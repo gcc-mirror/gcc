@@ -74,6 +74,10 @@
 
 	* gcc.target/riscv/zbs-bclri.c: New test.
 
+2022-11-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbs-bexti.c: New test.
+
 2022-11-17  mtsamis  <manolis.tsamis@vrull.eu>
 
 	* gcc.target/riscv/shrink-wrap-1.c: New test.
@@ -1685,7 +1689,7 @@
 	* g++.dg/cpp2a/concepts-friend10.C: New test.
 
 2022-10-20  Artem Klimov  <jakmobius@gmail.com>
-	     Alexander Monakov   <amonakov@gcc.gnu.org>
+	    Alexander Monakov   <amonakov@gcc.gnu.org>
 
 	PR middle-end/99619
 	* gcc.dg/tls/vis-attr-gd.c: New test.
@@ -3401,7 +3405,7 @@
 
 	PR target/95720
 	* lib/g++.exp: Moved gluefile block to after flags have been
-	  prefixed for the target_compile call.
+	prefixed for the target_compile call.
 	* lib/gcc.exp: Likewise.
 	* lib/wrapper.exp: Reset adjusted state flag.
 
@@ -3901,7 +3905,7 @@
 2022-09-02  Martin Liska  <mliska@suse.cz>
 
 	* lib/gcc-dg.exp: Remove -gstabs option support, DBX-related
-	  macros and DBX debugging info support.
+	macros and DBX debugging info support.
 	* lib/gfortran-dg.exp: Likewise.
 	* lib/target-supports.exp: Likewise.
 	* g++.dg/cpp0x/alias-decl-debug-0.C: Removed.
@@ -7825,8 +7829,8 @@
 	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
 
 	* gcc.dg/pr90838.c: Add additional flags (dg-additional-options)
-	  when compiling for riscv64 and subsume gcc.target/aarch64/pr90838.c
-	  and gcc.target/i386/pr95863-2.c.
+	when compiling for riscv64 and subsume gcc.target/aarch64/pr90838.c
+	and gcc.target/i386/pr95863-2.c.
 	* gcc.target/aarch64/pr90838.c: Removed.
 	* gcc.target/i386/pr95863-2.c: Removed.
 	* lib/target-supports.exp: Recognize RV32 or RV64 via XLEN
@@ -9462,7 +9466,7 @@
 2022-04-05  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.target/s390/zvector/vec-double-compile.c: Expect vl
-	  instead of vc*.
+	instead of vc*.
 	* gcc.target/s390/zvector/vec-float-compile.c: Dito.
 	* gcc.target/s390/zvector/vec-signed-compile.c: Dito.
 	* gcc.target/s390/zvector/vec-unsigned-compile.c: Dito.

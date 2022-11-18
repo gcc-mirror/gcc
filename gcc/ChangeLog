@@ -62,6 +62,11 @@
 	* config/riscv/predicates.md (const_nottwobits_operand):
 	New predicate.
 
+2022-11-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/bitmanip.md: Add a splitter to generate
+	polarity-reversed masks from a set bit using bexti + addi.
+
 2022-11-17  mtsamis  <manolis.tsamis@vrull.eu>
 
 	* config/riscv/riscv.cc (struct machine_function): Add array to store
@@ -396,7 +401,7 @@
 2022-11-14  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* config/riscv/bitmanip.md (orcb<mode>2): Add orc.b as an
-	  unspec.
+	unspec.
 	* config/riscv/riscv.md: Add UNSPEC_ORC_B.
 
 2022-11-14  Tamar Christina  <tamar.christina@arm.com>
@@ -1667,1317 +1672,1317 @@
 	2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/cpp/character-sets.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/conditional-syntax.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/conditional-uses.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/conditionals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/deleted-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/diagnostics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/environment-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/alternatives-to-wrapper-ifndef.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/computed-includes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/include-operation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/include-syntax.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/once-only-headers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/search-path.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/system-headers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/wrapper-headers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/implementation-defined-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/implementation-details.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/implementation-limits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/initial-processing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/invocation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/line-control.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/concatenation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/directives-within-macro-arguments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/function-like-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/macro-arguments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/macro-pitfalls.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/object-like-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/predefined-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/stringizing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/undefining-and-redefining-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/variadic-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/obsolete-features.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/other-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/pragmas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/preprocessor-output.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/the-preprocessing-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/tokenization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-lexical-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-miscellany.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-mode.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-warnings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/cppinternals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/cpplib.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/internal-representation-of-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/just-which-line-number-anyway.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/lexing-a-line.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/lexing-a-token.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/looking-for-a-function-like-macros-opening-parenthesis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/macro-expansion-overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/marking-tokens-ineligible-for-future-expansion.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/multiple-include-optimization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/representation-of-line-numbers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/scanning-the-replacement-list-for-macros-to-expand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/binary-compatibility.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c++-implementation-defined-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/architecture.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/arrays-and-pointers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/characters.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/declarators.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/environment.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/floating-point.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/hints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/identifiers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/integers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/library-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/locale-specific-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/preprocessing-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/qualifiers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/structures-unions-enumerations-and-bit-fields.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/translation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/conditionally-supported-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/contributing-to-gcc-development.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/contributors-to-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/exception-handling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/backwards-compatibility.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/c++-concepts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/c++-interface-and-implementation-pragmas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/c++-specific-variable-function-and-type-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/deprecated-features.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/extracting-the-function-pointer-from-a-bound-pointer-to-member-function.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/function-multiversioning.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/restricting-pointer-aliasing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/type-traits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/vague-linkage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/when-is-a-volatile-c++-object-accessed.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/wheres-the-template.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/128-bit-integers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/additional-floating-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/alternate-keywords.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/an-inline-function-is-as-fast-as-a-macro.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/arithmetic-on-void-and-function-pointers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/arrays-of-length-zero.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/arrays-of-variable-length.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/attribute-syntax.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/binary-constants-using-the-0b-prefix.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/built-in-functions-for-memory-model-aware-atomic-operations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/built-in-functions-to-perform-arithmetic-with-overflow-checking.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/c++-style-comments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/case-ranges.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/cast-to-a-union-type.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/complex-numbers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/compound-literals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/conditionals-with-omitted-operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/constructing-function-calls.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/decimal-floating-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/aarch64-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/amd-gcn-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/arc-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/arm-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/avr-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/blackfin-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/bpf-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/c-sky-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/common-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/epiphany-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/h8-300-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/ia-64-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m32c-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m32r-d-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m68k-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mcore-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mep-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/microblaze-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/microsoft-windows-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mips-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/msp430-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nds32-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nios-ii-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nvidia-ptx-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/powerpc-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/risc-v-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/rl78-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/rx-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/s-390-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/sh-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/symbian-os-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/v850-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/visium-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/x86-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/xstormy16-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/designated-initializers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/determining-the-alignment-of-functions-types-or-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/dollar-signs-in-identifier-names.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/double-word-integers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/enumerator-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/fixed-point-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/format-checks-specific-to-particular-target-machines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/function-names-as-strings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/getting-the-return-or-frame-address-of-a-function.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/half-precision-floating-point.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/hex-floats.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/how-to-use-inline-assembly-language-in-c-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/incomplete-enum-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/label-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/labels-as-values.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/legacy-sync-built-in-functions-for-atomic-memory-access.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/locally-declared-labels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/macros-with-a-variable-number-of-arguments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/mixed-declarations-labels-and-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/named-address-spaces.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/nested-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/non-constant-initializers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/non-lvalue-arrays-may-have-subscripts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/nonlocal-gotos.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/object-size-checking-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/other-built-in-functions-provided-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/pointer-arguments-in-variadic-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/pointers-to-arrays-with-qualifiers-work-as-expected.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/pragmas-accepted-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/prototypes-and-old-style-function-definitions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/referring-to-a-type-with-typeof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/slightly-looser-rules-for-escaped-newlines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/specifying-attributes-of-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/specifying-attributes-of-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/statement-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/statements-and-declarations-in-expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/structures-with-no-members.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/support-for-offsetof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/aarch64-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/alpha-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/altera-nios-ii-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arc-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arc-simd-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-armv8-m-security-extensions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-c-language-extensions-acle.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-floating-point-status-and-control-intrinsics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-iwmmxt-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/avr-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/basic-powerpc-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/blackfin-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/bpf-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/fr-v-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-dsp-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-loongson-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-paired-single-support.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-simd-architecture-msa-support.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/msp430-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/nds32-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/other-mips-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/picochip-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-altivec-vsx-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-atomic-memory-operation-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-hardware-transactional-memory-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-matrix-multiply-assist-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/pru-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/risc-v-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/rx-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/s-390-system-z-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/sh-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/sparc-vis-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/ti-c6x-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-control-flow-protection-intrinsics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-transactional-memory-intrinsics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/the-character-esc-in-constants.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/thread-local-storage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/unnamed-structure-and-union-fields.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/using-vector-instructions-through-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/when-is-a-volatile-object-accessed.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/x86-specific-memory-model-extensions-for-transactional-memory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/compiling-c++-programs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/description.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/environment-variables-affecting-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/gcc-developer-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/aarch64-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/adapteva-epiphany-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/amd-gcn-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/arc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/arm-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/avr-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/blackfin-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/c-sky-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/c6x-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/cris-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/darwin-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/dec-alpha-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/ebpf-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/fr30-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/frv-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/ft32-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/gnu-linux-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/h8-300-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/hppa-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/ia-64-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/ibm-rs-6000-and-powerpc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/lm32-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/loongarch-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/m32c-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/m32r-d-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/m680x0-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mcore-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mep-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/microblaze-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mips-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mmix-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mn10300-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/moxie-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/msp430-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/nds32-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/nios-ii-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/nvidia-ptx-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/openrisc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/options-for-system-v.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/pdp-11-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/picochip-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/powerpc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/pru-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/risc-v-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/rl78-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/rx-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/s-390-and-zseries-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/score-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/sh-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/solaris-2-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/sparc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/v850-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/vax-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/visium-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/vms-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/vxworks-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/x86-windows-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/xstormy16-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/xtensa-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/zseries-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-c++-dialect.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-c-dialect.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-objective-c-and-objective-c++-dialects.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-the-kind-of-output.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-the-preprocessor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-for-code-generation-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-for-debugging-your-program.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-for-directory-search.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-for-linking.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-that-control-optimization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-that-control-static-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-to-control-diagnostic-messages-formatting.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-to-request-or-suppress-warnings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/passing-options-to-the-assembler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/program-instrumentation-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/specifying-subprocesses-and-the-switches-to-pass-to-them.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/using-precompiled-headers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov-dump.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov-tool.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/brief-description-of-gcov-data-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/data-file-relocation-to-support-cross-profiling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/introduction-to-gcov.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/invoking-gcov.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/profiling-and-test-coverage-in-freestanding-environments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/using-gcov-with-gcc-optimization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/compatibilityalias.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/constant-string-objects.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/exceptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/fast-enumeration.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/garbage-collection.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/gnu-objective-c-runtime-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/load-executing-code-before-main.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/messaging-with-the-gnu-objective-c-runtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/synchronization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/type-encoding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/have-you-found-a-bug.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/how-and-where-to-report-bugs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/how-to-get-help-with-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/actual-bugs-we-havent-fixed-yet.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/certain-changes-we-dont-want-to-make.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/common-misunderstandings-with-gnu-c.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/disappointments-and-misunderstandings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/fixed-header-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/incompatibilities-of-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/interoperation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/standard-libraries.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/warning-messages-and-error-messages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/c++-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/c-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/d-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/go-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/objective-c-and-objective-c++-languages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/lto-dump.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/programming-languages-supported-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/reporting-bugs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/alias-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/annotations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/memory-model.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/ssa-operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/static-single-assignment.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/data-dependency-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/iv-analysis-on-rtl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/loop-closed-ssa-form.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/loop-manipulation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/loop-querying.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/loop-representation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/number-of-iterations-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/scalar-evolutions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analyzer-internals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/collect2.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/contributing-to-gcc-development.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/contributors-to-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/basic-blocks.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/edges.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/liveness-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/maintaining-the-cfg.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/profile-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/debugging-the-analyzer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gcc-and-portability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/attributes-in-trees.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/c-and-c++-trees.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/declarations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/deficiencies.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/language-dependent-trees.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/adding-a-new-gimple-statement-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/class-hierarchy-of-gimple-statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/exception-handling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/gimple-instruction-set.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/gimple-sequences.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/manipulating-gimple-statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/sequence-iterators.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/statement-and-operand-traversals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/temporaries.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-representation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleasm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleassign.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplebind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplecall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplecatch.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplecond.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpledebug.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleehfilter.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplegoto.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplelabel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplenop.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompatomicload.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompatomicstore.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompcontinue.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompcritical.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompfor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompmaster.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompordered.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompparallel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompreturn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsection.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsections.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsingle.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplephi.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleresx.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplereturn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleswitch.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpletry.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplewithcleanupexpr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/guidelines-for-diagnostics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/guidelines-for-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-common.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-configuration.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-filesystem.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-makefile-fragments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-misc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/interfacing-to-gcc-output.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/language-front-ends-in-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/design-overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/internal-flags-controlling-lto1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/lto-file-sections.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/using-summary-information-in-ipa-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/whole-program-assumptions-linker-plugin-and-symbol-visibilities.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/c-statements-for-assembler-output.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/canonicalization-of-instructions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/conditional-execution.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/constant-definitions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/defining-how-to-split-instructions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/defining-jump-instruction-patterns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/defining-looping-instruction-patterns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/defining-rtl-sequences-for-code-generation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/everything-about-instruction-patterns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/example-of-defineinsn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/including-patterns-in-machine-descriptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/instruction-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/interdependence-of-patterns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/iterators.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/machine-specific-peephole-optimizers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/operand-constraints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/output-templates-and-operand-substitution.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/overview-of-how-the-machine-description-is-used.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/predicates.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/rtl-template.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/rtl-templates-transformations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/standard-pattern-names-for-generation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/when-the-order-of-patterns-matters.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/makefile-fragments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/match-and-simplify.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/how-to-invoke-the-garbage-collector.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/marking-roots-for-the-garbage-collector.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/source-files-containing-type-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/support-for-inheritance.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/support-for-user-provided-gc-marking-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/the-inside-of-a-gty.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/troubleshooting-the-garbage-collector.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/option-file-format.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/option-properties.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/option-specification-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/gimplification-pass.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/inter-procedural-optimization-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/optimization-info.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/parsing-pass.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/pass-manager.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/rtl-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/tree-ssa-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/building-gcc-plugins.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/controlling-which-passes-are-being-run.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/giving-information-about-a-plugin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/interacting-with-the-gcc-garbage-collector.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/interacting-with-the-pass-manager.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/keeping-track-of-available-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/loading-plugins.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/plugin-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/recording-information-about-pass-execution.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/registering-custom-attributes-or-pragmas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/access-to-operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/access-to-special-operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/assembler-instructions-as-expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/bit-fields.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/comparison-operations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/constant-expression-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/conversions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/declarations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/embedded-side-effects-on-addresses.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/flags-in-an-rtl-expression.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/insns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/machine-modes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/on-the-side-ssa-form-for-rtl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/reading-rtl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/registers-and-memory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/rtl-classes-and-formats.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/rtl-expressions-for-arithmetic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/rtl-object-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/rtl-representation-of-function-call-insns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/side-effect-expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/structure-sharing-assumptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/variable-location-debug-information-in-rtl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/vector-operations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/alignment-of-polyints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/arithmetic-on-polyints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/comparisons-involving-polyint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/computing-bounds-on-polyints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/consequences-of-using-polyint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/converting-polyints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/guidelines-for-using-polyint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/miscellaneous-polyint-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/overview-of-polyint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/configure-terms-and-history.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/anatomy-of-a-language-front-end.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/anatomy-of-a-target-back-end.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/build-system-in-the-gcc-directory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/configuration-in-the-gcc-directory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/headers-installed-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/library-source-files-and-headers-under-the-gcc-directory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/makefile-targets.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/subdirectories-of-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/top-level-source-directory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/standard-header-file-directories.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/static-analyzer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/controlling-debugging-information-format.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/controlling-the-compilation-driver-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/cross-compilation-and-floating-point.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-coprocessor-specifics-for-mips-targets.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-data-structures-for-per-function-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/assembler-commands-for-alignment.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/how-initialization-functions-are-handled.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/macros-controlling-initialization-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/output-and-generation-of-labels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-assembler-instructions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-data.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-uninitialized-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/implicit-calls-to-library-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/layout-of-source-language-data-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/position-independent-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/register-usage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/basic-stack-layout.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/caller-saves-register-allocation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/exception-handling-support.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/passing-function-arguments-on-the-stack.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/registers-that-address-the-stack-frame.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/support-for-nested-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/the-global-targetm-variable.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-makefile-fragments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/ada-language-testsuites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/c-language-testsuites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/commands-for-use-in-dg-final.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/features-for-dg-add-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/keywords-describing-target-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/selecting-targets-to-which-a-test-applies.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/syntax-and-descriptions-of-test-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/variants-of-dg-require-support.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/idioms-used-in-testsuite-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-binary-compatibility.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-gcov.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-gimple-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-link-time-optimizations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-profile-directed-optimizations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-rtl-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-torture-testing-using-multiple-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/language-independent-routines-for-exception-handling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/miscellaneous-runtime-library-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-decimal-floating-point-emulation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-fixed-point-fractional-emulation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-floating-point-emulation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-integer-arithmetic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/user-experience-guidelines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/binaries.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-a-cross-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-a-native-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-in-parallel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-the-ada-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-the-d-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-with-profile-feedback.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/configuration.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/downloading-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/final-installation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/host-target-specific-installation-notes-for-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/how-can-you-run-the-testsuite-on-selected-tests.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/how-to-interpret-test-results.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/installing-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/passing-options-and-running-multiple-testsuites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/prerequisites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/submitting-test-results.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/testing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -3070,9 +3075,9 @@
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/gcc/gcc-command-options/machine-dependent-options/x86-options.rst:
-	  Revert.
+	Revert.
 	* doc/gcc/gcc-command-options/option-summary.rst:
-	  Revert.
+	Revert.
 
 2022-11-14  Hongyu Wang  <hongyu.wang@intel.com>
 
@@ -3505,1317 +3510,1317 @@
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/cpp/character-sets.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/conditional-syntax.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/conditional-uses.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/conditionals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/deleted-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/diagnostics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/environment-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/alternatives-to-wrapper-ifndef.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/computed-includes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/include-operation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/include-syntax.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/once-only-headers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/search-path.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/system-headers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/header-files/wrapper-headers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/implementation-defined-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/implementation-details.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/implementation-limits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/initial-processing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/invocation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/line-control.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/concatenation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/directives-within-macro-arguments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/function-like-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/macro-arguments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/macro-pitfalls.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/object-like-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/predefined-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/stringizing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/undefining-and-redefining-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/macros/variadic-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/obsolete-features.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/other-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/pragmas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/preprocessor-output.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/the-preprocessing-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/tokenization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-lexical-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-miscellany.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-mode.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cpp/traditional-warnings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/cppinternals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/cpplib.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/internal-representation-of-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/just-which-line-number-anyway.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/lexing-a-line.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/lexing-a-token.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/looking-for-a-function-like-macros-opening-parenthesis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/macro-expansion-overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/marking-tokens-ineligible-for-future-expansion.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/multiple-include-optimization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/representation-of-line-numbers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppinternals/scanning-the-replacement-list-for-macros-to-expand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/binary-compatibility.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c++-implementation-defined-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/architecture.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/arrays-and-pointers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/characters.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/declarators.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/environment.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/floating-point.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/hints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/identifiers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/integers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/library-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/locale-specific-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/preprocessing-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/qualifiers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/structures-unions-enumerations-and-bit-fields.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/c-implementation-defined-behavior/translation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/conditionally-supported-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/contributing-to-gcc-development.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/contributors-to-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/exception-handling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/backwards-compatibility.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/c++-concepts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/c++-interface-and-implementation-pragmas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/c++-specific-variable-function-and-type-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/deprecated-features.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/extracting-the-function-pointer-from-a-bound-pointer-to-member-function.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/function-multiversioning.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/restricting-pointer-aliasing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/type-traits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/vague-linkage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/when-is-a-volatile-c++-object-accessed.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c++-language/wheres-the-template.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/128-bit-integers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/additional-floating-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/alternate-keywords.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/an-inline-function-is-as-fast-as-a-macro.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/arithmetic-on-void-and-function-pointers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/arrays-of-length-zero.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/arrays-of-variable-length.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/attribute-syntax.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/binary-constants-using-the-0b-prefix.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/built-in-functions-for-memory-model-aware-atomic-operations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/built-in-functions-to-perform-arithmetic-with-overflow-checking.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/c++-style-comments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/case-ranges.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/cast-to-a-union-type.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/complex-numbers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/compound-literals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/conditionals-with-omitted-operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/constructing-function-calls.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/decimal-floating-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/aarch64-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/amd-gcn-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/arc-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/arm-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/avr-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/blackfin-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/bpf-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/c-sky-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/common-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/epiphany-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/h8-300-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/ia-64-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m32c-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m32r-d-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m68k-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mcore-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mep-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/microblaze-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/microsoft-windows-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mips-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/msp430-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nds32-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nios-ii-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nvidia-ptx-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/powerpc-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/risc-v-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/rl78-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/rx-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/s-390-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/sh-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/symbian-os-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/v850-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/visium-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/x86-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/xstormy16-function-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/designated-initializers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/determining-the-alignment-of-functions-types-or-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/dollar-signs-in-identifier-names.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/double-word-integers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/enumerator-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/fixed-point-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/format-checks-specific-to-particular-target-machines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/function-names-as-strings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/getting-the-return-or-frame-address-of-a-function.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/half-precision-floating-point.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/hex-floats.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/how-to-use-inline-assembly-language-in-c-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/incomplete-enum-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/label-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/labels-as-values.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/legacy-sync-built-in-functions-for-atomic-memory-access.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/locally-declared-labels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/macros-with-a-variable-number-of-arguments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/mixed-declarations-labels-and-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/named-address-spaces.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/nested-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/non-constant-initializers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/non-lvalue-arrays-may-have-subscripts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/nonlocal-gotos.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/object-size-checking-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/other-built-in-functions-provided-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/pointer-arguments-in-variadic-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/pointers-to-arrays-with-qualifiers-work-as-expected.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/pragmas-accepted-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/prototypes-and-old-style-function-definitions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/referring-to-a-type-with-typeof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/slightly-looser-rules-for-escaped-newlines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/specifying-attributes-of-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/specifying-attributes-of-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/statement-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/statements-and-declarations-in-expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/structures-with-no-members.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/support-for-offsetof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/aarch64-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/alpha-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/altera-nios-ii-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arc-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arc-simd-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-armv8-m-security-extensions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-c-language-extensions-acle.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-floating-point-status-and-control-intrinsics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-iwmmxt-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/avr-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/basic-powerpc-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/blackfin-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/bpf-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/fr-v-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-dsp-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-loongson-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-paired-single-support.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-simd-architecture-msa-support.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/msp430-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/nds32-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/other-mips-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/picochip-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-altivec-vsx-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-atomic-memory-operation-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-hardware-transactional-memory-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-matrix-multiply-assist-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/pru-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/risc-v-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/rx-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/s-390-system-z-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/sh-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/sparc-vis-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/ti-c6x-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-control-flow-protection-intrinsics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-transactional-memory-intrinsics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/the-character-esc-in-constants.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/thread-local-storage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/unnamed-structure-and-union-fields.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/using-vector-instructions-through-built-in-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/when-is-a-volatile-object-accessed.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/extensions-to-the-c-language-family/x86-specific-memory-model-extensions-for-transactional-memory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/compiling-c++-programs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/description.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/environment-variables-affecting-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/gcc-developer-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/aarch64-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/adapteva-epiphany-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/amd-gcn-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/arc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/arm-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/avr-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/blackfin-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/c-sky-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/c6x-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/cris-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/darwin-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/dec-alpha-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/ebpf-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/fr30-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/frv-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/ft32-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/gnu-linux-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/h8-300-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/hppa-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/ia-64-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/ibm-rs-6000-and-powerpc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/lm32-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/loongarch-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/m32c-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/m32r-d-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/m680x0-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mcore-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mep-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/microblaze-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mips-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mmix-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/mn10300-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/moxie-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/msp430-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/nds32-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/nios-ii-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/nvidia-ptx-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/openrisc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/options-for-system-v.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/pdp-11-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/picochip-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/powerpc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/pru-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/risc-v-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/rl78-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/rx-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/s-390-and-zseries-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/score-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/sh-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/solaris-2-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/sparc-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/v850-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/vax-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/visium-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/vms-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/vxworks-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/x86-windows-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/xstormy16-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/xtensa-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/machine-dependent-options/zseries-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-c++-dialect.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-c-dialect.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-objective-c-and-objective-c++-dialects.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-the-kind-of-output.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-controlling-the-preprocessor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-for-code-generation-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-for-debugging-your-program.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-for-directory-search.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-for-linking.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-that-control-optimization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-that-control-static-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-to-control-diagnostic-messages-formatting.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/options-to-request-or-suppress-warnings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/passing-options-to-the-assembler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/program-instrumentation-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/specifying-subprocesses-and-the-switches-to-pass-to-them.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc-command-options/using-precompiled-headers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov-dump.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov-tool.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/brief-description-of-gcov-data-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/data-file-relocation-to-support-cross-profiling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/introduction-to-gcov.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/invoking-gcov.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/profiling-and-test-coverage-in-freestanding-environments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gcov/using-gcov-with-gcc-optimization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/compatibilityalias.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/constant-string-objects.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/exceptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/fast-enumeration.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/garbage-collection.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/gnu-objective-c-runtime-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/load-executing-code-before-main.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/messaging-with-the-gnu-objective-c-runtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/synchronization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu-objective-c-features/type-encoding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/gnu.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/have-you-found-a-bug.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/how-and-where-to-report-bugs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/how-to-get-help-with-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/actual-bugs-we-havent-fixed-yet.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/certain-changes-we-dont-want-to-make.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/common-misunderstandings-with-gnu-c.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/disappointments-and-misunderstandings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/fixed-header-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/incompatibilities-of-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/interoperation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/standard-libraries.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/known-causes-of-trouble-with-gcc/warning-messages-and-error-messages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/c++-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/c-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/d-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/go-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/language-standards-supported-by-gcc/objective-c-and-objective-c++-languages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/lto-dump.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/programming-languages-supported-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gcc/reporting-bugs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/alias-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/annotations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/memory-model.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/ssa-operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-optimization-of-gimple-tuples/static-single-assignment.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/data-dependency-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/iv-analysis-on-rtl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/loop-closed-ssa-form.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/loop-manipulation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/loop-querying.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/loop-representation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/number-of-iterations-analysis.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analysis-and-representation-of-loops/scalar-evolutions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/analyzer-internals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/collect2.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/contributing-to-gcc-development.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/contributors-to-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/basic-blocks.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/edges.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/liveness-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/maintaining-the-cfg.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/control-flow-graph/profile-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/debugging-the-analyzer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gcc-and-portability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/attributes-in-trees.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/c-and-c++-trees.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/declarations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/deficiencies.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/language-dependent-trees.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/generic/types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/adding-a-new-gimple-statement-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/class-hierarchy-of-gimple-statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/exception-handling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/gimple-instruction-set.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/gimple-sequences.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/manipulating-gimple-statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/sequence-iterators.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/statement-and-operand-traversals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/temporaries.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-representation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleasm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleassign.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplebind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplecall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplecatch.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplecond.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpledebug.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleehfilter.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplegoto.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplelabel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplenop.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompatomicload.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompatomicstore.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompcontinue.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompcritical.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompfor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompmaster.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompordered.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompparallel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompreturn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsection.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsections.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsingle.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplephi.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleresx.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplereturn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpleswitch.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimpletry.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gimple/tuple-specific-accessors/gimplewithcleanupexpr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/guidelines-for-diagnostics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/guidelines-for-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-common.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-configuration.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-filesystem.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-makefile-fragments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/host-misc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/interfacing-to-gcc-output.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/language-front-ends-in-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/design-overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/internal-flags-controlling-lto1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/lto-file-sections.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/using-summary-information-in-ipa-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/link-time-optimization/whole-program-assumptions-linker-plugin-and-symbol-visibilities.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/c-statements-for-assembler-output.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/canonicalization-of-instructions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/conditional-execution.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/constant-definitions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/defining-how-to-split-instructions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/defining-jump-instruction-patterns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/defining-looping-instruction-patterns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/defining-rtl-sequences-for-code-generation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/everything-about-instruction-patterns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/example-of-defineinsn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/including-patterns-in-machine-descriptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/instruction-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/interdependence-of-patterns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/iterators.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/machine-specific-peephole-optimizers.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/operand-constraints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/output-templates-and-operand-substitution.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/overview-of-how-the-machine-description-is-used.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/predicates.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/rtl-template.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/rtl-templates-transformations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/standard-pattern-names-for-generation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/machine-descriptions/when-the-order-of-patterns-matters.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/makefile-fragments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/match-and-simplify.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/how-to-invoke-the-garbage-collector.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/marking-roots-for-the-garbage-collector.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/source-files-containing-type-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/support-for-inheritance.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/support-for-user-provided-gc-marking-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/the-inside-of-a-gty.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/memory-management-and-type-information/troubleshooting-the-garbage-collector.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/option-file-format.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/option-properties.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/option-specification-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/gimplification-pass.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/inter-procedural-optimization-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/optimization-info.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/parsing-pass.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/pass-manager.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/rtl-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/passes-and-files-of-the-compiler/tree-ssa-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/building-gcc-plugins.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/controlling-which-passes-are-being-run.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/giving-information-about-a-plugin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/interacting-with-the-gcc-garbage-collector.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/interacting-with-the-pass-manager.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/keeping-track-of-available-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/loading-plugins.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/plugin-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/recording-information-about-pass-execution.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/plugins/registering-custom-attributes-or-pragmas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/access-to-operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/access-to-special-operands.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/assembler-instructions-as-expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/bit-fields.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/comparison-operations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/constant-expression-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/conversions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/declarations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/embedded-side-effects-on-addresses.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/flags-in-an-rtl-expression.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/insns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/machine-modes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/on-the-side-ssa-form-for-rtl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/reading-rtl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/registers-and-memory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/rtl-classes-and-formats.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/rtl-expressions-for-arithmetic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/rtl-object-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/rtl-representation-of-function-call-insns.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/side-effect-expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/structure-sharing-assumptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/variable-location-debug-information-in-rtl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/rtl-representation/vector-operations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/alignment-of-polyints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/arithmetic-on-polyints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/comparisons-involving-polyint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/computing-bounds-on-polyints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/consequences-of-using-polyint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/converting-polyints.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/guidelines-for-using-polyint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/miscellaneous-polyint-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/sizes-and-offsets-as-runtime-invariants/overview-of-polyint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/configure-terms-and-history.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/anatomy-of-a-language-front-end.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/anatomy-of-a-target-back-end.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/build-system-in-the-gcc-directory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/configuration-in-the-gcc-directory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/headers-installed-by-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/library-source-files-and-headers-under-the-gcc-directory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/makefile-targets.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/subdirectories-of-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/source-tree-structure-and-build-system/top-level-source-directory.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/standard-header-file-directories.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/static-analyzer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/controlling-debugging-information-format.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/controlling-the-compilation-driver-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/cross-compilation-and-floating-point.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-coprocessor-specifics-for-mips-targets.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-data-structures-for-per-function-information.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/assembler-commands-for-alignment.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/how-initialization-functions-are-handled.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/macros-controlling-initialization-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/output-and-generation-of-labels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-assembler-instructions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-data.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-uninitialized-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/implicit-calls-to-library-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/layout-of-source-language-data-types.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/position-independent-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/register-usage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/basic-stack-layout.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/caller-saves-register-allocation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/exception-handling-support.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/passing-function-arguments-on-the-stack.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/stack-layout-and-calling-conventions/registers-that-address-the-stack-frame.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/support-for-nested-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-macros/the-global-targetm-variable.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/target-makefile-fragments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/ada-language-testsuites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/c-language-testsuites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/commands-for-use-in-dg-final.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/features-for-dg-add-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/keywords-describing-target-attributes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/selecting-targets-to-which-a-test-applies.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/syntax-and-descriptions-of-test-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/variants-of-dg-require-support.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/idioms-used-in-testsuite-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-binary-compatibility.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-gcov.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-gimple-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-link-time-optimizations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-profile-directed-optimizations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-testing-rtl-passes.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/testsuites/support-for-torture-testing-using-multiple-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/language-independent-routines-for-exception-handling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/miscellaneous-runtime-library-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-decimal-floating-point-emulation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-fixed-point-fractional-emulation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-floating-point-emulation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-integer-arithmetic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/the-language.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gccint/user-experience-guidelines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/binaries.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-a-cross-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-a-native-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-in-parallel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-the-ada-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-the-d-compiler.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/building/building-with-profile-feedback.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/configuration.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/downloading-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/final-installation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/host-target-specific-installation-notes-for-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/how-can-you-run-the-testsuite-on-selected-tests.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/how-to-interpret-test-results.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/installing-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/passing-options-and-running-multiple-testsuites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/prerequisites.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/submitting-test-results.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/install/testing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
@@ -7469,9 +7474,9 @@
 	* configure: Regenerated.
 	* config.in: Regenerated.
 	* config/mips/mips.h: don't define STANDARD_STARTFILE_PREFIX_1
-	  if ENABLE_MULTIARCH is defined.
+	if ENABLE_MULTIARCH is defined.
 	* config/mips/t-linux64: define correct multiarch path when
-	  multiarch is enabled.
+	multiarch is enabled.
 
 2022-10-25  Richard Biener  <rguenther@suse.de>
 
@@ -7488,7 +7493,7 @@
 2022-10-25  Martin Liska  <mliska@suse.cz>
 
 	* common/config/riscv/riscv-common.cc
-	  (riscv_get_valid_option_values): Get out of ifdef.
+	(riscv_get_valid_option_values): Get out of ifdef.
 
 2022-10-25  Martin Liska  <mliska@suse.cz>
 
@@ -7523,8 +7528,8 @@
 
 	PR target/107364
 	* common/config/i386/i386-cpuinfo.h (enum processor_vendor):
-	  Reorder enum values as BUILTIN_VENDOR_MAX should not point
-	  in the middle of the valid enum values.
+	Reorder enum values as BUILTIN_VENDOR_MAX should not point
+	in the middle of the valid enum values.
 
 2022-10-24  Marek Polacek  <polacek@redhat.com>
 
@@ -7942,13 +7947,13 @@
 	* config/i386/avxifmaintrin.h: New header.
 	* config/i386/cpuid.h (bit_AVXIFMA): New.
 	* config/i386/i386-builtin.def: Add new builtins, and correct
-	  pattern names for AVX512IFMA.
+	pattern names for AVX512IFMA.
 	* config/i386/i386-builtins.cc (def_builtin): Handle AVX-IFMA
-	  builtins like AVX-VNNI.
+	builtins like AVX-VNNI.
 	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
 	__AVXIFMA__.
 	* config/i386/i386-expand.cc (ix86_check_builtin_isa_match):
-	  Relax ISA masks for AVXIFMA.
+	Relax ISA masks for AVXIFMA.
 	* config/i386/i386-isa.def: Add AVXIFMA.
 	* config/i386/i386-options.cc (isa2_opts): Add -mavxifma.
 	(ix86_valid_target_attribute_inner_p): Handle avxifma.
@@ -7983,7 +7988,7 @@
 	(foperator_unordered_lt::op2_range): New.
 
 2022-10-20  Artem Klimov  <jakmobius@gmail.com>
-	     Alexander Monakov   <amonakov@gcc.gnu.org>
+	    Alexander Monakov   <amonakov@gcc.gnu.org>
 
 	PR middle-end/99619
 	* ipa-visibility.cc (function_and_variable_visibility): Promote
@@ -8157,7 +8162,7 @@
 2022-10-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (ranger_cache::range_from_dom): Use
-	  Value_Range not int_range_max.
+	Value_Range not int_range_max.
 
 2022-10-19  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -8222,8 +8227,8 @@
 	Use !xtensa_split1_finished_p() instead of can_create_pseudo_p().
 	* config/xtensa/predicates.md (move_operand): Ditto.
 	* config/xtensa/xtensa.md: Add two new split patterns:
-	  - splits DImode immediate load into two SImode ones
-	  - puts out-of-constraint SImode constants into the constant pool
+	- splits DImode immediate load into two SImode ones
+	- puts out-of-constraint SImode constants into the constant pool
 	* config/xtensa/xtensa.opt (-mlra): New target-specific option
 	for testing purpose.
 
@@ -8814,7 +8819,7 @@
 	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Use
 	iterator.
 	* value-relation.cc
-	  (equiv_relation_iterator::equiv_relation_iterator): New.
+	(equiv_relation_iterator::equiv_relation_iterator): New.
 	(equiv_relation_iterator::next): New.
 	(equiv_relation_iterator::get_name): New.
 	* value-relation.h (class relation_oracle): Privatize some methods.
@@ -9199,7 +9204,6 @@
 	to [0,0] when nonzero mask is 0.
 
 2022-10-11  Olivier Hainque  <hainque@adacore.com>
-	    Olivier Hainque  <hainque@adacore.com>
 
 	* configure: Regenerate.
 
@@ -9415,8 +9419,8 @@
 
 	* config.gcc: set with_arch to default_mips_arch if no defined.
 	* config/mips/driver-native.cc (host_detect_local_cpu):
-	  try getauxval(AT_BASE_PLATFORM) and _MIPS_ARCH, too.
-	  pass -mnan=2008 if __mips_nan2008__ is defined.
+	try getauxval(AT_BASE_PLATFORM) and _MIPS_ARCH, too.
+	pass -mnan=2008 if __mips_nan2008__ is defined.
 	* config.in: define HAVE_SYS_AUXV_H and HAVE_GETAUXVAL.
 	* configure.ac: detect sys/auxv.h and getauxval.
 	* configure: regenerated.
@@ -9504,7 +9508,7 @@
 2022-10-07  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386-protos.h (ix86_binary_operator_ok): Add array
-	  size to function parameter.
+	size to function parameter.
 	(ix86_unary_operator_ok): Likewise.
 
 2022-10-07  Martin Liska  <mliska@suse.cz>
@@ -10588,7 +10592,7 @@
 2022-09-26  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Add missing dash for
-	  Wanalyzer-exposure-through-uninit-copy.
+	Wanalyzer-exposure-through-uninit-copy.
 
 2022-09-26  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -10812,7 +10816,7 @@
 
 	* common.opt: Update -flto-compression-level documentation.
 	* opts.cc (print_filtered_help): Do not append range to an
-	  option that uses \t syntax.
+	option that uses \t syntax.
 
 2022-09-23  Jakub Jelinek  <jakub@redhat.com>
 
@@ -10933,14 +10937,14 @@
 2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* range-op-float.cc (range_operator_float::fold_range): New base
-	  method for "int = float op int".
+	method for "int = float op int".
 	* range-op.cc (range_op_handler::fold_range): New case.
 	* range-op.h: Update prototypes.
 
 2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-op.cc (gimple_range_op_handler::calc_op1): Use
-	  operand 1 for second range if there is no operand 2.
+	operand 1 for second range if there is no operand 2.
 
 2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -10994,8 +10998,8 @@
 2022-09-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-threadbackward.cc
-	  (back_threader::find_paths_to_names): Replace sequence with
-	  a call to gimple_range_ssa_names.
+	(back_threader::find_paths_to_names): Replace sequence with
+	a call to gimple_range_ssa_names.
 
 2022-09-22  Martin Liska  <mliska@suse.cz>
 	    Fangrui Song  <i@maskray.me>
@@ -11005,7 +11009,7 @@
 	and gcc_cv_as_compress_debug={0,1}.
 	* doc/invoke.texi: Document the removal.
 	* gcc.cc (LINK_COMPRESS_DEBUG_SPEC): Simplify and ignore
-	  zlib-gnu.
+	zlib-gnu.
 	(ASM_COMPRESS_DEBUG_SPEC): Likewise.
 
 2022-09-22  Richard Biener  <rguenther@suse.de>
@@ -11973,10 +11977,10 @@
 	PR bootstrap/106855
 	* collect2.cc (scan_prog_file): Restore if XCOFF_DEBUGGING_INFO.
 	* config/rs6000/rs6000.cc (rs6000_option_override_internal):
-	  Restore usage of XCOFF_DEBUGGING_INFO.
+	Restore usage of XCOFF_DEBUGGING_INFO.
 	* config/rs6000/xcoff.h (XCOFF_DEBUGGING_INFO): Restore.
 	* dwarf2asm.cc (XCOFF_DEBUGGING_INFO): Restore support for
-	  XCOFF_DEBUGGING_INFO.
+	XCOFF_DEBUGGING_INFO.
 	(dw2_asm_output_nstring): Likewise.
 	(USE_LINKONCE_INDIRECT): Likewise.
 	* dwarf2out.cc (XCOFF_DEBUGGING_INFO): Likewise.
@@ -12290,7 +12294,7 @@
 2022-09-05  Martin Liska  <mliska@suse.cz>
 
 	* doc/tm.texi.in: Rename DEBUGGER_REGISTER_NUMBER to
-	  DEBUGGER_REGNO.
+	DEBUGGER_REGNO.
 	* doc/tm.texi: Regenerate.
 
 2022-09-05  Martin Liska  <mliska@suse.cz>
@@ -12753,7 +12757,7 @@
 2022-09-02  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Remove -gstabs option support, DBX-related
-	  macros and DBX debugging info support.
+	macros and DBX debugging info support.
 	* collect2.cc (scan_prog_file): Likewise.
 	* common.opt: Likewise.
 	* config.gcc: Likewise.
@@ -13104,7 +13108,7 @@
 
 	PR tree-optimization/106789
 	* range-op-float.cc (default_frelop_fold_range): Remove the
-	  function.
+	function.
 
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
@@ -13355,7 +13359,7 @@
 2022-08-30  Martin Liska  <mliska@suse.cz>
 
 	* config/s390/s390.cc (s390_rtx_costs): Use proper type as
-	  argument.
+	argument.
 
 2022-08-30  Richard Biener  <rguenther@suse.de>
 
@@ -14034,9 +14038,9 @@
 	* config.in: Regenerate.
 	* configure: Regenerate.
 	* opts-common.cc (jobserver_info::connect): Set is_connected
-	  properly based on O_NONBLOCK.
+	properly based on O_NONBLOCK.
 	* opts-jobserver.h (struct jobserver_info): Add is_connected
-	  member variable.
+	member variable.
 
 2022-08-22  zhongjuzhe  <juzhe.zhong@rivai.ai>
 
@@ -14189,7 +14193,7 @@
 
 	PR gcov-profile/106659
 	* gcov-dump.cc (INCLUDE_VECTOR): Include vector.h with
-	  INCLUDE_VECTOR.
+	INCLUDE_VECTOR.
 
 2022-08-18  konglin1  <lingling.kong@intel.com>
 
@@ -14450,7 +14454,7 @@
 	* gimple-range-fold.cc (gimple_range_ssa_names): New.
 	* gimple-range-fold.h (gimple_range_ssa_names): New prototype.
 	* gimple-range-gori.cc (range_def_chain::get_def_chain): Move
-	  code to new routine.
+	code to new routine.
 
 2022-08-16  Martin Liska  <mliska@suse.cz>
 
@@ -14541,13 +14545,13 @@
 2022-08-16  Martin Liska  <mliska@suse.cz>
 
 	* value-range-storage.h (class obstack_vrange_allocator): Mark
-	  the class as final.
+	the class as final.
 	(class ggc_vrange_allocator): Likewise.
 
 2022-08-16  Martin Liska  <mliska@suse.cz>
 
 	* value-range-equiv.h (class value_range_equiv): Add virtual
-	  destructor.
+	destructor.
 	* value-range.h: Likewise.
 
 2022-08-16  Richard Biener  <rguenther@suse.de>
@@ -14563,7 +14567,7 @@
 2022-08-16  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386-features.h (class general_scalar_chain): Add
-	  final override for a method.
+	final override for a method.
 	(class timode_scalar_chain): Likewise.
 
 2022-08-16  Richard Biener  <rguenther@suse.de>
@@ -14924,7 +14928,7 @@
 
 	PR tree-optimization/106556
 	* gimple-range-gori.cc (gori_compute::condexpr_adjust): Use the
-	  type of the cond_expr operands being evaluted.
+	type of the cond_expr operands being evaluted.
 
 2022-08-08  Tom Honermann  <tom@honermann.net>
 
@@ -15043,7 +15047,7 @@
 
 	PR tree-optimization/106514
 	* value-relation.cc (path_oracle::killing_def) Do not walk the
-	  equivalence set clearing bits.
+	equivalence set clearing bits.
 
 2022-08-03  Tamar Christina  <tamar.christina@arm.com>
 
@@ -15122,7 +15126,7 @@
 
 	PR tree-optimization/106510
 	* gimple-range-fold.cc (fur_source::register_outgoing_edges):
-	  Check for unsupported statements early.
+	Check for unsupported statements early.
 
 2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -16172,7 +16176,7 @@
 2022-07-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (ranger_cache::range_from_dom): Check
-	  for incoming ranges on join nodes and add to worklist.
+	for incoming ranges on join nodes and add to worklist.
 
 2022-07-19  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -20384,7 +20388,7 @@
 2022-05-24  Vineet Gupta  <vineetg@rivosinc.com>
 
 	* config/riscv/riscv.cc: (struct riscv_tune_param): Add
-	  fmv_cost.
+	fmv_cost.
 	(rocket_tune_info): Add default fmv_cost 8.
 	(sifive_7_tune_info): Ditto.
 	(thead_c906_tune_info): Ditto.
@@ -22568,7 +22572,7 @@
 
 	PR target/103069
 	* config/i386/i386-expand.cc (ix86_expand_cmpxchg_loop):
-	  Add missing set to target_val at pause label.
+	Add missing set to target_val at pause label.
 
 2022-04-13  Jakub Jelinek  <jakub@redhat.com>
 
@@ -23232,7 +23236,7 @@
 2022-04-01  YunQiang Su  <yunqiang.su@cipunited.com>
 
 	* config/mips/mips.cc (mips_expand_prologue):
-	  IPL is 8bit for MCU ASE.
+	IPL is 8bit for MCU ASE.
 
 2022-03-31  Bill Schmidt  <wschmidt@linux.ibm.com>
 
@@ -23854,7 +23858,7 @@
 
 	PR target/104898
 	* config/i386/i386-options.cc (ix86_option_override_internal):
-	  Use '%qs' instead of '(%qs)'.
+	Use '%qs' instead of '(%qs)'.
 
 2022-03-22  Martin Liska  <mliska@suse.cz>
 
@@ -25050,7 +25054,7 @@
 
 	PR target/104664
 	* config/i386/i386-expand.cc (ix86_expand_vector_init_duplicate):
-	  Use vec_setv8hf_0 for HF to V8HFmode move instead of subreg.
+	Use vec_setv8hf_0 for HF to V8HFmode move instead of subreg.
 
 2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
 
@@ -27349,7 +27353,7 @@
 
 	PR middle-end/95115
 	* fold-const.cc (const_binop): Do not fold NaN result from
-	  non-NaN operands.
+	non-NaN operands.
 
 2022-02-01  Tom de Vries  <tdevries@suse.de>
 
