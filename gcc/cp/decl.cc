@@ -12664,6 +12664,7 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (type != error_mark_node)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (loc, "structured binding declaration cannot have "
 			"type %qT", type);
 	      inform (loc,
@@ -12673,6 +12674,10 @@ grokdeclarator (const cp_declarator *declarator,
 	  type = build_qualified_type (make_auto (), type_quals);
 	  declspecs->type = type;
 	}
+      else if (PLACEHOLDER_TYPE_CONSTRAINTS_INFO (type))
+	pedwarn (loc, OPT_Wpedantic,
+		 "structured binding declaration cannot have constrained "
+		 "%<auto%> type %qT", type);
       inlinep = 0;
       typedef_p = 0;
       constexpr_p = 0;
