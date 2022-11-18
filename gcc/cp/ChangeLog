@@ -1,3 +1,12 @@
+2022-11-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104066
+	* decl.c (grokdeclarator): Check funcdecl_p before complaining
+	about constinit.
+
 2022-06-28  Release Manager
 
 	* GCC 10.4.0 released.

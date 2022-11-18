@@ -1,3 +1,11 @@
+2022-11-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104066
+	* g++.dg/cpp2a/constinit18.C: New test.
+
 2022-11-08  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
