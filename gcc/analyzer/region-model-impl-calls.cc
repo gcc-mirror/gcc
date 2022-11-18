@@ -133,6 +133,14 @@ call_details::num_args () const
   return gimple_call_num_args (m_call);
 }
 
+/* Get the location of the call statement.  */
+
+location_t
+call_details::get_location () const
+{
+  return m_call->location;
+}
+
 /* Get argument IDX at the callsite as a tree.  */
 
 tree
@@ -246,42 +254,79 @@ region_model::impl_call_alloca (const call_details &cd)
   cd.maybe_set_lhs (ptr_sval);
 }
 
-/* Handle a call to "__analyzer_describe".
+/* Handle calls to "__analyzer_break" by triggering a breakpoint within
+   the analyzer.  */
+
+class kf_analyzer_break : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 0;
+  }
+  void impl_call_pre (const call_details &) const final override
+  {
+    /* TODO: is there a good cross-platform way to do this?  */
+    raise (SIGINT);
+  }
+};
+
+/* Handler for calls to "__analyzer_describe".
 
    Emit a warning describing the 2nd argument (which can be of any
    type), at the given verbosity level.  This is for use when
    debugging, and may be of use in DejaGnu tests.  */
 
-void
-region_model::impl_call_analyzer_describe (const gcall *call,
-					   region_model_context *ctxt)
+class kf_analyzer_describe : public known_function
 {
-  tree t_verbosity = gimple_call_arg (call, 0);
-  tree t_val = gimple_call_arg (call, 1);
-  const svalue *sval = get_rvalue (t_val, ctxt);
-  bool simple = zerop (t_verbosity);
-  label_text desc = sval->get_desc (simple);
-  warning_at (call->location, 0, "svalue: %qs", desc.get ());
-}
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 2;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    if (!cd.get_ctxt ())
+      return;
+    tree t_verbosity = cd.get_arg_tree (0);
+    const svalue *sval = cd.get_arg_svalue (1);
+    bool simple = zerop (t_verbosity);
+    label_text desc = sval->get_desc (simple);
+    warning_at (cd.get_location (), 0, "svalue: %qs", desc.get ());
+  }
+};
 
-/* Handle a call to "__analyzer_dump_capacity".
+/* Handler for calls to "__analyzer_dump_capacity".
 
    Emit a warning describing the capacity of the base region of
    the region pointed to by the 1st argument.
    This is for use when debugging, and may be of use in DejaGnu tests.  */
 
-void
-region_model::impl_call_analyzer_dump_capacity (const gcall *call,
-						region_model_context *ctxt)
+class kf_analyzer_dump_capacity : public known_function
 {
-  tree t_ptr = gimple_call_arg (call, 0);
-  const svalue *sval_ptr = get_rvalue (t_ptr, ctxt);
-  const region *reg = deref_rvalue (sval_ptr, t_ptr, ctxt);
-  const region *base_reg = reg->get_base_region ();
-  const svalue *capacity = get_capacity (base_reg);
-  label_text desc = capacity->get_desc (true);
-  warning_at (call->location, 0, "capacity: %qs", desc.get ());
-}
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 1
+	    && POINTER_TYPE_P (cd.get_arg_type (0)));
+  }
+
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_context *ctxt = cd.get_ctxt ();
+    if (!ctxt)
+      return;
+    region_model *model = cd.get_model ();
+    tree t_ptr = cd.get_arg_tree (0);
+    const svalue *sval_ptr = model->get_rvalue (t_ptr, ctxt);
+    const region *reg = model->deref_rvalue (sval_ptr, t_ptr, ctxt);
+    const region *base_reg = reg->get_base_region ();
+    const svalue *capacity = model->get_capacity (base_reg);
+    label_text desc = capacity->get_desc (true);
+    warning_at (cd.get_call_stmt ()->location, 0,
+		"capacity: %qs", desc.get ());
+  }
+};
 
 /* Compare D1 and D2 using their names, and then IDs to order them.  */
 
@@ -309,76 +354,176 @@ cmp_decls_ptr_ptr (const void *p1, const void *p2)
   return cmp_decls (*d1, *d2);
 }
 
-/* Handle a call to "__analyzer_dump_escaped".
+/* Handler for calls to "__analyzer_dump_escaped".
 
    Emit a warning giving the number of decls that have escaped, followed
    by a comma-separated list of their names, in alphabetical order.
 
    This is for use when debugging, and may be of use in DejaGnu tests.  */
 
-void
-region_model::impl_call_analyzer_dump_escaped (const gcall *call)
+class kf_analyzer_dump_escaped : public known_function
 {
-  auto_vec<tree> escaped_decls;
-  for (auto iter : m_store)
-    {
-      const binding_cluster *c = iter.second;
-      if (!c->escaped_p ())
-	continue;
-      if (tree decl = c->get_base_region ()->maybe_get_decl ())
-	escaped_decls.safe_push (decl);
-    }
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 0;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_context *ctxt = cd.get_ctxt ();
+    if (!ctxt)
+      return;
+    region_model *model = cd.get_model ();
 
-  /* Sort them into deterministic order; alphabetical is
-     probably most user-friendly.  */
-  escaped_decls.qsort (cmp_decls_ptr_ptr);
+    auto_vec<tree> escaped_decls;
+    for (auto iter : *model->get_store ())
+      {
+	const binding_cluster *c = iter.second;
+	if (!c->escaped_p ())
+	  continue;
+	if (tree decl = c->get_base_region ()->maybe_get_decl ())
+	  escaped_decls.safe_push (decl);
+      }
 
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  bool first = true;
-  for (auto iter : escaped_decls)
-    {
-      if (first)
-	first = false;
-      else
-	pp_string (&pp, ", ");
-      pp_printf (&pp, "%qD", iter);
-    }
-  /* Print the number to make it easier to write DejaGnu tests for
-     the "nothing has escaped" case.  */
-  warning_at (call->location, 0, "escaped: %i: %s",
-	      escaped_decls.length (),
-	      pp_formatted_text (&pp));
-}
+    /* Sort them into deterministic order; alphabetical is
+       probably most user-friendly.  */
+    escaped_decls.qsort (cmp_decls_ptr_ptr);
 
-/* Handle a call to "__analyzer_dump_named_constant".
+    pretty_printer pp;
+    pp_format_decoder (&pp) = default_tree_printer;
+    pp_show_color (&pp) = pp_show_color (global_dc->printer);
+    bool first = true;
+    for (auto iter : escaped_decls)
+      {
+	if (first)
+	  first = false;
+	else
+	  pp_string (&pp, ", ");
+	pp_printf (&pp, "%qD", iter);
+      }
+    /* Print the number to make it easier to write DejaGnu tests for
+       the "nothing has escaped" case.  */
+    warning_at (cd.get_location (), 0, "escaped: %i: %s",
+		escaped_decls.length (),
+		pp_formatted_text (&pp));
+  }
+};
+
+/* Placeholder handler for calls to "__analyzer_dump_exploded_nodes".
+   This is a no-op; the real implementation happens when the
+   exploded_graph is postprocessed.  */
+
+class kf_analyzer_dump_exploded_nodes : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 1;
+  }
+};
+
+/* Handler for calls to "__analyzer_dump_named_constant".
 
    Look up the given name, and emit a warning describing the
    state of the corresponding stashed value.
 
    This is for use when debugging, and for DejaGnu tests.  */
 
-void
-region_model::
-impl_call_analyzer_dump_named_constant (const gcall *call,
-					region_model_context *ctxt)
+class kf_analyzer_dump_named_constant : public known_function
 {
-  call_details cd (call, this, ctxt);
-  const char *name = cd.get_arg_string_literal (0);
-  if (!name)
-    {
-      error_at (call->location, "cannot determine name");
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 1;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_context *ctxt = cd.get_ctxt ();
+    if (!ctxt)
       return;
-    }
-  tree value = get_stashed_constant_by_name (name);
-  if (value)
-    warning_at (call->location, 0, "named constant %qs has value %qE",
-		name, value);
-  else
-    warning_at (call->location, 0, "named constant %qs has unknown value",
-		name);
-}
+
+    const char *name = cd.get_arg_string_literal (0);
+    if (!name)
+      {
+	error_at (cd.get_location (), "cannot determine name");
+	return;
+      }
+    tree value = get_stashed_constant_by_name (name);
+    if (value)
+      warning_at (cd.get_location (), 0, "named constant %qs has value %qE",
+		  name, value);
+    else
+      warning_at (cd.get_location (), 0, "named constant %qs has unknown value",
+		  name);
+  }
+};
+
+/* A pending_diagnostic subclass for implementing "__analyzer_dump_path".  */
+
+class dump_path_diagnostic
+  : public pending_diagnostic_subclass<dump_path_diagnostic>
+{
+public:
+  int get_controlling_option () const final override
+  {
+    return 0;
+  }
+
+  bool emit (rich_location *richloc) final override
+  {
+    inform (richloc, "path");
+    return true;
+  }
+
+  const char *get_kind () const final override
+  {
+    return "dump_path_diagnostic";
+  }
+
+  bool operator== (const dump_path_diagnostic &) const
+  {
+    return true;
+  }
+};
+
+/* Handle calls to "__analyzer_dump_path" by queuing a diagnostic at this
+   exploded_node.  */
+
+class kf_analyzer_dump_path : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 0;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_context *ctxt = cd.get_ctxt ();
+    if (!ctxt)
+      return;
+    ctxt->warn (make_unique<dump_path_diagnostic> ());
+  }
+};
+
+/* Handle calls to "__analyzer_dump_region_model" by dumping
+   the region model's state to stderr.  */
+
+class kf_analyzer_dump_region_model : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 0;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_context *ctxt = cd.get_ctxt ();
+    if (!ctxt)
+      return;
+    region_model *model = cd.get_model ();
+    model->dump (false);
+  }
+};
 
 /* Handle a call to "__analyzer_eval" by evaluating the input
    and dumping as a dummy warning, so that test cases can use
@@ -388,29 +533,49 @@ impl_call_analyzer_dump_named_constant (const gcall *call,
    - though typically this doesn't help, as we have an SSA name as the arg,
    and what's more interesting is usually the def stmt for that name.  */
 
-void
-region_model::impl_call_analyzer_eval (const gcall *call,
-				       region_model_context *ctxt)
+class kf_analyzer_eval : public known_function
 {
-  tree t_arg = gimple_call_arg (call, 0);
-  tristate t = eval_condition (t_arg, NE_EXPR, integer_zero_node, ctxt);
-  warning_at (call->location, 0, "%s", t.as_string ());
-}
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 1;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_context *ctxt = cd.get_ctxt ();
+    if (!ctxt)
+      return;
+    region_model *model = cd.get_model ();
 
-/* Handle the on_call_pre part of "__analyzer_get_unknown_ptr".  */
+    tree t_arg = cd.get_arg_tree (0);
+    tristate t = model->eval_condition (t_arg, NE_EXPR, integer_zero_node,
+					ctxt);
+    warning_at (cd.get_location (), 0, "%s", t.as_string ());
+  }
+};
 
-void
-region_model::impl_call_analyzer_get_unknown_ptr (const call_details &cd)
+/* Handler for "__analyzer_get_unknown_ptr".  */
+
+class kf_analyzer_get_unknown_ptr : public known_function
 {
-  const svalue *ptr_sval
-    = m_mgr->get_or_create_unknown_svalue (cd.get_lhs_type ());
-  cd.maybe_set_lhs (ptr_sval);
-}
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 0;
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_manager *mgr = cd.get_manager ();
+    const svalue *ptr_sval
+      = mgr->get_or_create_unknown_svalue (cd.get_lhs_type ());
+    cd.maybe_set_lhs (ptr_sval);
+  }
+};
 
 /* Handle calls to "accept".
    See e.g. https://man7.org/linux/man-pages/man3/accept.3p.html  */
 
-class known_function_accept : public known_function
+class kf_accept : public known_function
 {
   class outcome_of_accept : public succeed_or_fail_call_info
   {
@@ -447,7 +612,7 @@ class known_function_accept : public known_function
 /* Handle calls to "bind".
    See e.g. https://man7.org/linux/man-pages/man3/bind.3p.html  */
 
-class known_function_bind : public known_function
+class kf_bind : public known_function
 {
 public:
   class outcome_of_bind : public succeed_or_fail_call_info
@@ -519,7 +684,7 @@ region_model::impl_call_calloc (const call_details &cd)
 /* Handle calls to "connect".
    See e.g. https://man7.org/linux/man-pages/man3/connect.3p.html  */
 
-class known_function_connect : public known_function
+class kf_connect : public known_function
 {
 public:
   class outcome_of_connect : public succeed_or_fail_call_info
@@ -555,19 +720,28 @@ public:
   }
 };
 
-/* Handle the on_call_pre part of "__errno_location".  */
+/* Handler for glibc's "__errno_location".  */
 
-void
-region_model::impl_call_errno_location (const call_details &cd)
+class kf_errno_location : public known_function
 {
-  if (cd.get_lhs_region ())
-    {
-      const region *errno_reg = m_mgr->get_errno_region ();
-      const svalue *errno_ptr = m_mgr->get_ptr_svalue (cd.get_lhs_type (),
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 0;
+  }
+
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    if (cd.get_lhs_region ())
+      {
+	region_model_manager *mgr = cd.get_manager ();
+	const region *errno_reg = mgr->get_errno_region ();
+	const svalue *errno_ptr = mgr->get_ptr_svalue (cd.get_lhs_type (),
 						       errno_reg);
-      cd.maybe_set_lhs (errno_ptr);
-    }
-}
+	cd.maybe_set_lhs (errno_ptr);
+      }
+  }
+};
 
 /* Handle the on_call_pre part of "error" and "error_at_line" from
    GNU's non-standard <error.h>.
@@ -660,7 +834,7 @@ region_model::impl_call_free (const call_details &cd)
 /* Handle calls to "listen".
    See e.g. https://man7.org/linux/man-pages/man3/listen.3p.html  */
 
-class known_function_listen : public known_function
+class kf_listen : public known_function
 {
   class outcome_of_listen : public succeed_or_fail_call_info
   {
@@ -758,10 +932,10 @@ region_model::impl_call_memset (const call_details &cd)
   fill_region (sized_dest_reg, fill_value_u8);
 }
 
-/* Handle the on_call_post part of "pipe".  */
+/* Handler for calls to "pipe" and "pipe2".
+   See e.g. https://www.man7.org/linux/man-pages/man2/pipe.2.html  */
 
-void
-region_model::impl_call_pipe (const call_details &cd)
+class kf_pipe : public known_function
 {
   class failure : public failed_call_info
   {
@@ -819,14 +993,32 @@ region_model::impl_call_pipe (const call_details &cd)
     }
   };
 
-  /* Body of region_model::impl_call_pipe.  */
-  if (cd.get_ctxt ())
-    {
-      cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
-      cd.get_ctxt ()->bifurcate (make_unique<success> (cd));
-      cd.get_ctxt ()->terminate_path ();
-    }
-}
+public:
+  kf_pipe (unsigned num_args)
+  : m_num_args (num_args)
+  {
+    gcc_assert (num_args > 0);
+  }
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == m_num_args
+	    && POINTER_TYPE_P (cd.get_arg_type (0)));
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
+	cd.get_ctxt ()->bifurcate (make_unique<success> (cd));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+
+private:
+  unsigned m_num_args;
+};
 
 /* A subclass of pending_diagnostic for complaining about 'putenv'
    called on an auto var.  */
@@ -912,70 +1104,104 @@ private:
   tree m_var_decl; // could be NULL
 };
 
-/* Handle the on_call_pre part of "putenv".
+/* Handler for calls to "putenv".
 
    In theory we could try to model the state of the environment variables
    for the process; for now we merely complain about putenv of regions
    on the stack.  */
 
-void
-region_model::impl_call_putenv (const call_details &cd)
+class kf_putenv : public known_function
 {
-  tree fndecl = cd.get_fndecl_for_call ();
-  gcc_assert (fndecl);
-  region_model_context *ctxt = cd.get_ctxt ();
-  const svalue *ptr_sval = cd.get_arg_svalue (0);
-  const region *reg = deref_rvalue (ptr_sval, cd.get_arg_tree (0), ctxt);
-  m_store.mark_as_escaped (reg);
-  enum memory_space mem_space = reg->get_memory_space ();
-  switch (mem_space)
-    {
-    default:
-      gcc_unreachable ();
-    case MEMSPACE_UNKNOWN:
-    case MEMSPACE_CODE:
-    case MEMSPACE_GLOBALS:
-    case MEMSPACE_HEAP:
-    case MEMSPACE_READONLY_DATA:
-      break;
-    case MEMSPACE_STACK:
-      if (ctxt)
-	ctxt->warn (make_unique<putenv_of_auto_var> (fndecl, reg));
-      break;
-    }
-}
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 1
+	    && POINTER_TYPE_P (cd.get_arg_type (0)));
+  }
 
-/* Handle the on_call_pre part of "operator new".  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    tree fndecl = cd.get_fndecl_for_call ();
+    gcc_assert (fndecl);
+    region_model_context *ctxt = cd.get_ctxt ();
+    region_model *model = cd.get_model ();
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    const region *reg
+      = model->deref_rvalue (ptr_sval, cd.get_arg_tree (0), ctxt);
+    model->get_store ()->mark_as_escaped (reg);
+    enum memory_space mem_space = reg->get_memory_space ();
+    switch (mem_space)
+      {
+      default:
+	gcc_unreachable ();
+      case MEMSPACE_UNKNOWN:
+      case MEMSPACE_CODE:
+      case MEMSPACE_GLOBALS:
+      case MEMSPACE_HEAP:
+      case MEMSPACE_READONLY_DATA:
+	break;
+      case MEMSPACE_STACK:
+	if (ctxt)
+	  ctxt->warn (make_unique<putenv_of_auto_var> (fndecl, reg));
+	break;
+      }
+  }
+};
 
-void
-region_model::impl_call_operator_new (const call_details &cd)
+/* Handler for "operator new" and "operator new []".  */
+
+class kf_operator_new : public known_function
 {
-  const svalue *size_sval = cd.get_arg_svalue (0);
-  const region *new_reg
-    = create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
-  if (cd.get_lhs_type ())
-    {
-      const svalue *ptr_sval
-	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
-      cd.maybe_set_lhs (ptr_sval);
-    }
-}
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 1;
+  }
 
-/* Handle the on_call_pre part of "operator delete", which comes in
-   both sized and unsized variants (2 arguments and 1 argument
-   respectively).  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model *model = cd.get_model ();
+    region_model_manager *mgr = cd.get_manager ();
+    const svalue *size_sval = cd.get_arg_svalue (0);
+    const region *new_reg
+      = model->create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
+    if (cd.get_lhs_type ())
+      {
+	const svalue *ptr_sval
+	  = mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	cd.maybe_set_lhs (ptr_sval);
+      }
+  }
+};
 
-void
-region_model::impl_call_operator_delete (const call_details &cd)
+/* Handler for "operator delete", both the sized and unsized variants
+   (2 arguments and 1 argument respectively), and for "operator delete []"  */
+
+class kf_operator_delete : public known_function
 {
-  const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region *freed_reg = ptr_sval->maybe_get_region ())
-    {
-      /* If the ptr points to an underlying heap region, delete it,
-	 poisoning pointers.  */
-      unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
-    }
-}
+public:
+  kf_operator_delete (unsigned num_args) : m_num_args (num_args) {}
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == m_num_args;
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    region_model *model = cd.get_model ();
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    if (const region *freed_reg = ptr_sval->maybe_get_region ())
+      {
+	/* If the ptr points to an underlying heap region, delete it,
+	   poisoning pointers.  */
+	model->unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+      }
+  }
+
+private:
+  unsigned m_num_args;
+};
 
 /* Handle the on_call_post part of "realloc":
 
@@ -1209,7 +1435,7 @@ region_model::impl_call_realloc (const call_details &cd)
 /* Handle calls to "socket".
    See e.g. https://man7.org/linux/man-pages/man3/socket.3p.html  */
 
-class known_function_socket : public known_function
+class kf_socket : public known_function
 {
 public:
   class outcome_of_socket : public succeed_or_fail_call_info
@@ -1378,17 +1604,58 @@ region_model::impl_deallocation_call (const call_details &cd)
   impl_call_free (cd);
 }
 
-/* Add instances to MGR of known functions supported by the core of the
+/* Populate KFM with instances of known functions supported by the core of the
    analyzer (as opposed to plugins).  */
 
 void
-register_known_functions (known_function_manager &mgr)
+register_known_functions (known_function_manager &kfm)
 {
-  mgr.add ("accept", make_unique<known_function_accept> ());
-  mgr.add ("bind", make_unique<known_function_bind> ());
-  mgr.add ("connect", make_unique<known_function_connect> ());
-  mgr.add ("listen", make_unique<known_function_listen> ());
-  mgr.add ("socket", make_unique<known_function_socket> ());
+  /* Debugging/test support functions, all  with a "__analyzer_" prefix.  */
+  {
+    kfm.add ("__analyzer_break", make_unique<kf_analyzer_break> ());
+    kfm.add ("__analyzer_describe", make_unique<kf_analyzer_describe> ());
+    kfm.add ("__analyzer_dump_capacity",
+	     make_unique<kf_analyzer_dump_capacity> ());
+    kfm.add ("__analyzer_dump_escaped",
+	     make_unique<kf_analyzer_dump_escaped> ());
+    kfm.add ("__analyzer_dump_exploded_nodes",
+	     make_unique<kf_analyzer_dump_exploded_nodes> ());
+    kfm.add ("__analyzer_dump_named_constant",
+	     make_unique<kf_analyzer_dump_named_constant> ());
+    kfm.add ("__analyzer_dump_path", make_unique<kf_analyzer_dump_path> ());
+    kfm.add ("__analyzer_dump_region_model",
+	     make_unique<kf_analyzer_dump_region_model> ());
+    kfm.add ("__analyzer_eval",
+	     make_unique<kf_analyzer_eval> ());
+    kfm.add ("__analyzer_get_unknown_ptr",
+	     make_unique<kf_analyzer_get_unknown_ptr> ());
+  }
+
+  /* Known POSIX functions.  */
+  {
+    kfm.add ("accept", make_unique<kf_accept> ());
+    kfm.add ("bind", make_unique<kf_bind> ());
+    kfm.add ("connect", make_unique<kf_connect> ());
+    kfm.add ("listen", make_unique<kf_listen> ());
+    kfm.add ("pipe", make_unique<kf_pipe> (1));
+    kfm.add ("pipe2", make_unique<kf_pipe> (2));
+    kfm.add ("putenv", make_unique<kf_putenv> ());
+    kfm.add ("socket", make_unique<kf_socket> ());
+  }
+
+  /* glibc functions.  */
+  {
+    kfm.add ("__errno_location", make_unique<kf_errno_location> ());
+  }
+
+  /* C++ support functions.  */
+  {
+    kfm.add ("operator new", make_unique<kf_operator_new> ());
+    kfm.add ("operator new []", make_unique<kf_operator_new> ());
+    kfm.add ("operator delete", make_unique<kf_operator_delete> (1));
+    kfm.add ("operator delete", make_unique<kf_operator_delete> (2));
+    kfm.add ("operator delete []", make_unique<kf_operator_delete> (1));
+  }
 }
 
 } // namespace ana

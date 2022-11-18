@@ -1159,31 +1159,6 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
     }
 }
 
-/* A pending_diagnostic subclass for implementing "__analyzer_dump_path".  */
-
-class dump_path_diagnostic
-  : public pending_diagnostic_subclass<dump_path_diagnostic>
-{
-public:
-  int get_controlling_option () const final override
-  {
-    return 0;
-  }
-
-  bool emit (rich_location *richloc) final override
-  {
-    inform (richloc, "path");
-    return true;
-  }
-
-  const char *get_kind () const final override { return "dump_path_diagnostic"; }
-
-  bool operator== (const dump_path_diagnostic &) const
-  {
-    return true;
-  }
-};
-
 /* Handle the pre-sm-state part of STMT, modifying this object in-place.
    Write true to *OUT_TERMINATE_PATH if the path should be terminated.
    Write true to *OUT_UNKNOWN_SIDE_EFFECTS if the stmt has unknown
@@ -1221,55 +1196,8 @@ region_model::on_stmt_pre (const gimple *stmt,
 	   anything, for which we don't have a function body, or for which we
 	   don't know the fndecl.  */
 	const gcall *call = as_a <const gcall *> (stmt);
-
-	/* Debugging/test support.  */
-	if (is_special_named_call_p (call, "__analyzer_describe", 2))
-	  impl_call_analyzer_describe (call, ctxt);
-	else if (is_special_named_call_p (call, "__analyzer_dump_capacity", 1))
-	  impl_call_analyzer_dump_capacity (call, ctxt);
-	else if (is_special_named_call_p (call, "__analyzer_dump_escaped", 0))
-	  impl_call_analyzer_dump_escaped (call);
-	else if (is_special_named_call_p (call,
-					  "__analyzer_dump_named_constant",
-					  1))
-	  impl_call_analyzer_dump_named_constant (call, ctxt);
-	else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
-	  {
-	    /* Handle the builtin "__analyzer_dump_path" by queuing a
-	       diagnostic at this exploded_node.  */
-	    ctxt->warn (make_unique<dump_path_diagnostic> ());
-	  }
-	else if (is_special_named_call_p (call, "__analyzer_dump_region_model",
-					  0))
-	  {
-	    /* Handle the builtin "__analyzer_dump_region_model" by dumping
-	       the region model's state to stderr.  */
-	    dump (false);
-	  }
-	else if (is_special_named_call_p (call, "__analyzer_eval", 1))
-	  impl_call_analyzer_eval (call, ctxt);
-	else if (is_special_named_call_p (call, "__analyzer_break", 0))
-	  {
-	    /* Handle the builtin "__analyzer_break" by triggering a
-	       breakpoint.  */
-	    /* TODO: is there a good cross-platform way to do this?  */
-	    raise (SIGINT);
-	  }
-	else if (is_special_named_call_p (call,
-					  "__analyzer_dump_exploded_nodes",
-					  1))
-	  {
-	    /* This is handled elsewhere.  */
-	  }
-	else if (is_special_named_call_p (call, "__analyzer_get_unknown_ptr",
-					  0))
-	  {
-	    call_details cd (call, this, ctxt);
-	    impl_call_analyzer_get_unknown_ptr (cd);
-	  }
-	else
-	  *out_unknown_side_effects = on_call_pre (call, ctxt,
-						   out_terminate_path);
+	*out_unknown_side_effects
+	  = on_call_pre (call, ctxt, out_terminate_path);
       }
       break;
 
@@ -2293,11 +2221,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_realloc (cd);
 	  return false;
 	}
-      else if (is_named_call_p (callee_fndecl, "__errno_location", call, 0))
-	{
-	  impl_call_errno_location (cd);
-	  return false;
-	}
       else if (is_named_call_p (callee_fndecl, "error"))
 	{
 	  if (impl_call_error (cd, 3, out_terminate_path))
@@ -2334,20 +2257,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_memset (cd);
 	  return false;
 	}
-      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
-	{
-	  /* Handle in "on_call_post"; bail now so that fd array
-	     is left untouched so that we can detect use-of-uninit
-	     for the case where the call fails.  */
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "putenv", call, 1)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  impl_call_putenv (cd);
-	  return false;
-	}
       else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
@@ -2359,22 +2268,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	{
 	  impl_call_strlen (cd);
 	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "operator new", call, 1))
-	{
-	  impl_call_operator_new (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
-	{
-	  impl_call_operator_new (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
-	       || is_named_call_p (callee_fndecl, "operator delete", call, 2)
-	       || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
-	{
-	  /* Handle in "on_call_post".  */
 	}
       else if (const known_function *kf = get_known_function (callee_fndecl))
 	{
@@ -2416,19 +2309,6 @@ region_model::on_call_post (const gcall *call,
       if (is_named_call_p (callee_fndecl, "free", call, 1))
 	{
 	  impl_call_free (cd);
-	  return;
-	}
-      if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
-	  || is_named_call_p (callee_fndecl, "operator delete", call, 2)
-	  || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
-	{
-	  impl_call_operator_delete (cd);
-	  return;
-	}
-      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
-	{
-	  impl_call_pipe (cd);
 	  return;
 	}
       else if (is_named_call_p (callee_fndecl, "strchr", call, 2)

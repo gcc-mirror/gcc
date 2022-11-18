@@ -258,6 +258,7 @@ public:
   unsigned num_args () const;
 
   const gcall *get_call_stmt () const { return m_call; }
+  location_t get_location () const;
 
   tree get_arg_tree (unsigned idx) const;
   tree get_arg_type (unsigned idx) const;
@@ -339,19 +340,8 @@ class region_model
 
   /* Specific handling for on_call_pre.  */
   void impl_call_alloca (const call_details &cd);
-  void impl_call_analyzer_describe (const gcall *call,
-				    region_model_context *ctxt);
-  void impl_call_analyzer_dump_capacity (const gcall *call,
-					 region_model_context *ctxt);
-  void impl_call_analyzer_dump_escaped (const gcall *call);
-  void impl_call_analyzer_dump_named_constant (const gcall *call,
-					       region_model_context *ctxt);
-  void impl_call_analyzer_eval (const gcall *call,
-				region_model_context *ctxt);
-  void impl_call_analyzer_get_unknown_ptr (const call_details &cd);
   void impl_call_builtin_expect (const call_details &cd);
   void impl_call_calloc (const call_details &cd);
-  void impl_call_errno_location (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,
 			bool *out_terminate_path);
   void impl_call_fgets (const call_details &cd);
@@ -360,14 +350,10 @@ class region_model
   void impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
   void impl_call_memset (const call_details &cd);
-  void impl_call_pipe (const call_details &cd);
-  void impl_call_putenv (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
   void impl_call_strchr (const call_details &cd);
   void impl_call_strcpy (const call_details &cd);
   void impl_call_strlen (const call_details &cd);
-  void impl_call_operator_new (const call_details &cd);
-  void impl_call_operator_delete (const call_details &cd);
   void impl_deallocation_call (const call_details &cd);
 
   /* Implemented in varargs.cc.  */
