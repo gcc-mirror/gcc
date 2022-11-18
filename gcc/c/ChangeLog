@@ -1,3 +1,15 @@
+2022-11-17  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* c-decl.cc (start_function): Set the result decl source
+	location to the location of the typespec.
+
+2022-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107711
+	* c-parser.cc (ana::c_translation_unit::consider_macro): Pass NULL
+	to cpp_create_reader, rather than ident_hash, so that the new
+	reader gets its own hash table.
+
 2022-11-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106302

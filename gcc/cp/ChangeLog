@@ -1,3 +1,16 @@
+2022-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.cc (grokdeclarator): Implement
+	CWG2635 - Constrained structured bindings.  Emit a pedwarn on
+	constrained auto type.  Add auto_diagnostic_group for error_at
+	and inform for non-auto type on structured bindings declaration.
+
+2022-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104066
+	* decl.cc (grokdeclarator): Check funcdecl_p before complaining
+	about constinit.
+
 2022-11-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106649

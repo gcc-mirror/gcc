@@ -1,3 +1,10 @@
+2022-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107720
+	* include/std/format [_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT]:
+	Declare overloads of std::to_chars for the alternative long
+	double type.
+
 2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/107720

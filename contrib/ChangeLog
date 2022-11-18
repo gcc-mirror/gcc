@@ -1,3 +1,8 @@
+2022-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	1957bedf29a1b2cc231972aba680fe80199d5498 to ignored commits.
+
 2022-11-15  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Revert temporary rule

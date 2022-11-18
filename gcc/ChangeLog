@@ -1,3 +1,135 @@
+2022-11-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/107705
+	* function.cc (aggregate_value_p): Return 0 if
+	the function type was an error operand.
+
+2022-11-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/106764
+	PR c/106765
+	PR c/107307
+	* gimplify.cc (gimplify_compound_lval): Return GS_ERROR
+	if gimplify_expr had return GS_ERROR.
+	(gimplify_call_expr): Likewise.
+
+2022-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/atomics.md (*aarch64_atomic_load<ALLX:mode>_rcpc_sext):
+	Use <GPI:w>  for destination format.
+	* config/aarch64/iterators.md (w_sz): Delete.
+
+2022-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_RCPC2): Define.
+	* config/aarch64/atomics.md (*aarch64_atomic_load<ALLX:mode>_rcpc_zext):
+	Adjust output template.
+	(*aarch64_atomic_load<ALLX:mode>_rcpc_sex): Guard on TARGET_RCPC2.
+	Adjust output template.
+	* config/aarch64/iterators.md (w_sz): New mode attr.
+
+2022-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107647
+	* tree-vect-slp-patterns.cc (addsub_pattern::recognize): Only
+	allow FMA generation with -ffp-contract=fast for FP types.
+	(complex_mul_pattern::matches): Likewise.
+
+2022-11-18  Jinyang He  <hejinyang@loongson.cn>
+
+	PR target/107713
+	* config/loongarch/sync.md
+	(atomic_cas_value_exchange_7_<mode>): New define_insn.
+	(atomic_exchange): Use atomic_cas_value_exchange_7_si instead of
+	atomic_cas_value_cmp_and_7_si.
+
+2022-11-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/107734
+	* match.pd (perm + vector op pattern): Clear the sbitmap before
+	use.
+
+2022-11-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107732
+	* range-op-float.cc (foperator_abs::op1_range): Early exit when
+	result is undefined.
+
+2022-11-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/bitmanip.md (*bclri<mode>_nottwobits): New pattern.
+	(*bclridisi_nottwobits): New pattern, handling the sign-bit.
+	* config/riscv/predicates.md (const_nottwobits_operand):
+	New predicate.
+
+2022-11-17  mtsamis  <manolis.tsamis@vrull.eu>
+
+	* config/riscv/riscv.cc (struct machine_function): Add array to store
+	register wrapping information.
+	(riscv_for_each_saved_reg): Skip registers that are wrapped separetely.
+	(riscv_get_separate_components): New function.
+	(riscv_components_for_bb): Likewise.
+	(riscv_disqualify_components): Likewise.
+	(riscv_process_components): Likewise.
+	(riscv_emit_prologue_components): Likewise.
+	(riscv_emit_epilogue_components): Likewise.
+	(riscv_set_handled_components): Likewise.
+	(TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS): Define.
+	(TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB): Likewise.
+	(TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS): Likewise.
+
+2022-11-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/atomics.md (*aarch64_atomic_load<ALLX:mode>_rcpc_zext):
+	Add mode size check to condition.
+	(*aarch64_atomic_load<ALLX:mode>_rcpc_sext): Likewise.
+
+2022-11-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/68097
+	* gimple-fold.cc (gimple_stmt_nonnegative_warnv_p): Call
+	range_of_stmt for floats.
+
+2022-11-17  Lili Cui  <lili.cui@intel.com>
+
+	* config/i386/x86-tune.def
+	(X86_TUNE_AVX256_MOVE_BY_PIECES): Add alderlake.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Ditto.
+
+2022-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/107717
+	* match.pd: Ensure same SSA_NAME.
+
+2022-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* match.pd: Replace GET_MODE_WIDER_MODE with
+	custom code.
+
+2022-11-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (range_operator_float::fold_range): Make check
+	for maybe_isnan more readable.
+
+2022-11-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gimple-fold.cc (gimple_fold_partial_load_store_mem_ref): Use
+	tree_fits_shwi_p rather than tree_fits_uhwi_p as bias is signed.
+
+2022-11-17  Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv.cc (riscv_expand_epilogue):
+	Do not emit useless add sp, sp, 0 instrutions.
+
+2022-11-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/sh/sh_treg_combine.cc: Include tm-preds.h.
+	(t_reg_operand): Remove bogus prototype.
+	(negt_reg_operand): Likewise.
+
 2022-11-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106649

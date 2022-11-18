@@ -1,3 +1,96 @@
+2022-11-18  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/redecl-22.c: New test.
+
+2022-11-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/106764
+	PR c/106765
+	PR c/107307
+	* gcc.dg/redecl-19.c: New test.
+	* gcc.dg/redecl-20.c: New test.
+	* gcc.dg/redecl-21.c: New test.
+
+2022-11-18  Yixuan Chen  <chenyixuan@iscas.ac.cn>
+
+	* gcc.dg/pr25521.c: Fix testcase for architectures that use .srodata.
+
+2022-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldapr-sext.c: Adjust expected output.
+
+2022-11-18  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/target-supports.exp (check_is_prog_name_available):
+	New.
+	* lib/target-supports-dg.exp
+	(dg-require-prog-name-available): New.
+	* g++.dg/modules/modules.exp: Verify avilability of module
+	mapper.
+
+2022-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldapr-ext.c: Rename to...
+	* gcc.target/aarch64/ldapr-zext.c: ... This.  Fix expected assembly.
+	* gcc.target/aarch64/ldapr-sext.c: New test.
+
+2022-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/decomp5.C: New test.
+	* g++.dg/cpp2a/decomp6.C: New test.
+	* g++.dg/cpp2a/decomp7.C: New test.
+	* g++.dg/cpp2a/concepts-placeholder7.C: Adjust expected diagnostics.
+	* g++.dg/cpp2a/concepts-placeholder8.C: Likewise.
+	* g++.dg/cpp2a/concepts-placeholder9.C: New test.
+	* g++.dg/cpp2a/concepts-placeholder10.C: New test.
+
+2022-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107647
+	* gcc.target/i386/pr107647.c: New testcase.
+
+2022-11-18  Jinyang He  <hejinyang@loongson.cn>
+
+	PR target/107713
+	* gcc.target/loongarch/pr107713-1.c: New test.
+	* gcc.target/loongarch/pr107713-2.c: New test.
+
+2022-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104066
+	* g++.dg/cpp2a/constinit18.C: New test.
+
+2022-11-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107732
+	* gcc.dg/tree-ssa/pr107732.c: New test.
+
+2022-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107711
+	* gcc.dg/analyzer/named-constants-Wunused-macros.c: New test.
+
+2022-11-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbs-bclri.c: New test.
+
+2022-11-17  mtsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.target/riscv/shrink-wrap-1.c: New test.
+
+2022-11-17  Lili Cui  <lili.cui@intel.com>
+
+	* gcc.target/i386/pieces-memset-50.c: New test.
+
+2022-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/107717
+	* gcc.target/aarch64/sve2/pr107717.c: New test.
+
+2022-11-17  Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/spill-sp-adjust.c: New test.
+
 2022-11-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/named-constants-via-command-line.c: New test.
