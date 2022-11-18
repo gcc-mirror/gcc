@@ -1176,6 +1176,20 @@ proc check_effective_target_pthread {} {
     } "-pthread"]
 }
 
+# Return 1 if the target supports both Unix and internet sockets, 0 otherwise.
+proc check_effective_target_sockets {} {
+    return [check_no_compiler_messages socket executable {
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+int main (void) {
+    socket(AF_UNIX, SOCK_STREAM, 0);
+    socket(AF_INET, SOCK_DGRAM, 0);
+    return 0;
+}
+    } ""]
+}
+
 # Return 1 if compilation with -mpe-aligned-commons is error-free
 # for trivial code, 0 otherwise.
 

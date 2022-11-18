@@ -26,6 +26,8 @@ Formatted or processed versions of this manual, if unaccompanied by
 the source, must acknowledge the copyright and authors of this work.
 */
 
+/* { dg-require-effective-target sockets } */
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,5 @@
 /* Example from glibc manual (16.9.6).  */
+/* { dg-require-effective-target sockets } */
 
 #include <stdio.h>
 #include <string.h>
