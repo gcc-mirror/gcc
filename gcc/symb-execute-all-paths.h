@@ -42,8 +42,17 @@ along with GCC; see the file COPYING3.  If not see
 class crc_symb_execution {
 
  private:
-  /* A vector of states to keep the state of each executed path.  */
+  /* A vector of states to keep the current state of each executed path.  */
   vec<state*> states;
+
+  /* A vector of final states
+     to keep the returned_value and path conditions.  */
+  vec<state*> final_states;
+
+  /*  This map will contain the calculated return value
+      and the path conditions for each executed path.  */
+  hash_map<const vec<value *>*, const hash_set<bit_expression *> *>
+      ret_val_states;
 
 /* Assign symbolic values to the arguments of the function
    and keep in the state.  */
@@ -54,12 +63,20 @@ class crc_symb_execution {
 
   void execute_assign_statement (const gassign *);
 
+  /* Create new state for true and false branch.
+     Keep conditions in new created states.  */
+  void resolve_condition (const gcond* cond);
+
+  /* Keep the calculated value of the return value
+     and the conditions of the executed path.  */
+  void keep_return_val_and_conditions (const greturn* ret);
+
   /* Execute gimple statements of the basic block.
-   Keeping values of variables in the state.  */
+     Keeping values of variables in the state.  */
   void execute_bb_gimple_statements (basic_block);
 
   /* Assign values of phi instruction to its result.
-   Keep updated values in the state.  */
+     Keep updated values in the state.  */
   void execute_bb_phi_statements (basic_block, basic_block);
 
   /* Execute all statements of the basic block.
@@ -76,10 +93,9 @@ class crc_symb_execution {
 
   crc_symb_execution ()
   {
-    /* Reserve memory for the vector.
-       Actually, if the function is calculating one CRC, there may be 2 states.
-       Just in case allocate more memory.  */
-    states.create (4);
+    /* Reserve memory for the vectors of states.  */
+    states.create (30);
+    final_states.create (30);
   }
 };
 

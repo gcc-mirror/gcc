@@ -100,7 +100,8 @@ crc_symb_execution::add_function_local_ssa_vars (function *fun,
 	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      {
 		print_generic_expr (dump_file, name, dump_flags);
-		fprintf (dump_file, ", not interesting type.\n");
+		fprintf (dump_file, ", %s type, won't be considered.\n",
+			 get_tree_code_name (TREE_CODE (TREE_TYPE (name))));
 	      }
 	    continue;
 	  }
@@ -140,6 +141,7 @@ crc_symb_execution::execute_assign_statement (const gassign *gs)
 	    // do_mem_ref
 	    return;
 	  case NOP_EXPR:
+	    current_state->do_assign (op1, lhs);
 	    return;
 	  default:
 	    if (dump_file)
@@ -205,6 +207,94 @@ crc_symb_execution::execute_assign_statement (const gassign *gs)
     }
 }
 
+/* Create new state for true and false branch.
+   Keep conditions in new created states.  */
+void
+crc_symb_execution::resolve_condition (const gcond* cond)
+{
+  /* Remove last state.  */
+  state* old_state = states.last ();
+
+  /* Add new states for each branch.  */
+  state* true_branch_state = new state (*old_state);
+  state* false_branch_state = new state (*old_state);
+
+  delete old_state;
+  states.pop ();
+
+  /* First insert false_branch_state then true_branch_state,
+     as at first we will examine true branch's basic block, then false branch's,
+     and state.last () is called to get current paths state.  */
+  states.quick_push (false_branch_state);
+  states.quick_push (true_branch_state);
+
+  /* Keep conditions of each branch execution in its state.
+     Ex.
+       if (a == 0)
+
+       true_branch_state.keep (a==0)
+       false_branch_state.keep (a!=0)
+  */
+
+  tree lhs = gimple_cond_lhs (cond);
+  tree rhs = gimple_cond_rhs (cond);
+  switch (gimple_cond_code (cond))
+    {
+      case EQ_EXPR:
+	//true_branch_state->add_equal_cond (lhs, rhs);
+	//false_branch_state->add_not_equal_cond (lhs, rhs);
+	break;
+      case NE_EXPR:
+	//true_branch_state->add_not_equal_cond (lhs, rhs);
+	//false_branch_state->add_equal_cond (lhs, rhs);
+	break;
+      case GT_EXPR:
+	//true_branch_state->add_greater_than_cond (lhs, rhs);
+	// false_branch_state->add_less_or_equal_cond (lhs, rhs);
+	break;
+      case LT_EXPR:
+	//true_branch_state->add_less_than_cond (lhs, rhs);
+	//false_branch_state->add_greater_or_equal_cond (lhs, rhs);
+	break;
+      case GE_EXPR:
+	//true_branch_state->add_greater_or_equal_cond (lhs, rhs);
+	// false_branch_state->add_less_than_cond (lhs, rhs);
+	break;
+      case LE_EXPR:
+	//true_branch_state->add_less_or_equal_cond (lhs, rhs);
+	//false_branch_state->add_greater_than_cond (lhs, rhs);
+	break;
+      default:
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf (dump_file, "Unsupported condition.\n");
+    }
+}
+
+/* Keep the calculated value of the return value
+   and the conditions of the executed path.  */
+void
+crc_symb_execution::keep_return_val_and_conditions (const greturn* ret)
+{
+  tree return_op = gimple_return_retval (ret);
+
+  if (return_op == nullptr)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "No return value.\n");
+      return;
+    }
+
+  /* Get calculated return value.  */
+  state * curr_state = states.last ();
+
+  state * final_state = new state;
+  /* Keep return value's calculated value and conditions in the final state.  */
+  final_state->add_var_state (return_op, curr_state->get_bits (return_op));
+  final_state->bulk_add_conditions (curr_state->get_conditions ());
+  final_states.quick_push (final_state);
+}
+
+
 /* Execute gimple statements of BB.
    Keeping values of variables in the state.  */
 void
@@ -225,9 +315,10 @@ crc_symb_execution::execute_bb_gimple_statements (basic_block bb)
 	    execute_assign_statement (as_a<const gassign *> (gs));
 	    break;
 	  case GIMPLE_COND:
-	    //TODO: Examine condition.  Fork state if needed and keep condition.
+	    resolve_condition (as_a<const gcond *> (gs));
 	    break;
 	  case GIMPLE_RETURN:
+	    keep_return_val_and_conditions (as_a<const greturn *> (gs));
 	    break;
 	  default:
 	    if (dump_file)
@@ -252,6 +343,12 @@ crc_symb_execution::execute_bb_phi_statements (basic_block bb,
        gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
+      tree lhs = gimple_phi_result (phi);
+
+      /* Don't consider virtual operands.  */
+      if (virtual_operand_p (lhs))
+	continue;
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Determining the value "
@@ -265,7 +362,6 @@ crc_symb_execution::execute_bb_phi_statements (basic_block bb,
 	  basic_block src = gimple_phi_arg_edge (phi, i)->src;
 	  if (src != nullptr && src == prev_exec_bb_index)
 	    {
-	      tree lhs = gimple_phi_result (phi);
 	      tree rhs = gimple_phi_arg_def (phi, i);
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -312,7 +408,7 @@ crc_symb_execution::traverse_function (function *fun)
       stack.pop ();
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "\nExecuting BB <%d>\n", bb->index);
+	fprintf (dump_file, "\n\nExecuting BB <%d>\n\n", bb->index);
 
       /* Symbolically execute statements.  */
       execute_bb_statements (bb, prev_bb);
@@ -321,8 +417,20 @@ crc_symb_execution::traverse_function (function *fun)
        * despite the one connected with back edge.  */
       edge e;
       edge_iterator ei;
-      FOR_EACH_EDGE (e, ei, bb->succs) if (!(e->flags & EDGE_DFS_BACK))
-	  stack.quick_push (e->dest);
+      /* TODO: if edges are conditional add false edge, then true edge.  */
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  if (!(e->flags & EDGE_DFS_BACK)
+	      && e->dest != EXIT_BLOCK_PTR_FOR_FN (fun))
+	    stack.quick_push (e->dest);
+	  else if (!states.is_empty ())
+	    {
+	      /* Delete the state after executing the path till the end,
+		 or encountering back edge.  */
+	      delete states.last ();
+	      states.pop ();
+	    }
+	}
     }
 }
 
