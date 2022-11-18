@@ -27,7 +27,7 @@
 
 /* Run-time Target.  */
 
-#define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
+#define STARTFILE_SPEC "%{mmainkernel:crt0.o%s}"
 
 #define ASM_SPEC "%{misa=*:-m %*}"
 
