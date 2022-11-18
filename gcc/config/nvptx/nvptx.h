@@ -27,7 +27,7 @@
 
 /* Run-time Target.  */
 
-#define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
+#define STARTFILE_SPEC "%{mmainkernel:crt0.o%s}"
 
 /* Default needs to be in sync with default for misa in nvptx.opt.
    We add a default here to work around a hard-coded sm_30 default in
