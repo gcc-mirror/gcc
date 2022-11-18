@@ -21109,7 +21109,9 @@ Returns the value that is currently set in the @samp{tp} register.
 @end deftypefn
 
 @deftypefn {Built-in Function}  void __builtin_riscv_pause (void)
-Generates the @code{pause} (hint) machine instruction.
+Generates the @code{pause} (hint) machine instruction.  This implies the
+Xgnuzihintpausestate extension, which redefines the @code{pause} instruction to
+change architectural state.
 @end deftypefn
 
 @node RX Built-in Functions
