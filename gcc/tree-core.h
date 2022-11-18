@@ -2284,15 +2284,32 @@ struct floatn_type_info {
 /* Matrix describing the structures contained in a given tree code.  */
 extern bool tree_contains_struct[MAX_TREE_CODES][64];
 
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+#define END_OF_BASE_TREE_CODES tcc_exceptional,
+
+
 /* Class of tree given its code.  */
-extern const enum tree_code_class tree_code_type[];
+constexpr enum tree_code_class tree_code_type[] = {
+#include "all-tree.def"
+};
+
+#undef DEFTREECODE
+#undef END_OF_BASE_TREE_CODES
 
 /* Each tree code class has an associated string representation.
    These must correspond to the tree_code_class entries.  */
 extern const char *const tree_code_class_strings[];
 
 /* Number of argument-words in each kind of tree-node.  */
-extern const unsigned char tree_code_length[];
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
+#define END_OF_BASE_TREE_CODES 0,
+constexpr unsigned char tree_code_length[] = {
+#include "all-tree.def"
+};
+
+#undef DEFTREECODE
+#undef END_OF_BASE_TREE_CODES
 
 /* Vector of all alias pairs for global symbols.  */
 extern GTY(()) vec<alias_pair, va_gc> *alias_pairs;
