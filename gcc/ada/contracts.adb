@@ -1691,6 +1691,10 @@ package body Contracts is
       Set_Debug_Info_Needed  (Wrapper_Id);
       Set_Wrapped_Statements (Subp_Id, Wrapper_Id);
 
+      Set_Has_Pragma_Inline (Wrapper_Id, Has_Pragma_Inline (Subp_Id));
+      Set_Has_Pragma_Inline_Always
+        (Wrapper_Id, Has_Pragma_Inline_Always (Subp_Id));
+
       --  Create specification and declaration for the wrapper
 
       if No (Ret_Type) or else Ret_Type = Standard_Void_Type then
@@ -1718,20 +1722,6 @@ package body Contracts is
       Set_Handled_Statement_Sequence (Body_Decl,
         Make_Handled_Sequence_Of_Statements (Loc,
           End_Label  => Make_Identifier (Loc, Chars (Wrapper_Id))));
-
-      --  Move certain flags which are relevant to the body
-
-      --  Wouldn't a better way be to perform some sort of copy of Body_Decl
-      --  for Wrapper_Body be less error-prone ???
-
-      if Was_Expression_Function (Body_Decl) then
-         Set_Was_Expression_Function (Body_Decl, False);
-         Set_Was_Expression_Function (Wrapper_Body);
-      end if;
-
-      Set_Has_Pragma_Inline (Wrapper_Id, Has_Pragma_Inline (Subp_Id));
-      Set_Has_Pragma_Inline_Always
-        (Wrapper_Id, Has_Pragma_Inline_Always (Subp_Id));
 
       --  Prepend a call to the wrapper when the subprogram is a procedure
 
