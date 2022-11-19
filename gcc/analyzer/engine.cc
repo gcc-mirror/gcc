@@ -2024,16 +2024,22 @@ exploded_node::dump_succs_and_preds (FILE *outf) const
 /* Implementation of custom_edge_info::update_model vfunc
    for dynamic_call_info_t.
 
-   Update state for the dynamically discorverd calls */
+   Update state for a dynamically discovered call (or return), by pushing
+   or popping the a frame for the appropriate function.  */
 
 bool
 dynamic_call_info_t::update_model (region_model *model,
 				   const exploded_edge *eedge,
-				   region_model_context *) const
+				   region_model_context *ctxt) const
 {
   gcc_assert (eedge);
-  const program_state &dest_state = eedge->m_dest->get_state ();
-  *model = *dest_state.m_region_model;
+  if (m_is_returning_call)
+    model->update_for_return_gcall (m_dynamic_call, ctxt);
+  else
+    {
+      function *callee = eedge->m_dest->get_function ();
+      model->update_for_gcall (m_dynamic_call, ctxt, callee);
+    }
   return true;
 }
 
