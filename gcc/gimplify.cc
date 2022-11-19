@@ -6054,6 +6054,9 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   location_t loc = EXPR_LOCATION (*expr_p);
   gimple_stmt_iterator gsi;
 
+  if (error_operand_p (*from_p) || error_operand_p (*to_p))
+    return GS_ERROR;
+
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
 
