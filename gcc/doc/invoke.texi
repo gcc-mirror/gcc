@@ -15784,18 +15784,8 @@ The maximum number of may-defs we analyze when looking for a must-def
 specifying the dynamic type of an object that invokes a virtual call
 we may be able to devirtualize speculatively.
 
-@item max-vrp-switch-assertions
-The maximum number of assertions to add along the default edge of a switch
-statement during VRP.
-
 @item evrp-sparse-threshold
 Maximum number of basic blocks before EVRP uses a sparse cache.
-
-@item vrp1-mode
-Specifies the mode VRP pass 1 should operate in.
-
-@item vrp2-mode
-Specifies the mode VRP pass 2 should operate in.
 
 @item ranger-debug
 Specifies the type of debug output to be issued for ranges.
