@@ -7124,7 +7124,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    && (TREE_STATIC (r)
 		|| (CP_DECL_THREAD_LOCAL_P (r) && !DECL_REALLY_EXTERN (r)))
 	    /* Allow __FUNCTION__ etc.  */
-	    && !DECL_ARTIFICIAL (r))
+	    && !DECL_ARTIFICIAL (r)
+	    && !decl_constant_var_p (r))
 	  {
 	    if (!ctx->quiet)
 	      {
@@ -9630,7 +9631,10 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
     case DECL_EXPR:
       tmp = DECL_EXPR_DECL (t);
-      if (VAR_P (tmp) && !DECL_ARTIFICIAL (tmp))
+      if (VAR_P (tmp) && !DECL_ARTIFICIAL (tmp)
+	  && (processing_template_decl
+	      ? !decl_maybe_constant_var_p (tmp)
+	      : !decl_constant_var_p (tmp)))
 	{
 	  if (CP_DECL_THREAD_LOCAL_P (tmp) && !DECL_REALLY_EXTERN (tmp))
 	    {
