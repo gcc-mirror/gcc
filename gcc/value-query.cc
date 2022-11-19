@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "tree-pretty-print.h"
 #include "fold-const.h"
-#include "value-range-equiv.h"
 #include "value-query.h"
 #include "alloc-pool.h"
 #include "gimple-range.h"
@@ -143,34 +142,22 @@ range_query::dump (FILE *)
 {
 }
 
-// valuation_query support routines for value_range_equiv's.
+// valuation_query support routines for value_range's.
 
-class equiv_allocator : public object_allocator<value_range_equiv>
+class equiv_allocator : public object_allocator<value_range>
 {
 public:
   equiv_allocator ()
-    : object_allocator<value_range_equiv> ("equiv_allocator pool") { }
+    : object_allocator<value_range> ("equiv_allocator pool") { }
 };
 
-value_range_equiv *
-range_query::allocate_value_range_equiv ()
-{
-  return new (equiv_alloc->allocate ()) value_range_equiv;
-}
-
-void
-range_query::free_value_range_equiv (value_range_equiv *v)
-{
-  equiv_alloc->remove (v);
-}
-
-const class value_range_equiv *
+const value_range *
 range_query::get_value_range (const_tree expr, gimple *stmt)
 {
   int_range_max r;
   if (range_of_expr (r, const_cast<tree> (expr), stmt))
-    return new (equiv_alloc->allocate ()) value_range_equiv (r);
-  return new (equiv_alloc->allocate ()) value_range_equiv (TREE_TYPE (expr));
+    return new (equiv_alloc->allocate ()) value_range (r);
+  return new (equiv_alloc->allocate ()) value_range (TREE_TYPE (expr));
 }
 
 range_query::range_query ()

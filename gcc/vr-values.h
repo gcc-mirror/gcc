@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VR_VALUES_H
 #define GCC_VR_VALUES_H
 
-#include "value-range-equiv.h"
 #include "value-query.h"
 
 // Abstract class to return a range for a given SSA.
@@ -54,11 +53,9 @@ private:
 
   bool two_valued_val_range_p (tree, tree *, tree *, gimple *);
   bool op_with_boolean_value_range_p (tree, gimple *);
-  tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool,
-				gimple *);
+  tree compare_name_with_value (enum tree_code, tree, tree, bool *, gimple *);
   tree compare_names (enum tree_code, tree, tree, bool *, gimple *s);
-  const value_range_equiv *get_vr_for_comparison (int, value_range_equiv *,
-						  gimple *s);
+  const value_range *get_vr_for_comparison (int, value_range *, gimple *s);
   tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
 							     tree, tree,
 							     bool *, gimple *s);

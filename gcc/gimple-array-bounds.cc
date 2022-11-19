@@ -46,9 +46,6 @@ array_bounds_checker::array_bounds_checker (struct function *func,
   /* No-op.  */
 }
 
-// This purposely returns a value_range, not a value_range_equiv, to
-// break the dependency on equivalences for this pass.
-
 const value_range *
 array_bounds_checker::get_value_range (const_tree op, gimple *stmt)
 {

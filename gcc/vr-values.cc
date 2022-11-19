@@ -215,8 +215,8 @@ check_for_binary_op_overflow (range_query *query,
 
 
 static tree
-compare_ranges (enum tree_code comp, const value_range_equiv *vr0,
-		const value_range_equiv *vr1, bool *strict_overflow_p)
+compare_ranges (enum tree_code comp, const value_range *vr0,
+		const value_range *vr1, bool *strict_overflow_p)
 {
   /* VARYING or UNDEFINED ranges cannot be compared.  */
   if (vr0->varying_p ()
@@ -619,19 +619,20 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
    or a symbolic range containing the SSA_NAME only if the value range
    is varying or undefined.  Uses TEM as storage for the alternate range.  */
 
-const value_range_equiv *
-simplify_using_ranges::get_vr_for_comparison (int i, value_range_equiv *tem,
+const value_range *
+simplify_using_ranges::get_vr_for_comparison (int i, value_range *tem,
 					      gimple *s)
 {
   /* Shallow-copy equiv bitmap.  */
-  const value_range_equiv *vr = query->get_value_range (ssa_name (i), s);
+  const value_range *vr = query->get_value_range (ssa_name (i), s);
 
   /* If name N_i does not have a valid range, use N_i as its own
      range.  This allows us to compare against names that may
      have N_i in their ranges.  */
   if (vr->varying_p () || vr->undefined_p ())
     {
-      tem->set (ssa_name (i));
+      tree ssa = ssa_name (i);
+      tem->set (ssa, ssa);
       return tem;
     }
 
@@ -646,76 +647,25 @@ simplify_using_ranges::get_vr_for_comparison (int i, value_range_equiv *tem,
 tree
 simplify_using_ranges::compare_name_with_value
 				(enum tree_code comp, tree var, tree val,
-				 bool *strict_overflow_p, bool use_equiv_p,
-				 gimple *s)
+				 bool *strict_overflow_p, gimple *s)
 {
-  /* Get the set of equivalences for VAR.  */
-  bitmap e = query->get_value_range (var, s)->equiv ();
-
   /* Start at -1.  Set it to 0 if we do a comparison without relying
      on overflow, or 1 if all comparisons rely on overflow.  */
   int used_strict_overflow = -1;
 
   /* Compare vars' value range with val.  */
-  value_range_equiv tem_vr;
-  const value_range_equiv *equiv_vr
+  value_range tem_vr;
+  const value_range *equiv_vr
     = get_vr_for_comparison (SSA_NAME_VERSION (var), &tem_vr, s);
   bool sop = false;
   tree retval = compare_range_with_value (comp, equiv_vr, val, &sop);
   if (retval)
     used_strict_overflow = sop ? 1 : 0;
 
-  /* If the equiv set is empty we have done all work we need to do.  */
-  if (e == NULL)
-    {
-      if (retval && used_strict_overflow > 0)
-	*strict_overflow_p = true;
-      return retval;
-    }
-
-  unsigned i;
-  bitmap_iterator bi;
-  EXECUTE_IF_SET_IN_BITMAP (e, 0, i, bi)
-    {
-      tree name = ssa_name (i);
-      if (!name)
-	continue;
-
-      if (!use_equiv_p
-	  && !SSA_NAME_IS_DEFAULT_DEF (name)
-	  && prop_simulate_again_p (SSA_NAME_DEF_STMT (name)))
-	continue;
-
-      equiv_vr = get_vr_for_comparison (i, &tem_vr, s);
-      sop = false;
-      tree t = compare_range_with_value (comp, equiv_vr, val, &sop);
-      if (t)
-	{
-	  /* If we get different answers from different members
-	     of the equivalence set this check must be in a dead
-	     code region.  Folding it to a trap representation
-	     would be correct here.  For now just return don't-know.  */
-	  if (retval != NULL
-	      && t != retval)
-	    {
-	      retval = NULL_TREE;
-	      break;
-	    }
-	  retval = t;
-
-	  if (!sop)
-	    used_strict_overflow = 0;
-	  else if (used_strict_overflow < 0)
-	    used_strict_overflow = 1;
-	}
-    }
-
   if (retval && used_strict_overflow > 0)
     *strict_overflow_p = true;
-
   return retval;
 }
-
 
 /* Given a comparison code COMP and names N1 and N2, compare all the
    ranges equivalent to N1 against all the ranges equivalent to N2
@@ -728,10 +678,10 @@ tree
 simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
 				      bool *strict_overflow_p, gimple *s)
 {
-  /* Compare the ranges of every name equivalent to N1 against the
-     ranges of every name equivalent to N2.  */
-  bitmap e1 = query->get_value_range (n1, s)->equiv ();
-  bitmap e2 = query->get_value_range (n2, s)->equiv ();
+  /* ?? These bitmaps are NULL as there are no longer any equivalences
+     available in the value_range*.  */
+  bitmap e1 = NULL;
+  bitmap e2 = NULL;
 
   /* Use the fake bitmaps if e1 or e2 are not available.  */
   static bitmap s_e1 = NULL, s_e2 = NULL;
@@ -780,8 +730,8 @@ simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
       if (!ssa_name (i1))
 	continue;
 
-      value_range_equiv tem_vr1;
-      const value_range_equiv *vr1 = get_vr_for_comparison (i1, &tem_vr1, s);
+      value_range tem_vr1;
+      const value_range *vr1 = get_vr_for_comparison (i1, &tem_vr1, s);
 
       tree t = NULL_TREE, retval = NULL_TREE;
       bitmap_iterator bi2;
@@ -793,9 +743,8 @@ simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
 
 	  bool sop = false;
 
-	  value_range_equiv tem_vr2;
-	  const value_range_equiv *vr2 = get_vr_for_comparison (i2, &tem_vr2,
-								s);
+	  value_range tem_vr2;
+	  const value_range *vr2 = get_vr_for_comparison (i2, &tem_vr2, s);
 
 	  t = compare_ranges (comp, vr1, vr2, &sop);
 	  if (t)
@@ -844,7 +793,7 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops_using_ranges
     (enum tree_code code, tree op0, tree op1, bool * strict_overflow_p,
      gimple *s)
 {
-  const value_range_equiv *vr0, *vr1;
+  const value_range *vr0, *vr1;
   vr0 = (TREE_CODE (op0) == SSA_NAME) ? query->get_value_range (op0, s) : NULL;
   vr1 = (TREE_CODE (op1) == SSA_NAME) ? query->get_value_range (op1, s) : NULL;
 
@@ -925,7 +874,7 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
 	    }
 	  else
 	    gcc_unreachable ();
-	  const value_range_equiv *vr0 = query->get_value_range (op0, stmt);
+	  const value_range *vr0 = query->get_value_range (op0, stmt);
 	  /* If vro, the range for OP0 to pass the overflow test, has
 	     no intersection with *vr0, OP0's known range, then the
 	     overflow test can't pass, so return the node for false.
@@ -955,11 +904,10 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
       && use_equiv_p)
     return compare_names (code, op0, op1, strict_overflow_p, stmt);
   else if (TREE_CODE (op0) == SSA_NAME)
-    return compare_name_with_value (code, op0, op1,
-				    strict_overflow_p, use_equiv_p, stmt);
+    return compare_name_with_value (code, op0, op1, strict_overflow_p, stmt);
   else if (TREE_CODE (op1) == SSA_NAME)
     return compare_name_with_value (swap_tree_comparison (code), op1, op0,
-				    strict_overflow_p, use_equiv_p, stmt);
+				    strict_overflow_p, stmt);
   return NULL_TREE;
 }
 
@@ -1250,7 +1198,7 @@ simplify_using_ranges::simplify_div_or_mod_using_ranges
   if (rhs_code == TRUNC_MOD_EXPR
       && TREE_CODE (op1) == SSA_NAME)
     {
-      const value_range_equiv *vr1 = query->get_value_range (op1, stmt);
+      const value_range *vr1 = query->get_value_range (op1, stmt);
       if (range_int_cst_p (vr1))
 	op1min = vr1->min ();
     }
