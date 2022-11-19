@@ -7552,9 +7552,10 @@ package body Exp_Ch6 is
 
             Remove_Side_Effects (A);
 
-            if Is_Controlling_Actual (A)
-              and then Etype (F) /= Etype (A)
-            then
+            --  Ensure matching types to avoid reporting spurious errors since
+            --  the called helper may have been built for a parent type.
+
+            if Etype (F) /= Etype (A) then
                Append_To (Actuals,
                  Unchecked_Convert_To (Etype (F), New_Copy_Tree (A)));
             else
