@@ -11769,37 +11769,39 @@ package body Exp_Ch3 is
 
    function Make_Tag_Assignment (N : Node_Id) return Node_Id is
       Loc      : constant Source_Ptr := Sloc (N);
-      Def_If   : constant Entity_Id := Defining_Identifier (N);
-      Expr     : constant Node_Id := Expression (N);
-      Typ      : constant Entity_Id := Etype (Def_If);
-      Full_Typ : constant Entity_Id := Underlying_Type (Typ);
+      Def_If   : constant Entity_Id  := Defining_Identifier (N);
+      Expr     : constant Node_Id    := Expression (N);
+      Typ      : constant Entity_Id  := Etype (Def_If);
+      Full_Typ : constant Entity_Id  := Underlying_Type (Typ);
+
       New_Ref  : Node_Id;
 
    begin
-      --  This expansion activity is called during analysis.
+      --  This expansion activity is called during analysis
 
       if Is_Tagged_Type (Typ)
-       and then not Is_Class_Wide_Type (Typ)
-       and then not Is_CPP_Class (Typ)
-       and then Tagged_Type_Expansion
-       and then Nkind (Expr) /= N_Aggregate
-       and then (Nkind (Expr) /= N_Qualified_Expression
-                  or else Nkind (Expression (Expr)) /= N_Aggregate)
+        and then not Is_Class_Wide_Type (Typ)
+        and then not Is_CPP_Class (Typ)
+        and then Tagged_Type_Expansion
+        and then Nkind (Expr) /= N_Aggregate
+        and then (Nkind (Expr) /= N_Qualified_Expression
+                   or else Nkind (Expression (Expr)) /= N_Aggregate)
       then
          New_Ref :=
            Make_Selected_Component (Loc,
-              Prefix        => New_Occurrence_Of (Def_If, Loc),
-              Selector_Name =>
-                New_Occurrence_Of (First_Tag_Component (Full_Typ), Loc));
+             Prefix        => New_Occurrence_Of (Def_If, Loc),
+             Selector_Name =>
+               New_Occurrence_Of (First_Tag_Component (Full_Typ), Loc));
+
          Set_Assignment_OK (New_Ref);
 
          return
            Make_Assignment_Statement (Loc,
-              Name       => New_Ref,
-              Expression =>
-                Unchecked_Convert_To (RTE (RE_Tag),
-                  New_Occurrence_Of (Node
-                      (First_Elmt (Access_Disp_Table (Full_Typ))), Loc)));
+             Name       => New_Ref,
+             Expression =>
+               Unchecked_Convert_To (RTE (RE_Tag),
+                 New_Occurrence_Of
+                   (Node (First_Elmt (Access_Disp_Table (Full_Typ))), Loc)));
       else
          return Empty;
       end if;
