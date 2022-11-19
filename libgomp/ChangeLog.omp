@@ -1,3 +1,19 @@
+2022-11-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/libgomp-gcn.h: New file; contains
+	struct output, declared previously in plugin-gcn.c.
+	* config/gcn/target.c: Include it.
+	(GOMP_ADDITIONAL_ICVS): Declare as extern var.
+	(GOMP_target_ext): Handle reverse offload.
+	* plugin/plugin-gcn.c: Include libgomp-gcn.h.
+	(struct kernargs): Replace struct def by the one
+	from libgomp-gcn.h for output_data.
+	(process_reverse_offload): New.
+	(console_output): Call it.
+
 2022-11-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
