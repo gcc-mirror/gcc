@@ -1537,7 +1537,7 @@ namespace __format
 
 	      if (__trailing_zeros)
 		{
-		  if (!isxdigit(__s[0]))
+		  if (!std::isxdigit(__s[0]))
 		    --__sigfigs;
 		  __z = __prec - __sigfigs;
 		}
@@ -1627,7 +1627,7 @@ namespace __format
 		{
 		  __fill_char = _CharT('0');
 		  // Write sign before zero filling.
-		  if (!isxdigit(__narrow_str[0]))
+		  if (!std::isxdigit(__narrow_str[0]))
 		    {
 		      *__out++ = __str[0];
 		      __str.remove_prefix(1);
