@@ -579,8 +579,10 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 		vr0.set_varying (TREE_TYPE (init));
 	      tree tem = wide_int_to_tree (TREE_TYPE (init), wtmp);
 	      vr1.set (tem, tem);
-	      range_fold_binary_expr (&maxvr, PLUS_EXPR,
-				      TREE_TYPE (init), &vr0, &vr1);
+
+	      range_op_handler handler (PLUS_EXPR, TREE_TYPE (init));
+	      if (!handler.fold_range (maxvr, TREE_TYPE (init), vr0, vr1))
+		maxvr.set_varying (TREE_TYPE (init));
 
 	      /* Likewise if the addition did.  */
 	      if (maxvr.kind () == VR_RANGE)

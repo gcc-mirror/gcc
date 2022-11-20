@@ -128,6 +128,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "dbgcnt.h"
 #include "symtab-clones.h"
+#include "gimple-range.h"
 
 template <typename valtype> class ipcp_value;
 
@@ -1900,10 +1901,15 @@ ipa_vr_operation_and_type_effects (value_range *dst_vr,
 				   enum tree_code operation,
 				   tree dst_type, tree src_type)
 {
-  range_fold_unary_expr (dst_vr, operation, dst_type, src_vr, src_type);
-  if (dst_vr->varying_p () || dst_vr->undefined_p ())
+  if (!irange::supports_p (dst_type) || !irange::supports_p (src_type))
     return false;
-  return true;
+
+  range_op_handler handler (operation, dst_type);
+  return (handler
+	  && handler.fold_range (*dst_vr, dst_type,
+				 *src_vr, value_range (dst_type))
+	  && !dst_vr->varying_p ()
+	  && !dst_vr->undefined_p ());
 }
 
 /* Determine value_range of JFUNC given that INFO describes the caller node or
@@ -1958,8 +1964,13 @@ ipa_value_range_from_jfunc (ipa_node_params *info, cgraph_edge *cs,
 	  value_range op_res, res;
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
 	  value_range op_vr (op, op);
+	  range_op_handler handler (operation, vr_type);
 
-	  range_fold_binary_expr (&op_res, operation, vr_type, &srcvr, &op_vr);
+	  if (!handler
+	      || !op_res.supports_type_p (vr_type)
+	      || !handler.fold_range (op_res, vr_type, srcvr, op_vr))
+	    op_res.set_varying (vr_type);
+
 	  if (ipa_vr_operation_and_type_effects (&res,
 						 &op_res,
 						 NOP_EXPR, parm_type,
@@ -2748,9 +2759,14 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
 	  value_range op_vr (op, op);
 	  value_range op_res,res;
+	  range_op_handler handler (operation, operand_type);
 
-	  range_fold_binary_expr (&op_res, operation, operand_type,
-				  &src_lats->m_value_range.m_vr, &op_vr);
+	  if (!handler
+	      || !op_res.supports_type_p (operand_type)
+	      || !handler.fold_range (op_res, operand_type,
+				      src_lats->m_value_range.m_vr, op_vr))
+	    op_res.set_varying (operand_type);
+
 	  ipa_vr_operation_and_type_effects (&vr,
 					     &op_res,
 					     NOP_EXPR, param_type,

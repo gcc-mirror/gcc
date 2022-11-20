@@ -481,13 +481,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	      && (TYPE_SIZE (c->type) == TYPE_SIZE (vr.type ())))
 	    {
 	      if (!useless_type_conversion_p (c->type, vr.type ()))
-		{
-		  value_range res;
-		  range_fold_unary_expr (&res, NOP_EXPR,
-				     c->type, &vr, vr.type ());
-		  vr = res;
-		}
-	      tree type = c->type;
+		range_cast (vr, c->type);
 
 	      for (j = 0; vec_safe_iterate (c->param_ops, j, &op); j++)
 		{
@@ -496,26 +490,45 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 
 		  value_range res;
 		  if (!op->val[0])
-		    range_fold_unary_expr (&res, op->code, op->type, &vr, type);
+		    {
+		      range_op_handler handler (op->code, op->type);
+		      if (!handler
+			  || !res.supports_type_p (op->type)
+			  || !handler.fold_range (res, op->type, vr,
+						  value_range (op->type)))
+			res.set_varying (op->type);
+		    }
 		  else if (!op->val[1])
 		    {
 		      value_range op0 (op->val[0], op->val[0]);
-		      range_fold_binary_expr (&res, op->code, op->type,
-					      op->index ? &op0 : &vr,
-					      op->index ? &vr : &op0);
+		      range_op_handler handler (op->code, op->type);
+
+		      if (!handler
+			  || !res.supports_type_p (op->type)
+			  || !handler.fold_range (res, op->type,
+						  op->index ? op0 : vr,
+						  op->index ? vr : op0))
+			res.set_varying (op->type);
 		    }
 		  else
 		    res.set_varying (op->type);
-		  type = op->type;
 		  vr = res;
 		}
 	      if (!vr.varying_p () && !vr.undefined_p ())
 		{
 		  value_range res;
-		  value_range val_vr (c->val, c->val);
-		  range_fold_binary_expr (&res, c->code, boolean_type_node,
-					  &vr,
-					  &val_vr);
+		  value_range val_vr;
+		  if (TREE_CODE (c->val) == INTEGER_CST)
+		    val_vr.set (c->val, c->val);
+		  else
+		    val_vr.set_varying (TREE_TYPE (c->val));
+		  range_op_handler handler (c->code, boolean_type_node);
+
+		  if (!handler
+		      || !res.supports_type_p (boolean_type_node)
+		      || !handler.fold_range (res, boolean_type_node, vr, val_vr))
+		    res.set_varying (boolean_type_node);
+
 		  if (res.zero_p ())
 		    continue;
 		}
