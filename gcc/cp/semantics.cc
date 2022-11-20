@@ -12325,24 +12325,23 @@ apply_deduced_return_type (tree fco, tree return_type)
   /* We already have a DECL_RESULT from start_preparsed_function.
      Now we need to redo the work it and allocate_struct_function
      did to reflect the new type.  */
-  gcc_assert (current_function_decl == fco);
-  result = build_decl (input_location, RESULT_DECL, NULL_TREE,
+  result = build_decl (DECL_SOURCE_LOCATION (result), RESULT_DECL, NULL_TREE,
 		       TYPE_MAIN_VARIANT (return_type));
   DECL_ARTIFICIAL (result) = 1;
   DECL_IGNORED_P (result) = 1;
   cp_apply_type_quals_to_decl (cp_type_quals (return_type),
                                result);
-
   DECL_RESULT (fco) = result;
 
   if (!processing_template_decl)
-    {
-      bool aggr = aggregate_value_p (result, fco);
+    if (function *fun = DECL_STRUCT_FUNCTION (fco))
+      {
+	bool aggr = aggregate_value_p (result, fco);
 #ifdef PCC_STATIC_STRUCT_RETURN
-      cfun->returns_pcc_struct = aggr;
+	fun->returns_pcc_struct = aggr;
 #endif
-      cfun->returns_struct = aggr;
-    }
+	fun->returns_struct = aggr;
+      }
 }
 
 /* DECL is a local variable or parameter from the surrounding scope of a

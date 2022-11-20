@@ -4997,7 +4997,8 @@ init_function_start (tree subr)
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
   if (AGGREGATE_TYPE_P (TREE_TYPE (DECL_RESULT (subr))))
-    warning (OPT_Waggregate_return, "function returns an aggregate");
+    warning_at (DECL_SOURCE_LOCATION (DECL_RESULT (subr)),
+		OPT_Waggregate_return, "function returns an aggregate");
 }
 
 /* Expand code to verify the stack_protect_guard.  This is invoked at

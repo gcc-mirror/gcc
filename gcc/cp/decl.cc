@@ -14772,6 +14772,19 @@ grokdeclarator (const cp_declarator *declarator,
 	else if (constinit_p)
 	  DECL_DECLARED_CONSTINIT_P (decl) = true;
       }
+    else if (TREE_CODE (decl) == FUNCTION_DECL)
+      {
+	/* If we saw a return type, record its location.  */
+	location_t loc = declspecs->locations[ds_type_spec];
+	if (loc != UNKNOWN_LOCATION)
+	  {
+	    tree restype = TREE_TYPE (TREE_TYPE (decl));
+	    tree resdecl = build_decl (loc, RESULT_DECL, 0, restype);
+	    DECL_ARTIFICIAL (resdecl) = 1;
+	    DECL_IGNORED_P (resdecl) = 1;
+	    DECL_RESULT (decl) = resdecl;
+	  }
+      }
 
     /* Record constancy and volatility on the DECL itself .  There's
        no need to do this when processing a template; we'll do this
@@ -17326,9 +17339,17 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   if (DECL_RESULT (decl1) == NULL_TREE)
     {
-      tree resdecl;
+      /* In a template instantiation, copy the return type location.  When
+	 parsing, the location will be set in grokdeclarator.  */
+      location_t loc = input_location;
+      if (DECL_TEMPLATE_INSTANTIATION (decl1))
+	{
+	  tree tmpl = template_for_substitution (decl1);
+	  if (tree res = DECL_RESULT (DECL_TEMPLATE_RESULT (tmpl)))
+	    loc = DECL_SOURCE_LOCATION (res);
+	}
 
-      resdecl = build_decl (input_location, RESULT_DECL, 0, restype);
+      tree resdecl = build_decl (loc, RESULT_DECL, 0, restype);
       DECL_ARTIFICIAL (resdecl) = 1;
       DECL_IGNORED_P (resdecl) = 1;
       DECL_RESULT (decl1) = resdecl;
