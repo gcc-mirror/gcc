@@ -262,14 +262,14 @@ static void swap_to_top (rtx_insn *, stack_ptr, rtx, rtx);
 static bool move_for_stack_reg (rtx_insn *, stack_ptr, rtx);
 static bool move_nan_for_stack_reg (rtx_insn *, stack_ptr, rtx);
 static int swap_rtx_condition_1 (rtx);
-static int swap_rtx_condition (rtx_insn *);
+static int swap_rtx_condition (rtx_insn *, int &);
 static void compare_for_stack_reg (rtx_insn *, stack_ptr, rtx, bool);
 static bool subst_stack_regs_pat (rtx_insn *, stack_ptr, rtx);
 static void subst_asm_stack_regs (rtx_insn *, stack_ptr);
 static bool subst_stack_regs (rtx_insn *, stack_ptr);
 static void change_stack (rtx_insn *, stack_ptr, stack_ptr, enum emit_where);
 static void print_stack (FILE *, stack_ptr);
-static rtx_insn *next_flags_user (rtx_insn *);
+static rtx_insn *next_flags_user (rtx_insn *, int &);
 
 /* Return nonzero if any stack register is mentioned somewhere within PAT.  */
 
@@ -335,7 +335,7 @@ stack_regs_mentioned (const_rtx insn)
 static rtx ix86_flags_rtx;
 
 static rtx_insn *
-next_flags_user (rtx_insn *insn)
+next_flags_user (rtx_insn *insn, int &debug_seen)
 {
   /* Search forward looking for the first use of this value.
      Stop at block boundaries.  */
@@ -345,7 +345,14 @@ next_flags_user (rtx_insn *insn)
       insn = NEXT_INSN (insn);
 
       if (INSN_P (insn) && reg_mentioned_p (ix86_flags_rtx, PATTERN (insn)))
-	return insn;
+	{
+	  if (DEBUG_INSN_P (insn) && debug_seen >= 0)
+	    {
+	      debug_seen = 1;
+	      continue;
+	    }
+	  return insn;
+	}
 
       if (CALL_P (insn))
 	return NULL;
@@ -1246,8 +1253,22 @@ swap_rtx_condition_1 (rtx pat)
   return r;
 }
 
+/* This function swaps condition in cc users and returns true
+   if successful.  It is invoked in 2 different modes, one with
+   DEBUG_SEEN set initially to 0.  In this mode, next_flags_user
+   will skip DEBUG_INSNs that it would otherwise return and just
+   sets DEBUG_SEEN to 1 in that case.  If DEBUG_SEEN is 0 at
+   the end of toplevel swap_rtx_condition which returns true,
+   it means no problematic DEBUG_INSNs were seen and all changes
+   have been applied.  If it returns true but DEBUG_SEEN is 1,
+   it means some problematic DEBUG_INSNs were seen and no changes
+   have been applied so far.  In that case one needs to call
+   swap_rtx_condition again with DEBUG_SEEN set to -1, in which
+   case it doesn't skip DEBUG_INSNs, but instead adjusts the
+   flags related condition in them or resets them as needed.  */
+
 static int
-swap_rtx_condition (rtx_insn *insn)
+swap_rtx_condition (rtx_insn *insn, int &debug_seen)
 {
   rtx pat = PATTERN (insn);
 
@@ -1257,7 +1278,7 @@ swap_rtx_condition (rtx_insn *insn)
       && REG_P (SET_DEST (pat))
       && REGNO (SET_DEST (pat)) == FLAGS_REG)
     {
-      insn = next_flags_user (insn);
+      insn = next_flags_user (insn, debug_seen);
       if (insn == NULL_RTX)
 	return 0;
       pat = PATTERN (insn);
@@ -1279,7 +1300,18 @@ swap_rtx_condition (rtx_insn *insn)
 	{
 	  insn = NEXT_INSN (insn);
 	  if (INSN_P (insn) && reg_mentioned_p (dest, insn))
-	    break;
+	    {
+	      if (DEBUG_INSN_P (insn))
+		{
+		  if (debug_seen >= 0)
+		    debug_seen = 1;
+		  else
+		    /* Reset the DEBUG insn otherwise.  */
+		    INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+		  continue;
+		}
+	      break;
+	    }
 	  if (CALL_P (insn))
 	    return 0;
 	}
@@ -1299,7 +1331,7 @@ swap_rtx_condition (rtx_insn *insn)
 	return 0;
 
       /* Now we are prepared to handle this as a normal cc0 setter.  */
-      insn = next_flags_user (insn);
+      insn = next_flags_user (insn, debug_seen);
       if (insn == NULL_RTX)
 	return 0;
       pat = PATTERN (insn);
@@ -1308,23 +1340,25 @@ swap_rtx_condition (rtx_insn *insn)
   if (swap_rtx_condition_1 (pat))
     {
       int fail = 0;
-      INSN_CODE (insn) = -1;
-      if (recog_memoized (insn) == -1)
-	fail = 1;
-      /* In case the flags don't die here, recurse to try fix
-         following user too.  */
-      else if (! dead_or_set_p (insn, ix86_flags_rtx))
+      if (DEBUG_INSN_P (insn))
+	gcc_assert (debug_seen < 0);
+      else
 	{
-	  insn = next_flags_user (insn);
-	  if (!insn || !swap_rtx_condition (insn))
+	  INSN_CODE (insn) = -1;
+	  if (recog_memoized (insn) == -1)
 	    fail = 1;
 	}
-      if (fail)
+      /* In case the flags don't die here, recurse to try fix
+	 following user too.  */
+      if (!fail && !dead_or_set_p (insn, ix86_flags_rtx))
 	{
-	  swap_rtx_condition_1 (pat);
-	  return 0;
+	  insn = next_flags_user (insn, debug_seen);
+	  if (!insn || !swap_rtx_condition (insn, debug_seen))
+	    fail = 1;
 	}
-      return 1;
+      if (fail || debug_seen == 1)
+	swap_rtx_condition_1 (pat);
+      return !fail;
     }
   return 0;
 }
@@ -1343,6 +1377,7 @@ compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack,
 {
   rtx *src1, *src2;
   rtx src1_note, src2_note;
+  int debug_seen = 0;
 
   src1 = get_true_reg (&XEXP (pat_src, 0));
   src2 = get_true_reg (&XEXP (pat_src, 1));
@@ -1352,8 +1387,17 @@ compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack,
   if ((! STACK_REG_P (*src1)
        || (STACK_REG_P (*src2)
 	   && get_hard_regnum (regstack, *src2) == FIRST_STACK_REG))
-      && swap_rtx_condition (insn))
+      && swap_rtx_condition (insn, debug_seen))
     {
+      /* If swap_rtx_condition succeeded but some debug insns
+	 were seen along the way, it has actually reverted all the
+	 changes.  Rerun swap_rtx_condition in a mode where DEBUG_ISNSs
+	 will be adjusted as well.  */
+      if (debug_seen)
+	{
+	  debug_seen = -1;
+	  swap_rtx_condition (insn, debug_seen);
+	}
       std::swap (XEXP (pat_src, 0), XEXP (pat_src, 1));
 
       src1 = get_true_reg (&XEXP (pat_src, 0));
