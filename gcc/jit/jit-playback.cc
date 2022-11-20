@@ -1647,7 +1647,7 @@ bool
 playback::lvalue::
 mark_addressable (location *loc)
 {
-  tree x = as_tree ();;
+  tree x = as_tree ();
 
   while (1)
     switch (TREE_CODE (x))
