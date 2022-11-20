@@ -22,6 +22,6 @@ baz (unsigned int x)
   return (-1U >> x) * 16;
 }
 
-/* { dg-final { scan-tree-dump-times  "254" 2 "evrp" } }  */
+/* { dg-final { scan-tree-dump-times  "return 254" 2 "evrp" } }  */
 /* { dg-final { scan-tree-dump "= PHI <32.*, 4294967280" "evrp" } }  */
 
