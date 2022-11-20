@@ -35,9 +35,8 @@ public:
   bool simplify (gimple_stmt_iterator *);
   bool fold_cond (gcond *);
 private:
-  void vrp_visit_cond_stmt (gcond *, edge *);
-  tree vrp_evaluate_conditional_warnv_with_ops (gimple *stmt, enum tree_code,
-						tree, tree, bool *, bool *);
+  void legacy_fold_cond (gcond *, edge *);
+  tree legacy_fold_cond_overflow (gimple *stmt, bool *, bool *);
   bool simplify_casted_cond (gcond *);
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);

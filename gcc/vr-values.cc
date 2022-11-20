@@ -638,19 +638,20 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops_using_ranges
   return res;
 }
 
-/* Helper function for vrp_evaluate_conditional_warnv. */
+/* Helper function for legacy_fold_cond.  */
 
 tree
-simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
-						(gimple *stmt,
-						 enum tree_code code,
-						 tree op0, tree op1,
-						 bool *strict_overflow_p,
-						 bool *only_ranges)
+simplify_using_ranges::legacy_fold_cond_overflow (gimple *stmt,
+						  bool *strict_overflow_p,
+						  bool *only_ranges)
 {
   tree ret;
   if (only_ranges)
     *only_ranges = true;
+
+  tree_code code = gimple_cond_code (stmt);
+  tree op0 = gimple_cond_lhs (stmt);
+  tree op1 = gimple_cond_rhs (stmt);
 
   /* We only deal with integral and pointer types.  */
   if (!INTEGRAL_TYPE_P (TREE_TYPE (op0))
@@ -736,7 +737,7 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
    *TAKEN_EDGE_P.  Otherwise, set *TAKEN_EDGE_P to NULL.  */
 
 void
-simplify_using_ranges::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
+simplify_using_ranges::legacy_fold_cond (gcond *stmt, edge *taken_edge_p)
 {
   tree val;
 
@@ -765,11 +766,7 @@ simplify_using_ranges::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
     }
 
   bool sop;
-  val = vrp_evaluate_conditional_warnv_with_ops (stmt,
-						 gimple_cond_code (stmt),
-						 gimple_cond_lhs (stmt),
-						 gimple_cond_rhs (stmt),
-						 &sop, NULL);
+  val = legacy_fold_cond_overflow (stmt, &sop, NULL);
   if (val)
     *taken_edge_p = find_taken_edge (gimple_bb (stmt), val);
 
@@ -1471,7 +1468,7 @@ simplify_using_ranges::fold_cond (gcond *cond)
 
   // FIXME: Audit the code below and make sure it never finds anything.
   edge taken_edge;
-  vrp_visit_cond_stmt (cond, &taken_edge);
+  legacy_fold_cond (cond, &taken_edge);
 
   if (taken_edge)
     {
