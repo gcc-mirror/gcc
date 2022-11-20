@@ -5836,7 +5836,8 @@ recording::comparison::replay_into (replayer *r)
   set_playback_obj (r->new_comparison (playback_location (r, m_loc),
 				       m_op,
 				       m_a->playback_rvalue (),
-				       m_b->playback_rvalue ()));
+				       m_b->playback_rvalue (),
+				       m_type->playback_type ()));
 }
 
 /* Implementation of pure virtual hook recording::rvalue::visit_children

@@ -162,7 +162,7 @@ public:
   rvalue *
   new_comparison (location *loc,
 		  enum gcc_jit_comparison op,
-		  rvalue *a, rvalue *b);
+		  rvalue *a, rvalue *b, type *vec_result_type);
 
   rvalue *
   new_call (location *loc,

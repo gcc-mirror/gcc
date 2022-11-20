@@ -1213,7 +1213,7 @@ playback::rvalue *
 playback::context::
 new_comparison (location *loc,
 		enum gcc_jit_comparison op,
-		rvalue *a, rvalue *b)
+		rvalue *a, rvalue *b, type *vec_result_type)
 {
   // FIXME: type-checking, or coercion?
   enum tree_code inner_op;
@@ -1252,10 +1252,27 @@ new_comparison (location *loc,
   tree node_b = b->as_tree ();
   node_b = fold_const_var (node_b);
 
-  tree inner_expr = build2 (inner_op,
-			    boolean_type_node,
-			    node_a,
-			    node_b);
+  tree inner_expr;
+  tree a_type = TREE_TYPE (node_a);
+  if (VECTOR_TYPE_P (a_type))
+  {
+    /* Build a vector comparison.  See build_vec_cmp in c-typeck.cc for
+       reference.  */
+    tree t_vec_result_type = vec_result_type->as_tree ();
+    tree zero_vec = build_zero_cst (t_vec_result_type);
+    tree minus_one_vec = build_minus_one_cst (t_vec_result_type);
+    tree cmp_type = truth_type_for (a_type);
+    tree cmp = build2 (inner_op, cmp_type, node_a, node_b);
+    inner_expr = build3 (VEC_COND_EXPR, t_vec_result_type, cmp, minus_one_vec,
+			 zero_vec);
+  }
+  else
+  {
+    inner_expr = build2 (inner_op,
+			 boolean_type_node,
+			 node_a,
+			 node_b);
+  }
 
   /* Try to fold.  */
   inner_expr = fold (inner_expr);
