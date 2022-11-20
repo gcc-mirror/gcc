@@ -615,58 +615,6 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
   return true;
 }
 
-/* Helper that gets the value range of the SSA_NAME with version I
-   or a symbolic range containing the SSA_NAME only if the value range
-   is varying or undefined.  Uses TEM as storage for the alternate range.  */
-
-const value_range *
-simplify_using_ranges::get_vr_for_comparison (int i, value_range *tem,
-					      gimple *s)
-{
-  /* Shallow-copy equiv bitmap.  */
-  const value_range *vr = query->get_value_range (ssa_name (i), s);
-
-  /* If name N_i does not have a valid range, use N_i as its own
-     range.  This allows us to compare against names that may
-     have N_i in their ranges.  */
-  if (vr->varying_p () || vr->undefined_p ())
-    {
-      tree ssa = ssa_name (i);
-      tem->set (ssa, ssa);
-      return tem;
-    }
-
-  return vr;
-}
-
-/* Compare all the value ranges for names equivalent to VAR with VAL
-   using comparison code COMP.  Return the same value returned by
-   compare_range_with_value, including the setting of
-   *STRICT_OVERFLOW_P.  */
-
-tree
-simplify_using_ranges::compare_name_with_value
-				(enum tree_code comp, tree var, tree val,
-				 bool *strict_overflow_p, gimple *s)
-{
-  /* Start at -1.  Set it to 0 if we do a comparison without relying
-     on overflow, or 1 if all comparisons rely on overflow.  */
-  int used_strict_overflow = -1;
-
-  /* Compare vars' value range with val.  */
-  value_range tem_vr;
-  const value_range *equiv_vr
-    = get_vr_for_comparison (SSA_NAME_VERSION (var), &tem_vr, s);
-  bool sop = false;
-  tree retval = compare_range_with_value (comp, equiv_vr, val, &sop);
-  if (retval)
-    used_strict_overflow = sop ? 1 : 0;
-
-  if (retval && used_strict_overflow > 0)
-    *strict_overflow_p = true;
-  return retval;
-}
-
 /* Helper function for vrp_evaluate_conditional_warnv & other
    optimizers.  */
 
@@ -780,11 +728,6 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
     return ret;
   if (only_ranges)
     *only_ranges = false;
-  if (TREE_CODE (op0) == SSA_NAME)
-    return compare_name_with_value (code, op0, op1, strict_overflow_p, stmt);
-  else if (TREE_CODE (op1) == SSA_NAME)
-    return compare_name_with_value (swap_tree_comparison (code), op1, op0,
-				    strict_overflow_p, stmt);
   return NULL_TREE;
 }
 

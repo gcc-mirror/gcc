@@ -52,8 +52,6 @@ private:
 
   bool two_valued_val_range_p (tree, tree *, tree *, gimple *);
   bool op_with_boolean_value_range_p (tree, gimple *);
-  tree compare_name_with_value (enum tree_code, tree, tree, bool *, gimple *);
-  const value_range *get_vr_for_comparison (int, value_range *, gimple *s);
   tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
 							     tree, tree,
 							     bool *, gimple *s);
