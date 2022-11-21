@@ -590,8 +590,9 @@ STAGEautofeedback_CXXFLAGS = $(CXXFLAGS)
 STAGEautofeedback_CXXFLAGS = $(STAGEautofeedback_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGEautofeedback_TFLAGS = $(STAGE_TFLAGS)
-STAGEautofeedback_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
-
+# Disable warnings as errors since inlining decisions with -fauto-profile
+# may result in additional warnings.
+STAGEautofeedback_CONFIGURE_FLAGS = $(filter-out --enable-werror-always,$(STAGE_CONFIGURE_FLAGS))
 
 # By default, C and C++ are the only stage1 languages, because they are the
 # only ones we require to build with the bootstrap compiler, and also the
