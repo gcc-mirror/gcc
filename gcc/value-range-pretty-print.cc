@@ -63,19 +63,6 @@ vrange_printer::visit (const irange &r) const
       pp_string (pp, "VARYING");
       return;
     }
-  // Handle legacy symbolics.
-  if (!r.constant_p ())
-    {
-      if (r.kind () == VR_ANTI_RANGE)
-	pp_character (pp, '~');
-      pp_character (pp, '[');
-      dump_generic_node (pp, r.min (), 0, TDF_NONE, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, r.max (), 0, TDF_NONE, false);
-      pp_character (pp, ']');
-      print_irange_bitmasks (r);
-      return;
-    }
   for (unsigned i = 0; i < r.num_pairs (); ++i)
     {
       pp_character (pp, '[');

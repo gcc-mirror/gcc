@@ -1351,16 +1351,6 @@ irange::operator== (const irange &other) const
   return nz1 == nz2;
 }
 
-/* Return TRUE if this is a constant range.  */
-
-bool
-irange::constant_p () const
-{
-  return (m_num_ranges > 0
-	  && TREE_CODE (min ()) == INTEGER_CST
-	  && TREE_CODE (max ()) == INTEGER_CST);
-}
-
 /* If range is a singleton, place it in RESULT and return TRUE.
    Note: A singleton can be any gimple invariant, not just constants.
    So, [&x, &x] counts as a singleton.  */
@@ -2835,10 +2825,6 @@ irange::invert ()
 wide_int
 irange::get_nonzero_bits_from_range () const
 {
-  // For legacy symbolics.
-  if (!constant_p ())
-    return wi::shwi (-1, TYPE_PRECISION (type ()));
-
   wide_int min = lower_bound ();
   wide_int max = upper_bound ();
   wide_int xorv = min ^ max;

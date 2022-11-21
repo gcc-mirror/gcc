@@ -169,7 +169,6 @@ public:
   // Deprecated legacy public methods.
   tree min () const;				// DEPRECATED
   tree max () const;				// DEPRECATED
-  bool constant_p () const;			// DEPRECATED
   bool legacy_verbose_union_ (const class irange *);	// DEPRECATED
   bool legacy_verbose_intersect (const irange *);	// DEPRECATED
 
@@ -692,7 +691,12 @@ inline unsigned
 irange::num_pairs () const
 {
   if (m_kind == VR_ANTI_RANGE)
-    return constant_p () ? 2 : 1;
+    {
+      bool constant_p = (TREE_CODE (min ()) == INTEGER_CST
+			 && TREE_CODE (max ()) == INTEGER_CST);
+      gcc_checking_assert (constant_p);
+      return 2;
+    }
   else
     return m_num_ranges;
 }
