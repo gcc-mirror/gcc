@@ -1980,6 +1980,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // three_way_comparison
 
   // NB: DR 705.
+  /// Create a tuple containing copies of the arguments
   template<typename... _Elements>
     constexpr tuple<typename __decay_and_strip<_Elements>::__type...>
     make_tuple(_Elements&&... __args)
@@ -1991,7 +1992,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2275. Why is forward_as_tuple not constexpr?
-  /// std::forward_as_tuple
+  /// Create a tuple of lvalue or rvalue references to the arguments
   template<typename... _Elements>
     constexpr tuple<_Elements&&...>
     forward_as_tuple(_Elements&&... __args) noexcept
@@ -2018,7 +2019,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const _Tp&&
     get(const array<_Tp, _Nm>&&) noexcept;
 
-
+  /// @cond undocumented
   template<size_t, typename, typename, size_t>
     struct __make_tuple_impl;
 
@@ -2130,8 +2131,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename... _Tps>
     struct __is_tuple_like_impl<tuple<_Tps...>> : true_type
     { };
+  /// @endcond
 
-  /// tuple_cat
+  /// Create a `tuple` containing all elements from multiple tuple-like objects
   template<typename... _Tpls, typename = typename
            enable_if<__and_<__is_tuple_like<_Tpls>...>::value>::type>
     constexpr auto
@@ -2146,13 +2148,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2301. Why is tie not constexpr?
-  /// tie
+  /// Return a tuple of lvalue references bound to the arguments
   template<typename... _Elements>
     constexpr tuple<_Elements&...>
     tie(_Elements&... __args) noexcept
     { return tuple<_Elements&...>(__args...); }
 
-  /// swap
+  /// Exchange the values of two tuples
   template<typename... _Elements>
     _GLIBCXX20_CONSTEXPR
     inline
@@ -2177,6 +2179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++23
 
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+  /// Exchange the values of two const tuples (if const elements can be swapped)
   template<typename... _Elements>
     _GLIBCXX20_CONSTEXPR
     typename enable_if<!__and_<__is_swappable<_Elements>...>::value>::type
@@ -2197,6 +2200,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2773. Making std::ignore constexpr
+  /** Used with `std::tie` to ignore an element of a tuple
+   *
+   * When using `std::tie` to assign the elements of a tuple to variables,
+   * unwanted elements can be ignored by using `std::ignore`. For example:
+   *
+   * ```
+   * int x, y;
+   * std::tie(x, std::ignore, y) = std::make_tuple(1, 2, 3);
+   * ```
+   *
+   * This assignment will perform `x=1; std::ignore=2; y=3;` which results
+   * in the second element being ignored.
+   *
+   * @since C++11
+   */
   _GLIBCXX17_INLINE constexpr _Swallow_assign ignore{};
 
   /// Partial specialization for tuples
