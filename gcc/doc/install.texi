@@ -3119,7 +3119,7 @@ It is recommended to only use GCC for this.
 
 On Linux/x86_64 hosts with some restrictions (no virtualization) it is
 also possible to do autofdo build with @samp{make
-autoprofiledback}. This uses Linux perf to sample branches in the
+autoprofiledbootstrap}. This uses Linux perf to sample branches in the
 binary and then rebuild it with feedback derived from the profile.
 Linux perf and the @code{autofdo} toolkit needs to be installed for
 this.
