@@ -62,29 +62,29 @@
 	2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/bsd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/extensions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/function-variable-and-macro-listing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/lesser-general-public-license-2.1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/replacement-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/supplemental-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/using.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -115,29 +115,29 @@
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/bsd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/extensions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/function-variable-and-macro-listing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/lesser-general-public-license-2.1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/overview.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/replacement-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/supplemental-functions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/using.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
@@ -1740,7 +1740,7 @@
 2016-06-12  Brooks Moses  <bmoses@google.com>
 
 	* cp-demangle.c (cplus_demangle_print_callback): Avoid zero-length
-	  VLAs.
+	VLAs.
 
 2016-05-31  Alan Modra  <amodra@gmail.com>
 
@@ -3317,8 +3317,8 @@
 
 2009-08-23  H.J. Lu  <hongjiu.lu@intel.com>
 
-	 PR ld/10536
-	 * Makefile.in (install-html-recursive): Removed.
+	PR ld/10536
+	* Makefile.in (install-html-recursive): Removed.
 
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -7752,7 +7752,7 @@ Sun Nov 28 00:59:39 1999  Philippe De Muyter  <phdm@macqel.be>
 	* strtoul.c, strtol.c, random.c: Remove advertising clause from
 	BSD license, pursuant with
 
-	  ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change
+	ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change
 
 Wed Nov 10 09:42:39 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -10136,12 +10136,12 @@ Sun Feb 27 21:50:11 1994  Jim Kingdon  (kingdon@deneb.cygnus.com)
 Thu Feb 24 11:51:12 1994  David J. Mackenzie  (djm@rtl.cygnus.com)
 
 	* getopt.c: Remove #ifdef GETOPT_COMPAT and #if 0 code.
-	 (_getopt_initialize): New function, broken out of _getopt_internal.
-	 (_getopt_internal):
-	 If long_only and the ARGV-element has the form "-f", where f is
-	 a valid short option, don't consider it an abbreviated form of
-	 a long option that starts with f.  Otherwise there would be no
-	 way to give the -f short option.
+	(_getopt_initialize): New function, broken out of _getopt_internal.
+	(_getopt_internal):
+	If long_only and the ARGV-element has the form "-f", where f is
+	a valid short option, don't consider it an abbreviated form of
+	a long option that starts with f.  Otherwise there would be no
+	way to give the -f short option.
 
 Thu Feb 10 14:44:16 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
@@ -10361,8 +10361,8 @@ Fri Oct 22 07:53:15 1993  Jim Kingdon  (kingdon@lioth.cygnus.com)
 Tue Oct 19 17:12:01 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 
 	* Makefile.in (lneeded-list): ensure that object file names are
-	  not duplicated, as multiple instances of the same object file in
-	  a library causes problems on some machines
+	not duplicated, as multiple instances of the same object file in
+	a library causes problems on some machines
 
 Mon Oct 18 21:59:28 1993  Jim Kingdon  (kingdon@lioth.cygnus.com)
 
@@ -10775,10 +10775,10 @@ Wed Sep  9 12:41:48 1992  Ian Lance Taylor  (ian@cygnus.com)
 Thu Sep  3 13:29:39 1992  K. Richard Pixley  (rich@sendai.cygnus.com)
 
 	* cplus-dem.c: (demangle_prefix): reduction in strength of strstr
-	  as a time optimization.
+	as a time optimization.
 
 	* cplus-dem.c (cplus_demangle): remove strpbrk test.  Appears to
-	  be more expensive than simply demangling.
+	be more expensive than simply demangling.
 
 	* cplus-dem.c (cplus_match): new function.
 
@@ -10874,7 +10874,7 @@ Wed Jun 17 18:13:58 1992  Per Bothner  (bothner@rtl.cygnus.com)
 Tue Jun 16 16:11:59 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* getopt.c, getopt1.c: merged largely gratuitous, mostly
-	  whitespace diffs from other prep distributions.
+	whitespace diffs from other prep distributions.
 
 Mon Jun 15 12:25:46 1992  Fred Fish  (fnf@cygnus.com)
 
@@ -10964,7 +10964,7 @@ Mon Apr 20 20:49:32 1992  K. Richard Pixley  (rich@cygnus.com)
 	* Makefile.in: do not print recursion line.
 
 	* Makefile.in: allow CFLAGS to be passed in from command line.
-	  Removed MINUS_G.  Default CFLAGS to -g.
+	Removed MINUS_G.  Default CFLAGS to -g.
 
 Mon Apr 20 12:57:46 1992  Per Bothner  (bothner@rtl.cygnus.com)
 
@@ -11035,8 +11035,8 @@ Thu Feb 27 22:19:39 1992  Per Bothner  (bothner@cygnus.com)
 Wed Feb 26 18:04:40 1992  K. Richard Pixley  (rich@cygnus.com)
 
 	* Makefile.in, configure.in: removed traces of namesubdir,
-	  -subdirs, $(subdir), $(unsubdir), some rcs triggers.  Forced
-	  copyrights to '92, changed some from Cygnus to FSF.
+	-subdirs, $(subdir), $(unsubdir), some rcs triggers.  Forced
+	copyrights to '92, changed some from Cygnus to FSF.
 
 Sat Feb 22 01:09:21 1992  Stu Grossman  (grossman at cygnus.com)
 
@@ -11121,17 +11121,17 @@ Tue Dec 10 04:14:49 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 Fri Dec  6 23:26:45 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* Makefile.in: remove spaces following hyphens because bsd make
-	  can't cope.  added standards.text support.  install using
-	  INSTALL_DATA.
+	can't cope.  added standards.text support.  install using
+	INSTALL_DATA.
 
 	* configure.in: remove commontargets as it is no longer a
-	  recognized hook.
+	recognized hook.
 
 Thu Dec  5 22:46:46 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* Makefile.in: idestdir and ddestdir go away.  Added copyrights
-	  and shift gpl to v2.  Added ChangeLog if it didn't exist. docdir
-	  and mandir now keyed off datadir by default.
+	and shift gpl to v2.  Added ChangeLog if it didn't exist. docdir
+	and mandir now keyed off datadir by default.
 
 Fri Nov 22 19:15:29 1991  John Gilmore  (gnu at cygnus.com)
 

@@ -620,7 +620,7 @@
 	decNumberDivideInteger, decNumberMax, decNumberMin,
 	decNumberMinus, decNumberPlus, decNumberMultiply,
 	decNumberNormalize, decNumberQuantize, decNumberRescale,
-	 decNumberRemainder, decNumberRemainderNear,
+	decNumberRemainder, decNumberRemainderNear,
 	decNumberSameQuantum, decNumberSquareRoot, decNumberSubtract,
 	decNumberToIntegralValue, decNumberCopy, decToString, decAddOp,
 	decDivideOp, decMultiplyOp, decQuantizeOp, decCompareOp,
@@ -633,7 +633,7 @@
 	decNumberDivideInteger, decNumberMax, decNumberMin,
 	decNumberMinus, decNumberMultiply, decNumberNormalize,
 	decNumberPlus, decNumberQuantize, decNumberRemainder,
-	 decNumberRemainderNear, decNumberRescale,
+	decNumberRemainderNear, decNumberRescale,
 	decNumberSameQuantum, decNumberSquareRoot, decNumberSubtract,
 	decNumberToIntegralValue, decNumberCopy): Likewise.
 	* decUtility.c (decDensePackCoeff, decDenseUnpackCoeff):

@@ -130,7 +130,7 @@
 2021-09-27  Martin Liska  <mliska@suse.cz>
 
 	* lto-lang.c (lto_init_options_struct): Set also
-	  x_flag_default_complex_method.
+	x_flag_default_complex_method.
 
 2021-09-03  Jakub Jelinek  <jakub@redhat.com>
 
@@ -672,7 +672,7 @@
 2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	* lto-partition.c (privatize_symbol_name_1): Use
-	  clone_function_name_numbered.
+	clone_function_name_numbered.
 
 2018-10-26  Jan Hubicka  <jh@suse.cz>
 
@@ -2139,7 +2139,7 @@
 	(lto_fixup_prevailing_decls): Handle fixing up CONSTRUCTOR values.
 
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
-	    Markus Trippelsdorf
+	Markus Trippelsdorf
 
 	PR ipa/59469
 	* lto-symtab.c (lto_cgraph_replace_node, lto_varpool_replace_node):
@@ -3457,7 +3457,7 @@
 2010-10-03  Andi Kleen  <ak@linux.intel.com>
 
     	* lto.c (lto_file_finalize): Replace gcc_assert for missing section
-	  with fatal_error.
+	with fatal_error.
 
 2010-09-28  Jan Hubicka  <jh@suse.cz>
 
@@ -5944,10 +5944,10 @@
 2007-11-06  Alon Dayan  <alond@il.ibm.com>
 	    Kenneth Zadeck  <zadeck@naturalbridge.com>
 
-	 * lto-read.c (process_flags, lto_static_init_local):
-	 read flags of VAR_DECL and FUNCTION_DECL of size>1.
-	 change global array num_flags_for_code to flags_length_for_code.
-	 (set_line_info): Make decls work in USE_MAPPED_LOCATION mode.
+	* lto-read.c (process_flags, lto_static_init_local):
+	read flags of VAR_DECL and FUNCTION_DECL of size>1.
+	change global array num_flags_for_code to flags_length_for_code.
+	(set_line_info): Make decls work in USE_MAPPED_LOCATION mode.
 
 2007-11-05  Nathan Froyd  <froydnj@codesourcery.com>
 

@@ -1253,8 +1253,8 @@
 
 	PR target/102552
 	* c-common.c (parse_optimize_options): decoded_options[0] is
-	  used for program name, so merged_decoded_options should also
-	  respect that.
+	used for program name, so merged_decoded_options should also
+	respect that.
 
 2021-10-01  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
@@ -1282,7 +1282,7 @@
 2021-09-27  Martin Liska  <mliska@suse.cz>
 
 	* c-opts.c (c_common_init_options_struct): Set also
-	  x_flag_default_complex_method.
+	x_flag_default_complex_method.
 
 2021-09-22  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1475,8 +1475,8 @@
 2021-07-06  Martin Sebor  <msebor@redhat.com>
 
 	* c-format.c (gcc_tdiag_char_table): Remove support for %G and %K.
-	 (gcc_cdiag_char_table): Same.
-	 (gcc_cxxdiag_char_table): Same.
+	(gcc_cdiag_char_table): Same.
+	(gcc_cxxdiag_char_table): Same.
 
 2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 

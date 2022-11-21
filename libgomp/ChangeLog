@@ -227,337 +227,337 @@
 	2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/amd-radeon-gcn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cuda-streams-usage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/enabling-openacc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/enabling-openmp.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/first-invocation-nvidia-cublas-library-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/first-invocation-openacc-library-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/implementation-status-and-implementation-defined-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/memory-allocation-with-libmemkind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/nvptx.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/offload-target-specifics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables/accdevicenum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables/accdevicetype.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables/accproflib.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables/gccaccnotify.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-library-and-environment-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-library-interoperability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-profiling-interface.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accasynctest.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accasynctestall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accattach.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/acccopyin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/acccopyout.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/acccreate.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accdelete.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accdetach.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accdeviceptr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accfree.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetcudastream.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetcurrentcudacontext.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetcurrentcudadevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetdevicenum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetdevicetype.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetnumdevices.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetproperty.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/acchostptr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accinit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accispresent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accmalloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accmapdata.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accmemcpyfromdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accmemcpytodevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accondevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accpresentorcopyin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accpresentorcreate.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accproflookup.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accprofregister.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accprofunregister.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accregisterlibrary.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accsetcudastream.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accsetdevicenum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accsetdevicetype.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accshutdown.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accunmapdata.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accupdatedevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accupdateself.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accwait.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accwaitall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accwaitallasync.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accwaitasync.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-context-selectors.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gompcpuaffinity.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gompdebug.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gomprtemsthreadpools.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gompspincount.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gompstacksize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompcancellation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompdefaultdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompdisplayenv.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompdynamic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompmaxactivelevels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompmaxtaskpriority.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompnested.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompnumteams.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompnumthreads.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompplaces.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompprocbind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompschedule.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompstacksize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/omptargetoffload.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompteamsthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompwaitpolicy.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-specifics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status/openmp-45.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status/openmp-50.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status/openmp-51.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status/openmp-52.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompdestroylock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompdestroynestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompfulfillevent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetactivelevel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetancestorthreadnum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetcancellation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetdefaultdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetdevicenum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetdynamic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetinitialdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetlevel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetmaxactivelevels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetmaxtaskpriority.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetmaxteams.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetmaxthreads.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnested.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnumdevices.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnumprocs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnumteams.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnumthreads.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetprocbind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetschedule.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetsupportedactivelevels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetteamnum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetteamsize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetteamsthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetthreadnum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetwtick.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetwtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompinfinal.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompinitlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompinitnestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompinparallel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompisinitialdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetdefaultdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetdynamic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetmaxactivelevels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetnested.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetnestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetnumteams.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetnumthreads.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetschedule.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetteamsthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/omptestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/omptestnestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompunsetlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompunsetnestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/reporting-bugs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-atomic-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-barrier-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-critical-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-flush-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-for-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-master-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-openaccs-parallel-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-ordered-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-parallel-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-private-clause.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-reduction-clause.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-sections-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-single-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-threadprivate-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -605,337 +605,337 @@
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/amd-radeon-gcn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cuda-streams-usage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/enabling-openacc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/enabling-openmp.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/first-invocation-nvidia-cublas-library-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/first-invocation-openacc-library-api.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/implementation-status-and-implementation-defined-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/memory-allocation-with-libmemkind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/nvptx.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/offload-target-specifics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables/accdevicenum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables/accdevicetype.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables/accproflib.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-environment-variables/gccaccnotify.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-library-and-environment-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-library-interoperability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-profiling-interface.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accasynctest.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accasynctestall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accattach.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/acccopyin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/acccopyout.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/acccreate.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accdelete.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accdetach.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accdeviceptr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accfree.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetcudastream.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetcurrentcudacontext.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetcurrentcudadevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetdevicenum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetdevicetype.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetnumdevices.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accgetproperty.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/acchostptr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accinit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accispresent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accmalloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accmapdata.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accmemcpyfromdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accmemcpytodevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accondevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accpresentorcopyin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accpresentorcreate.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accproflookup.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accprofregister.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accprofunregister.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accregisterlibrary.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accsetcudastream.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accsetdevicenum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accsetdevicetype.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accshutdown.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accunmapdata.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accupdatedevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accupdateself.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accwait.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accwaitall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accwaitallasync.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openacc-runtime-library-routines/accwaitasync.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-context-selectors.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gompcpuaffinity.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gompdebug.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gomprtemsthreadpools.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gompspincount.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/gompstacksize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompcancellation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompdefaultdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompdisplayenv.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompdynamic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompmaxactivelevels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompmaxtaskpriority.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompnested.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompnumteams.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompnumthreads.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompplaces.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompprocbind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompschedule.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompstacksize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/omptargetoffload.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompteamsthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-environment-variables/ompwaitpolicy.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-specifics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status/openmp-45.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status/openmp-50.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status/openmp-51.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-implementation-status/openmp-52.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompdestroylock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompdestroynestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompfulfillevent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetactivelevel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetancestorthreadnum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetcancellation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetdefaultdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetdevicenum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetdynamic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetinitialdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetlevel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetmaxactivelevels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetmaxtaskpriority.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetmaxteams.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetmaxthreads.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnested.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnumdevices.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnumprocs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnumteams.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetnumthreads.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetprocbind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetschedule.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetsupportedactivelevels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetteamnum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetteamsize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetteamsthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetthreadnum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetwtick.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompgetwtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompinfinal.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompinitlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompinitnestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompinparallel.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompisinitialdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetdefaultdevice.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetdynamic.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetmaxactivelevels.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetnested.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetnestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetnumteams.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetnumthreads.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetschedule.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompsetteamsthreadlimit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/omptestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/omptestnestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompunsetlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/openmp-runtime-library-routines/ompunsetnestlock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/reporting-bugs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-atomic-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-barrier-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-critical-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-flush-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-for-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-master-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-openaccs-parallel-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-ordered-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-parallel-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-private-clause.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-reduction-clause.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-sections-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-single-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libgomp-abi/implementing-threadprivate-construct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
@@ -5798,7 +5798,7 @@
 
 	* oacc-mem.c (goacc_enter_datum): Use 'tgt' returned from
 	'gomp_map_vars'.
-	 (acc_map_data): Clean up accordingly.
+	(acc_map_data): Clean up accordingly.
 
 2020-06-04  Thomas Schwinge  <thomas@codesourcery.com>
 

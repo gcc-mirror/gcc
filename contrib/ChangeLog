@@ -60,7 +60,7 @@
 2022-09-20  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Skip egrep: warning: egrep is
-	  obsolescent; using grep -E.
+	obsolescent; using grep -E.
 
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
@@ -174,7 +174,7 @@
 	    Lulu Cheng  <chenglulu@loongson.cn>
 
 	* gcc_update (files_and_dependencies): Add
-	  config/loongarch/loongarch.opt and config/loongarch/loongarch-str.h.
+	config/loongarch/loongarch.opt and config/loongarch/loongarch-str.h.
 
 2022-03-28  Martin Liska  <mliska@suse.cz>
 
@@ -411,7 +411,7 @@
 2021-08-03  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_update_version.py: Ignore problematic
-	  commit.
+	commit.
 
 2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -1864,7 +1864,7 @@
 2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* compare_tests: Take ERROR messages into account when
-	  comparing.
+	comparing.
 
 2016-08-17  Martin Liska  <mliska@suse.cz>
 
@@ -3959,13 +3959,13 @@ Tue Jun 12 12:21:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2000-11-19  Zack Weinberg  <zackw@stanford.edu>
 
 	* texi2pod.pl:
-	  - Add real command line parsing.
+	- Add real command line parsing.
 	  - Support @ifset, @ifclear, @set, @value, -D switch.
 	  - Support @sc.  Improve handling of @ref and friends.
 	  - Discard @subsection, @need, @node lines.
-	  - Un-nest font changes to match texinfo semantics.
+	- Un-nest font changes to match texinfo semantics.
 	  - Handle @{ and @}.  Oops.
-	  - Don't emit E<> directives inside verbatim blocks.
+	- Don't emit E<> directives inside verbatim blocks.
 
 2000-11-12  Bruce Korb  <bkorb@gnu.org>
 

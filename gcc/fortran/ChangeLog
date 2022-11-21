@@ -479,7 +479,7 @@
 	2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/gfortran/intrinsic-procedures/aint.rst: Simplify function
-	  declaration.
+	declaration.
 	* doc/gfortran/intrinsic-procedures/int.rst: Likewise.
 	* doc/gfortran/intrinsic-procedures/anint.rst: Likewise.
 	* doc/gfortran/intrinsic-procedures/char.rst: Likewise.
@@ -491,741 +491,741 @@
 	2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/gfc-internals/code-that-interacts-with-the-user.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/command-line-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/error-handling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/frontend-data-structures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages/accessing-declarations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages/basic-data-structures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages/converting-expressions-to-tree.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages/translating-statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/gfccode.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/gfcexpr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/internals-of-fortran-2003-oop-features.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/symbol-versioning.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/the-libgfortran-runtime-library.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/type-bound-operators.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/type-bound-procedures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/about-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/coarray-programming.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/asynchronous-i-o.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/data-consistency-and-durability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/evaluation-of-logical-expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/file-format-of-unformatted-sequential-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/file-operations-on-symbolic-links.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/files-opened-without-an-explicit-action=-specifier.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/internal-representation-of-logical-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/kind-type-parameters.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/max-and-min-intrinsics-with-real-nan-arguments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/thread-safety-of-the-runtime-library.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/contributing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/contributors-to-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/extensions-implemented-in-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/extensions-not-implemented-in-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/extensions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/function-abi-documentation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-and-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/description.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/enable-and-customize-preprocessing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/environment-variables-affecting-gfortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/influencing-runtime-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/influencing-the-linking-step.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/option-summary.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-controlling-fortran-dialect.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-for-code-generation-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-for-debugging-your-program-or-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-for-directory-search.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-for-interoperability-with-other-languages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-to-request-or-suppress-errors-and-warnings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-compiler-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/interoperability-with-c.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/ieee-modules-ieeeexceptions-ieeearithmetic-and-ieeefeatures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/isocbinding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/isofortranenv.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/openacc-module-openacc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/openmp-modules-omplib-and-omplibkinds.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/abort.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/abs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/access.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/achar.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/acos.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/acosd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/acosh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/adjustl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/adjustr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/aimag.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/alarm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/all.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/allocated.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/and.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/any.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/asin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/asind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/asinh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/associated.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atan2.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atan2d.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atanh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicadd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomiccas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicdefine.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicfetchadd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicfetchand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicfetchor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicfetchxor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicref.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicxor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/backtrace.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/besselj0.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/besselj1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/besseljn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bessely0.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bessely1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/besselyn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bge.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bgt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bitsize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ble.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/blt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/btest.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cassociated.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ceiling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cfpointer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cfprocpointer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cfunloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/chdir.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/chmod.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cmplx.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cobroadcast.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/comax.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/comin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/commandargumentcount.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/compileroptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/compilerversion.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/complex.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/conjg.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/coreduce.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cos.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cosd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cosh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cosum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cotan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cotand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/count.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cputime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cshift.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/csizeof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ctime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dateandtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dble.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dcmplx.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/digits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dim.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dotproduct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dprod.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dreal.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dshiftl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dshiftr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/eoshift.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/epsilon.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/erf.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/erfc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/erfcscaled.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/etime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/eventquery.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/executecommandline.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/exit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/exp.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/exponent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/extendstypeof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fdate.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fget.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fgetc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/findloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/floor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/flush.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fnum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fput.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fputc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fraction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/free.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fseek.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fstat.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ftell.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/gamma.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/gerror.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getarg.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getcommand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getcommandargument.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getcwd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getenv.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getenvironmentvariable.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getgid.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getlog.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getpid.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getuid.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/gmtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/hostnm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/huge.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/hypot.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iachar.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iany.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iargc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ibclr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ibits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ibset.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ichar.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/idate.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ieor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ierrno.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/imageindex.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/int2.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/int8.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/introduction-to-intrinsic-procedures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iparity.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/irand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/isatty.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iscontiguous.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ishft.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ishftc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/isiostatend.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/isiostateor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/isnan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/itime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/kill.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/kind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lbound.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lcobound.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/leadz.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/len.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lentrim.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lge.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lgt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/link.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lle.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/llt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lnblnk.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/loc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/log.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/log10.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/loggamma.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/logical.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lshift.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lstat.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ltime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/malloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maskl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maskr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/matmul.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/max.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maxexponent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maxloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maxval.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mclock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mclock8.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/merge.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mergebits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/min.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/minexponent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/minloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/minval.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mod.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/modulo.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/movealloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mvbits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/nearest.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/newline.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/nint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/norm2.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/not.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/null.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/numimages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/or.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/pack.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/parity.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/perror.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/popcnt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/poppar.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/precision.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/present.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/product.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/radix.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/randominit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/randomnumber.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/randomseed.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/range.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rank.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rename.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/repeat.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/reshape.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rrspacing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rshift.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sametypeas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/scale.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/scan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/secnds.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/second.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/selectedcharkind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/selectedintkind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/selectedrealkind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/setexponent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/shape.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/shifta.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/shiftl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/shiftr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sign.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/signal.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sinh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/size.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sizeof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sleep.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/spacing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/spread.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sqrt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/srand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/stat.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/storagesize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/symlnk.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/system.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/systemclock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/tan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/tand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/tanh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/thisimage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/time.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/time8.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/tiny.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/trailz.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/transfer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/transpose.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/trim.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ttynam.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ubound.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ucobound.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/umask.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/unlink.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/unpack.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/verify.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/xor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/mixed-language-programming.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/naming-and-argument-passing-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/non-fortran-main-program.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/projects.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranconvertunit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranerrorbacktrace.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranformattedbuffersize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranlistseparator.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranoptionalplus.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranshowlocus.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranstderrunit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranstdinunit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranstdoutunit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranunbufferedall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranunbufferedpreconnected.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranunformattedbuffersize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/tmpdir.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/standards.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/type-and-enum-abi-documentation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -1436,746 +1436,746 @@
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/gfc-internals/code-that-interacts-with-the-user.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/command-line-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/error-handling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/frontend-data-structures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages/accessing-declarations.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages/basic-data-structures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages/converting-expressions-to-tree.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/generating-the-intermediate-language-for-later-stages/translating-statements.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/gfccode.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/gfcexpr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/internals-of-fortran-2003-oop-features.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/symbol-versioning.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/the-libgfortran-runtime-library.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/type-bound-operators.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfc-internals/type-bound-procedures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/about-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/coarray-programming.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/asynchronous-i-o.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/data-consistency-and-durability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/evaluation-of-logical-expressions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/file-format-of-unformatted-sequential-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/file-operations-on-symbolic-links.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/files-opened-without-an-explicit-action=-specifier.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/internal-representation-of-logical-variables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/kind-type-parameters.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/max-and-min-intrinsics-with-real-nan-arguments.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/compiler-characteristics/thread-safety-of-the-runtime-library.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/contributing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/contributors-to-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/extensions-implemented-in-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/extensions-not-implemented-in-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/extensions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/function-abi-documentation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-and-gcc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/description.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/enable-and-customize-preprocessing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/environment-variables-affecting-gfortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/influencing-runtime-behavior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/influencing-the-linking-step.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/option-summary.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-controlling-fortran-dialect.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-for-code-generation-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-for-debugging-your-program-or-gnu-fortran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-for-directory-search.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-for-interoperability-with-other-languages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-command-options/options-to-request-or-suppress-errors-and-warnings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-fortran-compiler-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/interoperability-with-c.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/ieee-modules-ieeeexceptions-ieeearithmetic-and-ieeefeatures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/isocbinding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/isofortranenv.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/openacc-module-openacc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-modules/openmp-modules-omplib-and-omplibkinds.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/abort.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/abs.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/access.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/achar.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/acos.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/acosd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/acosh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/adjustl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/adjustr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/aimag.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/alarm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/all.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/allocated.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/and.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/any.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/asin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/asind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/asinh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/associated.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atan2.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atan2d.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atanh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicadd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomiccas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicdefine.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicfetchadd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicfetchand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicfetchor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicfetchxor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicref.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/atomicxor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/backtrace.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/besselj0.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/besselj1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/besseljn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bessely0.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bessely1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/besselyn.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bge.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bgt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/bitsize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ble.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/blt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/btest.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cassociated.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ceiling.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cfpointer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cfprocpointer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cfunloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/chdir.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/chmod.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cmplx.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cobroadcast.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/comax.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/comin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/commandargumentcount.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/compileroptions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/compilerversion.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/complex.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/conjg.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/coreduce.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cos.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cosd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cosh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cosum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cotan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cotand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/count.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cputime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/cshift.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/csizeof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ctime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dateandtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dble.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dcmplx.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/digits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dim.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dotproduct.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dprod.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dreal.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dshiftl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dshiftr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/dtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/eoshift.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/epsilon.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/erf.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/erfc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/erfcscaled.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/etime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/eventquery.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/executecommandline.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/exit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/exp.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/exponent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/extendstypeof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fdate.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fget.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fgetc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/findloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/floor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/flush.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fnum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fput.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fputc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fraction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/free.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fseek.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/fstat.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ftell.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/gamma.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/gerror.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getarg.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getcommand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getcommandargument.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getcwd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getenv.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getenvironmentvariable.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getgid.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getlog.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getpid.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/getuid.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/gmtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/hostnm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/huge.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/hypot.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iachar.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iany.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iargc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ibclr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ibits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ibset.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ichar.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/idate.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ieor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ierrno.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/imageindex.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/int2.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/int8.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/introduction-to-intrinsic-procedures.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ior.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iparity.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/irand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/isatty.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/iscontiguous.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ishft.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ishftc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/isiostatend.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/isiostateor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/isnan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/itime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/kill.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/kind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lbound.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lcobound.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/leadz.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/len.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lentrim.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lge.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lgt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/link.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lle.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/llt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lnblnk.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/loc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/log.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/log10.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/loggamma.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/logical.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lshift.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/lstat.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ltime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/malloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maskl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maskr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/matmul.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/max.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maxexponent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maxloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/maxval.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mclock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mclock8.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/merge.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mergebits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/min.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/minexponent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/minloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/minval.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mod.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/modulo.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/movealloc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/mvbits.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/nearest.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/newline.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/nint.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/norm2.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/not.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/null.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/numimages.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/or.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/pack.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/parity.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/perror.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/popcnt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/poppar.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/precision.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/present.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/product.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/radix.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ran.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/randominit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/randomnumber.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/randomseed.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/range.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rank.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rename.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/repeat.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/reshape.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rrspacing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/rshift.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sametypeas.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/scale.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/scan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/secnds.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/second.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/selectedcharkind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/selectedintkind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/selectedrealkind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/setexponent.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/shape.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/shifta.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/shiftl.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/shiftr.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sign.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/signal.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sin.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sind.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sinh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/size.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sizeof.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sleep.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/spacing.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/spread.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sqrt.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/srand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/stat.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/storagesize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/sum.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/symlnk.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/system.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/systemclock.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/tan.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/tand.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/tanh.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/thisimage.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/time.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/time8.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/tiny.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/trailz.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/transfer.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/transpose.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/trim.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ttynam.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ubound.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/ucobound.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/umask.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/unlink.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/unpack.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/verify.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/intrinsic-procedures/xor.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/mixed-language-programming.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/naming-and-argument-passing-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/non-fortran-main-program.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/projects.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranconvertunit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranerrorbacktrace.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranformattedbuffersize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranlistseparator.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranoptionalplus.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranshowlocus.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranstderrunit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranstdinunit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranstdoutunit.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranunbufferedall.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranunbufferedpreconnected.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/gfortranunformattedbuffersize.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/runtime/tmpdir.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/standards.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gfortran/type-and-enum-abi-documentation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/gfortran/intrinsic-procedures/aint.rst: Simplify function
-	  declaration.
+	declaration.
 	* doc/gfortran/intrinsic-procedures/int.rst: Likewise.
 	* doc/gfortran/intrinsic-procedures/anint.rst: Likewise.
 	* doc/gfortran/intrinsic-procedures/char.rst: Likewise.
@@ -2762,7 +2762,7 @@
 	(gfc_match_omp_clauses): Call it; optionally use passed
 	omp_clauses argument.
 	(omp_verify_merge_absent_contains, gfc_match_omp_assume,
-	 gfc_match_omp_assumes, gfc_resolve_omp_assumptions): New.
+	gfc_match_omp_assumes, gfc_resolve_omp_assumptions): New.
 	(resolve_omp_clauses): Call the latter.
 	(gfc_resolve_omp_directive, omp_code_to_statement): Handle
 	EXEC_OMP_ASSUME.

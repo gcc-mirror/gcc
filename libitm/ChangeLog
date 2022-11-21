@@ -60,43 +60,43 @@
 	2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/c-c++-language-constructs-for-tm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/enabling-libitm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/internals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/locking-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/nesting-flat-vs-closed.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/function-list.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/future-enhancements-to-the-abi.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/library-design-principles.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/memory-model.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/non-objectives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/objectives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/sample-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/types-and-macros-list.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/tm-methods-and-method-groups.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -138,43 +138,43 @@
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/c-c++-language-constructs-for-tm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/enabling-libitm.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/internals.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/locking-conventions.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/nesting-flat-vs-closed.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/function-list.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/future-enhancements-to-the-abi.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/library-design-principles.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/memory-model.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/non-objectives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/objectives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/sample-code.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/the-libitm-abi/types-and-macros-list.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/tm-methods-and-method-groups.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
@@ -1055,9 +1055,9 @@
 
 	* local_atomic (__always_inline): Add.
 	(__calculate_memory_order, atomic_thread_fence,
-	 atomic_signal_fence, test_and_set, clear, store, load,
-	 exchange, compare_exchange_weak, compare_exchange_strong,
-	 fetch_add, fetch_sub, fetch_and, fetch_or, fetch_xor):
+	atomic_signal_fence, test_and_set, clear, store, load,
+	exchange, compare_exchange_weak, compare_exchange_strong,
+	fetch_add, fetch_sub, fetch_and, fetch_or, fetch_xor):
 	Add __always_inline to force inlining.
 
 2013-02-11  Iain Sandoe  <iain@codesourcery.com>

@@ -60,31 +60,31 @@
 	2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/code-generation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/developer-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/input-and-output-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/options-for-directory-search.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/options-for-linking.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/runtime-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/warnings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -100,31 +100,31 @@
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/code-generation.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/developer-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/input-and-output-files.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/options-for-directory-search.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/options-for-linking.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/runtime-options.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gdc/warnings.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-09  Martin Liska  <mliska@suse.cz>
 

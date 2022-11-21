@@ -115,7 +115,7 @@
 	* doc/share/adabaseconf.py: New file.
 	* doc/gnat_rm/security_hardening_features.rst: Add role.
 	* doc/gnat_ugn/platform_specific_information.rst: Remove
-	  duplicate definition of |nbsp|.
+	duplicate definition of |nbsp|.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -178,7 +178,7 @@
 	* doc/share/adabaseconf.py: New file.
 	* doc/gnat_rm/security_hardening_features.rst: Add role.
 	* doc/gnat_ugn/platform_specific_information.rst: Remove
-	  duplicate definition of |nbsp|.
+	duplicate definition of |nbsp|.
 
 2022-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -2155,7 +2155,7 @@
 2022-09-05  Martin Liska  <mliska@suse.cz>
 
 	* sigtramp-vxworks-target.h: Rename DBX_REGISTER_NUMBER to
-	  DEBUGGER_REGNO.
+	DEBUGGER_REGNO.
 
 2022-09-05  Piotr Trojanek  <trojanek@adacore.com>
 

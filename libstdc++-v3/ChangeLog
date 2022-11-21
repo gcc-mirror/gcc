@@ -5200,7 +5200,7 @@
 2022-03-07  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* config/locale/vxworks/ctype_members.cc: Remove <iostream>
-	  include.
+	include.
 
 2022-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
@@ -5360,8 +5360,8 @@
 
 	PR libstdc++/104442
 	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): Move spin
-	 loop inside do loop so that threads failing the wait, reload
-	 _M_ver.
+	loop inside do loop so that threads failing the wait, reload
+	_M_ver.
 
 2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
 

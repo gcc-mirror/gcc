@@ -274,7 +274,7 @@
 	(count_all_pages): Likewise.
 	(dl_iterate_phdr_count_pages): Don't build on Cygwin and MinGW.
 	* libvtv/utils.cc : Include windows.h and skip execinfo.h inclusion on
-	 Cygwin and MinGW.
+	Cygwin and MinGW.
 	(__vtv_open_log): Exchange call to getuid and getpid with
 	GetCurrentProcessId and adjust call to snprintf accordingly on Cygwin
 	and MinGW.  Adjust calls to mkdir on MinGW.  Adjust call to open on

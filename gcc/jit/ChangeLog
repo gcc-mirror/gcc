@@ -945,10 +945,10 @@
 2021-09-10  Petter Tomner  <tomner@kth.se>
 
 	* jit-playback.c: Moved global var processing to after loc handling.
-	  Setting TYPE_NAME for fundamental types.
-	  Using common functions for finalizing globals.
+	Setting TYPE_NAME for fundamental types.
+	Using common functions for finalizing globals.
 	* jit-playback.h: New method init_types().
-	  Changed get_tree_node_for_type() to method.
+	Changed get_tree_node_for_type() to method.
 
 2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
 
@@ -1703,7 +1703,7 @@
 	(memento_of_get_vector::write_reproducer): New method.
 	* jit-recording.h: In namespace gcc::jit::recording::
 	(type::get_vector): New
-	 method.
+	method.
 	(class memento_of_get_vector): New class.
 	* libgccjit++.h (gccjit::type::get_vector): New method.
 	* libgccjit.c (gcc_jit_type_get_vector): New public entrypoint.

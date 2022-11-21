@@ -103,8 +103,8 @@
 	PR other/21823
 	PR bootstrap/80047
 	* fixincl.c (process): Simplify the handling for highly
-	  unlikely access() failure, to avoid using non-standard
-	  extensions.
+	unlikely access() failure, to avoid using non-standard
+	extensions.
 
 2021-08-30  John David Anglin  <danglin@gcc.gnu.org>
 
@@ -122,8 +122,8 @@
 
 	PR other/91085
 	* fixfixes.c (check_has_inc): New static function.
-	  (machine_name_fix): Don't replace header names in
-	  __has_include(...).
+	(machine_name_fix): Don't replace header names in
+	__has_include(...).
 	* inclhack.def (machine_name): Adjust test.
 	* tests/base/testing.h: Update.
 

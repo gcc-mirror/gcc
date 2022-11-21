@@ -53,29 +53,29 @@
 	2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/c-interoperability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/c-type-interoperability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/compiler-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/function-names.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/import-and-export.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gccgo.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -97,29 +97,29 @@
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/c-interoperability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/c-type-interoperability.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/compiler-directives.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/copyright.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/function-names.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/general-public-license-3.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu-free-documentation-license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/import-and-export.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/index.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/introduction.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/invoking-gccgo.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
@@ -163,7 +163,7 @@
 2022-09-02  Martin Liska  <mliska@suse.cz>
 
 	* go-lang.cc (go_langhook_pushdecl): Remove -gstabs option support, DBX-related
-	  macros and DBX debugging info support.
+	macros and DBX debugging info support.
 	* gospec.cc (lang_specific_driver): Likewise.
 
 2022-07-16  Ian Lance Taylor  <iant@golang.org>
@@ -236,7 +236,7 @@
 2021-09-27  Martin Liska  <mliska@suse.cz>
 
 	* go-lang.c (go_langhook_init_options_struct): Set also
-	  x_flag_default_complex_method.
+	x_flag_default_complex_method.
 
 2021-06-29  Ian Lance Taylor  <iant@golang.org>
 

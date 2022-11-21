@@ -58,9 +58,9 @@
 2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* config/riscv/bitmanip.md (*minmax): Additional pattern for
-	  min/max against constants that are extension-invariant.
+	min/max against constants that are extension-invariant.
 	* config/riscv/iterators.md (minmax_optab): Add an iterator
-	  that has only min and max rtl.
+	that has only min and max rtl.
 
 2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
@@ -99,7 +99,7 @@
 2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* config/riscv/bitmanip.md: Add a define_split to optimize
-	  slliw + addiw + divw into sh[123]add + divw.
+	slliw + addiw + divw into sh[123]add + divw.
 
 2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
@@ -23478,8 +23478,8 @@
 	    Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/invoke.texi (march): Document __PTX_SM__.
-	 (mptx): Document __PTX_ISA_VERSION_MAJOR__ and
-	 __PTX_ISA_VERSION_MINOR__.
+	(mptx): Document __PTX_ISA_VERSION_MAJOR__ and
+	__PTX_ISA_VERSION_MINOR__.
 
 2022-03-30  Jakub Jelinek  <jakub@redhat.com>
 

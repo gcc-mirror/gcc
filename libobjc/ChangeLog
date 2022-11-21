@@ -3236,9 +3236,9 @@ Mon Dec 17 17:02:12 2001  Nicola Pero  <nicola@brainstorm.co.uk>
 
 2001-11-07  Aldy Hernandez  <aldyh@redhat.com>
 
-	 * objc/objc-api.h (_C_VECTOR): New.
+	* objc/objc-api.h (_C_VECTOR): New.
 
-	 * encoding.c (VECTOR_TYPE): New.
+	* encoding.c (VECTOR_TYPE): New.
 
 Mon Oct 29 21:29:21 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 

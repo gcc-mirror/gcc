@@ -55,33 +55,33 @@
 	2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/bsd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/contrib.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/contribute.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppdiropts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppenv.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppopts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppwarnopts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu_free_documentation_license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gpl-3.0.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/lgpl-2.1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/md.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
@@ -188,33 +188,33 @@
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* doc/bsd.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/contrib.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/contribute.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppdiropts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppenv.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppopts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/cppwarnopts.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/funding.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gnu_free_documentation_license.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/gpl-3.0.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/indices-and-tables.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/lgpl-2.1.rst:
-	  Add trailing newline.
+	Add trailing newline.
 	* doc/md.rst:
-	  Add trailing newline.
+	Add trailing newline.
 
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
@@ -15339,7 +15339,7 @@ Tue May 25 11:20:46 1999  H.J. Lu  (hjl@gnu.org)
 
 Thu May 20 10:00:42 1999   Stephen L Moshier  <moshier@world.std.com>
 
-	 * Makefile.in (GCC_FOR_TARGET): Add -I$(build_tooldir)/include.
+	* Makefile.in (GCC_FOR_TARGET): Add -I$(build_tooldir)/include.
 
 1999-04-30  Tom Tromey  <tromey@cygnus.com>
 
@@ -18804,7 +18804,7 @@ Wed May 31 22:27:42 1995  Jim Wilson  <wilson@chestnut.cygnus.com>
 Thu May 25 22:40:59 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
 
 	* configure.in (noconfigdirs): Enable all packages for
-	  i386-unknown-netbsd.
+	i386-unknown-netbsd.
 
 Sat May 20 13:22:31 1995  Angela Marie Thomas  <angela@cirdan.cygnus.com>
 
@@ -19078,7 +19078,7 @@ Mon Nov 14 08:49:15 1994  Stu Grossman  (grossman@cygnus.com)
 Fri Nov 11 15:31:26 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* build-all.mk: Add mips-ncd-elf target to sun4 targets
-	  for special NCD build.
+	for special NCD build.
 
 Mon Nov  7 20:58:17 1994  Ken Raeburn  <raeburn@cujo.cygnus.com>
 
@@ -19090,8 +19090,8 @@ Mon Nov  7 20:58:17 1994  Ken Raeburn  <raeburn@cujo.cygnus.com>
 Mon Nov  7 17:25:18 1994  Bill Cox  (bill@cirdan.cygnus.com)
 
 	* build-all.mk: Add Ericsson targets to sun4 and solaris
-	  hosts.  Add  BNR's sun4 target to solaris host, so their
-	  build-from-source will be tested in-house first.
+	hosts.  Add  BNR's sun4 target to solaris host, so their
+	build-from-source will be tested in-house first.
 
 Sat Nov  5 18:43:30 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
 
@@ -19220,7 +19220,7 @@ Mon Sep  5 05:01:30 1994  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
 Thu Sep  1 09:35:00 1994  J.T. Conklin  (jtc@phishhead.cygnus.com)
 
 	* configure.in (*-*-netware): don't configure libg++, libio,
-	  librx, or newlib.
+	librx, or newlib.
 
 Wed Aug 31 13:52:08 1994  Ian Lance Taylor  (ian@sanguine.cygnus.com)
 
@@ -19462,7 +19462,7 @@ Mon Jun  6 21:35:02 1994  D. V. Henkel-Wallace  (gumby@cygnus.com)
 Mon Jun  6 16:06:34 1994  Karen Christiansen (karen@cirdan.cygnus.com)
 
 	* brought devo/test-build.mk update-to-date with progressive/
-	  test-build.mk. Add lynx targets and hppa flag info.
+	test-build.mk. Add lynx targets and hppa flag info.
 
 Sat Jun  4 17:23:54 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
@@ -19481,7 +19481,7 @@ Thu Jun  2 18:56:46 1994  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 Thu Jun  2 10:57:06 1994  Karen Christiansen (karen@cirdan.cygnus.com)
 
 	* brought build-all.mk update-to-date with progressive build-all.mk,
-	  added new targets and hppa info.
+	added new targets and hppa info.
 
 Thu Jun  2 00:12:44 1994  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 
@@ -19497,7 +19497,7 @@ Wed Jun  1 10:49:41 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* Makefile.in: Rename HOST_ONLY to NATIVE.
 	* configure: Delete SunOs patch suffix from host_canonical
-	  and build_canonical variables that are prepended to Makefiles.
+	and build_canonical variables that are prepended to Makefiles.
 	* configure.in: Add comments for easier maintenance.
 
 Tue May 31 19:39:47 1994  Jim Kingdon  (kingdon@lioth.cygnus.com)
@@ -19521,12 +19521,12 @@ Thu May 26 08:53:19 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* config.sub: Move deletion of patch suffix from here...
 	* configure.in: To here, at Ian's suggestion.  The top-
-	  level scripts might need to know of a patch level.
+	level scripts might need to know of a patch level.
 
 Wed May 25 09:15:54 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* config.sub: Strip off patch suffix so rtl is recognized
-	  as a sunos4.1.3 machine, even though it's been patched.
+	as a sunos4.1.3 machine, even though it's been patched.
 
 Fri May 20 08:25:49 1994  Steve Chamberlain  (sac@deneb.cygnus.com)
 
@@ -19640,7 +19640,7 @@ Thu Apr 14 23:33:17 1994  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 Wed Apr 13 15:14:52 1994  Bill Cox  (bill@cygnus.com)
 
 	* configure: Make file links cleanly even if Lynx fails on
-	  an NFS symlink (at least fail cleanly).
+	an NFS symlink (at least fail cleanly).
 
 Mon Apr 11 10:58:56 1994  Jim Wilson  (wilson@sphagnum.cygnus.com)
 
@@ -19894,12 +19894,12 @@ Wed Dec  1 17:00:33 1993  Jason Merrill  (jason@deneb.cygnus.com)
 Tue Nov 30 13:45:15 1993  david d `zoo' zuhn  (zoo@andros.cygnus.com)
 
 	* configure.in (notsupp): ensure that a space is always at the end
-	  of the configdirs list, since the grep checks for an explicit space
+	of the configdirs list, since the grep checks for an explicit space
 
 Tue Nov 16 15:04:27 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 
 	* configure.in (target i386-sysv4.2): don't build ld, since static
-	  versions of many libraries are not available.
+	versions of many libraries are not available.
 
 Tue Nov 16 14:28:12 1993  Jim Kingdon  (kingdon@lioth.cygnus.com)
 
@@ -19967,7 +19967,7 @@ Wed Nov  3 22:09:46 1993  Ken Raeburn  (raeburn@rtl.cygnus.com)
 Wed Nov  3 21:31:52 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 
 	* configure.in (hppa target): check the source directory for the
-	  pagas sub-directory
+	pagas sub-directory
 
 Wed Nov  3 11:12:22 1993  Doug Evans  (dje@canuck.cygnus.com)
 
@@ -20028,7 +20028,7 @@ Wed Oct 20 09:56:12 1993  Jim Kingdon  (kingdon@lioth.cygnus.com)
 Tue Oct 19 16:02:22 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 
 	* configure.in: don't build ld on solaris2 (not a viable option
-	  due to bugs in getpwnam & getpwuid)
+	due to bugs in getpwnam & getpwuid)
 
 Tue Oct 19 15:13:56 1993  Ken Raeburn  (raeburn@rtl.cygnus.com)
 
@@ -20239,7 +20239,7 @@ Mon Jul 19 21:54:46 1993  Fred Fish  (fnf@deneb.cygnus.com)
 Wed Jul 14 12:03:11 1993  K. Richard Pixley  (rich@sendai.cygnus.com)
 
 	* Makefile.in (Makefile): depend on configure.in.  Also drop the
-	  $(srcdir)/ from the dependency on Makefile.in.
+	$(srcdir)/ from the dependency on Makefile.in.
 
 Tue Jul 13 20:10:58 1993  Doug Evans  (dje@canuck.cygnus.com)
 
@@ -20262,7 +20262,7 @@ Wed Jul  7 17:58:14 1993  david d `zoo' zuhn  (zoo at rtl.cygnus.com)
 	* Makefile.in: remove all.cross and install.cross targets
 
 	* configure: remove CROSS=-DCROSS_COMPILE and ALL=all.cross
-	  definitions
+	definitions
 
 Tue Jul  6 10:39:44 1993  Steve Chamberlain  (sac@phydeaux.cygnus.com)
 
@@ -20494,7 +20494,7 @@ Mon May 10 17:22:26 1993  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 Mon May 10 14:55:51 1993  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* configure: Change help message to prefer --options rather than
-	  -options.
+	-options.
 
 Mon May 10 05:58:35 1993  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
 
@@ -20717,7 +20717,7 @@ Wed Mar 10 12:08:27 1993  K. Richard Pixley  (rich@rtl.cygnus.com)
 	* config.guess: add GPL.
 
 	* Makefile.in, config.guess, config.sub, configure: bump
-	  copyrights to 93.
+	copyrights to 93.
 
 Wed Mar 10 07:12:48 1993  Ian Lance Taylor  (ian@cygnus.com)
 
@@ -20908,7 +20908,7 @@ Tue Feb  2 11:45:53 1993  Ian Lance Taylor  (ian@cygnus.com)
 Mon Feb  1 12:35:41 1993  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* configure: check return code from mkdir, print error message and
-	  exit on failure.
+	exit on failure.
 
 Sat Jan 30 16:40:28 1993  John Gilmore  (gnu@cygnus.com)
 
@@ -20966,7 +20966,7 @@ Wed Jan 13 17:06:45 1993  Jim Wilson  (wilson@sphagnum.cygnus.com)
 Wed Jan  6 20:29:16 1993  Mike Werner  (mtw@rtl.cygnus.com)
 
 	* Makefile.in: Removed explicit setting of SUBDIRS. SUBDIRS is now
-	  set exclusively by configure, using configure.in .
+	set exclusively by configure, using configure.in .
 
 Wed Jan  6 13:44:11 1993  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
@@ -21345,8 +21345,8 @@ Tue Jul 21 01:01:50 1992  david d `zoo' zuhn (zoo@cygnus.com)
 Mon Jul 20 11:02:09 1992  D. V. Henkel-Wallace  (gumby@cygnus.com)
 
 	* Makefile.in: eradicate bison spoor (ditto libgcc).
-	 configure.in: recognise m68{k,000}-ericsson-OSE.
-	 es1800 is alias for m68k-ericsson-OSE
+	configure.in: recognise m68{k,000}-ericsson-OSE.
+	es1800 is alias for m68k-ericsson-OSE
 
 Sun Jul 19 17:49:02 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
@@ -21356,10 +21356,10 @@ Sun Jul 19 17:49:02 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 Fri Jul 17 22:52:49 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* test-build.mk: recurse explicitly with -f test-build.mk when
-	  appropriate.  predicate stage3 and comparison on the existence
-	  of gcc.  That is, if gcc isn't around, we aren't three-staging.
-	  On very clean, also remove ...stamp-co.  Build in-place before
-	  doing other builds.
+	appropriate.  predicate stage3 and comparison on the existence
+	of gcc.  That is, if gcc isn't around, we aren't three-staging.
+	On very clean, also remove ...stamp-co.  Build in-place before
+	doing other builds.
 
 Thu Jul 16 18:33:09 1992  Steve Chamberlain  (sac@thepub.cygnus.com)
 
@@ -21461,27 +21461,27 @@ Sun May 10 21:45:59 1992  Per Bothner  (bothner@rtl.cygnus.com)
 Fri May  8 08:31:41 1992  K. Richard Pixley  (rich@cygnus.com)
 
 	* configure: do not bury `pwd` into config.status, thus do fewer
-	  pwd's.
+	pwd's.
 
 	* configure: print the "Building in" message only when building in
-	  other than "." AND verbose.
+	other than "." AND verbose.
 
 	* configure: remove -s, rework -v to better accommodate guested
-	  configures.
+	configures.
 
 	* standards.texi: updated to 3 may, fixed librid <-> libdir typo.
 
 Fri May  1 18:00:50 1992  K. Richard Pixley  (rich@cygnus.com)
 
 	* Makefile.in: macroize flags passed on recursion.  remove
-	  fileutils.
+	fileutils.
 
 Thu Apr 30 08:56:20 1992  K. Richard Pixley  (rich@cygnus.com)
 
 	* configure: get makesrcdir right for subdirs deeper than 1.
 
 	* Makefile.in: pass INSTALL, INSTALL_DATA, INSTALL_PROGRAM on
-	  install.
+	install.
 
 Fri Apr 24 15:51:51 1992  K. Richard Pixley  (rich@cygnus.com)
 
@@ -21498,7 +21498,7 @@ Fri Apr 24 15:22:04 1992  K. Richard Pixley  (rich@cygnus.com)
 Wed Apr 22 18:06:55 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* configure: test for and move config.status pieces from
-	  ${subdir}/.
+	${subdir}/.
 
 Wed Apr 22 14:38:34 1992  Fred Fish  (fnf@cygnus.com)
 
@@ -21510,22 +21510,22 @@ Tue Apr 21 12:31:33 1992  K. Richard Pixley  (rich@cygnus.com)
 	* configure: correct final line of config.status.
 
 	* configure: patch from eggert.  Avoids a protection problem if
-	  the original Makefile.in is read only.
+	the original Makefile.in is read only.
 
 	* configure: use move-if-change from gcc to create config.status.
-	  Some makefiles depend on config.status to tell if a directory
-	  has been reconfigured for a different host.  This change
-	  prevents those directories from remaking everything in the case
-	  where the reconfig was only intended to rebuild a Makefile.
+	Some makefiles depend on config.status to tell if a directory
+	has been reconfigured for a different host.  This change
+	prevents those directories from remaking everything in the case
+	where the reconfig was only intended to rebuild a Makefile.
 
 	* configure: test for config.sub with "config.sub sun4" rather
-	  than "config.sub ${host_alias}".  Otherwise we can't tell a bad
-	  host alias from a missing config.sub.
+	than "config.sub ${host_alias}".  Otherwise we can't tell a bad
+	host alias from a missing config.sub.
 
 Mon Apr 20 18:16:36 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* Makefile.in: explicitly pass CFLAGS on recursion. no longer pass
-	  MINUS_G (this can be done with CFLAGS).  Default CFLAGS to -g.
+	MINUS_G (this can be done with CFLAGS).  Default CFLAGS to -g.
 
 Fri Apr 17 18:27:51 1992  Per Bothner  (bothner@cygnus.com)
 
@@ -21540,7 +21540,7 @@ Wed Apr 15 17:27:34 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 	* Makefile.in: no longer pass against on recursion.
 
 	* Makefile.in: added .NOEXPORT: so that stray makefile_frag
-	  definitions are not inherited.
+	definitions are not inherited.
 
 	* configure: correct makesrcdir when subdir is .
 
@@ -21592,7 +21592,7 @@ Tue Mar 31 16:32:57 1992  K. Richard Pixley  (rich@cygnus.com)
 Mon Mar 30 22:20:23 1992  K. Richard Pixley  (rich@cygnus.com)
 
 	* Makefile.in: add send_pr.  remove "force" from .stmp-gprof rule.
-	  Supress echoing of all the "if [ -d ... $(MAKE)" lines.
+	Supress echoing of all the "if [ -d ... $(MAKE)" lines.
 
 Wed Mar 25 15:20:04 1992  Stu Grossman  (grossman@cygnus.com)
 
@@ -21631,7 +21631,7 @@ Fri Mar 13 18:44:18 1992  K. Richard Pixley  (rich@cygnus.com)
 Thu Mar 12 04:56:24 1992  K. Richard Pixley  (rich@cygnus.com)
 
 	* configure: adjusted error message on objdir/srcdir configure
-	  collision, per john's suggestion.
+	collision, per john's suggestion.
 
 	* Makefile.in: add libiberty stmp to all and all.cross.
 
@@ -21644,10 +21644,10 @@ Tue Mar 10 21:49:18 1992  K. Richard Pixley  (rich@mars.cygnus.com)
 	* Makefile.in: drop flex.  make stamp files work.
 
 	* configure: added test for conflicting configuration in srcdir,
-	  remove trailing slashes from srcdir.  Otherwise emacs gdb mode
-	  gets cranky.  use relative paths for configure and srcdir
-	  whenever possible.  Send some error messages to stderr that were
-	  going to stdout.
+	remove trailing slashes from srcdir.  Otherwise emacs gdb mode
+	gets cranky.  use relative paths for configure and srcdir
+	whenever possible.  Send some error messages to stderr that were
+	going to stdout.
 
 Tue Mar 10 18:01:55 1992  Per Bothner  (bothner@cygnus.com)
 
@@ -21657,7 +21657,7 @@ Tue Mar 10 18:01:55 1992  Per Bothner  (bothner@cygnus.com)
 Thu Mar  5 21:45:07 1992  K. Richard Pixley  (rich@sendai)
 
 	* Makefile.in: added stmp-files so that directories aren't polled
-	  when they are already built.
+	when they are already built.
 
 	* configure.texi: fixed a node pointer problem.
 
@@ -21671,16 +21671,16 @@ Thu Mar  5 12:05:58 1992  Stu Grossman  (grossman at cygnus.com)
 Wed Mar  4 02:57:46 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* configure: -recurring becomes -silent.  corrected help message
-	  for -site= option.
+	for -site= option.
 
 	* Makefile.in: mkdir $(exec_prefix) and $(tooldir).
 
 Tue Mar  3 14:51:21 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* configure: when building Makefile for crosses, replace
-	  tooldir and program_prefix.  default srcdir from location of
-	  config.sub.  remove "for host in hosts" and "for target in
-	  targets" loops.
+	tooldir and program_prefix.  default srcdir from location of
+	config.sub.  remove "for host in hosts" and "for target in
+	targets" loops.
 
 Wed Feb 26 19:48:25 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
@@ -21689,14 +21689,14 @@ Wed Feb 26 19:48:25 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 Wed Feb 26 18:04:40 1992  K. Richard Pixley  (rich@cygnus.com)
 
 	* Makefile.in, configure.in: removed traces of namesubdir,
-	  -subdirs, $(subdir), $(unsubdir), some rcs triggers.  Forced
-	  copyrights to '92, changed some from Cygnus to FSF.
+	-subdirs, $(subdir), $(unsubdir), some rcs triggers.  Forced
+	copyrights to '92, changed some from Cygnus to FSF.
 
 	* configure.texi: remove most references to multiple hosts,
-	  multiple targets, subdirs, etc.
+	multiple targets, subdirs, etc.
 
 	* configure.man: removed rcsid. reference config.sub not
-	  config.subr.
+	config.subr.
 
 	* Makefile.in: mkdir $(infodir) on install-info.
 
@@ -21772,12 +21772,12 @@ Thu Jan  2 22:57:12 1992  John Gilmore  (gnu at cygnus.com)
 Fri Dec 27 16:26:47 1991  K. Richard Pixley  (rich at cygnus.com)
 
 	* configure.in, Makefile.in: fix clean-info, add flex.  add
-	  fileutils.
+	fileutils.
 
 	* configure: be less sensitive to spaces in Makefile.in.  Do not
-	  look for sources in "..".  Doing so breaks subdirectories that
-	  might have their own configure.  If a subdir has it's own
-	  configure script, use it.
+	look for sources in "..".  Doing so breaks subdirectories that
+	might have their own configure.  If a subdir has it's own
+	configure script, use it.
 
 Thu Dec 26 16:30:26 1991  K. Richard Pixley  (rich at cygnus.com)
 
@@ -21800,33 +21800,33 @@ Thu Dec 19 15:54:29 1991  K. Richard Pixley  (rich at cygnus.com)
 Wed Dec 18 15:39:34 1991  K. Richard Pixley  (rich at cygnus.com)
 
 	* DOC.configure, cfg-paper.texi: revised, updated, and texinfo'd.
-	  renamed from DOC.configure to cfg-paper.texi.
+	renamed from DOC.configure to cfg-paper.texi.
 
 Mon Dec 16 23:05:19 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* configure, config.subr, config.sub: config.subr is now
-	  config.sub again.
+	config.sub again.
 
 Fri Dec 13 01:17:06 1991  K. Richard Pixley  (rich at cygnus.com)
 
 	* configure.texi: new file, in progress.
 
 	* Makefile.in: build info file and install the man page for
-	  configure.
+	configure.
 
 	* configure.man: new file, first cut.
 
 	* configure: find config.subr again now that configuration "none"
-	  has gone.  removed all traces of the -ansi option.  removed all
-	  traces of the -languages option.
+	has gone.  removed all traces of the -ansi option.  removed all
+	traces of the -languages option.
 
 	* config.subr: resync from rms.
 
 Wed Dec 11 22:25:20 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* configure, config.sub, config.subr: merge config.sub into
-	  config.subr, call the result config.subr, remove config.sub, use
-	  config.subr.
+	config.subr, call the result config.subr, remove config.sub, use
+	config.subr.
 
 	* Makefile.in: revised install for dir.info.
 
@@ -21835,9 +21835,9 @@ Tue Dec 10 00:04:35 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 	* configure.in: add decstation host makefile frag.
 
 	* Makefile.in: BISON now bison -y again.  also install-gcc on
-	  install.  clean-gdbm on clean.  infodir belongs in datadir.
-	  Make directories for info install.  Build dir.info here then
-	  install it.
+	install.  clean-gdbm on clean.  infodir belongs in datadir.
+	Make directories for info install.  Build dir.info here then
+	install it.
 
 Mon Dec  9 16:48:33 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
@@ -21846,29 +21846,29 @@ Mon Dec  9 16:48:33 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 Sat Dec  7 00:17:01 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* configure: \{1,2\} appears to be a sysv'ism.  Use a different
-	  regexp.  -srcdir relative was being handled incorrectly.
+	regexp.  -srcdir relative was being handled incorrectly.
 
 	* Makefile.in: unwrapped some for loops so that parallel makes
-	  work again and so one can focus one's attention on a particular
-	  package.
+	work again and so one can focus one's attention on a particular
+	package.
 
 Fri Dec  6 00:22:08 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* configure: added PWD as a stand in for `pwd` (for speed). use
-	  elif wherever possible.  make -srcdir work without -objdir.
-	  -objdir= commented out.
+	elif wherever possible.  make -srcdir work without -objdir.
+	-objdir= commented out.
 
 Thu Dec  5 22:46:52 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* configure: +options become --options.  -subdirs commented out.
-	  added -host, -datadir.  Renamed -destdir to -prefix.  Comment in
-	  Makefile now at top of generated Makefile.  Removed cvs log
-	  entries.  added -srcdir.  create .gdbinit only if there is one
-	  in ${srcdir}.
+	added -host, -datadir.  Renamed -destdir to -prefix.  Comment in
+	Makefile now at top of generated Makefile.  Removed cvs log
+	entries.  added -srcdir.  create .gdbinit only if there is one
+	in ${srcdir}.
 
 	* Makefile.in: idestdir and ddestdir go away.  Added copyrights
-	  and shift gpl to v2.  Added ChangeLog if it didn't exist. docdir
-	  and mandir now keyed off datadir by default.
+	and shift gpl to v2.  Added ChangeLog if it didn't exist. docdir
+	and mandir now keyed off datadir by default.
 
 Fri Nov 22 07:38:11 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 

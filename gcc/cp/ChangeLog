@@ -2279,7 +2279,7 @@
 	initializer calling function and add it to the list.  Shrink
 	the c-lang region.
 	* module.cc (num_init_calls_needed): Delete.
-	 (module_has_import_init): Rename to ...
+	(module_has_import_init): Rename to ...
 	(module_determined_import_inits): ... here. Do the
 	calculation here ...
 	(finish_module_processing): ... rather than here.
@@ -3032,7 +3032,7 @@
 2022-05-04  Jason Merrill  <jason@redhat.com>
 
 	* decl.cc (reshape_init): Shortcut already-reshaped init.
-	 (reshape_init_class): Assert not getting one here.
+	(reshape_init_class): Assert not getting one here.
 
 2022-05-04  Jason Merrill  <jason@redhat.com>
 
