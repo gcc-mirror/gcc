@@ -1,3 +1,28 @@
+2022-11-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR other/104044
+	* jit-playback.cc (playback::lvale::mark_addressable): Remove
+	extraeous semicolon
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+	    LIU Hao  <lh_mouse@126.com>
+
+	* jit-playback.cc (playback::context::scoped_lock): Define RAII
+	lock type.
+	(playback::context::compile): Use scoped_lock to acquire mutex
+	for the active playback context.
+	(jit_mutex): Change to std::mutex.
+	(playback::context::acquire_mutex): Rename to ...
+	(playback::context::lock): ... this.
+	(playback::context::release_mutex): Rename to ...
+	(playback::context::unlock): ... this.
+	* jit-playback.h (playback::context): Rename members and declare
+	scoped_lock.
+	* jit-recording.cc (INCLUDE_PTHREAD_H): Remove unused define.
+	* libgccjit.cc (version_mutex): Change to std::mutex.
+	(struct jit_version_info): Use std::lock_guard to acquire and
+	release mutex.
+
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	Revert:

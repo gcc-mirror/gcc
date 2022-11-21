@@ -1,3 +1,92 @@
+2022-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107582
+	* engine.cc (dynamic_call_info_t::update_model): Update the model
+	by pushing or pop a frame, rather than by clobbering it with the
+	model from the exploded_node's state.
+
+2022-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc (is_pipe_call_p): Delete.
+	* analyzer.h (is_pipe_call_p): Delete.
+	* region-model-impl-calls.cc (call_details::get_location): New.
+	(class kf_analyzer_break): New, adapted from
+	region_model::on_stmt_pre.
+	(region_model::impl_call_analyzer_describe): Convert to...
+	(class kf_analyzer_describe): ...this.
+	(region_model::impl_call_analyzer_dump_capacity): Convert to...
+	(class kf_analyzer_dump_capacity): ...this.
+	(region_model::impl_call_analyzer_dump_escaped): Convert to...
+	(class kf_analyzer_dump_escaped): ...this.
+	(class kf_analyzer_dump_exploded_nodes): New.
+	(region_model::impl_call_analyzer_dump_named_constant): Convert
+	to...
+	(class kf_analyzer_dump_named_constant): ...this.
+	(class dump_path_diagnostic): Move here from region-model.cc.
+	(class kf_analyzer_dump_path) New, adapted from
+	region_model::on_stmt_pre.
+	(class kf_analyzer_dump_region_model): Likewise.
+	(region_model::impl_call_analyzer_eval): Convert to...
+	(class kf_analyzer_eval): ...this.
+	(region_model::impl_call_analyzer_get_unknown_ptr): Convert to...
+	(class kf_analyzer_get_unknown_ptr): ...this.
+	(class known_function_accept): Rename to...
+	(class kf_accept): ...this.
+	(class known_function_bind): Rename to...
+	(class kf_bind): ...this.
+	(class known_function_connect): Rename to...
+	(class kf_connect): ...this.
+	(region_model::impl_call_errno_location): Convert to...
+	(class kf_errno_location): ...this.
+	(class known_function_listen): Rename to...
+	(class kf_listen): ...this.
+	(region_model::impl_call_pipe): Convert to...
+	(class kf_pipe): ...this.
+	(region_model::impl_call_putenv): Convert to...
+	(class kf_putenv): ...this.
+	(region_model::impl_call_operator_new): Convert to...
+	(class kf_operator_new): ...this.
+	(region_model::impl_call_operator_delete): Convert to...
+	(class kf_operator_delete): ...this.
+	(class known_function_socket): Rename to...
+	(class kf_socket): ...this.
+	(register_known_functions): Rename param to KFM.  Break out
+	existing known functions into a "POSIX" section, and add "pipe",
+	"pipe2", and "putenv".  Add debugging functions
+	"__analyzer_break", "__analyzer_describe",
+	"__analyzer_dump_capacity", "__analyzer_dump_escaped",
+	"__analyzer_dump_exploded_nodes",
+	"__analyzer_dump_named_constant", "__analyzer_dump_path",
+	"__analyzer_dump_region_model", "__analyzer_eval",
+	"__analyzer_get_unknown_ptr".  Add C++ support functions
+	"operator new", "operator new []", "operator delete", and
+	"operator delete []".
+	* region-model.cc (class dump_path_diagnostic): Move to
+	region-model-impl-calls.cc.
+	(region_model::on_stmt_pre): Eliminate special-casing of
+	"__analyzer_describe", "__analyzer_dump_capacity",
+	"__analyzer_dump_escaped", "__analyzer_dump_named_constant",
+	"__analyzer_dump_path", "__analyzer_dump_region_model",
+	"__analyzer_eval", "__analyzer_break",
+	"__analyzer_dump_exploded_nodes", "__analyzer_get_unknown_ptr",
+	"__errno_location", "pipe", "pipe2", "putenv", "operator new",
+	"operator new []", "operator delete", "operator delete []"
+	"pipe" and "pipe2", handling them instead via the known_functions
+	mechanism.
+	* region-model.h (call_details::get_location): New decl.
+	(region_model::impl_call_analyzer_describe): Delete decl.
+	(region_model::impl_call_analyzer_dump_capacity): Delete decl.
+	(region_model::impl_call_analyzer_dump_escaped): Delete decl.
+	(region_model::impl_call_analyzer_dump_named_constant): Delete decl.
+	(region_model::impl_call_analyzer_eval): Delete decl.
+	(region_model::impl_call_analyzer_get_unknown_ptr): Delete decl.
+	(region_model::impl_call_errno_location): Delete decl.
+	(region_model::impl_call_pipe): Delete decl.
+	(region_model::impl_call_putenv): Delete decl.
+	(region_model::impl_call_operator_new): Delete decl.
+	(region_model::impl_call_operator_delete): Delete decl.
+	* sm-fd.cc: Update comments.
+
 2022-11-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107711

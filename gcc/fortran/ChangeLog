@@ -1,3 +1,9 @@
+2022-11-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107576
+	* interface.cc (gfc_procedure_use): Reject NULL as actual argument
+	when there is no explicit procedure interface.
+
 2022-11-17  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/99884

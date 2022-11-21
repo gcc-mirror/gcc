@@ -1,3 +1,18 @@
+2022-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump __cpp_constexpr
+	value from 202207L to 202211L.
+
+2022-11-19  Jeff Chapman II  <jchapman@lock3software.com>
+	    Andrew Sutton   <asutton@lock3software.com>
+	    Andrew Marmaduke  <amarmaduke@lock3software.com>
+	    Michael Lopez  <mlopez@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* c.opt: Add contracts flags.
+	* c-cppbuiltin.cc (c_cpp_builtins): Add contracts feature-test
+	macros.
+
 2022-11-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106649

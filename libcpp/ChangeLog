@@ -1,3 +1,14 @@
+2022-11-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR preprocessor/107691
+	* configure.ac: Add valgrind header checks.
+	* configure: Regenerate.
+
+2022-11-18  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* macro.cc (_cpp_builtin_macro_text): Don't remap filenames within
+	directives.
+
 2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/55971

@@ -1,3 +1,41 @@
+2022-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/format: Add std qualification on isxdigit calls.
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h: Add always_inline attribute to
+	trivial functions.
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Fix -Wsign-compare warnings.
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ptr_traits.h (pointer_traits::pointer_to): Rename
+	parameter.
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107649
+	* include/std/complex (__complex_proj): Fix requires-clause.
+
+2022-11-19  Jeff Chapman II  <jchapman@lock3software.com>
+	    Andrew Marmaduke  <amarmaduke@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* acinclude.m4 (glibcxx_SUBDIRS): Add src/experimental.
+	* include/Makefile.am (experimental_headers): Add contract.
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.am (SUBDIRS): Add experimental.
+	* src/Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* src/experimental/contract.cc: New file.
+	* src/experimental/Makefile.am: New file.
+	* src/experimental/Makefile.in: New file.
+	* include/experimental/contract: New file.
+
 2022-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/107720

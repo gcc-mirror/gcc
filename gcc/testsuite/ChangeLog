@@ -1,3 +1,207 @@
+2022-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107183
+	* gcc.dg/ubsan/pr107183.c: New test.
+
+2022-11-20  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/pr96542.c: Avoid falsely matching DECL_UIDs with
+	the number 254 in them.
+
+2022-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107628
+	* gcc.target/i386/pr107628.c: New test.
+
+2022-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/constexpr-nonlit17.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit18.C: New test.
+	* g++.dg/cpp23/feat-cxx2b.C: Adjust expected __cpp_constexpr
+	value.
+	* g++.dg/ext/stmtexpr19.C: Don't expect an error.
+	* g++.dg/ext/stmtexpr25.C: New test.
+
+2022-11-19  Jeff Chapman II  <jchapman@lock3software.com>
+	    Andrew Sutton   <asutton@lock3software.com>
+	    Andrew Marmaduke  <amarmaduke@lock3software.com>
+	    Michael Lopez  <mlopez@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* g++.dg/modules/modules.exp: Pass dg-options to link command.
+	* lib/g++.exp: Add -L for libstdc++exp.a.
+	* g++.dg/contracts/backtrace_handler/assert_fail.cpp: New test.
+	* g++.dg/contracts/backtrace_handler/handle_contract_violation.cpp: New test.
+	* g++.dg/contracts/contracts-access1.C: New test.
+	* g++.dg/contracts/contracts-assume1.C: New test.
+	* g++.dg/contracts/contracts-assume2.C: New test.
+	* g++.dg/contracts/contracts-assume3.C: New test.
+	* g++.dg/contracts/contracts-assume4.C: New test.
+	* g++.dg/contracts/contracts-assume5.C: New test.
+	* g++.dg/contracts/contracts-assume6.C: New test.
+	* g++.dg/contracts/contracts-comdat1.C: New test.
+	* g++.dg/contracts/contracts-config1.C: New test.
+	* g++.dg/contracts/contracts-constexpr1.C: New test.
+	* g++.dg/contracts/contracts-constexpr2.C: New test.
+	* g++.dg/contracts/contracts-constexpr3.C: New test.
+	* g++.dg/contracts/contracts-conversion1.C: New test.
+	* g++.dg/contracts/contracts-ctor-dtor1.C: New test.
+	* g++.dg/contracts/contracts-ctor-dtor2.C: New test.
+	* g++.dg/contracts/contracts-cv1.C: New test.
+	* g++.dg/contracts/contracts-deduced1.C: New test.
+	* g++.dg/contracts/contracts-deduced2.C: New test.
+	* g++.dg/contracts/contracts-friend1.C: New test.
+	* g++.dg/contracts/contracts-ft1.C: New test.
+	* g++.dg/contracts/contracts-ignore1.C: New test.
+	* g++.dg/contracts/contracts-ignore2.C: New test.
+	* g++.dg/contracts/contracts-large-return.C: New test.
+	* g++.dg/contracts/contracts-multiline1.C: New test.
+	* g++.dg/contracts/contracts-multiple-inheritance1.C: New test.
+	* g++.dg/contracts/contracts-multiple-inheritance2.C: New test.
+	* g++.dg/contracts/contracts-nested-class1.C: New test.
+	* g++.dg/contracts/contracts-nested-class2.C: New test.
+	* g++.dg/contracts/contracts-nocopy1.C: New test.
+	* g++.dg/contracts/contracts-override.C: New test.
+	* g++.dg/contracts/contracts-post1.C: New test.
+	* g++.dg/contracts/contracts-post2.C: New test.
+	* g++.dg/contracts/contracts-post3.C: New test.
+	* g++.dg/contracts/contracts-post4.C: New test.
+	* g++.dg/contracts/contracts-post5.C: New test.
+	* g++.dg/contracts/contracts-post6.C: New test.
+	* g++.dg/contracts/contracts-pre1.C: New test.
+	* g++.dg/contracts/contracts-pre10.C: New test.
+	* g++.dg/contracts/contracts-pre2.C: New test.
+	* g++.dg/contracts/contracts-pre2a1.C: New test.
+	* g++.dg/contracts/contracts-pre2a2.C: New test.
+	* g++.dg/contracts/contracts-pre3.C: New test.
+	* g++.dg/contracts/contracts-pre4.C: New test.
+	* g++.dg/contracts/contracts-pre5.C: New test.
+	* g++.dg/contracts/contracts-pre6.C: New test.
+	* g++.dg/contracts/contracts-pre7.C: New test.
+	* g++.dg/contracts/contracts-pre9.C: New test.
+	* g++.dg/contracts/contracts-redecl1.C: New test.
+	* g++.dg/contracts/contracts-redecl2.C: New test.
+	* g++.dg/contracts/contracts-redecl3.C: New test.
+	* g++.dg/contracts/contracts-redecl4.C: New test.
+	* g++.dg/contracts/contracts-redecl5.C: New test.
+	* g++.dg/contracts/contracts-redecl6.C: New test.
+	* g++.dg/contracts/contracts-redecl7.C: New test.
+	* g++.dg/contracts/contracts-redecl8.C: New test.
+	* g++.dg/contracts/contracts-tmpl-attr1.C: New test.
+	* g++.dg/contracts/contracts-tmpl-spec1.C: New test.
+	* g++.dg/contracts/contracts-tmpl-spec2.C: New test.
+	* g++.dg/contracts/contracts-tmpl-spec3.C: New test.
+	* g++.dg/contracts/contracts1.C: New test.
+	* g++.dg/contracts/contracts10.C: New test.
+	* g++.dg/contracts/contracts11.C: New test.
+	* g++.dg/contracts/contracts12.C: New test.
+	* g++.dg/contracts/contracts13.C: New test.
+	* g++.dg/contracts/contracts14.C: New test.
+	* g++.dg/contracts/contracts15.C: New test.
+	* g++.dg/contracts/contracts16.C: New test.
+	* g++.dg/contracts/contracts17.C: New test.
+	* g++.dg/contracts/contracts18.C: New test.
+	* g++.dg/contracts/contracts19.C: New test.
+	* g++.dg/contracts/contracts2.C: New test.
+	* g++.dg/contracts/contracts20.C: New test.
+	* g++.dg/contracts/contracts22.C: New test.
+	* g++.dg/contracts/contracts24.C: New test.
+	* g++.dg/contracts/contracts25.C: New test.
+	* g++.dg/contracts/contracts3.C: New test.
+	* g++.dg/contracts/contracts35.C: New test.
+	* g++.dg/contracts/contracts4.C: New test.
+	* g++.dg/contracts/contracts5.C: New test.
+	* g++.dg/contracts/contracts6.C: New test.
+	* g++.dg/contracts/contracts7.C: New test.
+	* g++.dg/contracts/contracts8.C: New test.
+	* g++.dg/contracts/contracts9.C: New test.
+	* g++.dg/modules/contracts-1_a.C: New test.
+	* g++.dg/modules/contracts-1_b.C: New test.
+	* g++.dg/modules/contracts-2_a.C: New test.
+	* g++.dg/modules/contracts-2_b.C: New test.
+	* g++.dg/modules/contracts-2_c.C: New test.
+	* g++.dg/modules/contracts-3_a.C: New test.
+	* g++.dg/modules/contracts-3_b.C: New test.
+	* g++.dg/modules/contracts-4_a.C: New test.
+	* g++.dg/modules/contracts-4_b.C: New test.
+	* g++.dg/modules/contracts-4_c.C: New test.
+	* g++.dg/modules/contracts-4_d.C: New test.
+	* g++.dg/modules/contracts-tpl-friend-1_a.C: New test.
+	* g++.dg/modules/contracts-tpl-friend-1_b.C: New test.
+	* g++.dg/contracts/backtrace_handler/Makefile: New test.
+	* g++.dg/contracts/backtrace_handler/README: New test.
+	* g++.dg/contracts/backtrace_handler/example_out.txt: New test.
+	* g++.dg/contracts/backtrace_handler/example_pretty.txt: New test.
+	* g++.dg/contracts/backtrace_handler/prettytrace.sh: New test.
+	* g++.dg/contracts/except_preload_handler/Makefile: New test.
+	* g++.dg/contracts/except_preload_handler/README: New test.
+	* g++.dg/contracts/except_preload_handler/assert_fail.cpp: New test.
+	* g++.dg/contracts/except_preload_handler/handle_contract_violation.cpp: New test.
+	* g++.dg/contracts/noexcept_preload_handler/Makefile: New test.
+	* g++.dg/contracts/noexcept_preload_handler/README: New test.
+	* g++.dg/contracts/noexcept_preload_handler/assert_fail.cpp: New test.
+	* g++.dg/contracts/noexcept_preload_handler/handle_contract_violation.cpp: New test.
+	* g++.dg/contracts/preload_handler/Makefile: New test.
+	* g++.dg/contracts/preload_handler/README: New test.
+	* g++.dg/contracts/preload_handler/assert_fail.cpp: New test.
+	* g++.dg/contracts/preload_handler/handle_contract_violation.cpp: New test.
+	* g++.dg/contracts/preload_nocontinue_handler/Makefile: New test.
+	* g++.dg/contracts/preload_nocontinue_handler/README: New test.
+	* g++.dg/contracts/preload_nocontinue_handler/assert_fail.cpp: New test.
+	* g++.dg/contracts/preload_nocontinue_handler/handle_contract_violation.cpp: New test.
+	* g++.dg/contracts/preload_nocontinue_handler/nocontinue.cpp: New test.
+
+2022-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107582
+	* gcc.dg/analyzer/feasibility-4.c: New test.
+	* gcc.dg/analyzer/feasibility-pr107582-1.c: New test.
+	* gcc.dg/analyzer/feasibility-pr107582-2.c: New test.
+
+2022-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/analyzer-debugging-fns-1.c: New test.
+	* gcc.dg/analyzer/attr-const-3.c: Increase the
+	"analyzer-max-svalue-depth" from 0 to 4 to ensure that
+	"__analyzer_eval" is recognized.
+
+2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbb-min-max-02.c: New test.
+
+2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbs-if_then_else-01.c: New test.
+
+2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbs-bclri.c: Rename
+	* gcc.target/riscv/zbs-bclri-01.c: Renamed from above.
+	* gcc.target/riscv/zbs-bclri-02.c: New test.
+	* gcc.target/riscv/zbs-binvi.c: New test.
+	* gcc.target/riscv/zbs-bseti.c: New test.
+
+2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zba-shNadd-04.c: New test.
+
+2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zba-shNadd-05.c: New test.
+
+2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/branch-1.c: New test.
+
+2022-11-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbs-bseti-02.c: New test.
+
+2022-11-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107576
+	* gfortran.dg/null_actual_3.f90: New test.
+
 2022-11-18  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.dg/redecl-22.c: New test.

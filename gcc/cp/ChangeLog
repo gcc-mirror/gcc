@@ -1,3 +1,122 @@
+2022-11-20  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (struct norm_entry): Define.
+	(struct norm_hasher): Define.
+	(norm_cache): Define.
+	(normalize_concept_check): Add function comment.  Cache the
+	the normal form of the substituted concept-id.  Canonicalize
+	generic arguments as NULL_TREE.  Don't coerce arguments unless
+	they were substituted.
+	(normalize_concept_definition): Simplify.  Use norm_cache
+	instead of normalized_map.
+
+2022-11-20  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (coerce_template_parms): Salvage part of the function
+	comment from c_innermost_t_p.  Handle parms being a full
+	template parameter list.
+	(coerce_innermost_template_parms): Remove.
+	(lookup_template_class): Use c_t_p instead of c_innermost_t_p.
+	(finish_template_variable): Likewise.
+	(tsubst_decl): Likewise.
+	(instantiate_alias_template): Likewise.
+
+2022-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.cc (cxx_eval_constant_expression): Implement C++23
+	P2647R1 - Permitting static constexpr variables in constexpr functions.
+	Allow DECL_EXPRs of decl_constant_var_p static or thread_local vars.
+	(potential_constant_expression_1): Similarly, except use
+	decl_maybe_constant_var_p instead of decl_constant_var_p if
+	processing_template_decl.
+
+2022-11-19  Jeff Chapman II  <jchapman@lock3software.com>
+	    Andrew Sutton   <asutton@lock3software.com>
+	    Andrew Marmaduke  <amarmaduke@lock3software.com>
+	    Michael Lopez  <mlopez@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* cp-tree.h (enum cp_tree_index): Add
+	CPTI_PSEUDO_CONTRACT_VIOLATION.
+	(pseudo_contract_violation_type): New macro.
+	(struct saved_scope): Add x_processing_contract_condition.
+	(processing_contract_condition): New macro.
+	(comparing_override_contracts): New variable decl.
+	(find_contract): New inline.
+	(set_decl_contracts): New inline.
+	(get_contract_semantic): New inline.
+	(set_contract_semantic): New inline.
+	* constexpr.cc (cxx_eval_assert): Split out from...
+	(cxx_eval_internal_function): ...here.
+	(cxx_eval_constant_expression): Use it for contracts.
+	(potential_constant_expression_1): Handle contracts.
+	* cp-gimplify.cc (cp_genericize_r): Handle contracts.
+	* cp-objcp-common.cc (cp_tree_size): Handle contracts.
+	(cp_common_init_ts): Handle contracts.
+	(cp_handle_option): Handle contracts.
+	* decl.cc (duplicate_decls): Handle contracts.
+	(check_tag_decl): Check for bogus contracts.
+	(start_decl): Check flag_contracts.
+	(grokfndecl): Call rebuild_postconditions.
+	(grokdeclarator): Handle contract attributes.
+	(start_preparsed_function): Call start_function_contracts.
+	(finish_function): Call finish_function_contracts.
+	* decl2.cc (cp_check_const_attributes): Skip contracts.
+	(comdat_linkage): Handle outlined contracts.
+	* error.cc (dump_type): Handle null TYPE_IDENTIFIER.
+	* g++spec.cc (EXPERIMENTAL): New macro.
+	(lang_specific_driver): Add -lstdc++exp if -fcontracts.
+	* mangle.cc (write_encoding): Handle outlined contracts.
+	* module.cc (trees_out::fn_parms_init): Handle outlined contracts.
+	(trees_in::fn_parms_init): Likewise.
+	(check_mergeable_decl): Likewise.
+	(module_state_config::get_dialect): Record -fcontracts.
+	* parser.h (struct cp_unparsed_functions_entry): Add contracts.
+	* parser.cc (unparsed_contracts): New macro.
+	(push_unparsed_function_queues): Adjust.
+	(contract_attribute_p): New.
+	(cp_parser_statement): Check contracts.
+	(cp_parser_decl_specifier_seq): Handle contracts.
+	(cp_parser_skip_to_closing_square_bracket): Split out...
+	(cp_parser_skip_up_to_closing_square_bracket): ...this fn.
+	(cp_parser_class_specifier): Do contract late parsing.
+	(cp_parser_class_head): Check contracts.
+	(cp_parser_contract_role): New.
+	(cp_parser_contract_mode_opt): New.
+	(find_error, contains_error_p): New.
+	(cp_parser_contract_attribute_spec): New.
+	(cp_parser_late_contract_condition): New.
+	(cp_parser_std_attribute_spec): Handle contracts.
+	(cp_parser_save_default_args): Also save contracts.
+	* pt.cc (register_parameter_specializations): No longer static.
+	(register_local_identity): New.
+	(check_explicit_specialization): Call remove_contract_attributes.
+	(tsubst_contract, tsubst_contract_attribute): New.
+	(tsubst_contract_attributes): New.
+	(tsubst_attribute): Add comment.
+	(tsubst_copy): Also allow parm when processing_contract_condition.
+	(tsubst_expr): Handle contracts.
+	(regenerate_decl_from_template): Handle contracts.
+	* search.cc (check_final_overrider): Compare contracts.
+	* semantics.cc (set_cleanup_locs): Skip POSTCONDITION_STMT.
+	(finish_non_static_data_member): Check contracts.
+	(finish_this_expr): Check contracts.
+	(process_outer_var_ref): Handle contracts.
+	(finish_id_expression_1): Handle contracts.
+	(apply_deduced_return_type): Adjust contracts.
+	* tree.cc (handle_contract_attribute): New.
+	(get_innermost_component, is_this_expression): New.
+	(comparing_this_references): New.
+	(equivalent_member_references): New.
+	(cp_tree_equal): Check it.
+	* typeck.cc (check_return_expr): Apply contracts.
+	* Make-lang.in: Add contracts.o.
+	* config-lang.in: Add contracts.cc.
+	* cp-tree.def (ASSERTION_STMT, PRECONDITION_STMT)
+	(POSTCONDITION_STMT): New.
+	* contracts.h: New file.
+	* contracts.cc: New file.
+
 2022-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.cc (grokdeclarator): Implement
