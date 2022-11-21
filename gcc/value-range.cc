@@ -1475,14 +1475,6 @@ irange::value_inside_range (tree val) const
     return !!cmp2;
 }
 
-/* Return TRUE if it is possible that range contains VAL.  */
-
-bool
-irange::may_contain_p (tree val) const
-{
-  return value_inside_range (val) != 0;
-}
-
 /* Return TRUE if range contains INTEGER_CST.  */
 /* Return 1 if VAL is inside value range.
 	  0 if VAL is not inside value range.

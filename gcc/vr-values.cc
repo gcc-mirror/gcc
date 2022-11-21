@@ -375,7 +375,8 @@ compare_range_with_value (enum tree_code comp, const value_range *vr,
 	return NULL_TREE;
 
       /* ~[VAL_1, VAL_2] OP VAL is known if VAL_1 <= VAL <= VAL_2.  */
-      if (!vr->may_contain_p (val))
+      bool contains_p = TREE_CODE (val) != INTEGER_CST || vr->contains_p (val);
+      if (!contains_p)
 	return (comp == NE_EXPR) ? boolean_true_node : boolean_false_node;
 
       return NULL_TREE;

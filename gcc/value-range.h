@@ -173,7 +173,6 @@ public:
   bool constant_p () const;			// DEPRECATED
   void normalize_symbolics ();			// DEPRECATED
   void normalize_addresses ();			// DEPRECATED
-  bool may_contain_p (tree) const;		// DEPRECATED
   bool legacy_verbose_union_ (const class irange *);	// DEPRECATED
   bool legacy_verbose_intersect (const irange *);	// DEPRECATED
 
@@ -828,7 +827,8 @@ range_includes_zero_p (const irange *vr)
   if (vr->varying_p ())
     return true;
 
-  return vr->may_contain_p (build_zero_cst (vr->type ()));
+  tree zero = build_zero_cst (vr->type ());
+  return vr->contains_p (zero);
 }
 
 extern void gt_ggc_mx (vrange *);
