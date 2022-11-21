@@ -1,3 +1,15 @@
+2022-11-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/libgomp-gcn.h (struct output):
+	Remove 'msg_u64' from the union, change
+	value_u64[2] to value_u64[6].
+	* config/gcn/target.c (GOMP_target_ext): Update accordingly.
+	* plugin/plugin-gcn.c (process_reverse_offload, console_output):
+	Likewise.
+
 2022-11-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

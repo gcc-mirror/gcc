@@ -102,12 +102,12 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
       asm ("s_sleep 64");
 
   unsigned int slot = index % 1024;
-  uint64_t addrs_sizes_kind[3] = {(uint64_t) hostaddrs, (uint64_t) sizes,
-				  (uint64_t) kinds};
-  data->queue[slot].msg_u64[0] = (uint64_t) fn;
-  data->queue[slot].msg_u64[1] = (uint64_t) mapnum;
-  data->queue[slot].value_u64[0] = (uint64_t) &addrs_sizes_kind[0];
-  data->queue[slot].value_u64[1] = (uint64_t) GOMP_ADDITIONAL_ICVS.device_num;
+  data->queue[slot].value_u64[0] = (uint64_t) fn;
+  data->queue[slot].value_u64[1] = (uint64_t) mapnum;
+  data->queue[slot].value_u64[2] = (uint64_t) hostaddrs;
+  data->queue[slot].value_u64[3] = (uint64_t) sizes;
+  data->queue[slot].value_u64[4] = (uint64_t) kinds;
+  data->queue[slot].value_u64[5] = (uint64_t) GOMP_ADDITIONAL_ICVS.device_num;
 
   data->queue[slot].type = 4; /* Reverse offload.  */
   __atomic_store_n (&data->queue[slot].written, 1, __ATOMIC_RELEASE);

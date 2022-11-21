@@ -1953,16 +1953,12 @@ create_kernel_dispatch (struct kernel_info *kernel, int num_teams)
 }
 
 static void
-process_reverse_offload (uint64_t fn, uint64_t mapnum, uint64_t rev_data,
-			 uint64_t dev_num64)
+process_reverse_offload (uint64_t fn, uint64_t mapnum, uint64_t hostaddrs,
+			 uint64_t sizes, uint64_t kinds, uint64_t dev_num64)
 {
   int dev_num = dev_num64;
-  uint64_t addrs_sizes_kinds[3];
-  GOMP_OFFLOAD_host2dev (dev_num, &addrs_sizes_kinds, (void *) rev_data,
-			 sizeof (addrs_sizes_kinds));
-  GOMP_PLUGIN_target_rev (fn, mapnum, addrs_sizes_kinds[0],
-			  addrs_sizes_kinds[1], addrs_sizes_kinds[2],
-			  dev_num, NULL, NULL, NULL);
+  GOMP_PLUGIN_target_rev (fn, mapnum, hostaddrs, sizes, kinds, dev_num,
+			  NULL, NULL, NULL);
 }
 
 /* Output any data written to console output from the kernel.  It is expected
@@ -2010,8 +2006,9 @@ console_output (struct kernel_info *kernel, struct kernargs *kernargs,
 	case 2: printf ("%.128s%.128s\n", data->msg, data->text); break;
 	case 3: printf ("%.128s%.128s", data->msg, data->text); break;
 	case 4:
-	  process_reverse_offload (data->msg_u64[0], data->msg_u64[1],
-				   data->value_u64[0],data->value_u64[1]);
+	  process_reverse_offload (data->value_u64[0], data->value_u64[1],
+				   data->value_u64[2], data->value_u64[3],
+				   data->value_u64[4], data->value_u64[5]);
 	  break;
 	default: printf ("GCN print buffer error!\n"); break;
 	}

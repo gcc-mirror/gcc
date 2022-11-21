@@ -37,16 +37,13 @@ struct output
   unsigned int next_output;
   struct printf_data {
     int written;
-    union {
-      char msg[128];
-      uint64_t msg_u64[2];
-    };
+    char msg[128];
     int type;
     union {
       int64_t ivalue;
       double dvalue;
       char text[128];
-      uint64_t value_u64[2];
+      uint64_t value_u64[16];
     };
   } queue[1024];
   unsigned int consumed;
