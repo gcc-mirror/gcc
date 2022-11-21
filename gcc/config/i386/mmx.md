@@ -133,7 +133,8 @@
 	(match_operand:MMXMODE 1 "nonimm_or_0_operand"
     "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!y,r  ,C,v,m,v,v,r,*x,!y"))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
-   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))
+   && ix86_hardreg_mov_ok (operands[0], operands[1])"
 {
   switch (get_attr_type (insn))
     {
@@ -286,7 +287,8 @@
     "=r ,m ,v,v,v,m,r,v")
 	(match_operand:V_32 1 "general_operand"
     "rmC,rC,C,v,m,v,v,r"))]
-  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))
+   && ix86_hardreg_mov_ok (operands[0], operands[1])"
 {
   switch (get_attr_type (insn))
     {
