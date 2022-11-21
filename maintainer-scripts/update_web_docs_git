@@ -21,6 +21,7 @@ MANUALS="cpp
   gccgo
   gccint
   gcj
+  gdc
   gfortran
   gfc-internals
   gnat_ugn
