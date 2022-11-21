@@ -2224,12 +2224,12 @@
 			(const_int 0)])
 	 (label_ref (match_operand 0 "" ""))
 	 (pc)))
-   (clobber (match_scratch:ANYI 4 "=&r"))]
-  "INTVAL (operands[3]) >= 0 || !partial_subreg_p (operands[2])"
+   (clobber (match_scratch:X 4 "=&r"))]
+  "!SMALL_OPERAND (INTVAL (operands[3]))"
   "#"
   "&& reload_completed"
-  [(set (match_dup 4) (lshiftrt:ANYI (match_dup 2) (match_dup 6)))
-   (set (match_dup 4) (and:ANYI (match_dup 4) (match_dup 7)))
+  [(set (match_dup 4) (lshiftrt:X (subreg:X (match_dup 2) 0) (match_dup 6)))
+   (set (match_dup 4) (and:X (match_dup 4) (match_dup 7)))
    (set (pc) (if_then_else (match_op_dup 1 [(match_dup 4) (const_int 0)])
 			   (label_ref (match_dup 0)) (pc)))]
 {
