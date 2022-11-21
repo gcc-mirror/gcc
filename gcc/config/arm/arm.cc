@@ -375,7 +375,7 @@ static const struct attribute_spec arm_attribute_table[] =
   /* ARMv8-M Security Extensions support.  */
   { "cmse_nonsecure_entry", 0, 0, true, false, false, false,
     arm_handle_cmse_nonsecure_entry, NULL },
-  { "cmse_nonsecure_call", 0, 0, true, false, false, true,
+  { "cmse_nonsecure_call", 0, 0, false, false, false, true,
     arm_handle_cmse_nonsecure_call, NULL },
   { "Advanced SIMD type", 1, 1, false, true, false, true, NULL, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
@@ -7605,8 +7605,8 @@ arm_handle_cmse_nonsecure_call (tree *node, tree name,
 				 int /* flags */,
 				 bool *no_add_attrs)
 {
-  tree decl = NULL_TREE, fntype = NULL_TREE;
-  tree type;
+  tree decl = NULL_TREE;
+  tree fntype, type;
 
   if (!use_cmse)
     {
@@ -7616,16 +7616,20 @@ arm_handle_cmse_nonsecure_call (tree *node, tree name,
       return NULL_TREE;
     }
 
-  if (TREE_CODE (*node) == VAR_DECL || TREE_CODE (*node) == TYPE_DECL)
+  if (DECL_P (*node))
     {
-      decl = *node;
-      fntype = TREE_TYPE (decl);
-    }
+      fntype = TREE_TYPE (*node);
 
-  while (fntype != NULL_TREE && TREE_CODE (fntype) == POINTER_TYPE)
+      if (TREE_CODE (*node) == VAR_DECL || TREE_CODE (*node) == TYPE_DECL)
+	decl = *node;
+    }
+  else
+    fntype = *node;
+
+  while (fntype && TREE_CODE (fntype) == POINTER_TYPE)
     fntype = TREE_TYPE (fntype);
 
-  if (!decl || TREE_CODE (fntype) != FUNCTION_TYPE)
+  if ((DECL_P (*node) && !decl) || TREE_CODE (fntype) != FUNCTION_TYPE)
     {
 	warning (OPT_Wattributes, "%qE attribute only applies to base type of a "
 		 "function pointer", name);
@@ -7640,10 +7644,17 @@ arm_handle_cmse_nonsecure_call (tree *node, tree name,
 
   /* Prevent trees being shared among function types with and without
      cmse_nonsecure_call attribute.  */
-  type = TREE_TYPE (decl);
+  if (decl)
+    {
+      type = build_distinct_type_copy (TREE_TYPE (decl));
+      TREE_TYPE (decl) = type;
+    }
+  else
+    {
+      type = build_distinct_type_copy (*node);
+      *node = type;
+    }
 
-  type = build_distinct_type_copy (type);
-  TREE_TYPE (decl) = type;
   fntype = type;
 
   while (TREE_CODE (fntype) != FUNCTION_TYPE)
