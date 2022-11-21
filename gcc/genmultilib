@@ -141,20 +141,6 @@ multiarch=$9
 multilib_reuse=${10}
 enable_multilib=${11}
 
-# Sanity check: make sure we have as many dirnames as options
-if [ -n "${dirnames}" ]; then
-    set x $options
-    nboptions=$#
-    set x $dirnames
-    nbdirnames=$#
-    if [ $nbdirnames -ne $nboptions ]; then
-	echo 1>&2 "Error calling $0: Number of dirnames ($nbdirnames) does not match number of options ($nboptions)"
-	echo 1>&2 "options: ${options}"
-	echo 1>&2 "dirnames: ${dirnames}"
-	exit 1
-    fi
-fi
-
 echo "static const char *const multilib_raw[] = {"
 
 mkdir tmpmultilib.$$ || exit 1
@@ -264,6 +250,10 @@ if [ -n "${dirnames}" ]; then
     for opts in `echo ${set} | sed -e 's|/| |'g`; do
       patt="/"
       for opt in `echo ${opts} | sed -e 's_|_ _'g`; do
+	if [ -z "$1" ]; then
+	  echo 1>&2 "Error calling $0: No dirname for option: $opt"
+	  exit 1
+	fi
         if [ "$1" != "${opt}" ]; then
           todirnames="${todirnames} -e s|/${opt}/|/${1}/|g"
 	  patt="${patt}${1}/"
@@ -320,6 +310,10 @@ if [ -n "${osdirnames}" ]; then
       for opts in `echo ${set} | sed -e 's|/| |'g`; do
         patt="/"
         for opt in `echo ${opts} | sed -e 's_|_ _'g`; do
+	if [ -z "$1" ]; then
+	  echo 1>&2 "Error calling $0: No osdirname for option: $opt"
+	  exit 1
+	fi
           if [ "$1" != "${opt}" ]; then
             toosdirnames="${toosdirnames} -e s|/${opt}/|/${1}/|g"
 	    patt="${patt}${1}/"
