@@ -2161,7 +2161,6 @@ simplify_using_ranges::two_valued_val_range_p (tree var, tree *a, tree *b,
   value_range vr;
   if (!query->range_of_expr (vr, var, s))
     return false;
-  vr.normalize_symbolics ();
   if (vr.varying_p () || vr.undefined_p ())
     return false;
 

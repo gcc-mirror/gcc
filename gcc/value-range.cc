@@ -945,7 +945,6 @@ irange::copy_legacy_to_multi_range (const irange &src)
       else
 	{
 	  value_range cst (src);
-	  cst.normalize_symbolics ();
 	  gcc_checking_assert (cst.varying_p () || cst.kind () == VR_RANGE);
 	  set (cst.min (), cst.max ());
 	}
@@ -1153,17 +1152,10 @@ irange::set (tree min, tree max, value_range_kind kind)
 	}
       return;
     }
-  // Nothing to canonicalize for symbolic ranges.
-  if (TREE_CODE (min) != INTEGER_CST
-      || TREE_CODE (max) != INTEGER_CST)
-    {
-      m_kind = kind;
-      m_base[0] = min;
-      m_base[1] = max;
-      m_num_ranges = 1;
-      m_nonzero_mask = NULL;
-      return;
-    }
+
+  // Symbolics are not allowed in an irange.
+  gcc_checking_assert (TREE_CODE (min) == INTEGER_CST
+		       && TREE_CODE (max) == INTEGER_CST);
 
   swap_out_of_order_endpoints (min, max, kind);
   if (kind == VR_VARYING)
@@ -1264,12 +1256,6 @@ wide_int
 irange::legacy_lower_bound (unsigned pair) const
 {
   gcc_checking_assert (legacy_mode_p ());
-  if (symbolic_p ())
-    {
-      value_range numeric_range (*this);
-      numeric_range.normalize_symbolics ();
-      return numeric_range.legacy_lower_bound (pair);
-    }
   gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   if (m_kind == VR_ANTI_RANGE)
@@ -1291,12 +1277,6 @@ wide_int
 irange::legacy_upper_bound (unsigned pair) const
 {
   gcc_checking_assert (legacy_mode_p ());
-  if (symbolic_p ())
-    {
-      value_range numeric_range (*this);
-      numeric_range.normalize_symbolics ();
-      return numeric_range.legacy_upper_bound (pair);
-    }
   gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   if (m_kind == VR_ANTI_RANGE)
@@ -1369,16 +1349,6 @@ irange::operator== (const irange &other) const
   widest_int nz2 = widest_int::from (other.get_nonzero_bits (),
 				     TYPE_SIGN (other.type ()));
   return nz1 == nz2;
-}
-
-/* Return TRUE if this is a symbolic range.  */
-
-bool
-irange::symbolic_p () const
-{
-  return (m_num_ranges > 0
-	  && (!is_gimple_min_invariant (min ())
-	      || !is_gimple_min_invariant (max ())));
 }
 
 /* Return TRUE if this is a constant range.  */
@@ -1492,12 +1462,6 @@ irange::contains_p (tree cst) const
   if (legacy_mode_p ())
     {
       gcc_checking_assert (TREE_CODE (cst) == INTEGER_CST);
-      if (symbolic_p ())
-	{
-	  value_range numeric_range (*this);
-	  numeric_range.normalize_symbolics ();
-	  return numeric_range.contains_p (cst);
-	}
       return value_inside_range (cst) == 1;
     }
 
@@ -1522,86 +1486,6 @@ irange::contains_p (tree cst) const
     }
 
   return false;
-}
-
-
-/* Normalize addresses into constants.  */
-
-void
-irange::normalize_addresses ()
-{
-  if (undefined_p ())
-    return;
-
-  if (!POINTER_TYPE_P (type ()) || range_has_numeric_bounds_p (this))
-    return;
-
-  if (!range_includes_zero_p (this))
-    {
-      gcc_checking_assert (TREE_CODE (min ()) == ADDR_EXPR
-			   || TREE_CODE (max ()) == ADDR_EXPR);
-      set_nonzero (type ());
-      return;
-    }
-  set_varying (type ());
-}
-
-/* Normalize symbolics and addresses into constants.  */
-
-void
-irange::normalize_symbolics ()
-{
-  if (varying_p () || undefined_p ())
-    return;
-
-  tree ttype = type ();
-  bool min_symbolic = !is_gimple_min_invariant (min ());
-  bool max_symbolic = !is_gimple_min_invariant (max ());
-  if (!min_symbolic && !max_symbolic)
-    {
-      normalize_addresses ();
-      return;
-    }
-
-  // [SYM, SYM] -> VARYING
-  if (min_symbolic && max_symbolic)
-    {
-      set_varying (ttype);
-      return;
-    }
-  if (kind () == VR_RANGE)
-    {
-      // [SYM, NUM] -> [-MIN, NUM]
-      if (min_symbolic)
-	{
-	  set (vrp_val_min (ttype), max ());
-	  return;
-	}
-      // [NUM, SYM] -> [NUM, +MAX]
-      set (min (), vrp_val_max (ttype));
-      return;
-    }
-  gcc_checking_assert (kind () == VR_ANTI_RANGE);
-  // ~[SYM, NUM] -> [NUM + 1, +MAX]
-  if (min_symbolic)
-    {
-      if (!vrp_val_is_max (max ()))
-	{
-	  tree n = wide_int_to_tree (ttype, wi::to_wide (max ()) + 1);
-	  set (n, vrp_val_max (ttype));
-	  return;
-	}
-      set_varying (ttype);
-      return;
-    }
-  // ~[NUM, SYM] -> [-MIN, NUM - 1]
-  if (!vrp_val_is_min (min ()))
-    {
-      tree n = wide_int_to_tree (ttype, wi::to_wide (min ()) - 1);
-      set (vrp_val_min (ttype), n);
-      return;
-    }
-  set_varying (ttype);
 }
 
 /* Intersect the two value-ranges { *VR0TYPE, *VR0MIN, *VR0MAX } and
@@ -3524,21 +3408,6 @@ range_tests_legacy ()
   big.union_ (int_range<1> (INT (80), vrp_val_max (integer_type_node)));
   small = big;
   ASSERT_TRUE (small == int_range<1> (INT (21), INT (21), VR_ANTI_RANGE));
-
-  // Copying a legacy symbolic to an int_range should normalize the
-  // symbolic at copy time.
-  {
-    tree ssa = make_ssa_name (integer_type_node);
-    value_range legacy_range (ssa, INT (25));
-    int_range<2> copy = legacy_range;
-    ASSERT_TRUE (copy == int_range<2>  (vrp_val_min (integer_type_node),
-					INT (25)));
-
-    // Test that copying ~[abc_23, abc_23] to a multi-range yields varying.
-    legacy_range = value_range (ssa, ssa, VR_ANTI_RANGE);
-    copy = legacy_range;
-    ASSERT_TRUE (copy.varying_p ());
-  }
 
   // VARYING of different sizes should not be equal.
   tree big_type = build_nonstandard_integer_type (32, 1);

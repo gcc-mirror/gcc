@@ -169,10 +169,7 @@ public:
   // Deprecated legacy public methods.
   tree min () const;				// DEPRECATED
   tree max () const;				// DEPRECATED
-  bool symbolic_p () const;			// DEPRECATED
   bool constant_p () const;			// DEPRECATED
-  void normalize_symbolics ();			// DEPRECATED
-  void normalize_addresses ();			// DEPRECATED
   bool legacy_verbose_union_ (const class irange *);	// DEPRECATED
   bool legacy_verbose_intersect (const irange *);	// DEPRECATED
 
