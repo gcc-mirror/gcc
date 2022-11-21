@@ -210,8 +210,8 @@ lookup_concrete_semantic (const char *name)
 static bool
 role_name_equal (const char *role, const char *name)
 {
-  size_t role_len = strchrnul (role, ':') - role;
-  size_t name_len = strchrnul (name, ':') - name;
+  size_t role_len = strcspn (role, ":");
+  size_t name_len = strcspn (name, ":");
   if (role_len != name_len)
     return false;
   return strncmp (role, name, role_len) == 0;
