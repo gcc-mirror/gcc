@@ -272,10 +272,10 @@ _mm512_castph512_ph128 (__m512h __A)
 {
   union
   {
-    __m128h a[4];
-    __m512h v;
-  } u = { .v = __A };
-  return u.a[0];
+    __m128h __a[4];
+    __m512h __v;
+  } __u = { .__v = __A };
+  return __u.__a[0];
 }
 
 extern __inline __m256h
@@ -284,10 +284,10 @@ _mm512_castph512_ph256 (__m512h __A)
 {
   union
   {
-    __m256h a[2];
-    __m512h v;
-  } u = { .v = __A };
-  return u.a[0];
+    __m256h __a[2];
+    __m512h __v;
+  } __u = { .__v = __A };
+  return __u.__a[0];
 }
 
 extern __inline __m512h
@@ -296,11 +296,11 @@ _mm512_castph128_ph512 (__m128h __A)
 {
   union
   {
-    __m128h a[4];
-    __m512h v;
-  } u;
-  u.a[0] = __A;
-  return u.v;
+    __m128h __a[4];
+    __m512h __v;
+  } __u;
+  __u.__a[0] = __A;
+  return __u.__v;
 }
 
 extern __inline __m512h
@@ -309,11 +309,11 @@ _mm512_castph256_ph512 (__m256h __A)
 {
   union
   {
-    __m256h a[2];
-    __m512h v;
-  } u;
-  u.a[0] = __A;
-  return u.v;
+    __m256h __a[2];
+    __m512h __v;
+  } __u;
+  __u.__a[0] = __A;
+  return __u.__v;
 }
 
 extern __inline __m512h
@@ -7156,11 +7156,11 @@ _mm512_set1_pch (_Float16 _Complex __A)
 {
   union
   {
-    _Float16 _Complex a;
-    float b;
-  } u = { .a = __A};
+    _Float16 _Complex __a;
+    float __b;
+  } __u = { .__a = __A};
 
-  return (__m512h) _mm512_set1_ps (u.b);
+  return (__m512h) _mm512_set1_ps (__u.__b);
 }
 
 // intrinsics below are alias for f*mul_*ch
