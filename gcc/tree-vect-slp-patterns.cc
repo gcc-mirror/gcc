@@ -1039,7 +1039,7 @@ complex_mul_pattern::matches (complex_operation_t op,
      with -ffp-contract=fast.  */
   if (!mul0
       && (flag_fp_contract_mode == FP_CONTRACT_FAST
-	  || !FLOAT_TYPE_P (SLP_TREE_VECTYPE (l0node[0])))
+	  || !FLOAT_TYPE_P (SLP_TREE_VECTYPE (*node)))
       && vect_match_expression_p (l0node[0], PLUS_EXPR))
     {
       auto vals = SLP_TREE_CHILDREN (l0node[0]);
