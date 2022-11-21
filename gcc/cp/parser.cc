@@ -15831,11 +15831,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
             {
 	      cp_token *next = cp_lexer_peek_token (parser->lexer);
 	      if (next->keyword == RID_BOOL)
-		pedwarn (next->location, 0, "the %<bool%> keyword is not "
-			 "allowed in a C++20 concept definition");
+		permerror (next->location, "the %<bool%> keyword is not "
+			   "allowed in a C++20 concept definition");
 	      else
-		pedwarn (token->location, 0, "C++20 concept definition syntax "
-			 "is %<concept <name> = <expr>%>");
+		error_at (token->location, "C++20 concept definition syntax "
+			  "is %<concept <name> = <expr>%>");
             }
 
 	  /* In C++20 a concept definition is just 'concept name = expr;'
