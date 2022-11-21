@@ -6180,6 +6180,23 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
   return true;
 }
 
+/* Like irange::contains_p(), but convert VAL to the range of R if
+   necessary.  */
+
+static inline bool
+ipa_range_contains_p (const irange &r, tree val)
+{
+  if (r.undefined_p ())
+    return false;
+
+  tree type = r.type ();
+  if (!wi::fits_to_tree_p (wi::to_wide (val), type))
+    return false;
+
+  val = fold_convert (type, val);
+  return r.contains_p (val);
+}
+
 /* Decide whether and what specialized clones of NODE should be created.  */
 
 static bool
@@ -6221,7 +6238,8 @@ decide_whether_version_node (struct cgraph_node *node)
 		 supports this only for integers now.  */
 	      if (TREE_CODE (val->value) == INTEGER_CST
 		  && !plats->m_value_range.bottom_p ()
-		  && !plats->m_value_range.m_vr.contains_p (val->value))
+		  && !ipa_range_contains_p (plats->m_value_range.m_vr,
+					    val->value))
 		{
 		  /* This can happen also if a constant present in the source
 		     code falls outside of the range of parameter's type, so we
