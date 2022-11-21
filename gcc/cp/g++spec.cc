@@ -128,6 +128,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
 
+  /* By default, we don't add -lstdc++exp.  */
+  bool need_experimental = false;
+
   /* True if we saw -static.  */
   int static_link = 0;
 
@@ -161,8 +164,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       switch (decoded_options[i].opt_index)
 	{
 	case OPT_fcontracts:
-	  args[i] |= EXPERIMENTAL;
-	  ++added;
+	  need_experimental = true;
 	  break;
 
 	case OPT_nostdlib:
@@ -292,7 +294,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
 
   /* Add one for shared_libgcc or extra static library.  */
-  num_args = argc + added + need_math + (library > 0) * 4 + 1;
+  num_args = (argc + added + need_math + need_experimental
+	      + (library > 0) * 4 + 1);
   /* For libc++, on most platforms, the ABI library (usually called libc++abi)
      is provided as a separate DSO, which we must also append.
      However, a platform might have the ability to forward the ABI library
@@ -355,11 +358,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 			   &new_decoded_options[j]);
 	}
 
-      if ((args[i] & EXPERIMENTAL)
-	  && which_library == USE_LIBSTDCXX)
-	generate_option (OPT_l, "stdc++exp", 1, CL_DRIVER,
-			 &new_decoded_options[++j]);
-
       if ((args[i] & SKIPOPT) != 0)
 	--j;
 
@@ -370,6 +368,12 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Add `-lstdc++' if we haven't already done so.  */
   if (library > 0)
     {
+      if (need_experimental && which_library == USE_LIBSTDCXX)
+	{
+	  generate_option (OPT_l, "stdc++exp", 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	  ++added_libraries;
+	}
 #ifdef HAVE_LD_STATIC_DYNAMIC
       if (library > 1 && !static_link)
 	{

@@ -1434,6 +1434,7 @@ build_contract_condition_function (tree fndecl, bool pre)
       tree name = get_identifier ("__r");
       tree parm = build_lang_decl (PARM_DECL, name, value_type);
       DECL_CONTEXT (parm) = fn;
+      DECL_ARTIFICIAL (parm) = true;
       DECL_ARGUMENTS (fn) = chainon (DECL_ARGUMENTS (fn), parm);
 
       *last = build_tree_list (NULL_TREE, value_type);
