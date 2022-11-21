@@ -995,9 +995,69 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::tuple<_BoundArgs...> _M_bound_args;
     };
 
+  // Avoid the overhead of an empty tuple<> if there are no bound args.
+  template<typename _Fd>
+    struct _Bind_front0
+    {
+      static_assert(is_move_constructible_v<_Fd>);
+
+      // First parameter is to ensure this constructor is never used
+      // instead of the copy/move constructor.
+      template<typename _Fn>
+	explicit constexpr
+	_Bind_front0(int, _Fn&& __fn)
+	noexcept(is_nothrow_constructible_v<_Fd, _Fn>)
+	: _M_fd(std::forward<_Fn>(__fn))
+	{ }
+
+      _Bind_front0(const _Bind_front0&) = default;
+      _Bind_front0(_Bind_front0&&) = default;
+      _Bind_front0& operator=(const _Bind_front0&) = default;
+      _Bind_front0& operator=(_Bind_front0&&) = default;
+      ~_Bind_front0() = default;
+
+      template<typename... _CallArgs>
+	constexpr
+	invoke_result_t<_Fd&, _CallArgs...>
+	operator()(_CallArgs&&... __call_args) &
+	noexcept(is_nothrow_invocable_v<_Fd&, _CallArgs...>)
+	{ return std::invoke(_M_fd, std::forward<_CallArgs>(__call_args)...); }
+
+      template<typename... _CallArgs>
+	constexpr
+	invoke_result_t<const _Fd&, _CallArgs...>
+	operator()(_CallArgs&&... __call_args) const &
+	noexcept(is_nothrow_invocable_v<const _Fd&, _CallArgs...>)
+	{ return std::invoke(_M_fd, std::forward<_CallArgs>(__call_args)...); }
+
+      template<typename... _CallArgs>
+	constexpr
+	invoke_result_t<_Fd, _CallArgs...>
+	operator()(_CallArgs&&... __call_args) &&
+	noexcept(is_nothrow_invocable_v<_Fd, _CallArgs...>)
+	{
+	  return std::invoke(std::move(_M_fd),
+			     std::forward<_CallArgs>(__call_args)...);
+	}
+
+      template<typename... _CallArgs>
+	constexpr
+	invoke_result_t<const _Fd, _CallArgs...>
+	operator()(_CallArgs&&... __call_args) const &&
+	noexcept(is_nothrow_invocable_v<const _Fd, _CallArgs...>)
+	{
+	  return std::invoke(std::move(_M_fd),
+			     std::forward<_CallArgs>(__call_args)...);
+	}
+
+    private:
+      _Fd _M_fd;
+    };
+
   template<typename _Fn, typename... _Args>
     using _Bind_front_t
-      = _Bind_front<decay_t<_Fn>, decay_t<_Args>...>;
+      = __conditional_t<sizeof...(_Args) == 0, _Bind_front0<decay_t<_Fn>>,
+			_Bind_front<decay_t<_Fn>, decay_t<_Args>...>>;
 
   /** Create call wrapper by partial application of arguments to function.
    *
