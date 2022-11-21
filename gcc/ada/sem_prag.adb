@@ -4549,6 +4549,11 @@ package body Sem_Prag is
          elsif Nkind (Subp_Decl) = N_Single_Task_Declaration then
             null;
 
+         --  Abstract subprogram declaration
+
+         elsif Nkind (Subp_Decl) = N_Abstract_Subprogram_Declaration then
+            null;
+
          --  Subprogram body acts as spec
 
          elsif Nkind (Subp_Decl) = N_Subprogram_Body
