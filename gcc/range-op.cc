@@ -4890,7 +4890,7 @@ namespace selftest
 static void
 range_op_cast_tests ()
 {
-  int_range<1> r0, r1, r2, rold;
+  int_range<2> r0, r1, r2, rold;
   r0.set_varying (integer_type_node);
   tree maxint = wide_int_to_tree (integer_type_node, r0.upper_bound ());
 

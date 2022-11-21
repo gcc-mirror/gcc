@@ -120,7 +120,6 @@ class GTY((user)) irange : public vrange
 {
   friend value_range_kind get_legacy_range (const irange &, tree &, tree &);
   friend class vrange_allocator;
-  friend class irange_storage_slot; // For legacy_mode_p checks.
 public:
   // In-place setters.
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
@@ -170,8 +169,6 @@ public:
   // Deprecated legacy public methods.
   tree min () const;				// DEPRECATED
   tree max () const;				// DEPRECATED
-  bool legacy_verbose_union_ (const class irange *);	// DEPRECATED
-  bool legacy_verbose_intersect (const irange *);	// DEPRECATED
 
 protected:
   irange (tree *, unsigned);
@@ -190,16 +187,8 @@ protected:
 
   void normalize_kind ();
 
-  bool legacy_mode_p () const;
-  bool legacy_equal_p (const irange &) const;
-  void legacy_union (irange *, const irange *);
-  void legacy_intersect (irange *, const irange *);
   void verify_range ();
-  wide_int legacy_lower_bound (unsigned = 0) const;
-  wide_int legacy_upper_bound (unsigned) const;
   int value_inside_range (tree) const;
-  void copy_to_legacy (const irange &);
-  void copy_legacy_to_multi_range (const irange &);
 
 private:
   friend void gt_ggc_mx (irange *);
@@ -241,12 +230,6 @@ private:
   template <unsigned X> friend void gt_pch_nx (int_range<X> *);
   template <unsigned X> friend void gt_pch_nx (int_range<X> *,
 					       gt_pointer_operator, void *);
-
-  // ?? These stubs are for ipa-prop.cc which use a value_range in a
-  // hash_traits.  hash-traits.h defines an extern of gt_ggc_mx (T &)
-  // instead of picking up the gt_ggc_mx (T *) version.
-  friend void gt_ggc_mx (int_range<1> *&);
-  friend void gt_pch_nx (int_range<1> *&);
 
   tree m_ranges[N*2];
 };
@@ -485,15 +468,7 @@ public:
   virtual void visit (const unsupported_range &) const { }
 };
 
-// This is a special int_range<1> with only one pair, plus
-// VR_ANTI_RANGE magic to describe slightly more than can be described
-// in one pair.  It is described in the code as a "legacy range" (as
-// opposed to multi-ranges which have multiple sub-ranges).  It is
-// provided for backward compatibility with code that has not been
-// converted to multi-range irange's.
-//
-// There are copy operators to seamlessly copy to/fro multi-ranges.
-typedef int_range<1> value_range;
+typedef int_range<2> value_range;
 
 // This is an "infinite" precision irange for use in temporary
 // calculations.
@@ -662,15 +637,6 @@ Value_Range::supports_type_p (const_tree type)
   return irange::supports_p (type) || frange::supports_p (type);
 }
 
-// Returns true for an old-school value_range as described above.
-inline bool
-irange::legacy_mode_p () const
-{
-  return m_max_ranges == 1;
-}
-
-extern bool ranges_from_anti_range (const value_range *,
-				    value_range *, value_range *);
 extern value_range_kind get_legacy_range (const irange &, tree &min, tree &max);
 extern void dump_value_range (FILE *, const vrange *);
 extern bool vrp_val_is_min (const_tree);
@@ -810,7 +776,7 @@ irange::nonzero_p () const
     return false;
 
   tree zero = build_zero_cst (type ());
-  return *this == int_range<1> (zero, zero, VR_ANTI_RANGE);
+  return *this == int_range<2> (zero, zero, VR_ANTI_RANGE);
 }
 
 inline bool
@@ -977,8 +943,6 @@ irange::set_varying (tree type)
 inline wide_int
 irange::lower_bound (unsigned pair) const
 {
-  if (legacy_mode_p ())
-    return legacy_lower_bound (pair);
   gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   return wi::to_wide (tree_lower_bound (pair));
@@ -990,8 +954,6 @@ irange::lower_bound (unsigned pair) const
 inline wide_int
 irange::upper_bound (unsigned pair) const
 {
-  if (legacy_mode_p ())
-    return legacy_upper_bound (pair);
   gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   return wi::to_wide (tree_upper_bound (pair));
@@ -1010,21 +972,13 @@ irange::upper_bound () const
 inline bool
 irange::union_ (const vrange &r)
 {
-  dump_flags_t m_flags = dump_flags;
-  dump_flags &= ~TDF_DETAILS;
-  bool ret = irange::legacy_verbose_union_ (&as_a <irange> (r));
-  dump_flags = m_flags;
-  return ret;
+  return irange_union (as_a <irange> (r));
 }
 
 inline bool
 irange::intersect (const vrange &r)
 {
-  dump_flags_t m_flags = dump_flags;
-  dump_flags &= ~TDF_DETAILS;
-  bool ret = irange::legacy_verbose_intersect (&as_a <irange> (r));
-  dump_flags = m_flags;
-  return ret;
+  return irange_intersect (as_a <irange> (r));
 }
 
 // Set value range VR to a nonzero range of type TYPE.
@@ -1033,10 +987,7 @@ inline void
 irange::set_nonzero (tree type)
 {
   tree zero = build_int_cst (type, 0);
-  if (legacy_mode_p ())
-    set (zero, zero, VR_ANTI_RANGE);
-  else
-    irange_set_anti_range (zero, zero);
+  irange_set_anti_range (zero, zero);
 }
 
 // Set value range VR to a ZERO range of type TYPE.
@@ -1045,10 +996,7 @@ inline void
 irange::set_zero (tree type)
 {
   tree z = build_int_cst (type, 0);
-  if (legacy_mode_p ())
-    set (z, z);
-  else
-    irange_set (z, z);
+  irange_set (z, z);
 }
 
 // Normalize a range to VARYING or UNDEFINED if possible.

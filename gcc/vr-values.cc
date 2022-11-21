@@ -751,10 +751,10 @@ simplify_using_ranges::legacy_fold_cond_overflow (gimple *stmt,
 	     for previously LE_ or LT_EXPR and GT_EXPR otherwise, but
 	     the comments next to the enclosing if suggest it's not
 	     generally profitable to do so.  */
-	  vro.legacy_verbose_intersect (&vr0);
+	  vro.intersect (vr0);
 	  if (vro.undefined_p ())
 	    return boolean_false_node;
-	  vri.legacy_verbose_intersect (&vr0);
+	  vri.intersect (vr0);
 	  if (vri.undefined_p ())
 	    return boolean_true_node;
 	}

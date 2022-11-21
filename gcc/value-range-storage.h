@@ -175,8 +175,7 @@ inline irange *
 vrange_allocator::alloc_irange (unsigned num_pairs)
 {
   // Never allocate 0 pairs.
-  // Don't allocate 1 either, or we get legacy value_range's.
-  if (num_pairs < 2)
+  if (num_pairs < 1)
     num_pairs = 2;
 
   size_t nbytes = sizeof (tree) * 2 * num_pairs;
