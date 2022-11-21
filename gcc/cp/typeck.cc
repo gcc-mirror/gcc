@@ -1627,7 +1627,7 @@ similar_type_p (tree type1, tree type2)
    the common initial sequence.  */
 
 bool
-next_common_initial_seqence (tree &memb1, tree &memb2)
+next_common_initial_sequence (tree &memb1, tree &memb2)
 {
   while (memb1)
     {
@@ -1719,7 +1719,7 @@ layout_compatible_type_p (tree type1, tree type2)
 	{
 	  while (1)
 	    {
-	      if (!next_common_initial_seqence (field1, field2))
+	      if (!next_common_initial_sequence (field1, field2))
 		return false;
 	      if (field1 == NULL_TREE)
 		return true;

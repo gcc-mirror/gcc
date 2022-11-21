@@ -1,3 +1,12 @@
+2022-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104688
+	* config/x86/init.c (__libat_feat1_init): Don't clear
+	bit_AVX on AMD CPUs.
+
 2022-08-19  Release Manager
 
 	* GCC 12.2.0 released.

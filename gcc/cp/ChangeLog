@@ -1,3 +1,25 @@
+2022-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (next_common_initial_seqence): Rename to ...
+	(next_common_initial_sequence): ... this.
+	* typeck.cc (next_common_initial_seqence): Rename to ...
+	(next_common_initial_sequence): ... this.
+	(layout_compatible_type_p): Call next_common_initial_sequence
+	rather than next_common_initial_seqence.
+	* semantics.cc (is_corresponding_member_aggr): Likewise.
+
+2022-11-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104066
+	* decl.cc (grokdeclarator): Check funcdecl_p before complaining
+	about constinit.
+
 2022-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

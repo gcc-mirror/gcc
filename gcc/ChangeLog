@@ -1,3 +1,39 @@
+2022-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107183
+	* reg-stack.cc (next_flags_user): Add DEBUG_SEEN argument.
+	If >= 0 and a DEBUG_INSN would be otherwise returned, set
+	DEBUG_SEEN to 1 and ignore it.
+	(swap_rtx_condition): Add DEBUG_SEEN argument.  In >= 0
+	mode only set DEBUG_SEEN to 1 if problematic DEBUG_ISNSs
+	were seen and revert all changes on success in that case.
+	Don't try to recog_memoized DEBUG_INSNs.
+	(compare_for_stack_reg): Adjust swap_rtx_condition caller.
+	If it returns true and debug_seen is 1, call swap_rtx_condition
+	again with debug_seen -1.
+
+2022-11-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-11-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (STARTFILE_SPEC): Fix 'crt0.o' for
+	'-mmainkernel'.
+
+2022-11-19  Jinyang He  <hejinyang@loongson.cn>
+
+	Backported from master:
+	2022-11-18  Jinyang He  <hejinyang@loongson.cn>
+
+	PR target/107713
+	* config/loongarch/sync.md
+	(atomic_cas_value_exchange_7_<mode>): New define_insn.
+	(atomic_exchange): Use atomic_cas_value_exchange_7_si instead of
+	atomic_cas_value_cmp_and_7_si.
+
 2022-11-16  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	Backported from master:
