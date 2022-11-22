@@ -1930,6 +1930,8 @@ region_model::update_for_int_cst_return (const call_details &cd,
 {
   if (!cd.get_lhs_type ())
     return;
+  if (TREE_CODE (cd.get_lhs_type ()) != INTEGER_TYPE)
+    return;
   const svalue *result
     = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), retval);
   if (unmergeable)
@@ -1954,6 +1956,8 @@ void
 region_model::update_for_nonzero_return (const call_details &cd)
 {
   if (!cd.get_lhs_type ())
+    return;
+  if (TREE_CODE (cd.get_lhs_type ()) != INTEGER_TYPE)
     return;
   const svalue *zero
     = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
