@@ -5752,14 +5752,16 @@ push_agg_values_for_index_from_edge (struct cgraph_edge *cs, int index,
    description of ultimate callee of CS or the one it was cloned from (the
    summary where lattices are).  If INTERIM is non-NULL, it contains the
    current interim state of collected aggregate values which can be used to
-   compute values passed over self-recursive edges and to skip values which
-   clearly will not be part of intersection with INTERIM.  */
+   compute values passed over self-recursive edges (if OPTIMIZE_SELF_RECURSION
+   is true) and to skip values which clearly will not be part of intersection
+   with INTERIM.  */
 
 static void
 push_agg_values_from_edge (struct cgraph_edge *cs,
 			   ipa_node_params *dest_info,
 			   vec<ipa_argagg_value> *res,
-			   const ipa_argagg_value_list *interim)
+			   const ipa_argagg_value_list *interim,
+			   bool optimize_self_recursion)
 {
   ipa_edge_args *args = ipa_edge_args_sum->get (cs);
   if (!args)
@@ -5785,7 +5787,9 @@ push_agg_values_from_edge (struct cgraph_edge *cs,
       ipcp_param_lattices *plats = ipa_get_parm_lattices (dest_info, index);
       if (plats->aggs_bottom)
 	continue;
-      push_agg_values_for_index_from_edge (cs, index, res, interim);
+      push_agg_values_for_index_from_edge (cs, index, res,
+					   optimize_self_recursion ? interim
+					   : NULL);
     }
 }
 
@@ -5804,7 +5808,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
   /* gather_edges_for_value puts a non-recursive call into the first element of
      callers if it can.  */
   auto_vec<ipa_argagg_value, 32> interim;
-  push_agg_values_from_edge (callers[0], dest_info, &interim, NULL);
+  push_agg_values_from_edge (callers[0], dest_info, &interim, NULL, true);
 
   unsigned valid_entries = interim.length ();
   if (!valid_entries)
@@ -5815,7 +5819,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
     {
       auto_vec<ipa_argagg_value, 32> last;
       ipa_argagg_value_list avs (&interim);
-      push_agg_values_from_edge (callers[i], dest_info, &last, &avs);
+      push_agg_values_from_edge (callers[i], dest_info, &last, &avs, true);
 
       valid_entries = intersect_argaggs_with (interim, last);
       if (!valid_entries)
@@ -5882,7 +5886,7 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
   ipa_node_params *dest_info = ipa_node_params_sum->get (node);
   gcc_checking_assert (dest_info->ipcp_orig_node);
   dest_info = ipa_node_params_sum->get (dest_info->ipcp_orig_node);
-  push_agg_values_from_edge (cs, dest_info, &edge_values, &existing);
+  push_agg_values_from_edge (cs, dest_info, &edge_values, &existing, false);
   const ipa_argagg_value_list avl (&edge_values);
   return avl.superset_of_p (existing);
 }
