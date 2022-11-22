@@ -537,7 +537,14 @@ namespace __detail
   /// @relates std::experimental::filesystem::path @{
 
   /// Swap overload for paths
-  inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
+#if __cpp_concepts >= 201907L
+  // Workaround for PR libstdc++/106201
+  inline void
+  swap(same_as<path> auto& __lhs, same_as<path> auto& __rhs) noexcept
+  { __lhs.swap(__rhs); }
+#else
+   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
+#endif
 
   /// Compute a hash value for a path
   size_t hash_value(const path& __p) noexcept;
