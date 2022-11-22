@@ -673,10 +673,10 @@ record_edge_info (basic_block bb)
 		{
 		  /* At this point we know the exit condition is loop
 		     invariant.  The only way to get out of the loop is
-		     if never traverses the backedge to begin with.  This
-		     implies that any PHI nodes create equivalances we can
-		     attach to the loop exit edge.  */
-		  int alternative
+		     if it never traverses the backedge to begin with.  This
+		     implies that any PHI nodes create equivalances that we
+		     can attach to the loop exit edge.  */
+		  int bool
 		    = (EDGE_PRED (bb, 0)->flags & EDGE_DFS_BACK) ? 1 : 0;
 
 		  gphi_iterator gsi;
