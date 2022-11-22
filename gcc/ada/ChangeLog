@@ -1,3 +1,127 @@
+2022-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Constant>: Revert
+	latest change.
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Object_Declaration>:
+	Tweak latest change.
+
+2022-11-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_pakd.adb (Create_Packed_Array_Impl_Type): Do not share PAT
+	if sizes of types differ.
+
+2022-11-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Restore
+	alphabetical ordering.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2022-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Needs_Secondary_Stack): Test Is_Constrained
+	directly instead of Is_Definite_Subtype for an array subtype.
+
+2022-11-21  Steve Baird  <baird@adacore.com>
+
+	* libgnat/s-rident.ads: Define a new restriction,
+	No_Task_Hierarchy_Implicit. This is like the No_Task_Hierarchy
+	restriction, but with the difference that setting this restriction
+	does not mean the H.6(6) post-compilation check is satisified.
+	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call): If it is
+	known that the function result cannot have tasks, then pass in a
+	null literal for the activation chain actual parameter. This
+	avoids generating a reference to an entity that
+	Build_Activation_Chain_Entity may have chosen not to generate a
+	declaration for.
+	* gnatbind.adb (List_Applicable_Restrictions): Do not list the
+	No_Task_Hierarchy_Implicit restriction.
+	* restrict.adb: Special treatment for the
+	No_Task_Hierarchy_Implicit restriction in functions
+	Get_Restriction_Id and Restriction_Active. The former is needed to
+	disallow the (unlikely) case that a user tries to explicitly
+	reference the No_Task_Hierarchy_Implicit restriction.
+	* sem_prag.adb (Analyze_Pragma): If a Sequential
+	Partition_Elaboration_Policy is specified (and the
+	No_Task_Hierarchy restriction is not already enabled), then enable
+	the No_Task_Hierarchy_Implicit restriction.
+
+2022-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Use Typ local
+	constant throughout, remove Ret_Obj_Typ local constant, rename
+	Ref_Type into Acc_Typ in a couple of places, remove a useless call
+	to Set_Etype, use a consistent checks suppression scheme, adjust
+	comments for the sake of consistencty and alphabetize some local
+	declarations.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Remove a couple of
+	redundant local constants.
+
+2022-11-21  Steve Baird  <baird@adacore.com>
+
+	* libgnat/a-sttebu.adb (Put): Add missing call to Encode.
+	* libgnat/a-strsup.ads: Declare new Put_Image procedure and add
+	Put_Image aspect specification for type Super_String.
+	* libgnat/a-strsup.adb (Put_Image): New procedure.
+	* libgnat/a-stwisu.ads: Declare new Put_Image procedure and add
+	Put_Image aspect specification for type Super_String.
+	* libgnat/a-stwisu.adb (Put_Image): New procedure.
+	* libgnat/a-stzsup.ads: Declare new Put_Image procedure and add
+	Put_Image aspect specification for type Super_String.
+	* libgnat/a-stzsup.adb (Put_Image): New procedure.
+
+2022-11-21  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* frontend.adb (Frontend): Disable subprogram call validation.
+
+2022-11-21  Bob Duff  <duff@adacore.com>
+
+	* warnsw.ads, warnsw.adb: Move warning flags here from package
+	Opt. Rename Warning_Record to be Warnings_State. Use an array
+	instead of a record; this simplifies the code. Add renamings of
+	all the array components for easy reference outside this package.
+	Pass the "Family" to Set_Warning_Switch. Use more table-driven
+	code. Misc cleanup and comment fixes.
+	* opt.ads: Move warning switches to Warnsw.
+	* gnat1drv.adb
+	(Adjust_Global_Switches): Expanded names needed.
+	* inline.ads: Rename Warning_Record to be Warnings_State.
+	* sem_ch12.adb: Likewise.
+	* sem_prag.adb: Use new Set_Warning_Switch.
+	* contracts.adb, errout.adb, exp_aggr.adb, exp_ch11.adb: Adjust
+	imports for move to Warnsw.
+	* exp_ch5.adb, exp_prag.adb, exp_util.adb, frontend.adb: Likewise.
+	* layout.adb, lib-xref.adb, restrict.adb, scn.adb, sem_aggr.adb:
+	Likewise.
+	* sem_attr.adb, sem_case.adb, sem_ch10.adb, sem_ch11.adb:
+	Likewise.
+	* sem_ch13.adb, sem_ch3.adb, sem_ch4.adb, sem_ch5.adb: Likewise.
+	* sem_ch6.adb, sem_ch7.adb, sem_ch8.adb, sem_elab.adb: Likewise.
+	* sem_eval.adb, sem_res.adb, sem_util.adb, sem_warn.adb: Likewise.
+	* switch-c.adb: Likewise.
+
+2022-11-21  Steve Baird  <baird@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Improve
+	the description of how the -gnatw.h switch interacts with
+	"partial" record layout specifications (i.e., specifications where
+	the locations of some components are left unspecified).
+	* gnat_ugn.texi: Regenerate.
+
+2022-11-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch13.adb (Check_One_Attr): produce error when Size attribute
+	used on aliased object of elementary types with nonconfirming
+	value.
+
+2022-11-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sfn_scan.adb (Scan_SFN_Pragmas): Improve handling of comments.
+
+2022-11-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* par-ch3.adb (P_Declarative_Item): Tweak handling of with keyword.
+
 2022-11-14  Boris Yakobowski  <yakobowski@adacore.com>
 
 	* sem_case.adb: silence false positive warning emitted by CodePeer

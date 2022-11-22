@@ -1,3 +1,82 @@
+2022-11-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (SUBTARGET_CC1_SPEC): Undef and define.
+
+2022-11-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.cc (SUBTARGET_CC1_SPEC): Define if not defined.
+	(cc1_spec): Append SUBTARGET_CC1_SPEC.
+
+2022-11-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* doc/sourcebuild.texi (sockets): Document new check.
+
+2022-11-21  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-ssa-loop.h (tree_niter_desc): Update comment.
+
+2022-11-21  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-ssa-loop-niter.cc
+	(number_of_iterations_exit_assumptions): Modify to call...
+	(number_of_iterations_bitcount): ...this new function.
+	(number_of_iterations_popcount): Now called by the above.
+	Refactor, and extract popcount expression builder to...
+	(build_popcount_expr): this new function.
+
+2022-11-21  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-ssa-loop-niter.cc (ssa_defined_by_minus_one_stmt_p): Move
+	(number_of_iterations_popcount): Move, and remove separate prototype.
+
+2022-11-21  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-ssa-loop-niter.cc (number_of_iterations_exit_assumptions):
+	Move at_stmt assignment.
+
+2022-11-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* genmultilib: Fix options and dirnames/osdirnames sanity check.
+
+2022-11-21  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR target/107786
+	* config/riscv/riscv.md
+	(*branch<ANYI:mode>_shiftedarith_equals_zero): Wrap ANYI
+	in a subreg, as our branch instructions only supports X.
+
+2022-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107748
+	* config/i386/avx512fp16intrin.h (_mm512_castph512_ph128,
+	_mm512_castph512_ph256, _mm512_castph128_ph512,
+	_mm512_castph256_ph512, _mm512_set1_pch): Uglify names of local
+	variables and union members.
+	* config/i386/avx512fp16vlintrin.h (_mm256_castph256_ph128,
+	_mm256_castph128_ph256, _mm256_set1_pch, _mm_set1_pch): Likewise.
+	* config/i386/smmintrin.h (_mm_extract_ps): Likewise.
+
+2022-11-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* genmultilib: Add sanity check.
+
+2022-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.cc (arm_attribute_table) <cmse_nonsecure_call>:
+	Change decl_required field to false.
+	(arm_handle_cmse_nonsecure_call): Deal with a TYPE node.
+
+2022-11-21  Andrew Pinski  <apinski@marvell.com>
+
+	* gimplify.cc (gimplify_modify_expr): If
+	either *from_p or *to_p were error_operand
+	return early.
+
+2022-11-21  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-builtins.cc (def_builtin): Handle "shared"
+	avx512bf16vl-avxneconvert builtins.
+
 2022-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/107183

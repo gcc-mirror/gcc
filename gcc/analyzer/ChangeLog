@@ -1,3 +1,27 @@
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107788
+	* region-model.cc (region_model::update_for_int_cst_return):
+	Require that the return type be an integer type.
+	(region_model::update_for_nonzero_return): Likewise.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107783
+	* region-model-impl-calls.cc (kf_accept::matches_call_types_p):
+	Require that args 1 and 2 be pointers.
+	(kf_bind::matches_call_types_p): Require that arg 1 be a pointer.
+	* region-model.h (call_details::arg_is_pointer_p): New
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107777
+	* call-summary.cc
+	(call_summary_replay::convert_region_from_summary_1): Handle
+	RK_THREAD_LOCAL and RK_ERRNO in switch.
+	* region-model.cc (region_model::get_representative_path_var_1):
+	Likewise.
+
 2022-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107582

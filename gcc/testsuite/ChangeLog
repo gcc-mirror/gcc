@@ -1,3 +1,87 @@
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107788
+	* g++.dg/analyzer/fd-bind-pr107783.C: New test.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107783
+	* gcc.dg/analyzer/fd-bind-pr107783.c: New test.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107777
+	* gcc.dg/analyzer/call-summaries-errno.c: New test.
+	* gcc.dg/analyzer/errno-pr107777.c: New test.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/CWE-131-examples.c: New test.
+	* gcc.dg/analyzer/file-CWE-1341-example.c: New test.
+	* gcc.dg/analyzer/malloc-CWE-401-example.c: New test.
+	* gcc.dg/analyzer/malloc-CWE-415-examples.c: New test.
+	* gcc.dg/analyzer/malloc-CWE-416-examples.c: New test.
+	* gcc.dg/analyzer/malloc-CWE-590-examples.c: New test.
+
+2022-11-21  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-c++-common/gomp/pragma-omp-unknown.c: New test.
+
+2022-11-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/analyzer/fd-accept.c: Require sockets.
+	* gcc.dg/analyzer/fd-bind.c: Ditto.
+	* gcc.dg/analyzer/fd-connect.c: Ditto.
+	* gcc.dg/analyzer/fd-datagram-socket.c: Ditto.
+	* gcc.dg/analyzer/fd-glibc-byte-stream-connection-server.c:
+	Ditto.
+	* gcc.dg/analyzer/fd-glibc-byte-stream-socket.c: Ditto.
+	* gcc.dg/analyzer/fd-glibc-datagram-client.c: Ditto.
+	* gcc.dg/analyzer/fd-glibc-datagram-socket.c: Ditto.
+	* gcc.dg/analyzer/fd-listen.c: Ditto.
+	* gcc.dg/analyzer/fd-manpage-getaddrinfo-client.c: Ditto.
+	* gcc.dg/analyzer/fd-mappage-getaddrinfo-server.c: Ditto.
+	* gcc.dg/analyzer/fd-socket-meaning.c: Ditto.
+	* gcc.dg/analyzer/fd-socket-misuse.c: Ditto.
+	* gcc.dg/analyzer/fd-stream-socket-active-open.c: Ditto.
+	* gcc.dg/analyzer/fd-stream-socket-passive-open.c: Ditto.
+	* gcc.dg/analyzer/fd-stream-socket.c: Ditto.
+	* gcc.dg/analyzer/fd-symbolic-socket.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_sockets): New
+	check.
+
+2022-11-21  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.dg/pr77975.c: Make tests more robust.
+
+2022-11-21  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.dg/tree-ssa/popcount-max.c: New test.
+
+2022-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* g++.dg/modules/pr99023_b.X: Match Windows paths too.
+
+2022-11-21  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/pr107786-2.c: New test.
+	* gcc.target/riscv/pr107786.c: New test.
+
+2022-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/machine_attr2.ads, gnat.dg/machine_attr2.adb: New test.
+
+2022-11-21  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/redecl-23.c: New test.
+	* gcc.dg/redecl-24.c: New test.
+	* gcc.dg/redecl-25.c: New test.
+
+2022-11-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avxneconvert-1.c: New test.
+
 2022-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/107183

@@ -1,3 +1,16 @@
+2022-11-21  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* directives.cc (do_pragma): Fix memory leak in token buffer.  Fix
+	unwanted paste between two tokens.
+
+2022-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* files.cc: Ensure pattern matches before use.
+
+2022-11-21  Martin Liska  <mliska@suse.cz>
+
+	* config.in: Re-configure.
+
 2022-11-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR preprocessor/107691

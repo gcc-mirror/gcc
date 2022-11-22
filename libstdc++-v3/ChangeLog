@@ -1,3 +1,24 @@
+2022-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (_Bind_front0): New class template.
+	(_Bind_front_t): Use _Bind_front0 when there are no bound
+	arguments.
+	* testsuite/20_util/function_objects/bind_front/107784.cc:
+	New test.
+
+2022-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (duration): Check preconditions on
+	template arguments before using them.
+
+2022-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple: Add better Doxygen comments.
+
+2022-11-21  Martin Liska  <mliska@suse.cz>
+
+	* src/experimental/Makefile.in: Re-configure.
+
 2022-11-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/std/format: Add std qualification on isxdigit calls.
