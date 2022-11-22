@@ -54,7 +54,7 @@ void test_listen_on_new_datagram_socket (void)
   close (fd);
 }
 
-void test_listed_on_connected_socket (int fd)
+void test_listen_on_connected_socket (int fd)
 {
   int afd = accept (fd, NULL, 0);
   if (afd == -1)
@@ -62,4 +62,9 @@ void test_listed_on_connected_socket (int fd)
   listen (afd, 5); /* { dg-warning "'listen' on file descriptor 'afd' in wrong phase" "warning" } */
   /* { dg-message "'listen' expects a bound stream socket file descriptor but 'afd' is connected" "final event" { target *-*-* } .-1 } */
   close (afd);
+}
+
+int test_listen_on_constant ()
+{
+  return listen (0, 10);
 }

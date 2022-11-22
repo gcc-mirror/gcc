@@ -74,3 +74,8 @@ void test_bind_after_accept (int fd, const char *sockname)
 
   close (afd);
 }
+
+int test_bind_on_constant ()
+{
+  return bind (0, NULL, 0);
+}

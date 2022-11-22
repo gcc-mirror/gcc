@@ -69,3 +69,8 @@ int test_accept_on_accept (int fd_a)
 
   return fd_b;
 }
+
+int test_accept_on_constant ()
+{
+  return accept (0, NULL, 0);
+}

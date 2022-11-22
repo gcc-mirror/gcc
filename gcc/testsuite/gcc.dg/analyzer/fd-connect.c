@@ -46,3 +46,8 @@ void test_connect_after_bind (const char *sockname,
 
   close (fd);      
 }
+
+int test_connect_on_constant ()
+{
+  return connect (0, NULL, 0);
+}

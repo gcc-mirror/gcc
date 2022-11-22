@@ -1798,7 +1798,8 @@ fd_state_machine::check_for_new_socket_fd (const call_details &cd,
 		|| old_state == m_new_datagram_socket
 		|| old_state == m_new_unknown_socket
 		|| old_state == m_start
-		|| old_state == m_stop))
+		|| old_state == m_stop
+		|| old_state == m_constant_fd))
     {
       /* Complain about "bind" or "connect" in wrong phase.  */
       tree diag_arg = sm_ctxt->get_diagnostic_tree (fd_sval);
@@ -1900,6 +1901,7 @@ fd_state_machine::on_listen (const call_details &cd,
   if (!check_for_socket_fd (cd, successful, sm_ctxt, fd_sval, node, old_state))
     return false;
   if (!(old_state == m_start
+	|| old_state == m_constant_fd
 	|| old_state == m_stop
 	|| old_state == m_bound_stream_socket
 	|| old_state == m_bound_unknown_socket
@@ -2015,8 +2017,9 @@ fd_state_machine::on_accept (const call_details &cd,
   if (!check_for_socket_fd (cd, successful, sm_ctxt, fd_sval, node, old_state))
     return false;
 
-  if (old_state == m_start)
-    /* If we were in the start state, assume we had the expected state.  */
+  if (old_state == m_start || old_state == m_constant_fd)
+    /* If we were in the start state (or a constant), assume we had the
+       expected state.  */
     sm_ctxt->set_next_state (cd.get_call_stmt (), fd_sval,
 			     m_listening_stream_socket);
   else if (old_state == m_stop)
