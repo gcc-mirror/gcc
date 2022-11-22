@@ -1953,6 +1953,20 @@ register_known_functions (known_function_manager &kfm)
     kfm.add ("error_at_line", make_unique<kf_error> (5));
   }
 
+  /* Other implementations of C standard library.  */
+  {
+    /* According to PR 107807 comment #2, Solaris implements "errno"
+       like this:
+	 extern int *___errno(void) __attribute__((__const__));
+	 #define errno (*(___errno()))
+       and OS X like this:
+	 extern int * __error(void);
+	 #define errno (*__error())
+       Add these as synonyms for "__errno_location".  */
+    kfm.add ("___errno", make_unique<kf_errno_location> ());
+    kfm.add ("__error", make_unique<kf_errno_location> ());
+  }
+
   /* C++ support functions.  */
   {
     kfm.add ("operator new", make_unique<kf_operator_new> ());
