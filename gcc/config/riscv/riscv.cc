@@ -5340,7 +5340,8 @@ riscv_get_separate_components (void)
   bitmap_clear (components);
 
   if (riscv_use_save_libcall (&cfun->machine->frame)
-      || cfun->machine->interrupt_handler_p)
+      || cfun->machine->interrupt_handler_p
+      || !cfun->machine->frame.gp_sp_offset.is_constant ())
     return components;
 
   offset = cfun->machine->frame.gp_sp_offset.to_constant ();
