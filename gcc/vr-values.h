@@ -37,8 +37,7 @@ public:
 private:
   void vrp_visit_cond_stmt (gcond *, edge *);
   tree vrp_evaluate_conditional_warnv_with_ops (gimple *stmt, enum tree_code,
-						tree, tree, bool,
-						bool *, bool *);
+						tree, tree, bool *, bool *);
   bool simplify_casted_cond (gcond *);
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
@@ -54,7 +53,6 @@ private:
   bool two_valued_val_range_p (tree, tree *, tree *, gimple *);
   bool op_with_boolean_value_range_p (tree, gimple *);
   tree compare_name_with_value (enum tree_code, tree, tree, bool *, gimple *);
-  tree compare_names (enum tree_code, tree, tree, bool *, gimple *s);
   const value_range *get_vr_for_comparison (int, value_range *, gimple *s);
   tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
 							     tree, tree,

@@ -667,124 +667,6 @@ simplify_using_ranges::compare_name_with_value
   return retval;
 }
 
-/* Given a comparison code COMP and names N1 and N2, compare all the
-   ranges equivalent to N1 against all the ranges equivalent to N2
-   to determine the value of N1 COMP N2.  Return the same value
-   returned by compare_ranges.  Set *STRICT_OVERFLOW_P to indicate
-   whether we relied on undefined signed overflow in the comparison.  */
-
-
-tree
-simplify_using_ranges::compare_names (enum tree_code comp, tree n1, tree n2,
-				      bool *strict_overflow_p, gimple *s)
-{
-  /* ?? These bitmaps are NULL as there are no longer any equivalences
-     available in the value_range*.  */
-  bitmap e1 = NULL;
-  bitmap e2 = NULL;
-
-  /* Use the fake bitmaps if e1 or e2 are not available.  */
-  static bitmap s_e1 = NULL, s_e2 = NULL;
-  static bitmap_obstack *s_obstack = NULL;
-  if (s_obstack == NULL)
-    {
-      s_obstack = XNEW (bitmap_obstack);
-      bitmap_obstack_initialize (s_obstack);
-      s_e1 = BITMAP_ALLOC (s_obstack);
-      s_e2 = BITMAP_ALLOC (s_obstack);
-    }
-  if (e1 == NULL)
-    e1 = s_e1;
-  if (e2 == NULL)
-    e2 = s_e2;
-
-  /* Add N1 and N2 to their own set of equivalences to avoid
-     duplicating the body of the loop just to check N1 and N2
-     ranges.  */
-  bitmap_set_bit (e1, SSA_NAME_VERSION (n1));
-  bitmap_set_bit (e2, SSA_NAME_VERSION (n2));
-
-  /* If the equivalence sets have a common intersection, then the two
-     names can be compared without checking their ranges.  */
-  if (bitmap_intersect_p (e1, e2))
-    {
-      bitmap_clear_bit (e1, SSA_NAME_VERSION (n1));
-      bitmap_clear_bit (e2, SSA_NAME_VERSION (n2));
-
-      return (comp == EQ_EXPR || comp == GE_EXPR || comp == LE_EXPR)
-	     ? boolean_true_node
-	     : boolean_false_node;
-    }
-
-  /* Start at -1.  Set it to 0 if we do a comparison without relying
-     on overflow, or 1 if all comparisons rely on overflow.  */
-  int used_strict_overflow = -1;
-
-  /* Otherwise, compare all the equivalent ranges.  First, add N1 and
-     N2 to their own set of equivalences to avoid duplicating the body
-     of the loop just to check N1 and N2 ranges.  */
-  bitmap_iterator bi1;
-  unsigned i1;
-  EXECUTE_IF_SET_IN_BITMAP (e1, 0, i1, bi1)
-    {
-      if (!ssa_name (i1))
-	continue;
-
-      value_range tem_vr1;
-      const value_range *vr1 = get_vr_for_comparison (i1, &tem_vr1, s);
-
-      tree t = NULL_TREE, retval = NULL_TREE;
-      bitmap_iterator bi2;
-      unsigned i2;
-      EXECUTE_IF_SET_IN_BITMAP (e2, 0, i2, bi2)
-	{
-	  if (!ssa_name (i2))
-	    continue;
-
-	  bool sop = false;
-
-	  value_range tem_vr2;
-	  const value_range *vr2 = get_vr_for_comparison (i2, &tem_vr2, s);
-
-	  t = compare_ranges (comp, vr1, vr2, &sop);
-	  if (t)
-	    {
-	      /* If we get different answers from different members
-		 of the equivalence set this check must be in a dead
-		 code region.  Folding it to a trap representation
-		 would be correct here.  For now just return don't-know.  */
-	      if (retval != NULL && t != retval)
-		{
-		  bitmap_clear_bit (e1, SSA_NAME_VERSION (n1));
-		  bitmap_clear_bit (e2, SSA_NAME_VERSION (n2));
-		  return NULL_TREE;
-		}
-	      retval = t;
-
-	      if (!sop)
-		used_strict_overflow = 0;
-	      else if (used_strict_overflow < 0)
-		used_strict_overflow = 1;
-	    }
-	}
-
-      if (retval)
-	{
-	  bitmap_clear_bit (e1, SSA_NAME_VERSION (n1));
-	  bitmap_clear_bit (e2, SSA_NAME_VERSION (n2));
-	  if (used_strict_overflow > 0)
-	    *strict_overflow_p = true;
-	  return retval;
-	}
-    }
-
-  /* None of the equivalent ranges are useful in computing this
-     comparison.  */
-  bitmap_clear_bit (e1, SSA_NAME_VERSION (n1));
-  bitmap_clear_bit (e2, SSA_NAME_VERSION (n2));
-  return NULL_TREE;
-}
-
 /* Helper function for vrp_evaluate_conditional_warnv & other
    optimizers.  */
 
@@ -815,7 +697,6 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
 						(gimple *stmt,
 						 enum tree_code code,
 						 tree op0, tree op1,
-						 bool use_equiv_p,
 						 bool *strict_overflow_p,
 						 bool *only_ranges)
 {
@@ -899,11 +780,7 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
     return ret;
   if (only_ranges)
     *only_ranges = false;
-  /* Do not use compare_names during propagation, it's quadratic.  */
-  if (TREE_CODE (op0) == SSA_NAME && TREE_CODE (op1) == SSA_NAME
-      && use_equiv_p)
-    return compare_names (code, op0, op1, strict_overflow_p, stmt);
-  else if (TREE_CODE (op0) == SSA_NAME)
+  if (TREE_CODE (op0) == SSA_NAME)
     return compare_name_with_value (code, op0, op1, strict_overflow_p, stmt);
   else if (TREE_CODE (op1) == SSA_NAME)
     return compare_name_with_value (swap_tree_comparison (code), op1, op0,
@@ -949,7 +826,7 @@ simplify_using_ranges::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
 						 gimple_cond_code (stmt),
 						 gimple_cond_lhs (stmt),
 						 gimple_cond_rhs (stmt),
-						 false, &sop, NULL);
+						 &sop, NULL);
   if (val)
     *taken_edge_p = find_taken_edge (gimple_bb (stmt), val);
 
