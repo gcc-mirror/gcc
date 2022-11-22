@@ -1,3 +1,18 @@
+2022-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107748
+	* config/i386/avx512fp16intrin.h (_mm512_castph512_ph128,
+	_mm512_castph512_ph256, _mm512_castph128_ph512,
+	_mm512_castph256_ph512, _mm512_set1_pch): Uglify names of local
+	variables and union members.
+	* config/i386/avx512fp16vlintrin.h (_mm256_castph256_ph128,
+	_mm256_castph128_ph256, _mm256_set1_pch, _mm_set1_pch): Likewise.
+	* config/i386/smmintrin.h (_mm_extract_ps): Likewise.
+	* config/i386/avx512bf16intrin.h (_mm_cvtsbh_ss): Likewise.
+
 2022-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
