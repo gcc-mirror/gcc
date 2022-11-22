@@ -671,12 +671,14 @@ public:
       stmts_to_remove.create (0);
       stmts_to_fixup.create (0);
       need_eh_cleanup = BITMAP_ALLOC (NULL);
+      need_ab_cleanup = BITMAP_ALLOC (NULL);
     }
     ~substitute_and_fold_dom_walker ()
     {
       stmts_to_remove.release ();
       stmts_to_fixup.release ();
       BITMAP_FREE (need_eh_cleanup);
+      BITMAP_FREE (need_ab_cleanup);
     }
 
     edge before_dom_children (basic_block) final override;
@@ -689,6 +691,7 @@ public:
     vec<gimple *> stmts_to_remove;
     vec<gimple *> stmts_to_fixup;
     bitmap need_eh_cleanup;
+    bitmap need_ab_cleanup;
 
     class substitute_and_fold_engine *substitute_and_fold_engine;
 
@@ -838,8 +841,13 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	 folded.  */
       did_replace = false;
       gimple *old_stmt = stmt;
-      bool was_noreturn = (is_gimple_call (stmt)
-			   && gimple_call_noreturn_p (stmt));
+      bool was_noreturn = false;
+      bool can_make_abnormal_goto = false;
+      if (is_gimple_call (stmt))
+	{
+	  was_noreturn = gimple_call_noreturn_p (stmt);
+	  can_make_abnormal_goto = stmt_can_make_abnormal_goto (stmt);
+	}
 
       /* Replace real uses in the statement.  */
       did_replace |= substitute_and_fold_engine->replace_uses_in (stmt);
@@ -904,6 +912,12 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	     remove EH edges.  */
 	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
 	    bitmap_set_bit (need_eh_cleanup, bb->index);
+
+	  /* If we turned a call with possible abnormal control transfer
+	     into one that doesn't, remove abnormal edges.  */
+	  if (can_make_abnormal_goto
+	      && !stmt_can_make_abnormal_goto (stmt))
+	    bitmap_set_bit (need_ab_cleanup, bb->index);
 
 	  /* If we turned a not noreturn call into a noreturn one
 	     schedule it for fixup.  */
@@ -1012,6 +1026,8 @@ substitute_and_fold_engine::substitute_and_fold (basic_block block)
 
   if (!bitmap_empty_p (walker.need_eh_cleanup))
     gimple_purge_all_dead_eh_edges (walker.need_eh_cleanup);
+  if (!bitmap_empty_p (walker.need_ab_cleanup))
+    gimple_purge_all_dead_abnormal_call_edges (walker.need_ab_cleanup);
 
   /* Fixup stmts that became noreturn calls.  This may require splitting
      blocks and thus isn't possible during the dominator walk.  Do this
