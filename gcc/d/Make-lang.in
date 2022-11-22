@@ -70,7 +70,7 @@ DPOSTCOMPILE = @mv $(@D)/$(DEPDIR)/$(*F).TPo $(@D)/$(DEPDIR)/$(*F).Po
 DLINKER = $(GDC) $(NO_PIE_FLAG) -lstdc++
 
 # Like LINKER, but use a mutex for serializing front end links.
-ifeq (@DO_LINK_MUTEX@,true)
+ifeq ($(DO_LINK_MUTEX),true)
 DLLINKER = $(SHELL) $(srcdir)/lock-and-run.sh linkfe.lck $(DLINKER)
 else
 DLLINKER = $(DLINKER)

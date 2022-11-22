@@ -272,6 +272,7 @@ COMPILER += $(CET_HOST_FLAGS)
 
 NO_PIE_CFLAGS = @NO_PIE_CFLAGS@
 NO_PIE_FLAG = @NO_PIE_FLAG@
+DO_LINK_MUTEX = @DO_LINK_MUTEX@
 
 # We don't want to compile the compilers with -fPIE, it make PCH fail.
 COMPILER += $(NO_PIE_CFLAGS)
