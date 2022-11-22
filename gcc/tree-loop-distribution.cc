@@ -1770,8 +1770,13 @@ loop_distribution::classify_builtin_ldst (loop_p loop, struct graph *rdg,
   if (res != 2)
     return;
 
-  /* They much have the same access size.  */
+  /* They must have the same access size.  */
   if (!operand_equal_p (size, src_size, 0))
+    return;
+
+  /* They must have the same storage order.  */
+  if (reverse_storage_order_for_component_p (DR_REF (dst_dr))
+      != reverse_storage_order_for_component_p (DR_REF (src_dr)))
     return;
 
   /* Load and store in loop nest must access memory in the same way, i.e,
