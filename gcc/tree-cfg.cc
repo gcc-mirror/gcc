@@ -4795,17 +4795,6 @@ verify_gimple_assign_single (gassign *stmt)
 	}
       return res;
 
-    case ASSERT_EXPR:
-      /* FIXME.  */
-      rhs1 = fold (ASSERT_EXPR_COND (rhs1));
-      if (rhs1 == boolean_false_node)
-	{
-	  error ("%qs with an always-false condition", code_name);
-	  debug_generic_stmt (rhs1);
-	  return true;
-	}
-      break;
-
     case WITH_SIZE_EXPR:
       error ("%qs RHS in assignment statement",
 	     get_tree_code_name (rhs_code));

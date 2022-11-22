@@ -897,7 +897,6 @@ operands_scanner::get_expr_operands (tree *expr_p, int flags)
     case BIT_INSERT_EXPR:
     case COMPOUND_EXPR:
     case OBJ_TYPE_REF:
-    case ASSERT_EXPR:
     do_binary:
       {
 	get_expr_operands (&TREE_OPERAND (expr, 0), flags);

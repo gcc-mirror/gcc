@@ -944,49 +944,6 @@ simplify_using_ranges::vrp_visit_cond_stmt (gcond *stmt, edge *taken_edge_p)
       fprintf (dump_file, "\n");
     }
 
-  /* Compute the value of the predicate COND by checking the known
-     ranges of each of its operands.
-
-     Note that we cannot evaluate all the equivalent ranges here
-     because those ranges may not yet be final and with the current
-     propagation strategy, we cannot determine when the value ranges
-     of the names in the equivalence set have changed.
-
-     For instance, given the following code fragment
-
-        i_5 = PHI <8, i_13>
-	...
-     	i_14 = ASSERT_EXPR <i_5, i_5 != 0>
-	if (i_14 == 1)
-	  ...
-
-     Assume that on the first visit to i_14, i_5 has the temporary
-     range [8, 8] because the second argument to the PHI function is
-     not yet executable.  We derive the range ~[0, 0] for i_14 and the
-     equivalence set { i_5 }.  So, when we visit 'if (i_14 == 1)' for
-     the first time, since i_14 is equivalent to the range [8, 8], we
-     determine that the predicate is always false.
-
-     On the next round of propagation, i_13 is determined to be
-     VARYING, which causes i_5 to drop down to VARYING.  So, another
-     visit to i_14 is scheduled.  In this second visit, we compute the
-     exact same range and equivalence set for i_14, namely ~[0, 0] and
-     { i_5 }.  But we did not have the previous range for i_5
-     registered, so vrp_visit_assignment thinks that the range for
-     i_14 has not changed.  Therefore, the predicate 'if (i_14 == 1)'
-     is not visited again, which stops propagation from visiting
-     statements in the THEN clause of that if().
-
-     To properly fix this we would need to keep the previous range
-     value for the names in the equivalence set.  This way we would've
-     discovered that from one visit to the other i_5 changed from
-     range [8, 8] to VR_VARYING.
-
-     However, fixing this apparent limitation may not be worth the
-     additional checking.  Testing on several code bases (GCC, DLV,
-     MICO, TRAMP3D and SPEC2000) showed that doing this results in
-     4 more predicates folded in SPEC.  */
-
   bool sop;
   val = vrp_evaluate_conditional_warnv_with_ops (stmt,
 						 gimple_cond_code (stmt),

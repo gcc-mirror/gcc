@@ -821,10 +821,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	      && sprime != lhs
 	      && may_propagate_copy (lhs, sprime)
 	      && !stmt_could_throw_p (cfun, stmt)
-	      && !gimple_has_side_effects (stmt)
-	      /* We have to leave ASSERT_EXPRs around for jump-threading.  */
-	      && (!is_gimple_assign (stmt)
-		  || gimple_assign_rhs_code (stmt) != ASSERT_EXPR))
+	      && !gimple_has_side_effects (stmt))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{

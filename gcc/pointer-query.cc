@@ -2144,12 +2144,6 @@ handle_ssa_name (tree ptr, bool addr, int ostype,
 
   tree rhs = gimple_assign_rhs1 (stmt);
 
-  if (code == ASSERT_EXPR)
-    {
-      rhs = TREE_OPERAND (rhs, 0);
-      return compute_objsize_r (rhs, stmt, addr, ostype, pref, snlim, qry);
-    }
-
   if (code == POINTER_PLUS_EXPR
       && TREE_CODE (TREE_TYPE (rhs)) == POINTER_TYPE)
     {

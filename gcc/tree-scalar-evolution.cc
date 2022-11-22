@@ -1122,13 +1122,11 @@ scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
      - a PLUS_EXPR,
      - a POINTER_PLUS_EXPR,
      - a MINUS_EXPR,
-     - an ASSERT_EXPR,
      - other cases are not yet handled.  */
 
   /* For SSA_NAME look at the definition statement, handling
      PHI nodes and otherwise expand appropriately for the expression
      handling below.  */
-tail_recurse:
   if (TREE_CODE (expr) == SSA_NAME)
     {
       gimple *def = SSA_NAME_DEF_STMT (expr);
@@ -1271,12 +1269,6 @@ tail_recurse:
       /* Else search for the SCC in both rhs0 and rhs1.  */
       return follow_ssa_edge_binary (at_stmt, type, rhs0, code, rhs1,
 				     evolution_of_loop, limit);
-
-    case ASSERT_EXPR:
-      /* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
-	 It must be handled as a copy assignment of the form a_1 = a_2.  */
-      expr = ASSERT_EXPR_VAR (rhs0);
-      goto tail_recurse;
 
     default:
       return t_false;
@@ -1640,13 +1632,6 @@ interpret_rhs_expr (class loop *loop, gimple *at_stmt,
       if (code == SSA_NAME)
 	return chrec_convert (type, analyze_scalar_evolution (loop, rhs1),
 			      at_stmt);
-
-      if (code == ASSERT_EXPR)
-	{
-	  rhs1 = ASSERT_EXPR_VAR (rhs1);
-	  return chrec_convert (type, analyze_scalar_evolution (loop, rhs1),
-				at_stmt);
-	}
     }
 
   switch (code)

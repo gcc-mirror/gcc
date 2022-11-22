@@ -682,8 +682,7 @@ more than two slots on the RHS.  For instance, a @code{COND_EXPR}
 expression of the form @code{(a op b) ? x : y} could be flattened
 out on the operand vector using 4 slots, but it would also
 require additional processing to distinguish @code{c = a op b}
-from @code{c = a op b ? x : y}.  Something similar occurs with
-@code{ASSERT_EXPR}.   In time, these special case tree
+from @code{c = a op b ? x : y}.  In time, these special case tree
 expressions should be flattened into the operand vector.
 @end itemize
 

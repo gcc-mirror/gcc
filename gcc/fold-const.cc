@@ -10751,7 +10751,6 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
     case COND_EXPR:
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
-    case ASSERT_EXPR:
     case ADDR_EXPR:
     case WITH_SIZE_EXPR:
     case SSA_NAME:
@@ -12617,10 +12616,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
       tem = integer_zerop (arg1) ? build1_loc (loc, NOP_EXPR, type, arg1)
 				 : fold_convert_loc (loc, type, arg1);
       return tem;
-
-    case ASSERT_EXPR:
-      /* An ASSERT_EXPR should never be passed to fold_binary.  */
-      gcc_unreachable ();
 
     default:
       return NULL_TREE;
@@ -15117,7 +15112,6 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
     case COND_EXPR:
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
-    case ASSERT_EXPR:
     case ADDR_EXPR:
     case WITH_SIZE_EXPR:
     case SSA_NAME:
