@@ -358,6 +358,12 @@ namespace __format
     size_t
     __int_from_arg(const basic_format_arg<_Context>& __arg);
 
+  constexpr bool __is_digit(char __c)
+  { return std::__detail::__from_chars_alnum_to_val(__c) < 10; }
+
+  constexpr bool __is_xdigit(char __c)
+  { return std::__detail::__from_chars_alnum_to_val(__c) < 16; }
+
   template<typename _CharT>
     struct _Spec
     {
@@ -469,7 +475,7 @@ namespace __format
 				  unsigned short& __val, bool& __arg_id,
 				  basic_format_parse_context<_CharT>& __pc)
       {
-	if (std::isdigit(*__first))
+	if (__format::__is_digit(*__first))
 	  {
 	    auto [__v, __ptr] = __format::__parse_integer(__first, __last);
 	    if (!__ptr)
@@ -1537,7 +1543,7 @@ namespace __format
 
 	      if (__trailing_zeros)
 		{
-		  if (!std::isxdigit(__s[0]))
+		  if (!__format::__is_xdigit(__s[0]))
 		    --__sigfigs;
 		  __z = __prec - __sigfigs;
 		}
@@ -1627,7 +1633,7 @@ namespace __format
 		{
 		  __fill_char = _CharT('0');
 		  // Write sign before zero filling.
-		  if (!std::isxdigit(__narrow_str[0]))
+		  if (!__format::__is_xdigit(__narrow_str[0]))
 		    {
 		      *__out++ = __str[0];
 		      __str.remove_prefix(1);

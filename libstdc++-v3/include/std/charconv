@@ -454,7 +454,7 @@ namespace __detail
   // If _DecOnly is false: if the character is an alphanumeric digit, then
   // return its corresponding base-36 value, otherwise return a value >= 127.
   template<bool _DecOnly = false>
-    _GLIBCXX23_CONSTEXPR unsigned char
+    _GLIBCXX20_CONSTEXPR unsigned char
     __from_chars_alnum_to_val(unsigned char __c)
     {
       if _GLIBCXX17_CONSTEXPR (_DecOnly)
