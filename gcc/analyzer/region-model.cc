@@ -1160,13 +1160,11 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
 }
 
 /* Handle the pre-sm-state part of STMT, modifying this object in-place.
-   Write true to *OUT_TERMINATE_PATH if the path should be terminated.
    Write true to *OUT_UNKNOWN_SIDE_EFFECTS if the stmt has unknown
    side effects.  */
 
 void
 region_model::on_stmt_pre (const gimple *stmt,
-			   bool *out_terminate_path,
 			   bool *out_unknown_side_effects,
 			   region_model_context *ctxt)
 {
@@ -1196,8 +1194,7 @@ region_model::on_stmt_pre (const gimple *stmt,
 	   anything, for which we don't have a function body, or for which we
 	   don't know the fndecl.  */
 	const gcall *call = as_a <const gcall *> (stmt);
-	*out_unknown_side_effects
-	  = on_call_pre (call, ctxt, out_terminate_path);
+	*out_unknown_side_effects = on_call_pre (call, ctxt);
       }
       break;
 
@@ -2030,13 +2027,28 @@ region_model::maybe_get_copy_bounds (const region *src_reg,
   return NULL;
 }
 
-/* Get any known_function for FNDECL, or NULL if there is none.  */
+/* Get any known_function for FNDECL for call CD.
+
+   The call must match all assumptions made by the known_function (such as
+   e.g. "argument 1's type must be a pointer type").
+
+   Return NULL if no known_function is found, or it does not match the
+   assumption(s).  */
 
 const known_function *
-region_model::get_known_function (tree fndecl) const
+region_model::get_known_function (tree fndecl, const call_details &cd) const
 {
   known_function_manager *known_fn_mgr = m_mgr->get_known_function_manager ();
-  return known_fn_mgr->get_by_fndecl (fndecl);
+  return known_fn_mgr->get_match (fndecl, cd);
+}
+
+/* Get any known_function for IFN, or NULL.  */
+
+const known_function *
+region_model::get_known_function (enum internal_fn ifn) const
+{
+  known_function_manager *known_fn_mgr = m_mgr->get_known_function_manager ();
+  return known_fn_mgr->get_internal_fn (ifn);
 }
 
 /* Update this model for the CALL stmt, using CTXT to report any
@@ -2048,14 +2060,10 @@ region_model::get_known_function (tree fndecl) const
 
    Return true if the function call has unknown side effects (it wasn't
    recognized and we don't have a body for it, or are unable to tell which
-   fndecl it is).
-
-   Write true to *OUT_TERMINATE_PATH if this execution path should be
-   terminated (e.g. the function call terminates the process).  */
+   fndecl it is).  */
 
 bool
-region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
-			   bool *out_terminate_path)
+region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 {
   call_details cd (call, this, ctxt);
 
@@ -2099,187 +2107,27 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
     }
 
   if (gimple_call_internal_p (call))
-    {
-      switch (gimple_call_internal_fn (call))
-       {
-       default:
-	 break;
-       case IFN_BUILTIN_EXPECT:
-	 impl_call_builtin_expect (cd);
-	 return false;
-       case IFN_UBSAN_BOUNDS:
-	 return false;
-       case IFN_VA_ARG:
-	 impl_call_va_arg (cd);
-	 return false;
-       }
-    }
+    if (const known_function *kf
+	  = get_known_function (gimple_call_internal_fn (call)))
+      {
+	kf->impl_call_pre (cd);
+	return false;
+      }
 
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
     {
-      /* The various impl_call_* member functions are implemented
-	 in region-model-impl-calls.cc.
-	 Having them split out into separate functions makes it easier
-	 to put breakpoints on the handling of specific functions.  */
       int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
 
-      if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
+      if (const known_function *kf = get_known_function (callee_fndecl, cd))
+	{
+	  kf->impl_call_pre (cd);
+	  return false;
+	}
+      else if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
 	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
-	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
-	  {
-	  default:
-	    if (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
-	      unknown_side_effects = true;
-	    break;
-	  case BUILT_IN_ALLOCA:
-	  case BUILT_IN_ALLOCA_WITH_ALIGN:
-	    impl_call_alloca (cd);
-	    return false;
-	  case BUILT_IN_CALLOC:
-	    impl_call_calloc (cd);
-	    return false;
-	  case BUILT_IN_EXPECT:
-	  case BUILT_IN_EXPECT_WITH_PROBABILITY:
-	    impl_call_builtin_expect (cd);
-	    return false;
-	  case BUILT_IN_FREE:
-	    /* Handle in "on_call_post".  */
-	    break;
-	  case BUILT_IN_MALLOC:
-	    impl_call_malloc (cd);
-	    return false;
-	  case BUILT_IN_MEMCPY:
-	  case BUILT_IN_MEMCPY_CHK:
-	    impl_call_memcpy (cd);
-	    return false;
-	  case BUILT_IN_MEMSET:
-	  case BUILT_IN_MEMSET_CHK:
-	    impl_call_memset (cd);
-	    return false;
-	    break;
-	  case BUILT_IN_REALLOC:
-	    return false;
-	  case BUILT_IN_STRCHR:
-	    /* Handle in "on_call_post".  */
-	    return false;
-	  case BUILT_IN_STRCPY:
-	  case BUILT_IN_STRCPY_CHK:
-	    impl_call_strcpy (cd);
-	    return false;
-	  case BUILT_IN_STRLEN:
-	    impl_call_strlen (cd);
-	    return false;
-
-	  case BUILT_IN_STACK_SAVE:
-	  case BUILT_IN_STACK_RESTORE:
-	    return false;
-
-	  /* Stdio builtins.  */
-	  case BUILT_IN_FPRINTF:
-	  case BUILT_IN_FPRINTF_UNLOCKED:
-	  case BUILT_IN_PUTC:
-	  case BUILT_IN_PUTC_UNLOCKED:
-	  case BUILT_IN_FPUTC:
-	  case BUILT_IN_FPUTC_UNLOCKED:
-	  case BUILT_IN_FPUTS:
-	  case BUILT_IN_FPUTS_UNLOCKED:
-	  case BUILT_IN_FWRITE:
-	  case BUILT_IN_FWRITE_UNLOCKED:
-	  case BUILT_IN_PRINTF:
-	  case BUILT_IN_PRINTF_UNLOCKED:
-	  case BUILT_IN_PUTCHAR:
-	  case BUILT_IN_PUTCHAR_UNLOCKED:
-	  case BUILT_IN_PUTS:
-	  case BUILT_IN_PUTS_UNLOCKED:
-	  case BUILT_IN_VFPRINTF:
-	  case BUILT_IN_VPRINTF:
-	    /* These stdio builtins have external effects that are out
-	       of scope for the analyzer: we only want to model the effects
-	       on the return value.  */
-	    break;
-
-	  case BUILT_IN_VA_START:
-	    impl_call_va_start (cd);
-	    return false;
-	  case BUILT_IN_VA_COPY:
-	    impl_call_va_copy (cd);
-	    return false;
-	  }
-      else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
 	{
-	  impl_call_malloc (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "calloc", call, 2))
-	{
-	  impl_call_calloc (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "alloca", call, 1))
-	{
-	  impl_call_alloca (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "realloc", call, 2))
-	{
-	  impl_call_realloc (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "error"))
-	{
-	  if (impl_call_error (cd, 3, out_terminate_path))
-	    return false;
-	  else
+	  if (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
 	    unknown_side_effects = true;
-	}
-      else if (is_named_call_p (callee_fndecl, "error_at_line"))
-	{
-	  if (impl_call_error (cd, 5, out_terminate_path))
-	    return false;
-	  else
-	    unknown_side_effects = true;
-	}
-      else if (is_named_call_p (callee_fndecl, "fgets", call, 3)
-	       || is_named_call_p (callee_fndecl, "fgets_unlocked", call, 3))
-	{
-	  impl_call_fgets (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "fread", call, 4))
-	{
-	  impl_call_fread (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "getchar", call, 0))
-	{
-	  /* No side-effects (tracking stream state is out-of-scope
-	     for the analyzer).  */
-	}
-      else if (is_named_call_p (callee_fndecl, "memset", call, 3)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  impl_call_memset (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  /* Handle in "on_call_post".  */
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  impl_call_strlen (cd);
-	  return false;
-	}
-      else if (const known_function *kf = get_known_function (callee_fndecl))
-	{
-	  if (kf->matches_call_types_p (cd))
-	    {
-	      kf->impl_call_pre (cd);
-	      return false;
-	    }
 	}
       else if (!fndecl_has_gimple_body_p (callee_fndecl)
 	       && (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
@@ -2310,24 +2158,10 @@ region_model::on_call_post (const gcall *call,
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
     {
       call_details cd (call, this, ctxt);
-      if (is_named_call_p (callee_fndecl, "free", call, 1))
+      if (const known_function *kf = get_known_function (callee_fndecl, cd))
 	{
-	  impl_call_free (cd);
+	  kf->impl_call_post (cd);
 	  return;
-	}
-      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  impl_call_strchr (cd);
-	  return;
-	}
-      else if (const known_function *kf = get_known_function (callee_fndecl))
-	{
-	  if (kf->matches_call_types_p (cd))
-	    {
-	      kf->impl_call_post (cd);
-	      return;
-	    }
 	}
       /* Was this fndecl referenced by
 	 __attribute__((malloc(FOO)))?  */
@@ -2336,24 +2170,6 @@ region_model::on_call_post (const gcall *call,
 	  impl_deallocation_call (cd);
 	  return;
 	}
-      if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
-	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
-	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
-	  {
-	  default:
-	    break;
-	  case BUILT_IN_REALLOC:
-	    impl_call_realloc (cd);
-	    return;
-
-	  case BUILT_IN_STRCHR:
-	    impl_call_strchr (cd);
-	    return;
-
-	  case BUILT_IN_VA_END:
-	    impl_call_va_end (cd);
-	    return;
-	  }
     }
 
   if (unknown_side_effects)

@@ -245,7 +245,20 @@ public:
   }
 };
 
+/* Subclass of known_function for IFN_* functions.  */
+
+class internal_known_function : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &) const final override
+  {
+    /* Types are assumed to be correct.  */
+    return true;
+  }
+};
+
 extern void register_known_functions (known_function_manager &mgr);
+extern void register_varargs_builtins (known_function_manager &kfm);
 
 /* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
 

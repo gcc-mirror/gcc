@@ -133,6 +133,14 @@ call_details::num_args () const
   return gimple_call_num_args (m_call);
 }
 
+/* Return true if argument IDX is a size_t (or compatible with it).  */
+
+bool
+call_details::arg_is_size_p (unsigned idx) const
+{
+  return types_compatible_p (get_arg_type (idx), size_type_node);
+}
+
 /* Get the location of the call statement.  */
 
 location_t
@@ -242,15 +250,30 @@ call_details::get_or_create_conjured_svalue (const region *reg) const
 
 /* Implementations of specific functions.  */
 
-/* Handle the on_call_pre part of "alloca".  */
+/* Handler for "alloca".  */
+
+class kf_alloca : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 1;
+  }
+  void impl_call_pre (const call_details &cd) const final override;
+};
 
 void
-region_model::impl_call_alloca (const call_details &cd)
+kf_alloca::impl_call_pre (const call_details &cd) const
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
-  const region *new_reg = create_region_for_alloca (size_sval, cd.get_ctxt ());
+
+  region_model *model = cd.get_model ();
+  region_model_manager *mgr = cd.get_manager ();
+
+  const region *new_reg
+    = model->create_region_for_alloca (size_sval, cd.get_ctxt ());
   const svalue *ptr_sval
-    = m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+    = mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
   cd.maybe_set_lhs (ptr_sval);
 }
 
@@ -308,7 +331,7 @@ public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 1
-	    && POINTER_TYPE_P (cd.get_arg_type (0)));
+	    && cd.arg_is_pointer_p (0));
   }
 
   void impl_call_pre (const call_details &cd) const final override
@@ -649,36 +672,53 @@ public:
   }
 };
 
-/* Handle the on_call_pre part of "__builtin_expect" etc.  */
+/* Handler for "__builtin_expect" etc.  */
+
+class kf_expect : public internal_known_function
+{
+public:
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    /* __builtin_expect's return value is its initial argument.  */
+    const svalue *sval = cd.get_arg_svalue (0);
+    cd.maybe_set_lhs (sval);
+  }
+};
+
+/* Handler for "calloc".  */
+
+class kf_calloc : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && cd.arg_is_size_p (0)
+	    && cd.arg_is_size_p (1));
+  }
+  void impl_call_pre (const call_details &cd) const final override;
+};
 
 void
-region_model::impl_call_builtin_expect (const call_details &cd)
+kf_calloc::impl_call_pre (const call_details &cd) const
 {
-  /* __builtin_expect's return value is its initial argument.  */
-  const svalue *sval = cd.get_arg_svalue (0);
-  cd.maybe_set_lhs (sval);
-}
-
-/* Handle the on_call_pre part of "calloc".  */
-
-void
-region_model::impl_call_calloc (const call_details &cd)
-{
+  region_model *model = cd.get_model ();
+  region_model_manager *mgr = cd.get_manager ();
   const svalue *nmemb_sval = cd.get_arg_svalue (0);
   const svalue *size_sval = cd.get_arg_svalue (1);
   /* TODO: check for overflow here?  */
   const svalue *prod_sval
-    = m_mgr->get_or_create_binop (size_type_node, MULT_EXPR,
-				  nmemb_sval, size_sval);
+    = mgr->get_or_create_binop (size_type_node, MULT_EXPR,
+				nmemb_sval, size_sval);
   const region *new_reg
-    = create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
+    = model->create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
   const region *sized_reg
-    = m_mgr->get_sized_region (new_reg, NULL_TREE, prod_sval);
-  zero_fill_region (sized_reg);
+    = mgr->get_sized_region (new_reg, NULL_TREE, prod_sval);
+  model->zero_fill_region (sized_reg);
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
-	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	= mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       cd.maybe_set_lhs (ptr_sval);
     }
 }
@@ -708,7 +748,7 @@ public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 3
-	    && POINTER_TYPE_P (cd.get_arg_type (1)));
+	    && cd.arg_is_pointer_p (1));
   }
 
   void impl_call_post (const call_details &cd) const final override
@@ -745,67 +785,102 @@ public:
   }
 };
 
-/* Handle the on_call_pre part of "error" and "error_at_line" from
-   GNU's non-standard <error.h>.
+/* Handler for "error" and "error_at_line" from GNU's non-standard <error.h>.
    MIN_ARGS identifies the minimum number of expected arguments
-   to be consistent with such a call (3 and 5 respectively).
-   Return true if handling it as one of these functions.
-   Write true to *OUT_TERMINATE_PATH if this execution path should be
-   terminated (e.g. the function call terminates the process).  */
+   to be consistent with such a call (3 and 5 respectively).  */
 
-bool
-region_model::impl_call_error (const call_details &cd, unsigned min_args,
-			       bool *out_terminate_path)
+class kf_error : public known_function
 {
-  /* Bail if not enough args.  */
-  if (cd.num_args () < min_args)
-    return false;
+public:
+  kf_error (unsigned min_args) : m_min_args (min_args) {}
 
-  /* Initial argument ought to be of type "int".  */
-  if (cd.get_arg_type (0) != integer_type_node)
-    return false;
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () >= m_min_args
+	    && cd.get_arg_type (0) == integer_type_node);
+  }
 
+  void impl_call_pre (const call_details &cd) const final override;
+
+private:
+  unsigned m_min_args;
+};
+
+void
+kf_error::impl_call_pre (const call_details &cd) const
+{
   /* The process exits if status != 0, so it only continues
      for the case where status == 0.
      Add that constraint, or terminate this analysis path.  */
   tree status = cd.get_arg_tree (0);
-  if (!add_constraint (status, EQ_EXPR, integer_zero_node, cd.get_ctxt ()))
-    *out_terminate_path = true;
-
-  return true;
+  region_model_context *ctxt = cd.get_ctxt ();
+  region_model *model = cd.get_model ();
+  if (!model->add_constraint (status, EQ_EXPR, integer_zero_node, ctxt))
+    if (ctxt)
+      ctxt->terminate_path ();
 }
 
-/* Handle the on_call_pre part of "fgets" and "fgets_unlocked".  */
+/* Handler for "fgets" and "fgets_unlocked".  */
+
+class kf_fgets : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (2));
+  }
+
+  void impl_call_pre (const call_details &cd) const final override;
+};
 
 void
-region_model::impl_call_fgets (const call_details &cd)
+kf_fgets::impl_call_pre (const call_details &cd) const
 {
   /* Ideally we would bifurcate state here between the
      error vs no error cases.  */
+  region_model *model = cd.get_model ();
   const svalue *ptr_sval = cd.get_arg_svalue (0);
   if (const region *reg = ptr_sval->maybe_get_region ())
     {
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-      set_value (base_reg, new_sval, cd.get_ctxt ());
+      model->set_value (base_reg, new_sval, cd.get_ctxt ());
     }
 }
 
-/* Handle the on_call_pre part of "fread".  */
+/* Handler for "fread"".  */
+
+class kf_fread : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 4
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_size_p (1)
+	    && cd.arg_is_size_p (2)
+	    && cd.arg_is_pointer_p (3));
+  }
+
+  void impl_call_pre (const call_details &cd) const final override;
+};
 
 void
-region_model::impl_call_fread (const call_details &cd)
+kf_fread::impl_call_pre (const call_details &cd) const
 {
+  region_model *model = cd.get_model ();
   const svalue *ptr_sval = cd.get_arg_svalue (0);
   if (const region *reg = ptr_sval->maybe_get_region ())
     {
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-      set_value (base_reg, new_sval, cd.get_ctxt ());
+      model->set_value (base_reg, new_sval, cd.get_ctxt ());
     }
 }
 
-/* Handle the on_call_post part of "free", after sm-handling.
+/* Handler for "free", after sm-handling.
 
    If the ptr points to an underlying heap region, delete the region,
    poisoning pointers to it and regions within it.
@@ -820,18 +895,43 @@ region_model::impl_call_fread (const call_details &cd)
    all pointers to the region to the "freed" state together, regardless
    of casts.  */
 
+class kf_free : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 0 && cd.arg_is_pointer_p (0));
+  }
+  void impl_call_post (const call_details &cd) const final override;
+};
+
 void
-region_model::impl_call_free (const call_details &cd)
+kf_free::impl_call_post (const call_details &cd) const
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
   if (const region *freed_reg = ptr_sval->maybe_get_region ())
     {
       /* If the ptr points to an underlying heap region, delete it,
 	 poisoning pointers.  */
-      unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
-      m_dynamic_extents.remove (freed_reg);
+      region_model *model = cd.get_model ();
+      model->unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+      model->unset_dynamic_extents (freed_reg);
     }
 }
+
+/* Handler for "getchar"".  */
+
+class kf_getchar : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 0;
+  }
+
+  /* Empty.  No side-effects (tracking stream state is out-of-scope
+     for the analyzer).  */
+};
 
 /* Handle calls to "listen".
    See e.g. https://man7.org/linux/man-pages/man3/listen.3p.html  */
@@ -872,66 +972,109 @@ class kf_listen : public known_function
 
 /* Handle the on_call_pre part of "malloc".  */
 
-void
-region_model::impl_call_malloc (const call_details &cd)
+class kf_malloc : public known_function
 {
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 1
+	    && cd.arg_is_size_p (0));
+  }
+  void impl_call_pre (const call_details &cd) const final override;
+};
+
+void
+kf_malloc::impl_call_pre (const call_details &cd) const
+{
+  region_model *model = cd.get_model ();
+  region_model_manager *mgr = cd.get_manager ();
   const svalue *size_sval = cd.get_arg_svalue (0);
   const region *new_reg
-    = create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
+    = model->create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
-	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	= mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       cd.maybe_set_lhs (ptr_sval);
     }
 }
 
-/* Handle the on_call_pre part of "memcpy" and "__builtin_memcpy".  */
+/* Handler for "memcpy" and "__builtin_memcpy".  */
 // TODO: complain about overlapping src and dest.
 
+class kf_memcpy : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1)
+	    && cd.arg_is_size_p (2));
+  }
+  void impl_call_pre (const call_details &cd) const final override;
+};
+
 void
-region_model::impl_call_memcpy (const call_details &cd)
+kf_memcpy::impl_call_pre (const call_details &cd) const
 {
   const svalue *dest_ptr_sval = cd.get_arg_svalue (0);
   const svalue *src_ptr_sval = cd.get_arg_svalue (1);
   const svalue *num_bytes_sval = cd.get_arg_svalue (2);
 
-  const region *dest_reg = deref_rvalue (dest_ptr_sval, cd.get_arg_tree (0),
-					 cd.get_ctxt ());
-  const region *src_reg = deref_rvalue (src_ptr_sval, cd.get_arg_tree (1),
-					cd.get_ctxt ());
+  region_model *model = cd.get_model ();
+  region_model_manager *mgr = cd.get_manager ();
+
+  const region *dest_reg
+    = model->deref_rvalue (dest_ptr_sval, cd.get_arg_tree (0), cd.get_ctxt ());
+  const region *src_reg
+    = model->deref_rvalue (src_ptr_sval, cd.get_arg_tree (1), cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_ptr_sval);
 
   const region *sized_src_reg
-    = m_mgr->get_sized_region (src_reg, NULL_TREE, num_bytes_sval);
+    = mgr->get_sized_region (src_reg, NULL_TREE, num_bytes_sval);
   const region *sized_dest_reg
-    = m_mgr->get_sized_region (dest_reg, NULL_TREE, num_bytes_sval);
+    = mgr->get_sized_region (dest_reg, NULL_TREE, num_bytes_sval);
   const svalue *src_contents_sval
-    = get_store_value (sized_src_reg, cd.get_ctxt ());
-  set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
+    = model->get_store_value (sized_src_reg, cd.get_ctxt ());
+  model->set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
 }
 
-/* Handle the on_call_pre part of "memset" and "__builtin_memset".  */
+/* Handler for "memset" and "__builtin_memset".  */
+
+class kf_memset : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3 && cd.arg_is_pointer_p (0));
+  }
+
+  void impl_call_pre (const call_details &cd) const final override;
+};
 
 void
-region_model::impl_call_memset (const call_details &cd)
+kf_memset::impl_call_pre (const call_details &cd) const
 {
   const svalue *dest_sval = cd.get_arg_svalue (0);
   const svalue *fill_value_sval = cd.get_arg_svalue (1);
   const svalue *num_bytes_sval = cd.get_arg_svalue (2);
 
-  const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
-					  cd.get_ctxt ());
+  region_model *model = cd.get_model ();
+  region_model_manager *mgr = cd.get_manager ();
+
+  const region *dest_reg
+    = model->deref_rvalue (dest_sval, cd.get_arg_tree (0), cd.get_ctxt ());
 
   const svalue *fill_value_u8
-    = m_mgr->get_or_create_cast (unsigned_char_type_node, fill_value_sval);
+    = mgr->get_or_create_cast (unsigned_char_type_node, fill_value_sval);
 
-  const region *sized_dest_reg = m_mgr->get_sized_region (dest_reg,
-							  NULL_TREE,
-							  num_bytes_sval);
-  check_region_for_write (sized_dest_reg, cd.get_ctxt ());
-  fill_region (sized_dest_reg, fill_value_u8);
+  const region *sized_dest_reg = mgr->get_sized_region (dest_reg,
+							NULL_TREE,
+							num_bytes_sval);
+  model->check_region_for_write (sized_dest_reg, cd.get_ctxt ());
+  model->fill_region (sized_dest_reg, fill_value_u8);
 }
 
 /* Handler for calls to "pipe" and "pipe2".
@@ -989,7 +1132,6 @@ class kf_pipe : public known_function
 						  p);
 	  model->set_value (element_reg, fd_sval, cd.get_ctxt ());
 	  model->mark_as_valid_fd (fd_sval, cd.get_ctxt ());
-
 	}
       return true;
     }
@@ -1004,8 +1146,7 @@ public:
 
   bool matches_call_types_p (const call_details &cd) const final override
   {
-    return (cd.num_args () == m_num_args
-	    && POINTER_TYPE_P (cd.get_arg_type (0)));
+    return (cd.num_args () == m_num_args && cd.arg_is_pointer_p (0));
   }
 
   void impl_call_post (const call_details &cd) const final override
@@ -1117,8 +1258,7 @@ class kf_putenv : public known_function
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
-    return (cd.num_args () == 1
-	    && POINTER_TYPE_P (cd.get_arg_type (0)));
+    return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
   }
 
   void impl_call_pre (const call_details &cd) const final override
@@ -1205,7 +1345,7 @@ private:
   unsigned m_num_args;
 };
 
-/* Handle the on_call_post part of "realloc":
+/* Handler for "realloc":
 
      void *realloc(void *ptr, size_t size);
 
@@ -1228,8 +1368,20 @@ private:
    Each of these has a custom_edge_info subclass, which updates
    the region_model and sm-state of the destination state.  */
 
+class kf_realloc : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_size_p (1));
+  }
+  void impl_call_post (const call_details &cd) const final override;
+};
+
 void
-region_model::impl_call_realloc (const call_details &cd)
+kf_realloc::impl_call_post (const call_details &cd) const
 {
   /* Three custom subclasses of custom_edge_info, for handling the various
      outcomes of "realloc".  */
@@ -1249,10 +1401,11 @@ region_model::impl_call_realloc (const call_details &cd)
     {
       /* Return NULL; everything else is unchanged.  */
       const call_details cd (get_call_details (model, ctxt));
+      region_model_manager *mgr = cd.get_manager ();
       if (cd.get_lhs_type ())
 	{
 	  const svalue *zero
-	    = model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+	    = mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
 	  model->set_value (cd.get_lhs_region (),
 			    zero,
 			    cd.get_ctxt ());
@@ -1284,13 +1437,14 @@ region_model::impl_call_realloc (const call_details &cd)
     {
       /* Update size of buffer and return the ptr unchanged.  */
       const call_details cd (get_call_details (model, ctxt));
+      region_model_manager *mgr = cd.get_manager ();
       const svalue *ptr_sval = cd.get_arg_svalue (0);
       const svalue *size_sval = cd.get_arg_svalue (1);
 
       /* We can only grow in place with a non-NULL pointer.  */
       {
 	const svalue *null_ptr
-	  = model->m_mgr->get_or_create_int_cst (ptr_sval->get_type (), 0);
+	  = mgr->get_or_create_int_cst (ptr_sval->get_type (), 0);
 	if (!model->add_constraint (ptr_sval, NE_EXPR, null_ptr,
 				    cd.get_ctxt ()))
 	  return false;
@@ -1304,8 +1458,8 @@ region_model::impl_call_realloc (const call_details &cd)
 	{
 	  model->set_value (cd.get_lhs_region (), ptr_sval, cd.get_ctxt ());
 	  const svalue *zero
-	    = model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
-	  return model->add_constraint (ptr_sval, NE_EXPR, zero, cd.get_ctxt ());
+	    = mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+	  return model->add_constraint (ptr_sval, NE_EXPR, zero, ctxt);
 	}
       else
 	return true;
@@ -1334,6 +1488,7 @@ region_model::impl_call_realloc (const call_details &cd)
 		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
+      region_model_manager *mgr = cd.get_manager ();
       const svalue *old_ptr_sval = cd.get_arg_svalue (0);
       const svalue *new_size_sval = cd.get_arg_svalue (1);
 
@@ -1341,7 +1496,7 @@ region_model::impl_call_realloc (const call_details &cd)
       const region *new_reg
 	= model->create_region_for_heap_alloc (new_size_sval, ctxt);
       const svalue *new_ptr_sval
-	= model->m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	= mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       if (!model->add_constraint (new_ptr_sval, NE_EXPR, old_ptr_sval,
 				  cd.get_ctxt ()))
 	return false;
@@ -1359,13 +1514,11 @@ region_model::impl_call_realloc (const call_details &cd)
 	      const svalue *copied_size_sval
 		= get_copied_size (model, old_size_sval, new_size_sval);
 	      const region *copied_old_reg
-		= model->m_mgr->get_sized_region (freed_reg, NULL,
-						  copied_size_sval);
+		= mgr->get_sized_region (freed_reg, NULL, copied_size_sval);
 	      const svalue *buffer_content_sval
 		= model->get_store_value (copied_old_reg, cd.get_ctxt ());
 	      const region *copied_new_reg
-		= model->m_mgr->get_sized_region (new_reg, NULL,
-						  copied_size_sval);
+		= mgr->get_sized_region (new_reg, NULL, copied_size_sval);
 	      model->set_value (copied_new_reg, buffer_content_sval,
 				cd.get_ctxt ());
 	    }
@@ -1383,7 +1536,7 @@ region_model::impl_call_realloc (const call_details &cd)
 	  /* If the ptr points to an underlying heap region, delete it,
 	     poisoning pointers.  */
 	  model->unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
-	  model->m_dynamic_extents.remove (freed_reg);
+	  model->unset_dynamic_extents (freed_reg);
 	}
 
       /* Update the sm-state: mark the old_ptr_sval as "freed",
@@ -1393,7 +1546,7 @@ region_model::impl_call_realloc (const call_details &cd)
       if (cd.get_lhs_type ())
 	{
 	  const svalue *zero
-	    = model->m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+	    = mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
 	  return model->add_constraint (new_ptr_sval, NE_EXPR, zero,
 					cd.get_ctxt ());
 	}
@@ -1423,7 +1576,7 @@ region_model::impl_call_realloc (const call_details &cd)
     }
   };
 
-  /* Body of region_model::impl_call_realloc.  */
+  /* Body of kf_realloc::impl_call_post.  */
 
   if (cd.get_ctxt ())
     {
@@ -1472,10 +1625,20 @@ public:
   }
 };
 
-/* Handle the on_call_post part of "strchr" and "__builtin_strchr".  */
+/* Handler for "strchr" and "__builtin_strchr".  */
+
+class kf_strchr : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2 && cd.arg_is_pointer_p (0));
+  }
+  void impl_call_post (const call_details &cd) const final override;
+};
 
 void
-region_model::impl_call_strchr (const call_details &cd)
+kf_strchr::impl_call_post (const call_details &cd) const
 {
   class strchr_call_info : public call_info
   {
@@ -1534,7 +1697,7 @@ region_model::impl_call_strchr (const call_details &cd)
     bool m_found;
   };
 
-  /* Body of region_model::impl_call_strchr.  */
+  /* Body of kf_strchr::impl_call_post.  */
   if (cd.get_ctxt ())
     {
       cd.get_ctxt ()->bifurcate (make_unique<strchr_call_info> (cd, false));
@@ -1543,41 +1706,116 @@ region_model::impl_call_strchr (const call_details &cd)
     }
 }
 
-/* Handle the on_call_pre part of "strcpy" and "__builtin_strcpy_chk".  */
+/* Handler for "__builtin_stack_restore".  */
+
+class kf_stack_restore : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &) const final override
+  {
+    return true;
+  }
+
+  /* Currently a no-op.  */
+};
+
+/* Handler for "__builtin_stack_save".  */
+
+class kf_stack_save : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &) const final override
+  {
+    return true;
+  }
+
+  /* Currently a no-op.  */
+};
+
+/* Handler for various stdio-related builtins that merely have external
+   effects that are out of scope for the analyzer: we only want to model
+   the effects on the return value.  */
+
+class kf_stdio_output_fn : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &) const final override
+  {
+    return true;
+  }
+
+  /* A no-op; we just want the conjured return value.  */
+};
+
+/* Handler for "strcpy" and "__builtin_strcpy_chk".  */
+
+class kf_strcpy : public known_function
+{
+public:
+  kf_strcpy (unsigned int num_args) : m_num_args (num_args) {}
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == m_num_args
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1));
+  }
+
+  void impl_call_pre (const call_details &cd) const final override;
+
+private:
+  unsigned int m_num_args;
+};
 
 void
-region_model::impl_call_strcpy (const call_details &cd)
+kf_strcpy::impl_call_pre (const call_details &cd) const
 {
+  region_model *model = cd.get_model ();
+  region_model_manager *mgr = cd.get_manager ();
+
   const svalue *dest_sval = cd.get_arg_svalue (0);
-  const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
+  const region *dest_reg = model->deref_rvalue (dest_sval, cd.get_arg_tree (0),
 					 cd.get_ctxt ());
   const svalue *src_sval = cd.get_arg_svalue (1);
-  const region *src_reg = deref_rvalue (src_sval, cd.get_arg_tree (1),
+  const region *src_reg = model->deref_rvalue (src_sval, cd.get_arg_tree (1),
 					cd.get_ctxt ());
-  const svalue *src_contents_sval = get_store_value (src_reg,
-						     cd.get_ctxt ());
+  const svalue *src_contents_sval = model->get_store_value (src_reg,
+							    cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_sval);
 
   /* Try to get the string size if SRC_REG is a string_region.  */
-  const svalue *copied_bytes_sval = get_string_size (src_reg);
+  const svalue *copied_bytes_sval = model->get_string_size (src_reg);
   /* Otherwise, check if the contents of SRC_REG is a string.  */
   if (copied_bytes_sval->get_kind () == SK_UNKNOWN)
-    copied_bytes_sval = get_string_size (src_contents_sval);
+    copied_bytes_sval = model->get_string_size (src_contents_sval);
 
   const region *sized_dest_reg
-    = m_mgr->get_sized_region (dest_reg, NULL_TREE, copied_bytes_sval);
-  set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
+    = mgr->get_sized_region (dest_reg, NULL_TREE, copied_bytes_sval);
+  model->set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
 }
 
 /* Handle the on_call_pre part of "strlen".  */
 
+class kf_strlen : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
+  }
+  void impl_call_pre (const call_details &cd) const final override;
+};
+
 void
-region_model::impl_call_strlen (const call_details &cd)
+kf_strlen::impl_call_pre (const call_details &cd) const
 {
   region_model_context *ctxt = cd.get_ctxt ();
+  region_model *model = cd.get_model ();
+  region_model_manager *mgr = cd.get_manager ();
+
   const svalue *arg_sval = cd.get_arg_svalue (0);
-  const region *buf_reg = deref_rvalue (arg_sval, cd.get_arg_tree (0), ctxt);
+  const region *buf_reg
+    = model->deref_rvalue (arg_sval, cd.get_arg_tree (0), ctxt);
   if (const string_region *str_reg
       = buf_reg->dyn_cast_string_region ())
     {
@@ -1589,7 +1827,7 @@ region_model::impl_call_strlen (const call_details &cd)
 	{
 	  tree t_cst = build_int_cst (cd.get_lhs_type (), strlen_cst);
 	  const svalue *result_sval
-	    = m_mgr->get_or_create_constant_svalue (t_cst);
+	    = mgr->get_or_create_constant_svalue (t_cst);
 	  cd.maybe_set_lhs (result_sval);
 	  return;
 	}
@@ -1597,13 +1835,19 @@ region_model::impl_call_strlen (const call_details &cd)
   /* Otherwise a conjured value.  */
 }
 
+class kf_ubsan_bounds : public internal_known_function
+{
+  /* Empty.  */
+};
+
 /* Handle calls to functions referenced by
    __attribute__((malloc(FOO))).  */
 
 void
 region_model::impl_deallocation_call (const call_details &cd)
 {
-  impl_call_free (cd);
+  kf_free kf;
+  kf.impl_call_post (cd);
 }
 
 /* Populate KFM with instances of known functions supported by the core of the
@@ -1612,6 +1856,54 @@ region_model::impl_deallocation_call (const call_details &cd)
 void
 register_known_functions (known_function_manager &kfm)
 {
+  /* Internal fns the analyzer has known_functions for.  */
+  {
+    kfm.add (IFN_BUILTIN_EXPECT, make_unique<kf_expect> ());
+    kfm.add (IFN_UBSAN_BOUNDS, make_unique<kf_ubsan_bounds> ());
+  }
+
+  /* Built-ins the analyzer has known_functions for.  */
+  {
+    kfm.add (BUILT_IN_ALLOCA, make_unique<kf_alloca> ());
+    kfm.add (BUILT_IN_ALLOCA_WITH_ALIGN, make_unique<kf_alloca> ());
+    kfm.add (BUILT_IN_CALLOC, make_unique<kf_calloc> ());
+    kfm.add (BUILT_IN_EXPECT, make_unique<kf_expect> ());
+    kfm.add (BUILT_IN_EXPECT_WITH_PROBABILITY, make_unique<kf_expect> ());
+    kfm.add (BUILT_IN_FPRINTF, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_FPRINTF_UNLOCKED, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_FPUTC, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_FPUTC_UNLOCKED, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_FPUTS, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_FPUTS_UNLOCKED, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_FREE, make_unique<kf_free> ());
+    kfm.add (BUILT_IN_FWRITE, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_FWRITE_UNLOCKED, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_MALLOC, make_unique<kf_malloc> ());
+    kfm.add (BUILT_IN_MEMCPY, make_unique<kf_memcpy> ());
+    kfm.add (BUILT_IN_MEMCPY_CHK, make_unique<kf_memcpy> ());
+    kfm.add (BUILT_IN_MEMSET, make_unique<kf_memset> ());
+    kfm.add (BUILT_IN_MEMSET_CHK, make_unique<kf_memset> ());
+    kfm.add (BUILT_IN_PRINTF, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_PRINTF_UNLOCKED, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_PUTC, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_PUTCHAR, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_PUTCHAR_UNLOCKED, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_PUTC_UNLOCKED, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_PUTS, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_PUTS_UNLOCKED, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_REALLOC, make_unique<kf_realloc> ());
+    kfm.add (BUILT_IN_STACK_RESTORE, make_unique<kf_stack_restore> ());
+    kfm.add (BUILT_IN_STACK_SAVE, make_unique<kf_stack_save> ());
+    kfm.add (BUILT_IN_STRCHR, make_unique<kf_strchr> ());
+    kfm.add (BUILT_IN_STRCPY, make_unique<kf_strcpy> (2));
+    kfm.add (BUILT_IN_STRCPY_CHK, make_unique<kf_strcpy> (3));
+    kfm.add (BUILT_IN_STRLEN, make_unique<kf_strlen> ());
+    kfm.add (BUILT_IN_VFPRINTF, make_unique<kf_stdio_output_fn> ());
+    kfm.add (BUILT_IN_VPRINTF, make_unique<kf_stdio_output_fn> ());
+
+    register_varargs_builtins (kfm);
+  }
+
   /* Debugging/test support functions, all  with a "__analyzer_" prefix.  */
   {
     kfm.add ("__analyzer_break", make_unique<kf_analyzer_break> ());
@@ -1633,11 +1925,20 @@ register_known_functions (known_function_manager &kfm)
 	     make_unique<kf_analyzer_get_unknown_ptr> ());
   }
 
-  /* Known POSIX functions.  */
+  /* Known builtins and C standard library functions.  */
+  {
+    kfm.add ("getchar", make_unique<kf_getchar> ());
+    kfm.add ("memset", make_unique<kf_memset> ());
+  }
+
+  /* Known POSIX functions, and some non-standard extensions.  */
   {
     kfm.add ("accept", make_unique<kf_accept> ());
     kfm.add ("bind", make_unique<kf_bind> ());
     kfm.add ("connect", make_unique<kf_connect> ());
+    kfm.add ("fgets", make_unique<kf_fgets> ());
+    kfm.add ("fgets_unlocked", make_unique<kf_fgets> ()); // non-standard
+    kfm.add ("fread", make_unique<kf_fread> ());
     kfm.add ("listen", make_unique<kf_listen> ());
     kfm.add ("pipe", make_unique<kf_pipe> (1));
     kfm.add ("pipe2", make_unique<kf_pipe> (2));
@@ -1648,6 +1949,8 @@ register_known_functions (known_function_manager &kfm)
   /* glibc functions.  */
   {
     kfm.add ("__errno_location", make_unique<kf_errno_location> ());
+    kfm.add ("error", make_unique<kf_error> (3));
+    kfm.add ("error_at_line", make_unique<kf_error> (5));
   }
 
   /* C++ support functions.  */

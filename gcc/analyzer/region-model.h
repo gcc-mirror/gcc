@@ -260,6 +260,7 @@ public:
   {
     return POINTER_TYPE_P (get_arg_type (idx));
   }
+  bool arg_is_size_p (unsigned idx) const;
 
   const gcall *get_call_stmt () const { return m_call; }
   location_t get_location () const;
@@ -326,7 +327,6 @@ class region_model
 
   void
   on_stmt_pre (const gimple *stmt,
-	       bool *out_terminate_path,
 	       bool *out_unknown_side_effects,
 	       region_model_context *ctxt);
 
@@ -334,37 +334,14 @@ class region_model
   const svalue *get_gassign_result (const gassign *assign,
 				    region_model_context *ctxt);
   void on_asm_stmt (const gasm *asm_stmt, region_model_context *ctxt);
-  bool on_call_pre (const gcall *stmt, region_model_context *ctxt,
-		    bool *out_terminate_path);
+  bool on_call_pre (const gcall *stmt, region_model_context *ctxt);
   void on_call_post (const gcall *stmt,
 		     bool unknown_side_effects,
 		     region_model_context *ctxt);
 
   void purge_state_involving (const svalue *sval, region_model_context *ctxt);
 
-  /* Specific handling for on_call_pre.  */
-  void impl_call_alloca (const call_details &cd);
-  void impl_call_builtin_expect (const call_details &cd);
-  void impl_call_calloc (const call_details &cd);
-  bool impl_call_error (const call_details &cd, unsigned min_args,
-			bool *out_terminate_path);
-  void impl_call_fgets (const call_details &cd);
-  void impl_call_fread (const call_details &cd);
-  void impl_call_free (const call_details &cd);
-  void impl_call_malloc (const call_details &cd);
-  void impl_call_memcpy (const call_details &cd);
-  void impl_call_memset (const call_details &cd);
-  void impl_call_realloc (const call_details &cd);
-  void impl_call_strchr (const call_details &cd);
-  void impl_call_strcpy (const call_details &cd);
-  void impl_call_strlen (const call_details &cd);
   void impl_deallocation_call (const call_details &cd);
-
-  /* Implemented in varargs.cc.  */
-  void impl_call_va_start (const call_details &cd);
-  void impl_call_va_copy (const call_details &cd);
-  void impl_call_va_arg (const call_details &cd);
-  void impl_call_va_end (const call_details &cd);
 
   const svalue *maybe_get_copy_bounds (const region *src_reg,
 				       const svalue *num_bytes_sval);
@@ -562,6 +539,9 @@ class region_model
 				  tree expr,
 				  region_model_context *ctxt) const;
 
+  void check_region_for_write (const region *dest_reg,
+			       region_model_context *ctxt) const;
+
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
@@ -573,7 +553,9 @@ private:
   get_representative_path_var_1 (const region *reg,
 				 svalue_set *visited) const;
 
-  const known_function *get_known_function (tree fndecl) const;
+  const known_function *get_known_function (tree fndecl,
+					    const call_details &cd) const;
+  const known_function *get_known_function (enum internal_fn) const;
 
   bool add_constraints_from_binop (const svalue *outer_lhs,
 				   enum tree_code outer_op,
@@ -622,8 +604,6 @@ private:
   void check_region_access (const region *reg,
 			    enum access_direction dir,
 			    region_model_context *ctxt) const;
-  void check_region_for_write (const region *dest_reg,
-			       region_model_context *ctxt) const;
   void check_region_for_read (const region *src_reg,
 			      region_model_context *ctxt) const;
   void check_region_size (const region *lhs_reg, const svalue *rhs_sval,

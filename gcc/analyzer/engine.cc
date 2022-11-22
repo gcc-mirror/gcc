@@ -1538,7 +1538,6 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
 
   /* Otherwise, defer to m_region_model.  */
   state->m_region_model->on_stmt_pre (stmt,
-				      out_terminate_path,
 				      out_unknown_side_effects,
 				      ctxt);
 }
@@ -4839,9 +4838,7 @@ feasibility_state::maybe_update_for_edge (logger *logger,
 	m_model.on_asm_stmt (asm_stmt, NULL);
       else if (const gcall *call = dyn_cast <const gcall *> (stmt))
 	{
-	  bool terminate_path;
-	  bool unknown_side_effects
-	    = m_model.on_call_pre (call, NULL, &terminate_path);
+	  bool unknown_side_effects = m_model.on_call_pre (call, NULL);
 	  m_model.on_call_post (call, unknown_side_effects, NULL);
 	}
       else if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
