@@ -679,7 +679,7 @@ range_fold_unary_expr (value_range *vr,
 
 static bool
 overflow_comparison_p_1 (enum tree_code code, tree op0, tree op1,
-			 bool follow_assert_exprs, bool reversed, tree *new_cst)
+			 bool reversed, tree *new_cst)
 {
   /* See if this is a relational operation between two SSA_NAMES with
      unsigned, overflow wrapping values.  If so, check it more deeply.  */
@@ -693,19 +693,6 @@ overflow_comparison_p_1 (enum tree_code code, tree op0, tree op1,
     {
       gimple *op1_def = SSA_NAME_DEF_STMT (op1);
 
-      /* If requested, follow any ASSERT_EXPRs backwards for OP1.  */
-      if (follow_assert_exprs)
-	{
-	  while (gimple_assign_single_p (op1_def)
-		 && TREE_CODE (gimple_assign_rhs1 (op1_def)) == ASSERT_EXPR)
-	    {
-	      op1 = TREE_OPERAND (gimple_assign_rhs1 (op1_def), 0);
-	      if (TREE_CODE (op1) != SSA_NAME)
-		break;
-	      op1_def = SSA_NAME_DEF_STMT (op1);
-	    }
-	}
-
       /* Now look at the defining statement of OP1 to see if it adds
 	 or subtracts a nonzero constant from another operand.  */
       if (op1_def
@@ -715,24 +702,6 @@ overflow_comparison_p_1 (enum tree_code code, tree op0, tree op1,
 	  && !integer_zerop (gimple_assign_rhs2 (op1_def)))
 	{
 	  tree target = gimple_assign_rhs1 (op1_def);
-
-	  /* If requested, follow ASSERT_EXPRs backwards for op0 looking
-	     for one where TARGET appears on the RHS.  */
-	  if (follow_assert_exprs)
-	    {
-	      /* Now see if that "other operand" is op0, following the chain
-		 of ASSERT_EXPRs if necessary.  */
-	      gimple *op0_def = SSA_NAME_DEF_STMT (op0);
-	      while (op0 != target
-		     && gimple_assign_single_p (op0_def)
-		     && TREE_CODE (gimple_assign_rhs1 (op0_def)) == ASSERT_EXPR)
-		{
-		  op0 = TREE_OPERAND (gimple_assign_rhs1 (op0_def), 0);
-		  if (TREE_CODE (op0) != SSA_NAME)
-		    break;
-		  op0_def = SSA_NAME_DEF_STMT (op0);
-		}
-	    }
 
 	  /* If we did not find our target SSA_NAME, then this is not
 	     an overflow test.  */
@@ -764,13 +733,12 @@ overflow_comparison_p_1 (enum tree_code code, tree op0, tree op1,
    the alternate range representation is often useful within VRP.  */
 
 bool
-overflow_comparison_p (tree_code code, tree name, tree val,
-		       bool use_equiv_p, tree *new_cst)
+overflow_comparison_p (tree_code code, tree name, tree val, tree *new_cst)
 {
-  if (overflow_comparison_p_1 (code, name, val, use_equiv_p, false, new_cst))
+  if (overflow_comparison_p_1 (code, name, val, false, new_cst))
     return true;
   return overflow_comparison_p_1 (swap_tree_comparison (code), val, name,
-				  use_equiv_p, true, new_cst);
+				  true, new_cst);
 }
 
 /* Handle

@@ -837,7 +837,7 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
      occurs when the chosen argument is zero and does not occur if the
      chosen argument is not zero.  */
   tree x;
-  if (overflow_comparison_p (code, op0, op1, use_equiv_p, &x))
+  if (overflow_comparison_p (code, op0, op1, &x))
     {
       wide_int max = wi::max_value (TYPE_PRECISION (TREE_TYPE (op0)), UNSIGNED);
       /* B = A - 1; if (A < B) -> B = A - 1; if (A == 0)
