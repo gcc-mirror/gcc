@@ -1343,10 +1343,10 @@ proc check_effective_target_pie { } {
 
 # Return true if the target supports -mpaired-single (as used on MIPS).
 
-proc check_effective_target_mpaired_single { } {
+proc check_effective_target_mpaired_single { args } {
     return [check_no_compiler_messages mpaired_single object {
 	void foo (void) { }
-    } "-mpaired-single"]
+    } "$args"]
 }
 
 # Return true if the target has access to FPU instructions.
@@ -2158,7 +2158,7 @@ proc check_mips_msa_hw_available { } {
 # executables, 0 otherwise.
 
 proc check_effective_target_mpaired_single_runtime { } {
-    if { [check_effective_target_mpaired_single]
+    if { [check_effective_target_mpaired_single "-mpaired-single"]
 	 && [check_mpaired_single_hw_available] } {
 	return 1
     }
@@ -2168,7 +2168,7 @@ proc check_effective_target_mpaired_single_runtime { } {
 # Return 1 if the target supports running Loongson executables, 0 otherwise.
 
 proc check_effective_target_mips_loongson_mmi_runtime { } {
-    if { [check_effective_target_mips_loongson_mmi]
+    if { [check_effective_target_mips_loongson_mmi "-mloongson-mmi"]
 	 && [check_mips_loongson_mmi_hw_available] } {
 	return 1
     }
@@ -2178,7 +2178,7 @@ proc check_effective_target_mips_loongson_mmi_runtime { } {
 # Return 1 if the target supports running MIPS MSA executables, 0 otherwise.
 
 proc check_effective_target_mips_msa_runtime { } {
-  if { [check_effective_target_mips_msa]
+  if { [check_effective_target_mips_msa "-mmsa"]
        && [check_mips_msa_hw_available] } {
     return 1
   }
@@ -6109,7 +6109,7 @@ proc check_effective_target_arm_acq_rel { } {
 # Add the options needed for MIPS Paired-Single.
 
 proc add_options_for_mpaired_single { flags } {
-    if { ! [check_effective_target_mpaired_single] } {
+    if { ! [check_effective_target_mpaired_single "-mpaired-single"] } {
 	return "$flags"
     }
     return "$flags -mpaired-single"
@@ -6118,7 +6118,7 @@ proc add_options_for_mpaired_single { flags } {
 # Add the options needed for MIPS SIMD Architecture.
 
 proc add_options_for_mips_msa { flags } {
-  if { ! [check_effective_target_mips_msa] } {
+  if { ! [check_effective_target_mips_msa "-mmsa"] } {
     return "$flags"
   }
   return "$flags -mmsa"
@@ -6127,7 +6127,7 @@ proc add_options_for_mips_msa { flags } {
 # Add the options needed for MIPS Loongson MMI Architecture.
 
 proc add_options_for_mips_loongson_mmi { flags } {
-  if { ! [check_effective_target_mips_loongson_mmi] } {
+  if { ! [check_effective_target_mips_loongson_mmi "-mloongson-mmi"] } {
     return "$flags"
   }
   return "$flags -mloongson-mmi"
@@ -6137,7 +6137,7 @@ proc add_options_for_mips_loongson_mmi { flags } {
 # Return 1 if this a Loongson-2E or -2F target using an ABI that supports
 # the Loongson vector modes.
 
-proc check_effective_target_mips_loongson_mmi { } {
+proc check_effective_target_mips_loongson_mmi { args } {
     return [check_no_compiler_messages loongson assembly {
 	#if !defined(__mips_loongson_mmi)
 	#error !__mips_loongson_mmi
@@ -6145,7 +6145,7 @@ proc check_effective_target_mips_loongson_mmi { } {
 	#if !defined(__mips_loongson_vector_rev)
 	#error !__mips_loongson_vector_rev
 	#endif
-    }]
+    } "$args"]
 }
 
 # Return 1 if this is a MIPS target that supports the legacy NAN.
@@ -6159,7 +6159,7 @@ proc check_effective_target_mips_nanlegacy { } {
 
 # Return 1 if an MSA program can be compiled to object
 
-proc check_effective_target_mips_msa { } {
+proc check_effective_target_mips_msa { args } {
   if ![check_effective_target_nomips16] {
     return 0
   }
@@ -6185,7 +6185,7 @@ proc check_effective_target_mips_msa { } {
       return v[0];
     }
     #endif
-  } "-mmsa" ]
+  } "$args"]
 }
 
 # Return 1 if this is an ARM target that adheres to the ABI for the ARM
@@ -9063,11 +9063,16 @@ proc et-is-effective-target { target } {
     global EFFECTIVE_TARGETS
     global et_index
 
-    if { [llength $EFFECTIVE_TARGETS] > $et_index
-	 && [lindex $EFFECTIVE_TARGETS $et_index] == $target } {
+    if { [info exists EFFECTIVE_TARGETS] } {
+	if { [llength $EFFECTIVE_TARGETS] > $et_index
+	     && [lindex $EFFECTIVE_TARGETS $et_index] == $target } {
 	    return 1
+	} else {
+	    return 0
+	}
+    } else {
+	return [check_effective_target_${target}]
     }
-    return 0
 }
 
 # Return 1 if target default to short enums
@@ -10661,13 +10666,13 @@ proc check_vect_support_and_set_flags { } {
         }
     } elseif { [istarget mips*-*-*]
 	       && [check_effective_target_nomips16] } {
-	if { [check_effective_target_mpaired_single] } {
+	if { [check_effective_target_mpaired_single "-mpaired-single"] } {
 	    lappend EFFECTIVE_TARGETS mpaired_single
 	}
-	if { [check_effective_target_mips_loongson_mmi] } {
+	if { [check_effective_target_mips_loongson_mmi "-mloongson-mmi"] } {
 	    lappend EFFECTIVE_TARGETS mips_loongson_mmi
 	}
-	if { [check_effective_target_mips_msa] } {
+	if { [check_effective_target_mips_msa "-mmsa"] } {
 	    lappend EFFECTIVE_TARGETS mips_msa
         }
 	return [llength $EFFECTIVE_TARGETS]
