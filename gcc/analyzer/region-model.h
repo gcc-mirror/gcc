@@ -256,6 +256,10 @@ public:
   bool maybe_set_lhs (const svalue *result) const;
 
   unsigned num_args () const;
+  bool arg_is_pointer_p (unsigned idx) const
+  {
+    return POINTER_TYPE_P (get_arg_type (idx));
+  }
 
   const gcall *get_call_stmt () const { return m_call; }
   location_t get_location () const;
