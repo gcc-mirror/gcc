@@ -575,6 +575,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
     case RK_CODE:
     case RK_STACK:
     case RK_HEAP:
+    case RK_THREAD_LOCAL:
     case RK_ROOT:
       /* These should never be pointed to by a region_svalue.  */
       gcc_unreachable ();
@@ -582,6 +583,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
     case RK_FUNCTION:
     case RK_LABEL:
     case RK_STRING:
+    case RK_ERRNO:
     case RK_UNKNOWN:
       /* We can reuse these regions directly.  */
       return summary_reg;

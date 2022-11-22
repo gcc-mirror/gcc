@@ -4754,6 +4754,7 @@ region_model::get_representative_path_var_1 (const region *reg,
     case RK_CODE:
     case RK_HEAP:
     case RK_STACK:
+    case RK_THREAD_LOCAL:
     case RK_ROOT:
        /* Regions that represent memory spaces are not expressible as trees.  */
       return path_var (NULL_TREE, 0);
@@ -4873,6 +4874,7 @@ region_model::get_representative_path_var_1 (const region *reg,
       }
 
     case RK_VAR_ARG:
+    case RK_ERRNO:
     case RK_UNKNOWN:
       return path_var (NULL_TREE, 0);
     }
