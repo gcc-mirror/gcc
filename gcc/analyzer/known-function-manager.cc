@@ -91,6 +91,7 @@ known_function_manager::add (enum internal_fn ifn,
 const known_function *
 known_function_manager::get_match (tree fndecl, const call_details &cd) const
 {
+  /* Look for a matching built-in.  */
   if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     {
       if (const known_function *candidate
@@ -99,10 +100,18 @@ known_function_manager::get_match (tree fndecl, const call_details &cd) const
 						    fndecl))
 	  return candidate;
     }
+
+  /* Look for a match by name.  */
+
+  /* Reject fndecls that aren't in the root namespace.  */
+  if (DECL_CONTEXT (fndecl)
+      && TREE_CODE (DECL_CONTEXT (fndecl)) != TRANSLATION_UNIT_DECL)
+    return NULL;
   if (tree identifier = DECL_NAME (fndecl))
-      if (const known_function *candidate = get_by_identifier (identifier))
-	if (candidate->matches_call_types_p (cd))
-	  return candidate;
+    if (const known_function *candidate = get_by_identifier (identifier))
+      if (candidate->matches_call_types_p (cd))
+	return candidate;
+
   return NULL;
 }
 
