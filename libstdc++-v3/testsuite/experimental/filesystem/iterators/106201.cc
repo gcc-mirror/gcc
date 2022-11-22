@@ -4,10 +4,10 @@
 
 // PR libstdc++/106201 constraint recursion in path(Source const&) constructor.
 
-#include <filesystem>
+#include <experimental/filesystem>
 #include <iterator>
 #include <concepts>
-namespace fs = std::filesystem;
+namespace fs = std::experimental::filesystem;
 using I = std::counted_iterator<fs::directory_iterator>;
 static_assert( std::swappable<I> );
 using R = std::counted_iterator<fs::recursive_directory_iterator>;
