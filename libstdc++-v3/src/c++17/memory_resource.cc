@@ -870,9 +870,11 @@ namespace pmr
       256, 320, 384, 448,
       512, 768,
 #if __SIZE_WIDTH__ > 16
+      // Use bigger pools if size_t has at least 20 bits.
       1024, 1536,
       2048, 3072,
-#if __SIZE_WIDTH__ > 20
+#if __INT_WIDTH__ >= 32
+      // Use even bigger pools if int has at least 32 bits.
       1<<12, 1<<13, 1<<14,
       1<<15, 1<<16, 1<<17,
       1<<20, 1<<21, 1<<22 // 4MB should be enough for anybody
