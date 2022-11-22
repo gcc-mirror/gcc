@@ -1,3 +1,29 @@
+2022-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107748
+	* config/i386/smmintrin.h (_mm_extract_ps): Uglify names of local
+	variables and union members.
+
+2022-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107183
+	* reg-stack.c (next_flags_user): Add DEBUG_SEEN argument.
+	If >= 0 and a DEBUG_INSN would be otherwise returned, set
+	DEBUG_SEEN to 1 and ignore it.
+	(swap_rtx_condition): Add DEBUG_SEEN argument.  In >= 0
+	mode only set DEBUG_SEEN to 1 if problematic DEBUG_ISNSs
+	were seen and revert all changes on success in that case.
+	Don't try to recog_memoized DEBUG_INSNs.
+	(compare_for_stack_reg): Adjust swap_rtx_condition caller.
+	If it returns true and debug_seen is 1, call swap_rtx_condition
+	again with debug_seen -1.
+
 2022-11-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

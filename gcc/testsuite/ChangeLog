@@ -1,3 +1,11 @@
+2022-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107183
+	* gcc.dg/ubsan/pr107183.c: New test.
+
 2022-11-18  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
