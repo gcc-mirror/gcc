@@ -7450,6 +7450,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	  else if (Present (gnat_smo)
 		   && Present (Storage_Model_Copy_To (gnat_smo)))
 	    {
+	      /* We obviously cannot use memset in this case.  */
+	      gcc_assert (!use_memset_p);
+
 	      tree t = remove_conversions (gnu_rhs, false);
 
 	      /* If a storage model load is present on the RHS then instantiate
