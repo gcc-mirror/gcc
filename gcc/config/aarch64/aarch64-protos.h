@@ -540,6 +540,7 @@ struct tune_params
   const char *loop_align;
   int int_reassoc_width;
   int fp_reassoc_width;
+  int fma_reassoc_width;
   int vec_reassoc_width;
   int min_div_recip_mul_sf;
   int min_div_recip_mul_df;
