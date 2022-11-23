@@ -610,8 +610,12 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* The number of libraries added in.  */
   int added_libraries;
 
+#ifdef ENABLE_PLUGIN
   /* True if we should add -fplugin=m2rte to the command-line.  */
   bool need_plugin = true;
+#else
+  bool need_plugin = false;
+#endif
 
   /* True if we should set up include paths and library paths.  */
   bool allow_libraries = true;
@@ -674,6 +678,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
           break;
         case OPT_fm2_plugin:
           need_plugin = decoded_options[i].value;
+#ifndef ENABLE_PLUGIN
+	  if (need_plugin)
+	    error ("plugin support is disabled; configure with "
+		   "%<--enable-plugin%>");
+#endif
           break;
 	case OPT_fscaffold_dynamic:
 	  seen_scaffold_dynamic = true;
