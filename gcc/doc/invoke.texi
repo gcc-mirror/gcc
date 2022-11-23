@@ -3986,6 +3986,9 @@ destructor itself or in an accessible polymorphic base class, in which
 case it is possible but unsafe to delete an instance of a derived
 class through a pointer to the class itself or base class.  This
 warning is automatically enabled if @option{-Weffc++} is specified.
+The @option{-Wdelete-non-virtual-dtor} option (enabled by @option{-Wall})
+should be preferred because it warns about the unsafe cases without false
+positives.
 
 @item -Wregister @r{(C++ and Objective-C++ only)}
 @opindex Wregister
