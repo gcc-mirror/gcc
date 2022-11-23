@@ -1,3 +1,22 @@
+2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106201
+	* include/bits/fs_path.h (filesystem::swap(path&, path&)):
+	Replace with abbreviated function template.
+	* include/experimental/bits/fs_path.h (filesystem::swap):
+	Likewise.
+	* testsuite/27_io/filesystem/iterators/106201.cc: New test.
+	* testsuite/experimental/filesystem/iterators/106201.cc: New test.
+
+2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107801
+	* src/c++17/memory_resource.cc (pool_sizes): Disable large pools
+	for targets with 16-bit int.
+
 2022-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/mofunc_impl.h (move_only_function::__param_t):
