@@ -25,6 +25,17 @@ LDFLAGS="$saved_LDFLAGS"
 if test "x$have_static_libgcc" = xyes; then
    ac_lto_plugin_ldflags="-Wc,-static-libgcc"
 fi
+
+# Enable --enable-host-bind-now
+AC_ARG_ENABLE(host-bind-now,
+[AS_HELP_STRING([--enable-host-bind-now],
+       [link host code as BIND_NOW])])
+AC_SUBST(enable_host_bind_now)
+
+if test x$enable_host_bind_now = xyes; then
+  ac_lto_plugin_ldflags="$ac_lto_plugin_ldflags -Wl,-z,now"
+fi
+
 AC_SUBST(ac_lto_plugin_ldflags)
 
 GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
