@@ -211,23 +211,8 @@ esac
 # Enable --enable-host-shared.
 AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],
-		[build host code as shared libraries])])
-AC_SUBST(enable_host_shared)
-
-# Enable --enable-host-pie.
-AC_ARG_ENABLE(host-pie,
-[AS_HELP_STRING([--enable-host-pie],
-		[build host code as PIE])])
-AC_SUBST(enable_host_pie)
-
-if test x$enable_host_shared = xyes; then
-  PICFLAG=-fPIC
-elif test x$enable_host_pie = xyes; then
-  PICFLAG=-fPIE
-else
-  PICFLAG=
-fi
-
+		[build host code as shared libraries])],
+[PICFLAG=-fPIC], [PICFLAG=])
 AC_SUBST(PICFLAG)
 
 # Enable Intel CET on Intel CET enabled host if jit is enabled.

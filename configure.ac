@@ -1870,22 +1870,6 @@ AC_ARG_ENABLE(host-shared,
  esac])
 AC_SUBST(host_shared)
 
-# Enable --enable-host-pie.
-AC_ARG_ENABLE(host-pie,
-[AS_HELP_STRING([--enable-host-pie],
-       [build host code as PIE])])
-AC_SUBST(enable_host_pie)
-
-if test x$enable_host_shared = xyes; then
-  PICFLAG=-fPIC
-elif test x$enable_host_pie = xyes; then
-  PICFLAG=-fPIE
-else
-  PICFLAG=
-fi
-
-AC_SUBST(PICFLAG)
-
 # By default, C and C++ are the only stage 1 languages.
 stage1_languages=,c,
 
