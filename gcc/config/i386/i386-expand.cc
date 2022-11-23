@@ -10423,6 +10423,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       return ix86_expand_sse_ptest (d, exp, target);
     case FLOAT128_FTYPE_FLOAT128:
     case FLOAT_FTYPE_FLOAT:
+    case FLOAT_FTYPE_BFLOAT16:
     case INT_FTYPE_INT:
     case UINT_FTYPE_UINT:
     case UINT16_FTYPE_UINT16:
