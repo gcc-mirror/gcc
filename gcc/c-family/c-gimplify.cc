@@ -570,8 +570,8 @@ c_genericize (tree fndecl)
       bc_state_t save_state;
       push_cfun (DECL_STRUCT_FUNCTION (fndecl));
       save_bc_state (&save_state);
-      walk_tree (&DECL_SAVED_TREE (fndecl), c_genericize_control_r,
-		 NULL, NULL);
+      walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
+				    c_genericize_control_r, NULL);
       restore_bc_state (&save_state);
       pop_cfun ();
     }
