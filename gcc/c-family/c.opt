@@ -1692,12 +1692,12 @@ EnumValue
 Enum(on_off) String(on) Value(1)
 
 fcontract-assumption-mode=
-C++ Joined
+C++ Joined RejectNegative
 -fcontract-assumption-mode=[on|off]	Enable or disable treating axiom level contracts as assumptions (default on).
 
 fcontract-build-level=
 C++ Joined RejectNegative
--fcontract-build-level=[off|default|audit]	Specify max contract level to generate runtime checks for
+-fcontract-build-level=[off|default|audit]	Specify max contract level to generate runtime checks for.
 
 fcontract-strict-declarations=
 C++ Var(flag_contract_strict_declarations) Enum(on_off) Joined Init(0) RejectNegative
@@ -1708,15 +1708,15 @@ C++ Var(flag_contract_mode) Enum(on_off) Joined Init(1) RejectNegative
 -fcontract-mode=[on|off]	Enable or disable all contract facilities (default on).
 
 fcontract-continuation-mode=
-C++ Joined
+C++ Joined RejectNegative
 -fcontract-continuation-mode=[on|off]	Enable or disable contract continuation mode (default off).
 
 fcontract-role=
-C++ Joined
+C++ Joined RejectNegative
 -fcontract-role=<name>:<semantics>	Specify the semantics for all levels in a role (default, review), or a custom contract role with given semantics (ex: opt:assume,assume,assume)
 
 fcontract-semantic=
-C++ Joined
+C++ Joined RejectNegative
 -fcontract-semantic=<level>:<semantic>	Specify the concrete semantics for level
 
 fcoroutines
