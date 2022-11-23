@@ -1,3 +1,109 @@
+2022-11-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* tree-ssa-dom.cc (record_edge_info): Fix thinko in last commit.
+
+2022-11-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* tree-ssa-dom.cc (record_edge_info): Fix comment typos.
+
+2022-11-22  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv.cc (riscv_get_separate_components): Do not
+	do shrink-wrapping for a frame with a variable size.
+
+2022-11-22  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.cc (todo): New variable.
+	(object_sizes_execute): Use it.
+	(strdup_object_size): New function.
+	(call_object_size): Use it.
+
+2022-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-loop-distribution.cc (loop_distribution::classify_builtin_ldst):
+	Bail out if source and destination do not have the same storage order.
+
+2022-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.cc (ipa_sra_dump_all_summaries): Dump edge summaries even
+	for non-candidates.
+
+2022-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.cc (push_agg_values_from_edge): Do not consider constants
+	in unused aggregate parameters.
+
+2022-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-param-manipulation.h (ipa_param_body_adjustments): Removed
+	member m_split_modifications_p.
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::common_initialization): Do not set
+	m_split_modifications_p.
+	(ipa_param_body_adjustments::ipa_param_body_adjustments): Remove
+	initializations of m_split_modifications_p.
+	(ipa_param_body_adjustments::modify_call_stmt): Check that
+	m_replacements is empty instead of m_split_modifications_p.
+
+2022-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107661
+	* ipa-cp.cc (push_agg_values_from_edge): New parameter
+	optimize_self_recursion, use it to decide whether to pass interim to
+	the helper function.
+	(find_aggregate_values_for_callers_subset): Pass true in the new
+	parameter of push_agg_values_from_edge.
+	(cgraph_edge_brings_all_agg_vals_for_node): Pass false in the new
+	parameter of push_agg_values_from_edge.
+
+2022-11-22  Tobias Burnus  <tobias@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (FIRST_CALL_THIS_THREAD_P,
+	GET_STACK_LIMIT): Add new builtins.
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Expand them.
+	* config/gcn/gcn.md (prologue_use): Add "register_operand" as
+	arg to match_operand.
+	(prologue_use_di): New; DI insn_and_split variant of the former.
+
+2022-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107803
+	* tree-ssa-propagate.cc (substitute_and_fold_dom_walker): Add
+	need_ab_cleanup member.
+	(substitute_and_fold_dom_walker::before_dom_children): When
+	a stmt can no longer transfer control flow abnormally set
+	need_ab_cleanup.
+	(substitute_and_fold_engine::substitute_and_fold): Cleanup
+	abnormal control flow.
+
+2022-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107672
+	* tree-vect-stmts.cc (supportable_widening_operation): Avoid
+	type_for_mode on vector modes.
+
+2022-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107766
+	* tree-vect-slp-patterns.cc (complex_mul_pattern::matches):
+	Use *node to check for FP vector types.
+
+2022-11-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/mmx.md (*mov<mode>_internal): Add
+	ix86_hard_reg_move_ok to condition.
+
+2022-11-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_can_change_mode_class): Also guard
+	size of TO.
+	(ix86_hard_regno_mode_ok): Remove VALID_AVX512FP16_SCALAR_MODE
+	* config/i386/i386.h (VALID_AVX512FP16_SCALAR_MODE): Merged to
+	..
+	(VALID_AVX512F_SCALAR_MODE): .. this, also add HImode.
+	(VALID_SSE_REG_MODE): Add DI/HImode.
+
 2022-11-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rtems.h (SUBTARGET_CC1_SPEC): Undef and define.

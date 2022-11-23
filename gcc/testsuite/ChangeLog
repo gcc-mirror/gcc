@@ -1,3 +1,108 @@
+2022-11-22  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/builtin-dynamic-object-size-0.c (test_strdup,
+	test_strndup, test_strdup_min, test_strndup_min): New tests.
+	(main): Call them.
+	* gcc.dg/builtin-dynamic-object-size-1.c: Silence overread
+	warnings.
+	* gcc.dg/builtin-dynamic-object-size-2.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-3.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-4.c: Likewise.
+	* gcc.dg/builtin-object-size-1.c: Silence overread warnings.
+	Declare free, strdup and strndup.
+	(test11): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-2.c: Silence overread warnings.
+	Declare free, strdup and strndup.
+	(test9): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-3.c: Silence overread warnings.
+	Declare free, strdup and strndup.
+	(test11): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-4.c: Silence overread warnings.
+	Declare free, strdup and strndup.
+	(test9): New test.
+	(main): Call it.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107788
+	* g++.dg/analyzer/named-functions.C: New test.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107783
+	* gcc.dg/analyzer/fd-accept.c (test_accept_on_constant): New.
+	* gcc.dg/analyzer/fd-bind.c (test_bind_on_constant): New.
+	* gcc.dg/analyzer/fd-connect.c (test_connect_on_constant): New.
+	* gcc.dg/analyzer/fd-listen.c (test_listen_on_connected_socket):
+	Fix typo.
+	(test_listen_on_constant): New.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107807
+	* gcc.dg/analyzer/errno-___errno.c: New test.
+	* gcc.dg/analyzer/errno-__error.c: New test.
+	* gcc.dg/analyzer/errno-global-var.c: New test.
+
+2022-11-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_mpaired_single): Add `args' argument and
+	pass it to `check_no_compiler_messages' replacing
+	`-mpaired-single'.
+	(add_options_for_mips_loongson_mmi): Add `args' argument and
+	pass it to `check_no_compiler_messages'.
+	(check_effective_target_mips_msa): Add `args' argument and pass
+	it to `check_no_compiler_messages' replacing `-mmsa'.
+	(check_effective_target_mpaired_single_runtime)
+	(add_options_for_mpaired_single): Pass `-mpaired-single' to
+	`check_effective_target_mpaired_single'.
+	(check_effective_target_mips_loongson_mmi_runtime)
+	(add_options_for_mips_loongson_mmi): Pass `-mloongson-mmi' to
+	`check_effective_target_mips_loongson_mmi'.
+	(check_effective_target_mips_msa_runtime)
+	(add_options_for_mips_msa): Pass `-mmsa' to
+	`check_effective_target_mips_msa'.
+	(et-is-effective-target): Verify that EFFECTIVE_TARGETS exists
+	and if not, just check if the current compilation environment
+	supports the target feature requested.
+	(check_vect_support_and_set_flags): Pass `-mpaired-single',
+	`-mloongson-mmi', and `-mmsa' to the respective target feature
+	checks.
+
+2022-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso18.adb: New test.
+
+2022-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107661
+	* g++.dg/ipa/pr107661.C: New test.
+
+2022-11-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/107604
+	* gcc.target/aarch64/aapcs64/test_dfp_17.c: Fix for big-endian.
+
+2022-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107803
+	* g++.dg/pr107803.C: New testcase.
+
+2022-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107766
+	* g++.dg/vect/pr107766.cc: New testcase.
+
+2022-11-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pieces-memset-3.c: Remove xfail.
+	* gcc.target/i386/pieces-memset-37.c: Remove xfail.
+	* gcc.target/i386/pieces-memset-39.c: Remove xfail.
+
 2022-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107788

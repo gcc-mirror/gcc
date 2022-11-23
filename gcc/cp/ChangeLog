@@ -1,3 +1,16 @@
+2022-11-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107781
+	* contracts.cc (role_name_equal): Use strcspn instead
+	of strchrnul.
+
+2022-11-22  Jason Merrill  <jason@redhat.com>
+
+	* contracts.cc (build_contract_condition_function):
+	Set DECL_ARTIFICIAL on return value parm.
+	* g++spec.cc (lang_specific_driver): Add -lstdc++exp
+	just before -lstdc++.
+
 2022-11-20  Patrick Palka  <ppalka@redhat.com>
 
 	* constraint.cc (struct norm_entry): Define.

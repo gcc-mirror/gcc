@@ -1,3 +1,30 @@
+2022-11-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_Global): Accept aspects on
+	abstract subprograms.
+
+2022-11-22  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* frontend.adb (Frontend): Re-enable Validate_Subprogram_Calls.
+	* exp_ch6.adb (Check_BIP_Actuals): When in CodePeer mode, do not
+	attempt to validate procedures coming from an
+	Elab_Spec/Elab_Body/Elab_Subp_Body procedure.
+
+2022-11-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (To_Be_Removed): Decrease total number of errors when
+	removing a warning that has been escalated into error.
+	* erroutc.adb (dmsg): Print Warn_Runtime_Raise flag.
+
+2022-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Tag_Assignment): Fix formatting glitches.
+
+2022-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* contracts.adb (Build_Subprogram_Contract_Wrapper): Do not fiddle
+	with the Was_Expression_Function flag. Move a few lines around.
+
 2022-11-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Constant>: Revert
