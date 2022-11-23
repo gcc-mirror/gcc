@@ -17,6 +17,17 @@
 # This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
 # for GNU Modula-2.
 
+load_lib target-supports.exp
+
+global TESTING_IN_BUILD_TREE
+global ENABLE_PLUGIN
+
+# The plugin testcases currently only work when the build tree is available.
+# Also check whether the host supports plugins.
+if { ![info exists TESTING_IN_BUILD_TREE] || ![info exists ENABLE_PLUGIN] } {
+    return
+}
+
 if $tracelevel then {
     strace $tracelevel
 }
