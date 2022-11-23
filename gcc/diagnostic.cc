@@ -2593,7 +2593,10 @@ test_diagnostic_get_location_text ()
   const char *old_progname = progname;
   progname = "PROGNAME";
   assert_location_text ("PROGNAME:", NULL, 0, 0, true);
-  assert_location_text ("<built-in>:", "<built-in>", 42, 10, true);
+  char *built_in_colon = concat (special_fname_builtin (), ":", (char *) 0);
+  assert_location_text (built_in_colon, special_fname_builtin (),
+			42, 10, true);
+  free (built_in_colon);
   assert_location_text ("foo.c:42:10:", "foo.c", 42, 10, true);
   assert_location_text ("foo.c:42:9:", "foo.c", 42, 10, true, 0);
   assert_location_text ("foo.c:42:1010:", "foo.c", 42, 10, true, 1001);
