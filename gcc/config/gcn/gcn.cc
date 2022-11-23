@@ -4526,6 +4526,45 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       emit_insn (gen_gcn_wavefront_barrier ());
       return target;
 
+    case GCN_BUILTIN_GET_STACK_LIMIT:
+      {
+	/* stackbase = (stack_segment_decr & 0x0000ffffffffffff)
+			+ stack_wave_offset);
+	   seg_size = dispatch_ptr->private_segment_size;
+	   stacklimit = stackbase + seg_size*64;
+	   with segsize = *(uint32_t *) ((char *) dispatch_ptr
+				       + 6*sizeof(int16_t) + 3*sizeof(int32_t));
+	   cf. struct hsa_kernel_dispatch_packet_s in the HSA doc.  */
+	rtx ptr;
+	if (cfun->machine->args.reg[DISPATCH_PTR_ARG] >= 0
+	    && cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] >= 0)
+	  {
+	    rtx size_rtx = gen_rtx_REG (DImode,
+			     cfun->machine->args.reg[DISPATCH_PTR_ARG]);
+	    size_rtx = gen_rtx_MEM (SImode,
+				    gen_rtx_PLUS (DImode, size_rtx,
+						  GEN_INT (6*2 + 3*4)));
+	    size_rtx = gen_rtx_MULT (SImode, size_rtx, GEN_INT (64));
+
+	    ptr = gen_rtx_REG (DImode,
+		    cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]);
+	    ptr = gen_rtx_AND (DImode, ptr, GEN_INT (0x0000ffffffffffff));
+	    ptr = gen_rtx_PLUS (DImode, ptr, size_rtx);
+	    if (cfun->machine->args.reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG] >= 0)
+	      {
+		rtx off;
+		off = gen_rtx_REG (SImode,
+		      cfun->machine->args.reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG]);
+		ptr = gen_rtx_PLUS (DImode, ptr, off);
+	      }
+	  }
+	else
+	  {
+	    ptr = gen_reg_rtx (DImode);
+	    emit_move_insn (ptr, const0_rtx);
+	  }
+	return ptr;
+      }
     case GCN_BUILTIN_KERNARG_PTR:
       {
 	rtx ptr;
@@ -4539,7 +4578,36 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	  }
 	return ptr;
       }
-
+    case GCN_BUILTIN_FIRST_CALL_THIS_THREAD_P:
+      {
+	/* Stash a marker in the unused upper 16 bits of s[0:1] to indicate
+	   whether it was the first call.  */
+	rtx result = gen_reg_rtx (BImode);
+	emit_move_insn (result, const0_rtx);
+	if (cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] >= 0)
+	  {
+	    rtx not_first = gen_label_rtx ();
+	    rtx reg = gen_rtx_REG (DImode,
+			cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]);
+	    rtx cmp = force_reg (DImode,
+				 gen_rtx_LSHIFTRT (DImode, reg, GEN_INT (48)));
+	    emit_insn (gen_cstoresi4 (result, gen_rtx_NE (BImode, cmp,
+							  GEN_INT(12345)),
+				      cmp, GEN_INT(12345)));
+	    emit_jump_insn (gen_cjump (not_first, gen_rtx_EQ (BImode, result,
+							      const0_rtx),
+				       result));
+	    emit_move_insn (reg,
+	      force_reg (DImode,
+		gen_rtx_IOR (DImode,
+			     gen_rtx_AND (DImode, reg,
+					  GEN_INT (0x0000ffffffffffffL)),
+			     GEN_INT (12345L << 48))));
+	    emit_insn (gen_prologue_use (reg));
+	    emit_label (not_first);
+	  }
+	return result;
+      }
     default:
       gcc_unreachable ();
     }

@@ -1,3 +1,16 @@
+2022-11-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-22  Tobias Burnus  <tobias@codesourcery.com>
+		    Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (FIRST_CALL_THIS_THREAD_P,
+	GET_STACK_LIMIT): Add new builtins.
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Expand them.
+	* config/gcn/gcn.md (prologue_use): Add "register_operand" as
+	arg to match_operand.
+	(prologue_use_di): New; DI insn_and_split variant of the former.
+
 2022-11-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
