@@ -783,11 +783,16 @@ namespace
     using uint_t = conditional_t<is_same_v<T, float>, uint32_t,
 				 conditional_t<is_same_v<T, double>, uint64_t,
 					       uint16_t>>;
+#if USE_LIB_FAST_FLOAT
     constexpr int mantissa_bits
       = fast_float::binary_format<T>::mantissa_explicit_bits();
     constexpr int exponent_bits
       = is_same_v<T, double> ? 11
 	: is_same_v<T, fast_float::floating_type_float16_t> ? 5 : 8;
+#else
+    constexpr int mantissa_bits = is_same_v<T, float> ? 23 : 52;
+    constexpr int exponent_bits = is_same_v<T, float> ? 8 : 11;
+#endif
     constexpr int exponent_bias = (1 << (exponent_bits - 1)) - 1;
 
     __glibcxx_requires_valid_range(first, last);
@@ -945,8 +950,11 @@ namespace
 	else if (mantissa_idx >= -4)
 	  {
 	    if constexpr (is_same_v<T, float>
+#if USE_LIB_FAST_FLOAT
 			  || is_same_v<T,
-				       fast_float::floating_type_bfloat16_t>)
+				       fast_float::floating_type_bfloat16_t>
+#endif
+			 )
 	      {
 		__glibcxx_assert(mantissa_idx == -1);
 		mantissa |= hexit >> 1;
@@ -1130,6 +1138,7 @@ namespace
       }
     if constexpr (is_same_v<T, float> || is_same_v<T, double>)
       memcpy(&value, &result, sizeof(result));
+#if USE_LIB_FAST_FLOAT
     else if constexpr (is_same_v<T, fast_float::floating_type_bfloat16_t>)
       {
 	uint32_t res = uint32_t{result} << 16;
@@ -1156,6 +1165,7 @@ namespace
 		 | ((uint32_t{result} & 0x8000) << 16));
 	memcpy(value.x, &res, sizeof(res));
       }
+#endif
 
     return {first, errc{}};
   }
