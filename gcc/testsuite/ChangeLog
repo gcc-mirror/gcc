@@ -1,3 +1,19 @@
+2022-11-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/analyzer/call-summaries-2.c (uses_alloca): Use
+	__builtin_alloca instead of alloca.
+
+2022-11-23  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107577
+	* gfortran.dg/pr107577.f90: New test.
+
+2022-11-23  Andrew Pinski  <apinski@marvell.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107127
+	* gcc.dg/pr107127.c: New test.
+
 2022-11-22  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	* gcc.dg/builtin-dynamic-object-size-0.c (test_strdup,

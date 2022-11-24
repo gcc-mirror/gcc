@@ -1,3 +1,16 @@
+2022-11-23  Andrew Pinski  <apinski@marvell.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107127
+	* c-gimplify.cc (c_genericize): Use walk_tree_without_duplicates
+	instead of walk_tree for c_genericize_control_r.
+
+2022-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (fcontract-assumption-mode=, fcontract-continuation-mode=,
+	fcontract-role=, fcontract-semantic=): Add RejectNegative.
+	(fcontract-build-level=): Terminate description with dot.
+
 2022-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.cc (c_cpp_builtins): Bump __cpp_constexpr

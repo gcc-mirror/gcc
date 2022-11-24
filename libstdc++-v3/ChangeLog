@@ -1,3 +1,16 @@
+2022-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107811
+	* src/c++17/floating_from_chars.cc (__floating_from_chars_hex): Guard
+	fast_float uses with #if USE_LIB_FAST_FLOAT and for mantissa_bits and
+	exponent_bits provide a fallback.
+
+2022-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107814
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Use a static buffer with space after it.
+
 2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/107817

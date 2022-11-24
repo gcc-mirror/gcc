@@ -1,3 +1,9 @@
+2022-11-23  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107577
+	* resolve.cc (find_array_spec): Choose appropriate locus either of
+	bad array reference or of non-array entity in error message.
+
 2022-11-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107576

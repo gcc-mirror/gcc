@@ -1,3 +1,20 @@
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Set and use PICFLAG and LD_PICFLAG.  Use the "pic"
+	build of libiberty if PICFLAG is set.
+	* configure.ac:
+	* configure: Regenerate.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Set and use PICFLAG and LD_PICFLAG.  Use the "pic"
+	build of libiberty if PICFLAG is set.
+	* configure.ac:
+	* configure: Regenerate.
+
 2022-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/107059

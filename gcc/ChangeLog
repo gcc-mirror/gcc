@@ -1,3 +1,77 @@
+2022-11-23  Ramana Radhakrishnan  <ramana.gcc@gmail.com>
+
+	* config/arm/types.md: Update comment.
+	(is_neon_type): Add neon_fcmla, neon_fcadd.
+
+2022-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Recommend using
+	-Wdelete-non-virtual-dtor instead of -Wnon-virtual-dtor.
+
+2022-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107722
+	* diagnostic.cc (test_diagnostic_get_location_text): Test
+	special_fname_builtin () rather than "<built-in>" and expect
+	special_fname_builtin () concatenated with ":" for it.
+
+2022-11-23  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Set DO_LINK_MUTEX.
+
+2022-11-23  Lulu Cheng  <chenglulu@loongson.cn>
+	    xujiahao  <xujiahao@loongson.cn>
+
+	* config/loongarch/constraints.md (ZD): New constraint.
+	* config/loongarch/loongarch-def.c: Initial number of parallel prefetch.
+	* config/loongarch/loongarch-tune.h (struct loongarch_cache):
+	Define number of parallel prefetch.
+	* config/loongarch/loongarch.cc (loongarch_option_override_internal):
+	Set up parameters to be used in prefetching algorithm.
+	* config/loongarch/loongarch.md (prefetch): New template.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Set LD_PICFLAG.  Use it.  Set enable_host_pie.
+	Remove NO_PIE_CFLAGS and NO_PIE_FLAG.  Pass LD_PICFLAG to
+	ALL_LINKERFLAGS.  Use the "pic" build of libiberty if --enable-host-pie.
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG and LD_PICFLAG after this
+	check.
+	* configure: Regenerate.
+	* doc/install.texi: Document --enable-host-pie.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-bind-now): New check.  Add
+	-Wl,-z,now to LD_PICFLAG if --enable-host-bind-now.
+	* configure: Regenerate.
+	* doc/install.texi: Document --enable-host-bind-now.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-bind-now): New check.  Add
+	-Wl,-z,now to LD_PICFLAG if --enable-host-bind-now.
+	* configure: Regenerate.
+	* doc/install.texi: Document --enable-host-bind-now.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Set LD_PICFLAG.  Use it.  Set enable_host_pie.
+	Remove NO_PIE_CFLAGS and NO_PIE_FLAG.  Pass LD_PICFLAG to
+	ALL_LINKERFLAGS.  Use the "pic" build of libiberty if --enable-host-pie.
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG and LD_PICFLAG after this
+	check.
+	* configure: Regenerate.
+	* doc/install.texi: Document --enable-host-pie.
+
 2022-11-22  Jeff Law  <jlaw@ventanamicro.com>
 
 	* tree-ssa-dom.cc (record_edge_info): Fix thinko in last commit.
