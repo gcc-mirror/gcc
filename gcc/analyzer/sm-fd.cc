@@ -2270,7 +2270,16 @@ public:
 		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
-      return cd.get_model ()->on_socket (cd, m_success);
+      sm_state_map *smap;
+      const fd_state_machine *fd_sm;
+      std::unique_ptr<sm_context> sm_ctxt;
+      if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
+	return true;
+      const extrinsic_state *ext_state = ctxt->get_ext_state ();
+      if (!ext_state)
+	return true;
+
+      return fd_sm->on_socket (cd, m_success, sm_ctxt.get (), *ext_state);
     }
   };
 
@@ -2290,24 +2299,6 @@ public:
   }
 };
 
-/* Specialcase hook for handling "socket", for use by
-   kf_socket::outcome_of_socket::update_model.  */
-
-bool
-region_model::on_socket (const call_details &cd, bool successful)
-{
-  sm_state_map *smap;
-  const fd_state_machine *fd_sm;
-  std::unique_ptr<sm_context> sm_ctxt;
-  if (!get_fd_state (cd.get_ctxt (), &smap, &fd_sm, NULL, &sm_ctxt))
-    return true;
-  const extrinsic_state *ext_state = cd.get_ctxt ()->get_ext_state ();
-  if (!ext_state)
-    return true;
-
-  return fd_sm->on_socket (cd, successful, sm_ctxt.get (), *ext_state);
-}
-
 /* Handle calls to "bind".
    See e.g. https://man7.org/linux/man-pages/man3/bind.3p.html  */
 
@@ -2326,7 +2317,15 @@ public:
 		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
-      return cd.get_model ()->on_bind (cd, m_success);
+      sm_state_map *smap;
+      const fd_state_machine *fd_sm;
+      std::unique_ptr<sm_context> sm_ctxt;
+      if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
+	return true;
+      const extrinsic_state *ext_state = ctxt->get_ext_state ();
+      if (!ext_state)
+	return true;
+      return fd_sm->on_bind (cd, m_success, sm_ctxt.get (), *ext_state);
     }
   };
 
@@ -2346,24 +2345,6 @@ public:
   }
 };
 
-/* Specialcase hook for handling "bind", for use by
-   kf_bind::outcome_of_bind::update_model.  */
-
-bool
-region_model::on_bind (const call_details &cd, bool successful)
-{
-  sm_state_map *smap;
-  const fd_state_machine *fd_sm;
-  std::unique_ptr<sm_context> sm_ctxt;
-  if (!get_fd_state (cd.get_ctxt (), &smap, &fd_sm, NULL, &sm_ctxt))
-    return true;
-  const extrinsic_state *ext_state = cd.get_ctxt ()->get_ext_state ();
-  if (!ext_state)
-    return true;
-
-  return fd_sm->on_bind (cd, successful, sm_ctxt.get (), *ext_state);
-}
-
 /* Handle calls to "listen".
    See e.g. https://man7.org/linux/man-pages/man3/listen.3p.html  */
 
@@ -2381,7 +2362,16 @@ class kf_listen : public known_function
 		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
-      return cd.get_model ()->on_listen (cd, m_success);
+      sm_state_map *smap;
+      const fd_state_machine *fd_sm;
+      std::unique_ptr<sm_context> sm_ctxt;
+      if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
+	return true;
+      const extrinsic_state *ext_state = ctxt->get_ext_state ();
+      if (!ext_state)
+	return true;
+
+      return fd_sm->on_listen (cd, m_success, sm_ctxt.get (), *ext_state);
     }
   };
 
@@ -2401,24 +2391,6 @@ class kf_listen : public known_function
   }
 };
 
-/* Specialcase hook for handling "listen", for use by
-   kf_listen::outcome_of_listen::update_model.  */
-
-bool
-region_model::on_listen (const call_details &cd, bool successful)
-{
-  sm_state_map *smap;
-  const fd_state_machine *fd_sm;
-  std::unique_ptr<sm_context> sm_ctxt;
-  if (!get_fd_state (cd.get_ctxt (), &smap, &fd_sm, NULL, &sm_ctxt))
-    return true;
-  const extrinsic_state *ext_state = cd.get_ctxt ()->get_ext_state ();
-  if (!ext_state)
-    return true;
-
-  return fd_sm->on_listen (cd, successful, sm_ctxt.get (), *ext_state);
-}
-
 /* Handle calls to "accept".
    See e.g. https://man7.org/linux/man-pages/man3/accept.3p.html  */
 
@@ -2436,7 +2408,16 @@ class kf_accept : public known_function
 		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
-      return cd.get_model ()->on_accept (cd, m_success);
+      sm_state_map *smap;
+      const fd_state_machine *fd_sm;
+      std::unique_ptr<sm_context> sm_ctxt;
+      if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
+	return true;
+      const extrinsic_state *ext_state = ctxt->get_ext_state ();
+      if (!ext_state)
+	return true;
+
+      return fd_sm->on_accept (cd, m_success, sm_ctxt.get (), *ext_state);
     }
   };
 
@@ -2458,24 +2439,6 @@ class kf_accept : public known_function
   }
 };
 
-/* Specialcase hook for handling "accept", for use by
-   kf_accept::outcome_of_accept::update_model.  */
-
-bool
-region_model::on_accept (const call_details &cd, bool successful)
-{
-  sm_state_map *smap;
-  const fd_state_machine *fd_sm;
-  std::unique_ptr<sm_context> sm_ctxt;
-  if (!get_fd_state (cd.get_ctxt (), &smap, &fd_sm, NULL, &sm_ctxt))
-    return true;
-  const extrinsic_state *ext_state = cd.get_ctxt ()->get_ext_state ();
-  if (!ext_state)
-    return true;
-
-  return fd_sm->on_accept (cd, successful, sm_ctxt.get (), *ext_state);
-}
-
 /* Handle calls to "connect".
    See e.g. https://man7.org/linux/man-pages/man3/connect.3p.html  */
 
@@ -2494,7 +2457,16 @@ public:
 		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
-      return cd.get_model ()->on_connect (cd, m_success);
+      sm_state_map *smap;
+      const fd_state_machine *fd_sm;
+      std::unique_ptr<sm_context> sm_ctxt;
+      if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
+	return true;
+      const extrinsic_state *ext_state = ctxt->get_ext_state ();
+      if (!ext_state)
+	return true;
+
+      return fd_sm->on_connect (cd, m_success, sm_ctxt.get (), *ext_state);
     }
   };
 
@@ -2514,24 +2486,6 @@ public:
       }
   }
 };
-
-/* Specialcase hook for handling "connect", for use by
-   kf_connect::outcome_of_connect::update_model.  */
-
-bool
-region_model::on_connect (const call_details &cd, bool successful)
-{
-  sm_state_map *smap;
-  const fd_state_machine *fd_sm;
-  std::unique_ptr<sm_context> sm_ctxt;
-  if (!get_fd_state (cd.get_ctxt (), &smap, &fd_sm, NULL, &sm_ctxt))
-    return true;
-  const extrinsic_state *ext_state = cd.get_ctxt ()->get_ext_state ();
-  if (!ext_state)
-    return true;
-
-  return fd_sm->on_connect (cd, successful, sm_ctxt.get (), *ext_state);
-}
 
 /* Handler for calls to "pipe" and "pipe2".
    See e.g. https://www.man7.org/linux/man-pages/man2/pipe.2.html  */

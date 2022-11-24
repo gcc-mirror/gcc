@@ -515,11 +515,6 @@ class region_model
 
   /* Implemented in sm-fd.cc  */
   void mark_as_valid_fd (const svalue *sval, region_model_context *ctxt);
-  bool on_socket (const call_details &cd, bool successful);
-  bool on_bind (const call_details &cd, bool successful);
-  bool on_listen (const call_details &cd, bool successful);
-  bool on_accept (const call_details &cd, bool successful);
-  bool on_connect (const call_details &cd, bool successful);
 
   /* Implemented in sm-malloc.cc  */
   void on_realloc_with_move (const call_details &cd,
