@@ -11,4 +11,4 @@ int main()
   std::function<const int&()> ff(f);  // { dg-error "no matching function" }
   std::function<long&&()> f2(f);      // { dg-error "no matching function" }
 }
-// { dg-error "std::enable_if" "" { target *-*-* } 0 }
+// { dg-error "std::(__8::)?enable_if" "" { target *-*-* } 0 }
