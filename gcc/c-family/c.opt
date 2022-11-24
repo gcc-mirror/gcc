@@ -1713,11 +1713,11 @@ C++ Joined RejectNegative
 
 fcontract-role=
 C++ Joined RejectNegative
--fcontract-role=<name>:<semantics>	Specify the semantics for all levels in a role (default, review), or a custom contract role with given semantics (ex: opt:assume,assume,assume)
+-fcontract-role=<name>:<semantics>	Specify the semantics for all levels in a role (default, review), or a custom contract role with given semantics (ex: opt:assume,assume,assume).
 
 fcontract-semantic=
 C++ Joined RejectNegative
--fcontract-semantic=<level>:<semantic>	Specify the concrete semantics for level
+-fcontract-semantic=<level>:<semantic>	Specify the concrete semantics for level.
 
 fcoroutines
 C++ LTO Var(flag_coroutines)
