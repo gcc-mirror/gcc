@@ -726,7 +726,9 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	/* If we have a heap-allocated region in the summary, then
 	   it was allocated within the callee.
 	   Create a new heap-allocated region to summarize this.  */
-	return mgr->create_region_for_heap_alloc ();
+	auto_sbitmap heap_regs_in_use (mgr->get_num_regions ());
+	get_caller_model ()->get_referenced_base_regions (heap_regs_in_use);
+	return mgr->get_or_create_region_for_heap_alloc (heap_regs_in_use);
       }
       break;
     case RK_ALLOCA:

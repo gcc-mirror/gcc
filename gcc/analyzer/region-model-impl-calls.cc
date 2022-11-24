@@ -634,7 +634,7 @@ kf_calloc::impl_call_pre (const call_details &cd) const
     = mgr->get_or_create_binop (size_type_node, MULT_EXPR,
 				nmemb_sval, size_sval);
   const region *new_reg
-    = model->create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
+    = model->get_or_create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
   const region *sized_reg
     = mgr->get_sized_region (new_reg, NULL_TREE, prod_sval);
   model->zero_fill_region (sized_reg);
@@ -837,7 +837,7 @@ kf_malloc::impl_call_pre (const call_details &cd) const
   region_model_manager *mgr = cd.get_manager ();
   const svalue *size_sval = cd.get_arg_svalue (0);
   const region *new_reg
-    = model->create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
+    = model->get_or_create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -1067,7 +1067,7 @@ public:
     region_model_manager *mgr = cd.get_manager ();
     const svalue *size_sval = cd.get_arg_svalue (0);
     const region *new_reg
-      = model->create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
+      = model->get_or_create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
     if (cd.get_lhs_type ())
       {
 	const svalue *ptr_sval
@@ -1255,7 +1255,7 @@ kf_realloc::impl_call_post (const call_details &cd) const
 
       /* Create the new region.  */
       const region *new_reg
-	= model->create_region_for_heap_alloc (new_size_sval, ctxt);
+	= model->get_or_create_region_for_heap_alloc (new_size_sval, ctxt);
       const svalue *new_ptr_sval
 	= mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       if (!model->add_constraint (new_ptr_sval, NE_EXPR, old_ptr_sval,

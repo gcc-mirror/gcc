@@ -1678,11 +1678,22 @@ get_region_for_unexpected_tree_code (region_model_context *ctxt,
   return new_reg;
 }
 
-/* Return a new region describing a heap-allocated block of memory.  */
+/* Return a region describing a heap-allocated block of memory.
+   Reuse an existing heap_allocated_region is its id is not within
+   BASE_REGS_IN_USE.  */
 
 const region *
-region_model_manager::create_region_for_heap_alloc ()
+region_model_manager::
+get_or_create_region_for_heap_alloc (const sbitmap &base_regs_in_use)
 {
+  /* Try to reuse an existing region, if it's unreferenced in the
+     client state.  */
+  for (auto existing_reg : m_managed_dynamic_regions)
+    if (!bitmap_bit_p (base_regs_in_use, existing_reg->get_id ()))
+      if (existing_reg->get_kind () == RK_HEAP_ALLOCATED)
+	return existing_reg;
+
+  /* All existing ones (if any) are in use; create a new one.  */
   region *reg
     = new heap_allocated_region (alloc_region_id (), &m_heap_region);
   m_managed_dynamic_regions.safe_push (reg);

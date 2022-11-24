@@ -209,8 +209,9 @@ region_to_value_map::dump (bool simple) const
    to OUT.
 
    For now, write (region, value) mappings that are in common between THIS
-   and OTHER to OUT, effectively taking the intersection, rather than
-   rejecting differences.  */
+   and OTHER to OUT, effectively taking the intersection.
+
+   Reject merger of different values.  */
 
 bool
 region_to_value_map::can_merge_with_p (const region_to_value_map &other,
@@ -222,8 +223,12 @@ region_to_value_map::can_merge_with_p (const region_to_value_map &other,
       const svalue *iter_sval = iter.second;
       const svalue * const * other_slot = other.get (iter_reg);
       if (other_slot)
-	if (iter_sval == *other_slot)
-	  out->put (iter_reg, iter_sval);
+	{
+	  if (iter_sval == *other_slot)
+	    out->put (iter_reg, iter_sval);
+	  else
+	    return false;
+	}
     }
   return true;
 }
@@ -5498,17 +5503,50 @@ region_model::check_dynamic_size_for_floats (const svalue *size_in_bytes,
 	}
 }
 
-/* Return a new region describing a heap-allocated block of memory.
-   Use CTXT to complain about tainted sizes.  */
+/* Return a region describing a heap-allocated block of memory.
+   Use CTXT to complain about tainted sizes.
+
+   Reuse an existing heap_allocated_region if it's not being referenced by
+   this region_model; otherwise create a new one.  */
 
 const region *
-region_model::create_region_for_heap_alloc (const svalue *size_in_bytes,
-					    region_model_context *ctxt)
+region_model::get_or_create_region_for_heap_alloc (const svalue *size_in_bytes,
+						   region_model_context *ctxt)
 {
-  const region *reg = m_mgr->create_region_for_heap_alloc ();
+  /* Determine which regions are referenced in this region_model, so that
+     we can reuse an existing heap_allocated_region if it's not in use on
+     this path.  */
+  auto_sbitmap base_regs_in_use (m_mgr->get_num_regions ());
+  get_referenced_base_regions (base_regs_in_use);
+  const region *reg
+    = m_mgr->get_or_create_region_for_heap_alloc (base_regs_in_use);
   if (compat_types_p (size_in_bytes->get_type (), size_type_node))
     set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
+}
+
+/* Populate OUT_IDS with the set of IDs of those base regions which are
+   reachable in this region_model.  */
+
+void
+region_model::get_referenced_base_regions (auto_sbitmap &out_ids) const
+{
+  reachable_regions reachable_regs (const_cast<region_model *> (this));
+  m_store.for_each_cluster (reachable_regions::init_cluster_cb,
+			    &reachable_regs);
+  /* Get regions for locals that have explicitly bound values.  */
+  for (store::cluster_map_t::iterator iter = m_store.begin ();
+       iter != m_store.end (); ++iter)
+    {
+      const region *base_reg = (*iter).first;
+      if (const region *parent = base_reg->get_parent_region ())
+	if (parent->get_kind () == RK_FRAME)
+	  reachable_regs.add (base_reg, false);
+    }
+
+  bitmap_clear (out_ids);
+  for (auto iter_reg : reachable_regs)
+    bitmap_set_bit (out_ids, iter_reg->get_id ());
 }
 
 /* Return a new region describing a block of memory allocated within the
@@ -7608,7 +7646,7 @@ test_state_merging ()
     tree size = build_int_cst (size_type_node, 1024);
     const svalue *size_sval = mgr.get_or_create_constant_svalue (size);
     const region *new_reg
-      = model0.create_region_for_heap_alloc (size_sval, &ctxt);
+      = model0.get_or_create_region_for_heap_alloc (size_sval, &ctxt);
     const svalue *ptr_sval = mgr.get_ptr_svalue (ptr_type_node, new_reg);
     model0.set_value (model0.get_lvalue (p, &ctxt),
 		      ptr_sval, &ctxt);
@@ -7996,7 +8034,8 @@ test_malloc_constraints ()
 
   const svalue *size_in_bytes
     = mgr.get_or_create_unknown_svalue (size_type_node);
-  const region *reg = model.create_region_for_heap_alloc (size_in_bytes, NULL);
+  const region *reg
+    = model.get_or_create_region_for_heap_alloc (size_in_bytes, NULL);
   const svalue *sval = mgr.get_ptr_svalue (ptr_type_node, reg);
   model.set_value (model.get_lvalue (p, NULL), sval, NULL);
   model.set_value (q, p, NULL);
@@ -8225,7 +8264,8 @@ test_malloc ()
 
   /* "p = malloc (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
-  const region *reg = model.create_region_for_heap_alloc (size_sval, &ctxt);
+  const region *reg
+    = model.get_or_create_region_for_heap_alloc (size_sval, &ctxt);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);
   ASSERT_EQ (model.get_capacity (reg), size_sval);

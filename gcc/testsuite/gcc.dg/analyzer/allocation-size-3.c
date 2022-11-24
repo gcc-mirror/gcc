@@ -1,3 +1,6 @@
+/* { dg-additional-options "-fanalyzer-fine-grained" }
+   -fanalyzer-fine-grained is currently required; see PR analyzer/107851.  */
+
 /* { dg-additional-options -Wno-analyzer-out-of-bounds } */
 
 #include <stdlib.h>
