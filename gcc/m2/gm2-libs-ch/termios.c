@@ -195,7 +195,7 @@ int EXPORT (SetChar) (struct termios *t, ControlChar c, char ch);
 int EXPORT (tcsnow) (void);
 int EXPORT (tcsflush) (void);
 int EXPORT (tcsdrain) (void);
-int doSetUnset (unsigned int *bitset, unsigned int mask, int value);
+int doSetUnset (tcflag_t *bitset, unsigned int mask, int value);
 void _M2_termios_init (void);
 void _M2_termios_finish (void);
 
@@ -376,7 +376,7 @@ int EXPORT (tcflowoffo) (int fd)
 /* doSetUnset - applies mask or undoes mask depending upon value.  */
 
 int
-doSetUnset (unsigned int *bitset, unsigned int mask, int value)
+doSetUnset (tcflag_t *bitset, unsigned int mask, int value)
 {
   if (value)
     (*bitset) |= mask;

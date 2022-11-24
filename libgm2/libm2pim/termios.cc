@@ -213,7 +213,7 @@ extern "C" int EXPORT (SetChar) (struct termios *t, ControlChar c, char ch);
 extern "C" int EXPORT (tcsnow) (void);
 extern "C" int EXPORT (tcsflush) (void);
 extern "C" int EXPORT (tcsdrain) (void);
-extern "C" int doSetUnset (unsigned int *bitset, unsigned int mask, int value);
+extern "C" int doSetUnset (tcflag_t *bitset, unsigned int mask, int value);
 
 /* InitTermios new data structure.   */
 
@@ -413,7 +413,7 @@ EXPORT (tcflowoffo) (int fd)
 /* doSetUnset applies mask or undoes mask depending upon value.  */
 
 extern "C" int
-doSetUnset (unsigned int *bitset, unsigned int mask, int value)
+doSetUnset (tcflag_t *bitset, unsigned int mask, int value)
 {
   if (value)
     (*bitset) |= mask;

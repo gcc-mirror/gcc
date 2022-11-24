@@ -165,7 +165,7 @@ typedef enum {
 } Flag;
 
 int
-doSetUnset (unsigned int *bitset, unsigned int mask, int value)
+doSetUnset (tcflag_t *bitset, unsigned int mask, int value)
 {
   if (value)
     (*bitset) |= mask;
