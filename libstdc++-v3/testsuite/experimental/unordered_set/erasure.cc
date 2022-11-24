@@ -42,11 +42,24 @@ test02()
   VERIFY( ums == t );
 }
 
+void
+test_pr107850()
+{
+  // Predicate only callable as non-const.
+  struct Pred { bool operator()(const int&) { return false; } };
+  const Pred pred; // erase_if parameter is passed by value, so non-const.
+  std::unordered_set<int> s;
+  std::experimental::erase_if(s, pred);
+  std::unordered_multiset<int> ms;
+  std::experimental::erase_if(ms, pred);
+}
+
 int
 main()
 {
   test01();
   test02();
+  test_pr107850();
 
   return 0;
 }

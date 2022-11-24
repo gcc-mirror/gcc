@@ -94,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename set<_Key, _Compare, _Alloc>::size_type
     erase_if(set<_Key, _Compare, _Alloc>& __cont, _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::set<_Key, _Compare, _Alloc>& __ucont = __cont;
+      _GLIBCXX_STD_C::set<_Key, _Compare, _Alloc>& __ucont = __cont;
       return __detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
 
@@ -103,7 +103,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename multiset<_Key, _Compare, _Alloc>::size_type
     erase_if(multiset<_Key, _Compare, _Alloc>& __cont, _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::multiset<_Key, _Compare, _Alloc>& __ucont = __cont;
+      _GLIBCXX_STD_C::multiset<_Key, _Compare, _Alloc>& __ucont = __cont;
       return __detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
 _GLIBCXX_END_NAMESPACE_VERSION
