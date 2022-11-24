@@ -52,14 +52,17 @@ test(std::chars_format fmt = std::chars_format{})
     std::numbers::inv_sqrt3_v<std::float128_t>,
     std::numbers::egamma_v<std::float128_t>,
     std::numbers::phi_v<std::float128_t>,
+// Solaris has non-conforming printf, see PR98384 and PR107815.
+#if !(defined(__sun__) && defined(__svr4__))
     std::numeric_limits<std::float128_t>::max()
+#endif
   };
   char str1[10000], str2[10000];
   for (auto u : tests)
     {
       auto [ptr1, ec1] = std::to_chars(str1, str1 + sizeof(str1), u, fmt);
       VERIFY( ec1 == std::errc() );
-//    std::cout << i << ' ' << std::string_view (str1, ptr1) << '\n';
+//    std::cout << u << ' ' << std::string_view (str1, ptr1) << '\n';
       if (fmt == std::chars_format::fixed)
 	{
 	  auto [ptr2, ec2] = std::to_chars(str2, str2 + (ptr1 - str1), u, fmt);
@@ -76,7 +79,7 @@ test(std::chars_format fmt = std::chars_format{})
 
       auto [ptr5, ec5] = std::to_chars(str1, str1 + sizeof(str1), u, fmt, 90);
       VERIFY( ec5 == std::errc() );
-//    std::cout << i << ' ' << std::string_view (str1, ptr5) << '\n';
+//    std::cout << u << ' ' << std::string_view (str1, ptr5) << '\n';
       v = 4.0f128;
       auto [ptr6, ec6] = std::from_chars(str1, ptr5, v,
 					 fmt == std::chars_format{}
