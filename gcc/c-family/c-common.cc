@@ -6811,7 +6811,7 @@ fold_offsetof (tree expr, tree type, enum tree_code ctx)
 		     definition thereof.  */
 		  if (TREE_CODE (v) == ARRAY_REF
 		      || TREE_CODE (v) == COMPONENT_REF)
-		    warning (OPT_Warray_bounds,
+		    warning (OPT_Warray_bounds_,
 			     "index %E denotes an offset "
 			     "greater than size of %qT",
 			     t, TREE_TYPE (TREE_OPERAND (expr, 0)));
@@ -8534,7 +8534,7 @@ convert_vector_to_array_for_subscript (location_t loc,
       if (TREE_CODE (index) == INTEGER_CST)
         if (!tree_fits_uhwi_p (index)
 	    || maybe_ge (tree_to_uhwi (index), TYPE_VECTOR_SUBPARTS (type)))
-          warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
+	  warning_at (loc, OPT_Warray_bounds_, "index value is out of bound");
 
       /* We are building an ARRAY_REF so mark the vector as addressable
          to not run into the gimplifiers premature setting of DECL_GIMPLE_REG_P

@@ -539,8 +539,7 @@ Common Var(warn_aggressive_loop_optimizations) Init(1) Warning
 Warn if a loop with constant number of iterations triggers undefined behavior.
 
 Warray-bounds
-Common Var(warn_array_bounds) Warning
-Warn if an array is accessed out of bounds.
+Common Alias(Warray-bounds=, 1, 0) Warning
 
 Warray-bounds=
 Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning IntegerRange(0, 2)
