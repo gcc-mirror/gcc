@@ -1243,11 +1243,11 @@ package body Sem_Ch7 is
          Check_Completion;
 
          --  If the package spec does not require an explicit body, then all
-         --  abstract states declared in nested packages cannot possibly get
-         --  a proper refinement (SPARK RM 7.2.2(3)). This check is performed
-         --  only when the compilation unit is the main unit to allow for
-         --  modular SPARK analysis where packages do not necessarily have
-         --  bodies.
+         --  abstract states declared in nested packages cannot possibly get a
+         --  proper refinement (SPARK RM 7.1.4(4) and SPARK RM 7.2.2(3)). This
+         --  check is performed only when the compilation unit is the main
+         --  unit to allow for modular SPARK analysis where packages do not
+         --  necessarily have bodies.
 
          if Is_Comp_Unit then
             Check_State_Refinements

@@ -63,6 +63,7 @@ with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch12;       use Sem_Ch12;
 with Sem_Ch13;       use Sem_Ch13;
@@ -3564,6 +3565,21 @@ package body Sem_Prag is
                  ("\& is declared in the body of package %", Indic, Item_Id);
             end if;
 
+            return;
+         end if;
+
+         --  In the case of state in a (descendant of a private) child which
+         --  is Part_Of the state of another package, the package defining the
+         --  encapsulating abstract state should have a body, to ensure that it
+         --  has a state refinement (SPARK RM 7.1.4(4)).
+
+         if Enclosing_Comp_Unit_Node (Encap_Id) /=
+            Enclosing_Comp_Unit_Node (Item_Id)
+           and then not Unit_Requires_Body (Scope (Encap_Id))
+         then
+            SPARK_Msg_N
+              ("indicator Part_Of must denote abstract state of package "
+               & "with a body (SPARK RM 7.1.4(4))", Indic);
             return;
          end if;
 

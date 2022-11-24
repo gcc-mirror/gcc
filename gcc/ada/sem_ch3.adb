@@ -2942,7 +2942,8 @@ package body Sem_Ch3 is
          --  Verify that all abstract states found in any package declared in
          --  the input declarative list have proper refinements. The check is
          --  performed only when the context denotes a block, entry, package,
-         --  protected, subprogram, or task body (SPARK RM 7.2.2(3)).
+         --  protected, subprogram, or task body (SPARK RM 7.1.4(4) and SPARK
+         --  RM 7.2.2(3)).
 
          Check_State_Refinements (Context);
 
