@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-ssa.h"
 #include "tree-eh.h"
+#include "diagnostic-core.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -1428,6 +1429,11 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   unsigned char cur_shadow_byte = ASAN_STACK_MAGIC_LEFT;
   tree str_cst, decl, id;
   int use_after_return_class = -1;
+
+  /* Don't emit anything when doing error recovery, the assertions
+     might fail e.g. if a function had a frame offset overflow.  */
+  if (seen_error ())
+    return NULL;
 
   if (shadow_ptr_types[0] == NULL_TREE)
     asan_init_shadow_ptr_types ();
