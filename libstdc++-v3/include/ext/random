@@ -208,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void _M_period_certification();
   };
 
-
+#if __cpp_impl_three_way_comparison < 201907L
   template<typename _UIntType, size_t __m,
 	   size_t __pos1, size_t __sl1, size_t __sl2,
 	   size_t __sr1, size_t __sr2,
@@ -224,7 +224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       __m, __pos1, __sl1, __sl2, __sr1, __sr2, __msk1, __msk2, __msk3,
 	       __msk4, __parity1, __parity2, __parity3, __parity4>& __rhs)
     { return !(__lhs == __rhs); }
-
+#endif
 
   /* Definitions for the SIMD-oriented Fast Mersenne Twister as defined
    * in the C implementation by Daito and Matsumoto, as both a 32-bit
@@ -451,9 +451,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return (__p1._M_alpha == __p2._M_alpha
 		  && __p1._M_beta == __p2._M_beta); }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	void
@@ -616,6 +618,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       param_type _M_param;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two beta distributions are different.
    */
@@ -624,7 +627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const __gnu_cxx::beta_distribution<_RealType>& __d1,
 	       const __gnu_cxx::beta_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A multi-variate normal continuous distribution for random numbers.
@@ -735,9 +738,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_mean == __p2._M_mean && __p1._M_t == __p2._M_t; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	template <typename _InputIterator1, typename _InputIterator2>
@@ -943,6 +948,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::normal_distribution<_RealType> _M_nd;
   };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two multi-variate normal distributions are
    * different.
@@ -954,7 +960,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const __gnu_cxx::normal_mv_distribution<_Dimen, _RealType>&
 	       __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A Rice continuous distribution for random numbers.
@@ -1014,9 +1020,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_nu == __p2._M_nu && __p1._M_sigma == __p2._M_sigma; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	void _M_initialize();
@@ -1209,6 +1217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::normal_distribution<result_type> _M_ndy;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two Rice distributions are not equal.
    */
@@ -1217,7 +1226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const rice_distribution<_RealType1>& __d1,
 	       const rice_distribution<_RealType1>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A Nakagami continuous distribution for random numbers.
@@ -1268,9 +1277,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_mu == __p2._M_mu && __p1._M_omega == __p2._M_omega; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	void _M_initialize();
@@ -1442,6 +1453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::gamma_distribution<result_type> _M_gd;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two Nakagami distributions are not equal.
    */
@@ -1450,7 +1462,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const nakagami_distribution<_RealType>& __d1,
 	       const nakagami_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A Pareto continuous distribution for random numbers.
@@ -1513,9 +1525,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_alpha == __p2._M_alpha && __p1._M_mu == __p2._M_mu; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	void _M_initialize();
@@ -1691,6 +1705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::uniform_real_distribution<result_type> _M_ud;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two Pareto distributions are not equal.
    */
@@ -1699,7 +1714,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const pareto_distribution<_RealType>& __d1,
 	       const pareto_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A K continuous distribution for random numbers.
@@ -1770,9 +1785,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && __p1._M_nu == __p2._M_nu;
 	}
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	void _M_initialize();
@@ -1950,6 +1967,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::gamma_distribution<result_type> _M_gd2;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two K distributions are not equal.
    */
@@ -1958,7 +1976,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const k_distribution<_RealType>& __d1,
 	       const k_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief An arcsine continuous distribution for random numbers.
@@ -2012,9 +2030,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	void _M_initialize();
@@ -2191,6 +2211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::uniform_real_distribution<result_type> _M_ud;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two arcsine distributions are not equal.
    */
@@ -2199,7 +2220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const arcsine_distribution<_RealType>& __d1,
 	       const arcsine_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A Hoyt continuous distribution for random numbers.
@@ -2260,9 +2281,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_q == __p2._M_q && __p1._M_omega == __p2._M_omega; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	void _M_initialize();
@@ -2436,6 +2459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::exponential_distribution<result_type> _M_ed;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two Hoyt distributions are not equal.
    */
@@ -2444,7 +2468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const hoyt_distribution<_RealType>& __d1,
 	       const hoyt_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A triangular distribution for random numbers.
@@ -2516,9 +2540,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  && __p1._M_c == __p2._M_c);
 	}
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 
@@ -2700,6 +2726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       param_type _M_param;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two triangle distributions are different.
    */
@@ -2708,7 +2735,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const __gnu_cxx::triangular_distribution<_RealType>& __d1,
 	       const __gnu_cxx::triangular_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A von Mises distribution for random numbers.
@@ -2776,9 +2803,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_mu == __p2._M_mu && __p1._M_kappa == __p2._M_kappa; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	_RealType _M_mu;
@@ -2942,6 +2971,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       param_type _M_param;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two von Mises distributions are different.
    */
@@ -2950,7 +2980,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const __gnu_cxx::von_mises_distribution<_RealType>& __d1,
 	       const __gnu_cxx::von_mises_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A discrete hypergeometric random number distribution.
@@ -3024,9 +3054,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && (__p1._M_K == __p2._M_K)
 	      && (__p1._M_n == __p2._M_n); }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 
@@ -3212,6 +3244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       param_type _M_param;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two hypergeometric distributions are different.
    */
@@ -3220,6 +3253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const __gnu_cxx::hypergeometric_distribution<_UIntType>& __d1,
 	       const __gnu_cxx::hypergeometric_distribution<_UIntType>& __d2)
     { return !(__d1 == __d2); }
+#endif
 
   /**
    * @brief A logistic continuous distribution for random numbers.
@@ -3280,9 +3314,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	void _M_initialize();
@@ -3443,6 +3479,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       param_type _M_param;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two logistic distributions are not equal.
    */
@@ -3451,7 +3488,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const logistic_distribution<_RealType1>& __d1,
 	       const logistic_distribution<_RealType1>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A distribution for random coordinates on a unit sphere.
@@ -3479,9 +3516,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type&, const param_type&)
 	{ return true; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type&, const param_type&)
 	{ return false; }
+#endif
       };
 
       /**
@@ -3636,6 +3675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::normal_distribution<_RealType> _M_nd;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two uniform on sphere distributions are different.
    */
@@ -3646,7 +3686,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
 	       _RealType>& __d2)
     { return !(__d1 == __d2); }
-
+#endif
 
   /**
    * @brief A distribution for random coordinates inside a unit sphere.
@@ -3686,9 +3726,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_radius == __p2._M_radius; }
 
+#if __cpp_impl_three_way_comparison < 201907L
 	friend bool
 	operator!=(const param_type& __p1, const param_type& __p2)
 	{ return !(__p1 == __p2); }
+#endif
 
       private:
 	_RealType _M_radius;
@@ -3862,6 +3904,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       uniform_on_sphere_distribution<_Dimen, _RealType> _M_uosd;
     };
 
+#if __cpp_impl_three_way_comparison < 201907L
   /**
    * @brief Return true if two uniform on sphere distributions are different.
    */
@@ -3872,6 +3915,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const __gnu_cxx::uniform_inside_sphere_distribution<_Dimen,
 	       _RealType>& __d2)
     { return !(__d1 == __d2); }
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
