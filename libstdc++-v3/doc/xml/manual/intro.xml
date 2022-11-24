@@ -1308,6 +1308,13 @@ requirements of the license of GCC.
     <listitem><para>Implement the fix for trailing slashes.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr3656"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#3656">3656</link>:
+	<emphasis role="bold">Inconsistent bit operations returning a count
+	</emphasis>
+    </term>
+    <listitem><para>Changed <code>bit_width</code> to return <code>int</code>.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>
