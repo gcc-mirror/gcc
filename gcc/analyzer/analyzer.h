@@ -258,6 +258,7 @@ public:
 };
 
 extern void register_known_functions (known_function_manager &mgr);
+extern void register_known_fd_functions (known_function_manager &kfm);
 extern void register_varargs_builtins (known_function_manager &kfm);
 
 /* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */

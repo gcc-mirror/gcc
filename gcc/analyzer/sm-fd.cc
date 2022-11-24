@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-language.h"
+#include "analyzer/call-info.h"
 
 #if ENABLE_ANALYZER
 
@@ -2251,6 +2252,44 @@ region_model::mark_as_valid_fd (const svalue *sval, region_model_context *ctxt)
   fd_sm->mark_as_valid_fd (this, smap, sval, *ext_state);
 }
 
+/* Handle calls to "socket".
+   See e.g. https://man7.org/linux/man-pages/man3/socket.3p.html  */
+
+class kf_socket : public known_function
+{
+public:
+  class outcome_of_socket : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_socket (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_socket (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 3;
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_socket> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_socket> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
+
 /* Specialcase hook for handling "socket", for use by
    kf_socket::outcome_of_socket::update_model.  */
 
@@ -2268,6 +2307,44 @@ region_model::on_socket (const call_details &cd, bool successful)
 
   return fd_sm->on_socket (cd, successful, sm_ctxt.get (), *ext_state);
 }
+
+/* Handle calls to "bind".
+   See e.g. https://man7.org/linux/man-pages/man3/bind.3p.html  */
+
+class kf_bind : public known_function
+{
+public:
+  class outcome_of_bind : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_bind (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_bind (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3 && cd.arg_is_pointer_p (1));
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_bind> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_bind> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
 
 /* Specialcase hook for handling "bind", for use by
    kf_bind::outcome_of_bind::update_model.  */
@@ -2287,6 +2364,43 @@ region_model::on_bind (const call_details &cd, bool successful)
   return fd_sm->on_bind (cd, successful, sm_ctxt.get (), *ext_state);
 }
 
+/* Handle calls to "listen".
+   See e.g. https://man7.org/linux/man-pages/man3/listen.3p.html  */
+
+class kf_listen : public known_function
+{
+  class outcome_of_listen : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_listen (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_listen (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 2;
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_listen> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_listen> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
+
 /* Specialcase hook for handling "listen", for use by
    kf_listen::outcome_of_listen::update_model.  */
 
@@ -2304,6 +2418,45 @@ region_model::on_listen (const call_details &cd, bool successful)
 
   return fd_sm->on_listen (cd, successful, sm_ctxt.get (), *ext_state);
 }
+
+/* Handle calls to "accept".
+   See e.g. https://man7.org/linux/man-pages/man3/accept.3p.html  */
+
+class kf_accept : public known_function
+{
+  class outcome_of_accept : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_accept (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_accept (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3
+	    && cd.arg_is_pointer_p (1)
+	    && cd.arg_is_pointer_p (2));
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_accept> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_accept> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
 
 /* Specialcase hook for handling "accept", for use by
    kf_accept::outcome_of_accept::update_model.  */
@@ -2323,6 +2476,45 @@ region_model::on_accept (const call_details &cd, bool successful)
   return fd_sm->on_accept (cd, successful, sm_ctxt.get (), *ext_state);
 }
 
+/* Handle calls to "connect".
+   See e.g. https://man7.org/linux/man-pages/man3/connect.3p.html  */
+
+class kf_connect : public known_function
+{
+public:
+  class outcome_of_connect : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_connect (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_connect (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3
+	    && cd.arg_is_pointer_p (1));
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_connect> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_connect> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
+
 /* Specialcase hook for handling "connect", for use by
    kf_connect::outcome_of_connect::update_model.  */
 
@@ -2339,6 +2531,107 @@ region_model::on_connect (const call_details &cd, bool successful)
     return true;
 
   return fd_sm->on_connect (cd, successful, sm_ctxt.get (), *ext_state);
+}
+
+/* Handler for calls to "pipe" and "pipe2".
+   See e.g. https://www.man7.org/linux/man-pages/man2/pipe.2.html  */
+
+class kf_pipe : public known_function
+{
+  class failure : public failed_call_info
+  {
+  public:
+    failure (const call_details &cd) : failed_call_info (cd) {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      /* Return -1; everything else is unchanged.  */
+      const call_details cd (get_call_details (model, ctxt));
+      model->update_for_int_cst_return (cd, -1, true);
+      return true;
+    }
+  };
+
+  class success : public success_call_info
+  {
+  public:
+    success (const call_details &cd) : success_call_info (cd) {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+
+      /* Return 0.  */
+      model->update_for_zero_return (cd, true);
+
+      /* Update fd array.  */
+      region_model_manager *mgr = cd.get_manager ();
+      tree arr_tree = cd.get_arg_tree (0);
+      const svalue *arr_sval = cd.get_arg_svalue (0);
+      for (int idx = 0; idx < 2; idx++)
+	{
+	  const region *arr_reg
+	    = model->deref_rvalue (arr_sval, arr_tree, cd.get_ctxt ());
+	  const svalue *idx_sval
+	    = mgr->get_or_create_int_cst (integer_type_node, idx);
+	  const region *element_reg
+	    = mgr->get_element_region (arr_reg, integer_type_node, idx_sval);
+	  conjured_purge p (model, cd.get_ctxt ());
+	  const svalue *fd_sval
+	    = mgr->get_or_create_conjured_svalue (integer_type_node,
+						  cd.get_call_stmt (),
+						  element_reg,
+						  p);
+	  model->set_value (element_reg, fd_sval, cd.get_ctxt ());
+	  model->mark_as_valid_fd (fd_sval, cd.get_ctxt ());
+	}
+      return true;
+    }
+  };
+
+public:
+  kf_pipe (unsigned num_args)
+  : m_num_args (num_args)
+  {
+    gcc_assert (num_args > 0);
+  }
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == m_num_args && cd.arg_is_pointer_p (0));
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
+	cd.get_ctxt ()->bifurcate (make_unique<success> (cd));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+
+private:
+  unsigned m_num_args;
+};
+
+/* Populate KFM with instances of known functions relating to
+   file descriptors.  */
+
+void
+register_known_fd_functions (known_function_manager &kfm)
+{
+  kfm.add ("accept", make_unique<kf_accept> ());
+  kfm.add ("bind", make_unique<kf_bind> ());
+  kfm.add ("connect", make_unique<kf_connect> ());
+  kfm.add ("listen", make_unique<kf_listen> ());
+  kfm.add ("pipe", make_unique<kf_pipe> (1));
+  kfm.add ("pipe2", make_unique<kf_pipe> (2));
+  kfm.add ("socket", make_unique<kf_socket> ());
 }
 
 } // namespace ana
