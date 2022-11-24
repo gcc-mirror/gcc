@@ -652,7 +652,7 @@ make_va_list_state_machine (logger *logger)
 class kf_va_start : public known_function
 {
 public:
-  bool matches_call_types_p (const call_details &) const
+  bool matches_call_types_p (const call_details &) const final override
   {
     return true;
   }
@@ -704,7 +704,7 @@ kf_va_start::impl_call_pre (const call_details &cd) const
 class kf_va_copy : public known_function
 {
 public:
-  bool matches_call_types_p (const call_details &cd) const
+  bool matches_call_types_p (const call_details &) const final override
   {
     return true;
   }
