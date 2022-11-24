@@ -96,8 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename map<_Key, _Tp, _Compare, _Alloc>::size_type
     erase_if(map<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Alloc>&
-	__ucont = __cont;
+      _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Alloc>& __ucont = __cont;
       return __detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
 
@@ -106,8 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename multimap<_Key, _Tp, _Compare, _Alloc>::size_type
     erase_if(multimap<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Alloc>&
-	__ucont = __cont;
+      _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Alloc>& __ucont = __cont;
       return __detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
 _GLIBCXX_END_NAMESPACE_VERSION

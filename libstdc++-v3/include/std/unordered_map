@@ -84,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase_if(unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>&
+      _GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>&
 	__ucont = __cont;
       return __detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase_if(unordered_multimap<_Key, _Tp, _Hash, _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::unordered_multimap<_Key, _Tp, _Hash, _CPred, _Alloc>&
+      _GLIBCXX_STD_C::unordered_multimap<_Key, _Tp, _Hash, _CPred, _Alloc>&
 	__ucont = __cont;
       return __detail::__erase_nodes_if(__cont, __ucont, __pred);
     }

@@ -51,8 +51,7 @@ inline namespace fundamentals_v2
     inline void
     erase_if(map<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Alloc>&
-	__ucont = __cont;
+      _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Alloc>& __ucont = __cont;
       std::__detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
 
@@ -61,8 +60,7 @@ inline namespace fundamentals_v2
     inline void
     erase_if(multimap<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Alloc>&
-	__ucont = __cont;
+      _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Alloc>& __ucont = __cont;
       std::__detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
 
