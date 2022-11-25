@@ -47,13 +47,19 @@ class crc_optimization {
      operation on the same variable.  */
   gimple *shift_after_xor;
 
-  /* Phi statements result may be the crc variable.  */
+  /* Phi statement, result may be the crc variable.  */
   gimple *first_phi_for_crc;
 
   /* Sometimes polynomial may not be constant
      and xor-ed variable may depend on two variables.
      The result of phi statement may contain the polynomial.  */
   gimple *second_phi_for_crc;
+
+  /* Phi statement, result maybe data (if exists).  */
+  gimple * data;
+
+  /* The loop, which probably calculates CRC.  */
+  loop *crc_loop;
 
   unsigned HOST_WIDE_INT loop_iteration_number;
 
@@ -77,6 +83,7 @@ class crc_optimization {
     shift_after_xor = nullptr;
     first_phi_for_crc = nullptr;
     second_phi_for_crc = nullptr;
+    data = nullptr;
     is_left_shift = false;
     crc_if_dep = false;
     clean_xor_maybe_crc = true;
@@ -103,22 +110,27 @@ class crc_optimization {
   /* This function goes up through the def-chain of the name,
    until doesn't encounter a phi statement or
    if it does not meet certain conditions
-   depending on the passed check_dependency function.
-   The check_dependency may be the check_def_stmt_for_xor
+   depending on the passed continue_to_check_dep function.
+   The continue_to_check_dep may be the check_def_stmt_for_xor
    or check_def_stmt_for_if function.  */
   void
-  get_dep (tree name, void (crc_optimization::*check_dependency) (tree ssa));
+  get_dep (tree name,
+	   bool (crc_optimization::*continue_to_check_dep) (gimple* stmt));
 
-  /* Check whether the statement, dependent from xor's operands,
-   does shift operation (for calculating crc)
-   or is a phi statement.  */
-  void check_def_stmt_for_xor (tree ssa);
+/* Checks whether the def_stmt statement, dependent from xor's operands,
+   does shift operation for calculating crc
+   or is a phi statement.  Keeps phi statements of the loop's header.
+   Returns false, if there is an instruction which may not exist
+   in the CRC loop.
+   Returns true, if the def-chain examination must be continued.  */
+  bool continue_to_check_dep_for_xor (gimple* stmt);
 
-  /* Walks through def-chain of if's condition and
-   checks whether if's condition and xor-ed variable
+/* Checks whether if's condition and xor-ed variable
    are dependent from the same variable.
-   (The crc variable is xor-ed if variable's MSB/LSB is 1).  */
-  void check_def_stmt_for_if (tree ssa);
+   (The crc variable is xor-ed if variable's MSB/LSB is 1).
+   Also determines phi instruction's of data and crc
+   (for further polynomial extraction).  */
+  bool continue_to_check_dep_for_if (gimple* stmt);
 
   /* This function checks that xor is done under the condition
    of MSB/LSB being one.
@@ -172,8 +184,33 @@ class crc_optimization {
 };
 
 
-/* Set GIMPLE_PHI and GIMPLE statements of the function not visited.  */
+/* Set GIMPLE_PHI and GIMPLE statements of the crc loop not visited.  */
+void
+set_loop_statements_not_visited (loop *loop)
+{
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
+  for (unsigned int i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = bbs[i];
+      /* Set phis not visited.  */
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *stmt = gsi.phi ();
+	  gimple_set_visited (stmt, false);
+	}
 
+      /* Set statements not visited.  */
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gimple_set_visited (stmt, false);
+	}
+    }
+}
+
+/* Set GIMPLE_PHI and GIMPLE statements of the function not visited.  */
 static void
 set_all_statements_not_visited (function *fun)
 {
@@ -434,13 +471,15 @@ crc_optimization::crc_cond_and_shift (const basic_block &pred_bb,
     }
 
   /* Check whether there is a dependence between
-     if condition's variable and xor-ed variable.  */
+     if condition's variable and xor-ed variable.
+     Also determine phi statements of crc and data.  */
   tree lhs = gimple_cond_lhs (cond);
   tree rhs = gimple_cond_rhs (cond);
+  set_loop_statements_not_visited (crc_loop);
   if (TREE_CODE (lhs) == SSA_NAME)
-    check_def_stmt_for_if (lhs);
+    get_dep (lhs, &crc_optimization::continue_to_check_dep_for_if);
   else if (TREE_CODE (rhs) == SSA_NAME)
-    check_def_stmt_for_if (rhs);
+    get_dep (rhs, &crc_optimization::continue_to_check_dep_for_if);
   else
     return false; /* Both parts of condition are not SSA_NAME.  */
 
@@ -541,19 +580,17 @@ crc_optimization::can_not_be_shift_of_crc (gimple *assign_stmt,
 /* This function goes up through the def-chain of the given name,
    until doesn't encounter a phi statement or
    if it does not meet certain conditions
-   depending on the passed check_dependency function.
-   The check_dependency may be the check_def_stmt_for_xor
+   depending on the passed continue_to_check_dep function.
+   The continue_to_check_dep may be the check_def_stmt_for_xor
    or check_def_stmt_for_if function.  */
 
 void
 crc_optimization::get_dep (tree name,
-			   void (crc_optimization::*check_dependency) (
-			       tree ssa))
+			   bool (crc_optimization::*continue_to_check_dep) (
+			       gimple* ssa))
 {
-  if (!clean_xor_maybe_crc)
+  if (!(name && TREE_CODE (name) == SSA_NAME))
     return;
-
-  tree ssa1 = NULL_TREE, ssa2 = NULL_TREE;
 
   /* No definition chain for default defs.  */
   if (SSA_NAME_IS_DEFAULT_DEF (name))
@@ -561,112 +598,161 @@ crc_optimization::get_dep (tree name,
 
   gimple *stmt = SSA_NAME_DEF_STMT (name);
 
-  /* If it is an assigment statement - get first and second operand
-     if phi statement of loop's header bb - stop function's execution.  */
+  if (!stmt)
+    return;
+
+  /* Don't go outside the loop.  */
+  if (!flow_bb_inside_loop_p (crc_loop, gimple_bb (stmt)))
+    return;
+
+  /* Check the statement, extract important information.
+     Stop examining def-chain if there is no need of other information.  */
+  if (!((this->*continue_to_check_dep) (stmt)))
+    return;
+
+  /* If it is an assigment statement,
+     get and check def-chain for the first and second operands.
+     Otherwise if it's a phi statement, not declared in loop's header,
+     get and check def-chain for its values.  */
   if (is_a<gassign *> (stmt))
     {
-      ssa1 = gimple_assign_rhs1 (stmt);
-      ssa2 = gimple_assign_rhs2 (stmt);
+      tree ssa1 = gimple_assign_rhs1 (stmt);
+      tree ssa2 = gimple_assign_rhs2 (stmt);
+
+      get_dep (ssa1, continue_to_check_dep);
+      get_dep (ssa2, continue_to_check_dep);
     }
-  else if (is_a<gphi *> (stmt)
-	   && (!bb_loop_header_p (gimple_bb (stmt))))
+   else if (is_a<gphi *> (stmt) && !bb_loop_header_p (gimple_bb (stmt)))
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "Phi's definition IS NOT in loop header.\n");
-
-      if (check_dependency == &crc_optimization::check_def_stmt_for_xor)
-	clean_xor_maybe_crc = false;
-      return;
+      for (unsigned i = 0; i < gimple_phi_num_args (stmt); i++)
+	{
+	  tree val = gimple_phi_arg_def (stmt, i);
+	  get_dep (val, continue_to_check_dep);
+	}
     }
-
-  /* Do some checks on definition statements of
-     assignment's first and second operands.  */
-  (this->*check_dependency) (ssa1);
-  (this->*check_dependency) (ssa2);
-  return;
 }
 
 
-/* Check whether the statement, dependent from xor's operands,
-   does shift operation (for calculating crc)
-   or is a phi statement.  */
+/* Checks whether the def_stmt statement, dependent from xor's operands,
+   does shift operation for calculating crc
+   or is a phi statement.  Keeps phi statements of the loop's header.
 
-void
-crc_optimization::check_def_stmt_for_xor (tree dep)
+   Returns false, if there is an instruction which may not exist
+   in the CRC loop.
+   Returns true, if the def-chain examination must be continued.  */
+
+bool
+crc_optimization::continue_to_check_dep_for_xor (gimple *def_stmt)
 {
-  if (!gimple_range_ssa_p (dep))
-    return;
+
   if (!clean_xor_maybe_crc)
-    return;
+    return false;
 
-  gimple *def_stmt = SSA_NAME_DEF_STMT (dep);
+  if (gimple_visited_p (def_stmt))
+    return false;
 
-  if (!def_stmt)
-    return;
+  gimple_set_visited (def_stmt, true);
 
   if (is_gimple_assign (def_stmt))
-    if (can_not_be_shift_of_crc (def_stmt, true))
-      return;
-
-  /* Keep phi statement.  */
-  if (is_a<gphi *> (def_stmt))
     {
-      if (first_phi_for_crc)
+      if (can_not_be_shift_of_crc (def_stmt, true))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Set second phi.\n");
-
-	  second_phi_for_crc = def_stmt;
+	  clean_xor_maybe_crc = false;
+	  return false;
 	}
-      else
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Set first phi.\n");
-
-	  first_phi_for_crc = def_stmt;
-	}
-      return;
     }
+  else if (is_a<gphi *> (def_stmt))
+    {
+      /* Keep phi statement.  */
+      if (bb_loop_header_p (gimple_bb (def_stmt)))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "Phi's definition is in loop header.\n");
 
-  /* Get the def chain for the operand.  */
-  get_dep (dep, &crc_optimization::check_def_stmt_for_xor);
+	  /* The case when polynomial's value is determined by
+	     a phi statement.  */
+	  if (first_phi_for_crc)
+	    {
+	      second_phi_for_crc = def_stmt;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Set second phi.\n");
+	    }
+	  else
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Set first phi.\n");
+	      first_phi_for_crc = def_stmt;
+	    }
+	  return true;
+	}
+    }
+    return true;
 }
 
 
-/* Walks through def-chain of if's condition and
-   checks whether if's condition and xor-ed variable
+/* Checks whether if's condition and xor-ed variable
    are dependent from the same variable.
-   (The crc variable is xor-ed if variable's MSB/LSB is 1).  */
+   (The crc variable is xor-ed if variable's MSB/LSB is 1).
 
-void
-crc_optimization::check_def_stmt_for_if (tree dep)
+   Also determines phi instruction's of data and crc
+   (for further polynomial extraction).  */
+
+bool
+crc_optimization::continue_to_check_dep_for_if (gimple *def_stmt)
 {
-  if (!gimple_range_ssa_p (dep))
-    return;
-  gimple *def_stmt = SSA_NAME_DEF_STMT (dep);
+  gimple_set_visited (def_stmt, true);
 
-  if (!def_stmt)
-    return;
-
-  /* Checks whether if's condition and xor-ed variable are dependent
-     from the same variable.  */
-  if (is_a<gphi *> (def_stmt))
+  if (is_a<gphi *> (def_stmt) && bb_loop_header_p (gimple_bb (def_stmt)))
     {
+      /* Checks whether if's condition and xor-ed variable are dependent
+	 from the same variable.  */
       if ((first_phi_for_crc && first_phi_for_crc == def_stmt)
 	  || (second_phi_for_crc && second_phi_for_crc == def_stmt))
 	{
 	  crc_if_dep = true;
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "\nIf condition has dependence "
-		     "from the same variable as xor.\n");
-	}
-      return;
-    }
+	  /* If the second phi equals def_stmt,
+	     then it is used for crc calculation,
+	     keep crc phi in first_phi_for_crc.
+	     (This is needed for the polynomial extraction.)  */
+	  if ((second_phi_for_crc && second_phi_for_crc == def_stmt))
+	    {
+	      first_phi_for_crc = second_phi_for_crc;
+	    }
 
-  /* Get the def chain for the operand.  */
-  get_dep (dep, &crc_optimization::check_def_stmt_for_if);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file,
+		       "If condition has dependence "
+		       "from the same variable as xor.\n"
+		       "CRC's phi statement is:\n");
+	      print_gimple_stmt (dump_file, def_stmt, dump_flags);
+	    }
+	}
+	/* If we encounter a phi statement which isn't the crc,
+	   then it may be the data.
+	   (This is needed for the polynomial extraction.)  */
+      else
+	{
+	  /* Cond statement for crc calculation
+	     may depend only on data and crc.
+	     If it doesn't then it's not for crc calculation.  */
+	  if (data && data != def_stmt)
+	    {
+	      crc_if_dep = false;
+	      return false;
+	    }
+
+	  data = def_stmt;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file,
+		       "Found data's phi statement:\n");
+	      print_gimple_stmt (dump_file, def_stmt, dump_flags);
+	    }
+	}
+    }
+  return true;
 }
 
 
@@ -680,18 +766,29 @@ crc_optimization::xor_calculates_crc (function *fun, class loop *crc_loop,
 {
   tree crc_var = gimple_assign_lhs (xor_stmt);
   set_initial_values ();
+  set_loop_statements_not_visited (crc_loop);
   get_dep (crc_var,
-	   &crc_optimization::check_def_stmt_for_xor);
+	   &crc_optimization::continue_to_check_dep_for_xor);
+
+
   if (!clean_xor_maybe_crc)
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Xor doesn't calculate crc.\n");
+      return false;
+    }
 
   /* Check the case when shift is done after xor.  */
   if (!shift_before_xor)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "No shift before xor.\n");
+	fprintf (dump_file, "No shift before xor, trying to find after xor.\n");
 
-      set_all_statements_not_visited (fun);
+      // TODO: It's time consuming to get loop's body,
+      //  (set_all_statements_not_visited may be time consuming too).
+      //  Do it better.
+      set_loop_statements_not_visited (crc_loop);
+
       find_shift_after_xor (crc_loop, crc_var);
       if (!shift_after_xor)
 	return false;
@@ -725,6 +822,12 @@ crc_optimization::xor_calculates_crc (function *fun, class loop *crc_loop,
 	    }
 	  return true;
 	}
+    }
+  else
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Xor bb doesn't have single predecessor.\n");
     }
   return false;
 }
@@ -788,6 +891,7 @@ crc_optimization::function_may_calculate_crc (function *fun)
       if (!is_loop_of_crc_calculation (loop))
 	continue;
 
+      crc_loop = loop;
       basic_block *bbs = get_loop_body_in_dom_order (loop);
       /* Walk bbs of the loop.  */
       for (unsigned int i = 0; i < loop->num_nodes; i++)
