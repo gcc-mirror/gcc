@@ -14925,22 +14925,13 @@ rs6000_print_patchable_function_entry (FILE *file,
 				       unsigned HOST_WIDE_INT patch_area_size,
 				       bool record_p)
 {
-  unsigned int flags = SECTION_WRITE | SECTION_RELRO;
-  /* When .opd section is emitted, the function symbol
-     default_print_patchable_function_entry_1 is emitted into the .opd section
-     while the patchable area is emitted into the function section.
-     Don't use SECTION_LINK_ORDER in that case.  */
-  if (!(TARGET_64BIT && DEFAULT_ABI != ABI_ELFv2)
-      && HAVE_GAS_SECTION_LINK_ORDER)
-    flags |= SECTION_LINK_ORDER;
   bool global_entry_needed_p = rs6000_global_entry_point_prologue_needed_p ();
   /* For a function which needs global entry point, we will emit the
      patchable area before and after local entry point under the control of
      cfun->machine->global_entry_emitted, see the handling in function
      rs6000_output_function_prologue.  */
   if (!global_entry_needed_p || cfun->machine->global_entry_emitted)
-    default_print_patchable_function_entry_1 (file, patch_area_size, record_p,
-					      flags);
+    default_print_patchable_function_entry (file, patch_area_size, record_p);
 }
 
 enum rtx_code
