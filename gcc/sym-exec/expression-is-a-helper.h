@@ -1,7 +1,7 @@
 #ifndef SYM_EXEC_EXPRESSION_IS_A_HELPER_H
 #define SYM_EXEC_EXPRESSION_IS_A_HELPER_H
 
-#include "expression.h"
+#include "condition.h"
 #include "is-a.h"
 
 
@@ -38,7 +38,8 @@ is_a_helper <bit_expression *>::test (value * ptr)
 	 || type == value_type::SHIFT_RIGHT_EXPRESSION
 	 || type == value_type::SHIFT_LEFT_EXPRESSION
 	 || type == value_type::ADD_EXPRESSION
-	 || type == value_type::SUB_EXPRESSION;
+	 || type == value_type::SUB_EXPRESSION
+	 || type == value_type::BIT_CONDITION;
 }
 
 
@@ -112,5 +113,15 @@ is_a_helper <sub_expression *>::test (value * ptr)
 {
   return ptr->get_type () == value_type::SUB_EXPRESSION;
 }
+
+
+template <>
+template <>
+inline bool
+is_a_helper <bit_condition *>::test (value * ptr)
+{
+  return ptr->get_type () == value_type::BIT_CONDITION;
+}
+
 
 #endif /* SYM_EXEC_EXPRESSION_IS_A_HELPER_H.  */
