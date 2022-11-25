@@ -119,6 +119,7 @@ extern void riscv_run_selftests (void);
 #endif
 
 namespace riscv_vector {
+#define RVV_VLMAX gen_rtx_REG (Pmode, X0_REGNUM)
 /* Routines implemented in riscv-vector-builtins.cc.  */
 extern void init_builtins (void);
 extern const char *mangle_builtin_type (const_tree);
@@ -130,6 +131,7 @@ extern tree builtin_decl (unsigned, bool);
 extern rtx expand_builtin (unsigned int, tree, rtx);
 extern bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern bool legitimize_move (rtx, rtx, machine_mode);
+extern void emit_pred_op (unsigned, rtx, rtx, machine_mode);
 enum tail_policy
 {
   TAIL_UNDISTURBED = 0,

@@ -651,6 +651,9 @@ enum reg_class
 #define FP_ARG_FIRST (FP_REG_FIRST + 10)
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
 
+/* Helper macro for RVV vsetvl instruction generation.  */
+#define X0_REGNUM GP_REG_FIRST
+
 #define CALLEE_SAVED_REG_NUMBER(REGNO)			\
   ((REGNO) >= 8 && (REGNO) <= 9 ? (REGNO) - 8 :		\
    (REGNO) >= 18 && (REGNO) <= 27 ? (REGNO) - 16 : -1)

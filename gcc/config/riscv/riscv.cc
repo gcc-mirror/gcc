@@ -4229,6 +4229,19 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 
   switch (letter)
     {
+      case 'v': {
+	rtx elt;
+
+	if (!const_vec_duplicate_p (op, &elt))
+	  output_operand_lossage ("invalid vector constant");
+	else if (satisfies_constraint_Wc0 (op))
+	  asm_fprintf (file, "0");
+	else if (satisfies_constraint_vi (op))
+	  asm_fprintf (file, "%wd", INTVAL (elt));
+	else
+	  output_operand_lossage ("invalid vector constant");
+	break;
+      }
       case 'm': {
 	if (riscv_v_ext_vector_mode_p (mode))
 	  {

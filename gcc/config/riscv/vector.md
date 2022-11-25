@@ -152,6 +152,26 @@
    (set_attr "mode" "<MODE>")])
 
 ;; -----------------------------------------------------------------
+;; ---- Duplicate Operations
+;; -----------------------------------------------------------------
+
+;; According to GCC internal:
+;; This pattern only handles duplicates of non-constant inputs.
+;; Constant vectors go through the movm pattern instead.
+;; So "direct_broadcast_operand" can only be mem or reg, no CONSTANT.
+(define_expand "vec_duplicate<mode>"
+  [(set (match_operand:V 0 "register_operand")
+	(vec_duplicate:V
+	  (match_operand:<VEL> 1 "direct_broadcast_operand")))]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::emit_pred_op (
+      code_for_pred_broadcast (<MODE>mode), operands[0], operands[1], <VM>mode);
+    DONE;
+  }
+)
+
+;; -----------------------------------------------------------------
 ;; ---- 6. Configuration-Setting Instructions
 ;; -----------------------------------------------------------------
 ;; Includes:
@@ -368,7 +388,7 @@
    vle<sew>.v\t%0,%3%p1
    vse<sew>.v\t%3,%0%p1
    vmv.v.v\t%0,%3
-   vmv.v.i\t%0,v%3"
+   vmv.v.i\t%0,%v3"
   "&& register_operand (operands[0], <MODE>mode)
    && register_operand (operands[3], <MODE>mode)
    && satisfies_constraint_vu (operands[2])"
@@ -406,4 +426,35 @@
   [(set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
+   (set_attr "mode" "<MODE>")])
+
+;; -------------------------------------------------------------------------------
+;; ---- Predicated Broadcast
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - 7.5. Vector Strided Instructions (zero stride)
+;; - 11.16 Vector Integer Move Instructions (vmv.v.x)
+;; - 13.16 Vector Floating-Point Move Instruction (vfmv.v.f)
+;; -------------------------------------------------------------------------------
+
+(define_insn "@pred_broadcast<mode>"
+  [(set (match_operand:V 0 "register_operand"                 "=vr,  vr,  vr,  vr")
+	(if_then_else:V
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"      " Wc1, Wc1, vm, Wc1")
+	     (match_operand 4 "vector_length_operand"         " rK,  rK,  rK,  rK")
+	     (match_operand 5 "const_int_operand"             "  i,   i,   i,   i")
+	     (match_operand 6 "const_int_operand"             "  i,   i,   i,   i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (vec_duplicate:V
+	    (match_operand:<VEL> 3 "direct_broadcast_operand" "  r,   f, Wdm, Wdm"))
+	  (match_operand:V 2 "vector_merge_operand"           "vu0, vu0, vu0, vu0")))]
+  "TARGET_VECTOR"
+  "@
+   vmv.v.x\t%0,%3
+   vfmv.v.f\t%0,%3
+   vlse<sew>.v\t%0,%3,zero,%1.t
+   vlse<sew>.v\t%0,%3,zero"
+  [(set_attr "type" "vimov,vfmov,vlds,vlds")
    (set_attr "mode" "<MODE>")])

@@ -40,6 +40,7 @@
 #include "target.h"
 #include "expr.h"
 #include "optabs.h"
+#include "tm-constrs.h"
 
 using namespace riscv_vector;
 
@@ -104,34 +105,80 @@ const_vec_all_same_in_range_p (rtx x, HOST_WIDE_INT minval,
 	  && IN_RANGE (INTVAL (elt), minval, maxval));
 }
 
+static rtx
+emit_vlmax_vsetvl (machine_mode vmode)
+{
+  rtx vl = gen_reg_rtx (Pmode);
+  unsigned int sew = GET_MODE_CLASS (vmode) == MODE_VECTOR_BOOL
+		       ? 8
+		       : GET_MODE_BITSIZE (GET_MODE_INNER (vmode));
+
+  emit_insn (
+    gen_vsetvl_no_side_effects (Pmode, vl, RVV_VLMAX, gen_int_mode (sew, Pmode),
+				gen_int_mode ((unsigned int) vmode, Pmode),
+				const1_rtx, const1_rtx));
+  return vl;
+}
+
 /* Emit an RVV unmask && vl mov from SRC to DEST.  */
-static void
-emit_pred_move (rtx dest, rtx src, machine_mode mask_mode)
+void
+emit_pred_op (unsigned icode, rtx dest, rtx src, machine_mode mask_mode)
 {
   insn_expander<7> e;
   machine_mode mode = GET_MODE (dest);
-  rtx vl = gen_reg_rtx (Pmode);
-  unsigned int sew = GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
-		       ? 8
-		       : GET_MODE_BITSIZE (GET_MODE_INNER (mode));
-
-  emit_insn (gen_vsetvl_no_side_effects (
-    Pmode, vl, gen_rtx_REG (Pmode, 0), gen_int_mode (sew, Pmode),
-    gen_int_mode ((unsigned int) mode, Pmode), const1_rtx, const1_rtx));
 
   e.add_output_operand (dest, mode);
   e.add_all_one_mask_operand (mask_mode);
   e.add_vundef_operand (mode);
 
-  e.add_input_operand (src, mode);
+  e.add_input_operand (src, GET_MODE (src));
 
-  e.add_input_operand (vl, Pmode);
+  rtx vlmax = emit_vlmax_vsetvl (mode);
+  e.add_input_operand (vlmax, Pmode);
 
   e.add_policy_operand (TAIL_AGNOSTIC, MASK_AGNOSTIC);
 
-  enum insn_code icode;
-  icode = code_for_pred_mov (mode);
-  e.expand (icode, true);
+  e.expand ((enum insn_code) icode, MEM_P (dest) || MEM_P (src));
+}
+
+static void
+expand_const_vector (rtx target, rtx src, machine_mode mask_mode)
+{
+  machine_mode mode = GET_MODE (target);
+  scalar_mode elt_mode = GET_MODE_INNER (mode);
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+    {
+      rtx elt;
+      gcc_assert (
+	const_vec_duplicate_p (src, &elt)
+	&& (rtx_equal_p (elt, const0_rtx) || rtx_equal_p (elt, const1_rtx)));
+      emit_pred_op (code_for_pred_mov (mode), target, src, mode);
+      return;
+    }
+
+  rtx elt;
+  if (const_vec_duplicate_p (src, &elt))
+    {
+      rtx tmp = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+      /* Element in range -16 ~ 15 integer or 0.0 floating-point,
+	 we use vmv.v.i instruction.  */
+      if (satisfies_constraint_vi (src) || satisfies_constraint_Wc0 (src))
+	emit_pred_op (code_for_pred_mov (mode), tmp, src, mask_mode);
+      else
+	emit_pred_op (code_for_pred_broadcast (mode), tmp,
+		      force_reg (elt_mode, elt), mask_mode);
+
+      if (tmp != target)
+	emit_move_insn (target, tmp);
+      return;
+    }
+
+  /* TODO: We only support const duplicate vector for now. More cases
+     will be supported when we support auto-vectorization:
+
+       1. series vector.
+       2. multiple elts duplicate vector.
+       3. multiple patterns with multiple elts.  */
 }
 
 /* Expand a pre-RA RVV data move from SRC to DEST.
@@ -140,6 +187,11 @@ bool
 legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
 {
   machine_mode mode = GET_MODE (dest);
+  if (CONST_VECTOR_P (src))
+    {
+      expand_const_vector (dest, src, mask_mode);
+      return true;
+    }
   if (known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
       && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
     {
@@ -153,12 +205,12 @@ legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
     {
       rtx tmp = gen_reg_rtx (mode);
       if (MEM_P (src))
-	emit_pred_move (tmp, src, mask_mode);
+	emit_pred_op (code_for_pred_mov (mode), tmp, src, mask_mode);
       else
 	emit_move_insn (tmp, src);
       src = tmp;
     }
-  emit_pred_move (dest, src, mask_mode);
+  emit_pred_op (code_for_pred_mov (mode), dest, src, mask_mode);
   return true;
 }
 
