@@ -87,7 +87,8 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     BuildSetStart, BuildSetEnd,
                     PushLineNo, BuildSizeCheckStart,
                     BuildBuiltinConst, BuildBuiltinTypeInfo,
-                    BuildAssignment, BuildAlignment,
+                    BuildAssignment, BuildAssignConstant,
+                    BuildAlignment,
                     BuildRepeat, BuildUntil,
                     BuildWhile, BuildDoWhile, BuildEndWhile,
                     BuildLoop, BuildExit, BuildEndLoop,
@@ -662,7 +663,7 @@ ConstantDeclaration :=                                                     % VAR
                                                                            % PushAutoOn %
                        ( Ident "="                                         % tokno := GetTokenNo () -1 %
                                                                            % BuildConst %
-                         ConstExpression )                                 % BuildAssignment (tokno) %
+                         ConstExpression )                                 % BuildAssignConstant (tokno) %
                                                                            % PopAuto %
                      =:
 
@@ -729,12 +730,12 @@ ConstFactor := Number | ConstString | ConstSetOrQualidentOrFunction |
 
 ConstString := string =:
 
-ComponentElement := ConstExpression ( ".." ConstExpression                 % PushT(PeriodPeriodTok) %
+ComponentElement := ConstExpression ( ".." ConstExpression                 % PushTtok(PeriodPeriodTok, GetTokenNo() -1) %
                                       |                                    % PushT(NulTok) %
                                     )
                   =:
 
-ComponentValue := ComponentElement ( 'BY' ConstExpression                  % PushT(ByTok) %
+ComponentValue := ComponentElement ( 'BY' ConstExpression                  % PushTtok(ByTok, GetTokenNo() -1) %
 
                                      |                                     % PushT(NulTok) %
                                    )

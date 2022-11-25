@@ -61,7 +61,7 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, PushTFtok, PopTFtok,
                     EndBuildInit,
                     BuildProcedureStart,
                     BuildProcedureEnd,
-                    BuildAssignment,
+                    BuildAssignment, BuildAssignConstant,
                     BuildFunctionCall, BuildConstFunctionCall,
                     BuildBinaryOp, BuildUnaryOp, BuildRelOp, BuildNot,
       	       	    BuildEmptySet, BuildInclRange, BuildInclBit,
@@ -612,7 +612,7 @@ ConstantDeclaration :=                                                     % Pus
                                                                            % VAR tokno: CARDINAL ; %
                        ( Ident "="                                         % tokno := GetTokenNo () %
                                                                            % BuildConst %
-                         ConstExpression )                                 % BuildAssignment (tokno) %
+                         ConstExpression )                                 % BuildAssignConstant (tokno) %
                                                                            % PopAuto %
                      =:
 

@@ -3304,7 +3304,8 @@ END CheckBecomesMeta ;
    BuildAssignment - Builds an assignment from the values given on the
                      quad stack. Either an assignment to an
                      arithmetic expression or an assignment to a
-                     boolean expression.
+                     boolean expression.  This procedure should not
+                     be called in CONST declarations.
                      The Stack is expected to contain:
 
 
@@ -3323,22 +3324,9 @@ END CheckBecomesMeta ;
                      |------------|          |------------|
 
 
-                     Quadruples Produced depend of GetMode of Designator and Expression
+                     Quadruples Produced
 
-
-                     Designator = RightValue         Expression = RightValue
                      q     BecomesOp  Designator  _  Expression
-
-                     Designator = RightValue         Expression = LeftValue
-                     q     IndrX      Designator     Expression
-
-                     Designator = LeftValue          Expression = RightValue
-                     q     XIndr      Designator     Expression
-
-                     Designator = LeftValue          Expression = LeftValue
-                     q     IndrX      t              Expression
-                     q+1   XIndr      Designator     t
-
 
        OR
 
@@ -3355,24 +3343,97 @@ END CheckBecomesMeta ;
                      |------------|          |------------|
 
 
-                     Quadruples Produced depend of GetMode of Designator
+                     Quadruples Produced
 
-                     Designator = RightValue
                      q     BecomesOp  Designator  _  TRUE
                      q+1   GotoOp                    q+3
                      q+2   BecomesOp  Designator  _  FALSE
 
-
-                     Designator = LeftValue
-                     q     XIndr      Designator  _  TRUE
-                     q+1   GotoOp                    q+3
-                     q+2   XIndr      Designator  _  FALSE
 *)
 
 PROCEDURE BuildAssignment (becomesTokNo: CARDINAL) ;
+VAR
+   des, exp   : CARDINAL ;
+   destok,
+   exptok,
+   combinedtok: CARDINAL ;
 BEGIN
-   doBuildAssignment (becomesTokNo, TRUE, TRUE)
+   des := OperandT (2) ;
+   IF IsConst (des)
+   THEN
+      destok := OperandTok (2) ;
+      exptok := OperandTok (1) ;
+      IF DebugTokPos
+      THEN
+         MetaErrorT1 (destok, 'destok {%1Ead}', des) ;
+         MetaErrorT1 (exptok, 'exptok {%1Ead}', exp)
+      END ;
+      combinedtok := MakeVirtualTok (becomesTokNo, destok, exptok) ;
+      IF IsBoolean (1)
+      THEN
+         MetaErrorT1 (combinedtok,
+                      'cannot assign expression to a constant designator {%1Ead}', des)
+      ELSE
+         exp := OperandT (1) ;
+         MetaErrorT2 (combinedtok,
+                      'cannot assign a constant designator {%1Ead} with an expression {%2Ead}',
+                      des, exp)
+      END
+   ELSE
+      doBuildAssignment (becomesTokNo, TRUE, TRUE)
+   END
 END BuildAssignment ;
+
+
+(*
+   BuildAssignConstant - used to create constant in the CONST declaration.
+                         The stack is expected to contain:
+
+       Either
+
+                     Entry                   Exit
+                     =====                   ====
+
+              Ptr ->
+                     +------------+
+                     | Expression |
+                     |------------|
+                     | Designator |
+                     |------------|          +------------+
+                     |            |          |            |  <- Ptr
+                     |------------|          |------------|
+
+
+                     Quadruples Produced
+
+                     q     BecomesOp  Designator  _  Expression
+
+       OR
+
+                     Entry                   Exit
+                     =====                   ====
+
+              Ptr ->
+                     +------------+
+                     | True |False|
+                     |------------|
+                     | Designator |
+                     |------------|          +------------+
+                     |            |          |            |  <- Ptr
+                     |------------|          |------------|
+
+
+                     Quadruples Produced
+
+                     q     BecomesOp  Designator  _  TRUE
+                     q+1   GotoOp                    q+3
+                     q+2   BecomesOp  Designator  _  FALSE
+*)
+
+PROCEDURE BuildAssignConstant (equalsTokNo: CARDINAL) ;
+BEGIN
+   doBuildAssignment (equalsTokNo, TRUE, TRUE)
+END BuildAssignConstant ;
 
 
 (*
@@ -3476,7 +3537,7 @@ BEGIN
       ((DesL#NulSym) AND (NOT IsProcType(DesL)))
    THEN
       MetaError1 ('incorrectly assigning a procedure to a designator {%1Ead} (designator is not a procedure type, {%1ast})', Des)
-   ELSIF IsProcedure(Exp) AND IsProcedureNested(Exp)
+   ELSIF IsProcedure (Exp) AND IsProcedureNested (Exp)
    THEN
       MetaError1 ('cannot call nested procedure {%1Ead} indirectly as the outer scope will not be known', Exp)
    ELSIF IsConstString(Exp)
@@ -3597,7 +3658,7 @@ BEGIN
    GetConstFromFifoQueue (align) ;
    PushT (align) ;
    PushT (expr) ;
-   BuildAssignment (tokno)
+   BuildAssignConstant (tokno)
 END BuildAlignment ;
 
 
@@ -3625,7 +3686,7 @@ BEGIN
    GetConstFromFifoQueue (length) ;
    PushT (length) ;
    PushT (expr) ;
-   BuildAssignment (tokno)
+   BuildAssignConstant (tokno)
 END BuildBitLength ;
 
 
@@ -3659,7 +3720,7 @@ BEGIN
    GetConstFromFifoQueue (align) ;
    PushT (align) ;
    PushT (expr) ;
-   BuildAssignment (GetTokenNo ())
+   BuildAssignConstant (GetTokenNo ())
 END BuildDefaultFieldAlignment ;
 
 
@@ -3695,7 +3756,7 @@ BEGIN
       GetConstFromFifoQueue (const) ;
       PushT (const) ;
       PushT (expr) ;
-      BuildAssignment (GetTokenNo ())
+      BuildAssignConstant (GetTokenNo ())
    END
 END BuildPragmaField ;
 
@@ -10958,7 +11019,7 @@ BEGIN
          PushTFtok (t, GetSType(t), exprTok) ;
          PushTtok (Sym, arrayTok) ;
          combinedTok := MakeVirtualTok (arrayTok, arrayTok, exprTok) ;
-         BuildAssignment (combinedTok) ;
+         BuildAssignConstant (combinedTok) ;
          PushTFDtok (t, GetDType(t), d, arrayTok) ;
          PushTtok (e, exprTok)
       END
@@ -11981,7 +12042,7 @@ BEGIN
          PopT(e2) ;
          PopT(e1) ;
          PopT(const) ;
-         WriteFormat0('either the constant must be an array constructor or a set constructor but not both') ;
+         WriteFormat0('the constant must be an array constructor or a set constructor but not both') ;
          PushT(const)
       END
    END

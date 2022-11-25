@@ -40,7 +40,8 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  BuildRetry,
                  BuildReThrow,
                  BuildBuiltinConst, BuildBuiltinTypeInfo,
-                 BuildAssignment, BuildAlignment,
+                 BuildAssignment, BuildAssignConstant,
+                 BuildAlignment,
                  BuildDefaultFieldAlignment, BuildPragmaField,
                  BuildRepeat, BuildUntil,
                  BuildWhile, BuildDoWhile, BuildEndWhile,
@@ -735,7 +736,8 @@ PROCEDURE BuildBuiltinTypeInfo ;
    BuildAssignment - Builds an assignment from the values given on the
                      quad stack. Either an assignment to an
                      arithmetic expression or an assignment to a
-                     boolean expression.
+                     boolean expression.  This procedure should not
+                     be called in CONST declarations.
                      The Stack is expected to contain:
 
 
@@ -782,6 +784,54 @@ PROCEDURE BuildBuiltinTypeInfo ;
 *)
 
 PROCEDURE BuildAssignment (becomesTokNo: CARDINAL) ;
+
+
+(*
+   BuildAssignConstant - used to create constant in the CONST declaration.
+                         The stack is expected to contain:
+
+       Either
+
+                     Entry                   Exit
+                     =====                   ====
+
+              Ptr ->
+                     +------------+
+                     | Expression |
+                     |------------|
+                     | Designator |
+                     |------------|          +------------+
+                     |            |          |            |  <- Ptr
+                     |------------|          |------------|
+
+
+                     Quadruples Produced
+
+                     q     BecomesOp  Designator  _  Expression
+
+       OR
+
+                     Entry                   Exit
+                     =====                   ====
+
+              Ptr ->
+                     +------------+
+                     | True |False|
+                     |------------|
+                     | Designator |
+                     |------------|          +------------+
+                     |            |          |            |  <- Ptr
+                     |------------|          |------------|
+
+
+                     Quadruples Produced
+
+                     q     BecomesOp  Designator  _  TRUE
+                     q+1   GotoOp                    q+3
+                     q+2   BecomesOp  Designator  _  FALSE
+*)
+
+PROCEDURE BuildAssignConstant (equalsTokNo: CARDINAL) ;
 
 
 (*
