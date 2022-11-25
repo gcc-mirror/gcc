@@ -1390,7 +1390,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   else if (rev_fn_table)
     {
       CUdeviceptr var;
-      size_t bytes, i;
+      size_t bytes;
+      unsigned int i;
       r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &var, &bytes, module,
 			     "$offload_func_table");
       if (r != CUDA_SUCCESS)
@@ -1413,12 +1414,11 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
   if (rev_fn_table && *rev_fn_table && dev->rev_data == NULL)
     {
-      /* cuMemHostAlloc memory is accessible on the device, if unified-shared
-	 address is supported; this is assumed - see comment in
-	 nvptx_open_device for CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING.   */
-      CUDA_CALL_ASSERT (cuMemHostAlloc, (void **) &dev->rev_data,
-			sizeof (*dev->rev_data), CU_MEMHOSTALLOC_DEVICEMAP);
-      CUdeviceptr dp = (CUdeviceptr) dev->rev_data;
+      /* Get the on-device GOMP_REV_OFFLOAD_VAR variable.  It should be
+	 available but it might be not.  One reason could be: if the user code
+	 has 'omp target device(ancestor:1)' in pure hostcode, GOMP_target_ext
+	 is not called on the device and, hence, it and GOMP_REV_OFFLOAD_VAR
+	 are not linked in.  */
       CUdeviceptr device_rev_offload_var;
       size_t device_rev_offload_size;
       CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal,
@@ -1426,11 +1426,23 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 				      &device_rev_offload_size, module,
 				      XSTRING (GOMP_REV_OFFLOAD_VAR));
       if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuModuleGetGlobal error - GOMP_REV_OFFLOAD_VAR: %s", cuda_error (r));
-      r = CUDA_CALL_NOCHECK (cuMemcpyHtoD, device_rev_offload_var, &dp,
-			     sizeof (dp));
-      if (r != CUDA_SUCCESS)
-	GOMP_PLUGIN_fatal ("cuMemcpyHtoD error: %s", cuda_error (r));
+	{
+	  free (*rev_fn_table);
+	  *rev_fn_table = NULL;
+	}
+      else
+	{
+	  /* cuMemHostAlloc memory is accessible on the device, if
+	     unified-shared address is supported; this is assumed - see comment
+	     in nvptx_open_device for CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING. */
+	  CUDA_CALL_ASSERT (cuMemHostAlloc, (void **) &dev->rev_data,
+			    sizeof (*dev->rev_data), CU_MEMHOSTALLOC_DEVICEMAP);
+	  CUdeviceptr dp = (CUdeviceptr) dev->rev_data;
+	  r = CUDA_CALL_NOCHECK (cuMemcpyHtoD, device_rev_offload_var, &dp,
+				 sizeof (dp));
+	  if (r != CUDA_SUCCESS)
+	    GOMP_PLUGIN_fatal ("cuMemcpyHtoD error: %s", cuda_error (r));
+	}
     }
 
   nvptx_set_clocktick (module, dev);
