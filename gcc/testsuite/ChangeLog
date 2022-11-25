@@ -1,3 +1,12 @@
+2022-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt100.adb: New test.
+	* gnat.dg/opt100_pkg.adb, gnat.dg/opt100_pkg.ads: New helper.
+
+2022-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso18.adb: New test.
+
 2022-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

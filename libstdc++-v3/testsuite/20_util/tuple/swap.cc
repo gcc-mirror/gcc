@@ -38,7 +38,7 @@ struct MoveOnly
   MoveOnly(MoveOnly const&) = delete;
   MoveOnly& operator=(MoveOnly const&) = delete;
 
-  bool operator==(MoveOnly const& m)
+  bool operator==(MoveOnly const& m) const
   { return i == m.i; }
 
   void swap(MoveOnly& m)

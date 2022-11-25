@@ -852,6 +852,12 @@ requirements of the license of GCC.
 		    by the resolution of the DR.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr1203"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#1203">1203</link>:
+       <emphasis>More useful rvalue stream insertion</emphasis>
+    </term>
+    <listitem><para>Return the stream as its original type, not the base class.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr1339"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#1339">1339</link>:
        <emphasis>uninitialized_fill_n should return the end of its range</emphasis>
     </term>

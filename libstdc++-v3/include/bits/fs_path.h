@@ -737,7 +737,14 @@ namespace __detail
   /// @{
   /// @relates std::filesystem::path
 
+#if __cpp_concepts >= 201907L
+  // Workaround for PR libstdc++/106201
+  inline void
+  swap(same_as<path> auto& __lhs, same_as<path> auto& __rhs) noexcept
+  { __lhs.swap(__rhs); }
+#else
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
+#endif
 
   size_t hash_value(const path& __p) noexcept;
 
@@ -1281,9 +1288,9 @@ namespace __detail
       {
 	if (_M_pathname.back() == preferred_separator)
 	  return {};
-	auto& __last = *--end();
-	if (__last._M_type() == _Type::_Filename)
-	  return __last;
+	auto __last = --end();
+	if (__last->_M_type() == _Type::_Filename)
+	  return *__last;
       }
     return {};
   }
