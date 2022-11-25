@@ -316,6 +316,7 @@ package body Contracts is
                         | Name_Async_Writers
                         | Name_Effective_Reads
                         | Name_Effective_Writes
+                        | Name_No_Caching
               or else (Ekind (Id) = E_Task_Type
                          and Prag_Nam in Name_Part_Of
                                        | Name_Depends
@@ -859,6 +860,7 @@ package body Contracts is
       AW_Val  : Boolean := False;
       ER_Val  : Boolean := False;
       EW_Val  : Boolean := False;
+      NC_Val  : Boolean;
       Seen    : Boolean := False;
       Prag    : Node_Id;
       Obj_Typ : Entity_Id;
@@ -956,16 +958,23 @@ package body Contracts is
       end if;
 
       --  Verify the mutual interaction of the various external properties.
-      --  For variables for which No_Caching is enabled, it has been checked
-      --  already that only False values for other external properties are
-      --  allowed.
+      --  For types and variables for which No_Caching is enabled, it has been
+      --  checked already that only False values for other external properties
+      --  are allowed.
 
       if Seen
-        and then (Ekind (Type_Or_Obj_Id) /= E_Variable
-                   or else not No_Caching_Enabled (Type_Or_Obj_Id))
+        and then not No_Caching_Enabled (Type_Or_Obj_Id)
       then
          Check_External_Properties
            (Type_Or_Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
+      end if;
+
+      --  Analyze the non-external volatility property No_Caching
+
+      Prag := Get_Pragma (Type_Or_Obj_Id, Pragma_No_Caching);
+
+      if Present (Prag) then
+         Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
       end if;
 
       --  The following checks are relevant only when SPARK_Mode is on, as
@@ -1047,10 +1056,10 @@ package body Contracts is
 
             if Is_Type_Id
               and then not Is_Effectively_Volatile (Type_Or_Obj_Id)
-              and then Has_Volatile_Component (Type_Or_Obj_Id)
+              and then Has_Effectively_Volatile_Component (Type_Or_Obj_Id)
             then
                Error_Msg_N
-                 ("non-volatile type & cannot have volatile"
+                 ("non-volatile type & cannot have effectively volatile"
                     & " components",
                   Type_Or_Obj_Id);
             end if;
@@ -1076,7 +1085,6 @@ package body Contracts is
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save the SPARK_Mode-related data to restore on exit
 
-      NC_Val   : Boolean;
       Items    : Node_Id;
       Prag     : Node_Id;
       Ref_Elmt : Elmt_Id;
@@ -1117,14 +1125,6 @@ package body Contracts is
       --  variables.
 
       Check_Type_Or_Object_External_Properties (Type_Or_Obj_Id => Obj_Id);
-
-      --  Analyze the non-external volatility property No_Caching
-
-      Prag := Get_Pragma (Obj_Id, Pragma_No_Caching);
-
-      if Present (Prag) then
-         Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
-      end if;
 
       --  Constant-related checks
 

@@ -1564,6 +1564,11 @@ package Sem_Util is
    --  Given arbitrary expression Expr, determine whether it contains at
    --  least one name whose entity is Any_Id.
 
+   function Has_Effectively_Volatile_Component
+     (Typ : Entity_Id) return Boolean;
+   --  Given arbitrary type Typ, determine whether it contains at least one
+   --  effectively volatile component.
+
    function Has_Volatile_Component (Typ : Entity_Id) return Boolean;
    --  Given arbitrary type Typ, determine whether it contains at least one
    --  volatile component.
@@ -2758,9 +2763,9 @@ package Sem_Util is
    --  inline this procedural form, but not the functional form above.
 
    function No_Caching_Enabled (Id : Entity_Id) return Boolean;
-   --  Given the entity of a variable, determine whether Id is subject to
-   --  volatility property No_Caching and if it is, the related expression
-   --  evaluates to True.
+   --  Given any entity Id, determine whether Id is subject to volatility
+   --  property No_Caching and if it is, the related expression evaluates
+   --  to True.
 
    function No_Heap_Finalization (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ is subject to pragma No_Heap_Finalization
