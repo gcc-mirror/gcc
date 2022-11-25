@@ -180,13 +180,13 @@ crc_symb_execution::execute_assign_statement (const gassign *gs)
 	    current_state->do_sub (op1, op2, lhs);
 	    return;
 	  case MULT_EXPR:
-	    // current_state->do_mul (op1, op2, lhs);
+	    current_state->do_mul (op1, op2, lhs);
 	    return;
 	  case POINTER_PLUS_EXPR:
-	    // current_state->do_pointer_plus (op1, op2, lhs);
+	    current_state->do_pointer_plus (op1, op2, lhs);
 	    return;
 	  case POINTER_DIFF_EXPR:
-	    // current_state->do_pointer_diff (op1, op2, lhs);
+	    current_state->do_pointer_diff (op1, op2, lhs);
 	    return;
 	  default:
 	    if (dump_file)
@@ -241,28 +241,28 @@ crc_symb_execution::resolve_condition (const gcond* cond)
   switch (gimple_cond_code (cond))
     {
       case EQ_EXPR:
-	//true_branch_state->add_equal_cond (lhs, rhs);
-	//false_branch_state->add_not_equal_cond (lhs, rhs);
+	true_branch_state->add_equal_cond (lhs, rhs);
+	false_branch_state->add_not_equal_cond (lhs, rhs);
 	break;
       case NE_EXPR:
-	//true_branch_state->add_not_equal_cond (lhs, rhs);
-	//false_branch_state->add_equal_cond (lhs, rhs);
+	true_branch_state->add_not_equal_cond (lhs, rhs);
+	false_branch_state->add_equal_cond (lhs, rhs);
 	break;
       case GT_EXPR:
-	//true_branch_state->add_greater_than_cond (lhs, rhs);
-	// false_branch_state->add_less_or_equal_cond (lhs, rhs);
+	true_branch_state->add_greater_than_cond (lhs, rhs);
+	false_branch_state->add_less_or_equal_cond (lhs, rhs);
 	break;
       case LT_EXPR:
-	//true_branch_state->add_less_than_cond (lhs, rhs);
-	//false_branch_state->add_greater_or_equal_cond (lhs, rhs);
+	true_branch_state->add_less_than_cond (lhs, rhs);
+	false_branch_state->add_greater_or_equal_cond (lhs, rhs);
 	break;
       case GE_EXPR:
-	//true_branch_state->add_greater_or_equal_cond (lhs, rhs);
-	// false_branch_state->add_less_than_cond (lhs, rhs);
+	true_branch_state->add_greater_or_equal_cond (lhs, rhs);
+	false_branch_state->add_less_than_cond (lhs, rhs);
 	break;
       case LE_EXPR:
-	//true_branch_state->add_less_or_equal_cond (lhs, rhs);
-	//false_branch_state->add_greater_than_cond (lhs, rhs);
+	true_branch_state->add_less_or_equal_cond (lhs, rhs);
+	false_branch_state->add_greater_than_cond (lhs, rhs);
 	break;
       default:
 	if (dump_file && (dump_flags & TDF_DETAILS))
@@ -334,11 +334,8 @@ crc_symb_execution::execute_bb_gimple_statements (basic_block bb)
    Keep updated values in the state.  */
 void
 crc_symb_execution::execute_bb_phi_statements (basic_block bb,
-					       basic_block prev_exec_bb_index)
+					       edge incoming_edge)
 {
-  if (prev_exec_bb_index == nullptr)
-    return;
-
   for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
     {
@@ -355,23 +352,15 @@ crc_symb_execution::execute_bb_phi_statements (basic_block bb,
 			      "for the following phi.\n");
 	  print_gimple_stmt (dump_file, phi, dump_flags);
 	}
-      for (unsigned i = 0; i < gimple_phi_num_args (phi); i++)
+
+      tree rhs = PHI_ARG_DEF_FROM_EDGE (phi, incoming_edge);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  // TODO optimization:
-	  //  Try to get correct arg, without checking all args.
-	  basic_block src = gimple_phi_arg_edge (phi, i)->src;
-	  if (src != nullptr && src == prev_exec_bb_index)
-	    {
-	      tree rhs = gimple_phi_arg_def (phi, i);
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "Found phi's value.\n\n");
-		}
-	      state *current_state = states.last ();
-	      current_state->do_assign (rhs, lhs);
-	      return;
-	    }
+	  fprintf (dump_file, "Found phi's value.\n\n");
 	}
+      state *current_state = states.last ();
+      current_state->do_assign (rhs, lhs);
     }
 }
 
@@ -379,9 +368,9 @@ crc_symb_execution::execute_bb_phi_statements (basic_block bb,
    Keeping values of variables in the state.  */
 void
 crc_symb_execution::execute_bb_statements (basic_block bb,
-					   basic_block prev_exec_bb_index)
+					   edge incoming_edge)
 {
-  execute_bb_phi_statements (bb, prev_exec_bb_index);
+  execute_bb_phi_statements (bb, incoming_edge);
   execute_bb_gimple_statements (bb);
 }
 
@@ -394,43 +383,46 @@ crc_symb_execution::traverse_function (function *fun)
   /* TODO: Check whether back_edges can be determined by BB index,
        if so, no need of EDGE_DFS_BACK flag.  */
   mark_dfs_back_edges (fun);
-  basic_block prev_bb = nullptr;
   /* Allocate stack for back-tracking up CFG.  */
-  auto_vec<basic_block, 20> stack (n_basic_blocks_for_fn (fun) + 1);
+  auto_vec<edge, 20> stack (n_basic_blocks_for_fn (fun) + 1);
 
-  /* Push the first block into the stack.  */
-  stack.quick_push (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  /* Push all successor edges of first block into the stack.
+     No need to execute first block.  */
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (fun)->succs)
+    stack.quick_push (e);
 
   while (!stack.is_empty ())
     {
-      /* Look at the block on the top of the stack.  */
-      basic_block bb = stack.last ();
+      /* Look at the edge on the top of the stack.  */
+      edge e = stack.last ();
       stack.pop ();
+
+      /* Get dest block of the edge.  */
+      basic_block bb = e->dest;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "\n\nExecuting BB <%d>\n\n", bb->index);
 
       /* Symbolically execute statements.  */
-      execute_bb_statements (bb, prev_bb);
-      prev_bb = bb;
-      /* Add each successor block of the current block to the stack,
-       * despite the one connected with back edge.  */
-      edge e;
+      execute_bb_statements (bb, e);
+
+      /* Add each outgoing edge of the current block to the stack,
+	despite back edges.  */
+      edge out_edge;
       edge_iterator ei;
-      /* TODO: if edges are conditional add false edge, then true edge.  */
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  if (!(e->flags & EDGE_DFS_BACK)
-	      && e->dest != EXIT_BLOCK_PTR_FOR_FN (fun))
-	    stack.quick_push (e->dest);
-	  else if (!states.is_empty ())
-	    {
-	      /* Delete the state after executing the path till the end,
-		 or encountering back edge.  */
-	      delete states.last ();
-	      states.pop ();
-	    }
-	}
+      FOR_EACH_EDGE (out_edge, ei, bb->succs)
+	if (!(out_edge->flags & EDGE_DFS_BACK)
+	    && out_edge->dest != EXIT_BLOCK_PTR_FOR_FN (fun))
+	  stack.quick_push (out_edge);
+	else if (!states.is_empty ())
+	  {
+	    /* Delete the state after executing the full path,
+	       or encountering back edge.  */
+	    delete states.last ();
+	    states.pop ();
+	  }
     }
 }
 
