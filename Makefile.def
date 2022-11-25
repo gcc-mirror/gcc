@@ -145,6 +145,7 @@ host_modules= { module= lto-plugin; bootstrap=true;
 host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
 host_modules= { module= libctf; bootstrap=true; };
+host_modules= { module= libsframe; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -470,6 +471,7 @@ dependencies = { module=all-binutils; on=all-intl; };
 dependencies = { module=all-binutils; on=all-gas; };
 dependencies = { module=all-binutils; on=all-libctf; };
 dependencies = { module=all-ld; on=all-libctf; };
+dependencies = { module=all-binutils; on=all-libsframe; };
 
 // We put install-opcodes before install-binutils because the installed
 // binutils might be on PATH, and they might need the shared opcodes

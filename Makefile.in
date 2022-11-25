@@ -1097,7 +1097,8 @@ configure-host:  \
     maybe-configure-lto-plugin \
     maybe-configure-libcc1 \
     maybe-configure-gotools \
-    maybe-configure-libctf
+    maybe-configure-libctf \
+    maybe-configure-libsframe
 .PHONY: configure-target
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
@@ -1273,6 +1274,9 @@ all-host: maybe-all-gotools
 @if libctf-no-bootstrap
 all-host: maybe-all-libctf
 @endif libctf-no-bootstrap
+@if libsframe-no-bootstrap
+all-host: maybe-all-libsframe
+@endif libsframe-no-bootstrap
 
 .PHONY: all-target
 
@@ -1384,6 +1388,7 @@ info-host: maybe-info-lto-plugin
 info-host: maybe-info-libcc1
 info-host: maybe-info-gotools
 info-host: maybe-info-libctf
+info-host: maybe-info-libsframe
 
 .PHONY: info-target
 
@@ -1472,6 +1477,7 @@ dvi-host: maybe-dvi-lto-plugin
 dvi-host: maybe-dvi-libcc1
 dvi-host: maybe-dvi-gotools
 dvi-host: maybe-dvi-libctf
+dvi-host: maybe-dvi-libsframe
 
 .PHONY: dvi-target
 
@@ -1560,6 +1566,7 @@ pdf-host: maybe-pdf-lto-plugin
 pdf-host: maybe-pdf-libcc1
 pdf-host: maybe-pdf-gotools
 pdf-host: maybe-pdf-libctf
+pdf-host: maybe-pdf-libsframe
 
 .PHONY: pdf-target
 
@@ -1648,6 +1655,7 @@ html-host: maybe-html-lto-plugin
 html-host: maybe-html-libcc1
 html-host: maybe-html-gotools
 html-host: maybe-html-libctf
+html-host: maybe-html-libsframe
 
 .PHONY: html-target
 
@@ -1736,6 +1744,7 @@ TAGS-host: maybe-TAGS-lto-plugin
 TAGS-host: maybe-TAGS-libcc1
 TAGS-host: maybe-TAGS-gotools
 TAGS-host: maybe-TAGS-libctf
+TAGS-host: maybe-TAGS-libsframe
 
 .PHONY: TAGS-target
 
@@ -1824,6 +1833,7 @@ install-info-host: maybe-install-info-lto-plugin
 install-info-host: maybe-install-info-libcc1
 install-info-host: maybe-install-info-gotools
 install-info-host: maybe-install-info-libctf
+install-info-host: maybe-install-info-libsframe
 
 .PHONY: install-info-target
 
@@ -1912,6 +1922,7 @@ install-dvi-host: maybe-install-dvi-lto-plugin
 install-dvi-host: maybe-install-dvi-libcc1
 install-dvi-host: maybe-install-dvi-gotools
 install-dvi-host: maybe-install-dvi-libctf
+install-dvi-host: maybe-install-dvi-libsframe
 
 .PHONY: install-dvi-target
 
@@ -2000,6 +2011,7 @@ install-pdf-host: maybe-install-pdf-lto-plugin
 install-pdf-host: maybe-install-pdf-libcc1
 install-pdf-host: maybe-install-pdf-gotools
 install-pdf-host: maybe-install-pdf-libctf
+install-pdf-host: maybe-install-pdf-libsframe
 
 .PHONY: install-pdf-target
 
@@ -2088,6 +2100,7 @@ install-html-host: maybe-install-html-lto-plugin
 install-html-host: maybe-install-html-libcc1
 install-html-host: maybe-install-html-gotools
 install-html-host: maybe-install-html-libctf
+install-html-host: maybe-install-html-libsframe
 
 .PHONY: install-html-target
 
@@ -2176,6 +2189,7 @@ installcheck-host: maybe-installcheck-lto-plugin
 installcheck-host: maybe-installcheck-libcc1
 installcheck-host: maybe-installcheck-gotools
 installcheck-host: maybe-installcheck-libctf
+installcheck-host: maybe-installcheck-libsframe
 
 .PHONY: installcheck-target
 
@@ -2264,6 +2278,7 @@ mostlyclean-host: maybe-mostlyclean-lto-plugin
 mostlyclean-host: maybe-mostlyclean-libcc1
 mostlyclean-host: maybe-mostlyclean-gotools
 mostlyclean-host: maybe-mostlyclean-libctf
+mostlyclean-host: maybe-mostlyclean-libsframe
 
 .PHONY: mostlyclean-target
 
@@ -2352,6 +2367,7 @@ clean-host: maybe-clean-lto-plugin
 clean-host: maybe-clean-libcc1
 clean-host: maybe-clean-gotools
 clean-host: maybe-clean-libctf
+clean-host: maybe-clean-libsframe
 
 .PHONY: clean-target
 
@@ -2440,6 +2456,7 @@ distclean-host: maybe-distclean-lto-plugin
 distclean-host: maybe-distclean-libcc1
 distclean-host: maybe-distclean-gotools
 distclean-host: maybe-distclean-libctf
+distclean-host: maybe-distclean-libsframe
 
 .PHONY: distclean-target
 
@@ -2528,6 +2545,7 @@ maintainer-clean-host: maybe-maintainer-clean-lto-plugin
 maintainer-clean-host: maybe-maintainer-clean-libcc1
 maintainer-clean-host: maybe-maintainer-clean-gotools
 maintainer-clean-host: maybe-maintainer-clean-libctf
+maintainer-clean-host: maybe-maintainer-clean-libsframe
 
 .PHONY: maintainer-clean-target
 
@@ -2673,7 +2691,8 @@ check-host:  \
     maybe-check-lto-plugin \
     maybe-check-libcc1 \
     maybe-check-gotools \
-    maybe-check-libctf
+    maybe-check-libctf \
+    maybe-check-libsframe
 
 .PHONY: check-target
 check-target:  \
@@ -2808,7 +2827,8 @@ install-host-nogcc:  \
     maybe-install-lto-plugin \
     maybe-install-libcc1 \
     maybe-install-gotools \
-    maybe-install-libctf
+    maybe-install-libctf \
+    maybe-install-libsframe
 
 .PHONY: install-host
 install-host:  \
@@ -2862,7 +2882,8 @@ install-host:  \
     maybe-install-lto-plugin \
     maybe-install-libcc1 \
     maybe-install-gotools \
-    maybe-install-libctf
+    maybe-install-libctf \
+    maybe-install-libsframe
 
 .PHONY: install-target
 install-target:  \
@@ -2970,7 +2991,8 @@ install-strip-host:  \
     maybe-install-strip-lto-plugin \
     maybe-install-strip-libcc1 \
     maybe-install-strip-gotools \
-    maybe-install-strip-libctf
+    maybe-install-strip-libctf \
+    maybe-install-strip-libsframe
 
 .PHONY: install-strip-target
 install-strip-target:  \
@@ -42376,6 +42398,1146 @@ maintainer-clean-libctf:
 
 
 
+.PHONY: configure-libsframe maybe-configure-libsframe
+maybe-configure-libsframe:
+@if gcc-bootstrap
+configure-libsframe: stage_current
+@endif gcc-bootstrap
+@if libsframe
+maybe-configure-libsframe: configure-libsframe
+configure-libsframe: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/libsframe; \
+	cd "$(HOST_SUBDIR)/libsframe" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
+@endif libsframe
+
+
+
+.PHONY: configure-stage1-libsframe maybe-configure-stage1-libsframe
+maybe-configure-stage1-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stage1-libsframe: configure-stage1-libsframe
+configure-stage1-libsframe:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   \
+	  $(STAGE1_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+.PHONY: configure-stage2-libsframe maybe-configure-stage2-libsframe
+maybe-configure-stage2-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stage2-libsframe: configure-stage2-libsframe
+configure-stage2-libsframe:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+.PHONY: configure-stage3-libsframe maybe-configure-stage3-libsframe
+maybe-configure-stage3-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stage3-libsframe: configure-stage3-libsframe
+configure-stage3-libsframe:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+.PHONY: configure-stage4-libsframe maybe-configure-stage4-libsframe
+maybe-configure-stage4-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stage4-libsframe: configure-stage4-libsframe
+configure-stage4-libsframe:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+.PHONY: configure-stageprofile-libsframe maybe-configure-stageprofile-libsframe
+maybe-configure-stageprofile-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stageprofile-libsframe: configure-stageprofile-libsframe
+configure-stageprofile-libsframe:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+.PHONY: configure-stagetrain-libsframe maybe-configure-stagetrain-libsframe
+maybe-configure-stagetrain-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stagetrain-libsframe: configure-stagetrain-libsframe
+configure-stagetrain-libsframe:
+	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEtrain_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEtrain_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEtrain_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEtrain_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage train in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEtrain_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+.PHONY: configure-stagefeedback-libsframe maybe-configure-stagefeedback-libsframe
+maybe-configure-stagefeedback-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stagefeedback-libsframe: configure-stagefeedback-libsframe
+configure-stagefeedback-libsframe:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+.PHONY: configure-stageautoprofile-libsframe maybe-configure-stageautoprofile-libsframe
+maybe-configure-stageautoprofile-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stageautoprofile-libsframe: configure-stageautoprofile-libsframe
+configure-stageautoprofile-libsframe:
+	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEautoprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEautoprofile_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage autoprofile in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEautoprofile_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+.PHONY: configure-stageautofeedback-libsframe maybe-configure-stageautofeedback-libsframe
+maybe-configure-stageautofeedback-libsframe:
+@if libsframe-bootstrap
+maybe-configure-stageautofeedback-libsframe: configure-stageautofeedback-libsframe
+configure-stageautofeedback-libsframe:
+	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libsframe/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEautofeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEautofeedback_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage autofeedback in $(HOST_SUBDIR)/libsframe; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libsframe; \
+	cd $(HOST_SUBDIR)/libsframe || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libsframe/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libsframe; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEautofeedback_CONFIGURE_FLAGS)
+@endif libsframe-bootstrap
+
+
+
+
+
+.PHONY: all-libsframe maybe-all-libsframe
+maybe-all-libsframe:
+@if gcc-bootstrap
+all-libsframe: stage_current
+@endif gcc-bootstrap
+@if libsframe
+TARGET-libsframe=all
+maybe-all-libsframe: all-libsframe
+all-libsframe: configure-libsframe
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-libsframe))
+@endif libsframe
+
+
+
+.PHONY: all-stage1-libsframe maybe-all-stage1-libsframe
+.PHONY: clean-stage1-libsframe maybe-clean-stage1-libsframe
+maybe-all-stage1-libsframe:
+maybe-clean-stage1-libsframe:
+@if libsframe-bootstrap
+maybe-all-stage1-libsframe: all-stage1-libsframe
+all-stage1: all-stage1-libsframe
+TARGET-stage1-libsframe = $(TARGET-libsframe)
+all-stage1-libsframe: configure-stage1-libsframe
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
+		LIBCFLAGS="$(LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE1_TFLAGS)"  \
+		$(TARGET-stage1-libsframe)
+
+maybe-clean-stage1-libsframe: clean-stage1-libsframe
+clean-stage1: clean-stage1-libsframe
+clean-stage1-libsframe:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+	$(STAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+.PHONY: all-stage2-libsframe maybe-all-stage2-libsframe
+.PHONY: clean-stage2-libsframe maybe-clean-stage2-libsframe
+maybe-all-stage2-libsframe:
+maybe-clean-stage2-libsframe:
+@if libsframe-bootstrap
+maybe-all-stage2-libsframe: all-stage2-libsframe
+all-stage2: all-stage2-libsframe
+TARGET-stage2-libsframe = $(TARGET-libsframe)
+all-stage2-libsframe: configure-stage2-libsframe
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE2_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE2_TFLAGS)"  \
+		$(TARGET-stage2-libsframe)
+
+maybe-clean-stage2-libsframe: clean-stage2-libsframe
+clean-stage2: clean-stage2-libsframe
+clean-stage2-libsframe:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+.PHONY: all-stage3-libsframe maybe-all-stage3-libsframe
+.PHONY: clean-stage3-libsframe maybe-clean-stage3-libsframe
+maybe-all-stage3-libsframe:
+maybe-clean-stage3-libsframe:
+@if libsframe-bootstrap
+maybe-all-stage3-libsframe: all-stage3-libsframe
+all-stage3: all-stage3-libsframe
+TARGET-stage3-libsframe = $(TARGET-libsframe)
+all-stage3-libsframe: configure-stage3-libsframe
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE3_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE3_TFLAGS)"  \
+		$(TARGET-stage3-libsframe)
+
+maybe-clean-stage3-libsframe: clean-stage3-libsframe
+clean-stage3: clean-stage3-libsframe
+clean-stage3-libsframe:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+.PHONY: all-stage4-libsframe maybe-all-stage4-libsframe
+.PHONY: clean-stage4-libsframe maybe-clean-stage4-libsframe
+maybe-all-stage4-libsframe:
+maybe-clean-stage4-libsframe:
+@if libsframe-bootstrap
+maybe-all-stage4-libsframe: all-stage4-libsframe
+all-stage4: all-stage4-libsframe
+TARGET-stage4-libsframe = $(TARGET-libsframe)
+all-stage4-libsframe: configure-stage4-libsframe
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE4_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE4_TFLAGS)"  \
+		$(TARGET-stage4-libsframe)
+
+maybe-clean-stage4-libsframe: clean-stage4-libsframe
+clean-stage4: clean-stage4-libsframe
+clean-stage4-libsframe:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+.PHONY: all-stageprofile-libsframe maybe-all-stageprofile-libsframe
+.PHONY: clean-stageprofile-libsframe maybe-clean-stageprofile-libsframe
+maybe-all-stageprofile-libsframe:
+maybe-clean-stageprofile-libsframe:
+@if libsframe-bootstrap
+maybe-all-stageprofile-libsframe: all-stageprofile-libsframe
+all-stageprofile: all-stageprofile-libsframe
+TARGET-stageprofile-libsframe = $(TARGET-libsframe)
+all-stageprofile-libsframe: configure-stageprofile-libsframe
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEprofile_TFLAGS)"  \
+		$(TARGET-stageprofile-libsframe)
+
+maybe-clean-stageprofile-libsframe: clean-stageprofile-libsframe
+clean-stageprofile: clean-stageprofile-libsframe
+clean-stageprofile-libsframe:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+.PHONY: all-stagetrain-libsframe maybe-all-stagetrain-libsframe
+.PHONY: clean-stagetrain-libsframe maybe-clean-stagetrain-libsframe
+maybe-all-stagetrain-libsframe:
+maybe-clean-stagetrain-libsframe:
+@if libsframe-bootstrap
+maybe-all-stagetrain-libsframe: all-stagetrain-libsframe
+all-stagetrain: all-stagetrain-libsframe
+TARGET-stagetrain-libsframe = $(TARGET-libsframe)
+all-stagetrain-libsframe: configure-stagetrain-libsframe
+	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEtrain_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEtrain_TFLAGS)"  \
+		$(TARGET-stagetrain-libsframe)
+
+maybe-clean-stagetrain-libsframe: clean-stagetrain-libsframe
+clean-stagetrain: clean-stagetrain-libsframe
+clean-stagetrain-libsframe:
+	@if [ $(current_stage) = stagetrain ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagetrain-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stagetrain-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+.PHONY: all-stagefeedback-libsframe maybe-all-stagefeedback-libsframe
+.PHONY: clean-stagefeedback-libsframe maybe-clean-stagefeedback-libsframe
+maybe-all-stagefeedback-libsframe:
+maybe-clean-stagefeedback-libsframe:
+@if libsframe-bootstrap
+maybe-all-stagefeedback-libsframe: all-stagefeedback-libsframe
+all-stagefeedback: all-stagefeedback-libsframe
+TARGET-stagefeedback-libsframe = $(TARGET-libsframe)
+all-stagefeedback-libsframe: configure-stagefeedback-libsframe
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEfeedback_TFLAGS)"  \
+		$(TARGET-stagefeedback-libsframe)
+
+maybe-clean-stagefeedback-libsframe: clean-stagefeedback-libsframe
+clean-stagefeedback: clean-stagefeedback-libsframe
+clean-stagefeedback-libsframe:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+.PHONY: all-stageautoprofile-libsframe maybe-all-stageautoprofile-libsframe
+.PHONY: clean-stageautoprofile-libsframe maybe-clean-stageautoprofile-libsframe
+maybe-all-stageautoprofile-libsframe:
+maybe-clean-stageautoprofile-libsframe:
+@if libsframe-bootstrap
+maybe-all-stageautoprofile-libsframe: all-stageautoprofile-libsframe
+all-stageautoprofile: all-stageautoprofile-libsframe
+TARGET-stageautoprofile-libsframe = $(TARGET-libsframe)
+all-stageautoprofile-libsframe: configure-stageautoprofile-libsframe
+	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEautoprofile_TFLAGS)"  \
+		$(TARGET-stageautoprofile-libsframe)
+
+maybe-clean-stageautoprofile-libsframe: clean-stageautoprofile-libsframe
+clean-stageautoprofile: clean-stageautoprofile-libsframe
+clean-stageautoprofile-libsframe:
+	@if [ $(current_stage) = stageautoprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageautoprofile-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stageautoprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+.PHONY: all-stageautofeedback-libsframe maybe-all-stageautofeedback-libsframe
+.PHONY: clean-stageautofeedback-libsframe maybe-clean-stageautofeedback-libsframe
+maybe-all-stageautofeedback-libsframe:
+maybe-clean-stageautofeedback-libsframe:
+@if libsframe-bootstrap
+maybe-all-stageautofeedback-libsframe: all-stageautofeedback-libsframe
+all-stageautofeedback: all-stageautofeedback-libsframe
+TARGET-stageautofeedback-libsframe = $(TARGET-libsframe)
+all-stageautofeedback-libsframe: configure-stageautofeedback-libsframe
+	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libsframe && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEautofeedback_TFLAGS)" PERF_DATA=perf.data \
+		$(TARGET-stageautofeedback-libsframe)
+
+maybe-clean-stageautofeedback-libsframe: clean-stageautofeedback-libsframe
+clean-stageautofeedback: clean-stageautofeedback-libsframe
+clean-stageautofeedback-libsframe:
+	@if [ $(current_stage) = stageautofeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libsframe/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageautofeedback-libsframe/Makefile ] || exit 0; \
+	  $(MAKE) stageautofeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libsframe && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libsframe-bootstrap
+
+
+
+
+
+.PHONY: check-libsframe maybe-check-libsframe
+maybe-check-libsframe:
+@if libsframe
+maybe-check-libsframe: check-libsframe
+
+check-libsframe:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
+
+@endif libsframe
+
+.PHONY: install-libsframe maybe-install-libsframe
+maybe-install-libsframe:
+@if libsframe
+maybe-install-libsframe: install-libsframe
+
+install-libsframe: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif libsframe
+
+.PHONY: install-strip-libsframe maybe-install-strip-libsframe
+maybe-install-strip-libsframe:
+@if libsframe
+maybe-install-strip-libsframe: install-strip-libsframe
+
+install-strip-libsframe: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif libsframe
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-libsframe info-libsframe
+maybe-info-libsframe:
+@if libsframe
+maybe-info-libsframe: info-libsframe
+
+info-libsframe: \
+    configure-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-dvi-libsframe dvi-libsframe
+maybe-dvi-libsframe:
+@if libsframe
+maybe-dvi-libsframe: dvi-libsframe
+
+dvi-libsframe: \
+    configure-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-pdf-libsframe pdf-libsframe
+maybe-pdf-libsframe:
+@if libsframe
+maybe-pdf-libsframe: pdf-libsframe
+
+pdf-libsframe: \
+    configure-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-html-libsframe html-libsframe
+maybe-html-libsframe:
+@if libsframe
+maybe-html-libsframe: html-libsframe
+
+html-libsframe: \
+    configure-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-TAGS-libsframe TAGS-libsframe
+maybe-TAGS-libsframe:
+@if libsframe
+maybe-TAGS-libsframe: TAGS-libsframe
+
+TAGS-libsframe: \
+    configure-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-install-info-libsframe install-info-libsframe
+maybe-install-info-libsframe:
+@if libsframe
+maybe-install-info-libsframe: install-info-libsframe
+
+install-info-libsframe: \
+    configure-libsframe \
+    info-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-install-dvi-libsframe install-dvi-libsframe
+maybe-install-dvi-libsframe:
+@if libsframe
+maybe-install-dvi-libsframe: install-dvi-libsframe
+
+install-dvi-libsframe: \
+    configure-libsframe \
+    dvi-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-install-pdf-libsframe install-pdf-libsframe
+maybe-install-pdf-libsframe:
+@if libsframe
+maybe-install-pdf-libsframe: install-pdf-libsframe
+
+install-pdf-libsframe: \
+    configure-libsframe \
+    pdf-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-install-html-libsframe install-html-libsframe
+maybe-install-html-libsframe:
+@if libsframe
+maybe-install-html-libsframe: install-html-libsframe
+
+install-html-libsframe: \
+    configure-libsframe \
+    html-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-installcheck-libsframe installcheck-libsframe
+maybe-installcheck-libsframe:
+@if libsframe
+maybe-installcheck-libsframe: installcheck-libsframe
+
+installcheck-libsframe: \
+    configure-libsframe 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-mostlyclean-libsframe mostlyclean-libsframe
+maybe-mostlyclean-libsframe:
+@if libsframe
+maybe-mostlyclean-libsframe: mostlyclean-libsframe
+
+mostlyclean-libsframe: 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-clean-libsframe clean-libsframe
+maybe-clean-libsframe:
+@if libsframe
+maybe-clean-libsframe: clean-libsframe
+
+clean-libsframe: 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-distclean-libsframe distclean-libsframe
+maybe-distclean-libsframe:
+@if libsframe
+maybe-distclean-libsframe: distclean-libsframe
+
+distclean-libsframe: 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif libsframe
+
+.PHONY: maybe-maintainer-clean-libsframe maintainer-clean-libsframe
+maybe-maintainer-clean-libsframe:
+@if libsframe
+maybe-maintainer-clean-libsframe: maintainer-clean-libsframe
+
+maintainer-clean-libsframe: 
+	@[ -f ./libsframe/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libsframe"; \
+	(cd $(HOST_SUBDIR)/libsframe && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif libsframe
+
+
+
 # ---------------------------------------
 # Modules which run on the target machine
 # ---------------------------------------
@@ -60262,6 +61424,11 @@ stage1-start::
 	  mkdir stage1-libctf; \
 	mv stage1-libctf libctf
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stage1-libsframe ] || \
+	  mkdir stage1-libsframe; \
+	mv stage1-libsframe libsframe
+@endif libsframe
 	@[ -d stage1-$(TARGET_SUBDIR) ] || \
 	  mkdir stage1-$(TARGET_SUBDIR); \
 	mv stage1-$(TARGET_SUBDIR) $(TARGET_SUBDIR)
@@ -60382,6 +61549,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv libctf stage1-libctf; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stage1-libsframe; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR); \
 	fi
@@ -60568,6 +61740,12 @@ stage2-start::
 	mv stage2-libctf libctf; \
 	mv stage1-libctf prev-libctf || test -f stage1-lean 
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stage2-libsframe ] || \
+	  mkdir stage2-libsframe; \
+	mv stage2-libsframe libsframe; \
+	mv stage1-libsframe prev-libsframe || test -f stage1-lean 
+@endif libsframe
 	@[ -d stage2-$(TARGET_SUBDIR) ] || \
 	  mkdir stage2-$(TARGET_SUBDIR); \
 	mv stage2-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -60712,6 +61890,12 @@ stage2-end::
 	  mv prev-libctf stage1-libctf; : ; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stage2-libsframe; \
+	  mv prev-libsframe stage1-libsframe; : ; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR); : ; \
@@ -60922,6 +62106,12 @@ stage3-start::
 	mv stage3-libctf libctf; \
 	mv stage2-libctf prev-libctf || test -f stage2-lean 
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stage3-libsframe ] || \
+	  mkdir stage3-libsframe; \
+	mv stage3-libsframe libsframe; \
+	mv stage2-libsframe prev-libsframe || test -f stage2-lean 
+@endif libsframe
 	@[ -d stage3-$(TARGET_SUBDIR) ] || \
 	  mkdir stage3-$(TARGET_SUBDIR); \
 	mv stage3-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -61066,6 +62256,12 @@ stage3-end::
 	  mv prev-libctf stage2-libctf; : ; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stage3-libsframe; \
+	  mv prev-libsframe stage2-libsframe; : ; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR); : ; \
@@ -61332,6 +62528,12 @@ stage4-start::
 	mv stage4-libctf libctf; \
 	mv stage3-libctf prev-libctf || test -f stage3-lean 
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stage4-libsframe ] || \
+	  mkdir stage4-libsframe; \
+	mv stage4-libsframe libsframe; \
+	mv stage3-libsframe prev-libsframe || test -f stage3-lean 
+@endif libsframe
 	@[ -d stage4-$(TARGET_SUBDIR) ] || \
 	  mkdir stage4-$(TARGET_SUBDIR); \
 	mv stage4-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -61476,6 +62678,12 @@ stage4-end::
 	  mv prev-libctf stage3-libctf; : ; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stage4-libsframe; \
+	  mv prev-libsframe stage3-libsframe; : ; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stage4-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR); : ; \
@@ -61730,6 +62938,12 @@ stageprofile-start::
 	mv stageprofile-libctf libctf; \
 	mv stage1-libctf prev-libctf || test -f stage1-lean 
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stageprofile-libsframe ] || \
+	  mkdir stageprofile-libsframe; \
+	mv stageprofile-libsframe libsframe; \
+	mv stage1-libsframe prev-libsframe || test -f stage1-lean 
+@endif libsframe
 	@[ -d stageprofile-$(TARGET_SUBDIR) ] || \
 	  mkdir stageprofile-$(TARGET_SUBDIR); \
 	mv stageprofile-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -61874,6 +63088,12 @@ stageprofile-end::
 	  mv prev-libctf stage1-libctf; : ; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stageprofile-libsframe; \
+	  mv prev-libsframe stage1-libsframe; : ; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR); : ; \
@@ -62061,6 +63281,12 @@ stagetrain-start::
 	mv stagetrain-libctf libctf; \
 	mv stageprofile-libctf prev-libctf || test -f stageprofile-lean 
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stagetrain-libsframe ] || \
+	  mkdir stagetrain-libsframe; \
+	mv stagetrain-libsframe libsframe; \
+	mv stageprofile-libsframe prev-libsframe || test -f stageprofile-lean 
+@endif libsframe
 	@[ -d stagetrain-$(TARGET_SUBDIR) ] || \
 	  mkdir stagetrain-$(TARGET_SUBDIR); \
 	mv stagetrain-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -62205,6 +63431,12 @@ stagetrain-end::
 	  mv prev-libctf stageprofile-libctf; : ; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stagetrain-libsframe; \
+	  mv prev-libsframe stageprofile-libsframe; : ; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stagetrain-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR); : ; \
@@ -62392,6 +63624,12 @@ stagefeedback-start::
 	mv stagefeedback-libctf libctf; \
 	mv stagetrain-libctf prev-libctf || test -f stagetrain-lean 
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-libsframe ] || \
+	  mkdir stagefeedback-libsframe; \
+	mv stagefeedback-libsframe libsframe; \
+	mv stagetrain-libsframe prev-libsframe || test -f stagetrain-lean 
+@endif libsframe
 	@[ -d stagefeedback-$(TARGET_SUBDIR) ] || \
 	  mkdir stagefeedback-$(TARGET_SUBDIR); \
 	mv stagefeedback-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -62536,6 +63774,12 @@ stagefeedback-end::
 	  mv prev-libctf stagetrain-libctf; : ; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stagefeedback-libsframe; \
+	  mv prev-libsframe stagetrain-libsframe; : ; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stagefeedback-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stagetrain-$(TARGET_SUBDIR); : ; \
@@ -62746,6 +63990,12 @@ stageautoprofile-start::
 	mv stageautoprofile-libctf libctf; \
 	mv stage1-libctf prev-libctf || test -f stage1-lean 
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stageautoprofile-libsframe ] || \
+	  mkdir stageautoprofile-libsframe; \
+	mv stageautoprofile-libsframe libsframe; \
+	mv stage1-libsframe prev-libsframe || test -f stage1-lean 
+@endif libsframe
 	@[ -d stageautoprofile-$(TARGET_SUBDIR) ] || \
 	  mkdir stageautoprofile-$(TARGET_SUBDIR); \
 	mv stageautoprofile-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -62890,6 +64140,12 @@ stageautoprofile-end::
 	  mv prev-libctf stage1-libctf; : ; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stageautoprofile-libsframe; \
+	  mv prev-libsframe stage1-libsframe; : ; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stageautoprofile-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR); : ; \
@@ -63077,6 +64333,12 @@ stageautofeedback-start::
 	mv stageautofeedback-libctf libctf; \
 	mv stageautoprofile-libctf prev-libctf || test -f stageautoprofile-lean 
 @endif libctf
+@if libsframe
+	@cd $(HOST_SUBDIR); [ -d stageautofeedback-libsframe ] || \
+	  mkdir stageautofeedback-libsframe; \
+	mv stageautofeedback-libsframe libsframe; \
+	mv stageautoprofile-libsframe prev-libsframe || test -f stageautoprofile-lean 
+@endif libsframe
 	@[ -d stageautofeedback-$(TARGET_SUBDIR) ] || \
 	  mkdir stageautofeedback-$(TARGET_SUBDIR); \
 	mv stageautofeedback-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -63221,6 +64483,12 @@ stageautofeedback-end::
 	  mv prev-libctf stageautoprofile-libctf; : ; \
 	fi
 @endif libctf
+@if libsframe
+	@if test -d $(HOST_SUBDIR)/libsframe; then \
+	  cd $(HOST_SUBDIR); mv libsframe stageautofeedback-libsframe; \
+	  mv prev-libsframe stageautoprofile-libsframe; : ; \
+	fi
+@endif libsframe
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stageautofeedback-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stageautoprofile-$(TARGET_SUBDIR); : ; \
@@ -64160,6 +65428,16 @@ all-stagetrain-ld: maybe-all-stagetrain-libctf
 all-stagefeedback-ld: maybe-all-stagefeedback-libctf
 all-stageautoprofile-ld: maybe-all-stageautoprofile-libctf
 all-stageautofeedback-ld: maybe-all-stageautofeedback-libctf
+all-binutils: maybe-all-libsframe
+all-stage1-binutils: maybe-all-stage1-libsframe
+all-stage2-binutils: maybe-all-stage2-libsframe
+all-stage3-binutils: maybe-all-stage3-libsframe
+all-stage4-binutils: maybe-all-stage4-libsframe
+all-stageprofile-binutils: maybe-all-stageprofile-libsframe
+all-stagetrain-binutils: maybe-all-stagetrain-libsframe
+all-stagefeedback-binutils: maybe-all-stagefeedback-libsframe
+all-stageautoprofile-binutils: maybe-all-stageautoprofile-libsframe
+all-stageautofeedback-binutils: maybe-all-stageautofeedback-libsframe
 install-binutils: maybe-install-opcodes
 install-strip-binutils: maybe-install-strip-opcodes
 install-libctf: maybe-install-bfd
