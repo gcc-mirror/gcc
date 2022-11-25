@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 18, 2022
+GNAT Reference Manual , Dec 01, 2022
 
 AdaCore
 
@@ -690,7 +690,7 @@ The GNAT Library
 
 * Ada.Characters.Latin_9 (a-chlat9.ads): Ada Characters Latin_9 a-chlat9 ads. 
 * Ada.Characters.Wide_Latin_1 (a-cwila1.ads): Ada Characters Wide_Latin_1 a-cwila1 ads. 
-* Ada.Characters.Wide_Latin_9 (a-cwila1.ads): Ada Characters Wide_Latin_9 a-cwila1 ads. 
+* Ada.Characters.Wide_Latin_9 (a-cwila9.ads): Ada Characters Wide_Latin_9 a-cwila9 ads. 
 * Ada.Characters.Wide_Wide_Latin_1 (a-chzla1.ads): Ada Characters Wide_Wide_Latin_1 a-chzla1 ads. 
 * Ada.Characters.Wide_Wide_Latin_9 (a-chzla9.ads): Ada Characters Wide_Wide_Latin_9 a-chzla9 ads. 
 * Ada.Containers.Bounded_Holders (a-coboho.ads): Ada Containers Bounded_Holders a-coboho ads. 
@@ -809,8 +809,8 @@ The GNAT Library
 * GNAT.Threads (g-thread.ads): GNAT Threads g-thread ads. 
 * GNAT.Traceback (g-traceb.ads): GNAT Traceback g-traceb ads. 
 * GNAT.Traceback.Symbolic (g-trasym.ads): GNAT Traceback Symbolic g-trasym ads. 
-* GNAT.UTF_32 (g-table.ads): GNAT UTF_32 g-table ads. 
-* GNAT.Wide_Spelling_Checker (g-u3spch.ads): GNAT Wide_Spelling_Checker g-u3spch ads. 
+* GNAT.UTF_32 (g-utf_32.ads): GNAT UTF_32 g-utf_32 ads. 
+* GNAT.UTF_32_Spelling_Checker (g-u3spch.ads): GNAT UTF_32_Spelling_Checker g-u3spch ads. 
 * GNAT.Wide_Spelling_Checker (g-wispch.ads): GNAT Wide_Spelling_Checker g-wispch ads. 
 * GNAT.Wide_String_Split (g-wistsp.ads): GNAT Wide_String_Split g-wistsp ads. 
 * GNAT.Wide_Wide_Spelling_Checker (g-zspche.ads): GNAT Wide_Wide_Spelling_Checker g-zspche ads. 
@@ -9177,7 +9177,7 @@ also be used as a configuration pragma.
 The fourth form, with an @code{On|Off} parameter and a string, is used to
 control individual messages, based on their text. The string argument
 is a pattern that is used to match against the text of individual
-warning messages (not including the initial “warning: “ tag).
+warning messages (not including the initial “warning: ” tag).
 
 The pattern may contain asterisks, which match zero or more characters in
 the message. For example, you can use
@@ -23105,7 +23105,7 @@ of GNAT, and will generate a warning message.
 @menu
 * Ada.Characters.Latin_9 (a-chlat9.ads): Ada Characters Latin_9 a-chlat9 ads. 
 * Ada.Characters.Wide_Latin_1 (a-cwila1.ads): Ada Characters Wide_Latin_1 a-cwila1 ads. 
-* Ada.Characters.Wide_Latin_9 (a-cwila1.ads): Ada Characters Wide_Latin_9 a-cwila1 ads. 
+* Ada.Characters.Wide_Latin_9 (a-cwila9.ads): Ada Characters Wide_Latin_9 a-cwila9 ads. 
 * Ada.Characters.Wide_Wide_Latin_1 (a-chzla1.ads): Ada Characters Wide_Wide_Latin_1 a-chzla1 ads. 
 * Ada.Characters.Wide_Wide_Latin_9 (a-chzla9.ads): Ada Characters Wide_Wide_Latin_9 a-chzla9 ads. 
 * Ada.Containers.Bounded_Holders (a-coboho.ads): Ada Containers Bounded_Holders a-coboho ads. 
@@ -23224,8 +23224,8 @@ of GNAT, and will generate a warning message.
 * GNAT.Threads (g-thread.ads): GNAT Threads g-thread ads. 
 * GNAT.Traceback (g-traceb.ads): GNAT Traceback g-traceb ads. 
 * GNAT.Traceback.Symbolic (g-trasym.ads): GNAT Traceback Symbolic g-trasym ads. 
-* GNAT.UTF_32 (g-table.ads): GNAT UTF_32 g-table ads. 
-* GNAT.Wide_Spelling_Checker (g-u3spch.ads): GNAT Wide_Spelling_Checker g-u3spch ads. 
+* GNAT.UTF_32 (g-utf_32.ads): GNAT UTF_32 g-utf_32 ads. 
+* GNAT.UTF_32_Spelling_Checker (g-u3spch.ads): GNAT UTF_32_Spelling_Checker g-u3spch ads. 
 * GNAT.Wide_Spelling_Checker (g-wispch.ads): GNAT Wide_Spelling_Checker g-wispch ads. 
 * GNAT.Wide_String_Split (g-wistsp.ads): GNAT Wide_String_Split g-wistsp ads. 
 * GNAT.Wide_Wide_Spelling_Checker (g-zspche.ads): GNAT Wide_Wide_Spelling_Checker g-zspche ads. 
@@ -23266,12 +23266,12 @@ of GNAT, and will generate a warning message.
 This child of @code{Ada.Characters}
 provides a set of definitions corresponding to those in the
 RM-defined package @code{Ada.Characters.Latin_1} but with the
-few modifications required for @code{Latin-9}
+few modifications required for @code{Latin-9}.
 The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3.3(27)).
 
-@node Ada Characters Wide_Latin_1 a-cwila1 ads,Ada Characters Wide_Latin_9 a-cwila1 ads,Ada Characters Latin_9 a-chlat9 ads,The GNAT Library
+@node Ada Characters Wide_Latin_1 a-cwila1 ads,Ada Characters Wide_Latin_9 a-cwila9 ads,Ada Characters Latin_9 a-chlat9 ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library ada-characters-wide-latin-1-a-cwila1-ads}@anchor{2d9}@anchor{gnat_rm/the_gnat_library id3}@anchor{2da}
 @section @code{Ada.Characters.Wide_Latin_1} (@code{a-cwila1.ads})
 
@@ -23288,12 +23288,12 @@ instead of @code{Character}.  The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3.3(27)).
 
-@node Ada Characters Wide_Latin_9 a-cwila1 ads,Ada Characters Wide_Wide_Latin_1 a-chzla1 ads,Ada Characters Wide_Latin_1 a-cwila1 ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library ada-characters-wide-latin-9-a-cwila1-ads}@anchor{2db}@anchor{gnat_rm/the_gnat_library id4}@anchor{2dc}
-@section @code{Ada.Characters.Wide_Latin_9} (@code{a-cwila1.ads})
+@node Ada Characters Wide_Latin_9 a-cwila9 ads,Ada Characters Wide_Wide_Latin_1 a-chzla1 ads,Ada Characters Wide_Latin_1 a-cwila1 ads,The GNAT Library
+@anchor{gnat_rm/the_gnat_library ada-characters-wide-latin-9-a-cwila9-ads}@anchor{2db}@anchor{gnat_rm/the_gnat_library id4}@anchor{2dc}
+@section @code{Ada.Characters.Wide_Latin_9} (@code{a-cwila9.ads})
 
 
-@geindex Ada.Characters.Wide_Latin_9 (a-cwila1.ads)
+@geindex Ada.Characters.Wide_Latin_9 (a-cwila9.ads)
 
 @geindex Latin_9 constants for Wide_Character
 
@@ -23305,7 +23305,7 @@ instead of @code{Character}.  The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3.3(27)).
 
-@node Ada Characters Wide_Wide_Latin_1 a-chzla1 ads,Ada Characters Wide_Wide_Latin_9 a-chzla9 ads,Ada Characters Wide_Latin_9 a-cwila1 ads,The GNAT Library
+@node Ada Characters Wide_Wide_Latin_1 a-chzla1 ads,Ada Characters Wide_Wide_Latin_9 a-chzla9 ads,Ada Characters Wide_Latin_9 a-cwila9 ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library ada-characters-wide-wide-latin-1-a-chzla1-ads}@anchor{2dd}@anchor{gnat_rm/the_gnat_library id5}@anchor{2de}
 @section @code{Ada.Characters.Wide_Wide_Latin_1} (@code{a-chzla1.ads})
 
@@ -23379,8 +23379,8 @@ where this concept makes sense.
 This child of @code{Ada.Command_Line}
 provides a mechanism for logically removing
 arguments from the argument list.  Once removed, an argument is not visible
-to further calls on the subprograms in @code{Ada.Command_Line} will not
-see the removed argument.
+to further calls to the subprograms in @code{Ada.Command_Line}. These calls
+will not see the removed argument.
 
 @node Ada Command_Line Response_File a-clrefi ads,Ada Direct_IO C_Streams a-diocst ads,Ada Command_Line Remove a-colire ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library ada-command-line-response-file-a-clrefi-ads}@anchor{2e7}@anchor{gnat_rm/the_gnat_library id10}@anchor{2e8}
@@ -24072,7 +24072,7 @@ obtaining information about exceptions provided by Ada 83 compilers.
 
 @geindex Memory corruption debugging
 
-Provide a debugging storage pools that helps tracking memory corruption
+Provides a debugging storage pools that helps tracking memory corruption
 problems.
 See @code{The GNAT Debug_Pool Facility} section in the @cite{GNAT User’s Guide}.
 
@@ -24285,7 +24285,7 @@ a message from a subprogram in a pure package, since the
 necessary types and subprograms are in @code{Ada.Exceptions}
 which is not a pure unit. @code{GNAT.Exceptions} provides a
 facility for getting around this limitation for a few
-predefined exceptions, and for example allow raising
+predefined exceptions, and for example allows raising
 @code{Constraint_Error} with a message from a pure subprogram.
 
 @node GNAT Expect g-expect ads,GNAT Expect TTY g-exptty ads,GNAT Exceptions g-except ads,The GNAT Library
@@ -24340,7 +24340,7 @@ in this package can be used to reestablish the required mode.
 @geindex Formatted String
 
 Provides support for C/C++ printf() formatted strings. The format is
-copied from the printf() routine and should therefore gives identical
+copied from the printf() routine and should therefore give identical
 output. Some generic routines are provided to be able to use types
 derived from Integer, Float or enumerations as values for the
 formatted string.
@@ -24557,7 +24557,7 @@ Provides a generator of static minimal perfect hash functions. No
 collisions occur and each item can be retrieved from the table in one
 probe (perfect property). The hash table size corresponds to the exact
 size of the key set and no larger (minimal property). The key set has to
-be know in advance (static property). The hash functions are also order
+be known in advance (static property). The hash functions are also order
 preserving. If w2 is inserted after w1 in the generator, their
 hashcode are in the same order. These hashing functions are very
 convenient for use with realtime applications.
@@ -24642,7 +24642,7 @@ this interface usable for large files or socket streams.
 
 @geindex Secondary Stack Info
 
-Provide the capability to query the high water mark of the current task’s
+Provides the capability to query the high water mark of the current task’s
 secondary stack.
 
 @node GNAT Semaphores g-semaph ads,GNAT Serial_Communications g-sercom ads,GNAT Secondary_Stack_Info g-sestin ads,The GNAT Library
@@ -24757,7 +24757,7 @@ targets.
 A high level and portable interface to develop sockets based applications.
 This package is based on the sockets thin binding found in
 @code{GNAT.Sockets.Thin}. Currently @code{GNAT.Sockets} is implemented
-on all native GNAT ports and on VxWorks cross prots.  It is not implemented for
+on all native GNAT ports and on VxWorks cross ports.  It is not implemented for
 the LynxOS cross port.
 
 @node GNAT Source_Info g-souinf ads,GNAT Spelling_Checker g-speche ads,GNAT Sockets g-socket ads,The GNAT Library
@@ -25017,7 +25017,7 @@ environment which then accesses Ada code.
 Provides a facility for obtaining non-symbolic traceback information, useful
 in various debugging situations.
 
-@node GNAT Traceback Symbolic g-trasym ads,GNAT UTF_32 g-table ads,GNAT Traceback g-traceb ads,The GNAT Library
+@node GNAT Traceback Symbolic g-trasym ads,GNAT UTF_32 g-utf_32 ads,GNAT Traceback g-traceb ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-traceback-symbolic-g-trasym-ads}@anchor{3c6}@anchor{gnat_rm/the_gnat_library id122}@anchor{3c7}
 @section @code{GNAT.Traceback.Symbolic} (@code{g-trasym.ads})
 
@@ -25026,12 +25026,12 @@ in various debugging situations.
 
 @geindex Trace back facilities
 
-@node GNAT UTF_32 g-table ads,GNAT Wide_Spelling_Checker g-u3spch ads,GNAT Traceback Symbolic g-trasym ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-utf-32-g-table-ads}@anchor{3c8}@anchor{gnat_rm/the_gnat_library id123}@anchor{3c9}
-@section @code{GNAT.UTF_32} (@code{g-table.ads})
+@node GNAT UTF_32 g-utf_32 ads,GNAT UTF_32_Spelling_Checker g-u3spch ads,GNAT Traceback Symbolic g-trasym ads,The GNAT Library
+@anchor{gnat_rm/the_gnat_library gnat-utf-32-g-utf-32-ads}@anchor{3c8}@anchor{gnat_rm/the_gnat_library id123}@anchor{3c9}
+@section @code{GNAT.UTF_32} (@code{g-utf_32.ads})
 
 
-@geindex GNAT.UTF_32 (g-table.ads)
+@geindex GNAT.UTF_32 (g-utf_32.ads)
 
 @geindex Wide character codes
 
@@ -25045,12 +25045,12 @@ lexical rules for identifiers and strings, and also a
 lower case to upper case fold routine corresponding to
 the Ada 2005 rules for identifier equivalence.
 
-@node GNAT Wide_Spelling_Checker g-u3spch ads,GNAT Wide_Spelling_Checker g-wispch ads,GNAT UTF_32 g-table ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library gnat-wide-spelling-checker-g-u3spch-ads}@anchor{3ca}@anchor{gnat_rm/the_gnat_library id124}@anchor{3cb}
-@section @code{GNAT.Wide_Spelling_Checker} (@code{g-u3spch.ads})
+@node GNAT UTF_32_Spelling_Checker g-u3spch ads,GNAT Wide_Spelling_Checker g-wispch ads,GNAT UTF_32 g-utf_32 ads,The GNAT Library
+@anchor{gnat_rm/the_gnat_library gnat-utf-32-spelling-checker-g-u3spch-ads}@anchor{3ca}@anchor{gnat_rm/the_gnat_library id124}@anchor{3cb}
+@section @code{GNAT.UTF_32_Spelling_Checker} (@code{g-u3spch.ads})
 
 
-@geindex GNAT.Wide_Spelling_Checker (g-u3spch.ads)
+@geindex GNAT.UTF_32_Spelling_Checker (g-u3spch.ads)
 
 @geindex Spell checking
 
@@ -25058,7 +25058,7 @@ Provides a function for determining whether one wide wide string is a plausible
 near misspelling of another wide wide string, where the strings are represented
 using the UTF_32_String type defined in System.Wch_Cnv.
 
-@node GNAT Wide_Spelling_Checker g-wispch ads,GNAT Wide_String_Split g-wistsp ads,GNAT Wide_Spelling_Checker g-u3spch ads,The GNAT Library
+@node GNAT Wide_Spelling_Checker g-wispch ads,GNAT Wide_String_Split g-wistsp ads,GNAT UTF_32_Spelling_Checker g-u3spch ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-wide-spelling-checker-g-wispch-ads}@anchor{3cc}@anchor{gnat_rm/the_gnat_library id125}@anchor{3cd}
 @section @code{GNAT.Wide_Spelling_Checker} (@code{g-wispch.ads})
 
