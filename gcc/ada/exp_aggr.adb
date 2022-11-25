@@ -62,6 +62,7 @@ with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
+use Sem_Util.Storage_Model_Support;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
@@ -74,6 +75,15 @@ with Urealp;         use Urealp;
 with Warnsw;         use Warnsw;
 
 package body Exp_Aggr is
+
+   function Build_Assignment_With_Temporary
+     (Target : Node_Id;
+      Typ    : Node_Id;
+      Source : Node_Id) return List_Id;
+   --  Returns a list of actions to assign Source to Target of type Typ using
+   --  an extra temporary:
+   --   Tmp := Source;
+   --   Target := Tmp;
 
    type Case_Bounds is record
      Choice_Lo   : Node_Id;
@@ -2508,6 +2518,42 @@ package body Exp_Aggr is
       return New_Code;
    end Build_Array_Aggr_Code;
 
+   -------------------------------------
+   -- Build_Assignment_With_Temporary --
+   -------------------------------------
+
+   function Build_Assignment_With_Temporary
+     (Target : Node_Id;
+      Typ    : Node_Id;
+      Source : Node_Id) return List_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Source);
+
+      Aggr_Code : List_Id;
+      Tmp       : Entity_Id;
+      Tmp_Decl  : Node_Id;
+
+   begin
+      Tmp := Make_Temporary (Loc, 'A', Source);
+      Tmp_Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Tmp,
+          Object_Definition   => New_Occurrence_Of (Typ, Loc));
+      Set_No_Initialization (Tmp_Decl, True);
+
+      Aggr_Code := New_List (Tmp_Decl);
+      Append_To (Aggr_Code,
+        Make_OK_Assignment_Statement (Loc,
+          Name       => New_Occurrence_Of (Tmp, Loc),
+          Expression => Source));
+
+      Append_To (Aggr_Code,
+        Make_OK_Assignment_Statement (Loc,
+          Name       => Target,
+          Expression => New_Occurrence_Of (Tmp, Loc)));
+      return Aggr_Code;
+   end Build_Assignment_With_Temporary;
+
    ----------------------------
    -- Build_Record_Aggr_Code --
    ----------------------------
@@ -4514,15 +4560,29 @@ package body Exp_Aggr is
          New_Aggr := New_Copy_Tree (Aggr);
          Set_Expansion_Delayed (New_Aggr, False);
 
-         Aggr_Code :=
-           New_List (
-             Make_OK_Assignment_Statement (Sloc (New_Aggr),
-               Name       => Target,
-               Expression => New_Aggr));
+         --  In the case of Target's type using the Designated_Storage_Model
+         --  aspect with a Copy_To procedure, insert a temporary and have the
+         --  back end handle the assignment to it. Copy the result to the
+         --  original target.
+
+         if Has_Designated_Storage_Model_Aspect
+              (Etype (Prefix (Expression (Target))))
+           and then Present (Storage_Model_Copy_To
+                               (Storage_Model_Object
+                                  (Etype (Prefix (Expression (Target))))))
+         then
+            Aggr_Code := Build_Assignment_With_Temporary (Target,
+                           Typ, New_Aggr);
+         else
+            Aggr_Code :=
+              New_List (
+                Make_OK_Assignment_Statement (Sloc (New_Aggr),
+                  Name       => Target,
+                  Expression => New_Aggr));
+         end if;
 
       --  Or else, generate component assignments to it, as for an aggregate
       --  that appears on the right-hand side of an assignment statement.
-
       else
          Aggr_Code :=
            Build_Array_Aggr_Code (Aggr,
@@ -7065,16 +7125,34 @@ package body Exp_Aggr is
            and then not Is_Possibly_Unaligned_Slice (Target)
            and then Aggr_Assignment_OK_For_Backend (N)
          then
-            if Maybe_In_Place_OK then
-               return;
+
+            --  In the case of an assignment using an access with the
+            --  Designated_Storage_Model aspect with a Copy_To procedure,
+            --  insert a temporary and have the back end handle the assignment
+            --  to it. Copy the result to the original target.
+
+            if Parent_Kind = N_Assignment_Statement
+              and then Nkind (Name (Parent_Node)) = N_Explicit_Dereference
+              and then Has_Designated_Storage_Model_Aspect
+                         (Etype (Prefix (Name (Parent_Node))))
+              and then Present (Storage_Model_Copy_To
+                                  (Storage_Model_Object
+                                     (Etype (Prefix (Name (Parent_Node))))))
+            then
+               Aggr_Code := Build_Assignment_With_Temporary (Target,
+                              Typ, New_Copy_Tree (N));
+            else
+               if Maybe_In_Place_OK then
+                  return;
+               end if;
+
+               Aggr_Code :=
+                 New_List (
+                   Make_Assignment_Statement (Loc,
+                     Name       => Target,
+                     Expression => New_Copy_Tree (N)));
+
             end if;
-
-            Aggr_Code :=
-              New_List (
-                Make_Assignment_Statement (Loc,
-                  Name       => Target,
-                  Expression => New_Copy_Tree (N)));
-
          else
             Aggr_Code :=
               Build_Array_Aggr_Code (N,
