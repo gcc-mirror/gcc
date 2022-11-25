@@ -1,3 +1,9 @@
+2022-11-24  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/107805
+	* c-decl.cc (declspecs_add_type): Propagate error_mark_bode
+	from type to specs.
+
 2022-11-17  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* c-decl.cc (start_function): Set the result decl source

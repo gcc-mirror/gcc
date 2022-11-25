@@ -1,3 +1,248 @@
+2022-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* range-op.cc (operator_bitwise_xor::op1_range): Fix thinko.
+
+2022-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107865
+	* tree-cfg.cc (move_sese_region_to_fn): Free the number of
+	iterations of moved loops.
+
+2022-11-25  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/99889
+	* config/rs6000/rs6000.cc (rs6000_print_patchable_function_entry):
+	Adjust to call function default_print_patchable_function_entry.
+	* targhooks.cc (default_print_patchable_function_entry_1): Remove and
+	move the flags preparation ...
+	(default_print_patchable_function_entry): ... here, adjust to use
+	current_function_funcdef_no for label no.
+	* targhooks.h (default_print_patchable_function_entry_1): Remove.
+	* varasm.cc (default_elf_asm_named_section): Adjust code for
+	__patchable_function_entries section support with LPFE label.
+
+2022-11-24  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR tree-optimization/107413
+	* config/aarch64/aarch64.cc (struct tune_params): Add
+	fma_reassoc_width to all CPU tuning structures.
+	(aarch64_reassociation_width): Use fma_reassoc_width.
+	* config/aarch64/aarch64-protos.h (struct tune_params): Add
+	fma_reassoc_width.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107317
+	* asan.cc: Include diagnostic-core.h.
+	(asan_emit_stack_protection): Return NULL early if seen_error ().
+
+2022-11-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.cc (simplify_using_ranges::compare_names): Remove.
+	(vrp_evaluate_conditional_warnv_with_ops): Remove call to
+	compare_names.
+	(simplify_using_ranges::vrp_visit_cond_stmt): Remove use_equiv_p
+	argument to vrp_evaluate_conditional_warnv_with_ops.
+	* vr-values.h (class simplify_using_ranges): Remove
+	compare_names.
+	Remove use_equiv_p to vrp_evaluate_conditional_warnv_with_ops.
+
+2022-11-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.cc (overflow_comparison_p_1): Remove follow_assert_exprs.
+	(overflow_comparison_p): Remove use_equiv_p.
+	* tree-vrp.h (overflow_comparison_p): Same.
+	* vr-values.cc (vrp_evaluate_conditional_warnv_with_ops): Remove
+	use_equiv_p argument to overflow_comparison_p.
+
+2022-11-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/gimple.texi: Remove ASSERT_EXPR references.
+	* fold-const.cc (tree_expr_nonzero_warnv_p): Same.
+	(fold_binary_loc): Same.
+	(tree_expr_nonnegative_warnv_p): Same.
+	* gimple-array-bounds.cc (get_base_decl): Same.
+	* gimple-pretty-print.cc (dump_unary_rhs): Same.
+	* gimple.cc (get_gimple_rhs_num_ops): Same.
+	* pointer-query.cc (handle_ssa_name): Same.
+	* tree-cfg.cc (verify_gimple_assign_single): Same.
+	* tree-pretty-print.cc (dump_generic_node): Same.
+	* tree-scalar-evolution.cc (scev_dfs::follow_ssa_edge_expr):Same.
+	(interpret_rhs_expr): Same.
+	* tree-ssa-operands.cc (operands_scanner::get_expr_operands): Same.
+	* tree-ssa-propagate.cc
+	(substitute_and_fold_dom_walker::before_dom_children): Same.
+	* tree-ssa-threadedge.cc: Same.
+	* tree-vrp.cc (overflow_comparison_p): Same.
+	* tree.def (ASSERT_EXPR): Add note.
+	* tree.h (ASSERT_EXPR_VAR): Remove.
+	(ASSERT_EXPR_COND): Remove.
+	* vr-values.cc (simplify_using_ranges::vrp_visit_cond_stmt):
+	Remove comment.
+
+2022-11-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in: Remove value-range-equiv.o
+	* gimple-array-bounds.cc
+	(array_bounds_checker::array_bounds_checker): Remove comment.
+	* tree-vrp.cc (supported_types_p): Remove use of value_range_equiv.
+	* value-query.cc (class equiv_allocator): Same.
+	(range_query::allocate_value_range_equiv): Remove.
+	(range_query::free_value_range_equiv): Remove.
+	(range_query::get_value_range): Remove.
+	* value-query.h (class range_query): Remove get_value_range.
+	Remove allocate_value_range_equiv.
+	Remove free_value_range_equiv.
+	* vr-values.cc (compare_ranges): Replace value_range_equiv with
+	value_range.
+	(simplify_using_ranges::get_vr_for_comparison): Same.
+	(simplify_using_ranges::compare_names): Same.
+	* vr-values.h: Remove value_range_equiv references.
+	* value-range-equiv.cc: Removed.
+	* value-range-equiv.h: Removed.
+
+2022-11-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/invoke.texi: Remove docs for max-vrp-switch-assertions,
+	vrp1-mode, and vrp2-mode.
+	* params.opt: Same.
+	* range-op.cc (masked_increment): Move from tree-vrp.cc.
+	* tree-vrp.cc (class live_names): Remove.
+	(live_names::init_bitmap_if_needed): Remove.
+	(live_names::block_has_live_names_p): Remove.
+	(live_names::clear_block): Remove.
+	(live_names::merge): Remove.
+	(live_names::set): Remove.
+	(live_names::clear): Remove.
+	(live_names::live_names): Remove.
+	(live_names::~live_names): Remove.
+	(live_names::live_on_block_p): Remove.
+	(live_names::live_on_edge_p): Remove.
+	(get_single_symbol): Make static.
+	(build_symbolic_expr): Remove.
+	(adjust_symbolic_bound): Remove.
+	(combine_bound): Remove.
+	(set_value_range_with_overflow): Remove.
+	(extract_range_from_pointer_plus_expr): Remove.
+	(extract_range_from_plus_minus_expr): Remove.
+	(drop_undefines_to_varying): Remove.
+	(range_fold_binary_symbolics_p): Remove.
+	(range_fold_unary_symbolics_p): Remove.
+	(range_fold_binary_expr): Remove.
+	(infer_value_range): Remove.
+	(dump_assert_info): Remove.
+	(dump_asserts_info): Remove.
+	(add_assert_info): Remove.
+	(extract_code_and_val_from_cond_with_ops): Remove.
+	(masked_increment): Move to range-op.cc.
+	(register_edge_assert_for_2): Remove.
+	(find_case_label_index): Remove.
+	(find_case_label_range): Remove.
+	(register_edge_assert_for_1): Remove.
+	(is_masked_range_test): Remove.
+	(register_edge_assert_for): Remove.
+	(stmt_interesting_for_vrp): Remove.
+	(struct case_info): Remove.
+	(struct assert_locus): Remove.
+	(class vrp_asserts): Remove.
+	(vrp_asserts::build_assert_expr_for): Remove.
+	(vrp_asserts::dump): Remove.
+	(vrp_asserts::register_new_assert_for): Remove.
+	(vrp_asserts::finish_register_edge_assert_for): Remove.
+	(vrp_asserts::find_conditional_asserts): Remove.
+	(vrp_asserts::compare_case_labels): Remove.
+	(vrp_asserts::find_switch_asserts): Remove.
+	(vrp_asserts::find_assert_locations_in_bb): Remove.
+	(vrp_asserts::find_assert_locations): Remove.
+	(vrp_asserts::process_assert_insertions_for): Remove.
+	(vrp_asserts::compare_assert_loc): Remove.
+	(vrp_asserts::process_assert_insertions): Remove.
+	(vrp_asserts::insert_range_assertions): Remove.
+	(vrp_asserts::all_imm_uses_in_stmt_or_feed_cond): Remove.
+	(vrp_asserts::remove_range_assertions): Remove.
+	(class vrp_prop): Remove.
+	(vrp_prop::initialize): Remove.
+	(enum ssa_prop_result): Remove.
+	(vrp_prop::visit_stmt): Remove.
+	(vrp_prop::visit_phi): Remove.
+	(vrp_prop::finalize): Remove.
+	(class vrp_folder): Remove.
+	(vrp_folder::fold_predicate_in): Remove.
+	(vrp_folder::fold_stmt): Remove.
+	(vrp_folder::simplify_casted_conds): Remove.
+	(execute_vrp): Remove.
+	* tree-vrp.h (struct assert_info): Remove.
+	(register_edge_assert_for): Remove.
+	(stmt_interesting_for_vrp): Remove.
+	(infer_value_range): Remove.
+	(get_single_symbol): Remove.
+	(masked_increment): Remove.
+	(execute_ranger_vrp): Remove.
+	* vr-values.cc (set_value_range_to_nonnegative): Remove.
+	(set_value_range_to_truthvalue): Remove.
+	(vr_values::get_lattice_entry): Remove.
+	(vr_values::get_value_range): Remove.
+	(vr_values::range_of_expr): Remove.
+	(vr_values::value_of_expr): Remove.
+	(vr_values::value_on_edge): Remove.
+	(vr_values::value_of_stmt): Remove.
+	(vr_values::set_def_to_varying): Remove.
+	(vr_values::set_defs_to_varying): Remove.
+	(vr_values::update_value_range): Remove.
+	(symbolic_range_based_on_p): Remove.
+	(gimple_assign_nonzero_p): Remove.
+	(gimple_stmt_nonzero_p): Remove.
+	(vr_values::vrp_stmt_computes_nonzero): Remove.
+	(vr_values::op_with_constant_singleton_value_range): Remove.
+	(vr_values::extract_range_for_var_from_comparison_expr): Remove.
+	(vr_values::extract_range_from_assert): Remove.
+	(vr_values::extract_range_from_ssa_name): Remove.
+	(vr_values::extract_range_from_binary_expr): Remove.
+	(vr_values::extract_range_from_unary_expr): Remove.
+	(vr_values::extract_range_from_cond_expr): Remove.
+	(vr_values::extract_range_from_comparison): Remove.
+	(vr_values::extract_range_from_ubsan_builtin): Remove.
+	(vr_values::extract_range_basic): Remove.
+	(vr_values::extract_range_from_assignment): Remove.
+	(vr_values::adjust_range_with_scev): Remove.
+	(vr_values::dump): Remove.
+	(vr_values::vr_values): Remove.
+	(vr_values::~vr_values): Remove.
+	(vrp_valueize): Remove.
+	(vrp_valueize_1): Remove.
+	(get_output_for_vrp): Remove.
+	(vr_values::vrp_visit_assignment_or_call): Remove.
+	(simplify_using_ranges::vrp_evaluate_conditional): Remove.
+	(vr_values::vrp_visit_switch_stmt): Remove.
+	(vr_values::extract_range_from_stmt): Remove.
+	(vr_values::extract_range_from_phi_node): Remove.
+	(simplify_using_ranges::fold_cond): Add FIXME note.
+	(vr_values::set_vr_value): Remove.
+	(vr_values::swap_vr_value): Remove.
+	* vr-values.h (class vr_values): Remove.
+	(get_output_for_vrp): Remove.
+
+2022-11-24  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/107692
+	* common/config/i386/i386-common.cc (ix86_optimization_table):
+	Enable loop unroll O2, disable -fweb and -frename-registers
+	by default.
+	* config/i386/i386-options.cc
+	(ix86_override_options_after_change):
+	Disable small loop unroll when funroll-loops enabled, reset
+	cunroll_grow_size when it is not explicitly enabled.
+	(ix86_option_override_internal): Call
+	ix86_override_options_after_change instead of calling
+	ix86_recompute_optlev_based_flags and ix86_default_align
+	separately.
+	* config/i386/i386.cc (ix86_loop_unroll_adjust): Adjust unroll
+	factor if -munroll-only-small-loops enabled.
+	* loop-init.cc (pass_rtl_unroll_loops::gate): Do not enable
+	loop unrolling for -O2-speed.
+	(pass_rtl_unroll_loops::execute): Rmove
+	targetm.loop_unroll_adjust check.
+
 2022-11-23  Ramana Radhakrishnan  <ramana.gcc@gmail.com>
 
 	* config/arm/types.md: Update comment.

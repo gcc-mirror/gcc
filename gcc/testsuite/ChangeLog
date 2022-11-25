@@ -1,3 +1,58 @@
+2022-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt100.adb: New test.
+	* gnat.dg/opt100_pkg.adb, gnat.dg/opt100_pkg.ads: New helper.
+
+2022-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107865
+	* gfortran.dg/graphite/pr107865.f90: New testcase.
+
+2022-11-25  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/99889
+	* g++.dg/pr93195a.C: Remove the skip on powerpc*-*-* 64-bit.
+	* gcc.target/aarch64/pr92424-2.c: Adjust LPFE1 with LPFE0.
+	* gcc.target/aarch64/pr92424-3.c: Likewise.
+	* gcc.target/i386/pr93492-2.c: Likewise.
+	* gcc.target/i386/pr93492-3.c: Likewise.
+	* gcc.target/i386/pr93492-4.c: Likewise.
+	* gcc.target/i386/pr93492-5.c: Likewise.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107317
+	* gcc.dg/asan/pr107317.c: New test.
+
+2022-11-24  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/107805
+	* gcc.dg/pr107805-1.c: New test.
+	* gcc.dg/pr107805-2.c: Likewise.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107127
+	* gcc.dg/pr107127.c (foo): Add missing closing }.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106473
+	* gcc.dg/analyzer/aliasing-pr106473.c: New test.
+	* gcc.dg/analyzer/allocation-size-2.c: Add
+	-fanalyzer-fine-grained".
+	* gcc.dg/analyzer/allocation-size-3.c: Likewise.
+	* gcc.dg/analyzer/explode-1.c: Mark leak with XFAIL.
+	* gcc.dg/analyzer/explode-3.c: New test.
+	* gcc.dg/analyzer/malloc-reuse.c: New test.
+
+2022-11-24  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/107692
+	* gcc.dg/guality/loop-1.c: Remove additional option for ia32.
+	* gcc.target/i386/pr86270.c: Add -fno-unroll-loops.
+	* gcc.target/i386/pr93002.c: Likewise.
+
 2022-11-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/analyzer/call-summaries-2.c (uses_alloca): Use

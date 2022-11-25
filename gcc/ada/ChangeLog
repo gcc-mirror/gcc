@@ -1,3 +1,18 @@
+2022-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Assignment_Statement>: Add
+	assertion that memset is not supposed to be used when the target has
+	a storage model with Copy_To routine.
+
+2022-11-24  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb
+	(Find_Direct_Name): Remove bypass to reanalyze incorrectly
+	analyzed discriminals.
+	(Set_Entity_Or_Discriminal): Avoid resetting the entity field of a
+	discriminant reference to be the internally generated renaming
+	when we are in strict preanalysis mode.
+
 2022-11-22  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_prag.adb (Analyze_Depends_Global): Accept aspects on

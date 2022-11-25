@@ -1,3 +1,91 @@
+2022-11-24  Martin Liska  <mliska@suse.cz>
+
+	* varargs.cc: Fix Clang warnings.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106473
+	* call-summary.cc
+	(call_summary_replay::convert_region_from_summary_1): Update for
+	change to creation of heap-allocated regions.
+	* program-state.cc (test_program_state_1): Likewise.
+	(test_program_state_merging): Likewise.
+	* region-model-impl-calls.cc (kf_calloc::impl_call_pre): Likewise.
+	(kf_malloc::impl_call_pre): Likewise.
+	(kf_operator_new::impl_call_pre): Likewise.
+	(kf_realloc::impl_call_postsuccess_with_move::update_model): Likewise.
+	* region-model-manager.cc
+	(region_model_manager::create_region_for_heap_alloc): Convert
+	to...
+	(region_model_manager::get_or_create_region_for_heap_alloc):
+	...this, reusing an existing region if it's unreferenced in the
+	client state.
+	* region-model-manager.h (region_model_manager::get_num_regions): New.
+	 (region_model_manager::create_region_for_heap_alloc): Convert to...
+	 (region_model_manager::get_or_create_region_for_heap_alloc): ...this.
+	* region-model.cc (region_to_value_map::can_merge_with_p): Reject
+	merger when the values are different.
+	(region_model::create_region_for_heap_alloc): Convert to...
+	(region_model::get_or_create_region_for_heap_alloc): ...this.
+	(region_model::get_referenced_base_regions): New.
+	(selftest::test_state_merging):  Update for change to creation of
+	heap-allocated regions.
+	(selftest::test_malloc_constraints): Likewise.
+	(selftest::test_malloc): Likewise.
+	* region-model.h: Include "sbitmap.h".
+	(region_model::create_region_for_heap_alloc): Convert to...
+	(region_model::get_or_create_region_for_heap_alloc): ...this.
+	(region_model::get_referenced_base_regions): New decl.
+	* store.cc (store::canonicalize): Don't purge a heap-allocated region
+	that's been marked as escaping.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (checker_path::inject_any_inlined_call_events):
+	Don't dump the address of the block when -fdump-noaddr.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.h (region_model::on_socket): Delete decl.
+	(region_model::on_bind): Likewise.
+	(region_model::on_listen): Likewise.
+	(region_model::on_accept): Likewise.
+	(region_model::on_connect): Likewise.
+	* sm-fd.cc (kf_socket::outcome_of_socket::update_model): Move body
+	of region_model::on_socket into here, ...
+	(region_model::on_socket): ...eliminating this function.
+	(kf_bind::outcome_of_bind::update_model): Likewise for on_bind...
+	(region_model::on_bind): ...eliminating this function.
+	(kf_listen::outcome_of_listen::update_model): Likewise fo
+	on_listen...
+	(region_model::on_listen): ...eliminating this function.
+	(kf_accept::outcome_of_accept::update_model): Likewise fo
+	on_accept...
+	(region_model::on_accept): ...eliminating this function.
+	(kf_connect::outcome_of_connect::update_model): Likewise fo
+	on_connect...
+	(region_model::on_connect): ...eliminating this function.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (register_known_fd_functions): New decl.
+	* region-model-impl-calls.cc (class kf_accept): Move to sm-fd.cc.
+	(class kf_bind): Likewise.
+	(class kf_connect): Likewise.
+	(class kf_listen): Likewise.
+	(class kf_pipe): Likewise.
+	(class kf_socket): Likewise.
+	(register_known_functions): Remove registration of the above
+	functions, instead calling register_known_fd_functions.
+	* sm-fd.cc: Include "analyzer/call-info.h".
+	(class kf_socket): Move here from region-model-impl-calls.cc.
+	(class kf_bind): Likewise.
+	(class kf_listen): Likewise.
+	(class kf_accept): Likewise.
+	(class kf_connect): Likewise.
+	(class kf_pipe): Likewise.
+	(register_known_fd_functions): New.
+
 2022-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107788

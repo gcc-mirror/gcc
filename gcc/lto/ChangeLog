@@ -1,3 +1,9 @@
+2022-11-25  Martin Liska  <mliska@suse.cz>
+
+	PR lto/107829
+	* lto.cc (materialize_cgraph): Call timevar_push before
+	  materialization starts.
+
 2022-10-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lang.opt: Better separate 'LTO' vs. 'LTODump'.

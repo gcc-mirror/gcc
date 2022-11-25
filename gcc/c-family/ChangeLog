@@ -1,3 +1,8 @@
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (fcontract-role=, fcontract-semantic=): Terminate descriptions
+	with a dot.
+
 2022-11-23  Andrew Pinski  <apinski@marvell.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,3 +1,30 @@
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/manual/bugs.html: Regenerate.
+	* doc/xml/manual/intro.xml: Document LWG 3656 change.
+	* include/std/bit (__bit_width, bit_width): Return int.
+	* testsuite/26_numerics/bit/bit.pow.two/lwg3656.cc: New test.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106201
+	* testsuite/27_io/filesystem/iterators/106201.cc: Improve test.
+	* testsuite/experimental/filesystem/iterators/106201.cc: New test.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107468
+	* src/c++17/fast_float/MERGE: Adjust for merge from upstream.
+	* src/c++17/fast_float/fast_float.h: Merge from fast_float
+	2ef9abbcf6a11958b6fa685a89d0150022e82e78 commit.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107815
+	* testsuite/20_util/to_chars/float128_c++23.cc (test): Disable
+	__FLT128_MAX__ test on Solaris.  Fix up commented out debugging
+	printouts.
+
 2022-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/107811
