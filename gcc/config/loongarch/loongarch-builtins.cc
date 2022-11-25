@@ -74,6 +74,13 @@ enum loongarch_builtin_type
   /* The function corresponds to an LSX conditional branch instruction
      combined with a compare instruction.  */
   LARCH_BUILTIN_LSX_TEST_BRANCH,
+
+  /* For generating LoongArch LASX.  */
+  LARCH_BUILTIN_LASX,
+
+  /* The function corresponds to an LASX conditional branch instruction
+     combined with a compare instruction.  */
+  LARCH_BUILTIN_LASX_TEST_BRANCH,
 };
 
 /* Declare an availability predicate for built-in functions that require
@@ -112,6 +119,7 @@ struct loongarch_builtin_description
 
 AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
 AVAIL_ALL (lsx, ISA_HAS_LSX)
+AVAIL_ALL (lasx, ISA_HAS_LASX)
 
 /* Construct a loongarch_builtin_description from the given arguments.
 
@@ -172,6 +180,30 @@ AVAIL_ALL (lsx, ISA_HAS_LSX)
   { CODE_FOR_lsx_ ## INSN,						\
     "__builtin_lsx_" #INSN,  LARCH_BUILTIN_DIRECT_NO_TARGET,		\
     FUNCTION_TYPE, loongarch_builtin_avail_lsx }
+
+/* Define an LASX LARCH_BUILTIN_DIRECT function __builtin_lasx_<INSN>
+   for instruction CODE_FOR_lasx_<INSN>.  FUNCTION_TYPE is a builtin_description
+   field.  */
+#define LASX_BUILTIN(INSN, FUNCTION_TYPE)				\
+  { CODE_FOR_lasx_ ## INSN,						\
+    "__builtin_lasx_" #INSN,  LARCH_BUILTIN_LASX,			\
+    FUNCTION_TYPE, loongarch_builtin_avail_lasx }
+
+/* Define an LASX LARCH_BUILTIN_DIRECT_NO_TARGET function __builtin_lasx_<INSN>
+   for instruction CODE_FOR_lasx_<INSN>.  FUNCTION_TYPE is a builtin_description
+   field.  */
+#define LASX_NO_TARGET_BUILTIN(INSN, FUNCTION_TYPE)			\
+  { CODE_FOR_lasx_ ## INSN,						\
+    "__builtin_lasx_" #INSN,  LARCH_BUILTIN_DIRECT_NO_TARGET,		\
+    FUNCTION_TYPE, loongarch_builtin_avail_lasx }
+
+/* Define an LASX LARCH_BUILTIN_LASX_TEST_BRANCH function __builtin_lasx_<INSN>
+   for instruction CODE_FOR_lasx_<INSN>.  FUNCTION_TYPE is a builtin_description
+   field.  */
+#define LASX_BUILTIN_TEST_BRANCH(INSN, FUNCTION_TYPE)			\
+  { CODE_FOR_lasx_ ## INSN,						\
+    "__builtin_lasx_" #INSN, LARCH_BUILTIN_LASX_TEST_BRANCH,		\
+    FUNCTION_TYPE, loongarch_builtin_avail_lasx }
 
 /* LoongArch SX define CODE_FOR_lsx_xxx */
 #define CODE_FOR_lsx_vsadd_b CODE_FOR_ssaddv16qi3
@@ -441,6 +473,276 @@ AVAIL_ALL (lsx, ISA_HAS_LSX)
 #define CODE_FOR_lsx_vssrlrn_bu_h CODE_FOR_lsx_vssrlrn_u_bu_h
 #define CODE_FOR_lsx_vssrlrn_hu_w CODE_FOR_lsx_vssrlrn_u_hu_w
 #define CODE_FOR_lsx_vssrlrn_wu_d CODE_FOR_lsx_vssrlrn_u_wu_d
+
+/* LoongArch ASX define CODE_FOR_lasx_mxxx */
+#define CODE_FOR_lasx_xvsadd_b CODE_FOR_ssaddv32qi3
+#define CODE_FOR_lasx_xvsadd_h CODE_FOR_ssaddv16hi3
+#define CODE_FOR_lasx_xvsadd_w CODE_FOR_ssaddv8si3
+#define CODE_FOR_lasx_xvsadd_d CODE_FOR_ssaddv4di3
+#define CODE_FOR_lasx_xvsadd_bu CODE_FOR_usaddv32qi3
+#define CODE_FOR_lasx_xvsadd_hu CODE_FOR_usaddv16hi3
+#define CODE_FOR_lasx_xvsadd_wu CODE_FOR_usaddv8si3
+#define CODE_FOR_lasx_xvsadd_du CODE_FOR_usaddv4di3
+#define CODE_FOR_lasx_xvadd_b CODE_FOR_addv32qi3
+#define CODE_FOR_lasx_xvadd_h CODE_FOR_addv16hi3
+#define CODE_FOR_lasx_xvadd_w CODE_FOR_addv8si3
+#define CODE_FOR_lasx_xvadd_d CODE_FOR_addv4di3
+#define CODE_FOR_lasx_xvaddi_bu CODE_FOR_addv32qi3
+#define CODE_FOR_lasx_xvaddi_hu CODE_FOR_addv16hi3
+#define CODE_FOR_lasx_xvaddi_wu CODE_FOR_addv8si3
+#define CODE_FOR_lasx_xvaddi_du CODE_FOR_addv4di3
+#define CODE_FOR_lasx_xvand_v CODE_FOR_andv32qi3
+#define CODE_FOR_lasx_xvandi_b CODE_FOR_andv32qi3
+#define CODE_FOR_lasx_xvbitsel_v CODE_FOR_lasx_xvbitsel_b
+#define CODE_FOR_lasx_xvseqi_b CODE_FOR_lasx_xvseq_b
+#define CODE_FOR_lasx_xvseqi_h CODE_FOR_lasx_xvseq_h
+#define CODE_FOR_lasx_xvseqi_w CODE_FOR_lasx_xvseq_w
+#define CODE_FOR_lasx_xvseqi_d CODE_FOR_lasx_xvseq_d
+#define CODE_FOR_lasx_xvslti_b CODE_FOR_lasx_xvslt_b
+#define CODE_FOR_lasx_xvslti_h CODE_FOR_lasx_xvslt_h
+#define CODE_FOR_lasx_xvslti_w CODE_FOR_lasx_xvslt_w
+#define CODE_FOR_lasx_xvslti_d CODE_FOR_lasx_xvslt_d
+#define CODE_FOR_lasx_xvslti_bu CODE_FOR_lasx_xvslt_bu
+#define CODE_FOR_lasx_xvslti_hu CODE_FOR_lasx_xvslt_hu
+#define CODE_FOR_lasx_xvslti_wu CODE_FOR_lasx_xvslt_wu
+#define CODE_FOR_lasx_xvslti_du CODE_FOR_lasx_xvslt_du
+#define CODE_FOR_lasx_xvslei_b CODE_FOR_lasx_xvsle_b
+#define CODE_FOR_lasx_xvslei_h CODE_FOR_lasx_xvsle_h
+#define CODE_FOR_lasx_xvslei_w CODE_FOR_lasx_xvsle_w
+#define CODE_FOR_lasx_xvslei_d CODE_FOR_lasx_xvsle_d
+#define CODE_FOR_lasx_xvslei_bu CODE_FOR_lasx_xvsle_bu
+#define CODE_FOR_lasx_xvslei_hu CODE_FOR_lasx_xvsle_hu
+#define CODE_FOR_lasx_xvslei_wu CODE_FOR_lasx_xvsle_wu
+#define CODE_FOR_lasx_xvslei_du CODE_FOR_lasx_xvsle_du
+#define CODE_FOR_lasx_xvdiv_b CODE_FOR_divv32qi3
+#define CODE_FOR_lasx_xvdiv_h CODE_FOR_divv16hi3
+#define CODE_FOR_lasx_xvdiv_w CODE_FOR_divv8si3
+#define CODE_FOR_lasx_xvdiv_d CODE_FOR_divv4di3
+#define CODE_FOR_lasx_xvdiv_bu CODE_FOR_udivv32qi3
+#define CODE_FOR_lasx_xvdiv_hu CODE_FOR_udivv16hi3
+#define CODE_FOR_lasx_xvdiv_wu CODE_FOR_udivv8si3
+#define CODE_FOR_lasx_xvdiv_du CODE_FOR_udivv4di3
+#define CODE_FOR_lasx_xvfadd_s CODE_FOR_addv8sf3
+#define CODE_FOR_lasx_xvfadd_d CODE_FOR_addv4df3
+#define CODE_FOR_lasx_xvftintrz_w_s CODE_FOR_fix_truncv8sfv8si2
+#define CODE_FOR_lasx_xvftintrz_l_d CODE_FOR_fix_truncv4dfv4di2
+#define CODE_FOR_lasx_xvftintrz_wu_s CODE_FOR_fixuns_truncv8sfv8si2
+#define CODE_FOR_lasx_xvftintrz_lu_d CODE_FOR_fixuns_truncv4dfv4di2
+#define CODE_FOR_lasx_xvffint_s_w CODE_FOR_floatv8siv8sf2
+#define CODE_FOR_lasx_xvffint_d_l CODE_FOR_floatv4div4df2
+#define CODE_FOR_lasx_xvffint_s_wu CODE_FOR_floatunsv8siv8sf2
+#define CODE_FOR_lasx_xvffint_d_lu CODE_FOR_floatunsv4div4df2
+#define CODE_FOR_lasx_xvfsub_s CODE_FOR_subv8sf3
+#define CODE_FOR_lasx_xvfsub_d CODE_FOR_subv4df3
+#define CODE_FOR_lasx_xvfmul_s CODE_FOR_mulv8sf3
+#define CODE_FOR_lasx_xvfmul_d CODE_FOR_mulv4df3
+#define CODE_FOR_lasx_xvfdiv_s CODE_FOR_divv8sf3
+#define CODE_FOR_lasx_xvfdiv_d CODE_FOR_divv4df3
+#define CODE_FOR_lasx_xvfmax_s CODE_FOR_smaxv8sf3
+#define CODE_FOR_lasx_xvfmax_d CODE_FOR_smaxv4df3
+#define CODE_FOR_lasx_xvfmin_s CODE_FOR_sminv8sf3
+#define CODE_FOR_lasx_xvfmin_d CODE_FOR_sminv4df3
+#define CODE_FOR_lasx_xvfsqrt_s CODE_FOR_sqrtv8sf2
+#define CODE_FOR_lasx_xvfsqrt_d CODE_FOR_sqrtv4df2
+#define CODE_FOR_lasx_xvflogb_s CODE_FOR_logbv8sf2
+#define CODE_FOR_lasx_xvflogb_d CODE_FOR_logbv4df2
+#define CODE_FOR_lasx_xvmax_b CODE_FOR_smaxv32qi3
+#define CODE_FOR_lasx_xvmax_h CODE_FOR_smaxv16hi3
+#define CODE_FOR_lasx_xvmax_w CODE_FOR_smaxv8si3
+#define CODE_FOR_lasx_xvmax_d CODE_FOR_smaxv4di3
+#define CODE_FOR_lasx_xvmaxi_b CODE_FOR_smaxv32qi3
+#define CODE_FOR_lasx_xvmaxi_h CODE_FOR_smaxv16hi3
+#define CODE_FOR_lasx_xvmaxi_w CODE_FOR_smaxv8si3
+#define CODE_FOR_lasx_xvmaxi_d CODE_FOR_smaxv4di3
+#define CODE_FOR_lasx_xvmax_bu CODE_FOR_umaxv32qi3
+#define CODE_FOR_lasx_xvmax_hu CODE_FOR_umaxv16hi3
+#define CODE_FOR_lasx_xvmax_wu CODE_FOR_umaxv8si3
+#define CODE_FOR_lasx_xvmax_du CODE_FOR_umaxv4di3
+#define CODE_FOR_lasx_xvmaxi_bu CODE_FOR_umaxv32qi3
+#define CODE_FOR_lasx_xvmaxi_hu CODE_FOR_umaxv16hi3
+#define CODE_FOR_lasx_xvmaxi_wu CODE_FOR_umaxv8si3
+#define CODE_FOR_lasx_xvmaxi_du CODE_FOR_umaxv4di3
+#define CODE_FOR_lasx_xvmin_b CODE_FOR_sminv32qi3
+#define CODE_FOR_lasx_xvmin_h CODE_FOR_sminv16hi3
+#define CODE_FOR_lasx_xvmin_w CODE_FOR_sminv8si3
+#define CODE_FOR_lasx_xvmin_d CODE_FOR_sminv4di3
+#define CODE_FOR_lasx_xvmini_b CODE_FOR_sminv32qi3
+#define CODE_FOR_lasx_xvmini_h CODE_FOR_sminv16hi3
+#define CODE_FOR_lasx_xvmini_w CODE_FOR_sminv8si3
+#define CODE_FOR_lasx_xvmini_d CODE_FOR_sminv4di3
+#define CODE_FOR_lasx_xvmin_bu CODE_FOR_uminv32qi3
+#define CODE_FOR_lasx_xvmin_hu CODE_FOR_uminv16hi3
+#define CODE_FOR_lasx_xvmin_wu CODE_FOR_uminv8si3
+#define CODE_FOR_lasx_xvmin_du CODE_FOR_uminv4di3
+#define CODE_FOR_lasx_xvmini_bu CODE_FOR_uminv32qi3
+#define CODE_FOR_lasx_xvmini_hu CODE_FOR_uminv16hi3
+#define CODE_FOR_lasx_xvmini_wu CODE_FOR_uminv8si3
+#define CODE_FOR_lasx_xvmini_du CODE_FOR_uminv4di3
+#define CODE_FOR_lasx_xvmod_b CODE_FOR_modv32qi3
+#define CODE_FOR_lasx_xvmod_h CODE_FOR_modv16hi3
+#define CODE_FOR_lasx_xvmod_w CODE_FOR_modv8si3
+#define CODE_FOR_lasx_xvmod_d CODE_FOR_modv4di3
+#define CODE_FOR_lasx_xvmod_bu CODE_FOR_umodv32qi3
+#define CODE_FOR_lasx_xvmod_hu CODE_FOR_umodv16hi3
+#define CODE_FOR_lasx_xvmod_wu CODE_FOR_umodv8si3
+#define CODE_FOR_lasx_xvmod_du CODE_FOR_umodv4di3
+#define CODE_FOR_lasx_xvmul_b CODE_FOR_mulv32qi3
+#define CODE_FOR_lasx_xvmul_h CODE_FOR_mulv16hi3
+#define CODE_FOR_lasx_xvmul_w CODE_FOR_mulv8si3
+#define CODE_FOR_lasx_xvmul_d CODE_FOR_mulv4di3
+#define CODE_FOR_lasx_xvclz_b CODE_FOR_clzv32qi2
+#define CODE_FOR_lasx_xvclz_h CODE_FOR_clzv16hi2
+#define CODE_FOR_lasx_xvclz_w CODE_FOR_clzv8si2
+#define CODE_FOR_lasx_xvclz_d CODE_FOR_clzv4di2
+#define CODE_FOR_lasx_xvnor_v CODE_FOR_lasx_xvnor_b
+#define CODE_FOR_lasx_xvor_v CODE_FOR_iorv32qi3
+#define CODE_FOR_lasx_xvori_b CODE_FOR_iorv32qi3
+#define CODE_FOR_lasx_xvnori_b CODE_FOR_lasx_xvnor_b
+#define CODE_FOR_lasx_xvpcnt_b CODE_FOR_popcountv32qi2
+#define CODE_FOR_lasx_xvpcnt_h CODE_FOR_popcountv16hi2
+#define CODE_FOR_lasx_xvpcnt_w CODE_FOR_popcountv8si2
+#define CODE_FOR_lasx_xvpcnt_d CODE_FOR_popcountv4di2
+#define CODE_FOR_lasx_xvxor_v CODE_FOR_xorv32qi3
+#define CODE_FOR_lasx_xvxori_b CODE_FOR_xorv32qi3
+#define CODE_FOR_lasx_xvsll_b CODE_FOR_vashlv32qi3
+#define CODE_FOR_lasx_xvsll_h CODE_FOR_vashlv16hi3
+#define CODE_FOR_lasx_xvsll_w CODE_FOR_vashlv8si3
+#define CODE_FOR_lasx_xvsll_d CODE_FOR_vashlv4di3
+#define CODE_FOR_lasx_xvslli_b CODE_FOR_vashlv32qi3
+#define CODE_FOR_lasx_xvslli_h CODE_FOR_vashlv16hi3
+#define CODE_FOR_lasx_xvslli_w CODE_FOR_vashlv8si3
+#define CODE_FOR_lasx_xvslli_d CODE_FOR_vashlv4di3
+#define CODE_FOR_lasx_xvsra_b CODE_FOR_vashrv32qi3
+#define CODE_FOR_lasx_xvsra_h CODE_FOR_vashrv16hi3
+#define CODE_FOR_lasx_xvsra_w CODE_FOR_vashrv8si3
+#define CODE_FOR_lasx_xvsra_d CODE_FOR_vashrv4di3
+#define CODE_FOR_lasx_xvsrai_b CODE_FOR_vashrv32qi3
+#define CODE_FOR_lasx_xvsrai_h CODE_FOR_vashrv16hi3
+#define CODE_FOR_lasx_xvsrai_w CODE_FOR_vashrv8si3
+#define CODE_FOR_lasx_xvsrai_d CODE_FOR_vashrv4di3
+#define CODE_FOR_lasx_xvsrl_b CODE_FOR_vlshrv32qi3
+#define CODE_FOR_lasx_xvsrl_h CODE_FOR_vlshrv16hi3
+#define CODE_FOR_lasx_xvsrl_w CODE_FOR_vlshrv8si3
+#define CODE_FOR_lasx_xvsrl_d CODE_FOR_vlshrv4di3
+#define CODE_FOR_lasx_xvsrli_b CODE_FOR_vlshrv32qi3
+#define CODE_FOR_lasx_xvsrli_h CODE_FOR_vlshrv16hi3
+#define CODE_FOR_lasx_xvsrli_w CODE_FOR_vlshrv8si3
+#define CODE_FOR_lasx_xvsrli_d CODE_FOR_vlshrv4di3
+#define CODE_FOR_lasx_xvsub_b CODE_FOR_subv32qi3
+#define CODE_FOR_lasx_xvsub_h CODE_FOR_subv16hi3
+#define CODE_FOR_lasx_xvsub_w CODE_FOR_subv8si3
+#define CODE_FOR_lasx_xvsub_d CODE_FOR_subv4di3
+#define CODE_FOR_lasx_xvsubi_bu CODE_FOR_subv32qi3
+#define CODE_FOR_lasx_xvsubi_hu CODE_FOR_subv16hi3
+#define CODE_FOR_lasx_xvsubi_wu CODE_FOR_subv8si3
+#define CODE_FOR_lasx_xvsubi_du CODE_FOR_subv4di3
+#define CODE_FOR_lasx_xvpackod_d CODE_FOR_lasx_xvilvh_d
+#define CODE_FOR_lasx_xvpackev_d CODE_FOR_lasx_xvilvl_d
+#define CODE_FOR_lasx_xvpickod_d CODE_FOR_lasx_xvilvh_d
+#define CODE_FOR_lasx_xvpickev_d CODE_FOR_lasx_xvilvl_d
+#define CODE_FOR_lasx_xvrepli_b CODE_FOR_lasx_xvrepliv32qi
+#define CODE_FOR_lasx_xvrepli_h CODE_FOR_lasx_xvrepliv16hi
+#define CODE_FOR_lasx_xvrepli_w CODE_FOR_lasx_xvrepliv8si
+#define CODE_FOR_lasx_xvrepli_d CODE_FOR_lasx_xvrepliv4di
+
+#define CODE_FOR_lasx_xvandn_v CODE_FOR_xvandnv32qi3
+#define CODE_FOR_lasx_xvorn_v CODE_FOR_xvornv32qi3
+#define CODE_FOR_lasx_xvneg_b CODE_FOR_negv32qi2
+#define CODE_FOR_lasx_xvneg_h CODE_FOR_negv16hi2
+#define CODE_FOR_lasx_xvneg_w CODE_FOR_negv8si2
+#define CODE_FOR_lasx_xvneg_d CODE_FOR_negv4di2
+#define CODE_FOR_lasx_xvbsrl_v CODE_FOR_lasx_xvbsrl_b
+#define CODE_FOR_lasx_xvbsll_v CODE_FOR_lasx_xvbsll_b
+#define CODE_FOR_lasx_xvfmadd_s CODE_FOR_fmav8sf4
+#define CODE_FOR_lasx_xvfmadd_d CODE_FOR_fmav4df4
+#define CODE_FOR_lasx_xvfmsub_s CODE_FOR_fmsv8sf4
+#define CODE_FOR_lasx_xvfmsub_d CODE_FOR_fmsv4df4
+#define CODE_FOR_lasx_xvfnmadd_s CODE_FOR_xvfnmaddv8sf4_nmadd4
+#define CODE_FOR_lasx_xvfnmadd_d CODE_FOR_xvfnmaddv4df4_nmadd4
+#define CODE_FOR_lasx_xvfnmsub_s CODE_FOR_xvfnmsubv8sf4_nmsub4
+#define CODE_FOR_lasx_xvfnmsub_d CODE_FOR_xvfnmsubv4df4_nmsub4
+
+#define CODE_FOR_lasx_xvpermi_q CODE_FOR_lasx_xvpermi_q_v32qi
+#define CODE_FOR_lasx_xvpermi_d CODE_FOR_lasx_xvpermi_d_v4di
+#define CODE_FOR_lasx_xbnz_v CODE_FOR_lasx_xbnz_v_b
+#define CODE_FOR_lasx_xbz_v CODE_FOR_lasx_xbz_v_b
+
+#define CODE_FOR_lasx_xvssub_b CODE_FOR_lasx_xvssub_s_b
+#define CODE_FOR_lasx_xvssub_h CODE_FOR_lasx_xvssub_s_h
+#define CODE_FOR_lasx_xvssub_w CODE_FOR_lasx_xvssub_s_w
+#define CODE_FOR_lasx_xvssub_d CODE_FOR_lasx_xvssub_s_d
+#define CODE_FOR_lasx_xvssub_bu CODE_FOR_lasx_xvssub_u_bu
+#define CODE_FOR_lasx_xvssub_hu CODE_FOR_lasx_xvssub_u_hu
+#define CODE_FOR_lasx_xvssub_wu CODE_FOR_lasx_xvssub_u_wu
+#define CODE_FOR_lasx_xvssub_du CODE_FOR_lasx_xvssub_u_du
+#define CODE_FOR_lasx_xvabsd_b CODE_FOR_lasx_xvabsd_s_b
+#define CODE_FOR_lasx_xvabsd_h CODE_FOR_lasx_xvabsd_s_h
+#define CODE_FOR_lasx_xvabsd_w CODE_FOR_lasx_xvabsd_s_w
+#define CODE_FOR_lasx_xvabsd_d CODE_FOR_lasx_xvabsd_s_d
+#define CODE_FOR_lasx_xvabsd_bu CODE_FOR_lasx_xvabsd_u_bu
+#define CODE_FOR_lasx_xvabsd_hu CODE_FOR_lasx_xvabsd_u_hu
+#define CODE_FOR_lasx_xvabsd_wu CODE_FOR_lasx_xvabsd_u_wu
+#define CODE_FOR_lasx_xvabsd_du CODE_FOR_lasx_xvabsd_u_du
+#define CODE_FOR_lasx_xvavg_b CODE_FOR_lasx_xvavg_s_b
+#define CODE_FOR_lasx_xvavg_h CODE_FOR_lasx_xvavg_s_h
+#define CODE_FOR_lasx_xvavg_w CODE_FOR_lasx_xvavg_s_w
+#define CODE_FOR_lasx_xvavg_d CODE_FOR_lasx_xvavg_s_d
+#define CODE_FOR_lasx_xvavg_bu CODE_FOR_lasx_xvavg_u_bu
+#define CODE_FOR_lasx_xvavg_hu CODE_FOR_lasx_xvavg_u_hu
+#define CODE_FOR_lasx_xvavg_wu CODE_FOR_lasx_xvavg_u_wu
+#define CODE_FOR_lasx_xvavg_du CODE_FOR_lasx_xvavg_u_du
+#define CODE_FOR_lasx_xvavgr_b CODE_FOR_lasx_xvavgr_s_b
+#define CODE_FOR_lasx_xvavgr_h CODE_FOR_lasx_xvavgr_s_h
+#define CODE_FOR_lasx_xvavgr_w CODE_FOR_lasx_xvavgr_s_w
+#define CODE_FOR_lasx_xvavgr_d CODE_FOR_lasx_xvavgr_s_d
+#define CODE_FOR_lasx_xvavgr_bu CODE_FOR_lasx_xvavgr_u_bu
+#define CODE_FOR_lasx_xvavgr_hu CODE_FOR_lasx_xvavgr_u_hu
+#define CODE_FOR_lasx_xvavgr_wu CODE_FOR_lasx_xvavgr_u_wu
+#define CODE_FOR_lasx_xvavgr_du CODE_FOR_lasx_xvavgr_u_du
+#define CODE_FOR_lasx_xvmuh_b CODE_FOR_lasx_xvmuh_s_b
+#define CODE_FOR_lasx_xvmuh_h CODE_FOR_lasx_xvmuh_s_h
+#define CODE_FOR_lasx_xvmuh_w CODE_FOR_lasx_xvmuh_s_w
+#define CODE_FOR_lasx_xvmuh_d CODE_FOR_lasx_xvmuh_s_d
+#define CODE_FOR_lasx_xvmuh_bu CODE_FOR_lasx_xvmuh_u_bu
+#define CODE_FOR_lasx_xvmuh_hu CODE_FOR_lasx_xvmuh_u_hu
+#define CODE_FOR_lasx_xvmuh_wu CODE_FOR_lasx_xvmuh_u_wu
+#define CODE_FOR_lasx_xvmuh_du CODE_FOR_lasx_xvmuh_u_du
+#define CODE_FOR_lasx_xvssran_b_h CODE_FOR_lasx_xvssran_s_b_h
+#define CODE_FOR_lasx_xvssran_h_w CODE_FOR_lasx_xvssran_s_h_w
+#define CODE_FOR_lasx_xvssran_w_d CODE_FOR_lasx_xvssran_s_w_d
+#define CODE_FOR_lasx_xvssran_bu_h CODE_FOR_lasx_xvssran_u_bu_h
+#define CODE_FOR_lasx_xvssran_hu_w CODE_FOR_lasx_xvssran_u_hu_w
+#define CODE_FOR_lasx_xvssran_wu_d CODE_FOR_lasx_xvssran_u_wu_d
+#define CODE_FOR_lasx_xvssrarn_b_h CODE_FOR_lasx_xvssrarn_s_b_h
+#define CODE_FOR_lasx_xvssrarn_h_w CODE_FOR_lasx_xvssrarn_s_h_w
+#define CODE_FOR_lasx_xvssrarn_w_d CODE_FOR_lasx_xvssrarn_s_w_d
+#define CODE_FOR_lasx_xvssrarn_bu_h CODE_FOR_lasx_xvssrarn_u_bu_h
+#define CODE_FOR_lasx_xvssrarn_hu_w CODE_FOR_lasx_xvssrarn_u_hu_w
+#define CODE_FOR_lasx_xvssrarn_wu_d CODE_FOR_lasx_xvssrarn_u_wu_d
+#define CODE_FOR_lasx_xvssrln_bu_h CODE_FOR_lasx_xvssrln_u_bu_h
+#define CODE_FOR_lasx_xvssrln_hu_w CODE_FOR_lasx_xvssrln_u_hu_w
+#define CODE_FOR_lasx_xvssrln_wu_d CODE_FOR_lasx_xvssrln_u_wu_d
+#define CODE_FOR_lasx_xvssrlrn_bu_h CODE_FOR_lasx_xvssrlrn_u_bu_h
+#define CODE_FOR_lasx_xvssrlrn_hu_w CODE_FOR_lasx_xvssrlrn_u_hu_w
+#define CODE_FOR_lasx_xvssrlrn_wu_d CODE_FOR_lasx_xvssrlrn_u_wu_d
+#define CODE_FOR_lasx_xvftint_w_s CODE_FOR_lasx_xvftint_s_w_s
+#define CODE_FOR_lasx_xvftint_l_d CODE_FOR_lasx_xvftint_s_l_d
+#define CODE_FOR_lasx_xvftint_wu_s CODE_FOR_lasx_xvftint_u_wu_s
+#define CODE_FOR_lasx_xvftint_lu_d CODE_FOR_lasx_xvftint_u_lu_d
+#define CODE_FOR_lasx_xvsllwil_h_b CODE_FOR_lasx_xvsllwil_s_h_b
+#define CODE_FOR_lasx_xvsllwil_w_h CODE_FOR_lasx_xvsllwil_s_w_h
+#define CODE_FOR_lasx_xvsllwil_d_w CODE_FOR_lasx_xvsllwil_s_d_w
+#define CODE_FOR_lasx_xvsllwil_hu_bu CODE_FOR_lasx_xvsllwil_u_hu_bu
+#define CODE_FOR_lasx_xvsllwil_wu_hu CODE_FOR_lasx_xvsllwil_u_wu_hu
+#define CODE_FOR_lasx_xvsllwil_du_wu CODE_FOR_lasx_xvsllwil_u_du_wu
+#define CODE_FOR_lasx_xvsat_b CODE_FOR_lasx_xvsat_s_b
+#define CODE_FOR_lasx_xvsat_h CODE_FOR_lasx_xvsat_s_h
+#define CODE_FOR_lasx_xvsat_w CODE_FOR_lasx_xvsat_s_w
+#define CODE_FOR_lasx_xvsat_d CODE_FOR_lasx_xvsat_s_d
+#define CODE_FOR_lasx_xvsat_bu CODE_FOR_lasx_xvsat_u_bu
+#define CODE_FOR_lasx_xvsat_hu CODE_FOR_lasx_xvsat_u_hu
+#define CODE_FOR_lasx_xvsat_wu CODE_FOR_lasx_xvsat_u_wu
+#define CODE_FOR_lasx_xvsat_du CODE_FOR_lasx_xvsat_u_du
 
 static const struct loongarch_builtin_description loongarch_builtins[] = {
 #define LARCH_MOVFCSR2GR 0
@@ -1209,7 +1511,761 @@ static const struct loongarch_builtin_description loongarch_builtins[] = {
   LSX_BUILTIN (vshuf_b, LARCH_V16QI_FTYPE_V16QI_V16QI_V16QI),
   LSX_BUILTIN (vldx, LARCH_V16QI_FTYPE_CVPOINTER_DI),
   LSX_NO_TARGET_BUILTIN (vstx, LARCH_VOID_FTYPE_V16QI_CVPOINTER_DI),
-  LSX_BUILTIN (vextl_qu_du, LARCH_UV2DI_FTYPE_UV2DI)
+  LSX_BUILTIN (vextl_qu_du, LARCH_UV2DI_FTYPE_UV2DI),
+
+  /* Built-in functions for LASX */
+  LASX_BUILTIN (xvsll_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsll_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsll_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsll_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvslli_b, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvslli_h, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvslli_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvslli_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvsra_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsra_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsra_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsra_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsrai_b, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvsrai_h, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvsrai_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvsrai_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvsrar_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsrar_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsrar_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsrar_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsrari_b, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvsrari_h, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvsrari_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvsrari_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvsrl_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsrl_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsrl_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsrl_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsrli_b, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvsrli_h, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvsrli_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvsrli_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvsrlr_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsrlr_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsrlr_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsrlr_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsrlri_b, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvsrlri_h, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvsrlri_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvsrlri_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvbitclr_b, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvbitclr_h, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvbitclr_w, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvbitclr_d, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvbitclri_b, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvbitclri_h, LARCH_UV16HI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvbitclri_w, LARCH_UV8SI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvbitclri_d, LARCH_UV4DI_FTYPE_UV4DI_UQI),
+  LASX_BUILTIN (xvbitset_b, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvbitset_h, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvbitset_w, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvbitset_d, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvbitseti_b, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvbitseti_h, LARCH_UV16HI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvbitseti_w, LARCH_UV8SI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvbitseti_d, LARCH_UV4DI_FTYPE_UV4DI_UQI),
+  LASX_BUILTIN (xvbitrev_b, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvbitrev_h, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvbitrev_w, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvbitrev_d, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvbitrevi_b, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvbitrevi_h, LARCH_UV16HI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvbitrevi_w, LARCH_UV8SI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvbitrevi_d, LARCH_UV4DI_FTYPE_UV4DI_UQI),
+  LASX_BUILTIN (xvadd_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvadd_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvadd_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvadd_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvaddi_bu, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvaddi_hu, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvaddi_wu, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvaddi_du, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvsub_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsub_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsub_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsub_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsubi_bu, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvsubi_hu, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvsubi_wu, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvsubi_du, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvmax_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvmax_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvmax_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvmax_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvmaxi_b, LARCH_V32QI_FTYPE_V32QI_QI),
+  LASX_BUILTIN (xvmaxi_h, LARCH_V16HI_FTYPE_V16HI_QI),
+  LASX_BUILTIN (xvmaxi_w, LARCH_V8SI_FTYPE_V8SI_QI),
+  LASX_BUILTIN (xvmaxi_d, LARCH_V4DI_FTYPE_V4DI_QI),
+  LASX_BUILTIN (xvmax_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvmax_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvmax_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmax_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvmaxi_bu, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvmaxi_hu, LARCH_UV16HI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvmaxi_wu, LARCH_UV8SI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvmaxi_du, LARCH_UV4DI_FTYPE_UV4DI_UQI),
+  LASX_BUILTIN (xvmin_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvmin_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvmin_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvmin_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvmini_b, LARCH_V32QI_FTYPE_V32QI_QI),
+  LASX_BUILTIN (xvmini_h, LARCH_V16HI_FTYPE_V16HI_QI),
+  LASX_BUILTIN (xvmini_w, LARCH_V8SI_FTYPE_V8SI_QI),
+  LASX_BUILTIN (xvmini_d, LARCH_V4DI_FTYPE_V4DI_QI),
+  LASX_BUILTIN (xvmin_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvmin_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvmin_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmin_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvmini_bu, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvmini_hu, LARCH_UV16HI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvmini_wu, LARCH_UV8SI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvmini_du, LARCH_UV4DI_FTYPE_UV4DI_UQI),
+  LASX_BUILTIN (xvseq_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvseq_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvseq_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvseq_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvseqi_b, LARCH_V32QI_FTYPE_V32QI_QI),
+  LASX_BUILTIN (xvseqi_h, LARCH_V16HI_FTYPE_V16HI_QI),
+  LASX_BUILTIN (xvseqi_w, LARCH_V8SI_FTYPE_V8SI_QI),
+  LASX_BUILTIN (xvseqi_d, LARCH_V4DI_FTYPE_V4DI_QI),
+  LASX_BUILTIN (xvslt_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvslt_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvslt_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvslt_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvslti_b, LARCH_V32QI_FTYPE_V32QI_QI),
+  LASX_BUILTIN (xvslti_h, LARCH_V16HI_FTYPE_V16HI_QI),
+  LASX_BUILTIN (xvslti_w, LARCH_V8SI_FTYPE_V8SI_QI),
+  LASX_BUILTIN (xvslti_d, LARCH_V4DI_FTYPE_V4DI_QI),
+  LASX_BUILTIN (xvslt_bu, LARCH_V32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvslt_hu, LARCH_V16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvslt_wu, LARCH_V8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvslt_du, LARCH_V4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvslti_bu, LARCH_V32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvslti_hu, LARCH_V16HI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvslti_wu, LARCH_V8SI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvslti_du, LARCH_V4DI_FTYPE_UV4DI_UQI),
+  LASX_BUILTIN (xvsle_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsle_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsle_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsle_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvslei_b, LARCH_V32QI_FTYPE_V32QI_QI),
+  LASX_BUILTIN (xvslei_h, LARCH_V16HI_FTYPE_V16HI_QI),
+  LASX_BUILTIN (xvslei_w, LARCH_V8SI_FTYPE_V8SI_QI),
+  LASX_BUILTIN (xvslei_d, LARCH_V4DI_FTYPE_V4DI_QI),
+  LASX_BUILTIN (xvsle_bu, LARCH_V32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvsle_hu, LARCH_V16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvsle_wu, LARCH_V8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvsle_du, LARCH_V4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvslei_bu, LARCH_V32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvslei_hu, LARCH_V16HI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvslei_wu, LARCH_V8SI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvslei_du, LARCH_V4DI_FTYPE_UV4DI_UQI),
+
+  LASX_BUILTIN (xvsat_b, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvsat_h, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvsat_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvsat_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvsat_bu, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvsat_hu, LARCH_UV16HI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvsat_wu, LARCH_UV8SI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvsat_du, LARCH_UV4DI_FTYPE_UV4DI_UQI),
+
+  LASX_BUILTIN (xvadda_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvadda_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvadda_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvadda_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsadd_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsadd_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsadd_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsadd_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsadd_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvsadd_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvsadd_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvsadd_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+
+  LASX_BUILTIN (xvavg_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvavg_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvavg_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvavg_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvavg_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvavg_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvavg_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvavg_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+
+  LASX_BUILTIN (xvavgr_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvavgr_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvavgr_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvavgr_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvavgr_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvavgr_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvavgr_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvavgr_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+
+  LASX_BUILTIN (xvssub_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvssub_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvssub_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvssub_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvssub_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvssub_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvssub_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvssub_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvabsd_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvabsd_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvabsd_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvabsd_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvabsd_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvabsd_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvabsd_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvabsd_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+
+  LASX_BUILTIN (xvmul_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvmul_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvmul_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvmul_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvmadd_b, LARCH_V32QI_FTYPE_V32QI_V32QI_V32QI),
+  LASX_BUILTIN (xvmadd_h, LARCH_V16HI_FTYPE_V16HI_V16HI_V16HI),
+  LASX_BUILTIN (xvmadd_w, LARCH_V8SI_FTYPE_V8SI_V8SI_V8SI),
+  LASX_BUILTIN (xvmadd_d, LARCH_V4DI_FTYPE_V4DI_V4DI_V4DI),
+  LASX_BUILTIN (xvmsub_b, LARCH_V32QI_FTYPE_V32QI_V32QI_V32QI),
+  LASX_BUILTIN (xvmsub_h, LARCH_V16HI_FTYPE_V16HI_V16HI_V16HI),
+  LASX_BUILTIN (xvmsub_w, LARCH_V8SI_FTYPE_V8SI_V8SI_V8SI),
+  LASX_BUILTIN (xvmsub_d, LARCH_V4DI_FTYPE_V4DI_V4DI_V4DI),
+  LASX_BUILTIN (xvdiv_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvdiv_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvdiv_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvdiv_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvdiv_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvdiv_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvdiv_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvdiv_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvhaddw_h_b, LARCH_V16HI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvhaddw_w_h, LARCH_V8SI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvhaddw_d_w, LARCH_V4DI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvhaddw_hu_bu, LARCH_UV16HI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvhaddw_wu_hu, LARCH_UV8SI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvhaddw_du_wu, LARCH_UV4DI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvhsubw_h_b, LARCH_V16HI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvhsubw_w_h, LARCH_V8SI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvhsubw_d_w, LARCH_V4DI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvhsubw_hu_bu, LARCH_V16HI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvhsubw_wu_hu, LARCH_V8SI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvhsubw_du_wu, LARCH_V4DI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmod_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvmod_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvmod_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvmod_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvmod_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvmod_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvmod_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmod_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+
+  LASX_BUILTIN (xvrepl128vei_b, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvrepl128vei_h, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvrepl128vei_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvrepl128vei_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvpickev_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvpickev_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvpickev_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvpickev_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvpickod_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvpickod_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvpickod_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvpickod_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvilvh_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvilvh_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvilvh_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvilvh_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvilvl_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvilvl_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvilvl_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvilvl_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvpackev_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvpackev_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvpackev_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvpackev_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvpackod_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvpackod_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvpackod_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvpackod_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvshuf_b, LARCH_V32QI_FTYPE_V32QI_V32QI_V32QI),
+  LASX_BUILTIN (xvshuf_h, LARCH_V16HI_FTYPE_V16HI_V16HI_V16HI),
+  LASX_BUILTIN (xvshuf_w, LARCH_V8SI_FTYPE_V8SI_V8SI_V8SI),
+  LASX_BUILTIN (xvshuf_d, LARCH_V4DI_FTYPE_V4DI_V4DI_V4DI),
+  LASX_BUILTIN (xvand_v, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvandi_b, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvor_v, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvori_b, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvnor_v, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvnori_b, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvxor_v, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvxori_b, LARCH_UV32QI_FTYPE_UV32QI_UQI),
+  LASX_BUILTIN (xvbitsel_v, LARCH_UV32QI_FTYPE_UV32QI_UV32QI_UV32QI),
+  LASX_BUILTIN (xvbitseli_b, LARCH_UV32QI_FTYPE_UV32QI_UV32QI_USI),
+
+  LASX_BUILTIN (xvshuf4i_b, LARCH_V32QI_FTYPE_V32QI_USI),
+  LASX_BUILTIN (xvshuf4i_h, LARCH_V16HI_FTYPE_V16HI_USI),
+  LASX_BUILTIN (xvshuf4i_w, LARCH_V8SI_FTYPE_V8SI_USI),
+
+  LASX_BUILTIN (xvreplgr2vr_b, LARCH_V32QI_FTYPE_SI),
+  LASX_BUILTIN (xvreplgr2vr_h, LARCH_V16HI_FTYPE_SI),
+  LASX_BUILTIN (xvreplgr2vr_w, LARCH_V8SI_FTYPE_SI),
+  LASX_BUILTIN (xvreplgr2vr_d, LARCH_V4DI_FTYPE_DI),
+  LASX_BUILTIN (xvpcnt_b, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (xvpcnt_h, LARCH_V16HI_FTYPE_V16HI),
+  LASX_BUILTIN (xvpcnt_w, LARCH_V8SI_FTYPE_V8SI),
+  LASX_BUILTIN (xvpcnt_d, LARCH_V4DI_FTYPE_V4DI),
+  LASX_BUILTIN (xvclo_b, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (xvclo_h, LARCH_V16HI_FTYPE_V16HI),
+  LASX_BUILTIN (xvclo_w, LARCH_V8SI_FTYPE_V8SI),
+  LASX_BUILTIN (xvclo_d, LARCH_V4DI_FTYPE_V4DI),
+  LASX_BUILTIN (xvclz_b, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (xvclz_h, LARCH_V16HI_FTYPE_V16HI),
+  LASX_BUILTIN (xvclz_w, LARCH_V8SI_FTYPE_V8SI),
+  LASX_BUILTIN (xvclz_d, LARCH_V4DI_FTYPE_V4DI),
+
+  LASX_BUILTIN (xvrepli_b, LARCH_V32QI_FTYPE_HI),
+  LASX_BUILTIN (xvrepli_h, LARCH_V16HI_FTYPE_HI),
+  LASX_BUILTIN (xvrepli_w, LARCH_V8SI_FTYPE_HI),
+  LASX_BUILTIN (xvrepli_d, LARCH_V4DI_FTYPE_HI),
+  LASX_BUILTIN (xvfcmp_caf_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_caf_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_cor_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_cor_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_cun_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_cun_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_cune_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_cune_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_cueq_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_cueq_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_ceq_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_ceq_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_cne_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_cne_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_clt_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_clt_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_cult_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_cult_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_cle_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_cle_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_cule_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_cule_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_saf_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_saf_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_sor_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_sor_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_sun_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_sun_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_sune_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_sune_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_sueq_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_sueq_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_seq_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_seq_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_sne_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_sne_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_slt_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_slt_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_sult_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_sult_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_sle_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_sle_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcmp_sule_s, LARCH_V8SI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcmp_sule_d, LARCH_V4DI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfadd_s, LARCH_V8SF_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfadd_d, LARCH_V4DF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfsub_s, LARCH_V8SF_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfsub_d, LARCH_V4DF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfmul_s, LARCH_V8SF_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfmul_d, LARCH_V4DF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfdiv_s, LARCH_V8SF_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfdiv_d, LARCH_V4DF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfcvt_h_s, LARCH_V16HI_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfcvt_s_d, LARCH_V8SF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfmin_s, LARCH_V8SF_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfmin_d, LARCH_V4DF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfmina_s, LARCH_V8SF_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfmina_d, LARCH_V4DF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfmax_s, LARCH_V8SF_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfmax_d, LARCH_V4DF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfmaxa_s, LARCH_V8SF_FTYPE_V8SF_V8SF),
+  LASX_BUILTIN (xvfmaxa_d, LARCH_V4DF_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvfclass_s, LARCH_V8SI_FTYPE_V8SF),
+  LASX_BUILTIN (xvfclass_d, LARCH_V4DI_FTYPE_V4DF),
+  LASX_BUILTIN (xvfsqrt_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfsqrt_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvfrecip_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfrecip_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvfrint_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfrint_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvfrsqrt_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfrsqrt_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvflogb_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvflogb_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvfcvth_s_h, LARCH_V8SF_FTYPE_V16HI),
+  LASX_BUILTIN (xvfcvth_d_s, LARCH_V4DF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfcvtl_s_h, LARCH_V8SF_FTYPE_V16HI),
+  LASX_BUILTIN (xvfcvtl_d_s, LARCH_V4DF_FTYPE_V8SF),
+  LASX_BUILTIN (xvftint_w_s, LARCH_V8SI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftint_l_d, LARCH_V4DI_FTYPE_V4DF),
+  LASX_BUILTIN (xvftint_wu_s, LARCH_UV8SI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftint_lu_d, LARCH_UV4DI_FTYPE_V4DF),
+  LASX_BUILTIN (xvftintrz_w_s, LARCH_V8SI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrz_l_d, LARCH_V4DI_FTYPE_V4DF),
+  LASX_BUILTIN (xvftintrz_wu_s, LARCH_UV8SI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrz_lu_d, LARCH_UV4DI_FTYPE_V4DF),
+  LASX_BUILTIN (xvffint_s_w, LARCH_V8SF_FTYPE_V8SI),
+  LASX_BUILTIN (xvffint_d_l, LARCH_V4DF_FTYPE_V4DI),
+  LASX_BUILTIN (xvffint_s_wu, LARCH_V8SF_FTYPE_UV8SI),
+  LASX_BUILTIN (xvffint_d_lu, LARCH_V4DF_FTYPE_UV4DI),
+
+  LASX_BUILTIN (xvreplve_b, LARCH_V32QI_FTYPE_V32QI_SI),
+  LASX_BUILTIN (xvreplve_h, LARCH_V16HI_FTYPE_V16HI_SI),
+  LASX_BUILTIN (xvreplve_w, LARCH_V8SI_FTYPE_V8SI_SI),
+  LASX_BUILTIN (xvreplve_d, LARCH_V4DI_FTYPE_V4DI_SI),
+  LASX_BUILTIN (xvpermi_w, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+
+  LASX_BUILTIN (xvandn_v, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvneg_b, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (xvneg_h, LARCH_V16HI_FTYPE_V16HI),
+  LASX_BUILTIN (xvneg_w, LARCH_V8SI_FTYPE_V8SI),
+  LASX_BUILTIN (xvneg_d, LARCH_V4DI_FTYPE_V4DI),
+  LASX_BUILTIN (xvmuh_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvmuh_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvmuh_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvmuh_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvmuh_bu, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvmuh_hu, LARCH_UV16HI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvmuh_wu, LARCH_UV8SI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmuh_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvsllwil_h_b, LARCH_V16HI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvsllwil_w_h, LARCH_V8SI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvsllwil_d_w, LARCH_V4DI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvsllwil_hu_bu, LARCH_UV16HI_FTYPE_UV32QI_UQI), /* FIXME: U? */
+  LASX_BUILTIN (xvsllwil_wu_hu, LARCH_UV8SI_FTYPE_UV16HI_UQI),
+  LASX_BUILTIN (xvsllwil_du_wu, LARCH_UV4DI_FTYPE_UV8SI_UQI),
+  LASX_BUILTIN (xvsran_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsran_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsran_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvssran_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvssran_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvssran_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvssran_bu_h, LARCH_UV32QI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvssran_hu_w, LARCH_UV16HI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvssran_wu_d, LARCH_UV8SI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvsrarn_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsrarn_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsrarn_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvssrarn_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvssrarn_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvssrarn_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvssrarn_bu_h, LARCH_UV32QI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvssrarn_hu_w, LARCH_UV16HI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvssrarn_wu_d, LARCH_UV8SI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvsrln_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsrln_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsrln_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvssrln_bu_h, LARCH_UV32QI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvssrln_hu_w, LARCH_UV16HI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvssrln_wu_d, LARCH_UV8SI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvsrlrn_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsrlrn_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsrlrn_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvssrlrn_bu_h, LARCH_UV32QI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvssrlrn_hu_w, LARCH_UV16HI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvssrlrn_wu_d, LARCH_UV8SI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvfrstpi_b, LARCH_V32QI_FTYPE_V32QI_V32QI_UQI),
+  LASX_BUILTIN (xvfrstpi_h, LARCH_V16HI_FTYPE_V16HI_V16HI_UQI),
+  LASX_BUILTIN (xvfrstp_b, LARCH_V32QI_FTYPE_V32QI_V32QI_V32QI),
+  LASX_BUILTIN (xvfrstp_h, LARCH_V16HI_FTYPE_V16HI_V16HI_V16HI),
+  LASX_BUILTIN (xvshuf4i_d, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvbsrl_v, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvbsll_v, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvextrins_b, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvextrins_h, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvextrins_w, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvextrins_d, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvmskltz_b, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (xvmskltz_h, LARCH_V16HI_FTYPE_V16HI),
+  LASX_BUILTIN (xvmskltz_w, LARCH_V8SI_FTYPE_V8SI),
+  LASX_BUILTIN (xvmskltz_d, LARCH_V4DI_FTYPE_V4DI),
+  LASX_BUILTIN (xvsigncov_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsigncov_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsigncov_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsigncov_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvfmadd_s, LARCH_V8SF_FTYPE_V8SF_V8SF_V8SF),
+  LASX_BUILTIN (xvfmadd_d, LARCH_V4DF_FTYPE_V4DF_V4DF_V4DF),
+  LASX_BUILTIN (xvfmsub_s, LARCH_V8SF_FTYPE_V8SF_V8SF_V8SF),
+  LASX_BUILTIN (xvfmsub_d, LARCH_V4DF_FTYPE_V4DF_V4DF_V4DF),
+  LASX_BUILTIN (xvfnmadd_s, LARCH_V8SF_FTYPE_V8SF_V8SF_V8SF),
+  LASX_BUILTIN (xvfnmadd_d, LARCH_V4DF_FTYPE_V4DF_V4DF_V4DF),
+  LASX_BUILTIN (xvfnmsub_s, LARCH_V8SF_FTYPE_V8SF_V8SF_V8SF),
+  LASX_BUILTIN (xvfnmsub_d, LARCH_V4DF_FTYPE_V4DF_V4DF_V4DF),
+  LASX_BUILTIN (xvftintrne_w_s, LARCH_V8SI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrne_l_d, LARCH_V4DI_FTYPE_V4DF),
+  LASX_BUILTIN (xvftintrp_w_s, LARCH_V8SI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrp_l_d, LARCH_V4DI_FTYPE_V4DF),
+  LASX_BUILTIN (xvftintrm_w_s, LARCH_V8SI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrm_l_d, LARCH_V4DI_FTYPE_V4DF),
+  LASX_BUILTIN (xvftint_w_d, LARCH_V8SI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvffint_s_l, LARCH_V8SF_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvftintrz_w_d, LARCH_V8SI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvftintrp_w_d, LARCH_V8SI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvftintrm_w_d, LARCH_V8SI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvftintrne_w_d, LARCH_V8SI_FTYPE_V4DF_V4DF),
+  LASX_BUILTIN (xvftinth_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintl_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvffinth_d_w, LARCH_V4DF_FTYPE_V8SI),
+  LASX_BUILTIN (xvffintl_d_w, LARCH_V4DF_FTYPE_V8SI),
+  LASX_BUILTIN (xvftintrzh_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrzl_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrph_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrpl_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrmh_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrml_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrneh_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvftintrnel_l_s, LARCH_V4DI_FTYPE_V8SF),
+  LASX_BUILTIN (xvfrintrne_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfrintrne_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvfrintrz_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfrintrz_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvfrintrp_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfrintrp_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvfrintrm_s, LARCH_V8SF_FTYPE_V8SF),
+  LASX_BUILTIN (xvfrintrm_d, LARCH_V4DF_FTYPE_V4DF),
+  LASX_BUILTIN (xvld, LARCH_V32QI_FTYPE_CVPOINTER_SI),
+  LASX_NO_TARGET_BUILTIN (xvst, LARCH_VOID_FTYPE_V32QI_CVPOINTER_SI),
+  LASX_NO_TARGET_BUILTIN (xvstelm_b, LARCH_VOID_FTYPE_V32QI_CVPOINTER_SI_UQI),
+  LASX_NO_TARGET_BUILTIN (xvstelm_h, LARCH_VOID_FTYPE_V16HI_CVPOINTER_SI_UQI),
+  LASX_NO_TARGET_BUILTIN (xvstelm_w, LARCH_VOID_FTYPE_V8SI_CVPOINTER_SI_UQI),
+  LASX_NO_TARGET_BUILTIN (xvstelm_d, LARCH_VOID_FTYPE_V4DI_CVPOINTER_SI_UQI),
+  LASX_BUILTIN (xvinsve0_w, LARCH_V8SI_FTYPE_V8SI_V8SI_UQI),
+  LASX_BUILTIN (xvinsve0_d, LARCH_V4DI_FTYPE_V4DI_V4DI_UQI),
+  LASX_BUILTIN (xvpickve_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvpickve_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvpickve_w_f, LARCH_V8SF_FTYPE_V8SF_UQI),
+  LASX_BUILTIN (xvpickve_d_f, LARCH_V4DF_FTYPE_V4DF_UQI),
+  LASX_BUILTIN (xvssrlrn_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvssrlrn_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvssrlrn_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvssrln_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvssrln_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvssrln_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvorn_v, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvldi, LARCH_V4DI_FTYPE_HI),
+  LASX_BUILTIN (xvldx, LARCH_V32QI_FTYPE_CVPOINTER_DI),
+  LASX_NO_TARGET_BUILTIN (xvstx, LARCH_VOID_FTYPE_V32QI_CVPOINTER_DI),
+  LASX_BUILTIN (xvextl_qu_du, LARCH_UV4DI_FTYPE_UV4DI),
+
+  /* LASX */
+  LASX_BUILTIN (xvinsgr2vr_w, LARCH_V8SI_FTYPE_V8SI_SI_UQI),
+  LASX_BUILTIN (xvinsgr2vr_d, LARCH_V4DI_FTYPE_V4DI_DI_UQI),
+
+  LASX_BUILTIN (xvreplve0_b, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (xvreplve0_h, LARCH_V16HI_FTYPE_V16HI),
+  LASX_BUILTIN (xvreplve0_w, LARCH_V8SI_FTYPE_V8SI),
+  LASX_BUILTIN (xvreplve0_d, LARCH_V4DI_FTYPE_V4DI),
+  LASX_BUILTIN (xvreplve0_q, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (vext2xv_h_b, LARCH_V16HI_FTYPE_V32QI),
+  LASX_BUILTIN (vext2xv_w_h, LARCH_V8SI_FTYPE_V16HI),
+  LASX_BUILTIN (vext2xv_d_w, LARCH_V4DI_FTYPE_V8SI),
+  LASX_BUILTIN (vext2xv_w_b, LARCH_V8SI_FTYPE_V32QI),
+  LASX_BUILTIN (vext2xv_d_h, LARCH_V4DI_FTYPE_V16HI),
+  LASX_BUILTIN (vext2xv_d_b, LARCH_V4DI_FTYPE_V32QI),
+  LASX_BUILTIN (vext2xv_hu_bu, LARCH_V16HI_FTYPE_V32QI),
+  LASX_BUILTIN (vext2xv_wu_hu, LARCH_V8SI_FTYPE_V16HI),
+  LASX_BUILTIN (vext2xv_du_wu, LARCH_V4DI_FTYPE_V8SI),
+  LASX_BUILTIN (vext2xv_wu_bu, LARCH_V8SI_FTYPE_V32QI),
+  LASX_BUILTIN (vext2xv_du_hu, LARCH_V4DI_FTYPE_V16HI),
+  LASX_BUILTIN (vext2xv_du_bu, LARCH_V4DI_FTYPE_V32QI),
+  LASX_BUILTIN (xvpermi_q, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvpermi_d, LARCH_V4DI_FTYPE_V4DI_USI),
+  LASX_BUILTIN (xvperm_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN_TEST_BRANCH (xbz_b, LARCH_SI_FTYPE_UV32QI),
+  LASX_BUILTIN_TEST_BRANCH (xbz_h, LARCH_SI_FTYPE_UV16HI),
+  LASX_BUILTIN_TEST_BRANCH (xbz_w, LARCH_SI_FTYPE_UV8SI),
+  LASX_BUILTIN_TEST_BRANCH (xbz_d, LARCH_SI_FTYPE_UV4DI),
+  LASX_BUILTIN_TEST_BRANCH (xbnz_b, LARCH_SI_FTYPE_UV32QI),
+  LASX_BUILTIN_TEST_BRANCH (xbnz_h, LARCH_SI_FTYPE_UV16HI),
+  LASX_BUILTIN_TEST_BRANCH (xbnz_w, LARCH_SI_FTYPE_UV8SI),
+  LASX_BUILTIN_TEST_BRANCH (xbnz_d, LARCH_SI_FTYPE_UV4DI),
+  LASX_BUILTIN_TEST_BRANCH (xbz_v, LARCH_SI_FTYPE_UV32QI),
+  LASX_BUILTIN_TEST_BRANCH (xbnz_v, LARCH_SI_FTYPE_UV32QI),
+  LASX_BUILTIN (xvldrepl_b, LARCH_V32QI_FTYPE_CVPOINTER_SI),
+  LASX_BUILTIN (xvldrepl_h, LARCH_V16HI_FTYPE_CVPOINTER_SI),
+  LASX_BUILTIN (xvldrepl_w, LARCH_V8SI_FTYPE_CVPOINTER_SI),
+  LASX_BUILTIN (xvldrepl_d, LARCH_V4DI_FTYPE_CVPOINTER_SI),
+  LASX_BUILTIN (xvpickve2gr_w, LARCH_SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvpickve2gr_wu, LARCH_USI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvpickve2gr_d, LARCH_DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvpickve2gr_du, LARCH_UDI_FTYPE_V4DI_UQI),
+
+  LASX_BUILTIN (xvaddwev_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvaddwev_d_w, LARCH_V4DI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvaddwev_w_h, LARCH_V8SI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvaddwev_h_b, LARCH_V16HI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvaddwev_q_du, LARCH_V4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvaddwev_d_wu, LARCH_V4DI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvaddwev_w_hu, LARCH_V8SI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvaddwev_h_bu, LARCH_V16HI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvsubwev_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsubwev_d_w, LARCH_V4DI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsubwev_w_h, LARCH_V8SI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsubwev_h_b, LARCH_V16HI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsubwev_q_du, LARCH_V4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvsubwev_d_wu, LARCH_V4DI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvsubwev_w_hu, LARCH_V8SI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvsubwev_h_bu, LARCH_V16HI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvmulwev_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvmulwev_d_w, LARCH_V4DI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvmulwev_w_h, LARCH_V8SI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvmulwev_h_b, LARCH_V16HI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvmulwev_q_du, LARCH_V4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvmulwev_d_wu, LARCH_V4DI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmulwev_w_hu, LARCH_V8SI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvmulwev_h_bu, LARCH_V16HI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvaddwod_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvaddwod_d_w, LARCH_V4DI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvaddwod_w_h, LARCH_V8SI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvaddwod_h_b, LARCH_V16HI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvaddwod_q_du, LARCH_V4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvaddwod_d_wu, LARCH_V4DI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvaddwod_w_hu, LARCH_V8SI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvaddwod_h_bu, LARCH_V16HI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvsubwod_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsubwod_d_w, LARCH_V4DI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvsubwod_w_h, LARCH_V8SI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvsubwod_h_b, LARCH_V16HI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvsubwod_q_du, LARCH_V4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvsubwod_d_wu, LARCH_V4DI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvsubwod_w_hu, LARCH_V8SI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvsubwod_h_bu, LARCH_V16HI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvmulwod_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvmulwod_d_w, LARCH_V4DI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvmulwod_w_h, LARCH_V8SI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvmulwod_h_b, LARCH_V16HI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvmulwod_q_du, LARCH_V4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvmulwod_d_wu, LARCH_V4DI_FTYPE_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmulwod_w_hu, LARCH_V8SI_FTYPE_UV16HI_UV16HI),
+  LASX_BUILTIN (xvmulwod_h_bu, LARCH_V16HI_FTYPE_UV32QI_UV32QI),
+  LASX_BUILTIN (xvaddwev_d_wu_w, LARCH_V4DI_FTYPE_UV8SI_V8SI),
+  LASX_BUILTIN (xvaddwev_w_hu_h, LARCH_V8SI_FTYPE_UV16HI_V16HI),
+  LASX_BUILTIN (xvaddwev_h_bu_b, LARCH_V16HI_FTYPE_UV32QI_V32QI),
+  LASX_BUILTIN (xvmulwev_d_wu_w, LARCH_V4DI_FTYPE_UV8SI_V8SI),
+  LASX_BUILTIN (xvmulwev_w_hu_h, LARCH_V8SI_FTYPE_UV16HI_V16HI),
+  LASX_BUILTIN (xvmulwev_h_bu_b, LARCH_V16HI_FTYPE_UV32QI_V32QI),
+  LASX_BUILTIN (xvaddwod_d_wu_w, LARCH_V4DI_FTYPE_UV8SI_V8SI),
+  LASX_BUILTIN (xvaddwod_w_hu_h, LARCH_V8SI_FTYPE_UV16HI_V16HI),
+  LASX_BUILTIN (xvaddwod_h_bu_b, LARCH_V16HI_FTYPE_UV32QI_V32QI),
+  LASX_BUILTIN (xvmulwod_d_wu_w, LARCH_V4DI_FTYPE_UV8SI_V8SI),
+  LASX_BUILTIN (xvmulwod_w_hu_h, LARCH_V8SI_FTYPE_UV16HI_V16HI),
+  LASX_BUILTIN (xvmulwod_h_bu_b, LARCH_V16HI_FTYPE_UV32QI_V32QI),
+  LASX_BUILTIN (xvhaddw_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvhaddw_qu_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvhsubw_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvhsubw_qu_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI),
+  LASX_BUILTIN (xvmaddwev_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI_V4DI),
+  LASX_BUILTIN (xvmaddwev_d_w, LARCH_V4DI_FTYPE_V4DI_V8SI_V8SI),
+  LASX_BUILTIN (xvmaddwev_w_h, LARCH_V8SI_FTYPE_V8SI_V16HI_V16HI),
+  LASX_BUILTIN (xvmaddwev_h_b, LARCH_V16HI_FTYPE_V16HI_V32QI_V32QI),
+  LASX_BUILTIN (xvmaddwev_q_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI_UV4DI),
+  LASX_BUILTIN (xvmaddwev_d_wu, LARCH_UV4DI_FTYPE_UV4DI_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmaddwev_w_hu, LARCH_UV8SI_FTYPE_UV8SI_UV16HI_UV16HI),
+  LASX_BUILTIN (xvmaddwev_h_bu, LARCH_UV16HI_FTYPE_UV16HI_UV32QI_UV32QI),
+  LASX_BUILTIN (xvmaddwod_q_d, LARCH_V4DI_FTYPE_V4DI_V4DI_V4DI),
+  LASX_BUILTIN (xvmaddwod_d_w, LARCH_V4DI_FTYPE_V4DI_V8SI_V8SI),
+  LASX_BUILTIN (xvmaddwod_w_h, LARCH_V8SI_FTYPE_V8SI_V16HI_V16HI),
+  LASX_BUILTIN (xvmaddwod_h_b, LARCH_V16HI_FTYPE_V16HI_V32QI_V32QI),
+  LASX_BUILTIN (xvmaddwod_q_du, LARCH_UV4DI_FTYPE_UV4DI_UV4DI_UV4DI),
+  LASX_BUILTIN (xvmaddwod_d_wu, LARCH_UV4DI_FTYPE_UV4DI_UV8SI_UV8SI),
+  LASX_BUILTIN (xvmaddwod_w_hu, LARCH_UV8SI_FTYPE_UV8SI_UV16HI_UV16HI),
+  LASX_BUILTIN (xvmaddwod_h_bu, LARCH_UV16HI_FTYPE_UV16HI_UV32QI_UV32QI),
+  LASX_BUILTIN (xvmaddwev_q_du_d, LARCH_V4DI_FTYPE_V4DI_UV4DI_V4DI),
+  LASX_BUILTIN (xvmaddwev_d_wu_w, LARCH_V4DI_FTYPE_V4DI_UV8SI_V8SI),
+  LASX_BUILTIN (xvmaddwev_w_hu_h, LARCH_V8SI_FTYPE_V8SI_UV16HI_V16HI),
+  LASX_BUILTIN (xvmaddwev_h_bu_b, LARCH_V16HI_FTYPE_V16HI_UV32QI_V32QI),
+  LASX_BUILTIN (xvmaddwod_q_du_d, LARCH_V4DI_FTYPE_V4DI_UV4DI_V4DI),
+  LASX_BUILTIN (xvmaddwod_d_wu_w, LARCH_V4DI_FTYPE_V4DI_UV8SI_V8SI),
+  LASX_BUILTIN (xvmaddwod_w_hu_h, LARCH_V8SI_FTYPE_V8SI_UV16HI_V16HI),
+  LASX_BUILTIN (xvmaddwod_h_bu_b, LARCH_V16HI_FTYPE_V16HI_UV32QI_V32QI),
+  LASX_BUILTIN (xvrotr_b, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvrotr_h, LARCH_V16HI_FTYPE_V16HI_V16HI),
+  LASX_BUILTIN (xvrotr_w, LARCH_V8SI_FTYPE_V8SI_V8SI),
+  LASX_BUILTIN (xvrotr_d, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvadd_q, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvsub_q, LARCH_V4DI_FTYPE_V4DI_V4DI),
+  LASX_BUILTIN (xvaddwev_q_du_d, LARCH_V4DI_FTYPE_UV4DI_V4DI),
+  LASX_BUILTIN (xvaddwod_q_du_d, LARCH_V4DI_FTYPE_UV4DI_V4DI),
+  LASX_BUILTIN (xvmulwev_q_du_d, LARCH_V4DI_FTYPE_UV4DI_V4DI),
+  LASX_BUILTIN (xvmulwod_q_du_d, LARCH_V4DI_FTYPE_UV4DI_V4DI),
+  LASX_BUILTIN (xvmskgez_b, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (xvmsknz_b, LARCH_V32QI_FTYPE_V32QI),
+  LASX_BUILTIN (xvexth_h_b, LARCH_V16HI_FTYPE_V32QI),
+  LASX_BUILTIN (xvexth_w_h, LARCH_V8SI_FTYPE_V16HI),
+  LASX_BUILTIN (xvexth_d_w, LARCH_V4DI_FTYPE_V8SI),
+  LASX_BUILTIN (xvexth_q_d, LARCH_V4DI_FTYPE_V4DI),
+  LASX_BUILTIN (xvexth_hu_bu, LARCH_UV16HI_FTYPE_UV32QI),
+  LASX_BUILTIN (xvexth_wu_hu, LARCH_UV8SI_FTYPE_UV16HI),
+  LASX_BUILTIN (xvexth_du_wu, LARCH_UV4DI_FTYPE_UV8SI),
+  LASX_BUILTIN (xvexth_qu_du, LARCH_UV4DI_FTYPE_UV4DI),
+  LASX_BUILTIN (xvrotri_b, LARCH_V32QI_FTYPE_V32QI_UQI),
+  LASX_BUILTIN (xvrotri_h, LARCH_V16HI_FTYPE_V16HI_UQI),
+  LASX_BUILTIN (xvrotri_w, LARCH_V8SI_FTYPE_V8SI_UQI),
+  LASX_BUILTIN (xvrotri_d, LARCH_V4DI_FTYPE_V4DI_UQI),
+  LASX_BUILTIN (xvextl_q_d, LARCH_V4DI_FTYPE_V4DI),
+  LASX_BUILTIN (xvsrlni_b_h, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvsrlni_h_w, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvsrlni_w_d, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvsrlni_d_q, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvsrlrni_b_h, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvsrlrni_h_w, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvsrlrni_w_d, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvsrlrni_d_q, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvssrlni_b_h, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvssrlni_h_w, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvssrlni_w_d, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvssrlni_d_q, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvssrlni_bu_h, LARCH_UV32QI_FTYPE_UV32QI_V32QI_USI),
+  LASX_BUILTIN (xvssrlni_hu_w, LARCH_UV16HI_FTYPE_UV16HI_V16HI_USI),
+  LASX_BUILTIN (xvssrlni_wu_d, LARCH_UV8SI_FTYPE_UV8SI_V8SI_USI),
+  LASX_BUILTIN (xvssrlni_du_q, LARCH_UV4DI_FTYPE_UV4DI_V4DI_USI),
+  LASX_BUILTIN (xvssrlrni_b_h, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvssrlrni_h_w, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvssrlrni_w_d, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvssrlrni_d_q, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvssrlrni_bu_h, LARCH_UV32QI_FTYPE_UV32QI_V32QI_USI),
+  LASX_BUILTIN (xvssrlrni_hu_w, LARCH_UV16HI_FTYPE_UV16HI_V16HI_USI),
+  LASX_BUILTIN (xvssrlrni_wu_d, LARCH_UV8SI_FTYPE_UV8SI_V8SI_USI),
+  LASX_BUILTIN (xvssrlrni_du_q, LARCH_UV4DI_FTYPE_UV4DI_V4DI_USI),
+  LASX_BUILTIN (xvsrani_b_h, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvsrani_h_w, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvsrani_w_d, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvsrani_d_q, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvsrarni_b_h, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvsrarni_h_w, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvsrarni_w_d, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvsrarni_d_q, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvssrani_b_h, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvssrani_h_w, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvssrani_w_d, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvssrani_d_q, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvssrani_bu_h, LARCH_UV32QI_FTYPE_UV32QI_V32QI_USI),
+  LASX_BUILTIN (xvssrani_hu_w, LARCH_UV16HI_FTYPE_UV16HI_V16HI_USI),
+  LASX_BUILTIN (xvssrani_wu_d, LARCH_UV8SI_FTYPE_UV8SI_V8SI_USI),
+  LASX_BUILTIN (xvssrani_du_q, LARCH_UV4DI_FTYPE_UV4DI_V4DI_USI),
+  LASX_BUILTIN (xvssrarni_b_h, LARCH_V32QI_FTYPE_V32QI_V32QI_USI),
+  LASX_BUILTIN (xvssrarni_h_w, LARCH_V16HI_FTYPE_V16HI_V16HI_USI),
+  LASX_BUILTIN (xvssrarni_w_d, LARCH_V8SI_FTYPE_V8SI_V8SI_USI),
+  LASX_BUILTIN (xvssrarni_d_q, LARCH_V4DI_FTYPE_V4DI_V4DI_USI),
+  LASX_BUILTIN (xvssrarni_bu_h, LARCH_UV32QI_FTYPE_UV32QI_V32QI_USI),
+  LASX_BUILTIN (xvssrarni_hu_w, LARCH_UV16HI_FTYPE_UV16HI_V16HI_USI),
+  LASX_BUILTIN (xvssrarni_wu_d, LARCH_UV8SI_FTYPE_UV8SI_V8SI_USI),
+  LASX_BUILTIN (xvssrarni_du_q, LARCH_UV4DI_FTYPE_UV4DI_V4DI_USI)
 };
 
 /* Index I is the function declaration for loongarch_builtins[I], or null if
@@ -1446,11 +2502,15 @@ loongarch_builtin_vectorized_function (unsigned int fn, tree type_out,
     {
       if (out_n == 2 && in_n == 2)
 	return LARCH_GET_BUILTIN (lsx_vfrintrp_d);
+      if (out_n == 4 && in_n == 4)
+	return LARCH_GET_BUILTIN (lasx_xvfrintrp_d);
     }
       if (out_mode == SFmode && in_mode == SFmode)
     {
       if (out_n == 4 && in_n == 4)
 	return LARCH_GET_BUILTIN (lsx_vfrintrp_s);
+      if (out_n == 8 && in_n == 8)
+	return LARCH_GET_BUILTIN (lasx_xvfrintrp_s);
     }
       break;
 
@@ -1459,11 +2519,15 @@ loongarch_builtin_vectorized_function (unsigned int fn, tree type_out,
     {
       if (out_n == 2 && in_n == 2)
 	return LARCH_GET_BUILTIN (lsx_vfrintrz_d);
+      if (out_n == 4 && in_n == 4)
+	return LARCH_GET_BUILTIN (lasx_xvfrintrz_d);
     }
       if (out_mode == SFmode && in_mode == SFmode)
     {
       if (out_n == 4 && in_n == 4)
 	return LARCH_GET_BUILTIN (lsx_vfrintrz_s);
+      if (out_n == 8 && in_n == 8)
+	return LARCH_GET_BUILTIN (lasx_xvfrintrz_s);
     }
       break;
 
@@ -1473,11 +2537,15 @@ loongarch_builtin_vectorized_function (unsigned int fn, tree type_out,
     {
       if (out_n == 2 && in_n == 2)
 	return LARCH_GET_BUILTIN (lsx_vfrint_d);
+      if (out_n == 4 && in_n == 4)
+	return LARCH_GET_BUILTIN (lasx_xvfrint_d);
     }
       if (out_mode == SFmode && in_mode == SFmode)
     {
       if (out_n == 4 && in_n == 4)
 	return LARCH_GET_BUILTIN (lsx_vfrint_s);
+      if (out_n == 8 && in_n == 8)
+	return LARCH_GET_BUILTIN (lasx_xvfrint_s);
     }
       break;
 
@@ -1486,11 +2554,15 @@ loongarch_builtin_vectorized_function (unsigned int fn, tree type_out,
     {
       if (out_n == 2 && in_n == 2)
 	return LARCH_GET_BUILTIN (lsx_vfrintrm_d);
+      if (out_n == 4 && in_n == 4)
+	return LARCH_GET_BUILTIN (lasx_xvfrintrm_d);
     }
       if (out_mode == SFmode && in_mode == SFmode)
     {
       if (out_n == 4 && in_n == 4)
 	return LARCH_GET_BUILTIN (lsx_vfrintrm_s);
+      if (out_n == 8 && in_n == 8)
+	return LARCH_GET_BUILTIN (lasx_xvfrintrm_s);
     }
       break;
 
@@ -1565,6 +2637,30 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lsx_vsubi_hu:
     case CODE_FOR_lsx_vsubi_wu:
     case CODE_FOR_lsx_vsubi_du:
+    case CODE_FOR_lasx_xvaddi_bu:
+    case CODE_FOR_lasx_xvaddi_hu:
+    case CODE_FOR_lasx_xvaddi_wu:
+    case CODE_FOR_lasx_xvaddi_du:
+    case CODE_FOR_lasx_xvslti_bu:
+    case CODE_FOR_lasx_xvslti_hu:
+    case CODE_FOR_lasx_xvslti_wu:
+    case CODE_FOR_lasx_xvslti_du:
+    case CODE_FOR_lasx_xvslei_bu:
+    case CODE_FOR_lasx_xvslei_hu:
+    case CODE_FOR_lasx_xvslei_wu:
+    case CODE_FOR_lasx_xvslei_du:
+    case CODE_FOR_lasx_xvmaxi_bu:
+    case CODE_FOR_lasx_xvmaxi_hu:
+    case CODE_FOR_lasx_xvmaxi_wu:
+    case CODE_FOR_lasx_xvmaxi_du:
+    case CODE_FOR_lasx_xvmini_bu:
+    case CODE_FOR_lasx_xvmini_hu:
+    case CODE_FOR_lasx_xvmini_wu:
+    case CODE_FOR_lasx_xvmini_du:
+    case CODE_FOR_lasx_xvsubi_bu:
+    case CODE_FOR_lasx_xvsubi_hu:
+    case CODE_FOR_lasx_xvsubi_wu:
+    case CODE_FOR_lasx_xvsubi_du:
       gcc_assert (has_target_p && nops == 3);
       /* We only generate a vector of constants iff the second argument
 	 is an immediate.  We also validate the range of the immediate.  */
@@ -1603,6 +2699,26 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lsx_vmini_h:
     case CODE_FOR_lsx_vmini_w:
     case CODE_FOR_lsx_vmini_d:
+    case CODE_FOR_lasx_xvseqi_b:
+    case CODE_FOR_lasx_xvseqi_h:
+    case CODE_FOR_lasx_xvseqi_w:
+    case CODE_FOR_lasx_xvseqi_d:
+    case CODE_FOR_lasx_xvslti_b:
+    case CODE_FOR_lasx_xvslti_h:
+    case CODE_FOR_lasx_xvslti_w:
+    case CODE_FOR_lasx_xvslti_d:
+    case CODE_FOR_lasx_xvslei_b:
+    case CODE_FOR_lasx_xvslei_h:
+    case CODE_FOR_lasx_xvslei_w:
+    case CODE_FOR_lasx_xvslei_d:
+    case CODE_FOR_lasx_xvmaxi_b:
+    case CODE_FOR_lasx_xvmaxi_h:
+    case CODE_FOR_lasx_xvmaxi_w:
+    case CODE_FOR_lasx_xvmaxi_d:
+    case CODE_FOR_lasx_xvmini_b:
+    case CODE_FOR_lasx_xvmini_h:
+    case CODE_FOR_lasx_xvmini_w:
+    case CODE_FOR_lasx_xvmini_d:
       gcc_assert (has_target_p && nops == 3);
       /* We only generate a vector of constants iff the second argument
 	 is an immediate.  We also validate the range of the immediate.  */
@@ -1625,6 +2741,10 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lsx_vori_b:
     case CODE_FOR_lsx_vnori_b:
     case CODE_FOR_lsx_vxori_b:
+    case CODE_FOR_lasx_xvandi_b:
+    case CODE_FOR_lasx_xvori_b:
+    case CODE_FOR_lasx_xvnori_b:
+    case CODE_FOR_lasx_xvxori_b:
       gcc_assert (has_target_p && nops == 3);
       if (!CONST_INT_P (ops[2].value))
 	break;
@@ -1634,6 +2754,7 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       break;
 
     case CODE_FOR_lsx_vbitseli_b:
+    case CODE_FOR_lasx_xvbitseli_b:
       gcc_assert (has_target_p && nops == 4);
       if (!CONST_INT_P (ops[3].value))
 	break;
@@ -1646,6 +2767,10 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lsx_vreplgr2vr_h:
     case CODE_FOR_lsx_vreplgr2vr_w:
     case CODE_FOR_lsx_vreplgr2vr_d:
+    case CODE_FOR_lasx_xvreplgr2vr_b:
+    case CODE_FOR_lasx_xvreplgr2vr_h:
+    case CODE_FOR_lasx_xvreplgr2vr_w:
+    case CODE_FOR_lasx_xvreplgr2vr_d:
       /* Map the built-ins to vector fill operations.  We need fix up the mode
 	 for the element being inserted.  */
       gcc_assert (has_target_p && nops == 2);
@@ -1674,6 +2799,26 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lsx_vpickod_b:
     case CODE_FOR_lsx_vpickod_h:
     case CODE_FOR_lsx_vpickod_w:
+    case CODE_FOR_lasx_xvilvh_b:
+    case CODE_FOR_lasx_xvilvh_h:
+    case CODE_FOR_lasx_xvilvh_w:
+    case CODE_FOR_lasx_xvilvh_d:
+    case CODE_FOR_lasx_xvilvl_b:
+    case CODE_FOR_lasx_xvilvl_h:
+    case CODE_FOR_lasx_xvilvl_w:
+    case CODE_FOR_lasx_xvilvl_d:
+    case CODE_FOR_lasx_xvpackev_b:
+    case CODE_FOR_lasx_xvpackev_h:
+    case CODE_FOR_lasx_xvpackev_w:
+    case CODE_FOR_lasx_xvpackod_b:
+    case CODE_FOR_lasx_xvpackod_h:
+    case CODE_FOR_lasx_xvpackod_w:
+    case CODE_FOR_lasx_xvpickev_b:
+    case CODE_FOR_lasx_xvpickev_h:
+    case CODE_FOR_lasx_xvpickev_w:
+    case CODE_FOR_lasx_xvpickod_b:
+    case CODE_FOR_lasx_xvpickod_h:
+    case CODE_FOR_lasx_xvpickod_w:
       /* Swap the operands 1 and 2 for interleave operations.  Built-ins follow
 	 convention of ISA, which have op1 as higher component and op2 as lower
 	 component.  However, the VEC_PERM op in tree and vec_concat in RTL
@@ -1695,6 +2840,18 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lsx_vsrli_h:
     case CODE_FOR_lsx_vsrli_w:
     case CODE_FOR_lsx_vsrli_d:
+    case CODE_FOR_lasx_xvslli_b:
+    case CODE_FOR_lasx_xvslli_h:
+    case CODE_FOR_lasx_xvslli_w:
+    case CODE_FOR_lasx_xvslli_d:
+    case CODE_FOR_lasx_xvsrai_b:
+    case CODE_FOR_lasx_xvsrai_h:
+    case CODE_FOR_lasx_xvsrai_w:
+    case CODE_FOR_lasx_xvsrai_d:
+    case CODE_FOR_lasx_xvsrli_b:
+    case CODE_FOR_lasx_xvsrli_h:
+    case CODE_FOR_lasx_xvsrli_w:
+    case CODE_FOR_lasx_xvsrli_d:
       gcc_assert (has_target_p && nops == 3);
       if (CONST_INT_P (ops[2].value))
 	{
@@ -1753,6 +2910,25 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
       gcc_assert (has_target_p && nops == 3);
       ops[2].value = loongarch_gen_const_int_vector_shuffle (ops[0].mode,
 							     INTVAL (ops[2].value));
+      break;
+
+    case CODE_FOR_lasx_xvinsgr2vr_w:
+    case CODE_FOR_lasx_xvinsgr2vr_d:
+      /* Map the built-ins to insert operations.  We need to swap operands,
+	 fix up the mode for the element being inserted, and generate
+	 a bit mask for vec_merge.  */
+      gcc_assert (has_target_p && nops == 4);
+      std::swap (ops[1], ops[2]);
+      imode = GET_MODE_INNER (ops[0].mode);
+      ops[1].value = lowpart_subreg (imode, ops[1].value, ops[1].mode);
+      ops[1].mode = imode;
+      rangelo = 0;
+      rangehi = GET_MODE_NUNITS (ops[0].mode) - 1;
+      if (CONST_INT_P (ops[3].value)
+	  && IN_RANGE (INTVAL (ops[3].value), rangelo, rangehi))
+	ops[3].value = GEN_INT (1 << INTVAL (ops[3].value));
+      else
+	error_opno = 2;
       break;
 
     default:
@@ -1864,12 +3040,14 @@ loongarch_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     {
     case LARCH_BUILTIN_DIRECT:
     case LARCH_BUILTIN_LSX:
+    case LARCH_BUILTIN_LASX:
       return loongarch_expand_builtin_direct (d->icode, target, exp, true);
 
     case LARCH_BUILTIN_DIRECT_NO_TARGET:
       return loongarch_expand_builtin_direct (d->icode, target, exp, false);
 
     case LARCH_BUILTIN_LSX_TEST_BRANCH:
+    case LARCH_BUILTIN_LASX_TEST_BRANCH:
       return loongarch_expand_builtin_lsx_test_branch (d->icode, exp);
     }
   gcc_unreachable ();

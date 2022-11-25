@@ -469,7 +469,7 @@ mips*-*-*)
 	;;
 loongarch*-*-*)
 	cpu_type=loongarch
-	extra_headers="larchintrin.h lsxintrin.h"
+	extra_headers="larchintrin.h lsxintrin.h lasxintrin.h"
 	extra_objs="loongarch-c.o loongarch-builtins.o loongarch-cpu.o loongarch-opts.o loongarch-def.o"
 	extra_gcc_objs="loongarch-driver.o loongarch-cpu.o loongarch-opts.o loongarch-def.o"
 	extra_options="${extra_options} g.opt fused-madd.opt"
