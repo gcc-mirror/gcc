@@ -92,7 +92,7 @@ if doc_name == 'gnat_rm':
     exclude_patterns.append('share/gnat_project_manager.rst')
     print('ignoring share/gnat_project_manager.rst')
 
-extensions = []
+extensions = ['sphinx_rtd_theme']
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = doc_name
@@ -107,7 +107,7 @@ release = get_gnat_version()
 
 pygments_style = None
 tags.add(get_gnat_build_type())
-html_theme = 'sphinxdoc'
+html_theme = 'sphinx_rtd_theme'
 if os.path.isfile('adacore_transparent.png'):
     html_logo = 'adacore_transparent.png'
 if os.path.isfile('favicon.ico'):
