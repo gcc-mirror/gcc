@@ -1,3 +1,97 @@
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory: Do not include <bits/stl_algobase.h>.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/swap.cc (MoveOnly::operator==): Add
+	const qualifier.
+	* testsuite/26_numerics/valarray/87641.cc (X::operator==):
+	Likewise.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::_M_invalid): Remove.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (duration): Check preconditions on
+	template arguments before using them.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::filename()): Fix dangling
+	reference.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 1203.
+	* doc/html/*: Regenerate.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/barrier: Add missing runtime exception.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_dir.h (directory_iterator): Add comparison
+	with std::default_sentinel_t. Remove redundant operator!= for
+	C++20.
+	* (recursive_directory_iterator): Likewise.
+	* include/bits/iterator_concepts.h [!__cpp_lib_concepts]
+	(default_sentinel_t, default_sentinel): Define even if concepts
+	are not supported.
+	* include/bits/regex.h (regex_iterator): Add comparison with
+	std::default_sentinel_t. Remove redundant operator!= for C++20.
+	(regex_token_iterator): Likewise.
+	(regex_token_iterator::_M_end_of_seq()): Add noexcept.
+	* testsuite/27_io/filesystem/iterators/lwg3719.cc: New test.
+	* testsuite/28_regex/iterators/regex_iterator/lwg3719.cc:
+	New test.
+	* testsuite/28_regex/iterators/regex_token_iterator/lwg3719.cc:
+	New test.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91456
+	* include/std/type_traits (__is_nothrow_invocable): Remove.
+	(__is_invocable_impl::__nothrow_type): New member type which
+	checks if the conversion can throw.
+	(__is_nt_invocable_impl): Replace class template with alias
+	template to __is_nt_invocable_impl::__nothrow_type.
+	* testsuite/20_util/is_nothrow_invocable/91456.cc: New test.
+	* testsuite/20_util/is_nothrow_convertible/value.cc: Remove
+	macro used by value_ext.cc test.
+	* testsuite/20_util/is_nothrow_convertible/value_ext.cc: Remove
+	test for non-standard __is_nothrow_invocable trait.
+
 2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/106201

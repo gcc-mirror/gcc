@@ -1,3 +1,12 @@
+2022-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* range-op.cc (operator_bitwise_xor::op1_range): Fix thinko.
+
+2022-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-loop-distribution.cc (loop_distribution::classify_builtin_ldst):
+	Bail out if source and destination do not have the same storage order.
+
 2022-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
