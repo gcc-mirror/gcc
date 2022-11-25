@@ -19215,11 +19215,11 @@ else
   ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&5
+$as_echo "$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&6; }
   else
     ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&5
-$as_echo "$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&6; }
   if test x"$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" = x"yes"; then
 
 $as_echo "#define _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T 1" >>confdefs.h
@@ -19253,11 +19253,11 @@ else
   ac_uchar_c8rtomb_mbrtoc8_cxx20=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_cxx20" >&5
+$as_echo "$ac_uchar_c8rtomb_mbrtoc8_cxx20" >&6; }
   else
     ac_uchar_c8rtomb_mbrtoc8_cxx20=no
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_cxx20" >&5
-$as_echo "$ac_uchar_c8rtomb_mbrtoc8_cxx20" >&6; }
   if test x"$ac_uchar_c8rtomb_mbrtoc8_cxx20" = x"yes"; then
 
 $as_echo "#define _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20 1" >>confdefs.h
@@ -71212,6 +71212,8 @@ $as_echo_n "checking whether to build libbacktrace support... " >&6; }
   if test "$enable_libstdcxx_backtrace" = "auto"; then
     enable_libstdcxx_backtrace=no
   fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_backtrace" >&5
+$as_echo "$enable_libstdcxx_backtrace" >&6; }
   if test "$enable_libstdcxx_backtrace" = "yes"; then
     BACKTRACE_SUPPORTED=1
 
@@ -71280,8 +71282,6 @@ $as_echo "#define HAVE_STACKTRACE 1" >>confdefs.h
     BACKTRACE_USES_MALLOC=0
     BACKTRACE_SUPPORTS_THREADS=0
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_backtrace" >&5
-$as_echo "$enable_libstdcxx_backtrace" >&6; }
 
 
 
