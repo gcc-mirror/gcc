@@ -2649,6 +2649,9 @@ operator_bitwise_xor::op1_range (irange &r, tree type,
 	    r.set_varying (type);
 	  else if (op2.zero_p ())
 	    r = range_true (type);
+	  // See get_bool_state for the rationale
+	  else if (op2.contains_p (build_zero_cst (op2.type ())))
+	    r = range_true_and_false (type);
 	  else
 	    r = range_false (type);
 	  break;
