@@ -21897,18 +21897,6 @@ AMD Family 19h Zen version 3.
 
 @item znver4
 AMD Family 19h Zen version 4.
-
-@item x86-64
-Baseline x86-64 microarchitecture level (as defined in x86-64 psABI).
-
-@item x86-64-v2
-x86-64-v2 microarchitecture level.
-
-@item x86-64-v3
-x86-64-v3 microarchitecture level.
-
-@item x86-64-v4
-x86-64-v4 microarchitecture level.
 @end table
 
 Here is an example:
@@ -22002,6 +21990,16 @@ VPCLMULQDQ instructions.
 AVX512VNNI instructions.
 @item avx512bitalg
 AVX512BITALG instructions.
+@item x86-64
+Baseline x86-64 microarchitecture level (as defined in x86-64 psABI).
+@item x86-64-v2
+x86-64-v2 microarchitecture level.
+@item x86-64-v3
+x86-64-v3 microarchitecture level.
+@item x86-64-v4
+x86-64-v4 microarchitecture level.
+
+
 @end table
 
 Here is an example:
