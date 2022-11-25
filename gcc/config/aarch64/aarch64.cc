@@ -7537,14 +7537,18 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
    bits.  The idea is to suppress any stronger alignment requested by
    the user and opt for the natural alignment (specified in AAPCS64 \S
    4.1).  ABI_BREAK is set to the old alignment if the alignment was
-   incorrectly calculated in versions of GCC prior to GCC-9.  This is
-   a helper function for local use only.  */
+   incorrectly calculated in versions of GCC prior to GCC-9.
+   ABI_BREAK_PACKED is set to the old alignment if it was incorrectly
+   calculated in versions between GCC-9 and GCC-13.  This is a helper
+   function for local use only.  */
 
 static unsigned int
 aarch64_function_arg_alignment (machine_mode mode, const_tree type,
-				unsigned int *abi_break)
+				unsigned int *abi_break,
+				unsigned int *abi_break_packed)
 {
   *abi_break = 0;
+  *abi_break_packed = 0;
   if (!type)
     return GET_MODE_ALIGNMENT (mode);
 
@@ -7560,6 +7564,7 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
     return TYPE_ALIGN (TREE_TYPE (type));
 
   unsigned int alignment = 0;
+  unsigned int bitfield_alignment_with_packed = 0;
   unsigned int bitfield_alignment = 0;
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)
@@ -7579,10 +7584,29 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 	   but gains 8-byte alignment and size thanks to "e".  */
 	alignment = std::max (alignment, DECL_ALIGN (field));
 	if (DECL_BIT_FIELD_TYPE (field))
-	  bitfield_alignment
-	    = std::max (bitfield_alignment,
-			TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+	  {
+	    /* Take the bit-field type's alignment into account only
+	       if the user didn't reduce this field's alignment with
+	       the packed attribute.  */
+	    if (!DECL_PACKED (field))
+	      bitfield_alignment
+		= std::max (bitfield_alignment,
+			    TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+
+	    /* Compute the alignment even if the bit-field is
+	       packed, so that we can emit a warning in case the
+	       alignment changed between GCC versions.  */
+	    bitfield_alignment_with_packed
+	      = std::max (bitfield_alignment_with_packed,
+			  TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+	  }
       }
+
+  /* Emit a warning if the alignment is different when taking the
+     'packed' attribute into account.  */
+  if (bitfield_alignment != bitfield_alignment_with_packed
+      && bitfield_alignment_with_packed > alignment)
+    *abi_break_packed = bitfield_alignment_with_packed;
 
   if (bitfield_alignment > alignment)
     {
@@ -7609,6 +7633,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   bool allocate_ncrn, allocate_nvrn;
   HOST_WIDE_INT size;
   unsigned int abi_break;
+  unsigned int abi_break_packed;
 
   /* We need to do this once per argument.  */
   if (pcum->aapcs_arg_processed)
@@ -7620,9 +7645,57 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
        && (currently_expanding_function_start
 	   || currently_expanding_gimple_stmt));
 
+  /* There are several things to note here:
+
+     - Both the C and AAPCS64 interpretations of a type's alignment should
+       give a value that is no greater than the type's size.
+
+     - Types bigger than 16 bytes are passed indirectly.
+
+     - If an argument of type T is passed indirectly, TYPE and MODE describe
+       a pointer to T rather than T iself.
+
+     It follows that the AAPCS64 alignment of TYPE must be no greater
+     than 16 bytes.
+
+     Versions prior to GCC 9.1 ignored a bitfield's underlying type
+     and so could calculate an alignment that was too small.  If this
+     happened for TYPE then ABI_BREAK is this older, too-small alignment.
+
+     Although GCC 9.1 fixed that bug, it introduced a different one:
+     it would consider the alignment of a bitfield's underlying type even
+     if the field was packed (which should have the effect of overriding
+     the alignment of the underlying type).  This was fixed in GCC 13.1.
+
+     As a result of this bug, GCC 9 to GCC 12 could calculate an alignment
+     that was too big.  If this happened for TYPE, ABI_BREAK_PACKED is
+     this older, too-big alignment.
+
+     Also, the fact that GCC 9 to GCC 12 considered irrelevant
+     alignments meant they could calculate type alignments that were
+     bigger than the type's size, contrary to the assumption above.
+     The handling of register arguments was nevertheless (and justifiably)
+     written to follow the assumption that the alignment can never be
+     greater than the size.  The same was not true for stack arguments;
+     their alignment was instead handled by MIN bounds in
+     aarch64_function_arg_boundary.
+
+     The net effect is that, if GCC 9 to GCC 12 incorrectly calculated
+     an alignment of more than 16 bytes for TYPE then:
+
+     - If the argument was passed in registers, these GCC versions
+       would treat the alignment as though it was *less than* 16 bytes.
+
+     - If the argument was passed on the stack, these GCC versions
+       would treat the alignment as though it was *equal to* 16 bytes.
+
+     Both behaviors were wrong, but in different cases.  */
   unsigned int alignment
-    = aarch64_function_arg_alignment (mode, type, &abi_break);
-  gcc_assert (!alignment || abi_break < alignment);
+    = aarch64_function_arg_alignment (mode, type, &abi_break,
+				      &abi_break_packed);
+  gcc_assert (alignment <= 16 * BITS_PER_UNIT
+	      && (!alignment || abi_break < alignment)
+	      && (!abi_break_packed || alignment < abi_break_packed));
 
   pcum->aapcs_arg_processed = true;
 
@@ -7760,19 +7833,29 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
       /* C.8 if the argument has an alignment of 16 then the NGRN is
 	 rounded up to the next even number.  */
       if (nregs == 2
-	  && ncrn % 2
+	  && ncrn % 2)
+	{
+	  /* Emit a warning if the alignment changed when taking the
+	     'packed' attribute into account.  */
+	  if (warn_pcs_change
+	      && abi_break_packed
+	      && ((abi_break_packed == 16 * BITS_PER_UNIT)
+		  != (alignment == 16 * BITS_PER_UNIT)))
+	    inform (input_location, "parameter passing for argument of type "
+		    "%qT changed in GCC 13.1", type);
+
 	  /* The == 16 * BITS_PER_UNIT instead of >= 16 * BITS_PER_UNIT
 	     comparison is there because for > 16 * BITS_PER_UNIT
 	     alignment nregs should be > 2 and therefore it should be
 	     passed by reference rather than value.  */
-	  && (aarch64_function_arg_alignment (mode, type, &abi_break)
-	      == 16 * BITS_PER_UNIT))
-	{
-	  if (warn_pcs_change && abi_break)
-	    inform (input_location, "parameter passing for argument of type "
-		    "%qT changed in GCC 9.1", type);
-	  ++ncrn;
-	  gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	  if (alignment == 16 * BITS_PER_UNIT)
+	    {
+	      if (warn_pcs_change && abi_break)
+		inform (input_location, "parameter passing for argument of type "
+			"%qT changed in GCC 9.1", type);
+	      ++ncrn;
+	      gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	    }
 	}
 
       /* If an argument with an SVE mode needs to be shifted up to the
@@ -7825,8 +7908,14 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
 
-  if (aarch64_function_arg_alignment (mode, type, &abi_break)
-      == 16 * BITS_PER_UNIT)
+  if (warn_pcs_change
+      && abi_break_packed
+      && ((abi_break_packed >= 16 * BITS_PER_UNIT)
+	  != (alignment >= 16 * BITS_PER_UNIT)))
+    inform (input_location, "parameter passing for argument of type "
+	    "%qT changed in GCC 13.1", type);
+
+  if (alignment == 16 * BITS_PER_UNIT)
     {
       int new_size = ROUND_UP (pcum->aapcs_stack_size, 16 / UNITS_PER_WORD);
       if (pcum->aapcs_stack_size != new_size)
@@ -7948,16 +8037,13 @@ static unsigned int
 aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int abi_break;
+  unsigned int abi_break_packed;
   unsigned int alignment = aarch64_function_arg_alignment (mode, type,
-							   &abi_break);
+							   &abi_break,
+							   &abi_break_packed);
+  /* We rely on aarch64_layout_arg and aarch64_gimplify_va_arg_expr
+     to emit warnings about ABI incompatibility.  */
   alignment = MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
-  if (abi_break && warn_psabi)
-    {
-      abi_break = MIN (MAX (abi_break, PARM_BOUNDARY), STACK_BOUNDARY);
-      if (alignment != abi_break)
-	inform (input_location, "parameter passing for argument of type "
-		"%qT changed in GCC 9.1", type);
-    }
   return alignment;
 }
 
@@ -19706,8 +19792,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   size = int_size_in_bytes (type);
 
   unsigned int abi_break;
+  unsigned int abi_break_packed;
   align
-    = aarch64_function_arg_alignment (mode, type, &abi_break) / BITS_PER_UNIT;
+    = aarch64_function_arg_alignment (mode, type, &abi_break, &abi_break_packed)
+    / BITS_PER_UNIT;
 
   dw_align = false;
   adjust = 0;
@@ -19749,6 +19837,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		      unshare_expr (valist), f_groff, NULL_TREE);
       rsize = ROUND_UP (size, UNITS_PER_WORD);
       nregs = rsize / UNITS_PER_WORD;
+
+      if (align <= 8 && abi_break_packed && warn_psabi)
+	inform (input_location, "parameter passing for argument of type "
+		"%qT changed in GCC 13.1", type);
 
       if (align > 8)
 	{
