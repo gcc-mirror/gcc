@@ -24351,12 +24351,17 @@ aarch64_vectorize_can_special_div_by_constant (enum tree_code code,
   if ((flags & VEC_ANY_SVE) && !TARGET_SVE2)
     return false;
 
+  int pow = wi::exact_log2 (cst + 1);
+  auto insn_code = maybe_code_for_aarch64_bitmask_udiv3 (TYPE_MODE (vectype));
+  /* SVE actually has a div operator, we may have gotten here through
+     that route.  */
+  if (pow != (int) (element_precision (vectype) / 2)
+      || insn_code == CODE_FOR_nothing)
+    return false;
+
+  /* We can use the optimized pattern.  */
   if (in0 == NULL_RTX && in1 == NULL_RTX)
-    {
-      wide_int val = wi::add (cst, 1);
-      int pow = wi::exact_log2 (val);
-      return pow == (int)(element_precision (vectype) / 2);
-    }
+    return true;
 
   if (!VECTOR_TYPE_P (vectype))
    return false;
