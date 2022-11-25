@@ -7859,6 +7859,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       if (bb->loop_father->header == bb)
 	{
 	  class loop *this_loop = bb->loop_father;
+	  /* Avoid the need to remap SSA names used in nb_iterations.  */
+	  free_numbers_of_iterations_estimates (this_loop);
 	  class loop *outer = loop_outer (this_loop);
 	  if (outer == loop
 	      /* If the SESE region contains some bbs ending with
