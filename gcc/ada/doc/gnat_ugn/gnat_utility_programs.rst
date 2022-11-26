@@ -2187,30 +2187,32 @@ building specialized scripts.
 
   This program, when built and run, prints a list of addresses which
   correspond to the traceback when inside function ``Call_Me_Third``.
-  For instance, on x86_64 GNU/Linux:
+  For instance, on x86-64 GNU/Linux:
 
     ::
 
        $ gnatmake -g -q foo.adb
        $ ./foo
-       0x0000000000402561
-       0x00000000004025EF
-       0x00000000004025FB
-       0x0000000000402611
-       0x00000000004024C7
+       Load address: 0x00005586C9D7D000
+       0x00005586C9D81105
+       0x00005586C9D8119B
+       0x00005586C9D811A7
+       0x00005586C9D8128C
+       0x00005586C9D81069
 
   ``gnatsymbolize`` can be used to translate those addresses into
   code locations as follow:
 
     ::
 
-       $ gnatsymbolize foo 0x0000000000402561 0x00000000004025EF \
-           0x00000000004025FB 0x0000000000402611 0x00000000004024C7
-       Pck.Call_Me_Third at pck.adb:12
-       Pck.Call_Me_Second at pck.adb:20
-       Pck.Call_Me_First at pck.adb:25
-       Foo at foo.adb:6
-       Main at b~foo.adb:184
+       $ gnatsymbolize --load foo 0x00005586C9D7D000 0x00005586C9D81105 \
+           0x00005586C9D8119B 0x00005586C9D811A7 0x00005586C9D8128C \
+           0x00005586C9D81069
+       0x5586c9d81105 Pck.Call_Me_Third at pck.adb:12
+       0x5586c9d8119b Pck.Call_Me_Second at pck.adb:20
+       0x5586c9d811a7 Pck.Call_Me_First at pck.adb:25
+       0x5586c9d8128c Foo at foo.adb:6
+       0x5586c9d81069 Main at b~foo.adb:199
 
   Switches for ``gnatsymbolize``
   ------------------------------
@@ -2243,7 +2245,7 @@ building specialized scripts.
 
   :switch:`--load`
     Interpret the first address as the load address of the executable.
-    This is needed for position-independent executables on Windows.
+    This is needed for position-independent executables on Linux and Windows.
 
   Requirements for Correct Operation
   ----------------------------------
