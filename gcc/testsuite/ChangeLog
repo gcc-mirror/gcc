@@ -1,3 +1,23 @@
+2022-11-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/gomp/target-simd-clone-1.C: New.
+	* g++.dg/gomp/target-simd-clone-2.C: New.
+	* gcc.dg/gomp/target-simd-clone-1.c: New.
+	* gcc.dg/gomp/target-simd-clone-2.c: New.
+	* gcc.dg/gomp/target-simd-clone-3.c: New.
+	* gcc.dg/gomp/target-simd-clone-4.c: New.
+	* gcc.dg/gomp/target-simd-clone-5.c: New.
+	* gcc.dg/gomp/target-simd-clone-6.c: New.
+	* gcc.dg/gomp/target-simd-clone-7.c: New.
+	* gcc.dg/gomp/target-simd-clone-8.c: New.
+	* lib/scanoffloadipa.exp: New.
+
+2022-11-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/107830
+	* gcc.target/aarch64/sve2/pr107830-1.c: New test.
+	* gcc.target/aarch64/sve2/pr107830-2.c: New test.
+
 2022-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt100.adb: New test.

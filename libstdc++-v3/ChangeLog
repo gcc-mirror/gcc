@@ -1,5 +1,50 @@
 2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_CHECK_UCHAR_H): Don't use AC_MSG_RESULT
+	unless the AC_MSG_CHECKING happened.
+	* configure: Regenerate.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107850
+	* include/bits/erase_if.h (__erase_nodes_if): Use non-const
+	reference to the container.
+	* include/experimental/map (erase_if): Likewise.
+	* include/experimental/set (erase_if): Likewise.
+	* include/experimental/unordered_map (erase_if): Likewise.
+	* include/experimental/unordered_set (erase_if): Likewise.
+	* include/std/map (erase_if): Likewise.
+	* include/std/set (erase_if): Likewise.
+	* include/std/unordered_map (erase_if): Likewise.
+	* include/std/unordered_set (erase_if): Likewise.
+	* testsuite/23_containers/map/erasure.cc: Check with
+	const-incorrect predicate.
+	* testsuite/23_containers/set/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erasure.cc: Likewise.
+	* testsuite/experimental/map/erasure.cc: Likewise.
+	* testsuite/experimental/set/erasure.cc: Likewise.
+	* testsuite/experimental/unordered_map/erasure.cc: Likewise.
+	* testsuite/experimental/unordered_set/erasure.cc: Likewise.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h [three_way_comparison] (operator!=):
+	Do not define inequality operators when C++20 three way
+	comparisons are supported.
+	* include/ext/random [three_way_comparison] (operator!=):
+	Likewise.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_funcs.h (__distance):
+	Add always_inline attribute to overload for random
+	access iterators.
+	(advance, distance, next, prev): Add always_inline attribute to
+	inline functions that just forward to another function.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
 	* doc/html/manual/bugs.html: Regenerate.
 	* doc/xml/manual/intro.xml: Document LWG 3656 change.
 	* include/std/bit (__bit_width, bit_width): Return int.

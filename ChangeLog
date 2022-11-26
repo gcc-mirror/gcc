@@ -1,3 +1,10 @@
+2022-11-25  Weimin Pan  <weimin.pan@oracle.com>
+
+	* Makefile.def: Add libsframe as new module with its dependencies.
+	* Makefile.in: Regenerated.
+	* configure.ac: Add libsframe to host_libs.
+	* configure: Regenerated.
+
 2022-11-23  Marek Polacek  <polacek@redhat.com>
 
 	Revert:

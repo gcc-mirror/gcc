@@ -1,5 +1,13 @@
 2022-11-25  Martin Liska  <mliska@suse.cz>
 
+	Revert:
+	2022-11-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Temporarily disable
+	check_line.start.
+
+2022-11-25  Martin Liska  <mliska@suse.cz>
+
 	* gcc-changelog/git_commit.py: Temporarily disable
 	check_line.start.
 

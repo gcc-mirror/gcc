@@ -1,3 +1,22 @@
+2022-11-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp: Load scanoffloadipa.exp library.
+	* testsuite/libgomp.c/target-simd-clone-1.c: New.
+	* testsuite/libgomp.c/target-simd-clone-2.c: New.
+	* testsuite/libgomp.c/target-simd-clone-3.c: New.
+
+2022-11-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Use unsigned int
+	for 'i' to match 'fn_entries'; regard absent GOMP_REV_OFFLOAD_VAR
+	as valid and the code having no reverse-offload code.
+	* testsuite/libgomp.c-c++-common/reverse-offload-2.c: New test.
+
+2022-11-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Add three 5.1 items
+	and status for Technical Report (TR) 11.
+
 2022-11-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* config/gcn/libgomp-gcn.h (struct output):
