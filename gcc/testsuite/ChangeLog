@@ -1,3 +1,11 @@
+2022-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-11-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107576
+	* gfortran.dg/null_actual_3.f90: New test.
+
 2022-11-18  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
