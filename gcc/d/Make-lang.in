@@ -239,6 +239,7 @@ d21$(exeext): $(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(d.prev)
 
 D_TEXI_FILES = \
 	d/gdc.texi \
+	d/implement-d.texi \
 	$(gcc_docdir)/include/fdl.texi \
 	$(gcc_docdir)/include/gpl_v3.texi \
 	$(gcc_docdir)/include/gcc-common.texi \

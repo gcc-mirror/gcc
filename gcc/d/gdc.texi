@@ -65,13 +65,15 @@ Boston, MA 02110-1301, USA@*
 @top Introduction
 
 This manual describes how to use @command{gdc}, the GNU compiler for
-the D programming language.  This manual is specifically about
-@command{gdc}.  For more information about the D programming
-language in general, including language specifications and standard
-package documentation, see @uref{https://dlang.org/}.
+the D programming language.  This manual is specifically about how to
+invoke @command{gdc}, as well as its features and incompatibilities.
+For more information about the D programming language in general,
+including language specifications and standard package documentation,
+see @uref{https://dlang.org/}.
 
 @menu
 * Invoking gdc::                How to run gdc.
+* D Implementation::            User-visible implementation details.
 * Copying::                     The GNU General Public License.
 * GNU Free Documentation License::
                                 How you can share and copy this manual.
@@ -837,6 +839,8 @@ and all @code{function} bodies that are being compiled.
 @end table
 
 @c man end
+
+@include implement-d.texi
 
 @include gpl_v3.texi
 @include fdl.texi
