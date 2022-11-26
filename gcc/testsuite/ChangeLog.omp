@@ -1,3 +1,20 @@
+2022-11-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2022-11-25  Sandra Loosemore  <sandra@codesourcery.com>
+	
+	* g++.dg/gomp/target-simd-clone-1.C: New.
+	* g++.dg/gomp/target-simd-clone-2.C: New.
+	* gcc.dg/gomp/target-simd-clone-1.c: New.
+	* gcc.dg/gomp/target-simd-clone-2.c: New.
+	* gcc.dg/gomp/target-simd-clone-3.c: New.
+	* gcc.dg/gomp/target-simd-clone-4.c: New.
+	* gcc.dg/gomp/target-simd-clone-5.c: New.
+	* gcc.dg/gomp/target-simd-clone-6.c: New.
+	* gcc.dg/gomp/target-simd-clone-7.c: New.
+	* gcc.dg/gomp/target-simd-clone-8.c: New.
+	* lib/scanoffloadipa.exp: New.
+
 2022-11-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gcc.target/gcn/simd-math-1.c: New testcase.

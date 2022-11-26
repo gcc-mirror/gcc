@@ -2211,6 +2211,28 @@ fomit-frame-pointer
 Common Var(flag_omit_frame_pointer) Optimization
 When possible do not generate stack frames.
 
+fopenmp-target-simd-clone
+Common Alias(fopenmp-target-simd-clone=,any,none)
+
+fopenmp-target-simd-clone=
+Common Joined RejectNegative Enum(target_simd_clone_device) Var(flag_openmp_target_simd_clone) Init(OMP_TARGET_SIMD_CLONE_NONE) Optimization
+Generate SIMD clones for functions with the OpenMP declare target directive.
+
+Enum
+Name(target_simd_clone_device) Type(int)
+
+EnumValue
+Enum(target_simd_clone_device) String(none) Value(OMP_TARGET_SIMD_CLONE_NONE)
+
+EnumValue
+Enum(target_simd_clone_device) String(host) Value(OMP_TARGET_SIMD_CLONE_HOST)
+
+EnumValue
+Enum(target_simd_clone_device) String(nohost) Value(OMP_TARGET_SIMD_CLONE_NOHOST)
+
+EnumValue
+Enum(target_simd_clone_device) String(any) Value(OMP_TARGET_SIMD_CLONE_ANY)
+
 fopt-info
 Common Var(flag_opt_info) Optimization
 Enable all optimization info dumps on stderr.

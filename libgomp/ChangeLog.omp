@@ -1,3 +1,13 @@
+2022-11-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2022-11-25  Sandra Loosemore  <sandra@codesourcery.com>
+	
+	* testsuite/lib/libgomp.exp: Load scanoffloadipa.exp library.
+	* testsuite/libgomp.c/target-simd-clone-1.c: New.
+	* testsuite/libgomp.c/target-simd-clone-2.c: New.
+	* testsuite/libgomp.c/target-simd-clone-3.c: New.
+
 2022-11-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

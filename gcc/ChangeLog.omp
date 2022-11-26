@@ -1,3 +1,32 @@
+2022-11-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2022-11-25  Sandra Loosemore  <sandra@codesourcery.com>
+	
+	* common.opt (fopenmp-target-simd-clone): New option.
+	(target_simd_clone_device): New enum to go with it.
+	* doc/invoke.texi (-fopenmp-target-simd-clone): Document.
+	* flag-types.h (enum omp_target_simd_clone_device_kind): New.
+	* omp-simd-clone.cc (auto_simd_fail): New function.
+	(auto_simd_check_stmt): New function.
+	(plausible_type_for_simd_clone): New function.
+	(ok_for_auto_simd_clone): New function.
+	(simd_clone_create): Add force_local argument, make the symbol
+	have internal linkage if it is true.
+	(expand_simd_clones): Also check for cloneable functions with
+	"omp declare target".  Pass explicit_p argument to
+	simd_clone.compute_vecsize_and_simdlen target hook.
+	* opts.cc (default_options_table): Add -fopenmp-target-simd-clone.
+	* target.def (TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN):
+	Add bool explicit_p argument.
+	* doc/tm.texi: Regenerated.
+	* config/aarch64/aarch64.cc
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): Update.
+	* config/gcn/gcn.cc
+	(gcn_simd_clone_compute_vecsize_and_simdlen): Update.
+	* config/i386/i386.cc
+	(ix86_simd_clone_compute_vecsize_and_simdlen): Update.
+
 2022-11-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

@@ -5175,7 +5175,8 @@ static int
 gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node),
 					    struct cgraph_simd_clone *clonei,
 					    tree base_type,
-					    int ARG_UNUSED (num))
+					    int ARG_UNUSED (num),
+					    bool explicit_p)
 {
   unsigned int elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
 
@@ -5185,9 +5186,10 @@ gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node
     {
       /* Note that x86 has a similar message that is likely to trigger on
 	 sizes that are OK for gcn; the user can't win.  */
-      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %wd (amdgcn)",
-		  clonei->simdlen.to_constant ());
+      if (explicit_p)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported simdlen %wd (amdgcn)",
+		    clonei->simdlen.to_constant ());
       return 0;
     }
 
