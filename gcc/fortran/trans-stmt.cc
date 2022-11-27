@@ -264,6 +264,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
       if (e->expr_type == EXPR_VARIABLE
 	    && e->rank && fsym
 	    && fsym->attr.intent != INTENT_IN
+	    && !fsym->attr.value
 	    && gfc_check_fncall_dependency (e, fsym->attr.intent,
 					    sym, arg0, check_variable))
 	{
