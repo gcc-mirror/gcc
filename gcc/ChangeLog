@@ -1,3 +1,8 @@
+2022-11-26  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103356
+	* match.pd: ((~a) == b -> a ^ b): New pattern.
+
 2022-11-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* common.opt (fopenmp-target-simd-clone): New option.
