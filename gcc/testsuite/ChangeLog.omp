@@ -1,6 +1,20 @@
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from trunk:
+	2025-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/torture/stackalign/global-1.c: Re-enable for nvptx.
+	* gcc.dg/torture/stackalign/inline-1.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-1.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-4.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-1.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-2.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-3.c: Likewise.
+	* gcc.dg/torture/stackalign/ret-struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/struct-1.c: Likewise.
+
+	Backported from trunk:
 	2024-09-24  Prathamesh Kulkarni  <prathameshk@nvidia.com>
 		    Thomas Schwinge  <tschwinge@baylibre.com>
 

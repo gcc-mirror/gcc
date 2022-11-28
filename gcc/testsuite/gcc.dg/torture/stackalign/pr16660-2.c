@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-skip-if "Stack alignment causes use of alloca" { nvptx-*-* } } */
 
 #include "check.h"
 
