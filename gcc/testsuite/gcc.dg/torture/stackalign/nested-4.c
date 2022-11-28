@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "Stack alignment is too small" { hppa*-*-hpux* } } */
-/* { dg-skip-if "Stack alignment causes use of alloca" { nvptx-*-* } } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 #include "check.h"
 
