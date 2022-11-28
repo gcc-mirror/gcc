@@ -34,6 +34,191 @@
   UNSPEC_VPREDICATE
 ])
 
+(define_constants [
+   (INVALID_ATTRIBUTE            255)
+])
+
+;; True if the type is RVV instructions that include VTYPE
+;; global status register in the use op list.
+;; We known VTYPE has 4 fields: SEW, LMUL, TA, MA.
+;; The instruction need any of VTYPE field is set as true
+;; in this attribute.
+(define_attr "has_vtype_op" "false,true"
+  (cond [(eq_attr "type" "vlde,vste,vldm,vstm,vlds,vsts,\
+			  vldux,vldox,vstux,vstox,vldff,\
+			  vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,\
+			  vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,\
+			  vsalu,vaalu,vsmul,vsshift,vnclip,\
+			  vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,\
+			  vfcmp,vfsgnj,vfclass,vfmerge,vfmov,\
+			  vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,\
+			  vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
+			  vired,viwred,vfred,vfredo,vfwred,vfwredo,\
+			  vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,\
+			  vislide,vislide1,vfslide1,vgather,vcompress")
+	 (const_string "true")]
+	(const_string "false")))
+
+;; True if the type is RVV instructions that include VL
+;; global status register in the use op list.
+;; The instruction need vector length to be specified is set
+;; in this attribute.
+(define_attr "has_vl_op" "false,true"
+  (cond [(eq_attr "type" "vlde,vste,vldm,vstm,vlds,vsts,\
+			  vldux,vldox,vstux,vstox,vldff,\
+			  vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,\
+			  vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,\
+			  vsalu,vaalu,vsmul,vsshift,vnclip,\
+			  vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,\
+			  vfcmp,vfsgnj,vfclass,vfmerge,vfmov,\
+			  vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,\
+			  vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
+			  vired,viwred,vfred,vfredo,vfwred,vfwredo,\
+			  vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovxv,vfmovfv,\
+			  vislide,vislide1,vfslide1,vgather,vcompress")
+	 (const_string "true")]
+	(const_string "false")))
+
+;; The default SEW of RVV instruction. This attribute doesn't mean the instruction
+;; is necessary to require SEW check for example vlm.v which require ratio to
+;; check. However, we need default value of SEW for vsetvl instruction since there
+;; is no field for ratio in the vsetvl instruction encoding.
+(define_attr "sew" ""
+  (cond [(eq_attr "mode" "VNx1QI,VNx2QI,VNx4QI,VNx8QI,VNx16QI,VNx32QI,VNx64QI,\
+			  VNx1BI,VNx2BI,VNx4BI,VNx8BI,VNx16BI,VNx32BI,VNx64BI")
+	 (const_int 8)
+	 (eq_attr "mode" "VNx1HI,VNx2HI,VNx4HI,VNx8HI,VNx16HI,VNx32HI")
+	 (const_int 16)
+	 (eq_attr "mode" "VNx1SI,VNx2SI,VNx4SI,VNx8SI,VNx16SI,\
+			  VNx1SF,VNx2SF,VNx4SF,VNx8SF,VNx16SF")
+	 (const_int 32)
+	 (eq_attr "mode" "VNx1DI,VNx2DI,VNx4DI,VNx8DI,\
+			  VNx1DF,VNx2DF,VNx4DF,VNx8DF")
+	 (const_int 64)]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; Ditto to LMUL.
+(define_attr "vlmul" ""
+  (cond [(eq_attr "mode" "VNx1QI,VNx1BI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx1QImode)")
+	 (eq_attr "mode" "VNx2QI,VNx2BI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx2QImode)")
+	 (eq_attr "mode" "VNx4QI,VNx4BI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx4QImode)")
+	 (eq_attr "mode" "VNx8QI,VNx8BI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8QImode)")
+	 (eq_attr "mode" "VNx16QI,VNx16BI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx16QImode)")
+	 (eq_attr "mode" "VNx32QI,VNx32BI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx32QImode)")
+	 (eq_attr "mode" "VNx64QI,VNx64BI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx64QImode)")
+	 (eq_attr "mode" "VNx1HI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx1HImode)")
+	 (eq_attr "mode" "VNx2HI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx2HImode)")
+	 (eq_attr "mode" "VNx4HI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx4HImode)")
+	 (eq_attr "mode" "VNx8HI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8HImode)")
+	 (eq_attr "mode" "VNx16HI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx16HImode)")
+	 (eq_attr "mode" "VNx32HI")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx32HImode)")
+	 (eq_attr "mode" "VNx1SI,VNx1SF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx1SImode)")
+	 (eq_attr "mode" "VNx2SI,VNx2SF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx2SImode)")
+	 (eq_attr "mode" "VNx4SI,VNx4SF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx4SImode)")
+	 (eq_attr "mode" "VNx8SI,VNx8SF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8SImode)")
+	 (eq_attr "mode" "VNx16SI,VNx16SF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx16SImode)")
+	 (eq_attr "mode" "VNx1DI,VNx1DF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx1DImode)")
+	 (eq_attr "mode" "VNx2DI,VNx2DF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx2DImode)")
+	 (eq_attr "mode" "VNx4DI,VNx4DF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx4DImode)")
+	 (eq_attr "mode" "VNx8DI,VNx8DF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8DImode)")]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; It is valid for instruction that require sew/lmul ratio.
+(define_attr "ratio" ""
+  (cond [(eq_attr "type" "vimov,vfmov")
+	   (const_int INVALID_ATTRIBUTE)
+	 (eq_attr "mode" "VNx1QI,VNx1BI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx1QImode)")
+	 (eq_attr "mode" "VNx2QI,VNx2BI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx2QImode)")
+	 (eq_attr "mode" "VNx4QI,VNx4BI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx4QImode)")
+	 (eq_attr "mode" "VNx8QI,VNx8BI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx8QImode)")
+	 (eq_attr "mode" "VNx16QI,VNx16BI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx16QImode)")
+	 (eq_attr "mode" "VNx32QI,VNx32BI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx32QImode)")
+	 (eq_attr "mode" "VNx64QI,VNx64BI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx64QImode)")
+	 (eq_attr "mode" "VNx1HI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx1HImode)")
+	 (eq_attr "mode" "VNx2HI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx2HImode)")
+	 (eq_attr "mode" "VNx4HI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx4HImode)")
+	 (eq_attr "mode" "VNx8HI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx8HImode)")
+	 (eq_attr "mode" "VNx16HI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx16HImode)")
+	 (eq_attr "mode" "VNx32HI")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx32HImode)")
+	 (eq_attr "mode" "VNx1SI,VNx1SF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx1SImode)")
+	 (eq_attr "mode" "VNx2SI,VNx2SF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx2SImode)")
+	 (eq_attr "mode" "VNx4SI,VNx4SF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx4SImode)")
+	 (eq_attr "mode" "VNx8SI,VNx8SF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx8SImode)")
+	 (eq_attr "mode" "VNx16SI,VNx16SF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx16SImode)")
+	 (eq_attr "mode" "VNx1DI,VNx1DF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx1DImode)")
+	 (eq_attr "mode" "VNx2DI,VNx2DF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx2DImode)")
+	 (eq_attr "mode" "VNx4DI,VNx4DF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx4DImode)")
+	 (eq_attr "mode" "VNx8DI,VNx8DF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx8DImode)")]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; The index of operand[] to get the merge op.
+(define_attr "merge_op_idx" ""
+	(cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vlds,vmalu")
+	 (const_int 2)]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; The index of operand[] to get the avl op.
+(define_attr "vl_op_idx" ""
+	(cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vlds,vmalu")
+	 (const_int 4)]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; The index of operand[] to get the tail policy op.
+(define_attr "tail_policy_op_idx" ""
+  (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vlds")
+	 (const_int 5)]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; The index of operand[] to get the mask policy op.
+(define_attr "mask_policy_op_idx" ""
+  (cond [(eq_attr "type" "vlde,vste,vlds")
+	 (const_int 6)]
+	(const_int INVALID_ATTRIBUTE)))
+
 ;; -----------------------------------------------------------------
 ;; ---- Miscellaneous Operations
 ;; -----------------------------------------------------------------

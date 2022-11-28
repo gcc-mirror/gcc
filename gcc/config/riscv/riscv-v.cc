@@ -214,4 +214,45 @@ legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
   return true;
 }
 
+/* VTYPE information for machine_mode.  */
+struct mode_vtype_group
+{
+  enum vlmul_type vlmul_for_min_vlen32[NUM_MACHINE_MODES];
+  uint8_t ratio_for_min_vlen32[NUM_MACHINE_MODES];
+  enum vlmul_type vlmul_for_min_vlen64[NUM_MACHINE_MODES];
+  uint8_t ratio_for_min_vlen64[NUM_MACHINE_MODES];
+  mode_vtype_group ()
+  {
+#define ENTRY(MODE, REQUIREMENT, VLMUL_FOR_MIN_VLEN32, RATIO_FOR_MIN_VLEN32,   \
+	      VLMUL_FOR_MIN_VLEN64, RATIO_FOR_MIN_VLEN64)                      \
+  vlmul_for_min_vlen32[MODE##mode] = VLMUL_FOR_MIN_VLEN32;                     \
+  ratio_for_min_vlen32[MODE##mode] = RATIO_FOR_MIN_VLEN32;                     \
+  vlmul_for_min_vlen64[MODE##mode] = VLMUL_FOR_MIN_VLEN64;                     \
+  ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;
+#include "riscv-vector-switch.def"
+  }
+};
+
+static mode_vtype_group mode_vtype_infos;
+
+/* Get vlmul field value by comparing LMUL with BYTES_PER_RISCV_VECTOR.  */
+enum vlmul_type
+get_vlmul (machine_mode mode)
+{
+  if (TARGET_MIN_VLEN == 32)
+    return mode_vtype_infos.vlmul_for_min_vlen32[mode];
+  else
+    return mode_vtype_infos.vlmul_for_min_vlen64[mode];
+}
+
+/* Get ratio according to machine mode.  */
+unsigned int
+get_ratio (machine_mode mode)
+{
+  if (TARGET_MIN_VLEN == 32)
+    return mode_vtype_infos.ratio_for_min_vlen32[mode];
+  else
+    return mode_vtype_infos.ratio_for_min_vlen64[mode];
+}
+
 } // namespace riscv_vector

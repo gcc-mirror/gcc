@@ -979,7 +979,7 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
 bool
 riscv_v_ext_vector_mode_p (machine_mode mode)
 {
-#define ENTRY(MODE, REQUIREMENT)                                               \
+#define ENTRY(MODE, REQUIREMENT, ...)                                          \
   case MODE##mode:                                                             \
     return REQUIREMENT;
   switch (mode)

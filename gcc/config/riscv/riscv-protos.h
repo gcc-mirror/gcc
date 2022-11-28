@@ -120,6 +120,17 @@ extern void riscv_run_selftests (void);
 
 namespace riscv_vector {
 #define RVV_VLMAX gen_rtx_REG (Pmode, X0_REGNUM)
+enum vlmul_type
+{
+  LMUL_1 = 0,
+  LMUL_2 = 1,
+  LMUL_4 = 2,
+  LMUL_8 = 3,
+  LMUL_RESERVED = 4,
+  LMUL_F8 = 5,
+  LMUL_F4 = 6,
+  LMUL_F2 = 7,
+};
 /* Routines implemented in riscv-vector-builtins.cc.  */
 extern void init_builtins (void);
 extern const char *mangle_builtin_type (const_tree);
@@ -132,6 +143,8 @@ extern rtx expand_builtin (unsigned int, tree, rtx);
 extern bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern bool legitimize_move (rtx, rtx, machine_mode);
 extern void emit_pred_op (unsigned, rtx, rtx, machine_mode);
+extern enum vlmul_type get_vlmul (machine_mode);
+extern unsigned int get_ratio (machine_mode);
 enum tail_policy
 {
   TAIL_UNDISTURBED = 0,
