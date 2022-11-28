@@ -859,9 +859,6 @@ proc check_profiling_available { test_what } {
 # in Section 4 of C99 standard. Effectively, it is a target which supports no
 # extra headers or libraries other than what is considered essential.
 proc check_effective_target_freestanding { } {
-    if { [istarget nvptx-*-*] } {
-	return 1
-    }
     return 0
 }
 
