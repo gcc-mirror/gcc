@@ -49,6 +49,13 @@ GCCRS_D_OBJS = \
    rust/rustspec.o \
    $(END)
 
+RUST_CXXFLAGS = $(CXXFLAGS)
+
+# If the file exists, we're bootstrapping
+ifneq ($(wildcard ../stage_current)),)
+RUST_CXXFLAGS += -DRUST_RELEASE
+endif
+
 gccrs$(exeext): $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
@@ -269,7 +276,7 @@ rust.uninstall:
 # Enable selftests for the rust frontend
 selftest-rust: s-selftest-rust
 
-RUST_SELFTEST_FLAGS = -xrust $(SELFTEST_FLAGS)
+RUST_SELFTEST_FLAGS = -xrust -frust-incomplete-and-experimental-compiler-do-not-use $(SELFTEST_FLAGS)
 RUST_SELFTEST_DEPS = rust1$(exeext) $(SELFTEST_DEPS)
 
 # Run the rust selftests
@@ -330,8 +337,6 @@ CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-lex.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-parse.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-session-manager.o += $(RUST_INCLUDES)
-
-RUST_CXXFLAGS = $(CXXFLAGS)
 
 # build all rust/lex files in rust folder, add cross-folder includes
 rust/%.o: rust/lex/%.cc

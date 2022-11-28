@@ -74,6 +74,10 @@ frust-mangling=
 Rust Joined RejectNegative Enum(frust_mangling) Var(flag_rust_mangling)
 -frust-mangling=[legacy|v0]     Choose which version to use for name mangling
 
+frust-incomplete-and-experimental-compiler-do-not-use
+Rust Var(flag_rust_experimental)
+Enable experimental compilation of Rust files at your own risk
+
 Enum
 Name(frust_mangling) Type(int) UnknownError(unknown rust mangling option %qs)
 

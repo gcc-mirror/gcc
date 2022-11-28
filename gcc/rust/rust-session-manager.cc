@@ -427,6 +427,11 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
 void
 Session::compile_crate (const char *filename)
 {
+#ifdef RUST_RELEASE
+  if (!flag_rust_experimental)
+    gcc_unreachable ();
+#endif
+
   RAIIFile file_wrap (filename);
   if (!file_wrap.ok ())
     {
