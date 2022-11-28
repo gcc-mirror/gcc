@@ -162,6 +162,7 @@ See also @ref{OpenMP Implementation Status}.
 * OpenMP 5.0:: Feature completion status to 5.0 specification
 * OpenMP 5.1:: Feature completion status to 5.1 specification
 * OpenMP 5.2:: Feature completion status to 5.2 specification
+* OpenMP Technical Report 11:: Feature completion status to first 6.0 preview
 @end menu
 
 The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
@@ -350,6 +351,9 @@ The OpenMP 4.5 specification is fully supported.
 to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item For Fortran, diagnose placing declarative before/between @code{USE},
       @code{IMPORT}, and @code{IMPLICIT} as invalid @tab N @tab
+@item Optional comma beween directive and clause in the @code{#pragma} form @tab Y @tab
+@item @code{indirect} clause in @code{declare target} @tab N @tab
+@item @code{device_type(nohost)}/@code{device_type(host)} for variables @tab N @tab
 @end multitable
 
 
@@ -423,6 +427,70 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @emph{interop_types} in any position of the modifier list for the @code{init} clause
       of the @code{interop} construct @tab N @tab
 @end multitable
+
+
+@node OpenMP Technical Report 11
+@section OpenMP Technical Report 11
+
+Technical Report (TR) 11 is the first preview for OpenMP 6.0.
+
+@unnumberedsubsec New features listed in Appendix B of the OpenMP specification
+@multitable @columnfractions .60 .10 .25
+@item Features deprecated in versions 5.2, 5.1 and 5.0 were removed
+      @tab N/A @tab Backward compatibility
+@item The @code{decl} attribute was added to the C++ attribute syntax
+      @tab N @tab
+@item @code{_ALL} suffix to the device-scope environment variables
+      @tab P @tab Host device number wrongly accepted
+@item For Fortran, @emph{locator list} can be also function reference with
+      data pointer result @tab N @tab
+@item Ref-count change for @code{use_device_ptr}/@code{use_device_addr}
+      @tab N @tab
+@item Implicit reduction identifiers of C++ classes
+      @tab N @tab
+@item Change of the @emph{map-type} property from @emph{ultimate} to
+      @emph{default} @tab N @tab
+@item Concept of @emph{assumed-size arrays} in C and C++
+      @tab N @tab
+@item Mapping of @emph{assumed-size arrays} in C, C++ and Fortran
+      @tab N @tab
+@item @code{groupprivate} directive @tab N @tab
+@item @code{local} clause to declare target directive @tab N @tab
+@item @code{part_size} allocator trait @tab N @tab
+@item @code{pin_device}, @code{preferred_device} and @code{target_access}
+      allocator traits
+      @tab N @tab
+@item @code{access} allocator trait changes @tab N @tab
+@item Extension of @code{interop} operation of @code{append_args}, allowing all
+      modifiers of the @code{init} clause
+@item @code{interop} clause to @code{dispatch} @tab N @tab
+@item @code{apply} code to loop-transforming constructs @tab N @tab
+@item @code{omp_curr_progress_width} identifier @tab N @tab
+@item @code{safesync} clause to the @code{parallel} construct @tab N @tab
+@item @code{omp_get_max_progress_width} runtime routine @tab N @tab
+@item @code{strict} modifier keyword to @code{num_threads}, @code{num_tasks}
+      and @code{grainsize} @tab N @tab
+@item @code{memscope} clause to @code{atomic} and @code{flush} @tab N @tab
+@item Routines for obtaining memory spaces/allocators for shared/device memory
+      @tab N @tab
+@item @code{omp_get_memspace_num_resources} routine @tab N @tab
+@item @code{omp_get_submemspace} routine @tab N @tab
+@item @code{ompt_get_buffer_limits} OMPT routine @tab N @tab
+@item Extension of @code{OMP_DEFAULT_DEVICE} and new
+      @code{OMP_AVAILABLE_DEVICES} environment vars @tab N @tab
+@item Supporting increments with abstract names in @code{OMP_PLACES} @tab N @tab
+@end multitable
+
+@unnumberedsubsec Other new TR 11 features
+@multitable @columnfractions .60 .10 .25
+@item Relaxed Fortran restrictions to the @code{aligned} clause @tab N @tab
+@item Mapping lambda captures @tab N @tab
+@item For Fortran, atomic compare with storing the comparison result
+      @tab N @tab
+@item @code{aligned} clause changes for @code{simd} and @code{declare simd}
+      @tab N @tab
+@end multitable
+
 
 
 @c ---------------------------------------------------------------------
