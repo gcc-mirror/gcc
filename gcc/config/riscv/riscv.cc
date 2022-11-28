@@ -625,6 +625,30 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
 	}
     }
 
+  if (!TARGET_64BIT
+      && (value > INT32_MAX || value < INT32_MIN))
+    {
+      unsigned HOST_WIDE_INT loval = sext_hwi (value, 32);
+      unsigned HOST_WIDE_INT hival = sext_hwi ((value - loval) >> 32, 32);
+      struct riscv_integer_op alt_codes[RISCV_MAX_INTEGER_OPS];
+      struct riscv_integer_op hicode[RISCV_MAX_INTEGER_OPS];
+      int hi_cost, lo_cost;
+
+      hi_cost = riscv_build_integer_1 (hicode, hival, mode);
+      if (hi_cost < cost)
+	{
+	  lo_cost = riscv_build_integer_1 (alt_codes, loval, mode);
+	  if (lo_cost + hi_cost < cost)
+	    {
+	      memcpy (codes, alt_codes,
+		      lo_cost * sizeof (struct riscv_integer_op));
+	      memcpy (codes + lo_cost, hicode,
+		      hi_cost * sizeof (struct riscv_integer_op));
+	      cost = lo_cost + hi_cost;
+	    }
+	}
+    }
+
   return cost;
 }
 
