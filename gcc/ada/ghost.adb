@@ -261,6 +261,16 @@ package body Ghost is
             then
                return True;
 
+            --  A reference to a Ghost entity may appear within the class-wide
+            --  precondition of a helper subprogram. This context is treated
+            --  as suitable because it was already verified when we were
+            --  analyzing the original class-wide precondition.
+
+            elsif Is_Subprogram (Current_Scope)
+              and then Present (Class_Preconditions_Subprogram (Current_Scope))
+            then
+               return True;
+
             --  References to Ghost entities may be relocated in internally
             --  generated bodies.
 
