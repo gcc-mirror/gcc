@@ -462,7 +462,7 @@
 	 VCLSQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vcls.s%#<V_sz_elem>  %q0, %q1"
+  "vcls.s%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
