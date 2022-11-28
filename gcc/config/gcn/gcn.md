@@ -697,19 +697,6 @@
   ""
   [(set_attr "length" "0")])
 
-(define_insn_and_split "prologue_use_di"
-  [(unspec_volatile [(match_operand:DI 0 "register_operand")] UNSPECV_PROLOGUE_USE)]
-  ""
-  "#"
-  "reload_completed"
-  [(unspec_volatile [(match_dup 0)] UNSPECV_PROLOGUE_USE)
-   (unspec_volatile [(match_dup 1)] UNSPECV_PROLOGUE_USE)]
-  {
-    operands[1] = gcn_operand_part (DImode, operands[0], 1);
-    operands[0] = gcn_operand_part (DImode, operands[0], 0);
-  }
-  [(set_attr "length" "0")])
-
 (define_expand "prologue"
   [(const_int 0)]
   ""
