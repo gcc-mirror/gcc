@@ -951,7 +951,8 @@ decode_omp_directive (void)
       matchs ("end ordered", gfc_match_omp_eos_error, ST_OMP_END_ORDERED);
       matchs ("end parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
-      matcho ("end parallel do", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel do", gfc_match_omp_eos_error,
+	      ST_OMP_END_PARALLEL_DO);
       matcho ("end parallel loop", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_LOOP);
       matcho ("end parallel masked taskloop simd", gfc_match_omp_eos_error,
@@ -5433,7 +5434,13 @@ parse_omp_do (gfc_statement omp_st)
   if (st == omp_end_st)
     {
       if (new_st.op == EXEC_OMP_END_NOWAIT)
-	cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
+	{
+	  if (cp->ext.omp_clauses->nowait && new_st.ext.omp_bool)
+	    gfc_error_now ("Duplicated NOWAIT clause on %s and %s at %C",
+			   gfc_ascii_statement (omp_st),
+			   gfc_ascii_statement (omp_end_st));
+	  cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
+	}
       else
 	gcc_assert (new_st.op == EXEC_NOP);
       gfc_clear_new_st ();
@@ -5809,6 +5816,10 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
   switch (new_st.op)
     {
     case EXEC_OMP_END_NOWAIT:
+      if (cp->ext.omp_clauses->nowait && new_st.ext.omp_bool)
+	gfc_error_now ("Duplicated NOWAIT clause on %s and %s at %C",
+		       gfc_ascii_statement (omp_st),
+		       gfc_ascii_statement (omp_end_st));
       cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
       break;
     case EXEC_OMP_END_CRITICAL:
@@ -5823,8 +5834,22 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       new_st.ext.omp_name = NULL;
       break;
     case EXEC_OMP_END_SINGLE:
-      cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE]
-	= new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
+      if (cp->ext.omp_clauses->nowait && new_st.ext.omp_clauses->nowait)
+	gfc_error_now ("Duplicated NOWAIT clause on %s and %s at %C",
+		       gfc_ascii_statement (omp_st),
+		       gfc_ascii_statement (omp_end_st));
+      cp->ext.omp_clauses->nowait |= new_st.ext.omp_clauses->nowait;
+      if (cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE])
+	{
+	  gfc_omp_namelist *nl;
+	  for (nl = cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
+	      nl->next; nl = nl->next);
+	    ;
+	  nl->next = new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
+	}
+      else
+	cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE]
+	  = new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
       new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE] = NULL;
       gfc_free_omp_clauses (new_st.ext.omp_clauses);
       break;

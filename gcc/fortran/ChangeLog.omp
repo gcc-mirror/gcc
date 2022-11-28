@@ -1,3 +1,25 @@
+2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (OMP_DO_CLAUSES, OMP_SCOPE_CLAUSES,
+	OMP_SECTIONS_CLAUSES): Add 'nowait'.
+	(OMP_SINGLE_CLAUSES): Add 'nowait' and 'copyprivate'.
+	(gfc_match_omp_distribute_parallel_do,
+	gfc_match_omp_distribute_parallel_do_simd,
+	gfc_match_omp_parallel_do,
+	gfc_match_omp_parallel_do_simd,
+	gfc_match_omp_parallel_sections,
+	gfc_match_omp_teams_distribute_parallel_do,
+	gfc_match_omp_teams_distribute_parallel_do_simd): Disallow 'nowait'.
+	(gfc_match_omp_workshare): Match 'nowait' clause.
+	(gfc_match_omp_end_single): Use clause matcher for 'nowait'.
+	(resolve_omp_clauses): Reject 'nowait' + 'copyprivate'.
+	* parse.cc (decode_omp_directive): Break too long line.
+	(parse_omp_do, parse_omp_structured_block): Diagnose duplicated
+	'nowait' clause.
+
 2022-11-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Partial Revert:

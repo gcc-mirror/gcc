@@ -1,6 +1,13 @@
 2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark end-directive as Y.
+
+2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2022-11-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Use unsigned int

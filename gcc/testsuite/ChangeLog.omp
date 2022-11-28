@@ -1,3 +1,17 @@
+2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/copyprivate-1.f90: New test.
+	* gfortran.dg/gomp/copyprivate-2.f90: New test.
+	* gfortran.dg/gomp/nowait-2.f90: Move dg-error tests ...
+	* gfortran.dg/gomp/nowait-4.f90: ... to this new file.
+	* gfortran.dg/gomp/nowait-5.f90: New test.
+	* gfortran.dg/gomp/nowait-6.f90: New test.
+	* gfortran.dg/gomp/nowait-7.f90: New test.
+	* gfortran.dg/gomp/nowait-8.f90: New test.
+
 2022-11-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
