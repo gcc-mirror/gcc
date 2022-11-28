@@ -10955,7 +10955,7 @@ ix86_expand_vec_set_builtin (tree exp)
   op1 = expand_expr (arg1, NULL_RTX, mode1, EXPAND_NORMAL);
   elt = get_element_number (TREE_TYPE (arg0), arg2);
 
-  if (GET_MODE (op1) != mode1 && GET_MODE (op1) != VOIDmode)
+  if (GET_MODE (op1) != mode1)
     op1 = convert_modes (mode1, GET_MODE (op1), op1, true);
 
   op0 = force_reg (tmode, op0);
