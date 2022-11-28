@@ -439,7 +439,22 @@ Session::compile_crate (const char *filename)
   // parse file here
   /* create lexer and parser - these are file-specific and so aren't instance
    * variables */
-  Lexer lex (filename, std::move (file_wrap), linemap);
+  Optional<std::ofstream &> dump_lex_opt = Optional<std::ofstream &>::none ();
+  std::ofstream dump_lex_stream;
+  if (options.dump_option_enabled (CompileOptions::LEXER_DUMP))
+    {
+      dump_lex_stream.open (kLexDumpFile);
+      if (dump_lex_stream.fail ())
+	{
+	  rust_error_at (Linemap::unknown_location (),
+			 "cannot open %s:%m; ignored", kLexDumpFile);
+	}
+      auto stream = Optional<std::ofstream &>::some (dump_lex_stream);
+      dump_lex_opt = std::move (stream);
+    }
+
+  Lexer lex (filename, std::move (file_wrap), linemap, dump_lex_opt);
+
   Parser<Lexer> parser (lex);
 
   // generate crate from parser
@@ -448,11 +463,7 @@ Session::compile_crate (const char *filename)
   // handle crate name
   handle_crate_name (*ast_crate.get ());
 
-  // dump options
-  if (options.dump_option_enabled (CompileOptions::LEXER_DUMP))
-    {
-      dump_lex (parser);
-    }
+  // dump options except lexer dump
   if (options.dump_option_enabled (CompileOptions::PARSER_AST_DUMP))
     {
       dump_ast (parser, *ast_crate.get ());
@@ -817,24 +828,6 @@ Session::expansion (AST::Crate &crate)
   // maybe create macro crate if not rustdoc
 
   rust_debug ("finished expansion");
-}
-
-void
-Session::dump_lex (Parser<Lexer> &parser) const
-{
-  std::ofstream out;
-  out.open (kLexDumpFile);
-  if (out.fail ())
-    {
-      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
-		     kLexDumpFile);
-      return;
-    }
-
-  // TODO: rewrite lexer dump or something so that it allows for the crate
-  // to already be parsed
-  parser.debug_dump_lex_output (out);
-  out.close ();
 }
 
 void
