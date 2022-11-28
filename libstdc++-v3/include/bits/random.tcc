@@ -532,7 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::long_lag;
 
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
-    constexpr _UIntType
+    constexpr uint_least32_t
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::default_seed;
 #endif
 
@@ -541,7 +541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::
     seed(result_type __value)
     {
-      std::linear_congruential_engine<result_type, 40014u, 0u, 2147483563u>
+      std::linear_congruential_engine<uint_least32_t, 40014u, 0u, 2147483563u>
 	__lcg(__value == 0u ? default_seed : __value);
 
       const size_t __n = (__w + 31) / 32;

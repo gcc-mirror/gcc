@@ -721,9 +721,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr size_t      word_size    = __w;
       static constexpr size_t      short_lag    = __s;
       static constexpr size_t      long_lag     = __r;
-      static constexpr result_type default_seed = 19780503u;
+      static constexpr uint_least32_t default_seed = 19780503u;
 
-      subtract_with_carry_engine() : subtract_with_carry_engine(default_seed)
+      subtract_with_carry_engine() : subtract_with_carry_engine(0u)
       { }
 
       /**
@@ -758,7 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * set carry to 1, otherwise sets carry to 0.
        */
       void
-      seed(result_type __sd = default_seed);
+      seed(result_type __sd = 0u);
 
       /**
        * @brief Seeds the initial state @f$x_0@f$ of the
