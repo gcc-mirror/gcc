@@ -7557,6 +7557,9 @@ gfc_conv_intrinsic_merge (gfc_se * se, gfc_expr * expr)
 				   &se->pre);
       se->string_length = len;
     }
+  tsource = gfc_evaluate_now (tsource, &se->pre);
+  fsource = gfc_evaluate_now (fsource, &se->pre);
+  mask = gfc_evaluate_now (mask, &se->pre);
   type = TREE_TYPE (tsource);
   se->expr = fold_build3_loc (input_location, COND_EXPR, type, mask, tsource,
 			      fold_convert (type, fsource));

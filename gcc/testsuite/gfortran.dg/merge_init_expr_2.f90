@@ -48,7 +48,8 @@ end module m2
 
 
 subroutine test
-  character(len=3) :: one, two, three
+  character(len=3) :: one, three
+  character(len=3), parameter :: two = "def"
   logical, parameter :: true = .true.
   three = merge (one, two, true)
 end subroutine test
