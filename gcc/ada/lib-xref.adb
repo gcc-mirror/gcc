@@ -776,7 +776,7 @@ package body Lib.Xref is
                Set_Referenced_As_LHS (E, False);
 
             --  For OUT parameter not covered by the above cases, we simply
-            --  regard it as a non-reference.
+            --  regard it as a reference.
 
             else
                Set_Referenced_As_Out_Parameter (E);
