@@ -109,8 +109,8 @@ TargetVariable
 enum cmodel ix86_cmodel = CM_32
 
 ;; -mabi=
-TargetSave
-enum calling_abi x_ix86_abi
+TargetVariable
+enum calling_abi ix86_abi = SYSV_ABI
 
 ;; -masm=
 TargetSave
