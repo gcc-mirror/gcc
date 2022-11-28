@@ -429,7 +429,23 @@ Session::compile_crate (const char *filename)
 {
 #ifdef RUST_RELEASE
   if (!flag_rust_experimental)
-    gcc_unreachable ();
+    rust_fatal_error (
+      Location (), "%s",
+      "gccrs is not yet able to compile Rust code "
+      "properly. Most of the errors produced will be gccrs' fault and not the "
+      "crate you are trying to compile. Because of this, please reports issues "
+      "to us directly instead of opening issues on said crate's "
+      "repository.\n\nOur github repository: "
+      "https://github.com/rust-gcc/gccrs\nOur bugzilla tracker: "
+      "https://gcc.gnu.org/bugzilla/"
+      "buglist.cgi?bug_status=__open__&component=rust&product=gcc\n\n"
+      "If you understand this, and understand that the binaries produced might "
+      "not behave accordingly, you may attempt to use gccrs in an experimental "
+      "manner by passing the following flag:\n\n"
+      "`-frust-incomplete-and-experimental-compiler-do-not-use`\n\nFor "
+      "cargo-gccrs, this means passing\n\n"
+      "GCCRS_EXTRA_FLAGS=\"-frust-incomplete-and-experimental-compiler-do-not-"
+      "use\"\n\nas an environment variable.");
 #endif
 
   RAIIFile file_wrap (filename);
