@@ -1,3 +1,12 @@
+2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Work on s1 instead
+	of s[0:1] and use USE to prevent removal of setting that register.
+	* config/gcn/gcn.md (prologue_use_di): Remove.
+
 2022-11-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:

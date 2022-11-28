@@ -4589,8 +4589,9 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	    rtx not_first = gen_label_rtx ();
 	    rtx reg = gen_rtx_REG (DImode,
 			cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]);
-	    rtx cmp = force_reg (DImode,
-				 gen_rtx_LSHIFTRT (DImode, reg, GEN_INT (48)));
+	    reg = gcn_operand_part (DImode, reg, 1);
+	    rtx cmp = force_reg (SImode,
+				 gen_rtx_LSHIFTRT (SImode, reg, GEN_INT (16)));
 	    emit_insn (gen_cstoresi4 (result, gen_rtx_NE (BImode, cmp,
 							  GEN_INT(12345)),
 				      cmp, GEN_INT(12345)));
@@ -4598,12 +4599,11 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 							      const0_rtx),
 				       result));
 	    emit_move_insn (reg,
-	      force_reg (DImode,
-		gen_rtx_IOR (DImode,
-			     gen_rtx_AND (DImode, reg,
-					  GEN_INT (0x0000ffffffffffffL)),
-			     GEN_INT (12345L << 48))));
-	    emit_insn (gen_prologue_use (reg));
+	      force_reg (SImode,
+		gen_rtx_IOR (SImode,
+			     gen_rtx_AND (SImode, reg, GEN_INT (0x0000ffff)),
+			     GEN_INT (12345L << 16))));
+	    emit_insn (gen_rtx_USE (VOIDmode, reg));
 	    emit_label (not_first);
 	  }
 	return result;
