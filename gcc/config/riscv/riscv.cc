@@ -3004,9 +3004,9 @@ riscv_emit_int_order_test (enum rtx_code code, bool *invert_ptr,
 	}
       else if (invert_ptr == 0)
 	{
-	  rtx inv_target = riscv_force_binary (GET_MODE (target),
+	  rtx inv_target = riscv_force_binary (word_mode,
 					       inv_code, cmp0, cmp1);
-	  riscv_emit_binary (XOR, target, inv_target, const1_rtx);
+	  riscv_emit_binary (EQ, target, inv_target, const0_rtx);
 	}
       else
 	{
