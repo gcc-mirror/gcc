@@ -367,7 +367,7 @@
 	 VQNEGQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vqneg.s%#<V_sz_elem> %q0, %q1"
+  "vqneg.s%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
