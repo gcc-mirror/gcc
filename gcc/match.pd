@@ -354,7 +354,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    Only for unsigned A.  For signed A, this would not preserve rounding
    toward zero.
    For example: (-1 / ( 1 << B)) !=  -1 >> B.
-   Also also widening conversions, like:
+   Also handle widening conversions, like:
    (A / (unsigned long long) (1U << B)) -> (A >> B)
    or
    (A / (unsigned long long) (1 << B)) -> (A >> B).
