@@ -245,7 +245,7 @@
 	(neg:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vneg.f%#<V_sz_elem>  %q0, %q1"
+  "vneg.f%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -394,7 +394,7 @@
 	(neg:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vneg.s%#<V_sz_elem>  %q0, %q1"
+  "vneg.s%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
