@@ -1227,10 +1227,16 @@ scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
     {
     CASE_CONVERT:
       {
-	/* This assignment is under the form "a_1 = (cast) rhs.  */
+	/* This assignment is under the form "a_1 = (cast) rhs.  We cannot
+	   validate any precision altering conversion during the SCC
+	   analysis, so don't even try.  */
+	if (!tree_nop_conversion_p (type, TREE_TYPE (rhs0)))
+	  return t_false;
 	t_bool res = follow_ssa_edge_expr (at_stmt, rhs0,
 					   evolution_of_loop, limit);
-	*evolution_of_loop = chrec_convert (type, *evolution_of_loop, at_stmt);
+	if (res == t_true)
+	  *evolution_of_loop = chrec_convert (type, *evolution_of_loop,
+					      at_stmt);
 	return res;
       }
 
