@@ -21,9 +21,8 @@ void fn3 (char*);
 **	slli\tt1,t0,1
 **	add\tsp,sp,t1
 **	li\tt0,8192
-**	addi\tt0,t0,-208
+**	addi\tt0,t0,-192
 **	add\tsp,sp,t0
-**	addi\tsp,sp,16
 **	tail\t__riscv_restore_2
 */
 int stack_save_restore_2 (float a1, float a2, float a3, float a4,

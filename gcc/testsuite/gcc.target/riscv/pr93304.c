@@ -16,4 +16,4 @@ foo (void)
    regradless of the REG_ALLOC_ORDER.
    In theory, t2 should not used in such small program if regrename
    not executed incorrectly, because t0-a2 should be enough.  */
-/* { dg-final { scan-assembler-not "t2" } } */
+/* { dg-final { scan-assembler-not {\t[a-zA-Z0-9]+\t.*t2} } } */
