@@ -381,7 +381,7 @@
 	 VQABSQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vqabs.s%#<V_sz_elem> %q0, %q1"
+  "vqabs.s%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
