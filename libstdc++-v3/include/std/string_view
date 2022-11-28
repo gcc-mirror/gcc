@@ -315,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__glibcxx_requires_string_len(__str, __n);
 	__pos = std::__sv_check(size(), __pos, "basic_string_view::copy");
-	const size_type __rlen = std::min(__n, _M_len - __pos);
+	const size_type __rlen = std::min<size_t>(__n, _M_len - __pos);
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 2777. basic_string_view::copy should use char_traits::copy
 	traits_type::copy(__str, data() + __pos, __rlen);
@@ -327,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       substr(size_type __pos = 0, size_type __n = npos) const noexcept(false)
       {
 	__pos = std::__sv_check(size(), __pos, "basic_string_view::substr");
-	const size_type __rlen = std::min(__n, _M_len - __pos);
+	const size_type __rlen = std::min<size_t>(__n, _M_len - __pos);
 	return basic_string_view{_M_str + __pos, __rlen};
       }
 
