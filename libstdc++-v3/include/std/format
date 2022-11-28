@@ -2472,21 +2472,21 @@ namespace __format
       void
       _M_overflow() override
       {
-	auto __used = this->_M_used();
+	auto __s = this->_M_used();
 	if (_M_max < 0) // No maximum.
-	  _M_out = ranges::copy(__used, std::move(_M_out)).out;
+	  _M_out = ranges::copy(__s, std::move(_M_out)).out;
 	else if (_M_count < size_t(_M_max))
 	  {
 	    auto __max = _M_max - _M_count;
 	    span<_CharT> __first;
-	    if (__max < __used.size())
-	      __first = __used.first(__max);
+	    if (__max < __s.size())
+	      __first = __s.first(__max);
 	    else
-	      __first = __used;
+	      __first = __s;
 	    _M_out = ranges::copy(__first, std::move(_M_out)).out;
 	  }
 	this->_M_rewind();
-	_M_count += __used.size();
+	_M_count += __s.size();
       }
 
     public:
@@ -2529,8 +2529,8 @@ namespace __format
       void
       _M_overflow()
       {
-	auto __used = this->_M_used();
-	_M_count += __used.size();
+	auto __s = this->_M_used();
+	_M_count += __s.size();
 
 	if (_M_max >= 0)
 	  {
@@ -2544,7 +2544,7 @@ namespace __format
 	  {
 	    // No maximum character count. Just extend the span to allow
 	    // writing more characters to it.
-	    this->_M_reset({__used.data(), __used.size() + 1024}, __used.end());
+	    this->_M_reset({__s.data(), __s.size() + 1024}, __s.end());
 	  }
       }
 
@@ -2594,12 +2594,12 @@ namespace __format
       {
 	_Iter_sink::_M_overflow();
 	iter_difference_t<_OutIter> __count(_M_count);
-	auto __used = this->_M_used();
+	auto __s = this->_M_used();
 	auto __last = _M_first;
-	if (__used.data() == _M_buf) // Wrote at least _M_max characters.
+	if (__s.data() == _M_buf) // Wrote at least _M_max characters.
 	  __last += _M_max;
 	else
-	  __last += iter_difference_t<_OutIter>(__used.size());
+	  __last += iter_difference_t<_OutIter>(__s.size());
 	return { __last, __count };
       }
     };
@@ -3119,10 +3119,10 @@ namespace __format
     constexpr auto
     __pack_arg_types(const array<_Arg_t, _Nm>& __types)
     {
-      __UINT64_TYPE__ __packed = 0;
+      __UINT64_TYPE__ __packed_types = 0;
       for (auto __i = __types.rbegin(); __i != __types.rend(); ++__i)
-	__packed = (__packed << _Bits) | *__i;
-      return __packed;
+	__packed_types = (__packed_types << _Bits) | *__i;
+      return __packed_types;
     }
 } // namespace __format
 /// @endcond

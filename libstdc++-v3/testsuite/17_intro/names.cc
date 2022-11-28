@@ -129,8 +129,11 @@
 #define ptr (
 #endif
 
-// This clashes with newlib so don't use it.
+// These clash with newlib so don't use them.
 # define __lockable		cannot be used as an identifier
+# define __packed		cannot be used as an identifier
+# define __unused		cannot be used as an identifier
+# define __used			cannot be used as an identifier
 
 #ifndef __APPLE__
 #define __weak   predefined qualifier on darwin
@@ -239,8 +242,11 @@
 #endif
 
 #if __has_include(<newlib.h>)
-// newlib's <sys/cdefs.h> defines __lockable as a macro.
+// newlib's <sys/cdefs.h> defines these as macros.
 #undef __lockable
+#undef __packed
+#undef __unused
+#undef __used
 // newlib's <time.h> defines __tzrule_type with these members.
 #undef d
 #undef m
