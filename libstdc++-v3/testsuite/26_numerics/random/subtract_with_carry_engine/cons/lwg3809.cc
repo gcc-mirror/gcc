@@ -3,7 +3,7 @@
 #include <testsuite_hooks.h>
 
 // LWG 3809. Is std::subtract_with_carry_engine<uint16_t> supposed to work?
-// PR 107466 - invalid -Wnarrowing error with std::subtract_with_carry_engine
+// PR 107466 - invalid -Wnarrowing error with std::subtract_with_carry_engine
 
 int main()
 {
