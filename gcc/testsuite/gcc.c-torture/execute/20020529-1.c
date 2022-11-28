@@ -12,10 +12,6 @@
    forced a splitter through the output pattern "#", but there was no
    matching splitter.  */
 
-/* The ptx assembler appears to clobber 'b' inside foo during the f1 call.
-   Reported to nvidia 2016-05-18.  */
-/* { dg-skip-if "PTX assembler bug" { nvptx-*-* } { "-O0" } { "" } } */
-
 void abort (void);
 void exit (int);
 
