@@ -1,4 +1,3 @@
-/* { dg-skip-if "ptxas times out" { nvptx-*-* } { "*" } { "-O0" } } */
 __extension__ typedef __SIZE_TYPE__ size_t;
 __extension__ typedef long long int __quad_t;
 __extension__ typedef unsigned int __mode_t;

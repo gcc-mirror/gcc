@@ -1,5 +1,4 @@
 /* PR target/39423 */
-/* { dg-skip-if "ptxas times out" { nvptx-*-* } { "-O2" } { "" } } */
 
 int
 foo (const char *name, int nmlen, char *flags)
