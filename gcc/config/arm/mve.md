@@ -441,7 +441,7 @@
 	(clz:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vclz.i%#<V_sz_elem>  %q0, %q1"
+  "vclz.i%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 (define_expand "mve_vclzq_u<mode>"
