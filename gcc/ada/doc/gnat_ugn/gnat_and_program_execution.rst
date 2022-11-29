@@ -928,10 +928,9 @@ Ada facilities defined in ``Ada.Exceptions``. Here is a simple example:
          P2;
       end STB;
 
-This program will output:
-
   ::
 
+     $ gnatmake stb -g -bargs -E -largs -no-pie
      $ stb
 
      raised CONSTRAINT_ERROR : stb.adb:12 range check failed
@@ -1070,7 +1069,7 @@ Here is an example:
 
   ::
 
-      $ gnatmake -g .\stb -bargs -E
+      $ gnatmake -g stb -bargs -E
       $ stb
 
       0040149F in stb.p1 at stb.adb:8
@@ -1081,16 +1080,6 @@ Here is an example:
       004011C4 in __mingw_CRTStartup at crt1.c:200
       004011F1 in mainCRTStartup at crt1.c:222
       77E892A4 in ?? at ??:0
-
-In the above example the ``.\`` syntax in the ``gnatmake`` command
-is currently required by ``addr2line`` for files that are in
-the current working directory.
-Moreover, the exact sequence of linker options may vary from platform
-to platform.
-The above :switch:`-largs` section is for Windows platforms. By contrast,
-under Unix there is no need for the :switch:`-largs` section.
-Differences across platforms are due to details of linker implementation.
-
 
 .. rubric:: Tracebacks From Anywhere in a Program
 
