@@ -173,7 +173,7 @@ rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
 # The compiler itself is called rust1 (formerly grs1)
 rust1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS)
-	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LLINKER) $(RUST_CXXFLAGS) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 # Build hooks.
