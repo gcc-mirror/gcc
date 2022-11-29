@@ -1258,8 +1258,10 @@ LoopStatement := "LOOP"
                                           "END"                            % BuildEndLoop %
                =:
 
-WithStatement := "WITH"
-                        Designator                                         % StartBuildWith %
+WithStatement :=                                                           % VAR
+                                                                                tok: CARDINAL ; %
+                 "WITH"                                                    % tok := GetTokenNo () -1 %
+                        Designator                                         % StartBuildWith (tok) %
                                    "DO"
                         StatementSequence
                                                                            % BuildStmtNote (0) %

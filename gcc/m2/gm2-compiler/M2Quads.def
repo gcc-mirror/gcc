@@ -1735,7 +1735,7 @@ PROCEDURE BuildModulePriority ;
                     |------------|
 *)
 
-PROCEDURE StartBuildWith ;
+PROCEDURE StartBuildWith (withTok: CARDINAL) ;
 
 
 (*

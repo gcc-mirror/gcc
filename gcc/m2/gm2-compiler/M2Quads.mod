@@ -298,10 +298,11 @@ TYPE
                           END ;
 
    WithFrame = POINTER TO RECORD
-                             RecordSym : CARDINAL ;
-                             RecordType: CARDINAL ;
-                             RecordRef : CARDINAL ;
-                             rw        : CARDINAL ;  (* the record variable *)
+                             RecordSym   : CARDINAL ;
+                             RecordType  : CARDINAL ;
+                             RecordRef   : CARDINAL ;
+                             rw          : CARDINAL ;  (* The record variable.  *)
+                             RecordTokPos: CARDINAL ;  (* Token of the record.  *)
                           END ;
 
    ForLoopInfo = RECORD
@@ -3361,7 +3362,7 @@ VAR
    combinedtok: CARDINAL ;
 BEGIN
    des := OperandT (2) ;
-   IF IsConst (des) OR IsVarConst (des)
+   IF IsReadOnly (des)
    THEN
       destok := OperandTok (2) ;
       exptok := OperandTok (1) ;
@@ -10919,6 +10920,16 @@ END BuildReturn ;
 
 
 (*
+   IsReadOnly - a helper procedure function to detect constants.
+*)
+
+PROCEDURE IsReadOnly (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsConst (sym) OR (IsVar (sym) AND IsVarConst (sym))
+END IsReadOnly ;
+
+
+(*
    BuildDesignatorRecord - Builds the record referencing.
                            The Stack is expected to contain:
 
@@ -10974,6 +10985,7 @@ BEGIN
    END ;
    Res := MakeComponentRef (MakeComponentRecord (combinedtok,
                                                  RightValue, RecordSym), Field) ;
+   PutVarConst (Res, IsReadOnly (RecordSym)) ;
    GenQuadO (combinedtok, RecordFieldOp, Res, RecordSym, Field, FALSE) ;
    PopN (n+1) ;
    PushTFrwtok (Res, FieldType, rw, combinedtok)
@@ -11207,8 +11219,8 @@ BEGIN
    arrayTok := OperandTok (2) ;
    indexTok := OperandTok (1) ;
    combinedTok := MakeVirtualTok (arrayTok, arrayTok, indexTok) ;
-   Dim := OperandD(2) ;
-   rw := OperandMergeRW(2) ;
+   Dim := OperandD (2) ;
+   rw := OperandMergeRW (2) ;
    Assert (IsLegal (rw)) ;
    INC (Dim) ;
    IF Dim = 1
@@ -11223,10 +11235,10 @@ BEGIN
          which will generate the quads to access the record.
       *)
       ArraySym := Sym ;
-      UnboundedType := GetUnboundedRecordType(GetSType(Sym)) ;
-      PushTFrwtok(Sym, UnboundedType, rw, arrayTok) ;
-      PushTF (GetUnboundedAddressOffset(GetSType(Sym)),
-              GetSType(GetUnboundedAddressOffset(GetSType(Sym)))) ;
+      UnboundedType := GetUnboundedRecordType (GetSType (Sym)) ;
+      PushTFrwtok (Sym, UnboundedType, rw, arrayTok) ;
+      PushTF (GetUnboundedAddressOffset (GetSType (Sym)),
+              GetSType (GetUnboundedAddressOffset (GetSType (Sym)))) ;
       PushT (1) ;  (* One record field to dereference *)
       BuildDesignatorRecord (combinedTok) ;
       PopT (PtrToBase) ;
@@ -11375,37 +11387,38 @@ END BuildDesignatorPointer ;
                     |------------|
 *)
 
-PROCEDURE StartBuildWith ;
+PROCEDURE StartBuildWith (withTok: CARDINAL) ;
 VAR
    tok      : CARDINAL ;
    Sym, Type,
    Ref      : CARDINAL ;
 BEGIN
    DisplayStack ;
-   PopTF(Sym, Type) ;
-   Type := SkipType(Type) ;
-   tok := GetTokenNo () ;
+   PopTFtok (Sym, Type, tok) ;
+   Type := SkipType (Type) ;
 
-   Ref := MakeTemporary(tok, LeftValue) ;
-   PutVar(Ref, Type) ;
-   IF GetMode(Sym)=LeftValue
+   Ref := MakeTemporary (tok, LeftValue) ;
+   PutVar (Ref, Type) ;
+   IF GetMode (Sym) = LeftValue
    THEN
       (* copy LeftValue *)
-      GenQuad(BecomesOp, Ref, NulSym, Sym)
+      GenQuadO (tok, BecomesOp, Ref, NulSym, Sym, TRUE)
    ELSE
       (* calculate the address of Sym *)
-      GenQuad(AddrOp, Ref, NulSym, Sym)
+      GenQuadO (tok, AddrOp, Ref, NulSym, Sym, TRUE)
    END ;
 
-   PushWith(Sym, Type, Ref) ;
-   IF Type=NulSym
+   PushWith (Sym, Type, Ref, tok) ;
+   IF Type = NulSym
    THEN
-      MetaError1 ('{%1Ea} {%1d} has a no type, the {%kWITH} statement requires a variable or parameter of a {%kRECORD} type', Sym)
+      MetaError1 ('{%1Ea} {%1d} has a no type, the {%kWITH} statement requires a variable or parameter of a {%kRECORD} type',
+                  Sym)
    ELSIF NOT IsRecord(Type)
    THEN
-      MetaError1 ('the {%kWITH} statement requires that {%1Ea} {%1d} be of a {%kRECORD} {%1tsa:type rather than {%1tsa}}', Sym)
+      MetaError1 ('the {%kWITH} statement requires that {%1Ea} {%1d} be of a {%kRECORD} {%1tsa:type rather than {%1tsa}}',
+		   Sym)
    END ;
-   StartScope(Type)
+   StartScope (Type)
  ; DisplayStack ;
 END StartBuildWith ;
 
@@ -11428,7 +11441,7 @@ END EndBuildWith ;
               previous declaration of this record type.
 *)
 
-PROCEDURE PushWith (Sym, Type, Ref: CARDINAL) ;
+PROCEDURE PushWith (Sym, Type, Ref, Tok: CARDINAL) ;
 VAR
    i, n: CARDINAL ;
    f   : WithFrame ;
@@ -11449,12 +11462,13 @@ BEGIN
    END ;
    NEW(f) ;
    WITH f^ DO
-      RecordSym  := Sym ;
-      RecordType := Type ;
-      RecordRef  := Ref ;
-      rw         := Sym
+      RecordSym    := Sym ;
+      RecordType   := Type ;
+      RecordRef    := Ref ;
+      rw           := Sym ;
+      RecordTokPos := Tok
    END ;
-   PushAddress(WithStack, f)
+   PushAddress (WithStack, f)
 END PushWith ;
 
 
@@ -11488,32 +11502,32 @@ BEGIN
    n := NoOfItemsInStackAddress(WithStack) ;
    IF (n>0) AND (NOT SuppressWith)
    THEN
-      PopTFrwtok(Sym, Type, rw, tokpos) ;
+      PopTFrwtok (Sym, Type, rw, tokpos) ;
       Assert (tokpos # UnknownTokenNo) ;
       (* inner WITH always has precidence *)
       i := 1 ;  (* top of stack *)
       WHILE i<=n DO
          (* WriteString('Checking for a with') ; *)
-         f := PeepAddress(WithStack, i) ;
+         f := PeepAddress (WithStack, i) ;
          WITH f^ DO
-            IF IsRecordField(Sym) AND (GetRecord(GetParent(Sym))=RecordType)
+            IF IsRecordField (Sym) AND (GetRecord (GetParent (Sym)) = RecordType)
             THEN
-               IF IsUnused(Sym)
+               IF IsUnused (Sym)
                THEN
                   MetaError1('record field {%1Dad} was declared as unused by a pragma', Sym)
                END ;
                (* Fake a RecordSym.op *)
-               PushTFrw(RecordRef, RecordType, rw) ;
-               PushTF(Sym, Type) ;
+               PushTFrwtok (RecordRef, RecordType, rw, RecordTokPos) ;
+               PushTFtok (Sym, Type, tokpos) ;
                BuildAccessWithField ;
-               PopTFrw(Sym, Type, rw) ;
-               i := n+1
+               PopTFrw (Sym, Type, rw) ;
+               i := n+1  (* Finish loop.  *)
             ELSE
-               INC(i)
+               INC (i)
             END
          END
       END ;
-      PushTFrwtok(Sym, Type, rw, tokpos)
+      PushTFrwtok (Sym, Type, rw, tokpos)
    END
 END CheckWithReference ;
 
@@ -11540,7 +11554,7 @@ END CheckWithReference ;
 
 PROCEDURE BuildAccessWithField ;
 VAR
-   tok               : CARDINAL ;
+   rectok, fieldtok  : CARDINAL ;
    OldSuppressWith   : BOOLEAN ;
    rw,
    Field, FieldType,
@@ -11548,19 +11562,20 @@ VAR
    Ref               : CARDINAL ;
 BEGIN
    OldSuppressWith := SuppressWith ;
-   tok := GetTokenNo () ;
    SuppressWith := TRUE ;
    (*
       now the WITH cannot look at the stack of outstanding WITH records.
    *)
-   PopTF(Field, FieldType) ;
-   PopTFrw(Record, RecordType, rw) ;
+   PopTFtok (Field, FieldType, fieldtok) ;
+   PopTFrwtok (Record, RecordType, rw, rectok) ;
 
-   Ref := MakeComponentRef (MakeComponentRecord (tok,
+   Ref := MakeComponentRef (MakeComponentRecord (fieldtok,
                                                  RightValue, Record), Field) ;
-   GenQuad(RecordFieldOp, Ref, Record, Field) ;
+   PutVarConst (Ref, IsReadOnly (Record)) ;
+   GenQuadO (fieldtok,
+             RecordFieldOp, Ref, Record, Field, TRUE) ;
 
-   PushTFrw(Ref, FieldType, rw) ;
+   PushTFrwtok (Ref, FieldType, rw, fieldtok) ;
    SuppressWith := OldSuppressWith
 END BuildAccessWithField ;
 
