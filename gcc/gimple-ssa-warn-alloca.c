@@ -218,6 +218,7 @@ alloca_call_type (range_query &query, gimple *stmt, bool is_vla)
   int_range_max r;
   if (warn_limit_specified_p (is_vla)
       && TREE_CODE (len) == SSA_NAME
+      && types_compatible_p (TREE_TYPE (len), size_type_node)
       && query.range_of_expr (r, len, stmt)
       && !r.varying_p ())
     {
