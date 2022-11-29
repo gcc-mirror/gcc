@@ -9369,8 +9369,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	      && TREE_CODE (tem) == COND_EXPR
 	      && TREE_CODE (TREE_OPERAND (tem, 1)) == code
 	      && TREE_CODE (TREE_OPERAND (tem, 2)) == code
-	      && ! VOID_TYPE_P (TREE_OPERAND (tem, 1))
-	      && ! VOID_TYPE_P (TREE_OPERAND (tem, 2))
+	      && ! VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (tem, 1)))
+	      && ! VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (tem, 2)))
 	      && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (tem, 1), 0))
 		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (tem, 2), 0)))
 	      && (! (INTEGRAL_TYPE_P (TREE_TYPE (tem))
@@ -15002,7 +15002,7 @@ tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 
 	/* If the initializer is non-void, then it's a normal expression
 	   that will be assigned to the slot.  */
-	if (!VOID_TYPE_P (t))
+	if (!VOID_TYPE_P (TREE_TYPE (t)))
 	  return RECURSE (t);
 
 	/* Otherwise, the initializer sets the slot in some way.  One common
