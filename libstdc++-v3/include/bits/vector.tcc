@@ -539,9 +539,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      if (__elems_after > __n)
 		{
 		  _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
-		  std::__uninitialized_move_a(this->_M_impl._M_finish - __n,
-					      this->_M_impl._M_finish,
-					      this->_M_impl._M_finish,
+		  std::__uninitialized_move_a(__old_finish - __n,
+					      __old_finish,
+					      __old_finish,
 					      _M_get_Tp_allocator());
 		  this->_M_impl._M_finish += __n;
 		  _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
@@ -554,7 +554,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		{
 		  _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 		  this->_M_impl._M_finish =
-		    std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
+		    std::__uninitialized_fill_n_a(__old_finish,
 						  __n - __elems_after,
 						  __x_copy,
 						  _M_get_Tp_allocator());
@@ -569,9 +569,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    }
 	  else
 	    {
+	      // Make local copies of these members because the compiler thinks
+	      // the allocator can alter them if 'this' is globally reachable.
+	      pointer __old_start = this->_M_impl._M_start;
+	      pointer __old_finish = this->_M_impl._M_finish;
+	      const pointer __pos = __position.base();
+
 	      const size_type __len =
 		_M_check_len(__n, "vector::_M_fill_insert");
-	      const size_type __elems_before = __position - begin();
+	      const size_type __elems_before = __pos - __old_start;
 	      pointer __new_start(this->_M_allocate(__len));
 	      pointer __new_finish(__new_start);
 	      __try
@@ -584,15 +590,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 		  __new_finish
 		    = std::__uninitialized_move_if_noexcept_a
-		    (this->_M_impl._M_start, __position.base(),
-		     __new_start, _M_get_Tp_allocator());
+		    (__old_start, __pos, __new_start, _M_get_Tp_allocator());
 
 		  __new_finish += __n;
 
 		  __new_finish
 		    = std::__uninitialized_move_if_noexcept_a
-		    (__position.base(), this->_M_impl._M_finish,
-		     __new_finish, _M_get_Tp_allocator());
+		    (__pos, __old_finish, __new_finish, _M_get_Tp_allocator());
 		}
 	      __catch(...)
 		{
@@ -606,12 +610,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  _M_deallocate(__new_start, __len);
 		  __throw_exception_again;
 		}
-	      std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-			    _M_get_Tp_allocator());
+	      std::_Destroy(__old_start, __old_finish, _M_get_Tp_allocator());
 	      _GLIBCXX_ASAN_ANNOTATE_REINIT;
-	      _M_deallocate(this->_M_impl._M_start,
-			    this->_M_impl._M_end_of_storage
-			    - this->_M_impl._M_start);
+	      _M_deallocate(__old_start,
+			    this->_M_impl._M_end_of_storage - __old_start);
 	      this->_M_impl._M_start = __new_start;
 	      this->_M_impl._M_finish = __new_finish;
 	      this->_M_impl._M_end_of_storage = __new_start + __len;
@@ -645,6 +647,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    }
 	  else
 	    {
+	      // Make local copies of these members because the compiler thinks
+	      // the allocator can alter them if 'this' is globally reachable.
+	      pointer __old_start = this->_M_impl._M_start;
+	      pointer __old_finish = this->_M_impl._M_finish;
+
 	      const size_type __len =
 		_M_check_len(__n, "vector::_M_default_append");
 	      pointer __new_start(this->_M_allocate(__len));
@@ -660,7 +667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		      _M_deallocate(__new_start, __len);
 		      __throw_exception_again;
 		    }
-		  _S_relocate(this->_M_impl._M_start, this->_M_impl._M_finish,
+		  _S_relocate(__old_start, __old_finish,
 			      __new_start, _M_get_Tp_allocator());
 		}
 	      else
@@ -672,7 +679,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			      __n, _M_get_Tp_allocator());
 		      __destroy_from = __new_start + __size;
 		      std::__uninitialized_move_if_noexcept_a(
-			      this->_M_impl._M_start, this->_M_impl._M_finish,
+			      __old_start, __old_finish,
 			      __new_start, _M_get_Tp_allocator());
 		    }
 		  __catch(...)
@@ -683,13 +690,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		      _M_deallocate(__new_start, __len);
 		      __throw_exception_again;
 		    }
-		  std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+		  std::_Destroy(__old_start, __old_finish,
 				_M_get_Tp_allocator());
 		}
 	      _GLIBCXX_ASAN_ANNOTATE_REINIT;
-	      _M_deallocate(this->_M_impl._M_start,
-			    this->_M_impl._M_end_of_storage
-			    - this->_M_impl._M_start);
+	      _M_deallocate(__old_start,
+			    this->_M_impl._M_end_of_storage - __old_start);
 	      this->_M_impl._M_start = __new_start;
 	      this->_M_impl._M_finish = __new_start + __size + __n;
 	      this->_M_impl._M_end_of_storage = __new_start + __len;
@@ -782,6 +788,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      }
 	    else
 	      {
+		// Make local copies of these members because the compiler
+		// thinks the allocator can alter them if 'this' is globally
+		// reachable.
+		pointer __old_start = this->_M_impl._M_start;
+		pointer __old_finish = this->_M_impl._M_finish;
+
 		const size_type __len =
 		  _M_check_len(__n, "vector::_M_range_insert");
 		pointer __new_start(this->_M_allocate(__len));
@@ -790,7 +802,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  {
 		    __new_finish
 		      = std::__uninitialized_move_if_noexcept_a
-		      (this->_M_impl._M_start, __position.base(),
+		      (__old_start, __position.base(),
 		       __new_start, _M_get_Tp_allocator());
 		    __new_finish
 		      = std::__uninitialized_copy_a(__first, __last,
@@ -798,7 +810,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 						    _M_get_Tp_allocator());
 		    __new_finish
 		      = std::__uninitialized_move_if_noexcept_a
-		      (__position.base(), this->_M_impl._M_finish,
+		      (__position.base(), __old_finish,
 		       __new_finish, _M_get_Tp_allocator());
 		  }
 		__catch(...)
@@ -808,12 +820,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    _M_deallocate(__new_start, __len);
 		    __throw_exception_again;
 		  }
-		std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+		std::_Destroy(__old_start, __old_finish,
 			      _M_get_Tp_allocator());
 		_GLIBCXX_ASAN_ANNOTATE_REINIT;
-		_M_deallocate(this->_M_impl._M_start,
-			      this->_M_impl._M_end_of_storage
-			      - this->_M_impl._M_start);
+		_M_deallocate(__old_start,
+			      this->_M_impl._M_end_of_storage - __old_start);
 		this->_M_impl._M_start = __new_start;
 		this->_M_impl._M_finish = __new_finish;
 		this->_M_impl._M_end_of_storage = __new_start + __len;
