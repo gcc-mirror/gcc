@@ -593,8 +593,6 @@
 	  (unspec:VB
 	    [(match_operand:VB 1 "vector_mask_operand"   "Wc1, Wc1, Wc1, Wc1, Wc1")
 	     (match_operand 4 "vector_length_operand"    " rK,  rK,  rK,  rK,  rK")
-	     (match_operand 5 "const_int_operand"        "  i,   i,   i,   i,   i")
-	     (match_operand 6 "const_int_operand"        "  i,   i,   i,   i,   i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operand:VB 3 "vector_move_operand"      "  m,  vr,  vr, Wc0, Wc1")

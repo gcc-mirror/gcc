@@ -136,7 +136,8 @@ emit_pred_op (unsigned icode, rtx dest, rtx src, machine_mode mask_mode)
   rtx vlmax = emit_vlmax_vsetvl (mode);
   e.add_input_operand (vlmax, Pmode);
 
-  e.add_policy_operand (TAIL_AGNOSTIC, MASK_AGNOSTIC);
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+    e.add_policy_operand (TAIL_AGNOSTIC, MASK_AGNOSTIC);
 
   e.expand ((enum insn_code) icode, MEM_P (dest) || MEM_P (src));
 }
