@@ -4400,6 +4400,11 @@ get_storage_model_access (Node_Id gnat_node, Entity_Id *gnat_smo)
       return;
     }
 
+  /* Now strip any type conversion from GNAT_NODE.  */
+  if (Nkind (gnat_node) == N_Type_Conversion
+      || Nkind (gnat_node) == N_Unchecked_Type_Conversion)
+    gnat_node = Expression (gnat_node);
+
   while (node_is_component (gnat_node))
     gnat_node = Prefix (gnat_node);
 
