@@ -1,3 +1,49 @@
+2022-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/g-traceb.ads: Minor tweaks in the commentary.
+	(Executable_Load_Address): New function.
+	* doc/gnat_ugn/gnat_and_program_execution.rst (Non-Symbolic
+	Traceback): Adjust to PIE default on Linux.
+	(Symbolic Traceback): Likewise.
+	* doc/gnat_ugn/gnat_utility_programs.rst (gnatsymbolize): Likewise.
+	* gnat_ugn.texi: Regenerate.
+
+2022-11-28  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/share/conf.py (extensions): Add 'sphinx_rtd_theme'.
+	(html_theme): Set to 'sphinx_rtd_theme'.
+
+2022-11-28  Claire Dross  <dross@adacore.com>
+
+	* libgnat/g-souinf.ads (Source_Code_Information): Add a new
+	volatile abstract state and add it in the global contract of all
+	functions defined in Source_Info.
+
+2022-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals.Add_Call_By_Copy_Code): Deal with a
+	reference to a validation variable in the actual.
+	(Expand_Actuals.Add_Validation_Call_By_Copy_Code): Minor tweak.
+	(Expand_Actuals): Call Add_Validation_Call_By_Copy_Code directly
+	only if Add_Call_By_Copy_Code is not to be invoked.
+
+2022-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c [Linux]: Include <link.h>.
+	(__gnat_get_executable_load_address) [Linux]: Enable.
+
+2022-11-28  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Part_Of_Abstract_State): Add verification
+	related to use of Part_Of, so that constituents in private childs
+	that refer to state in a sibling or parent unit force that unit to
+	have a body.
+	* sem_util.adb (Check_State_Refinements): Drop the requirement to
+	have always a package body for state refinement, when the package
+	state is mentioned in no Part_Of specification.
+	* sem_ch3.adb (Analyze_Declarations): Refresh SPARK refs in comment.
+	* sem_ch7.adb (Analyze_Package_Declaration): Likewise.
+
 2022-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (gnat_to_gnu) <N_Assignment_Statement>: Add

@@ -1,3 +1,238 @@
+2022-11-28  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd ((A / (1 << B)) -> (A >> B).):
+	Fix comment.
+
+2022-11-28  Sinan  <sinan.lin@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer): Improve some cases
+	of loading 64bit constants for rv32.
+
+2022-11-28  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_emit_int_order_test): Use EQ 0
+	rather that XOR 1 for LE and LEU operations.
+
+2022-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107896
+	* tree-vect-stmts.cc (supportable_widening_operation):
+	Handle non-vector mode intermediate mode.
+
+2022-11-28  Frolov Daniil  <frolov.da@phystech.edu>
+
+	* gimple-ssa-sprintf.cc (fmtresult::type_max_digits): Handle
+	base == 2.
+	(tree_digits): Likewise.
+	(format_integer): Likewise.
+	(parse_directive): Add cases for %b and %B directives.
+
+2022-11-28  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_first_stack_step): Fix computation
+	of MIN_FIRST_STEP to cover FP save area too.
+
+2022-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107493
+	* tree-scalar-evolution.cc (scev_dfs::follow_ssa_edge_expr):
+	Only handle no-op and sign-changing conversions.
+
+2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Work on s1 instead
+	of s[0:1] and use USE to prevent removal of setting that register.
+	* config/gcn/gcn.md (prologue_use_di): Remove.
+
+2022-11-28  Yuri Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/106558
+	* sanopt.cc: Do not optimize out checks for non-SSA addresses.
+
+2022-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106875
+	* config/i386/i386.opt (x_ix86_abi): Remove TargetSave.
+	(ix86_abi): Replace it with TargetVariable.
+	* config/i386/i386-options.cc (ix86_function_specific_save,
+	ix86_function_specific_restore): Don't save and restore x_ix86_abi.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vrmlaldavhq_<supf>v4si,
+	mve_vrmlaldavhaq_<supf>v4si): Fix spacing vs tabs.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vmlaldavaq_<supf><mode>)
+	(mve_vmlaldavaxq_s<mode>, mve_vmlaldavaxq_p_<supf><mode>): Fix
+	spacing vs tabs.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vsubq_n_f<mode>): Fix spacing.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vaddlvq_p_<supf>v4si)
+	(mve_vaddq_n_<supf><mode>, mve_vaddvaq_<supf><mode>)
+	(mve_vaddlvaq_<supf>v4si, mve_vaddq_n_f<mode>)
+	(mve_vaddlvaq_p_<supf>v4si, mve_vaddq<mode>, mve_vaddq_f<mode>):
+	Fix spacing.
+
+2022-11-28  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vsubq_x FP): New overloads.
+	(__arm_vsubq_x Integer): New.
+
+2022-11-28  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/107515
+	* config/arm/arm_mve.h (__ARM_mve_typeid): Add float types.
+
+2022-11-28  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/96795
+	* config/arm/arm_mve.h (__arm_vaddq): Fix Overloading.
+	(__arm_vmulq): Likewise.
+	(__arm_vcmpeqq): Likewise.
+	(__arm_vcmpneq): Likewise.
+	(__arm_vmaxnmavq): Likewise.
+	(__arm_vmaxnmvq): Likewise.
+	(__arm_vminnmavq): Likewise.
+	(__arm_vsubq): Likewise.
+	(__arm_vminnmvq): Likewise.
+	(__arm_vrshlq): Likewise.
+	(__arm_vqsubq): Likewise.
+	(__arm_vqdmulltq): Likewise.
+	(__arm_vqdmullbq): Likewise.
+	(__arm_vqdmulhq): Likewise.
+	(__arm_vqaddq): Likewise.
+	(__arm_vhaddq): Likewise.
+	(__arm_vhsubq): Likewise.
+	(__arm_vqdmlashq): Likewise.
+	(__arm_vqrdmlahq): Likewise.
+	(__arm_vmlasq): Likewise.
+	(__arm_vqdmlahq): Likewise.
+	(__arm_vmaxnmavq_p): Likewise.
+	(__arm_vmaxnmvq_p): Likewise.
+	(__arm_vminnmavq_p): Likewise.
+	(__arm_vminnmvq_p): Likewise.
+	(__arm_vfmasq_m): Likewise.
+	(__arm_vsetq_lane): Likewise.
+	(__arm_vcmpneq_m): Likewise.
+	(__arm_vhaddq_x): Likewise.
+	(__arm_vhsubq_x): Likewise.
+	(__arm_vqrdmlashq_m): Likewise.
+	(__arm_vqdmlashq_m): Likewise.
+	(__arm_vmlaldavaxq_p): Likewise.
+	(__arm_vmlasq_m): Likewise.
+	(__arm_vqdmulhq_m): Likewise.
+	(__arm_vqdmulltq_m): Likewise.
+	(__arm_viwdupq_m): Likewise.
+	(__arm_viwdupq_u16): Likewise.
+	(__arm_viwdupq_u32): Likewise.
+	(__arm_viwdupq_u8): Likewise.
+	(__arm_vdwdupq_m): Likewise.
+	(__arm_vdwdupq_u16): Likewise.
+	(__arm_vdwdupq_u32): Likewise.
+	(__arm_vdwdupq_u8): Likewise.
+	(__arm_vaddlvaq): Likewise.
+	(__arm_vaddlvaq_p): Likewise.
+	(__arm_vaddvaq): Likewise.
+	(__arm_vaddvaq_p): Likewise.
+	(__arm_vcmphiq_m): Likewise.
+	(__arm_vmladavaq_p): Likewise.
+	(__arm_vmladavaxq): Likewise.
+	(__arm_vmlaldavaxq): Likewise.
+	(__arm_vrmlaldavhaq_p): Likewise.
+
+2022-11-28  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/96795
+	* config/arm/arm_mve.h (__arm_vaddq_m_n_s8): Change types.
+	(__arm_vaddq_m_n_s32): Likewise.
+	(__arm_vaddq_m_n_s16): Likewise.
+	(__arm_vaddq_m_n_u8): Likewise.
+	(__arm_vaddq_m_n_u32): Likewise.
+	(__arm_vaddq_m_n_u16): Likewise.
+	(__arm_vaddq_m): Fix Overloading.
+	(__ARM_mve_coerce3): New.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vabsq_f<mode>): Fix spacing.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (@mve_vcmp<mve_cmp_op>q_<mode>): Fix
+	spacing.
+	* config/arm/arm_mve.h (__arm_vcmpgtq_m, __arm_vcmpleq_m)
+	(__arm_vcmpltq_m, __arm_vcmpneq_m): Add missing defines.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vdupq_n_f<mode>)
+	(mve_vdupq_n_<supf><mode>, mve_vdupq_m_n_<supf><mode>)
+	(mve_vdupq_m_n_f<mode>): Fix spacing.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vdwdupq_m_wb_u<mode>_insn): Fix spacing.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vddupq_u<mode>_insn): Fix 'vddup.u'
+	spacing.
+	(mve_vddupq_m_wb_u<mode>_insn): Likewise.
+
+2022-11-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/vfp.md (*thumb2_movhi_vfp, *thumb2_movhi_fp16): Fix
+	'vmsr' spacing and reg capitalization.
+
+2022-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107876
+	* tree-ssa-loop-unswitch.cc (clean_up_after_unswitching): Wipe
+	dominator info if we removed an edge.
+
+2022-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107867
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Handle
+	abnormal cleanup after substitution.
+
+2022-11-28  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (enum loongarch_load_imm_method):
+	Remove the member METHOD_INSV that is not currently used.
+	(struct loongarch_integer_op): Define a new member curr_value,
+	that records the value of the number stored in the destination
+	register immediately after the current instruction has run.
+	(loongarch_build_integer): Assign a value to the curr_value member variable.
+	(loongarch_move_integer): Adds information for the immediate load instruction.
+	* config/loongarch/loongarch.md (*movdi_32bit): Redefine as define_insn_and_split.
+	(*movdi_64bit): Likewise.
+	(*movsi_internal): Likewise.
+	(*movhi_internal): Likewise.
+	* config/loongarch/predicates.md: Return true as long as it is CONST_INT, ensure
+	that the immediate number is not optimized by decomposition during expand
+	optimization loop.
+
+2022-11-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107748
+	* config/i386/avx512bf16intrin.h (_mm_cvtsbh_ss): Refined.
+	* config/i386/i386-builtin-types.def (FLOAT_FTYPE_BFLOAT16):
+	New function type.
+	* config/i386/i386-builtin.def (BDESC): New builtin.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin):
+	Handle the builtin.
+	* config/i386/i386.md (extendbfsf2): New expander.
+	(extendbfsf2_1): New define_insn.
+	(truncsfbf2): Ditto.
+
 2022-11-26  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/103356

@@ -1,3 +1,52 @@
+2022-11-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/20_util/function/cons/70692.cc: Adapt dg-error message.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107801
+	* src/c++17/memory_resource.cc (chunk::_M_bytes): Change type
+	from uint32_t to bitset::size_type. Adjust static assertion.
+	(__pool_resource::_Pool::replenish): Cast to size_t after
+	multiplication instead of before.
+	(__pool_resource::_M_alloc_pools): Ensure both arguments to
+	std::max have type size_t.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view::copy) Use explicit
+	template argument for call to std::min<size_t>.
+	(basic_string_view::substr): Likewise.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107885
+	* libsupc++/hash_bytes.cc (_Hash_bytes): Convert to size_t
+	instead of implicit integer promotion to 16 bits.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	Replace non-ASCII character.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_complete_or_unbounded/memoization_neg.cc:
+	Simplify dg-prune-output pattern.
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune "::__8".
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107466
+	* include/bits/random.h (subtract_with_carry_engine): Use 32-bit
+	type for default seed. Use 0u as default argument for
+	subtract_with_carry_engine(result_type) constructor and
+	seed(result_type) member function.
+	* include/bits/random.tcc (subtract_with_carry_engine): Use
+	32-bit type for default seed and engine used for initial state.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	New test.
+
 2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_UCHAR_H): Don't use AC_MSG_RESULT

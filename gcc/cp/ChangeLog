@@ -1,3 +1,20 @@
+2022-11-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101733
+	* parser.cc (cp_parser_requirement): Parse tentatively for the
+	'typename' case.
+
+2022-11-28  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_decl_specifier_seq): Change 'concept bool'
+	diagnostic from pedwarn to permerror.
+
+2022-11-28  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* module.cc: On Windows, 'A:Foo' is supposed to be a module
+	and not a path.
+
 2022-11-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107781
