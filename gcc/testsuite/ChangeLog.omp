@@ -1,5 +1,11 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* gfortran.dg/gomp/declare-mapper-1.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-5.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-14.f90: New test.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* c-c++-common/gomp/declare-mapper-4.c: Enable for C.
 	* c-c++-common/gomp/declare-mapper-5.c: Likewise.
 	* c-c++-common/gomp/declare-mapper-6.c: Likewise.

@@ -1060,6 +1060,10 @@ decode_omp_directive (void)
       matcho ("critical", gfc_match_omp_critical, ST_OMP_CRITICAL);
       break;
     case 'd':
+      matchds ("declare mapper", gfc_match_omp_declare_mapper,
+	       ST_OMP_DECLARE_MAPPER);
+      matchds ("declare reduction", gfc_match_omp_declare_reduction,
+	       ST_OMP_DECLARE_REDUCTION);
       matcho ("depobj", gfc_match_omp_depobj, ST_OMP_DEPOBJ);
       matchs ("distribute parallel do simd",
 	      gfc_match_omp_distribute_parallel_do_simd,
@@ -1946,7 +1950,8 @@ next_statement (void)
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
   case ST_OMP_DECLARE_VARIANT: case ST_OMP_ALLOCATE: case ST_OMP_ASSUMES: \
-  case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
+  case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE: \
+  case ST_OMP_DECLARE_MAPPER
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -2593,6 +2598,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_CRITICAL:
       p = "!$OMP CRITICAL";
+      break;
+    case ST_OMP_DECLARE_MAPPER:
+      p = "!$OMP DECLARE MAPPER";
       break;
     case ST_OMP_DECLARE_REDUCTION:
       p = "!$OMP DECLARE REDUCTION";
