@@ -5534,8 +5534,11 @@ gfc_free_namelist (gfc_namelist *name)
 /* Free an OpenMP namelist structure.  */
 
 void
-gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns, bool free_align)
+gfc_free_omp_namelist (gfc_omp_namelist *name, int list)
 {
+  bool free_ns = (list == OMP_LIST_AFFINITY || list == OMP_LIST_DEPEND);
+  bool free_mapper = (list == OMP_LIST_MAP);
+  bool free_align = (list == OMP_LIST_ALLOCATE);
   gfc_omp_namelist *n;
 
   for (; name; name = n)
@@ -5545,7 +5548,9 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns, bool free_align)
 	gfc_free_expr (name->u.align);
       if (free_ns)
 	gfc_free_namespace (name->u2.ns);
-      else if (name->u2.udr)
+      else if (free_mapper && name->u2.udm)
+	free (name->u2.udm);
+      else if (!free_mapper && name->u2.udr)
 	{
 	  if (name->u2.udr->combiner)
 	    gfc_free_statement (name->u2.udr->combiner);

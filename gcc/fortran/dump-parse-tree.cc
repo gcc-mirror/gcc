@@ -895,6 +895,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" PDT-STRING", dumpfile);
   if (attr->omp_udr_artificial_var)
     fputs (" OMP-UDR-ARTIFICIAL-VAR", dumpfile);
+  if (attr->omp_udm_artificial_var)
+    fputs (" OMP-UDM-ARTIFICIAL-VAR", dumpfile);
   if (attr->omp_declare_target)
     fputs (" OMP-DECLARE-TARGET", dumpfile);
   if (attr->omp_declare_target_link)
@@ -1469,6 +1471,8 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	    fputs ("always,present,tofrom:", dumpfile); break;
 	  case OMP_MAP_DELETE: fputs ("delete:", dumpfile); break;
 	  case OMP_MAP_RELEASE: fputs ("release:", dumpfile); break;
+	  case OMP_MAP_POINTER_ONLY: fputs ("pointeronly:", dumpfile); break;
+	  case OMP_MAP_UNSET: fputs ("unset:", dumpfile); break;
 	  default: break;
 	  }
       else if (list_type == OMP_LIST_LINEAR && n->u.linear.old_modifier)

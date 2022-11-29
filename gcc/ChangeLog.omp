@@ -1,5 +1,19 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (dwarf2out.h): Include.
+	(omp_maybe_get_descriptor_from_ptr): New function.
+	(build_omp_struct_comp_nodes): Use above function to locate array
+	descriptor when necessary.
+	(omp_mapping_group_data, omp_mapping_group_ptr,
+	omp_mapping_group_pset): New functions.
+	(omp_instantiate_mapper): Handle inlining of "declare mapper" function
+	bodies containing setup code (e.g. for Fortran).  Handle pointers to
+	derived types.  Handle GOMP_MAP_MAPPING_GROUPs.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	GOMP_MAP_MAPPING_GROUP.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (gimplify_omp_ctx): Add IMPLICIT_MAPPERS field.
 	(new_omp_context): Initialise IMPLICIT_MAPPERS hash map.
 	(delete_omp_context): Delete IMPLICIT_MAPPERS hash map.

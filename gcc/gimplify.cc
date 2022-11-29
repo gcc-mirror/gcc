@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"
 #include "context.h"
 #include "tree-nested.h"
+#include "dwarf2out.h"
 
 /* Hash set of poisoned variables in a bind expr.  */
 static hash_set<tree> *asan_poisoned_variables = NULL;
@@ -8932,6 +8933,26 @@ omp_map_clause_descriptor_p (tree c)
   return false;
 }
 
+/* Try to find a (Fortran) array descriptor given a data pointer PTR, i.e.
+   return "foo.descr" from "foo.descr.data".  */
+
+static tree
+omp_maybe_get_descriptor_from_ptr (tree ptr)
+{
+  struct array_descr_info info;
+
+  if (TREE_CODE (ptr) != COMPONENT_REF)
+    return NULL_TREE;
+
+  ptr = TREE_OPERAND (ptr, 0);
+
+  if (lang_hooks.types.get_array_descr_info
+      && lang_hooks.types.get_array_descr_info (TREE_TYPE (ptr), &info))
+    return ptr;
+
+  return NULL_TREE;
+}
+
 /* For a set of mappings describing an array section pointed to by a struct
    (or derived type, etc.) component, create an "alloc" or "release" node to
    insert into a list following a GOMP_MAP_STRUCT node.  For some types of
@@ -8953,14 +8974,22 @@ static tree
 build_omp_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
 			     tree *extra_node)
 {
+  tree descr = omp_maybe_get_descriptor_from_ptr (OMP_CLAUSE_DECL (grp_end));
   enum gomp_map_kind mkind
     = (code == OMP_TARGET_EXIT_DATA || code == OACC_EXIT_DATA)
-      ? GOMP_MAP_RELEASE : GOMP_MAP_ALLOC;
+      ? GOMP_MAP_RELEASE : descr ? GOMP_MAP_ALWAYS_TO : GOMP_MAP_ALLOC;
 
   gcc_assert (grp_start != grp_end);
 
   tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (grp_end), OMP_CLAUSE_MAP);
   OMP_CLAUSE_SET_MAP_KIND (c2, mkind);
+  if (descr)
+    {
+      OMP_CLAUSE_DECL (c2) = unshare_expr (descr);
+      OMP_CLAUSE_SIZE (c2) = TYPE_SIZE_UNIT (TREE_TYPE (descr));
+      *extra_node = NULL_TREE;
+      return c2;
+    }
   OMP_CLAUSE_DECL (c2) = unshare_expr (OMP_CLAUSE_DECL (grp_end));
   OMP_CLAUSE_CHAIN (c2) = NULL_TREE;
   tree grp_mid = NULL_TREE;
@@ -11703,6 +11732,60 @@ omp_mapper_copy_decl (tree var, copy_body_data *cb)
   return var;
 }
 
+/* If we have a TREE_LIST representing an unprocessed mapping group (e.g. from
+   a "declare mapper" definition emitted by the Fortran FE), return the node
+   for the data being mapped.  */
+
+static tree
+omp_mapping_group_data (tree group)
+{
+  gcc_assert (TREE_CODE (group) == TREE_LIST);
+  /* Use the first member of the group for substitution.  */
+  return TREE_PURPOSE (group);
+}
+
+/* Return the final node of a mapping_group GROUP (represented as a tree list),
+   or NULL_TREE if it's not an attach_detach node.  */
+
+static tree
+omp_mapping_group_ptr (tree group)
+{
+  gcc_assert (TREE_CODE (group) == TREE_LIST);
+
+  while (TREE_CHAIN (group))
+    group = TREE_CHAIN (group);
+
+  tree node = TREE_PURPOSE (group);
+
+  gcc_assert (OMP_CLAUSE_CODE (node) == OMP_CLAUSE_MAP);
+
+  if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_ATTACH_DETACH)
+    return node;
+
+  return NULL_TREE;
+}
+
+/* Return the pointer set (GOMP_MAP_TO_PSET) of a mapping_group node GROUP,
+   represented by a tree list, or NULL_TREE if there isn't one.  */
+
+static tree
+omp_mapping_group_pset (tree group)
+{
+  gcc_assert (TREE_CODE (group) == TREE_LIST);
+
+  if (!TREE_CHAIN (group))
+    return NULL_TREE;
+
+  group = TREE_CHAIN (group);
+
+  tree node = TREE_PURPOSE (group);
+
+  if (omp_map_clause_descriptor_p (node))
+    return node;
+
+  return NULL_TREE;
+}
+
 static tree *
 omp_instantiate_mapper (gimple_seq *pre_p,
 			hash_map<omp_name_type<tree>, tree> *implicit_mappers,
@@ -11722,8 +11805,138 @@ omp_instantiate_mapper (gimple_seq *pre_p,
      "bind" expression in the pre_p sequence).  */
   hash_map<tree, tree> extraction_map;
 
-  extraction_map.put (dummy_var, expr);
-  extraction_map.put (expr, expr);
+  if (TREE_CODE (mapperfn) == FUNCTION_DECL
+      && TREE_CODE (DECL_SAVED_TREE (mapperfn)) == BIND_EXPR)
+    {
+      tree body = NULL_TREE, bind = DECL_SAVED_TREE (mapperfn);
+      copy_body_data id;
+      hash_map<tree, tree> decl_map;
+
+      /* The "decl map" maps declarations in the definition of the mapper
+	 function into new declarations in the current function.  These are
+	 local to the bind in which they are expanded, so we copy them out to
+	 temporaries in the enclosing function scope, and use those temporaries
+	 in the mapper expansion (see "extraction_map" above).  (This also
+	 allows a mapper to be invoked for multiple variables).  */
+
+      memset (&id, 0, sizeof (id));
+      /* The source function isn't always mapperfn: e.g. for C++ mappers
+	 defined within functions, the mapper decl is created in a scope
+	 within that function, rather than in mapperfn.  So, that containing
+	 function is the one we need to copy from.  */
+      id.src_fn = DECL_CONTEXT (dummy_var);
+      id.dst_fn = current_function_decl;
+      id.src_cfun = DECL_STRUCT_FUNCTION (mapperfn);
+      id.decl_map = &decl_map;
+      id.copy_decl = copy_decl_no_change;
+      id.transform_call_graph_edges = CB_CGE_DUPLICATE;
+      id.transform_new_cfg = true;
+
+      walk_tree (&bind, copy_tree_body_r, &id, NULL);
+
+      body = BIND_EXPR_BODY (bind);
+
+      extraction_map.put (dummy_var, expr);
+      extraction_map.put (expr, expr);
+
+      if (DECL_P (expr))
+	mark_addressable (expr);
+
+      tree dummy_var_remapped, *remapped_var_p = decl_map.get (dummy_var);
+      if (remapped_var_p)
+	dummy_var_remapped = *remapped_var_p;
+      else
+	internal_error ("failed to remap mapper variable");
+
+      hash_map<tree, tree> mapper_map;
+      mapper_map.put (dummy_var_remapped, expr);
+
+      /* Now we need to make two adjustments to the inlined bind: we have to
+	 substitute the dummy variable for the expression in the clause
+	 triggering this mapper instantiation, and we need to remove the
+	 (remapped) decl from the bind's decl list.  */
+
+      if (TREE_CODE (body) == STATEMENT_LIST)
+	{
+	  copy_body_data id2;
+	  memset (&id2, 0, sizeof (id2));
+	  id2.src_fn = current_function_decl;
+	  id2.dst_fn = current_function_decl;
+	  id2.src_cfun = cfun;
+	  id2.decl_map = &mapper_map;
+	  id2.copy_decl = omp_mapper_copy_decl;
+	  id2.transform_call_graph_edges = CB_CGE_DUPLICATE;
+	  id2.transform_new_cfg = true;
+
+	  tree_stmt_iterator tsi;
+	  for (tsi = tsi_start (body); !tsi_end_p (tsi); tsi_next (&tsi))
+	    {
+	      tree* stmtp = tsi_stmt_ptr (tsi);
+	      if (TREE_CODE (*stmtp) == OMP_DECLARE_MAPPER)
+		*stmtp = NULL_TREE;
+	      else if (TREE_CODE (*stmtp) == DECL_EXPR
+		       && DECL_EXPR_DECL (*stmtp) == dummy_var_remapped)
+		*stmtp = NULL_TREE;
+	      else
+		walk_tree (stmtp, remap_mapper_decl_1, &id2, NULL);
+	    }
+
+	  tsi = tsi_last (body);
+
+	  for (hash_map<tree, tree>::iterator ti = decl_map.begin ();
+	       ti != decl_map.end ();
+	       ++ti)
+	    {
+	      tree tmp, var = (*ti).first, inlined = (*ti).second;
+
+	      if (var == dummy_var || var == inlined || !DECL_P (var))
+		continue;
+
+	      if (!is_gimple_reg (var))
+		{
+		  const char *decl_name
+		    = IDENTIFIER_POINTER (DECL_NAME (var));
+		  tmp = create_tmp_var (TREE_TYPE (var), decl_name);
+		}
+	      else
+		tmp = create_tmp_var (TREE_TYPE (var));
+
+	      /* We have three versions of the decl here. VAR is the version
+		 as represented in the function defining the "declare mapper",
+		 and in the clause list attached to the OMP_DECLARE_MAPPER
+		 directive within that function.  INLINED is the variable that
+		 has been localised to a bind within the function where the
+		 mapper is being instantiated (i.e. current_function_decl).
+		 TMP is the variable that we copy the values created in that
+		 block to.  */
+
+	      extraction_map.put (var, tmp);
+	      extraction_map.put (tmp, tmp);
+
+	      tree asgn = build2 (MODIFY_EXPR, TREE_TYPE (tmp), tmp, inlined);
+	      tsi_link_after (&tsi, asgn, TSI_CONTINUE_LINKING);
+	    }
+	}
+
+      /* We've replaced the "dummy variable" of the declare mapper definition
+	 with a localised version in a bind expr in the current function.  We
+	 have just rewritten all references to that, so remove the decl.  */
+
+      for (tree *decl = &BIND_EXPR_VARS (bind); *decl;)
+	{
+	  if (*decl == dummy_var_remapped)
+	    *decl = DECL_CHAIN (*decl);
+	  else
+	    decl = &DECL_CHAIN (*decl);
+	}
+
+      gimplify_bind_expr (&bind, pre_p);
+    }
+  else
+    {
+      extraction_map.put (dummy_var, expr);
+      extraction_map.put (expr, expr);
+    }
 
   /* This copy_body_data is only used to remap the decls in the
      OMP_DECLARE_MAPPER tree node expansion itself.  All relevant decls should
@@ -11755,6 +11968,85 @@ omp_instantiate_mapper (gimple_seq *pre_p,
 	}
 
       tree decl = OMP_CLAUSE_DECL (clause);
+
+      if (map_kind == GOMP_MAP_MAPPING_GROUP)
+	{
+	  tree data = omp_mapping_group_data (decl);
+	  tree group_type = TREE_TYPE (OMP_CLAUSE_DECL (data));
+
+	  group_type = TYPE_MAIN_VARIANT (group_type);
+
+	  nested_mapper_p = implicit_mappers->get ({ mapper_name, group_type });
+
+	  if (nested_mapper_p && *nested_mapper_p != mapperfn)
+	    {
+	      tree unshared = unshare_expr (data);
+	      map_kind = OMP_CLAUSE_MAP_KIND (data);
+	      walk_tree (&unshared, remap_mapper_decl_1, &id, NULL);
+	      tree ptr = omp_mapping_group_ptr (decl);
+
+	      /* !!! When ptr is NULL, we're discarding the other nodes in the
+		 mapping group.  Is that always OK?  */
+
+	      if (ptr)
+		{
+		  /* This behaviour is Fortran-specific.  That's fine for now
+		     because only Fortran is using GOMP_MAP_MAPPING_GROUP, but
+		     may need revisiting if that ever changes.  */
+		  gcc_assert (lang_GNU_Fortran ());
+
+		  /* We're invoking a (nested) mapper from CLAUSE, which was a
+		     pointer to a derived type.  The elements of the derived
+		     type are handled by the mapper, but we need to map the
+		     actual pointer as well.  Create an ALLOC node to do
+		     that.
+		     If we have an array descriptor, we want to copy it to the
+		     target, so instead use an ALWAYS_TO mapping and copy the
+		     descriptor itself rather than the data pointer.  */
+
+		  tree pset = omp_mapping_group_pset (decl);
+		  tree ptr_unshared = unshare_expr (pset ? pset : ptr);
+		  walk_tree (&ptr_unshared, remap_mapper_decl_1, &id, NULL);
+
+		  tree node = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
+						OMP_CLAUSE_MAP);
+		  OMP_CLAUSE_SET_MAP_KIND (node, pset ? GOMP_MAP_ALWAYS_TO
+						      : GOMP_MAP_ALLOC);
+		  OMP_CLAUSE_DECL (node) = OMP_CLAUSE_DECL (ptr_unshared);
+		  OMP_CLAUSE_SIZE (node)
+		    = TYPE_SIZE_UNIT (TREE_TYPE (OMP_CLAUSE_DECL (node)));
+
+		  *mapper_clauses_p = node;
+		  mapper_clauses_p = &OMP_CLAUSE_CHAIN (node);
+		}
+
+	      if (map_kind == GOMP_MAP_UNSET)
+		map_kind = outer_kind;
+
+	      mapper_clauses_p
+		= omp_instantiate_mapper (pre_p, implicit_mappers,
+					  *nested_mapper_p,
+					  OMP_CLAUSE_DECL (unshared), map_kind,
+					  mapper_clauses_p);
+	    }
+	  else
+	    /* No nested mapper, so process each element of the mapping
+	       group.  */
+	    for (tree cp = OMP_CLAUSE_DECL (clause); cp; cp = TREE_CHAIN (cp))
+	      {
+		tree node = unshare_expr (TREE_PURPOSE (cp));
+		walk_tree (&node, remap_mapper_decl_1, &id, NULL);
+
+		if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_UNSET)
+		  OMP_CLAUSE_SET_MAP_KIND (node, outer_kind);
+
+		*mapper_clauses_p = node;
+		mapper_clauses_p = &OMP_CLAUSE_CHAIN (node);
+	      }
+
+	  continue;
+	}
+
       tree unshared, type;
       bool nonunit_array_with_mapper = false;
 

@@ -17991,6 +17991,8 @@ resolve_types (gfc_namespace *ns)
 
   gfc_resolve_omp_udrs (ns->omp_udr_root);
 
+  gfc_resolve_omp_udms (ns->omp_udm_root);
+
   ns->types_resolved = 1;
 
   gfc_current_ns = old_ns;

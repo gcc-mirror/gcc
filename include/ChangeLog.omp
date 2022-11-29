@@ -1,5 +1,9 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_MAPPING_GROUP.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_UNSET,
 	GOMP_MAP_PUSH_MAPPER_NAME, GOMP_MAP_POP_MAPPER_NAME artificial mapping
 	clause types.

@@ -1,5 +1,88 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* dump-parse-tree.cc (show_attr): Show omp_udm_artificial_var flag.
+	(show_omp_namelist): Support OMP_MAP_POINTER_ONLY and OMP_MAP_UNSET.
+	* f95-lang.cc (LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES,
+	LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE,
+	LANG_HOOKS_OMP_MAP_ARRAY_SECTION): Define language hooks.
+	* gfortran.h (gfc_statement): Add ST_OMP_DECLARE_MAPPER.
+	(symbol_attribute): Add omp_udm_artificial_var attribute.
+	(gfc_omp_map_op): Add OMP_MAP_POINTER_ONLY and OMP_MAP_UNSET.
+	(gfc_omp_namelist): Add udm pointer to u2 union.
+	(gfc_omp_udm): New struct.
+	(gfc_omp_namelist_udm): New struct.
+	(gfc_symtree): Add omp_udm pointer.
+	(gfc_namespace): Add omp_udm_root symtree. Add omp_udm_ns flag.
+	(gfc_free_omp_namelist): Update prototype.
+	(gfc_free_omp_udm, gfc_omp_udm_find, gfc_find_omp_udm,
+	gfc_resolve_omp_udms): Add prototypes.
+	* match.cc (gfc_free_omp_namelist): Change FREE_NS and FREE_ALIGN
+	parameters to LIST number, to handle freeing user-defined mapper
+	namelists safely.
+	* match.h (gfc_match_omp_declare_mapper): Add prototype.
+	* module.cc (ab_attribute): Add AB_OMP_DECLARE_MAPPER_VAR.
+	(attr_bits): Add OMP_DECLARE_MAPPER_VAR.
+	(mio_symbol_attribute): Read/write AB_OMP_DECLARE_MAPPER_VAR attribute.
+	Set referenced attr on read.
+	(omp_map_clause_ops, omp_map_cardinality): New arrays.
+	(load_omp_udms, check_omp_declare_mappers): New functions.
+	(read_module): Load and check OMP declare mappers.
+	(write_omp_udm, write_omp_udms): New functions.
+	(write_module): Write OMP declare mappers.
+	* openmp.cc (gfc_free_omp_clauses, gfc_match_omp_variable_list,
+	gfc_match_omp_to_link, gfc_match_omp_depend_sink,
+	gfc_match_omp_clause_reduction): Update calls to gfc_free_omp_namelist.
+	(gfc_free_omp_udm, gfc_find_omp_udm, gfc_omp_udm_find,
+	gfc_match_omp_declare_mapper): New functions.
+	(gfc_match_omp_clauses): Add DEFAULT_MAP_OP parameter. Update calls to
+	gfc_free_omp_namelist.  Add declare mapper support.
+	(resolve_omp_clauses): Add declare mapper support.  Update calls to
+	gfc_free_omp_namelist.
+	(gfc_resolve_omp_udm, gfc_resolve_omp_udms): New functions.
+	* parse.cc (decode_omp_directive): Add declare mapper support.
+	(case_omp_decl): Add ST_OMP_DECLARE_MAPPER case.
+	(gfc_ascii_statement): Add ST_OMP_DECLARE_MAPPER case.
+	* resolve.cc (resolve_types): Call gfc_resolve_omp_udms.
+	* st.cc (gfc_free_statement): Update call to gfc_free_omp_namelist.
+	* symbol.cc (free_omp_udm_tree): New function.
+	(gfc_free_namespace): Call above.
+	* trans-decl.cc (omp_declare_mapper_ns): New global.
+	(gfc_finish_var_decl, gfc_generate_function_code): Support declare
+	mappers.
+	(gfc_trans_deferred_vars): Ignore artificial declare-mapper vars.
+	* trans-openmp.cc (tree-iterator.h): Include.
+	(toc_directive): New enum.
+	(gfc_trans_omp_array_section): Change OP and OPENMP parameters to
+	toc_directive CD ('clause directive').
+	(gfc_omp_finish_mapper_clauses, gfc_omp_extract_mapper_directive,
+	gfc_omp_map_array_section): New functions.
+	(omp_clause_directive): New enum.
+	(gfc_trans_omp_clauses): Remove DECLARE_SIMD and OPENACC parameters.
+	Replace with toc_directive CD, defaulting to TOC_OPENMP.  Add declare
+	mapper support and OMP_MAP_POINTER_ONLY support.
+	(gfc_trans_omp_construct, gfc_trans_oacc_executable_directive,
+	gfc_trans_oacc_combined_directive): Update calls to
+	gfc_trans_omp_clauses.
+	(gfc_subst_replace, gfc_subst_prepend_ref): New variables.
+	(gfc_subst_in_expr_1, gfc_subst_in_expr, gfc_subst_mapper_var,
+	gfc_trans_omp_instantiate_mapper, gfc_trans_omp_instantiate_mappers,
+	gfc_record_mapper_bindings_code_fn, gfc_record_mapper_bindings_expr_fn,
+	gfc_find_nested_mappers, gfc_record_mapper_bindings): New functions.
+	(gfc_typespec * hash traits): New template.
+	(omp_declare_mapper_ns): Extern declaration.
+	(gfc_trans_omp_target): Call gfc_trans_omp_instantiate_mappers and
+	gfc_record_mapper_bindings. Update calls to gfc_trans_omp_clauses.
+	(gfc_trans_omp_declare_simd, gfc_trans_omp_declare_variant): Update
+	calls to gfc_trans_omp_clauses.
+	(gfc_trans_omp_mapper_name, gfc_trans_omp_declare_mapper,
+	gfc_trans_omp_declare_mappers): New functions.
+	* trans-stmt.h (gfc_trans_omp_declare_mappers): Add prototype.
+	* trans.h (gfc_omp_finish_mapper_clauses,
+	gfc_omp_extract_mapper_directive, gfc_omp_map_array_section): Add
+	prototypes.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* parse.cc (tree.h, fold-const.h, tree-hash-traits.h): Add includes
 	(for additions to omp-general.h).
 

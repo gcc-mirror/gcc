@@ -3888,6 +3888,21 @@ free_omp_udr_tree (gfc_symtree * omp_udr_tree)
   free (omp_udr_tree);
 }
 
+/* Similar, for !$omp declare mappers.  */
+
+static void
+free_omp_udm_tree (gfc_symtree *omp_udm_tree)
+{
+  if (omp_udm_tree == NULL)
+    return;
+
+  free_omp_udm_tree (omp_udm_tree->left);
+  free_omp_udm_tree (omp_udm_tree->right);
+
+  gfc_free_omp_udm (omp_udm_tree->n.omp_udm);
+  free (omp_udm_tree);
+}
+
 
 /* Recursive function that deletes an entire tree and all the user
    operator nodes that it contains.  */
@@ -4062,6 +4077,7 @@ gfc_free_namespace (gfc_namespace *&ns)
   free_uop_tree (ns->uop_root);
   free_common_tree (ns->common_root);
   free_omp_udr_tree (ns->omp_udr_root);
+  free_omp_udm_tree (ns->omp_udm_root);
   free_tb_tree (ns->tb_sym_root);
   free_tb_tree (ns->tb_uop_root);
   gfc_free_finalizer_list (ns->finalizers);

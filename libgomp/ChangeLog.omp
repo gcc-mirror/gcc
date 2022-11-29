@@ -1,5 +1,25 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.fortran/declare-mapper-2.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-3.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-4.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-6.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-7.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-8.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-9.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-10.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-11.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-12.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-13.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-15.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-17.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-18.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-19.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-20.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-21.f90: New test.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.c-c++-common/declare-mapper-9.c: Enable for C.
 	* testsuite/libgomp.c-c++-common/declare-mapper-10.c: Likewise.
 	* testsuite/libgomp.c-c++-common/declare-mapper-11.c: Likewise.

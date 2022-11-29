@@ -2081,7 +2081,8 @@ enum ab_attribute
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
   AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
-  AB_IMPLICIT_PURE, AB_ARTIFICIAL, AB_UNLIMITED_POLY, AB_OMP_DECLARE_TARGET,
+  AB_IMPLICIT_PURE, AB_ARTIFICIAL, AB_UNLIMITED_POLY,
+  AB_OMP_DECLARE_MAPPER_VAR, AB_OMP_DECLARE_TARGET,
   AB_ARRAY_OUTER_DEPENDENCY, AB_MODULE_PROCEDURE, AB_OACC_DECLARE_CREATE,
   AB_OACC_DECLARE_COPYIN, AB_OACC_DECLARE_DEVICEPTR,
   AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK,
@@ -2149,6 +2150,7 @@ static const mstring attr_bits[] =
     minit ("CLASS_POINTER", AB_CLASS_POINTER),
     minit ("IMPLICIT_PURE", AB_IMPLICIT_PURE),
     minit ("UNLIMITED_POLY", AB_UNLIMITED_POLY),
+    minit ("OMP_DECLARE_MAPPER_VAR", AB_OMP_DECLARE_MAPPER_VAR),
     minit ("OMP_DECLARE_TARGET", AB_OMP_DECLARE_TARGET),
     minit ("ARRAY_OUTER_DEPENDENCY", AB_ARRAY_OUTER_DEPENDENCY),
     minit ("MODULE_PROCEDURE", AB_MODULE_PROCEDURE),
@@ -2369,6 +2371,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_VTYPE, attr_bits);
       if (attr->vtab)
 	MIO_NAME (ab_attribute) (AB_VTAB, attr_bits);
+      if (attr->omp_udm_artificial_var)
+	MIO_NAME (ab_attribute) (AB_OMP_DECLARE_MAPPER_VAR, attr_bits);
       if (attr->omp_declare_target)
 	MIO_NAME (ab_attribute) (AB_OMP_DECLARE_TARGET, attr_bits);
       if (attr->array_outer_dependency)
@@ -2625,6 +2629,17 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_VTAB:
 	      attr->vtab = 1;
+	      break;
+	    case AB_OMP_DECLARE_MAPPER_VAR:
+	      attr->omp_udm_artificial_var = 1;
+	      /* For the placeholder variable used in an !$OMP DECLARE MAPPER,
+		 we don't know if the final clauses will reference used
+		 variables or not, yet.  Make sure the clause list doesn't get
+		 skipped in trans-openmp.cc by forcing the variable referenced
+		 attribute true here (else on reading the module, the symbol is
+		 created with "referenced" false, and nothing else sets it to
+		 true).  */
+	      attr->referenced = 1;
 	      break;
 	    case AB_OMP_DECLARE_TARGET:
 	      attr->omp_declare_target = 1;
@@ -5134,6 +5149,130 @@ load_omp_udrs (void)
 }
 
 
+/* We only need some of the enumeration values of gfc_omp_map_op for mapping
+   ops in the "!$omp declare mapper" clause list.  */
+
+static const mstring omp_map_clause_ops[] =
+{
+    minit ("ALLOC", OMP_MAP_ALLOC),
+    minit ("TO", OMP_MAP_TO),
+    minit ("FROM", OMP_MAP_FROM),
+    minit ("TOFROM", OMP_MAP_TOFROM),
+    minit ("ALWAYS_TO", OMP_MAP_ALWAYS_TO),
+    minit ("ALWAYS_FROM", OMP_MAP_ALWAYS_FROM),
+    minit ("ALWAYS_TOFROM", OMP_MAP_ALWAYS_TOFROM),
+    minit ("POINTER_ONLY", OMP_MAP_POINTER_ONLY),
+    minit ("UNSET", OMP_MAP_UNSET),
+    minit (NULL, -1)
+};
+
+
+/* Whether a namelist in an "!$omp declare mapper" maps a single element or
+   multiple elements.  */
+
+static const mstring omp_map_cardinality[] =
+{
+    minit ("SINGLE", 0),
+    minit ("MULTIPLE", 1),
+    minit (NULL, -1)
+};
+
+/* This function loads OpenMP user-defined mappers.  */
+
+static void
+load_omp_udms (void)
+{
+  mio_lparen ();
+  while (peek_atom () != ATOM_RPAREN)
+    {
+      const char *mapper_id = NULL;
+      gfc_symtree *st;
+
+      mio_lparen ();
+      gfc_omp_udm *udm = gfc_get_omp_udm ();
+
+      require_atom (ATOM_INTEGER);
+      pointer_info *udmpi = get_integer (atom_int);
+      associate_integer_pointer (udmpi, udm);
+
+      mio_pool_string (&mapper_id);
+
+      /* Note: for a derived-type typespec, we might not have loaded the
+	 "u.derived" symbol yet.  Defer checking duplicates until
+	 check_omp_declare_mappers is called after loading all symbols.  */
+      mio_typespec (&udm->ts);
+
+      if (mapper_id == NULL)
+	mapper_id = gfc_get_string ("%s", "");
+
+      st = gfc_find_symtree (gfc_current_ns->omp_udm_root, mapper_id);
+
+      pointer_info *p = mio_symbol_ref (&udm->var_sym);
+      pointer_info *q = get_integer (p->u.rsym.ns);
+
+      udm->where = gfc_current_locus;
+      udm->mapper_id = mapper_id;
+      udm->mapper_ns = gfc_get_namespace (gfc_current_ns, 1);
+      udm->mapper_ns->proc_name = gfc_current_ns->proc_name;
+      udm->mapper_ns->omp_udm_ns = 1;
+
+      associate_integer_pointer (q, udm->mapper_ns);
+
+      gfc_omp_namelist *clauses = NULL;
+      gfc_omp_namelist **clausep = &clauses;
+
+      mio_lparen ();
+      while (peek_atom () != ATOM_RPAREN)
+	{
+	  /* Read each map clause.  */
+	  gfc_omp_namelist *n = gfc_get_omp_namelist ();
+
+	  mio_lparen ();
+
+	  n->u.map_op = (gfc_omp_map_op) mio_name (0, omp_map_clause_ops);
+	  mio_symbol_ref (&n->sym);
+	  mio_expr (&n->expr);
+
+	  mio_lparen ();
+
+	  if (peek_atom () != ATOM_RPAREN)
+	    {
+	      n->u2.udm = gfc_get_omp_namelist_udm ();
+	      n->u2.udm->multiple_elems_p = mio_name (0, omp_map_cardinality);
+	      mio_pointer_ref (&n->u2.udm->udm);
+	    }
+
+	  mio_rparen ();
+
+	  n->where = gfc_current_locus;
+
+	  mio_rparen ();
+
+	  *clausep = n;
+	  clausep = &n->next;
+	}
+      mio_rparen ();
+
+      udm->clauses = gfc_get_omp_clauses ();
+      udm->clauses->lists[OMP_LIST_MAP] = clauses;
+
+      if (st)
+	{
+	  udm->next = st->n.omp_udm;
+	  st->n.omp_udm = udm;
+	}
+      else
+	{
+	  st = gfc_new_symtree (&gfc_current_ns->omp_udm_root, mapper_id);
+	  st->n.omp_udm = udm;
+	}
+
+      mio_rparen ();
+    }
+  mio_rparen ();
+}
+
+
 /* Recursive function to traverse the pointer_info tree and load a
    needed symbol.  We return nonzero if we load a symbol and stop the
    traversal, because the act of loading can alter the tree.  */
@@ -5324,12 +5463,44 @@ check_for_ambiguous (gfc_symtree *st, pointer_info *info)
 }
 
 
+static void
+check_omp_declare_mappers (gfc_symtree *st)
+{
+  if (!st)
+    return;
+
+  check_omp_declare_mappers (st->left);
+  check_omp_declare_mappers (st->right);
+
+  gfc_omp_udm **udmp = &st->n.omp_udm;
+  gfc_symtree tmp_st;
+
+  while (*udmp)
+    {
+      gfc_omp_udm *udm = *udmp;
+      tmp_st.n.omp_udm = udm->next;
+      gfc_omp_udm *prev_udm = gfc_omp_udm_find (&tmp_st, &udm->ts);
+      if (prev_udm)
+	{
+	  gfc_error ("Ambiguous !$OMP DECLARE MAPPER from module %s at %L",
+		     udm->ts.u.derived->module, &udm->where);
+	  gfc_error ("Previous !$OMP DECLARE MAPPER from module %s at %L",
+		     prev_udm->ts.u.derived->module, &prev_udm->where);
+	  /* Delete the duplicate.  */
+	  *udmp = (*udmp)->next;
+	}
+      else
+	udmp = &(*udmp)->next;
+    }
+}
+
+
 /* Read a module file.  */
 
 static void
 read_module (void)
 {
-  module_locus operator_interfaces, user_operators, omp_udrs;
+  module_locus operator_interfaces, user_operators, omp_udrs, omp_udms;
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   int i;
@@ -5354,6 +5525,10 @@ read_module (void)
 
   /* Skip OpenMP UDRs.  */
   get_module_locus (&omp_udrs);
+  skip_list ();
+
+  /* Skip OpenMP UDMs.  */
+  get_module_locus (&omp_udms);
   skip_list ();
 
   mio_lparen ();
@@ -5690,6 +5865,10 @@ read_module (void)
   set_module_locus (&omp_udrs);
   load_omp_udrs ();
 
+  /* Load OpenMP user defined mappers.  */
+  set_module_locus (&omp_udms);
+  load_omp_udms ();
+
   /* At this point, we read those symbols that are needed but haven't
      been loaded yet.  If one symbol requires another, the other gets
      marked as NEEDED if its previous state was UNUSED.  */
@@ -5721,6 +5900,9 @@ read_module (void)
 		 "in module %qs", gfc_op2string (u->op), &u->where,
 		 module_name);
     }
+
+  /* Check "omp declare mappers" for duplicates from different modules.  */
+  check_omp_declare_mappers (gfc_current_ns->omp_udm_root);
 
   /* Clean up symbol nodes that were never loaded, create references
      to hidden symbols.  */
@@ -6100,6 +6282,65 @@ write_omp_udrs (gfc_symtree *st)
 }
 
 
+static void
+write_omp_udm (gfc_omp_udm *udm)
+{
+  /* If "!$omp declare mapper" type is private, don't write it.  */
+  if (!gfc_check_symbol_access (udm->ts.u.derived))
+    return;
+
+  mio_lparen ();
+  /* We need this pointer ref to identify this mapper so that other mappers
+     can refer to it.  */
+  mio_pointer_ref (&udm);
+  mio_pool_string (&udm->mapper_id);
+  mio_typespec (&udm->ts);
+
+  if (udm->var_sym->module == NULL)
+    udm->var_sym->module = module_name;
+
+  mio_symbol_ref (&udm->var_sym);
+  mio_lparen ();
+  gfc_omp_namelist *n;
+  for (n = udm->clauses->lists[OMP_LIST_MAP]; n; n = n->next)
+    {
+      mio_lparen ();
+
+      mio_name (n->u.map_op, omp_map_clause_ops);
+      mio_symbol_ref (&n->sym);
+      mio_expr (&n->expr);
+
+      mio_lparen ();
+
+      if (n->u2.udm)
+	{
+	  mio_name (n->u2.udm->multiple_elems_p, omp_map_cardinality);
+	  mio_pointer_ref (&n->u2.udm->udm);
+	}
+
+      mio_rparen ();
+
+      mio_rparen ();
+    }
+  mio_rparen ();
+  mio_rparen ();
+}
+
+
+static void
+write_omp_udms (gfc_symtree *st)
+{
+  if (st == NULL)
+    return;
+
+  write_omp_udms (st->left);
+  gfc_omp_udm *udm;
+  for (udm = st->n.omp_udm; udm; udm = udm->next)
+    write_omp_udm (udm);
+  write_omp_udms (st->right);
+}
+
+
 /* Type for the temporary tree used when writing secondary symbols.  */
 
 struct sorted_pointer_info
@@ -6357,6 +6598,12 @@ write_module (void)
 
   mio_lparen ();
   write_omp_udrs (gfc_current_ns->omp_udr_root);
+  mio_rparen ();
+  write_char ('\n');
+  write_char ('\n');
+
+  mio_lparen ();
+  write_omp_udms (gfc_current_ns->omp_udm_root);
   mio_rparen ();
   write_char ('\n');
   write_char ('\n');
