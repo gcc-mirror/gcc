@@ -5793,7 +5793,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 
   /* See if all non-TOP arguments have the same value.  TOP is
      equivalent to everything, so we can ignore it.  */
-  FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
+  basic_block bb = gimple_bb (phi);
+  FOR_EACH_EDGE (e, ei, bb->preds)
     if (e->flags & EDGE_EXECUTABLE)
       {
 	tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
@@ -5837,6 +5838,54 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 			    (TREE_OPERAND (def, 0), &doff) == sameval_base)
 			 && known_eq (soff, doff))
 		  continue;
+	      }
+	    /* There's also the possibility to use equivalences.  */
+	    if (!FLOAT_TYPE_P (TREE_TYPE (def)))
+	      {
+		vn_nary_op_t vnresult;
+		tree ops[2];
+		ops[0] = def;
+		ops[1] = sameval;
+		tree val = vn_nary_op_lookup_pieces (2, EQ_EXPR,
+						     boolean_type_node,
+						     ops, &vnresult);
+		if (! val && vnresult && vnresult->predicated_values)
+		  {
+		    val = vn_nary_op_get_predicated_value (vnresult, e->src);
+		    if (val && integer_truep (val))
+		      {
+			if (dump_file && (dump_flags & TDF_DETAILS))
+			  {
+			    fprintf (dump_file, "Predication says ");
+			    print_generic_expr (dump_file, def, TDF_NONE);
+			    fprintf (dump_file, " and ");
+			    print_generic_expr (dump_file, sameval, TDF_NONE);
+			    fprintf (dump_file, " are equal on edge %d -> %d\n",
+				     e->src->index, e->dest->index);
+			  }
+			continue;
+		      }
+		    /* If on all previous edges the value was equal to def
+		       we can change sameval to def.  */
+		    if (EDGE_COUNT (bb->preds) == 2
+			&& (val = vn_nary_op_get_predicated_value
+				    (vnresult, EDGE_PRED (bb, 0)->src))
+			&& integer_truep (val))
+		      {
+			if (dump_file && (dump_flags & TDF_DETAILS))
+			  {
+			    fprintf (dump_file, "Predication says ");
+			    print_generic_expr (dump_file, def, TDF_NONE);
+			    fprintf (dump_file, " and ");
+			    print_generic_expr (dump_file, sameval, TDF_NONE);
+			    fprintf (dump_file, " are equal on edge %d -> %d\n",
+				     EDGE_PRED (bb, 0)->src->index,
+				     EDGE_PRED (bb, 0)->dest->index);
+			  }
+			sameval = def;
+			continue;
+		      }
+		  }
 	      }
 	    sameval = NULL_TREE;
 	    break;
