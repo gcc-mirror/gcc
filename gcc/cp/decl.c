@@ -944,9 +944,7 @@ static bool
 function_requirements_equivalent_p (tree newfn, tree oldfn)
 {
   /* In the concepts TS, the combined constraints are compared.  */
-  if (cxx_dialect < cxx20
-      && (DECL_TEMPLATE_SPECIALIZATION (newfn)
-	  <= DECL_TEMPLATE_SPECIALIZATION (oldfn)))
+  if (cxx_dialect < cxx20)
     {
       tree ci1 = get_constraints (oldfn);
       tree ci2 = get_constraints (newfn);
