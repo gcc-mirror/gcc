@@ -456,6 +456,7 @@ TYPE
                     CVariant,
                     NulCVariant    : CARDINAL ;   (* variants of the same string *)
                     StringVariant  : ConstStringVariant ;
+                    Scope          : CARDINAL ;   (* Scope of declaration.       *)
                     At             : Where ;      (* Where was sym declared/used *)
                  END ;
 
@@ -468,6 +469,7 @@ TYPE
                     IsConstructor: BOOLEAN ;      (* is the constant a set?      *)
                     FromType     : CARDINAL ;     (* type is determined FromType *)
                     UnresFromType: BOOLEAN ;      (* is Type unresolved?         *)
+                    Scope        : CARDINAL ;     (* Scope of declaration.       *)
                     At           : Where ;        (* Where was sym declared/used *)
                  END ;
 
@@ -481,6 +483,7 @@ TYPE
                     FromType     : CARDINAL ; (* type is determined FromType *)
                     UnresFromType: BOOLEAN ;  (* is Type resolved?           *)
                     IsTemp       : BOOLEAN ;  (* is it a temporary?          *)
+                    Scope        : CARDINAL ; (* Scope of declaration.       *)
                     At           : Where ;    (* Where was sym declared/used *)
                  END ;
 
@@ -504,6 +507,7 @@ TYPE
                                               (* dereference a pointer?      *)
                IsWritten     : BOOLEAN ;      (* Is variable written to?     *)
                IsSSA         : BOOLEAN ;      (* Is variable a SSA?          *)
+               IsConst       : BOOLEAN ;      (* Is variable read/only?      *)
                At            : Where ;        (* Where was sym declared/used *)
                ReadUsageList,                 (* list of var read quads      *)
                WriteUsageList: LRLists ;      (* list of var write quads     *)
@@ -4081,6 +4085,7 @@ BEGIN
             IsPointerCheck := FALSE ;
             IsWritten := FALSE ;
             IsSSA := FALSE ;
+            IsConst := FALSE ;
             InitWhereDeclaredTok(tok, At) ;
             InitWhereFirstUsedTok(tok, At) ;   (* Where symbol first used.  *)
             InitList(ReadUsageList[RightValue]) ;
@@ -4667,6 +4672,7 @@ BEGIN
                     ConstLit.IsConstructor := FALSE ;
                     ConstLit.FromType := NulSym ;     (* type is determined FromType *)
                     ConstLit.UnresFromType := FALSE ; (* is Type resolved?           *)
+                    ConstLit.Scope := GetCurrentScope() ;
                     InitWhereDeclaredTok (tok, ConstLit.At) ;
                     InitWhereFirstUsedTok (tok, ConstLit.At)
 
@@ -4703,6 +4709,7 @@ BEGIN
             FromType := NulSym ;     (* type is determined FromType *)
             UnresFromType := FALSE ; (* is Type resolved?           *)
             IsTemp := FALSE ;
+            Scope := GetCurrentScope() ;
             InitWhereDeclaredTok (tok, At)
          END
       END ;
@@ -4811,6 +4818,7 @@ BEGIN
                                        m2sym, m2nulsym, csym, cnulsym) ;
                        BackFillString (cnulsym,
                                        m2sym, m2nulsym, csym, cnulsym) ;
+                       ConstString.Scope := GetCurrentScope() ;
                        InitWhereDeclaredTok (tok, ConstString.At)
 
       ELSE
@@ -6576,6 +6584,43 @@ BEGIN
       END
    END
 END GetVarWritten ;
+
+
+(*
+   PutVarConst - sets the IsConst field to value indicating the variable is read only.
+*)
+
+PROCEDURE PutVarConst (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsVar (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      pSym^.Var.IsConst := value
+   END
+END PutVarConst ;
+
+
+(*
+   IsVarConst - returns the IsConst field indicating the variable is read only.
+*)
+
+PROCEDURE IsVarConst (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym(sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      VarSym: RETURN( Var.IsConst )
+
+      ELSE
+         InternalError ('expecting VarSym')
+      END
+   END
+END IsVarConst ;
 
 
 (*
@@ -11964,6 +12009,9 @@ BEGIN
       RecordSym          : RETURN( Record.Scope ) |
       SetSym             : RETURN( Set.Scope ) |
       UnboundedSym       : RETURN( Unbounded.Scope ) |
+      ConstLitSym        : RETURN( ConstLit.Scope ) |
+      ConstStringSym     : RETURN( ConstString.Scope ) |
+      ConstVarSym        : RETURN( ConstVar.Scope ) |
       PartialUnboundedSym: InternalError ('should not be requesting the scope of a PartialUnbounded symbol')
 
       ELSE

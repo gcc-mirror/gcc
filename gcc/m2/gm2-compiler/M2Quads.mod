@@ -84,6 +84,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         PutWriteQuad, RemoveWriteQuad,
                         PutPriority, GetPriority,
                         PutProcedureBegin, PutProcedureEnd,
+                        PutVarConst, IsVarConst,
                         IsVarParam, IsProcedure, IsPointer, IsParameter,
                         IsUnboundedParam, IsEnumeration, IsDefinitionForC,
                         IsVarAParam, IsVarient, IsLegal,
@@ -104,6 +105,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         IsPartialUnbounded, IsProcedureBuiltin,
                         IsSet, IsConstSet, IsConstructor, PutConst,
                         PutConstructor, PutConstructorFrom,
+                        PutDeclared,
                         MakeComponentRecord, MakeComponentRef,
                         IsSubscript,
                         IsTemporary,
@@ -3359,16 +3361,21 @@ VAR
    combinedtok: CARDINAL ;
 BEGIN
    des := OperandT (2) ;
-   IF IsConst (des)
+   IF IsConst (des) OR IsVarConst (des)
    THEN
       destok := OperandTok (2) ;
       exptok := OperandTok (1) ;
+      exp := OperandT (1) ;
       IF DebugTokPos
       THEN
          MetaErrorT1 (destok, 'destok {%1Ead}', des) ;
          MetaErrorT1 (exptok, 'exptok {%1Ead}', exp)
       END ;
       combinedtok := MakeVirtualTok (becomesTokNo, destok, exptok) ;
+      IF DebugTokPos
+      THEN
+         MetaErrorT1 (combinedtok, 'combined {%1Ead}', des)
+      END ;
       IF IsBoolean (1)
       THEN
          MetaErrorT1 (combinedtok,
@@ -3489,24 +3496,24 @@ BEGIN
       combinedtok := MakeVirtualTok (becomesTokNo, destok, exptok) ;
       IF (GetSType (Des) # NulSym) AND (NOT IsSet (GetDType (Des)))
       THEN
-         (* tell code generator to test runtime values of assignment so ensure we
-            catch overflow and underflow *)
+         (* Tell code generator to test runtime values of assignment so ensure we
+            catch overflow and underflow.  *)
          BuildRange (InitAssignmentRangeCheck (combinedtok, Des, Exp))
       END ;
       IF checkTypes
       THEN
          CheckBecomesMeta (Des, Exp)
       END ;
-      (* Traditional Assignment *)
+      (* Traditional Assignment.  *)
       MoveWithMode (becomesTokNo, Des, Exp, Array, destok, exptok, checkOverflow) ;
       IF checkTypes
       THEN
          (*
          IF (CannotCheckTypeInPass3 (Des) OR CannotCheckTypeInPass3 (Exp))
          THEN
-            (* we must do this after the assignment to allow the Designator to be
-               resolved (if it is a constant) before the type checking is done *)
-            (* prompt post pass 3 to check the assignment once all types are resolved *)
+            (* We must do this after the assignment to allow the Designator to be
+               resolved (if it is a constant) before the type checking is done.  *)
+            (* Prompt post pass 3 to check the assignment once all types are resolved.  *)
             BuildRange (InitTypesAssignmentCheck (combinedtok, Des, Exp))
          END ;
          *)
@@ -11019,6 +11026,7 @@ BEGIN
          PushTFtok (t, GetSType(t), exprTok) ;
          PushTtok (Sym, arrayTok) ;
          combinedTok := MakeVirtualTok (arrayTok, arrayTok, exprTok) ;
+         PutVarConst (t, TRUE) ;
          BuildAssignConstant (combinedTok) ;
          PushTFDtok (t, GetDType(t), d, arrayTok) ;
          PushTtok (e, exprTok)
@@ -11100,6 +11108,11 @@ BEGIN
    (* now make Adr point to the address of the indexed element *)
    combinedTok := MakeVirtualTok (arrayTok, arrayTok, indexTok) ;
    Adr := MakeTemporary (combinedTok, LeftValue) ;
+   IF IsVar (Array)
+   THEN
+      (* BuildDesignatorArray may have detected des is a constant.  *)
+      PutVarConst (Adr, IsVarConst (Array))
+   END ;
    (*
       From now on it must reference the array element by its lvalue
       - so we create the type of the referenced entity
@@ -11201,16 +11214,13 @@ BEGIN
    IF Dim = 1
    THEN
       (*
-         Base has type address because
+         Base has type address since
          BuildDesignatorRecord references by address.
 
          Build a record for retrieving the address of dynamic array.
          BuildDesignatorRecord will generate the required quadruples,
          therefore build sets up the stack for BuildDesignatorRecord
          which will generate the quads to access the record.
-
-         Build above current current info needed for array.
-         Note that, n, has gone by now.
       *)
       ArraySym := Sym ;
       UnboundedType := GetUnboundedRecordType(GetSType(Sym)) ;
@@ -11846,7 +11856,7 @@ PROCEDURE PopConstructor ;
 VAR
    c: ConstructorFrame ;
 BEGIN
-   c := PopAddress(ConstructorStack) ;
+   c := PopAddress (ConstructorStack) ;
    DISPOSE(c)
 END PopConstructor ;
 
@@ -11870,7 +11880,7 @@ END NextConstructorField ;
 
 PROCEDURE SilentBuildConstructor ;
 BEGIN
-   PutConstructorIntoFifoQueue(NulSym)
+   PutConstructorIntoFifoQueue (NulSym)
 END SilentBuildConstructor ;
 
 
@@ -11886,28 +11896,28 @@ END SilentBuildConstructor ;
                       |------------+
 *)
 
-PROCEDURE BuildConstructor ;
+PROCEDURE BuildConstructor (tokcbrpos: CARDINAL) ;
 VAR
    tok       : CARDINAL ;
    constValue,
    type      : CARDINAL ;
 BEGIN
-   PopT(type) ;
-   tok := GetTokenNo () ;
-   constValue := MakeTemporary(tok, ImmediateValue) ;
-   PutVar(constValue, type) ;
-   PutConstructor(constValue) ;
-   PushValue(constValue) ;
-   IF type=NulSym
+   PopTtok (type, tok) ;
+   constValue := MakeTemporary (tok, ImmediateValue) ;
+   PutVar (constValue, type) ;
+   PutConstructor (constValue) ;
+   PushValue (constValue) ;
+   IF type = NulSym
    THEN
-      WriteFormat0('constructor requires a type before the opening {')
+      MetaErrorT0 (tokcbrpos,
+                   '{%E}constructor requires a type before the opening {')
    ELSE
-      ChangeToConstructor(GetTokenNo(), type) ;
-      PutConstructorFrom(constValue, type) ;
-      PopValue(constValue) ;
-      PutConstructorIntoFifoQueue(constValue)
+      ChangeToConstructor (tok, type) ;
+      PutConstructorFrom (constValue, type) ;
+      PopValue (constValue) ;
+      PutConstructorIntoFifoQueue (constValue)
    END ;
-   PushConstructor(type)
+   PushConstructor (type)
 END BuildConstructor ;
 
 
@@ -11919,7 +11929,7 @@ PROCEDURE SilentBuildConstructorStart ;
 VAR
    constValue: CARDINAL ;
 BEGIN
-   GetConstructorFromFifoQueue(constValue)
+   GetConstructorFromFifoQueue (constValue)
 END SilentBuildConstructorStart ;
 
 
@@ -11935,16 +11945,16 @@ END SilentBuildConstructorStart ;
                            |------------+        |----------------|
 *)
 
-PROCEDURE BuildConstructorStart ;
+PROCEDURE BuildConstructorStart (cbratokpos: CARDINAL) ;
 VAR
    constValue,
    type      : CARDINAL ;
 BEGIN
-   PopT(type) ;   (* we ignore the type as we already have the constructor symbol from pass C *)
-   GetConstructorFromFifoQueue(constValue) ;
-   Assert(type=GetSType(constValue)) ;
-   PushT(constValue) ;
-   PushConstructor(type)
+   PopT (type) ;   (* we ignore the type as we already have the constructor symbol from pass C *)
+   GetConstructorFromFifoQueue (constValue) ;
+   Assert (type = GetSType (constValue)) ;
+   PushTtok (constValue, cbratokpos) ;
+   PushConstructor (type)
 END BuildConstructorStart ;
 
 
@@ -11961,9 +11971,23 @@ END BuildConstructorStart ;
                          |------------|        |------------|
 *)
 
-PROCEDURE BuildConstructorEnd ;
+PROCEDURE BuildConstructorEnd (cbratokpos: CARDINAL) ;
+VAR
+   type, typetok,
+   value, valtok: CARDINAL ;
 BEGIN
+   PopTtok (value, valtok) ;
+   IF IsBoolean (1)
+   THEN
+      typetok := valtok
+   ELSE
+      typetok := OperandTtok (1)
+   END ;
+   valtok := MakeVirtualTok (typetok, typetok, cbratokpos) ;
+   PutDeclared (valtok, value) ;
+   PushTtok (value, valtok) ;   (* Use valtok as we now know it was a constructor.  *)
    PopConstructor
+   (* ; ErrorStringAt (Mark (InitString ('aggregate constant')), valtok) *)
 END BuildConstructorEnd ;
 
 
@@ -14683,6 +14707,26 @@ BEGIN
    END ;
    PushAddress(BoolStack, f)
 END PushTFn ;
+
+
+(*
+   PushTFntok - Push a True and False numbers onto the True/False stack.
+                True and False are assumed to contain Symbols or Ident etc.
+*)
+
+PROCEDURE PushTFntok (True, False, n: WORD; tokno: CARDINAL) ;
+VAR
+   f: BoolFrame ;
+BEGIN
+   f := newBoolFrame () ;
+   WITH f^ DO
+      TrueExit  := True ;
+      FalseExit := False ;
+      name      := n ;
+      tokenno   := tokno
+   END ;
+   PushAddress (BoolStack, f)
+END PushTFntok ;
 
 
 (*

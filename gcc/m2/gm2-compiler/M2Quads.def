@@ -81,7 +81,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  Top,
                  PopTF, PushTF, PopT, PushT, PopNothing, PopN, PushTFA,
                  PushTtok, PushTFtok, PopTFtok, PopTtok, PushTFAtok,
-                 PushTFn, PopTFn,
+                 PushTFn, PushTFntok, PopTFn,
                  OperandT, OperandF, OperandA, OperandAnno, OperandTok,
                  DisplayStack, WriteOperand, Annotate,
 
@@ -93,6 +93,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  BuildConstructorStart,
                  BuildConstructorEnd,
                  NextConstructorField, BuildTypeForConstructor,
+                 PopConstructor,
                  BuildComponentValue,
                  SilentBuildConstructor, SilentBuildConstructorStart,
 
@@ -1971,7 +1972,7 @@ PROCEDURE SilentBuildConstructorStart ;
                       |------------+
 *)
 
-PROCEDURE BuildConstructor ;
+PROCEDURE BuildConstructor (tokcbrpos: CARDINAL) ;
 
 
 (*
@@ -1986,7 +1987,7 @@ PROCEDURE BuildConstructor ;
                            |------------+        |------------|
 *)
 
-PROCEDURE BuildConstructorStart ;
+PROCEDURE BuildConstructorStart (cbratokpos: CARDINAL) ;
 
 
 (*
@@ -2004,7 +2005,7 @@ PROCEDURE BuildConstructorStart ;
                          |------------+        |------------|
 *)
 
-PROCEDURE BuildConstructorEnd ;
+PROCEDURE BuildConstructorEnd (cbratokpos: CARDINAL) ;
 
 
 (*
@@ -2040,6 +2041,13 @@ PROCEDURE BuildTypeForConstructor ;
 *)
 
 PROCEDURE BuildComponentValue ;
+
+
+(*
+   PopConstructor - removes the top constructor from the top of stack.
+*)
+
+PROCEDURE PopConstructor ;
 
 
 (*
@@ -2256,6 +2264,14 @@ PROCEDURE PopTtok (VAR True: WORD; VAR tok: CARDINAL) ;
 *)
 
 PROCEDURE PushTFn (True, False, n: WORD) ;
+
+
+(*
+   PushTFntok - Push a True and False numbers onto the True/False stack.
+                True and False are assumed to contain Symbols or Ident etc.
+*)
+
+PROCEDURE PushTFntok (True, False, n: WORD; tokno: CARDINAL) ;
 
 
 (*

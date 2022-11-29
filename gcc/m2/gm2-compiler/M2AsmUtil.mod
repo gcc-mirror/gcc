@@ -69,8 +69,7 @@ END StringToKey ;
 
 PROCEDURE GetFullScopeAsmName (sym: CARDINAL) : Name ;
 VAR
-   leader,
-   module: String ;
+   leader: String ;
    scope : CARDINAL ;
 BEGIN
    scope := GetScope (sym) ;

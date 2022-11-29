@@ -62,9 +62,10 @@ FROM M2Reserved IMPORT tokToTok, toktype,
                        AndTok, AmbersandTok, PeriodPeriodTok, ByTok ;
 
 FROM M2Quads IMPORT Top, PushT, PopT, PushTF, PopTF, PopNothing, OperandT, PushTFA,
-                    PushTFn, PopTFn, PushTFtok, PopTtok, PopTFtok, PushTtok,
+                    PushTFn, PopTFn, PushTFtok, PopTtok, PopTFtok, PushTtok, PushTFntok,
                     PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto,
                     BuildTypeForConstructor, BuildConstructor, BuildConstructorEnd,
+                    PopConstructor,
                     NextConstructorField, SilentBuildConstructor ;
 
 FROM P3SymBuild IMPORT CheckCanBeImported ;
@@ -130,15 +131,21 @@ VAR
 
 PROCEDURE ErrorString (s: String) ;
 BEGIN
-   ErrorStringAt(s, GetTokenNo()) ;
+   ErrorStringAt (s, GetTokenNo ()) ;
    WasNoError := FALSE
 END ErrorString ;
 
 
 PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
 BEGIN
-   ErrorString(InitString(a))
+   ErrorString (InitString (a))
 END ErrorArray ;
+
+
+PROCEDURE ErrorArrayAt (a: ARRAY OF CHAR; tok: CARDINAL) ;
+BEGIN
+   ErrorStringAt (InitString(a), tok)
+END ErrorArrayAt ;
 
 
 % declaration PCBuild begin
@@ -344,7 +351,7 @@ PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop
 BEGIN
    IF IsAutoPushOn()
    THEN
-      PushTF(makekey(currentstring), identtok)
+      PushTFtok (makekey (currentstring), identtok, GetTokenNo ())
    END ;
    Expect(identtok, stopset0, stopset1, stopset2)
 END Ident ;
@@ -681,8 +688,8 @@ ArraySetRecordValue := ComponentValue { ','                                % Nex
 
 Constructor := '{'                                                         % PushConstructorCastType %
                                                                            % PushInConstructor %
-                                                                           % BuildConstructor %
-                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd %
+                                                                           % BuildConstructor (GetTokenNo ()-1) %
+                  [ ArraySetRecordValue ]                                  % PopConstructor %
                '}'                                                         % PopInConstructor %
                    =:
 
@@ -926,50 +933,64 @@ Term := Factor { MulOperator Factor } =:
 Factor := Number | string | SetOrDesignatorOrFunction |
           "(" Expression ")" | "NOT" ( Factor | ConstAttribute ) =:
 
-PushQualident :=                                                           % VAR name     : Name ;
-                                                                                 init, ip1: CARDINAL ; %
+PushQualident :=                                                           % VAR name         : Name ;
+                                                                                 init, ip1    : CARDINAL ;
+                                                                                 tok, tokstart: CARDINAL ; %
                                                                            % PushAutoOn %
              Ident                                                         % IF IsAutoPushOn()
                                                                              THEN
-                                                                                PopT(name) ;
-                                                                                init := GetSym(name) ;
+                                                                                PopTtok (name, tokstart) ;
+                                                                                tok := tokstart ;
+                                                                                init := GetSym (name) ;
                                                                                 IF init=NulSym
                                                                                 THEN
-                                                                                   PushTFn(NulSym, NulSym, name)
+                                                                                   PushTFntok (NulSym, NulSym, name, tok)
                                                                                 ELSE
-                                                                                   WHILE IsDefImp(init) OR IsModule(init) DO
-                                                                                      IF currenttoken#periodtok
+                                                                                   WHILE IsDefImp (init) OR IsModule (init) DO
+                                                                                      IF currenttoken # periodtok
                                                                                       THEN
-                                                                                         ErrorArray("expecting '.' after module in the construction of a qualident") ;
-                                                                                         PushT(init) ;
+                                                                                         ErrorArrayAt ("expecting '.' after module in the construction of a qualident", tok) ;
+                                                                                         IF tok#tokstart
+                                                                                         THEN
+                                                                                            tok := MakeVirtualTok (tokstart, tokstart, tok)
+                                                                                         END ;
+                                                                                         PushTtok (init, tok) ;
                                                                                          PopAuto ;
                                                                                          RETURN
                                                                                       ELSE
-                                                                                         Expect(periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
-                                                                                         StartScope(init) ;
-                                                                                         Ident(stopset0, stopset1, stopset2) ;
-                                                                                         PopT(name) ;
-                                                                                         ip1 := GetSym(name) ;
-                                                                                         IF ip1=NulSym
+                                                                                         Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
+                                                                                         StartScope (init) ;
+                                                                                         Ident (stopset0, stopset1, stopset2) ;
+                                                                                         PopTtok (name, tok) ;
+                                                                                         ip1 := GetSym (name) ;
+                                                                                         IF ip1 = NulSym
                                                                                          THEN
-                                                                                            ErrorArray("unknown ident in the construction of a qualident") ;
+                                                                                            ErrorArrayAt ("unknown ident in the construction of a qualident", tok) ;
                                                                                             EndScope ;
-                                                                                            PushTFn(NulSym, NulSym, name) ;
+                                                                                            IF tok#tokstart
+                                                                                            THEN
+                                                                                               tok := MakeVirtualTok (tokstart, tokstart, tok)
+                                                                                            END ;
+                                                                                            PushTFntok (NulSym, NulSym, name, tok) ;
                                                                                             PopAuto ;
                                                                                             RETURN
                                                                                          ELSE
-                                                                                            PutIncluded(ip1)
+                                                                                            PutIncluded (ip1)
                                                                                          END ;
                                                                                          EndScope ;
-                                                                                         CheckCanBeImported(init, ip1) ;
+                                                                                         CheckCanBeImported (init, ip1) ;
                                                                                          init := ip1
                                                                                       END
                                                                                    END ;
-                                                                                   IF IsProcedure(init) OR IsProcType(init)
+                                                                                   IF tok#tokstart
                                                                                    THEN
-                                                                                      PushT(init)
+                                                                                      tok := MakeVirtualTok (tokstart, tokstart, tok)
+                                                                                   END ;
+                                                                                   IF IsProcedure (init) OR IsProcType (init)
+                                                                                   THEN
+                                                                                      PushTtok (init, tok)
                                                                                    ELSE
-                                                                                      PushTF(init, GetType(init))
+                                                                                      PushTFtok (init, GetType(init), tok)
                                                                                    END
                                                                                 END
                                                                              ELSE %

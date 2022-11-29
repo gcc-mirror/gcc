@@ -146,6 +146,7 @@ EXPORT QUALIFIED NulSym,
                  GetImportStatementList, GetModuleDefImportStatementList, GetModuleModImportStatementList,
 
                  PutVar,
+                 PutVarConst,
                  PutLeftValueFrontBackType,
                  GetVarBackEndType,
                  PutVarPointerCheck,
@@ -227,6 +228,7 @@ EXPORT QUALIFIED NulSym,
                  IsImport,
                  IsImportStatement,
                  IsVar,
+                 IsVarConst,
                  IsConst,
                  IsConstString,
                  IsConstStringM2, IsConstStringC, IsConstStringM2nul, IsConstStringCnul,
@@ -881,6 +883,13 @@ PROCEDURE PutVariableSSA (sym: CARDINAL; value: BOOLEAN) ;
 *)
 
 PROCEDURE IsVariableSSA (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutVarConst - sets the IsConst field to value indicating the variable is read only.
+*)
+
+PROCEDURE PutVarConst (sym: CARDINAL; value: BOOLEAN) ;
 
 
 (*
@@ -2800,6 +2809,13 @@ PROCEDURE IsProcType (Sym: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE IsVar (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsVarConst - returns the IsConst field indicating the variable is read only.
+*)
+
+PROCEDURE IsVarConst (sym: CARDINAL) : BOOLEAN ;
 
 
 (*

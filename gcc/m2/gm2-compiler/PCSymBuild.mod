@@ -1326,14 +1326,10 @@ END PushConstType ;
 *)
 
 PROCEDURE PushConstructorCastType ;
-VAR
-   c: CARDINAL ;
 BEGIN
-   PopT(c) ;
-   PushT(c) ;
    IF inDesignator
    THEN
-      InitConvert(cast, c, NIL, NIL)
+      InitConvert (cast, OperandT (1), NIL, NIL)
    END
 END PushConstructorCastType ;
 

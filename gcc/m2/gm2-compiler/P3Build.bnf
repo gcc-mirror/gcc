@@ -747,8 +747,9 @@ ArraySetRecordValue := ComponentValue                                      % Bui
                                                            }
                      =:
 
-Constructor := '{'                                                         % BuildConstructorStart %
-                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd   %
+Constructor :=                                                             % DisplayStack %
+               '{'                                                         % BuildConstructorStart (GetTokenNo() -1) %
+                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd (GetTokenNo())  %
                '}' =:
 
 ConstSetOrQualidentOrFunction := Qualident
