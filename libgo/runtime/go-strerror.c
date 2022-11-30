@@ -12,7 +12,7 @@
    exists to selectively undefine it and provides an alias to the
    XSI-compliant version of strerror_r(3).  */
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__gnu_hurd__)
 
 /* Force selection of XSI-compliant strerror_r by glibc.  */
 #undef XOPEN_SOURCE
@@ -21,7 +21,7 @@
 #define _POSIX_C_SOURCE 200112L
 #undef _GNU_SOURCE
 
-#endif /* __linux__ */
+#endif /* defined(__linux__) || defined(__gnu_hurd__) */
 
 #include <string.h>
 
