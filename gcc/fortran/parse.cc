@@ -5779,7 +5779,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	{
 	  gfc_omp_namelist *nl;
 	  for (nl = cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
-	      nl->next; nl = nl->next);
+	      nl->next; nl = nl->next)
 	    ;
 	  nl->next = new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
 	}
