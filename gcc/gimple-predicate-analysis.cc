@@ -1257,63 +1257,48 @@ predicate::simplify_2 ()
   /* (X AND Y) OR (!X AND Y) is equivalent to Y.
      (X AND Y) OR (X AND !Y) is equivalent to X.  */
 
-  unsigned n = m_preds.length ();
-  for (unsigned i = 0; i < n; i++)
+  for (unsigned i = 0; i < m_preds.length (); i++)
     {
       pred_chain &a_chain = m_preds[i];
-      if (a_chain.length () != 2)
-	continue;
 
-      /* Create copies since the chain may be released below before
-	 the copy is added to the other chain.  */
-      const pred_info x = a_chain[0];
-      const pred_info y = a_chain[1];
-
-      for (unsigned j = 0; j < n; j++)
+      for (unsigned j = i + 1; j < m_preds.length (); j++)
 	{
-	  if (j == i)
-	    continue;
-
 	  pred_chain &b_chain = m_preds[j];
-	  if (b_chain.length () != 2)
+	  if (b_chain.length () != a_chain.length ())
 	    continue;
 
-	  const pred_info &x2 = b_chain[0];
-	  const pred_info &y2 = b_chain[1];
-
-	  if (pred_equal_p (x, x2) && pred_neg_p (y, y2))
+	  unsigned neg_idx = -1U;
+	  for (unsigned k = 0; k < a_chain.length (); ++k)
 	    {
-	      /* Kill a_chain.  */
-	      b_chain.release ();
-	      a_chain.release ();
-	      b_chain.safe_push (x);
-	      simplified = true;
-	      break;
+	      if (pred_equal_p (a_chain[k], b_chain[k]))
+		continue;
+	      if (neg_idx != -1U)
+		{
+		  neg_idx = -1U;
+		  break;
+		}
+	      if (pred_neg_p (a_chain[k], b_chain[k]))
+		neg_idx = k;
+	      else
+		break;
 	    }
-	  if (pred_neg_p (x, x2) && pred_equal_p (y, y2))
+	  /* If we found equal chains with one negated predicate
+	     simplify.  */
+	  if (neg_idx != -1U)
 	    {
-	      /* Kill a_chain.  */
-	      a_chain.release ();
-	      b_chain.release ();
-	      b_chain.safe_push (y);
+	      a_chain.ordered_remove (neg_idx);
+	      m_preds.ordered_remove (j);
 	      simplified = true;
+	      if (a_chain.is_empty ())
+		{
+		  /* A && !A simplifies to true, wipe the whole predicate.  */
+		  for (unsigned k = 0; k < m_preds.length (); ++k)
+		    m_preds[k].release ();
+		  m_preds.truncate (0);
+		}
 	      break;
 	    }
 	}
-    }
-  /* Now clean up the chain.  */
-  if (simplified)
-    {
-      pred_chain_union s_preds = vNULL;
-      for (unsigned i = 0; i < n; i++)
-	{
-	  if (m_preds[i].is_empty ())
-	    continue;
-	  s_preds.safe_push (m_preds[i]);
-	}
-      m_preds.release ();
-      m_preds = s_preds;
-      s_preds = vNULL;
     }
 
   return simplified;
