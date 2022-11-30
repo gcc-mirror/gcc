@@ -26,7 +26,7 @@ FROM M2Base IMPORT ZType, RType ;
 FROM NameKey IMPORT Name, KeyToCharStar, NulName ;
 FROM StrLib IMPORT StrLen ;
 FROM M2LexBuf IMPORT GetTokenNo, UnknownTokenNo ;
-FROM M2Error IMPORT Error, NewError, NewWarning, NewNote, ErrorString, InternalError, ChainError, SetColor, FlushErrors ;
+FROM M2Error IMPORT Error, NewError, NewWarning, NewNote, ErrorString, InternalError, ChainError, SetColor, FlushErrors, FlushWarnings ;
 FROM FIO IMPORT StdOut, WriteLine ;
 FROM SFIO IMPORT WriteS ;
 FROM StringConvert IMPORT ctos ;
@@ -2275,6 +2275,7 @@ PROCEDURE checkAbort ;
 BEGIN
    IF seenAbort
    THEN
+      FlushWarnings ;
       FlushErrors
    END
 END checkAbort ;

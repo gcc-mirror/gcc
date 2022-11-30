@@ -1136,7 +1136,7 @@ Statement :=		                                                   % BuildStmtNote
              ]                                                             % PopAuto ; %
           =:
 
-RetryStatement := "RETRY"                                                  % BuildRetry %
+RetryStatement := "RETRY"                                                  % BuildRetry (GetTokenNo () -1) %
                 =:
 
 AssignmentOrProcedureCall :=                                               % VAR isFunc: BOOLEAN ;
@@ -1262,6 +1262,7 @@ WithStatement :=                                                           % VAR
                                                                                 tok: CARDINAL ; %
                  "WITH"                                                    % tok := GetTokenNo () -1 %
                         Designator                                         % StartBuildWith (tok) %
+                                                                           % BuildStmtNote (0) %
                                    "DO"
                         StatementSequence
                                                                            % BuildStmtNote (0) %

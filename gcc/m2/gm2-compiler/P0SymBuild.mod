@@ -24,10 +24,11 @@ IMPLEMENTATION MODULE P0SymBuild ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
 FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, RemoveItemFromList, NoOfItemsInList, GetItemFromList, IsItemInList ;
+FROM Indexing IMPORT Index, InitIndex, HighIndice, LowIndice, GetIndice, RemoveIndiceFromIndex, IncludeIndiceIntoIndex ;
 FROM M2Batch IMPORT MakeDefinitionSource, MakeProgramSource, MakeImplementationSource ;
 FROM SymbolTable IMPORT NulSym, MakeInnerModule, SetCurrentModule, SetFileModule, MakeError, PutDefinitionForC ;
 FROM NameKey IMPORT Name, NulName ;
-FROM M2Quads IMPORT PushT, PushTF, PopT, PopTF, PopN, OperandT, PopTtok, PushTtok ;
+FROM M2Quads IMPORT PushT, PushTF, PopT, PopTF, PopN, OperandT, PopTtok, PushTtok, OperandTok ;
 FROM M2Reserved IMPORT ImportTok ;
 FROM M2Debug IMPORT Assert ;
 FROM M2MetaError IMPORT MetaErrorT1, MetaErrorT2, MetaError1, MetaError2 ;
@@ -47,14 +48,19 @@ TYPE
                      sym            : CARDINAL ;
                      level          : CARDINAL ;
                      token          : CARDINAL ;      (* where the block starts.  *)
-                     LocalModules,                    (* locally declared modules at the current level  *)
-                     ImportedModules: List ;          (* current list of imports for the scanned module *)
+                     LocalModules   : List ;          (* locally declared modules at the current level  *)
+                     ImportedModules: Index ;         (* current list of imports for the scanned module *)
                      toPC,
                      toReturn,
                      toNext,                          (* next in same level *)
                      toUp,                            (* return to outer level *)
                      toDown         : BlockInfoPtr ;  (* first of the inner level *)
                   END ;
+
+   ModuleDesc = POINTER TO RECORD
+                              name: Name ;            (* Name of the module.  *)
+                              tok : CARDINAL ;        (* Location where the module ident was first seen.  *)
+                           END ;
 
 VAR
    headBP,
@@ -210,8 +216,8 @@ BEGIN
       name := n ;
       kind := k ;
       sym := s ;
-      InitList(LocalModules) ;
-      InitList(ImportedModules) ;
+      InitList (LocalModules) ;
+      ImportedModules := InitIndex (1) ;
       toPC := NIL ;
       toReturn := NIL ;
       toNext := NIL ;
@@ -235,8 +241,8 @@ BEGIN
       name := NulName ;
       kind := universe ;
       sym := NulSym ;
-      InitList(LocalModules) ;
-      InitList(ImportedModules) ;
+      InitList (LocalModules) ;
+      ImportedModules := InitIndex (1) ;
       toNext := NIL ;
       toDown := NIL ;
       toUp := curBP ;
@@ -254,13 +260,14 @@ PROCEDURE FlushImports (b: BlockInfoPtr) ;
 VAR
    i, n   : CARDINAL ;
    modname: Name ;
+   desc   : ModuleDesc ;
 BEGIN
    WITH b^ DO
-      i := 1 ;
-      n := NoOfItemsInList (ImportedModules) ;
-      WHILE i<=n DO
-         modname := GetItemFromList (ImportedModules, i) ;
-         sym := MakeDefinitionSource (GetTokenNo (), modname) ;
+      i := LowIndice (ImportedModules) ;
+      n := HighIndice (ImportedModules) ;
+      WHILE i <= n DO
+         desc := GetIndice (ImportedModules, i) ;
+         sym := MakeDefinitionSource (desc^.tok, desc^.name) ;
          Assert (sym # NulSym) ;
          INC (i)
       END
@@ -289,12 +296,27 @@ END EndBlock ;
    RegisterLocalModule - register, n, as a local module.
 *)
 
-PROCEDURE RegisterLocalModule (n: Name) ;
+PROCEDURE RegisterLocalModule (name: Name) ;
+VAR
+   i, n: CARDINAL ;
+   desc: ModuleDesc ;
 BEGIN
    (* printf1('seen local module %a\n', n) ; *)
    WITH curBP^ DO
-      IncludeItemIntoList(LocalModules, n) ;
-      RemoveItemFromList(ImportedModules, n)
+      IncludeItemIntoList (LocalModules, n) ;
+      i := LowIndice (ImportedModules) ;
+      n := HighIndice (ImportedModules) ;
+      WHILE i <= n DO
+         desc := GetIndice (ImportedModules, i) ;
+         IF desc^.name = name
+         THEN
+            RemoveIndiceFromIndex (ImportedModules, desc) ;
+            DISPOSE (desc) ;
+            RETURN  (* All done.  *)
+         ELSE
+            INC (i)
+         END
+      END
    END
 END RegisterLocalModule ;
 
@@ -303,18 +325,22 @@ END RegisterLocalModule ;
    RegisterImport - register, n, as a module imported from either a local scope or definition module.
 *)
 
-PROCEDURE RegisterImport (n: Name) ;
+PROCEDURE RegisterImport (n: Name; tok: CARDINAL) ;
 VAR
-   bp: BlockInfoPtr ;
+   bp  : BlockInfoPtr ;
+   desc: ModuleDesc ;
 BEGIN
    (* printf1('register import from module %a\n', n) ; *)
    Assert(curBP#NIL) ;
    Assert(curBP^.toUp#NIL) ;
    bp := curBP^.toUp ;   (* skip over current module *)
    WITH bp^ DO
-      IF NOT IsItemInList(LocalModules, n)
+      IF NOT IsItemInList (LocalModules, n)
       THEN
-         IncludeItemIntoList(ImportedModules, n)
+         NEW (desc) ;
+         desc^.name := n ;
+         desc^.tok := tok ;
+         IncludeIndiceIntoIndex (ImportedModules, desc)
       END
    END
 END RegisterImport ;
@@ -326,7 +352,8 @@ END RegisterImport ;
 
 PROCEDURE RegisterImports ;
 VAR
-   i, n: CARDINAL ;
+   index,
+   i, n : CARDINAL ;
 BEGIN
    PopT(n) ;       (* n   = # of the Ident List *)
    IF OperandT(n+1)=ImportTok
@@ -334,12 +361,13 @@ BEGIN
       (* Ident list contains Module Names *)
       i := 1 ;
       WHILE i<=n DO
-         RegisterImport(OperandT(n+1-i)) ;
+         index := n+1-i ;
+         RegisterImport (OperandT (index), OperandTok (index)) ;
          INC(i)
       END
    ELSE
       (* Ident List contains list of objects *)
-      RegisterImport(OperandT(n+1))
+      RegisterImport (OperandT (n+1), OperandTok (n+1))
    END ;
    PopN(n+1)   (* clear stack *)
 END RegisterImports ;
@@ -366,9 +394,9 @@ BEGIN
 *)
    ELSE
       (* Ident List contains list of objects, but we are importing directly from a module OperandT(n+1) *)
-      RegisterImport(OperandT(n+1))
+      RegisterImport (OperandT (n+1), OperandTok (n+1))
    END ;
-   PopN(n+1)   (* clear stack *)
+   PopN (n+1)   (* clear stack *)
 END RegisterInnerImports ;
 
 

@@ -667,7 +667,7 @@ PROCEDURE BuildExceptProcedure ;
    BuildRetry - adds an RetryOp quadruple.
 *)
 
-PROCEDURE BuildRetry ;
+PROCEDURE BuildRetry (tok: CARDINAL) ;
 
 
 (*

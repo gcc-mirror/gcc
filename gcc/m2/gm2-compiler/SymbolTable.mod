@@ -1450,7 +1450,7 @@ VAR
    Sym : CARDINAL ;
 BEGIN
    (* if Sym is present on the unknown tree then remove it *)
-   Sym := FetchUnknownSym(name) ;
+   Sym := FetchUnknownSym (name) ;
    IF Sym=NulSym
    THEN
       NewSym(Sym)

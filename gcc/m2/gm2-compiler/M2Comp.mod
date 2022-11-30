@@ -263,16 +263,13 @@ BEGIN
                qprintf0 ('\n') ;
                CloseSource
             ELSE
-               MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUF%s} containing module {%%1a} cannot be found'), FileName), Sym) ;
-               FlushWarnings ; FlushErrors ;
-               fprintf1(StdErr, 'failed to open %s\n', FileName) ;
-               exit(1)
+               (* Unrecoverable error.  *)
+               MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found'),
+                                           FileName), Sym)
             END
          ELSE
-            MetaError1 ('the file containing the definition module {%1EUa} cannot be found', Sym) ;
-            FlushWarnings ; FlushErrors ;
-            fprintf1(StdErr, 'failed to find definition module %s.def\n', SymName) ;
-            exit(1)
+            (* Unrecoverable error.  *)
+            MetaError1 ('the file containing the definition module {%1EMAa} cannot be found', Sym)
          END ;
          ModuleType := Implementation
       ELSE
@@ -313,9 +310,9 @@ BEGIN
                   is used.  *)
                IF (NOT WholeProgram) OR (Sym=Main) OR IsHiddenTypeDeclared(Sym)
                THEN
-                  MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUF%s} containing module {%%1a} cannot be found'), FileName), Sym) ;
-                  FlushWarnings ; FlushErrors ;
-                  fprintf1(StdErr, 'file %s cannot be opened\n', FileName)
+                  (* Unrecoverable error.  *)
+                  MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found'),
+                                              FileName), Sym) ;
                END
             END
          END

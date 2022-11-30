@@ -770,7 +770,7 @@ BEGIN
          THEN
             missing := TRUE ;
             MetaErrorT2 (tokenno,
-                         'not all variant record alternatives in the CASE clause are specified, hint you either need to specify each value of {%2ad} or use an ELSE clause {%1U}',
+                         'not all variant record alternatives in the {%kCASE} clause are specified, hint you either need to specify each value of {%2ad} or use an {%kELSE} clause',
                          varient, type) ;
             ErrorRanges(p, type, set)
          END ;

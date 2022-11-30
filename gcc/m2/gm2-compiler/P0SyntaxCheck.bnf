@@ -48,7 +48,7 @@ FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
                      InsertTokenAndRewind, GetTokenNo, DisplayToken, DumpTokens ;
 
 FROM M2MetaError IMPORT MetaErrorStringT0 ;
-FROM M2Quads IMPORT PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto, DisplayStack, PushTFtok ;
+FROM M2Quads IMPORT PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto, DisplayStack, PushTFtok, PushTtok ;
 FROM M2Reserved IMPORT tokToTok, toktype, NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok, BuiltinTok, InlineTok ;
 FROM P2SymBuild IMPORT BuildString, BuildNumber ;
 FROM NameKey IMPORT Name, NulName, makekey ;
@@ -884,7 +884,7 @@ Export := "EXPORT" ( "QUALIFIED"   IdentList |
                    ) ";" =:
 
 Import :=  "FROM" Ident "IMPORT" IdentList ";" |
-           "IMPORT"                                                        % PushT(ImportTok)
+           "IMPORT"                                                        % PushTtok (ImportTok, GetTokenNo () -1)
                                                                              (* determines whether Ident or Module *) %
             IdentList ";" =:
 

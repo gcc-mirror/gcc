@@ -114,6 +114,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         PushSize, PushValue, PopValue,
                         GetVariableAtAddress, IsVariableAtAddress,
                         MakeError, UnknownReported,
+                        IsError,
                         IsInnerModule,
                         IsImportStatement, IsImport, GetImportModule, GetImportDeclared,
                         GetImportStatementList,
@@ -3386,7 +3387,11 @@ BEGIN
          MetaErrorT2 (combinedtok,
                       'cannot assign a constant designator {%1Ead} with an expression {%2Ead}',
                       des, exp)
-      END
+      END ;
+      PopN (2)  (* Remove both parameters.  *)
+   ELSIF IsError (des)
+   THEN
+      PopN (2)  (* Remove both parameters.  *)
    ELSE
       doBuildAssignment (becomesTokNo, TRUE, TRUE)
    END
@@ -10993,6 +10998,30 @@ END BuildDesignatorRecord ;
 
 
 (*
+   BuildDesignatorError - removes the designator from the stack and replaces
+                          it with an error symbol.
+*)
+
+PROCEDURE BuildDesignatorError (message: ARRAY OF CHAR) ;
+VAR
+   combinedTok,
+   arrayTok,
+   exprTok    : CARDINAL ;
+   s          : String ;
+   e, d, error,
+   Sym,
+   Type       : CARDINAL ;
+BEGIN
+   PopTtok (e, exprTok) ;
+   PopTFDtok (Sym, Type, d, arrayTok) ;
+   combinedTok := MakeVirtualTok (arrayTok, arrayTok, exprTok) ;
+   error := MakeError (combinedTok, MakeKey (message)) ;
+   PushTFDtok (error, Type, d, arrayTok)
+END BuildDesignatorError ;
+
+
+
+(*
    BuildDesignatorArray - Builds the array referencing.
                           The purpose of this procedure is to work out
                           whether the DesignatorArray is a static or
@@ -11044,32 +11073,35 @@ BEGIN
          PushTtok (e, exprTok)
       END
    END ;
-   IF (NOT IsVar(OperandT(2))) AND (NOT IsTemporary(OperandT(2)))
+   IF (NOT IsVar (OperandT (2))) AND (NOT IsTemporary (OperandT (2)))
    THEN
-      ErrorStringAt2(Mark(InitString('can only access arrays using variables or formal parameters')),
-                     GetDeclaredMod(OperandT(2)), GetTokenNo())
+      MetaErrorT1 (OperandTtok (2),
+                   'can only access arrays using variables or formal parameters not {%1Ead}',
+                   OperandT (2)) ;
+      BuildDesignatorError ('bad array access')
    END ;
-   Sym := GetDType(OperandT(2)) ;
-   IF Sym=NulSym
+   Sym := OperandT (2) ;
+   Type := GetDType (Sym) ;
+   arrayTok := OperandTtok (2) ;
+   IF Type = NulSym
    THEN
-      IF GetSymName(Sym)=NulName
+      IF (arrayTok = UnknownTokenNo) OR (arrayTok = BuiltinTokenNo)
       THEN
-         ErrorStringAt(Mark(InitString('type of array is undefined (no such array declared)')), GetTokenNo())
-      ELSE
-         s := Mark(InitStringCharStar(KeyToCharStar(GetSymName(Sym)))) ;
-         ErrorStringAt(Sprintf1(Mark(InitString('type of array is undefined (%s)')),
-                                s),
-                       GetTokenNo())
-      END
-   END ;
-   IF IsUnbounded(Sym)
+         arrayTok := GetTokenNo ()
+      END ;
+      MetaErrorT0 (arrayTok, "type of array is undefined") ;
+      BuildDesignatorError ('bad array access')
+   ELSIF IsUnbounded (Type)
    THEN
       BuildDynamicArray
-   ELSIF IsArray(Sym)
+   ELSIF IsArray (Type)
    THEN
       BuildStaticArray
    ELSE
-      MetaError0 ('{%E}can only index static or dynamic arrays')
+      MetaErrorT1 (arrayTok,
+                   'can only index static or dynamic arrays, {%1Ead} is not an array but a {%tad}',
+                   Sym) ;
+      BuildDesignatorError ('bad array access')
    END
 END BuildDesignatorArray ;
 
@@ -11450,17 +11482,22 @@ BEGIN
    THEN
       n := NoOfItemsInStackAddress(WithStack) ;
       i := 1 ;  (* top of the stack *)
-      WHILE i<=n DO
+      WHILE i <= n DO
          (* Search for other declarations of the with using Type *)
          f := PeepAddress(WithStack, i) ;
          IF f^.RecordSym=Type
          THEN
-            WriteFormat0('cannot have nested WITH statements referencing the same RECORD')
+            MetaErrorT1 (Tok,
+                         'cannot have nested {%kWITH} statements referencing the same {%kRECORD} {%1Ead}',
+                         Sym) ;
+            MetaErrorT1 (f^.RecordTokPos,
+                         'cannot have nested {%kWITH} statements referencing the same {%kRECORD} {%1Ead}',
+                         f^.RecordSym)
          END ;
-         INC(i)
+         INC (i)
       END
    END ;
-   NEW(f) ;
+   NEW (f) ;
    WITH f^ DO
       RecordSym    := Sym ;
       RecordType   := Type ;
@@ -11476,8 +11513,8 @@ PROCEDURE PopWith ;
 VAR
    f: WithFrame ;
 BEGIN
-   f := PopAddress(WithStack) ;
-   DISPOSE(f)
+   f := PopAddress (WithStack) ;
+   DISPOSE (f)
 END PopWith ;
 
 
