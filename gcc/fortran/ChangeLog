@@ -1,3 +1,13 @@
+2022-11-29  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107874
+	* simplify.cc (gfc_simplify_merge): When simplifying MERGE with a
+	constant scalar MASK, ensure that arguments TSOURCE and FSOURCE are
+	either constant or will be evaluated.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_merge): Evaluate arguments
+	before generating conditional expression.
+
 2022-11-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107819

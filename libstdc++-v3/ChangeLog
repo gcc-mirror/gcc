@@ -1,3 +1,30 @@
+2022-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107852
+	PR libstdc++/106199
+	PR libstdc++/100366
+	* include/bits/vector.tcc (vector::_M_fill_insert): Copy
+	_M_start and _M_finish members before allocating.
+	(vector::_M_default_append): Likewise.
+	(vector::_M_range_insert): Likewise.
+
+2022-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_types.h (__iterator_category):
+	Add always_inline attribute.
+	* include/bits/stl_vector.h (assign(Iter, Iter)): Call
+	_M_assign_aux directly, instead of _M_assign_dispatch.
+	(insert(const_iterator, Iter, Iter)): Call _M_range_insert
+	directly instead of _M_insert_dispatch.
+
+2022-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Rename all variables called __used or
+	__packed.
+	* testsuite/17_intro/badnames.cc: Add no_pch options.
+	* testsuite/17_intro/names.cc: Check __packed, __unused and
+	__used.
+
 2022-11-28  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/20_util/function/cons/70692.cc: Adapt dg-error message.

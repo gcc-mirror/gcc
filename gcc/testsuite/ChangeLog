@@ -1,3 +1,31 @@
+2022-11-29  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107874
+	* gfortran.dg/merge_init_expr_2.f90: Adjust code to the corrected
+	simplification.
+	* gfortran.dg/merge_1.f90: New test.
+
+2022-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107864
+	* g++.dg/concepts/explicit-spec1a.C: New test.
+
+2022-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107852
+	* gcc.dg/tree-ssa/ssa-fre-101.c: New testcase.
+
+2022-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/ipa/iinline-attr.c: XFAIL on SPARC.
+	* gcc.dg/signbit-2.c: Replace vect_int selector by vect_shift.
+
+2022-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/107810
+	* gnat.dg/unchecked_convert9.adb: Adjust pattern.
+
 2022-11-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101733

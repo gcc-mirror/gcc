@@ -1,3 +1,12 @@
+2022-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107864
+	* decl.cc (function_requirements_equivalent_p): Don't check
+	DECL_TEMPLATE_SPECIALIZATION.
+	* pt.cc (determine_specialization): Propagate constraints when
+	specializing a function template too.  Simplify by using
+	add_outermost_template_args.
+
 2022-11-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101733
