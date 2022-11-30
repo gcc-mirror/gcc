@@ -1456,20 +1456,20 @@ fetch_overflow_builtins (ArithmeticOrLogicalOperator op)
   switch (op)
     {
     case ArithmeticOrLogicalOperator::ADD:
-      builtin_ctx.lookup_simple_builtin ("add_overflow", &builtin);
+      builtin_ctx.lookup_simple_builtin ("__builtin_add_overflow", &builtin);
       break;
     case ArithmeticOrLogicalOperator::SUBTRACT:
-      builtin_ctx.lookup_simple_builtin ("sub_overflow", &builtin);
+      builtin_ctx.lookup_simple_builtin ("__builtin_sub_overflow", &builtin);
       break;
     case ArithmeticOrLogicalOperator::MULTIPLY:
-      builtin_ctx.lookup_simple_builtin ("mul_overflow", &builtin);
+      builtin_ctx.lookup_simple_builtin ("__builtin_mul_overflow", &builtin);
       break;
     default:
       gcc_unreachable ();
       break;
     };
 
-  builtin_ctx.lookup_simple_builtin ("abort", &abort);
+  builtin_ctx.lookup_simple_builtin ("__builtin_abort", &abort);
 
   rust_assert (abort);
   rust_assert (builtin);

@@ -7,14 +7,14 @@ extern "rust-intrinsic" {
     pub fn atomic_load_unordered<T: Copy>(src: *const T) -> T;
 }
 
-fn main() -> i32 {
+fn main() -> u32 {
     let one;
     let two;
     let three;
     let four;
 
     unsafe {
-        let mut src = 1;
+        let mut src = 1u32;
         one = atomic_load_seqcst(&src);
 
         src = 2;

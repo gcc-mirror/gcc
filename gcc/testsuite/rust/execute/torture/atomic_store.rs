@@ -7,8 +7,8 @@ extern "rust-intrinsic" {
     pub fn atomic_store_unordered<T: Copy>(dst: *mut T, val: T);
 }
 
-fn main() -> i32 {
-    let mut dst = 15;
+fn main() -> u32 {
+    let mut dst = 15u32;
     let one;
     let two;
     let three;
