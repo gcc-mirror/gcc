@@ -704,66 +704,6 @@ kf_error::impl_call_pre (const call_details &cd) const
       ctxt->terminate_path ();
 }
 
-/* Handler for "fgets" and "fgets_unlocked".  */
-
-class kf_fgets : public known_function
-{
-public:
-  bool matches_call_types_p (const call_details &cd) const final override
-  {
-    return (cd.num_args () == 3
-	    && cd.arg_is_pointer_p (0)
-	    && cd.arg_is_pointer_p (2));
-  }
-
-  void impl_call_pre (const call_details &cd) const final override;
-};
-
-void
-kf_fgets::impl_call_pre (const call_details &cd) const
-{
-  /* Ideally we would bifurcate state here between the
-     error vs no error cases.  */
-  region_model *model = cd.get_model ();
-  const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region *reg = ptr_sval->maybe_get_region ())
-    {
-      const region *base_reg = reg->get_base_region ();
-      const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-      model->set_value (base_reg, new_sval, cd.get_ctxt ());
-    }
-}
-
-/* Handler for "fread"".  */
-
-class kf_fread : public known_function
-{
-public:
-  bool matches_call_types_p (const call_details &cd) const final override
-  {
-    return (cd.num_args () == 4
-	    && cd.arg_is_pointer_p (0)
-	    && cd.arg_is_size_p (1)
-	    && cd.arg_is_size_p (2)
-	    && cd.arg_is_pointer_p (3));
-  }
-
-  void impl_call_pre (const call_details &cd) const final override;
-};
-
-void
-kf_fread::impl_call_pre (const call_details &cd) const
-{
-  region_model *model = cd.get_model ();
-  const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region *reg = ptr_sval->maybe_get_region ())
-    {
-      const region *base_reg = reg->get_base_region ();
-      const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-      model->set_value (base_reg, new_sval, cd.get_ctxt ());
-    }
-}
-
 /* Handler for "free", after sm-handling.
 
    If the ptr points to an underlying heap region, delete the region,
@@ -802,20 +742,6 @@ kf_free::impl_call_post (const call_details &cd) const
       model->unset_dynamic_extents (freed_reg);
     }
 }
-
-/* Handler for "getchar"".  */
-
-class kf_getchar : public known_function
-{
-public:
-  bool matches_call_types_p (const call_details &cd) const final override
-  {
-    return cd.num_args () == 0;
-  }
-
-  /* Empty.  No side-effects (tracking stream state is out-of-scope
-     for the analyzer).  */
-};
 
 /* Handle the on_call_pre part of "malloc".  */
 
@@ -1455,21 +1381,6 @@ public:
   /* Currently a no-op.  */
 };
 
-/* Handler for various stdio-related builtins that merely have external
-   effects that are out of scope for the analyzer: we only want to model
-   the effects on the return value.  */
-
-class kf_stdio_output_fn : public known_function
-{
-public:
-  bool matches_call_types_p (const call_details &) const final override
-  {
-    return true;
-  }
-
-  /* A no-op; we just want the conjured return value.  */
-};
-
 /* Handler for "strcpy" and "__builtin_strcpy_chk".  */
 
 class kf_strcpy : public known_function
@@ -1592,28 +1503,12 @@ register_known_functions (known_function_manager &kfm)
     kfm.add (BUILT_IN_CALLOC, make_unique<kf_calloc> ());
     kfm.add (BUILT_IN_EXPECT, make_unique<kf_expect> ());
     kfm.add (BUILT_IN_EXPECT_WITH_PROBABILITY, make_unique<kf_expect> ());
-    kfm.add (BUILT_IN_FPRINTF, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_FPRINTF_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_FPUTC, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_FPUTC_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_FPUTS, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_FPUTS_UNLOCKED, make_unique<kf_stdio_output_fn> ());
     kfm.add (BUILT_IN_FREE, make_unique<kf_free> ());
-    kfm.add (BUILT_IN_FWRITE, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_FWRITE_UNLOCKED, make_unique<kf_stdio_output_fn> ());
     kfm.add (BUILT_IN_MALLOC, make_unique<kf_malloc> ());
     kfm.add (BUILT_IN_MEMCPY, make_unique<kf_memcpy> ());
     kfm.add (BUILT_IN_MEMCPY_CHK, make_unique<kf_memcpy> ());
     kfm.add (BUILT_IN_MEMSET, make_unique<kf_memset> ());
     kfm.add (BUILT_IN_MEMSET_CHK, make_unique<kf_memset> ());
-    kfm.add (BUILT_IN_PRINTF, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_PRINTF_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_PUTC, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_PUTCHAR, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_PUTCHAR_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_PUTC_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_PUTS, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_PUTS_UNLOCKED, make_unique<kf_stdio_output_fn> ());
     kfm.add (BUILT_IN_REALLOC, make_unique<kf_realloc> ());
     kfm.add (BUILT_IN_STACK_RESTORE, make_unique<kf_stack_restore> ());
     kfm.add (BUILT_IN_STACK_SAVE, make_unique<kf_stack_save> ());
@@ -1621,8 +1516,6 @@ register_known_functions (known_function_manager &kfm)
     kfm.add (BUILT_IN_STRCPY, make_unique<kf_strcpy> (2));
     kfm.add (BUILT_IN_STRCPY_CHK, make_unique<kf_strcpy> (3));
     kfm.add (BUILT_IN_STRLEN, make_unique<kf_strlen> ());
-    kfm.add (BUILT_IN_VFPRINTF, make_unique<kf_stdio_output_fn> ());
-    kfm.add (BUILT_IN_VPRINTF, make_unique<kf_stdio_output_fn> ());
 
     register_varargs_builtins (kfm);
   }
@@ -1650,15 +1543,11 @@ register_known_functions (known_function_manager &kfm)
 
   /* Known builtins and C standard library functions.  */
   {
-    kfm.add ("getchar", make_unique<kf_getchar> ());
     kfm.add ("memset", make_unique<kf_memset> ());
   }
 
   /* Known POSIX functions, and some non-standard extensions.  */
   {
-    kfm.add ("fgets", make_unique<kf_fgets> ());
-    kfm.add ("fgets_unlocked", make_unique<kf_fgets> ()); // non-standard
-    kfm.add ("fread", make_unique<kf_fread> ());
     kfm.add ("putenv", make_unique<kf_putenv> ());
 
     register_known_fd_functions (kfm);
