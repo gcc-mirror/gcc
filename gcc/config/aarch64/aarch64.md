@@ -303,6 +303,7 @@
     UNSPEC_TAG_SPACE		; Translate address to MTE tag address space.
     UNSPEC_LD1RO
     UNSPEC_SALT_ADDR
+    UNSPECV_PATCHABLE_AREA
 ])
 
 (define_c_enum "unspecv" [
@@ -7823,6 +7824,19 @@
   "TARGET_LS64"
   "st64bv0\\t%0, %2, [%1]"
   [(set_attr "type" "ls64")]
+)
+
+(define_insn "patchable_area"
+  [(unspec_volatile [(match_operand 0 "const_int_operand")
+		     (match_operand 1 "const_int_operand")]
+		    UNSPECV_PATCHABLE_AREA)]
+  ""
+{
+  aarch64_output_patchable_area (INTVAL (operands[0]),
+			         INTVAL (operands[1]) != 0);
+  return "";
+}
+  [(set (attr "length") (symbol_ref "INTVAL (operands[0])"))]
 )
 
 ;; AdvSIMD Stuff

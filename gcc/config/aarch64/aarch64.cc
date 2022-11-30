@@ -22672,30 +22672,56 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   cfun->machine->label_is_assembled = true;
 }
 
-/* Implement PRINT_PATCHABLE_FUNCTION_ENTRY.  Check if the patch area is after
-   the function label and emit a BTI if necessary.  */
+/* Implement PRINT_PATCHABLE_FUNCTION_ENTRY.  */
 
 void
 aarch64_print_patchable_function_entry (FILE *file,
 					unsigned HOST_WIDE_INT patch_area_size,
 					bool record_p)
 {
-  if (cfun->machine->label_is_assembled
-      && aarch64_bti_enabled ()
-      && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
+  if (!cfun->machine->label_is_assembled)
     {
-      /* Remove the BTI that follows the patch area and insert a new BTI
-	 before the patch area right after the function label.  */
-      rtx_insn *insn = next_real_nondebug_insn (get_insns ());
-      if (insn
-	  && INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-	  && XINT (PATTERN (insn), 1) == UNSPECV_BTI_C)
-	delete_insn (insn);
-      asm_fprintf (file, "\thint\t34 // bti c\n");
+      /* Emit the patching area before the entry label, if any.  */
+      default_print_patchable_function_entry (file, patch_area_size,
+					      record_p);
+      return;
     }
 
-  default_print_patchable_function_entry (file, patch_area_size, record_p);
+  rtx pa = gen_patchable_area (GEN_INT (patch_area_size),
+			       GEN_INT (record_p));
+  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+
+  if (!aarch64_bti_enabled ()
+      || cgraph_node::get (cfun->decl)->only_called_directly_p ())
+    {
+      /* Emit the patchable_area at the beginning of the function.  */
+      rtx_insn *insn = emit_insn_before (pa, BB_HEAD (bb));
+      INSN_ADDRESSES_NEW (insn, -1);
+      return;
+    }
+
+  rtx_insn *insn = next_real_nondebug_insn (get_insns ());
+  if (!insn
+      || !INSN_P (insn)
+      || GET_CODE (PATTERN (insn)) != UNSPEC_VOLATILE
+      || XINT (PATTERN (insn), 1) != UNSPECV_BTI_C)
+    {
+      /* Emit a BTI_C.  */
+      insn = emit_insn_before (gen_bti_c (), BB_HEAD (bb));
+    }
+
+  /* Emit the patchable_area after BTI_C.  */
+  insn = emit_insn_after (pa, insn);
+  INSN_ADDRESSES_NEW (insn, -1);
+}
+
+/* Output patchable area.  */
+
+void
+aarch64_output_patchable_area (unsigned int patch_area_size, bool record_p)
+{
+  default_print_patchable_function_entry (asm_out_file, patch_area_size,
+					  record_p);
 }
 
 /* Implement ASM_OUTPUT_DEF_FROM_DECLS.  Output .variant_pcs for aliases.  */
