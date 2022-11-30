@@ -1249,8 +1249,8 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds, int *bb_to_rpo)
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "Found unguarded use in bb %u: ",
-		       use_bb->index);
+	      fprintf (dump_file, "Found unguarded use on edge %u -> %u: ",
+		       e->src->index, e->dest->index);
 	      print_gimple_stmt (dump_file, use_stmt, 0);
 	    }
 	  /* Found a phi use that is not guarded, mark the phi_result as
