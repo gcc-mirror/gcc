@@ -613,13 +613,13 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       /* (VAL + 0) -> VAL.  */
-      if (cst1 && zerop (cst1) && type == arg0->get_type ())
-	return arg0;
+      if (cst1 && zerop (cst1))
+	return get_or_create_cast (type, arg0);
       break;
     case MINUS_EXPR:
       /* (VAL - 0) -> VAL.  */
-      if (cst1 && zerop (cst1) && type == arg0->get_type ())
-	return arg0;
+      if (cst1 && zerop (cst1))
+	return get_or_create_cast (type, arg0);
       break;
     case MULT_EXPR:
       /* (VAL * 0).  */
