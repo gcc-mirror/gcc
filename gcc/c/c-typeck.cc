@@ -10639,17 +10639,22 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 
   /* Handle superfluous braces around string cst as in
      char x[] = {"foo"}; */
-  if (string_flag
-      && constructor_type
+  if (constructor_type
       && !was_designated
       && TREE_CODE (constructor_type) == ARRAY_TYPE
       && INTEGRAL_TYPE_P (TREE_TYPE (constructor_type))
       && integer_zerop (constructor_unfilled_index))
     {
       if (constructor_stack->replacement_value.value)
-	error_init (loc, "excess elements in %<char%> array initializer");
-      constructor_stack->replacement_value = value;
-      return;
+	{
+	  error_init (loc, "excess elements in %<char%> array initializer");
+	  return;
+	}
+      else if (string_flag)
+	{
+	  constructor_stack->replacement_value = value;
+	  return;
+	}
     }
 
   if (constructor_stack->replacement_value.value != NULL_TREE)
