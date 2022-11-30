@@ -1,3 +1,12 @@
+2022-11-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backported from master:
+	2022-11-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR rtl-optimization/107482
+	* ira-color.c (assign_hard_reg): Only call
+	update_costs_from_copies when retry_p is false.
+
 2022-11-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
