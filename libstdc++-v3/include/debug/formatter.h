@@ -32,32 +32,17 @@
 #include <bits/c++config.h>
 
 #if _GLIBCXX_HAVE_STACKTRACE
-struct __glibcxx_backtrace_state;
-
 extern "C"
 {
-  __glibcxx_backtrace_state*
+  struct __glibcxx_backtrace_state*
   __glibcxx_backtrace_create_state(const char*, int,
 				   void(*)(void*, const char*, int),
 				   void*);
-
-  typedef int (*__glibcxx_backtrace_full_callback) (
-    void*, __UINTPTR_TYPE__, const char *, int, const char*);
-
-  typedef void (*__glibcxx_backtrace_error_callback) (
-    void*, const char*, int);
-
-  typedef int (*__glibcxx_backtrace_full_func) (
-    __glibcxx_backtrace_state*, int,
-    __glibcxx_backtrace_full_callback,
-    __glibcxx_backtrace_error_callback,
-    void*);
-
   int
   __glibcxx_backtrace_full(
-    __glibcxx_backtrace_state*, int,
-    __glibcxx_backtrace_full_callback,
-    __glibcxx_backtrace_error_callback,
+    struct __glibcxx_backtrace_state*, int,
+    int (*)(void*, __UINTPTR_TYPE__, const char *, int, const char*),
+    void (*)(void*, const char*, int),
     void*);
 }
 #endif
@@ -609,10 +594,10 @@ namespace __gnu_debug
     , _M_function(__function)
 #if _GLIBCXX_HAVE_STACKTRACE
 # ifdef _GLIBCXX_DEBUG_BACKTRACE
-    , _M_backtrace_state(__glibcxx_backtrace_create_state(0, 0, 0, 0))
+    , _M_backtrace_state(__glibcxx_backtrace_create_state(0, 1, _S_err, 0))
     , _M_backtrace_full(&__glibcxx_backtrace_full)
 # else
-    , _M_backtrace_state()
+    , _M_backtrace_state(0)
 # endif
 #endif
     { }
@@ -631,8 +616,12 @@ namespace __gnu_debug
     const char*		_M_text;
     const char*		_M_function;
 #if _GLIBCXX_HAVE_STACKTRACE
-    __glibcxx_backtrace_state*		_M_backtrace_state;
-    __glibcxx_backtrace_full_func	_M_backtrace_full;
+    struct __glibcxx_backtrace_state*		_M_backtrace_state;
+    // TODO: Remove _M_backtrace_full after __glibcxx_backtrace_full is moved
+    // from libstdc++_libbacktrace.a to libstdc++.so:
+    __decltype(&__glibcxx_backtrace_full)	_M_backtrace_full;
+
+    static void _S_err(void*, const char*, int) { }
 #endif
 
   public:
