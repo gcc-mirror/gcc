@@ -52,7 +52,7 @@ GCCRS_D_OBJS = \
 RUST_CXXFLAGS = $(CXXFLAGS)
 
 # If the file exists, we're bootstrapping. Set a specific flag for the session manager.
-ifneq ($(wildcard ../stage_current)),)
+ifneq ($(wildcard ../stage_current),)
 SESSION_FLAGS = -DRUST_BOOTSTRAP_BUILD
 endif
 
