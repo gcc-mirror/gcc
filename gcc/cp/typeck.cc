@@ -6215,8 +6215,9 @@ cp_build_binary_op (const op_location_t &location,
       tree_code orig_code0 = TREE_CODE (orig_type0);
       tree orig_type1 = TREE_TYPE (orig_op1);
       tree_code orig_code1 = TREE_CODE (orig_type1);
-      if (!result_type)
-	/* Nope.  */;
+      if (!result_type || result_type == error_mark_node)
+	/* Nope.  */
+	result_type = NULL_TREE;
       else if ((orig_code0 == BOOLEAN_TYPE) != (orig_code1 == BOOLEAN_TYPE))
 	/* "If one of the operands is of type bool and the other is not, the
 	   program is ill-formed."  */
