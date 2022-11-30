@@ -4377,7 +4377,8 @@ offloading devices (it's not clear if they should be):
       @tab See @code{-m...} flags in ``x86 Options'' (without @code{-m})
 @item @code{amdgcn}, @code{gcn}
       @tab @code{gpu}
-      @tab See @code{-march=} in ``AMD GCN Options''
+      @tab See @code{-march=} in ``AMD GCN Options''@footnote{Additionally,
+      @code{gfx803} is supported as an alias for @code{fiji}.}
 @item @code{nvptx}
       @tab @code{gpu}
       @tab See @code{-march=} in ``Nvidia PTX Options''
