@@ -2802,6 +2802,8 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   return build_va_arg_indirect_ref (addr);
 }
 
+/* The selector (perm) is expected to be used with vperm direct as the
+   function generates reversed perm for little endian with this patch.  */
 rtx
 swap_endian_selector_for_mode (machine_mode mode)
 {
@@ -2834,7 +2836,11 @@ swap_endian_selector_for_mode (machine_mode mode)
     }
 
   for (i = 0; i < 16; ++i)
-    perm[i] = GEN_INT (swaparray[i]);
+    if (BYTES_BIG_ENDIAN)
+      perm[i] = GEN_INT (swaparray[i]);
+    else
+      /* Generates the reversed perm for little endian.  */
+      perm[i] = GEN_INT (~swaparray[i] & 0x0000001f);
 
   return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode,
 						     gen_rtvec_v (16, perm)));

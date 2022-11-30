@@ -6099,8 +6099,8 @@
 	     to the endian mode in use, i.e. in LE mode, put elements
 	     in BE order.  */
 	  rtx sel = swap_endian_selector_for_mode (<MODE>mode);
-	  emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
-					       operands[1], sel));
+	  emit_insn (gen_altivec_vperm_<mode>_direct (operands[0], operands[1],
+						      operands[1], sel));
 	}
     }
 
