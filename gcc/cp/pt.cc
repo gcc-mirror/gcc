@@ -11561,7 +11561,7 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
   tree r = copy_node (t);
 
   /* Rebuild the result variable.  */
-  if (POSTCONDITION_P (t) && POSTCONDITION_IDENTIFIER (t))
+  if (type && POSTCONDITION_P (t) && POSTCONDITION_IDENTIFIER (t))
     {
       tree oldvar = POSTCONDITION_IDENTIFIER (t);
 
