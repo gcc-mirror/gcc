@@ -29,6 +29,14 @@
    files (via 'CRT_BEGIN' and 'CRT_END'): 'crtbegin.o' and 'crtend.o', but we
    do so anyway, for symmetry with other configurations.  */
 
+
+/* See 'crt0.c', 'mgomp.c'.  */
+#if defined(__nvptx_softstack__) && defined(__nvptx_unisimt__)
+extern void *__nvptx_stacks[32] __attribute__((shared,nocommon));
+extern unsigned __nvptx_uni[32] __attribute__((shared,nocommon));
+#endif
+
+
 #ifdef CRT_BEGIN
 
 void
@@ -36,6 +44,33 @@ __do_global_ctors (void)
 {
   DO_GLOBAL_CTORS_BODY;
 }
+
+/* Need '.entry' wrapper for offloading.  */
+
+# if defined(__nvptx_softstack__) && defined(__nvptx_unisimt__)
+
+__attribute__((kernel)) void __do_global_ctors__entry__mgomp (void *);
+
+void
+__do_global_ctors__entry__mgomp (void *nvptx_stacks_0)
+{
+  __nvptx_stacks[0] = nvptx_stacks_0;
+  __nvptx_uni[0] = 0;
+
+  __do_global_ctors ();
+}
+
+# else
+
+__attribute__((kernel)) void __do_global_ctors__entry (void);
+
+void
+__do_global_ctors__entry (void)
+{
+  __do_global_ctors ();
+}
+
+# endif
 
 #elif defined(CRT_END) /* ! CRT_BEGIN */
 
@@ -45,13 +80,40 @@ __do_global_dtors (void)
   /* In this configuration here, there's no way that "this routine is run more
      than once [...] when exit is called recursively": for nvptx target, the
      call to '__do_global_dtors' is registered via 'atexit', which doesn't
-     re-enter a function already run.
+     re-enter a function already run, and neither does nvptx offload target.
      Therefore, we do *not* "arrange to remember where in the list we left off
      processing".  */
   func_ptr *p;
   for (p = __DTOR_LIST__ + 1; *p; )
     (*p++) ();
 }
+
+/* Need '.entry' wrapper for offloading.  */
+
+# if defined(__nvptx_softstack__) && defined(__nvptx_unisimt__)
+
+__attribute__((kernel)) void __do_global_dtors__entry__mgomp (void *);
+
+void
+__do_global_dtors__entry__mgomp (void *nvptx_stacks_0)
+{
+  __nvptx_stacks[0] = nvptx_stacks_0;
+  __nvptx_uni[0] = 0;
+
+  __do_global_dtors ();
+}
+
+# else
+
+__attribute__((kernel)) void __do_global_dtors__entry (void);
+
+void
+__do_global_dtors__entry (void)
+{
+  __do_global_dtors ();
+}
+
+# endif
 
 #else /* ! CRT_BEGIN && ! CRT_END */
 #error "One of CRT_BEGIN or CRT_END must be defined."

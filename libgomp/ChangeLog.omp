@@ -1,5 +1,9 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* plugin/plugin-nvptx.c (nvptx_do_global_cdtors): New.
+	(nvptx_close_device, GOMP_OFFLOAD_load_image)
+	(GOMP_OFFLOAD_unload_image): Call it.
+
 	* plugin/plugin-nvptx.c (nvptx_exec): Assert what we know about
 	'blockDimX'.
 
