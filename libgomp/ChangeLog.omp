@@ -1,3 +1,9 @@
+2022-12-06  Paul-Antoine Arras <pa@codesourcery.com>
+
+	* config/gcn/selector.c (GOMP_evaluate_current_device): Recognise 'amdgcn'
+	as arch, and '-march' values (as well as 'gfx803') as isa traits.
+	* testsuite/libgomp.c-c++-common/metadirective-6.c: New test.
+
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
