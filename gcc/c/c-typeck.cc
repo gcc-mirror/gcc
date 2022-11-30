@@ -10647,7 +10647,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
     {
       if (constructor_stack->replacement_value.value)
 	{
-	  error_init (loc, "excess elements in %<char%> array initializer");
+	  error_init (loc, "excess elements in %qT initializer", constructor_type);
 	  return;
 	}
       else if (string_flag)
