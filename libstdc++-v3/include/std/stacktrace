@@ -155,11 +155,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Allocator> friend class basic_stacktrace;
 
+    static void _S_err_handler(void*, const char*, int) { }
+
     static __glibcxx_backtrace_state*
     _S_init()
     {
       static __glibcxx_backtrace_state* __state
-	= __glibcxx_backtrace_create_state(nullptr, 1, nullptr, nullptr);
+	= __glibcxx_backtrace_create_state(nullptr, 1, _S_err_handler, nullptr);
       return __state;
     }
 
@@ -192,7 +194,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __function != nullptr;
       };
       const auto __state = _S_init();
-      if (::__glibcxx_backtrace_pcinfo(__state, _M_pc, +__cb, nullptr, &__data))
+      if (::__glibcxx_backtrace_pcinfo(__state, _M_pc, +__cb, _S_err_handler,
+				       &__data))
 	return true;
       if (__desc && __desc->empty())
 	{
@@ -201,8 +204,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (__symname)
 		*static_cast<_Data*>(__data)->_M_desc = _S_demangle(__symname);
 	  };
-	  if (::__glibcxx_backtrace_syminfo(__state, _M_pc, +__cb2, nullptr,
-					    &__data))
+	  if (::__glibcxx_backtrace_syminfo(__state, _M_pc, +__cb2,
+					    _S_err_handler, &__data))
 	    return true;
 	}
       return false;
@@ -252,7 +255,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (auto __cb = __ret._M_prepare()) [[likely]]
 	  {
 	    auto __state = stacktrace_entry::_S_init();
-	    if (__glibcxx_backtrace_simple(__state, 1, __cb, nullptr,
+	    if (__glibcxx_backtrace_simple(__state, 1, __cb,
+					   stacktrace_entry::_S_err_handler,
 					   std::__addressof(__ret)))
 	      __ret._M_clear();
 	  }
@@ -270,7 +274,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (auto __cb = __ret._M_prepare()) [[likely]]
 	  {
 	    auto __state = stacktrace_entry::_S_init();
-	    if (__glibcxx_backtrace_simple(__state, __skip + 1, __cb, nullptr,
+	    if (__glibcxx_backtrace_simple(__state, __skip + 1, __cb,
+					   stacktrace_entry::_S_err_handler,
 					   std::__addressof(__ret)))
 	      __ret._M_clear();
 	  }
@@ -294,7 +299,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    auto __state = stacktrace_entry::_S_init();
 	    int __err = __glibcxx_backtrace_simple(__state, __skip + 1, __cb,
-						   nullptr,
+						   stacktrace_entry::_S_err_handler,
 						   std::__addressof(__ret));
 	    if (__err < 0)
 	      __ret._M_clear();
