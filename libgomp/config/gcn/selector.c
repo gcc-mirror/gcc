@@ -36,20 +36,34 @@ GOMP_evaluate_current_device (const char *kind, const char *arch,
   if (kind && strcmp (kind, "gpu") != 0)
     return false;
 
-  if (arch && strcmp (arch, "gcn") != 0)
+  if (arch && (strcmp (arch, "gcn") != 0 && strcmp (arch, "amdgcn") != 0))
     return false;
 
   if (!isa)
     return true;
 
-#ifdef __GCN3__
+#ifdef __gfx803__
   if (strcmp (isa, "fiji") == 0 || strcmp (isa, "gfx803") == 0)
     return true;
 #endif
 
-#ifdef __GCN5__
-  if (strcmp (isa, "gfx900") == 0 || strcmp (isa, "gfx906") != 0
-      || strcmp (isa, "gfx908") == 0)
+#ifdef __gfx900__
+  if (strcmp (isa, "gfx900") == 0)
+    return true;
+#endif
+
+#ifdef __gfx906__
+  if (strcmp (isa, "gfx906") == 0)
+    return true;
+#endif
+
+#ifdef __gfx908__
+  if (strcmp (isa, "gfx908") == 0)
+    return true;
+#endif
+
+#ifdef __gfx90a__
+  if (strcmp (isa, "gfx90a") == 0)
     return true;
 #endif
 
