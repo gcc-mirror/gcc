@@ -1,5 +1,11 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/nvptx/crtstuff.c ["mgomp"]
+	(__do_global_ctors__entry__mgomp)
+	(__do_global_dtors__entry__mgomp): New.
+	[!"mgomp"] (__do_global_ctors__entry, __do_global_dtors__entry):
+	New.
+
 	* config.host <case ${host} in nvptx-*>: Add 'crtbegin.o',
 	'crtend.o' to 'extra_parts'.
 	* config/nvptx/crt0.c: Invoke '__do_global_ctors',

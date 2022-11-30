@@ -339,6 +339,11 @@ struct ptx_device
 
 static struct ptx_device **ptx_devices;
 
+static bool nvptx_do_global_cdtors (CUmodule, struct ptx_device *,
+				    const char *);
+static size_t nvptx_stacks_size ();
+static void *nvptx_stacks_acquire (struct ptx_device *, size_t, int);
+
 /* OpenMP kernels reserve a small amount of ".shared" space for use by
    omp_alloc.  The size is configured using GOMP_NVPTX_LOWLAT_POOL, but the
    default is set here.  */
@@ -571,6 +576,17 @@ nvptx_close_device (struct ptx_device *ptx_dev)
   if (!ptx_dev)
     return true;
 
+  bool ret = true;
+
+  for (struct ptx_image_data *image = ptx_dev->images;
+       image != NULL;
+       image = image->next)
+    {
+      if (!nvptx_do_global_cdtors (image->module, ptx_dev,
+				   "__do_global_dtors__entry"))
+	ret = false;
+    }
+
   for (struct ptx_free_block *b = ptx_dev->free_blocks; b;)
     {
       struct ptx_free_block *b_next = b->next;
@@ -591,7 +607,8 @@ nvptx_close_device (struct ptx_device *ptx_dev)
     CUDA_CALL (cuCtxDestroy, ptx_dev->ctx);
 
   free (ptx_dev);
-  return true;
+
+  return ret;
 }
 
 static int
@@ -1323,6 +1340,93 @@ nvptx_set_clocktick (CUmodule module, struct ptx_device *dev)
     GOMP_PLUGIN_fatal ("cuMemcpyHtoD error: %s", cuda_error (r));
 }
 
+/* Invoke MODULE's global constructors/destructors.  */
+
+static bool
+nvptx_do_global_cdtors (CUmodule module, struct ptx_device *ptx_dev,
+			const char *funcname)
+{
+  bool ret = true;
+  char *funcname_mgomp = NULL;
+  CUresult r;
+  CUfunction funcptr;
+  r = CUDA_CALL_NOCHECK (cuModuleGetFunction,
+			 &funcptr, module, funcname);
+  GOMP_PLUGIN_debug (0, "cuModuleGetFunction (%s): %s\n",
+		     funcname, cuda_error (r));
+  if (r == CUDA_ERROR_NOT_FOUND)
+    {
+      /* Try '[funcname]__mgomp'.  */
+
+      size_t funcname_len = strlen (funcname);
+      const char *mgomp_suffix = "__mgomp";
+      size_t mgomp_suffix_len = strlen (mgomp_suffix);
+      funcname_mgomp
+	= GOMP_PLUGIN_malloc (funcname_len + mgomp_suffix_len + 1);
+      memcpy (funcname_mgomp, funcname, funcname_len);
+      memcpy (funcname_mgomp + funcname_len,
+	      mgomp_suffix, mgomp_suffix_len + 1);
+      funcname = funcname_mgomp;
+
+      r = CUDA_CALL_NOCHECK (cuModuleGetFunction,
+			     &funcptr, module, funcname);
+      GOMP_PLUGIN_debug (0, "cuModuleGetFunction (%s): %s\n",
+			 funcname, cuda_error (r));
+    }
+  if (r == CUDA_ERROR_NOT_FOUND)
+    ;
+  else if (r != CUDA_SUCCESS)
+    {
+      GOMP_PLUGIN_error ("cuModuleGetFunction (%s) error: %s",
+			 funcname, cuda_error (r));
+      ret = false;
+    }
+  else
+    {
+      /* If necessary, set up soft stack.  */
+      void *nvptx_stacks_0;
+      void *kargs[1];
+      if (funcname_mgomp)
+	{
+	  size_t stack_size = nvptx_stacks_size ();
+	  pthread_mutex_lock (&ptx_dev->omp_stacks.lock);
+	  nvptx_stacks_0 = nvptx_stacks_acquire (ptx_dev, stack_size, 1);
+	  nvptx_stacks_0 += stack_size;
+	  kargs[0] = &nvptx_stacks_0;
+	}
+      r = CUDA_CALL_NOCHECK (cuLaunchKernel,
+			     funcptr,
+			     1, 1, 1, 1, 1, 1,
+			     /* sharedMemBytes */ 0,
+			     /* hStream */ NULL,
+			     /* kernelParams */ funcname_mgomp ? kargs : NULL,
+			     /* extra */ NULL);
+      if (r != CUDA_SUCCESS)
+	{
+	  GOMP_PLUGIN_error ("cuLaunchKernel (%s) error: %s",
+			     funcname, cuda_error (r));
+	  ret = false;
+	}
+
+      r = CUDA_CALL_NOCHECK (cuStreamSynchronize,
+			     NULL);
+      if (r != CUDA_SUCCESS)
+	{
+	  GOMP_PLUGIN_error ("cuStreamSynchronize (%s) error: %s",
+			     funcname, cuda_error (r));
+	  ret = false;
+	}
+
+      if (funcname_mgomp)
+	pthread_mutex_unlock (&ptx_dev->omp_stacks.lock);
+    }
+
+  if (funcname_mgomp)
+    free (funcname_mgomp);
+
+  return ret;
+}
+
 /* Load the (partial) program described by TARGET_DATA to device
    number ORD.  Allocate and return TARGET_TABLE.  If not NULL, REV_FN_TABLE
    will contain the on-device addresses of the functions for reverse offload.
@@ -1495,6 +1599,9 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
   nvptx_set_clocktick (module, dev);
 
+  if (!nvptx_do_global_cdtors (module, dev, "__do_global_ctors__entry"))
+    return -1;
+
   return fn_entries + var_entries + other_entries;
 }
 
@@ -1520,6 +1627,10 @@ GOMP_OFFLOAD_unload_image (int ord, unsigned version, const void *target_data)
   for (prev_p = &dev->images; (image = *prev_p) != 0; prev_p = &image->next)
     if (image->target_data == target_data)
       {
+	if (!nvptx_do_global_cdtors (image->module, dev,
+				     "__do_global_dtors__entry"))
+	  ret = false;
+
 	*prev_p = image->next;
 	if (CUDA_CALL_NOCHECK (cuModuleUnload, image->module) != CUDA_SUCCESS)
 	  ret = false;
