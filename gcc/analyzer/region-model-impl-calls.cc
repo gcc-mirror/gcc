@@ -1662,6 +1662,7 @@ register_known_functions (known_function_manager &kfm)
     kfm.add ("putenv", make_unique<kf_putenv> ());
 
     register_known_fd_functions (kfm);
+    register_known_file_functions (kfm);
   }
 
   /* glibc functions.  */

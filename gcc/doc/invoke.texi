@@ -10774,6 +10774,7 @@ of the following functions for working with file descriptors:
 @item @code{close}
 @item @code{creat}
 @item @code{dup}, @code{dup2} and @code{dup3}
+@item @code{isatty}
 @item @code{pipe}, and @code{pipe2}
 @item @code{read}
 @item @code{write}
@@ -10794,9 +10795,12 @@ of the following functions for working with @code{<stdio.h>} streams:
 @code{__builtin_vprintf}
 @item @code{fopen}
 @item @code{fclose}
+@item @code{ferror}
 @item @code{fgets}
 @item @code{fgets_unlocked}
+@item @code{fileno}
 @item @code{fread}
+@item @code{getc}
 @item @code{getchar}
 @item @code{fprintf}
 @item @code{printf}

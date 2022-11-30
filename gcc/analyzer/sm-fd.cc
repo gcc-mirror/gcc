@@ -2487,6 +2487,84 @@ public:
   }
 };
 
+/* Handler for "isatty"".
+   See e.g. https://man7.org/linux/man-pages/man3/isatty.3.html  */
+
+class kf_isatty : public known_function
+{
+  class outcome_of_isatty : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_isatty (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+
+      if (m_success)
+	{
+	  /* Return 1.  */
+	  model->update_for_int_cst_return (cd, 1, true);
+	}
+      else
+	{
+	  /* Return 0; set errno.  */
+	  model->update_for_int_cst_return (cd, 0, true);
+	  model->set_errno (cd);
+	}
+
+      return feasible_p (cd, ctxt);
+    }
+
+  private:
+    bool feasible_p (const call_details &cd,
+		     region_model_context *ctxt) const
+    {
+      if (m_success)
+	{
+	  /* Can't be "success" on a closed/invalid fd.  */
+	  sm_state_map *smap;
+	  const fd_state_machine *fd_sm;
+	  std::unique_ptr<sm_context> sm_ctxt;
+	  if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
+	    return true;
+	  const extrinsic_state *ext_state = ctxt->get_ext_state ();
+	  if (!ext_state)
+	    return true;
+
+	  const svalue *fd_sval = cd.get_arg_svalue (0);
+	  state_machine::state_t old_state
+	    = sm_ctxt->get_state (cd.get_call_stmt (), fd_sval);
+
+	  if (fd_sm->is_closed_fd_p (old_state)
+	      || old_state == fd_sm->m_invalid)
+	    return false;
+	}
+      return true;
+    }
+  }; // class outcome_of_isatty
+
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 1;
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_isatty> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_isatty> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
+
 /* Handler for calls to "pipe" and "pipe2".
    See e.g. https://www.man7.org/linux/man-pages/man2/pipe.2.html  */
 
@@ -2582,6 +2660,7 @@ register_known_fd_functions (known_function_manager &kfm)
   kfm.add ("accept", make_unique<kf_accept> ());
   kfm.add ("bind", make_unique<kf_bind> ());
   kfm.add ("connect", make_unique<kf_connect> ());
+  kfm.add ("isatty", make_unique<kf_isatty> ());
   kfm.add ("listen", make_unique<kf_listen> ());
   kfm.add ("pipe", make_unique<kf_pipe> (1));
   kfm.add ("pipe2", make_unique<kf_pipe> (2));

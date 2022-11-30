@@ -489,6 +489,59 @@ make_fileptr_state_machine (logger *logger)
   return new fileptr_state_machine (logger);
 }
 
+/* Handler for "ferror"".  */
+
+class kf_ferror : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 1
+	    && cd.arg_is_pointer_p (0));
+  }
+
+  /* No side effects.  */
+};
+
+/* Handler for "fileno"".  */
+
+class kf_fileno : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 1
+	    && cd.arg_is_pointer_p (0));
+  }
+
+  /* No side effects.  */
+};
+
+/* Handler for "getc"".  */
+
+class kf_getc : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 1
+	    && cd.arg_is_pointer_p (0));
+  }
+
+  /* No side effects.  */
+};
+
+/* Populate KFM with instances of known functions relating to
+   stdio streams.  */
+
+void
+register_known_file_functions (known_function_manager &kfm)
+{
+  kfm.add ("ferror", make_unique<kf_ferror> ());
+  kfm.add ("fileno", make_unique<kf_fileno> ());
+  kfm.add ("getc", make_unique<kf_getc> ());
+}
+
 #if CHECKING_P
 
 namespace selftest {

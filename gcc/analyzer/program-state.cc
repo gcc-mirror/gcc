@@ -821,6 +821,8 @@ sm_state_map::replay_call_summary (call_summary_replay &r,
       const svalue *caller_sval = r.convert_svalue_from_summary (summary_sval);
       if (!caller_sval)
 	continue;
+      if (!caller_sval->can_have_associated_state_p ())
+	continue;
       const svalue *summary_origin = kv.second.m_origin;
       const svalue *caller_origin
 	= (summary_origin
