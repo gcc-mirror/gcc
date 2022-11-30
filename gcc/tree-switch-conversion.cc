@@ -1518,7 +1518,6 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 
   tree minval = get_low ();
   tree maxval = get_high ();
-  unsigned HOST_WIDE_INT bt_range = get_range (minval, maxval);
 
   /* Go through all case labels, and collect the case labels, profile
      counts, and other information we need to build the branch tests.  */
@@ -1676,7 +1675,6 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
     {
       profile_probability prob = test[k].prob / (subtree_prob + default_prob);
       subtree_prob -= test[k].prob;
-      bt_range -= test[k].bits;
       tmp = wide_int_to_tree (word_type_node, test[k].mask);
       tmp = fold_build2_loc (loc, BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node,
