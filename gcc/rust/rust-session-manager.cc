@@ -427,7 +427,8 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
 void
 Session::compile_crate (const char *filename)
 {
-#ifdef RUST_RELEASE
+#ifdef RUST_BOOTSTRAP_BUILD
+  // Do not emit the fatal error or require the flag for dev builds
   if (!flag_rust_experimental)
     rust_fatal_error (
       Location (), "%s",
