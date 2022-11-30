@@ -42,6 +42,7 @@
 #include "value-query.h"
 #include "cfganal.h"
 #include "tree-eh.h"
+#include "gimple-fold.h"
 
 #include "gimple-predicate-analysis.h"
 
@@ -1174,7 +1175,9 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
 /* Implemented simplifications:
 
-   1) ((x IOR y) != 0) AND (x != 0) is equivalent to (x != 0);
+   1a) ((x IOR y) != 0) AND (x != 0) is equivalent to (x != 0);
+   1b) [!](X rel y) AND [!](X rel y') where y == y' or both constant
+       can possibly be simplified
    2) (X AND Y) OR (!X AND Y) is equivalent to Y;
    3) X OR (!X AND Y) is equivalent to (X OR Y);
    4) ((x IAND y) != 0) || (x != 0 AND y != 0)) is equivalent to
@@ -1184,11 +1187,11 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
    PREDS is the predicate chains, and N is the number of chains.  */
 
-/* Implement rule 1 above.  PREDS is the AND predicate to simplify
+/* Implement rule 1a above.  PREDS is the AND predicate to simplify
    in place.  */
 
 static void
-simplify_1 (pred_chain &chain)
+simplify_1a (pred_chain &chain)
 {
   bool simplified = false;
   pred_chain s_chain = vNULL;
@@ -1243,6 +1246,66 @@ simplify_1 (pred_chain &chain)
 
   chain.release ();
   chain = s_chain;
+}
+
+/* Implement rule 1b above.  PREDS is the AND predicate to simplify
+   in place.  Returns true if CHAIN simplifies to true.  */
+
+static bool
+simplify_1b (pred_chain &chain)
+{
+  for (unsigned i = 0; i < chain.length (); i++)
+    {
+      pred_info &a_pred = chain[i];
+
+      for (unsigned j = i + 1; j < chain.length (); ++j)
+	{
+	  pred_info &b_pred = chain[j];
+
+	  if (!operand_equal_p (a_pred.pred_lhs, b_pred.pred_lhs)
+	      || (!operand_equal_p (a_pred.pred_rhs, b_pred.pred_rhs)
+		  && !(CONSTANT_CLASS_P (a_pred.pred_rhs)
+		       && CONSTANT_CLASS_P (b_pred.pred_rhs))))
+	    continue;
+
+	  tree_code a_code = a_pred.cond_code;
+	  if (a_pred.invert)
+	    a_code = invert_tree_comparison (a_code, false);
+	  tree_code b_code = b_pred.cond_code;
+	  if (b_pred.invert)
+	    b_code = invert_tree_comparison (b_code, false);
+	  /* Try to combine X a_code Y && X b_code Y'.  */
+	  tree comb = maybe_fold_and_comparisons (boolean_type_node,
+						  a_code,
+						  a_pred.pred_lhs,
+						  a_pred.pred_rhs,
+						  b_code,
+						  b_pred.pred_lhs,
+						  b_pred.pred_rhs, NULL);
+	  if (!comb)
+	    ;
+	  else if (integer_zerop (comb))
+	    return true;
+	  else if (integer_truep (comb))
+	    {
+	      chain.ordered_remove (j);
+	      chain.ordered_remove (i);
+	      i--;
+	      break;
+	    }
+	  else if (COMPARISON_CLASS_P (comb)
+		   && operand_equal_p (a_pred.pred_lhs, TREE_OPERAND (comb, 0)))
+	    {
+	      chain.ordered_remove (j);
+	      a_pred.cond_code = TREE_CODE (comb);
+	      a_pred.pred_rhs = TREE_OPERAND (comb, 1);
+	      a_pred.invert = false;
+	      j--;
+	    }
+	}
+    }
+
+  return false;
 }
 
 /* Implements rule 2 for the OR predicate PREDS:
@@ -1435,11 +1498,17 @@ predicate::simplify (gimple *use_or_def, bool is_use)
       dump (dump_file, use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
-  unsigned n = m_preds.length ();
-  for (unsigned i = 0; i < n; i++)
-    ::simplify_1 (m_preds[i]);
+  for (unsigned i = 0; i < m_preds.length (); i++)
+    {
+      ::simplify_1a (m_preds[i]);
+      if (::simplify_1b (m_preds[i]))
+	{
+	  m_preds.ordered_remove (i);
+	  i--;
+	}
+    }
 
-  if (n < 2)
+  if (m_preds.length () < 2)
     return;
 
   bool changed;
