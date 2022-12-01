@@ -606,6 +606,8 @@ private:
 			      region_model_context *ctxt) const;
   void check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 			  region_model_context *ctxt) const;
+
+  /* Implemented in bounds-checking.cc  */
   void check_symbolic_bounds (const region *base_reg,
 			      const svalue *sym_byte_offset,
 			      const svalue *num_bytes_sval,
