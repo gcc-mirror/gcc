@@ -71,6 +71,34 @@ public:
   }
 
 protected:
+  /* Potentially add a note about valid ways to index this array, such
+     as (given "int arr[10];"):
+       note: valid subscripts for 'arr' are '[0]' to '[9]'
+     We print the '[' and ']' characters so as to express the valid
+     subscripts using C syntax, rather than just as byte ranges,
+     which hopefully is more clear to the user.  */
+  void
+  maybe_describe_array_bounds (location_t loc) const
+  {
+    if (!m_diag_arg)
+      return;
+    tree t = TREE_TYPE (m_diag_arg);
+    if (!t)
+      return;
+    if (TREE_CODE (t) != ARRAY_TYPE)
+      return;
+    tree domain = TYPE_DOMAIN (t);
+    if (!domain)
+      return;
+    tree max_idx = TYPE_MAX_VALUE (domain);
+    if (!max_idx)
+      return;
+    tree min_idx = TYPE_MIN_VALUE (domain);
+    inform (loc,
+	    "valid subscripts for %qE are %<[%E]%> to %<[%E]%>",
+	    m_diag_arg, min_idx, max_idx);
+  }
+
   const region *m_reg;
   tree m_diag_arg;
   byte_range m_out_of_bounds_range;
@@ -165,6 +193,8 @@ public:
 	  inform (rich_loc->get_loc (),
 		  "write to beyond the end of %qE",
 		  m_diag_arg);
+
+	maybe_describe_array_bounds (rich_loc->get_loc ());
       }
 
     return warned;
@@ -245,6 +275,8 @@ public:
 	  inform (rich_loc->get_loc (),
 		  "read from after the end of %qE",
 		  m_diag_arg);
+
+	maybe_describe_array_bounds (rich_loc->get_loc ());
       }
 
     return warned;
@@ -297,8 +329,11 @@ public:
   {
     diagnostic_metadata m;
     m.add_cwe (124);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "buffer underflow");
+    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
+				"buffer underflow");
+    if (warned)
+      maybe_describe_array_bounds (rich_loc->get_loc ());
+    return warned;
   }
 
   label_text describe_final_event (const evdesc::final_event &ev)
@@ -346,8 +381,11 @@ public:
   {
     diagnostic_metadata m;
     m.add_cwe (127);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "buffer underread");
+    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
+				"buffer underread");
+    if (warned)
+      maybe_describe_array_bounds (rich_loc->get_loc ());
+    return warned;
   }
 
   label_text describe_final_event (const evdesc::final_event &ev)

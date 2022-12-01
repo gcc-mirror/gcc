@@ -25,8 +25,9 @@ void test1 (void)
   id_sequence[2] = 345;
   id_sequence[3] = 456; /* { dg-line test1 } */
 
-  /* { dg-warning "overflow" "warning" { target *-*-* } test1 } */
-  /* { dg-message "" "note" { target *-*-* } test1 } */
+  /* { dg-warning "stack-based buffer overflow" "warning" { target *-*-* } test1 } */
+  /* { dg-message "write of 4 bytes to beyond the end of 'id_sequence'" "num bad bytes note" { target *-*-* } test1 } */
+  /* { dg-message "valid subscripts for 'id_sequence' are '\\\[0\\\]' to '\\\[2\\\]'" "valid subscript note" { target *-*-* } test1 } */
 }
 
 void test2 (void)
@@ -46,8 +47,9 @@ void test3 (void)
   for (int i = n; i >= 0; i--)
     arr[i] = i; /* { dg-line test3 } */
 
-  /* { dg-warning "overflow" "warning" { target *-*-* } test3 } */
-  /* { dg-message "" "note" { target *-*-* } test3 } */
+  /* { dg-warning "stack-based buffer overflow" "warning" { target *-*-* } test3 } */
+  /* { dg-message "write of 4 bytes to beyond the end of 'arr'" "num bad bytes note" { target *-*-* } test3 } */
+  /* { dg-message "valid subscripts for 'arr' are '\\\[0\\\]' to '\\\[3\\\]'" "valid subscript note" { target *-*-* } test3 } */
 }
 
 void test4 (void)
@@ -72,7 +74,7 @@ void test5 (void)
   *last_el = 4; /* { dg-line test5 } */
 
   free (arr);
-  /* { dg-warning "overflow" "warning" { target *-*-* } test5 } */
+  /* { dg-warning "heap-based buffer overflow" "warning" { target *-*-* } test5 } */
   /* { dg-message "" "note" { target *-*-* } test5 } */
 }
 
@@ -89,9 +91,9 @@ void test6 (void)
     printf ("x=%d y=%d *p=%d *q=%d\n" , x, y, *p, *q);  /* { dg-line test6c } */
   }
 
-  /* { dg-warning "overflow" "warning" { target *-*-* } test6b } */
+  /* { dg-warning "buffer overflow" "warning" { target *-*-* } test6b } */
   /* { dg-message "" "note" { target *-*-* } test6b } */
-  /* { dg-warning "overread" "warning" { target *-*-* } test6c } */
+  /* { dg-warning "buffer overread" "warning" { target *-*-* } test6c } */
   /* { dg-message "" "note" { target *-*-* } test6c } */
 }
 
