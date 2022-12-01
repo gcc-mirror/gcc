@@ -37,27 +37,21 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-/* Abstract base class for all out-of-bounds warnings with concrete values.  */
+/* Abstract base class for all out-of-bounds warnings.  */
 
-class out_of_bounds : public pending_diagnostic_subclass<out_of_bounds>
+class out_of_bounds : public pending_diagnostic
 {
 public:
-  out_of_bounds (const region *reg, tree diag_arg,
-		 byte_range out_of_bounds_range)
-  : m_reg (reg), m_diag_arg (diag_arg),
-    m_out_of_bounds_range (out_of_bounds_range)
+  out_of_bounds (const region *reg, tree diag_arg)
+  : m_reg (reg), m_diag_arg (diag_arg)
   {}
 
-  const char *get_kind () const final override
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
   {
-    return "out_of_bounds_diagnostic";
-  }
-
-  bool operator== (const out_of_bounds &other) const
-  {
-    return m_reg == other.m_reg
-	   && m_out_of_bounds_range == other.m_out_of_bounds_range
-	   && pending_diagnostic::same_tree_p (m_diag_arg, other.m_diag_arg);
+    const out_of_bounds &other
+      (static_cast <const out_of_bounds &>(base_other));
+    return (m_reg == other.m_reg
+	    && pending_diagnostic::same_tree_p (m_diag_arg, other.m_diag_arg));
   }
 
   int get_controlling_option () const final override
@@ -106,25 +100,51 @@ protected:
 
   const region *m_reg;
   tree m_diag_arg;
+};
+
+/* Abstract base class for all out-of-bounds warnings where the
+   out-of-bounds range is concrete.  */
+
+class concrete_out_of_bounds : public out_of_bounds
+{
+public:
+  concrete_out_of_bounds (const region *reg, tree diag_arg,
+			  byte_range out_of_bounds_range)
+  : out_of_bounds (reg, diag_arg),
+    m_out_of_bounds_range (out_of_bounds_range)
+  {}
+
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
+  {
+    const concrete_out_of_bounds &other
+      (static_cast <const concrete_out_of_bounds &>(base_other));
+    return (out_of_bounds::subclass_equal_p (other)
+	    && m_out_of_bounds_range == other.m_out_of_bounds_range);
+  }
+
+protected:
   byte_range m_out_of_bounds_range;
 };
 
-/* Abstract subclass to complaing about out-of-bounds
+/* Abstract subclass to complaing about concrete out-of-bounds
    past the end of the buffer.  */
 
-class past_the_end : public out_of_bounds
+class concrete_past_the_end : public concrete_out_of_bounds
 {
 public:
-  past_the_end (const region *reg, tree diag_arg, byte_range range,
-		tree byte_bound)
-  : out_of_bounds (reg, diag_arg, range), m_byte_bound (byte_bound)
+  concrete_past_the_end (const region *reg, tree diag_arg, byte_range range,
+			 tree byte_bound)
+  : concrete_out_of_bounds (reg, diag_arg, range), m_byte_bound (byte_bound)
   {}
 
-  bool operator== (const past_the_end &other) const
+  bool
+  subclass_equal_p (const pending_diagnostic &base_other) const final override
   {
-    return out_of_bounds::operator== (other)
-	   && pending_diagnostic::same_tree_p (m_byte_bound,
-					       other.m_byte_bound);
+    const concrete_past_the_end &other
+      (static_cast <const concrete_past_the_end &>(base_other));
+    return (concrete_out_of_bounds::subclass_equal_p (other)
+	    && pending_diagnostic::same_tree_p (m_byte_bound,
+						other.m_byte_bound));
   }
 
   label_text
@@ -143,13 +163,18 @@ protected:
 
 /* Concrete subclass to complain about buffer overflows.  */
 
-class buffer_overflow : public past_the_end
+class concrete_buffer_overflow : public concrete_past_the_end
 {
 public:
-  buffer_overflow (const region *reg, tree diag_arg,
+  concrete_buffer_overflow (const region *reg, tree diag_arg,
 		   byte_range range, tree byte_bound)
-  : past_the_end (reg, diag_arg, range, byte_bound)
+  : concrete_past_the_end (reg, diag_arg, range, byte_bound)
   {}
+
+  const char *get_kind () const final override
+  {
+    return "concrete_buffer_overflow";
+  }
 
   bool emit (rich_location *rich_loc) final override
   {
@@ -241,13 +266,18 @@ public:
 
 /* Concrete subclass to complain about buffer over-reads.  */
 
-class buffer_over_read : public past_the_end
+class concrete_buffer_over_read : public concrete_past_the_end
 {
 public:
-  buffer_over_read (const region *reg, tree diag_arg,
-		    byte_range range, tree byte_bound)
-  : past_the_end (reg, diag_arg, range, byte_bound)
+  concrete_buffer_over_read (const region *reg, tree diag_arg,
+			     byte_range range, tree byte_bound)
+  : concrete_past_the_end (reg, diag_arg, range, byte_bound)
   {}
+
+  const char *get_kind () const final override
+  {
+    return "concrete_buffer_over_read";
+  }
 
   bool emit (rich_location *rich_loc) final override
   {
@@ -337,12 +367,18 @@ public:
 
 /* Concrete subclass to complain about buffer underwrites.  */
 
-class buffer_underwrite : public out_of_bounds
+class concrete_buffer_underwrite : public concrete_out_of_bounds
 {
 public:
-  buffer_underwrite (const region *reg, tree diag_arg, byte_range range)
-  : out_of_bounds (reg, diag_arg, range)
+  concrete_buffer_underwrite (const region *reg, tree diag_arg,
+			      byte_range range)
+  : concrete_out_of_bounds (reg, diag_arg, range)
   {}
+
+  const char *get_kind () const final override
+  {
+    return "concrete_buffer_underwrite";
+  }
 
   bool emit (rich_location *rich_loc) final override
   {
@@ -403,12 +439,18 @@ public:
 
 /* Concrete subclass to complain about buffer under-reads.  */
 
-class buffer_under_read : public out_of_bounds
+class concrete_buffer_under_read : public concrete_out_of_bounds
 {
 public:
-  buffer_under_read (const region *reg, tree diag_arg, byte_range range)
-  : out_of_bounds (reg, diag_arg, range)
+  concrete_buffer_under_read (const region *reg, tree diag_arg,
+			      byte_range range)
+  : concrete_out_of_bounds (reg, diag_arg, range)
   {}
+
+  const char *get_kind () const final override
+  {
+    return "concrete_buffer_under_read";
+  }
 
   bool emit (rich_location *rich_loc) final override
   {
@@ -470,38 +512,26 @@ public:
 /* Abstract class to complain about out-of-bounds read/writes where
    the values are symbolic.  */
 
-class symbolic_past_the_end
-  : public pending_diagnostic_subclass<symbolic_past_the_end>
+class symbolic_past_the_end : public out_of_bounds
 {
 public:
   symbolic_past_the_end (const region *reg, tree diag_arg, tree offset,
 			 tree num_bytes, tree capacity)
-  : m_reg (reg), m_diag_arg (diag_arg), m_offset (offset),
-    m_num_bytes (num_bytes), m_capacity (capacity)
+  : out_of_bounds (reg, diag_arg),
+    m_offset (offset),
+    m_num_bytes (num_bytes),
+    m_capacity (capacity)
   {}
 
-  const char *get_kind () const final override
+  bool
+  subclass_equal_p (const pending_diagnostic &base_other) const final override
   {
-    return "symbolic_past_the_end";
-  }
-
-  bool operator== (const symbolic_past_the_end &other) const
-  {
-    return m_reg == other.m_reg
-	   && pending_diagnostic::same_tree_p (m_diag_arg, other.m_diag_arg)
-	   && pending_diagnostic::same_tree_p (m_offset, other.m_offset)
-	   && pending_diagnostic::same_tree_p (m_num_bytes, other.m_num_bytes)
-	   && pending_diagnostic::same_tree_p (m_capacity, other.m_capacity);
-  }
-
-  int get_controlling_option () const final override
-  {
-    return OPT_Wanalyzer_out_of_bounds;
-  }
-
-  void mark_interesting_stuff (interesting_t *interest) final override
-  {
-    interest->add_region_creation (m_reg);
+    const symbolic_past_the_end &other
+      (static_cast <const symbolic_past_the_end &>(base_other));
+    return (out_of_bounds::subclass_equal_p (other)
+	    && pending_diagnostic::same_tree_p (m_offset, other.m_offset)
+	    && pending_diagnostic::same_tree_p (m_num_bytes, other.m_num_bytes)
+	    && pending_diagnostic::same_tree_p (m_capacity, other.m_capacity));
   }
 
   label_text
@@ -566,13 +596,6 @@ public:
   }
 
 protected:
-  enum memory_space get_memory_space () const
-  {
-    return m_reg->get_memory_space ();
-  }
-
-  const region *m_reg;
-  tree m_diag_arg;
   tree m_offset;
   tree m_num_bytes;
   tree m_capacity;
@@ -589,6 +612,11 @@ public:
   : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
   {
     m_dir_str = "write";
+  }
+
+  const char *get_kind () const final override
+  {
+    return "symbolic_buffer_overflow";
   }
 
   bool emit (rich_location *rich_loc) final override
@@ -622,6 +650,11 @@ public:
   : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
   {
     m_dir_str = "read";
+  }
+
+  const char *get_kind () const final override
+  {
+    return "symbolic_buffer_over_read";
   }
 
   bool emit (rich_location *rich_loc) final override
@@ -776,10 +809,12 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (make_unique<buffer_under_read> (reg, diag_arg, out));
+	  ctxt->warn (make_unique<concrete_buffer_under_read> (reg, diag_arg,
+							       out));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (make_unique<buffer_underwrite> (reg, diag_arg, out));
+	  ctxt->warn (make_unique<concrete_buffer_underwrite> (reg, diag_arg,
+							       out));
 	  break;
 	}
     }
@@ -804,12 +839,12 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (make_unique<buffer_over_read> (reg, diag_arg,
-						     out, byte_bound));
+	  ctxt->warn (make_unique<concrete_buffer_over_read> (reg, diag_arg,
+							      out, byte_bound));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (make_unique<buffer_overflow> (reg, diag_arg,
-						    out, byte_bound));
+	  ctxt->warn (make_unique<concrete_buffer_overflow> (reg, diag_arg,
+							     out, byte_bound));
 	  break;
 	}
     }

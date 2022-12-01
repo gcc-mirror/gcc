@@ -310,21 +310,17 @@ public:
   }
 
 
-  void set_next_state (const gimple *stmt,
+  void set_next_state (const gimple *,
 		       tree var,
 		       state_machine::state_t to,
 		       tree origin) final override
   {
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
-    impl_region_model_context new_ctxt (m_eg, m_enode_for_diag,
-					m_old_state, m_new_state,
-					NULL, NULL,
-					stmt);
     const svalue *var_new_sval
-      = m_new_state->m_region_model->get_rvalue (var, &new_ctxt);
+      = m_new_state->m_region_model->get_rvalue (var, NULL);
     const svalue *origin_new_sval
-      = m_new_state->m_region_model->get_rvalue (origin, &new_ctxt);
+      = m_new_state->m_region_model->get_rvalue (origin, NULL);
 
     /* We use the new sval here to avoid issues with uninitialized values.  */
     state_machine::state_t current
@@ -350,12 +346,8 @@ public:
       (m_eg, m_enode_for_diag, NULL, NULL, NULL/*m_enode->get_state ()*/,
        NULL, stmt);
 
-    impl_region_model_context new_ctxt (m_eg, m_enode_for_diag,
-					m_old_state, m_new_state,
-					NULL, NULL,
-					stmt);
     const svalue *origin_new_sval
-      = m_new_state->m_region_model->get_rvalue (origin, &new_ctxt);
+      = m_new_state->m_region_model->get_rvalue (origin, NULL);
 
     state_machine::state_t current
       = m_old_smap->get_state (sval, m_eg.get_ext_state ());
@@ -380,11 +372,8 @@ public:
   {
     LOG_FUNC (get_logger ());
     gcc_assert (d);
-    impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
-
     const svalue *var_old_sval
-      = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
+      = m_old_state->m_region_model->get_rvalue (var, NULL);
     state_machine::state_t current
       = (var
 	 ? m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ())
@@ -400,9 +389,6 @@ public:
   {
     LOG_FUNC (get_logger ());
     gcc_assert (d);
-    impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
-
     state_machine::state_t current
       = (sval
 	 ? m_old_smap->get_state (sval, m_eg.get_ext_state ())
