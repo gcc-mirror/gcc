@@ -81,7 +81,7 @@ g++-cross$(exeext): xg++$(exeext)
 
 # The compiler itself.
 # Shared with C front end:
-CXX_C_OBJS = attribs.o incpath.o \
+CXX_C_OBJS = attribs.o \
 	$(C_COMMON_OBJS) $(CXX_TARGET_OBJS)
 
 # Language-specific object files for C++ and Objective C++.
