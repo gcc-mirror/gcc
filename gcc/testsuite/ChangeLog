@@ -1,3 +1,19 @@
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/107592
+	* gdc.dg/pr107592.d: New test.
+
+2022-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-11-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107576
+	* gfortran.dg/null_actual_3.f90: New test.
+
 2022-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt100.adb: New test.
