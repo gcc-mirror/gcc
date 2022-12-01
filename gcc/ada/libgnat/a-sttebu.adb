@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Strings.UTF_Encoding.Strings;
 with Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 
@@ -59,7 +60,7 @@ package body Ada.Strings.Text_Buffers is
 
       procedure Put (Buffer : in out Buffer_Type; Item : String) is
       begin
-         Put_UTF_8 (Buffer, Item);
+         Put_UTF_8 (Buffer, UTF_Encoding.Strings.Encode (Item));
       end Put;
 
       procedure Wide_Put (Buffer : in out Buffer_Type; Item : Wide_String) is

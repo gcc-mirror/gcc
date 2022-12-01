@@ -45,6 +45,7 @@ struct loongarch_cache {
     int l1d_line_size;  /* bytes */
     int l1d_size;       /* KiB */
     int l2d_size;       /* kiB */
+    int simultaneous_prefetches; /* number of parallel prefetch */
 };
 
 #endif /* LOONGARCH_TUNE_H */

@@ -4682,7 +4682,7 @@ package body Ch3 is
          when Tok_With =>
             Check_Bad_Layout;
 
-            if Aspect_Specifications_Present then
+            if Aspect_Specifications_Present (Strict => True) then
 
                --  If we are after a semicolon, complain that it was ignored.
                --  But we don't really ignore it, since we dump the aspects,

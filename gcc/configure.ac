@@ -888,7 +888,7 @@ if test x${enable_multiarch} = xauto; then
   fi
 fi
 if test x${enable_multiarch} = xyes; then
-  AC_DEFINE(ENABLE_MULTIARCH, 1)
+  AC_DEFINE(ENABLE_MULTIARCH, 1, [If --with-multiarch option is used])
 fi
 AC_MSG_CHECKING(for multiarch configuration)
 AC_SUBST(enable_multiarch)

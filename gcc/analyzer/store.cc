@@ -3069,6 +3069,15 @@ store::canonicalize (store_manager *mgr)
       binding_cluster *cluster = (*iter).second;
       if (base_reg->get_kind () == RK_HEAP_ALLOCATED)
 	{
+	  /* Don't purge a heap-allocated region that's been marked as
+	     escaping, since this could be recording that a ptr to it
+	     was written to an unknown symbolic region along this
+	     path, and so we don't know whether it's referenced or
+	     not, and hence should report it as leaking
+	     (PR analyzer/106473).  */
+	  if (cluster->escaped_p ())
+	    continue;
+
 	  if (cluster->empty_p ())
 	    if (!s.m_regs.contains (base_reg))
 	      purgeable_regions.add (base_reg);

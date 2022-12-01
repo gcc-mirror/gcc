@@ -746,10 +746,6 @@ Max. size of var tracking hash tables.
 Common Joined UInteger Var(param_max_find_base_term_values) Init(200) Param Optimization
 Maximum number of VALUEs handled during a single find_base_term call.
 
--param=max-vrp-switch-assertions=
-Common Joined UInteger Var(param_max_vrp_switch_assertions) Init(10) Param Optimization
-Maximum number of assertions to add along the default edge of a switch statement during VRP.
-
 -param=min-crossjump-insns=
 Common Joined UInteger Var(param_min_crossjump_insns) Init(5) IntegerRange(1, 65536) Param Optimization
 The minimum number of matching instructions to consider for crossjumping.
@@ -1164,22 +1160,5 @@ The maximum factor which the loop vectorizer applies to the cost of statements i
 -param=vect-induction-float=
 Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRage(0, 1) Param Optimization
 Enable loop vectorization of floating point inductions.
-
--param=vrp1-mode=
-Common Joined Var(param_vrp1_mode) Enum(vrp_mode) Init(VRP_MODE_RANGER) Param Optimization
---param=vrp1-mode=[vrp|ranger] Specifies the mode VRP1 should operate in.
-
--param=vrp2-mode=
-Common Joined Var(param_vrp2_mode) Enum(vrp_mode) Init(VRP_MODE_RANGER) Param Optimization
---param=vrp2-mode=[vrp|ranger] Specifies the mode VRP2 should operate in.
-
-Enum
-Name(vrp_mode) Type(enum vrp_mode) UnknownError(unknown vrp mode %qs)
-
-EnumValue
-Enum(vrp_mode) String(vrp) Value(VRP_MODE_VRP)
-
-EnumValue
-Enum(vrp_mode) String(ranger) Value(VRP_MODE_RANGER)
 
 ; This comment is to ensure we retain the blank line above.

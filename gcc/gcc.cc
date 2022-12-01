@@ -706,6 +706,13 @@ proper position among the other output files.  */
 #define CPP_SPEC ""
 #endif
 
+/* Subtargets can define SUBTARGET_CC1_SPEC to provide extra args to cc1 and
+   cc1plus or extra switch-translations.  The SUBTARGET_CC1_SPEC is appended
+   to CC1_SPEC in the initialization of cc1_spec.  */
+#ifndef SUBTARGET_CC1_SPEC
+#define SUBTARGET_CC1_SPEC ""
+#endif
+
 /* config.h can define CC1_SPEC to provide extra args to cc1 and cc1plus
    or extra switch-translations.  */
 #ifndef CC1_SPEC
@@ -1174,7 +1181,7 @@ proper position among the other output files.  */
 static const char *asm_debug = ASM_DEBUG_SPEC;
 static const char *asm_debug_option = ASM_DEBUG_OPTION_SPEC;
 static const char *cpp_spec = CPP_SPEC;
-static const char *cc1_spec = CC1_SPEC;
+static const char *cc1_spec = CC1_SPEC SUBTARGET_CC1_SPEC;
 static const char *cc1plus_spec = CC1PLUS_SPEC;
 static const char *link_gcc_c_sequence_spec = LINK_GCC_C_SEQUENCE_SPEC;
 static const char *link_ssp_spec = LINK_SSP_SPEC;

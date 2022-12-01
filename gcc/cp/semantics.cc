@@ -610,7 +610,8 @@ set_cleanup_locs (tree stmts, location_t loc)
   if (TREE_CODE (stmts) == CLEANUP_STMT)
     {
       tree t = CLEANUP_EXPR (stmts);
-      protected_set_expr_location (t, loc);
+      if (t && TREE_CODE (t) != POSTCONDITION_STMT)
+	protected_set_expr_location (t, loc);
       /* Avoid locus differences for C++ cdtor calls depending on whether
 	 cdtor_returns_this: a conversion to void is added to discard the return
 	 value, and this conversion ends up carrying the location, and when it
@@ -2169,7 +2170,8 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
 
   /* DR 613/850: Can use non-static data members without an associated
      object in sizeof/decltype/alignof.  */
-  if (is_dummy_object (object) && cp_unevaluated_operand == 0
+  if (is_dummy_object (object)
+      && !cp_unevaluated_operand
       && (!processing_template_decl || !current_class_ref))
     {
       if (complain & tf_error)
@@ -2177,6 +2179,14 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
 	  if (current_function_decl
 	      && DECL_STATIC_FUNCTION_P (current_function_decl))
 	    error ("invalid use of member %qD in static member function", decl);
+	  else if (current_function_decl
+		   && processing_contract_condition
+		   && DECL_CONSTRUCTOR_P (current_function_decl))
+	    error ("invalid use of member %qD in constructor %<pre%> contract", decl);
+	  else if (current_function_decl
+		   && processing_contract_condition
+		   && DECL_DESTRUCTOR_P (current_function_decl))
+	    error ("invalid use of member %qD in destructor %<post%> contract", decl);
 	  else
 	    error ("invalid use of non-static data member %qD", decl);
 	  inform (DECL_SOURCE_LOCATION (decl), "declared here");
@@ -3014,6 +3024,10 @@ finish_this_expr (void)
   tree fn = current_nonlambda_function ();
   if (fn && DECL_STATIC_FUNCTION_P (fn))
     error ("%<this%> is unavailable for static member functions");
+  else if (fn && processing_contract_condition && DECL_CONSTRUCTOR_P (fn))
+    error ("invalid use of %<this%> before it is valid");
+  else if (fn && processing_contract_condition && DECL_DESTRUCTOR_P (fn))
+    error ("invalid use of %<this%> after it is valid");
   else if (fn)
     error ("invalid use of %<this%> in non-member function");
   else
@@ -3987,6 +4001,9 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 	}
       return error_mark_node;
     }
+  else if (processing_contract_condition && (TREE_CODE (decl) == PARM_DECL))
+    /* Use of a parameter in a contract condition is fine.  */
+    return decl;
   else
     {
       if (complain & tf_error)
@@ -4119,7 +4136,8 @@ finish_id_expression_1 (tree id_expression,
 	 body, except inside an unevaluated context (i.e. decltype).  */
       if (TREE_CODE (decl) == PARM_DECL
 	  && DECL_CONTEXT (decl) == NULL_TREE
-	  && !cp_unevaluated_operand)
+	  && !cp_unevaluated_operand
+	  && !processing_contract_condition)
 	{
 	  *error_msg = G_("use of parameter outside function body");
 	  return error_mark_node;
@@ -12289,6 +12307,10 @@ apply_deduced_return_type (tree fco, tree return_type)
     DECL_NAME (fco) = make_conv_op_name (return_type);
 
   TREE_TYPE (fco) = change_return_type (return_type, TREE_TYPE (fco));
+
+  maybe_update_postconditions (fco);
+
+  /* Apply the type to the result object.  */
 
   result = DECL_RESULT (fco);
   if (result == NULL_TREE)

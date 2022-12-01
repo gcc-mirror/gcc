@@ -4795,17 +4795,6 @@ verify_gimple_assign_single (gassign *stmt)
 	}
       return res;
 
-    case ASSERT_EXPR:
-      /* FIXME.  */
-      rhs1 = fold (ASSERT_EXPR_COND (rhs1));
-      if (rhs1 == boolean_false_node)
-	{
-	  error ("%qs with an always-false condition", code_name);
-	  debug_generic_stmt (rhs1);
-	  return true;
-	}
-      break;
-
     case WITH_SIZE_EXPR:
       error ("%qs RHS in assignment statement",
 	     get_tree_code_name (rhs_code));
@@ -7870,6 +7859,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       if (bb->loop_father->header == bb)
 	{
 	  class loop *this_loop = bb->loop_father;
+	  /* Avoid the need to remap SSA names used in nb_iterations.  */
+	  free_numbers_of_iterations_estimates (this_loop);
 	  class loop *outer = loop_outer (this_loop);
 	  if (outer == loop
 	      /* If the SESE region contains some bbs ending with

@@ -314,8 +314,9 @@ private:
 
   /* Functions for implementing "compile".  */
 
-  void acquire_mutex ();
-  void release_mutex ();
+  void lock ();
+  void unlock ();
+  struct scoped_lock;
 
   void
   make_fake_args (vec <char *> *argvec,

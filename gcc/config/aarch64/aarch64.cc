@@ -1346,6 +1346,7 @@ static const struct tune_params generic_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1382,6 +1383,7 @@ static const struct tune_params cortexa35_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1415,6 +1417,7 @@ static const struct tune_params cortexa53_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1448,6 +1451,7 @@ static const struct tune_params cortexa57_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1481,6 +1485,7 @@ static const struct tune_params cortexa72_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1514,6 +1519,7 @@ static const struct tune_params cortexa73_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1548,6 +1554,7 @@ static const struct tune_params exynosm1_tunings =
   "4",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1580,6 +1587,7 @@ static const struct tune_params thunderxt88_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1612,6 +1620,7 @@ static const struct tune_params thunderx_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1646,6 +1655,7 @@ static const struct tune_params tsv110_tunings =
   "8",  /* loop_align.  */
   2,    /* int_reassoc_width.  */
   4,    /* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,    /* vec_reassoc_width.  */
   2,    /* min_div_recip_mul_sf.  */
   2,    /* min_div_recip_mul_df.  */
@@ -1678,6 +1688,7 @@ static const struct tune_params xgene1_tunings =
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1710,6 +1721,7 @@ static const struct tune_params emag_tunings =
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1743,6 +1755,7 @@ static const struct tune_params qdf24xx_tunings =
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1778,6 +1791,7 @@ static const struct tune_params saphira_tunings =
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1811,6 +1825,7 @@ static const struct tune_params thunderx2t99_tunings =
   "16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
   2,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1844,6 +1859,7 @@ static const struct tune_params thunderx3t110_tunings =
   "16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
   2,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1876,6 +1892,7 @@ static const struct tune_params neoversen1_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1912,6 +1929,7 @@ static const struct tune_params ampere1_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1949,6 +1967,7 @@ static const struct tune_params ampere1a_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2126,6 +2145,7 @@ static const struct tune_params neoversev1_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  4,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2263,6 +2283,7 @@ static const struct tune_params neoverse512tvb_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  4,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2451,6 +2472,7 @@ static const struct tune_params neoversen2_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2640,6 +2662,7 @@ static const struct tune_params neoversev2_tunings =
   "32:16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
   6,	/* fp_reassoc_width.  */
+  4,	/* fma_reassoc_width.  */
   3,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2675,6 +2698,7 @@ static const struct tune_params a64fx_tunings =
   "32",	/* loop_align.  */
   4,	/* int_reassoc_width.  */
   2,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -3387,9 +3411,15 @@ aarch64_reassociation_width (unsigned opc, machine_mode mode)
     return aarch64_tune_params.vec_reassoc_width;
   if (INTEGRAL_MODE_P (mode))
     return aarch64_tune_params.int_reassoc_width;
-  /* Avoid reassociating floating point addition so we emit more FMAs.  */
-  if (FLOAT_MODE_P (mode) && opc != PLUS_EXPR)
-    return aarch64_tune_params.fp_reassoc_width;
+  /* Reassociation reduces the number of FMAs which may result in worse
+     performance.  Use a per-CPU setting for FMA reassociation which allows
+     narrow CPUs with few FP pipes to switch it off (value of 1), and wider
+     CPUs with many FP pipes to enable reassociation.
+     Since the reassociation pass doesn't understand FMA at all, assume
+     that any FP addition might turn into FMA.  */
+  if (FLOAT_MODE_P (mode))
+    return opc == PLUS_EXPR ? aarch64_tune_params.fma_reassoc_width
+			    : aarch64_tune_params.fp_reassoc_width;
   return 1;
 }
 
@@ -24321,12 +24351,17 @@ aarch64_vectorize_can_special_div_by_constant (enum tree_code code,
   if ((flags & VEC_ANY_SVE) && !TARGET_SVE2)
     return false;
 
+  int pow = wi::exact_log2 (cst + 1);
+  auto insn_code = maybe_code_for_aarch64_bitmask_udiv3 (TYPE_MODE (vectype));
+  /* SVE actually has a div operator, we may have gotten here through
+     that route.  */
+  if (pow != (int) (element_precision (vectype) / 2)
+      || insn_code == CODE_FOR_nothing)
+    return false;
+
+  /* We can use the optimized pattern.  */
   if (in0 == NULL_RTX && in1 == NULL_RTX)
-    {
-      wide_int val = wi::add (cst, 1);
-      int pow = wi::exact_log2 (val);
-      return pow == (int)(element_precision (vectype) / 2);
-    }
+    return true;
 
   if (!VECTOR_TYPE_P (vectype))
    return false;
@@ -26832,7 +26867,8 @@ currently_supported_simd_type (tree t, tree b)
 static int
 aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					struct cgraph_simd_clone *clonei,
-					tree base_type, int num)
+					tree base_type, int num,
+					bool explicit_p)
 {
   tree t, ret_type;
   unsigned int elt_bits, count;
@@ -26850,8 +26886,9 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || const_simdlen > 1024
 	  || (const_simdlen & (const_simdlen - 1)) != 0))
     {
-      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %wd", const_simdlen);
+      if (explicit_p)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported simdlen %wd", const_simdlen);
       return 0;
     }
 
@@ -26859,7 +26896,9 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   if (TREE_CODE (ret_type) != VOID_TYPE
       && !currently_supported_simd_type (ret_type, base_type))
     {
-      if (TYPE_SIZE (ret_type) != TYPE_SIZE (base_type))
+      if (!explicit_p)
+	;
+      else if (TYPE_SIZE (ret_type) != TYPE_SIZE (base_type))
 	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 		    "GCC does not currently support mixed size types "
 		    "for %<simd%> functions");
@@ -26886,7 +26925,9 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (clonei->args[i].arg_type != SIMD_CLONE_ARG_TYPE_UNIFORM
 	  && !currently_supported_simd_type (arg_type, base_type))
 	{
-	  if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
+	  if (!explicit_p)
+	    ;
+	  else if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 			"GCC does not currently support mixed size types "
 			"for %<simd%> functions");
@@ -26916,9 +26957,11 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (clonei->simdlen.is_constant (&const_simdlen)
 	  && maybe_ne (vec_bits, 64U) && maybe_ne (vec_bits, 128U))
 	{
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "GCC does not currently support simdlen %wd for type %qT",
-		      const_simdlen, base_type);
+	  if (explicit_p)
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"GCC does not currently support simdlen %wd for "
+			"type %qT",
+			const_simdlen, base_type);
 	  return 0;
 	}
     }

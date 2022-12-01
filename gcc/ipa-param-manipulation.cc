@@ -1378,7 +1378,6 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 
 	  if (apm->op == IPA_PARAM_OP_SPLIT)
 	    {
-	      m_split_modifications_p = true;
 	      split[prev_index] = true;
 	      register_replacement (apm, new_parm);
 	    }
@@ -1472,10 +1471,10 @@ ipa_param_body_adjustments
 ::ipa_param_body_adjustments (vec<ipa_adjusted_param, va_gc> *adj_params,
 			      tree fndecl)
   : m_adj_params (adj_params), m_adjustments (NULL), m_reset_debug_decls (),
-    m_split_modifications_p (false), m_dead_stmts (), m_dead_ssas (),
-    m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (), m_fndecl (fndecl),
-    m_id (NULL), m_oparms (), m_new_decls (), m_new_types (), m_replacements (),
-    m_removed_decls (), m_removed_map (), m_method2func (false)
+    m_dead_stmts (), m_dead_ssas (), m_dead_ssa_debug_equiv (),
+    m_dead_stmt_debug_equiv (), m_fndecl (fndecl), m_id (NULL), m_oparms (),
+    m_new_decls (), m_new_types (), m_replacements (), m_removed_decls (),
+    m_removed_map (), m_method2func (false)
 {
   common_initialization (fndecl, NULL, NULL);
 }
@@ -1489,11 +1488,10 @@ ipa_param_body_adjustments
 ::ipa_param_body_adjustments (ipa_param_adjustments *adjustments,
 			      tree fndecl)
   : m_adj_params (adjustments->m_adj_params), m_adjustments (adjustments),
-    m_reset_debug_decls (), m_split_modifications_p (false), m_dead_stmts (),
-    m_dead_ssas (), m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (),
-    m_fndecl (fndecl), m_id (NULL), m_oparms (), m_new_decls (),
-    m_new_types (), m_replacements (), m_removed_decls (), m_removed_map (),
-    m_method2func (false)
+    m_reset_debug_decls (), m_dead_stmts (), m_dead_ssas (),
+    m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (), m_fndecl (fndecl),
+    m_id (NULL), m_oparms (), m_new_decls (), m_new_types (), m_replacements (),
+    m_removed_decls (), m_removed_map (), m_method2func (false)
 {
   common_initialization (fndecl, NULL, NULL);
 }
@@ -1513,11 +1511,10 @@ ipa_param_body_adjustments
 			      copy_body_data *id, tree *vars,
 			      vec<ipa_replace_map *, va_gc> *tree_map)
   : m_adj_params (adjustments->m_adj_params), m_adjustments (adjustments),
-    m_reset_debug_decls (), m_split_modifications_p (false), m_dead_stmts (),
-    m_dead_ssas (), m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (),
-    m_fndecl (fndecl), m_id (id), m_oparms (), m_new_decls (), m_new_types (),
-    m_replacements (), m_removed_decls (), m_removed_map (),
-    m_method2func (false)
+    m_reset_debug_decls (), m_dead_stmts (), m_dead_ssas (),
+    m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (), m_fndecl (fndecl),
+    m_id (id), m_oparms (), m_new_decls (), m_new_types (), m_replacements (),
+    m_removed_decls (), m_removed_map (), m_method2func (false)
 {
   common_initialization (old_fndecl, vars, tree_map);
 }
@@ -1979,7 +1976,7 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p,
 	  && m_dead_ssas.contains (t))
 	recreate = true;
 
-      if (!m_split_modifications_p)
+      if (m_replacements.is_empty ())
 	continue;
 
       tree base;

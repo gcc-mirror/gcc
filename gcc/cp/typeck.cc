@@ -6215,8 +6215,9 @@ cp_build_binary_op (const op_location_t &location,
       tree_code orig_code0 = TREE_CODE (orig_type0);
       tree orig_type1 = TREE_TYPE (orig_op1);
       tree_code orig_code1 = TREE_CODE (orig_type1);
-      if (!result_type)
-	/* Nope.  */;
+      if (!result_type || result_type == error_mark_node)
+	/* Nope.  */
+	result_type = NULL_TREE;
       else if ((orig_code0 == BOOLEAN_TYPE) != (orig_code1 == BOOLEAN_TYPE))
 	/* "If one of the operands is of type bool and the other is not, the
 	   program is ill-formed."  */
@@ -11247,10 +11248,21 @@ check_return_expr (tree retval, bool *no_warning)
 
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
-    retval = cp_build_init_expr (result, retval);
+    {
+      /* If there's a postcondition for a scalar return value, wrap
+	 retval in a call to the postcondition function.  */
+      if (tree post = apply_postcondition_to_return (retval))
+	retval = post;
+      retval = cp_build_init_expr (result, retval);
+    }
 
   if (tree set = maybe_set_retval_sentinel ())
     retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);
+
+  /* If there's a postcondition for an aggregate return value, call the
+     postcondition function after the return object is initialized.  */
+  if (tree post = apply_postcondition_to_return (result))
+    retval = build2 (COMPOUND_EXPR, void_type_node, retval, post);
 
   return retval;
 }

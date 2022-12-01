@@ -297,6 +297,17 @@ package body Ada.Strings.Wide_Wide_Superbounded is
       return Left <= Right.Data (1 .. Right.Current_Length);
    end Less_Or_Equal;
 
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S      : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class;
+      Source : Super_String) is
+   begin
+      Wide_Wide_String'Put_Image (S, Super_To_String (Source));
+   end Put_Image;
+
    ----------------------
    -- Set_Super_String --
    ----------------------

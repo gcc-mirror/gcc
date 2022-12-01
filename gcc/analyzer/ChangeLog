@@ -1,3 +1,399 @@
+2022-11-24  Martin Liska  <mliska@suse.cz>
+
+	* varargs.cc: Fix Clang warnings.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106473
+	* call-summary.cc
+	(call_summary_replay::convert_region_from_summary_1): Update for
+	change to creation of heap-allocated regions.
+	* program-state.cc (test_program_state_1): Likewise.
+	(test_program_state_merging): Likewise.
+	* region-model-impl-calls.cc (kf_calloc::impl_call_pre): Likewise.
+	(kf_malloc::impl_call_pre): Likewise.
+	(kf_operator_new::impl_call_pre): Likewise.
+	(kf_realloc::impl_call_postsuccess_with_move::update_model): Likewise.
+	* region-model-manager.cc
+	(region_model_manager::create_region_for_heap_alloc): Convert
+	to...
+	(region_model_manager::get_or_create_region_for_heap_alloc):
+	...this, reusing an existing region if it's unreferenced in the
+	client state.
+	* region-model-manager.h (region_model_manager::get_num_regions): New.
+	 (region_model_manager::create_region_for_heap_alloc): Convert to...
+	 (region_model_manager::get_or_create_region_for_heap_alloc): ...this.
+	* region-model.cc (region_to_value_map::can_merge_with_p): Reject
+	merger when the values are different.
+	(region_model::create_region_for_heap_alloc): Convert to...
+	(region_model::get_or_create_region_for_heap_alloc): ...this.
+	(region_model::get_referenced_base_regions): New.
+	(selftest::test_state_merging):  Update for change to creation of
+	heap-allocated regions.
+	(selftest::test_malloc_constraints): Likewise.
+	(selftest::test_malloc): Likewise.
+	* region-model.h: Include "sbitmap.h".
+	(region_model::create_region_for_heap_alloc): Convert to...
+	(region_model::get_or_create_region_for_heap_alloc): ...this.
+	(region_model::get_referenced_base_regions): New decl.
+	* store.cc (store::canonicalize): Don't purge a heap-allocated region
+	that's been marked as escaping.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (checker_path::inject_any_inlined_call_events):
+	Don't dump the address of the block when -fdump-noaddr.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.h (region_model::on_socket): Delete decl.
+	(region_model::on_bind): Likewise.
+	(region_model::on_listen): Likewise.
+	(region_model::on_accept): Likewise.
+	(region_model::on_connect): Likewise.
+	* sm-fd.cc (kf_socket::outcome_of_socket::update_model): Move body
+	of region_model::on_socket into here, ...
+	(region_model::on_socket): ...eliminating this function.
+	(kf_bind::outcome_of_bind::update_model): Likewise for on_bind...
+	(region_model::on_bind): ...eliminating this function.
+	(kf_listen::outcome_of_listen::update_model): Likewise fo
+	on_listen...
+	(region_model::on_listen): ...eliminating this function.
+	(kf_accept::outcome_of_accept::update_model): Likewise fo
+	on_accept...
+	(region_model::on_accept): ...eliminating this function.
+	(kf_connect::outcome_of_connect::update_model): Likewise fo
+	on_connect...
+	(region_model::on_connect): ...eliminating this function.
+
+2022-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (register_known_fd_functions): New decl.
+	* region-model-impl-calls.cc (class kf_accept): Move to sm-fd.cc.
+	(class kf_bind): Likewise.
+	(class kf_connect): Likewise.
+	(class kf_listen): Likewise.
+	(class kf_pipe): Likewise.
+	(class kf_socket): Likewise.
+	(register_known_functions): Remove registration of the above
+	functions, instead calling register_known_fd_functions.
+	* sm-fd.cc: Include "analyzer/call-info.h".
+	(class kf_socket): Move here from region-model-impl-calls.cc.
+	(class kf_bind): Likewise.
+	(class kf_listen): Likewise.
+	(class kf_accept): Likewise.
+	(class kf_connect): Likewise.
+	(class kf_pipe): Likewise.
+	(register_known_fd_functions): New.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107788
+	* known-function-manager.cc (known_function_manager::get_match):
+	Don't look up fndecls by name when they're not in the root
+	namespace.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107783
+	* sm-fd.cc (fd_state_machine::check_for_new_socket_fd): Don't
+	complain when old state is "fd-constant".
+	(fd_state_machine::on_listen): Likewise.
+	(fd_state_machine::on_accept): Likewise.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107807
+	* region-model-impl-calls.cc (register_known_functions): Register
+	"___errno" and "__error" as synonyms  for "__errno_location".
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class internal_known_function): New.
+	(register_varargs_builtins): New decl.
+	* engine.cc (exploded_node::on_stmt_pre): Remove
+	"out_terminate_path" param from call to region_model::on_stmt_pre.
+	(feasibility_state::maybe_update_for_edge): Likewise.
+	* known-function-manager.cc: Include "basic-block.h", "gimple.h",
+	and "analyzer/region-model.h".
+	(known_function_manager::known_function_manager): Initialize
+	m_combined_fns_arr.
+	(known_function_manager::~known_function_manager): Clean up
+	m_combined_fns_arr.
+	(known_function_manager::get_by_identifier): Make const.
+	(known_function_manager::add): New overloaded definitions for
+	enum built_in_function and enum internal_fn.
+	(known_function_manager::get_by_fndecl): Delete.
+	(known_function_manager::get_match): New.
+	(known_function_manager::get_internal_fn): New.
+	(known_function_manager::get_normal_builtin): New.
+	* known-function-manager.h
+	(known_function_manager::get_by_identifier): Make private and
+	add const qualifier.
+	(known_function_manager::get_by_fndecl): Delete.
+	(known_function_manager::add): Add overloaded decls for
+	enum built_in_function name and enum internal_fn.
+	(known_function_manager::get_match): New decl.
+	(known_function_manager::get_internal_fn): New decl.
+	(known_function_manager::get_normal_builtin): New decl.
+	(known_function_manager::m_combined_fns_arr): New field.
+	* region-model-impl-calls.cc (call_details::arg_is_size_p): New.
+	(class kf_alloca): New.
+	(region_model::impl_call_alloca): Convert to...
+	(kf_alloca::impl_call_pre): ...this.
+	(kf_analyzer_dump_capacity::matches_call_types_p): Rewrite check
+	to use call_details::arg_is_pointer_p.
+	(region_model::impl_call_builtin_expect): Convert to...
+	(class kf_expect): ...this.
+	(class kf_calloc): New, adding check that both arguments are
+	size_t.
+	(region_model::impl_call_calloc): Convert to...
+	(kf_calloc::impl_call_pre): ...this.
+	(kf_connect::matches_call_types_p): Rewrite check to use
+	call_details::arg_is_pointer_p.
+	(region_model::impl_call_error): Convert to...
+	(class kf_error): ...this, and...
+	(kf_error::impl_call_pre): ...this.
+	(class kf_fgets): New, adding checks that args 0 and 2 are
+	pointers.
+	(region_model::impl_call_fgets): Convert to...
+	(kf_fgets::impl_call_pre): ...this.
+	(class kf_fread): New, adding checks on the argument types.
+	(region_model::impl_call_fread): Convert to...
+	(kf_fread::impl_call_pre): ...this.
+	(class kf_free): New, adding check that the argument is a pointer.
+	(region_model::impl_call_free): Convert to...
+	(kf_free::impl_call_post): ...this.
+	(class kf_getchar): New.
+	(class kf_malloc): New, adding check that the argument is a
+	size_t.
+	(region_model::impl_call_malloc): Convert to...
+	(kf_malloc::impl_call_pre): ...this.
+	(class kf_memcpy): New, adding checks on arguments.
+	(region_model::impl_call_memcpy): Convert to...
+	(kf_memcpy::impl_call_pre): ...this.
+	(class kf_memset): New.
+	(region_model::impl_call_memset): Convert to...
+	(kf_memset::impl_call_pre): ...this.
+	(kf_pipe::matches_call_types_p): Rewrite check to use
+	call_details::arg_is_pointer_p.
+	(kf_putenv::matches_call_types_p): Likewise.
+	(class kf_realloc): New, adding checks on the argument types.
+	(region_model::impl_call_realloc): Convert to...
+	(kf_realloc::impl_call_post): ...this.
+	(class kf_strchr): New.
+	(region_model::impl_call_strchr): Convert to...
+	(kf_strchr::impl_call_post): ...this.
+	(class kf_stack_restore): New.
+	(class kf_stack_save): New.
+	(class kf_stdio_output_fn): New.
+	(class kf_strcpy): New,
+	(region_model::impl_call_strcpy): Convert to...
+	(kf_strcpy::impl_call_pre): ...this.
+	(class kf_strlen): New.
+	(region_model::impl_call_strlen): Convert to...
+	(kf_strlen::impl_call_pre): ...this.
+	(class kf_ubsan_bounds): New.
+	(region_model::impl_deallocation_call): Reimplement to avoid call
+	to impl_call_free.
+	(register_known_functions): Add handlers for IFN_BUILTIN_EXPECT
+	and IFN_UBSAN_BOUNDS.  Add handlers for BUILT_IN_ALLOCA,
+	BUILT_IN_ALLOCA_WITH_ALIGN, BUILT_IN_CALLOC, BUILT_IN_EXPECT,
+	BUILT_IN_EXPECT_WITH_PROBABILITY, BUILT_IN_FPRINTF,
+	BUILT_IN_FPRINTF_UNLOCKED, BUILT_IN_FPUTC,
+	BUILT_IN_FPUTC_UNLOCKED, BUILT_IN_FPUTS, BUILT_IN_FPUTS_UNLOCKED,
+	BUILT_IN_FREE, BUILT_IN_FWRITE, BUILT_IN_FWRITE_UNLOCKED,
+	BUILT_IN_MALLOC, BUILT_IN_MEMCPY, BUILT_IN_MEMCPY_CHK,
+	BUILT_IN_MEMSET, BUILT_IN_MEMSET_CHK, BUILT_IN_PRINTF,
+	BUILT_IN_PRINTF_UNLOCKED, BUILT_IN_PUTC, BUILT_IN_PUTCHAR,
+	BUILT_IN_PUTCHAR_UNLOCKED, BUILT_IN_PUTC_UNLOCKED, BUILT_IN_PUTS,
+	BUILT_IN_PUTS_UNLOCKED, BUILT_IN_REALLOC, BUILT_IN_STACK_RESTORE,
+	BUILT_IN_STACK_SAVE, BUILT_IN_STRCHR, BUILT_IN_STRCPY,
+	BUILT_IN_STRCPY_CHK, BUILT_IN_STRLEN, BUILT_IN_VFPRINTF, and
+	BUILT_IN_VPRINTF. Call register_varargs_builtins.  Add handlers
+	for "getchar", "memset", "fgets", "fgets_unlocked", "fread",
+	"error", and "error_at_line".
+	* region-model.cc (region_model::on_stmt_pre): Drop
+	"out_terminate_path" param.
+	(region_model::get_known_function): Reimplement by calling
+	known_function_manager::get_match, passing new "cd" param.
+	Add overload taking enum internal_fn.
+	(region_model::on_call_pre): Drop "out_terminate_path" param.
+	Remove special-case handling of internal fns IFN_BUILTIN_EXPECT,
+	IFN_UBSAN_BOUNDS, and IFN_VA_ARG, of built-in fns BUILT_IN_ALLOCA,
+	BUILT_IN_ALLOCA_WITH_ALIGN, BUILT_IN_CALLOC, BUILT_IN_EXPECT,
+	BUILT_IN_EXPECT_WITH_PROBABILITY, BUILT_IN_FREE, BUILT_IN_MALLOC,
+	BUILT_IN_MEMCPY, BUILT_IN_MEMCPY_CHK, BUILT_IN_MEMSET,
+	BUILT_IN_MEMSET_CHK, BUILT_IN_REALLOC, BUILT_IN_STRCHR,
+	BUILT_IN_STRCPY, BUILT_IN_STRCPY_CHK, BUILT_IN_STRLEN,
+	BUILT_IN_STACK_SAVE, BUILT_IN_STACK_RESTORE, BUILT_IN_FPRINTF,
+	BUILT_IN_FPRINTF_UNLOCKED, BUILT_IN_PUTC, BUILT_IN_PUTC_UNLOCKED,
+	BUILT_IN_FPUTC, BUILT_IN_FPUTC_UNLOCKED, BUILT_IN_FPUTS,
+	BUILT_IN_FPUTS_UNLOCKED, BUILT_IN_FWRITE,
+	BUILT_IN_FWRITE_UNLOCKED, BUILT_IN_PRINTF,
+	BUILT_IN_PRINTF_UNLOCKED, BUILT_IN_PUTCHAR,
+	BUILT_IN_PUTCHAR_UNLOCKED, BUILT_IN_PUTS, BUILT_IN_PUTS_UNLOCKED,
+	BUILT_IN_VFPRINTF, BUILT_IN_VPRINTF, BUILT_IN_VA_START, and
+	BUILT_IN_VA_COPY, and of named functions "malloc", "calloc",
+	"alloca", "realloc", "error", "error_at_line", "fgets",
+	"fgets_unlocked", "fread", "getchar", "memset", "strchr", and
+	"strlen".  Replace all this special-casing with calls to
+	get_known_function for internal fns and for fn decls.
+	(region_model::on_call_post): Remove special-casing handling for
+	"free" and "strchr", and for BUILT_IN_REALLOC, BUILT_IN_STRCHR,
+	and BUILT_IN_VA_END.  Replace by consolidating on usage of
+	get_known_function.
+	* region-model.h (call_details::arg_is_size_p): New.
+	(region_model::on_stmt_pre): Drop "out_terminate_path" param.
+	(region_model::on_call_pre): Likewise.
+	(region_model::impl_call_alloca): Delete.
+	(region_model::impl_call_builtin_expect): Delete.
+	(region_model::impl_call_calloc): Delete.
+	(region_model::impl_call_error): Delete.
+	(region_model::impl_call_fgets): Delete.
+	(region_model::impl_call_fread): Delete.
+	(region_model::impl_call_free): Delete.
+	(region_model::impl_call_malloc): Delete.
+	(region_model::impl_call_memcpy): Delete.
+	(region_model::impl_call_memset): Delete.
+	(region_model::impl_call_realloc): Delete.
+	(region_model::impl_call_strchr): Delete.
+	(region_model::impl_call_strcpy): Delete.
+	(region_model::impl_call_strlen): Delete.
+	(region_model::impl_call_va_start): Delete.
+	(region_model::impl_call_va_copy): Delete.
+	(region_model::impl_call_va_arg): Delete.
+	(region_model::impl_call_va_end): Delete.
+	(region_model::check_region_for_write): Public.
+	(region_model::get_known_function): Add "cd" param.  Add
+	overloaded decl taking enum internal_fn.
+	* sm-malloc.cc: Update comments.
+	* varargs.cc (class kf_va_start): New.
+	(region_model::impl_call_va_start): Convert to...
+	(kf_va_start::impl_call_pre): ...this.
+	(class kf_va_copy): New.
+	(region_model::impl_call_va_copy): Convert to...
+	(kf_va_copy::impl_call_pre): ...this.
+	(class kf_va_arg): New.
+	(region_model::impl_call_va_arg): Convert to...
+	(kf_va_arg::impl_call_pre): ...this.
+	(class kf_va_end): New.
+	(region_model::impl_call_va_end): Delete.
+	(register_varargs_builtins): New.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107788
+	* region-model.cc (region_model::update_for_int_cst_return):
+	Require that the return type be an integer type.
+	(region_model::update_for_nonzero_return): Likewise.
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107783
+	* region-model-impl-calls.cc (kf_accept::matches_call_types_p):
+	Require that args 1 and 2 be pointers.
+	(kf_bind::matches_call_types_p): Require that arg 1 be a pointer.
+	* region-model.h (call_details::arg_is_pointer_p): New
+
+2022-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107777
+	* call-summary.cc
+	(call_summary_replay::convert_region_from_summary_1): Handle
+	RK_THREAD_LOCAL and RK_ERRNO in switch.
+	* region-model.cc (region_model::get_representative_path_var_1):
+	Likewise.
+
+2022-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107582
+	* engine.cc (dynamic_call_info_t::update_model): Update the model
+	by pushing or pop a frame, rather than by clobbering it with the
+	model from the exploded_node's state.
+
+2022-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc (is_pipe_call_p): Delete.
+	* analyzer.h (is_pipe_call_p): Delete.
+	* region-model-impl-calls.cc (call_details::get_location): New.
+	(class kf_analyzer_break): New, adapted from
+	region_model::on_stmt_pre.
+	(region_model::impl_call_analyzer_describe): Convert to...
+	(class kf_analyzer_describe): ...this.
+	(region_model::impl_call_analyzer_dump_capacity): Convert to...
+	(class kf_analyzer_dump_capacity): ...this.
+	(region_model::impl_call_analyzer_dump_escaped): Convert to...
+	(class kf_analyzer_dump_escaped): ...this.
+	(class kf_analyzer_dump_exploded_nodes): New.
+	(region_model::impl_call_analyzer_dump_named_constant): Convert
+	to...
+	(class kf_analyzer_dump_named_constant): ...this.
+	(class dump_path_diagnostic): Move here from region-model.cc.
+	(class kf_analyzer_dump_path) New, adapted from
+	region_model::on_stmt_pre.
+	(class kf_analyzer_dump_region_model): Likewise.
+	(region_model::impl_call_analyzer_eval): Convert to...
+	(class kf_analyzer_eval): ...this.
+	(region_model::impl_call_analyzer_get_unknown_ptr): Convert to...
+	(class kf_analyzer_get_unknown_ptr): ...this.
+	(class known_function_accept): Rename to...
+	(class kf_accept): ...this.
+	(class known_function_bind): Rename to...
+	(class kf_bind): ...this.
+	(class known_function_connect): Rename to...
+	(class kf_connect): ...this.
+	(region_model::impl_call_errno_location): Convert to...
+	(class kf_errno_location): ...this.
+	(class known_function_listen): Rename to...
+	(class kf_listen): ...this.
+	(region_model::impl_call_pipe): Convert to...
+	(class kf_pipe): ...this.
+	(region_model::impl_call_putenv): Convert to...
+	(class kf_putenv): ...this.
+	(region_model::impl_call_operator_new): Convert to...
+	(class kf_operator_new): ...this.
+	(region_model::impl_call_operator_delete): Convert to...
+	(class kf_operator_delete): ...this.
+	(class known_function_socket): Rename to...
+	(class kf_socket): ...this.
+	(register_known_functions): Rename param to KFM.  Break out
+	existing known functions into a "POSIX" section, and add "pipe",
+	"pipe2", and "putenv".  Add debugging functions
+	"__analyzer_break", "__analyzer_describe",
+	"__analyzer_dump_capacity", "__analyzer_dump_escaped",
+	"__analyzer_dump_exploded_nodes",
+	"__analyzer_dump_named_constant", "__analyzer_dump_path",
+	"__analyzer_dump_region_model", "__analyzer_eval",
+	"__analyzer_get_unknown_ptr".  Add C++ support functions
+	"operator new", "operator new []", "operator delete", and
+	"operator delete []".
+	* region-model.cc (class dump_path_diagnostic): Move to
+	region-model-impl-calls.cc.
+	(region_model::on_stmt_pre): Eliminate special-casing of
+	"__analyzer_describe", "__analyzer_dump_capacity",
+	"__analyzer_dump_escaped", "__analyzer_dump_named_constant",
+	"__analyzer_dump_path", "__analyzer_dump_region_model",
+	"__analyzer_eval", "__analyzer_break",
+	"__analyzer_dump_exploded_nodes", "__analyzer_get_unknown_ptr",
+	"__errno_location", "pipe", "pipe2", "putenv", "operator new",
+	"operator new []", "operator delete", "operator delete []"
+	"pipe" and "pipe2", handling them instead via the known_functions
+	mechanism.
+	* region-model.h (call_details::get_location): New decl.
+	(region_model::impl_call_analyzer_describe): Delete decl.
+	(region_model::impl_call_analyzer_dump_capacity): Delete decl.
+	(region_model::impl_call_analyzer_dump_escaped): Delete decl.
+	(region_model::impl_call_analyzer_dump_named_constant): Delete decl.
+	(region_model::impl_call_analyzer_eval): Delete decl.
+	(region_model::impl_call_analyzer_get_unknown_ptr): Delete decl.
+	(region_model::impl_call_errno_location): Delete decl.
+	(region_model::impl_call_pipe): Delete decl.
+	(region_model::impl_call_putenv): Delete decl.
+	(region_model::impl_call_operator_new): Delete decl.
+	(region_model::impl_call_operator_delete): Delete decl.
+	* sm-fd.cc: Update comments.
+
 2022-11-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107711
@@ -788,7 +1184,7 @@
 2022-10-05  Martin Liska  <mliska@suse.cz>
 
 	* call-summary.cc (call_summary_replay::call_summary_replay):
-	  Remove unused variable and arguments.
+	Remove unused variable and arguments.
 	* call-summary.h: Likewise.
 	* engine.cc (exploded_node::on_stmt): Likewise.
 	(exploded_node::replay_call_summaries): Likewise.
@@ -905,7 +1301,7 @@
 2022-09-12  Martin Liska  <mliska@suse.cz>
 
 	* region-model.cc (region_model::maybe_complain_about_infoleak):
-	  Remove unused fields.
+	Remove unused fields.
 
 2022-09-11  Tim Lange  <mail@tim-lange.me>
 
@@ -1079,7 +1475,7 @@
 2022-08-16  Martin Liska  <mliska@suse.cz>
 
 	* region-model.cc: Fix -Winconsistent-missing-override clang
-	  warning.
+	warning.
 	* region.h: Likewise.
 
 2022-08-15  David Malcolm  <dmalcolm@redhat.com>

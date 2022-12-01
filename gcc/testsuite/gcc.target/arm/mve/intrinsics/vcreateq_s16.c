@@ -1,13 +1,34 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+/*
+**foo:
+**	...
+**	vmov q[0-9+]\[2\], q[0-9+]\[0\], r[0-9+], r[0-9+]
+**	vmov q[0-9+]\[3\], q[0-9+]\[1\], r[0-9+], r[0-9+]
+**	...
+*/
 int16x8_t
 foo (uint64_t a, uint64_t b)
 {
   return vcreateq_s16 (a, b);
 }
 
-/* { dg-final { scan-assembler "vmov"  }  } */
+/*
+**foo1:
+**	...
+**	vmov q[0-9+]\[2\], q[0-9+]\[0\], r[0-9+], r[0-9+]
+**	vmov q[0-9+]\[3\], q[0-9+]\[1\], r[0-9+], r[0-9+]
+**	...
+*/
+int16x8_t
+foo1 ()
+{
+  return vcreateq_s16 (1, 1);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

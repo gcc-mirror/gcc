@@ -1,3 +1,28 @@
+2022-11-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR other/104044
+	* jit-playback.cc (playback::lvale::mark_addressable): Remove
+	extraeous semicolon
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+	    LIU Hao  <lh_mouse@126.com>
+
+	* jit-playback.cc (playback::context::scoped_lock): Define RAII
+	lock type.
+	(playback::context::compile): Use scoped_lock to acquire mutex
+	for the active playback context.
+	(jit_mutex): Change to std::mutex.
+	(playback::context::acquire_mutex): Rename to ...
+	(playback::context::lock): ... this.
+	(playback::context::release_mutex): Rename to ...
+	(playback::context::unlock): ... this.
+	* jit-playback.h (playback::context): Rename members and declare
+	scoped_lock.
+	* jit-recording.cc (INCLUDE_PTHREAD_H): Remove unused define.
+	* libgccjit.cc (version_mutex): Change to std::mutex.
+	(struct jit_version_info): Use std::lock_guard to acquire and
+	release mutex.
+
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	Revert:
@@ -920,10 +945,10 @@
 2021-09-10  Petter Tomner  <tomner@kth.se>
 
 	* jit-playback.c: Moved global var processing to after loc handling.
-	  Setting TYPE_NAME for fundamental types.
-	  Using common functions for finalizing globals.
+	Setting TYPE_NAME for fundamental types.
+	Using common functions for finalizing globals.
 	* jit-playback.h: New method init_types().
-	  Changed get_tree_node_for_type() to method.
+	Changed get_tree_node_for_type() to method.
 
 2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
 
@@ -1678,7 +1703,7 @@
 	(memento_of_get_vector::write_reproducer): New method.
 	* jit-recording.h: In namespace gcc::jit::recording::
 	(type::get_vector): New
-	 method.
+	method.
 	(class memento_of_get_vector): New class.
 	* libgccjit++.h (gccjit::type::get_vector): New method.
 	* libgccjit.c (gcc_jit_type_get_vector): New public entrypoint.

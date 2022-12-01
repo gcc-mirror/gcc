@@ -1,3 +1,5 @@
+/* { dg-require-effective-target sockets } */
+
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -71,4 +73,9 @@ void test_bind_after_accept (int fd, const char *sockname)
   /* { dg-message "'bind' expects a new socket file descriptor but 'afd' is already connected" "final event" { target *-*-* } .-1 } */
 
   close (afd);
+}
+
+int test_bind_on_constant ()
+{
+  return bind (0, NULL, 0);
 }

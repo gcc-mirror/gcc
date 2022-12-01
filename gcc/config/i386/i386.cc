@@ -19725,7 +19725,8 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
 	 the vec_dupv4hi pattern.
 	 NB: SSE2 can load 16bit data to sse register via pinsrw.  */
       int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_SSE2 ? 2 : 4;
-      if (GET_MODE_SIZE (from) < mov_size)
+      if (GET_MODE_SIZE (from) < mov_size
+	  || GET_MODE_SIZE (to) < mov_size)
 	return false;
     }
 
@@ -20089,12 +20090,6 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
 
-      /* For AVX512FP16, vmovw supports movement of HImode
-	 and HFmode between GPR and SSE registers.  */
-      if (TARGET_AVX512FP16
-	  && VALID_AVX512FP16_SCALAR_MODE (mode))
-	return true;
-
       /* For AVX-5124FMAPS or AVX-5124VNNIW
 	 allow V64SF and V64SI modes for special regnos.  */
       if ((TARGET_AVX5124FMAPS || TARGET_AVX5124VNNIW)
@@ -20112,6 +20107,10 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       /* xmm16-xmm31 are only available for AVX-512.  */
       if (EXT_REX_SSE_REGNO_P (regno))
 	return false;
+
+      /* Use pinsrw/pextrw to mov 16-bit data from/to sse to/from integer.  */
+      if (TARGET_SSE2 && mode == HImode)
+	return true;
 
       /* OImode and AVX modes are available only when AVX is enabled.  */
       return ((TARGET_AVX
@@ -23633,7 +23632,8 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 static int
 ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					     struct cgraph_simd_clone *clonei,
-					     tree base_type, int num)
+					     tree base_type, int num,
+					     bool explicit_p)
 {
   int ret = 1;
 
@@ -23642,8 +23642,9 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || clonei->simdlen > 1024
 	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
     {
-      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %wd", clonei->simdlen.to_constant ());
+      if (explicit_p)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported simdlen %wd", clonei->simdlen.to_constant ());
       return 0;
     }
 
@@ -23663,8 +23664,9 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  break;
 	/* FALLTHRU */
       default:
-	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		    "unsupported return type %qT for simd", ret_type);
+	if (explicit_p)
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "unsupported return type %qT for simd", ret_type);
 	return 0;
       }
 
@@ -23693,13 +23695,14 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	default:
 	  if (clonei->args[i].arg_type == SIMD_CLONE_ARG_TYPE_UNIFORM)
 	    break;
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "unsupported argument type %qT for simd", arg_type);
+	  if (explicit_p)
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"unsupported argument type %qT for simd", arg_type);
 	  return 0;
 	}
     }
 
-  if (!TREE_PUBLIC (node->decl))
+  if (!TREE_PUBLIC (node->decl) || !explicit_p)
     {
       /* If the function isn't exported, we can pick up just one ISA
 	 for the clones.  */
@@ -23770,9 +23773,10 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	cnt /= clonei->vecsize_float;
       if (cnt > (TARGET_64BIT ? 16 : 8))
 	{
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "unsupported simdlen %wd",
-		      clonei->simdlen.to_constant ());
+	  if (explicit_p)
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"unsupported simdlen %wd",
+			clonei->simdlen.to_constant ());
 	  return 0;
 	}
       }
@@ -23829,20 +23833,12 @@ ix86_loop_unroll_adjust (unsigned nunroll, class loop *loop)
 
   /* Unroll small size loop when unroll factor is not explicitly
      specified.  */
-  if (!(flag_unroll_loops
-	|| flag_unroll_all_loops
-	|| loop->unroll))
+  if (ix86_unroll_only_small_loops && !loop->unroll)
     {
-      nunroll = 1;
-
-      /* Any explicit -f{no-}unroll-{all-}loops turns off
-	 -munroll-only-small-loops.  */
-      if (ix86_unroll_only_small_loops
-	  && !OPTION_SET_P (flag_unroll_loops)
-	  && loop->ninsns <= ix86_cost->small_unroll_ninsns)
-	nunroll = ix86_cost->small_unroll_factor;
-
-      return nunroll;
+      if (loop->ninsns <= ix86_cost->small_unroll_ninsns)
+	return MIN (nunroll, ix86_cost->small_unroll_factor);
+      else
+	return 1;
     }
 
   if (!TARGET_ADJUST_UNROLL)

@@ -285,12 +285,12 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 		REAL_VALUE_TO_TARGET_DOUBLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val);
 		fprintf (file, "0x%lx", val[0]);
-		break;;
+		break;
 	      case E_SFmode:
 		REAL_VALUE_TO_TARGET_SINGLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val[0]);
 		fprintf (file, "0x%lx", val[0]);
-		break;;
+		break;
 	      case E_VOIDmode:
 	      case E_DImode:
 		mn10300_print_operand_address (file,
@@ -344,7 +344,7 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 		REAL_VALUE_TO_TARGET_DOUBLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val);
 		fprintf (file, "0x%lx", val[1]);
-		break;;
+		break;
 	      case E_SFmode:
 		gcc_unreachable ();
 	      case E_VOIDmode:

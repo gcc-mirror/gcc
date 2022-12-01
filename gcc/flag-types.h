@@ -494,6 +494,15 @@ enum openacc_privatization
   OPENACC_PRIVATIZATION_NOISY
 };
 
+/* Targets for -fopenmp-target-simd-clone.  */
+enum omp_target_simd_clone_device_kind
+{
+  OMP_TARGET_SIMD_CLONE_NONE = 0,
+  OMP_TARGET_SIMD_CLONE_HOST = 1,
+  OMP_TARGET_SIMD_CLONE_NOHOST = 2,
+  OMP_TARGET_SIMD_CLONE_ANY = 3
+};
+
 #endif
 
 #endif /* ! GCC_FLAG_TYPES_H */

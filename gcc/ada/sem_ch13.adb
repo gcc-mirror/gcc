@@ -7310,6 +7310,21 @@ package body Sem_Ch13 is
                      Set_Esize (U_Ent, Size);
                   end if;
 
+                  --  As of RM 13.1, only confirming size
+                  --  (i.e. (Size = Esize (Etyp))) for aliased object of
+                  --  elementary type must be supported.
+                  --  GNAT rejects nonconfirming size for such object.
+
+                  if Is_Aliased (U_Ent)
+                    and then Is_Elementary_Type (Etyp)
+                    and then Known_Esize (U_Ent)
+                    and then Size /= Esize (Etyp)
+                  then
+                     Error_Msg_N
+                       ("nonconfirming Size for aliased object is not "
+                        & "supported", N);
+                  end if;
+
                   Set_Has_Size_Clause (U_Ent);
                end;
             end if;
@@ -9928,7 +9943,7 @@ package body Sem_Ch13 is
             --  generally suppress the message in instantiations, and also
             --  if it involves internal names.
 
-            if Opt.List_Inherited_Aspects
+            if List_Inherited_Aspects
               and then not Is_Generic_Actual_Type (Typ)
               and then Instantiation_Location (Sloc (Typ)) = No_Location
               and then not Is_Internal_Name (Chars (T))

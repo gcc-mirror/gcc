@@ -12194,6 +12194,15 @@ supportable_widening_operation (vec_info *vinfo,
       if (VECTOR_BOOLEAN_TYPE_P (prev_type))
 	intermediate_type
 	  = vect_halve_mask_nunits (prev_type, intermediate_mode);
+      else if (VECTOR_MODE_P (intermediate_mode))
+	{
+	  tree intermediate_element_type
+	    = lang_hooks.types.type_for_mode (GET_MODE_INNER (intermediate_mode),
+					      TYPE_UNSIGNED (prev_type));
+	  intermediate_type
+	    = build_vector_type_for_mode (intermediate_element_type,
+					  intermediate_mode);
+	}
       else
 	intermediate_type
 	  = lang_hooks.types.type_for_mode (intermediate_mode,

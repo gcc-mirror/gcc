@@ -46,9 +46,7 @@ extern __inline float
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsbh_ss (__bf16 __A)
 {
-  union{ float a; unsigned int b;} __tmp;
-  __tmp.b = ((unsigned int)(__A)) << 16;
-  return __tmp.a;
+  return __builtin_ia32_cvtbf2sf (__A);
 }
 
 /* vcvtne2ps2bf16 */

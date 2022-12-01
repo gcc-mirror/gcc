@@ -563,7 +563,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	    if (!name)
 	      abort ();
 	  }
-	if (pfile->cb.remap_filename)
+	if (pfile->cb.remap_filename && !pfile->state.in_directive)
 	  name = pfile->cb.remap_filename (name);
 	len = strlen (name);
 	buf = _cpp_unaligned_alloc (pfile, len * 2 + 3);

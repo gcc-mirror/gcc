@@ -1326,7 +1326,7 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      C := Switch_Chars (Ptr);
 
-                     if Set_Dot_Warning_Switch (C) then
+                     if Set_Warning_Switch ('.', C) then
                         Store_Compilation_Switch ("-gnatw." & C);
                      else
                         Bad_Switch ("-gnatw." & Switch_Chars (Ptr .. Max));
@@ -1338,7 +1338,7 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      C := Switch_Chars (Ptr);
 
-                     if Set_Underscore_Warning_Switch (C) then
+                     if Set_Warning_Switch ('_', C) then
                         Store_Compilation_Switch ("-gnatw_" & C);
                      else
                         Bad_Switch ("-gnatw_" & Switch_Chars (Ptr .. Max));
@@ -1347,7 +1347,7 @@ package body Switch.C is
                   --  Normal case
 
                   else
-                     if Set_Warning_Switch (C) then
+                     if Set_Warning_Switch (Plain, C) then
                         Store_Compilation_Switch ("-gnatw" & C);
                      else
                         Bad_Switch ("-gnatw" & Switch_Chars (Ptr .. Max));

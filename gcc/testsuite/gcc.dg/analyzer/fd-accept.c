@@ -1,3 +1,5 @@
+/* { dg-require-effective-target sockets } */
+
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -66,4 +68,9 @@ int test_accept_on_accept (int fd_a)
   /* { dg-message "'accept' expects a listening stream socket file descriptor but 'fd_b' is connected" "final event" { target *-*-* } .-1 } */
 
   return fd_b;
+}
+
+int test_accept_on_constant ()
+{
+  return accept (0, NULL, 0);
 }

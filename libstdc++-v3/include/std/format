@@ -291,7 +291,7 @@ namespace __format
 	}
       else
 	{
-	  constexpr size_t __n = 32;
+	  constexpr int __n = 32;
 	  char __buf[__n]{};
 	  for (int __i = 0; __i < __n && __first != __last; ++__i)
 	    __buf[__i] = __first[__i];
@@ -357,6 +357,12 @@ namespace __format
   template<typename _Context>
     size_t
     __int_from_arg(const basic_format_arg<_Context>& __arg);
+
+  constexpr bool __is_digit(char __c)
+  { return std::__detail::__from_chars_alnum_to_val(__c) < 10; }
+
+  constexpr bool __is_xdigit(char __c)
+  { return std::__detail::__from_chars_alnum_to_val(__c) < 16; }
 
   template<typename _CharT>
     struct _Spec
@@ -469,7 +475,7 @@ namespace __format
 				  unsigned short& __val, bool& __arg_id,
 				  basic_format_parse_context<_CharT>& __pc)
       {
-	if (std::isdigit(*__first))
+	if (__format::__is_digit(*__first))
 	  {
 	    auto [__v, __ptr] = __format::__parse_integer(__first, __last);
 	    if (!__ptr)
@@ -1537,14 +1543,14 @@ namespace __format
 
 	      if (__trailing_zeros)
 		{
-		  if (!isxdigit(__s[0]))
+		  if (!__format::__is_xdigit(__s[0]))
 		    --__sigfigs;
 		  __z = __prec - __sigfigs;
 		}
 
 	      if (size_t __extras = int(__d == __p) + __z)
 		{
-		  if (__dynbuf.empty() && __extras <= (__end - __res.ptr))
+		  if (__dynbuf.empty() && __extras <= size_t(__end - __res.ptr))
 		    {
 		      // Move exponent to make space for extra chars.
 		      __builtin_memmove(__start + __p + __extras,
@@ -1627,7 +1633,7 @@ namespace __format
 		{
 		  __fill_char = _CharT('0');
 		  // Write sign before zero filling.
-		  if (!isxdigit(__narrow_str[0]))
+		  if (!__format::__is_xdigit(__narrow_str[0]))
 		    {
 		      *__out++ = __str[0];
 		      __str.remove_prefix(1);
@@ -2357,7 +2363,7 @@ namespace __format
       _M_write(_CharT __c)
       {
 	*_M_next++ = __c;
-	if (_M_next - _M_span.begin() == _M_span.size()) [[unlikely]]
+	if (_M_next - _M_span.begin() == std::ssize(_M_span)) [[unlikely]]
 	  _M_overflow();
       }
 
@@ -2466,21 +2472,21 @@ namespace __format
       void
       _M_overflow() override
       {
-	auto __used = this->_M_used();
+	auto __s = this->_M_used();
 	if (_M_max < 0) // No maximum.
-	  _M_out = ranges::copy(__used, std::move(_M_out)).out;
-	else if (_M_count < _M_max)
+	  _M_out = ranges::copy(__s, std::move(_M_out)).out;
+	else if (_M_count < size_t(_M_max))
 	  {
 	    auto __max = _M_max - _M_count;
 	    span<_CharT> __first;
-	    if (__max < __used.size())
-	      __first = __used.first(__max);
+	    if (__max < __s.size())
+	      __first = __s.first(__max);
 	    else
-	      __first = __used;
+	      __first = __s;
 	    _M_out = ranges::copy(__first, std::move(_M_out)).out;
 	  }
 	this->_M_rewind();
-	_M_count += __used.size();
+	_M_count += __s.size();
       }
 
     public:
@@ -2523,8 +2529,8 @@ namespace __format
       void
       _M_overflow()
       {
-	auto __used = this->_M_used();
-	_M_count += __used.size();
+	auto __s = this->_M_used();
+	_M_count += __s.size();
 
 	if (_M_max >= 0)
 	  {
@@ -2538,7 +2544,7 @@ namespace __format
 	  {
 	    // No maximum character count. Just extend the span to allow
 	    // writing more characters to it.
-	    this->_M_reset({__used.data(), __used.size() + 1024}, __used.end());
+	    this->_M_reset({__s.data(), __s.size() + 1024}, __s.end());
 	  }
       }
 
@@ -2588,12 +2594,12 @@ namespace __format
       {
 	_Iter_sink::_M_overflow();
 	iter_difference_t<_OutIter> __count(_M_count);
-	auto __used = this->_M_used();
+	auto __s = this->_M_used();
 	auto __last = _M_first;
-	if (__used.data() == _M_buf) // Wrote at least _M_max characters.
+	if (__s.data() == _M_buf) // Wrote at least _M_max characters.
 	  __last += _M_max;
 	else
-	  __last += iter_difference_t<_OutIter>(__used.size());
+	  __last += iter_difference_t<_OutIter>(__s.size());
 	return { __last, __count };
       }
     };
@@ -3113,10 +3119,10 @@ namespace __format
     constexpr auto
     __pack_arg_types(const array<_Arg_t, _Nm>& __types)
     {
-      __UINT64_TYPE__ __packed = 0;
+      __UINT64_TYPE__ __packed_types = 0;
       for (auto __i = __types.rbegin(); __i != __types.rend(); ++__i)
-	__packed = (__packed << _Bits) | *__i;
-      return __packed;
+	__packed_types = (__packed_types << _Bits) | *__i;
+      return __packed_types;
     }
 } // namespace __format
 /// @endcond

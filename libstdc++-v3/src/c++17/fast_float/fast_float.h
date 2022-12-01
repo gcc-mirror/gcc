@@ -99,11 +99,11 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
        || defined(__MINGW64__)                                          \
        || defined(__s390x__)                                            \
        || (defined(__ppc64__) || defined(__PPC64__) || defined(__ppc64le__) || defined(__PPC64LE__)) )
-#define FASTFLOAT_64BIT
+#define FASTFLOAT_64BIT 1
 #elif (defined(__i386) || defined(__i386__) || defined(_M_IX86)   \
      || defined(__arm__) || defined(_M_ARM)                   \
      || defined(__MINGW32__) || defined(__EMSCRIPTEN__))
-#define FASTFLOAT_32BIT
+#define FASTFLOAT_32BIT 1
 #else
   // Need to check incrementally, since SIZE_MAX is a size_t, avoid overflow.
   // We can never tell the register width, but the SIZE_MAX is a good approximation.
@@ -111,9 +111,9 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
   #if SIZE_MAX == 0xffff
     #error Unknown platform (16-bit, unsupported)
   #elif SIZE_MAX == 0xffffffff
-    #define FASTFLOAT_32BIT
+    #define FASTFLOAT_32BIT 1
   #elif SIZE_MAX == 0xffffffffffffffff
-    #define FASTFLOAT_64BIT
+    #define FASTFLOAT_64BIT 1
   #else
     #error Unknown platform (not 32-bit, not 64-bit?)
   #endif
@@ -359,10 +359,12 @@ template <typename T> struct binary_format {
   static inline constexpr int minimum_exponent();
   static inline constexpr int infinite_power();
   static inline constexpr int sign_index();
+  static inline constexpr int min_exponent_fast_path(); // used when fegetround() == FE_TONEAREST
   static inline constexpr int max_exponent_fast_path();
   static inline constexpr int max_exponent_round_to_even();
   static inline constexpr int min_exponent_round_to_even();
   static inline constexpr uint64_t max_mantissa_fast_path(int64_t power);
+  static inline constexpr uint64_t max_mantissa_fast_path(); // used when fegetround() == FE_TONEAREST
   static inline constexpr int largest_power_of_ten();
   static inline constexpr int smallest_power_of_ten();
   static inline constexpr T exact_power_of_ten(int64_t power);
@@ -371,6 +373,22 @@ template <typename T> struct binary_format {
   static inline constexpr equiv_uint mantissa_mask();
   static inline constexpr equiv_uint hidden_bit_mask();
 };
+
+template <> inline constexpr int binary_format<double>::min_exponent_fast_path() {
+#if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
+  return 0;
+#else
+  return -22;
+#endif
+}
+
+template <> inline constexpr int binary_format<float>::min_exponent_fast_path() {
+#if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
+  return 0;
+#else
+  return -10;
+#endif
+}
 
 template <> inline constexpr int binary_format<double>::mantissa_explicit_bits() {
   return 52;
@@ -418,12 +436,17 @@ template <> inline constexpr int binary_format<double>::max_exponent_fast_path()
 template <> inline constexpr int binary_format<float>::max_exponent_fast_path() {
   return 10;
 }
-
+template <> inline constexpr uint64_t binary_format<double>::max_mantissa_fast_path() {
+  return uint64_t(2) << mantissa_explicit_bits();
+}
 template <> inline constexpr uint64_t binary_format<double>::max_mantissa_fast_path(int64_t power) {
   // caller is responsible to ensure that
   // power >= 0 && power <= 22
   //
   return max_mantissa_double[power];
+}
+template <> inline constexpr uint64_t binary_format<float>::max_mantissa_fast_path() {
+  return uint64_t(2) << mantissa_explicit_bits();
 }
 template <> inline constexpr uint64_t binary_format<float>::max_mantissa_fast_path(int64_t power) {
   // caller is responsible to ensure that
@@ -619,10 +642,6 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
 
   uint64_t i = 0; // an unsigned int avoids signed overflows (which are bad)
 
-  while ((std::distance(p, pend) >= 8) && is_made_of_eight_digits_fast(p)) {
-    i = i * 100000000 + parse_eight_digits_unrolled(p); // in rare cases, this will overflow, but that's ok
-    p += 8;
-  }
   while ((p != pend) && is_integer(*p)) {
     // a multiplication by 10 is cheaper than an arbitrary integer
     // multiplication
@@ -1640,7 +1659,7 @@ namespace fast_float {
 // we might have platforms where `CHAR_BIT` is not 8, so let's avoid
 // doing `8 * sizeof(limb)`.
 #if defined(FASTFLOAT_64BIT) && !defined(__sparc)
-#define FASTFLOAT_64BIT_LIMB
+#define FASTFLOAT_64BIT_LIMB 1
 typedef uint64_t limb;
 constexpr size_t limb_bits = 64;
 #else
@@ -2314,10 +2333,6 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
 
   uint64_t i = 0; // an unsigned int avoids signed overflows (which are bad)
 
-  while ((std::distance(p, pend) >= 8) && is_made_of_eight_digits_fast(p)) {
-    i = i * 100000000 + parse_eight_digits_unrolled(p); // in rare cases, this will overflow, but that's ok
-    p += 8;
-  }
   while ((p != pend) && is_integer(*p)) {
     // a multiplication by 10 is cheaper than an arbitrary integer
     // multiplication
@@ -2892,6 +2907,48 @@ from_chars_result parse_infnan(const char *first, const char *last, T &value)  n
   return answer;
 }
 
+/**
+ * Returns true if the floating-pointing rounding mode is to 'nearest'.
+ * It is the default on most system. This function is meant to be inexpensive.
+ * Credit : @mwalcott3
+ */
+fastfloat_really_inline bool rounds_to_nearest() noexcept {
+  // See
+  // A fast function to check your floating-point rounding mode
+  // https://lemire.me/blog/2022/11/16/a-fast-function-to-check-your-floating-point-rounding-mode/
+  //
+  // This function is meant to be equivalent to :
+  // prior: #include <cfenv>
+  //  return fegetround() == FE_TONEAREST;
+  // However, it is expected to be much faster than the fegetround()
+  // function call.
+  //
+  // The volatile keywoard prevents the compiler from computing the function
+  // at compile-time.
+  // There might be other ways to prevent compile-time optimizations (e.g., asm).
+  // The value does not need to be std::numeric_limits<float>::min(), any small
+  // value so that 1 + x should round to 1 would do (after accounting for excess
+  // precision, as in 387 instructions).
+  static volatile float fmin = std::numeric_limits<float>::min();
+  float fmini = fmin; // we copy it so that it gets loaded at most once.
+  //
+  // Explanation:
+  // Only when fegetround() == FE_TONEAREST do we have that
+  // fmin + 1.0f == 1.0f - fmin.
+  //
+  // FE_UPWARD:
+  //  fmin + 1.0f > 1
+  //  1.0f - fmin == 1
+  //
+  // FE_DOWNWARD or  FE_TOWARDZERO:
+  //  fmin + 1.0f == 1
+  //  1.0f - fmin < 1
+  //
+  // Note: This may fail to be accurate if fast-math has been
+  // enabled, as rounding conventions may not apply.
+  return (fmini + 1.0f == 1.0f - fmini);
+}
+
 } // namespace detail
 
 template<typename T>
@@ -2919,12 +2976,45 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
   }
   answer.ec = std::errc(); // be optimistic
   answer.ptr = pns.lastmatch;
-  // Next is a modified Clinger's fast path, inspired by Jakub Jelínek's proposal
-  if (pns.exponent >= 0 && pns.exponent <= binary_format<T>::max_exponent_fast_path() && pns.mantissa <=binary_format<T>::max_mantissa_fast_path(pns.exponent) && !pns.too_many_digits) {
-    value = T(pns.mantissa);
-    value = value * binary_format<T>::exact_power_of_ten(pns.exponent);
-    if (pns.negative) { value = -value; }
-    return answer;
+  // The implementation of the Clinger's fast path is convoluted because
+  // we want round-to-nearest in all cases, irrespective of the rounding mode
+  // selected on the thread.
+  // We proceed optimistically, assuming that detail::rounds_to_nearest() returns
+  // true.
+  if (binary_format<T>::min_exponent_fast_path() <= pns.exponent && pns.exponent <= binary_format<T>::max_exponent_fast_path() && !pns.too_many_digits) {
+    // Unfortunately, the conventional Clinger's fast path is only possible
+    // when the system rounds to the nearest float.
+    //
+    // We expect the next branch to almost always be selected.
+    // We could check it first (before the previous branch), but
+    // there might be performance advantages at having the check
+    // be last.
+    if(detail::rounds_to_nearest())  {
+      // We have that fegetround() == FE_TONEAREST.
+      // Next is Clinger's fast path.
+      if (pns.mantissa <=binary_format<T>::max_mantissa_fast_path()) {
+        value = T(pns.mantissa);
+        if (pns.exponent < 0) { value = value / binary_format<T>::exact_power_of_ten(-pns.exponent); }
+        else { value = value * binary_format<T>::exact_power_of_ten(pns.exponent); }
+        if (pns.negative) { value = -value; }
+        return answer;
+      }
+    } else {
+      // We do not have that fegetround() == FE_TONEAREST.
+      // Next is a modified Clinger's fast path, inspired by Jakub Jelínek's proposal
+      if (pns.exponent >= 0 && pns.mantissa <=binary_format<T>::max_mantissa_fast_path(pns.exponent)) {
+#if (defined(_WIN32) && defined(__clang__))
+        // ClangCL may map 0 to -0.0 when fegetround() == FE_DOWNWARD
+        if(pns.mantissa == 0) {
+          value = 0;
+          return answer;
+        }
+#endif
+        value = T(pns.mantissa) * binary_format<T>::exact_power_of_ten(pns.exponent);
+        if (pns.negative) { value = -value; }
+        return answer;
+      }
+    }
   }
   adjusted_mantissa am = compute_float<binary_format<T>>(pns.exponent, pns.mantissa);
   if(pns.too_many_digits && am.power2 >= 0) {

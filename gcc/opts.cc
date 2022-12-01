@@ -658,6 +658,8 @@ static const struct default_options default_options_table[] =
       REORDER_BLOCKS_ALGORITHM_STC },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_ftree_loop_vectorize, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_ftree_slp_vectorize, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fopenmp_target_simd_clone_, NULL,
+      OMP_TARGET_SIMD_CLONE_NOHOST },
 #ifdef INSN_SCHEDULING
   /* Only run the pre-regalloc scheduling pass if optimizing for speed.  */
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fschedule_insns, NULL, 1 },

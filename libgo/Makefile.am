@@ -465,6 +465,7 @@ runtime_files = \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-nosys.c \
+	runtime/go-strerror.c \
 	runtime/go-reflect-call.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \

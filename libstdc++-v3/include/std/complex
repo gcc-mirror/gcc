@@ -2528,7 +2528,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _Tp>
-    requires(__complex_type<_Tp>::type)
+    requires requires { typename __complex_type<_Tp>::type; }
     inline complex<_Tp>
     __complex_proj(const complex<_Tp>& __z)
     { return __complex_proj(__z.__rep()); }

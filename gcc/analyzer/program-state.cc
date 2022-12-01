@@ -821,6 +821,8 @@ sm_state_map::replay_call_summary (call_summary_replay &r,
       const svalue *caller_sval = r.convert_svalue_from_summary (summary_sval);
       if (!caller_sval)
 	continue;
+      if (!caller_sval->can_have_associated_state_p ())
+	continue;
       const svalue *summary_origin = kv.second.m_origin;
       const svalue *caller_origin
 	= (summary_origin
@@ -1733,7 +1735,7 @@ test_program_state_1 ()
   const svalue *size_in_bytes
     = mgr->get_or_create_unknown_svalue (size_type_node);
   const region *new_reg
-    = model->create_region_for_heap_alloc (size_in_bytes, NULL);
+    = model->get_or_create_region_for_heap_alloc (size_in_bytes, NULL);
   const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
   model->set_value (model->get_lvalue (p, NULL),
 		    ptr_sval, NULL);
@@ -1790,7 +1792,7 @@ test_program_state_merging ()
   const svalue *size_in_bytes
     = mgr->get_or_create_unknown_svalue (size_type_node);
   const region *new_reg
-    = model0->create_region_for_heap_alloc (size_in_bytes, NULL);
+    = model0->get_or_create_region_for_heap_alloc (size_in_bytes, NULL);
   const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
   model0->set_value (model0->get_lvalue (p, &ctxt),
 		     ptr_sval, &ctxt);

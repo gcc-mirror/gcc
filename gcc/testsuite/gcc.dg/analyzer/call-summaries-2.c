@@ -465,7 +465,7 @@ int test_returns_external_result (void)
 
 int uses_alloca (int i)
 {
-  int *p = alloca (sizeof (int));
+  int *p = __builtin_alloca (sizeof (int));
   *p = i;
   return *p;
 }

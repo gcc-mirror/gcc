@@ -53,6 +53,7 @@ with Stringt;        use Stringt;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 package body Exp_Ch11 is
 

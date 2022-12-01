@@ -687,7 +687,6 @@ ix86_function_specific_save (struct cl_target_option *ptr,
   ptr->x_recip_mask_explicit = opts->x_recip_mask_explicit;
   ptr->x_ix86_arch_string = opts->x_ix86_arch_string;
   ptr->x_ix86_tune_string = opts->x_ix86_tune_string;
-  ptr->x_ix86_abi = opts->x_ix86_abi;
   ptr->x_ix86_asm_dialect = opts->x_ix86_asm_dialect;
   ptr->x_ix86_branch_cost = opts->x_ix86_branch_cost;
   ptr->x_ix86_dump_tunes = opts->x_ix86_dump_tunes;
@@ -823,7 +822,6 @@ ix86_function_specific_restore (struct gcc_options *opts,
   opts->x_recip_mask_explicit = ptr->x_recip_mask_explicit;
   opts->x_ix86_arch_string = ptr->x_ix86_arch_string;
   opts->x_ix86_tune_string = ptr->x_ix86_tune_string;
-  opts->x_ix86_abi = ptr->x_ix86_abi;
   opts->x_ix86_asm_dialect = ptr->x_ix86_asm_dialect;
   opts->x_ix86_branch_cost = ptr->x_ix86_branch_cost;
   opts->x_ix86_dump_tunes = ptr->x_ix86_dump_tunes;
@@ -1838,8 +1836,37 @@ ix86_recompute_optlev_based_flags (struct gcc_options *opts,
 void
 ix86_override_options_after_change (void)
 {
+  /* Default align_* from the processor table.  */
   ix86_default_align (&global_options);
+
   ix86_recompute_optlev_based_flags (&global_options, &global_options_set);
+
+  /* Disable unrolling small loops when there's explicit
+     -f{,no}unroll-loop.  */
+  if ((OPTION_SET_P (flag_unroll_loops))
+     || (OPTION_SET_P (flag_unroll_all_loops)
+	 && flag_unroll_all_loops))
+    {
+      if (!OPTION_SET_P (ix86_unroll_only_small_loops))
+	ix86_unroll_only_small_loops = 0;
+      /* Re-enable -frename-registers and -fweb if funroll-loops
+	 enabled.  */
+      if (!OPTION_SET_P (flag_web))
+	flag_web = flag_unroll_loops;
+      if (!OPTION_SET_P (flag_rename_registers))
+	flag_rename_registers = flag_unroll_loops;
+      /* -fcunroll-grow-size default follws -f[no]-unroll-loops.  */
+      if (!OPTION_SET_P (flag_cunroll_grow_size))
+	flag_cunroll_grow_size = flag_unroll_loops
+				 || flag_peel_loops
+				 || optimize >= 3;
+    }
+  else
+    {
+      if (!OPTION_SET_P (flag_cunroll_grow_size))
+	flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
+    }
+
 }
 
 /* Clear stack slot assignments remembered from previous functions.
@@ -2351,7 +2378,7 @@ ix86_option_override_internal (bool main_args_p,
 
   set_ix86_tune_features (opts, ix86_tune, opts->x_ix86_dump_tunes);
 
-  ix86_recompute_optlev_based_flags (opts, opts_set);
+  ix86_override_options_after_change ();
 
   ix86_tune_cost = processor_cost_table[ix86_tune];
   /* TODO: ix86_cost should be chosen at instruction or function granuality
@@ -2381,9 +2408,6 @@ ix86_option_override_internal (bool main_args_p,
   if (TARGET_IAMCU_P (opts->x_target_flags)
       || TARGET_64BIT_P (opts->x_ix86_isa_flags))
     opts->x_ix86_regparm = REGPARM_MAX;
-
-  /* Default align_* from the processor table.  */
-  ix86_default_align (opts);
 
   /* Provide default for -mbranch-cost= value.  */
   SET_OPTION_IF_UNSET (opts, opts_set, ix86_branch_cost,

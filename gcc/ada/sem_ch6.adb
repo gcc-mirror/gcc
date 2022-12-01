@@ -11669,7 +11669,7 @@ package body Sem_Ch6 is
 
    procedure List_Inherited_Pre_Post_Aspects (E : Entity_Id) is
    begin
-      if Opt.List_Inherited_Aspects
+      if List_Inherited_Aspects
         and then Is_Subprogram_Or_Generic_Subprogram (E)
       then
          declare

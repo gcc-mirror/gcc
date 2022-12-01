@@ -1,5 +1,7 @@
 /* Various operations done on sockets in the wrong phase.  */
 
+/* { dg-require-effective-target sockets } */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

@@ -74,31 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "ubsan.h"
 
-/* Tree code classes.  */
 
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
-#define END_OF_BASE_TREE_CODES tcc_exceptional,
-
-const enum tree_code_class tree_code_type[] = {
-#include "all-tree.def"
-};
-
-#undef DEFTREECODE
-#undef END_OF_BASE_TREE_CODES
-
-/* Table indexed by tree code giving number of expression
-   operands beyond the fixed part of the node structure.
-   Not used for types or decls.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
-#define END_OF_BASE_TREE_CODES 0,
-
-const unsigned char tree_code_length[] = {
-#include "all-tree.def"
-};
-
-#undef DEFTREECODE
-#undef END_OF_BASE_TREE_CODES
 
 /* Names of tree components.
    Used for printing out the tree and error messages.  */

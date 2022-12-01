@@ -204,7 +204,7 @@ in the following sections.
 -flax-vector-conversions  -fms-extensions @gol
 -foffload=@var{arg}  -foffload-options=@var{arg} @gol
 -fopenacc  -fopenacc-dim=@var{geom} @gol
--fopenmp  -fopenmp-simd @gol
+-fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]} @gol
 -fpermitted-flt-eval-methods=@var{standard} @gol
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields @gol
 -fsigned-char  -funsigned-char -fstrict-flex-arrays[=@var{n}] @gol
@@ -2201,7 +2201,8 @@ any references to them in the result of the compilation as if the
 files resided in directory @file{@var{new}} instead.  Specifying this
 option is equivalent to specifying all the individual
 @option{-f*-prefix-map} options.  This can be used to make reproducible
-builds that are location independent.  See also
+builds that are location independent.  Directories referenced by
+directives are not affected by these options. See also
 @option{-fmacro-prefix-map}, @option{-fdebug-prefix-map} and
 @option{-fprofile-prefix-map}.
 
@@ -2742,6 +2743,27 @@ Enable handling of OpenMP's @code{simd}, @code{declare simd},
 @code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++
 and @code{!$omp} in Fortran.  Other OpenMP directives are ignored.
 
+@item -fopenmp-target-simd-clone
+@item -fopenmp-target-simd-clone=@var{device-type}
+@opindex fopenmp-target-simd-clone
+@cindex OpenMP target SIMD clone
+In addition to generating SIMD clones for functions marked with the
+@code{declare simd} directive, GCC also generates clones
+for functions marked with the OpenMP @code{declare target} directive
+that are suitable for vectorization when this option is in effect.  The
+@var{device-type} may be one of @code{none}, @code{host}, @code{nohost},
+and @code{any}, which correspond to keywords for the @code{device_type}
+clause of the @code{declare target} directive; clones are generated for
+the intersection of devices specified.
+@option{-fopenmp-target-simd-clone} is equivalent to
+@option{-fopenmp-target-simd-clone=any} and
+@option{-fno-openmp-target-simd-clone} is equivalent to
+@option{-fopenmp-target-simd-clone=none}.
+
+At @option{-O2} and higher (but not @option{-Os} or @option{-Og}) this
+optimization defaults to @option{-fopenmp-target-simd-clone=nohost}; otherwise
+it is disabled by default.
+
 @item -fpermitted-flt-eval-methods=@var{style}
 @opindex fpermitted-flt-eval-methods
 @opindex fpermitted-flt-eval-methods=c11
@@ -3119,6 +3141,85 @@ smaller than the above limit, or if in a body of some loop or even outside
 of a loop too many expressions need to be evaluated, the resulting constexpr
 evaluation might take too long.
 The default is 33554432 (1<<25).
+
+@item -fcontracts
+@opindex fcontracts
+Enable experimental support for the C++ Contracts feature, as briefly
+added to and then removed from the C++20 working paper (N4820).  The
+implementation also includes proposed enhancements from papers P1290,
+P1332, and P1429.  This functionality is intended mostly for those
+interested in experimentation towards refining the feature to get it
+into shape for a future C++ standard.
+
+On violation of a checked contract, the violation handler is called.
+Users can replace the violation handler by defining
+@smallexample
+void handle_contract_violation (const std::experimental::contract_violation&);
+@end smallexample
+
+There are different sets of additional flags that can be used together
+to specify which contracts will be checked and how, for N4820
+contracts, P1332 contracts, or P1429 contracts; these sets cannot be
+used together.
+
+@table @gcctabopt
+@item -fcontract-mode=[on|off]
+@opindex fcontract-mode
+Control whether any contracts have any semantics at all.  Defaults to on.
+
+@item -fcontract-assumption-mode=[on|off]
+@opindex fcontract-assumption-mode
+[N4820] Control whether contracts with level @samp{axiom}
+should have the assume semantic.  Defaults to on.
+
+@item -fcontract-build-level=[off|default|audit]
+@opindex fcontract-build-level
+[N4820] Specify which level of contracts to generate checks
+for.  Defaults to @samp{default}.
+
+@item -fcontract-continuation-mode=[on|off]
+@opindex fcontract-continuation-mode
+[N4820] Control whether to allow the program to continue executing
+after a contract violation.  That is, do checked contracts have the
+@samp{maybe} semantic described below rather than the @samp{never}
+semantic.  Defaults to off.
+
+@item -fcontract-role=<name>:<default>,<audit>,<axiom>
+@opindex fcontract-role
+[P1332] Specify the concrete semantics for each contract level
+of a particular contract role.
+
+@item -fcontract-semantic=[default|audit|axiom]:<semantic>
+[P1429] Specify the concrete semantic for a particular
+contract level.
+
+@item -fcontract-strict-declarations=[on|off]
+@opindex fcontract-strict-declarations
+Control whether to reject adding contracts to a function after its
+first declaration.  Defaults to off.
+@end table
+
+The possible concrete semantics for that can be specified with
+@samp{-fcontract-role} or @samp{-fcontract-semantic} are:
+
+@table @code
+@item ignore
+This contract has no effect.
+
+@item assume
+This contract is treated like C++23 @code{[[assume]]}.
+
+@item check_never_continue
+@itemx never
+@itemx abort
+This contract is checked.  If it fails, the violation handler is
+called.  If the handler returns, @code{std::terminate} is called.
+
+@item check_maybe_continue
+@itemx maybe
+This contract is checked.  If it fails, the violation handler is
+called.  If the handler returns, execution continues normally.
+@end table
 
 @item -fcoroutines
 @opindex fcoroutines
@@ -3906,6 +4007,9 @@ destructor itself or in an accessible polymorphic base class, in which
 case it is possible but unsafe to delete an instance of a derived
 class through a pointer to the class itself or base class.  This
 warning is automatically enabled if @option{-Weffc++} is specified.
+The @option{-Wdelete-non-virtual-dtor} option (enabled by @option{-Wall})
+should be preferred because it warns about the unsafe cases without false
+positives.
 
 @item -Wregister @r{(C++ and Objective-C++ only)}
 @opindex Wregister
@@ -10670,6 +10774,7 @@ of the following functions for working with file descriptors:
 @item @code{close}
 @item @code{creat}
 @item @code{dup}, @code{dup2} and @code{dup3}
+@item @code{isatty}
 @item @code{pipe}, and @code{pipe2}
 @item @code{read}
 @item @code{write}
@@ -10690,9 +10795,12 @@ of the following functions for working with @code{<stdio.h>} streams:
 @code{__builtin_vprintf}
 @item @code{fopen}
 @item @code{fclose}
+@item @code{ferror}
 @item @code{fgets}
 @item @code{fgets_unlocked}
+@item @code{fileno}
 @item @code{fread}
+@item @code{getc}
 @item @code{getchar}
 @item @code{fprintf}
 @item @code{printf}
@@ -15701,18 +15809,8 @@ The maximum number of may-defs we analyze when looking for a must-def
 specifying the dynamic type of an object that invokes a virtual call
 we may be able to devirtualize speculatively.
 
-@item max-vrp-switch-assertions
-The maximum number of assertions to add along the default edge of a switch
-statement during VRP.
-
 @item evrp-sparse-threshold
 Maximum number of basic blocks before EVRP uses a sparse cache.
-
-@item vrp1-mode
-Specifies the mode VRP pass 1 should operate in.
-
-@item vrp2-mode
-Specifies the mode VRP pass 2 should operate in.
 
 @item ranger-debug
 Specifies the type of debug output to be issued for ranges.

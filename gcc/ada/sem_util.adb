@@ -71,6 +71,7 @@ with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uname;          use Uname;
+with Warnsw;         use Warnsw;
 
 with GNAT.Heap_Sort_G;
 with GNAT.HTable;    use GNAT.HTable;
@@ -5449,12 +5450,18 @@ package body Sem_Util is
                while Present (State_Elmt) loop
                   State_Id := Node (State_Elmt);
 
-                  --  Emit an error when a non-null state lacks any form of
-                  --  refinement.
+                  --  Emit an error when a non-null state lacks refinement,
+                  --  but has Part_Of constituents or there is a package
+                  --  body (SPARK RM 7.1.4(4)). Constituents in private
+                  --  child packages, which are not known at this stage,
+                  --  independently require the existence of a package body.
 
                   if not Is_Null_State (State_Id)
-                    and then not Has_Null_Refinement (State_Id)
-                    and then not Has_Non_Null_Refinement (State_Id)
+                    and then No (Refinement_Constituents (State_Id))
+                    and then
+                      (Present (Part_Of_Constituents (State_Id))
+                         or else
+                       Present (Body_Id))
                   then
                      Error_Msg_N ("state & requires refinement", State_Id);
                      Error_Msg_N ("\package body should have Refined_State "
@@ -23633,7 +23640,7 @@ package body Sem_Util is
       --  Unconstrained array type
 
       else
-         pragma Assert (Is_Array_Type (Typ) and not Is_Definite_Subtype (Typ));
+         pragma Assert (Is_Array_Type (Typ) and then not Is_Constrained (Typ));
          return True;
       end if;
    end Needs_Secondary_Stack;

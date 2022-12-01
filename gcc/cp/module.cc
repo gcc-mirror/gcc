@@ -10186,6 +10186,20 @@ trees_out::fn_parms_init (tree fn)
 		   base_tag - ix, ix, parm, fn);
       tree_node_vals (parm);
     }
+
+  if (!streaming_p ())
+    {
+      /* We must walk contract attrs so the dependency graph is complete. */
+      for (tree contract = DECL_CONTRACTS (fn);
+	  contract;
+	  contract = CONTRACT_CHAIN (contract))
+	tree_node (contract);
+    }
+
+  /* Write a reference to contracts pre/post functions, if any, to avoid
+     regenerating them in importers.  */
+  tree_node (DECL_PRE_FN (fn));
+  tree_node (DECL_POST_FN (fn));
 }
 
 /* Build skeleton parm nodes, read their flags, type & parm indices.  */
@@ -10219,6 +10233,11 @@ trees_in::fn_parms_init (tree fn)
       if (!tree_node_vals (parm))
 	return 0;
     }
+
+  /* Reload references to contract functions, if any.  */
+  tree pre_fn = tree_node ();
+  tree post_fn = tree_node ();
+  set_contract_functions (fn, pre_fn, post_fn);
 
   return base_tag;
 }
@@ -10807,7 +10826,15 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 		   Matches decls_match behaviour.  */
 		&& (!DECL_IS_UNDECLARED_BUILTIN (m_inner)
 		    || !DECL_EXTERN_C_P (m_inner)
-		    || DECL_EXTERN_C_P (d_inner)))
+		    || DECL_EXTERN_C_P (d_inner))
+		/* Reject if one is a different member of a
+		   guarded/pre/post fn set.  */
+		&& (!flag_contracts
+		    || (DECL_IS_PRE_FN_P (d_inner)
+			== DECL_IS_PRE_FN_P (m_inner)))
+		&& (!flag_contracts
+		    || (DECL_IS_POST_FN_P (d_inner)
+			== DECL_IS_POST_FN_P (m_inner))))
 	      {
 		tree m_reqs = get_constraints (m_inner);
 		if (m_reqs)
@@ -13960,7 +13987,15 @@ get_module (tree name, module_state *parent, bool partition)
 static module_state *
 get_module (const char *ptr)
 {
-  if (ptr[0] == '.' ? IS_DIR_SEPARATOR (ptr[1]) : IS_ABSOLUTE_PATH (ptr))
+  /* On DOS based file systems, there is an ambiguity with A:B which can be
+     interpreted as a module Module:Partition or Drive:PATH.  Interpret strings
+     which clearly starts as pathnames as header-names and everything else is
+     treated as a (possibly malformed) named moduled.  */
+  if (IS_DIR_SEPARATOR (ptr[ptr[0] == '.']) // ./FOO or /FOO
+#if HAVE_DOS_BASED_FILE_SYSTEM
+      || (HAS_DRIVE_SPEC (ptr) && IS_DIR_SEPARATOR (ptr[2])) // A:/FOO
+#endif
+      || false)
     /* A header name.  */
     return get_module (build_string (strlen (ptr), ptr));
 
@@ -14575,6 +14610,7 @@ module_state_config::get_dialect ()
 		      cxx_dialect < cxx20 && flag_concepts ? "/concepts" : "",
 		      flag_coroutines ? "/coroutines" : "",
 		      flag_module_implicit_inline ? "/implicit-inline" : "",
+		      flag_contracts ? "/contracts" : "",
 		      NULL);
 
   return dialect;

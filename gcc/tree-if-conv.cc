@@ -3761,7 +3761,8 @@ pass_if_conversion::execute (function *fun)
       if (!gimple_bb (g))
 	continue;
       unsigned ifcvt_loop = tree_to_uhwi (gimple_call_arg (g, 0));
-      if (!get_loop (fun, ifcvt_loop))
+      unsigned orig_loop = tree_to_uhwi (gimple_call_arg (g, 1));
+      if (!get_loop (fun, ifcvt_loop) || !get_loop (fun, orig_loop))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "If-converted loop vanished\n");

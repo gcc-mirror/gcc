@@ -625,6 +625,30 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
 	}
     }
 
+  if (!TARGET_64BIT
+      && (value > INT32_MAX || value < INT32_MIN))
+    {
+      unsigned HOST_WIDE_INT loval = sext_hwi (value, 32);
+      unsigned HOST_WIDE_INT hival = sext_hwi ((value - loval) >> 32, 32);
+      struct riscv_integer_op alt_codes[RISCV_MAX_INTEGER_OPS];
+      struct riscv_integer_op hicode[RISCV_MAX_INTEGER_OPS];
+      int hi_cost, lo_cost;
+
+      hi_cost = riscv_build_integer_1 (hicode, hival, mode);
+      if (hi_cost < cost)
+	{
+	  lo_cost = riscv_build_integer_1 (alt_codes, loval, mode);
+	  if (lo_cost + hi_cost < cost)
+	    {
+	      memcpy (codes, alt_codes,
+		      lo_cost * sizeof (struct riscv_integer_op));
+	      memcpy (codes + lo_cost, hicode,
+		      hi_cost * sizeof (struct riscv_integer_op));
+	      cost = lo_cost + hi_cost;
+	    }
+	}
+    }
+
   return cost;
 }
 
@@ -3004,9 +3028,9 @@ riscv_emit_int_order_test (enum rtx_code code, bool *invert_ptr,
 	}
       else if (invert_ptr == 0)
 	{
-	  rtx inv_target = riscv_force_binary (GET_MODE (target),
+	  rtx inv_target = riscv_force_binary (word_mode,
 					       inv_code, cmp0, cmp1);
-	  riscv_emit_binary (XOR, target, inv_target, const1_rtx);
+	  riscv_emit_binary (EQ, target, inv_target, const0_rtx);
 	}
       else
 	{
@@ -4903,7 +4927,7 @@ riscv_first_stack_step (struct riscv_frame_info *frame)
     return frame_total_constant_size;
 
   HOST_WIDE_INT min_first_step =
-    RISCV_STACK_ALIGN ((frame->total_size - frame->fp_sp_offset).to_constant());
+    RISCV_STACK_ALIGN ((frame->total_size - frame->frame_pointer_offset).to_constant());
   HOST_WIDE_INT max_first_step = IMM_REACH / 2 - PREFERRED_STACK_BOUNDARY / 8;
   HOST_WIDE_INT min_second_step = frame_total_constant_size - max_first_step;
   gcc_assert (min_first_step <= max_first_step);
@@ -5340,7 +5364,8 @@ riscv_get_separate_components (void)
   bitmap_clear (components);
 
   if (riscv_use_save_libcall (&cfun->machine->frame)
-      || cfun->machine->interrupt_handler_p)
+      || cfun->machine->interrupt_handler_p
+      || !cfun->machine->frame.gp_sp_offset.is_constant ())
     return components;
 
   offset = cfun->machine->frame.gp_sp_offset.to_constant ();
@@ -6770,6 +6795,15 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
   *factor = riscv_bytes_per_vector_chunk;
   *offset = 1;
   return RISCV_DWARF_VLENB;
+}
+
+/* Return true if a shift-amount matches the trailing cleared bits on
+   a bitmask.  */
+
+bool
+riscv_shamt_matches_mask_p (int shamt, HOST_WIDE_INT mask)
+{
+  return shamt == ctz_hwi (mask);
 }
 
 /* Initialize the GCC target structure.  */

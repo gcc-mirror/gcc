@@ -433,6 +433,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Rep, typename _Period>
       struct duration
       {
+	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
+	static_assert(__is_ratio<_Period>::value,
+		      "period must be a specialization of ratio");
+	static_assert(_Period::num > 0, "period must be positive");
+
       private:
 	template<typename _Rep2>
 	  using __is_float = treat_as_floating_point<_Rep2>;
@@ -477,11 +482,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	using rep = _Rep;
 	using period = typename _Period::type;
-
-	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
-	static_assert(__is_ratio<_Period>::value,
-		      "period must be a specialization of ratio");
-	static_assert(_Period::num > 0, "period must be positive");
 
 	// 20.11.5.1 construction / copy / destroy
 	constexpr duration() = default;

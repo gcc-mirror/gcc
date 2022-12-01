@@ -662,7 +662,10 @@ package body Exp_Ch6 is
 
       --  Create the actual which is a pointer to the current activation chain
 
-      if No (Chain) then
+      if Restriction_Active (No_Task_Hierarchy) then
+         Chain_Actual := Make_Null (Loc);
+
+      elsif No (Chain) then
          Chain_Actual :=
            Make_Attribute_Reference (Loc,
              Prefix         => Make_Identifier (Loc, Name_uChain),
@@ -1111,6 +1114,23 @@ package body Exp_Ch6 is
       pragma Assert (Nkind (Subp_Call) in N_Entry_Call_Statement
                                         | N_Function_Call
                                         | N_Procedure_Call_Statement);
+
+      --  In CodePeer_Mode, the tree for `'Elab_Spec` procedures will be
+      --  malformed because GNAT does not perform the usual expansion that
+      --  results in the importation of external elaboration procedure symbols.
+      --  This is expected: the CodePeer backend has special handling for this
+      --  malformed tree.
+      --  Thus, we do not need to check the tree (and in fact can't, because
+      --  it's malformed).
+
+      if CodePeer_Mode
+        and then Nkind (Name (Subp_Call)) = N_Attribute_Reference
+        and then Attribute_Name (Name (Subp_Call)) in Name_Elab_Spec
+                                                    | Name_Elab_Body
+                                                    | Name_Elab_Subp_Body
+      then
+         return True;
+      end if;
 
       Formal := First_Formal_With_Extras (Subp_Id);
       Actual := First_Actual (Subp_Call);
@@ -1619,6 +1639,27 @@ package body Exp_Ch6 is
             Crep  := False;
          end if;
 
+         --  If the actual denotes a variable which captures the value of an
+         --  object for validation purposes, we propagate the link with this
+         --  object to the new variable made from the actual just above.
+
+         if Ekind (Formal) /= E_In_Parameter
+           and then Is_Validation_Variable_Reference (Actual)
+         then
+            declare
+               Ref : constant Node_Id := Unqual_Conv (Actual);
+
+            begin
+               if Is_Entity_Name (Ref) then
+                  Set_Validated_Object (Var, Validated_Object (Entity (Ref)));
+
+               else
+                  pragma Assert (False);
+                  null;
+               end if;
+            end;
+         end if;
+
          --  Setup initialization for case of in out parameter, or an out
          --  parameter where the formal is an unconstrained array (in the
          --  latter case, we have to pass in an object with bounds).
@@ -1886,6 +1927,13 @@ package body Exp_Ch6 is
                       Name       => Lhs,
                       Expression => Expr));
                end if;
+
+               --  Add a copy-back to reflect any potential changes in value
+               --  back into the original object, if any.
+
+               if Is_Validation_Variable_Reference (Lhs) then
+                  Add_Validation_Call_By_Copy_Code (Lhs);
+               end if;
             end;
          end if;
       end Add_Call_By_Copy_Code;
@@ -2032,10 +2080,11 @@ package body Exp_Ch6 is
       --------------------------------------
 
       procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id) is
+         Var : constant Node_Id := Unqual_Conv (Act);
+
          Expr    : Node_Id;
          Obj     : Node_Id;
          Obj_Typ : Entity_Id;
-         Var     : constant Node_Id := Unqual_Conv (Act);
          Var_Id  : Entity_Id;
 
       begin
@@ -2385,26 +2434,10 @@ package body Exp_Ch6 is
                end if;
             end if;
 
-            --  The actual denotes a variable which captures the value of an
-            --  object for validation purposes. Add a copy-back to reflect any
-            --  potential changes in value back into the original object.
-
-            --    Var : ... := Object;
-            --    if not Var'Valid then  --  validity check
-            --    Call (Var);            --  modify var
-            --    Object := Var;         --  update Object
-
-            --  This case is given higher priority because the subsequent check
-            --  for type conversion may add an extra copy of the variable and
-            --  prevent proper value propagation back in the original object.
-
-            if Is_Validation_Variable_Reference (Actual) then
-               Add_Validation_Call_By_Copy_Code (Actual);
-
             --  If argument is a type conversion for a type that is passed by
             --  copy, then we must pass the parameter by copy.
 
-            elsif Nkind (Actual) = N_Type_Conversion
+            if Nkind (Actual) = N_Type_Conversion
               and then
                 (Is_Elementary_Type (E_Formal)
                   or else Is_Bit_Packed_Array (Etype (Formal))
@@ -2488,6 +2521,18 @@ package body Exp_Ch6 is
                       and then not In_Subrange_Of (E_Actual, E_Formal)))
             then
                Add_Call_By_Copy_Code;
+
+            --  The actual denotes a variable which captures the value of an
+            --  object for validation purposes. Add a copy-back to reflect any
+            --  potential changes in value back into the original object.
+
+            --    Var : ... := Object;
+            --    if not Var'Valid then  --  validity check
+            --    Call (Var);            --  modify var
+            --    Object := Var;         --  update Object
+
+            elsif Is_Validation_Variable_Reference (Actual) then
+               Add_Validation_Call_By_Copy_Code (Actual);
             end if;
 
             --  RM 3.2.4 (23/3): A predicate is checked on in-out and out
@@ -6650,8 +6695,8 @@ package body Exp_Ch6 is
                           and then Needs_Finalization (Exp_Typ))
          then
             declare
-               Loc        : constant Source_Ptr := Sloc (N);
-               Acc_Typ    : constant Entity_Id := Make_Temporary (Loc, 'A');
+               Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
                Alloc_Node : Node_Id;
                Temp       : Entity_Id;
 
@@ -6753,8 +6798,8 @@ package body Exp_Ch6 is
                           and then Needs_Finalization (Exp_Typ))
          then
             declare
-               Loc        : constant Source_Ptr := Sloc (N);
-               Acc_Typ    : constant Entity_Id := Make_Temporary (Loc, 'A');
+               Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
                Alloc_Node : Node_Id;
                Temp       : Entity_Id;
 

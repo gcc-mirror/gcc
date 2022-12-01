@@ -4913,7 +4913,22 @@ gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 
   if (mask->expr_type == EXPR_CONSTANT)
     {
-      result = gfc_copy_expr (mask->value.logical ? tsource : fsource);
+      /* The standard requires evaluation of all function arguments.
+	 Simplify only when the other dropped argument (FSOURCE or TSOURCE)
+	 is a constant expression.  */
+      if (mask->value.logical)
+	{
+	  if (!gfc_is_constant_expr (fsource))
+	    return NULL;
+	  result = gfc_copy_expr (tsource);
+	}
+      else
+	{
+	  if (!gfc_is_constant_expr (tsource))
+	    return NULL;
+	  result = gfc_copy_expr (fsource);
+	}
+
       /* Parenthesis is needed to get lower bounds of 1.  */
       result = gfc_get_parentheses (result);
       gfc_simplify_expr (result, 1);

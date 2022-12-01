@@ -79,7 +79,6 @@ nowarn_spec_t::nowarn_spec_t (opt_code opt)
       break;
 
       /* Access warning group.  */
-    case OPT_Warray_bounds:
     case OPT_Warray_bounds_:
     case OPT_Wformat_overflow_:
     case OPT_Wformat_truncation_:

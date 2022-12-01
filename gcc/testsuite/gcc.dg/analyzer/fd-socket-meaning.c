@@ -1,3 +1,4 @@
+/* { dg-require-effective-target sockets } */
 /* { dg-additional-options "-fanalyzer-verbose-state-changes" } */
 
 #include <sys/socket.h>

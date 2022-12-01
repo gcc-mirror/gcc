@@ -3367,6 +3367,7 @@ pass_forwprop::execute (function *fun)
   auto_vec<gimple *, 4> to_fixup;
   auto_vec<gimple *, 32> to_remove;
   to_purge = BITMAP_ALLOC (NULL);
+  bitmap need_ab_cleanup = BITMAP_ALLOC (NULL);
   for (int i = 0; i < postorder_num; ++i)
     {
       gimple_stmt_iterator gsi;
@@ -3682,6 +3683,9 @@ pass_forwprop::execute (function *fun)
 	  /* Mark stmt as potentially needing revisiting.  */
 	  gimple_set_plf (stmt, GF_PLF_1, false);
 
+	  bool can_make_abnormal_goto = (is_gimple_call (stmt)
+					 && stmt_can_make_abnormal_goto (stmt));
+
 	  /* Substitute from our lattice.  We need to do so only once.  */
 	  bool substituted_p = false;
 	  use_operand_p usep;
@@ -3700,6 +3704,10 @@ pass_forwprop::execute (function *fun)
 	      && is_gimple_assign (stmt)
 	      && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
 	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
+	  if (substituted_p
+	      && can_make_abnormal_goto
+	      && !stmt_can_make_abnormal_goto (stmt))
+	    bitmap_set_bit (need_ab_cleanup, bb->index);
 
 	  bool changed;
 	  do
@@ -3901,7 +3909,9 @@ pass_forwprop::execute (function *fun)
     }
 
   cfg_changed |= gimple_purge_all_dead_eh_edges (to_purge);
+  cfg_changed |= gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
   BITMAP_FREE (to_purge);
+  BITMAP_FREE (need_ab_cleanup);
 
   if (cfg_changed)
     todoflags |= TODO_cleanup_cfg;

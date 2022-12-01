@@ -479,6 +479,40 @@ test_loop (int *obj, size_t sz, size_t start, size_t end, int incr)
   return __builtin_dynamic_object_size (ptr, 0);
 }
 
+/* strdup/strndup.  */
+
+size_t
+__attribute__ ((noinline))
+test_strdup (const char *in)
+{
+  char *res = __builtin_strdup (in);
+  return __builtin_dynamic_object_size (res, 0);
+}
+
+size_t
+__attribute__ ((noinline))
+test_strndup (const char *in, size_t bound)
+{
+  char *res = __builtin_strndup (in, bound);
+  return __builtin_dynamic_object_size (res, 0);
+}
+
+size_t
+__attribute__ ((noinline))
+test_strdup_min (const char *in)
+{
+  char *res = __builtin_strdup (in);
+  return __builtin_dynamic_object_size (res, 2);
+}
+
+size_t
+__attribute__ ((noinline))
+test_strndup_min (const char *in, size_t bound)
+{
+  char *res = __builtin_strndup (in, bound);
+  return __builtin_dynamic_object_size (res, 2);
+}
+
 /* Other tests.  */
 
 struct TV4
@@ -650,6 +684,15 @@ main (int argc, char **argv)
   /* pr105736.  */
   int *t = test_pr105736 (&val3);
   if (__builtin_dynamic_object_size (t, 0) != -1)
+    FAIL ();
+  const char *str = "hello world";
+  if (test_strdup (str) != __builtin_strlen (str) + 1)
+    FAIL ();
+  if (test_strndup (str, 4) != 5)
+    FAIL ();
+  if (test_strdup_min (str) != __builtin_strlen (str) + 1)
+    FAIL ();
+  if (test_strndup_min (str, 4) != 1)
     FAIL ();
 
   if (nfails > 0)

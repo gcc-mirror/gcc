@@ -1,3 +1,5 @@
+/* { dg-require-effective-target sockets } */
+
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -43,4 +45,9 @@ void test_connect_after_bind (const char *sockname,
   /* { dg-message "'connect' expects a new socket file descriptor but 'fd' is bound" "final event" { target *-*-* } .-1 } */
 
   close (fd);      
+}
+
+int test_connect_on_constant ()
+{
+  return connect (0, NULL, 0);
 }

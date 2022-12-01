@@ -53,8 +53,7 @@ with Stand;          use Stand;
 with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
-with Warnsw; pragma Unreferenced (Warnsw);
---  Will be referenced when various flags are moved to Warnsw.
+with Warnsw; pragma Unreferenced (Warnsw); -- disable spurious warning
 
 package body Errout is
 
@@ -989,14 +988,14 @@ package body Errout is
          --  after fixing the error, the use clause no longer looks like it was
          --  unused.
 
-         Check_Unreferenced := False;
-         Check_Unreferenced_Formals := False;
+         Warnsw.Check_Unreferenced := False;
+         Warnsw.Check_Unreferenced_Formals := False;
       end Handle_Serious_Error;
 
    --  Start of processing for Error_Msg_Internal
 
    begin
-      --  Detect common mistake of prefixing or suffing the message with a
+      --  Detect common mistake of prefixing or suffixing the message with a
       --  space character.
 
       pragma Assert (Msg (Msg'First) /= ' ' and then Msg (Msg'Last) /= ' ');
@@ -3350,6 +3349,17 @@ package body Errout is
 
                if Errors.Table (E).Info then
                   Warning_Info_Messages := Warning_Info_Messages - 1;
+               end if;
+
+               --  When warning about a runtime exception has been escalated
+               --  into error, the starting message has increased the total
+               --  errors counter, so here we decrease this counter.
+
+               if Errors.Table (E).Warn_Runtime_Raise
+                 and then not Errors.Table (E).Msg_Cont
+                 and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
+               then
+                  Total_Errors_Detected := Total_Errors_Detected - 1;
                end if;
 
                return True;

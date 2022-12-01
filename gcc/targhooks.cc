@@ -2020,15 +2020,17 @@ default_compare_by_pieces_branch_ratio (machine_mode)
   return 1;
 }
 
-/* Helper for default_print_patchable_function_entry and other
-   print_patchable_function_entry hook implementations.  */
+/* Write PATCH_AREA_SIZE NOPs into the asm outfile FILE around a function
+   entry.  If RECORD_P is true and the target supports named sections,
+   the location of the NOPs will be recorded in a special object section
+   called "__patchable_function_entries".  This routine may be called
+   twice per function to put NOPs before and after the function
+   entry.  */
 
 void
-default_print_patchable_function_entry_1 (FILE *file,
-					  unsigned HOST_WIDE_INT
-					  patch_area_size,
-					  bool record_p,
-					  unsigned int flags)
+default_print_patchable_function_entry (FILE *file,
+					unsigned HOST_WIDE_INT patch_area_size,
+					bool record_p)
 {
   const char *nop_templ = 0;
   int code_num;
@@ -2042,13 +2044,17 @@ default_print_patchable_function_entry_1 (FILE *file,
   if (record_p && targetm_common.have_named_sections)
     {
       char buf[256];
-      static int patch_area_number;
       section *previous_section = in_section;
       const char *asm_op = integer_asm_op (POINTER_SIZE_UNITS, false);
 
       gcc_assert (asm_op != NULL);
-      patch_area_number++;
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
+      /* If SECTION_LINK_ORDER is supported, this internal label will
+	 be filled as the symbol for linked_to section.  */
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", current_function_funcdef_no);
+
+      unsigned int flags = SECTION_WRITE | SECTION_RELRO;
+      if (HAVE_GAS_SECTION_LINK_ORDER)
+	flags |= SECTION_LINK_ORDER;
 
       section *sect = get_section ("__patchable_function_entries",
 				  flags, current_function_decl);
@@ -2068,25 +2074,6 @@ default_print_patchable_function_entry_1 (FILE *file,
   unsigned i;
   for (i = 0; i < patch_area_size; ++i)
     output_asm_insn (nop_templ, NULL);
-}
-
-/* Write PATCH_AREA_SIZE NOPs into the asm outfile FILE around a function
-   entry.  If RECORD_P is true and the target supports named sections,
-   the location of the NOPs will be recorded in a special object section
-   called "__patchable_function_entries".  This routine may be called
-   twice per function to put NOPs before and after the function
-   entry.  */
-
-void
-default_print_patchable_function_entry (FILE *file,
-					unsigned HOST_WIDE_INT patch_area_size,
-					bool record_p)
-{
-  unsigned int flags = SECTION_WRITE | SECTION_RELRO;
-  if (HAVE_GAS_SECTION_LINK_ORDER)
-    flags |= SECTION_LINK_ORDER;
-  default_print_patchable_function_entry_1 (file, patch_area_size, record_p,
-					    flags);
 }
 
 bool

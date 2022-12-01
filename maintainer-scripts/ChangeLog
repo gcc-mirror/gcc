@@ -1,3 +1,7 @@
+2022-11-23  Sam James  <sam@gentoo.org>
+
+	* gcc_release (XZ): Add -T0.
+
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	Revert:

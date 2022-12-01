@@ -1,3 +1,250 @@
+2022-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107852
+	PR libstdc++/106199
+	PR libstdc++/100366
+	* include/bits/vector.tcc (vector::_M_fill_insert): Copy
+	_M_start and _M_finish members before allocating.
+	(vector::_M_default_append): Likewise.
+	(vector::_M_range_insert): Likewise.
+
+2022-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_types.h (__iterator_category):
+	Add always_inline attribute.
+	* include/bits/stl_vector.h (assign(Iter, Iter)): Call
+	_M_assign_aux directly, instead of _M_assign_dispatch.
+	(insert(const_iterator, Iter, Iter)): Call _M_range_insert
+	directly instead of _M_insert_dispatch.
+
+2022-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Rename all variables called __used or
+	__packed.
+	* testsuite/17_intro/badnames.cc: Add no_pch options.
+	* testsuite/17_intro/names.cc: Check __packed, __unused and
+	__used.
+
+2022-11-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/20_util/function/cons/70692.cc: Adapt dg-error message.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107801
+	* src/c++17/memory_resource.cc (chunk::_M_bytes): Change type
+	from uint32_t to bitset::size_type. Adjust static assertion.
+	(__pool_resource::_Pool::replenish): Cast to size_t after
+	multiplication instead of before.
+	(__pool_resource::_M_alloc_pools): Ensure both arguments to
+	std::max have type size_t.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view::copy) Use explicit
+	template argument for call to std::min<size_t>.
+	(basic_string_view::substr): Likewise.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107885
+	* libsupc++/hash_bytes.cc (_Hash_bytes): Convert to size_t
+	instead of implicit integer promotion to 16 bits.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	Replace non-ASCII character.
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_complete_or_unbounded/memoization_neg.cc:
+	Simplify dg-prune-output pattern.
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune "::__8".
+
+2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107466
+	* include/bits/random.h (subtract_with_carry_engine): Use 32-bit
+	type for default seed. Use 0u as default argument for
+	subtract_with_carry_engine(result_type) constructor and
+	seed(result_type) member function.
+	* include/bits/random.tcc (subtract_with_carry_engine): Use
+	32-bit type for default seed and engine used for initial state.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	New test.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_UCHAR_H): Don't use AC_MSG_RESULT
+	unless the AC_MSG_CHECKING happened.
+	* configure: Regenerate.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107850
+	* include/bits/erase_if.h (__erase_nodes_if): Use non-const
+	reference to the container.
+	* include/experimental/map (erase_if): Likewise.
+	* include/experimental/set (erase_if): Likewise.
+	* include/experimental/unordered_map (erase_if): Likewise.
+	* include/experimental/unordered_set (erase_if): Likewise.
+	* include/std/map (erase_if): Likewise.
+	* include/std/set (erase_if): Likewise.
+	* include/std/unordered_map (erase_if): Likewise.
+	* include/std/unordered_set (erase_if): Likewise.
+	* testsuite/23_containers/map/erasure.cc: Check with
+	const-incorrect predicate.
+	* testsuite/23_containers/set/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erasure.cc: Likewise.
+	* testsuite/experimental/map/erasure.cc: Likewise.
+	* testsuite/experimental/set/erasure.cc: Likewise.
+	* testsuite/experimental/unordered_map/erasure.cc: Likewise.
+	* testsuite/experimental/unordered_set/erasure.cc: Likewise.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h [three_way_comparison] (operator!=):
+	Do not define inequality operators when C++20 three way
+	comparisons are supported.
+	* include/ext/random [three_way_comparison] (operator!=):
+	Likewise.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_funcs.h (__distance):
+	Add always_inline attribute to overload for random
+	access iterators.
+	(advance, distance, next, prev): Add always_inline attribute to
+	inline functions that just forward to another function.
+
+2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/manual/bugs.html: Regenerate.
+	* doc/xml/manual/intro.xml: Document LWG 3656 change.
+	* include/std/bit (__bit_width, bit_width): Return int.
+	* testsuite/26_numerics/bit/bit.pow.two/lwg3656.cc: New test.
+
+2022-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106201
+	* testsuite/27_io/filesystem/iterators/106201.cc: Improve test.
+	* testsuite/experimental/filesystem/iterators/106201.cc: New test.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107468
+	* src/c++17/fast_float/MERGE: Adjust for merge from upstream.
+	* src/c++17/fast_float/fast_float.h: Merge from fast_float
+	2ef9abbcf6a11958b6fa685a89d0150022e82e78 commit.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107815
+	* testsuite/20_util/to_chars/float128_c++23.cc (test): Disable
+	__FLT128_MAX__ test on Solaris.  Fix up commented out debugging
+	printouts.
+
+2022-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107811
+	* src/c++17/floating_from_chars.cc (__floating_from_chars_hex): Guard
+	fast_float uses with #if USE_LIB_FAST_FLOAT and for mantissa_bits and
+	exponent_bits provide a fallback.
+
+2022-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107814
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Use a static buffer with space after it.
+
+2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107817
+	* include/std/charconv (__from_chars_alnum_to_val): Add
+	constexpr for C++20.
+	* include/std/format (__is_digit, __is_xdigit): New functions.
+	(_Spec::_S_parse_width_or_precision): Use __is_digit.
+	(__formatter_fp::parse): Use __is_xdigit.
+
+2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106201
+	* testsuite/27_io/filesystem/iterators/106201.cc: New test.
+
+2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107801
+	* src/c++17/memory_resource.cc (pool_sizes): Disable large pools
+	for targets with 16-bit int.
+
+2022-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (_Bind_front0): New class template.
+	(_Bind_front_t): Use _Bind_front0 when there are no bound
+	arguments.
+	* testsuite/20_util/function_objects/bind_front/107784.cc:
+	New test.
+
+2022-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (duration): Check preconditions on
+	template arguments before using them.
+
+2022-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple: Add better Doxygen comments.
+
+2022-11-21  Martin Liska  <mliska@suse.cz>
+
+	* src/experimental/Makefile.in: Re-configure.
+
+2022-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/format: Add std qualification on isxdigit calls.
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h: Add always_inline attribute to
+	trivial functions.
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Fix -Wsign-compare warnings.
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ptr_traits.h (pointer_traits::pointer_to): Rename
+	parameter.
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107649
+	* include/std/complex (__complex_proj): Fix requires-clause.
+
+2022-11-19  Jeff Chapman II  <jchapman@lock3software.com>
+	    Andrew Marmaduke  <amarmaduke@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* acinclude.m4 (glibcxx_SUBDIRS): Add src/experimental.
+	* include/Makefile.am (experimental_headers): Add contract.
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.am (SUBDIRS): Add experimental.
+	* src/Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* src/experimental/contract.cc: New file.
+	* src/experimental/Makefile.am: New file.
+	* src/experimental/Makefile.in: New file.
+	* include/experimental/contract: New file.
+
+2022-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107720
+	* include/std/format [_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT]:
+	Declare overloads of std::to_chars for the alternative long
+	double type.
+
 2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/107720
@@ -5155,7 +5402,7 @@
 2022-03-07  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* config/locale/vxworks/ctype_members.cc: Remove <iostream>
-	  include.
+	include.
 
 2022-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
@@ -5315,8 +5562,8 @@
 
 	PR libstdc++/104442
 	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): Move spin
-	 loop inside do loop so that threads failing the wait, reload
-	 _M_ver.
+	loop inside do loop so that threads failing the wait, reload
+	_M_ver.
 
 2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
 

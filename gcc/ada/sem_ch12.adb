@@ -11892,7 +11892,7 @@ package body Sem_Ch12 is
       Saved_SM   : constant SPARK_Mode_Type          := SPARK_Mode;
       Saved_SMP  : constant Node_Id                  := SPARK_Mode_Pragma;
       Saved_SS   : constant Suppress_Record          := Scope_Suppress;
-      Saved_Warn : constant Warning_Record           := Save_Warnings;
+      Saved_Warn : constant Warnings_State           := Save_Warnings;
 
       Act_Body      : Node_Id;
       Act_Body_Id   : Entity_Id;
@@ -12429,7 +12429,7 @@ package body Sem_Ch12 is
       Saved_SM   : constant SPARK_Mode_Type          := SPARK_Mode;
       Saved_SMP  : constant Node_Id                  := SPARK_Mode_Pragma;
       Saved_SS   : constant Suppress_Record          := Scope_Suppress;
-      Saved_Warn : constant Warning_Record           := Save_Warnings;
+      Saved_Warn : constant Warnings_State           := Save_Warnings;
 
       Act_Body      : Node_Id;
       Act_Body_Id   : Entity_Id;
@@ -14432,7 +14432,7 @@ package body Sem_Ch12 is
    is
       Comp_Unit          : constant Node_Id := Cunit (Get_Source_Unit (Spec));
       Saved_Style_Check  : constant Boolean := Style_Check;
-      Saved_Warnings     : constant Warning_Record := Save_Warnings;
+      Saved_Warn         : constant Warnings_State := Save_Warnings;
       True_Parent        : Node_Id;
       Inst_Node          : Node_Id;
       OK                 : Boolean;
@@ -14763,7 +14763,7 @@ package body Sem_Ch12 is
             Expander_Mode_Save_And_Set (True);
             Load_Needed_Body (Comp_Unit, OK);
             Opt.Style_Check := Saved_Style_Check;
-            Restore_Warnings (Saved_Warnings);
+            Restore_Warnings (Saved_Warn);
             Expander_Mode_Restore;
 
             if not OK

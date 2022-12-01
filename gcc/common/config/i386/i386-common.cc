@@ -1808,7 +1808,15 @@ static const struct default_options ix86_option_optimization_table[] =
     /* The STC algorithm produces the smallest code at -Os, for x86.  */
     { OPT_LEVELS_2_PLUS, OPT_freorder_blocks_algorithm_, NULL,
       REORDER_BLOCKS_ALGORITHM_STC },
+
+    /* Turn on -funroll-loops with -munroll-only-small-loops to enable small
+       loop unrolling at -O2.  */
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_funroll_loops, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_munroll_only_small_loops, NULL, 1 },
+    /* Turns off -frename-registers and -fweb which are enabled by
+       funroll-loops.  */
+    { OPT_LEVELS_ALL, OPT_frename_registers, NULL, 0 },
+    { OPT_LEVELS_ALL, OPT_fweb, NULL, 0 },
     /* Turn off -fschedule-insns by default.  It tends to make the
        problem with not enough registers even worse.  */
     { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },

@@ -3082,6 +3082,34 @@ set_nonzero_range_from_mask (irange &r, tree type, const irange &lhs)
     r.set_varying (type);
 }
 
+/* Find out smallest RES where RES > VAL && (RES & MASK) == RES, if any
+   (otherwise return VAL).  VAL and MASK must be zero-extended for
+   precision PREC.  If SGNBIT is non-zero, first xor VAL with SGNBIT
+   (to transform signed values into unsigned) and at the end xor
+   SGNBIT back.  */
+
+wide_int
+masked_increment (const wide_int &val_in, const wide_int &mask,
+		  const wide_int &sgnbit, unsigned int prec)
+{
+  wide_int bit = wi::one (prec), res;
+  unsigned int i;
+
+  wide_int val = val_in ^ sgnbit;
+  for (i = 0; i < prec; i++, bit += bit)
+    {
+      res = mask;
+      if ((res & bit) == 0)
+	continue;
+      res = bit - 1;
+      res = wi::bit_and_not (val + bit, res);
+      res &= mask;
+      if (wi::gtu_p (res, val))
+	return res ^ sgnbit;
+    }
+  return val ^ sgnbit;
+}
+
 // This was shamelessly stolen from register_edge_assert_for_2 and
 // adjusted to work with iranges.
 
@@ -3501,6 +3529,9 @@ operator_bitwise_xor::op1_range (irange &r, tree type,
 	    r.set_varying (type);
 	  else if (op2.zero_p ())
 	    r = range_true (type);
+	  // See get_bool_state for the rationale
+	  else if (op2.contains_p (build_zero_cst (op2.type ())))
+	    r = range_true_and_false (type);
 	  else
 	    r = range_false (type);
 	  break;

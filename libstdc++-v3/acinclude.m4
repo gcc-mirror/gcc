@@ -49,7 +49,7 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   # Keep these sync'd with the list in Makefile.am.  The first provides an
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
-  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace doc po testsuite python])
+  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace src/experimental doc po testsuite python])
   SUBDIRS='glibcxx_SUBDIRS'
 
   # These need to be absolute paths, yet at the same time need to
@@ -2060,10 +2060,10 @@ AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
 		   ],
 		   [], [ac_uchar_c8rtomb_mbrtoc8_fchar8_t=yes],
 		       [ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no])
+    AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_fchar8_t)
   else
     ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
   fi
-  AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_fchar8_t)
   if test x"$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T, 1,
 	      [Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be
@@ -2082,10 +2082,10 @@ AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
 		   ],
 		   [], [ac_uchar_c8rtomb_mbrtoc8_cxx20=yes],
 		       [ac_uchar_c8rtomb_mbrtoc8_cxx20=no])
+    AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_cxx20)
   else
     ac_uchar_c8rtomb_mbrtoc8_cxx20=no
   fi
-  AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_cxx20)
   if test x"$ac_uchar_c8rtomb_mbrtoc8_cxx20" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20, 1,
 	      [Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be
@@ -5045,6 +5045,7 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
   if test "$enable_libstdcxx_backtrace" = "auto"; then
     enable_libstdcxx_backtrace=no
   fi
+  AC_MSG_RESULT($enable_libstdcxx_backtrace)
   if test "$enable_libstdcxx_backtrace" = "yes"; then
     BACKTRACE_SUPPORTED=1
 
@@ -5091,7 +5092,6 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
     BACKTRACE_USES_MALLOC=0
     BACKTRACE_SUPPORTS_THREADS=0
   fi
-  AC_MSG_RESULT($enable_libstdcxx_backtrace)
   GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" = yes])
 ])
 

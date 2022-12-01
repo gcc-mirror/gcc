@@ -209,8 +209,9 @@ region_to_value_map::dump (bool simple) const
    to OUT.
 
    For now, write (region, value) mappings that are in common between THIS
-   and OTHER to OUT, effectively taking the intersection, rather than
-   rejecting differences.  */
+   and OTHER to OUT, effectively taking the intersection.
+
+   Reject merger of different values.  */
 
 bool
 region_to_value_map::can_merge_with_p (const region_to_value_map &other,
@@ -222,8 +223,12 @@ region_to_value_map::can_merge_with_p (const region_to_value_map &other,
       const svalue *iter_sval = iter.second;
       const svalue * const * other_slot = other.get (iter_reg);
       if (other_slot)
-	if (iter_sval == *other_slot)
-	  out->put (iter_reg, iter_sval);
+	{
+	  if (iter_sval == *other_slot)
+	    out->put (iter_reg, iter_sval);
+	  else
+	    return false;
+	}
     }
   return true;
 }
@@ -1159,39 +1164,12 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
     }
 }
 
-/* A pending_diagnostic subclass for implementing "__analyzer_dump_path".  */
-
-class dump_path_diagnostic
-  : public pending_diagnostic_subclass<dump_path_diagnostic>
-{
-public:
-  int get_controlling_option () const final override
-  {
-    return 0;
-  }
-
-  bool emit (rich_location *richloc) final override
-  {
-    inform (richloc, "path");
-    return true;
-  }
-
-  const char *get_kind () const final override { return "dump_path_diagnostic"; }
-
-  bool operator== (const dump_path_diagnostic &) const
-  {
-    return true;
-  }
-};
-
 /* Handle the pre-sm-state part of STMT, modifying this object in-place.
-   Write true to *OUT_TERMINATE_PATH if the path should be terminated.
    Write true to *OUT_UNKNOWN_SIDE_EFFECTS if the stmt has unknown
    side effects.  */
 
 void
 region_model::on_stmt_pre (const gimple *stmt,
-			   bool *out_terminate_path,
 			   bool *out_unknown_side_effects,
 			   region_model_context *ctxt)
 {
@@ -1221,55 +1199,7 @@ region_model::on_stmt_pre (const gimple *stmt,
 	   anything, for which we don't have a function body, or for which we
 	   don't know the fndecl.  */
 	const gcall *call = as_a <const gcall *> (stmt);
-
-	/* Debugging/test support.  */
-	if (is_special_named_call_p (call, "__analyzer_describe", 2))
-	  impl_call_analyzer_describe (call, ctxt);
-	else if (is_special_named_call_p (call, "__analyzer_dump_capacity", 1))
-	  impl_call_analyzer_dump_capacity (call, ctxt);
-	else if (is_special_named_call_p (call, "__analyzer_dump_escaped", 0))
-	  impl_call_analyzer_dump_escaped (call);
-	else if (is_special_named_call_p (call,
-					  "__analyzer_dump_named_constant",
-					  1))
-	  impl_call_analyzer_dump_named_constant (call, ctxt);
-	else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
-	  {
-	    /* Handle the builtin "__analyzer_dump_path" by queuing a
-	       diagnostic at this exploded_node.  */
-	    ctxt->warn (make_unique<dump_path_diagnostic> ());
-	  }
-	else if (is_special_named_call_p (call, "__analyzer_dump_region_model",
-					  0))
-	  {
-	    /* Handle the builtin "__analyzer_dump_region_model" by dumping
-	       the region model's state to stderr.  */
-	    dump (false);
-	  }
-	else if (is_special_named_call_p (call, "__analyzer_eval", 1))
-	  impl_call_analyzer_eval (call, ctxt);
-	else if (is_special_named_call_p (call, "__analyzer_break", 0))
-	  {
-	    /* Handle the builtin "__analyzer_break" by triggering a
-	       breakpoint.  */
-	    /* TODO: is there a good cross-platform way to do this?  */
-	    raise (SIGINT);
-	  }
-	else if (is_special_named_call_p (call,
-					  "__analyzer_dump_exploded_nodes",
-					  1))
-	  {
-	    /* This is handled elsewhere.  */
-	  }
-	else if (is_special_named_call_p (call, "__analyzer_get_unknown_ptr",
-					  0))
-	  {
-	    call_details cd (call, this, ctxt);
-	    impl_call_analyzer_get_unknown_ptr (cd);
-	  }
-	else
-	  *out_unknown_side_effects = on_call_pre (call, ctxt,
-						   out_terminate_path);
+	*out_unknown_side_effects = on_call_pre (call, ctxt);
       }
       break;
 
@@ -2002,6 +1932,8 @@ region_model::update_for_int_cst_return (const call_details &cd,
 {
   if (!cd.get_lhs_type ())
     return;
+  if (TREE_CODE (cd.get_lhs_type ()) != INTEGER_TYPE)
+    return;
   const svalue *result
     = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), retval);
   if (unmergeable)
@@ -2026,6 +1958,8 @@ void
 region_model::update_for_nonzero_return (const call_details &cd)
 {
   if (!cd.get_lhs_type ())
+    return;
+  if (TREE_CODE (cd.get_lhs_type ()) != INTEGER_TYPE)
     return;
   const svalue *zero
     = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
@@ -2098,13 +2032,28 @@ region_model::maybe_get_copy_bounds (const region *src_reg,
   return NULL;
 }
 
-/* Get any known_function for FNDECL, or NULL if there is none.  */
+/* Get any known_function for FNDECL for call CD.
+
+   The call must match all assumptions made by the known_function (such as
+   e.g. "argument 1's type must be a pointer type").
+
+   Return NULL if no known_function is found, or it does not match the
+   assumption(s).  */
 
 const known_function *
-region_model::get_known_function (tree fndecl) const
+region_model::get_known_function (tree fndecl, const call_details &cd) const
 {
   known_function_manager *known_fn_mgr = m_mgr->get_known_function_manager ();
-  return known_fn_mgr->get_by_fndecl (fndecl);
+  return known_fn_mgr->get_match (fndecl, cd);
+}
+
+/* Get any known_function for IFN, or NULL.  */
+
+const known_function *
+region_model::get_known_function (enum internal_fn ifn) const
+{
+  known_function_manager *known_fn_mgr = m_mgr->get_known_function_manager ();
+  return known_fn_mgr->get_internal_fn (ifn);
 }
 
 /* Update this model for the CALL stmt, using CTXT to report any
@@ -2116,14 +2065,10 @@ region_model::get_known_function (tree fndecl) const
 
    Return true if the function call has unknown side effects (it wasn't
    recognized and we don't have a body for it, or are unable to tell which
-   fndecl it is).
-
-   Write true to *OUT_TERMINATE_PATH if this execution path should be
-   terminated (e.g. the function call terminates the process).  */
+   fndecl it is).  */
 
 bool
-region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
-			   bool *out_terminate_path)
+region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 {
   call_details cd (call, this, ctxt);
 
@@ -2167,222 +2112,27 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
     }
 
   if (gimple_call_internal_p (call))
-    {
-      switch (gimple_call_internal_fn (call))
-       {
-       default:
-	 break;
-       case IFN_BUILTIN_EXPECT:
-	 impl_call_builtin_expect (cd);
-	 return false;
-       case IFN_UBSAN_BOUNDS:
-	 return false;
-       case IFN_VA_ARG:
-	 impl_call_va_arg (cd);
-	 return false;
-       }
-    }
+    if (const known_function *kf
+	  = get_known_function (gimple_call_internal_fn (call)))
+      {
+	kf->impl_call_pre (cd);
+	return false;
+      }
 
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
     {
-      /* The various impl_call_* member functions are implemented
-	 in region-model-impl-calls.cc.
-	 Having them split out into separate functions makes it easier
-	 to put breakpoints on the handling of specific functions.  */
       int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
 
-      if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
+      if (const known_function *kf = get_known_function (callee_fndecl, cd))
+	{
+	  kf->impl_call_pre (cd);
+	  return false;
+	}
+      else if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
 	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
-	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
-	  {
-	  default:
-	    if (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
-	      unknown_side_effects = true;
-	    break;
-	  case BUILT_IN_ALLOCA:
-	  case BUILT_IN_ALLOCA_WITH_ALIGN:
-	    impl_call_alloca (cd);
-	    return false;
-	  case BUILT_IN_CALLOC:
-	    impl_call_calloc (cd);
-	    return false;
-	  case BUILT_IN_EXPECT:
-	  case BUILT_IN_EXPECT_WITH_PROBABILITY:
-	    impl_call_builtin_expect (cd);
-	    return false;
-	  case BUILT_IN_FREE:
-	    /* Handle in "on_call_post".  */
-	    break;
-	  case BUILT_IN_MALLOC:
-	    impl_call_malloc (cd);
-	    return false;
-	  case BUILT_IN_MEMCPY:
-	  case BUILT_IN_MEMCPY_CHK:
-	    impl_call_memcpy (cd);
-	    return false;
-	  case BUILT_IN_MEMSET:
-	  case BUILT_IN_MEMSET_CHK:
-	    impl_call_memset (cd);
-	    return false;
-	    break;
-	  case BUILT_IN_REALLOC:
-	    return false;
-	  case BUILT_IN_STRCHR:
-	    /* Handle in "on_call_post".  */
-	    return false;
-	  case BUILT_IN_STRCPY:
-	  case BUILT_IN_STRCPY_CHK:
-	    impl_call_strcpy (cd);
-	    return false;
-	  case BUILT_IN_STRLEN:
-	    impl_call_strlen (cd);
-	    return false;
-
-	  case BUILT_IN_STACK_SAVE:
-	  case BUILT_IN_STACK_RESTORE:
-	    return false;
-
-	  /* Stdio builtins.  */
-	  case BUILT_IN_FPRINTF:
-	  case BUILT_IN_FPRINTF_UNLOCKED:
-	  case BUILT_IN_PUTC:
-	  case BUILT_IN_PUTC_UNLOCKED:
-	  case BUILT_IN_FPUTC:
-	  case BUILT_IN_FPUTC_UNLOCKED:
-	  case BUILT_IN_FPUTS:
-	  case BUILT_IN_FPUTS_UNLOCKED:
-	  case BUILT_IN_FWRITE:
-	  case BUILT_IN_FWRITE_UNLOCKED:
-	  case BUILT_IN_PRINTF:
-	  case BUILT_IN_PRINTF_UNLOCKED:
-	  case BUILT_IN_PUTCHAR:
-	  case BUILT_IN_PUTCHAR_UNLOCKED:
-	  case BUILT_IN_PUTS:
-	  case BUILT_IN_PUTS_UNLOCKED:
-	  case BUILT_IN_VFPRINTF:
-	  case BUILT_IN_VPRINTF:
-	    /* These stdio builtins have external effects that are out
-	       of scope for the analyzer: we only want to model the effects
-	       on the return value.  */
-	    break;
-
-	  case BUILT_IN_VA_START:
-	    impl_call_va_start (cd);
-	    return false;
-	  case BUILT_IN_VA_COPY:
-	    impl_call_va_copy (cd);
-	    return false;
-	  }
-      else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
 	{
-	  impl_call_malloc (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "calloc", call, 2))
-	{
-	  impl_call_calloc (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "alloca", call, 1))
-	{
-	  impl_call_alloca (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "realloc", call, 2))
-	{
-	  impl_call_realloc (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "__errno_location", call, 0))
-	{
-	  impl_call_errno_location (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "error"))
-	{
-	  if (impl_call_error (cd, 3, out_terminate_path))
-	    return false;
-	  else
+	  if (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
 	    unknown_side_effects = true;
-	}
-      else if (is_named_call_p (callee_fndecl, "error_at_line"))
-	{
-	  if (impl_call_error (cd, 5, out_terminate_path))
-	    return false;
-	  else
-	    unknown_side_effects = true;
-	}
-      else if (is_named_call_p (callee_fndecl, "fgets", call, 3)
-	       || is_named_call_p (callee_fndecl, "fgets_unlocked", call, 3))
-	{
-	  impl_call_fgets (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "fread", call, 4))
-	{
-	  impl_call_fread (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "getchar", call, 0))
-	{
-	  /* No side-effects (tracking stream state is out-of-scope
-	     for the analyzer).  */
-	}
-      else if (is_named_call_p (callee_fndecl, "memset", call, 3)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  impl_call_memset (cd);
-	  return false;
-	}
-      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
-	{
-	  /* Handle in "on_call_post"; bail now so that fd array
-	     is left untouched so that we can detect use-of-uninit
-	     for the case where the call fails.  */
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "putenv", call, 1)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  impl_call_putenv (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  /* Handle in "on_call_post".  */
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  impl_call_strlen (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "operator new", call, 1))
-	{
-	  impl_call_operator_new (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
-	{
-	  impl_call_operator_new (cd);
-	  return false;
-	}
-      else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
-	       || is_named_call_p (callee_fndecl, "operator delete", call, 2)
-	       || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
-	{
-	  /* Handle in "on_call_post".  */
-	}
-      else if (const known_function *kf = get_known_function (callee_fndecl))
-	{
-	  if (kf->matches_call_types_p (cd))
-	    {
-	      kf->impl_call_pre (cd);
-	      return false;
-	    }
 	}
       else if (!fndecl_has_gimple_body_p (callee_fndecl)
 	       && (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
@@ -2413,37 +2163,10 @@ region_model::on_call_post (const gcall *call,
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
     {
       call_details cd (call, this, ctxt);
-      if (is_named_call_p (callee_fndecl, "free", call, 1))
+      if (const known_function *kf = get_known_function (callee_fndecl, cd))
 	{
-	  impl_call_free (cd);
+	  kf->impl_call_post (cd);
 	  return;
-	}
-      if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
-	  || is_named_call_p (callee_fndecl, "operator delete", call, 2)
-	  || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
-	{
-	  impl_call_operator_delete (cd);
-	  return;
-	}
-      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
-	{
-	  impl_call_pipe (cd);
-	  return;
-	}
-      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
-	       && POINTER_TYPE_P (cd.get_arg_type (0)))
-	{
-	  impl_call_strchr (cd);
-	  return;
-	}
-      else if (const known_function *kf = get_known_function (callee_fndecl))
-	{
-	  if (kf->matches_call_types_p (cd))
-	    {
-	      kf->impl_call_post (cd);
-	      return;
-	    }
 	}
       /* Was this fndecl referenced by
 	 __attribute__((malloc(FOO)))?  */
@@ -2452,24 +2175,6 @@ region_model::on_call_post (const gcall *call,
 	  impl_deallocation_call (cd);
 	  return;
 	}
-      if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
-	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
-	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
-	  {
-	  default:
-	    break;
-	  case BUILT_IN_REALLOC:
-	    impl_call_realloc (cd);
-	    return;
-
-	  case BUILT_IN_STRCHR:
-	    impl_call_strchr (cd);
-	    return;
-
-	  case BUILT_IN_VA_END:
-	    impl_call_va_end (cd);
-	    return;
-	  }
     }
 
   if (unknown_side_effects)
@@ -4874,6 +4579,7 @@ region_model::get_representative_path_var_1 (const region *reg,
     case RK_CODE:
     case RK_HEAP:
     case RK_STACK:
+    case RK_THREAD_LOCAL:
     case RK_ROOT:
        /* Regions that represent memory spaces are not expressible as trees.  */
       return path_var (NULL_TREE, 0);
@@ -4993,6 +4699,7 @@ region_model::get_representative_path_var_1 (const region *reg,
       }
 
     case RK_VAR_ARG:
+    case RK_ERRNO:
     case RK_UNKNOWN:
       return path_var (NULL_TREE, 0);
     }
@@ -5796,17 +5503,50 @@ region_model::check_dynamic_size_for_floats (const svalue *size_in_bytes,
 	}
 }
 
-/* Return a new region describing a heap-allocated block of memory.
-   Use CTXT to complain about tainted sizes.  */
+/* Return a region describing a heap-allocated block of memory.
+   Use CTXT to complain about tainted sizes.
+
+   Reuse an existing heap_allocated_region if it's not being referenced by
+   this region_model; otherwise create a new one.  */
 
 const region *
-region_model::create_region_for_heap_alloc (const svalue *size_in_bytes,
-					    region_model_context *ctxt)
+region_model::get_or_create_region_for_heap_alloc (const svalue *size_in_bytes,
+						   region_model_context *ctxt)
 {
-  const region *reg = m_mgr->create_region_for_heap_alloc ();
+  /* Determine which regions are referenced in this region_model, so that
+     we can reuse an existing heap_allocated_region if it's not in use on
+     this path.  */
+  auto_sbitmap base_regs_in_use (m_mgr->get_num_regions ());
+  get_referenced_base_regions (base_regs_in_use);
+  const region *reg
+    = m_mgr->get_or_create_region_for_heap_alloc (base_regs_in_use);
   if (compat_types_p (size_in_bytes->get_type (), size_type_node))
     set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
+}
+
+/* Populate OUT_IDS with the set of IDs of those base regions which are
+   reachable in this region_model.  */
+
+void
+region_model::get_referenced_base_regions (auto_sbitmap &out_ids) const
+{
+  reachable_regions reachable_regs (const_cast<region_model *> (this));
+  m_store.for_each_cluster (reachable_regions::init_cluster_cb,
+			    &reachable_regs);
+  /* Get regions for locals that have explicitly bound values.  */
+  for (store::cluster_map_t::iterator iter = m_store.begin ();
+       iter != m_store.end (); ++iter)
+    {
+      const region *base_reg = (*iter).first;
+      if (const region *parent = base_reg->get_parent_region ())
+	if (parent->get_kind () == RK_FRAME)
+	  reachable_regs.add (base_reg, false);
+    }
+
+  bitmap_clear (out_ids);
+  for (auto iter_reg : reachable_regs)
+    bitmap_set_bit (out_ids, iter_reg->get_id ());
 }
 
 /* Return a new region describing a block of memory allocated within the
@@ -7906,7 +7646,7 @@ test_state_merging ()
     tree size = build_int_cst (size_type_node, 1024);
     const svalue *size_sval = mgr.get_or_create_constant_svalue (size);
     const region *new_reg
-      = model0.create_region_for_heap_alloc (size_sval, &ctxt);
+      = model0.get_or_create_region_for_heap_alloc (size_sval, &ctxt);
     const svalue *ptr_sval = mgr.get_ptr_svalue (ptr_type_node, new_reg);
     model0.set_value (model0.get_lvalue (p, &ctxt),
 		      ptr_sval, &ctxt);
@@ -8294,7 +8034,8 @@ test_malloc_constraints ()
 
   const svalue *size_in_bytes
     = mgr.get_or_create_unknown_svalue (size_type_node);
-  const region *reg = model.create_region_for_heap_alloc (size_in_bytes, NULL);
+  const region *reg
+    = model.get_or_create_region_for_heap_alloc (size_in_bytes, NULL);
   const svalue *sval = mgr.get_ptr_svalue (ptr_type_node, reg);
   model.set_value (model.get_lvalue (p, NULL), sval, NULL);
   model.set_value (q, p, NULL);
@@ -8523,7 +8264,8 @@ test_malloc ()
 
   /* "p = malloc (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
-  const region *reg = model.create_region_for_heap_alloc (size_sval, &ctxt);
+  const region *reg
+    = model.get_or_create_region_for_heap_alloc (size_sval, &ctxt);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);
   ASSERT_EQ (model.get_capacity (reg), size_sval);

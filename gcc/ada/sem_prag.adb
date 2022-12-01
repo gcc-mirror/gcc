@@ -63,6 +63,7 @@ with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch12;       use Sem_Ch12;
 with Sem_Ch13;       use Sem_Ch13;
@@ -3567,6 +3568,21 @@ package body Sem_Prag is
             return;
          end if;
 
+         --  In the case of state in a (descendant of a private) child which
+         --  is Part_Of the state of another package, the package defining the
+         --  encapsulating abstract state should have a body, to ensure that it
+         --  has a state refinement (SPARK RM 7.1.4(4)).
+
+         if Enclosing_Comp_Unit_Node (Encap_Id) /=
+            Enclosing_Comp_Unit_Node (Item_Id)
+           and then not Unit_Requires_Body (Scope (Encap_Id))
+         then
+            SPARK_Msg_N
+              ("indicator Part_Of must denote abstract state of package "
+               & "with a body (SPARK RM 7.1.4(4))", Indic);
+            return;
+         end if;
+
          --  At this point it is known that the Part_Of indicator is legal
 
          Legal := True;
@@ -4547,6 +4563,11 @@ package body Sem_Prag is
          --  Single task type
 
          elsif Nkind (Subp_Decl) = N_Single_Task_Declaration then
+            null;
+
+         --  Abstract subprogram declaration
+
+         elsif Nkind (Subp_Decl) = N_Abstract_Subprogram_Declaration then
             null;
 
          --  Subprogram body acts as spec
@@ -21097,6 +21118,25 @@ package body Sem_Prag is
                if Partition_Elaboration_Policy_Sloc /= System_Location then
                   Partition_Elaboration_Policy_Sloc := Loc;
                end if;
+
+               if PEP_Val = Name_Sequential
+                 and then not Restriction_Active (No_Task_Hierarchy)
+               then
+                  --  RM H.6(6) guarantees that No_Task_Hierarchy will be
+                  --  set eventually, so take advantage of that knowledge now.
+                  --  But we have to do this in a tricky way. If we simply
+                  --  set the No_Task_Hierarchy restriction here, then the
+                  --  assumption that the restriction will be set eventually
+                  --  becomes a self-fulfilling prophecy; the binder can
+                  --  then mistakenly conclude that the H.6(6) rule is
+                  --  satisified in cases where the post-compilation check
+                  --  should fail. So we invent a new restriction,
+                  --  No_Task_Hierarchy_Implicit, which is treated specially
+                  --  in the function Restriction_Active.
+
+                  Set_Restriction (No_Task_Hierarchy_Implicit, N);
+                  pragma Assert (Restriction_Active (No_Task_Hierarchy));
+               end if;
             end if;
          end PEP;
 
@@ -25784,7 +25824,7 @@ package body Sem_Prag is
                                  C := Get_String_Char (Str, J);
                                  Chr := Get_Character (C);
 
-                                 if not Set_Dot_Warning_Switch (Chr) then
+                                 if not Set_Warning_Switch ('.', Chr) then
                                     Error_Pragma_Arg
                                       ("invalid warning switch character "
                                        & '.' & Chr, Arg1);
@@ -25793,7 +25833,7 @@ package body Sem_Prag is
                               --  Non-Dot case
 
                               else
-                                 OK := Set_Warning_Switch (Chr);
+                                 OK := Set_Warning_Switch (Plain, Chr);
                               end if;
 
                               if not OK then

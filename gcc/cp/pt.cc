@@ -148,8 +148,6 @@ static void add_pending_template (tree);
 static tree reopen_tinst_level (struct tinst_level *);
 static tree tsubst_initializer_list (tree, tree);
 static tree get_partial_spec_bindings (tree, tree, tree);
-static tree coerce_innermost_template_parms (tree, tree, tree, tsubst_flags_t,
-					     bool = true);
 static void tsubst_enum	(tree, tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int check_non_deducible_conversion (tree, tree, unification_kind_t, int,
@@ -217,7 +215,6 @@ static tree get_underlying_template (tree);
 static tree tsubst_attributes (tree, tree, tsubst_flags_t, tree);
 static tree canonicalize_expr_argument (tree, tsubst_flags_t);
 static tree make_argument_pack (tree);
-static void register_parameter_specializations (tree, tree);
 static tree enclosing_instantiation_of (tree tctx);
 static void instantiate_body (tree pattern, tree args, tree d, bool nested);
 static tree maybe_dependent_member_ref (tree, tree, tsubst_flags_t, tree);
@@ -1968,6 +1965,16 @@ register_local_specialization (tree spec, tree tmpl)
   local_specializations->put (tmpl, spec);
 }
 
+/* Registers T as a specialization of itself.  This is used to preserve
+   the references to already-parsed parameters when instantiating
+   postconditions.  */
+
+void
+register_local_identity (tree t)
+{
+  local_specializations->put (t, t);
+}
+
 /* TYPE is a class type.  Returns true if TYPE is an explicitly
    specialized class.  */
 
@@ -2475,17 +2482,14 @@ determine_specialization (tree template_id,
     }
 
   /* It was a specialization of a template.  */
-  targs = DECL_TI_ARGS (DECL_TEMPLATE_RESULT (TREE_VALUE (templates)));
-  if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (targs))
-    {
-      *targs_out = copy_node (targs);
-      SET_TMPL_ARGS_LEVEL (*targs_out,
-			   TMPL_ARGS_DEPTH (*targs_out),
-			   TREE_PURPOSE (templates));
-    }
-  else
-    *targs_out = TREE_PURPOSE (templates);
-  return TREE_VALUE (templates);
+  tree tmpl = TREE_VALUE (templates);
+  *targs_out = add_outermost_template_args (tmpl, TREE_PURPOSE (templates));
+
+  /* Propagate the template's constraints to the declaration.  */
+  if (tsk != tsk_template)
+    set_constraints (decl, get_constraints (tmpl));
+
+  return tmpl;
 }
 
 /* Returns a chain of parameter types, exactly like the SPEC_TYPES,
@@ -3161,8 +3165,10 @@ check_explicit_specialization (tree declarator,
 		       parm = DECL_CHAIN (parm))
 		    DECL_CONTEXT (parm) = result;
 		}
-	      return register_specialization (tmpl, gen_tmpl, targs,
+	      decl = register_specialization (tmpl, gen_tmpl, targs,
 					      is_friend, 0);
+	      remove_contract_attributes (result);
+	      return decl;
 	    }
 
 	  /* Set up the DECL_TEMPLATE_INFO for DECL.  */
@@ -3262,6 +3268,10 @@ check_explicit_specialization (tree declarator,
 					      is_friend, 0);
 	    }
 
+	  /* If this is a specialization, splice any contracts that may have
+	     been inherited from the template, removing them.  */
+	  if (decl != error_mark_node && DECL_TEMPLATE_SPECIALIZATION (decl))
+	    remove_contract_attributes (decl);
 
 	  /* A 'structor should already have clones.  */
 	  gcc_assert (decl == error_mark_node
@@ -8827,6 +8837,14 @@ pack_expansion_args_count (tree args)
    arguments.  If any error occurs, return error_mark_node. Error and
    warning messages are issued under control of COMPLAIN.
 
+   If PARMS represents all template parameters levels, this function
+   returns a vector of vectors representing all the resulting argument
+   levels.  Note that in this case, only the innermost arguments are
+   coerced because the outermost ones are supposed to have been coerced
+   already.  Otherwise, if PARMS represents only (the innermost) vector
+   of parameters, this function returns a vector containing just the
+   innermost resulting arguments.
+
    If REQUIRE_ALL_ARGS is false, argument deduction will be performed
    for arguments not specified in ARGS.  If REQUIRE_ALL_ARGS is true,
    arguments not specified in ARGS must have default arguments which
@@ -8842,8 +8860,6 @@ coerce_template_parms (tree parms,
   int nparms, nargs, parm_idx, arg_idx, lost = 0;
   tree orig_inner_args;
   tree inner_args;
-  tree new_args;
-  tree new_inner_args;
 
   /* When used as a boolean value, indicates whether this is a
      variadic template parameter list. Since it's an int, we can also
@@ -8863,6 +8879,17 @@ coerce_template_parms (tree parms,
 
   if (args == error_mark_node)
     return error_mark_node;
+
+  bool return_full_args = false;
+  if (TREE_CODE (parms) == TREE_LIST)
+    {
+      if (TMPL_PARMS_DEPTH (parms) > 1)
+	{
+	  gcc_assert (TMPL_PARMS_DEPTH (parms) == TMPL_ARGS_DEPTH (args));
+	  return_full_args = true;
+	}
+      parms = INNERMOST_TEMPLATE_PARMS (parms);
+    }
 
   nparms = TREE_VEC_LENGTH (parms);
 
@@ -8961,8 +8988,8 @@ coerce_template_parms (tree parms,
      template-id may be nested within a "sizeof".  */
   cp_evaluated ev;
 
-  new_inner_args = make_tree_vec (nparms);
-  new_args = add_outermost_template_args (args, new_inner_args);
+  tree new_args = add_outermost_template_args (args, make_tree_vec (nparms));
+  tree& new_inner_args = TMPL_ARGS_LEVEL (new_args, TMPL_ARGS_DEPTH (new_args));
   int pack_adjust = 0;
   for (parm_idx = 0, arg_idx = 0; parm_idx < nparms; parm_idx++, arg_idx++)
     {
@@ -9164,59 +9191,7 @@ coerce_template_parms (tree parms,
     SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (new_inner_args,
 					 TREE_VEC_LENGTH (new_inner_args));
 
-  return new_inner_args;
-}
-
-/* Like coerce_template_parms.  If PARMS represents all template
-   parameters levels, this function returns a vector of vectors
-   representing all the resulting argument levels.  Note that in this
-   case, only the innermost arguments are coerced because the
-   outermost ones are supposed to have been coerced already.
-
-   Otherwise, if PARMS represents only (the innermost) vector of
-   parameters, this function returns a vector containing just the
-   innermost resulting arguments.  */
-
-static tree
-coerce_innermost_template_parms (tree parms,
-				 tree args,
-				 tree in_decl,
-				 tsubst_flags_t complain,
-				 bool require_all_args /* = true */)
-{
-  int parms_depth = TMPL_PARMS_DEPTH (parms);
-  int args_depth = TMPL_ARGS_DEPTH (args);
-  tree coerced_args;
-
-  if (parms_depth > 1)
-    {
-      coerced_args = make_tree_vec (parms_depth);
-      tree level;
-      int cur_depth;
-
-      for (level = parms, cur_depth = parms_depth;
-	   parms_depth > 0 && level != NULL_TREE;
-	   level = TREE_CHAIN (level), --cur_depth)
-	{
-	  tree l;
-	  if (cur_depth == args_depth)
-	    l = coerce_template_parms (TREE_VALUE (level),
-				       args, in_decl, complain,
-				       require_all_args);
-	  else
-	    l = TMPL_ARGS_LEVEL (args, cur_depth);
-
-	  if (l == error_mark_node)
-	    return error_mark_node;
-
-	  SET_TMPL_ARGS_LEVEL (coerced_args, cur_depth, l);
-	}
-    }
-  else
-    coerced_args = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parms),
-					  args, in_decl, complain,
-					  require_all_args);
-  return coerced_args;
+  return return_full_args ? new_args : new_inner_args;
 }
 
 /* Returns true if T is a wrapper to make a C++20 template parameter
@@ -9909,8 +9884,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
       /* Calculate the BOUND_ARGS.  These will be the args that are
 	 actually tsubst'd into the definition to create the
 	 instantiation.  */
-      arglist = coerce_innermost_template_parms (parmlist, arglist, gen_tmpl,
-						 complain);
+      arglist = coerce_template_parms (parmlist, arglist, gen_tmpl, complain);
 
       if (arglist == error_mark_node)
 	/* We were unable to bind the arguments.  */
@@ -10326,7 +10300,7 @@ finish_template_variable (tree var, tsubst_flags_t complain)
   tree arglist = TREE_OPERAND (var, 1);
 
   tree parms = DECL_TEMPLATE_PARMS (templ);
-  arglist = coerce_innermost_template_parms (parms, arglist, templ, complain);
+  arglist = coerce_template_parms (parms, arglist, templ, complain);
   if (arglist == error_mark_node)
     return error_mark_node;
 
@@ -11575,6 +11549,113 @@ can_complete_type_without_circularity (tree type)
 static tree tsubst_omp_clauses (tree, enum c_omp_region_type, tree,
 				tsubst_flags_t, tree);
 
+/* Instantiate the contract statement.  */
+
+static tree
+tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
+		 tree in_decl)
+{
+  tree type = decl ? TREE_TYPE (TREE_TYPE (decl)) : NULL_TREE;
+  bool auto_p  = type_uses_auto (type);
+
+  tree r = copy_node (t);
+
+  /* Rebuild the result variable.  */
+  if (POSTCONDITION_P (t) && POSTCONDITION_IDENTIFIER (t))
+    {
+      tree oldvar = POSTCONDITION_IDENTIFIER (t);
+
+      tree newvar = copy_node (oldvar);
+      TREE_TYPE (newvar) = type;
+      DECL_CONTEXT (newvar) = decl;
+      POSTCONDITION_IDENTIFIER (r) = newvar;
+
+      /* Make sure the postcondition is valid.  */
+      location_t loc = DECL_SOURCE_LOCATION (oldvar);
+      if (!auto_p)
+	if (!check_postcondition_result (decl, type, loc))
+	  return invalidate_contract (r);
+
+      /* Make the variable available for lookup.  */
+      register_local_specialization (newvar, oldvar);
+    }
+
+  /* Instantiate the condition.  If the return type is undeduced, process
+     the expression as if inside a template to avoid spurious type errors.  */
+  if (auto_p)
+    ++processing_template_decl;
+  ++processing_contract_condition;
+  CONTRACT_CONDITION (r)
+      = tsubst_expr (CONTRACT_CONDITION (t), args, complain, in_decl);
+  --processing_contract_condition;
+  if (auto_p)
+    --processing_template_decl;
+
+  /* And the comment.  */
+  CONTRACT_COMMENT (r)
+      = tsubst_expr (CONTRACT_COMMENT (r), args, complain, in_decl);
+
+  return r;
+}
+
+/* Update T by instantiating its contract attribute.  */
+
+static void
+tsubst_contract_attribute (tree decl, tree t, tree args,
+			   tsubst_flags_t complain, tree in_decl)
+{
+  /* For non-specializations, adjust the current declaration to the most general
+     version of in_decl. Because we defer the instantiation of contracts as long
+     as possible, they are still written in terms of the parameters (and return
+     type) of the most general template.  */
+  tree tmpl = DECL_TI_TEMPLATE (in_decl);
+  if (!DECL_TEMPLATE_SPECIALIZATION (tmpl))
+    in_decl = DECL_TEMPLATE_RESULT (most_general_template (in_decl));
+  local_specialization_stack specs (lss_copy);
+  register_parameter_specializations (in_decl, decl);
+
+  /* Get the contract to be instantiated.  */
+  tree contract = CONTRACT_STATEMENT (t);
+
+  /* Use the complete set of template arguments for instantiation. The
+     contract may not have been instantiated and still refer to outer levels
+     of template parameters.  */
+  args = DECL_TI_ARGS (decl);
+
+  /* For member functions, make this available for semantic analysis.  */
+  tree save_ccp = current_class_ptr;
+  tree save_ccr = current_class_ref;
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+    {
+      tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      tree this_type = TREE_TYPE (TREE_VALUE (arg_types));
+      inject_this_parameter (this_type, cp_type_quals (this_type));
+    }
+
+  contract = tsubst_contract (decl, contract, args, complain, in_decl);
+
+  current_class_ptr = save_ccp;
+  current_class_ref = save_ccr;
+
+  /* Rebuild the attribute.  */
+  TREE_VALUE (t) = build_tree_list (NULL_TREE, contract);
+}
+
+/* Rebuild the attribute list for DECL, substituting into contracts
+   as needed.  */
+
+void
+tsubst_contract_attributes (tree decl, tree args, tsubst_flags_t complain, tree in_decl)
+{
+  tree list = copy_list (DECL_ATTRIBUTES (decl));
+  for (tree attr = list; attr; attr = CONTRACT_CHAIN (attr))
+    {
+      if (cxx_contract_attribute_p (attr))
+	tsubst_contract_attribute (decl, attr, args, complain, in_decl);
+    }
+  DECL_ATTRIBUTES (decl) = list;
+}
+
 /* Instantiate a single dependent attribute T (a TREE_LIST), and return either
    T or a new TREE_LIST, possibly a chain in the case of a pack expansion.  */
 
@@ -11583,6 +11664,10 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 		  tsubst_flags_t complain, tree in_decl)
 {
   gcc_assert (ATTR_IS_DEPENDENT (t));
+
+  /* Note that contract attributes are never substituted from this function.
+     Their instantiation is triggered by regenerate_from_template_decl when
+     we instantiate the body of the function.  */
 
   tree val = TREE_VALUE (t);
   if (val == NULL_TREE)
@@ -14962,7 +15047,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		  /* We're fully specializing a template declaration, so
 		     we need to coerce the innermost arguments corresponding to
 		     the template.  */
-		  argvec = (coerce_innermost_template_parms
+		  argvec = (coerce_template_parms
 			    (DECL_TEMPLATE_PARMS (gen_tmpl),
 			     argvec, t, complain));
 		if (argvec == error_mark_node)
@@ -17108,7 +17193,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			  = do_auto_deduction (TREE_TYPE (r), init, auto_node,
 					       complain, adc_variable_type);
 		    }
-		  gcc_assert (cp_unevaluated_operand || TREE_STATIC (r)
+		  gcc_assert (cp_unevaluated_operand
+			      || processing_contract_condition
+			      || TREE_STATIC (r)
 			      || decl_constant_var_p (r)
 			      || seen_error ());
 		  if (!processing_template_decl
@@ -18604,6 +18691,19 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case USING_STMT:
       finish_using_directive (USING_STMT_NAMESPACE (t), /*attribs=*/NULL_TREE);
+      break;
+
+    case PRECONDITION_STMT:
+    case POSTCONDITION_STMT:
+      gcc_unreachable ();
+
+    case ASSERTION_STMT:
+      {
+	r = tsubst_contract (NULL_TREE, t, args, complain, in_decl);
+	if (r != error_mark_node)
+	  add_stmt (r);
+	RETURN (r);
+      }
       break;
 
     case DECL_EXPR:
@@ -21800,8 +21900,8 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
   if (tmpl == error_mark_node || args == error_mark_node)
     return error_mark_node;
 
-  args = coerce_innermost_template_parms (DECL_TEMPLATE_PARMS (tmpl),
-					  args, tmpl, complain);
+  args = coerce_template_parms (DECL_TEMPLATE_PARMS (tmpl),
+				args, tmpl, complain);
 
   /* FIXME check for satisfaction in check_instantiated_args.  */
   if (flag_concepts
@@ -26088,6 +26188,21 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 	    DECL_CONTEXT (t) = decl;
 	}
 
+      if (DECL_CONTRACTS (decl))
+	{
+	  /* If we're regenerating a specialization, the contracts will have
+	     been copied from the most general template. Replace those with
+	     the ones from the actual specialization.  */
+	  tree tmpl = DECL_TI_TEMPLATE (decl);
+	  if (DECL_TEMPLATE_SPECIALIZATION (tmpl))
+	    {
+	      remove_contract_attributes (decl);
+	      copy_contract_attributes (decl, code_pattern);
+	    }
+
+	  tsubst_contract_attributes (decl, args, tf_warning_or_error, code_pattern);
+	}
+
       /* Merge additional specifiers from the CODE_PATTERN.  */
       if (DECL_DECLARED_INLINE_P (code_pattern)
 	  && !DECL_DECLARED_INLINE_P (decl))
@@ -26333,7 +26448,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 /* We're starting to process the function INST, an instantiation of PATTERN;
    add their parameters to local_specializations.  */
 
-static void
+void
 register_parameter_specializations (tree pattern, tree inst)
 {
   tree tmpl_parm = DECL_ARGUMENTS (pattern);

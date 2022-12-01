@@ -245,7 +245,22 @@ public:
   }
 };
 
+/* Subclass of known_function for IFN_* functions.  */
+
+class internal_known_function : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &) const final override
+  {
+    /* Types are assumed to be correct.  */
+    return true;
+  }
+};
+
 extern void register_known_functions (known_function_manager &mgr);
+extern void register_known_fd_functions (known_function_manager &kfm);
+extern void register_known_file_functions (known_function_manager &kfm);
+extern void register_varargs_builtins (known_function_manager &kfm);
 
 /* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
 
@@ -338,8 +353,6 @@ extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);
-extern bool is_pipe_call_p (const_tree fndecl, const char *funcname,
-			    const gcall *call, unsigned int num_args);
 
 extern const char *get_user_facing_name (const gcall *call);
 

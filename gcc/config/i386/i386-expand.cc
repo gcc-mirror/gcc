@@ -10423,6 +10423,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       return ix86_expand_sse_ptest (d, exp, target);
     case FLOAT128_FTYPE_FLOAT128:
     case FLOAT_FTYPE_FLOAT:
+    case FLOAT_FTYPE_BFLOAT16:
     case INT_FTYPE_INT:
     case UINT_FTYPE_UINT:
     case UINT16_FTYPE_UINT16:
@@ -24136,6 +24137,32 @@ ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
   }
 
   *ptarget_bool = target_bool;
+}
+
+/* Convert a BFmode VAL to SFmode without signaling sNaNs.
+   This is done by returning SF SUBREG of ((HI SUBREG) (VAL)) << 16.  */
+
+rtx
+ix86_expand_fast_convert_bf_to_sf (rtx val)
+{
+  rtx op = gen_lowpart (HImode, val), ret;
+  if (CONST_INT_P (op))
+    {
+      ret = simplify_const_unary_operation (FLOAT_EXTEND, SFmode,
+					    val, BFmode);
+      if (ret)
+	return ret;
+      /* FLOAT_EXTEND simplification will fail if VAL is a sNaN.  */
+      ret = gen_reg_rtx (SImode);
+      emit_move_insn (ret, GEN_INT (INTVAL (op) & 0xffff));
+    }
+  else
+    {
+      ret = gen_reg_rtx (SImode);
+      emit_insn (gen_zero_extendhisi2 (ret, op));
+    }
+  emit_insn (gen_ashlsi3 (ret, ret, GEN_INT (16)));
+  return gen_lowpart (SFmode, ret);
 }
 
 #include "gt-i386-expand.h"

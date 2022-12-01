@@ -1,9 +1,16 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+/*
+**foo:
+**	...
+**	vminav.s32	(?:ip|fp|r[0-9]+), q[0-9]+(?:	@.*|)
+**	...
+*/
 uint32_t
 foo (uint32_t a, int32x4_t b)
 {
@@ -11,18 +18,28 @@ foo (uint32_t a, int32x4_t b)
 }
 
 
+/*
+**foo1:
+**	...
+**	vminav.s32	(?:ip|fp|r[0-9]+), q[0-9]+(?:	@.*|)
+**	...
+*/
 uint32_t
 foo1 (uint32_t a, int32x4_t b)
 {
   return vminavq (a, b);
 }
 
-
-int32_t
-foo2 (uint16_t a, int32x4_t b)
+/*
+**foo2:
+**	...
+**	vminav.s32	(?:ip|fp|r[0-9]+), q[0-9]+(?:	@.*|)
+**	...
+*/
+uint32_t
+foo2 (int32x4_t b)
 {
-  return vminavq (a, b);
+  return vminavq (1, b);
 }
 
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */
-/* { dg-final { scan-assembler-times "vminav.s32" 3 } } */

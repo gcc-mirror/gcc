@@ -12243,11 +12243,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
     error_at (loc, "two or more data types in declaration specifiers");
   else if (TREE_CODE (type) == TYPE_DECL)
     {
-      if (TREE_TYPE (type) == error_mark_node)
-	; /* Allow the type to default to int to avoid cascading errors.  */
-      else
+      specs->type = TREE_TYPE (type);
+      if (TREE_TYPE (type) != error_mark_node)
 	{
-	  specs->type = TREE_TYPE (type);
 	  specs->decl_attr = DECL_ATTRIBUTES (type);
 	  specs->typedef_p = true;
 	  specs->explicit_signed_p = C_TYPEDEF_EXPLICITLY_SIGNED (type);

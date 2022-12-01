@@ -692,7 +692,7 @@
 ;; {{{ Prologue/Epilogue
 
 (define_insn "prologue_use"
-  [(unspec_volatile [(match_operand 0)] UNSPECV_PROLOGUE_USE)]
+  [(unspec_volatile [(match_operand 0 "register_operand")] UNSPECV_PROLOGUE_USE)]
   ""
   ""
   [(set_attr "length" "0")])

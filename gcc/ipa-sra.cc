@@ -2805,13 +2805,10 @@ ipa_sra_dump_all_summaries (FILE *f)
       if (!ifs)
 	fprintf (f, "  Function does not have any associated IPA-SRA "
 		 "summary\n");
+      else if (!ifs->m_candidate)
+	fprintf (f, "  Not a candidate function\n");
       else
 	{
-	  if (!ifs->m_candidate)
-	    {
-	      fprintf (f, "  Not a candidate function\n");
-	      continue;
-	    }
 	  if (ifs->m_returns_value)
 	    fprintf (f, "  Returns value\n");
 	  if (vec_safe_is_empty (ifs->m_parameters))
