@@ -1,3 +1,11 @@
+2023-02-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.c-torture/execute/pr47237.c: Xfail on amdgcn.
+	* gcc.dg/builtin-apply3.c: Xfail for amdgcn.
+	* gcc.dg/builtin-apply4.c: Xfail for amdgcn.
+	* gcc.dg/torture/stackalign/builtin-apply-3.c: Xfail for amdgcn.
+	* gcc.dg/torture/stackalign/builtin-apply-4.c: Xfail for amdgcn.
+
 2023-02-02  Paul-Antoine Arras  <pa@codesourcery.com>
 
 	Backported from master:

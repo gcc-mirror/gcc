@@ -60,14 +60,16 @@ gomp_gcn_enter_kernel (void)
       /* Initialize the team arena for optimized memory allocation.
          The arena has been allocated on the host side, and the address
          passed in via the kernargs.  Each team takes a small slice of it.  */
-      void **kernargs = (void**) __builtin_gcn_kernarg_ptr ();
-      void *team_arena = (kernargs[4] + TEAM_ARENA_SIZE*teamid);
+      struct kernargs_abi *kernargs =
+	(struct kernargs_abi*) __builtin_gcn_kernarg_ptr ();
+      void *team_arena = ((void*)kernargs->arena_ptr
+			  + kernargs->arena_size_per_team * teamid);
       void * __lds *arena_start = (void * __lds *)TEAM_ARENA_START;
       void * __lds *arena_free = (void * __lds *)TEAM_ARENA_FREE;
       void * __lds *arena_end = (void * __lds *)TEAM_ARENA_END;
       *arena_start = team_arena;
       *arena_free = team_arena;
-      *arena_end = team_arena + TEAM_ARENA_SIZE;
+      *arena_end = team_arena + kernargs->arena_size_per_team;
 
       /* Allocate and initialize the team-local-storage data.  */
       struct gomp_thread *thrs = team_malloc_cleared (sizeof (*thrs)

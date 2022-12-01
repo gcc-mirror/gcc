@@ -1,3 +1,23 @@
+2023-02-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-run.cc: Include libgomp-gcn.h.
+	(struct kernargs): Replace the common content with kernargs_abi.
+	(struct heap): Delete.
+	(main): Read GCN_STACK_SIZE envvar.
+	Allocate space for the device stacks.
+	Write the new kernargs fields.
+	* config/gcn/gcn.cc (gcn_option_override): Remove stack_size_opt.
+	(default_requested_args): Remove PRIVATE_SEGMENT_BUFFER_ARG and
+	PRIVATE_SEGMENT_WAVE_OFFSET_ARG.
+	(gcn_addr_space_convert): Mask the QUEUE_PTR_ARG content.
+	(gcn_expand_prologue): Move the TARGET_PACKED_WORK_ITEMS to the top.
+	Set up the stacks from the values in the kernargs, not private.
+	(gcn_expand_builtin_1): Match the stack configuration in the prologue.
+	(gcn_hsa_declare_function_name): Turn off the private segment.
+	(gcn_conditional_register_usage): Ensure QUEUE_PTR is fixed.
+	* config/gcn/gcn.h (FIXED_REGISTERS): Fix the QUEUE_PTR register.
+	* config/gcn/gcn.opt (mstack-size): Change the description.
+
 2023-02-02  Paul-Antoine Arras  <pa@codesourcery.com>
 
 	Backported from master:

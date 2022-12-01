@@ -30,6 +30,40 @@
 #ifndef LIBGOMP_GCN_H
 #define LIBGOMP_GCN_H 1
 
+#define DEFAULT_GCN_STACK_SIZE (32*1024)
+#define DEFAULT_TEAM_ARENA_SIZE (64*1024)
+
+struct heap
+{
+  int64_t size;
+  char data[0];
+};
+
+/* This struct defines the (unofficial) ABI-defined values the compiler
+   expects to find in first bytes of the kernargs space.
+   The plugin may choose to place additional data later in the kernargs
+   memory allocation, but those are not in any fixed location.  */
+struct kernargs_abi {
+  /* Leave space for the real kernel arguments.
+     OpenACC and OpenMP only use one pointer.  */
+  int64_t dummy1;
+  int64_t dummy2;
+
+  /* A pointer to struct output, below, for console output data.  */
+  int64_t out_ptr;		/* Offset 16.  */
+
+  /* A pointer to struct heap.  */
+  int64_t heap_ptr;		/* Offset 24.  */
+
+  /* A pointer to the ephemeral memory areas.
+     The team arena is only needed for OpenMP.
+     Each should have enough space for all the teams and threads.  */
+  int64_t arena_ptr;		/* Offset 32.  */
+  int64_t stack_ptr;		/* Offset 40.  */
+  int arena_size_per_team;	/* Offset 48.  */
+  int stack_size_per_thread;	/* Offset 52.  */
+};
+
 /* This struct is also used in Newlib's libc/sys/amdgcn/write.c.  */
 struct output
 {
