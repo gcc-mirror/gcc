@@ -5,6 +5,10 @@
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 **foo:
 **	...
@@ -41,5 +45,9 @@ foo2 (int8x16_t b, int8x16_t c)
 {
   return vabavq (1, b, c);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */
