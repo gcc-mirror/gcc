@@ -45,7 +45,7 @@ class predicate
 {
  public:
   /* Construct with the specified EVAL object.  */
-  predicate () : m_preds (vNULL) { }
+  predicate (bool empty_val) : m_preds (vNULL), m_cval (empty_val) { }
 
   /* Copy.  */
   predicate (const predicate &rhs) : m_preds (vNULL) { *this = rhs; }
@@ -58,6 +58,21 @@ class predicate
   bool is_empty () const
   {
     return m_preds.is_empty ();
+  }
+
+  bool is_true () const
+  {
+    return is_empty () && m_cval;
+  }
+
+  bool is_false () const
+  {
+    return is_empty () && !m_cval;
+  }
+
+  bool empty_val () const
+  {
+    return m_cval;
   }
 
   const pred_chain_union chain () const
@@ -92,8 +107,10 @@ private:
   bool simplify_3 ();
   bool simplify_4 ();
 
-  /* Representation of the predicate expression(s).  */
+  /* Representation of the predicate expression(s).  The predicate is
+     m_cval || m_preds[0] || ...  */
   pred_chain_union m_preds;
+  bool m_cval;
 };
 
 /* Represents a complex Boolean predicate expression.  */
@@ -119,7 +136,7 @@ class uninit_analysis
 
   /* Construct with the specified EVAL object.  */
   uninit_analysis (func_t &eval)
-    : m_phi_def_preds (), m_eval (eval) { }
+    : m_phi_def_preds (false), m_eval (eval) { }
 
   /* Copy.  */
   uninit_analysis (const uninit_analysis &rhs) = delete;

@@ -1249,7 +1249,7 @@ simplify_1a (pred_chain &chain)
 }
 
 /* Implement rule 1b above.  PREDS is the AND predicate to simplify
-   in place.  Returns true if CHAIN simplifies to true.  */
+   in place.  Returns true if CHAIN simplifies to true or false.  */
 
 static bool
 simplify_1b (pred_chain &chain)
@@ -1290,6 +1290,8 @@ simplify_1b (pred_chain &chain)
 	    {
 	      chain.ordered_remove (j);
 	      chain.ordered_remove (i);
+	      if (chain.is_empty ())
+		return true;
 	      i--;
 	      break;
 	    }
@@ -1503,6 +1505,7 @@ predicate::simplify (gimple *use_or_def, bool is_use)
       ::simplify_1a (m_preds[i]);
       if (::simplify_1b (m_preds[i]))
 	{
+	  m_preds[i].release ();
 	  m_preds.ordered_remove (i);
 	  i--;
 	}
@@ -1719,10 +1722,11 @@ predicate::normalize (const pred_chain &chain)
   while (!work_list.is_empty ())
     {
       pred_info pi = work_list.pop ();
-      predicate pred;
       /* The predicate object is not modified here, only NORM_CHAIN and
 	 WORK_LIST are appended to.  */
-      pred.normalize (&norm_chain, pi, BIT_AND_EXPR, &work_list, &mark_set);
+      unsigned oldlen = m_preds.length ();
+      normalize (&norm_chain, pi, BIT_AND_EXPR, &work_list, &mark_set);
+      gcc_assert (m_preds.length () == oldlen);
     }
 
   m_preds.safe_push (norm_chain);
@@ -1740,7 +1744,7 @@ predicate::normalize (gimple *use_or_def, bool is_use)
       dump (dump_file, use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
-  predicate norm_preds;
+  predicate norm_preds (empty_val ());
   for (unsigned i = 0; i < m_preds.length (); i++)
     {
       if (m_preds[i].length () != 1)
@@ -2076,6 +2080,8 @@ predicate::operator= (const predicate &rhs)
   if (this == &rhs)
     return *this;
 
+  m_cval = rhs.m_cval;
+
   unsigned n = m_preds.length ();
   for (unsigned i = 0; i != n; ++i)
     m_preds[i].release ();
@@ -2204,11 +2210,15 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
   /* Try to build the predicate expression under which the PHI flows
      into its use.  This will be empty if the PHI is defined and used
      in the same bb.  */
-  predicate use_preds;
+  predicate use_preds (true);
   if (!init_use_preds (use_preds, def_bb, use_bb))
     return false;
 
   use_preds.simplify (use_stmt, /*is_use=*/true);
+  if (use_preds.is_false ())
+    return true;
+  if (use_preds.is_true ())
+    return false;
   use_preds.normalize (use_stmt, /*is_use=*/true);
 
   /* Try to prune the dead incoming phi edges.  */
@@ -2227,6 +2237,10 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
 	return false;
 
       m_phi_def_preds.simplify (phi);
+      if (m_phi_def_preds.is_false ())
+	return false;
+      if (m_phi_def_preds.is_true ())
+	return true;
       m_phi_def_preds.normalize (phi);
     }
 
