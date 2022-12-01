@@ -1,3 +1,9 @@
+2022-11-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107542
+	* typeck.cc (cp_build_binary_op): In the SPACESHIP_EXPR case,
+	handle an error_mark_node result type.
+
 2022-11-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/107864

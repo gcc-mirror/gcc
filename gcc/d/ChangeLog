@@ -1,3 +1,31 @@
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_TEXI_FILES): Add d/implement-d.texi.
+	* gdc.texi: Adjust introduction, include implement-d.texi.
+	* implement-d.texi: New file.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in: Only include doc/include when building documentation.
+	(d.html): Rename html directory to $(build_htmldir)/gdc.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.texi: Separate indices into options and keywords.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.texi: Update gdc option documentation.
+	* lang.opt (frevert=intpromote): Correct documentation.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/107592
+	* toir.cc (IRVisitor::push_unrolled_continue_label): New method.
+	(IRVisitor::pop_unrolled_continue_label): New method.
+	(IRVisitor::visit (UnrolledLoopStatement *)): Use them instead of
+	push_continue_label and pop_continue_label.
+
 2022-11-23  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Use it as $DO_LINK_MUTEX.

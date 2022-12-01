@@ -1,3 +1,106 @@
+2022-11-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (addvdi3): Force operand 2 to a register.
+	Remove "addi,tsv,*" instruction from unamed pattern.
+	(subvdi3): Force operand 1 to a register.
+	Remove "subi,tsv" instruction from from unamed pattern.
+
+2022-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_cpymemdi): Specify clobber of CC reg.
+	(*aarch64_cpymemdi): Likewise.
+	(aarch64_movmemdi): Likewise.
+	(aarch64_setmemdi): Likewise.
+	(*aarch64_setmemdi): Likewise.
+
+2022-11-30  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.cc (bit_test_cluster::emit): Remove
+	dead variable bt_range.
+
+2022-11-30  Iskander Shakirzyanov  <iskander@ispras.ru>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR driver/107787
+	* common.opt (Warray-bounds): Turn into alias of
+	-Warray-bounds=1.
+	* builtins.cc (c_strlen): Use OPT_Warray_bounds_
+	instead of OPT_Warray_bounds.
+	* diagnostic-spec.cc (nowarn_spec_t::nowarn_spec_t): Ditto.
+	* gimple-array-bounds.cc (array_bounds_checker::check_array_ref,
+	array_bounds_checker::check_mem_ref,
+	array_bounds_checker::check_addr_expr,
+	array_bounds_checker::check_array_bounds): Ditto.
+	* gimple-ssa-warn-restrict.cc (maybe_diag_access_bounds): Ditto.
+
+2022-11-30  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/101301
+	PR tree-optimization/103680
+	* tree-switch-conversion.cc (bit_test_cluster::emit):
+	Handle correctly remaining probability.
+	(switch_decision_tree::try_switch_expansion): Fix BB's count
+	where a cluster expansion happens.
+	(switch_decision_tree::emit_cmp_and_jump_insns): Fill up also
+	BB count.
+	(switch_decision_tree::do_jump_if_equal): Likewise.
+	(switch_decision_tree::emit_case_nodes): Handle special case
+	for BT expansion which can also fallback to a default BB.
+	* tree-switch-conversion.h (cluster::cluster): Add
+	m_default_prob probability.
+
+2022-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107919
+	* gimple-predicate-analysis.cc (simplify_1): Rename to ...
+	(simplify_1a): .. this.
+	(simplify_1b): New.
+	(predicate::simplify): Call both simplify_1a and simplify_1b.
+
+2022-11-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-uninit.cc (find_uninit_use): Dump the edge for a
+	PHI node.
+
+2022-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107919
+	* gimple-predicate-analysis.cc (predicate::simplify_2):
+	Handle predicates of arbitrary length.
+
+2022-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107835
+	* tree-chrec.cc (chrec_apply): Don't handle "{a, +, a} (x-1)"
+	as "a*x" if type is a pointer type.
+
+2022-11-30  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_omp_device_kind_arch_isa): Add gfx803.
+	* config/gcn/t-omp-device: Add gfx803.
+
+2022-11-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/linux.h (STACK_CHECK_MOVING_SP):
+	Define this macro to 1.
+	* config/loongarch/loongarch.cc (STACK_CLASH_PROTECTION_GUARD_SIZE):
+	Size of guard page.
+	(loongarch_first_stack_step): Return the size of the first drop stack
+	according to whether stack checking is performed.
+	(loongarch_emit_probe_stack_range): Adjust the method of stack checking in prologue.
+	(loongarch_output_probe_stack_range): Delete useless code.
+	(loongarch_expand_prologue): Adjust the method of stack checking in prologue.
+	(loongarch_option_override_internal): Enforce that interval is the same
+	size as size so the mid-end does the right thing.
+	* config/loongarch/loongarch.h (STACK_CLASH_MAX_UNROLL_PAGES):
+	New macro decide whether to loop stack detection.
+
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	* doc/invoke.texi (Static Analyzer Options): Add isatty, ferror,
+	fileno, and getc to the list of functions known to the analyzer.
+
 2022-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/107852

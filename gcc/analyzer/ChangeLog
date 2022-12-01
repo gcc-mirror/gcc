@@ -1,3 +1,59 @@
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (class kf_fgets): Move to sm-file.cc.
+	(kf_fgets::impl_call_pre): Likewise.
+	(class kf_fread): Likewise.
+	(kf_fread::impl_call_pre): Likewise.
+	(class kf_getchar): Likewise.
+	(class kf_stdio_output_fn): Likewise.
+	(register_known_functions): Move registration of
+	BUILT_IN_FPRINTF, BUILT_IN_FPRINTF_UNLOCKED, BUILT_IN_FPUTC,
+	BUILT_IN_FPUTC_UNLOCKED, BUILT_IN_FPUTS, BUILT_IN_FPUTS_UNLOCKED,
+	BUILT_IN_FWRITE, BUILT_IN_FWRITE_UNLOCKED, BUILT_IN_PRINTF,
+	BUILT_IN_PRINTF_UNLOCKED, BUILT_IN_PUTC, BUILT_IN_PUTCHAR,
+	BUILT_IN_PUTCHAR_UNLOCKED, BUILT_IN_PUTC_UNLOCKED, BUILT_IN_PUTS,
+	BUILT_IN_PUTS_UNLOCKED, BUILT_IN_VFPRINTF, BUILT_IN_VPRINTF,
+	"getchar", "fgets", "fgets_unlocked", and "fread" to
+	register_known_file_functions.
+	* sm-file.cc (class kf_stdio_output_fn): Move here from
+	region-model-impl-calls.cc.
+	(class kf_fgets): Likewise.
+	(class kf_fread): Likewise.
+	(class kf_getchar): Likewise.
+	(register_known_file_functions): Move registration of
+	BUILT_IN_FPRINTF, BUILT_IN_FPRINTF_UNLOCKED, BUILT_IN_FPUTC,
+	BUILT_IN_FPUTC_UNLOCKED, BUILT_IN_FPUTS, BUILT_IN_FPUTS_UNLOCKED,
+	BUILT_IN_FWRITE, BUILT_IN_FWRITE_UNLOCKED, BUILT_IN_PRINTF,
+	BUILT_IN_PRINTF_UNLOCKED, BUILT_IN_PUTC, BUILT_IN_PUTCHAR,
+	BUILT_IN_PUTCHAR_UNLOCKED, BUILT_IN_PUTC_UNLOCKED, BUILT_IN_PUTS,
+	BUILT_IN_PUTS_UNLOCKED, BUILT_IN_VFPRINTF, BUILT_IN_VPRINTF,
+	"fgets", "fgets_unlocked", "fread", and "getchar" to here from
+	register_known_functions.
+
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	* analyzer.h (register_known_file_functions): New decl.
+	* program-state.cc (sm_state_map::replay_call_summary): Rejct
+	attempts to store sm-state for caller_sval that can't have
+	associated state.
+	* region-model-impl-calls.cc (register_known_functions): Call
+	register_known_file_functions.
+	* sm-fd.cc (class kf_isatty): New.
+	(register_known_fd_functions): Register it.
+	* sm-file.cc (class kf_ferror): New.
+	(class kf_fileno): New.
+	(class kf_getc): New.
+	(register_known_file_functions): New.
+
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105784
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): For POINTER_PLUS_EXPR,
+	PLUS_EXPR and MINUS_EXPR, eliminate requirement that the final
+	type matches that of arg0 in favor of a cast.
+
 2022-11-24  Martin Liska  <mliska@suse.cz>
 
 	* varargs.cc: Fix Clang warnings.

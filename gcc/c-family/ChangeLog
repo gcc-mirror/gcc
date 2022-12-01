@@ -1,3 +1,11 @@
+2022-11-30  Iskander Shakirzyanov  <iskander@ispras.ru>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR driver/107787
+	* c-common.cc (fold_offsetof,
+	convert_vector_to_array_for_subscript): Use OPT_Warray_bounds_
+	instead of OPT_Warray_bounds.
+
 2022-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (fcontract-role=, fcontract-semantic=): Terminate descriptions

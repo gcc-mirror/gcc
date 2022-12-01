@@ -1,3 +1,79 @@
+2022-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mops_5.c: New test.
+	* gcc.target/aarch64/mops_6.c: Likewise.
+	* gcc.target/aarch64/mops_7.c: Likewise.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/107592
+	* gdc.dg/pr107592.d: New test.
+
+2022-11-30  Iskander Shakirzyanov  <iskander@ispras.ru>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR driver/107787
+	* gcc.dg/Warray-bounds-34.c: Correct the regular expression
+	for -Warray-bounds=.
+	* gcc.dg/Warray-bounds-43.c: Likewise.
+	* gcc.dg/pr107787.c: New test.
+
+2022-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107919
+	* g++.dg/warn/Wuninitialized-pr107919-1.C: New testcase.
+
+2022-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107835
+	* gcc.c-torture/compile/pr107835.c: New test.
+
+2022-11-30  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/107304
+	* gcc.target/i386/pr107304.c: dg-require ifunc support.
+
+2022-11-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* lib/target-supports.exp:
+	* gcc.target/loongarch/stack-check-alloca-1.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-2.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-3.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-4.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-5.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-6.c: New test.
+	* gcc.target/loongarch/stack-check-alloca.h: New test.
+	* gcc.target/loongarch/stack-check-cfa-1.c: New test.
+	* gcc.target/loongarch/stack-check-cfa-2.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-1.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-2.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-3.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-4.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-5.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-6.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-7.c: New test.
+	* gcc.target/loongarch/stack-check-prologue.h: New test.
+
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	* gcc.dg/analyzer/ferror-1.c: New test.
+	* gcc.dg/analyzer/fileno-1.c: New test.
+	* gcc.dg/analyzer/flex-with-call-summaries.c: New test.
+	* gcc.dg/analyzer/flex-without-call-summaries.c: New test.
+	* gcc.dg/analyzer/getc-1.c: New test.
+	* gcc.dg/analyzer/isatty-1.c: New test.
+
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105784
+	* gcc.dg/analyzer/torture/fold-ptr-arith-pr105784.c: New test.
+
+2022-11-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107542
+	* g++.dg/cpp2a/spaceship-sfinae2.C: New test.
+
 2022-11-29  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

@@ -1,3 +1,17 @@
+2022-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Add 'gfx803' to gcn's isa.
+
+2022-11-30  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx900.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx906.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx908.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx90a.c: New test.
+	* testsuite/libgomp.c/declare-variant-4.h: New header file.
+
 2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.2): Mark end-directive as Y.
