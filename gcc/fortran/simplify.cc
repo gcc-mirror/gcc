@@ -8485,7 +8485,16 @@ gfc_simplify_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 	    }
 	}
       else if (field->expr_type == EXPR_ARRAY)
-	e = gfc_copy_expr (field_ctor->expr);
+	{
+	  if (field_ctor)
+	    e = gfc_copy_expr (field_ctor->expr);
+	  else
+	    {
+	      /* Not enough elements in array FIELD.  */
+	      gfc_free_expr (result);
+	      return &gfc_bad_expr;
+	    }
+	}
       else
 	e = gfc_copy_expr (field);
 
