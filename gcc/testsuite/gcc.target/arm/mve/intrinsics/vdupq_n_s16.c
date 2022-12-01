@@ -5,6 +5,10 @@
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 **foo:
 **	...
@@ -16,5 +20,9 @@ foo (int16_t a)
 {
   return vdupq_n_s16 (a);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */

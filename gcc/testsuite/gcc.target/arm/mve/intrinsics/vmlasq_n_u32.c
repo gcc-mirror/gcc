@@ -5,6 +5,10 @@
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 **foo:
 **	...
@@ -41,5 +45,9 @@ foo2 (uint32x4_t m1, uint32x4_t m2)
 {
   return vmlasq (m1, m2, 1);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */
