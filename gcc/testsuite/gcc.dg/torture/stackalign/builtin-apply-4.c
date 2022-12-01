@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-fgnu89-inline" } */
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-xfail-run-if "can cause stack underflow" { amdgcn-*-* } } */
 
 extern void abort (void);
 

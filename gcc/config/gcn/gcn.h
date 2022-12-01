@@ -183,7 +183,7 @@
 
 #define FIXED_REGISTERS {			    \
     /* Scalars.  */				    \
-    1, 1, 0, 0, 1, 1, 1, 1, 1, 1,		    \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		    \
 /*		fp    sp    lr.  */		    \
     1, 1, 0, 0, 0, 0, 1, 1, 0, 0,		    \
 /*  exec_save, cc_save */			    \

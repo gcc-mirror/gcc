@@ -237,20 +237,7 @@ struct kernel_dispatch
    in libgomp target code.  */
 
 struct kernargs {
-  /* Leave space for the real kernel arguments.
-     OpenACC and OpenMP only use one pointer.  */
-  int64_t dummy1;
-  int64_t dummy2;
-
-  /* A pointer to struct output, below, for console output data.  */
-  int64_t out_ptr;
-
-  /* A pointer to struct heap, below.  */
-  int64_t heap_ptr;
-
-  /* A pointer to an ephemeral memory arena.
-    Only needed for OpenMP.  */
-  int64_t arena_ptr;
+  struct kernargs_abi abi;
 
   /* Output data.  */
   struct output output_data;
@@ -426,9 +413,9 @@ struct agent_info
   /* The HSA memory region from which to allocate device data.  */
   hsa_region_t data_region;
 
-  /* Allocated team arenas.  */
-  struct team_arena_list *team_arena_list;
-  pthread_mutex_t team_arena_write_lock;
+  /* Allocated ephemeral memories (team arena and stack space).  */
+  struct ephemeral_memories_list *ephemeral_memories_list;
+  pthread_mutex_t ephemeral_memories_write_lock;
 
   /* Read-write lock that protects kernels which are running or about to be run
      from interference with loading and unloading of images.  Needs to be
@@ -510,17 +497,18 @@ struct module_info
 };
 
 /* A linked list of memory arenas allocated on the device.
-   These are only used by OpenMP, as a means to optimize per-team malloc.  */
+   These are used by OpenMP, as a means to optimize per-team malloc,
+   and for host-accessible stack space.  */
 
-struct team_arena_list
+struct ephemeral_memories_list
 {
-  struct team_arena_list *next;
+  struct ephemeral_memories_list *next;
 
-  /* The number of teams determines the size of the allocation.  */
-  int num_teams;
-  /* The device address of the arena itself.  */
-  void *arena;
-  /* A flag to prevent two asynchronous kernels trying to use the same arena.
+  /* The size is determined by the number of teams and threads.  */
+  size_t size;
+  /* The device address allocated memory.  */
+  void *address;
+  /* A flag to prevent two asynchronous kernels trying to use the same memory.
      The mutex is locked until the kernel exits.  */
   pthread_mutex_t in_use;
 };
@@ -539,15 +527,6 @@ struct hsa_context_info
   char driver_version_s[30];
 };
 
-/* Format of the on-device heap.
-
-   This must match the definition in Newlib and gcn-run.  */
-
-struct heap {
-  int64_t size;
-  char data[0];
-};
-
 /* }}}  */
 /* {{{ Global variables  */
 
@@ -564,6 +543,11 @@ static struct hsa_runtime_fn_info hsa_fns;
    Beware that heap usage increases with OpenMP teams.  See also arenas.  */
 
 static size_t gcn_kernel_heap_size = DEFAULT_GCN_HEAP_SIZE;
+
+/* Ephemeral memory sizes for each kernel launch.  */
+
+static int team_arena_size = DEFAULT_TEAM_ARENA_SIZE;
+static int stack_size = DEFAULT_GCN_STACK_SIZE;
 
 /* Flag to decide whether print to stderr information about what is going on.
    Set in init_debug depending on environment variables.  */
@@ -1020,9 +1004,13 @@ print_kernel_dispatch (struct kernel_dispatch *dispatch, unsigned indent)
   fprintf (stderr, "%*squeue: %p\n", indent, "", dispatch->queue);
   fprintf (stderr, "%*skernarg_address: %p\n", indent, "", kernargs);
   fprintf (stderr, "%*sheap address: %p\n", indent, "",
-	   (void*)kernargs->heap_ptr);
-  fprintf (stderr, "%*sarena address: %p\n", indent, "",
-	   (void*)kernargs->arena_ptr);
+	   (void*)kernargs->abi.heap_ptr);
+  fprintf (stderr, "%*sarena address: %p (%d bytes per workgroup)\n", indent,
+	   "", (void*)kernargs->abi.arena_ptr,
+	   kernargs->abi.arena_size_per_team);
+  fprintf (stderr, "%*sstack address: %p (%d bytes per wavefront)\n", indent,
+	   "", (void*)kernargs->abi.stack_ptr,
+	   kernargs->abi.stack_size_per_thread);
   fprintf (stderr, "%*sobject: %lu\n", indent, "", dispatch->object);
   fprintf (stderr, "%*sprivate_segment_size: %u\n", indent, "",
 	   dispatch->private_segment_size);
@@ -1081,6 +1069,22 @@ init_environment_variables (void)
       size_t tmp = atol (heap);
       if (tmp)
 	gcn_kernel_heap_size = tmp;
+    }
+
+  const char *arena = secure_getenv ("GCN_TEAM_ARENA_SIZE");
+  if (arena)
+    {
+      int tmp = atoi (arena);
+      if (tmp)
+	team_arena_size = tmp;;
+    }
+
+  const char *stack = secure_getenv ("GCN_STACK_SIZE");
+  if (stack)
+    {
+      int tmp = atoi (stack);
+      if (tmp)
+	stack_size = tmp;;
     }
 }
 
@@ -1693,85 +1697,103 @@ isa_code(const char *isa) {
 /* }}}  */
 /* {{{ Run  */
 
-/* Create or reuse a team arena.
+/* Create or reuse a team arena and stack space.
  
    Team arenas are used by OpenMP to avoid calling malloc multiple times
    while setting up each team.  This is purely a performance optimization.
 
-   Allocating an arena also costs performance, albeit on the host side, so
-   this function will reuse an existing arena if a large enough one is idle.
-   The arena is released, but not deallocated, when the kernel exits.  */
+   The stack space is used by all kernels.  We must allocate it in such a
+   way that the reverse offload implmentation can access the data.
 
-static void *
-get_team_arena (struct agent_info *agent, int num_teams)
+   Allocating this memory costs performance, so this function will reuse an
+   existing allocation if a large enough one is idle.
+   The memory lock is released, but not deallocated, when the kernel exits.  */
+
+static void
+configure_ephemeral_memories (struct kernel_info *kernel,
+			      struct kernargs_abi *kernargs, int num_teams,
+			      int num_threads)
 {
-  struct team_arena_list **next_ptr = &agent->team_arena_list;
-  struct team_arena_list *item;
+  struct agent_info *agent = kernel->agent;
+  struct ephemeral_memories_list **next_ptr = &agent->ephemeral_memories_list;
+  struct ephemeral_memories_list *item;
+
+  int actual_arena_size = (kernel->kind == KIND_OPENMP
+			   ? team_arena_size : 0);
+  int actual_arena_total_size = actual_arena_size * num_teams;
+  size_t size = (actual_arena_total_size
+		 + num_teams * num_threads * stack_size);
 
   for (item = *next_ptr; item; next_ptr = &item->next, item = item->next)
     {
-      if (item->num_teams < num_teams)
+      if (item->size < size)
 	continue;
 
-      if (pthread_mutex_trylock (&item->in_use))
-	continue;
-
-      return item->arena;
+      if (pthread_mutex_trylock (&item->in_use) == 0)
+	break;
     }
 
-  GCN_DEBUG ("Creating a new arena for %d teams\n", num_teams);
-
-  if (pthread_mutex_lock (&agent->team_arena_write_lock))
+  if (!item)
     {
-      GOMP_PLUGIN_error ("Could not lock a GCN agent program mutex");
-      return false;
-    }
-  item = malloc (sizeof (*item));
-  item->num_teams = num_teams;
-  item->next = NULL;
-  *next_ptr = item;
+      GCN_DEBUG ("Creating a new %sstack for %d teams with %d threads"
+		 " (%zd bytes)\n", (actual_arena_size ? "arena and " : ""),
+		 num_teams, num_threads, size);
 
-  if (pthread_mutex_init (&item->in_use, NULL))
-    {
-      GOMP_PLUGIN_error ("Failed to initialize a GCN team arena write mutex");
-      return false;
-    }
-  if (pthread_mutex_lock (&item->in_use))
-    {
-      GOMP_PLUGIN_error ("Could not lock a GCN agent program mutex");
-      return false;
-    }
-  if (pthread_mutex_unlock (&agent->team_arena_write_lock))
-    {
-      GOMP_PLUGIN_error ("Could not unlock a GCN agent program mutex");
-      return false;
+      if (pthread_mutex_lock (&agent->ephemeral_memories_write_lock))
+	{
+	  GOMP_PLUGIN_error ("Could not lock a GCN agent program mutex");
+	  return;
+	}
+      item = malloc (sizeof (*item));
+      item->size = size;
+      item->next = NULL;
+      *next_ptr = item;
+
+      if (pthread_mutex_init (&item->in_use, NULL))
+	{
+	  GOMP_PLUGIN_error ("Failed to initialize a GCN memory write mutex");
+	  return;
+	}
+      if (pthread_mutex_lock (&item->in_use))
+	{
+	  GOMP_PLUGIN_error ("Could not lock a GCN agent program mutex");
+	  return;
+	}
+      if (pthread_mutex_unlock (&agent->ephemeral_memories_write_lock))
+	{
+	  GOMP_PLUGIN_error ("Could not unlock a GCN agent program mutex");
+	  return;
+	}
+
+      hsa_status_t status;
+      status = hsa_fns.hsa_memory_allocate_fn (agent->data_region, size,
+					       &item->address);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not allocate memory for GCN kernel arena", status);
+      status = hsa_fns.hsa_memory_assign_agent_fn (item->address, agent->id,
+						   HSA_ACCESS_PERMISSION_RW);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not assign arena & stack memory to device", status);
     }
 
-  const int TEAM_ARENA_SIZE = 64*1024;  /* Must match libgomp.h.  */
-  hsa_status_t status;
-  status = hsa_fns.hsa_memory_allocate_fn (agent->data_region,
-					   TEAM_ARENA_SIZE*num_teams,
-					   &item->arena);
-  if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Could not allocate memory for GCN kernel arena", status);
-  status = hsa_fns.hsa_memory_assign_agent_fn (item->arena, agent->id,
-					       HSA_ACCESS_PERMISSION_RW);
-  if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Could not assign arena memory to device", status);
-
-  return item->arena;
+  kernargs->arena_ptr = (actual_arena_total_size
+			 ? (uint64_t)item->address
+			 : 0);
+  kernargs->stack_ptr = (uint64_t)item->address + actual_arena_total_size;
+  kernargs->arena_size_per_team = actual_arena_size;
+  kernargs->stack_size_per_thread = stack_size;
 }
 
-/* Mark a team arena available for reuse.  */
+/* Mark an ephemeral memory space available for reuse.  */
 
 static void
-release_team_arena (struct agent_info* agent, void *arena)
+release_ephemeral_memories (struct agent_info* agent, void *address)
 {
-  struct team_arena_list *item;
+  struct ephemeral_memories_list *item;
 
-  for (item = agent->team_arena_list; item; item = item->next)
+  for (item = agent->ephemeral_memories_list; item; item = item->next)
     {
-      if (item->arena == arena)
+      if (item->address == address)
 	{
 	  if (pthread_mutex_unlock (&item->in_use))
 	    GOMP_PLUGIN_error ("Could not unlock a GCN agent program mutex");
@@ -1784,22 +1806,22 @@ release_team_arena (struct agent_info* agent, void *arena)
 /* Clean up all the allocated team arenas.  */
 
 static bool
-destroy_team_arenas (struct agent_info *agent)
+destroy_ephemeral_memories (struct agent_info *agent)
 {
-  struct team_arena_list *item, *next;
+  struct ephemeral_memories_list *item, *next;
 
-  for (item = agent->team_arena_list; item; item = next)
+  for (item = agent->ephemeral_memories_list; item; item = next)
     {
       next = item->next;
-      hsa_fns.hsa_memory_free_fn (item->arena);
+      hsa_fns.hsa_memory_free_fn (item->address);
       if (pthread_mutex_destroy (&item->in_use))
 	{
-	  GOMP_PLUGIN_error ("Failed to destroy a GCN team arena mutex");
+	  GOMP_PLUGIN_error ("Failed to destroy a GCN memory mutex");
 	  return false;
 	}
       free (item);
     }
-  agent->team_arena_list = NULL;
+  agent->ephemeral_memories_list = NULL;
 
   return true;
 }
@@ -1871,7 +1893,8 @@ alloc_by_agent (struct agent_info *agent, size_t size)
    the necessary device signals and memory allocations.  */
 
 static struct kernel_dispatch *
-create_kernel_dispatch (struct kernel_info *kernel, int num_teams)
+create_kernel_dispatch (struct kernel_info *kernel, int num_teams,
+			int num_threads)
 {
   struct agent_info *agent = kernel->agent;
   struct kernel_dispatch *shadow
@@ -1906,7 +1929,7 @@ create_kernel_dispatch (struct kernel_info *kernel, int num_teams)
   struct kernargs *kernargs = shadow->kernarg_address;
 
   /* Zero-initialize the output_data (minimum needed).  */
-  kernargs->out_ptr = (int64_t)&kernargs->output_data;
+  kernargs->abi.out_ptr = (int64_t)&kernargs->output_data;
   kernargs->output_data.next_output = 0;
   for (unsigned i = 0;
        i < (sizeof (kernargs->output_data.queue)
@@ -1916,13 +1939,10 @@ create_kernel_dispatch (struct kernel_info *kernel, int num_teams)
   kernargs->output_data.consumed = 0;
 
   /* Pass in the heap location.  */
-  kernargs->heap_ptr = (int64_t)kernel->module->heap;
+  kernargs->abi.heap_ptr = (int64_t)kernel->module->heap;
 
-  /* Create an arena.  */
-  if (kernel->kind == KIND_OPENMP)
-    kernargs->arena_ptr = (int64_t)get_team_arena (agent, num_teams);
-  else
-    kernargs->arena_ptr = 0;
+  /* Create the ephemeral memory spaces.  */
+  configure_ephemeral_memories (kernel, &kernargs->abi, num_teams, num_threads);
 
   /* Ensure we can recognize unset return values.  */
   kernargs->output_data.return_value = 0xcafe0000;
@@ -2006,9 +2026,10 @@ release_kernel_dispatch (struct kernel_dispatch *shadow)
   GCN_DEBUG ("Released kernel dispatch: %p\n", shadow);
 
   struct kernargs *kernargs = shadow->kernarg_address;
-  void *arena = (void *)kernargs->arena_ptr;
-  if (arena)
-    release_team_arena (shadow->agent, arena);
+  void *addr = (void *)kernargs->abi.arena_ptr;
+  if (!addr)
+    addr = (void *)kernargs->abi.stack_ptr;
+  release_ephemeral_memories (shadow->agent, addr);
 
   hsa_fns.hsa_memory_free_fn (shadow->kernarg_address);
 
@@ -2238,7 +2259,8 @@ run_kernel (struct kernel_info *kernel, void *vars,
 	     packet->workgroup_size_z);
 
   struct kernel_dispatch *shadow
-    = create_kernel_dispatch (kernel, packet->grid_size_x);
+    = create_kernel_dispatch (kernel, packet->grid_size_x,
+			      packet->grid_size_z);
   shadow->queue = command_q;
 
   if (debug)
@@ -3280,14 +3302,14 @@ GOMP_OFFLOAD_init_device (int n)
       GOMP_PLUGIN_error ("Failed to initialize a GCN agent queue mutex");
       return false;
     }
-  if (pthread_mutex_init (&agent->team_arena_write_lock, NULL))
+  if (pthread_mutex_init (&agent->ephemeral_memories_write_lock, NULL))
     {
       GOMP_PLUGIN_error ("Failed to initialize a GCN team arena write mutex");
       return false;
     }
   agent->async_queues = NULL;
   agent->omp_async_queue = NULL;
-  agent->team_arena_list = NULL;
+  agent->ephemeral_memories_list = NULL;
 
   uint32_t queue_size;
   hsa_status_t status;
@@ -3640,7 +3662,7 @@ GOMP_OFFLOAD_fini_device (int n)
       agent->module = NULL;
     }
 
-  if (!destroy_team_arenas (agent))
+  if (!destroy_ephemeral_memories (agent))
     return false;
 
   if (!destroy_hsa_program (agent))
@@ -3666,9 +3688,9 @@ GOMP_OFFLOAD_fini_device (int n)
       GOMP_PLUGIN_error ("Failed to destroy a GCN agent queue mutex");
       return false;
     }
-  if (pthread_mutex_destroy (&agent->team_arena_write_lock))
+  if (pthread_mutex_destroy (&agent->ephemeral_memories_write_lock))
     {
-      GOMP_PLUGIN_error ("Failed to destroy a GCN team arena mutex");
+      GOMP_PLUGIN_error ("Failed to destroy a GCN memory mutex");
       return false;
     }
   agent->initialized = false;

@@ -1,4 +1,4 @@
-/* { dg-xfail-if "can cause stack underflow" { nios2-*-* } } */
+/* { dg-xfail-run-if "can cause stack underflow" { nios2-*-* amdgcn-*-* } } */
 /* { dg-require-effective-target untyped_assembly } */
 #define INTEGER_ARG  5
 

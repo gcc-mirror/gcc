@@ -35,6 +35,7 @@
 #include <signal.h>
 
 #include "hsa.h"
+#include "../../../libgomp/config/gcn/libgomp-gcn.h"
 
 #ifndef HSA_RUNTIME_LIB
 #define HSA_RUNTIME_LIB "libhsa-runtime64.so.1"
@@ -487,38 +488,15 @@ device_malloc (size_t size, hsa_region_t region)
    automatically assign the exit value to *return_value.  */
 struct kernargs
 {
-  /* Kernargs.  */
-  int32_t argc;
-  int64_t argv;
-  int64_t out_ptr;
-  int64_t heap_ptr;
-
-  /* Output data.  */
-  struct output
-  {
-    int return_value;
-    unsigned int next_output;
-    struct printf_data
-    {
-      int written;
-      char msg[128];
-      int type;
-      union
-      {
-	int64_t ivalue;
-	double dvalue;
-	char text[128];
-      };
-    } queue[1024];
-    unsigned int consumed;
-  } output_data;
+  union {
+    struct {
+      int32_t argc;
+      int64_t argv;
+    } args;
+    struct kernargs_abi abi;
+  };
+  struct output output_data;
 };
-
-struct heap
-{
-  int64_t size;
-  char data[0];
-} heap;
 
 /* Print any console output from the kernel.
    We print all entries from "consumed" to the next entry without a "written"
@@ -687,6 +665,16 @@ main (int argc, char *argv[])
   for (int i = 0; i < kernel_argc; i++)
     args_size += strlen (kernel_argv[i]) + 1;
 
+  /* The device stack can be adjusted via an environment variable.  */
+  char *envvar = getenv ("GCN_STACK_SIZE");
+  int stack_size = 1 * 1024 * 1024;  /* 1MB default.  */
+  if (envvar)
+    {
+      int val = atoi (envvar);
+      if (val)
+	stack_size = val;
+    }
+
   /* Allocate device memory for both function parameters and the argv
      data.  */
   struct kernargs *kernargs = device_malloc (sizeof (*kernargs),
@@ -702,11 +690,12 @@ main (int argc, char *argv[])
   XHSA (hsa_fns.hsa_memory_assign_agent_fn (heap, device,
 					    HSA_ACCESS_PERMISSION_RW),
 	"Assign heap to device agent");
+  void *stack = device_malloc (stack_size, heap_region);
 
   /* Write the data to the target.  */
-  kernargs->argc = kernel_argc;
-  kernargs->argv = (int64_t) args->argv_data;
-  kernargs->out_ptr = (int64_t) &kernargs->output_data;
+  kernargs->args.argc = kernel_argc;
+  kernargs->args.argv = (int64_t) args->argv_data;
+  kernargs->abi.out_ptr = (int64_t) &kernargs->output_data;
   kernargs->output_data.return_value = 0xcafe0000; /* Default return value. */
   kernargs->output_data.next_output = 0;
   for (unsigned i = 0; i < (sizeof (kernargs->output_data.queue)
@@ -721,8 +710,11 @@ main (int argc, char *argv[])
       memcpy (&args->strings[offset], kernel_argv[i], arg_len + 1);
       offset += arg_len;
     }
-  kernargs->heap_ptr = (int64_t) heap;
+  kernargs->abi.heap_ptr = (int64_t) heap;
   hsa_fns.hsa_memory_copy_fn (&heap->size, &heap_size, sizeof (heap_size));
+  kernargs->abi.arena_ptr = 0;
+  kernargs->abi.stack_ptr = (int64_t) stack;
+  kernargs->abi.stack_size_per_thread = stack_size;
 
   /* Run constructors on the GPU.  */
   run (init_array_kernel, kernargs);
