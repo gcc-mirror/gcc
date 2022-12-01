@@ -9,6 +9,6 @@ unsigned foo(int8x16_t v, int8x16_t w)
 {
   return vcmpeqq (v, w);
 }
-/* { dg-final { scan-assembler {\tvcmp.i8  eq} } } */
-/* { dg-final { scan-assembler {\tvmrs\tr[0-9]+, P0} } } */
+/* { dg-final { scan-assembler {\tvcmp.i8\teq} } } */
+/* { dg-final { scan-assembler {\tvmrs\tr[0-9]+, p0} } } */
 /* { dg-final { scan-assembler {\tuxth} } } */

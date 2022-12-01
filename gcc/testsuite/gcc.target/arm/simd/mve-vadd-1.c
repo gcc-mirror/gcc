@@ -22,9 +22,9 @@ FUNC(u, uint, 16, 8, +, vadd)
 FUNC(s, int, 8, 16, +, vadd)
 FUNC(u, uint, 8, 16, +, vadd)
 
-/* { dg-final { scan-assembler-times {vadd\.i32  q[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
-/* { dg-final { scan-assembler-times {vadd\.i16  q[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
-/* { dg-final { scan-assembler-times {vadd\.i8  q[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vadd\.i32\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vadd\.i16\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vadd\.i8\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
 
 void test_vadd_f32 (float * dest, float * a, float * b) {
   int i;
@@ -32,7 +32,7 @@ void test_vadd_f32 (float * dest, float * a, float * b) {
     dest[i] = a[i] + b[i];
   }
 }
-/* { dg-final { scan-assembler-times {vadd\.f32 q[0-9]+, q[0-9]+, q[0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {vadd\.f32\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } } */
 
 void test_vadd_f16 (__fp16 * dest, __fp16 * a, __fp16 * b) {
   int i;
@@ -40,4 +40,4 @@ void test_vadd_f16 (__fp16 * dest, __fp16 * a, __fp16 * b) {
     dest[i] = a[i] + b[i];
   }
 }
-/* { dg-final { scan-assembler-times {vadd\.f16 q[0-9]+, q[0-9]+, q[0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {vadd\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } } */
