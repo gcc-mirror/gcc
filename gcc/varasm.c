@@ -2322,7 +2322,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   else
     {
       /* Special-case handling of vtv comdat sections.  */
-      if (sect->named.name
+      if (SECTION_STYLE (sect) == SECTION_NAMED
 	  && (strcmp (sect->named.name, ".vtable_map_vars") == 0))
 	handle_vtv_comdat_section (sect, decl);
       else
