@@ -143,17 +143,28 @@ public:
 
     if (warned)
       {
-	char num_bytes_past_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-	print_dec (m_out_of_bounds_range.m_size_in_bytes,
-		   num_bytes_past_buf, UNSIGNED);
-	if (m_diag_arg)
-	  inform (rich_loc->get_loc (), "write is %s bytes past the end"
-					" of %qE", num_bytes_past_buf,
-						   m_diag_arg);
-	else
-	  inform (rich_loc->get_loc (), "write is %s bytes past the end"
-					"of the region",
-					num_bytes_past_buf);
+	if (wi::fits_uhwi_p (m_out_of_bounds_range.m_size_in_bytes))
+	  {
+	    unsigned HOST_WIDE_INT num_bad_bytes
+	      = m_out_of_bounds_range.m_size_in_bytes.to_uhwi ();
+	    if (m_diag_arg)
+	      inform_n (rich_loc->get_loc (),
+			num_bad_bytes,
+			"write of %wu byte to beyond the end of %qE",
+			"write of %wu bytes to beyond the end of %qE",
+			num_bad_bytes,
+			m_diag_arg);
+	    else
+	      inform_n (rich_loc->get_loc (),
+			num_bad_bytes,
+			"write of %wu byte to beyond the end of the region",
+			"write of %wu bytes to beyond the end of the region",
+			num_bad_bytes);
+	  }
+	else if (m_diag_arg)
+	  inform (rich_loc->get_loc (),
+		  "write to beyond the end of %qE",
+		  m_diag_arg);
       }
 
     return warned;
@@ -212,17 +223,28 @@ public:
 
     if (warned)
       {
-	char num_bytes_past_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-	print_dec (m_out_of_bounds_range.m_size_in_bytes,
-		   num_bytes_past_buf, UNSIGNED);
-	if (m_diag_arg)
-	  inform (rich_loc->get_loc (), "read is %s bytes past the end"
-					" of %qE", num_bytes_past_buf,
-						    m_diag_arg);
-	else
-	  inform (rich_loc->get_loc (), "read is %s bytes past the end"
-					"of the region",
-					num_bytes_past_buf);
+	if (wi::fits_uhwi_p (m_out_of_bounds_range.m_size_in_bytes))
+	  {
+	    unsigned HOST_WIDE_INT num_bad_bytes
+	      = m_out_of_bounds_range.m_size_in_bytes.to_uhwi ();
+	    if (m_diag_arg)
+	      inform_n (rich_loc->get_loc (),
+			num_bad_bytes,
+			"read of %wu byte from after the end of %qE",
+			"read of %wu bytes from after the end of %qE",
+			num_bad_bytes,
+			m_diag_arg);
+	    else
+	      inform_n (rich_loc->get_loc (),
+			num_bad_bytes,
+			"read of %wu byte from after the end of the region",
+			"read of %wu bytes from after the end of the region",
+			num_bad_bytes);
+	  }
+	else if (m_diag_arg)
+	  inform (rich_loc->get_loc (),
+		  "read from after the end of %qE",
+		  m_diag_arg);
       }
 
     return warned;

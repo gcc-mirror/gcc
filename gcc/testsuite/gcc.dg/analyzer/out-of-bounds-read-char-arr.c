@@ -32,24 +32,19 @@ char int_arr_read_element_after_end_off_by_one(void)
 {
   return arr[10]; /* { dg-warning "buffer overread" "warning" } */
   /* { dg-message "out-of-bounds read at byte 10 but 'arr' ends at byte 10" "final event" { target *-*-* } .-1 } */
-  /* { dg-message "read is 1 bytes past the end of 'arr'" "note" { target *-*-* } .-2 } */
-  // FIXME(PR 106626): "1 bytes"
+  /* { dg-message "read of 1 byte from after the end of 'arr'" "num bad bytes note" { target *-*-* } .-2 } */
 }
 
 char int_arr_read_element_after_end_near(void)
 {
   return arr[11]; /* { dg-warning "buffer overread" "warning" } */
   /* { dg-message "out-of-bounds read at byte 11 but 'arr' ends at byte 10" "final event" { target *-*-* } .-1 } */
-  /* { dg-message "read is 1 bytes past the end of 'arr'" "note" { target *-*-* } .-2 } */
-  // FIXME(PR 106626): is the note correct?
-  // FIXME(PR 106626): "1 bytes"
+  /* { dg-message "read of 1 byte from after the end of 'arr'" "num bad bytes note" { target *-*-* } .-2 } */
 }
 
 char int_arr_read_element_after_end_far(void)
 {
   return arr[100]; /* { dg-warning "buffer overread" "warning" } */
   /* { dg-message "out-of-bounds read at byte 100 but 'arr' ends at byte 10" "final event" { target *-*-* } .-1 } */
-  /* { dg-message "read is 1 bytes past the end of 'arr'" "note" { target *-*-* } .-2 } */
-  // FIXME(PR 106626): the note seems incorrect (size of access is 1 byte, but magnitude beyond boundary is 90)
-  // FIXME(PR 106626): "1 bytes"
+  /* { dg-message "read of 1 byte from after the end of 'arr'" "num bad bytes note" { target *-*-* } .-2 } */
 }

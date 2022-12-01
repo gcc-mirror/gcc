@@ -32,24 +32,19 @@ void int_arr_write_element_after_end_off_by_one(char x)
 {
   arr[10] = x; /* { dg-warning "buffer overflow" "warning" } */
   /* { dg-message "out-of-bounds write at byte 10 but 'arr' ends at byte 10" "final event" { target *-*-* } .-1 } */
-  /* { dg-message "write is 1 bytes past the end of 'arr'" "note" { target *-*-* } .-2 } */
-  // FIXME(PR 106626): "1 bytes"
+  /* { dg-message "write of 1 byte to beyond the end of 'arr'" "num bad bytes note" { target *-*-* } .-2 } */
 }
 
 void int_arr_write_element_after_end_near(char x)
 {
   arr[11] = x; /* { dg-warning "buffer overflow" "warning" } */
   /* { dg-message "out-of-bounds write at byte 11 but 'arr' ends at byte 10" "final event" { target *-*-* } .-1 } */
-  /* { dg-message "write is 1 bytes past the end of 'arr'" "note" { target *-*-* } .-2 } */
-  // FIXME(PR 106626): is the note correct?
-  // FIXME(PR 106626): "1 bytes"
+  /* { dg-message "write of 1 byte to beyond the end of 'arr'" "num bad bytes note" { target *-*-* } .-2 } */
 }
 
 void int_arr_write_element_after_end_far(char x)
 {
   arr[100] = x; /* { dg-warning "buffer overflow" "warning" } */
   /* { dg-message "out-of-bounds write at byte 100 but 'arr' ends at byte 10" "final event" { target *-*-* } .-1 } */
-  /* { dg-message "write is 1 bytes past the end of 'arr'" "note" { target *-*-* } .-2 } */
-  // FIXME(PR 106626): the note seems incorrect (size of access is 1 byte, but magnitude beyond boundary is 90)
-  // FIXME(PR 106626): "1 bytes"
+  /* { dg-message "write of 1 byte to beyond the end of 'arr'" "num bad bytes note" { target *-*-* } .-2 } */
 }
