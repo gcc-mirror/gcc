@@ -38,7 +38,7 @@ FUNC(f, float, 16, 8, vabs)
    integer optimizations actually generate a call to memmove, the other ones a
    'vabs'.  */
 /* { dg-final { scan-assembler-times {vabs.s[0-9]+\tq[0-9]+, q[0-9]+} 3 } } */
-/* { dg-final { scan-assembler-times {vabs.f[0-9]+  q[0-9]+, q[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vabs.f[0-9]+\tq[0-9]+, q[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vldr[bhw].[0-9]+\tq[0-9]+} 5 } } */
 /* { dg-final { scan-assembler-times {vstr[bhw].[0-9]+\tq[0-9]+} 5 } } */
 /* { dg-final { scan-assembler-times {memmove} 3 } } */

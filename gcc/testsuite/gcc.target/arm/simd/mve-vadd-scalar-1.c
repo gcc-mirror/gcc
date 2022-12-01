@@ -24,9 +24,9 @@ FUNC_IMM(u, uint, 8, 16, +, vaddimm)
 
 /* For the moment we do not select the T2 vadd variant operating on a scalar
    final argument.  */
-/* { dg-final { scan-assembler-times {vadd\.i32  q[0-9]+, q[0-9]+, r[0-9]+} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {vadd\.i16  q[0-9]+, q[0-9]+, r[0-9]+} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {vadd\.i8  q[0-9]+, q[0-9]+, r[0-9]+} 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {vadd\.i32\tq[0-9]+, q[0-9]+, r[0-9]+} 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {vadd\.i16\tq[0-9]+, q[0-9]+, r[0-9]+} 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {vadd\.i8\tq[0-9]+, q[0-9]+, r[0-9]+} 2 { xfail *-*-* } } } */
 
 void test_vaddimm_f32 (float * dest, float * a) {
   int i;
@@ -34,7 +34,7 @@ void test_vaddimm_f32 (float * dest, float * a) {
     dest[i] = a[i] + 5.0;
   }
 }
-/* { dg-final { scan-assembler-times {vadd\.f32 q[0-9]+, q[0-9]+, r[0-9]+} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {vadd\.f32\tq[0-9]+, q[0-9]+, r[0-9]+} 1 { xfail *-*-* } } } */
 
 /* Note that dest[i] = a[i] + 5.0f16 is not vectorized.  */
 void test_vaddimm_f16 (__fp16 * dest, __fp16 * a) {
@@ -44,4 +44,4 @@ void test_vaddimm_f16 (__fp16 * dest, __fp16 * a) {
     dest[i] = a[i] + b;
   }
 }
-/* { dg-final { scan-assembler-times {vadd\.f16 q[0-9]+, q[0-9]+, r[0-9]+} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {vadd\.f16\tq[0-9]+, q[0-9]+, r[0-9]+} 1 { xfail *-*-* } } } */

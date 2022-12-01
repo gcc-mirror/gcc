@@ -50,31 +50,31 @@ TEST_TYPE (vs32, __INT32_TYPE__, COMPARE_REG_AND_ZERO, 16)
 TEST_TYPE (vu32, __UINT32_TYPE__, COMPARE_REG, 16)
 
 /* { 8 bits } x { eq, ne, lt, le, gt, ge, hi, cs }.
-/* { dg-final { scan-assembler-times {\tvcmp.i8  eq, q[0-9]+, q[0-9]+\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.i8  ne, q[0-9]+, q[0-9]+\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s8  lt, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s8  le, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s8  gt, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s8  ge, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.u8  hi, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.u8  cs, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.i8\teq, q[0-9]+, q[0-9]+\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.i8\tne, q[0-9]+, q[0-9]+\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s8\tlt, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s8\tle, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s8\tgt, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s8\tge, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.u8\thi, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.u8\tcs, q[0-9]+, q[0-9]+\n} 2 } } */
 
 /* { 16 bits } x { eq, ne, lt, le, gt, ge, hi, cs }.
-/* { dg-final { scan-assembler-times {\tvcmp.i16  eq, q[0-9]+, q[0-9]+\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.i16  ne, q[0-9]+, q[0-9]+\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s16  lt, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s16  le, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s16  gt, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s16  ge, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.u16  hi, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.u16  cs, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.i16\teq, q[0-9]+, q[0-9]+\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.i16\tne, q[0-9]+, q[0-9]+\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s16\tlt, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s16\tle, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s16\tgt, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s16\tge, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.u16\thi, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.u16\tcs, q[0-9]+, q[0-9]+\n} 2 } } */
 
 /* { 32 bits } x { eq, ne, lt, le, gt, ge, hi, cs }.
-/* { dg-final { scan-assembler-times {\tvcmp.i32  eq, q[0-9]+, q[0-9]+\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.i32  ne, q[0-9]+, q[0-9]+\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s32  lt, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s32  le, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s32  gt, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s32  ge, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.u32  hi, q[0-9]+, q[0-9]+\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.u32  cs, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.i32\teq, q[0-9]+, q[0-9]+\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.i32\tne, q[0-9]+, q[0-9]+\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s32\tlt, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s32\tle, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s32\tgt, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s32\tge, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.u32\thi, q[0-9]+, q[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.u32\tcs, q[0-9]+, q[0-9]+\n} 2 } } */

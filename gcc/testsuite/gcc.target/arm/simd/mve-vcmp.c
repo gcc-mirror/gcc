@@ -36,15 +36,15 @@ ALL_FUNCS(>=, vcmpge)
 
 /* MVE has only 128-bit vectors, so we can vectorize only half of the
    functions above.  */
-/* { dg-final { scan-assembler-times {\tvcmp.i[0-9]+  eq, q[0-9]+, q[0-9]+\n} 6 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.i[0-9]+  ne, q[0-9]+, q[0-9]+\n} 6 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.i[0-9]+\teq, q[0-9]+, q[0-9]+\n} 6 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.i[0-9]+\tne, q[0-9]+, q[0-9]+\n} 6 } } */
 
 /* lt, le, gt, ge apply to signed types, cs and hi to unsigned types.  */
 /* lt and le with unsigned types are replaced with the opposite condition, hence
    the double number of matches for cs and hi.  */
-/* { dg-final { scan-assembler-times {\tvcmp.s[0-9]+  lt, q[0-9]+, q[0-9]+\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s[0-9]+  le, q[0-9]+, q[0-9]+\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s[0-9]+  gt, q[0-9]+, q[0-9]+\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.s[0-9]+  ge, q[0-9]+, q[0-9]+\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.u[0-9]+  cs, q[0-9]+, q[0-9]+\n} 6 } } */
-/* { dg-final { scan-assembler-times {\tvcmp.u[0-9]+  hi, q[0-9]+, q[0-9]+\n} 6 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s[0-9]+\tlt, q[0-9]+, q[0-9]+\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s[0-9]+\tle, q[0-9]+, q[0-9]+\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s[0-9]+\tgt, q[0-9]+, q[0-9]+\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.s[0-9]+\tge, q[0-9]+, q[0-9]+\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.u[0-9]+\tcs, q[0-9]+, q[0-9]+\n} 6 } } */
+/* { dg-final { scan-assembler-times {\tvcmp.u[0-9]+\thi, q[0-9]+, q[0-9]+\n} 6 } } */
