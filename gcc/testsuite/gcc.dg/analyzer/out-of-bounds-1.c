@@ -93,7 +93,7 @@ void test6 (void)
 
   /* { dg-warning "buffer overflow" "warning" { target *-*-* } test6b } */
   /* { dg-message "" "note" { target *-*-* } test6b } */
-  /* { dg-warning "buffer overread" "warning" { target *-*-* } test6c } */
+  /* { dg-warning "buffer over-read" "warning" { target *-*-* } test6c } */
   /* { dg-message "" "note" { target *-*-* } test6c } */
 }
 
@@ -116,7 +116,7 @@ void test7 (void)
   fn (destBuf, srcBuf, returnChunkSize (destBuf)); /* { dg-line test7 } */
 
   // TODO: Should we handle widening_svalues as a follow-up?
-  /* { dg-warning "overread" "warning" { xfail *-*-* } test7 } */
+  /* { dg-warning "over-read" "warning" { xfail *-*-* } test7 } */
   /* { dg-warning "overflow" "warning" { xfail *-*-* } test7 } */
   /* { dg-message "" "note" { xfail *-*-* } test7 } */
 }

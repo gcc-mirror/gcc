@@ -4,21 +4,21 @@ int32_t arr[10]; /* { dg-message "capacity is 40 bytes" } */
 
 void int_arr_write_element_before_start_far(int32_t x)
 {
-  arr[-100] = x; /* { dg-warning "buffer underflow" "warning" } */
+  arr[-100] = x; /* { dg-warning "buffer underwrite" "warning" } */
   /* { dg-message "out-of-bounds write from byte -400 till byte -397 but 'arr' starts at byte 0" "final event" { target *-*-* } .-1 } */
   /* { dg-message "valid subscripts for 'arr' are '\\\[0\\\]' to '\\\[9\\\]'" "valid subscript note" { target *-*-* } .-2 } */
 }
 
 void int_arr_write_element_before_start_near(int32_t x)
 {
-  arr[-2] = x; /* { dg-warning "buffer underflow" "warning" } */
+  arr[-2] = x; /* { dg-warning "buffer underwrite" "warning" } */
   /* { dg-message "out-of-bounds write from byte -8 till byte -5 but 'arr' starts at byte 0" "final event" { target *-*-* } .-1 } */
   /* { dg-message "valid subscripts for 'arr' are '\\\[0\\\]' to '\\\[9\\\]'" "valid subscript note" { target *-*-* } .-2 } */
 }
 
 void int_arr_write_element_before_start_off_by_one(int32_t x)
 {
-  arr[-1] = x; /* { dg-warning "buffer underflow" "warning" } */
+  arr[-1] = x; /* { dg-warning "buffer underwrite" "warning" } */
   /* { dg-message "out-of-bounds write from byte -4 till byte -1 but 'arr' starts at byte 0" "final event" { target *-*-* } .-1 } */
   /* { dg-message "valid subscripts for 'arr' are '\\\[0\\\]' to '\\\[9\\\]'" "valid subscript note" { target *-*-* } .-2 } */
 }

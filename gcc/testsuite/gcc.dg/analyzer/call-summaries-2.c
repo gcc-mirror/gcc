@@ -329,7 +329,7 @@ int test_returns_element_ptr (int j)
   __analyzer_eval (*returns_element_ptr (0) == 7); /* { dg-warning "TRUE" } */
   __analyzer_eval (*returns_element_ptr (1) == 8); /* { dg-warning "TRUE" } */
   __analyzer_eval (*returns_element_ptr (2) == 9); /* { dg-warning "TRUE" } */
-  return *returns_element_ptr (3); /* { dg-warning "buffer overread" } */
+  return *returns_element_ptr (3); /* { dg-warning "buffer over-read" } */
   /* { dg-message "valid subscripts for 'arr' are '\\\[0\\\]' to '\\\[2\\\]'" "valid subscript note" { target *-*-* } .-1 } */
 }
 

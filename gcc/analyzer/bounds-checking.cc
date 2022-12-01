@@ -71,6 +71,11 @@ public:
   }
 
 protected:
+  enum memory_space get_memory_space () const
+  {
+    return m_reg->get_memory_space ();
+  }
+
   /* Potentially add a note about valid ways to index this array, such
      as (given "int arr[10];"):
        note: valid subscripts for 'arr' are '[0]' to '[9]'
@@ -150,7 +155,7 @@ public:
   {
     diagnostic_metadata m;
     bool warned;
-    switch (m_reg->get_memory_space ())
+    switch (get_memory_space ())
       {
       default:
 	m.add_cwe (787);
@@ -234,22 +239,36 @@ public:
   }
 };
 
-/* Concrete subclass to complain about buffer overreads.  */
+/* Concrete subclass to complain about buffer over-reads.  */
 
-class buffer_overread : public past_the_end
+class buffer_over_read : public past_the_end
 {
 public:
-  buffer_overread (const region *reg, tree diag_arg,
-		   byte_range range, tree byte_bound)
+  buffer_over_read (const region *reg, tree diag_arg,
+		    byte_range range, tree byte_bound)
   : past_the_end (reg, diag_arg, range, byte_bound)
   {}
 
   bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
+    bool warned;
     m.add_cwe (126);
-    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
-				"buffer overread");
+    switch (get_memory_space ())
+      {
+      default:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "buffer over-read");
+	break;
+      case MEMSPACE_STACK:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "stack-based buffer over-read");
+	break;
+      case MEMSPACE_HEAP:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "heap-based buffer over-read");
+	break;
+      }
 
     if (warned)
       {
@@ -316,21 +335,35 @@ public:
   }
 };
 
-/* Concrete subclass to complain about buffer underflows.  */
+/* Concrete subclass to complain about buffer underwrites.  */
 
-class buffer_underflow : public out_of_bounds
+class buffer_underwrite : public out_of_bounds
 {
 public:
-  buffer_underflow (const region *reg, tree diag_arg, byte_range range)
+  buffer_underwrite (const region *reg, tree diag_arg, byte_range range)
   : out_of_bounds (reg, diag_arg, range)
   {}
 
   bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
+    bool warned;
     m.add_cwe (124);
-    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
-				"buffer underflow");
+    switch (get_memory_space ())
+      {
+      default:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "buffer underwrite");
+	break;
+      case MEMSPACE_STACK:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "stack-based buffer underwrite");
+	break;
+      case MEMSPACE_HEAP:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "heap-based buffer underwrite");
+	break;
+      }
     if (warned)
       maybe_describe_array_bounds (rich_loc->get_loc ());
     return warned;
@@ -368,21 +401,35 @@ public:
   }
 };
 
-/* Concrete subclass to complain about buffer underreads.  */
+/* Concrete subclass to complain about buffer under-reads.  */
 
-class buffer_underread : public out_of_bounds
+class buffer_under_read : public out_of_bounds
 {
 public:
-  buffer_underread (const region *reg, tree diag_arg, byte_range range)
+  buffer_under_read (const region *reg, tree diag_arg, byte_range range)
   : out_of_bounds (reg, diag_arg, range)
   {}
 
   bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
+    bool warned;
     m.add_cwe (127);
-    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
-				"buffer underread");
+    switch (get_memory_space ())
+      {
+      default:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "buffer under-read");
+	break;
+      case MEMSPACE_STACK:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "stack-based buffer under-read");
+	break;
+      case MEMSPACE_HEAP:
+	warned = warning_meta (rich_loc, m, get_controlling_option (),
+			       "heap-based buffer under-read");
+	break;
+      }
     if (warned)
       maybe_describe_array_bounds (rich_loc->get_loc ());
     return warned;
@@ -519,6 +566,11 @@ public:
   }
 
 protected:
+  enum memory_space get_memory_space () const
+  {
+    return m_reg->get_memory_space ();
+  }
+
   const region *m_reg;
   tree m_diag_arg;
   tree m_offset;
@@ -542,7 +594,7 @@ public:
   bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
-    switch (m_reg->get_memory_space ())
+    switch (get_memory_space ())
       {
       default:
 	m.add_cwe (787);
@@ -560,13 +612,13 @@ public:
   }
 };
 
-/* Concrete subclass to complain about overreads with symbolic values.  */
+/* Concrete subclass to complain about over-reads with symbolic values.  */
 
-class symbolic_buffer_overread : public symbolic_past_the_end
+class symbolic_buffer_over_read : public symbolic_past_the_end
 {
 public:
-  symbolic_buffer_overread (const region *reg, tree diag_arg, tree offset,
-			    tree num_bytes, tree capacity)
+  symbolic_buffer_over_read (const region *reg, tree diag_arg, tree offset,
+			     tree num_bytes, tree capacity)
   : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
   {
     m_dir_str = "read";
@@ -576,8 +628,21 @@ public:
   {
     diagnostic_metadata m;
     m.add_cwe (126);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "buffer overread");
+    switch (get_memory_space ())
+      {
+      default:
+	m.add_cwe (787);
+	return warning_meta (rich_loc, m, get_controlling_option (),
+			     "buffer over-read");
+      case MEMSPACE_STACK:
+	m.add_cwe (121);
+	return warning_meta (rich_loc, m, get_controlling_option (),
+			     "stack-based buffer over-read");
+      case MEMSPACE_HEAP:
+	m.add_cwe (122);
+	return warning_meta (rich_loc, m, get_controlling_option (),
+			     "heap-based buffer over-read");
+      }
   }
 };
 
@@ -609,11 +674,11 @@ region_model::check_symbolic_bounds (const region *base_reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (make_unique<symbolic_buffer_overread> (base_reg,
-							     diag_arg,
-							     offset_tree,
-							     num_bytes_tree,
-							     capacity_tree));
+	  ctxt->warn (make_unique<symbolic_buffer_over_read> (base_reg,
+							      diag_arg,
+							      offset_tree,
+							      num_bytes_tree,
+							      capacity_tree));
 	  break;
 	case DIR_WRITE:
 	  ctxt->warn (make_unique<symbolic_buffer_overflow> (base_reg,
@@ -701,7 +766,7 @@ region_model::check_region_bounds (const region *reg,
   /* NUM_BYTES_TREE should always be interpreted as unsigned.  */
   byte_offset_t num_bytes_unsigned = wi::to_offset (num_bytes_tree);
   byte_range read_bytes (offset, num_bytes_unsigned);
-  /* If read_bytes has a subset < 0, we do have an underflow.  */
+  /* If read_bytes has a subset < 0, we do have an underwrite.  */
   if (read_bytes.falls_short_of_p (0, &out))
     {
       tree diag_arg = get_representative_tree (base_reg);
@@ -711,10 +776,10 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (make_unique<buffer_underread> (reg, diag_arg, out));
+	  ctxt->warn (make_unique<buffer_under_read> (reg, diag_arg, out));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (make_unique<buffer_underflow> (reg, diag_arg, out));
+	  ctxt->warn (make_unique<buffer_underwrite> (reg, diag_arg, out));
 	  break;
 	}
     }
@@ -739,8 +804,8 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (make_unique<buffer_overread> (reg, diag_arg,
-						    out, byte_bound));
+	  ctxt->warn (make_unique<buffer_over_read> (reg, diag_arg,
+						     out, byte_bound));
 	  break;
 	case DIR_WRITE:
 	  ctxt->warn (make_unique<buffer_overflow> (reg, diag_arg,
