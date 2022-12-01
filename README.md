@@ -4,6 +4,7 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/philberty/gccrs)
 [![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://gcc-rust.zulipchat.com/)
 [![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/32890)
+[![justforfunnoreally.dev badge](https://img.shields.io/badge/justforfunnoreally-dev-9ff)](https://justforfunnoreally.dev)
 # GCC Rust
 ![GCC Rust](logo.png?raw=true "GCC rust Logo")
 
