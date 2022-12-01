@@ -27,6 +27,9 @@ digraph "fd" {
   /* Start state.  */
   start;
 
+  /* State for a constant file descriptor (>= 0).  */
+  constant_fd;
+
   /* States representing a file descriptor that hasn't yet been
     checked for validity after opening, for three different
     access modes.  */
@@ -129,6 +132,7 @@ digraph "fd" {
 
   /* On "bind".  */
   start -> bound_unknown_socket [label="when 'bind(X, ...)' succeeds"];
+  constant_fd -> bound_unknown_socket [label="when 'bind(X, ...)' succeeds"];
   new_stream_socket -> bound_stream_socket [label="when 'bind(X, ...)' succeeds"];
   new_datagram_socket -> bound_datagram_socket [label="when 'bind(X, ...)' succeeds"];
   new_unknown_socket -> bound_unknown_socket [label="when 'bind(X, ...)' succeeds"];
@@ -140,12 +144,14 @@ digraph "fd" {
 
   /* On "accept".  */
   start -> connected_stream_socket [label="when 'accept(OTHER, ...)' succeeds on a listening_stream_socket"];
+  constant_fd -> connected_stream_socket [label="when 'accept(OTHER, ...)' succeeds on a listening_stream_socket"];
 
   /* On "connect".  */
   new_stream_socket -> connected_stream_socket [label="when 'connect(X, ...)' succeeds"];
   new_datagram_socket -> new_datagram_socket [label="when 'connect(X, ...)' succeeds"];
   new_unknown_socket -> stop [label="when 'connect(X, ...)' succeeds"];
   start -> stop [label="when 'connect(X, ...)' succeeds"];
+  constant_fd -> stop [label="when 'connect(X, ...)' succeeds"];
 
   /* on_condition.  */
   unchecked_read_write -> valid_read_write [label="on 'X >= 0'"];
