@@ -544,62 +544,10 @@ public:
     return label_text ();
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
-  {
-    const char *byte_str;
-    if (pending_diagnostic::same_tree_p (m_num_bytes, integer_one_node))
-      byte_str = "byte";
-    else
-      byte_str = "bytes";
-
-    if (m_offset)
-      {
-	if (m_num_bytes && TREE_CODE (m_num_bytes) == INTEGER_CST)
-	  {
-	    if (m_diag_arg)
-	      return ev.formatted_print ("%s of %E %s at offset %qE"
-					 " exceeds %qE", m_dir_str,
-					 m_num_bytes, byte_str,
-					 m_offset, m_diag_arg);
-	    else
-	      return ev.formatted_print ("%s of %E %s at offset %qE"
-					 " exceeds the buffer", m_dir_str,
-					 m_num_bytes, byte_str, m_offset);
-	  }
-	else if (m_num_bytes)
-	  {
-	    if (m_diag_arg)
-	      return ev.formatted_print ("%s of %qE %s at offset %qE"
-					 " exceeds %qE", m_dir_str,
-					 m_num_bytes, byte_str,
-					 m_offset, m_diag_arg);
-	    else
-	      return ev.formatted_print ("%s of %qE %s at offset %qE"
-					 " exceeds the buffer", m_dir_str,
-					 m_num_bytes, byte_str, m_offset);
-	  }
-	else
-	  {
-	    if (m_diag_arg)
-	      return ev.formatted_print ("%s at offset %qE exceeds %qE",
-					 m_dir_str, m_offset, m_diag_arg);
-	    else
-	      return ev.formatted_print ("%s at offset %qE exceeds the"
-					 " buffer", m_dir_str, m_offset);
-	  }
-      }
-    if (m_diag_arg)
-      return ev.formatted_print ("out-of-bounds %s on %qE",
-				 m_dir_str, m_diag_arg);
-    return ev.formatted_print ("out-of-bounds %s", m_dir_str);
-  }
-
 protected:
   tree m_offset;
   tree m_num_bytes;
   tree m_capacity;
-  const char *m_dir_str;
 };
 
 /* Concrete subclass to complain about overflows with symbolic values.  */
@@ -611,7 +559,6 @@ public:
 			    tree num_bytes, tree capacity)
   : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
   {
-    m_dir_str = "write";
   }
 
   const char *get_kind () const final override
@@ -638,6 +585,75 @@ public:
 			     "heap-based buffer overflow");
       }
   }
+
+  label_text
+  describe_final_event (const evdesc::final_event &ev) final override
+  {
+    if (m_offset)
+      {
+	/* Known offset.  */
+	if (m_num_bytes)
+	  {
+	    /* Known offset, known size.  */
+	    if (TREE_CODE (m_num_bytes) == INTEGER_CST)
+	      {
+		/* Known offset, known constant size.  */
+		if (pending_diagnostic::same_tree_p (m_num_bytes,
+						     integer_one_node))
+		  {
+		    /* Singular m_num_bytes.  */
+		    if (m_diag_arg)
+		      return ev.formatted_print
+			("write of %E byte at offset %qE exceeds %qE",
+			 m_num_bytes, m_offset, m_diag_arg);
+		    else
+		      return ev.formatted_print
+			("write of %E byte at offset %qE exceeds the buffer",
+			 m_num_bytes, m_offset);
+		  }
+		else
+		  {
+		    /* Plural m_num_bytes.  */
+		    if (m_diag_arg)
+		      return ev.formatted_print
+			("write of %E bytes at offset %qE exceeds %qE",
+			 m_num_bytes, m_offset, m_diag_arg);
+		    else
+		      return ev.formatted_print
+			("write of %E bytes at offset %qE exceeds the buffer",
+			 m_num_bytes, m_offset);
+		  }
+	      }
+	    else
+	      {
+		/* Known offset, known symbolic size.  */
+		if (m_diag_arg)
+		  return ev.formatted_print
+		    ("write of %qE bytes at offset %qE exceeds %qE",
+		     m_num_bytes, m_offset, m_diag_arg);
+		else
+		  return ev.formatted_print
+		    ("write of %qE bytes at offset %qE exceeds the buffer",
+		     m_num_bytes, m_offset);
+	      }
+	  }
+	else
+	  {
+	    /* Known offset, unknown size.  */
+	    if (m_diag_arg)
+	      return ev.formatted_print ("write at offset %qE exceeds %qE",
+					 m_offset, m_diag_arg);
+	    else
+	      return ev.formatted_print ("write at offset %qE exceeds the"
+					 " buffer", m_offset);
+	  }
+      }
+    /* Unknown offset.  */
+    if (m_diag_arg)
+      return ev.formatted_print ("out-of-bounds write on %qE",
+				 m_diag_arg);
+    return ev.formatted_print ("out-of-bounds write");
+  }
 };
 
 /* Concrete subclass to complain about over-reads with symbolic values.  */
@@ -649,7 +665,6 @@ public:
 			     tree num_bytes, tree capacity)
   : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
   {
-    m_dir_str = "read";
   }
 
   const char *get_kind () const final override
@@ -676,6 +691,75 @@ public:
 	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "heap-based buffer over-read");
       }
+  }
+
+  label_text
+  describe_final_event (const evdesc::final_event &ev) final override
+  {
+    if (m_offset)
+      {
+	/* Known offset.  */
+	if (m_num_bytes)
+	  {
+	    /* Known offset, known size.  */
+	    if (TREE_CODE (m_num_bytes) == INTEGER_CST)
+	      {
+		/* Known offset, known constant size.  */
+		if (pending_diagnostic::same_tree_p (m_num_bytes,
+						     integer_one_node))
+		  {
+		    /* Singular m_num_bytes.  */
+		    if (m_diag_arg)
+		      return ev.formatted_print
+			("read of %E byte at offset %qE exceeds %qE",
+			 m_num_bytes, m_offset, m_diag_arg);
+		    else
+		      return ev.formatted_print
+			("read of %E byte at offset %qE exceeds the buffer",
+			 m_num_bytes, m_offset);
+		  }
+		else
+		  {
+		    /* Plural m_num_bytes.  */
+		    if (m_diag_arg)
+		      return ev.formatted_print
+			("read of %E bytes at offset %qE exceeds %qE",
+			 m_num_bytes, m_offset, m_diag_arg);
+		    else
+		      return ev.formatted_print
+			("read of %E bytes at offset %qE exceeds the buffer",
+			 m_num_bytes, m_offset);
+		  }
+	      }
+	    else
+	      {
+		/* Known offset, known symbolic size.  */
+		if (m_diag_arg)
+		  return ev.formatted_print
+		    ("read of %qE bytes at offset %qE exceeds %qE",
+		     m_num_bytes, m_offset, m_diag_arg);
+		else
+		  return ev.formatted_print
+		    ("read of %qE bytes at offset %qE exceeds the buffer",
+		     m_num_bytes, m_offset);
+	      }
+	  }
+	else
+	  {
+	    /* Known offset, unknown size.  */
+	    if (m_diag_arg)
+	      return ev.formatted_print ("read at offset %qE exceeds %qE",
+					 m_offset, m_diag_arg);
+	    else
+	      return ev.formatted_print ("read at offset %qE exceeds the"
+					 " buffer", m_offset);
+	  }
+      }
+    /* Unknown offset.  */
+    if (m_diag_arg)
+      return ev.formatted_print ("out-of-bounds read on %qE",
+				 m_diag_arg);
+    return ev.formatted_print ("out-of-bounds read");
   }
 };
 
