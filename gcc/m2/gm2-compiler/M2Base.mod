@@ -1127,14 +1127,23 @@ END GetCmplxReturnType ;
    EmitTypeIncompatibleWarning - emit a type incompatibility warning.
 *)
 
-PROCEDURE EmitTypeIncompatibleWarning (kind: Compatability; t1, t2: CARDINAL) ;
+PROCEDURE EmitTypeIncompatibleWarning (tok: CARDINAL;
+                                       kind: Compatability; t1, t2: CARDINAL) ;
 BEGIN
    CASE kind OF
 
-   expression:  MetaError2('{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} in an expression, hint one of the expressions should be converted', t1, t2) |
-   assignment:  MetaError2('{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} during an assignment, hint maybe the expression should be converted', t1, t2) |
-   parameter :  MetaError2('{%1W:} type incompatibility found when passing a parameter {%1as:{%2as:between formal parameter and actual parameter types {%1as} {%2as}}}, hint the actual parameter {%2a} should be converted', t1, t2) |
-   comparison:  MetaError2('{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} in a relational expression, hint one of the expressions should be converted', t1, t2)
+   expression:  MetaErrorT2 (tok,
+                             '{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} in an expression, hint one of the expressions should be converted',
+                             t1, t2) |
+   assignment:  MetaErrorT2 (tok,
+                             '{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} during an assignment, hint maybe the expression should be converted',
+                             t1, t2) |
+   parameter :  MetaErrorT2 (tok,
+                            '{%1W:} type incompatibility found when passing a parameter {%1as:{%2as:between formal parameter and actual parameter types {%1as} {%2as}}}, hint the actual parameter {%2a} should be converted',
+                            t1, t2) |
+   comparison:  MetaErrorT2 (tok,
+                            '{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} in a relational expression, hint one of the expressions should be converted',
+                            t1, t2)
 
    ELSE
    END
@@ -1145,14 +1154,23 @@ END EmitTypeIncompatibleWarning ;
    EmitTypeIncompatibleError - emit a type incompatibility error.
 *)
 
-PROCEDURE EmitTypeIncompatibleError (kind: Compatability; t1, t2: CARDINAL) ;
+PROCEDURE EmitTypeIncompatibleError (tok: CARDINAL;
+                                     kind: Compatability; t1, t2: CARDINAL) ;
 BEGIN
    CASE kind OF
 
-   expression:  MetaError2('type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} in an expression, hint one of the expressions should be converted', t1, t2) |
-   assignment:  MetaError2('type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} during an assignment, hint maybe the expression should be converted', t1, t2) |
-   parameter :  MetaError2('type incompatibility found when passing a parameter {%1as:{%2as:between formal parameter and actual parameter types {%1as} and {%2as}}}, hint the actual parameter should be converted', t1, t2) |
-   comparison:  MetaError2('type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} in a relational expression, hint one of the expressions should be converted', t1, t2)
+   expression:  MetaErrorT2 (tok,
+                            'type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} in an expression, hint one of the expressions should be converted',
+                            t1, t2) |
+   assignment:  MetaErrorT2 (tok,
+                             'type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} during an assignment, hint maybe the expression should be converted',
+                             t1, t2) |
+   parameter :  MetaErrorT2 (tok,
+                             'type incompatibility found when passing a parameter {%1as:{%2as:between formal parameter and actual parameter types {%1as} and {%2as}}}, hint the actual parameter should be converted',
+                             t1, t2) |
+   comparison:  MetaErrorT2 (tok,
+                             'type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} in a relational expression, hint one of the expressions should be converted',
+                             t1, t2)
 
    ELSE
    END
@@ -1163,7 +1181,8 @@ END EmitTypeIncompatibleError ;
    CheckCompatible - returns if t1 and t2 are kind compatible
 *)
 
-PROCEDURE CheckCompatible (t1, t2: CARDINAL; kind: Compatability) ;
+PROCEDURE CheckCompatible (tok: CARDINAL;
+                           t1, t2: CARDINAL; kind: Compatability) ;
 VAR
    s: String ;
    r: Compatible ;
@@ -1180,21 +1199,21 @@ BEGIN
       IF IsUnknown(t1) AND IsUnknown(t2)
       THEN
          s := ConCat(s, InitString('two different unknown types {%1a:{%2a:{%1a} and {%2a}}} must either be declared or imported)')) ;
-         MetaErrorStringT2(GetTokenNo(), s, t1, t2)
+         MetaErrorStringT2 (tok, s, t1, t2)
       ELSIF IsUnknown(t1)
       THEN
          s := ConCat(s, InitString('this type {%1a} is currently unknown, it must be declared or imported')) ;
-         MetaErrorStringT1(GetTokenNo(), s, t1)
+         MetaErrorStringT1 (tok, s, t1)
       ELSIF IsUnknown(t2)
       THEN
-         s := ConCat(s, InitString('this type {%1a} is currently unknown, it must be declared or imported')) ;
-         MetaErrorStringT1(GetTokenNo(), s, t2)
+         s := ConCat (s, InitString('this type {%1a} is currently unknown, it must be declared or imported')) ;
+         MetaErrorStringT1 (tok, s, t2)
       ELSE
          IF (r=warnfirst) OR (r=warnsecond)
          THEN
-            EmitTypeIncompatibleWarning(kind, t1, t2)
+            EmitTypeIncompatibleWarning (tok, kind, t1, t2)
          ELSE
-            EmitTypeIncompatibleError(kind, t1, t2)
+            EmitTypeIncompatibleError (tok, kind, t1, t2)
          END
       END
    END
@@ -1208,9 +1227,9 @@ END CheckCompatible ;
                                message is displayed.
 *)
 
-PROCEDURE CheckExpressionCompatible (t1, t2: CARDINAL) ;
+PROCEDURE CheckExpressionCompatible (tok: CARDINAL; left, right: CARDINAL) ;
 BEGIN
-   CheckCompatible(t1, t2, expression)
+   CheckCompatible (tok, left, right, expression)
 END CheckExpressionCompatible ;
 
 
@@ -1219,9 +1238,10 @@ END CheckExpressionCompatible ;
                               compatible for parameter passing.
 *)
 
-PROCEDURE CheckParameterCompatible (t1, t2: CARDINAL) ;
+PROCEDURE CheckParameterCompatible (tok: CARDINAL;
+                                    t1, t2: CARDINAL) ;
 BEGIN
-   CheckCompatible(t1, t2, parameter)
+   CheckCompatible (tok, t1, t2, parameter)
 END CheckParameterCompatible ;
 
 
@@ -1232,11 +1252,12 @@ END CheckParameterCompatible ;
                                message is displayed.
 *)
 
-PROCEDURE CheckAssignmentCompatible (t1, t2: CARDINAL) ;
+PROCEDURE CheckAssignmentCompatible (tok: CARDINAL;
+                                     left, right: CARDINAL) ;
 BEGIN
-   IF t1#t2
+   IF left # right
    THEN
-      CheckCompatible(t1, t2, assignment)
+      CheckCompatible (tok, left, right, assignment)
    END
 END CheckAssignmentCompatible ;
 
@@ -1967,7 +1988,7 @@ BEGIN
    mt2 := FindMetaType(t2) ;
    CASE Expr[mt1, mt2] OF
 
-   no        :  MetaErrorT2(NearTok, 'type incompatibility between {%1as} and {%2as}', t1, t2) ;
+   no        :  MetaErrorT2 (NearTok, 'type incompatibility between {%1as} and {%2as}', t1, t2) ;
                 FlushErrors  (* unrecoverable at present *) |
    warnfirst,
    first     :  RETURN( t1 ) |

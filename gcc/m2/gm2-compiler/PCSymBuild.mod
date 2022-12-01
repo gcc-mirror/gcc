@@ -28,7 +28,7 @@ FROM StrIO IMPORT WriteString, WriteLn ;
 FROM NumberIO IMPORT WriteCard ;
 FROM M2Debug IMPORT Assert, WriteDebug ;
 FROM M2Error IMPORT WriteFormat0, WriteFormat1, WriteFormat2, FlushErrors, InternalError, NewError, ErrorFormat0 ;
-FROM M2MetaError IMPORT MetaError1 ;
+FROM M2MetaError IMPORT MetaError1, MetaErrorT1 ;
 FROM M2LexBuf IMPORT GetTokenNo ;
 FROM M2Reserved IMPORT NulTok, ImportTok ;
 FROM M2Const IMPORT constType ;
@@ -510,19 +510,19 @@ VAR
    Sym, ModSym,
    i, n       : CARDINAL ;
 BEGIN
-   PopT(n) ;       (* n   = # of the Ident List *)
-   IF OperandT(n+1)#ImportTok
+   PopT (n) ;       (* n   = # of the Ident List *)
+   IF OperandT (n+1) # ImportTok
    THEN
       (* Ident List contains list of objects imported from ModSym *)
-      ModSym := LookupModule(OperandTok(n+1), OperandT(n+1)) ;
+      ModSym := LookupModule (OperandTok (n+1), OperandT (n+1)) ;
       i := 1 ;
       WHILE i<=n DO
          Sym := GetExported (OperandTok (i), ModSym, OperandT (i)) ;
-         CheckForEnumerationInCurrentModule(Sym) ;
-         INC(i)
+         CheckForEnumerationInCurrentModule (Sym) ;
+         INC (i)
       END
    END ;
-   PopN(n+1)   (* clear stack *)
+   PopN (n+1)   (* clear stack *)
 END PCBuildImportOuterModule ;
 
 
@@ -568,8 +568,8 @@ BEGIN
       i := 1 ;
       WHILE i<=n DO
          Sym := GetFromOuterModule (OperandTok (i), OperandT (i)) ;
-         CheckForEnumerationInCurrentModule(Sym) ;
-         INC(i)
+         CheckForEnumerationInCurrentModule (Sym) ;
+         INC (i)
       END
    ELSE
       (* Ident List contains list of objects imported from ModSym *)
@@ -686,10 +686,10 @@ VAR
    ProcSym  : CARDINAL ;
    NameStart: Name ;
 BEGIN
-   IF CompilingDefinitionModule()
+   IF CompilingDefinitionModule ()
    THEN
-      PopT(ProcSym) ;
-      PopT(NameStart) ;
+      PopT (ProcSym) ;
+      PopT (NameStart) ;
       EndScope
    END
 END PCBuildProcedureHeading ;
@@ -710,7 +710,7 @@ END PCBuildProcedureHeading ;
 
 PROCEDURE BuildNulName ;
 BEGIN
-   PushT(NulName)
+   PushT (NulName)
 END BuildNulName ;
 
 
@@ -1121,22 +1121,22 @@ BEGIN
    IF IsProcedure(p)
    THEN
       tok := GetTokenNo () ;
-      t := MakeProcType(tok, CheckAnonymous(NulName)) ;
+      t := MakeProcType (tok, CheckAnonymous (NulName)) ;
       i := 1 ;
       n := NoOfParam(p) ;
       WHILE i<=n DO
-         par := GetParam(p, i) ;
-         IF IsParameterVar(par)
+         par := GetParam (p, i) ;
+         IF IsParameterVar (par)
          THEN
-            PutProcTypeVarParam(t, GetType(par), IsParameterUnbounded(par))
+            PutProcTypeVarParam (t, GetType (par), IsParameterUnbounded (par))
          ELSE
-            PutProcTypeParam(t, GetType(par), IsParameterUnbounded(par))
+            PutProcTypeParam (t, GetType (par), IsParameterUnbounded (par))
          END ;
          INC(i)
       END ;
-      IF GetType(p)#NulSym
+      IF GetType (p) # NulSym
       THEN
-         PutFunction(t, GetType(p))
+         PutFunction (t, GetType (p))
       END ;
       RETURN( t )
    ELSE
@@ -1408,11 +1408,12 @@ END buildConstFunction ;
 
 PROCEDURE PushConstFunctionType ;
 VAR
-   func: CARDINAL ;
-   n   : CARDINAL ;
+   functok,
+   func   : CARDINAL ;
+   n      : CARDINAL ;
 BEGIN
-   PopT(n) ;
-   PopT(func) ;
+   PopT (n) ;
+   PopTtok (func, functok) ;
    IF inDesignator
    THEN
       IF (func#Convert) AND
@@ -1420,7 +1421,7 @@ BEGIN
           IsPseudoSystemFunctionConstExpression(func) OR
           (IsProcedure(func) AND IsProcedureBuiltin(func)))
       THEN
-         buildConstFunction(func, n)
+         buildConstFunction (func, n)
       ELSIF IsAModula2Type(func)
       THEN
          IF n=1
@@ -1433,13 +1434,17 @@ BEGIN
       ELSE
          IF Iso
          THEN
-            WriteFormat0('the only functions permissible in a constant expression are: CAP, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
+            MetaErrorT1 (functok,
+                         'the only functions permissible in a constant expression are: CAP, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
+                        func)
          ELSE
-            WriteFormat0('the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
+            MetaErrorT1 (functok,
+                         'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
+                        func)
          END
       END
    END ;
-   PushT(func)
+   PushTtok (func, functok)
 END PushConstFunctionType ;
 
 

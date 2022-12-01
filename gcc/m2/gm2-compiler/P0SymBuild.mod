@@ -74,9 +74,9 @@ VAR
 
 PROCEDURE nSpaces (n: CARDINAL) ;
 BEGIN
-   WHILE n>0 DO
-      printf0(" ") ;
-      DEC(n)
+   WHILE n > 0 DO
+      printf0 (" ") ;
+      DEC (n)
    END
 END nSpaces ;
 
@@ -89,10 +89,10 @@ PROCEDURE DisplayB (b: BlockInfoPtr) ;
 BEGIN
    CASE b^.kind OF
 
-   program  :  printf1("MODULE %a ;\n", b^.name) |
-   defimp   :  printf1("DEFIMP %a ;\n", b^.name) |
-   inner    :  printf1("INNER MODULE %a ;\n", b^.name) |
-   procedure:  printf1("PROCEDURE %a ;\n", b^.name)
+   program  :  printf1 ("MODULE %a ;\n", b^.name) |
+   defimp   :  printf1 ("DEFIMP %a ;\n", b^.name) |
+   inner    :  printf1 ("INNER MODULE %a ;\n", b^.name) |
+   procedure:  printf1 ("PROCEDURE %a ;\n", b^.name)
 
    ELSE
       HALT
@@ -108,17 +108,17 @@ PROCEDURE DisplayBlock (b: BlockInfoPtr; l: CARDINAL) ;
 VAR
    a: BlockInfoPtr ;
 BEGIN
-   nSpaces(l) ;
-   DisplayB(b) ;
+   nSpaces (l) ;
+   DisplayB (b) ;
    a := b^.toDown ;
-   INC(l, 3) ;
-   WHILE a#NIL DO
-      DisplayBlock(a, l) ;
+   INC (l, 3) ;
+   WHILE a # NIL DO
+      DisplayBlock (a, l) ;
       a := a^.toNext
    END ;
-   DEC(l, 3) ;
-   nSpaces(l) ;
-   printf1("END %a\n", b^.name)
+   DEC (l, 3) ;
+   nSpaces (l) ;
+   printf1 ("END %a\n", b^.name)
 END DisplayBlock ;
 
 
@@ -129,7 +129,7 @@ END DisplayBlock ;
 (*
 PROCEDURE pc ;
 BEGIN
-   DisplayB(curBP)
+   DisplayB (curBP)
 END pc ;
 *)
 
@@ -142,12 +142,12 @@ PROCEDURE Display ;
 VAR
    b: BlockInfoPtr ;
 BEGIN
-   printf0("Universe of Modula-2 modules\n") ;
-   IF headBP#NIL
+   printf0 ("Universe of Modula-2 modules\n") ;
+   IF headBP # NIL
    THEN
       b := headBP^.toDown ;
-      WHILE b#NIL DO
-         DisplayBlock(b, 0) ;
+      WHILE b # NIL DO
+         DisplayBlock (b, 0) ;
          b := b^.toNext
       END
    END
@@ -160,12 +160,12 @@ END Display ;
 
 PROCEDURE addDown (a, b: BlockInfoPtr) ;
 BEGIN
-   IF a^.toDown=NIL
+   IF a^.toDown = NIL
    THEN
       a^.toDown := b
    ELSE
       a := a^.toDown ;
-      WHILE a^.toNext#NIL DO
+      WHILE a^.toNext # NIL DO
          a := a^.toNext
       END ;
       a^.toNext := b
@@ -179,21 +179,21 @@ END addDown ;
 
 PROCEDURE GraftBlock (b: BlockInfoPtr) ;
 BEGIN
-   Assert(curBP#NIL) ;
-   Assert(ABS(Level-curBP^.level)<=1) ;
+   Assert (curBP # NIL) ;
+   Assert (ABS (Level-curBP^.level) <= 1) ;
    CASE Level-curBP^.level OF
 
    -1:  (* returning up to the outer scope *)
         curBP := curBP^.toUp ;
-        Assert(curBP^.toNext=NIL) ;
+        Assert (curBP^.toNext = NIL) ;
         curBP^.toNext := b |
     0:  (* add toNext *)
-        Assert(curBP^.toNext=NIL) ;
+        Assert (curBP^.toNext = NIL) ;
         curBP^.toNext := b ;
         b^.toUp := curBP^.toUp |
    +1:  (* insert down a level *)
         b^.toUp := curBP ;  (* save return value *)
-        addDown(curBP, b)
+        addDown (curBP, b)
 
    ELSE
       HALT
@@ -211,7 +211,7 @@ PROCEDURE BeginBlock (n: Name; k: Kind; s: CARDINAL; tok: CARDINAL) ;
 VAR
    b: BlockInfoPtr ;
 BEGIN
-   NEW(b) ;
+   NEW (b) ;
    WITH b^ DO
       name := n ;
       kind := k ;
@@ -236,7 +236,7 @@ END BeginBlock ;
 
 PROCEDURE InitUniverse ;
 BEGIN
-   NEW(curBP) ;
+   NEW (curBP) ;
    WITH curBP^ DO
       name := NulName ;
       kind := universe ;
@@ -282,12 +282,12 @@ END FlushImports ;
 
 PROCEDURE EndBlock ;
 BEGIN
-   FlushImports(curBP) ;
+   FlushImports (curBP) ;
    curBP := curBP^.toUp ;
-   DEC(Level) ;
-   IF Level=0
+   DEC (Level) ;
+   IF Level = 0
    THEN
-      FlushImports(curBP)
+      FlushImports (curBP)
    END
 END EndBlock ;
 
@@ -296,23 +296,24 @@ END EndBlock ;
    RegisterLocalModule - register, n, as a local module.
 *)
 
-PROCEDURE RegisterLocalModule (name: Name) ;
+PROCEDURE RegisterLocalModule (modname: Name) ;
 VAR
    i, n: CARDINAL ;
    desc: ModuleDesc ;
 BEGIN
    (* printf1('seen local module %a\n', n) ; *)
    WITH curBP^ DO
-      IncludeItemIntoList (LocalModules, n) ;
+      IncludeItemIntoList (LocalModules, modname) ;
       i := LowIndice (ImportedModules) ;
       n := HighIndice (ImportedModules) ;
       WHILE i <= n DO
          desc := GetIndice (ImportedModules, i) ;
-         IF desc^.name = name
+         IF desc^.name = modname
          THEN
             RemoveIndiceFromIndex (ImportedModules, desc) ;
             DISPOSE (desc) ;
-            RETURN  (* All done.  *)
+            DEC (n)
+            (* Continue checking in case a user imported the same module again.  *)
          ELSE
             INC (i)
          END
@@ -325,20 +326,20 @@ END RegisterLocalModule ;
    RegisterImport - register, n, as a module imported from either a local scope or definition module.
 *)
 
-PROCEDURE RegisterImport (n: Name; tok: CARDINAL) ;
+PROCEDURE RegisterImport (tok: CARDINAL; modname: Name) ;
 VAR
    bp  : BlockInfoPtr ;
    desc: ModuleDesc ;
 BEGIN
    (* printf1('register import from module %a\n', n) ; *)
-   Assert(curBP#NIL) ;
-   Assert(curBP^.toUp#NIL) ;
+   Assert (curBP # NIL) ;
+   Assert (curBP^.toUp # NIL) ;
    bp := curBP^.toUp ;   (* skip over current module *)
    WITH bp^ DO
-      IF NOT IsItemInList (LocalModules, n)
+      IF NOT IsItemInList (LocalModules, modname)
       THEN
          NEW (desc) ;
-         desc^.name := n ;
+         desc^.name := modname ;
          desc^.tok := tok ;
          IncludeIndiceIntoIndex (ImportedModules, desc)
       END
@@ -355,21 +356,21 @@ VAR
    index,
    i, n : CARDINAL ;
 BEGIN
-   PopT(n) ;       (* n   = # of the Ident List *)
-   IF OperandT(n+1)=ImportTok
+   PopT (n) ;       (* n   = # of the Ident List *)
+   IF OperandT (n+1) = ImportTok
    THEN
       (* Ident list contains Module Names *)
       i := 1 ;
       WHILE i<=n DO
          index := n+1-i ;
-         RegisterImport (OperandT (index), OperandTok (index)) ;
-         INC(i)
+         RegisterImport (OperandTok (index), OperandT (index)) ;
+         INC (i)
       END
    ELSE
       (* Ident List contains list of objects *)
-      RegisterImport (OperandT (n+1), OperandTok (n+1))
+      RegisterImport (OperandTok (n+1), OperandT (n+1))
    END ;
-   PopN(n+1)   (* clear stack *)
+   PopN (n+1)   (* clear stack *)
 END RegisterImports ;
 
 
@@ -381,20 +382,13 @@ PROCEDURE RegisterInnerImports ;
 VAR
    n: CARDINAL ;
 BEGIN
-   PopT(n) ;       (* n   = # of the Ident List *)
-   IF OperandT(n+1)=ImportTok
+   PopT (n) ;       (* n   = # of the Ident List *)
+   IF OperandT (n+1) = ImportTok
    THEN
-      (* Ident list contains list of objects, which will be seen outside the scope of this module *)
-(*
-      i := 1 ;
-      WHILE i<=n DO
-         RegisterImport(OperandT(n+1-i)) ;
-         INC(i)
-      END
-*)
+      (* Ident list contains list of objects, which will be seen outside the scope of this module.  *)
    ELSE
       (* Ident List contains list of objects, but we are importing directly from a module OperandT(n+1) *)
-      RegisterImport (OperandT (n+1), OperandTok (n+1))
+      RegisterImport (OperandTok (n+1), OperandT (n+1))
    END ;
    PopN (n+1)   (* clear stack *)
 END RegisterInnerImports ;
@@ -410,7 +404,7 @@ VAR
    sym: CARDINAL ;
    tok: CARDINAL ;
 BEGIN
-   Assert (Level=0) ;
+   Assert (Level = 0) ;
    INC (Level) ;
    PopTtok (n, tok) ;
    PushTtok (n, tok) ;
@@ -432,7 +426,7 @@ VAR
    sym: CARDINAL ;
    tok: CARDINAL ;
 BEGIN
-   Assert (Level=0) ;
+   Assert (Level = 0) ;
    INC (Level) ;
    PopTtok (n, tok) ;
    PushTtok (n, tok) ;
@@ -481,7 +475,7 @@ VAR
    n  : Name ;
    tok: CARDINAL ;
 BEGIN
-   INC(Level) ;
+   INC (Level) ;
    PopTtok (n, tok) ;
    PushTtok (n, tok) ;
    RegisterLocalModule (n) ;
@@ -660,7 +654,7 @@ PROCEDURE Move ;
 VAR
    b: BlockInfoPtr ;
 BEGIN
-   IF Level=curBP^.level
+   IF Level = curBP^.level
    THEN
       b := curBP^.toReturn ;
       (* moving to next *)
@@ -668,8 +662,8 @@ BEGIN
       (* remember our return *)
       curBP^.toReturn := b
    ELSE
-      WHILE Level#curBP^.level DO
-         IF Level<curBP^.level
+      WHILE Level # curBP^.level DO
+         IF Level < curBP^.level
          THEN
             (* move up to the outer scope *)
             b := curBP ;
@@ -679,12 +673,12 @@ BEGIN
             (* move down a level *)
             (* remember where we came from *)
             b := curBP ;
-            IF curBP^.toPC=NIL
+            IF curBP^.toPC = NIL
             THEN
-               Assert(curBP^.toDown#NIL) ;
+               Assert (curBP^.toDown#NIL) ;
                curBP^.toPC := curBP^.toDown
             END ;
-            Assert(curBP^.toPC#NIL) ;
+            Assert (curBP^.toPC#NIL) ;
             curBP := curBP^.toPC ;
             curBP^.toReturn := b
          END
@@ -699,20 +693,20 @@ END Move ;
 
 PROCEDURE EnterBlock (n: Name) ;
 BEGIN
-   Assert(curBP#NIL) ;
-   INC(Level) ;
+   Assert (curBP#NIL) ;
+   INC (Level) ;
    Move ;
    IF Debugging
    THEN
-      nSpaces(Level*3) ;
-      IF n=curBP^.name
+      nSpaces (Level*3) ;
+      IF n = curBP^.name
       THEN
-         printf1('block %a\n', n)
+         printf1 ('block %a\n', n)
       ELSE
-         printf2('seen block %a but tree has recorded %a\n', n, curBP^.name)
+         printf2 ('seen block %a but tree has recorded %a\n', n, curBP^.name)
       END
    END ;
-   Assert((n=curBP^.name) OR (curBP^.name=NulName)) ;
+   Assert ((n = curBP^.name) OR (curBP^.name = NulName)) ;
    DeclareModules
 END EnterBlock ;
 
@@ -725,9 +719,9 @@ PROCEDURE LeaveBlock ;
 BEGIN
    IF Debugging
    THEN
-      printf1('leaving block %a ', curBP^.name)
+      printf1 ('leaving block %a ', curBP^.name)
    END ;
-   DEC(Level) ;
+   DEC (Level) ;
    Move
 END LeaveBlock ;
 

@@ -314,7 +314,8 @@ PROCEDURE IsValidParameter (formal, actual: CARDINAL) : BOOLEAN ;
                                message is displayed.
 *)
 
-PROCEDURE CheckExpressionCompatible (t1, t2: CARDINAL) ;
+PROCEDURE CheckExpressionCompatible (tok: CARDINAL;
+                                     left, right: CARDINAL) ;
 
 
 (*
@@ -324,7 +325,8 @@ PROCEDURE CheckExpressionCompatible (t1, t2: CARDINAL) ;
                                message is displayed.
 *)
 
-PROCEDURE CheckAssignmentCompatible (t1, t2: CARDINAL) ;
+PROCEDURE CheckAssignmentCompatible (tok: CARDINAL;
+                                     left, right: CARDINAL) ;
 
 
 (*
@@ -332,7 +334,8 @@ PROCEDURE CheckAssignmentCompatible (t1, t2: CARDINAL) ;
                               compatible for parameter passing.
 *)
 
-PROCEDURE CheckParameterCompatible (t1, t2: CARDINAL) ;
+PROCEDURE CheckParameterCompatible (tok: CARDINAL;
+                                    t1, t2: CARDINAL) ;
 
 
 (*

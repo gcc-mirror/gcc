@@ -22,7 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE M2MetaError ;
 
 
-FROM M2Base IMPORT ZType, RType ;
+FROM M2Base IMPORT ZType, RType, IsPseudoBaseFunction, IsPseudoBaseProcedure ;
 FROM NameKey IMPORT Name, KeyToCharStar, NulName ;
 FROM StrLib IMPORT StrLen ;
 FROM M2LexBuf IMPORT GetTokenNo, UnknownTokenNo ;
@@ -1384,6 +1384,12 @@ BEGIN
    ELSIF IsProcType(sym)
    THEN
       RETURN InitString('procedure type')
+   ELSIF IsPseudoBaseFunction (sym)
+   THEN
+      RETURN InitString('standard function procedure')
+   ELSIF IsPseudoBaseProcedure (sym)
+   THEN
+      RETURN InitString('standard procedure')
    ELSIF IsProcedure(sym)
    THEN
       RETURN InitString('procedure')

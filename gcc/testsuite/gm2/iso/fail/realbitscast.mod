@@ -17,7 +17,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
 
 MODULE realbitscast;
 
-FROM SYSTEM IMPORT CAST, WORD ;
+FROM SYSTEM IMPORT WORD, CAST ;
 
 TYPE
     BITS32 = SET OF [0..31];
@@ -35,6 +35,6 @@ VAR
 BEGIN
    r32 := 1.0 ;
    r64 := 1.0 ;
-   b32 := CAST(BITS32, r64) ;   (* error (r32), but the compiler should not crash!  *)
-   b64 := CAST(BITS64, r32) ;   (* error (r64), but the compiler should not crash!  *)
+   b32 := CAST (BITS32, r64) ;   (* error (r32), but the compiler should not crash!  *)
+   b64 := CAST (BITS64, r32) ;   (* error (r64), but the compiler should not crash!  *)
 END realbitscast.

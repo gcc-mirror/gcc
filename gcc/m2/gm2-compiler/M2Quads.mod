@@ -34,7 +34,7 @@ FROM M2Scaffold IMPORT DeclareScaffold, mainFunction, initFunction,
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaError3,
                         MetaErrors1, MetaErrors2, MetaErrors3,
                         MetaErrorT0, MetaErrorT1, MetaErrorT2,
-                        MetaErrorsT1,
+                        MetaErrorsT1, MetaErrorsT2,
                         MetaErrorStringT0, MetaErrorStringT1,
                         MetaErrorString1, MetaErrorString2,
                         MetaErrorN1, MetaErrorN2,
@@ -3037,17 +3037,26 @@ END BackPatchSubrangesAndOptParam ;
                                 compatible with the := operator.
 *)
 
-PROCEDURE CheckCompatibleWithBecomes (sym: CARDINAL) ;
+PROCEDURE CheckCompatibleWithBecomes (des, expr,
+                                      destok, exprtok: CARDINAL) ;
 BEGIN
-   IF IsType(sym)
+   IF IsType (des)
    THEN
-      MetaError1 ('an assignment cannot assign a value to a type {%1a}', sym)
-   ELSIF IsProcedure(sym)
+      MetaErrorT1 (destok,
+                   'an assignment cannot assign a value to a type {%1a}', des)
+   ELSIF IsProcedure (des)
    THEN
-      MetaError1 ('an assignment cannot assign a value to a procedure {%1a}', sym)
-   ELSIF IsFieldEnumeration(sym)
+      MetaErrorT1 (destok,
+                   'an assignment cannot assign a value to a procedure {%1a}', des)
+   ELSIF IsFieldEnumeration (des)
    THEN
-      MetaError1 ('an assignment cannot assign a value to an enumeration field {%1a}', sym)
+      MetaErrorT1 (destok,
+                   'an assignment cannot assign a value to an enumeration field {%1a}', des)
+   END ;
+   IF IsPseudoBaseProcedure (expr) OR IsPseudoBaseFunction (expr)
+   THEN
+      MetaErrorT1 (exprtok,
+                  'an assignment cannot assign a {%1d} {%1a}', expr)
    END
 END CheckCompatibleWithBecomes ;
 
@@ -3286,20 +3295,23 @@ END BuildBuiltinTypeInfo ;
                       unbounded array.
 *)
 
-PROCEDURE CheckBecomesMeta (Des, Exp: CARDINAL) ;
+PROCEDURE CheckBecomesMeta (Des, Exp: CARDINAL; combinedtok, destok, exprtok: CARDINAL) ;
 BEGIN
-   IF IsConst(Des) AND IsVar(Exp)
+   IF IsConst (Des) AND IsVar (Exp)
    THEN
-      MetaErrors2('in assignment, cannot assign a variable {%2a} to a constant {%1a}',
-                  'designator {%1Da} is declared as a CONST', Des, Exp)
+      MetaErrorsT2 (combinedtok,
+                    'in assignment, cannot assign a variable {%2a} to a constant {%1a}',
+                    'designator {%1Da} is declared as a {%kCONST}', Des, Exp)
    END ;
-   IF (GetDType(Des)#NulSym) AND IsVar(Des) AND IsUnbounded(GetDType(Des))
+   IF (GetDType(Des) # NulSym) AND IsVar (Des) AND IsUnbounded (GetDType (Des))
    THEN
-      MetaError1('in assignment, cannot assign to an unbounded array {%1ad}', Des)
+      MetaErrorT1 (destok,
+                   'in assignment, cannot assign to an unbounded array {%1ad}', Des)
    END ;
-   IF (GetDType(Exp)#NulSym) AND IsVar(Exp) AND IsUnbounded(GetDType(Exp))
+   IF (GetDType(Exp) # NulSym) AND IsVar (Exp) AND IsUnbounded (GetDType (Exp))
    THEN
-      MetaError1('in assignment, cannot assign from an unbounded array {%1ad}', Exp)
+      MetaErrorT1 (exprtok,
+                  'in assignment, cannot assign from an unbounded array {%1ad}', Exp)
    END
 END CheckBecomesMeta ;
 
@@ -3498,7 +3510,7 @@ BEGIN
       Array := OperandA (1) ;
       PopTrwtok (Des, w, destok) ;
       MarkAsWrite (w) ;
-      CheckCompatibleWithBecomes (Des) ;
+      CheckCompatibleWithBecomes (Des, Exp, destok, exptok) ;
       combinedtok := MakeVirtualTok (becomesTokNo, destok, exptok) ;
       IF (GetSType (Des) # NulSym) AND (NOT IsSet (GetDType (Des)))
       THEN
@@ -3508,7 +3520,7 @@ BEGIN
       END ;
       IF checkTypes
       THEN
-         CheckBecomesMeta (Des, Exp)
+         CheckBecomesMeta (Des, Exp, combinedtok, destok, exptok)
       END ;
       (* Traditional Assignment.  *)
       MoveWithMode (becomesTokNo, Des, Exp, Array, destok, exptok, checkOverflow) ;
@@ -3524,7 +3536,7 @@ BEGIN
          END ;
          *)
          (* BuildRange (InitTypesAssignmentCheck (combinedtok, Des, Exp)) ; *)
-         CheckAssignCompatible (Des, Exp)
+         CheckAssignCompatible (Des, Exp, combinedtok, destok, exptok)
       END
    END ;
    DisplayStack
@@ -3538,7 +3550,7 @@ END doBuildAssignment ;
                            given knowledge so far.
 *)
 
-PROCEDURE CheckAssignCompatible (Des, Exp: CARDINAL) ;
+PROCEDURE CheckAssignCompatible (Des, Exp: CARDINAL; combinedtok, destok, exprtok: CARDINAL) ;
 VAR
    DesT, ExpT, DesL: CARDINAL ;
 BEGIN
@@ -3549,10 +3561,12 @@ BEGIN
       ((DesT#NulSym) AND (NOT IsProcType(DesT))) AND
       ((DesL#NulSym) AND (NOT IsProcType(DesL)))
    THEN
-      MetaError1 ('incorrectly assigning a procedure to a designator {%1Ead} (designator is not a procedure type, {%1ast})', Des)
+      MetaErrorT1 (combinedtok,
+                  'incorrectly assigning a procedure to a designator {%1Ead} (designator is not a procedure type, {%1ast})', Des)
    ELSIF IsProcedure (Exp) AND IsProcedureNested (Exp)
    THEN
-      MetaError1 ('cannot call nested procedure {%1Ead} indirectly as the outer scope will not be known', Exp)
+      MetaErrorT1 (exprtok,
+                   'cannot call nested procedure {%1Ead} indirectly as the outer scope will not be known', Exp)
    ELSIF IsConstString(Exp)
    THEN
    ELSIF (DesT#NulSym) AND (IsUnbounded(DesT))
@@ -3571,7 +3585,8 @@ BEGIN
          PutConst(Des, ExpT)
       ELSIF NOT IsAssignmentCompatible(DesT, ExpT)
       THEN
-         MetaError1 ('constructor expression is not compatible during assignment to {%1Ead}', Des)
+         MetaErrorT1 (combinedtok,
+                      'constructor expression is not compatible during assignment to {%1Ead}', Des)
       END
    ELSIF (DesT#NulSym) AND IsSet(DesT) AND IsConst(Exp)
    THEN
@@ -3582,16 +3597,17 @@ BEGIN
    THEN
       IF (IsBaseType(DesL) OR IsSystemType(DesL))
       THEN
-         CheckAssignmentCompatible(ExpT, DesT)
+         CheckAssignmentCompatible (combinedtok, ExpT, DesT)
       ELSE
-         MetaError2 ('assignment of a constant {%1Ead} can only be made to a variable whose type is equivalent to a Modula-2 base type {%2tsa}', Exp, Des)
+         MetaErrorT2 (combinedtok,
+                      'assignment of a constant {%1Ead} can only be made to a variable whose type is equivalent to a Modula-2 base type {%2tsa}', Exp, Des)
       END
    ELSE
       IF (DesT#NulSym) AND IsProcType(DesT) AND IsProcedure(Exp)
       THEN
          DesT := GetSType(DesT) ; (* we can at least check RETURN values of procedure variables *)
          (* remember that thorough assignment checking is done post pass 3 *)
-         CheckAssignmentCompatible(ExpT, DesT)
+         CheckAssignmentCompatible (combinedtok, ExpT, DesT)
       END
    END
 END CheckAssignCompatible ;
@@ -4353,18 +4369,18 @@ BEGIN
    THEN
       MetaError2 ('incompatible types found in {%EkFOR} loop header, initial expression {%E1tsad} and final expression {%E2tsad}',
                  e1, e2) ;
-      CheckExpressionCompatible (GetSType (e1), GetSType (e2))
+      CheckExpressionCompatible (idtok, GetSType (e1), GetSType (e2))
    END ;
    IF NOT IsExpressionCompatible( GetSType (e1), ByType)
    THEN
       MetaError2 ('incompatible types found in {%EkFOR} loop header, initial expression {%E1tsad} and {%kBY} {%E2tsad}',
                   e2, BySym) ;
-      CheckExpressionCompatible (GetSType (e1), ByType)
+      CheckExpressionCompatible (e1tok, GetSType (e1), ByType)
    ELSIF NOT IsExpressionCompatible (GetSType (e2), ByType)
    THEN
       MetaError2 ('incompatible types found in {%EkFOR} loop header, final expression {%E1tsad} and {%kBY} {%E2tsad}',
                   e2, BySym) ;
-      CheckExpressionCompatible (GetSType (e2), ByType)
+      CheckExpressionCompatible (e1tok, GetSType (e2), ByType)
    END ;
    BuildRange (InitForLoopBeginRangeCheck (IdSym, e1)) ;
    PushTtok (IdSym, idtok) ;
@@ -7432,9 +7448,15 @@ VAR
    NoOfParam,
    ProcSym        : CARDINAL ;
 BEGIN
+   DisplayStack ;
    PopT(NoOfParam) ;
    ProcSym := OperandT (NoOfParam + 1) ;
    functok := OperandTtok (NoOfParam + 1) ;
+   IF CompilerDebugging
+   THEN
+      printf2 ('procsym = %d  token = %d\n', ProcSym, functok) ;
+      ErrorStringAt (InitString ('constant function'), functok)
+   END ;
    PushT (NoOfParam) ;
    IF (ProcSym # Convert) AND
       (IsPseudoBaseFunction (ProcSym) OR
@@ -9795,7 +9817,7 @@ BEGIN
       IF (IsVar(l) OR IsConst(l)) AND
          (IsVar(r) OR IsConst(r))
       THEN
-         CheckExpressionCompatible (GetSType(l), GetSType(r)) ;
+         CheckExpressionCompatible (combinedtok, GetSType(l), GetSType(r)) ;
          ReturnVar := MakeTemporary (combinedtok, AreConstant (IsConst (l) AND IsConst (r))) ;
          PutVar (ReturnVar, GetCmplxReturnType (GetDType (l), GetDType (r))) ;
          GenQuadO (combinedtok, StandardFunctionOp, ReturnVar, Cmplx, Make2Tuple (l, r), TRUE) ;
