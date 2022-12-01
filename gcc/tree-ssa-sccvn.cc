@@ -5840,7 +5840,12 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		  continue;
 	      }
 	    /* There's also the possibility to use equivalences.  */
-	    if (!FLOAT_TYPE_P (TREE_TYPE (def)))
+	    if (!FLOAT_TYPE_P (TREE_TYPE (def))
+		/* But only do this if we didn't force any of sameval or
+		   val to VARYING because of backedge processing rules.  */
+		&& (TREE_CODE (sameval) != SSA_NAME
+		    || SSA_VAL (sameval) == sameval)
+		&& (TREE_CODE (def) != SSA_NAME || SSA_VAL (def) == def))
 	      {
 		vn_nary_op_t vnresult;
 		tree ops[2];
