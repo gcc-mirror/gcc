@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/region-model.h"
+#include "analyzer/checker-event.h"
+#include "analyzer/checker-path.h"
 
 #if ENABLE_ANALYZER
 
@@ -62,6 +64,20 @@ public:
   void mark_interesting_stuff (interesting_t *interest) final override
   {
     interest->add_region_creation (m_reg);
+  }
+
+  void add_region_creation_events (const region *,
+				   tree capacity,
+				   location_t loc,
+				   tree fndecl, int depth,
+				   checker_path &emission_path) override
+  {
+    /* The memory space is described in the diagnostic message itself,
+       so we don't need an event for that.  */
+    if (capacity)
+      emission_path.add_event
+	(make_unique<region_creation_event_capacity> (capacity,
+						      loc, fndecl, depth));
   }
 
 protected:
@@ -147,14 +163,16 @@ public:
 						other.m_byte_bound));
   }
 
-  label_text
-  describe_region_creation_event (const evdesc::region_creation &ev) final
-  override
+  void add_region_creation_events (const region *,
+				   tree,
+				   location_t loc,
+				   tree fndecl, int depth,
+				   checker_path &emission_path) final override
   {
     if (m_byte_bound && TREE_CODE (m_byte_bound) == INTEGER_CST)
-      return ev.formatted_print ("capacity is %E bytes", m_byte_bound);
-
-    return label_text ();
+      emission_path.add_event
+	(make_unique<region_creation_event_capacity> (m_byte_bound,
+						      loc, fndecl, depth));
   }
 
 protected:
@@ -532,16 +550,6 @@ public:
 	    && pending_diagnostic::same_tree_p (m_offset, other.m_offset)
 	    && pending_diagnostic::same_tree_p (m_num_bytes, other.m_num_bytes)
 	    && pending_diagnostic::same_tree_p (m_capacity, other.m_capacity));
-  }
-
-  label_text
-  describe_region_creation_event (const evdesc::region_creation &ev) final
-  override
-  {
-    if (m_capacity)
-      return ev.formatted_print ("capacity is %qE bytes", m_capacity);
-
-    return label_text ();
   }
 
 protected:

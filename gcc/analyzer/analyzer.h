@@ -359,7 +359,8 @@ extern const char *get_user_facing_name (const gcall *call);
 extern void register_analyzer_pass ();
 
 extern label_text make_label_text (bool can_colorize, const char *fmt, ...);
-extern label_text make_label_text_n (bool can_colorize, int n,
+extern label_text make_label_text_n (bool can_colorize,
+				     unsigned HOST_WIDE_INT n,
 				     const char *singular_fmt,
 				     const char *plural_fmt, ...);
 

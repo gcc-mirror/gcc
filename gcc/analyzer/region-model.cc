@@ -74,6 +74,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "is-a.h"
 #include "gcc-rich-location.h"
+#include "analyzer/checker-event.h"
+#include "analyzer/checker-path.h"
 
 #if ENABLE_ANALYZER
 
@@ -2777,12 +2779,14 @@ class dubious_allocation_size
 {
 public:
   dubious_allocation_size (const region *lhs, const region *rhs)
-  : m_lhs (lhs), m_rhs (rhs), m_expr (NULL_TREE)
+  : m_lhs (lhs), m_rhs (rhs), m_expr (NULL_TREE),
+    m_has_allocation_event (false)
   {}
 
   dubious_allocation_size (const region *lhs, const region *rhs,
 			   tree expr)
-  : m_lhs (lhs), m_rhs (rhs), m_expr (expr)
+  : m_lhs (lhs), m_rhs (rhs), m_expr (expr),
+    m_has_allocation_event (false)
   {}
 
   const char *get_kind () const final override
@@ -2811,34 +2815,17 @@ public:
 			 " of the pointee's size");
   }
 
-  label_text
-  describe_region_creation_event (const evdesc::region_creation &ev) final
-  override
-  {
-    m_allocation_event = &ev;
-    if (m_expr)
-      {
-	if (TREE_CODE (m_expr) == INTEGER_CST)
-	  return ev.formatted_print ("allocated %E bytes here", m_expr);
-	else
-	  return ev.formatted_print ("allocated %qE bytes here", m_expr);
-      }
-
-    return ev.formatted_print ("allocated here");
-  }
-
   label_text describe_final_event (const evdesc::final_event &ev) final
   override
   {
     tree pointee_type = TREE_TYPE (m_lhs->get_type ());
-    if (m_allocation_event)
-      /* Fallback: Typically, we should always
-	 see an m_allocation_event before.  */
+    if (m_has_allocation_event)
       return ev.formatted_print ("assigned to %qT here;"
 				 " %<sizeof (%T)%> is %qE",
 				 m_lhs->get_type (), pointee_type,
 				 size_in_bytes (pointee_type));
-
+    /* Fallback: Typically, we should always see an allocation_event
+       before.  */
     if (m_expr)
       {
 	if (TREE_CODE (m_expr) == INTEGER_CST)
@@ -2859,6 +2846,20 @@ public:
 			       size_in_bytes (pointee_type));
   }
 
+  void
+  add_region_creation_events (const region *,
+			      tree capacity,
+			      location_t loc,
+			      tree fndecl, int depth,
+			      checker_path &emission_path) final override
+  {
+    emission_path.add_event
+      (make_unique<region_creation_event_allocation_size> (capacity,
+							   loc, fndecl, depth));
+
+    m_has_allocation_event = true;
+  }
+
   void mark_interesting_stuff (interesting_t *interest) final override
   {
     interest->add_region_creation (m_rhs);
@@ -2868,7 +2869,7 @@ private:
   const region *m_lhs;
   const region *m_rhs;
   const tree m_expr;
-  const evdesc::region_creation *m_allocation_event;
+  bool m_has_allocation_event;
 };
 
 /* Return true on dubious allocation sizes for constant sizes.  */

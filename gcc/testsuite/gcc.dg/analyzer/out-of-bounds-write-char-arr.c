@@ -1,4 +1,4 @@
-char arr[10]; /* { dg-message "capacity is 10 bytes" } */
+char arr[10]; /* { dg-message "capacity: 10 bytes" } */
 
 void char_arr_write_element_before_start_far(char x)
 {

@@ -1447,7 +1447,8 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 		  && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
 		{
 		  emission_path->add_region_creation_events
-		    (reg, NULL,
+		    (pb.get_pending_diagnostic (),
+		     reg, NULL,
 		     DECL_SOURCE_LOCATION (decl),
 		     NULL_TREE,
 		     0,
@@ -1463,7 +1464,8 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
       const exploded_edge *eedge = epath.m_edges[i];
       add_events_for_eedge (pb, *eedge, emission_path, &interest);
     }
-  add_event_on_final_node (epath.get_final_enode (), emission_path, &interest);
+  add_event_on_final_node (pb, epath.get_final_enode (),
+			   emission_path, &interest);
 }
 
 /* Emit a region_creation_event when requested on the last statement in
@@ -1475,7 +1477,8 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 */
 
 void
-diagnostic_manager::add_event_on_final_node (const exploded_node *final_enode,
+diagnostic_manager::add_event_on_final_node (const path_builder &pb,
+					     const exploded_node *final_enode,
 					     checker_path *emission_path,
 					     interesting_t *interest) const
 {
@@ -1512,7 +1515,8 @@ diagnostic_manager::add_event_on_final_node (const exploded_node *final_enode,
 		case RK_HEAP_ALLOCATED:
 		case RK_ALLOCA:
 		  emission_path->add_region_creation_events
-		    (reg,
+		    (pb.get_pending_diagnostic (),
+		     reg,
 		     dst_model,
 		     src_point.get_location (),
 		     src_point.get_fndecl (),
@@ -1940,7 +1944,8 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 			    && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
 			  {
 			    emission_path->add_region_creation_events
-			      (reg, dst_state.m_region_model,
+			      (pb.get_pending_diagnostic (),
+			       reg, dst_state.m_region_model,
 			       DECL_SOURCE_LOCATION (decl),
 			       dst_point.get_fndecl (),
 			       dst_stack_depth,
@@ -2036,7 +2041,8 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		  case RK_HEAP_ALLOCATED:
 		  case RK_ALLOCA:
 		    emission_path->add_region_creation_events
-		      (reg, dst_model,
+		      (pb.get_pending_diagnostic (),
+		       reg, dst_model,
 		       src_point.get_location (),
 		       src_point.get_fndecl (),
 		       src_stack_depth,

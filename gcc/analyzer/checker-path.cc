@@ -141,7 +141,8 @@ checker_path::debug () const
    If DEBUG is true, also create an RCE_DEBUG event.  */
 
 void
-checker_path::add_region_creation_events (const region *reg,
+checker_path::add_region_creation_events (pending_diagnostic *pd,
+					  const region *reg,
 					  const region_model *model,
 					  location_t loc,
 					  tree fndecl, int depth,
@@ -152,16 +153,11 @@ checker_path::add_region_creation_events (const region *reg,
     if (const svalue *capacity_sval = model->get_capacity (reg))
       capacity = model->get_representative_tree (capacity_sval);
 
-  add_event (make_unique<region_creation_event> (reg, capacity, RCE_MEM_SPACE,
-						 loc, fndecl, depth));
-
-  if (capacity)
-    add_event (make_unique<region_creation_event> (reg, capacity, RCE_CAPACITY,
-						   loc, fndecl, depth));
+  pd->add_region_creation_events (reg, capacity, loc, fndecl, depth, *this);
 
   if (debug)
-    add_event (make_unique<region_creation_event> (reg, capacity, RCE_DEBUG,
-						   loc, fndecl, depth));
+    add_event (make_unique<region_creation_event_debug> (reg, capacity,
+							 loc, fndecl, depth));
 }
 
 void

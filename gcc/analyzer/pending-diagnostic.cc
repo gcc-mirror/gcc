@@ -199,6 +199,26 @@ pending_diagnostic::add_call_event (const exploded_edge &eedge,
 			      src_stack_depth));
 }
 
+/* Base implementation of pending_diagnostic::add_region_creation_events.
+   See the comment for class region_creation_event.  */
+
+void
+pending_diagnostic::add_region_creation_events (const region *reg,
+						tree capacity,
+						location_t loc,
+						tree fndecl, int depth,
+						checker_path &emission_path)
+{
+  emission_path.add_event
+    (make_unique<region_creation_event_memory_space> (reg->get_memory_space (),
+						      loc, fndecl, depth));
+
+  if (capacity)
+    emission_path.add_event
+      (make_unique<region_creation_event_capacity> (capacity,
+						    loc, fndecl, depth));
+}
+
 /* Base implementation of pending_diagnostic::add_final_event.
    Add a warning_event to the end of EMISSION_PATH.  */
 

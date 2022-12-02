@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-int32_t arr[10]; /* { dg-message "capacity is 40 bytes" } */
+int32_t arr[10]; /* { dg-message "capacity: 40 bytes" } */
 
 int32_t int_arr_read_element_before_start_far(void)
 {

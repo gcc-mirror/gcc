@@ -25,7 +25,7 @@ void int_arr_write_element_after_end_off_by_one(int32_t x)
     | int32_t arr[10];
     |         ^~~
     |         |
-    |         (1) capacity is 40 bytes
+    |         (1) capacity: 40 bytes
     |
     +--> 'int_arr_write_element_after_end_off_by_one': event 2 (depth 1)
            |

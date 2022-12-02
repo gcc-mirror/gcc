@@ -293,84 +293,77 @@ statement_event::get_desc (bool) const
 
 /* class region_creation_event : public checker_event.  */
 
-region_creation_event::region_creation_event (const region *reg,
-					      tree capacity,
-					      enum rce_kind kind,
-					      location_t loc,
+region_creation_event::region_creation_event (location_t loc,
 					      tree fndecl,
 					      int depth)
-: checker_event (EK_REGION_CREATION, loc, fndecl, depth),
-  m_reg (reg),
-  m_capacity (capacity),
-  m_rce_kind (kind)
+: checker_event (EK_REGION_CREATION, loc, fndecl, depth)
 {
-  if (m_rce_kind == RCE_CAPACITY)
-    gcc_assert (capacity);
 }
 
-/* Implementation of diagnostic_event::get_desc vfunc for
-   region_creation_event.
-   There are effectively 3 kinds of region_region_event, to
-   avoid combinatorial explosion by trying to convy the
-   information in a single message.  */
+/* The various region_creation_event subclasses' get_desc
+   implementations.  */
 
 label_text
-region_creation_event::get_desc (bool can_colorize) const
+region_creation_event_memory_space::get_desc (bool) const
 {
-  if (m_pending_diagnostic)
-    {
-      label_text custom_desc
-	    = m_pending_diagnostic->describe_region_creation_event
-		(evdesc::region_creation (can_colorize, m_reg));
-      if (custom_desc.get ())
-	return custom_desc;
-    }
-
-  switch (m_rce_kind)
+  switch (m_mem_space)
     {
     default:
-      gcc_unreachable ();
+      return label_text::borrow ("region created here");
+    case MEMSPACE_STACK:
+      return label_text::borrow ("region created on stack here");
+    case MEMSPACE_HEAP:
+      return label_text::borrow ("region created on heap here");
+    }
+}
 
-    case RCE_MEM_SPACE:
-      switch (m_reg->get_memory_space ())
-	{
-	default:
-	  return label_text::borrow ("region created here");
-	case MEMSPACE_STACK:
-	  return label_text::borrow ("region created on stack here");
-	case MEMSPACE_HEAP:
-	  return label_text::borrow ("region created on heap here");
-	}
-      break;
+label_text
+region_creation_event_capacity::get_desc (bool can_colorize) const
+{
+  gcc_assert (m_capacity);
+  if (TREE_CODE (m_capacity) == INTEGER_CST)
+    {
+      unsigned HOST_WIDE_INT hwi = tree_to_uhwi (m_capacity);
+      return make_label_text_n (can_colorize,
+				hwi,
+				"capacity: %wu byte",
+				"capacity: %wu bytes",
+				hwi);
+    }
+  else
+    return make_label_text (can_colorize,
+			    "capacity: %qE bytes", m_capacity);
+}
 
-    case RCE_CAPACITY:
-      gcc_assert (m_capacity);
+label_text
+region_creation_event_allocation_size::get_desc (bool can_colorize) const
+{
+  if (m_capacity)
+    {
       if (TREE_CODE (m_capacity) == INTEGER_CST)
-	{
-	  unsigned HOST_WIDE_INT hwi = tree_to_uhwi (m_capacity);
-	  if (hwi == 1)
-	    return make_label_text (can_colorize,
-				    "capacity: %wu byte", hwi);
-	  else
-	    return make_label_text (can_colorize,
-				    "capacity: %wu bytes", hwi);
-	}
+	return make_label_text_n (can_colorize,
+				  tree_to_uhwi (m_capacity),
+				  "allocated %E byte here",
+				  "allocated %E bytes here",
+				  m_capacity);
       else
 	return make_label_text (can_colorize,
-				"capacity: %qE bytes", m_capacity);
-
-    case RCE_DEBUG:
-      {
-	pretty_printer pp;
-	pp_format_decoder (&pp) = default_tree_printer;
-	pp_string (&pp, "region creation: ");
-	m_reg->dump_to_pp (&pp, true);
-	if (m_capacity)
-	  pp_printf (&pp, " capacity: %qE", m_capacity);
-	return label_text::take (xstrdup (pp_formatted_text (&pp)));
-      }
-      break;
+				"allocated %qE bytes here",
+				m_capacity);
     }
+  return make_label_text (can_colorize, "allocated here");
+}
+
+label_text
+region_creation_event_debug::get_desc (bool) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_string (&pp, "region creation: ");
+  m_reg->dump_to_pp (&pp, true);
+  if (m_capacity)
+    pp_printf (&pp, " capacity: %qE", m_capacity);
+  return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
 
 /* class function_entry_event : public checker_event.  */

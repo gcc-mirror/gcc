@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_CHECKER_EVENT_H
 
 #include "tree-logical-location.h"
+#include "analyzer/program-state.h"
 
 namespace ana {
 
@@ -211,43 +212,105 @@ public:
   const program_state m_dst_state;
 };
 
-/* There are too many combinations to express region creation in one message,
+/* An abstract event subclass describing the creation of a region that
+   is significant for a diagnostic.
+
+   There are too many combinations to express region creation in one message,
    so we emit multiple region_creation_event instances when each pertinent
    region is created.
 
-   This enum distinguishes between the different messages.  */
-
-enum rce_kind
-{
-  /* Generate a message based on the memory space of the region
-     e.g. "region created on stack here".  */
-  RCE_MEM_SPACE,
-
-  /* Generate a message based on the capacity of the region
-     e.g. "capacity: 100 bytes".  */
-  RCE_CAPACITY,
-
-  /* Generate a debug message.  */
-  RCE_DEBUG
-};
-
-/* A concrete event subclass describing the creation of a region that
-   is significant for a diagnostic.  */
+   The events are created by pending_diagnostic's add_region_creation_events
+   vfunc, which by default creates a region_creation_event_memory_space, and
+   if a capacity is known, a region_creation_event_capacity, giving e.g.:
+     (1) region created on stack here
+     (2) capacity: 100 bytes
+   but this vfunc can be overridden to create other events if other wordings
+   are more appropriate foa a given pending_diagnostic.  */
 
 class region_creation_event : public checker_event
 {
+protected:
+  region_creation_event (location_t loc, tree fndecl, int depth);
+};
+
+/* Concrete subclass of region_creation_event.
+   Generates a message based on the memory space of the region
+   e.g. "region created on stack here".  */
+
+class region_creation_event_memory_space : public region_creation_event
+{
 public:
-  region_creation_event (const region *reg,
-			 tree capacity,
-			 enum rce_kind kind,
-			 location_t loc, tree fndecl, int depth);
+  region_creation_event_memory_space (enum memory_space mem_space,
+				      location_t loc, tree fndecl, int depth)
+  : region_creation_event (loc, fndecl, depth),
+    m_mem_space (mem_space)
+  {
+  }
+
+  label_text get_desc (bool can_colorize) const final override;
+
+private:
+  enum memory_space m_mem_space;
+};
+
+/* Concrete subclass of region_creation_event.
+   Generates a message based on the capacity of the region
+   e.g. "capacity: 100 bytes".  */
+
+class region_creation_event_capacity : public region_creation_event
+{
+public:
+  region_creation_event_capacity (tree capacity,
+				  location_t loc, tree fndecl, int depth)
+  : region_creation_event (loc, fndecl, depth),
+    m_capacity (capacity)
+  {
+    gcc_assert (m_capacity);
+  }
+
+  label_text get_desc (bool can_colorize) const final override;
+
+private:
+  tree m_capacity;
+};
+
+/* Concrete subclass of region_creation_event.
+   Generates a message based on the capacity of the region
+   e.g. "allocated 100 bytes here".  */
+
+class region_creation_event_allocation_size : public region_creation_event
+{
+public:
+  region_creation_event_allocation_size (tree capacity,
+					 location_t loc, tree fndecl, int depth)
+  : region_creation_event (loc, fndecl, depth),
+    m_capacity (capacity)
+  {}
+
+  label_text get_desc (bool can_colorize) const final override;
+
+private:
+  tree m_capacity;
+};
+
+/* Concrete subclass of region_creation_event.
+   Generates a debug message intended for analyzer developers.  */
+
+class region_creation_event_debug : public region_creation_event
+{
+public:
+  region_creation_event_debug (const region *reg, tree capacity,
+			       location_t loc, tree fndecl, int depth)
+  : region_creation_event (loc, fndecl, depth),
+    m_reg (reg), m_capacity (capacity)
+  {
+  }
 
   label_text get_desc (bool can_colorize) const final override;
 
 private:
   const region *m_reg;
   tree m_capacity;
-  enum rce_kind m_rce_kind;
 };
 
 /* An event subclass describing the entry to a function.  */
