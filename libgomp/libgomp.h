@@ -1197,6 +1197,7 @@ struct target_mem_desc;
 #define OFFSET_INLINED (~(uintptr_t) 0)
 #define OFFSET_POINTER (~(uintptr_t) 1)
 #define OFFSET_STRUCT (~(uintptr_t) 2)
+#define OFFSET_USM (~(uintptr_t) 3)
 
 /* Auxiliary structure for infrequently-used or API-specific data.  */
 

@@ -693,6 +693,9 @@ gomp_map_pointer (struct target_mem_desc *tgt, struct goacc_asyncqueue *aq,
     {
       if (allow_zero_length_array_sections)
 	cur_node.tgt_offset = 0;
+      else if (devicep->is_usm_ptr_func
+	       && devicep->is_usm_ptr_func ((void*)cur_node.host_start))
+	cur_node.tgt_offset = cur_node.host_start;
       else
 	{
 	  gomp_mutex_unlock (&devicep->lock);
@@ -929,6 +932,7 @@ gomp_map_val (struct target_mem_desc *tgt, void **hostaddrs, size_t i)
   switch (tgt->list[i].offset)
     {
     case OFFSET_INLINED:
+    case OFFSET_USM:
       return (uintptr_t) hostaddrs[i];
 
     case OFFSET_POINTER:
@@ -1014,11 +1018,21 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
     {
       int kind = get_kind (short_mapkind, kinds, i);
       bool implicit = get_implicit (short_mapkind, kinds, i);
+      tgt->list[i].offset = 0;
       if (hostaddrs[i] == NULL
 	  || (kind & typemask) == GOMP_MAP_FIRSTPRIVATE_INT)
 	{
 	  tgt->list[i].key = NULL;
 	  tgt->list[i].offset = OFFSET_INLINED;
+	  continue;
+	}
+      else if (devicep->is_usm_ptr_func
+	       && devicep->is_usm_ptr_func (hostaddrs[i]))
+	{
+	  /* The memory is visible from both host and target
+	     so nothing needs to be moved.  */
+	  tgt->list[i].key = NULL;
+	  tgt->list[i].offset = OFFSET_USM;
 	  continue;
 	}
       else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR
@@ -1062,15 +1076,6 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    }
 	  else
 	    tgt->list[i].offset = 0;
-	  continue;
-	}
-      else if (devicep->is_usm_ptr_func
-	       && devicep->is_usm_ptr_func (hostaddrs[i]))
-	{
-	  /* The memory is visible from both host and target
-	     so nothing needs to be moved.  */
-	  tgt->list[i].key = NULL;
-	  tgt->list[i].offset = OFFSET_INLINED;
 	  continue;
 	}
       else if ((kind & typemask) == GOMP_MAP_STRUCT)
@@ -1441,6 +1446,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    int kind = get_kind (short_mapkind, kinds, i);
 	    bool implicit = get_implicit (short_mapkind, kinds, i);
 	    if (hostaddrs[i] == NULL)
+	      continue;
+	    if (tgt->list[i].offset == OFFSET_USM)
 	      continue;
 	    switch (kind & typemask)
 	      {

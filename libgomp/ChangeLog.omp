@@ -1,3 +1,13 @@
+2022-12-16  Andrew Stubbs  <ams@codesourcery.com>
+
+	* libgomp.h (OFFSET_USM): New macro.
+	* target.c (gomp_map_pointer): Handle USM mappings.
+	(gomp_map_val): Handle OFFSET_USM.
+	(gomp_map_vars_internal): Move USM check earlier, and use OFFSET_USM.
+	Add OFFSET_USM check to the second mapping pass.
+	* testsuite/libgomp.fortran/usm-1.f90: New test.
+	* testsuite/libgomp.fortran/usm-2.f90: New test.
+
 2022-12-13  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* target.c (omp_target_is_accessible): Handle unified shared memory.
