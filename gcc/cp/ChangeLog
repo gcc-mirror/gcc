@@ -1,3 +1,39 @@
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* parser.cc (cp_convert_omp_range_for): After do_auto_deduction if
+	!processing_template_decl call cp_finish_decomp with
+	processing_template_decl temporarily incremented.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* parser.cc (do_range_for_auto_deduction): Add DECOMP_FIRST_NAME
+	and DECOMP_CNT arguments.  Call cp_finish_decomp if DECL
+	is a structured binding.
+	(cp_parser_range_for): Adjust do_range_for_auto_deduction caller.
+	(cp_convert_omp_range_for): Likewise.
+
+2022-12-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107539
+	* constraint.cc (norm_hasher::hash, norm_hasher::equal): Set
+	comparing_specializations.
+	(sat_hasher::hash, sat_hasher::equal): Likewise.
+	* cp-tree.h (atom_hasher::hash, atom_hasher::equal): Likewise.
+	* pt.cc (ctp_hasher::hash, ctp_hasher::equal): Likewise.
+
+2022-12-01  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Remove extra object dependency.
+
+2022-12-01  Jason Merrill  <jason@redhat.com>
+
+	* contracts.cc (remove_contract_attributes): Actually prepend
+	to the list.
+	* pt.cc (tsubst_contract): Only look for a postcondition if type is
+	nonnull.
+
 2022-11-30  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/107542

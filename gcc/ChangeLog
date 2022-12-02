@@ -1,3 +1,158 @@
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106577
+	* config/i386/i386-expand.cc (ix86_vector_duplicate_value): Save/restore
+	recog_data around recog_memoized calls.
+
+2022-12-02  Michael Collison  <collison@rivosinc.com>
+
+	* match.pd ((x & 0x1) == 0) ? y : z <op> y
+	-> (-(typeof(y))(x & 0x1) & z) <op> y.
+
+2022-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107946
+	* params.opt (-param=max-unswitch-depth=): New.
+	* doc/invoke.texi (--param=max-unswitch-depth): Document.
+	* tree-ssa-loop-unswitch.cc (init_loop_unswitch_info): Honor
+	--param=max-unswitch-depth
+
+2022-12-02  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR bootstrap/59447
+	* configure: Regenerate.
+	* configure.ac: Document --with-dwarf2 flag as also
+	applying to later DWARF standards.
+	* doc/install.texi: Likewise.
+
+2022-12-02  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107934
+	* config/i386/i386.md (extendbfsf2_1): Change type from
+	sseishft to sseishft1.
+
+2022-12-01  Alex Coplan  <alex.coplan@arm.com>
+
+	* varasm.cc (assemble_variable): Fix type confusion bug when
+	checking for ".vtable_map_vars" section.
+
+2022-12-01  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (emit_pred_op): Adapt for mask mode.
+	* config/riscv/vector.md: Remove Tail && make policy operand for mask mode mov.
+
+2022-12-01  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum vlmul_type): New enum.
+	(get_vlmul): New function.
+	(get_ratio): Ditto.
+	* config/riscv/riscv-v.cc (struct mode_vtype_group): New struct.
+	(ENTRY): Adapt for attributes.
+	(enum vlmul_type): New enum.
+	(get_vlmul): New function.
+	(get_ratio): New function.
+	* config/riscv/riscv-vector-switch.def (ENTRY): Adapt for attributes.
+	* config/riscv/riscv.cc (ENTRY): Ditto.
+	* config/riscv/vector.md (false,true): Add attributes.
+
+2022-12-01  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (Wdm): New constraint.
+	* config/riscv/predicates.md (direct_broadcast_operand): New predicate.
+	* config/riscv/riscv-protos.h (RVV_VLMAX): New macro.
+	(emit_pred_op): Refine function.
+	* config/riscv/riscv-selftests.cc (run_const_vector_selftests): New function.
+	(run_broadcast_selftests): Ditto.
+	(BROADCAST_TEST): New tests.
+	(riscv_run_selftests): More tests.
+	* config/riscv/riscv-v.cc (emit_pred_move): Refine function.
+	(emit_vlmax_vsetvl): Ditto.
+	(emit_pred_op): Ditto.
+	(expand_const_vector): New function.
+	(legitimize_move): Add constant vector support.
+	* config/riscv/riscv.cc (riscv_print_operand): New asm print rule for const vector.
+	* config/riscv/riscv.h (X0_REGNUM): New macro.
+	* config/riscv/vector-iterators.md: New attribute.
+	* config/riscv/vector.md (vec_duplicate<mode>): New pattern.
+	(@pred_broadcast<mode>): New pattern.
+
+2022-12-01  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* config/gcn/gcn-opts.h (TARGET_FIJI): -march=fiji.
+	(TARGET_VEGA10): -march=gfx900.
+	(TARGET_VEGA20): -march=gfx906.
+	(TARGET_GFX908): -march=gfx908.
+	(TARGET_GFX90a): -march=gfx90a.
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS): Define a builtin that
+	uniquely maps to '-march'.
+
+2022-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107937
+	* gimple-predicate-analysis.h (predicate::is_true): New.
+	(predicate::is_false): Likewise.
+	(predicate::empty_val): Likewise.
+	(uninit_analysis::uninit_analysis): Properly initialize
+	def_preds.
+	* gimple-predicate-analysis.cc (simplify_1b): Indicate
+	whether the chain became empty.
+	(predicate::simplify): Release emptied chain before removing it.
+	(predicate::normalize): Replace temporary object with assertion.
+	(uninit_analysis::is_use_guarded): Deal with predicates
+	that simplify to true/false.
+
+2022-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107935
+	* tree-ssa-sccvn.cc (visit_phi): Honor forced VARYING on
+	backedges.
+
+2022-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107627
+	* config/i386/i386.md (*concat<mode><dwi>3_1, *concat<mode><dwi>3_2):
+	For operands which are zero_extend arguments allow memory if
+	output operand is a register.
+	(*concat<mode><dwi>3_3, *concat<mode><dwi>3_4): Likewise.  If
+	both input operands are memory, use early clobber on output operand.
+	* config/i386/i386-expand.cc (split_double_concat): Deal with corner
+	cases where one input is memory and the other is not and the address
+	of the memory input uses a register we'd overwrite before loading
+	the memory into a register.
+
+2022-12-01  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-call.cc (swap_endian_selector_for_mode):
+	Corrects comments of this function and make them clear.
+
+2022-12-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107863
+	* config/i386/i386-expand.cc (ix86_expand_vec_set_builtin):
+	Convert op1 to target mode whenever mode mismatch.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* diagnostic-path.h
+	(diagnostic_path::get_first_event_in_a_function): New decl.
+	* diagnostic.cc (diagnostic_path::get_first_event_in_a_function):
+	New.
+	(diagnostic_path::interprocedural_p): Ignore leading events that
+	are outside of any function.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/bounds-checking.o.
+
+2022-12-01  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100866
+	* config/rs6000/rs6000-call.cc (swap_endian_selector_for_mode):
+	Generate permute index directly for little endian targets.
+	* config/rs6000/vsx.md (revb_<mode>): Call vprem directly with
+	corresponding permute indexes.
+
 2022-11-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (addvdi3): Force operand 2 to a register.

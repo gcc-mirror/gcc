@@ -1,3 +1,10 @@
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* c-omp.cc (c_omp_is_loop_iterator): For range for with structured
+	binding return TREE_VEC_LENGTH (d->declv) even if decl is equal
+	to any of the structured binding decls.
+
 2022-11-30  Iskander Shakirzyanov  <iskander@ispras.ru>
 	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 

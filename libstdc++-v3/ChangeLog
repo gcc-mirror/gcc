@@ -1,3 +1,11 @@
+2022-12-02  Björn Schäpers  <bjoern@hazardy.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (stacktrace_entry::_S_err_handler): New
+	static function.
+	(stacktrace_entry, basic_stacktrace): Pass &_S_err_handler to
+	all calls to libbacktrace.
+
 2022-11-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/107852

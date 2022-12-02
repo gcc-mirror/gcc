@@ -1,3 +1,145 @@
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106577
+	* gcc.target/i386/pr106577.c: New test.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* g++.dg/gomp/for-21.C (f3, f6, f9): Adjust expected diagnostics.
+	* g++.dg/gomp/for-22.C: New test.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* g++.dg/cpp1z/decomp56.C: New test.
+	* g++.dg/gomp/pr84469.C: New test.
+
+2022-12-02  Michael Collison  <collison@rivosinc.com>
+
+	* gcc.dg/tree-ssa/branchless-cond.c: New test.
+
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107948
+	* gcc.dg/analyzer/feasibility-pr107948.c: New test.
+
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/string-ops-concat-pair.c: New test.
+	* gcc.dg/analyzer/string-ops-dup.c: New test.
+
+2022-12-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107934.c: New test.
+
+2022-12-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107539
+	* g++.dg/template/canon-type-19.C: New test.
+
+2022-12-01  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/dup-1.c: New test.
+	* gcc.target/riscv/rvv/base/dup-2.c: New test.
+
+2022-12-01  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/simd/mve-compare-1.c: Update.
+	* gcc.target/arm/simd/mve-compare-scalar-1.c: Update.
+	* gcc.target/arm/simd/mve-vabs.c: Update.
+	* gcc.target/arm/simd/mve-vadd-1.c: Update.
+	* gcc.target/arm/simd/mve-vadd-scalar-1.c: Update.
+	* gcc.target/arm/simd/mve-vcmp.c: Update.
+	* gcc.target/arm/simd/pr101325.c: Update.
+
+2022-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107937
+	* gcc.dg/pr107937.c: New testcase.
+
+2022-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107935
+	* gcc.dg/torture/pr107935.c: New testcase.
+
+2022-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107627
+	* gcc.target/i386/pr107627-1.c: New test.
+	* gcc.target/i386/pr107627-2.c: New test.
+
+2022-12-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107863.c: New test.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/out-of-bounds-multiline-1.c: New test.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/call-summaries-2.c: Update expected results.
+	* gcc.dg/analyzer/out-of-bounds-1.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-2.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-3.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-4.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-5.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-container_of.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-read-char-arr.c: Likewise.  Rename
+	functions from "int_arr_" to "char_arr_".
+	* gcc.dg/analyzer/out-of-bounds-read-int-arr.c: Update expected
+	results.
+	* gcc.dg/analyzer/out-of-bounds-read-struct-arr.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: Update expected
+	results.  Rename functions from "int_arr_" to "char_arr_".
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: Update expected
+	results.
+	* gcc.dg/analyzer/out-of-bounds-write-struct-arr.c: New test.
+	* gcc.dg/analyzer/pr101962.c: Update expected results.
+	* gcc.dg/analyzer/realloc-5.c: Update expected results.
+	* gcc.dg/analyzer/zlib-3.c: Update expected results.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/call-summaries-2.c: Add dg-message for expected
+	note about valid indexes.
+	* gcc.dg/analyzer/out-of-bounds-1.c: Likewise, fixing up existing
+	dg-message directives.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: Likewise.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/out-of-bounds-read-char-arr.c: Update for
+	changes to expected wording.
+	* gcc.dg/analyzer/out-of-bounds-read-int-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: Likewise.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107928
+	* gcc.dg/analyzer/fd-bind-pr107928.c: New test.
+	* gcc.dg/analyzer/fd-connect-pr107928.c: New test.
+	* gcc.dg/analyzer/fd-stream-socket-active-open.c
+	(test_active_open_from_connect_constant): New, adapted from
+	test_active_open_from_connect.
+	* gcc.dg/analyzer/fd-stream-socket-passive-open.c
+	(test_passive_open_from_bind_constant): New, adapted from
+	test_passive_open_from_bind.
+	(test_passive_open_from_listen_constant): New, adapted from
+	test_passive_open_from_listen.
+
+2022-12-01  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100866
+	* gcc.target/powerpc/pr100866-1.c: New.
+
 2022-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/mops_5.c: New test.

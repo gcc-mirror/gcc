@@ -1,3 +1,127 @@
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107948
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Fold (0 - VAL) to -VAL.
+	* region-model.cc (region_model::eval_condition): Handle e.g.
+	"-X <= 0" as equivalent to X >= 0".
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* bounds-checking.cc
+	(symbolic_past_the_end::describe_final_event): Delete, moving to
+	symbolic_buffer_overflow::describe_final_event and
+	symbolic_buffer_over_read::describe_final_event, eliminating
+	composition of text strings via "byte_str" and "m_dir_str".
+	(symbolic_past_the_end::m_dir_str): Delete field.
+	(symbolic_buffer_overflow::symbolic_buffer_overflow): Drop
+	m_dir_str.
+	(symbolic_buffer_overflow::describe_final_event): New, as noted
+	above.
+	(symbolic_buffer_over_read::symbolic_buffer_overflow): Drop
+	m_dir_str.
+	(symbolic_buffer_over_read::describe_final_event): New, as noted
+	above.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* bounds-checking.cc (class out_of_bounds): Split out from...
+	(class concrete_out_of_bounds): New abstract subclass.
+	(class past_the_end): Rename to...
+	(class concrete_past_the_end): ...this, and make a subclass of
+	concrete_out_of_bounds.
+	(class buffer_overflow): Rename to...
+	(class concrete_buffer_overflow): ...this, and make a subclass of
+	concrete_past_the_end.
+	(class buffer_over_read): Rename to...
+	(class concrete_buffer_over_read): ...this, and make a subclass of
+	concrete_past_the_end.
+	(class buffer_underwrite): Rename to...
+	(class concrete_buffer_underwrite): ...this, and make a subclass
+	of concrete_out_of_bounds.
+	(class buffer_under_read): Rename to...
+	(class concrete_buffer_under_read): ...this, and make a subclass
+	of concrete_out_of_bounds.
+	(class symbolic_past_the_end): Convert to a subclass of
+	out_of_bounds.
+	(symbolic_buffer_overflow::get_kind): New.
+	(symbolic_buffer_over_read::get_kind): New.
+	(region_model::check_region_bounds): Update for renamings.
+	* engine.cc (impl_sm_context::set_next_state): Eliminate
+	"new_ctxt", passing NULL to get_rvalue instead.
+	(impl_sm_context::warn): Likewise.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* bounds-checking.cc (out_of_bounds::get_memory_space): New.
+	(buffer_overflow::emit): Use it.
+	(class buffer_overread): Rename to...
+	(class buffer_over_read): ...this.
+	(buffer_over_read::emit): Specify which memory space the read is
+	from, where known.  Change "overread" to "over-read".
+	(class buffer_underflow): Rename to...
+	(class buffer_underwrite): ...this.
+	(buffer_underwrite::emit): Specify which memory space the write is
+	to, where known.  Change "underflow" to "underwrite".
+	(class buffer_underread): Rename to...
+	(class buffer_under_read): Rename to...
+	(buffer_under_read::emit): Specify which memory space the read is
+	from, where known.  Change "underread" to "under-read".
+	(symbolic_past_the_end::get_memory_space): New.
+	(symbolic_buffer_overflow::emit): Use it.
+	(class symbolic_buffer_overread): Rename to...
+	(class symbolic_buffer_over_read): ...this.
+	(symbolic_buffer_over_read::emit): Specify which memory space the
+	read is from, where known.  Change "overread" to "over-read".
+	(region_model::check_symbolic_bounds): Update for class renaming.
+	(region_model::check_region_bounds): Likewise.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* bounds-checking.cc (out_of_bounds::maybe_describe_array_bounds):
+	New.
+	(buffer_overflow::emit): Call maybe_describe_array_bounds.
+	(buffer_overread::emit): Likewise.
+	(buffer_underflow::emit): Likewise.
+	(buffer_underread::emit): Likewise.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* bounds-checking.cc (buffer_overflow::emit): Use inform_n.
+	Update wording to clarify that we're talking about the size of
+	the bad access, rather than its position.
+	(buffer_overread::emit): Likewise.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* bounds-checking.cc: New file, taken from region-model.cc.
+	* region-model.cc (class out_of_bounds): Move to
+	bounds-checking.cc.
+	(class past_the_end): Likewise.
+	(class buffer_overflow): Likewise.
+	(class buffer_overread): Likewise.
+	(class buffer_underflow): Likewise.
+	(class buffer_underread): Likewise.
+	(class symbolic_past_the_end): Likewise.
+	(class symbolic_buffer_overflow): Likewise.
+	(class symbolic_buffer_overread): Likewise.
+	(region_model::check_symbolic_bounds): Likewise.
+	(maybe_get_integer_cst_tree): Likewise.
+	(region_model::check_region_bounds): Likewise.
+	* region-model.h: Add comment.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107928
+	* sm-fd.cc (fd_state_machine::on_bind): Handle m_constant_fd in
+	the "success" outcome.
+	(fd_state_machine::on_connect): Likewise.
+	* sm-fd.dot: Add "constant_fd" state and its transitions.
+
 2022-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model-impl-calls.cc (class kf_fgets): Move to sm-file.cc.
