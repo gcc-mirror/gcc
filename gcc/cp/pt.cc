@@ -4492,18 +4492,23 @@ struct ctp_hasher : ggc_ptr_hash<tree_node>
 {
   static hashval_t hash (tree t)
   {
+    ++comparing_specializations;
     tree_code code = TREE_CODE (t);
     hashval_t val = iterative_hash_object (code, 0);
     val = iterative_hash_object (TEMPLATE_TYPE_LEVEL (t), val);
     val = iterative_hash_object (TEMPLATE_TYPE_IDX (t), val);
     if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
       val = iterative_hash_template_arg (TYPE_TI_ARGS (t), val);
+    --comparing_specializations;
     return val;
   }
 
   static bool equal (tree t, tree u)
   {
-    return comptypes (t, u, COMPARE_STRUCTURAL);
+    ++comparing_specializations;
+    bool eq = comptypes (t, u, COMPARE_STRUCTURAL);
+    --comparing_specializations;
+    return eq;
   }
 };
 
