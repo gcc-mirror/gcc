@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "dumpfile.h"
 #include "cfganal.h"
+#include "tree.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "sreal.h"
