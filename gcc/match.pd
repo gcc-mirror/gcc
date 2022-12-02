@@ -3492,6 +3492,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (le @0 integer_zerop@1) (negate@2 @0) integer_zerop@1)
   (max @2 @1))
 
+/* ((x & 0x1) == 0) ? y : z <op> y -> (-(typeof(y))(x & 0x1) & z) <op> y */
+(for op (bit_xor bit_ior)
+ (simplify
+  (cond (eq zero_one_valued_p@0
+            integer_zerop)
+        @1
+        (op:c @2 @1))
+  (if (INTEGRAL_TYPE_P (type)
+       && TYPE_PRECISION (type) > 1
+       && (INTEGRAL_TYPE_P (TREE_TYPE (@0))))
+       (op (bit_and (negate (convert:type @0)) @2) @1))))
+
+/* ((x & 0x1) == 0) ? z <op> y : y -> (-(typeof(y))(x & 0x1) & z) <op> y */
+(for op (bit_xor bit_ior)
+ (simplify
+  (cond (ne zero_one_valued_p@0
+            integer_zerop)
+       (op:c @2 @1)
+        @1)
+  (if (INTEGRAL_TYPE_P (type)
+       && TYPE_PRECISION (type) > 1
+       && (INTEGRAL_TYPE_P (TREE_TYPE (@0))))
+       (op (bit_and (negate (convert:type @0)) @2) @1))))
+
 /* Simplifications of shift and rotates.  */
 
 (for rotate (lrotate rrotate)
