@@ -99,6 +99,16 @@ package Exp_Ch6 is
    --  Adds Extra_Actual as a named parameter association for the formal
    --  Extra_Formal in Subprogram_Call.
 
+   procedure Apply_CW_Accessibility_Check (Exp : Node_Id; Func : Entity_Id);
+   --  Ada 2005 (AI95-344): If the result type is class-wide, insert a check
+   --  that the level of the return expression's underlying type is not deeper
+   --  than the level of the master enclosing the function. Always generate the
+   --  check when the type of the return expression is class-wide, when it's a
+   --  type conversion, or when it's a formal parameter. Otherwise suppress the
+   --  check in the case where the return expression has a specific type whose
+   --  level is known not to be statically deeper than the result type of the
+   --  function.
+
    function BIP_Formal_Suffix (Kind : BIP_Formal_Kind) return String;
    --  Ada 2005 (AI-318-02): Returns a string to be used as the suffix of names
    --  for build-in-place formal parameters of the given kind.
@@ -158,12 +168,27 @@ package Exp_Ch6 is
    --  True in >= Ada 2005 and must be False in Ada 95.
 
    function Is_Build_In_Place_Return_Object (E : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Return True is E is a return object of a function
+   --  Ada 2005 (AI-318-02): Return True if E is a return object of a function
    --  that uses build-in-place protocols.
+
+   function Is_By_Reference_Return_Object (E : Entity_Id) return Boolean;
+   --  Return True if E is a return object of a function whose return type is
+   --  required to be passed by reference, as defined in (RM 6.2(4-9)).
 
    function Is_Null_Procedure (Subp : Entity_Id) return Boolean;
    --  Predicate to recognize stubbed procedures and null procedures, which
    --  can be inlined unconditionally in all cases.
+
+   function Is_Secondary_Stack_Return_Object (E : Entity_Id) return Boolean;
+   --  Return True if E is a return object of a function whose return type is
+   --  returned on the secondary stack.
+
+   function Is_Special_Return_Object (E : Entity_Id) return Boolean;
+   --  Return True if E is the return object of a function and is handled in a
+   --  special way by the expander. In most cases, return objects are handled
+   --  like any other variables or constants but, in a few special cases, they
+   --  are further expanded into more elaborate constructs, whose common goal
+   --  is to elide the copy operation associated with the return.
 
    procedure Make_Build_In_Place_Call_In_Allocator
      (Allocator     : Node_Id;

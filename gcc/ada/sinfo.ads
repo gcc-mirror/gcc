@@ -842,10 +842,6 @@ package Sinfo is
    --    known at compile time, this field points to an N_Range node with those
    --    bounds. Otherwise Empty.
 
-   --  Alloc_For_BIP_Return
-   --    Present in N_Allocator nodes. True if the allocator is one of those
-   --    generated for a build-in-place return statement.
-
    --  All_Others
    --    Present in an N_Others_Choice node. This flag is set for an others
    --    exception where all exceptions are to be caught, even those that are
@@ -1343,6 +1339,10 @@ package Sinfo is
    --    definitely safe, and a runtime check may be required if the backend
    --    cannot figure it out. If both flags Forwards_OK and Backwards_OK are
    --    set, it means that the front end can assure no overlap of operands.
+
+   --  For_Special_Return_Object
+   --    Present in N_Allocator nodes. True if the allocator is generated for
+   --    the initialization of a special return object.
 
    --  From_Aspect_Specification
    --    Processing of aspect specifications typically results in insertion in
@@ -4777,7 +4777,7 @@ package Sinfo is
       --  Subpool_Handle_Name (set to Empty if not present)
       --  Storage_Pool
       --  Procedure_To_Call
-      --  Alloc_For_BIP_Return
+      --  For_Special_Return_Object
       --  Null_Exclusion_Present
       --  No_Initialization
       --  Is_Static_Coextension

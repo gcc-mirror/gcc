@@ -44,6 +44,7 @@ with Opt;            use Opt;
 with Output;         use Output;
 with Restrict;       use Restrict;
 with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Case;       use Sem_Case;
@@ -733,43 +734,16 @@ package body Sem_Ch4 is
             end;
          end if;
 
-         --  Check for missing initialization. Skip this check if we already
-         --  had errors on analyzing the allocator, since in that case these
-         --  are probably cascaded errors.
+         --  Check for missing initialization. Skip this check if the allocator
+         --  is made for a special return object or if we already had errors on
+         --  analyzing the allocator since, in that case, these are very likely
+         --  cascaded errors.
 
          if not Is_Definite_Subtype (Type_Id)
+           and then not For_Special_Return_Object (N)
            and then Serious_Errors_Detected = Sav_Errs
          then
-            --  The build-in-place machinery may produce an allocator when
-            --  the designated type is indefinite but the underlying type is
-            --  not. In this case the unknown discriminants are meaningless
-            --  and should not trigger error messages. Check the parent node
-            --  because the allocator is marked as coming from source.
-
-            if Present (Underlying_Type (Type_Id))
-              and then Is_Definite_Subtype (Underlying_Type (Type_Id))
-              and then not Comes_From_Source (Parent (N))
-            then
-               null;
-
-            --  An unusual case arises when the parent of a derived type is
-            --  a limited record extension  with unknown discriminants, and
-            --  its full view has no discriminants.
-            --
-            --  A more general fix might be to create the proper underlying
-            --  type for such a derived type, but it is a record type with
-            --  no private attributes, so this required extending the
-            --  meaning of this attribute. ???
-
-            elsif Ekind (Etype (Type_Id)) = E_Record_Type_With_Private
-              and then Present (Underlying_Type (Etype (Type_Id)))
-              and then
-                not Has_Discriminants (Underlying_Type (Etype (Type_Id)))
-              and then not Comes_From_Source (Parent (N))
-            then
-               null;
-
-            elsif Is_Class_Wide_Type (Type_Id) then
+            if Is_Class_Wide_Type (Type_Id) then
                Error_Msg_N
                  ("initialization required in class-wide allocation", N);
 
@@ -842,6 +816,27 @@ package body Sem_Ch4 is
          Error_Msg_N ("cannot allocate abstract object", E);
       end if;
 
+      Set_Etype (N, Acc_Type);
+
+      --  If this is an allocator for the return stack, then no restriction may
+      --  be violated since it's just a low-level access to the primary stack.
+
+      if Nkind (Parent (N)) = N_Object_Declaration
+        and then Is_Entity_Name (Object_Definition (Parent (N)))
+        and then Is_Access_Type (Entity (Object_Definition (Parent (N))))
+      then
+         declare
+            Pool : constant Entity_Id :=
+              Associated_Storage_Pool
+                (Root_Type (Entity (Object_Definition (Parent (N)))));
+
+         begin
+            if Present (Pool) and then Is_RTE (Pool, RE_RS_Pool) then
+               goto Leave;
+            end if;
+         end;
+      end if;
+
       if Has_Task (Designated_Type (Acc_Type)) then
          Check_Restriction (No_Tasking, N);
          Check_Restriction (Max_Tasks, N);
@@ -893,12 +888,11 @@ package body Sem_Ch4 is
          end if;
       end if;
 
-      Set_Etype (N, Acc_Type);
-
       if not Is_Library_Level_Entity (Acc_Type) then
          Check_Restriction (No_Local_Allocators, N);
       end if;
 
+   <<Leave>>
       if Serious_Errors_Detected > Sav_Errs then
          Set_Error_Posted (N);
          Set_Etype (N, Any_Type);

@@ -898,6 +898,11 @@ package body Exp_Ch4 is
                             (Directly_Designated_Type (Etype (N))));
             null;
 
+         --  Likewise if the allocator is made for a special return object
+
+         elsif For_Special_Return_Object (N) then
+            null;
+
          elsif Is_Tagged_Type (T) and then not Is_Class_Wide_Type (T) then
             TagT := T;
             TagR :=
@@ -946,19 +951,18 @@ package body Exp_Ch4 is
          --  Adjust procedure, and the object is built in place. In Ada 95, the
          --  object can be limited but not inherently limited if this allocator
          --  came from a return statement (we're allocating the result on the
-         --  secondary stack). In that case, the object will be moved, so we do
-         --  want to Adjust. However, if it's a nonlimited build-in-place
-         --  function call, Adjust is not wanted.
-         --
-         --  Needs_Finalization (DesigT) can differ from Needs_Finalization (T)
+         --  secondary stack); in that case, the object will be moved, so we do
+         --  want to Adjust. But the call is always skipped if the allocator is
+         --  made for a special return object because it's generated elsewhere.
+
+         --  Needs_Finalization (DesigT) may differ from Needs_Finalization (T)
          --  if one of the two types is class-wide, and the other is not.
 
          if Needs_Finalization (DesigT)
            and then Needs_Finalization (T)
            and then not Aggr_In_Place
            and then not Is_Limited_View (T)
-           and then not Alloc_For_BIP_Return (N)
-           and then not Is_Build_In_Place_Function_Call (Expression (N))
+           and then not For_Special_Return_Object (N)
          then
             --  An unchecked conversion is needed in the classwide case because
             --  the designated type can be an ancestor of the subtype mark of
@@ -2724,6 +2728,7 @@ package body Exp_Ch4 is
       Len        : Unat;
       J          : Nat;
       Clen       : Node_Id;
+      Decl       : Node_Id;
       Set        : Boolean;
 
    --  Start of processing for Expand_Concatenate
@@ -3250,10 +3255,32 @@ package body Exp_Ch4 is
       Set_Is_Internal       (Ent);
       Set_Debug_Info_Needed (Ent);
 
+      --  If the bound is statically known to be out of range, we do not want
+      --  to abort, we want a warning and a constraint error at run time. Note
+      --  that we have arranged that the result will not be treated as a static
+      --  constant, so we won't get an illegality during the insertion. We also
+      --  enable all checks (in particular range checks) in case the bounds of
+      --  Subtyp_Ind are out of range.
+
+      Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Ent,
+          Object_Definition   => Subtyp_Ind);
+      Insert_Action (Cnode, Decl);
+
+      --  If the result of the concatenation appears as the initializing
+      --  expression of an object declaration, we can just rename the
+      --  result, rather than copying it.
+
+      Set_OK_To_Rename (Ent);
+
       --  If we are concatenating strings and the current scope already uses
-      --  the secondary stack, allocate the resulting string also on the
-      --  secondary stack to avoid putting too much pressure on the primary
-      --  stack.
+      --  the secondary stack, allocate the result also on the secondary stack
+      --  to avoid putting too much pressure on the primary stack.
+
+      --  We use an unconstrained allocation, i.e. we also allocate the bounds,
+      --  so that the result can be renamed in all contexts.
+
       --  Don't do this if -gnatd.h is set, as this will break the wrapping of
       --  Cnode in an Expression_With_Actions, see Expand_N_Op_Concat.
 
@@ -3263,84 +3290,77 @@ package body Exp_Ch4 is
         and then not Debug_Flag_Dot_H
       then
          --  Generate:
-         --     subtype Axx is ...;
-         --     type Ayy is access Axx;
-         --     Rxx : Ayy := new <subtype> [storage_pool = ss_pool];
-         --     Sxx : <subtype> renames Rxx.all;
+         --     subtype Axx is String (<low-bound> .. <high-bound>)
+         --     type Ayy is access String;
+         --     Rxx : Ayy := new <Axx> [storage_pool = ss_pool];
+         --     Sxx : String renames Rxx.all;
 
          declare
-            Alloc   : Node_Id;
             ConstrT : constant Entity_Id := Make_Temporary (Loc, 'A');
             Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
+            Alloc   : Node_Id;
+            Deref   : Node_Id;
             Temp    : Entity_Id;
 
          begin
-            Insert_Action (Cnode,
+            Insert_Action (Decl,
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => ConstrT,
                 Subtype_Indication  => Subtyp_Ind),
               Suppress => All_Checks);
-            Freeze_Itype (ConstrT, Cnode);
 
-            Insert_Action (Cnode,
+            Freeze_Itype (ConstrT, Decl);
+
+            Insert_Action (Decl,
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => Acc_Typ,
                 Type_Definition     =>
                   Make_Access_To_Object_Definition (Loc,
-                    Subtype_Indication => New_Occurrence_Of (ConstrT, Loc))),
+                    Subtype_Indication => New_Occurrence_Of (Atyp, Loc))),
               Suppress => All_Checks);
+
+            Mutate_Ekind (Acc_Typ, E_Access_Type);
+            Set_Associated_Storage_Pool (Acc_Typ, RTE (RE_SS_Pool));
+
             Alloc :=
               Make_Allocator (Loc,
                 Expression => New_Occurrence_Of (ConstrT, Loc));
 
-            --  Allocate on the secondary stack. This is currently done
-            --  only for type String, which normally doesn't have default
-            --  initialization, but we need to Set_No_Initialization in case
-            --  of Initialize_Scalars or Normalize_Scalars; otherwise, the
-            --  allocator will get transformed and will not use the secondary
-            --  stack.
+            --  This is currently done only for type String, which normally
+            --  doesn't have default initialization, but we need to set the
+            --  No_Initialization flag in case of either Initialize_Scalars
+            --  or Normalize_Scalars.
 
-            Set_Storage_Pool (Alloc, RTE (RE_SS_Pool));
-            Set_Procedure_To_Call (Alloc, RTE (RE_SS_Allocate));
             Set_No_Initialization (Alloc);
 
             Temp := Make_Temporary (Loc, 'R', Alloc);
-            Insert_Action (Cnode,
+            Insert_Action (Decl,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Object_Definition   => New_Occurrence_Of (Acc_Typ, Loc),
                 Expression          => Alloc),
               Suppress => All_Checks);
 
-            Insert_Action (Cnode,
+            Deref :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Temp, Loc));
+            Set_Etype (Deref, Atyp);
+
+            Rewrite (Decl,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Ent,
-                Subtype_Mark        => New_Occurrence_Of (ConstrT, Loc),
-                Name                =>
-                  Make_Explicit_Dereference (Loc,
-                    Prefix => New_Occurrence_Of (Temp, Loc))),
-              Suppress => All_Checks);
+                Subtype_Mark        => New_Occurrence_Of (Atyp, Loc),
+                Name                => Deref));
+
+            --  We do not analyze this renaming declaration because this would
+            --  change the subtype of Ent back to a constrained string.
+
+            Set_Etype (Ent, Atyp);
+            Set_Renamed_Object (Ent, Deref);
+            Set_Analyzed (Decl);
          end;
-      else
-         --  If the bound is statically known to be out of range, we do not
-         --  want to abort, we want a warning and a runtime constraint error.
-         --  Note that we have arranged that the result will not be treated as
-         --  a static constant, so we won't get an illegality during this
-         --  insertion.
-         --  We also enable checks (in particular range checks) in case the
-         --  bounds of Subtyp_Ind are out of range.
-
-         Insert_Action (Cnode,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Ent,
-             Object_Definition   => Subtyp_Ind));
       end if;
-
-      --  If the result of the concatenation appears as the initializing
-      --  expression of an object declaration, we can just rename the
-      --  result, rather than copying it.
-
-      Set_OK_To_Rename (Ent);
 
       --  Catch the static out of range case now
 

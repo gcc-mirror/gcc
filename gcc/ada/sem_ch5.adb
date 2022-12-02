@@ -307,7 +307,8 @@ package body Sem_Ch5 is
          --  get the actual subtype (needed for the unconstrained case). If the
          --  operand is the actual in an entry declaration, then within the
          --  accept statement it is replaced with a local renaming, which may
-         --  also have an actual subtype.
+         --  also have an actual subtype. Likewise for a return object that
+         --  lives on the secondary stack.
 
          if Is_Entity_Name (Opnd)
            and then (Ekind (Entity (Opnd)) in E_Out_Parameter
@@ -318,7 +319,8 @@ package body Sem_Ch5 is
                           and then Nkind (Parent (Entity (Opnd))) =
                                      N_Object_Renaming_Declaration
                           and then Nkind (Parent (Parent (Entity (Opnd)))) =
-                                     N_Accept_Statement))
+                                     N_Accept_Statement)
+                      or else Is_Secondary_Stack_Return_Object (Entity (Opnd)))
          then
             Opnd_Type := Get_Actual_Subtype (Opnd);
 

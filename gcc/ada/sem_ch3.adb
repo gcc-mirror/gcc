@@ -3781,6 +3781,11 @@ package body Sem_Ch3 is
       --  Obj_Decl carrying type Obj_Typ has explicit initialization. Emit
       --  a compile-time warning if this is not the case.
 
+      procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id);
+      --  Check that the return subtype indication properly matches the result
+      --  subtype of the function in an extended return object declaration, as
+      --  required by RM 6.5(5.1/2-5.3/2).
+
       function Count_Tasks (T : Entity_Id) return Uint;
       --  This function is called when a non-generic library level object of a
       --  task type is declared. Its function is to count the static number of
@@ -3953,6 +3958,134 @@ package body Sem_Ch3 is
       begin
          Check_Component (Obj_Typ, Obj_Decl);
       end Check_For_Null_Excluding_Components;
+
+      -------------------------------------
+      -- Check_Return_Subtype_Indication --
+      -------------------------------------
+
+      procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id) is
+         Obj_Id  : constant Entity_Id := Defining_Identifier (Obj_Decl);
+         Obj_Typ : constant Entity_Id := Etype (Obj_Id);
+         Func_Id : constant Entity_Id := Return_Applies_To (Scope (Obj_Id));
+         R_Typ   : constant Entity_Id := Etype (Func_Id);
+         Indic   : constant Node_Id   :=
+                     Object_Definition (Original_Node (Obj_Decl));
+
+         procedure Error_No_Match (N : Node_Id);
+         --  Output error messages for case where types do not statically
+         --  match. N is the location for the messages.
+
+         --------------------
+         -- Error_No_Match --
+         --------------------
+
+         procedure Error_No_Match (N : Node_Id) is
+         begin
+            Error_Msg_N
+              ("subtype must statically match function result subtype", N);
+
+            if not Predicates_Match (Obj_Typ, R_Typ) then
+               Error_Msg_Node_2 := R_Typ;
+               Error_Msg_NE
+                 ("\predicate of& does not match predicate of&",
+                  N, Obj_Typ);
+            end if;
+         end Error_No_Match;
+
+      --  Start of processing for Check_Return_Subtype_Indication
+
+      begin
+         --  First, avoid cascaded errors
+
+         if Error_Posted (Obj_Decl) or else Error_Posted (Indic) then
+            return;
+         end if;
+
+         --  "return access T" case; check that the return statement also has
+         --  "access T", and that the subtypes statically match:
+         --   if this is an access to subprogram the signatures must match.
+
+         if Is_Anonymous_Access_Type (R_Typ) then
+            if Is_Anonymous_Access_Type (Obj_Typ) then
+               if Ekind (Designated_Type (Obj_Typ)) /= E_Subprogram_Type
+               then
+                  if Base_Type (Designated_Type (Obj_Typ)) /=
+                     Base_Type (Designated_Type (R_Typ))
+                    or else not Subtypes_Statically_Match (Obj_Typ, R_Typ)
+                  then
+                     Error_No_Match (Subtype_Mark (Indic));
+                  end if;
+
+               else
+                  --  For two anonymous access to subprogram types, the types
+                  --  themselves must be type conformant.
+
+                  if not Conforming_Types
+                           (Obj_Typ, R_Typ, Fully_Conformant)
+                  then
+                     Error_No_Match (Indic);
+                  end if;
+               end if;
+
+            else
+               Error_Msg_N ("must use anonymous access type", Indic);
+            end if;
+
+         --  If the return object is of an anonymous access type, then report
+         --  an error if the function's result type is not also anonymous.
+
+         elsif Is_Anonymous_Access_Type (Obj_Typ) then
+            pragma Assert (not Is_Anonymous_Access_Type (R_Typ));
+            Error_Msg_N
+              ("anonymous access not allowed for function with named access "
+               & "result", Indic);
+
+         --  Subtype indication case: check that the return object's type is
+         --  covered by the result type, and that the subtypes statically match
+         --  when the result subtype is constrained. Also handle record types
+         --  with unknown discriminants for which we have built the underlying
+         --  record view. Coverage is needed to allow specific-type return
+         --  objects when the result type is class-wide (see AI05-32).
+
+         elsif Covers (Base_Type (R_Typ), Base_Type (Obj_Typ))
+           or else (Is_Underlying_Record_View (Base_Type (Obj_Typ))
+                     and then
+                       Covers
+                         (Base_Type (R_Typ),
+                          Underlying_Record_View (Base_Type (Obj_Typ))))
+         then
+            --  A null exclusion may be present on the return type, on the
+            --  function specification, on the object declaration or on the
+            --  subtype itself.
+
+            if Is_Access_Type (R_Typ)
+              and then
+                (Can_Never_Be_Null (R_Typ)
+                  or else Null_Exclusion_Present (Parent (Func_Id))) /=
+                            Can_Never_Be_Null (Obj_Typ)
+            then
+               Error_No_Match (Indic);
+            end if;
+
+            --  AI05-103: for elementary types, subtypes must statically match
+
+            if Is_Constrained (R_Typ) or else Is_Access_Type (R_Typ) then
+               if not Subtypes_Statically_Match (Obj_Typ, R_Typ) then
+                  Error_No_Match (Indic);
+               end if;
+            end if;
+
+         --  All remaining cases are illegal
+
+         --  Note: previous versions of this subprogram allowed the return
+         --  value to be the ancestor of the return type if the return type
+         --  was a null extension. This was plainly incorrect.
+
+         else
+            Error_Msg_N
+              ("wrong type for return_subtype_indication", Indic);
+         end if;
+      end Check_Return_Subtype_Indication;
 
       -----------------
       -- Count_Tasks --
@@ -5045,6 +5178,12 @@ package body Sem_Ch3 is
                end loop;
             end;
          end if;
+      end if;
+
+      --  Check specific legality rules for a return object
+
+      if Is_Return_Object (Id) then
+         Check_Return_Subtype_Indication (N);
       end if;
 
       --  Some simple constant-propagation: if the expression is a constant

@@ -494,7 +494,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Expression, Node_Id, Default_Empty),
         Sy (Subpool_Handle_Name, Node_Id, Default_Empty),
         Sy (Null_Exclusion_Present, Flag, Default_False),
-        Sm (Alloc_For_BIP_Return, Flag),
+        Sm (For_Special_Return_Object, Flag),
         Sm (Do_Storage_Check, Flag),
         Sm (Is_Dynamic_Coextension, Flag),
         Sm (Is_Static_Coextension, Flag),

@@ -6841,7 +6841,7 @@ package body Exp_Aggr is
         or else Parent_Kind = N_Component_Association
         or else (Parent_Kind = N_Object_Declaration
                   and then (Needs_Finalization (Typ)
-                             or else Is_Build_In_Place_Return_Object
+                             or else Is_Special_Return_Object
                                        (Defining_Identifier (Parent_Node))))
         or else (Parent_Kind = N_Assignment_Statement
                   and then Inside_Init_Proc)

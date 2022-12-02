@@ -5622,7 +5622,7 @@ package body Sem_Res is
       --  caller does use an allocator, it will be caught at the call site.
 
       if No_Pool_Assigned (Typ)
-        and then not Alloc_For_BIP_Return (N)
+        and then not For_Special_Return_Object (N)
       then
          Error_Msg_N ("allocation from empty storage pool!", N);
 
