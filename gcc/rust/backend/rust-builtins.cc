@@ -253,7 +253,7 @@ BuiltinsContext::define_builtins ()
 {
   auto *built_in_attributes = builtin_attributes;
   auto build_builtin = [this] (built_in_function fn_code, const char *fn_name,
-			       built_in_class fn_class, tree fn_type, bool both,
+			       built_in_class fn_class, tree fn_type,
 			       bool fallback, tree attributes, bool implicit) {
     if (fn_type == error_mark_node)
       return;
@@ -272,7 +272,7 @@ BuiltinsContext::define_builtins ()
 #define DEF_BUILTIN(ENUM, NAME, CLASS, TYPE, LIBTYPE, BOTH_P, FALLBACK_P,      \
 		    NONANSI_P, ATTRS, IMPLICIT, COND)                          \
   if (NAME && COND)                                                            \
-    build_builtin (ENUM, NAME, CLASS, builtin_types[TYPE], BOTH_P, FALLBACK_P, \
+    build_builtin (ENUM, NAME, CLASS, builtin_types[TYPE], FALLBACK_P,         \
 		   built_in_attributes[ATTRS], IMPLICIT);
 #include "builtins.def"
 #undef DEF_BUILTIN
