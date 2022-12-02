@@ -427,9 +427,8 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
 void
 Session::compile_crate (const char *filename)
 {
-#ifdef RUST_BOOTSTRAP_BUILD
-  // Do not emit the fatal error or require the flag for dev builds
-  if (!flag_rust_experimental)
+  if (!flag_rust_experimental
+      && !std::getenv ("GCCRS_INCOMPLETE_AND_EXPERIMENTAL_COMPILER_DO_NOT_USE"))
     rust_fatal_error (
       Location (), "%s",
       "gccrs is not yet able to compile Rust code "
@@ -443,11 +442,12 @@ Session::compile_crate (const char *filename)
       "If you understand this, and understand that the binaries produced might "
       "not behave accordingly, you may attempt to use gccrs in an experimental "
       "manner by passing the following flag:\n\n"
-      "`-frust-incomplete-and-experimental-compiler-do-not-use`\n\nFor "
+      "`-frust-incomplete-and-experimental-compiler-do-not-use`\n\nor by "
+      "defining the following environment variable (any value will "
+      "do)\n\nGCCRS_INCOMPLETE_AND_EXPERIMENTAL_COMPILER_DO_NOT_USE\n\nFor"
       "cargo-gccrs, this means passing\n\n"
       "GCCRS_EXTRA_FLAGS=\"-frust-incomplete-and-experimental-compiler-do-not-"
       "use\"\n\nas an environment variable.");
-#endif
 
   RAIIFile file_wrap (filename);
   if (!file_wrap.ok ())

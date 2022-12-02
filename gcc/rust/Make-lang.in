@@ -49,13 +49,6 @@ GCCRS_D_OBJS = \
    rust/rustspec.o \
    $(END)
 
-RUST_CXXFLAGS = $(CXXFLAGS)
-
-# If the file exists, we're bootstrapping. Set a specific flag for the session manager.
-ifneq ($(wildcard ../stage_current),)
-SESSION_FLAGS = -DRUST_BOOTSTRAP_BUILD
-endif
-
 gccrs$(exeext): $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
@@ -336,7 +329,9 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-lex.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-parse.o += $(RUST_INCLUDES)
-CFLAGS-rust/rust-session-manager.o += $(RUST_INCLUDES) $(SESSION_FLAGS)
+CFLAGS-rust/rust-session-manager.o += $(RUST_INCLUDES)
+
+RUST_CXXFLAGS = $(CXXFLAGS)
 
 # build all rust/lex files in rust folder, add cross-folder includes
 rust/%.o: rust/lex/%.cc
