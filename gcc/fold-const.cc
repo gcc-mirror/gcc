@@ -164,7 +164,7 @@ expr_location_or (tree t, location_t loc)
 /* Similar to protected_set_expr_location, but never modify x in place,
    if location can and needs to be set, unshare it.  */
 
-static inline tree
+tree
 protected_set_expr_location_unshare (tree x, location_t loc)
 {
   if (CAN_HAVE_LOCATION_P (x)

@@ -9137,9 +9137,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	  if (processing_template_decl)
 	    continue;
 	  tree t = unshare_expr (dexp);
-	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
-			  eltype, t, size_int (i), NULL_TREE,
-			  NULL_TREE);
+	  t = build4 (ARRAY_REF, eltype, t, size_int (i), NULL_TREE, NULL_TREE);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}
@@ -9158,9 +9156,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	  if (processing_template_decl)
 	    continue;
 	  tree t = unshare_expr (dexp);
-	  t = build1_loc (DECL_SOURCE_LOCATION (v[i]),
-			  i ? IMAGPART_EXPR : REALPART_EXPR, eltype,
-			  t);
+	  t = build1 (i ? IMAGPART_EXPR : REALPART_EXPR, eltype, t);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}
@@ -9184,9 +9180,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	  tree t = unshare_expr (dexp);
 	  convert_vector_to_array_for_subscript (DECL_SOURCE_LOCATION (v[i]),
 						 &t, size_int (i));
-	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
-			  eltype, t, size_int (i), NULL_TREE,
-			  NULL_TREE);
+	  t = build4 (ARRAY_REF, eltype, t, size_int (i), NULL_TREE, NULL_TREE);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}

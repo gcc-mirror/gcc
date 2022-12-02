@@ -5862,6 +5862,9 @@ decl_value_expr_insert (tree from, tree to)
 {
   struct tree_decl_map *h;
 
+  /* Uses of FROM shouldn't look like they happen at the location of TO.  */
+  to = protected_set_expr_location_unshare (to, UNKNOWN_LOCATION);
+
   h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
   h->to = to;
