@@ -620,6 +620,9 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       /* (VAL - 0) -> VAL.  */
       if (cst1 && zerop (cst1))
 	return get_or_create_cast (type, arg0);
+      /* (0 - VAL) -> -VAL.  */
+      if (cst0 && zerop (cst0))
+	return get_or_create_unaryop (type, NEGATE_EXPR, arg1);
       break;
     case MULT_EXPR:
       /* (VAL * 0).  */

@@ -3339,6 +3339,19 @@ region_model::eval_condition (const svalue *lhs,
 		  return lhs_ts;
 	      }
 	  }
+	else if (const unaryop_svalue *unaryop
+		   = lhs->dyn_cast_unaryop_svalue ())
+	  {
+	    if (unaryop->get_op () == NEGATE_EXPR)
+	      {
+		/* e.g. "-X <= 0" is equivalent to X >= 0".  */
+		tristate lhs_ts = eval_condition (unaryop->get_arg (),
+						  swap_tree_comparison (op),
+						  rhs);
+		if (lhs_ts.is_known ())
+		  return lhs_ts;
+	      }
+	  }
       }
 
   /* Handle rejection of equality for comparisons of the initial values of
