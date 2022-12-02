@@ -881,6 +881,10 @@ package body Sem_Elab is
       --  The subprogram body traversal mode. Once set, this value should not
       --  be changed.
 
+      Within_Freezing_Actions : Boolean := False;
+      --  This flag is set when the Processing phase is currently examining a
+      --  scenario which was reached from the actions of a freeze node.
+
       Within_Generic : Boolean := False;
       --  This flag is set when the Processing phase is currently within a
       --  generic unit.
@@ -5353,6 +5357,7 @@ package body Sem_Elab is
          Subp_Id   : constant Entity_Id     := Target (Call_Rep);
          Subp_Rep  : constant Target_Rep_Id :=
                        Target_Representation_Of (Subp_Id, In_State);
+         Body_Decl : constant Node_Id       := Body_Declaration (Subp_Rep);
          Subp_Decl : constant Node_Id       := Spec_Declaration (Subp_Rep);
 
          SPARK_Rules_On : constant Boolean :=
@@ -5452,6 +5457,16 @@ package body Sem_Elab is
              or else not Elaboration_Warnings_OK (Call_Rep)
              or else not Elaboration_Warnings_OK (Subp_Rep);
 
+         --  The call occurs in freezing actions context when a prior scenario
+         --  is already in that mode, or when the target is a subprogram whose
+         --  body has been generated as a freezing action. Update the state of
+         --  the Processing phase to reflect this.
+
+         New_In_State.Within_Freezing_Actions :=
+           New_In_State.Within_Freezing_Actions
+             or else (Present (Body_Decl)
+                       and then Nkind (Parent (Body_Decl)) = N_Freeze_Entity);
+
          --  The call occurs in an initial condition context when a prior
          --  scenario is already in that mode, or when the target is an
          --  Initial_Condition procedure. Update the state of the Processing
@@ -5502,7 +5517,7 @@ package body Sem_Elab is
             In_State => New_In_State);
 
          Traverse_Conditional_ABE_Body
-           (N        => Body_Declaration (Subp_Rep),
+           (N        => Body_Decl,
             In_State => New_In_State);
       end Process_Conditional_ABE_Call;
 
@@ -5719,6 +5734,13 @@ package body Sem_Elab is
             --  this traversal has suppressed elaboration warnings.
 
             if In_State.Suppress_Warnings then
+               null;
+
+            --  Do not emit any ABE diagnostics when the call occurs in a
+            --  freezing actions context because this leads to incorrect
+            --  diagnostics.
+
+            elsif In_State.Within_Freezing_Actions then
                null;
 
             --  Do not emit any ABE diagnostics when the call occurs in an
