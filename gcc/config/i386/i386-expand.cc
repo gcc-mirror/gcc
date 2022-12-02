@@ -24187,14 +24187,13 @@ ix86_expand_fast_convert_bf_to_sf (rtx val)
       /* FLOAT_EXTEND simplification will fail if VAL is a sNaN.  */
       ret = gen_reg_rtx (SImode);
       emit_move_insn (ret, GEN_INT (INTVAL (op) & 0xffff));
+      emit_insn (gen_ashlsi3 (ret, ret, GEN_INT (16)));
+      return gen_lowpart (SFmode, ret);
     }
-  else
-    {
-      ret = gen_reg_rtx (SImode);
-      emit_insn (gen_zero_extendhisi2 (ret, op));
-    }
-  emit_insn (gen_ashlsi3 (ret, ret, GEN_INT (16)));
-  return gen_lowpart (SFmode, ret);
+
+  ret = gen_reg_rtx (SFmode);
+  emit_insn (gen_extendbfsf2_1 (ret, force_reg (BFmode, val)));
+  return ret;
 }
 
 #include "gt-i386-expand.h"
