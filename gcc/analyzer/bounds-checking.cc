@@ -68,16 +68,14 @@ public:
 
   void add_region_creation_events (const region *,
 				   tree capacity,
-				   location_t loc,
-				   tree fndecl, int depth,
+				   const event_loc_info &loc_info,
 				   checker_path &emission_path) override
   {
     /* The memory space is described in the diagnostic message itself,
        so we don't need an event for that.  */
     if (capacity)
       emission_path.add_event
-	(make_unique<region_creation_event_capacity> (capacity,
-						      loc, fndecl, depth));
+	(make_unique<region_creation_event_capacity> (capacity, loc_info));
   }
 
 protected:
@@ -165,14 +163,12 @@ public:
 
   void add_region_creation_events (const region *,
 				   tree,
-				   location_t loc,
-				   tree fndecl, int depth,
+				   const event_loc_info &loc_info,
 				   checker_path &emission_path) final override
   {
     if (m_byte_bound && TREE_CODE (m_byte_bound) == INTEGER_CST)
       emission_path.add_event
-	(make_unique<region_creation_event_capacity> (m_byte_bound,
-						      loc, fndecl, depth));
+	(make_unique<region_creation_event_capacity> (m_byte_bound, loc_info));
   }
 
 protected:

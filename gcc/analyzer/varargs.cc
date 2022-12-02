@@ -777,9 +777,9 @@ public:
     {
     public:
       va_arg_call_event (const exploded_edge &eedge,
-			 location_t loc, tree fndecl, int depth,
+			 const event_loc_info &loc_info,
 			 int num_variadic_arguments)
-      : call_event (eedge, loc, fndecl, depth),
+      : call_event (eedge, loc_info),
 	m_num_variadic_arguments (num_variadic_arguments)
       {
       }
@@ -812,13 +812,12 @@ public:
 	  = get_num_variadic_arguments (dst_node->get_function ()->decl,
 					call_stmt);
 	emission_path->add_event
-	  (make_unique<va_arg_call_event> (eedge,
-					   (last_stmt
-					    ? last_stmt->location
-					    : UNKNOWN_LOCATION),
-					   src_point.get_fndecl (),
-					   src_stack_depth,
-					   num_variadic_arguments));
+	  (make_unique<va_arg_call_event>
+	   (eedge,
+	    event_loc_info (last_stmt ? last_stmt->location : UNKNOWN_LOCATION,
+			    src_point.get_fndecl (),
+			    src_stack_depth),
+	    num_variadic_arguments));
       }
     else
       pending_diagnostic::add_call_event (eedge, emission_path);

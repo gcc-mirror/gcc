@@ -235,7 +235,7 @@ public:
   {
     emission_path->add_event
       (make_unique<precanned_custom_event>
-       (UNKNOWN_LOCATION, NULL_TREE, 0,
+       (event_loc_info (UNKNOWN_LOCATION, NULL_TREE, 0),
 	"later on,"
 	" when the signal is delivered to the process"));
   }

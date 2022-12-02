@@ -191,9 +191,10 @@ public:
     gcc_assert (m_new_entry_enode);
     emission_path->add_event
       (make_unique<warning_event>
-       (m_new_entry_enode->get_supernode ()->get_start_location (),
-	m_callee_fndecl,
-	m_new_entry_enode->get_stack_depth (),
+       (event_loc_info (m_new_entry_enode->get_supernode
+			  ()->get_start_location (),
+			m_callee_fndecl,
+			m_new_entry_enode->get_stack_depth ()),
 	NULL, NULL, NULL));
   }
 

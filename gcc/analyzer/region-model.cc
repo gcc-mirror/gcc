@@ -2849,13 +2849,11 @@ public:
   void
   add_region_creation_events (const region *,
 			      tree capacity,
-			      location_t loc,
-			      tree fndecl, int depth,
+			      const event_loc_info &loc_info,
 			      checker_path &emission_path) final override
   {
     emission_path.add_event
-      (make_unique<region_creation_event_allocation_size> (capacity,
-							   loc, fndecl, depth));
+      (make_unique<region_creation_event_allocation_size> (capacity, loc_info));
 
     m_has_allocation_event = true;
   }

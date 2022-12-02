@@ -144,8 +144,7 @@ void
 checker_path::add_region_creation_events (pending_diagnostic *pd,
 					  const region *reg,
 					  const region_model *model,
-					  location_t loc,
-					  tree fndecl, int depth,
+					  const event_loc_info &loc_info,
 					  bool debug)
 {
   tree capacity = NULL_TREE;
@@ -153,11 +152,11 @@ checker_path::add_region_creation_events (pending_diagnostic *pd,
     if (const svalue *capacity_sval = model->get_capacity (reg))
       capacity = model->get_representative_tree (capacity_sval);
 
-  pd->add_region_creation_events (reg, capacity, loc, fndecl, depth, *this);
+  pd->add_region_creation_events (reg, capacity, loc_info, *this);
 
   if (debug)
     add_event (make_unique<region_creation_event_debug> (reg, capacity,
-							 loc, fndecl, depth));
+							 loc_info));
 }
 
 void

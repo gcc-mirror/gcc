@@ -26,6 +26,19 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* A bundle of location information for a checker_event.  */
+
+struct event_loc_info
+{
+  event_loc_info (location_t loc, tree fndecl, int depth)
+  : m_loc (loc), m_fndecl (fndecl), m_depth (depth)
+  {}
+
+  location_t m_loc;
+  tree m_fndecl;
+  int m_depth;
+};
+
 /* An enum for discriminating between the concrete subclasses of
    checker_event.  */
 
@@ -125,7 +138,7 @@ public:
 
 protected:
   checker_event (enum event_kind kind,
-		 location_t loc, tree fndecl, int depth);
+		 const event_loc_info &loc_info);
 
  public:
   const enum event_kind m_kind;
@@ -146,9 +159,10 @@ protected:
 class debug_event : public checker_event
 {
 public:
-  debug_event (location_t loc, tree fndecl, int depth,
-	      const char *desc)
-  : checker_event (EK_DEBUG, loc, fndecl, depth),
+
+  debug_event (const event_loc_info &loc_info,
+	       const char *desc)
+  : checker_event (EK_DEBUG, loc_info),
     m_desc (xstrdup (desc))
   {
   }
@@ -169,8 +183,8 @@ private:
 class custom_event : public checker_event
 {
 protected:
-  custom_event (location_t loc, tree fndecl, int depth)
-  : checker_event (EK_CUSTOM, loc, fndecl, depth)
+  custom_event (const event_loc_info &loc_info)
+  : checker_event (EK_CUSTOM, loc_info)
   {
   }
 };
@@ -180,9 +194,9 @@ protected:
 class precanned_custom_event : public custom_event
 {
 public:
-  precanned_custom_event (location_t loc, tree fndecl, int depth,
+  precanned_custom_event (const event_loc_info &loc_info,
 			  const char *desc)
-  : custom_event (loc, fndecl, depth),
+  : custom_event (loc_info),
     m_desc (xstrdup (desc))
   {
   }
@@ -230,7 +244,7 @@ public:
 class region_creation_event : public checker_event
 {
 protected:
-  region_creation_event (location_t loc, tree fndecl, int depth);
+  region_creation_event (const event_loc_info &loc_info);
 };
 
 /* Concrete subclass of region_creation_event.
@@ -241,8 +255,8 @@ class region_creation_event_memory_space : public region_creation_event
 {
 public:
   region_creation_event_memory_space (enum memory_space mem_space,
-				      location_t loc, tree fndecl, int depth)
-  : region_creation_event (loc, fndecl, depth),
+				      const event_loc_info &loc_info)
+  : region_creation_event (loc_info),
     m_mem_space (mem_space)
   {
   }
@@ -261,8 +275,8 @@ class region_creation_event_capacity : public region_creation_event
 {
 public:
   region_creation_event_capacity (tree capacity,
-				  location_t loc, tree fndecl, int depth)
-  : region_creation_event (loc, fndecl, depth),
+				  const event_loc_info &loc_info)
+  : region_creation_event (loc_info),
     m_capacity (capacity)
   {
     gcc_assert (m_capacity);
@@ -282,8 +296,8 @@ class region_creation_event_allocation_size : public region_creation_event
 {
 public:
   region_creation_event_allocation_size (tree capacity,
-					 location_t loc, tree fndecl, int depth)
-  : region_creation_event (loc, fndecl, depth),
+					 const event_loc_info &loc_info)
+  : region_creation_event (loc_info),
     m_capacity (capacity)
   {}
 
@@ -300,8 +314,8 @@ class region_creation_event_debug : public region_creation_event
 {
 public:
   region_creation_event_debug (const region *reg, tree capacity,
-			       location_t loc, tree fndecl, int depth)
-  : region_creation_event (loc, fndecl, depth),
+			       const event_loc_info &loc_info)
+  : region_creation_event (loc_info),
     m_reg (reg), m_capacity (capacity)
   {
   }
@@ -318,8 +332,8 @@ private:
 class function_entry_event : public checker_event
 {
 public:
-  function_entry_event (location_t loc, tree fndecl, int depth)
-  : checker_event (EK_FUNCTION_ENTRY, loc, fndecl, depth)
+  function_entry_event (const event_loc_info &loc_info)
+  : checker_event (EK_FUNCTION_ENTRY, loc_info)
   {
   }
 
@@ -385,7 +399,7 @@ public:
 
  protected:
   superedge_event (enum event_kind kind, const exploded_edge &eedge,
-		   location_t loc, tree fndecl, int depth);
+		   const event_loc_info &loc_info);
 
  public:
   const exploded_edge &m_eedge;
@@ -407,7 +421,7 @@ public:
 
  protected:
   cfg_edge_event (enum event_kind kind, const exploded_edge &eedge,
-		  location_t loc, tree fndecl, int depth);
+		  const event_loc_info &loc_info);
 };
 
 /* A concrete event subclass for the start of a CFG edge
@@ -417,8 +431,8 @@ class start_cfg_edge_event : public cfg_edge_event
 {
 public:
   start_cfg_edge_event (const exploded_edge &eedge,
-			location_t loc, tree fndecl, int depth)
-  : cfg_edge_event (EK_START_CFG_EDGE, eedge, loc, fndecl, depth)
+			const event_loc_info &loc_info)
+  : cfg_edge_event (EK_START_CFG_EDGE, eedge, loc_info)
   {
   }
 
@@ -441,8 +455,8 @@ class end_cfg_edge_event : public cfg_edge_event
 {
 public:
   end_cfg_edge_event (const exploded_edge &eedge,
-		      location_t loc, tree fndecl, int depth)
-  : cfg_edge_event (EK_END_CFG_EDGE, eedge, loc, fndecl, depth)
+		      const event_loc_info &loc_info)
+  : cfg_edge_event (EK_END_CFG_EDGE, eedge, loc_info)
   {
   }
 
@@ -458,7 +472,7 @@ class call_event : public superedge_event
 {
 public:
   call_event (const exploded_edge &eedge,
-	      location_t loc, tree fndecl, int depth);
+	      const event_loc_info &loc_info);
 
   label_text get_desc (bool can_colorize) const override;
   meaning get_meaning () const override;
@@ -479,7 +493,7 @@ class return_event : public superedge_event
 {
 public:
   return_event (const exploded_edge &eedge,
-		location_t loc, tree fndecl, int depth);
+		const event_loc_info &loc_info);
 
   label_text get_desc (bool can_colorize) const final override;
   meaning get_meaning () const override;
@@ -496,9 +510,9 @@ public:
 class start_consolidated_cfg_edges_event : public checker_event
 {
 public:
-  start_consolidated_cfg_edges_event (location_t loc, tree fndecl, int depth,
+  start_consolidated_cfg_edges_event (const event_loc_info &loc_info,
 				      bool edge_sense)
-  : checker_event (EK_START_CONSOLIDATED_CFG_EDGES, loc, fndecl, depth),
+  : checker_event (EK_START_CONSOLIDATED_CFG_EDGES, loc_info),
     m_edge_sense (edge_sense)
   {
   }
@@ -516,8 +530,8 @@ public:
 class end_consolidated_cfg_edges_event : public checker_event
 {
 public:
-  end_consolidated_cfg_edges_event (location_t loc, tree fndecl, int depth)
-  : checker_event (EK_END_CONSOLIDATED_CFG_EDGES, loc, fndecl, depth)
+  end_consolidated_cfg_edges_event (const event_loc_info &loc_info)
+  : checker_event (EK_END_CONSOLIDATED_CFG_EDGES, loc_info)
   {
   }
 
@@ -538,9 +552,10 @@ public:
 		      tree apparent_caller_fndecl,
 		      int actual_depth,
 		      int stack_depth_adjustment)
-  : checker_event (EK_INLINED_CALL, loc,
-		   apparent_caller_fndecl,
-		   actual_depth + stack_depth_adjustment),
+  : checker_event (EK_INLINED_CALL,
+		   event_loc_info (loc,
+				   apparent_caller_fndecl,
+				   actual_depth + stack_depth_adjustment)),
     m_apparent_callee_fndecl (apparent_callee_fndecl),
     m_apparent_caller_fndecl (apparent_caller_fndecl)
   {
@@ -560,9 +575,10 @@ private:
 class setjmp_event : public checker_event
 {
 public:
-  setjmp_event (location_t loc, const exploded_node *enode,
-		tree fndecl, int depth, const gcall *setjmp_call)
-  : checker_event (EK_SETJMP, loc, fndecl, depth),
+  setjmp_event (const event_loc_info &loc_info,
+		const exploded_node *enode,
+		const gcall *setjmp_call)
+  : checker_event (EK_SETJMP, loc_info),
     m_enode (enode), m_setjmp_call (setjmp_call)
   {
   }
@@ -594,7 +610,7 @@ public:
  protected:
   rewind_event (const exploded_edge *eedge,
 		enum event_kind kind,
-		location_t loc, tree fndecl, int depth,
+		const event_loc_info &loc_info,
 		const rewind_info_t *rewind_info);
   const rewind_info_t *m_rewind_info;
 
@@ -609,9 +625,9 @@ class rewind_from_longjmp_event : public rewind_event
 {
 public:
   rewind_from_longjmp_event (const exploded_edge *eedge,
-			     location_t loc, tree fndecl, int depth,
+			     const event_loc_info &loc_info,
 			     const rewind_info_t *rewind_info)
-  : rewind_event (eedge, EK_REWIND_FROM_LONGJMP, loc, fndecl, depth,
+  : rewind_event (eedge, EK_REWIND_FROM_LONGJMP, loc_info,
 		  rewind_info)
   {
   }
@@ -626,9 +642,9 @@ class rewind_to_setjmp_event : public rewind_event
 {
 public:
   rewind_to_setjmp_event (const exploded_edge *eedge,
-			  location_t loc, tree fndecl, int depth,
+			  const event_loc_info &loc_info,
 			  const rewind_info_t *rewind_info)
-  : rewind_event (eedge, EK_REWIND_TO_SETJMP, loc, fndecl, depth,
+  : rewind_event (eedge, EK_REWIND_TO_SETJMP, loc_info,
 		  rewind_info)
   {
   }
@@ -651,10 +667,10 @@ private:
 class warning_event : public checker_event
 {
 public:
-  warning_event (location_t loc, tree fndecl, int depth,
+  warning_event (const event_loc_info &loc_info,
 		 const state_machine *sm,
 		 tree var, state_machine::state_t state)
-  : checker_event (EK_WARNING, loc, fndecl, depth),
+  : checker_event (EK_WARNING, loc_info),
     m_sm (sm), m_var (var), m_state (state)
   {
   }

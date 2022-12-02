@@ -315,8 +315,7 @@ class pending_diagnostic
      See the comment for class region_creation_event.  */
   virtual void add_region_creation_events (const region *reg,
 					   tree capacity,
-					   location_t loc,
-					   tree fndecl, int depth,
+					   const event_loc_info &loc_info,
 					   checker_path &emission_path);
 
   /* Vfunc for adding the final warning_event to a checker_path, so that e.g.

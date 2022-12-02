@@ -92,6 +92,7 @@ class bounded_ranges_manager;
 
 class pending_diagnostic;
 class pending_note;
+struct event_loc_info;
 class state_change_event;
 class checker_path;
 class extrinsic_state;

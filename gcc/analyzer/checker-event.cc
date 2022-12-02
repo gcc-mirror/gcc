@@ -151,17 +151,19 @@ private:
 /* checker_event's ctor.  */
 
 checker_event::checker_event (enum event_kind kind,
-			      location_t loc, tree fndecl, int depth)
-: m_kind (kind), m_loc (loc),
-  m_original_fndecl (fndecl), m_effective_fndecl (fndecl),
-  m_original_depth (depth), m_effective_depth (depth),
+			      const event_loc_info &loc_info)
+: m_kind (kind), m_loc (loc_info.m_loc),
+  m_original_fndecl (loc_info.m_fndecl),
+  m_effective_fndecl (loc_info.m_fndecl),
+  m_original_depth (loc_info.m_depth),
+  m_effective_depth (loc_info.m_depth),
   m_pending_diagnostic (NULL), m_emission_id (),
-  m_logical_loc (fndecl)
+  m_logical_loc (loc_info.m_fndecl)
 {
   /* Update effective fndecl and depth if inlining has been recorded.  */
   if (flag_analyzer_undo_inlining)
     {
-      inlining_info info (loc);
+      inlining_info info (m_loc);
       if (info.get_inner_fndecl ())
 	{
 	  m_effective_fndecl = info.get_inner_fndecl ();
@@ -272,7 +274,8 @@ precanned_custom_event::get_desc (bool) const
 
 statement_event::statement_event (const gimple *stmt, tree fndecl, int depth,
 				  const program_state &dst_state)
-: checker_event (EK_STMT, gimple_location (stmt), fndecl, depth),
+: checker_event (EK_STMT,
+		 event_loc_info (gimple_location (stmt), fndecl, depth)),
   m_stmt (stmt),
   m_dst_state (dst_state)
 {
@@ -293,10 +296,8 @@ statement_event::get_desc (bool) const
 
 /* class region_creation_event : public checker_event.  */
 
-region_creation_event::region_creation_event (location_t loc,
-					      tree fndecl,
-					      int depth)
-: checker_event (EK_REGION_CREATION, loc, fndecl, depth)
+region_creation_event::region_creation_event (const event_loc_info &loc_info)
+: checker_event (EK_REGION_CREATION, loc_info)
 {
 }
 
@@ -370,9 +371,10 @@ region_creation_event_debug::get_desc (bool) const
 
 function_entry_event::function_entry_event (const program_point &dst_point)
 : checker_event (EK_FUNCTION_ENTRY,
-		 dst_point.get_supernode ()->get_start_location (),
-		 dst_point.get_fndecl (),
-		 dst_point.get_stack_depth ())
+		 event_loc_info (dst_point.get_supernode
+				   ()->get_start_location (),
+				 dst_point.get_fndecl (),
+				 dst_point.get_stack_depth ()))
 {
 }
 
@@ -410,8 +412,9 @@ state_change_event::state_change_event (const supernode *node,
 					const svalue *origin,
 					const program_state &dst_state)
 : checker_event (EK_STATE_CHANGE,
-		 stmt->location, node->m_fun->decl,
-		 stack_depth),
+		 event_loc_info (stmt->location,
+				 node->m_fun->decl,
+				 stack_depth)),
   m_node (node), m_stmt (stmt), m_sm (sm),
   m_sval (sval), m_from (from), m_to (to),
   m_origin (origin),
@@ -578,8 +581,8 @@ superedge_event::should_filter_p (int verbosity) const
 
 superedge_event::superedge_event (enum event_kind kind,
 				  const exploded_edge &eedge,
-				  location_t loc, tree fndecl, int depth)
-: checker_event (kind, loc, fndecl, depth),
+				  const event_loc_info &loc_info)
+: checker_event (kind, loc_info),
   m_eedge (eedge), m_sedge (eedge.m_sedge),
   m_var (NULL_TREE), m_critical_state (0)
 {
@@ -599,8 +602,8 @@ cfg_edge_event::get_cfg_superedge () const
 
 cfg_edge_event::cfg_edge_event (enum event_kind kind,
 				const exploded_edge &eedge,
-				location_t loc, tree fndecl, int depth)
-: superedge_event (kind, eedge, loc, fndecl, depth)
+				const event_loc_info &loc_info)
+: superedge_event (kind, eedge, loc_info)
 {
   gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CFG_EDGE);
 }
@@ -815,8 +818,8 @@ start_cfg_edge_event::should_print_expr_p (tree expr)
 /* call_event's ctor.  */
 
 call_event::call_event (const exploded_edge &eedge,
-			location_t loc, tree fndecl, int depth)
-: superedge_event (EK_CALL_EDGE, eedge, loc, fndecl, depth)
+			const event_loc_info &loc_info)
+: superedge_event (EK_CALL_EDGE, eedge, loc_info)
 {
   if (eedge.m_sedge)
     gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
@@ -894,8 +897,8 @@ call_event::get_callee_fndecl () const
 /* return_event's ctor.  */
 
 return_event::return_event (const exploded_edge &eedge,
-			    location_t loc, tree fndecl, int depth)
-: superedge_event (EK_RETURN_EDGE, eedge, loc, fndecl, depth)
+			    const event_loc_info &loc_info)
+: superedge_event (EK_RETURN_EDGE, eedge, loc_info)
 {
   if (eedge.m_sedge)
     gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
@@ -1045,9 +1048,9 @@ rewind_event::get_setjmp_caller () const
 
 rewind_event::rewind_event (const exploded_edge *eedge,
 			    enum event_kind kind,
-			    location_t loc, tree fndecl, int depth,
+			    const event_loc_info &loc_info,
 			    const rewind_info_t *rewind_info)
-: checker_event (kind, loc, fndecl, depth),
+: checker_event (kind, loc_info),
   m_rewind_info (rewind_info),
   m_eedge (eedge)
 {

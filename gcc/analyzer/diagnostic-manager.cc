@@ -1449,9 +1449,9 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 		  emission_path->add_region_creation_events
 		    (pb.get_pending_diagnostic (),
 		     reg, NULL,
-		     DECL_SOURCE_LOCATION (decl),
-		     NULL_TREE,
-		     0,
+		     event_loc_info (DECL_SOURCE_LOCATION (decl),
+				     NULL_TREE,
+				     0),
 		     m_verbosity > 3);
 		}
 	  }
@@ -1518,9 +1518,9 @@ diagnostic_manager::add_event_on_final_node (const path_builder &pb,
 		    (pb.get_pending_diagnostic (),
 		     reg,
 		     dst_model,
-		     src_point.get_location (),
-		     src_point.get_fndecl (),
-		     src_stack_depth,
+		     event_loc_info (src_point.get_location (),
+				     src_point.get_fndecl (),
+				     src_stack_depth),
 		     false);
 		  emitted = true;
 		  break;
@@ -1946,9 +1946,9 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 			    emission_path->add_region_creation_events
 			      (pb.get_pending_diagnostic (),
 			       reg, dst_state.m_region_model,
-			       DECL_SOURCE_LOCATION (decl),
-			       dst_point.get_fndecl (),
-			       dst_stack_depth,
+			       event_loc_info (DECL_SOURCE_LOCATION (decl),
+					       dst_point.get_fndecl (),
+					       dst_stack_depth),
 			       m_verbosity > 3);
 			  }
 		    }
@@ -1961,10 +1961,10 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 	const gcall *call = dyn_cast <const gcall *> (stmt);
 	if (call && is_setjmp_call_p (call))
 	  emission_path->add_event
-	    (make_unique<setjmp_event> (stmt->location,
+	    (make_unique<setjmp_event> (event_loc_info (stmt->location,
+							dst_point.get_fndecl (),
+							dst_stack_depth),
 					dst_node,
-					dst_point.get_fndecl (),
-					dst_stack_depth,
 					call));
 	else
 	  emission_path->add_event
@@ -2043,9 +2043,9 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		    emission_path->add_region_creation_events
 		      (pb.get_pending_diagnostic (),
 		       reg, dst_model,
-		       src_point.get_location (),
-		       src_point.get_fndecl (),
-		       src_stack_depth,
+		       event_loc_info (src_point.get_location (),
+				       src_point.get_fndecl (),
+				       src_stack_depth),
 		       m_verbosity > 3);
 		    break;
 		  }
@@ -2064,9 +2064,9 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
       pb.get_feasibility_problem ()->dump_to_pp (&pp);
       emission_path->add_event
 	(make_unique<precanned_custom_event>
-	 (dst_point.get_location (),
-	  dst_point.get_fndecl (),
-	  dst_stack_depth,
+	 (event_loc_info (dst_point.get_location (),
+			  dst_point.get_fndecl (),
+			  dst_stack_depth),
 	  pp_formatted_text (&pp)));
     }
 }
@@ -2178,18 +2178,17 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
     case SUPEREDGE_CFG_EDGE:
       {
 	emission_path->add_event
-	  (make_unique<start_cfg_edge_event> (eedge,
-					      (last_stmt
-					       ? last_stmt->location
-					       : UNKNOWN_LOCATION),
-					      src_point.get_fndecl (),
-					      src_stack_depth));
+	  (make_unique<start_cfg_edge_event>
+	   (eedge,
+	    event_loc_info (last_stmt ? last_stmt->location : UNKNOWN_LOCATION,
+			    src_point.get_fndecl (),
+			    src_stack_depth)));
 	emission_path->add_event
 	  (make_unique<end_cfg_edge_event>
 	    (eedge,
-	     dst_point.get_supernode ()->get_start_location (),
-	     dst_point.get_fndecl (),
-	     dst_stack_depth));
+	     event_loc_info (dst_point.get_supernode ()->get_start_location (),
+			     dst_point.get_fndecl (),
+			     dst_stack_depth)));
       }
       break;
 
@@ -2202,11 +2201,11 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
 	/* TODO: add a subclass for this, or generate events for the
 	   summary.  */
 	emission_path->add_event
-	  (make_unique<debug_event> ((last_stmt
-				      ? last_stmt->location
-				      : UNKNOWN_LOCATION),
-				     src_point.get_fndecl (),
-				     src_stack_depth,
+	  (make_unique<debug_event> (event_loc_info (last_stmt
+						     ? last_stmt->location
+						     : UNKNOWN_LOCATION,
+						     src_point.get_fndecl (),
+						     src_stack_depth),
 				     "call summary"));
       }
       break;
@@ -2219,11 +2218,11 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
 	const gcall *call_stmt = return_edge->get_call_stmt ();
 	emission_path->add_event
 	  (make_unique<return_event> (eedge,
-				      (call_stmt
-				       ? call_stmt->location
-				       : UNKNOWN_LOCATION),
-				      dst_point.get_fndecl (),
-				      dst_stack_depth));
+				      event_loc_info (call_stmt
+						      ? call_stmt->location
+						      : UNKNOWN_LOCATION,
+						      dst_point.get_fndecl (),
+						      dst_stack_depth)));
       }
       break;
     }
@@ -2765,15 +2764,15 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 		   start_idx, next_idx - 1, start_idx, start_idx +1);
 	      start_consolidated_cfg_edges_event *new_start_ev
 		= new start_consolidated_cfg_edges_event
-		(old_start_ev->get_location (),
-		 old_start_ev->get_fndecl (),
-		 old_start_ev->get_stack_depth (),
+		(event_loc_info (old_start_ev->get_location (),
+				 old_start_ev->get_fndecl (),
+				 old_start_ev->get_stack_depth ()),
 		 edge_sense);
 	      checker_event *new_end_ev
 		= new end_consolidated_cfg_edges_event
-		(old_end_ev->get_location (),
-		 old_end_ev->get_fndecl (),
-		 old_end_ev->get_stack_depth ());
+		(event_loc_info (old_end_ev->get_location (),
+				 old_end_ev->get_fndecl (),
+				 old_end_ev->get_stack_depth ()));
 	      path->replace_event (start_idx, new_start_ev);
 	      path->replace_event (start_idx + 1, new_end_ev);
 	      path->delete_events (start_idx + 2, next_idx - (start_idx + 2));
