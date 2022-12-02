@@ -16,6 +16,15 @@ enum condition_type
 };
 
 
+enum condition_status
+{
+  CS_NO_COND,
+  CS_TRUE,
+  CS_FALSE,
+  CS_SYM
+};
+
+
 class bit_condition : public bit_expression
 {
  private:

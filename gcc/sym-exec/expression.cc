@@ -2,8 +2,6 @@
    Every variable will be represented as a vector of these classes which later
    will be used for bit-level symbolic execution.  */
 
-#include "stddef.h"
-#include "expression.h"
 #include "expression-is-a-helper.h"
 
 
@@ -60,6 +58,8 @@ bit_complement_expression::bit_complement_expression (value *right)
 {
   this->left = nullptr;
   this->right = right;
+  op_sign[0] = '!';
+  op_sign[1] = '\0';
 }
 
 
@@ -101,6 +101,9 @@ bit_expression::copy (const bit_expression *expr)
 
   if (expr->right)
     right = expr->right->copy ();
+
+  op_sign[0] = (expr->op_sign)[0];
+  op_sign[1] = (expr->op_sign)[1];
 }
 
 
@@ -164,6 +167,8 @@ bit_xor_expression::bit_xor_expression (value *left, value *right)
 {
   this->left = left;
   this->right = right;
+  op_sign[0] = '^';
+  op_sign[1] = '\0';
 }
 
 
@@ -177,6 +182,8 @@ bit_and_expression::bit_and_expression (value *left, value *right)
 {
   this->left = left;
   this->right = right;
+  op_sign[0] = '&';
+  op_sign[1] = '\0';
 }
 
 
@@ -190,6 +197,8 @@ bit_or_expression::bit_or_expression (value *left, value *right)
 {
   this->left = left;
   this->right = right;
+  op_sign[0] = '|';
+  op_sign[0] = '\0';
 }
 
 
@@ -203,6 +212,8 @@ shift_right_expression::shift_right_expression (value *left, value *right)
 {
   this->left = left;
   this->right = right;
+  op_sign[0] = '>';
+  op_sign[1] = '>';
 }
 
 
@@ -217,6 +228,8 @@ shift_left_expression::shift_left_expression (value *left, value *right)
 {
   this->left = left;
   this->right = right;
+  op_sign[0] = '<';
+  op_sign[1] = '<';
 }
 
 
@@ -230,6 +243,8 @@ add_expression::add_expression (value *left, value *right)
 {
   this->left = left;
   this->right = right;
+  op_sign[0] = '+';
+  op_sign[1] = '\0';
 }
 
 
@@ -243,6 +258,8 @@ sub_expression::sub_expression (value *left, value *right)
 {
   this->left = left;
   this->right = right;
+  op_sign[0] = '-';
+  op_sign[1] = '\0';
 }
 
 
@@ -319,4 +336,67 @@ value_type
 sub_expression::get_type () const
 {
   return value_type::SUB_EXPRESSION;
+}
+
+
+tree
+symbolic_bit::get_origin ()
+{
+  return origin;
+}
+
+
+void
+symbolic_bit::print ()
+{
+  if (dump_file)
+    {
+      print_generic_expr (dump_file, origin, dump_flags);
+      fprintf (dump_file, "[%lu]", index);
+    }
+}
+
+
+void
+bit::print ()
+{
+  if (dump_file)
+    fprintf (dump_file, "%u", val);
+}
+
+
+void
+bit_expression::print ()
+{
+  if (dump_file)
+    {
+      fprintf (dump_file, "(");
+      if (left)
+	left->print ();
+      else
+	fprintf (dump_file, "null");
+
+      fprintf (dump_file, " %.2s ", op_sign);
+
+      if (right)
+	right->print ();
+      else
+	fprintf (dump_file, "null");
+
+      fprintf (dump_file, ")");
+    }
+}
+
+
+void
+bit_complement_expression::print ()
+{
+  if (dump_file)
+    {
+      fprintf (dump_file, "%.2s", op_sign);
+      if (right)
+	right->print ();
+      else
+	fprintf (dump_file, "null");
+    }
 }

@@ -5,6 +5,26 @@
 #ifndef SYM_EXEC_EXPRESSION_H
 #define SYM_EXEC_EXPRESSION_H
 
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "backend.h"
+#include "tree.h"
+#include "gimple.h"
+#include "tree-pass.h"
+#include "ssa.h"
+#include "gimple-iterator.h"
+#include "tree-cfg.h"
+#include "tree-ssa-loop-niter.h"
+#include "cfgloop.h"
+#include "gimple-range.h"
+#include "tree-scalar-evolution.h"
+#include "hwint.h"
+#include "gimple-pretty-print.h"
+#include "is-a.h"
+#include "vec.h"
+#include "hash-map.h"
+#include "hash-set.h"
 #include "stddef.h"
 
 
@@ -42,6 +62,7 @@ class value {
   /* This will support deep copy of objects' values.  */
   virtual value *copy () const = 0;
   virtual value_type get_type () const = 0;
+  virtual void print () = 0;
   virtual ~value ()
   {};
 };
@@ -50,14 +71,19 @@ class value {
 /* Represents value of a single bit of symbolic marked variables.  */
 
 class symbolic_bit : public value {
+  tree origin = nullptr;
+
  public:
-  symbolic_bit (size_t i) : value (i)
+  symbolic_bit (size_t i, tree orig) : value (i), origin (orig)
   {};
-  symbolic_bit (const symbolic_bit &sym_bit) : symbolic_bit (sym_bit.index)
+  symbolic_bit (const symbolic_bit &sym_bit) : symbolic_bit (sym_bit.index,
+							     sym_bit.origin)
   {};
 
   value *copy () const;
+  void print ();
   value_type get_type () const;
+  tree get_origin ();
 };
 
 
@@ -77,6 +103,7 @@ class bit : public value {
   void set_val (unsigned char new_val);
   value *copy () const;
   value_type get_type () const;
+  void print ();
 };
 
 
@@ -87,6 +114,7 @@ class bit_expression : public value {
  protected:
   value *left = nullptr;
   value *right = nullptr;
+  char op_sign[2];
 
   void copy (const bit_expression *expr);
 
@@ -100,6 +128,7 @@ class bit_expression : public value {
   void set_right (value *expr);
   value *copy () const = 0;
   value_type get_type () const = 0;
+  void print ();
 };
 
 
@@ -193,6 +222,7 @@ class bit_complement_expression : public bit_expression {
   bit_complement_expression (const bit_complement_expression &expr);
   value *copy () const;
   value_type get_type () const;
+  void print ();
 };
 
 

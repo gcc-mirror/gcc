@@ -2,11 +2,7 @@
    It will be used for bit-level symbolic execution to determine values of bits
    of function's return value and symbolic marked arguments.  */
 
-#include "stddef.h"
 #include "state.h"
-#include "vec.h"
-#include "hash-set.h"
-#include "condition.h"
 
 
 state::state ()
@@ -70,17 +66,11 @@ state::get_conditions ()
 }
 
 
+/* Checks if sizes of arguments and destination are compatible.  */
+
 bool
 state::check_args_compatibility (tree arg1, tree arg2, tree dest)
 {
-  if (!is_declared (dest))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: Destination var is not declared.\n");
-
-      return false;
-    }
-
   if (!(get_var_size (arg1) == get_var_size (dest)
        || TREE_CODE (arg1) == INTEGER_CST)
       || !(get_var_size (arg2) == get_var_size (dest)
@@ -97,23 +87,26 @@ state::check_args_compatibility (tree arg1, tree arg2, tree dest)
 }
 
 
+/* Creates bit sequence of given constant tree.  */
+
 vec<value*>
 state::create_bits_for_const (tree var, size_t size) const
 {
   HOST_WIDE_INT val = tree_to_shwi (var);
-  unsigned HOST_WIDE_INT pos_bit = 1;
-
   vec<value *> bits;
   bits.create (size);
+
   for (size_t i = 0; i < size; i++)
     {
-      bits.quick_push (new bit (val & pos_bit));
-      pos_bit >>= 1;
+      bits.quick_push (new bit (val & 1));
+      val >>= 1;
     }
 
   return bits;
 }
 
+
+/* Removes given sequence of bits.  */
 
 void
 state::free_bits (vec<value*> * bits) const
@@ -293,7 +286,7 @@ state::make_symbolic (tree var, unsigned size)
 
   /* Initialize each bit of a variable with unknown value.  */
   for (size_t i = 0; i < size; i++)
-    bits.quick_push (new symbolic_bit (i));
+    bits.quick_push (new symbolic_bit (i, var));
 
   return var_states.put (var, bits);
 }
@@ -324,15 +317,20 @@ state::and_two_bits (value *arg1_bit, value* arg2_bit) const
 }
 
 
+/* Does preprocessing and postprocessing for expressions with tree operands.
+   Handles bit sequence creation for constant values
+   and their removement in the end.  */
+
 bool
 state::do_binary_operation (tree arg1, tree arg2, tree dest,
 			    binary_func bin_func)
 {
+  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+  declare_if_needed (arg1, var_states.get (dest)->allocated ());
+  declare_if_needed (arg2, var_states.get (dest)->allocated ());
+
   if (!check_args_compatibility (arg1, arg2, dest))
     return false;
-
-  declare_if_needed (arg1, var_states.get (dest)->length ());
-  declare_if_needed (arg2, var_states.get (dest)->length ());
 
   vec<value*> * arg1_bits = var_states.get (arg1);
   vec<value*> arg1_const_bits (vNULL);
@@ -356,6 +354,7 @@ state::do_binary_operation (tree arg1, tree arg2, tree dest,
   free_bits (&arg1_const_bits);
   free_bits (&arg2_const_bits);
 
+  print_bits (var_states.get (dest));
   return true;
 }
 
@@ -522,15 +521,15 @@ state::is_bit_vector (const vec <value *>* bits)
 
 /* Returns the value of the number represented as a bit vector.  */
 
-size_t
-state::get_value (const vec <value *> * binary_value)
+unsigned HOST_WIDE_INT
+state::get_value (const vec <value *> * bits_value)
 {
-  size_t number = 0;
-  if (binary_value->length () <= sizeof (size_t))
-    for (unsigned i = 0; i < binary_value->length (); i++)
+  unsigned HOST_WIDE_INT number = 0;
+  if (bits_value->length () <= sizeof (size_t))
+    for (unsigned i = 0; i < bits_value->length (); i++)
       {
-	if (is_a<bit *> ((*binary_value)[i]))
-	  number = (number | as_a<bit*> ((*binary_value)[i])->get_val ()) << 1;
+	if (is_a<bit *> ((*bits_value)[i]))
+	  number = (number | as_a<bit*> ((*bits_value)[i])->get_val ()) << 1;
 	else
 	  return 0;
       }
@@ -652,7 +651,7 @@ void
 state::do_add (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 {
   value * carry = new bit (0);
-  for (size_t i =  get_var_size (dest) - 1; i != 0; --i)
+  for (size_t i = 0; i < get_var_size (dest); ++i)
     {
       value * temp = (*var_states.get (dest))[i];
       (*var_states.get (dest))[i] = full_adder ((*arg1_bits)[i],
@@ -667,26 +666,26 @@ state::do_add (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 /* Returns the additive inverse of the number stored in number verctor.  */
 
 vec < value * > *
-state::additive_inverse (const vec < value * > *number)
+state::additive_inverse (const vec <value *> *number)
 {
-  vec < value * > * result = new vec < value * > ();
-  vec < value * > * one = new vec < value * > ();
+  vec <value *> * result = new vec <value *> ();
+  vec <value *> * one = new vec <value *> ();
 
   result->create (number->length ());
   one->create (number -> length ());
-  size_t vec_len = number->length ();
 
-  for (size_t i = 0; i < vec_len; i++)
+  size_t vec_len = number->length ();
+  one->quick_push (new bit (1));
+  result->quick_push (complement_a_bit ((*number)[0]->copy ()));
+
+  for (size_t i = 1; i < vec_len; i++)
     {
-      if (i == vec_len - 1)
-	one->quick_push (new bit (1));
-      else
-	one->quick_push (new bit (0));
+      one->quick_push (new bit (0));
       result->quick_push (complement_a_bit ((*number)[i]->copy ()));
     }
 
   value * carry = new bit (0);
-  for (size_t i = vec_len - 1; i != 0; --i)
+  for (size_t i = 0; i < vec_len; ++i)
     (*result)[i] = full_adder ((*result)[i], (*one)[i], carry);
 
   delete carry;
@@ -707,7 +706,6 @@ void
 state::do_sub (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 {
   vec < value * > * neg_arg2 = additive_inverse (arg2_bits);
-
   do_add (arg1_bits, neg_arg2, dest);
 
   free_bits (neg_arg2);
@@ -736,15 +734,9 @@ state::complement_a_bit (value *var) const
 bool
 state::do_complement (tree arg, tree dest)
 {
-  if (!is_declared (dest))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: Destination var is not declared.\n");
+  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+  declare_if_needed (arg, var_states.get (dest)->allocated ());
 
-      return false;
-    }
-
-  declare_if_needed (arg, var_states.get (dest)->length ());
   if (get_var_size (arg) != get_var_size (dest))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -764,6 +756,7 @@ state::do_complement (tree arg, tree dest)
       (*var_states.get (dest))[i] = result;
     }
 
+  print_bits (var_states.get (dest));
   return true;
 }
 
@@ -771,16 +764,10 @@ state::do_complement (tree arg, tree dest)
 bool
 state::do_assign (tree arg, tree dest)
 {
-  if (!is_declared (dest))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: Destination var is not declared.\n");
-
-      return false;
-    }
-
-  declare_if_needed (arg, var_states.get (dest)->length ());
+  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+  declare_if_needed (arg, var_states.get (dest)->allocated ());
   vec<value*> * dest_bits = var_states.get (dest);
+
   /* If the argument is already defined, then we must just copy its bits.  */
   if (auto bits = var_states.get (arg))
     {
@@ -799,7 +786,7 @@ state::do_assign (tree arg, tree dest)
   /* If the argument is a constant, we must save it as sequence of bits.  */
   else if (TREE_CODE (arg) == INTEGER_CST)
     {
-      vec < value * > arg_bits
+      vec <value *> arg_bits
       = create_bits_for_const (arg, dest_bits->length ());
       for (size_t i = 0; i < dest_bits->length (); i++)
 	{
@@ -815,6 +802,44 @@ state::do_assign (tree arg, tree dest)
 
       return false;
     }
+
+  print_bits (var_states.get (dest));
+  return true;
+}
+
+
+/* Assigns pow 2 value.  */
+
+bool
+state::do_assign_pow2 (tree dest, unsigned pow)
+{
+  vec<value *> * dest_bits = var_states.get (dest);
+  unsigned dest_size = dest_bits ? dest_bits->allocated ()
+				 : tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest)));
+  if (pow > dest_size)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Sym-Exec: pow %u of 2 won't fit in"
+			    " specified destination\n", pow);
+      return false;
+    }
+
+  if (!dest_bits)
+    {
+      decl_var (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+      dest_bits = var_states.get (dest);
+    }
+  else
+    free_bits (dest_bits);
+
+  for (unsigned i = 0; i < dest_bits->length (); i++)
+    {
+      if (i == pow)
+	(*dest_bits)[i] = new bit (1);
+      else
+	(*dest_bits)[i] = new bit (0);
+    }
+
   return true;
 }
 
@@ -1013,7 +1038,7 @@ state::is_safe_branching (value* node) const
 /* Shifts number left by shift_value bits.  */
 
 vec <value *> *
-state::shift_left_by_const (const vec < value * > * number,
+state::shift_left_by_const (const vec <value *> * number,
 			    size_t shift_value)
 {
   vec <value *> *shift_result = new vec< value * > ();
@@ -1052,10 +1077,10 @@ state::shift_right_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
 }
 
 
-/* Adds two vectors, stores the result in the first one.  */
+/* Adds two variables, stores the result in the first one.  */
 
 void
-state::add_numbers (vec< value * > *var1, const vec< value * > *var2)
+state::add_numbers (vec<value *> *var1, const vec<value *> *var2)
 {
   value * carry = new bit (0);
   for (unsigned i = 0; i < var1->length (); i++)
@@ -1095,9 +1120,8 @@ state::do_mul (tree arg1, tree arg2, tree dest)
 void
 state::do_mul (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 {
-  vec <value *> *shifted = new vec <value *> ();
-  vec_copy_construct (shifted, arg1_bits, arg1_bits->length ());
   vec <value *> * dest_bits = var_states.get (dest);
+  vec <value *> * shifted = make_copy (arg1_bits);
 
   for (unsigned i = 0; i < dest_bits->length (); i++)
     {
@@ -1105,26 +1129,21 @@ state::do_mul (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
       (*dest_bits)[i] = new bit (0);
     }
 
-  for (unsigned i = arg2_bits->length () - 1; i != 0; --i)
+  for (unsigned i = arg2_bits->length (); i != 0; --i)
     {
-      if (is_a<bit *> ((*arg2_bits)[i]))
+      if (is_a<bit *> ((*arg2_bits)[i - 1])
+	  && as_a<bit *> ((*arg2_bits)[i - 1])->get_val () != 0)
+	add_numbers (dest_bits, shifted);
+      else if (is_a<symbolic_bit *> ((*arg2_bits)[i - 1]))
 	{
-	  if (as_a<bit *> ((*arg2_bits)[i])->get_val () != 0)
+	  and_number_bit (shifted, as_a<symbolic_bit *> ((*arg2_bits)[i - 1]));
 	  add_numbers (dest_bits, shifted);
 	}
-      else if (is_a<symbolic_bit *> ((*arg2_bits)[i]))
-	{
-	  and_number_bit (shifted, as_a<symbolic_bit *> ((*arg2_bits)[i]));
-	  add_numbers (dest_bits, shifted);
-	}
-
-      vec <value *> *temp = shifted;
+      vec <value *> * temp = shifted;
       shifted = shift_left_by_const (shifted, 1);
-
       free_bits (temp);
       delete temp;
     }
-
   free_bits (shifted);
   delete shifted;
 }
@@ -1135,7 +1154,8 @@ state::check_const_bit_equality (vec<value *> * arg1_bits,
 				 vec<value *> * arg2_bits) const
 {
   for (size_t i = 1; i < arg1_bits->length (); i++)
-    if ((*arg1_bits)[i] != (*arg2_bits)[i])
+    if (as_a<bit *>((*arg1_bits)[i])->get_val ()
+	!= as_a<bit *>((*arg2_bits)[i])->get_val ())
       return false;
   return true;
 }
@@ -1148,15 +1168,16 @@ state::add_equal_cond (tree arg1, tree arg2)
 }
 
 
+/* Adds equality condition for two sequences of bits.  */
+
 void
 state::add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 {
   if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
     {
       bool result = check_const_bit_equality (arg1_bits, arg2_bits);
-      conditions.add (new bit_condition (nullptr, nullptr,
-					 result ? condition_type::IS_TRUE
-						: condition_type::IS_FALSE));
+      last_cond_status = result ? condition_status::CS_TRUE
+				: condition_status::CS_FALSE;
       return;
     }
   for (size_t i = 0; i < arg1_bits->length (); i++)
@@ -1165,6 +1186,7 @@ state::add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 					 (*arg2_bits)[i]->copy (),
 					 condition_type::EQUAL));
     }
+  last_cond_status = condition_status::CS_SYM;
 }
 
 
@@ -1173,7 +1195,8 @@ state::check_const_bit_are_not_equal (vec<value *> * arg1_bits,
 				      vec<value *> * arg2_bits) const
 {
   for (size_t i = 0; i < arg1_bits->length (); i++)
-    if ((*arg1_bits)[i] != (*arg2_bits)[i])
+    if (as_a<bit *>((*arg1_bits)[i])->get_val ()
+	!= as_a<bit*>((*arg2_bits)[i])->get_val ())
       return true;
   return false;
 }
@@ -1186,15 +1209,16 @@ state::add_not_equal_cond (tree arg1, tree arg2)
 }
 
 
+/* Adds not equal condition for two sequences of bits.  */
+
 void
 state::add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 {
   if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
     {
       bool result = check_const_bit_are_not_equal (arg1_bits, arg2_bits);
-      conditions.add (new bit_condition (nullptr, nullptr,
-					 result ? condition_type::IS_TRUE
-						: condition_type::IS_FALSE));
+      last_cond_status = result ? condition_status::CS_TRUE
+				: condition_status::CS_FALSE;
       return;
     }
 
@@ -1209,6 +1233,8 @@ state::add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
       else
 	prev = new_cond;
     }
+
+  last_cond_status = condition_status::CS_SYM;
   conditions.add (prev);
 }
 
@@ -1219,9 +1245,11 @@ state::check_const_bit_is_greater_than (vec<value *> * arg1_bits,
 {
   for (int i = arg1_bits->length () - 1; i >= 0; i--)
     {
-      if ((*arg1_bits)[i] > (*arg2_bits)[i])
+      if (as_a<bit *>((*arg1_bits)[i])->get_val ()
+	  > as_a<bit *>((*arg2_bits)[i])->get_val ())
 	return true;
-      else if ((*arg1_bits)[i] < (*arg2_bits)[i])
+      else if (as_a<bit *>((*arg1_bits)[i])->get_val ()
+	       < as_a<bit *>((*arg2_bits)[i])->get_val ())
 	return false;
     }
   return false;
@@ -1235,6 +1263,8 @@ state::add_greater_than_cond (tree arg1, tree arg2)
 }
 
 
+/* Adds greater than condition for two sequences of bits.  */
+
 void
 state::add_greater_than_cond (vec<value*> * arg1_bits,
 			      vec<value*> * arg2_bits)
@@ -1242,15 +1272,18 @@ state::add_greater_than_cond (vec<value*> * arg1_bits,
   if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
     {
       bool result = check_const_bit_is_greater_than (arg1_bits, arg2_bits);
-      conditions.add (new bit_condition (nullptr, nullptr,
-					 result ? condition_type::IS_TRUE
-						: condition_type::IS_FALSE));
+      last_cond_status = result ? condition_status::CS_TRUE
+				: condition_status::CS_FALSE;
       return;
     }
 
+  last_cond_status = condition_status::CS_SYM;
   conditions.add (construct_great_than_cond (arg1_bits, arg2_bits));
 }
 
+
+/* Constructs expression trees of greater than condition
+   for given sequences of bits.  */
 
 bit_expression*
 state::construct_great_than_cond (vec<value*> * arg1_bits,
@@ -1286,9 +1319,11 @@ state::check_const_bit_is_less_than (vec<value *> * arg1_bits,
 {
   for (int i = arg1_bits->length () - 1; i >= 0; i--)
     {
-      if ((*arg1_bits)[i] < (*arg2_bits)[i])
+      if (as_a<bit *>((*arg1_bits)[i])->get_val ()
+	  < as_a<bit *>((*arg2_bits)[i])->get_val ())
 	return true;
-      else if ((*arg1_bits)[i] > (*arg2_bits)[i])
+      else if (as_a<bit *>((*arg1_bits)[i])->get_val ()
+	       > as_a<bit *>((*arg2_bits)[i])->get_val ())
 	return false;
     }
   return false;
@@ -1302,21 +1337,26 @@ state::add_less_than_cond (tree arg1, tree arg2)
 }
 
 
+/* Adds less than condition for two sequences of bits.  */
+
 void
 state::add_less_than_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 {
   if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
     {
       bool result = check_const_bit_is_less_than (arg1_bits, arg2_bits);
-      conditions.add (new bit_condition (nullptr, nullptr,
-					 result ? condition_type::IS_TRUE
-						: condition_type::IS_FALSE));
+      last_cond_status = result ? condition_status::CS_TRUE
+				: condition_status::CS_FALSE;
       return;
     }
 
+  last_cond_status = condition_status::CS_SYM;
   conditions.add (construct_less_than_cond (arg1_bits, arg2_bits));
 }
 
+
+/* Constructs expression trees of less than condition
+   for given sequences of bits.  */
 
 bit_expression*
 state::construct_less_than_cond (vec<value*> * arg1_bits,
@@ -1353,6 +1393,8 @@ state::add_greater_or_equal_cond (tree arg1, tree arg2)
 }
 
 
+/* Adds greater or equal condition for two sequences of bits.  */
+
 void
 state::add_greater_or_equal_cond (vec<value*> * arg1_bits,
 				  vec<value*> * arg2_bits)
@@ -1362,18 +1404,20 @@ state::add_greater_or_equal_cond (vec<value*> * arg1_bits,
       bool is_greater_than = check_const_bit_is_greater_than (arg1_bits,
 							      arg2_bits);
       bool is_equal = check_const_bit_equality (arg1_bits, arg2_bits);
-      conditions.add (new bit_condition (nullptr, nullptr,
-					 (is_greater_than | is_equal)
-					 ? condition_type::IS_TRUE
-					 : condition_type::IS_FALSE));
+      last_cond_status = (is_greater_than | is_equal)
+			 ? condition_status::CS_TRUE
+			 : condition_status::CS_FALSE;
       return;
     }
 
+  last_cond_status = condition_status::CS_SYM;
   conditions.add (
 	new bit_or_expression (construct_great_than_cond (arg1_bits, arg2_bits),
 			       construct_equal_cond (arg1_bits, arg2_bits)));
 }
 
+
+/* Adds less or equal condition for two sequences of bits.  */
 
 bool
 state::add_less_or_equal_cond (tree arg1, tree arg2)
@@ -1390,13 +1434,13 @@ state::add_less_or_equal_cond (vec<value*> * arg1_bits,
     {
       bool is_less_than = check_const_bit_is_less_than (arg1_bits, arg2_bits);
       bool is_equal = check_const_bit_equality (arg1_bits, arg2_bits);
-      conditions.add (new bit_condition (nullptr, nullptr,
-					 (is_less_than | is_equal)
-					 ? condition_type::IS_TRUE
-					 : condition_type::IS_FALSE));
+      last_cond_status = (is_less_than | is_equal)
+			 ? condition_status::CS_TRUE
+			 : condition_status::CS_FALSE;
       return;
     }
 
+  last_cond_status = condition_status::CS_SYM;
   conditions.add (
 	new bit_or_expression (construct_less_than_cond (arg1_bits, arg2_bits),
 			       construct_equal_cond (arg1_bits, arg2_bits)));
@@ -1417,14 +1461,14 @@ state::add_bool_cond (tree arg)
   vec<value *> * arg_bits = var_states.get (arg);
   if (is_bit_vector (arg_bits))
     {
-      condition_type result = condition_type::IS_FALSE;
+      last_cond_status = condition_status::CS_FALSE;
       for (size_t i = 0; i < arg_bits->length (); i++)
-	if ((*arg_bits)[i] != 0)
+	if (as_a<bit *>((*arg_bits)[i])->get_val () != 0)
 	  {
-	    result = condition_type::IS_TRUE;
+	    last_cond_status = condition_status::CS_TRUE;
 	    break;
 	  }
-      conditions.add (new bit_condition (nullptr, nullptr, result));
+      return true;
     }
 
   bit_expression* prev = nullptr;
@@ -1439,10 +1483,15 @@ state::add_bool_cond (tree arg)
 	prev = not_eq_cond;
     }
 
+  last_cond_status = condition_status::CS_SYM;
   conditions.add (prev);
   return true;
 }
 
+
+/* Does preprocessing and postprocessing for condition adding.
+   Handles bit sequence creation for constant values
+   and their removement in the end.  */
 
 bool
 state::add_binary_cond (tree arg1, tree arg2, binary_cond_func cond_func)
@@ -1490,6 +1539,9 @@ state::add_binary_cond (tree arg1, tree arg2, binary_cond_func cond_func)
 }
 
 
+/* Constructs expression trees of equal condition
+   for given sequences of bits.  */
+
 bit_expression*
 state::construct_equal_cond (vec<value*> * arg1_bits,
 			     vec<value*> * arg2_bits)
@@ -1515,11 +1567,12 @@ state::construct_equal_cond (vec<value*> * arg1_bits,
 bool
 state::do_mem_ref (tree arg1, tree dest)
 {
-  if (!is_declared (arg1) || !is_declared (dest))
+  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+  if (!is_declared (arg1))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: For memory reference, both destination"
-			    "and argument must be declared\n");
+	fprintf (dump_file, "Sym-Exec: For memory reference"
+			    " argument must be declared\n");
 
       return false;
     }
@@ -1528,9 +1581,10 @@ state::do_mem_ref (tree arg1, tree dest)
     {
       delete (*var_states.get (dest))[i];
       // TODO: Find a better way.
-      (*var_states.get (dest))[i] = new symbolic_bit (i);
+      (*var_states.get (dest))[i] = new symbolic_bit (i, arg1);
     }
 
+  print_bits (var_states.get (dest));
   return true;
 }
 
@@ -1540,11 +1594,12 @@ state::do_mem_ref (tree arg1, tree dest)
 bool
 state::do_pointer_plus (tree arg1, tree arg2, tree dest)
 {
-  if (!is_declared (arg1) || !is_declared (arg2) || !is_declared (dest))
+  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+  if (!is_declared (arg1) || !is_declared (arg2))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: For pointer addition destination"
-			    "and arguments must be declared\n");
+	fprintf (dump_file, "Sym-Exec: For pointer addition "
+			    "arguments must be declared\n");
 
       return false;
     }
@@ -1562,11 +1617,12 @@ state::do_pointer_plus (tree arg1, tree arg2, tree dest)
 bool
 state::do_pointer_diff (tree arg1, tree arg2, tree dest)
 {
-  if (!is_declared (arg1) || !is_declared (arg2) || !is_declared (dest))
+  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+  if (!is_declared (arg1) || !is_declared (arg2))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: For pointer subtraction destination"
-			    "and arguments must be declared\n");
+	fprintf (dump_file, "Sym-Exec: For pointer subtraction "
+			    "arguments must be declared\n");
 
       return false;
     }
@@ -1576,4 +1632,89 @@ state::do_pointer_diff (tree arg1, tree arg2, tree dest)
     return do_mem_ref (arg1, dest);
 
   return do_sub (arg1, arg2, dest);
+}
+
+
+vec<value *> *
+state::make_copy (vec<value *> *bits) const
+{
+  vec<value *> * copied_bits = new vec<value*> ();
+  copied_bits->create (bits->length ());
+  for (size_t i = 0; i < bits->length (); i++)
+    copied_bits->quick_push ((*bits)[i]->copy ());
+
+  return copied_bits;
+}
+
+
+condition_status
+state::get_last_cond_status ()
+{
+  return last_cond_status;
+}
+
+
+void
+state::print_bits (vec<value *> * bits)
+{
+  if (!dump_file || !(dump_flags & TDF_DETAILS))
+    return;
+
+  fprintf (dump_file, "{");
+  for (int i = bits->length () - 1; i >= 0; i--)
+    {
+      (*bits)[i]->print ();
+
+      if (i)
+	fprintf (dump_file, ", ");
+    }
+  fprintf (dump_file, "}\n");
+}
+
+
+
+size_t min (size_t a, size_t b, size_t c)
+{
+  size_t min = (a < b ? a : b);
+  return min < c ? min : c;
+}
+
+
+/* Casts arg_bits to cast_size size, stores value in dest.  */
+
+bool
+state::do_cast (tree var, tree dest, size_t cast_size)
+{
+  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+  if (!is_declared (var))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Sym-Exec: For cast operantion "
+			    "argument must be declared\n");
+
+      return false;
+    }
+
+  //TODO: add case for signed numbers
+
+  vec<value *> *arg = var_states.get (var);
+  vec<value *> *dest_bits = var_states.get (dest);
+
+  size_t arg_size = min (arg->length (), dest_bits->length (), cast_size);
+
+  for (size_t i = 0; i < arg_size; i++)
+    {
+      value *temp = (*dest_bits)[i];
+      (*dest_bits)[i] = (*arg)[i]->copy ();
+      delete temp;
+    }
+
+  value * sign_bit = arg->last ();
+  for (size_t i = arg_size; i < dest_bits->length (); i++)
+    {
+      value *temp = (*dest_bits)[i];
+      (*dest_bits)[i] = sign_bit->copy ();
+      delete temp;
+    }
+  return true;
 }

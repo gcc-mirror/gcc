@@ -2,7 +2,6 @@
 #define SYM_EXEC_EXPRESSION_IS_A_HELPER_H
 
 #include "condition.h"
-#include "is-a.h"
 
 
 /* Defining test functions for value conversion via dyn_cast.  */
