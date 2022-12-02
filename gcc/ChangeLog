@@ -1,3 +1,9 @@
+2022-12-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107863
+	* config/i386/i386-expand.c (ix86_expand_vec_set_builtin):
+	Convert op1 to target mode whenever mode mismatch.
+
 2022-11-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (addvdi3): Force operand 2 to a register.
