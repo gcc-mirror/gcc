@@ -2342,7 +2342,7 @@ static tree cp_parser_c_for
 static tree cp_parser_range_for
   (cp_parser *, tree, tree, tree, bool, unsigned short, bool);
 static void do_range_for_auto_deduction
-  (tree, tree);
+  (tree, tree, tree, unsigned int);
 static tree cp_parser_perform_range_for_lookup
   (tree, tree *, tree *);
 static tree cp_parser_range_for_member_function
@@ -13668,7 +13668,8 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
       if (!type_dependent_expression_p (range_expr)
 	  /* do_auto_deduction doesn't mess with template init-lists.  */
 	  && !BRACE_ENCLOSED_INITIALIZER_P (range_expr))
-	do_range_for_auto_deduction (range_decl, range_expr);
+	do_range_for_auto_deduction (range_decl, range_expr, decomp_first_name,
+				     decomp_cnt);
     }
   else
     {
@@ -13707,7 +13708,8 @@ build_range_temp (tree range_expr)
    a shortcut version of cp_convert_range_for.  */
 
 static void
-do_range_for_auto_deduction (tree decl, tree range_expr)
+do_range_for_auto_deduction (tree decl, tree range_expr,
+			     tree decomp_first_name, unsigned int decomp_cnt)
 {
   tree auto_node = type_uses_auto (TREE_TYPE (decl));
   if (auto_node)
@@ -13727,6 +13729,8 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
 						iter_decl, auto_node,
 						tf_warning_or_error,
 						adc_variable_type);
+	  if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+	    cp_finish_decomp (decl, decomp_first_name, decomp_cnt);
 	}
     }
 }
@@ -42994,15 +42998,21 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
 	  && !BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  tree d = decl;
+	  tree decomp_first_name = NULL_TREE;
+	  unsigned decomp_cnt = 0;
 	  if (decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (decl))
 	    {
 	      tree v = DECL_VALUE_EXPR (decl);
 	      if (TREE_CODE (v) == ARRAY_REF
 		  && VAR_P (TREE_OPERAND (v, 0))
 		  && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
-		d = TREE_OPERAND (v, 0);
+		{
+		  d = TREE_OPERAND (v, 0);
+		  decomp_cnt = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+		  decomp_first_name = decl;
+		}
 	    }
-	  do_range_for_auto_deduction (d, init);
+	  do_range_for_auto_deduction (d, init, decomp_first_name, decomp_cnt);
 	}
       cond = global_namespace;
       incr = NULL_TREE;
