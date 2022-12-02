@@ -43126,8 +43126,16 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
       tree t = build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
 				     NULL_TREE, tf_none);
       if (!error_operand_p (t))
-	TREE_TYPE (orig_decl) = do_auto_deduction (TREE_TYPE (orig_decl),
-						   t, auto_node);
+	{
+	  TREE_TYPE (orig_decl) = do_auto_deduction (TREE_TYPE (orig_decl),
+						     t, auto_node);
+	  if (decomp_first_name)
+	    {
+	      ++processing_template_decl;
+	      cp_finish_decomp (orig_decl, decomp_first_name, decomp_cnt);
+	      --processing_template_decl;
+	    }
+	}
     }
 
   tree v = make_tree_vec (decomp_cnt + 3);

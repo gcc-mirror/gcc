@@ -24,9 +24,9 @@ void
 f3 (S (&a)[10])
 {
   #pragma omp for collapse (2)
-  for (auto [i, j, k] : a)			// { dg-error "use of 'i' before deduction of 'auto'" "" { target *-*-* } .+1 }
-    for (int l = i; l < j; l += k)		// { dg-error "use of 'j' before deduction of 'auto'" }
-      ;						// { dg-error "use of 'k' before deduction of 'auto'" "" { target *-*-* } .-1 }
+  for (auto [i, j, k] : a)			// { dg-error "initializer expression refers to iteration variable 'i'" }
+    for (int l = i; l < j; l += k)		// { dg-error "condition expression refers to iteration variable 'j'" }
+      ;						// { dg-error "increment expression refers to iteration variable 'k'" "" { target *-*-* } .-2 }
 }
 
 template <int N>
@@ -54,9 +54,9 @@ void
 f6 (S (&a)[10])
 {
   #pragma omp for collapse (2)
-  for (auto [i, j, k] : a)			// { dg-error "use of 'i' before deduction of 'auto'" "" { target *-*-* } .-1 }
-    for (int l = i; l < j; l += k)		// { dg-error "use of 'j' before deduction of 'auto'" }
-      ;						// { dg-error "use of 'k' before deduction of 'auto'" "" { target *-*-* } .-3 }
+  for (auto [i, j, k] : a)			// { dg-error "initializer expression refers to iteration variable 'i'" "" { target *-*-* } .-1 }
+    for (int l = i; l < j; l += k)		// { dg-error "condition expression refers to iteration variable 'j'" }
+      ;						// { dg-error "increment expression refers to iteration variable 'k'" "" { target *-*-* } .-3 }
 }
 
 template <typename T>
@@ -84,9 +84,9 @@ void
 f9 (U (&a)[10])
 {
   #pragma omp for collapse (2)
-  for (auto [i, j, k] : a)			// { dg-error "use of 'i' before deduction of 'auto'" "" { target *-*-* } .-1 }
-    for (T l = i; l < j; l += k)		// { dg-error "use of 'j' before deduction of 'auto'" }
-      ;						// { dg-error "use of 'k' before deduction of 'auto'" "" { target *-*-* } .-3 }
+  for (auto [i, j, k] : a)			// { dg-error "initializer expression refers to iteration variable 'i'" "" { target *-*-* } .-1 }
+    for (T l = i; l < j; l += k)		// { dg-error "condition expression refers to iteration variable 'j'" }
+      ;						// { dg-error "increment expression refers to iteration variable 'k'" "" { target *-*-* } .-3 }
 }
 
 void
