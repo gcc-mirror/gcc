@@ -595,3 +595,174 @@ crc_symb_execution::execute_function (function *fun)
   /* Execute function's statements, keeping a state for each path.  */
   return traverse_function (fun);
 }
+
+/* Determine which bit of data must be 1.  */
+unsigned HOST_WIDE_INT
+determine_index (tree data, bool is_shift_left)
+{
+  if (is_shift_left)
+    // FIXME: may be the data's size is larger,
+    //  but MSB is checked for the middle bit.
+    return tree_to_uhwi (TYPE_SIZE (TREE_TYPE (data))) - 1;
+  else
+    return 0;
+}
+
+
+/* Assign appropriate values to data, crc
+   and other phi results to calculate the polynomial.  */
+void
+assign_vals_to_header_phis (state * polynomial_state, basic_block bb,
+			    gphi *crc, gphi *data,
+			    bool is_shift_left)
+{
+  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+
+      gphi *phi = gsi.phi ();
+      tree lhs = gimple_phi_result (phi);
+
+      /* Don't consider virtual operands.  */
+      if (virtual_operand_p (lhs))
+	continue;
+
+
+      if ((data && phi == data) || (!data && phi == crc))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Assigning the required value to ");
+	      print_generic_expr (dump_file, lhs, dump_flags);
+	      fprintf (dump_file, " variable.\n");
+	    }
+	  polynomial_state->do_assign_pow2 (lhs,
+					    determine_index (lhs,
+							      is_shift_left));
+	}
+      else if (phi == crc)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Assigning 0 value to ");
+	      print_generic_expr (dump_file, lhs, dump_flags);
+	      fprintf (dump_file, " variable.\n");
+	    }
+	  polynomial_state->do_assign (build_zero_cst (TREE_TYPE (lhs)), lhs);
+	}
+      else if (TREE_CODE (PHI_ARG_DEF (phi, phi->nargs-1)) == INTEGER_CST)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "First value of phi is a constant, "
+				  "assigning the number to ");
+	      print_generic_expr (dump_file, lhs, dump_flags);
+	      fprintf (dump_file, " variable.\n");
+	    }
+	  polynomial_state->do_assign (PHI_ARG_DEF (phi, phi->nargs-1), lhs);
+	}
+      else
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "First value of phi isn't constant, "
+				  "assigning to ");
+	      print_generic_expr (dump_file, lhs, dump_flags);
+	      fprintf (dump_file, " variable.\n");
+	    }
+	  polynomial_state->do_assign (build_zero_cst (TREE_TYPE (lhs)), lhs);
+	}
+    }
+}
+
+
+/* Execute the loop, which calculates crc with initial values,
+   to calculate the polynomial.  */
+bool
+crc_symb_execution::execute_crc_loop (loop *crc_loop, gphi *crc, gphi *data,
+				      bool is_shift_left)
+{
+  basic_block bb = crc_loop->header;
+  assign_vals_to_header_phis (states.last (), bb, crc, data, is_shift_left);
+
+  auto_vec<edge, 20> stack (crc_loop->num_nodes);
+
+  execute_bb_gimple_statements (bb, stack);
+
+  /* stack may not be empty.  Successor BB's are added into the stack
+     from the execute_bb_gimple_statements function.  */
+  while (!stack.is_empty ())
+    {
+      /* Look at the edge on the top of the stack.  */
+      edge e = stack.last ();
+      stack.pop ();
+
+      /* Get dest block of the edge.  */
+      basic_block bb = e->dest;
+
+      /* Execute only basic blocks of the crc_loop.  */
+      if (!flow_bb_inside_loop_p (crc_loop, bb))
+	continue;
+
+
+      /* Execute statements.  */
+      if (!execute_bb_statements (bb, e, stack))
+	return false;
+    }
+  return true;
+}
+
+
+/* Execute the loop, which is expected to calculate CRC,
+   to extract polynomial, assigning real numbers to crc and data.  */
+vec<value*> *
+crc_symb_execution::extract_polynomial (loop *crc_loop,
+					gphi *crc, gphi *data,
+					bool is_shift_left)
+{
+  if (dump_file)
+    fprintf (dump_file, "\n\nTrying to calculate the polynomial.\n\n");
+
+  state * polynomial_state = new state;
+  states.quick_push (polynomial_state);
+
+  execute_crc_loop (crc_loop, crc, data, is_shift_left);
+
+  if (states.length () != 1)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "The number of states is not one.\n");
+      return nullptr;
+    }
+
+  /* Get the tree which will contain the value of the polynomial
+     at the end of the loop.  */
+  tree calculated_crc = PHI_ARG_DEF (crc, 0);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Getting the value of ");
+      print_generic_expr (dump_file, calculated_crc, dump_flags);
+      fprintf (dump_file, " variable.\n");
+    }
+
+
+  /* Get the value of the tree.  */
+  vec<value*> * polynomial = polynomial_state->get_bits (calculated_crc);
+  if (polynomial == nullptr)
+   {
+    if (dump_file && (dump_flags & TDF_DETAILS))
+       fprintf (dump_file, "Polynomial's value is null");
+    return nullptr;
+   }
+
+   if (dump_file && (dump_flags & TDF_DETAILS))
+     {
+	/* Note: It may not be the real polynomial.
+	   If it's a bit reflected crc, then to get a real polynomial,
+	   it must be reflected and 1 bit added.  */
+	fprintf (dump_file, "Polynomial's value is ");
+	state::print_bits (polynomial);
+     }
+  return polynomial;
+}

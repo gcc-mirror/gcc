@@ -48,15 +48,15 @@ class crc_optimization {
   gimple *shift_after_xor;
 
   /* Phi statement, result may be the crc variable.  */
-  gimple *first_phi_for_crc;
+  gphi *first_phi_for_crc;
 
   /* Sometimes polynomial may not be constant
      and xor-ed variable may depend on two variables.
      The result of phi statement may contain the polynomial.  */
-  gimple *second_phi_for_crc;
+  gphi *second_phi_for_crc;
 
   /* Phi statement, result maybe data (if exists).  */
-  gimple * data;
+  gphi * data;
 
   /* The loop, which probably calculates CRC.  */
   loop *crc_loop;
@@ -674,7 +674,7 @@ crc_optimization::continue_to_check_dep_for_xor (gimple *def_stmt)
 	     a phi statement.  */
 	  if (first_phi_for_crc)
 	    {
-	      second_phi_for_crc = def_stmt;
+	      second_phi_for_crc = as_a <gphi *> (def_stmt);
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Set second phi.\n");
 	    }
@@ -682,7 +682,7 @@ crc_optimization::continue_to_check_dep_for_xor (gimple *def_stmt)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Set first phi.\n");
-	      first_phi_for_crc = def_stmt;
+	      first_phi_for_crc = as_a <gphi *> (def_stmt);
 	    }
 	  return true;
 	}
@@ -743,7 +743,7 @@ crc_optimization::continue_to_check_dep_for_if (gimple *def_stmt)
 	      return false;
 	    }
 
-	  data = def_stmt;
+	  data = as_a <gphi *> (def_stmt);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file,
@@ -935,7 +935,24 @@ crc_optimization::execute (function *fun)
       {
 	if (dump_file)
 	  fprintf (dump_file, "\nAttention! Not the CRC we want!\n");
+	return 0;
       }
+
+      crc_symb_execution execute_loop;
+      vec<value*> * polynomial
+      = execute_loop.extract_polynomial (crc_loop, first_phi_for_crc,
+					 data, is_left_shift);
+
+    if (!polynomial)
+      {
+	if (dump_file)
+	  fprintf (dump_file, "\nCouldn't determine the polynomial!\n");
+	return 0;
+      }
+
+    /* TODO: Create LFSR state.  */
+
+    /* TODO: Match LFSR.  */
   }
   return 0;
 }

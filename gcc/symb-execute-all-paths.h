@@ -90,8 +90,17 @@ class crc_symb_execution {
    Symbolically execute statements of each path.  */
   bool traverse_function (function *);
 
+  /* Execute the loop, which calculates crc with initial values,
+   to calculate the polynomial.  */
+  bool execute_crc_loop (loop *, gphi *, gphi *, bool);
+
  public:
+  /* Symbolically execute the function and keep final states.  */
   bool execute_function (function *);
+
+  /* Returns calculated polynomial by executing the loop
+     with concrete values.  */
+  vec<value*> * extract_polynomial (loop *, gphi *, gphi *, bool);
 
   crc_symb_execution ()
   {
