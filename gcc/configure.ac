@@ -1023,7 +1023,7 @@ fi,
 objc_boehm_gc='')
 
 AC_ARG_WITH(dwarf2,
-[AS_HELP_STRING([--with-dwarf2], [force the default debug format to be DWARF 2])],
+[AS_HELP_STRING([--with-dwarf2], [force the default debug format to be DWARF 2 (or later)])],
 dwarf2="$with_dwarf2",
 dwarf2=no)
 

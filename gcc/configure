@@ -1823,7 +1823,8 @@ Optional Packages:
   --with-stack-clash-protection-guard-size=size
                           Set the default stack clash protection guard size
                           for specific targets as a power of two in bytes.
-  --with-dwarf2           force the default debug format to be DWARF 2
+  --with-dwarf2           force the default debug format to be DWARF 2 (or
+                          later)
   --with-specs=SPECS      add SPECS to driver command-line processing
   --with-pkgversion=PKG   Use PKG in the version string in place of "GCC"
   --with-bugurl=URL       Direct users to URL to report a bug
