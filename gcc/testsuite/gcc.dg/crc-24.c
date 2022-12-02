@@ -10,6 +10,8 @@ uint16_t gen_crc16(const uint8_t *data, uint16_t size) {
     uint16_t out = 0;
     int bits_read = 0, bit_flag;
 
+    printf("buffer in function %s\n", data);
+
     if (data == NULL)
         return 0;
 
@@ -28,6 +30,7 @@ uint16_t gen_crc16(const uint8_t *data, uint16_t size) {
 
         if (bit_flag)
             out ^= CRC16;
+
     }
 
     int i;

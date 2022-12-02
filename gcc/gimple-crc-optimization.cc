@@ -931,7 +931,11 @@ crc_optimization::execute (function *fun)
   if (function_may_calculate_crc (fun))
   {
     crc_symb_execution symb_exec;
-    symb_exec.execute_function (fun);
+    if (!symb_exec.execute_function (fun))
+      {
+	if (dump_file)
+	  fprintf (dump_file, "\nAttention! Not the CRC we want!\n");
+      }
   }
   return 0;
 }
