@@ -561,7 +561,7 @@ PROCEDURE BuildScaffold (tok: CARDINAL; moduleSym: CARDINAL) ;
                        q     StartDefFileOp  _  _  ModuleSym
 *)
 
-PROCEDURE StartBuildDefFile ;
+PROCEDURE StartBuildDefFile (tok: CARDINAL) ;
 
 
 (*
@@ -586,7 +586,7 @@ PROCEDURE StartBuildDefFile ;
                        q     StartModFileOp  _  _  ModuleSym
 *)
 
-PROCEDURE StartBuildModFile ;
+PROCEDURE StartBuildModFile (tok: CARDINAL) ;
 
 
 (*
@@ -608,35 +608,35 @@ PROCEDURE StartBuildModFile ;
                   q     EndFileOp  _  _  ModuleSym
 *)
 
-PROCEDURE EndBuildFile ;
+PROCEDURE EndBuildFile (tok: CARDINAL) ;
 
 
 (*
    StartBuildInit - Builds the start initialisation code of a module.
 *)
 
-PROCEDURE StartBuildInit ;
+PROCEDURE StartBuildInit (tok: CARDINAL) ;
 
 
 (*
    EndBuildInit - Builds the end initialisation code of a module.
 *)
 
-PROCEDURE EndBuildInit ;
+PROCEDURE EndBuildInit (tok: CARDINAL) ;
 
 
 (*
    StartBuildFinally - Builds the start finalisation code of a module.
 *)
 
-PROCEDURE StartBuildFinally ;
+PROCEDURE StartBuildFinally (tok: CARDINAL) ;
 
 
 (*
    EndBuildFinally - Builds the end finalisation code of a module.
 *)
 
-PROCEDURE EndBuildFinally ;
+PROCEDURE EndBuildFinally (tok: CARDINAL) ;
 
 
 (*
@@ -644,7 +644,7 @@ PROCEDURE EndBuildFinally ;
                         initial block.
 *)
 
-PROCEDURE BuildExceptInitial ;
+PROCEDURE BuildExceptInitial (tok: CARDINAL) ;
 
 
 (*
@@ -652,7 +652,7 @@ PROCEDURE BuildExceptInitial ;
                         finally block.
 *)
 
-PROCEDURE BuildExceptFinally ;
+PROCEDURE BuildExceptFinally (tok: CARDINAL) ;
 
 
 (*
@@ -660,7 +660,7 @@ PROCEDURE BuildExceptFinally ;
                           block.
 *)
 
-PROCEDURE BuildExceptProcedure ;
+PROCEDURE BuildExceptProcedure (tok: CARDINAL) ;
 
 
 (*
@@ -684,14 +684,14 @@ PROCEDURE BuildReThrow (tokenno: CARDINAL) ;
                          inner module to the next quadruple.
 *)
 
-PROCEDURE StartBuildInnerInit ;
+PROCEDURE StartBuildInnerInit (tok: CARDINAL) ;
 
 
 (*
    EndBuildInnerInit - Sets the end initialization code of a module.
 *)
 
-PROCEDURE EndBuildInnerInit ;
+PROCEDURE EndBuildInnerInit (tok: CARDINAL) ;
 
 
 (*
@@ -1612,7 +1612,7 @@ PROCEDURE BuildBooleanVariable ;
    BuildModuleStart - starts current module scope.
 *)
 
-PROCEDURE BuildModuleStart ;
+PROCEDURE BuildModuleStart (tok: CARDINAL) ;
 
 
 (*

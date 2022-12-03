@@ -1137,7 +1137,7 @@ VAR
 BEGIN
    p := GetIndice (RangeIndex, r) ;
    WITH p^ DO
-      TryDeclareConstant (tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
+      TryDeclareConstant (tokenNo, expr) ;
       IF desLowestType # NulSym
       THEN
          IF GccKnowsAbout (expr) AND IsConst (expr) AND
@@ -1169,7 +1169,7 @@ VAR
 BEGIN
    p := GetIndice(RangeIndex, r) ;
    WITH p^ DO
-      TryDeclareConstant(tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
+      TryDeclareConstant (tokenNo, expr) ;
       IF desLowestType#NulSym
       THEN
          IF GccKnowsAbout(expr) AND IsConst(expr) AND
@@ -1204,7 +1204,7 @@ VAR
 BEGIN
    p := GetIndice(RangeIndex, r) ;
    WITH p^ DO
-      TryDeclareConstant(tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
+      TryDeclareConstant (tokenNo, expr) ;
       IF desLowestType#NulSym
       THEN
          IF GccKnowsAbout(expr) AND IsConst(expr) AND

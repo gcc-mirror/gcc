@@ -221,7 +221,7 @@ FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
                         PushWord, PopWord, PeepWord, RemoveTop,
                         IsEmptyWord, NoOfItemsInStackWord ;
 
-FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, InBounds ;
+FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, InBounds, HighIndice, IncludeIndiceIntoIndex ;
 
 FROM M2Range IMPORT InitAssignmentRangeCheck,
                     InitReturnRangeCheck,
@@ -306,12 +306,13 @@ TYPE
                              RecordTokPos: CARDINAL ;  (* Token of the record.  *)
                           END ;
 
-   ForLoopInfo = RECORD
-                    IncrementQuad,
-                    StartOfForLoop,                              (* we keep a list of all for      *)
-                    EndOfForLoop,                                (* loops so we can check index    *)
-                    ForLoopIndex  : List ;                       (* variables are not abused       *)
-                 END ;
+   ForLoopInfo = POINTER TO RECORD
+                               IncrementQuad,
+                               StartOfForLoop,                 (* we keep a list of all for      *)
+                               EndOfForLoop,                   (* loops so we can check index    *)
+                               ForLoopIndex,
+                               IndexTok      : CARDINAL ;      (* variables are not abused       *)
+                            END ;
 
    LineNote  = POINTER TO RECORD
                              Line: CARDINAL ;
@@ -351,7 +352,7 @@ VAR
    InConstExpression,
    IsAutoOn,                          (* should parser automatically push idents *)
    MustNotCheckBounds   : BOOLEAN ;
-   ForInfo              : ForLoopInfo ;  (* start and end of all FOR loops       *)
+   ForInfo              : Index ;     (* start and end of all FOR loops       *)
    GrowInitialization   : CARDINAL ;  (* upper limit of where the initialized    *)
                                       (* quadruples.                             *)
    BuildingHigh,
@@ -1932,13 +1933,13 @@ END CheckNeedPriorityEnd ;
                        q     StartDefFileOp  _  _  ModuleSym
 *)
 
-PROCEDURE StartBuildDefFile ;
+PROCEDURE StartBuildDefFile (tok: CARDINAL) ;
 VAR
    ModuleName: Name ;
 BEGIN
    PopT (ModuleName) ;
    PushT (ModuleName) ;
-   GenQuad (StartDefFileOp, GetPreviousTokenLineNo (), NulSym, GetModule (ModuleName))
+   GenQuadO (tok, StartDefFileOp, tok, NulSym, GetModule (ModuleName), FALSE)
 END StartBuildDefFile ;
 
 
@@ -1964,10 +1965,11 @@ END StartBuildDefFile ;
                        q     StartModFileOp  lineno  filename  ModuleSym
 *)
 
-PROCEDURE StartBuildModFile ;
+PROCEDURE StartBuildModFile (tok: CARDINAL) ;
 BEGIN
-   GenQuad(StartModFileOp, GetPreviousTokenLineNo(),
-           WORD(makekey(string(GetFileName()))), GetFileModule())
+   GenQuadO (tok, StartModFileOp, tok,
+             WORD (makekey (string (GetFileName ()))),
+             GetFileModule (), FALSE)
 END StartBuildModFile ;
 
 
@@ -1990,13 +1992,12 @@ END StartBuildModFile ;
                   q     EndFileOp  _  _  ModuleSym
 *)
 
-PROCEDURE EndBuildFile ;
+PROCEDURE EndBuildFile (tok: CARDINAL) ;
 VAR
    ModuleName: Name ;
 BEGIN
-   PopT(ModuleName) ;
-   PushT(ModuleName) ;
-   GenQuad(EndFileOp, NulSym, NulSym, GetModule(ModuleName))
+   ModuleName := OperandT (1) ;
+   GenQuadO (tok, EndFileOp, NulSym, NulSym, GetModule (ModuleName), FALSE)
 END EndBuildFile ;
 
 
@@ -2005,9 +2006,8 @@ END EndBuildFile ;
                     current module to the next quadruple.
 *)
 
-PROCEDURE StartBuildInit ;
+PROCEDURE StartBuildInit (tok: CARDINAL) ;
 VAR
-   tok      : CARDINAL ;
    name     : Name ;
    ModuleSym: CARDINAL ;
 BEGIN
@@ -2016,7 +2016,6 @@ BEGIN
    Assert(IsModule(ModuleSym) OR IsDefImp(ModuleSym)) ;
    Assert(GetSymName(ModuleSym)=name) ;
    PutModuleStartQuad(ModuleSym, NextQuad) ;
-   tok := GetPreviousTokenLineNo () ;
    GenQuad(InitStartOp, tok, GetFileModule(), ModuleSym) ;
    PushWord(ReturnStack, 0) ;
    PushT(name) ;
@@ -2035,11 +2034,8 @@ END StartBuildInit ;
    EndBuildInit - Sets the end initialization code of a module.
 *)
 
-PROCEDURE EndBuildInit ;
-VAR
-   tok: CARDINAL ;
+PROCEDURE EndBuildInit (tok: CARDINAL) ;
 BEGIN
-   tok := GetPreviousTokenLineNo () ;
    IF HasExceptionBlock(GetCurrentModule())
    THEN
       BuildRTExceptLeave (tok, TRUE) ;
@@ -2058,9 +2054,8 @@ END EndBuildInit ;
                        current module to the next quadruple.
 *)
 
-PROCEDURE StartBuildFinally ;
+PROCEDURE StartBuildFinally (tok: CARDINAL) ;
 VAR
-   tok      : CARDINAL ;
    name     : Name ;
    ModuleSym: CARDINAL ;
 BEGIN
@@ -2069,7 +2064,6 @@ BEGIN
    Assert(IsModule(ModuleSym) OR IsDefImp(ModuleSym)) ;
    Assert(GetSymName(ModuleSym)=name) ;
    PutModuleFinallyStartQuad(ModuleSym, NextQuad) ;
-   tok := GetPreviousTokenLineNo() ;
    GenQuadO (tok, FinallyStartOp, tok, GetFileModule(), ModuleSym, FALSE) ;
    PushWord (ReturnStack, 0) ;
    PushT (name) ;
@@ -2088,11 +2082,8 @@ END StartBuildFinally ;
    EndBuildFinally - Sets the end finalization code of a module.
 *)
 
-PROCEDURE EndBuildFinally ;
-VAR
-   tok: CARDINAL ;
+PROCEDURE EndBuildFinally (tok: CARDINAL) ;
 BEGIN
-   tok := GetPreviousTokenLineNo() ;
    IF HasExceptionFinally(GetCurrentModule())
    THEN
       BuildRTExceptLeave (tok, TRUE) ;
@@ -2723,11 +2714,8 @@ END BuildScaffold ;
    BuildModuleStart - starts current module scope.
 *)
 
-PROCEDURE BuildModuleStart ;
-VAR
-   tok: CARDINAL ;
+PROCEDURE BuildModuleStart (tok: CARDINAL) ;
 BEGIN
-   tok := GetPreviousTokenLineNo () ;
    GenQuadO (tok,
              ModuleScopeOp, tok,
              WORD (makekey (string (GetFileName ()))), GetCurrentModule (), FALSE)
@@ -2739,12 +2727,9 @@ END BuildModuleStart ;
                          inner module to the next quadruple.
 *)
 
-PROCEDURE StartBuildInnerInit ;
-VAR
-   tok: CARDINAL ;
+PROCEDURE StartBuildInnerInit (tok: CARDINAL) ;
 BEGIN
-   tok := GetPreviousTokenLineNo () ;
-   PutModuleStartQuad(GetCurrentModule(), NextQuad) ;
+   PutModuleStartQuad (GetCurrentModule(), NextQuad) ;
    GenQuadO (tok, InitStartOp, tok, NulSym, GetCurrentModule(), FALSE) ;
    PushWord (ReturnStack, 0) ;
    CheckNeedPriorityBegin (tok, GetCurrentModule(), GetCurrentModule()) ;
@@ -2761,11 +2746,8 @@ END StartBuildInnerInit ;
    EndBuildInnerInit - Sets the end initialization code of a module.
 *)
 
-PROCEDURE EndBuildInnerInit ;
-VAR
-   tok: CARDINAL ;
+PROCEDURE EndBuildInnerInit (tok: CARDINAL) ;
 BEGIN
-   tok := GetPreviousTokenLineNo () ;
    IF HasExceptionBlock (GetCurrentModule())
    THEN
       BuildRTExceptLeave (tok, TRUE) ;
@@ -2809,20 +2791,17 @@ END BuildModulePriority ;
 
 PROCEDURE ForLoopAnalysis ;
 VAR
-   i, n: CARDINAL ;
+   i, n   : CARDINAL ;
+   forDesc: ForLoopInfo ;
 BEGIN
    IF Pedantic
    THEN
-      WITH ForInfo DO
-         n := NoOfItemsInList(IncrementQuad) ;
-         i := 1 ;
-         WHILE i<=n DO
-            CheckForIndex(GetItemFromList(StartOfForLoop, i),
-                          GetItemFromList(EndOfForLoop, i),
-                          GetItemFromList(IncrementQuad, i),
-                          GetItemFromList(ForLoopIndex, i)) ;
-            INC(i)
-         END
+      n := HighIndice (ForInfo) ;
+      i := 1 ;
+      WHILE i <= n DO
+         forDesc := GetIndice (ForInfo, i) ;
+         CheckForIndex (forDesc) ;
+         INC (i)
       END
    END
 END ForLoopAnalysis ;
@@ -2834,16 +2813,21 @@ END ForLoopAnalysis ;
                 usage.
 *)
 
-PROCEDURE AddForInfo (Start, End, IncQuad: CARDINAL; Sym: CARDINAL) ;
+PROCEDURE AddForInfo (Start, End, IncQuad: CARDINAL; Sym: CARDINAL; idtok: CARDINAL) ;
+VAR
+   forDesc: ForLoopInfo ;
 BEGIN
    IF Pedantic
    THEN
-      WITH ForInfo DO
-         PutItemIntoList (IncrementQuad, IncQuad) ;
-         PutItemIntoList (StartOfForLoop, Start) ;
-         PutItemIntoList (EndOfForLoop, End) ;
-         PutItemIntoList (ForLoopIndex, Sym)
-      END
+      NEW (forDesc) ;
+      WITH forDesc^ DO
+         IncrementQuad := IncQuad ;
+         StartOfForLoop := Start ;
+         EndOfForLoop := End ;
+         ForLoopIndex := Sym ;
+         IndexTok := idtok
+      END ;
+      IncludeIndiceIntoIndex (ForInfo, forDesc)
    END
 END AddForInfo ;
 
@@ -2857,24 +2841,31 @@ END AddForInfo ;
                    is issued.
 *)
 
-PROCEDURE CheckForIndex (Start, End, Omit: CARDINAL; IndexSym: CARDINAL) ;
+PROCEDURE CheckForIndex (forDesc: ForLoopInfo) ;
 VAR
    ReadStart, ReadEnd,
    WriteStart, WriteEnd: CARDINAL ;
 BEGIN
-   GetWriteLimitQuads(IndexSym, RightValue, Start, End, WriteStart, WriteEnd) ;
-   IF (WriteStart < Omit) AND (WriteStart > Start)
+   GetWriteLimitQuads (forDesc^.ForLoopIndex, RightValue, forDesc^.StartOfForLoop, forDesc^.EndOfForLoop, WriteStart, WriteEnd) ;
+   IF (WriteStart < forDesc^.IncrementQuad) AND (WriteStart > forDesc^.StartOfForLoop)
    THEN
+      MetaErrorT1 (forDesc^.IndexTok,
+                   '{%kFOR} loop index variable {%1Wad} is being manipulated inside the loop',
+                   forDesc^.ForLoopIndex) ;
       MetaErrorT1 (QuadToTokenNo (WriteStart),
-                   '{%kFOR} loop index variable {%1Wad} is being manipulated inside the loop, this is considered bad practice and may cause unknown program behaviour', IndexSym)
+                   '{%kFOR} loop index variable {%1Wad} is being manipulated, this is considered bad practice and may cause unknown program behaviour',
+                   forDesc^.ForLoopIndex)
    END ;
-   GetWriteLimitQuads (IndexSym, RightValue, End, 0, WriteStart, WriteEnd) ;
-   GetReadLimitQuads (IndexSym, RightValue, End, 0, ReadStart, ReadEnd) ;
+   GetWriteLimitQuads (forDesc^.ForLoopIndex, RightValue, forDesc^.EndOfForLoop, 0, WriteStart, WriteEnd) ;
+   GetReadLimitQuads (forDesc^.ForLoopIndex, RightValue, forDesc^.EndOfForLoop, 0, ReadStart, ReadEnd) ;
    IF (ReadStart#0) AND ((ReadStart < WriteStart) OR (WriteStart = 0))
    THEN
+      MetaErrorT1 (forDesc^.IndexTok,
+                   '{%kFOR} loop index variable {%1Wad} is being read outside the FOR loop (without being reset)',
+                   forDesc^.ForLoopIndex) ;
       MetaErrorT1 (QuadToTokenNo (ReadStart),
-                   '{%kFOR} loop index variable {%1Wad} is being read outside the FOR loop (without being reset first), this is considered extremely bad practice and may cause unknown program behaviour',
-                   IndexSym)
+                   '{%kFOR} loop index variable {%1Wad} is being read outside the FOR loop (without being reset), this is considered extremely bad practice and may cause unknown program behaviour',
+                   forDesc^.ForLoopIndex)
    END
 END CheckForIndex ;
 
@@ -4538,7 +4529,7 @@ BEGIN
    END ;
    GenQuadO (endpostok, GotoOp, NulSym, NulSym, ForQuad, FALSE) ;
    BackPatch (PopFor (), NextQuad) ;
-   AddForInfo (ForQuad, NextQuad-1, IncQuad, IdSym)
+   AddForInfo (ForQuad, NextQuad-1, IncQuad, IdSym, idtok)
 END BuildEndFor ;
 
 
@@ -14139,7 +14130,7 @@ BEGIN
       a varient field anyway as the next pass would not know whether to
       ignore a varient field.
    *)
-   PutItemIntoList(VarientFields, r) ;
+   PutItemIntoList (VarientFields, r) ;
    IF DebugVarients
    THEN
       n := NoOfItemsInList(VarientFields) ;
@@ -15058,7 +15049,7 @@ BEGIN
    LogicalAndTok := MakeKey('_LAND') ;
    LogicalXorTok := MakeKey('_LXOR') ;
    LogicalDifferenceTok := MakeKey('_LDIFF') ;
-   QuadArray := InitIndex(1) ;
+   QuadArray := InitIndex (1) ;
    FreeList := 1 ;
    NewQuad(NextQuad) ;
    Assert(NextQuad=1) ;
@@ -15083,12 +15074,7 @@ BEGIN
    MustNotCheckBounds := FALSE ;
    InitQuad := 0 ;
    GrowInitialization := 0 ;
-   WITH ForInfo DO
-      InitList(IncrementQuad) ;
-      InitList(StartOfForLoop) ;
-      InitList(EndOfForLoop) ;
-      InitList(ForLoopIndex)
-   END ;
+   ForInfo := InitIndex (1) ;
    QuadrupleGeneration := TRUE ;
    BuildingHigh := FALSE ;
    BuildingSize := FALSE ;

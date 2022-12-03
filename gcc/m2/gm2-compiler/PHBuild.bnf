@@ -540,40 +540,47 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
+ProgramModule :=                                                           % VAR begint, endt: CARDINAL ; %
+                                                                           % begint := GetTokenNo () %
+                 "MODULE"                                                  % M2Error.DefaultProgramModule %
                                                                            % PushAutoOn %
                   Ident                                                    % P3StartBuildProgModule %
-                                                                           % BuildModuleStart %
+                                                                           % BuildModuleStart (begint) %
                                                                            % PushAutoOff %
                   [ Priority
                   ]
                   ";"
                   { Import
-                  }                                                        % StartBuildInit %
+                  }                                                        % begint := GetTokenNo () %
+                                                                           % StartBuildInit (begint) %
                   Block                                                    % PushAutoOn %
-                  Ident                                                    % EndBuildFile %
+                                                                           % endt := GetTokenNo () -1 %
+                  Ident                                                    % EndBuildFile (endt) %
                                                                            % P3EndBuildProgModule %
                   "."                                                      % PopAuto ;
-                                                                             EndBuildInit ;
+                                                                             EndBuildInit (endt) ;
                                                                              PopAuto %
                   =:
 
-ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+ImplementationModule :=                                                    % VAR begint, endt: CARDINAL ; %
+                                                                           % begint := GetTokenNo () %
+                        "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
                                          "MODULE"                          % PushAutoOn %
-                         Ident                                             % StartBuildModFile %
+                         Ident                                             % StartBuildModFile (begint) %
                                                                            % P3StartBuildImpModule %
-                                                                           % BuildModuleStart %
+                                                                           % BuildModuleStart (begint) %
                                                                            % PushAutoOff %
                          [ Priority
                          ] ";"
                          { Import
-                           }                                               % StartBuildInit %
+                           }                                               % begint := GetTokenNo () %
+                                                                           % StartBuildInit (begint) %
                          Block                                             % PushAutoOn %
-
-                         Ident                                             % EndBuildFile %
+                                                                           % endt := GetTokenNo () -1 %
+                         Ident                                             % EndBuildFile (endt) %
                                                                            % P3EndBuildImpModule %
                          "."                                               % PopAuto ;
-                                                                             EndBuildInit ;
+                                                                             EndBuildInit (endt) ;
                                                                              PopAuto ;
                                                                              PopAuto %
                       =:
@@ -1181,10 +1188,12 @@ DefOptArg := "[" Ident ":" FormalType "=" SilentConstExpression "]" =:
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 
-ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
+ModuleDeclaration :=                                                       % VAR begint, endt: CARDINAL ; %
+                                                                           % begint := GetTokenNo () %
+                     "MODULE"                                              % M2Error.DefaultInnerModule %
                                                                            % PushAutoOn %
                      Ident                                                 % StartBuildInnerModule ;
-                                                                             BuildModuleStart ;
+                                                                             BuildModuleStart (begint) ;
 
                                                                              PushAutoOff %
                      [ Priority ] ";"
@@ -1192,6 +1201,7 @@ ModuleDeclaration := "MODULE"                                              % M2E
                         } [ Export
                             ]
                        Block                                               % PushAutoOn %
+                                                                           % endt := GetTokenNo () -1 %
                        Ident                                               % EndBuildInnerModule %
                                                                            % PopAuto ; PopAuto ; PopAuto %
                      =:
@@ -1208,19 +1218,21 @@ Import :=  "FROM" Ident "IMPORT" IdentList ";" |
            "IMPORT"
             IdentList ";" =:
 
-DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+DefinitionModule :=                                                        % VAR begint, endt: CARDINAL ; %
+                                                                           % begint := GetTokenNo () %
+                    "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
                                  "MODULE"                                  % PushAutoOn %
                     [ "FOR" string ]
-                    Ident                                                  % StartBuildDefFile ;
+                    Ident                                                  % StartBuildDefFile (begint) ;
                                                                              P3StartBuildDefModule ;
                                                                              PushAutoOff %
                     ";"
                     { Import
                              } [ Export
                                         ]
-                    { Definition }
+                    { Definition }                                         % endt := GetTokenNo () %
                                    "END"                                   % PushAutoOn %
-                                         Ident                             % EndBuildFile ;
+                                         Ident                             % EndBuildFile (endt) ;
                                                                              P3EndBuildDefModule %
                                                "."                         % PopAuto ; PopAuto ; PopAuto %
                   =:

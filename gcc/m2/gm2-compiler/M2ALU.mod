@@ -48,7 +48,7 @@ FROM M2Base IMPORT MixTypes, GetBaseTypeMinMax, Char, IsRealType, IsComplexType,
 FROM DynamicStrings IMPORT String, InitString, Mark, ConCat, Slice, InitStringCharStar, KillString, InitStringChar, string ;
 FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation ;
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaErrorStringT0,
-                        MetaErrorT0, MetaErrorT2 ;
+                        MetaErrorT0, MetaErrorT1, MetaErrorT2,  MetaErrorT3 ;
 
 FROM SymbolTable IMPORT NulSym, IsEnumeration, IsSubrange, IsValueSolved, PushValue,
                         ForeachFieldEnumerationDo, MakeTemporary, PutVar, PopValue, GetType,
@@ -4849,14 +4849,17 @@ END InitialiseArrayWith ;
 
 
 (*
-   CheckGetCharFromString - return char from the position, arrayIndex, in the list of
-                            constDecl elements.
+   CheckGetCharFromString - return TRUE if a char from the position arrayIndex in the list of
+                            constDecl elements can be extracted.  The character is returned
+                            in value.
 *)
 
 PROCEDURE CheckGetCharFromString (location: location_t;
                                   tokenno: CARDINAL ;
                                   constDecl: PtrToValue;
-                                  arrayIndex: CARDINAL) : Tree ;
+                                  consType: CARDINAL ;
+                                  arrayIndex: CARDINAL;
+                                  VAR value: Tree) : BOOLEAN ;
 VAR
    elementIndex: CARDINAL ;
    element     : CARDINAL ;
@@ -4876,7 +4879,8 @@ BEGIN
          THEN
             key := GetString (element) ;
             DEC (arrayIndex, offset) ;
-            RETURN BuildCharConstantChar (location, CharKey (key, arrayIndex))
+            value := BuildCharConstantChar (location, CharKey (key, arrayIndex)) ;
+            RETURN TRUE
          END
       ELSIF IsConst (element) AND (SkipType (GetType (element)) = Char) AND IsValueSolved (element)
       THEN
@@ -4884,14 +4888,27 @@ BEGIN
          IF totalLength > arrayIndex
          THEN
             PushValue (element) ;
-            RETURN ConvertConstantAndCheck (location, GetM2CharType (), PopIntegerTree ())
+            value := ConvertConstantAndCheck (location, GetM2CharType (), PopIntegerTree ()) ;
+            RETURN TRUE
          END
       ELSE
-         InternalError ('const char should be resolved')
+         INC (totalLength) ;
+         IF totalLength > arrayIndex
+         THEN
+            MetaErrorT3 (tokenno,
+                         'expecting {%kCHAR} datatype and not {%1Ea} a {%1tad} in the {%2N} component of the {%3a} {%3d}',
+                         element, arrayIndex, consType) ;
+            value := GetCardinalZero (location) ;
+            RETURN FALSE
+         END
       END ;
       INC (elementIndex)
    UNTIL element = NulSym ;
-   RETURN GetCardinalZero (location)
+   value := GetCardinalZero (location) ;
+   MetaErrorT2 (tokenno,
+                'unable to obtain a {%kCHAR} at the {%1EN} position in {%2ad}',
+                arrayIndex, consType) ;
+   RETURN FALSE
 END CheckGetCharFromString ;
 
 
@@ -4900,7 +4917,8 @@ END CheckGetCharFromString ;
 *)
 
 PROCEDURE InitialiseArrayOfCharWith (tokenno: CARDINAL; cons: Tree;
-                                     constDecl: PtrToValue; el, high, low, arrayType: CARDINAL) : Tree ;
+                                     constDecl: PtrToValue;
+                                     el, high, low, consType, arrayType: CARDINAL) : Tree ;
 VAR
    location  : location_t ;
    arrayIndex: CARDINAL ;      (* arrayIndex is the char position index of the final string.  *)
@@ -4915,7 +4933,14 @@ BEGIN
       PushInt (arrayIndex) ;
       Addn ;
       indice := PopIntegerTree () ;
-      value := CheckGetCharFromString (location, tokenno, constDecl, arrayIndex) ;
+      IF NOT CheckGetCharFromString (location, tokenno, constDecl, consType, arrayIndex, value)
+      THEN
+         (*
+         MetaErrorT2 (tokenno,
+                      'unable to obtain a {%kCHAR} at the {%1EN} position in {%2ad}',
+                      arrayIndex, consType) ;
+         *)
+      END ;
       value := ConvertConstantAndCheck (location, Mod2Gcc (arrayType), value) ;
       BuildArrayConstructorElement (cons, value, indice) ;
       PushValue (low) ;
@@ -4972,7 +4997,7 @@ BEGIN
             RETURN InitialiseArrayOfCharWithString (tokenno, cons, el1, baseType, arrayType)
          ELSIF SkipType(arrayType)=Char
          THEN
-            RETURN InitialiseArrayOfCharWith (tokenno, cons, v, el1, high, low, arrayType)
+            RETURN InitialiseArrayOfCharWith (tokenno, cons, v, el1, high, low, baseType, arrayType)
          ELSE
             RETURN InitialiseArrayWith (tokenno, cons, v, el1, high, low, arrayType)
          END

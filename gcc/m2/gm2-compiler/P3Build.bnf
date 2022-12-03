@@ -574,40 +574,41 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
+ProgramModule :=                                                           % VAR modulet, endt: CARDINAL ; %
+                                                                           % modulet := GetTokenNo () %
+                 "MODULE"                                                  % M2Error.DefaultProgramModule %
                                                                            % PushAutoOn %
-                                                                           % VAR tokno: CARDINAL ; %
-                                                                           % tokno := GetTokenNo () %
                   Ident                                                    % P3StartBuildProgModule %
-                                                                           % StartBuildModFile %
-                                                                           % BuildModuleStart %
+                                                                           % StartBuildModFile (modulet) %
+                                                                           % BuildModuleStart (modulet) %
                                                                            % PushAutoOff %
                   [ Priority
                   ]
-                  ";"                                                      % BuildScaffold (tokno,
+                  ";"                                                      % BuildScaffold (modulet,
                                                                                             GetCurrentModule ()) %
                   { Import }
                   Block                                                    % PushAutoOn %
-                  Ident                                                    % EndBuildFile %
+                                                                           % endt := GetTokenNo () -1 %
+                  Ident                                                    % EndBuildFile (endt) %
                                                                            % P3EndBuildProgModule %
                   "."                                                      % PopAuto ; PopAuto %
                   =:
 
-ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+ImplementationModule :=                                                    % VAR modulet, endt: CARDINAL ; %
+                                                                           % modulet := GetTokenNo () %
+                        "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
                                          "MODULE"                          % PushAutoOn %
-                                                                           % VAR tokno: CARDINAL ; %
-                                                                           % tokno := GetTokenNo () %
-                         Ident                                             % StartBuildModFile %
+                         Ident                                             % StartBuildModFile (modulet) %
                                                                            % P3StartBuildImpModule %
-                                                                           % BuildModuleStart %
+                                                                           % BuildModuleStart (modulet) %
                                                                            % PushAutoOff %
                          [ Priority
-                         ] ";"                                             % BuildScaffold (tokno,
+                         ] ";"                                             % BuildScaffold (modulet,
                                                                                             GetCurrentModule ()) %
                          { Import }
                          Block                                             % PushAutoOn %
-
-                         Ident                                             % EndBuildFile %
+                                                                           % endt := GetTokenNo () -1 %
+                         Ident                                             % EndBuildFile (endt) %
                                                                            % P3EndBuildImpModule %
                          "."                                               % PopAuto ; PopAuto ; PopAuto %
                       =:
@@ -1323,10 +1324,10 @@ ProcedureBlock :=                                                          % Bui
                                                                  "END"
                 =:
 
-Block := { Declaration }                                                   % StartBuildInit %
-                         InitialBlock                                      % EndBuildInit ;
-                                                                             StartBuildFinally %
-                                      FinalBlock                           % EndBuildFinally %
+Block := { Declaration }                                                   % StartBuildInit (GetTokenNo ()) %
+                         InitialBlock                                      % EndBuildInit (GetTokenNo ()) ;
+                                                                             StartBuildFinally (GetTokenNo ()) %
+                                      FinalBlock                           % EndBuildFinally (GetTokenNo ()) %
                                                  "END"
        =:
 
@@ -1338,17 +1339,17 @@ FinalBlock := [ "FINALLY"                                                  % Bui
 
 InitialBlockBody := NormalPart [
                                  "EXCEPT"                                  % BuildStmtNote (-1) %
-                                                                           % BuildExceptInitial %
+                                                                           % BuildExceptInitial (GetTokenNo() -1) %
                                           ExceptionalPart ] =:
 
 FinalBlockBody := NormalPart [
                                "EXCEPT"                                    % BuildStmtNote (-1) %
-			                                                   % BuildExceptFinally %
+			                                                   % BuildExceptFinally (GetTokenNo() -1) %
                                         ExceptionalPart ] =:
 
 ProcedureBlockBody := NormalPart [
                                    "EXCEPT"                                % BuildStmtNote (-1) %
-				                                           % BuildExceptProcedure %
+				                                           % BuildExceptProcedure (GetTokenNo() -1) %
                                             ExceptionalPart ] =:
 
 NormalPart := StatementSequence =:
@@ -1390,10 +1391,12 @@ DefOptArg := "[" Ident ":" FormalType "=" ConstExpression                  % Bui
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 
-ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
+ModuleDeclaration :=                                                       % VAR modulet: CARDINAL ; %
+                                                                           % modulet := GetTokenNo () %
+                     "MODULE"                                              % M2Error.DefaultInnerModule %
                                                                            % PushAutoOn %
                      Ident                                                 % StartBuildInnerModule %
-                                                                           % BuildModuleStart ;
+                                                                           % BuildModuleStart (modulet) ;
                                                                              PushAutoOff %
                      [ Priority ] ";"
                      { Import } [ Export ]
@@ -1425,18 +1428,20 @@ WithoutFromImport :=                                                       % Pus
 
 Import :=  FromImport | WithoutFromImport =:
 
-DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+DefinitionModule :=                                                        % VAR deft, endt: CARDINAL ; %
+                                                                           % deft := GetTokenNo () %
+                    "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
                                  "MODULE"                                  % PushAutoOn %
                     [ "FOR" string ]
-                    Ident                                                  % StartBuildDefFile ;
+                    Ident                                                  % StartBuildDefFile (deft) ;
                                                                              P3StartBuildDefModule ;
                                                                              PushAutoOff %
                     ";"
                     { Import } [ Export
                                         ]
-                    { Definition }
+                    { Definition }                                         % endt := GetTokenNo () %
                                    "END"                                   % PushAutoOn %
-                                         Ident                             % EndBuildFile ;
+                                         Ident                             % EndBuildFile (endt) ;
                                                                              P3EndBuildDefModule %
                                                "."                         % PopAuto ; PopAuto ; PopAuto %
                   =:
