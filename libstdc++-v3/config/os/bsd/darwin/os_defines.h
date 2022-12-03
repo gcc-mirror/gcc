@@ -33,11 +33,11 @@
    links to, so there's no need for weak-ness for that.  */
 #define _GLIBCXX_GTHREAD_USE_WEAK 0
 
-// On Darwin, in order to enable overriding of operator new and delete,
-// GCC makes the definition of these functions weak, relies on the
-// loader to implement weak semantics properly, and uses
-// -flat_namespace to work around the way that it doesn't.
-#define _GLIBCXX_WEAK_DEFINITION __attribute__ ((weak))
+// On Darwin, in order to enable overriding of operator new and delete, the
+// ABI library exports a weak definition. The static linker will override this
+// iff a user-provided implementation is given (providing that the user
+// implementation is not itself a weak definition).
+#define _GLIBCXX_WEAK_DEFINITION __attribute__ ((__weak__))
 
 // Static initializer macro is buggy in darwin, see libstdc++/51906
 #define _GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC
