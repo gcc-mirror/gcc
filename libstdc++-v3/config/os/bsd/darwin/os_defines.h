@@ -39,8 +39,12 @@
 // implementation is not itself a weak definition).
 #define _GLIBCXX_WEAK_DEFINITION __attribute__ ((__weak__))
 
-// Static initializer macro is buggy in darwin, see libstdc++/51906
+#if defined (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) \
+     && (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1080)
+// Static initializer macro is absent for Darwin < 11 and buggy in Darwin 11,
+// see libstdc++/51906.  Fixed in Darwin 12 (OS X 10.8).
 #define _GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC
+#endif
 
 // Configure checks for nanosleep fail on Darwin, but nanosleep and
 // sched_yield are always available, so use them.
