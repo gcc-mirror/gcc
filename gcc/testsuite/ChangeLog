@@ -1,3 +1,43 @@
+2022-12-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107874
+	* gfortran.dg/merge_1.f90: Avoid recursive I/O.
+
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107851
+	* gcc.dg/analyzer/allocation-size-4.c: Update expected wording.
+	* gcc.dg/analyzer/allocation-size-multiline-1.c: New test.
+	* gcc.dg/analyzer/allocation-size-multiline-2.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-multiline-1.c: Update expected
+	wording.
+	* gcc.dg/analyzer/out-of-bounds-multiline-2.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-read-char-arr.c: Update expected
+	wording.
+	* gcc.dg/analyzer/out-of-bounds-read-int-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: Likewise.
+
+2022-12-02  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-ex1.C: Adjust dg-error.
+	* g++.dg/cpp23/constexpr-nonlit10.C: Adjust dg-warning.
+	* g++.dg/cpp23/constexpr-nonlit11.C: Likewise.
+	* g++.dg/cpp2a/spaceship-eq3.C: Add dg-error.
+
+2022-12-02  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/diagnostic/return-type-loc1.C: New test.
+
+2022-12-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/mips/pr106462.c: New test.
+
+2022-12-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cbranchbf4.c: New test.
+
 2022-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/106577

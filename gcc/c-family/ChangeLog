@@ -1,3 +1,8 @@
+2022-12-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-attribs.cc (handle_deprecated_attribute): Use type when
+	using TYPE_NAME.
+
 2022-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84469

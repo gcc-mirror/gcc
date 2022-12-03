@@ -1,3 +1,16 @@
+2022-12-02  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (grokdeclarator): Build RESULT_DECL.
+	(start_preparsed_function): Copy location from template.
+	* semantics.cc (apply_deduced_return_type): Handle
+	arg != current_function_decl.
+	* method.cc (implicitly_declare_fn): Use it.
+
+2022-12-02  Jason Merrill  <jason@redhat.com>
+
+	* g++spec.cc (lang_specific_driver): Set SKIPOPT for nostdlib++.
+
 2022-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84469

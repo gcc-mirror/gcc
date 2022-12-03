@@ -1,3 +1,33 @@
+2022-12-02  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* function.cc (init_function_start): Use DECL_RESULT location
+	for -Waggregate-return warning.
+
+2022-12-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* fold-const.cc (fold_unary_loc): Check TREE_TYPE of node.
+	(tree_invalid_nonnegative_warnv_p): Likewise.
+
+2022-12-02  Jason Merrill  <jason@redhat.com>
+
+	* gcc.cc (validate_switches): Reset suffix/starred on loop.
+
+2022-12-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (curr_insn_transform): Check available hard
+	regs for pseudo and its subreg to decide what to reload.
+
+2022-12-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_expand_fast_convert_bf_to_sf): Use extendbfsf2_1 for
+	nonimmediate operand.
+
+2022-12-02  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
 2022-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/106577

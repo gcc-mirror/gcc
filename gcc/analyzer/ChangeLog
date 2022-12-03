@@ -1,5 +1,90 @@
 2022-12-02  David Malcolm  <dmalcolm@redhat.com>
 
+	* analyzer.h (struct event_loc_info): New forward decl.
+	* bounds-checking.cc: Use event_loc_info throughout to bundle the
+	loc, fndecl, depth triples.
+	* call-info.cc: Likewise.
+	* checker-event.cc: Likewise.
+	* checker-event.h (struct event_loc_info): New decl.  Use it
+	throughout to bundle the loc, fndecl, depth triples.
+	* checker-path.cc: Likewise.
+	* checker-path.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* infinite-recursion.cc: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* pending-diagnostic.h: Likewise.
+	* region-model.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* varargs.cc: Likewise.
+
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107851
+	* analyzer.cc (make_label_text_n): Convert param "n" from int to
+	unsigned HOST_WIDE_INT.
+	* analyzer.h (make_label_text_n): Likewise for decl.
+	* bounds-checking.cc: Include "analyzer/checker-event.h" and
+	"analyzer/checker-path.h".
+	(out_of_bounds::add_region_creation_events): New.
+	(concrete_past_the_end::describe_region_creation_event): Replace
+	with...
+	(concrete_past_the_end::add_region_creation_events): ...this.
+	(symbolic_past_the_end::describe_region_creation_event): Delete.
+	* checker-event.cc (region_creation_event::region_creation_event):
+	Update for dropping all member data.
+	(region_creation_event::get_desc): Delete, splitting out into
+	region_creation_event_memory_space::get_desc,
+	region_creation_event_capacity::get_desc, and
+	region_creation_event_debug::get_desc.
+	(region_creation_event_memory_space::get_desc): New.
+	(region_creation_event_capacity::get_desc): New.
+	(region_creation_event_allocation_size::get_desc): New.
+	(region_creation_event_debug::get_desc): New.
+	* checker-event.h: Include "analyzer/program-state.h".
+	(enum rce_kind): Delete.
+	(class region_creation_event): Drop all member data.
+	(region_creation_event::region_creation_event): Make protected.
+	(region_creation_event::get_desc): Delete.
+	(class region_creation_event_memory_space): New.
+	(class region_creation_event_capacity): New.
+	(class region_creation_event_allocation_size): New.
+	(class region_creation_event_debug): New.
+	* checker-path.cc (checker_path::add_region_creation_events): Add
+	"pd" param.  Call pending_diangnostic::add_region_creation_events.
+	Update for conversion of RCE_DEBUG to region_creation_event_debug.
+	* checker-path.h (checker_path::add_region_creation_events): Add
+	"pd" param.
+	* diagnostic-manager.cc (diagnostic_manager::build_emission_path):
+	Pass pending_diagnostic to
+	emission_path::add_region_creation_events.
+	(diagnostic_manager::build_emission_path): Pass path_builder to
+	add_event_on_final_node.
+	(diagnostic_manager::add_event_on_final_node): Add "pb" param.
+	Pass pending_diagnostic to
+	emission_path::add_region_creation_events.
+	(diagnostic_manager::add_events_for_eedge): Pass
+	pending_diagnostic to emission_path::add_region_creation_events.
+	* diagnostic-manager.h
+	(diagnostic_manager::add_event_on_final_node): Add "pb" param.
+	* pending-diagnostic.cc
+	(pending_diagnostic::add_region_creation_events): New.
+	* pending-diagnostic.h (struct region_creation): Delete.
+	(pending_diagnostic::describe_region_creation_event): Delete.
+	(pending_diagnostic::add_region_creation_events): New vfunc.
+	* region-model.cc: Include "analyzer/checker-event.h" and
+	"analyzer/checker-path.h".
+	(dubious_allocation_size::dubious_allocation_size): Initialize
+	m_has_allocation_event.
+	(dubious_allocation_size::describe_region_creation_event): Delete.
+	(dubious_allocation_size::describe_final_event): Update for
+	replacement of m_allocation_event with m_has_allocation_event.
+	(dubious_allocation_size::add_region_creation_events): New.
+	(dubious_allocation_size::m_allocation_event): Replace with...
+	(dubious_allocation_size::m_has_allocation_event): ...this.
+
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
 	PR analyzer/107948
 	* region-model-manager.cc
 	(region_model_manager::maybe_fold_binop): Fold (0 - VAL) to -VAL.
