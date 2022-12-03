@@ -17066,13 +17066,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (DECL_TEMPLATE_PARM_P (t))
 	  return tsubst_copy (DECL_INITIAL (t), args, complain, in_decl);
-	/* There is no need to substitute into namespace-scope
-	   enumerators.  */
-	if (DECL_NAMESPACE_SCOPE_P (t))
+	if (!uses_template_parms (DECL_CONTEXT (t)))
 	  return t;
-	/* If ARGS is NULL, then T is known to be non-dependent.  */
-	if (args == NULL_TREE)
-	  return scalar_constant_value (t);
 
 	/* Unfortunately, we cannot just call lookup_name here.
 	   Consider:
