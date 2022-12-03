@@ -7570,7 +7570,7 @@ resolve_deallocate_expr (gfc_expr *e)
   sym = e->symtree->n.sym;
   unlimited = UNLIMITED_POLY(sym);
 
-  if (sym->ts.type == BT_CLASS)
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym))
     {
       allocatable = CLASS_DATA (sym)->attr.allocatable;
       pointer = CLASS_DATA (sym)->attr.class_pointer;
