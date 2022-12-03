@@ -6454,15 +6454,15 @@ package body Exp_Ch4 is
       Rop    : constant Node_Id    := Right_Opnd (N);
       Static : constant Boolean    := Is_OK_Static_Expression (N);
 
-      procedure Substitute_Valid_Check;
+      procedure Substitute_Valid_Test;
       --  Replaces node N by Lop'Valid. This is done when we have an explicit
       --  test for the left operand being in range of its subtype.
 
-      ----------------------------
-      -- Substitute_Valid_Check --
-      ----------------------------
+      ---------------------------
+      -- Substitute_Valid_Test --
+      ---------------------------
 
-      procedure Substitute_Valid_Check is
+      procedure Substitute_Valid_Test is
          function Is_OK_Object_Reference (Nod : Node_Id) return Boolean;
          --  Determine whether arbitrary node Nod denotes a source object that
          --  may safely act as prefix of attribute 'Valid.
@@ -6502,7 +6502,7 @@ package body Exp_Ch4 is
             return False;
          end Is_OK_Object_Reference;
 
-      --  Start of processing for Substitute_Valid_Check
+      --  Start of processing for Substitute_Valid_Test
 
       begin
          Rewrite (N,
@@ -6526,7 +6526,7 @@ package body Exp_Ch4 is
             Error_Msg_N -- CODEFIX
               ("\??use ''Valid attribute instead", N);
          end if;
-      end Substitute_Valid_Check;
+      end Substitute_Valid_Test;
 
       --  Local variables
 
@@ -6579,7 +6579,7 @@ package body Exp_Ch4 is
         --  eliminates the cases where MINIMIZED/ELIMINATED mode overflow
         --  checks have changed the type of the left operand.
 
-        and then Nkind (Rop) in N_Has_Entity
+        and then Is_Entity_Name (Rop)
         and then Ltyp = Entity (Rop)
 
         --  Skip this for predicated types, where such expressions are a
@@ -6587,7 +6587,7 @@ package body Exp_Ch4 is
 
         and then No (Predicate_Function (Ltyp))
       then
-         Substitute_Valid_Check;
+         Substitute_Valid_Test;
          return;
       end if;
 
@@ -6605,25 +6605,41 @@ package body Exp_Ch4 is
             Lo : constant Node_Id := Low_Bound (Rop);
             Hi : constant Node_Id := High_Bound (Rop);
 
-            Lo_Orig : constant Node_Id := Original_Node (Lo);
-            Hi_Orig : constant Node_Id := Original_Node (Hi);
+            Lo_Orig  : constant Node_Id := Original_Node (Lo);
+            Hi_Orig  : constant Node_Id := Original_Node (Hi);
+            Rop_Orig : constant Node_Id := Original_Node (Rop);
 
-            Lcheck : Compare_Result;
-            Ucheck : Compare_Result;
+            Comes_From_Simple_Range_In_Source : constant Boolean :=
+              Comes_From_Source (N)
+                and then not
+                  (Is_Entity_Name (Rop_Orig)
+                    and then Is_Type (Entity (Rop_Orig))
+                    and then Present (Predicate_Function (Entity (Rop_Orig))));
+            --  This is true for a membership test present in the source with a
+            --  range or mark for a subtype that is not predicated. As already
+            --  explained a few lines above, we do not want to give warnings on
+            --  a test with a mark for a subtype that is predicated.
 
             Warn : constant Boolean :=
                       Constant_Condition_Warnings
-                        and then Comes_From_Source (N)
+                        and then Comes_From_Simple_Range_In_Source
                         and then not In_Instance;
             --  This must be true for any of the optimization warnings, we
             --  clearly want to give them only for source with the flag on. We
             --  also skip these warnings in an instance since it may be the
             --  case that different instantiations have different ranges.
 
+            Lcheck : Compare_Result;
+            Ucheck : Compare_Result;
+
          begin
-            --  If test is explicit x'First .. x'Last, replace by valid check
+            --  If test is explicit x'First .. x'Last, replace by 'Valid test
 
             if Is_Scalar_Type (Ltyp)
+
+              --  Only relevant for source comparisons
+
+              and then Comes_From_Simple_Range_In_Source
 
               --  And left operand is X'First where X matches left operand
               --  type (this eliminates cases of type mismatch, including
@@ -6632,21 +6648,17 @@ package body Exp_Ch4 is
 
               and then Nkind (Lo_Orig) = N_Attribute_Reference
               and then Attribute_Name (Lo_Orig) = Name_First
-              and then Nkind (Prefix (Lo_Orig)) in N_Has_Entity
+              and then Is_Entity_Name (Prefix (Lo_Orig))
               and then Entity (Prefix (Lo_Orig)) = Ltyp
 
               --  Same tests for right operand
 
               and then Nkind (Hi_Orig) = N_Attribute_Reference
               and then Attribute_Name (Hi_Orig) = Name_Last
-              and then Nkind (Prefix (Hi_Orig)) in N_Has_Entity
+              and then Is_Entity_Name (Prefix (Hi_Orig))
               and then Entity (Prefix (Hi_Orig)) = Ltyp
-
-              --  Relevant only for source cases
-
-              and then Comes_From_Source (N)
             then
-               Substitute_Valid_Check;
+               Substitute_Valid_Test;
                goto Leave;
             end if;
 
@@ -6655,7 +6667,7 @@ package body Exp_Ch4 is
             --  for substituting a valid test. We only do this for discrete
             --  types, since it won't arise in practice for float types.
 
-            if Comes_From_Source (N)
+            if Comes_From_Simple_Range_In_Source
               and then Is_Discrete_Type (Ltyp)
               and then Compile_Time_Known_Value (Type_High_Bound (Ltyp))
               and then Compile_Time_Known_Value (Type_Low_Bound  (Ltyp))
@@ -6668,7 +6680,7 @@ package body Exp_Ch4 is
               --  have a test in the generic that makes sense with some types
               --  and not with other types.
 
-              --  Similarly, do not rewrite membership as a validity check if
+              --  Similarly, do not rewrite membership as a 'Valid test if
               --  within the predicate function for the type.
 
               --  Finally, if the original bounds are type conversions, even
@@ -6688,7 +6700,7 @@ package body Exp_Ch4 is
                   null;
 
                else
-                  Substitute_Valid_Check;
+                  Substitute_Valid_Test;
                   goto Leave;
                end if;
             end if;
@@ -6823,12 +6835,12 @@ package body Exp_Ch4 is
                goto Leave;
 
             --  If type is scalar type, rewrite as x in t'First .. t'Last.
-            --  This reason we do this is that the bounds may have the wrong
+            --  The reason we do this is that the bounds may have the wrong
             --  type if they come from the original type definition. Also this
             --  way we get all the processing above for an explicit range.
 
-            --  Don't do this for predicated types, since in this case we
-            --  want to check the predicate.
+            --  Don't do this for predicated types, since in this case we want
+            --  to generate the predicate check at the end of the function.
 
             elsif Is_Scalar_Type (Typ) then
                if No (Predicate_Function (Typ)) then
@@ -6843,6 +6855,7 @@ package body Exp_Ch4 is
                         Make_Attribute_Reference (Loc,
                           Attribute_Name => Name_Last,
                           Prefix         => New_Occurrence_Of (Typ, Loc))));
+
                   Analyze_And_Resolve (N, Restyp);
                end if;
 
@@ -7150,6 +7163,24 @@ package body Exp_Ch4 is
            and then Current_Scope /= PFunc
            and then Nkind (Rop) /= N_Range
          then
+            --  First apply the transformation that was skipped above
+
+            if Is_Scalar_Type (Rtyp) then
+               Rewrite (Rop,
+                 Make_Range (Loc,
+                   Low_Bound =>
+                     Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_First,
+                       Prefix         => New_Occurrence_Of (Rtyp, Loc)),
+
+                   High_Bound =>
+                     Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_Last,
+                       Prefix         => New_Occurrence_Of (Rtyp, Loc))));
+
+               Analyze_And_Resolve (N, Restyp);
+            end if;
+
             if not In_Range_Check then
                --  Indicate via Static_Mem parameter that this predicate
                --  evaluation is for a membership test.
@@ -7169,10 +7200,6 @@ package body Exp_Ch4 is
 
             Set_Analyzed (Left_Opnd (N));
             Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
-
-            --  All done, skip attempt at compile time determination of result
-
-            return;
          end if;
       end Predicate_Check;
    end Expand_N_In;

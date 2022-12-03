@@ -10105,6 +10105,51 @@ package body Sem_Res is
       then
          T := Etype (R);
 
+      --  If the left operand is of a universal numeric type and the right
+      --  operand is not, we do not resolve the operands to the tested type
+      --  but to the universal type instead. If not conforming to the letter,
+      --  it's conforming to the spirit of the specification of membership
+      --  tests, which are typically used to guard a specific operation and
+      --  ought not to fail a check in doing so. Without this, in the case of
+
+      --    type Small_Length is range 1 .. 16;
+
+      --    function Is_Small_String (S : String) return Boolean is
+      --    begin
+      --      return S'Length in Small_Length;
+      --    end;
+
+      --   the function Is_Small_String would fail a range check for strings
+      --   larger than 127 characters.
+
+      elsif not Is_Overloaded (L)
+        and then Is_Universal_Numeric_Type (Etype (L))
+        and then (Is_Overloaded (R)
+                   or else not Is_Universal_Numeric_Type (Etype (R)))
+      then
+         T := Etype (L);
+
+         --  If the right operand is 'Range, we first need to resolve it (to
+         --  the tested type) so that it is rewritten as an N_Range, before
+         --  converting its bounds and resolving it again below.
+
+         if Nkind (R) = N_Attribute_Reference
+           and then Attribute_Name (R) = Name_Range
+         then
+            Resolve (R);
+         end if;
+
+         --  If the right operand is an N_Range, we convert its bounds to the
+         --  universal type before resolving it.
+
+         if Nkind (R) = N_Range then
+            Rewrite (R,
+              Make_Range (Sloc (R),
+                Low_Bound  => Convert_To (T, Low_Bound (R)),
+                High_Bound => Convert_To (T, High_Bound (R))));
+            Analyze (R);
+         end if;
+
       --  Ada 2005 (AI-251): Support the following case:
 
       --      type I is interface;
@@ -10124,6 +10169,7 @@ package body Sem_Res is
         and then not Is_Interface (Etype (R))
       then
          return;
+
       else
          T := Intersect_Types (L, R);
       end if;
