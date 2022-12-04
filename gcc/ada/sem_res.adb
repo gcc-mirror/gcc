@@ -10105,11 +10105,11 @@ package body Sem_Res is
       then
          T := Etype (R);
 
-      --  If the left operand is of a universal numeric type and the right
-      --  operand is not, we do not resolve the operands to the tested type
-      --  but to the universal type instead. If not conforming to the letter,
-      --  it's conforming to the spirit of the specification of membership
-      --  tests, which are typically used to guard a specific operation and
+      --  If the type of the left operand is universal_integer and that of the
+      --  right operand is smaller, then we do not resolve the operands to the
+      --  tested type but to universal_integer instead. If not conforming to
+      --  the letter, it's conforming to the spirit of the specification of
+      --  membership tests, which are typically used to guard an operation and
       --  ought not to fail a check in doing so. Without this, in the case of
 
       --    type Small_Length is range 1 .. 16;
@@ -10122,10 +10122,14 @@ package body Sem_Res is
       --   the function Is_Small_String would fail a range check for strings
       --   larger than 127 characters.
 
+      --  The test on the size is required in GNAT because universal_integer
+      --  does not cover all the values of all the supported integer types,
+      --  for example the large values of Long_Long_Long_Unsigned.
+
       elsif not Is_Overloaded (L)
-        and then Is_Universal_Numeric_Type (Etype (L))
+        and then Etype (L) = Universal_Integer
         and then (Is_Overloaded (R)
-                   or else not Is_Universal_Numeric_Type (Etype (R)))
+                   or else RM_Size (Etype (R)) < RM_Size (Universal_Integer))
       then
          T := Etype (L);
 
