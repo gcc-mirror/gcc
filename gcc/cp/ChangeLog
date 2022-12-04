@@ -1,3 +1,10 @@
+2022-12-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103081
+	* pt.cc (tsubst_copy) <case CONST_DECL>: Generalize
+	early exit test for namespace-scope decls to check dependence of
+	the enclosing scope instead.  Remove dead early exit test.
+
 2022-12-02  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

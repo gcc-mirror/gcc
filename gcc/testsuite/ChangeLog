@@ -1,3 +1,18 @@
+2022-12-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103081
+	* g++.dg/cpp2a/using-enum-10.C: New test.
+	* g++.dg/cpp2a/using-enum-10a.C: New test.
+
+2022-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/ssa-sink-18.c: xfail sink2 on riscv64.
+
+2022-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/uninit-pred-9_b.c: Add riscv*-*-* to the xfail list
+	for the bogus warning.
+
 2022-12-02  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107874
