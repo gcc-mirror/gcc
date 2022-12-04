@@ -56,7 +56,7 @@ public:
     auto path = prefix.append (decl);
 
     resolver->get_type_scope ().insert (
-      path, type.get_node_id (), type.get_locus (), false,
+      path, type.get_node_id (), type.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (type.get_locus ());
 	r.add_range (locus);
@@ -72,6 +72,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
+      Rib::ItemType::Const,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (constant.get_locus ());
 	r.add_range (locus);
@@ -87,6 +88,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
+      Rib::ItemType::Function,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (function.get_locus ());
 	r.add_range (locus);
@@ -102,6 +104,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, method.get_node_id (), method.get_locus (), false,
+      Rib::ItemType::Function,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (method.get_locus ());
 	r.add_range (locus);
@@ -141,6 +144,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
+      Rib::ItemType::Function,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (function.get_locus ());
 	r.add_range (locus);
@@ -159,6 +163,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, method.get_node_id (), method.get_locus (), false,
+      Rib::ItemType::Function,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (method.get_locus ());
 	r.add_range (locus);
@@ -177,6 +182,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
+      Rib::ItemType::Const,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (constant.get_locus ());
 	r.add_range (locus);
@@ -194,7 +200,7 @@ public:
     auto cpath = canonical_prefix.append (decl);
 
     resolver->get_type_scope ().insert (
-      path, type.get_node_id (), type.get_locus (), false,
+      path, type.get_node_id (), type.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (type.get_locus ());
 	r.add_range (locus);
@@ -233,6 +239,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
+      Rib::ItemType::Function,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (function.get_locus ());
 	r.add_range (locus);
@@ -251,6 +258,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false,
+      Rib::ItemType::Static,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (item.get_locus ());
 	r.add_range (locus);

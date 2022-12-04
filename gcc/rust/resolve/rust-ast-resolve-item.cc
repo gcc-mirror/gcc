@@ -82,7 +82,8 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get ());
+      PatternDeclaration::go (param.get_pattern ().get (),
+			      Rib::ItemType::Param);
     }
 
   if (function.has_where_clause ())
@@ -138,14 +139,15 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
   AST::TypePath self_type_path (std::move (segments), self_param.get_locus ());
 
   ResolveType::go (&self_type_path);
-  PatternDeclaration::go (&self_pattern);
+  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
 
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get ());
+      PatternDeclaration::go (param.get_pattern ().get (),
+			      Rib::ItemType::Param);
     }
 
   if (function.has_where_clause ())
@@ -499,10 +501,8 @@ ResolveItem::visit (AST::Function &function)
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get ());
-
-      // the mutability checker needs to verify for immutable decls the number
-      // of assignments are <1. This marks an implicit assignment
+      PatternDeclaration::go (param.get_pattern ().get (),
+			      Rib::ItemType::Param);
     }
 
   // resolve the function body
@@ -631,14 +631,15 @@ ResolveItem::visit (AST::Method &method)
   AST::TypePath self_type_path (std::move (segments), self_param.get_locus ());
 
   ResolveType::go (&self_type_path);
-  PatternDeclaration::go (&self_pattern);
+  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
 
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : method.get_function_params ())
     {
       ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get ());
+      PatternDeclaration::go (param.get_pattern ().get (),
+			      Rib::ItemType::Param);
     }
 
   // resolve any where clause items

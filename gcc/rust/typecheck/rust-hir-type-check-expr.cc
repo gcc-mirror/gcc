@@ -1492,8 +1492,10 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 		 expr.get_locus ());
 
   // generate the closure type
+  NodeId closure_node_id = expr.get_mappings ().get_nodeid ();
+  const std::set<NodeId> &captures = resolver->get_captures (closure_node_id);
   infered = new TyTy::ClosureType (ref, id, ident, closure_args, result_type,
-				   subst_refs);
+				   subst_refs, captures);
 
   // FIXME
   // all closures automatically inherit the appropriate fn trait. Lets just

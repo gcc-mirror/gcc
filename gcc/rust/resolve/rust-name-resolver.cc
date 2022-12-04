@@ -19,40 +19,17 @@
 #include "rust-name-resolver.h"
 #include "rust-ast-full.h"
 
-#define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
-  do                                                                           \
-    {                                                                          \
-      AST::PathIdentSegment seg (_X, Linemap::predeclared_location ());        \
-      auto typePath = ::std::unique_ptr<AST::TypePathSegment> (                \
-	new AST::TypePathSegment (::std::move (seg), false,                    \
-				  Linemap::predeclared_location ()));          \
-      ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;           \
-      segs.push_back (::std::move (typePath));                                 \
-      auto builtin_type                                                        \
-	= new AST::TypePath (::std::move (segs),                               \
-			     Linemap::predeclared_location (), false);         \
-      _R.push_back (builtin_type);                                             \
-      tyctx->insert_builtin (_TY->get_ref (), builtin_type->get_node_id (),    \
-			     _TY);                                             \
-      mappings->insert_node_to_hir (builtin_type->get_node_id (),              \
-				    _TY->get_ref ());                          \
-      mappings->insert_canonical_path (                                        \
-	builtin_type->get_node_id (),                                          \
-	CanonicalPath::new_seg (builtin_type->get_node_id (), _X));            \
-    }                                                                          \
-  while (0)
-
 namespace Rust {
 namespace Resolver {
 
 Rib::Rib (CrateNum crateNum, NodeId node_id)
-  : crate_num (crateNum), node_id (node_id),
-    mappings (Analysis::Mappings::get ())
+  : crate_num (crateNum), node_id (node_id)
 {}
 
 void
 Rib::insert_name (
   const CanonicalPath &path, NodeId id, Location locus, bool shadow,
+  ItemType type,
   std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
 {
   auto it = path_mappings.find (path);
@@ -69,9 +46,10 @@ Rib::insert_name (
     }
 
   path_mappings[path] = id;
-  reverse_path_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
-  decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
+  reverse_path_mappings.insert ({id, path});
+  decls_within_rib.insert ({id, locus});
   references[id] = {};
+  decl_type_mappings.insert ({id, type});
 }
 
 bool
@@ -128,6 +106,17 @@ Rib::decl_was_declared_here (NodeId def) const
   return false;
 }
 
+bool
+Rib::lookup_decl_type (NodeId def, ItemType *type) const
+{
+  auto it = decl_type_mappings.find (def);
+  if (it == decl_type_mappings.end ())
+    return false;
+
+  *type = it->second;
+  return true;
+}
+
 void
 Rib::debug () const
 {
@@ -151,15 +140,17 @@ Scope::Scope (CrateNum crate_num) : crate_num (crate_num) {}
 void
 Scope::insert (
   const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
+  Rib::ItemType type,
   std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
 {
-  peek ()->insert_name (ident, id, locus, shadow, dup_cb);
+  peek ()->insert_name (ident, id, locus, shadow, type, dup_cb);
 }
 
 void
-Scope::insert (const CanonicalPath &ident, NodeId id, Location locus)
+Scope::insert (const CanonicalPath &ident, NodeId id, Location locus,
+	       Rib::ItemType type)
 {
-  peek ()->insert_name (ident, id, locus, true,
+  peek ()->insert_name (ident, id, locus, true, type,
 			[] (const CanonicalPath &, NodeId, Location) -> void {
 			});
 }
@@ -176,6 +167,39 @@ Scope::lookup (const CanonicalPath &ident, NodeId *id)
 
   *id = lookup;
   return lookup != UNKNOWN_NODEID;
+}
+
+bool
+Scope::lookup_decl_type (NodeId id, Rib::ItemType *type)
+{
+  bool found = false;
+  iterate ([&] (const Rib *r) -> bool {
+    if (r->decl_was_declared_here (id))
+      {
+	bool ok = r->lookup_decl_type (id, type);
+	rust_assert (ok);
+	found = true;
+	return false;
+      }
+    return true;
+  });
+  return found;
+}
+
+bool
+Scope::lookup_rib_for_decl (NodeId id, const Rib **rib)
+{
+  bool found = false;
+  iterate ([&] (const Rib *r) -> bool {
+    if (r->decl_was_declared_here (id))
+      {
+	*rib = r;
+	found = true;
+	return false;
+      }
+    return true;
+  });
+  return found;
 }
 
 void
@@ -344,6 +368,7 @@ Resolver::insert_builtin_types (Rib *r)
 				  builtin->as_string ());
       r->insert_name (builtin_path, builtin->get_node_id (),
 		      Linemap::predeclared_location (), false,
+		      Rib::ItemType::Type,
 		      [] (const CanonicalPath &, NodeId, Location) -> void {});
     }
 }
@@ -387,24 +412,24 @@ Resolver::generate_builtins ()
   auto str = new TyTy::StrType (mappings->get_next_hir_id ());
   auto never = new TyTy::NeverType (mappings->get_next_hir_id ());
 
-  MKBUILTIN_TYPE ("u8", builtins, u8);
-  MKBUILTIN_TYPE ("u16", builtins, u16);
-  MKBUILTIN_TYPE ("u32", builtins, u32);
-  MKBUILTIN_TYPE ("u64", builtins, u64);
-  MKBUILTIN_TYPE ("u128", builtins, u128);
-  MKBUILTIN_TYPE ("i8", builtins, i8);
-  MKBUILTIN_TYPE ("i16", builtins, i16);
-  MKBUILTIN_TYPE ("i32", builtins, i32);
-  MKBUILTIN_TYPE ("i64", builtins, i64);
-  MKBUILTIN_TYPE ("i128", builtins, i128);
-  MKBUILTIN_TYPE ("bool", builtins, rbool);
-  MKBUILTIN_TYPE ("f32", builtins, f32);
-  MKBUILTIN_TYPE ("f64", builtins, f64);
-  MKBUILTIN_TYPE ("usize", builtins, usize);
-  MKBUILTIN_TYPE ("isize", builtins, isize);
-  MKBUILTIN_TYPE ("char", builtins, char_tyty);
-  MKBUILTIN_TYPE ("str", builtins, str);
-  MKBUILTIN_TYPE ("!", builtins, never);
+  setup_builtin ("u8", u8);
+  setup_builtin ("u16", u16);
+  setup_builtin ("u32", u32);
+  setup_builtin ("u64", u64);
+  setup_builtin ("u128", u128);
+  setup_builtin ("i8", i8);
+  setup_builtin ("i16", i16);
+  setup_builtin ("i32", i32);
+  setup_builtin ("i64", i64);
+  setup_builtin ("i128", i128);
+  setup_builtin ("bool", rbool);
+  setup_builtin ("f32", f32);
+  setup_builtin ("f64", f64);
+  setup_builtin ("usize", usize);
+  setup_builtin ("isize", isize);
+  setup_builtin ("char", char_tyty);
+  setup_builtin ("str", str);
+  setup_builtin ("!", never);
 
   // unit type ()
   TyTy::TupleType *unit_tyty
@@ -419,10 +444,31 @@ Resolver::generate_builtins ()
 }
 
 void
+Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
+{
+  AST::PathIdentSegment seg (name, Linemap::predeclared_location ());
+  auto typePath = ::std::unique_ptr<AST::TypePathSegment> (
+    new AST::TypePathSegment (::std::move (seg), false,
+			      Linemap::predeclared_location ()));
+  ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;
+  segs.push_back (::std::move (typePath));
+  auto builtin_type
+    = new AST::TypePath (::std::move (segs), Linemap::predeclared_location (),
+			 false);
+  builtins.push_back (builtin_type);
+  tyctx->insert_builtin (tyty->get_ref (), builtin_type->get_node_id (), tyty);
+  mappings->insert_node_to_hir (builtin_type->get_node_id (), tyty->get_ref ());
+  mappings->insert_canonical_path (
+    builtin_type->get_node_id (),
+    CanonicalPath::new_seg (builtin_type->get_node_id (), name));
+}
+
+void
 Resolver::insert_resolved_name (NodeId refId, NodeId defId)
 {
   resolved_names[refId] = defId;
   get_name_scope ().append_reference_for_def (refId, defId);
+  insert_captured_item (defId);
 }
 
 bool
@@ -517,6 +563,105 @@ Resolver::lookup_resolved_misc (NodeId refId, NodeId *defId)
 
   *defId = it->second;
   return true;
+}
+
+void
+Resolver::push_closure_context (NodeId closure_expr_id)
+{
+  auto it = closures_capture_mappings.find (closure_expr_id);
+  rust_assert (it == closures_capture_mappings.end ());
+
+  closures_capture_mappings.insert ({closure_expr_id, {}});
+  closure_context.push_back (closure_expr_id);
+}
+
+void
+Resolver::pop_closure_context ()
+{
+  rust_assert (!closure_context.empty ());
+  closure_context.pop_back ();
+}
+
+void
+Resolver::insert_captured_item (NodeId id)
+{
+  // nothing to do unless we are in a closure context
+  if (closure_context.empty ())
+    return;
+
+  // check that this is a VAR_DECL?
+  Scope &name_scope = get_name_scope ();
+  Rib::ItemType type = Rib::ItemType::Unknown;
+  bool found = name_scope.lookup_decl_type (id, &type);
+  if (!found)
+    return;
+
+  // RIB Function { let a, let b } id = 1;
+  //   RIB Closure { let c } id = 2;
+  //     RIB IfStmt { <bind a>} id = 3;
+  //   RIB ... { ... } id = 4
+  //
+  // if we have a resolved_node_id of 'a' and the current rib is '3' we know
+  // this is binding exists in a rib with id < the closure rib id, other wise
+  // its just a normal binding and we don't care
+  //
+  // Problem the node id's dont work like this because the inner most items are
+  // created first so this means the root will have a larger id and a simple
+  // less than or greater than check wont work for more complex scoping cases
+  // but we can use our current rib context to figure this out by checking if
+  // the rib id the decl we care about exists prior to the rib for the closure
+  // id
+
+  const Rib *r = nullptr;
+  bool ok = name_scope.lookup_rib_for_decl (id, &r);
+  rust_assert (ok);
+  NodeId decl_rib_node_id = r->get_node_id ();
+
+  // iterate the closure context and add in the mapping for all to handle the
+  // case of nested closures
+  for (auto &closure_expr_id : closure_context)
+    {
+      if (!decl_needs_capture (decl_rib_node_id, closure_expr_id, name_scope))
+	continue;
+
+      // is this a valid binding to take
+      bool is_var_decl_p = type == Rib::ItemType::Var;
+      if (!is_var_decl_p)
+	{
+	  // FIXME is this an error case?
+	  return;
+	}
+
+      // append it to the context info
+      auto it = closures_capture_mappings.find (closure_expr_id);
+      rust_assert (it != closures_capture_mappings.end ());
+
+      it->second.insert (id);
+    }
+}
+
+bool
+Resolver::decl_needs_capture (NodeId decl_rib_node_id,
+			      NodeId closure_rib_node_id, const Scope &scope)
+{
+  for (const auto &rib : scope.get_context ())
+    {
+      bool rib_is_closure = rib->get_node_id () == closure_rib_node_id;
+      bool rib_is_decl = rib->get_node_id () == decl_rib_node_id;
+      if (rib_is_closure)
+	return false;
+      else if (rib_is_decl)
+	return true;
+    }
+  return false;
+}
+
+const std::set<NodeId> &
+Resolver::get_captures (NodeId id) const
+{
+  auto it = closures_capture_mappings.find (id);
+  rust_assert (it != closures_capture_mappings.end ());
+  return it->second;
 }
 
 } // namespace Resolver

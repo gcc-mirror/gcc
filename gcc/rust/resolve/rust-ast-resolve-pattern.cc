@@ -49,7 +49,7 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
 
 	for (auto &inner_pattern : items_no_range.get_patterns ())
 	  {
-	    PatternDeclaration::go (inner_pattern.get ());
+	    PatternDeclaration::go (inner_pattern.get (), type);
 	  }
       }
       break;

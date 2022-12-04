@@ -121,6 +121,14 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       return constant_expr;
     }
 
+  // maybe closure binding
+  tree closure_binding = error_mark_node;
+  if (ctx->lookup_closure_binding (ref, &closure_binding))
+    {
+      TREE_USED (closure_binding) = 1;
+      return closure_binding;
+    }
+
   // this might be a variable reference or a function reference
   Bvariable *var = nullptr;
   if (ctx->lookup_var_decl (ref, &var))
