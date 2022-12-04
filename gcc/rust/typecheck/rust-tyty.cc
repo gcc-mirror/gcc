@@ -544,13 +544,13 @@ ErrorType::as_string () const
 }
 
 BaseType *
-ErrorType::unify (BaseType *)
+ErrorType::unify (BaseType *other)
 {
   return this;
 }
 
 bool
-ErrorType::can_eq (const BaseType *other, bool) const
+ErrorType::can_eq (const BaseType *other, bool emit_errors) const
 {
   return get_kind () == other->get_kind ();
 }
@@ -1724,7 +1724,8 @@ ClosureType::monomorphized_clone () const
   return clone ();
 }
 
-ClosureType *ClosureType::handle_substitions (SubstitutionArgumentMappings)
+ClosureType *
+ClosureType::handle_substitions (SubstitutionArgumentMappings mappings)
 {
   gcc_unreachable ();
   return nullptr;

@@ -381,34 +381,34 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 }
 
 void
-TypeCheckPattern::visit (HIR::IdentifierPattern &)
+TypeCheckPattern::visit (HIR::IdentifierPattern &pattern)
 {
   infered = parent;
 }
 
 void
-TypeCheckPattern::visit (HIR::GroupedPattern &)
+TypeCheckPattern::visit (HIR::GroupedPattern &pattern)
 {
   // TODO
   gcc_unreachable ();
 }
 
 void
-TypeCheckPattern::visit (HIR::QualifiedPathInExpression &)
+TypeCheckPattern::visit (HIR::QualifiedPathInExpression &pattern)
 {
   // TODO
   gcc_unreachable ();
 }
 
 void
-TypeCheckPattern::visit (HIR::ReferencePattern &)
+TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
 {
   // TODO
   gcc_unreachable ();
 }
 
 void
-TypeCheckPattern::visit (HIR::SlicePattern &)
+TypeCheckPattern::visit (HIR::SlicePattern &pattern)
 {
   // TODO
   gcc_unreachable ();

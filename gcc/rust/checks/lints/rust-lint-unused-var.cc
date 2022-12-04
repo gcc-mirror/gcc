@@ -53,7 +53,7 @@ check_decl (tree *t)
 }
 
 static tree
-unused_var_walk_fn (tree *t, int *, void *)
+unused_var_walk_fn (tree *t, int *walk_subtrees, void *closure)
 {
   switch (TREE_CODE (*t))
     {

@@ -226,7 +226,7 @@ PrivacyReporter::visit (HIR::PathInExpression &path)
 }
 
 void
-PrivacyReporter::visit (HIR::TypePathSegmentFunction &)
+PrivacyReporter::visit (HIR::TypePathSegmentFunction &segment)
 {
   // FIXME: Do we need to do anything for this?
 }
@@ -253,7 +253,7 @@ PrivacyReporter::visit (HIR::QualifiedPathInType &path)
 }
 
 void
-PrivacyReporter::visit (HIR::LiteralExpr &)
+PrivacyReporter::visit (HIR::LiteralExpr &expr)
 {
   // Literals cannot contain any sort of privacy violation
 }
@@ -371,13 +371,13 @@ PrivacyReporter::visit (HIR::TupleIndexExpr &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::StructExprStruct &)
+PrivacyReporter::visit (HIR::StructExprStruct &expr)
 {
   // FIXME: We need to check the visibility of the type it refers to here
 }
 
 void
-PrivacyReporter::visit (HIR::StructExprFieldIdentifier &)
+PrivacyReporter::visit (HIR::StructExprFieldIdentifier &field)
 {}
 
 void
@@ -426,7 +426,7 @@ PrivacyReporter::visit (HIR::FieldAccessExpr &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::ClosureExpr &)
+PrivacyReporter::visit (HIR::ClosureExpr &expr)
 {
   // Not handled yet
 }
@@ -443,7 +443,7 @@ PrivacyReporter::visit (HIR::BlockExpr &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::ContinueExpr &)
+PrivacyReporter::visit (HIR::ContinueExpr &expr)
 {}
 
 void
@@ -474,7 +474,7 @@ PrivacyReporter::visit (HIR::RangeToExpr &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::RangeFullExpr &)
+PrivacyReporter::visit (HIR::RangeFullExpr &expr)
 {}
 
 void
@@ -485,7 +485,7 @@ PrivacyReporter::visit (HIR::RangeFromToInclExpr &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::RangeToInclExpr &)
+PrivacyReporter::visit (HIR::RangeToInclExpr &expr)
 {
   // Not handled yet
 }
@@ -564,14 +564,14 @@ PrivacyReporter::visit (HIR::IfExprConseqIfLet &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::IfLetExpr &)
+PrivacyReporter::visit (HIR::IfLetExpr &expr)
 {
   // TODO: We need to visit the if_let_expr
   // TODO: We need to visit the block as well
 }
 
 void
-PrivacyReporter::visit (HIR::IfLetExprConseqElse &)
+PrivacyReporter::visit (HIR::IfLetExprConseqElse &expr)
 {
   // TODO: We need to visit the if_let_expr
   // TODO: We need to visit the if_block as well
@@ -579,7 +579,7 @@ PrivacyReporter::visit (HIR::IfLetExprConseqElse &)
 }
 
 void
-PrivacyReporter::visit (HIR::IfLetExprConseqIf &)
+PrivacyReporter::visit (HIR::IfLetExprConseqIf &expr)
 {
   // TODO: We need to visit the if_let_expr
   // TODO: We need to visit the if_block as well
@@ -587,7 +587,7 @@ PrivacyReporter::visit (HIR::IfLetExprConseqIf &)
 }
 
 void
-PrivacyReporter::visit (HIR::IfLetExprConseqIfLet &)
+PrivacyReporter::visit (HIR::IfLetExprConseqIfLet &expr)
 {
   // TODO: We need to visit the if_let_expr
   // TODO: We need to visit the if_block as well
@@ -601,13 +601,13 @@ PrivacyReporter::visit (HIR::MatchExpr &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::AwaitExpr &)
+PrivacyReporter::visit (HIR::AwaitExpr &expr)
 {
   // Not handled yet
 }
 
 void
-PrivacyReporter::visit (HIR::AsyncBlockExpr &)
+PrivacyReporter::visit (HIR::AsyncBlockExpr &expr)
 {
   // Not handled yet
 }
@@ -628,11 +628,11 @@ PrivacyReporter::visit (HIR::Module &module)
 }
 
 void
-PrivacyReporter::visit (HIR::ExternCrate &)
+PrivacyReporter::visit (HIR::ExternCrate &crate)
 {}
 
 void
-PrivacyReporter::visit (HIR::UseDeclaration &)
+PrivacyReporter::visit (HIR::UseDeclaration &use_decl)
 {
   // FIXME: Is there anything we need to do here?
 }
@@ -647,51 +647,51 @@ PrivacyReporter::visit (HIR::Function &function)
 }
 
 void
-PrivacyReporter::visit (HIR::TypeAlias &)
+PrivacyReporter::visit (HIR::TypeAlias &type_alias)
 {
   // TODO: Check the type here
 }
 
 void
-PrivacyReporter::visit (HIR::StructStruct &)
+PrivacyReporter::visit (HIR::StructStruct &struct_item)
 {
   // TODO: Check the type of all fields
 }
 
 void
-PrivacyReporter::visit (HIR::TupleStruct &)
+PrivacyReporter::visit (HIR::TupleStruct &tuple_struct)
 {
   // TODO: Check the type of all fields
 }
 
 void
-PrivacyReporter::visit (HIR::EnumItem &)
+PrivacyReporter::visit (HIR::EnumItem &item)
 {
   // TODO: Check the type of all variants
 }
 
 void
-PrivacyReporter::visit (HIR::EnumItemTuple &)
+PrivacyReporter::visit (HIR::EnumItemTuple &item)
 {
   // TODO: Check the type
 }
 
 void
-PrivacyReporter::visit (HIR::EnumItemStruct &)
+PrivacyReporter::visit (HIR::EnumItemStruct &item)
 {
   // TODO: Check the type
 }
 
 void
-PrivacyReporter::visit (HIR::EnumItemDiscriminant &)
+PrivacyReporter::visit (HIR::EnumItemDiscriminant &item)
 {}
 
 void
-PrivacyReporter::visit (HIR::Enum &)
+PrivacyReporter::visit (HIR::Enum &enum_item)
 {}
 
 void
-PrivacyReporter::visit (HIR::Union &)
+PrivacyReporter::visit (HIR::Union &union_item)
 {
   // TODO: Check the type
 }
@@ -711,7 +711,7 @@ PrivacyReporter::visit (HIR::StaticItem &static_item)
 }
 
 void
-PrivacyReporter::visit (HIR::Trait &)
+PrivacyReporter::visit (HIR::Trait &trait)
 {
   // FIXME: We need to be an ItemVisitor as well
   // for (auto &item : trait.get_trait_items ())
@@ -726,15 +726,15 @@ PrivacyReporter::visit (HIR::ImplBlock &impl)
 }
 
 void
-PrivacyReporter::visit (HIR::ExternBlock &)
+PrivacyReporter::visit (HIR::ExternBlock &block)
 {
   // FIXME: We need to be an ItemVisitor as well
-  // for (auto &block: block.get_extern_items ())
+  // for (auto &item : block.get_extern_items ())
   //   item->accept_vis (*this);
 }
 
 void
-PrivacyReporter::visit (HIR::EmptyStmt &)
+PrivacyReporter::visit (HIR::EmptyStmt &stmt)
 {}
 
 void

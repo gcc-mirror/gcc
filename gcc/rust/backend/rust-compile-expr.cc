@@ -1814,15 +1814,17 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
       fn_expr
 	= get_fn_addr_from_dyn (dyn, receiver, fntype, self, expr.get_locus ());
-      self = get_receiver_from_dyn (receiver, self, expr.get_locus ());
+      self = get_receiver_from_dyn (dyn, receiver, fntype, self,
+				    expr.get_locus ());
     }
   else
     {
       // lookup compiled functions since it may have already been compiled
       HIR::PathExprSegment method_name = expr.get_method_name ();
       HIR::PathIdentSegment segment_name = method_name.get_segment ();
-      fn_expr = resolve_method_address (fntype, ref, receiver, segment_name,
-					expr.get_locus ());
+      fn_expr
+	= resolve_method_address (fntype, ref, receiver, segment_name,
+				  expr.get_mappings (), expr.get_locus ());
     }
 
   // lookup the autoderef mappings
@@ -1923,7 +1925,9 @@ CompileExpr::get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
 }
 
 tree
-CompileExpr::get_receiver_from_dyn (TyTy::BaseType *receiver, tree receiver_ref,
+CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
+				    TyTy::BaseType *receiver,
+				    TyTy::FnType *fntype, tree receiver_ref,
 				    Location expr_locus)
 {
   // get any indirection sorted out
@@ -1942,6 +1946,7 @@ tree
 CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 				     TyTy::BaseType *receiver,
 				     HIR::PathIdentSegment &segment,
+				     Analysis::NodeMapping expr_mappings,
 				     Location expr_locus)
 {
   // lookup compiled functions since it may have already been compiled
@@ -2011,7 +2016,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
       // implementation and we should just return error_mark_node
 
       rust_assert (candidates.size () == 1);
-      auto candidate = *candidates.begin ();
+      auto &candidate = *candidates.begin ();
       rust_assert (candidate.is_impl_candidate ());
       rust_assert (candidate.ty->get_kind () == TyTy::TypeKind::FNDEF);
       TyTy::FnType *candidate_call = static_cast<TyTy::FnType *> (candidate.ty);
@@ -2035,8 +2040,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 tree
 CompileExpr::resolve_operator_overload (
   Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExprMeta expr,
-  tree lhs, tree rhs, HIR::Expr *lhs_expr,
-  HIR::Expr * /* rhs_expr // FIXME: Reuse when needed */)
+  tree lhs, tree rhs, HIR::Expr *lhs_expr, HIR::Expr *rhs_expr)
 {
   TyTy::FnType *fntype;
   bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
@@ -2069,8 +2073,9 @@ CompileExpr::resolve_operator_overload (
   // lookup compiled functions since it may have already been compiled
   HIR::PathIdentSegment segment_name (
     Analysis::RustLangItem::ToString (lang_item_type));
-  tree fn_expr = resolve_method_address (fntype, ref, receiver, segment_name,
-					 expr.get_locus ());
+  tree fn_expr
+    = resolve_method_address (fntype, ref, receiver, segment_name,
+			      expr.get_mappings (), expr.get_locus ());
 
   // lookup the autoderef mappings
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
@@ -2091,9 +2096,8 @@ CompileExpr::resolve_operator_overload (
 }
 
 tree
-CompileExpr::compile_bool_literal (
-  const HIR::LiteralExpr &expr,
-  const TyTy::BaseType * /* tyty FIXME: Reuse when needed */)
+CompileExpr::compile_bool_literal (const HIR::LiteralExpr &expr,
+				   const TyTy::BaseType *tyty)
 {
   rust_assert (expr.get_lit_type () == HIR::Literal::BOOL);
 
@@ -2175,9 +2179,8 @@ CompileExpr::compile_float_literal (const HIR::LiteralExpr &expr,
 }
 
 tree
-CompileExpr::compile_char_literal (
-  const HIR::LiteralExpr &expr,
-  const TyTy::BaseType * /* tyty FIXME: Reuse when needed */)
+CompileExpr::compile_char_literal (const HIR::LiteralExpr &expr,
+				   const TyTy::BaseType *tyty)
 {
   rust_assert (expr.get_lit_type () == HIR::Literal::CHAR);
   const auto literal_value = expr.get_literal ();
@@ -2356,6 +2359,8 @@ CompileExpr::visit (HIR::ArrayExpr &expr)
     }
 
   rust_assert (tyty->get_kind () == TyTy::TypeKind::ARRAY);
+  const TyTy::ArrayType &array_tyty
+    = static_cast<const TyTy::ArrayType &> (*tyty);
 
   HIR::ArrayElems &elements = *expr.get_internal_elements ();
   switch (elements.get_array_expr_type ())
@@ -2363,20 +2368,23 @@ CompileExpr::visit (HIR::ArrayExpr &expr)
       case HIR::ArrayElems::ArrayExprType::VALUES: {
 	HIR::ArrayElemsValues &elems
 	  = static_cast<HIR::ArrayElemsValues &> (elements);
-	translated = array_value_expr (expr.get_locus (), array_type, elems);
+	translated
+	  = array_value_expr (expr.get_locus (), array_tyty, array_type, elems);
       }
       return;
 
     case HIR::ArrayElems::ArrayExprType::COPIED:
       HIR::ArrayElemsCopied &elems
 	= static_cast<HIR::ArrayElemsCopied &> (elements);
-      translated = array_copied_expr (expr.get_locus (), array_type, elems);
+      translated
+	= array_copied_expr (expr.get_locus (), array_tyty, array_type, elems);
     }
 }
 
 tree
-CompileExpr::array_value_expr (Location expr_locus, tree array_type,
-			       HIR::ArrayElemsValues &elems)
+CompileExpr::array_value_expr (Location expr_locus,
+			       const TyTy::ArrayType &array_tyty,
+			       tree array_type, HIR::ArrayElemsValues &elems)
 {
   std::vector<unsigned long> indexes;
   std::vector<tree> constructor;
@@ -2394,8 +2402,9 @@ CompileExpr::array_value_expr (Location expr_locus, tree array_type,
 }
 
 tree
-CompileExpr::array_copied_expr (Location expr_locus, tree array_type,
-				HIR::ArrayElemsCopied &elems)
+CompileExpr::array_copied_expr (Location expr_locus,
+				const TyTy::ArrayType &array_tyty,
+				tree array_type, HIR::ArrayElemsCopied &elems)
 {
   //  see gcc/cp/typeck2.cc:1369-1401
   gcc_assert (TREE_CODE (array_type) == ARRAY_TYPE);
@@ -2557,8 +2566,7 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
 
 tree
 HIRCompileBase::resolve_indirection_adjustment (
-  Resolver::Adjustment & /* adjustment FIXME: Reuse when needed */,
-  tree expression, Location locus)
+  Resolver::Adjustment &adjustment, tree expression, Location locus)
 {
   return indirect_expression (expression, locus);
 }
@@ -2971,13 +2979,14 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 }
 
 tree
-CompileExpr::generate_closure_fntype (HIR::ClosureExpr &,
+CompileExpr::generate_closure_fntype (HIR::ClosureExpr &expr,
 				      const TyTy::ClosureType &closure_tyty,
-				      tree, TyTy::FnType **fn_tyty)
+				      tree compiled_closure_tyty,
+				      TyTy::FnType **fn_tyty)
 {
   // grab the specified_bound
   rust_assert (closure_tyty.num_specified_bounds () == 1);
-  const TyTy::TypeBoundPredicate predicate
+  const TyTy::TypeBoundPredicate &predicate
     = *closure_tyty.get_specified_bounds ().begin ();
 
   // ensure the fn_once_output associated type is set

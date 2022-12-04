@@ -180,11 +180,11 @@ UnsafeChecker::check_function_call (HirId node_id, Location locus)
 }
 
 void
-UnsafeChecker::visit (Lifetime &)
+UnsafeChecker::visit (Lifetime &lifetime)
 {}
 
 void
-UnsafeChecker::visit (LifetimeParam &)
+UnsafeChecker::visit (LifetimeParam &lifetime_param)
 {}
 
 void
@@ -203,31 +203,31 @@ UnsafeChecker::visit (PathInExpression &path)
 }
 
 void
-UnsafeChecker::visit (TypePathSegment &)
+UnsafeChecker::visit (TypePathSegment &segment)
 {}
 
 void
-UnsafeChecker::visit (TypePathSegmentGeneric &)
+UnsafeChecker::visit (TypePathSegmentGeneric &segment)
 {}
 
 void
-UnsafeChecker::visit (TypePathSegmentFunction &)
+UnsafeChecker::visit (TypePathSegmentFunction &segment)
 {}
 
 void
-UnsafeChecker::visit (TypePath &)
+UnsafeChecker::visit (TypePath &path)
 {}
 
 void
-UnsafeChecker::visit (QualifiedPathInExpression &)
+UnsafeChecker::visit (QualifiedPathInExpression &path)
 {}
 
 void
-UnsafeChecker::visit (QualifiedPathInType &)
+UnsafeChecker::visit (QualifiedPathInType &path)
 {}
 
 void
-UnsafeChecker::visit (LiteralExpr &)
+UnsafeChecker::visit (LiteralExpr &expr)
 {}
 
 void
@@ -349,11 +349,11 @@ UnsafeChecker::visit (TupleIndexExpr &expr)
 }
 
 void
-UnsafeChecker::visit (StructExprStruct &)
+UnsafeChecker::visit (StructExprStruct &expr)
 {}
 
 void
-UnsafeChecker::visit (StructExprFieldIdentifier &)
+UnsafeChecker::visit (StructExprFieldIdentifier &field)
 {}
 
 void
@@ -376,7 +376,7 @@ UnsafeChecker::visit (StructExprStructFields &expr)
 }
 
 void
-UnsafeChecker::visit (StructExprStructBase &)
+UnsafeChecker::visit (StructExprStructBase &expr)
 {}
 
 void
@@ -469,7 +469,7 @@ UnsafeChecker::visit (BlockExpr &expr)
 }
 
 void
-UnsafeChecker::visit (ContinueExpr &)
+UnsafeChecker::visit (ContinueExpr &expr)
 {}
 
 void
@@ -499,7 +499,7 @@ UnsafeChecker::visit (RangeToExpr &expr)
 }
 
 void
-UnsafeChecker::visit (RangeFullExpr &)
+UnsafeChecker::visit (RangeFullExpr &expr)
 {}
 
 void
@@ -633,31 +633,31 @@ UnsafeChecker::visit (MatchExpr &expr)
 }
 
 void
-UnsafeChecker::visit (AwaitExpr &)
+UnsafeChecker::visit (AwaitExpr &expr)
 {
   // TODO: Visit expression
 }
 
 void
-UnsafeChecker::visit (AsyncBlockExpr &)
+UnsafeChecker::visit (AsyncBlockExpr &expr)
 {
   // TODO: Visit block expression
 }
 
 void
-UnsafeChecker::visit (TypeParam &)
+UnsafeChecker::visit (TypeParam &param)
 {}
 
 void
-UnsafeChecker::visit (ConstGenericParam &)
+UnsafeChecker::visit (ConstGenericParam &param)
 {}
 
 void
-UnsafeChecker::visit (LifetimeWhereClauseItem &)
+UnsafeChecker::visit (LifetimeWhereClauseItem &item)
 {}
 
 void
-UnsafeChecker::visit (TypeBoundWhereClauseItem &)
+UnsafeChecker::visit (TypeBoundWhereClauseItem &item)
 {}
 
 void
@@ -668,23 +668,23 @@ UnsafeChecker::visit (Module &module)
 }
 
 void
-UnsafeChecker::visit (ExternCrate &)
+UnsafeChecker::visit (ExternCrate &crate)
 {}
 
 void
-UnsafeChecker::visit (UseTreeGlob &)
+UnsafeChecker::visit (UseTreeGlob &use_tree)
 {}
 
 void
-UnsafeChecker::visit (UseTreeList &)
+UnsafeChecker::visit (UseTreeList &use_tree)
 {}
 
 void
-UnsafeChecker::visit (UseTreeRebind &)
+UnsafeChecker::visit (UseTreeRebind &use_tree)
 {}
 
 void
-UnsafeChecker::visit (UseDeclaration &)
+UnsafeChecker::visit (UseDeclaration &use_decl)
 {}
 
 void
@@ -702,42 +702,42 @@ UnsafeChecker::visit (Function &function)
 }
 
 void
-UnsafeChecker::visit (TypeAlias &)
+UnsafeChecker::visit (TypeAlias &type_alias)
 {
   // FIXME: What do we need to do to handle type aliasing? Is it possible to
   // have unsafe types? Type aliases on unsafe functions?
 }
 
 void
-UnsafeChecker::visit (StructStruct &)
+UnsafeChecker::visit (StructStruct &struct_item)
 {}
 
 void
-UnsafeChecker::visit (TupleStruct &)
+UnsafeChecker::visit (TupleStruct &tuple_struct)
 {}
 
 void
-UnsafeChecker::visit (EnumItem &)
+UnsafeChecker::visit (EnumItem &item)
 {}
 
 void
-UnsafeChecker::visit (EnumItemTuple &)
+UnsafeChecker::visit (EnumItemTuple &item)
 {}
 
 void
-UnsafeChecker::visit (EnumItemStruct &)
+UnsafeChecker::visit (EnumItemStruct &item)
 {}
 
 void
-UnsafeChecker::visit (EnumItemDiscriminant &)
+UnsafeChecker::visit (EnumItemDiscriminant &item)
 {}
 
 void
-UnsafeChecker::visit (Enum &)
+UnsafeChecker::visit (Enum &enum_item)
 {}
 
 void
-UnsafeChecker::visit (Union &)
+UnsafeChecker::visit (Union &union_item)
 {}
 
 void
@@ -767,7 +767,7 @@ UnsafeChecker::visit (TraitItemConst &item)
 }
 
 void
-UnsafeChecker::visit (TraitItemType &)
+UnsafeChecker::visit (TraitItemType &item)
 {}
 
 void
@@ -787,11 +787,11 @@ UnsafeChecker::visit (ImplBlock &impl)
 }
 
 void
-UnsafeChecker::visit (ExternalStaticItem &)
+UnsafeChecker::visit (ExternalStaticItem &item)
 {}
 
 void
-UnsafeChecker::visit (ExternalFunctionItem &)
+UnsafeChecker::visit (ExternalFunctionItem &item)
 {}
 
 void
@@ -803,87 +803,87 @@ UnsafeChecker::visit (ExternBlock &block)
 }
 
 void
-UnsafeChecker::visit (LiteralPattern &)
+UnsafeChecker::visit (LiteralPattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (IdentifierPattern &)
+UnsafeChecker::visit (IdentifierPattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (WildcardPattern &)
+UnsafeChecker::visit (WildcardPattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (RangePatternBoundLiteral &)
+UnsafeChecker::visit (RangePatternBoundLiteral &bound)
 {}
 
 void
-UnsafeChecker::visit (RangePatternBoundPath &)
+UnsafeChecker::visit (RangePatternBoundPath &bound)
 {}
 
 void
-UnsafeChecker::visit (RangePatternBoundQualPath &)
+UnsafeChecker::visit (RangePatternBoundQualPath &bound)
 {}
 
 void
-UnsafeChecker::visit (RangePattern &)
+UnsafeChecker::visit (RangePattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (ReferencePattern &)
+UnsafeChecker::visit (ReferencePattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (StructPatternFieldTuplePat &)
+UnsafeChecker::visit (StructPatternFieldTuplePat &field)
 {}
 
 void
-UnsafeChecker::visit (StructPatternFieldIdentPat &)
+UnsafeChecker::visit (StructPatternFieldIdentPat &field)
 {}
 
 void
-UnsafeChecker::visit (StructPatternFieldIdent &)
+UnsafeChecker::visit (StructPatternFieldIdent &field)
 {}
 
 void
-UnsafeChecker::visit (StructPattern &)
+UnsafeChecker::visit (StructPattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (TupleStructItemsNoRange &)
+UnsafeChecker::visit (TupleStructItemsNoRange &tuple_items)
 {}
 
 void
-UnsafeChecker::visit (TupleStructItemsRange &)
+UnsafeChecker::visit (TupleStructItemsRange &tuple_items)
 {}
 
 void
-UnsafeChecker::visit (TupleStructPattern &)
+UnsafeChecker::visit (TupleStructPattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (TuplePatternItemsMultiple &)
+UnsafeChecker::visit (TuplePatternItemsMultiple &tuple_items)
 {}
 
 void
-UnsafeChecker::visit (TuplePatternItemsRanged &)
+UnsafeChecker::visit (TuplePatternItemsRanged &tuple_items)
 {}
 
 void
-UnsafeChecker::visit (TuplePattern &)
+UnsafeChecker::visit (TuplePattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (GroupedPattern &)
+UnsafeChecker::visit (GroupedPattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (SlicePattern &)
+UnsafeChecker::visit (SlicePattern &pattern)
 {}
 
 void
-UnsafeChecker::visit (EmptyStmt &)
+UnsafeChecker::visit (EmptyStmt &stmt)
 {}
 
 void
@@ -906,55 +906,55 @@ UnsafeChecker::visit (ExprStmtWithBlock &stmt)
 }
 
 void
-UnsafeChecker::visit (TraitBound &)
+UnsafeChecker::visit (TraitBound &bound)
 {}
 
 void
-UnsafeChecker::visit (ImplTraitType &)
+UnsafeChecker::visit (ImplTraitType &type)
 {}
 
 void
-UnsafeChecker::visit (TraitObjectType &)
+UnsafeChecker::visit (TraitObjectType &type)
 {}
 
 void
-UnsafeChecker::visit (ParenthesisedType &)
+UnsafeChecker::visit (ParenthesisedType &type)
 {}
 
 void
-UnsafeChecker::visit (ImplTraitTypeOneBound &)
+UnsafeChecker::visit (ImplTraitTypeOneBound &type)
 {}
 
 void
-UnsafeChecker::visit (TupleType &)
+UnsafeChecker::visit (TupleType &type)
 {}
 
 void
-UnsafeChecker::visit (NeverType &)
+UnsafeChecker::visit (NeverType &type)
 {}
 
 void
-UnsafeChecker::visit (RawPointerType &)
+UnsafeChecker::visit (RawPointerType &type)
 {}
 
 void
-UnsafeChecker::visit (ReferenceType &)
+UnsafeChecker::visit (ReferenceType &type)
 {}
 
 void
-UnsafeChecker::visit (ArrayType &)
+UnsafeChecker::visit (ArrayType &type)
 {}
 
 void
-UnsafeChecker::visit (SliceType &)
+UnsafeChecker::visit (SliceType &type)
 {}
 
 void
-UnsafeChecker::visit (InferredType &)
+UnsafeChecker::visit (InferredType &type)
 {}
 
 void
-UnsafeChecker::visit (BareFunctionType &)
+UnsafeChecker::visit (BareFunctionType &type)
 {}
 
 } // namespace HIR

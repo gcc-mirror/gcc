@@ -61,13 +61,13 @@ ResolveType::visit (AST::RawPointerType &type)
 }
 
 void
-ResolveType::visit (AST::InferredType &)
+ResolveType::visit (AST::InferredType &type)
 {
   // FIXME
 }
 
 void
-ResolveType::visit (AST::NeverType &)
+ResolveType::visit (AST::NeverType &type)
 {
   // FIXME
 }
@@ -505,7 +505,7 @@ ResolveTypeToCanonicalPath::visit (AST::TraitObjectTypeOneBound &type)
 }
 
 void
-ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &)
+ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &type)
 {
   // FIXME is this actually allowed? dyn A+B
   gcc_unreachable ();
