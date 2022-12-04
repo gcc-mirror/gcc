@@ -2893,7 +2893,9 @@ output_branch_count (FILE *gcov_file, int ix, const arc_info *arc)
 		 arc->fall_through ? " (fallthrough)"
 		 : arc->is_throw ? " (throw)" : "");
       else
-	fnotice (gcov_file, "branch %2d never executed", ix);
+	fnotice (gcov_file, "branch %2d never executed%s", ix,
+     arc->fall_through ? " (fallthrough)"
+		 : arc->is_throw ? " (throw)" : "");
 
       if (flag_verbose)
 	fnotice (gcov_file, " (BB %d)", arc->dst->id);
