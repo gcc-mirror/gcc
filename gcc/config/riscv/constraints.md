@@ -180,3 +180,11 @@
   "Vector duplicate memory operand"
   (and (match_code "mem")
        (match_code "reg" "0")))
+
+;; Vendor ISA extension constraints.
+
+(define_register_constraint "th_f_fmv" "TARGET_XTHEADFMV ? FP_REGS : NO_REGS"
+  "A floating-point register for XTheadFmv.")
+
+(define_register_constraint "th_r_fmv" "TARGET_XTHEADFMV ? GR_REGS : NO_REGS"
+  "An integer register for XTheadFmv.")

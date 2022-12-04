@@ -2767,11 +2767,29 @@ riscv_split_64bit_move_p (rtx dest, rtx src)
 void
 riscv_split_doubleword_move (rtx dest, rtx src)
 {
-  rtx low_dest;
+  /* XTheadFmv has instructions for accessing the upper bits of a double.  */
+  if (!TARGET_64BIT && TARGET_XTHEADFMV)
+    {
+      if (FP_REG_RTX_P (dest))
+	{
+	  rtx low_src = riscv_subword (src, false);
+	  rtx high_src = riscv_subword (src, true);
+	  emit_insn (gen_th_fmv_hw_w_x (dest, high_src, low_src));
+	  return;
+	}
+      if (FP_REG_RTX_P (src))
+	{
+	  rtx low_dest = riscv_subword (dest, false);
+	  rtx high_dest = riscv_subword (dest, true);
+	  emit_insn (gen_th_fmv_x_w (low_dest, src));
+	  emit_insn (gen_th_fmv_x_hw (high_dest, src));
+	  return;
+	}
+    }
 
    /* The operation can be split into two normal moves.  Decide in
       which order to do them.  */
-   low_dest = riscv_subword (dest, false);
+   rtx low_dest = riscv_subword (dest, false);
    if (REG_P (low_dest) && reg_overlap_mentioned_p (low_dest, src))
      {
        riscv_emit_move (riscv_subword (dest, true), riscv_subword (src, true));
@@ -5815,7 +5833,8 @@ riscv_secondary_memory_needed (machine_mode mode, reg_class_t class1,
 {
   return (!riscv_v_ext_vector_mode_p (mode)
 	  && GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD
-	  && (class1 == FP_REGS) != (class2 == FP_REGS));
+	  && (class1 == FP_REGS) != (class2 == FP_REGS)
+	  && !TARGET_XTHEADFMV);
 }
 
 /* Implement TARGET_REGISTER_MOVE_COST.  */

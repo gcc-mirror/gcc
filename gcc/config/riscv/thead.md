@@ -139,6 +139,39 @@
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
+;; XTheadFmv
+
+;; In RV32, we lack fmv.x.d and fmv.d.x, but XTheadFmv has instructions
+;; that cover this case.
+
+(define_insn "th_fmv_hw_w_x"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(unspec:DF [(match_operand:SI 1 "register_operand" "r")
+                (match_operand:SI 2 "register_operand" "r")]
+     UNSPEC_XTHEADFMV))]
+  "!TARGET_64BIT && TARGET_XTHEADFMV"
+  "fmv.w.x\t%0,%2\n\tth.fmv.hw.x\t%0,%1"
+  [(set_attr "move_type" "move")
+   (set_attr "mode" "DF")])
+
+(define_insn "th_fmv_x_w"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:DF 1 "register_operand" "f")]
+     UNSPEC_XTHEADFMV))]
+  "!TARGET_64BIT && TARGET_XTHEADFMV"
+  "fmv.x.w\t%0,%1"
+  [(set_attr "move_type" "move")
+   (set_attr "mode" "DF")])
+
+(define_insn "th_fmv_x_hw"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:DF 1 "register_operand" "f")]
+     UNSPEC_XTHEADFMV_HW))]
+  "!TARGET_64BIT && TARGET_XTHEADFMV"
+  "th.fmv.x.hw\t%0,%1"
+  [(set_attr "move_type" "move")
+   (set_attr "mode" "DF")])
+
 ;; XTheadMac
 
 (define_insn "*th_mula<mode>"
