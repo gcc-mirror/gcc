@@ -1767,17 +1767,17 @@ VAR
    f: QuadFrame ;
 BEGIN
    QuadNo := FreeList ;
-   IF InBounds(QuadArray, QuadNo) AND (GetIndice(QuadArray, QuadNo)#NIL)
+   IF InBounds (QuadArray, QuadNo) AND (GetIndice (QuadArray, QuadNo) # NIL)
    THEN
-      f := GetIndice(QuadArray, QuadNo)
+      f := GetIndice (QuadArray, QuadNo)
    ELSE
-      NEW(f) ;
+      NEW (f) ;
       IF f=NIL
       THEN
          InternalError ('out of memory error trying to allocate a quadruple')
       ELSE
-         INC(NoOfQuads) ;
-         PutIndice(QuadArray, QuadNo, f) ;
+         INC (NoOfQuads) ;
+         PutIndice (QuadArray, QuadNo, f) ;
          f^.NoOfTimesReferenced := 0
       END
    END ;
@@ -1786,8 +1786,8 @@ BEGIN
       Operand3 := 0 ;
       Next := 0
    END ;
-   INC(FreeList) ;
-   IF GrowInitialization<FreeList
+   INC (FreeList) ;
+   IF GrowInitialization < FreeList
    THEN
       GrowInitialization := FreeList
    END
@@ -1800,13 +1800,13 @@ END NewQuad ;
 
 PROCEDURE CheckVariableAt (sym: CARDINAL) ;
 BEGIN
-   IF IsVar(sym) AND IsVariableAtAddress(sym)
+   IF IsVar (sym) AND IsVariableAtAddress (sym)
    THEN
-      IF GetMode(sym)=LeftValue
+      IF GetMode (sym) = LeftValue
       THEN
-         GenQuad(InitAddressOp, sym, NulSym, GetVariableAtAddress(sym))
+         GenQuad (InitAddressOp, sym, NulSym, GetVariableAtAddress (sym))
       ELSE
-         InternalError('expecting lvalue for this variable which is declared at an explicit address')
+         InternalError ('expecting lvalue for this variable which is declared at an explicit address')
       END
    END
 END CheckVariableAt ;
@@ -1819,7 +1819,7 @@ END CheckVariableAt ;
 
 PROCEDURE CheckVariablesAt (scope: CARDINAL) ;
 BEGIN
-   ForeachLocalSymDo(scope, CheckVariableAt)
+   ForeachLocalSymDo (scope, CheckVariableAt)
 END CheckVariablesAt ;
 
 
@@ -1832,10 +1832,10 @@ BEGIN
    IF Iso
    THEN
       RETURN GetQualidentImport (tok,
-                                 MakeKey('TurnInterrupts'), MakeKey('COROUTINES'))
+                                 MakeKey ('TurnInterrupts'), MakeKey ('COROUTINES'))
    ELSE
       RETURN GetQualidentImport (tok,
-                                 MakeKey('TurnInterrupts'), MakeKey('SYSTEM'))
+                                 MakeKey ('TurnInterrupts'), MakeKey ('SYSTEM'))
    END
 END GetTurnInterrupts ;
 
@@ -1848,11 +1848,11 @@ PROCEDURE GetProtection (tok: CARDINAL) : CARDINAL ;
 BEGIN
    IF Iso
    THEN
-      RETURN GetQualidentImport(tok,
-                                MakeKey('PROTECTION'), MakeKey('COROUTINES'))
+      RETURN GetQualidentImport (tok,
+                                 MakeKey ('PROTECTION'), MakeKey ('COROUTINES'))
    ELSE
-      RETURN GetQualidentImport(tok,
-                                MakeKey('PROTECTION'), MakeKey('SYSTEM'))
+      RETURN GetQualidentImport (tok,
+                                 MakeKey ('PROTECTION'), MakeKey ('SYSTEM'))
    END
 END GetProtection ;
 
@@ -1870,17 +1870,17 @@ PROCEDURE CheckNeedPriorityBegin (tok: CARDINAL; scope, module: CARDINAL) ;
 VAR
    ProcSym, old: CARDINAL ;
 BEGIN
-   IF GetPriority(module)#NulSym
+   IF GetPriority (module) # NulSym
    THEN
       (* module has been given a priority *)
-      ProcSym := GetTurnInterrupts(tok) ;
-      IF ProcSym#NulSym
+      ProcSym := GetTurnInterrupts (tok) ;
+      IF ProcSym # NulSym
       THEN
          old := MakeTemporary (tok, RightValue) ;
-         PutVar(old, GetProtection(tok)) ;
+         PutVar (old, GetProtection (tok)) ;
 
          GenQuadO (tok, SavePriorityOp, old, scope, ProcSym, FALSE) ;
-         PushWord(PriorityStack, old)
+         PushWord (PriorityStack, old)
       END
    END
 END CheckNeedPriorityBegin ;
@@ -1898,14 +1898,14 @@ PROCEDURE CheckNeedPriorityEnd (tok: CARDINAL;
 VAR
    ProcSym, old: CARDINAL ;
 BEGIN
-   IF GetPriority(module)#NulSym
+   IF GetPriority (module) # NulSym
    THEN
       (* module has been given a priority *)
-      ProcSym := GetTurnInterrupts(tok) ;
-      IF ProcSym#NulSym
+      ProcSym := GetTurnInterrupts (tok) ;
+      IF ProcSym # NulSym
       THEN
-         old := PopWord(PriorityStack) ;
-         GenQuad(RestorePriorityOp, old, scope, ProcSym)
+         old := PopWord (PriorityStack) ;
+         GenQuad (RestorePriorityOp, old, scope, ProcSym)
       END
    END
 END CheckNeedPriorityEnd ;
@@ -11020,7 +11020,6 @@ VAR
    combinedTok,
    arrayTok,
    exprTok    : CARDINAL ;
-   s          : String ;
    e, d, error,
    Sym,
    Type       : CARDINAL ;
@@ -11060,7 +11059,6 @@ VAR
    combinedTok,
    arrayTok,
    exprTok    : CARDINAL ;
-   s          : String ;
    e, t, d,
    Sym,
    Type       : CARDINAL ;
@@ -12038,7 +12036,7 @@ END BuildConstructorStart ;
 
 PROCEDURE BuildConstructorEnd (cbratokpos: CARDINAL) ;
 VAR
-   type, typetok,
+   typetok,
    value, valtok: CARDINAL ;
 BEGIN
    PopTtok (value, valtok) ;

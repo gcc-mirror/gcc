@@ -1324,7 +1324,8 @@ ProcedureBlock :=                                                          % Bui
                                                                  "END"
                 =:
 
-Block := { Declaration }                                                   % StartBuildInit (GetTokenNo ()) %
+Block := { Declaration }
+                                                                           % StartBuildInit (GetTokenNo ()) %
                          InitialBlock                                      % EndBuildInit (GetTokenNo ()) ;
                                                                              StartBuildFinally (GetTokenNo ()) %
                                       FinalBlock                           % EndBuildFinally (GetTokenNo ()) %

@@ -258,9 +258,8 @@ END InitUniverse ;
 
 PROCEDURE FlushImports (b: BlockInfoPtr) ;
 VAR
-   i, n   : CARDINAL ;
-   modname: Name ;
-   desc   : ModuleDesc ;
+   i, n: CARDINAL ;
+   desc: ModuleDesc ;
 BEGIN
    WITH b^ DO
       i := LowIndice (ImportedModules) ;

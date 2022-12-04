@@ -126,6 +126,7 @@ END AddToRange ;
 
 PROCEDURE GetGlobalQuads (sb: ScopeBlock; scope: CARDINAL) : ScopeBlock ;
 VAR
+   prev,
    nb           : ScopeBlock ;
    NestedLevel,
    i            : CARDINAL ;
@@ -135,6 +136,7 @@ VAR
    start, end   : CARDINAL ;
 BEGIN
    NestedLevel := 0 ;
+   prev := NIL ;
    First := FALSE ;
    IF (GetScope(scope)#NulSym) AND
       (IsProcedure(GetScope(scope)) OR
@@ -162,6 +164,10 @@ BEGIN
    LOOP
       IF i=0
       THEN
+         IF Debugging
+         THEN
+            DisplayScope (sb)
+         END ;
          RETURN sb
       END ;
       GetQuad (i, op, op1, op2, op3) ;
@@ -178,44 +184,48 @@ BEGIN
          THEN
             First := TRUE
          END
-      ELSE
-         IF NestedLevel=0
-         THEN
-            IF op=StartDefFileOp
-            THEN
-               nb := AddToRange (nb, TRUE, i) ;
-               SetScope (nb, op3, definitionscope)
-            ELSIF op=StartModFileOp
-            THEN
-               nb := AddToRange (nb, TRUE, i) ;
-               IF IsDefImp (op3)
-               THEN
-                  SetScope (nb, op3, implementationscope)
-               ELSE
-                  SetScope (nb, op3, programscope)
-               END
-            ELSIF op=InitStartOp
-            THEN
-               nb := AddToRange (nb, TRUE, i) ;
-               IF IsDefImp (op3)
-               THEN
-                  SetScope (nb, op3, implementationscope)
-               ELSE
-                  SetScope (nb, op3, programscope)
-               END
-            ELSE
-               nb := AddToRange (nb, First, i) ;
-               IF First
-               THEN
-                  SetScope (nb, NulSym, unsetscope)  (* is this reachable?  *)
-               END
-            END ;
-            First := FALSE
-         END
-      END ;
-      (* IF (i=end) *)
-      IF (i=end) (*  OR (op=EndFileOp) *)
+      ELSIF NestedLevel=0
       THEN
+         IF op=StartDefFileOp
+         THEN
+            nb := AddToRange (nb, TRUE, i) ;
+            SetScope (nb, op3, definitionscope) ;
+            prev := nb
+         ELSIF (op=StartModFileOp) OR (op=InitStartOp)
+         THEN
+            nb := AddToRange (nb, TRUE, i) ;
+            IF IsDefImp (op3)
+            THEN
+               SetScope (nb, op3, implementationscope)
+            ELSE
+               SetScope (nb, op3, programscope)
+            END ;
+            prev := nb
+         ELSE
+            nb := AddToRange (nb, First, i) ;
+            IF op = InitEndOp
+            THEN
+               IF IsDefImp (op3)
+               THEN
+                  SetScope (nb, op3, implementationscope)
+               ELSE
+                  SetScope (nb, op3, programscope)
+               END ;
+               prev := nb
+            ELSIF First
+            THEN
+               Assert (prev # NIL) ;
+               SetScope (nb, prev^.scopeSym, prev^.kindScope)
+            END
+         END ;
+         First := FALSE
+      END ;
+      IF i=end
+      THEN
+         IF Debugging
+         THEN
+            DisplayScope (sb)
+         END ;
          RETURN sb
       END ;
       i := GetNextQuad (i)
