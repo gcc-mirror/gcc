@@ -99,6 +99,7 @@ try_extract_string_literal_from_fragment (const Location &parent_locus,
 
 static std::unique_ptr<AST::LiteralExpr>
 try_expand_single_string_literal (AST::Expr *input_expr,
+				  const Location &invoc_locus,
 				  MacroExpander *expander)
 {
   auto nodes = try_expand_macro_expression (input_expr, expander);
@@ -115,8 +116,8 @@ try_expand_single_string_literal (AST::Expr *input_expr,
 
 static std::vector<std::unique_ptr<AST::Expr>>
 try_expand_many_expr (Parser<MacroInvocLexer> &parser,
-		      const TokenId last_token_id, MacroExpander *expander,
-		      bool &has_error)
+		      const Location &invoc_locus, const TokenId last_token_id,
+		      MacroExpander *expander, bool &has_error)
 {
   auto restrictions = Rust::ParseRestrictions ();
   // stop parsing when encountered a braces/brackets
@@ -203,7 +204,8 @@ parse_single_string_literal (AST::DelimTokenTree &invoc_token_tree,
       // when the expression does not seem to be a string literal, we then try
       // to parse/expand it as macro to see if it expands to a string literal
       auto expr = parser.parse_expr ();
-      lit_expr = try_expand_single_string_literal (expr.get (), expander);
+      lit_expr
+	= try_expand_single_string_literal (expr.get (), invoc_locus, expander);
     }
 
   parser.skip_token (last_token_id);
@@ -263,7 +265,7 @@ load_file_bytes (const char *filename)
 } // namespace
 
 AST::Fragment
-MacroBuiltin::assert_handler (Location, AST::MacroInvocData &)
+MacroBuiltin::assert_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   rust_debug ("assert!() called");
 
@@ -271,7 +273,7 @@ MacroBuiltin::assert_handler (Location, AST::MacroInvocData &)
 }
 
 AST::Fragment
-MacroBuiltin::file_handler (Location invoc_locus, AST::MacroInvocData &)
+MacroBuiltin::file_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_file
     = Session::get_instance ().linemap->location_file (invoc_locus);
@@ -281,7 +283,7 @@ MacroBuiltin::file_handler (Location invoc_locus, AST::MacroInvocData &)
 }
 
 AST::Fragment
-MacroBuiltin::column_handler (Location invoc_locus, AST::MacroInvocData &)
+MacroBuiltin::column_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_column
     = Session::get_instance ().linemap->location_to_column (invoc_locus);
@@ -399,7 +401,7 @@ MacroBuiltin::concat_handler (Location invoc_locus, AST::MacroInvocData &invoc)
   auto last_token_id = macro_end_token (invoc_token_tree, parser);
 
   /* NOTE: concat! could accept no argument, so we don't have any checks here */
-  auto expanded_expr = try_expand_many_expr (parser, last_token_id,
+  auto expanded_expr = try_expand_many_expr (parser, invoc_locus, last_token_id,
 					     invoc.get_expander (), has_error);
   for (auto &expr : expanded_expr)
     {
@@ -449,7 +451,7 @@ MacroBuiltin::env_handler (Location invoc_locus, AST::MacroInvocData &invoc)
   std::unique_ptr<AST::LiteralExpr> lit_expr = nullptr;
   bool has_error = false;
 
-  auto expanded_expr = try_expand_many_expr (parser, last_token_id,
+  auto expanded_expr = try_expand_many_expr (parser, invoc_locus, last_token_id,
 					     invoc.get_expander (), has_error);
   if (has_error)
     return AST::Fragment::create_error ();
@@ -589,7 +591,7 @@ MacroBuiltin::include_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 }
 
 AST::Fragment
-MacroBuiltin::line_handler (Location invoc_locus, AST::MacroInvocData &)
+MacroBuiltin::line_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_line
     = Session::get_instance ().linemap->location_to_line (invoc_locus);

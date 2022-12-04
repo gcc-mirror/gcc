@@ -112,7 +112,8 @@ public:
 	break;
 
       case TYPE:
-	return get_type_from_typealias ();
+	return get_type_from_typealias (
+	  static_cast</*const*/ HIR::TraitItemType &> (*hir_trait_item));
 
       case FN:
 	return get_type_from_fn (
@@ -148,7 +149,8 @@ private:
     return new TyTy::ErrorType (get_mappings ().get_hirid ());
   }
 
-  TyTy::BaseType *get_type_from_typealias () const;
+  TyTy::BaseType *get_type_from_typealias (/*const*/
+					   HIR::TraitItemType &type) const;
 
   TyTy::BaseType *
   get_type_from_constant (/*const*/ HIR::TraitItemConst &constant) const;

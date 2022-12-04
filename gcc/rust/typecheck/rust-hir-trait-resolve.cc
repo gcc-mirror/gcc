@@ -302,7 +302,7 @@ TraitItemReference::resolve_item (HIR::TraitItemType &type)
 }
 
 void
-TraitItemReference::resolve_item (HIR::TraitItemConst &)
+TraitItemReference::resolve_item (HIR::TraitItemConst &constant)
 {
   // TODO
 }

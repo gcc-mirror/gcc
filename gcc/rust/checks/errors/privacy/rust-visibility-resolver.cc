@@ -141,11 +141,11 @@ VisibilityResolver::visit (HIR::Module &mod)
 }
 
 void
-VisibilityResolver::visit (HIR::ExternCrate &)
+VisibilityResolver::visit (HIR::ExternCrate &crate)
 {}
 
 void
-VisibilityResolver::visit (HIR::UseDeclaration &)
+VisibilityResolver::visit (HIR::UseDeclaration &use_decl)
 {}
 
 void
@@ -185,7 +185,7 @@ VisibilityResolver::visit (HIR::Enum &enum_item)
 }
 
 void
-VisibilityResolver::visit (HIR::Union &)
+VisibilityResolver::visit (HIR::Union &union_item)
 {}
 
 void
@@ -238,7 +238,7 @@ VisibilityResolver::visit (HIR::ImplBlock &impl)
 }
 
 void
-VisibilityResolver::visit (HIR::ExternBlock &)
+VisibilityResolver::visit (HIR::ExternBlock &block)
 {}
 
 } // namespace Privacy

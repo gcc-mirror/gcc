@@ -140,7 +140,7 @@ ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
 }
 
 void
-ReachabilityVisitor::visit (HIR::TupleStruct &)
+ReachabilityVisitor::visit (HIR::TupleStruct &tuple_struct)
 {}
 
 void
@@ -227,7 +227,7 @@ ReachabilityVisitor::visit (HIR::ImplBlock &impl)
 }
 
 void
-ReachabilityVisitor::visit (HIR::ExternBlock &)
+ReachabilityVisitor::visit (HIR::ExternBlock &block)
 {}
 
 // FIXME: How can we visit Blocks in the current configuration? Have a full

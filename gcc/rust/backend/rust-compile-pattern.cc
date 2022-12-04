@@ -71,7 +71,7 @@ CompilePatternCaseLabelExpr::visit (HIR::TupleStructPattern &pattern)
 }
 
 void
-CompilePatternCaseLabelExpr::visit (HIR::WildcardPattern &)
+CompilePatternCaseLabelExpr::visit (HIR::WildcardPattern &pattern)
 {
   // operand 0 being NULL_TREE signifies this is the default case label see:
   // tree.def for documentation for CASE_LABEL_EXPR
