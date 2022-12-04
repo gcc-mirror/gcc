@@ -10573,21 +10573,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return error_mark_node;
       break;
 
-    case REQUIRES_EXPR:
-      {
-	if (!fn)
-	  return error_mark_node;
-
-	/* Recursively walk the type of each constraint variable.  */
-	tree p = TREE_OPERAND (t, 0);
-	while (p)
-	  {
-	    WALK_SUBTREE (TREE_TYPE (p));
-	    p = TREE_CHAIN (p);
-	  }
-      }
-      break;
-
     default:
       break;
     }

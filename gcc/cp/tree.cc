@@ -5603,15 +5603,18 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
  
     case REQUIRES_EXPR:
-      // Only recurse through the nested expression. Do not
-      // walk the parameter list. Doing so causes false
-      // positives in the pack expansion checker since the
-      // requires parameters are introduced as pack expansions.
-      ++cp_unevaluated_operand;
-      result = cp_walk_tree (&REQUIRES_EXPR_REQS (*tp), func, data, pset);
-      --cp_unevaluated_operand;
-      *walk_subtrees_p = 0;
-      break;
+      {
+	cp_unevaluated u;
+	for (tree parm = REQUIRES_EXPR_PARMS (*tp); parm; parm = DECL_CHAIN (parm))
+	  /* Walk the types of each parameter, but not the parameter itself,
+	     since doing so would cause false positives in the unexpanded pack
+	     checker if the requires-expr introduces a function parameter pack,
+	     e.g. requires (Ts... ts) { }.   */
+	  WALK_SUBTREE (TREE_TYPE (parm));
+	WALK_SUBTREE (REQUIRES_EXPR_REQS (*tp));
+	*walk_subtrees_p = 0;
+	break;
+      }
 
     case DECL_EXPR:
       /* User variables should be mentioned in BIND_EXPR_VARS
