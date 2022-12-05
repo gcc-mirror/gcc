@@ -2412,8 +2412,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
 	  return true;
 	}
-      /* bext pattern for zbs.  */
-      if (TARGET_ZBS && outer_code == SET
+      /* bit extraction pattern (zbs:bext, xtheadbs:tst).  */
+      if ((TARGET_ZBS || TARGET_XTHEADBS) && outer_code == SET
 	  && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) == 1)
 	{

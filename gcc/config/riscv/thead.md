@@ -29,3 +29,14 @@
   "th.addsl\t%0,%3,%1,%2"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
+
+;; XTheadBs
+
+(define_insn "*th_tst<mode>3"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(zero_extract:X (match_operand:X 1 "register_operand" "r")
+			(const_int 1)
+			(match_operand 2 "const_int_operand" "n")))]
+  "TARGET_XTHEADBS && UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+  "th.tst\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
