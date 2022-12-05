@@ -7215,7 +7215,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 strict_warn=
 save_CXXFLAGS="$CXXFLAGS"
-for real_option in -Wmissing-format-attribute -Woverloaded-virtual; do
+for real_option in -Wmissing-format-attribute -Wconditionally-supported -Woverloaded-virtual; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in

@@ -580,7 +580,7 @@ ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wstrict-prototypes -Wmissing-prototypes ],
 		       [])), [c_loose_warn])
 ACX_PROG_CXX_WARNING_OPTS(
-	m4_quote(m4_do([-Wmissing-format-attribute ],
+	m4_quote(m4_do([-Wmissing-format-attribute ], [-Wconditionally-supported ],
 		       [-Woverloaded-virtual])), [strict_warn])
 ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wold-style-definition -Wc++-compat])), [c_strict_warn])
