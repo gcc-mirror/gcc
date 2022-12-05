@@ -3290,6 +3290,44 @@ package body Sem_Warn is
       Left  : constant Node_Id := Left_Opnd  (Op);
       Right : constant Node_Id := Right_Opnd (Op);
 
+      function Comes_From_Simple_Condition_In_Source
+        (Op : Node_Id) return Boolean;
+      --  Return True if Op comes from a simple condition present in the source
+
+      -------------------------------------------
+      -- Comes_From_Simple_Condition_In_Source --
+      -------------------------------------------
+
+      function Comes_From_Simple_Condition_In_Source
+        (Op : Node_Id) return Boolean
+      is
+         Orig_Op : constant Node_Id := Original_Node (Op);
+
+      begin
+         if not Comes_From_Source (Orig_Op) then
+            return False;
+         end if;
+
+         --  We do not want to give warnings on a membership test with a mark
+         --  for a subtype that is predicated, see also Exp_Ch4.Expand_N_In.
+
+         if Nkind (Orig_Op) = N_In then
+            declare
+               Orig_Rop : constant Node_Id :=
+                            Original_Node (Right_Opnd (Orig_Op));
+            begin
+               if Is_Entity_Name (Orig_Rop)
+                 and then Is_Type (Entity (Orig_Rop))
+                 and then Present (Predicate_Function (Entity (Orig_Rop)))
+               then
+                  return False;
+               end if;
+            end;
+         end if;
+
+         return True;
+      end Comes_From_Simple_Condition_In_Source;
+
       True_Result  : Boolean;
       False_Result : Boolean;
 
@@ -3298,7 +3336,7 @@ package body Sem_Warn is
       --  scalar operands are valid.
 
       if Constant_Condition_Warnings
-        and then Comes_From_Source (Original_Node (Op))
+        and then Comes_From_Simple_Condition_In_Source (Op)
         and then Is_Scalar_Type (Etype (Left))
         and then Is_Scalar_Type (Etype (Right))
 
