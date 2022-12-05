@@ -221,7 +221,10 @@ namespace __format
 	if (_M_indexing == _Manual)
 	  __format::__conflicting_indexing_in_format_string();
 	_M_indexing = _Auto;
-	// if (std::is_constant_evaluated()) // XXX skip runtime check?
+
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3825. Missing compile-time argument id check in next_arg_id
+	if (std::is_constant_evaluated())
 	  if (_M_next_arg_id == _M_num_args)
 	    __format::__invalid_arg_id_in_format_string();
 	return _M_next_arg_id++;
@@ -234,7 +237,7 @@ namespace __format
 	  __format::__conflicting_indexing_in_format_string();
 	_M_indexing = _Manual;
 
-	// if (std::is_constant_evaluated()) // XXX skip runtime check?
+	if (std::is_constant_evaluated())
 	  if (__id >= _M_num_args)
 	    __format::__invalid_arg_id_in_format_string();
       }
@@ -1167,15 +1170,18 @@ namespace __format
 		  string __grp = __np.grouping();
 		  if (!__grp.empty())
 		    {
-		      size_t __n = __str.size();
+		      size_t __n = __str.size() - __prefix_len;
 		      auto __p = (_CharT*)__builtin_alloca(2 * __n
-							     * sizeof(_CharT));
-		      auto __end = std::__add_grouping(__p,
+							     * sizeof(_CharT)
+							     + __prefix_len);
+		      auto __s = __str.data();
+		      char_traits<_CharT>::copy(__p, __s, __prefix_len);
+		      __s += __prefix_len;
+		      auto __end = std::__add_grouping(__p + __prefix_len,
 						       __np.thousands_sep(),
 						       __grp.data(),
 						       __grp.size(),
-						       __str.data(),
-						       __str.data() + __n);
+						       __s, __s + __n);
 		      __str = {__p, size_t(__end - __p)};
 		    }
 		}
@@ -3381,10 +3387,11 @@ namespace __format
       __ctx.advance_to(__format::__write(__ctx.out()));
     }
 
-  // TODO define __process_format_string which takes an object with callbacks
-  // can use that for initial constexpr parse of format string (with callbacks
-  // that have no side effects, just non-constant on error).
-
+  // Abstract base class defining an interface for scanning format strings.
+  // Scan the characters in a format string, dividing it up into strings of
+  // ordinary characters, escape sequences, and replacement fields.
+  // Call virtual functions for derived classes to parse format-specifiers
+  // or write formatted output.
   template<typename _CharT>
     struct _Scanner
     {

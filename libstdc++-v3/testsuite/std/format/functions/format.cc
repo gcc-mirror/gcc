@@ -111,6 +111,10 @@ test_std_examples()
     string s3 = format("{:L}", 1234);
     VERIFY(s3 == "1,234");
 
+    // Test locale's "byte-and-a-half" grouping (Imperial word? tribble?).
+    string s4 = format("{:#Lx}", 0xfffff);
+    VERIFY(s4 == "0xff,fff");
+
     // Restore
     std::locale::global(std::locale::classic());
   }
