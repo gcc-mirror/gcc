@@ -30,9 +30,9 @@ class VerifyAsignee : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static bool go (AST::Expr *assignee, NodeId parent)
+  static bool go (AST::Expr *assignee)
   {
-    VerifyAsignee checker (parent);
+    VerifyAsignee checker;
     assignee->accept_vis (checker);
     if (!checker.ok)
       rust_error_at (assignee->get_locus (),
@@ -70,10 +70,10 @@ public:
     expr.get_dereferenced_expr ()->accept_vis (*this);
   }
 
-  void visit (AST::PathInExpression &expr) override { ok = true; }
+  void visit (AST::PathInExpression &) override { ok = true; }
 
 private:
-  VerifyAsignee (NodeId parent) : ResolverBase (), ok (false) {}
+  VerifyAsignee () : ResolverBase (), ok (false) {}
 
   bool ok;
 };

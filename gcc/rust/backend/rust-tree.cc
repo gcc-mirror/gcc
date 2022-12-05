@@ -2059,11 +2059,7 @@ rs_tree_equal (tree t1, tree t2)
 
 /* TRUE iff TYPE is publicly & uniquely derived from PARENT.  */
 
-bool
-publicly_uniquely_derived_p (tree parent, tree type)
-{
-  return false;
-}
+bool publicly_uniquely_derived_p (tree, tree) { return false; }
 
 // forked from gcc/cp/typeck.cc comp_except_types
 
@@ -3343,11 +3339,7 @@ release_tree_vector (vec<tree, va_gc> *vec)
 
 /* As above, but also check value-dependence of the expression as a whole.  */
 
-bool
-instantiation_dependent_expression_p (tree expression)
-{
-  return false;
-}
+bool instantiation_dependent_expression_p (tree) { return false; }
 
 // forked from gcc/cp/cvt.cc cp_get_callee
 
@@ -3397,11 +3389,7 @@ scalarish_type_p (const_tree t)
    constructors are deleted.  This function implements the ABI notion of
    non-trivial copy, which has diverged from the one in the standard.  */
 
-bool
-type_has_nontrivial_copy_init (const_tree type)
-{
-  return false;
-}
+bool type_has_nontrivial_copy_init (const_tree) { return false; }
 
 // forked from gcc/cp/tree.cc build_local_temp
 
@@ -3424,11 +3412,7 @@ build_local_temp (tree type)
 /* Returns true iff DECL is a capture proxy for a normal capture
    (i.e. without explicit initializer).  */
 
-bool
-is_normal_capture_proxy (tree decl)
-{
-  return false;
-}
+bool is_normal_capture_proxy (tree) { return false; }
 
 // forked from gcc/cp/c-common.cc reject_gcc_builtin
 
@@ -3693,7 +3677,7 @@ char_type_p (tree type)
    lvalue for the function template specialization.  */
 
 tree
-resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
+resolve_nondeduced_context (tree orig_expr, tsubst_flags_t)
 {
   return orig_expr;
 }
@@ -3972,21 +3956,13 @@ decl_constant_var_p (tree decl)
 /* Returns true iff DECL is a variable or function declared with an auto type
    that has not yet been deduced to a real type.  */
 
-bool
-undeduced_auto_decl (tree decl)
-{
-  return false;
-}
+bool undeduced_auto_decl (tree) { return false; }
 
 // forked from gcc/cp/decl.cc require_deduced_type
 
 /* Complain if DECL has an undeduced return type.  */
 
-bool
-require_deduced_type (tree decl, tsubst_flags_t complain)
-{
-  return true;
-}
+bool require_deduced_type (tree, tsubst_flags_t) { return true; }
 
 /* Return the location of a tree passed to %+ formats.  */
 

@@ -157,18 +157,18 @@ class ExportVisItems : public HIR::HIRVisItemVisitor
 public:
   ExportVisItems (ExportContext &context) : ctx (context) {}
 
-  void visit (HIR::Module &module) override {}
-  void visit (HIR::ExternCrate &crate) override {}
-  void visit (HIR::UseDeclaration &use_decl) override {}
-  void visit (HIR::TypeAlias &type_alias) override {}
-  void visit (HIR::StructStruct &struct_item) override {}
-  void visit (HIR::TupleStruct &tuple_struct) override {}
-  void visit (HIR::Enum &enum_item) override {}
-  void visit (HIR::Union &union_item) override {}
-  void visit (HIR::ConstantItem &const_item) override {}
-  void visit (HIR::StaticItem &static_item) override {}
-  void visit (HIR::ImplBlock &impl) override {}
-  void visit (HIR::ExternBlock &block) override {}
+  void visit (HIR::Module &) override {}
+  void visit (HIR::ExternCrate &) override {}
+  void visit (HIR::UseDeclaration &) override {}
+  void visit (HIR::TypeAlias &) override {}
+  void visit (HIR::StructStruct &) override {}
+  void visit (HIR::TupleStruct &) override {}
+  void visit (HIR::Enum &) override {}
+  void visit (HIR::Union &) override {}
+  void visit (HIR::ConstantItem &) override {}
+  void visit (HIR::StaticItem &) override {}
+  void visit (HIR::ImplBlock &) override {}
+  void visit (HIR::ExternBlock &) override {}
 
   void visit (HIR::Trait &trait) override { ctx.emit_trait (trait); }
 
