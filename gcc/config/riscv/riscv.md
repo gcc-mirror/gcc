@@ -220,7 +220,6 @@
 ;; mfc		transfer from coprocessor
 ;; const	load constant
 ;; arith	integer arithmetic instructions
-;; auipc	integer addition to PC
 ;; logical      integer logical instructions
 ;; shift	integer shift instructions
 ;; slt		set less than instructions
@@ -236,9 +235,13 @@
 ;; fcvt		floating point convert
 ;; fsqrt	floating point square root
 ;; multi	multiword sequence (or user asm statements)
+;; auipc	integer addition to PC
+;; sfb_alu  SFB ALU instruction
 ;; nop		no operation
 ;; ghost	an instruction that produces no real code
 ;; bitmanip	bit manipulation instructions
+;; rotate   rotation instructions
+;; atomic   atomic instructions
 ;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
 ;; rdvlenb     vector byte length vlenb csrr read
 ;; rdvl        vector length vl csrr read
