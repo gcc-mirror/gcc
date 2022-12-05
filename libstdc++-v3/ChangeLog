@@ -1,3 +1,14 @@
+2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/os/bsd/darwin/os_defines.h
+	(_GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC): Limit use of this macro
+	to OS versions that need it.
+
+2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/os/bsd/darwin/os_defines.h (_GLIBCXX_WEAK_DEFINITION): Use the
+	implementation namespace for the weak attribute.
+
 2022-12-02  Björn Schäpers  <bjoern@hazardy.de>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

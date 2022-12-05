@@ -1,3 +1,20 @@
+2022-12-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107417
+	* pt.cc (for_each_template_parm_r) <case REQUIRES_EXPR>: Move
+	walking of the TREE_TYPE of each parameter to ...
+	* tree.cc (cp_walk_subtrees) <case REQUIRES_EXPR>: ... here.
+
+2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+	    Adrian Perl  <adrian.perl@web.de>
+
+	PR c++/100611
+	PR c++/101367
+	PR c++/101976
+	PR c++/99576
+	* coroutines.cc (find_interesting_subtree): Do not promote temporaries
+	that are only used as direct initializers for some other object.
+
 2022-12-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/103081

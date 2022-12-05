@@ -1,3 +1,22 @@
+2022-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107922
+	* simplify.cc (gfc_simplify_unpack): Terminate simplification when
+	array-valued argument FIELD does not provide enough elements.
+
+2022-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107870
+	* intrinsic.texi: Fix typo in documentation of intrinsic FLOOR.
+	Describe the optional KIND argument to intrinsics as a scalar
+	constant expression, in accordance with the current standard.
+
+2022-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107899
+	* resolve.cc (resolve_deallocate_expr): Avoid NULL pointer dereference
+	on invalid CLASS variable.
+
 2022-11-30  Martin Liska  <mliska@suse.cz>
 
 	* parse.cc (parse_omp_structured_block): Remove extra semicolon.

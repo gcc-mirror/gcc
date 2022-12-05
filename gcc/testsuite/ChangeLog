@@ -1,3 +1,31 @@
+2022-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107922
+	* gfortran.dg/unpack_field_1.f90: New test.
+
+2022-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107899
+	* gfortran.dg/pr107899.f90: New test.
+
+2022-12-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107417
+	* g++.dg/cpp2a/concepts-requires33.C: New test.
+
+2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+	    Adrian Perl  <adrian.perl@web.de>
+
+	PR c++/100611
+	PR c++/101367
+	PR c++/101976
+	PR c++/99576
+	* g++.dg/coroutines/pr100611.C: New test.
+	* g++.dg/coroutines/pr101367.C: New test.
+	* g++.dg/coroutines/pr101976.C: New test.
+	* g++.dg/coroutines/pr99576_1.C: New test.
+	* g++.dg/coroutines/pr99576_2.C: New test.
+
 2022-12-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/103081
