@@ -4603,6 +4603,8 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
       else
 	{
 	  lhs = gimple_call_lhs (last_stmt);
+	  if (!lhs)
+	    return NULL;
 	  vectype1 = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
 	}
 
