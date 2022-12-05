@@ -123,53 +123,53 @@ public:
     return resolved;
   }
 
-  virtual void visit (TupleType &type) override {}
+  virtual void visit (TupleType &) override {}
 
-  virtual void visit (ADTType &type) override {}
+  virtual void visit (ADTType &) override {}
 
-  virtual void visit (InferType &type) override {}
+  virtual void visit (InferType &) override {}
 
-  virtual void visit (FnType &type) override {}
+  virtual void visit (FnType &) override {}
 
-  virtual void visit (FnPtr &type) override {}
+  virtual void visit (FnPtr &) override {}
 
-  virtual void visit (ArrayType &type) override {}
+  virtual void visit (ArrayType &) override {}
 
-  virtual void visit (SliceType &type) override {}
+  virtual void visit (SliceType &) override {}
 
-  virtual void visit (BoolType &type) override {}
+  virtual void visit (BoolType &) override {}
 
-  virtual void visit (IntType &type) override {}
+  virtual void visit (IntType &) override {}
 
-  virtual void visit (UintType &type) override {}
+  virtual void visit (UintType &) override {}
 
-  virtual void visit (USizeType &type) override {}
+  virtual void visit (USizeType &) override {}
 
-  virtual void visit (ISizeType &type) override {}
+  virtual void visit (ISizeType &) override {}
 
-  virtual void visit (FloatType &type) override {}
+  virtual void visit (FloatType &) override {}
 
-  virtual void visit (ErrorType &type) override {}
+  virtual void visit (ErrorType &) override {}
 
-  virtual void visit (CharType &type) override {}
+  virtual void visit (CharType &) override {}
 
-  virtual void visit (ReferenceType &type) override {}
+  virtual void visit (ReferenceType &) override {}
 
-  virtual void visit (PointerType &type) override {}
+  virtual void visit (PointerType &) override {}
 
-  virtual void visit (ParamType &type) override {}
+  virtual void visit (ParamType &) override {}
 
-  virtual void visit (StrType &type) override {}
+  virtual void visit (StrType &) override {}
 
-  virtual void visit (NeverType &type) override {}
+  virtual void visit (NeverType &) override {}
 
-  virtual void visit (PlaceholderType &type) override {}
+  virtual void visit (PlaceholderType &) override {}
 
-  virtual void visit (ProjectionType &type) override {}
+  virtual void visit (ProjectionType &) override {}
 
-  virtual void visit (DynamicObjectType &type) override {}
+  virtual void visit (DynamicObjectType &) override {}
 
-  virtual void visit (ClosureType &type) override {}
+  virtual void visit (ClosureType &) override {}
 
 protected:
   BaseRules (BaseType *base)

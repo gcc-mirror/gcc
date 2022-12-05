@@ -72,27 +72,21 @@ public:
   void visit (HIR::ClosureExpr &expr) override;
 
   // TODO
-  void visit (HIR::ErrorPropagationExpr &expr) override {}
-  void visit (HIR::RangeToInclExpr &expr) override {}
-  void visit (HIR::WhileLetLoopExpr &expr) override {}
-  void visit (HIR::ForLoopExpr &expr) override {}
-  void visit (HIR::IfExprConseqIfLet &expr) override {}
-  void visit (HIR::IfLetExprConseqElse &expr) override {}
-  void visit (HIR::IfLetExprConseqIf &expr) override {}
-  void visit (HIR::IfLetExprConseqIfLet &expr) override {}
-  void visit (HIR::AwaitExpr &expr) override {}
-  void visit (HIR::AsyncBlockExpr &expr) override {}
+  void visit (HIR::ErrorPropagationExpr &) override {}
+  void visit (HIR::RangeToInclExpr &) override {}
+  void visit (HIR::WhileLetLoopExpr &) override {}
+  void visit (HIR::ForLoopExpr &) override {}
+  void visit (HIR::IfExprConseqIfLet &) override {}
+  void visit (HIR::IfLetExprConseqElse &) override {}
+  void visit (HIR::IfLetExprConseqIf &) override {}
+  void visit (HIR::IfLetExprConseqIfLet &) override {}
+  void visit (HIR::AwaitExpr &) override {}
+  void visit (HIR::AsyncBlockExpr &) override {}
 
   // don't need to implement these see rust-hir-type-check-struct-field.h
-  void visit (HIR::StructExprFieldIdentifier &field) override
-  {
-    gcc_unreachable ();
-  }
-  void visit (HIR::StructExprFieldIdentifierValue &field) override
-  {
-    gcc_unreachable ();
-  }
-  void visit (HIR::StructExprFieldIndexValue &field) override
+  void visit (HIR::StructExprFieldIdentifier &) override { gcc_unreachable (); }
+  void visit (HIR::StructExprFieldIndexValue &) override { gcc_unreachable (); }
+  void visit (HIR::StructExprFieldIdentifierValue &) override
   {
     gcc_unreachable ();
   }
