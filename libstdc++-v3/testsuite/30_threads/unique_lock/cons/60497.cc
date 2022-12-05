@@ -50,5 +50,5 @@ void test02()
 void test03()
 {
   test_type l1, l2, l3;
-  std::try_lock(l1, l2, l3);
+  (void) std::try_lock(l1, l2, l3);
 }

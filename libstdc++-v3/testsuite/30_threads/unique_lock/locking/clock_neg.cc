@@ -34,7 +34,7 @@ test01()
 {
   std::timed_mutex m;
   std::unique_lock<std::timed_mutex> l(m, std::defer_lock);
-  l.try_lock_until(clok::now()); // { dg-error "here" }
+  (void) l.try_lock_until(clok::now()); // { dg-error "here" }
 }
 
 struct cloc
@@ -53,7 +53,7 @@ test02()
 {
   std::recursive_timed_mutex m;
   std::unique_lock<std::recursive_timed_mutex> l(m, std::defer_lock);
-  l.try_lock_until(cloc::now()); // { dg-error "here" }
+  (void) l.try_lock_until(cloc::now()); // { dg-error "here" }
 }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }

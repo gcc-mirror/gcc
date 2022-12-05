@@ -40,7 +40,7 @@ int main()
 
       try
 	{
-	  l.try_lock_until(t);
+	  (void) l.try_lock_until(t);
 	}
       catch(const std::system_error&)
 	{
