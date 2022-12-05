@@ -4891,14 +4891,16 @@ package body Sem_Ch8 is
          then
             null;
 
-         --  Don't replace the discriminant in strict preanalysis mode since
-         --  it can lead to errors during full analysis when the discriminant
-         --  gets referenced later.
+         --  Don't replace a non-qualified discriminant in strict preanalysis
+         --  mode since it can lead to errors during full analysis when the
+         --  discriminant gets referenced later.
 
          --  This can occur in situations where a protected type contains
-         --  an expression function which references a discriminant.
+         --  an expression function which references a non-prefixed
+         --  discriminant.
 
-         elsif Preanalysis_Active
+         elsif No (P)
+           and then Preanalysis_Active
            and then Inside_Preanalysis_Without_Freezing = 0
          then
             null;
