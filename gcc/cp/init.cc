@@ -4308,6 +4308,51 @@ finish_length_check (tree atype, tree iterator, tree obase, unsigned n)
     }
 }
 
+/* walk_tree callback to collect temporaries in an expression.  */
+
+tree
+find_temps_r (tree *tp, int *walk_subtrees, void *data)
+{
+  vec<tree*> &temps = *static_cast<auto_vec<tree*> *>(data);
+  tree t = *tp;
+  if (TREE_CODE (t) == TARGET_EXPR
+      && !TARGET_EXPR_ELIDING_P (t))
+    temps.safe_push (tp);
+  else if (TYPE_P (t))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
+/* If INIT initializes a standard library class, and involves a temporary
+   std::allocator<T>, return a pointer to the temp.
+
+   Used by build_vec_init when initializing an array of e.g. strings to reuse
+   the same temporary allocator for all of the strings.  We can do this because
+   std::allocator has no data and the standard library doesn't care about the
+   address of allocator objects.
+
+   ??? Add an attribute to allow users to assert the same property for other
+   classes, i.e. one object of the type is interchangeable with any other?  */
+
+static tree*
+find_allocator_temp (tree init)
+{
+  if (TREE_CODE (init) == EXPR_STMT)
+    init = EXPR_STMT_EXPR (init);
+  if (TREE_CODE (init) == CONVERT_EXPR)
+    init = TREE_OPERAND (init, 0);
+  tree type = TREE_TYPE (init);
+  if (!CLASS_TYPE_P (type) || !decl_in_std_namespace_p (TYPE_NAME (type)))
+    return NULL;
+  auto_vec<tree*> temps;
+  cp_walk_tree_without_duplicates (&init, find_temps_r, &temps);
+  for (tree *p : temps)
+    if (is_std_allocator (TREE_TYPE (*p)))
+      return p;
+  return NULL;
+}
+
 /* `build_vec_init' returns tree structure that performs
    initialization of a vector of aggregate types.
 
@@ -4589,6 +4634,8 @@ build_vec_init (tree base, tree maxindex, tree init,
       if (try_const)
 	vec_alloc (const_vec, CONSTRUCTOR_NELTS (init));
 
+      tree alloc_obj = NULL_TREE;
+
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx, field, elt)
 	{
 	  tree baseref = build1 (INDIRECT_REF, type, base);
@@ -4638,7 +4685,17 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    }
 
 	  if (one_init)
-	    finish_expr_stmt (one_init);
+	    {
+	      /* Only create one std::allocator temporary.  */
+	      if (tree *this_alloc = find_allocator_temp (one_init))
+		{
+		  if (alloc_obj)
+		    *this_alloc = alloc_obj;
+		  else
+		    alloc_obj = TARGET_EXPR_SLOT (*this_alloc);
+		}
+	      finish_expr_stmt (one_init);
+	    }
 
 	  one_init = cp_build_unary_op (PREINCREMENT_EXPR, base, false,
 					complain);
