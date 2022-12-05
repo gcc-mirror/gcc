@@ -2143,8 +2143,30 @@ public:
     range_op_handler rdiv (RDIV_EXPR, type);
     if (!rdiv)
       return false;
-    return float_binary_op_range_finish (rdiv.fold_range (r, type, lhs, op2),
-					 r, type, lhs);
+    bool ret = rdiv.fold_range (r, type, lhs, op2);
+    if (ret == false)
+      return false;
+    const REAL_VALUE_TYPE &lhs_lb = lhs.lower_bound ();
+    const REAL_VALUE_TYPE &lhs_ub = lhs.upper_bound ();
+    const REAL_VALUE_TYPE &op2_lb = op2.lower_bound ();
+    const REAL_VALUE_TYPE &op2_ub = op2.upper_bound ();
+    if ((contains_zero_p (lhs_lb, lhs_ub) && contains_zero_p (op2_lb, op2_ub))
+	|| ((real_isinf (&lhs_lb) || real_isinf (&lhs_ub))
+	    && (real_isinf (&op2_lb) || real_isinf (&op2_ub))))
+      {
+	// If both lhs and op2 could be zeros or both could be infinities,
+	// we don't know anything about op1 except maybe for the sign
+	// and perhaps if it can be NAN or not.
+	REAL_VALUE_TYPE lb, ub;
+	int signbit_known = signbit_known_p (lhs_lb, lhs_ub, op2_lb, op2_ub);
+	zero_to_inf_range (lb, ub, signbit_known);
+	r.set (type, lb, ub);
+      }
+    // Otherwise, if op2 is a singleton INF and lhs doesn't include INF,
+    // or if lhs must be zero and op2 doesn't include zero, it would be
+    // UNDEFINED, while rdiv.fold_range computes a zero or singleton INF
+    // range.  Those are supersets of UNDEFINED, so let's keep that way.
+    return float_binary_op_range_finish (ret, r, type, lhs);
   }
   virtual bool op2_range (frange &r, tree type,
 			  const frange &lhs,
@@ -2271,9 +2293,27 @@ public:
   {
     if (lhs.undefined_p ())
       return false;
-    return float_binary_op_range_finish (fop_mult.fold_range (r, type, lhs,
-							      op2),
-					 r, type, lhs);
+    bool ret = fop_mult.fold_range (r, type, lhs, op2);
+    if (!ret)
+      return ret;
+    const REAL_VALUE_TYPE &lhs_lb = lhs.lower_bound ();
+    const REAL_VALUE_TYPE &lhs_ub = lhs.upper_bound ();
+    const REAL_VALUE_TYPE &op2_lb = op2.lower_bound ();
+    const REAL_VALUE_TYPE &op2_ub = op2.upper_bound ();
+    if ((contains_zero_p (lhs_lb, lhs_ub)
+	 && (real_isinf (&op2_lb) || real_isinf (&op2_ub)))
+	|| ((contains_zero_p (op2_lb, op2_ub))
+	    && (real_isinf (&lhs_lb) || real_isinf (&lhs_ub))))
+      {
+	// If both lhs could be zero and op2 infinity or vice versa,
+	// we don't know anything about op1 except maybe for the sign
+	// and perhaps if it can be NAN or not.
+	REAL_VALUE_TYPE lb, ub;
+	int signbit_known = signbit_known_p (lhs_lb, lhs_ub, op2_lb, op2_ub);
+	zero_to_inf_range (lb, ub, signbit_known);
+	r.set (type, lb, ub);
+      }
+    return float_binary_op_range_finish (ret, r, type, lhs);
   }
   virtual bool op2_range (frange &r, tree type,
 			  const frange &lhs,
@@ -2282,8 +2322,26 @@ public:
   {
     if (lhs.undefined_p ())
       return false;
-    return float_binary_op_range_finish (fold_range (r, type, op1, lhs),
-					 r, type, lhs);
+    bool ret = fold_range (r, type, op1, lhs);
+    if (!ret)
+      return ret;
+    const REAL_VALUE_TYPE &lhs_lb = lhs.lower_bound ();
+    const REAL_VALUE_TYPE &lhs_ub = lhs.upper_bound ();
+    const REAL_VALUE_TYPE &op1_lb = op1.lower_bound ();
+    const REAL_VALUE_TYPE &op1_ub = op1.upper_bound ();
+    if ((contains_zero_p (lhs_lb, lhs_ub) && contains_zero_p (op1_lb, op1_ub))
+	|| ((real_isinf (&lhs_lb) || real_isinf (&lhs_ub))
+	    && (real_isinf (&op1_lb) || real_isinf (&op1_ub))))
+      {
+	// If both lhs and op1 could be zeros or both could be infinities,
+	// we don't know anything about op2 except maybe for the sign
+	// and perhaps if it can be NAN or not.
+	REAL_VALUE_TYPE lb, ub;
+	int signbit_known = signbit_known_p (lhs_lb, lhs_ub, op1_lb, op1_ub);
+	zero_to_inf_range (lb, ub, signbit_known);
+	r.set (type, lb, ub);
+      }
+    return float_binary_op_range_finish (ret, r, type, lhs);
   }
 private:
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
@@ -2296,7 +2354,7 @@ private:
   {
     // +-0.0 / +-0.0 or +-INF / +-INF is a known NAN.
     if ((zero_p (lh_lb, lh_ub) && zero_p (rh_lb, rh_ub))
-	|| (singleton_inf_p (lh_lb, lh_ub) || singleton_inf_p (rh_lb, rh_ub)))
+	|| (singleton_inf_p (lh_lb, lh_ub) && singleton_inf_p (rh_lb, rh_ub)))
       {
 	real_nan (&lb, "", 0, TYPE_MODE (type));
 	ub = lb;
