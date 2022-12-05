@@ -2481,12 +2481,12 @@ namespace __format
 	auto __s = this->_M_used();
 	if (_M_max < 0) // No maximum.
 	  _M_out = ranges::copy(__s, std::move(_M_out)).out;
-	else if (_M_count < size_t(_M_max))
+	else if (_M_count < static_cast<size_t>(_M_max))
 	  {
 	    auto __max = _M_max - _M_count;
 	    span<_CharT> __first;
 	    if (__max < __s.size())
-	      __first = __s.first(__max);
+	      __first = __s.first(static_cast<size_t>(__max));
 	    else
 	      __first = __s;
 	    _M_out = ranges::copy(__first, std::move(_M_out)).out;
@@ -2564,11 +2564,11 @@ namespace __format
 
 	if (__n > 0)
 	  {
-	    if constexpr (!is_integral_v<decltype(__n)>
+	    if constexpr (!is_integral_v<iter_difference_t<_OutIter>>
 			    || sizeof(__n) > sizeof(size_t))
 	      {
 		// __int128 or __detail::__max_diff_type
-		auto __m = (decltype(__n))(size_t)-1;
+		auto __m = iter_difference_t<_OutIter>((size_t)-1);
 		if (__n > __m)
 		  __n = __m;
 	      }
