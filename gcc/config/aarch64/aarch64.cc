@@ -5625,12 +5625,10 @@ aarch64_bitmask_imm (unsigned HOST_WIDE_INT val)
 
 /* Return true if VAL is a valid bitmask immediate for MODE.  */
 bool
-aarch64_bitmask_imm (HOST_WIDE_INT val_in, machine_mode mode)
+aarch64_bitmask_imm (unsigned HOST_WIDE_INT val, machine_mode mode)
 {
   if (mode == DImode)
-    return aarch64_bitmask_imm (val_in);
-
-  unsigned HOST_WIDE_INT val = val_in;
+    return aarch64_bitmask_imm (val);
 
   if (mode == SImode)
     return aarch64_bitmask_imm ((val & 0xffffffff) | (val << 32));
@@ -5669,50 +5667,54 @@ aarch64_check_bitmask (unsigned HOST_WIDE_INT val,
 }
 
 
-/* Return true if val is an immediate that can be loaded into a
-   register by a MOVZ instruction.  */
-static bool
-aarch64_movw_imm (HOST_WIDE_INT val, scalar_int_mode mode)
+/* Return true if VAL is a valid MOVZ immediate.  */
+static inline bool
+aarch64_is_movz (unsigned HOST_WIDE_INT val)
 {
-  if (GET_MODE_SIZE (mode) > 4)
-    {
-      if ((val & (((HOST_WIDE_INT) 0xffff) << 32)) == val
-	   || (val & (((HOST_WIDE_INT) 0xffff) << 48)) == val)
-	return 1;
-    }
-  else
-    {
-      /* Ignore sign extension.  */
-      val &= (HOST_WIDE_INT) 0xffffffff;
-    }
-  return ((val & (((HOST_WIDE_INT) 0xffff) << 0)) == val
-	  || (val & (((HOST_WIDE_INT) 0xffff) << 16)) == val);
+  return (val >> (ctz_hwi (val) & 48)) < 65536;
 }
 
 
-/* Return true if VAL is an immediate that can be loaded into a
-   register in a single instruction.  */
+/* Return true if immediate VAL can be created by a 64-bit MOVI/MOVN/MOVZ.  */
 bool
-aarch64_move_imm (HOST_WIDE_INT val, machine_mode mode)
+aarch64_is_mov_xn_imm (unsigned HOST_WIDE_INT val)
 {
-  scalar_int_mode int_mode;
-  if (!is_a <scalar_int_mode> (mode, &int_mode))
-    return false;
+  return aarch64_is_movz (val) || aarch64_is_movz (~val)
+    || aarch64_bitmask_imm (val);
+}
 
-  if (aarch64_movw_imm (val, int_mode) || aarch64_movw_imm (~val, int_mode))
-    return 1;
-  return aarch64_bitmask_imm (val, int_mode);
+
+/* Return true if VAL is an immediate that can be created by a single
+   MOV instruction.  */
+bool
+aarch64_move_imm (unsigned HOST_WIDE_INT val, machine_mode mode)
+{
+  gcc_assert (mode == SImode || mode == DImode);
+
+  if (val < 65536)
+    return true;
+
+  unsigned HOST_WIDE_INT mask =
+    (val >> 32) == 0 || mode == SImode ? 0xffffffff : HOST_WIDE_INT_M1U;
+
+  if (aarch64_is_movz (val & mask) || aarch64_is_movz (~val & mask))
+    return true;
+
+  val = (val & mask) | ((val << 32) & ~mask);
+  return aarch64_bitmask_imm (val);
 }
 
 
 static int
 aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
-				scalar_int_mode mode)
+				machine_mode mode)
 {
   int i;
   unsigned HOST_WIDE_INT val, val2, mask;
   int one_match, zero_match;
   int num_insns;
+
+  gcc_assert (mode == SImode || mode == DImode);
 
   val = INTVAL (imm);
 
@@ -5721,31 +5723,6 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
       if (generate)
 	emit_insn (gen_rtx_SET (dest, imm));
       return 1;
-    }
-
-  /* Check to see if the low 32 bits are either 0xffffXXXX or 0xXXXXffff
-     (with XXXX non-zero). In that case check to see if the move can be done in
-     a smaller mode.  */
-  val2 = val & 0xffffffff;
-  if (mode == DImode
-      && aarch64_move_imm (val2, SImode)
-      && (((val >> 32) & 0xffff) == 0 || (val >> 48) == 0))
-    {
-      if (generate)
-	emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
-
-      /* Check if we have to emit a second instruction by checking to see
-	 if any of the upper 32 bits of the original DI mode value is set.  */
-      if (val == val2)
-	return 1;
-
-      i = (val >> 48) ? 48 : 32;
-
-      if (generate)
-	 emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-				    GEN_INT ((val >> i) & 0xffff)));
-
-      return 2;
     }
 
   if ((val >> 32) == 0 || mode == SImode)
@@ -5771,24 +5748,31 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   one_match = ((~val & mask) == 0) + ((~val & (mask << 16)) == 0) +
     ((~val & (mask << 32)) == 0) + ((~val & (mask << 48)) == 0);
 
+  /* Try a bitmask immediate and a movk to generate the immediate
+     in 2 instructions.  */
+
   if (zero_match < 2 && one_match < 2)
     {
-      /* Try emitting a bitmask immediate with a movk replacing 16 bits.
-	 For a 64-bit bitmask try whether changing 16 bits to all ones or
-	 zeroes creates a valid bitmask.  To check any repeated bitmask,
-	 try using 16 bits from the other 32-bit half of val.  */
-
       for (i = 0; i < 64; i += 16)
-	if (aarch64_check_bitmask (val, val2, mask << i))
-	  {
-	    if (generate)
-	      {
-		emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
-		emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-					   GEN_INT ((val >> i) & 0xffff)));
-	      }
-	    return 2;
-	  }
+	{
+	  if (aarch64_check_bitmask (val, val2, mask << i))
+	    break;
+
+	  val2 = val & ~(mask << i);
+	  if ((val2 >> 32) == 0 && aarch64_move_imm (val2, DImode))
+	    break;
+	}
+
+      if (i != 64)
+	{
+	  if (generate)
+	    {
+	      emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
+	      emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+					 GEN_INT ((val >> i) & 0xffff)));
+	    }
+	  return 2;
+	}
     }
 
   /* Try a bitmask plus 2 movk to generate the immediate in 3 instructions.  */
@@ -5857,26 +5841,24 @@ aarch64_mov128_immediate (rtx imm)
 /* Return true if val can be encoded as a 12-bit unsigned immediate with
    a left shift of 0 or 12 bits.  */
 bool
-aarch64_uimm12_shift (HOST_WIDE_INT val)
+aarch64_uimm12_shift (unsigned HOST_WIDE_INT val)
 {
-  return ((val & (((HOST_WIDE_INT) 0xfff) << 0)) == val
-	  || (val & (((HOST_WIDE_INT) 0xfff) << 12)) == val
-	  );
+  return val < 4096 || (val & 0xfff000) == val;
 }
 
 /* Returns the nearest value to VAL that will fit as a 12-bit unsigned immediate
    that can be created with a left shift of 0 or 12.  */
 static HOST_WIDE_INT
-aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val)
+aarch64_clamp_to_uimm12_shift (unsigned HOST_WIDE_INT val)
 {
   /* Check to see if the value fits in 24 bits, as that is the maximum we can
      handle correctly.  */
-  gcc_assert ((val & 0xffffff) == val);
+  gcc_assert (val < 0x1000000);
 
-  if (((val & 0xfff) << 0) == val)
+  if (val < 4096)
     return val;
 
-  return val & (0xfff << 12);
+  return val & 0xfff000;
 }
 
 
@@ -7024,8 +7006,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
       return;
     }
 
-  aarch64_internal_mov_immediate (dest, imm, true,
-				  as_a <scalar_int_mode> (mode));
+  aarch64_internal_mov_immediate (dest, imm, true, mode);
 }
 
 /* Return the MEM rtx that provides the canary value that should be used
@@ -11197,9 +11178,7 @@ aarch64_float_const_rtx_p (rtx x)
       && SCALAR_FLOAT_MODE_P (mode)
       && aarch64_reinterpret_float_as_int (x, &ival))
     {
-      scalar_int_mode imode = (mode == HFmode
-			       ? SImode
-			       : int_mode_for_mode (mode).require ());
+      machine_mode imode = known_eq (GET_MODE_SIZE (mode), 8) ? DImode : SImode;
       int num_instr = aarch64_internal_mov_immediate
 			(NULL_RTX, gen_int_mode (ival, imode), false, imode);
       return num_instr < 3;
@@ -13857,10 +13836,10 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	     proportionally expensive to the number of instructions
 	     required to build that constant.  This is true whether we
 	     are compiling for SPEED or otherwise.  */
-	  if (!is_a <scalar_int_mode> (mode, &int_mode))
-	    int_mode = word_mode;
+	  machine_mode imode = known_le (GET_MODE_SIZE (mode), 4)
+				? SImode : DImode;
 	  *cost = COSTS_N_INSNS (aarch64_internal_mov_immediate
-				 (NULL_RTX, x, false, int_mode));
+				 (NULL_RTX, x, false, imode));
 	}
       return true;
 
@@ -13876,9 +13855,8 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  bool succeed = aarch64_reinterpret_float_as_int (x, &ival);
 	  gcc_assert (succeed);
 
-	  scalar_int_mode imode = (mode == HFmode
-				   ? SImode
-				   : int_mode_for_mode (mode).require ());
+	  machine_mode imode = known_eq (GET_MODE_SIZE (mode), 8)
+				? DImode : SImode;
 	  int ncost = aarch64_internal_mov_immediate
 		(NULL_RTX, gen_int_mode (ival, imode), false, imode);
 	  *cost += COSTS_N_INSNS (ncost);
