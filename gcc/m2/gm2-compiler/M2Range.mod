@@ -2323,6 +2323,7 @@ BEGIN
             scope := GetAnnounceScope (filename, NIL)
          ELSE
             scope := quoteOpen (InitString ('')) ;
+            scope := ConCat (scope, Mark (InitStringCharStar (function))) ;
             scope := ConCat (InitString ("procedure "), quoteClose (scope))
          END ;
          BuildStringParamLoc (location, scope) ;
