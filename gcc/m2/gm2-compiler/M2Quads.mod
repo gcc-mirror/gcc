@@ -3552,7 +3552,7 @@ BEGIN
       ((DesT#NulSym) AND (NOT IsProcType(DesT))) AND
       ((DesL#NulSym) AND (NOT IsProcType(DesL)))
    THEN
-      MetaErrorT1 (combinedtok,
+      MetaErrorT1 (destok,
                   'incorrectly assigning a procedure to a designator {%1Ead} (designator is not a procedure type, {%1ast})', Des)
    ELSIF IsProcedure (Exp) AND IsProcedureNested (Exp)
    THEN
@@ -12763,28 +12763,6 @@ BEGIN
                    sym)
    END
 END CheckVariableOrConstantOrProcedure ;
-
-
-(*
-   CheckInCompatible - checks to see that t1 IN t2 is type legal.
-*)
-
-PROCEDURE CheckInCompatible (Op: Name; t1, t2: CARDINAL) : CARDINAL ;
-BEGIN
-   IF Op = InTok
-   THEN
-      t2 := SkipType (t2) ;
-      IF IsSet (t2)
-      THEN
-         RETURN GetSType (t2)
-      ELSE
-         MetaError1 ('expect a set type as the right hand operand to the {%kIN} operator, the type attempting to be used with the {%kIN} is {%1Ead}', t2) ;
-         RETURN t1
-      END
-   ELSE
-      RETURN t2
-   END
-END CheckInCompatible ;
 
 
 (*

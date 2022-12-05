@@ -24,8 +24,11 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-void abort (void) __attribute__ ((noreturn));
-void exit (int) __attribute__ ((noreturn));
+#include <config.h>
+
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
 
 void abort (void)
 {

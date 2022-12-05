@@ -1188,7 +1188,7 @@ DefOptArg := "[" Ident ":" FormalType "=" SilentConstExpression "]" =:
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 
-ModuleDeclaration :=                                                       % VAR begint, endt: CARDINAL ; %
+ModuleDeclaration :=                                                       % VAR begint: CARDINAL ; %
                                                                            % begint := GetTokenNo () %
                      "MODULE"                                              % M2Error.DefaultInnerModule %
                                                                            % PushAutoOn %
@@ -1201,7 +1201,6 @@ ModuleDeclaration :=                                                       % VAR
                         } [ Export
                             ]
                        Block                                               % PushAutoOn %
-                                                                           % endt := GetTokenNo () -1 %
                        Ident                                               % EndBuildInnerModule %
                                                                            % PopAuto ; PopAuto ; PopAuto %
                      =:
