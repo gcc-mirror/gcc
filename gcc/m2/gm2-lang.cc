@@ -83,8 +83,6 @@ union GTY ((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
   struct lang_identifier GTY ((tag ("1"))) identifier;
 };
 
-/* We don't use language_function.  */
-
 struct GTY (()) language_function
 {
 
@@ -94,18 +92,12 @@ struct GTY (()) language_function
   tree stmt_tree;
 };
 
-/* end of new stuff.  */
-
 /* Language hooks.  */
 
 bool
 gm2_langhook_init (void)
 {
   build_common_tree_nodes (false);
-
-  /* I don't know why this has to be done explicitly.  */
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
-
   build_common_builtin_nodes ();
 
   /* The default precision for floating point numbers.  This is used
@@ -115,7 +107,6 @@ gm2_langhook_init (void)
 
   /* GNU Modula-2 uses exceptions.  */
   using_eh_for_cleanups ();
-
   return true;
 }
 
@@ -491,43 +482,32 @@ gm2_langhook_type_for_mode (machine_mode mode, int unsignedp)
     }
 
   scalar_int_mode imode;
-  scalar_float_mode fmode;
-  complex_mode cmode;
   if (is_int_mode (mode, &imode))
     return gm2_langhook_type_for_size (GET_MODE_BITSIZE (imode), unsignedp);
-  else if (is_float_mode (mode, &fmode))
+
+  if (mode == TYPE_MODE (float_type_node))
+    return float_type_node;
+
+  if (mode == TYPE_MODE (double_type_node))
+    return double_type_node;
+
+  if (mode == TYPE_MODE (long_double_type_node))
+    return long_double_type_node;
+
+  if (COMPLEX_MODE_P (mode))
     {
-      switch (GET_MODE_BITSIZE (fmode))
-        {
-        case 32:
-          return float_type_node;
-        case 64:
-          return double_type_node;
-        default:
-          // We have to check for long double in order to support
-          // i386 excess precision.
-          if (fmode == TYPE_MODE (long_double_type_node))
-            return long_double_type_node;
-        }
-    }
-  else if (is_complex_float_mode (mode, &cmode))
-    {
-      switch (GET_MODE_BITSIZE (cmode))
-        {
-        case 64:
-          return complex_float_type_node;
-        case 128:
-          return complex_double_type_node;
-        default:
-          // We have to check for long double in order to support
-          // i386 excess precision.
-          if (cmode == TYPE_MODE (complex_long_double_type_node))
-            return complex_long_double_type_node;
-        }
+      machine_mode inner_mode;
+      tree inner_type;
+
+      if (mode == TYPE_MODE (complex_float_type_node))
+	return complex_float_type_node;
+      if (mode == TYPE_MODE (complex_double_type_node))
+	return complex_double_type_node;
+      if (mode == TYPE_MODE (complex_long_double_type_node))
+	return complex_long_double_type_node;
     }
 
 #if HOST_BITS_PER_WIDE_INT >= 64
-
   /* The middle-end and some backends rely on TImode being supported
   for 64-bit HWI.  */
   if (mode == TImode)
@@ -579,34 +559,23 @@ gm2_langhook_getdecls (void)
   return NULL;
 }
 
-/* m2_write_global_declarations writes out globals by coping into a vec
-   and calling wrapup_global_declarations.  */
+/* m2_write_global_declarations writes out globals creating an array
+   of the declarations and calling wrapup_global_declarations.  */
 
 static void
 m2_write_global_declarations (tree globals)
 {
+  auto_vec<tree> global_decls;
   tree decl = globals;
   int n = 0;
 
   while (decl != NULL)
     {
-      n++;
+      global_decls.safe_push (decl);
       decl = TREE_CHAIN (decl);
+      n++;
     }
-
-  if (n > 0)
-    {
-      int i = 0;
-      tree vec[n];
-      decl = globals;
-      while (decl != NULL)
-        {
-          vec[i] = decl;
-          decl = TREE_CHAIN (decl);
-          i++;
-        }
-      wrapup_global_declarations (vec, n);
-    }
+  wrapup_global_declarations (global_decls.address (), n);
 }
 
 /* Write out globals.  */
@@ -633,7 +602,6 @@ static void
 gimplify_expr_stmt (tree *stmt_p)
 {
   gcc_assert (EXPR_STMT_EXPR (*stmt_p) != NULL_TREE);
-
   *stmt_p = EXPR_STMT_EXPR (*stmt_p);
 }
 
@@ -732,29 +700,15 @@ gm2_langhook_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
     }
 }
 
-/* FIXME: This is a hack to preserve trees that we create from the
-   garbage collector.  */
-
-static GTY (()) tree gm2_gc_root;
-static tree personality_decl = NULL_TREE;
-
-static void
-gm2_preserve_from_gc (tree t)
-{
-  gm2_gc_root = tree_cons (NULL_TREE, t, gm2_gc_root);
-}
-
-/* Return a decl for the exception personality function.  */
+static GTY(()) tree gm2_eh_personality_decl;
 
 static tree
 gm2_langhook_eh_personality (void)
 {
-  if (personality_decl == NULL_TREE)
-    {
-      personality_decl = build_personality_function ("gxx");
-      gm2_preserve_from_gc (personality_decl);
-    }
-  return personality_decl;
+  if (!gm2_eh_personality_decl)
+    gm2_eh_personality_decl = build_personality_function ("gxx");
+
+  return gm2_eh_personality_decl;
 }
 
 /* Functions called directly by the generic backend.  */
