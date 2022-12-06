@@ -1,3 +1,71 @@
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/40635
+	* tree-into-ssa.cc (rewrite_update_phi_arguments): Only
+	update the argument when the reaching definition is different
+	from the current argument.  Keep an existing argument
+	location.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106868
+	* gimple-ssa-warn-access.cc (pass_waccess::gimple_call_return_arg_ref):
+	Inline into single user ...
+	(pass_waccess::check_dangling_uses): ... here and adjust the
+	call and the PHI case to require that ref.aref is the address
+	of the decl.
+
+2022-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106805
+	* match.pd (cmp @0 REAL_CST@1): Don't optimize x cmp NaN
+	or NaN cmp x to false/true for cmp >/>=/</<= if -ftrapping-math.
+
+2022-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107879
+	* range-op-float.cc (foperator_mult::op1_range): If both
+	lhs and op2 ranges contain zero or both ranges contain
+	some infinity, set r range to zero_to_inf_range depending on
+	signbit_known_p.
+	(foperator_div::op2_range): Similarly for lhs and op1 ranges.
+	(foperator_div::op1_range): If lhs range contains zero and op2
+	range contains some infinity or vice versa, set r range to
+	zero_to_inf_range depending on signbit_known_p.
+	(foperator_div::rv_fold): Fix up condition for returning known NAN.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107833
+	PR tree-optimization/107839
+	* cfghooks.cc: Include tree.h.
+	* tree-ssa-loop-im.cc (movement_possibility): Wrap and
+	make stmts using any ssa_name_maybe_undef_p operand
+	to preserve execution.
+	(loop_invariant_motion_in_fun): Call mark_ssa_maybe_undefs
+	to init maybe-undefined status.
+	* tree-ssa-loop-ivopts.cc (ssa_name_maybe_undef_p,
+	ssa_name_set_maybe_undef, ssa_name_any_use_dominates_bb_p,
+	mark_ssa_maybe_undefs): Move ...
+	* tree-ssa.cc: ... here.
+	* tree-ssa.h (ssa_name_any_use_dominates_bb_p,
+	mark_ssa_maybe_undefs): Declare.
+	(ssa_name_maybe_undef_p, ssa_name_set_maybe_undef): Define.
+
+2022-12-05  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/107956
+	* tree-vect-patterns.cc (vect_recog_mask_conversion_pattern):
+	Check for NULL LHS on masked loads.
+
+2022-12-05  Kewen Lin  <linkw@linux.ibm.com>
+	    Richard Sandiford   <richard.sandiford@arm.com>
+
+	PR tree-optimization/107412
+	* gimple-fold.cc (gimple_fold_partial_load_store_mem_ref): Use
+	untruncated type for the length, and avoid to_constant and tree
+	arithmetic for subtraction.
+
 2022-12-02  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

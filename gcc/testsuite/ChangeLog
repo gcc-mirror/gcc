@@ -1,3 +1,34 @@
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/40635
+	* gcc.dg/uninit-pr40635.c: New testcase.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106868
+	* gcc.dg/Wdangling-pointer-pr106868.c: New testcase.
+
+2022-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106805
+	* c-c++-common/pr57371-4.c: Revert 2021-09-19 changes.
+	* c-c++-common/pr57371-5.c: New test.
+	* gcc.c-torture/execute/ieee/fp-cmp-6.x: Add -fno-trapping-math.
+	* gcc.c-torture/execute/ieee/fp-cmp-9.c: New test.
+	* gcc.c-torture/execute/ieee/fp-cmp-9.x: New file.
+
+2022-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107879
+	* gcc.c-torture/execute/pr107879.c: New file.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107833
+	PR tree-optimization/107839
+	* gcc.dg/torture/pr107833.c: New testcase.
+	* gcc.dg/uninit-pr107839.c: Likewise.
+
 2022-12-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107922

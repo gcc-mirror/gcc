@@ -1,3 +1,8 @@
+2022-12-05  Scott Snyder  <sss@li-snyder.org>
+
+	PR plugins/107964
+	* Make-lang.in (CP_PLUGIN_HEADERS): Install contracts.h
+
 2022-12-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/107417
