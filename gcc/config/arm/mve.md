@@ -841,8 +841,9 @@
 (define_insn "mve_vcmp<mve_cmp_op>q_n_<mode>"
   [
    (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
-	(MVE_COMPARISONS:<MVE_VPRED> (match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")))
+	(MVE_COMPARISONS:<MVE_VPRED>
+	 (match_operand:MVE_2 1 "s_register_operand" "w")
+	 (vec_duplicate:MVE_2 (match_operand:<V_elem> 2 "s_register_operand" "r"))))
   ]
   "TARGET_HAVE_MVE"
   "vcmp.<mve_cmp_type>%#<V_sz_elem>	<mve_cmp_op>, %q1, %2"
@@ -1931,8 +1932,9 @@
 (define_insn "@mve_vcmp<mve_cmp_op>q_n_f<mode>"
   [
    (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
-	(MVE_FP_COMPARISONS:<MVE_VPRED> (match_operand:MVE_0 1 "s_register_operand" "w")
-			       (match_operand:<V_elem> 2 "s_register_operand" "r")))
+	(MVE_FP_COMPARISONS:<MVE_VPRED>
+	 (match_operand:MVE_0 1 "s_register_operand" "w")
+	 (vec_duplicate:MVE_0 (match_operand:<V_elem> 2 "s_register_operand" "r"))))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vcmp.f%#<V_sz_elem>	<mve_cmp_op>, %q1, %2"
