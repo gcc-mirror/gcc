@@ -2146,6 +2146,8 @@ public:
     bool ret = rdiv.fold_range (r, type, lhs, op2);
     if (ret == false)
       return false;
+    if (lhs.known_isnan () || op2.known_isnan () || op2.undefined_p ())
+      return float_binary_op_range_finish (ret, r, type, lhs);
     const REAL_VALUE_TYPE &lhs_lb = lhs.lower_bound ();
     const REAL_VALUE_TYPE &lhs_ub = lhs.upper_bound ();
     const REAL_VALUE_TYPE &op2_lb = op2.lower_bound ();
@@ -2296,6 +2298,8 @@ public:
     bool ret = fop_mult.fold_range (r, type, lhs, op2);
     if (!ret)
       return ret;
+    if (lhs.known_isnan () || op2.known_isnan () || op2.undefined_p ())
+      return float_binary_op_range_finish (ret, r, type, lhs);
     const REAL_VALUE_TYPE &lhs_lb = lhs.lower_bound ();
     const REAL_VALUE_TYPE &lhs_ub = lhs.upper_bound ();
     const REAL_VALUE_TYPE &op2_lb = op2.lower_bound ();
@@ -2325,6 +2329,8 @@ public:
     bool ret = fold_range (r, type, op1, lhs);
     if (!ret)
       return ret;
+    if (lhs.known_isnan () || op1.known_isnan () || op1.undefined_p ())
+      return float_binary_op_range_finish (ret, r, type, lhs);
     const REAL_VALUE_TYPE &lhs_lb = lhs.lower_bound ();
     const REAL_VALUE_TYPE &lhs_ub = lhs.upper_bound ();
     const REAL_VALUE_TYPE &op1_lb = op1.lower_bound ();
