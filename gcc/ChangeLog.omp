@@ -1,3 +1,12 @@
+2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	Backported from master:
+	2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gimplify.cc (optimize_target_teams): Set initial num_teams_upper
+	to "-2" instead of "1" for non-existing num_teams clause in order to
+	disambiguate from the case of an existing num_teams clause with value 1.
+
 2022-12-06  Paul-Antoine Arras <pa@codesourcery.com>
 
 	Backported from master:

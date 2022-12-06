@@ -1,3 +1,15 @@
+2022-12-06  Marcel Vollweiler  <marcel@codesourcery>
+
+	Backported from master:
+	2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/target-teams-1.c: Adapt expected values for
+	num_teams from "1" to "-2" in cases without num_teams clause.
+	* g++.dg/gomp/target-teams-1.C: Likewise.
+	* gfortran.dg/gomp/defaultmap-4.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-5.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-6.f90: Likewise.
+
 2022-11-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
