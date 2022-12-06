@@ -330,6 +330,18 @@ frange_drop_ninf (frange &r, tree type)
   r.intersect (tmp);
 }
 
+// Crop R to [MIN, MAX] where MAX is the maximum representable number
+// for TYPE and MIN the minimum representable number for TYPE.
+
+static inline void
+frange_drop_infs (frange &r, tree type)
+{
+  REAL_VALUE_TYPE max = real_max_representable (type);
+  REAL_VALUE_TYPE min = real_min_representable (type);
+  frange tmp (type, min, max);
+  r.intersect (tmp);
+}
+
 // If zero is in R, make sure both -0.0 and +0.0 are in the range.
 
 static inline void
@@ -1883,7 +1895,7 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
 
 static bool
 float_binary_op_range_finish (bool ret, frange &r, tree type,
-			      const frange &lhs)
+			      const frange &lhs, bool div_op2 = false)
 {
   if (!ret)
     return false;
@@ -1904,7 +1916,20 @@ float_binary_op_range_finish (bool ret, frange &r, tree type,
   // If lhs isn't NAN, then neither operand could be NAN,
   // even if the reverse operation does introduce a maybe_nan.
   if (!lhs.maybe_isnan ())
-    r.clear_nan ();
+    {
+      r.clear_nan ();
+      if (div_op2
+	  ? !(real_compare (LE_EXPR, &lhs.lower_bound (), &dconst0)
+	      && real_compare (GE_EXPR, &lhs.upper_bound (), &dconst0))
+	  : !(real_isinf (&lhs.lower_bound ())
+	      || real_isinf (&lhs.upper_bound ())))
+	// For reverse + or - or * or op1 of /, if result is finite, then
+	// r must be finite too, as X + INF or X - INF or X * INF or
+	// INF / X is always +-INF or NAN.  For op2 of /, if result is
+	// non-zero and not NAN, r must be finite, as X / INF is always
+	// 0 or NAN.
+	frange_drop_infs (r, type);
+    }
   // If lhs is a maybe or known NAN, the operand could be
   // NAN.
   else
@@ -2330,7 +2355,7 @@ public:
     if (!ret)
       return ret;
     if (lhs.known_isnan () || op1.known_isnan () || op1.undefined_p ())
-      return float_binary_op_range_finish (ret, r, type, lhs);
+      return float_binary_op_range_finish (ret, r, type, lhs, true);
     const REAL_VALUE_TYPE &lhs_lb = lhs.lower_bound ();
     const REAL_VALUE_TYPE &lhs_ub = lhs.upper_bound ();
     const REAL_VALUE_TYPE &op1_lb = op1.lower_bound ();
@@ -2347,7 +2372,7 @@ public:
 	zero_to_inf_range (lb, ub, signbit_known);
 	r.set (type, lb, ub);
       }
-    return float_binary_op_range_finish (ret, r, type, lhs);
+    return float_binary_op_range_finish (ret, r, type, lhs, true);
   }
 private:
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
