@@ -130,10 +130,8 @@ gm2_langhook_init_options_struct (struct gcc_options *opts)
   opts->x_flag_errno_math = 0;
   opts->frontend_set_flag_errno_math = true;
 
-  /* Exceptions are used to handle recovering from panics.  */
+  /* Exceptions are used.  */
   opts->x_flag_exceptions = 1;
-  opts->x_flag_non_call_exceptions = 1;
-
   init_FrontEndInit ();
 }
 
@@ -150,8 +148,6 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 {
   unsigned int i;
   bool in_cpp_args = false;
-
-  // filename_cpp = ggc_vec_alloc<bool> (decoded_options_count);
 
   for (i = 1; i < decoded_options_count; i++)
     {
@@ -471,6 +467,12 @@ gm2_langhook_type_for_mode (machine_mode mode, int unsignedp)
 {
   tree type;
 
+  for (int i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& mode == int_n_data[i].m)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
+
   if (VECTOR_MODE_P (mode))
     {
       tree inner;
@@ -496,9 +498,6 @@ gm2_langhook_type_for_mode (machine_mode mode, int unsignedp)
 
   if (COMPLEX_MODE_P (mode))
     {
-      machine_mode inner_mode;
-      tree inner_type;
-
       if (mode == TYPE_MODE (complex_float_type_node))
 	return complex_float_type_node;
       if (mode == TYPE_MODE (complex_double_type_node))
@@ -537,11 +536,7 @@ gm2_langhook_global_bindings_p (void)
   return current_function_decl == NULL_TREE;
 }
 
-/* Push a declaration into the current binding level.  We can't
-   usefully implement this since we don't want to convert from tree back
-   to one of our internal data structures.  I think the only way this is
-   used is to record a decl which is to be returned by getdecls, and we
-   could implement it for that purpose if necessary.  */
+/* Unused langhook.  */
 
 static tree
 gm2_langhook_pushdecl (tree decl ATTRIBUTE_UNUSED)
