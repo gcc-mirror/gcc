@@ -816,7 +816,8 @@ gm2_type_for_size (unsigned int bits, int unsignedp)
       else if (bits == LONG_LONG_TYPE_SIZE)
         type = long_long_unsigned_type_node;
       else
-        type = make_unsigned_type (bits);
+	type = build_nonstandard_integer_type (bits,
+					       unsignedp);
     }
   else
     {
@@ -831,7 +832,8 @@ gm2_type_for_size (unsigned int bits, int unsignedp)
       else if (bits == LONG_LONG_TYPE_SIZE)
         type = long_long_integer_type_node;
       else
-        type = make_signed_type (bits);
+	type = build_nonstandard_integer_type (bits,
+					       unsignedp);
     }
   return type;
 }
