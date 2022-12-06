@@ -22058,6 +22058,38 @@ aarch64_expand_vector_init (rtx target, rtx vals)
       return;
     }
 
+  /* Check for interleaving case.
+     For eg if initializer is (int16x8_t) {x, y, x, y, x, y, x, y}.
+     Generate following code:
+     dup v0.h, x
+     dup v1.h, y
+     zip1 v0.h, v0.h, v1.h
+     for "large enough" initializer.  */
+
+  if (n_elts >= 8)
+    {
+      int i;
+      for (i = 2; i < n_elts; i++)
+	if (!rtx_equal_p (XVECEXP (vals, 0, i), XVECEXP (vals, 0, i % 2)))
+	  break;
+
+      if (i == n_elts)
+	{
+	  machine_mode mode = GET_MODE (target);
+	  rtx dest[2];
+
+	  for (int i = 0; i < 2; i++)
+	    {
+	      rtx x = expand_vector_broadcast (mode, XVECEXP (vals, 0, i));
+	      dest[i] = force_reg (mode, x);
+	    }
+
+	  rtvec v = gen_rtvec (2, dest[0], dest[1]);
+	  emit_set_insn (target, gen_rtx_UNSPEC (mode, v, UNSPEC_ZIP1));
+	  return;
+	}
+    }
+
   enum insn_code icode = optab_handler (vec_set_optab, mode);
   gcc_assert (icode != CODE_FOR_nothing);
 
