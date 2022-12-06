@@ -1150,6 +1150,18 @@ limit_worker_threads (int threads)
   return threads;
 }
 
+/* This sets the maximum number of teams to twice the number of GPU Compute
+   Units to avoid memory waste and corresponding memory access faults.  */
+
+static int
+limit_teams (int teams, struct agent_info *agent)
+{
+  int max_teams = 2 * get_cu_count (agent);
+  if (teams > max_teams)
+    teams = max_teams;
+  return teams;
+}
+
 /* Parse the target attributes INPUT provided by the compiler and return true
    if we should run anything all.  If INPUT is NULL, fill DEF with default
    values, then store INPUT or DEF into *RESULT.
@@ -1194,7 +1206,7 @@ parse_target_attributes (void **input,
 	  switch (id & GOMP_TARGET_ARG_ID_MASK)
 	    {
 	    case GOMP_TARGET_ARG_NUM_TEAMS:
-	      gcn_teams = val;
+	      gcn_teams = limit_teams (val, agent);
 	      break;
 	    case GOMP_TARGET_ARG_THREAD_LIMIT:
 	      gcn_threads = limit_worker_threads (val);

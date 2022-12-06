@@ -97,3 +97,20 @@ omp_set_num_teams (int num_teams)
 }
 
 ialias (omp_set_num_teams)
+
+int
+omp_get_teams_thread_limit (void)
+{
+  return gomp_teams_thread_limit_var;
+}
+
+ialias (omp_get_teams_thread_limit)
+
+void
+omp_set_teams_thread_limit (int thread_limit)
+{
+  if (thread_limit >= 0)
+    gomp_teams_thread_limit_var = thread_limit;
+}
+
+ialias (omp_set_teams_thread_limit)
