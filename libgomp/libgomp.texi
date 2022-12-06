@@ -406,7 +406,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{allocate} and @code{firstprivate} clauses on @code{scope}
       @tab Y @tab
 @item @code{ompt_callback_work} @tab N @tab
-@item Default map-type for @code{map} clause in @code{target enter/exit data}
+@item Default map-type for the @code{map} clause in @code{target enter/exit data}
       @tab Y @tab
 @item New @code{doacross} clause as alias for @code{depend} with
       @code{source}/@code{sink} modifier @tab Y @tab
@@ -463,6 +463,7 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item @code{access} allocator trait changes @tab N @tab
 @item Extension of @code{interop} operation of @code{append_args}, allowing all
       modifiers of the @code{init} clause
+      @tab N @tab
 @item @code{interop} clause to @code{dispatch} @tab N @tab
 @item @code{apply} code to loop-transforming constructs @tab N @tab
 @item @code{omp_curr_progress_width} identifier @tab N @tab
