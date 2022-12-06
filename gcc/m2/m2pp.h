@@ -28,6 +28,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #      define EXTERN extern
 #   endif
 
+namespace modula2 {
 /* These functions allow a maintainer to dump the trees in Modula-2.  */
 
 EXTERN void pf (tree t);
@@ -36,7 +37,7 @@ EXTERN void pt (tree t);
 EXTERN void ptl (tree t);
 EXTERN void pv (tree t);
 EXTERN void ptcl (tree t);
-
+}
 
 #   undef EXTERN
 #endif

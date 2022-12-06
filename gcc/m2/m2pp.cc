@@ -42,6 +42,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define M2PP_C
 #include "m2/m2pp.h"
 
+namespace modula2 {
+
 #undef DEBUGGING
 
 typedef struct pretty_t
@@ -342,7 +344,7 @@ pv (tree t)
               m2pp_print (state, ", abstract origin = ");
               m2pp_identifier (state, DECL_ABSTRACT_ORIGIN (t));
               m2pp_print (state, ">\n");
-              pv (DECL_ABSTRACT_ORIGIN (t));
+	      modula2::pv (DECL_ABSTRACT_ORIGIN (t));
             }
           killPretty (state);
         }
@@ -361,7 +363,7 @@ pv (tree t)
               m2pp_print (state, ", abstract origin = ");
               m2pp_identifier (state, DECL_ABSTRACT_ORIGIN (t));
               m2pp_print (state, "> *)\n");
-              pv (DECL_ABSTRACT_ORIGIN (t));
+	      modula2::pv (DECL_ABSTRACT_ORIGIN (t));
             }
           killPretty (state);
         }
@@ -2640,4 +2642,6 @@ m2pp_component_ref (pretty *s, tree t)
   m2pp_simple_expression (s, TREE_OPERAND (t, 0));
   m2pp_print (s, ".");
   m2pp_simple_expression (s, TREE_OPERAND (t, 1));
+}
+
 }
