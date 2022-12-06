@@ -8474,7 +8474,8 @@ fold_simple (tree t)
 static GTY((deletable)) hash_map<tree, tree> *cv_cache;
 
 tree
-maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
+maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
+		      bool manifestly_const_eval /* = false */)
 {
   tree r;
 
