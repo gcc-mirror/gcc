@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
 #include "diagnostic-metadata.h"
+#include "analyzer/call-details.h"
 
 #if ENABLE_ANALYZER
 

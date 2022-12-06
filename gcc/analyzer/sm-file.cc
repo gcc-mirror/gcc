@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "analyzer/call-details.h"
 
 #if ENABLE_ANALYZER
 

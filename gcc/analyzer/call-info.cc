@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
+#include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
 #include "make-unique.h"
 

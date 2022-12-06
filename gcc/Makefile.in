@@ -1256,6 +1256,7 @@ ANALYZER_OBJS = \
 	analyzer/analyzer-selftests.o \
 	analyzer/bar-chart.o \
 	analyzer/bounds-checking.o \
+	analyzer/call-details.o \
 	analyzer/call-info.o \
 	analyzer/call-string.o \
 	analyzer/call-summary.o \
@@ -1268,6 +1269,8 @@ ANALYZER_OBJS = \
 	analyzer/feasible-graph.o \
 	analyzer/function-set.o \
 	analyzer/infinite-recursion.o \
+	analyzer/kf-analyzer.o \
+	analyzer/kf-lang-cp.o \
 	analyzer/known-function-manager.o \
 	analyzer/pending-diagnostic.o \
 	analyzer/program-point.o \

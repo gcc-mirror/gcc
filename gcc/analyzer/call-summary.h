@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_CALL_SUMMARY_H
 #define GCC_ANALYZER_CALL_SUMMARY_H
 
+#include "call-details.h"
+
 namespace ana {
 
 /* A class summarizing one particular outcome of a function that

@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-language.h"
+#include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
 
 #if ENABLE_ANALYZER

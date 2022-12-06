@@ -41,6 +41,7 @@
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
 #include "make-unique.h"
 
