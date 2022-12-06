@@ -237,6 +237,17 @@ region_model_manager::get_or_create_int_cst (tree type, poly_int64 val)
   return get_or_create_constant_svalue (tree_cst);
 }
 
+/* Return the svalue * for the constant_svalue for the NULL pointer
+   of POINTER_TYPE, creating it if necessary.  */
+
+const svalue *
+region_model_manager::get_or_create_null_ptr (tree pointer_type)
+{
+  gcc_assert (pointer_type);
+  gcc_assert (POINTER_TYPE_P (pointer_type));
+  return get_or_create_int_cst (pointer_type, 0);
+}
+
 /* Return the svalue * for a unknown_svalue for TYPE (which can be NULL),
    creating it if necessary.
    The unknown_svalue instances are reused, based on pointer equality

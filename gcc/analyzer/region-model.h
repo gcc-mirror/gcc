@@ -530,7 +530,9 @@ private:
   int poison_any_pointers_to_descendents (const region *reg,
 					  enum poison_kind pkind);
 
-  void on_top_level_param (tree param, region_model_context *ctxt);
+  void on_top_level_param (tree param,
+			   bool nonnull,
+			   region_model_context *ctxt);
 
   bool called_from_main_p () const;
   const svalue *get_initial_value_for_global (const region *reg) const;

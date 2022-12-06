@@ -4385,11 +4385,13 @@ region_model::apply_constraints_for_exception (const gimple *last_stmt,
    PARAM has a defined but unknown initial value.
    Anything it points to has escaped, since the calling context "knows"
    the pointer, and thus calls to unknown functions could read/write into
-   the region.  */
+   the region.
+   If NONNULL is true, then assume that PARAM must be non-NULL.  */
 
 void
 region_model::on_top_level_param (tree param,
-				   region_model_context *ctxt)
+				  bool nonnull,
+				  region_model_context *ctxt)
 {
   if (POINTER_TYPE_P (TREE_TYPE (param)))
     {
@@ -4398,6 +4400,12 @@ region_model::on_top_level_param (tree param,
 	= m_mgr->get_or_create_initial_value (param_reg);
       const region *pointee_reg = m_mgr->get_symbolic_region (init_ptr_sval);
       m_store.mark_as_escaped (pointee_reg);
+      if (nonnull)
+	{
+	  const svalue *null_ptr_sval
+	    = m_mgr->get_or_create_null_ptr (TREE_TYPE (param));
+	  add_constraint (init_ptr_sval, NE_EXPR, null_ptr_sval, ctxt);
+	}
     }
 }
 
@@ -4453,14 +4461,27 @@ region_model::push_frame (function *fun, const vec<const svalue *> *arg_svals,
 	 have defined but unknown initial values.
 	 Anything they point to has escaped.  */
       tree fndecl = fun->decl;
+
+      /* Handle "__attribute__((nonnull))".   */
+      tree fntype = TREE_TYPE (fndecl);
+      bitmap nonnull_args = get_nonnull_args (fntype);
+
+      unsigned parm_idx = 0;
       for (tree iter_parm = DECL_ARGUMENTS (fndecl); iter_parm;
 	   iter_parm = DECL_CHAIN (iter_parm))
 	{
+	  bool non_null = (nonnull_args
+			   ? (bitmap_empty_p (nonnull_args)
+			      || bitmap_bit_p (nonnull_args, parm_idx))
+			   : false);
 	  if (tree parm_default_ssa = ssa_default_def (fun, iter_parm))
-	    on_top_level_param (parm_default_ssa, ctxt);
+	    on_top_level_param (parm_default_ssa, non_null, ctxt);
 	  else
-	    on_top_level_param (iter_parm, ctxt);
+	    on_top_level_param (iter_parm, non_null, ctxt);
+	  parm_idx++;
 	}
+
+      BITMAP_FREE (nonnull_args);
     }
 
   return m_current_frame;
