@@ -7087,6 +7087,7 @@ extern void set_global_friend			(tree);
 extern bool is_global_friend			(tree);
 
 /* in init.cc */
+extern tree find_temps_r			(tree *, int *, void *);
 extern tree expand_member_init			(tree);
 extern void emit_mem_initializers		(tree);
 extern tree build_aggr_init			(tree, tree, int,

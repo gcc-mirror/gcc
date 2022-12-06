@@ -25445,6 +25445,7 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
   location_t finish_loc = cp_lexer_peek_token (parser->lexer)->location;
   braces.require_close (parser);
   TREE_TYPE (initializer) = init_list_type_node;
+  recompute_constructor_flags (initializer);
 
   cp_expr result (initializer);
   /* Build a location of the form:

@@ -4154,6 +4154,134 @@ add_list_candidates (tree fns, tree first_arg,
 		  access_path, flags, candidates, complain);
 }
 
+/* Given C(std::initializer_list<A>), return A.  */
+
+static tree
+list_ctor_element_type (tree fn)
+{
+  gcc_checking_assert (is_list_ctor (fn));
+
+  tree parm = FUNCTION_FIRST_USER_PARMTYPE (fn);
+  parm = non_reference (TREE_VALUE (parm));
+  return TREE_VEC_ELT (CLASSTYPE_TI_ARGS (parm), 0);
+}
+
+/* If EXPR is a braced-init-list where the elements all decay to the same type,
+   return that type.  */
+
+static tree
+braced_init_element_type (tree expr)
+{
+  if (TREE_CODE (expr) == CONSTRUCTOR
+      && TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE)
+    return TREE_TYPE (TREE_TYPE (expr));
+  if (!BRACE_ENCLOSED_INITIALIZER_P (expr))
+    return NULL_TREE;
+
+  tree elttype = NULL_TREE;
+  for (constructor_elt &e: CONSTRUCTOR_ELTS (expr))
+    {
+      tree type = TREE_TYPE (e.value);
+      type = type_decays_to (type);
+      if (!elttype)
+	elttype = type;
+      else if (!same_type_p (type, elttype))
+	return NULL_TREE;
+    }
+  return elttype;
+}
+
+/* True iff EXPR contains any temporaries with non-trivial destruction.
+
+   ??? Also ignore classes with non-trivial but no-op destruction other than
+   std::allocator?  */
+
+static bool
+has_non_trivial_temporaries (tree expr)
+{
+  auto_vec<tree*> temps;
+  cp_walk_tree_without_duplicates (&expr, find_temps_r, &temps);
+  for (tree *p : temps)
+    {
+      tree t = TREE_TYPE (*p);
+      if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (t)
+	  && !is_std_allocator (t))
+	return true;
+    }
+  return false;
+}
+
+/* We're initializing an array of ELTTYPE from INIT.  If it seems useful,
+   return INIT as an array (of its own type) so the caller can initialize the
+   target array in a loop.  */
+
+static tree
+maybe_init_list_as_array (tree elttype, tree init)
+{
+  /* Only do this if the array can go in rodata but not once converted.  */
+  if (!CLASS_TYPE_P (elttype))
+    return NULL_TREE;
+  tree init_elttype = braced_init_element_type (init);
+  if (!init_elttype || !SCALAR_TYPE_P (init_elttype) || !TREE_CONSTANT (init))
+    return NULL_TREE;
+
+  tree first = CONSTRUCTOR_ELT (init, 0)->value;
+  if (TREE_CODE (init_elttype) == INTEGER_TYPE && null_ptr_cst_p (first))
+    /* Avoid confusion from treating 0 as a null pointer constant.  */
+    first = build1 (UNARY_PLUS_EXPR, init_elttype, first);
+  first = (perform_implicit_conversion_flags
+	   (elttype, first, tf_none, LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING));
+  if (first == error_mark_node)
+    /* Let the normal code give the error.  */
+    return NULL_TREE;
+
+  /* Don't do this if the conversion would be constant.  */
+  first = maybe_constant_init (first);
+  if (TREE_CONSTANT (first))
+    return NULL_TREE;
+
+  /* We can't do this if the conversion creates temporaries that need
+     to live until the whole array is initialized.  */
+  if (has_non_trivial_temporaries (first))
+    return NULL_TREE;
+
+  init_elttype = cp_build_qualified_type (init_elttype, TYPE_QUAL_CONST);
+  tree arr = build_array_of_n_type (init_elttype, CONSTRUCTOR_NELTS (init));
+  return finish_compound_literal (arr, init, tf_none);
+}
+
+/* If we were going to call e.g. vector(initializer_list<string>) starting
+   with a list of string-literals (which is inefficient, see PR105838),
+   instead build an array of const char* and pass it to the range constructor.
+   But only do this for standard library types, where we can assume the
+   transformation makes sense.
+
+   Really the container classes should have initializer_list<U> constructors to
+   get the same effect more simply; this is working around that lack.  */
+
+static tree
+maybe_init_list_as_range (tree fn, tree expr)
+{
+  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+      && is_list_ctor (fn)
+      && decl_in_std_namespace_p (fn))
+    {
+      tree to = list_ctor_element_type (fn);
+      if (tree init = maybe_init_list_as_array (to, expr))
+	{
+	  tree begin = decay_conversion (TARGET_EXPR_SLOT (init), tf_none);
+	  tree nelts = array_type_nelts_top (TREE_TYPE (init));
+	  tree end = cp_build_binary_op (input_location, PLUS_EXPR, begin,
+					 nelts, tf_none);
+	  begin = cp_build_compound_expr (init, begin, tf_none);
+	  return build_constructor_va (init_list_type_node, 2,
+				       NULL_TREE, begin, NULL_TREE, end);
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* Returns the best overload candidate to perform the requested
    conversion.  This function is used for three the overloading situations
    described in [over.match.copy], [over.match.conv], and [over.match.ref].
@@ -4424,6 +4552,16 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 
       return cand;
     }
+
+  /* Maybe pass { } as iterators instead of an initializer_list.  */
+  if (tree iters = maybe_init_list_as_range (cand->fn, expr))
+    if (z_candidate *cand2
+	= build_user_type_conversion_1 (totype, iters, flags, tf_none))
+      if (cand2->viable == 1)
+	{
+	  cand = cand2;
+	  expr = iters;
+	}
 
   tree convtype;
   if (!DECL_CONSTRUCTOR_P (cand->fn))
