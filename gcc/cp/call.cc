@@ -8541,7 +8541,16 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	unsigned len = CONSTRUCTOR_NELTS (expr);
 	tree array;
 
-	if (len)
+	if (tree init = maybe_init_list_as_array (elttype, expr))
+	  {
+	    elttype = cp_build_qualified_type
+	      (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
+	    array = build_array_of_n_type (elttype, len);
+	    array = build_vec_init_expr (array, init, complain);
+	    array = get_target_expr (array);
+	    array = cp_build_addr_expr (array, complain);
+	  }
+	else if (len)
 	  {
 	    tree val; unsigned ix;
 
