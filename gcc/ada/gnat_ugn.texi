@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 01, 2022
+GNAT User's Guide for Native Platforms , Jan 02, 2023
 
 AdaCore
 
@@ -22450,8 +22450,8 @@ Debug Pool info:
 
 
 This appendix contains information relating to the implementation
-of run-time libraries on various platforms and also covers
-topics related to the GNAT implementation on Windows and Mac OS.
+of run-time libraries on various platforms and also covers topics
+related to the GNAT implementation on specific Operating Systems.
 
 @menu
 * Run-Time Libraries:: 

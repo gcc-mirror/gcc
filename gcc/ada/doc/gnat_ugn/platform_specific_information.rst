@@ -13,8 +13,8 @@ Platform-Specific Information
 *****************************
 
 This appendix contains information relating to the implementation
-of run-time libraries on various platforms and also covers
-topics related to the GNAT implementation on Windows and Mac OS.
+of run-time libraries on various platforms and also covers topics
+related to the GNAT implementation on specific Operating Systems.
 
 .. _`Run_Time_Libraries`:
 
