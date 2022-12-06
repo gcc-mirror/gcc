@@ -127,8 +127,12 @@ binding_key::make (store_manager *mgr, const region *r)
     {
       bit_size_t bit_size;
       if (r->get_bit_size (&bit_size))
-	return mgr->get_concrete_binding (offset.get_bit_offset (),
-					  bit_size);
+	{
+	  /* Must be non-empty.  */
+	  gcc_assert (bit_size > 0);
+	  return mgr->get_concrete_binding (offset.get_bit_offset (),
+					    bit_size);
+	}
       else
 	return mgr->get_symbolic_binding (r);
     }
@@ -1464,6 +1468,9 @@ binding_cluster::mark_region_as_unknown (store_manager *mgr,
 					 const region *reg_for_overlap,
 					 uncertainty_t *uncertainty)
 {
+  if (reg_to_bind->empty_p ())
+    return;
+
   remove_overlapping_bindings (mgr, reg_for_overlap, uncertainty);
 
   /* Add a default binding to "unknown".  */
@@ -1516,6 +1523,8 @@ const svalue *
 binding_cluster::get_binding (store_manager *mgr,
 			      const region *reg) const
 {
+  if (reg->empty_p ())
+    return NULL;
   const binding_key *reg_binding = binding_key::make (mgr, reg);
   const svalue *sval = m_map.get (reg_binding);
   if (sval)
@@ -1800,6 +1809,8 @@ binding_cluster::remove_overlapping_bindings (store_manager *mgr,
 					      const region *reg,
 					      uncertainty_t *uncertainty)
 {
+  if (reg->empty_p ())
+    return;
   const binding_key *reg_binding = binding_key::make (mgr, reg);
 
   const region *cluster_base_reg = get_base_region ();
@@ -2007,11 +2018,14 @@ binding_cluster::on_unknown_fncall (const gcall *call,
     {
       m_map.empty ();
 
-      /* Bind it to a new "conjured" value using CALL.  */
-      const svalue *sval
-	= mgr->get_svalue_manager ()->get_or_create_conjured_svalue
+      if (!m_base_region->empty_p ())
+	{
+	  /* Bind it to a new "conjured" value using CALL.  */
+	  const svalue *sval
+	    = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
 	    (m_base_region->get_type (), call, m_base_region, p);
-      bind (mgr, m_base_region, sval);
+	  bind (mgr, m_base_region, sval);
+	}
 
       m_touched = true;
     }
@@ -2742,6 +2756,10 @@ store::purge_region (store_manager *mgr, const region *reg)
 void
 store::fill_region (store_manager *mgr, const region *reg, const svalue *sval)
 {
+  /* Filling an empty region is a no-op.  */
+  if (reg->empty_p ())
+    return;
+
   const region *base_reg = reg->get_base_region ();
   if (base_reg->symbolic_for_unknown_ptr_p ()
       || !base_reg->tracked_p ())

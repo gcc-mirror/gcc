@@ -233,6 +233,8 @@ public:
 
   bool is_named_decl_p (const char *decl_name) const;
 
+  bool empty_p () const;
+
  protected:
   region (complexity c, unsigned id, const region *parent, tree type);
 

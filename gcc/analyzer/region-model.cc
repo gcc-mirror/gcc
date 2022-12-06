@@ -2321,6 +2321,10 @@ const svalue *
 region_model::get_store_value (const region *reg,
 			       region_model_context *ctxt) const
 {
+  /* Getting the value of an empty region gives an unknown_svalue.  */
+  if (reg->empty_p ())
+    return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
+
   check_region_for_read (reg, ctxt);
 
   /* Special-case: handle var_decls in the constant pool.  */
@@ -3158,6 +3162,10 @@ region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
 {
   gcc_assert (lhs_reg);
   gcc_assert (rhs_sval);
+
+  /* Setting the value of an empty region is a no-op.  */
+  if (lhs_reg->empty_p ())
+    return;
 
   check_region_size (lhs_reg, rhs_sval, ctxt);
 
