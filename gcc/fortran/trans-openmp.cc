@@ -5968,6 +5968,39 @@ gfc_add_clause_implicitly (gfc_omp_clauses *clauses_out,
     }
 }
 
+/* Kind of opposite to above, add firstprivate to CLAUSES_OUT if it is mapped
+   in CLAUSES_IN's FIRSTPRIVATE list but not its MAP list.  */
+
+static void
+gfc_add_firstprivate_if_unmapped (gfc_omp_clauses *clauses_out,
+				  gfc_omp_clauses *clauses_in)
+{
+  gfc_omp_namelist *n = clauses_in->lists[OMP_LIST_FIRSTPRIVATE];
+  gfc_omp_namelist **tail = NULL;
+
+  for (; n != NULL; n = n->next)
+    {
+      gfc_omp_namelist *n2 = clauses_out->lists[OMP_LIST_MAP];
+      for (; n2 != NULL; n2 = n2->next)
+	if (n->sym == n2->sym)
+	  break;
+      if (n2 == NULL)
+	{
+	  gfc_omp_namelist *dup = gfc_get_omp_namelist ();
+	  *dup = *n;
+	  dup->next = NULL;
+	  if (!tail)
+	    {
+	      tail = &clauses_out->lists[OMP_LIST_FIRSTPRIVATE];
+	      while (*tail && (*tail)->next)
+		tail = &(*tail)->next;
+	    }
+	  *tail = dup;
+	  tail = &(*tail)->next;
+	}
+    }
+}
+
 static void
 gfc_free_split_omp_clauses (gfc_code *code, gfc_omp_clauses *clausesa)
 {
@@ -6351,8 +6384,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	 simd and masked/master.  Put it on the outermost of those and duplicate
 	 on parallel and teams.  */
       if (mask & GFC_OMP_MASK_TARGET)
-	clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_FIRSTPRIVATE]
-	  = code->ext.omp_clauses->lists[OMP_LIST_FIRSTPRIVATE];
+	gfc_add_firstprivate_if_unmapped (&clausesa[GFC_OMP_SPLIT_TARGET],
+					  code->ext.omp_clauses);
       if (mask & GFC_OMP_MASK_TEAMS)
 	clausesa[GFC_OMP_SPLIT_TEAMS].lists[OMP_LIST_FIRSTPRIVATE]
 	  = code->ext.omp_clauses->lists[OMP_LIST_FIRSTPRIVATE];
