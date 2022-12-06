@@ -11836,7 +11836,7 @@ package body Exp_Ch4 is
 
          if Is_Fixed_Point_Type (Etype (Expr)) then
             Ityp := Small_Integer_Type_For
-                      (Esize (Base_Type (Etype (Expr))), False);
+                      (Esize (Base_Type (Etype (Expr))), Uns => False);
 
             --  Generate a temporary with the integer type to facilitate in the
             --  C backend the code generation for the unchecked conversion.
@@ -12206,7 +12206,7 @@ package body Exp_Ch4 is
             declare
                Expr_Id : constant Entity_Id := Make_Temporary (Loc, 'T', Conv);
                Int_Typ : constant Entity_Id :=
-                           Small_Integer_Type_For (RM_Size (Btyp), False);
+                 Small_Integer_Type_For (RM_Size (Btyp), Uns => False);
 
             begin
                --  Generate a temporary with the integer value. Required in the

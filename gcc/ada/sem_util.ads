@@ -2976,16 +2976,16 @@ package Sem_Util is
 
    function Rep_To_Pos_Flag (E : Entity_Id; Loc : Source_Ptr) return Node_Id;
    --  This is used to construct the second argument in a call to Rep_To_Pos
-   --  which is Standard_True if range checks are enabled (E is an entity to
-   --  which the Range_Checks_Suppressed test is applied), and Standard_False
-   --  if range checks are suppressed. Loc is the location for the node that
-   --  is returned (which is a New_Occurrence of the appropriate entity).
+   --  which is True if range checks are enabled (E is an entity to which the
+   --  Range_Checks_Suppressed test is applied), and False if range checks are
+   --  suppressed. Loc is the location for the node that is returned (which is
+   --  a New_Occurrence of the appropriate entity).
    --
-   --  Note: one might think that it would be fine to always use True and
-   --  to ignore the suppress in this case, but it is generally better to
-   --  believe a request to suppress exceptions if possible, and further
-   --  more there is at least one case in the generated code (the code for
-   --  array assignment in a loop) that depends on this suppression.
+   --  Note: one might think that it would be fine to always use True and to
+   --  ignore the suppress in this case, but there is at least one case in the
+   --  generated code (the code for array assignment in a loop) that depends on
+   --  this suppression. Anyway, it is generally better to believe a request to
+   --  suppress exceptions if possible.
 
    procedure Require_Entity (N : Node_Id);
    --  N is a node which should have an entity value if it is an entity name.
