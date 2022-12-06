@@ -8040,17 +8040,34 @@ is enabled by @option{-Wall}.  It is more effective when @option{-ftree-vrp}
 is active (the default for @option{-O2} and above) but a subset of instances
 are issued even without optimization.
 
+By default, the trailing array of a structure will be treated as a flexible
+array member by @option{-Warray-bounds} or @option{-Warray-bounds=@var{n}}
+if it is declared as either a flexible array member per C99 standard onwards
+(@samp{[]}), a GCC zero-length array extension (@samp{[0]}), or an one-element
+array (@samp{[1]}). As a result, out of bounds subscripts or offsets into
+zero-length arrays or one-element arrays are not warned by default.
+
+You can add the option @option{-fstrict-flex-arrays} or
+@option{-fstrict-flex-arrays=@var{level}} to control how this
+option treat trailing array of a structure as a flexible array member:
+
+when @var{level}<=1, no change to the default behavior.
+
+when @var{level}=2, additional warnings will be issued for out of bounds
+subscripts or offsets into one-element arrays;
+
+when @var{level}=3, in addition to @var{level}=2, additional warnings will be
+issued for out of bounds subscripts or offsets into zero-length arrays.
+
 @table @gcctabopt
 @item -Warray-bounds=1
 This is the default warning level of @option{-Warray-bounds} and is enabled
 by @option{-Wall}; higher levels are not, and must be explicitly requested.
 
 @item -Warray-bounds=2
-This warning level also warns about out of bounds accesses to trailing
-struct members of one-element array types (@pxref{Zero Length}) and about
-the intermediate results of pointer arithmetic that may yield out of bounds
-values.  This warning level may give a larger number of false positives and
-is deactivated by default.
+This warning level also warns about the intermediate results of pointer
+arithmetic that may yield out of bounds values. This warning level may
+give a larger number of false positives and is deactivated by default.
 @end table
 
 @item -Warray-compare
