@@ -6440,11 +6440,7 @@ package body Exp_Ch6 is
       pragma Assert (Present (Exp));
 
       Exp_Is_Function_Call : constant Boolean :=
-        Nkind (Exp) = N_Function_Call
-          or else (Nkind (Exp) = N_Explicit_Dereference
-                   and then Is_Entity_Name (Prefix (Exp))
-                   and then Ekind (Entity (Prefix (Exp))) = E_Constant
-                   and then Is_Related_To_Func_Return (Entity (Prefix (Exp))));
+        Nkind (Exp) = N_Function_Call or else Is_Captured_Function_Call (Exp);
 
       Exp_Typ : constant Entity_Id := Etype (Exp);
       --  The type of the expression (not necessarily the same as R_Type)

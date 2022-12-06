@@ -8160,6 +8160,30 @@ package body Exp_Util is
       end if;
    end Integer_Type_For;
 
+   -------------------------------
+   -- Is_Captured_Function_Call --
+   -------------------------------
+
+   function Is_Captured_Function_Call (N : Node_Id) return Boolean is
+   begin
+      if Nkind (N) = N_Explicit_Dereference
+        and then Is_Entity_Name (Prefix (N))
+        and then Ekind (Entity (Prefix (N))) = E_Constant
+      then
+         declare
+            Value : constant Node_Id := Constant_Value (Entity (Prefix (N)));
+
+         begin
+            return Present (Value)
+              and then Nkind (Value) = N_Reference
+              and then Nkind (Prefix (Value)) = N_Function_Call;
+         end;
+
+      else
+         return False;
+      end if;
+   end Is_Captured_Function_Call;
+
    --------------------------------------------------
    -- Is_Displacement_Of_Object_Or_Function_Result --
    --------------------------------------------------

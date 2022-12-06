@@ -7901,18 +7901,16 @@ package body Exp_Ch3 is
                 --  secondary stack, then the declaration can be rewritten as
                 --  the renaming of this dereference:
 
-                --    type Axx is access all Typ;
-                --    Rxx : constant Axx := Func (...)'reference;
-                --    Obj : Typ renames Rxx.all;
+                --    type Ann is access all Typ;
+                --    Rnn : constant Axx := Func (...)'reference;
+                --    Obj : Typ renames Rnn.all;
 
                 --  This avoids an extra copy and, in the case where Typ needs
                 --  finalization, a pair of Adjust/Finalize calls (see below).
 
                 and then
                   ((not Is_Library_Level_Entity (Def_Id)
-                     and then Nkind (Expr_Q) = N_Explicit_Dereference
-                     and then not Comes_From_Source (Expr_Q)
-                     and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
+                     and then Is_Captured_Function_Call (Expr_Q)
                      and then not Is_Class_Wide_Type (Typ))
 
                    --  If the initializing expression is a variable with the
