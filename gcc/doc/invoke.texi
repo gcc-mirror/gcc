@@ -16510,6 +16510,16 @@ The option cannot be combined with @option{-fsanitize=thread} or
 @option{-fsanitize=hwaddress}.  Note that the only target
 @option{-fsanitize=hwaddress} is currently supported on is AArch64.
 
+To get more accurate stack traces, it is possible to use options such as
+@option{-O0}, @option{-O1}, or @option{-Og} (which, for instance, prevent
+most function inlining), @option{-fno-optimize-sibling-calls} (which prevents
+optimizing sibling and tail recursive calls; this option is implicit for
+@option{-O0}, @option{-O1}, or @option{-Og}), or @option{-fno-ipa-icf} (which
+disables Identical Code Folding for functions).  Since multiple runs of the
+program may yield backtraces with different addresses due to ASLR (Address
+Space Layout Randomization), it may be desirable to turn ASLR off.  On Linux,
+this can be achieved with @samp{setarch `uname -m` -R ./prog}.
+
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
