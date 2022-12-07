@@ -117,6 +117,7 @@ Rust Joined RejectNegative
 
 o
 Rust Joined Separate
+; Documented in common.opt
 
 frust-compile-until=
 Rust Joined RejectNegative Enum(frust_compile_until) Var(flag_rust_compile_until)
@@ -157,8 +158,5 @@ Enum(frust_compile_until) String(compilation) Value(9)
 
 EnumValue
 Enum(frust_compile_until) String(end) Value(10)
-
-
-; Documented in common.opt
 
 ; This comment is to ensure we retain the blank line above.
