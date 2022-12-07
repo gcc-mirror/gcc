@@ -350,6 +350,8 @@ btf_collect_datasec (ctf_container_ref ctfc)
       tree size = DECL_SIZE_UNIT (node->decl);
       if (tree_fits_uhwi_p (size))
 	info.size = tree_to_uhwi (size);
+      else if (VOID_TYPE_P (TREE_TYPE (node->decl)))
+	info.size = 1;
 
       /* Offset is left as 0 at compile time, to be filled in by loaders such
 	 as libbpf.  */
@@ -441,7 +443,7 @@ btf_dvd_emit_preprocess_cb (ctf_dvdef_ref *slot, ctf_container_ref arg_ctfc)
     return 1;
 
   /* Do not add variables which refer to unsupported types.  */
-  if (btf_removed_type_p (var->dvd_type))
+  if (!voids.contains (var->dvd_type) && btf_removed_type_p (var->dvd_type))
     return 1;
 
   arg_ctfc->ctfc_vars_list[num_vars_added] = var;
@@ -1075,14 +1077,48 @@ btf_init_postprocess (void)
 {
   ctf_container_ref tu_ctfc = ctf_get_tu_ctfc ();
 
-  size_t i;
-  size_t num_ctf_types = tu_ctfc->ctfc_types->elements ();
-
   holes.create (0);
   voids.create (0);
 
   num_types_added = 0;
   num_types_created = 0;
+
+  /* Workaround for 'const void' variables.  These variables are sometimes used
+     in eBPF programs to address kernel symbols.  DWARF does not generate const
+     qualifier on void type, so we would incorrectly emit these variables
+     without the const qualifier.
+     Unfortunately we need the TREE node to know it was const, and we need
+     to create the const modifier type (if needed) now, before making the types
+     list.  So we can't avoid iterating with FOR_EACH_VARIABLE here, and then
+     again when creating the DATASEC entries.  */
+  ctf_id_t constvoid_id = CTF_NULL_TYPEID;
+  varpool_node *var;
+  FOR_EACH_VARIABLE (var)
+    {
+      if (!var->decl)
+	continue;
+
+      tree type = TREE_TYPE (var->decl);
+      if (type && VOID_TYPE_P (type) && TYPE_READONLY (type))
+	{
+	  dw_die_ref die = lookup_decl_die (var->decl);
+	  if (die == NULL)
+	    continue;
+
+	  ctf_dvdef_ref dvd = ctf_dvd_lookup (tu_ctfc, die);
+	  if (dvd == NULL)
+	    continue;
+
+	  /* Create the 'const' modifier type for void.  */
+	  if (constvoid_id == CTF_NULL_TYPEID)
+	    constvoid_id = ctf_add_reftype (tu_ctfc, CTF_ADD_ROOT,
+					    dvd->dvd_type, CTF_K_CONST, NULL);
+	  dvd->dvd_type = constvoid_id;
+	}
+    }
+
+  size_t i;
+  size_t num_ctf_types = tu_ctfc->ctfc_types->elements ();
 
   if (num_ctf_types)
     {
