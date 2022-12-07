@@ -4845,11 +4845,13 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
   if (loop_vinfo)
     addr_base = fold_build_pointer_plus (data_ref_base, base_offset);
   else
-    {
-      addr_base = build1 (ADDR_EXPR,
-			  build_pointer_type (TREE_TYPE (DR_REF (dr))),
-			  unshare_expr (DR_REF (dr)));
-    }
+    addr_base = build1 (ADDR_EXPR,
+			build_pointer_type (TREE_TYPE (DR_REF (dr))),
+			/* Strip zero offset components since we don't need
+			   them and they can confuse late diagnostics if
+			   we CSE them wrongly.  See PR106904 for example.  */
+			unshare_expr (strip_zero_offset_components
+								(DR_REF (dr))));
 
   vect_ptr_type = build_pointer_type (TREE_TYPE (DR_REF (dr)));
   dest = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var, base_name);
