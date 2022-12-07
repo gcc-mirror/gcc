@@ -149,6 +149,8 @@ proc rust_init { args } {
 	lappend ALWAYS_RUSTFLAGS "additional_flags=$TOOL_OPTIONS"
     }
 
+	lappend ALWAYS_RUSTFLAGS "additional_flags=-frust-incomplete-and-experimental-compiler-do-not-use"	
+	
     verbose -log "ALWAYS_RUSTFLAGS set to $ALWAYS_RUSTFLAGS"
 
     set gcc_warning_prefix "warning:"
