@@ -6513,7 +6513,8 @@ aarch64_expand_sve_const_vector (rtx target, rtx src)
 	  /* If the integer can be moved into a general register by a
 	     single instruction, do that and duplicate the result.  */
 	  if (CONST_INT_P (elt_value)
-	      && aarch64_move_imm (INTVAL (elt_value), elt_mode))
+	      && aarch64_move_imm (INTVAL (elt_value),
+				   encoded_bits <= 32 ? SImode : DImode))
 	    {
 	      elt_value = force_reg (elt_mode, elt_value);
 	      return expand_vector_broadcast (mode, elt_value);
