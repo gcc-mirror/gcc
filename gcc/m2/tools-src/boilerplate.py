@@ -85,9 +85,9 @@ def analyse_comment(text, f):
             lic = 'GPL'
         elif text.find(GNU_LESSER_GENERAL) > 0:
             lic = 'LGPL'
-        for license in Licenses.keys():
-            if text.find(license) > 0:
-                lic += Licenses[license]
+        for license_ in Licenses.keys():
+            if text.find(license_) > 0:
+                lic += Licenses[license_]
         if text.find(GCC_RUNTIME_LIB_EXC) > 0:
             lic += 'x'
         now = datetime.datetime.now()
@@ -105,7 +105,7 @@ def analyse_comment(text, f):
         i = text.find(basename(f))
         j = text.find('. ', i)
         if j < 0:
-            error('summary of the file does not finish with a '.'')
+            error("summary of the file does not finish with a '.'")
             summary = text[i:]
         else:
             summary = text[i:j]
@@ -175,7 +175,7 @@ def add_stop(sentence):
     return sentence
 
 
-GPLv3 = '''
+GPLv3 = """
 %s
 
 Copyright (C) %s Free Software Foundation, Inc.
@@ -196,9 +196,9 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.
-'''
+"""
 
-GPLv3x = '''
+GPLv3x = """
 %s
 
 Copyright (C) %s Free Software Foundation, Inc.
@@ -224,9 +224,9 @@ You should have received a copy of the GNU General Public License and
 a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.
-'''
+"""
 
-LGPLv3 = '''
+LGPLv3 = """
 %s
 
 Copyright (C) %s Free Software Foundation, Inc.
@@ -246,9 +246,9 @@ Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with GNU Modula-2.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
-BSISO = '''
+BSISO = """
 Library module defined by the International Standard
    Information technology - programming languages
    BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
@@ -259,7 +259,7 @@ Library module defined by the International Standard
    It may be freely copied for the purpose of implementation (see page
    707 of the Information technology - Programming languages Part 1:
    Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).
-'''
+"""
 
 templates = {}
 templates['GPLv3'] = GPLv3

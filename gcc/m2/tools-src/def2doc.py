@@ -46,29 +46,39 @@ class state:
     def __init__(self):
         self._state_state = state_none
         self._block = block_none
-    def get_state (self):
+
+    def get_state(self):
         return self._state_state
-    def set_state (self, value):
+
+    def set_state(self, value):
         self._state_state = value
+
     def is_const(self):
         return self._state_state == state_const
+
     def is_type(self):
         return self._state_state == state_type
+
     def is_var(self):
         return self._state_state == state_var
+
     def get_block(self):
         return self._block
+
     def _change_block(self, new_block):
         if self._block != new_block:
             self._block = new_block
             self._emit_block_desc()
+
     def _emit_block_desc(self):
         if self._block == block_code:
             output.write('.. code-block:: modula2\n')
         elif self._block == block_index:
             output.write('.. index::\n')
+
     def to_code(self):
         self._change_block(block_code)
+
     def to_index(self):
         self._change_block(block_index)
 
@@ -169,8 +179,8 @@ def remove_fields(file, line):
     # fields from a comment within the start of a definition module.
     while (line.find('*)') == -1):
         if not removeable_field(line):
-            output.write(str.replace(str.replace(str.rstrip(line),
-                                                 '{', '@{'), '}', '@}') + '\n')
+            line = line.rstrip().replace('{', '@{').replace('}', '@}')
+            output.write(line + '\n')
         line = file.readline()
     output.write(line.rstrip() + '\n')
 
@@ -274,8 +284,8 @@ def emit_texinfo_content(f, line):
         line = line.rstrip()
         check_index(line)
         state_obj.to_code()
-        output.write(str.replace(str.replace(line, '{', '@{'), '}', '@}'))
-        output.write('\n')
+        line = line.replace('{', '@{').replace('}', '@}')
+        output.write(line + '\n')
         line = f.readline()
     return f
 
@@ -327,11 +337,11 @@ def emit_page(need_page):
         output.write('@page\n')
 
 
-def parse_definition(dir, source, build, file, need_page):
+def parse_definition(dir_, source, build, file, need_page):
     # parse_definition reads a definition module and creates
     # indices for procedures, constants, variables and types.
     output.write('\n')
-    with open(find_file(dir, build, source, file), 'r') as f:
+    with open(find_file(dir_, build, source, file), 'r') as f:
         init_state()
         line = f.readline()
         while (line.find('(*') != -1):
@@ -345,22 +355,22 @@ def parse_definition(dir, source, build, file, need_page):
         emit_page(need_page)
 
 
-def parse_modules(up, dir, build, source, list_of_modules):
+def parse_modules(up, dir_, build, source, list_of_modules):
     previous = ''
     i = 0
     if len(list_of_modules) > 1:
-        nxt = dir + '/' + list_of_modules[1][:-4]
+        nxt = dir_ + '/' + list_of_modules[1][:-4]
     else:
         nxt = ''
     while i < len(list_of_modules):
-        emit_node(dir + '/' + list_of_modules[i][:-4], nxt, previous, up)
-        emit_sub_section(dir + '/' + list_of_modules[i][:-4])
-        parse_definition(dir, source, build, list_of_modules[i], True)
+        emit_node(dir_ + '/' + list_of_modules[i][:-4], nxt, previous, up)
+        emit_sub_section(dir_ + '/' + list_of_modules[i][:-4])
+        parse_definition(dir_, source, build, list_of_modules[i], True)
         output.write('\n')
-        previous = dir + '/' + list_of_modules[i][:-4]
+        previous = dir_ + '/' + list_of_modules[i][:-4]
         i = i + 1
         if i+1 < len(list_of_modules):
-            nxt = dir + '/' + list_of_modules[i+1][:-4]
+            nxt = dir_ + '/' + list_of_modules[i+1][:-4]
         else:
             nxt = ''
 
@@ -374,54 +384,54 @@ def do_cat(name):
             line = file.readline()
 
 
-def module_menu(dir, build, source):
+def module_menu(dir_, build, source):
     # module_menu generates a simple menu for all definition modules
     # in dir
     output.write('@menu\n')
     list_of_files = []
-    if os.path.exists(os.path.join(source, dir)):
-        list_of_files += os.listdir(os.path.join(source, dir))
-    if os.path.exists(os.path.join(source, dir)):
-        list_of_files += os.listdir(os.path.join(build, dir))
+    if os.path.exists(os.path.join(source, dir_)):
+        list_of_files += os.listdir(os.path.join(source, dir_))
+    if os.path.exists(os.path.join(source, dir_)):
+        list_of_files += os.listdir(os.path.join(build, dir_))
     list_of_files = list(dict.fromkeys(list_of_files).keys())
     list_of_files.sort()
     for file in list_of_files:
-        if found_file(dir, build, source, file):
+        if found_file(dir_, build, source, file):
             if (len(file) > 4) and (file[-4:] == '.def'):
-                output.write('* ' + dir + '/' + file[:-4] + '::' + file + '\n')
+                output.write('* ' + dir_ + '/' + file[:-4] + '::' + file + '\n')
     output.write('@end menu\n')
     output.write('\n')
 
 
-def check_directory(dir, build, source):
+def check_directory(dir_, build, source):
     # check_directory - returns True if dir exists in either build or source.
-    if os.path.isdir(build) and os.path.exists(os.path.join(build, dir)):
+    if os.path.isdir(build) and os.path.exists(os.path.join(build, dir_)):
         return True
-    elif os.path.isdir(source) and os.path.exists(os.path.join(source, dir)):
+    elif os.path.isdir(source) and os.path.exists(os.path.join(source, dir_)):
         return True
     else:
         return False
 
 
-def found_file(dir, build, source, file):
+def found_file(dir_, build, source, file):
     # found_file return True if file is found in build/dir/file or
     # source/dir/file.
-    name = os.path.join(os.path.join(build, dir), file)
+    name = os.path.join(os.path.join(build, dir_), file)
     if os.path.exists(name):
         return True
-    name = os.path.join(os.path.join(source, dir), file)
+    name = os.path.join(os.path.join(source, dir_), file)
     if os.path.exists(name):
         return True
     return False
 
 
-def find_file(dir, build, source, file):
+def find_file(dir_, build, source, file):
     # find_file return the path to file searching in build/dir/file
     # first then source/dir/file.
-    name1 = os.path.join(os.path.join(build, dir), file)
+    name1 = os.path.join(os.path.join(build, dir_), file)
     if os.path.exists(name1):
         return name1
-    name2 = os.path.join(os.path.join(source, dir), file)
+    name2 = os.path.join(os.path.join(source, dir_), file)
     if os.path.exists(name2):
         return name2
     sys.stderr.write('file cannot be found in either ' + name1)
@@ -429,35 +439,35 @@ def find_file(dir, build, source, file):
     os.sys.exit(1)
 
 
-def display_modules(up, dir, build, source):
+def display_modules(up, dir_, build, source):
     # display_modules walks though the files in dir and parses
     # definition modules and includes README.texi
-    if check_directory(dir, build, source):
+    if check_directory(dir_, build, source):
         if args.texinfo:
-            ext = ".texi"
+            ext = '.texi'
         elif args.sphinx:
-            ext = ".rst"
+            ext = '.rst'
         else:
-            ext = ""
-        if found_file(dir, build, source, 'README' + ext):
-            do_cat(find_file(dir, build, source, 'README' + ext))
-        module_menu(dir, build, source)
+            ext = ''
+        if found_file(dir_, build, source, 'README' + ext):
+            do_cat(find_file(dir_, build, source, 'README' + ext))
+        module_menu(dir_, build, source)
         list_of_files = []
-        if os.path.exists(os.path.join(source, dir)):
-            list_of_files += os.listdir(os.path.join(source, dir))
-        if os.path.exists(os.path.join(source, dir)):
-            list_of_files += os.listdir(os.path.join(build, dir))
+        if os.path.exists(os.path.join(source, dir_)):
+            list_of_files += os.listdir(os.path.join(source, dir_))
+        if os.path.exists(os.path.join(source, dir_)):
+            list_of_files += os.listdir(os.path.join(build, dir_))
         list_of_files = list(dict.fromkeys(list_of_files).keys())
         list_of_files.sort()
         list_of_modules = []
         for file in list_of_files:
-            if found_file(dir, build, source, file):
+            if found_file(dir_, build, source, file):
                 if (len(file) > 4) and (file[-4:] == '.def'):
                     list_of_modules += [file]
         list_of_modules.sort()
-        parse_modules(up, dir, build, source, list_of_modules)
+        parse_modules(up, dir_, build, source, list_of_modules)
     else:
-        line = 'directory ' + dir + ' not found in either '
+        line = 'directory ' + dir_ + ' not found in either '
         line += build + ' or ' + source
         sys.stderr.write(line + '\n')
 
@@ -465,11 +475,11 @@ def display_modules(up, dir, build, source):
 def display_copyright():
     output.write('@c Copyright (C) 2000-2022 Free Software Foundation, Inc.\n')
     output.write('@c This file is part of GNU Modula-2.\n')
-    output.write('''
+    output.write("""
 @c Permission is granted to copy, distribute and/or modify this document
 @c under the terms of the GNU Free Documentation License, Version 1.2 or
 @c any later version published by the Free Software Foundation.
-''')
+""")
 
 
 def collect_args():

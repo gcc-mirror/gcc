@@ -22,9 +22,9 @@
 # 02110-1301, USA.
 
 import os
-import sys
 import pathlib
 import shutil
+import sys
 
 max_line_length = 60
 
@@ -126,7 +126,7 @@ def handle_header(filename, leader1, leader2):
             for i in lines:
                 if i.find('Copyright (C)') >= 0:
                     outfile, n = handle_copyright(outfile, lines,
-                                                 n, leader1, leader2)
+                                                  n, leader1, leader2)
                     outfile.writelines(lines[n:])
                     outfile.close()
                     print('-> mv tmptidy', filename)
