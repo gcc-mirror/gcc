@@ -158,7 +158,7 @@ symtab_node::address_can_be_compared_p ()
      flag_merge_constants permits us to assume the same on readonly vars.  */
   if (is_a <varpool_node *> (this)
       && (DECL_IN_CONSTANT_POOL (decl)
-	  || (flag_merge_constants >= 2
+	  || ((flag_merge_constants >= 2 || DECL_MERGEABLE (decl))
 	      && TREE_READONLY (decl) && !TREE_THIS_VOLATILE (decl))))
     return false;
   return true;

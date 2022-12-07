@@ -5045,7 +5045,14 @@ handle_no_unique_addr_attribute (tree* node,
 				 int /*flags*/,
 				 bool* no_add_attrs)
 {
-  if (TREE_CODE (*node) != FIELD_DECL)
+  if (TREE_CODE (*node) == VAR_DECL)
+    {
+      DECL_MERGEABLE (*node) = true;
+      if (pedantic)
+	warning (OPT_Wattributes, "%qE attribute can only be applied to "
+		 "non-static data members", name);
+    }
+  else if (TREE_CODE (*node) != FIELD_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute can only be applied to "
 	       "non-static data members", name);

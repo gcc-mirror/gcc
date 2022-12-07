@@ -7032,7 +7032,7 @@ categorize_decl_for_section (const_tree decl, int reloc)
 	}
       else if (reloc & targetm.asm_out.reloc_rw_mask ())
 	ret = reloc == 1 ? SECCAT_DATA_REL_RO_LOCAL : SECCAT_DATA_REL_RO;
-      else if (reloc || flag_merge_constants < 2
+      else if (reloc || (flag_merge_constants < 2 && !DECL_MERGEABLE (decl))
 	       || ((flag_sanitize & SANITIZE_ADDRESS)
 		   /* PR 81697: for architectures that use section anchors we
 		      need to ignore DECL_RTL_SET_P (decl) for string constants

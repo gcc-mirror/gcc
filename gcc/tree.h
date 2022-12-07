@@ -3233,6 +3233,12 @@ extern void decl_fini_priority_insert (tree, priority_type);
 #define DECL_NONALIASED(NODE) \
   (VAR_DECL_CHECK (NODE)->base.nothrow_flag)
 
+/* In a VAR_DECL, nonzero if this variable is not required to have a distinct
+   address from other variables with the same constant value.  In other words,
+   consider -fmerge-all-constants to be on for this VAR_DECL.  */
+#define DECL_MERGEABLE(NODE) \
+  (VAR_DECL_CHECK (NODE)->decl_common.decl_flag_3)
+
 /* This field is used to reference anything in decl.result and is meant only
    for use by the garbage collector.  */
 #define DECL_RESULT_FLD(NODE) \

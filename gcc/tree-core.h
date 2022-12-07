@@ -1803,7 +1803,8 @@ struct GTY(()) tree_decl_common {
      In VAR_DECL, PARM_DECL and RESULT_DECL, this is
      DECL_HAS_VALUE_EXPR_P.  */
   unsigned decl_flag_2 : 1;
-  /* In FIELD_DECL, this is DECL_PADDING_P.  */
+  /* In FIELD_DECL, this is DECL_PADDING_P.
+     In VAR_DECL, this is DECL_MERGEABLE.  */
   unsigned decl_flag_3 : 1;
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */

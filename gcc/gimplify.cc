@@ -5253,7 +5253,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    && TREE_READONLY (object)
 	    && VAR_P (object)
 	    && !DECL_REGISTER (object)
-	    && (flag_merge_constants >= 2 || !TREE_ADDRESSABLE (object))
+	    && (flag_merge_constants >= 2 || !TREE_ADDRESSABLE (object)
+		|| DECL_MERGEABLE (object))
 	    /* For ctors that have many repeated nonzero elements
 	       represented through RANGE_EXPRs, prefer initializing
 	       those through runtime loops over copies of large amounts
