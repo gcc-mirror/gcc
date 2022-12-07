@@ -290,7 +290,35 @@ btf_datasec_push_entry (ctf_container_ref ctfc, const char *secname,
   ds.entries.safe_push (info);
 
   datasecs.safe_push (ds);
-  num_types_created++;
+}
+
+
+/* Return the section name, as of interest to btf_collect_datasec, for the
+   given symtab node.  Note that this deliberately returns NULL for objects
+   which do not go in a section btf_collect_datasec cares about.  */
+static const char *
+get_section_name (symtab_node *node)
+{
+  const char *section_name = node->get_section ();
+
+  if (section_name == NULL)
+    {
+      switch (categorize_decl_for_section (node->decl, 0))
+	{
+	case SECCAT_BSS:
+	  section_name = ".bss";
+	  break;
+	case SECCAT_DATA:
+	  section_name = ".data";
+	  break;
+	case SECCAT_RODATA:
+	  section_name = ".rodata";
+	  break;
+	default:;
+	}
+    }
+
+  return section_name;
 }
 
 /* Construct all BTF_KIND_DATASEC records for CTFC. One such record is created
@@ -301,7 +329,60 @@ btf_datasec_push_entry (ctf_container_ref ctfc, const char *secname,
 static void
 btf_collect_datasec (ctf_container_ref ctfc)
 {
-  /* See cgraph.h struct symtab_node, which varpool_node extends.  */
+  cgraph_node *func;
+  FOR_EACH_FUNCTION (func)
+    {
+      dw_die_ref die = lookup_decl_die (func->decl);
+      if (die == NULL)
+	continue;
+
+      ctf_dtdef_ref dtd = ctf_dtd_lookup (ctfc, die);
+      if (dtd == NULL)
+	continue;
+
+      /* Functions actually get two types: a BTF_KIND_FUNC_PROTO, and
+	 also a BTF_KIND_FUNC.  But the CTF container only allocates one
+	 type per function, which matches closely with BTF_KIND_FUNC_PROTO.
+	 For each such function, also allocate a BTF_KIND_FUNC entry.
+	 These will be output later.  */
+      ctf_dtdef_ref func_dtd = ggc_cleared_alloc<ctf_dtdef_t> ();
+      func_dtd->dtd_data = dtd->dtd_data;
+      func_dtd->dtd_data.ctti_type = dtd->dtd_type;
+      func_dtd->linkage = dtd->linkage;
+      func_dtd->dtd_type = num_types_added + num_types_created;
+
+      /* Only the BTF_KIND_FUNC type actually references the name. The
+	 BTF_KIND_FUNC_PROTO is always anonymous.  */
+      dtd->dtd_data.ctti_name = 0;
+
+      vec_safe_push (funcs, func_dtd);
+      num_types_created++;
+
+      /* Mark any 'extern' funcs and add DATASEC entries for them.  */
+      if (DECL_EXTERNAL (func->decl))
+	{
+	  func_dtd->linkage = BTF_FUNC_EXTERN;
+
+	  const char *section_name = get_section_name (func);
+	  /* Note: get_section_name () returns NULL for functions in text
+	     section.  This is intentional, since we do not want to generate
+	     DATASEC entries for them.  */
+	  if (section_name == NULL)
+	    continue;
+
+	  struct btf_var_secinfo info;
+
+	  /* +1 for the sentinel type not in the types map.  */
+	  info.type = func_dtd->dtd_type + 1;
+
+	  /* Both zero at compile time.  */
+	  info.size = 0;
+	  info.offset = 0;
+
+	  btf_datasec_push_entry (ctfc, section_name, info);
+	}
+    }
+
   varpool_node *node;
   FOR_EACH_VARIABLE (node)
     {
@@ -313,28 +394,13 @@ btf_collect_datasec (ctf_container_ref ctfc)
       if (dvd == NULL)
 	continue;
 
-      const char *section_name = node->get_section ();
       /* Mark extern variables.  */
       if (DECL_EXTERNAL (node->decl))
 	dvd->dvd_visibility = BTF_VAR_GLOBAL_EXTERN;
 
+      const char *section_name = get_section_name (node);
       if (section_name == NULL)
-	{
-	  switch (categorize_decl_for_section (node->decl, 0))
-	    {
-	    case SECCAT_BSS:
-	      section_name = ".bss";
-	      break;
-	    case SECCAT_DATA:
-	      section_name = ".data";
-	      break;
-	    case SECCAT_RODATA:
-	      section_name = ".rodata";
-	      break;
-	    default:
-	      continue;
-	    }
-	}
+	continue;
 
       struct btf_var_secinfo info;
 
@@ -359,6 +425,8 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
       btf_datasec_push_entry (ctfc, section_name, info);
     }
+
+  num_types_created += datasecs.length ();
 }
 
 /* Return true if the type ID is that of a type which will not be emitted (for
@@ -462,29 +530,6 @@ btf_dtd_emit_preprocess_cb (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 {
   if (!btf_emit_id_p (dtd->dtd_type))
     return;
-
-  uint32_t btf_kind
-    = get_btf_kind (CTF_V2_INFO_KIND (dtd->dtd_data.ctti_info));
-
-  if (btf_kind == BTF_KIND_FUNC_PROTO)
-    {
-      /* Functions actually get two types: a BTF_KIND_FUNC_PROTO, and
-	 also a BTF_KIND_FUNC. But the CTF container only allocates one
-	 type per function, which matches closely with BTF_KIND_FUNC_PROTO.
-	 For each such function, also allocate a BTF_KIND_FUNC entry.
-	 These will be output later.  */
-      ctf_dtdef_ref func_dtd = ggc_cleared_alloc<ctf_dtdef_t> ();
-      func_dtd->dtd_data = dtd->dtd_data;
-      func_dtd->dtd_data.ctti_type = dtd->dtd_type;
-      func_dtd->linkage = dtd->linkage;
-
-      vec_safe_push (funcs, func_dtd);
-      num_types_created++;
-
-      /* Only the BTF_KIND_FUNC type actually references the name. The
-	 BTF_KIND_FUNC_PROTO is always anonymous.  */
-      dtd->dtd_data.ctti_name = 0;
-    }
 
   ctfc->ctfc_num_vlen_bytes += btf_calc_num_vbytes (dtd);
 }
