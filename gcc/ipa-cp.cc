@@ -4225,7 +4225,7 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
 	for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
 	  {
 	    profile_count count = cs->count.ipa ();
-	    if (!(count > profile_count::zero ()))
+	    if (!count.nonzero_p ())
 	      continue;
 
 	    enum availability avail;
