@@ -27,6 +27,12 @@ enum processor_type
   PROCESSOR_GFX90a
 };
 
+#define TARGET_FIJI (gcn_arch == PROCESSOR_FIJI)
+#define TARGET_VEGA10 (gcn_arch == PROCESSOR_VEGA10)
+#define TARGET_VEGA20 (gcn_arch == PROCESSOR_VEGA20)
+#define TARGET_GFX908 (gcn_arch == PROCESSOR_GFX908)
+#define TARGET_GFX90a (gcn_arch == PROCESSOR_GFX90a)
+
 /* Set in gcn_option_override.  */
 extern enum gcn_isa {
   ISA_UNKNOWN,

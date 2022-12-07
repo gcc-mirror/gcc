@@ -358,9 +358,11 @@ package Einfo is
 --
 --       For objects, the Actual_Subtype is set only if this is a discriminated
 --       type. For arrays, the bounds of the expression are obtained and the
---       Etype of the object is directly the constrained subtype. This is
---       rather irregular, and the semantic checks that depend on the nominal
---       subtype being unconstrained use flag Is_Constr_Subt_For_U_Nominal(qv).
+--       Etype of the object is directly the constrained subtype, except in the
+--       case of a return object that lives on the secondary stack where Etype
+--       is the nominal unconstrained subtype. This is rather irregular and the
+--       semantic checks that depend on the nominal subtype being unconstrained
+--       use flag Is_Constr_Subt_For_U_Nominal(qv).
 
 --    Address_Clause (synthesized)
 --       Applies to entries, objects and subprograms. Set if an address clause

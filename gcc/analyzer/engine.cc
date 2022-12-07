@@ -310,21 +310,17 @@ public:
   }
 
 
-  void set_next_state (const gimple *stmt,
+  void set_next_state (const gimple *,
 		       tree var,
 		       state_machine::state_t to,
 		       tree origin) final override
   {
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
-    impl_region_model_context new_ctxt (m_eg, m_enode_for_diag,
-					m_old_state, m_new_state,
-					NULL, NULL,
-					stmt);
     const svalue *var_new_sval
-      = m_new_state->m_region_model->get_rvalue (var, &new_ctxt);
+      = m_new_state->m_region_model->get_rvalue (var, NULL);
     const svalue *origin_new_sval
-      = m_new_state->m_region_model->get_rvalue (origin, &new_ctxt);
+      = m_new_state->m_region_model->get_rvalue (origin, NULL);
 
     /* We use the new sval here to avoid issues with uninitialized values.  */
     state_machine::state_t current
@@ -350,12 +346,8 @@ public:
       (m_eg, m_enode_for_diag, NULL, NULL, NULL/*m_enode->get_state ()*/,
        NULL, stmt);
 
-    impl_region_model_context new_ctxt (m_eg, m_enode_for_diag,
-					m_old_state, m_new_state,
-					NULL, NULL,
-					stmt);
     const svalue *origin_new_sval
-      = m_new_state->m_region_model->get_rvalue (origin, &new_ctxt);
+      = m_new_state->m_region_model->get_rvalue (origin, NULL);
 
     state_machine::state_t current
       = m_old_smap->get_state (sval, m_eg.get_ext_state ());
@@ -380,11 +372,8 @@ public:
   {
     LOG_FUNC (get_logger ());
     gcc_assert (d);
-    impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
-
     const svalue *var_old_sval
-      = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
+      = m_old_state->m_region_model->get_rvalue (var, NULL);
     state_machine::state_t current
       = (var
 	 ? m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ())
@@ -400,9 +389,6 @@ public:
   {
     LOG_FUNC (get_logger ());
     gcc_assert (d);
-    impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
-
     state_machine::state_t current
       = (sval
 	 ? m_old_smap->get_state (sval, m_eg.get_ext_state ())
@@ -1803,9 +1789,9 @@ public:
 	/* Compare with diagnostic_manager::add_events_for_superedge.  */
 	const int src_stack_depth = src_point.get_stack_depth ();
 	m_stack_pop_event = new precanned_custom_event
-	  (src_point.get_location (),
-	   src_point.get_fndecl (),
-	   src_stack_depth,
+	  (event_loc_info (src_point.get_location (),
+			   src_point.get_fndecl (),
+			   src_stack_depth),
 	   "stack frame is popped here, invalidating saved environment");
 	emission_path->add_event
 	  (std::unique_ptr<custom_event> (m_stack_pop_event));
@@ -2059,19 +2045,19 @@ dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
   if (m_is_returning_call)
     emission_path->add_event
       (make_unique<return_event> (eedge,
-				  (m_dynamic_call
-				   ? m_dynamic_call->location
-				   : UNKNOWN_LOCATION),
-				  dest_point.get_fndecl (),
-				  dest_stack_depth));
+				  event_loc_info (m_dynamic_call
+						  ? m_dynamic_call->location
+						  : UNKNOWN_LOCATION,
+						  dest_point.get_fndecl (),
+						  dest_stack_depth)));
   else
     emission_path->add_event
       (make_unique<call_event> (eedge,
-				(m_dynamic_call
-				 ? m_dynamic_call->location
-				 : UNKNOWN_LOCATION),
-				src_point.get_fndecl (),
-				src_stack_depth));
+				event_loc_info (m_dynamic_call
+						? m_dynamic_call->location
+						: UNKNOWN_LOCATION,
+						src_point.get_fndecl (),
+						src_stack_depth)));
 }
 
 /* class rewind_info_t : public custom_edge_info.  */
@@ -2117,14 +2103,18 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
 
   emission_path->add_event
     (make_unique<rewind_from_longjmp_event>
-     (&eedge, get_longjmp_call ()->location,
-      src_point.get_fndecl (),
-      src_stack_depth, this));
+     (&eedge,
+      event_loc_info (get_longjmp_call ()->location,
+		      src_point.get_fndecl (),
+		      src_stack_depth),
+      this));
   emission_path->add_event
     (make_unique<rewind_to_setjmp_event>
-     (&eedge, get_setjmp_call ()->location,
-      dst_point.get_fndecl (),
-      dst_stack_depth, this));
+     (&eedge,
+      event_loc_info (get_setjmp_call ()->location,
+		      dst_point.get_fndecl (),
+		      dst_stack_depth),
+      this));
 }
 
 /* class exploded_edge : public dedge<eg_traits>.  */
@@ -2665,9 +2655,9 @@ mark_params_as_tainted (program_state *state, tree fndecl,
 class tainted_args_function_custom_event : public custom_event
 {
 public:
-  tainted_args_function_custom_event (location_t loc, tree fndecl, int depth)
-  : custom_event (loc, fndecl, depth),
-    m_fndecl (fndecl)
+  tainted_args_function_custom_event (const event_loc_info &loc_info)
+  : custom_event (loc_info),
+    m_fndecl (loc_info.m_fndecl)
   {
   }
 
@@ -2711,7 +2701,7 @@ public:
   {
     emission_path->add_event
       (make_unique<tainted_args_function_custom_event>
-       (DECL_SOURCE_LOCATION (m_fndecl), m_fndecl, 0));
+       (event_loc_info (DECL_SOURCE_LOCATION (m_fndecl), m_fndecl, 0)));
   }
 
 private:
@@ -3083,7 +3073,7 @@ class tainted_args_field_custom_event : public custom_event
 {
 public:
   tainted_args_field_custom_event (tree field)
-  : custom_event (DECL_SOURCE_LOCATION (field), NULL_TREE, 0),
+  : custom_event (event_loc_info (DECL_SOURCE_LOCATION (field), NULL_TREE, 0)),
     m_field (field)
   {
   }
@@ -3107,9 +3097,9 @@ private:
 class tainted_args_callback_custom_event : public custom_event
 {
 public:
-  tainted_args_callback_custom_event (location_t loc, tree fndecl, int depth,
-				 tree field)
-  : custom_event (loc, fndecl, depth),
+  tainted_args_callback_custom_event (const event_loc_info &loc_info,
+				      tree field)
+  : custom_event (loc_info),
     m_field (field)
   {
   }
@@ -3162,8 +3152,9 @@ public:
        "(2) function 'gadget_dev_desc_UDC_store' used as initializer
        for field 'store' marked with '__attribute__((tainted_args))'".  */
     emission_path->add_event
-      (make_unique<tainted_args_callback_custom_event> (m_loc, m_fndecl,
-							0, m_field));
+      (make_unique<tainted_args_callback_custom_event>
+       (event_loc_info (m_loc, m_fndecl, 0),
+	m_field));
   }
 
 private:

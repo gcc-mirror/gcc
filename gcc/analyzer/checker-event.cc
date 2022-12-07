@@ -151,17 +151,19 @@ private:
 /* checker_event's ctor.  */
 
 checker_event::checker_event (enum event_kind kind,
-			      location_t loc, tree fndecl, int depth)
-: m_kind (kind), m_loc (loc),
-  m_original_fndecl (fndecl), m_effective_fndecl (fndecl),
-  m_original_depth (depth), m_effective_depth (depth),
+			      const event_loc_info &loc_info)
+: m_kind (kind), m_loc (loc_info.m_loc),
+  m_original_fndecl (loc_info.m_fndecl),
+  m_effective_fndecl (loc_info.m_fndecl),
+  m_original_depth (loc_info.m_depth),
+  m_effective_depth (loc_info.m_depth),
   m_pending_diagnostic (NULL), m_emission_id (),
-  m_logical_loc (fndecl)
+  m_logical_loc (loc_info.m_fndecl)
 {
   /* Update effective fndecl and depth if inlining has been recorded.  */
   if (flag_analyzer_undo_inlining)
     {
-      inlining_info info (loc);
+      inlining_info info (m_loc);
       if (info.get_inner_fndecl ())
 	{
 	  m_effective_fndecl = info.get_inner_fndecl ();
@@ -272,7 +274,8 @@ precanned_custom_event::get_desc (bool) const
 
 statement_event::statement_event (const gimple *stmt, tree fndecl, int depth,
 				  const program_state &dst_state)
-: checker_event (EK_STMT, gimple_location (stmt), fndecl, depth),
+: checker_event (EK_STMT,
+		 event_loc_info (gimple_location (stmt), fndecl, depth)),
   m_stmt (stmt),
   m_dst_state (dst_state)
 {
@@ -293,93 +296,85 @@ statement_event::get_desc (bool) const
 
 /* class region_creation_event : public checker_event.  */
 
-region_creation_event::region_creation_event (const region *reg,
-					      tree capacity,
-					      enum rce_kind kind,
-					      location_t loc,
-					      tree fndecl,
-					      int depth)
-: checker_event (EK_REGION_CREATION, loc, fndecl, depth),
-  m_reg (reg),
-  m_capacity (capacity),
-  m_rce_kind (kind)
+region_creation_event::region_creation_event (const event_loc_info &loc_info)
+: checker_event (EK_REGION_CREATION, loc_info)
 {
-  if (m_rce_kind == RCE_CAPACITY)
-    gcc_assert (capacity);
 }
 
-/* Implementation of diagnostic_event::get_desc vfunc for
-   region_creation_event.
-   There are effectively 3 kinds of region_region_event, to
-   avoid combinatorial explosion by trying to convy the
-   information in a single message.  */
+/* The various region_creation_event subclasses' get_desc
+   implementations.  */
 
 label_text
-region_creation_event::get_desc (bool can_colorize) const
+region_creation_event_memory_space::get_desc (bool) const
 {
-  if (m_pending_diagnostic)
-    {
-      label_text custom_desc
-	    = m_pending_diagnostic->describe_region_creation_event
-		(evdesc::region_creation (can_colorize, m_reg));
-      if (custom_desc.get ())
-	return custom_desc;
-    }
-
-  switch (m_rce_kind)
+  switch (m_mem_space)
     {
     default:
-      gcc_unreachable ();
+      return label_text::borrow ("region created here");
+    case MEMSPACE_STACK:
+      return label_text::borrow ("region created on stack here");
+    case MEMSPACE_HEAP:
+      return label_text::borrow ("region created on heap here");
+    }
+}
 
-    case RCE_MEM_SPACE:
-      switch (m_reg->get_memory_space ())
-	{
-	default:
-	  return label_text::borrow ("region created here");
-	case MEMSPACE_STACK:
-	  return label_text::borrow ("region created on stack here");
-	case MEMSPACE_HEAP:
-	  return label_text::borrow ("region created on heap here");
-	}
-      break;
+label_text
+region_creation_event_capacity::get_desc (bool can_colorize) const
+{
+  gcc_assert (m_capacity);
+  if (TREE_CODE (m_capacity) == INTEGER_CST)
+    {
+      unsigned HOST_WIDE_INT hwi = tree_to_uhwi (m_capacity);
+      return make_label_text_n (can_colorize,
+				hwi,
+				"capacity: %wu byte",
+				"capacity: %wu bytes",
+				hwi);
+    }
+  else
+    return make_label_text (can_colorize,
+			    "capacity: %qE bytes", m_capacity);
+}
 
-    case RCE_CAPACITY:
-      gcc_assert (m_capacity);
+label_text
+region_creation_event_allocation_size::get_desc (bool can_colorize) const
+{
+  if (m_capacity)
+    {
       if (TREE_CODE (m_capacity) == INTEGER_CST)
-	{
-	  unsigned HOST_WIDE_INT hwi = tree_to_uhwi (m_capacity);
-	  if (hwi == 1)
-	    return make_label_text (can_colorize,
-				    "capacity: %wu byte", hwi);
-	  else
-	    return make_label_text (can_colorize,
-				    "capacity: %wu bytes", hwi);
-	}
+	return make_label_text_n (can_colorize,
+				  tree_to_uhwi (m_capacity),
+				  "allocated %E byte here",
+				  "allocated %E bytes here",
+				  m_capacity);
       else
 	return make_label_text (can_colorize,
-				"capacity: %qE bytes", m_capacity);
-
-    case RCE_DEBUG:
-      {
-	pretty_printer pp;
-	pp_format_decoder (&pp) = default_tree_printer;
-	pp_string (&pp, "region creation: ");
-	m_reg->dump_to_pp (&pp, true);
-	if (m_capacity)
-	  pp_printf (&pp, " capacity: %qE", m_capacity);
-	return label_text::take (xstrdup (pp_formatted_text (&pp)));
-      }
-      break;
+				"allocated %qE bytes here",
+				m_capacity);
     }
+  return make_label_text (can_colorize, "allocated here");
+}
+
+label_text
+region_creation_event_debug::get_desc (bool) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_string (&pp, "region creation: ");
+  m_reg->dump_to_pp (&pp, true);
+  if (m_capacity)
+    pp_printf (&pp, " capacity: %qE", m_capacity);
+  return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
 
 /* class function_entry_event : public checker_event.  */
 
 function_entry_event::function_entry_event (const program_point &dst_point)
 : checker_event (EK_FUNCTION_ENTRY,
-		 dst_point.get_supernode ()->get_start_location (),
-		 dst_point.get_fndecl (),
-		 dst_point.get_stack_depth ())
+		 event_loc_info (dst_point.get_supernode
+				   ()->get_start_location (),
+				 dst_point.get_fndecl (),
+				 dst_point.get_stack_depth ()))
 {
 }
 
@@ -417,8 +412,9 @@ state_change_event::state_change_event (const supernode *node,
 					const svalue *origin,
 					const program_state &dst_state)
 : checker_event (EK_STATE_CHANGE,
-		 stmt->location, node->m_fun->decl,
-		 stack_depth),
+		 event_loc_info (stmt->location,
+				 node->m_fun->decl,
+				 stack_depth)),
   m_node (node), m_stmt (stmt), m_sm (sm),
   m_sval (sval), m_from (from), m_to (to),
   m_origin (origin),
@@ -585,8 +581,8 @@ superedge_event::should_filter_p (int verbosity) const
 
 superedge_event::superedge_event (enum event_kind kind,
 				  const exploded_edge &eedge,
-				  location_t loc, tree fndecl, int depth)
-: checker_event (kind, loc, fndecl, depth),
+				  const event_loc_info &loc_info)
+: checker_event (kind, loc_info),
   m_eedge (eedge), m_sedge (eedge.m_sedge),
   m_var (NULL_TREE), m_critical_state (0)
 {
@@ -606,8 +602,8 @@ cfg_edge_event::get_cfg_superedge () const
 
 cfg_edge_event::cfg_edge_event (enum event_kind kind,
 				const exploded_edge &eedge,
-				location_t loc, tree fndecl, int depth)
-: superedge_event (kind, eedge, loc, fndecl, depth)
+				const event_loc_info &loc_info)
+: superedge_event (kind, eedge, loc_info)
 {
   gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CFG_EDGE);
 }
@@ -822,8 +818,8 @@ start_cfg_edge_event::should_print_expr_p (tree expr)
 /* call_event's ctor.  */
 
 call_event::call_event (const exploded_edge &eedge,
-			location_t loc, tree fndecl, int depth)
-: superedge_event (EK_CALL_EDGE, eedge, loc, fndecl, depth)
+			const event_loc_info &loc_info)
+: superedge_event (EK_CALL_EDGE, eedge, loc_info)
 {
   if (eedge.m_sedge)
     gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
@@ -901,8 +897,8 @@ call_event::get_callee_fndecl () const
 /* return_event's ctor.  */
 
 return_event::return_event (const exploded_edge &eedge,
-			    location_t loc, tree fndecl, int depth)
-: superedge_event (EK_RETURN_EDGE, eedge, loc, fndecl, depth)
+			    const event_loc_info &loc_info)
+: superedge_event (EK_RETURN_EDGE, eedge, loc_info)
 {
   if (eedge.m_sedge)
     gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
@@ -1052,9 +1048,9 @@ rewind_event::get_setjmp_caller () const
 
 rewind_event::rewind_event (const exploded_edge *eedge,
 			    enum event_kind kind,
-			    location_t loc, tree fndecl, int depth,
+			    const event_loc_info &loc_info,
 			    const rewind_info_t *rewind_info)
-: checker_event (kind, loc, fndecl, depth),
+: checker_event (kind, loc_info),
   m_rewind_info (rewind_info),
   m_eedge (eedge)
 {

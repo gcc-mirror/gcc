@@ -3079,7 +3079,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     {
       fn = copy_operator_fn (pattern_fn, EQ_EXPR);
       DECL_ARTIFICIAL (fn) = 1;
-      TREE_TYPE (fn) = change_return_type (boolean_type_node, TREE_TYPE (fn));
+      apply_deduced_return_type (fn, boolean_type_node);
       return fn;
     }
 

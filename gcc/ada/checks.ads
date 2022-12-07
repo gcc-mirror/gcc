@@ -189,16 +189,6 @@ package Checks is
    --  Determines whether an expression node requires a run-time access
    --  check and if so inserts the appropriate run-time check.
 
-   procedure Apply_Accessibility_Check
-     (N           : Node_Id;
-      Typ         : Entity_Id;
-      Insert_Node : Node_Id);
-   --  Given a name N denoting an access parameter, emits a run-time
-   --  accessibility check (if necessary), checking that the level of
-   --  the object denoted by the access parameter is not deeper than the
-   --  level of the type Typ. Program_Error is raised if the check fails.
-   --  Insert_Node indicates the node where the check should be inserted.
-
    procedure Apply_Address_Clause_Check (E : Entity_Id; N : Node_Id);
    --  E is the entity for an object which has an address clause. If checks
    --  are enabled, then this procedure generates a check that the specified

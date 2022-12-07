@@ -1,3 +1,461 @@
+2022-12-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_bitmask_imm): Use unsigned type.
+	(aarch64_is_mov_xn_imm): New function.
+	(aarch64_move_imm): Refactor, assert mode is SImode or DImode.
+	(aarch64_internal_mov_immediate): Assert mode is SImode or DImode.
+	Simplify special cases.
+	(aarch64_uimm12_shift): Simplify code.
+	(aarch64_clamp_to_uimm12_shift): Likewise.
+	(aarch64_movw_imm): Rename to aarch64_is_movz.
+	(aarch64_float_const_rtx_p): Pass either SImode or DImode to
+	aarch64_internal_mov_immediate.
+	(aarch64_rtx_costs): Likewise.
+	* config/aarch64/aarch64.md (movdi_aarch64): Merge 'N' and 'M'
+	constraints into single 'O'.
+	(mov<mode>_aarch64): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_move_imm): Use unsigned.
+	(aarch64_bitmask_imm): Likewise.
+	(aarch64_uimm12_shift): Likewise.
+	(aarch64_is_mov_xn_imm): New prototype.
+	* config/aarch64/constraints.md: Add 'O' for 32/64-bit immediates,
+	limit 'N' to 64-bit only moves.
+
+2022-12-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	* attribs.cc (strict_flex_array_level_of): New function.
+	* attribs.h (strict_flex_array_level_of): Prototype for new function.
+	* doc/invoke.texi: Update -Warray-bounds by specifying the impact from
+	-fstrict-flex-arrays. Also update -Warray-bounds=2 by eliminating its
+	impact on treating trailing arrays as flexible array members.
+	* gimple-array-bounds.cc (get_up_bounds_for_array_ref): New function.
+	(check_out_of_bounds_and_warn): New function.
+	(array_bounds_checker::check_array_ref): Update with call to the above
+	new functions.
+	* tree.cc (array_ref_flexible_size_p): Add one new argument.
+	(component_ref_sam_type): New function.
+	(component_ref_size): Control with level of strict-flex-array.
+	* tree.h (array_ref_flexible_size_p): Update prototype.
+	(enum struct special_array_member): Add two new enum values.
+	(component_ref_sam_type): New prototype.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi: Drop out-of-date ideas for other checkers.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/call-details.o,
+	analyzer/kf-analyzer.o, and kf-lang-cp.o.
+
+2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gimplify.cc (optimize_target_teams): Set initial num_teams_upper
+	to "-2" instead of "1" for non-existing num_teams clause in order to
+	disambiguate from the case of an existing num_teams clause with value 1.
+
+2022-12-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/107987
+	* config/arm/mve.md (mve_vcmp<mve_cmp_op>q_n_<mode>,
+	@mve_vcmp<mve_cmp_op>q_n_f<mode>): Apply vec_duplicate to scalar
+	operand.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107969
+	* config/i386/i386.md (cbranchbf4, cstorebf4): Guard expanders
+	with the same condition as cbranchsf4 or cstoresf4 expanders.
+
+2022-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104475
+	* pointer-query.h (access_ref::ref_nullptr_p): New flag.
+	* pointer-query.cc (access_ref::access_ref): Initialize
+	ref_nullptr_p.
+	(compute_objsize_r): Set ref_nullptr_p if we treat it that way.
+	(access_ref::inform_access): If ref was treated as nullptr
+	based, indicate that.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107972
+	* range-op-float.cc (frange_drop_infs): New function.
+	(float_binary_op_range_finish): Add DIV_OP2 argument.  If DIV_OP2 is
+	false and lhs is finite or if DIV_OP2 is true and lhs is non-zero and
+	not NAN, r must be finite too.
+	(foperator_div::op2_range): Pass true to DIV_OP2 of
+	float_binary_op_range_finish.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107975
+	* range-op-float.cc (foperator_mult::op1_range,
+	foperator_div::op1_range, foperator_div::op2_range): Just
+	return float_binary_op_range_finish result if lhs is known
+	NAN, or the other operand is known NAN or UNDEFINED.
+
+2022-12-06  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init): Use dup
+	and zip1 for interleaving elements in vector initializer.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/40635
+	* tree-into-ssa.cc (rewrite_update_phi_arguments): Only
+	update the argument when the reaching definition is different
+	from the current argument.  Keep an existing argument
+	location.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106868
+	* gimple-ssa-warn-access.cc (pass_waccess::gimple_call_return_arg_ref):
+	Inline into single user ...
+	(pass_waccess::check_dangling_uses): ... here and adjust the
+	call and the PHI case to require that ref.aref is the address
+	of the decl.
+
+2022-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106805
+	* match.pd (cmp @0 REAL_CST@1): Don't optimize x cmp NaN
+	or NaN cmp x to false/true for cmp >/>=/</<= if -ftrapping-math.
+
+2022-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107879
+	* range-op-float.cc (foperator_mult::op1_range): If both
+	lhs and op2 ranges contain zero or both ranges contain
+	some infinity, set r range to zero_to_inf_range depending on
+	signbit_known_p.
+	(foperator_div::op2_range): Similarly for lhs and op1 ranges.
+	(foperator_div::op1_range): If lhs range contains zero and op2
+	range contains some infinity or vice versa, set r range to
+	zero_to_inf_range depending on signbit_known_p.
+	(foperator_div::rv_fold): Fix up condition for returning known NAN.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107833
+	PR tree-optimization/107839
+	* cfghooks.cc: Include tree.h.
+	* tree-ssa-loop-im.cc (movement_possibility): Wrap and
+	make stmts using any ssa_name_maybe_undef_p operand
+	to preserve execution.
+	(loop_invariant_motion_in_fun): Call mark_ssa_maybe_undefs
+	to init maybe-undefined status.
+	* tree-ssa-loop-ivopts.cc (ssa_name_maybe_undef_p,
+	ssa_name_set_maybe_undef, ssa_name_any_use_dominates_bb_p,
+	mark_ssa_maybe_undefs): Move ...
+	* tree-ssa.cc: ... here.
+	* tree-ssa.h (ssa_name_any_use_dominates_bb_p,
+	mark_ssa_maybe_undefs): Declare.
+	(ssa_name_maybe_undef_p, ssa_name_set_maybe_undef): Define.
+
+2022-12-05  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-optimization/107956
+	* tree-vect-patterns.cc (vect_recog_mask_conversion_pattern):
+	Check for NULL LHS on masked loads.
+
+2022-12-05  Kewen Lin  <linkw@linux.ibm.com>
+	    Richard Sandiford   <richard.sandiford@arm.com>
+
+	PR tree-optimization/107412
+	* gimple-fold.cc (gimple_fold_partial_load_store_mem_ref): Use
+	untruncated type for the length, and avoid to_constant and tree
+	arithmetic for subtraction.
+
+2022-12-02  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* function.cc (init_function_start): Use DECL_RESULT location
+	for -Waggregate-return warning.
+
+2022-12-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* fold-const.cc (fold_unary_loc): Check TREE_TYPE of node.
+	(tree_invalid_nonnegative_warnv_p): Likewise.
+
+2022-12-02  Jason Merrill  <jason@redhat.com>
+
+	* gcc.cc (validate_switches): Reset suffix/starred on loop.
+
+2022-12-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (curr_insn_transform): Check available hard
+	regs for pseudo and its subreg to decide what to reload.
+
+2022-12-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_expand_fast_convert_bf_to_sf): Use extendbfsf2_1 for
+	nonimmediate operand.
+
+2022-12-02  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106577
+	* config/i386/i386-expand.cc (ix86_vector_duplicate_value): Save/restore
+	recog_data around recog_memoized calls.
+
+2022-12-02  Michael Collison  <collison@rivosinc.com>
+
+	* match.pd ((x & 0x1) == 0) ? y : z <op> y
+	-> (-(typeof(y))(x & 0x1) & z) <op> y.
+
+2022-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107946
+	* params.opt (-param=max-unswitch-depth=): New.
+	* doc/invoke.texi (--param=max-unswitch-depth): Document.
+	* tree-ssa-loop-unswitch.cc (init_loop_unswitch_info): Honor
+	--param=max-unswitch-depth
+
+2022-12-02  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR bootstrap/59447
+	* configure: Regenerate.
+	* configure.ac: Document --with-dwarf2 flag as also
+	applying to later DWARF standards.
+	* doc/install.texi: Likewise.
+
+2022-12-02  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107934
+	* config/i386/i386.md (extendbfsf2_1): Change type from
+	sseishft to sseishft1.
+
+2022-12-01  Alex Coplan  <alex.coplan@arm.com>
+
+	* varasm.cc (assemble_variable): Fix type confusion bug when
+	checking for ".vtable_map_vars" section.
+
+2022-12-01  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (emit_pred_op): Adapt for mask mode.
+	* config/riscv/vector.md: Remove Tail && make policy operand for mask mode mov.
+
+2022-12-01  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum vlmul_type): New enum.
+	(get_vlmul): New function.
+	(get_ratio): Ditto.
+	* config/riscv/riscv-v.cc (struct mode_vtype_group): New struct.
+	(ENTRY): Adapt for attributes.
+	(enum vlmul_type): New enum.
+	(get_vlmul): New function.
+	(get_ratio): New function.
+	* config/riscv/riscv-vector-switch.def (ENTRY): Adapt for attributes.
+	* config/riscv/riscv.cc (ENTRY): Ditto.
+	* config/riscv/vector.md (false,true): Add attributes.
+
+2022-12-01  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (Wdm): New constraint.
+	* config/riscv/predicates.md (direct_broadcast_operand): New predicate.
+	* config/riscv/riscv-protos.h (RVV_VLMAX): New macro.
+	(emit_pred_op): Refine function.
+	* config/riscv/riscv-selftests.cc (run_const_vector_selftests): New function.
+	(run_broadcast_selftests): Ditto.
+	(BROADCAST_TEST): New tests.
+	(riscv_run_selftests): More tests.
+	* config/riscv/riscv-v.cc (emit_pred_move): Refine function.
+	(emit_vlmax_vsetvl): Ditto.
+	(emit_pred_op): Ditto.
+	(expand_const_vector): New function.
+	(legitimize_move): Add constant vector support.
+	* config/riscv/riscv.cc (riscv_print_operand): New asm print rule for const vector.
+	* config/riscv/riscv.h (X0_REGNUM): New macro.
+	* config/riscv/vector-iterators.md: New attribute.
+	* config/riscv/vector.md (vec_duplicate<mode>): New pattern.
+	(@pred_broadcast<mode>): New pattern.
+
+2022-12-01  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* config/gcn/gcn-opts.h (TARGET_FIJI): -march=fiji.
+	(TARGET_VEGA10): -march=gfx900.
+	(TARGET_VEGA20): -march=gfx906.
+	(TARGET_GFX908): -march=gfx908.
+	(TARGET_GFX90a): -march=gfx90a.
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS): Define a builtin that
+	uniquely maps to '-march'.
+
+2022-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107937
+	* gimple-predicate-analysis.h (predicate::is_true): New.
+	(predicate::is_false): Likewise.
+	(predicate::empty_val): Likewise.
+	(uninit_analysis::uninit_analysis): Properly initialize
+	def_preds.
+	* gimple-predicate-analysis.cc (simplify_1b): Indicate
+	whether the chain became empty.
+	(predicate::simplify): Release emptied chain before removing it.
+	(predicate::normalize): Replace temporary object with assertion.
+	(uninit_analysis::is_use_guarded): Deal with predicates
+	that simplify to true/false.
+
+2022-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107935
+	* tree-ssa-sccvn.cc (visit_phi): Honor forced VARYING on
+	backedges.
+
+2022-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107627
+	* config/i386/i386.md (*concat<mode><dwi>3_1, *concat<mode><dwi>3_2):
+	For operands which are zero_extend arguments allow memory if
+	output operand is a register.
+	(*concat<mode><dwi>3_3, *concat<mode><dwi>3_4): Likewise.  If
+	both input operands are memory, use early clobber on output operand.
+	* config/i386/i386-expand.cc (split_double_concat): Deal with corner
+	cases where one input is memory and the other is not and the address
+	of the memory input uses a register we'd overwrite before loading
+	the memory into a register.
+
+2022-12-01  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-call.cc (swap_endian_selector_for_mode):
+	Corrects comments of this function and make them clear.
+
+2022-12-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107863
+	* config/i386/i386-expand.cc (ix86_expand_vec_set_builtin):
+	Convert op1 to target mode whenever mode mismatch.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* diagnostic-path.h
+	(diagnostic_path::get_first_event_in_a_function): New decl.
+	* diagnostic.cc (diagnostic_path::get_first_event_in_a_function):
+	New.
+	(diagnostic_path::interprocedural_p): Ignore leading events that
+	are outside of any function.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/bounds-checking.o.
+
+2022-12-01  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100866
+	* config/rs6000/rs6000-call.cc (swap_endian_selector_for_mode):
+	Generate permute index directly for little endian targets.
+	* config/rs6000/vsx.md (revb_<mode>): Call vprem directly with
+	corresponding permute indexes.
+
+2022-11-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (addvdi3): Force operand 2 to a register.
+	Remove "addi,tsv,*" instruction from unamed pattern.
+	(subvdi3): Force operand 1 to a register.
+	Remove "subi,tsv" instruction from from unamed pattern.
+
+2022-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_cpymemdi): Specify clobber of CC reg.
+	(*aarch64_cpymemdi): Likewise.
+	(aarch64_movmemdi): Likewise.
+	(aarch64_setmemdi): Likewise.
+	(*aarch64_setmemdi): Likewise.
+
+2022-11-30  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.cc (bit_test_cluster::emit): Remove
+	dead variable bt_range.
+
+2022-11-30  Iskander Shakirzyanov  <iskander@ispras.ru>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR driver/107787
+	* common.opt (Warray-bounds): Turn into alias of
+	-Warray-bounds=1.
+	* builtins.cc (c_strlen): Use OPT_Warray_bounds_
+	instead of OPT_Warray_bounds.
+	* diagnostic-spec.cc (nowarn_spec_t::nowarn_spec_t): Ditto.
+	* gimple-array-bounds.cc (array_bounds_checker::check_array_ref,
+	array_bounds_checker::check_mem_ref,
+	array_bounds_checker::check_addr_expr,
+	array_bounds_checker::check_array_bounds): Ditto.
+	* gimple-ssa-warn-restrict.cc (maybe_diag_access_bounds): Ditto.
+
+2022-11-30  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/101301
+	PR tree-optimization/103680
+	* tree-switch-conversion.cc (bit_test_cluster::emit):
+	Handle correctly remaining probability.
+	(switch_decision_tree::try_switch_expansion): Fix BB's count
+	where a cluster expansion happens.
+	(switch_decision_tree::emit_cmp_and_jump_insns): Fill up also
+	BB count.
+	(switch_decision_tree::do_jump_if_equal): Likewise.
+	(switch_decision_tree::emit_case_nodes): Handle special case
+	for BT expansion which can also fallback to a default BB.
+	* tree-switch-conversion.h (cluster::cluster): Add
+	m_default_prob probability.
+
+2022-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107919
+	* gimple-predicate-analysis.cc (simplify_1): Rename to ...
+	(simplify_1a): .. this.
+	(simplify_1b): New.
+	(predicate::simplify): Call both simplify_1a and simplify_1b.
+
+2022-11-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-uninit.cc (find_uninit_use): Dump the edge for a
+	PHI node.
+
+2022-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107919
+	* gimple-predicate-analysis.cc (predicate::simplify_2):
+	Handle predicates of arbitrary length.
+
+2022-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107835
+	* tree-chrec.cc (chrec_apply): Don't handle "{a, +, a} (x-1)"
+	as "a*x" if type is a pointer type.
+
+2022-11-30  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_omp_device_kind_arch_isa): Add gfx803.
+	* config/gcn/t-omp-device: Add gfx803.
+
+2022-11-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/linux.h (STACK_CHECK_MOVING_SP):
+	Define this macro to 1.
+	* config/loongarch/loongarch.cc (STACK_CLASH_PROTECTION_GUARD_SIZE):
+	Size of guard page.
+	(loongarch_first_stack_step): Return the size of the first drop stack
+	according to whether stack checking is performed.
+	(loongarch_emit_probe_stack_range): Adjust the method of stack checking in prologue.
+	(loongarch_output_probe_stack_range): Delete useless code.
+	(loongarch_expand_prologue): Adjust the method of stack checking in prologue.
+	(loongarch_option_override_internal): Enforce that interval is the same
+	size as size so the mid-end does the right thing.
+	* config/loongarch/loongarch.h (STACK_CLASH_MAX_UNROLL_PAGES):
+	New macro decide whether to loop stack detection.
+
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	* doc/invoke.texi (Static Analyzer Options): Add isatty, ferror,
+	fileno, and getc to the list of functions known to the analyzer.
+
 2022-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/107852

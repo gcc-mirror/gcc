@@ -167,6 +167,9 @@ class diagnostic_path
   virtual const diagnostic_event & get_event (int idx) const = 0;
 
   bool interprocedural_p () const;
+
+private:
+  bool get_first_event_in_a_function (unsigned *out_idx) const;
 };
 
 /* Concrete subclasses.  */

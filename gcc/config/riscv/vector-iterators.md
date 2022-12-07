@@ -71,6 +71,15 @@
   (VNx1DF "VNx1BI") (VNx2DF "VNx2BI") (VNx4DF "VNx4BI") (VNx8DF "VNx8BI")
 ])
 
+(define_mode_attr VEL [
+  (VNx1QI "QI") (VNx2QI "QI") (VNx4QI "QI") (VNx8QI "QI") (VNx16QI "QI") (VNx32QI "QI") (VNx64QI "QI")
+  (VNx1HI "HI") (VNx2HI "HI") (VNx4HI "HI") (VNx8HI "HI") (VNx16HI "HI") (VNx32HI "HI")
+  (VNx1SI "SI") (VNx2SI "SI") (VNx4SI "SI") (VNx8SI "SI") (VNx16SI "SI")
+  (VNx1DI "DI") (VNx2DI "DI") (VNx4DI "DI") (VNx8DI "DI")
+  (VNx1SF "SF") (VNx2SF "SF") (VNx4SF "SF") (VNx8SF "SF") (VNx16SF "SF")
+  (VNx1DF "DF") (VNx2DF "DF") (VNx4DF "DF") (VNx8DF "DF")
+])
+
 (define_mode_attr sew [
   (VNx1QI "8") (VNx2QI "8") (VNx4QI "8") (VNx8QI "8") (VNx16QI "8") (VNx32QI "8") (VNx64QI "8")
   (VNx1HI "16") (VNx2HI "16") (VNx4HI "16") (VNx8HI "16") (VNx16HI "16") (VNx32HI "16")

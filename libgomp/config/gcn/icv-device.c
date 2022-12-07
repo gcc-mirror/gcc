@@ -81,6 +81,19 @@ omp_set_num_teams (int num_teams)
     GOMP_ADDITIONAL_ICVS.nteams = num_teams;
 }
 
+int
+omp_get_teams_thread_limit (void)
+{
+  return GOMP_ADDITIONAL_ICVS.teams_thread_limit;
+}
+
+void
+omp_set_teams_thread_limit (int thread_limit)
+{
+  if (thread_limit >= 0)
+    GOMP_ADDITIONAL_ICVS.teams_thread_limit = thread_limit;
+}
+
 ialias (omp_set_default_device)
 ialias (omp_get_default_device)
 ialias (omp_get_initial_device)
@@ -89,3 +102,5 @@ ialias (omp_is_initial_device)
 ialias (omp_get_device_num)
 ialias (omp_get_max_teams)
 ialias (omp_set_num_teams)
+ialias (omp_get_teams_thread_limit)
+ialias (omp_set_teams_thread_limit)

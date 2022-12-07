@@ -715,14 +715,20 @@ struct norm_hasher : ggc_ptr_hash<norm_entry>
 {
   static hashval_t hash (norm_entry *e)
   {
-    hashval_t hash = iterative_hash_template_arg (e->tmpl, 0);
-    return iterative_hash_template_arg (e->args, hash);
+    ++comparing_specializations;
+    hashval_t val = iterative_hash_template_arg (e->tmpl, 0);
+    val = iterative_hash_template_arg (e->args, val);
+    --comparing_specializations;
+    return val;
   }
 
   static bool equal (norm_entry *e1, norm_entry *e2)
   {
-    return e1->tmpl == e2->tmpl
+    ++comparing_specializations;
+    bool eq = e1->tmpl == e2->tmpl
       && template_args_equal (e1->args, e2->args);
+    --comparing_specializations;
+    return eq;
   }
 };
 
@@ -2530,6 +2536,9 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 {
   static hashval_t hash (sat_entry *e)
   {
+    auto cso = make_temp_override (comparing_specializations);
+    ++comparing_specializations;
+
     if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e->atom))
       {
 	/* Atoms with instantiated mappings are built during satisfaction.
@@ -2564,6 +2573,9 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 
   static bool equal (sat_entry *e1, sat_entry *e2)
   {
+    auto cso = make_temp_override (comparing_specializations);
+    ++comparing_specializations;
+
     if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->atom)
 	!= ATOMIC_CONSTR_MAP_INSTANTIATED_P (e2->atom))
       return false;

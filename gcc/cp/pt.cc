@@ -4492,18 +4492,23 @@ struct ctp_hasher : ggc_ptr_hash<tree_node>
 {
   static hashval_t hash (tree t)
   {
+    ++comparing_specializations;
     tree_code code = TREE_CODE (t);
     hashval_t val = iterative_hash_object (code, 0);
     val = iterative_hash_object (TEMPLATE_TYPE_LEVEL (t), val);
     val = iterative_hash_object (TEMPLATE_TYPE_IDX (t), val);
     if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
       val = iterative_hash_template_arg (TYPE_TI_ARGS (t), val);
+    --comparing_specializations;
     return val;
   }
 
   static bool equal (tree t, tree u)
   {
-    return comptypes (t, u, COMPARE_STRUCTURAL);
+    ++comparing_specializations;
+    bool eq = comptypes (t, u, COMPARE_STRUCTURAL);
+    --comparing_specializations;
+    return eq;
   }
 };
 
@@ -10568,21 +10573,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return error_mark_node;
       break;
 
-    case REQUIRES_EXPR:
-      {
-	if (!fn)
-	  return error_mark_node;
-
-	/* Recursively walk the type of each constraint variable.  */
-	tree p = TREE_OPERAND (t, 0);
-	while (p)
-	  {
-	    WALK_SUBTREE (TREE_TYPE (p));
-	    p = TREE_CHAIN (p);
-	  }
-      }
-      break;
-
     default:
       break;
     }
@@ -11561,7 +11551,7 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
   tree r = copy_node (t);
 
   /* Rebuild the result variable.  */
-  if (POSTCONDITION_P (t) && POSTCONDITION_IDENTIFIER (t))
+  if (type && POSTCONDITION_P (t) && POSTCONDITION_IDENTIFIER (t))
     {
       tree oldvar = POSTCONDITION_IDENTIFIER (t);
 
@@ -17061,13 +17051,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (DECL_TEMPLATE_PARM_P (t))
 	  return tsubst_copy (DECL_INITIAL (t), args, complain, in_decl);
-	/* There is no need to substitute into namespace-scope
-	   enumerators.  */
-	if (DECL_NAMESPACE_SCOPE_P (t))
+	if (!uses_template_parms (DECL_CONTEXT (t)))
 	  return t;
-	/* If ARGS is NULL, then T is known to be non-dependent.  */
-	if (args == NULL_TREE)
-	  return scalar_constant_value (t);
 
 	/* Unfortunately, we cannot just call lookup_name here.
 	   Consider:

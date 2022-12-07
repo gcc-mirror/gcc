@@ -756,7 +756,7 @@ void aarch64_post_cfi_startproc (void);
 poly_int64 aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_address_valid_for_prefetch_p (rtx, bool);
-bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);
+bool aarch64_bitmask_imm (unsigned HOST_WIDE_INT val, machine_mode);
 unsigned HOST_WIDE_INT aarch64_and_split_imm1 (HOST_WIDE_INT val_in);
 unsigned HOST_WIDE_INT aarch64_and_split_imm2 (HOST_WIDE_INT val_in);
 bool aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode);
@@ -793,7 +793,7 @@ bool aarch64_masks_and_shift_for_bfi_p (scalar_int_mode, unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT);
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
-bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
+bool aarch64_move_imm (unsigned HOST_WIDE_INT, machine_mode);
 machine_mode aarch64_sve_int_mode (machine_mode);
 opt_machine_mode aarch64_sve_pred_mode (unsigned int);
 machine_mode aarch64_sve_pred_mode (machine_mode);
@@ -843,8 +843,9 @@ bool aarch64_sve_float_arith_immediate_p (rtx, bool);
 bool aarch64_sve_float_mul_immediate_p (rtx);
 bool aarch64_split_dimode_const_store (rtx, rtx);
 bool aarch64_symbolic_address_p (rtx);
-bool aarch64_uimm12_shift (HOST_WIDE_INT);
+bool aarch64_uimm12_shift (unsigned HOST_WIDE_INT);
 int aarch64_movk_shift (const wide_int_ref &, const wide_int_ref &);
+bool aarch64_is_mov_xn_imm (unsigned HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
 const char *aarch64_output_casesi (rtx *);
 

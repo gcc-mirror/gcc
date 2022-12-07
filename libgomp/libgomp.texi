@@ -406,7 +406,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{allocate} and @code{firstprivate} clauses on @code{scope}
       @tab Y @tab
 @item @code{ompt_callback_work} @tab N @tab
-@item Default map-type for @code{map} clause in @code{target enter/exit data}
+@item Default map-type for the @code{map} clause in @code{target enter/exit data}
       @tab Y @tab
 @item New @code{doacross} clause as alias for @code{depend} with
       @code{source}/@code{sink} modifier @tab Y @tab
@@ -463,6 +463,7 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item @code{access} allocator trait changes @tab N @tab
 @item Extension of @code{interop} operation of @code{append_args}, allowing all
       modifiers of the @code{init} clause
+      @tab N @tab
 @item @code{interop} clause to @code{dispatch} @tab N @tab
 @item @code{apply} code to loop-transforming constructs @tab N @tab
 @item @code{omp_curr_progress_width} identifier @tab N @tab
@@ -4420,7 +4421,7 @@ On the hardware side, there is the hierarchy (fine to coarse):
 @item work item (thread)
 @item wavefront
 @item work group
-@item compute unite (CU)
+@item compute unit (CU)
 @end itemize
 
 All OpenMP and OpenACC levels are used, i.e.
@@ -4435,7 +4436,8 @@ All OpenMP and OpenACC levels are used, i.e.
 The used sizes are
 @itemize
 @item Number of teams is the specified @code{num_teams} (OpenMP) or
-      @code{num_gangs} (OpenACC) or otherwise the number of CU
+      @code{num_gangs} (OpenACC) or otherwise the number of CU. It is limited
+      by two times the number of CU.
 @item Number of wavefronts is 4 for gfx900 and 16 otherwise;
       @code{num_threads} (OpenMP) and @code{num_workers} (OpenACC)
       overrides this if smaller.
@@ -4481,6 +4483,8 @@ The used sizes are
 @itemize
 @item The @code{warp_size} is always 32
 @item CUDA kernel launched: @code{dim=@{#teams,1,1@}, blocks=@{#threads,warp_size,1@}}.
+@item The number of teams is limited by the number of blocks the device can
+      host simultaneously.
 @end itemize
 
 Additional information can be obtained by setting the environment variable to

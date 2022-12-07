@@ -76,10 +76,10 @@ public:
     m_events[idx] = new_event;
   }
 
-  void add_region_creation_events (const region *reg,
+  void add_region_creation_events (pending_diagnostic *pd,
+				   const region *reg,
 				   const region_model *model,
-				   location_t loc,
-				   tree fndecl, int depth,
+				   const event_loc_info &loc_info,
 				   bool debug);
 
   /* After all event-pruning, a hook for notifying each event what

@@ -92,6 +92,7 @@ class bounded_ranges_manager;
 
 class pending_diagnostic;
 class pending_note;
+struct event_loc_info;
 class state_change_event;
 class checker_path;
 class extrinsic_state;
@@ -258,8 +259,10 @@ public:
 };
 
 extern void register_known_functions (known_function_manager &mgr);
+extern void register_known_analyzer_functions (known_function_manager &kfm);
 extern void register_known_fd_functions (known_function_manager &kfm);
 extern void register_known_file_functions (known_function_manager &kfm);
+extern void register_known_functions_lang_cp (known_function_manager &kfm);
 extern void register_varargs_builtins (known_function_manager &kfm);
 
 /* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
@@ -359,7 +362,8 @@ extern const char *get_user_facing_name (const gcall *call);
 extern void register_analyzer_pass ();
 
 extern label_text make_label_text (bool can_colorize, const char *fmt, ...);
-extern label_text make_label_text_n (bool can_colorize, int n,
+extern label_text make_label_text_n (bool can_colorize,
+				     unsigned HOST_WIDE_INT n,
 				     const char *singular_fmt,
 				     const char *plural_fmt, ...);
 

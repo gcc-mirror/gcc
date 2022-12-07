@@ -5553,21 +5553,25 @@ extern tree array_ref_low_bound (tree);
 /* Returns true if REF is an array reference, a component reference,
    or a memory reference to an array whose actual size might be larger
    than its upper bound implies.  */
-extern bool array_ref_flexible_size_p (tree);
+extern bool array_ref_flexible_size_p (tree, bool * = NULL);
 
 /* Return a tree representing the offset, in bytes, of the field referenced
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
 extern tree component_ref_field_offset (tree);
 
-/* Describes a "special" array member due to which component_ref_size
-   returns null.  */
+/* Describes a "special" array member for a COMPONENT_REF.  */
 enum struct special_array_member
   {
     none,	/* Not a special array member.  */
     int_0,	/* Interior array member with size zero.  */
     trail_0,	/* Trailing array member with size zero.  */
-    trail_1	/* Trailing array member with one element.  */
+    trail_1,	/* Trailing array member with one element.  */
+    trail_n,	/* Trailing array member with two or more elements.  */
+    int_n	/* Interior array member with one or more elements.  */
   };
+
+/* Determines the special array member type for a COMPONENT_REF.  */
+extern special_array_member component_ref_sam_type (tree);
 
 /* Return the size of the member referenced by the COMPONENT_REF, using
    its initializer expression if necessary in order to determine the size

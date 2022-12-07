@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "analyzer/known-function-manager.h"
 #include "analyzer/region-model.h"
+#include "analyzer/call-details.h"
 
 #if ENABLE_ANALYZER
 

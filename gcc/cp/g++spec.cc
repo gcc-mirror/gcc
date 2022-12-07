@@ -167,8 +167,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  need_experimental = true;
 	  break;
 
-	case OPT_nostdlib:
 	case OPT_nostdlib__:
+	  args[i] |= SKIPOPT;
+	  /* FALLTHRU */
+	case OPT_nostdlib:
 	case OPT_nodefaultlibs:
 	  library = -1;
 	  break;

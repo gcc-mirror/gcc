@@ -1,3 +1,4 @@
+lappend additional_flags "-fno-trapping-math"
 # The ARM VxWorks kernel uses an external floating-point library in
 # which routines like __ledf2 are just aliases for __cmpdf2.  These
 # routines therefore don't handle NaNs correctly.

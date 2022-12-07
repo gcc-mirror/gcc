@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -5621,7 +5622,7 @@ package body Sem_Res is
       --  caller does use an allocator, it will be caught at the call site.
 
       if No_Pool_Assigned (Typ)
-        and then not Alloc_For_BIP_Return (N)
+        and then not For_Special_Return_Object (N)
       then
          Error_Msg_N ("allocation from empty storage pool!", N);
 
@@ -10104,6 +10105,55 @@ package body Sem_Res is
       then
          T := Etype (R);
 
+      --  If the type of the left operand is universal_integer and that of the
+      --  right operand is smaller, then we do not resolve the operands to the
+      --  tested type but to universal_integer instead. If not conforming to
+      --  the letter, it's conforming to the spirit of the specification of
+      --  membership tests, which are typically used to guard an operation and
+      --  ought not to fail a check in doing so. Without this, in the case of
+
+      --    type Small_Length is range 1 .. 16;
+
+      --    function Is_Small_String (S : String) return Boolean is
+      --    begin
+      --      return S'Length in Small_Length;
+      --    end;
+
+      --   the function Is_Small_String would fail a range check for strings
+      --   larger than 127 characters.
+
+      --  The test on the size is required in GNAT because universal_integer
+      --  does not cover all the values of all the supported integer types,
+      --  for example the large values of Long_Long_Long_Unsigned.
+
+      elsif not Is_Overloaded (L)
+        and then Etype (L) = Universal_Integer
+        and then (Is_Overloaded (R)
+                   or else RM_Size (Etype (R)) < RM_Size (Universal_Integer))
+      then
+         T := Etype (L);
+
+         --  If the right operand is 'Range, we first need to resolve it (to
+         --  the tested type) so that it is rewritten as an N_Range, before
+         --  converting its bounds and resolving it again below.
+
+         if Nkind (R) = N_Attribute_Reference
+           and then Attribute_Name (R) = Name_Range
+         then
+            Resolve (R);
+         end if;
+
+         --  If the right operand is an N_Range, we convert its bounds to the
+         --  universal type before resolving it.
+
+         if Nkind (R) = N_Range then
+            Rewrite (R,
+              Make_Range (Sloc (R),
+                Low_Bound  => Convert_To (T, Low_Bound (R)),
+                High_Bound => Convert_To (T, High_Bound (R))));
+            Analyze (R);
+         end if;
+
       --  Ada 2005 (AI-251): Support the following case:
 
       --      type I is interface;
@@ -10123,6 +10173,7 @@ package body Sem_Res is
         and then not Is_Interface (Etype (R))
       then
          return;
+
       else
          T := Intersect_Types (L, R);
       end if;

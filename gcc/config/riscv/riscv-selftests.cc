@@ -33,6 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "selftest.h"
 #include "selftest-rtl.h"
+#include "insn-attr.h"
+#include "target.h"
+#include "optabs.h"
 
 #if CHECKING_P
 using namespace selftest;
@@ -230,12 +233,136 @@ run_poly_int_selftests (void)
   run_poly_int_selftest ("rv32imafd_zve32x1p0", ABI_ILP32D, POLY_TEST_DIMODE,
 			 worklist);
 }
+
+static void
+run_const_vector_selftests (void)
+{
+  /* We dont't need to do the redundant tests in different march && mabi.
+     Just pick up the march && mabi which fully support all RVV modes.  */
+  riscv_selftest_arch_abi_setter rv ("rv64imafdcv", ABI_LP64D);
+  rtl_dump_test t (SELFTEST_LOCATION, locate_file ("riscv/empty-func.rtl"));
+  set_new_first_and_last_insn (NULL, NULL);
+
+  machine_mode mode;
+  std::vector<HOST_WIDE_INT> worklist = {-111, -17, -16, 7, 15, 16, 111};
+
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
+    {
+      if (riscv_v_ext_vector_mode_p (mode))
+	{
+	  for (const HOST_WIDE_INT &val : worklist)
+	    {
+	      start_sequence ();
+	      rtx dest = gen_reg_rtx (mode);
+	      rtx dup = gen_const_vec_duplicate (mode, GEN_INT (val));
+	      emit_move_insn (dest, dup);
+	      rtx_insn *insn = get_last_insn ();
+	      rtx src = XEXP (SET_SRC (PATTERN (insn)), 1);
+	      /* 1. Should be vmv.v.i for in rang of -16 ~ 15.
+		 2. Should be vmv.v.x for exceed -16 ~ 15.  */
+	      if (IN_RANGE (val, -16, 15))
+		ASSERT_TRUE (rtx_equal_p (src, dup));
+	      else
+		ASSERT_TRUE (
+		  rtx_equal_p (src,
+			       gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));
+	      end_sequence ();
+	    }
+	}
+    }
+
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_FLOAT)
+    {
+      if (riscv_v_ext_vector_mode_p (mode))
+	{
+	  scalar_mode inner_mode = GET_MODE_INNER (mode);
+	  REAL_VALUE_TYPE f = REAL_VALUE_ATOF ("0.2928932", inner_mode);
+	  rtx ele = const_double_from_real_value (f, inner_mode);
+
+	  start_sequence ();
+	  rtx dest = gen_reg_rtx (mode);
+	  rtx dup = gen_const_vec_duplicate (mode, ele);
+	  emit_move_insn (dest, dup);
+	  rtx_insn *insn = get_last_insn ();
+	  rtx src = XEXP (SET_SRC (PATTERN (insn)), 1);
+	  /* Should always be vfmv.v.f.  */
+	  ASSERT_TRUE (
+	    rtx_equal_p (src, gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));
+	  end_sequence ();
+	}
+    }
+
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_BOOL)
+    {
+      /* Test vmset.m.  */
+      if (riscv_v_ext_vector_mode_p (mode))
+	{
+	  start_sequence ();
+	  rtx dest = gen_reg_rtx (mode);
+	  emit_move_insn (dest, CONSTM1_RTX (mode));
+	  rtx_insn *insn = get_last_insn ();
+	  rtx src = XEXP (SET_SRC (PATTERN (insn)), 1);
+	  ASSERT_TRUE (rtx_equal_p (src, CONSTM1_RTX (mode)));
+	  end_sequence ();
+	}
+    }
+}
+
+static void
+run_broadcast_selftests (void)
+{
+  /* We dont't need to do the redundant tests in different march && mabi.
+     Just pick up the march && mabi which fully support all RVV modes.  */
+  riscv_selftest_arch_abi_setter rv ("rv64imafdcv", ABI_LP64D);
+  rtl_dump_test t (SELFTEST_LOCATION, locate_file ("riscv/empty-func.rtl"));
+  set_new_first_and_last_insn (NULL, NULL);
+
+  machine_mode mode;
+
+#define BROADCAST_TEST(MODE_CLASS)                                             \
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)                               \
+    {                                                                          \
+      if (riscv_v_ext_vector_mode_p (mode))                                    \
+	{                                                                      \
+	  rtx_insn *insn;                                                      \
+	  rtx src;                                                             \
+	  scalar_mode inner_mode = GET_MODE_INNER (mode);                      \
+	  /* Test vlse.v with zero stride.  */                                 \
+	  start_sequence ();                                                   \
+	  rtx addr = gen_reg_rtx (Pmode);                                      \
+	  rtx mem = gen_rtx_MEM (inner_mode, addr);                            \
+	  expand_vector_broadcast (mode, mem);                                 \
+	  insn = get_last_insn ();                                             \
+	  src = XEXP (SET_SRC (PATTERN (insn)), 1);                            \
+	  ASSERT_TRUE (MEM_P (XEXP (src, 0)));                                 \
+	  ASSERT_TRUE (                                                        \
+	    rtx_equal_p (src, gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));   \
+	  end_sequence ();                                                     \
+	  /* Test vmv.v.x or vfmv.v.f.  */                                     \
+	  start_sequence ();                                                   \
+	  rtx reg = gen_reg_rtx (inner_mode);                                  \
+	  expand_vector_broadcast (mode, reg);                                 \
+	  insn = get_last_insn ();                                             \
+	  src = XEXP (SET_SRC (PATTERN (insn)), 1);                            \
+	  ASSERT_TRUE (REG_P (XEXP (src, 0)));                                 \
+	  ASSERT_TRUE (                                                        \
+	    rtx_equal_p (src, gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));   \
+	  end_sequence ();                                                     \
+	}                                                                      \
+    }
+
+  BROADCAST_TEST (MODE_VECTOR_INT)
+  BROADCAST_TEST (MODE_VECTOR_FLOAT)
+}
+
 namespace selftest {
 /* Run all target-specific selftests.  */
 void
 riscv_run_selftests (void)
 {
   run_poly_int_selftests ();
+  run_const_vector_selftests ();
+  run_broadcast_selftests ();
 }
 } // namespace selftest
 #endif /* #if CHECKING_P */

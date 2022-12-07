@@ -2154,6 +2154,7 @@ building specialized scripts.
         with GNAT.IO; use GNAT.IO;
         with GNAT.Traceback; use GNAT.Traceback;
         with GNAT.Debug_Utilities;
+
         package body Pck is
            procedure Call_Me_Third is
               TB : Tracebacks_Array (1 .. 5);
@@ -2177,10 +2178,25 @@ building specialized scripts.
               Call_Me_Second;
            end Call_Me_First;
         end Pck;
+
+        with GNAT.IO; use GNAT.IO;
+        with GNAT.Debug_Utilities;
+        with GNAT.Traceback;
+        with System;
+
         with Pck; use Pck;
 
         procedure Foo is
+           LA : constant System.Address := \
+             GNAT.Traceback.Executable_Load_Address;
+
+           use type System.Address;
+
         begin
+           if LA /= System.Null_Address then
+              Put_Line ("Load address: " & GNAT.Debug_Utilities.Image_C (LA));
+           end if;
+
            Global_Val := 123;
            Call_Me_First;
         end Foo;

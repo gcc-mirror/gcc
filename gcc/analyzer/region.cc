@@ -671,6 +671,18 @@ region::symbolic_p () const
   return get_kind () == RK_SYMBOLIC;
 }
 
+/* Return true if this region is known to be zero bits in size.  */
+
+bool
+region::empty_p () const
+{
+  bit_size_t num_bits;
+  if (get_bit_size (&num_bits))
+    if (num_bits == 0)
+      return true;
+  return false;
+}
+
 /* Return true if this is a region for a decl with name DECL_NAME.
    Intended for use when debugging (for assertions and conditional
    breakpoints).  */

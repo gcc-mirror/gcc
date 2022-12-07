@@ -9067,26 +9067,7 @@ is_flexible_array_member_p (bool is_last_field,
   bool is_one_element_array = one_element_array_type_p (TREE_TYPE (x));
   bool is_flexible_array = flexible_array_member_type_p (TREE_TYPE (x));
 
-  unsigned int strict_flex_array_level = flag_strict_flex_arrays;
-
-  tree attr_strict_flex_array = lookup_attribute ("strict_flex_array",
-						  DECL_ATTRIBUTES (x));
-  /* If there is a strict_flex_array attribute attached to the field,
-     override the flag_strict_flex_arrays.  */
-  if (attr_strict_flex_array)
-    {
-      /* Get the value of the level first from the attribute.  */
-      unsigned HOST_WIDE_INT attr_strict_flex_array_level = 0;
-      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
-      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
-      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
-      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
-      gcc_assert (tree_fits_uhwi_p (attr_strict_flex_array));
-      attr_strict_flex_array_level = tree_to_uhwi (attr_strict_flex_array);
-
-      /* The attribute has higher priority than flag_struct_flex_array.  */
-      strict_flex_array_level = attr_strict_flex_array_level;
-    }
+  unsigned int strict_flex_array_level = strict_flex_array_level_of (x);
 
   switch (strict_flex_array_level)
     {

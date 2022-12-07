@@ -125,7 +125,7 @@ void test03()
         unreliable_lock::count = 0;
         try
           {
-            std::try_lock(l1, l2, l3);
+            (void) std::try_lock(l1, l2, l3);
             VERIFY( false );
           }
         catch (int e)

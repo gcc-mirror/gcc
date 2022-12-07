@@ -52,6 +52,9 @@ if { [istarget "alpha*-*-*"]
      || [istarget "sh*-*-*"] } then {
   lappend additional_flags "-mieee"
 }
+if [istarget rx-*-*] then {
+  lappend additional_flags "-mnofpu"
+}
 
 if { ![check_effective_target_signal] } {
     lappend additional_flags "-DSIGNAL_SUPPRESS"

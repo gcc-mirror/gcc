@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-language.h"
+#include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
 
 #if ENABLE_ANALYZER
@@ -1861,7 +1862,8 @@ fd_state_machine::on_bind (const call_details &cd,
 	next_state = m_bound_datagram_socket;
       else if (old_state == m_new_unknown_socket)
 	next_state = m_bound_unknown_socket;
-      else if (old_state == m_start)
+      else if (old_state == m_start
+	       || old_state == m_constant_fd)
 	next_state = m_bound_unknown_socket;
       else if (old_state == m_stop)
 	next_state = m_stop;
@@ -2116,7 +2118,8 @@ fd_state_machine::on_connect (const call_details &cd,
 	next_state = m_new_datagram_socket;
       else if (old_state == m_new_unknown_socket)
 	next_state = m_stop;
-      else if (old_state == m_start)
+      else if (old_state == m_start
+	       || old_state == m_constant_fd)
 	next_state = m_stop;
       else if (old_state == m_stop)
 	next_state = m_stop;

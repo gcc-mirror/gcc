@@ -2155,6 +2155,19 @@ get_gomp_offload_icvs (int dev_num)
     new->icvs.nteams = gomp_default_icv_values.nteams_var;
 
   if (dev_x != NULL
+      && gomp_get_icv_flag (dev_x->flags, GOMP_ICV_TEAMS_THREAD_LIMIT))
+    new->icvs.teams_thread_limit = dev_x->icvs.teams_thread_limit_var;
+  else if (dev != NULL
+	   && gomp_get_icv_flag (dev->flags, GOMP_ICV_TEAMS_THREAD_LIMIT))
+    new->icvs.teams_thread_limit = dev->icvs.teams_thread_limit_var;
+  else if (all != NULL
+	   && gomp_get_icv_flag (all->flags, GOMP_ICV_TEAMS_THREAD_LIMIT))
+    new->icvs.teams_thread_limit = all->icvs.teams_thread_limit_var;
+  else
+    new->icvs.teams_thread_limit
+      = gomp_default_icv_values.teams_thread_limit_var;
+
+  if (dev_x != NULL
       && gomp_get_icv_flag (dev_x->flags, GOMP_ICV_DEFAULT_DEVICE))
     new->icvs.default_device = dev_x->icvs.default_device_var;
   else if (dev != NULL
@@ -2290,7 +2303,14 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 	  int dev_num = (int) (devicep - &devices[0]);
 	  struct gomp_offload_icvs *icvs = get_gomp_offload_icvs (dev_num);
 	  size_t var_size = var->end - var->start;
-
+	  if (var_size != sizeof (struct gomp_offload_icvs))
+	    {
+	      gomp_mutex_unlock (&devicep->lock);
+	      if (is_register_lock)
+		gomp_mutex_unlock (&register_lock);
+	      gomp_fatal ("offload plugin managed 'icv struct' not of expected "
+			  "format");
+	    }
 	  /* Copy the ICVs variable to place on device memory, hereby
 	     actually designating its device number into effect.  */
 	  gomp_copy_host2dev (devicep, NULL, (void *) var->start, icvs,
@@ -2769,6 +2789,20 @@ clear_unsupported_flags (struct gomp_device_descr *devicep, unsigned int flags)
   return flags;
 }
 
+static void
+gomp_copy_back_icvs (struct gomp_device_descr *devicep, int device)
+{
+  struct gomp_offload_icv_list *item = gomp_get_offload_icv_item (device);
+  if (item == NULL)
+    return;
+
+  void *host_ptr = &item->icvs;
+  void *dev_ptr = omp_get_mapped_ptr (host_ptr, device);
+  if (dev_ptr != NULL)
+    gomp_copy_dev2host (devicep, NULL, host_ptr, dev_ptr,
+			sizeof (struct gomp_offload_icvs));
+}
+
 /* Like GOMP_target, but KINDS is 16-bit, UNUSED is no longer present,
    and several arguments have been added:
    FLAGS is a bitmask, see GOMP_TARGET_FLAG_* in gomp-constants.h.
@@ -2800,6 +2834,146 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
   struct gomp_device_descr *devicep = resolve_device (device, true);
   size_t tgt_align = 0, tgt_size = 0;
   bool fpc_done = false;
+
+  /* Obtain the original TEAMS and THREADS values from ARGS.  */
+  intptr_t orig_teams = 1, orig_threads = 0;
+  size_t num_args = 0, len = 1, teams_len = 1, threads_len = 1;
+  void **tmpargs = args;
+  while (*tmpargs)
+    {
+      intptr_t id = (intptr_t) *tmpargs++, val;
+      if (id & GOMP_TARGET_ARG_SUBSEQUENT_PARAM)
+	{
+	  val = (intptr_t) *tmpargs++;
+	  len = 2;
+	}
+      else
+	{
+	  val = id >> GOMP_TARGET_ARG_VALUE_SHIFT;
+	  len = 1;
+	}
+      num_args += len;
+      if ((id & GOMP_TARGET_ARG_DEVICE_MASK) != GOMP_TARGET_ARG_DEVICE_ALL)
+	continue;
+      val = val > INT_MAX ? INT_MAX : val;
+      if ((id & GOMP_TARGET_ARG_ID_MASK) == GOMP_TARGET_ARG_NUM_TEAMS)
+	{
+	  orig_teams = val;
+	  teams_len = len;
+	}
+      else if ((id & GOMP_TARGET_ARG_ID_MASK) == GOMP_TARGET_ARG_THREAD_LIMIT)
+	{
+	  orig_threads = val;
+	  threads_len = len;
+	}
+    }
+
+  intptr_t new_teams = orig_teams, new_threads = orig_threads;
+  /* ORIG_TEAMS == -2: No explicit teams construct specified.  Set to 1.
+     ORIG_TEAMS == -1: TEAMS construct with NUM_TEAMS clause specified, but the
+		       value could not be determined.  No change.
+     ORIG_TEAMS == 0: TEAMS construct without NUM_TEAMS clause.
+		      Set device-specific value.
+     ORIG_TEAMS > 0: Value was already set through e.g. NUM_TEAMS clause.
+		     No change.  */
+  if (orig_teams == -2)
+    new_teams = 1;
+  else if (orig_teams == 0)
+    {
+      struct gomp_offload_icv_list *item = gomp_get_offload_icv_item (device);
+      if (item != NULL)
+	new_teams = item->icvs.nteams;
+    }
+  /* The device-specific teams-thread-limit is only set if (a) an explicit TEAMS
+     region exists, i.e. ORIG_TEAMS > -2, and (b) THREADS was not already set by
+     e.g. a THREAD_LIMIT clause.  */
+  if (orig_teams > -2 && orig_threads == 0)
+    {
+      struct gomp_offload_icv_list *item = gomp_get_offload_icv_item (device);
+      if (item != NULL)
+	new_threads = item->icvs.teams_thread_limit;
+    }
+
+  /* Copy and change the arguments list only if TEAMS or THREADS need to be
+     updated.  */
+  void **new_args = args;
+  if (orig_teams != new_teams || orig_threads != new_threads)
+    {
+      size_t tms_len = (orig_teams == new_teams
+			? teams_len
+			: (new_teams > -(1 << 15) && new_teams < (1 << 15)
+			   ? 1 : 2));
+      size_t ths_len = (orig_threads == new_threads
+			? threads_len
+			: (new_threads > -(1 << 15) && new_threads < (1 << 15)
+			   ? 1 : 2));
+      /* One additional item after the last arg must be NULL.  */
+      size_t new_args_cnt = num_args - teams_len - threads_len + tms_len
+			    + ths_len + 1;
+      new_args = (void **) gomp_alloca (new_args_cnt * sizeof (void*));
+
+      tmpargs = args;
+      void **tmp_new_args = new_args;
+      /* Copy all args except TEAMS and THREADS.  TEAMS and THREADS are copied
+	 too if they have not been changed and skipped otherwise.  */
+      while (*tmpargs)
+	{
+	  intptr_t id = (intptr_t) *tmpargs;
+	  if (((id & GOMP_TARGET_ARG_ID_MASK) == GOMP_TARGET_ARG_NUM_TEAMS
+	       && orig_teams != new_teams)
+	      || ((id & GOMP_TARGET_ARG_ID_MASK) == GOMP_TARGET_ARG_THREAD_LIMIT
+		  && orig_threads != new_threads))
+	    {
+	      tmpargs++;
+	      if (id & GOMP_TARGET_ARG_SUBSEQUENT_PARAM)
+		tmpargs++;
+	    }
+	  else
+	    {
+	      *tmp_new_args++ = *tmpargs++;
+	      if (id & GOMP_TARGET_ARG_SUBSEQUENT_PARAM)
+		*tmp_new_args++ = *tmpargs++;
+	    }
+	}
+
+      /* Add the new TEAMS arg to the new args list if it has been changed.  */
+      if (orig_teams != new_teams)
+	{
+	  intptr_t new_val = new_teams;
+	  if (tms_len == 1)
+	    {
+	      new_val = (new_val << GOMP_TARGET_ARG_VALUE_SHIFT)
+			 | GOMP_TARGET_ARG_NUM_TEAMS;
+	      *tmp_new_args++ = (void *) new_val;
+	    }
+	  else
+	    {
+	      *tmp_new_args++ = (void *) (GOMP_TARGET_ARG_SUBSEQUENT_PARAM
+					  | GOMP_TARGET_ARG_NUM_TEAMS);
+	      *tmp_new_args++ = (void *) new_val;
+	    }
+	}
+
+      /* Add the new THREADS arg to the new args list if it has been changed. */
+      if (orig_threads != new_threads)
+	{
+	  intptr_t new_val = new_threads;
+	  if (ths_len == 1)
+	    {
+	      new_val = (new_val << GOMP_TARGET_ARG_VALUE_SHIFT)
+			 | GOMP_TARGET_ARG_THREAD_LIMIT;
+	      *tmp_new_args++ = (void *) new_val;
+	    }
+	  else
+	    {
+	      *tmp_new_args++ = (void *) (GOMP_TARGET_ARG_SUBSEQUENT_PARAM
+					  | GOMP_TARGET_ARG_THREAD_LIMIT);
+	      *tmp_new_args++ = (void *) new_val;
+	    }
+	}
+
+      *tmp_new_args = NULL;
+    }
 
   flags = clear_unsupported_flags (devicep, flags);
 
@@ -2848,7 +3022,7 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 	  && !thr->task->final_task)
 	{
 	  gomp_create_target_task (devicep, fn, mapnum, hostaddrs,
-				   sizes, kinds, flags, depend, args,
+				   sizes, kinds, flags, depend, new_args,
 				   GOMP_TARGET_TASK_BEFORE_MAP);
 	  return;
 	}
@@ -2894,7 +3068,7 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 				      tgt_align, tgt_size);
 	    }
 	}
-      gomp_target_fallback (fn, hostaddrs, devicep, args);
+      gomp_target_fallback (fn, hostaddrs, devicep, new_args);
       return;
     }
 
@@ -2924,7 +3098,7 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
     }
   devicep->run_func (devicep->target_id, fn_addr,
 		     tgt_vars ? (void *) tgt_vars->tgt_start : hostaddrs,
-		     args);
+		     new_args);
   if (tgt_vars)
     {
       htab_clear (refcount_set);
@@ -2932,6 +3106,12 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
     }
   if (refcount_set)
     htab_free (refcount_set);
+
+  /* Copy back ICVs from device to host.
+     HOST_PTR is expected to exist since it was added in
+     gomp_load_image_to_device if not already available.  */
+  gomp_copy_back_icvs (devicep, device);
+
 }
 
 /* Handle reverse offload.  This is called by the device plugins for a

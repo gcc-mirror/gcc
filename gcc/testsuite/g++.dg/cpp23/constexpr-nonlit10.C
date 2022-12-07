@@ -11,13 +11,13 @@ struct NonLiteral {
 // C++23: It is possible to write a constexpr function for which no
 // invocation satisfies the requirements of a core constant expression.
 constexpr NonLiteral
-fn0 (int) // { dg-warning "invalid return type" }
+fn0 (int) // { dg-warning "invalid return type" "" { target { ! implicit_constexpr } } }
 {
   return NonLiteral{};
 }
 
 constexpr int
-fn1 (NonLiteral) // { dg-warning "invalid type" }
+fn1 (NonLiteral) // { dg-warning "invalid type" "" { target { ! implicit_constexpr } } }
 {
   return 42;
 }

@@ -173,6 +173,33 @@ split_double_concat (machine_mode mode, rtx dst, rtx lo, rtx hi)
   rtx dlo, dhi;
   int deleted_move_count = 0;
   split_double_mode (mode, &dst, 1, &dlo, &dhi);
+  /* Constraints ensure that if both lo and hi are MEMs, then
+     dst has early-clobber and thus addresses of MEMs don't use
+     dlo/dhi registers.  Otherwise if at least one of li and hi are MEMs,
+     dlo/dhi are registers.  */
+  if (MEM_P (lo)
+      && rtx_equal_p (dlo, hi)
+      && reg_overlap_mentioned_p (dhi, lo))
+    {
+      /* If dlo is same as hi and lo's address uses dhi register,
+	 code below would first emit_move_insn (dhi, hi)
+	 and then emit_move_insn (dlo, lo).  But the former
+	 would invalidate lo's address.  Load into dhi first,
+	 then swap.  */
+      emit_move_insn (dhi, lo);
+      lo = dhi;
+    }
+  else if (MEM_P (hi)
+	   && !MEM_P (lo)
+	   && !rtx_equal_p (dlo, lo)
+	   && reg_overlap_mentioned_p (dlo, hi))
+    {
+      /* In this case, code below would first emit_move_insn (dlo, lo)
+	 and then emit_move_insn (dhi, hi).  But the former would
+	 invalidate hi's address.  Load into dhi first.  */
+      emit_move_insn (dhi, hi);
+      hi = dhi;
+    }
   if (!rtx_equal_p (dlo, hi))
     {
       if (!rtx_equal_p (dlo, lo))
@@ -12476,7 +12503,7 @@ ix86_expand_vec_set_builtin (tree exp)
   op1 = expand_expr (arg1, NULL_RTX, mode1, EXPAND_NORMAL);
   elt = get_element_number (TREE_TYPE (arg0), arg2);
 
-  if (GET_MODE (op1) != mode1 && GET_MODE (op1) != VOIDmode)
+  if (GET_MODE (op1) != mode1)
     op1 = convert_modes (mode1, GET_MODE (op1), op1, true);
 
   op0 = force_reg (tmode, op0);
@@ -15160,6 +15187,10 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
   bool ok;
   rtx_insn *insn;
   rtx dup;
+  /* Save/restore recog_data in case this is called from splitters
+     or other routines where recog_data needs to stay valid across
+     force_reg.  See PR106577.  */
+  recog_data_d recog_data_save = recog_data;
 
   /* First attempt to recognize VAL as-is.  */
   dup = gen_vec_duplicate (mode, val);
@@ -15185,6 +15216,7 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
       ok = recog_memoized (insn) >= 0;
       gcc_assert (ok);
     }
+  recog_data = recog_data_save;
   return true;
 }
 
@@ -24155,14 +24187,13 @@ ix86_expand_fast_convert_bf_to_sf (rtx val)
       /* FLOAT_EXTEND simplification will fail if VAL is a sNaN.  */
       ret = gen_reg_rtx (SImode);
       emit_move_insn (ret, GEN_INT (INTVAL (op) & 0xffff));
+      emit_insn (gen_ashlsi3 (ret, ret, GEN_INT (16)));
+      return gen_lowpart (SFmode, ret);
     }
-  else
-    {
-      ret = gen_reg_rtx (SImode);
-      emit_insn (gen_zero_extendhisi2 (ret, op));
-    }
-  emit_insn (gen_ashlsi3 (ret, ret, GEN_INT (16)));
-  return gen_lowpart (SFmode, ret);
+
+  ret = gen_reg_rtx (SFmode);
+  emit_insn (gen_extendbfsf2_1 (ret, force_reg (BFmode, val)));
+  return ret;
 }
 
 #include "gt-i386-expand.h"

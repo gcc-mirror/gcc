@@ -237,6 +237,17 @@ region_model_manager::get_or_create_int_cst (tree type, poly_int64 val)
   return get_or_create_constant_svalue (tree_cst);
 }
 
+/* Return the svalue * for the constant_svalue for the NULL pointer
+   of POINTER_TYPE, creating it if necessary.  */
+
+const svalue *
+region_model_manager::get_or_create_null_ptr (tree pointer_type)
+{
+  gcc_assert (pointer_type);
+  gcc_assert (POINTER_TYPE_P (pointer_type));
+  return get_or_create_int_cst (pointer_type, 0);
+}
+
 /* Return the svalue * for a unknown_svalue for TYPE (which can be NULL),
    creating it if necessary.
    The unknown_svalue instances are reused, based on pointer equality
@@ -620,6 +631,9 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       /* (VAL - 0) -> VAL.  */
       if (cst1 && zerop (cst1))
 	return get_or_create_cast (type, arg0);
+      /* (0 - VAL) -> -VAL.  */
+      if (cst0 && zerop (cst0))
+	return get_or_create_unaryop (type, NEGATE_EXPR, arg1);
       break;
     case MULT_EXPR:
       /* (VAL * 0).  */

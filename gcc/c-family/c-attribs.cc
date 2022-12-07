@@ -4240,7 +4240,7 @@ handle_deprecated_attribute (tree *node, tree name,
       if (type && TYPE_NAME (type))
 	{
 	  if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	    what = TYPE_NAME (*node);
+	    what = TYPE_NAME (type);
 	  else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 		   && DECL_NAME (TYPE_NAME (type)))
 	    what = DECL_NAME (TYPE_NAME (type));

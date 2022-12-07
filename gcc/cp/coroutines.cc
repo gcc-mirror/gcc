@@ -2685,6 +2685,7 @@ find_interesting_subtree (tree *expr_p, int *dosub, void *d)
 	}
     }
   else if (tmp_target_expr_p (expr)
+	   && !TARGET_EXPR_ELIDING_P (expr)
 	   && !p->temps_used->contains (expr))
     {
       p->entry = expr_p;

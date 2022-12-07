@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -2215,12 +2216,24 @@ package body Exp_Attr is
 
             --  Local declarations
 
-            Enc_Object : constant Node_Id := Enclosing_Object (Ref_Object);
+            Enc_Object : Node_Id := Enclosing_Object (Ref_Object);
 
          --  Start of processing for Access_Cases
 
          begin
             Btyp_DDT := Designated_Type (Btyp);
+
+            --  When Enc_Object is a view conversion then RM 3.10.2 (9)
+            --  applies and we obtain the expression being converted.
+            --  Otherwise we do not dig any deeper since a conversion
+            --  might generate a copy and we can't assume it will be as
+            --  long-lived as the original.
+
+            while Nkind (Enc_Object) = N_Type_Conversion
+              and then Is_View_Conversion (Enc_Object)
+            loop
+               Enc_Object := Expression (Enc_Object);
+            end loop;
 
             --  Handle designated types that come from the limited view
 

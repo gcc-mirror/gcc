@@ -1,3 +1,413 @@
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107882
+	* gcc.dg/analyzer/memcpy-pr107882.c: New test.
+
+2022-12-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/Warray-bounds-11.c: Update warnings for -Warray-bounds=2.
+	* gcc.dg/Warray-bounds-flex-arrays-1.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-2.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-3.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-4.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-5.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-6.c: New test.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106325
+	* gcc.dg/analyzer/attr-nonnull-pr106325.c: New test.
+	* gcc.dg/analyzer/attribute-nonnull.c (test_6): New.
+	(test_7): New.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: Include
+	"analyzer/call-details.h".
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: Likewise.
+
+2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/target-teams-1.c: Adapt expected values for
+	num_teams from "1" to "-2" in cases without num_teams clause.
+	* g++.dg/gomp/target-teams-1.C: Likewise.
+	* gfortran.dg/gomp/defaultmap-4.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-5.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-6.f90: Likewise.
+
+2022-12-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/pr107987.c: New test.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107969
+	* gcc.target/i386/pr107969.c: New test.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/107046
+	* gcc.c-torture/execute/ieee/ieee.exp: For rx-*-* append
+	-mnofpu.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107975
+	* gcc.dg/pr107975.c: New test.
+
+2022-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104165
+	* g++.dg/warn/Warray-bounds-pr104165-1.C: New testcase.
+
+2022-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/x86_64/abi/bf16/abi-bf16.exp: Use separate asm for Darwin.
+	* gcc.target/x86_64/abi/bf16/m256bf16/abi-bf16-ymm.exp: Likewise.
+	* gcc.target/x86_64/abi/bf16/m512bf16/abi-bf16-zmm.exp: Likewise.
+	* gcc.target/x86_64/abi/bf16/args.h: Make xmm_regs, x87_regs extern.
+	* gcc.target/x86_64/abi/bf16/m256bf16/args.h: Likewise.
+	* gcc.target/x86_64/abi/bf16/m512bf16/args.h: Likewise.
+	* gcc.target/x86_64/abi/bf16/asm-support-darwin.S: New file.
+	* gcc.target/x86_64/abi/bf16/m256bf16/asm-support-darwin.S: New file.
+	* gcc.target/x86_64/abi/bf16/m512bf16/asm-support-darwin.S: New file.
+
+2022-12-06  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/interleave-init-1.c: New test.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/40635
+	* gcc.dg/uninit-pr40635.c: New testcase.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106868
+	* gcc.dg/Wdangling-pointer-pr106868.c: New testcase.
+
+2022-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106805
+	* c-c++-common/pr57371-4.c: Revert 2021-09-19 changes.
+	* c-c++-common/pr57371-5.c: New test.
+	* gcc.c-torture/execute/ieee/fp-cmp-6.x: Add -fno-trapping-math.
+	* gcc.c-torture/execute/ieee/fp-cmp-9.c: New test.
+	* gcc.c-torture/execute/ieee/fp-cmp-9.x: New file.
+
+2022-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107879
+	* gcc.c-torture/execute/pr107879.c: New file.
+
+2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107833
+	PR tree-optimization/107839
+	* gcc.dg/torture/pr107833.c: New testcase.
+	* gcc.dg/uninit-pr107839.c: Likewise.
+
+2022-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107922
+	* gfortran.dg/unpack_field_1.f90: New test.
+
+2022-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107899
+	* gfortran.dg/pr107899.f90: New test.
+
+2022-12-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107417
+	* g++.dg/cpp2a/concepts-requires33.C: New test.
+
+2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+	    Adrian Perl  <adrian.perl@web.de>
+
+	PR c++/100611
+	PR c++/101367
+	PR c++/101976
+	PR c++/99576
+	* g++.dg/coroutines/pr100611.C: New test.
+	* g++.dg/coroutines/pr101367.C: New test.
+	* g++.dg/coroutines/pr101976.C: New test.
+	* g++.dg/coroutines/pr99576_1.C: New test.
+	* g++.dg/coroutines/pr99576_2.C: New test.
+
+2022-12-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103081
+	* g++.dg/cpp2a/using-enum-10.C: New test.
+	* g++.dg/cpp2a/using-enum-10a.C: New test.
+
+2022-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/ssa-sink-18.c: xfail sink2 on riscv64.
+
+2022-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/uninit-pred-9_b.c: Add riscv*-*-* to the xfail list
+	for the bogus warning.
+
+2022-12-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107874
+	* gfortran.dg/merge_1.f90: Avoid recursive I/O.
+
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107851
+	* gcc.dg/analyzer/allocation-size-4.c: Update expected wording.
+	* gcc.dg/analyzer/allocation-size-multiline-1.c: New test.
+	* gcc.dg/analyzer/allocation-size-multiline-2.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-multiline-1.c: Update expected
+	wording.
+	* gcc.dg/analyzer/out-of-bounds-multiline-2.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-read-char-arr.c: Update expected
+	wording.
+	* gcc.dg/analyzer/out-of-bounds-read-int-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: Likewise.
+
+2022-12-02  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-ex1.C: Adjust dg-error.
+	* g++.dg/cpp23/constexpr-nonlit10.C: Adjust dg-warning.
+	* g++.dg/cpp23/constexpr-nonlit11.C: Likewise.
+	* g++.dg/cpp2a/spaceship-eq3.C: Add dg-error.
+
+2022-12-02  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/diagnostic/return-type-loc1.C: New test.
+
+2022-12-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/mips/pr106462.c: New test.
+
+2022-12-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cbranchbf4.c: New test.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106577
+	* gcc.target/i386/pr106577.c: New test.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* g++.dg/gomp/for-21.C (f3, f6, f9): Adjust expected diagnostics.
+	* g++.dg/gomp/for-22.C: New test.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* g++.dg/cpp1z/decomp56.C: New test.
+	* g++.dg/gomp/pr84469.C: New test.
+
+2022-12-02  Michael Collison  <collison@rivosinc.com>
+
+	* gcc.dg/tree-ssa/branchless-cond.c: New test.
+
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107948
+	* gcc.dg/analyzer/feasibility-pr107948.c: New test.
+
+2022-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/string-ops-concat-pair.c: New test.
+	* gcc.dg/analyzer/string-ops-dup.c: New test.
+
+2022-12-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107934.c: New test.
+
+2022-12-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107539
+	* g++.dg/template/canon-type-19.C: New test.
+
+2022-12-01  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/dup-1.c: New test.
+	* gcc.target/riscv/rvv/base/dup-2.c: New test.
+
+2022-12-01  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/simd/mve-compare-1.c: Update.
+	* gcc.target/arm/simd/mve-compare-scalar-1.c: Update.
+	* gcc.target/arm/simd/mve-vabs.c: Update.
+	* gcc.target/arm/simd/mve-vadd-1.c: Update.
+	* gcc.target/arm/simd/mve-vadd-scalar-1.c: Update.
+	* gcc.target/arm/simd/mve-vcmp.c: Update.
+	* gcc.target/arm/simd/pr101325.c: Update.
+
+2022-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107937
+	* gcc.dg/pr107937.c: New testcase.
+
+2022-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107935
+	* gcc.dg/torture/pr107935.c: New testcase.
+
+2022-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107627
+	* gcc.target/i386/pr107627-1.c: New test.
+	* gcc.target/i386/pr107627-2.c: New test.
+
+2022-12-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107863.c: New test.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/out-of-bounds-multiline-1.c: New test.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/call-summaries-2.c: Update expected results.
+	* gcc.dg/analyzer/out-of-bounds-1.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-2.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-3.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-4.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-5.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-container_of.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-read-char-arr.c: Likewise.  Rename
+	functions from "int_arr_" to "char_arr_".
+	* gcc.dg/analyzer/out-of-bounds-read-int-arr.c: Update expected
+	results.
+	* gcc.dg/analyzer/out-of-bounds-read-struct-arr.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: Update expected
+	results.  Rename functions from "int_arr_" to "char_arr_".
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: Update expected
+	results.
+	* gcc.dg/analyzer/out-of-bounds-write-struct-arr.c: New test.
+	* gcc.dg/analyzer/pr101962.c: Update expected results.
+	* gcc.dg/analyzer/realloc-5.c: Update expected results.
+	* gcc.dg/analyzer/zlib-3.c: Update expected results.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/call-summaries-2.c: Add dg-message for expected
+	note about valid indexes.
+	* gcc.dg/analyzer/out-of-bounds-1.c: Likewise, fixing up existing
+	dg-message directives.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: Likewise.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/out-of-bounds-read-char-arr.c: Update for
+	changes to expected wording.
+	* gcc.dg/analyzer/out-of-bounds-read-int-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: Likewise.
+
+2022-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107928
+	* gcc.dg/analyzer/fd-bind-pr107928.c: New test.
+	* gcc.dg/analyzer/fd-connect-pr107928.c: New test.
+	* gcc.dg/analyzer/fd-stream-socket-active-open.c
+	(test_active_open_from_connect_constant): New, adapted from
+	test_active_open_from_connect.
+	* gcc.dg/analyzer/fd-stream-socket-passive-open.c
+	(test_passive_open_from_bind_constant): New, adapted from
+	test_passive_open_from_bind.
+	(test_passive_open_from_listen_constant): New, adapted from
+	test_passive_open_from_listen.
+
+2022-12-01  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100866
+	* gcc.target/powerpc/pr100866-1.c: New.
+
+2022-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mops_5.c: New test.
+	* gcc.target/aarch64/mops_6.c: Likewise.
+	* gcc.target/aarch64/mops_7.c: Likewise.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/107592
+	* gdc.dg/pr107592.d: New test.
+
+2022-11-30  Iskander Shakirzyanov  <iskander@ispras.ru>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR driver/107787
+	* gcc.dg/Warray-bounds-34.c: Correct the regular expression
+	for -Warray-bounds=.
+	* gcc.dg/Warray-bounds-43.c: Likewise.
+	* gcc.dg/pr107787.c: New test.
+
+2022-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107919
+	* g++.dg/warn/Wuninitialized-pr107919-1.C: New testcase.
+
+2022-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107835
+	* gcc.c-torture/compile/pr107835.c: New test.
+
+2022-11-30  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/107304
+	* gcc.target/i386/pr107304.c: dg-require ifunc support.
+
+2022-11-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* lib/target-supports.exp:
+	* gcc.target/loongarch/stack-check-alloca-1.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-2.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-3.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-4.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-5.c: New test.
+	* gcc.target/loongarch/stack-check-alloca-6.c: New test.
+	* gcc.target/loongarch/stack-check-alloca.h: New test.
+	* gcc.target/loongarch/stack-check-cfa-1.c: New test.
+	* gcc.target/loongarch/stack-check-cfa-2.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-1.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-2.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-3.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-4.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-5.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-6.c: New test.
+	* gcc.target/loongarch/stack-check-prologue-7.c: New test.
+	* gcc.target/loongarch/stack-check-prologue.h: New test.
+
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	* gcc.dg/analyzer/ferror-1.c: New test.
+	* gcc.dg/analyzer/fileno-1.c: New test.
+	* gcc.dg/analyzer/flex-with-call-summaries.c: New test.
+	* gcc.dg/analyzer/flex-without-call-summaries.c: New test.
+	* gcc.dg/analyzer/getc-1.c: New test.
+	* gcc.dg/analyzer/isatty-1.c: New test.
+
+2022-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105784
+	* gcc.dg/analyzer/torture/fold-ptr-arith-pr105784.c: New test.
+
+2022-11-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107542
+	* g++.dg/cpp2a/spaceship-sfinae2.C: New test.
+
 2022-11-29  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

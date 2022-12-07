@@ -241,6 +241,13 @@
 #undef y
 #endif
 
+#ifdef __GLIBC_PREREQ
+#if ! __GLIBC_PREREQ(2, 19)
+// Glibc defines this prior to 2.19
+#undef __unused
+#endif
+#endif
+
 #if __has_include(<newlib.h>)
 // newlib's <sys/cdefs.h> defines these as macros.
 #undef __lockable

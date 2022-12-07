@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;    use Accessibility;
 with Aspects;          use Aspects;
 with Atree;            use Atree;
 with Checks;           use Checks;
@@ -15728,6 +15729,12 @@ package body Sem_Ch13 is
              ("conflicting operations for aggregate (RM 4.3.5)", N);
             return;
          end if;
+
+      elsif No (Add_Named_Subp)
+        and then No (Add_Unnamed_Subp)
+        and then No (Assign_Indexed_Subp)
+      then
+         Error_Msg_N ("incomplete specification for aggregate", N);
 
       elsif Present (New_Indexed_Subp) /= Present (Assign_Indexed_Subp) then
          Error_Msg_N ("incomplete specification for indexed aggregate", N);

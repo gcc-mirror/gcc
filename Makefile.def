@@ -50,7 +50,7 @@ host_modules= { module= gcc; bootstrap=true;
 		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
 host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
 		// Work around in-tree gmp configure bug with missing flex.
-		extra_configure_flags='--disable-shared LEX="touch lex.yy.c"';
+		extra_configure_flags='--disable-shared LEX="touch lex.yy.c" @host_libs_picflag@';
 		extra_make_flags='AM_CFLAGS="-DNO_ASM"';
 		no_install= true;
 		// none-*-* disables asm optimizations, bootstrap-testing
@@ -60,18 +60,19 @@ host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
 		// different from host for target.
 	        target="none-${host_vendor}-${host_os}"; };
 host_modules= { module= mpfr; lib_path=src/.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared @extra_mpfr_configure_flags@';
+		extra_configure_flags='--disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@';
 		extra_make_flags='AM_CFLAGS="-DNO_ASM"';
 		no_install= true; };
 host_modules= { module= mpc; lib_path=src/.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode';
+		extra_configure_flags='--disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode';
 		no_install= true; };
 host_modules= { module= isl; lib_path=.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@';
+		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@';
 		extra_make_flags='V=1';
 		no_install= true; };
 host_modules= { module= gold; bootstrap=true; };
 host_modules= { module= gprof; };
+// intl acts on 'host_shared' directly, and does not support --with-pic.
 host_modules= { module= intl; bootstrap=true; };
 host_modules= { module= tcl;
                 missing=mostlyclean; };
@@ -107,7 +108,7 @@ host_modules= { module= libiberty-linker-plugin; bootstrap=true;
 // We abuse missing to avoid installing anything for libiconv.
 host_modules= { module= libiconv;
 		bootstrap=true;
-		extra_configure_flags='--disable-shared';
+		extra_configure_flags='--disable-shared  @host_libs_picflag@';
 		no_install= true;
 		missing= pdf;
 		missing= html;
@@ -122,7 +123,7 @@ host_modules= { module= sim; };
 host_modules= { module= texinfo; no_install= true; };
 host_modules= { module= zlib; no_install=true; no_check=true;
 		bootstrap=true;
-	        extra_configure_flags='@extra_host_zlib_configure_flags@';};
+	        extra_configure_flags='@extra_host_zlib_configure_flags@ @host_libs_picflag@';};
 host_modules= { module= gnulib; };
 host_modules= { module= gdbsupport; };
 host_modules= { module= gdbserver; };

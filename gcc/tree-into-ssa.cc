@@ -2110,7 +2110,6 @@ rewrite_update_phi_arguments (basic_block bb)
 		 symbol we may find NULL arguments.  That's why we
 		 take the symbol from the LHS of the PHI node.  */
 	      reaching_def = get_reaching_def (lhs_sym);
-
 	    }
 	  else
 	    {
@@ -2122,8 +2121,9 @@ rewrite_update_phi_arguments (basic_block bb)
 		reaching_def = get_reaching_def (arg);
 	    }
 
-          /* Update the argument if there is a reaching def.  */
-	  if (reaching_def)
+	  /* Update the argument if there is a reaching def different
+	     from arg.  */
+	  if (reaching_def && reaching_def != arg)
 	    {
 	      location_t locus;
 	      int arg_i = PHI_ARG_INDEX_FROM_USE (arg_p);
@@ -2133,6 +2133,10 @@ rewrite_update_phi_arguments (basic_block bb)
 	      /* Virtual operands do not need a location.  */
 	      if (virtual_operand_p (reaching_def))
 		locus = UNKNOWN_LOCATION;
+	      /* If SSA update didn't insert this PHI the argument
+		 might have a location already, keep that.  */
+	      else if (gimple_phi_arg_has_location (phi, arg_i))
+		locus = gimple_phi_arg_location (phi, arg_i);
 	      else
 		{
 		  gimple *stmt = SSA_NAME_DEF_STMT (reaching_def);
@@ -2149,7 +2153,6 @@ rewrite_update_phi_arguments (basic_block bb)
 
 	      gimple_phi_arg_set_location (phi, arg_i, locus);
 	    }
-
 
 	  if (e->flags & EDGE_ABNORMAL)
 	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (USE_FROM_PTR (arg_p)) = 1;

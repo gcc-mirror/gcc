@@ -192,11 +192,29 @@ pending_diagnostic::add_call_event (const exploded_edge &eedge,
   const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
   emission_path->add_event
     (make_unique<call_event> (eedge,
-			      (last_stmt
-			       ? last_stmt->location
-			       : UNKNOWN_LOCATION),
-			      src_point.get_fndecl (),
-			      src_stack_depth));
+			      event_loc_info (last_stmt
+					      ? last_stmt->location
+					      : UNKNOWN_LOCATION,
+					      src_point.get_fndecl (),
+					      src_stack_depth)));
+}
+
+/* Base implementation of pending_diagnostic::add_region_creation_events.
+   See the comment for class region_creation_event.  */
+
+void
+pending_diagnostic::add_region_creation_events (const region *reg,
+						tree capacity,
+						const event_loc_info &loc_info,
+						checker_path &emission_path)
+{
+  emission_path.add_event
+    (make_unique<region_creation_event_memory_space> (reg->get_memory_space (),
+						      loc_info));
+
+  if (capacity)
+    emission_path.add_event
+      (make_unique<region_creation_event_capacity> (capacity, loc_info));
 }
 
 /* Base implementation of pending_diagnostic::add_final_event.
@@ -210,11 +228,11 @@ pending_diagnostic::add_final_event (const state_machine *sm,
 				     checker_path *emission_path)
 {
   emission_path->add_event
-    (make_unique<warning_event> (get_stmt_location (stmt,
-						    enode->get_function ()),
-				 enode->get_function ()->decl,
-				 enode->get_stack_depth (),
-				 sm, var, state));
+    (make_unique<warning_event>
+     (event_loc_info (get_stmt_location (stmt, enode->get_function ()),
+		      enode->get_function ()->decl,
+		      enode->get_stack_depth ()),
+      sm, var, state));
 }
 
 } // namespace ana

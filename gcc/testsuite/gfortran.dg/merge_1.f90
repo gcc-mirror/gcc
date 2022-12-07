@@ -7,32 +7,40 @@ program testmerge9
   integer :: i
   logical :: x(2) = (/.true., .false./)
   logical :: called(2)
+  logical :: y
 
   ! At run-time all arguments shall be evaluated
   do i = 1,2
      called = .false.
-     print *, merge (tstuff(), fstuff(), x(i))
+     y = merge (tstuff(), fstuff(), x(i))
+     print *, y
      if (any (.not. called)) stop 1
   end do
 
   ! Compile-time simplification shall not drop non-constant args
   called = .false.
-  print *, merge (tstuff(),fstuff(),.true.)
+  y = merge (tstuff(),fstuff(),.true.)
+  print *, y
   if (any (.not. called)) stop 2
   called = .false.
-  print *, merge (tstuff(),fstuff(),.false.)
+  y = merge (tstuff(),fstuff(),.false.)
+  print *, y
   if (any (.not. called)) stop 3
   called = .false.
-  print *, merge (tstuff(),.false.,.true.)
+  y = merge (tstuff(),.false.,.true.)
+  print *, y
   if (any (called .neqv. [.true.,.false.])) stop 4
   called = .false.
-  print *, merge (tstuff(),.false.,.false.)
+  y = merge (tstuff(),.false.,.false.)
+  print *, y
   if (any (called .neqv. [.true.,.false.])) stop 5
   called = .false.
-  print *, merge (.true.,fstuff(),.true.)
+  y = merge (.true.,fstuff(),.true.)
+  print *, y
   if (any (called .neqv. [.false.,.true.])) stop 6
   called = .false.
-  print *, merge (.true.,fstuff(),.false.)
+  y = merge (.true.,fstuff(),.false.)
+  print *, y
   if (any (called .neqv. [.false.,.true.])) stop 7
 contains
   logical function tstuff()

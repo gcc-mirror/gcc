@@ -1,3 +1,7 @@
+2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Restrict build to Darwin 16 or newer.
+
 2022-11-15  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Update local patches.

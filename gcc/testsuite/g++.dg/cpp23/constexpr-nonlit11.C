@@ -25,10 +25,10 @@ struct X {
 struct S {
   X x;
   // Calls a non-constexpr constructor X::X(int).
-  constexpr S(int i) : x(i) { } // { dg-warning "call to" }
+  constexpr S(int i) : x(i) { } // { dg-warning "call to" "" { target { ! implicit_constexpr } } }
   S(int, int) { }
   // Target constructor isn't constexpr.
-  constexpr S() : S(42, 42) { } // { dg-warning "call to" }
+  constexpr S() : S(42, 42) { } // { dg-warning "call to" "" { target { ! implicit_constexpr } } }
 };
 
 namespace N1 {

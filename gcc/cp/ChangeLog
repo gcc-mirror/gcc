@@ -1,3 +1,87 @@
+2022-12-05  Scott Snyder  <sss@li-snyder.org>
+
+	PR plugins/107964
+	* Make-lang.in (CP_PLUGIN_HEADERS): Install contracts.h
+
+2022-12-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107417
+	* pt.cc (for_each_template_parm_r) <case REQUIRES_EXPR>: Move
+	walking of the TREE_TYPE of each parameter to ...
+	* tree.cc (cp_walk_subtrees) <case REQUIRES_EXPR>: ... here.
+
+2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+	    Adrian Perl  <adrian.perl@web.de>
+
+	PR c++/100611
+	PR c++/101367
+	PR c++/101976
+	PR c++/99576
+	* coroutines.cc (find_interesting_subtree): Do not promote temporaries
+	that are only used as direct initializers for some other object.
+
+2022-12-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103081
+	* pt.cc (tsubst_copy) <case CONST_DECL>: Generalize
+	early exit test for namespace-scope decls to check dependence of
+	the enclosing scope instead.  Remove dead early exit test.
+
+2022-12-02  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (grokdeclarator): Build RESULT_DECL.
+	(start_preparsed_function): Copy location from template.
+	* semantics.cc (apply_deduced_return_type): Handle
+	arg != current_function_decl.
+	* method.cc (implicitly_declare_fn): Use it.
+
+2022-12-02  Jason Merrill  <jason@redhat.com>
+
+	* g++spec.cc (lang_specific_driver): Set SKIPOPT for nostdlib++.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* parser.cc (cp_convert_omp_range_for): After do_auto_deduction if
+	!processing_template_decl call cp_finish_decomp with
+	processing_template_decl temporarily incremented.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* parser.cc (do_range_for_auto_deduction): Add DECOMP_FIRST_NAME
+	and DECOMP_CNT arguments.  Call cp_finish_decomp if DECL
+	is a structured binding.
+	(cp_parser_range_for): Adjust do_range_for_auto_deduction caller.
+	(cp_convert_omp_range_for): Likewise.
+
+2022-12-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107539
+	* constraint.cc (norm_hasher::hash, norm_hasher::equal): Set
+	comparing_specializations.
+	(sat_hasher::hash, sat_hasher::equal): Likewise.
+	* cp-tree.h (atom_hasher::hash, atom_hasher::equal): Likewise.
+	* pt.cc (ctp_hasher::hash, ctp_hasher::equal): Likewise.
+
+2022-12-01  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Remove extra object dependency.
+
+2022-12-01  Jason Merrill  <jason@redhat.com>
+
+	* contracts.cc (remove_contract_attributes): Actually prepend
+	to the list.
+	* pt.cc (tsubst_contract): Only look for a postcondition if type is
+	nonnull.
+
+2022-11-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107542
+	* typeck.cc (cp_build_binary_op): In the SPACESHIP_EXPR case,
+	handle an error_mark_node result type.
+
 2022-11-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/107864

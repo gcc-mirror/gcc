@@ -600,8 +600,8 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
 /* Initialize the object.  */
 
 access_ref::access_ref ()
-  : ref (), eval ([](tree x){ return x; }), deref (), trail1special (true),
-    base0 (true), parmarray ()
+  : ref (), eval ([](tree x){ return x; }), deref (), ref_nullptr_p (false),
+    trail1special (true), base0 (true), parmarray ()
 {
   /* Set to valid.  */
   offrng[0] = offrng[1] = 0;
@@ -1193,7 +1193,16 @@ access_ref::inform_access (access_mode mode, int ostype /* = 1 */) const
     loc = EXPR_LOCATION (ref);
   else if (TREE_CODE (ref) != IDENTIFIER_NODE
 	   && TREE_CODE (ref) != SSA_NAME)
-    return;
+    {
+      if (TREE_CODE (ref) == INTEGER_CST && ref_nullptr_p)
+	{
+	  if (mode == access_read_write || mode == access_write_only)
+	    inform (loc, "destination object is likely at address zero");
+	  else
+	    inform (loc, "source object is likely at address zero");
+	}
+      return;
+    }
 
   if (mode == access_read_write || mode == access_write_only)
     {
@@ -2280,7 +2289,10 @@ compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
 	  if (targetm.addr_space.zero_address_valid (as))
 	    pref->set_max_size_range ();
 	  else
-	    pref->sizrng[0] = pref->sizrng[1] = 0;
+	    {
+	      pref->sizrng[0] = pref->sizrng[1] = 0;
+	      pref->ref_nullptr_p = true;
+	    }
 	}
       else
 	pref->sizrng[0] = pref->sizrng[1] = 0;

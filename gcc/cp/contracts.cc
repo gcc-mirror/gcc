@@ -869,7 +869,7 @@ remove_contract_attributes (tree fndecl)
   tree list = NULL_TREE;
   for (tree p = DECL_ATTRIBUTES (fndecl); p; p = TREE_CHAIN (p))
     if (!cxx_contract_attribute_p (p))
-      list = tree_cons (TREE_PURPOSE (p), TREE_VALUE (p), NULL_TREE);
+      list = tree_cons (TREE_PURPOSE (p), TREE_VALUE (p), list);
   DECL_ATTRIBUTES (fndecl) = nreverse (list);
 }
 

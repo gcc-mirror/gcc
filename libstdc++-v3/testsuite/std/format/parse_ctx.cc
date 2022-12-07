@@ -4,11 +4,11 @@
 #include <format>
 #include <testsuite_hooks.h>
 
-template<typename T, size_t N = 1, bool auto_indexing = true>
+template<typename T, bool auto_indexing = true>
 bool
 is_std_format_spec_for(std::string_view spec)
 {
-  std::format_parse_context pc(spec, N);
+  std::format_parse_context pc(spec);
   if (auto_indexing)
     (void) pc.next_arg_id();
   else
@@ -49,11 +49,9 @@ test_char()
   VERIFY( ! is_std_format_spec_for<char>("0") );
   VERIFY( ! is_std_format_spec_for<char>("00d") );
   VERIFY( is_std_format_spec_for<char>("01d") );
-  VERIFY( ! is_std_format_spec_for<char>("0{}d") );
+  VERIFY( is_std_format_spec_for<char>("0{}d") );
   VERIFY( ! is_std_format_spec_for<char>("0{1}d") );
-  VERIFY(( is_std_format_spec_for<char, 2>("0{}d") ));
-  VERIFY(( ! is_std_format_spec_for<char, 2>("0{1}d") ));
-  VERIFY(( is_std_format_spec_for<char, 2, false>("0{1}d") ));
+  VERIFY(( is_std_format_spec_for<char, false>("0{1}d") ));
   VERIFY( is_std_format_spec_for<char>("1") );
   VERIFY( ! is_std_format_spec_for<char>("-1") );
   VERIFY( is_std_format_spec_for<char>("-1d") ); // sign and width
@@ -98,11 +96,10 @@ test_int()
   VERIFY( is_std_format_spec_for<int>("0") );
   VERIFY( ! is_std_format_spec_for<int>("00d") );
   VERIFY( is_std_format_spec_for<int>("01d") );
-  VERIFY( ! is_std_format_spec_for<int>("0{}d") );
   VERIFY( ! is_std_format_spec_for<int>("0{1}d") );
-  VERIFY(( is_std_format_spec_for<int, 2>("0{}d") ));
-  VERIFY(( ! is_std_format_spec_for<int, 2>("0{1}d") ));
-  VERIFY(( is_std_format_spec_for<int, 2, false>("0{1}d") ));
+  VERIFY(( is_std_format_spec_for<int>("0{}d") ));
+  VERIFY(( ! is_std_format_spec_for<int>("0{1}d") ));
+  VERIFY(( is_std_format_spec_for<int, false>("0{1}d") ));
   VERIFY( is_std_format_spec_for<int>("1") );
   VERIFY( is_std_format_spec_for<int>("-1") ); // sign and width
   VERIFY( ! is_std_format_spec_for<int>(".") );
@@ -193,24 +190,20 @@ test_float()
   VERIFY( is_std_format_spec_for<float>("0") );
   VERIFY( ! is_std_format_spec_for<float>("00f") );
   VERIFY( is_std_format_spec_for<float>("01f") );
-  VERIFY( ! is_std_format_spec_for<float>("0{}f") );
+  VERIFY( is_std_format_spec_for<float>("0{}f") );
   VERIFY( ! is_std_format_spec_for<float>("0{1}f") );
-  VERIFY(( is_std_format_spec_for<float, 2>("0{}f") ));
-  VERIFY(( ! is_std_format_spec_for<float, 2>("0{1}f") ));
-  VERIFY(( is_std_format_spec_for<float, 2, false>("0{1}f") ));
+  VERIFY( ! is_std_format_spec_for<float>("0{1}f") );
+  VERIFY(( is_std_format_spec_for<float, false>("0{1}f") ));
   VERIFY( is_std_format_spec_for<float>("1") );
   VERIFY( is_std_format_spec_for<float>("-1") ); // sign and width
   VERIFY( ! is_std_format_spec_for<float>(".") );
   VERIFY( is_std_format_spec_for<float>(".1") );
-  VERIFY( ! is_std_format_spec_for<float>(".{}") );
+  VERIFY( is_std_format_spec_for<float>(".{}") );
   VERIFY( ! is_std_format_spec_for<float>(".{1}") );
-  VERIFY(( is_std_format_spec_for<float, 2>(".{}") ));
-  VERIFY(( ! is_std_format_spec_for<float, 2>(".{1}") ));
-  VERIFY(( is_std_format_spec_for<float, 2, false>(".{1}") ));
-  VERIFY(( ! is_std_format_spec_for<float, 2>("{}.{}") ));
-  VERIFY(( is_std_format_spec_for<float, 3>("{}.{}") ));
-  VERIFY(( is_std_format_spec_for<float, 2, false>("{1}.{1}") ));
-  VERIFY(( is_std_format_spec_for<float, 3, false>("{2}.{1}") ));
+  VERIFY(( is_std_format_spec_for<float, false>(".{1}") ));
+  VERIFY( is_std_format_spec_for<float>("{}.{}") );
+  VERIFY(( is_std_format_spec_for<float, false>("{1}.{1}") ));
+  VERIFY(( is_std_format_spec_for<float, false>("{2}.{1}") ));
   VERIFY( ! is_std_format_spec_for<float>("c") );
   VERIFY( ! is_std_format_spec_for<float>("b") );
   VERIFY( ! is_std_format_spec_for<float>("B") );
@@ -302,11 +295,9 @@ test_string()
   VERIFY( ! is_std_format_spec_for<const char*>("-1s") );
   VERIFY( ! is_std_format_spec_for<const char*>(".") );
   VERIFY( is_std_format_spec_for<const char*>(".1") );
-  VERIFY( ! is_std_format_spec_for<const char*>(".{}") );
-  VERIFY(( ! is_std_format_spec_for<const char*, 1, false>(".{1}") ));
-  VERIFY(( is_std_format_spec_for<const char*, 1, false>(".{0}") ));
-  VERIFY(( is_std_format_spec_for<const char*, 2>(".{}") ));
-  VERIFY(( is_std_format_spec_for<const char*, 2, false>(".{1}") ));
+  VERIFY( is_std_format_spec_for<const char*>(".{}") );
+  VERIFY(( is_std_format_spec_for<const char*, false>(".{0}") ));
+  VERIFY(( is_std_format_spec_for<const char*, false>(".{1}") ));
   VERIFY( ! is_std_format_spec_for<const char*>("c") );
   VERIFY( ! is_std_format_spec_for<const char*>("b") );
   VERIFY( ! is_std_format_spec_for<const char*>("B") );

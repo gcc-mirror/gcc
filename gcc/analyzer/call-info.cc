@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
+#include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
 #include "make-unique.h"
 
@@ -94,10 +95,10 @@ call_info::add_events_to_path (checker_path *emission_path,
   class call_event : public custom_event
   {
   public:
-    call_event (location_t loc, tree fndecl, int depth,
+    call_event (const event_loc_info &loc_info,
 		const call_info *call_info)
-      : custom_event (loc, fndecl, depth),
-	m_call_info (call_info)
+    : custom_event (loc_info),
+      m_call_info (call_info)
     {}
 
     label_text get_desc (bool can_colorize) const final override
@@ -114,10 +115,11 @@ call_info::add_events_to_path (checker_path *emission_path,
   tree caller_fndecl = src_point.get_fndecl ();
   const int stack_depth = src_point.get_stack_depth ();
 
-  emission_path->add_event (make_unique<call_event> (get_call_stmt ()->location,
-						     caller_fndecl,
-						     stack_depth,
-						     this));
+  emission_path->add_event
+    (make_unique<call_event> (event_loc_info (get_call_stmt ()->location,
+					      caller_fndecl,
+					      stack_depth),
+			      this));
 }
 
 /* Recreate a call_details instance from this call_info.  */

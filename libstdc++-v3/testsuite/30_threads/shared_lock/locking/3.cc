@@ -38,7 +38,7 @@ int main()
 
       try
 	{
-	  l.try_lock_for(std::chrono::milliseconds(100));
+	  (void) l.try_lock_for(std::chrono::milliseconds(100));
 	}
       catch(const std::system_error&)
 	{
