@@ -77,6 +77,12 @@ package body GNAT.Formatted_String is
       Value_Needed : Natural range 0 .. 2 := 0;
    end record;
 
+   procedure Advance_And_Accumulate_Until_Next_Specifier
+     (Format : Formatted_String);
+   --  Advance Format.D.Index until either the next format specifier is
+   --  encountered, or the end of Format.D.Format is reached. The characters
+   --  advanced over are appended to Format.D.Result.
+
    procedure Next_Format
      (Format : Formatted_String;
       F_Spec : out F_Data;
@@ -139,29 +145,13 @@ package body GNAT.Formatted_String is
    ---------
 
    function "-" (Format : Formatted_String) return String is
-      F : String renames Format.D.Format;
-      J : Natural renames Format.D.Index;
-      R : Unbounded_String := Format.D.Result;
-
    begin
       --  Make sure we get the remaining character up to the next unhandled
       --  format specifier.
 
-      while (J <= F'Length and then F (J) /= '%')
-        or else (J < F'Length - 1 and then F (J + 1) = '%')
-      loop
-         Append (R, F (J));
+      Advance_And_Accumulate_Until_Next_Specifier (Format);
 
-         --  If we have two consecutive %, skip the second one
-
-         if F (J) = '%' and then J < F'Length - 1 and then F (J + 1) = '%' then
-            J := J + 1;
-         end if;
-
-         J := J + 1;
-      end loop;
-
-      return To_String (R);
+      return To_String (Format.D.Result);
    end "-";
 
    ---------
@@ -317,6 +307,33 @@ package body GNAT.Formatted_String is
    begin
       F.D.Ref_Count := F.D.Ref_Count + 1;
    end Adjust;
+
+   -------------------------------------------------
+   -- Advance_And_Accumulate_Until_Next_Specifier --
+   -------------------------------------------------
+
+   procedure Advance_And_Accumulate_Until_Next_Specifier
+     (Format : Formatted_String)
+   is
+   begin
+      loop
+         if Format.D.Index > Format.D.Format'Last then
+            exit;
+         end if;
+
+         if Format.D.Format (Format.D.Index) /= '%' then
+            Append (Format.D.Result, Format.D.Format (Format.D.Index));
+            Format.D.Index := Format.D.Index + 1;
+         elsif Format.D.Index + 1 <= Format.D.Format'Last
+           and then Format.D.Format (Format.D.Index + 1) = '%'
+         then
+            Append (Format.D.Result, '%');
+            Format.D.Index := Format.D.Index + 2;
+         else
+            exit;
+         end if;
+      end loop;
+   end Advance_And_Accumulate_Until_Next_Specifier;
 
    --------------------
    -- Decimal_Format --
@@ -505,19 +522,7 @@ package body GNAT.Formatted_String is
 
       --  Got to next %
 
-      while (J <= F'Last and then F (J) /= '%')
-        or else (J < F'Last - 1 and then F (J + 1) = '%')
-      loop
-         Append (Format.D.Result, F (J));
-
-         --  If we have two consecutive %, skip the second one
-
-         if F (J) = '%' and then J < F'Last - 1 and then F (J + 1) = '%' then
-            J := J + 1;
-         end if;
-
-         J := J + 1;
-      end loop;
+      Advance_And_Accumulate_Until_Next_Specifier (Format);
 
       if J >= F'Last or else F (J) /= '%'  then
          raise Format_Error with "no format specifier found for parameter"
