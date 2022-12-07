@@ -1,3 +1,185 @@
+2022-12-06  Yannick Moy  <moy@adacore.com>
+
+	* contracts.adb (Add_Contract_Item): Allow No_Caching on types.
+	(Check_Type_Or_Object_External_Properties): Check No_Caching.
+	Check that non-effectively volatile types does not contain an
+	effectively volatile component (instead of just a volatile
+	component).
+	(Analyze_Object_Contract): Remove shared checking of No_Caching.
+	* sem_prag.adb (Analyze_External_Property_In_Decl_Part): Adapt checking
+	of No_Caching for types.
+	(Analyze_Pragma): Allow No_Caching on types.
+	* sem_util.adb (Has_Effectively_Volatile_Component): New query function.
+	(Is_Effectively_Volatile): Type with Volatile and No_Caching is not
+	effectively volatile.
+	(No_Caching_Enabled): Remove assertion to apply to all entities.
+	* sem_util.ads: Same.
+
+2022-12-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb
+	(Build_Static_Check_Helper_Call): Perform implicit type conversion
+	to ensure matching types and avoid reporting spurious errors.
+
+2022-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_warn.adb (Warn_On_Constant_Valid_Condition): Bail out for a
+	membership test with a mark for a subtype that is predicated.
+
+2022-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_elab.adb (Processing_In_State): Add Within_Freezing_Actions
+	component.
+	(Process_Conditional_ABE_Call): Compute its value.
+	(Process_Conditional_ABE_Call_SPARK): For a call and a target in
+	the main unit, do not emit any ABE diagnostics if the call occurs
+	in a freezing actions context.
+
+2022-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Actual_Subtype): Document additional usage.
+	* exp_aggr.adb (Expand_Array_Aggregate): Replace test on
+	Is_Build_In_Place_Return_Object with Is_Special_Return_Object.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Factor out parts of the
+	processing done for build-in-place return objects and reuse them to
+	implement a similar processing for specific return objects.
+	* exp_ch4.adb (Expand_Allocator_Expression): Do not generate a tag
+	assignment or an adjustment if the allocator was made for a special
+	return object.
+	(Expand_Concatenate): If the result is allocated on the secondary
+	stack, use an unconstrained allocation.
+	* exp_ch6.ads (Apply_CW_Accessibility_Check): New declaration.
+	(Is_By_Reference_Return_Object): Likewise.
+	(Is_Secondary_Stack_Return_Object): Likewise.
+	(Is_Special_Return_Object): Likewise.
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Do not bail out for the
+	expression in the declaration of a special return object.
+	(Expand_N_Extended_Return_Statement): Add missing guard and move
+	the class-wide accessibility check to Expand_N_Object_Declaration.
+	(Expand_Simple_Function_Return): Delete obsolete commentary.
+	Skip the special processing for types that require finalization or
+	are returned on the secondary stack if the return originally comes
+	from an extended return statement.  Add missing Constant_Present.
+	(Is_By_Reference_Return_Object): New predicate.
+	(Is_Secondary_Stack_Return_Object): Likewise.
+	(Is_Special_Return_Object): Likewise.
+	* exp_util.adb (Is_Related_To_Func_Return): Also return true if the
+	parent of the expression is the renaming declaration generated for
+	the expansion of a return object.
+	* gen_il-fields.ads (Opt_Field_Enum): Replace Alloc_For_BIP_Return
+	with For_Special_Return_Object.
+	* gen_il-gen-gen_nodes.adb (N_Allocator): Likewise.
+	* gen_il-internals.adb (Image): Remove Alloc_For_BIP_Return.
+	* sem_ch3.adb (Check_Return_Subtype_Indication): New procedure
+	moved from sem_ch6.adb.
+	(Analyze_Object_Declaration): Call it on a return object.
+	* sem_ch4.adb: Add with and use clauses for Rtsfind.
+	(Analyze_Allocator): Test For_Special_Return_Object to skip checks
+	for allocators made for special return objects.
+	Do not report restriction violations for the return stack pool.
+	* sem_ch5.adb (Analyze_Assignment.Set_Assignment_Type): Return the
+	Actual_Subtype for return objects that live on the secondary stack.
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Move procedure to
+	sem_ch3.adb.
+	(Analyze_Function_Return): Do not call above procedure.
+	* sem_res.adb (Resolve_Allocator): Replace Alloc_For_BIP_Return
+	with For_Special_Return_Object.
+	* sinfo.ads: Likewise.
+	* treepr.adb (Image): Remove Alloc_For_BIP_Return.
+	* gcc-interface/trans.cc (gnat_to_gnu): Do not convert to the result
+	type in the unconstrained array type case if the parent is a simple
+	return statement.
+
+2022-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Membership_Op): Adjust latest change.
+
+2022-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_In) <Substitute_Valid_Check>: Rename to...
+	<Substitute_Valid_Test>: ...this.
+	Use Is_Entity_Name to test for the presence of entity references.
+	Do not warn or substitute a valid test for a test with a mark for
+	a subtype that is predicated.
+	Apply the same transformation for a test with a mark for a subtype
+	that is predicated as for a subtype that is not.
+	Remove useless return statement.
+	* sem_res.adb (Resolve_Membership_Op): Perform a special resolution
+	if the left operand is of a universal numeric type.
+
+2022-12-06  Justin Squirek  <squirek@adacore.com>
+
+	* accessibility.adb, accessibility.ads
+	(Accessibility_Message): Moved from sem_attr.
+	(Apply_Accessibility_Check): Moved from checks.
+	(Apply_Accessibility_Check_For_Allocator): Moved from exp_ch4 and
+	renamed
+	(Check_Return_Construct_Accessibility): Moved from sem_ch6.
+	(Innermost_Master_Scope_Depth): Moved from sem_util. Add condition
+	to detect expanded iterators.
+	(Prefix_With_Safe_Accessibility_Level): Moved from sem_attr.
+	(Static_Accessibility_Level): Moved from sem_util.
+	(Has_Unconstrained_Access_Discriminants): Likewise.
+	(Has_Anonymous_Access_Discriminant): Likewise.
+	(Is_Anonymous_Access_Actual): Likewise.
+	(Is_Special_Aliased_Formal_Access): Likewise.
+	(Needs_Result_Accessibility_Level): Likewise.
+	(Subprogram_Access_Level): Likewise.
+	(Type_Access_Level): Likewise.
+	(Deepest_Type_Access_Level): Likewise.
+	(Effective_Extra_Accessibility): Likewise.
+	(Get_Dynamic_Accessibility): Likewise.
+	(Has_Access_Values): Likewise.
+	(Accessibility_Level): Likewise.
+	* exp_attr.adb (Access_Cases): Obtain the proper enclosing object
+	which applies to a given 'Access by looking through type
+	conversions.
+	* exp_ch4.adb (Apply_Accessibility_Check): Moved to accessibility.
+	* exp_ch5.adb: Likewise.
+	* exp_ch6.adb: Likewise.
+	* exp_ch9.adb: Likewise.
+	* exp_disp.adb: Likewise.
+	* gen_il-fields.ads: Add new flag Comes_From_Iterator.
+	* gen_il-gen-gen_nodes.adb: Add new flag Comes_From_Iterator for
+	N_Object_Renaming_Declaration.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Mark object
+	renamings resulting from iterator expansion with the new flag
+	Comes_From_Iterator.
+	* sem_aggr.adb (Resolve_Container_Aggregate): Refine test.
+	* sem_ch13.adb: Add dependence on the accessibility package.
+	* sem_ch3.adb: Likewise.
+	* sem_ch4.adb: Likewise.
+	* sem_ch9.adb: Likewise.
+	* sem_res.adb: Likewise.
+	* sem_warn.adb: Likewise.
+	* exp_ch3.adb: Likewise.
+	* sem_attr.adb (Accessibility_Message): Moved to accessibility.
+	(Prefix_With_Safe_Accessibility_Level): Likewise.
+	* checks.adb, checks.ads (Apply_Accessibility_Check): Likewise.
+	* sem_ch6.adb (Check_Return_Construct_Accessibility): Likewise.
+	* sem_util.adb, sem_util.ads
+	(Accessibility_Level): Likewise.
+	(Deepest_Type_Access_Level): Likewise.
+	(Effective_Extra_Accessibility): Likewise.
+	(Get_Dynamic_Accessibility): Likewise.
+	(Has_Access_Values): Likewise.
+	(Has_Anonymous_Access_Discriminant): Likewise.
+	(Static_Accessibility_Level): Likewise.
+	(Has_Unconstrained_Access_Discriminants): Likewise.
+	(Is_Anonymous_Access_Actual): Likewise.
+	(Is_Special_Aliased_Formal_Access): Likewise.
+	(Needs_Result_Accessibility_Level): Likewise.
+	(Subprogram_Access_Level): Likewise.
+	(Type_Access_Level): Likewise.
+	* sinfo.ads: Document new flag Comes_From_Iterator.
+	* gcc-interface/Make-lang.in: Add entry for new Accessibility package.
+
+2022-12-06  Liaiss Merzougue  <merzougue@adacore.com>
+
+	* libgnat/i-c.adb (To_C): Simplify code for having a single
+	exception raise. Add pragma annotate about uninitialized value
+	which happen only on exception raising.
+
 2022-12-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (get_storage_model_access): Strip any type

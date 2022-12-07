@@ -1,3 +1,46 @@
+2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* config/gcn/icv-device.c (omp_get_teams_thread_limit): Added to
+	allow processing of device-specific values.
+	(omp_set_teams_thread_limit): Likewise.
+	(ialias): Likewise.
+	* config/nvptx/icv-device.c (omp_get_teams_thread_limit): Likewise.
+	(omp_set_teams_thread_limit): Likewise.
+	(ialias): Likewise.
+	* icv-device.c (omp_get_teams_thread_limit): Likewise.
+	(ialias): Likewise.
+	(omp_set_teams_thread_limit): Likewise.
+	* icv.c (omp_set_teams_thread_limit): Removed.
+	(omp_get_teams_thread_limit): Likewise.
+	(ialias): Likewise.
+	* libgomp.texi: Updated documentation for nvptx and gcn corresponding
+	to the limitation of the number of teams.
+	* plugin/plugin-gcn.c (limit_teams): New helper function that limits
+	the number of teams by twice the number of compute units.
+	(parse_target_attributes): Limit the number of teams on gcn offload
+	devices.
+	* target.c (get_gomp_offload_icvs): Added teams_thread_limit_var
+	handling.
+	(gomp_load_image_to_device): Added a size check for the ICVs struct
+	variable.
+	(gomp_copy_back_icvs): New function that is used in GOMP_target_ext to
+	copy back the ICV values from device to host.
+	(GOMP_target_ext): Update the number of teams and threads in the kernel
+	args also considering device-specific values.
+	* testsuite/libgomp.c-c++-common/icv-4.c: Fixed an error in the reading
+	of OMP_TEAMS_THREAD_LIMIT from the environment.
+	* testsuite/libgomp.c-c++-common/icv-5.c: Extended.
+	* testsuite/libgomp.c-c++-common/icv-6.c: Extended.
+	* testsuite/libgomp.c-c++-common/icv-7.c: Extended.
+	* testsuite/libgomp.c-c++-common/icv-9.c: New test.
+	* testsuite/libgomp.fortran/icv-5.f90: New test.
+	* testsuite/libgomp.fortran/icv-6.f90: New test.
+
+2022-12-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Add missing 'the'.
+	(TR11): Add missing '@tab N @tab'.
+
 2022-11-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP Context Selectors): Add 'gfx803' to gcn's isa.

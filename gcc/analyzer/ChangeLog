@@ -1,3 +1,67 @@
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107882
+	* region-model.cc (region_model::get_store_value): Return an
+	unknown value for empty regions.
+	(region_model::set_value): Bail on empty regions.
+	* region.cc (region::empty_p): New.
+	* region.h (region::empty_p): New decl.
+	* state-purge.cc (same_binding_p): Bail if either region is empty.
+	* store.cc (binding_key::make): Assert that a concrete binding's
+	bit_size must be > 0.
+	(binding_cluster::mark_region_as_unknown): Bail on empty regions.
+	(binding_cluster::get_binding): Likewise.
+	(binding_cluster::remove_overlapping_bindings): Likewise.
+	(binding_cluster::on_unknown_fncall): Don't conjure values for
+	empty regions.
+	(store::fill_region): Bail on empty regions.
+	* store.h (class concrete_binding): Update comment to reflect that
+	the range of bits must be non-empty.
+	(concrete_binding::concrete_binding): Assert that bit range is
+	non-empty.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106325
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_null_ptr): New.
+	* region-model-manager.h
+	(region_model_manager::get_or_create_null_ptr): New decl.
+	* region-model.cc (region_model::on_top_level_param): Add
+	"nonnull" param and make use of it.
+	(region_model::push_frame): When handling a top-level entrypoint
+	to the analysis, determine which params __attribute__((nonnull))
+	applies to, and pass to on_top_level_param.
+	* region-model.h (region_model::on_top_level_param): Add "nonnull"
+	param.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (register_known_analyzer_functions): New decl.
+	(register_known_functions_lang_cp): New decl.
+	* call-details.cc: New file, split out from
+	region-model-impl-calls.cc.
+	* call-details.h: New file, split out from region-model.h.
+	* call-info.cc: Include "analyzer/call-details.h".
+	* call-summary.h: Likewise.
+	* kf-analyzer.cc: New file, split out from
+	region-model-impl-calls.cc.
+	* kf-lang-cp.cc: Likewise.
+	* known-function-manager.cc: Include "analyzer/call-details.h".
+	* region-model-impl-calls.cc: Move definitions of call_details's
+	member functions to call-details.cc.  Move class kf_analyzer_* to
+	kf-analyzer.cc.  Move kf_operator_new and kf_operator_delete to
+	kf-lang-cp.cc.  Refresh #includes accordingly.
+	(register_known_functions): Replace registration of __analyzer_*
+	functions with a call to register_known_analyzer_functions.
+	Replace registration of C++ support functions with a call to
+	register_known_functions_lang_cp.
+	* region-model.h (class call_details): Move to new call-details.h.
+	* sm-fd.cc: Include "analyzer/call-details.h".
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* varargs.cc: Likewise.
+
 2022-12-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (struct event_loc_info): New forward decl.

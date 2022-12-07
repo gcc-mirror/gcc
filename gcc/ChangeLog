@@ -1,3 +1,105 @@
+2022-12-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_bitmask_imm): Use unsigned type.
+	(aarch64_is_mov_xn_imm): New function.
+	(aarch64_move_imm): Refactor, assert mode is SImode or DImode.
+	(aarch64_internal_mov_immediate): Assert mode is SImode or DImode.
+	Simplify special cases.
+	(aarch64_uimm12_shift): Simplify code.
+	(aarch64_clamp_to_uimm12_shift): Likewise.
+	(aarch64_movw_imm): Rename to aarch64_is_movz.
+	(aarch64_float_const_rtx_p): Pass either SImode or DImode to
+	aarch64_internal_mov_immediate.
+	(aarch64_rtx_costs): Likewise.
+	* config/aarch64/aarch64.md (movdi_aarch64): Merge 'N' and 'M'
+	constraints into single 'O'.
+	(mov<mode>_aarch64): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_move_imm): Use unsigned.
+	(aarch64_bitmask_imm): Likewise.
+	(aarch64_uimm12_shift): Likewise.
+	(aarch64_is_mov_xn_imm): New prototype.
+	* config/aarch64/constraints.md: Add 'O' for 32/64-bit immediates,
+	limit 'N' to 64-bit only moves.
+
+2022-12-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	* attribs.cc (strict_flex_array_level_of): New function.
+	* attribs.h (strict_flex_array_level_of): Prototype for new function.
+	* doc/invoke.texi: Update -Warray-bounds by specifying the impact from
+	-fstrict-flex-arrays. Also update -Warray-bounds=2 by eliminating its
+	impact on treating trailing arrays as flexible array members.
+	* gimple-array-bounds.cc (get_up_bounds_for_array_ref): New function.
+	(check_out_of_bounds_and_warn): New function.
+	(array_bounds_checker::check_array_ref): Update with call to the above
+	new functions.
+	* tree.cc (array_ref_flexible_size_p): Add one new argument.
+	(component_ref_sam_type): New function.
+	(component_ref_size): Control with level of strict-flex-array.
+	* tree.h (array_ref_flexible_size_p): Update prototype.
+	(enum struct special_array_member): Add two new enum values.
+	(component_ref_sam_type): New prototype.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi: Drop out-of-date ideas for other checkers.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/call-details.o,
+	analyzer/kf-analyzer.o, and kf-lang-cp.o.
+
+2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gimplify.cc (optimize_target_teams): Set initial num_teams_upper
+	to "-2" instead of "1" for non-existing num_teams clause in order to
+	disambiguate from the case of an existing num_teams clause with value 1.
+
+2022-12-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/107987
+	* config/arm/mve.md (mve_vcmp<mve_cmp_op>q_n_<mode>,
+	@mve_vcmp<mve_cmp_op>q_n_f<mode>): Apply vec_duplicate to scalar
+	operand.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107969
+	* config/i386/i386.md (cbranchbf4, cstorebf4): Guard expanders
+	with the same condition as cbranchsf4 or cstoresf4 expanders.
+
+2022-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104475
+	* pointer-query.h (access_ref::ref_nullptr_p): New flag.
+	* pointer-query.cc (access_ref::access_ref): Initialize
+	ref_nullptr_p.
+	(compute_objsize_r): Set ref_nullptr_p if we treat it that way.
+	(access_ref::inform_access): If ref was treated as nullptr
+	based, indicate that.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107972
+	* range-op-float.cc (frange_drop_infs): New function.
+	(float_binary_op_range_finish): Add DIV_OP2 argument.  If DIV_OP2 is
+	false and lhs is finite or if DIV_OP2 is true and lhs is non-zero and
+	not NAN, r must be finite too.
+	(foperator_div::op2_range): Pass true to DIV_OP2 of
+	float_binary_op_range_finish.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107975
+	* range-op-float.cc (foperator_mult::op1_range,
+	foperator_div::op1_range, foperator_div::op2_range): Just
+	return float_binary_op_range_finish result if lhs is known
+	NAN, or the other operand is known NAN or UNDEFINED.
+
+2022-12-06  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init): Use dup
+	and zip1 for interleaving elements in vector initializer.
+
 2022-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/40635

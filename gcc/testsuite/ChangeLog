@@ -1,3 +1,81 @@
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107882
+	* gcc.dg/analyzer/memcpy-pr107882.c: New test.
+
+2022-12-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/Warray-bounds-11.c: Update warnings for -Warray-bounds=2.
+	* gcc.dg/Warray-bounds-flex-arrays-1.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-2.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-3.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-4.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-5.c: New test.
+	* gcc.dg/Warray-bounds-flex-arrays-6.c: New test.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106325
+	* gcc.dg/analyzer/attr-nonnull-pr106325.c: New test.
+	* gcc.dg/analyzer/attribute-nonnull.c (test_6): New.
+	(test_7): New.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: Include
+	"analyzer/call-details.h".
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: Likewise.
+
+2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/target-teams-1.c: Adapt expected values for
+	num_teams from "1" to "-2" in cases without num_teams clause.
+	* g++.dg/gomp/target-teams-1.C: Likewise.
+	* gfortran.dg/gomp/defaultmap-4.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-5.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-6.f90: Likewise.
+
+2022-12-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/pr107987.c: New test.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107969
+	* gcc.target/i386/pr107969.c: New test.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/107046
+	* gcc.c-torture/execute/ieee/ieee.exp: For rx-*-* append
+	-mnofpu.
+
+2022-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107975
+	* gcc.dg/pr107975.c: New test.
+
+2022-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104165
+	* g++.dg/warn/Warray-bounds-pr104165-1.C: New testcase.
+
+2022-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/x86_64/abi/bf16/abi-bf16.exp: Use separate asm for Darwin.
+	* gcc.target/x86_64/abi/bf16/m256bf16/abi-bf16-ymm.exp: Likewise.
+	* gcc.target/x86_64/abi/bf16/m512bf16/abi-bf16-zmm.exp: Likewise.
+	* gcc.target/x86_64/abi/bf16/args.h: Make xmm_regs, x87_regs extern.
+	* gcc.target/x86_64/abi/bf16/m256bf16/args.h: Likewise.
+	* gcc.target/x86_64/abi/bf16/m512bf16/args.h: Likewise.
+	* gcc.target/x86_64/abi/bf16/asm-support-darwin.S: New file.
+	* gcc.target/x86_64/abi/bf16/m256bf16/asm-support-darwin.S: New file.
+	* gcc.target/x86_64/abi/bf16/m512bf16/asm-support-darwin.S: New file.
+
+2022-12-06  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/interleave-init-1.c: New test.
+
 2022-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/40635

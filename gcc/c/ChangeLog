@@ -1,3 +1,8 @@
+2022-12-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (is_flexible_array_member_p): Call new function
+	strict_flex_array_level_of.
+
 2022-11-24  Florian Weimer  <fweimer@redhat.com>
 
 	PR c/107805

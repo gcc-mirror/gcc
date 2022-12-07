@@ -1,3 +1,78 @@
+2022-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107979
+	* testsuite/17_intro/names.cc: Do not check __unused on old
+	Glibc versions.
+
+2022-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107871
+	* include/std/format (_Iter_sink::_M_overflow): Add cast to
+	size_t.
+	(_Iter_sink<CharT, contiguous_iterator auto>::_M_make_span): Use
+	typedef instead of decltype.
+	* testsuite/std/format/functions/107871.cc: New test.
+
+2022-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (chrono::hh_mm_ss): Do not use 64-bit
+	representations for all four duration members. Reorder members.
+	(hh_mm_ss::hh_mm_ss()): Define as defaulted.
+	(hh_mm_ss::hh_mm_ss(Duration)): Delegate to a new private
+	constructor, instead of calling chrono::abs repeatedly.
+	* testsuite/std/time/hh_mm_ss/1.cc: Check floating-point
+	representations. Check default constructor. Check sizes.
+
+2022-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/106434
+	* include/bits/vector.tcc (insert(const_iterator, const T&)):
+	Add assertion and optimization hint that the iterator for the
+	insertion point must be non-null.
+
+2022-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_mutex.h (mutex): Add nodiscard attribute to
+	try_lock member function.
+	* include/bits/unique_lock.h (unique_lock): Likewise for
+	try_lock, try_lock_until, try_lock_for member functions, and
+	owns_lock and mutex member functions.
+	* include/std/mutex (recursive_mutex): Likewise for try_lock
+	member function.
+	(timed_mutex, recursive_timed_mutex, try_lock): Likewise for
+	try_lock, try_lock_until, try_lock_for member functions.
+	(try_lock): Likewise for non-member function.
+	* include/std/shared_mutex (shared_mutex): Likewise for try_lock
+	and try_lock_shared member functions.
+	(shared_timed_mutex): Likewise for try_lock, try_lock_for,
+	try_lock_shared, try_lock_shared_for, try_lock_until, and
+	try_lock_shared_until member functions.
+	(shared_lock): Likewise for try_lock, try_lock, try_lock_for,
+	try_lock_until, owns_lock, and mutex member functions.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/clock_neg.cc:
+	Cast discarded value expression to void.
+	* testsuite/30_threads/shared_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/4.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/clock_neg.cc:
+	Likewise.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/clock_neg.cc:
+	Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/clock_neg.cc:
+	Likewise.
+	* testsuite/30_threads/try_lock/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/60497.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/clock_neg.cc:
+	Likewise.
+
+2022-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (basic_format_parse_context::next_arg_id):
+	Only check arg-id is in range during constant evaluation.
+	* testsuite/std/format/functions/format.cc: Check "{:#Lx}".
+	* testsuite/std/format/parse_ctx.cc: Adjust expected results for
+	format-strings using an out-of-range arg-id.
+
 2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/os/bsd/darwin/os_defines.h
