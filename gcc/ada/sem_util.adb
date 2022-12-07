@@ -15255,8 +15255,15 @@ package body Sem_Util is
       then
          return Is_Aliased_View (Expression (Obj));
 
+      --  The dereference of an access-to-object value denotes an aliased view,
+      --  but this routine uses the rules of the language so we need to exclude
+      --  rewritten constructs that introduce artificial dereferences.
+
       elsif Nkind (Obj) = N_Explicit_Dereference then
-         return Nkind (Original_Node (Obj)) /= N_Function_Call;
+         return not Is_Captured_Function_Call (Obj)
+           and then not
+             (Nkind (Parent (Obj)) = N_Object_Renaming_Declaration
+               and then Is_Return_Object (Defining_Entity (Parent (Obj))));
 
       else
          return False;
@@ -27394,7 +27401,9 @@ package body Sem_Util is
 
    procedure Set_Debug_Info_Defining_Id (N : Node_Id) is
    begin
-      if Comes_From_Source (Defining_Identifier (N)) then
+      if Comes_From_Source (Defining_Identifier (N))
+        or else Debug_Generated_Code
+      then
          Set_Debug_Info_Needed (Defining_Identifier (N));
       end if;
    end Set_Debug_Info_Defining_Id;

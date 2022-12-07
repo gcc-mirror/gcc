@@ -3096,8 +3096,8 @@ package Sem_Util is
    --  associated name (i.e. the Node_Id associated with its name).
 
    procedure Set_Debug_Info_Defining_Id (N : Node_Id);
-   --  Call Set_Debug_Info_Needed on Defining_Identifier (N) if it comes
-   --  from source.
+   --  Call Set_Debug_Info_Needed on Defining_Identifier (N) if it comes from
+   --  source or we are in -gnatD mode, where we are debugging generated code.
 
    procedure Set_Debug_Info_Needed (T : Entity_Id);
    --  Sets the Debug_Info_Needed flag on entity T , and also on any entities
