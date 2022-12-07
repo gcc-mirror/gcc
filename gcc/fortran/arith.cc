@@ -1281,8 +1281,16 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
   else
     {
       gfc_constructor *c = gfc_constructor_first (head);
-      r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
-			      &op->where);
+      if (c == NULL)
+	{
+	  /* Handle zero-sized arrays.  */
+	  r = gfc_get_array_expr (op->ts.type, op->ts.kind, &op->where);
+	}
+      else
+	{
+	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
+				  &op->where);
+	}
       r->shape = gfc_copy_shape (op->shape, op->rank);
       r->rank = op->rank;
       r->value.constructor = head;
@@ -1435,8 +1443,16 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   else
     {
       gfc_constructor *c = gfc_constructor_first (head);
-      r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
-			      &op1->where);
+      if (c == NULL)
+	{
+	  /* Handle zero-sized arrays.  */
+	  r = gfc_get_array_expr (op1->ts.type, op1->ts.kind, &op1->where);
+	}
+      else
+	{
+	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
+				  &op1->where);
+	}
       r->shape = gfc_copy_shape (op1->shape, op1->rank);
       r->rank = op1->rank;
       r->value.constructor = head;
