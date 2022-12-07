@@ -1,3 +1,14 @@
+2022-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2022-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_cpymemdi): Specify clobber of CC reg.
+	(*aarch64_cpymemdi): Likewise.
+	(aarch64_movmemdi): Likewise.
+	(aarch64_setmemdi): Likewise.
+	(*aarch64_setmemdi): Likewise.
+
 2022-12-05  Andrew Pinski  <pinskia@gmail.com>
 
 	Backported from master:
