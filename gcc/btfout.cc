@@ -314,6 +314,9 @@ btf_collect_datasec (ctf_container_ref ctfc)
 	continue;
 
       const char *section_name = node->get_section ();
+      /* Mark extern variables.  */
+      if (DECL_EXTERNAL (node->decl))
+	dvd->dvd_visibility = BTF_VAR_GLOBAL_EXTERN;
 
       if (section_name == NULL)
 	{
@@ -430,6 +433,12 @@ int
 btf_dvd_emit_preprocess_cb (ctf_dvdef_ref *slot, ctf_container_ref arg_ctfc)
 {
   ctf_dvdef_ref var = (ctf_dvdef_ref) * slot;
+
+  /* If this is an extern variable declaration with a defining declaration
+     later, skip it so that only the defining declaration is emitted.
+     This is the same case, fix and reasoning as in CTF; see PR105089.  */
+  if (ctf_dvd_ignore_lookup (arg_ctfc, var->dvd_key))
+    return 1;
 
   /* Do not add variables which refer to unsupported types.  */
   if (btf_removed_type_p (var->dvd_type))
@@ -676,7 +685,7 @@ btf_asm_varent (ctf_dvdef_ref var)
   dw2_asm_output_data (4, var->dvd_name_offset, "btv_name");
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_VAR, 0, 0), "btv_info");
   dw2_asm_output_data (4, get_btf_id (var->dvd_type), "btv_type");
-  dw2_asm_output_data (4, (var->dvd_visibility ? 1 : 0), "btv_linkage");
+  dw2_asm_output_data (4, var->dvd_visibility, "btv_linkage");
 }
 
 /* Asm'out a member description following a BTF_KIND_STRUCT or

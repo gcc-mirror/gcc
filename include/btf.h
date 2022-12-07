@@ -178,11 +178,20 @@ struct btf_param
   uint32_t type;	/* Type of parameter.  */
 };
 
+/* BTF_KIND_VAR records encode linkage information in a single
+   trailing struct btf_var.  These are the supported values.  */
+enum btf_var_linkage
+{
+  BTF_VAR_STATIC = 0,
+  BTF_VAR_GLOBAL_ALLOCATED = 1,
+  BTF_VAR_GLOBAL_EXTERN = 2,
+};
+
 /* BTF_KIND_VAR is followed by a single struct btf_var, which describes
    information about the variable.  */
 struct btf_var
 {
-  uint32_t linkage;	/* Currently only 0=static or 1=global.  */
+  uint32_t linkage;	/* 0=static, 1=global, 2=extern.  */
 };
 
 /* BTF_KIND_DATASEC is followed by VLEN struct btf_var_secinfo entries,
