@@ -591,7 +591,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
    If the statement has a lhs the last stmt in the sequence is expected
    to assign to that lhs.  */
 
-static void
+void
 gsi_replace_with_seq_vops (gimple_stmt_iterator *si_p, gimple_seq stmts)
 {
   gimple *stmt = gsi_stmt (*si_p);
