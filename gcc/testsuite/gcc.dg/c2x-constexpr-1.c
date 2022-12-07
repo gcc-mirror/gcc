@@ -180,10 +180,10 @@ f0 ()
 {
   constexpr int fv0 = 3;
   static_assert (fv0 == 3);
-  auto constexpr int fv1 = 4;
+  auto constexpr fv1 = 4;
   static_assert (fv1 == 4);
   register constexpr float fv2 = 1.0;
-  constexpr auto int fv3 = 123;
+  constexpr auto fv3 = 123;
   static_assert (fv3 == 123);
   constexpr register void *fv4 = (void *) 0;
   const int *fv5 = &(constexpr int) { 234 };

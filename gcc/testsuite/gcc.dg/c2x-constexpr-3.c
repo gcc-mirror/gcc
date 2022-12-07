@@ -225,4 +225,12 @@ f0 ()
   constexpr typeof (nullptr) not_npc = nullptr;
   int *ptr = 0;
   (void) (ptr == not_npc); /* { dg-error "invalid operands" } */
+  /* auto may only be used with another storage class specifier, such as
+     constexpr, if the type is inferred.  */
+  auto constexpr int a_c_t = 1; /* { dg-error "'auto' used with 'constexpr'" } */
+  constexpr auto int c_a_t = 1; /* { dg-error "'auto' used with 'constexpr'" } */
+  auto int constexpr a_t_c = 1; /* { dg-error "'constexpr' used with 'auto'" } */
+  constexpr int auto c_t_a = 1; /* { dg-error "'auto' used with 'constexpr'" } */
+  int auto constexpr t_a_c = 1; /* { dg-error "'constexpr' used with 'auto'" } */
+  int constexpr auto t_c_a = 1; /* { dg-error "'auto' used with 'constexpr'" } */
 }
