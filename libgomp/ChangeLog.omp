@@ -1,5 +1,14 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.c-c++-common/target-implicit-map-2.c: Fix missing
+	"free".
+	* testsuite/libgomp.c-c++-common/target-implicit-map-3.c: New test.
+	* testsuite/libgomp.c-c++-common/target-map-zlas-1.c: New test.
+	* testsuite/libgomp.c/target-22.c: Remove explicit base pointer
+	mappings.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* target.c (gomp_map_fields_existing): Use gomp_map_0len_lookup.
 	(gomp_attach_pointer): Allow attaching null pointers (or Fortran
 	"unassociated" pointers).

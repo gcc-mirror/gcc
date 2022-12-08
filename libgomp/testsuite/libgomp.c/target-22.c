@@ -21,8 +21,7 @@ main ()
   s.v.b = a + 16;
   s.w = c + 3;
   int err = 0;
-  #pragma omp target map (to: s.w, s.v.b, s.u, s.s) \
-		     map (to:s.v.b[0:z + 7], s.u[z + 1:z + 4]) \
+  #pragma omp target map (to:s.v.b[0:z + 7], s.u[z + 1:z + 4]) \
 		     map (tofrom:s.s[3:3]) \
 		     map (from: s.w[z:4], err) private (i)
   {

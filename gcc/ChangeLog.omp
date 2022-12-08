@@ -1,5 +1,10 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (omp_accumulate_sibling_list): Don't require
+	explicitly-mapped base pointer for compute regions.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (build_struct_comp_nodes): Don't process
 	GOMP_MAP_ATTACH_DETACH "middle" nodes here.
 	(omp_mapping_group): Add REPROCESS_STRUCT and FRAGILE booleans for

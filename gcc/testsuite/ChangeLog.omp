@@ -1,5 +1,9 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* c-c++-comon/gomp/target-implicit-map-2.c: Update expected scan output.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* c-c++-common/gomp/clauses-2.c: Fix error output.
 	* c-c++-common/gomp/target-implicit-map-2.c: Adjust scan output.
 	* c-c++-common/gomp/target-50.c: Adjust scan output.
