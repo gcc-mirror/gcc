@@ -6163,9 +6163,12 @@ package body Sem_Util is
       elsif Is_Build_In_Place_Function (Func) then
          Set_Returns_By_Ref (Func);
 
-      --  In Ada 95, limited types are returned by reference
+      --  In Ada 95, limited types are returned by reference, but not if the
+      --  convention is other than Ada.
 
-      elsif Is_Limited_View (Typ) then
+      elsif Is_Limited_View (Typ)
+        and then not Has_Foreign_Convention (Func)
+      then
          Set_Returns_By_Ref (Func);
       end if;
    end Compute_Returns_By_Ref;
