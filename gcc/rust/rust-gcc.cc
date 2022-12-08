@@ -1171,14 +1171,14 @@ Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
       ret = expr_tree;
     }
   else if (TREE_CODE (type_tree) == INTEGER_TYPE)
-    ret = fold (convert_to_integer (type_tree, expr_tree));
+    ret = convert_to_integer (type_tree, expr_tree);
   else if (TREE_CODE (type_tree) == REAL_TYPE)
-    ret = fold (convert_to_real (type_tree, expr_tree));
+    ret = convert_to_real (type_tree, expr_tree);
   else if (TREE_CODE (type_tree) == COMPLEX_TYPE)
-    ret = fold (convert_to_complex (type_tree, expr_tree));
+    ret = convert_to_complex (type_tree, expr_tree);
   else if (TREE_CODE (type_tree) == POINTER_TYPE
 	   && TREE_CODE (TREE_TYPE (expr_tree)) == INTEGER_TYPE)
-    ret = fold (convert_to_pointer (type_tree, expr_tree));
+    ret = convert_to_pointer (type_tree, expr_tree);
   else if (TREE_CODE (type_tree) == RECORD_TYPE
 	   || TREE_CODE (type_tree) == ARRAY_TYPE)
     ret = fold_build1_loc (location.gcc_location (), VIEW_CONVERT_EXPR,
