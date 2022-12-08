@@ -1,3 +1,16 @@
+2022-12-07  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* MAINTAINERS: Add Arthur Cohen as Rust front-end maintainer.
+
+2022-12-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Pass host_libs_picflag to host dependent library
+	configures.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (host_libs_picflag): New configure variable set to
+	'--with-pic' when building 'host_shared'.
+
 2022-11-25  Weimin Pan  <weimin.pan@oracle.com>
 
 	* Makefile.def: Add libsframe as new module with its dependencies.

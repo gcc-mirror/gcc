@@ -1,3 +1,53 @@
+2022-12-07  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config.gcc (xtensa*-*-*): Add xtensa-dynconfig.o to extra_objs.
+	* config/xtensa/t-xtensa (TM_H): Add xtensa-dynconfig.h.
+	(xtensa-dynconfig.o): New rule.
+	* config/xtensa/xtensa-dynconfig.c: New file.
+	* config/xtensa/xtensa-protos.h (xtensa_get_config_strings): New
+	declaration.
+	* config/xtensa/xtensa.h (xtensa-config.h): Replace #include
+	with xtensa-dynconfig.h
+	(XCHAL_HAVE_MUL32_HIGH, XCHAL_HAVE_RELEASE_SYNC)
+	(XCHAL_HAVE_S32C1I, XCHAL_HAVE_THREADPTR)
+	(XCHAL_HAVE_FP_POSTINC): Drop definitions.
+	(TARGET_DIV32): Replace with __XCHAL_HAVE_DIV32.
+	(TARGET_CPU_CPP_BUILTINS): Add new 'builtin' variable and loop
+	through string array returned by the xtensa_get_config_strings
+	function call.
+
+2022-12-07  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/108006
+	* config/aarch64/aarch64.cc (aarch64_expand_sve_const_vector):
+	Fix call to aarch64_move_imm to use SI/DI.
+
+2022-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/105676
+	* ipa-pure-const.cc (ipa_make_function_pure): Skip also
+	for functions already being const.
+
+2022-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS): Add
+	m_SAPPHIRERAPIDS, m_ALDERLAKE and m_CORE_ATOM.
+
+2022-12-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/107920
+	* config/aarch64/aarch64-sve-builtins-base.cc: Use
+	gsi_replace_with_seq_vops to handle virtual operands, and gate
+	the transform on !flag_non_call_exceptions.
+	* gimple-fold.cc (gsi_replace_with_seq_vops): Make function non static.
+	* gimple-fold.h (gsi_replace_with_seq_vops): Declare.
+
+2022-12-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107970
+	* config/i386/mmx.md (btruncv2sf2): Add TARGET_MMX_WITH_SSE to
+	the condition.
+
 2022-12-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/aarch64.cc (aarch64_bitmask_imm): Use unsigned type.

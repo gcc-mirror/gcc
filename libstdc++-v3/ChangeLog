@@ -1,3 +1,13 @@
+2022-12-07  Jonathan Wakely  <jwakely@redhat.com>
+	    François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/formatter.h [_GLIBCXX_DEBUG_BACKTRACE]
+	(_Error_formatter::_Error_formatter): Pass error handler to
+	__glibcxx_backtrace_create_state. Pass 1 for threaded argument.
+	(_Error_formatter::_S_err): Define empty function.
+	* src/c++11/debug.cc (_Error_formatter::_M_error): Pass error
+	handler to __glibcxx_backtrace_full.
+
 2022-12-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/107979

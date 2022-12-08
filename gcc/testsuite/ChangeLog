@@ -1,3 +1,47 @@
+2022-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108010
+	* gfortran.dg/pr108010.f90: New test.
+
+2022-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-constexpr-1.c: Do not use auto, constexpr and a type
+	together.
+	* gcc.dg/c2x-constexpr-3.c: Add tests of auto, constexpr and type
+	used together.
+
+2022-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c90-auto-1.c: New test.
+
+2022-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/c11-vararg-1.c, gcc.dg/cpp/c2x-va-opt-1.c: New tests.
+
+2022-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/105676
+	* gcc.dg/pr105676.c: New testcase.
+
+2022-12-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/107920
+	* gcc.target/aarch64/sve/acle/general/pr107920.c: New test.
+	* g++.target/aarch64/sve/pr107920.C: Likewise.
+
+2022-12-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107970.c: New test.
+
+2022-12-07  Antoni Boucher  <bouanto@zoho.com>
+	    Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	PR jit/107770
+	* jit.dg/harness.h: Add new macro to to perform vector
+	comparisons
+	* jit.dg/test-expressions.c: Extend comparison tests to add float
+	types and vectors
+
 2022-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107882

@@ -1,3 +1,12 @@
+2022-12-07  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/crti.S (xtensa-config.h): Replace #inlcude with
+	xtensa-config-builtin.h.
+	* config/xtensa/crtn.S: Likewise.
+	* config/xtensa/lib1funcs.S: Likewise.
+	* config/xtensa/lib2funcs.S: Likewise.
+	* config/xtensa/xtensa-config-builtin.h: New File.
+
 2022-11-04  Florian Weimer  <fweimer@redhat.com>
 
 	* unwind-dw2-fde-dip.c (find_fde_tail): Special-case encoding

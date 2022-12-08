@@ -1,3 +1,7 @@
+2022-12-07  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* xtensa-dynconfig.h: New file.
+
 2022-11-15  Nathan Sidwell  <nathan@acm.org>
 
 	* demangle.h (enum demangle_component_type): Add

@@ -1,3 +1,9 @@
+2022-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108010
+	* arith.cc (reduce_unary): Handle zero-sized arrays.
+	(reduce_binary_aa): Likewise.
+
 2022-12-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107922
