@@ -1,6 +1,6 @@
 /* Verify pattern initialization for integer and pointer type automatic variables.  */
 /* { dg-do compile { target { ilp32 || lp64 } } } */
-/* { dg-options "-ftrivial-auto-var-init=pattern -fdump-tree-gimple" } */
+/* { dg-options "-ftrivial-auto-var-init=pattern -fno-short-enums -fdump-tree-gimple" } */
 
 #ifndef __cplusplus
 # define bool _Bool
