@@ -254,10 +254,21 @@ frange_nextafter (enum machine_mode mode,
 		  REAL_VALUE_TYPE &value,
 		  const REAL_VALUE_TYPE &inf)
 {
-  const real_format *fmt = REAL_MODE_FORMAT (mode);
-  REAL_VALUE_TYPE tmp;
-  real_nextafter (&tmp, fmt, &value, &inf);
-  value = tmp;
+  if (MODE_COMPOSITE_P (mode)
+      && (real_isdenormal (&value, mode) || real_iszero (&value)))
+    {
+      // IBM extended denormals only have DFmode precision.
+      REAL_VALUE_TYPE tmp, tmp2;
+      real_convert (&tmp2, DFmode, &value);
+      real_nextafter (&tmp, REAL_MODE_FORMAT (DFmode), &tmp2, &inf);
+      real_convert (&value, mode, &tmp);
+    }
+  else
+    {
+      REAL_VALUE_TYPE tmp;
+      real_nextafter (&tmp, REAL_MODE_FORMAT (mode), &value, &inf);
+      value = tmp;
+    }
 }
 
 // Like real_arithmetic, but round the result to INF if the operation
@@ -324,21 +335,40 @@ frange_arithmetic (enum tree_code code, tree type,
     }
   if (round && (inexact || !real_identical (&result, &value)))
     {
-      if (mode_composite)
+      if (mode_composite
+	  && (real_isdenormal (&result, mode) || real_iszero (&result)))
 	{
-	  if (real_isdenormal (&result, mode)
-	      || real_iszero (&result))
-	    {
-	      // IBM extended denormals only have DFmode precision.
-	      REAL_VALUE_TYPE tmp;
-	      real_convert (&tmp, DFmode, &value);
-	      frange_nextafter (DFmode, tmp, inf);
-	      real_convert (&result, mode, &tmp);
-	      return;
-	    }
+	  // IBM extended denormals only have DFmode precision.
+	  REAL_VALUE_TYPE tmp, tmp2;
+	  real_convert (&tmp2, DFmode, &value);
+	  real_nextafter (&tmp, REAL_MODE_FORMAT (DFmode), &tmp2, &inf);
+	  real_convert (&result, mode, &tmp);
 	}
-      frange_nextafter (mode, result, inf);
+      else
+	frange_nextafter (mode, result, inf);
     }
+  if (mode_composite)
+    switch (code)
+      {
+      case PLUS_EXPR:
+      case MINUS_EXPR:
+	// ibm-ldouble-format documents 1ulp for + and -.
+	frange_nextafter (mode, result, inf);
+	break;
+      case MULT_EXPR:
+	// ibm-ldouble-format documents 2ulps for *.
+	frange_nextafter (mode, result, inf);
+	frange_nextafter (mode, result, inf);
+	break;
+      case RDIV_EXPR:
+	// ibm-ldouble-format documents 3ulps for /.
+	frange_nextafter (mode, result, inf);
+	frange_nextafter (mode, result, inf);
+	frange_nextafter (mode, result, inf);
+	break;
+      default:
+	break;
+      }
 }
 
 // Crop R to [-INF, MAX] where MAX is the maximum representable number
