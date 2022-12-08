@@ -103,6 +103,9 @@
 /* Define if -lz is available. */
 #undef HAVE_ZLIB
 
+/* Define if -lzstd is available. */
+#undef HAVE_ZSTD
+
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR
