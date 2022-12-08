@@ -1108,6 +1108,12 @@ gfc_add_contiguous (symbol_attribute *attr, const char *name, locus *where)
   if (check_used (attr, name, where))
     return false;
 
+  if (attr->contiguous)
+    {
+      duplicate_attr ("CONTIGUOUS", where);
+      return false;
+    }
+
   attr->contiguous = 1;
   return gfc_check_conflict (attr, name, where);
 }
