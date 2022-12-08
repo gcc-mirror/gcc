@@ -287,9 +287,42 @@ frange_arithmetic (enum tree_code code, tree type,
 
   // Be extra careful if there may be discrepancies between the
   // compile and runtime results.
-  if ((mode_composite || (real_isneg (&inf) ? real_less (&result, &value)
-			  : !real_less (&value, &result)))
-      && (inexact || !real_identical (&result, &value)))
+  bool round = false;
+  if (mode_composite)
+    round = true;
+  else
+    {
+      bool low = real_isneg (&inf);
+      round = (low ? !real_less (&result, &value)
+		   : !real_less (&value, &result));
+      if (real_isinf (&result, !low)
+	  && !real_isinf (&value)
+	  && !flag_rounding_math)
+	{
+	  // Use just [+INF, +INF] rather than [MAX, +INF]
+	  // even if value is larger than MAX and rounds to
+	  // nearest to +INF.  Similarly just [-INF, -INF]
+	  // rather than [-INF, +MAX] even if value is smaller
+	  // than -MAX and rounds to nearest to -INF.
+	  // Unless INEXACT is true, in that case we need some
+	  // extra buffer.
+	  if (!inexact)
+	    round = false;
+	  else
+	    {
+	      REAL_VALUE_TYPE tmp = result, tmp2;
+	      frange_nextafter (mode, tmp, inf);
+	      // TMP is at this point the maximum representable
+	      // number.
+	      real_arithmetic (&tmp2, MINUS_EXPR, &value, &tmp);
+	      if (real_isneg (&tmp2) != low
+		  && (REAL_EXP (&tmp2) - REAL_EXP (&tmp)
+		      >= 2 - REAL_MODE_FORMAT (mode)->p))
+		round = false;
+	    }
+	}
+    }
+  if (round && (inexact || !real_identical (&result, &value)))
     {
       if (mode_composite)
 	{
