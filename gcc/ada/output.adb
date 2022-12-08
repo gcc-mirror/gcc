@@ -422,10 +422,10 @@ package body Output is
 
    procedure Write_Char (C : Character) is
    begin
-      pragma Assert (Next_Col in Buffer'Range);
-      if Next_Col = Buffer'Length then
-         Write_Eol;
+      if Next_Col > Buffer'Length then
+         Flush_Buffer;
       end if;
+      pragma Assert (Next_Col in Buffer'Range);
 
       if C = ASCII.LF then
          Write_Eol;
