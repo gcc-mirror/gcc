@@ -19,8 +19,8 @@
 
 ;; Scheduling for ZHAOXIN lujiazui processor.
 
-;; Modeling automatons for decoders, execution pipes and AGU pipes.
-(define_automaton "lujiazui_decoder,lujiazui_core,lujiazui_agu")
+;; Modeling automatons for decoders, execution pipes, AGU pipes, and divider.
+(define_automaton "lujiazui_decoder,lujiazui_core,lujiazui_agu,lujiazui_div")
 
 ;; The rules for the decoder are simple:
 ;;  - an instruction with 1 uop can be decoded by any of the three
@@ -54,6 +54,8 @@
 
 (define_cpu_unit "lua_p0,lua_p1,lua_p2,lua_p3" "lujiazui_core")
 (define_cpu_unit "lua_p4,lua_p5" "lujiazui_agu")
+
+(define_cpu_unit "lua_div" "lujiazui_div")
 
 (define_reservation "lua_p03" "lua_p0|lua_p3")
 (define_reservation "lua_p12" "lua_p1|lua_p2")
@@ -229,56 +231,56 @@
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "QI")
 					(eq_attr "type" "idiv"))))
-			 "lua_decoder0,lua_p0p1p2p3*21")
+			 "lua_decoder0,lua_p0p1p2p3,lua_div*21")
 
 (define_insn_reservation "lua_idiv_qi_load" 25
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "QI")
 					(eq_attr "type" "idiv"))))
-			 "lua_decoder0,lua_p45,lua_p0p1p2p3*21")
+			 "lua_decoder0,lua_p45,lua_p0p1p2p3,lua_div*21")
 
 (define_insn_reservation "lua_idiv_hi" 22
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "HI")
 					(eq_attr "type" "idiv"))))
-			 "lua_decoder0,lua_p0p1p2p3*22")
+			 "lua_decoder0,lua_p0p1p2p3,lua_div*22")
 
 (define_insn_reservation "lua_idiv_hi_load" 26
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "HI")
 					(eq_attr "type" "idiv"))))
-			 "lua_decoder0,lua_p45,lua_p0p1p2p3*22")
+			 "lua_decoder0,lua_p45,lua_p0p1p2p3,lua_div*22")
 
 (define_insn_reservation "lua_idiv_si" 20
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "SI")
 					(eq_attr "type" "idiv"))))
-			 "lua_decoder0,lua_p0p1p2p3*20")
+			 "lua_decoder0,lua_p0p1p2p3,lua_div*20")
 
 (define_insn_reservation "lua_idiv_si_load" 24
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "SI")
 					(eq_attr "type" "idiv"))))
-			 "lua_decoder0,lua_p45,lua_p0p1p2p3*20")
+			 "lua_decoder0,lua_p45,lua_p0p1p2p3,lua_div*20")
 
 (define_insn_reservation "lua_idiv_di" 150
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "type" "idiv"))))
-			 "lua_decoder0,lua_p0p1p2p3*150")
+			 "lua_decoder0,lua_p0p1p2p3,lua_div*150")
 
 (define_insn_reservation "lua_idiv_di_load" 154
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "type" "idiv"))))
-			 "lua_decoder0,lua_p45,lua_p0p1p2p3*150")
+			 "lua_decoder0,lua_p45,lua_p0p1p2p3,lua_div*150")
 
 ;; x87 floating point operations.
 
@@ -406,42 +408,42 @@
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "SF")
 				    (eq_attr "type" "fdiv,fpspc"))))
-			 "lua_decodern,lua_p0*15")
+			 "lua_decodern,lua_p0,lua_div*15")
 
 (define_insn_reservation "lua_fdiv_SF_load" 19
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "SF")
 				    (eq_attr "type" "fdiv,fpspc"))))
-			 "lua_decoder01,lua_p45,lua_p0*15")
+			 "lua_decoder01,lua_p45,lua_p0,lua_div*15")
 
 (define_insn_reservation "lua_fdiv_DF" 18
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "DF")
 				    (eq_attr "type" "fdiv,fpspc"))))
-			 "lua_decodern,lua_p0*18")
+			 "lua_decodern,lua_p0,lua_div*18")
 
 (define_insn_reservation "lua_fdiv_DF_load" 22
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "DF")
 				    (eq_attr "type" "fdiv,fpspc"))))
-			 "lua_decoder01,lua_p45,lua_p0*18")
+			 "lua_decoder01,lua_p45,lua_p0,lua_div*18")
 
 (define_insn_reservation "lua_fdiv_XF" 22
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "XF")
 				    (eq_attr "type" "fdiv,fpspc"))))
-			 "lua_decoder0,lua_p0*22")
+			 "lua_decoder0,lua_p0,lua_div*22")
 
 (define_insn_reservation "lua_fdiv_XF_load" 26
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "XF")
 				    (eq_attr "type" "fdiv,fpspc"))))
-			 "lua_decoder0,lua_p45,lua_p0*22")
+			 "lua_decoder0,lua_p45,lua_p0,lua_div*22")
 
 ;; MMX instructions.
 
@@ -593,84 +595,84 @@
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "SF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decodern,lua_p0*13")
+			 "lua_decodern,lua_p0,lua_div*13")
 
 (define_insn_reservation "lua_ssediv_load_SF" 17
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "SF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decoder01,lua_p45,lua_p0*13")
+			 "lua_decoder01,lua_p45,lua_p0,lua_div*13")
 
 (define_insn_reservation "lua_ssediv_V4SF" 23
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "V4SF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decodern,lua_p0*23")
+			 "lua_decodern,lua_p0,lua_div*23")
 
 (define_insn_reservation "lua_ssediv_load_V4SF" 27
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "V4SF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decoder01,lua_p45,lua_p0*23")
+			 "lua_decoder01,lua_p45,lua_p0,lua_div*23")
 
 (define_insn_reservation "lua_ssediv_V8SF" 47
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "V8SF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decoder0,lua_p0*47")
+			 "lua_decoder0,lua_p0,lua_div*47")
 
 (define_insn_reservation "lua_ssediv_load_V8SF" 51
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "V8SF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decoder0,lua_p45,lua_p0*47")
+			 "lua_decoder0,lua_p45,lua_p0,lua_div*47")
 
 (define_insn_reservation "lua_ssediv_SD" 17
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "DF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decodern,lua_p0*17")
+			 "lua_decodern,lua_p0,lua_div*17")
 
 (define_insn_reservation "lua_ssediv_load_SD" 21
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "DF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decoder01,lua_p45,lua_p0*17")
+			 "lua_decoder01,lua_p45,lua_p0,lua_div*17")
 
 (define_insn_reservation "lua_ssediv_V2DF" 30
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "V2DF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decodern,lua_p0*30")
+			 "lua_decodern,lua_p0,lua_div*30")
 
 (define_insn_reservation "lua_ssediv_load_V2DF" 34
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "V2DF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decoder01,lua_p45,lua_p0*30")
+			 "lua_decoder01,lua_p45,lua_p0,lua_div*30")
 
 (define_insn_reservation "lua_ssediv_V4DF" 56
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "V4DF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decoder0,lua_p0*56")
+			 "lua_decoder0,lua_p0,lua_div*56")
 
 (define_insn_reservation "lua_ssediv_load_V4DF" 60
 			 (and (eq_attr "cpu" "lujiazui")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "V4DF")
 					(eq_attr "type" "ssediv"))))
-			 "lua_decoder0,lua_p4p5,lua_p0*56")
+			 "lua_decoder0,lua_p4p5,lua_p0,lua_div*56")
 
 
 (define_insn_reservation "lua_sseicvt_si" 2
