@@ -1021,6 +1021,7 @@ Gcc_backend::var_expression (Bvariable *var, Location location)
 }
 
 // Return a typed value as a constant integer.
+// This function does not release the memory of @val
 
 tree
 Gcc_backend::integer_constant_expression (tree t, mpz_t val)
