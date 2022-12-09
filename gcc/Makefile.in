@@ -1269,6 +1269,7 @@ ANALYZER_OBJS = \
 	analyzer/feasible-graph.o \
 	analyzer/function-set.o \
 	analyzer/infinite-recursion.o \
+	analyzer/kf.o \
 	analyzer/kf-analyzer.o \
 	analyzer/kf-lang-cp.o \
 	analyzer/known-function-manager.o \
@@ -1278,7 +1279,6 @@ ANALYZER_OBJS = \
 	analyzer/region.o \
 	analyzer/region-model.o \
 	analyzer/region-model-asm.o \
-	analyzer/region-model-impl-calls.o \
 	analyzer/region-model-manager.o \
 	analyzer/region-model-reachability.o \
 	analyzer/sm.o \

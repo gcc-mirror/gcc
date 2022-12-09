@@ -229,7 +229,8 @@ extern location_t get_stmt_location (const gimple *stmt, function *fun);
 extern bool compat_types_p (tree src_type, tree dst_type);
 
 /* Abstract base class for simulating the behavior of known functions,
-   supplied by the core of the analyzer, or by plugins.  */
+   supplied by the core of the analyzer, or by plugins.
+   The former are typically implemented in the various kf*.cc  */
 
 class known_function
 {
