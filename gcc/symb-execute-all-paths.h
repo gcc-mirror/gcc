@@ -100,7 +100,7 @@ class crc_symb_execution {
 
   /* Returns calculated polynomial by executing the loop
      with concrete values.  */
-  vec<value*> * extract_polynomial (loop *, gphi *, gphi *, bool);
+  vec<value*> * extract_poly_and_create_lfsr (loop *, gphi *, gphi *, bool);
 
   crc_symb_execution ()
   {

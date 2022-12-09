@@ -939,20 +939,25 @@ crc_optimization::execute (function *fun)
       }
 
       crc_symb_execution execute_loop;
-      vec<value*> * polynomial
-      = execute_loop.extract_polynomial (crc_loop, first_phi_for_crc,
-					 data, is_left_shift);
+      vec<value*> * lfsr
+      = execute_loop.extract_poly_and_create_lfsr (crc_loop, first_phi_for_crc,
+						   data, is_left_shift);
 
-    if (!polynomial)
-      {
+      if (!lfsr)
+	{
 	if (dump_file)
-	  fprintf (dump_file, "\nCouldn't determine the polynomial!\n");
+	  fprintf (dump_file, "Couldn't create LFSR!\n");
 	return 0;
-      }
-
-    /* TODO: Create LFSR state.  */
-
-    /* TODO: Match LFSR.  */
+	}
+      else
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nLFSR value is \n");
+	      state::print_bits (lfsr);
+	    }
+	}
+	/* TODO: Match LFSR.  */
   }
   return 0;
 }

@@ -682,6 +682,11 @@ bool
 crc_symb_execution::execute_crc_loop (loop *crc_loop, gphi *crc, gphi *data,
 				      bool is_shift_left)
 {
+  if (dump_file)
+    fprintf (dump_file, "\n\nTrying to calculate the polynomial.\n\n");
+
+  states.quick_push (new state);
+
   basic_block bb = crc_loop->header;
   assign_vals_to_header_phis (states.last (), bb, crc, data, is_shift_left);
 
@@ -709,31 +714,38 @@ crc_symb_execution::execute_crc_loop (loop *crc_loop, gphi *crc, gphi *data,
       if (!execute_bb_statements (bb, e, stack))
 	return false;
     }
-  return true;
-}
-
-
-/* Execute the loop, which is expected to calculate CRC,
-   to extract polynomial, assigning real numbers to crc and data.  */
-vec<value*> *
-crc_symb_execution::extract_polynomial (loop *crc_loop,
-					gphi *crc, gphi *data,
-					bool is_shift_left)
-{
-  if (dump_file)
-    fprintf (dump_file, "\n\nTrying to calculate the polynomial.\n\n");
-
-  state * polynomial_state = new state;
-  states.quick_push (polynomial_state);
-
-  execute_crc_loop (crc_loop, crc, data, is_shift_left);
 
   if (states.length () != 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "The number of states is not one.\n");
-      return nullptr;
+      return false;
     }
+  return true;
+}
+
+/* Return true if all bits of the polynomial are constants (0 or 1).
+   Otherwise return false.  */
+bool polynomial_is_known (const vec<value*> &polynomial)
+{
+  for (size_t i=0; i<polynomial.length (); i++)
+    {
+      if (!is_a <bit *> (polynomial[i]))
+      return false;
+    }
+    return true;
+}
+/* Execute the loop, which is expected to calculate CRC,
+   to extract polynomial, assigning real numbers to crc and data.  */
+vec<value*> *
+crc_symb_execution::extract_poly_and_create_lfsr (loop *crc_loop,
+						  gphi *crc, gphi *data,
+						  bool is_shift_left)
+{
+  if (!execute_crc_loop (crc_loop, crc, data, is_shift_left))
+    return nullptr;
+
+  state *polynomial_state = states.last ();
 
   /* Get the tree which will contain the value of the polynomial
      at the end of the loop.  */
@@ -746,23 +758,32 @@ crc_symb_execution::extract_polynomial (loop *crc_loop,
       fprintf (dump_file, " variable.\n");
     }
 
-
   /* Get the value of the tree.  */
   vec<value*> * polynomial = polynomial_state->get_bits (calculated_crc);
-  if (polynomial == nullptr)
-   {
-    if (dump_file && (dump_flags & TDF_DETAILS))
-       fprintf (dump_file, "Polynomial's value is null");
-    return nullptr;
-   }
+  if (!polynomial)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Polynomial's value is null");
+      return nullptr;
+    }
 
-   if (dump_file && (dump_flags & TDF_DETAILS))
-     {
-	/* Note: It may not be the real polynomial.
-	   If it's a bit reflected crc, then to get a real polynomial,
-	   it must be reflected and 1 bit added.  */
-	fprintf (dump_file, "Polynomial's value is ");
-	state::print_bits (polynomial);
-     }
-  return polynomial;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      /* Note: It may not be the real polynomial.  If it's a bit reflected crc,
+	 then to get a real polynomial,
+	 it must be reflected and 1 bit added.  */
+      fprintf (dump_file, "Polynomial's value is ");
+      state::print_bits (polynomial);
+    }
+
+  if (!polynomial_is_known (*polynomial))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Polynomial's value is not constant.\n");
+	}
+      return nullptr;
+    }
+
+  return state::create_lfsr (calculated_crc, polynomial, is_shift_left);
 }

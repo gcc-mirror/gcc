@@ -90,7 +90,7 @@ state::check_args_compatibility (tree arg1, tree arg2, tree dest)
 /* Creates bit sequence of given constant tree.  */
 
 vec<value*>
-state::create_bits_for_const (tree var, size_t size) const
+state::create_bits_for_const (tree var, size_t size)
 {
   HOST_WIDE_INT val = tree_to_shwi (var);
   vec<value *> bits;
@@ -109,7 +109,7 @@ state::create_bits_for_const (tree var, size_t size) const
 /* Removes given sequence of bits.  */
 
 void
-state::free_bits (vec<value*> * bits) const
+state::free_bits (vec<value*> * bits)
 {
   if (bits == nullptr || !bits->exists ())
     return;
@@ -179,7 +179,7 @@ state::clear_conditions ()
 /* performs AND operation for 2 symbolic_bit operands.  */
 
 value *
-state::and_sym_bits (const value * var1, const value * var2) const
+state::and_sym_bits (const value * var1, const value * var2)
 {
   return new bit_and_expression (var1->copy (), var2->copy ());
 }
@@ -188,7 +188,7 @@ state::and_sym_bits (const value * var1, const value * var2) const
 /* performs AND operation for a symbolic_bit and const_bit operands.  */
 
 value *
-state::and_var_const (const value * var1, const bit * const_bit) const
+state::and_var_const (const value * var1, const bit * const_bit)
 {
   if (const_bit->get_val () == 1)
     return var1->copy ();
@@ -200,7 +200,7 @@ state::and_var_const (const value * var1, const bit * const_bit) const
 /* performs AND operation for 2 constant bit operands.  */
 
 bit *
-state::and_const_bits (const bit * const_bit1, const bit * const_bit2) const
+state::and_const_bits (const bit * const_bit1, const bit * const_bit2)
 {
   if (const_bit1->get_val () == const_bit2->get_val ())
     return new bit (*const_bit1);
@@ -212,7 +212,7 @@ state::and_const_bits (const bit * const_bit1, const bit * const_bit2) const
 /* performs OR operation for 2 symbolic_bit operands.  */
 
 value *
-state::or_sym_bits (const value * var1, const value * var2) const
+state::or_sym_bits (const value * var1, const value * var2)
 {
   return new bit_or_expression (var1->copy (), var2->copy ());
 }
@@ -221,7 +221,7 @@ state::or_sym_bits (const value * var1, const value * var2) const
 /* performs OR operation for a symbolic_bit and a constant bit operands.  */
 
 value *
-state::or_var_const (const value * var1, const bit * const_bit) const
+state::or_var_const (const value * var1, const bit * const_bit)
 {
   if (const_bit->get_val () == 0)
     return var1->copy ();
@@ -233,7 +233,7 @@ state::or_var_const (const value * var1, const bit * const_bit) const
 /* performs OR operation for 2 constant bit operands.  */
 
 bit *
-state::or_const_bits (const bit * const_bit1, const bit * const_bit2) const
+state::or_const_bits (const bit * const_bit1, const bit * const_bit2)
 {
   if (const_bit1->get_val () == const_bit2->get_val ())
     return new bit (*const_bit1);
@@ -295,7 +295,7 @@ state::make_symbolic (tree var, unsigned size)
 /* Performs AND operation on two bits.  */
 
 value *
-state::and_two_bits (value *arg1_bit, value* arg2_bit) const
+state::and_two_bits (value *arg1_bit, value* arg2_bit)
 {
   value *result = nullptr;
 
@@ -387,7 +387,7 @@ state::do_and (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 /* Performs OR operation on two bits.  */
 
 value *
-state::or_two_bits (value *arg1_bit, value* arg2_bit) const
+state::or_two_bits (value *arg1_bit, value* arg2_bit)
 {
   value *result = nullptr;
 
@@ -436,7 +436,7 @@ state::do_or (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 /* Performs XOR operation on two bits.  */
 
 value *
-state::xor_two_bits (value *arg1_bit, value* arg2_bit) const
+state::xor_two_bits (value *arg1_bit, value* arg2_bit)
 {
   value *result = nullptr;
 
@@ -716,7 +716,7 @@ state::do_sub (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 /* Performs complement operation on a bit.  */
 
 value *
-state::complement_a_bit (value *var) const
+state::complement_a_bit (value *var)
 {
   value *result = nullptr;
   bit* const_bit = dyn_cast<bit *> (var);
@@ -847,7 +847,7 @@ state::do_assign_pow2 (tree dest, unsigned pow)
 /* Performs NOT operation for constant bit.  */
 
 bit *
-state::complement_const_bit (const bit * const_bit) const
+state::complement_const_bit (const bit * const_bit)
 {
   return new bit (1u ^ const_bit->get_val ());
 }
@@ -856,7 +856,7 @@ state::complement_const_bit (const bit * const_bit) const
 /* Performs NOT operation for symbolic_bit.  */
 
 value *
-state::complement_sym_bit (const value * var) const
+state::complement_sym_bit (const value * var)
 {
   return new bit_complement_expression (var->copy ());
 }
@@ -865,7 +865,7 @@ state::complement_sym_bit (const value * var) const
 /* Performs XOR operation for 2 symbolic_bit operands.  */
 
 value *
-state::xor_sym_bits (const value * var1, const value * var2) const
+state::xor_sym_bits (const value * var1, const value * var2)
 {
   value * var2_copy = var2->copy ();
   bit_expression * var2_node_with_const_child
@@ -950,7 +950,7 @@ state::xor_sym_bits (const value * var1, const value * var2) const
 /* Performs XOR operation for 2 constant bit operands.  */
 
 bit *
-state::xor_const_bits (const bit * const_bit1, const bit * const_bit2) const
+state::xor_const_bits (const bit * const_bit1, const bit * const_bit2)
 {
   return new bit (const_bit1->get_val () ^ const_bit2->get_val ());
 }
@@ -959,7 +959,7 @@ state::xor_const_bits (const bit * const_bit1, const bit * const_bit2) const
 /* Performs XOR operation for a symbolic_bit and const_bit operands.  */
 
 value *
-state::xor_var_const (const value * var, const bit * const_bit) const
+state::xor_var_const (const value * var, const bit * const_bit)
 {
   value *var_copy = var->copy ();
   bit_expression *node_with_const_child
@@ -992,7 +992,7 @@ state::xor_var_const (const value * var, const bit * const_bit) const
    on safe branching.  */
 
 bit_expression *
-state::get_parent_with_const_child (value* root) const
+state::get_parent_with_const_child (value* root)
 {
   if (! is_a<bit_expression *> (root))
     return nullptr;
@@ -1028,7 +1028,7 @@ state::get_parent_with_const_child (value* root) const
 /* Checks if node is AND, OR or XOR expression as they are comutative.  */
 
 bool
-state::is_safe_branching (value* node) const
+state::is_safe_branching (value* node)
 {
   return is_a<bit_and_expression *> (node) || is_a<bit_or_expression *> (node)
 	 || is_a<bit_xor_expression *> (node);
@@ -1151,7 +1151,7 @@ state::do_mul (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 
 bool
 state::check_const_bit_equality (vec<value *> * arg1_bits,
-				 vec<value *> * arg2_bits) const
+				 vec<value *> * arg2_bits)
 {
   for (size_t i = 1; i < arg1_bits->length (); i++)
     if (as_a<bit *>((*arg1_bits)[i])->get_val ()
@@ -1192,7 +1192,7 @@ state::add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 
 bool
 state::check_const_bit_are_not_equal (vec<value *> * arg1_bits,
-				      vec<value *> * arg2_bits) const
+				      vec<value *> * arg2_bits)
 {
   for (size_t i = 0; i < arg1_bits->length (); i++)
     if (as_a<bit *>((*arg1_bits)[i])->get_val ()
@@ -1241,7 +1241,7 @@ state::add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 
 bool
 state::check_const_bit_is_greater_than (vec<value *> * arg1_bits,
-					vec<value *> * arg2_bits) const
+					vec<value *> * arg2_bits)
 {
   for (int i = arg1_bits->length () - 1; i >= 0; i--)
     {
@@ -1315,7 +1315,7 @@ state::construct_great_than_cond (vec<value*> * arg1_bits,
 
 bool
 state::check_const_bit_is_less_than (vec<value *> * arg1_bits,
-				     vec<value *> * arg2_bits) const
+				     vec<value *> * arg2_bits)
 {
   for (int i = arg1_bits->length () - 1; i >= 0; i--)
     {
@@ -1636,7 +1636,7 @@ state::do_pointer_diff (tree arg1, tree arg2, tree dest)
 
 
 vec<value *> *
-state::make_copy (vec<value *> *bits) const
+state::make_copy (vec<value *> *bits)
 {
   vec<value *> * copied_bits = new vec<value*> ();
   copied_bits->create (bits->length ());
@@ -1717,4 +1717,90 @@ state::do_cast (tree var, tree dest, size_t cast_size)
       delete temp;
     }
   return true;
+}
+
+/* Create LFSR value for the reversed CRC.  */
+void
+state::create_reversed_lfsr (vec<value *> &lfsr, const vec<value *> &crc,
+			     const vec<value *> &polynomial)
+{
+  size_t size = crc.length ();
+
+  /* Determine values of all bits, except MSB.  */
+  for (size_t i = 0; i < size - 1; i++)
+    {
+      if (as_a<bit *> (polynomial[i])->get_val ())
+	lfsr.quick_push (state::xor_two_bits (crc[i + 1], crc[0]));
+      else
+	lfsr.quick_push (crc[i+1]->copy ());
+    }
+
+    /* Determine value of MSB.  */
+  if (as_a<bit *> (polynomial[size-1])->get_val ())
+    lfsr.quick_push (crc[0]->copy ());
+  else
+    lfsr.quick_push (new bit (0));
+}
+
+/* Create LFSR value for the forward CRC.  */
+void
+state::create_forward_lfsr (vec<value *> &lfsr, const vec<value *> &crc,
+			    const vec<value *> &polynomial)
+{
+  size_t size = crc.length ();
+
+  /* Determine value of LSB.  */
+  if (as_a<bit *> (polynomial[0])->get_val ())
+    lfsr.quick_push (crc[size - 1]->copy ());
+  else
+    lfsr.quick_push (new bit (0));
+
+  /* Determine values of remaining bits.  */
+  for (size_t i = 1; i < size; i++)
+    {
+      if (as_a<bit *> (polynomial[i])->get_val ())
+	lfsr.quick_push (state::xor_two_bits (crc[i - 1], crc[size - 1]));
+      else
+	lfsr.quick_push (crc[i - 1]->copy ());
+    }
+}
+
+/* Create LFSR value.  */
+vec<value *> *
+state::create_lfsr (tree crc, vec<value *> *polynomial, bool is_bit_forward)
+{
+  /* Check size compatibility․  */
+  unsigned HOST_WIDE_INT size = polynomial->length ();
+  unsigned HOST_WIDE_INT crc_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (crc)));
+  if (crc_size < size)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "LFSR state creation: "
+			    "Polynomial doesn't fit into the crc.\n");
+
+      return nullptr;
+    }
+
+  /* Create vector of symbolic bits for crc.  */
+  vec<value *> *crc_value = new vec<value *> ();
+  crc_value->create (size);
+
+  for (unsigned HOST_WIDE_INT i = 0; i < size; i++)
+    crc_value->quick_push (new symbolic_bit (i, crc));
+
+  /* create LFSR vector.  */
+  vec<value *> *lfsr = new vec<value *> ();
+  lfsr->create (size);
+
+  /* Calculate values for LFSR.  */
+  if (is_bit_forward)
+    create_forward_lfsr (*lfsr, *crc_value, *polynomial);
+  else
+    create_reversed_lfsr (*lfsr, *crc_value, *polynomial);
+
+  /* crc_value is no more needed, delete.  */
+  free_bits (crc_value);
+  delete crc_value;
+
+  return lfsr;
 }
