@@ -781,7 +781,7 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
              * so in order to place that member we need to compute the member's
              * size and alignment.
              */
-            size_t fieldstart = ad.fields.dim;
+            size_t fieldstart = ad.fields.length;
 
             /* Hackishly hijack ad's structsize and alignsize fields
              * for use in our fake anon aggregate member.
@@ -804,7 +804,7 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
              * added in ad.fields, just update *poffset for the subsequent
              * field offset calculation.
              */
-            if (fieldstart == ad.fields.dim)
+            if (fieldstart == ad.fields.length)
             {
                 ad.structsize = savestructsize;
                 ad.alignsize = savealignsize;
@@ -838,7 +838,7 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
 
             // Add to the anon fields the base offset of this anonymous aggregate
             //printf("anon fields, anonoffset = %d\n", anonoffset);
-            foreach (const i; fieldstart .. ad.fields.dim)
+            foreach (const i; fieldstart .. ad.fields.length)
             {
                 VarDeclaration v = ad.fields[i];
                 //printf("\t[%d] %s %d\n", i, v.toChars(), v.offset);
@@ -1349,7 +1349,7 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
     override Scope* newScope(Scope* sc)
     {
         Scope* sc2 = sc;
-        if (atts && atts.dim)
+        if (atts && atts.length)
         {
             // create new one for changes
             sc2 = sc.copy();
@@ -1369,9 +1369,9 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
     extern (D) static Expressions* concat(Expressions* udas1, Expressions* udas2)
     {
         Expressions* udas;
-        if (!udas1 || udas1.dim == 0)
+        if (!udas1 || udas1.length == 0)
             udas = udas2;
-        else if (!udas2 || udas2.dim == 0)
+        else if (!udas2 || udas2.length == 0)
             udas = udas1;
         else
         {
@@ -1395,7 +1395,7 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
         auto exps = new Expressions();
         if (userAttribDecl && userAttribDecl !is this)
             exps.push(new TupleExp(Loc.initial, userAttribDecl.getAttributes()));
-        if (atts && atts.dim)
+        if (atts && atts.length)
             exps.push(new TupleExp(Loc.initial, atts));
         return exps;
     }

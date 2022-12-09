@@ -3946,7 +3946,7 @@ if (isRandomAccessRange!(Range1) && hasLength!Range1 &&
     {
         foreach (T2; ReferenceRanges)
         {
-            import std.array;
+            import std.array : array;
 
             T1 A;
             T2 B;

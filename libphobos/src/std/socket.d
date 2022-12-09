@@ -2628,7 +2628,7 @@ private:
     AddressFamily _family;
 
     version (Windows)
-        bool _blocking = false;         /// Property to get or set whether the socket is blocking or nonblocking.
+        bool _blocking = true;         /// Property to get or set whether the socket is blocking or nonblocking.
 
     // The WinSock timeouts seem to be effectively skewed by a constant
     // offset of about half a second (value in milliseconds). This has
@@ -2641,22 +2641,22 @@ private:
     {
         if (runSlowTests)
         softUnittest({
-            import std.datetime.stopwatch;
-            import std.typecons;
+            import std.datetime.stopwatch : StopWatch;
+            import std.typecons : Yes;
 
             enum msecs = 1000;
             auto pair = socketPair();
-            auto sock = pair[0];
-            sock.setOption(SocketOptionLevel.SOCKET,
+            auto testSock = pair[0];
+            testSock.setOption(SocketOptionLevel.SOCKET,
                 SocketOption.RCVTIMEO, dur!"msecs"(msecs));
 
             auto sw = StopWatch(Yes.autoStart);
             ubyte[1] buf;
-            sock.receive(buf);
+            testSock.receive(buf);
             sw.stop();
 
             Duration readBack = void;
-            sock.getOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, readBack);
+            testSock.getOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, readBack);
 
             assert(readBack.total!"msecs" == msecs);
             assert(sw.peek().total!"msecs" > msecs - 100 && sw.peek().total!"msecs" < msecs + 100);
@@ -2748,6 +2748,21 @@ public:
     @property socket_t handle() const pure nothrow @nogc
     {
         return sock;
+    }
+
+    /**
+     * Releases the underlying socket handle from the Socket object. Once it
+     * is released, you cannot use the Socket object's methods anymore. This
+     * also means the Socket destructor will no longer close the socket - it
+     * becomes your responsibility.
+     *
+     * To get the handle without releasing it, use the `handle` property.
+     */
+    @property socket_t release() pure nothrow @nogc
+    {
+        auto h = sock;
+        this.sock = socket_t.init;
+        return h;
     }
 
     /**

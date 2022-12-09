@@ -22,7 +22,6 @@ fail_compilation/fail15616b.d(26):                        `foo(T)(T a)`
   `~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
 `  > is(T == char)
 `  `~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-fail_compilation/fail15616b.d(44):        All possible candidates are marked as `deprecated` or `@disable`
   Tip: not satisfied constraints are marked with `>`
 ---
 */

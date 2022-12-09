@@ -286,9 +286,9 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 ae.e1 = ae.e1.expressionSemantic(sc);
                 ae.e1 = resolveProperties(sc, ae.e1);
                 Expression ae1old = ae.e1;
-                const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == EXP.interval);
+                const(bool) maybeSlice = (ae.arguments.length == 0 || ae.arguments.length == 1 && (*ae.arguments)[0].op == EXP.interval);
                 IntervalExp ie = null;
-                if (maybeSlice && ae.arguments.dim)
+                if (maybeSlice && ae.arguments.length)
                 {
                     ie = (*ae.arguments)[0].isIntervalExp();
                 }
@@ -425,9 +425,9 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
             ae.e1 = ae.e1.expressionSemantic(sc);
             ae.e1 = resolveProperties(sc, ae.e1);
             Expression ae1old = ae.e1;
-            const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == EXP.interval);
+            const(bool) maybeSlice = (ae.arguments.length == 0 || ae.arguments.length == 1 && (*ae.arguments)[0].op == EXP.interval);
             IntervalExp ie = null;
-            if (maybeSlice && ae.arguments.dim)
+            if (maybeSlice && ae.arguments.length)
             {
                 ie = (*ae.arguments)[0].isIntervalExp();
             }
@@ -457,7 +457,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                             return result;
                         }
                         // Convert to IndexExp
-                        if (ae.arguments.dim == 1)
+                        if (ae.arguments.length == 1)
                         {
                             result = new IndexExp(ae.loc, ae.e1, (*ae.arguments)[0]);
                             result = result.expressionSemantic(sc);
@@ -849,7 +849,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                      * the mentioned member, then alias this may be
                      * used since the object will be fully initialised.
                      * If the struct is nested, the context pointer is considered
-                     * one of the members, hence the `ad1.fields.dim == 2 && ad1.vthis`
+                     * one of the members, hence the `ad1.fields.length == 2 && ad1.vthis`
                      * condition.
                      */
                     if (result.op != EXP.assign)
@@ -864,7 +864,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     {
                         // i.e: Rewrote `e1 = e2` -> `e1.some.var = e2`
                         // Ensure that `var` is the only field member in `ad`
-                        if (ad.fields.dim == 1 || (ad.fields.dim == 2 && ad.vthis))
+                        if (ad.fields.length == 1 || (ad.fields.length == 2 && ad.vthis))
                         {
                             if (dve.var == ad.aliasthis.sym)
                                 return result;
@@ -1043,11 +1043,11 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
             {
                 auto tup1 = e.e1.isTupleExp();
                 auto tup2 = e.e2.isTupleExp();
-                size_t dim = tup1.exps.dim;
-                if (dim != tup2.exps.dim)
+                size_t dim = tup1.exps.length;
+                if (dim != tup2.exps.length)
                 {
                     e.error("mismatched tuple lengths, `%d` and `%d`",
-                        cast(int)dim, cast(int)tup2.exps.dim);
+                        cast(int)dim, cast(int)tup2.exps.length);
                     return ErrorExp.get();
                 }
 
@@ -1101,9 +1101,9 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 ae.e1 = ae.e1.expressionSemantic(sc);
                 ae.e1 = resolveProperties(sc, ae.e1);
                 Expression ae1old = ae.e1;
-                const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == EXP.interval);
+                const(bool) maybeSlice = (ae.arguments.length == 0 || ae.arguments.length == 1 && (*ae.arguments)[0].op == EXP.interval);
                 IntervalExp ie = null;
-                if (maybeSlice && ae.arguments.dim)
+                if (maybeSlice && ae.arguments.length)
                 {
                     ie = (*ae.arguments)[0].isIntervalExp();
                 }
@@ -1553,7 +1553,7 @@ bool inferForeachAggregate(Scope* sc, bool isForeach, ref Expression feaggr, out
  */
 bool inferApplyArgTypes(ForeachStatement fes, Scope* sc, ref Dsymbol sapply)
 {
-    if (!fes.parameters || !fes.parameters.dim)
+    if (!fes.parameters || !fes.parameters.length)
         return false;
     if (sapply) // prefer opApply
     {
@@ -1604,7 +1604,7 @@ bool inferApplyArgTypes(ForeachStatement fes, Scope* sc, ref Dsymbol sapply)
     case Tarray:
     case Tsarray:
     case Ttuple:
-        if (fes.parameters.dim == 2)
+        if (fes.parameters.length == 2)
         {
             if (!p.type)
             {
@@ -1623,7 +1623,7 @@ bool inferApplyArgTypes(ForeachStatement fes, Scope* sc, ref Dsymbol sapply)
     case Taarray:
         {
             TypeAArray taa = tab.isTypeAArray();
-            if (fes.parameters.dim == 2)
+            if (fes.parameters.length == 2)
             {
                 if (!p.type)
                 {
@@ -1647,7 +1647,7 @@ bool inferApplyArgTypes(ForeachStatement fes, Scope* sc, ref Dsymbol sapply)
     {
         AggregateDeclaration ad = (tab.ty == Tclass) ? tab.isTypeClass().sym
                                                      : tab.isTypeStruct().sym;
-        if (fes.parameters.dim == 1)
+        if (fes.parameters.length == 1)
         {
             if (!p.type)
             {
@@ -1811,7 +1811,7 @@ private bool matchParamsToOpApply(TypeFunction tf, Parameters* parameters, bool 
      * Fill in missing types in parameters.
      */
     const nparams = tdg.parameterList.length;
-    if (nparams == 0 || nparams != parameters.dim || tdg.parameterList.varargs != VarArg.none)
+    if (nparams == 0 || nparams != parameters.length || tdg.parameterList.varargs != VarArg.none)
         return nomatch; // parameter mismatch
 
     foreach (u, p; *parameters)

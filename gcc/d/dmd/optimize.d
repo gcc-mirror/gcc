@@ -225,7 +225,7 @@ package void setLengthVarIfKnown(VarDeclaration lengthVar, Expression arr)
     if (auto se = arr.isStringExp())
         len = se.len;
     else if (auto ale = arr.isArrayLiteralExp())
-        len = ale.elements.dim;
+        len = ale.elements.length;
     else
     {
         auto tsa = arr.type.toBasetype().isTypeSArray();
@@ -358,7 +358,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
 
     void visitAssocArrayLiteral(AssocArrayLiteralExp e)
     {
-        assert(e.keys.dim == e.values.dim);
+        assert(e.keys.length == e.values.length);
         foreach (i, ref ekey; (*e.keys)[])
         {
             expOptimize(ekey, result & WANTexpand);

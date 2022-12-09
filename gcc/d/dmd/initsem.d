@@ -55,7 +55,7 @@ Expression toAssocArrayLiteral(ArrayInitializer ai)
     Expression e;
     //printf("ArrayInitializer::toAssocArrayInitializer()\n");
     //static int i; if (++i == 2) assert(0);
-    const dim = ai.value.dim;
+    const dim = ai.value.length;
     auto keys = new Expressions(dim);
     auto values = new Expressions(dim);
     for (size_t i = 0; i < dim; i++)
@@ -249,7 +249,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             auto ie = new ExpInitializer(i.loc, sle);
             return ie.initializerSemantic(sc, t, needInterpret);
         }
-        else if ((t.ty == Tdelegate || t.isPtrToFunction()) && i.value.dim == 0)
+        else if ((t.ty == Tdelegate || t.isPtrToFunction()) && i.value.length == 0)
         {
             const tok = (t.ty == Tdelegate) ? TOK.delegate_ : TOK.function_;
             /* Rewrite as empty delegate literal { }
@@ -315,7 +315,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
         i.type = t;
         length = 0;
-        for (size_t j = 0; j < i.index.dim; j++)
+        for (size_t j = 0; j < i.index.length; j++)
         {
             Expression idx = i.index[j];
             if (idx)
@@ -350,7 +350,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 TupleExp te = ei.exp.isTupleExp();
                 i.index.remove(j);
                 i.value.remove(j);
-                for (size_t k = 0; k < te.exps.dim; ++k)
+                for (size_t k = 0; k < te.exps.length; ++k)
                 {
                     Expression e = (*te.exps)[k];
                     i.index.insert(j + k, cast(Expression)null);
@@ -475,7 +475,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         {
             return i; // Failed, suppress duplicate error messages
         }
-        if (i.exp.type.isTypeTuple() && i.exp.type.isTypeTuple().arguments.dim == 0)
+        if (i.exp.type.isTypeTuple() && i.exp.type.isTypeTuple().arguments.length == 0)
         {
             Type et = i.exp.type;
             i.exp = new TupleExp(i.exp.loc, new Expressions());
@@ -638,7 +638,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 uinteger_t dim2 = dim1;
                 if (auto ale = i.exp.isArrayLiteralExp())
                 {
-                    dim2 = ale.elements ? ale.elements.dim : 0;
+                    dim2 = ale.elements ? ale.elements.length : 0;
                 }
                 else if (auto se = i.exp.isSliceExp())
                 {
@@ -1094,9 +1094,9 @@ Initializer inferType(Initializer init, Scope* sc)
         Expressions* values;
         if (init.isAssociativeArray())
         {
-            keys = new Expressions(init.value.dim);
-            values = new Expressions(init.value.dim);
-            for (size_t i = 0; i < init.value.dim; i++)
+            keys = new Expressions(init.value.length);
+            values = new Expressions(init.value.length);
+            for (size_t i = 0; i < init.value.length; i++)
             {
                 Expression e = init.index[i];
                 if (!e)
@@ -1119,9 +1119,9 @@ Initializer inferType(Initializer init, Scope* sc)
         }
         else
         {
-            auto elements = new Expressions(init.value.dim);
+            auto elements = new Expressions(init.value.length);
             elements.zero();
-            for (size_t i = 0; i < init.value.dim; i++)
+            for (size_t i = 0; i < init.value.length; i++)
             {
                 assert(!init.index[i]); // already asserted by isAssociativeArray()
                 Initializer iz = init.value[i];
@@ -1300,9 +1300,9 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
         {
             /* Calculate the length of the array literal
              */
-            edim = cast(uint)init.value.dim;
+            edim = cast(uint)init.value.length;
             size_t j = 0;
-            foreach (i; 0 .. init.value.dim)
+            foreach (i; 0 .. init.value.length)
             {
                 if (auto e = init.index[i])
                 {
@@ -1325,7 +1325,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
         auto elements = new Expressions(edim);
         elements.zero();
         size_t j = 0;
-        foreach (i; 0 .. init.value.dim)
+        foreach (i; 0 .. init.value.length)
         {
             if (auto e = init.index[i])
                 j = cast(size_t)e.toInteger();

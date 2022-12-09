@@ -721,8 +721,8 @@ public:
         mangleIdentifier(tempdecl.ident, tempdecl);
 
         auto args = ti.tiargs;
-        size_t nparams = tempdecl.parameters.dim - (tempdecl.isVariadic() ? 1 : 0);
-        for (size_t i = 0; i < args.dim; i++)
+        size_t nparams = tempdecl.parameters.length - (tempdecl.isVariadic() ? 1 : 0);
+        for (size_t i = 0; i < args.length; i++)
         {
             auto o = (*args)[i];
             Type ta = isType(o);
@@ -814,7 +814,7 @@ public:
             }
             else if (va)
             {
-                assert(i + 1 == args.dim); // must be last one
+                assert(i + 1 == args.length); // must be last one
                 args = &va.objects;
                 i = -cast(size_t)1;
             }
@@ -960,7 +960,7 @@ public:
 
     override void visit(ArrayLiteralExp e)
     {
-        const dim = e.elements ? e.elements.dim : 0;
+        const dim = e.elements ? e.elements.length : 0;
         buf.writeByte('A');
         buf.print(dim);
         foreach (i; 0 .. dim)
@@ -971,7 +971,7 @@ public:
 
     override void visit(AssocArrayLiteralExp e)
     {
-        const dim = e.keys.dim;
+        const dim = e.keys.length;
         buf.writeByte('A');
         buf.print(dim);
         foreach (i; 0 .. dim)
@@ -983,7 +983,7 @@ public:
 
     override void visit(StructLiteralExp e)
     {
-        const dim = e.elements ? e.elements.dim : 0;
+        const dim = e.elements ? e.elements.length : 0;
         buf.writeByte('S');
         buf.print(dim);
         foreach (i; 0 .. dim)

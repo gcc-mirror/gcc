@@ -62,7 +62,7 @@ void semantic3OnDependencies(Module m)
 
     m.semantic3(null);
 
-    foreach (i; 1 .. m.aimports.dim)
+    foreach (i; 1 .. m.aimports.length)
         semantic3OnDependencies(m.aimports[i]);
 }
 
@@ -132,7 +132,7 @@ private const(char)[] getFilename(Identifier[] packages, Identifier ident) nothr
     {
         const p = pid.toString();
         buf.writestring(p);
-        if (modAliases.dim)
+        if (modAliases.length)
             checkModFileAlias(p);
         version (Windows)
             enum FileSeparator = '\\';
@@ -141,7 +141,7 @@ private const(char)[] getFilename(Identifier[] packages, Identifier ident) nothr
         buf.writeByte(FileSeparator);
     }
     buf.writestring(filename);
-    if (modAliases.dim)
+    if (modAliases.length)
         checkModFileAlias(filename);
     buf.writeByte(0);
     filename = buf.extractSlice()[0 .. $ - 1];
@@ -499,7 +499,7 @@ extern (C++) final class Module : Package
 
     extern (D) static const(char)[] find(const(char)[] filename)
     {
-        return FileManager.lookForSourceFile(filename, global.path ? (*global.path)[] : null);
+        return global.fileManager.lookForSourceFile(filename, global.path ? (*global.path)[] : null);
     }
 
     extern (C++) static Module load(const ref Loc loc, Identifiers* packages, Identifier ident)
@@ -942,7 +942,7 @@ extern (C++) final class Module : Package
         //    classinst == classinst -> .object.opEquals(classinst, classinst)
         // would fail inside object.d.
         if (filetype != FileType.c &&
-            (members.dim == 0 ||
+            (members.length == 0 ||
              (*members)[0].ident != Id.object ||
              (*members)[0].isImport() is null))
         {
@@ -953,7 +953,7 @@ extern (C++) final class Module : Package
         {
             // Add all symbols into module's symbol table
             symtab = new DsymbolTable();
-            for (size_t i = 0; i < members.dim; i++)
+            for (size_t i = 0; i < members.length; i++)
             {
                 Dsymbol s = (*members)[i];
                 s.addMember(sc, sc.scopesym);
@@ -966,12 +966,12 @@ extern (C++) final class Module : Package
          * before any semantic() on any of them.
          */
         setScope(sc); // remember module scope for semantic
-        for (size_t i = 0; i < members.dim; i++)
+        for (size_t i = 0; i < members.length; i++)
         {
             Dsymbol s = (*members)[i];
             s.setScope(sc);
         }
-        for (size_t i = 0; i < members.dim; i++)
+        for (size_t i = 0; i < members.length; i++)
         {
             Dsymbol s = (*members)[i];
             s.importAll(sc);
@@ -1115,13 +1115,13 @@ extern (C++) final class Module : Package
         __gshared int nested;
         if (nested)
             return;
-        //if (deferred.dim) printf("+Module::runDeferredSemantic(), len = %ld\n", deferred.dim);
+        //if (deferred.length) printf("+Module::runDeferredSemantic(), len = %ld\n", deferred.length);
         nested++;
 
         size_t len;
         do
         {
-            len = deferred.dim;
+            len = deferred.length;
             if (!len)
                 break;
 
@@ -1146,13 +1146,13 @@ extern (C++) final class Module : Package
                 s.dsymbolSemantic(null);
                 //printf("deferred: %s, parent = %s\n", s.toChars(), s.parent.toChars());
             }
-            //printf("\tdeferred.dim = %ld, len = %ld\n", deferred.dim, len);
+            //printf("\tdeferred.length = %ld, len = %ld\n", deferred.length, len);
             if (todoalloc)
                 free(todoalloc);
         }
-        while (deferred.dim != len); // while making progress
+        while (deferred.length != len); // while making progress
         nested--;
-        //printf("-Module::runDeferredSemantic(), len = %ld\n", deferred.dim);
+        //printf("-Module::runDeferredSemantic(), len = %ld\n", deferred.length);
     }
 
     static void runDeferredSemantic2()
@@ -1160,7 +1160,7 @@ extern (C++) final class Module : Package
         Module.runDeferredSemantic();
 
         Dsymbols* a = &Module.deferred2;
-        for (size_t i = 0; i < a.dim; i++)
+        for (size_t i = 0; i < a.length; i++)
         {
             Dsymbol s = (*a)[i];
             //printf("[%d] %s semantic2a\n", i, s.toPrettyChars());
@@ -1177,7 +1177,7 @@ extern (C++) final class Module : Package
         Module.runDeferredSemantic2();
 
         Dsymbols* a = &Module.deferred3;
-        for (size_t i = 0; i < a.dim; i++)
+        for (size_t i = 0; i < a.length; i++)
         {
             Dsymbol s = (*a)[i];
             //printf("[%d] %s semantic3a\n", i, s.toPrettyChars());

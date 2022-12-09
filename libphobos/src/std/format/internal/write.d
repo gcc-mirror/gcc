@@ -3011,7 +3011,7 @@ void enforceValidFormatSpec(T, Char)(scope const ref FormatSpec!Char f)
 /*
     `enum`s are formatted like their base value
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) val, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, T val, scope const ref FormatSpec!Char f)
 if (is(T == enum))
 {
     import std.array : appender;
@@ -3020,21 +3020,15 @@ if (is(T == enum))
     if (f.spec != 's')
         return formatValueImpl(w, cast(OriginalType!T) val, f);
 
-    static foreach (e; EnumMembers!T)
-    {
-        if (val == e)
-        {
-            formatValueImpl(w, __traits(identifier, e), f);
-            return;
-        }
-    }
+    foreach (immutable member; __traits(allMembers, T))
+        if (val == __traits(getMember, T, member))
+            return formatValueImpl(w, member, f);
 
     auto w2 = appender!string();
 
     // val is not a member of T, output cast(T) rawValue instead.
-    put(w2, "cast(");
-    put(w2, T.stringof);
-    put(w2, ")");
+    enum prefix = "cast(" ~ T.stringof ~ ")";
+    put(w2, prefix);
     static assert(!is(OriginalType!T == T), "OriginalType!" ~ T.stringof ~
                   "must not be equal to " ~ T.stringof);
 
@@ -3154,7 +3148,7 @@ if (isPointer!T && !is(T == enum) && !hasToString!(T, Char))
 
     auto a = iota(0, 10);
     auto b = iota(0, 10);
-    auto p = () @trusted { auto p = &a; return p; }();
+    auto p = () @trusted { auto result = &a; return result; }();
 
     assert(format("%s",p) != format("%s",b));
 }

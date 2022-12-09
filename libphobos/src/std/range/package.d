@@ -3774,10 +3774,17 @@ private:
         alias fun = Fun[0];
 
     enum returnByRef_ = (functionAttributes!fun & FunctionAttribute.ref_) ? true : false;
-    static if (returnByRef_)
-        ReturnType!fun *elem_;
+
+    import std.traits : hasIndirections;
+    static if (!hasIndirections!(ReturnType!fun))
+        alias RetType = Unqual!(ReturnType!fun);
     else
-        ReturnType!fun elem_;
+        alias RetType = ReturnType!fun;
+
+    static if (returnByRef_)
+        RetType *elem_;
+    else
+        RetType elem_;
 public:
     /// Range primitives
     enum empty = false;
@@ -3864,6 +3871,13 @@ public:
     assert(f == g.front);
     g = g.drop(5); // reassign because generate caches
     assert(g.front == f + 5);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23319
+@safe pure nothrow unittest
+{
+    auto b = generate!(() => const(int)(42));
+    assert(b.front == 42);
 }
 
 /**
@@ -6856,6 +6870,7 @@ if (!isIntegral!(CommonType!(B, E)) &&
             assert(!empty);
             ++current;
         }
+        @property auto save() { return this; }
     }
     return Result(begin, end);
 }
@@ -6888,6 +6903,13 @@ if (!isIntegral!(CommonType!(B, E)) &&
     // Wraparound case
     auto i2 = iota(Cycle5(3), Cycle5(2));
     assert(i2.equal([3, 4, 0, 1 ]));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23453
+@safe unittest
+{
+    auto r = iota('a', 'z');
+    static assert(isForwardRange!(typeof(r)));
 }
 
 /**

@@ -555,7 +555,7 @@ extern(C++) private final class Supported : Objc
                 return 1;
             }
 
-            assert(literal.elements.dim == 1);
+            assert(literal.elements.length == 1);
             auto se = (*literal.elements)[0].toStringExp();
             assert(se);
 
@@ -570,7 +570,7 @@ extern(C++) private final class Supported : Objc
         if (!fd.objc.selector)
             return;
         TypeFunction tf = cast(TypeFunction)fd.type;
-        if (fd.objc.selector.paramCount != tf.parameterList.parameters.dim)
+        if (fd.objc.selector.paramCount != tf.parameterList.parameters.length)
             fd.error("number of colons in Objective-C selector must match number of parameters");
         if (fd.parent && fd.parent.isTemplateInstance())
             fd.error("template cannot have an Objective-C selector attached");

@@ -114,7 +114,7 @@ extern (C++) final class Import : Dsymbol
         assert(!s);
         auto si = new Import(loc, packages, id, aliasId, isstatic);
         si.comment = comment;
-        for (size_t i = 0; i < names.dim; i++)
+        for (size_t i = 0; i < names.length; i++)
         {
             si.addAlias(names[i], aliases[i]);
         }
@@ -241,11 +241,11 @@ extern (C++) final class Import : Dsymbol
         mod.checkImportDeprecation(loc, sc);
         if (sc.explicitVisibility)
             visibility = sc.visibility;
-        if (!isstatic && !aliasId && !names.dim)
+        if (!isstatic && !aliasId && !names.length)
             sc.scopesym.importScope(mod, visibility);
         // Enable access to pkgs/mod as soon as posible, because compiler
         // can traverse them before the import gets semantic (Issue: 21501)
-        if (!aliasId && !names.dim)
+        if (!aliasId && !names.length)
             addPackageAccess(sc.scopesym);
     }
 
@@ -296,14 +296,14 @@ extern (C++) final class Import : Dsymbol
     override void addMember(Scope* sc, ScopeDsymbol sd)
     {
         //printf("Import.addMember(this=%s, sd=%s, sc=%p)\n", toChars(), sd.toChars(), sc);
-        if (names.dim == 0)
+        if (names.length == 0)
             return Dsymbol.addMember(sc, sd);
         if (aliasId)
             Dsymbol.addMember(sc, sd);
         /* Instead of adding the import to sd's symbol table,
          * add each of the alias=name pairs
          */
-        for (size_t i = 0; i < names.dim; i++)
+        for (size_t i = 0; i < names.length; i++)
         {
             Identifier name = names[i];
             Identifier _alias = aliases[i];
@@ -320,7 +320,7 @@ extern (C++) final class Import : Dsymbol
     override void setScope(Scope* sc)
     {
         Dsymbol.setScope(sc);
-        if (aliasdecls.dim)
+        if (aliasdecls.length)
         {
             if (!mod)
                 importAll(sc);

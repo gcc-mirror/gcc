@@ -34,7 +34,7 @@ pure @system unittest
         float[] a0;
         {
             import std.range : iota;
-            import std.array;
+            import std.array : array;
             import std.algorithm.iteration : map;
             a0 = iota (0, n).map!(i => i * 1.1f).array;
         }
@@ -991,7 +991,7 @@ if (!is(immutable T == immutable bool))
      */
     void removeBack()
     {
-        enforce(!empty);
+        assert(!empty);
         static if (hasElaborateDestructor!T)
             .destroy(_data._payload[$ - 1]);
 
@@ -1812,49 +1812,49 @@ if (is(immutable T == immutable bool))
         /// Ditto
         @property T front()
         {
-            enforce(!empty, "Attempting to access the front of an empty Array");
+            assert(!empty, "Attempting to access the front of an empty Array");
             return _outer[_a];
         }
         /// Ditto
         @property void front(bool value)
         {
-            enforce(!empty, "Attempting to set the front of an empty Array");
+            assert(!empty, "Attempting to set the front of an empty Array");
             _outer[_a] = value;
         }
         /// Ditto
         T moveFront()
         {
-            enforce(!empty, "Attempting to move the front of an empty Array");
+            assert(!empty, "Attempting to move the front of an empty Array");
             return _outer.moveAt(_a);
         }
         /// Ditto
         void popFront()
         {
-            enforce(!empty, "Attempting to popFront an empty Array");
+            assert(!empty, "Attempting to popFront an empty Array");
             ++_a;
         }
         /// Ditto
         @property T back()
         {
-            enforce(!empty, "Attempting to access the back of an empty Array");
+            assert(!empty, "Attempting to access the back of an empty Array");
             return _outer[_b - 1];
         }
         /// Ditto
         @property void back(bool value)
         {
-            enforce(!empty, "Attempting to set the back of an empty Array");
+            assert(!empty, "Attempting to set the back of an empty Array");
             _outer[_b - 1] = value;
         }
         /// Ditto
         T moveBack()
         {
-            enforce(!empty, "Attempting to move the back of an empty Array");
+            assert(!empty, "Attempting to move the back of an empty Array");
             return _outer.moveAt(_b - 1);
         }
         /// Ditto
         void popBack()
         {
-            enforce(!empty, "Attempting to popBack an empty Array");
+            assert(!empty, "Attempting to popBack an empty Array");
             --_b;
         }
         /// Ditto
@@ -2029,14 +2029,14 @@ if (is(immutable T == immutable bool))
      */
     @property bool front()
     {
-        enforce(!empty);
+        assert(!empty);
         return data.ptr[0] & 1;
     }
 
     /// Ditto
     @property void front(bool value)
     {
-        enforce(!empty);
+        assert(!empty);
         if (value) data.ptr[0] |= 1;
         else data.ptr[0] &= ~cast(size_t) 1;
     }
@@ -2052,14 +2052,14 @@ if (is(immutable T == immutable bool))
      */
     @property bool back()
     {
-        enforce(!empty);
+        assert(!empty);
         return cast(bool)(data.back & (cast(size_t) 1 << ((_store._length - 1) % bitsPerWord)));
     }
 
     /// Ditto
     @property void back(bool value)
     {
-        enforce(!empty);
+        assert(!empty);
         if (value)
         {
             data.back |= (cast(size_t) 1 << ((_store._length - 1) % bitsPerWord));

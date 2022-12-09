@@ -48,9 +48,9 @@ public:
 
     override void visit(CompoundStatement s)
     {
-        if (s.statements && s.statements.dim)
+        if (s.statements && s.statements.length)
         {
-            for (size_t i = 0; i < s.statements.dim; i++)
+            for (size_t i = 0; i < s.statements.length; i++)
             {
                 if ((*s.statements)[i])
                     visitStmt((*s.statements)[i]);
@@ -65,9 +65,9 @@ public:
 
     override void visit(UnrolledLoopStatement s)
     {
-        if (s.statements && s.statements.dim)
+        if (s.statements && s.statements.length)
         {
-            for (size_t i = 0; i < s.statements.dim; i++)
+            for (size_t i = 0; i < s.statements.length; i++)
             {
                 if ((*s.statements)[i])
                     visitStmt((*s.statements)[i]);
@@ -161,9 +161,9 @@ public:
     {
         if (s._body)
             visitStmt(s._body);
-        if (s.catches && s.catches.dim)
+        if (s.catches && s.catches.length)
         {
-            for (size_t i = 0; i < s.catches.dim; i++)
+            for (size_t i = 0; i < s.catches.length; i++)
             {
                 Catch c = (*s.catches)[i];
                 if (c && c.handler)

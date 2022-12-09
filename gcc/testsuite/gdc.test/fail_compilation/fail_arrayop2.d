@@ -327,6 +327,7 @@ fail_compilation/fail_arrayop2.d(342): Error: array operation `[1] * 6` without 
 fail_compilation/fail_arrayop2.d(345): Error: array operation `[1] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(348): Error: array operation `[1] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(349): Error: array operation `[1] * 6` without destination memory not allowed
+fail_compilation/fail_arrayop2.d(350): Deprecation: `[1] * 6` has no effect
 fail_compilation/fail_arrayop2.d(350): Error: array operation `[1] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(353): Error: array operation `[1] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(356): Error: array operation `[1] * 6` without destination memory not allowed
@@ -336,8 +337,7 @@ fail_compilation/fail_arrayop2.d(367): Error: `"uvt"[] - '\x01'` cannot be inter
 ---
 */
 // Test all statements, which can take arrays as their operands.
-void test15407stmt()
-{
+void test15407stmt() {
     // ExpStatement - exp
     [1] * 6;
 
