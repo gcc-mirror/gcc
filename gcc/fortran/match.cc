@@ -5524,13 +5524,15 @@ gfc_free_namelist (gfc_namelist *name)
 /* Free an OpenMP namelist structure.  */
 
 void
-gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns)
+gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns, bool free_align)
 {
   gfc_omp_namelist *n;
 
   for (; name; name = n)
     {
       gfc_free_expr (name->expr);
+      if (free_align)
+	gfc_free_expr (name->u.align);
       if (free_ns)
 	gfc_free_namespace (name->u2.ns);
       else if (name->u2.udr)

@@ -1357,6 +1357,29 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	    }
 	  ns_iter = n->u2.ns;
 	}
+      if (list_type == OMP_LIST_ALLOCATE)
+	{
+	  if (n->expr)
+	    {
+	      fputs ("allocator(", dumpfile);
+	      show_expr (n->expr);
+	      fputc (')', dumpfile);
+	    }
+	  if (n->expr && n->u.align)
+	    fputc (',', dumpfile);
+	  if (n->u.align)
+	    {
+	      fputs ("allocator(", dumpfile);
+	      show_expr (n->u.align);
+	      fputc (')', dumpfile);
+	    }
+	  if (n->expr || n->u.align)
+	    fputc (':', dumpfile);
+	  fputs (n->sym->name, dumpfile);
+	  if (n->next)
+	    fputs (") ALLOCATE(", dumpfile);
+	  continue;
+	}
       if (list_type == OMP_LIST_REDUCTION)
 	switch (n->u.reduction_op)
 	  {

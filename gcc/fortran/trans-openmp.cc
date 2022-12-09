@@ -2724,6 +2724,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			allocator_ = gfc_evaluate_now (se.expr, block);
 			OMP_CLAUSE_ALLOCATE_ALLOCATOR (node) = allocator_;
 		      }
+		    if (n->u.align)
+		      {
+			tree align_;
+			gfc_init_se (&se, NULL);
+			gfc_conv_expr (&se, n->u.align);
+			align_ = gfc_evaluate_now (se.expr, block);
+			OMP_CLAUSE_ALLOCATE_ALIGN (node) = align_;
+		      }
 		    omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 		  }
 	      }
