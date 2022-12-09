@@ -246,10 +246,12 @@ kf_malloc::impl_call_pre (const call_details &cd) const
     }
 }
 
-/* Handler for "memcpy" and "__builtin_memcpy".  */
-// TODO: complain about overlapping src and dest.
+/* Handler for "memcpy" and "__builtin_memcpy",
+   "memmove", and "__builtin_memmove".  */
+/* TODO: complain about overlapping src and dest for the memcpy
+   variants.  */
 
-class kf_memcpy : public known_function
+class kf_memcpy_memmove : public known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -263,7 +265,7 @@ public:
 };
 
 void
-kf_memcpy::impl_call_pre (const call_details &cd) const
+kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
 {
   const svalue *dest_ptr_sval = cd.get_arg_svalue (0);
   const svalue *src_ptr_sval = cd.get_arg_svalue (1);
@@ -285,6 +287,8 @@ kf_memcpy::impl_call_pre (const call_details &cd) const
     = mgr->get_sized_region (dest_reg, NULL_TREE, num_bytes_sval);
   const svalue *src_contents_sval
     = model->get_store_value (sized_src_reg, cd.get_ctxt ());
+  model->check_for_poison (src_contents_sval, cd.get_arg_tree (1),
+			   cd.get_ctxt ());
   model->set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
 }
 
@@ -927,8 +931,10 @@ register_known_functions (known_function_manager &kfm)
     kfm.add (BUILT_IN_EXPECT_WITH_PROBABILITY, make_unique<kf_expect> ());
     kfm.add (BUILT_IN_FREE, make_unique<kf_free> ());
     kfm.add (BUILT_IN_MALLOC, make_unique<kf_malloc> ());
-    kfm.add (BUILT_IN_MEMCPY, make_unique<kf_memcpy> ());
-    kfm.add (BUILT_IN_MEMCPY_CHK, make_unique<kf_memcpy> ());
+    kfm.add (BUILT_IN_MEMCPY, make_unique<kf_memcpy_memmove> ());
+    kfm.add (BUILT_IN_MEMCPY_CHK, make_unique<kf_memcpy_memmove> ());
+    kfm.add (BUILT_IN_MEMMOVE, make_unique<kf_memcpy_memmove> ());
+    kfm.add (BUILT_IN_MEMMOVE_CHK, make_unique<kf_memcpy_memmove> ());
     kfm.add (BUILT_IN_MEMSET, make_unique<kf_memset> ());
     kfm.add (BUILT_IN_MEMSET_CHK, make_unique<kf_memset> ());
     kfm.add (BUILT_IN_REALLOC, make_unique<kf_realloc> ());

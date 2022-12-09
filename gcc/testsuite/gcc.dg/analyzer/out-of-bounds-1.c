@@ -117,6 +117,6 @@ void test7 (void)
 
   // TODO: Should we handle widening_svalues as a follow-up?
   /* { dg-warning "over-read" "warning" { xfail *-*-* } test7 } */
+  /* { dg-warning "use of uninitialized value" "uninit warning" { target *-*-* } test7 } */
   /* { dg-warning "overflow" "warning" { xfail *-*-* } test7 } */
-  /* { dg-message "" "note" { xfail *-*-* } test7 } */
 }
