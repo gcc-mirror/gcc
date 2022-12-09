@@ -1586,6 +1586,7 @@
      [(set (match_operand 2) (const_int 0))
       (clobber (match_dup 3))
       (clobber (match_dup 4))
+      (clobber (reg:CC CC_REGNUM))
       (set (match_operand 0)
 	   (unspec:BLK [(match_operand 1) (match_dup 2)] UNSPEC_CPYMEM))])]
   "TARGET_MOPS"
@@ -1599,6 +1600,7 @@
   [(set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
    (clobber (match_operand:DI 0 "register_operand" "+&r"))
    (clobber (match_operand:DI 1 "register_operand" "+&r"))
+   (clobber (reg:CC CC_REGNUM))
    (set (mem:BLK (match_dup 0))
         (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_CPYMEM))]
   "TARGET_MOPS"
@@ -1629,6 +1631,7 @@
    (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
    (clobber (match_operand:DI 0 "register_operand" "+&r"))
    (clobber (match_operand:DI 1 "register_operand" "+&r"))
+   (clobber (reg:CC CC_REGNUM))
    (set (mem:BLK (match_dup 0))
         (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_MOVMEM))])]
  "TARGET_MOPS"
@@ -1674,6 +1677,7 @@
   [(parallel
      [(set (match_operand 2) (const_int 0))
       (clobber (match_dup 3))
+      (clobber (reg:CC CC_REGNUM))
       (set (match_operand 0)
 	   (unspec:BLK [(match_operand 1)
 			(match_dup 2)] UNSPEC_SETMEM))])]
@@ -1686,6 +1690,7 @@
 (define_insn "*aarch64_setmemdi"
   [(set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
    (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (clobber (reg:CC CC_REGNUM))
    (set (mem:BLK (match_dup 0))
         (unspec:BLK [(match_operand:QI 1 "aarch64_reg_or_zero" "rZ")
 		     (match_dup 2)] UNSPEC_SETMEM))]
