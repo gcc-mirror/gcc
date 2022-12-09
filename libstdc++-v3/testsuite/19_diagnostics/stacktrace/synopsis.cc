@@ -28,13 +28,12 @@ namespace std
   template<class Allocator>
     string to_string(const basic_stacktrace<Allocator>& st);
 
-  template<class charT, class traits>
-    basic_ostream<charT, traits>&
-    operator<<(basic_ostream<charT, traits>& os, const stacktrace_entry& f);
+  ostream&
+  operator<<(ostream& os, const stacktrace_entry& f);
 
-  template<class charT, class traits, class Allocator>
-    basic_ostream<charT, traits>&
-    operator<<(basic_ostream<charT, traits>& os, const basic_stacktrace<Allocator>& st);
+  template<class Allocator>
+    ostream&
+    operator<<(ostream& os, const basic_stacktrace<Allocator>& st);
 
   namespace pmr {
     using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;
