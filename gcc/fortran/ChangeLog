@@ -1,3 +1,9 @@
+2022-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108025
+	* symbol.cc (gfc_add_contiguous): Diagnose and reject duplicate
+	CONTIGUOUS attribute.
+
 2022-12-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108010

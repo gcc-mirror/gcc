@@ -1,3 +1,10 @@
+2022-12-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa-config-builtin.h (XCHAL_NUM_AREGS)
+	(XCHAL_ICACHE_SIZE, XCHAL_DCACHE_SIZE, XCHAL_ICACHE_LINESIZE)
+	(XCHAL_DCACHE_LINESIZE, XCHAL_MMU_MIN_PTE_PAGE_SIZE)
+	(XSHAL_ABI): Remove stray symbols from macro definitions.
+
 2022-12-07  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/crti.S (xtensa-config.h): Replace #inlcude with

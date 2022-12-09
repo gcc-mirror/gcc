@@ -1,3 +1,45 @@
+2022-12-08  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Check for zstd library and
+	--compress-debug-sections=zstd linker option.
+	* Makefile.am (zstdtest_*): New targets.
+	(zstdtest_alloc_*, ctestzstd_*): New targets.
+	(BUILDTESTS): Add zstdtest, zstdtest_alloc, ctestzstd as
+	appropriate.
+	* elf.c (ELFCOMPRESS_ZSTD): Define.
+	(elf_fetch_bits): Rename from elf_zlib_fetch.  Update uses.
+	(elf_fetch_bits_backward): New static function.
+	(ZLIB_HUFFMAN_*): Rename from HUFFMAN_*.  Update uses.
+	(ZLIB_TABLE_*): Rename from ZDEBUG_TABLE_*.  Update uses.
+	(ZSTD_TABLE_*): Define.
+	(struct elf_zstd_fse_entry): Define.
+	(elf_zstd_read_fse): New static function.
+	(elf_zstd_build_fse): Likewise.
+	(lit): Define if BACKTRACE_GENERATE_ZSTD_FSE_TABLES.
+	(match, offset, next, print_table, main): Likewise.
+	(elf_zstd_lit_table): New static const array.
+	(elf_zstd_match_table, elf_zstd_offset_table): Likewise.
+	(elf_zstd_read_huff): New static function.
+	(struct elf_zstd_seq_decode): Define.
+	(elf_zstd_unpack_seq_decode): New static function.
+	(ZSTD_LIT_*): Define.
+	(struct elf_zstd_literals): Define.
+	(elf_zstd_literal_output): New static function.
+	(ZSTD_LITERAL_LENGTH_BASELINE_OFFSET): Define.
+	(elf_zstd_literal_length_baseline): New static const array.
+	(elf_zstd_literal_length_bits): Likewise.
+	(ZSTD_MATCH_LENGTH_BASELINE_OFFSET): Define.
+	(elf_zstd_match_length_baseline): New static const array.
+	(elf_zstd_match_length_bits): Likewise.
+	(elf_zstd_decompress): New static function.
+	(ZDEBUG_TABLE_SIZE): New definition.
+	(elf_uncompress_chdr): Support ELF_COMPRESS_ZSTD.
+	(backtrace_uncompress_zstd): New function.
+	(elf_add): Use ZLIB_TABLE_SIZE for zlib-gnu sections.
+	* internal.h (backtrace_uncompress_zstd): Declare.
+	* zstdtest.c: New file.
+	* configure, config.h.in, Makefile.in: Regenerate.
+
 2022-10-12  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

@@ -1,3 +1,41 @@
+2022-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105838
+	* call.cc (convert_like_internal) [ck_list]: Use
+	maybe_init_list_as_array.
+	* constexpr.cc (cxx_eval_vec_init_1): Init might have
+	a different type.
+	* tree.cc (build_vec_init_elt): Likewise.
+	* init.cc (build_vec_init): Handle from_array from a
+	TARGET_EXPR.  Retain TARGET_EXPR of a different type.
+
+2022-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105838
+	* call.cc (list_ctor_element_type): New.
+	(braced_init_element_type): New.
+	(has_non_trivial_temporaries): New.
+	(maybe_init_list_as_array): New.
+	(maybe_init_list_as_range): New.
+	(build_user_type_conversion_1): Use maybe_init_list_as_range.
+	* parser.cc (cp_parser_braced_list): Call
+	recompute_constructor_flags.
+	* cp-tree.h (find_temps_r): Declare.
+
+2022-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105838
+	* cp-tree.h (is_std_allocator): Declare.
+	* constexpr.cc (is_std_allocator): Split out  from...
+	(is_std_allocator_allocate): ...here.
+	* init.cc (find_temps_r): New.
+	(find_allocator_temp): New.
+	(build_vec_init): Use it.
+
+2022-12-08  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (maybe_constant_value): Add default arg comments.
+
 2022-12-05  Scott Snyder  <sss@li-snyder.org>
 
 	PR plugins/107964

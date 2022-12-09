@@ -1,3 +1,91 @@
+2022-12-08  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi (-fsanitize=address): Suggest options to improve
+	stack traces.
+
+2022-12-08  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR ipa/108000
+	* ipa-cp.cc (ipcp_propagate_stage): Fix profile count comparison
+
+2022-12-08  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md (bswap<mode>2): New define_insn.
+
+2022-12-08  Sebastian Pop  <spop@amazon.com>
+
+	PR target/98776
+	* config/aarch64/aarch64-protos.h (aarch64_output_patchable_area):
+	Declared.
+	* config/aarch64/aarch64.cc (aarch64_print_patchable_function_entry):
+	Emit an UNSPECV_PATCHABLE_AREA pseudo instruction.
+	(aarch64_output_patchable_area): New.
+	* config/aarch64/aarch64.md (UNSPECV_PATCHABLE_AREA): New.
+	(patchable_area): Define.
+
+2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106719
+	* cfgbuild.cc (find_bb_boundaries): If there are NOTEs in between
+	debug_insn (seen after flow_transfer_insn) and insn, move NOTEs
+	before all the DEBUG_INSNs and split after NOTEs.  If there are
+	other insns like jump table data, clear debug_insn.
+
+2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107627
+	* config/i386/i386.md (HALF, half): New mode attributes.
+	(*concat<half><mode>3_5, *concat<mode><dwi>3_6,
+	*concat<mode><dwi>3_7): New define_insn_and_split patterns.
+
+2022-12-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107985
+	* gimple-range-op.cc
+	(gimple_range_op_handler::gimple_range_op_handler): Check if type
+	of the operands is supported.
+	* gimple-range.cc (gimple_ranger::prefill_stmt_dependencies): Do
+	not assert if here is no range-op handler.
+
+2022-12-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/predicates.md: Use sext_hwi.
+	* config/rs6000/rs6000.cc (num_insns_constant_gpr): Likewise.
+	(darwin_rs6000_legitimate_lo_sum_const_p): Likewise.
+	(mem_operand_gpr): Likewise.
+	(mem_operand_ds_form): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_emit_set_const): Likewise.
+	(rs6000_emit_set_long_const): Likewise.
+	(print_operand): Likewise.
+	(constant_generates_xxspltiw): Remove unnecessary expressions.
+	* config/rs6000/rs6000.md: Use sext_hwi.
+
+2022-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107699
+	* match.pd (&a !=/== &a.b + c -> (&a - &a.b) !=/== c): New
+	pattern variant.
+
+2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* range-op-float.cc (frange_nextafter): For MODE_COMPOSITE_P from
+	denormal or zero, use real_nextafter on DFmode with conversions
+	around it.
+	(frange_arithmetic): For mode_composite, on top of rounding in the
+	right direction accept extra 1ulp error for PLUS/MINUS_EXPR, extra
+	2ulps error for MULT_EXPR and extra 3ulps error for RDIV_EXPR.
+
+2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107967
+	* range-op-float.cc (frange_arithmetic): Fix a thinko - if
+	inf is negative, use nextafter if !real_less (&result, &value)
+	rather than if real_less (&result, &value).  If result is +-INF
+	while value is finite and -fno-rounding-math, don't do rounding
+	if !inexact or if result is significantly above max representable
+	value or below min representable value.
+
 2022-12-07  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config.gcc (xtensa*-*-*): Add xtensa-dynconfig.o to extra_objs.
