@@ -686,9 +686,10 @@ package body GNAT.Formatted_String is
    begin
       Next_Format (Format, F, Start);
 
-      if F.Value_Needed > 0 then
+      if F.Value_Needed /= Format.D.Stored_Value then
          Raise_Wrong_Format (Format);
       end if;
+      Format.D.Stored_Value := 0;
 
       if F.Precision = Unset then
          Aft := 6;
