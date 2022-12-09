@@ -10186,10 +10186,9 @@ rs6000_emit_set_const (rtx dest, rtx source)
     case E_SImode:
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (SImode);
 
-      emit_insn (gen_rtx_SET (copy_rtx (temp),
-			      GEN_INT (c & ~(HOST_WIDE_INT) 0xffff)));
+      emit_insn (gen_rtx_SET (temp, GEN_INT (c & ~(HOST_WIDE_INT) 0xffff)));
       emit_insn (gen_rtx_SET (dest,
-			      gen_rtx_IOR (SImode, copy_rtx (temp),
+			      gen_rtx_IOR (SImode, temp,
 					   GEN_INT (c & 0xffff))));
       break;
 
@@ -10198,10 +10197,8 @@ rs6000_emit_set_const (rtx dest, rtx source)
 	{
 	  rtx hi, lo;
 
-	  hi = operand_subword_force (copy_rtx (dest), WORDS_BIG_ENDIAN == 0,
-				      DImode);
-	  lo = operand_subword_force (dest, WORDS_BIG_ENDIAN != 0,
-				      DImode);
+	  hi = operand_subword_force (dest, WORDS_BIG_ENDIAN == 0, DImode);
+	  lo = operand_subword_force (dest, WORDS_BIG_ENDIAN != 0, DImode);
 	  emit_move_insn (hi, GEN_INT (c >> 32));
 	  c = sext_hwi (c, 32);
 	  emit_move_insn (lo, GEN_INT (c));
@@ -10249,27 +10246,22 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
-      emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
+      emit_move_insn (ud1 != 0 ? temp : dest,
 		      GEN_INT (sext_hwi (ud2 << 16, 32)));
       if (ud1 != 0)
-	emit_move_insn (dest,
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud1)));
+	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
   else if (ud3 == 0 && ud4 == 0)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
       gcc_assert (ud2 & 0x8000);
-      emit_move_insn (copy_rtx (temp), GEN_INT (sext_hwi (ud2 << 16, 32)));
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
       if (ud1 != 0)
-	emit_move_insn (copy_rtx (temp),
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud1)));
+	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
       emit_move_insn (dest,
 		      gen_rtx_ZERO_EXTEND (DImode,
-					   gen_lowpart (SImode,
-							copy_rtx (temp))));
+					   gen_lowpart (SImode,temp)));
     }
   else if (ud1 == ud3 && ud2 == ud4)
     {
@@ -10285,18 +10277,13 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
-      emit_move_insn (copy_rtx (temp), GEN_INT (sext_hwi (ud3 << 16, 32)));
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud3 << 16, 32)));
       if (ud2 != 0)
-	emit_move_insn (copy_rtx (temp),
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud2)));
-      emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
-		      gen_rtx_ASHIFT (DImode, copy_rtx (temp),
-				      GEN_INT (16)));
+	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud2)));
+      emit_move_insn (ud1 != 0 ? temp : dest,
+		      gen_rtx_ASHIFT (DImode, temp, GEN_INT (16)));
       if (ud1 != 0)
-	emit_move_insn (dest,
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud1)));
+	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
   else if (TARGET_PREFIXED)
     {
@@ -10337,23 +10324,17 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
-      emit_move_insn (copy_rtx (temp), GEN_INT (sext_hwi (ud4 << 16, 32)));
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud4 << 16, 32)));
       if (ud3 != 0)
-	emit_move_insn (copy_rtx (temp),
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud3)));
+	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud3)));
 
-      emit_move_insn (ud2 != 0 || ud1 != 0 ? copy_rtx (temp) : dest,
-		      gen_rtx_ASHIFT (DImode, copy_rtx (temp),
-				      GEN_INT (32)));
+      emit_move_insn (ud2 != 0 || ud1 != 0 ? temp : dest,
+		      gen_rtx_ASHIFT (DImode, temp, GEN_INT (32)));
       if (ud2 != 0)
-	emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud2 << 16)));
+	emit_move_insn (ud1 != 0 ? temp : dest,
+			gen_rtx_IOR (DImode, temp, GEN_INT (ud2 << 16)));
       if (ud1 != 0)
-	emit_move_insn (dest,
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud1)));
+	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
 }
 
