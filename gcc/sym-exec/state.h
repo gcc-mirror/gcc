@@ -166,7 +166,8 @@ class state {
 
   /* Return node which has a const bit child.  Traversal is done based
      on safe branching.  */
-  static bit_expression* get_parent_with_const_child (value* root);
+  static void get_parent_with_const_child (value* root, bit_expression*& parent,
+					   bit_expression*& parent_of_parent);
 
   /* Checks if node is AND, OR or XOR expression.  */
   static bool is_safe_branching (value* node);

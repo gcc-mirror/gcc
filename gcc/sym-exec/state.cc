@@ -525,14 +525,14 @@ unsigned HOST_WIDE_INT
 state::get_value (const vec <value *> * bits_value)
 {
   unsigned HOST_WIDE_INT number = 0;
-  if (bits_value->length () <= sizeof (size_t))
-    for (unsigned i = 0; i < bits_value->length (); i++)
-      {
-	if (is_a<bit *> ((*bits_value)[i]))
-	  number = (number | as_a<bit*> ((*bits_value)[i])->get_val ()) << 1;
-	else
-	  return 0;
-      }
+  int bits_value_size = bits_value->length ();
+  for (int i = bits_value_size - 1; i >= 0; i--)
+    {
+      if (is_a<bit *> ((*bits_value)[i]))
+	number = (number << 1) | as_a<bit*> ((*bits_value)[i])->get_val ();
+      else
+	return 0;
+    }
   return number;
 }
 
@@ -868,75 +868,99 @@ value *
 state::xor_sym_bits (const value * var1, const value * var2)
 {
   value * var2_copy = var2->copy ();
-  bit_expression * var2_node_with_const_child
-      = get_parent_with_const_child (var2_copy);
+  bit_expression * node2_with_const_child = nullptr;
+  bit_expression * parent_of_node2_with_child = nullptr;
+  get_parent_with_const_child (var2_copy, node2_with_const_child,
+			       parent_of_node2_with_child);
 
-  if (var2_node_with_const_child != nullptr)
+  if (node2_with_const_child != nullptr)
     {
       value *var1_copy = var1->copy ();
-      bit_expression *var1_node_with_const_child
-	= get_parent_with_const_child (var1_copy);
+      bit_expression * node1_with_const_child = nullptr;
+      bit_expression * parent_of_node1_with_child = nullptr;
+      get_parent_with_const_child (var1_copy, node1_with_const_child,
+				   parent_of_node1_with_child);
 
       /* If both subtrees have constant bit nodes,
 	 we can merge them together.  */
-      if (var1_node_with_const_child != nullptr)
+      if (node1_with_const_child != nullptr)
 	{
 	  /* If var1's const bit is in its left subtree.  */
-	  value *var1_left = var1_node_with_const_child->get_left ();
+	  value *var1_left = node1_with_const_child->get_left ();
 	  if (var1_left != nullptr && is_a<bit *> (var1_left))
 	    {
 	      /* If var2's const bit is in its left subtree.  */
-	      value *var2_left = var2_node_with_const_child->get_left ();
+	      value *var2_left = node2_with_const_child->get_left ();
 	      if (var2_left != nullptr && is_a<bit *> (var2_left))
 		{
 		  bit *new_left = xor_const_bits (as_a<bit *> (var1_left),
 						  as_a<bit *> (var2_left));
-		  delete var2_left;
-		  var2_node_with_const_child->set_left (nullptr);
+
+		  value* reformed_elem = node2_with_const_child->get_right ()
+					 ->copy ();
+		  parent_of_node2_with_child->get_left ()
+		  == node2_with_const_child
+		    ? parent_of_node2_with_child->set_left (reformed_elem)
+		    : parent_of_node2_with_child->set_right (reformed_elem);
 
 		  delete var1_left;
-		  var1_node_with_const_child->set_left (new_left);
+		  node1_with_const_child->set_left (new_left);
 		}
 	      else /* Var2's const bit is in its right subtree.  */
 		{
-		  value *var2_right = var2_node_with_const_child->get_right ();
+		  value *var2_right = node2_with_const_child->get_right ();
 		  bit *new_left = xor_const_bits (as_a<bit *> (var1_left),
 						  as_a<bit *> (var2_right));
-		  delete var2_right;
-		  var2_node_with_const_child->set_right (nullptr);
+
+		  value* reformed_elem = node2_with_const_child->get_left ()
+					 ->copy ();
+		  parent_of_node2_with_child->get_left ()
+		  == node2_with_const_child
+		    ? parent_of_node2_with_child->set_left (reformed_elem)
+		    : parent_of_node2_with_child->set_right (reformed_elem);
 
 		  delete var1_left;
-		  var1_node_with_const_child->set_left (new_left);
+		  node1_with_const_child->set_left (new_left);
 		}
 	    }
 	  else /* Var1's const bit is in its right subtree.  */
 	    {
-	      value *var1_right = var1_node_with_const_child->get_right ();
-	      value *var2_left = var2_node_with_const_child->get_left ();
+	      value *var1_right = node1_with_const_child->get_right ();
+	      value *var2_left = node2_with_const_child->get_left ();
 	      /* If var2's const bit is in its left subtree.  */
 	      if (var2_left != nullptr && is_a<bit *> (var2_left))
 		{
 		  bit *new_right = xor_const_bits (as_a<bit *> (var1_left),
 						   as_a<bit *> (var2_left));
-		  delete var2_left;
-		  var2_node_with_const_child->set_left (nullptr);
+
+		  value* reformed_elem = node2_with_const_child->get_right ()
+					 ->copy ();
+		  parent_of_node2_with_child->get_left ()
+		  == node2_with_const_child
+		    ? parent_of_node2_with_child->set_left (reformed_elem)
+		    : parent_of_node2_with_child->set_right (reformed_elem);
 
 		  delete var1_right;
-		  var1_node_with_const_child->set_right (new_right);
+		  node1_with_const_child->set_right (new_right);
 		}
 	      else /* Var2's const bit is in its right subtree.  */
 		{
-		  value *var2_right = var2_node_with_const_child->get_right ();
+		  value *var2_right = node2_with_const_child->get_right ();
 		  bit *new_right = xor_const_bits (as_a<bit *> (var1_right),
 						   as_a<bit *> (var2_right));
-		  delete var2_right;
-		  var2_node_with_const_child->set_right (nullptr);
+
+		  value* reformed_elem = node2_with_const_child->get_left ()
+					 ->copy ();
+		  parent_of_node2_with_child->get_left ()
+		  == node2_with_const_child
+		    ? parent_of_node2_with_child->set_left (reformed_elem)
+		    : parent_of_node2_with_child->set_right (reformed_elem);
 
 		  delete var1_right;
-		  var1_node_with_const_child->set_right (new_right);
+		  node1_with_const_child->set_right (new_right);
 		}
 	    }
-
+	  delete node2_with_const_child;
 	  return new bit_xor_expression (var1_copy, var2_copy);
 	}
       delete var1_copy;
@@ -962,9 +986,13 @@ value *
 state::xor_var_const (const value * var, const bit * const_bit)
 {
   value *var_copy = var->copy ();
-  bit_expression *node_with_const_child
-    = get_parent_with_const_child (var_copy);
-  if (node_with_const_child != nullptr)
+  bit_expression *node_with_const_child = nullptr;
+  bit_expression *tmp = nullptr;
+  get_parent_with_const_child (var_copy, node_with_const_child, tmp);
+
+  if (const_bit->get_val () == 0)
+    return var->copy ();
+  else if (node_with_const_child != nullptr)
     {
       value *left = node_with_const_child->get_left ();
       if (left != nullptr && is_a<bit *> (left))
@@ -991,15 +1019,22 @@ state::xor_var_const (const value * var, const bit * const_bit)
 /* Return node which has a const bit child.  Traversal is done based
    on safe branching.  */
 
-bit_expression *
-state::get_parent_with_const_child (value* root)
+void
+state::get_parent_with_const_child (value* root, bit_expression*& parent,
+				    bit_expression*& parent_of_parent)
 {
-  if (! is_a<bit_expression *> (root))
-    return nullptr;
+  parent_of_parent = nullptr;
+  parent = nullptr;
 
-  bit_expression* expr_root = as_a<bit_expression *> (root->copy ());
+  if (! is_a<bit_expression *> (root))
+    return;
+
+  bit_expression* expr_root = as_a<bit_expression *> (root);
   hash_set<bit_expression *> nodes_to_consider;
   nodes_to_consider.add (expr_root);
+
+  hash_map<bit_expression*, bit_expression*> node_to_parent;
+  node_to_parent.put (expr_root, nullptr);
 
   /* Traversing expression tree:
      considering only comutative expression nodes.  */
@@ -1013,15 +1048,24 @@ state::get_parent_with_const_child (value* root)
 
       if ((left != nullptr && is_a<bit *> (left))
 	  || (right != nullptr && is_a<bit *> (right)))
-	return cur_element;
+	{
+	  parent = cur_element;
+	  parent_of_parent = *node_to_parent.get (cur_element);
+	}
 
       if (left != nullptr && is_safe_branching (left))
-	nodes_to_consider.add (as_a<bit_expression *> (left));
+	{
+	  nodes_to_consider.add (as_a<bit_expression *> (left));
+	  node_to_parent.put (as_a<bit_expression *> (left), cur_element);
+	}
+
 
       if (right != nullptr && is_safe_branching (right))
-	nodes_to_consider.add (as_a<bit_expression *> (right));
+	{
+	  nodes_to_consider.add (as_a<bit_expression *> (right));
+	  node_to_parent.put (as_a<bit_expression *> (right), cur_element);
+	}
     }
-  return nullptr;
 }
 
 
@@ -1050,9 +1094,9 @@ state::shift_left_by_const (const vec <value *> * number,
   else
     {
       size_t i = 0;
-      for ( ; i < number->length () - shift_value; ++i)
+      for ( ; i < shift_value; ++i)
 	shift_result->quick_push (new bit (0));
-      for (size_t j = 0; i < number->length (); ++i, ++j)
+      for (size_t j = 0; i < number->length (); ++i, j++)
 	shift_result->quick_push (((*number)[j])->copy ());
     }
   return shift_result;
@@ -1594,20 +1638,7 @@ state::do_mem_ref (tree arg1, tree dest)
 bool
 state::do_pointer_plus (tree arg1, tree arg2, tree dest)
 {
-  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
-  if (!is_declared (arg1) || !is_declared (arg2))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: For pointer addition "
-			    "arguments must be declared\n");
-
-      return false;
-    }
-
-  if (is_bit_vector (var_states.get (arg2))
-	&& get_value (var_states.get (arg2)) == 0)
-    return do_mem_ref (arg1, dest);
-
+  //TODO: For pointer addition we need to consider size of argument
   return do_add (arg1, arg2, dest);
 }
 
@@ -1617,20 +1648,7 @@ state::do_pointer_plus (tree arg1, tree arg2, tree dest)
 bool
 state::do_pointer_diff (tree arg1, tree arg2, tree dest)
 {
-  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
-  if (!is_declared (arg1) || !is_declared (arg2))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: For pointer subtraction "
-			    "arguments must be declared\n");
-
-      return false;
-    }
-
-  if (is_bit_vector (var_states.get (arg2))
-  	&& get_value (var_states.get (arg2)) == 0)
-    return do_mem_ref (arg1, dest);
-
+  //TODO: For pointer subtraction we need to consider size of argument
   return do_sub (arg1, arg2, dest);
 }
 
