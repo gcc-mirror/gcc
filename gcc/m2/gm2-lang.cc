@@ -305,9 +305,12 @@ gm2_langhook_handle_option (
     case OPT_Wall:
       M2Options_SetWall (value);
       return 1;
+#if 0
+    /* Not yet implemented.  */
     case OPT_fxcode:
       M2Options_SetXCode (value);
       return 1;
+#endif
     case OPT_fm2_lower_case:
       M2Options_SetLowerCaseKeywords (value);
       return 1;
@@ -318,10 +321,10 @@ gm2_langhook_handle_option (
       M2Options_SetRuntimeModuleOverride (arg);
       return 1;
     case OPT_fpthread:
-      /* handled in the driver.  */
+      /* Handled in the driver.  */
       return 1;
     case OPT_fm2_plugin:
-      /* handled in the driver.  */
+      /* Handled in the driver.  */
       return 1;
     case OPT_fscaffold_dynamic:
       M2Options_SetScaffoldDynamic (value);

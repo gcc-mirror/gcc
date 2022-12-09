@@ -573,6 +573,10 @@ turns on auto initialization of pointers to NIL.  Whenever a block is
 created all pointers declarated within this scope will have their
 addresses assigned to NIL.
 
+@item -fbounds
+turns on runtime subrange, array index and indirection via @code{NIL}
+pointer checking.
+
 @item -fcase
 turns on compile time checking to check whether a @code{CASE}
 statement requires an @code{ELSE} clause when on was not specified.
@@ -584,10 +588,34 @@ If @samp{-fcpp} is supplied then all definition modules and
 implementation modules which are parsed will be preprocessed by
 @samp{cpp}.
 
+@c fcpp-end
+@c Modula-2
+@c passed to the preprocessor if -fcpp is used (internal switch)
+
+@c fcpp-begin
+@c Modula-2
+@c passed to the preprocessor if -fcpp is used (internal switch)
+
 @item -fdebug-builtins
 call a real function, rather than the builtin equivalent.  This can
 be useful for debugging parameter values to a builtin function as
 it allows users to single step code into a real function.
+
+@c fd
+@c Modula-2
+@c turn on internal debugging of the compiler (internal switch)
+
+@c fdebug-trace-quad
+@c Modula-2
+@c turn on quadruple tracing (internal switch)
+
+@c fdebug-trace-api
+@c Modula-2
+@c turn on the Modula-2 api tracing (internal switch)
+
+@c fdebug-function-line-numbers
+@c Modula-2
+@c turn on the Modula-2 function line number generation (internal switch)
 
 @item -fdef=
 recognise the specified suffix as a definition module filename.
@@ -609,6 +637,10 @@ allows opaque types to be implemented as any type. This is a GNU
 Modula-2 extension and it requires that the implementation module
 defining the opaque type is available so that it can be resolved when
 compiling the module which imports the opaque type.
+
+@item -ffloatvalue
+turns on runtime checking to check whether a floating point number is
+about to exceed range.
 
 @item -fgen-module-list=@file{filename}
 attempt to find all modules when linking and generate a module list.
@@ -641,6 +673,10 @@ the they provide the base modules which all other dialects utilize.
 The option @samp{-fno-libs=-} disables the @samp{gm2} driver from
 modifying the search and library paths.
 
+@c flocation=
+@c Modula-2 Joined
+@c set all location values to a specific value (internal switch)
+
 @item -fm2-g
 improve the debugging experience for new programmers at the expense
 of generating @code{nop} instructions if necessary to ensure single
@@ -652,10 +688,16 @@ where multiple @code{END} keywords are mapped onto a sequence of
 @item -fm2-lower-case
 render keywords in error messages using lower case.
 
+@item -fm2-plugin
+insert plugin to identify runtime errors at compiletime (default on).
+
 @item -fm2-statistics
 generates quadruple information: number of quadruples generated,
 number of quadruples remaining after optimisation and number of source
 lines compiled.
+
+@item -fm2-strict-type
+experimental flag to turn on the new strict type checker.
 
 @item -fm2-whole-program
 compile all implementation modules and program module at once.  Notice
@@ -712,6 +754,10 @@ can be disabled by @samp{-fno-pthread}.  GNU Modula-2 uses the GCC
 pthread libraries to implement coroutines (see the SYSTEM
 implementation module).
 
+@c -fq
+@c -Modula-2
+@c -internal compiler debugging information, dump the list of quadruples
+
 @item -frange
 generate code to check the assignment range, return value range
 set range and constructor range.  Range checking can be disabled
@@ -738,6 +784,12 @@ infastructure when compiling implementation and program modules.
 By default this option is on.  Use @samp{-fno-scaffold-dynamic}
 to turn it off or select @samp{-fno-scaffold-static}.
 
+@item -fscaffold-c
+generate a C source scaffold for the current module being compiled.
+
+@item -fscaffold-c++
+generate a C++ source scaffold for the current module being compiled.
+
 @item -fscaffold-main
 force the generation of the @samp{main} function.  This is not
 necessary if the @samp{-c} is omitted.
@@ -756,7 +808,7 @@ generate a shared library from the module.
 turns on all runtime checks.  This is the same as invoking
 GNU Modula-2 using the command options
 @code{-fnil} @code{-frange} @code{-findex}
-@c @code{-fwholevalue}  --fixme-- add this when working
+@code{-fwholevalue}
 @code{-fwholediv} @code{-fcase} @code{-freturn}.
 
 @item -fsources
@@ -792,72 +844,57 @@ This option cannot be used if @samp{-fgen-module-list=} is enabled.
 
 @item -fwholediv
 generate code to detect whole number division by zero or modulus by
-zero.  Whole number division checking can be disabled via
-@samp{-fno-wholediv}.
+zero.
 
-@c @item -fxcode
-@c issues all errors and warnings in the @file{Xcode} format.
+@item -fwholevalue
+generate code to detect whole number overflow and underflow.
 
-@c @item -fwholevalue
-@c generate code to detect whole number overflow and underflow.
+@c the following warning options are complete but need to be
+@c regression tested against all other front ends
+@c to ensure the options do not conflict.
 
-@c @item -fno-wholevalue
-@c do not generate code to detect whole number overflow and underflow.
+@c @item -Wall
+@c turn on all Modula-2 warnings.
 
-@c @item -frealdiv
-@c generate code to detect real number division by zero.
+@c @item -Wpedantic
+@c forces the compiler to reject nested @code{WITH} statements
+@c referencing the same record type.  Does not allow multiple imports of
+@c the same item from a module.  It also checks that: procedure variables
+@c are written to before being read; variables are not only written to
+@c but read from; variables are declared and used.  If the compiler
+@c encounters a variable being read before written it will terminate with
+@c a message.  It will check that @code{FOR} loop indices are not used
+@c outside the end of this loop without being reset.
 
-@c @item -fno-realdiv
-@c do not generate code to detect real number division by zero.
+@c @item -Wpedantic-cast
+@c warns if the ISO system function is used and if the size of
+@c the variable is different from that of the type.  This is legal
+@c in ISO Modula-2, however it can be dangerous.  Some users may prefer
+@c to use @code{VAL} instead in these situations and use @code{CAST}
+@c exclusively for changes in type on objects which have the same size.
 
-@c @item -frealvalue
-@c generate code to detect @code{NaN}s real number overflow and underflow.
+@c @item -Wpedantic-param-names
+@c procedure parameter names are checked in the definition module
+@c against their implementation module counterpart.  This is not
+@c necessary in ISO or PIM versions of Modula-2.
 
-@c @item -fno-realvalue
-@c do not generate code to detect @code{NaN}s real number overflow and underflow.
+@c @item -Wstyle
+@c checks for poor programming style.  This option is aimed at new users of
+@c Modula-2 in that it checks for situations which might cause confusion
+@c and thus mistakes.  It checks whether variables of the same name are
+@c declared in different scopes and whether variables look like keywords.
+@c Experienced users might find this option too aggressive.
 
-@item -Wall
-turn on all Modula-2 warnings.
+@c @item -Wunused-variable
+@c warns if a variable has been declared and it not used.
 
-@item -Wpedantic
-forces the compiler to reject nested @code{WITH} statements
-referencing the same record type.  Does not allow multiple imports of
-the same item from a module.  It also checks that: procedure variables
-are written to before being read; variables are not only written to
-but read from; variables are declared and used.  If the compiler
-encounters a variable being read before written it will terminate with
-a message.  It will check that @code{FOR} loop indices are not used
-outside the end of this loop without being reset.
+@c @item -Wunused-parameter
+@c warns if a parameter has been declared and it not used.
 
-@item -Wpedantic-cast
-warns if the ISO system function is used and if the size of
-the variable is different from that of the type.  This is legal
-in ISO Modula-2, however it can be dangerous.  Some users may prefer
-to use @code{VAL} instead in these situations and use @code{CAST}
-exclusively for changes in type on objects which have the same size.
-
-@item -Wpedantic-param-names
-procedure parameter names are checked in the definition module
-against their implementation module counterpart.  This is not
-necessary in ISO or PIM versions of Modula-2.
-
-@item -Wstyle
-checks for poor programming style.  This option is aimed at new users of
-Modula-2 in that it checks for situations which might cause confusion
-and thus mistakes.  It checks whether variables of the same name are
-declared in different scopes and whether variables look like keywords.
-Experienced users might find this option too aggressive.
-
-@item -Wunused-variable
-warns if a variable has been declared and it not used.
-
-@item -Wunused-parameter
-warns if a parameter has been declared and it not used.
-
-@item -Wverbose-unbounded
-inform the user which non @code{VAR} unbounded parameters will be
-passed by reference.  This only produces output if the option
-@samp{-funbounded-by-reference} is also supplied on the command line.
+@c @item -Wverbose-unbounded
+@c inform the user which non @code{VAR} unbounded parameters will be
+@c passed by reference.  This only produces output if the option
+@c @samp{-funbounded-by-reference} is also supplied on the command line.
 
 @end table
 

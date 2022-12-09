@@ -122,13 +122,9 @@ fdebug-builtins
 Modula-2
 call a real function, rather than the builtin equivalent
 
-fdump-system-exports
-Modula-2
-display all inbuilt system items
-
 fd
 Modula-2
-turn on internal debugging of the compiler
+turn on internal debugging of the compiler (internal switch)
 
 fdebug-trace-quad
 Modula-2
@@ -145,6 +141,10 @@ turn on the Modula-2 function line number generation (internal switch)
 fdef=
 Modula-2 Joined
 recognise the specified suffix as a definition module filename
+
+fdump-system-exports
+Modula-2
+display all inbuilt system items
 
 fexceptions
 Modula-2
@@ -250,10 +250,6 @@ fruntime-modules=
 Modula-2 Joined
 specify the list of runtime modules and their initialization order
 
-fscaffold-static
-Modula-2
-generate static scaffold initialization and finalization for every module inside main
-
 fscaffold-dynamic
 Modula-2
 the modules initialization order is dynamically determined by M2RTS and application dependancies
@@ -270,13 +266,17 @@ fscaffold-main
 Modula-2
 generate the main function
 
+fscaffold-static
+Modula-2
+generate static scaffold initialization and finalization for every module inside main
+
 fshared
 Modula-2
 generate a shared library from the module
 
 fsoft-check-all
 Modula-2
-turns on all software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholediv -ffloatvalue)
+turns on all software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)
 
 fsources
 Modula-2
@@ -305,10 +305,6 @@ turns on all division and modulus by zero checking for ordinal values
 fwholevalue
 Modula-2
 turns on runtime checking to check whether a whole number is about to exceed range
-
-fxcode
-Modula-2
-issue all errors and warnings in the Xcode format
 
 iprefix
 Modula-2
