@@ -58,6 +58,13 @@ state::get_bits (tree var)
   return var_states.get (var);
 }
 
+/* Get the value of the tree, which is in the beginning of the var_states.  */
+
+vec<value*> *
+state::get_first_value ()
+{
+  return &(*(var_states.begin ())).second;
+}
 
 const hash_set<bit_expression *>&
 state::get_conditions ()

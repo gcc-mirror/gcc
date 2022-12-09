@@ -230,6 +230,9 @@ class state {
 
   vec<value*> * get_bits (tree var);
 
+  /* Get the value of the tree, which is in the beginning of the var_states.  */
+  vec<value*> * get_first_value ();
+
   const hash_set<bit_expression *>& get_conditions ();
 
   /* Adds a variable with unknown value to state.  Such variables are

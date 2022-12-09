@@ -141,7 +141,10 @@ crc_symb_execution::execute_assign_statement (const gassign *gs)
 	      return true;
 	    return false;
 	  case MEM_REF:
-	    if (current_state->do_mem_ref (op1, lhs))
+	    /* FIXME: There can be something like
+	       MEM[(some_type *)data + 1B],
+	       in this case we just pass data.  */
+	    if (current_state->do_mem_ref (TREE_OPERAND (op1, 0), lhs))
 	      return true;
 	    return false;
 	  case NOP_EXPR:
@@ -682,7 +685,7 @@ bool
 crc_symb_execution::execute_crc_loop (loop *crc_loop, gphi *crc, gphi *data,
 				      bool is_shift_left)
 {
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n\nTrying to calculate the polynomial.\n\n");
 
   states.quick_push (new state);
@@ -786,4 +789,152 @@ crc_symb_execution::extract_poly_and_create_lfsr (loop *crc_loop,
     }
 
   return state::create_lfsr (calculated_crc, polynomial, is_shift_left);
+}
+
+bool
+condition_is_true ()
+{
+  return true;
+}
+
+bool
+condition_is_false ()
+{
+  return true;
+}
+
+
+/* Returns true if the symb_exp is a bit_xor_expression and const_bit equals 1.
+   Otherwise, returns false.  */
+bool
+is_one (value * const_bit)
+{
+  return is_a <bit *> (const_bit)
+      && (as_a <bit *> (const_bit))->get_val () == 1;
+}
+
+
+/* Returns true if bit is symbolic and its index differs from LFSR bit's index
+   by a factor of 8.
+   Sometimes calculated crc value is returned
+   after being shifted by 8's factor.  */
+bool
+is_a_valid_symb (value* bit, size_t lfsr_bit_index)
+{
+  if (!is_a <symbolic_bit *> (bit))
+    return false;
+
+  size_t sym_bit_index = (as_a <symbolic_bit *> (bit))->get_index ();
+
+  size_t diff;
+  if (sym_bit_index > lfsr_bit_index)
+    diff = sym_bit_index - lfsr_bit_index;
+  else
+    diff = lfsr_bit_index - sym_bit_index;
+
+  /* Indexes of the symbolic bit may differ by 0, 8, 16, 24, 32, ...  */
+  return  diff % 8 == 0;
+}
+
+
+/* Returns true if bit is a bit_xor_expression
+   and xor-ed values are valid symbolic bits.
+   Otherwise, returns false.  */
+bool
+is_a_valid_xor (value* bit, size_t index)
+{
+  return is_a <bit_xor_expression *> (bit)
+	 && is_a_valid_symb ((as_a <bit_xor_expression *> (bit))->get_left (),
+			     index)
+	 && is_a_valid_symb ((as_a <bit_xor_expression *> (bit))->get_right (),
+			     index);
+}
+
+
+/* Returns true if bit is a valid bit_xor_expression with 1.
+   Otherwise, returns false.  */
+bool
+is_a_valid_xor_one (value* bit, size_t index)
+{
+   if (is_a <bit_xor_expression *> (bit))
+     {
+       value * symb_exp = nullptr;
+       bit_xor_expression * xor_exp = as_a <bit_xor_expression *> (bit);
+       if (is_one (xor_exp->get_right ()))
+	 symb_exp = xor_exp->get_left ();
+       else if (is_one (xor_exp->get_left ()))
+	 symb_exp = xor_exp->get_right ();
+       else
+	 return false;
+       return is_a_valid_xor (symb_exp, index)
+	      || is_a_valid_symb (symb_exp, index);
+     }
+   else
+     return false;
+}
+
+
+/* Returns true if the state matches the LFSR, otherwise - false.  */
+bool
+crc_symb_execution::state_matches_lfsr (const vec<value*> &lfsr,
+					const vec<value*> &crc_state)
+{
+  for (size_t i = 0; i < lfsr.length () && crc_state.length (); i++)
+    {
+       if (dump_file && (dump_flags & TDF_DETAILS))
+	 fprintf (dump_file, "Checking %lu-th bit.\n", i);
+
+      if (is_a <bit_xor_expression *> (lfsr[i]))
+	{
+	  size_t index = (as_a <bit_xor_expression *> (lfsr[i]))->get_left ()
+	      ->get_index ();
+	  if (!(((is_a_valid_xor_one (crc_state[i], index)
+		&& condition_is_true ())
+	  || (is_a_valid_symb (crc_state[i], index) && condition_is_false ()))
+	  || ((is_a_valid_xor_one (crc_state[i], index) && condition_is_true ())
+	  || (is_a_valid_xor (crc_state[i], index) && condition_is_false ()))))
+	    return false;
+	}
+      else if (is_a <symbolic_bit *> (lfsr[i]))
+	{
+	  size_t index = (as_a<symbolic_bit *> (lfsr[i]))->get_index ();
+	  if (!(is_a_valid_symb (crc_state[i], index)
+		|| is_a_valid_xor (crc_state[i], index)
+		|| condition_is_false ()))
+	    return false;
+	}
+      else if (is_a <bit *> (lfsr[i]))
+	{
+	  if (!is_a <bit*> (crc_state[i]) || as_a <bit*> (lfsr[i])->get_val ()
+	      != as_a <bit*> (crc_state[i])->get_val ())
+	    return false;
+	}
+      else
+	{
+	 if (dump_file && (dump_flags & TDF_DETAILS))
+	   fprintf (dump_file, "Not expected expression in LFSR.\n");
+	 return false;
+	}
+    }
+  return true;
+}
+
+/* Returns true if all states match the LFSR, otherwise - false.  */
+bool
+crc_symb_execution::states_match_lfsr (vec<value*> * lfsr)
+{
+  while (!final_states.is_empty ())
+    {
+      state * final_state = final_states.last ();
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Matching LFSR and following returned state.\n");
+	  state::print_bits (final_state->get_first_value ());
+	}
+      if (!state_matches_lfsr (*lfsr, *(final_state->get_first_value ())))
+	return false;
+      final_states.pop ();
+      delete final_state;
+    }
+ return true;
 }

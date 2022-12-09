@@ -957,7 +957,22 @@ crc_optimization::execute (function *fun)
 	      state::print_bits (lfsr);
 	    }
 	}
-	/* TODO: Match LFSR.  */
+
+      if (symb_exec.states_match_lfsr (lfsr))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "The function really calculates CRC "
+				  "and returns it!\n");
+	    }
+	}
+      else
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Returned state and LFSR differ.\n");
+	    }
+	}
   }
   return 0;
 }

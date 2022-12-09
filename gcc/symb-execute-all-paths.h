@@ -94,13 +94,20 @@ class crc_symb_execution {
    to calculate the polynomial.  */
   bool execute_crc_loop (loop *, gphi *, gphi *, bool);
 
+  /* Returns true if the state matches the LFSR, otherwise - false.  */
+  bool state_matches_lfsr (const vec<value*> &, const vec<value*> &);
+
  public:
+
   /* Symbolically execute the function and keep final states.  */
   bool execute_function (function *);
 
   /* Returns calculated polynomial by executing the loop
      with concrete values.  */
   vec<value*> * extract_poly_and_create_lfsr (loop *, gphi *, gphi *, bool);
+
+  /* Returns true if all states match the LFSR, otherwise - false.  */
+  bool states_match_lfsr (vec<value*> *lfsr);
 
   crc_symb_execution ()
   {
