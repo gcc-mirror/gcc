@@ -825,6 +825,10 @@ package Exp_Util is
    --  Determine whether object Id is related to an expanded return statement.
    --  The case concerned is "return Id.all;".
 
+   --  This is effectively used to determine which temporaries generated for
+   --  return statements must be finalized because they are regular temporaries
+   --  and which ones must not be since they are allocated on the return stack.
+
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Is_Renamed_Object (N : Node_Id) return Boolean;

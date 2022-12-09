@@ -6435,12 +6435,21 @@ package body Exp_Ch6 is
       --  The result type of the function
 
       Utyp : constant Entity_Id := Underlying_Type (R_Type);
+      --  The underlying result type of the function
 
       Exp : Node_Id := Expression (N);
       pragma Assert (Present (Exp));
 
       Exp_Is_Function_Call : constant Boolean :=
-        Nkind (Exp) = N_Function_Call or else Is_Captured_Function_Call (Exp);
+        Nkind (Exp) = N_Function_Call
+          or else
+            (Is_Captured_Function_Call (Exp)
+              and then Is_Related_To_Func_Return (Entity (Prefix (Exp))));
+      --  If the expression is a captured function call, then we need to make
+      --  sure that the object doing the capture is properly recognized by the
+      --  Is_Related_To_Func_Return predicate; otherwise, if it is of a type
+      --  that needs finalization, Requires_Cleanup_Actions would return true
+      --  because of it and Build_Finalizer would finalize it prematurely.
 
       Exp_Typ : constant Entity_Id := Etype (Exp);
       --  The type of the expression (not necessarily the same as R_Type)
@@ -6624,7 +6633,8 @@ package body Exp_Ch6 is
          --  size. We create an actual subtype for this purpose. However we
          --  need not do it if the expression is a function call since this
          --  will be done in the called function and doing it here too would
-         --  cause a temporary with maximum size to be created.
+         --  cause a temporary with maximum size to be created. Likewise for
+         --  a special return object, since there is no copy in this case.
 
          declare
             Ubt  : constant Entity_Id := Underlying_Type (Base_Type (Exp_Typ));
@@ -6633,6 +6643,8 @@ package body Exp_Ch6 is
 
          begin
             if not Exp_Is_Function_Call
+              and then not (Is_Entity_Name (Exp)
+                             and then Is_Special_Return_Object (Entity (Exp)))
               and then Has_Defaulted_Discriminants (Ubt)
               and then not Is_Constrained (Ubt)
               and then not Has_Unchecked_Union (Ubt)
