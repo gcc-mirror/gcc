@@ -7536,7 +7536,8 @@ derived_inaccessible (gfc_symbol *sym)
   for (c = sym->components; c; c = c->next)
     {
 	/* Prevent an infinite loop through this function.  */
-	if (c->ts.type == BT_DERIVED && c->attr.pointer
+	if (c->ts.type == BT_DERIVED
+	    && (c->attr.pointer || c->attr.allocatable)
 	    && sym == c->ts.u.derived)
 	  continue;
 
