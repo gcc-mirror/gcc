@@ -63,8 +63,6 @@ release_registered_frames (void)
 
 static void
 get_pc_range (const struct object *ob, uintptr_type *range);
-static void
-init_object (struct object *ob);
 
 #else
 /* Without fast path frame deregistration must always succeed.  */
@@ -76,6 +74,7 @@ static const int in_shutdown = 0;
    by decreasing value of pc_begin.  */
 static struct object *unseen_objects;
 static struct object *seen_objects;
+#endif
 
 #ifdef __GTHREAD_MUTEX_INIT
 static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
@@ -103,7 +102,6 @@ init_object_mutex_once (void)
 static __gthread_mutex_t object_mutex;
 #endif
 #endif
-#endif
 
 /* Called from crtbegin.o to register the unwind info for an object.  */
 
@@ -126,10 +124,7 @@ __register_frame_info_bases (const void *begin, struct object *ob,
 #endif
 
 #ifdef ATOMIC_FDE_FAST_PATH
-  // Initialize eagerly to avoid locking later
-  init_object (ob);
-
-  // And register the frame
+  // Register the frame in the b-tree
   uintptr_type range[2];
   get_pc_range (ob, range);
   btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
@@ -180,10 +175,7 @@ __register_frame_info_table_bases (void *begin, struct object *ob,
   ob->s.b.encoding = DW_EH_PE_omit;
 
 #ifdef ATOMIC_FDE_FAST_PATH
-  // Initialize eagerly to avoid locking later
-  init_object (ob);
-
-  // And register the frame
+  // Register the frame in the b-tree
   uintptr_type range[2];
   get_pc_range (ob, range);
   btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
@@ -926,7 +918,15 @@ init_object (struct object* ob)
   accu.linear->orig_data = ob->u.single;
   ob->u.sort = accu.linear;
 
+#ifdef ATOMIC_FDE_FAST_PATH
+  // We must update the sorted bit with an atomic operation
+  struct object tmp;
+  tmp.s.b = ob->s.b;
+  tmp.s.b.sorted = 1;
+  __atomic_store (&(ob->s.b), &(tmp.s.b), __ATOMIC_RELEASE);
+#else
   ob->s.b.sorted = 1;
+#endif
 }
 
 #ifdef ATOMIC_FDE_FAST_PATH
@@ -1164,6 +1164,21 @@ search_object (struct object* ob, void *pc)
     }
 }
 
+#ifdef ATOMIC_FDE_FAST_PATH
+
+// Check if the object was already initialized
+static inline bool
+is_object_initialized (struct object *ob)
+{
+  // We have to use acquire atomics for the read, which
+  // is a bit involved as we read from a bitfield
+  struct object tmp;
+  __atomic_load (&(ob->s.b), &(tmp.s.b), __ATOMIC_ACQUIRE);
+  return tmp.s.b.sorted;
+}
+
+#endif
+
 const fde *
 _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 {
@@ -1174,6 +1189,21 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
   ob = btree_lookup (&registered_frames, (uintptr_type) pc);
   if (!ob)
     return NULL;
+
+  // Initialize the object lazily
+  if (!is_object_initialized (ob))
+    {
+      // Check again under mutex
+      init_object_mutex_once ();
+      __gthread_mutex_lock (&object_mutex);
+
+      if (!ob->s.b.sorted)
+	{
+	  init_object (ob);
+	}
+
+      __gthread_mutex_unlock (&object_mutex);
+    }
 
   f = search_object (ob, pc);
 #else
