@@ -808,6 +808,7 @@ package body GNAT.Formatted_String is
          Format.D.Index := Start;
          return Format;
       end if;
+      Format.D.Stored_Value := 0;
 
       case F.Kind is
          when Unsigned_Octal =>
