@@ -200,7 +200,7 @@ void
 Dump::visit (ClosureExpr &)
 {}
 void
-Dump::visit (BlockExpr &block_expr)
+Dump::visit (BlockExpr &)
 {
   stream << "BlockExpr"
 	 << ":"
@@ -324,7 +324,7 @@ void
 Dump::visit (UseDeclaration &)
 {}
 void
-Dump::visit (Function &function)
+Dump::visit (Function &)
 {
   indent++;
   stream << std::string (indent, indent_char);

@@ -81,8 +81,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 bool
 potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 				 tsubst_flags_t flags);
-inline tree
-get_nth_callarg (tree t, int n);
 tree
 unshare_constructor (tree t MEM_STAT_DECL);
 void
@@ -3081,7 +3079,7 @@ rs_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
       tree type = parms ? TREE_TYPE (parms) : void_type_node;
       if (parms && DECL_BY_REFERENCE (parms))
 	type = TREE_TYPE (type);
-      x = get_nth_callarg (t, i);
+      x = CALL_EXPR_ARG (t, i);
 
       if (TREE_ADDRESSABLE (type))
 	/* Undo convert_for_arg_passing work here.  */
@@ -3996,8 +3994,7 @@ constexpr_fn_retval (const constexpr_ctx *ctx, tree body)
 // return an aggregate constant.  If UNSHARE_P, return an unshared
 // copy of the initializer.
 static tree
-constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p,
-		  bool unshare_p)
+constant_value_1 (tree decl, bool, bool, bool unshare_p)
 {
   while (TREE_CODE (decl) == CONST_DECL)
     {
@@ -4079,25 +4076,6 @@ bool
 maybe_constexpr_fn (tree t)
 {
   return (DECL_DECLARED_CONSTEXPR_P (t));
-}
-
-// forked from gcc/cp/constexpr.cc get_nth_callarg
-
-/* We have an expression tree T that represents a call, either CALL_EXPR.
-  Return the Nth argument.  */
-
-inline tree
-get_nth_callarg (tree t, int n)
-{
-  switch (TREE_CODE (t))
-    {
-    case CALL_EXPR:
-      return CALL_EXPR_ARG (t, n);
-
-    default:
-      gcc_unreachable ();
-      return NULL;
-    }
 }
 
 // forked from gcc/cp/constexpr.cc var_in_maybe_constexpr_fn
@@ -5817,7 +5795,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
 		    && !DECL_CONSTRUCTOR_P (fun))
 		  {
-		    tree x = get_nth_callarg (t, 0);
+		    tree x = CALL_EXPR_ARG (t, 0);
 
 		    /* Don't require an immediately constant value, as
 		       constexpr substitution might not use the value.  */
@@ -5846,7 +5824,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  }
 	for (; i < nargs; ++i)
 	  {
-	    tree x = get_nth_callarg (t, i);
+	    tree x = CALL_EXPR_ARG (t, i);
 	    /* In a template, reference arguments haven't been converted to
 	       REFERENCE_TYPE and we might not even know if the parameter
 	       is a reference, so accept lvalue constants too.  */
@@ -6486,8 +6464,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 /* Like maybe_constant_init but first fully instantiate the argument.  */
 
 tree
-fold_non_dependent_init (tree t,
-			 tsubst_flags_t complain /*=tf_warning_or_error*/,
+fold_non_dependent_init (tree t, tsubst_flags_t /*=tf_warning_or_error*/,
 			 bool manifestly_const_eval /*=false*/,
 			 tree object /* = NULL_TREE */)
 {

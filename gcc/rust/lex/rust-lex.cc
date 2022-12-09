@@ -1364,7 +1364,7 @@ Lexer::parse_escape (char opening_char)
 /* Parses an escape (or string continue) in a string or character. Supports
  * unicode escapes. */
 std::tuple<Codepoint, int, bool>
-Lexer::parse_utf8_escape (char opening_char)
+Lexer::parse_utf8_escape ()
 {
   Codepoint output_char;
   int additional_length_offset = 0;
@@ -1964,7 +1964,7 @@ Lexer::parse_string (Location loc)
       if (current_char32.value == '\\')
 	{
 	  // parse escape
-	  auto utf8_escape_pair = parse_utf8_escape ('\'');
+	  auto utf8_escape_pair = parse_utf8_escape ();
 	  current_char32 = std::get<0> (utf8_escape_pair);
 
 	  if (current_char32 == Codepoint (0) && std::get<2> (utf8_escape_pair))
@@ -2365,7 +2365,7 @@ Lexer::parse_char_or_lifetime (Location loc)
   if (current_char32.value == '\\')
     {
       // parse escape
-      auto utf8_escape_pair = parse_utf8_escape ('\'');
+      auto utf8_escape_pair = parse_utf8_escape ();
       current_char32 = std::get<0> (utf8_escape_pair);
       length += std::get<1> (utf8_escape_pair);
 

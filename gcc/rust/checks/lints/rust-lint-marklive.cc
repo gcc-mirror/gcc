@@ -78,7 +78,7 @@ MarkLive::Analysis (HIR::Crate &crate)
 //    visited first time
 // 2. save all the live symbols in liveSymbols
 void
-MarkLive::go (HIR::Crate &crate)
+MarkLive::go (HIR::Crate &)
 {
   while (!worklist.empty ())
     {
