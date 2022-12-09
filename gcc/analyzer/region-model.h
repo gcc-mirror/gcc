@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
       (Zhongxing Xu, Ted Kremenek, and Jian Zhang)
      http://lcs.ios.ac.cn/~xuzb/canalyze/memmodel.pdf  */
 
-#include "sbitmap.h"
+#include "bitmap.h"
 #include "selftest.h"
 #include "analyzer/svalue.h"
 #include "analyzer/region.h"
@@ -390,7 +390,7 @@ class region_model
 				       region_model_context *ctxt);
   const region *create_region_for_alloca (const svalue *size_in_bytes,
 					  region_model_context *ctxt);
-  void get_referenced_base_regions (auto_sbitmap &out_ids) const;
+  void get_referenced_base_regions (auto_bitmap &out_ids) const;
 
   tree get_representative_tree (const svalue *sval) const;
   tree get_representative_tree (const region *reg) const;

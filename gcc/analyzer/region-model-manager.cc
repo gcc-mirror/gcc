@@ -1698,7 +1698,7 @@ get_region_for_unexpected_tree_code (region_model_context *ctxt,
 
 const region *
 region_model_manager::
-get_or_create_region_for_heap_alloc (const sbitmap &base_regs_in_use)
+get_or_create_region_for_heap_alloc (const bitmap &base_regs_in_use)
 {
   /* Try to reuse an existing region, if it's unreferenced in the
      client state.  */
