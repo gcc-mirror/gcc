@@ -102,16 +102,25 @@ enum binding_powers
   LBP_CLOSURE = LBP_RETURN, // unary prefix operators
 
 #if 0
-        // rust precedences
-        PREC_CLOSURE = -40,     // used for closures
-        PREC_JUMP = -30,        // used for break, continue, return, and yield
-        PREC_RANGE = -10,       // used for range (although weird comment in rustc about this)
-        PREC_BINOP = FROM_ASSOC_OP,
-        // used for binary operators mentioned below - also cast, colon (type), assign, assign_op
-        PREC_PREFIX = 50,       // used for box, address_of, let, unary (again, weird comment on let)
-        PREC_POSTFIX = 60,      // used for await, call, method call, field, index, try, inline asm, macro invocation
-        PREC_PAREN = 99,        // used for array, repeat, tuple, literal, path, paren, if, while, for, 'loop', match, block, try block, async, struct
-        PREC_FORCE_PAREN = 100,
+  // rust precedences
+  // used for closures
+  PREC_CLOSURE = -40,
+  // used for break, continue, return, and yield
+  PREC_JUMP = -30,
+  // used for range (although weird comment in rustc about this)
+  PREC_RANGE = -10,
+  // used for binary operators mentioned below - also cast, colon (type),
+  // assign, assign_op
+  PREC_BINOP = FROM_ASSOC_OP,
+  // used for box, address_of, let, unary (again, weird comment on let)
+  PREC_PREFIX = 50,
+  // used for await, call, method call, field, index, try,
+  // inline asm, macro invocation
+  PREC_POSTFIX = 60,
+  // used for array, repeat, tuple, literal, path, paren, if,
+  // while, for, 'loop', match, block, try block, async, struct
+  PREC_PAREN = 99,
+  PREC_FORCE_PAREN = 100,
 #endif
 
   // lowest priority
