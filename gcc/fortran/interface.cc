@@ -1334,6 +1334,12 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
   if (s1 == NULL || s2 == NULL)
     return s1 == s2 ? true : false;
 
+  if (s1->attr.proc == PROC_ST_FUNCTION || s2->attr.proc == PROC_ST_FUNCTION)
+    {
+      strncpy (errmsg, "Statement function", err_len);
+      return false;
+    }
+
   /* Check type and rank.  */
   if (type_must_agree)
     {
