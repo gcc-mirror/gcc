@@ -1028,7 +1028,8 @@ build_decl_tree (Dsymbol *d)
   input_location = saved_location;
 }
 
-/* Returns true if function FD is defined or instantiated in a root module.  */
+/* Returns true if function FD, or any lexically enclosing scope function of FD
+   is defined or instantiated in a root module.  */
 
 static bool
 function_defined_in_root_p (FuncDeclaration *fd)
@@ -1037,9 +1038,11 @@ function_defined_in_root_p (FuncDeclaration *fd)
   if (md && md->isRoot ())
     return true;
 
-  TemplateInstance *ti = fd->isInstantiated ();
-  if (ti && ti->minst && ti->minst->isRoot ())
-    return true;
+  for (TemplateInstance *ti = fd->isInstantiated (); ti != NULL; ti = ti->tinst)
+    {
+      if (ti->minst && ti->minst->isRoot ())
+	return true;
+    }
 
   return false;
 }
@@ -1067,7 +1070,8 @@ function_needs_inline_definition_p (FuncDeclaration *fd)
 
   /* Check whether function will be regularly defined later in the current
      translation unit.  */
-  if (function_defined_in_root_p (fd))
+  Module *md = fd->getModule ();
+  if (md && md->isRoot ())
     return false;
 
   /* Non-inlineable functions are always external.  */
