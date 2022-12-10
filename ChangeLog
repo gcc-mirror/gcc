@@ -1,3 +1,7 @@
+2022-12-09  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix spacing.
+
 2022-12-07  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* MAINTAINERS: Add Arthur Cohen as Rust front-end maintainer.

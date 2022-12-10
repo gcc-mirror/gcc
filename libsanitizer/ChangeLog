@@ -1,3 +1,7 @@
+2022-12-09  liuhongt  <hongtao.liu@intel.com>
+
+	* configure.tgt: Enable hwasan for x86-64.
+
 2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure.tgt: Restrict build to Darwin 16 or newer.

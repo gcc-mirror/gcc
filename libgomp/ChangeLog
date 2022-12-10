@@ -1,3 +1,10 @@
+2022-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (5.1 Impl. Status): Split allocate clause/directive
+	item about 'align'; mark clause as 'Y' and directive as 'N'.
+	* testsuite/libgomp.fortran/allocate-2.f90: New test.
+	* testsuite/libgomp.fortran/allocate-3.f90: New test.
+
 2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* config/gcn/icv-device.c (omp_get_teams_thread_limit): Added to

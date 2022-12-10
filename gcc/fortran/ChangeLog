@@ -1,3 +1,24 @@
+2022-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/107872
+	* resolve.cc (derived_inaccessible): Skip over allocatable components
+	to prevent an infinite loop.
+
+2022-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Improve OMP_LIST_ALLOCATE
+	output.
+	* gfortran.h (struct gfc_omp_namelist): Add 'align' to 'u'.
+	(gfc_free_omp_namelist): Add bool arg.
+	* match.cc (gfc_free_omp_namelist): Likewise; free 'u.align'.
+	* openmp.cc (gfc_free_omp_clauses, gfc_match_omp_clause_reduction,
+	gfc_match_omp_flush): Update call.
+	(gfc_match_omp_clauses): Match 'align/allocate modifers in
+	'allocate' clause.
+	(resolve_omp_clauses): Resolve align.
+	* st.cc (gfc_free_statement): Update call
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle 'align'.
+
 2022-12-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108025

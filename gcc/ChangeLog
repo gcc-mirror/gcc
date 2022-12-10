@@ -1,3 +1,54 @@
+2022-12-09  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_set_const): Remove copy_rtx.
+	(rs6000_emit_set_long_const): Likewise.
+
+2022-12-09  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-builtins.cc (fold_builtin_cpu): Use same path
+	as for PR103661.
+	* doc/extend.texi: Fix "x86-64" use.
+
+2022-12-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (SUBTARGET_CC1_SPEC): Rename to...
+	(OS_CC1_SPEC): ...this.
+	* gcc.cc (SUBTARGET_CC1_SPEC): Rename to...
+	(OS_CC1_SPEC): ...this.
+
+2022-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Update for renaming of
+	analyzer/region-model-impl-calls.cc to analyzer/kf.cc.
+
+2022-12-09  liuhongt  <hongtao.liu@intel.com>
+
+	* doc/invoke.texi (x86 options): Document
+	-mlam={none,u48,u57}.
+	* config/i386/i386-opts.h (enum lam_type): New enum.
+	* config/i386/i386.cc (ix86_memtag_can_tag_addresses): New.
+	(ix86_memtag_set_tag): Ditto.
+	(ix86_memtag_extract_tag): Ditto.
+	(ix86_memtag_add_tag): Ditto.
+	(ix86_memtag_tag_size): Ditto.
+	(ix86_memtag_untagged_pointer): Ditto.
+	(TARGET_MEMTAG_CAN_TAG_ADDRESSES): New.
+	(TARGET_MEMTAG_ADD_TAG): Ditto.
+	(TARGET_MEMTAG_SET_TAG): Ditto.
+	(TARGET_MEMTAG_EXTRACT_TAG): Ditto.
+	(TARGET_MEMTAG_UNTAGGED_POINTER): Ditto.
+	(TARGET_MEMTAG_TAG_SIZE): Ditto.
+	(IX86_HWASAN_SHIFT): Ditto.
+	(IX86_HWASAN_TAG_SIZE): Ditto.
+	* config/i386/i386-expand.cc (ix86_expand_call): Untag code
+	pointer.
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Error when enable -mlam=[u48|u57] for 32-bit code.
+	* config/i386/i386.opt: Add -mlam=[none|u48|u57].
+	* config/i386/i386-protos.h (ix86_memtag_untagged_pointer):
+	Declare.
+	(ix86_memtag_can_tag_addresses): Ditto.
+
 2022-12-08  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi (-fsanitize=address): Suggest options to improve

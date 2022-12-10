@@ -1,3 +1,28 @@
+2022-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/107872
+	* gfortran.dg/pr107872.f90: New test.
+
+2022-12-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/builtin_target.c: Add more checks.
+
+2022-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108003
+	* g++.dg/analyzer/pr108003.C: New test.
+
+2022-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/memcpy-1.c (test_8a, test_8b): New tests.
+	* gcc.dg/analyzer/memmove-1.c: New test, based on memcpy-1.c
+	* gcc.dg/analyzer/out-of-bounds-1.c (test7): Update expected
+	result for uninit srcBuf.
+	* gcc.dg/analyzer/out-of-bounds-5.c (test8, test9): Add
+	dg-warnings for memcpy from uninit src vla.
+	* gcc.dg/analyzer/pr104308.c (test_memmove_within_uninit):
+	Expect creation point note to be missing on riscv*-*-*.
+
 2022-12-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108025
