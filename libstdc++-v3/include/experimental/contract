@@ -45,7 +45,7 @@ namespace experimental
 {
   // From P1332
   enum class contract_violation_continuation_mode {
-    NEVER_CONTINUE, MAYBE_CONTINUE
+    never_continue, maybe_continue
   };
 
   class contract_violation {
