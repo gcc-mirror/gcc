@@ -1,3 +1,23 @@
+2022-12-09  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-12-09  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-builtins.cc (fold_builtin_cpu): Use same path
+	as for PR103661.
+	* doc/extend.texi: Fix "x86-64" use.
+
+2022-12-09  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	* common/config/i386/cpuinfo.h (has_cpu_feature): Directly
+	compute index in cpu_features2.
+	(set_cpu_feature): Likewise.
+	* config/i386/i386-builtins.cc (fold_builtin_cpu): Also remove
+	loop for cpu_features2 and use NOP_EXPRs.
+
 2022-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
