@@ -157,6 +157,20 @@ public:
       }
   }
 
+  /* Build IMPORTED_DECLs for all overloads in a set.  */
+  void visit (OverloadSet *d)
+  {
+    vec<tree, va_gc> *tset = NULL;
+
+    vec_alloc (tset, d->a.dim);
+
+    for (size_t i = 0; i < d->a.dim; i++)
+      vec_safe_push (tset, build_import_decl (d->a[i]));
+
+    d->isym = build_tree_list_vec (tset);
+    tset->truncate (0);
+  }
+
   /* Function aliases are the same as alias symbols.  */
   void visit (FuncAliasDeclaration *d)
   {
