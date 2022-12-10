@@ -4059,7 +4059,7 @@ gfc_match_oacc_routine (void)
       if (gfc_match_char (')') != MATCH_YES)
 	{
 	  gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C, expecting"
-		     " ')' after NAME");
+		     " %<)%> after NAME");
 	  gfc_current_locus = old_loc;
 	  return MATCH_ERROR;
 	}
@@ -5348,8 +5348,8 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 		}
 	      else
 		{
-		  gfc_error ("selector '%s' not allowed for context selector "
-			     "set '%s' at %C",
+		  gfc_error ("selector %qs not allowed for context selector "
+			     "set %qs at %C",
 			     selector, oss->trait_set_selector_name);
 		  return MATCH_ERROR;
 		}
@@ -5368,7 +5368,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	{
 	  if (property_kind == CTX_PROPERTY_NONE)
 	    {
-	      gfc_error ("selector '%s' does not accept any properties at %C",
+	      gfc_error ("selector %qs does not accept any properties at %C",
 			 selector);
 	      return MATCH_ERROR;
 	    }
@@ -5377,7 +5377,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	    {
 	      if (gfc_match (" (") != MATCH_YES)
 		{
-		  gfc_error ("expected '(' at %C");
+		  gfc_error ("expected %<(%> at %C");
 		  return MATCH_ERROR;
 		}
 	      if (gfc_match_expr (&os->score) != MATCH_YES
@@ -5399,7 +5399,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 
 	      if (gfc_match (" )") != MATCH_YES)
 		{
-		  gfc_error ("expected ')' at %C");
+		  gfc_error ("expected %<)%> at %C");
 		  return MATCH_ERROR;
 		}
 
@@ -5512,7 +5512,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 
 	  if (gfc_match (" )") != MATCH_YES)
 	    {
-	      gfc_error ("expected ')' at %C");
+	      gfc_error ("expected %<)%> at %C");
 	      return MATCH_ERROR;
 	    }
 	}
@@ -5522,7 +5522,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	{
 	  if (gfc_match (" (") != MATCH_YES)
 	    {
-	      gfc_error ("expected '(' at %C");
+	      gfc_error ("expected %<(%> at %C");
 	      return MATCH_ERROR;
 	    }
 	}
@@ -5568,22 +5568,22 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
 
       if (m != MATCH_YES || i == selector_set_count)
 	{
-	  gfc_error ("expected 'construct', 'device', 'implementation' or "
-		     "'user' at %C");
+	  gfc_error ("expected %<constructs%>, %<device%>, %<implementation%> "
+		     "or %<user%> at %C");
 	  return MATCH_ERROR;
 	}
 
       m = gfc_match (" =");
       if (m != MATCH_YES)
 	{
-	  gfc_error ("expected '=' at %C");
+	  gfc_error ("expected %<=%> at %C");
 	  return MATCH_ERROR;
 	}
 
       m = gfc_match (" {");
       if (m != MATCH_YES)
 	{
-	  gfc_error ("expected '{' at %C");
+	  gfc_error ("expected %<{%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -5598,7 +5598,7 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
       m = gfc_match (" }");
       if (m != MATCH_YES)
 	{
-	  gfc_error ("expected '}' at %C");
+	  gfc_error ("expected %<}%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -5620,7 +5620,7 @@ gfc_match_omp_declare_variant (void)
 
   if (gfc_match (" (") != MATCH_YES)
     {
-      gfc_error ("expected '(' at %C");
+      gfc_error ("expected %<(%> at %C");
       return MATCH_ERROR;
     }
 
@@ -5668,7 +5668,7 @@ gfc_match_omp_declare_variant (void)
 
   if (gfc_match (" )") != MATCH_YES)
     {
-      gfc_error ("expected ')' at %C");
+      gfc_error ("expected %<)%> at %C");
       return MATCH_ERROR;
     }
 
@@ -5678,7 +5678,7 @@ gfc_match_omp_declare_variant (void)
 	{
 	  if (first_p)
 	    {
-	      gfc_error ("expected 'match' at %C");
+	      gfc_error ("expected %<match%> at %C");
 	      return MATCH_ERROR;
 	    }
 	  else
@@ -5687,7 +5687,7 @@ gfc_match_omp_declare_variant (void)
 
       if (gfc_match (" (") != MATCH_YES)
 	{
-	  gfc_error ("expected '(' at %C");
+	  gfc_error ("expected %<(%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -5696,7 +5696,7 @@ gfc_match_omp_declare_variant (void)
 
       if (gfc_match (" )") != MATCH_YES)
 	{
-	  gfc_error ("expected ')' at %C");
+	  gfc_error ("expected %<)%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -7378,7 +7378,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 	  for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
 	    if (n->sym->mark == 1)
-	      gfc_error ("%qs specified in 'allocate' clause at %L but not "
+	      gfc_error ("%qs specified in %<allocate%> clause at %L but not "
 			 "in an explicit privatization clause",
 			 n->sym->name, &n->where);
 	}
