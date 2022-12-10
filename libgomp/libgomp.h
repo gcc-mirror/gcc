@@ -1157,29 +1157,7 @@ struct target_var_desc {
   uintptr_t length;
 };
 
-struct target_mem_desc {
-  /* Reference count.  */
-  uintptr_t refcount;
-  /* All the splay nodes allocated together.  */
-  splay_tree_node array;
-  /* Start of the target region.  */
-  uintptr_t tgt_start;
-  /* End of the targer region.  */
-  uintptr_t tgt_end;
-  /* Handle to free.  */
-  void *to_free;
-  /* Previous target_mem_desc.  */
-  struct target_mem_desc *prev;
-  /* Number of items in following list.  */
-  size_t list_count;
-
-  /* Corresponding target device descriptor.  */
-  struct gomp_device_descr *device_descr;
-
-  /* List of target items to remove (or decrease refcount)
-     at the end of region.  */
-  struct target_var_desc list[];
-};
+struct target_mem_desc;
 
 /* Special value for refcount - mask to indicate existence of special
    values. Right now we allocate 3 bits.  */
@@ -1272,6 +1250,58 @@ splay_compare (splay_tree_key x, splay_tree_key y)
 }
 
 #include "splay-tree.h"
+
+/* Reverse offload splay-tree handling (functions only). */
+
+struct reverse_splay_tree_key_s {
+  /* Address of the device object.  */
+  uint64_t dev;
+  splay_tree_key k;
+};
+
+typedef struct reverse_splay_tree_node_s *reverse_splay_tree_node;
+typedef struct reverse_splay_tree_s *reverse_splay_tree;
+typedef struct reverse_splay_tree_key_s *reverse_splay_tree_key;
+
+static inline int
+reverse_splay_compare (reverse_splay_tree_key x, reverse_splay_tree_key y)
+{
+  if (x->dev < y->dev)
+    return -1;
+  if (x->dev > y->dev)
+    return 1;
+  return 0;
+}
+
+#define splay_tree_prefix reverse
+#include "splay-tree.h"
+
+struct target_mem_desc {
+  /* Reference count.  */
+  uintptr_t refcount;
+  /* All the splay nodes allocated together.  */
+  splay_tree_node array;
+  /* Likewise for the reverse lookup device->host for reverse offload. */
+  reverse_splay_tree_node rev_array;
+  /* Start of the target region.  */
+  uintptr_t tgt_start;
+  /* End of the targer region.  */
+  uintptr_t tgt_end;
+  /* Handle to free.  */
+  void *to_free;
+  /* Previous target_mem_desc.  */
+  struct target_mem_desc *prev;
+  /* Number of items in following list.  */
+  size_t list_count;
+
+  /* Corresponding target device descriptor.  */
+  struct gomp_device_descr *device_descr;
+
+  /* List of target items to remove (or decrease refcount)
+     at the end of region.  */
+  struct target_var_desc list[];
+};
+
 
 typedef struct acc_dispatch_t
 {
@@ -1367,6 +1397,7 @@ struct gomp_device_descr
 
   /* Splay tree containing information about mapped memory regions.  */
   struct splay_tree_s mem_map;
+  struct reverse_splay_tree_s mem_map_rev;
 
   /* Mutex for the mutable data.  */
   gomp_mutex_t lock;
