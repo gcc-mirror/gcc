@@ -14,4 +14,4 @@ int foo(struct bar *x)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Replaced .p_. < q_.. with .1." "forwprop1" } } */
+/* { dg-final { scan-tree-dump "return 1;" "forwprop1" } } */

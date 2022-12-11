@@ -2927,8 +2927,16 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
 	  if (expr *e = dyn_cast <expr *> (op->op))
 	    {
 	      if (e->ops.length () == 0
+		  /* In GIMPLE a CONSTRUCTOR always appears in a
+		     separate definition.  */
 		  && (!gimple || !(*e->operation == CONSTRUCTOR)))
-		generic_exprs.safe_push (op);
+		{
+		  generic_exprs.safe_push (op);
+		  /* But ADDR_EXPRs can appear directly when invariant
+		     and in a separate definition when not.  */
+		  if (gimple && *e->operation == ADDR_EXPR)
+		    gimple_exprs.safe_push (op);
+		}
 	      else if (e->operation->kind == id_base::FN)
 		{
 		  if (gimple)
@@ -3599,14 +3607,26 @@ dt_simplify::gen (FILE *f, int indent, bool gimple, int depth ATTRIBUTE_UNUSED)
   if (s->capture_max >= 0)
     {
       char opname[20];
-      fprintf_indent (f, indent, "tree captures[%u] ATTRIBUTE_UNUSED = { %s",
-		      s->capture_max + 1, indexes[0]->get_name (opname));
+      fprintf_indent (f, indent, "tree captures[%u] ATTRIBUTE_UNUSED = {",
+		      s->capture_max + 1);
 
-      for (int i = 1; i <= s->capture_max; ++i)
+      for (int i = 0; i <= s->capture_max; ++i)
 	{
 	  if (!indexes[i])
 	    break;
-	  fprintf (f, ", %s", indexes[i]->get_name (opname));
+	  const char *opstr = indexes[i]->get_name (opname);
+	  expr *e = dyn_cast <expr *> (indexes[i]->op);
+	  fputs (i == 0 ? " " : ", ", f);
+	  if (e && gimple
+	      /* Transparently handle picking up CONSTRUCTOR and ADDR_EXPR
+		 leafs if they appear in a separate definition.  */
+	      && (*e->operation == CONSTRUCTOR
+		  || *e->operation == ADDR_EXPR))
+	    fprintf (f, "(TREE_CODE (%s) == SSA_NAME "
+		     "? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (%s)) : %s)",
+		     opstr, opstr, opstr);
+	  else
+	    fprintf (f, "%s", opstr);
 	}
       fprintf (f, " };\n");
     }
