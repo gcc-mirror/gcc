@@ -474,7 +474,7 @@ created all pointers declared within this scope will have their
 addresses assigned to NIL.
 
 @item -fbounds
-turns on run time sub range, array index and indirection via @code{NIL}
+turns on run time subrange, array index and indirection via @code{NIL}
 pointer checking.
 
 @item -fcase
