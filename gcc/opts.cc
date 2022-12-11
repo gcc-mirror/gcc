@@ -1662,15 +1662,15 @@ print_filtered_help (unsigned int include_flags,
       if (option->warn_message)
 	{
 	  /* Mention that the use of the option will trigger a warning.  */
-	  if (help == new_help)
-	    snprintf (new_help + strlen (new_help),
-		      sizeof new_help - strlen (new_help),
-		      "  %s", _(use_diagnosed_msg));
-	  else
-	    snprintf (new_help, sizeof new_help,
-		      "%s  %s", help, _(use_diagnosed_msg));
-
-	  help = new_help;
+	  size_t help_len = strlen(help);
+	  if (help != new_help)
+	    {
+	      memcpy(new_help, help, help_len);
+	      help = new_help;
+	    }
+	  snprintf (new_help + help_len,
+		    sizeof new_help - help_len,
+		    "  %s", _(use_diagnosed_msg));
 	}
 
       /* Find the gap between the name of the
