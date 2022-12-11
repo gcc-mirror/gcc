@@ -5568,7 +5568,7 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
 
       if (m != MATCH_YES || i == selector_set_count)
 	{
-	  gfc_error ("expected %<constructs%>, %<device%>, %<implementation%> "
+	  gfc_error ("expected %<construct%>, %<device%>, %<implementation%> "
 		     "or %<user%> at %C");
 	  return MATCH_ERROR;
 	}
