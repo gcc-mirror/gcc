@@ -1,3 +1,14 @@
+2022-12-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations): Add
+	'gcc/rust'.
+	(bug_components): Add 'rust'.
+
+2022-12-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations):
+	New entry for gcc/m2.  New entry for libgm2.
+
 2022-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.doxy (INPUT): Add gcc/analyzer subdirectory.

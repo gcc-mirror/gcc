@@ -1,3 +1,11 @@
+2022-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107997
+	* tree-ssa-loop-ivopts.cc: Include cfganal.h.
+	(create_new_iv) <case IP_END>: If ip_end_pos bb is non-empty and ends
+	with a stmt which ends bb, instead of adding iv update after it split
+	the latch edge and insert iterator into the new latch bb.
+
 2022-12-09  Jiufu Guo  <guojiufu@linux.ibm.com>
 
 	* config/rs6000/rs6000.cc (rs6000_emit_set_const): Remove copy_rtx.

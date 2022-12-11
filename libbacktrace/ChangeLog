@@ -1,3 +1,28 @@
+2022-12-10  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (ZSTD_TABLE_*): Use elf_zstd_fse_baseline_entry.
+	(ZSTD_ENCODE_BASELINE_BITS): Define.
+	(ZSTD_DECODE_BASELINE, ZSTD_DECODE_BASEBITS): Define.
+	(elf_zstd_literal_length_base): New static const array.
+	(elf_zstd_match_length_base): Likewise.
+	(struct elf_zstd_fse_baseline_entry): Define.
+	(elf_zstd_make_literal_baseline_fse): New static function.
+	(elf_zstd_make_offset_baseline_fse): Likewise.
+	(elf_zstd_make_match_baseline_fse): Likewise.
+	(print_table, main): Use elf_zstd_fse_baseline_entry.
+	(elf_zstd_lit_table, elf_zstd_match_table): Likewise.
+	(elf_zstd_offset_table): Likewise.
+	(struct elf_zstd_seq_decode): Likewise.  Remove use_rle and rle
+	fields.
+	(elf_zstd_unpack_seq_decode): Use elf_zstd_fse_baseline_entry,
+	taking a conversion function.  Convert RLE to FSE.
+	(elf_zstd_literal_length_baseline): Remove.
+	(elf_zstd_literal_length_bits): Remove.
+	(elf_zstd_match_length_baseline): Remove.
+	(elf_zstd_match_length_bits): Remove.
+	(elf_zstd_decompress): Use elf_zstd_fse_baseline_entry.  Rewrite
+	and simplify main loop.
+
 2022-12-08  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac: Check for zstd library and

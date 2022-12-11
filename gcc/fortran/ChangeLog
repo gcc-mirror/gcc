@@ -1,3 +1,20 @@
+2022-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106911
+	* simplify.cc (gfc_simplify_ishftc): If the SIZE argument is known
+	to be outside the allowed range, terminate simplification.
+
+2022-12-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* match.cc (gfc_match_member_sep): Use %<...%> in gfc_error.
+	* openmp.cc (gfc_match_oacc_routine, gfc_match_omp_context_selector,
+	gfc_match_omp_context_selector_specification,
+	gfc_match_omp_declare_variant, resolve_omp_clauses): Likewise;
+	use %qs instead of '%s'.
+	* primary.cc (match_real_constant, gfc_match_varspec): Likewise.
+	* resolve.cc (gfc_resolve_formal_arglist, resolve_operator,
+	resolve_ordinary_assign): Likewise.
+
 2022-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/107872

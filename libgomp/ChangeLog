@@ -1,3 +1,40 @@
+2022-12-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.h (struct target_mem_desc): Predeclare; move
+	below after 'reverse_splay_tree_node' and add rev_array
+	member.
+	(struct reverse_splay_tree_key_s, reverse_splay_compare): New.
+	(reverse_splay_tree_node, reverse_splay_tree,
+	reverse_splay_tree_key): New typedef.
+	(struct gomp_device_descr): Add mem_map_rev member.
+	* oacc-host.c (host_dispatch): NULL init .mem_map_rev.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_num_devices): Claim
+	support for GOMP_REQUIRES_REVERSE_OFFLOAD.
+	* splay-tree.h (splay_tree_callback_stop): New typedef; like
+	splay_tree_callback but returning int not void.
+	(splay_tree_foreach_lazy): Define; like splay_tree_foreach but
+	taking splay_tree_callback_stop as argument.
+	* splay-tree.c (splay_tree_foreach_internal_lazy,
+	splay_tree_foreach_lazy): New; but early exit if callback returns
+	nonzero.
+	* target.c: Instatiate splay_tree_c with splay_tree_prefix 'reverse'.
+	(gomp_map_lookup_rev): New.
+	(gomp_load_image_to_device): Handle reverse-offload function
+	lookup table.
+	(gomp_unload_image_from_device): Free devicep->mem_map_rev.
+	(struct gomp_splay_tree_rev_lookup_data, gomp_splay_tree_rev_lookup,
+	gomp_map_rev_lookup, struct cpy_data, gomp_map_cdata_lookup_int,
+	gomp_map_cdata_lookup): New auxiliary structs and functions for
+	gomp_target_rev.
+	(gomp_target_rev): Implement reverse offloading and its mapping.
+	(gomp_target_init): Init current_device.mem_map_rev.root.
+	* testsuite/libgomp.fortran/reverse-offload-2.f90: New test.
+	* testsuite/libgomp.fortran/reverse-offload-3.f90: New test.
+	* testsuite/libgomp.fortran/reverse-offload-4.f90: New test.
+	* testsuite/libgomp.fortran/reverse-offload-5.f90: New test.
+	* testsuite/libgomp.fortran/reverse-offload-5a.f90: New test without
+	mapping of on-device allocated variables.
+
 2022-12-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (5.1 Impl. Status): Split allocate clause/directive
