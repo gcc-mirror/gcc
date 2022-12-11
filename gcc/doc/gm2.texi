@@ -70,8 +70,8 @@ Boston, MA 02110-1301, USA@*
 @menu
 * Overview::         What is GNU Modula-2.
 * Using::            Using GNU Modula-2.
-* Licence::          Licence of GNU Modula-2
-* Copying::          GNU Public Licence V3.
+* License::          License of GNU Modula-2
+* Copying::          GNU Public License V3.
 * Contributing::     Contributing to GNU Modula-2
 * Internals::        GNU Modula-2 internals.
 * EBNF::             EBNF of GNU Modula-2
@@ -133,9 +133,9 @@ gm2 can produce swig interface headers to allow access from Python and
 other scripting languages.  It can also be used with C/C++ and
 generate shared libraries.
 
-The compiler provides semantic analysis and runtime checking (full ISO
+The compiler provides semantic analysis and run time checking (full ISO
 Modula-2 checking is implemented) and there is a plugin which can,
-under certain conditions, detect runtime errors at compile time.
+under certain conditions, detect run time errors at compile time.
 
 The compiler supports PIM2, PIM3, PIM4 and ISO dialects of Modula-2,
 work is underway to implement M2R10.  Many of the GCC builtins are
@@ -145,7 +145,9 @@ same syntax as that used by GCC.
 The gm2 driver allows third party libraries to be installed alongside
 gm2 libraries.  For example if the user specifies library @code{foo}
 using @code{-flibs=foo} the driver will check the standard GCC install
-directory for a subdirectory.
+directory for a sub directory @code{foo} containing the library
+contents.  The library module search path is altered accordingly
+for compile and link.
 
 @node Release map, Development, Why use GNU Modula-2, Using
 @section Release map
@@ -194,8 +196,8 @@ shared libraries can be built.
 @item
 fixed sized types are now available from @samp{SYSTEM}.
 
-@item
-support for dynamic @code{ARRAY}s has been added into @samp{gdb}.
+@c @item
+@c support for dynamic @code{ARRAY}s has been added into @samp{gdb}.
 
 @item
 variables can be declared at addresses.
@@ -218,7 +220,7 @@ many Logitech libraries have been implemented and can be accessed via:
 
 @item
 coroutines have been implemented in the PIM style and these are
-accessible from SYSTEM. A number of supporting libraries (executive
+accessible from SYSTEM.  A number of supporting libraries (executive
 and file descriptor mapping to interrupt vector libraries are
 available through the @samp{-flibs=m2iso,m2pim} switch).
 
@@ -282,7 +284,7 @@ front end to GCC.
 
 @item
 It should support all Niklaus Wirth PIM Dialects [234] and also ISO
-Modula-2 including a reimplementation of all the ISO modules.
+Modula-2 including a re-implementation of all the ISO modules.
 
 @item
 There should be an easy interface to C.
@@ -331,7 +333,7 @@ These exist and can be found on the frontends web page on the
 * Standard procedures::   Permanently accessible base procedures.
 * Dialect::               GNU Modula-2 supported dialects.
 * Exceptions::            Exception implementation
-* Semantic checking::     How to detect runtime problems at compile time.
+* Semantic checking::     How to detect run time problems at compile time.
 * Extensions::            GNU Modula-2 language extensions.
 * Type compatibility::    Data type compatibility.
 * Unbounded by reference::Explanation of a language optimization.
@@ -406,7 +408,7 @@ MODULE hello ;
 FROM StrIO IMPORT WriteString, WriteLn ;
 
 BEGIN
-   WriteString('hello world') ; WriteLn
+   WriteString ('hello world') ; WriteLn
 END hello.
 @end example
 
@@ -422,7 +424,7 @@ add the @samp{-v} flag at the command line, for example:
 
 @samp{gm2 -v -g -I. hello.mod}
 
-This displays the subprocesses initiated by @samp{gm2} which can be useful
+This displays the sub processes initiated by @samp{gm2} which can be useful
 when trouble shooting.}
 
 @node Compiler options, Elementary data types, Example usage, Using
@@ -455,7 +457,7 @@ You can specify more than one input file on the @command{gm2} command line,
 
 @item -g
 create debugging information so that debuggers such as @file{gdb}
-can inspect and control executables.
+can inspect and control executable.
 
 @item -I
 used to specify the search path for definition and implementation
@@ -468,11 +470,11 @@ language dialect library directories.
 
 @item -fauto-init
 turns on auto initialization of pointers to NIL.  Whenever a block is
-created all pointers declarated within this scope will have their
+created all pointers declared within this scope will have their
 addresses assigned to NIL.
 
 @item -fbounds
-turns on runtime subrange, array index and indirection via @code{NIL}
+turns on run time sub range, array index and indirection via @code{NIL}
 pointer checking.
 
 @item -fcase
@@ -483,7 +485,7 @@ statement requires an @code{ELSE} clause when on was not specified.
 preprocess the source with @samp{cpp -lang-asm -traditional-cpp}
 For further details about these options @xref{Invocation, , ,cpp}.
 If @samp{-fcpp} is supplied then all definition modules and
-implementation modules which are parsed will be preprocessed by
+implementation modules which are parsed will be prepossessed by
 @samp{cpp}.
 
 @c fcpp-end
@@ -517,7 +519,7 @@ it allows users to single step code into a real function.
 
 @item -fdef=
 recognize the specified suffix as a definition module filename.
-The default implmentation and module filename suffix is @file{.def}.
+The default implementation and module filename suffix is @file{.def}.
 If this option is used GNU Modula-2 will still fall back to this
 default if a requested definition module is not found.
 
@@ -528,16 +530,16 @@ This is an internal command line option.
 @item -fexceptions
 turn on exception handling code.  By default this option is on.
 Exception handling can be disabled by @samp{-fno-exceptions}
-and no references are made to the runtime exception libraries.
+and no references are made to the run time exception libraries.
 
 @item -fextended-opaque
-allows opaque types to be implemented as any type. This is a GNU
+allows opaque types to be implemented as any type.  This is a GNU
 Modula-2 extension and it requires that the implementation module
 defining the opaque type is available so that it can be resolved when
 compiling the module which imports the opaque type.
 
 @item -ffloatvalue
-turns on runtime checking to check whether a floating point number is
+turns on run time checking to check whether a floating point number is
 about to exceed range.
 
 @item -fgen-module-list=@file{filename}
@@ -551,10 +553,10 @@ generate code to check whether array index values are out of bounds.
 Array index checking can be disabled via @samp{-fno-index}.
 
 @item -fiso
-turn on ISO standard features. Currently this enables the ISO
+turn on ISO standard features.  Currently this enables the ISO
 @code{SYSTEM} module and alters the default library search path so
 that the ISO libraries are searched before the PIM libraries.  It also
-effects the behaviour of @code{DIV} and @code{MOD} operators.
+effects the behavior of @code{DIV} and @code{MOD} operators.
 @xref{Dialect, , ,gm2}.
 
 @item -flibs=
@@ -563,7 +565,7 @@ m2pim, m2iso, m2min, m2log and m2cor.  These map onto the
 Programming in Modula-2 base libraries, ISO standard libraries, minimal
 library support, Logitech compatible library and Programming in
 Modula-2 with coroutines.
-Multiple libraries can be specified and are comma separated with precidence
+Multiple libraries can be specified and are comma separated with precedence
 going to the first in the list.  It is not necessary to use -flibs=m2pim or
 -flibs=m2iso if you also specify -fpim, -fpim2, -fpim3, -fpim4 or
 -fiso.  Unless you are using -flibs=m2min you should include m2pim as
@@ -587,11 +589,11 @@ where multiple @code{END} keywords are mapped onto a sequence of
 render keywords in error messages using lower case.
 
 @item -fm2-plugin
-insert plugin to identify runtime errors at compiletime (default on).
+insert plugin to identify run time errors at compile time (default on).
 
 @item -fm2-statistics
 generates quadruple information: number of quadruples generated,
-number of quadruples remaining after optimisation and number of source
+number of quadruples remaining after optimization and number of source
 lines compiled.
 
 @item -fm2-strict-type
@@ -606,9 +608,9 @@ performance improvements.
 
 @item -fmod=
 recognize the specified suffix as implementation and module filenames.
-The default implmentation and module filename suffix is @file{.mod}.
+The default implementation and module filename suffix is @file{.mod}.
 If this option is used GNU Modula-2 will still fall back to this
-default if it needs to read an implmentation module and the specified
+default if it needs to read an implementation module and the specified
 suffixed filename does not exist.
 
 @item -fnil
@@ -617,27 +619,27 @@ pointer.  Dereferencing checking through a @code{NIL} pointer can be
 disabled by @samp{-fno-nil}.
 
 @item -fpim
-turn on PIM standard features. Currently this enables the PIM
+turn on PIM standard features.  Currently this enables the PIM
 @code{SYSTEM} module and determines which identifiers are pervasive
-(declared in the base module). If no other @samp{-fpim[234]} switch is
+(declared in the base module).  If no other @samp{-fpim[234]} switch is
 used then division and modulus operators behave as defined in PIM4.
 @xref{Dialect, , ,gm2}.
 
 @item -fpim2
-turn on PIM-2 standard features. Currently this removes @code{SIZE}
+turn on PIM-2 standard features.  Currently this removes @code{SIZE}
 from being a pervasive identifier (declared in the base module).  It
 places @code{SIZE} in the @code{SYSTEM} module.  It also effects the
-behaviour of @code{DIV} and @code{MOD} operators.
+behavior of @code{DIV} and @code{MOD} operators.
 @xref{Dialect, , ,gm2}.
 
 @item -fpim3
-turn on PIM-3 standard features. Currently this only effects the
-behaviour of @code{DIV} and @code{MOD} operators.
+turn on PIM-3 standard features.  Currently this only effects the
+behavior of @code{DIV} and @code{MOD} operators.
 @xref{Dialect, , ,gm2}.
 
 @item -fpim4
-turn on PIM-4 standard features. Currently this only effects the
-behaviour of @code{DIV} and @code{MOD} operators.
+turn on PIM-4 standard features.  Currently this only effects the
+behavior of @code{DIV} and @code{MOD} operators.
 @xref{Dialect, , ,gm2}.
 
 @item -fpositive-mod-floor-div
@@ -667,18 +669,18 @@ and do not fall out at the end.  Return checking can be disabled
 via @samp{-fno-return}.
 
 @item -fruntime-modules=
-specify, using a comma separated list, the runtime modules and their
+specify, using a comma separated list, the run time modules and their
 order.  These modules will initialized first before any other modules
-in the application dependency.  By default the runtime modules list is
+in the application dependency.  By default the run time modules list is
 set to @code{Storage,SYSTEM,M2RTS,RTExceptions,IOLink}.  Note that
 these modules will only be linked into your executable if they are
-required.  So adding a long list of dependant modules will not effect
+required.  So adding a long list of dependent modules will not effect
 the size of the executable it merely states the initialization order
 should they be required.
 
 @item -fscaffold-dynamic
 the option ensures that @samp{gm2} will generate a dynamic scaffold
-infastructure when compiling implementation and program modules.
+infrastructure when compiling implementation and program modules.
 By default this option is on.  Use @samp{-fno-scaffold-dynamic}
 to turn it off or select @samp{-fno-scaffold-static}.
 
@@ -695,7 +697,7 @@ necessary if the @samp{-c} is omitted.
 @item -fscaffold-static
 the option ensures that @samp{gm2} will generate a static scaffold
 within the program module.  The static scaffold consists of sequences
-of calls to all dependent module initialization and finalialization
+of calls to all dependent module initialization and finalization
 procedures.  The static scaffold is useful for debugging and single
 stepping the initialization blocks of implementation modules.
 
@@ -703,7 +705,7 @@ stepping the initialization blocks of implementation modules.
 generate a shared library from the module.
 
 @item -fsoft-check-all
-turns on all runtime checks.  This is the same as invoking
+turns on all run time checks.  This is the same as invoking
 GNU Modula-2 using the command options
 @code{-fnil} @code{-frange} @code{-findex}
 @code{-fwholevalue}
@@ -720,7 +722,7 @@ generate a swig interface file.
 @item -funbounded-by-reference
 enable optimization of unbounded parameters by attempting to pass non
 @code{VAR} unbounded parameters by reference.  This optimization
-avoids the implicit copy inside the callee procedure. GNU Modula-2
+avoids the implicit copy inside the callee procedure.  GNU Modula-2
 will only allow unbounded parameters to be passed by reference if,
 inside the callee procedure, they are not written to, no address is
 calculated on the array and it is not passed as a @code{VAR}
@@ -802,7 +804,7 @@ generate code to detect whole number overflow and underflow.
 @section Elementary data types
 
 This section describes the elementary data types supported by GNU
-Modula-2. It also describes the relationship between these data types
+Modula-2.  It also describes the relationship between these data types
 and the equivalent C data types.
 
 The following data types are supported: @code{INTEGER},
@@ -851,7 +853,7 @@ in Modula-2 and ISO Modula-2: @code{NEW}, @code{DISPOSE}, @code{INC},
 functions are: @code{ABS}, @code{CAP}, @code{CHR}, @code{FLOAT},
 @code{HIGH}, @code{LFLOAT}, @code{LTRUNC}, @code{MIN}, @code{MAX},
 @code{ODD}, @code{SFLOAT}, @code{STRUNC} @code{TRUNC} and
-@code{VAL}. All these functions and procedures (except @code{HALT},
+@code{VAL}.  All these functions and procedures (except @code{HALT},
 @code{NEW}, @code{DISPOSE} and, under non constant conditions,
 @code{LENGTH}) generate in-line code for efficiency.
 
@@ -870,7 +872,7 @@ PROCEDURE ABS (i: <any signed type>) : <any signed type> ;
 
 (*
    CAP - returns the capital of character ch providing
-         ch lies within the range 'a'..'z'. Otherwise ch
+         ch lies within the range 'a'..'z'.  Otherwise ch
          is returned unaltered.
 *)
 
@@ -981,7 +983,7 @@ PROCEDURE HALT ;
 
 (*
    HIGH - returns the last accessible index of an parameter declared as
-          ARRAY OF CHAR. Thus
+          ARRAY OF CHAR.  Thus
 
           PROCEDURE foo (a: ARRAY OF CHAR) ;
           VAR
@@ -1210,7 +1212,7 @@ PROCEDURE LENGTH (a: ARRAY OF CHAR) : CARDINAL ;
 @end example
 
 This function is evaluated at compile time, providing that string
-@code{a} is a constant. If @code{a} cannot be evaluated then a call is
+@code{a} is a constant.  If @code{a} cannot be evaluated then a call is
 made to @code{M2RTS.Length}.
 
 @example
@@ -1278,9 +1280,9 @@ The most dangerous set of mutually exclusive features found in the
 four dialects supported by GNU Modula-2 are the @code{INTEGER}
 division, remainder and modulus arithmetic operators.  It is important
 to note that the same source code can be compiled to give different
-runtime results depending upon these switches!  The reference manual
+run time results depending upon these switches!  The reference manual
 for the various dialects of Modula-2 are quite clear about this
-behaviour and sadly there are three distinct definitions.
+behavior and sadly there are three distinct definitions.
 
 The table below illustrates the problem when a negative operand is
 used.
@@ -1298,14 +1300,14 @@ lval    rval   DIV     MOD    DIV     MOD    DIV    MOD    /    REM
 See also P24 of PIM2, P27 of PIM3, P29 of PIM4 and P201 of the ISO
 Standard.  At present all dialect division, remainder and modulus are
 implemented as above, apart from the exception calling in the ISO
-dialect. Instead of exception handling the results are the same as the
-PIM4 dialect. This is a temporary implementation situation.
+dialect.  Instead of exception handling the results are the same as the
+PIM4 dialect.  This is a temporary implementation situation.
 
 @node Exceptions, Semantic checking, Dialect, Using
 @section Exception implementation
 
 This section describes how exceptions are implemented in GNU Modula-2
-and how command line switches affect their behaviour.  The option
+and how command line switches affect their behavior.  The option
 @samp{-fsoft-check-all} enables all software checking of nil
 dereferences, division by zero etc.  Additional code is produced to
 check these conditions and exception handlers are invoked if the
@@ -1322,11 +1324,11 @@ architecture it does not.  Therefore to ensure portability it is
 recommended to use @samp{-fsoft-check-all}.
 
 @footnote{@samp{-fsoft-check-all} can be effectively combined with
-@samp{-O2} to semantically analyse source code for possible runtime
+@samp{-O2} to semantically analyze source code for possible run time
 errors at compile time.}
 
 @node Semantic checking, Extensions, Exceptions, Using
-@section How to detect runtime problems at compile time
+@section How to detect run time problems at compile time
 
 Consider the following program:
 
@@ -1344,7 +1346,7 @@ END bad ;
 VAR
    foo: CARDINAL ;
 BEGIN
-   (* the m2rte plugin will detect this as an error, post
+   (* The m2rte plugin will detect this as an error, post
       optimization.  *)
    foo := bad ()
 END assignvalue.
@@ -1356,7 +1358,7 @@ the code with the following options:
 
 @example
 $ gm2 -g -fsoft-check-all -O2 -c assignvalue.mod
-assignvalue.mod:16:0:inevitable that this error will occur at runtime,
+assignvalue.mod:16:0:inevitable that this error will occur at run time,
 assignment will result in an overflow
 @end example
 
@@ -1386,7 +1388,7 @@ assembly language.
 GNU Modula-2 provides support for the special tokens @code{__LINE__},
 @code{__FILE__}, @code{__FUNCTION__} and @code{__DATE__}.  Support for
 these tokens will occur even if the @samp{-fcpp} option is not
-supplied. A table of these identifiers and their data type and values
+supplied.  A table of these identifiers and their data type and values
 is given below:
 
 @example
@@ -1399,13 +1401,13 @@ anywhere    __LINE__                Constant Literal compatible
 anywhere    __FILE__                Constant string compatible
                                     with parameter ARRAY OF CHAR or
                                     an ARRAY whose SIZE is >= string
-                                    length. Example
+                                    length.  Example
                                     "hello.mod"
 
 procedure   __FUNCTION__            Constant string compatible
                                     with parameter ARRAY OF CHAR or
                                     an ARRAY whose SIZE is >= string
-                                    length. Example
+                                    length.  Example
                                     "calc"
 
 module      __FUNCTION__            Example
@@ -1414,10 +1416,10 @@ module      __FUNCTION__            Example
 anywhere    __DATE__                Constant string compatible
                                     with parameter ARRAY OF CHAR or
                                     an ARRAY whose SIZE is >= string
-                                    length. Example
+                                    length.  Example
                                     "Thu Apr 29 10:07:16 BST 2004"
 
-anywhere   __COLUMN__               Gives a contant literal number
+anywhere   __COLUMN__               Gives a constant literal number
                                     determining the left hand column
                                     where the first _ appears in
                                     __COLUMN__.  The left most column
@@ -1426,7 +1428,7 @@ anywhere   __COLUMN__               Gives a contant literal number
 @end example
 
 The preprocessor @samp{cpp} can be invoked via the @samp{-fcpp}
-command line option. This in turn invokes @samp{cpp} with the
+command line option.  This in turn invokes @samp{cpp} with the
 following arguments @samp{-traditional -lang-asm}.  These options
 preserve comments and all quotations.  @samp{gm2} treats a @samp{#}
 character in the first column as a preprocessor directive.
@@ -1444,9 +1446,9 @@ PROCEDURE FatalError (a, file: ARRAY OF CHAR;
                          line: CARDINAL;
                          func: ARRAY OF CHAR) ;
 BEGIN
-   printf("%s:%d:fatal error, %s, in %s\n",
-           ADR(file), line, ADR(a), ADR(func)) ;
-   exit(1)
+   printf ("%s:%d:fatal error, %s, in %s\n",
+            ADR (file), line, ADR (a), ADR (func)) ;
+   exit (1)
 END FatalError ;
 
 #define ERROR(X)  FatalError(X, __FILE__, __LINE__, __FUNCTION__)
@@ -1454,10 +1456,10 @@ END FatalError ;
 VAR
    pc: POINTER TO CARDINAL;
 BEGIN
-   pc := malloc(SIZE(CARDINAL)) ;
-   IF pc=NIL
+   pc := malloc (SIZE (CARDINAL)) ;
+   IF pc = NIL
    THEN
-      ERROR('out of memory')
+      ERROR ('out of memory')
    END
 END cpp.
 @end example
@@ -1495,7 +1497,7 @@ END doDSdbEnter ;
 
 PROCEDURE doDSdbExit (s: String) ;
 BEGIN
-   s := PopAllocationExemption(TRUE, s)
+   s := PopAllocationExemption (TRUE, s)
 END doDSdbExit ;
 
 PROCEDURE DSdbEnter ;
@@ -1514,9 +1516,9 @@ END DSdbExit ;
 PROCEDURE Sprintf1 (s: String; w: ARRAY OF BYTE) : String ;
 BEGIN
    DSdbEnter ;
-   s := FormatString(HandleEscape(s), w) ;
-   DSdbExit(s) ;
-   RETURN( s )
+   s := FormatString (HandleEscape (s), w) ;
+   DSdbExit (s) ;
+   RETURN s
 END Sprintf1 ;
 @end example
 
@@ -1528,7 +1530,7 @@ the optimization passes of the GCC backend.
 @subsection Optional procedure parameter
 
 GNU Modula-2 allows the last parameter to a procedure or function
-parameter to be optional. For example in the ISO library
+parameter to be optional.  For example in the ISO library
 @file{COROUTINES.def} the procedure @code{NEWCOROUTINE} is defined as
 having an optional fifth argument (@code{initProtection}) which, if
 absent, is automatically replaced by @code{NIL}.
@@ -1563,8 +1565,8 @@ END NEWCOROUTINE ;
 @end example
 
 Note that it is illegal for this declaration to contain an initializer
-value for @code{initProtection}. However it is necessary to surround
-this parameter with the brackets @code{[} and @code{]}. This serves to
+value for @code{initProtection}.  However it is necessary to surround
+this parameter with the brackets @code{[} and @code{]}.  This serves to
 remind the programmer that the last parameter was declared as optional
 in the definition module.
 
@@ -1582,7 +1584,7 @@ are all exported from the @code{SYSTEM} module.
 
 This section discuss the issues surrounding assignment, expression
 and parameter compatibility, their effect of the additional
-fixed sized datatypes and also their effect of runtime checking.
+fixed sized datatypes and also their effect of run time checking.
 The data types supported by the compiler are:
 
 @example
@@ -1637,7 +1639,7 @@ COMPLEX128                SYSTEM
 @end example
 
 The Modula-2 language categorizes compatibility between entities of
-possibly differing types into three subcomponents: expressions,
+possibly differing types into three sub components: expressions,
 assignments, and parameters.  Parameter compatibility is further
 divided into two sections for pass by reference and pass by value
 compatibility.
@@ -1688,7 +1690,7 @@ not know which of the two bytes from @code{WORD32} should be copied
 into @code{WORD16} and which two should be ignored.  Currently the
 types @code{BITSET8}, @code{BITSET16} and @code{BITSET32} are
 assignment incompatible.  However this restriction maybe lifted when
-further runtime checking is achieved.
+further run time checking is achieved.
 
 Modula-2 does allow @code{INTEGER} to be assignment compatible with
 @code{WORD} as they are the same size.  Likewise GNU Modula-2 allows
@@ -1699,14 +1701,14 @@ assignment between @code{WORD} and @code{WORD32} even though on many
 systems these sizes will be the same.  The reasoning behind this rule
 is that the extended fixed sized types are meant to be used by
 applications requiring fixed sized data types and it is more portable
-to forbid the bluring of the boundaries between fixed sized and
-machine dependant sized types.
+to forbid the blurring of the boundaries between fixed sized and
+machine dependent sized types.
 
-Intemediate code runtime checking is always generated by the front
-end.  However this intemediate code is only translated into actual
+Intermediate code run time checking is always generated by the front
+end.  However this intermediate code is only translated into actual
 code if the appropriate command line switches are specified.  This
 allows the compiler to perform limited range checking at compile time.
-In the future it will allow the extensive GCC optimisations to
+In the future it will allow the extensive GCC optimizations to
 propagate constant values through to the range checks which if they
 are found to exceed the type range will result in a compile time
 error message.
@@ -1722,16 +1724,16 @@ the same size and family.  Furthermore @code{INTEGER} and
 reference case.
 
 The types @code{BYTE}, @code{LOC}, @code{WORD} and @code{WORD}n
-derivitives are assignment and parameter compatible with any data type
+derivatives are assignment and parameter compatible with any data type
 of the same size.
 
 @node Unbounded by reference, Building a shared library, Type compatibility, Using
 @section Unbounded by reference
 
 This section documents a GNU Modula-2 compiler switch which implements
-a language optimisation surrounding the implementation of unbounded
+a language optimization surrounding the implementation of unbounded
 arrays.  In GNU Modula-2 the unbounded array is implemented by
-utilising an internal structure @code{struct @{dataType *address,
+utilizing an internal structure @code{struct @{dataType *address,
 unsigned int high@}}.  So given the Modula-2 procedure declaration:
 
 @example
@@ -1811,7 +1813,7 @@ passed three times to @code{StrConCat}.  Clearly even though parameters
 @code{b} and @code{c} are never modified it would be incorrect to
 implement them as pass by reference.  Therefore the compiler checks to
 see if any non @code{VAR} parameter is type compatible with any
-@code{VAR} parameter and if so it generates runtime procedure entry
+@code{VAR} parameter and if so it generates run time procedure entry
 checks to determine whether the contents of parameters @code{b} or
 @code{c} matches the contents of @code{a}.  If a match is detected
 then a copy is made and the @code{address} in the unbounded
@@ -1841,7 +1843,7 @@ END bar ;
 Here we see that although parameter, @code{a}, is a candidate for the
 passing by reference, it would be incorrect to use this
 transformation.  Thus the compiler detects that parameters, @code{a}
-and @code{f} are type compatible and will produce runtime checking
+and @code{f} are type compatible and will produce run time checking
 code to test whether the address range of their respective contents
 intersect.
 
@@ -1850,7 +1852,7 @@ intersect.
 This section describes the linking related options.  There are three
 linking strategies available which are dynamic scaffold, static
 scaffold and user defined.  The dynamic scaffold is enabled by default
-and each module will register itself to the runtime @samp{M2RTS} via
+and each module will register itself to the run time @samp{M2RTS} via
 a constructor.  The static scaffold mechanism will invoke each modules
 @samp{_init} and @samp{_finish} function in turn via a sequence of
 calls from within @samp{main}.  Lastly the user defined strategy
@@ -1943,7 +1945,7 @@ libtool --tag=CC --mode=compile gm2 -g -c c.mod -o c.lo
 
 The second step is to generate the shared library initialization and
 finalization routines.  We can do this by asking gm2 to generate a
-list of dependant modules and then use this to generate the scaffold.
+list of dependent modules and then use this to generate the scaffold.
 We also must compile the scaffold.
 
 @example
@@ -2091,7 +2093,7 @@ block of a procedure.
 @node Producing a Python module, Interface to C, Interface for Python, Using
 @section How to produce a Python module
 
-This section descibes how it is possible to produce a Python module
+This section describes how it is possible to produce a Python module
 from Modula-2 code.  There are a number of advantages to this
 approach, it ensures your code reaches a wider audience, maybe it is
 easier to initialize your application in Python.
@@ -2311,9 +2313,9 @@ in the object file.
 
 The @code{printf} declaration states that the first parameter
 semantically matches @code{ARRAY OF CHAR} but since the module is for
-the C language it will be mapped onto @code{char *}. The token
+the C language it will be mapped onto @code{char *}.  The token
 @code{...} indicates a variable number of arguments (varargs) and all
-parameters passed here are mapped onto their C equivalents. Arrays and
+parameters passed here are mapped onto their C equivalents.  Arrays and
 constant strings are passed as pointers.  Lastly @code{[ INTEGER ]}
 states that the caller can ignore the function return result if desired.
 
@@ -2325,7 +2327,7 @@ MODULE hello ;
 FROM libprintf IMPORT printf ;
 
 BEGIN
-   printf("hello world\n")
+   printf ("hello world\n")
 END hello.
 @end example
 
@@ -2348,8 +2350,8 @@ Actual Parameter       |  Default conversion  |   Type of actual
 ===============================================================
 123                    |  none                |   long long int
 "hello world"          |  none                |   const char *
-a: ARRAY OF CHAR       |  ADR(a)              |   char *
-a: ARRAY [0..5] OF CHAR|  ADR(a)              |   char *
+a: ARRAY OF CHAR       |  ADR (a)             |   char *
+a: ARRAY [0..5] OF CHAR|  ADR (a)             |   char *
 3.14                   |  none                |   long double
 @end example
 
@@ -2366,7 +2368,7 @@ identical to GNU C.  The only alterations are that the keywords
 @code{asm} and @code{volatile} are in capitals, following the Modula-2
 convention.
 
-A simple, but highly non optimal, example is given below. Here we want
+A simple, but highly non optimal, example is given below.  Here we want
 to add the two @code{CARDINAL}s @code{foo} and @code{bar} together and
 return the result.  The target processor is assumed to be executing
 the x86_64 instruction set.
@@ -2428,7 +2430,7 @@ ByteAlignment := '<*' AttributeExpression '*>' =:
 AlignmentExpression := "(" ConstExpression ")" =:
 @end example
 
-The @code{Alignment} ebnf statement may be used during contruction of
+The @code{Alignment} ebnf statement may be used during construction of
 types, records, record fields, arrays, pointers and variables.  Below
 is an example of aligning a type so that the variable @code{bar} is
 aligned on a 1024 address.
@@ -2632,13 +2634,13 @@ of a six bit set type followed by a 2 bit integer subrange.
 
 This section describes the built-in constants and functions defined in
 GNU Modula-2.  The following compiler constants can be accessed using
-the @code{__ATTRIBUTE__} @code{__BUILTIN__} keywords. These are not
+the @code{__ATTRIBUTE__} @code{__BUILTIN__} keywords.  These are not
 part of the Modula-2 language and they may differ depending upon the
 target architecture but they provide a method whereby common
 libraries can interface to a different underlying architecture.
 
 The built-in constants are: @code{BITS_PER_UNIT}, @code{BITS_PER_WORD},
-@code{BITS_PER_CHAR} and @code{UNITS_PER_WORD}. They are integrated into
+@code{BITS_PER_CHAR} and @code{UNITS_PER_WORD}.  They are integrated into
 GNU Modula-2 by an extension to the @code{ConstFactor} rule:
 
 @example
@@ -2657,10 +2659,10 @@ CONST
    LOCSPERWORD   = __ATTRIBUTE__ __BUILTIN__ ((UNITS_PER_WORD)) ;
 @end example
 
-Built-in functions are transparent to the end user. All built-in
+Built-in functions are transparent to the end user.  All built-in
 functions are declared in @code{DEFINITION MODULE}s and are imported
 as and when required.  Built-in functions are declared in definition
-modules by using the @code{__BUILTIN__} keyword. Here is a section of
+modules by using the @code{__BUILTIN__} keyword.  Here is a section of
 the ISO library @code{LongMath.def} which demonstrates this feature.
 
 @example
@@ -2675,10 +2677,10 @@ function (for example if the programmer requested the address of
 implemented in the @code{IMPLEMENTATION} @code{MODULE}.
 
 Sometimes a function exported from the @code{DEFINITION} @code{MODULE}
-will have a different name from the built-in function within gcc. In
+will have a different name from the built-in function within gcc.  In
 such cases the mapping between the GNU Modula-2 function name and the
 gcc name is expressed using the keywords @code{__ATTRIBUTE__}
-@code{__BUILTIN__} @code{((Ident))}. For example the function
+@code{__BUILTIN__} @code{((Ident))}.  For example the function
 @code{sqrt} in @code{LongMath.def} maps onto the gcc built-in function
 @code{sqrtl} and this is expressed as:
 
@@ -2689,7 +2691,7 @@ PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((sqrtl)) sqrt
 @end example
 
 The following module @code{Builtins.def} enumerates the list of
-built-in functions which can be accessed in GNU Modula-2. It also
+built-in functions which can be accessed in GNU Modula-2.  It also
 serves to define the parameter and return value for each function:
 
 @include m2/Builtins.texi
@@ -2698,7 +2700,7 @@ Although this module exists and will result in the generation of
 in-line code if optimization flags are passed to GNU Modula-2, users
 are advised to utilize the same functions from more generic libraries.
 The built-in mechanism will be applied to these generic
-libraries where appropriate. Note for the mathematical routines to
+libraries where appropriate.  Note for the mathematical routines to
 be in-lined you need to specify the @samp{-ffast-math -O} options.
 
 @node The PIM system module, The ISO system module, Built-ins, Using
@@ -2744,13 +2746,13 @@ There are also a variety of fixed sized @code{INTEGER} and
 @code{CARDINAL} types.  The variety of the fixed sized types will
 depend upon the target architecture.
 
-@node Licence, Copying, The ISO system module, Top
-@section Licence of GNU Modula-2
+@node License, Copying, The ISO system module, Top
+@section License of GNU Modula-2
 
 GNU Modula-2 is free software, the compiler is held under the GPL v3
 @uref{http://www.gnu.org/licenses/gpl.txt},
 its libraries (pim, iso and Logitech compatible) are under the
-GPL v3 with the GCC runtime library exception clause.
+GPL v3 with the GCC run time library exception clause.
 
 Under Section 7 of GPL version 3, you are granted additional
 permissions described in the GCC Runtime Library Exception, version
@@ -2761,7 +2763,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.
 
-More information on how these licences work is available
+More information on how these licenses work is available
 @uref{http://www.gnu.org/licenses/licenses.html} on the GNU web site.
 
 @c Copying node is inside the gpl_v3.texi
@@ -2770,7 +2772,7 @@ More information on how these licences work is available
 @node Contributing, Internals, Copying, Top
 @section Contributing to GNU Modula-2
 
-Please do. But also please read the GNU Emacs info under
+Please do and please read the GNU Emacs info under
 
 @example
 * Standards: (standards).       GNU coding standards.
@@ -2794,9 +2796,9 @@ This section is still being written.
 @node EBNF, Libraries, Internals, Top
 @chapter EBNF of GNU Modula-2
 
-This chapter contains the EBNF of GNU Modula-2. This grammer currently
+This chapter contains the EBNF of GNU Modula-2.  This grammar currently
 supports both PIM and ISO dialects.  The rules here are automatically
-extracted from the grammer files in GNU Modula-2 and serve to document
+extracted from the crammer files in GNU Modula-2 and serve to document
 the syntax of the extensions described earlier and how they fit in
 with the base language.
 
@@ -2809,13 +2811,6 @@ phase.
 @chapter PIM and ISO library definitions
 
 This chapter contains M2F, PIM and ISO libraries.
-
-@c Permission has been kindly granted by
-@c the authors of the ULM libraries to include them with GNU
-@c Modula-2.
-@c These libraries (under the GNU GPL) were written at the
-@c University of Ulm and were originally shipped with the ULM sparc
-@c Modula-2 compiler.
 
 @include m2/gm2-libs.texi
 
