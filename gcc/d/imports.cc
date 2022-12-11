@@ -161,7 +161,7 @@ public:
   }
 
   /* Build IMPORTED_DECLs for all overloads in a set.  */
-  void visit (OverloadSet *d) final override
+  void visit (OverloadSet *d)
   {
     vec<tree, va_gc> *tset = NULL;
 
