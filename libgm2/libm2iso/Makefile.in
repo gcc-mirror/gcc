@@ -168,8 +168,8 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@	RealIO.lo RealMath.lo RealStr.lo RndFile.lo \
 @BUILD_ISOLIB_TRUE@	RTdata.lo RTentity.lo RTfio.lo RTgenif.lo \
 @BUILD_ISOLIB_TRUE@	RTgen.lo RTio.lo Semaphores.lo SeqFile.lo \
-@BUILD_ISOLIB_TRUE@	ServerSocket.lo ShortComplexMath.lo \
-@BUILD_ISOLIB_TRUE@	ShortIO.lo ShortWholeIO.lo SimpleCipher.lo \
+@BUILD_ISOLIB_TRUE@	ShortComplexMath.lo ShortIO.lo \
+@BUILD_ISOLIB_TRUE@	ShortWholeIO.lo SimpleCipher.lo \
 @BUILD_ISOLIB_TRUE@	SIOResult.lo SLongIO.lo SLongWholeIO.lo \
 @BUILD_ISOLIB_TRUE@	SRawIO.lo SRealIO.lo SShortIO.lo \
 @BUILD_ISOLIB_TRUE@	SShortWholeIO.lo StdChans.lo STextIO.lo \
@@ -388,7 +388,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 # Used to install the shared libgcc.
@@ -500,7 +499,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         RTfio.def  RTgen.def \
 @BUILD_ISOLIB_TRUE@         RTgenif.def  RTio.def \
 @BUILD_ISOLIB_TRUE@         Semaphores.def  SeqFile.def \
-@BUILD_ISOLIB_TRUE@         ServerSocket.def  ShortComplexMath.def \
+@BUILD_ISOLIB_TRUE@         ShortComplexMath.def \
 @BUILD_ISOLIB_TRUE@         ShortIO.def  ShortWholeIO.def \
 @BUILD_ISOLIB_TRUE@         SimpleCipher.def  SIOResult.def \
 @BUILD_ISOLIB_TRUE@         SLongIO.def  SLongWholeIO.def \
@@ -539,7 +538,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         RTfio.mod  RTgenif.mod \
 @BUILD_ISOLIB_TRUE@         RTgen.mod  RTio.mod \
 @BUILD_ISOLIB_TRUE@         Semaphores.mod  SeqFile.mod \
-@BUILD_ISOLIB_TRUE@         ServerSocket.mod  ShortComplexMath.mod \
+@BUILD_ISOLIB_TRUE@         ShortComplexMath.mod \
 @BUILD_ISOLIB_TRUE@         ShortIO.mod  ShortWholeIO.mod \
 @BUILD_ISOLIB_TRUE@         SimpleCipher.mod  SIOResult.mod \
 @BUILD_ISOLIB_TRUE@         SLongIO.mod  SLongWholeIO.mod \

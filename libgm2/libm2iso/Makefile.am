@@ -122,7 +122,7 @@ M2DEFS = ChanConsts.def  CharClass.def \
          RTfio.def  RTgen.def \
          RTgenif.def  RTio.def \
          Semaphores.def  SeqFile.def \
-         ServerSocket.def  ShortComplexMath.def \
+         ShortComplexMath.def \
          ShortIO.def  ShortWholeIO.def \
          SimpleCipher.def  SIOResult.def \
          SLongIO.def  SLongWholeIO.def \
@@ -161,7 +161,7 @@ M2MODS = ChanConsts.mod  CharClass.mod \
          RTfio.mod  RTgenif.mod \
          RTgen.mod  RTio.mod \
          Semaphores.mod  SeqFile.mod \
-         ServerSocket.mod  ShortComplexMath.mod \
+         ShortComplexMath.mod \
          ShortIO.mod  ShortWholeIO.mod \
          SimpleCipher.mod  SIOResult.mod \
          SLongIO.mod  SLongWholeIO.mod \
