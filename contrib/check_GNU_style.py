@@ -35,9 +35,9 @@ def main():
     format = args.format
 
     if filename == '-':
-        check_GNU_style_file(sys.stdin, None, format)
+        check_GNU_style_file(sys.stdin, format)
     else:
-        with open(filename, 'rb') as diff_file:
-            check_GNU_style_file(diff_file, 'utf-8', format)
+        with open(filename, newline='\n') as diff_file:
+            check_GNU_style_file(diff_file, format)
 
 main()

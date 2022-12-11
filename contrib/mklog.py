@@ -361,7 +361,7 @@ if __name__ == '__main__':
     if args.directory:
         root = args.directory
 
-    data = open(args.input) if args.input else sys.stdin
+    data = open(args.input, newline='\n') if args.input else sys.stdin
     if args.update_copyright:
         update_copyright(data)
     else:

@@ -3610,3 +3610,29 @@ index 0b9aa3639c5..f279371948a 100644
  	  if (r.intersect (infer.range (x)))
 -- 
 2.38.0
+
+=== 0001-Add-M-character.patch ====
+From 71ab4c18f279dc0fa0172ffe8cfac5fabcde953d Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Fri, 9 Dec 2022 11:55:21 +0100
+Subject: [PATCH] Add ^M character
+
+---
+ demo.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+ create mode 100644 demo.txt
+
+diff --git a/demo.txt b/demo.txt
+new file mode 100644
+index 0000000..d75da75
+--- /dev/null
++++ b/demo.txt
+@@ -0,0 +1,5 @@
++pub fn main ()
++{
++// { dg-error "Isolated CR" "" { target *-*-* } .+1 }
++  //! doc cr comment
++}
+-- 
+2.38.1
+

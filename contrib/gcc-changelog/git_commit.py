@@ -718,11 +718,12 @@ class GitCommit:
                         if not prs:
                             # if all ChangeLog entries have identical PRs
                             # then use them
-                            prs = self.changelog_entries[0].prs
-                            for entry in self.changelog_entries:
-                                if entry.prs != prs:
-                                    prs = []
-                                    break
+                            if self.changelog_entries:
+                                prs = self.changelog_entries[0].prs
+                                for entry in self.changelog_entries:
+                                    if entry.prs != prs:
+                                        prs = []
+                                        break
                         entry = ChangeLogEntry(changelog_location,
                                                self.top_level_authors,
                                                prs)
