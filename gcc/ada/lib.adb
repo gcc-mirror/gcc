@@ -320,15 +320,13 @@ package body Lib is
    begin
       if S1 = No_Location or else S2 = No_Location then
          return No;
+      end if;
 
-      elsif S1 = Standard_Location then
-         if S2 = Standard_Location then
-            return Yes_Same;
-         else
-            return No;
-         end if;
+      if S1 = S2 then
+         return Yes_Same;
+      end if;
 
-      elsif S2 = Standard_Location then
+      if S1 = Standard_Location or else S2 = Standard_Location then
          return No;
       end if;
 
@@ -841,53 +839,36 @@ package body Lib is
      (N : Node_Or_Entity_Id) return Boolean
    is
    begin
-      if Sloc (N) = Standard_Location then
-         return False;
-
-      elsif Sloc (N) = No_Location then
-         return False;
-
       --  Special case Itypes to test the Sloc of the associated node. The
       --  reason we do this is for possible calls from gigi after -gnatD
       --  processing is complete in sprint. This processing updates the
       --  sloc fields of all nodes in the tree, but itypes are not in the
       --  tree so their slocs do not get updated.
 
-      elsif Nkind (N) = N_Defining_Identifier
-        and then Is_Itype (N)
-      then
+      if Nkind (N) = N_Defining_Identifier and then Is_Itype (N) then
          return In_Extended_Main_Code_Unit (Associated_Node_For_Itype (N));
-
-      --  Otherwise see if we are in the main unit
-
-      elsif Get_Code_Unit (Sloc (N)) = Get_Code_Unit (Cunit (Main_Unit)) then
-         return True;
-
-      --  Node may be in spec (or subunit etc) of main unit
-
-      else
-         return In_Same_Extended_Unit (N, Cunit (Main_Unit));
       end if;
+
+      return In_Extended_Main_Code_Unit (Sloc (N));
    end In_Extended_Main_Code_Unit;
 
    function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean is
    begin
-      if Loc = Standard_Location then
-         return False;
+      --  Special value cases
 
-      elsif Loc = No_Location then
+      if Loc in No_Location | Standard_Location then
          return False;
+      end if;
 
       --  Otherwise see if we are in the main unit
 
-      elsif Get_Code_Unit (Loc) = Get_Code_Unit (Cunit (Main_Unit)) then
+      if Get_Code_Unit (Loc) = Get_Code_Unit (Cunit (Main_Unit)) then
          return True;
+      end if;
 
       --  Location may be in spec (or subunit etc) of main unit
 
-      else
-         return In_Same_Extended_Unit (Loc, Sloc (Cunit (Main_Unit)));
-      end if;
+      return In_Same_Extended_Unit (Loc, Sloc (Cunit (Main_Unit)));
    end In_Extended_Main_Code_Unit;
 
    ----------------------------------
@@ -897,69 +878,42 @@ package body Lib is
    function In_Extended_Main_Source_Unit
      (N : Node_Or_Entity_Id) return Boolean
    is
-      Nloc : constant Source_Ptr := Sloc (N);
-      Mloc : constant Source_Ptr := Sloc (Cunit (Main_Unit));
-
    begin
-      --  If parsing, then use the global flag to indicate result
-
-      if Compiler_State = Parsing then
-         return Parsing_Main_Extended_Source;
-
-      --  Special value cases
-
-      elsif Nloc = Standard_Location then
-         return False;
-
-      elsif Nloc = No_Location then
-         return False;
-
       --  Special case Itypes to test the Sloc of the associated node. The
       --  reason we do this is for possible calls from gigi after -gnatD
       --  processing is complete in sprint. This processing updates the
       --  sloc fields of all nodes in the tree, but itypes are not in the
       --  tree so their slocs do not get updated.
 
-      elsif Nkind (N) = N_Defining_Identifier
-        and then Is_Itype (N)
-      then
+      if Nkind (N) = N_Defining_Identifier and then Is_Itype (N) then
+         pragma Assert (Compiler_State /= Parsing);
          return In_Extended_Main_Source_Unit (Associated_Node_For_Itype (N));
-
-      --  Otherwise compare original locations to see if in same unit
-
-      else
-         return
-           In_Same_Extended_Unit
-             (Original_Location (Nloc), Original_Location (Mloc));
       end if;
+
+      return In_Extended_Main_Source_Unit (Sloc (N));
    end In_Extended_Main_Source_Unit;
 
    function In_Extended_Main_Source_Unit
      (Loc : Source_Ptr) return Boolean
    is
-      Mloc : constant Source_Ptr := Sloc (Cunit (Main_Unit));
-
    begin
       --  If parsing, then use the global flag to indicate result
 
       if Compiler_State = Parsing then
          return Parsing_Main_Extended_Source;
+      end if;
 
       --  Special value cases
 
-      elsif Loc = Standard_Location then
+      if Loc in No_Location | Standard_Location then
          return False;
-
-      elsif Loc = No_Location then
-         return False;
-
-      --  Otherwise compare original locations to see if in same unit
-
-      else
-         return
-           In_Same_Extended_Unit
-             (Original_Location (Loc), Original_Location (Mloc));
       end if;
+
+      --  Otherwise compare original locations
+
+      return In_Same_Extended_Unit
+        (Original_Location (Loc),
+         Original_Location (Sloc (Cunit (Main_Unit))));
    end In_Extended_Main_Source_Unit;
 
    ----------------------

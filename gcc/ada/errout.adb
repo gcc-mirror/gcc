@@ -53,7 +53,7 @@ with Stand;          use Stand;
 with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
-with Warnsw; pragma Unreferenced (Warnsw); -- disable spurious warning
+with Warnsw;
 
 package body Errout is
 
