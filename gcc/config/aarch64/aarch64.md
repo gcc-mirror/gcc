@@ -947,12 +947,29 @@
 		      (const_int 1)))]
 )
 
-(define_insn "*tb<optab><mode>1"
+(define_expand "tbranch_<code><mode>3"
   [(set (pc) (if_then_else
-	      (EQL (zero_extract:DI (match_operand:GPI 0 "register_operand" "r")
-				    (const_int 1)
-				    (match_operand 1
-				      "aarch64_simd_shift_imm_<mode>" "n"))
+              (EQL (match_operand:ALLI 0 "register_operand")
+                   (match_operand 1 "aarch64_simd_shift_imm_<mode>"))
+              (label_ref (match_operand 2 ""))
+              (pc)))]
+  ""
+{
+  rtx bitvalue = gen_reg_rtx (<ZEROM>mode);
+  rtx reg = gen_lowpart (<ZEROM>mode, operands[0]);
+  rtx val = GEN_INT (1UL << UINTVAL (operands[1]));
+  emit_insn (gen_and<zerom>3 (bitvalue, reg, val));
+  operands[1] = const0_rtx;
+  operands[0] = aarch64_gen_compare_reg (<CODE>, bitvalue,
+					 operands[1]);
+})
+
+(define_insn "*tb<optab><ALLI:mode><GPI:mode>1"
+  [(set (pc) (if_then_else
+	      (EQL (zero_extract:GPI (match_operand:ALLI 0 "register_operand" "r")
+				     (const_int 1)
+				     (match_operand 1
+				       "aarch64_simd_shift_imm_<ALLI:mode>" "n"))
 		   (const_int 0))
 	     (label_ref (match_operand 2 "" ""))
 	     (pc)))
@@ -963,15 +980,15 @@
       {
 	if (get_attr_far_branch (insn) == 1)
 	  return aarch64_gen_far_branch (operands, 2, "Ltb",
-					 "<inv_tb>\\t%<w>0, %1, ");
+					 "<inv_tb>\\t%<ALLI:w>0, %1, ");
 	else
 	  {
 	    operands[1] = GEN_INT (HOST_WIDE_INT_1U << UINTVAL (operands[1]));
-	    return "tst\t%<w>0, %1\;<bcond>\t%l2";
+	    return "tst\t%<ALLI:w>0, %1\;<bcond>\t%l2";
 	  }
       }
     else
-      return "<tbz>\t%<w>0, %1, %l2";
+      return "<tbz>\t%<ALLI:w>0, %1, %l2";
   }
   [(set_attr "type" "branch")
    (set (attr "length")
