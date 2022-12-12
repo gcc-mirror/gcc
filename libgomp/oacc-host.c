@@ -294,6 +294,7 @@ static struct gomp_device_descr host_dispatch =
     .evaluate_device_func = host_evaluate_device,
 
     .mem_map = { NULL },
+    .mem_map_rev = { NULL },
     /* .lock initialized in goacc_host_init.  */
     .state = GOMP_DEVICE_UNINITIALIZED,
 

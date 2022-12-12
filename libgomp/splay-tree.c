@@ -236,3 +236,25 @@ splay_tree_foreach (splay_tree sp, splay_tree_callback func, void *data)
 {
   splay_tree_foreach_internal (sp->root, func, data);
 }
+
+/* Like above, except when func returns != 0, stop early.  */
+
+static int
+splay_tree_foreach_internal_lazy (splay_tree_node node,
+				  splay_tree_callback_stop func, void *data)
+{
+  if (!node)
+    return 0;
+  if (func (&node->key, data))
+    return 1;
+  if (splay_tree_foreach_internal_lazy (node->left, func, data))
+    return 1;
+  /* Yeah, whatever.  GCC can fix my tail recursion.  */
+  return splay_tree_foreach_internal_lazy (node->right, func, data);
+}
+
+attribute_hidden void
+splay_tree_foreach_lazy (splay_tree sp, splay_tree_callback_stop func, void *data)
+{
+  splay_tree_foreach_internal_lazy (sp->root, func, data);
+}
