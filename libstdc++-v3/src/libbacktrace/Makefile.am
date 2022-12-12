@@ -71,6 +71,7 @@ libstdc___libbacktrace_la_SOURCES = \
 
 FORMAT_FILES = \
 	elf.c \
+	pecoff.c \
 	unknown.c
 
 VIEW_FILES = \

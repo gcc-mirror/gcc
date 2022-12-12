@@ -518,6 +518,7 @@ libstdc___libbacktrace_la_SOURCES = \
 
 FORMAT_FILES = \
 	elf.c \
+	pecoff.c \
 	unknown.c
 
 VIEW_FILES = \
@@ -674,6 +675,9 @@ $(obj_prefix)-cp-demangle.lo: cp-demangle.c
 
 $(obj_prefix)-elf.lo: elf.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-elf.lo `test -f 'elf.c' || echo '$(srcdir)/'`elf.c
+
+$(obj_prefix)-pecoff.lo: pecoff.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-pecoff.lo `test -f 'pecoff.c' || echo '$(srcdir)/'`pecoff.c
 
 $(obj_prefix)-unknown.lo: unknown.c
 	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-unknown.lo `test -f 'unknown.c' || echo '$(srcdir)/'`unknown.c

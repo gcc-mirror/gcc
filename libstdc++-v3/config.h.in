@@ -525,6 +525,9 @@
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
 
+/* Define to 1 if you have the <windows.h> header file. */
+#undef HAVE_WINDOWS_H
+
 /* Define if writev is available in <sys/uio.h>. */
 #undef HAVE_WRITEV
 
