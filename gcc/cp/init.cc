@@ -4420,9 +4420,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   /* Look through the TARGET_EXPR around a compound literal.  */
   if (init && TREE_CODE (init) == TARGET_EXPR
       && TREE_CODE (TARGET_EXPR_INITIAL (init)) == CONSTRUCTOR
-      && from_array != 2
-      && (same_type_ignoring_top_level_qualifiers_p
-	  (TREE_TYPE (init), atype)))
+      && from_array != 2)
     init = TARGET_EXPR_INITIAL (init);
 
   if (tree vi = get_vec_init_expr (init))
@@ -4548,14 +4546,7 @@ build_vec_init (tree base, tree maxindex, tree init,
     {
       if (lvalue_kind (init) & clk_rvalueref)
 	xvalue = true;
-      if (TREE_CODE (init) == TARGET_EXPR)
-	{
-	  /* Avoid error in decay_conversion.  */
-	  base2 = decay_conversion (TARGET_EXPR_SLOT (init), complain);
-	  base2 = cp_build_compound_expr (init, base2, tf_none);
-	}
-      else
-	base2 = decay_conversion (init, complain);
+      base2 = decay_conversion (init, complain);
       if (base2 == error_mark_node)
 	return error_mark_node;
       itype = TREE_TYPE (base2);
