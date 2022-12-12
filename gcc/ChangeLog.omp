@@ -1,3 +1,8 @@
+2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.md (nvptx_uniform_warp_check): Make fit for
+	non-full-warp execution.
+
 2022-11-01  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* omp-expand-metadirective.cc (omp_expand_metadirective): Add already

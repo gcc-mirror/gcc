@@ -1,5 +1,8 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* plugin/plugin-nvptx.c (nvptx_exec): Assert what we know about
+	'blockDimX'.
+
 	PR target/85463
 	* config/nvptx/error.c (exit): Don't override.
 	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Update.

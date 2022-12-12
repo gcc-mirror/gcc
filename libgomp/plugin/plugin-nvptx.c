@@ -997,6 +997,9 @@ nvptx_exec (void (*fn), unsigned *dims, void *targ_mem_desc,
 					    api_info);
     }
 
+  /* Per 'nvptx_goacc_validate_dims'.  */
+  assert (dims[GOMP_DIM_VECTOR] % warp_size == 0);
+
   kargs[0] = &dp;
   CUDA_CALL_ASSERT (cuLaunchKernel, function,
 		    dims[GOMP_DIM_GANG], 1, 1,
