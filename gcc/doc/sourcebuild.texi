@@ -2515,6 +2515,24 @@ Target supports the execution of @code{amx-fp16} instructions.
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 
+@item clz
+Target supports a clz optab on int.
+
+@item clzl
+Target supports a clz optab on long.
+
+@item clzll
+Target supports a clz optab on long long.
+
+@item ctz
+Target supports a ctz optab on int.
+
+@item ctzl
+Target supports a ctz optab on long.
+
+@item ctzll
+Target supports a ctz optab on long long.
+
 @item cmpccxadd
 Target supports the execution of @code{cmpccxadd} instructions.
 
@@ -2535,6 +2553,15 @@ Target does not require strict alignment.
 
 @item pie_copyreloc
 The x86-64 target linker supports PIE with copy reloc.
+
+@item popcount
+Target supports a popcount optab on int.
+
+@item popcountl
+Target supports a popcount optab on long.
+
+@item popcountll
+Target supports a popcount optab on long long.
 
 @item prefetchi
 Target supports the execution of @code{prefetchi} instructions.
