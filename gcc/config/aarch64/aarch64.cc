@@ -3634,6 +3634,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
+    case E_V2HFmode:
       return TARGET_FLOAT ? VEC_ADVSIMD : 0;
 
     default:

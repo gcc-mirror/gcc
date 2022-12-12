@@ -30,11 +30,9 @@ vec_slp_##TYPE (TYPE *restrict a, TYPE b, TYPE c, int n)	\
 TEST_ALL (VEC_PERM)
 
 /* We should use one DUP for each of the 8-, 16- and 32-bit types,
-   although we currently use LD1RW for _Float16.  We should use two
-   DUPs for each of the three 64-bit types.  */
+   We should use two DUPs for each of the three 64-bit types.  */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, [hw]} 2 } } */
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.s, [sw]} 2 } } */
-/* { dg-final { scan-assembler-times {\tld1rw\tz[0-9]+\.s, } 1 } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.s, [sw]} 3 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, [dx]} 9 } } */
 /* { dg-final { scan-assembler-times {\tzip1\tz[0-9]+\.d, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
 /* { dg-final { scan-assembler-not {\tzip2\t} } } */
@@ -53,7 +51,7 @@ TEST_ALL (VEC_PERM)
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.s} 6 } } */
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.d} 6 } } */
 /* { dg-final { scan-assembler-not {\tldr} } } */
-/* { dg-final { scan-assembler-times {\tstr} 2 } } */
-/* { dg-final { scan-assembler-times {\tstr\th[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-not {\tstr} } } */
+/* { dg-final { scan-assembler-not {\tstr\th[0-9]+} } } */
 
 /* { dg-final { scan-assembler-not {\tuqdec} } } */
