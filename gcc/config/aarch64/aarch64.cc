@@ -26731,8 +26731,9 @@ aarch64_can_change_mode_class (machine_mode from,
   bool from_pred_p = (from_flags & VEC_SVE_PRED);
   bool to_pred_p = (to_flags & VEC_SVE_PRED);
 
-  bool from_full_advsimd_struct_p = (from_flags == (VEC_ADVSIMD | VEC_STRUCT));
   bool to_partial_advsimd_struct_p = (to_flags == (VEC_ADVSIMD | VEC_STRUCT
+						   | VEC_PARTIAL));
+  bool from_partial_advsimd_struct_p = (from_flags == (VEC_ADVSIMD | VEC_STRUCT
 						   | VEC_PARTIAL));
 
   /* Don't allow changes between predicate modes and other modes.
@@ -26755,9 +26756,10 @@ aarch64_can_change_mode_class (machine_mode from,
 	  || GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to)))
     return false;
 
-  /* Don't allow changes between partial and full Advanced SIMD structure
-     modes.  */
-  if (from_full_advsimd_struct_p && to_partial_advsimd_struct_p)
+  /* Don't allow changes between partial and other registers only if
+     one is a normal SIMD register, allow only if not larger than 64-bit.  */
+  if ((to_partial_advsimd_struct_p ^ from_partial_advsimd_struct_p)
+      && (known_gt (GET_MODE_SIZE (to), 8) || known_gt (GET_MODE_SIZE (to), 8)))
     return false;
 
   if (maybe_ne (BITS_PER_SVE_VECTOR, 128u))
