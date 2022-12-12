@@ -2321,10 +2321,24 @@
       "{",
       "\\t"		  ".reg.b32"	    "\\t" "%%r_act;",
       "%.\\t"		  "vote.ballot.b32" "\\t" "%%r_act,1;",
+      /* For '%r_exp', we essentially need 'activemask.b32', but that is "Introduced in PTX ISA version 6.2", and this code here is used only 'if (!TARGET_PTX_6_0)'.  Thus, emulate it.
+         TODO Is that actually correct?  Wouldn't 'activemask.b32' rather replace our 'vote.ballot.b32' given that it registers the *currently active threads*?  */
+      /* Compute the "membermask" of all threads of the warp that are expected to be converged here.
+      	 For OpenACC, '%ntid.x' is 'vector_length', which per 'nvptx_goacc_validate_dims' always is a multiple of 32.
+	 For OpenMP, '%ntid.x' always is 32.
+      	 Thus, this is typically 0xffffffff, but additionally always for the case that not all 32 threads of the warp have been launched.
+	 This assume that lane IDs are assigned in ascending order.  */
+      //TODO Can we rely on '1 << 32 == 0', and '0 - 1 = 0xffffffff'?
+      //TODO https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/
+      //TODO https://stackoverflow.com/questions/54055195/activemask-vs-ballot-sync
+      "\\t"		  ".reg.b32"	    "\\t" "%%r_exp;",
+      "%.\\t"		  "mov.b32"	    "\\t" "%%r_exp, %%ntid.x;",
+      "%.\\t"		  "shl.b32"	    "\\t" "%%r_exp, 1, %%r_exp;",
+      "%.\\t"		  "sub.u32"	    "\\t" "%%r_exp, %%r_exp, 1;",
       "\\t"		  ".reg.pred"	    "\\t" "%%r_do_abort;",
       "\\t"		  "mov.pred"	    "\\t" "%%r_do_abort,0;",
       "%.\\t"		  "setp.ne.b32"	    "\\t" "%%r_do_abort,%%r_act,"
-						  "0xffffffff;",
+						  "%%r_exp;",
       "@ %%r_do_abort\\t" "trap;",
       "@ %%r_do_abort\\t" "exit;",
       "}",
