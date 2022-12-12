@@ -2193,8 +2193,9 @@ package body Errout is
          end if;
 
          if Include_Subprogram_In_Messages then
-            Write_Str
-              (",""subprogram"":""" & Subprogram_Name_Ptr (Error.Node) & """");
+            Write_Str (",""subprogram"":""");
+            Write_JSON_Escaped_String (Subprogram_Name_Ptr (Error.Node));
+            Write_Str ("""");
          end if;
 
          Write_Str ("}");
