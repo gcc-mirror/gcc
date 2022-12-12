@@ -1271,24 +1271,15 @@ valueize_op_1 (tree op)
 static tree
 ccp_fold (gimple *stmt)
 {
-  location_t loc = gimple_location (stmt);
   switch (gimple_code (stmt))
     {
-    case GIMPLE_COND:
-      {
-        /* Handle comparison operators that can appear in GIMPLE form.  */
-        tree op0 = valueize_op (gimple_cond_lhs (stmt));
-        tree op1 = valueize_op (gimple_cond_rhs (stmt));
-        enum tree_code code = gimple_cond_code (stmt);
-        return fold_binary_loc (loc, code, boolean_type_node, op0, op1);
-      }
-
     case GIMPLE_SWITCH:
       {
 	/* Return the constant switch index.  */
         return valueize_op (gimple_switch_index (as_a <gswitch *> (stmt)));
       }
 
+    case GIMPLE_COND:
     case GIMPLE_ASSIGN:
     case GIMPLE_CALL:
       return gimple_fold_stmt_to_constant_1 (stmt,
