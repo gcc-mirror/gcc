@@ -8969,10 +8969,10 @@ $as_echo "$gcc_cv_prog_python3_modern" >&6; }
 if test $gcc_cv_prog_python3_modern = no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
 *** Python3 is missing.
-*** Info documentation for modula-2 will not be built." >&5
+*** Documentation for modula-2 will not include the library modules." >&5
 $as_echo "$as_me: WARNING:
 *** Python3 is missing.
-*** Info documentation for modula-2 will not be built." >&2;}
+*** Documentation for modula-2 will not include the library modules." >&2;}
   HAVE_PYTHON=no
 else
   HAVE_PYTHON=yes
