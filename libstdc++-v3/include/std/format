@@ -110,7 +110,8 @@ namespace __format
   template<typename _CharT, typename... _Args>
     struct basic_format_string
     {
-      template<convertible_to<basic_string_view<_CharT>> _Tp>
+      template<typename _Tp>
+	requires convertible_to<const _Tp&, basic_string_view<_CharT>>
 	consteval
 	basic_format_string(const _Tp& __s);
 
@@ -609,7 +610,7 @@ namespace __format
       else
 	for (_CharT __c : __str)
 	  *__out++ = __c;
-      return std::move(__out);
+      return __out;
     }
 
   // Write STR to OUT with NFILL copies of FILL_CHAR specified by ALIGN.
@@ -664,7 +665,7 @@ namespace __format
       __out = __format::__write(std::move(__out), __str);
       __pad(__r, __out);
 
-      return std::move(__out);
+      return __out;
     }
 
   // A lightweight optional<locale>.
@@ -3626,7 +3627,8 @@ namespace __format
 /// @endcond
 
   template<typename _CharT, typename... _Args>
-    template<convertible_to<basic_string_view<_CharT>> _Tp>
+    template<typename _Tp>
+      requires convertible_to<const _Tp&, basic_string_view<_CharT>>
       consteval
       basic_format_string<_CharT, _Args...>::
       basic_format_string(const _Tp& __s)
