@@ -308,6 +308,13 @@ On some targets, @samp{libphobos} isn't enabled by default, but compiles
 and works if @option{--enable-libphobos} is used.  Specifics are
 documented for affected targets.
 
+@item @anchor{GM2-prerequisite}GM2
+
+Python3 is required if you want to build the complete modula-2
+documentation containing all the library modules and the target
+@code{SYSTEM} definition module.  If Python3 is unavailable the manual
+page and a subset of the texinfo documentation is generated.
+
 @item A ``working'' POSIX compatible shell, or GNU bash
 
 Necessary when running @command{configure} because some
@@ -435,6 +442,34 @@ search path.
 Necessary to build GCC with zstd compression used for LTO bytecode.
 The library is searched in your default library patch search.
 Alternatively, the @option{--with-zstd} configure option should be used.
+
+@item Python3 modules
+
+The complete list of Python3 modules broken down by GCC subcomponent
+is shown below:
+
+@table @asis
+@item internal debugging in gdbhooks
+@code{gdb}, @code{gdb.printing}, @code{gdb.types},
+@code{os.path}, @code{re}, @code{sys} and @code{tempfile},
+
+@item g++ testsuite
+@code{gcov}, @code{gzip}, @code{json}, @code{os} and @code{pytest}.
+
+@item c++ cxx api generation
+@code{csv}, @code{os}, @code{sys} and @code{time}.
+
+@item modula-2 documentation
+@code{argparse}, @code{os}, @code{pathlib}, @code{shutil} and
+@code{sys}.
+
+@item git
+@code{os} and @code{sys}.
+
+@item ada documentation
+@code{latex_elements}, @code{os}, @code{pygments}, @code{re},
+@code{sys} and @code{time}.
+@end table
 
 @end table
 
@@ -2854,8 +2889,8 @@ version 2.21 or later).
 
 @item @samp{bootstrap-lto-noplugin}
 This option is similar to @code{bootstrap-lto}, but is intended for
-hosts that do not support the linker plugin.  Without the linker plugin 
-static libraries are not compiled with link-time optimizations.  Since 
+hosts that do not support the linker plugin.  Without the linker plugin
+static libraries are not compiled with link-time optimizations.  Since
 the GCC middle end and back end are in @file{libbackend.a} this means
 that only the front end is actually LTO optimized.
 
@@ -3144,10 +3179,10 @@ on a simulator as described at @uref{https://gcc.gnu.org/simtest-howto.html}.
 In order to run sets of tests selectively, there are targets
 @samp{make check-gcc} and language specific @samp{make check-c},
 @samp{make check-c++}, @samp{make check-d} @samp{make check-fortran},
-@samp{make check-ada}, @samp{make check-objc}, @samp{make check-obj-c++},
-@samp{make check-lto}
-in the @file{gcc} subdirectory of the object directory.  You can also
-just run @samp{make check} in a subdirectory of the object directory.
+@samp{make check-ada}, @samp{make check-m2}, @samp{make check-objc},
+@samp{make check-obj-c++}, @samp{make check-lto} in the @file{gcc}
+subdirectory of the object directory.  You can also just run
+@samp{make check} in a subdirectory of the object directory.
 
 
 A more selective way to just run all @command{gcc} execute tests in the
@@ -3572,7 +3607,7 @@ GNU Compiler Collection on your machine.
 Note that this list of install notes is @emph{not} a list of supported
 hosts or targets.  Not all supported hosts and targets are listed
 here, only the ones that require host-specific or target-specific
-information have to. 
+information have to.
 
 @ifhtml
 @itemize

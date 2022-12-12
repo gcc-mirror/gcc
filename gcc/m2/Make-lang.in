@@ -52,6 +52,23 @@ m2 modula-2 modula2: gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext) \
                  $(GCC_PASSES) $(GCC_PARTS)
 m2.serial = cc1gm2$(exeext)
 
+m2.srcinfo: doc/m2.info
+	-cp -p $^ $(srcdir)/doc
+
+ifeq ($(HAVE_PYTHON),yes)
+m2.srcextra: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/gm2-libs.texi m2/gm2-ebnf.texi
+	-cp -p m2/SYSTEM-pim.texi $(srcdir)/m2
+	-cp -p m2/SYSTEM-iso.texi $(srcdir)/m2
+	-cp -p m2/gm2-libs.texi $(srcdir)/m2
+	-cp -p m2/gm2-ebnf.texi $(srcdir)/m2
+	find . -name '*.texi' -print
+else
+m2.srcextra:
+endif
+
+m2.srcman: doc/gm2.1
+	-cp -p $^ $(srcdir)/doc
+
 # Tell GNU make to ignore these if they exist.
 .PHONY: m2 modula-2 modula2
 
@@ -123,7 +140,7 @@ m2.ps: m2.dvi
 m2.pdf: m2.ps
 	gs -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=$@ $<
 
-.INTERMEDIATE: gm2.pod
+.INTERMEDIATE: m2.pod
 
 m2.pod: doc/gm2.texi $(TEXISRC)
 	-$(TEXI2POD) -I $(objdir)/m2 -D m2 < $< > $@
@@ -137,13 +154,7 @@ doc/m2.info: $(TEXISRC)
 
 $(objdir)/m2/images/gnu.eps: $(srcdir)/m2/images/gnupng
 	test -d m2/images || mkdir -p m2/images
-	if [ -f $(srcdir)/m2/images/gnu.eps ] ; then \
-           cp $(srcdir)/m2/images/gnu.eps $@ ; \
-        else \
-           pngtopnm $< | pnmtops -noturn > $@ ; \
-        fi
-
-.INTERMEDIATE: gm2.pod
+	cp $(srcdir)/m2/images/gnu.eps $@
 
 # gm2-libs.texi
 
