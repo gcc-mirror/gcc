@@ -14237,6 +14237,16 @@ cost_plus:
 	    return true;
 	  }
 
+	if (aarch64_pluslong_immediate (op1, mode))
+	  {
+	    /* 24-bit add in 2 instructions or 12-bit shifted add.  */
+	    if ((INTVAL (op1) & 0xfff) != 0)
+	      *cost += COSTS_N_INSNS (1);
+
+	    *cost += rtx_cost (op0, mode, PLUS, 0, speed);
+	    return true;
+	  }
+
 	*cost += rtx_cost (op1, mode, PLUS, 1, speed);
 
 	/* Look for ADD (extended register).  */
@@ -28090,6 +28100,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_HAVE_SHADOW_CALL_STACK
 #define TARGET_HAVE_SHADOW_CALL_STACK true
+
+#undef TARGET_CONST_ANCHOR
+#define TARGET_CONST_ANCHOR 0x1000000
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
