@@ -296,8 +296,8 @@ The OpenMP 4.5 specification is fully supported.
 @item Loop transformation constructs @tab N @tab
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
       clauses of the @code{taskloop} construct @tab Y @tab
-@item @code{align} clause/modifier in @code{allocate} directive/clause
-      and @code{allocator} directive @tab P @tab C/C++ on clause only
+@item @code{align} clause in @code{allocate} directive @tab N @tab
+@item @code{align} modifier in @code{allocate} clause @tab Y @tab
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
 @item Iterators in @code{target update} motion clauses and @code{map}
