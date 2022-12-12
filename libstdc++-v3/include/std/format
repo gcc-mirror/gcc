@@ -3345,10 +3345,10 @@ namespace __format
       : _M_args(__args), _M_out(std::move(__out)), _M_loc(__loc)
       { }
 
-      template<typename _Out_, typename _CharT_, typename _Context_>
-	friend _Out_
-	__format::__do_vformat_to(_Out_, basic_string_view<_CharT_>,
-				  const basic_format_args<_Context_>&,
+      template<typename _Out2, typename _CharT2, typename _Context2>
+	friend _Out2
+	__format::__do_vformat_to(_Out2, basic_string_view<_CharT2>,
+				  const basic_format_args<_Context2>&,
 				  const locale*);
 
     public:

@@ -2344,7 +2344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr bool
 	is_negative() const noexcept
 	{
-	  if constexpr (!__is_unsigned)
+	  if constexpr (!_S_is_unsigned)
 	    return _M_is_neg;
 	  else
 	    return false;
@@ -2373,7 +2373,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr precision
 	to_duration() const noexcept
 	{
-	  if constexpr (!__is_unsigned)
+	  if constexpr (!_S_is_unsigned)
 	    if (_M_is_neg)
 	      return -(_M_h + _M_m + _M_s + subseconds());
 	  return _M_h + _M_m + _M_s + subseconds();
@@ -2382,7 +2382,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// TODO: Implement operator<<.
 
       private:
-	static constexpr bool __is_unsigned
+	static constexpr bool _S_is_unsigned
 	  = __and_v<is_integral<typename _Duration::rep>,
 		    is_unsigned<typename _Duration::rep>>;
 
