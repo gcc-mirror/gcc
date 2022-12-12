@@ -1419,10 +1419,20 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
       basic_block bb = ifc_bbs[i];
       gimple_stmt_iterator gsi;
 
+      bool may_have_nonlocal_labels
+	= bb_with_exit_edge_p (loop, bb) || bb == loop->latch;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	switch (gimple_code (gsi_stmt (gsi)))
 	  {
 	  case GIMPLE_LABEL:
+	    if (!may_have_nonlocal_labels)
+	      {
+		tree label
+		  = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi)));
+		if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
+		  return false;
+	      }
+	    /* Fallthru.  */
 	  case GIMPLE_ASSIGN:
 	  case GIMPLE_CALL:
 	  case GIMPLE_DEBUG:
@@ -2498,8 +2508,8 @@ remove_conditions_and_labels (loop_p loop)
       basic_block bb = ifc_bbs[i];
 
       if (bb_with_exit_edge_p (loop, bb)
-        || bb == loop->latch)
-      continue;
+	  || bb == loop->latch)
+	continue;
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	switch (gimple_code (gsi_stmt (gsi)))
