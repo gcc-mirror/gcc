@@ -3607,26 +3607,14 @@ dt_simplify::gen (FILE *f, int indent, bool gimple, int depth ATTRIBUTE_UNUSED)
   if (s->capture_max >= 0)
     {
       char opname[20];
-      fprintf_indent (f, indent, "tree captures[%u] ATTRIBUTE_UNUSED = {",
-		      s->capture_max + 1);
+      fprintf_indent (f, indent, "tree captures[%u] ATTRIBUTE_UNUSED = { %s",
+		      s->capture_max + 1, indexes[0]->get_name (opname));
 
-      for (int i = 0; i <= s->capture_max; ++i)
+      for (int i = 1; i <= s->capture_max; ++i)
 	{
 	  if (!indexes[i])
 	    break;
-	  const char *opstr = indexes[i]->get_name (opname);
-	  expr *e = dyn_cast <expr *> (indexes[i]->op);
-	  fputs (i == 0 ? " " : ", ", f);
-	  if (e && gimple
-	      /* Transparently handle picking up CONSTRUCTOR and ADDR_EXPR
-		 leafs if they appear in a separate definition.  */
-	      && (*e->operation == CONSTRUCTOR
-		  || *e->operation == ADDR_EXPR))
-	    fprintf (f, "(TREE_CODE (%s) == SSA_NAME "
-		     "? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (%s)) : %s)",
-		     opstr, opstr, opstr);
-	  else
-	    fprintf (f, "%s", opstr);
+	  fprintf (f, ", %s", indexes[i]->get_name (opname));
 	}
       fprintf (f, " };\n");
     }

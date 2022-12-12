@@ -16344,6 +16344,11 @@ split_address_to_core_and_offset (tree exp,
   poly_int64 bitsize;
   location_t loc = EXPR_LOCATION (exp);
 
+  if (TREE_CODE (exp) == SSA_NAME)
+    if (gassign *def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (exp)))
+      if (gimple_assign_rhs_code (def) == ADDR_EXPR)
+	exp = gimple_assign_rhs1 (def);
+
   if (TREE_CODE (exp) == ADDR_EXPR)
     {
       core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
@@ -16628,6 +16633,10 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
 		 tree &base0, tree &base1, poly_int64 &off0, poly_int64 &off1,
 		 bool generic)
 {
+  if (TREE_CODE (op0) == SSA_NAME)
+    op0 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op0));
+  if (TREE_CODE (op1) == SSA_NAME)
+    op1 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op1));
   gcc_checking_assert (TREE_CODE (op0) == ADDR_EXPR);
   gcc_checking_assert (TREE_CODE (op1) == ADDR_EXPR);
   base0 = get_addr_base_and_unit_offset (TREE_OPERAND (op0, 0), &off0);

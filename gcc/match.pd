@@ -3936,7 +3936,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (view_convert CONSTRUCTOR@0)
   (with
-   { tree ctor = @0; }
+   { tree ctor = (TREE_CODE (@0) == SSA_NAME
+		  ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0); }
    (switch
     (if (CONSTRUCTOR_NELTS (ctor) == 0)
      { build_zero_cst (type); })
@@ -5735,19 +5736,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* SSA names are canonicalized to 2nd place.  */
   (cmp addr@0 SSA_NAME@1)
   (with
-   { poly_int64 off; tree base; }
+   {
+     poly_int64 off; tree base;
+     tree addr = (TREE_CODE (@0) == SSA_NAME
+		  ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0);
+   }
    /* A local variable can never be pointed to by
       the default SSA name of an incoming parameter.  */
    (if (SSA_NAME_IS_DEFAULT_DEF (@1)
 	&& TREE_CODE (SSA_NAME_VAR (@1)) == PARM_DECL
-	&& (base = get_base_address (TREE_OPERAND (@0, 0)))
+	&& (base = get_base_address (TREE_OPERAND (addr, 0)))
 	&& TREE_CODE (base) == VAR_DECL
 	&& auto_var_in_fn_p (base, current_function_decl))
     (if (cmp == NE_EXPR)
      { constant_boolean_node (true, type); }
      { constant_boolean_node (false, type); })
     /* If the address is based on @1 decide using the offset.  */
-    (if ((base = get_addr_base_and_unit_offset (TREE_OPERAND (@0, 0), &off))
+    (if ((base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0), &off))
 	 && TREE_CODE (base) == MEM_REF
 	 && TREE_OPERAND (base, 0) == @1)
      (with { off += mem_ref_offset (base).force_shwi (); }
@@ -7302,7 +7307,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		  == tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (@0))))))))
   (with
    {
-     tree ctor = @0;
+     tree ctor = (TREE_CODE (@0) == SSA_NAME
+		  ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0);
      tree eltype = TREE_TYPE (TREE_TYPE (ctor));
      unsigned HOST_WIDE_INT width = tree_to_uhwi (TYPE_SIZE (eltype));
      unsigned HOST_WIDE_INT n = tree_to_uhwi (@1);
@@ -7950,7 +7956,8 @@ and,
 /* Fold reduction of a single nonzero element constructor.  */
 (for reduc (IFN_REDUC_PLUS IFN_REDUC_IOR IFN_REDUC_XOR)
   (simplify (reduc (CONSTRUCTOR@0))
-    (with { tree ctor = @0;
+    (with { tree ctor = (TREE_CODE (@0) == SSA_NAME
+			 ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0);
 	    tree elt = ctor_single_nonzero_element (ctor); }
       (if (elt
 	   && !HONOR_SNANS (type)
@@ -8169,7 +8176,8 @@ and,
 
 (match vec_same_elem_p
  CONSTRUCTOR@0
- (if (uniform_vector_p (@0))))
+ (if (TREE_CODE (@0) == SSA_NAME
+      && uniform_vector_p (gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0))))))
 
 (match vec_same_elem_p
  @0
