@@ -1,3 +1,23 @@
+2022-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108050
+	* decl.cc (DeclVisitor::visit (Import *)): Handle build_import_decl
+	returning a TREE_LIST.
+	* imports.cc (ImportVisitor::visit (OverloadSet *)): New override.
+
+2022-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd c8ae4adb2e.
+	* typeinfo.cc (check_typeinfo_type): Update for new front-end
+	interface.
+	(TypeInfoVisitor::visit (TypeInfoStructDeclaration *)): Remove warning
+	that toHash() must be declared 'nothrow @safe`.
+
+2022-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (expand_intrinsic_bsf): Fix comment.
+	(expand_intrinsic_bsr): Use BIT_XOR_EXPR instead of MINUS_EXPR.
+
 2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Make-lang.in (D_TEXI_FILES): Add d/implement-d.texi.

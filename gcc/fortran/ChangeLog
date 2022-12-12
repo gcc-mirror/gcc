@@ -1,3 +1,14 @@
+2022-12-11  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107995
+	* interface.cc (gfc_check_dummy_characteristics): Reject statement
+	function dummy arguments.
+
+2022-12-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (gfc_match_omp_context_selector_specification):
+	Remove spurious 's' in an error message.
+
 2022-12-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/106911

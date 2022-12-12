@@ -1,3 +1,14 @@
+2022-12-11  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style.py: Use newline=\n.
+	* check_GNU_style_lib.py: Simplify.
+	* gcc-changelog/git_commit.py: Fix issues seen
+	Rust patchset.
+	* gcc-changelog/git_email.py: Use newline argument.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: New test.
+	* mklog.py: Use newline argument.
+
 2022-12-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc-changelog/git_commit.py (default_changelog_locations): Add

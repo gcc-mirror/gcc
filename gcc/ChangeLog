@@ -1,3 +1,24 @@
+2022-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89317
+	* match.pd ((p + b) - &p->c -> b - offsetof(c)): New patterns.
+
+2022-12-11  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.cc (dt_node::gen_kids): Handle ADDR_EXPR in both
+	the GENERIC and GIMPLE op position.
+	(dt_simplify::gen): Capture both GENERIC and GIMPLE op
+	position for ADDR_EXPR and CONSTRUCTOR.
+	* match.pd: Simplify CONSTRUCTOR leaf handling.
+
+2022-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106904
+	* tree.h (strip_zero_offset_components): Declare.
+	* tree.cc (strip_zero_offset_components): Define.
+	* tree-vect-data-refs.cc (vect_create_addr_base_for_vector_ref):
+	Strip zero offset components before building the address.
+
 2022-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/107997
