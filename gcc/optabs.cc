@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "libfuncs.h"
 #include "internal-fn.h"
 #include "langhooks.h"
+#include "gimple.h"
+#include "ssa.h"
 
 static void prepare_float_lib_cmp (rtx, rtx, enum rtx_code, rtx *,
 				   machine_mode *);
@@ -4623,7 +4625,8 @@ prepare_operand (enum insn_code icode, rtx x, int opnum, machine_mode mode,
 
 static void
 emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
-			  profile_probability prob)
+			  direct_optab cmp_optab, profile_probability prob,
+			  bool test_branch)
 {
   machine_mode optab_mode;
   enum mode_class mclass;
@@ -4632,12 +4635,17 @@ emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
 
   mclass = GET_MODE_CLASS (mode);
   optab_mode = (mclass == MODE_CC) ? CCmode : mode;
-  icode = optab_handler (cbranch_optab, optab_mode);
+  icode = optab_handler (cmp_optab, optab_mode);
 
   gcc_assert (icode != CODE_FOR_nothing);
-  gcc_assert (insn_operand_matches (icode, 0, test));
-  insn = emit_jump_insn (GEN_FCN (icode) (test, XEXP (test, 0),
-                                          XEXP (test, 1), label));
+  gcc_assert (test_branch || insn_operand_matches (icode, 0, test));
+  if (test_branch)
+    insn = emit_jump_insn (GEN_FCN (icode) (XEXP (test, 0),
+					    XEXP (test, 1), label));
+  else
+    insn = emit_jump_insn (GEN_FCN (icode) (test, XEXP (test, 0),
+					    XEXP (test, 1), label));
+
   if (prob.initialized_p ()
       && profile_status_for_fn (cfun) != PROFILE_ABSENT
       && insn
@@ -4645,6 +4653,68 @@ emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
       && any_condjump_p (insn)
       && !find_reg_note (insn, REG_BR_PROB, 0))
     add_reg_br_prob_note (insn, prob);
+}
+
+/* PTEST points to a comparison that compares its first operand with zero.
+   Check to see if it can be performed as a bit-test-and-branch instead.
+   On success, return the instruction that performs the bit-test-and-branch
+   and replace the second operand of *PTEST with the bit number to test.
+   On failure, return CODE_FOR_nothing and leave *PTEST unchanged.
+
+   Note that the comparison described by *PTEST should not be taken
+   literally after a successful return.  *PTEST is just a convenient
+   place to store the two operands of the bit-and-test.
+
+   VAL must contain the original tree expression for the first operand
+   of *PTEST.  */
+
+static enum insn_code
+validate_test_and_branch (tree val, rtx *ptest, machine_mode *pmode, optab *res)
+{
+  if (!val || TREE_CODE (val) != SSA_NAME)
+    return CODE_FOR_nothing;
+
+  machine_mode mode = TYPE_MODE (TREE_TYPE (val));
+  rtx test = *ptest;
+  direct_optab optab;
+
+  if (GET_CODE (test) == EQ)
+    optab = tbranch_eq_optab;
+  else if (GET_CODE (test) == NE)
+    optab = tbranch_ne_optab;
+  else
+    return CODE_FOR_nothing;
+
+  *res = optab;
+
+  /* If the target supports the testbit comparison directly, great.  */
+  auto icode = direct_optab_handler (optab, mode);
+  if (icode == CODE_FOR_nothing)
+    return icode;
+
+  if (tree_zero_one_valued_p (val))
+    {
+      auto pos = BITS_BIG_ENDIAN ? GET_MODE_BITSIZE (mode) - 1 : 0;
+      XEXP (test, 1) = gen_int_mode (pos, mode);
+      *ptest = test;
+      *pmode = mode;
+      return icode;
+    }
+
+  wide_int wcst = get_nonzero_bits (val);
+  if (wcst == -1)
+    return CODE_FOR_nothing;
+
+  int bitpos;
+
+  if ((bitpos = wi::exact_log2 (wcst)) == -1)
+    return CODE_FOR_nothing;
+
+  auto pos = BITS_BIG_ENDIAN ? GET_MODE_BITSIZE (mode) - 1 - bitpos : bitpos;
+  XEXP (test, 1) = gen_int_mode (pos, mode);
+  *ptest = test;
+  *pmode = mode;
+  return icode;
 }
 
 /* Generate code to compare X with Y so that the condition codes are
@@ -4664,11 +4734,13 @@ emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
    It will be potentially converted into an unsigned variant based on
    UNSIGNEDP to select a proper jump instruction.
    
-   PROB is the probability of jumping to LABEL.  */
+   PROB is the probability of jumping to LABEL.  If the comparison is against
+   zero then VAL contains the expression from which the non-zero RTL is
+   derived.  */
 
 void
 emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
-			 machine_mode mode, int unsignedp, rtx label,
+			 machine_mode mode, int unsignedp, tree val, rtx label,
                          profile_probability prob)
 {
   rtx op0 = x, op1 = y;
@@ -4693,10 +4765,34 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
   prepare_cmp_insn (op0, op1, comparison, size, unsignedp, OPTAB_LIB_WIDEN,
 		    &test, &mode);
-  emit_cmp_and_jump_insn_1 (test, mode, label, prob);
+
+  /* Check if we're comparing a truth type with 0, and if so check if
+     the target supports tbranch.  */
+  machine_mode tmode = mode;
+  direct_optab optab;
+  if (op1 == CONST0_RTX (GET_MODE (op1))
+      && validate_test_and_branch (val, &test, &tmode,
+				   &optab) != CODE_FOR_nothing)
+    {
+      emit_cmp_and_jump_insn_1 (test, tmode, label, optab, prob, true);
+      return;
+    }
+
+  emit_cmp_and_jump_insn_1 (test, mode, label, cbranch_optab, prob, false);
 }
 
-
+/* Overloaded version of emit_cmp_and_jump_insns in which VAL is unknown.  */
+
+void
+emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
+			 machine_mode mode, int unsignedp, rtx label,
+			 profile_probability prob)
+{
+  emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, NULL,
+			   label, prob);
+}
+
+
 /* Emit a library call comparison between floating point X and Y.
    COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).  */
 

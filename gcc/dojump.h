@@ -71,6 +71,10 @@ extern void jumpifnot (tree exp, rtx_code_label *label,
 extern void jumpifnot_1 (enum tree_code, tree, tree, rtx_code_label *,
 			 profile_probability);
 
+extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int, tree,
+				     machine_mode, rtx, rtx_code_label *,
+				     rtx_code_label *, profile_probability);
+
 extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int,
 				     machine_mode, rtx, rtx_code_label *,
 				     rtx_code_label *, profile_probability);
