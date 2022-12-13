@@ -13,6 +13,7 @@
 #define backtrace_syminfo __asan_backtrace_syminfo
 #define backtrace_uncompress_lzma __asan_backtrace_uncompress_lzma
 #define backtrace_uncompress_zdebug __asan_backtrace_uncompress_zdebug
+#define backtrace_uncompress_zstd __asan_backtrace_uncompress_zstd
 #define backtrace_vector_finish __asan_backtrace_vector_finish
 #define backtrace_vector_grow __asan_backtrace_vector_grow
 #define backtrace_vector_release __asan_backtrace_vector_release
