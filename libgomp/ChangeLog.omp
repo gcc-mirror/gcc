@@ -1,3 +1,11 @@
+2022-12-13  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* target.c (omp_target_is_accessible): Handle unified shared memory.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-1.c: Updated.
+	* testsuite/libgomp.fortran/target-is-accessible-1.f90: Updated.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-2.c: New test.
+	* testsuite/libgomp.fortran/target-is-accessible-2.f90: New test.
+
 2022-12-06  Paul-Antoine Arras <pa@codesourcery.com>
 
 	* config/gcn/selector.c (GOMP_evaluate_current_device): Recognise 'amdgcn'

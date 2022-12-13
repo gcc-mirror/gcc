@@ -1,3 +1,5 @@
+! { dg-do run }
+
 program main
   use omp_lib
   use iso_c_binding
@@ -28,24 +30,28 @@ program main
   if (omp_target_is_accessible (p, c_sizeof (d), n + 1) /= 0) &
     stop 5
 
-  ! Currently, a host pointer is accessible if the device supports shared
-  ! memory or omp_target_is_accessible is executed on the host. This
-  ! test case must be adapted when unified shared memory is avialable.
   do d = 0, omp_get_num_devices ()
+    ! SHARED_MEM is 1 if and only if host and device share the same memory.
+    ! OMP_TARGET_IS_ACCESSIBLE should not return 0 for shared memory.
     shared_mem = 0;
     !$omp target map (alloc: shared_mem) device (d)
       shared_mem = 1;
     !$omp end target
 
-    if (omp_target_is_accessible (p, c_sizeof (d), d) /= shared_mem) &
+    if (shared_mem == 1 .and. omp_target_is_accessible (p, c_sizeof (d), d) == 0) &
       stop 6;
 
-    if (omp_target_is_accessible (c_loc (a), 128 * sizeof (a(1)), d) /= shared_mem) &
+    ! USM is disabled by default.  Hence OMP_TARGET_IS_ACCESSIBLE should
+    ! return 0 if shared_mem is false.
+    if (shared_mem == 0 .and. omp_target_is_accessible (p, c_sizeof (d), d) /= 0) &
       stop 7;
 
+    if (shared_mem == 1 .and. omp_target_is_accessible (c_loc (a), 128 * sizeof (a(1)), d) == 0) &
+      stop 8;
+
     do i = 1, 128
-      if (omp_target_is_accessible (c_loc (a(i)), sizeof (a(i)), d) /= shared_mem) &
-        stop 8;
+      if (shared_mem == 1 .and. omp_target_is_accessible (c_loc (a(i)), sizeof (a(i)), d) == 0) &
+        stop 9;
     end do
 
   end do

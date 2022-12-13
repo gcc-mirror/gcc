@@ -5079,9 +5079,13 @@ omp_target_is_accessible (const void *ptr, size_t size, int device_num)
   if (devicep == NULL)
     return false;
 
-  /* TODO: Unified shared memory must be handled when available.  */
+  if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return true;
 
-  return devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM;
+  if (devicep->is_usm_ptr_func && devicep->is_usm_ptr_func ((void *) ptr))
+    return true;
+
+  return false;
 }
 
 int
