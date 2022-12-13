@@ -1762,6 +1762,8 @@ ipa_param_body_adjustments::modify_expression (tree *expr_p, bool convert)
 {
   tree expr = *expr_p;
 
+  if (m_replacements.is_empty ())
+    return false;
   if (TREE_CODE (expr) == BIT_FIELD_REF
       || TREE_CODE (expr) == IMAGPART_EXPR
       || TREE_CODE (expr) == REALPART_EXPR)
@@ -1809,7 +1811,7 @@ ipa_param_body_adjustments::modify_assignment (gimple *stmt,
   tree *lhs_p, *rhs_p;
   bool any;
 
-  if (!gimple_assign_single_p (stmt))
+  if (m_replacements.is_empty () || !gimple_assign_single_p (stmt))
     return false;
 
   rhs_p = gimple_assign_rhs1_ptr (stmt);
