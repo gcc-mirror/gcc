@@ -173,6 +173,10 @@ struct GTY(()) isra_param_desc
   unsigned param_size_limit : ISRA_ARG_SIZE_LIMIT_BITS;
   /* Sum of unit sizes of all certain replacements.  */
   unsigned size_reached : ISRA_ARG_SIZE_LIMIT_BITS;
+  /* Minimum offset that is known to be safe to dereference because of callers
+     pass pointers to DECLs of at least this size or because of dereferences in
+     callers.  */
+  unsigned safe_size : ISRA_ARG_SIZE_LIMIT_BITS;
 
   /* A parameter that is used only in call arguments and can be removed if all
      concerned actual arguments are removed.  */
@@ -185,6 +189,12 @@ struct GTY(()) isra_param_desc
      not construct the argument just to pass it to calls.  Only meaningful for
      by_ref parameters.  */
   unsigned not_specially_constructed : 1;
+  /* Only meaningful for by_ref parameters.  If set, this parameter can only be
+     a split candidate if all callers pass pointers that are known to point to
+     a chunk of memory large enough to contain all accesses.  */
+  unsigned conditionally_dereferenceable : 1;
+  /* Set when safe_size has been updated from at least one caller.  */
+  unsigned safe_size_set : 1;
 };
 
 /* Structure used when generating summaries that describes a parameter.  */
@@ -220,6 +230,10 @@ struct gensum_param_desc
      without performing further checks (for example because it is a
      REFERENCE_TYPE)?  */
   bool safe_ref;
+  /* Only meaningful for by_ref parameters.  If set, this parameter can only be
+     a split candidate if all callers pass pointers that are known to point to
+     a chunk of memory large enough to contain all accesses.  */
+  bool conditionally_dereferenceable;
 
   /* The number of this parameter as they are ordered in function decl.  */
   int param_number;
@@ -332,10 +346,12 @@ struct isra_param_flow
 
   /* Offset within the formal parameter.  */
   unsigned unit_offset;
-  /* Size of the portion of the formal parameter that is being passed.  */
+  /* When aggregate_pass_through is set, this is the size of the portion of an
+     aggregate formal parameter that is being passed.  Otherwise, this is size
+     of pointed to memory that is known to be valid be dereferenced.  */
   unsigned unit_size : ISRA_ARG_SIZE_LIMIT_BITS;
 
-  /* True when the value of this actual copy is a portion of a formal
+  /* True when the value of this actual argument is a portion of a formal
      parameter.  */
   unsigned aggregate_pass_through : 1;
   /* True when the value of this actual copy is a verbatim pass through of an
@@ -425,10 +441,13 @@ ipa_sra_function_summaries::duplicate (cgraph_node *, cgraph_node *,
 
       d->param_size_limit = s->param_size_limit;
       d->size_reached = s->size_reached;
+      d->safe_size = s->safe_size;
       d->locally_unused = s->locally_unused;
       d->split_candidate = s->split_candidate;
       d->by_ref = s->by_ref;
       d->not_specially_constructed = s->not_specially_constructed;
+      d->conditionally_dereferenceable = s->conditionally_dereferenceable;
+      d->safe_size_set = s->safe_size_set;
 
       unsigned acc_count = vec_safe_length (s->accesses);
       vec_safe_reserve_exact (d->accesses, acc_count);
@@ -537,6 +556,8 @@ isra_call_summary::dump (FILE *f)
 	fprintf (f, "      Aggregate pass through from the param given above, "
 		 "unit offset: %u , unit size: %u\n",
 		 ipf->unit_offset, ipf->unit_size);
+      else if (ipf->unit_size > 0)
+	fprintf (f, "      Known dereferenceable size: %u\n", ipf->unit_size);
       if (ipf->pointer_pass_through)
 	fprintf (f, "      Pointer pass through from the param given above, "
 		 "safe_to_import_accesses: %u\n", ipf->safe_to_import_accesses);
@@ -717,8 +738,11 @@ dump_gensum_param_descriptor (FILE *f, gensum_param_desc *desc)
       return;
     }
   if (desc->by_ref)
-    fprintf (f, "    %s by_ref with %u pass throughs\n",
-	     desc->safe_ref ? "safe" : "unsafe", desc->ptr_pt_count);
+    fprintf (f, "    %s%s by_ref with %u pass throughs\n",
+	     desc->safe_ref ? "safe" : "unsafe",
+	     desc->conditionally_dereferenceable
+	     ? " conditionally_dereferenceable" : " ok",
+	     desc->ptr_pt_count);
 
   for (gensum_param_access *acc = desc->accesses; acc; acc = acc->next_sibling)
     dump_gensum_access (f, acc, 2);
@@ -756,16 +780,23 @@ dump_isra_param_descriptor (FILE *f, isra_param_desc *desc, bool hints)
     }
   if (!desc->split_candidate)
     {
-      fprintf (f, "    not a candidate for splitting\n");
+      fprintf (f, "    not a candidate for splitting");
+      if (hints && desc->by_ref && desc->safe_size_set)
+	fprintf (f, ", safe_size: %u", (unsigned) desc->safe_size);
+      fprintf (f, "\n");
       return;
     }
   fprintf (f, "    param_size_limit: %u, size_reached: %u%s",
 	   desc->param_size_limit, desc->size_reached,
 	   desc->by_ref ? ", by_ref" : "");
+  if (desc->by_ref && desc->conditionally_dereferenceable)
+    fprintf (f, ", conditionally_dereferenceable");
   if (hints)
     {
       if (desc->by_ref && !desc->not_specially_constructed)
 	fprintf (f, ", args_specially_constructed");
+      if (desc->by_ref && desc->safe_size_set)
+	fprintf (f, ", safe_size: %u", (unsigned) desc->safe_size);
     }
   fprintf (f, "\n");
 
@@ -2085,8 +2116,19 @@ isra_analyze_call (cgraph_edge *cs)
 	  bool reverse;
 	  tree base = get_ref_base_and_extent (TREE_OPERAND (arg, 0), &poffset,
 					       &psize, &pmax_size, &reverse);
-	  /* TODO: Next patch will need the offset too, so we cannot use
-	     get_base_address. */
+	  HOST_WIDE_INT offset;
+	  unsigned HOST_WIDE_INT ds;
+	  if (DECL_P (base)
+	      && (poffset.is_constant (&offset))
+	      && tree_fits_uhwi_p (DECL_SIZE (base))
+	      && ((ds = tree_to_uhwi (DECL_SIZE (base)) - offset)
+		  < ISRA_ARG_SIZE_LIMIT * BITS_PER_UNIT))
+	    {
+	      csum->init_inputs (count);
+	      gcc_assert (!csum->m_arg_flow[i].aggregate_pass_through);
+	      csum->m_arg_flow[i].unit_size = ds / BITS_PER_UNIT;
+	    }
+
 	  if (TREE_CODE (base) == VAR_DECL
 	      && !TREE_STATIC (base)
 	      && !loaded_decls->contains (base))
@@ -2309,9 +2351,14 @@ check_gensum_access (struct function *fun, tree parm, gensum_param_desc *desc,
 	  int idx = (entry_bb_index * unsafe_by_ref_count + desc->deref_index);
 	  if ((access->offset + access->size) > bb_dereferences[idx])
 	    {
-	      disqualify_split_candidate (desc, "Would create a possibly "
-					  "illegal dereference in a caller.");
-	      return true;
+	      if (!dereference_probable_p (fun, access))
+		{
+		  disqualify_split_candidate (desc, "Would create a possibly "
+					      "illegal dereference in a "
+					      "caller.");
+		  return true;
+		}
+	      desc->conditionally_dereferenceable = true;
 	    }
 	}
     }
@@ -2540,6 +2587,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
       d->locally_unused = s->locally_unused;
       d->split_candidate = s->split_candidate;
       d->by_ref = s->by_ref;
+      d->conditionally_dereferenceable = s->conditionally_dereferenceable;
 
       for (gensum_param_access *acc = s->accesses;
 	   acc;
@@ -2694,11 +2742,14 @@ isra_write_node_summary (output_block *ob, cgraph_node *node)
 	}
       streamer_write_uhwi (ob, desc->param_size_limit);
       streamer_write_uhwi (ob, desc->size_reached);
+      gcc_assert (desc->safe_size == 0);
       bitpack_d bp = bitpack_create (ob->main_stream);
       bp_pack_value (&bp, desc->locally_unused, 1);
       bp_pack_value (&bp, desc->split_candidate, 1);
       bp_pack_value (&bp, desc->by_ref, 1);
       gcc_assert (!desc->not_specially_constructed);
+      bp_pack_value (&bp, desc->conditionally_dereferenceable, 1);
+      gcc_assert (!desc->safe_size_set);
       streamer_write_bitpack (&bp);
     }
   bitpack_d bp = bitpack_create (ob->main_stream);
@@ -2815,11 +2866,14 @@ isra_read_node_info (struct lto_input_block *ib, cgraph_node *node,
 	}
       desc->param_size_limit = streamer_read_uhwi (ib);
       desc->size_reached = streamer_read_uhwi (ib);
+      desc->safe_size = 0;
       bitpack_d bp = streamer_read_bitpack (ib);
       desc->locally_unused = bp_unpack_value (&bp, 1);
       desc->split_candidate = bp_unpack_value (&bp, 1);
       desc->by_ref = bp_unpack_value (&bp, 1);
       desc->not_specially_constructed = 0;
+      desc->conditionally_dereferenceable = bp_unpack_value (&bp, 1);
+      desc->safe_size_set = 0;
     }
   bitpack_d bp = streamer_read_bitpack (ib);
   ifs->m_candidate = bp_unpack_value (&bp, 1);
@@ -3266,44 +3320,65 @@ isra_mark_caller_param_used (isra_func_summary *from_ifs, int input_idx,
     }
 }
 
-/* Set all param hints in DESC to the pessimistic values.  */
+/* Combine safe_size of DESC with SIZE and return true if it has changed.  */
 
-static void
+static bool
+update_safe_size (isra_param_desc *desc, unsigned size)
+{
+  if (!desc->safe_size_set)
+    {
+      desc->safe_size_set = 1;
+      desc->safe_size = size;
+      return true;
+    }
+  if (desc->safe_size <= size)
+    return false;
+  desc->safe_size = size;
+  return true;
+}
+
+/* Set all param hints in DESC to the pessimistic values.  Return true if any
+   hints that need to potentially trigger further propagation have changed.  */
+
+static bool
 flip_all_hints_pessimistic (isra_param_desc *desc)
 {
   desc->not_specially_constructed = true;
-
-  return;
+  return update_safe_size (desc, 0);
 }
 
-/* Because we have not analyzed a caller, go over all parameter int flags of
-   NODE and turn them pessimistic.  */
+/* Because we have not analyzed or otherwise problematic caller, go over all
+   parameter int flags of IFS describing a call graph node of a calllee and
+   turn them pessimistic.  Return true if any hints that need to potentially
+   trigger further propagation have changed.  */
 
-static void
-flip_all_param_hints_pessimistic (cgraph_node *node)
+static bool
+flip_all_param_hints_pessimistic (isra_func_summary *ifs)
 {
-  isra_func_summary *ifs = func_sums->get (node);
   if (!ifs || !ifs->m_candidate)
-    return;
+    return false;
 
+  bool ret = false;
   unsigned param_count = vec_safe_length (ifs->m_parameters);
 
   for (unsigned i = 0; i < param_count; i++)
-    flip_all_hints_pessimistic (&(*ifs->m_parameters)[i]);
+    ret |= flip_all_hints_pessimistic (&(*ifs->m_parameters)[i]);
 
-  return;
+  return ret;
 }
 
-/* Propagate hints accross edge CS which ultimately leads to CALLEE.  */
+/* Propagate hints accross edge CS which ultimately leads to a node described
+   by TO_IFS.  Return true if any hints of the callee which should potentially
+   trigger further propagation have changed.  */
 
-static void
-propagate_param_hints (cgraph_edge *cs, cgraph_node *callee)
+static bool
+propagate_param_hints_accross_call (cgraph_edge *cs, isra_func_summary *to_ifs)
 {
-  isra_call_summary *csum = call_sums->get (cs);
-  isra_func_summary *to_ifs = func_sums->get (callee);
   if (!to_ifs || !to_ifs->m_candidate)
-    return;
+    return false;
 
+  isra_call_summary *csum = call_sums->get (cs);
+  bool ret = false;
   unsigned args_count = csum->m_arg_flow.length ();
   unsigned param_count = vec_safe_length (to_ifs->m_parameters);
 
@@ -3312,14 +3387,62 @@ propagate_param_hints (cgraph_edge *cs, cgraph_node *callee)
       isra_param_desc *desc = &(*to_ifs->m_parameters)[i];
       if (i >= args_count)
 	{
-	  flip_all_hints_pessimistic (desc);
+	  ret |= flip_all_hints_pessimistic (desc);
 	  continue;
 	}
 
-      if (desc->by_ref && !csum->m_arg_flow[i].constructed_for_calls)
-	desc->not_specially_constructed = true;
+      if (desc->by_ref)
+	{
+	  isra_param_flow *ipf = &csum->m_arg_flow[i];
+
+	  if (!ipf->constructed_for_calls)
+	    desc->not_specially_constructed = true;
+
+	  if (ipf->pointer_pass_through)
+	    {
+	      isra_func_summary *from_ifs = func_sums->get (cs->caller);
+	      int srcidx = get_single_param_flow_source (ipf);
+	      if (vec_safe_length (from_ifs->m_parameters) > (unsigned) srcidx)
+		{
+		  isra_param_desc *src_d = &(*from_ifs->m_parameters)[srcidx];
+		  if (src_d->safe_size_set)
+		    ret |= update_safe_size (desc, src_d->safe_size);
+		}
+	      else
+		ret |= update_safe_size (desc, 0);
+	    }
+	  else if (!ipf->aggregate_pass_through)
+	    ret |= update_safe_size (desc, ipf->unit_size);
+	  else
+	    /* LTOing type-mismatched programs can end up here.  */
+	    ret |= update_safe_size (desc, 0);
+	}
     }
-  return;
+  return ret;
+}
+
+/* Propagate hints from NODE described by FROM_IFS to all its (dorect) callees,
+   push those that may need re-visiting onto STACK.  */
+
+static void
+propagate_hints_to_all_callees (cgraph_node *node, isra_func_summary *from_ifs,
+				vec<cgraph_node *> *stack)
+{
+  for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
+    {
+      enum availability availability;
+      cgraph_node *callee = cs->callee->function_symbol (&availability);
+      isra_func_summary *to_ifs = func_sums->get (callee);
+      if (!from_ifs)
+	{
+	  if (flip_all_param_hints_pessimistic (to_ifs)
+	      && ipa_edge_within_scc (cs))
+	    isra_push_node_to_stack (callee, to_ifs, stack);
+	}
+      else if (propagate_param_hints_accross_call (cs, to_ifs)
+	       && ipa_edge_within_scc (cs))
+	isra_push_node_to_stack (callee, to_ifs, stack);
+    }
 }
 
 /* Propagate information that any parameter is not used only locally within a
@@ -3991,7 +4114,8 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
       check_surviving = true;
       cinfo->param_adjustments->get_surviving_params (&surviving_params);
     }
-  bool dumped_first = false;
+  auto_vec <unsigned> dump_dead_indices;
+  auto_vec <unsigned> dump_bad_cond_indices;
   for (unsigned i = 0; i < len; i++)
     {
       isra_param_desc *desc = &(*ifs->m_parameters)[i];
@@ -4010,19 +4134,23 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
 	  desc->split_candidate = false;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      if (!dumped_first)
-		{
-		  fprintf (dump_file,
-			   "The following parameters of %s are dead on "
-			   "arrival:", node->dump_name ());
-		  dumped_first = true;
-		}
-	      fprintf (dump_file, " %u", i);
-	    }
+	    dump_dead_indices.safe_push (i);
 	}
       else
 	{
+	  if (desc->split_candidate && desc->conditionally_dereferenceable)
+	    {
+	      gcc_assert (desc->safe_size_set);
+	      for (param_access *pa : *desc->accesses)
+		if ((pa->unit_offset + pa->unit_size) > desc->safe_size)
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      dump_bad_cond_indices.safe_push (i);
+		    desc->split_candidate = false;
+		    break;
+		  }
+	    }
+
 	  if (desc->split_candidate)
 	    {
 	      if (desc->by_ref && !desc->not_specially_constructed)
@@ -4040,8 +4168,22 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
 	}
     }
 
-  if (dumped_first)
-    fprintf (dump_file, "\n");
+  if (!dump_dead_indices.is_empty ())
+    {
+      fprintf (dump_file, "The following parameters of %s are dead on arrival:",
+	       node->dump_name ());
+      for (unsigned i : dump_dead_indices)
+	fprintf (dump_file, " %u", i);
+      fprintf (dump_file, "\n");
+    }
+  if (!dump_bad_cond_indices.is_empty ())
+    {
+      fprintf (dump_file, "The following parameters of %s are not safe to "
+	       "derefernce in all callers:", node->dump_name ());
+      for (unsigned i : dump_bad_cond_indices)
+	fprintf (dump_file, " %u", i);
+      fprintf (dump_file, "\n");
+    }
 
   return ret;
 }
@@ -4122,17 +4264,16 @@ ipa_sra_analysis (void)
       for (cgraph_node *v : cycle_nodes)
 	{
 	  isra_func_summary *ifs = func_sums->get (v);
-	  for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
-	    {
-	      enum availability availability;
-	      cgraph_node *callee = cs->callee->function_symbol (&availability);
-	      if (!ifs)
-		{
-		  flip_all_param_hints_pessimistic (callee);
-		  continue;
-		}
-	      propagate_param_hints (cs, callee);
-	    }
+	  propagate_hints_to_all_callees (v, ifs, &stack);
+	}
+
+      while (!stack.is_empty ())
+	{
+	  cgraph_node *node = stack.pop ();
+	  isra_func_summary *ifs = func_sums->get (node);
+	  gcc_checking_assert (ifs && ifs->m_queued);
+	  ifs->m_queued = false;
+	  propagate_hints_to_all_callees (node, ifs, &stack);
 	}
 
       cycle_nodes.release ();
