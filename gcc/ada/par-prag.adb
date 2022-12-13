@@ -73,10 +73,12 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    --  Check the expression of the specified argument to make sure that it
    --  is a string literal. If not give error and raise Error_Resync.
 
-   procedure Check_Arg_Is_On_Or_Off (Arg : Node_Id);
+   procedure Check_Arg_Is_On_Or_Off
+     (Arg : Node_Id; All_OK_Too : Boolean := False);
    --  Check the expression of the specified argument to make sure that it
    --  is an identifier which is either ON or OFF, and if not, then issue
-   --  an error message and raise Error_Resync.
+   --  an error message and raise Error_Resync. If All_OK_Too is True,
+   --  then an ALL identifer is also acceptable.
 
    procedure Check_No_Identifier (Arg : Node_Id);
    --  Checks that the given argument does not have an identifier. If
@@ -167,17 +169,26 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    -- Check_Arg_Is_On_Or_Off --
    ----------------------------
 
-   procedure Check_Arg_Is_On_Or_Off (Arg : Node_Id) is
+   procedure Check_Arg_Is_On_Or_Off
+     (Arg : Node_Id; All_OK_Too : Boolean := False)
+   is
       Argx : constant Node_Id := Expression (Arg);
-
+      Error : Boolean := Nkind (Expression (Arg)) /= N_Identifier;
    begin
-      if Nkind (Expression (Arg)) /= N_Identifier
-        or else Chars (Argx) not in Name_On | Name_Off
-      then
+      if not Error then
+         Error := (Chars (Argx) not in Name_On | Name_Off)
+           and then not (All_OK_Too and Chars (Argx) = Name_All);
+      end if;
+      if Error then
          Error_Msg_Name_2 := Name_On;
          Error_Msg_Name_3 := Name_Off;
 
-         Error_Msg_N ("argument for pragma% must be% or%", Argx);
+         if All_OK_Too then
+            Error_Msg_Name_4 := Name_All;
+            Error_Msg_N ("argument for pragma% must be% or% or%", Argx);
+         else
+            Error_Msg_N ("argument for pragma% must be% or%", Argx);
+         end if;
          raise Error_Resync;
       end if;
    end Check_Arg_Is_On_Or_Off;
@@ -414,7 +425,7 @@ begin
       -- Extensions_Allowed (GNAT) --
       -------------------------------
 
-      --  pragma Extensions_Allowed (Off | On)
+      --  pragma Extensions_Allowed (Off | On | All)
 
       --  The processing for pragma Extensions_Allowed must be done at
       --  parse time, since extensions mode may affect what is accepted.
@@ -422,10 +433,12 @@ begin
       when Pragma_Extensions_Allowed =>
          Check_Arg_Count (1);
          Check_No_Identifier (Arg1);
-         Check_Arg_Is_On_Or_Off (Arg1);
+         Check_Arg_Is_On_Or_Off (Arg1, All_OK_Too => True);
 
          if Chars (Expression (Arg1)) = Name_On then
-            Ada_Version := Ada_With_Extensions;
+            Ada_Version := Ada_With_Core_Extensions;
+         elsif Chars (Expression (Arg1)) = Name_All then
+            Ada_Version := Ada_With_All_Extensions;
          else
             Ada_Version := Ada_Version_Explicit;
          end if;

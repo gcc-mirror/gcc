@@ -1779,7 +1779,7 @@ similar_type_p (tree type1, tree type2)
    the common initial sequence.  */
 
 bool
-next_common_initial_seqence (tree &memb1, tree &memb2)
+next_common_initial_sequence (tree &memb1, tree &memb2)
 {
   while (memb1)
     {
@@ -1833,6 +1833,8 @@ next_common_initial_seqence (tree &memb1, tree &memb2)
   if ((!lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb1)))
       != !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb2)))
     return false;
+  if (DECL_ALIGN (memb1) != DECL_ALIGN (memb2))
+    return false;
   if (!tree_int_cst_equal (bit_position (memb1), bit_position (memb2)))
     return false;
   return true;
@@ -1854,15 +1856,13 @@ layout_compatible_type_p (tree type1, tree type2)
   type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
 
   if (TREE_CODE (type1) == ENUMERAL_TYPE)
-    return (TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
-	    && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
+    return (tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
 	    && same_type_p (finish_underlying_type (type1),
 			    finish_underlying_type (type2)));
 
   if (CLASS_TYPE_P (type1)
       && std_layout_type_p (type1)
       && std_layout_type_p (type2)
-      && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
       && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2)))
     {
       tree field1 = TYPE_FIELDS (type1);
@@ -1871,7 +1871,7 @@ layout_compatible_type_p (tree type1, tree type2)
 	{
 	  while (1)
 	    {
-	      if (!next_common_initial_seqence (field1, field2))
+	      if (!next_common_initial_sequence (field1, field2))
 		return false;
 	      if (field1 == NULL_TREE)
 		return true;
@@ -6215,8 +6215,9 @@ cp_build_binary_op (const op_location_t &location,
       tree_code orig_code0 = TREE_CODE (orig_type0);
       tree orig_type1 = TREE_TYPE (orig_op1);
       tree_code orig_code1 = TREE_CODE (orig_type1);
-      if (!result_type)
-	/* Nope.  */;
+      if (!result_type || result_type == error_mark_node)
+	/* Nope.  */
+	result_type = NULL_TREE;
       else if ((orig_code0 == BOOLEAN_TYPE) != (orig_code1 == BOOLEAN_TYPE))
 	/* "If one of the operands is of type bool and the other is not, the
 	   program is ill-formed."  */
@@ -9513,19 +9514,6 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 			 && MAYBE_CLASS_TYPE_P (TREE_TYPE (lhstype)))
 			|| MAYBE_CLASS_TYPE_P (lhstype)));
 
-	  /* An expression of the form E1 op= E2.  [expr.ass] says:
-	     "Such expressions are deprecated if E1 has volatile-qualified
-	     type and op is not one of the bitwise operators |, &, ^."
-	     We warn here rather than in cp_genericize_r because
-	     for compound assignments we are supposed to warn even if the
-	     assignment is a discarded-value expression.  */
-	  if (modifycode != BIT_AND_EXPR
-	      && modifycode != BIT_IOR_EXPR
-	      && modifycode != BIT_XOR_EXPR
-	      && (TREE_THIS_VOLATILE (lhs) || CP_TYPE_VOLATILE_P (lhstype)))
-	    warning_at (loc, OPT_Wvolatile,
-			"compound assignment with %<volatile%>-qualified left "
-			"operand is deprecated");
 	  /* Preevaluate the RHS to make sure its evaluation is complete
 	     before the lvalue-to-rvalue conversion of the LHS:
 
@@ -10885,7 +10873,9 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
      and where the std::move does nothing if T does not have a T(const T&&)
      constructor, because the argument is const.  It will not use T(T&&)
      because that would mean losing the const.  */
-  else if (TYPE_REF_P (TREE_TYPE (arg))
+  else if (warn_redundant_move
+	   && !warning_suppressed_p (expr, OPT_Wredundant_move)
+	   && TYPE_REF_P (TREE_TYPE (arg))
 	   && CP_TYPE_CONST_P (TREE_TYPE (TREE_TYPE (arg))))
     {
       tree rtype = TREE_TYPE (TREE_TYPE (arg));
@@ -10901,8 +10891,11 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
 	      return;
 	  }
       auto_diagnostic_group d;
-      if (warning_at (loc, OPT_Wredundant_move,
-		      "redundant move in return statement"))
+      if (return_p
+	  ? warning_at (loc, OPT_Wredundant_move,
+			"redundant move in return statement")
+	  : warning_at (loc, OPT_Wredundant_move,
+			"redundant move in initialization"))
 	inform (loc, "remove %<std::move%> call");
     }
 }
@@ -11126,11 +11119,6 @@ check_return_expr (tree retval, bool *no_warning)
       /* We don't know if this is an lvalue or rvalue use, but
 	 either way we can mark it as read.  */
       mark_exp_read (retval);
-      /* Disable our std::move warnings when we're returning
-	 a dependent expression (c++/89780).  */
-      if (retval && TREE_CODE (retval) == CALL_EXPR)
-	/* This also suppresses -Wredundant-move.  */
-	suppress_warning (retval, OPT_Wpessimizing_move);
       return retval;
     }
 
@@ -11260,10 +11248,21 @@ check_return_expr (tree retval, bool *no_warning)
 
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
-    retval = cp_build_init_expr (result, retval);
+    {
+      /* If there's a postcondition for a scalar return value, wrap
+	 retval in a call to the postcondition function.  */
+      if (tree post = apply_postcondition_to_return (retval))
+	retval = post;
+      retval = cp_build_init_expr (result, retval);
+    }
 
   if (tree set = maybe_set_retval_sentinel ())
     retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);
+
+  /* If there's a postcondition for an aggregate return value, call the
+     postcondition function after the return object is initialized.  */
+  if (tree post = apply_postcondition_to_return (result))
+    retval = build2 (COMPOUND_EXPR, void_type_node, retval, post);
 
   return retval;
 }

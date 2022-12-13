@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "i386-options.h"
 #include "i386-builtins.h"
 #include "i386-expand.h"
+#include "asan.h"
 
 /* Split one or more double-mode RTL references into pairs of half-mode
    references.  The RTL can be REG, offsettable MEM, integer constant, or
@@ -173,6 +174,33 @@ split_double_concat (machine_mode mode, rtx dst, rtx lo, rtx hi)
   rtx dlo, dhi;
   int deleted_move_count = 0;
   split_double_mode (mode, &dst, 1, &dlo, &dhi);
+  /* Constraints ensure that if both lo and hi are MEMs, then
+     dst has early-clobber and thus addresses of MEMs don't use
+     dlo/dhi registers.  Otherwise if at least one of li and hi are MEMs,
+     dlo/dhi are registers.  */
+  if (MEM_P (lo)
+      && rtx_equal_p (dlo, hi)
+      && reg_overlap_mentioned_p (dhi, lo))
+    {
+      /* If dlo is same as hi and lo's address uses dhi register,
+	 code below would first emit_move_insn (dhi, hi)
+	 and then emit_move_insn (dlo, lo).  But the former
+	 would invalidate lo's address.  Load into dhi first,
+	 then swap.  */
+      emit_move_insn (dhi, lo);
+      lo = dhi;
+    }
+  else if (MEM_P (hi)
+	   && !MEM_P (lo)
+	   && !rtx_equal_p (dlo, lo)
+	   && reg_overlap_mentioned_p (dlo, hi))
+    {
+      /* In this case, code below would first emit_move_insn (dlo, lo)
+	 and then emit_move_insn (dhi, hi).  But the former would
+	 invalidate hi's address.  Load into dhi first.  */
+      emit_move_insn (dhi, hi);
+      hi = dhi;
+    }
   if (!rtx_equal_p (dlo, hi))
     {
       if (!rtx_equal_p (dlo, lo))
@@ -4510,15 +4538,88 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	case GTU:
 	  break;
 
-	case NE:
 	case LE:
 	case LEU:
+	  /* x <= cst can be handled as x < cst + 1 unless there is
+	     wrap around in cst + 1.  */
+	  if (GET_CODE (cop1) == CONST_VECTOR
+	      && GET_MODE_INNER (mode) != TImode)
+	    {
+	      unsigned int n_elts = GET_MODE_NUNITS (mode), i;
+	      machine_mode eltmode = GET_MODE_INNER (mode);
+	      for (i = 0; i < n_elts; ++i)
+		{
+		  rtx elt = CONST_VECTOR_ELT (cop1, i);
+		  if (!CONST_INT_P (elt))
+		    break;
+		  if (code == GE)
+		    {
+		      /* For LE punt if some element is signed maximum.  */
+		      if ((INTVAL (elt) & (GET_MODE_MASK (eltmode) >> 1))
+			  == (GET_MODE_MASK (eltmode) >> 1))
+			break;
+		    }
+		  /* For LEU punt if some element is unsigned maximum.  */
+		  else if (elt == constm1_rtx)
+		    break;
+		}
+	      if (i == n_elts)
+		{
+		  rtvec v = rtvec_alloc (n_elts);
+		  for (i = 0; i < n_elts; ++i)
+		    RTVEC_ELT (v, i)
+		      = gen_int_mode (INTVAL (CONST_VECTOR_ELT (cop1, i)) + 1,
+				      eltmode);
+		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
+		  std::swap (cop0, cop1);
+		  code = code == LE ? GT : GTU;
+		  break;
+		}
+	    }
+	  /* FALLTHRU */
+	case NE:
 	  code = reverse_condition (code);
 	  *negate = true;
 	  break;
 
 	case GE:
 	case GEU:
+	  /* x >= cst can be handled as x > cst - 1 unless there is
+	     wrap around in cst - 1.  */
+	  if (GET_CODE (cop1) == CONST_VECTOR
+	      && GET_MODE_INNER (mode) != TImode)
+	    {
+	      unsigned int n_elts = GET_MODE_NUNITS (mode), i;
+	      machine_mode eltmode = GET_MODE_INNER (mode);
+	      for (i = 0; i < n_elts; ++i)
+		{
+		  rtx elt = CONST_VECTOR_ELT (cop1, i);
+		  if (!CONST_INT_P (elt))
+		    break;
+		  if (code == GE)
+		    {
+		      /* For GE punt if some element is signed minimum.  */
+		      if (INTVAL (elt) < 0
+			  && ((INTVAL (elt) & (GET_MODE_MASK (eltmode) >> 1))
+			      == 0))
+			break;
+		    }
+		  /* For GEU punt if some element is zero.  */
+		  else if (elt == const0_rtx)
+		    break;
+		}
+	      if (i == n_elts)
+		{
+		  rtvec v = rtvec_alloc (n_elts);
+		  for (i = 0; i < n_elts; ++i)
+		    RTVEC_ELT (v, i)
+		      = gen_int_mode (INTVAL (CONST_VECTOR_ELT (cop1, i)) - 1,
+				      eltmode);
+		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
+		  code = code == GE ? GT : GTU;
+		  break;
+		}
+	    }
 	  code = reverse_condition (code);
 	  *negate = true;
 	  /* FALLTHRU */
@@ -4555,6 +4656,11 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      gcc_unreachable ();
 	    }
 	}
+
+      if (GET_CODE (cop0) == CONST_VECTOR)
+	cop0 = force_reg (mode, cop0);
+      else if (GET_CODE (cop1) == CONST_VECTOR)
+	cop1 = force_reg (mode, cop1);
 
       rtx optrue = op_true ? op_true : CONSTM1_RTX (data_mode);
       rtx opfalse = op_false ? op_false : CONST0_RTX (data_mode);
@@ -4752,13 +4858,13 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
   if (*negate)
     std::swap (op_true, op_false);
 
+  if (GET_CODE (cop1) == CONST_VECTOR)
+    cop1 = force_reg (mode, cop1);
+
   /* Allow the comparison to be done in one mode, but the movcc to
      happen in another mode.  */
   if (data_mode == mode)
-    {
-      x = ix86_expand_sse_cmp (dest, code, cop0, cop1,
-			       op_true, op_false);
-    }
+    x = ix86_expand_sse_cmp (dest, code, cop0, cop1, op_true, op_false);
   else
     {
       gcc_assert (GET_MODE_SIZE (data_mode) == GET_MODE_SIZE (mode));
@@ -9360,6 +9466,17 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (word_mode, fnaddr));
     }
 
+  /* PR100665: Hwasan may tag code pointer which is not supported by LAM,
+     mask off code pointers here.
+     TODO: also need to handle indirect jump.  */
+  if (ix86_memtag_can_tag_addresses () && !fndecl
+      && sanitize_flags_p (SANITIZE_HWADDRESS))
+    {
+      rtx untagged_addr = ix86_memtag_untagged_pointer (XEXP (fnaddr, 0),
+							NULL_RTX);
+      fnaddr = gen_rtx_MEM (QImode, untagged_addr);
+    }
+
   call = gen_rtx_CALL (VOIDmode, fnaddr, callarg1);
 
   if (retval)
@@ -10345,6 +10462,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       return ix86_expand_sse_ptest (d, exp, target);
     case FLOAT128_FTYPE_FLOAT128:
     case FLOAT_FTYPE_FLOAT:
+    case FLOAT_FTYPE_BFLOAT16:
     case INT_FTYPE_INT:
     case UINT_FTYPE_UINT:
     case UINT16_FTYPE_UINT16:
@@ -11860,8 +11978,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   tree arg;
   rtx pat, op;
   unsigned int i, nargs, arg_adjust, memory;
+  unsigned int constant = 100;
   bool aligned_mem = false;
-  rtx xops[3];
+  rtx xops[4];
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
@@ -12152,6 +12271,13 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
+    case INT_FTYPE_PINT_INT_INT_INT:
+    case LONGLONG_FTYPE_PLONGLONG_LONGLONG_LONGLONG_INT:
+      nargs = 4;
+      klass = load;
+      memory = 0;
+      constant = 3;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -12217,6 +12343,15 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	  if (MEM_ALIGN (op) < align)
 	    set_mem_align (op, align);
 	}
+      else if (i == constant)
+	{
+	  /* This must be the constant.  */
+	  if (!insn_p->operand[nargs].predicate(op, SImode))
+	    {
+	      error ("the fourth argument must be one of enum %qs", "_CMPCCX_ENUM");
+	      return const0_rtx;
+	    }
+	}
       else
 	{
 	  /* This must be register.  */
@@ -12257,6 +12392,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       break;
     case 3:
       pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
+      break;
+    case 4:
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2], xops[3]);
       break;
     default:
       gcc_unreachable ();
@@ -12377,7 +12515,7 @@ ix86_expand_vec_set_builtin (tree exp)
   op1 = expand_expr (arg1, NULL_RTX, mode1, EXPAND_NORMAL);
   elt = get_element_number (TREE_TYPE (arg0), arg2);
 
-  if (GET_MODE (op1) != mode1 && GET_MODE (op1) != VOIDmode)
+  if (GET_MODE (op1) != mode1)
     op1 = convert_modes (mode1, GET_MODE (op1), op1, true);
 
   op0 = force_reg (tmode, op0);
@@ -13013,6 +13151,90 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  }
 
 	return target;
+      }
+
+    case IX86_BUILTIN_PREFETCH:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0); // const void *
+	arg1 = CALL_EXPR_ARG (exp, 1); // const int
+	arg2 = CALL_EXPR_ARG (exp, 2); // const int
+	arg3 = CALL_EXPR_ARG (exp, 3); // const int
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+	op3 = expand_normal (arg3);
+
+	if (!CONST_INT_P (op1) || !CONST_INT_P (op2) || !CONST_INT_P (op3))
+	  {
+	    error ("second, third and fourth argument must be a const");
+	    return const0_rtx;
+	  }
+
+	if (INTVAL (op3) == 1)
+	  {
+	    if (TARGET_64BIT && TARGET_PREFETCHI
+		&& local_func_symbolic_operand (op0, GET_MODE (op0)))
+	      emit_insn (gen_prefetchi (op0, op2));
+	    else
+	      {
+		warning (0, "instruction prefetch applies when in 64-bit mode"
+			    " with RIP-relative addressing and"
+			    " option %<-mprefetchi%>;"
+			    " they stay NOPs otherwise");
+		emit_insn (gen_nop ());
+	      }
+	  }
+	else
+	  {
+	    if (!address_operand (op0, VOIDmode))
+	      {
+		op0 = convert_memory_address (Pmode, op0);
+		op0 = copy_addr_to_reg (op0);
+	      }
+
+	    if (TARGET_3DNOW || TARGET_PREFETCH_SSE
+		|| TARGET_PRFCHW || TARGET_PREFETCHWT1)
+	      emit_insn (gen_prefetch (op0, op1, op2));
+	    else if (!MEM_P (op0) && side_effects_p (op0))
+	      /* Don't do anything with direct references to volatile memory,
+		 but generate code to handle other side effects.  */
+	      emit_insn (op0);
+	  }
+
+	return 0;
+      }
+
+    case IX86_BUILTIN_PREFETCHI:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0); // const void *
+	arg1 = CALL_EXPR_ARG (exp, 1); // const int
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+
+	if (!CONST_INT_P (op1))
+	  {
+	    error ("second argument must be a const");
+	    return const0_rtx;
+	  }
+
+	/* GOT/PLT_PIC should not be available for instruction prefetch.
+	   It must be real instruction address.  */
+	if (TARGET_64BIT
+	    && local_func_symbolic_operand (op0, GET_MODE (op0)))
+	  emit_insn (gen_prefetchi (op0, op1));
+	else
+	  {
+	    /* Ignore the hint.  */
+	    warning (0, "instruction prefetch applies when in 64-bit mode"
+			" with RIP-relative addressing and"
+			" option %<-mprefetchi%>;"
+			" they stay NOPs otherwise");
+	    emit_insn (gen_nop ());
+	  }
+
+	return 0;
       }
 
     case IX86_BUILTIN_VEC_INIT_V2SI:
@@ -14977,6 +15199,10 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
   bool ok;
   rtx_insn *insn;
   rtx dup;
+  /* Save/restore recog_data in case this is called from splitters
+     or other routines where recog_data needs to stay valid across
+     force_reg.  See PR106577.  */
+  recog_data_d recog_data_save = recog_data;
 
   /* First attempt to recognize VAL as-is.  */
   dup = gen_vec_duplicate (mode, val);
@@ -15002,6 +15228,7 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
       ok = recog_memoized (insn) >= 0;
       gcc_assert (ok);
     }
+  recog_data = recog_data_save;
   return true;
 }
 
@@ -23954,6 +24181,31 @@ ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
   }
 
   *ptarget_bool = target_bool;
+}
+
+/* Convert a BFmode VAL to SFmode without signaling sNaNs.
+   This is done by returning SF SUBREG of ((HI SUBREG) (VAL)) << 16.  */
+
+rtx
+ix86_expand_fast_convert_bf_to_sf (rtx val)
+{
+  rtx op = gen_lowpart (HImode, val), ret;
+  if (CONST_INT_P (op))
+    {
+      ret = simplify_const_unary_operation (FLOAT_EXTEND, SFmode,
+					    val, BFmode);
+      if (ret)
+	return ret;
+      /* FLOAT_EXTEND simplification will fail if VAL is a sNaN.  */
+      ret = gen_reg_rtx (SImode);
+      emit_move_insn (ret, GEN_INT (INTVAL (op) & 0xffff));
+      emit_insn (gen_ashlsi3 (ret, ret, GEN_INT (16)));
+      return gen_lowpart (SFmode, ret);
+    }
+
+  ret = gen_reg_rtx (SFmode);
+  emit_insn (gen_extendbfsf2_1 (ret, force_reg (BFmode, val)));
+  return ret;
 }
 
 #include "gt-i386-expand.h"

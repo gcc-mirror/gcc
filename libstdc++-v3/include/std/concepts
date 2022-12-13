@@ -113,9 +113,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       using __cref = const remove_reference_t<_Tp>&;
 
-      template<typename _Tp>
-	concept __class_or_enum
-	  = is_class_v<_Tp> || is_union_v<_Tp> || is_enum_v<_Tp>;
+    template<typename _Tp>
+      concept __class_or_enum
+	= is_class_v<_Tp> || is_union_v<_Tp> || is_enum_v<_Tp>;
+
+    template<typename _Tp>
+      constexpr bool __destructible_impl = false;
+    template<typename _Tp>
+      requires requires(_Tp& __t) { { __t.~_Tp() } noexcept; }
+      constexpr bool __destructible_impl<_Tp> = true;
+
+    template<typename _Tp>
+      constexpr bool __destructible = __destructible_impl<_Tp>;
+    template<typename _Tp>
+      constexpr bool __destructible<_Tp&> = true;
+    template<typename _Tp>
+      constexpr bool __destructible<_Tp&&> = true;
+    template<typename _Tp, size_t _Nm>
+      constexpr bool __destructible<_Tp[_Nm]> = __destructible<_Tp>;
+
   } // namespace __detail
 
   /// [concept.assignable], concept assignable_from
@@ -129,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// [concept.destructible], concept destructible
   template<typename _Tp>
-    concept destructible = is_nothrow_destructible_v<_Tp>;
+    concept destructible = __detail::__destructible<_Tp>;
 
   /// [concept.constructible], concept constructible_from
   template<typename _Tp, typename... _Args>

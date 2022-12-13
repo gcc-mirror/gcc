@@ -938,12 +938,12 @@ package body Exp_Imgv is
          --    P3 : constant Natural := call_put_enumN (P1 + 1);
 
          declare
-            Add_Node : constant Node_Id := New_Op_Node (N_Op_Add, Loc);
+            Add_Node : constant Node_Id :=
+              Make_Op_Add (Loc,
+                Left_Opnd  => New_Occurrence_Of (P1_Id, Loc),
+                Right_Opnd => Make_Integer_Literal (Loc, Uint_1));
 
          begin
-            Set_Left_Opnd  (Add_Node, New_Occurrence_Of (P1_Id, Loc));
-            Set_Right_Opnd (Add_Node, Make_Integer_Literal (Loc, 1));
-
             Append_To (Ins_List,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => P3_Id,
@@ -963,12 +963,12 @@ package body Exp_Imgv is
          --    P4 : String renames call_put_enumS (P2 .. P3 - 1);
 
          declare
-            Sub_Node : constant Node_Id := New_Op_Node (N_Op_Subtract, Loc);
+            Sub_Node : constant Node_Id :=
+              Make_Op_Subtract (Loc,
+                Left_Opnd  => New_Occurrence_Of (P3_Id, Loc),
+                Right_Opnd => Make_Integer_Literal (Loc, Uint_1));
 
          begin
-            Set_Left_Opnd  (Sub_Node, New_Occurrence_Of (P3_Id, Loc));
-            Set_Right_Opnd (Sub_Node, Make_Integer_Literal (Loc, 1));
-
             Append_To (Ins_List,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => P4_Id,
@@ -988,12 +988,12 @@ package body Exp_Imgv is
          --    subtype S1 is String (1 .. P3 - P2);
 
          declare
-            HB : constant Node_Id := New_Op_Node (N_Op_Subtract, Loc);
+            HB : constant Node_Id :=
+              Make_Op_Subtract (Loc,
+                Left_Opnd  => New_Occurrence_Of (P3_Id, Loc),
+                Right_Opnd => New_Occurrence_Of (P2_Id, Loc));
 
          begin
-            Set_Left_Opnd  (HB, New_Occurrence_Of (P3_Id, Loc));
-            Set_Right_Opnd (HB, New_Occurrence_Of (P2_Id, Loc));
-
             Append_To (Ins_List,
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => S1_Id,
@@ -1842,6 +1842,15 @@ package body Exp_Imgv is
          return;
       end if;
 
+      --  If Image should be transformed using Put_Image, then do so. See
+      --  Exp_Put_Image for details.
+
+      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
+         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
+         Analyze_And_Resolve (N, Standard_Wide_String, Suppress => All_Checks);
+         return;
+      end if;
+
       Rtyp := Root_Type (Entity (Pref));
 
       Insert_Actions (N, New_List (
@@ -1939,6 +1948,16 @@ package body Exp_Imgv is
       if Is_Object_Image (Pref) then
          Rewrite_Object_Image
            (N, Pref, Name_Wide_Wide_Image, Standard_Wide_Wide_String);
+         return;
+      end if;
+
+      --  If Image should be transformed using Put_Image, then do so. See
+      --  Exp_Put_Image for details.
+
+      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
+         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
+         Analyze_And_Resolve
+           (N, Standard_Wide_Wide_String, Suppress => All_Checks);
          return;
       end if;
 

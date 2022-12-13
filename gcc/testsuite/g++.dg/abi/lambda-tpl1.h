@@ -56,4 +56,15 @@ void f ()
   l_var4 (y);
 
   Fn<1> ();
+
+  auto l1 = []<typename T, T v = T(0)> (T a) {
+    auto l2 = []<typename U> (T a, U b) {};
+
+    l2 (a, v);
+  };
+  auto l3 = []<typename T>(U<T, 0> *, U<int, 0> *) {};
+
+  l1 (1);
+  l1 ('1');
+  l3 ((U<char, 0> *)nullptr, nullptr);
 }

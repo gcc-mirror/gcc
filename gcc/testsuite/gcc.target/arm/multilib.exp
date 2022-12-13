@@ -450,6 +450,9 @@ if {[multilib_config "aprofile"] } {
 	{-march=armv8-a -mfpu=crypto-neon-fp-armv8 -mfloat-abi=hard -mthumb} "thumb/v8-a+simd/hard"
 	{-march=armv7-a -mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp -mthumb} "thumb/v7-a+simd/softfp"
 	{-march=armv8-a -mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp -mthumb} "thumb/v8-a+simd/softfp"
+	{-mcpu=cortex-x1c -mfpu=auto -mfloat-abi=softfp -mthumb} "thumb/v8-a+simd/softfp"
+	{-mcpu=cortex-x1c -mfpu=auto -mfloat-abi=hard -mthumb} "thumb/v8-a+simd/hard"
+	{-mcpu=cortex-x1c -mfpu=auto -mfloat-abi=soft -mthumb} "thumb/v8-a/nofp"
     } {
 	check_multi_dir $opts $dir
     }

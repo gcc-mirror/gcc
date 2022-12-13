@@ -42,6 +42,7 @@
 #include "value-query.h"
 #include "cfganal.h"
 #include "tree-eh.h"
+#include "gimple-fold.h"
 
 #include "gimple-predicate-analysis.h"
 
@@ -1174,7 +1175,9 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
 /* Implemented simplifications:
 
-   1) ((x IOR y) != 0) AND (x != 0) is equivalent to (x != 0);
+   1a) ((x IOR y) != 0) AND (x != 0) is equivalent to (x != 0);
+   1b) [!](X rel y) AND [!](X rel y') where y == y' or both constant
+       can possibly be simplified
    2) (X AND Y) OR (!X AND Y) is equivalent to Y;
    3) X OR (!X AND Y) is equivalent to (X OR Y);
    4) ((x IAND y) != 0) || (x != 0 AND y != 0)) is equivalent to
@@ -1184,11 +1187,11 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
    PREDS is the predicate chains, and N is the number of chains.  */
 
-/* Implement rule 1 above.  PREDS is the AND predicate to simplify
+/* Implement rule 1a above.  PREDS is the AND predicate to simplify
    in place.  */
 
 static void
-simplify_1 (pred_chain &chain)
+simplify_1a (pred_chain &chain)
 {
   bool simplified = false;
   pred_chain s_chain = vNULL;
@@ -1245,6 +1248,68 @@ simplify_1 (pred_chain &chain)
   chain = s_chain;
 }
 
+/* Implement rule 1b above.  PREDS is the AND predicate to simplify
+   in place.  Returns true if CHAIN simplifies to true or false.  */
+
+static bool
+simplify_1b (pred_chain &chain)
+{
+  for (unsigned i = 0; i < chain.length (); i++)
+    {
+      pred_info &a_pred = chain[i];
+
+      for (unsigned j = i + 1; j < chain.length (); ++j)
+	{
+	  pred_info &b_pred = chain[j];
+
+	  if (!operand_equal_p (a_pred.pred_lhs, b_pred.pred_lhs)
+	      || (!operand_equal_p (a_pred.pred_rhs, b_pred.pred_rhs)
+		  && !(CONSTANT_CLASS_P (a_pred.pred_rhs)
+		       && CONSTANT_CLASS_P (b_pred.pred_rhs))))
+	    continue;
+
+	  tree_code a_code = a_pred.cond_code;
+	  if (a_pred.invert)
+	    a_code = invert_tree_comparison (a_code, false);
+	  tree_code b_code = b_pred.cond_code;
+	  if (b_pred.invert)
+	    b_code = invert_tree_comparison (b_code, false);
+	  /* Try to combine X a_code Y && X b_code Y'.  */
+	  tree comb = maybe_fold_and_comparisons (boolean_type_node,
+						  a_code,
+						  a_pred.pred_lhs,
+						  a_pred.pred_rhs,
+						  b_code,
+						  b_pred.pred_lhs,
+						  b_pred.pred_rhs, NULL);
+	  if (!comb)
+	    ;
+	  else if (integer_zerop (comb))
+	    return true;
+	  else if (integer_truep (comb))
+	    {
+	      chain.ordered_remove (j);
+	      chain.ordered_remove (i);
+	      if (chain.is_empty ())
+		return true;
+	      i--;
+	      break;
+	    }
+	  else if (COMPARISON_CLASS_P (comb)
+		   && operand_equal_p (a_pred.pred_lhs, TREE_OPERAND (comb, 0)))
+	    {
+	      chain.ordered_remove (j);
+	      a_pred.cond_code = TREE_CODE (comb);
+	      a_pred.pred_rhs = TREE_OPERAND (comb, 1);
+	      a_pred.invert = false;
+	      j--;
+	    }
+	}
+    }
+
+  return false;
+}
+
 /* Implements rule 2 for the OR predicate PREDS:
 
    2) (X AND Y) OR (!X AND Y) is equivalent to Y.  */
@@ -1257,63 +1322,48 @@ predicate::simplify_2 ()
   /* (X AND Y) OR (!X AND Y) is equivalent to Y.
      (X AND Y) OR (X AND !Y) is equivalent to X.  */
 
-  unsigned n = m_preds.length ();
-  for (unsigned i = 0; i < n; i++)
+  for (unsigned i = 0; i < m_preds.length (); i++)
     {
       pred_chain &a_chain = m_preds[i];
-      if (a_chain.length () != 2)
-	continue;
 
-      /* Create copies since the chain may be released below before
-	 the copy is added to the other chain.  */
-      const pred_info x = a_chain[0];
-      const pred_info y = a_chain[1];
-
-      for (unsigned j = 0; j < n; j++)
+      for (unsigned j = i + 1; j < m_preds.length (); j++)
 	{
-	  if (j == i)
-	    continue;
-
 	  pred_chain &b_chain = m_preds[j];
-	  if (b_chain.length () != 2)
+	  if (b_chain.length () != a_chain.length ())
 	    continue;
 
-	  const pred_info &x2 = b_chain[0];
-	  const pred_info &y2 = b_chain[1];
-
-	  if (pred_equal_p (x, x2) && pred_neg_p (y, y2))
+	  unsigned neg_idx = -1U;
+	  for (unsigned k = 0; k < a_chain.length (); ++k)
 	    {
-	      /* Kill a_chain.  */
-	      b_chain.release ();
-	      a_chain.release ();
-	      b_chain.safe_push (x);
-	      simplified = true;
-	      break;
+	      if (pred_equal_p (a_chain[k], b_chain[k]))
+		continue;
+	      if (neg_idx != -1U)
+		{
+		  neg_idx = -1U;
+		  break;
+		}
+	      if (pred_neg_p (a_chain[k], b_chain[k]))
+		neg_idx = k;
+	      else
+		break;
 	    }
-	  if (pred_neg_p (x, x2) && pred_equal_p (y, y2))
+	  /* If we found equal chains with one negated predicate
+	     simplify.  */
+	  if (neg_idx != -1U)
 	    {
-	      /* Kill a_chain.  */
-	      a_chain.release ();
-	      b_chain.release ();
-	      b_chain.safe_push (y);
+	      a_chain.ordered_remove (neg_idx);
+	      m_preds.ordered_remove (j);
 	      simplified = true;
+	      if (a_chain.is_empty ())
+		{
+		  /* A && !A simplifies to true, wipe the whole predicate.  */
+		  for (unsigned k = 0; k < m_preds.length (); ++k)
+		    m_preds[k].release ();
+		  m_preds.truncate (0);
+		}
 	      break;
 	    }
 	}
-    }
-  /* Now clean up the chain.  */
-  if (simplified)
-    {
-      pred_chain_union s_preds = vNULL;
-      for (unsigned i = 0; i < n; i++)
-	{
-	  if (m_preds[i].is_empty ())
-	    continue;
-	  s_preds.safe_push (m_preds[i]);
-	}
-      m_preds.release ();
-      m_preds = s_preds;
-      s_preds = vNULL;
     }
 
   return simplified;
@@ -1450,11 +1500,18 @@ predicate::simplify (gimple *use_or_def, bool is_use)
       dump (dump_file, use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
-  unsigned n = m_preds.length ();
-  for (unsigned i = 0; i < n; i++)
-    ::simplify_1 (m_preds[i]);
+  for (unsigned i = 0; i < m_preds.length (); i++)
+    {
+      ::simplify_1a (m_preds[i]);
+      if (::simplify_1b (m_preds[i]))
+	{
+	  m_preds[i].release ();
+	  m_preds.ordered_remove (i);
+	  i--;
+	}
+    }
 
-  if (n < 2)
+  if (m_preds.length () < 2)
     return;
 
   bool changed;
@@ -1665,10 +1722,11 @@ predicate::normalize (const pred_chain &chain)
   while (!work_list.is_empty ())
     {
       pred_info pi = work_list.pop ();
-      predicate pred;
       /* The predicate object is not modified here, only NORM_CHAIN and
 	 WORK_LIST are appended to.  */
-      pred.normalize (&norm_chain, pi, BIT_AND_EXPR, &work_list, &mark_set);
+      unsigned oldlen = m_preds.length ();
+      normalize (&norm_chain, pi, BIT_AND_EXPR, &work_list, &mark_set);
+      gcc_assert (m_preds.length () == oldlen);
     }
 
   m_preds.safe_push (norm_chain);
@@ -1686,7 +1744,7 @@ predicate::normalize (gimple *use_or_def, bool is_use)
       dump (dump_file, use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
-  predicate norm_preds;
+  predicate norm_preds (empty_val ());
   for (unsigned i = 0; i < m_preds.length (); i++)
     {
       if (m_preds[i].length () != 1)
@@ -2022,6 +2080,8 @@ predicate::operator= (const predicate &rhs)
   if (this == &rhs)
     return *this;
 
+  m_cval = rhs.m_cval;
+
   unsigned n = m_preds.length ();
   for (unsigned i = 0; i != n; ++i)
     m_preds[i].release ();
@@ -2150,11 +2210,15 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
   /* Try to build the predicate expression under which the PHI flows
      into its use.  This will be empty if the PHI is defined and used
      in the same bb.  */
-  predicate use_preds;
+  predicate use_preds (true);
   if (!init_use_preds (use_preds, def_bb, use_bb))
     return false;
 
   use_preds.simplify (use_stmt, /*is_use=*/true);
+  if (use_preds.is_false ())
+    return true;
+  if (use_preds.is_true ())
+    return false;
   use_preds.normalize (use_stmt, /*is_use=*/true);
 
   /* Try to prune the dead incoming phi edges.  */
@@ -2173,6 +2237,10 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
 	return false;
 
       m_phi_def_preds.simplify (phi);
+      if (m_phi_def_preds.is_false ())
+	return false;
+      if (m_phi_def_preds.is_true ())
+	return true;
       m_phi_def_preds.normalize (phi);
     }
 

@@ -82,7 +82,6 @@ namespace pmr
       struct constant_init
       {
 	union {
-	  unsigned char unused;
 	  T obj;
 	};
 	constexpr constant_init() : obj() { }
@@ -506,7 +505,7 @@ namespace pmr
     }
 
     // Allocated size of chunk:
-    uint32_t _M_bytes = 0;
+    bitset::size_type _M_bytes = 0;
     // Start of allocated chunk:
     std::byte* _M_p = nullptr;
 
@@ -580,7 +579,7 @@ namespace pmr
   // For 16-bit pointers it's five pointers (10 bytes).
   // TODO pad 64-bit to 4*sizeof(void*) to avoid splitting across cache lines?
   static_assert(sizeof(chunk)
-      == sizeof(bitset::size_type) + sizeof(uint32_t) + 2 * sizeof(void*));
+      == 2 * sizeof(bitset::size_type) + 2 * sizeof(void*));
 
   // An oversized allocation that doesn't fit in a pool.
   struct big_block
@@ -735,7 +734,7 @@ namespace pmr
 	  _M_blocks_per_chunk = std::min({
 	      max_blocks,
 	      __opts.max_blocks_per_chunk,
-	      (size_t)_M_blocks_per_chunk * 2
+	      size_t(_M_blocks_per_chunk * 2)
 	  });
 	}
     }
@@ -874,9 +873,11 @@ namespace pmr
       256, 320, 384, 448,
       512, 768,
 #if __SIZE_WIDTH__ > 16
+      // Use bigger pools if size_t has at least 20 bits.
       1024, 1536,
       2048, 3072,
-#if __SIZE_WIDTH__ > 20
+#if __INT_WIDTH__ >= 32
+      // Use even bigger pools if int has at least 32 bits.
       1<<12, 1<<13, 1<<14,
       1<<15, 1<<16, 1<<17,
       1<<20, 1<<21, 1<<22 // 4MB should be enough for anybody
@@ -1056,7 +1057,8 @@ namespace pmr
 	// Decide on initial number of blocks per chunk.
 	// At least 16 blocks per chunk seems reasonable,
 	// more for smaller blocks:
-	size_t blocks_per_chunk = std::max(size_t(16), 1024 / block_size);
+	size_t blocks_per_chunk = 1024 / block_size;
+	blocks_per_chunk = std::max(size_t(16), blocks_per_chunk);
 	// But don't exceed the requested max_blocks_per_chunk:
 	blocks_per_chunk
 	  = std::min(blocks_per_chunk, _M_opts.max_blocks_per_chunk);

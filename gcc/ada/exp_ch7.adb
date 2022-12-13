@@ -4452,7 +4452,7 @@ package body Exp_Ch7 is
    begin
       if Is_Derived_Type (Typ)
         and then Comes_From_Source (E)
-        and then not Present (Overridden_Operation (E))
+        and then No (Overridden_Operation (E))
       then
          --  We know that the explicit operation on the type does not override
          --  the inherited operation of the parent, and that the derivation

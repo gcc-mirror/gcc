@@ -895,7 +895,7 @@ package body Exp_SPARK is
    procedure SPARK_Freeze_Type (N : Entity_Id) is
       Typ : constant Entity_Id := Entity (N);
 
-      Renamed_Eq : Node_Id;
+      Renamed_Eq : Entity_Id;
       --  Defining unit name for the predefined equality function in the case
       --  where the type has a primitive operation that is a renaming of
       --  predefined equality (but only if there is also an overriding

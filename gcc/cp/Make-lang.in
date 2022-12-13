@@ -39,7 +39,7 @@ CXX_INSTALL_NAME := $(shell echo c++|sed '$(program_transform_name)')
 GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
 CXX_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo c++|sed '$(program_transform_name)')
 GXX_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo g++|sed '$(program_transform_name)')
-CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h operators.def cp-trait.def
+CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h operators.def cp-trait.def contracts.h
 
 #
 # Define the names for selecting c++ in LANGUAGES.
@@ -81,7 +81,7 @@ g++-cross$(exeext): xg++$(exeext)
 
 # The compiler itself.
 # Shared with C front end:
-CXX_C_OBJS = attribs.o incpath.o \
+CXX_C_OBJS = attribs.o \
 	$(C_COMMON_OBJS) $(CXX_TARGET_OBJS)
 
 # Language-specific object files for C++ and Objective C++.
@@ -89,7 +89,7 @@ CXX_AND_OBJCXX_OBJS = \
 	cp/call.o cp/class.o cp/constexpr.o cp/constraint.o \
 	cp/coroutines.o cp/cp-gimplify.o \
 	cp/cp-objcp-common.o cp/cp-ubsan.o \
-	cp/cvt.o cp/cxx-pretty-print.o \
+	cp/cvt.o cp/contracts.o cp/cxx-pretty-print.o \
 	cp/decl.o cp/decl2.o cp/dump.o \
 	cp/error.o cp/except.o cp/expr.o \
 	cp/friend.o cp/init.o \

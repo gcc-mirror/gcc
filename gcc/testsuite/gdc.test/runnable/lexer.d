@@ -2,8 +2,8 @@
 /*
 TEST_OUTPUT:
 ---
-runnable/lexer.d(81): Deprecation: `version( <integer> )` is deprecated, use version identifiers instead
-runnable/lexer.d(82): Deprecation: `debug( <integer> )` is deprecated, use debug identifiers instead
+runnable/lexer.d(86): Deprecation: `version( <integer> )` is deprecated, use version identifiers instead
+runnable/lexer.d(87): Deprecation: `debug( <integer> )` is deprecated, use debug identifiers instead
 ---
 */
 
@@ -36,6 +36,11 @@ HERE";
     //writefln("'%s'", s);
     assert(s == "foo\n");
 
+    // https://issues.dlang.org/show_bug.cgi?id=19623
+    s = q"übel
+foo
+übel";
+    assert(s == "foo\n");
 
     s = q{ foo(xxx) };
     assert(s ==" foo(xxx) ");

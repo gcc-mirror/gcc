@@ -82,6 +82,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend const _Facet&
       use_facet(const locale&);
 
+    template<typename _Facet>
+      friend const _Facet*
+      __try_use_facet(const locale&) _GLIBCXX_NOTHROW;
+
     template<typename _Cache>
       friend struct __use_cache;
 
@@ -496,6 +500,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend bool
       has_facet(const locale&) throw();
 
+    template<typename _Facet>
+      friend const _Facet*
+      __try_use_facet(const locale&) _GLIBCXX_NOTHROW;
+
     // NB: There is no accessor for _M_index because it may be used
     // before the constructor is run; the effect of calling a member
     // function (even an inline) would be undefined.
@@ -535,6 +543,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Facet>
       friend const _Facet&
       use_facet(const locale&);
+
+    template<typename _Facet>
+      friend const _Facet*
+      __try_use_facet(const locale&) _GLIBCXX_NOTHROW;
 
     template<typename _Cache>
       friend struct __use_cache;

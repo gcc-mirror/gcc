@@ -18,6 +18,6 @@ inline  char  operator == (const Char    a, const char b) { return 0; }
 
 char mystrcmp(Char s[31], Char t[31])
 {
-  for (; *s == *t; ++s, ++t) if (*s == '\0') return 0;
+  for (; *s == *t; ++s, ++t) if (*s == '\0') return 0; // { dg-error "reversed" "" { target c++20 } }
   return char(*s - *t);
 }

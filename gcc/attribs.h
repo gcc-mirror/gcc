@@ -398,4 +398,6 @@ extern void init_attr_rdwr_indices (rdwr_map *, tree);
 extern attr_access *get_parm_access (rdwr_map &, tree,
 				     tree = current_function_decl);
 
+extern unsigned int strict_flex_array_level_of (tree);
+
 #endif // GCC_ATTRIBS_H

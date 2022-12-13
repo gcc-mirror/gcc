@@ -1,21 +1,41 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vqrdmlah.s32	q[0-9]+, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+*/
 int32x4_t
-foo (int32x4_t a, int32x4_t b, int32_t c)
+foo (int32x4_t add, int32x4_t m1, int32_t m2)
 {
-  return vqrdmlahq_n_s32 (a, b, c);
+  return vqrdmlahq_n_s32 (add, m1, m2);
 }
 
-/* { dg-final { scan-assembler "vqrdmlah.s32"  }  } */
 
+/*
+**foo1:
+**	...
+**	vqrdmlah.s32	q[0-9]+, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+*/
 int32x4_t
-foo1 (int32x4_t a, int32x4_t b, int32_t c)
+foo1 (int32x4_t add, int32x4_t m1, int32_t m2)
 {
-  return vqrdmlahq (a, b, c);
+  return vqrdmlahq (add, m1, m2);
 }
 
-/* { dg-final { scan-assembler "vqrdmlah.s32"  }  } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

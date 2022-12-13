@@ -4,6 +4,11 @@
    { dg-do compile }
    { dg-options "-O2 -Wall" } */
 
+/* pr102706: disabled warnings because the now-disabled conditions for the
+   bogus warnings to come up do not take cost analysis into account, and often
+   come up wrong.  */
+/* { dg-additional-options "-Wno-stringop-overflow" } */
+
 void sink (void*);
 
 struct A { int i; };
@@ -87,7 +92,8 @@ void test_C_global_buf (void)
   p->b1.a[ 1].i = 0;     // { dg-warning "\\\[-Wzero-length-bounds" }
   sink (p);
 
-  p->b2.a[ 0].i = 0;    // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v2si_store_align &&  { ! vect_slp_v4si_store_unalign } } } }
+  p->b2.a[ 0].i = 0;    // { dg-bogus "\\\[-Wstringop-overflow" "pr102706" }
+                        //   { xfail { vect_slp_v2si_store_align &&  { ! vect_slp_v4si_store_unalign } } }
   p->b2.a[ 1].i = 0;
   p->b2.a[ 2].i = 0;     // { dg-warning "\\\[-Warray-bounds" }
   p->b2.a[ 3].i = 0;     // { dg-warning "\\\[-Warray-bounds" }
@@ -117,7 +123,8 @@ void test_C_local_buf (void)
   p->b1.a[ 1].i = 8;     // { dg-warning "\\\[-Wzero-length-bounds" }
   sink (p);
 
-  p->b2.a[ 0].i = 9;
+  p->b2.a[ 0].i = 9;    // { dg-bogus "\\\[-Wstringop-overflow" "pr102706" }
+                        //   { xfail { vect_slp_v2si_store_align &&  { ! vect_slp_v4si_store_unalign } } }
   p->b2.a[ 1].i = 10;
   p->b2.a[ 2].i = 11;    // { dg-warning "\\\[-Warray-bounds" }
   p->b2.a[ 3].i = 12;    // { dg-warning "\\\[-Warray-bounds" }

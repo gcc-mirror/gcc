@@ -1069,9 +1069,9 @@ as the language is free to assume objects don't have internal pointers
 */
 bool doesPointTo(S, T, Tdummy=void)(auto ref const S source, ref const T target) @nogc @trusted pure nothrow
 if (__traits(isRef, source) || isDynamicArray!S ||
-    isPointer!S || is(S == class))
+    is(S : U*, U) || is(S == class))
 {
-    static if (isPointer!S || is(S == class) || is(S == interface))
+    static if (is(S : U*, U) || is(S == class) || is(S == interface))
     {
         const m = *cast(void**) &source;
         const b = cast(void*) &target;
@@ -1115,9 +1115,9 @@ bool doesPointTo(S, T)(auto ref const shared S source, ref const shared T target
 /// ditto
 bool mayPointTo(S, T, Tdummy=void)(auto ref const S source, ref const T target) @trusted pure nothrow
 if (__traits(isRef, source) || isDynamicArray!S ||
-    isPointer!S || is(S == class))
+    is(S : U*, U) || is(S == class))
 {
-    static if (isPointer!S || is(S == class) || is(S == interface))
+    static if (is(S : U*, U) || is(S == class) || is(S == interface))
     {
         const m = *cast(void**) &source;
         const b = cast(void*) &target;

@@ -34,6 +34,8 @@ void f5(std::try_to_lock_t);
 void f6(std::adopt_lock_t);
 #endif
 
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 int main()
 {
   std::nothrow_t v1;

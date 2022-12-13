@@ -44,8 +44,8 @@ int test (struct outer *outer_p, struct inner *inner_p)
   sum += o->i; /* { dg-line testB } */
 
   return sum;
-  /* { dg-warning "underread" "warning" { target *-*-* } testA } */
+  /* { dg-warning "stack-based buffer under-read" "warning" { target *-*-* } testA } */
   /* { dg-message "" "note" { target *-*-* } testA } */
-  /* { dg-warning "underread" "warning" { target *-*-* } testB } */
+  /* { dg-warning "stack-based buffer under-read" "warning" { target *-*-* } testB } */
   /* { dg-message "" "note" { target *-*-* } testB } */
 }

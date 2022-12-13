@@ -2542,7 +2542,6 @@ GCC plugins may provide their own attributes.
 * M32R/D Function Attributes::
 * m68k Function Attributes::
 * MCORE Function Attributes::
-* MeP Function Attributes::
 * MicroBlaze Function Attributes::
 * Microsoft Windows Function Attributes::
 * MIPS Function Attributes::
@@ -5392,45 +5391,6 @@ basic @code{asm} and C code may appear to work, they cannot be
 depended upon to work reliably and are not supported.
 @end table
 
-@node MeP Function Attributes
-@subsection MeP Function Attributes
-
-These function attributes are supported by the MeP back end:
-
-@table @code
-@item disinterrupt
-@cindex @code{disinterrupt} function attribute, MeP
-On MeP targets, this attribute causes the compiler to emit
-instructions to disable interrupts for the duration of the given
-function.
-
-@item interrupt
-@cindex @code{interrupt} function attribute, MeP
-Use this attribute to indicate
-that the specified function is an interrupt handler.  The compiler generates
-function entry and exit sequences suitable for use in an interrupt handler
-when this attribute is present.
-
-@item near
-@cindex @code{near} function attribute, MeP
-This attribute causes the compiler to assume the called
-function is close enough to use the normal calling convention,
-overriding the @option{-mtf} command-line option.
-
-@item far
-@cindex @code{far} function attribute, MeP
-On MeP targets this causes the compiler to use a calling convention
-that assumes the called function is too far away for the built-in
-addressing modes.
-
-@item vliw
-@cindex @code{vliw} function attribute, MeP
-The @code{vliw} attribute tells the compiler to emit
-instructions in VLIW mode instead of core mode.  Note that this
-attribute is not allowed unless a VLIW coprocessor has been configured
-and enabled through command-line options.
-@end table
-
 @node MicroBlaze Function Attributes
 @subsection MicroBlaze Function Attributes
 
@@ -7075,6 +7035,26 @@ Enable/disable the generation of the AVXVNNIINT8 instructions.
 @cindex @code{target("avxneconvert")} function attribute, x86
 Enable/disable the generation of the AVXNECONVERT instructions.
 
+@item cmpccxadd
+@itemx no-cmpccxadd
+@cindex @code{target("cmpccxadd")} function attribute, x86
+Enable/disable the generation of the CMPccXADD instructions.
+
+@item amx-fp16
+@itemx no-amx-fp16
+@cindex @code{target("amx-fp16")} function attribute, x86
+Enable/disable the generation of the AMX-FP16 instructions.
+
+@item prefetchi
+@itemx no-prefetchi
+@cindex @code{target("prefetchi")} function attribute, x86
+Enable/disable the generation of the PREFETCHI instructions.
+
+@item raoint
+@itemx no-raoint
+@cindex @code{target("raoint")} function attribute, x86
+Enable/disable the generation of the RAOINT instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86
@@ -7316,7 +7296,6 @@ attributes.
 * IA-64 Variable Attributes::
 * LoongArch Variable Attributes::
 * M32R/D Variable Attributes::
-* MeP Variable Attributes::
 * Microsoft Windows Variable Attributes::
 * MSP430 Variable Attributes::
 * Nvidia PTX Variable Attributes::
@@ -8162,70 +8141,6 @@ Medium and large model objects may live anywhere in the 32-bit address space
 addresses).
 @end table
 
-@node MeP Variable Attributes
-@subsection MeP Variable Attributes
-
-The MeP target has a number of addressing modes and busses.  The
-@code{near} space spans the standard memory space's first 16 megabytes
-(24 bits).  The @code{far} space spans the entire 32-bit memory space.
-The @code{based} space is a 128-byte region in the memory space that
-is addressed relative to the @code{$tp} register.  The @code{tiny}
-space is a 65536-byte region relative to the @code{$gp} register.  In
-addition to these memory regions, the MeP target has a separate 16-bit
-control bus which is specified with @code{cb} attributes.
-
-@table @code
-
-@item based
-@cindex @code{based} variable attribute, MeP
-Any variable with the @code{based} attribute is assigned to the
-@code{.based} section, and is accessed with relative to the
-@code{$tp} register.
-
-@item tiny
-@cindex @code{tiny} variable attribute, MeP
-Likewise, the @code{tiny} attribute assigned variables to the
-@code{.tiny} section, relative to the @code{$gp} register.
-
-@item near
-@cindex @code{near} variable attribute, MeP
-Variables with the @code{near} attribute are assumed to have addresses
-that fit in a 24-bit addressing mode.  This is the default for large
-variables (@code{-mtiny=4} is the default) but this attribute can
-override @code{-mtiny=} for small variables, or override @code{-ml}.
-
-@item far
-@cindex @code{far} variable attribute, MeP
-Variables with the @code{far} attribute are addressed using a full
-32-bit address.  Since this covers the entire memory space, this
-allows modules to make no assumptions about where variables might be
-stored.
-
-@item io
-@cindex @code{io} variable attribute, MeP
-@itemx io (@var{addr})
-Variables with the @code{io} attribute are used to address
-memory-mapped peripherals.  If an address is specified, the variable
-is assigned that address, else it is not assigned an address (it is
-assumed some other module assigns an address).  Example:
-
-@smallexample
-int timer_count __attribute__((io(0x123)));
-@end smallexample
-
-@item cb
-@itemx cb (@var{addr})
-@cindex @code{cb} variable attribute, MeP
-Variables with the @code{cb} attribute are used to access the control
-bus, using special instructions.  @code{addr} indicates the control bus
-address.  Example:
-
-@smallexample
-int cpu_clock __attribute__((cb(0x123)));
-@end smallexample
-
-@end table
-
 @node Microsoft Windows Variable Attributes
 @subsection Microsoft Windows Variable Attributes
 
@@ -8464,7 +8379,6 @@ attributes.
 * ARC Type Attributes::
 * ARM Type Attributes::
 * BPF Type Attributes::
-* MeP Type Attributes::
 * PowerPC Type Attributes::
 * x86 Type Attributes::
 @end menu
@@ -9048,18 +8962,6 @@ relocation information should be generated for any access to a variable
 of that type. The behavior is equivalent to the programmer manually
 wrapping every such access with @code{__builtin_preserve_access_index}.
 
-
-@node MeP Type Attributes
-@subsection MeP Type Attributes
-
-@cindex @code{based} type attribute, MeP
-@cindex @code{tiny} type attribute, MeP
-@cindex @code{near} type attribute, MeP
-@cindex @code{far} type attribute, MeP
-Many of the MeP variable attributes may be applied to types as well.
-Specifically, the @code{based}, @code{tiny}, @code{near}, and
-@code{far} attributes may be applied to either.  The @code{io} and
-@code{cb} attributes may not be applied to types.
 
 @node PowerPC Type Attributes
 @subsection PowerPC Type Attributes
@@ -14745,7 +14647,6 @@ instructions, but allow the compiler to schedule those calls.
 * Other MIPS Built-in Functions::
 * MSP430 Built-in Functions::
 * NDS32 Built-in Functions::
-* picoChip Built-in Functions::
 * Basic PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
 * PowerPC Hardware Transactional Memory Built-in Functions::
@@ -17871,42 +17772,6 @@ Enable global interrupt.
 @deftypefn {Built-in Function} void __builtin_nds32_setgie_dis (void)
 Disable global interrupt.
 @end deftypefn
-
-@node picoChip Built-in Functions
-@subsection picoChip Built-in Functions
-
-GCC provides an interface to selected machine instructions from the
-picoChip instruction set.
-
-@table @code
-@item int __builtin_sbc (int @var{value})
-Sign bit count.  Return the number of consecutive bits in @var{value}
-that have the same value as the sign bit.  The result is the number of
-leading sign bits minus one, giving the number of redundant sign bits in
-@var{value}.
-
-@item int __builtin_byteswap (int @var{value})
-Byte swap.  Return the result of swapping the upper and lower bytes of
-@var{value}.
-
-@item int __builtin_brev (int @var{value})
-Bit reversal.  Return the result of reversing the bits in
-@var{value}.  Bit 15 is swapped with bit 0, bit 14 is swapped with bit 1,
-and so on.
-
-@item int __builtin_adds (int @var{x}, int @var{y})
-Saturating addition.  Return the result of adding @var{x} and @var{y},
-storing the value 32767 if the result overflows.
-
-@item int __builtin_subs (int @var{x}, int @var{y})
-Saturating subtraction.  Return the result of subtracting @var{y} from
-@var{x}, storing the value @minus{}32768 if the result overflows.
-
-@item void __builtin_halt (void)
-Halt.  The processor stops execution.  This built-in is useful for
-implementing assertions.
-
-@end table
 
 @node Basic PowerPC Built-in Functions
 @subsection Basic PowerPC Built-in Functions
@@ -21237,6 +21102,10 @@ processors.
 Returns the value that is currently set in the @samp{tp} register.
 @end deftypefn
 
+@deftypefn {Built-in Function}  void __builtin_riscv_pause (void)
+Generates the @code{pause} (hint) machine instruction.
+@end deftypefn
+
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in
@@ -21945,6 +21814,9 @@ Intel Core i7 Alderlake CPU.
 @item rocketlake
 Intel Core i7 Rocketlake CPU.
 
+@item graniterapids
+Intel Core i7 graniterapids CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
@@ -21959,6 +21831,12 @@ Intel Atom Goldmont Plus CPU.
 
 @item tremont
 Intel Atom Tremont CPU.
+
+@item sierraforest
+Intel Atom Sierra Forest CPU.
+
+@item grandridge
+Intel Atom Grand Ridge CPU.
 
 @item knl
 Intel Knights Landing CPU.
@@ -22019,18 +21897,6 @@ AMD Family 19h Zen version 3.
 
 @item znver4
 AMD Family 19h Zen version 4.
-
-@item x86-64
-Baseline x86-64 microarchitecture level (as defined in x86-64 psABI).
-
-@item x86-64-v2
-x86-64-v2 microarchitecture level.
-
-@item x86-64-v3
-x86-64-v3 microarchitecture level.
-
-@item x86-64-v4
-x86-64-v4 microarchitecture level.
 @end table
 
 Here is an example:
@@ -22124,6 +21990,16 @@ VPCLMULQDQ instructions.
 AVX512VNNI instructions.
 @item avx512bitalg
 AVX512BITALG instructions.
+@item x86-64
+Baseline x86-64 microarchitecture level (as defined in x86-64 psABI).
+@item x86-64-v2
+x86-64-v2 microarchitecture level.
+@item x86-64-v3
+x86-64-v3 microarchitecture level.
+@item x86-64-v4
+x86-64-v4 microarchitecture level.
+
+
 @end table
 
 Here is an example:
@@ -23570,7 +23446,6 @@ information.
 * AArch64 Pragmas::
 * ARM Pragmas::
 * M32C Pragmas::
-* MeP Pragmas::
 * PRU Pragmas::
 * RS/6000 and PowerPC Pragmas::
 * S/390 Pragmas::
@@ -23648,77 +23523,6 @@ instead).  Example:
 @smallexample
 #pragma ADDRESS port3 0x103
 char port3;
-@end smallexample
-
-@end table
-
-@node MeP Pragmas
-@subsection MeP Pragmas
-
-@table @code
-
-@item custom io_volatile (on|off)
-@cindex pragma, custom io_volatile
-Overrides the command-line option @code{-mio-volatile} for the current
-file.  Note that for compatibility with future GCC releases, this
-option should only be used once before any @code{io} variables in each
-file.
-
-@item GCC coprocessor available @var{registers}
-@cindex pragma, coprocessor available
-Specifies which coprocessor registers are available to the register
-allocator.  @var{registers} may be a single register, register range
-separated by ellipses, or comma-separated list of those.  Example:
-
-@smallexample
-#pragma GCC coprocessor available $c0...$c10, $c28
-@end smallexample
-
-@item GCC coprocessor call_saved @var{registers}
-@cindex pragma, coprocessor call_saved
-Specifies which coprocessor registers are to be saved and restored by
-any function using them.  @var{registers} may be a single register,
-register range separated by ellipses, or comma-separated list of
-those.  Example:
-
-@smallexample
-#pragma GCC coprocessor call_saved $c4...$c6, $c31
-@end smallexample
-
-@item GCC coprocessor subclass '(A|B|C|D)' = @var{registers}
-@cindex pragma, coprocessor subclass
-Creates and defines a register class.  These register classes can be
-used by inline @code{asm} constructs.  @var{registers} may be a single
-register, register range separated by ellipses, or comma-separated
-list of those.  Example:
-
-@smallexample
-#pragma GCC coprocessor subclass 'B' = $c2, $c4, $c6
-
-asm ("cpfoo %0" : "=B" (x));
-@end smallexample
-
-@item GCC disinterrupt @var{name} , @var{name} @dots{}
-@cindex pragma, disinterrupt
-For the named functions, the compiler adds code to disable interrupts
-for the duration of those functions.  If any functions so named 
-are not encountered in the source, a warning is emitted that the pragma is
-not used.  Examples:
-
-@smallexample
-#pragma disinterrupt foo
-#pragma disinterrupt bar, grill
-int foo () @{ @dots{} @}
-@end smallexample
-
-@item GCC call @var{name} , @var{name} @dots{}
-@cindex pragma, call
-For the named functions, the compiler always uses a register-indirect
-call model when calling the named functions.  Examples:
-
-@smallexample
-extern int foo ();
-#pragma call foo
 @end smallexample
 
 @end table

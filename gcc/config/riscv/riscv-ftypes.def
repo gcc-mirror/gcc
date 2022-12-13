@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
         argument type.  */
 
 DEF_RISCV_FTYPE (0, (USI))
+DEF_RISCV_FTYPE (0, (VOID))
 DEF_RISCV_FTYPE (1, (VOID, USI))
 DEF_RISCV_FTYPE (1, (VOID, VOID_PTR))
 DEF_RISCV_FTYPE (1, (SI, SI))

@@ -763,10 +763,9 @@ idx_within_array_bound (tree ref, tree *idx, void *dta)
   if (TREE_CODE (ref) != ARRAY_REF)
     return false;
 
-  /* For arrays at the end of the structure, we are not guaranteed that they
-     do not really extend over their declared size.  However, for arrays of
-     size greater than one, this is unlikely to be intended.  */
-  if (array_at_struct_end_p (ref))
+  /* For arrays that might have flexible sizes, it is not guaranteed that they
+     do not extend over their declared size.  */
+  if (array_ref_flexible_size_p (ref))
     return false;
 
   ev = analyze_scalar_evolution (loop, *idx);
@@ -1434,10 +1433,20 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
       basic_block bb = ifc_bbs[i];
       gimple_stmt_iterator gsi;
 
+      bool may_have_nonlocal_labels
+	= bb_with_exit_edge_p (loop, bb) || bb == loop->latch;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	switch (gimple_code (gsi_stmt (gsi)))
 	  {
 	  case GIMPLE_LABEL:
+	    if (!may_have_nonlocal_labels)
+	      {
+		tree label
+		  = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi)));
+		if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
+		  return false;
+	      }
+	    /* Fallthru.  */
 	  case GIMPLE_ASSIGN:
 	  case GIMPLE_CALL:
 	  case GIMPLE_DEBUG:
@@ -2628,8 +2637,8 @@ remove_conditions_and_labels (loop_p loop)
       basic_block bb = ifc_bbs[i];
 
       if (bb_with_exit_edge_p (loop, bb)
-        || bb == loop->latch)
-      continue;
+	  || bb == loop->latch)
+	continue;
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	switch (gimple_code (gsi_stmt (gsi)))
@@ -3762,7 +3771,8 @@ pass_if_conversion::execute (function *fun)
       if (!gimple_bb (g))
 	continue;
       unsigned ifcvt_loop = tree_to_uhwi (gimple_call_arg (g, 0));
-      if (!get_loop (fun, ifcvt_loop))
+      unsigned orig_loop = tree_to_uhwi (gimple_call_arg (g, 1));
+      if (!get_loop (fun, ifcvt_loop) || !get_loop (fun, orig_loop))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "If-converted loop vanished\n");

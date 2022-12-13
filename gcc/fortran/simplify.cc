@@ -3955,6 +3955,9 @@ gfc_simplify_ishftc (gfc_expr *e, gfc_expr *s, gfc_expr *sz)
 	return NULL;
 
       gfc_extract_int (sz, &ssize);
+
+      if (ssize > isize || ssize <= 0)
+	return &gfc_bad_expr;
     }
   else
     ssize = isize;
@@ -4913,7 +4916,22 @@ gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 
   if (mask->expr_type == EXPR_CONSTANT)
     {
-      result = gfc_copy_expr (mask->value.logical ? tsource : fsource);
+      /* The standard requires evaluation of all function arguments.
+	 Simplify only when the other dropped argument (FSOURCE or TSOURCE)
+	 is a constant expression.  */
+      if (mask->value.logical)
+	{
+	  if (!gfc_is_constant_expr (fsource))
+	    return NULL;
+	  result = gfc_copy_expr (tsource);
+	}
+      else
+	{
+	  if (!gfc_is_constant_expr (tsource))
+	    return NULL;
+	  result = gfc_copy_expr (fsource);
+	}
+
       /* Parenthesis is needed to get lower bounds of 1.  */
       result = gfc_get_parentheses (result);
       gfc_simplify_expr (result, 1);
@@ -8470,7 +8488,16 @@ gfc_simplify_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 	    }
 	}
       else if (field->expr_type == EXPR_ARRAY)
-	e = gfc_copy_expr (field_ctor->expr);
+	{
+	  if (field_ctor)
+	    e = gfc_copy_expr (field_ctor->expr);
+	  else
+	    {
+	      /* Not enough elements in array FIELD.  */
+	      gfc_free_expr (result);
+	      return &gfc_bad_expr;
+	    }
+	}
       else
 	e = gfc_copy_expr (field);
 

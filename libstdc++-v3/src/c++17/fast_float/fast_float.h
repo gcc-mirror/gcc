@@ -74,7 +74,7 @@ struct parse_options {
  * Like the C++17 standard, the `fast_float::from_chars` functions take an optional last argument of
  * the type `fast_float::chars_format`. It is a bitset value: we check whether
  * `fmt & fast_float::chars_format::fixed` and `fmt & fast_float::chars_format::scientific` are set
- * to determine whether we allowe the fixed point and scientific notation respectively.
+ * to determine whether we allow the fixed point and scientific notation respectively.
  * The default is  `fast_float::chars_format::general` which allows both `fixed` and `scientific`.
  */
 template<typename T>
@@ -98,13 +98,12 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
        || defined(__amd64) || defined(__aarch64__) || defined(_M_ARM64) \
        || defined(__MINGW64__)                                          \
        || defined(__s390x__)                                            \
-       || (defined(__ppc64__) || defined(__PPC64__) || defined(__ppc64le__) || defined(__PPC64LE__)) \
-       || defined(__EMSCRIPTEN__))
-#define FASTFLOAT_64BIT
+       || (defined(__ppc64__) || defined(__PPC64__) || defined(__ppc64le__) || defined(__PPC64LE__)) )
+#define FASTFLOAT_64BIT 1
 #elif (defined(__i386) || defined(__i386__) || defined(_M_IX86)   \
      || defined(__arm__) || defined(_M_ARM)                   \
-     || defined(__MINGW32__))
-#define FASTFLOAT_32BIT
+     || defined(__MINGW32__) || defined(__EMSCRIPTEN__))
+#define FASTFLOAT_32BIT 1
 #else
   // Need to check incrementally, since SIZE_MAX is a size_t, avoid overflow.
   // We can never tell the register width, but the SIZE_MAX is a good approximation.
@@ -112,9 +111,9 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
   #if SIZE_MAX == 0xffff
     #error Unknown platform (16-bit, unsupported)
   #elif SIZE_MAX == 0xffffffff
-    #define FASTFLOAT_32BIT
+    #define FASTFLOAT_32BIT 1
   #elif SIZE_MAX == 0xffffffffffffffff
-    #define FASTFLOAT_64BIT
+    #define FASTFLOAT_64BIT 1
   #else
     #error Unknown platform (not 32-bit, not 64-bit?)
   #endif
@@ -128,7 +127,7 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
 #define FASTFLOAT_VISUAL_STUDIO 1
 #endif
 
-#ifdef __BYTE_ORDER__
+#if defined __BYTE_ORDER__ && defined __ORDER_BIG_ENDIAN__
 #define FASTFLOAT_IS_BIG_ENDIAN (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 #elif defined _WIN32
 #define FASTFLOAT_IS_BIG_ENDIAN 0
@@ -271,8 +270,9 @@ fastfloat_really_inline uint64_t _umul128(uint64_t ab, uint64_t cd,
 fastfloat_really_inline value128 full_multiplication(uint64_t a,
                                                      uint64_t b) {
   value128 answer;
-#ifdef _M_ARM64
+#if defined(_M_ARM64) && !defined(__MINGW32__)
   // ARM64 has native support for 64-bit multiplications, no need to emulate
+  // But MinGW on ARM64 doesn't have native support for 64-bit multiplications
   answer.high = __umulh(a, b);
   answer.low = a * b;
 #elif defined(FASTFLOAT_32BIT) || (defined(_WIN64) && !defined(__clang__))
@@ -307,22 +307,88 @@ constexpr static double powers_of_ten_double[] = {
     1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19, 1e20, 1e21, 1e22};
 constexpr static float powers_of_ten_float[] = {1e0, 1e1, 1e2, 1e3, 1e4, 1e5,
                                                 1e6, 1e7, 1e8, 1e9, 1e10};
+// used for max_mantissa_double and max_mantissa_float
+constexpr uint64_t constant_55555 = 5 * 5 * 5 * 5 * 5;
+// Largest integer value v so that (5**index * v) <= 1<<53.
+// 0x10000000000000 == 1 << 53
+constexpr static uint64_t max_mantissa_double[] = {
+      0x10000000000000,
+      0x10000000000000 / 5,
+      0x10000000000000 / (5 * 5),
+      0x10000000000000 / (5 * 5 * 5),
+      0x10000000000000 / (5 * 5 * 5 * 5),
+      0x10000000000000 / (constant_55555),
+      0x10000000000000 / (constant_55555 * 5),
+      0x10000000000000 / (constant_55555 * 5 * 5),
+      0x10000000000000 / (constant_55555 * 5 * 5 * 5),
+      0x10000000000000 / (constant_55555 * 5 * 5 * 5 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555),
+      0x10000000000000 / (constant_55555 * constant_55555 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * 5 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * 5 * 5 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * 5 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * 5 * 5 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * 5 * 5 * 5 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * 5 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * 5 * 5 * 5),
+      0x10000000000000 / (constant_55555 * constant_55555 * constant_55555 * constant_55555 * 5 * 5 * 5 * 5)};
+  // Largest integer value v so that (5**index * v) <= 1<<24.
+  // 0x1000000 == 1<<24
+  constexpr static uint64_t max_mantissa_float[] = {
+      0x1000000,
+      0x1000000 / 5,
+      0x1000000 / (5 * 5),
+      0x1000000 / (5 * 5 * 5),
+      0x1000000 / (5 * 5 * 5 * 5),
+      0x1000000 / (constant_55555),
+      0x1000000 / (constant_55555 * 5),
+      0x1000000 / (constant_55555 * 5 * 5),
+      0x1000000 / (constant_55555 * 5 * 5 * 5),
+      0x1000000 / (constant_55555 * 5 * 5 * 5 * 5),
+      0x1000000 / (constant_55555 * constant_55555),
+      0x1000000 / (constant_55555 * constant_55555 * 5)};
 
 template <typename T> struct binary_format {
+  using equiv_uint = typename std::conditional<sizeof(T) == 4, uint32_t, uint64_t>::type;
+
   static inline constexpr int mantissa_explicit_bits();
   static inline constexpr int minimum_exponent();
   static inline constexpr int infinite_power();
   static inline constexpr int sign_index();
-  static inline constexpr int min_exponent_fast_path();
+  static inline constexpr int min_exponent_fast_path(); // used when fegetround() == FE_TONEAREST
   static inline constexpr int max_exponent_fast_path();
   static inline constexpr int max_exponent_round_to_even();
   static inline constexpr int min_exponent_round_to_even();
-  static inline constexpr uint64_t max_mantissa_fast_path();
+  static inline constexpr uint64_t max_mantissa_fast_path(int64_t power);
+  static inline constexpr uint64_t max_mantissa_fast_path(); // used when fegetround() == FE_TONEAREST
   static inline constexpr int largest_power_of_ten();
   static inline constexpr int smallest_power_of_ten();
   static inline constexpr T exact_power_of_ten(int64_t power);
   static inline constexpr size_t max_digits();
+  static inline constexpr equiv_uint exponent_mask();
+  static inline constexpr equiv_uint mantissa_mask();
+  static inline constexpr equiv_uint hidden_bit_mask();
 };
+
+template <> inline constexpr int binary_format<double>::min_exponent_fast_path() {
+#if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
+  return 0;
+#else
+  return -22;
+#endif
+}
+
+template <> inline constexpr int binary_format<float>::min_exponent_fast_path() {
+#if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
+  return 0;
+#else
+  return -10;
+#endif
+}
 
 template <> inline constexpr int binary_format<double>::mantissa_explicit_bits() {
   return 52;
@@ -364,33 +430,29 @@ template <> inline constexpr int binary_format<float>::infinite_power() {
 template <> inline constexpr int binary_format<double>::sign_index() { return 63; }
 template <> inline constexpr int binary_format<float>::sign_index() { return 31; }
 
-template <> inline constexpr int binary_format<double>::min_exponent_fast_path() {
-#if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
-  return 0;
-#else
-  return -22;
-#endif
-}
-template <> inline constexpr int binary_format<float>::min_exponent_fast_path() {
-#if (FLT_EVAL_METHOD != 1) && (FLT_EVAL_METHOD != 0)
-  return 0;
-#else
-  return -10;
-#endif
-}
-
 template <> inline constexpr int binary_format<double>::max_exponent_fast_path() {
   return 22;
 }
 template <> inline constexpr int binary_format<float>::max_exponent_fast_path() {
   return 10;
 }
-
 template <> inline constexpr uint64_t binary_format<double>::max_mantissa_fast_path() {
   return uint64_t(2) << mantissa_explicit_bits();
 }
+template <> inline constexpr uint64_t binary_format<double>::max_mantissa_fast_path(int64_t power) {
+  // caller is responsible to ensure that
+  // power >= 0 && power <= 22
+  //
+  return max_mantissa_double[power];
+}
 template <> inline constexpr uint64_t binary_format<float>::max_mantissa_fast_path() {
   return uint64_t(2) << mantissa_explicit_bits();
+}
+template <> inline constexpr uint64_t binary_format<float>::max_mantissa_fast_path(int64_t power) {
+  // caller is responsible to ensure that
+  // power >= 0 && power <= 10
+  //
+  return max_mantissa_float[power];
 }
 
 template <>
@@ -427,6 +489,33 @@ template <> inline constexpr size_t binary_format<double>::max_digits() {
 }
 template <> inline constexpr size_t binary_format<float>::max_digits() {
   return 114;
+}
+
+template <> inline constexpr binary_format<float>::equiv_uint
+    binary_format<float>::exponent_mask() {
+  return 0x7F800000;
+}
+template <> inline constexpr binary_format<double>::equiv_uint
+    binary_format<double>::exponent_mask() {
+  return 0x7FF0000000000000;
+}
+
+template <> inline constexpr binary_format<float>::equiv_uint
+    binary_format<float>::mantissa_mask() {
+  return 0x007FFFFF;
+}
+template <> inline constexpr binary_format<double>::equiv_uint
+    binary_format<double>::mantissa_mask() {
+  return 0x000FFFFFFFFFFFFF;
+}
+
+template <> inline constexpr binary_format<float>::equiv_uint
+    binary_format<float>::hidden_bit_mask() {
+  return 0x00800000;
+}
+template <> inline constexpr binary_format<double>::equiv_uint
+    binary_format<double>::hidden_bit_mask() {
+  return 0x0010000000000000;
 }
 
 template<typename T>
@@ -553,10 +642,6 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
 
   uint64_t i = 0; // an unsigned int avoids signed overflows (which are bad)
 
-  while ((std::distance(p, pend) >= 8) && is_made_of_eight_digits_fast(p)) {
-    i = i * 100000000 + parse_eight_digits_unrolled(p); // in rare cases, this will overflow, but that's ok
-    p += 8;
-  }
   while ((p != pend) && is_integer(*p)) {
     // a multiplication by 10 is cheaper than an arbitrary integer
     // multiplication
@@ -1574,7 +1659,7 @@ namespace fast_float {
 // we might have platforms where `CHAR_BIT` is not 8, so let's avoid
 // doing `8 * sizeof(limb)`.
 #if defined(FASTFLOAT_64BIT) && !defined(__sparc)
-#define FASTFLOAT_64BIT_LIMB
+#define FASTFLOAT_64BIT_LIMB 1
 typedef uint64_t limb;
 constexpr size_t limb_bits = 64;
 #else
@@ -2248,10 +2333,6 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
 
   uint64_t i = 0; // an unsigned int avoids signed overflows (which are bad)
 
-  while ((std::distance(p, pend) >= 8) && is_made_of_eight_digits_fast(p)) {
-    i = i * 100000000 + parse_eight_digits_unrolled(p); // in rare cases, this will overflow, but that's ok
-    p += 8;
-  }
   while ((p != pend) && is_integer(*p)) {
     // a multiplication by 10 is cheaper than an arbitrary integer
     // multiplication
@@ -2410,40 +2491,24 @@ fastfloat_really_inline int32_t scientific_exponent(parsed_number_string& num) n
 // this converts a native floating-point number to an extended-precision float.
 template <typename T>
 fastfloat_really_inline adjusted_mantissa to_extended(T value) noexcept {
+  using equiv_uint = typename binary_format<T>::equiv_uint;
+  constexpr equiv_uint exponent_mask = binary_format<T>::exponent_mask();
+  constexpr equiv_uint mantissa_mask = binary_format<T>::mantissa_mask();
+  constexpr equiv_uint hidden_bit_mask = binary_format<T>::hidden_bit_mask();
+
   adjusted_mantissa am;
   int32_t bias = binary_format<T>::mantissa_explicit_bits() - binary_format<T>::minimum_exponent();
-  if (std::is_same<T, float>::value) {
-    constexpr uint32_t exponent_mask = 0x7F800000;
-    constexpr uint32_t mantissa_mask = 0x007FFFFF;
-    constexpr uint64_t hidden_bit_mask = 0x00800000;
-    uint32_t bits;
-    ::memcpy(&bits, &value, sizeof(T));
-    if ((bits & exponent_mask) == 0) {
-      // denormal
-      am.power2 = 1 - bias;
-      am.mantissa = bits & mantissa_mask;
-    } else {
-      // normal
-      am.power2 = int32_t((bits & exponent_mask) >> binary_format<T>::mantissa_explicit_bits());
-      am.power2 -= bias;
-      am.mantissa = (bits & mantissa_mask) | hidden_bit_mask;
-    }
+  equiv_uint bits;
+  ::memcpy(&bits, &value, sizeof(T));
+  if ((bits & exponent_mask) == 0) {
+    // denormal
+    am.power2 = 1 - bias;
+    am.mantissa = bits & mantissa_mask;
   } else {
-    constexpr uint64_t exponent_mask = 0x7FF0000000000000;
-    constexpr uint64_t mantissa_mask = 0x000FFFFFFFFFFFFF;
-    constexpr uint64_t hidden_bit_mask = 0x0010000000000000;
-    uint64_t bits;
-    ::memcpy(&bits, &value, sizeof(T));
-    if ((bits & exponent_mask) == 0) {
-      // denormal
-      am.power2 = 1 - bias;
-      am.mantissa = bits & mantissa_mask;
-    } else {
-      // normal
-      am.power2 = int32_t((bits & exponent_mask) >> binary_format<T>::mantissa_explicit_bits());
-      am.power2 -= bias;
-      am.mantissa = (bits & mantissa_mask) | hidden_bit_mask;
-    }
+    // normal
+    am.power2 = int32_t((bits & exponent_mask) >> binary_format<T>::mantissa_explicit_bits());
+    am.power2 -= bias;
+    am.mantissa = (bits & mantissa_mask) | hidden_bit_mask;
   }
 
   return am;
@@ -2842,6 +2907,48 @@ from_chars_result parse_infnan(const char *first, const char *last, T &value)  n
   return answer;
 }
 
+/**
+ * Returns true if the floating-pointing rounding mode is to 'nearest'.
+ * It is the default on most system. This function is meant to be inexpensive.
+ * Credit : @mwalcott3
+ */
+fastfloat_really_inline bool rounds_to_nearest() noexcept {
+  // See
+  // A fast function to check your floating-point rounding mode
+  // https://lemire.me/blog/2022/11/16/a-fast-function-to-check-your-floating-point-rounding-mode/
+  //
+  // This function is meant to be equivalent to :
+  // prior: #include <cfenv>
+  //  return fegetround() == FE_TONEAREST;
+  // However, it is expected to be much faster than the fegetround()
+  // function call.
+  //
+  // The volatile keywoard prevents the compiler from computing the function
+  // at compile-time.
+  // There might be other ways to prevent compile-time optimizations (e.g., asm).
+  // The value does not need to be std::numeric_limits<float>::min(), any small
+  // value so that 1 + x should round to 1 would do (after accounting for excess
+  // precision, as in 387 instructions).
+  static volatile float fmin = std::numeric_limits<float>::min();
+  float fmini = fmin; // we copy it so that it gets loaded at most once.
+  //
+  // Explanation:
+  // Only when fegetround() == FE_TONEAREST do we have that
+  // fmin + 1.0f == 1.0f - fmin.
+  //
+  // FE_UPWARD:
+  //  fmin + 1.0f > 1
+  //  1.0f - fmin == 1
+  //
+  // FE_DOWNWARD or  FE_TOWARDZERO:
+  //  fmin + 1.0f == 1
+  //  1.0f - fmin < 1
+  //
+  // Note: This may fail to be accurate if fast-math has been
+  // enabled, as rounding conventions may not apply.
+  return (fmini + 1.0f == 1.0f - fmini);
+}
+
 } // namespace detail
 
 template<typename T>
@@ -2869,13 +2976,45 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
   }
   answer.ec = std::errc(); // be optimistic
   answer.ptr = pns.lastmatch;
-  // Next is Clinger's fast path.
-  if (binary_format<T>::min_exponent_fast_path() <= pns.exponent && pns.exponent <= binary_format<T>::max_exponent_fast_path() && pns.mantissa <=binary_format<T>::max_mantissa_fast_path() && !pns.too_many_digits) {
-    value = T(pns.mantissa);
-    if (pns.exponent < 0) { value = value / binary_format<T>::exact_power_of_ten(-pns.exponent); }
-    else { value = value * binary_format<T>::exact_power_of_ten(pns.exponent); }
-    if (pns.negative) { value = -value; }
-    return answer;
+  // The implementation of the Clinger's fast path is convoluted because
+  // we want round-to-nearest in all cases, irrespective of the rounding mode
+  // selected on the thread.
+  // We proceed optimistically, assuming that detail::rounds_to_nearest() returns
+  // true.
+  if (binary_format<T>::min_exponent_fast_path() <= pns.exponent && pns.exponent <= binary_format<T>::max_exponent_fast_path() && !pns.too_many_digits) {
+    // Unfortunately, the conventional Clinger's fast path is only possible
+    // when the system rounds to the nearest float.
+    //
+    // We expect the next branch to almost always be selected.
+    // We could check it first (before the previous branch), but
+    // there might be performance advantages at having the check
+    // be last.
+    if(detail::rounds_to_nearest())  {
+      // We have that fegetround() == FE_TONEAREST.
+      // Next is Clinger's fast path.
+      if (pns.mantissa <=binary_format<T>::max_mantissa_fast_path()) {
+        value = T(pns.mantissa);
+        if (pns.exponent < 0) { value = value / binary_format<T>::exact_power_of_ten(-pns.exponent); }
+        else { value = value * binary_format<T>::exact_power_of_ten(pns.exponent); }
+        if (pns.negative) { value = -value; }
+        return answer;
+      }
+    } else {
+      // We do not have that fegetround() == FE_TONEAREST.
+      // Next is a modified Clinger's fast path, inspired by Jakub Jelínek's proposal
+      if (pns.exponent >= 0 && pns.mantissa <=binary_format<T>::max_mantissa_fast_path(pns.exponent)) {
+#if (defined(_WIN32) && defined(__clang__))
+        // ClangCL may map 0 to -0.0 when fegetround() == FE_DOWNWARD
+        if(pns.mantissa == 0) {
+          value = 0;
+          return answer;
+        }
+#endif
+        value = T(pns.mantissa) * binary_format<T>::exact_power_of_ten(pns.exponent);
+        if (pns.negative) { value = -value; }
+        return answer;
+      }
+    }
   }
   adjusted_mantissa am = compute_float<binary_format<T>>(pns.exponent, pns.mantissa);
   if(pns.too_many_digits && am.power2 >= 0) {

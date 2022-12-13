@@ -50,6 +50,7 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Stand;          use Stand;
+with Warnsw;         use Warnsw;
 
 package body Sem_Ch11 is
 

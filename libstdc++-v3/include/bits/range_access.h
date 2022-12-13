@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     begin(_Container& __cont) -> decltype(__cont.begin())
     { return __cont.begin(); }
@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     begin(const _Container& __cont) -> decltype(__cont.begin())
     { return __cont.begin(); }
@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     end(_Container& __cont) -> decltype(__cont.end())
     { return __cont.end(); }
@@ -80,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     end(const _Container& __cont) -> decltype(__cont.end())
     { return __cont.end(); }
@@ -90,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __arr  Array.
    */
   template<typename _Tp, size_t _Nm>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX14_CONSTEXPR _Tp*
     begin(_Tp (&__arr)[_Nm]) noexcept
     { return __arr; }
@@ -101,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __arr  Array.
    */
   template<typename _Tp, size_t _Nm>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX14_CONSTEXPR _Tp*
     end(_Tp (&__arr)[_Nm]) noexcept
     { return __arr + _Nm; }
@@ -121,7 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     constexpr auto
     cbegin(const _Container& __cont) noexcept(noexcept(std::begin(__cont)))
       -> decltype(std::begin(__cont))
@@ -133,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     constexpr auto
     cend(const _Container& __cont) noexcept(noexcept(std::end(__cont)))
       -> decltype(std::end(__cont))
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     rbegin(_Container& __cont) -> decltype(__cont.rbegin())
     { return __cont.rbegin(); }
@@ -156,7 +156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     rbegin(const _Container& __cont) -> decltype(__cont.rbegin())
     { return __cont.rbegin(); }
@@ -167,7 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     rend(_Container& __cont) -> decltype(__cont.rend())
     { return __cont.rend(); }
@@ -178,7 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     rend(const _Container& __cont) -> decltype(__cont.rend())
     { return __cont.rend(); }
@@ -233,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     crbegin(const _Container& __cont) -> decltype(std::rbegin(__cont))
     { return std::rbegin(__cont); }
@@ -244,7 +244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template<typename _Container>
-    [[__nodiscard__]]
+    [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
     crend(const _Container& __cont) -> decltype(std::rend(__cont))
     { return std::rend(__cont); }
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template <typename _Container>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr auto
     size(const _Container& __cont) noexcept(noexcept(__cont.size()))
     -> decltype(__cont.size())
@@ -269,7 +269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  Return the size of an array.
    */
   template <typename _Tp, size_t _Nm>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr size_t
     size(const _Tp (&)[_Nm]) noexcept
     { return _Nm; }
@@ -279,7 +279,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template <typename _Container>
-    [[nodiscard]] constexpr auto
+    [[nodiscard, __gnu__::__always_inline__]]
+    constexpr auto
     empty(const _Container& __cont) noexcept(noexcept(__cont.empty()))
     -> decltype(__cont.empty())
     { return __cont.empty(); }
@@ -288,7 +289,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  Return whether an array is empty (always false).
    */
   template <typename _Tp, size_t _Nm>
-    [[nodiscard]] constexpr bool
+    [[nodiscard, __gnu__::__always_inline__]]
+    constexpr bool
     empty(const _Tp (&)[_Nm]) noexcept
     { return false; }
 
@@ -297,7 +299,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __il  Initializer list.
    */
   template <typename _Tp>
-    [[nodiscard]] constexpr bool
+    [[nodiscard, __gnu__::__always_inline__]]
+    constexpr bool
     empty(initializer_list<_Tp> __il) noexcept
     { return __il.size() == 0;}
 
@@ -306,7 +309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template <typename _Container>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr auto
     data(_Container& __cont) noexcept(noexcept(__cont.data()))
     -> decltype(__cont.data())
@@ -317,7 +320,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __cont  Container.
    */
   template <typename _Container>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr auto
     data(const _Container& __cont) noexcept(noexcept(__cont.data()))
     -> decltype(__cont.data())
@@ -328,7 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __array  Array.
    */
   template <typename _Tp, size_t _Nm>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr _Tp*
     data(_Tp (&__array)[_Nm]) noexcept
     { return __array; }
@@ -338,7 +341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __il  Initializer list.
    */
   template <typename _Tp>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr const _Tp*
     data(initializer_list<_Tp> __il) noexcept
     { return __il.begin(); }
@@ -346,7 +349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201703L
 #define __cpp_lib_ssize 201902L
   template<typename _Container>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr auto
     ssize(const _Container& __cont)
     noexcept(noexcept(__cont.size()))
@@ -357,7 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, ptrdiff_t _Num>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr ptrdiff_t
     ssize(const _Tp (&)[_Num]) noexcept
     { return _Num; }

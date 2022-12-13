@@ -696,14 +696,14 @@ c_strlen (tree arg, int only_value, c_strlen_data *data, unsigned eltsize)
     {
       /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
-	  && !warning_suppressed_p (arg, OPT_Warray_bounds)
-	  && warning_at (loc, OPT_Warray_bounds,
+	  && !warning_suppressed_p (arg, OPT_Warray_bounds_)
+	  && warning_at (loc, OPT_Warray_bounds_,
 			 "offset %qwi outside bounds of constant string",
 			 eltoff))
 	{
 	  if (decl)
 	    inform (DECL_SOURCE_LOCATION (decl), "%qE declared here", decl);
-	  suppress_warning (arg, OPT_Warray_bounds);
+	  suppress_warning (arg, OPT_Warray_bounds_);
 	}
       return NULL_TREE;
     }
@@ -1930,6 +1930,11 @@ mathfn_built_in_2 (tree type, combined_fn fn)
   built_in_function fcodef32x = END_BUILTINS;
   built_in_function fcodef64x = END_BUILTINS;
   built_in_function fcodef128x = END_BUILTINS;
+
+  /* If <math.h> has been included somehow, HUGE_VAL and NAN definitions
+     break the uses below.  */
+#undef HUGE_VAL
+#undef NAN
 
   switch (fn)
     {

@@ -50,6 +50,48 @@ namespace experimental
 {
 inline namespace fundamentals_v2
 {
+  template<typename _Tp>
+    using __propagate_const_elem_type
+      = remove_reference_t<decltype(*std::declval<_Tp&>())>;
+
+  template<typename _Tp,
+	   typename _Elem = __propagate_const_elem_type<_Tp>,
+	   bool = is_convertible<const _Tp, const _Elem*>::value>
+    struct __propagate_const_conversion_c
+    { };
+
+  template<typename _Tp, typename _Elem>
+    struct __propagate_const_conversion_c<_Tp, _Elem, true>
+    {
+      constexpr operator const _Elem*() const;
+    };
+
+  template<typename _Tp,
+	   typename _Elem = __propagate_const_elem_type<_Tp>,
+	   bool = is_convertible<_Tp, _Elem*>::value>
+    struct __propagate_const_conversion_nc
+    { };
+
+  template<typename _Tp, typename _Elem>
+    struct __propagate_const_conversion_nc<_Tp, _Elem, true>
+    {
+      constexpr operator _Elem*();
+    };
+
+  // Base class of propagate_const<T> when T is a class type.
+  template <typename _Tp>
+    struct __propagate_const_conversions
+    : __propagate_const_conversion_c<_Tp>, __propagate_const_conversion_nc<_Tp>
+    { };
+
+  // Base class of propagate_const<T> when T is a pointer type.
+  template<typename _Tp>
+    struct __propagate_const_conversions<_Tp*>
+    {
+      constexpr operator const _Tp*() const noexcept;
+      constexpr operator _Tp*() noexcept;
+    };
+
   /**
    * @defgroup propagate_const Const-propagating wrapper
    * @ingroup libfund-ts
@@ -63,10 +105,10 @@ inline namespace fundamentals_v2
 
   /// Const-propagating wrapper.
   template <typename _Tp>
-    class propagate_const
+    class propagate_const : public __propagate_const_conversions<_Tp>
     {
     public:
-      typedef remove_reference_t<decltype(*std::declval<_Tp&>())> element_type;
+      using element_type = __propagate_const_elem_type<_Tp>;
 
     private:
       template <typename _Up>
@@ -186,16 +228,6 @@ inline namespace fundamentals_v2
 	return get();
       }
 
-      template <typename _Up = _Tp,
-		typename enable_if<__or_<is_pointer<_Up>,
-					 is_convertible<_Up,
-							const element_type*>
-					 >::value, bool>::type = true>
-      constexpr operator const element_type*() const
-      {
-	return get();
-      }
-
       constexpr const element_type& operator*() const
       {
 	return *get();
@@ -208,16 +240,6 @@ inline namespace fundamentals_v2
 
       // [propagate_const.non_const_observers], non-const observers
       constexpr element_type* operator->()
-      {
-	return get();
-      }
-
-      template <typename _Up = _Tp,
-		typename enable_if<__or_<is_pointer<_Up>,
-					 is_convertible<_Up,
-						        const element_type*>
-					 >::value, bool>::type = true>
-      constexpr operator element_type*()
       {
 	return get();
       }
@@ -429,6 +451,28 @@ inline namespace fundamentals_v2
     {
       return __pt._M_t;
     }
+
+  template<typename _Tp>
+    constexpr
+    __propagate_const_conversions<_Tp*>::operator const _Tp*() const noexcept
+    { return static_cast<const propagate_const<_Tp*>*>(this)->get(); }
+
+  template<typename _Tp>
+    constexpr
+    __propagate_const_conversions<_Tp*>::operator _Tp*() noexcept
+    { return static_cast<propagate_const<_Tp*>*>(this)->get(); }
+
+  template<typename _Tp, typename _Elem>
+    constexpr
+    __propagate_const_conversion_c<_Tp, _Elem, true>::
+    operator const _Elem*() const
+    { return static_cast<const propagate_const<_Tp>*>(this)->get(); }
+
+  template<typename _Tp, typename _Elem>
+    constexpr
+    __propagate_const_conversion_nc<_Tp, _Elem, true>::
+    operator _Elem*()
+    { return static_cast<propagate_const<_Tp>*>(this)->get(); }
 
   /// @} group propagate_const
 } // namespace fundamentals_v2

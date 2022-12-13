@@ -1,5 +1,5 @@
 // { dg-require-effective-target c++20 }
-// { dg-options "-O2 -fdump-tree-cddce3" }
+// { dg-options "-O2 -fdump-tree-dce7" }
 
 template <typename> struct __new_allocator {
   void deallocate(int *, int) { operator delete(0); }
@@ -87,4 +87,4 @@ void testfunctionfoo() {
   }
 }
 
-// { dg-final { scan-tree-dump-not "m_initialized" "cddce3" } }
+// { dg-final { scan-tree-dump-not "m_initialized" "dce7" } }

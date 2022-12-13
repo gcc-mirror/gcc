@@ -25,7 +25,7 @@ test_1 (void)
   return *a; /* { dg-line test_1 } */
 
   /* { dg-warning "use of uninitialized value '\\*a'" "warning" { target *-*-* } test_1 } */
-  /* { dg-warning "overread" "warning" { target *-*-* } test_1 } */
+  /* { dg-warning "stack-based buffer over-read" "warning" { target *-*-* } test_1 } */
 }
 
 static const char * __attribute__((noinline))

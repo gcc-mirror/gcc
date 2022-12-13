@@ -8,7 +8,7 @@ const test* setup()
 {
   static constexpr test atest =
     {
-      ({ static const int inner = 123; &inner; }) // { dg-error "static" }
+      ({ static const int inner = 123; &inner; })
     };
 
   return &atest;

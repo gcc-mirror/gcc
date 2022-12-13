@@ -168,6 +168,15 @@ package body Switch.B is
                   if Enable_CUDA_Expansion and Enable_CUDA_Device_Expansion
                   then
                      Bad_Switch (Switch_Chars);
+                  elsif C = 'c' then
+                     --  specify device library name
+                     if Ptr >= Max or else Switch_Chars (Ptr + 1) /= '=' then
+                        Bad_Switch (Switch_Chars);
+                     else
+                        CUDA_Device_Library_Name :=
+                           new String'(Switch_Chars (Ptr + 2 .. Max));
+                        Ptr := Max;
+                     end if;
                   end if;
 
                   Underscore := False;

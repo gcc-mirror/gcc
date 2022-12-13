@@ -2400,7 +2400,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   else
     {
       /* Special-case handling of vtv comdat sections.  */
-      if (sect->named.name
+      if (SECTION_STYLE (sect) == SECTION_NAMED
 	  && (strcmp (sect->named.name, ".vtable_map_vars") == 0))
 	handle_vtv_comdat_section (sect, decl);
       else
@@ -6915,11 +6915,16 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 	fprintf (asm_out_file, ",%d", flags & SECTION_ENTSIZE);
       if (flags & SECTION_LINK_ORDER)
 	{
-	  tree id = DECL_ASSEMBLER_NAME (decl);
-	  ultimate_transparent_alias_target (&id);
-	  const char *name = IDENTIFIER_POINTER (id);
-	  name = targetm.strip_name_encoding (name);
-	  fprintf (asm_out_file, ",%s", name);
+	  /* For now, only section "__patchable_function_entries"
+	     adopts flag SECTION_LINK_ORDER, internal label LPFE*
+	     was emitted in default_print_patchable_function_entry,
+	     just place it here for linked_to section.  */
+	  gcc_assert (!strcmp (name, "__patchable_function_entries"));
+	  fprintf (asm_out_file, ",");
+	  char buf[256];
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE",
+				       current_function_funcdef_no);
+	  assemble_name_raw (asm_out_file, buf);
 	}
       if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
 	{

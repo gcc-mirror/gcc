@@ -610,7 +610,8 @@ set_cleanup_locs (tree stmts, location_t loc)
   if (TREE_CODE (stmts) == CLEANUP_STMT)
     {
       tree t = CLEANUP_EXPR (stmts);
-      protected_set_expr_location (t, loc);
+      if (t && TREE_CODE (t) != POSTCONDITION_STMT)
+	protected_set_expr_location (t, loc);
       /* Avoid locus differences for C++ cdtor calls depending on whether
 	 cdtor_returns_this: a conversion to void is added to discard the return
 	 value, and this conversion ends up carrying the location, and when it
@@ -2169,7 +2170,8 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
 
   /* DR 613/850: Can use non-static data members without an associated
      object in sizeof/decltype/alignof.  */
-  if (is_dummy_object (object) && cp_unevaluated_operand == 0
+  if (is_dummy_object (object)
+      && !cp_unevaluated_operand
       && (!processing_template_decl || !current_class_ref))
     {
       if (complain & tf_error)
@@ -2177,6 +2179,14 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
 	  if (current_function_decl
 	      && DECL_STATIC_FUNCTION_P (current_function_decl))
 	    error ("invalid use of member %qD in static member function", decl);
+	  else if (current_function_decl
+		   && processing_contract_condition
+		   && DECL_CONSTRUCTOR_P (current_function_decl))
+	    error ("invalid use of member %qD in constructor %<pre%> contract", decl);
+	  else if (current_function_decl
+		   && processing_contract_condition
+		   && DECL_DESTRUCTOR_P (current_function_decl))
+	    error ("invalid use of member %qD in destructor %<post%> contract", decl);
 	  else
 	    error ("invalid use of non-static data member %qD", decl);
 	  inform (DECL_SOURCE_LOCATION (decl), "declared here");
@@ -2737,6 +2747,10 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  result = build_min_nt_call_vec (orig_fn, *args);
 	  SET_EXPR_LOCATION (result, cp_expr_loc_or_input_loc (fn));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
+	  /* Disable the std::move warnings since this call was dependent
+	     (c++/89780, c++/107363).  This also suppresses the
+	     -Wredundant-move warning.  */
+	  suppress_warning (result, OPT_Wpessimizing_move);
 	  if (is_overloaded_fn (fn))
 	    fn = get_fns (fn);
 
@@ -3010,6 +3024,10 @@ finish_this_expr (void)
   tree fn = current_nonlambda_function ();
   if (fn && DECL_STATIC_FUNCTION_P (fn))
     error ("%<this%> is unavailable for static member functions");
+  else if (fn && processing_contract_condition && DECL_CONSTRUCTOR_P (fn))
+    error ("invalid use of %<this%> before it is valid");
+  else if (fn && processing_contract_condition && DECL_DESTRUCTOR_P (fn))
+    error ("invalid use of %<this%> after it is valid");
   else if (fn)
     error ("invalid use of %<this%> in non-member function");
   else
@@ -3983,6 +4001,9 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 	}
       return error_mark_node;
     }
+  else if (processing_contract_condition && (TREE_CODE (decl) == PARM_DECL))
+    /* Use of a parameter in a contract condition is fine.  */
+    return decl;
   else
     {
       if (complain & tf_error)
@@ -4115,7 +4136,8 @@ finish_id_expression_1 (tree id_expression,
 	 body, except inside an unevaluated context (i.e. decltype).  */
       if (TREE_CODE (decl) == PARM_DECL
 	  && DECL_CONTEXT (decl) == NULL_TREE
-	  && !cp_unevaluated_operand)
+	  && !cp_unevaluated_operand
+	  && !processing_contract_condition)
 	{
 	  *error_msg = G_("use of parameter outside function body");
 	  return error_mark_node;
@@ -11661,7 +11683,7 @@ is_corresponding_member_aggr (location_t loc, tree basetype1, tree membertype1,
   tree ret = boolean_false_node;
   while (1)
     {
-      bool r = next_common_initial_seqence (field1, field2);
+      bool r = next_common_initial_sequence (field1, field2);
       if (field1 == NULL_TREE || field2 == NULL_TREE)
 	break;
       if (r
@@ -12286,6 +12308,10 @@ apply_deduced_return_type (tree fco, tree return_type)
 
   TREE_TYPE (fco) = change_return_type (return_type, TREE_TYPE (fco));
 
+  maybe_update_postconditions (fco);
+
+  /* Apply the type to the result object.  */
+
   result = DECL_RESULT (fco);
   if (result == NULL_TREE)
     return;
@@ -12299,24 +12325,23 @@ apply_deduced_return_type (tree fco, tree return_type)
   /* We already have a DECL_RESULT from start_preparsed_function.
      Now we need to redo the work it and allocate_struct_function
      did to reflect the new type.  */
-  gcc_assert (current_function_decl == fco);
-  result = build_decl (input_location, RESULT_DECL, NULL_TREE,
+  result = build_decl (DECL_SOURCE_LOCATION (result), RESULT_DECL, NULL_TREE,
 		       TYPE_MAIN_VARIANT (return_type));
   DECL_ARTIFICIAL (result) = 1;
   DECL_IGNORED_P (result) = 1;
   cp_apply_type_quals_to_decl (cp_type_quals (return_type),
                                result);
-
   DECL_RESULT (fco) = result;
 
   if (!processing_template_decl)
-    {
-      bool aggr = aggregate_value_p (result, fco);
+    if (function *fun = DECL_STRUCT_FUNCTION (fco))
+      {
+	bool aggr = aggregate_value_p (result, fco);
 #ifdef PCC_STATIC_STRUCT_RETURN
-      cfun->returns_pcc_struct = aggr;
+	fun->returns_pcc_struct = aggr;
 #endif
-      cfun->returns_struct = aggr;
-    }
+	fun->returns_struct = aggr;
+      }
 }
 
 /* DECL is a local variable or parameter from the surrounding scope of a

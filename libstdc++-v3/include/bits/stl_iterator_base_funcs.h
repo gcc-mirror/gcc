@@ -94,6 +94,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _RandomAccessIterator>
+    __attribute__((__always_inline__))
     inline _GLIBCXX14_CONSTEXPR
     typename iterator_traits<_RandomAccessIterator>::difference_type
     __distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
@@ -141,7 +142,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  and are constant time.  For other %iterator classes they are linear time.
   */
   template<typename _InputIterator>
-    _GLIBCXX_NODISCARD
+    _GLIBCXX_NODISCARD __attribute__((__always_inline__))
     inline _GLIBCXX17_CONSTEXPR
     typename iterator_traits<_InputIterator>::difference_type
     distance(_InputIterator __first, _InputIterator __last)
@@ -214,6 +215,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  and are constant time.  For other %iterator classes they are linear time.
   */
   template<typename _InputIterator, typename _Distance>
+    __attribute__((__always_inline__))
     inline _GLIBCXX17_CONSTEXPR void
     advance(_InputIterator& __i, _Distance __n)
     {
@@ -225,7 +227,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
 
   template<typename _InputIterator>
-    _GLIBCXX_NODISCARD
+    _GLIBCXX_NODISCARD [[__gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR _InputIterator
     next(_InputIterator __x, typename
 	 iterator_traits<_InputIterator>::difference_type __n = 1)
@@ -237,7 +239,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _BidirectionalIterator>
-    _GLIBCXX_NODISCARD
+    _GLIBCXX_NODISCARD [[__gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR _BidirectionalIterator
     prev(_BidirectionalIterator __x, typename
 	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1) 

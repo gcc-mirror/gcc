@@ -90,17 +90,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	len -= 4;
       }
 
+    size_t k;
     // Handle the last few bytes of the input array.
     switch(len)
       {
       case 3:
-	hash ^= static_cast<unsigned char>(buf[2]) << 16;
+	k = static_cast<unsigned char>(buf[2]);
+	hash ^= k << 16;
 	[[gnu::fallthrough]];
       case 2:
-	hash ^= static_cast<unsigned char>(buf[1]) << 8;
+	k = static_cast<unsigned char>(buf[1]);
+	hash ^= k << 8;
 	[[gnu::fallthrough]];
       case 1:
-	hash ^= static_cast<unsigned char>(buf[0]);
+	k = static_cast<unsigned char>(buf[0]);
+	hash ^= k;
 	hash *= m;
       };
 

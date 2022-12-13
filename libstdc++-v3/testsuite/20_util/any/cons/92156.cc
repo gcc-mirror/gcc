@@ -1,4 +1,5 @@
 // { dg-do run { target c++17 } }
+// { dg-options "-Wno-init-list-lifetime" }
 
 // Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //

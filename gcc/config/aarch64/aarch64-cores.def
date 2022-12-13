@@ -70,6 +70,7 @@ AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  V8A,  (CRC, CRYPTO), thu
 
 /* Ampere Computing ('\xC0') cores. */
 AARCH64_CORE("ampere1", ampere1, cortexa57, V8_6A, (F16, RNG, AES, SHA3), ampere1, 0xC0, 0xac3, -1)
+AARCH64_CORE("ampere1a", ampere1a, cortexa57, V8_6A, (F16, RNG, AES, SHA3, MEMTAG), ampere1a, 0xC0, 0xac4, -1)
 /* Do not swap around "emag" and "xgene1",
    this order is required to handle variant correctly. */
 AARCH64_CORE("emag",        emag,      xgene1,    V8A,  (CRC, CRYPTO), emag, 0x50, 0x000, 3)
@@ -110,6 +111,7 @@ AARCH64_CORE("cortex-a78c",  cortexa78c, cortexa57, V8_2A,  (F16, RCPC, DOTPROD,
 AARCH64_CORE("cortex-a65",  cortexa65, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd06, -1)
 AARCH64_CORE("cortex-a65ae",  cortexa65ae, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd43, -1)
 AARCH64_CORE("cortex-x1",  cortexx1, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE), neoversen1, 0x41, 0xd44, -1)
+AARCH64_CORE("cortex-x1c",  cortexx1c, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE, PAUTH), neoversen1, 0x41, 0xd4c, -1)
 AARCH64_CORE("ares",  ares, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
 AARCH64_CORE("neoverse-n1",  neoversen1, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
 AARCH64_CORE("neoverse-e1",  neoversee1, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd4a, -1)
@@ -167,7 +169,11 @@ AARCH64_CORE("cortex-a510",  cortexa510, cortexa55, V9A,  (SVE2_BITPERM, MEMTAG,
 
 AARCH64_CORE("cortex-a710",  cortexa710, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd47, -1)
 
+AARCH64_CORE("cortex-a715",  cortexa715, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd4d, -1)
+
 AARCH64_CORE("cortex-x2",  cortexx2, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd48, -1)
+
+AARCH64_CORE("cortex-x3",  cortexx3, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd4e, -1)
 
 AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversen2, 0x41, 0xd49, -1)
 

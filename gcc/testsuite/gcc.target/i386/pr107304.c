@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -march=tigerlake" } */
+/* { dg-require-ifunc "" } */
 
 #include <stdint.h>
 

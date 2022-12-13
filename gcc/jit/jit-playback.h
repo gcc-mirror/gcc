@@ -162,7 +162,7 @@ public:
   rvalue *
   new_comparison (location *loc,
 		  enum gcc_jit_comparison op,
-		  rvalue *a, rvalue *b);
+		  rvalue *a, rvalue *b, type *vec_result_type);
 
   rvalue *
   new_call (location *loc,
@@ -314,8 +314,9 @@ private:
 
   /* Functions for implementing "compile".  */
 
-  void acquire_mutex ();
-  void release_mutex ();
+  void lock ();
+  void unlock ();
+  struct scoped_lock;
 
   void
   make_fake_args (vec <char *> *argvec,

@@ -141,6 +141,8 @@
 
     case CONST:
       op = XEXP (op, 0);
+      if (GET_CODE (op) == UNSPEC)
+        return false;
       return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT);

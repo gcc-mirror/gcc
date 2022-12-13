@@ -285,3 +285,60 @@
        (ior (match_operand 0 "register_operand")
 	    (match_test "GET_CODE (op) == UNSPEC
 			 && (XINT (op, 1) == UNSPEC_VUNDEF)"))))
+
+;; The scalar operand can be directly broadcast by RVV instructions.
+(define_predicate "direct_broadcast_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_test "satisfies_constraint_Wdm (op)")))
+
+;; A CONST_INT operand that has exactly two bits cleared.
+(define_predicate "const_nottwobits_operand"
+  (and (match_code "const_int")
+       (match_test "popcount_hwi (~UINTVAL (op)) == 2")))
+
+;; A CONST_INT operand that consists of a single run of 32 consecutive
+;; set bits.
+(define_predicate "consecutive_bits32_operand"
+  (and (match_operand 0 "consecutive_bits_operand")
+       (match_test "popcount_hwi (UINTVAL (op)) == 32")))
+
+;; A CONST_INT operand that, if shifted down to start with its least
+;; significant non-zero bit, is a SMALL_OPERAND (suitable as an
+;; immediate to logical and arithmetic instructions).
+(define_predicate "shifted_const_arith_operand"
+  (and (match_code "const_int")
+       (match_test "ctz_hwi (INTVAL (op)) > 0")
+       (match_test "SMALL_OPERAND (INTVAL (op) >> ctz_hwi (INTVAL (op)))")))
+
+;; A CONST_INT operand that has exactly two bits set.
+(define_predicate "const_twobits_operand"
+  (and (match_code "const_int")
+       (match_test "popcount_hwi (UINTVAL (op)) == 2")))
+
+(define_predicate "const_twobits_not_arith_operand"
+  (and (match_code "const_int")
+       (and (not (match_operand 0 "arith_operand"))
+	    (match_operand 0 "const_twobits_operand"))))
+
+;; A CONST_INT operand that fits into the unsigned half of a
+;; signed-immediate after the top bit has been cleared
+(define_predicate "uimm_extra_bit_operand"
+  (and (match_code "const_int")
+       (match_test "UIMM_EXTRA_BIT_OPERAND (UINTVAL (op))")))
+
+(define_predicate "uimm_extra_bit_or_twobits"
+  (and (match_code "const_int")
+       (ior (match_operand 0 "uimm_extra_bit_operand")
+	    (match_operand 0 "const_twobits_operand"))))
+
+;; A CONST_INT operand that fits into the negative half of a
+;; signed-immediate after a single cleared top bit has been
+;; set: i.e., a bitwise-negated uimm_extra_bit_operand
+(define_predicate "not_uimm_extra_bit_operand"
+  (and (match_code "const_int")
+       (match_test "UIMM_EXTRA_BIT_OPERAND (~UINTVAL (op))")))
+
+(define_predicate "not_uimm_extra_bit_or_nottwobits"
+  (and (match_code "const_int")
+       (ior (match_operand 0 "not_uimm_extra_bit_operand")
+	    (match_operand 0 "const_nottwobits_operand"))))

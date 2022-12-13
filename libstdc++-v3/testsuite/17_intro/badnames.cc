@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target x86_64-*-linux* } }
+// { dg-add-options no_pch }
 
 // Names taken from coding_style.bad_identifiers in the libstdc++ manual.
 // We can't test this on all targets, because these names are used in

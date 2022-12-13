@@ -409,8 +409,6 @@ package Sinput is
 
    Current_Source_File : Source_File_Index := No_Source_File;
    --  Source_File table index of source file currently being scanned.
-   --  Initialized so that some tools (such as gprbuild) can be built with
-   --  -gnatVa and pragma Initialize_Scalars without problems.
 
    Current_Source_Unit : Unit_Number_Type := No_Unit;
    --  Unit number of source file currently being scanned. Initialized to

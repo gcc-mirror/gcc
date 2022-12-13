@@ -1215,7 +1215,7 @@ a distributed application.
 *
   "The range of type System.RPC.Partition_Id.  See E.5(14)."
 
-System.RPC.Partion_ID'Last is Integer'Last. See source file :file:`s-rpc.ads`.
+System.RPC.Partition_ID'Last is Integer'Last. See source file :file:`s-rpc.ads`.
 
 *
   "Implementation-defined interfaces in the PCS.  See E.5(26)."

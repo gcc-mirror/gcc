@@ -191,41 +191,6 @@ void test_blendvector()
     blendvector!(byte16, byte16, byte16)(0, 0, 0);
 }
 
-void test_comparison()
-{
-    equalMask!int(0, 0); // { dg-warning "mismatch in return type" }
-    equalMask!double(0, 0); // { dg-warning "mismatch in return type" }
-    equalMask!int4(0, 0);
-    equalMask!short8(0, 0);
-    equalMask!float4(0, 0);
-    equalMask!byte16(0, 0);
-    equalMask!fake4(f, f); // { dg-warning "mismatch in return type" }
-
-    notEqualMask!int(0, 0); // { dg-warning "mismatch in return type" }
-    notEqualMask!double(0, 0); // { dg-warning "mismatch in return type" }
-    notEqualMask!int4(0, 0);
-    notEqualMask!short8(0, 0);
-    notEqualMask!float4(0, 0);
-    notEqualMask!byte16(0, 0);
-    notEqualMask!fake4(f, f); // { dg-warning "mismatch in return type" }
-
-    greaterMask!int(0, 0); // { dg-warning "mismatch in return type" }
-    greaterMask!double(0, 0); // { dg-warning "mismatch in return type" }
-    greaterMask!int4(0, 0);
-    greaterMask!short8(0, 0);
-    greaterMask!float4(0, 0);
-    greaterMask!byte16(0, 0);
-    greaterMask!fake4(f, f); // { dg-warning "mismatch in return type" }
-
-    greaterOrEqualMask!int(0, 0); // { dg-warning "mismatch in return type" }
-    greaterOrEqualMask!double(0, 0); // { dg-warning "mismatch in return type" }
-    greaterOrEqualMask!int4(0, 0);
-    greaterOrEqualMask!short8(0, 0);
-    greaterOrEqualMask!float4(0, 0);
-    greaterOrEqualMask!byte16(0, 0);
-    greaterOrEqualMask!fake4(f, f); // { dg-warning "mismatch in return type" }
-}
-
 // The following declarations of the simd intrinsics are without any guards
 // to verify `d/intrinsics.cc` is doing checks to prevent invalid lowerings.
 V loadUnaligned(V)(const V*);
@@ -243,8 +208,3 @@ __vector(E!V1[M.length]) shufflevector(V1, V2, M...)(V1, V2, M) if (isV!V1 && is
 
 V convertvector(V, T)(T);
 V0 blendvector(V0, V1, M)(V0, V1, M);
-
-V equalMask(V)(V, V);
-V notEqualMask(V)(V, V);
-V greaterMask(V)(V, V);
-V greaterOrEqualMask(V)(V, V);

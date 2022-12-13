@@ -2,7 +2,7 @@
 // Origin: Nathan Sidwell <nathan@codesourcery.com>
 
 struct A {
-  bool operator== (A const &);
+  bool operator== (A const &) const;
   operator bool () const;
   operator int * () const;
 };

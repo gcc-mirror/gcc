@@ -59,6 +59,15 @@
 #endif
 // strtold for __ieee128
 extern "C" __ieee128 __strtoieee128(const char*, char**);
+#elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113 \
+      && defined(__GLIBC_PREREQ)
+#define USE_STRTOF128_FOR_FROM_CHARS 1
+extern "C" _Float128 __strtof128(const char*, char**)
+  __asm ("strtof128")
+#ifndef _GLIBCXX_HAVE_FLOAT128_MATH
+  __attribute__((__weak__))
+#endif
+  ;
 #endif
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
@@ -618,6 +627,16 @@ namespace
 # ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 	else if constexpr (is_same_v<T, __ieee128>)
 	  tmpval = __strtoieee128(str, &endptr);
+# elif defined(USE_STRTOF128_FOR_FROM_CHARS)
+	else if constexpr (is_same_v<T, _Float128>)
+	  {
+#ifndef _GLIBCXX_HAVE_FLOAT128_MATH
+	    if (&__strtof128 == nullptr)
+	      tmpval = _Float128(std::strtold(str, &endptr));
+	    else
+#endif
+	      tmpval = __strtof128(str, &endptr);
+	  }
 # endif
 #else
 	tmpval = std::strtod(str, &endptr);
@@ -637,8 +656,13 @@ namespace
 	  {
 	    if (__builtin_isinf(tmpval)) // overflow
 	      ec = errc::result_out_of_range;
-	    else // underflow (LWG 3081 wants to set value = tmpval here)
+	    else if (tmpval == 0) // underflow (LWG 3081 wants to set value = tmpval here)
 	      ec = errc::result_out_of_range;
+	    else // denormal value
+	      {
+		value = tmpval;
+		ec = errc();
+	      }
 	  }
 	else if (n)
 	  {
@@ -759,11 +783,16 @@ namespace
     using uint_t = conditional_t<is_same_v<T, float>, uint32_t,
 				 conditional_t<is_same_v<T, double>, uint64_t,
 					       uint16_t>>;
+#if USE_LIB_FAST_FLOAT
     constexpr int mantissa_bits
       = fast_float::binary_format<T>::mantissa_explicit_bits();
     constexpr int exponent_bits
       = is_same_v<T, double> ? 11
 	: is_same_v<T, fast_float::floating_type_float16_t> ? 5 : 8;
+#else
+    constexpr int mantissa_bits = is_same_v<T, float> ? 23 : 52;
+    constexpr int exponent_bits = is_same_v<T, float> ? 8 : 11;
+#endif
     constexpr int exponent_bias = (1 << (exponent_bits - 1)) - 1;
 
     __glibcxx_requires_valid_range(first, last);
@@ -921,8 +950,11 @@ namespace
 	else if (mantissa_idx >= -4)
 	  {
 	    if constexpr (is_same_v<T, float>
+#if USE_LIB_FAST_FLOAT
 			  || is_same_v<T,
-				       fast_float::floating_type_bfloat16_t>)
+				       fast_float::floating_type_bfloat16_t>
+#endif
+			 )
 	      {
 		__glibcxx_assert(mantissa_idx == -1);
 		mantissa |= hexit >> 1;
@@ -1106,6 +1138,7 @@ namespace
       }
     if constexpr (is_same_v<T, float> || is_same_v<T, double>)
       memcpy(&value, &result, sizeof(result));
+#if USE_LIB_FAST_FLOAT
     else if constexpr (is_same_v<T, fast_float::floating_type_bfloat16_t>)
       {
 	uint32_t res = uint32_t{result} << 16;
@@ -1132,6 +1165,7 @@ namespace
 		 | ((uint32_t{result} & 0x8000) << 16));
 	memcpy(value.x, &res, sizeof(res));
       }
+#endif
 
     return {first, errc{}};
   }
@@ -1229,6 +1263,14 @@ __attribute__((alias ("_ZSt10from_charsPKcS0_RdSt12chars_format")));
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 from_chars_result
 from_chars(const char* first, const char* last, __ieee128& value,
+	   chars_format fmt) noexcept
+{
+  // fast_float doesn't support IEEE binary128 format, but we can use strtold.
+  return from_chars_strtod(first, last, value, fmt);
+}
+#elif defined(USE_STRTOF128_FOR_FROM_CHARS)
+from_chars_result
+from_chars(const char* first, const char* last, _Float128& value,
 	   chars_format fmt) noexcept
 {
   // fast_float doesn't support IEEE binary128 format, but we can use strtold.

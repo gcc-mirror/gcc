@@ -392,6 +392,7 @@ ASM_MISA_SPEC
 /* Define Dwarf for RVV.  */
 #define RISCV_DWARF_VL (4096 + 0xc20)
 #define RISCV_DWARF_VTYPE (4096 + 0xc21)
+#define RISCV_DWARF_VLENB (4096 + 0xc22)
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_TEMP_FIRST + 2)
@@ -405,6 +406,8 @@ ASM_MISA_SPEC
 
 #define RISCV_PROLOGUE_TEMP_REGNUM (GP_TEMP_FIRST)
 #define RISCV_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP_REGNUM)
+#define RISCV_PROLOGUE_TEMP2_REGNUM (GP_TEMP_FIRST + 1)
+#define RISCV_PROLOGUE_TEMP2(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP2_REGNUM)
 
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
@@ -590,6 +593,14 @@ enum reg_class
 		? (VALUE)						\
 		: ((VALUE) & ((HOST_WIDE_INT_1U << 32)-1))))
 
+/* True if VALUE can be represented as an immediate with 1 extra bit
+   set: we check that it is not a SMALL_OPERAND (as this would be true
+   for all small operands) unmodified and turns into a small operand
+   once we clear the top bit. */
+#define UIMM_EXTRA_BIT_OPERAND(VALUE)					\
+  (!SMALL_OPERAND (VALUE)						\
+   && SMALL_OPERAND (VALUE & ~(HOST_WIDE_INT_1U << floor_log2 (VALUE))))
+
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD 1
@@ -639,6 +650,9 @@ enum reg_class
 #define GP_TEMP_FIRST (GP_REG_FIRST + 5)
 #define FP_ARG_FIRST (FP_REG_FIRST + 10)
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
+
+/* Helper macro for RVV vsetvl instruction generation.  */
+#define X0_REGNUM GP_REG_FIRST
 
 #define CALLEE_SAVED_REG_NUMBER(REGNO)			\
   ((REGNO) >= 8 && (REGNO) <= 9 ? (REGNO) - 8 :		\

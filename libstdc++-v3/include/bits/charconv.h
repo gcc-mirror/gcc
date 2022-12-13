@@ -35,19 +35,28 @@
 #if __cplusplus >= 201103L
 
 #include <type_traits>
+#include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace __detail
 {
+#if __cpp_variable_templates
+  // This accepts 128-bit integers even in strict mode.
+  template<typename _Tp>
+    constexpr bool __integer_to_chars_is_unsigned
+      = ! __gnu_cxx::__int_traits<_Tp>::__is_signed;
+#endif
+
   // Generic implementation for arbitrary bases.
   template<typename _Tp>
     _GLIBCXX14_CONSTEXPR unsigned
     __to_chars_len(_Tp __value, int __base = 10) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+#if __cpp_variable_templates
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
+#endif
 
       unsigned __n = 1;
       const unsigned __b2 = __base  * __base;
@@ -71,8 +80,9 @@ namespace __detail
     _GLIBCXX23_CONSTEXPR void
     __to_chars_10_impl(char* __first, unsigned __len, _Tp __val) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+#if __cpp_variable_templates
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
+#endif
 
       constexpr char __digits[201] =
 	"0001020304050607080910111213141516171819"

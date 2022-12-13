@@ -141,5 +141,5 @@ end
 ! { dg-final { scan-tree-dump-times "map\\(to:strxparr \\\[pointer set, len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:\\*strxp \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:\\.strxp \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(1\\) thread_limit\\(0\\) defaultmap\\(to\\)" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(1\\) thread_limit\\(0\\) defaultmap\\(to:scalar\\) defaultmap\\(tofrom:aggregate\\) defaultmap\\(firstprivate:allocatable\\) defaultmap\\(default:pointer\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-2\\) thread_limit\\(0\\) defaultmap\\(to\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-2\\) thread_limit\\(0\\) defaultmap\\(to:scalar\\) defaultmap\\(tofrom:aggregate\\) defaultmap\\(firstprivate:allocatable\\) defaultmap\\(default:pointer\\)" 1 "gimple" } }

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -126,8 +127,12 @@ binding_key::make (store_manager *mgr, const region *r)
     {
       bit_size_t bit_size;
       if (r->get_bit_size (&bit_size))
-	return mgr->get_concrete_binding (offset.get_bit_offset (),
-					  bit_size);
+	{
+	  /* Must be non-empty.  */
+	  gcc_assert (bit_size > 0);
+	  return mgr->get_concrete_binding (offset.get_bit_offset (),
+					    bit_size);
+	}
       else
 	return mgr->get_symbolic_binding (r);
     }
@@ -1463,6 +1468,9 @@ binding_cluster::mark_region_as_unknown (store_manager *mgr,
 					 const region *reg_for_overlap,
 					 uncertainty_t *uncertainty)
 {
+  if (reg_to_bind->empty_p ())
+    return;
+
   remove_overlapping_bindings (mgr, reg_for_overlap, uncertainty);
 
   /* Add a default binding to "unknown".  */
@@ -1515,6 +1523,8 @@ const svalue *
 binding_cluster::get_binding (store_manager *mgr,
 			      const region *reg) const
 {
+  if (reg->empty_p ())
+    return NULL;
   const binding_key *reg_binding = binding_key::make (mgr, reg);
   const svalue *sval = m_map.get (reg_binding);
   if (sval)
@@ -1799,6 +1809,8 @@ binding_cluster::remove_overlapping_bindings (store_manager *mgr,
 					      const region *reg,
 					      uncertainty_t *uncertainty)
 {
+  if (reg->empty_p ())
+    return;
   const binding_key *reg_binding = binding_key::make (mgr, reg);
 
   const region *cluster_base_reg = get_base_region ();
@@ -2006,11 +2018,14 @@ binding_cluster::on_unknown_fncall (const gcall *call,
     {
       m_map.empty ();
 
-      /* Bind it to a new "conjured" value using CALL.  */
-      const svalue *sval
-	= mgr->get_svalue_manager ()->get_or_create_conjured_svalue
+      if (!m_base_region->empty_p ())
+	{
+	  /* Bind it to a new "conjured" value using CALL.  */
+	  const svalue *sval
+	    = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
 	    (m_base_region->get_type (), call, m_base_region, p);
-      bind (mgr, m_base_region, sval);
+	  bind (mgr, m_base_region, sval);
+	}
 
       m_touched = true;
     }
@@ -2033,6 +2048,17 @@ binding_cluster::on_asm (const gasm *stmt,
   bind (mgr, m_base_region, sval);
 
   m_touched = true;
+}
+
+/* Return true if this cluster has escaped.  */
+
+bool
+binding_cluster::escaped_p () const
+{
+  /* Consider the "errno" region to always have escaped.  */
+  if (m_base_region->get_kind () == RK_ERRNO)
+    return true;
+  return m_escaped;
 }
 
 /* Return true if this binding_cluster has no information
@@ -2730,6 +2756,10 @@ store::purge_region (store_manager *mgr, const region *reg)
 void
 store::fill_region (store_manager *mgr, const region *reg, const svalue *sval)
 {
+  /* Filling an empty region is a no-op.  */
+  if (reg->empty_p ())
+    return;
+
   const region *base_reg = reg->get_base_region ();
   if (base_reg->symbolic_for_unknown_ptr_p ()
       || !base_reg->tracked_p ())
@@ -2945,6 +2975,10 @@ store::escaped_p (const region *base_reg) const
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
 
+  /* "errno" can always be modified by external code.  */
+  if (base_reg->get_kind () == RK_ERRNO)
+    return true;
+
   if (binding_cluster **cluster_slot
       = const_cast <cluster_map_t &>(m_cluster_map).get (base_reg))
     return (*cluster_slot)->escaped_p ();
@@ -3053,6 +3087,15 @@ store::canonicalize (store_manager *mgr)
       binding_cluster *cluster = (*iter).second;
       if (base_reg->get_kind () == RK_HEAP_ALLOCATED)
 	{
+	  /* Don't purge a heap-allocated region that's been marked as
+	     escaping, since this could be recording that a ptr to it
+	     was written to an unknown symbolic region along this
+	     path, and so we don't know whether it's referenced or
+	     not, and hence should report it as leaking
+	     (PR analyzer/106473).  */
+	  if (cluster->escaped_p ())
+	    continue;
+
 	  if (cluster->empty_p ())
 	    if (!s.m_regs.contains (base_reg))
 	      purgeable_regions.add (base_reg);
@@ -3191,6 +3234,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
     case RK_CODE:
     case RK_STACK:
     case RK_HEAP:
+    case RK_THREAD_LOCAL:
     case RK_ROOT:
     /* Child regions.  */
     case RK_FIELD:
@@ -3241,6 +3285,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 
     case RK_HEAP_ALLOCATED:
     case RK_DECL:
+    case RK_ERRNO:
       {
 	const region *caller_dest_reg
 	  = r.convert_region_from_summary (summary_base_reg);

@@ -1,7 +1,7 @@
 /* { dg-do "compile" } */
 /* { dg-options "-O1" } */
 
-/* Test the placement of the .LPFE1 label.  */
+/* Test the placement of the .LPFE0 label.  */
 
 void
 __attribute__ ((target("branch-protection=bti+pac-ret+leaf"),
@@ -9,4 +9,4 @@ __attribute__ ((target("branch-protection=bti+pac-ret+leaf"),
 f10_pac ()
 {
 }
-/* { dg-final { scan-assembler "f10_pac:\n\thint\t34 // bti c\n.*\.LPFE1:\n\tnop\n.*\thint\t25 // paciasp\n.*\thint\t29 // autiasp\n.*\tret\n" } } */
+/* { dg-final { scan-assembler "hint\t34 // bti c\n.*\.LPFE0:\n\tnop\n.*\thint\t25 // paciasp\n.*\thint\t29 // autiasp\n.*\tret\n" } } */

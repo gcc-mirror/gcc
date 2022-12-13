@@ -5,6 +5,7 @@
 int alignas;
 int alignof;
 int bool;
+int constexpr;
 int false;
 int true;
 int static_assert;

@@ -3105,6 +3105,7 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 {
   tree type;
   vec<tree, va_gc> *typelist = NULL;
+  vec<tree, va_gc> *hidden_typelist = NULL;
   gfc_formal_arglist *f;
   gfc_symbol *arg;
   int alternate_return = 0;
@@ -3222,17 +3223,17 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 	       so that the value can be returned.  */
 	    type = build_pointer_type (gfc_charlen_type_node);
 
-	  vec_safe_push (typelist, type);
+	  vec_safe_push (hidden_typelist, type);
 	}
-      /* For noncharacter scalar intrinsic types, VALUE passes the value,
+      /* For scalar intrinsic types, VALUE passes the value,
 	 hence, the optional status cannot be transferred via a NULL pointer.
 	 Thus, we will use a hidden argument in that case.  */
-      else if (arg
-	       && arg->attr.optional
-	       && arg->attr.value
-	       && !arg->attr.dimension
-	       && arg->ts.type != BT_CLASS
-	       && !gfc_bt_struct (arg->ts.type))
+      if (arg
+	  && arg->attr.optional
+	  && arg->attr.value
+	  && !arg->attr.dimension
+	  && arg->ts.type != BT_CLASS
+	  && !gfc_bt_struct (arg->ts.type))
 	vec_safe_push (typelist, boolean_type_node);
       /* Coarrays which are descriptorless or assumed-shape pass with
 	 -fcoarray=lib the token and the offset as hidden arguments.  */
@@ -3245,10 +3246,14 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 		  && CLASS_DATA (arg)->attr.codimension
 		  && !CLASS_DATA (arg)->attr.allocatable)))
 	{
-	  vec_safe_push (typelist, pvoid_type_node);  /* caf_token.  */
-	  vec_safe_push (typelist, gfc_array_index_type);  /* caf_offset.  */
+	  vec_safe_push (hidden_typelist, pvoid_type_node);  /* caf_token.  */
+	  vec_safe_push (hidden_typelist, gfc_array_index_type);  /* caf_offset.  */
 	}
     }
+
+  /* Put hidden character length, caf_token, caf_offset at the end.  */
+  vec_safe_reserve (typelist, vec_safe_length (hidden_typelist));
+  vec_safe_splice (typelist, hidden_typelist);
 
   if (!vec_safe_is_empty (typelist)
       || sym->attr.is_main_program

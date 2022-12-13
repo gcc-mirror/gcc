@@ -9,7 +9,7 @@ struct A
 struct B
 {
   A a;
-  bool operator==(const B&) const = default; // { dg-error "A::operator==" "" { target { ! implicit_constexpr } } }
+  bool operator==(const B&) const = default; // { dg-error "A::operator==" "" { target { { ! implicit_constexpr } && c++20_down } } }
 };
 
 constexpr bool x = B() == B();	// { dg-error "non-.constexpr" "" { target { ! implicit_constexpr } } }

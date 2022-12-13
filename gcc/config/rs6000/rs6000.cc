@@ -6021,7 +6021,7 @@ num_insns_constant_gpr (HOST_WIDE_INT value)
 
   else if (TARGET_POWERPC64)
     {
-      HOST_WIDE_INT low  = ((value & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      HOST_WIDE_INT low = sext_hwi (value, 32);
       HOST_WIDE_INT high = value >> 31;
 
       if (high == 0 || high == -1)
@@ -8456,7 +8456,7 @@ darwin_rs6000_legitimate_lo_sum_const_p (rtx x, machine_mode mode)
     }
 
   /* We only care if the access(es) would cause a change to the high part.  */
-  offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
+  offset = sext_hwi (offset, 16);
   return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
@@ -8522,7 +8522,7 @@ mem_operand_gpr (rtx op, machine_mode mode)
   if (GET_CODE (addr) == LO_SUM)
     /* For lo_sum addresses, we must allow any offset except one that
        causes a wrap, so test only the low 16 bits.  */
-    offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
+    offset = sext_hwi (offset, 16);
 
   return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
@@ -8562,7 +8562,7 @@ mem_operand_ds_form (rtx op, machine_mode mode)
   if (GET_CODE (addr) == LO_SUM)
     /* For lo_sum addresses, we must allow any offset except one that
        causes a wrap, so test only the low 16 bits.  */
-    offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
+    offset = sext_hwi (offset, 16);
 
   return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
@@ -9136,7 +9136,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
     {
       HOST_WIDE_INT high_int, low_int;
       rtx sum;
-      low_int = ((INTVAL (XEXP (x, 1)) & 0xffff) ^ 0x8000) - 0x8000;
+      low_int = sext_hwi (INTVAL (XEXP (x, 1)), 16);
       if (low_int >= 0x8000 - extra)
 	low_int = 0;
       high_int = INTVAL (XEXP (x, 1)) - low_int;
@@ -10186,10 +10186,9 @@ rs6000_emit_set_const (rtx dest, rtx source)
     case E_SImode:
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (SImode);
 
-      emit_insn (gen_rtx_SET (copy_rtx (temp),
-			      GEN_INT (c & ~(HOST_WIDE_INT) 0xffff)));
+      emit_insn (gen_rtx_SET (temp, GEN_INT (c & ~(HOST_WIDE_INT) 0xffff)));
       emit_insn (gen_rtx_SET (dest,
-			      gen_rtx_IOR (SImode, copy_rtx (temp),
+			      gen_rtx_IOR (SImode, temp,
 					   GEN_INT (c & 0xffff))));
       break;
 
@@ -10198,12 +10197,10 @@ rs6000_emit_set_const (rtx dest, rtx source)
 	{
 	  rtx hi, lo;
 
-	  hi = operand_subword_force (copy_rtx (dest), WORDS_BIG_ENDIAN == 0,
-				      DImode);
-	  lo = operand_subword_force (dest, WORDS_BIG_ENDIAN != 0,
-				      DImode);
+	  hi = operand_subword_force (dest, WORDS_BIG_ENDIAN == 0, DImode);
+	  lo = operand_subword_force (dest, WORDS_BIG_ENDIAN != 0, DImode);
 	  emit_move_insn (hi, GEN_INT (c >> 32));
-	  c = ((c & 0xffffffff) ^ 0x80000000) - 0x80000000;
+	  c = sext_hwi (c, 32);
 	  emit_move_insn (lo, GEN_INT (c));
 	}
       else
@@ -10242,41 +10239,35 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
 
   if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
       || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
-    emit_move_insn (dest, GEN_INT ((ud1 ^ 0x8000) - 0x8000));
+    emit_move_insn (dest, GEN_INT (sext_hwi (ud1, 16)));
 
   else if ((ud4 == 0xffff && ud3 == 0xffff && (ud2 & 0x8000))
 	   || (ud4 == 0 && ud3 == 0 && ! (ud2 & 0x8000)))
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
-      emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
-		      GEN_INT (((ud2 << 16) ^ 0x80000000) - 0x80000000));
+      emit_move_insn (ud1 != 0 ? temp : dest,
+		      GEN_INT (sext_hwi (ud2 << 16, 32)));
       if (ud1 != 0)
-	emit_move_insn (dest,
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud1)));
+	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
   else if (ud3 == 0 && ud4 == 0)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
       gcc_assert (ud2 & 0x8000);
-      emit_move_insn (copy_rtx (temp),
-		      GEN_INT (((ud2 << 16) ^ 0x80000000) - 0x80000000));
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
       if (ud1 != 0)
-	emit_move_insn (copy_rtx (temp),
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud1)));
+	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
       emit_move_insn (dest,
 		      gen_rtx_ZERO_EXTEND (DImode,
-					   gen_lowpart (SImode,
-							copy_rtx (temp))));
+					   gen_lowpart (SImode,temp)));
     }
   else if (ud1 == ud3 && ud2 == ud4)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
       HOST_WIDE_INT num = (ud2 << 16) | ud1;
-      rs6000_emit_set_long_const (temp, (num ^ 0x80000000) - 0x80000000);
+      rs6000_emit_set_long_const (temp, sext_hwi (num, 32));
       rtx one = gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff));
       rtx two = gen_rtx_ASHIFT (DImode, temp, GEN_INT (32));
       emit_move_insn (dest, gen_rtx_IOR (DImode, one, two));
@@ -10286,19 +10277,13 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
-      emit_move_insn (copy_rtx (temp),
-		      GEN_INT (((ud3 << 16) ^ 0x80000000) - 0x80000000));
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud3 << 16, 32)));
       if (ud2 != 0)
-	emit_move_insn (copy_rtx (temp),
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud2)));
-      emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
-		      gen_rtx_ASHIFT (DImode, copy_rtx (temp),
-				      GEN_INT (16)));
+	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud2)));
+      emit_move_insn (ud1 != 0 ? temp : dest,
+		      gen_rtx_ASHIFT (DImode, temp, GEN_INT (16)));
       if (ud1 != 0)
-	emit_move_insn (dest,
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud1)));
+	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
   else if (TARGET_PREFIXED)
     {
@@ -10339,24 +10324,17 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
-      emit_move_insn (copy_rtx (temp),
-		      GEN_INT (((ud4 << 16) ^ 0x80000000) - 0x80000000));
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud4 << 16, 32)));
       if (ud3 != 0)
-	emit_move_insn (copy_rtx (temp),
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud3)));
+	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud3)));
 
-      emit_move_insn (ud2 != 0 || ud1 != 0 ? copy_rtx (temp) : dest,
-		      gen_rtx_ASHIFT (DImode, copy_rtx (temp),
-				      GEN_INT (32)));
+      emit_move_insn (ud2 != 0 || ud1 != 0 ? temp : dest,
+		      gen_rtx_ASHIFT (DImode, temp, GEN_INT (32)));
       if (ud2 != 0)
-	emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud2 << 16)));
+	emit_move_insn (ud1 != 0 ? temp : dest,
+			gen_rtx_IOR (DImode, temp, GEN_INT (ud2 << 16)));
       if (ud1 != 0)
-	emit_move_insn (dest,
-			gen_rtx_IOR (DImode, copy_rtx (temp),
-				     GEN_INT (ud1)));
+	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
 }
 
@@ -14170,8 +14148,7 @@ print_operand (FILE *file, rtx x, int code)
       /* If constant, low-order 16 bits of constant, signed.  Otherwise, write
 	 normally.  */
       if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 ((INTVAL (x) & 0xffff) ^ 0x8000) - 0x8000);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, sext_hwi (INTVAL (x), 16));
       else
 	print_operand (file, x, 0);
       return;
@@ -14925,22 +14902,13 @@ rs6000_print_patchable_function_entry (FILE *file,
 				       unsigned HOST_WIDE_INT patch_area_size,
 				       bool record_p)
 {
-  unsigned int flags = SECTION_WRITE | SECTION_RELRO;
-  /* When .opd section is emitted, the function symbol
-     default_print_patchable_function_entry_1 is emitted into the .opd section
-     while the patchable area is emitted into the function section.
-     Don't use SECTION_LINK_ORDER in that case.  */
-  if (!(TARGET_64BIT && DEFAULT_ABI != ABI_ELFv2)
-      && HAVE_GAS_SECTION_LINK_ORDER)
-    flags |= SECTION_LINK_ORDER;
   bool global_entry_needed_p = rs6000_global_entry_point_prologue_needed_p ();
   /* For a function which needs global entry point, we will emit the
      patchable area before and after local entry point under the control of
      cfun->machine->global_entry_emitted, see the handling in function
      rs6000_output_function_prologue.  */
   if (!global_entry_needed_p || cfun->machine->global_entry_emitted)
-    default_print_patchable_function_entry_1 (file, patch_area_size, record_p,
-					      flags);
+    default_print_patchable_function_entry (file, patch_area_size, record_p);
 }
 
 enum rtx_code
@@ -28731,14 +28699,12 @@ constant_generates_xxspltiw (vec_const_128bit_type *vsx_const)
   /* See if we can use VSPLTISH or VSPLTISW.  */
   if (vsx_const->all_half_words_same)
     {
-      unsigned short h_word = vsx_const->half_words[0];
-      short sign_h_word = ((h_word & 0xffff) ^ 0x8000) - 0x8000;
+      short sign_h_word = vsx_const->half_words[0];
       if (EASY_VECTOR_15 (sign_h_word))
 	return 0;
     }
 
-  unsigned int word = vsx_const->words[0];
-  int sign_word = ((word & 0xffffffff) ^ 0x80000000) - 0x80000000;
+  int sign_word = vsx_const->words[0];
   if (EASY_VECTOR_15 (sign_word))
     return 0;
 

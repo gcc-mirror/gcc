@@ -262,7 +262,7 @@ class SpacesAndTabsMixedTest(unittest.TestCase):
         r = self.check.check('foo', 123, '\t  a = 123;')
         self.assertIsNone(r)
 
-def check_GNU_style_file(file, file_encoding, format):
+def check_GNU_style_file(file, format):
     checks = [LineLengthCheck(), SpacesCheck(), TrailingWhitespaceCheck(),
         SentenceSeparatorCheck(), SentenceEndOfCommentCheck(),
         SentenceDotEndCheck(), FunctionParenthesisCheck(),
@@ -271,7 +271,7 @@ def check_GNU_style_file(file, file_encoding, format):
         SpacesAndTabsMixedCheck()]
     errors = []
 
-    patch = PatchSet(file, encoding=file_encoding)
+    patch = PatchSet(file)
 
     for pfile in patch.added_files + patch.modified_files:
         t = pfile.target_file.lstrip('b/')

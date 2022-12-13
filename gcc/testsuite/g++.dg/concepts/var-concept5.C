@@ -1,5 +1,5 @@
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 template<typename T1, typename T2>
 concept bool C1 = true;

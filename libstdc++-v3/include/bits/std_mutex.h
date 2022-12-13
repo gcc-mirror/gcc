@@ -117,6 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_system_error(__e);
     }
 
+    _GLIBCXX_NODISCARD
     bool
     try_lock() noexcept
     {

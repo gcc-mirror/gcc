@@ -178,6 +178,9 @@ struct GTY(()) cp_unparsed_functions_entry {
 
   /* Functions with noexcept-specifiers that require post-processing.  */
   vec<tree, va_gc> *noexcepts;
+
+  /* Functions with contract attributes that require post-processing.  */
+  vec<tree, va_gc> *contracts;
 };
 
 

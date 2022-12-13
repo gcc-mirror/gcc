@@ -139,6 +139,6 @@ struct Y {
 // x1 = Y::operator int&& (&TARGET_EXPR <D.2410, {}>)
 int&& x1 = Y(); // { dg-warning "dangling reference" }
 int&& x2 = Y{}; // { dg-warning "dangling reference" }
-int& x3 = Y(); // { dg-warning "dangling reference" }
-int& x4 = Y{}; // { dg-warning "dangling reference" }
+int& x3 = Y(); // { dg-bogus "dangling reference" }
+int& x4 = Y{}; // { dg-bogus "dangling reference" }
 const int& t1 = Y().foo(10); // { dg-warning "dangling reference" }

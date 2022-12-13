@@ -480,7 +480,7 @@ private template isSpawnable(F, T...)
             enum isParamsImplicitlyConvertible = false;
         else static if (param1.length == i)
             enum isParamsImplicitlyConvertible = true;
-        else static if (isImplicitlyConvertible!(param2[i], param1[i]))
+        else static if (is(param2[i] : param1[i]))
             enum isParamsImplicitlyConvertible = isParamsImplicitlyConvertible!(F1,
                     F2, i + 1);
         else
@@ -2129,7 +2129,7 @@ private
 
             static assert(T.length, "T must not be empty");
 
-            static if (isImplicitlyConvertible!(T[0], Duration))
+            static if (is(T[0] : Duration))
             {
                 alias Ops = AliasSeq!(T[1 .. $]);
                 alias ops = vals[1 .. $];

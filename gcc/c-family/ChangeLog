@@ -1,3 +1,120 @@
+2022-12-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-attribs.cc (handle_deprecated_attribute): Use type when
+	using TYPE_NAME.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* c-omp.cc (c_omp_is_loop_iterator): For range for with structured
+	binding return TREE_VEC_LENGTH (d->declv) even if decl is equal
+	to any of the structured binding decls.
+
+2022-11-30  Iskander Shakirzyanov  <iskander@ispras.ru>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR driver/107787
+	* c-common.cc (fold_offsetof,
+	convert_vector_to_array_for_subscript): Use OPT_Warray_bounds_
+	instead of OPT_Warray_bounds.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (fcontract-role=, fcontract-semantic=): Terminate descriptions
+	with a dot.
+
+2022-11-23  Andrew Pinski  <apinski@marvell.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107127
+	* c-gimplify.cc (c_genericize): Use walk_tree_without_duplicates
+	instead of walk_tree for c_genericize_control_r.
+
+2022-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (fcontract-assumption-mode=, fcontract-continuation-mode=,
+	fcontract-role=, fcontract-semantic=): Add RejectNegative.
+	(fcontract-build-level=): Terminate description with dot.
+
+2022-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump __cpp_constexpr
+	value from 202207L to 202211L.
+
+2022-11-19  Jeff Chapman II  <jchapman@lock3software.com>
+	    Andrew Sutton   <asutton@lock3software.com>
+	    Andrew Marmaduke  <amarmaduke@lock3software.com>
+	    Michael Lopez  <mlopez@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* c.opt: Add contracts flags.
+	* c-cppbuiltin.cc (c_cpp_builtins): Add contracts feature-test
+	macros.
+
+2022-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106649
+	* c-cppbuiltin.cc (c_cpp_builtins): Update value of __cpp_constexpr for
+	C++23.
+	* c-opts.cc (c_common_post_options): Set warn_invalid_constexpr
+	depending on cxx_dialect.
+	* c.opt (Winvalid-constexpr): New option.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.def (CONCEPT_DECL): New tree, moved here from
+	cp-tree.def.
+	* c-common.cc (c_common_init_ts): Handle CONCEPT_DECL.
+	* c-attribs.cc (handle_deprecated_attribute): Allow deprecated
+	attribute on CONCEPT_DECL.
+
+2022-11-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-opts.cc (c_finish_options): Use special_fname_builtin () rather
+	than a hard-coded string.
+
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump C++23
+	__cpp_multidimensional_subscript macro value to 202211L.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107638
+	* c-lex.cc (c_common_has_attribute): Return 1 for init_priority
+	iff SUPPORTS_INIT_PRIORITY.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Port to RST.
+
+2022-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Use D_C2X instead of D_CXXONLY.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/85487
+	* c-pragma.cc (handle_pragma_ignore): New function.
+	(init_pragma): Register region and endregion pragmas.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Port to RST.
+
+2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/55971
+	* c-ppoutput.cc (adjust_for_newlines): Update comment.
+
+2022-11-03  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.cc (c_common_post_options): -fconcepts no longer implies
+	-fconcepts-ts before C++20.
+
 2022-10-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.cc (def_fn_type): Call build_function_type for
@@ -1174,8 +1291,8 @@
 
 	PR target/102552
 	* c-common.c (parse_optimize_options): decoded_options[0] is
-	  used for program name, so merged_decoded_options should also
-	  respect that.
+	used for program name, so merged_decoded_options should also
+	respect that.
 
 2021-10-01  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
@@ -1203,7 +1320,7 @@
 2021-09-27  Martin Liska  <mliska@suse.cz>
 
 	* c-opts.c (c_common_init_options_struct): Set also
-	  x_flag_default_complex_method.
+	x_flag_default_complex_method.
 
 2021-09-22  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1396,8 +1513,8 @@
 2021-07-06  Martin Sebor  <msebor@redhat.com>
 
 	* c-format.c (gcc_tdiag_char_table): Remove support for %G and %K.
-	 (gcc_cdiag_char_table): Same.
-	 (gcc_cxxdiag_char_table): Same.
+	(gcc_cdiag_char_table): Same.
+	(gcc_cxxdiag_char_table): Same.
 
 2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 

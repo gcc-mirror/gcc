@@ -639,7 +639,7 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
          */
         void popFront()
         {
-            enforce(!empty, new Base64Exception("Cannot call popFront on Encoder with no data remaining"));
+            assert(!empty, "Cannot call popFront on Encoder with no data remaining");
 
             range_.popFront();
 
@@ -757,7 +757,7 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
          */
         void popFront()
         {
-            enforce(!empty, new Base64Exception("Cannot call popFront on Encoder with no data remaining"));
+            assert(!empty, "Cannot call popFront on Encoder with no data remaining");
 
             static if (Padding != NoPadding)
                 if (padding)
@@ -1414,7 +1414,7 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
          */
         void popFront()
         {
-            enforce(!empty, new Base64Exception("Cannot call popFront on Decoder with no data remaining."));
+            assert(!empty, "Cannot call popFront on Decoder with no data remaining.");
 
             range_.popFront();
 

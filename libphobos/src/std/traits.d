@@ -889,10 +889,10 @@ private template fqnType(T,
             );
         }
     }
-    else static if (isPointer!T)
+    else static if (is(T : U*, U))
     {
         enum fqnType = chain!(
-            fqnType!(PointerTarget!T, qualifiers) ~ "*"
+            fqnType!(U, qualifiers) ~ "*"
         );
     }
     else static if (is(T : __vector(V[N]), V, size_t N))
@@ -3925,8 +3925,8 @@ template hasStaticMember(T, string member)
 {
     static if (__traits(hasMember, T, member))
     {
-        static if (isPointer!T)
-            alias U = PointerTarget!T;
+        static if (is(T : V*, V))
+            alias U = V;
         else
             alias U = T;
 
@@ -5446,8 +5446,8 @@ private template isStorageClassImplicitlyConvertible(From, To)
 {
     alias Pointify(T) = void*;
 
-    enum isStorageClassImplicitlyConvertible = isImplicitlyConvertible!(
-            ModifyTypePreservingTQ!(Pointify, From),
+    enum isStorageClassImplicitlyConvertible = is(
+            ModifyTypePreservingTQ!(Pointify, From) :
             ModifyTypePreservingTQ!(Pointify,   To) );
 }
 
@@ -7138,7 +7138,7 @@ enum bool isSIMDVector(T) = is(T : __vector(V[N]), V, size_t N);
 /**
  * Detect whether type `T` is a pointer.
  */
-enum bool isPointer(T) = is(T == U*, U) && __traits(isScalar, T);
+enum bool isPointer(T) = is(T == U*, U);
 
 ///
 @safe unittest
@@ -8847,6 +8847,14 @@ version (StdUnittest)
     static assert(__traits(compiles, getSymbolsByUDA!(mixin(__MODULE__), "Issue20054")));
 }
 
+private template isAliasSeq(Args...)
+{
+    static if (Args.length != 1)
+        enum isAliasSeq = true;
+    else
+        enum isAliasSeq = false;
+}
+
 private template getSymbolsByUDAImpl(alias symbol, alias attribute, names...)
 {
     import std.meta : Alias, AliasSeq, Filter;
@@ -8868,12 +8876,12 @@ private template getSymbolsByUDAImpl(alias symbol, alias attribute, names...)
             alias member = __traits(getMember, symbol, names[0]);
 
             // Filtering not compiled members such as alias of basic types.
-            static if (!__traits(compiles, hasUDA!(member, attribute)))
+            static if (isAliasSeq!member || isType!member)
             {
                 alias getSymbolsByUDAImpl = tail;
             }
-            // Get overloads for functions, in case different overloads have different sets of UDAs.
-            else static if (isFunction!member)
+            // If a symbol is overloaded, get UDAs for each overload (including templated overlaods).
+            else static if (__traits(getOverloads, symbol, names[0], true).length > 0)
             {
                 enum hasSpecificUDA(alias member) = hasUDA!(member, attribute);
                 alias overloadsWithUDA = Filter!(hasSpecificUDA, __traits(getOverloads, symbol, names[0]));

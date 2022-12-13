@@ -685,6 +685,7 @@ get_gcc_base_ver
 extra_host_zlib_configure_flags
 extra_host_libiberty_configure_flags
 stage1_languages
+host_libs_picflag
 host_shared
 extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
@@ -719,7 +720,6 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
-extra_liboffloadmic_configure_flags
 target_subdir
 host_subdir
 build_subdir
@@ -805,7 +805,6 @@ enable_libquadmath_support
 enable_libada
 enable_libssp
 enable_libstdcxx
-enable_liboffloadmic
 enable_bootstrap
 enable_pgo_build
 with_mpc
@@ -1543,8 +1542,6 @@ Optional Features:
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
   --disable-libstdcxx     do not build libstdc++-v3 directory
-  --enable-liboffloadmic=ARG
-                          build liboffloadmic [ARG={no,host,target}]
   --enable-bootstrap      enable bootstrapping [yes if native build]
   --enable-pgo-build[=lto]
                           enable the PGO build
@@ -2807,7 +2804,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #f
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libcody libdecnumber gmp mpfr mpc isl libiconv libctf"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libcody libdecnumber gmp mpfr mpc isl libiconv libctf libsframe"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -2825,7 +2822,6 @@ target_libraries="target-libgcc \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
-		target-liboffloadmic \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
@@ -3199,44 +3195,6 @@ if test "${ENABLE_LIBSTDCXX}" = "no" ; then
   noconfigdirs="$noconfigdirs target-libstdc++-v3"
 fi
 
-# If this is accelerator compiler and its target is intelmic we enable
-# target liboffloadmic by default.  If this is compiler with offloading
-# for intelmic we enable host liboffloadmic by default.  Otherwise
-# liboffloadmic is disabled by default.
-# Check whether --enable-liboffloadmic was given.
-if test "${enable_liboffloadmic+set}" = set; then :
-  enableval=$enable_liboffloadmic; case "$enableval" in
-  no | host | target)
-    enable_liboffloadmic=$enableval ;;
-  *)
-    as_fn_error $? "--enable-liboffloadmic=no/host/target" "$LINENO" 5 ;;
-esac
-else
-  if test x"$enable_as_accelerator_for" != x; then
-  case "${target}" in
-    *-intelmic-* | *-intelmicemul-*)
-      enable_liboffloadmic=target
-      extra_liboffloadmic_configure_flags="--enable-liboffloadmic=target"
-      ;;
-    *)
-      enable_liboffloadmic=no
-      ;;
-  esac
-else
-  case "${enable_offload_targets}" in
-    *-intelmic-* | *-intelmicemul-*)
-      enable_liboffloadmic=host
-      extra_liboffloadmic_configure_flags="--enable-liboffloadmic=host"
-      ;;
-    *)
-      enable_liboffloadmic=no
-      ;;
-    esac
-fi
-fi
-
-
-
 # Enable libgomp by default on hosted POSIX systems, and a few others.
 if test x$enable_libgomp = x ; then
     case "${target}" in
@@ -3268,25 +3226,6 @@ $as_echo_n "checking for libatomic support... " >&6; }
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	    noconfigdirs="$noconfigdirs target-libatomic"
-	else
-	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	fi
-    fi
-fi
-
-# Disable liboffloadmic on unsupported systems.
-if test -d ${srcdir}/liboffloadmic; then
-    if test x$enable_liboffloadmic != xno; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for liboffloadmic support" >&5
-$as_echo_n "checking for liboffloadmic support... " >&6; }
-	if (srcdir=${srcdir}/liboffloadmic; \
-		. ${srcdir}/configure.tgt; \
-		test -n "$UNSUPPORTED")
-	then
-	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	    noconfigdirs="$noconfigdirs target-liboffloadmic"
 	else
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -8658,6 +8597,16 @@ fi
 
 
 
+
+# If we are building PIC/PIE host executables, and we are building dependent
+# libs (e.g. GMP) in-tree those libs need to be configured to generate PIC
+# code.
+host_libs_picflag=
+if test "$host_shared" = "yes";then
+host_libs_picflag='--with-pic'
+fi
+
+
 # By default, C and C++ are the only stage 1 languages.
 stage1_languages=,c,
 
@@ -9083,7 +9032,7 @@ $as_echo "using paths configured with --with-target-bdw-gc options" >&6; }
   fi
 esac
 
-# Disable libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
+# Disable libitm, libsanitizer, libvtv if we're not building C++
 case ,${enable_languages}, in
   *,c++,*)
     # Disable libitm, libsanitizer if we're not building libstdc++
@@ -9095,7 +9044,7 @@ case ,${enable_languages}, in
     esac
     ;;
   *)
-    noconfigdirs="$noconfigdirs target-liboffloadmic target-libitm target-libsanitizer target-libvtv"
+    noconfigdirs="$noconfigdirs target-libitm target-libsanitizer target-libvtv"
     ;;
 esac
 

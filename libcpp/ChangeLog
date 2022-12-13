@@ -1,3 +1,64 @@
+2022-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* init.cc (lang_defaults): Enable va_opt for STDC2X.
+	* lex.cc (maybe_va_opt_error): Adjust diagnostic message for C.
+	* macro.cc (_cpp_arguments_ok): Update comment.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG after this check.
+	* configure: Regenerate.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG after this check.
+	* configure: Regenerate.
+
+2022-11-21  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* directives.cc (do_pragma): Fix memory leak in token buffer.  Fix
+	unwanted paste between two tokens.
+
+2022-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* files.cc: Ensure pattern matches before use.
+
+2022-11-21  Martin Liska  <mliska@suse.cz>
+
+	* config.in: Re-configure.
+
+2022-11-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR preprocessor/107691
+	* configure.ac: Add valgrind header checks.
+	* configure: Regenerate.
+
+2022-11-18  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* macro.cc (_cpp_builtin_macro_text): Don't remap filenames within
+	directives.
+
+2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/55971
+	* lex.cc (get_fresh_line_impl): New function refactoring the code
+	from...
+	(_cpp_get_fresh_line): ...here.
+	(lex_raw_string): Use the new version of get_fresh_line_impl() to
+	support raw strings containing new lines when processing a directive.
+
+2022-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeuname2c.cc (struct generated): Update from Unicode 15.0.0
+	table 4-8.
+	* ucnid.h: Regenerated for Unicode 15.0.0.
+	* uname2c.h: Likewise.
+
 2022-10-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* include/cpplib.h (struct cpp_string): Use new "string_length" GTY.

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -53,7 +54,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
+#include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -92,10 +95,10 @@ call_info::add_events_to_path (checker_path *emission_path,
   class call_event : public custom_event
   {
   public:
-    call_event (location_t loc, tree fndecl, int depth,
+    call_event (const event_loc_info &loc_info,
 		const call_info *call_info)
-      : custom_event (loc, fndecl, depth),
-	m_call_info (call_info)
+    : custom_event (loc_info),
+      m_call_info (call_info)
     {}
 
     label_text get_desc (bool can_colorize) const final override
@@ -112,10 +115,11 @@ call_info::add_events_to_path (checker_path *emission_path,
   tree caller_fndecl = src_point.get_fndecl ();
   const int stack_depth = src_point.get_stack_depth ();
 
-  emission_path->add_event (new call_event (get_call_stmt ()->location,
-					    caller_fndecl,
-					    stack_depth,
-					    this));
+  emission_path->add_event
+    (make_unique<call_event> (event_loc_info (get_call_stmt ()->location,
+					      caller_fndecl,
+					      stack_depth),
+			      this));
 }
 
 /* Recreate a call_details instance from this call_info.  */
@@ -139,24 +143,15 @@ call_info::call_info (const call_details &cd)
   gcc_assert (m_fndecl);
 }
 
-/* class success_call_info : public call_info.  */
-
-/* Implementation of call_info::get_desc vfunc for success_call_info.  */
+/* class succeed_or_fail_call_info : public call_info.  */
 
 label_text
-success_call_info::get_desc (bool can_colorize) const
+succeed_or_fail_call_info::get_desc (bool can_colorize) const
 {
-  return make_label_text (can_colorize, "when %qE succeeds", get_fndecl ());
-}
-
-/* class failed_call_info : public call_info.  */
-
-/* Implementation of call_info::get_desc vfunc for failed_call_info.  */
-
-label_text
-failed_call_info::get_desc (bool can_colorize) const
-{
-  return make_label_text (can_colorize, "when %qE fails", get_fndecl ());
+  if (m_success)
+    return make_label_text (can_colorize, "when %qE succeeds", get_fndecl ());
+  else
+    return make_label_text (can_colorize, "when %qE fails", get_fndecl ());
 }
 
 } // namespace ana

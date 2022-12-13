@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Casing;         use Casing;
 with Checks;         use Checks;
 with Debug;          use Debug;
@@ -30,7 +31,6 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Erroutc;        use Erroutc;
-with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch11;       use Exp_Ch11;
 with Exp_Util;       use Exp_Util;
@@ -71,6 +71,7 @@ with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uname;          use Uname;
+with Warnsw;         use Warnsw;
 
 with GNAT.Heap_Sort_G;
 with GNAT.HTable;    use GNAT.HTable;
@@ -254,740 +255,6 @@ package body Sem_Util is
       return Interface_List (Nod);
    end Abstract_Interface_List;
 
-   -------------------------
-   -- Accessibility_Level --
-   -------------------------
-
-   function Accessibility_Level
-     (Expr              : Node_Id;
-      Level             : Accessibility_Level_Kind;
-      In_Return_Context : Boolean := False;
-      Allow_Alt_Model   : Boolean := True) return Node_Id
-   is
-      Loc : constant Source_Ptr := Sloc (Expr);
-
-      function Accessibility_Level (Expr : Node_Id) return Node_Id
-        is (Accessibility_Level (Expr, Level, In_Return_Context));
-      --  Renaming of the enclosing function to facilitate recursive calls
-
-      function Make_Level_Literal (Level : Uint) return Node_Id;
-      --  Construct an integer literal representing an accessibility level
-      --  with its type set to Natural.
-
-      function Innermost_Master_Scope_Depth (N : Node_Id) return Uint;
-      --  Returns the scope depth of the given node's innermost enclosing
-      --  scope (effectively the accessibility level of the innermost
-      --  enclosing master).
-
-      function Function_Call_Or_Allocator_Level (N : Node_Id) return Node_Id;
-      --  Centralized processing of subprogram calls which may appear in
-      --  prefix notation.
-
-      function Typ_Access_Level (Typ : Entity_Id) return Uint
-        is (Type_Access_Level (Typ, Allow_Alt_Model));
-      --  Renaming of Type_Access_Level with Allow_Alt_Model specified to avoid
-      --  passing the parameter specifically in every call.
-
-      ----------------------------------
-      -- Innermost_Master_Scope_Depth --
-      ----------------------------------
-
-      function Innermost_Master_Scope_Depth (N : Node_Id) return Uint is
-         Encl_Scop           : Entity_Id;
-         Ent                 : Entity_Id;
-         Node_Par            : Node_Id := Parent (N);
-         Master_Lvl_Modifier : Int     := 0;
-
-      begin
-         --  Locate the nearest enclosing node (by traversing Parents)
-         --  that Defining_Entity can be applied to, and return the
-         --  depth of that entity's nearest enclosing scope.
-
-         --  The rules that define what a master are defined in
-         --  RM 7.6.1 (3), and include statements and conditions for loops
-         --  among other things. These cases are detected properly ???
-
-         while Present (Node_Par) loop
-            Ent := Defining_Entity_Or_Empty (Node_Par);
-
-            if Present (Ent) then
-               Encl_Scop := Find_Enclosing_Scope (Ent);
-
-               --  Ignore transient scopes made during expansion
-
-               if Comes_From_Source (Node_Par) then
-                  --  Note that in some rare cases the scope depth may not be
-                  --  set, for example, when we are in the middle of analyzing
-                  --  a type and the enclosing scope is said type. So, instead,
-                  --  continue to move up the parent chain since the scope
-                  --  depth of the type's parent is the same as that of the
-                  --  type.
-
-                  if not Scope_Depth_Set (Encl_Scop) then
-                     pragma Assert (Nkind (Parent (Encl_Scop))
-                                     = N_Full_Type_Declaration);
-                  else
-                     return
-                       Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
-                  end if;
-               end if;
-
-            --  For a return statement within a function, return
-            --  the depth of the function itself. This is not just
-            --  a small optimization, but matters when analyzing
-            --  the expression in an expression function before
-            --  the body is created.
-
-            elsif Nkind (Node_Par) in N_Extended_Return_Statement
-                                    | N_Simple_Return_Statement
-            then
-               return Scope_Depth (Enclosing_Subprogram (Node_Par));
-
-            --  Statements are counted as masters
-
-            elsif Is_Master (Node_Par) then
-               Master_Lvl_Modifier := Master_Lvl_Modifier + 1;
-
-            end if;
-
-            Node_Par := Parent (Node_Par);
-         end loop;
-
-         --  Should never reach the following return
-
-         pragma Assert (False);
-
-         return Scope_Depth (Current_Scope) + 1;
-      end Innermost_Master_Scope_Depth;
-
-      ------------------------
-      -- Make_Level_Literal --
-      ------------------------
-
-      function Make_Level_Literal (Level : Uint) return Node_Id is
-         Result : constant Node_Id := Make_Integer_Literal (Loc, Level);
-
-      begin
-         Set_Etype (Result, Standard_Natural);
-         return Result;
-      end Make_Level_Literal;
-
-      --------------------------------------
-      -- Function_Call_Or_Allocator_Level --
-      --------------------------------------
-
-      function Function_Call_Or_Allocator_Level (N : Node_Id) return Node_Id is
-         Par      : Node_Id;
-         Prev_Par : Node_Id;
-      begin
-         --  Results of functions are objects, so we either get the
-         --  accessibility of the function or, in case of a call which is
-         --  indirect, the level of the access-to-subprogram type.
-
-         --  This code looks wrong ???
-
-         if Nkind (N) = N_Function_Call
-           and then Ada_Version < Ada_2005
-         then
-            if Is_Entity_Name (Name (N)) then
-               return Make_Level_Literal
-                        (Subprogram_Access_Level (Entity (Name (N))));
-            else
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (Prefix (Name (N)))));
-            end if;
-
-         --  We ignore coextensions as they cannot be implemented under the
-         --  "small-integer" model.
-
-         elsif Nkind (N) = N_Allocator
-           and then (Is_Static_Coextension (N)
-                      or else Is_Dynamic_Coextension (N))
-         then
-            return Make_Level_Literal (Scope_Depth (Standard_Standard));
-         end if;
-
-         --  Named access types have a designated level
-
-         if Is_Named_Access_Type (Etype (N)) then
-            return Make_Level_Literal (Typ_Access_Level (Etype (N)));
-
-         --  Otherwise, the level is dictated by RM 3.10.2 (10.7/3)
-
-         else
-            --  Check No_Dynamic_Accessibility_Checks restriction override for
-            --  alternative accessibility model.
-
-            if Allow_Alt_Model
-              and then No_Dynamic_Accessibility_Checks_Enabled (N)
-              and then Is_Anonymous_Access_Type (Etype (N))
-            then
-               --  In the alternative model the level is that of the
-               --  designated type.
-
-               if Debug_Flag_Underscore_B then
-                  return Make_Level_Literal (Typ_Access_Level (Etype (N)));
-
-               --  For function calls the level is that of the innermost
-               --  master, otherwise (for allocators etc.) we get the level
-               --  of the corresponding anonymous access type, which is
-               --  calculated through the normal path of execution.
-
-               elsif Nkind (N) = N_Function_Call then
-                  return Make_Level_Literal
-                           (Innermost_Master_Scope_Depth (Expr));
-               end if;
-            end if;
-
-            if Nkind (N) = N_Function_Call then
-               --  Dynamic checks are generated when we are within a return
-               --  value or we are in a function call within an anonymous
-               --  access discriminant constraint of a return object (signified
-               --  by In_Return_Context) on the side of the callee.
-
-               --  So, in this case, return accessibility level of the
-               --  enclosing subprogram.
-
-               if In_Return_Value (N)
-                 or else In_Return_Context
-               then
-                  return Make_Level_Literal
-                           (Subprogram_Access_Level (Current_Subprogram));
-               end if;
-            end if;
-
-            --  When the call is being dereferenced the level is that of the
-            --  enclosing master of the dereferenced call.
-
-            if Nkind (Parent (N)) in N_Explicit_Dereference
-                                   | N_Indexed_Component
-                                   | N_Selected_Component
-            then
-               return Make_Level_Literal
-                        (Innermost_Master_Scope_Depth (Expr));
-            end if;
-
-            --  Find any relevant enclosing parent nodes that designate an
-            --  object being initialized.
-
-            --  Note: The above is only relevant if the result is used "in its
-            --  entirety" as RM 3.10.2 (10.2/3) states. However, this is
-            --  accounted for in the case statement in the main body of
-            --  Accessibility_Level for N_Selected_Component.
-
-            Par      := Parent (Expr);
-            Prev_Par := Empty;
-            while Present (Par) loop
-               --  Detect an expanded implicit conversion, typically this
-               --  occurs on implicitly converted actuals in calls.
-
-               --  Does this catch all implicit conversions ???
-
-               if Nkind (Par) = N_Type_Conversion
-                 and then Is_Named_Access_Type (Etype (Par))
-               then
-                  return Make_Level_Literal
-                           (Typ_Access_Level (Etype (Par)));
-               end if;
-
-               --  Jump out when we hit an object declaration or the right-hand
-               --  side of an assignment, or a construct such as an aggregate
-               --  subtype indication which would be the result is not used
-               --  "in its entirety."
-
-               exit when Nkind (Par) in N_Object_Declaration
-                           or else (Nkind (Par) = N_Assignment_Statement
-                                     and then Name (Par) /= Prev_Par);
-
-               Prev_Par := Par;
-               Par      := Parent (Par);
-            end loop;
-
-            --  Assignment statements are handled in a similar way in
-            --  accordance to the left-hand part. However, strictly speaking,
-            --  this is illegal according to the RM, but this change is needed
-            --  to pass an ACATS C-test and is useful in general ???
-
-            case Nkind (Par) is
-               when N_Object_Declaration =>
-                  return Make_Level_Literal
-                           (Scope_Depth
-                             (Scope (Defining_Identifier (Par))));
-
-               when N_Assignment_Statement =>
-                  --  Return the accessibility level of the left-hand part
-
-                  return Accessibility_Level
-                           (Expr              => Name (Par),
-                            Level             => Object_Decl_Level,
-                            In_Return_Context => In_Return_Context);
-
-               when others =>
-                  return Make_Level_Literal
-                           (Innermost_Master_Scope_Depth (Expr));
-            end case;
-         end if;
-      end Function_Call_Or_Allocator_Level;
-
-      --  Local variables
-
-      E   : Node_Id := Original_Node (Expr);
-      Pre : Node_Id;
-
-   --  Start of processing for Accessibility_Level
-
-   begin
-      --  We could be looking at a reference to a formal due to the expansion
-      --  of entries and other cases, so obtain the renaming if necessary.
-
-      if Present (Param_Entity (Expr)) then
-         E := Param_Entity (Expr);
-      end if;
-
-      --  Extract the entity
-
-      if Nkind (E) in N_Has_Entity and then Present (Entity (E)) then
-         E := Entity (E);
-
-         --  Deal with a possible renaming of a private protected component
-
-         if Ekind (E) in E_Constant | E_Variable and then Is_Prival (E) then
-            E := Prival_Link (E);
-         end if;
-      end if;
-
-      --  Perform the processing on the expression
-
-      case Nkind (E) is
-         --  The level of an aggregate is that of the innermost master that
-         --  evaluates it as defined in RM 3.10.2 (10/4).
-
-         when N_Aggregate =>
-            return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
-
-         --  The accessibility level is that of the access type, except for an
-         --  anonymous allocators which have special rules defined in RM 3.10.2
-         --  (14/3).
-
-         when N_Allocator =>
-            return Function_Call_Or_Allocator_Level (E);
-
-         --  We could reach this point for two reasons. Either the expression
-         --  applies to a special attribute ('Loop_Entry, 'Result, or 'Old), or
-         --  we are looking at the access attributes directly ('Access,
-         --  'Address, or 'Unchecked_Access).
-
-         when N_Attribute_Reference =>
-            Pre := Original_Node (Prefix (E));
-
-            --  Regular 'Access attribute presence means we have to look at the
-            --  prefix.
-
-            if Attribute_Name (E) = Name_Access then
-               return Accessibility_Level (Prefix (E));
-
-            --  Unchecked or unrestricted attributes have unlimited depth
-
-            elsif Attribute_Name (E) in Name_Address
-                                      | Name_Unchecked_Access
-                                      | Name_Unrestricted_Access
-            then
-               return Make_Level_Literal (Scope_Depth (Standard_Standard));
-
-            --  'Access can be taken further against other special attributes,
-            --  so handle these cases explicitly.
-
-            elsif Attribute_Name (E)
-                    in Name_Old | Name_Loop_Entry | Name_Result
-            then
-               --  Named access types
-
-               if Is_Named_Access_Type (Etype (Pre)) then
-                  return Make_Level_Literal
-                           (Typ_Access_Level (Etype (Pre)));
-
-               --  Anonymous access types
-
-               elsif Nkind (Pre) in N_Has_Entity
-                 and then Ekind (Entity (Pre)) not in Subprogram_Kind
-                 and then Present (Get_Dynamic_Accessibility (Entity (Pre)))
-                 and then Level = Dynamic_Level
-               then
-                  return New_Occurrence_Of
-                           (Get_Dynamic_Accessibility (Entity (Pre)), Loc);
-
-               --  Otherwise the level is treated in a similar way as
-               --  aggregates according to RM 6.1.1 (35.1/4) which concerns
-               --  an implicit constant declaration - in turn defining the
-               --  accessibility level to be that of the implicit constant
-               --  declaration.
-
-               else
-                  return Make_Level_Literal
-                           (Innermost_Master_Scope_Depth (Expr));
-               end if;
-
-            else
-               raise Program_Error;
-            end if;
-
-         --  This is the "base case" for accessibility level calculations which
-         --  means we are near the end of our recursive traversal.
-
-         when N_Defining_Identifier =>
-            --  A dynamic check is performed on the side of the callee when we
-            --  are within a return statement, so return a library-level
-            --  accessibility level to null out checks on the side of the
-            --  caller.
-
-            if Is_Explicitly_Aliased (E)
-              and then (In_Return_Context
-                         or else (Level /= Dynamic_Level
-                                   and then In_Return_Value (Expr)))
-            then
-               return Make_Level_Literal (Scope_Depth (Standard_Standard));
-
-            --  Something went wrong and an extra accessibility formal has not
-            --  been generated when one should have ???
-
-            elsif Is_Formal (E)
-              and then not Present (Get_Dynamic_Accessibility (E))
-              and then Ekind (Etype (E)) = E_Anonymous_Access_Type
-            then
-               return Make_Level_Literal (Scope_Depth (Standard_Standard));
-
-            --  Stand-alone object of an anonymous access type "SAOAAT"
-
-            elsif (Is_Formal (E)
-                    or else Ekind (E) in E_Variable
-                                       | E_Constant)
-              and then Present (Get_Dynamic_Accessibility (E))
-              and then (Level = Dynamic_Level
-                         or else Level = Zero_On_Dynamic_Level)
-            then
-               if Level = Zero_On_Dynamic_Level then
-                  return Make_Level_Literal
-                           (Scope_Depth (Standard_Standard));
-               end if;
-
-               --  No_Dynamic_Accessibility_Checks restriction override for
-               --  alternative accessibility model.
-
-               if Allow_Alt_Model
-                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
-               then
-                  --  In the alternative model the level is that of the
-                  --  designated type entity's context.
-
-                  if Debug_Flag_Underscore_B then
-                     return Make_Level_Literal (Typ_Access_Level (Etype (E)));
-
-                  --  Otherwise the level depends on the entity's context
-
-                  elsif Is_Formal (E) then
-                     return Make_Level_Literal
-                              (Subprogram_Access_Level
-                                (Enclosing_Subprogram (E)));
-                  else
-                     return Make_Level_Literal
-                              (Scope_Depth (Enclosing_Dynamic_Scope (E)));
-                  end if;
-               end if;
-
-               --  Return the dynamic level in the normal case
-
-               return New_Occurrence_Of
-                        (Get_Dynamic_Accessibility (E), Loc);
-
-            --  Initialization procedures have a special extra accessibility
-            --  parameter associated with the level at which the object
-            --  being initialized exists
-
-            elsif Ekind (E) = E_Record_Type
-              and then Is_Limited_Record (E)
-              and then Current_Scope = Init_Proc (E)
-              and then Present (Init_Proc_Level_Formal (Current_Scope))
-            then
-               return New_Occurrence_Of
-                        (Init_Proc_Level_Formal (Current_Scope), Loc);
-
-            --  Current instance of the type is deeper than that of the type
-            --  according to RM 3.10.2 (21).
-
-            elsif Is_Type (E) then
-               --  When restriction No_Dynamic_Accessibility_Checks is active
-               --  along with -gnatd_b.
-
-               if Allow_Alt_Model
-                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then Debug_Flag_Underscore_B
-               then
-                  return Make_Level_Literal (Typ_Access_Level (E));
-               end if;
-
-               --  Normal path
-
-               return Make_Level_Literal (Typ_Access_Level (E) + 1);
-
-            --  Move up the renamed entity or object if it came from source
-            --  since expansion may have created a dummy renaming under
-            --  certain circumstances.
-
-            --  Note: We check if the original node of the renaming comes
-            --  from source because the node may have been rewritten.
-
-            elsif Present (Renamed_Entity_Or_Object (E))
-              and then Comes_From_Source
-                (Original_Node (Renamed_Entity_Or_Object (E)))
-            then
-               return Accessibility_Level (Renamed_Entity_Or_Object (E));
-
-            --  Named access types get their level from their associated type
-
-            elsif Is_Named_Access_Type (Etype (E)) then
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (E)));
-
-            --  Check if E is an expansion-generated renaming of an iterator
-            --  by examining Related_Expression. If so, determine the
-            --  accessibility level based on the original expression.
-
-            elsif Ekind (E) in E_Constant | E_Variable
-              and then Present (Related_Expression (E))
-            then
-               return Accessibility_Level (Related_Expression (E));
-
-            elsif Level = Dynamic_Level
-               and then Ekind (E) in E_In_Parameter | E_In_Out_Parameter
-               and then Present (Init_Proc_Level_Formal (Scope (E)))
-            then
-               return New_Occurrence_Of
-                        (Init_Proc_Level_Formal (Scope (E)), Loc);
-
-            --  Normal object - get the level of the enclosing scope
-
-            else
-               return Make_Level_Literal
-                        (Scope_Depth (Enclosing_Dynamic_Scope (E)));
-            end if;
-
-         --  Handle indexed and selected components including the special cases
-         --  whereby there is an implicit dereference, a component of a
-         --  composite type, or a function call in prefix notation.
-
-         --  We don't handle function calls in prefix notation correctly ???
-
-         when N_Indexed_Component | N_Selected_Component | N_Slice =>
-            Pre := Prefix (E);
-
-            --  Fetch the original node when the prefix comes from the result
-            --  of expanding a function call since we want to find the level
-            --  of the original source call.
-
-            if not Comes_From_Source (Pre)
-              and then Nkind (Original_Node (Pre)) = N_Function_Call
-            then
-               Pre := Original_Node (Pre);
-            end if;
-
-            --  When E is an indexed component or selected component and
-            --  the current Expr is a function call, we know that we are
-            --  looking at an expanded call in prefix notation.
-
-            if Nkind (Expr) = N_Function_Call then
-               return Function_Call_Or_Allocator_Level (Expr);
-
-            --  If the prefix is a named access type, then we are dealing
-            --  with an implicit deferences. In that case the level is that
-            --  of the named access type in the prefix.
-
-            elsif Is_Named_Access_Type (Etype (Pre)) then
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (Pre)));
-
-            --  The current expression is a named access type, so there is no
-            --  reason to look at the prefix. Instead obtain the level of E's
-            --  named access type.
-
-            elsif Is_Named_Access_Type (Etype (E)) then
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (E)));
-
-            --  A nondiscriminant selected component where the component
-            --  is an anonymous access type means that its associated
-            --  level is that of the containing type - see RM 3.10.2 (16).
-
-            --  Note that when restriction No_Dynamic_Accessibility_Checks is
-            --  in effect we treat discriminant components as regular
-            --  components.
-
-            elsif
-              (Nkind (E) = N_Selected_Component
-                and then Ekind (Etype (E))   =  E_Anonymous_Access_Type
-                and then Ekind (Etype (Pre)) /= E_Anonymous_Access_Type
-                and then (not (Nkind (Selector_Name (E)) in N_Has_Entity
-                                and then Ekind (Entity (Selector_Name (E)))
-                                           = E_Discriminant)
-
-                           --  The alternative accessibility models both treat
-                           --  discriminants as regular components.
-
-                           or else (No_Dynamic_Accessibility_Checks_Enabled (E)
-                                     and then Allow_Alt_Model)))
-
-              --  Arrays featuring components of anonymous access components
-              --  get their corresponding level from their containing type's
-              --  declaration.
-
-              or else
-                (Nkind (E) = N_Indexed_Component
-                  and then Ekind (Etype (E)) = E_Anonymous_Access_Type
-                  and then Ekind (Etype (Pre)) in Array_Kind
-                  and then Ekind (Component_Type (Base_Type (Etype (Pre))))
-                             = E_Anonymous_Access_Type)
-            then
-               --  When restriction No_Dynamic_Accessibility_Checks is active
-               --  and -gnatd_b set, the level is that of the designated type.
-
-               if Allow_Alt_Model
-                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then Debug_Flag_Underscore_B
-               then
-                  return Make_Level_Literal
-                           (Typ_Access_Level (Etype (E)));
-               end if;
-
-               --  Otherwise proceed normally
-
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (Prefix (E))));
-
-            --  The accessibility calculation routine that handles function
-            --  calls (Function_Call_Level) assumes, in the case the
-            --  result is of an anonymous access type, that the result will be
-            --  used "in its entirety" when the call is present within an
-            --  assignment or object declaration.
-
-            --  To properly handle cases where the result is not used in its
-            --  entirety, we test if the prefix of the component in question is
-            --  a function call, which tells us that one of its components has
-            --  been identified and is being accessed. Therefore we can
-            --  conclude that the result is not used "in its entirety"
-            --  according to RM 3.10.2 (10.2/3).
-
-            elsif Nkind (Pre) = N_Function_Call
-              and then not Is_Named_Access_Type (Etype (Pre))
-            then
-               --  Dynamic checks are generated when we are within a return
-               --  value or we are in a function call within an anonymous
-               --  access discriminant constraint of a return object (signified
-               --  by In_Return_Context) on the side of the callee.
-
-               --  So, in this case, return a library accessibility level to
-               --  null out the check on the side of the caller.
-
-               if (In_Return_Value (E)
-                    or else In_Return_Context)
-                 and then Level /= Dynamic_Level
-               then
-                  return Make_Level_Literal
-                           (Scope_Depth (Standard_Standard));
-               end if;
-
-               return Make_Level_Literal
-                        (Innermost_Master_Scope_Depth (Expr));
-
-            --  Otherwise, continue recursing over the expression prefixes
-
-            else
-               return Accessibility_Level (Prefix (E));
-            end if;
-
-         --  Qualified expressions
-
-         when N_Qualified_Expression =>
-            if Is_Named_Access_Type (Etype (E)) then
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (E)));
-            else
-               return Accessibility_Level (Expression (E));
-            end if;
-
-         --  Handle function calls
-
-         when N_Function_Call =>
-            return Function_Call_Or_Allocator_Level (E);
-
-         --  Explicit dereference accessibility level calculation
-
-         when N_Explicit_Dereference =>
-            Pre := Original_Node (Prefix (E));
-
-            --  The prefix is a named access type so the level is taken from
-            --  its type.
-
-            if Is_Named_Access_Type (Etype (Pre)) then
-               return Make_Level_Literal (Typ_Access_Level (Etype (Pre)));
-
-            --  Otherwise, recurse deeper
-
-            else
-               return Accessibility_Level (Prefix (E));
-            end if;
-
-         --  Type conversions
-
-         when N_Type_Conversion | N_Unchecked_Type_Conversion =>
-            --  View conversions are special in that they require use to
-            --  inspect the expression of the type conversion.
-
-            --  Allocators of anonymous access types are internally generated,
-            --  so recurse deeper in that case as well.
-
-            if Is_View_Conversion (E)
-              or else Ekind (Etype (E)) = E_Anonymous_Access_Type
-            then
-               return Accessibility_Level (Expression (E));
-
-            --  We don't care about the master if we are looking at a named
-            --  access type.
-
-            elsif Is_Named_Access_Type (Etype (E)) then
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (E)));
-
-            --  In section RM 3.10.2 (10/4) the accessibility rules for
-            --  aggregates and value conversions are outlined. Are these
-            --  followed in the case of initialization of an object ???
-
-            --  Should use Innermost_Master_Scope_Depth ???
-
-            else
-               return Accessibility_Level (Current_Scope);
-            end if;
-
-         --  Default to the type accessibility level for the type of the
-         --  expression's entity.
-
-         when others =>
-            return Make_Level_Literal (Typ_Access_Level (Etype (E)));
-      end case;
-   end Accessibility_Level;
-
-   --------------------------------
-   -- Static_Accessibility_Level --
-   --------------------------------
-
-   function Static_Accessibility_Level
-     (Expr              : Node_Id;
-      Level             : Static_Accessibility_Level_Kind;
-      In_Return_Context : Boolean := False) return Uint
-   is
-   begin
-      return Intval
-               (Accessibility_Level (Expr, Level, In_Return_Context));
-   end Static_Accessibility_Level;
-
    ----------------------------------
    -- Acquire_Warning_Match_String --
    ----------------------------------
@@ -1044,7 +311,11 @@ package body Sem_Util is
    -- Add_Block_Identifier --
    --------------------------
 
-   procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id) is
+   procedure Add_Block_Identifier
+       (N : Node_Id;
+        Id : out Entity_Id;
+        Scope : Entity_Id := Current_Scope)
+   is
       Loc : constant Source_Ptr := Sloc (N);
    begin
       pragma Assert (Nkind (N) = N_Block_Statement);
@@ -1057,7 +328,7 @@ package body Sem_Util is
       --  Create a new block label and set its attributes
 
       else
-         Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+         Id := New_Internal_Entity (E_Block, Scope, Loc, 'B');
          Set_Etype  (Id, Standard_Void_Type);
          Set_Parent (Id, N);
 
@@ -1335,7 +606,7 @@ package body Sem_Util is
             end if;
 
             return
-              not Present (Etype (Constr)) -- previous error
+              No (Etype (Constr)) -- previous error
                 or else not Is_Discrete_Type (Etype (Constr))
                 or else Is_OK_Static_Expression (Constr);
 
@@ -3195,7 +2466,7 @@ package body Sem_Util is
       Actual : Node_Id;
 
    begin
-      if Extensions_Allowed then
+      if All_Extensions_Allowed then
          Actual := First_Actual (Call);
          while Present (Actual) loop
             if Nkind (Actual) = N_Aggregate then
@@ -4449,7 +3720,7 @@ package body Sem_Util is
             pragma Assert (Present (Ifc_Ancestors (Idx)));
             Ifc := Next (Ifc);
          end loop;
-         pragma Assert (not Present (Ifc));
+         pragma Assert (No (Ifc));
          if Present (Parent_Type) then
             return Parent_Type & Ifc_Ancestors;
          else
@@ -5445,12 +4716,18 @@ package body Sem_Util is
                while Present (State_Elmt) loop
                   State_Id := Node (State_Elmt);
 
-                  --  Emit an error when a non-null state lacks any form of
-                  --  refinement.
+                  --  Emit an error when a non-null state lacks refinement,
+                  --  but has Part_Of constituents or there is a package
+                  --  body (SPARK RM 7.1.4(4)). Constituents in private
+                  --  child packages, which are not known at this stage,
+                  --  independently require the existence of a package body.
 
                   if not Is_Null_State (State_Id)
-                    and then not Has_Null_Refinement (State_Id)
-                    and then not Has_Non_Null_Refinement (State_Id)
+                    and then No (Refinement_Constituents (State_Id))
+                    and then
+                      (Present (Part_Of_Constituents (State_Id))
+                         or else
+                       Present (Body_Id))
                   then
                      Error_Msg_N ("state & requires refinement", State_Id);
                      Error_Msg_N ("\package body should have Refined_State "
@@ -7045,7 +6322,6 @@ package body Sem_Util is
 
          if Present (Asp) then
             Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
-            Set_Has_Aspects (To, True);
          end if;
       end if;
    end Copy_Ghost_Aspect;
@@ -7097,7 +6373,6 @@ package body Sem_Util is
 
          if Present (Asp) then
             Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
-            Set_Has_Aspects (To, True);
          end if;
       end if;
    end Copy_SPARK_Mode_Aspect;
@@ -7421,47 +6696,6 @@ package body Sem_Util is
    begin
       return Is_Class_Wide_Type (Typ) or else Needs_Finalization (Typ);
    end CW_Or_Needs_Finalization;
-
-   -------------------------------
-   -- Deepest_Type_Access_Level --
-   -------------------------------
-
-   function Deepest_Type_Access_Level
-     (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean := True) return Uint
-   is
-   begin
-      if Ekind (Typ) = E_Anonymous_Access_Type
-        and then not Is_Local_Anonymous_Access (Typ)
-        and then Nkind (Associated_Node_For_Itype (Typ)) = N_Object_Declaration
-      then
-         --  No_Dynamic_Accessibility_Checks override for alternative
-         --  accessibility model.
-
-         if Allow_Alt_Model
-           and then No_Dynamic_Accessibility_Checks_Enabled (Typ)
-         then
-            return Type_Access_Level (Typ, Allow_Alt_Model);
-         end if;
-
-         --  Typ is the type of an Ada 2012 stand-alone object of an anonymous
-         --  access type.
-
-         return
-           Scope_Depth (Enclosing_Dynamic_Scope
-                         (Defining_Identifier
-                           (Associated_Node_For_Itype (Typ))));
-
-      --  For generic formal type, return Int'Last (infinite).
-      --  See comment preceding Is_Generic_Type call in Type_Access_Level.
-
-      elsif Is_Generic_Type (Root_Type (Typ)) then
-         return UI_From_Int (Int'Last);
-
-      else
-         return Type_Access_Level (Typ, Allow_Alt_Model);
-      end if;
-   end Deepest_Type_Access_Level;
 
    ---------------------
    -- Defining_Entity --
@@ -8173,21 +7407,6 @@ package body Sem_Util is
       return False;
    end Discriminated_Size;
 
-   -----------------------------------
-   -- Effective_Extra_Accessibility --
-   -----------------------------------
-
-   function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id is
-   begin
-      if Present (Renamed_Object (Id))
-        and then Is_Entity_Name (Renamed_Object (Id))
-      then
-         return Effective_Extra_Accessibility (Entity (Renamed_Object (Id)));
-      else
-         return Extra_Accessibility (Id);
-      end if;
-   end Effective_Extra_Accessibility;
-
    -----------------------------
    -- Effective_Reads_Enabled --
    -----------------------------
@@ -8268,6 +7487,33 @@ package body Sem_Util is
 
       return Decl;
    end Enclosing_Declaration;
+
+   ----------------------------------------
+   -- Enclosing_Declaration_Or_Statement --
+   ----------------------------------------
+
+   function Enclosing_Declaration_Or_Statement
+     (N : Node_Id) return Node_Id
+   is
+      Par : Node_Id;
+
+   begin
+      Par := N;
+      while Present (Par) loop
+         if Is_Declaration (Par) or else Is_Statement (Par) then
+            return Par;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            exit;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return N;
+   end Enclosing_Declaration_Or_Statement;
 
    ----------------------------
    -- Enclosing_Generic_Body --
@@ -10740,30 +9986,6 @@ package body Sem_Util is
       end if;
    end Gather_Components;
 
-   -------------------------------
-   -- Get_Dynamic_Accessibility --
-   -------------------------------
-
-   function Get_Dynamic_Accessibility (E : Entity_Id) return Entity_Id is
-   begin
-      --  When minimum accessibility is set for E then we utilize it - except
-      --  in a few edge cases like the expansion of select statements where
-      --  generated subprogram may attempt to unnecessarily use a minimum
-      --  accessibility object declared outside of scope.
-
-      --  To avoid these situations where expansion may get complex we verify
-      --  that the minimum accessibility object is within scope.
-
-      if Is_Formal (E)
-        and then Present (Minimum_Accessibility (E))
-        and then In_Open_Scopes (Scope (Minimum_Accessibility (E)))
-      then
-         return Minimum_Accessibility (E);
-      end if;
-
-      return Extra_Accessibility (E);
-   end Get_Dynamic_Accessibility;
-
    ------------------------
    -- Get_Actual_Subtype --
    ------------------------
@@ -11573,7 +10795,7 @@ package body Sem_Util is
       --  entry families with no Max_Queue_Length aspect or pragma default to
       --  it.
 
-      if not Present (Prag) then
+      if No (Prag) then
          return Uint_0;
       end if;
 
@@ -11969,85 +11191,6 @@ package body Sem_Util is
          end if;
       end if;
    end Get_Views;
-
-   -----------------------
-   -- Has_Access_Values --
-   -----------------------
-
-   function Has_Access_Values (T : Entity_Id) return Boolean
-   is
-      Typ : constant Entity_Id := Underlying_Type (T);
-
-   begin
-      --  Case of a private type which is not completed yet. This can only
-      --  happen in the case of a generic formal type appearing directly, or
-      --  as a component of the type to which this function is being applied
-      --  at the top level. Return False in this case, since we certainly do
-      --  not know that the type contains access types.
-
-      if No (Typ) then
-         return False;
-
-      elsif Is_Access_Type (Typ) then
-         return True;
-
-      elsif Is_Array_Type (Typ) then
-         return Has_Access_Values (Component_Type (Typ));
-
-      elsif Is_Record_Type (Typ) then
-         declare
-            Comp : Entity_Id;
-
-         begin
-            --  Loop to check components
-
-            Comp := First_Component_Or_Discriminant (Typ);
-            while Present (Comp) loop
-
-               --  Check for access component, tag field does not count, even
-               --  though it is implemented internally using an access type.
-
-               if Has_Access_Values (Etype (Comp))
-                 and then Chars (Comp) /= Name_uTag
-               then
-                  return True;
-               end if;
-
-               Next_Component_Or_Discriminant (Comp);
-            end loop;
-         end;
-
-         return False;
-
-      else
-         return False;
-      end if;
-   end Has_Access_Values;
-
-   ---------------------------------------
-   -- Has_Anonymous_Access_Discriminant --
-   ---------------------------------------
-
-   function Has_Anonymous_Access_Discriminant (Typ : Entity_Id) return Boolean
-   is
-      Disc : Node_Id;
-
-   begin
-      if not Has_Discriminants (Typ) then
-         return False;
-      end if;
-
-      Disc := First_Discriminant (Typ);
-      while Present (Disc) loop
-         if Ekind (Etype (Disc)) = E_Anonymous_Access_Type then
-            return True;
-         end if;
-
-         Next_Discriminant (Disc);
-      end loop;
-
-      return False;
-   end Has_Anonymous_Access_Discriminant;
 
    ------------------------------
    -- Has_Compatible_Alignment --
@@ -13092,7 +12235,7 @@ package body Sem_Util is
          Typ := Corresponding_Record_Type (Typ);
       end if;
 
-      if not Present (Typ)
+      if No (Typ)
         or else not Is_Record_Type (Typ)
         or else not Is_Tagged_Type (Typ)
       then
@@ -13280,7 +12423,7 @@ package body Sem_Util is
 
    begin
       return Nkind (Exp) = N_Aggregate
-        and then Present (Find_Aspect (Etype (Exp), Aspect_Aggregate))
+        and then Has_Aspect (Etype (Exp), Aspect_Aggregate)
         and then not Is_Record_Aggregate;
    end Is_Container_Aggregate;
 
@@ -13675,14 +12818,11 @@ package body Sem_Util is
          Exp : Node_Id;
 
       begin
-         --  Loop through entities of record or protected type
+         --  Loop through components and discriminants of record or protected
+         --  type.
 
-         Ent := E;
+         Ent := First_Component_Or_Discriminant (E);
          while Present (Ent) loop
-
-            --  We are interested only in components and discriminants
-
-            Exp := Empty;
 
             case Ekind (Ent) is
                when E_Component =>
@@ -13694,6 +12834,8 @@ package body Sem_Util is
 
                   if Present (Declaration_Node (Ent)) then
                      Exp := Expression (Declaration_Node (Ent));
+                  else
+                     Exp := Empty;
                   end if;
 
                when E_Discriminant =>
@@ -13706,7 +12848,7 @@ package body Sem_Util is
                   Exp := Discriminant_Default_Value (Ent);
 
                when others =>
-                  goto Check_Next_Entity;
+                  raise Program_Error;
             end case;
 
             --  A component has PI if it has no default expression and the
@@ -13727,8 +12869,7 @@ package body Sem_Util is
                exit;
             end if;
 
-         <<Check_Next_Entity>>
-            Next_Entity (Ent);
+            Next_Component_Or_Discriminant (Ent);
          end loop;
       end Check_Components;
 
@@ -13838,7 +12979,7 @@ package body Sem_Util is
          --  If OK, check extension components (if any)
 
          if Has_PE and then Is_Record_Type (E) then
-            Check_Components (First_Entity (E));
+            Check_Components (E);
          end if;
 
          --  Check specifically for 10.2.1(11.4/2) exception: a controlled type
@@ -13878,7 +13019,7 @@ package body Sem_Util is
 
       elsif Is_Record_Type (E) then
          Has_PE := True;
-         Check_Components (First_Entity (E));
+         Check_Components (E);
 
       --  Protected types must not have entries, and components must meet
       --  same set of rules as for record components.
@@ -13888,8 +13029,7 @@ package body Sem_Util is
             Has_PE := False;
          else
             Has_PE := True;
-            Check_Components (First_Entity (E));
-            Check_Components (First_Private_Entity (E));
+            Check_Components (E);
          end if;
 
       --  Type System.Address always has preelaborable initialization
@@ -14349,32 +13489,6 @@ package body Sem_Util is
       end if;
    end Has_Tagged_Component;
 
-   --------------------------------------------
-   -- Has_Unconstrained_Access_Discriminants --
-   --------------------------------------------
-
-   function Has_Unconstrained_Access_Discriminants
-     (Subtyp : Entity_Id) return Boolean
-   is
-      Discr : Entity_Id;
-
-   begin
-      if Has_Discriminants (Subtyp)
-        and then not Is_Constrained (Subtyp)
-      then
-         Discr := First_Discriminant (Subtyp);
-         while Present (Discr) loop
-            if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
-               return True;
-            end if;
-
-            Next_Discriminant (Discr);
-         end loop;
-      end if;
-
-      return False;
-   end Has_Unconstrained_Access_Discriminants;
-
    -----------------------------
    -- Has_Undefined_Reference --
    -----------------------------
@@ -14415,6 +13529,36 @@ package body Sem_Util is
 
       return Has_Undef_Ref;
    end Has_Undefined_Reference;
+
+   ----------------------------------------
+   -- Has_Effectively_Volatile_Component --
+   ----------------------------------------
+
+   function Has_Effectively_Volatile_Component
+     (Typ : Entity_Id) return Boolean
+   is
+      Comp : Entity_Id;
+
+   begin
+      if Has_Volatile_Components (Typ) then
+         return True;
+
+      elsif Is_Array_Type (Typ) then
+         return Is_Effectively_Volatile (Component_Type (Typ));
+
+      elsif Is_Record_Type (Typ) then
+         Comp := First_Component (Typ);
+         while Present (Comp) loop
+            if Is_Effectively_Volatile (Etype (Comp)) then
+               return True;
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+      end if;
+
+      return False;
+   end Has_Effectively_Volatile_Component;
 
    ----------------------------
    -- Has_Volatile_Component --
@@ -14795,8 +13939,15 @@ package body Sem_Util is
       loop
          if No (P) then
             return False;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (P) then
+            return False;
+
          elsif Nkind (P) = N_Pragma and then Pragma_Name (P) = Nam then
             return True;
+
          else
             P := Parent (P);
          end if;
@@ -14872,6 +14023,12 @@ package body Sem_Util is
       loop
          if No (P) then
             return False;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (P) then
+            return False;
+
          elsif Nkind (P) = N_Quantified_Expression then
             return True;
          else
@@ -15942,28 +15099,6 @@ package body Sem_Util is
          return Invalid_Integer_Value;
       end if;
    end Invalid_Scalar_Value;
-
-   --------------------------------
-   -- Is_Anonymous_Access_Actual --
-   --------------------------------
-
-   function Is_Anonymous_Access_Actual (N : Node_Id) return Boolean is
-      Par : Node_Id;
-   begin
-      if Ekind (Etype (N)) /= E_Anonymous_Access_Type then
-         return False;
-      end if;
-
-      Par := Parent (N);
-      while Present (Par)
-        and then Nkind (Par) in N_Case_Expression
-                              | N_If_Expression
-                              | N_Parameter_Association
-      loop
-         Par := Parent (Par);
-      end loop;
-      return Nkind (Par) in N_Subprogram_Call;
-   end Is_Anonymous_Access_Actual;
 
    ------------------------
    -- Is_Access_Variable --
@@ -17558,9 +16693,11 @@ package body Sem_Util is
       if Is_Type (Id) then
 
          --  An arbitrary type is effectively volatile when it is subject to
-         --  pragma Atomic or Volatile.
+         --  pragma Atomic or Volatile, unless No_Caching is enabled.
 
-         if Is_Volatile (Id) then
+         if Is_Volatile (Id)
+           and then not No_Caching_Enabled (Id)
+         then
             return True;
 
          --  An array type is effectively volatile when it is subject to pragma
@@ -18301,7 +17438,7 @@ package body Sem_Util is
            Is_Object (Id)
              and then (Is_Independent (Id)
                         or else
-                      Is_Independent (Etype (Id)));
+                       Is_Independent (Etype (Id)));
       end Is_Independent_Object_Entity;
 
       -------------------------------------
@@ -19458,7 +18595,7 @@ package body Sem_Util is
          return True;
       elsif Present (Variant_Part (Component_List (Record_Def))) then
          return False;
-      elsif not Present (Component_List (Record_Def)) then
+      elsif No (Component_List (Record_Def)) then
          return True;
       end if;
 
@@ -21178,38 +20315,6 @@ package body Sem_Util is
           and then Is_Single_Concurrent_Type (Etype (Id));
    end Is_Single_Task_Object;
 
-   --------------------------------------
-   -- Is_Special_Aliased_Formal_Access --
-   --------------------------------------
-
-   function Is_Special_Aliased_Formal_Access
-     (Exp               : Node_Id;
-      In_Return_Context : Boolean := False) return Boolean
-   is
-      Scop : constant Entity_Id := Current_Subprogram;
-   begin
-      --  Verify the expression is an access reference to 'Access within a
-      --  return statement as this is the only time an explicitly aliased
-      --  formal has different semantics.
-
-      if Nkind (Exp) /= N_Attribute_Reference
-        or else Get_Attribute_Id (Attribute_Name (Exp)) /= Attribute_Access
-        or else not (In_Return_Value (Exp)
-                      or else In_Return_Context)
-        or else not Needs_Result_Accessibility_Level (Scop)
-      then
-         return False;
-      end if;
-
-      --  Check if the prefix of the reference is indeed an explicitly aliased
-      --  formal parameter for the function Scop. Additionally, we must check
-      --  that Scop returns an anonymous access type, otherwise the special
-      --  rules dictating a need for a dynamic check are not in effect.
-
-      return Is_Entity_Name (Prefix (Exp))
-               and then Is_Explicitly_Aliased (Entity (Prefix (Exp)));
-   end Is_Special_Aliased_Formal_Access;
-
    -----------------------------
    -- Is_Specific_Tagged_Type --
    -----------------------------
@@ -21679,18 +20784,16 @@ package body Sem_Util is
       --  type has the appropriate user-defined literal aspect.
 
       return (Nkind (N) in N_Numeric_Or_String_Literal
-        and then Present (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N)))))
+        and then Has_Aspect (Typ, Literal_Aspect_Map (Nkind (N))))
           or else
             (Is_Entity_Name (N)
               and then Present (Entity (N))
               and then
                 ((Ekind (Entity (N)) = E_Named_Integer
-                    and then
-                      Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
+                    and then Has_Aspect (Typ, Aspect_Integer_Literal))
                    or else
                      (Ekind (Entity (N)) = E_Named_Real
-                        and then
-                          Present (Find_Aspect (Typ, Aspect_Real_Literal)))));
+                        and then Has_Aspect (Typ, Aspect_Real_Literal))));
    end Is_User_Defined_Literal;
 
    --------------------------------------
@@ -22287,25 +21390,6 @@ package body Sem_Util is
    procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False) is
       S : Entity_Id;
 
-      procedure Kill_Current_Values_For_Entity_Chain (E : Entity_Id);
-      --  Clear current value for entity E and all entities chained to E
-
-      ------------------------------------------
-      -- Kill_Current_Values_For_Entity_Chain --
-      ------------------------------------------
-
-      procedure Kill_Current_Values_For_Entity_Chain (E : Entity_Id) is
-         Ent : Entity_Id;
-      begin
-         Ent := E;
-         while Present (Ent) loop
-            Kill_Current_Values (Ent, Last_Assignment_Only);
-            Next_Entity (Ent);
-         end loop;
-      end Kill_Current_Values_For_Entity_Chain;
-
-   --  Start of processing for Kill_Current_Values
-
    begin
       --  Kill all saved checks, a special case of killing saved values
 
@@ -22321,16 +21405,15 @@ package body Sem_Util is
 
          --  Clear current values of all entities in current scope
 
-         Kill_Current_Values_For_Entity_Chain (First_Entity (S));
-
-         --  If scope is a package, also clear current values of all private
-         --  entities in the scope.
-
-         if Is_Package_Or_Generic_Package (S)
-           or else Is_Concurrent_Type (S)
-         then
-            Kill_Current_Values_For_Entity_Chain (First_Private_Entity (S));
-         end if;
+         declare
+            Ent : Entity_Id;
+         begin
+            Ent := First_Entity (S);
+            while Present (Ent) loop
+               Kill_Current_Values (Ent, Last_Assignment_Only);
+               Next_Entity (Ent);
+            end loop;
+         end;
 
          --  If this is a not a subprogram, deal with parents
 
@@ -23204,141 +22287,6 @@ package body Sem_Util is
       end if;
    end Needs_One_Actual;
 
-   --------------------------------------
-   -- Needs_Result_Accessibility_Level --
-   --------------------------------------
-
-   function Needs_Result_Accessibility_Level
-     (Func_Id : Entity_Id) return Boolean
-   is
-      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
-
-      function Has_Unconstrained_Access_Discriminant_Component
-        (Comp_Typ : Entity_Id) return Boolean;
-      --  Returns True if any component of the type has an unconstrained access
-      --  discriminant.
-
-      -----------------------------------------------------
-      -- Has_Unconstrained_Access_Discriminant_Component --
-      -----------------------------------------------------
-
-      function Has_Unconstrained_Access_Discriminant_Component
-        (Comp_Typ :  Entity_Id) return Boolean
-      is
-      begin
-         if not Is_Limited_Type (Comp_Typ) then
-            return False;
-
-         --  Only limited types can have access discriminants with
-         --  defaults.
-
-         elsif Has_Unconstrained_Access_Discriminants (Comp_Typ) then
-            return True;
-
-         elsif Is_Array_Type (Comp_Typ) then
-            return Has_Unconstrained_Access_Discriminant_Component
-                     (Underlying_Type (Component_Type (Comp_Typ)));
-
-         elsif Is_Record_Type (Comp_Typ) then
-            declare
-               Comp : Entity_Id;
-
-            begin
-               Comp := First_Component (Comp_Typ);
-               while Present (Comp) loop
-                  if Has_Unconstrained_Access_Discriminant_Component
-                       (Underlying_Type (Etype (Comp)))
-                  then
-                     return True;
-                  end if;
-
-                  Next_Component (Comp);
-               end loop;
-            end;
-         end if;
-
-         return False;
-      end Has_Unconstrained_Access_Discriminant_Component;
-
-      Disable_Tagged_Cases : constant Boolean := True;
-      --  Flag used to temporarily disable a "True" result for tagged types.
-      --  See comments further below for details.
-
-   --  Start of processing for Needs_Result_Accessibility_Level
-
-   begin
-      --  False if completion unavailable, which can happen when we are
-      --  analyzing an abstract subprogram or if the subprogram has
-      --  delayed freezing.
-
-      if No (Func_Typ) then
-         return False;
-
-      --  False if not a function, also handle enum-lit renames case
-
-      elsif Func_Typ = Standard_Void_Type
-        or else Is_Scalar_Type (Func_Typ)
-      then
-         return False;
-
-      --  Handle a corner case, a cross-dialect subp renaming. For example,
-      --  an Ada 2012 renaming of an Ada 2005 subprogram. This can occur when
-      --  an Ada 2005 (or earlier) unit references predefined run-time units.
-
-      elsif Present (Alias (Func_Id)) then
-
-         --  Unimplemented: a cross-dialect subp renaming which does not set
-         --  the Alias attribute (e.g., a rename of a dereference of an access
-         --  to subprogram value). ???
-
-         return Present (Extra_Accessibility_Of_Result (Alias (Func_Id)));
-
-      --  Remaining cases require Ada 2012 mode
-
-      elsif Ada_Version < Ada_2012 then
-         return False;
-
-      --  Handle the situation where a result is an anonymous access type
-      --  RM 3.10.2 (10.3/3).
-
-      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type then
-         return True;
-
-      --  In the case of, say, a null tagged record result type, the need for
-      --  this extra parameter might not be obvious so this function returns
-      --  True for all tagged types for compatibility reasons.
-
-      --  A function with, say, a tagged null controlling result type might
-      --  be overridden by a primitive of an extension having an access
-      --  discriminant and the overrider and overridden must have compatible
-      --  calling conventions (including implicitly declared parameters).
-
-      --  Similarly, values of one access-to-subprogram type might designate
-      --  both a primitive subprogram of a given type and a function which is,
-      --  for example, not a primitive subprogram of any type. Again, this
-      --  requires calling convention compatibility. It might be possible to
-      --  solve these issues by introducing wrappers, but that is not the
-      --  approach that was chosen.
-
-      --  Note: Despite the reasoning noted above, the extra accessibility
-      --  parameter for tagged types is disabled for performance reasons.
-
-      elsif Is_Tagged_Type (Func_Typ) then
-         return not Disable_Tagged_Cases;
-
-      elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then
-         return True;
-
-      elsif Has_Unconstrained_Access_Discriminant_Component (Func_Typ) then
-         return True;
-
-      --  False for all other cases
-
-      else
-         return False;
-      end if;
-   end Needs_Result_Accessibility_Level;
-
    ----------------------------
    --  Needs_Secondary_Stack --
    ----------------------------
@@ -23613,7 +22561,7 @@ package body Sem_Util is
       --  Unconstrained array type
 
       else
-         pragma Assert (Is_Array_Type (Typ) and not Is_Definite_Subtype (Typ));
+         pragma Assert (Is_Array_Type (Typ) and then not Is_Constrained (Typ));
          return True;
       end if;
    end Needs_Secondary_Stack;
@@ -25663,7 +24611,6 @@ package body Sem_Util is
    ------------------------
 
    function No_Caching_Enabled (Id : Entity_Id) return Boolean is
-      pragma Assert (Ekind (Id) = E_Variable);
       Prag : constant Node_Id := Get_Pragma (Id, Pragma_No_Caching);
       Arg1 : Node_Id;
 
@@ -27893,7 +26840,10 @@ package body Sem_Util is
 
          P := Parent (N);
          while Present (P) loop
-            if         Nkind (P) = N_If_Statement
+            if Is_Body (P) then
+               return True;
+
+            elsif      Nkind (P) = N_If_Statement
               or else  Nkind (P) = N_Case_Statement
               or else (Nkind (P) in N_Short_Circuit
                         and then Desc = Right_Opnd (P))
@@ -29149,19 +28099,6 @@ package body Sem_Util is
           and then Has_Loop_Entry_Attributes (Entity (Identifier (Stmt)));
    end Subject_To_Loop_Entry_Attributes;
 
-   -----------------------------
-   -- Subprogram_Access_Level --
-   -----------------------------
-
-   function Subprogram_Access_Level (Subp : Entity_Id) return Uint is
-   begin
-      if Present (Alias (Subp)) then
-         return Subprogram_Access_Level (Alias (Subp));
-      else
-         return Scope_Depth (Enclosing_Dynamic_Scope (Subp));
-      end if;
-   end Subprogram_Access_Level;
-
    ---------------------
    -- Subprogram_Name --
    ---------------------
@@ -29620,179 +28557,6 @@ package body Sem_Util is
    begin
       Discard := Traverse (Node);
    end Traverse_More_Proc;
-
-   -----------------------
-   -- Type_Access_Level --
-   -----------------------
-
-   function Type_Access_Level
-     (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean   := True;
-      Assoc_Ent       : Entity_Id := Empty) return Uint
-   is
-      Btyp    : Entity_Id := Base_Type (Typ);
-      Def_Ent : Entity_Id;
-
-   begin
-      --  Ada 2005 (AI-230): For most cases of anonymous access types, we
-      --  simply use the level where the type is declared. This is true for
-      --  stand-alone object declarations, and for anonymous access types
-      --  associated with components the level is the same as that of the
-      --  enclosing composite type. However, special treatment is needed for
-      --  the cases of access parameters, return objects of an anonymous access
-      --  type, and, in Ada 95, access discriminants of limited types.
-
-      if Is_Access_Type (Btyp) then
-         if Ekind (Btyp) = E_Anonymous_Access_Type then
-            --  No_Dynamic_Accessibility_Checks restriction override for
-            --  alternative accessibility model.
-
-            if Allow_Alt_Model
-              and then No_Dynamic_Accessibility_Checks_Enabled (Btyp)
-            then
-               --  In the -gnatd_b model, the level of an anonymous access
-               --  type is always that of the designated type.
-
-               if Debug_Flag_Underscore_B then
-                  return Type_Access_Level
-                           (Designated_Type (Btyp), Allow_Alt_Model);
-               end if;
-
-               --  When an anonymous access type's Assoc_Ent is specified,
-               --  calculate the result based on the general accessibility
-               --  level routine.
-
-               --  We would like to use Associated_Node_For_Itype here instead,
-               --  but in some cases it is not fine grained enough ???
-
-               if Present (Assoc_Ent) then
-                  return Static_Accessibility_Level
-                           (Assoc_Ent, Object_Decl_Level);
-               end if;
-
-               --  Otherwise take the context of the anonymous access type into
-               --  account.
-
-               --  Obtain the defining entity for the internally generated
-               --  anonymous access type.
-
-               Def_Ent := Defining_Entity_Or_Empty
-                            (Associated_Node_For_Itype (Typ));
-
-               if Present (Def_Ent) then
-                  --  When the defining entity is a subprogram then we know the
-                  --  anonymous access type Typ has been generated to either
-                  --  describe an anonymous access type formal or an anonymous
-                  --  access result type.
-
-                  --  Since we are only interested in the formal case, avoid
-                  --  the anonymous access result type.
-
-                  if Is_Subprogram (Def_Ent)
-                    and then not (Ekind (Def_Ent) = E_Function
-                                   and then Etype (Def_Ent) = Typ)
-                  then
-                     --  When the type comes from an anonymous access
-                     --  parameter, the level is that of the subprogram
-                     --  declaration.
-
-                     return Scope_Depth (Def_Ent);
-
-                  --  When the type is an access discriminant, the level is
-                  --  that of the type.
-
-                  elsif Ekind (Def_Ent) = E_Discriminant then
-                     return Scope_Depth (Scope (Def_Ent));
-                  end if;
-               end if;
-
-            --  If the type is a nonlocal anonymous access type (such as for
-            --  an access parameter) we treat it as being declared at the
-            --  library level to ensure that names such as X.all'access don't
-            --  fail static accessibility checks.
-
-            elsif not Is_Local_Anonymous_Access (Typ) then
-               return Scope_Depth (Standard_Standard);
-
-            --  If this is a return object, the accessibility level is that of
-            --  the result subtype of the enclosing function. The test here is
-            --  little complicated, because we have to account for extended
-            --  return statements that have been rewritten as blocks, in which
-            --  case we have to find and the Is_Return_Object attribute of the
-            --  itype's associated object. It would be nice to find a way to
-            --  simplify this test, but it doesn't seem worthwhile to add a new
-            --  flag just for purposes of this test. ???
-
-            elsif Ekind (Scope (Btyp)) = E_Return_Statement
-              or else
-                (Is_Itype (Btyp)
-                  and then Nkind (Associated_Node_For_Itype (Btyp)) =
-                                                         N_Object_Declaration
-                  and then Is_Return_Object
-                             (Defining_Identifier
-                                (Associated_Node_For_Itype (Btyp))))
-            then
-               declare
-                  Scop : Entity_Id;
-
-               begin
-                  Scop := Scope (Scope (Btyp));
-                  while Present (Scop) loop
-                     exit when Ekind (Scop) = E_Function;
-                     Scop := Scope (Scop);
-                  end loop;
-
-                  --  Treat the return object's type as having the level of the
-                  --  function's result subtype (as per RM05-6.5(5.3/2)).
-
-                  return Type_Access_Level (Etype (Scop), Allow_Alt_Model);
-               end;
-            end if;
-         end if;
-
-         Btyp := Root_Type (Btyp);
-
-         --  The accessibility level of anonymous access types associated with
-         --  discriminants is that of the current instance of the type, and
-         --  that's deeper than the type itself (AARM 3.10.2 (12.3.21)).
-
-         --  AI-402: access discriminants have accessibility based on the
-         --  object rather than the type in Ada 2005, so the above paragraph
-         --  doesn't apply.
-
-         --  ??? Needs completion with rules from AI-416
-
-         if Ada_Version <= Ada_95
-           and then Ekind (Typ) = E_Anonymous_Access_Type
-           and then Present (Associated_Node_For_Itype (Typ))
-           and then Nkind (Associated_Node_For_Itype (Typ)) =
-                                                 N_Discriminant_Specification
-         then
-            return Scope_Depth (Enclosing_Dynamic_Scope (Btyp)) + 1;
-         end if;
-      end if;
-
-      --  Return library level for a generic formal type. This is done because
-      --  RM(10.3.2) says that "The statically deeper relationship does not
-      --  apply to ... a descendant of a generic formal type". Rather than
-      --  checking at each point where a static accessibility check is
-      --  performed to see if we are dealing with a formal type, this rule is
-      --  implemented by having Type_Access_Level and Deepest_Type_Access_Level
-      --  return extreme values for a formal type; Deepest_Type_Access_Level
-      --  returns Int'Last. By calling the appropriate function from among the
-      --  two, we ensure that the static accessibility check will pass if we
-      --  happen to run into a formal type. More specifically, we should call
-      --  Deepest_Type_Access_Level instead of Type_Access_Level whenever the
-      --  call occurs as part of a static accessibility check and the error
-      --  case is the case where the type's level is too shallow (as opposed
-      --  to too deep).
-
-      if Is_Generic_Type (Root_Type (Btyp)) then
-         return Scope_Depth (Standard_Standard);
-      end if;
-
-      return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
-   end Type_Access_Level;
 
    ------------------------------------
    -- Type_Without_Stream_Operation  --
@@ -31575,7 +30339,7 @@ package body Sem_Util is
                   Next (Range_Or_Expr);
                end loop;
 
-               pragma Assert (not Present (Range_Or_Expr));
+               pragma Assert (No (Range_Or_Expr));
                Check_Consistency (Result);
                return Result;
             end;
@@ -31825,7 +30589,7 @@ package body Sem_Util is
                        and then Is_Non_Empty_List (Alternatives (Par))
                        and then Trailer /= First (Alternatives (Par))
                      then
-                        pragma Assert (not Present (Right_Opnd (Par)));
+                        pragma Assert (No (Right_Opnd (Par)));
                         pragma Assert
                           (Is_List_Member (Trailer)
                            and then List_Containing (Trailer)
@@ -32538,7 +31302,7 @@ package body Sem_Util is
         (Typ : Entity_Id) return Boolean
       is
       begin
-         return Present (Find_Aspect (Typ, Aspect_Designated_Storage_Model));
+         return Has_Aspect (Typ, Aspect_Designated_Storage_Model);
       end Has_Designated_Storage_Model_Aspect;
 
       -----------------------------------
@@ -32548,7 +31312,7 @@ package body Sem_Util is
       function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean
       is
       begin
-         return Present (Find_Aspect (Typ, Aspect_Storage_Model_Type));
+         return Has_Aspect (Typ, Aspect_Storage_Model_Type);
       end Has_Storage_Model_Type_Aspect;
 
       --------------------------

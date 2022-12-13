@@ -42,13 +42,13 @@ with Nmake;          use Nmake;
 with Opt;            use Opt;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch12;       use Sem_Ch12;
 with Sem_Ch13;       use Sem_Ch13;
 with Sem_Disp;       use Sem_Disp;
 with Sem_Prag;       use Sem_Prag;
-with Sem_Res;        use Sem_Res;
 with Sem_Type;       use Sem_Type;
 with Sem_Util;       use Sem_Util;
 with Sinfo;          use Sinfo;
@@ -59,6 +59,7 @@ with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
+with Warnsw;         use Warnsw;
 
 package body Contracts is
 
@@ -106,6 +107,11 @@ package body Contracts is
    --  any). This routine processes all [refined] pre- and postconditions as
    --  well as Contract_Cases, Subprogram_Variant, invariants and predicates.
    --  Body_Id denotes the entity of the subprogram body.
+
+   procedure Preanalyze_Condition
+     (Subp : Entity_Id;
+      Expr : Node_Id);
+   --  Preanalyze the class-wide condition Expr of Subp
 
    procedure Set_Class_Condition
      (Kind : Condition_Kind;
@@ -310,6 +316,7 @@ package body Contracts is
                         | Name_Async_Writers
                         | Name_Effective_Reads
                         | Name_Effective_Writes
+                        | Name_No_Caching
               or else (Ekind (Id) = E_Task_Type
                          and Prag_Nam in Name_Part_Of
                                        | Name_Depends
@@ -853,6 +860,7 @@ package body Contracts is
       AW_Val  : Boolean := False;
       ER_Val  : Boolean := False;
       EW_Val  : Boolean := False;
+      NC_Val  : Boolean;
       Seen    : Boolean := False;
       Prag    : Node_Id;
       Obj_Typ : Entity_Id;
@@ -950,16 +958,23 @@ package body Contracts is
       end if;
 
       --  Verify the mutual interaction of the various external properties.
-      --  For variables for which No_Caching is enabled, it has been checked
-      --  already that only False values for other external properties are
-      --  allowed.
+      --  For types and variables for which No_Caching is enabled, it has been
+      --  checked already that only False values for other external properties
+      --  are allowed.
 
       if Seen
-        and then (Ekind (Type_Or_Obj_Id) /= E_Variable
-                   or else not No_Caching_Enabled (Type_Or_Obj_Id))
+        and then not No_Caching_Enabled (Type_Or_Obj_Id)
       then
          Check_External_Properties
            (Type_Or_Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
+      end if;
+
+      --  Analyze the non-external volatility property No_Caching
+
+      Prag := Get_Pragma (Type_Or_Obj_Id, Pragma_No_Caching);
+
+      if Present (Prag) then
+         Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
       end if;
 
       --  The following checks are relevant only when SPARK_Mode is on, as
@@ -1041,10 +1056,10 @@ package body Contracts is
 
             if Is_Type_Id
               and then not Is_Effectively_Volatile (Type_Or_Obj_Id)
-              and then Has_Volatile_Component (Type_Or_Obj_Id)
+              and then Has_Effectively_Volatile_Component (Type_Or_Obj_Id)
             then
                Error_Msg_N
-                 ("non-volatile type & cannot have volatile"
+                 ("non-volatile type & cannot have effectively volatile"
                     & " components",
                   Type_Or_Obj_Id);
             end if;
@@ -1070,7 +1085,6 @@ package body Contracts is
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save the SPARK_Mode-related data to restore on exit
 
-      NC_Val   : Boolean;
       Items    : Node_Id;
       Prag     : Node_Id;
       Ref_Elmt : Elmt_Id;
@@ -1111,14 +1125,6 @@ package body Contracts is
       --  variables.
 
       Check_Type_Or_Object_External_Properties (Type_Or_Obj_Id => Obj_Id);
-
-      --  Analyze the non-external volatility property No_Caching
-
-      Prag := Get_Pragma (Obj_Id, Pragma_No_Caching);
-
-      if Present (Prag) then
-         Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
-      end if;
 
       --  Constant-related checks
 
@@ -1685,6 +1691,10 @@ package body Contracts is
       Set_Debug_Info_Needed  (Wrapper_Id);
       Set_Wrapped_Statements (Subp_Id, Wrapper_Id);
 
+      Set_Has_Pragma_Inline (Wrapper_Id, Has_Pragma_Inline (Subp_Id));
+      Set_Has_Pragma_Inline_Always
+        (Wrapper_Id, Has_Pragma_Inline_Always (Subp_Id));
+
       --  Create specification and declaration for the wrapper
 
       if No (Ret_Type) or else Ret_Type = Standard_Void_Type then
@@ -1712,20 +1722,6 @@ package body Contracts is
       Set_Handled_Statement_Sequence (Body_Decl,
         Make_Handled_Sequence_Of_Statements (Loc,
           End_Label  => Make_Identifier (Loc, Chars (Wrapper_Id))));
-
-      --  Move certain flags which are relevant to the body
-
-      --  Wouldn't a better way be to perform some sort of copy of Body_Decl
-      --  for Wrapper_Body be less error-prone ???
-
-      if Was_Expression_Function (Body_Decl) then
-         Set_Was_Expression_Function (Body_Decl, False);
-         Set_Was_Expression_Function (Wrapper_Body);
-      end if;
-
-      Set_Has_Pragma_Inline (Wrapper_Id, Has_Pragma_Inline (Subp_Id));
-      Set_Has_Pragma_Inline_Always
-        (Wrapper_Id, Has_Pragma_Inline_Always (Subp_Id));
 
       --  Prepend a call to the wrapper when the subprogram is a procedure
 
@@ -4548,241 +4544,9 @@ package body Contracts is
 
    procedure Merge_Class_Conditions (Spec_Id : Entity_Id) is
 
-      procedure Preanalyze_Condition
-        (Subp : Entity_Id;
-         Expr : Node_Id);
-      --  Preanalyze the class-wide condition Expr of Subp
-
       procedure Process_Inherited_Conditions (Kind : Condition_Kind);
       --  Collect all inherited class-wide conditions of Spec_Id and merge
       --  them into one big condition.
-
-      --------------------------
-      -- Preanalyze_Condition --
-      --------------------------
-
-      procedure Preanalyze_Condition
-        (Subp : Entity_Id;
-         Expr : Node_Id)
-      is
-         procedure Clear_Unset_References;
-         --  Clear unset references on formals of Subp since preanalysis
-         --  occurs in a place unrelated to the actual code.
-
-         procedure Remove_Controlling_Arguments;
-         --  Traverse Expr and clear the Controlling_Argument of calls to
-         --  nonabstract functions.
-
-         procedure Remove_Formals (Id : Entity_Id);
-         --  Remove formals from homonym chains and make them not visible
-
-         procedure Restore_Original_Selected_Component;
-         --  Traverse Expr searching for dispatching calls to functions whose
-         --  original node was a selected component, and replace them with
-         --  their original node.
-
-         ----------------------------
-         -- Clear_Unset_References --
-         ----------------------------
-
-         procedure Clear_Unset_References is
-            F : Entity_Id := First_Formal (Subp);
-
-         begin
-            while Present (F) loop
-               Set_Unset_Reference (F, Empty);
-               Next_Formal (F);
-            end loop;
-         end Clear_Unset_References;
-
-         ----------------------------------
-         -- Remove_Controlling_Arguments --
-         ----------------------------------
-
-         procedure Remove_Controlling_Arguments is
-            function Remove_Ctrl_Arg (N : Node_Id) return Traverse_Result;
-            --  Reset the Controlling_Argument of calls to nonabstract
-            --  function calls.
-
-            ---------------------
-            -- Remove_Ctrl_Arg --
-            ---------------------
-
-            function Remove_Ctrl_Arg (N : Node_Id) return Traverse_Result is
-            begin
-               if Nkind (N) = N_Function_Call
-                 and then Present (Controlling_Argument (N))
-                 and then not Is_Abstract_Subprogram (Entity (Name (N)))
-               then
-                  Set_Controlling_Argument (N, Empty);
-               end if;
-
-               return OK;
-            end Remove_Ctrl_Arg;
-
-            procedure Remove_Ctrl_Args is new Traverse_Proc (Remove_Ctrl_Arg);
-         begin
-            Remove_Ctrl_Args (Expr);
-         end Remove_Controlling_Arguments;
-
-         --------------------
-         -- Remove_Formals --
-         --------------------
-
-         procedure Remove_Formals (Id : Entity_Id) is
-            F : Entity_Id := First_Formal (Id);
-
-         begin
-            while Present (F) loop
-               Set_Is_Immediately_Visible (F, False);
-               Remove_Homonym (F);
-               Next_Formal (F);
-            end loop;
-         end Remove_Formals;
-
-         -----------------------------------------
-         -- Restore_Original_Selected_Component --
-         -----------------------------------------
-
-         procedure Restore_Original_Selected_Component is
-            Restored_Nodes_List : Elist_Id := No_Elist;
-
-            procedure Fix_Parents (N : Node_Id);
-            --  Traverse the subtree of N fixing the Parent field of all the
-            --  nodes.
-
-            function Restore_Node (N : Node_Id) return Traverse_Result;
-            --  Process dispatching calls to functions whose original node was
-            --  a selected component, and replace them with their original
-            --  node. Restored nodes are stored in the Restored_Nodes_List
-            --  to fix the parent fields of their subtrees in a separate
-            --  tree traversal.
-
-            -----------------
-            -- Fix_Parents --
-            -----------------
-
-            procedure Fix_Parents (N : Node_Id) is
-
-               function Fix_Parent
-                 (Parent_Node : Node_Id;
-                  Node        : Node_Id) return Traverse_Result;
-               --  Process a single node
-
-               ----------------
-               -- Fix_Parent --
-               ----------------
-
-               function Fix_Parent
-                 (Parent_Node : Node_Id;
-                  Node        : Node_Id) return Traverse_Result
-               is
-                  Par : constant Node_Id := Parent (Node);
-
-               begin
-                  if Par /= Parent_Node then
-                     pragma Assert (not Is_List_Member (Node));
-                     Set_Parent (Node, Parent_Node);
-                  end if;
-
-                  return OK;
-               end Fix_Parent;
-
-               procedure Fix_Parents is
-                  new Traverse_Proc_With_Parent (Fix_Parent);
-
-            begin
-               Fix_Parents (N);
-            end Fix_Parents;
-
-            ------------------
-            -- Restore_Node --
-            ------------------
-
-            function Restore_Node (N : Node_Id) return Traverse_Result is
-            begin
-               if Nkind (N) = N_Function_Call
-                 and then Nkind (Original_Node (N)) = N_Selected_Component
-                 and then Is_Dispatching_Operation (Entity (Name (N)))
-               then
-                  Rewrite (N, Original_Node (N));
-                  Set_Original_Node (N, N);
-
-                  --  Save the restored node in the Restored_Nodes_List to fix
-                  --  the parent fields of their subtrees in a separate tree
-                  --  traversal.
-
-                  Append_New_Elmt (N, Restored_Nodes_List);
-               end if;
-
-               return OK;
-            end Restore_Node;
-
-            procedure Restore_Nodes is new Traverse_Proc (Restore_Node);
-
-         --  Start of processing for Restore_Original_Selected_Component
-
-         begin
-            Restore_Nodes (Expr);
-
-            --  After restoring the original node we must fix the decoration
-            --  of the Parent attribute to ensure tree consistency; required
-            --  because when the class-wide condition is inherited, calls to
-            --  New_Copy_Tree will perform copies of this subtree, and formal
-            --  occurrences with wrong Parent field cannot be mapped to the
-            --  new formals.
-
-            if Present (Restored_Nodes_List) then
-               declare
-                  Elmt : Elmt_Id := First_Elmt (Restored_Nodes_List);
-
-               begin
-                  while Present (Elmt) loop
-                     Fix_Parents (Node (Elmt));
-                     Next_Elmt (Elmt);
-                  end loop;
-               end;
-            end if;
-         end Restore_Original_Selected_Component;
-
-      --  Start of processing for Preanalyze_Condition
-
-      begin
-         pragma Assert (Present (Expr));
-         pragma Assert (Inside_Class_Condition_Preanalysis = False);
-
-         Push_Scope (Subp);
-         Install_Formals (Subp);
-         Inside_Class_Condition_Preanalysis := True;
-
-         Preanalyze_And_Resolve (Expr, Standard_Boolean);
-
-         Inside_Class_Condition_Preanalysis := False;
-         Remove_Formals (Subp);
-         Pop_Scope;
-
-         --  If this preanalyzed condition has occurrences of dispatching calls
-         --  using the Object.Operation notation, during preanalysis such calls
-         --  are rewritten as dispatching function calls; if at later stages
-         --  this condition is inherited we must have restored the original
-         --  selected-component node to ensure that the preanalysis of the
-         --  inherited condition rewrites these dispatching calls in the
-         --  correct context to avoid reporting spurious errors.
-
-         Restore_Original_Selected_Component;
-
-         --  Traverse Expr and clear the Controlling_Argument of calls to
-         --  nonabstract functions. Required since the preanalyzed condition
-         --  is not yet installed on its definite context and will be cloned
-         --  and extended in derivations with additional conditions.
-
-         Remove_Controlling_Arguments;
-
-         --  Clear also attribute Unset_Reference; again because preanalysis
-         --  occurs in a place unrelated to the actual code.
-
-         Clear_Unset_References;
-      end Preanalyze_Condition;
 
       ----------------------------------
       -- Process_Inherited_Conditions --
@@ -5115,6 +4879,250 @@ package body Contracts is
          end if;
       end loop;
    end Merge_Class_Conditions;
+
+   ---------------------------------
+   -- Preanalyze_Class_Conditions --
+   ---------------------------------
+
+   procedure Preanalyze_Class_Conditions (Spec_Id : Entity_Id) is
+      Cond : Node_Id;
+
+   begin
+      for Kind in Condition_Kind loop
+         Cond := Class_Condition (Kind, Spec_Id);
+
+         if Present (Cond) then
+            Preanalyze_Condition (Spec_Id, Cond);
+         end if;
+      end loop;
+   end Preanalyze_Class_Conditions;
+
+   --------------------------
+   -- Preanalyze_Condition --
+   --------------------------
+
+   procedure Preanalyze_Condition
+     (Subp : Entity_Id;
+      Expr : Node_Id)
+   is
+      procedure Clear_Unset_References;
+      --  Clear unset references on formals of Subp since preanalysis
+      --  occurs in a place unrelated to the actual code.
+
+      procedure Remove_Controlling_Arguments;
+      --  Traverse Expr and clear the Controlling_Argument of calls to
+      --  nonabstract functions.
+
+      procedure Remove_Formals (Id : Entity_Id);
+      --  Remove formals from homonym chains and make them not visible
+
+      procedure Restore_Original_Selected_Component;
+      --  Traverse Expr searching for dispatching calls to functions whose
+      --  original node was a selected component, and replace them with
+      --  their original node.
+
+      ----------------------------
+      -- Clear_Unset_References --
+      ----------------------------
+
+      procedure Clear_Unset_References is
+         F : Entity_Id := First_Formal (Subp);
+
+      begin
+         while Present (F) loop
+            Set_Unset_Reference (F, Empty);
+            Next_Formal (F);
+         end loop;
+      end Clear_Unset_References;
+
+      ----------------------------------
+      -- Remove_Controlling_Arguments --
+      ----------------------------------
+
+      procedure Remove_Controlling_Arguments is
+         function Remove_Ctrl_Arg (N : Node_Id) return Traverse_Result;
+         --  Reset the Controlling_Argument of calls to nonabstract
+         --  function calls.
+
+         ---------------------
+         -- Remove_Ctrl_Arg --
+         ---------------------
+
+         function Remove_Ctrl_Arg (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Function_Call
+              and then Present (Controlling_Argument (N))
+              and then not Is_Abstract_Subprogram (Entity (Name (N)))
+            then
+               Set_Controlling_Argument (N, Empty);
+            end if;
+
+            return OK;
+         end Remove_Ctrl_Arg;
+
+         procedure Remove_Ctrl_Args is new Traverse_Proc (Remove_Ctrl_Arg);
+      begin
+         Remove_Ctrl_Args (Expr);
+      end Remove_Controlling_Arguments;
+
+      --------------------
+      -- Remove_Formals --
+      --------------------
+
+      procedure Remove_Formals (Id : Entity_Id) is
+         F : Entity_Id := First_Formal (Id);
+
+      begin
+         while Present (F) loop
+            Set_Is_Immediately_Visible (F, False);
+            Remove_Homonym (F);
+            Next_Formal (F);
+         end loop;
+      end Remove_Formals;
+
+      -----------------------------------------
+      -- Restore_Original_Selected_Component --
+      -----------------------------------------
+
+      procedure Restore_Original_Selected_Component is
+         Restored_Nodes_List : Elist_Id := No_Elist;
+
+         procedure Fix_Parents (N : Node_Id);
+         --  Traverse the subtree of N fixing the Parent field of all the
+         --  nodes.
+
+         function Restore_Node (N : Node_Id) return Traverse_Result;
+         --  Process dispatching calls to functions whose original node was
+         --  a selected component, and replace them with their original
+         --  node. Restored nodes are stored in the Restored_Nodes_List
+         --  to fix the parent fields of their subtrees in a separate
+         --  tree traversal.
+
+         -----------------
+         -- Fix_Parents --
+         -----------------
+
+         procedure Fix_Parents (N : Node_Id) is
+
+            function Fix_Parent
+              (Parent_Node : Node_Id;
+               Node        : Node_Id) return Traverse_Result;
+            --  Process a single node
+
+            ----------------
+            -- Fix_Parent --
+            ----------------
+
+            function Fix_Parent
+              (Parent_Node : Node_Id;
+               Node        : Node_Id) return Traverse_Result
+            is
+               Par : constant Node_Id := Parent (Node);
+
+            begin
+               if Par /= Parent_Node then
+                  pragma Assert (not Is_List_Member (Node));
+                  Set_Parent (Node, Parent_Node);
+               end if;
+
+               return OK;
+            end Fix_Parent;
+
+            procedure Fix_Parents is
+               new Traverse_Proc_With_Parent (Fix_Parent);
+
+         begin
+            Fix_Parents (N);
+         end Fix_Parents;
+
+         ------------------
+         -- Restore_Node --
+         ------------------
+
+         function Restore_Node (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Function_Call
+              and then Nkind (Original_Node (N)) = N_Selected_Component
+              and then Is_Dispatching_Operation (Entity (Name (N)))
+            then
+               Rewrite (N, Original_Node (N));
+               Set_Original_Node (N, N);
+
+               --  Save the restored node in the Restored_Nodes_List to fix
+               --  the parent fields of their subtrees in a separate tree
+               --  traversal.
+
+               Append_New_Elmt (N, Restored_Nodes_List);
+            end if;
+
+            return OK;
+         end Restore_Node;
+
+         procedure Restore_Nodes is new Traverse_Proc (Restore_Node);
+
+      --  Start of processing for Restore_Original_Selected_Component
+
+      begin
+         Restore_Nodes (Expr);
+
+         --  After restoring the original node we must fix the decoration
+         --  of the Parent attribute to ensure tree consistency; required
+         --  because when the class-wide condition is inherited, calls to
+         --  New_Copy_Tree will perform copies of this subtree, and formal
+         --  occurrences with wrong Parent field cannot be mapped to the
+         --  new formals.
+
+         if Present (Restored_Nodes_List) then
+            declare
+               Elmt : Elmt_Id := First_Elmt (Restored_Nodes_List);
+
+            begin
+               while Present (Elmt) loop
+                  Fix_Parents (Node (Elmt));
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
+         end if;
+      end Restore_Original_Selected_Component;
+
+   --  Start of processing for Preanalyze_Condition
+
+   begin
+      pragma Assert (Present (Expr));
+      pragma Assert (Inside_Class_Condition_Preanalysis = False);
+
+      Push_Scope (Subp);
+      Install_Formals (Subp);
+      Inside_Class_Condition_Preanalysis := True;
+
+      Preanalyze_Spec_Expression (Expr, Standard_Boolean);
+
+      Inside_Class_Condition_Preanalysis := False;
+      Remove_Formals (Subp);
+      Pop_Scope;
+
+      --  If this preanalyzed condition has occurrences of dispatching calls
+      --  using the Object.Operation notation, during preanalysis such calls
+      --  are rewritten as dispatching function calls; if at later stages
+      --  this condition is inherited we must have restored the original
+      --  selected-component node to ensure that the preanalysis of the
+      --  inherited condition rewrites these dispatching calls in the
+      --  correct context to avoid reporting spurious errors.
+
+      Restore_Original_Selected_Component;
+
+      --  Traverse Expr and clear the Controlling_Argument of calls to
+      --  nonabstract functions. Required since the preanalyzed condition
+      --  is not yet installed on its definite context and will be cloned
+      --  and extended in derivations with additional conditions.
+
+      Remove_Controlling_Arguments;
+
+      --  Clear also attribute Unset_Reference; again because preanalysis
+      --  occurs in a place unrelated to the actual code.
+
+      Clear_Unset_References;
+   end Preanalyze_Condition;
 
    ----------------------------------------
    -- Save_Global_References_In_Contract --

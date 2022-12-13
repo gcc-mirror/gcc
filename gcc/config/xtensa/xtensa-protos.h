@@ -81,5 +81,6 @@ extern void xtensa_expand_epilogue (bool);
 extern void order_regs_for_local_alloc (void);
 extern enum reg_class xtensa_regno_to_class (int regno);
 extern HOST_WIDE_INT xtensa_initial_elimination_offset (int from, int to);
+extern const char **xtensa_get_config_strings (void);
 
 #endif /* !__XTENSA_PROTOS_H__ */

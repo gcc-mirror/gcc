@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_PTHREAD_H
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -5837,7 +5836,8 @@ recording::comparison::replay_into (replayer *r)
   set_playback_obj (r->new_comparison (playback_location (r, m_loc),
 				       m_op,
 				       m_a->playback_rvalue (),
-				       m_b->playback_rvalue ()));
+				       m_b->playback_rvalue (),
+				       m_type->playback_type ()));
 }
 
 /* Implementation of pure virtual hook recording::rvalue::visit_children

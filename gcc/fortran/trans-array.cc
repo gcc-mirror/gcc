@@ -10527,7 +10527,6 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tree offset;
   tree jump_label1;
   tree jump_label2;
-  tree neq_size;
   tree lbd;
   tree class_expr2 = NULL_TREE;
   int n;
@@ -10607,6 +10606,11 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 	elemsize1 = expr1->ts.u.cl->backend_decl;
       else
 	elemsize1 = lss->info->string_length;
+      tree unit_size = TYPE_SIZE_UNIT (gfc_get_char_type (expr1->ts.kind));
+      elemsize1 = fold_build2_loc (input_location, MULT_EXPR,
+				   TREE_TYPE (elemsize1), elemsize1,
+				   fold_convert (TREE_TYPE (elemsize1), unit_size));
+
     }
   else if (expr1->ts.type == BT_CLASS)
     {
@@ -10699,19 +10703,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   /* Allocate if data is NULL.  */
   cond_null = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
 			 array1, build_int_cst (TREE_TYPE (array1), 0));
-
-  if (expr1->ts.type == BT_CHARACTER && expr1->ts.deferred)
-    {
-      tmp = fold_build2_loc (input_location, NE_EXPR,
-			     logical_type_node,
-			     lss->info->string_length,
-			     rss->info->string_length);
-      cond_null = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-				   logical_type_node, tmp, cond_null);
-      cond_null= gfc_evaluate_now (cond_null, &fblock);
-    }
-  else
-    cond_null= gfc_evaluate_now (cond_null, &fblock);
+  cond_null= gfc_evaluate_now (cond_null, &fblock);
 
   tmp = build3_v (COND_EXPR, cond_null,
 		  build1_v (GOTO_EXPR, jump_label1),
@@ -10778,19 +10770,6 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tmp = build1_v (LABEL_EXPR, jump_label1);
   gfc_add_expr_to_block (&fblock, tmp);
 
-  /* If the lhs has not been allocated, its bounds will not have been
-     initialized and so its size is set to zero.  */
-  size1 = gfc_create_var (gfc_array_index_type, NULL);
-  gfc_init_block (&alloc_block);
-  gfc_add_modify (&alloc_block, size1, gfc_index_zero_node);
-  gfc_init_block (&realloc_block);
-  gfc_add_modify (&realloc_block, size1,
-		  gfc_conv_descriptor_size (desc, expr1->rank));
-  tmp = build3_v (COND_EXPR, cond_null,
-		  gfc_finish_block (&alloc_block),
-		  gfc_finish_block (&realloc_block));
-  gfc_add_expr_to_block (&fblock, tmp);
-
   /* Get the rhs size and fix it.  */
   size2 = gfc_index_one_node;
   for (n = 0; n < expr2->rank; n++)
@@ -10806,16 +10785,6 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 			       tmp, size2);
     }
   size2 = gfc_evaluate_now (size2, &fblock);
-
-  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-			  size1, size2);
-
-  /* If the lhs is deferred length, assume that the element size
-     changes and force a reallocation.  */
-  if (expr1->ts.deferred)
-    neq_size = gfc_evaluate_now (logical_true_node, &fblock);
-  else
-    neq_size = gfc_evaluate_now (cond, &fblock);
 
   /* Deallocation of allocatable components will have to occur on
      reallocation.  Fix the old descriptor now.  */
@@ -11047,20 +11016,6 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 
   gfc_add_block_to_block (&realloc_block, &caf_se.post);
   realloc_expr = gfc_finish_block (&realloc_block);
-
-  /* Reallocate if sizes or dynamic types are different.  */
-  if (elemsize1)
-    {
-      tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-			     elemsize1, elemsize2);
-      tmp = gfc_evaluate_now (tmp, &fblock);
-      neq_size = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-				  logical_type_node, neq_size, tmp);
-    }
-  tmp = build3_v (COND_EXPR, neq_size, realloc_expr,
-		  build_empty_stmt (input_location));
-
-  realloc_expr = tmp;
 
   /* Malloc expression.  */
   gfc_init_block (&alloc_block);

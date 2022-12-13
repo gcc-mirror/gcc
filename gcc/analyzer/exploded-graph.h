@@ -56,8 +56,8 @@ class impl_region_model_context : public region_model_context
 			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
-  bool warn (pending_diagnostic *d) final override;
-  void add_note (pending_note *pn) final override;
+  bool warn (std::unique_ptr<pending_diagnostic> d) final override;
+  void add_note (std::unique_ptr<pending_note> pn) final override;
   void on_svalue_leak (const svalue *) override;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) final override;
@@ -77,6 +77,8 @@ class impl_region_model_context : public region_model_context
   void on_bounded_ranges (const svalue &sval,
 			  const bounded_ranges &ranges) final override;
 
+  void on_pop_frame (const frame_region *frame_reg) final override;
+
   void on_unknown_change (const svalue *sval, bool is_mutable) final override;
 
   void on_phi (const gphi *phi, tree rhs) final override;
@@ -90,16 +92,18 @@ class impl_region_model_context : public region_model_context
 
   void purge_state_involving (const svalue *sval) final override;
 
-  void bifurcate (custom_edge_info *info) final override;
+  void bifurcate (std::unique_ptr<custom_edge_info> info) final override;
   void terminate_path () final override;
   const extrinsic_state *get_ext_state () const final override
   {
     return &m_ext_state;
   }
-  bool get_state_map_by_name (const char *name,
-			      sm_state_map **out_smap,
-			      const state_machine **out_sm,
-			      unsigned *out_sm_idx) override;
+  bool
+  get_state_map_by_name (const char *name,
+			 sm_state_map **out_smap,
+			 const state_machine **out_sm,
+			 unsigned *out_sm_idx,
+			 std::unique_ptr<sm_context> *out_sm_context) override;
 
   const gimple *get_stmt () const override { return m_stmt; }
 
@@ -367,8 +371,7 @@ class exploded_edge : public dedge<eg_traits>
  public:
   exploded_edge (exploded_node *src, exploded_node *dest,
 		 const superedge *sedge,
-		 custom_edge_info *custom_info);
-  ~exploded_edge ();
+		 std::unique_ptr<custom_edge_info> custom_info);
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const final override;
   void dump_dot_label (pretty_printer *pp) const;
@@ -380,10 +383,8 @@ class exploded_edge : public dedge<eg_traits>
 
   /* NULL for most edges; will be non-NULL for special cases
      such as an unwind from a longjmp to a setjmp, or when
-     a signal is delivered to a signal-handler.
-
-     Owned by this class.  */
-  custom_edge_info *m_custom_info;
+     a signal is delivered to a signal-handler.  */
+  std::unique_ptr<custom_edge_info> m_custom_info;
 
 private:
   DISABLE_COPY_AND_ASSIGN (exploded_edge);
@@ -801,7 +802,7 @@ public:
 				     exploded_node *enode_for_diag);
   exploded_edge *add_edge (exploded_node *src, exploded_node *dest,
 			   const superedge *sedge,
-			   custom_edge_info *custom = NULL);
+			   std::unique_ptr<custom_edge_info> custom = NULL);
 
   per_program_point_data *
   get_or_create_per_program_point_data (const program_point &);
@@ -851,6 +852,11 @@ public:
   }
 
   void on_escaped_function (tree fndecl);
+
+  /* In infinite-recursion.cc */
+  void detect_infinite_recursion (exploded_node *enode);
+  exploded_node *find_previous_entry_to (function *top_of_stack_fun,
+					 exploded_node *enode) const;
 
 private:
   void print_bar_charts (pretty_printer *pp) const;
@@ -926,7 +932,7 @@ public:
   void dump_to_file (const char *filename,
 		     const extrinsic_state &ext_state) const;
 
-  bool feasible_p (logger *logger, feasibility_problem **out,
+  bool feasible_p (logger *logger, std::unique_ptr<feasibility_problem> *out,
 		    engine *eng, const exploded_graph *eg) const;
 
   auto_vec<const exploded_edge *> m_edges;
@@ -991,7 +997,7 @@ class stmt_finder
 {
 public:
   virtual ~stmt_finder () {}
-  virtual stmt_finder *clone () const = 0;
+  virtual std::unique_ptr<stmt_finder> clone () const = 0;
   virtual const gimple *find_stmt (const exploded_path &epath) = 0;
 };
 

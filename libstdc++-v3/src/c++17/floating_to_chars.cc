@@ -43,6 +43,14 @@
 #endif
 // sprintf for __ieee128
 extern "C" int __sprintfieee128(char*, const char*, ...);
+#elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113 \
+      && defined(__GLIBC_PREREQ)
+extern "C" int __strfromf128(char*, size_t, const char*, _Float128)
+  __asm ("strfromf128")
+#ifndef _GLIBCXX_HAVE_FLOAT128_MATH
+  __attribute__((__weak__))
+#endif
+  ;
 #endif
 
 // This implementation crucially assumes float/double have the
@@ -77,10 +85,11 @@ extern "C" int __sprintfieee128(char*, const char*, ...);
 #if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __FLT128_MANT_DIG__ == 113
 // Define overloads of std::to_chars for __float128.
 # define FLOAT128_TO_CHARS 1
-#endif
-
-#ifdef FLOAT128_TO_CHARS
 using F128_type = __float128;
+#elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113 \
+      && defined(__GLIBC_PREREQ)
+# define FLOAT128_TO_CHARS 1
+using F128_type = _Float128;
 #else
 using F128_type = void;
 #endif
@@ -252,7 +261,7 @@ namespace
 
 # ifdef FLOAT128_TO_CHARS
   template<>
-    struct floating_type_traits<__float128> : floating_type_traits_binary128
+    struct floating_type_traits<F128_type> : floating_type_traits_binary128
     { };
 # endif
 #endif
@@ -844,9 +853,9 @@ template<typename T>
     const bool is_normal_number = (biased_exponent != 0);
 
     // Calculate the unbiased exponent.
-    const int32_t unbiased_exponent = (is_normal_number
-				       ? biased_exponent - exponent_bias
-				       : 1 - exponent_bias);
+    int32_t unbiased_exponent = (is_normal_number
+				 ? biased_exponent - exponent_bias
+				 : 1 - exponent_bias);
 
     // Shift the mantissa so that its bitwidth is a multiple of 4.
     constexpr unsigned rounded_mantissa_bits = (mantissa_bits + 3) / 4 * 4;
@@ -862,6 +871,16 @@ template<typename T>
 	  // The explicit mantissa bit should already be set.
 	  __glibcxx_assert(effective_mantissa & (mantissa_t{1} << (mantissa_bits
 								   - 1u)));
+      }
+    else if (!precision.has_value() && effective_mantissa)
+      {
+	// 1.8p-23 is shorter than 0.00cp-14, so if precision is
+	// omitted, try to canonicalize denormals such that they
+	// have the leading bit set.
+	int width = __bit_width(effective_mantissa);
+	int shift = rounded_mantissa_bits - width + has_implicit_leading_bit;
+	unbiased_exponent -= shift;
+	effective_mantissa <<= shift;
       }
 
     // Compute the shortest precision needed to print this value exactly,
@@ -1024,7 +1043,8 @@ namespace
 #pragma GCC diagnostic ignored "-Wabi"
   template<typename T, typename... Extra>
   inline int
-  sprintf_ld(char* buffer, const char* format_string, T value, Extra... args)
+  sprintf_ld(char* buffer, size_t length __attribute__((unused)),
+	     const char* format_string, T value, Extra... args)
   {
     int len;
 
@@ -1034,10 +1054,31 @@ namespace
       fesetround(FE_TONEAREST); // We want round-to-nearest behavior.
 #endif
 
+#ifdef FLOAT128_TO_CHARS
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
     if constexpr (is_same_v<T, __ieee128>)
       len = __sprintfieee128(buffer, format_string, args..., value);
     else
+#else
+    if constexpr (is_same_v<T, _Float128>)
+      {
+#ifndef _GLIBCXX_HAVE_FLOAT128_MATH
+	if (&__strfromf128 == nullptr)
+	  len = sprintf(buffer, format_string, args..., (long double)value);
+	else
+#endif
+	if constexpr (sizeof...(args) == 0)
+	  len = __strfromf128(buffer, length, "%.0f", value);
+	else
+	  {
+	    // strfromf128 unfortunately doesn't allow .*
+	    char fmt[3 * sizeof(int) + 6];
+	    sprintf(fmt, "%%.%d%c", args..., int(format_string[4]));
+	    len = __strfromf128(buffer, length, fmt, value);
+	  }
+      }
+    else
+#endif
 #endif
     len = sprintf(buffer, format_string, args..., value);
 
@@ -1061,7 +1102,10 @@ template<typename T>
 	// std::bfloat16_t has the same exponent range as std::float32_t
 	// and so we can avoid instantiation of __floating_to_chars_hex
 	// for bfloat16_t.  Shortest hex will be the same as for float.
-	if constexpr (is_same_v<T, floating_type_bfloat16_t>)
+	// When we print shortest form even for denormals, we can do it
+	// for std::float16_t as well.
+	if constexpr (is_same_v<T, floating_type_float16_t>
+		      || is_same_v<T, floating_type_bfloat16_t>)
 	  return __floating_to_chars_hex(first, last, value.x, nullopt);
 	else
 	  return __floating_to_chars_hex(first, last, value, nullopt);
@@ -1192,8 +1236,10 @@ template<typename T>
 	    // can avoid this if we use sprintf to write all but the last
 	    // digit, and carefully compute and write the last digit
 	    // ourselves.
-	    char buffer[expected_output_length+1];
-	    const int output_length = sprintf_ld(buffer, "%.0Lf", value);
+	    char buffer[expected_output_length + 1];
+	    const int output_length = sprintf_ld(buffer,
+						 expected_output_length + 1,
+						 "%.0Lf", value);
 	    __glibcxx_assert(output_length == expected_output_length);
 	    memcpy(first, buffer, output_length);
 	    return {first + output_length, errc{}};
@@ -1383,9 +1429,10 @@ template<typename T>
 	  __builtin_unreachable();
 
 	// Do the sprintf into the local buffer.
-	char buffer[output_length_upper_bound+1];
+	char buffer[output_length_upper_bound + 1];
 	int output_length
-	  = sprintf_ld(buffer, output_specifier, value, effective_precision);
+	  = sprintf_ld(buffer, output_length_upper_bound + 1, output_specifier,
+		       value, effective_precision);
 	__glibcxx_assert(output_length <= output_length_upper_bound);
 
 	if (effective_precision > 0)
@@ -1785,6 +1832,7 @@ to_chars(char* first, char* last, long double value, chars_format fmt,
 }
 
 #ifdef FLOAT128_TO_CHARS
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 to_chars_result
 to_chars(char* first, char* last, __float128 value) noexcept
 {
@@ -1803,6 +1851,26 @@ to_chars(char* first, char* last, __float128 value, chars_format fmt,
 {
   return __floating_to_chars_precision(first, last, value, fmt, precision);
 }
+#else
+to_chars_result
+to_chars(char* first, char* last, _Float128 value) noexcept
+{
+  return __floating_to_chars_shortest(first, last, value, chars_format{});
+}
+
+to_chars_result
+to_chars(char* first, char* last, _Float128 value, chars_format fmt) noexcept
+{
+  return __floating_to_chars_shortest(first, last, value, fmt);
+}
+
+to_chars_result
+to_chars(char* first, char* last, _Float128 value, chars_format fmt,
+	 int precision) noexcept
+{
+  return __floating_to_chars_precision(first, last, value, fmt, precision);
+}
+#endif
 #endif
 
 // Entrypoints for 16-bit floats.

@@ -33,7 +33,7 @@ void
 test01()
 {
   std::shared_timed_mutex m;
-  m.try_lock_until(clok::now()); // { dg-error "here" }
+  (void) m.try_lock_until(clok::now()); // { dg-error "here" }
 }
 
 struct cloc
@@ -51,7 +51,7 @@ void
 test02()
 {
   std::shared_timed_mutex m;
-  m.try_lock_shared_until(cloc::now()); // { dg-error "here" }
+  (void) m.try_lock_shared_until(cloc::now()); // { dg-error "here" }
 }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }

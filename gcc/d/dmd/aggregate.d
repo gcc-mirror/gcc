@@ -193,7 +193,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
      */
     final size_t nonHiddenFields()
     {
-        return fields.dim - isNested() - (vthis2 !is null);
+        return fields.length - isNested() - (vthis2 !is null);
     }
 
     /***************************************
@@ -274,7 +274,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     {
         //printf("AggregateDeclaration::checkOverlappedFields() %s\n", toChars());
         assert(sizeok == Sizeok.done);
-        size_t nfields = fields.dim;
+        size_t nfields = fields.length;
         if (isNested())
         {
             auto cd = isClassDeclaration();
@@ -362,7 +362,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         const nfields = nonHiddenFields();
         bool errors = false;
 
-        size_t dim = elements.dim;
+        size_t dim = elements.length;
         elements.setDim(nfields);
         foreach (size_t i; dim .. nfields)
             elements[i] = null;
@@ -774,7 +774,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                 }
             }
 
-            for (size_t i = 0; i < members.dim; i++)
+            for (size_t i = 0; i < members.length; i++)
             {
                 auto sm = (*members)[i];
                 sm.apply(&SearchCtor.fp, null);

@@ -54,7 +54,7 @@ inline namespace fundamentals_v2
     erase_if(unordered_set<_Key, _Hash, _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::unordered_set<_Key, _Hash, _CPred, _Alloc>&
+      _GLIBCXX_STD_C::unordered_set<_Key, _Hash, _CPred, _Alloc>&
 	__ucont = __cont;
       std::__detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
@@ -65,7 +65,7 @@ inline namespace fundamentals_v2
     erase_if(unordered_multiset<_Key, _Hash, _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::unordered_multiset<_Key, _Hash, _CPred, _Alloc>&
+      _GLIBCXX_STD_C::unordered_multiset<_Key, _Hash, _CPred, _Alloc>&
 	__ucont = __cont;
       std::__detail::__erase_nodes_if(__cont, __ucont, __pred);
     }

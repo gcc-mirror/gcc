@@ -1472,6 +1472,76 @@ pop_file_scope (void)
   maybe_apply_pending_pragma_weaks ();
 }
 
+/* Whether we are curently inside the initializer for an
+   underspecified object definition (C2x auto or constexpr).  */
+static bool in_underspecified_init;
+
+/* Start an underspecified object definition for NAME at LOC.  This
+   means that NAME is shadowed inside its initializer, so neither the
+   definition being initialized, nor any definition from an outer
+   scope, may be referenced during that initializer.  Return state to
+   be passed to finish_underspecified_init.  If NAME is NULL_TREE, the
+   underspecified object is a (constexpr) compound literal; there is
+   no shadowing in that case, but all the other restrictions on
+   underspecified object definitions still apply.  */
+unsigned int
+start_underspecified_init (location_t loc, tree name)
+{
+  bool prev = in_underspecified_init;
+  bool ok;
+  if (name == NULL_TREE)
+    ok = true;
+  else
+    {
+      tree decl = build_decl (loc, VAR_DECL, name, error_mark_node);
+      C_DECL_UNDERSPECIFIED (decl) = 1;
+      struct c_scope *scope = current_scope;
+      struct c_binding *b = I_SYMBOL_BINDING (name);
+      if (b && B_IN_SCOPE (b, scope))
+	{
+	  error_at (loc, "underspecified declaration of %qE, which is already "
+		    "declared in this scope", name);
+	  ok = false;
+	}
+      else
+	{
+	  bind (name, decl, scope, false, false, loc);
+	  ok = true;
+	}
+    }
+  in_underspecified_init = true;
+  return ok | (prev << 1);
+}
+
+/* Finish an underspecified object definition for NAME, before that
+   name is bound to the real declaration instead of a placeholder.
+   PREV_STATE is the value returned by the call to
+   start_underspecified_init.  If NAME is NULL_TREE, this means a
+   compound literal, as for start_underspecified_init.  */
+void
+finish_underspecified_init (tree name, unsigned int prev_state)
+{
+  if (name != NULL_TREE && (prev_state & 1))
+    {
+      /* A VAR_DECL was bound to the name to shadow any previous
+	 declarations for the name; remove that binding now.  */
+      struct c_scope *scope = current_scope;
+      struct c_binding *b = I_SYMBOL_BINDING (name);
+      gcc_assert (b);
+      gcc_assert (B_IN_SCOPE (b, scope));
+      gcc_assert (VAR_P (b->decl));
+      gcc_assert (C_DECL_UNDERSPECIFIED (b->decl));
+      I_SYMBOL_BINDING (name) = b->shadowed;
+      /* In erroneous cases there may be other bindings added to this
+	 scope during the initializer.  */
+      struct c_binding **p = &scope->bindings;
+      while (*p != b)
+	p = &((*p)->prev);
+      *p = free_binding_and_advance (*p);
+    }
+  in_underspecified_init = (prev_state & (1u << 1)) >> 1;
+}
+
 /* Adjust the bindings for the start of a statement expression.  */
 
 void
@@ -2683,6 +2753,15 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   /* Merge the initialization information.  */
    if (DECL_INITIAL (newdecl) == NULL_TREE)
     DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
+
+  /* Merge 'constexpr' information.  */
+  if (VAR_P (olddecl) && VAR_P (newdecl))
+    {
+      if (C_DECL_DECLARED_CONSTEXPR (olddecl))
+	C_DECL_DECLARED_CONSTEXPR (newdecl) = 1;
+      else if (C_DECL_DECLARED_CONSTEXPR (newdecl))
+	C_DECL_DECLARED_CONSTEXPR (olddecl) = 1;
+    }
 
   /* Merge the threadprivate attribute.  */
   if (VAR_P (olddecl) && C_DECL_THREADPRIVATE_P (olddecl))
@@ -4764,6 +4843,17 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      warned = 1;
 	    }
 
+	  if (in_underspecified_init)
+	    {
+	      /* This can only occur with extensions such as statement
+		 expressions, but is still appropriate as an error to
+		 avoid types declared in such a context escaping to
+		 the type of an auto variable.  */
+	      error ("%qT declared in underspecified object initializer",
+		     value);
+	      warned = 1;
+	    }
+
 	  if (name == NULL_TREE)
 	    {
 	      if (warned != 1 && code != ENUMERAL_TYPE)
@@ -4869,6 +4959,12 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
   if (declspecs->noreturn_p)
     {
       error ("%<_Noreturn%> in empty declaration");
+      warned = 1;
+    }
+
+  if (declspecs->constexpr_p)
+    {
+      error ("%<constexpr%> in empty declaration");
       warned = 1;
     }
 
@@ -5229,7 +5325,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
    This is called as soon as the type information and variable name
    have been parsed, before parsing the initializer if any.
    Here we create the ..._DECL node, fill in its type,
-   and put it on the list of decls for the current context.
+   and (if DO_PUSH) put it on the list of decls for the current context.
    When nonnull, set *LASTLOC to the location of the prior declaration
    of the same entity if one exists.
    The ..._DECL node is returned as the value.
@@ -5244,7 +5340,8 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 
 tree
 start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
-	    bool initialized, tree attributes, location_t *lastloc /* = NULL */)
+	    bool initialized, tree attributes, bool do_push /* = true */,
+	    location_t *lastloc /* = NULL */)
 {
   tree decl;
   tree tem;
@@ -5417,15 +5514,20 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 
   /* Add this decl to the current scope.
      TEM may equal DECL or it may be a previous decl of the same name.  */
-  tem = pushdecl (decl);
-
-  if (initialized && DECL_EXTERNAL (tem))
+  if (do_push)
     {
-      DECL_EXTERNAL (tem) = 0;
-      TREE_STATIC (tem) = 1;
-    }
+      tem = pushdecl (decl);
 
-  return tem;
+      if (initialized && DECL_EXTERNAL (tem))
+	{
+	  DECL_EXTERNAL (tem) = 0;
+	  TREE_STATIC (tem) = 1;
+	}
+
+      return tem;
+    }
+  else
+    return decl;
 }
 
 /* Subroutine of finish_decl. TYPE is the type of an uninitialized object
@@ -6142,6 +6244,7 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   C_DECL_COMPOUND_LITERAL_P (decl) = 1;
+  C_DECL_DECLARED_CONSTEXPR (decl) = scspecs && scspecs->constexpr_p;
   TREE_TYPE (decl) = type;
   if (threadp)
     set_decl_tls_model (decl, decl_default_tls_model (decl));
@@ -6429,6 +6532,7 @@ grokdeclarator (const struct c_declarator *declarator,
 {
   tree type = declspecs->type;
   bool threadp = declspecs->thread_p;
+  bool constexprp = declspecs->constexpr_p;
   enum c_storage_class storage_class = declspecs->storage_class;
   int constp;
   int restrictp;
@@ -6458,6 +6562,15 @@ grokdeclarator (const struct c_declarator *declarator,
   enum c_declarator_kind first_non_attr_kind;
   unsigned int alignas_align = 0;
 
+  if (type == NULL_TREE)
+    {
+      /* This can occur for auto on a parameter in C2X mode.  Set a
+	 dummy type here so subsequent code can give diagnostics for
+	 this case.  */
+      gcc_assert (declspecs->c2x_auto_p);
+      gcc_assert (decl_context == PARM);
+      type = declspecs->type = integer_type_node;
+    }
   if (TREE_CODE (type) == ERROR_MARK)
     return error_mark_node;
   if (expr == NULL)
@@ -6662,6 +6775,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   if (funcdef_flag
       && (threadp
+	  || constexprp
 	  || storage_class == csc_auto
 	  || storage_class == csc_register
 	  || storage_class == csc_typedef))
@@ -6678,14 +6792,23 @@ grokdeclarator (const struct c_declarator *declarator,
 	error_at (loc, "function definition declared %qs",
 		  declspecs->thread_gnu_p ? "__thread" : "_Thread_local");
       threadp = false;
+      /* The parser ensures a constexpr function definition never
+	 reaches here.  */
+      gcc_assert (!constexprp);
       if (storage_class == csc_auto
 	  || storage_class == csc_register
 	  || storage_class == csc_typedef)
 	storage_class = csc_none;
     }
-  else if (decl_context != NORMAL && (storage_class != csc_none || threadp))
+  else if (decl_context != NORMAL && (storage_class != csc_none
+				      || threadp
+				      || constexprp
+				      || declspecs->c2x_auto_p))
     {
-      if (decl_context == PARM && storage_class == csc_register)
+      if (decl_context == PARM
+	  && storage_class == csc_register
+	  && !constexprp
+	  && !declspecs->c2x_auto_p)
 	;
       else
 	{
@@ -6711,6 +6834,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    }
 	  storage_class = csc_none;
 	  threadp = false;
+	  constexprp = false;
 	}
     }
   else if (storage_class == csc_extern
@@ -7758,7 +7882,7 @@ grokdeclarator (const struct c_declarator *declarator,
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
       {
-	if (storage_class == csc_register || threadp)
+	if (storage_class == csc_register || threadp || constexprp)
 	  {
 	    error_at (loc, "invalid storage class for function %qE", name);
 	  }
@@ -7858,6 +7982,32 @@ grokdeclarator (const struct c_declarator *declarator,
 	/* An uninitialized decl with `extern' is a reference.  */
 	int extern_ref = !initialized && storage_class == csc_extern;
 
+	if (constexprp)
+	  {
+	    /* The type of a constexpr variable must not be variably
+	       modified, volatile, atomic or restrict qualified or
+	       have a member with such a qualifier.  const
+	       qualification is implicitly added, and, at file scope,
+	       has internal linkage.  */
+	    if (variably_modified_type_p (type, NULL_TREE))
+	      error_at (loc, "%<constexpr%> object has variably modified "
+			"type");
+	    if (type_quals
+		& (TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC))
+	      error_at (loc, "invalid qualifiers for %<constexpr%> object");
+	    else
+	      {
+		tree type_no_array = strip_array_types (type);
+		if (RECORD_OR_UNION_TYPE_P (type_no_array)
+		    && C_TYPE_FIELDS_NON_CONSTEXPR (type_no_array))
+		  error_at (loc, "invalid qualifiers for field of "
+			    "%<constexpr%> object");
+	      }
+	    type_quals |= TYPE_QUAL_CONST;
+	    if (current_scope == file_scope)
+	      storage_class = csc_static;
+	  }
+
 	type = c_build_qualified_type (type, type_quals, orig_qual_type,
 				       orig_qual_indirect);
 
@@ -7884,6 +8034,8 @@ grokdeclarator (const struct c_declarator *declarator,
 			   VAR_DECL, declarator->u.id.id, type);
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
+	if (constexprp)
+	  C_DECL_DECLARED_CONSTEXPR (decl) = 1;
 
 	if (declspecs->inline_p)
 	  pedwarn (loc, 0, "variable %q+D declared %<inline%>", decl);
@@ -8428,6 +8580,9 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
 
   pushtag (loc, name, ref);
   decl_attributes (&ref, attrs, (int) ATTR_FLAG_TYPE_IN_PLACE);
+  if (in_underspecified_init)
+    error_at (loc, "%qT declared in underspecified object initializer",
+	      ref);
 
   ret.spec = ref;
   return ret;
@@ -8522,6 +8677,9 @@ start_struct (location_t loc, enum tree_code code, tree name,
 		(in_sizeof
 		 ? "sizeof"
 		 : (in_typeof ? "typeof" : "alignof")));
+
+  if (in_underspecified_init)
+    error_at (loc, "%qT defined in underspecified object initializer", ref);
 
   return ref;
 }
@@ -8909,26 +9067,7 @@ is_flexible_array_member_p (bool is_last_field,
   bool is_one_element_array = one_element_array_type_p (TREE_TYPE (x));
   bool is_flexible_array = flexible_array_member_type_p (TREE_TYPE (x));
 
-  unsigned int strict_flex_array_level = flag_strict_flex_arrays;
-
-  tree attr_strict_flex_array = lookup_attribute ("strict_flex_array",
-						  DECL_ATTRIBUTES (x));
-  /* If there is a strict_flex_array attribute attached to the field,
-     override the flag_strict_flex_arrays.  */
-  if (attr_strict_flex_array)
-    {
-      /* Get the value of the level first from the attribute.  */
-      unsigned HOST_WIDE_INT attr_strict_flex_array_level = 0;
-      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
-      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
-      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
-      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
-      gcc_assert (tree_fits_uhwi_p (attr_strict_flex_array));
-      attr_strict_flex_array_level = tree_to_uhwi (attr_strict_flex_array);
-
-      /* The attribute has higher priority than flag_struct_flex_array.  */
-      strict_flex_array_level = attr_strict_flex_array_level;
-    }
+  unsigned int strict_flex_array_level = strict_flex_array_level_of (x);
 
   switch (strict_flex_array_level)
     {
@@ -9028,13 +9167,13 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 
       DECL_CONTEXT (x) = t;
 
+      tree t1 = strip_array_types (TREE_TYPE (x));
       /* If any field is const, the structure type is pseudo-const.  */
       if (TREE_READONLY (x))
 	C_TYPE_FIELDS_READONLY (t) = 1;
       else
 	{
 	  /* A field that is pseudo-const makes the structure likewise.  */
-	  tree t1 = strip_array_types (TREE_TYPE (x));
 	  if (RECORD_OR_UNION_TYPE_P (t1) && C_TYPE_FIELDS_READONLY (t1))
 	    C_TYPE_FIELDS_READONLY (t) = 1;
 	}
@@ -9042,7 +9181,18 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       /* Any field that is volatile means variables of this type must be
 	 treated in some ways as volatile.  */
       if (TREE_THIS_VOLATILE (x))
-	C_TYPE_FIELDS_VOLATILE (t) = 1;
+	{
+	  C_TYPE_FIELDS_VOLATILE (t) = 1;
+	  C_TYPE_FIELDS_NON_CONSTEXPR (t) = 1;
+	}
+
+      /* Any field that is volatile, restrict-qualified or atomic
+	 means the type cannot be used for a constexpr object.  */
+      if (TYPE_QUALS (t1)
+	  & (TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC))
+	C_TYPE_FIELDS_NON_CONSTEXPR (t) = 1;
+      else if (RECORD_OR_UNION_TYPE_P (t1) && C_TYPE_FIELDS_NON_CONSTEXPR (t1))
+	    C_TYPE_FIELDS_NON_CONSTEXPR (t) = 1;
 
       /* Any field of nominal variable size implies structure is too.  */
       if (C_DECL_VARIABLE_SIZE (x))
@@ -9244,6 +9394,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       TYPE_TRANSPARENT_AGGR (x) = TYPE_TRANSPARENT_AGGR (t);
       C_TYPE_FIELDS_READONLY (x) = C_TYPE_FIELDS_READONLY (t);
       C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
+      C_TYPE_FIELDS_NON_CONSTEXPR (x) = C_TYPE_FIELDS_NON_CONSTEXPR (t);
       C_TYPE_VARIABLE_SIZE (x) = C_TYPE_VARIABLE_SIZE (t);
       C_TYPE_INCOMPLETE_VARS (x) = NULL_TREE;
     }
@@ -9432,6 +9583,10 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
 		(in_sizeof
 		 ? "sizeof"
 		 : (in_typeof ? "typeof" : "alignof")));
+
+  if (in_underspecified_init)
+    error_at (loc, "%qT defined in underspecified object initializer",
+	      enumtype);
 
   return enumtype;
 }
@@ -9885,6 +10040,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   tree decl1, old_decl;
   tree restype, resdecl;
   location_t loc;
+  location_t result_loc;
 
   current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
@@ -10111,8 +10267,11 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   push_scope ();
   declare_parm_level ();
 
+  /* Set the result decl source location to the location of the typespec.  */
+  result_loc = (declspecs->locations[cdw_typespec] == UNKNOWN_LOCATION
+		? loc : declspecs->locations[cdw_typespec]);
   restype = TREE_TYPE (TREE_TYPE (current_function_decl));
-  resdecl = build_decl (loc, RESULT_DECL, NULL_TREE, restype);
+  resdecl = build_decl (result_loc, RESULT_DECL, NULL_TREE, restype);
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_IGNORED_P (resdecl) = 1;
   DECL_RESULT (current_function_decl) = resdecl;
@@ -11261,6 +11420,24 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
   if (TREE_UNAVAILABLE (type))
     specs->unavailable_p = true;
 
+  /* As a type specifier is present, "auto" must be used as a storage
+     class specifier, not for type deduction.  */
+  if (specs->c2x_auto_p)
+    {
+      specs->c2x_auto_p = false;
+      if (specs->storage_class != csc_none)
+	error ("multiple storage classes in declaration specifiers");
+      else if (specs->thread_p)
+	error ("%qs used with %<auto%>",
+	       specs->thread_gnu_p ? "__thread" : "_Thread_local");
+      else if (specs->constexpr_p)
+	/* auto may only be used with another storage class specifier,
+	   such as constexpr, if the type is inferred.  */
+	error ("%<auto%> used with %<constexpr%>");
+      else
+	specs->storage_class = csc_auto;
+    }
+
   /* Handle type specifier keywords.  */
   if (TREE_CODE (type) == IDENTIFIER_NODE
       && C_IS_RESERVED_WORD (type)
@@ -12051,11 +12228,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
     error_at (loc, "two or more data types in declaration specifiers");
   else if (TREE_CODE (type) == TYPE_DECL)
     {
-      if (TREE_TYPE (type) == error_mark_node)
-	; /* Allow the type to default to int to avoid cascading errors.  */
-      else
+      specs->type = TREE_TYPE (type);
+      if (TREE_TYPE (type) != error_mark_node)
 	{
-	  specs->type = TREE_TYPE (type);
 	  specs->decl_attr = DECL_ATTRIBUTES (type);
 	  specs->typedef_p = true;
 	  specs->explicit_signed_p = C_TYPEDEF_EXPLICITLY_SIGNED (type);
@@ -12157,6 +12332,8 @@ declspecs_add_scspec (location_t loc,
 	error ("%qE used with %<register%>", scspec);
       else if (specs->storage_class == csc_typedef)
 	error ("%qE used with %<typedef%>", scspec);
+      else if (specs->constexpr_p)
+	error ("%qE used with %<constexpr%>", scspec);
       else
 	{
 	  specs->thread_p = true;
@@ -12179,7 +12356,21 @@ declspecs_add_scspec (location_t loc,
 	}
       break;
     case RID_AUTO:
+      if (flag_isoc2x
+	  && specs->typespec_kind == ctsk_none
+	  && specs->storage_class != csc_typedef)
+	{
+	  /* "auto" potentially used for type deduction.  */
+	  if (specs->c2x_auto_p)
+	    error ("duplicate %qE", scspec);
+	  specs->c2x_auto_p = true;
+	  return specs;
+	}
       n = csc_auto;
+      /* auto may only be used with another storage class specifier,
+	 such as constexpr, if the type is inferred.  */
+      if (specs->constexpr_p)
+	error ("%qE used with %<constexpr%>", scspec);
       break;
     case RID_EXTERN:
       n = csc_extern;
@@ -12198,6 +12389,27 @@ declspecs_add_scspec (location_t loc,
       break;
     case RID_TYPEDEF:
       n = csc_typedef;
+      if (specs->c2x_auto_p)
+	{
+	  error ("%<typedef%> used with %<auto%>");
+	  specs->c2x_auto_p = false;
+	}
+      break;
+    case RID_CONSTEXPR:
+      dupe = specs->constexpr_p;
+      if (specs->storage_class == csc_extern)
+	error ("%qE used with %<extern%>", scspec);
+      else if (specs->storage_class == csc_typedef)
+	error ("%qE used with %<typedef%>", scspec);
+      else if (specs->storage_class == csc_auto)
+	/* auto may only be used with another storage class specifier,
+	   such as constexpr, if the type is inferred.  */
+	error ("%qE used with %<auto%>", scspec);
+      else if (specs->thread_p)
+	error ("%qE used with %qs", scspec,
+	       specs->thread_gnu_p ? "__thread" : "_Thread_local");
+      else
+	specs->constexpr_p = true;
       break;
     default:
       gcc_unreachable ();
@@ -12227,6 +12439,12 @@ declspecs_add_scspec (location_t loc,
 		     specs->thread_gnu_p ? "__thread" : "_Thread_local",
 		     scspec);
 	      specs->thread_p = false;
+	    }
+	  if (n != csc_auto && n != csc_register && n != csc_static
+	      && specs->constexpr_p)
+	    {
+	      error ("%<constexpr%> used with %qE", scspec);
+	      specs->constexpr_p = false;
 	    }
 	}
     }
@@ -12284,7 +12502,7 @@ finish_declspecs (struct c_declspecs *specs)
     {
       gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p
-		  && !specs->complex_p);
+		  && !specs->complex_p && !specs->c2x_auto_p);
 
       /* Set a dummy type.  */
       if (TREE_CODE (specs->type) == ERROR_MARK)
@@ -12320,6 +12538,18 @@ finish_declspecs (struct c_declspecs *specs)
 		   "ISO C does not support plain %<complex%> meaning "
 		   "%<double complex%>");
 	}
+      else if (specs->c2x_auto_p)
+	{
+	  /* Type to be filled in later, including applying postfix
+	     attributes.  This warning only actually appears for
+	     -Wc11-c2x-compat in C2X mode; in older modes, there may
+	     be a warning or pedwarn for implicit "int" instead, or
+	     other errors for use of auto at file scope.  */
+	  pedwarn_c11 (input_location, OPT_Wpedantic,
+		       "ISO C does not support %<auto%> type deduction "
+		       "before C2X");
+	  return specs;
+	}
       else
 	{
 	  specs->typespec_word = cts_int;
@@ -12336,6 +12566,7 @@ finish_declspecs (struct c_declspecs *specs)
   specs->explicit_signed_p = specs->signed_p;
 
   /* Now compute the actual type.  */
+  gcc_assert (!specs->c2x_auto_p);
   switch (specs->typespec_word)
     {
     case cts_auto_type:

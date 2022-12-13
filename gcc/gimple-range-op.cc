@@ -148,6 +148,9 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	case GIMPLE_COND:
 	  m_op1 = gimple_cond_lhs (m_stmt);
 	  m_op2 = gimple_cond_rhs (m_stmt);
+	  // Check that operands are supported types.  One check is enough.
+	  if (!Value_Range::supports_type_p (TREE_TYPE (m_op1)))
+	    m_valid = false;
 	  return;
 	case GIMPLE_ASSIGN:
 	  m_op1 = gimple_range_base_of_assignment (m_stmt);
@@ -164,6 +167,9 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	    }
 	  if (gimple_num_ops (m_stmt) >= 3)
 	    m_op2 = gimple_assign_rhs2 (m_stmt);
+	  // Check that operands are supported types.  One check is enough.
+	  if ((m_op1 && !Value_Range::supports_type_p (TREE_TYPE (m_op1))))
+	    m_valid = false;
 	  return;
 	default:
 	  gcc_unreachable ();

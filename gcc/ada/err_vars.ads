@@ -32,12 +32,6 @@ with Uintp; use Uintp;
 
 package Err_Vars is
 
-   --  All of these variables are set when needed, so they do not need to be
-   --  initialized. However, there is code that saves and restores existing
-   --  values, which may malfunction in -gnatVa mode if the variable has never
-   --  been initialized, so we initialize some variables to avoid exceptions
-   --  from invalid values in such cases.
-
    --  Note on error counts (Serious_Errors_Detected, Total_Errors_Detected,
    --  Warnings_Detected, Warning_Info_Messages, Report_Info_Messages). These
    --  counts might more logically appear in this unit, but we place them
@@ -68,7 +62,6 @@ package Err_Vars is
    --  resulting from illegalities, and also for substitution of more
    --  appropriate error messages from higher semantic levels. It is
    --  a counter so that the increment/decrement protocol nests neatly.
-   --  Initialized for -gnatVa use, see comment above.
 
    Error_Msg_Exception : exception;
    --  Exception raised if Raise_Exception_On_Error is true
@@ -80,12 +73,6 @@ package Err_Vars is
    --  other than the main unit. However, if the main unit has a pragma
    --  Source_Reference line, then this is initialized to No_Source_File,
    --  to force an initial reference to the real source file name.
-
-   Warning_Doc_Switch : Boolean := True;
-   --  If this is set True, then the ??/?x?/?x? sequences in error messages
-   --  are active (see errout.ads for details). If this switch is False, then
-   --  these sequences are ignored (i.e. simply equivalent to a single ?). The
-   --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.
 
    ----------------------------------------
    -- Error Message Insertion Parameters --

@@ -415,7 +415,7 @@ package body Exp_Dbug is
                | N_Identifier
             =>
                if No (Entity (Ren))
-                 or else not Present (Renamed_Entity_Or_Object (Entity (Ren)))
+                 or else No (Renamed_Entity_Or_Object (Entity (Ren)))
                then
                   exit;
                end if;

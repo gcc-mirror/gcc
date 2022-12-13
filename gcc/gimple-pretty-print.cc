@@ -339,7 +339,6 @@ dump_unary_rhs (pretty_printer *buffer, const gassign *gs, int spc,
   switch (rhs_code)
     {
     case VIEW_CONVERT_EXPR:
-    case ASSERT_EXPR:
       dump_generic_node (buffer, rhs, spc, flags, false);
       break;
 

@@ -1007,7 +1007,7 @@ package body Sem_Type is
 
       elsif Ada_Version >= Ada_2022
         and then T2 = Any_Composite
-        and then Present (Find_Aspect (T1, Aspect_Aggregate))
+        and then Has_Aspect (T1, Aspect_Aggregate)
       then
          return True;
 

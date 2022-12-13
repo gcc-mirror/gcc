@@ -187,7 +187,8 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->vector_length_expr);
   for (i = 0; i < OMP_LIST_NUM; i++)
     gfc_free_omp_namelist (c->lists[i],
-			   i == OMP_LIST_AFFINITY || i == OMP_LIST_DEPEND);
+			   i == OMP_LIST_AFFINITY || i == OMP_LIST_DEPEND,
+			   i == OMP_LIST_ALLOCATE);
   gfc_free_expr_list (c->wait_list);
   gfc_free_expr_list (c->tile_list);
   free (CONST_CAST (char *, c->critical_name));
@@ -542,7 +543,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP variable list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false);
+  gfc_free_omp_namelist (head, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -632,7 +633,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP variable list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false);
+  gfc_free_omp_namelist (head, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -741,7 +742,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP SINK dependence-type list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false);
+  gfc_free_omp_namelist (head, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -1467,7 +1468,7 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
       *head = NULL;
       gfc_error_now ("!$OMP DECLARE REDUCTION %s not found at %L",
 		     buffer, &old_loc);
-      gfc_free_omp_namelist (n, false);
+      gfc_free_omp_namelist (n, false, false);
     }
   else
     for (n = *head; n; n = n->next)
@@ -1785,7 +1786,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 
 	      if (end_colon && gfc_match (" %e )", &alignment) != MATCH_YES)
 		{
-		  gfc_free_omp_namelist (*head, false);
+		  gfc_free_omp_namelist (*head, false, false);
 		  gfc_current_locus = old_loc;
 		  *head = NULL;
 		  break;
@@ -1853,17 +1854,33 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      && gfc_match ("allocate ( ") == MATCH_YES)
 	    {
 	      gfc_expr *allocator = NULL;
+	      gfc_expr *align = NULL;
 	      old_loc = gfc_current_locus;
-	      m = gfc_match_expr (&allocator);
-	      if (m == MATCH_YES && gfc_match (" : ") != MATCH_YES)
-		{
-		  /* If no ":" then there is no allocator, we backtrack
-		     and read the variable list.  */
-		  gfc_free_expr (allocator);
-		  allocator = NULL;
-		  gfc_current_locus = old_loc;
-		}
+	      if ((m = gfc_match ("allocator ( %e )", &allocator)) == MATCH_YES)
+		gfc_match (" , align ( %e )", &align);
+	      else if ((m = gfc_match ("align ( %e )", &align)) == MATCH_YES)
+		gfc_match (" , allocator ( %e )", &allocator);
 
+	      if (m == MATCH_YES)
+		{
+		  if (gfc_match (" : ") != MATCH_YES)
+		    {
+		      gfc_error ("Expected %<:%> at %C");
+		      goto error;
+		    }
+		}
+	      else
+		{
+		  m = gfc_match_expr (&allocator);
+		  if (m == MATCH_YES && gfc_match (" : ") != MATCH_YES)
+		    {
+		       /* If no ":" then there is no allocator, we backtrack
+			  and read the variable list.  */
+		      gfc_free_expr (allocator);
+		      allocator = NULL;
+		      gfc_current_locus = old_loc;
+		    }
+		}
 	      gfc_omp_namelist **head = NULL;
 	      m = gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_ALLOCATE],
 					       true, NULL, &head);
@@ -1871,16 +1888,18 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (m != MATCH_YES)
 		{
 		  gfc_free_expr (allocator);
+		  gfc_free_expr (align);
 		  gfc_error ("Expected variable list at %C");
 		  goto error;
 		}
 
 	      for (gfc_omp_namelist *n = *head; n; n = n->next)
-		if (allocator)
-		  n->expr = gfc_copy_expr (allocator);
-		else
-		  n->expr = NULL;
+		{
+		  n->expr = (allocator) ? gfc_copy_expr (allocator) : NULL;
+		  n->u.align = (align) ? gfc_copy_expr (align) : NULL;
+		}
 	      gfc_free_expr (allocator);
+	      gfc_free_expr (align);
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_AT)
@@ -2499,9 +2518,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					      true) == MATCH_YES)
 	    continue;
 	  if ((mask & OMP_CLAUSE_FROM)
-	      && gfc_match_omp_variable_list ("from (",
+	      && (gfc_match_omp_variable_list ("from (",
 					      &c->lists[OMP_LIST_FROM], false,
-					      NULL, &head, true) == MATCH_YES)
+					      NULL, &head, true, true)
+		  == MATCH_YES))
 	    continue;
 	  break;
 	case 'g':
@@ -2708,7 +2728,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    end_colon = true;
 		  else if (gfc_match (" )") != MATCH_YES)
 		    {
-		      gfc_free_omp_namelist (*head, false);
+		      gfc_free_omp_namelist (*head, false, false);
 		      gfc_current_locus = old_loc;
 		      *head = NULL;
 		      break;
@@ -2719,7 +2739,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		{
 		  if (gfc_match (" %e )", &step) != MATCH_YES)
 		    {
-		      gfc_free_omp_namelist (*head, false);
+		      gfc_free_omp_namelist (*head, false, false);
 		      gfc_current_locus = old_loc;
 		      *head = NULL;
 		      goto error;
@@ -2816,7 +2836,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    }
 		  if (has_error)
 		    {
-		      gfc_free_omp_namelist (*head, false);
+		      gfc_free_omp_namelist (*head, false, false);
 		      *head = NULL;
 		      goto error;
 		    }
@@ -3436,9 +3456,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		continue;
 	    }
 	  else if ((mask & OMP_CLAUSE_TO)
-	      && gfc_match_omp_variable_list ("to (",
+	      && (gfc_match_omp_variable_list ("to (",
 					      &c->lists[OMP_LIST_TO], false,
-					      NULL, &head, true) == MATCH_YES)
+					      NULL, &head, true, true)
+		  == MATCH_YES))
 	    continue;
 	  break;
 	case 'u':
@@ -4038,7 +4059,7 @@ gfc_match_oacc_routine (void)
       if (gfc_match_char (')') != MATCH_YES)
 	{
 	  gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C, expecting"
-		     " ')' after NAME");
+		     " %<)%> after NAME");
 	  gfc_current_locus = old_loc;
 	  return MATCH_ERROR;
 	}
@@ -4171,17 +4192,19 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION			\
    | OMP_CLAUSE_SCHEDULE | OMP_CLAUSE_ORDERED | OMP_CLAUSE_COLLAPSE	\
-   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ORDER | OMP_CLAUSE_ALLOCATE)
+   | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ORDER | OMP_CLAUSE_ALLOCATE		\
+   | OMP_CLAUSE_NOWAIT)
 #define OMP_LOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_BIND) | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_ORDER	\
    | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
 
 #define OMP_SCOPE_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) |OMP_CLAUSE_FIRSTPRIVATE		\
-   | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_ALLOCATE)
+   | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_ALLOCATE | OMP_CLAUSE_NOWAIT)
 #define OMP_SECTIONS_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
-   | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_ALLOCATE)
+   | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION			\
+   | OMP_CLAUSE_ALLOCATE | OMP_CLAUSE_NOWAIT)
 #define OMP_SIMD_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_LASTPRIVATE		\
    | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_SAFELEN	\
@@ -4231,7 +4254,7 @@ cleanup:
    | OMP_CLAUSE_ORDER | OMP_CLAUSE_ALLOCATE)
 #define OMP_SINGLE_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
-   | OMP_CLAUSE_ALLOCATE)
+   | OMP_CLAUSE_ALLOCATE | OMP_CLAUSE_NOWAIT | OMP_CLAUSE_COPYPRIVATE)
 #define OMP_ORDERED_CLAUSES \
   (omp_mask (OMP_CLAUSE_THREADS) | OMP_CLAUSE_SIMD)
 #define OMP_DECLARE_TARGET_CLAUSES \
@@ -4245,7 +4268,8 @@ cleanup:
   (omp_mask (OMP_CLAUSE_FILTER))
 #define OMP_ERROR_CLAUSES \
   (omp_mask (OMP_CLAUSE_AT) | OMP_CLAUSE_MESSAGE | OMP_CLAUSE_SEVERITY)
-
+#define OMP_WORKSHARE_CLAUSES \
+  omp_mask (OMP_CLAUSE_NOWAIT)
 
 
 static match
@@ -4456,8 +4480,8 @@ gfc_match_omp_distribute_parallel_do (void)
   return match_omp (EXEC_OMP_DISTRIBUTE_PARALLEL_DO,
 		    (OMP_DISTRIBUTE_CLAUSES | OMP_PARALLEL_CLAUSES
 		     | OMP_DO_CLAUSES)
-		    & ~(omp_mask (OMP_CLAUSE_ORDERED))
-		    & ~(omp_mask (OMP_CLAUSE_LINEAR)));
+		    & ~(omp_mask (OMP_CLAUSE_ORDERED)
+			| OMP_CLAUSE_LINEAR | OMP_CLAUSE_NOWAIT));
 }
 
 
@@ -4467,7 +4491,7 @@ gfc_match_omp_distribute_parallel_do_simd (void)
   return match_omp (EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD,
 		    (OMP_DISTRIBUTE_CLAUSES | OMP_PARALLEL_CLAUSES
 		     | OMP_DO_CLAUSES | OMP_SIMD_CLAUSES)
-		    & ~(omp_mask (OMP_CLAUSE_ORDERED)));
+		    & ~(omp_mask (OMP_CLAUSE_ORDERED) | OMP_CLAUSE_NOWAIT));
 }
 
 
@@ -4622,14 +4646,14 @@ gfc_match_omp_flush (void)
     {
       gfc_error ("List specified together with memory order clause in FLUSH "
 		 "directive at %C");
-      gfc_free_omp_namelist (list, false);
+      gfc_free_omp_namelist (list, false, false);
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP FLUSH statement at %C");
-      gfc_free_omp_namelist (list, false);
+      gfc_free_omp_namelist (list, false, false);
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
@@ -5324,8 +5348,8 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 		}
 	      else
 		{
-		  gfc_error ("selector '%s' not allowed for context selector "
-			     "set '%s' at %C",
+		  gfc_error ("selector %qs not allowed for context selector "
+			     "set %qs at %C",
 			     selector, oss->trait_set_selector_name);
 		  return MATCH_ERROR;
 		}
@@ -5344,7 +5368,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	{
 	  if (property_kind == CTX_PROPERTY_NONE)
 	    {
-	      gfc_error ("selector '%s' does not accept any properties at %C",
+	      gfc_error ("selector %qs does not accept any properties at %C",
 			 selector);
 	      return MATCH_ERROR;
 	    }
@@ -5353,7 +5377,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	    {
 	      if (gfc_match (" (") != MATCH_YES)
 		{
-		  gfc_error ("expected '(' at %C");
+		  gfc_error ("expected %<(%> at %C");
 		  return MATCH_ERROR;
 		}
 	      if (gfc_match_expr (&os->score) != MATCH_YES
@@ -5375,7 +5399,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 
 	      if (gfc_match (" )") != MATCH_YES)
 		{
-		  gfc_error ("expected ')' at %C");
+		  gfc_error ("expected %<)%> at %C");
 		  return MATCH_ERROR;
 		}
 
@@ -5488,7 +5512,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 
 	  if (gfc_match (" )") != MATCH_YES)
 	    {
-	      gfc_error ("expected ')' at %C");
+	      gfc_error ("expected %<)%> at %C");
 	      return MATCH_ERROR;
 	    }
 	}
@@ -5498,7 +5522,7 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	{
 	  if (gfc_match (" (") != MATCH_YES)
 	    {
-	      gfc_error ("expected '(' at %C");
+	      gfc_error ("expected %<(%> at %C");
 	      return MATCH_ERROR;
 	    }
 	}
@@ -5544,22 +5568,22 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
 
       if (m != MATCH_YES || i == selector_set_count)
 	{
-	  gfc_error ("expected 'construct', 'device', 'implementation' or "
-		     "'user' at %C");
+	  gfc_error ("expected %<construct%>, %<device%>, %<implementation%> "
+		     "or %<user%> at %C");
 	  return MATCH_ERROR;
 	}
 
       m = gfc_match (" =");
       if (m != MATCH_YES)
 	{
-	  gfc_error ("expected '=' at %C");
+	  gfc_error ("expected %<=%> at %C");
 	  return MATCH_ERROR;
 	}
 
       m = gfc_match (" {");
       if (m != MATCH_YES)
 	{
-	  gfc_error ("expected '{' at %C");
+	  gfc_error ("expected %<{%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -5574,7 +5598,7 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
       m = gfc_match (" }");
       if (m != MATCH_YES)
 	{
-	  gfc_error ("expected '}' at %C");
+	  gfc_error ("expected %<}%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -5596,7 +5620,7 @@ gfc_match_omp_declare_variant (void)
 
   if (gfc_match (" (") != MATCH_YES)
     {
-      gfc_error ("expected '(' at %C");
+      gfc_error ("expected %<(%> at %C");
       return MATCH_ERROR;
     }
 
@@ -5644,7 +5668,7 @@ gfc_match_omp_declare_variant (void)
 
   if (gfc_match (" )") != MATCH_YES)
     {
-      gfc_error ("expected ')' at %C");
+      gfc_error ("expected %<)%> at %C");
       return MATCH_ERROR;
     }
 
@@ -5654,7 +5678,7 @@ gfc_match_omp_declare_variant (void)
 	{
 	  if (first_p)
 	    {
-	      gfc_error ("expected 'match' at %C");
+	      gfc_error ("expected %<match%> at %C");
 	      return MATCH_ERROR;
 	    }
 	  else
@@ -5663,7 +5687,7 @@ gfc_match_omp_declare_variant (void)
 
       if (gfc_match (" (") != MATCH_YES)
 	{
-	  gfc_error ("expected '(' at %C");
+	  gfc_error ("expected %<(%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -5672,7 +5696,7 @@ gfc_match_omp_declare_variant (void)
 
       if (gfc_match (" )") != MATCH_YES)
 	{
-	  gfc_error ("expected ')' at %C");
+	  gfc_error ("expected %<)%> at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -5768,7 +5792,8 @@ match
 gfc_match_omp_parallel_do (void)
 {
   return match_omp (EXEC_OMP_PARALLEL_DO,
-		    OMP_PARALLEL_CLAUSES | OMP_DO_CLAUSES);
+		    (OMP_PARALLEL_CLAUSES | OMP_DO_CLAUSES)
+		    & ~(omp_mask (OMP_CLAUSE_NOWAIT)));
 }
 
 
@@ -5776,7 +5801,8 @@ match
 gfc_match_omp_parallel_do_simd (void)
 {
   return match_omp (EXEC_OMP_PARALLEL_DO_SIMD,
-		    OMP_PARALLEL_CLAUSES | OMP_DO_CLAUSES | OMP_SIMD_CLAUSES);
+		    (OMP_PARALLEL_CLAUSES | OMP_DO_CLAUSES | OMP_SIMD_CLAUSES)
+		    & ~(omp_mask (OMP_CLAUSE_NOWAIT)));
 }
 
 
@@ -5832,7 +5858,8 @@ match
 gfc_match_omp_parallel_sections (void)
 {
   return match_omp (EXEC_OMP_PARALLEL_SECTIONS,
-		    OMP_PARALLEL_CLAUSES | OMP_SECTIONS_CLAUSES);
+		    (OMP_PARALLEL_CLAUSES | OMP_SECTIONS_CLAUSES)
+		    & ~(omp_mask (OMP_CLAUSE_NOWAIT)));
 }
 
 
@@ -6318,8 +6345,8 @@ gfc_match_omp_teams_distribute_parallel_do (void)
   return match_omp (EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO,
 		    (OMP_TEAMS_CLAUSES | OMP_DISTRIBUTE_CLAUSES
 		     | OMP_PARALLEL_CLAUSES | OMP_DO_CLAUSES)
-		    & ~(omp_mask (OMP_CLAUSE_ORDERED))
-		    & ~(omp_mask (OMP_CLAUSE_LINEAR)));
+		    & ~(omp_mask (OMP_CLAUSE_ORDERED)
+			| OMP_CLAUSE_LINEAR | OMP_CLAUSE_NOWAIT));
 }
 
 
@@ -6329,7 +6356,8 @@ gfc_match_omp_teams_distribute_parallel_do_simd (void)
   return match_omp (EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
 		    (OMP_TEAMS_CLAUSES | OMP_DISTRIBUTE_CLAUSES
 		     | OMP_PARALLEL_CLAUSES | OMP_DO_CLAUSES
-		     | OMP_SIMD_CLAUSES) & ~(omp_mask (OMP_CLAUSE_ORDERED)));
+		     | OMP_SIMD_CLAUSES)
+		    & ~(omp_mask (OMP_CLAUSE_ORDERED) | OMP_CLAUSE_NOWAIT));
 }
 
 
@@ -6345,14 +6373,7 @@ gfc_match_omp_teams_distribute_simd (void)
 match
 gfc_match_omp_workshare (void)
 {
-  if (gfc_match_omp_eos () != MATCH_YES)
-    {
-      gfc_error ("Unexpected junk after $OMP WORKSHARE statement at %C");
-      return MATCH_ERROR;
-    }
-  new_st.op = EXEC_OMP_WORKSHARE;
-  new_st.ext.omp_clauses = gfc_get_omp_clauses ();
-  return MATCH_YES;
+  return match_omp (EXEC_OMP_WORKSHARE, OMP_WORKSHARE_CLAUSES);
 }
 
 
@@ -6656,14 +6677,8 @@ match
 gfc_match_omp_end_single (void)
 {
   gfc_omp_clauses *c;
-  if (gfc_match ("% nowait") == MATCH_YES)
-    {
-      new_st.op = EXEC_OMP_END_NOWAIT;
-      new_st.ext.omp_bool = true;
-      return MATCH_YES;
-    }
-  if (gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_COPYPRIVATE))
-      != MATCH_YES)
+  if (gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_COPYPRIVATE)
+					   | OMP_CLAUSE_NOWAIT) != MATCH_YES)
     return MATCH_ERROR;
   new_st.op = EXEC_OMP_END_SINGLE;
   new_st.ext.omp_clauses = c;
@@ -7283,19 +7298,36 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->lists[OMP_LIST_ALLOCATE])
     {
       for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
-	if (n->expr && (n->expr->ts.type != BT_INTEGER
-	    || n->expr->ts.kind != gfc_c_intptr_kind))
-	  {
-	    gfc_error ("Expected integer expression of the "
-		       "'omp_allocator_handle_kind' kind at %L",
-		       &n->expr->where);
-	    break;
-	  }
+	{
+	  if (n->expr && (!gfc_resolve_expr (n->expr)
+			  || n->expr->ts.type != BT_INTEGER
+			  || n->expr->ts.kind != gfc_c_intptr_kind))
+	    {
+	      gfc_error ("Expected integer expression of the "
+			 "%<omp_allocator_handle_kind%> kind at %L",
+			 &n->expr->where);
+	      break;
+	    }
+	  if (!n->u.align)
+	    continue;
+	  int alignment = 0;
+	  if (!gfc_resolve_expr (n->u.align)
+	      || n->u.align->ts.type != BT_INTEGER
+	      || n->u.align->rank != 0
+	      || gfc_extract_int (n->u.align, &alignment)
+	      || alignment <= 0)
+	    {
+	      gfc_error ("ALIGN modifier requires a scalar positive "
+			 "constant integer alignment expression at %L",
+			 &n->u.align->where);
+	      break;
+	    }
+	}
 
       /* Check for 2 things here.
-     1.  There is no duplication of variable in allocate clause.
-     2.  Variable in allocate clause are also present in some
-	 privatization clase (non-composite case).  */
+	 1.  There is no duplication of variable in allocate clause.
+	 2.  Variable in allocate clause are also present in some
+	     privatization clase (non-composite case).  */
       for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
 	n->sym->mark = 0;
 
@@ -7312,7 +7344,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		{
 		  prev->next = n->next;
 		  n->next = NULL;
-		  gfc_free_omp_namelist (n, 0);
+		  gfc_free_omp_namelist (n, false, true);
 		  n = prev->next;
 		}
 	      continue;
@@ -7346,7 +7378,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 	  for (n = omp_clauses->lists[OMP_LIST_ALLOCATE]; n; n = n->next)
 	    if (n->sym->mark == 1)
-	      gfc_error ("%qs specified in 'allocate' clause at %L but not "
+	      gfc_error ("%qs specified in %<allocate%> clause at %L but not "
 			 "in an explicit privatization clause",
 			 n->sym->name, &n->where);
 	}
@@ -7404,6 +7436,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      }
 	    break;
 	  case OMP_LIST_COPYPRIVATE:
+	    if (omp_clauses->nowait)
+	      gfc_error ("NOWAIT clause must not be used with COPYPRIVATE "
+			 "clause at %L", &n->where);
 	    for (; n != NULL; n = n->next)
 	      {
 		if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)

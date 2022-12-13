@@ -78,7 +78,7 @@ void foo(int (*a)[3])
 
 	h->j[4] = 1;	// flexible array member
 	h0->j[4] = 1;	// zero-sized array extension
-	h1->j[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
+	h1->j[4] = 1;	/* { dg-bogus "subscript 4 is above array bound" } */
 	h3->j[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
 
 	struct h0b* h0b = malloc(sizeof(struct h) + 3 * sizeof(int));

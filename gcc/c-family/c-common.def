@@ -81,6 +81,14 @@ DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_statement, 0)
    SWITCH_STMT_SCOPE, respectively.  */
 DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_statement, 4)
 
+/* Extensions for C++ Concepts. */
+
+/* Concept definition. This is not entirely different than a VAR_DECL
+   except that a) it must be a template, and b) doesn't have the wide
+   range of value and linkage options available to variables.  Used
+   by C++ FE and in c-family attribute handling.  */
+DEFTREECODE (CONCEPT_DECL, "concept_decl", tcc_declaration, 0)
+
 /*
 Local variables:
 mode:c

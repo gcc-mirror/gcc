@@ -263,12 +263,13 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 
   *zero_uses_p = false;
 
-  /* We only can sink assignments and non-looping const/pure calls.  */
+  /* We only can sink assignments and const/pure calls that are guaranteed
+     to return exactly once.  */
   int cf;
   if (!is_gimple_assign (stmt)
       && (!is_gimple_call (stmt)
 	  || !((cf = gimple_call_flags (stmt)) & (ECF_CONST|ECF_PURE))
-	  || (cf & ECF_LOOPING_CONST_OR_PURE)))
+	  || (cf & (ECF_LOOPING_CONST_OR_PURE|ECF_RETURNS_TWICE))))
     return false;
 
   /* We only can sink stmts with a single definition.  */

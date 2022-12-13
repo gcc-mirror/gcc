@@ -328,7 +328,7 @@ void printScopeFailure(E)(E printFunc, VarDeclaration v, int recursionLimit)
  * Params:
  *      sc = used to determine current function and module
  *      fdc = function being called, `null` if called indirectly
- *      par = function parameter (`this` if null)
+ *      parId = name of function parameter for error messages
  *      vPar = `VarDeclaration` corresponding to `par`
  *      parStc = storage classes of function parameter (may have added `scope` from `pure`)
  *      arg = initializer for param
@@ -337,12 +337,12 @@ void printScopeFailure(E)(E printFunc, VarDeclaration v, int recursionLimit)
  * Returns:
  *      `true` if pointers to the stack can escape via assignment
  */
-bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, VarDeclaration vPar, STC parStc, Expression arg, bool assertmsg, bool gag)
+bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Identifier parId, VarDeclaration vPar, STC parStc, Expression arg, bool assertmsg, bool gag)
 {
     enum log = false;
     if (log) printf("checkParamArgumentEscape(arg: %s par: %s)\n",
         arg ? arg.toChars() : "null",
-        par ? par.toChars() : "this");
+        parId ? parId.toChars() : "null");
     //printf("type = %s, %d\n", arg.type.toChars(), arg.type.hasPointers());
 
     if (!arg.type.hasPointers())
@@ -361,7 +361,7 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, Var
         er.byexp.setDim(0);
     }
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byfunc.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byfunc.length && !er.byexp.length)
         return false;
 
     bool result = false;
@@ -374,24 +374,18 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, Var
         {
             result |= sc.setUnsafeDIP1000(gag, arg.loc,
                 desc ~ " `%s` assigned to non-scope parameter calling `assert()`", v);
+            return;
         }
-        else if (par)
+        const(char)* msg =
+            (fdc &&  parId) ? (desc ~ " `%s` assigned to non-scope parameter `%s` calling `%s`") :
+            (fdc && !parId) ? (desc ~ " `%s` assigned to non-scope anonymous parameter calling `%s`") :
+            (!fdc && parId) ? (desc ~ " `%s` assigned to non-scope parameter `%s`") :
+            (desc ~ " `%s` assigned to non-scope anonymous parameter");
+
+        if (sc.setUnsafeDIP1000(gag, arg.loc, msg, v, parId ? parId : fdc, fdc))
         {
-            if (sc.setUnsafeDIP1000(gag, arg.loc,
-                desc ~ " `%s` assigned to non-scope parameter `%s` calling `%s`", v, par, fdc))
-            {
-                result = true;
-                printScopeFailure(previewSupplementalFunc(sc.isDeprecated(), global.params.useDIP1000), vPar, 10);
-            }
-        }
-        else
-        {
-            if (sc.setUnsafeDIP1000(gag, arg.loc,
-                desc ~ " `%s` assigned to non-scope parameter `this` calling `%s`", v, fdc))
-            {
-                result = true;
-                printScopeFailure(previewSupplementalFunc(sc.isDeprecated(), global.params.useDIP1000), fdc.vthis, 10);
-            }
+            result = true;
+            printScopeFailure(previewSupplementalFunc(sc.isDeprecated(), global.params.useDIP1000), vPar, 10);
         }
     }
 
@@ -465,16 +459,11 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, Var
 
     foreach (Expression ee; er.byexp)
     {
-        if (!par)
-        {
-            result |= sc.setUnsafeDIP1000(gag, ee.loc,
-                "reference to stack allocated value returned by `%s` assigned to non-scope parameter `this`", ee);
-        }
-        else
-        {
-            result |= sc.setUnsafeDIP1000(gag, ee.loc,
-                "reference to stack allocated value returned by `%s` assigned to non-scope parameter `%s`", ee, par);
-        }
+        const(char)* msg = parId ?
+            "reference to stack allocated value returned by `%s` assigned to non-scope parameter `%s`" :
+            "reference to stack allocated value returned by `%s` assigned to non-scope anonymous parameter";
+
+        result |= sc.setUnsafeDIP1000(gag, ee.loc, msg, ee, parId);
     }
 
     return result;
@@ -537,7 +526,7 @@ bool checkConstructorEscape(Scope* sc, CallExp ce, bool gag)
     if (!tthis.hasPointers())
         return false;
 
-    if (!ce.arguments && ce.arguments.dim)
+    if (!ce.arguments && ce.arguments.length)
         return false;
 
     DotVarExp dve = ce.e1.isDotVarExp();
@@ -545,7 +534,7 @@ bool checkConstructorEscape(Scope* sc, CallExp ce, bool gag)
     TypeFunction tf = ctor.type.isTypeFunction();
 
     const nparams = tf.parameterList.length;
-    const n = ce.arguments.dim;
+    const n = ce.arguments.length;
 
     // j=1 if _arguments[] is first argument
     const j = tf.isDstyleVariadic();
@@ -625,7 +614,7 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
     else
         escapeByValue(e2, &er);
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byfunc.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byfunc.length && !er.byexp.length)
         return false;
 
     VarDeclaration va = expToVariable(e1);
@@ -959,7 +948,7 @@ bool checkThrowEscape(Scope* sc, Expression e, bool gag)
 
     escapeByValue(e, &er);
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byexp.length)
         return false;
 
     bool result = false;
@@ -1007,7 +996,7 @@ bool checkNewEscape(Scope* sc, Expression e, bool gag)
 
     escapeByValue(e, &er);
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byexp.length)
         return false;
 
     bool result = false;
@@ -1187,7 +1176,7 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
     else
         escapeByValue(e, &er);
 
-    if (!er.byref.dim && !er.byvalue.dim && !er.byexp.dim)
+    if (!er.byref.length && !er.byvalue.length && !er.byexp.length)
         return false;
 
     bool result = false;
@@ -1739,13 +1728,13 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
         if (!e.type.hasPointers())
             return;
 
-        if (e.arguments && e.arguments.dim)
+        if (e.arguments && e.arguments.length)
         {
             /* j=1 if _arguments[] is first argument,
              * skip it because it is not passed by ref
              */
             int j = tf.isDstyleVariadic();
-            for (size_t i = j; i < e.arguments.dim; ++i)
+            for (size_t i = j; i < e.arguments.length; ++i)
             {
                 Expression arg = (*e.arguments)[i];
                 size_t nparams = tf.parameterList.length;
@@ -2048,13 +2037,13 @@ void escapeByRef(Expression e, EscapeByResults* er, bool live = false, bool retR
             return;
         if (tf.isref)
         {
-            if (e.arguments && e.arguments.dim)
+            if (e.arguments && e.arguments.length)
             {
                 /* j=1 if _arguments[] is first argument,
                  * skip it because it is not passed by ref
                  */
                 int j = tf.isDstyleVariadic();
-                for (size_t i = j; i < e.arguments.dim; ++i)
+                for (size_t i = j; i < e.arguments.length; ++i)
                 {
                     Expression arg = (*e.arguments)[i];
                     size_t nparams = tf.parameterList.length;
@@ -2323,7 +2312,7 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
     {
         // Create and fill array[] with maybe candidates from the `this` and the parameters
         VarDeclaration[10] tmp = void;
-        size_t dim = (funcdecl.vthis !is null) + (funcdecl.parameters ? funcdecl.parameters.dim : 0);
+        size_t dim = (funcdecl.vthis !is null) + (funcdecl.parameters ? funcdecl.parameters.length : 0);
 
         import dmd.common.string : SmallBuffer;
         auto sb = SmallBuffer!VarDeclaration(dim, tmp[]);
@@ -2345,7 +2334,7 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
     // Infer STC.scope_
     if (funcdecl.parameters && !funcdecl.errors)
     {
-        assert(f.parameterList.length == funcdecl.parameters.dim);
+        assert(f.parameterList.length == funcdecl.parameters.length);
         foreach (u, p; f.parameterList)
         {
             auto v = (*funcdecl.parameters)[u];

@@ -271,10 +271,10 @@ Initializer syntaxCopy(Initializer inx)
     static Initializer copyStruct(StructInitializer vi)
     {
         auto si = new StructInitializer(vi.loc);
-        assert(vi.field.dim == vi.value.dim);
-        si.field.setDim(vi.field.dim);
-        si.value.setDim(vi.value.dim);
-        foreach (const i; 0 .. vi.field.dim)
+        assert(vi.field.length == vi.value.length);
+        si.field.setDim(vi.field.length);
+        si.value.setDim(vi.value.length);
+        foreach (const i; 0 .. vi.field.length)
         {
             si.field[i] = vi.field[i];
             si.value[i] = vi.value[i].syntaxCopy();
@@ -285,10 +285,10 @@ Initializer syntaxCopy(Initializer inx)
     static Initializer copyArray(ArrayInitializer vi)
     {
         auto ai = new ArrayInitializer(vi.loc);
-        assert(vi.index.dim == vi.value.dim);
-        ai.index.setDim(vi.index.dim);
-        ai.value.setDim(vi.value.dim);
-        foreach (const i; 0 .. vi.value.dim)
+        assert(vi.index.length == vi.value.length);
+        ai.index.setDim(vi.index.length);
+        ai.value.setDim(vi.value.length);
+        foreach (const i; 0 .. vi.value.length)
         {
             ai.index[i] = vi.index[i] ? vi.index[i].syntaxCopy() : null;
             ai.value[i] = vi.value[i].syntaxCopy();

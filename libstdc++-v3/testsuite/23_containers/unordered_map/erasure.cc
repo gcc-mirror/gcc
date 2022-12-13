@@ -61,11 +61,24 @@ test02()
   VERIFY( num == 4 );
 }
 
+void
+test_pr107850()
+{
+  // Predicate only callable as non-const and only accepts non-const argument.
+  struct Pred { bool operator()(std::pair<const int, int>&) { return false; } };
+  const Pred pred; // erase_if parameter is passed by value, so non-const.
+  std::unordered_map<int, int> m;
+  std::erase_if(m, pred);
+  std::unordered_multimap<int, int> mm;
+  std::erase_if(mm, pred);
+}
+
 int
 main()
 {
   test01();
   test02();
+  test_pr107850();
 
   return 0;
 }

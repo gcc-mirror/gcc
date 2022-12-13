@@ -74,31 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "ubsan.h"
 
-/* Tree code classes.  */
 
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
-#define END_OF_BASE_TREE_CODES tcc_exceptional,
-
-const enum tree_code_class tree_code_type[] = {
-#include "all-tree.def"
-};
-
-#undef DEFTREECODE
-#undef END_OF_BASE_TREE_CODES
-
-/* Table indexed by tree code giving number of expression
-   operands beyond the fixed part of the node structure.
-   Not used for types or decls.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
-#define END_OF_BASE_TREE_CODES 0,
-
-const unsigned char tree_code_length[] = {
-#include "all-tree.def"
-};
-
-#undef DEFTREECODE
-#undef END_OF_BASE_TREE_CODES
 
 /* Names of tree components.
    Used for printing out the tree and error messages.  */
@@ -12038,6 +12014,18 @@ strip_invariant_refs (const_tree op)
   return op;
 }
 
+/* Strip handled components with zero offset from OP.  */
+
+tree
+strip_zero_offset_components (tree op)
+{
+  while (TREE_CODE (op) == COMPONENT_REF
+	 && integer_zerop (DECL_FIELD_OFFSET (TREE_OPERAND (op, 1)))
+	 && integer_zerop (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (op, 1))))
+    op = TREE_OPERAND (op, 0);
+  return op;
+}
+
 static GTY(()) tree gcc_eh_personality_decl;
 
 /* Return the GCC personality function decl.  */
@@ -12727,8 +12715,8 @@ array_ref_up_bound (tree exp)
   return NULL_TREE;
 }
 
-/* Returns true if REF is an array reference, component reference,
-   or memory reference to an array whose actual size might be larger
+/* Returns true if REF is an array reference, a component reference,
+   or a memory reference to an array whose actual size might be larger
    than its upper bound implies, there are multiple cases:
    A. a ref to a flexible array member at the end of a structure;
    B. a ref to an array with a different type against the original decl;
@@ -12744,14 +12732,20 @@ array_ref_up_bound (tree exp)
    for (int i = 0; i < 4; i++, p++)
      t[i][0] = ...;
 
-   FIXME, the name of this routine need to be changed to be more accurate.  */
+   If non-null, set IS_TRAILING_ARRAY to true if the ref is the above case A.
+*/
+
 bool
-array_at_struct_end_p (tree ref)
+array_ref_flexible_size_p (tree ref, bool *is_trailing_array /* = NULL */)
 {
-  /* the TYPE for this array referece.  */
+  /* The TYPE for this array referece.  */
   tree atype = NULL_TREE;
-  /* the FIELD_DECL for the array field in the containing structure.  */
+  /* The FIELD_DECL for the array field in the containing structure.  */
   tree afield_decl = NULL_TREE;
+  /* Whether this array is the trailing array of a structure.  */
+  bool is_trailing_array_tmp = false;
+  if (!is_trailing_array)
+    is_trailing_array = &is_trailing_array_tmp;
 
   if (TREE_CODE (ref) == ARRAY_REF
       || TREE_CODE (ref) == ARRAY_RANGE_REF)
@@ -12839,7 +12833,10 @@ array_at_struct_end_p (tree ref)
   if (! TYPE_SIZE (atype)
       || ! TYPE_DOMAIN (atype)
       || ! TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
-    return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
+    {
+      *is_trailing_array = afield_decl && TREE_CODE (afield_decl) == FIELD_DECL;
+      return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
+    }
 
   /* If the reference is based on a declared entity, the size of the array
      is constrained by its given domain.  (Do not trust commons PR/69368).  */
@@ -12861,9 +12858,17 @@ array_at_struct_end_p (tree ref)
       if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (atype))) != INTEGER_CST
 	  || TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (atype))) != INTEGER_CST
           || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (atype))) != INTEGER_CST)
-	return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
+	{
+	  *is_trailing_array
+	    = afield_decl && TREE_CODE (afield_decl) == FIELD_DECL;
+	  return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
+	}
       if (! get_addr_base_and_unit_offset (ref_to_array, &offset))
-	return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
+	{
+	  *is_trailing_array
+	    = afield_decl && TREE_CODE (afield_decl) == FIELD_DECL;
+	  return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
+	}
 
       /* If at least one extra element fits it is a flexarray.  */
       if (known_le ((wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
@@ -12871,13 +12876,19 @@ array_at_struct_end_p (tree ref)
 		     + 2)
 		    * wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (atype))),
 		    wi::to_offset (DECL_SIZE_UNIT (ref)) - offset))
-	return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
+	{
+	  *is_trailing_array
+	    = afield_decl && TREE_CODE (afield_decl) == FIELD_DECL;
+	  return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
+	}
 
       return false;
     }
 
+  *is_trailing_array = afield_decl && TREE_CODE (afield_decl) == FIELD_DECL;
   return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
 }
+
 
 /* Return a tree representing the offset, in bytes, of the field referenced
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
@@ -12936,11 +12947,63 @@ get_initializer_for (tree init, tree decl)
   return NULL_TREE;
 }
 
+/* Determines the special array member type for the array reference REF.  */
+special_array_member
+component_ref_sam_type (tree ref)
+{
+  special_array_member sam_type = special_array_member::none;
+
+  tree member = TREE_OPERAND (ref, 1);
+  tree memsize = DECL_SIZE_UNIT (member);
+  if (memsize)
+    {
+      tree memtype = TREE_TYPE (member);
+      if (TREE_CODE (memtype) != ARRAY_TYPE)
+	return sam_type;
+
+      bool trailing = false;
+      (void)array_ref_flexible_size_p (ref, &trailing);
+      bool zero_length = integer_zerop (memsize);
+      if (!trailing && !zero_length)
+	/* MEMBER is an interior array with
+	  more than one element.  */
+	return special_array_member::int_n;
+
+      if (zero_length)
+	{
+	  if (trailing)
+	    return special_array_member::trail_0;
+	  else
+	    return special_array_member::int_0;
+	}
+
+      if (!zero_length)
+	if (tree dom = TYPE_DOMAIN (memtype))
+	  if (tree min = TYPE_MIN_VALUE (dom))
+	    if (tree max = TYPE_MAX_VALUE (dom))
+	      if (TREE_CODE (min) == INTEGER_CST
+		  && TREE_CODE (max) == INTEGER_CST)
+		{
+		  offset_int minidx = wi::to_offset (min);
+		  offset_int maxidx = wi::to_offset (max);
+		  offset_int neltsm1 = maxidx - minidx;
+		  if (neltsm1 > 0)
+		    /* MEMBER is a trailing array with more than
+		       one elements.  */
+		    return special_array_member::trail_n;
+
+		  if (neltsm1 == 0)
+		    return special_array_member::trail_1;
+		}
+    }
+
+  return sam_type;
+}
+
 /* Determines the size of the member referenced by the COMPONENT_REF
    REF, using its initializer expression if necessary in order to
    determine the size of an initialized flexible array member.
-   If non-null, set *ARK when REF refers to an interior zero-length
-   array or a trailing one-element array.
+   If non-null, set *SAM to the type of special array member.
    Returns the size as sizetype (which might be zero for an object
    with an uninitialized flexible array member) or null if the size
    cannot be determined.  */
@@ -12953,7 +13016,7 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
   special_array_member sambuf;
   if (!sam)
     sam = &sambuf;
-  *sam = special_array_member::none;
+  *sam = component_ref_sam_type (ref);
 
   /* The object/argument referenced by the COMPONENT_REF and its type.  */
   tree arg = TREE_OPERAND (ref, 0);
@@ -12974,43 +13037,46 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 	return (tree_int_cst_equal (memsize, TYPE_SIZE_UNIT (memtype))
 		? memsize : NULL_TREE);
 
-      bool trailing = array_at_struct_end_p (ref);
-      bool zero_length = integer_zerop (memsize);
-      if (!trailing && !zero_length)
-	/* MEMBER is either an interior array or is an array with
-	   more than one element.  */
+      /* 2-or-more elements arrays are treated as normal arrays by default.  */
+      if (*sam == special_array_member::int_n
+	  || *sam == special_array_member::trail_n)
 	return memsize;
 
-      if (zero_length)
+      /* flag_strict_flex_arrays will control how to treat
+	 the trailing arrays as flexiable array members.  */
+
+      tree afield_decl = TREE_OPERAND (ref, 1);
+      unsigned int strict_flex_array_level
+	= strict_flex_array_level_of (afield_decl);
+
+      switch (strict_flex_array_level)
 	{
-	  if (trailing)
-	    *sam = special_array_member::trail_0;
-	  else
-	    {
-	      *sam = special_array_member::int_0;
-	      memsize = NULL_TREE;
-	    }
+	  case 3:
+	    /* Treaing 0-length trailing arrays as normal array.  */
+	    if (*sam == special_array_member::trail_0)
+	      return size_zero_node;
+	    /* FALLTHROUGH.  */
+	  case 2:
+	    /* Treating 1-element trailing arrays as normal array.  */
+	    if (*sam == special_array_member::trail_1)
+	      return memsize;
+	    /* FALLTHROUGH.  */
+	  case 1:
+	    /* Treating 2-or-more elements trailing arrays as normal
+	       array.  */
+	    if (*sam == special_array_member::trail_n)
+	      return memsize;
+	    /* FALLTHROUGH.  */
+	  case 0:
+	    break;
+	  default:
+	    gcc_unreachable ();
 	}
 
-      if (!zero_length)
-	if (tree dom = TYPE_DOMAIN (memtype))
-	  if (tree min = TYPE_MIN_VALUE (dom))
-	    if (tree max = TYPE_MAX_VALUE (dom))
-	      if (TREE_CODE (min) == INTEGER_CST
-		  && TREE_CODE (max) == INTEGER_CST)
-		{
-		  offset_int minidx = wi::to_offset (min);
-		  offset_int maxidx = wi::to_offset (max);
-		  offset_int neltsm1 = maxidx - minidx;
-		  if (neltsm1 > 0)
-		    /* MEMBER is an array with more than one element.  */
-		    return memsize;
+	if (*sam == special_array_member::int_0)
+	  memsize = NULL_TREE;
 
-		  if (neltsm1 == 0)
-		    *sam = special_array_member::trail_1;
-		}
-
-      /* For a reference to a zero- or one-element array member of a union
+      /* For a reference to a flexible array member of a union
 	 use the size of the union instead of the size of the member.  */
       if (TREE_CODE (argtype) == UNION_TYPE)
 	memsize = TYPE_SIZE_UNIT (argtype);

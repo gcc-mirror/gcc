@@ -286,11 +286,12 @@ extern bool real_isnan (const REAL_VALUE_TYPE *);
 /* Determine whether a floating-point value X is a signaling NaN.  */
 extern bool real_issignaling_nan (const REAL_VALUE_TYPE *);
 
-/* Determine whether a floating-point value X is a denormal.  */
+/* Determine whether floating-point value R is a denormal.  This
+   function is only valid for normalized values.  */
 inline bool
-real_isdenormal (const REAL_VALUE_TYPE *r)
+real_isdenormal (const REAL_VALUE_TYPE *r, machine_mode mode)
 {
-  return r->cl == rvc_normal && (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  return r->cl == rvc_normal && REAL_EXP (r) < REAL_MODE_FORMAT (mode)->emin;
 }
 
 /* Determine whether a floating-point value X is finite.  */

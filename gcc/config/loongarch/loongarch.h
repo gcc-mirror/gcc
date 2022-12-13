@@ -668,6 +668,10 @@ enum reg_class
 
 #define STACK_BOUNDARY (TARGET_ABI_LP64 ? 128 : 64)
 
+/* This value controls how many pages we manually unroll the loop for when
+   generating stack clash probes.  */
+#define STACK_CLASH_MAX_UNROLL_PAGES 4
+
 /* Symbolic macros for the registers used to return integer and floating
    point values.  */
 

@@ -43,6 +43,7 @@ public:
   /* svalue consolidation.  */
   const svalue *get_or_create_constant_svalue (tree cst_expr);
   const svalue *get_or_create_int_cst (tree type, poly_int64);
+  const svalue *get_or_create_null_ptr (tree pointer_type);
   const svalue *get_or_create_unknown_svalue (tree type);
   const svalue *get_or_create_setjmp_svalue (const setjmp_record &r,
 					     tree type);
@@ -100,6 +101,7 @@ public:
   const svalue *create_unique_svalue (tree type);
 
   /* region consolidation.  */
+  unsigned get_num_regions () const { return m_next_region_id; }
   const stack_region * get_stack_region () const { return &m_stack_region; }
   const heap_region *get_heap_region () const { return &m_heap_region; }
   const code_region *get_code_region () const { return &m_code_region; }
@@ -107,6 +109,7 @@ public:
   {
     return &m_globals_region;
   }
+  const errno_region *get_errno_region () const { return &m_errno_region; }
   const function_region *get_region_for_fndecl (tree fndecl);
   const label_region *get_region_for_label (tree label);
   const decl_region *get_region_for_global (tree expr);
@@ -151,7 +154,8 @@ public:
   /* Dynamically-allocated region instances.
      The number of these within the analysis can grow arbitrarily.
      They are still owned by the manager.  */
-  const region *create_region_for_heap_alloc ();
+  const region *
+  get_or_create_region_for_heap_alloc (const bitmap &base_regs_in_use);
   const region *create_region_for_alloca (const frame_region *frame);
 
   void log_stats (logger *logger, bool show_objs) const;
@@ -286,6 +290,9 @@ private:
   typedef hash_map<tree, decl_region *> globals_map_t;
   typedef globals_map_t::iterator globals_iterator_t;
   globals_map_t m_globals_map;
+
+  thread_local_region m_thread_local_region;
+  errno_region m_errno_region;
 
   consolidation_map<field_region> m_field_regions;
   consolidation_map<element_region> m_element_regions;

@@ -2549,13 +2549,21 @@
    (UNSPEC_SIN "sin")
    (UNSPEC_COS "cos")])
 
+(define_int_attr math_unop_insn
+  [(UNSPEC_FLOOR "floor")
+   (UNSPEC_CEIL "ceil")
+   (UNSPEC_EXP2 "exp")
+   (UNSPEC_LOG2 "log")
+   (UNSPEC_SIN "sin")
+   (UNSPEC_COS "cos")])
+
 (define_insn "<math_unop><mode>2"
   [(set (match_operand:FP 0 "register_operand"  "=  v")
 	(unspec:FP
 	  [(match_operand:FP 1 "gcn_alu_operand" "vSvB")]
 	  MATH_UNOP_1OR2REG))]
   ""
-  "v_<math_unop>%i0\t%0, %1"
+  "v_<math_unop_insn>%i0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
@@ -2565,7 +2573,7 @@
 	  [(match_operand:V_FP 1 "gcn_alu_operand" "vSvB")]
 	  MATH_UNOP_1OR2REG))]
   ""
-  "v_<math_unop>%i0\t%0, %1"
+  "v_<math_unop_insn>%i0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
@@ -2575,7 +2583,7 @@
 	  [(match_operand:FP_1REG 1 "gcn_alu_operand" "vSvB")]
 	  MATH_UNOP_1REG))]
   "flag_unsafe_math_optimizations"
-  "v_<math_unop>%i0\t%0, %1"
+  "v_<math_unop_insn>%i0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
@@ -2585,7 +2593,7 @@
 	  [(match_operand:V_FP_1REG 1 "gcn_alu_operand" "vSvB")]
 	  MATH_UNOP_1REG))]
   "flag_unsafe_math_optimizations"
-  "v_<math_unop>%i0\t%0, %1"
+  "v_<math_unop_insn>%i0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
@@ -2595,7 +2603,7 @@
 	  [(match_operand:FP_1REG 1 "gcn_alu_operand" "vSvB")]
 	  MATH_UNOP_TRIG))]
   "flag_unsafe_math_optimizations"
-  "v_<math_unop>%i0\t%0, %1"
+  "v_<math_unop_insn>%i0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
@@ -2605,7 +2613,7 @@
 	  [(match_operand:V_FP_1REG 1 "gcn_alu_operand" "vSvB")]
 	  MATH_UNOP_TRIG))]
   "flag_unsafe_math_optimizations"
-  "v_<math_unop>%i0\t%0, %1"
+  "v_<math_unop_insn>%i0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 

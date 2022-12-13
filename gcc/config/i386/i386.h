@@ -219,6 +219,11 @@ struct processor_costs {
   const char *const align_jump;		/* Jump alignment.  */
   const char *const align_label;	/* Label alignment.  */
   const char *const align_func;		/* Function alignment.  */
+
+  const unsigned small_unroll_ninsns;	/* Insn count limit for small loop
+					   to be unrolled.  */
+  const unsigned small_unroll_factor;   /* Unroll factor for small loop to
+					   be unrolled.  */
 };
 
 extern const struct processor_costs *ix86_cost;
@@ -1012,11 +1017,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode)
 
 #define VALID_AVX512F_SCALAR_MODE(MODE)					\
-  ((MODE) == DImode || (MODE) == DFmode || (MODE) == SImode		\
-   || (MODE) == SFmode)
-
-#define VALID_AVX512FP16_SCALAR_MODE(MODE)	\
-  ((MODE) == HImode || (MODE) == HFmode)
+  ((MODE) == DImode || (MODE) == DFmode					\
+   || (MODE) == SImode || (MODE) == SFmode				\
+   || (MODE) == HImode || (MODE) == HFmode || (MODE) == BFmode)
 
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
@@ -1040,13 +1043,15 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V8HFmode || (MODE) == V4HFmode || (MODE) == V2HFmode	\
    || (MODE) == V8BFmode || (MODE) == V4BFmode || (MODE) == V2BFmode	\
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
-   || (MODE) == V2DImode || (MODE) == V2QImode || (MODE) == DFmode	\
+   || (MODE) == V2DImode || (MODE) == V2QImode				\
+   || (MODE) == DFmode	|| (MODE) == DImode				\
    || (MODE) == HFmode || (MODE) == BFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
    || (MODE) == V4SFmode || (MODE) == V4SImode				\
-   || (MODE) == SFmode || (MODE) == TFmode || (MODE) == TDmode)
+   || (MODE) == SFmode || (MODE) == SImode				\
+   || (MODE) == TFmode || (MODE) == TDmode)
 
 #define VALID_MMX_REG_MODE_3DNOW(MODE) \
   ((MODE) == V2SFmode || (MODE) == SFmode)
@@ -1933,9 +1938,6 @@ do {							\
 
 #define SLOW_BYTE_ACCESS 0
 
-/* Nonzero if access to memory by shorts is slow and undesirable.  */
-#define SLOW_SHORT_ACCESS 0
-
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.
 
@@ -2225,6 +2227,8 @@ enum processor_type
   PROCESSOR_GOLDMONT,
   PROCESSOR_GOLDMONT_PLUS,
   PROCESSOR_TREMONT,
+  PROCESSOR_SIERRAFOREST,
+  PROCESSOR_GRANDRIDGE,
   PROCESSOR_KNL,
   PROCESSOR_KNM,
   PROCESSOR_SKYLAKE,
@@ -2238,6 +2242,7 @@ enum processor_type
   PROCESSOR_SAPPHIRERAPIDS,
   PROCESSOR_ALDERLAKE,
   PROCESSOR_ROCKETLAKE,
+  PROCESSOR_GRANITERAPIDS,
   PROCESSOR_INTEL,
   PROCESSOR_LUJIAZUI,
   PROCESSOR_GEODE,
@@ -2345,6 +2350,11 @@ constexpr wide_int_bitmask PTA_ALDERLAKE = PTA_TREMONT | PTA_ADX | PTA_AVX
   | PTA_AVX2 | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_LZCNT
   | PTA_PCONFIG | PTA_PKU | PTA_VAES | PTA_VPCLMULQDQ | PTA_SERIALIZE
   | PTA_HRESET | PTA_KL | PTA_WIDEKL | PTA_AVXVNNI;
+constexpr wide_int_bitmask PTA_SIERRAFOREST = PTA_ALDERLAKE | PTA_AVXIFMA
+  | PTA_AVXVNNIINT8 | PTA_AVXNECONVERT | PTA_CMPCCXADD;
+constexpr wide_int_bitmask PTA_GRANITERAPIDS = PTA_SAPPHIRERAPIDS | PTA_AMX_FP16
+  | PTA_PREFETCHI;
+constexpr wide_int_bitmask PTA_GRANDRIDGE = PTA_SIERRAFOREST | PTA_RAOINT;
 constexpr wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
   | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ;
 constexpr wide_int_bitmask PTA_ZNVER1 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2

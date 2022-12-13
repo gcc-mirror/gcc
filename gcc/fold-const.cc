@@ -3377,9 +3377,6 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		if (compare_address
 		    && (flags & OEP_ADDRESS_OF_SAME_FIELD) == 0)
 		  {
-		    if (TREE_OPERAND (arg0, 2)
-			|| TREE_OPERAND (arg1, 2))
-		      return OP_SAME_WITH_NULL (2);
 		    tree field0 = TREE_OPERAND (arg0, 1);
 		    tree field1 = TREE_OPERAND (arg1, 1);
 
@@ -3890,17 +3887,10 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	      if (sflags & OEP_ADDRESS_OF)
 		{
 		  hash_operand (TREE_OPERAND (t, 0), hstate, flags);
-		  if (TREE_OPERAND (t, 2))
-		    hash_operand (TREE_OPERAND (t, 2), hstate,
-				  flags & ~OEP_ADDRESS_OF);
-		  else
-		    {
-		      tree field = TREE_OPERAND (t, 1);
-		      hash_operand (DECL_FIELD_OFFSET (field),
-				    hstate, flags & ~OEP_ADDRESS_OF);
-		      hash_operand (DECL_FIELD_BIT_OFFSET (field),
-				    hstate, flags & ~OEP_ADDRESS_OF);
-		    }
+		  hash_operand (DECL_FIELD_OFFSET (TREE_OPERAND (t, 1)),
+				hstate, flags & ~OEP_ADDRESS_OF);
+		  hash_operand (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (t, 1)),
+				hstate, flags & ~OEP_ADDRESS_OF);
 		  return;
 		}
 	      break;
@@ -9379,8 +9369,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	      && TREE_CODE (tem) == COND_EXPR
 	      && TREE_CODE (TREE_OPERAND (tem, 1)) == code
 	      && TREE_CODE (TREE_OPERAND (tem, 2)) == code
-	      && ! VOID_TYPE_P (TREE_OPERAND (tem, 1))
-	      && ! VOID_TYPE_P (TREE_OPERAND (tem, 2))
+	      && ! VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (tem, 1)))
+	      && ! VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (tem, 2)))
 	      && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (tem, 1), 0))
 		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (tem, 2), 0)))
 	      && (! (INTEGRAL_TYPE_P (TREE_TYPE (tem))
@@ -10761,7 +10751,6 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
     case COND_EXPR:
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
-    case ASSERT_EXPR:
     case ADDR_EXPR:
     case WITH_SIZE_EXPR:
     case SSA_NAME:
@@ -12627,10 +12616,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
       tem = integer_zerop (arg1) ? build1_loc (loc, NOP_EXPR, type, arg1)
 				 : fold_convert_loc (loc, type, arg1);
       return tem;
-
-    case ASSERT_EXPR:
-      /* An ASSERT_EXPR should never be passed to fold_binary.  */
-      gcc_unreachable ();
 
     default:
       return NULL_TREE;
@@ -15017,7 +15002,7 @@ tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 
 	/* If the initializer is non-void, then it's a normal expression
 	   that will be assigned to the slot.  */
-	if (!VOID_TYPE_P (t))
+	if (!VOID_TYPE_P (TREE_TYPE (t)))
 	  return RECURSE (t);
 
 	/* Otherwise, the initializer sets the slot in some way.  One common
@@ -15127,7 +15112,6 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
     case COND_EXPR:
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
-    case ASSERT_EXPR:
     case ADDR_EXPR:
     case WITH_SIZE_EXPR:
     case SSA_NAME:
@@ -16360,6 +16344,11 @@ split_address_to_core_and_offset (tree exp,
   poly_int64 bitsize;
   location_t loc = EXPR_LOCATION (exp);
 
+  if (TREE_CODE (exp) == SSA_NAME)
+    if (gassign *def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (exp)))
+      if (gimple_assign_rhs_code (def) == ADDR_EXPR)
+	exp = gimple_assign_rhs1 (def);
+
   if (TREE_CODE (exp) == ADDR_EXPR)
     {
       core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
@@ -16644,6 +16633,10 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
 		 tree &base0, tree &base1, poly_int64 &off0, poly_int64 &off1,
 		 bool generic)
 {
+  if (TREE_CODE (op0) == SSA_NAME)
+    op0 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op0));
+  if (TREE_CODE (op1) == SSA_NAME)
+    op1 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op1));
   gcc_checking_assert (TREE_CODE (op0) == ADDR_EXPR);
   gcc_checking_assert (TREE_CODE (op1) == ADDR_EXPR);
   base0 = get_addr_base_and_unit_offset (TREE_OPERAND (op0, 0), &off0);

@@ -3072,18 +3072,27 @@ package body Sem_Disp is
 
       if Tagged_Type_Expansion then
          declare
-            Call_Typ : constant Entity_Id := Etype (Call_Node);
+            Call_Typ : Entity_Id := Etype (Call_Node);
+            Ctrl_Typ : Entity_Id := Etype (Control);
 
          begin
             Expand_Dispatching_Call (Call_Node);
+
+            if Is_Class_Wide_Type (Call_Typ) then
+               Call_Typ := Root_Type (Call_Typ);
+            end if;
+
+            if Is_Class_Wide_Type (Ctrl_Typ) then
+               Ctrl_Typ := Root_Type (Ctrl_Typ);
+            end if;
 
             --  If the controlling argument is an interface type and the type
             --  of Call_Node differs then we must add an implicit conversion to
             --  force displacement of the pointer to the object to reference
             --  the secondary dispatch table of the interface.
 
-            if Is_Interface (Etype (Control))
-              and then Etype (Control) /= Call_Typ
+            if Is_Interface (Ctrl_Typ)
+              and then Ctrl_Typ /= Call_Typ
             then
                --  Cannot use Convert_To because the previous call to
                --  Expand_Dispatching_Call leaves decorated the Call_Node

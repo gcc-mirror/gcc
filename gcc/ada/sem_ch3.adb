@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -87,6 +88,7 @@ with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
 with Urealp;         use Urealp;
+with Warnsw;         use Warnsw;
 
 package body Sem_Ch3 is
 
@@ -1318,7 +1320,8 @@ package body Sem_Ch3 is
 
       Check_Restriction (No_Access_Subprograms, T_Def);
 
-      Create_Extra_Formals (Desig_Type);
+      --  Addition of extra formals must be delayed till the freeze point so
+      --  that we know the convention.
    end Access_Subprogram_Declaration;
 
    ----------------------------
@@ -2668,7 +2671,7 @@ package body Sem_Ch3 is
                   --  Is_Conjunction_Of_Formal_Preelab_Init_Attributes goes to
                   --  Original_Node if needed, hence test for Standard_False.)
 
-                  if not Present (Expr)
+                  if No (Expr)
                     or else (Is_Entity_Name (Expr)
                               and then Entity (Expr) = Standard_True)
                     or else
@@ -2940,7 +2943,8 @@ package body Sem_Ch3 is
          --  Verify that all abstract states found in any package declared in
          --  the input declarative list have proper refinements. The check is
          --  performed only when the context denotes a block, entry, package,
-         --  protected, subprogram, or task body (SPARK RM 7.2.2(3)).
+         --  protected, subprogram, or task body (SPARK RM 7.1.4(4) and SPARK
+         --  RM 7.2.2(3)).
 
          Check_State_Refinements (Context);
 
@@ -3519,7 +3523,7 @@ package body Sem_Ch3 is
       --  Initialize the list of primitive operations to an empty list,
       --  to cover tagged types as well as untagged types. For untagged
       --  types this is used either to analyze the call as legal when
-      --  Extensions_Allowed is True, or to issue a better error message
+      --  Core_Extensions_Allowed is True, or to issue a better error message
       --  otherwise.
 
       Set_Direct_Primitive_Operations (T, New_Elmt_List);
@@ -3777,6 +3781,11 @@ package body Sem_Ch3 is
       --  Obj_Decl carrying type Obj_Typ has explicit initialization. Emit
       --  a compile-time warning if this is not the case.
 
+      procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id);
+      --  Check that the return subtype indication properly matches the result
+      --  subtype of the function in an extended return object declaration, as
+      --  required by RM 6.5(5.1/2-5.3/2).
+
       function Count_Tasks (T : Entity_Id) return Uint;
       --  This function is called when a non-generic library level object of a
       --  task type is declared. Its function is to count the static number of
@@ -3949,6 +3958,134 @@ package body Sem_Ch3 is
       begin
          Check_Component (Obj_Typ, Obj_Decl);
       end Check_For_Null_Excluding_Components;
+
+      -------------------------------------
+      -- Check_Return_Subtype_Indication --
+      -------------------------------------
+
+      procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id) is
+         Obj_Id  : constant Entity_Id := Defining_Identifier (Obj_Decl);
+         Obj_Typ : constant Entity_Id := Etype (Obj_Id);
+         Func_Id : constant Entity_Id := Return_Applies_To (Scope (Obj_Id));
+         R_Typ   : constant Entity_Id := Etype (Func_Id);
+         Indic   : constant Node_Id   :=
+                     Object_Definition (Original_Node (Obj_Decl));
+
+         procedure Error_No_Match (N : Node_Id);
+         --  Output error messages for case where types do not statically
+         --  match. N is the location for the messages.
+
+         --------------------
+         -- Error_No_Match --
+         --------------------
+
+         procedure Error_No_Match (N : Node_Id) is
+         begin
+            Error_Msg_N
+              ("subtype must statically match function result subtype", N);
+
+            if not Predicates_Match (Obj_Typ, R_Typ) then
+               Error_Msg_Node_2 := R_Typ;
+               Error_Msg_NE
+                 ("\predicate of& does not match predicate of&",
+                  N, Obj_Typ);
+            end if;
+         end Error_No_Match;
+
+      --  Start of processing for Check_Return_Subtype_Indication
+
+      begin
+         --  First, avoid cascaded errors
+
+         if Error_Posted (Obj_Decl) or else Error_Posted (Indic) then
+            return;
+         end if;
+
+         --  "return access T" case; check that the return statement also has
+         --  "access T", and that the subtypes statically match:
+         --   if this is an access to subprogram the signatures must match.
+
+         if Is_Anonymous_Access_Type (R_Typ) then
+            if Is_Anonymous_Access_Type (Obj_Typ) then
+               if Ekind (Designated_Type (Obj_Typ)) /= E_Subprogram_Type
+               then
+                  if Base_Type (Designated_Type (Obj_Typ)) /=
+                     Base_Type (Designated_Type (R_Typ))
+                    or else not Subtypes_Statically_Match (Obj_Typ, R_Typ)
+                  then
+                     Error_No_Match (Subtype_Mark (Indic));
+                  end if;
+
+               else
+                  --  For two anonymous access to subprogram types, the types
+                  --  themselves must be type conformant.
+
+                  if not Conforming_Types
+                           (Obj_Typ, R_Typ, Fully_Conformant)
+                  then
+                     Error_No_Match (Indic);
+                  end if;
+               end if;
+
+            else
+               Error_Msg_N ("must use anonymous access type", Indic);
+            end if;
+
+         --  If the return object is of an anonymous access type, then report
+         --  an error if the function's result type is not also anonymous.
+
+         elsif Is_Anonymous_Access_Type (Obj_Typ) then
+            pragma Assert (not Is_Anonymous_Access_Type (R_Typ));
+            Error_Msg_N
+              ("anonymous access not allowed for function with named access "
+               & "result", Indic);
+
+         --  Subtype indication case: check that the return object's type is
+         --  covered by the result type, and that the subtypes statically match
+         --  when the result subtype is constrained. Also handle record types
+         --  with unknown discriminants for which we have built the underlying
+         --  record view. Coverage is needed to allow specific-type return
+         --  objects when the result type is class-wide (see AI05-32).
+
+         elsif Covers (Base_Type (R_Typ), Base_Type (Obj_Typ))
+           or else (Is_Underlying_Record_View (Base_Type (Obj_Typ))
+                     and then
+                       Covers
+                         (Base_Type (R_Typ),
+                          Underlying_Record_View (Base_Type (Obj_Typ))))
+         then
+            --  A null exclusion may be present on the return type, on the
+            --  function specification, on the object declaration or on the
+            --  subtype itself.
+
+            if Is_Access_Type (R_Typ)
+              and then
+                (Can_Never_Be_Null (R_Typ)
+                  or else Null_Exclusion_Present (Parent (Func_Id))) /=
+                            Can_Never_Be_Null (Obj_Typ)
+            then
+               Error_No_Match (Indic);
+            end if;
+
+            --  AI05-103: for elementary types, subtypes must statically match
+
+            if Is_Constrained (R_Typ) or else Is_Access_Type (R_Typ) then
+               if not Subtypes_Statically_Match (Obj_Typ, R_Typ) then
+                  Error_No_Match (Indic);
+               end if;
+            end if;
+
+         --  All remaining cases are illegal
+
+         --  Note: previous versions of this subprogram allowed the return
+         --  value to be the ancestor of the return type if the return type
+         --  was a null extension. This was plainly incorrect.
+
+         else
+            Error_Msg_N
+              ("wrong type for return_subtype_indication", Indic);
+         end if;
+      end Check_Return_Subtype_Indication;
 
       -----------------
       -- Count_Tasks --
@@ -4721,6 +4858,26 @@ package body Sem_Ch3 is
                   Expand_Sliding_Conversion (E, T);
                end if;
 
+               if In_Spec_Expression and then In_Declare_Expr > 0 then
+                  --  It is too early to be doing expansion-ish things,
+                  --  so exit early. But we have to set Ekind (Id) now so
+                  --  that subsequent uses of this entity are not rejected
+                  --  via the same mechanism that (correctly) rejects
+                  --  "X : Integer := X;".
+
+                  if Constant_Present (N) then
+                     Mutate_Ekind         (Id, E_Constant);
+                     Set_Is_True_Constant (Id);
+                  else
+                     Mutate_Ekind (Id, E_Variable);
+                     if Present (E) then
+                        Set_Has_Initial_Value (Id);
+                     end if;
+                  end if;
+
+                  goto Leave;
+               end if;
+
                Expand_Subtype_From_Expr
                  (N             => N,
                   Unc_Type      => T,
@@ -5021,6 +5178,12 @@ package body Sem_Ch3 is
                end loop;
             end;
          end if;
+      end if;
+
+      --  Check specific legality rules for a return object
+
+      if Is_Return_Object (Id) then
+         Check_Return_Subtype_Indication (N);
       end if;
 
       --  Some simple constant-propagation: if the expression is a constant
@@ -5730,7 +5893,7 @@ package body Sem_Ch3 is
                   --  operations to an empty list.
 
                   if Is_Tagged_Type (Id)
-                    or else Extensions_Allowed
+                    or else Core_Extensions_Allowed
                   then
                      Set_Direct_Primitive_Operations (Id, New_Elmt_List);
                   end if;
@@ -11050,7 +11213,7 @@ package body Sem_Ch3 is
             --  with the aliased entity (otherwise we generate a duplicated
             --  error message).
 
-           and then not Present (Interface_Alias (Subp))
+           and then No (Interface_Alias (Subp))
          then
             if Present (Alias_Subp) then
 
@@ -11768,11 +11931,9 @@ package body Sem_Ch3 is
          Insert_Before (Typ_Decl, Decl);
          Analyze (Decl);
 
-         --  If an access to subprogram, create the extra formals
-
-         if Present (Acc_Def) then
-            Create_Extra_Formals (Designated_Type (Anon_Access));
-         end if;
+         --  At first sight we could add here the extra formals of an access to
+         --  subprogram; however, it must delayed till the freeze point so that
+         --  we know the convention.
 
          if Nkind (Comp_Def) = N_Component_Definition then
             Rewrite (Comp_Def,
@@ -14541,7 +14702,7 @@ package body Sem_Ch3 is
          --  in various places for an Empty upper bound, and in any case it
          --  accurately characterizes the index's range of values.
 
-         if Nkind (S) = N_Range and then not Present (High_Bound (S)) then
+         if Nkind (S) = N_Range and then No (High_Bound (S)) then
             Is_FLB_Index := True;
             Set_High_Bound (S, Type_High_Bound (T));
          end if;
@@ -16033,12 +16194,12 @@ package body Sem_Ch3 is
          Next_Formal (Formal);
       end loop;
 
-      --  Extra formals are shared between the parent subprogram and the
-      --  derived subprogram (implicit in the above copy of formals), unless
-      --  the parent type is a limited interface type; hence we must inherit
-      --  also the reference to the first extra formal. When the parent type is
-      --  an interface the extra formals will be added when the subprogram is
-      --  frozen (see Freeze.Freeze_Subprogram).
+      --  Extra formals are shared between the parent subprogram and this
+      --  internal entity built by Derive_Subprogram (implicit in the above
+      --  copy of formals), unless the parent type is a limited interface type;
+      --  hence we must inherit also the reference to the first extra formal.
+      --  When the parent type is an interface, the extra formals will be added
+      --  when the tagged type is frozen (see Expand_Freeze_Record_Type).
 
       if not Is_Limited_Interface (Parent_Type) then
          Set_Extra_Formals (New_Subp, Extra_Formals (Parent_Subp));
@@ -16079,7 +16240,7 @@ package body Sem_Ch3 is
       Copy_Strub_Mode (New_Subp, Alias (New_Subp));
 
       --  Derived subprograms of a tagged type must inherit the convention
-      --  of the parent subprogram (a requirement of AI-117). Derived
+      --  of the parent subprogram (a requirement of AI95-117). Derived
       --  subprograms of untagged types simply get convention Ada by default.
 
       --  If the derived type is a tagged generic formal type with unknown
@@ -16497,15 +16658,15 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Alias_Subp   : Entity_Id;
-      Act_List     : Elist_Id;
-      Act_Elmt     : Elmt_Id;
-      Act_Subp     : Entity_Id := Empty;
-      Elmt         : Elmt_Id;
-      Need_Search  : Boolean   := False;
-      New_Subp     : Entity_Id := Empty;
-      Parent_Base  : Entity_Id;
-      Subp         : Entity_Id;
+      Alias_Subp  : Entity_Id;
+      Act_List    : Elist_Id;
+      Act_Elmt    : Elmt_Id;
+      Act_Subp    : Entity_Id := Empty;
+      Elmt        : Elmt_Id;
+      Need_Search : Boolean   := False;
+      New_Subp    : Entity_Id;
+      Parent_Base : Entity_Id;
+      Subp        : Entity_Id;
 
    --  Start of processing for Derive_Subprograms
 
@@ -16720,9 +16881,9 @@ package body Sem_Ch3 is
                        (Is_Generic_Unit
                           (Scope (Find_Dispatching_Type (Alias_Subp)))
                          or else
-                           Instantiation_Depth
-                             (Sloc (Find_Dispatching_Type (Alias_Subp))) > 0);
-
+                           Instantiation_Location
+                             (Sloc (Find_Dispatching_Type (Alias_Subp)))
+                               /= No_Location);
                      declare
                         Iface_Prim_Loc : constant Source_Ptr :=
                                          Original_Location (Sloc (Alias_Subp));
@@ -16784,7 +16945,7 @@ package body Sem_Ch3 is
             --   have such primitives.
 
             if Present (Generic_Actual)
-              and then not Present (Act_Subp)
+              and then No (Act_Subp)
               and then Is_Limited_Interface (Parent_Base)
               and then Is_Predefined_Interface_Primitive (Subp)
             then
@@ -20145,6 +20306,7 @@ package body Sem_Ch3 is
 
       case Nkind (Original_Node (Exp)) is
          when N_Aggregate
+            | N_Delta_Aggregate
             | N_Extension_Aggregate
             | N_Function_Call
             | N_Op

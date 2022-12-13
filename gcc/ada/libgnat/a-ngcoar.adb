@@ -902,7 +902,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    function "-"
      (Left  : Real_Vector;
       Right : Complex_Vector) return Complex_Vector
-      renames Instantiations."-";
+     renames Instantiations."-";
 
    function "-"
      (Left  : Complex_Vector;
@@ -956,7 +956,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    -----------
 
    function "abs" (Right : Complex_Vector) return Real'Base
-      renames Instantiations."abs";
+     renames Instantiations."abs";
 
    --------------
    -- Argument --

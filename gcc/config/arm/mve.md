@@ -266,7 +266,7 @@
 	 VDUPQ_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vdup.%#<V_sz_elem>   %q0, %1"
+  "vdup.%#<V_sz_elem>\t%q0, %1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -279,7 +279,7 @@
 	(abs:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vabs.f%#<V_sz_elem>  %q0, %q1"
+  "vabs.f%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -435,7 +435,7 @@
 	 VDUPQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vdup.%#<V_sz_elem>   %q0, %1"
+  "vdup.%#<V_sz_elem>\t%q0, %1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -636,7 +636,7 @@
 	 VADDLVQ))
   ]
   "TARGET_HAVE_MVE"
-  "vaddlv.<supf>32 %Q0, %R0, %q1"
+  "vaddlv.<supf>32\t%Q0, %R0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -679,7 +679,7 @@
 	 VSUBQ_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vsub.f<V_sz_elem>  %q0, %q1, %2"
+  "vsub.f<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -817,7 +817,7 @@
 	 VADDLVQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vaddlvt.<supf>32 %Q0, %R0, %q1"
+  "vpst\;vaddlvt.<supf>32\t%Q0, %R0, %q1"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -831,7 +831,7 @@
 		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vcmp.<mve_cmp_type>%#<V_sz_elem>  <mve_cmp_op>, %q1, %q2"
+  "vcmp.<mve_cmp_type>%#<V_sz_elem>\t<mve_cmp_op>, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -841,8 +841,9 @@
 (define_insn "mve_vcmp<mve_cmp_op>q_n_<mode>"
   [
    (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
-	(MVE_COMPARISONS:<MVE_VPRED> (match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")))
+	(MVE_COMPARISONS:<MVE_VPRED>
+	 (match_operand:MVE_2 1 "s_register_operand" "w")
+	 (vec_duplicate:MVE_2 (match_operand:<V_elem> 2 "s_register_operand" "r"))))
   ]
   "TARGET_HAVE_MVE"
   "vcmp.<mve_cmp_type>%#<V_sz_elem>	<mve_cmp_op>, %q1, %2"
@@ -879,7 +880,7 @@
 	 VADDQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vadd.i%#<V_sz_elem>	%q0, %q1, %2"
+  "vadd.i%#<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -894,7 +895,7 @@
 	 VADDVAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vaddva.<supf>%#<V_sz_elem>	%0, %q2"
+  "vaddva.<supf>%#<V_sz_elem>\t%0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1834,7 +1835,7 @@
 	 VADDLVAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vaddlva.<supf>32 %Q0, %R0, %q2"
+  "vaddlva.<supf>32\t%Q0, %R0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1849,7 +1850,7 @@
 	 VADDQ_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vadd.f%#<V_sz_elem>	%q0, %q1, %2"
+  "vadd.f%#<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1931,8 +1932,9 @@
 (define_insn "@mve_vcmp<mve_cmp_op>q_n_f<mode>"
   [
    (set (match_operand:<MVE_VPRED> 0 "vpr_register_operand" "=Up")
-	(MVE_FP_COMPARISONS:<MVE_VPRED> (match_operand:MVE_0 1 "s_register_operand" "w")
-			       (match_operand:<V_elem> 2 "s_register_operand" "r")))
+	(MVE_FP_COMPARISONS:<MVE_VPRED>
+	 (match_operand:MVE_0 1 "s_register_operand" "w")
+	 (vec_duplicate:MVE_0 (match_operand:<V_elem> 2 "s_register_operand" "r"))))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vcmp.f%#<V_sz_elem>	<mve_cmp_op>, %q1, %2"
@@ -2543,7 +2545,7 @@
 	 VRMLALDAVHQ))
   ]
   "TARGET_HAVE_MVE"
-  "vrmlaldavh.<supf>32 %Q0, %R0, %q1, %q2"
+  "vrmlaldavh.<supf>32\t%Q0, %R0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2649,7 +2651,7 @@
 	 VRMLALDAVHAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vrmlaldavha.<supf>32 %Q0, %R0, %q2, %q3"
+  "vrmlaldavha.<supf>32\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -3046,7 +3048,7 @@
 	 VDUPQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vdupt.%#<V_sz_elem>	%q0, %2"
+  "vpst\;vdupt.%#<V_sz_elem>\t%q0, %2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -3717,7 +3719,7 @@
 	 VADDLVAQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vaddlvat.<supf>32 %Q0, %R0, %q2"
+  "vpst\;vaddlvat.<supf>32\t%Q0, %R0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 ;;
@@ -3991,7 +3993,7 @@
 	 VDUPQ_M_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vdupt.%#<V_sz_elem>	%q0, %2"
+  "vpst\;vdupt.%#<V_sz_elem>\t%q0, %2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -4163,7 +4165,7 @@
 	 VMLALDAVAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vmlaldava.<supf>%#<V_sz_elem> %Q0, %R0, %q2, %q3"
+  "vmlaldava.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -4179,7 +4181,7 @@
 	 VMLALDAVAXQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vmlaldavax.s%#<V_sz_elem> %Q0, %R0, %q2, %q3"
+  "vmlaldavax.s%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -6126,7 +6128,7 @@
 	 VMLALDAVAXQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vmlaldavaxt.<supf>%#<V_sz_elem> %Q0, %R0, %q2, %q3"
+  "vpst\;vmlaldavaxt.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -8928,7 +8930,7 @@
 		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vadd.i%#<V_sz_elem>  %q0, %q1, %q2"
+  "vadd.i%#<V_sz_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -8942,7 +8944,7 @@
 		    (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vadd.f%#<V_sz_elem> %q0, %q1, %q2"
+  "vadd.f%#<V_sz_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -9043,7 +9045,7 @@
        (minus:SI (match_dup 2)
 		 (match_operand:SI 4 "immediate_operand" "i")))]
  "TARGET_HAVE_MVE"
- "vddup.u%#<V_sz_elem>  %q0, %1, %3")
+ "vddup.u%#<V_sz_elem>\t%q0, %1, %3")
 
 ;;
 ;; [vddupq_m_n_u])
@@ -9079,7 +9081,7 @@
        (minus:SI (match_dup 3)
 		 (match_operand:SI 6 "immediate_operand" "i")))]
  "TARGET_HAVE_MVE"
- "vpst\;\tvddupt.u%#<V_sz_elem>\t%q0, %2, %4"
+ "vpst\;vddupt.u%#<V_sz_elem>\t%q0, %2, %4"
  [(set_attr "length""8")])
 
 ;;
@@ -9195,7 +9197,7 @@
 	 VDWDUPQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;\tvdwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
+  "vpst\;vdwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 

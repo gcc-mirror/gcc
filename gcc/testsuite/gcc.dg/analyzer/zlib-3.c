@@ -184,7 +184,7 @@ static int huft_build(uInt *b, uInt n, uInt s, const uInt *d, const uInt *e,
       mask = (1 << w) - 1;
       /* The analyzer thinks that h can be -1 here.
          This is probably a false positive. */
-      while ((i & mask) !=  x[h]) { /* { dg-bogus "underread" "" { xfail *-*-* } } */
+      while ((i & mask) !=  x[h]) { /* { dg-bogus "under-read" "" { xfail *-*-* } } */
         h--;
         w -= l;
         mask = (1 << w) - 1;

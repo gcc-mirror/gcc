@@ -2901,19 +2901,19 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
       if (!REG_P (dst) || REGNO (dst) < FIRST_PSEUDO_REGISTER)
 	dst = gen_reg_rtx (outer);
 
-      /* Make life a bit easier for combine.  */
-      /* If the first element of the vector is the low part
-	 of the destination mode, use a paradoxical subreg to
-	 initialize the destination.  */
+      /* Make life a bit easier for combine: if the first element of the
+	 vector is the word (or larger) low part of the destination mode,
+	 use a paradoxical subreg to initialize the destination.  */
       if (start < finish)
 	{
 	  inner = GET_MODE (tmps[start]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0, start), 1)),
-			bytepos))
+	  if (known_ge (GET_MODE_BITSIZE (inner), BITS_PER_WORD)
+	      && known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0,
+							     start), 1)),
+			   bytepos))
 	    {
-	      temp = simplify_gen_subreg (outer, tmps[start],
-					  inner, 0);
+	      temp = simplify_gen_subreg (outer, tmps[start], inner, 0);
 	      if (temp)
 		{
 		  emit_move_insn (dst, temp);
@@ -2929,12 +2929,12 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	{
 	  inner = GET_MODE (tmps[finish - 1]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0,
-							  finish - 1), 1)),
-			bytepos))
+	  if (known_ge (GET_MODE_BITSIZE (inner), BITS_PER_WORD)
+	      && known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0,
+							     finish - 1), 1)),
+			   bytepos))
 	    {
-	      temp = simplify_gen_subreg (outer, tmps[finish - 1],
-					  inner, 0);
+	      temp = simplify_gen_subreg (outer, tmps[finish - 1], inner, 0);
 	      if (temp)
 		{
 		  emit_move_insn (dst, temp);
@@ -8204,16 +8204,17 @@ force_operand (rtx value, rtx target)
 	    return expand_divmod (0,
 				  FLOAT_MODE_P (GET_MODE (value))
 				  ? RDIV_EXPR : TRUNC_DIV_EXPR,
-				  GET_MODE (value), op1, op2, target, 0);
+				  GET_MODE (value), NULL, NULL, op1, op2,
+				  target, 0);
 	case MOD:
-	  return expand_divmod (1, TRUNC_MOD_EXPR, GET_MODE (value), op1, op2,
-				target, 0);
+	  return expand_divmod (1, TRUNC_MOD_EXPR, GET_MODE (value), NULL, NULL,
+				op1, op2, target, 0);
 	case UDIV:
-	  return expand_divmod (0, TRUNC_DIV_EXPR, GET_MODE (value), op1, op2,
-				target, 1);
+	  return expand_divmod (0, TRUNC_DIV_EXPR, GET_MODE (value), NULL, NULL,
+				op1, op2, target, 1);
 	case UMOD:
-	  return expand_divmod (1, TRUNC_MOD_EXPR, GET_MODE (value), op1, op2,
-				target, 1);
+	  return expand_divmod (1, TRUNC_MOD_EXPR, GET_MODE (value), NULL, NULL,
+				op1, op2, target, 1);
 	case ASHIFTRT:
 	  return expand_simple_binop (GET_MODE (value), code, op1, op2,
 				      target, 0, OPTAB_LIB_WIDEN);
@@ -9166,11 +9167,13 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
       bool speed_p = optimize_insn_for_speed_p ();
       do_pending_stack_adjust ();
       start_sequence ();
-      rtx uns_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 1);
+      rtx uns_ret = expand_divmod (mod_p, code, mode, treeop0, treeop1,
+				   op0, op1, target, 1);
       rtx_insn *uns_insns = get_insns ();
       end_sequence ();
       start_sequence ();
-      rtx sgn_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 0);
+      rtx sgn_ret = expand_divmod (mod_p, code, mode, treeop0, treeop1,
+				   op0, op1, target, 0);
       rtx_insn *sgn_insns = get_insns ();
       end_sequence ();
       unsigned uns_cost = seq_cost (uns_insns, speed_p);
@@ -9192,7 +9195,8 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
       emit_insn (sgn_insns);
       return sgn_ret;
     }
-  return expand_divmod (mod_p, code, mode, op0, op1, target, unsignedp);
+  return expand_divmod (mod_p, code, mode, treeop0, treeop1,
+			op0, op1, target, unsignedp);
 }
 
 rtx

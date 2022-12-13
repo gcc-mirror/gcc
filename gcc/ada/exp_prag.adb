@@ -58,6 +58,7 @@ with Stand;          use Stand;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 with Validsw;        use Validsw;
+with Warnsw;         use Warnsw;
 
 package body Exp_Prag is
 

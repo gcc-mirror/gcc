@@ -3272,6 +3272,8 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
 			fallback | fb_lvalue);
   ret = MIN (ret, tret);
+  if (ret == GS_ERROR)
+    return GS_ERROR;
 
   /* Step 2a: if we have component references we do not support on
      registers then make sure the base isn't a register.  Of course
@@ -3708,6 +3710,9 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
      gimplify_expr to use an internal post queue.  */
   ret = gimplify_expr (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
 		       is_gimple_call_addr, fb_rvalue);
+
+  if (ret == GS_ERROR)
+    return GS_ERROR;
 
   nargs = call_expr_nargs (*expr_p);
 
@@ -6048,6 +6053,9 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   gimple *assign;
   location_t loc = EXPR_LOCATION (*expr_p);
   gimple_stmt_iterator gsi;
+
+  if (error_operand_p (*from_p) || error_operand_p (*to_p))
+    return GS_ERROR;
 
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
@@ -15225,6 +15233,7 @@ computable_teams_clause (tree *tp, int *walk_subtrees, void *)
    0 stands for clause not specified at all, use implementation default
    -1 stands for value that can't be determined easily before entering
       the target construct.
+   -2 means that no explicit teams construct was specified
    If teams construct is not present at all, use 1 for num_teams
    and 0 for thread_limit (only one team is involved, and the thread
    limit is implementation defined.  */
@@ -15243,7 +15252,7 @@ optimize_target_teams (tree target, gimple_seq *pre_p)
   struct gimplify_omp_ctx *target_ctx = gimplify_omp_ctxp;
 
   if (teams == NULL_TREE)
-    num_teams_upper = integer_one_node;
+    num_teams_upper = build_int_cst (integer_type_node, -2);
   else
     for (c = OMP_TEAMS_CLAUSES (teams); c; c = OMP_CLAUSE_CHAIN (c))
       {

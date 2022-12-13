@@ -72,6 +72,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Style;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 with GNAT.HTable;
 
@@ -1242,11 +1243,11 @@ package body Sem_Ch7 is
          Check_Completion;
 
          --  If the package spec does not require an explicit body, then all
-         --  abstract states declared in nested packages cannot possibly get
-         --  a proper refinement (SPARK RM 7.2.2(3)). This check is performed
-         --  only when the compilation unit is the main unit to allow for
-         --  modular SPARK analysis where packages do not necessarily have
-         --  bodies.
+         --  abstract states declared in nested packages cannot possibly get a
+         --  proper refinement (SPARK RM 7.1.4(4) and SPARK RM 7.2.2(3)). This
+         --  check is performed only when the compilation unit is the main
+         --  unit to allow for modular SPARK analysis where packages do not
+         --  necessarily have bodies.
 
          if Is_Comp_Unit then
             Check_State_Refinements
@@ -1317,11 +1318,10 @@ package body Sem_Ch7 is
       --  private_with_clauses, and remove them at the end of the nested
       --  package.
 
-      procedure Clear_Constants (Id : Entity_Id; FE : Entity_Id);
-      --  Clears constant indications (Never_Set_In_Source, Constant_Value, and
-      --  Is_True_Constant) on all variables that are entities of Id, and on
-      --  the chain whose first element is FE. A recursive call is made for all
-      --  packages and generic packages.
+      procedure Clear_Constants (Id : Entity_Id);
+      --  Clears constant indications (Never_Set_In_Source, Constant_Value,
+      --  and Is_True_Constant) on all variables that are entities of Id.
+      --  A recursive call is made for all packages and generic packages.
 
       procedure Generate_Parent_References;
       --  For a child unit, generate references to parent units, for
@@ -1352,7 +1352,7 @@ package body Sem_Ch7 is
       -- Clear_Constants --
       ---------------------
 
-      procedure Clear_Constants (Id : Entity_Id; FE : Entity_Id) is
+      procedure Clear_Constants (Id : Entity_Id) is
          E : Entity_Id;
 
       begin
@@ -1368,9 +1368,9 @@ package body Sem_Ch7 is
          --  package can contain a renaming declaration to itself, and such
          --  renamings are generated automatically within package instances.
 
-         E := FE;
+         E := First_Entity (Id);
          while Present (E) and then E /= Id loop
-            if Is_Assignable (E) then
+            if Ekind (E) = E_Variable then
                Set_Never_Set_In_Source (E, False);
                Set_Is_True_Constant    (E, False);
                Set_Current_Value       (E, Empty);
@@ -1382,8 +1382,7 @@ package body Sem_Ch7 is
                end if;
 
             elsif Is_Package_Or_Generic_Package (E) then
-               Clear_Constants (E, First_Entity (E));
-               Clear_Constants (E, First_Private_Entity (E));
+               Clear_Constants (E);
             end if;
 
             Next_Entity (E);
@@ -2009,8 +2008,7 @@ package body Sem_Ch7 is
       if Is_Library_Level_Entity (Id)
         or else Is_Generic_Instance (Id)
       then
-         Clear_Constants (Id, First_Entity (Id));
-         Clear_Constants (Id, First_Private_Entity (Id));
+         Clear_Constants (Id);
       end if;
 
       --  Output relevant information as to why the package requires a body.

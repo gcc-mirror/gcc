@@ -1,3 +1,255 @@
+2022-12-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108055
+	* decl.cc (function_defined_in_root_p): Check all enclosing template
+	instances for definition in a root module.
+	(function_needs_inline_definition_p): Replace call to
+	function_defined_in_root_p with test for outer module `isRoot'.
+
+2022-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108050
+	* decl.cc (DeclVisitor::visit (Import *)): Handle build_import_decl
+	returning a TREE_LIST.
+	* imports.cc (ImportVisitor::visit (OverloadSet *)): New override.
+
+2022-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd c8ae4adb2e.
+	* typeinfo.cc (check_typeinfo_type): Update for new front-end
+	interface.
+	(TypeInfoVisitor::visit (TypeInfoStructDeclaration *)): Remove warning
+	that toHash() must be declared 'nothrow @safe`.
+
+2022-12-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (expand_intrinsic_bsf): Fix comment.
+	(expand_intrinsic_bsr): Use BIT_XOR_EXPR instead of MINUS_EXPR.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_TEXI_FILES): Add d/implement-d.texi.
+	* gdc.texi: Adjust introduction, include implement-d.texi.
+	* implement-d.texi: New file.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in: Only include doc/include when building documentation.
+	(d.html): Rename html directory to $(build_htmldir)/gdc.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.texi: Separate indices into options and keywords.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.texi: Update gdc option documentation.
+	* lang.opt (frevert=intpromote): Correct documentation.
+
+2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/107592
+	* toir.cc (IRVisitor::push_unrolled_continue_label): New method.
+	(IRVisitor::pop_unrolled_continue_label): New method.
+	(IRVisitor::visit (UnrolledLoopStatement *)): Use them instead of
+	push_continue_label and pop_continue_label.
+
+2022-11-23  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Use it as $DO_LINK_MUTEX.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Make-lang.in: Remove NO_PIE_CFLAGS.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Make-lang.in: Remove NO_PIE_CFLAGS.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/general-public-license-3.rst: New file.
+	* doc/gnu-free-documentation-license.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/invoking-gdc.rst: New file.
+	* doc/invoking-gdc/code-generation.rst: New file.
+	* doc/invoking-gdc/developer-options.rst: New file.
+	* doc/invoking-gdc/input-and-output-files.rst: New file.
+	* doc/invoking-gdc/options-for-directory-search.rst: New file.
+	* doc/invoking-gdc/options-for-linking.rst: New file.
+	* doc/invoking-gdc/runtime-options.rst: New file.
+	* doc/invoking-gdc/warnings.rst: New file.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* d-target.def: Port to RST.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support Sphinx based documentation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* gdc.texi: Removed.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support --with-sphinx-build.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/copyright.rst:
+	Add trailing newline.
+	* doc/general-public-license-3.rst:
+	Add trailing newline.
+	* doc/gnu-free-documentation-license.rst:
+	Add trailing newline.
+	* doc/index.rst:
+	Add trailing newline.
+	* doc/indices-and-tables.rst:
+	Add trailing newline.
+	* doc/invoking-gdc.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/code-generation.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/developer-options.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/input-and-output-files.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/options-for-directory-search.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/options-for-linking.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/runtime-options.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/warnings.rst:
+	Add trailing newline.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/copyright.rst:
+	Add trailing newline.
+	* doc/general-public-license-3.rst:
+	Add trailing newline.
+	* doc/gnu-free-documentation-license.rst:
+	Add trailing newline.
+	* doc/index.rst:
+	Add trailing newline.
+	* doc/indices-and-tables.rst:
+	Add trailing newline.
+	* doc/invoking-gdc.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/code-generation.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/developer-options.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/input-and-output-files.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/options-for-directory-search.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/options-for-linking.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/runtime-options.rst:
+	Add trailing newline.
+	* doc/invoking-gdc/warnings.rst:
+	Add trailing newline.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support --with-sphinx-build.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* gdc.texi: Removed.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support Sphinx based documentation.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* d-target.def: Port to RST.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/general-public-license-3.rst: New file.
+	* doc/gnu-free-documentation-license.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/invoking-gdc.rst: New file.
+	* doc/invoking-gdc/code-generation.rst: New file.
+	* doc/invoking-gdc/developer-options.rst: New file.
+	* doc/invoking-gdc/input-and-output-files.rst: New file.
+	* doc/invoking-gdc/options-for-directory-search.rst: New file.
+	* doc/invoking-gdc/options-for-linking.rst: New file.
+	* doc/invoking-gdc/runtime-options.rst: New file.
+	* doc/invoking-gdc/warnings.rst: New file.
+
+2022-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::isVectorOpSupported): Remove cases for
+	comparison operators.
+	* intrinsics.cc (maybe_set_intrinsic): Remove cases for vector
+	comparison intrinsics.
+	(maybe_warn_intrinsic_mismatch): Likewise.
+	(expand_intrinsic_vec_cond): Remove.
+	(maybe_expand_intrinsic): Remove cases for vector comparison
+	intrinsics.
+	* intrinsics.def (INTRINSIC_EQUALMASK): Remove.
+	(INTRINSIC_NOTEQUALMASK): Remove.
+	(INTRINSIC_GREATERMASK): Remove.
+	(INTRINSIC_GREATEREQUALMASK): Remove.
+
 2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-attribs.cc (apply_user_attributes): Update for new front-end

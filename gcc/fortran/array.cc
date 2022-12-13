@@ -489,7 +489,20 @@ match_array_element_spec (gfc_array_spec *as)
     }
 
   if (gfc_match_char (':') == MATCH_YES)
-    return AS_DEFERRED;
+    {
+      locus old_loc = gfc_current_locus;
+      if (gfc_match_char ('*') == MATCH_YES)
+	{
+	  /* F2018:R821: "assumed-implied-spec  is  [ lower-bound : ] *".  */
+	  gfc_error ("A lower bound must precede colon in "
+		     "assumed-size array specification at %L", &old_loc);
+	  return AS_UNKNOWN;
+	}
+      else
+	{
+	  return AS_DEFERRED;
+	}
+    }
 
   m = gfc_match_expr (upper);
   if (m == MATCH_NO)
@@ -591,6 +604,8 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
     {
       as->rank++;
       current_type = match_array_element_spec (as);
+      if (current_type == AS_UNKNOWN)
+	goto cleanup;
 
       /* Note that current_type == AS_ASSUMED_SIZE for both assumed-size
 	 and implied-shape specifications.  If the rank is at least 2, we can
@@ -600,8 +615,6 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 
       if (as->rank == 1)
 	{
-	  if (current_type == AS_UNKNOWN)
-	    goto cleanup;
 	  as->type = current_type;
 	}
       else

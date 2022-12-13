@@ -747,6 +747,10 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 # include <memory>
 #endif
 
+#ifdef INCLUDE_MUTEX
+# include <mutex>
+#endif
+
 #ifdef INCLUDE_MALLOC_H
 #if defined(HAVE_MALLINFO) || defined(HAVE_MALLINFO2)
 #include <malloc.h>
@@ -1075,7 +1079,7 @@ extern void fancy_abort (const char *, int, const char *)
 	EH_FRAME_IN_DATA_SECTION TARGET_FLT_EVAL_METHOD_NON_DEFAULT	   \
 	JCR_SECTION_NAME TARGET_USE_JCR_SECTION SDB_DEBUGGING_INFO	   \
 	SDB_DEBUG NO_IMPLICIT_EXTERN_C NOTICE_UPDATE_CC			   \
-	CC_STATUS_MDEP_INIT CC_STATUS_MDEP CC_STATUS
+	CC_STATUS_MDEP_INIT CC_STATUS_MDEP CC_STATUS SLOW_SHORT_ACCESS
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\

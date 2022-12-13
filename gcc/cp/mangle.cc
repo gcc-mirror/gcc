@@ -856,6 +856,13 @@ write_encoding (const tree decl)
 				mangle_return_type_p (decl),
 				d);
 
+      /* If this is the pre/post function for a guarded function, append
+	 .pre/post, like something from create_virtual_clone.  */
+      if (DECL_IS_PRE_FN_P (decl))
+	write_string (".pre");
+      else if (DECL_IS_POST_FN_P (decl))
+	write_string (".post");
+
       /* If this is a coroutine helper, then append an appropriate string to
 	 identify which.  */
       if (tree ramp = DECL_RAMP_FN (decl))
@@ -1810,7 +1817,13 @@ write_closure_type_name (const tree type)
 
   write_method_parms (parms, /*method_p=*/1, fn);
   write_char ('E');
-  write_compact_number (LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda));
+  if ((LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda)
+       != LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda))
+      && abi_warn_or_compat_version_crosses (18))
+    G.need_abi_warning = true;
+  write_compact_number (abi_version_at_least (18)
+			? LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda)
+			: LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda));
 }
 
 /* Convert NUMBER to ascii using base BASE and generating at least
