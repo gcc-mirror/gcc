@@ -267,7 +267,6 @@ def check_index(line):
 
 def emit_texinfo_content(f, line):
     global state_obj
-    state_obj.to_code()
     output.write(line.rstrip() + '\n')
     line = f.readline()
     if len(line.rstrip()) == 0:
@@ -283,8 +282,13 @@ def emit_texinfo_content(f, line):
     while line:
         line = line.rstrip()
         check_index(line)
-        state_obj.to_code()
         line = line.replace('{', '@{').replace('}', '@}')
+        # The spaces in front align in the export qualified list.
+        line = line.replace('@SYSTEM_DATATYPES@',
+                            '\n' + len ('EXPORT QUALIFIED ') * ' '
+                            + 'Target specific data types.')
+        line = line.replace('@SYSTEM_TYPES@',
+                            '(* Target specific data types.  *)')
         output.write(line + '\n')
         line = f.readline()
     return f

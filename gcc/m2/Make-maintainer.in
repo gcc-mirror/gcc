@@ -825,3 +825,28 @@ m2/gm2-compiler-paranoid/M2Version.o: m2/gm2-compiler-paranoid/M2Version.mod
 
 m2/gm2-compiler-paranoid/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
 	$(PGE) -k -l $< -o $@
+
+# Recreate the target independent copies of the documentation
+# which is used during the build if Python3 is unavailable.
+
+m2-target-independent-doc: m2-target-independent-doc-texi m2-target-independent-doc-rst
+
+m2-target-independent-doc-texi: force
+ifeq ($(HAVE_PYTHON),yes)
+	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs-iso/SYSTEM.def -o $(srcdir)/m2/target-independent/SYSTEM-iso.texi
+	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/SYSTEM.def -o $(srcdir)/m2/target-independent/SYSTEM-pim.texi
+	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(srcdir)/m2/target-independent/Builtins.texi
+	python3 $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(srcdir)/m2 -o $(srcdir)/m2/target-independent/gm2-libs.texi
+else
+	echo "m2-target-independent-doc-texi will only work if Python3 was detected during configure"
+endif
+
+m2-target-independent-doc-rst: force
+ifeq ($(HAVE_PYTHON),yes)
+	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs-iso/SYSTEM.def -o $(srcdir)/m2/target-independent/SYSTEM-iso.rst
+	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/SYSTEM.def -o $(srcdir)/m2/target-independent/SYSTEM-pim.rst
+	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(srcdir)/m2/target-independent/Builtins.rst
+	python3 $(srcdir)/m2/tools-src/def2doc.py -x -uLibraries -s$(srcdir)/m2 -b$(srcdir)/m2 -o $(srcdir)/m2/target-independent/gm2-libs.rst
+else
+	echo "m2-target-independent-doc-rst will only work if Python3 was detected during configure"
+endif

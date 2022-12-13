@@ -1,44 +1,23 @@
-(* SYSTEM.def provides access to the SYSTEM dependent module.
 
-Copyright (C) 2001-2021 Free Software Foundation, Inc.
-Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
-
-This file is part of GNU Modula-2.
-
-GNU Modula-2 is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 3, or (at your option)
-any later version.
-
-GNU Modula-2 is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
-
-Under Section 7 of GPL version 3, you are granted additional
-permissions described in the GCC Runtime Library Exception, version
-3.1, as published by the Free Software Foundation.
-
-You should have received a copy of the GNU General Public License and
-a copy of the GCC Runtime Library Exception along with this program;
-see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-<http://www.gnu.org/licenses/>.  *)
-
+@example
 DEFINITION MODULE SYSTEM ;
 
 EXPORT QUALIFIED BITSPERBYTE, BYTESPERWORD,
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* @SYSTEM_DATATYPES@  *)
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* 
+                 Target specific data types.  *)
                  ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE ;
                  (* SIZE is also exported if -fpim2 is used,  *)
 
 CONST
+@findex BITSPERBYTE (const)
   BITSPERBYTE   = __ATTRIBUTE__ __BUILTIN__ ((BITS_PER_UNIT)) ;
+@findex BYTESPERWORD (const)
   BYTESPERWORD  = __ATTRIBUTE__ __BUILTIN__ ((UNITS_PER_WORD)) ;
 
 
 (* all the following types are declared internally to gm2
 TYPE
-   @SYSTEM_TYPES@
+   (* Target specific data types.  *)
 *)
 
 
@@ -46,19 +25,23 @@ TYPE
    all the functions below are declared internally to gm2
    ====================================================
 
+@findex ADR
 PROCEDURE ADR (VAR v: <anytype>): ADDRESS;
   (* Returns the address of variable v. *)
 
+@findex SIZE
 PROCEDURE SIZE (v: <type>) : ZType;
   (* Returns the number of BYTES used to store a v of
      any specified <type>.  Only available if -fpim2 is used.
   *)
 
+@findex TSIZE
 PROCEDURE TSIZE (<type>) : CARDINAL;
   (* Returns the number of BYTES used to store a value of the
      specified <type>.
   *)
 
+@findex ROTATE
 PROCEDURE ROTATE (val: <a set type>;
                   num: INTEGER): <type of first parameter>;
   (* Returns a bit sequence obtained from val by rotating up/right
@@ -67,6 +50,7 @@ PROCEDURE ROTATE (val: <a set type>;
      is up/left.
   *)
 
+@findex SHIFT
 PROCEDURE SHIFT (val: <a set type>;
                  num: INTEGER): <type of first parameter>;
   (* Returns a bit sequence obtained from val by shifting up/left
@@ -75,6 +59,7 @@ PROCEDURE SHIFT (val: <a set type>;
      num is negative, otherwise the direction is up/left.
   *)
 
+@findex THROW
 PROCEDURE THROW (i: INTEGER) ;
   (*
      THROW is a GNU extension and was not part of the PIM or ISO
@@ -88,6 +73,7 @@ PROCEDURE THROW (i: INTEGER) ;
      performing various housekeeping activities.
   *)
 
+@findex TBITSIZE
 PROCEDURE TBITSIZE (<type>) : CARDINAL ;
   (* Returns the minimum number of bits necessary to represent
      <type>.  This procedure function is only useful for determining
@@ -115,6 +101,7 @@ PROCEDURE TBITSIZE (<type>) : CARDINAL ;
               call this routine for larger sets.
 *)
 
+@findex ShiftVal
 PROCEDURE ShiftVal (VAR s, d: ARRAY OF BITSET;
                     SetSizeInBits: CARDINAL;
                     ShiftCount: INTEGER) ;
@@ -127,6 +114,7 @@ PROCEDURE ShiftVal (VAR s, d: ARRAY OF BITSET;
                compile time.
 *)
 
+@findex ShiftLeft
 PROCEDURE ShiftLeft (VAR s, d: ARRAY OF BITSET;
                      SetSizeInBits: CARDINAL;
                      ShiftCount: CARDINAL) ;
@@ -138,6 +126,7 @@ PROCEDURE ShiftLeft (VAR s, d: ARRAY OF BITSET;
                 compile time.
 *)
 
+@findex ShiftRight
 PROCEDURE ShiftRight (VAR s, d: ARRAY OF BITSET;
                       SetSizeInBits: CARDINAL;
                       ShiftCount: CARDINAL) ;
@@ -151,6 +140,7 @@ PROCEDURE ShiftRight (VAR s, d: ARRAY OF BITSET;
                sets.
 *)
 
+@findex RotateVal
 PROCEDURE RotateVal (VAR s, d: ARRAY OF BITSET;
                      SetSizeInBits: CARDINAL;
                      RotateCount: INTEGER) ;
@@ -163,6 +153,7 @@ PROCEDURE RotateVal (VAR s, d: ARRAY OF BITSET;
                 compile time.
 *)
 
+@findex RotateLeft
 PROCEDURE RotateLeft (VAR s, d: ARRAY OF BITSET;
                       SetSizeInBits: CARDINAL;
                       RotateCount: CARDINAL) ;
@@ -175,9 +166,11 @@ PROCEDURE RotateLeft (VAR s, d: ARRAY OF BITSET;
                  compile time.
 *)
 
+@findex RotateRight
 PROCEDURE RotateRight (VAR s, d: ARRAY OF BITSET;
                        SetSizeInBits: CARDINAL;
                        RotateCount: CARDINAL) ;
 
 
 END SYSTEM.
+@end example

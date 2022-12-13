@@ -259,10 +259,10 @@ $ make check-m2 -j 24
 
 Finally the results of the testsuite can be emailed to the
 @url{https://gcc.gnu.org/lists.html, gcc-testresults} list using the
-script:
+@file{test_summary} script found in the gcc source tree:
 
 @example
-$ @file{gccsrcdir/contrib/test_summary}
+$ @samp{directory to the sources}/contrib/test_summary
 @end example
 
 @node Limitations, Objectives, Regression tests, Using

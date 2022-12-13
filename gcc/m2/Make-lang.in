@@ -164,12 +164,11 @@ ifeq ($(HAVE_PYTHON),yes)
 gm2-libs.texi-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
                      $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.texi
-	$(STAMP) gm2-libs.texi-check
 else
 gm2-libs.texi-check:
-	echo "not building gm2-libs.texi as python3 has not been found"
-	touch $(objdir)/m2/gm2-libs.texi
+	cp $(srcdir)/m2/target-independent/gm2-libs.texi $(objdir)/m2/gm2-libs.texi
 endif
+	$(STAMP) gm2-libs.texi-check
 
 # gm2-libs.rst
 
@@ -179,12 +178,11 @@ ifeq ($(HAVE_PYTHON),yes)
 gm2-libs.rst-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
                      $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.rst
-	$(STAMP) gm2-libs.rst-check
 else
 gm2-libs.rst-check:
-	echo "not building gm2-libs.rst as python3 has not been found"
-	touch $(objdir)/m2/gm2-libs.rst
+	cp $(srcdir)/m2/target-independent/gm2-libs.rst $(objdir)/m2/gm2-libs.rst
 endif
+	$(STAMP) gm2-libs.rst-check
 
 # gm2-ebnf.texi
 
@@ -209,12 +207,11 @@ m2/SYSTEM-pim.texi: SYSTEM-pim-texi-check; @true
 ifeq ($(HAVE_PYTHON),yes)
 SYSTEM-pim-texi-check: $(objdir)/m2/gm2-libs/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs/SYSTEM.def -o $(objdir)/m2/SYSTEM-pim.texi
-	$(STAMP) SYSTEM-pim-texi-check
 else
 SYSTEM-pim-texi-check: $(objdir)/m2/gm2-libs/SYSTEM.def
-	echo "not building SYSTEM-pim.texi as python3 has not been found"
-	touch $(objdir)/m2/SYSTEM-pim.texi
+	cp $(srcdir)/m2/target-independent/SYSTEM-pim.texi $(objdir)/m2/SYSTEM-pim.texi
 endif
+	$(STAMP) SYSTEM-pim-texi-check
 
 # SYSTEM-pim.rst
 
@@ -223,12 +220,11 @@ m2/SYSTEM-pim.rst: SYSTEM-pim-rst-check; @true
 ifeq ($(HAVE_PYTHON),yes)
 SYSTEM-pim-rst-check: $(objdir)/m2/gm2-libs/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs/SYSTEM.def -o $(objdir)/m2/SYSTEM-pim.rst
-	$(STAMP) SYSTEM-pim-rst-check
 else
 SYSTEM-pim-rst-check: $(objdir)/m2/gm2-libs/SYSTEM.def
-	echo "not building SYSTEM-pim.rst as python3 has not been found"
-	touch $(objdir)/m2/SYSTEM-pim.rst
+	cp $(srcdir)/m2/target-independent/SYSTEM-pim.rst $(objdir)/m2/SYSTEM-pim.rst
 endif
+	$(STAMP) SYSTEM-pim-rst-check
 
 # SYSTEM-pim.texi
 
@@ -237,12 +233,11 @@ m2/SYSTEM-iso.texi:  SYSTEM-iso.texi-check; @true
 ifeq ($(HAVE_PYTHON),yes)
 SYSTEM-iso.texi-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs-iso/SYSTEM.def -o $(objdir)/m2/SYSTEM-iso.texi
-	$(STAMP) SYSTEM-iso.texi-check
 else
 SYSTEM-iso.texi-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
-	echo "not building SYSTEM-iso.texi as python3 has not been found"
-	touch $(objdir)/m2/SYSTEM-iso.texi
+	cp $(srcdir)/m2/target-independent/SYSTEM-iso.texi $(objdir)/m2/SYSTEM-iso.texi
 endif
+	$(STAMP) SYSTEM-iso.texi-check
 
 # SYSTEM-pim.rst
 
@@ -251,12 +246,12 @@ m2/SYSTEM-iso.rst:  SYSTEM-iso.rst-check; @true
 ifeq ($(HAVE_PYTHON),yes)
 SYSTEM-iso.rst-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs-iso/SYSTEM.def -o $(objdir)/m2/SYSTEM-iso.rst
-	$(STAMP) SYSTEM-iso.rst-check
 else
 SYSTEM-iso.rst-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
-	echo "not building SYSTEM-iso.rst as python3 has not been found"
-	touch $(objdir)/m2/SYSTEM-iso.rst
+	cp $(srcdir)/m2/target-independent/SYSTEM-iso.rst $(objdir)/m2/SYSTEM-iso.rst
 endif
+	$(STAMP) SYSTEM-iso.rst-check
+
 
 # m2/Builtins.texi
 
@@ -265,12 +260,11 @@ m2/Builtins.texi:  Builtins.texi-check; @true
 ifeq ($(HAVE_PYTHON),yes)
 Builtins.texi-check:  m2/gm2-libs/Builtins.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b./ -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(objdir)/m2/Builtins.texi
-	$(STAMP) Builtins.texi-check
 else
 Builtins.texi-check:  m2/gm2-libs/Builtins.def
-	echo "not building SYSTEM-iso.texi as python3 has not been found"
-	touch $(objdir)/m2/Builtins.texi
+	cp $(srcdir)/m2/target-independent/Builtins.texi $(objdir)/m2/Builtins.texi
 endif
+	$(STAMP) Builtins.texi-check
 
 # m2/Builtins.rst
 
@@ -279,12 +273,11 @@ m2/Builtins.rst:  Builtins.rst-check; @true
 ifeq ($(HAVE_PYTHON),yes)
 Builtins.rst-check:  m2/gm2-libs/Builtins.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b./ -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(objdir)/m2/Builtins.rst
-	$(STAMP) Builtins.rst-check
 else
 Builtins.rst-check:  m2/gm2-libs/Builtins.def
-	echo "not building SYSTEM-iso.rst as python3 has not been found"
-	touch $(objdir)/m2/Builtins.rst
+	cp $(srcdir)/m2/target-independent/Builtins.rst $(objdir)/m2/Builtins.rst
 endif
+	$(STAMP) Builtins.rst-check
 
 $(objdir)/m2/gm2-compiler-boot:
 	test -d $@ || mkdir $@
