@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "symtab-clones.h"
 #include "attribs.h"
+#include "ipa-prop.h"
 
 static void ipa_sra_summarize_function (cgraph_node *);
 
@@ -3605,13 +3606,16 @@ retval_used_p (cgraph_node *node, void *)
 /* Push into NEW_PARAMS all required parameter adjustment entries to copy or
    modify parameter which originally had index BASE_INDEX, in the adjustment
    vector of parent clone (if any) had PREV_CLONE_INDEX and was described by
-   PREV_ADJUSTMENT.  If the parent clone is the original function,
-   PREV_ADJUSTMENT is NULL and PREV_CLONE_INDEX is equal to BASE_INDEX.  */
+   PREV_ADJUSTMENT.  If IPA-CP has created a transformation summary for the
+   original node, it needs to be passed in IPCP_TS, otherwise it should be
+   NULL.  If the parent clone is the original function, PREV_ADJUSTMENT is NULL
+   and PREV_CLONE_INDEX is equal to BASE_INDEX.  */
 
 static void
 push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
 				  unsigned prev_clone_index,
 				  ipa_adjusted_param *prev_adjustment,
+				  ipcp_transformation *ipcp_ts,
 				  vec<ipa_adjusted_param, va_gc> **new_params)
 {
   isra_param_desc *desc = &(*ifs->m_parameters)[base_index];
@@ -3652,6 +3656,23 @@ push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
       param_access *pa = (*desc->accesses)[j];
       if (!pa->certain)
 	continue;
+
+      if (ipcp_ts)
+	{
+	  ipa_argagg_value_list avl (ipcp_ts);
+	  tree value = avl.get_value (base_index, pa->unit_offset);
+	  if (value
+	      && (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value))) / BITS_PER_UNIT
+		  == pa->unit_size))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "    - omitting component at byte "
+			 "offset %u which is known to have a constant value\n ",
+			 pa->unit_offset);
+	      continue;
+	    }
+	}
+
       if (dump_file)
 	fprintf (dump_file, "    - component at byte offset %u, "
 		 "size %u\n", pa->unit_offset, pa->unit_size);
@@ -3732,6 +3753,7 @@ process_isra_node_results (cgraph_node *node,
 	fprintf (dump_file, "  Will remove return value.\n");
     }
 
+  ipcp_transformation *ipcp_ts = ipcp_get_transformation_summary (node);
   vec<ipa_adjusted_param, va_gc> *new_params = NULL;
   if (ipa_param_adjustments *old_adjustments
 	 = cinfo ? cinfo->param_adjustments : NULL)
@@ -3741,12 +3763,12 @@ process_isra_node_results (cgraph_node *node,
 	{
 	  ipa_adjusted_param *old_adj = &(*old_adjustments->m_adj_params)[i];
 	  push_param_adjustments_for_index (ifs, old_adj->base_index, i,
-					    old_adj, &new_params);
+					    old_adj, ipcp_ts, &new_params);
 	}
     }
   else
     for (unsigned i = 0; i < param_count; i++)
-      push_param_adjustments_for_index (ifs, i, i, NULL, &new_params);
+      push_param_adjustments_for_index (ifs, i, i, NULL, ipcp_ts, &new_params);
 
   ipa_param_adjustments *new_adjustments
     = (new (ggc_alloc <ipa_param_adjustments> ())

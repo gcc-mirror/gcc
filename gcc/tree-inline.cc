@@ -6377,6 +6377,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
   bb = split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
   while (init_stmts.length ())
     insert_init_stmt (&id, bb, init_stmts.pop ());
+  if (param_body_adjs)
+    param_body_adjs->append_init_stmts (bb);
   update_clone_info (&id);
 
   /* Remap the nonlocal_goto_save_area, if any.  */

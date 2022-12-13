@@ -5518,29 +5518,21 @@ ipcp_read_transformation_summaries (void)
     }
 }
 
-/* Adjust the aggregate replacements in TS to reflect parameters skipped in
-   NODE but also if any parameter was IPA-SRAed into a scalar go ahead with
-   substitution of the default_definitions of that new param with the
-   appropriate constant.
+/* Adjust the aggregate replacements in TS to reflect any parameter removals
+   which might have already taken place.  If after adjustments there are no
+   aggregate replacements left, the m_agg_values will be set to NULL.  In other
+   cases, it may be shrunk.  */
 
-   If after adjustments there are no aggregate replacements left, the
-   m_agg_values will be set to NULL.  In other cases, it may be shrunk.
-
-   Return true if any values were already substituted for scalarized parameters
-   and update_cfg shuld be run after replace_uses_by.  */
-
-static bool
-adjust_agg_replacement_values (cgraph_node *node,
-			       ipcp_transformation *ts,
-			       const vec<ipa_param_descriptor, va_gc>
-			         &descriptors)
+static void
+adjust_agg_replacement_values (cgraph_node *node, ipcp_transformation *ts)
 {
   clone_info *cinfo = clone_info::get (node);
   if (!cinfo || !cinfo->param_adjustments)
-    return false;
+    return;
 
+  auto_vec<int, 16> new_indices;
+  cinfo->param_adjustments->get_updated_indices (&new_indices);
   bool removed_item = false;
-  bool done_replacement = false;
   unsigned dst_index = 0;
   unsigned count = ts->m_agg_values->length ();
   for (unsigned i = 0; i < count; i++)
@@ -5548,13 +5540,10 @@ adjust_agg_replacement_values (cgraph_node *node,
       ipa_argagg_value *v = &(*ts->m_agg_values)[i];
       gcc_checking_assert (v->index >= 0);
 
-      tree cst_type = TREE_TYPE (v->value);
-      int split_idx;
-      int new_idx
-	= cinfo->param_adjustments->get_updated_index_or_split (v->index,
-								v->unit_offset,
-								cst_type,
-								&split_idx);
+      int new_idx = -1;
+      if ((unsigned) v->index < new_indices.length ())
+	new_idx = new_indices[v->index];
+
       if (new_idx >= 0)
 	{
 	  v->index = new_idx;
@@ -5563,19 +5552,7 @@ adjust_agg_replacement_values (cgraph_node *node,
 	  dst_index++;
 	}
       else
-	{
-	  removed_item = true;
-	  if (split_idx >= 0)
-	    {
-	      tree parm = ipa_get_param (descriptors, split_idx);
-	      tree ddef = ssa_default_def (cfun, parm);
-	      if (ddef)
-		{
-		  replace_uses_by (ddef, v->value);
-		  done_replacement = true;
-		}
-	    }
-	}
+	removed_item = true;
     }
 
   if (dst_index == 0)
@@ -5586,7 +5563,7 @@ adjust_agg_replacement_values (cgraph_node *node,
   else if (removed_item)
     ts->m_agg_values->truncate (dst_index);
 
-  return done_replacement;
+  return;
 }
 
 /* Dominator walker driving the ipcp modification phase.  */
@@ -5955,7 +5932,6 @@ ipcp_update_vr (struct cgraph_node *node)
 unsigned int
 ipcp_transform_function (struct cgraph_node *node)
 {
-  vec<ipa_param_descriptor, va_gc> *descriptors = NULL;
   struct ipa_func_body_info fbi;
   int param_count;
 
@@ -5974,18 +5950,13 @@ ipcp_transform_function (struct cgraph_node *node)
   param_count = count_formal_params (node->decl);
   if (param_count == 0)
     return 0;
-  vec_safe_grow_cleared (descriptors, param_count, true);
-  ipa_populate_param_decls (node, *descriptors);
 
-  bool cfg_changed = adjust_agg_replacement_values (node, ts, *descriptors);
+  adjust_agg_replacement_values (node, ts);
   if (vec_safe_is_empty (ts->m_agg_values))
     {
-      vec_free (descriptors);
       if (dump_file)
 	fprintf (dump_file, "  All affected aggregate parameters were either "
 		 "removed or converted into scalars, phase done.\n");
-      if (cfg_changed)
-	delete_unreachable_blocks_update_callgraph (node, false);
       return 0;
     }
   if (dump_file)
@@ -6002,12 +5973,15 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.param_count = param_count;
   fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
+  vec<ipa_param_descriptor, va_gc> *descriptors = NULL;
+  vec_safe_grow_cleared (descriptors, param_count, true);
+  ipa_populate_param_decls (node, *descriptors);
   bool modified_mem_access = false;
   calculate_dominance_info (CDI_DOMINATORS);
   ipcp_modif_dom_walker walker (&fbi, descriptors, ts, &modified_mem_access);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   free_dominance_info (CDI_DOMINATORS);
-  cfg_changed |= walker.cleanup_eh ();
+  bool cfg_changed = walker.cleanup_eh ();
 
   int i;
   struct ipa_bb_info *bi;
