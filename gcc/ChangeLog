@@ -1,3 +1,85 @@
+2022-12-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs): Add correct costs
+	for 24-bit and 12-bit shifted immediate add/sub.
+	(TARGET_CONST_ANCHOR): Define.
+	* config/aarch64/predicates.md (aarch64_pluslong_immediate):
+	Fix range check.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* match.pd: Add new rule.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_can_change_mode_class): Restrict
+	conversions between partial struct types properly.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md (*tb<optab><mode>1): Rename to...
+	(*tb<optab><ALLI:mode><GPI:mode>1): ... this.
+	(tbranch_<code><mode>4): New.
+	* config/aarch64/iterators.md(ZEROM, zerom): New.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* dojump.cc (do_jump): Pass along value.
+	(do_jump_by_parts_greater_rtx): Likewise.
+	(do_jump_by_parts_zero_rtx): Likewise.
+	(do_jump_by_parts_equality_rtx): Likewise.
+	(do_compare_rtx_and_jump): Likewise.
+	(do_compare_and_jump): Likewise.
+	* dojump.h (do_compare_rtx_and_jump): New.
+	* optabs.cc (emit_cmp_and_jump_insn_1): Refactor to take optab to check.
+	(validate_test_and_branch): New.
+	(emit_cmp_and_jump_insns): Optiobally take a value, and when value is
+	supplied then check if it's suitable for tbranch.
+	* optabs.def (tbranch_eq$a4, tbranch_ne$a4): New.
+	* doc/md.texi (tbranch_@var{op}@var{mode}4): Document it.
+	* optabs.h (emit_cmp_and_jump_insns): New.
+	* tree.h (tree_zero_one_valued_p): New.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_movv2hf): New.
+	(mov<mode>, movmisalign<mode>, aarch64_dup_lane<mode>,
+	aarch64_store_lane0<mode>, aarch64_simd_vec_set<mode>,
+	@aarch64_simd_vec_copy_lane<mode>, vec_set<mode>,
+	reduc_<optab>_scal_<mode>, reduc_<fmaxmin>_scal_<mode>,
+	aarch64_reduc_<optab>_internal<mode>, aarch64_get_lane<mode>,
+	vec_init<mode><Vel>, vec_extract<mode><Vel>): Support V2HF.
+	(aarch64_simd_dupv2hf): New.
+	* config/aarch64/aarch64.cc (aarch64_classify_vector_mode):
+	Add E_V2HFmode.
+	* config/aarch64/iterators.md (VHSDF_P): New.
+	(V2F, VMOVE, nunits, Vtype, Vmtype, Vetype, stype, VEL,
+	Vel, q, vp): Add V2HF.
+	* config/arm/types.md (neon_fp_reduc_add_h): New.
+
+2022-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_PAUTH and __ARM_FEATURE_BTI when appropriate.
+	* config/aarch64/aarch64.h (TARGET_BTI): Define.
+
+2022-12-12  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.cc (dt_simplify::gen): Revert last change.
+	* match.pd: Revert simplification of CONSTUCTOR leaf handling.
+	(&x cmp SSA_NAME): Handle ADDR_EXPR in SSA defs.
+	* fold-const.cc (split_address_to_core_and_offset): Handle
+	ADDR_EXPRs in SSA defs.
+	(address_compare): Likewise.
+
+2022-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89317
+	* tree-ssa-ccp.cc (ccp_fold): Handle GIMPLE_COND via
+	gimple_fold_stmt_to_constant_1.
+	* match.pd (&a != &a + c): Apply to pointer_plus with non-ADDR_EXPR
+	base as well.
+
 2022-12-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/89317

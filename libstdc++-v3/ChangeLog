@@ -1,3 +1,40 @@
+2022-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/arithmetic/overflow_c++20.cc: New
+	test.
+
+2022-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108024
+	* include/std/format (basic_format_string): Fix constraint.
+	* testsuite/std/format/format_string.cc: New test.
+
+2022-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (hh_mm_ss): Rename __is_unsigned member to
+	_S_is_unsigned.
+	* include/std/format (basic_format_context): Rename _Out_
+	template parameter to _Out2.
+	* testsuite/17_intro/names.cc: Add Windows SAL annotation
+	macros.
+
+2022-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98034
+	* include/std/atomic (__cpp_lib_atomic_lock_free_type_aliases):
+	Define macro.
+	(atomic_signed_lock_free, atomic_unsigned_lock_free): Define
+	aliases.
+	* include/std/version (__cpp_lib_atomic_lock_free_type_aliases):
+	Define macro.
+	* testsuite/29_atomics/atomic/lock_free_aliases.cc: New test.
+
+2022-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (operator<<): Only output to narrow
+	ostreams (LWG 3515).
+	* testsuite/19_diagnostics/stacktrace/synopsis.cc:
+
 2022-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108015

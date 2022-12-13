@@ -1,3 +1,11 @@
+2022-12-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102180
+	* array.cc (match_array_element_spec): Add check for bad
+	assumed-implied-spec.
+	(gfc_match_array_spec): Reorder logic so that the first bad array
+	element spec may trigger an error.
+
 2022-12-11  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/107995

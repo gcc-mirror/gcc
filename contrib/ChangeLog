@@ -1,3 +1,7 @@
+2022-12-12  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Do not search PR entry in a file that is binary.
+
 2022-12-11  Martin Liska  <mliska@suse.cz>
 
 	* check_GNU_style.py: Use newline=\n.
