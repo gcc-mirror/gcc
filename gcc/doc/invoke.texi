@@ -13208,7 +13208,8 @@ disclosure and use.
 GCC still considers an automatic variable that doesn't have an explicit
 initializer as uninitialized, @option{-Wuninitialized} and
 @option{-Wanalyzer-use-of-uninitialized-value} will still report
-warning messages on such automatic variables.
+warning messages on such automatic variables and the compiler will
+perform optimization as if the variable were uninitialized.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
 However, the current implementation cannot initialize automatic variables that
