@@ -219,6 +219,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					       &__status);
       if (__status == 0)
 	__s = __str;
+      else
+	__s = __name;
       __builtin_free(__str);
       return __s;
     }
