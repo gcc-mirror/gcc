@@ -292,7 +292,11 @@ Maximum pieces that IPA-SRA tracks per formal parameter, as a consequence, also 
 
 -param=ipa-sra-ptr-growth-factor=
 Common Joined UInteger Var(param_ipa_sra_ptr_growth_factor) Init(2) Param Optimization
-Maximum allowed growth of number and total size of new parameters that ipa-sra replaces a pointer to an aggregate with.
+Maximum allowed growth of total size of new parameters that ipa-sra replaces a pointer to an aggregate with.
+
+-param=ipa-sra-ptrwrap-growth-factor=
+Common Joined UInteger Var(param_ipa_sra_ptrwrap_growth_factor) Init(4) IntegerRange(1, 8) Param Optimization
+Additional maximum allowed growth of total size of new parameters that ipa-sra replaces a pointer to an aggregate with, if it points to a local variable that the caller never writes to.
 
 -param=ira-loop-reserved-regs=
 Common Joined UInteger Var(param_ira_loop_reserved_regs) Init(2) Param Optimization
