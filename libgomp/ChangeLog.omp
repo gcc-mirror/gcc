@@ -1,3 +1,17 @@
+2023-02-16  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/nvptx/allocator.c (BASIC_ALLOC_PREFIX): New define, and
+	include basic-allocator.c.
+	(__nvptx_lowlat_heap_root): Remove.
+	(heapdesc): Remove.
+	(nvptx_memspace_alloc): Move implementation to basic-allocator.c.
+	(nvptx_memspace_calloc): Likewise.
+	(nvptx_memspace_free): Likewise.
+	(nvptx_memspace_realloc): Likewise.
+	* config/nvptx/team.c (__nvptx_lowlat_heap_root): Remove.
+	(gomp_nvptx_main): Call __nvptx_lowlat_init.
+	* basic-allocator.c: New file.
+
 2023-02-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/target-present-1.c: Fix.
