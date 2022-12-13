@@ -151,6 +151,8 @@ struct gensum_param_access
      arguments.  */
   tree alias_ptr_type;
 
+  /* Cumulative count of all loads. */
+  profile_count load_count;
   /* Have there been writes to or reads from this exact location except for as
      arguments to a function call that can be tracked.  */
   bool nonarg;
@@ -207,8 +209,13 @@ struct gensum_param_desc
      by reference that is a candidate for being converted to a set of
      parameters passing those data by value.  */
   bool split_candidate;
-  /* Is this a parameter passing stuff by reference?  */
+  /* Is this a parameter passing stuff by reference (either a pointer or a
+     source language reference type)?  */
   bool by_ref;
+  /* If this parameter passes stuff by reference, can it be safely dereferenced
+     without performing further checks (for example because it is a
+     REFERENCE_TYPE)?  */
+  bool safe_ref;
 
   /* The number of this parameter as they are ordered in function decl.  */
   int param_number;
@@ -561,7 +568,7 @@ int aa_walking_limit;
    accessed in that BB.  */
 HOST_WIDE_INT *bb_dereferences = NULL;
 /* How many by-reference parameters there are in the current function.  */
-int by_ref_count;
+int unsafe_by_ref_count;
 
 /* Bitmap of BBs that can cause the function to "stop" progressing by
    returning, throwing externally, looping infinitely or calling a function
@@ -643,6 +650,8 @@ dump_gensum_access (FILE *f, gensum_param_access *access, unsigned indent)
   print_generic_expr (f, access->type);
   fprintf (f, ", alias_ptr_type: ");
   print_generic_expr (f, access->alias_ptr_type);
+  fprintf (f, ", load_count: ");
+  access->load_count.dump (f);
   fprintf (f, ", nonarg: %u, reverse: %u\n", access->nonarg, access->reverse);
   for (gensum_param_access *ch = access->first_child;
        ch;
@@ -692,7 +701,8 @@ dump_gensum_param_descriptor (FILE *f, gensum_param_desc *desc)
       return;
     }
   if (desc->by_ref)
-    fprintf (f, "    by_ref with %u pass throughs\n", desc->ptr_pt_count);
+    fprintf (f, "    %s by_ref with %u pass throughs\n",
+	     desc->safe_ref ? "safe" : "unsafe", desc->ptr_pt_count);
 
   for (gensum_param_access *acc = desc->accesses; acc; acc = acc->next_sibling)
     dump_gensum_access (f, acc, 2);
@@ -1140,6 +1150,8 @@ create_parameter_descriptors (cgraph_node *node,
 
       if (POINTER_TYPE_P (type))
 	{
+	  desc->by_ref = true;
+	  desc->safe_ref = (TREE_CODE (type) == REFERENCE_TYPE);
 	  type = TREE_TYPE (type);
 
 	  if (TREE_CODE (type) == FUNCTION_TYPE
@@ -1187,7 +1199,6 @@ create_parameter_descriptors (cgraph_node *node,
 			 "nonarg uses\n");
 	      continue;
 	    }
-	  desc->by_ref = true;
 	}
       else if (!AGGREGATE_TYPE_P (type))
 	{
@@ -1231,8 +1242,8 @@ create_parameter_descriptors (cgraph_node *node,
 
       ret = true;
       desc->split_candidate = true;
-      if (desc->by_ref)
-	desc->deref_index = by_ref_count++;
+      if (desc->by_ref && !desc->safe_ref)
+	desc->deref_index = unsafe_by_ref_count++;
     }
   return ret;
 }
@@ -1301,6 +1312,7 @@ allocate_access (gensum_param_desc *desc,
   memset (access, 0, sizeof (*access));
   access->offset = offset;
   access->size = size;
+  access->load_count = profile_count::zero ();
   return access;
 }
 
@@ -1555,15 +1567,16 @@ asm_visit_addr (gimple *, tree op, tree, void *)
 
 static void
 mark_param_dereference (gensum_param_desc *desc, HOST_WIDE_INT dist,
-		       basic_block bb)
+			basic_block bb)
 {
   gcc_assert (desc->by_ref);
   gcc_checking_assert (desc->split_candidate);
 
-  if (bitmap_bit_p (final_bbs, bb->index))
+  if (desc->safe_ref
+      || bitmap_bit_p (final_bbs, bb->index))
     return;
 
-  int idx = bb->index * by_ref_count + desc->deref_index;
+  int idx = bb->index * unsafe_by_ref_count + desc->deref_index;
   if (bb_dereferences[idx] < dist)
     bb_dereferences[idx] = dist;
 }
@@ -1811,6 +1824,8 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
 	   other.  */
 	access->nonarg = true;
     }
+  else if (ctx == ISRA_CTX_LOAD && bb->count.initialized_p ())
+    access->load_count += bb->count;
 
   if (!access->type)
     {
@@ -2092,9 +2107,9 @@ dump_dereferences_table (FILE *f, struct function *fun, const char *str)
       if (bb != EXIT_BLOCK_PTR_FOR_FN (fun))
 	{
 	  int i;
-	  for (i = 0; i < by_ref_count; i++)
+	  for (i = 0; i < unsafe_by_ref_count; i++)
 	    {
-	      int idx = bb->index * by_ref_count + i;
+	      int idx = bb->index * unsafe_by_ref_count + i;
 	      fprintf (f, " %4" HOST_WIDE_INT_PRINT "d", bb_dereferences[idx]);
 	    }
 	}
@@ -2139,15 +2154,15 @@ propagate_dereference_distances (struct function *fun)
       if (bitmap_bit_p (final_bbs, bb->index))
 	continue;
 
-      for (i = 0; i < by_ref_count; i++)
+      for (i = 0; i < unsafe_by_ref_count; i++)
 	{
-	  int idx = bb->index * by_ref_count + i;
+	  int idx = bb->index * unsafe_by_ref_count + i;
 	  bool first = true;
 	  HOST_WIDE_INT inh = 0;
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	  {
-	    int succ_idx = e->dest->index * by_ref_count + i;
+	    int succ_idx = e->dest->index * unsafe_by_ref_count + i;
 
 	    if (e->dest == EXIT_BLOCK_PTR_FOR_FN (fun))
 	      continue;
@@ -2184,13 +2199,24 @@ propagate_dereference_distances (struct function *fun)
 			     "Dereference table after propagation:\n");
 }
 
-/* Perform basic checks on ACCESS to PARM described by DESC and all its
-   children, return true if the parameter cannot be split, otherwise return
-   true and update *TOTAL_SIZE and *ONLY_CALLS.  ENTRY_BB_INDEX must be the
-   index of the entry BB in the function of PARM.  */
+/* Return true if the ACCESS loads happen frequently enough in FUN to risk
+   moving them to the caller and only pass the result.  */
 
 static bool
-check_gensum_access (tree parm, gensum_param_desc *desc,
+dereference_probable_p (struct function *fun, gensum_param_access *access)
+{
+  int threshold = opt_for_fn (fun->decl, param_ipa_sra_deref_prob_threshold);
+  return access->load_count
+    >= ENTRY_BLOCK_PTR_FOR_FN (fun)->count.apply_scale (threshold, 100);
+}
+
+/* Perform basic checks on ACCESS to PARM (of FUN) described by DESC and all
+   its children, return true if the parameter cannot be split, otherwise return
+   false and update *NONARG_ACC_SIZE and *ONLY_CALLS.  ENTRY_BB_INDEX must be
+   the index of the entry BB in the function of PARM.  */
+
+static bool
+check_gensum_access (struct function *fun, tree parm, gensum_param_desc *desc,
 		     gensum_param_access *access,
 		     HOST_WIDE_INT *nonarg_acc_size, bool *only_calls,
 		     int entry_bb_index)
@@ -2218,19 +2244,31 @@ check_gensum_access (tree parm, gensum_param_desc *desc,
 
   if (desc->by_ref)
     {
-      int idx = (entry_bb_index * by_ref_count + desc->deref_index);
-      if ((access->offset + access->size) > bb_dereferences[idx])
+      if (desc->safe_ref)
 	{
-	  disqualify_split_candidate (desc, "Would create a possibly "
-				      "illegal dereference in a caller.");
-	  return true;
+	  if (!dereference_probable_p (fun, access))
+	    {
+	      disqualify_split_candidate (desc, "Dereferences in callers "
+					  "would happen much more frequently.");
+	      return true;
+	    }
+	}
+      else
+	{
+	  int idx = (entry_bb_index * unsafe_by_ref_count + desc->deref_index);
+	  if ((access->offset + access->size) > bb_dereferences[idx])
+	    {
+	      disqualify_split_candidate (desc, "Would create a possibly "
+					  "illegal dereference in a caller.");
+	      return true;
+	    }
 	}
     }
 
   for (gensum_param_access *ch = access->first_child;
        ch;
        ch = ch->next_sibling)
-    if (check_gensum_access (parm, desc, ch, nonarg_acc_size, only_calls,
+    if (check_gensum_access (fun, parm, desc, ch, nonarg_acc_size, only_calls,
 			     entry_bb_index))
       return true;
 
@@ -2288,6 +2326,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
 
       if (!dereferences_propagated
 	  && desc->by_ref
+	  && !desc->safe_ref
 	  && desc->accesses)
 	{
 	  propagate_dereference_distances (fun);
@@ -2302,8 +2341,8 @@ process_scan_results (cgraph_node *node, struct function *fun,
       for (gensum_param_access *acc = desc->accesses;
 	   acc;
 	   acc = acc->next_sibling)
-	if (check_gensum_access (parm, desc, acc, &nonarg_acc_size, &only_calls,
-				 entry_bb_index))
+	if (check_gensum_access (fun, parm, desc, acc, &nonarg_acc_size,
+				 &only_calls, entry_bb_index))
 	  {
 	    check_failed = true;
 	    break;
@@ -2393,6 +2432,12 @@ process_scan_results (cgraph_node *node, struct function *fun,
 	      }
 	    if (!uses_memory_as_obtained)
 	      continue;
+
+	    if (desc->safe_ref)
+	      {
+		csum->m_arg_flow[argidx].safe_to_import_accesses = true;
+		continue;
+	      }
 
 	    /* Post-dominator check placed last, hoping that it usually won't
 	       be needed.  */
@@ -4124,7 +4169,7 @@ ipa_sra_summarize_function (cgraph_node *node)
 	  cfun_pushed = true;
 	  final_bbs = BITMAP_ALLOC (NULL);
 	  bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
-				      by_ref_count
+				      unsafe_by_ref_count
 				      * last_basic_block_for_fn (fun));
 	  aa_walking_limit = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 	  scan_function (node, fun);

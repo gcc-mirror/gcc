@@ -15509,6 +15509,11 @@ the parameter is reserved exclusively for debug insns created by
 @option{-fvar-tracking-assignments}, but debug insns may get
 (non-overlapping) uids above it if the reserved range is exhausted.
 
+@item ipa-sra-deref-prob-threshold
+IPA-SRA replaces a pointer which is known not be NULL with one or more
+new parameters only when the probability (in percent, relative to
+function entry) of it being dereferenced is higher than this parameter.
+
 @item ipa-sra-ptr-growth-factor
 IPA-SRA replaces a pointer to an aggregate with one or more new
 parameters only when their cumulative size is less or equal to

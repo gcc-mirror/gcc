@@ -282,6 +282,10 @@ Maximum number of different predicates used to track properties of loops in IPA 
 Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param Optimization
 Maximal number of boundary endpoints of case ranges of switch statement used during IPA function summary generation.
 
+-param=ipa-sra-deref-prob-threshold=
+Common Joined UInteger Var(param_ipa_sra_deref_prob_threshold) Init(50) IntegerRange(0, 100) Param Optimization
+Minimum probability (in percent) of dereferencing of a function pointer parameter for it to be considered for replacement with simple values.
+
 -param=ipa-sra-max-replacements=
 Common Joined UInteger Var(param_ipa_sra_max_replacements) Optimization Init(8) IntegerRange(0, 16) Param
 Maximum pieces that IPA-SRA tracks per formal parameter, as a consequence, also the maximum number of replacements of a formal parameter.
