@@ -387,7 +387,7 @@ else version (CRuntime_UClibc)
         enum RTLD_LOCAL             = 0;
         enum RTLD_NODELETE          = 0x01000;
     }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         enum RTLD_LAZY              = 0x0001;
         enum RTLD_NOW               = 0x0002;

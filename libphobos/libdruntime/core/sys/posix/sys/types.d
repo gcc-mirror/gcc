@@ -1140,6 +1140,18 @@ else version (CRuntime_UClibc)
         enum __SIZEOF_PTHREAD_BARRIER_T     = 20;
         enum __SIZEOF_PTHREAD_BARRIERATTR_T = 4;
      }
+     else version (MIPS64)
+     {
+        enum __SIZEOF_PTHREAD_ATTR_T        = 56;
+        enum __SIZEOF_PTHREAD_MUTEX_T       = 40;
+        enum __SIZEOF_PTHREAD_MUTEXATTR_T   = 4;
+        enum __SIZEOF_PTHREAD_COND_T        = 48;
+        enum __SIZEOF_PTHREAD_CONDATTR_T    = 4;
+        enum __SIZEOF_PTHREAD_RWLOCK_T      = 56;
+        enum __SIZEOF_PTHREAD_RWLOCKATTR_T  = 8;
+        enum __SIZEOF_PTHREAD_BARRIER_T     = 32;
+        enum __SIZEOF_PTHREAD_BARRIERATTR_T = 4;
+     }
      else version (ARM)
      {
         enum __SIZEOF_PTHREAD_ATTR_T = 36;

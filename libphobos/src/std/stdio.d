@@ -85,8 +85,7 @@ else version (CRuntime_Musl)
 }
 else version (CRuntime_UClibc)
 {
-    // uClibc supports GCC IO
-    version = GCC_IO;
+    version = GENERIC_IO;
 }
 else version (OSX)
 {
