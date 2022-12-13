@@ -1,3 +1,17 @@
+2023-01-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c: Include sys/mman.h and unistd.h.
+	(usm_heap_create): New function.
+	(struct usm_splay_tree_key_s): Delete function.
+	(usm_splay_compare): Delete function.
+	(splay_tree_prefix): Delete define.
+	(GOMP_OFFLOAD_usm_alloc): Use new allocator.
+	(GOMP_OFFLOAD_usm_free): Likewise.
+	(GOMP_OFFLOAD_is_usm_ptr): Likewise.
+	(gomp_fatal): Delete macro.
+	(splay_tree_c): Delete.
+	* usm-allocator.c: New file.
+
 2022-12-16  Andrew Stubbs  <ams@codesourcery.com>
 
 	* libgomp.h (OFFSET_USM): New macro.

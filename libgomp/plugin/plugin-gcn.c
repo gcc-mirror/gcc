@@ -48,6 +48,8 @@
 #include "oacc-plugin.h"
 #include "oacc-int.h"
 #include <assert.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 /* These probably won't be in elf.h for a while.  */
 #ifndef R_AMDGPU_NONE
@@ -3077,6 +3079,102 @@ wait_queue (struct goacc_asyncqueue *aq)
 }
 
 /* }}}  */
+/* {{{ Unified Shared Memory
+
+   Normal heap memory is already enabled for USM, but by default it is "fine-
+   grained" memory, meaning that the GPU must access it via the system bus,
+   slowly.  Changing the page to "coarse-grained" mode means that the page
+   is migrated on-demand and can therefore be accessed quickly by both CPU and
+   GPU (although care should be taken to prevent thrashing the page back and
+   forth).
+
+   GOMP_OFFLOAD_alloc also allocates coarse-grained memory, but in that case
+   the initial location is GPU memory; GOMP_OFFLOAD_usm_alloc returns system
+   memory configure coarse-grained.
+
+   The USM memory space is allocated as a largish block and then subdivided
+   via a custom allocator.  (It would be possible to reconfigure regular
+   "malloc'd" memory, but if it ends up on the same page as memory used by
+   the HSA driver then bad things happen.)  */
+
+#include "../usm-allocator.c"
+
+/* Record a list of the memory blocks configured for USM.  */
+static struct usm_heap_pages {
+  void *start;
+  void *end;
+  struct usm_heap_pages *next;
+} *usm_heap_pages = NULL;
+
+/* Initialize or extend the USM memory space.  This is called whenever
+   allocation fails.  SIZE is the minimum size required for the failed
+   allocation to succeed; the function may choose a larger size.
+   Note that Linux lazy allocation means that the memory returned isn't
+   guarenteed to acually exist.  */
+
+static bool
+usm_heap_create (size_t size)
+{
+  static int lock = 0;
+  while (__atomic_exchange_n (&lock, 1, MEMMODEL_ACQUIRE) != 0)
+    ;
+
+  size_t default_size = 1L * 1024 * 1024 * 1024; /* 1GB */
+  if (size < default_size)
+    size = default_size;
+
+  /* Round up to a whole page.  */
+  int pagesize = getpagesize ();
+  int misalignment = size % pagesize;
+  if (misalignment > 0)
+    size += pagesize - misalignment;
+
+  /* Try to get contiguous memory, but it might not be possible.
+     The most recent previous allocation is at the head of the list.  */
+  void *addrhint = (usm_heap_pages ? usm_heap_pages->end : NULL);
+  void *new_pages = mmap (addrhint, size, PROT_READ | PROT_WRITE,
+			  MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  if (!new_pages)
+    {
+      GCN_DEBUG ("Could not allocate Unified Shared Memory heap.");
+      __atomic_store_n (&lock, 0, MEMMODEL_RELEASE);
+      return false;
+    }
+
+  /* Register the heap allocation as coarse grained, which implies USM.  */
+  struct hsa_amd_svm_attribute_pair_s attr = {
+    HSA_AMD_SVM_ATTRIB_GLOBAL_FLAG,
+    HSA_AMD_SVM_GLOBAL_FLAG_COARSE_GRAINED
+  };
+  hsa_status_t status = hsa_fns.hsa_amd_svm_attributes_set_fn (new_pages, size,
+							       &attr, 1);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_fatal ("Failed to allocate Unified Shared Memory;"
+		       " please update your drivers and/or kernel");
+
+  if (new_pages == addrhint)
+    {
+      /* We got contiguous pages, so we don't need extra list entries.  */
+      usm_heap_pages->end += size;
+    }
+  else
+    {
+      /* We need a new list entry to record a discontiguous range.  */
+      struct usm_heap_pages *page = malloc (sizeof (*page));
+      page->start = new_pages;
+      page->end = new_pages + size;
+      page->next = usm_heap_pages;
+      usm_heap_pages = page;
+    }
+
+  /* Add the new memory into the allocator's free table.  */
+  usm_register_memory (new_pages, size);
+
+  __atomic_store_n (&lock, 0, MEMMODEL_RELEASE);
+  return true;
+}
+
+/* }}} */
 /* {{{ OpenACC support  */
 
 /* Execute an OpenACC kernel, synchronously or asynchronously.  */
@@ -3898,74 +3996,24 @@ GOMP_OFFLOAD_evaluate_device (int device_num, const char *kind,
   return !isa || isa_code (isa) == agent->device_isa;
 }
 
-/* Use a splay tree to track USM allocations.  */
 
-typedef struct usm_splay_tree_node_s *usm_splay_tree_node;
-typedef struct usm_splay_tree_s *usm_splay_tree;
-typedef struct usm_splay_tree_key_s *usm_splay_tree_key;
-
-struct usm_splay_tree_key_s {
-  void *addr;
-  size_t size;
-};
-
-static inline int
-usm_splay_compare (usm_splay_tree_key x, usm_splay_tree_key y)
-{
-  if ((x->addr <= y->addr && x->addr + x->size > y->addr)
-      || (y->addr <= x->addr && y->addr + y->size > x->addr))
-    return 0;
-
-  return (x->addr > y->addr ? 1 : -1);
-}
-
-#define splay_tree_prefix usm
-#include "../splay-tree.h"
-
-static struct usm_splay_tree_s usm_map = { NULL };
-
-/* Allocate memory suitable for Unified Shared Memory.
-
-   Normal heap memory is already enabled for USM, but by default it is "fine-
-   grained" memory, meaning that the GPU must access it via the system bus,
-   slowly.  Changing the page to "coarse-grained" mode means that the page
-   is migrated on-demand and can therefore be accessed quickly by both CPU and
-   GPU (although care should be taken to prevent thrashing the page back and
-   forth).
-
-   GOMP_OFFLOAD_alloc also allocates coarse-grained memory, but in that case
-   the initial location is GPU memory; this function returns system memory.
-
-   We record and track allocations so that GOMP_OFFLOAD_is_usm_ptr can look
-   them up.  */
+/* Allocate memory suitable for Unified Shared Memory.  */
 
 void *
 GOMP_OFFLOAD_usm_alloc (int device, size_t size)
 {
-  void *ptr = malloc (size);
-  if (!ptr || !hsa_fns.hsa_amd_svm_attributes_set_fn)
-    return ptr;
+  while (1)
+    {
+      void *result = usm_alloc (size);
+      if (result)
+	return result;
 
-  /* Register the heap allocation as coarse grained, which implies USM.  */
-  struct hsa_amd_svm_attribute_pair_s attr = {
-    HSA_AMD_SVM_ATTRIB_GLOBAL_FLAG,
-    HSA_AMD_SVM_GLOBAL_FLAG_COARSE_GRAINED
-  };
-  hsa_status_t status = hsa_fns.hsa_amd_svm_attributes_set_fn (ptr, size,
-							       &attr, 1);
-  if (status != HSA_STATUS_SUCCESS)
-    GOMP_PLUGIN_fatal ("Failed to allocate Unified Shared Memory;"
-		       " please update your drivers and/or kernel");
-
-  /* Record the allocation for GOMP_OFFLOAD_is_usm_ptr.  */
-  usm_splay_tree_node node = malloc (sizeof (struct usm_splay_tree_node_s));
-  node->key.addr = ptr;
-  node->key.size = size;
-  node->left = NULL;
-  node->right = NULL;
-  usm_splay_tree_insert (&usm_map, node);
-
-  return ptr;
+      /* Allocation failed.  Try again if we can create a new heap block.
+	 Note: it's possible another thread could get to the new memory
+	 first, so the while loop is necessary. */
+      if (!usm_heap_create (size))
+	return NULL;
+    }
 }
 
 /* Free memory allocated via GOMP_OFFLOAD_usm_alloc.  */
@@ -3973,15 +4021,7 @@ GOMP_OFFLOAD_usm_alloc (int device, size_t size)
 bool
 GOMP_OFFLOAD_usm_free (int device, void *ptr)
 {
-  struct usm_splay_tree_key_s key = { ptr, 1 };
-  usm_splay_tree_key node = usm_splay_tree_lookup (&usm_map, &key);
-  if (node)
-    {
-      usm_splay_tree_remove (&usm_map, &key);
-      free (node);
-    }
-
-  free (ptr);
+  usm_free (ptr);
   return true;
 }
 
@@ -3990,8 +4030,10 @@ GOMP_OFFLOAD_usm_free (int device, void *ptr)
 bool
 GOMP_OFFLOAD_is_usm_ptr (void *ptr)
 {
-  struct usm_splay_tree_key_s key = { ptr, 1 };
-  return usm_splay_tree_lookup (&usm_map, &key);
+  for (struct usm_heap_pages *heap = usm_heap_pages; heap; heap = heap->next)
+    if (ptr >= (void*)heap && ptr < heap->end)
+      return true;
+  return false;
 }
 
 /* Indicate which GOMP_REQUIRES_* features are supported.  */
@@ -4298,18 +4340,3 @@ GOMP_OFFLOAD_openacc_destroy_thread_data (void *data)
 }
 
 /* }}} */
-/* {{{ USM splay tree */
-
-/* Include this now so that splay-tree.c doesn't include it later.  This
-   avoids a conflict with splay_tree_prefix.  */
-#include "libgomp.h"
-
-/* This allows splay-tree.c to call gomp_fatal in this context.  The splay
-   tree code doesn't use the variadic arguments right now.  */
-#define gomp_fatal(MSG, ...) GOMP_PLUGIN_fatal (MSG)
-
-/* Include the splay tree code inline, with the prefixes added.  */
-#define splay_tree_prefix usm
-#define splay_tree_c
-#include "../splay-tree.h"
-/* }}}  */
