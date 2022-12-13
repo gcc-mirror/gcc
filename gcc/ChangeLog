@@ -1,3 +1,13 @@
+2022-12-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107107
+	* tree-ssa-sccvn.c (visit_reference_op_store): Do not
+	affect value-numbering when doing the tail merging
+	MODIFY_EXPR lookup.
+
 2022-12-01  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/107863
