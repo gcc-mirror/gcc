@@ -3850,7 +3850,7 @@ string expandTilde(string inputPath) nothrow
     version (Posix)
     {
         import core.exception : onOutOfMemoryError;
-        import core.stdc.errno : errno, ERANGE;
+        import core.stdc.errno : errno, EBADF, ENOENT, EPERM, ERANGE, ESRCH;
         import core.stdc.stdlib : malloc, free, realloc;
 
         /*  Joins a path from a C string to the remainder of path.
@@ -3950,7 +3950,7 @@ string expandTilde(string inputPath) nothrow
                 scope(exit) free(extra_memory);
 
                 passwd result;
-                while (1)
+                loop: while (1)
                 {
                     extra_memory = cast(char*) realloc(extra_memory, extra_memory_size * char.sizeof);
                     if (extra_memory == null)
@@ -3969,10 +3969,23 @@ string expandTilde(string inputPath) nothrow
                         break;
                     }
 
-                    if (errno != ERANGE &&
+                    switch (errno)
+                    {
+                        case ERANGE:
                         // On BSD and OSX, errno can be left at 0 instead of set to ERANGE
-                        errno != 0)
-                        onOutOfMemoryError();
+                        case 0:
+                            break;
+
+                        case ENOENT:
+                        case ESRCH:
+                        case EBADF:
+                        case EPERM:
+                            // The given name or uid was not found.
+                            break loop;
+
+                        default:
+                            onOutOfMemoryError();
+                    }
 
                     // extra_memory isn't large enough
                     import core.checkedint : mulu;
