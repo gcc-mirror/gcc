@@ -3926,95 +3926,28 @@ ipa_sra_analysis (void)
   auto_vec <cgraph_node *, 16> stack;
   int node_scc_count = ipa_reduced_postorder (order, true, NULL);
 
-  /* One sweep from callees to callers for parameter removal and splitting.  */
-  for (int i = 0; i < node_scc_count; i++)
+  /* One sweep from callers to callees for return value removal.  */
+  for (int i = node_scc_count - 1; i >= 0 ; i--)
     {
       cgraph_node *scc_rep = order[i];
       vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (scc_rep);
-      unsigned j;
 
-      /* Preliminary IPA function level checks and first step of parameter
-	 removal.  */
-      cgraph_node *v;
-      FOR_EACH_VEC_ELT (cycle_nodes, j, v)
+      /* Preliminary IPA function level checks.  */
+      for (cgraph_node *v : cycle_nodes)
 	{
 	  isra_func_summary *ifs = func_sums->get (v);
 	  if (!ifs || !ifs->m_candidate)
 	    continue;
 	  if (!ipa_sra_ipa_function_checks (v)
 	      || check_all_callers_for_issues (v))
-	    {
-	      ifs->zap ();
-	      continue;
-	    }
-	  if (disable_unavailable_parameters (v, ifs))
-	    continue;
-	  for (cgraph_edge *cs = v->indirect_calls; cs; cs = cs->next_callee)
-	    process_edge_to_unknown_caller (cs);
-	  for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
-	    if (!ipa_edge_within_scc (cs))
-	      param_removal_cross_scc_edge (cs);
+	    ifs->zap ();
 	}
 
-      /* Look at edges within the current SCC and propagate used-ness across
-	 them, pushing onto the stack all notes which might need to be
-	 revisited.  */
-      FOR_EACH_VEC_ELT (cycle_nodes, j, v)
-	v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
-					       &stack, true);
-
-      /* Keep revisiting and pushing until nothing changes.  */
-      while (!stack.is_empty ())
-	{
-	  cgraph_node *v = stack.pop ();
-	  isra_func_summary *ifs = func_sums->get (v);
-	  gcc_checking_assert (ifs && ifs->m_queued);
-	  ifs->m_queued = false;
-
-	  v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
-						 &stack, true);
-	}
-
-      /* Parameter splitting.  */
-      bool repeat_scc_access_propagation;
-      do
-	{
-	  repeat_scc_access_propagation = false;
-	  FOR_EACH_VEC_ELT (cycle_nodes, j, v)
-	    {
-	      isra_func_summary *ifs = func_sums->get (v);
-	      if (!ifs
-		  || !ifs->m_candidate
-		  || vec_safe_is_empty (ifs->m_parameters))
-		continue;
-	      for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
-		if (param_splitting_across_edge (cs))
-		  repeat_scc_access_propagation = true;
-	    }
-	}
-      while (repeat_scc_access_propagation);
-
-      if (flag_checking)
-	FOR_EACH_VEC_ELT (cycle_nodes, j, v)
-	  verify_splitting_accesses (v, true);
-
-      cycle_nodes.release ();
-    }
-
-  /* One sweep from caller to callees for result removal.  */
-  for (int i = node_scc_count - 1; i >= 0 ; i--)
-    {
-      cgraph_node *scc_rep = order[i];
-      vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (scc_rep);
-      unsigned j;
-
-      cgraph_node *v;
-      FOR_EACH_VEC_ELT (cycle_nodes, j, v)
+      for (cgraph_node *v : cycle_nodes)
 	{
 	  isra_func_summary *ifs = func_sums->get (v);
 	  if (!ifs || !ifs->m_candidate)
 	    continue;
-
 	  bool return_needed
 	    = (ifs->m_returns_value
 	       && (!dbg_cnt (ipa_sra_retvalues)
@@ -4046,6 +3979,72 @@ ipa_sra_analysis (void)
 		  }
 	      }
 	}
+      cycle_nodes.release ();
+    }
+
+  /* One sweep from callees to callers for parameter removal and splitting.  */
+  for (int i = 0; i < node_scc_count; i++)
+    {
+      cgraph_node *scc_rep = order[i];
+      vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (scc_rep);
+
+      /* First step of parameter removal.  */
+      for (cgraph_node *v : cycle_nodes)
+	{
+	  isra_func_summary *ifs = func_sums->get (v);
+	  if (!ifs || !ifs->m_candidate)
+	    continue;
+	  if (disable_unavailable_parameters (v, ifs))
+	    continue;
+	  for (cgraph_edge *cs = v->indirect_calls; cs; cs = cs->next_callee)
+	    process_edge_to_unknown_caller (cs);
+	  for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
+	    if (!ipa_edge_within_scc (cs))
+	      param_removal_cross_scc_edge (cs);
+	}
+
+      /* Look at edges within the current SCC and propagate used-ness across
+	 them, pushing onto the stack all notes which might need to be
+	 revisited.  */
+      for (cgraph_node *v : cycle_nodes)
+	v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
+					       &stack, true);
+
+      /* Keep revisiting and pushing until nothing changes.  */
+      while (!stack.is_empty ())
+	{
+	  cgraph_node *v = stack.pop ();
+	  isra_func_summary *ifs = func_sums->get (v);
+	  gcc_checking_assert (ifs && ifs->m_queued);
+	  ifs->m_queued = false;
+
+	  v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
+						 &stack, true);
+	}
+
+      /* Parameter splitting.  */
+      bool repeat_scc_access_propagation;
+      do
+	{
+	  repeat_scc_access_propagation = false;
+	  for (cgraph_node *v : cycle_nodes)
+	    {
+	      isra_func_summary *ifs = func_sums->get (v);
+	      if (!ifs
+		  || !ifs->m_candidate
+		  || vec_safe_is_empty (ifs->m_parameters))
+		continue;
+	      for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
+		if (param_splitting_across_edge (cs))
+		  repeat_scc_access_propagation = true;
+	    }
+	}
+      while (repeat_scc_access_propagation);
+
+      if (flag_checking)
+	for (cgraph_node *v : cycle_nodes)
+	  verify_splitting_accesses (v, true);
+
       cycle_nodes.release ();
     }
 
