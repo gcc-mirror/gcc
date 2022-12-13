@@ -113,7 +113,7 @@ else version (CRuntime_UClibc)
         ///
         enum int FP_ILOGBNAN      = int.min;
     }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         ///
         enum int FP_ILOGB0        = -int.max;
