@@ -24,6 +24,9 @@
 
 # Use strict warnings for this front end.
 rust-warn = $(STRICT_WARN)
+# ..., with the exception of '-Wunused-parameter'; waiting for
+# <https://github.com/Rust-GCC/gccrs/issues/1626> "bootstrap build failure".
+rust-warn += -Wno-unused-parameter
 
 # Installation name. Useful for cross compilers and used during install.
 GCCRS_INSTALL_NAME := $(shell echo gccrs|sed '$(program_transform_name)')
