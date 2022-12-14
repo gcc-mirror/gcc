@@ -452,7 +452,7 @@ public:
         if (ty)
         {
             writeMangledName(ty.sym);
-            auto dim = e.elements.dim;
+            auto dim = e.elements.length;
             foreach (i; 0..dim)
             {
                 auto elem = (*e.elements)[i];

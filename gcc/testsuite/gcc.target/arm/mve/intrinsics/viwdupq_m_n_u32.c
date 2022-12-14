@@ -5,6 +5,10 @@
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 **foo:
 **	...
@@ -53,5 +57,9 @@ foo2 (uint32x4_t inactive, mve_pred16_t p)
 {
   return viwdupq_m (inactive, 1, 1, 1, p);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */

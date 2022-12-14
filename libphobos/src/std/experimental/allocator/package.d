@@ -27,13 +27,22 @@ $(TR $(TD Global) $(TD
     $(LREF theAllocator)
 ))
 $(TR $(TD Class interface) $(TD
-    $(LREF allocatorObject)
     $(LREF CAllocatorImpl)
+    $(LREF CSharedAllocatorImpl)
     $(LREF IAllocator)
+    $(LREF ISharedAllocator)
+))
+$(TR $(TD Structs) $(TD
+    $(LREF allocatorObject)
+    $(LREF RCIAllocator)
+    $(LREF RCISharedAllocator)
+    $(LREF sharedAllocatorObject)
+    $(LREF ThreadLocal)
 ))
 )
 
 Synopsis:
+$(RUNNABLE_EXAMPLE
 ---
 // Allocate an int, initialize it with 42
 int* p = theAllocator.make!int(42);
@@ -46,7 +55,10 @@ p = processAllocator.make!int(100);
 assert(*p == 100);
 // Destroy and deallocate
 processAllocator.dispose(p);
-
+---
+)
+$(RUNNABLE_EXAMPLE
+---
 // Create an array of 50 doubles initialized to -1.0
 double[] arr = theAllocator.makeArray!double(50, -1.0);
 // Append two zeros to it
@@ -56,6 +68,7 @@ theAllocator.shrinkArray(arr, 2);
 // Destroy and deallocate
 theAllocator.dispose(arr);
 ---
+)
 
 $(H2 Layered Structure)
 

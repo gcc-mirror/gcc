@@ -162,12 +162,12 @@ private
 
     template isEnumStrToStr(S, T)
     {
-        enum isEnumStrToStr = isImplicitlyConvertible!(S, T) &&
+        enum isEnumStrToStr = is(S : T) &&
                               is(S == enum) && isExactSomeString!T;
     }
     template isNullToStr(S, T)
     {
-        enum isNullToStr = isImplicitlyConvertible!(S, T) &&
+        enum isNullToStr = is(S : T) &&
                            (is(immutable S == immutable typeof(null))) && isExactSomeString!T;
     }
 }
@@ -542,7 +542,7 @@ If the source type is implicitly convertible to the target type, $(D
 to) simply performs the implicit conversion.
  */
 private T toImpl(T, S)(S value)
-if (isImplicitlyConvertible!(S, T) &&
+if (is(S : T) &&
     !isEnumStrToStr!(S, T) && !isNullToStr!(S, T))
 {
     template isSignedInt(T)
@@ -699,7 +699,7 @@ if (isStaticArray!S)
 When source type supports member template function opCast, it is used.
 */
 private T toImpl(T, S)(S value)
-if (!isImplicitlyConvertible!(S, T) &&
+if (!is(S : T) &&
     is(typeof(S.init.opCast!T()) : T) &&
     !isExactSomeString!T &&
     !is(typeof(T(value))))
@@ -750,7 +750,7 @@ $(UL $(LI If target type is struct, `T(value)` is used.)
      $(LI If target type is class, $(D new T(value)) is used.))
 */
 private T toImpl(T, S)(S value)
-if (!isImplicitlyConvertible!(S, T) &&
+if (!is(S : T) &&
     is(T == struct) && is(typeof(T(value))))
 {
     return T(value);
@@ -799,7 +799,7 @@ if (!isImplicitlyConvertible!(S, T) &&
 
 /// ditto
 private T toImpl(T, S)(S value)
-if (!isImplicitlyConvertible!(S, T) &&
+if (!is(S : T) &&
     is(T == class) && is(typeof(new T(value))))
 {
     return new T(value);
@@ -872,7 +872,7 @@ Object-to-object conversions by dynamic casting throw exception when the source 
 non-null and the target is null.
  */
 private T toImpl(T, S)(S value)
-if (!isImplicitlyConvertible!(S, T) &&
+if (!is(S : T) &&
     (is(S == class) || is(S == interface)) && !is(typeof(value.opCast!T()) : T) &&
     (is(T == class) || is(T == interface)) && !is(typeof(new T(value))))
 {
@@ -957,7 +957,7 @@ if (!isImplicitlyConvertible!(S, T) &&
         alias tgtmod = AddModifier!m2;
 
         // Compile time convertible equals to modifier convertible.
-        static if (isImplicitlyConvertible!(srcmod!Object, tgtmod!Object))
+        static if (is(srcmod!Object : tgtmod!Object))
         {
             // Test runtime conversions: class to class, class to interface,
             // interface to class, and interface to interface
@@ -993,7 +993,7 @@ if (!isImplicitlyConvertible!(S, T) &&
 Handles type _to string conversions
 */
 private T toImpl(T, S)(S value)
-if (!(isImplicitlyConvertible!(S, T) &&
+if (!(is(S : T) &&
     !isEnumStrToStr!(S, T) && !isNullToStr!(S, T)) &&
     !isInfinite!S && isExactSomeString!T)
 {
@@ -1138,7 +1138,7 @@ if (!(isImplicitlyConvertible!(S, T) &&
     To string conversion for non copy-able structs
  */
 private T toImpl(T, S)(ref S value)
-if (!(isImplicitlyConvertible!(S, T) &&
+if (!(is(S : T) &&
     !isEnumStrToStr!(S, T) && !isNullToStr!(S, T)) &&
     !isInfinite!S && isExactSomeString!T && !isCopyable!S && !isStaticArray!S)
 {
@@ -1528,7 +1528,7 @@ Narrowing numeric-numeric conversions throw when the value does not
 fit in the narrower type.
  */
 private T toImpl(T, S)(S value)
-if (!isImplicitlyConvertible!(S, T) &&
+if (!is(S : T) &&
     (isNumeric!S || isSomeChar!S || isBoolean!S) &&
     (isNumeric!T || isSomeChar!T || isBoolean!T) && !is(T == enum))
 {
@@ -1643,7 +1643,7 @@ Array-to-array conversion (except when target is a string type)
 converts each element in turn by using `to`.
  */
 private T toImpl(T, S)(scope S value)
-if (!isImplicitlyConvertible!(S, T) &&
+if (!is(S : T) &&
     !isSomeString!S && isDynamicArray!S &&
     !isExactSomeString!T && isArray!T)
 {
@@ -1725,7 +1725,7 @@ Associative array to associative array conversion converts each key
 and each value in turn.
  */
 private T toImpl(T, S)(S value)
-if (!isImplicitlyConvertible!(S, T) && isAssociativeArray!S &&
+if (!is(S : T) && isAssociativeArray!S &&
     isAssociativeArray!T && !is(T == enum))
 {
     /* This code is potentially unsafe.

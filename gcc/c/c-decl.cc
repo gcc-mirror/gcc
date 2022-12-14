@@ -11430,6 +11430,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
       else if (specs->thread_p)
 	error ("%qs used with %<auto%>",
 	       specs->thread_gnu_p ? "__thread" : "_Thread_local");
+      else if (specs->constexpr_p)
+	/* auto may only be used with another storage class specifier,
+	   such as constexpr, if the type is inferred.  */
+	error ("%<auto%> used with %<constexpr%>");
       else
 	specs->storage_class = csc_auto;
     }
@@ -12363,6 +12367,10 @@ declspecs_add_scspec (location_t loc,
 	  return specs;
 	}
       n = csc_auto;
+      /* auto may only be used with another storage class specifier,
+	 such as constexpr, if the type is inferred.  */
+      if (specs->constexpr_p)
+	error ("%qE used with %<constexpr%>", scspec);
       break;
     case RID_EXTERN:
       n = csc_extern;
@@ -12393,6 +12401,10 @@ declspecs_add_scspec (location_t loc,
 	error ("%qE used with %<extern%>", scspec);
       else if (specs->storage_class == csc_typedef)
 	error ("%qE used with %<typedef%>", scspec);
+      else if (specs->storage_class == csc_auto)
+	/* auto may only be used with another storage class specifier,
+	   such as constexpr, if the type is inferred.  */
+	error ("%qE used with %<auto%>", scspec);
       else if (specs->thread_p)
 	error ("%qE used with %qs", scspec,
 	       specs->thread_gnu_p ? "__thread" : "_Thread_local");

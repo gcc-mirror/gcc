@@ -1,3 +1,39 @@
+2022-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class known_function): Expand comment.
+	* region-model-impl-calls.cc: Rename to...
+	* kf.cc: ...this.
+	* known-function-manager.h (class known_function_manager): Add
+	leading comment.
+
+2022-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108003
+	* call-summary.cc
+	(call_summary_replay::convert_region_from_summary_1): Convert
+	heap_regs_in_use from auto_sbitmap to auto_bitmap.
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_region_for_heap_alloc):
+	Convert from sbitmap to bitmap.
+	* region-model-manager.h: Likewise.
+	* region-model.cc
+	(region_model::get_or_create_region_for_heap_alloc): Convert from
+	auto_sbitmap to auto_bitmap.
+	(region_model::get_referenced_base_regions): Likewise.
+	* region-model.h: Include "bitmap.h" rather than "sbitmap.h".
+	(region_model::get_referenced_base_regions): Convert from
+	auto_sbitmap to auto_bitmap.
+
+2022-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (class kf_memcpy): Rename to...
+	(class kf_memcpy_memmove): ...this.
+	(kf_memcpy::impl_call_pre): Rename to...
+	(kf_memcpy_memmove::impl_call_pre): ...this, and check the src for
+	poison.
+	(register_known_functions): Update for above renaming, and
+	register BUILT_IN_MEMMOVE and BUILT_IN_MEMMOVE_CHK.
+
 2022-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107882

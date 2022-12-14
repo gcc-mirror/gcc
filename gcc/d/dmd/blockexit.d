@@ -122,7 +122,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
 
         override void visit(CompoundStatement cs)
         {
-            //printf("CompoundStatement.blockExit(%p) %d result = x%X\n", cs, cs.statements.dim, result);
+            //printf("CompoundStatement.blockExit(%p) %d result = x%X\n", cs, cs.statements.length, result);
             result = BE.fallthru;
             Statement slast = null;
             foreach (s; *cs.statements)
@@ -547,7 +547,7 @@ BE checkThrow(ref const Loc loc, Expression exp, const bool mustNotThrow)
     ClassDeclaration cd = t.isClassHandle();
     assert(cd);
 
-    if (cd == ClassDeclaration.errorException || ClassDeclaration.errorException.isBaseOf(cd, null))
+    if (cd.isErrorException())
     {
         return BE.errthrow;
     }

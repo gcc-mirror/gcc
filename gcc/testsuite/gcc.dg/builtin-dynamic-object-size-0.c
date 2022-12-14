@@ -486,7 +486,10 @@ __attribute__ ((noinline))
 test_strdup (const char *in)
 {
   char *res = __builtin_strdup (in);
-  return __builtin_dynamic_object_size (res, 0);
+  size_t sz = __builtin_dynamic_object_size (res, 0);
+
+  __builtin_free (res);
+  return sz;
 }
 
 size_t
@@ -494,7 +497,10 @@ __attribute__ ((noinline))
 test_strndup (const char *in, size_t bound)
 {
   char *res = __builtin_strndup (in, bound);
-  return __builtin_dynamic_object_size (res, 0);
+  size_t sz = __builtin_dynamic_object_size (res, 0);
+
+  __builtin_free (res);
+  return sz;
 }
 
 size_t
@@ -502,7 +508,10 @@ __attribute__ ((noinline))
 test_strdup_min (const char *in)
 {
   char *res = __builtin_strdup (in);
-  return __builtin_dynamic_object_size (res, 2);
+  size_t sz = __builtin_dynamic_object_size (res, 2);
+
+  __builtin_free (res);
+  return sz;
 }
 
 size_t
@@ -510,7 +519,10 @@ __attribute__ ((noinline))
 test_strndup_min (const char *in, size_t bound)
 {
   char *res = __builtin_strndup (in, bound);
-  return __builtin_dynamic_object_size (res, 2);
+  size_t sz = __builtin_dynamic_object_size (res, 2);
+
+  __builtin_free (res);
+  return sz;
 }
 
 /* Other tests.  */

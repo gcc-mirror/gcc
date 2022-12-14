@@ -586,7 +586,7 @@ match_real_constant (gfc_expr **result, int signflag)
 
   if (c == 'q')
     {
-      if (!gfc_notify_std (GFC_STD_GNU, "exponent-letter 'q' in "
+      if (!gfc_notify_std (GFC_STD_GNU, "exponent-letter %<q%> in "
 			   "real-literal-constant at %C"))
 	return MATCH_ERROR;
       else if (warn_real_q_constant)
@@ -2070,8 +2070,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	      && CLASS_DATA (sym)->attr.dimension))
 	{
-	  gfc_error ("Array section designator, e.g. '(:)', is required "
-		     "besides the coarray designator '[...]' at %C");
+	  gfc_error ("Array section designator, e.g. %<(:)%>, is required "
+		     "besides the coarray designator %<[...]%> at %C");
 	  return MATCH_ERROR;
 	}
       if ((sym->ts.type != BT_CLASS && !sym->attr.codimension)

@@ -484,7 +484,7 @@ public:
     {
         buf.writestring("pragma (");
         buf.writestring(s.ident.toString());
-        if (s.args && s.args.dim)
+        if (s.args && s.args.length)
         {
             buf.writestring(", ");
             argsToBuffer(s.args, buf, hgs);
@@ -883,7 +883,7 @@ public:
             buf.printf("%s.", pid.toChars());
         }
         buf.writestring(imp.id.toString());
-        if (imp.names.dim)
+        if (imp.names.length)
         {
             buf.writestring(" : ");
             foreach (const i, const name; imp.names)
@@ -922,13 +922,13 @@ public:
             buf.writenl();
             return;
         }
-        if (d.decl.dim == 0 || (hgs.hdrgen && d.decl.dim == 1 && (*d.decl)[0].isUnitTestDeclaration()))
+        if (d.decl.length == 0 || (hgs.hdrgen && d.decl.length == 1 && (*d.decl)[0].isUnitTestDeclaration()))
         {
             // hack for bugzilla 8081
             if (hasSTC) buf.writeByte(' ');
             buf.writestring("{}");
         }
-        else if (d.decl.dim == 1)
+        else if (d.decl.length == 1)
         {
             if (hasSTC) buf.writeByte(' ');
             (*d.decl)[0].accept(this);
@@ -993,9 +993,9 @@ public:
     {
         visibilityToBuffer(buf, d.visibility);
         AttribDeclaration ad = cast(AttribDeclaration)d;
-        if (ad.decl.dim <= 1)
+        if (ad.decl.length <= 1)
             buf.writeByte(' ');
-        if (ad.decl.dim == 1 && (*ad.decl)[0].isVisibilityDeclaration)
+        if (ad.decl.length == 1 && (*ad.decl)[0].isVisibilityDeclaration)
             visit(cast(AttribDeclaration)(*ad.decl)[0]);
         else
             visit(cast(AttribDeclaration)d);
@@ -1011,7 +1011,7 @@ public:
                     buf.writeByte(' ');
                 buf.printf("align (%s)", exp.toChars());
             }
-            if (d.decl && d.decl.dim < 2)
+            if (d.decl && d.decl.length < 2)
                 buf.writeByte(' ');
         }
         else
@@ -1041,7 +1041,7 @@ public:
     {
         buf.writestring("pragma (");
         buf.writestring(d.ident.toString());
-        if (d.args && d.args.dim)
+        if (d.args && d.args.length)
         {
             buf.writestring(", ");
             argsToBuffer(d.args, buf, hgs);
@@ -1210,7 +1210,7 @@ public:
 
     bool visitEponymousMember(TemplateDeclaration d)
     {
-        if (!d.members || d.members.dim != 1)
+        if (!d.members || d.members.length != 1)
             return false;
         Dsymbol onemember = (*d.members)[0];
         if (onemember.ident != d.ident)
@@ -1286,7 +1286,7 @@ public:
 
     void visitTemplateParameters(TemplateParameters* parameters)
     {
-        if (!parameters || !parameters.dim)
+        if (!parameters || !parameters.length)
             return;
         foreach (i, p; *parameters)
         {
@@ -1437,7 +1437,7 @@ public:
 
     void visitBaseClasses(ClassDeclaration d)
     {
-        if (!d || !d.baseclasses.dim)
+        if (!d || !d.baseclasses.length)
             return;
         if (!d.isAnonymous())
             buf.writestring(" : ");
@@ -1722,7 +1722,7 @@ public:
         Statement s1;
         if (f.semanticRun >= PASS.semantic3done && cs)
         {
-            s1 = (*cs.statements)[cs.statements.dim - 1];
+            s1 = (*cs.statements)[cs.statements.length - 1];
         }
         else
             s1 = !cs ? f.fbody : null;
@@ -2130,7 +2130,7 @@ private void expressionPrettyPrint(Expression e, OutBuffer* buf, HdrGenState* hg
         }
         buf.writestring("new ");
         typeToBuffer(e.newtype, null, buf, hgs);
-        if (e.arguments && e.arguments.dim)
+        if (e.arguments && e.arguments.length)
         {
             buf.writeByte('(');
             argsToBuffer(e.arguments, buf, hgs);
@@ -2147,7 +2147,7 @@ private void expressionPrettyPrint(Expression e, OutBuffer* buf, HdrGenState* hg
         }
         buf.writestring("new");
         buf.writestring(" class ");
-        if (e.arguments && e.arguments.dim)
+        if (e.arguments && e.arguments.length)
         {
             buf.writeByte('(');
             argsToBuffer(e.arguments, buf, hgs);
@@ -2271,7 +2271,7 @@ private void expressionPrettyPrint(Expression e, OutBuffer* buf, HdrGenState* hg
                 buf.writestring(" == ");
             typeToBuffer(e.tspec, null, buf, hgs);
         }
-        if (e.parameters && e.parameters.dim)
+        if (e.parameters && e.parameters.length)
         {
             buf.writestring(", ");
             scope v = new DsymbolPrettyPrintVisitor(buf, hgs);
@@ -3100,7 +3100,7 @@ void toCBuffer(const Expression e, OutBuffer* buf, HdrGenState* hgs)
  */
 void argExpTypesToCBuffer(OutBuffer* buf, Expressions* arguments)
 {
-    if (!arguments || !arguments.dim)
+    if (!arguments || !arguments.length)
         return;
     HdrGenState hgs;
     foreach (i, arg; *arguments)
@@ -3119,7 +3119,7 @@ void toCBuffer(const TemplateParameter tp, OutBuffer* buf, HdrGenState* hgs)
 
 void arrayObjectsToBuffer(OutBuffer* buf, Objects* objects)
 {
-    if (!objects || !objects.dim)
+    if (!objects || !objects.length)
         return;
     HdrGenState hgs;
     foreach (i, o; *objects)
@@ -3160,7 +3160,7 @@ const(char)* parameterToChars(Parameter parameter, TypeFunction tf, bool fullQua
 
     parameterToBuffer(parameter, &buf, &hgs);
 
-    if (tf.parameterList.varargs == VarArg.typesafe && parameter == tf.parameterList[tf.parameterList.parameters.dim - 1])
+    if (tf.parameterList.varargs == VarArg.typesafe && parameter == tf.parameterList[tf.parameterList.parameters.length - 1])
     {
         buf.writestring("...");
     }
@@ -3219,7 +3219,7 @@ private void parameterToBuffer(Parameter p, OutBuffer* buf, HdrGenState* hgs)
     {
         buf.writeByte('@');
 
-        bool isAnonymous = p.userAttribDecl.atts.dim > 0 && !(*p.userAttribDecl.atts)[0].isCallExp();
+        bool isAnonymous = p.userAttribDecl.atts.length > 0 && !(*p.userAttribDecl.atts)[0].isCallExp();
         if (isAnonymous)
             buf.writeByte('(');
 
@@ -3281,7 +3281,7 @@ private void parameterToBuffer(Parameter p, OutBuffer* buf, HdrGenState* hgs)
  */
 private void argsToBuffer(Expressions* expressions, OutBuffer* buf, HdrGenState* hgs, Expression basis = null)
 {
-    if (!expressions || !expressions.dim)
+    if (!expressions || !expressions.length)
         return;
     version (all)
     {
@@ -3298,11 +3298,11 @@ private void argsToBuffer(Expressions* expressions, OutBuffer* buf, HdrGenState*
     else
     {
         // Sparse style formatting, for debug use only
-        //      [0..dim: basis, 1: e1, 5: e5]
+        //      [0..length: basis, 1: e1, 5: e5]
         if (basis)
         {
             buf.writestring("0..");
-            buf.print(expressions.dim);
+            buf.print(expressions.length);
             buf.writestring(": ");
             expToBuffer(basis, PREC.assign, buf, hgs);
         }
@@ -3483,12 +3483,12 @@ private void tiargsToBuffer(TemplateInstance ti, OutBuffer* buf, HdrGenState* hg
         buf.writestring("()");
         return;
     }
-    if (ti.tiargs.dim == 1)
+    if (ti.tiargs.length == 1)
     {
         RootObject oarg = (*ti.tiargs)[0];
         if (Type t = isType(oarg))
         {
-            if (t.equals(Type.tstring) || t.equals(Type.twstring) || t.equals(Type.tdstring) || t.mod == 0 && (t.isTypeBasic() || t.ty == Tident && (cast(TypeIdentifier)t).idents.dim == 0))
+            if (t.equals(Type.tstring) || t.equals(Type.twstring) || t.equals(Type.tdstring) || t.mod == 0 && (t.isTypeBasic() || t.ty == Tident && (cast(TypeIdentifier)t).idents.length == 0))
             {
                 buf.writestring(t.toChars());
                 return;

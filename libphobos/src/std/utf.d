@@ -66,7 +66,7 @@ import std.exception : basicExceptionCtors;
 import core.exception : UnicodeException;
 import std.meta : AliasSeq;
 import std.range;
-import std.traits : isAutodecodableString, isConvertibleToString, isPointer,
+import std.traits : isAutodecodableString, isConvertibleToString,
     isSomeChar, isSomeString, isStaticArray, Unqual;
 import std.typecons : Flag, Yes, No;
 
@@ -3136,7 +3136,7 @@ private T toUTFImpl(T, S)(scope S s)
     collection cycle and cause a nasty bug when the C code tries to use it.
   +/
 template toUTFz(P)
-if (isPointer!P && isSomeChar!(typeof(*P.init)))
+if (is(P : C*, C) && isSomeChar!C)
 {
     P toUTFz(S)(S str) @safe pure
     if (isSomeString!S)

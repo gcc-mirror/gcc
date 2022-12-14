@@ -396,6 +396,26 @@ void utf_encode(int sz, void* s, dchar c)
 }
 
 /********************************************
+ * Checks whether an Unicode code point is a bidirectional
+ * control character.
+ */
+@safe bool isBidiControl(dchar c)
+{
+    // Source: https://www.unicode.org/versions/Unicode15.0.0, table 23-3.
+    switch(c)
+    {
+        case '\u061C':
+        case '\u200E':
+        case '\u200F':
+        case '\u202A': .. case '\u202E':
+        case '\u2066': .. case '\u2069':
+            return true;
+        default:
+            return false;
+    }
+}
+
+/********************************************
  * Decode a UTF-8 sequence as a single UTF-32 code point.
  * Params:
  *      s = UTF-8 sequence

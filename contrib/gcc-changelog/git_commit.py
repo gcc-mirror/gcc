@@ -41,9 +41,11 @@ default_changelog_locations = {
     'gcc/go',
     'gcc/jit',
     'gcc/lto',
+    'gcc/m2',
     'gcc/objc',
     'gcc/objcp',
     'gcc/po',
+    'gcc/rust',
     'gcc/testsuite',
     'gnattools',
     'gotools',
@@ -62,6 +64,7 @@ default_changelog_locations = {
     'libgcc/config/avr/libf7',
     'libgcc/config/libbid',
     'libgfortran',
+    'libgm2',
     'libgomp',
     'libhsail-rt',
     'libiberty',
@@ -120,6 +123,7 @@ bug_components = {
     'preprocessor',
     'regression',
     'rtl-optimization',
+    'rust',
     'sanitizer',
     'spam',
     'target',
@@ -714,11 +718,12 @@ class GitCommit:
                         if not prs:
                             # if all ChangeLog entries have identical PRs
                             # then use them
-                            prs = self.changelog_entries[0].prs
-                            for entry in self.changelog_entries:
-                                if entry.prs != prs:
-                                    prs = []
-                                    break
+                            if self.changelog_entries:
+                                prs = self.changelog_entries[0].prs
+                                for entry in self.changelog_entries:
+                                    if entry.prs != prs:
+                                        prs = []
+                                        break
                         entry = ChangeLogEntry(changelog_location,
                                                self.top_level_authors,
                                                prs)

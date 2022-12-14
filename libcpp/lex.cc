@@ -2135,8 +2135,14 @@ maybe_va_opt_error (cpp_reader *pfile)
       /* __VA_OPT__ should not be accepted at all, but allow it in
 	 system headers.  */
       if (!_cpp_in_system_header (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "__VA_OPT__ is not available until C++20");
+	{
+	  if (CPP_OPTION (pfile, cplusplus))
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "__VA_OPT__ is not available until C++20");
+	  else
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "__VA_OPT__ is not available until C2X");
+	}
     }
   else if (!pfile->state.va_args_ok)
     {

@@ -2214,6 +2214,22 @@ is_std_construct_at (const constexpr_call *call)
 	  && is_std_construct_at (call->fundef->decl));
 }
 
+/* True if CTX is an instance of std::allocator.  */
+
+bool
+is_std_allocator (tree ctx)
+{
+  if (ctx == NULL_TREE || !CLASS_TYPE_P (ctx) || !TYPE_MAIN_DECL (ctx))
+    return false;
+
+  tree decl = TYPE_MAIN_DECL (ctx);
+  tree name = DECL_NAME (decl);
+  if (name == NULL_TREE || !id_equal (name, "allocator"))
+    return false;
+
+  return decl_in_std_namespace_p (decl);
+}
+
 /* Return true if FNDECL is std::allocator<T>::{,de}allocate.  */
 
 static inline bool
@@ -2224,16 +2240,7 @@ is_std_allocator_allocate (tree fndecl)
       || !(id_equal (name, "allocate") || id_equal (name, "deallocate")))
     return false;
 
-  tree ctx = DECL_CONTEXT (fndecl);
-  if (ctx == NULL_TREE || !CLASS_TYPE_P (ctx) || !TYPE_MAIN_DECL (ctx))
-    return false;
-
-  tree decl = TYPE_MAIN_DECL (ctx);
-  name = DECL_NAME (decl);
-  if (name == NULL_TREE || !id_equal (name, "allocator"))
-    return false;
-
-  return decl_in_std_namespace_p (decl);
+  return is_std_allocator (DECL_CONTEXT (fndecl));
 }
 
 /* Overload for the above taking constexpr_call*.  */
@@ -8474,7 +8481,8 @@ fold_simple (tree t)
 static GTY((deletable)) hash_map<tree, tree> *cv_cache;
 
 tree
-maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
+maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
+		      bool manifestly_const_eval /* = false */)
 {
   tree r;
 

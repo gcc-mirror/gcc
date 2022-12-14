@@ -2033,6 +2033,9 @@ ix86_option_override_internal (bool main_args_p,
   if (TARGET_UINTR && !TARGET_64BIT)
     error ("%<-muintr%> not supported for 32-bit code");
 
+  if (ix86_lam_type && !TARGET_LP64)
+    error ("%<-mlam=%> option: [u48|u57] not supported for 32-bit code");
+
   if (!opts->x_ix86_arch_string)
     opts->x_ix86_arch_string
       = TARGET_64BIT_P (opts->x_ix86_isa_flags)

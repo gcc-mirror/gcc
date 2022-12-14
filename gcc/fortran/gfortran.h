@@ -1349,6 +1349,7 @@ typedef struct gfc_omp_namelist
       gfc_omp_reduction_op reduction_op;
       gfc_omp_depend_doacross_op depend_doacross_op;
       gfc_omp_map_op map_op;
+      gfc_expr *align;
       struct
 	{
 	  ENUM_BITFIELD (gfc_omp_linear_op) op:4;
@@ -3572,7 +3573,7 @@ void gfc_free_iterator (gfc_iterator *, int);
 void gfc_free_forall_iterator (gfc_forall_iterator *);
 void gfc_free_alloc_list (gfc_alloc *);
 void gfc_free_namelist (gfc_namelist *);
-void gfc_free_omp_namelist (gfc_omp_namelist *, bool);
+void gfc_free_omp_namelist (gfc_omp_namelist *, bool, bool);
 void gfc_free_equiv (gfc_equiv *);
 void gfc_free_equiv_until (gfc_equiv *, gfc_equiv *);
 void gfc_free_data (gfc_data *);

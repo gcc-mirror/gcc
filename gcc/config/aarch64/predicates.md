@@ -146,7 +146,7 @@
 
 (define_predicate "aarch64_pluslong_immediate"
   (and (match_code "const_int")
-       (match_test "(INTVAL (op) < 0xffffff && INTVAL (op) > -0xffffff)")))
+       (match_test "IN_RANGE (INTVAL (op), -0xffffff, 0xffffff)")))
 
 (define_predicate "aarch64_sminmax_immediate"
   (and (match_code "const_int")

@@ -1,3 +1,8 @@
+2022-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (declspecs_add_type, declspecs_add_scspec): Check for
+	auto, constexpr and a type used together.
+
 2022-12-06  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-decl.cc (is_flexible_array_member_p): Call new function

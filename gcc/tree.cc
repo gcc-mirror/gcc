@@ -12014,6 +12014,18 @@ strip_invariant_refs (const_tree op)
   return op;
 }
 
+/* Strip handled components with zero offset from OP.  */
+
+tree
+strip_zero_offset_components (tree op)
+{
+  while (TREE_CODE (op) == COMPONENT_REF
+	 && integer_zerop (DECL_FIELD_OFFSET (TREE_OPERAND (op, 1)))
+	 && integer_zerop (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (op, 1))))
+    op = TREE_OPERAND (op, 0);
+  return op;
+}
+
 static GTY(()) tree gcc_eh_personality_decl;
 
 /* Return the GCC personality function decl.  */

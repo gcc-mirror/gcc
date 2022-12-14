@@ -1,3 +1,9 @@
+2022-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* init.cc (lang_defaults): Enable va_opt for STDC2X.
+	* lex.cc (maybe_va_opt_error): Adjust diagnostic message for C.
+	* macro.cc (_cpp_arguments_ok): Update comment.
+
 2022-11-23  Marek Polacek  <polacek@redhat.com>
 
 	Revert:

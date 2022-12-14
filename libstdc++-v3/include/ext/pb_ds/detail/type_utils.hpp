@@ -152,7 +152,8 @@ namespace __gnu_pbds
     };
 
 #define PB_DS_STATIC_ASSERT(UNIQUE, E)  \
-    typedef __gnu_pbds::detail::__static_assert_dumclass<sizeof(__gnu_pbds::detail::__static_assert<bool(E)>)> UNIQUE##__static_assert_type
+    typedef __gnu_pbds::detail::__static_assert_dumclass<sizeof(__gnu_pbds::detail::__static_assert<bool(E)>)> \
+      UNIQUE##__static_assert_type __attribute__((__unused__))
 
 #endif
 

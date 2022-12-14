@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "i386-options.h"
 #include "i386-builtins.h"
 #include "i386-expand.h"
+#include "asan.h"
 
 /* Split one or more double-mode RTL references into pairs of half-mode
    references.  The RTL can be REG, offsettable MEM, integer constant, or
@@ -9463,6 +9464,17 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     {
       fnaddr = convert_to_mode (word_mode, XEXP (fnaddr, 0), 1);
       fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (word_mode, fnaddr));
+    }
+
+  /* PR100665: Hwasan may tag code pointer which is not supported by LAM,
+     mask off code pointers here.
+     TODO: also need to handle indirect jump.  */
+  if (ix86_memtag_can_tag_addresses () && !fndecl
+      && sanitize_flags_p (SANITIZE_HWADDRESS))
+    {
+      rtx untagged_addr = ix86_memtag_untagged_pointer (XEXP (fnaddr, 0),
+							NULL_RTX);
+      fnaddr = gen_rtx_MEM (QImode, untagged_addr);
     }
 
   call = gen_rtx_CALL (VOIDmode, fnaddr, callarg1);

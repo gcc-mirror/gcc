@@ -4816,7 +4816,13 @@ final class CParser(AST) : Parser!AST
         else if (auto tt = t.isTypeTag())
             tt.mod |= MODFlags.const_;
         else
-            t = t.addSTC(STC.const_);
+        {
+            /* Ignore const if the result would be const pointer to mutable
+             */
+            auto tn = t.nextOf();
+            if (!tn || tn.isConst())
+                t = t.addSTC(STC.const_);
+        }
         return t;
     }
 

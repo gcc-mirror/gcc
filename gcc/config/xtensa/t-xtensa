@@ -16,5 +16,11 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TM_H += $(srcdir)/../include/xtensa-config.h
+TM_H += $(srcdir)/../include/xtensa-config.h \
+	$(srcdir)/../include/xtensa-dynconfig.h
 $(out_object_file): gt-xtensa.h
+
+xtensa-dynconfig.o: $(srcdir)/config/xtensa/xtensa-dynconfig.c \
+  $(CONFIG_H) $(SYSTEM_H) $(srcdir)/../include/xtensa-dynconfig.h \
+  $(srcdir)/../include/xtensa-config.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $<

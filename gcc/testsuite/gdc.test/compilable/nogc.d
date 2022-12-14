@@ -40,7 +40,8 @@ void foo_compiles() {}
     static assert(!__traits(compiles, delete p));
 
     int[int] aa;
-    static assert(!__traits(compiles, aa[0]));
+    static assert( __traits(compiles, aa[0]));
+    static assert(!__traits(compiles, (aa[0] = 10)));
 
     int[] a;
     static assert(!__traits(compiles, a.length = 1));

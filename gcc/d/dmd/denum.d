@@ -88,7 +88,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         version (none)
         {
             printf("EnumDeclaration::addMember() %s\n", toChars());
-            for (size_t i = 0; i < members.dim; i++)
+            for (size_t i = 0; i < members.length; i++)
             {
                 EnumMember em = (*members)[i].isEnumMember();
                 printf("    member %s\n", em.toChars());
@@ -191,7 +191,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
             return handleErrors();
         }
 
-        foreach (const i; 0 .. members.dim)
+        foreach (const i; 0 .. members.length)
         {
             EnumMember em = (*members)[i].isEnumMember();
             if (em)

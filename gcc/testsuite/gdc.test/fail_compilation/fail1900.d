@@ -30,7 +30,9 @@ void test1900a()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail1900.d(42): Error: template `imports.fail1900b.Bar(short n)` at fail_compilation/imports/fail1900b.d(2) conflicts with template `imports.fail1900a.Bar(int n)` at fail_compilation/imports/fail1900a.d(2)
+fail_compilation/fail1900.d(44): Error: `Bar` matches conflicting symbols:
+fail_compilation/imports/fail1900b.d(2):        template `imports.fail1900b.Bar(short n)`
+fail_compilation/imports/fail1900a.d(2):        template `imports.fail1900a.Bar(int n)`
 ---
 */
 
@@ -45,7 +47,9 @@ void test1900b()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail1900.d(66): Error: template `fail1900.Mix2b!().Baz(int x)` at fail_compilation/fail1900.d(58) conflicts with template `fail1900.Mix2a!().Baz(byte x)` at fail_compilation/fail1900.d(54)
+fail_compilation/fail1900.d(70): Error: `Baz` matches conflicting symbols:
+fail_compilation/fail1900.d(62):        template `fail1900.Mix2b!().Baz(int x)`
+fail_compilation/fail1900.d(58):        template `fail1900.Mix2a!().Baz(byte x)`
 ---
 */
 

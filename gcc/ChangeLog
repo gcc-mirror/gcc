@@ -1,3 +1,510 @@
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::modify_expression): Bail out early if
+	there are no replacements.
+	(ipa_param_body_adjustments::modify_assignment): Likewise.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.cc (isra_param_desc): New fields safe_size,
+	conditionally_dereferenceable and safe_size_set.
+	(struct gensum_param_desc): New field conditionally_dereferenceable.
+	(struct isra_param_flow): Updated comment of field unit_size.
+	(ipa_sra_function_summaries::duplicate): Copy the new fields.
+	(isra_call_summary::dump): Dump unit_size when representing safe_size.
+	(dump_gensum_param_descriptor): Dump new flag.
+	(dump_isra_param_descriptor): Dump new fields.
+	(isra_analyze_call): Fill unit_size when it represents known safe
+	size.
+	(check_gensum_access): Instead of disqualifying pointers which are not
+	always dereference, mark them as conditionally dereferencable if loads
+	are frequent enough.
+	(process_scan_results): Copy the conditionally_dereferenceable flag.
+	(isra_write_node_summary): Stream new fields, or assert they are not
+	initialized yet.
+	(isra_read_node_info): Stream new fields.
+	(update_safe_size): New function.
+	(propagate_param_hints_accross_call): Propagate safe_sizes.
+	(propagate_hints_to_all_callees): New function.
+	(adjust_parameter_descriptions): Check conditionally_dereferenceable
+	candidates, rework dumping.
+	(ipa_sra_analysis): Move most of hint propagation for one node to
+	propagate_hints_to_all_callees.  Add another loop to stabilize within
+	SCCs and another one to verify.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.cc (isra_param_desc): New field not_specially_constructed.
+	(struct isra_param_flow): New field constructed_for_calls.
+	(isra_call_summary::dump): Dump the new flag.
+	(loaded_decls): New variable.
+	(dump_isra_param_descriptor): New parameter hints, dump
+	not_specially_constructed if it is true.
+	(dump_isra_param_descriptors): New parameter hints, pass it to
+	dump_isra_param_descriptor.
+	(ipa_sra_function_summaries::duplicate): Duplicate new flag.
+	(create_parameter_descriptors): Adjust comment.
+	(get_gensum_param_desc): Bail out when decl2desc is NULL.
+	(scan_expr_access): Add loaded local variables to loaded_decls.
+	(scan_function): Survive if final_bbs is NULL.
+	(isra_analyze_call): Compute constructed_for_calls flag.
+	(process_scan_results): Be optimistic about size limits.  Do not dump
+	computed param hints when dumpint IPA-SRA structures.
+	(isra_write_edge_summary): Stream constructed_for_calls.
+	(isra_read_edge_summary): Likewise.
+	(ipa_sra_dump_all_summaries): New parameter hints, pass it to
+	dump_isra_param_descriptor.
+	(flip_all_hints_pessimistic): New function.
+	(flip_all_param_hints_pessimistic): Likewise.
+	(propagate_param_hints): Likewise.
+	(disable_unavailable_parameters): Renamed to
+	adjust_parameter_descriptions.  Expand size limits for parameters
+	which are specially contstructed by all callers.  Check limits again.p
+	(ipa_sra_analysis): Pass required hints to ipa_sra_dump_all_summaries.
+	Add hint propagation.
+	(ipa_sra_summarize_function): Initialize and destory loaded_decls,
+	rearrange so that scan_function is called even when there are no
+	candidates.
+	* params.opt (ipa-sra-ptrwrap-growth-factor): New parameter.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.cc (ipa_sra_analysis): Move top-down analysis before
+	bottom-up analysis.  Replace FOR_EACH_VEC_ELT with C++11 iteration.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103585
+	* params.opt (ipa-sra-deref-prob-threshold): New parameter.
+	* doc/invoke.texi (ipa-sra-deref-prob-threshold): Document it.
+	* ipa-sra.cc (struct gensum_param_access): New field load_count.
+	(struct gensum_param_desc): New field safe_ref, adjusted comments.
+	(by_ref_count): Renamed to unsafe_by_ref_count, adjusted all uses.
+	(dump_gensum_access): Dump the new field.
+	(dump_gensum_param_descriptor): Likewise.
+	(create_parameter_descriptors): Set safe_ref field, move setting
+	by_ref forward.  Only increment unsafe_by_ref_count for unsafe
+	by_ref parameters.
+	(allocate_access): Initialize new field.
+	(mark_param_dereference): Adjust indentation.  Only add data to
+	bb_dereferences for unsafe by_ref parameters.
+	(scan_expr_access): For loads, accumulate BB counts.
+	(dereference_probable_p): New function.
+	(check_gensum_access): Fix leading comment, add parameter FUN.
+	Check cumulative counts of loads for safe by_ref accesses instead
+	of dereferences.
+	(process_scan_results): Do not propagate dereference distances for
+	safe by_ref parameters.  Pass fun to check_gensum_access.  Safe
+	by_ref params do not need the postdominance check.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.cc (clone_for_param_removal_p): New function.
+	(estimate_local_effects): Call it before considering cloning
+	just to remove unused parameters.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103227
+	* ipa-param-manipulation.h (class ipa_param_adjustments): Removed
+	member function get_updated_index_or_split.
+	(class ipa_param_body_adjustments): New overload of
+	register_replacement, new member function append_init_stmts, new
+	member m_split_agg_csts_inits.
+	* ipa-param-manipulation.cc: Include ipa-prop.h.
+	(ipa_param_adjustments::get_updated_index_or_split): Removed.
+	(ipa_param_body_adjustments::register_replacement): New overload, use
+	it from the older one.
+	(ipa_param_body_adjustments::common_initialization): Added the
+	capability to create replacements for conflicting IPA-CP discovered
+	constants.
+	(ipa_param_body_adjustments::ipa_param_body_adjustments): Construct
+	the new member.
+	(ipa_param_body_adjustments::append_init_stmts): New function.
+	* ipa-sra.cc: Include ipa-prop.h.
+	(push_param_adjustments_for_index): Require IPA-CP transformation
+	summary as a parameter, do not create replacements which are known to
+	have constant values.
+	(process_isra_node_results): Find and pass to the above function the
+	IPA-CP transformation summary.
+	* ipa-prop.cc (adjust_agg_replacement_values): Remove the
+	functionality replacing IPA-SRA created scalar parameters with
+	constants.  Simplify, do not require parameter descriptors, do not
+	return anything.
+	(ipcp_transform_function): Simplify now that
+	adjust_agg_replacement_values does not change cfg.  Move definition
+	and initialization of descriptors lower.
+	* tree-inline.cc (tree_function_versioning): Call append_init_stmts of
+	param_body_adjs, if there are any.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.cc (useful_ipcp_transformation_info_p): New function.
+	(write_ipcp_transformation_info): Added a parameter, simplified
+	given that is known not to be NULL.
+	(ipcp_write_transformation_summaries): Write out all useful
+	transformation summaries.
+	(read_ipcp_transformation_info): Simplify given that some info
+	will be read.
+	(read_replacements_section): Remove assert.
+	* lto-cgraph.cc (add_node_to): Also set encode_body for clones.
+	* lto-streamer-out.cc (lto_output): Do not output virtual clones.
+
+2022-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108044
+	* config/i386/i386.md (*concat<half><mode>3_5, *concat<mode><dwi>3_6,
+	*concat<mode><dwi>3_7): Split alternative with =ro output constraint
+	into =r,o,o and use Wd input constraint for the last alternative which
+	is enabled for TARGET_64BIT.  Reject ix86_endbr_immediate_operand
+	in the input constant.
+
+2022-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md (tbranch_<code><mode>3): Use gen_int_mode.
+
+2022-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108064
+	* tree-vect-patterns.cc (vect_recog_rotate_pattern): Pass uvectype
+	as 4th argument to append_pattern_def_seq for statements with lhs
+	with utype type.
+
+2022-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105801
+	* tree-ssa-ccp.cc (likely_value): .DEFERRED_INIT produces
+	UNDEFINED.
+	* doc/invoke.texi (ftrivial-auto-var-init): Explicitely
+	mention we treat variables without an initializer as
+	undefined also for optimization purposes.
+
+2022-12-13  Tom Tromey  <tom@tromey.com>
+	    Mark Wielaard  <mark@klomp.org>
+	    Marc Poulhiès  <dkm@kataplop.net>
+
+	* dwarf2out.cc (is_rust): New.
+	(base_type_die): Use DW_ATE_UTF for the Rust 'char' type.
+	(gen_compile_unit_die): Handle "GNU Rust".
+
+2022-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108076
+	* tree-if-conv.cc (if_convertible_loop_p_1): Reject blocks
+	with non-local or forced labels that we later remove
+	labels from.
+
+2022-12-13  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (cbranchcc4): New expander.
+
+2022-12-13  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* optabs.cc (prepare_cmp_insn): Return a NULL rtx other than
+	assertion failure when targets don't have cbranch optab or
+	predicate check fails.
+
+2022-12-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs): Add correct costs
+	for 24-bit and 12-bit shifted immediate add/sub.
+	(TARGET_CONST_ANCHOR): Define.
+	* config/aarch64/predicates.md (aarch64_pluslong_immediate):
+	Fix range check.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* match.pd: Add new rule.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_can_change_mode_class): Restrict
+	conversions between partial struct types properly.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md (*tb<optab><mode>1): Rename to...
+	(*tb<optab><ALLI:mode><GPI:mode>1): ... this.
+	(tbranch_<code><mode>4): New.
+	* config/aarch64/iterators.md(ZEROM, zerom): New.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* dojump.cc (do_jump): Pass along value.
+	(do_jump_by_parts_greater_rtx): Likewise.
+	(do_jump_by_parts_zero_rtx): Likewise.
+	(do_jump_by_parts_equality_rtx): Likewise.
+	(do_compare_rtx_and_jump): Likewise.
+	(do_compare_and_jump): Likewise.
+	* dojump.h (do_compare_rtx_and_jump): New.
+	* optabs.cc (emit_cmp_and_jump_insn_1): Refactor to take optab to check.
+	(validate_test_and_branch): New.
+	(emit_cmp_and_jump_insns): Optiobally take a value, and when value is
+	supplied then check if it's suitable for tbranch.
+	* optabs.def (tbranch_eq$a4, tbranch_ne$a4): New.
+	* doc/md.texi (tbranch_@var{op}@var{mode}4): Document it.
+	* optabs.h (emit_cmp_and_jump_insns): New.
+	* tree.h (tree_zero_one_valued_p): New.
+
+2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_movv2hf): New.
+	(mov<mode>, movmisalign<mode>, aarch64_dup_lane<mode>,
+	aarch64_store_lane0<mode>, aarch64_simd_vec_set<mode>,
+	@aarch64_simd_vec_copy_lane<mode>, vec_set<mode>,
+	reduc_<optab>_scal_<mode>, reduc_<fmaxmin>_scal_<mode>,
+	aarch64_reduc_<optab>_internal<mode>, aarch64_get_lane<mode>,
+	vec_init<mode><Vel>, vec_extract<mode><Vel>): Support V2HF.
+	(aarch64_simd_dupv2hf): New.
+	* config/aarch64/aarch64.cc (aarch64_classify_vector_mode):
+	Add E_V2HFmode.
+	* config/aarch64/iterators.md (VHSDF_P): New.
+	(V2F, VMOVE, nunits, Vtype, Vmtype, Vetype, stype, VEL,
+	Vel, q, vp): Add V2HF.
+	* config/arm/types.md (neon_fp_reduc_add_h): New.
+
+2022-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_PAUTH and __ARM_FEATURE_BTI when appropriate.
+	* config/aarch64/aarch64.h (TARGET_BTI): Define.
+
+2022-12-12  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.cc (dt_simplify::gen): Revert last change.
+	* match.pd: Revert simplification of CONSTUCTOR leaf handling.
+	(&x cmp SSA_NAME): Handle ADDR_EXPR in SSA defs.
+	* fold-const.cc (split_address_to_core_and_offset): Handle
+	ADDR_EXPRs in SSA defs.
+	(address_compare): Likewise.
+
+2022-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89317
+	* tree-ssa-ccp.cc (ccp_fold): Handle GIMPLE_COND via
+	gimple_fold_stmt_to_constant_1.
+	* match.pd (&a != &a + c): Apply to pointer_plus with non-ADDR_EXPR
+	base as well.
+
+2022-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89317
+	* match.pd ((p + b) - &p->c -> b - offsetof(c)): New patterns.
+
+2022-12-11  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.cc (dt_node::gen_kids): Handle ADDR_EXPR in both
+	the GENERIC and GIMPLE op position.
+	(dt_simplify::gen): Capture both GENERIC and GIMPLE op
+	position for ADDR_EXPR and CONSTRUCTOR.
+	* match.pd: Simplify CONSTRUCTOR leaf handling.
+
+2022-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106904
+	* tree.h (strip_zero_offset_components): Declare.
+	* tree.cc (strip_zero_offset_components): Define.
+	* tree-vect-data-refs.cc (vect_create_addr_base_for_vector_ref):
+	Strip zero offset components before building the address.
+
+2022-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107997
+	* tree-ssa-loop-ivopts.cc: Include cfganal.h.
+	(create_new_iv) <case IP_END>: If ip_end_pos bb is non-empty and ends
+	with a stmt which ends bb, instead of adding iv update after it split
+	the latch edge and insert iterator into the new latch bb.
+
+2022-12-09  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_set_const): Remove copy_rtx.
+	(rs6000_emit_set_long_const): Likewise.
+
+2022-12-09  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-builtins.cc (fold_builtin_cpu): Use same path
+	as for PR103661.
+	* doc/extend.texi: Fix "x86-64" use.
+
+2022-12-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (SUBTARGET_CC1_SPEC): Rename to...
+	(OS_CC1_SPEC): ...this.
+	* gcc.cc (SUBTARGET_CC1_SPEC): Rename to...
+	(OS_CC1_SPEC): ...this.
+
+2022-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Update for renaming of
+	analyzer/region-model-impl-calls.cc to analyzer/kf.cc.
+
+2022-12-09  liuhongt  <hongtao.liu@intel.com>
+
+	* doc/invoke.texi (x86 options): Document
+	-mlam={none,u48,u57}.
+	* config/i386/i386-opts.h (enum lam_type): New enum.
+	* config/i386/i386.cc (ix86_memtag_can_tag_addresses): New.
+	(ix86_memtag_set_tag): Ditto.
+	(ix86_memtag_extract_tag): Ditto.
+	(ix86_memtag_add_tag): Ditto.
+	(ix86_memtag_tag_size): Ditto.
+	(ix86_memtag_untagged_pointer): Ditto.
+	(TARGET_MEMTAG_CAN_TAG_ADDRESSES): New.
+	(TARGET_MEMTAG_ADD_TAG): Ditto.
+	(TARGET_MEMTAG_SET_TAG): Ditto.
+	(TARGET_MEMTAG_EXTRACT_TAG): Ditto.
+	(TARGET_MEMTAG_UNTAGGED_POINTER): Ditto.
+	(TARGET_MEMTAG_TAG_SIZE): Ditto.
+	(IX86_HWASAN_SHIFT): Ditto.
+	(IX86_HWASAN_TAG_SIZE): Ditto.
+	* config/i386/i386-expand.cc (ix86_expand_call): Untag code
+	pointer.
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Error when enable -mlam=[u48|u57] for 32-bit code.
+	* config/i386/i386.opt: Add -mlam=[none|u48|u57].
+	* config/i386/i386-protos.h (ix86_memtag_untagged_pointer):
+	Declare.
+	(ix86_memtag_can_tag_addresses): Ditto.
+
+2022-12-08  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi (-fsanitize=address): Suggest options to improve
+	stack traces.
+
+2022-12-08  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR ipa/108000
+	* ipa-cp.cc (ipcp_propagate_stage): Fix profile count comparison
+
+2022-12-08  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md (bswap<mode>2): New define_insn.
+
+2022-12-08  Sebastian Pop  <spop@amazon.com>
+
+	PR target/98776
+	* config/aarch64/aarch64-protos.h (aarch64_output_patchable_area):
+	Declared.
+	* config/aarch64/aarch64.cc (aarch64_print_patchable_function_entry):
+	Emit an UNSPECV_PATCHABLE_AREA pseudo instruction.
+	(aarch64_output_patchable_area): New.
+	* config/aarch64/aarch64.md (UNSPECV_PATCHABLE_AREA): New.
+	(patchable_area): Define.
+
+2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106719
+	* cfgbuild.cc (find_bb_boundaries): If there are NOTEs in between
+	debug_insn (seen after flow_transfer_insn) and insn, move NOTEs
+	before all the DEBUG_INSNs and split after NOTEs.  If there are
+	other insns like jump table data, clear debug_insn.
+
+2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107627
+	* config/i386/i386.md (HALF, half): New mode attributes.
+	(*concat<half><mode>3_5, *concat<mode><dwi>3_6,
+	*concat<mode><dwi>3_7): New define_insn_and_split patterns.
+
+2022-12-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107985
+	* gimple-range-op.cc
+	(gimple_range_op_handler::gimple_range_op_handler): Check if type
+	of the operands is supported.
+	* gimple-range.cc (gimple_ranger::prefill_stmt_dependencies): Do
+	not assert if here is no range-op handler.
+
+2022-12-08  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/predicates.md: Use sext_hwi.
+	* config/rs6000/rs6000.cc (num_insns_constant_gpr): Likewise.
+	(darwin_rs6000_legitimate_lo_sum_const_p): Likewise.
+	(mem_operand_gpr): Likewise.
+	(mem_operand_ds_form): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_emit_set_const): Likewise.
+	(rs6000_emit_set_long_const): Likewise.
+	(print_operand): Likewise.
+	(constant_generates_xxspltiw): Remove unnecessary expressions.
+	* config/rs6000/rs6000.md: Use sext_hwi.
+
+2022-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107699
+	* match.pd (&a !=/== &a.b + c -> (&a - &a.b) !=/== c): New
+	pattern variant.
+
+2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* range-op-float.cc (frange_nextafter): For MODE_COMPOSITE_P from
+	denormal or zero, use real_nextafter on DFmode with conversions
+	around it.
+	(frange_arithmetic): For mode_composite, on top of rounding in the
+	right direction accept extra 1ulp error for PLUS/MINUS_EXPR, extra
+	2ulps error for MULT_EXPR and extra 3ulps error for RDIV_EXPR.
+
+2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107967
+	* range-op-float.cc (frange_arithmetic): Fix a thinko - if
+	inf is negative, use nextafter if !real_less (&result, &value)
+	rather than if real_less (&result, &value).  If result is +-INF
+	while value is finite and -fno-rounding-math, don't do rounding
+	if !inexact or if result is significantly above max representable
+	value or below min representable value.
+
+2022-12-07  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config.gcc (xtensa*-*-*): Add xtensa-dynconfig.o to extra_objs.
+	* config/xtensa/t-xtensa (TM_H): Add xtensa-dynconfig.h.
+	(xtensa-dynconfig.o): New rule.
+	* config/xtensa/xtensa-dynconfig.c: New file.
+	* config/xtensa/xtensa-protos.h (xtensa_get_config_strings): New
+	declaration.
+	* config/xtensa/xtensa.h (xtensa-config.h): Replace #include
+	with xtensa-dynconfig.h
+	(XCHAL_HAVE_MUL32_HIGH, XCHAL_HAVE_RELEASE_SYNC)
+	(XCHAL_HAVE_S32C1I, XCHAL_HAVE_THREADPTR)
+	(XCHAL_HAVE_FP_POSTINC): Drop definitions.
+	(TARGET_DIV32): Replace with __XCHAL_HAVE_DIV32.
+	(TARGET_CPU_CPP_BUILTINS): Add new 'builtin' variable and loop
+	through string array returned by the xtensa_get_config_strings
+	function call.
+
+2022-12-07  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/108006
+	* config/aarch64/aarch64.cc (aarch64_expand_sve_const_vector):
+	Fix call to aarch64_move_imm to use SI/DI.
+
+2022-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/105676
+	* ipa-pure-const.cc (ipa_make_function_pure): Skip also
+	for functions already being const.
+
+2022-12-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS): Add
+	m_SAPPHIRERAPIDS, m_ALDERLAKE and m_CORE_ATOM.
+
+2022-12-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/107920
+	* config/aarch64/aarch64-sve-builtins-base.cc: Use
+	gsi_replace_with_seq_vops to handle virtual operands, and gate
+	the transform on !flag_non_call_exceptions.
+	* gimple-fold.cc (gsi_replace_with_seq_vops): Make function non static.
+	* gimple-fold.h (gsi_replace_with_seq_vops): Declare.
+
+2022-12-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107970
+	* config/i386/mmx.md (btruncv2sf2): Add TARGET_MMX_WITH_SSE to
+	the condition.
+
 2022-12-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/aarch64.cc (aarch64_bitmask_imm): Use unsigned type.

@@ -24,6 +24,11 @@ else version (WatchOS)
 debug(trace) import core.stdc.stdio : printf;
 debug(info) import core.stdc.stdio : printf;
 
+extern (C) alias CXX_DEMANGLER = char* function (const char* mangled_name,
+                                                char* output_buffer,
+                                                size_t* length,
+                                                int* status) nothrow pure @trusted;
+
 private struct NoHooks
 {
     // supported hooks
@@ -2115,19 +2120,22 @@ pure @safe:
 
 
 /**
- * Demangles D mangled names.  If it is not a D mangled name, it returns its
- * argument name.
+ * Demangles D/C++ mangled names.  If it is not a D/C++ mangled name, it
+ * returns its argument name.
  *
  * Params:
  *  buf = The string to demangle.
  *  dst = An optional destination buffer.
+ *  __cxa_demangle = optional C++ demangler
  *
  * Returns:
- *  The demangled name or the original string if the name is not a mangled D
- *  name.
+ *  The demangled name or the original string if the name is not a mangled
+ *  D/C++ name.
  */
-char[] demangle(return scope const(char)[] buf, return scope char[] dst = null ) nothrow pure @safe
+char[] demangle(return scope const(char)[] buf, return scope char[] dst = null, CXX_DEMANGLER __cxa_demangle = null) nothrow pure @safe
 {
+    if (buf.length > 2 && buf[0..2] == "_Z")
+        return demangleCXX(buf, __cxa_demangle, dst);
     auto d = Demangle!()(buf, dst);
     // fast path (avoiding throwing & catching exception) for obvious
     // non-D mangled names
@@ -2210,7 +2218,7 @@ char[] reencodeMangled(return scope const(char)[] mangled) nothrow pure @safe
             }
         }
 
-        bool parseLName(scope ref Remangle d) scope
+        bool parseLName(scope ref Remangle d) scope @trusted
         {
             flushPosition(d);
 
@@ -2261,7 +2269,7 @@ char[] reencodeMangled(return scope const(char)[] mangled) nothrow pure @safe
                 }
                 else
                 {
-                    idpos[id] = refpos;
+                    idpos[id] = refpos; //! scope variable id used as AA key, makes this function @trusted
                     result ~= d.buf[refpos .. d.pos];
                 }
             }
@@ -2706,8 +2714,10 @@ unittest
     {
         char[] buf = new char[i];
         auto ds = demangle(s, buf);
-        assert(ds == "pure nothrow @safe char[] core.demangle.demangle(scope return const(char)[], scope return char[])" ||
-               ds == "pure nothrow @safe char[] core.demangle.demangle(return scope const(char)[], return scope char[])");
+        assert(ds == "pure nothrow @safe char[] core.demangle.demangle(scope return const(char)[], scope return char[], extern (C) char* function(const(char*), char*, ulong*, int*) pure nothrow @trusted*)" ||
+               ds == "pure nothrow @safe char[] core.demangle.demangle(return scope const(char)[], return scope char[], extern (C) char* function(const(char*), char*, ulong*, int*) pure nothrow @trusted*)" ||
+               ds == "pure nothrow @safe char[] core.demangle.demangle(scope return const(char)[], scope return char[], extern (C) char* function(const(char*), char*, uint*, int*) pure nothrow @trusted*)" ||
+               ds == "pure nothrow @safe char[] core.demangle.demangle(return scope const(char)[], return scope char[], extern (C) char* function(const(char*), char*, uint*, int*) pure nothrow @trusted*)", ds);
     }
 }
 
@@ -2900,4 +2910,77 @@ private string toStringConsume (immutable ManglingFlagInfo[] infos, ref ushort b
         }
     }
     return null;
+}
+
+private shared CXX_DEMANGLER __cxa_demangle;
+
+/**
+ * Returns:
+ *  a CXX_DEMANGLER if a C++ stdlib is loaded
+ */
+
+CXX_DEMANGLER getCXXDemangler() nothrow @trusted
+{
+    if (__cxa_demangle is null)
+    version (Posix)
+    {
+        import core.sys.posix.dlfcn : dlsym;
+        version (DragonFlyBSD) import core.sys.dragonflybsd.dlfcn : RTLD_DEFAULT;
+        version (FreeBSD) import core.sys.freebsd.dlfcn : RTLD_DEFAULT;
+        version (linux) import core.sys.linux.dlfcn : RTLD_DEFAULT;
+        version (NetBSD) import core.sys.netbsd.dlfcn : RTLD_DEFAULT;
+        version (OSX) import core.sys.darwin.dlfcn : RTLD_DEFAULT;
+        version (Solaris) import core.sys.solaris.dlfcn : RTLD_DEFAULT;
+
+        if (auto found = cast(CXX_DEMANGLER) dlsym(RTLD_DEFAULT, "__cxa_demangle"))
+            __cxa_demangle = found;
+    }
+
+    if (__cxa_demangle is null)
+        __cxa_demangle = (const char* mangled_name, char* output_buffer,
+                            size_t* length, int* status) nothrow pure @trusted {
+                                *status = -1;
+                                return null;
+                            };
+
+    return __cxa_demangle;
+}
+
+/**
+ * Demangles C++ mangled names.  If it is not a C++ mangled name, it
+ * returns its argument name.
+ *
+ * Params:
+ *  buf = The string to demangle.
+ *  __cxa_demangle = C++ demangler
+ *  dst = An optional destination buffer.
+ *
+ * Returns:
+ *  The demangled name or the original string if the name is not a mangled
+ *  C++ name.
+ */
+private char[] demangleCXX(return scope const(char)[] buf, CXX_DEMANGLER __cxa_demangle, return scope char[] dst = null,) nothrow pure @trusted
+{
+    char[] c_string = dst; // temporarily use dst buffer if possible
+    c_string.length = buf.length + 1;
+    c_string[0 .. buf.length] = buf[0 .. buf.length];
+    c_string[buf.length] = '\0';
+
+    int status;
+    size_t demangled_length;
+    auto demangled = __cxa_demangle(&c_string[0], null, &demangled_length, &status);
+    scope (exit) {
+        import core.memory;
+        pureFree(cast(void*) demangled);
+    }
+    if (status == 0)
+    {
+        dst.length = demangled_length;
+        dst[] = demangled[0 .. demangled_length];
+        return dst;
+    }
+
+    dst.length = buf.length;
+    dst[] = buf[];
+    return dst;
 }

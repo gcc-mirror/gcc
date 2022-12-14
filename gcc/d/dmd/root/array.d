@@ -352,7 +352,9 @@ public:
     }
 
     alias opDollar = length;
-    alias dim = length;
+
+    deprecated("use `.length` instead")
+    extern(D) size_t dim() const @nogc nothrow pure @safe { return length; }
 }
 
 unittest

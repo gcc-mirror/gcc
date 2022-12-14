@@ -1250,3 +1250,19 @@ Support RAOINT built-in functions and code generation.
 munroll-only-small-loops
 Target Var(ix86_unroll_only_small_loops) Init(0) Save
 Enable conservative small loop unrolling.
+
+mlam=
+Target RejectNegative Joined Enum(lam_type) Var(ix86_lam_type) Init(lam_none)
+-mlam=[none|u48|u57] Instrument meta data position in user data pointers.
+
+Enum
+Name(lam_type) Type(enum lam_type) UnknownError(unknown lam type %qs)
+
+EnumValue
+Enum(lam_type) String(none) Value(lam_none)
+
+EnumValue
+Enum(lam_type) String(u48) Value(lam_u48)
+
+EnumValue
+Enum(lam_type) String(u57) Value(lam_u57)

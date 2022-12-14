@@ -312,6 +312,11 @@ enum class aarch64_feature : unsigned char {
 /* PAUTH instructions are enabled through +pauth.  */
 #define TARGET_PAUTH (AARCH64_ISA_PAUTH)
 
+/* BTI instructions exist from Armv8.5-a onwards.  Their automatic use is
+   enabled through -mbranch-protection by using NOP-space instructions,
+   but this TARGET_ is used for defining BTI-related ACLE things.  */
+#define TARGET_BTI (AARCH64_ISA_V8_5A)
+
 /* MOPS instructions are enabled through +mops.  */
 #define TARGET_MOPS (AARCH64_ISA_MOPS)
 

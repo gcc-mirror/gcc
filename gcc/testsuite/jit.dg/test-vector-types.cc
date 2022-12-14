@@ -105,6 +105,19 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 		 v4f_type, GCC_JIT_BINARY_OP_MULT);
   create_vec_fn (ctxt, "jit_v4f_div",
 		 v4f_type, GCC_JIT_BINARY_OP_DIVIDE);
+
+  // Checking compatibility between types.
+  CHECK_VALUE(gcc_jit_compatible_types(v4si_type, v4ui_type), 0);
+  CHECK_VALUE(gcc_jit_compatible_types(v4si_type, v4f_type), 0);
+  CHECK_VALUE(gcc_jit_compatible_types(v4ui_type, v4f_type), 0);
+
+  gcc_jit_type *v4si_type2 = gcc_jit_type_get_vector (int_type, 4);
+  gcc_jit_type *v4ui_type2 = gcc_jit_type_get_vector (unsigned_type, 4);
+  gcc_jit_type *v4f_type2 = gcc_jit_type_get_vector (float_type, 4);
+
+  CHECK_VALUE(gcc_jit_compatible_types(v4si_type, v4si_type2), 1);
+  CHECK_VALUE(gcc_jit_compatible_types(v4ui_type, v4ui_type2), 1);
+  CHECK_VALUE(gcc_jit_compatible_types(v4f_type, v4f_type2), 1);
 }
 
 template <typename T>

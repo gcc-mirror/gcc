@@ -1448,7 +1448,7 @@ See RS/6000 and PowerPC Options.
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
 -mindirect-branch-register -mharden-sls=@var{choice} @gol
 -mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access @gol
--munroll-only-small-loops}
+-munroll-only-small-loops -mlam=@var{choice}}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -13208,7 +13208,8 @@ disclosure and use.
 GCC still considers an automatic variable that doesn't have an explicit
 initializer as uninitialized, @option{-Wuninitialized} and
 @option{-Wanalyzer-use-of-uninitialized-value} will still report
-warning messages on such automatic variables.
+warning messages on such automatic variables and the compiler will
+perform optimization as if the variable were uninitialized.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
 However, the current implementation cannot initialize automatic variables that
@@ -15508,11 +15509,21 @@ the parameter is reserved exclusively for debug insns created by
 @option{-fvar-tracking-assignments}, but debug insns may get
 (non-overlapping) uids above it if the reserved range is exhausted.
 
+@item ipa-sra-deref-prob-threshold
+IPA-SRA replaces a pointer which is known not be NULL with one or more
+new parameters only when the probability (in percent, relative to
+function entry) of it being dereferenced is higher than this parameter.
+
 @item ipa-sra-ptr-growth-factor
 IPA-SRA replaces a pointer to an aggregate with one or more new
 parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
+
+@item ipa-sra-ptrwrap-growth-factor
+Additional maximum allowed growth of total size of new parameters
+that ipa-sra replaces a pointer to an aggregate with,
+if it points to a local variable that the caller never writes to.
 
 @item ipa-sra-max-replacements
 Maximum pieces of an aggregate that IPA-SRA tracks.  As a
@@ -16509,6 +16520,16 @@ for a list of supported options.
 The option cannot be combined with @option{-fsanitize=thread} or
 @option{-fsanitize=hwaddress}.  Note that the only target
 @option{-fsanitize=hwaddress} is currently supported on is AArch64.
+
+To get more accurate stack traces, it is possible to use options such as
+@option{-O0}, @option{-O1}, or @option{-Og} (which, for instance, prevent
+most function inlining), @option{-fno-optimize-sibling-calls} (which prevents
+optimizing sibling and tail recursive calls; this option is implicit for
+@option{-O0}, @option{-O1}, or @option{-Og}), or @option{-fno-ipa-icf} (which
+disables Identical Code Folding for functions).  Since multiple runs of the
+program may yield backtraces with different addresses due to ASLR (Address
+Space Layout Randomization), it may be desirable to turn ASLR off.  On Linux,
+this can be achieved with @samp{setarch `uname -m` -R ./prog}.
 
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
@@ -33881,6 +33902,13 @@ Controls conservative small loop unrolling. It is default enabled by
 O2, and unrolls loop with less than 4 insns by 1 time. Explicit
 -f[no-]unroll-[all-]loops would disable this flag to avoid any
 unintended unrolling behavior that user does not want.
+
+@item -mlam=@var{choice}
+@opindex mlam
+LAM(linear-address masking) allows special bits in the pointer to be used
+for metadata. The default is @samp{none}. With @samp{u48}, pointer bits in
+positions 62:48 can be used for metadata; With @samp{u57}, pointer bits in
+positions 62:57 can be used for metadata.
 @end table
 
 @node x86 Windows Options

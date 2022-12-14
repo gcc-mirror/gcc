@@ -20,6 +20,9 @@ public import core.sync.exception;
 public import core.sync.mutex;
 public import core.time;
 
+import core.exception : AssertError, staticError;
+
+
 version (Windows)
 {
     import core.sync.semaphore;
@@ -51,7 +54,6 @@ else
 // void notifyAll();
 ////////////////////////////////////////////////////////////////////////////////
 
-
 /**
  * This class represents a condition variable as conceived by C.A.R. Hoare.  As
  * per Mesa type monitors however, "signal" has been replaced with "notify" to
@@ -74,19 +76,19 @@ class Condition
      * Throws:
      *  SyncError on error.
      */
-    this( Mutex m ) nothrow @safe
+    this( Mutex m ) nothrow @safe @nogc
     {
         this(m, true);
     }
 
     /// ditto
-    this( shared Mutex m ) shared nothrow @safe
+    this( shared Mutex m ) shared nothrow @safe @nogc
     {
         this(m, true);
     }
 
     //
-    private this(this Q, M)( M m, bool _unused_ ) nothrow @trusted
+    private this(this Q, M)( M m, bool _unused_ ) nothrow @trusted @nogc
         if ((is(Q == Condition) && is(M == Mutex)) ||
             (is(Q == shared Condition) && is(M == shared Mutex)))
     {
@@ -102,12 +104,12 @@ class Condition
             }
             m_blockLock = cast(HANDLE_TYPE) CreateSemaphoreA( null, 1, 1, null );
             if ( m_blockLock == m_blockLock.init )
-                throw new SyncError( "Unable to initialize condition" );
+                throw staticError!AssertError("Unable to initialize condition", __FILE__, __LINE__);
             scope(failure) CloseHandle( cast(void*) m_blockLock );
 
             m_blockQueue = cast(HANDLE_TYPE) CreateSemaphoreA( null, 0, int.max, null );
             if ( m_blockQueue == m_blockQueue.init )
-                throw new SyncError( "Unable to initialize condition" );
+                throw staticError!AssertError("Unable to initialize condition", __FILE__, __LINE__);
             scope(failure) CloseHandle( cast(void*) m_blockQueue );
 
             InitializeCriticalSection( cast(RTL_CRITICAL_SECTION*) &m_unblockLock );
@@ -123,29 +125,28 @@ class Condition
                     pthread_condattr_t attr = void;
                     int rc  = pthread_condattr_init( &attr );
                     if ( rc )
-                        throw new SyncError( "Unable to initialize condition" );
+                        throw staticError!AssertError("Unable to initialize condition", __FILE__, __LINE__);
                     rc = pthread_condattr_setclock( &attr, CLOCK_MONOTONIC );
                     if ( rc )
-                        throw new SyncError( "Unable to initialize condition" );
+                        throw staticError!AssertError("Unable to initialize condition", __FILE__, __LINE__);
                     rc = pthread_cond_init( cast(pthread_cond_t*) &m_hndl, &attr );
                     if ( rc )
-                        throw new SyncError( "Unable to initialize condition" );
+                        throw staticError!AssertError("Unable to initialize condition", __FILE__, __LINE__);
                     rc = pthread_condattr_destroy( &attr );
                     if ( rc )
-                        throw new SyncError( "Unable to initialize condition" );
+                        throw staticError!AssertError("Unable to initialize condition", __FILE__, __LINE__);
                 } ();
             }
             else
             {
                 int rc = pthread_cond_init( cast(pthread_cond_t*) &m_hndl, null );
                 if ( rc )
-                    throw new SyncError( "Unable to initialize condition" );
+                    throw staticError!AssertError("Unable to initialize condition", __FILE__, __LINE__);
             }
         }
     }
 
-
-    ~this()
+    ~this() @nogc
     {
         version (Windows)
         {
@@ -231,7 +232,7 @@ class Condition
         {
             int rc = pthread_cond_wait( cast(pthread_cond_t*) &m_hndl, (cast(Mutex) m_assocMutex).handleAddr() );
             if ( rc )
-                throw new SyncError( "Unable to wait for condition" );
+                throw staticError!AssertError("Unable to wait for condition", __FILE__, __LINE__);
         }
     }
 
@@ -296,7 +297,7 @@ class Condition
                 return true;
             if ( rc == ETIMEDOUT )
                 return false;
-            throw new SyncError( "Unable to wait for condition" );
+            throw staticError!AssertError("Unable to wait for condition", __FILE__, __LINE__);
         }
     }
 
@@ -344,7 +345,7 @@ class Condition
                 rc = pthread_cond_signal( cast(pthread_cond_t*) &m_hndl );
             } while ( rc == EAGAIN );
             if ( rc )
-                throw new SyncError( "Unable to notify condition" );
+                throw staticError!AssertError("Unable to notify condition", __FILE__, __LINE__);
         }
     }
 
@@ -392,7 +393,7 @@ class Condition
                 rc = pthread_cond_broadcast( cast(pthread_cond_t*) &m_hndl );
             } while ( rc == EAGAIN );
             if ( rc )
-                throw new SyncError( "Unable to notify condition" );
+                throw staticError!AssertError("Unable to notify condition", __FILE__, __LINE__);
         }
     }
 

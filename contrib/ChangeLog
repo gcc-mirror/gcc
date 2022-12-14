@@ -1,3 +1,29 @@
+2022-12-12  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Do not search PR entry in a file that is binary.
+
+2022-12-11  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style.py: Use newline=\n.
+	* check_GNU_style_lib.py: Simplify.
+	* gcc-changelog/git_commit.py: Fix issues seen
+	Rust patchset.
+	* gcc-changelog/git_email.py: Use newline argument.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: New test.
+	* mklog.py: Use newline argument.
+
+2022-12-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations): Add
+	'gcc/rust'.
+	(bug_components): Add 'rust'.
+
+2022-12-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations):
+	New entry for gcc/m2.  New entry for libgm2.
+
 2022-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.doxy (INPUT): Add gcc/analyzer subdirectory.

@@ -651,6 +651,10 @@ HAVE_OBJCOPY_DEBUGLINK_FALSE
 HAVE_OBJCOPY_DEBUGLINK_TRUE
 READELF
 OBJCOPY
+HAVE_COMPRESSED_DEBUG_ZSTD_FALSE
+HAVE_COMPRESSED_DEBUG_ZSTD_TRUE
+HAVE_ZSTD_FALSE
+HAVE_ZSTD_TRUE
 HAVE_COMPRESSED_DEBUG_FALSE
 HAVE_COMPRESSED_DEBUG_TRUE
 HAVE_ZLIB_FALSE
@@ -11535,7 +11539,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11538 "configure"
+#line 11542 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11641,7 +11645,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11644 "configure"
+#line 11648 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13776,6 +13780,95 @@ else
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ZSTD_compress in -lzstd" >&5
+$as_echo_n "checking for ZSTD_compress in -lzstd... " >&6; }
+if ${ac_cv_lib_zstd_ZSTD_compress+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lzstd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ZSTD_compress ();
+int
+main ()
+{
+return ZSTD_compress ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_zstd_ZSTD_compress=yes
+else
+  ac_cv_lib_zstd_ZSTD_compress=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_zstd_ZSTD_compress" >&5
+$as_echo "$ac_cv_lib_zstd_ZSTD_compress" >&6; }
+if test "x$ac_cv_lib_zstd_ZSTD_compress" = xyes; then :
+
+$as_echo "#define HAVE_ZSTD 1" >>confdefs.h
+
+fi
+
+ if test "$ac_cv_lib_zstd_ZSTD_compress" = yes; then
+  HAVE_ZSTD_TRUE=
+  HAVE_ZSTD_FALSE='#'
+else
+  HAVE_ZSTD_TRUE='#'
+  HAVE_ZSTD_FALSE=
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --compress-debug-sections=zstd is supported" >&5
+$as_echo_n "checking whether --compress-debug-sections=zstd is supported... " >&6; }
+if ${libgo_cv_ld_compress_zstd+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--compress-debug-sections=zstd"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgo_cv_ld_compress_zstd=yes
+else
+  libgo_cv_ld_compress_zstd=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LDFLAGS=$LDFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_ld_compress_zstd" >&5
+$as_echo "$libgo_cv_ld_compress_zstd" >&6; }
+ if test "$libgo_cv_ld_compress_zstd" = yes; then
+  HAVE_COMPRESSED_DEBUG_ZSTD_TRUE=
+  HAVE_COMPRESSED_DEBUG_ZSTD_FALSE='#'
+else
+  HAVE_COMPRESSED_DEBUG_ZSTD_TRUE='#'
+  HAVE_COMPRESSED_DEBUG_ZSTD_FALSE=
+fi
+
+
 
 # Extract the first word of "objcopy", so it can be a program name with args.
 set dummy objcopy; ac_word=$2
@@ -14320,6 +14413,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_COMPRESSED_DEBUG_TRUE}" && test -z "${HAVE_COMPRESSED_DEBUG_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_COMPRESSED_DEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_ZSTD_TRUE}" && test -z "${HAVE_ZSTD_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_ZSTD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_COMPRESSED_DEBUG_ZSTD_TRUE}" && test -z "${HAVE_COMPRESSED_DEBUG_ZSTD_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_COMPRESSED_DEBUG_ZSTD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_OBJCOPY_DEBUGLINK_TRUE}" && test -z "${HAVE_OBJCOPY_DEBUGLINK_FALSE}"; then

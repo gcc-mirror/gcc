@@ -1,6 +1,6 @@
 /* Verify zero initialization for integer and pointer type automatic variables.  */
 /* { dg-do compile { target { ilp32 || lp64 } } } */
-/* { dg-options "-ftrivial-auto-var-init=zero -fdump-tree-gimple" } */
+/* { dg-options "-ftrivial-auto-var-init=zero -fno-short-enums -fdump-tree-gimple" } */
 
 #ifndef __cplusplus
 # define bool _Bool

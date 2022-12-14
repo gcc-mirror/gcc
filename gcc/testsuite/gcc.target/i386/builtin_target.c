@@ -95,6 +95,11 @@ quick_check ()
 
   assert (__builtin_cpu_supports ("avx512vpopcntdq") >= 0);
 
+  assert (__builtin_cpu_supports ("x86-64") >= 0);
+  assert (__builtin_cpu_supports ("x86-64-v2") >= 0);
+  assert (__builtin_cpu_supports ("x86-64-v3") >= 0);
+  assert (__builtin_cpu_supports ("x86-64-v4") >= 0);
+
   /* Check CPU type.  */
   assert (__builtin_cpu_is ("amd") >= 0);
 

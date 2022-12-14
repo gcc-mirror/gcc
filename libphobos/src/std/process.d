@@ -1428,7 +1428,7 @@ version (Posix) @system unittest
     for (; environ[i] != null; ++i)
     {
         assert(e2[i] != null);
-        import core.stdc.string;
+        import core.stdc.string : strcmp;
         assert(strcmp(e2[i], environ[i]) == 0);
     }
     assert(e2[i] == null);
@@ -1732,7 +1732,9 @@ version (Posix) @system unittest
     // Pipes
     void testPipes(Config config)
     {
-        import std.file, std.uuid, core.thread, std.exception;
+        import std.file : tempDir, exists, remove;
+        import std.uuid : randomUUID;
+        import std.exception : collectException;
         auto pipei = pipe();
         auto pipeo = pipe();
         auto pipee = pipe();
@@ -1753,11 +1755,14 @@ version (Posix) @system unittest
     // Files
     void testFiles(Config config)
     {
-        import std.ascii, std.file, std.uuid, core.thread, std.exception;
+        import std.ascii : newline;
+        import std.file : tempDir, exists, remove, readText, write;
+        import std.uuid : randomUUID;
+        import std.exception : collectException;
         auto pathi = buildPath(tempDir(), randomUUID().toString());
         auto patho = buildPath(tempDir(), randomUUID().toString());
         auto pathe = buildPath(tempDir(), randomUUID().toString());
-        std.file.write(pathi, "INPUT"~std.ascii.newline);
+        write(pathi, "INPUT" ~ newline);
         auto filei = File(pathi, "r");
         auto fileo = File(patho, "w");
         auto filee = File(pathe, "w");

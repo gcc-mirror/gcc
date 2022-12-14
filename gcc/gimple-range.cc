@@ -422,18 +422,20 @@ gimple_ranger::prefill_stmt_dependencies (tree ssa)
       else
 	{
 	  gimple_range_op_handler handler (stmt);
-	  gcc_checking_assert (handler);
-	  tree op = handler.operand2 ();
-	  if (op)
+	  if (handler)
 	    {
-	      Value_Range r (TREE_TYPE (op));
-	      prefill_name (r, op);
-	    }
-	  op = handler.operand1 ();
-	  if (op)
-	    {
-	      Value_Range r (TREE_TYPE (op));
-	      prefill_name (r, op);
+	      tree op = handler.operand2 ();
+	      if (op)
+		{
+		  Value_Range r (TREE_TYPE (op));
+		  prefill_name (r, op);
+		}
+	      op = handler.operand1 ();
+	      if (op)
+		{
+		  Value_Range r (TREE_TYPE (op));
+		  prefill_name (r, op);
+		}
 	    }
 	}
     }

@@ -4904,7 +4904,7 @@ region_model::get_or_create_region_for_heap_alloc (const svalue *size_in_bytes,
   /* Determine which regions are referenced in this region_model, so that
      we can reuse an existing heap_allocated_region if it's not in use on
      this path.  */
-  auto_sbitmap base_regs_in_use (m_mgr->get_num_regions ());
+  auto_bitmap base_regs_in_use;
   get_referenced_base_regions (base_regs_in_use);
   const region *reg
     = m_mgr->get_or_create_region_for_heap_alloc (base_regs_in_use);
@@ -4917,7 +4917,7 @@ region_model::get_or_create_region_for_heap_alloc (const svalue *size_in_bytes,
    reachable in this region_model.  */
 
 void
-region_model::get_referenced_base_regions (auto_sbitmap &out_ids) const
+region_model::get_referenced_base_regions (auto_bitmap &out_ids) const
 {
   reachable_regions reachable_regs (const_cast<region_model *> (this));
   m_store.for_each_cluster (reachable_regions::init_cluster_cb,

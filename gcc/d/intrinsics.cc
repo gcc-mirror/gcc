@@ -525,7 +525,7 @@ call_builtin_fn (tree callexp, built_in_function code, int n, ...)
 static tree
 expand_intrinsic_bsf (tree callexp)
 {
-  /* The bsr() intrinsic gets turned into __builtin_ctz(arg).
+  /* The bsf() intrinsic gets turned into __builtin_ctz(arg).
      The return value is supposed to be undefined if arg is zero.  */
   tree arg = CALL_EXPR_ARG (callexp, 0);
   int argsize = TYPE_PRECISION (TREE_TYPE (arg));
@@ -554,11 +554,11 @@ expand_intrinsic_bsf (tree callexp)
 static tree
 expand_intrinsic_bsr (tree callexp)
 {
-  /* The bsr() intrinsic gets turned into (size - 1) - __builtin_clz(arg).
+  /* The bsr() intrinsic gets turned into __builtin_clz(arg) ^ (size - 1).
      The return value is supposed to be undefined if arg is zero.  */
   tree arg = CALL_EXPR_ARG (callexp, 0);
-  tree type = TREE_TYPE (arg);
-  int argsize = TYPE_PRECISION (type);
+  tree type = TREE_TYPE (callexp);
+  int argsize = TYPE_PRECISION (TREE_TYPE (arg));
 
   /* Which variant of __builtin_clz* should we call?  */
   built_in_function code = (argsize <= INT_TYPE_SIZE) ? BUILT_IN_CLZ
@@ -570,13 +570,8 @@ expand_intrinsic_bsr (tree callexp)
 
   tree result = call_builtin_fn (callexp, code, 1, arg);
 
-  /* Handle int -> long conversions.  */
-  if (TREE_TYPE (result) != type)
-    result = fold_convert (type, result);
-
-  result = fold_build2 (MINUS_EXPR, type,
-			build_integer_cst (argsize - 1, type), result);
-  return fold_convert (TREE_TYPE (callexp), result);
+  return fold_build2 (BIT_XOR_EXPR, type, result,
+		      build_integer_cst (argsize - 1, type));
 }
 
 /* Expand a front-end intrinsic call to INTRINSIC, which is either a call to

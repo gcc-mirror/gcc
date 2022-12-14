@@ -102,7 +102,7 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
             if (global.errors && !ce.e1.type)
                 return; // error recovery
 
-            if (ce.f && ce.arguments.dim > 0)
+            if (ce.f && ce.arguments.length > 0)
             {
                 Type tb = (*ce.arguments)[0].type.toBasetype();
                 auto tbNext = tb.nextOf();

@@ -220,6 +220,8 @@ OPTAB_D (reload_in_optab, "reload_in$a")
 OPTAB_D (reload_out_optab, "reload_out$a")
 
 OPTAB_DC(cbranch_optab, "cbranch$a4", COMPARE)
+OPTAB_D (tbranch_eq_optab, "tbranch_eq$a3")
+OPTAB_D (tbranch_ne_optab, "tbranch_ne$a3")
 OPTAB_D (addcc_optab, "add$acc")
 OPTAB_D (negcc_optab, "neg$acc")
 OPTAB_D (notcc_optab, "not$acc")

@@ -55,7 +55,7 @@ alias Strings = Array!(const(char)*);
 
 
 // Check whether character is a directory separator
-private bool isDirSeparator(char c) pure nothrow @nogc @safe
+bool isDirSeparator(char c) pure nothrow @nogc @safe
 {
     version (Windows)
     {
