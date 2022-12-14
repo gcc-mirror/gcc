@@ -7298,11 +7298,20 @@ package body Sem_Prag is
       --  the test below also permits use in a configuration pragma file.
 
       function Is_Configuration_Pragma return Boolean is
-         Lis : constant List_Id := List_Containing (N);
+         Lis : List_Id;
          Par : constant Node_Id := Parent (N);
          Prg : Node_Id;
 
       begin
+         --  Don't evaluate List_Containing (N) if Parent (N) could be
+         --  an N_Aspect_Specification node.
+
+         if not Is_List_Member (N) then
+            return False;
+         end if;
+
+         Lis := List_Containing (N);
+
          --  If no parent, then we are in the configuration pragma file,
          --  so the placement is definitely appropriate.
 
@@ -15729,8 +15738,13 @@ package body Sem_Prag is
 
             --  Deal with configuration pragma case
 
-            if Arg_Count = 0 and then Is_Configuration_Pragma then
-               Global_Discard_Names := True;
+            if Is_Configuration_Pragma then
+               if Arg_Count /= 0 then
+                  Error_Pragma
+                    ("nonzero number of arguments for configuration pragma%");
+               else
+                  Global_Discard_Names := True;
+               end if;
                return;
 
             --  Otherwise, check correct appropriate context
