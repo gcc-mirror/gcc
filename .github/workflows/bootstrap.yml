@@ -4,9 +4,6 @@ on:
   push:
     branches: [ master ]
 
-env:
-  CXXFLAGS: "-Wno-unused-parameter -Werror=overloaded-virtual"
-
 jobs:
   build:
 
