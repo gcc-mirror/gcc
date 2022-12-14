@@ -592,7 +592,8 @@ namespace {
 
 hash_map<tree, gensum_param_desc *> *decl2desc;
 
-/* All local DECLs ever loaded from.  */
+/* All local DECLs ever loaded from of and of those that have their address
+   assigned to a variable.  */
 
 hash_set <tree> *loaded_decls;
 
@@ -1742,6 +1743,19 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
   tree base;
   bool deref = false;
   bool reverse;
+
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    {
+      if (ctx == ISRA_CTX_ARG)
+	return;
+      tree t = get_base_address (TREE_OPERAND (expr, 0));
+      if (TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
+	loaded_decls->add (t);
+      return;
+    }
+  if (TREE_CODE (expr) == SSA_NAME
+      || CONSTANT_CLASS_P (expr))
+    return;
 
   if (TREE_CODE (expr) == BIT_FIELD_REF
       || TREE_CODE (expr) == IMAGPART_EXPR
