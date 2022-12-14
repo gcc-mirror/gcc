@@ -826,10 +826,14 @@ m2/gm2-compiler-paranoid/M2Version.o: m2/gm2-compiler-paranoid/M2Version.mod
 m2/gm2-compiler-paranoid/%.mod: $(srcdir)/m2/gm2-compiler/%.bnf $(PGE)
 	$(PGE) -k -l $< -o $@
 
-# Recreate the target independent copies of the documentation
-# which is used during the build if Python3 is unavailable.
+# Recreate the target independent copies of the documentation which is
+# used during the build if Python3 is unavailable.
 
-m2-target-independent-doc: m2-target-independent-doc-texi m2-target-independent-doc-rst
+# m2-target-independent-doc-rst should be enabled once
+# tools-src/def2doc.py is completed (module hyperlinks need rst
+# treatment).
+
+m2-target-independent-doc: m2-target-independent-doc-texi # m2-target-independent-doc-rst
 
 m2-target-independent-doc-texi: force
 ifeq ($(HAVE_PYTHON),yes)

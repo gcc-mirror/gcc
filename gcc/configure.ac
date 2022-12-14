@@ -1270,7 +1270,7 @@ ACX_CHECK_PROG_VER(PYTHON, python3, --version,
 if test $gcc_cv_prog_python3_modern = no; then
   AC_MSG_WARN([
 *** Python3 is missing.
-*** Documentation for modula-2 will not include the library modules.])
+*** Documentation for modula-2 will not include the target SYSTEM module.])
   HAVE_PYTHON=no
 else
   HAVE_PYTHON=yes

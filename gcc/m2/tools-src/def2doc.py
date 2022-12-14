@@ -264,6 +264,15 @@ def check_index(line):
             if proc != '':
                 emit_index(proc, '')
 
+def demangle_system_datatype(line, indent):
+    # The spaces in front align in the export qualified list.
+    indent += len ('EXPORT QUALIFIED ')
+    line = line.replace('@SYSTEM_DATATYPES@',
+                        '\n' + indent * ' ' + 'Target specific data types.')
+    line = line.replace('@SYSTEM_TYPES@',
+                        '(* Target specific data types.  *)')
+    return line
+
 
 def emit_texinfo_content(f, line):
     global state_obj
@@ -283,12 +292,7 @@ def emit_texinfo_content(f, line):
         line = line.rstrip()
         check_index(line)
         line = line.replace('{', '@{').replace('}', '@}')
-        # The spaces in front align in the export qualified list.
-        line = line.replace('@SYSTEM_DATATYPES@',
-                            '\n' + len ('EXPORT QUALIFIED ') * ' '
-                            + 'Target specific data types.')
-        line = line.replace('@SYSTEM_TYPES@',
-                            '(* Target specific data types.  *)')
+        line = demangle_system_datatype(line, 0)
         output.write(line + '\n')
         line = f.readline()
     return f
@@ -297,7 +301,8 @@ def emit_texinfo_content(f, line):
 def emit_sphinx_content(f, line):
     global state_obj
     state_obj.to_code()
-    indent = ' ' * 4
+    indentation = 4
+    indent = ' ' * indentation
     output.write(indent + line.rstrip() + '\n')
     line = f.readline()
     if len(line.rstrip()) == 0:
@@ -314,6 +319,7 @@ def emit_sphinx_content(f, line):
         line = line.rstrip()
         check_index(line)
         state_obj.to_code()
+        line = demangle_system_datatype(line, indentation)
         output.write(indent + line + '\n')
         line = f.readline()
     return f

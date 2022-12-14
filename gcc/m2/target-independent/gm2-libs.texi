@@ -3181,7 +3181,7 @@ EXPORT QUALIFIED BITSPERBYTE, BYTESPERWORD,
                  ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* 
                  Target specific data types.  *)
                  ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE ;
-                 (* SIZE is also exported if -fpim2 is used,  *)
+                 (* SIZE is also exported if -fpim2 is used.  *)
 
 CONST
 @findex BITSPERBYTE (const)

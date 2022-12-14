@@ -310,10 +310,10 @@ documented for affected targets.
 
 @item @anchor{GM2-prerequisite}GM2
 
-Python3 is required if you want to build the complete modula-2
-documentation containing all the library modules and the target
-@code{SYSTEM} definition module.  If Python3 is unavailable the manual
-page and a subset of the texinfo documentation is generated.
+Python3 is required if you want to build the complete Modula-2
+documentation including the target @code{SYSTEM} definition module.
+If Python3 is unavailable Modula-2 documentation will include a target
+independent version of the SYSTEM modules.
 
 @item A ``working'' POSIX compatible shell, or GNU bash
 
@@ -463,7 +463,7 @@ is shown below:
 @code{argparse}, @code{os}, @code{pathlib}, @code{shutil} and
 @code{sys}.
 
-@item git
+@item git developer tools
 @code{os} and @code{sys}.
 
 @item ada documentation
