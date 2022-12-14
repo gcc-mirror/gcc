@@ -29,9 +29,23 @@ CONST
 @findex LOCSPERBYTE (const)
   LOCSPERBYTE = 8 DIV BITSPERLOC ;
 
+(* Note that the full list of system and sized datatypes include:
+   LOC, WORD, BYTE, ADDRESS,
+
+   (and the non language standard target types)
+
+   INTEGER8, INTEGER16, INTEGER32, INTEGER64,
+   CARDINAL8, CARDINAL16, CARDINAL32, CARDINAL64,
+   WORD16, WORD32, WORD64, BITSET8, BITSET16,
+   BITSET32, REAL32, REAL64, REAL128, COMPLEX32,
+   COMPLEX64, COMPLEX128, CSIZE_T, CSSIZE_T.
+
+   Also note that the non-standard data types will
+   move into another module in the future.  *)
+
 (*
-   all the objects below are declared internally to gm2
-   ====================================================
+   All the data types and procedures below are declared internally.
+   ===============================================================
 
 TYPE
    (* Target specific data types.  *)
