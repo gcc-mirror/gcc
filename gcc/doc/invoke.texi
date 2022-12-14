@@ -15520,6 +15520,11 @@ parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
 
+@item ipa-sra-ptrwrap-growth-factor
+Additional maximum allowed growth of total size of new parameters
+that ipa-sra replaces a pointer to an aggregate with,
+if it points to a local variable that the caller never writes to.
+
 @item ipa-sra-max-replacements
 Maximum pieces of an aggregate that IPA-SRA tracks.  As a
 consequence, it is also the maximum number of replacements of a formal
