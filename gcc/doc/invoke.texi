@@ -343,6 +343,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
 -Wchar-subscripts @gol
 -Wclobbered  -Wcomment @gol
+-Wno-complain-wrong-lang @gol
 -Wconversion  -Wno-coverage-mismatch  -Wno-cpp @gol
 -Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}  @gol
 -Wdate-time @gol
@@ -8943,6 +8944,25 @@ programs.
 @opindex Wno-clobbered
 Warn for variables that might be changed by @code{longjmp} or
 @code{vfork}.  This warning is also enabled by @option{-Wextra}.
+
+@item -Wno-complain-wrong-lang
+@opindex Wcomplain-wrong-lang
+@opindex Wno-complain-wrong-lang
+By default, language front ends complain when a command-line option is
+valid, but not applicable to that front end.
+This may be disabled with @option{-Wno-complain-wrong-lang},
+which is mostly useful when invoking a single compiler driver for
+multiple source files written in different languages, for example:
+
+@smallexample
+$ g++ -fno-rtti a.cc b.f90
+@end smallexample
+
+The driver @file{g++} invokes the C++ front end to compile @file{a.cc}
+and the Fortran front end to compile @file{b.f90}.
+The latter front end diagnoses
+@samp{f951: Warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for Fortran},
+which may be disabled with @option{-Wno-complain-wrong-lang}.
 
 @item -Wconversion
 @opindex Wconversion

@@ -59,6 +59,10 @@ proc check_compile {basename type contents args} {
     } else {
 	set options ""
     }
+    # Silence "command-line option [...] is valid for [...] but not for [...]"
+    # that we may easily run into here, if more than one language is involved.
+    lappend options additional_flags=-Wno-complain-wrong-lang
+
     switch -glob -- $contents {
 	"*/\\* Assembly*" { set src ${basename}[pid].S }
 	"*! Fortran*" { set src ${basename}[pid].f90 }

@@ -1,7 +1,5 @@
 ! { dg-do run }
 
-  ! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
-
 ! Test tasks with detach clause on an offload device.  Each device
 ! thread spawns off a chain of tasks, that can then be executed by
 ! any available thread.

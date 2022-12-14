@@ -582,6 +582,10 @@ Wcast-align=strict
 Common Var(warn_cast_align,2) Warning
 Warn about pointer casts which increase alignment.
 
+Wcomplain-wrong-lang
+Common Var(warn_complain_wrong_lang) Init(1) Warning
+Complain when a command-line option is valid, but not applicable to the current front end.
+
 Wcpp
 Common Var(warn_cpp) Init(1) Warning
 Warn when a #warning directive is encountered.

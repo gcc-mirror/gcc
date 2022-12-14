@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-additional-sources allocate-1.c }
-! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
+! { dg-additional-options -Wno-complain-wrong-lang }
 
 module m
   use omp_lib

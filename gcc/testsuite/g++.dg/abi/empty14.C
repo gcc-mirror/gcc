@@ -2,7 +2,7 @@
 // { dg-do run { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } }
 // { dg-options "-Wabi=11 -x c" }
 // { dg-additional-sources "empty14a.c" }
-// { dg-prune-output "command-line option" }
+// { dg-additional-options -Wno-complain-wrong-lang }
 
 #include "empty14.h"
 extern "C" void fun(struct dummy, struct foo);
