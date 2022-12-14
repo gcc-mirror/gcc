@@ -308,6 +308,13 @@ On some targets, @samp{libphobos} isn't enabled by default, but compiles
 and works if @option{--enable-libphobos} is used.  Specifics are
 documented for affected targets.
 
+@item @anchor{GM2-prerequisite}GM2
+
+Python3 is required if you want to build the complete Modula-2
+documentation including the target @code{SYSTEM} definition module.
+If Python3 is unavailable Modula-2 documentation will include a target
+independent version of the SYSTEM modules.
+
 @item A ``working'' POSIX compatible shell, or GNU bash
 
 Necessary when running @command{configure} because some
@@ -435,6 +442,34 @@ search path.
 Necessary to build GCC with zstd compression used for LTO bytecode.
 The library is searched in your default library patch search.
 Alternatively, the @option{--with-zstd} configure option should be used.
+
+@item Python3 modules
+
+The complete list of Python3 modules broken down by GCC subcomponent
+is shown below:
+
+@table @asis
+@item internal debugging in gdbhooks
+@code{gdb}, @code{gdb.printing}, @code{gdb.types},
+@code{os.path}, @code{re}, @code{sys} and @code{tempfile},
+
+@item g++ testsuite
+@code{gcov}, @code{gzip}, @code{json}, @code{os} and @code{pytest}.
+
+@item c++ cxx api generation
+@code{csv}, @code{os}, @code{sys} and @code{time}.
+
+@item modula-2 documentation
+@code{argparse}, @code{os}, @code{pathlib}, @code{shutil} and
+@code{sys}.
+
+@item git developer tools
+@code{os} and @code{sys}.
+
+@item ada documentation
+@code{latex_elements}, @code{os}, @code{pygments}, @code{re},
+@code{sys} and @code{time}.
+@end table
 
 @end table
 
@@ -1853,11 +1888,13 @@ grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
 @code{all}, @code{default}, @code{ada}, @code{c}, @code{c++}, @code{d},
-@code{fortran}, @code{go}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
+@code{fortran}, @code{go}, @code{jit}, @code{lto}, @code{m2},
+@code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{default}, then the
 default languages available in the @file{gcc} sub-tree will be configured.
-Ada, D, Go, Jit, and Objective-C++ are not default languages.  LTO is not a
+Ada, D, Go, Jit, Objective-C++ and Modula-2 are not default languages.
+LTO is not a
 default language, but is built by default because @option{--enable-lto} is
 enabled by default.  The other languages are default languages.  If
 @code{all} is specified, then all available languages are built.  An
@@ -1884,6 +1921,10 @@ Specify that the run-time libraries and tools used by GNAT should not
 be built.  This can be useful for debugging, or for compatibility with
 previous Ada build procedures, when it was required to explicitly
 do a @samp{make -C gcc gnatlib_and_tools}.
+
+@item --disable-libgm2
+Specify that the run-time libraries and tools used by Modula-2 should not
+be built.  This can be useful for debugging.
 
 @item --disable-libsanitizer
 Specify that the run-time libraries for the various sanitizers should
@@ -3144,10 +3185,10 @@ on a simulator as described at @uref{https://gcc.gnu.org/simtest-howto.html}.
 In order to run sets of tests selectively, there are targets
 @samp{make check-gcc} and language specific @samp{make check-c},
 @samp{make check-c++}, @samp{make check-d} @samp{make check-fortran},
-@samp{make check-ada}, @samp{make check-objc}, @samp{make check-obj-c++},
-@samp{make check-lto}
-in the @file{gcc} subdirectory of the object directory.  You can also
-just run @samp{make check} in a subdirectory of the object directory.
+@samp{make check-ada}, @samp{make check-m2}, @samp{make check-objc},
+@samp{make check-obj-c++}, @samp{make check-lto} in the @file{gcc}
+subdirectory of the object directory.  You can also just run
+@samp{make check} in a subdirectory of the object directory.
 
 
 A more selective way to just run all @command{gcc} execute tests in the

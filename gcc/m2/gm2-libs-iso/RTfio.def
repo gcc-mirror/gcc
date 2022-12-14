@@ -1,0 +1,123 @@
+(* RTfio.def provide default FIO based methods.
+
+Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RTfio ;
+
+(*
+    Title      : RTfio
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Wed Sep 24 11:54:58 2008
+    Revision   : $Version$
+    Description: provides default FIO based methods for the RTgenif
+                 procedures.  These will be used by StreamFile,
+                 SeqFile, StdChans, TermFile and RndFile.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM IOLink IMPORT DeviceTablePtr;
+FROM RTgenif IMPORT GenDevIF ;
+
+
+(*
+   doreadchar - returns a CHAR from the file associated with, g.
+*)
+
+PROCEDURE doreadchar (g: GenDevIF; d: DeviceTablePtr) : CHAR ;
+
+
+(*
+   dounreadchar - pushes a CHAR back onto the file associated
+                  with, g.
+*)
+
+PROCEDURE dounreadchar (g: GenDevIF; d: DeviceTablePtr; ch: CHAR) : CHAR ;
+
+
+(*
+   dogeterrno - returns the errno relating to the generic device.
+*)
+
+PROCEDURE dogeterrno (g: GenDevIF; d: DeviceTablePtr) : INTEGER ;
+
+
+(*
+   dorbytes - reads upto, max, bytes setting, actual, and
+              returning FALSE if an error (not due to eof)
+              occurred.
+*)
+
+PROCEDURE dorbytes (g: GenDevIF;
+                    d: DeviceTablePtr;
+                    to: ADDRESS;
+                    max: CARDINAL;
+                    VAR actual: CARDINAL) : BOOLEAN ;
+
+(*
+   dowbytes - writes up to, nBytes.  It returns FALSE
+              if an error occurred and it sets actual
+              to the amount of data written.
+*)
+
+PROCEDURE dowbytes (g: GenDevIF;
+                    d: DeviceTablePtr;
+                    from: ADDRESS;
+                    nBytes: CARDINAL;
+                    VAR actual: CARDINAL) : BOOLEAN ;
+
+
+(*
+   dowriteln - attempt to write an end of line marker to the
+               file and returns TRUE if successful.
+*)
+
+PROCEDURE dowriteln (g: GenDevIF; d: DeviceTablePtr) : BOOLEAN ;
+
+
+(*
+   iseof - returns TRUE if end of file has been seen.
+*)
+
+PROCEDURE iseof (g: GenDevIF; d: DeviceTablePtr) : BOOLEAN ;
+
+
+(*
+   iseoln - returns TRUE if end of line has been seen.
+*)
+
+PROCEDURE iseoln (g: GenDevIF; d: DeviceTablePtr) : BOOLEAN ;
+
+
+(*
+   iserror - returns TRUE if an error was seen on the device.
+             Note that reaching EOF is not classified as an
+             error.
+*)
+
+PROCEDURE iserror (g: GenDevIF; d: DeviceTablePtr) : BOOLEAN ;
+
+
+END RTfio.

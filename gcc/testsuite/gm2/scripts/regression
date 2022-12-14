@@ -1,0 +1,147 @@
+#!/bin/sh
+
+# Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+# Free Software Foundation, Inc.
+# This file is part of GNU Modula-2.
+#
+# GNU Modula-2 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+# 
+# GNU Modula-2 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GNU Modula-2; see the file COPYING.  If not, write to the
+# Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA. 
+#
+
+GCC_VERSION=3.3.6
+BFLAGS=-B../../../../../../../build-$GCC_VERSION/gcc/stage1/gm2
+LIBS=-I.:/usr/local/lib/gcc-lib/i686-pc-linux-gnu/$GCC_VERSION/gm2/pim
+DRIVER=../../../../../../../build-$GCC_VERSION/gcc/xgm2
+OPTFLAGS=-O
+LIBRARIES=-lm
+
+if [ ! -x $DRIVER ] ; then
+   echo "cannot find $DRIVER"
+   exit 1
+fi
+
+function compile () {
+    rm -f a.out
+    if ! $DRIVER $BFLAGS -v $OPTFLAGS $LIBS -Wcpp -gstabs -c $1 >& /dev/null  ; then
+        echo "failed to compile $1: compilation command: exit code" $?
+        $DRIVER $BFLAGS $OPTFLAGS $LIBS -gstabs -c $1
+        $DRIVER -v $BFLAGS $OPTFLAGS $LIBS -gstabs -c $1
+        return
+    fi
+    if ! $DRIVER $BFLAGS $OPTFLAGS $LIBS -Wcpp -S -gstabs -c $1 >& /dev/null ; then
+        echo "failed to compile $1"
+        return
+    fi
+    if ! $DRIVER $BFLAGS $LIBS -Wcpp -gstabs -I. $1 $LIBRARIES >& /dev/null ; then
+        echo "failed to link $1"
+    fi
+}
+
+function doFile () {
+    compile $1
+    if [ -x a.out ] ; then
+        echo -n "$1 : "
+        if ./a.out >& /dev/null ; then
+            echo "passed"
+        else
+            echo "compiled ok, but executable, a.out, failed with exit code $?"
+        fi
+    fi
+}
+
+
+doFile smallset1.mod
+doFile smallset2.mod
+doFile smallset3.mod
+doFile smallset4.mod
+doFile smallset5.mod
+doFile smallset6.mod
+doFile smallset7.mod
+
+doFile largeset1.mod
+doFile largeset2.mod
+doFile largeset3.mod
+doFile largeset4.mod
+doFile largeset5.mod
+doFile largeset6.mod
+
+doFile setchar10.mod
+doFile parambool.mod
+doFile arraybool.mod
+doFile procindirect.mod
+doFile localvar.mod
+doFile proctype.mod
+doFile setchar11.mod
+doFile ptrarray.mod
+doFile ptrarray2.mod
+doFile record1.mod
+doFile record2.mod
+doFile ConvTypes.mod
+doFile ChanConsts.mod
+doFile testrecursive.mod
+doFile test2recursive.mod
+doFile testbuiltin2.mod
+doFile testcase.mod
+doFile testcase2.mod
+doFile testcase3.mod
+doFile testcase4.mod
+doFile trunc.mod
+doFile longreal.mod
+doFile realneg.mod
+doFile realneg2.mod
+doFile sizetype.mod
+doFile defset.mod
+doFile constset.mod
+doFile constset2.mod
+doFile constset3.mod
+doFile bitset2.mod
+doFile bitset3.mod
+
+doFile testabs.mod
+doFile testcap.mod
+doFile testodd.mod
+doFile testord.mod
+doFile bits32.mod
+doFile bits32i.mod
+doFile loopexit.mod
+doFile constsize.mod
+doFile constsize2.mod
+doFile impc.mod
+doFile impb.mod
+doFile impa.mod
+doFile impd.mod
+doFile impe.mod
+# doFile impf.mod should fail
+doFile impg.mod
+doFile imph.mod
+doFile impi.mod
+doFile impj.mod
+# doFile realbitscast.mod an ISO test
+doFile tinyimp.mod
+doFile impm.mod
+doFile impn.mod
+doFile impo.mod
+doFile testset.mod
+doFile convert.mod
+doFile longcard2.mod
+doFile arraydim.mod
+doFile multtypes.mod
+doFile testcard.mod
+doFile testcard2.mod
+doFile testcard3.mod
+doFile testcard4.mod
+doFile opaquetype.mod
+doFile testopaque3.mod
+doFile testchar.mod

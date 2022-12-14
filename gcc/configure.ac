@@ -1263,6 +1263,20 @@ AC_CHECK_PROGS([FLEX], flex, [$MISSING flex])
 # Bison?
 AC_CHECK_PROGS([BISON], bison, [$MISSING bison])
 
+# Python3?
+ACX_CHECK_PROG_VER(PYTHON, python3, --version,
+  [Python.* \([0-9][0-9.]*\)],
+  [3.[4-9]*|3.[1-9][0-9]*|[4-9].*|[1-9][0-9]*])
+if test $gcc_cv_prog_python3_modern = no; then
+  AC_MSG_WARN([
+*** Python3 is missing.
+*** Documentation for modula-2 will not include the target SYSTEM module.])
+  HAVE_PYTHON=no
+else
+  HAVE_PYTHON=yes
+fi
+AC_SUBST(HAVE_PYTHON)
+
 # Binutils are not build modules, unlike bison/flex/makeinfo.  So we
 # check for build == host before using them.
 
@@ -7651,4 +7665,3 @@ done
 ], 
 [subdirs='$subdirs'])
 AC_OUTPUT
-

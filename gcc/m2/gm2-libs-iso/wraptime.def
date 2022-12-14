@@ -1,0 +1,207 @@
+(* wraptime.def provides access to time primitives.
+
+Copyright (C) 2009-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE wraptime ;
+
+(*
+    Title      : wraptime
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Sun Mar  1 21:41:29 2009
+    Revision   : $Version$ 
+    Description: provides an interface to various time related
+                 entities on the underlying host operating system.
+                 It provides access to the glibc/libc functions:
+                 gettimeofday, settimeofday and localtime_r.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   timeval  = ADDRESS ;
+   timezone = ADDRESS ;
+   tm       = ADDRESS ;
+
+
+(*
+   InitTimeval - returns a newly created opaque type.
+*)
+
+PROCEDURE InitTimeval () : timeval ;
+
+
+(*
+   KillTimeval - deallocates the memory associated with an
+                 opaque type.
+*)
+
+PROCEDURE KillTimeval (tv: timeval) : timeval ;
+
+
+(*
+   InitTimezone - returns a newly created opaque type.
+*)
+
+PROCEDURE InitTimezone () : timezone ;
+
+
+(*
+   KillTimezone - deallocates the memory associated with an
+                  opaque type.
+*)
+
+PROCEDURE KillTimezone (tv: timezone) : timezone ;
+
+
+(*
+   InitTM - returns a newly created opaque type.
+*)
+
+PROCEDURE InitTM () : tm ;
+
+
+(*
+   KillTM - deallocates the memory associated with an
+            opaque type.
+*)
+
+PROCEDURE KillTM (tv: tm) : tm ;
+
+
+(*
+   gettimeofday - calls gettimeofday(2) with the same parameters, tv,
+                  and, tz.  It returns 0 on success.
+*)
+
+PROCEDURE gettimeofday (tv: timeval; tz: timezone) : INTEGER ;
+
+
+(*
+   settimeofday - calls settimeofday(2) with the same parameters, tv,
+                  and, tz.  It returns 0 on success.
+*)
+
+PROCEDURE settimeofday (tv: timeval; tz: timezone) : INTEGER ;
+
+
+(*
+   GetFractions - returns the tv_usec field inside the timeval structure
+                  as a CARDINAL.
+*)
+
+PROCEDURE GetFractions (tv: timeval) : CARDINAL ;
+
+
+(*
+   localtime_r - returns the tm parameter, m, after it has been assigned with
+                 appropriate contents determined by, tv.  Notice that
+                 this procedure function expects, timeval, as its first
+                 parameter and not a time_t (as expected by the posix
+                 equivalent).  This avoids having to expose a time_t
+                 system dependant definition.
+*)
+
+PROCEDURE localtime_r (tv: timeval; m: tm) : tm ;
+
+
+(*
+   GetYear - returns the year from the structure, m.
+*)
+
+PROCEDURE GetYear (m: tm) : CARDINAL ;
+
+
+(*
+   GetMonth - returns the month from the structure, m.
+*)
+
+PROCEDURE GetMonth (m: tm) : CARDINAL ;
+
+
+(*
+   GetDay - returns the day of the month from the structure, m.
+*)
+
+PROCEDURE GetDay (m: tm) : CARDINAL ;
+
+
+(*
+   GetHour - returns the hour of the day from the structure, m.
+*)
+
+PROCEDURE GetHour (m: tm) : CARDINAL ;
+
+
+(*
+   GetMinute - returns the minute within the hour from the structure, m.
+*)
+
+PROCEDURE GetMinute (m: tm) : CARDINAL ;
+
+
+(*
+   GetSecond - returns the seconds in the minute from the structure, m.
+               The return value will always be in the range 0..59.
+               A leap minute of value 60 will be truncated to 59.
+*)
+
+PROCEDURE GetSecond (m: tm) : CARDINAL ;
+
+
+(*
+   GetSummerTime - returns a boolean indicating whether summer time is
+                   set.
+*)
+
+PROCEDURE GetSummerTime (tz: timezone) : BOOLEAN ;
+
+
+(*
+   GetDST - returns the number of minutes west of GMT.
+*)
+
+PROCEDURE GetDST (tz: timezone) : INTEGER ;
+
+
+(*
+   SetTimeval - sets the fields in timeval, tv, with:
+                second, minute, hour, day, month, year, fractions.
+*)
+
+PROCEDURE SetTimeval (tv: timeval;
+                      second, minute, hour, day,
+                      month, year, yday, wday, isdst: CARDINAL) ;
+
+
+(*
+   SetTimezone - set the timezone field inside timeval, tv.
+*)
+
+PROCEDURE SetTimezone (tv: timeval;
+                       zone: CARDINAL; minuteswest: INTEGER) ;
+
+
+END wraptime.

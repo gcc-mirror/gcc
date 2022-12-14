@@ -1,0 +1,56 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE WholeStr;
+
+  (* Whole-number/string conversions *)
+
+IMPORT
+  ConvTypes;
+
+TYPE
+  ConvResults = ConvTypes.ConvResults;
+  (* strAllRight, strOutOfRange, strWrongFormat, strEmpty *)
+
+(* the string form of a signed whole number is
+     ["+" | "-"], decimal digit, {decimal digit}
+*)
+
+PROCEDURE StrToInt (str: ARRAY OF CHAR; VAR int: INTEGER;
+                    VAR res: ConvResults);
+  (* Ignores any leading spaces in str. If the subsequent
+     characters in str are in the format of a signed whole
+     number, assigns a corresponding value to int. Assigns
+     a value indicating the format of str to res.
+  *)
+
+PROCEDURE IntToStr (int: INTEGER; VAR str: ARRAY OF CHAR);
+  (* Converts the value of int to string form and copies the
+     possibly truncated result to str. *)
+
+(* the string form of an unsigned whole number is
+     decimal digit, {decimal digit}
+*)
+
+PROCEDURE StrToCard (str: ARRAY OF CHAR;
+                     VAR card: CARDINAL;
+                     VAR res: ConvResults);
+  (* Ignores any leading spaces in str. If the subsequent
+     characters in str are in the format of an unsigned
+     whole number, assigns a corresponding value to card.
+     Assigns a value indicating the format of str to res.
+  *)
+
+PROCEDURE CardToStr (card: CARDINAL; VAR str: ARRAY OF CHAR);
+  (* Converts the value of card to string form and copies the
+     possibly truncated result to str. *)
+
+END WholeStr.

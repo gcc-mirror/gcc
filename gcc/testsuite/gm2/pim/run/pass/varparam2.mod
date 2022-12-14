@@ -1,0 +1,48 @@
+(* Copyright (C) 2005, 2006 Free Software Foundation, Inc. *)
+(* This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+
+MODULE varparam2 ;
+
+TYPE
+   TermIO = RECORD
+               foo: BITSET ;
+            END ;
+
+
+   PROCEDURE GetTermIO(fd: CARDINAL; VAR termio: TermIO) : BOOLEAN;
+   VAR
+      t: BITSET ;
+
+      PROCEDURE Convert(flag1, flag2: CHAR; VAR bs: BITSET);
+      BEGIN
+	 bs := BITSET( ORD(flag1)*100H + ORD(flag2) );
+      END Convert;
+
+   BEGIN
+      WITH termio DO 
+         t := foo
+      END;
+      RETURN TRUE
+   END GetTermIO;
+
+VAR
+   f: TermIO ;
+BEGIN
+   IF GetTermIO(0, f)
+   THEN
+   END
+END varparam2.

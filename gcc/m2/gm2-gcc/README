@@ -1,0 +1,5 @@
+This directory contains the interface code between the Modula-2 front
+end and GCC.  In effect this is the Modula-2 compiler GCC Tree API.
+It is an internal API only.  Many of these filenames match their GCC C
+family counterparts.  So for example m2decl.def and m2decl.cc are the
+Modula-2 front end version of c-decl.cc.
