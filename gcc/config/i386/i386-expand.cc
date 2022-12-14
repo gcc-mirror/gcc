@@ -1260,14 +1260,14 @@ ix86_swap_binary_operands_p (enum rtx_code code, machine_mode mode,
   return false;
 }
 
-
 /* Fix up OPERANDS to satisfy ix86_binary_operator_ok.  Return the
    destination to use for the operation.  If different from the true
-   destination in operands[0], a copy operation will be required.  */
+   destination in operands[0], a copy operation will be required except
+   under TARGET_APX_NDD.  */
 
 rtx
 ix86_fixup_binary_operands (enum rtx_code code, machine_mode mode,
-			    rtx operands[])
+			    rtx operands[], bool use_ndd)
 {
   rtx dst = operands[0];
   rtx src1 = operands[1];
@@ -1307,7 +1307,7 @@ ix86_fixup_binary_operands (enum rtx_code code, machine_mode mode,
     src1 = force_reg (mode, src1);
 
   /* Source 1 cannot be a non-matching memory.  */
-  if (MEM_P (src1) && !rtx_equal_p (dst, src1))
+  if (!use_ndd && MEM_P (src1) && !rtx_equal_p (dst, src1))
     src1 = force_reg (mode, src1);
 
   /* Improve address combine.  */
@@ -1338,11 +1338,11 @@ ix86_fixup_binary_operands_no_copy (enum rtx_code code,
 
 void
 ix86_expand_binary_operator (enum rtx_code code, machine_mode mode,
-			     rtx operands[])
+			     rtx operands[], bool use_ndd)
 {
   rtx src1, src2, dst, op, clob;
 
-  dst = ix86_fixup_binary_operands (code, mode, operands);
+  dst = ix86_fixup_binary_operands (code, mode, operands, use_ndd);
   src1 = operands[1];
   src2 = operands[2];
 
@@ -1352,7 +1352,8 @@ ix86_expand_binary_operator (enum rtx_code code, machine_mode mode,
 
   if (reload_completed
       && code == PLUS
-      && !rtx_equal_p (dst, src1))
+      && !rtx_equal_p (dst, src1)
+      && !use_ndd)
     {
       /* This is going to be an LEA; avoid splitting it later.  */
       emit_insn (op);
@@ -1451,7 +1452,7 @@ ix86_expand_vector_logical_operator (enum rtx_code code, machine_mode mode,
 
 bool
 ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
-			 rtx operands[3])
+			 rtx operands[3], bool use_ndd)
 {
   rtx dst = operands[0];
   rtx src1 = operands[1];
@@ -1475,7 +1476,7 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
     return false;
 
   /* Source 1 cannot be a non-matching memory.  */
-  if (MEM_P (src1) && !rtx_equal_p (dst, src1))
+  if (!use_ndd && MEM_P (src1) && !rtx_equal_p (dst, src1))
     /* Support "andhi/andsi/anddi" as a zero-extending move.  */
     return (code == AND
 	    && (mode == HImode

@@ -2129,6 +2129,8 @@ ix86_option_override_internal (bool main_args_p,
 
   if (TARGET_APX_F && !TARGET_64BIT)
     error ("%<-mapxf%> is not supported for 32-bit code");
+  else if (opts->x_ix86_apx_features != apx_none && !TARGET_64BIT)
+    error ("%<-mapx-features=%> option is not supported for 32-bit code");
 
   if (TARGET_UINTR && !TARGET_64BIT)
     error ("%<-muintr%> not supported for 32-bit code");

@@ -108,14 +108,14 @@ extern void ix86_expand_move (machine_mode, rtx[]);
 extern void ix86_expand_vector_move (machine_mode, rtx[]);
 extern void ix86_expand_vector_move_misalign (machine_mode, rtx[]);
 extern rtx ix86_fixup_binary_operands (enum rtx_code,
-				       machine_mode, rtx[]);
+				       machine_mode, rtx[], bool = false);
 extern void ix86_fixup_binary_operands_no_copy (enum rtx_code,
 						machine_mode, rtx[]);
 extern void ix86_expand_binary_operator (enum rtx_code,
-					 machine_mode, rtx[]);
+					 machine_mode, rtx[], bool = false);
 extern void ix86_expand_vector_logical_operator (enum rtx_code,
 						 machine_mode, rtx[]);
-extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[3]);
+extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[3], bool = false);
 extern bool ix86_avoid_lea_for_add (rtx_insn *, rtx[]);
 extern bool ix86_use_lea_for_mov (rtx_insn *, rtx[]);
 extern bool ix86_avoid_lea_for_addr (rtx_insn *, rtx[]);
