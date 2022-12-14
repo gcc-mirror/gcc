@@ -34,6 +34,7 @@ with Ada.Float_Text_IO;
 with Ada.Integer_Text_IO;
 with Ada.Long_Float_Text_IO;
 with Ada.Long_Integer_Text_IO;
+with Ada.Strings;
 with Ada.Strings.Fixed;
 with Ada.Unchecked_Deallocation;
 
@@ -49,8 +50,8 @@ package body GNAT.Formatted_String is
                    Decimal_Float,               -- %f %F
                    Decimal_Scientific_Float,    -- %e
                    Decimal_Scientific_Float_Up, -- %E
-                   Shortest_Decimal_Float,      -- %g
-                   Shortest_Decimal_Float_Up,   -- %G
+                   G_Specifier,                 -- %g
+                   G_Specifier_Up,              -- %G
                    Char,                        -- %c
                    Str,                         -- %s
                    Pointer                      -- %p
@@ -58,7 +59,7 @@ package body GNAT.Formatted_String is
 
    type Sign_Kind is (Neg, Zero, Pos);
 
-   subtype Is_Number is F_Kind range Decimal_Int .. Shortest_Decimal_Float_Up;
+   subtype Is_Number is F_Kind range Decimal_Int .. G_Specifier_Up;
 
    type F_Sign is (If_Neg, Forced, Space) with Default_Value => If_Neg;
 
@@ -77,6 +78,8 @@ package body GNAT.Formatted_String is
       Value_Needed : Natural range 0 .. 2 := 0;
    end record;
 
+   type Notation is (Decimal, Scientific);
+
    procedure Advance_And_Accumulate_Until_Next_Specifier
      (Format : Formatted_String);
    --  Advance Format.D.Index until either the next format specifier is
@@ -90,11 +93,29 @@ package body GNAT.Formatted_String is
    --  Parse the next format specifier, a format specifier has the following
    --  syntax: %[flags][width][.precision][length]specifier
 
+   procedure Determine_Notation_And_Aft
+     (Exponent                : Integer;
+      Precision               : Text_IO.Field;
+      Nota                    : out Notation;
+      Aft                     : out Text_IO.Field);
+   --  Determine whether to use scientific or decimal notation and the value of
+   --  Aft given the exponent and precision of a real number, as described in
+   --  the C language specification, section 7.21.6.1.
+
    function Get_Formatted
      (F_Spec : F_Data;
       Value  : String;
       Len    : Positive) return String;
    --  Returns Value formatted given the information in F_Spec
+
+   procedure Increment_Integral_Part
+     (Buffer              : in out String;
+      First_Non_Blank     : in out Positive;
+      Last_Digit_Position : Positive);
+   --  Buffer must contain the textual representation of a number.
+   --  Last_Digit_Position must be the position of the rightmost digit of the
+   --  integral part. Buffer must have at least one padding blank. Increment
+   --  the integral part.
 
    procedure Raise_Wrong_Format (Format : Formatted_String) with No_Return;
    --  Raise the Format_Error exception which information about the context
@@ -127,6 +148,18 @@ package body GNAT.Formatted_String is
      (Format : Formatted_String;
       Var    : Int) return Formatted_String;
    --  Generic routine which handles all the integer numbers
+
+   procedure Remove_Extraneous_Decimal_Digit
+     (Textual_Rep     : in out String;
+      First_Non_Blank : in out Positive);
+   --  Remove the unique digit to the right of the point in Textual_Rep
+
+   procedure Trim_Fractional_Part
+     (Textual_Rep     : in out String;
+      First_Non_Blank : in out Positive);
+   --  Remove trailing zeros from Textual_Rep, which must be the textual
+   --  representation of a real number. If the fractional part only contains
+   --  zeros, also remove the point.
 
    ---------
    -- "+" --
@@ -335,6 +368,30 @@ package body GNAT.Formatted_String is
       end loop;
    end Advance_And_Accumulate_Until_Next_Specifier;
 
+   --------------------------------
+   -- Determine_Notation_And_Aft --
+   --------------------------------
+
+   procedure Determine_Notation_And_Aft
+     (Exponent  : Integer;
+      Precision : Text_IO.Field;
+      Nota      : out Notation;
+      Aft       : out Text_IO.Field)
+   is
+      --  The constants use the same names as those from the C specification
+      --  in order to match the description of the predicate.
+      P : constant Text_IO.Field := (if Precision /= 0 then Precision else 1);
+      X : constant Integer       := Exponent;
+   begin
+      if P > X and X >= -4 then
+         Nota := Decimal;
+         Aft  := P - (X + 1);
+      else
+         Nota := Scientific;
+         Aft  := P - 1;
+      end if;
+   end Determine_Notation_And_Aft;
+
    --------------------
    -- Decimal_Format --
    --------------------
@@ -461,6 +518,35 @@ package body GNAT.Formatted_String is
          return R;
       end;
    end Get_Formatted;
+
+   -----------------------------
+   -- Increment_Integral_Part --
+   -----------------------------
+
+   procedure Increment_Integral_Part
+     (Buffer              : in out String;
+      First_Non_Blank     : in out Positive;
+      Last_Digit_Position : Positive)
+   is
+      Cursor : Natural := Last_Digit_Position;
+   begin
+      while Buffer (Cursor) = '9' loop
+         Buffer (Cursor) := '0';
+         Cursor          := Cursor - 1;
+      end loop;
+
+      pragma Assert (Cursor > 0);
+
+      if Buffer (Cursor) in '0' .. '8' then
+         Buffer (Cursor) := Character'Succ (Buffer (Cursor));
+      else
+         Ada.Strings.Fixed.Insert
+           (Buffer,
+            Cursor + 1,
+            "1");
+         First_Non_Blank := First_Non_Blank - 1;
+      end if;
+   end Increment_Integral_Part;
 
    ----------------
    -- Int_Format --
@@ -639,8 +725,8 @@ package body GNAT.Formatted_String is
          when 'f' | 'F' => F_Spec.Kind := Decimal_Float;
          when 'e'       => F_Spec.Kind := Decimal_Scientific_Float;
          when 'E'       => F_Spec.Kind := Decimal_Scientific_Float_Up;
-         when 'g'       => F_Spec.Kind := Shortest_Decimal_Float;
-         when 'G'       => F_Spec.Kind := Shortest_Decimal_Float_Up;
+         when 'g'       => F_Spec.Kind := G_Specifier;
+         when 'G'       => F_Spec.Kind := G_Specifier_Up;
          when 'o'       => F_Spec.Kind := Unsigned_Octal;
          when 'x'       => F_Spec.Kind := Unsigned_Hexadecimal_Int;
          when 'X'       => F_Spec.Kind := Unsigned_Hexadecimal_Int_Up;
@@ -677,11 +763,155 @@ package body GNAT.Formatted_String is
      (Format : Formatted_String;
       Var    : Flt) return Formatted_String
    is
+      procedure Compute_Exponent
+        (Var      : Flt;
+         Valid    : out Boolean;
+         Exponent : out Integer);
+      --  If Var is invalid (for example, a NaN of an inf), set Valid False and
+      --  set Exponent to 0. Otherwise, set Valid True, and store the exponent
+      --  of the scientific notation representation of Var in Exponent. The
+      --  exponent can also be defined as:
+      --  - If Var = 0, 0.
+      --  - Otherwise, Floor (Log_10 (Abs (Var))).
+
+      procedure Format_With_Notation
+        (Var : Flt;
+         Nota : Notation;
+         Aft : Text_IO.Field;
+         Buffer : out String);
+      --  Fill buffer with the formatted value of Var following the notation
+      --  specified through Nota.
+
+      procedure Handle_G_Specifier
+        (Buffer          : out String;
+         First_Non_Blank : out Positive;
+         Aft             : Text_IO.Field);
+      --  Fill Buffer with the formatted value of Var according to the rules of
+      --  the "%g" specifier. Buffer is right-justified and padded with blanks.
+
+      ----------------------
+      -- Compute_Exponent --
+      ----------------------
+
+      procedure Compute_Exponent
+        (Var      : Flt;
+         Valid    : out Boolean;
+         Exponent : out Integer)
+      is
+         --  The way the exponent is computed is convoluted. It is not possible
+         --  to use the logarithm in base 10 of Var and floor it, because the
+         --  math functions for this are not available for fixed point types.
+         --  Instead, use the generic Put procedure to produce a scientific
+         --  representation of Var, and parse the exponent part of that back
+         --  into an Integer.
+         Scientific_Rep : String (1 .. 50);
+
+         E_Position : Natural;
+      begin
+         Put (Scientific_Rep, Var, Aft => 1, Exp => 1);
+
+         E_Position := Ada.Strings.Fixed.Index (Scientific_Rep, "E");
+
+         if E_Position = 0 then
+            Valid    := False;
+            Exponent := 0;
+         else
+            Valid    := True;
+            Exponent :=
+              Integer'Value
+                (Scientific_Rep (E_Position + 1 .. Scientific_Rep'Last));
+         end if;
+      end Compute_Exponent;
+
+      --------------------------
+      -- Format_With_Notation --
+      --------------------------
+
+      procedure Format_With_Notation
+        (Var : Flt;
+         Nota : Notation;
+         Aft : Text_IO.Field;
+         Buffer : out String)
+      is
+         Exp : constant Text_IO.Field :=
+           (case Nota is when Decimal => 0, when Scientific => 3);
+      begin
+         Put (Buffer, Var, Aft, Exp);
+      end Format_With_Notation;
+
+      ------------------------
+      -- Handle_G_Specifier --
+      ------------------------
+
+      procedure Handle_G_Specifier
+        (Buffer          : out String;
+         First_Non_Blank : out Positive;
+         Aft             : Text_IO.Field)
+      is
+         --  There is nothing that is directly equivalent to the "%g" specifier
+         --  in the standard Ada functionality provided by Ada.Text_IO. The
+         --  procedure Put will still be used, but significant postprocessing
+         --  will be performed on the output of that procedure.
+
+         --  The following code is intended to match the behavior of C's printf
+         --  for %g, as described by paragraph "7.21.6.1 The fprintf function"
+         --  of the C language specification.
+
+         --  As explained in the C specification, we're going to have to make a
+         --  choice between decimal notation and scientific notation. One of
+         --  the elements we need in order to make that choice is the value of
+         --  the exponent in the decimal representation of Var. We will store
+         --  that value in Exponent.
+         Exponent : Integer;
+         Valid    : Boolean;
+
+         Nota : Notation;
+
+         --  The value of the formal Aft comes from the precision specifier in
+         --  the format string. For %g, the precision specifier corresponds to
+         --  the number of significant figures desired, whereas the formal Aft
+         --  in Put corresponds to the number of digits after the point.
+         --  Effective_Aft is what will be passed to Put as Aft in order to
+         --  respect the semantics of %g.
+         Effective_Aft : Text_IO.Field;
+
+         Textual_Rep : String (Buffer'Range);
+      begin
+         Compute_Exponent (Var, Valid, Exponent);
+
+         Determine_Notation_And_Aft
+           (Exponent, Aft, Nota, Effective_Aft);
+
+         Format_With_Notation (Var, Nota, Effective_Aft, Textual_Rep);
+
+         First_Non_Blank := Strings.Fixed.Index_Non_Blank (Textual_Rep);
+
+         if not Valid then
+            null;
+         elsif Effective_Aft = 0 then
+            --  Special case: it is possible at this point that Effective_Aft
+            --  is zero. But when Put is passed zero through Aft, it still
+            --  outputs one digit after the point. See the reference manual,
+            --  A.10.9.25.
+
+            Remove_Extraneous_Decimal_Digit (Textual_Rep, First_Non_Blank);
+         else
+            Trim_Fractional_Part
+              (Textual_Rep, First_Non_Blank);
+         end if;
+
+         Buffer := Textual_Rep;
+      end Handle_G_Specifier;
+
+      --  Local variables
+
       F      : F_Data;
       Buffer : String (1 .. 50);
       S, E   : Positive := 1;
       Start  : Positive;
       Aft    : Text_IO.Field;
+
+   --  Start of processing for P_Flt_Format
 
    begin
       Next_Format (Format, F, Start);
@@ -716,36 +946,13 @@ package body GNAT.Formatted_String is
                  Characters.Handling.To_Lower (Buffer (S .. E));
             end if;
 
-         when Shortest_Decimal_Float
-            | Shortest_Decimal_Float_Up
+         when G_Specifier
+            | G_Specifier_Up
          =>
-            --  Without exponent
-
-            Put (Buffer, Var, Aft, Exp => 0);
-            S := Strings.Fixed.Index_Non_Blank (Buffer);
+            Handle_G_Specifier (Buffer, S, Aft);
             E := Buffer'Last;
 
-            --  Check with exponent
-
-            declare
-               Buffer2 : String (1 .. 50);
-               S2, E2  : Positive;
-
-            begin
-               Put (Buffer2, Var, Aft, Exp => 3);
-               S2 := Strings.Fixed.Index_Non_Blank (Buffer2);
-               E2 := Buffer2'Last;
-
-               --  If with exponent it is shorter, use it
-
-               if (E2 - S2) < (E - S) then
-                  Buffer := Buffer2;
-                  S := S2;
-                  E := E2;
-               end if;
-            end;
-
-            if F.Kind = Shortest_Decimal_Float then
+            if F.Kind = G_Specifier then
                Buffer (S .. E) :=
                  Characters.Handling.To_Lower (Buffer (S .. E));
             end if;
@@ -987,5 +1194,75 @@ package body GNAT.Formatted_String is
         "wrong format specified for parameter"
         & Positive'Image (Format.D.Current);
    end Raise_Wrong_Format;
+
+   -------------------------------------
+   -- Remove_Extraneous_Decimal_Digit --
+   -------------------------------------
+
+   procedure Remove_Extraneous_Decimal_Digit
+     (Textual_Rep     : in out String;
+      First_Non_Blank : in out Positive)
+   is
+      Point_Position : constant Positive := Ada.Strings.Fixed.Index
+        (Textual_Rep,
+         ".",
+         First_Non_Blank);
+
+      Integral_Part_Needs_Increment : constant Boolean :=
+        Textual_Rep (Point_Position + 1) in '5' .. '9';
+   begin
+      Ada.Strings.Fixed.Delete
+        (Textual_Rep,
+         Point_Position,
+         Point_Position + 1,
+         Ada.Strings.Right);
+
+      First_Non_Blank := First_Non_Blank + 2;
+
+      if Integral_Part_Needs_Increment then
+         Increment_Integral_Part
+           (Textual_Rep,
+            First_Non_Blank,
+            Last_Digit_Position => Point_Position + 1);
+      end if;
+   end Remove_Extraneous_Decimal_Digit;
+
+   --------------------------
+   -- Trim_Fractional_Part --
+   --------------------------
+
+   procedure Trim_Fractional_Part
+     (Textual_Rep     : in out String;
+      First_Non_Blank : in out Positive)
+   is
+      Cursor : Positive :=
+        Ada.Strings.Fixed.Index (Textual_Rep, ".", First_Non_Blank);
+
+      First_To_Trim : Positive;
+      Fractional_Part_Last : Positive;
+   begin
+      while Cursor + 1 <= Textual_Rep'Last
+        and then Textual_Rep (Cursor + 1) in '0' .. '9' loop
+         Cursor := Cursor + 1;
+      end loop;
+
+      Fractional_Part_Last := Cursor;
+
+      while Textual_Rep (Cursor) = '0' loop
+         Cursor := Cursor - 1;
+      end loop;
+
+      if Textual_Rep (Cursor) = '.' then
+         Cursor := Cursor - 1;
+      end if;
+
+      First_To_Trim := Cursor + 1;
+
+      Ada.Strings.Fixed.Delete
+        (Textual_Rep, First_To_Trim, Fractional_Part_Last, Ada.Strings.Right);
+
+      First_Non_Blank :=
+        First_Non_Blank + (Fractional_Part_Last - First_To_Trim + 1);
+   end Trim_Fractional_Part;
 
 end GNAT.Formatted_String;
