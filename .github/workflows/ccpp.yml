@@ -8,9 +8,6 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  CXXFLAGS: "-Wno-unused-parameter -Werror=overloaded-virtual"
-
 jobs:
   build-and-check-ubuntu-64bit:
 
