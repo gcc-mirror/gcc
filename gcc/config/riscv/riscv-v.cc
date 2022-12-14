@@ -72,10 +72,15 @@ public:
   }
   void add_policy_operand (enum tail_policy vta, enum mask_policy vma)
   {
-    rtx tail_policy_rtx = vta == TAIL_UNDISTURBED ? const0_rtx : const1_rtx;
-    rtx mask_policy_rtx = vma == MASK_UNDISTURBED ? const0_rtx : const1_rtx;
+    rtx tail_policy_rtx = gen_int_mode (vta, Pmode);
+    rtx mask_policy_rtx = gen_int_mode (vma, Pmode);
     add_input_operand (tail_policy_rtx, Pmode);
     add_input_operand (mask_policy_rtx, Pmode);
+  }
+  void add_avl_type_operand ()
+  {
+    rtx vlmax_rtx = gen_int_mode (avl_type::VLMAX, Pmode);
+    add_input_operand (vlmax_rtx, Pmode);
   }
 
   void expand (enum insn_code icode, bool temporary_volatile_p = false)
@@ -112,19 +117,58 @@ emit_vlmax_vsetvl (machine_mode vmode)
   unsigned int sew = GET_MODE_CLASS (vmode) == MODE_VECTOR_BOOL
 		       ? 8
 		       : GET_MODE_BITSIZE (GET_MODE_INNER (vmode));
+  enum vlmul_type vlmul = get_vlmul (vmode);
+  unsigned int ratio = calculate_ratio (sew, vlmul);
 
-  emit_insn (
-    gen_vsetvl_no_side_effects (Pmode, vl, RVV_VLMAX, gen_int_mode (sew, Pmode),
-				gen_int_mode (get_vlmul (vmode), Pmode),
-				const1_rtx, const1_rtx));
+  if (!optimize)
+    emit_insn (gen_vsetvl (Pmode, vl, RVV_VLMAX, gen_int_mode (sew, Pmode),
+			   gen_int_mode (get_vlmul (vmode), Pmode), const0_rtx,
+			   const0_rtx));
+  else
+    emit_insn (gen_vlmax_avl (Pmode, vl, gen_int_mode (ratio, Pmode)));
+
   return vl;
+}
+
+/* Calculate SEW/LMUL ratio.  */
+unsigned int
+calculate_ratio (unsigned int sew, enum vlmul_type vlmul)
+{
+  unsigned int ratio;
+  switch (vlmul)
+    {
+    case LMUL_1:
+      ratio = sew;
+      break;
+    case LMUL_2:
+      ratio = sew / 2;
+      break;
+    case LMUL_4:
+      ratio = sew / 4;
+      break;
+    case LMUL_8:
+      ratio = sew / 8;
+      break;
+    case LMUL_F8:
+      ratio = sew * 8;
+      break;
+    case LMUL_F4:
+      ratio = sew * 4;
+      break;
+    case LMUL_F2:
+      ratio = sew * 2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return ratio;
 }
 
 /* Emit an RVV unmask && vl mov from SRC to DEST.  */
 void
 emit_pred_op (unsigned icode, rtx dest, rtx src, machine_mode mask_mode)
 {
-  insn_expander<7> e;
+  insn_expander<8> e;
   machine_mode mode = GET_MODE (dest);
 
   e.add_output_operand (dest, mode);
@@ -137,7 +181,9 @@ emit_pred_op (unsigned icode, rtx dest, rtx src, machine_mode mask_mode)
   e.add_input_operand (vlmax, Pmode);
 
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
-    e.add_policy_operand (TAIL_AGNOSTIC, MASK_AGNOSTIC);
+    e.add_policy_operand (get_prefer_tail_policy (), get_prefer_mask_policy ());
+
+  e.add_avl_type_operand ();
 
   e.expand ((enum insn_code) icode, MEM_P (dest) || MEM_P (src));
 }
@@ -254,6 +300,46 @@ get_ratio (machine_mode mode)
     return mode_vtype_infos.ratio_for_min_vlen32[mode];
   else
     return mode_vtype_infos.ratio_for_min_vlen64[mode];
+}
+
+/* Get ta according to operand[tail_op_idx].  */
+int
+get_ta (rtx ta)
+{
+  if (INTVAL (ta) == TAIL_ANY)
+    return INVALID_ATTRIBUTE;
+  return INTVAL (ta);
+}
+
+/* Get ma according to operand[mask_op_idx].  */
+int
+get_ma (rtx ma)
+{
+  if (INTVAL (ma) == MASK_ANY)
+    return INVALID_ATTRIBUTE;
+  return INTVAL (ma);
+}
+
+/* Get prefer tail policy.  */
+enum tail_policy
+get_prefer_tail_policy ()
+{
+  /* TODO: By default, we choose to use TAIL_ANY which allows
+     compiler pick up either agnostic or undisturbed. Maybe we
+     will have a compile option like -mprefer=agnostic to set
+     this value???.  */
+  return TAIL_ANY;
+}
+
+/* Get prefer mask policy.  */
+enum mask_policy
+get_prefer_mask_policy ()
+{
+  /* TODO: By default, we choose to use MASK_ANY which allows
+     compiler pick up either agnostic or undisturbed. Maybe we
+     will have a compile option like -mprefer=agnostic to set
+     this value???.  */
+  return MASK_ANY;
 }
 
 } // namespace riscv_vector

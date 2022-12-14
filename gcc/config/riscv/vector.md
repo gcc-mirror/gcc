@@ -32,6 +32,7 @@
   UNSPEC_VSETVL
   UNSPEC_VUNDEF
   UNSPEC_VPREDICATE
+  UNSPEC_VLMAX
 ])
 
 (define_constants [
@@ -94,7 +95,13 @@
 	 (const_int 32)
 	 (eq_attr "mode" "VNx1DI,VNx2DI,VNx4DI,VNx8DI,\
 			  VNx1DF,VNx2DF,VNx4DF,VNx8DF")
-	 (const_int 64)]
+	 (const_int 64)
+
+	 (eq_attr "type" "vsetvl")
+	 (if_then_else (eq_attr "INSN_CODE (curr_insn) == CODE_FOR_vsetvldi
+				 || INSN_CODE (curr_insn) == CODE_FOR_vsetvlsi")
+		       (symbol_ref "INTVAL (operands[2])")
+		       (const_int INVALID_ATTRIBUTE))]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; Ditto to LMUL.
@@ -142,7 +149,12 @@
 	 (eq_attr "mode" "VNx4DI,VNx4DF")
 	   (symbol_ref "riscv_vector::get_vlmul(E_VNx4DImode)")
 	 (eq_attr "mode" "VNx8DI,VNx8DF")
-	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8DImode)")]
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8DImode)")
+	 (eq_attr "type" "vsetvl")
+	 (if_then_else (eq_attr "INSN_CODE (curr_insn) == CODE_FOR_vsetvldi
+				 || INSN_CODE (curr_insn) == CODE_FOR_vsetvlsi")
+		       (symbol_ref "INTVAL (operands[3])")
+		       (const_int INVALID_ATTRIBUTE))]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; It is valid for instruction that require sew/lmul ratio.
@@ -219,6 +231,34 @@
 	 (const_int 6)]
 	(const_int INVALID_ATTRIBUTE)))
 
+;; The index of operand[] to get the mask policy op.
+(define_attr "avl_type_op_idx" ""
+  (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov,vlds,vlds")
+	 (const_int 7)
+	 (eq_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
+	 (const_int 5)]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; The tail policy op value.
+(define_attr "ta" ""
+  (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vlds")
+	   (symbol_ref "riscv_vector::get_ta(operands[5])")]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; The mask policy op value.
+(define_attr "ma" ""
+  (cond [(eq_attr "type" "vlde,vlds")
+	   (symbol_ref "riscv_vector::get_ma(operands[6])")]
+	(const_int INVALID_ATTRIBUTE)))
+
+;; The avl type value.
+(define_attr "avl_type" ""
+  (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov,vlds,vlds")
+	   (symbol_ref "INTVAL (operands[7])")
+	 (eq_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
+	   (symbol_ref "INTVAL (operands[5])")]
+	(const_int INVALID_ATTRIBUTE)))
+
 ;; -----------------------------------------------------------------
 ;; ---- Miscellaneous Operations
 ;; -----------------------------------------------------------------
@@ -226,6 +266,37 @@
 (define_insn "vundefined<mode>"
   [(set (match_operand:V 0 "register_operand" "=vr")
 	(unspec:V [(const_int 0)] UNSPEC_VUNDEF))]
+  "TARGET_VECTOR"
+  "")
+
+;; This pattern is used to hold the AVL operand for
+;; RVV instructions that implicity use VLMAX AVL.
+;; RVV instruction implicitly use GPR that is ultimately
+;; defined by this pattern is safe for VSETVL pass emit
+;; a vsetvl instruction modify this register after RA.
+;; Case 1:
+;;   vlmax_avl a5
+;;   ... (across many blocks)
+;;   vadd (implicit use a5)  ====> emit: vsetvl a5,zero
+;; Case 2:
+;;   vlmax_avl a5
+;;   ... (across many blocks)
+;;   mv a6,a5
+;;   ... (across many blocks)
+;;   vadd (implicit use a6)  ====> emit: vsetvl a6,zero
+;; Case 3:
+;;   vlmax_avl a5
+;;   ... (across many blocks)
+;;   store mem,a5 (spill)
+;;   ... (across many blocks)
+;;   load a7,mem (spill)
+;;   ... (across many blocks)
+;;   vadd (implicit use a7)  ====> emit: vsetvl a7,zero
+;; Such cases are all safe for VSETVL PASS to emit a vsetvl
+;; instruction that modifies the AVL operand.
+(define_insn "@vlmax_avl<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "const_int_operand" "i")] UNSPEC_VLMAX))]
   "TARGET_VECTOR"
   "")
 
@@ -482,32 +553,35 @@
   [(set_attr "type" "vsetvl")
    (set_attr "mode" "<MODE>")])
 
-;; We keep it as no side effects before reload_completed.
-;; In this case, we can gain benefits from different GCC
-;; internal PASS such as cprop, fwprop, combine,...etc.
-
-;; Then recover it for "insert-vsetvl" and "sched2" PASS
-;; in order to get correct codegen.
-(define_insn_and_split "@vsetvl<mode>_no_side_effects"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P [(match_operand:P 1 "csr_operand" "rK")
-		   (match_operand 2 "const_int_operand" "i")
-		   (match_operand 3 "const_int_operand" "i")
-		   (match_operand 4 "const_int_operand" "i")
-		   (match_operand 5 "const_int_operand" "i")] UNSPEC_VSETVL))]
+;; vsetvl zero,zero,vtype instruction.
+;; This pattern has no side effects and does not set X0 register.
+(define_insn "vsetvl_vtype_change_only"
+  [(set (reg:SI VTYPE_REGNUM)
+	(unspec:SI
+	  [(match_operand 0 "const_int_operand" "i")
+	   (match_operand 1 "const_int_operand" "i")
+	   (match_operand 2 "const_int_operand" "i")
+	   (match_operand 3 "const_int_operand" "i")] UNSPEC_VSETVL))]
   "TARGET_VECTOR"
-  "#"
-  "&& reload_completed"
-  [(parallel
-    [(set (match_dup 0)
-	  (unspec:P [(match_dup 1) (match_dup 2) (match_dup 3)
-		     (match_dup 4) (match_dup 5)] UNSPEC_VSETVL))
-     (set (reg:SI VL_REGNUM)
-	  (unspec:SI [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPEC_VSETVL))
-     (set (reg:SI VTYPE_REGNUM)
-	  (unspec:SI [(match_dup 2) (match_dup 3) (match_dup 4)
-		      (match_dup 5)] UNSPEC_VSETVL))])]
-  ""
+  "vsetvli\tzero,zero,e%0,%m1,t%p2,m%p3"
+  [(set_attr "type" "vsetvl")
+   (set_attr "mode" "SI")])
+
+;; vsetvl zero,rs1,vtype instruction.
+;; The reason we need this pattern since we should avoid setting X0 register
+;; in vsetvl instruction pattern.
+(define_insn "@vsetvl_discard_result<mode>"
+  [(set (reg:SI VL_REGNUM)
+	(unspec:SI [(match_operand:P 0 "csr_operand" "rK")
+		    (match_operand 1 "const_int_operand" "i")
+		    (match_operand 2 "const_int_operand" "i")] UNSPEC_VSETVL))
+   (set (reg:SI VTYPE_REGNUM)
+	(unspec:SI [(match_dup 1)
+		    (match_dup 2)
+		    (match_operand 3 "const_int_operand" "i")
+		    (match_operand 4 "const_int_operand" "i")] UNSPEC_VSETVL))]
+  "TARGET_VECTOR"
+  "vsetvli\tzero,%0,e%1,%m2,t%p3,m%p4"
   [(set_attr "type" "vsetvl")
    (set_attr "mode" "<MODE>")])
 
@@ -563,6 +637,7 @@
 	     (match_operand 4 "vector_length_operand"    " rK,  rK,    rK,    rK,    rK")
 	     (match_operand 5 "const_int_operand"        "  i,   i,     i,     i,     i")
 	     (match_operand 6 "const_int_operand"        "  i,   i,     i,     i,     i")
+	     (match_operand 7 "const_int_operand"        "  i,   i,     i,     i,     i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operand:V 3 "vector_move_operand"       "  m,   m,    vr,    vr, viWc0")
@@ -593,6 +668,7 @@
 	  (unspec:VB
 	    [(match_operand:VB 1 "vector_mask_operand"   "Wc1, Wc1, Wc1, Wc1, Wc1")
 	     (match_operand 4 "vector_length_operand"    " rK,  rK,  rK,  rK,  rK")
+	     (match_operand 5 "const_int_operand"        "  i,   i,   i,   i,   i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operand:VB 3 "vector_move_operand"      "  m,  vr,  vr, Wc0, Wc1")
@@ -628,6 +704,7 @@
 	     (match_operand 4 "vector_length_operand"         " rK,  rK,  rK,  rK")
 	     (match_operand 5 "const_int_operand"             "  i,   i,   i,   i")
 	     (match_operand 6 "const_int_operand"             "  i,   i,   i,   i")
+	     (match_operand 7 "const_int_operand"             "  i,   i,   i,   i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (vec_duplicate:V
