@@ -6449,7 +6449,7 @@ package body Exp_Ch6 is
       --  sure that the object doing the capture is properly recognized by the
       --  Is_Related_To_Func_Return predicate; otherwise, if it is of a type
       --  that needs finalization, Requires_Cleanup_Actions would return true
-      --  because of it and Build_Finalizer would finalize it prematurely.
+      --  because of this and Build_Finalizer would finalize it prematurely.
 
       Exp_Typ : constant Entity_Id := Etype (Exp);
       --  The type of the expression (not necessarily the same as R_Type)

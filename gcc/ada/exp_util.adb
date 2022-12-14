@@ -9196,7 +9196,8 @@ package body Exp_Util is
           and then Nkind (Unqual_Conv (Expr)) = N_Explicit_Dereference
           and then (Nkind (Parent (Expr)) = N_Simple_Return_Statement
                      or else
-                       (Nkind (Parent (Expr)) = N_Object_Renaming_Declaration
+                       (Nkind (Parent (Expr)) in N_Object_Declaration
+                                               | N_Object_Renaming_Declaration
                          and then
                         Is_Return_Object (Defining_Entity (Parent (Expr)))));
    end Is_Related_To_Func_Return;

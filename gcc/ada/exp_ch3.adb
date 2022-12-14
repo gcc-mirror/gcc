@@ -7480,7 +7480,19 @@ package body Exp_Ch3 is
             --  creating the object (via allocator) and initializing it.
 
             if Is_Special_Return_Object (Def_Id) then
-               null;
+
+               --  If the type needs finalization and is not inherently
+               --  limited, then the target is adjusted after the copy
+               --  and attached to the finalization list.
+
+               if Needs_Finalization (Typ)
+                 and then not Is_Limited_View (Typ)
+               then
+                  Adj_Call :=
+                    Make_Adjust_Call (
+                      Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
+                      Typ     => Base_Typ);
+               end if;
 
             elsif Tagged_Type_Expansion then
                declare
@@ -7908,9 +7920,20 @@ package body Exp_Ch3 is
                 --  This avoids an extra copy and, in the case where Typ needs
                 --  finalization, a pair of Adjust/Finalize calls (see below).
 
+                --  However, in the case of a special return object, we need to
+                --  make sure that the object Rnn is properly recognized by the
+                --  Is_Related_To_Func_Return predicate; otherwise, if it is of
+                --  a type that needs finalization, Requires_Cleanup_Actions
+                --  would return true because of this and Build_Finalizer would
+                --  finalize it prematurely (see Expand_Simple_Function_Return
+                --  for the same test in the case of a simple return).
+
                 and then
                   ((not Is_Library_Level_Entity (Def_Id)
                      and then Is_Captured_Function_Call (Expr_Q)
+                     and then (not Is_Special_Return_Object (Def_Id)
+                                or else Is_Related_To_Func_Return
+                                          (Entity (Prefix (Expr_Q))))
                      and then not Is_Class_Wide_Type (Typ))
 
                    --  If the initializing expression is a variable with the
@@ -8554,7 +8577,8 @@ package body Exp_Ch3 is
 
       --  If we can rename the initialization expression, we need to make sure
       --  that we use the proper type in the case of a return object that lives
-      --  on the secondary stack. See other cases below for a similar handling.
+      --  on the secondary stack (see other cases below for a similar handling)
+      --  and that the tag is assigned in the case of any return object.
 
       elsif Rewrite_As_Renaming then
          if Is_Secondary_Stack_Return_Object (Def_Id) then
@@ -8575,6 +8599,12 @@ package body Exp_Ch3 is
                   Set_Actual_Subtype (Def_Id, Typ);
                end if;
             end;
+         end if;
+
+         if Is_Special_Return_Object (Def_Id)
+           and then Present (Tag_Assign)
+         then
+            Insert_Action_After (Init_After, Tag_Assign);
          end if;
 
       --  If this is the return object of a function returning on the secondary
