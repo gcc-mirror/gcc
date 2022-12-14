@@ -42,6 +42,8 @@ dg-init
 set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
 	"" $CFLAGS
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
+	"" $CFLAGS
 
 # All done.
 dg-finish
