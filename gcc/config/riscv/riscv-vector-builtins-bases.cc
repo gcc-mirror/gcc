@@ -73,7 +73,7 @@ public:
 			 gen_int_mode (GET_MODE_BITSIZE (inner_mode), Pmode));
 
     /* LMUL.  */
-    e.add_input_operand (Pmode, gen_int_mode ((unsigned int) mode, Pmode));
+    e.add_input_operand (Pmode, gen_int_mode (get_vlmul (mode), Pmode));
 
     /* TA.  */
     e.add_input_operand (Pmode, gen_int_mode (1, Pmode));

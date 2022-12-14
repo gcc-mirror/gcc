@@ -115,7 +115,7 @@ emit_vlmax_vsetvl (machine_mode vmode)
 
   emit_insn (
     gen_vsetvl_no_side_effects (Pmode, vl, RVV_VLMAX, gen_int_mode (sew, Pmode),
-				gen_int_mode ((unsigned int) vmode, Pmode),
+				gen_int_mode (get_vlmul (vmode), Pmode),
 				const1_rtx, const1_rtx));
   return vl;
 }
