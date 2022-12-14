@@ -1,3 +1,11 @@
+2022-12-13  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2022-12-01  Alex Coplan  <alex.coplan@arm.com>
+
+	* varasm.cc (assemble_variable): Fix type confusion bug when
+	checking for ".vtable_map_vars" section.
+
 2022-12-12  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
