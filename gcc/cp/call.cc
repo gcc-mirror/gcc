@@ -622,6 +622,15 @@ conversion_obstack_alloc (size_t n)
   return p;
 }
 
+/* RAII class to discard anything added to conversion_obstack.  */
+
+struct conversion_obstack_sentinel
+{
+  void *p;
+  conversion_obstack_sentinel (): p (conversion_obstack_alloc (0)) {}
+  ~conversion_obstack_sentinel () { obstack_free (&conversion_obstack, p); }
+};
+
 /* Allocate rejection reasons.  */
 
 static struct rejection_reason *
@@ -4219,18 +4228,32 @@ static tree
 maybe_init_list_as_array (tree elttype, tree init)
 {
   /* Only do this if the array can go in rodata but not once converted.  */
-  if (!CLASS_TYPE_P (elttype))
+  if (!TYPE_NON_AGGREGATE_CLASS (elttype))
     return NULL_TREE;
   tree init_elttype = braced_init_element_type (init);
   if (!init_elttype || !SCALAR_TYPE_P (init_elttype) || !TREE_CONSTANT (init))
     return NULL_TREE;
 
+  /* Check with a stub expression to weed out special cases, and check whether
+     we call the same function for direct-init as copy-list-init.  */
+  conversion_obstack_sentinel cos;
+  tree arg = build_stub_object (init_elttype);
+  conversion *c = implicit_conversion (elttype, init_elttype, arg, false,
+				       LOOKUP_NORMAL, tf_none);
+  if (c && c->kind == ck_rvalue)
+    c = next_conversion (c);
+  if (!c || c->kind != ck_user)
+    return NULL_TREE;
+
   tree first = CONSTRUCTOR_ELT (init, 0)->value;
-  if (TREE_CODE (init_elttype) == INTEGER_TYPE && null_ptr_cst_p (first))
-    /* Avoid confusion from treating 0 as a null pointer constant.  */
-    first = build1 (UNARY_PLUS_EXPR, init_elttype, first);
-  first = (perform_implicit_conversion_flags
-	   (elttype, first, tf_none, LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING));
+  conversion *fc = implicit_conversion (elttype, init_elttype, first, false,
+					LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING,
+					tf_none);
+  if (fc && fc->kind == ck_rvalue)
+    fc = next_conversion (fc);
+  if (!fc || fc->kind != ck_user || fc->cand->fn != c->cand->fn)
+    return NULL_TREE;
+  first = convert_like (fc, first, tf_none);
   if (first == error_mark_node)
     /* Let the normal code give the error.  */
     return NULL_TREE;
