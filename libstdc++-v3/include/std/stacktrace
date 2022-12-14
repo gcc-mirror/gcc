@@ -608,8 +608,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
 		{
-		  __n *= sizeof(value_type);
-		  void* const __p = _GLIBCXX_OPERATOR_NEW (__n, nothrow_t{});
+		  // For std::allocator we use nothrow-new directly so we
+		  // don't need to handle bad_alloc exceptions.
+		  size_t __nb = __n * sizeof(value_type);
+		  void* const __p = _GLIBCXX_OPERATOR_NEW (__nb, nothrow_t{});
 		  if (__p == nullptr) [[unlikely]]
 		    return nullptr;
 		  _M_frames = static_cast<pointer>(__p);
