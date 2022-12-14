@@ -680,6 +680,18 @@ class LibStdCxxFilter (GenericFilter):
             return re.compile ('// \(C\) Copyright Jeremy Siek')
         return GenericFilter.get_line_filter (self, dir, filename)
 
+class ContribFilter(GenericFilter):
+    def __init__ (self):
+        GenericFilter.__init__ (self)
+
+        self.skip_files |= set ([
+                # A different copyrights.
+                'unicode-license.txt',
+                'Info.plist',
+                # Contains CR (^M).
+                'repro_fail',
+                ])
+
 class GCCCopyright (Copyright):
     def __init__ (self, errors):
         Copyright.__init__ (self, errors)
@@ -699,6 +711,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Advanced Micro Devices Inc.')
         self.add_external_author ('Ami Tavory and Vladimir Dreizin, IBM-HRL.')
         self.add_external_author ('Cavium Networks.')
+        self.add_external_author ('David Malcolm')
         self.add_external_author ('Faraday Technology Corp.')
         self.add_external_author ('Florida State University')
         self.add_external_author ('Gerard Jungman')
@@ -738,7 +751,7 @@ class GCCCmdLine (CmdLine):
         # boehm-gc is imported from upstream.
         self.add_dir ('c++tools')
         self.add_dir ('config', ConfigFilter())
-        # contrib isn't really part of GCC.
+        self.add_dir ('contrib', ContribFilter())
         self.add_dir ('fixincludes')
         self.add_dir ('gcc', GCCFilter())
         self.add_dir (os.path.join ('gcc', 'testsuite'), TestsuiteFilter())
