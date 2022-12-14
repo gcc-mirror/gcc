@@ -24395,7 +24395,8 @@ aarch64_vectorize_can_special_div_by_constant (enum tree_code code,
       || !TYPE_UNSIGNED (vectype))
     return false;
 
-  unsigned int flags = aarch64_classify_vector_mode (TYPE_MODE (vectype));
+  machine_mode mode = TYPE_MODE (vectype);
+  unsigned int flags = aarch64_classify_vector_mode (mode);
   if ((flags & VEC_ANY_SVE) && !TARGET_SVE2)
     return false;
 
@@ -24411,15 +24412,14 @@ aarch64_vectorize_can_special_div_by_constant (enum tree_code code,
   if (in0 == NULL_RTX && in1 == NULL_RTX)
     return true;
 
-  if (!VECTOR_TYPE_P (vectype))
-   return false;
-
   gcc_assert (output);
 
-  if (!*output)
-    *output = gen_reg_rtx (TYPE_MODE (vectype));
-
-  emit_insn (gen_aarch64_bitmask_udiv3 (TYPE_MODE (vectype), *output, in0, in1));
+  expand_operand ops[3];
+  create_output_operand (&ops[0], *output, mode);
+  create_input_operand (&ops[1], in0, mode);
+  create_fixed_operand (&ops[2], in1);
+  expand_insn (insn_code, 3, ops);
+  *output = ops[0].value;
   return true;
 }
 
