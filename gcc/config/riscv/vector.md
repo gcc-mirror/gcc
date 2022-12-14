@@ -241,7 +241,7 @@
 
 ;; The tail policy op value.
 (define_attr "ta" ""
-  (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vlds")
+  (cond [(eq_attr "type" "vlde,vimov,vfmov,vlds")
 	   (symbol_ref "riscv_vector::get_ta(operands[5])")]
 	(const_int INVALID_ATTRIBUTE)))
 
