@@ -1,3 +1,8 @@
+2022-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/libbacktrace/backtrace-rename.h (backtrace_uncompress_zstd):
+	Define.
+
 2022-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/duration/arithmetic/overflow_c++20.cc: New

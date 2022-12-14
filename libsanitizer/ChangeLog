@@ -1,3 +1,8 @@
+2022-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108072
+	* libbacktrace/backtrace-rename.h (backtrace_uncompress_zstd): Define.
+
 2022-12-09  liuhongt  <hongtao.liu@intel.com>
 
 	* configure.tgt: Enable hwasan for x86-64.

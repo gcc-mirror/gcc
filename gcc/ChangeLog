@@ -1,3 +1,210 @@
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::modify_expression): Bail out early if
+	there are no replacements.
+	(ipa_param_body_adjustments::modify_assignment): Likewise.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.cc (isra_param_desc): New fields safe_size,
+	conditionally_dereferenceable and safe_size_set.
+	(struct gensum_param_desc): New field conditionally_dereferenceable.
+	(struct isra_param_flow): Updated comment of field unit_size.
+	(ipa_sra_function_summaries::duplicate): Copy the new fields.
+	(isra_call_summary::dump): Dump unit_size when representing safe_size.
+	(dump_gensum_param_descriptor): Dump new flag.
+	(dump_isra_param_descriptor): Dump new fields.
+	(isra_analyze_call): Fill unit_size when it represents known safe
+	size.
+	(check_gensum_access): Instead of disqualifying pointers which are not
+	always dereference, mark them as conditionally dereferencable if loads
+	are frequent enough.
+	(process_scan_results): Copy the conditionally_dereferenceable flag.
+	(isra_write_node_summary): Stream new fields, or assert they are not
+	initialized yet.
+	(isra_read_node_info): Stream new fields.
+	(update_safe_size): New function.
+	(propagate_param_hints_accross_call): Propagate safe_sizes.
+	(propagate_hints_to_all_callees): New function.
+	(adjust_parameter_descriptions): Check conditionally_dereferenceable
+	candidates, rework dumping.
+	(ipa_sra_analysis): Move most of hint propagation for one node to
+	propagate_hints_to_all_callees.  Add another loop to stabilize within
+	SCCs and another one to verify.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.cc (isra_param_desc): New field not_specially_constructed.
+	(struct isra_param_flow): New field constructed_for_calls.
+	(isra_call_summary::dump): Dump the new flag.
+	(loaded_decls): New variable.
+	(dump_isra_param_descriptor): New parameter hints, dump
+	not_specially_constructed if it is true.
+	(dump_isra_param_descriptors): New parameter hints, pass it to
+	dump_isra_param_descriptor.
+	(ipa_sra_function_summaries::duplicate): Duplicate new flag.
+	(create_parameter_descriptors): Adjust comment.
+	(get_gensum_param_desc): Bail out when decl2desc is NULL.
+	(scan_expr_access): Add loaded local variables to loaded_decls.
+	(scan_function): Survive if final_bbs is NULL.
+	(isra_analyze_call): Compute constructed_for_calls flag.
+	(process_scan_results): Be optimistic about size limits.  Do not dump
+	computed param hints when dumpint IPA-SRA structures.
+	(isra_write_edge_summary): Stream constructed_for_calls.
+	(isra_read_edge_summary): Likewise.
+	(ipa_sra_dump_all_summaries): New parameter hints, pass it to
+	dump_isra_param_descriptor.
+	(flip_all_hints_pessimistic): New function.
+	(flip_all_param_hints_pessimistic): Likewise.
+	(propagate_param_hints): Likewise.
+	(disable_unavailable_parameters): Renamed to
+	adjust_parameter_descriptions.  Expand size limits for parameters
+	which are specially contstructed by all callers.  Check limits again.p
+	(ipa_sra_analysis): Pass required hints to ipa_sra_dump_all_summaries.
+	Add hint propagation.
+	(ipa_sra_summarize_function): Initialize and destory loaded_decls,
+	rearrange so that scan_function is called even when there are no
+	candidates.
+	* params.opt (ipa-sra-ptrwrap-growth-factor): New parameter.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.cc (ipa_sra_analysis): Move top-down analysis before
+	bottom-up analysis.  Replace FOR_EACH_VEC_ELT with C++11 iteration.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103585
+	* params.opt (ipa-sra-deref-prob-threshold): New parameter.
+	* doc/invoke.texi (ipa-sra-deref-prob-threshold): Document it.
+	* ipa-sra.cc (struct gensum_param_access): New field load_count.
+	(struct gensum_param_desc): New field safe_ref, adjusted comments.
+	(by_ref_count): Renamed to unsafe_by_ref_count, adjusted all uses.
+	(dump_gensum_access): Dump the new field.
+	(dump_gensum_param_descriptor): Likewise.
+	(create_parameter_descriptors): Set safe_ref field, move setting
+	by_ref forward.  Only increment unsafe_by_ref_count for unsafe
+	by_ref parameters.
+	(allocate_access): Initialize new field.
+	(mark_param_dereference): Adjust indentation.  Only add data to
+	bb_dereferences for unsafe by_ref parameters.
+	(scan_expr_access): For loads, accumulate BB counts.
+	(dereference_probable_p): New function.
+	(check_gensum_access): Fix leading comment, add parameter FUN.
+	Check cumulative counts of loads for safe by_ref accesses instead
+	of dereferences.
+	(process_scan_results): Do not propagate dereference distances for
+	safe by_ref parameters.  Pass fun to check_gensum_access.  Safe
+	by_ref params do not need the postdominance check.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.cc (clone_for_param_removal_p): New function.
+	(estimate_local_effects): Call it before considering cloning
+	just to remove unused parameters.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103227
+	* ipa-param-manipulation.h (class ipa_param_adjustments): Removed
+	member function get_updated_index_or_split.
+	(class ipa_param_body_adjustments): New overload of
+	register_replacement, new member function append_init_stmts, new
+	member m_split_agg_csts_inits.
+	* ipa-param-manipulation.cc: Include ipa-prop.h.
+	(ipa_param_adjustments::get_updated_index_or_split): Removed.
+	(ipa_param_body_adjustments::register_replacement): New overload, use
+	it from the older one.
+	(ipa_param_body_adjustments::common_initialization): Added the
+	capability to create replacements for conflicting IPA-CP discovered
+	constants.
+	(ipa_param_body_adjustments::ipa_param_body_adjustments): Construct
+	the new member.
+	(ipa_param_body_adjustments::append_init_stmts): New function.
+	* ipa-sra.cc: Include ipa-prop.h.
+	(push_param_adjustments_for_index): Require IPA-CP transformation
+	summary as a parameter, do not create replacements which are known to
+	have constant values.
+	(process_isra_node_results): Find and pass to the above function the
+	IPA-CP transformation summary.
+	* ipa-prop.cc (adjust_agg_replacement_values): Remove the
+	functionality replacing IPA-SRA created scalar parameters with
+	constants.  Simplify, do not require parameter descriptors, do not
+	return anything.
+	(ipcp_transform_function): Simplify now that
+	adjust_agg_replacement_values does not change cfg.  Move definition
+	and initialization of descriptors lower.
+	* tree-inline.cc (tree_function_versioning): Call append_init_stmts of
+	param_body_adjs, if there are any.
+
+2022-12-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.cc (useful_ipcp_transformation_info_p): New function.
+	(write_ipcp_transformation_info): Added a parameter, simplified
+	given that is known not to be NULL.
+	(ipcp_write_transformation_summaries): Write out all useful
+	transformation summaries.
+	(read_ipcp_transformation_info): Simplify given that some info
+	will be read.
+	(read_replacements_section): Remove assert.
+	* lto-cgraph.cc (add_node_to): Also set encode_body for clones.
+	* lto-streamer-out.cc (lto_output): Do not output virtual clones.
+
+2022-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108044
+	* config/i386/i386.md (*concat<half><mode>3_5, *concat<mode><dwi>3_6,
+	*concat<mode><dwi>3_7): Split alternative with =ro output constraint
+	into =r,o,o and use Wd input constraint for the last alternative which
+	is enabled for TARGET_64BIT.  Reject ix86_endbr_immediate_operand
+	in the input constant.
+
+2022-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md (tbranch_<code><mode>3): Use gen_int_mode.
+
+2022-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108064
+	* tree-vect-patterns.cc (vect_recog_rotate_pattern): Pass uvectype
+	as 4th argument to append_pattern_def_seq for statements with lhs
+	with utype type.
+
+2022-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105801
+	* tree-ssa-ccp.cc (likely_value): .DEFERRED_INIT produces
+	UNDEFINED.
+	* doc/invoke.texi (ftrivial-auto-var-init): Explicitely
+	mention we treat variables without an initializer as
+	undefined also for optimization purposes.
+
+2022-12-13  Tom Tromey  <tom@tromey.com>
+	    Mark Wielaard  <mark@klomp.org>
+	    Marc Poulhiès  <dkm@kataplop.net>
+
+	* dwarf2out.cc (is_rust): New.
+	(base_type_die): Use DW_ATE_UTF for the Rust 'char' type.
+	(gen_compile_unit_die): Handle "GNU Rust".
+
+2022-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108076
+	* tree-if-conv.cc (if_convertible_loop_p_1): Reject blocks
+	with non-local or forced labels that we later remove
+	labels from.
+
+2022-12-13  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (cbranchcc4): New expander.
+
+2022-12-13  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* optabs.cc (prepare_cmp_insn): Return a NULL rtx other than
+	assertion failure when targets don't have cbranch optab or
+	predicate check fails.
+
 2022-12-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/aarch64.cc (aarch64_rtx_costs): Add correct costs
