@@ -24,11 +24,6 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
-AC_CHECK_PROGS(regex_realpath, realpath)
-if test x$regex_realpath = "x" ; then
-    AC_MSG_ERROR([realpath is required to build GNU Modula-2 (hint install coreutils).])
-fi
-
 AC_CHECK_FUNCS([stpcpy])
 
 AC_CHECK_HEADERS(sys/types.h)

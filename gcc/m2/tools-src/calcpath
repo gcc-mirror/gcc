@@ -23,27 +23,29 @@
 
 
 Usage () {
-   echo "Usage: calcpath pathcomponent1 pathcomponent2 subdir"
-   echo -n "  if pathcomponent1 is relative then pathcomponent1/pathcomponet2/subdir is"
-   echo " returned"
-   echo "  otherwise pathcomponet2/subdir is returned"
-   echo "  the path is checked for legality in subdir."
+   cat<<EOF
+Usage: $0 pathcomponent1 pathcomponent2 subdir
+  if pathcomponent2 is relative then pathcomponent1/pathcompinent2/subdir is returned
+  otherwise pathcomponent2/subdir is returned
+  the path is checked for legality in subdir.
+EOF
 }
 
+die () {
+   printf "calcpath: error: %s\n" "$1" >&2
+   exit 1
+}
 
 if [ $# -eq 3 ]; then
-   if [ "$(echo $2 | cut -b 1)" = "." ] ; then
-       # relative path
-       the_path=$1/$2/$3
+   case "$2" in
+      /*) the_path="$2/$3" ;;
+      *) the_path="$1/$2/$3" ;;
+   esac
+   cd "$3" || die "could not access $3"
+   if ( cd "$the_path" ); then
+      printf '%s\n' "${the_path}"
    else
-       the_path=$2/$3
-   fi
-   cd $3
-   if realpath ${the_path} > /dev/null ; then
-       echo ${the_path}
-   else
-       echo "calcpath: error ${the_path} is not a valid path in subdirectory $3" 1>&2
-       exit 1
+      die "${the_path} is not a valid path in subdirectory $3"
    fi
 else
    Usage
