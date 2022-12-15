@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mcpu=cortex-a55+crypto" } */
+/* { dg-options "-O3 -mcpu=cortex-a55+aes" } */
 #include <arm_neon.h>
 
 #define AESE(r, v, key) (r = vaeseq_u8 ((v), (key)));
