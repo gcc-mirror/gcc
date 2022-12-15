@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira-int.h"
 #include "addresses.h"
 #include "reload.h"
+#include "print-rtl.h"
 
 /* The flags is set up every time when we calculate pseudo register
    classes through function ira_set_pseudo_classes.  */
@@ -503,6 +504,18 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
   int insn_allows_mem[MAX_RECOG_OPERANDS];
   move_table *move_in_cost, *move_out_cost;
   short (*mem_cost)[2];
+  const char *p;
+
+  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+    {
+      fprintf (ira_dump_file, "    Processing insn %u", INSN_UID (insn));
+      if (INSN_CODE (insn) >= 0
+	  && (p = get_insn_name (INSN_CODE (insn))) != NULL)
+	fprintf (ira_dump_file, " {%s}", p);
+      fprintf (ira_dump_file, " (freq=%d)\n",
+	       REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn)));
+      dump_insn_slim (ira_dump_file, insn);
+  }
 
   for (i = 0; i < n_ops; i++)
     insn_allows_mem[i] = 0;
@@ -526,6 +539,21 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	  continue;
 	}
 
+      if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+	{
+	  fprintf (ira_dump_file, "      Alt %d:", alt);
+	  for (i = 0; i < n_ops; i++)
+	    {
+	      p = constraints[i];
+	      if (*p == '\0')
+		continue;
+	      fprintf (ira_dump_file, "  (%d) ", i);
+	      for (; *p != '\0' && *p != ',' && *p != '#'; p++)
+		fputc (*p, ira_dump_file);
+	    }
+	  fprintf (ira_dump_file, "\n");
+	}
+      
       for (i = 0; i < n_ops; i++)
 	{
 	  unsigned char c;
@@ -593,12 +621,16 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		     register, this alternative can't be used.  */
 
 		  if (classes[j] == NO_REGS)
-		    alt_fail = 1;
-		  /* Otherwise, add to the cost of this alternative
-		     the cost to copy the other operand to the hard
-		     register used for this operand.  */
+		    {
+		      alt_fail = 1;
+		    }
 		  else
-		    alt_cost += copy_cost (ops[j], mode, classes[j], 1, NULL);
+		    /* Otherwise, add to the cost of this alternative the cost
+		       to copy the other operand to the hard register used for
+		       this operand.  */
+		    {
+		      alt_cost += copy_cost (ops[j], mode, classes[j], 1, NULL);
+		    }
 		}
 	      else
 		{
@@ -1021,18 +1053,45 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
       for (i = 0; i < n_ops; i++)
 	if (REG_P (ops[i]) && REGNO (ops[i]) >= FIRST_PSEUDO_REGISTER)
 	  {
+	    int old_cost;
+	    bool cost_change_p = false;
 	    struct costs *pp = op_costs[i], *qq = this_op_costs[i];
 	    int *pp_costs = pp->cost, *qq_costs = qq->cost;
 	    int scale = 1 + (recog_data.operand_type[i] == OP_INOUT);
 	    cost_classes_t cost_classes_ptr
 	      = regno_cost_classes[REGNO (ops[i])];
 
-	    pp->mem_cost = MIN (pp->mem_cost,
+	    old_cost = pp->mem_cost;
+	    pp->mem_cost = MIN (old_cost,
 				(qq->mem_cost + op_cost_add) * scale);
 
+	    if (ira_dump_file != NULL && internal_flag_ira_verbose > 5
+		&& pp->mem_cost < old_cost)
+	      {
+		cost_change_p = true;
+		fprintf (ira_dump_file, "        op %d(r=%u) new costs MEM:%d",
+			 i, REGNO(ops[i]), pp->mem_cost);
+	      }
 	    for (k = cost_classes_ptr->num - 1; k >= 0; k--)
-	      pp_costs[k]
-		= MIN (pp_costs[k], (qq_costs[k] + op_cost_add) * scale);
+	      {
+		old_cost = pp_costs[k];
+		pp_costs[k]
+		  = MIN (old_cost, (qq_costs[k] + op_cost_add) * scale);
+		if (ira_dump_file != NULL && internal_flag_ira_verbose > 5
+		    && pp_costs[k] < old_cost)
+		  {
+		    if (!cost_change_p)
+		      fprintf (ira_dump_file, "        op %d(r=%u) new costs",
+			       i, REGNO(ops[i]));
+		    cost_change_p = true;
+		    fprintf (ira_dump_file, " %s:%d",
+			     reg_class_names[cost_classes_ptr->classes[k]],
+			     pp_costs[k]);
+		  }
+	      }
+	    if (ira_dump_file != NULL && internal_flag_ira_verbose > 5
+		&& cost_change_p)
+	      fprintf (ira_dump_file, "\n");
 	  }
     }
 
@@ -1506,6 +1565,18 @@ scan_one_insn (rtx_insn *insn)
 
   record_operand_costs (insn, pref);
 
+  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+    {
+      const char *p;
+      fprintf (ira_dump_file, "    Final costs after insn %u", INSN_UID (insn));
+      if (INSN_CODE (insn) >= 0
+	  && (p = get_insn_name (INSN_CODE (insn))) != NULL)
+	fprintf (ira_dump_file, " {%s}", p);
+      fprintf (ira_dump_file, " (freq=%d)\n",
+	       REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn)));
+      dump_insn_slim (ira_dump_file, insn);
+    }
+
   /* Now add the cost for each operand to the total costs for its
      allocno.  */
   for (i = 0; i < recog_data.n_operands; i++)
@@ -1521,7 +1592,7 @@ scan_one_insn (rtx_insn *insn)
 	  struct costs *q = op_costs[i];
 	  int *p_costs = p->cost, *q_costs = q->cost;
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
-	  int add_cost;
+	  int add_cost = 0;
 	  
 	  /* If the already accounted for the memory "cost" above, don't
 	     do so again.  */
@@ -1533,6 +1604,11 @@ scan_one_insn (rtx_insn *insn)
 	      else
 		p->mem_cost += add_cost;
 	    }
+	  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+	    {
+	      fprintf (ira_dump_file, "        op %d(r=%u) MEM:%d(+%d)",
+		       i, REGNO(op), p->mem_cost, add_cost);
+	    }
 	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
 	    {
 	      add_cost = q_costs[k];
@@ -1540,7 +1616,15 @@ scan_one_insn (rtx_insn *insn)
 		p_costs[k] = INT_MAX;
 	      else
 		p_costs[k] += add_cost;
+	      if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+		{
+		  fprintf (ira_dump_file, " %s:%d(+%d)",
+			   reg_class_names[cost_classes_ptr->classes[k]],
+			   p_costs[k], add_cost);
+		}
 	    }
+	  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+	    fprintf (ira_dump_file, "\n");
 	}
     }
   return insn;
