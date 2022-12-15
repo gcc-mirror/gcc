@@ -4582,7 +4582,18 @@ curr_insn_transform (bool check_only_p)
 		      || (partial_subreg_p (mode, GET_MODE (reg))
 			  && known_le (GET_MODE_SIZE (GET_MODE (reg)),
 				       UNITS_PER_WORD)
-			  && WORD_REGISTER_OPERATIONS)))
+			  && WORD_REGISTER_OPERATIONS))
+		  /* Avoid the situation when there are no available hard regs
+		     for the pseudo mode but there are ones for the subreg
+		     mode: */
+		  && !(goal_alt[i] != NO_REGS
+		       && REGNO (reg) >= FIRST_PSEUDO_REGISTER
+		       && (prohibited_class_reg_set_mode_p
+			   (goal_alt[i], reg_class_contents[goal_alt[i]],
+			    GET_MODE (reg)))
+		       && !(prohibited_class_reg_set_mode_p
+			    (goal_alt[i], reg_class_contents[goal_alt[i]],
+			     mode))))
 		{
 		  /* An OP_INOUT is required when reloading a subreg of a
 		     mode wider than a word to ensure that data beyond the

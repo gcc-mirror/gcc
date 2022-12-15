@@ -292,14 +292,14 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         }
         sizeok = Sizeok.inProcess;
 
-        //printf("+StructDeclaration::finalizeSize() %s, fields.dim = %d, sizeok = %d\n", toChars(), fields.dim, sizeok);
+        //printf("+StructDeclaration::finalizeSize() %s, fields.length = %d, sizeok = %d\n", toChars(), fields.length, sizeok);
 
         fields.setDim(0);   // workaround
 
         // Set the offsets of the fields and determine the size of the struct
         FieldState fieldState;
         bool isunion = isUnionDeclaration() !is null;
-        for (size_t i = 0; i < members.dim; i++)
+        for (size_t i = 0; i < members.length; i++)
         {
             Dsymbol s = (*members)[i];
             s.setFieldOffset(this, fieldState, isunion);
@@ -353,7 +353,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
 
         sizeok = Sizeok.done;
 
-        //printf("-StructDeclaration::finalizeSize() %s, fields.dim = %d, structsize = %d\n", toChars(), fields.dim, structsize);
+        //printf("-StructDeclaration::finalizeSize() %s, fields.length = %d, structsize = %d\n", toChars(), fields.length, structsize);
 
         if (errors)
             return;
@@ -454,7 +454,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         }
 
         // Recursively check all fields are POD.
-        for (size_t i = 0; i < fields.dim; i++)
+        for (size_t i = 0; i < fields.length; i++)
         {
             VarDeclaration v = fields[i];
             if (v.storage_class & STC.ref_)
@@ -491,7 +491,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
 
     final uint numArgTypes() const
     {
-        return argTypes && argTypes.arguments ? cast(uint) argTypes.arguments.dim : 0;
+        return argTypes && argTypes.arguments ? cast(uint) argTypes.arguments.length : 0;
     }
 
     final Type argType(uint index)
@@ -570,7 +570,7 @@ private bool _isZeroInit(Expression exp)
         case EXP.structLiteral:
         {
             auto sle = cast(StructLiteralExp) exp;
-            foreach (i; 0 .. sle.sd.fields.dim)
+            foreach (i; 0 .. sle.sd.fields.length)
             {
                 auto field = sle.sd.fields[i];
                 if (field.type.size(field.loc))
@@ -588,7 +588,7 @@ private bool _isZeroInit(Expression exp)
         {
             auto ale = cast(ArrayLiteralExp)exp;
 
-            const dim = ale.elements ? ale.elements.dim : 0;
+            const dim = ale.elements ? ale.elements.length : 0;
 
             if (ale.type.toBasetype().ty == Tarray) // if initializing a dynamic array
                 return dim == 0;

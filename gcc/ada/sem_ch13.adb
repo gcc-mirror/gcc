@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;    use Accessibility;
 with Aspects;          use Aspects;
 with Atree;            use Atree;
 with Checks;           use Checks;
@@ -1271,7 +1272,7 @@ package body Sem_Ch13 is
                                   | Aspect_Full_Access_Only
                                   | Aspect_Import
                        and then (A_Id /= Aspect_Preelaborable_Initialization
-                                  or else not Present (Expression (ASN)))
+                                  or else No (Expression (ASN)))
                      then
                         Make_Pragma_From_Boolean_Aspect (ASN);
                      end if;
@@ -1327,7 +1328,7 @@ package body Sem_Ch13 is
                      if not Is_Entity_Name (Expression (ASN))
                        or else not Is_Object (Entity (Expression (ASN)))
                        or else
-                         not Present (Find_Aspect (Etype (Expression (ASN)),
+                         No (Find_Aspect (Etype (Expression (ASN)),
                                                    Aspect_Storage_Model_Type))
                      then
                         Error_Msg_N
@@ -1915,7 +1916,7 @@ package body Sem_Ch13 is
                --  aspects are replaced with pragmas at the freeze point in
                --  Make_Pragma_From_Boolean_Aspect.
 
-               if not Present (Expr)
+               if No (Expr)
                  or else Is_True (Static_Boolean (Expr))
                then
                   if A_Id = Aspect_Import then
@@ -2399,16 +2400,17 @@ package body Sem_Ch13 is
 
                if not Is_Expression_Function (E)
                  and then
-                   not (Extensions_Allowed and then Is_Imported_Intrinsic)
+                   not (All_Extensions_Allowed and then Is_Imported_Intrinsic)
                then
-                  if Extensions_Allowed then
+                  if All_Extensions_Allowed then
                      Error_Msg_N
                        ("aspect % requires intrinsic or expression function",
                         Aspect);
 
                   elsif Is_Imported_Intrinsic then
                      Error_Msg_GNAT_Extension
-                       ("aspect % on intrinsic function", Sloc (Aspect));
+                       ("aspect % on intrinsic function", Sloc (Aspect),
+                        Is_Core_Extension => True);
 
                   else
                      Error_Msg_N
@@ -4212,7 +4214,7 @@ package body Sem_Ch13 is
                   goto Continue;
 
                when Aspect_Designated_Storage_Model =>
-                  if not Extensions_Allowed then
+                  if not All_Extensions_Allowed then
                      Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
 
                   elsif not Is_Type (E)
@@ -4227,7 +4229,7 @@ package body Sem_Ch13 is
                   goto Continue;
 
                when Aspect_Storage_Model_Type =>
-                  if not Extensions_Allowed then
+                  if not All_Extensions_Allowed then
                      Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
 
                   elsif not Is_Type (E)
@@ -7309,6 +7311,21 @@ package body Sem_Ch13 is
                      Set_Esize (U_Ent, Size);
                   end if;
 
+                  --  As of RM 13.1, only confirming size
+                  --  (i.e. (Size = Esize (Etyp))) for aliased object of
+                  --  elementary type must be supported.
+                  --  GNAT rejects nonconfirming size for such object.
+
+                  if Is_Aliased (U_Ent)
+                    and then Is_Elementary_Type (Etyp)
+                    and then Known_Esize (U_Ent)
+                    and then Size /= Esize (Etyp)
+                  then
+                     Error_Msg_N
+                       ("nonconfirming Size for aliased object is not "
+                        & "supported", N);
+                  end if;
+
                   Set_Has_Size_Clause (U_Ent);
                end;
             end if;
@@ -7547,7 +7564,7 @@ package body Sem_Ch13 is
             else
                Analyze_And_Resolve (Expr);
 
-               if not Present (Get_Rep_Pragma
+               if No (Get_Rep_Pragma
                                  (Etype (Expr), Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_N
@@ -9927,9 +9944,9 @@ package body Sem_Ch13 is
             --  generally suppress the message in instantiations, and also
             --  if it involves internal names.
 
-            if Opt.List_Inherited_Aspects
+            if List_Inherited_Aspects
               and then not Is_Generic_Actual_Type (Typ)
-              and then Instantiation_Depth (Sloc (Typ)) = 0
+              and then Instantiation_Location (Sloc (Typ)) = No_Location
               and then not Is_Internal_Name (Chars (T))
               and then not Is_Internal_Name (Chars (Typ))
             then
@@ -15713,6 +15730,12 @@ package body Sem_Ch13 is
             return;
          end if;
 
+      elsif No (Add_Named_Subp)
+        and then No (Add_Unnamed_Subp)
+        and then No (Assign_Indexed_Subp)
+      then
+         Error_Msg_N ("incomplete specification for aggregate", N);
+
       elsif Present (New_Indexed_Subp) /= Present (Assign_Indexed_Subp) then
          Error_Msg_N ("incomplete specification for indexed aggregate", N);
       end if;
@@ -16511,7 +16534,7 @@ package body Sem_Ch13 is
 
       begin
          for FP of Profiles loop
-            if not Present (Formal) then
+            if No (Formal) then
                Is_Error := True;
                Report_Argument_Error ("missing formal of }", Subt => FP.Subt);
                exit;
@@ -16582,7 +16605,7 @@ package body Sem_Ch13 is
       --  If Addr_Type is not present as the first association, then we default
       --  it to System.Address.
 
-      elsif not Present (Addr_Type) then
+      elsif No (Addr_Type) then
          Addr_Type := RTE (RE_Address);
       end if;
 
@@ -17251,7 +17274,7 @@ package body Sem_Ch13 is
          Param_Type := Standard_String;
       end if;
 
-      if not Overloaded and then not Present (Entity (Func_Name)) then
+      if not Overloaded and then No (Entity (Func_Name)) then
          --  The aspect is specified by a subprogram name, which
          --  may be an operator name given originally by a string.
 

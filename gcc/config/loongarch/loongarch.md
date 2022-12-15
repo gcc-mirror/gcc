@@ -37,6 +37,12 @@
   UNSPEC_FCLASS
   UNSPEC_FMAX
   UNSPEC_FMIN
+  UNSPEC_FCOPYSIGN
+  UNSPEC_FTINT
+  UNSPEC_FTINTRM
+  UNSPEC_FTINTRP
+  UNSPEC_FSCALEB
+  UNSPEC_FLOGB
 
   ;; Override return address for exception handling.
   UNSPEC_EH_RETURN
@@ -212,9 +218,12 @@
 ;; fdiv		floating point divide
 ;; frdiv	floating point reciprocal divide
 ;; fabs		floating point absolute value
+;; flogb	floating point exponent extract
 ;; fneg		floating point negation
 ;; fcmp		floating point compare
+;; fcopysign	floating point copysign
 ;; fcvt		floating point convert
+;; fscaleb	floating point scale
 ;; fsqrt	floating point square root
 ;; frsqrt       floating point reciprocal square root
 ;; multi	multiword sequence (or user asm statements)
@@ -226,8 +235,8 @@
   "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,
    prefetch,prefetchx,condmove,mgtf,mftg,const,arith,logical,
    shift,slt,signext,clz,trap,imul,idiv,move,
-   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,fneg,fcmp,fcvt,fsqrt,
-   frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost"
+   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,flogb,fneg,fcmp,fcopysign,fcvt,
+   fscaleb,fsqrt,frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost"
   (cond [(eq_attr "jirl" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
 
@@ -372,6 +381,11 @@
 (define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT")
 			    (DF "TARGET_DOUBLE_FLOAT")])
 
+;; Iterator for fixed-point modes which can be hold by a hardware
+;; floating-point register.
+(define_mode_iterator ANYFI [(SI "TARGET_HARD_FLOAT")
+			     (DI "TARGET_DOUBLE_FLOAT")])
+
 ;; A mode for which moves involving FPRs may need to be split.
 (define_mode_iterator SPLITF
   [(DF "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
@@ -407,6 +421,10 @@
 ;; This attribute gives the integer mode that has half the size of
 ;; the controlling mode.
 (define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
+
+;; This attribute gives the integer mode that has the same size of a
+;; floating-point mode.
+(define_mode_attr IMODE [(SF "SI") (DF "DI")])
 
 ;; This code iterator allows signed and unsigned widening multiplications
 ;; to use the same template.
@@ -512,6 +530,19 @@
 ;; The sel mnemonic to use depending on the condition test.
 (define_code_attr sel [(eq "masknez") (ne "maskeqz")])
 (define_code_attr selinv [(eq "maskeqz") (ne "masknez")])
+
+;; Iterator and attributes for floating-point to fixed-point conversion
+;; instructions.
+(define_int_iterator LRINT [UNSPEC_FTINT UNSPEC_FTINTRM UNSPEC_FTINTRP])
+(define_int_attr lrint_pattern [(UNSPEC_FTINT "lrint")
+				(UNSPEC_FTINTRM "lfloor")
+				(UNSPEC_FTINTRP "lceil")])
+(define_int_attr lrint_submenmonic [(UNSPEC_FTINT "")
+				    (UNSPEC_FTINTRM "rm")
+				    (UNSPEC_FTINTRP "rp")])
+(define_int_attr lrint_allow_inexact [(UNSPEC_FTINT "1")
+				      (UNSPEC_FTINTRM "0")
+				      (UNSPEC_FTINTRP "0")])
 
 ;;
 ;;  ....................
@@ -974,6 +1005,69 @@
   "fabs.<fmt>\t%0,%1"
   [(set_attr "type" "fabs")
    (set_attr "mode" "<UNITMODE>")])
+
+;;
+;;  ....................
+;;
+;;	FLOATING POINT COPYSIGN
+;;
+;;  ....................
+
+(define_insn "copysign<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")
+		      (match_operand:ANYF 2 "register_operand" "f")]
+		     UNSPEC_FCOPYSIGN))]
+  "TARGET_HARD_FLOAT"
+  "fcopysign.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fcopysign")
+   (set_attr "mode" "<UNITMODE>")])
+
+;;
+;;  ....................
+;;
+;;	FLOATING POINT SCALE
+;;
+;;  ....................
+
+(define_insn "ldexp<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF    1 "register_operand" "f")
+		      (match_operand:<IMODE> 2 "register_operand" "f")]
+		     UNSPEC_FSCALEB))]
+  "TARGET_HARD_FLOAT"
+  "fscaleb.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fscaleb")
+   (set_attr "mode" "<UNITMODE>")])
+
+;;
+;;  ....................
+;;
+;;	FLOATING POINT EXPONENT EXTRACT
+;;
+;;  ....................
+
+(define_insn "logb_non_negative<mode>2"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
+		     UNSPEC_FLOGB))]
+  "TARGET_HARD_FLOAT"
+  "flogb.<fmt>\t%0,%1"
+  [(set_attr "type" "flogb")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_expand "logb<mode>2"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(unspec:ANYF [(abs:ANYF (match_operand:ANYF 1 "register_operand"))]
+		     UNSPEC_FLOGB))]
+  "TARGET_HARD_FLOAT"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_abs<mode>2 (tmp, operands[1]));
+  emit_insn (gen_logb_non_negative<mode>2 (operands[0], tmp));
+  DONE;
+})
 
 ;;
 ;;  ...................
@@ -1624,23 +1718,41 @@
     DONE;
 })
 
-(define_insn "*movdi_32bit"
+(define_insn_and_split "*movdi_32bit"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,w,*f,*f,*r,*m")
        (match_operand:DI 1 "move_operand" "r,i,w,r,*J*r,*m,*f,*f"))]
   "!TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return loongarch_output_move (operands[0], operands[1]); }
+  "CONST_INT_P (operands[1]) && REG_P (operands[0]) && GP_REG_P (REGNO
+  (operands[0]))"
+  [(const_int 0)]
+  "
+{
+  loongarch_move_integer (operands[0], operands[0], INTVAL (operands[1]));
+  DONE;
+}
+  "
   [(set_attr "move_type" "move,const,load,store,mgtf,fpload,mftg,fpstore")
    (set_attr "mode" "DI")])
 
-(define_insn "*movdi_64bit"
+(define_insn_and_split "*movdi_64bit"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,w,*f,*f,*r,*m")
 	(match_operand:DI 1 "move_operand" "r,Yd,w,rJ,*r*J,*m,*f,*f"))]
   "TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return loongarch_output_move (operands[0], operands[1]); }
+  "CONST_INT_P (operands[1]) && REG_P (operands[0]) && GP_REG_P (REGNO
+  (operands[0]))"
+  [(const_int 0)]
+  "
+{
+  loongarch_move_integer (operands[0], operands[0], INTVAL (operands[1]));
+  DONE;
+}
+  "
   [(set_attr "move_type" "move,const,load,store,mgtf,fpload,mftg,fpstore")
    (set_attr "mode" "DI")])
 
@@ -1655,12 +1767,21 @@
     DONE;
 })
 
-(define_insn "*movsi_internal"
+(define_insn_and_split "*movsi_internal"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,w,*f,*f,*r,*m,*r,*z")
 	(match_operand:SI 1 "move_operand" "r,Yd,w,rJ,*r*J,*m,*f,*f,*z,*r"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))"
   { return loongarch_output_move (operands[0], operands[1]); }
+  "CONST_INT_P (operands[1]) && REG_P (operands[0]) && GP_REG_P (REGNO
+  (operands[0]))"
+  [(const_int 0)]
+  "
+{
+  loongarch_move_integer (operands[0], operands[0], INTVAL (operands[1]));
+  DONE;
+}
+  "
   [(set_attr "move_type" "move,const,load,store,mgtf,fpload,mftg,fpstore,mftg,mgtf")
    (set_attr "mode" "SI")])
 
@@ -1680,12 +1801,21 @@
     DONE;
 })
 
-(define_insn "*movhi_internal"
+(define_insn_and_split "*movhi_internal"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,m,r,k")
 	(match_operand:HI 1 "move_operand" "r,Yd,I,m,rJ,k,rJ"))]
   "(register_operand (operands[0], HImode)
        || reg_or_0_operand (operands[1], HImode))"
   { return loongarch_output_move (operands[0], operands[1]); }
+  "CONST_INT_P (operands[1]) && REG_P (operands[0]) && GP_REG_P (REGNO
+  (operands[0]))"
+  [(const_int 0)]
+  "
+{
+  loongarch_move_integer (operands[0], operands[0], INTVAL (operands[1]));
+  DONE;
+}
+  "
   [(set_attr "move_type" "move,const,const,load,store,load,store")
    (set_attr "mode" "HI")])
 
@@ -1992,8 +2122,8 @@
   [(set_attr "type" "move")]
 )
 
-;; Convert floating-point numbers to integers
-(define_insn "frint_<fmt>"
+;; Round floating-point numbers to integers
+(define_insn "rint<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
 		      UNSPEC_FRINT))]
@@ -2001,6 +2131,19 @@
   "frint.<fmt>\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "<MODE>")])
+
+;; Convert floating-point numbers to integers
+(define_insn "<lrint_pattern><ANYF:mode><ANYFI:mode>2"
+  [(set (match_operand:ANYFI 0 "register_operand" "=f")
+	(unspec:ANYFI [(match_operand:ANYF 1 "register_operand" "f")]
+		      LRINT))]
+  "TARGET_HARD_FLOAT &&
+   (<lrint_allow_inexact>
+    || flag_fp_int_builtin_inexact
+    || !flag_trapping_math)"
+  "ftint<lrint_submenmonic>.<ANYFI:ifmt>.<ANYF:fmt> %0,%1"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "<ANYF:MODE>")])
 
 ;; Load the low word of operand 0 with operand 1.
 (define_insn "load_low<mode>"
@@ -3174,6 +3317,20 @@
 ;;
 ;;  ....................
 ;;
+
+(define_insn "prefetch"
+  [(prefetch (match_operand 0 "address_operand" "ZD")
+	     (match_operand 1 "const_int_operand" "n")
+	     (match_operand 2 "const_int_operand" "n"))]
+  ""
+{
+  switch (INTVAL (operands[1]))
+  {
+    case 0: return "preld\t0,%a0";
+    case 1: return "preld\t8,%a0";
+    default: gcc_unreachable ();
+  }
+})
 
 (define_insn "nop"
   [(const_int 0)]

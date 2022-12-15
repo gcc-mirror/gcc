@@ -202,7 +202,7 @@ label1:
             assert(78);
         else
             assert(79);
-        false; false
+        false;
     )
         if (true)
             assert(80);

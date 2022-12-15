@@ -1914,7 +1914,8 @@ should not be built.
 
 @item --with-dwarf2
 Specify that the compiler should
-use DWARF 2 debugging information as the default.
+use DWARF debugging information as the default; the exact
+DWARF version that is the default is target-specific.
 
 @item --with-advance-toolchain=@var{at}
 On 64-bit PowerPC Linux systems, configure the compiler to use the
@@ -2337,7 +2338,7 @@ specifying paths @var{path1}, @dots{}, @var{pathN}.
 
 @smallexample
 % @var{srcdir}/configure \
-    --enable-offload-targets=x86_64-intelmicemul-linux-gnu=/path/to/x86_64/compiler,nvptx-none
+    --enable-offload-targets=amdgcn-amdhsa,nvptx-none
 @end smallexample
 
 @item --enable-offload-defaulted
@@ -3102,9 +3103,7 @@ but it can give you confidence in your new GCC installation or point out
 problems before you install and start using your new GCC@.
 
 First, you must have @uref{download.html,,downloaded the testsuites}.
-These are part of the full distribution, but if you downloaded the
-``core'' compiler plus any front ends, you must download the testsuites
-separately.
+These are included in the source tarball.
 
 Second, you must have the testing tools installed.  This includes
 @uref{https://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;

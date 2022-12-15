@@ -11,5 +11,5 @@ int main()
 {
   A<int> a1;
   A<void> a2;
-  return a1 == a2;
+  return a1 == a2; // { dg-error "ambiguous, even though the second is reversed" }
 }

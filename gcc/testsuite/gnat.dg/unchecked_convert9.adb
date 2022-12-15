@@ -11,4 +11,4 @@ package body Unchecked_Convert9 is
 
 end Unchecked_Convert9;
 
--- { dg-final { scan-rtl-dump-times "set \\(mem/v" 1 "final" } }
+-- { dg-final { scan-rtl-dump-times "set \\(mem/v/c" 1 "final" } }

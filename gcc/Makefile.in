@@ -272,6 +272,7 @@ COMPILER += $(CET_HOST_FLAGS)
 
 NO_PIE_CFLAGS = @NO_PIE_CFLAGS@
 NO_PIE_FLAG = @NO_PIE_FLAG@
+DO_LINK_MUTEX = @DO_LINK_MUTEX@
 
 # We don't want to compile the compilers with -fPIE, it make PCH fail.
 COMPILER += $(NO_PIE_CFLAGS)
@@ -1257,13 +1258,17 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
 ANALYZER_OBJS = \
 	analyzer/analysis-plan.o \
 	analyzer/analyzer.o \
+	analyzer/analyzer-language.o \
 	analyzer/analyzer-logging.o \
 	analyzer/analyzer-pass.o \
 	analyzer/analyzer-selftests.o \
 	analyzer/bar-chart.o \
+	analyzer/bounds-checking.o \
+	analyzer/call-details.o \
 	analyzer/call-info.o \
 	analyzer/call-string.o \
 	analyzer/call-summary.o \
+	analyzer/checker-event.o \
 	analyzer/checker-path.o \
 	analyzer/complexity.o \
 	analyzer/constraint-manager.o \
@@ -1271,6 +1276,10 @@ ANALYZER_OBJS = \
 	analyzer/engine.o \
 	analyzer/feasible-graph.o \
 	analyzer/function-set.o \
+	analyzer/infinite-recursion.o \
+	analyzer/kf.o \
+	analyzer/kf-analyzer.o \
+	analyzer/kf-lang-cp.o \
 	analyzer/known-function-manager.o \
 	analyzer/pending-diagnostic.o \
 	analyzer/program-point.o \
@@ -1278,7 +1287,6 @@ ANALYZER_OBJS = \
 	analyzer/region.o \
 	analyzer/region-model.o \
 	analyzer/region-model-asm.o \
-	analyzer/region-model-impl-calls.o \
 	analyzer/region-model-manager.o \
 	analyzer/region-model-reachability.o \
 	analyzer/sm.o \
@@ -1721,7 +1729,6 @@ OBJS = \
 	value-pointer-equiv.o \
 	value-query.o \
 	value-range.o \
-	value-range-equiv.o \
 	value-range-pretty-print.o \
 	value-range-storage.o \
 	value-relation.o \
@@ -2771,6 +2778,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/internal-fn.h \
   $(srcdir)/calls.cc \
   $(srcdir)/omp-general.h \
+  $(srcdir)/analyzer/analyzer-language.cc \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,

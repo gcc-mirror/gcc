@@ -266,15 +266,16 @@ frange::flush_denormals_to_zero ()
   if (undefined_p () || known_isnan ())
     return;
 
+  machine_mode mode = TYPE_MODE (type ());
   // Flush [x, -DENORMAL] to [x, -0.0].
-  if (real_isdenormal (&m_max) && real_isneg (&m_max))
+  if (real_isdenormal (&m_max, mode) && real_isneg (&m_max))
     {
       m_max = dconst0;
       if (HONOR_SIGNED_ZEROS (m_type))
 	m_max.sign = 1;
     }
   // Flush [+DENORMAL, x] to [+0.0, x].
-  if (real_isdenormal (&m_min) && !real_isneg (&m_min))
+  if (real_isdenormal (&m_min, mode) && !real_isneg (&m_min))
     m_min = dconst0;
 }
 
@@ -661,7 +662,7 @@ frange::contains_p (tree cst) const
     {
       // Make sure the signs are equal for signed zeros.
       if (HONOR_SIGNED_ZEROS (m_type) && real_iszero (rv))
-	return m_min.sign == m_max.sign && m_min.sign == rv->sign;
+	return rv->sign == m_min.sign || rv->sign == m_max.sign;
       return true;
     }
   return false;
@@ -796,14 +797,17 @@ frange::zero_p () const
 	  && real_iszero (&m_max));
 }
 
+// Set the range to non-negative numbers, that is [+0.0, +INF].
+//
+// The NAN in the resulting range (if HONOR_NANS) has a varying sign
+// as there are no guarantees in IEEE 754 wrt to the sign of a NAN,
+// except for copy, abs, and copysign.  It is the responsibility of
+// the caller to set the NAN's sign if desired.
+
 void
 frange::set_nonnegative (tree type)
 {
   set (type, dconst0, frange_val_max (type));
-
-  // Set +NAN as the only possibility.
-  if (HONOR_NANS (type))
-    update_nan (/*sign=*/false);
 }
 
 // Here we copy between any two irange's.  The ranges can be legacy or
@@ -3859,6 +3863,14 @@ range_tests_signed_zeros ()
   ASSERT_TRUE (r0.contains_p (neg_zero));
   ASSERT_FALSE (r0.contains_p (zero));
 
+  r0 = frange (neg_zero, zero);
+  ASSERT_TRUE (r0.contains_p (neg_zero));
+  ASSERT_TRUE (r0.contains_p (zero));
+
+  r0 = frange_float ("-3", "5");
+  ASSERT_TRUE (r0.contains_p (neg_zero));
+  ASSERT_TRUE (r0.contains_p (zero));
+
   // The intersection of zeros that differ in sign is a NAN (or
   // undefined if not honoring NANs).
   r0 = frange (neg_zero, neg_zero);
@@ -3914,9 +3926,13 @@ range_tests_signed_zeros ()
     ASSERT_TRUE (r0.undefined_p ());
 
   r0.set_nonnegative (float_type_node);
-  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
   if (HONOR_NANS (float_type_node))
     ASSERT_TRUE (r0.maybe_isnan ());
+
+  // Numbers containing zero should have an unknown SIGNBIT.
+  r0 = frange_float ("0", "10");
+  r0.clear_nan ();
+  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
 }
 
 static void
@@ -3931,10 +3947,6 @@ range_tests_signbit ()
   ASSERT_TRUE (r0.signbit_p (signbit) && signbit);
   // Positive numbers should have the SIGNBIT clear.
   r0 = frange_float ("1", "10");
-  r0.clear_nan ();
-  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
-  // Numbers containing zero should have an unknown SIGNBIT.
-  r0 = frange_float ("0", "10");
   r0.clear_nan ();
   ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
   // Numbers spanning both positive and negative should have an
@@ -4042,6 +4054,15 @@ range_tests_floats ()
       ASSERT_TRUE (real_isinf (&r0.lower_bound (), true));
       ASSERT_TRUE (real_isinf (&r0.upper_bound (), true));
     }
+
+  // Test that reading back a global range yields the same result as
+  // what we wrote into it.
+  tree ssa = make_temp_ssa_name (float_type_node, NULL, "blah");
+  r0.set_varying (float_type_node);
+  r0.clear_nan ();
+  set_range_info (ssa, r0);
+  get_global_range_query ()->range_of_expr (r1, ssa);
+  ASSERT_EQ (r0, r1);
 }
 
 // Run floating range tests for various combinations of NAN and INF

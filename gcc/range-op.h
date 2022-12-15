@@ -48,7 +48,9 @@ along with GCC; see the file COPYING3.  If not see
 
 class range_operator
 {
+  friend class range_op_table;
 public:
+  range_operator () : m_code (ERROR_MARK) { }
   // Perform an operation between 2 ranges and return it.
   virtual bool fold_range (irange &r, tree type,
 			   const irange &lh,
@@ -106,6 +108,9 @@ protected:
 			 const wide_int &lh_ub,
 			 const wide_int &rh_lb,
 			 const wide_int &rh_ub) const;
+
+  // Tree code of the range operator or ERROR_MARK if unknown.
+  tree_code m_code;
 };
 
 // Like range_operator above, but for floating point operators.
@@ -117,6 +122,14 @@ public:
 			   const frange &lh,
 			   const frange &rh,
 			   relation_trio = TRIO_VARYING) const;
+  virtual void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			bool &maybe_nan,
+			tree type,
+			const REAL_VALUE_TYPE &lh_lb,
+			const REAL_VALUE_TYPE &lh_ub,
+			const REAL_VALUE_TYPE &rh_lb,
+			const REAL_VALUE_TYPE &rh_ub,
+			relation_kind) const;
   // Unary operations have the range of the LHS as op2.
   virtual bool fold_range (irange &r, tree type,
 			   const frange &lh,

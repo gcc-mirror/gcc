@@ -29,6 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_ICONV 0
 #endif
 
+const char *
+special_fname_builtin ()
+{
+  return _("<built-in>");
+}
+
 /* Input charset configuration.  */
 static const char *default_charset_callback (const char *)
 {
@@ -275,7 +281,7 @@ expand_location_1 (location_t loc,
 
   xloc.data = block;
   if (loc <= BUILTINS_LOCATION)
-    xloc.file = loc == UNKNOWN_LOCATION ? NULL : _("<built-in>");
+    xloc.file = loc == UNKNOWN_LOCATION ? NULL : special_fname_builtin ();
 
   return xloc;
 }
@@ -947,6 +953,98 @@ location_get_source_line (const char *file_path, int line)
     return char_span (NULL, 0);
 
   return char_span (buffer, len);
+}
+
+/* Return a NUL-terminated copy of the source text between two locations, or
+   NULL if the arguments are invalid.  The caller is responsible for freeing
+   the return value.  */
+
+char *
+get_source_text_between (location_t start, location_t end)
+{
+  expanded_location expstart =
+    expand_location_to_spelling_point (start, LOCATION_ASPECT_START);
+  expanded_location expend =
+    expand_location_to_spelling_point (end, LOCATION_ASPECT_FINISH);
+
+  /* If the locations are in different files or the end comes before the
+     start, give up and return nothing.  */
+  if (!expstart.file || !expend.file)
+    return NULL;
+  if (strcmp (expstart.file, expend.file) != 0)
+    return NULL;
+  if (expstart.line > expend.line)
+    return NULL;
+  if (expstart.line == expend.line
+      && expstart.column > expend.column)
+    return NULL;
+  /* These aren't real column numbers, give up.  */
+  if (expstart.column == 0 || expend.column == 0)
+    return NULL;
+
+  /* For a single line we need to trim both edges.  */
+  if (expstart.line == expend.line)
+    {
+      char_span line = location_get_source_line (expstart.file, expstart.line);
+      if (line.length () < 1)
+	return NULL;
+      int s = expstart.column - 1;
+      int len = expend.column - s;
+      if (line.length () < (size_t)expend.column)
+	return NULL;
+      return line.subspan (s, len).xstrdup ();
+    }
+
+  struct obstack buf_obstack;
+  obstack_init (&buf_obstack);
+
+  /* Loop through all lines in the range and append each to buf; may trim
+     parts of the start and end lines off depending on column values.  */
+  for (int lnum = expstart.line; lnum <= expend.line; ++lnum)
+    {
+      char_span line = location_get_source_line (expstart.file, lnum);
+      if (line.length () < 1 && (lnum != expstart.line && lnum != expend.line))
+	continue;
+
+      /* For the first line in the range, only start at expstart.column */
+      if (lnum == expstart.line)
+	{
+	  unsigned off = expstart.column - 1;
+	  if (line.length () < off)
+	    return NULL;
+	  line = line.subspan (off, line.length() - off);
+	}
+      /* For the last line, don't go past expend.column */
+      else if (lnum == expend.line)
+	{
+	  if (line.length () < (size_t)expend.column)
+	    return NULL;
+	  line = line.subspan (0, expend.column);
+	}
+
+      /* Combine spaces at the beginning of later lines.  */
+      if (lnum > expstart.line)
+	{
+	  unsigned off;
+	  for (off = 0; off < line.length(); ++off)
+	    if (line[off] != ' ' && line[off] != '\t')
+	      break;
+	  if (off > 0)
+	    {
+	      obstack_1grow (&buf_obstack, ' ');
+	      line = line.subspan (off, line.length() - off);
+	    }
+	}
+
+      /* This does not include any trailing newlines.  */
+      obstack_grow (&buf_obstack, line.get_buffer (), line.length ());
+    }
+
+  /* NUL-terminate and finish the buf obstack.  */
+  obstack_1grow (&buf_obstack, 0);
+  const char *buf = (const char *) obstack_finish (&buf_obstack);
+
+  return xstrdup (buf);
 }
 
 /* Determine if FILE_PATH missing a trailing newline on its final line.
@@ -2102,7 +2200,7 @@ test_unknown_location ()
 static void
 test_builtins ()
 {
-  assert_loceq (_("<built-in>"), 0, 0, BUILTINS_LOCATION);
+  assert_loceq (special_fname_builtin (), 0, 0, BUILTINS_LOCATION);
   ASSERT_PRED1 (is_location_from_builtin_token, BUILTINS_LOCATION);
 }
 

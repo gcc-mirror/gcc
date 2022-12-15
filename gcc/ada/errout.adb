@@ -53,6 +53,7 @@ with Stand;          use Stand;
 with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
+with Warnsw; pragma Unreferenced (Warnsw); -- disable spurious warning
 
 package body Errout is
 
@@ -881,18 +882,40 @@ package body Errout is
    -- Error_Msg_GNAT_Extension --
    ------------------------------
 
-   procedure Error_Msg_GNAT_Extension (Extension : String; Loc : Source_Ptr) is
+   procedure Error_Msg_GNAT_Extension
+     (Extension : String;
+      Loc : Source_Ptr;
+      Is_Core_Extension : Boolean := False)
+   is
    begin
-      if not Extensions_Allowed then
-         Error_Msg (Extension & " is a 'G'N'A'T-specific extension", Loc);
+      if (if Is_Core_Extension
+           then Core_Extensions_Allowed
+           else All_Extensions_Allowed)
+      then
+         return;
+      end if;
 
-         if No (Ada_Version_Pragma) then
-            Error_Msg ("\unit must be compiled with -gnatX "
-                       & "or use pragma Extensions_Allowed (On)", Loc);
+      Error_Msg (Extension & " is a 'G'N'A'T-specific extension", Loc);
+
+      if No (Ada_Version_Pragma) then
+         if Is_Core_Extension then
+            Error_Msg
+              ("\unit must be compiled with -gnatX '[or -gnatX0'] " &
+               "or use pragma Extensions_Allowed (On) '[or All']", Loc);
          else
-            Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
-            Error_Msg ("\incompatible with Ada version set#", Loc);
-            Error_Msg ("\must use pragma Extensions_Allowed (On)", Loc);
+            Error_Msg
+              ("\unit must be compiled with -gnatX0 " &
+               "or use pragma Extensions_Allowed (All)", Loc);
+         end if;
+      else
+         Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
+         Error_Msg ("\incompatible with Ada version set#", Loc);
+         if Is_Core_Extension then
+            Error_Msg
+              ("\must use pragma Extensions_Allowed (On) '[or All']", Loc);
+         else
+            Error_Msg
+              ("\must use pragma Extensions_Allowed (All)", Loc);
          end if;
       end if;
    end Error_Msg_GNAT_Extension;
@@ -965,14 +988,14 @@ package body Errout is
          --  after fixing the error, the use clause no longer looks like it was
          --  unused.
 
-         Check_Unreferenced := False;
-         Check_Unreferenced_Formals := False;
+         Warnsw.Check_Unreferenced := False;
+         Warnsw.Check_Unreferenced_Formals := False;
       end Handle_Serious_Error;
 
    --  Start of processing for Error_Msg_Internal
 
    begin
-      --  Detect common mistake of prefixing or suffing the message with a
+      --  Detect common mistake of prefixing or suffixing the message with a
       --  space character.
 
       pragma Assert (Msg (Msg'First) /= ' ' and then Msg (Msg'Last) /= ' ');
@@ -1191,7 +1214,7 @@ package body Errout is
           Next                => No_Error_Msg,
           Prev                => No_Error_Msg,
           Sptr                => Span,
-          Optr                => Optr,
+          Optr                => Opan,
           Insertion_Sloc      => (if Has_Insertion_Line then Error_Msg_Sloc
                                   else No_Location),
           Sfile               => Get_Source_File_Index (Sptr),
@@ -1260,7 +1283,7 @@ package body Errout is
                        or else
                           (Sptr = Errors.Table (Last_Error_Msg).Sptr.Ptr
                              and then
-                               Optr > Errors.Table (Last_Error_Msg).Optr))
+                               Optr > Errors.Table (Last_Error_Msg).Optr.Ptr))
          then
             Prev_Msg := Last_Error_Msg;
             Next_Msg := No_Error_Msg;
@@ -1278,7 +1301,8 @@ package body Errout is
                then
                   exit when Sptr < Errors.Table (Next_Msg).Sptr.Ptr
                     or else (Sptr = Errors.Table (Next_Msg).Sptr.Ptr
-                              and then Optr < Errors.Table (Next_Msg).Optr);
+                              and then
+                             Optr < Errors.Table (Next_Msg).Optr.Ptr);
                end if;
 
                Prev_Msg := Next_Msg;
@@ -1657,8 +1681,8 @@ package body Errout is
                    (Warning_Specifically_Suppressed (CE.Sptr.Ptr, CE.Text, Tag)
                                                                 /= No_String
                       or else
-                    Warning_Specifically_Suppressed (CE.Optr, CE.Text, Tag) /=
-                                                                   No_String)
+                    Warning_Specifically_Suppressed (CE.Optr.Ptr, CE.Text, Tag)
+                                                                /= No_String)
             then
                Delete_Warning (Cur);
 
@@ -2208,9 +2232,9 @@ package body Errout is
       Write_Str (",""locations"":[");
       Write_JSON_Span (Errors.Table (E));
 
-      if Errors.Table (E).Optr /= Errors.Table (E).Sptr.Ptr then
+      if Errors.Table (E).Optr.Ptr /= Errors.Table (E).Sptr.Ptr then
          Write_Str (",{""caret"":");
-         Write_JSON_Location (Errors.Table (E).Optr);
+         Write_JSON_Location (Errors.Table (E).Optr.Ptr);
          Write_Str ("}");
       end if;
 
@@ -2930,7 +2954,7 @@ package body Errout is
                            else SGR_Error);
                      begin
                         Write_Source_Code_Lines
-                          (Errors.Table (E).Sptr, SGR_Span);
+                          (Errors.Table (E).Optr, SGR_Span);
                      end;
                   end if;
                end if;
@@ -3305,7 +3329,7 @@ package body Errout is
 
                --  Don't remove if location does not match
 
-               and then Errors.Table (E).Optr = Loc
+               and then Errors.Table (E).Optr.Ptr = Loc
 
                --  Don't remove if not warning/info message. Note that we do
                --  not remove style messages here. They are warning messages
@@ -3325,6 +3349,17 @@ package body Errout is
 
                if Errors.Table (E).Info then
                   Warning_Info_Messages := Warning_Info_Messages - 1;
+               end if;
+
+               --  When warning about a runtime exception has been escalated
+               --  into error, the starting message has increased the total
+               --  errors counter, so here we decrease this counter.
+
+               if Errors.Table (E).Warn_Runtime_Raise
+                 and then not Errors.Table (E).Msg_Cont
+                 and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
+               then
+                  Total_Errors_Detected := Total_Errors_Detected - 1;
                end if;
 
                return True;
@@ -3361,23 +3396,13 @@ package body Errout is
             E := Errors.Table (E).Next;
          end loop;
 
+         --  Warnings may have been posted on subexpressions of original tree
+
          if Nkind (N) = N_Raise_Constraint_Error
            and then Is_Rewrite_Substitution (N)
            and then No (Condition (N))
          then
-            --  Warnings may have been posted on subexpressions of the original
-            --  tree. We place the original node back on the tree to remove
-            --  those warnings, whose sloc do not match those of any node in
-            --  the current tree. Given that we are in unreachable code, this
-            --  modification to the tree is harmless.
-
-            if Is_List_Member (N) then
-               Set_Condition (N, Original_Node (N));
-               Check_All_Warnings (Condition (N));
-            else
-               Rewrite (N, Original_Node (N));
-               Check_All_Warnings (N);
-            end if;
+            Check_All_Warnings (Original_Node (N));
          end if;
 
          return OK;

@@ -7,7 +7,7 @@ void
 f (bool b)
 {
   (b ? x : y) = 1;
-  (b ? x : y) += 1; // { dg-warning "compound assignment" "" { target c++20 } }
+  (b ? x : y) += 1; // { dg-bogus "compound assignment" }
   z = (b ? x : y) = 1; // { dg-warning "using value of assignment" "" { target c++20 } }
   ((z = 2) ? x : y) = 1; // { dg-warning "using value of assignment" "" { target c++20 } }
   (b ? (x = 2) : y) = 1; // { dg-warning "using value of assignment" "" { target c++20 } }

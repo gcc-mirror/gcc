@@ -178,6 +178,8 @@ extern void default_target_option_override (void);
 extern void hook_void_bitmap (bitmap);
 extern int default_reloc_rw_mask (void);
 extern bool default_generate_pic_addr_diff_vec (void);
+extern void default_asm_out_constructor (rtx, int);
+extern void default_asm_out_destructor (rtx, int);
 extern tree default_mangle_decl_assembler_name (tree, tree);
 extern tree default_emutls_var_fields (tree, tree *);
 extern tree default_emutls_var_init (tree, tree, tree);
@@ -207,6 +209,8 @@ extern void default_addr_space_diagnose_usage (addr_space_t, location_t);
 extern rtx default_addr_space_convert (rtx, tree, tree);
 extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
+extern bool default_can_special_div_by_const (enum tree_code, tree, wide_int,
+					      rtx *, rtx, rtx);
 
 extern bool default_libc_has_function (enum function_class, tree);
 extern bool default_libc_has_fast_function (int fcode);
@@ -229,9 +233,6 @@ extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    bool);
 extern int default_compare_by_pieces_branch_ratio (machine_mode);
 
-extern void default_print_patchable_function_entry_1 (FILE *,
-						      unsigned HOST_WIDE_INT,
-						      bool, unsigned int);
 extern void default_print_patchable_function_entry (FILE *,
 						    unsigned HOST_WIDE_INT,
 						    bool);

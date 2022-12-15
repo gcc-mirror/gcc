@@ -350,10 +350,6 @@ public:
 
   auto_vec<tree, 16> m_reset_debug_decls;
 
-  /* Set to true if there are any IPA_PARAM_OP_SPLIT adjustments among stored
-     adjustments.  */
-  bool m_split_modifications_p;
-
   /* Sets of statements and SSA_NAMEs that only manipulate data from parameters
      removed because they are not necessary.  */
   hash_set<gimple *> m_dead_stmts;

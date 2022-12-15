@@ -3416,14 +3416,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_greater (pp);
       break;
 
-    case ASSERT_EXPR:
-      pp_string (pp, "ASSERT_EXPR <");
-      dump_generic_node (pp, ASSERT_EXPR_VAR (node), spc, flags, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, ASSERT_EXPR_COND (node), spc, flags, false);
-      pp_greater (pp);
-      break;
-
     case SCEV_KNOWN:
       pp_string (pp, "scev_known");
       break;

@@ -2985,7 +2985,7 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_arch:
       return strcmp (name, "amdgcn") == 0 || strcmp (name, "gcn") == 0;
     case omp_device_isa:
-      if (strcmp (name, "fiji") == 0)
+      if (strcmp (name, "fiji") == 0 || strcmp (name, "gfx803") == 0)
 	return gcn_arch == PROCESSOR_FIJI;
       if (strcmp (name, "gfx900") == 0)
 	return gcn_arch == PROCESSOR_VEGA10;
@@ -4058,15 +4058,15 @@ gcn_init_builtin_types (void)
 					  (integer_type_node) */
 					, 64);
   tree tmp = build_distinct_type_copy (intSI_type_node);
-  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_FLAT;
+  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_DEFAULT;
   siptr_type_node = build_pointer_type (tmp);
 
   tmp = build_distinct_type_copy (float_type_node);
-  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_FLAT;
+  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_DEFAULT;
   sfptr_type_node = build_pointer_type (tmp);
 
   tmp = build_distinct_type_copy (void_type_node);
-  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_FLAT;
+  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_DEFAULT;
   voidptr_type_node = build_pointer_type (tmp);
 
   tmp = build_distinct_type_copy (void_type_node);
@@ -4329,6 +4329,39 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	emit_insn (gen_absv64sf2 (target, arg));
 	return target;
       }
+    case GCN_BUILTIN_FABSV:
+      {
+	if (ignore)
+	  return target;
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_absv64df2 (target, arg));
+	return target;
+      }
+    case GCN_BUILTIN_FLOORVF:
+      {
+	if (ignore)
+	  return target;
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_floorv64sf2 (target, arg));
+	return target;
+      }
+    case GCN_BUILTIN_FLOORV:
+      {
+	if (ignore)
+	  return target;
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_floorv64df2 (target, arg));
+	return target;
+      }
     case GCN_BUILTIN_LDEXPVF:
       {
 	if (ignore)
@@ -4350,7 +4383,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	  return target;
 	rtx arg1 = force_reg (V64DFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
-					   V64SFmode,
+					   V64DFmode,
 					   EXPAND_NORMAL));
 	rtx arg2 = force_reg (V64SImode,
 			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
@@ -4460,6 +4493,88 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       emit_insn (gen_gcn_wavefront_barrier ());
       return target;
 
+    case GCN_BUILTIN_GET_STACK_LIMIT:
+      {
+	/* stackbase = (stack_segment_decr & 0x0000ffffffffffff)
+			+ stack_wave_offset);
+	   seg_size = dispatch_ptr->private_segment_size;
+	   stacklimit = stackbase + seg_size*64;
+	   with segsize = *(uint32_t *) ((char *) dispatch_ptr
+				       + 6*sizeof(int16_t) + 3*sizeof(int32_t));
+	   cf. struct hsa_kernel_dispatch_packet_s in the HSA doc.  */
+	rtx ptr;
+	if (cfun->machine->args.reg[DISPATCH_PTR_ARG] >= 0
+	    && cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] >= 0)
+	  {
+	    rtx size_rtx = gen_rtx_REG (DImode,
+			     cfun->machine->args.reg[DISPATCH_PTR_ARG]);
+	    size_rtx = gen_rtx_MEM (SImode,
+				    gen_rtx_PLUS (DImode, size_rtx,
+						  GEN_INT (6*2 + 3*4)));
+	    size_rtx = gen_rtx_MULT (SImode, size_rtx, GEN_INT (64));
+
+	    ptr = gen_rtx_REG (DImode,
+		    cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]);
+	    ptr = gen_rtx_AND (DImode, ptr, GEN_INT (0x0000ffffffffffff));
+	    ptr = gen_rtx_PLUS (DImode, ptr, size_rtx);
+	    if (cfun->machine->args.reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG] >= 0)
+	      {
+		rtx off;
+		off = gen_rtx_REG (SImode,
+		      cfun->machine->args.reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG]);
+		ptr = gen_rtx_PLUS (DImode, ptr, off);
+	      }
+	  }
+	else
+	  {
+	    ptr = gen_reg_rtx (DImode);
+	    emit_move_insn (ptr, const0_rtx);
+	  }
+	return ptr;
+      }
+    case GCN_BUILTIN_KERNARG_PTR:
+      {
+	rtx ptr;
+	if (cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG] >= 0)
+	   ptr = gen_rtx_REG (DImode,
+			      cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG]);
+	else
+	  {
+	    ptr = gen_reg_rtx (DImode);
+	    emit_move_insn (ptr, const0_rtx);
+	  }
+	return ptr;
+      }
+    case GCN_BUILTIN_FIRST_CALL_THIS_THREAD_P:
+      {
+	/* Stash a marker in the unused upper 16 bits of s[0:1] to indicate
+	   whether it was the first call.  */
+	rtx result = gen_reg_rtx (BImode);
+	emit_move_insn (result, const0_rtx);
+	if (cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] >= 0)
+	  {
+	    rtx not_first = gen_label_rtx ();
+	    rtx reg = gen_rtx_REG (DImode,
+			cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]);
+	    reg = gcn_operand_part (DImode, reg, 1);
+	    rtx cmp = force_reg (SImode,
+				 gen_rtx_LSHIFTRT (SImode, reg, GEN_INT (16)));
+	    emit_insn (gen_cstoresi4 (result, gen_rtx_NE (BImode, cmp,
+							  GEN_INT(12345)),
+				      cmp, GEN_INT(12345)));
+	    emit_jump_insn (gen_cjump (not_first, gen_rtx_EQ (BImode, result,
+							      const0_rtx),
+				       result));
+	    emit_move_insn (reg,
+	      force_reg (SImode,
+		gen_rtx_IOR (SImode,
+			     gen_rtx_AND (SImode, reg, GEN_INT (0x0000ffff)),
+			     GEN_INT (12345L << 16))));
+	    emit_insn (gen_rtx_USE (VOIDmode, reg));
+	    emit_label (not_first);
+	  }
+	return result;
+      }
     default:
       gcc_unreachable ();
     }
@@ -4927,7 +5042,6 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
   machine_mode scalar_mode = GET_MODE_INNER (mode);
   int vf = GET_MODE_NUNITS (mode);
   bool use_moves = (((unspec == UNSPEC_SMIN_DPP_SHR
-		      || unspec == UNSPEC_SMIN_DPP_SHR
 		      || unspec == UNSPEC_SMAX_DPP_SHR
 		      || unspec == UNSPEC_UMIN_DPP_SHR
 		      || unspec == UNSPEC_UMAX_DPP_SHR)
@@ -4936,7 +5050,6 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		    || (unspec == UNSPEC_PLUS_DPP_SHR
 			&& scalar_mode == DFmode));
   rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
-		   : unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
 		   : unspec == UNSPEC_SMAX_DPP_SHR ? SMAX
 		   : unspec == UNSPEC_UMIN_DPP_SHR ? UMIN
 		   : unspec == UNSPEC_UMAX_DPP_SHR ? UMAX
@@ -5030,7 +5143,8 @@ static int
 gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node),
 					    struct cgraph_simd_clone *clonei,
 					    tree ARG_UNUSED (base_type),
-					    int ARG_UNUSED (num))
+					    int ARG_UNUSED (num),
+					    bool explicit_p)
 {
   if (known_eq (clonei->simdlen, 0U))
     clonei->simdlen = 64;
@@ -5038,9 +5152,10 @@ gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node
     {
       /* Note that x86 has a similar message that is likely to trigger on
 	 sizes that are OK for gcn; the user can't win.  */
-      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %wd (amdgcn)",
-		  clonei->simdlen.to_constant ());
+      if (explicit_p)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported simdlen %wd (amdgcn)",
+		    clonei->simdlen.to_constant ());
       return 0;
     }
 
@@ -5669,7 +5784,9 @@ gcn_oacc_dim_size (int dim)
 					cfun->machine->args.
 					reg[DISPATCH_PTR_ARG]),
 			   GEN_INT (offset[dim]));
-  return gen_rtx_MEM (SImode, addr);
+  rtx mem = gen_rtx_MEM (SImode, addr);
+  set_mem_addr_space (mem, ADDR_SPACE_SCALAR_FLAT);
+  return mem;
 }
 
 /* Helper function for oacc_dim_pos instruction.

@@ -672,7 +672,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	_X86_80bit,  // x86 80-bit extended precision
 	_M68k_80bit, // m68k 80-bit extended precision
 	_Dbldbl, // IBM 128-bit double-double
-	// TODO: _Bfloat16,
+	_Bfloat16,   // std::bfloat16_t
       };
 
 #ifndef __cpp_using_enum
@@ -684,6 +684,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       static constexpr _Fp_fmt _X86_80bit = _Fp_fmt::_X86_80bit;
       static constexpr _Fp_fmt _M68k_80bit = _Fp_fmt::_M68k_80bit;
       static constexpr _Fp_fmt _Dbldbl = _Fp_fmt::_Dbldbl;
+      static constexpr _Fp_fmt _Bfloat16 = _Fp_fmt::_Bfloat16;
 #endif
 
       // Identify the format used by a floating-point type.
@@ -713,6 +714,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #ifdef __SIZEOF_FLOAT80__
 	  if constexpr (__is_same(_Tp, __float80))
 	    return _X86_80bit;
+#endif
+#ifdef __STDCPP_BFLOAT16_T__
+	  if constexpr (__is_same(_Tp, decltype(0.0bf16)))
+	    return _Bfloat16;
 #endif
 
 	  constexpr int __width = sizeof(_Tp) * __CHAR_BIT__;

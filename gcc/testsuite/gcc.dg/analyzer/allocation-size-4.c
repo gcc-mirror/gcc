@@ -56,6 +56,6 @@ void test_5 (void)
   free (ptr);
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } malloc5 } */
-  /* { dg-message "1 bytes" "note" { target *-*-* } malloc5 } */
+  /* { dg-message "allocated 1 byte here" "note" { target *-*-* } malloc5 } */
   /* { dg-message "'struct base \\*' here; 'sizeof \\(struct base\\)' is '\\d+'" "note" { target *-*-* } malloc5 } */
 }

@@ -18,3 +18,9 @@
 // { dg-final { scan-assembler {_ZNK6l_var3MUlRT_IJXspT0_EEEE_clI1XJLi1ELi2ELi3EEEEDaS1_:} } }
 // { dg-final { scan-assembler {_ZNK6l_var4MUlR1YIJDpT_EEE_clIJ1US6_EEEDaS3_:} } }
 // { dg-final { scan-assembler {_ZZ2FnILi1EEvvENKUlT_E_clIiEEDaS0_:} } }
+
+// { dg-final { scan-assembler {_ZZ1fvENKUlT_E_clIcLc0EEEDaS_:} } }
+// { dg-final { scan-assembler {_ZZ1fvENKUlT_E_clIiLi0EEEDaS_:} } }
+// { dg-final { scan-assembler {_ZZZ1fvENKUlT_E_clIcLc0EEEDaS_ENKUlcS_E_clIcEEDacS_:} } }
+// { dg-final { scan-assembler {_ZZZ1fvENKUlT_E_clIiLi0EEEDaS_ENKUliS_E_clIiEEDaiS_:} } }
+// { dg-final { scan-assembler {_ZZ1fvENKUlP1UIT_Lj0EEPS_IiLj0EEE0_clIcEEDaS2_S4_:} } }

@@ -143,6 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
+      _GLIBCXX_NODISCARD
       bool
       try_lock()
       {
@@ -158,6 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Clock, typename _Duration>
+	_GLIBCXX_NODISCARD
 	bool
 	try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
 	{
@@ -173,6 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Rep, typename _Period>
+	_GLIBCXX_NODISCARD
 	bool
 	try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
 	{
@@ -215,6 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __ret;
       }
 
+      _GLIBCXX_NODISCARD
       bool
       owns_lock() const noexcept
       { return _M_owns; }
@@ -222,6 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit operator bool() const noexcept
       { return owns_lock(); }
 
+      _GLIBCXX_NODISCARD
       mutex_type*
       mutex() const noexcept
       { return _M_device; }

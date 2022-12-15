@@ -2005,14 +2005,25 @@ class pass_dce : public gimple_opt_pass
 {
 public:
   pass_dce (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_dce, ctxt)
+    : gimple_opt_pass (pass_data_dce, ctxt), update_address_taken_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () final override { return new pass_dce (m_ctxt); }
+  void set_pass_param (unsigned n, bool param) final override
+    {
+      gcc_assert (n == 0);
+      update_address_taken_p = param;
+    }
   bool gate (function *) final override { return flag_tree_dce != 0; }
-  unsigned int execute (function *) final override { return tree_ssa_dce (); }
+  unsigned int execute (function *) final override
+    {
+      return (tree_ssa_dce ()
+	      | (update_address_taken_p ? TODO_update_address_taken : 0));
+    }
 
+private:
+  bool update_address_taken_p;
 }; // class pass_dce
 
 } // anon namespace

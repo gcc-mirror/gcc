@@ -44,7 +44,7 @@ class TestGccChangelog(unittest.TestCase):
 
         filename = None
         patch_lines = []
-        with open(os.path.join(script_path, 'test_patches.txt')) as f:
+        with open(os.path.join(script_path, 'test_patches.txt'), newline='\n') as f:
             lines = f.read()
         for line in lines.split('\n'):
             if line.startswith('==='):
@@ -451,3 +451,11 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('toplev-new-file.patch')
         assert (email.errors[0].message ==
                 'new file in the top-level folder not mentioned in a ChangeLog')
+
+    def test_space_after_tab(self):
+        email = self.from_patch_glob('0001-Use-Value_Range-when-applying-inferred-ranges.patch')
+        assert (email.errors[0].message == 'extra space after tab')
+
+    def test_CR_in_patch(self):
+        email = self.from_patch_glob('0001-Add-M-character.patch')
+        assert (email.errors[0].message == 'cannot find a ChangeLog location in message')

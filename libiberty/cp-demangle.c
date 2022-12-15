@@ -347,9 +347,9 @@ struct d_print_info
   /* Number of times d_print_comp was recursively called.  Should not
      be bigger than MAX_RECURSION_COUNT.  */
   int recursion;
-  /* Non-zero if we're printing a lambda argument.  A template
-     parameter reference actually means 'auto', a pack expansion means T...  */
-  int is_lambda_arg;
+  /* 1 more than the number of explicit template parms of a lambda.  Template
+     parm references >= are actually 'auto'.  */
+  int lambda_tpl_parms;
   /* The current index into any template argument packs we are using
      for printing, or -1 to print the whole pack.  */
   int pack_index;
@@ -490,6 +490,10 @@ static struct demangle_component *d_expr_primary (struct d_info *);
 static struct demangle_component *d_local_name (struct d_info *);
 
 static int d_discriminator (struct d_info *);
+
+static struct demangle_component *d_template_parm (struct d_info *, int *bad);
+
+static struct demangle_component *d_template_head (struct d_info *, int *bad);
 
 static struct demangle_component *d_lambda (struct d_info *);
 
@@ -1028,6 +1032,10 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_TPARM_OBJ:
     case DEMANGLE_COMPONENT_STRUCTURED_BINDING:
     case DEMANGLE_COMPONENT_MODULE_INIT:
+    case DEMANGLE_COMPONENT_TEMPLATE_HEAD:
+    case DEMANGLE_COMPONENT_TEMPLATE_NON_TYPE_PARM:
+    case DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM:
+    case DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM:
       if (left == NULL)
 	return NULL;
       break;
@@ -1050,6 +1058,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_CONST:
     case DEMANGLE_COMPONENT_ARGLIST:
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
+    case DEMANGLE_COMPONENT_TEMPLATE_TYPE_PARM:
     FNQUAL_COMPONENT_CASE:
       break;
 
@@ -3877,32 +3886,120 @@ d_discriminator (struct d_info *di)
   return 1;
 }
 
-/* <closure-type-name> ::= Ul <lambda-sig> E [ <nonnegative number> ] _ */
+/* <template-parm> ::= Ty
+                   ::= Tn <type>
+		   ::= Tt <template-head> E
+		   ::= Tp <template-parm>  */
+
+static struct demangle_component *
+d_template_parm (struct d_info *di, int *bad)
+{
+  if (d_peek_char (di) != 'T')
+    return NULL;
+
+  struct demangle_component *op;
+  enum demangle_component_type kind;
+  switch (d_peek_next_char (di))
+    {
+    default:
+      return NULL;
+
+    case 'p': /* Pack  */
+      d_advance (di, 2);
+      op = d_template_parm (di, bad);
+      kind = DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM;
+      if (!op)
+	{
+	  *bad = 1;
+	  return NULL;
+	}
+      break;
+
+    case 'y': /* Typename  */
+      d_advance (di, 2);
+      op = NULL;
+      kind = DEMANGLE_COMPONENT_TEMPLATE_TYPE_PARM;
+      break;
+
+    case 'n': /* Non-Type  */
+      d_advance (di, 2);
+      op = cplus_demangle_type (di);
+      kind = DEMANGLE_COMPONENT_TEMPLATE_NON_TYPE_PARM;
+      if (!op)
+	{
+	  *bad = 1;
+	  return NULL;
+	}
+      break;
+
+    case 't': /* Template */
+      d_advance (di, 2);
+      op = d_template_head (di, bad);
+      kind = DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM;
+      if (!op || !d_check_char (di, 'E'))
+	{
+	  *bad = 1;
+	  return NULL;
+	}
+    }
+
+  return d_make_comp (di, kind, op, NULL);
+}
+
+/* <template-head> ::= <template-head>? <template-parm>  */
+
+static struct demangle_component *
+d_template_head (struct d_info *di, int *bad)
+{
+  struct demangle_component *res = NULL, **slot = &res;
+  struct demangle_component *op;
+
+  while ((op = d_template_parm (di, bad)))
+    {
+      *slot = op;
+      slot = &d_right (op);
+    }
+
+  /* Wrap it in a template head, to make concatenating with any parm list, and
+     printing simpler.  */
+  if (res)
+    res = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE_HEAD, res, NULL);
+
+  return res;
+}
+
+/* <closure-type-name> ::= Ul <template-head>? <lambda-sig> E [ <nonnegative number> ] _ */
 
 static struct demangle_component *
 d_lambda (struct d_info *di)
 {
-  struct demangle_component *tl;
-  struct demangle_component *ret;
-  int num;
-
   if (! d_check_char (di, 'U'))
     return NULL;
   if (! d_check_char (di, 'l'))
     return NULL;
 
-  tl = d_parmlist (di);
+  int bad = 0;
+  struct demangle_component *head = d_template_head (di, &bad);
+  if (bad)
+    return NULL;
+
+  struct demangle_component *tl = d_parmlist (di);
   if (tl == NULL)
     return NULL;
+  if (head)
+    {
+      d_right (head) = tl;
+      tl = head;
+    }
 
   if (! d_check_char (di, 'E'))
     return NULL;
 
-  num = d_compact_number (di);
+  int num = d_compact_number (di);
   if (num < 0)
     return NULL;
 
-  ret = d_make_empty (di);
+  struct demangle_component *ret = d_make_empty (di);
   if (ret)
     {
       ret->type = DEMANGLE_COMPONENT_LAMBDA;
@@ -4254,6 +4351,11 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_MODULE_PARTITION:
     case DEMANGLE_COMPONENT_MODULE_INIT:
     case DEMANGLE_COMPONENT_FIXED_TYPE:
+    case DEMANGLE_COMPONENT_TEMPLATE_HEAD:
+    case DEMANGLE_COMPONENT_TEMPLATE_TYPE_PARM:
+    case DEMANGLE_COMPONENT_TEMPLATE_NON_TYPE_PARM:
+    case DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM:
+    case DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM:
       break;
 
     case DEMANGLE_COMPONENT_TEMPLATE:
@@ -4384,7 +4486,7 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
 
   dpi->demangle_failure = 0;
   dpi->recursion = 0;
-  dpi->is_lambda_arg = 0;
+  dpi->lambda_tpl_parms = 0;
 
   dpi->component_stack = NULL;
 
@@ -4881,6 +4983,33 @@ d_maybe_print_designated_init (struct d_print_info *dpi, int options,
   return 1;
 }
 
+static void
+d_print_lambda_parm_name (struct d_print_info *dpi, int type, unsigned index)
+{
+  const char *str;
+  switch (type)
+    {
+    default:
+      dpi->demangle_failure = 1;
+      str = "";
+      break;
+
+    case DEMANGLE_COMPONENT_TEMPLATE_TYPE_PARM:
+      str = "$T";
+      break;
+
+    case DEMANGLE_COMPONENT_TEMPLATE_NON_TYPE_PARM:
+      str = "$N";
+      break;
+
+    case DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM:
+      str = "$TT";
+      break;
+    }
+  d_append_string (dpi, str);
+  d_append_num (dpi, index);
+}
+
 /* Subroutine to handle components.  */
 
 static void
@@ -5135,7 +5264,21 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       }
 
     case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
-      if (dpi->is_lambda_arg)
+      if (dpi->lambda_tpl_parms > dc->u.s_number.number + 1)
+	{
+	  const struct demangle_component *a
+	    = d_left (dpi->templates->template_decl);
+	  unsigned c;
+	  for (c = dc->u.s_number.number; a && c; c--)
+	    a = d_right (a);
+	  if (a && a->type == DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM)
+	    a = d_left (a);
+	  if (!a)
+	    dpi->demangle_failure = 1;
+	  else
+	    d_print_lambda_parm_name (dpi, a->type, dc->u.s_number.number);
+	}
+      else if (dpi->lambda_tpl_parms)
 	{
 	  /* Show the template parm index, as that's how g++ displays
 	     these, and future proofs us against potential
@@ -5316,7 +5459,7 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       {
 	/* Handle reference smashing: & + && = &.  */
 	struct demangle_component *sub = d_left (dc);
-	if (!dpi->is_lambda_arg
+	if (!dpi->lambda_tpl_parms
 	    && sub->type == DEMANGLE_COMPONENT_TEMPLATE_PARAM)
 	  {
 	    struct d_saved_scope *scope = d_get_saved_scope (dpi, sub);
@@ -5942,7 +6085,7 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       {
 	struct demangle_component *a = NULL;
 
-	if (!dpi->is_lambda_arg)
+	if (!dpi->lambda_tpl_parms)
 	  a = d_find_pack (dpi, d_left (dc));
 	if (a == NULL)
 	  {
@@ -5994,15 +6137,50 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       return;
 
     case DEMANGLE_COMPONENT_LAMBDA:
-      d_append_string (dpi, "{lambda(");
-      /* Generic lambda auto parms are mangled as the template type
-	 parm they are.  */
-      dpi->is_lambda_arg++;
-      d_print_comp (dpi, options, dc->u.s_unary_num.sub);
-      dpi->is_lambda_arg--;
-      d_append_string (dpi, ")#");
-      d_append_num (dpi, dc->u.s_unary_num.num + 1);
-      d_append_char (dpi, '}');
+      {
+	d_append_string (dpi, "{lambda");
+	struct demangle_component *parms = dc->u.s_unary_num.sub;
+	struct d_print_template dpt;
+	/* Generic lambda auto parms are mangled as the (synthedic) template
+	   type parm they are.  We need to tell the printer that (a) we're in
+	   a lambda, and (b) the number of synthetic parms.  */
+	int saved_tpl_parms = dpi->lambda_tpl_parms;
+	dpi->lambda_tpl_parms = 0;
+	/* Hang any lambda head as-if template args.  */
+	dpt.template_decl = NULL;
+	dpt.next = dpi->templates;
+	dpi->templates = &dpt;
+	if (parms && parms->type == DEMANGLE_COMPONENT_TEMPLATE_HEAD)
+	  {
+	    dpt.template_decl = parms;
+
+	    d_append_char (dpi, '<');
+	    struct demangle_component *parm;
+	    for (parm = d_left (parms); parm; parm = d_right (parm))
+	      {
+		if (dpi->lambda_tpl_parms++)
+		  d_append_string (dpi, ", ");
+		d_print_comp (dpi, options, parm);
+		d_append_char (dpi, ' ');
+		if (parm->type == DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM)
+		  parm = d_left (parm);
+		d_print_lambda_parm_name (dpi, parm->type,
+					  dpi->lambda_tpl_parms - 1);
+	      }
+	    d_append_char (dpi, '>');
+
+	    parms = d_right (parms);
+	  }
+	dpi->lambda_tpl_parms++;
+
+	d_append_char (dpi, '(');
+	d_print_comp (dpi, options, parms);
+	dpi->lambda_tpl_parms = saved_tpl_parms;
+	dpi->templates = dpt.next;
+	d_append_string (dpi, ")#");
+	d_append_num (dpi, dc->u.s_unary_num.num + 1);
+	d_append_char (dpi, '}');
+      }
       return;
 
     case DEMANGLE_COMPONENT_UNNAMED_TYPE:
@@ -6016,6 +6194,40 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       d_append_string (dpi, " [clone ");
       d_print_comp (dpi, options, d_right (dc));
       d_append_char (dpi, ']');
+      return;
+
+    case DEMANGLE_COMPONENT_TEMPLATE_HEAD:
+      {
+	d_append_char (dpi, '<');
+	int count = 0;
+	struct demangle_component *parm;
+	for (parm = d_left (dc); parm; parm = d_right (parm))
+	  {
+	    if (count++)
+	      d_append_string (dpi, ", ");
+	    d_print_comp (dpi, options, parm);
+	  }
+	d_append_char (dpi, '>');
+      }
+      return;
+
+    case DEMANGLE_COMPONENT_TEMPLATE_TYPE_PARM:
+      d_append_string (dpi, "typename");
+      return;
+
+    case DEMANGLE_COMPONENT_TEMPLATE_NON_TYPE_PARM:
+      d_print_comp (dpi, options, d_left (dc));
+      return;
+
+    case DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM:
+      d_append_string (dpi, "template");
+      d_print_comp (dpi, options, d_left (dc));
+      d_append_string (dpi, " class");
+      return;
+
+    case DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM:
+      d_print_comp (dpi, options, d_left (dc));
+      d_append_string (dpi, "...");
       return;
 
     default:

@@ -25,6 +25,7 @@
 
 with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Casing;         use Casing;
@@ -84,6 +85,7 @@ with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 with Uname;          use Uname;
 with Urealp;         use Urealp;
+with Warnsw;         use Warnsw;
 
 with System.CRC32;   use System.CRC32;
 
@@ -1138,7 +1140,7 @@ package body Sem_Attr is
                   --  pointer can be used to modify the variable, and we might
                   --  not detect this, leading to some junk warnings.
 
-                  --  We only do this for source references, since otherwise
+                  --  We do this only for source references, since otherwise
                   --  we can suppress warnings, e.g. from the unrestricted
                   --  access generated for validity checks in -gnatVa mode.
 
@@ -3429,7 +3431,34 @@ package body Sem_Attr is
          Check_E0;
          Address_Checks;
          Check_Not_Incomplete_Type;
-         Set_Etype (N, RTE (RE_Address));
+
+         --  If the prefix is a dereference of a value whose associated access
+         --  type has been specified with aspect Designated_Storage_Model, then
+         --  use the associated Storage_Model_Type's address type as the type
+         --  of the attribute. Otherwise we use System.Address as usual. This
+         --  isn't normally legit for a predefined attribute, but this is for
+         --  our own extension to addressing and currently requires extensions
+         --  to be enabled (such as with -gnatX0).
+
+         declare
+            Prefix_Obj : constant Node_Id := Get_Referenced_Object (P);
+            Addr_Type  : Entity_Id        := RTE (RE_Address);
+         begin
+            if Nkind (Prefix_Obj) = N_Explicit_Dereference then
+               declare
+                  P_Type : constant Entity_Id := Etype (Prefix (Prefix_Obj));
+
+                  use Storage_Model_Support;
+               begin
+                  if Has_Designated_Storage_Model_Aspect (P_Type) then
+                     Addr_Type := Storage_Model_Address_Type
+                                    (Storage_Model_Object (P_Type));
+                  end if;
+               end;
+            end if;
+
+            Set_Etype (N, Addr_Type);
+         end;
 
       ------------------
       -- Address_Size --
@@ -3888,7 +3917,7 @@ package body Sem_Attr is
 
             elsif (Is_Generic_Type (P_Type)
                     or else Is_Generic_Actual_Type (P_Type))
-              and then Extensions_Allowed
+              and then All_Extensions_Allowed
             then
                return;
             end if;
@@ -5996,8 +6025,8 @@ package body Sem_Attr is
                --  Verify that prefix can be iterated upon.
 
                if Is_Array_Type (Typ)
-                 or else Present (Find_Aspect (Typ, Aspect_Default_Iterator))
-                 or else Present (Find_Aspect (Typ, Aspect_Iterable))
+                 or else Has_Aspect (Typ, Aspect_Default_Iterator)
+                 or else Has_Aspect (Typ, Aspect_Iterable)
                then
                   null;
                else
@@ -6425,7 +6454,7 @@ package body Sem_Attr is
             --  type to the pool object's type.
 
             else
-               if not Present (Get_Rep_Pragma (Etype (Entity (N)),
+               if No (Get_Rep_Pragma (Etype (Entity (N)),
                                                Name_Simple_Storage_Pool_Type))
                then
                   Error_Attr_P
@@ -9203,13 +9232,15 @@ package body Sem_Attr is
       --  Image is a scalar attribute, but is never static, because it is
       --  not a static function (having a non-scalar argument (RM 4.9(22))
       --  However, we can constant-fold the image of an enumeration literal
-      --  if names are available.
+      --  if names are available and default Image implementation has not
+      --  been overridden.
 
       when Attribute_Image =>
          if Is_Entity_Name (E1)
            and then Ekind (Entity (E1)) = E_Enumeration_Literal
            and then not Discard_Names (First_Subtype (Etype (E1)))
            and then not Global_Discard_Names
+           and then not Has_Aspect (Etype (E1), Aspect_Put_Image)
          then
             declare
                Lit : constant Entity_Id := Entity (E1);
@@ -10906,71 +10937,11 @@ package body Sem_Attr is
       It       : Interp;
       Nom_Subt : Entity_Id;
 
-      procedure Accessibility_Message;
-      --  Error, or warning within an instance, if the static accessibility
-      --  rules of 3.10.2 are violated.
-
       function Declared_Within_Generic_Unit
         (Entity       : Entity_Id;
          Generic_Unit : Node_Id) return Boolean;
       --  Returns True if Declared_Entity is declared within the declarative
       --  region of Generic_Unit; otherwise returns False.
-
-      function Prefix_With_Safe_Accessibility_Level return Boolean;
-      --  Return True if the prefix does not have a value conversion of an
-      --  array because a value conversion is like an aggregate with respect
-      --  to determining accessibility level (RM 3.10.2); even if evaluation
-      --  of a value conversion is guaranteed to not create a new object,
-      --  accessibility rules are defined as if it might.
-
-      ---------------------------
-      -- Accessibility_Message --
-      ---------------------------
-
-      procedure Accessibility_Message is
-         Indic : Node_Id := Parent (Parent (N));
-
-      begin
-         --  In an instance, this is a runtime check, but one we
-         --  know will fail, so generate an appropriate warning.
-
-         if In_Instance_Body then
-            Error_Msg_Warn := SPARK_Mode /= On;
-            Error_Msg_F
-              ("non-local pointer cannot point to local object<<", P);
-            Error_Msg_F ("\Program_Error [<<", P);
-            Rewrite (N,
-              Make_Raise_Program_Error (Loc,
-                Reason => PE_Accessibility_Check_Failed));
-            Set_Etype (N, Typ);
-            return;
-
-         else
-            Error_Msg_F ("non-local pointer cannot point to local object", P);
-
-            --  Check for case where we have a missing access definition
-
-            if Is_Record_Type (Current_Scope)
-              and then
-                Nkind (Parent (N)) in N_Discriminant_Association
-                                    | N_Index_Or_Discriminant_Constraint
-            then
-               Indic := Parent (Parent (N));
-               while Present (Indic)
-                 and then Nkind (Indic) /= N_Subtype_Indication
-               loop
-                  Indic := Parent (Indic);
-               end loop;
-
-               if Present (Indic) then
-                  Error_Msg_NE
-                    ("\use an access definition for" &
-                     " the access discriminant of&",
-                     N, Entity (Subtype_Mark (Indic)));
-               end if;
-            end if;
-         end if;
-      end Accessibility_Message;
 
       ----------------------------------
       -- Declared_Within_Generic_Unit --
@@ -10998,70 +10969,6 @@ package body Sem_Attr is
 
          return False;
       end Declared_Within_Generic_Unit;
-
-      ------------------------------------------
-      -- Prefix_With_Safe_Accessibility_Level --
-      ------------------------------------------
-
-      function Prefix_With_Safe_Accessibility_Level return Boolean is
-         function Safe_Value_Conversions return Boolean;
-         --  Return False if the prefix has a value conversion of an array type
-
-         ----------------------------
-         -- Safe_Value_Conversions --
-         ----------------------------
-
-         function Safe_Value_Conversions return Boolean is
-            PP : Node_Id := P;
-
-         begin
-            loop
-               if Nkind (PP) in N_Selected_Component | N_Indexed_Component then
-                  PP := Prefix (PP);
-
-               elsif Comes_From_Source (PP)
-                 and then Nkind (PP) in N_Type_Conversion
-                                      | N_Unchecked_Type_Conversion
-                 and then Is_Array_Type (Etype (PP))
-               then
-                  return False;
-
-               elsif Comes_From_Source (PP)
-                 and then Nkind (PP) = N_Qualified_Expression
-                 and then Is_Array_Type (Etype (PP))
-                 and then Nkind (Original_Node (Expression (PP))) in
-                            N_Aggregate | N_Extension_Aggregate
-               then
-                  return False;
-
-               else
-                  exit;
-               end if;
-            end loop;
-
-            return True;
-         end Safe_Value_Conversions;
-
-      --  Start of processing for Prefix_With_Safe_Accessibility_Level
-
-      begin
-         --  No check required for unchecked and unrestricted access
-
-         if Attr_Id = Attribute_Unchecked_Access
-           or else Attr_Id = Attribute_Unrestricted_Access
-         then
-            return True;
-
-         --  Check value conversions
-
-         elsif Ekind (Btyp) = E_General_Access_Type
-           and then not Safe_Value_Conversions
-         then
-            return False;
-         end if;
-
-         return True;
-      end Prefix_With_Safe_Accessibility_Level;
 
    --  Start of processing for Resolve_Attribute
 
@@ -11748,7 +11655,7 @@ package body Sem_Attr is
                       Intval (Accessibility_Level (P, Dynamic_Level))
                         > Deepest_Type_Access_Level (Btyp)
                   then
-                     Accessibility_Message;
+                     Accessibility_Message (N, Typ);
                      return;
                   end if;
                end;
@@ -11774,7 +11681,7 @@ package body Sem_Attr is
                  and then Ekind (Btyp) = E_Access_Protected_Subprogram_Type
                  and then Attr_Id /= Attribute_Unrestricted_Access
                then
-                  Accessibility_Message;
+                  Accessibility_Message (N, Typ);
                   return;
 
                --  AI05-0225: If the context is not an access to protected
@@ -11933,8 +11840,8 @@ package body Sem_Attr is
             --  array type since a value conversion is like an aggregate with
             --  respect to determining accessibility level (RM 3.10.2).
 
-            if not Prefix_With_Safe_Accessibility_Level then
-               Accessibility_Message;
+            if not Prefix_With_Safe_Accessibility_Level (N, Typ) then
+               Accessibility_Message (N, Typ);
                return;
             end if;
 

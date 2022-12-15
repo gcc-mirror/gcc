@@ -910,7 +910,7 @@ private:
         {
             fixbuf[0 .. symBeg] = buf[0 .. symBeg];
 
-            auto sym = demangle(buf[symBeg .. symEnd], fixbuf[symBeg .. $]);
+            auto sym = demangle(buf[symBeg .. symEnd], fixbuf[symBeg .. $], getCXXDemangler());
 
             if (sym.ptr !is fixbuf.ptr + symBeg)
             {

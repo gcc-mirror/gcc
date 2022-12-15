@@ -23,7 +23,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "xtensa-config.h"
+#include "xtensa-config-builtin.h"
 
 /* __xtensa_libgcc_window_spill: This function flushes out all but the
    current register window.  This is used to set up the stack so that

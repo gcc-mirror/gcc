@@ -620,7 +620,6 @@ package body Sinput is
    -------------------------
 
    function Instantiation_Depth (S : Source_Ptr) return Nat is
-      Sind  : Source_File_Index;
       Sval  : Source_Ptr;
       Depth : Nat;
 
@@ -629,8 +628,7 @@ package body Sinput is
       Depth := 0;
 
       loop
-         Sind := Get_Source_File_Index (Sval);
-         Sval := Instantiation (Sind);
+         Sval := Instantiation_Location (Sval);
          exit when Sval = No_Location;
          Depth := Depth + 1;
       end loop;

@@ -424,6 +424,7 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/deque \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/execution \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/filesystem \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/format \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/forward_list \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/fstream \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/future \
@@ -1115,6 +1116,7 @@ experimental_headers = \
 	${experimental_srcdir}/array \
 	${experimental_srcdir}/buffer \
 	${experimental_srcdir}/chrono \
+	${experimental_srcdir}/contract \
 	${experimental_srcdir}/deque \
 	${experimental_srcdir}/executor \
 	${experimental_srcdir}/forward_list \

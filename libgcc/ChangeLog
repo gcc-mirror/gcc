@@ -1,3 +1,24 @@
+2022-12-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa-config-builtin.h (XCHAL_NUM_AREGS)
+	(XCHAL_ICACHE_SIZE, XCHAL_DCACHE_SIZE, XCHAL_ICACHE_LINESIZE)
+	(XCHAL_DCACHE_LINESIZE, XCHAL_MMU_MIN_PTE_PAGE_SIZE)
+	(XSHAL_ABI): Remove stray symbols from macro definitions.
+
+2022-12-07  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/crti.S (xtensa-config.h): Replace #inlcude with
+	xtensa-config-builtin.h.
+	* config/xtensa/crtn.S: Likewise.
+	* config/xtensa/lib1funcs.S: Likewise.
+	* config/xtensa/lib2funcs.S: Likewise.
+	* config/xtensa/xtensa-config-builtin.h: New File.
+
+2022-11-04  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (find_fde_tail): Special-case encoding
+	values actually used by BFD ld.
+
 2022-10-23  LIU Hao  <lh_mouse@126.com>
 
 	* config/i386/gthr-mcf.h: Include 'gthr_libobjc.h' when building
@@ -5925,7 +5946,7 @@
 	for CUSTOM_CRTSTUFF.
 	* config.host (i[34567]86-*-cygwin*, x86_64-*-cygwin*,
 	i[34567]86-*-mingw*)
-	 (x86_64-*-mingw*): Only add vtv_*.o to extra_parts if
+	(x86_64-*-mingw*): Only add vtv_*.o to extra_parts if
 	enable_vtable_verify.
 
 2015-01-27  Nick Clifton  <nickc@redhat.com>
@@ -7249,7 +7270,7 @@
 
 2013-12-31  Sandra Loosemore  <sandra@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
-	    Based on patches from Altera Corporation
+	Based on patches from Altera Corporation
 
 	* config.host (nios2-*-*,nios2-*-linux*): Add nios2 host cases.
 	* config/nios2/lib2-nios2.h: New file.

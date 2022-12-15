@@ -356,8 +356,8 @@ struct byte_range
   byte_size_t m_size_in_bytes;
 };
 
-/* Concrete subclass of binding_key, for describing a concrete range of
-   bits within the binding_map (e.g. "bits 8-15").  */
+/* Concrete subclass of binding_key, for describing a non-empty
+   concrete range of bits within the binding_map (e.g. "bits 8-15").  */
 
 class concrete_binding : public binding_key
 {
@@ -367,7 +367,9 @@ public:
 
   concrete_binding (bit_offset_t start_bit_offset, bit_size_t size_in_bits)
   : m_bit_range (start_bit_offset, size_in_bits)
-  {}
+  {
+    gcc_assert (!m_bit_range.empty_p ());
+  }
   bool concrete_p () const final override { return true; }
 
   hashval_t hash () const
@@ -644,7 +646,7 @@ public:
   void on_asm (const gasm *stmt, store_manager *mgr,
 	       const conjured_purge &p);
 
-  bool escaped_p () const { return m_escaped; }
+  bool escaped_p () const;
   bool touched_p () const { return m_touched; }
 
   bool redundant_p () const;

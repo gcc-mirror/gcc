@@ -3,12 +3,13 @@
 
 const char* test_literal (int x)
 {
-  char *p = __builtin_strchr ("123", x);
+  char *p = __builtin_strchr ("123", x); /* { dg-message "when '__builtin_strchr' returns non-NULL" } */
   if (p)
     {
       __analyzer_eval (*p == x); /* { dg-message "UNKNOWN" } */
       /* TODO: this ought to be TRUE, but it's unclear that it's
 	 worth stashing this constraint.  */
+      *p = 'A'; /* { dg-warning "write to string literal" } */
     }
   return p;
 }

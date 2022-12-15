@@ -222,7 +222,7 @@ extern (C++) final class StaticForeach : RootObject
         }
         else
         {
-            assert(rangefe && parameters.dim == 1);
+            assert(rangefe && parameters.length == 1);
             return new ForeachRangeStatement(loc, rangefe.op, (*parameters)[0], rangefe.lwr.syntaxCopy(), rangefe.upr.syntaxCopy(), s, loc);
         }
     }
@@ -306,7 +306,7 @@ extern (C++) final class StaticForeach : RootObject
 
     private void lowerNonArrayAggregate(Scope* sc)
     {
-        auto nvars = aggrfe ? aggrfe.parameters.dim : 1;
+        auto nvars = aggrfe ? aggrfe.parameters.length : 1;
         auto aloc = aggrfe ? aggrfe.aggr.loc : rangefe.lwr.loc;
         // We need three sets of foreach loop variables because the
         // lowering contains three foreach loops.
@@ -332,7 +332,7 @@ extern (C++) final class StaticForeach : RootObject
         {
             foreach (i; 0 .. 2)
             {
-                auto e = new Expressions(pparams[0].dim);
+                auto e = new Expressions(pparams[0].length);
                 foreach (j, ref elem; *e)
                 {
                     auto p = (*pparams[i])[j];

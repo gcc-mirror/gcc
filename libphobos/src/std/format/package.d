@@ -212,17 +212,17 @@ There are several flags that affect the outcome of the formatting.
 $(BOOKTABLE ,
    $(TR $(TH Flag) $(TH Semantics))
    $(TR $(TD $(B '-'))
-        $(TD When the formatted result is shorter then the value
-             given by the width parameter, the output is right
-             justified. With the $(B '-') flag this is changed
-             to left justification.
+        $(TD When the formatted result is shorter than the value
+             given by the width parameter, the output is left
+             justified. Without the $(B '-') flag, the output remains
+             right justified.
 
              There are two exceptions where the $(B '-') flag has a
              different meaning: (1) with $(B 'r') it denotes to use little
              endian and (2) in case of a compound indicator it means that
              no special handling of the members is applied.))
    $(TR $(TD $(B '='))
-        $(TD When the formatted result is shorter then the value
+        $(TD When the formatted result is shorter than the value
              given by the width parameter, the output is centered.
              If the central position is not possible it is moved slightly
              to the right. In this case, if $(B '-') flag is present in
@@ -1563,6 +1563,14 @@ char[] sformat(Char, Args...)(return scope char[] buf, scope const(Char)[] fmt, 
     {
         char[] buf;
         size_t i;
+        void put(char c)
+        {
+            if (buf.length <= i)
+                throw new RangeError(__FILE__, __LINE__);
+
+            buf[i] = c;
+            i += 1;
+        }
         void put(dchar c)
         {
             char[4] enc;
@@ -1685,6 +1693,19 @@ if (isSomeString!(typeof(fmt)))
     sformat(buf, "%s", 'c');
     const v = () @trusted { return GC.stats().usedSize; } ();
     assert(u == v);
+}
+
+@safe unittest // https://issues.dlang.org/show_bug.cgi?id=23488
+{
+    static struct R
+    {
+        string s = "Ü";
+        bool empty() { return s.length == 0; }
+        char front() { return s[0]; }
+        void popFront() { s = s[1 .. $]; }
+    }
+    char[2] buf;
+    assert(sformat(buf, "%s", R()) == "Ü");
 }
 
 version (StdUnittest)

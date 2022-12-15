@@ -128,4 +128,10 @@ enum harden_sls {
   harden_sls_all = harden_sls_return | harden_sls_indirect_jmp
 };
 
+enum lam_type {
+  lam_none = 0,
+  lam_u48 = 1,
+  lam_u57
+};
+
 #endif

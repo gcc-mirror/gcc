@@ -886,16 +886,20 @@ Gcc_backend::Gcc_backend()
                                uint32_type_node,
                                integer_type_node,
                                NULL_TREE);
-  this->define_builtin(BUILT_IN_ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4", NULL,
-                       t, 0);
+  this->define_builtin(BUILT_IN_ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4",
+		       NULL, t, 0);
+  this->define_builtin(BUILT_IN_ATOMIC_FETCH_ADD_4, "__atomic_fetch_add_4",
+		       NULL, t, 0);
 
   t = build_function_type_list(uint64_type_node,
                                ptr_type_node,
                                uint64_type_node,
                                integer_type_node,
                                NULL_TREE);
-  this->define_builtin(BUILT_IN_ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8", NULL,
-                       t, 0);
+  this->define_builtin(BUILT_IN_ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8",
+		       NULL, t, 0);
+  this->define_builtin(BUILT_IN_ATOMIC_FETCH_ADD_8, "__atomic_fetch_add_8",
+		       NULL, t, 0);
 
   t = build_function_type_list(unsigned_char_type_node,
 			       ptr_type_node,

@@ -2127,7 +2127,6 @@ private:
 
   /* Return the argument that a call returns.  */
   tree gimple_call_return_arg (gcall *);
-  tree gimple_call_return_arg_ref (gcall *);
 
   /* Check a call for uses of a dangling pointer arguments.  */
   void check_call_dangling (gcall *);
@@ -4460,24 +4459,6 @@ pass_waccess::gimple_call_return_arg (gcall *call)
   return gimple_call_arg (call, argno);
 }
 
-/* Return the decl referenced by the argument that the call STMT to
-   a built-in function returns (including with an offset) or null if
-   it doesn't.  */
-
-tree
-pass_waccess::gimple_call_return_arg_ref (gcall *call)
-{
-  if (tree arg = gimple_call_return_arg (call))
-    {
-      access_ref aref;
-      if (m_ptr_qry.get_ref (arg, call, &aref, 0)
-	  && DECL_P (aref.ref))
-	return aref.ref;
-    }
-
-  return NULL_TREE;
-}
-
 /* Check for and diagnose all uses of the dangling pointer VAR to the auto
    object DECL whose lifetime has ended.  OBJREF is true when VAR denotes
    an access to a DECL that may have been clobbered.  */
@@ -4646,11 +4627,10 @@ pass_waccess::check_dangling_uses ()
   unsigned i;
   FOR_EACH_SSA_NAME (i, var, m_func)
     {
-      /* For each SSA_NAME pointer VAR find the DECL it points to.
-	 If the DECL is a clobbered local variable, check to see
+      /* For each SSA_NAME pointer VAR find the object it points to.
+	 If the object is a clobbered local variable, check to see
 	 if any of VAR's uses (or those of other pointers derived
 	 from VAR) happens after the clobber.  If so, warn.  */
-      tree decl = NULL_TREE;
 
       gimple *def_stmt = SSA_NAME_DEF_STMT (var);
       if (is_gimple_assign (def_stmt))
@@ -4660,23 +4640,30 @@ pass_waccess::check_dangling_uses ()
 	    {
 	      if (!POINTER_TYPE_P (TREE_TYPE (var)))
 		continue;
-	      decl = TREE_OPERAND (rhs, 0);
+	      check_dangling_uses (var, TREE_OPERAND (rhs, 0));
 	    }
 	  else
 	    {
 	      /* For other expressions, check the base DECL to see
 		 if it's been clobbered, most likely as a result of
 		 inlining a reference to it.  */
-	      decl = get_base_address (rhs);
+	      tree decl = get_base_address (rhs);
 	      if (DECL_P (decl))
 		check_dangling_uses (var, decl, false, true);
-	      continue;
 	    }
 	}
       else if (POINTER_TYPE_P (TREE_TYPE (var)))
 	{
 	  if (gcall *call = dyn_cast<gcall *>(def_stmt))
-	    decl = gimple_call_return_arg_ref (call);
+	    {
+	      if (tree arg = gimple_call_return_arg (call))
+		{
+		  access_ref aref;
+		  if (m_ptr_qry.get_ref (arg, call, &aref, 0)
+		      && aref.deref < 0)
+		    check_dangling_uses (var, aref.ref);
+		}
+	    }
 	  else if (gphi *phi = dyn_cast <gphi *>(def_stmt))
 	    {
 	      unsigned nargs = gimple_phi_num_args (phi);
@@ -4684,19 +4671,12 @@ pass_waccess::check_dangling_uses ()
 		{
 		  access_ref aref;
 		  tree arg = gimple_phi_arg_def (phi, i);
-		  if (!m_ptr_qry.get_ref (arg, phi, &aref, 0)
-		      || (aref.deref == 0
-			  && POINTER_TYPE_P (TREE_TYPE (aref.ref))))
-		    continue;
-		  check_dangling_uses (var, aref.ref, true);
+		  if (m_ptr_qry.get_ref (arg, phi, &aref, 0)
+		      && aref.deref < 0)
+		    check_dangling_uses (var, aref.ref, true);
 		}
-	      continue;
 	    }
-	  else
-	    continue;
 	}
-
-      check_dangling_uses (var, decl);
     }
 }
 

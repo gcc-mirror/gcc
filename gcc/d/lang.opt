@@ -422,7 +422,7 @@ Don't destruct fields of partially constructed objects.
 
 frevert=intpromote
 D RejectNegative
-Use C-style integral promotion for unary '+', '-' and '~'.
+Don't use C-style integral promotion for unary '+', '-' and '~'.
 
 frtti
 D

@@ -5518,7 +5518,7 @@ $as_echo "$ac_cv_path_EGREP" >&6; }
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
 
-  SUBDIRS='include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace doc po testsuite python'
+  SUBDIRS='include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace src/experimental doc po testsuite python'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -19215,11 +19215,11 @@ else
   ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&5
+$as_echo "$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&6; }
   else
     ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&5
-$as_echo "$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&6; }
   if test x"$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" = x"yes"; then
 
 $as_echo "#define _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T 1" >>confdefs.h
@@ -19253,11 +19253,11 @@ else
   ac_uchar_c8rtomb_mbrtoc8_cxx20=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_cxx20" >&5
+$as_echo "$ac_uchar_c8rtomb_mbrtoc8_cxx20" >&6; }
   else
     ac_uchar_c8rtomb_mbrtoc8_cxx20=no
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_cxx20" >&5
-$as_echo "$ac_uchar_c8rtomb_mbrtoc8_cxx20" >&6; }
   if test x"$ac_uchar_c8rtomb_mbrtoc8_cxx20" = x"yes"; then
 
 $as_echo "#define _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20 1" >>confdefs.h
@@ -71212,6 +71212,8 @@ $as_echo_n "checking whether to build libbacktrace support... " >&6; }
   if test "$enable_libstdcxx_backtrace" = "auto"; then
     enable_libstdcxx_backtrace=no
   fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_backtrace" >&5
+$as_echo "$enable_libstdcxx_backtrace" >&6; }
   if test "$enable_libstdcxx_backtrace" = "yes"; then
     BACKTRACE_SUPPORTED=1
 
@@ -71280,8 +71282,6 @@ $as_echo "#define HAVE_STACKTRACE 1" >>confdefs.h
     BACKTRACE_USES_MALLOC=0
     BACKTRACE_SUPPORTS_THREADS=0
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_backtrace" >&5
-$as_echo "$enable_libstdcxx_backtrace" >&6; }
 
 
 
@@ -72620,7 +72620,7 @@ ac_config_files="$ac_config_files src/libbacktrace/backtrace-supported.h"
 # append it here.  Only modify Makefiles that have just been created.
 #
 # Also, get rid of this simulated-VPATH thing that automake does.
-ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile src/c++17/Makefile src/c++20/Makefile src/filesystem/Makefile src/libbacktrace/Makefile doc/Makefile po/Makefile testsuite/Makefile python/Makefile"
+ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile src/c++17/Makefile src/c++20/Makefile src/filesystem/Makefile src/libbacktrace/Makefile src/experimental/Makefile doc/Makefile po/Makefile testsuite/Makefile python/Makefile"
 
 
 ac_config_commands="$ac_config_commands generate-headers"
@@ -73869,6 +73869,7 @@ do
     "src/c++20/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++20/Makefile" ;;
     "src/filesystem/Makefile") CONFIG_FILES="$CONFIG_FILES src/filesystem/Makefile" ;;
     "src/libbacktrace/Makefile") CONFIG_FILES="$CONFIG_FILES src/libbacktrace/Makefile" ;;
+    "src/experimental/Makefile") CONFIG_FILES="$CONFIG_FILES src/experimental/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "po/Makefile") CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
@@ -75378,6 +75379,17 @@ _EOF
    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "src/libbacktrace/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "src/experimental/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$

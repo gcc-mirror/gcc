@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -463,7 +464,7 @@ package body Sem_Ch9 is
 
                   --  References
 
-                  elsif Kind = N_Identifier
+                  elsif Kind in N_Identifier | N_Expanded_Name
                     and then Present (Entity (N))
                   then
                      declare
@@ -474,6 +475,12 @@ package body Sem_Ch9 is
                      begin
                         --  Prohibit references to non-constant entities
                         --  outside the protected subprogram scope.
+                        --
+                        --  References to variables in System.Scalar_Values
+                        --  generated because of pragma Initialize_Scalars are
+                        --  allowed, because once those variables are
+                        --  initialized by the binder-generated code, they
+                        --  behave like constants.
 
                         if Is_Assignable (Id)
                           and then not
@@ -482,6 +489,9 @@ package body Sem_Ch9 is
                             Scope_Within_Or_Same
                               (Scope (Id),
                                Protected_Body_Subprogram (Sub_Id))
+                          and then not
+                            (Is_RTU (Scope (Id), System_Scalar_Values)
+                               and then not Comes_From_Source (N))
                         then
                            if Lock_Free_Given then
                               Error_Msg_NE
@@ -564,7 +574,7 @@ package body Sem_Ch9 is
                   --  reference only one component of the protected type, plus
                   --  the type of the component must support atomic operation.
 
-                  if Kind = N_Identifier
+                  if Kind in N_Identifier | N_Expanded_Name
                     and then Present (Entity (N))
                   then
                      declare

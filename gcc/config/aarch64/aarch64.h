@@ -221,6 +221,8 @@ enum class aarch64_feature : unsigned char {
 #define AARCH64_ISA_V9_3A          (aarch64_isa_flags & AARCH64_FL_V9_3A)
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
+#define AARCH64_ISA_CSSC	   (aarch64_isa_flags & AARCH64_FL_CSSC)
+#define AARCH64_ISA_RCPC           (aarch64_isa_flags & AARCH64_FL_RCPC)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)
@@ -310,11 +312,19 @@ enum class aarch64_feature : unsigned char {
 /* PAUTH instructions are enabled through +pauth.  */
 #define TARGET_PAUTH (AARCH64_ISA_PAUTH)
 
+/* BTI instructions exist from Armv8.5-a onwards.  Their automatic use is
+   enabled through -mbranch-protection by using NOP-space instructions,
+   but this TARGET_ is used for defining BTI-related ACLE things.  */
+#define TARGET_BTI (AARCH64_ISA_V8_5A)
+
 /* MOPS instructions are enabled through +mops.  */
 #define TARGET_MOPS (AARCH64_ISA_MOPS)
 
 /* LS64 instructions are enabled through +ls64.  */
 #define TARGET_LS64 (AARCH64_ISA_LS64)
+
+/* CSSC instructions are enabled through +cssc.  */
+#define TARGET_CSSC (AARCH64_ISA_CSSC)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
@@ -327,6 +337,13 @@ enum class aarch64_feature : unsigned char {
 
 /* SB instruction is enabled through +sb.  */
 #define TARGET_SB (AARCH64_ISA_SB)
+
+/* RCPC loads from Armv8.3-a.  */
+#define TARGET_RCPC (AARCH64_ISA_RCPC)
+
+/* The RCPC2 extensions from Armv8.4-a that allow immediate offsets to LDAPR
+   and sign-extending versions.*/
+#define TARGET_RCPC2 (AARCH64_ISA_RCPC8_4)
 
 /* Apply the workaround for Cortex-A53 erratum 835769.  */
 #define TARGET_FIX_ERR_A53_835769	\

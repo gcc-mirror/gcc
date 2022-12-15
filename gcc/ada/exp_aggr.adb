@@ -71,6 +71,7 @@ with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 with Urealp;         use Urealp;
+with Warnsw;         use Warnsw;
 
 package body Exp_Aggr is
 
@@ -2058,7 +2059,7 @@ package body Exp_Aggr is
          --  to do that if we already have the base type at hand.
 
          if Etype (L) = Index_Base then
-            L_L := L;
+            L_L := New_Copy_Tree (L);
          else
             L_L :=
               Make_Qualified_Expression (Loc,
@@ -2067,7 +2068,7 @@ package body Exp_Aggr is
          end if;
 
          if Etype (H) = Index_Base then
-            L_H := H;
+            L_H := New_Copy_Tree (H);
          else
             L_H :=
               Make_Qualified_Expression (Loc,
@@ -6840,7 +6841,7 @@ package body Exp_Aggr is
         or else Parent_Kind = N_Component_Association
         or else (Parent_Kind = N_Object_Declaration
                   and then (Needs_Finalization (Typ)
-                             or else Is_Build_In_Place_Return_Object
+                             or else Is_Special_Return_Object
                                        (Defining_Identifier (Parent_Node))))
         or else (Parent_Kind = N_Assignment_Statement
                   and then Inside_Init_Proc)

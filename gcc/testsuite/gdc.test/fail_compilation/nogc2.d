@@ -92,8 +92,7 @@ fail_compilation/nogc2.d(87): Error: associative array literal in `@nogc` functi
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc2.d(101): Error: indexing an associative array in `@nogc` function `nogc2.testIndex` may cause a GC allocation
-fail_compilation/nogc2.d(102): Error: indexing an associative array in `@nogc` function `nogc2.testIndex` may cause a GC allocation
+fail_compilation/nogc2.d(100): Error: assigning an associative array element in `@nogc` function `nogc2.testIndex` may cause a GC allocation
 ---
 */
 @nogc void testIndex(int[int] aa)

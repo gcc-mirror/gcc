@@ -570,119 +570,6 @@ package body Checks is
       Install_Null_Excluding_Check (P);
    end Apply_Access_Check;
 
-   -------------------------------
-   -- Apply_Accessibility_Check --
-   -------------------------------
-
-   procedure Apply_Accessibility_Check
-     (N           : Node_Id;
-      Typ         : Entity_Id;
-      Insert_Node : Node_Id)
-   is
-      Loc : constant Source_Ptr := Sloc (N);
-
-      Check_Cond  : Node_Id;
-      Param_Ent   : Entity_Id := Param_Entity (N);
-      Param_Level : Node_Id;
-      Type_Level  : Node_Id;
-
-   begin
-      --  Verify we haven't tried to add a dynamic accessibility check when we
-      --  shouldn't.
-
-      pragma Assert (not No_Dynamic_Accessibility_Checks_Enabled (N));
-
-      if Ada_Version >= Ada_2012
-         and then not Present (Param_Ent)
-         and then Is_Entity_Name (N)
-         and then Ekind (Entity (N)) in E_Constant | E_Variable
-         and then Present (Effective_Extra_Accessibility (Entity (N)))
-      then
-         Param_Ent := Entity (N);
-         while Present (Renamed_Object (Param_Ent)) loop
-            --  Renamed_Object must return an Entity_Name here
-            --  because of preceding "Present (E_E_A (...))" test.
-
-            Param_Ent := Entity (Renamed_Object (Param_Ent));
-         end loop;
-      end if;
-
-      if Inside_A_Generic then
-         return;
-
-      --  Only apply the run-time check if the access parameter has an
-      --  associated extra access level parameter and when accessibility checks
-      --  are enabled.
-
-      elsif Present (Param_Ent)
-         and then Present (Get_Dynamic_Accessibility (Param_Ent))
-         and then not Accessibility_Checks_Suppressed (Param_Ent)
-         and then not Accessibility_Checks_Suppressed (Typ)
-      then
-         --  Obtain the parameter's accessibility level
-
-         Param_Level :=
-           New_Occurrence_Of (Get_Dynamic_Accessibility (Param_Ent), Loc);
-
-         --  Use the dynamic accessibility parameter for the function's result
-         --  when one has been created instead of statically referring to the
-         --  deepest type level so as to appropriatly handle the rules for
-         --  RM 3.10.2 (10.1/3).
-
-         if Ekind (Scope (Param_Ent)) = E_Function
-           and then In_Return_Value (N)
-           and then Ekind (Typ) = E_Anonymous_Access_Type
-         then
-            --  Associate the level of the result type to the extra result
-            --  accessibility parameter belonging to the current function.
-
-            if Present (Extra_Accessibility_Of_Result (Scope (Param_Ent))) then
-               Type_Level :=
-                 New_Occurrence_Of
-                   (Extra_Accessibility_Of_Result (Scope (Param_Ent)), Loc);
-
-            --  In Ada 2005 and earlier modes, a result extra accessibility
-            --  parameter is not generated and no dynamic check is performed.
-
-            else
-               return;
-            end if;
-
-         --  Otherwise get the type's accessibility level normally
-
-         else
-            Type_Level :=
-              Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));
-         end if;
-
-         --  Raise Program_Error if the accessibility level of the access
-         --  parameter is deeper than the level of the target access type.
-
-         Check_Cond :=
-           Make_Op_Gt (Loc,
-             Left_Opnd  => Param_Level,
-             Right_Opnd => Type_Level);
-
-         Insert_Action (Insert_Node,
-           Make_Raise_Program_Error (Loc,
-             Condition => Check_Cond,
-             Reason    => PE_Accessibility_Check_Failed));
-
-         Analyze_And_Resolve (N);
-
-         --  If constant folding has happened on the condition for the
-         --  generated error, then warn about it being unconditional.
-
-         if Nkind (Check_Cond) = N_Identifier
-           and then Entity (Check_Cond) = Standard_True
-         then
-            Error_Msg_Warn := SPARK_Mode /= On;
-            Error_Msg_N ("accessibility check fails<<", N);
-            Error_Msg_N ("\Program_Error [<<", N);
-         end if;
-      end if;
-   end Apply_Accessibility_Check;
-
    --------------------------------
    -- Apply_Address_Clause_Check --
    --------------------------------
@@ -778,7 +665,7 @@ package body Checks is
          --  Note: Expr is empty if the address-clause is applied to in-mode
          --  actuals (allowed by 13.1(22)).
 
-         if not Present (Expr)
+         if No (Expr)
            or else
              (Is_Entity_Name (Expression (AC))
                and then Ekind (Entity (Expression (AC))) = E_Constant
@@ -999,21 +886,26 @@ package body Checks is
                   Determine_Range (N, VOK, Vlo, Vhi, Assume_Valid => True);
 
                   if VOK and then Tlo <= Vlo and then Vhi <= Thi then
-                     Rewrite (Left_Opnd (N),
-                       Make_Type_Conversion (Loc,
-                         Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                         Expression   => Relocate_Node (Left_Opnd (N))));
-
-                     Rewrite (Right_Opnd (N),
-                       Make_Type_Conversion (Loc,
-                        Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                        Expression   => Relocate_Node (Right_Opnd (N))));
-
                      --  Rewrite the conversion operand so that the original
                      --  node is retained, in order to avoid the warning for
                      --  redundant conversions in Resolve_Type_Conversion.
 
-                     Rewrite (N, Relocate_Node (N));
+                     declare
+                        Op : constant Node_Id := New_Op_Node (Nkind (N), Loc);
+                     begin
+                        Set_Left_Opnd (Op,
+                          Make_Type_Conversion (Loc,
+                            Subtype_Mark =>
+                              New_Occurrence_Of (Target_Type, Loc),
+                            Expression   => Relocate_Node (Left_Opnd (N))));
+                        Set_Right_Opnd (Op,
+                          Make_Type_Conversion (Loc,
+                            Subtype_Mark =>
+                              New_Occurrence_Of (Target_Type, Loc),
+                            Expression   => Relocate_Node (Right_Opnd (N))));
+
+                        Rewrite (N, Op);
+                     end;
 
                      Set_Etype (N, Target_Type);
 
@@ -3784,13 +3676,14 @@ package body Checks is
                --  Universal_Integer. So in numeric conversions it is usually
                --  within range of the target integer type. Use the static
                --  bounds of the base types to check. Disable this optimization
-               --  in case of a generic formal discrete type, because we don't
-               --  necessarily know the upper bound yet.
+               --  in case of a descendant of a generic formal discrete type,
+               --  because we don't necessarily know the upper bound yet.
 
                if Nkind (Expr) = N_Attribute_Reference
                  and then Attribute_Name (Expr) = Name_Pos
                  and then Is_Enumeration_Type (Etype (Prefix (Expr)))
-                 and then not Is_Generic_Type (Etype (Prefix (Expr)))
+                 and then
+                   not Is_Generic_Type (Root_Type (Etype (Prefix (Expr))))
                  and then Is_Integer_Type (Target_Type)
                then
                   declare
@@ -8403,114 +8296,9 @@ package body Checks is
       Loc : constant Source_Ptr := Sloc (Parent (N));
       Typ : constant Entity_Id  := Etype (N);
 
-      function Safe_To_Capture_In_Parameter_Value return Boolean;
-      --  Determines if it is safe to capture Known_Non_Null status for an
-      --  the entity referenced by node N. The caller ensures that N is indeed
-      --  an entity name. It is safe to capture the non-null status for an IN
-      --  parameter when the reference occurs within a declaration that is sure
-      --  to be executed as part of the declarative region.
-
       procedure Mark_Non_Null;
       --  After installation of check, if the node in question is an entity
       --  name, then mark this entity as non-null if possible.
-
-      function Safe_To_Capture_In_Parameter_Value return Boolean is
-         E     : constant Entity_Id := Entity (N);
-         S     : constant Entity_Id := Current_Scope;
-         S_Par : Node_Id;
-
-      begin
-         if Ekind (E) /= E_In_Parameter then
-            return False;
-         end if;
-
-         --  Two initial context checks. We must be inside a subprogram body
-         --  with declarations and reference must not appear in nested scopes.
-
-         if (Ekind (S) /= E_Function and then Ekind (S) /= E_Procedure)
-           or else Scope (E) /= S
-         then
-            return False;
-         end if;
-
-         S_Par := Parent (Parent (S));
-
-         if Nkind (S_Par) /= N_Subprogram_Body
-           or else No (Declarations (S_Par))
-         then
-            return False;
-         end if;
-
-         declare
-            N_Decl : Node_Id;
-            P      : Node_Id;
-
-         begin
-            --  Retrieve the declaration node of N (if any). Note that N
-            --  may be a part of a complex initialization expression.
-
-            P := Parent (N);
-            N_Decl := Empty;
-            while Present (P) loop
-
-               --  If we have a short circuit form, and we are within the right
-               --  hand expression, we return false, since the right hand side
-               --  is not guaranteed to be elaborated.
-
-               if Nkind (P) in N_Short_Circuit
-                 and then N = Right_Opnd (P)
-               then
-                  return False;
-               end if;
-
-               --  Similarly, if we are in an if expression and not part of the
-               --  condition, then we return False, since neither the THEN or
-               --  ELSE dependent expressions will always be elaborated.
-
-               if Nkind (P) = N_If_Expression
-                 and then N /= First (Expressions (P))
-               then
-                  return False;
-               end if;
-
-               --  If within a case expression, and not part of the expression,
-               --  then return False, since a particular dependent expression
-               --  may not always be elaborated
-
-               if Nkind (P) = N_Case_Expression
-                 and then N /= Expression (P)
-               then
-                  return False;
-               end if;
-
-               --  While traversing the parent chain, if node N belongs to a
-               --  statement, then it may never appear in a declarative region.
-
-               if Nkind (P) in N_Statement_Other_Than_Procedure_Call
-                 or else Nkind (P) = N_Procedure_Call_Statement
-               then
-                  return False;
-               end if;
-
-               --  If we are at a declaration, record it and exit
-
-               if Nkind (P) in N_Declaration
-                 and then Nkind (P) not in N_Subprogram_Specification
-               then
-                  N_Decl := P;
-                  exit;
-               end if;
-
-               P := Parent (P);
-            end loop;
-
-            if No (N_Decl) then
-               return False;
-            end if;
-
-            return List_Containing (N_Decl) = Declarations (S_Par);
-         end;
-      end Safe_To_Capture_In_Parameter_Value;
 
       -------------------
       -- Mark_Non_Null --
@@ -8527,19 +8315,10 @@ package body Checks is
 
             Set_Is_Known_Null (Entity (N), False);
 
-            --  We can mark the entity as known to be non-null if either it is
-            --  safe to capture the value, or in the case of an IN parameter,
-            --  which is a constant, if the check we just installed is in the
-            --  declarative region of the subprogram body. In this latter case,
-            --  a check is decisive for the rest of the body if the expression
-            --  is sure to be elaborated, since we know we have to elaborate
-            --  all declarations before executing the body.
+            --  We can mark the entity as known to be non-null if it is safe to
+            --  capture the value.
 
-            --  Couldn't this always be part of Safe_To_Capture_Value ???
-
-            if Safe_To_Capture_Value (N, Entity (N))
-              or else Safe_To_Capture_In_Parameter_Value
-            then
+            if Safe_To_Capture_Value (N, Entity (N)) then
                Set_Is_Known_Non_Null (Entity (N));
             end if;
          end if;

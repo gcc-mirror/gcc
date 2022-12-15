@@ -567,7 +567,8 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return (flag_unroll_loops || flag_unroll_all_loops || cfun->has_unroll);
+      return (flag_unroll_loops || flag_unroll_all_loops
+	      || cfun->has_unroll);
     }
 
   unsigned int execute (function *) final override;

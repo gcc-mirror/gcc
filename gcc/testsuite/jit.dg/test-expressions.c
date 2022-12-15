@@ -383,15 +383,7 @@ make_test_of_comparison (gcc_jit_context *ctxt,
   gcc_jit_param *param_b =
     gcc_jit_context_new_param (ctxt, NULL, type, "b");
   gcc_jit_param *params[] = {param_a, param_b};
-  gcc_jit_type *bool_type =
-    gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_BOOL);
-  gcc_jit_function *test_fn =
-    gcc_jit_context_new_function (ctxt, NULL,
-				  GCC_JIT_FUNCTION_EXPORTED,
-				  bool_type,
-				  funcname,
-				  2, params,
-				  0);
+
   gcc_jit_rvalue *comparison =
     gcc_jit_context_new_comparison (
       ctxt,
@@ -400,6 +392,16 @@ make_test_of_comparison (gcc_jit_context *ctxt,
       gcc_jit_param_as_rvalue (param_a),
       gcc_jit_param_as_rvalue (param_b));
 
+  gcc_jit_type *comparison_type = gcc_jit_rvalue_get_type(comparison);
+
+  gcc_jit_function *test_fn =
+    gcc_jit_context_new_function (ctxt, NULL,
+				  GCC_JIT_FUNCTION_EXPORTED,
+				  comparison_type,
+				  funcname,
+				  2, params,
+				  0);
+
   gcc_jit_block *initial = gcc_jit_function_new_block (test_fn, "initial");
   gcc_jit_block_end_with_return (initial, NULL, comparison);
 
@@ -407,48 +409,103 @@ make_test_of_comparison (gcc_jit_context *ctxt,
     gcc_jit_rvalue_as_object (comparison));
 }
 
+static void run_test_of_comparison(gcc_jit_context *ctxt,
+			 gcc_jit_type *type,
+			 enum gcc_jit_comparison op,
+			 const char *funcname,
+			 const char *vec_funcname,
+			 const char *expected)
+{
+  gcc_jit_type *vec_type =
+    gcc_jit_type_get_vector (type, 4);
+
+  CHECK_STRING_VALUE (
+    make_test_of_comparison (ctxt,
+			     type,
+			     op,
+			     funcname),
+    expected);
+  CHECK_STRING_VALUE (
+    make_test_of_comparison (ctxt,
+			     vec_type,
+			     op,
+			     vec_funcname),
+    expected);
+}
+
 static void
 make_tests_of_comparisons (gcc_jit_context *ctxt)
 {
   gcc_jit_type *int_type =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
+  gcc_jit_type *float_type =
+    gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_FLOAT);
 
-  CHECK_STRING_VALUE (
-    make_test_of_comparison (ctxt,
-			     int_type,
-			     GCC_JIT_COMPARISON_EQ,
-			     "test_COMPARISON_EQ_on_int"),
-    "a == b");
-  CHECK_STRING_VALUE (
-    make_test_of_comparison (ctxt,
-			     int_type,
-			     GCC_JIT_COMPARISON_NE,
-			     "test_COMPARISON_NE_on_int"),
-    "a != b");
-  CHECK_STRING_VALUE (
-    make_test_of_comparison (ctxt,
-			     int_type,
-			     GCC_JIT_COMPARISON_LT,
-			     "test_COMPARISON_LT_on_int"),
-    "a < b");
-  CHECK_STRING_VALUE (
-    make_test_of_comparison (ctxt,
-			     int_type,
-			     GCC_JIT_COMPARISON_LE,
-			     "test_COMPARISON_LE_on_int"),
-    "a <= b");
-  CHECK_STRING_VALUE (
-    make_test_of_comparison (ctxt,
-			     int_type,
-			     GCC_JIT_COMPARISON_GT,
-			     "test_COMPARISON_GT_on_int"),
-    "a > b");
-  CHECK_STRING_VALUE (
-    make_test_of_comparison (ctxt,
-			     int_type,
-			     GCC_JIT_COMPARISON_GE,
-			     "test_COMPARISON_GE_on_int"),
-    "a >= b");
+  run_test_of_comparison(
+  	ctxt,
+  	int_type,
+  	GCC_JIT_COMPARISON_EQ,
+  	"test_COMPARISON_EQ_on_int",
+  	"test_COMPARISON_EQ_on_vec_int",
+  	"a == b");
+  run_test_of_comparison(
+  	ctxt,
+  	int_type,
+  	GCC_JIT_COMPARISON_NE,
+  	"test_COMPARISON_NE_on_int",
+  	"test_COMPARISON_NE_on_vec_int",
+  	"a != b");
+  run_test_of_comparison(
+  	ctxt,
+  	int_type,
+  	GCC_JIT_COMPARISON_LT,
+  	"test_COMPARISON_LT_on_int",
+  	"test_COMPARISON_LT_on_vec_int",
+  	"a < b");
+  run_test_of_comparison(
+  	ctxt,
+  	int_type,
+  	GCC_JIT_COMPARISON_LE,
+  	"test_COMPARISON_LE_on_int",
+  	"test_COMPARISON_LE_on_vec_int",
+  	"a <= b");
+  run_test_of_comparison(
+  	ctxt,
+  	int_type,
+  	GCC_JIT_COMPARISON_GT,
+  	"test_COMPARISON_GT_on_int",
+  	"test_COMPARISON_GT_on_vec_int",
+  	"a > b");
+  run_test_of_comparison(
+  	ctxt,
+  	int_type,
+  	GCC_JIT_COMPARISON_GE,
+  	"test_COMPARISON_GE_on_int",
+  	"test_COMPARISON_GE_on_vec_int",
+  	"a >= b");
+
+  // Float tests
+  run_test_of_comparison(
+  	ctxt,
+  	float_type,
+  	GCC_JIT_COMPARISON_NE,
+  	"test_COMPARISON_NE_on_float",
+  	"test_COMPARISON_NE_on_vec_float",
+  	"a != b");
+  run_test_of_comparison(
+  	ctxt,
+  	float_type,
+  	GCC_JIT_COMPARISON_LT,
+  	"test_COMPARISON_LT_on_float",
+  	"test_COMPARISON_LT_on_vec_float",
+  	"a < b");
+  run_test_of_comparison(
+  	ctxt,
+  	float_type,
+  	GCC_JIT_COMPARISON_GT,
+  	"test_COMPARISON_GT_on_float",
+  	"test_COMPARISON_GT_on_vec_float",
+  	"a > b");
 }
 
 static void
@@ -502,6 +559,93 @@ verify_comparisons (gcc_jit_result *result)
   CHECK_VALUE (test_COMPARISON_GE_on_int (0, 0), 1);
   CHECK_VALUE (test_COMPARISON_GE_on_int (1, 2), 0);
   CHECK_VALUE (test_COMPARISON_GE_on_int (2, 1), 1);
+
+  typedef int __vector __attribute__ ((__vector_size__ (sizeof(int) * 2)));
+  typedef __vector (*test_vec_fn) (__vector, __vector);
+
+  __vector zero_zero = {0, 0};
+  __vector zero_one = {0, 1};
+  __vector one_zero = {1, 0};
+
+  __vector true_true = {-1, -1};
+  __vector false_true = {0, -1};
+  __vector true_false = {-1, 0};
+  __vector false_false = {0, 0};
+
+  test_vec_fn test_COMPARISON_EQ_on_vec_int =
+    (test_vec_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_EQ_on_vec_int");
+  CHECK_NON_NULL (test_COMPARISON_EQ_on_vec_int);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_EQ_on_vec_int (zero_zero, zero_zero), true_true);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_EQ_on_vec_int (zero_one, one_zero), false_false);
+
+  test_vec_fn test_COMPARISON_NE_on_vec_int =
+    (test_vec_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_NE_on_vec_int");
+  CHECK_NON_NULL (test_COMPARISON_NE_on_vec_int);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_NE_on_vec_int (zero_zero, zero_zero), false_false);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_NE_on_vec_int (zero_one, one_zero), true_true);
+
+  test_vec_fn test_COMPARISON_LT_on_vec_int =
+    (test_vec_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_LT_on_vec_int");
+  CHECK_NON_NULL (test_COMPARISON_LT_on_vec_int);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_LT_on_vec_int (zero_zero, zero_zero), false_false);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_LT_on_vec_int (zero_one, one_zero), true_false);
+
+  test_vec_fn test_COMPARISON_LE_on_vec_int =
+    (test_vec_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_LE_on_vec_int");
+  CHECK_NON_NULL (test_COMPARISON_LE_on_vec_int);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_LE_on_vec_int (zero_zero, zero_zero), true_true);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_LE_on_vec_int (zero_one, one_zero), true_false);
+
+  test_vec_fn test_COMPARISON_GT_on_vec_int =
+    (test_vec_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_GT_on_vec_int");
+  CHECK_NON_NULL (test_COMPARISON_GT_on_vec_int);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_GT_on_vec_int (zero_zero, zero_zero), false_false);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_GT_on_vec_int (zero_one, one_zero), false_true);
+
+  test_vec_fn test_COMPARISON_GE_on_vec_int =
+    (test_vec_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_GE_on_vec_int");
+  CHECK_NON_NULL (test_COMPARISON_GE_on_vec_int);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_GE_on_vec_int (zero_zero, zero_zero), true_true);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_GE_on_vec_int (zero_one, one_zero), false_true);
+
+  typedef float __vector_f __attribute__ ((__vector_size__ (sizeof(float) * 2)));
+  typedef __vector (*test_vec_f_fn) (__vector_f, __vector_f);
+
+  __vector_f zero_zero_f = {0, 0};
+  __vector_f zero_one_f = {0, 1};
+  __vector_f one_zero_f = {1, 0};
+
+  __vector_f true_true_f = {-1, -1};
+  __vector_f false_true_f = {0, -1};
+  __vector_f true_false_f = {-1, 0};
+  __vector_f false_false_f = {0, 0};
+
+  test_vec_f_fn test_COMPARISON_NE_on_vec_float =
+    (test_vec_f_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_NE_on_vec_float");
+  CHECK_NON_NULL (test_COMPARISON_NE_on_vec_float);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_NE_on_vec_float (zero_zero_f, zero_zero_f), false_false_f);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_NE_on_vec_float (zero_one_f, one_zero_f), true_true_f);
+
+  test_vec_f_fn test_COMPARISON_LT_on_vec_float =
+    (test_vec_f_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_LT_on_vec_float");
+  CHECK_NON_NULL (test_COMPARISON_LT_on_vec_float);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_LT_on_vec_float (zero_zero_f, zero_zero_f), false_false_f);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_LT_on_vec_float (zero_one_f, one_zero_f), true_false_f);
+
+  test_vec_f_fn test_COMPARISON_GT_on_vec_float =
+    (test_vec_f_fn)gcc_jit_result_get_code (result,
+				      "test_COMPARISON_GT_on_vec_float");
+  CHECK_NON_NULL (test_COMPARISON_GT_on_vec_float);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_GT_on_vec_float (zero_zero_f, zero_zero_f), false_false_f);
+  CHECK_VECTOR_VALUE (2, test_COMPARISON_GT_on_vec_float (zero_one_f, one_zero_f), false_true_f);
 }
 
 /**********************************************************************

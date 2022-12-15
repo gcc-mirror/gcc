@@ -622,7 +622,8 @@ chrec_apply (unsigned var,
 	  /* "{a, +, b} (x)"  ->  "a + b*x".  */
 	  else if (operand_equal_p (CHREC_LEFT (chrec), chrecr)
 		   && TREE_CODE (x) == PLUS_EXPR
-		   && integer_all_onesp (TREE_OPERAND (x, 1)))
+		   && integer_all_onesp (TREE_OPERAND (x, 1))
+		   && !POINTER_TYPE_P (type))
 	    {
 	      /* We know the number of iterations can't be negative.
 		 So {a, +, a} (x-1) -> "a*x".  */

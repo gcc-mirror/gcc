@@ -14,7 +14,6 @@ This chapter describes a number of utility programs:
 
   * :ref:`The_File_Cleanup_Utility_gnatclean`
   * :ref:`The_GNAT_Library_Browser_gnatls`
-  * :ref:`The_Coding_Standard_Verifier_gnatcheck`
   * :ref:`The_GNAT_Pretty_Printer_gnatpp`
   * :ref:`The_Body_Stub_Generator_gnatstub`
   * :ref:`The_Backtrace_Symbolizer_gnatsymbolize`
@@ -463,27 +462,6 @@ building specialized scripts.
       /home/comar/local/adainclude/s-tasoli.ads
       /home/comar/local/adainclude/s-unstyp.ads
       /home/comar/local/adainclude/unchconv.ads
-
-
-.. only:: PRO or GPL
-
-  .. _The_Coding_Standard_Verifier_gnatcheck:
-
-  The Coding Standard Verifier ``gnatcheck``
-  ==========================================
-
-  .. index:: ! gnatcheck
-  .. index:: ASIS
-
-  The ``gnatcheck`` tool is an ASIS-based utility that checks coding standard
-  compliance of Ada source files according to a given set of semantic rules.
-
-  ``gnatcheck`` is a project-aware tool
-  (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
-  the project-related switches). The project file package that can specify
-  ``gnatcheck`` switches is named ``Check``.
-
-  For full details, plese refer to :title:`GNATcheck Reference Manual`.
 
 
 .. only:: PRO or GPL
@@ -2176,6 +2154,7 @@ building specialized scripts.
         with GNAT.IO; use GNAT.IO;
         with GNAT.Traceback; use GNAT.Traceback;
         with GNAT.Debug_Utilities;
+
         package body Pck is
            procedure Call_Me_Third is
               TB : Tracebacks_Array (1 .. 5);
@@ -2199,40 +2178,57 @@ building specialized scripts.
               Call_Me_Second;
            end Call_Me_First;
         end Pck;
+
+        with GNAT.IO; use GNAT.IO;
+        with GNAT.Debug_Utilities;
+        with GNAT.Traceback;
+        with System;
+
         with Pck; use Pck;
 
         procedure Foo is
+           LA : constant System.Address := \
+             GNAT.Traceback.Executable_Load_Address;
+
+           use type System.Address;
+
         begin
+           if LA /= System.Null_Address then
+              Put_Line ("Load address: " & GNAT.Debug_Utilities.Image_C (LA));
+           end if;
+
            Global_Val := 123;
            Call_Me_First;
         end Foo;
 
   This program, when built and run, prints a list of addresses which
   correspond to the traceback when inside function ``Call_Me_Third``.
-  For instance, on x86_64 GNU/Linux:
+  For instance, on x86-64 GNU/Linux:
 
     ::
 
        $ gnatmake -g -q foo.adb
        $ ./foo
-       0x0000000000402561
-       0x00000000004025EF
-       0x00000000004025FB
-       0x0000000000402611
-       0x00000000004024C7
+       Load address: 0x00005586C9D7D000
+       0x00005586C9D81105
+       0x00005586C9D8119B
+       0x00005586C9D811A7
+       0x00005586C9D8128C
+       0x00005586C9D81069
 
   ``gnatsymbolize`` can be used to translate those addresses into
   code locations as follow:
 
     ::
 
-       $ gnatsymbolize foo 0x0000000000402561 0x00000000004025EF \
-           0x00000000004025FB 0x0000000000402611 0x00000000004024C7
-       Pck.Call_Me_Third at pck.adb:12
-       Pck.Call_Me_Second at pck.adb:20
-       Pck.Call_Me_First at pck.adb:25
-       Foo at foo.adb:6
-       Main at b~foo.adb:184
+       $ gnatsymbolize --load foo 0x00005586C9D7D000 0x00005586C9D81105 \
+           0x00005586C9D8119B 0x00005586C9D811A7 0x00005586C9D8128C \
+           0x00005586C9D81069
+       0x5586c9d81105 Pck.Call_Me_Third at pck.adb:12
+       0x5586c9d8119b Pck.Call_Me_Second at pck.adb:20
+       0x5586c9d811a7 Pck.Call_Me_First at pck.adb:25
+       0x5586c9d8128c Foo at foo.adb:6
+       0x5586c9d81069 Main at b~foo.adb:199
 
   Switches for ``gnatsymbolize``
   ------------------------------
@@ -2265,7 +2261,7 @@ building specialized scripts.
 
   :switch:`--load`
     Interpret the first address as the load address of the executable.
-    This is needed for position-independent executables on Windows.
+    This is needed for position-independent executables on Linux and Windows.
 
   Requirements for Correct Operation
   ----------------------------------

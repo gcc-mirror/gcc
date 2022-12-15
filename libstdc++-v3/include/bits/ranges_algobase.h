@@ -239,7 +239,7 @@ namespace ranges
 	{
 	  auto [__in,__out]
 	    = ranges::__copy_or_move<_IsMove>(__first.base(), __last.base(),
-					      __result);
+					      std::move(__result));
 	  return {decltype(__first){__in}, std::move(__out)};
 	}
       else if constexpr (__is_normal_iterator<_Out>)

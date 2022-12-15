@@ -265,7 +265,7 @@ respect to control and data flow.
 Checking the Elaboration Order
 ==============================
 
-To avoid placing the entire elaboration-order burden on the programmer, Ada 
+To avoid placing the entire elaboration-order burden on the programmer, Ada
 provides three lines of defense:
 
 * *Static semantics*
@@ -931,9 +931,9 @@ Resolving Elaboration Circularities
 ===================================
 
 The most desirable option from the point of view of long-term maintenance is to
-rearrange the program so that the elaboration problems are avoided. One useful 
-technique is to place the elaboration code into separate child packages. 
-Another is to move some of the initialization code to explicitly invoked 
+rearrange the program so that the elaboration problems are avoided. One useful
+technique is to place the elaboration code into separate child packages.
+Another is to move some of the initialization code to explicitly invoked
 subprograms, where the program controls the order of initialization explicitly.
 Although this is the most desirable option, it may be impractical and involve
 too much modification, especially in the case of complex legacy code.
@@ -990,8 +990,9 @@ following tactics to eliminate the circularity:
      change pragma Elaborate_All for unit "..." to Elaborate in unit "..."
 
   This tactic is always suggested with the pragma ``Elaborate_All`` elimination
-  tactic. It offers a different alernative of guaranteeing that the argument of
-  the pragma will still be elaborated prior to the unit containing the pragma.
+  tactic. It offers a different alternative of guaranteeing that the argument
+  of the pragma will still be elaborated prior to the unit containing the
+  pragma.
 
   The programmer should update the pragma as advised, and rebuild the program.
 
@@ -1281,7 +1282,7 @@ Summary of Procedures for Elaboration Control
 
 A programmer should first compile the program with the default options, using
 none of the binder or compiler switches. If the binder succeeds in finding an
-elaboration order, then apart from possible cases involing dispatching calls
+elaboration order, then apart from possible cases involving dispatching calls
 and access-to-subprogram types, the program is free of elaboration errors.
 
 If it is important for the program to be portable to compilers other than GNAT,

@@ -609,6 +609,8 @@ package Rtsfind is
 
      RE_Buffer_Type,                     -- Ada.Strings.Text_Buffers.Unbounded
      RE_Get,                             -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Wide_Get,                        -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Wide_Wide_Get,                   -- Ada.Strings.Text_Buffers.Unbounded
 
      RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
 
@@ -2245,6 +2247,8 @@ package Rtsfind is
 
      RE_Buffer_Type                      => Ada_Strings_Text_Buffers_Unbounded,
      RE_Get                              => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Wide_Get                         => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Wide_Wide_Get                    => Ada_Strings_Text_Buffers_Unbounded,
 
      RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
 

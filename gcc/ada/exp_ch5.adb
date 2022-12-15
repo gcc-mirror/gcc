@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -65,6 +66,7 @@ with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
 with Validsw;        use Validsw;
+with Warnsw;         use Warnsw;
 
 package body Exp_Ch5 is
 
@@ -3939,7 +3941,9 @@ package body Exp_Ch5 is
    --  Start of processing for Expand_N_Case_Statement
 
    begin
-      if Extensions_Allowed and then not Is_Discrete_Type (Etype (Expr)) then
+      if Core_Extensions_Allowed
+        and then not Is_Discrete_Type (Etype (Expr))
+      then
          Rewrite (N, Expand_General_Case_Statement);
          Analyze (N);
          return;

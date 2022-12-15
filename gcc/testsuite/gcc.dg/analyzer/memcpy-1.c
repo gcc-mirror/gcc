@@ -166,3 +166,17 @@ void test_7b (void *src, size_t sz)
 {
   memcpy ((void *)"hello world", src, sz); /* { dg-warning "write to string literal" } */
 }
+
+/* memcpy from uninitialized buffer.  */
+
+void test_8a (void *dst)
+{
+  char src[16];
+  memcpy (dst, src, 16); /* { dg-warning "use of uninitialized value" } */
+}
+
+void test_8b (void *dst, size_t n)
+{
+  char src[16];
+  memcpy (dst, src, n); /* { dg-warning "use of uninitialized value" } */
+}

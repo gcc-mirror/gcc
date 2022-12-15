@@ -341,6 +341,23 @@
   "rsh<msuffix>\t%0,%2"
   [(set_attr "type" "<mtype>")])
 
+;;;; Endianness conversion
+
+(define_mode_iterator BSM [HI SI DI])
+(define_mode_attr endmode [(HI "16") (SI "32") (DI "64")])
+
+(define_insn "bswap<BSM:mode>2"
+  [(set (match_operand:BSM 0 "register_operand"            "=r")
+        (bswap:BSM (match_operand:BSM 1 "register_operand" " r")))]
+  ""
+{
+  if (TARGET_BIG_ENDIAN)
+    return "endle\t%0, <endmode>";
+  else
+    return "endbe\t%0, <endmode>";
+}
+  [(set_attr "type" "end")])
+
 ;;;; Conditional branches
 
 ;; The eBPF jump instructions use 64-bit arithmetic when evaluating

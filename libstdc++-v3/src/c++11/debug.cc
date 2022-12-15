@@ -1141,6 +1141,23 @@ namespace
 
     return ret;
   }
+
+  void
+  print_backtrace_error(void* data, const char* msg, int errnum)
+  {
+    PrintContext& ctx = *static_cast<PrintContext*>(data);
+
+    print_literal(ctx, "Backtrace unavailable: ");
+    print_word(ctx, msg ? msg : "<unknown error>");
+    if (errnum > 0)
+      {
+	char buf[64];
+	int written = __builtin_sprintf(buf, " (errno=%d)\n", errnum);
+	print_word(ctx, buf, written);
+      }
+    else
+      print_literal(ctx, "\n");
+  }
 #endif
 }
 
@@ -1193,7 +1210,7 @@ namespace __gnu_debug
       {
 	print_literal(ctx, "Backtrace:\n");
 	_M_backtrace_full(
-	  _M_backtrace_state, 1, print_backtrace, nullptr, &ctx);
+	  _M_backtrace_state, 1, print_backtrace, print_backtrace_error, &ctx);
 	ctx._M_first_line = true;
 	print_literal(ctx, "\n");
       }

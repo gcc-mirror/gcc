@@ -726,6 +726,10 @@ The maximum number of instructions to consider to unroll in a loop.
 Common Joined UInteger Var(param_max_unswitch_insns) Init(50) Param Optimization
 The maximum number of insns of an unswitched loop.
 
+-param=max-unswitch-depth=
+Common Joined UInteger Var(param_max_unswitch_depth) Init(50) IntegerRange(1, 50) Param Optimization
+The maximum depth of a loop nest to be unswitched.
+
 -param=max-variable-expansions-in-unroller=
 Common Joined UInteger Var(param_max_variable_expansions) Init(1) Param Optimization
 If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling.
@@ -745,10 +749,6 @@ Max. size of var tracking hash tables.
 -param=max-find-base-term-values=
 Common Joined UInteger Var(param_max_find_base_term_values) Init(200) Param Optimization
 Maximum number of VALUEs handled during a single find_base_term call.
-
--param=max-vrp-switch-assertions=
-Common Joined UInteger Var(param_max_vrp_switch_assertions) Init(10) Param Optimization
-Maximum number of assertions to add along the default edge of a switch statement during VRP.
 
 -param=min-crossjump-insns=
 Common Joined UInteger Var(param_min_crossjump_insns) Init(5) IntegerRange(1, 65536) Param Optimization
@@ -1164,22 +1164,5 @@ The maximum factor which the loop vectorizer applies to the cost of statements i
 -param=vect-induction-float=
 Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRage(0, 1) Param Optimization
 Enable loop vectorization of floating point inductions.
-
--param=vrp1-mode=
-Common Joined Var(param_vrp1_mode) Enum(vrp_mode) Init(VRP_MODE_RANGER) Param Optimization
---param=vrp1-mode=[vrp|ranger] Specifies the mode VRP1 should operate in.
-
--param=vrp2-mode=
-Common Joined Var(param_vrp2_mode) Enum(vrp_mode) Init(VRP_MODE_RANGER) Param Optimization
---param=vrp2-mode=[vrp|ranger] Specifies the mode VRP2 should operate in.
-
-Enum
-Name(vrp_mode) Type(enum vrp_mode) UnknownError(unknown vrp mode %qs)
-
-EnumValue
-Enum(vrp_mode) String(vrp) Value(VRP_MODE_VRP)
-
-EnumValue
-Enum(vrp_mode) String(ranger) Value(VRP_MODE_RANGER)
 
 ; This comment is to ensure we retain the blank line above.

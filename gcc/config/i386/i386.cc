@@ -19725,7 +19725,8 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
 	 the vec_dupv4hi pattern.
 	 NB: SSE2 can load 16bit data to sse register via pinsrw.  */
       int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_SSE2 ? 2 : 4;
-      if (GET_MODE_SIZE (from) < mov_size)
+      if (GET_MODE_SIZE (from) < mov_size
+	  || GET_MODE_SIZE (to) < mov_size)
 	return false;
     }
 
@@ -20089,12 +20090,6 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
 
-      /* For AVX512FP16, vmovw supports movement of HImode
-	 and HFmode between GPR and SSE registers.  */
-      if (TARGET_AVX512FP16
-	  && VALID_AVX512FP16_SCALAR_MODE (mode))
-	return true;
-
       /* For AVX-5124FMAPS or AVX-5124VNNIW
 	 allow V64SF and V64SI modes for special regnos.  */
       if ((TARGET_AVX5124FMAPS || TARGET_AVX5124VNNIW)
@@ -20112,6 +20107,10 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       /* xmm16-xmm31 are only available for AVX-512.  */
       if (EXT_REX_SSE_REGNO_P (regno))
 	return false;
+
+      /* Use pinsrw/pextrw to mov 16-bit data from/to sse to/from integer.  */
+      if (TARGET_SSE2 && mode == HImode)
+	return true;
 
       /* OImode and AVX modes are available only when AVX is enabled.  */
       return ((TARGET_AVX
@@ -23633,7 +23632,8 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 static int
 ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					     struct cgraph_simd_clone *clonei,
-					     tree base_type, int num)
+					     tree base_type, int num,
+					     bool explicit_p)
 {
   int ret = 1;
 
@@ -23642,8 +23642,9 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || clonei->simdlen > 1024
 	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
     {
-      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %wd", clonei->simdlen.to_constant ());
+      if (explicit_p)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported simdlen %wd", clonei->simdlen.to_constant ());
       return 0;
     }
 
@@ -23663,8 +23664,9 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  break;
 	/* FALLTHRU */
       default:
-	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		    "unsupported return type %qT for simd", ret_type);
+	if (explicit_p)
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "unsupported return type %qT for simd", ret_type);
 	return 0;
       }
 
@@ -23693,13 +23695,14 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	default:
 	  if (clonei->args[i].arg_type == SIMD_CLONE_ARG_TYPE_UNIFORM)
 	    break;
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "unsupported argument type %qT for simd", arg_type);
+	  if (explicit_p)
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"unsupported argument type %qT for simd", arg_type);
 	  return 0;
 	}
     }
 
-  if (!TREE_PUBLIC (node->decl))
+  if (!TREE_PUBLIC (node->decl) || !explicit_p)
     {
       /* If the function isn't exported, we can pick up just one ISA
 	 for the clones.  */
@@ -23770,9 +23773,10 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	cnt /= clonei->vecsize_float;
       if (cnt > (TARGET_64BIT ? 16 : 8))
 	{
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "unsupported simdlen %wd",
-		      clonei->simdlen.to_constant ());
+	  if (explicit_p)
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"unsupported simdlen %wd",
+			clonei->simdlen.to_constant ());
 	  return 0;
 	}
       }
@@ -23826,6 +23830,16 @@ ix86_loop_unroll_adjust (unsigned nunroll, class loop *loop)
   rtx_insn *insn;
   unsigned i;
   unsigned mem_count = 0;
+
+  /* Unroll small size loop when unroll factor is not explicitly
+     specified.  */
+  if (ix86_unroll_only_small_loops && !loop->unroll)
+    {
+      if (loop->ninsns <= ix86_cost->small_unroll_ninsns)
+	return MIN (nunroll, ix86_cost->small_unroll_factor);
+      else
+	return 1;
+    }
 
   if (!TARGET_ADJUST_UNROLL)
      return nunroll;
@@ -24258,6 +24272,111 @@ poly_int64
 ix86_push_rounding (poly_int64 bytes)
 {
   return ROUND_UP (bytes, UNITS_PER_WORD);
+}
+
+/* Use 8 bits metadata start from bit48 for LAM_U48,
+   6 bits metadat start from bit57 for LAM_U57.  */
+#define IX86_HWASAN_SHIFT (ix86_lam_type == lam_u48		\
+			   ? 48					\
+			   : (ix86_lam_type == lam_u57 ? 57 : 0))
+#define IX86_HWASAN_TAG_SIZE (ix86_lam_type == lam_u48		\
+			      ? 8				\
+			      : (ix86_lam_type == lam_u57 ? 6 : 0))
+
+/* Implement TARGET_MEMTAG_CAN_TAG_ADDRESSES.  */
+bool
+ix86_memtag_can_tag_addresses ()
+{
+  return ix86_lam_type != lam_none && TARGET_LP64;
+}
+
+/* Implement TARGET_MEMTAG_TAG_SIZE.  */
+unsigned char
+ix86_memtag_tag_size ()
+{
+  return IX86_HWASAN_TAG_SIZE;
+}
+
+/* Implement TARGET_MEMTAG_SET_TAG.  */
+rtx
+ix86_memtag_set_tag (rtx untagged, rtx tag, rtx target)
+{
+  /* default_memtag_insert_random_tag may
+     generate tag with value more than 6 bits.  */
+  if (ix86_lam_type == lam_u57)
+    {
+      unsigned HOST_WIDE_INT and_imm
+	= (HOST_WIDE_INT_1U << IX86_HWASAN_TAG_SIZE) - 1;
+
+      emit_insn (gen_andqi3 (tag, tag, GEN_INT (and_imm)));
+    }
+  tag = expand_simple_binop (Pmode, ASHIFT, tag,
+			     GEN_INT (IX86_HWASAN_SHIFT), NULL_RTX,
+			     /* unsignedp = */1, OPTAB_WIDEN);
+  rtx ret = expand_simple_binop (Pmode, IOR, untagged, tag, target,
+				 /* unsignedp = */1, OPTAB_DIRECT);
+  return ret;
+}
+
+/* Implement TARGET_MEMTAG_EXTRACT_TAG.  */
+rtx
+ix86_memtag_extract_tag (rtx tagged_pointer, rtx target)
+{
+  rtx tag = expand_simple_binop (Pmode, LSHIFTRT, tagged_pointer,
+				 GEN_INT (IX86_HWASAN_SHIFT), target,
+				 /* unsignedp = */0,
+				 OPTAB_DIRECT);
+  rtx ret = gen_reg_rtx (QImode);
+  /* Mask off bit63 when LAM_U57.  */
+  if (ix86_lam_type == lam_u57)
+    {
+      unsigned HOST_WIDE_INT and_imm
+	= (HOST_WIDE_INT_1U << IX86_HWASAN_TAG_SIZE) - 1;
+      emit_insn (gen_andqi3 (ret, gen_lowpart (QImode, tag),
+			     gen_int_mode (and_imm, QImode)));
+    }
+  else
+    emit_move_insn (ret, gen_lowpart (QImode, tag));
+  return ret;
+}
+
+/* The default implementation of TARGET_MEMTAG_UNTAGGED_POINTER.  */
+rtx
+ix86_memtag_untagged_pointer (rtx tagged_pointer, rtx target)
+{
+  /* Leave bit63 alone.  */
+  rtx tag_mask = gen_int_mode (((HOST_WIDE_INT_1U << IX86_HWASAN_SHIFT)
+				+ (HOST_WIDE_INT_1U << 63) - 1),
+			       Pmode);
+  rtx untagged_base = expand_simple_binop (Pmode, AND, tagged_pointer,
+					   tag_mask, target, true,
+					   OPTAB_DIRECT);
+  gcc_assert (untagged_base);
+  return untagged_base;
+}
+
+/* Implement TARGET_MEMTAG_ADD_TAG.  */
+rtx
+ix86_memtag_add_tag (rtx base, poly_int64 offset, unsigned char tag_offset)
+{
+  rtx base_tag = gen_reg_rtx (QImode);
+  rtx base_addr = gen_reg_rtx (Pmode);
+  rtx tagged_addr = gen_reg_rtx (Pmode);
+  rtx new_tag = gen_reg_rtx (QImode);
+  unsigned HOST_WIDE_INT and_imm
+    = (HOST_WIDE_INT_1U << IX86_HWASAN_SHIFT) - 1;
+
+  /* When there's "overflow" in tag adding,
+     need to mask the most significant bit off.  */
+  emit_move_insn (base_tag, ix86_memtag_extract_tag (base, NULL_RTX));
+  emit_move_insn (base_addr,
+		  ix86_memtag_untagged_pointer (base, NULL_RTX));
+  emit_insn (gen_add2_insn (base_tag, gen_int_mode (tag_offset, QImode)));
+  emit_move_insn (new_tag, base_tag);
+  emit_insn (gen_andqi3 (new_tag, new_tag, gen_int_mode (and_imm, QImode)));
+  emit_move_insn (tagged_addr,
+		  ix86_memtag_set_tag (base_addr, new_tag, NULL_RTX));
+  return plus_constant (Pmode, tagged_addr, offset);
 }
 
 /* Target-specific selftests.  */
@@ -25053,6 +25172,24 @@ ix86_libgcc_floating_mode_supported_p
 # undef TARGET_ASM_RELOC_RW_MASK
 # define TARGET_ASM_RELOC_RW_MASK ix86_reloc_rw_mask
 #endif
+
+#undef TARGET_MEMTAG_CAN_TAG_ADDRESSES
+#define TARGET_MEMTAG_CAN_TAG_ADDRESSES ix86_memtag_can_tag_addresses
+
+#undef TARGET_MEMTAG_ADD_TAG
+#define TARGET_MEMTAG_ADD_TAG ix86_memtag_add_tag
+
+#undef TARGET_MEMTAG_SET_TAG
+#define TARGET_MEMTAG_SET_TAG ix86_memtag_set_tag
+
+#undef TARGET_MEMTAG_EXTRACT_TAG
+#define TARGET_MEMTAG_EXTRACT_TAG ix86_memtag_extract_tag
+
+#undef TARGET_MEMTAG_UNTAGGED_POINTER
+#define TARGET_MEMTAG_UNTAGGED_POINTER ix86_memtag_untagged_pointer
+
+#undef TARGET_MEMTAG_TAG_SIZE
+#define TARGET_MEMTAG_TAG_SIZE ix86_memtag_tag_size
 
 static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 {

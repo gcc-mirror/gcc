@@ -11,7 +11,7 @@ void test(int flag)
     marker_B();
 
     /* Recurse, infinitely, as it happens: */
-    test(flag);
+    test(flag); /* { dg-warning "infinite recursion" } */
 
     marker_C();
   }
@@ -30,26 +30,26 @@ void mutual_test_1 (int flag)
 {
   marker_A ();
   if (flag)
-    mutual_test_2 (flag);
+    mutual_test_2 (flag); /* { dg-warning "infinite recursion" } */
 }
 
 void mutual_test_2 (int flag)
 {
   marker_B ();
   if (flag)
-    mutual_test_3 (flag);
+    mutual_test_3 (flag); /* { dg-warning "infinite recursion" } */
 }
 
 void mutual_test_3 (int flag)
 {
   marker_C ();
   if (flag)
-    mutual_test_4 (flag);
+    mutual_test_4 (flag); /* { dg-warning "infinite recursion" } */
 }
 
 void mutual_test_4 (int flag)
 {
   marker_D ();
   if (flag)
-    mutual_test_1 (flag);
+    mutual_test_1 (flag); /* { dg-warning "infinite recursion" } */
 }

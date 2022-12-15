@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 
 #include "diagnostic-path.h"
+#include "analyzer/sm.h"
 
 namespace ana {
 
@@ -56,17 +57,6 @@ struct event_desc
     ATTRIBUTE_GCC_DIAG(2,3);
 
   bool m_colorize;
-};
-
-/* For use by pending_diagnostic::describe_region_creation.  */
-
-struct region_creation : public event_desc
-{
-  region_creation (bool colorize, const region *reg)
-  : event_desc (colorize), m_reg (reg)
-  {}
-
-  const region *m_reg;
 };
 
 /* For use by pending_diagnostic::describe_state_change.  */
@@ -213,27 +203,10 @@ class pending_diagnostic
      diagnostic deduplication.  */
   static bool same_tree_p (tree t1, tree t2);
 
-  /* A vfunc for fixing up locations (both the primary location for the
-     diagnostic, and for events in their paths), e.g. to avoid unwinding
-     inside specific macros.  */
-  virtual location_t fixup_location (location_t loc) const;
-
-  /* For greatest precision-of-wording, the various following "describe_*"
-     virtual functions give the pending diagnostic a way to describe events
-     in a diagnostic_path in terms that make sense for that diagnostic.
-
-     In each case, return a non-NULL label_text to give the event a custom
-     description; NULL otherwise (falling back on a more generic
-     description).  */
-
-  /* Precision-of-wording vfunc for describing a region creation event
-     triggered by the mark_interesting_stuff vfunc.  */
-  virtual label_text
-  describe_region_creation_event (const evdesc::region_creation &)
-  {
-    /* Default no-op implementation.  */
-    return label_text ();
-  }
+  /* Vfunc for fixing up locations, e.g. to avoid unwinding
+     inside specific macros.  PRIMARY is true for the primary location
+     for the diagnostic, and FALSE for events in their paths.  */
+  virtual location_t fixup_location (location_t loc, bool primary) const;
 
   /* Precision-of-wording vfunc for describing a critical state change
      within the diagnostic_path.
@@ -308,6 +281,14 @@ class pending_diagnostic
 
   /* End of precision-of-wording vfuncs.  */
 
+  /* Vfunc for adding a function_entry_event to a checker_path, so that e.g.
+     the infinite recursion diagnostic can add a custom event subclass
+     that annotates recursively entering a function.  */
+
+  virtual void
+  add_function_entry_event (const exploded_edge &eedge,
+			    checker_path *emission_path);
+
   /* Vfunc for extending/overriding creation of the events for an
      exploded_edge that corresponds to a superedge, allowing for custom
      events to be created that are pertinent to a particular
@@ -328,6 +309,24 @@ class pending_diagnostic
      the variadic arguments.  */
   virtual void add_call_event (const exploded_edge &,
 			       checker_path *);
+
+  /* Vfunc for adding any events for the creation of regions identified
+     by the mark_interesting_stuff vfunc.
+     See the comment for class region_creation_event.  */
+  virtual void add_region_creation_events (const region *reg,
+					   tree capacity,
+					   const event_loc_info &loc_info,
+					   checker_path &emission_path);
+
+  /* Vfunc for adding the final warning_event to a checker_path, so that e.g.
+     the infinite recursion diagnostic can have its diagnostic appear at
+     the callsite, but the final event in the path be at the entrypoint
+     of the called function.  */
+  virtual void add_final_event (const state_machine *sm,
+				const exploded_node *enode,
+				const gimple *stmt,
+				tree var, state_machine::state_t state,
+				checker_path *emission_path);
 
   /* Vfunc for determining that this pending_diagnostic supercedes OTHER,
      and that OTHER should therefore not be emitted.

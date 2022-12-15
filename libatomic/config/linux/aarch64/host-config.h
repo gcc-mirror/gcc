@@ -22,14 +22,22 @@
    <http://www.gnu.org/licenses/>.  */
 
 #if HAVE_IFUNC
-#include <stdlib.h>
+#include <sys/auxv.h>
 
-# ifdef HWCAP_ATOMICS
-#  define IFUNC_COND_1	(hwcap & HWCAP_ATOMICS)
+#ifdef HWCAP_USCAT
+# if N == 16
+#  define IFUNC_COND_1	(hwcap & HWCAP_USCAT)
 # else
-#  define IFUNC_COND_1	(false)
+#  define IFUNC_COND_1	(hwcap & HWCAP_ATOMICS)
 # endif
-# define IFUNC_NCOND(N)	(1)
+#else
+#  define IFUNC_COND_1	(false)
+#endif
+#define IFUNC_NCOND(N)	(1)
+
+#if N == 16 && IFUNC_ALT != 0
+# define DONE 1
+#endif
 
 #endif /* HAVE_IFUNC */
 

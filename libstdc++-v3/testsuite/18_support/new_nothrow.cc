@@ -64,7 +64,13 @@ void* operator new (size_t n)
     }
 }
 
-void operator delete (void *p)
+#if __cplusplus >= 201103L
+#define NOEXCEPT noexcept
+#else
+#define NOEXCEPT
+#endif
+
+void operator delete (void *p) NOEXCEPT
 {
     ++delete_called;
     if (p)
@@ -77,18 +83,18 @@ void* operator new[] (size_t n)
     return operator new(n);
 }
 
-void operator delete[] (void *p)
+void operator delete[] (void *p) NOEXCEPT
 {
     ++delete_vec_called;
     operator delete(p);
 }
 
 #if __cplusplus >= 201402L
-void operator delete (void *p, std::size_t)
+void operator delete (void *p, std::size_t) noexcept
 {
   ::operator delete(p);
 }
-void operator delete[] (void *p, std::size_t)
+void operator delete[] (void *p, std::size_t) noexcept
 {
   ::operator delete[](p);
 }

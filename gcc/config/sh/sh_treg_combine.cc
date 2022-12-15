@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgrtl.h"
 #include "tree-pass.h"
 #include "expr.h"
+#include "tm-preds.h"
 
 /*
 This pass tries to optimize for example this:
@@ -425,10 +426,6 @@ is_conditional_insn (rtx_insn* i)
   rtx p = PATTERN (i);
   return GET_CODE (p) == SET && GET_CODE (XEXP (p, 1)) == IF_THEN_ELSE;
 }
-
-// FIXME: Remove dependency on SH predicate function somehow.
-extern int t_reg_operand (rtx, machine_mode);
-extern int negt_reg_operand (rtx, machine_mode);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // RTL pass class

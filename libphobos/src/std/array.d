@@ -169,8 +169,8 @@ if (isIterable!Range && !isAutodecodableString!Range && !isInfinite!Range)
 }
 
 /// ditto
-ForeachType!(PointerTarget!Range)[] array(Range)(Range r)
-if (isPointer!Range && isIterable!(PointerTarget!Range) && !isAutodecodableString!Range && !isInfinite!Range)
+ForeachType!(typeof((*Range).init))[] array(Range)(Range r)
+if (is(Range : U*, U) && isIterable!U && !isAutodecodableString!Range && !isInfinite!Range)
 {
     return array(*r);
 }
@@ -3416,7 +3416,8 @@ do
 Implements an output range that appends data to an array. This is
 recommended over $(D array ~= data) when appending many elements because it is more
 efficient. `Appender` maintains its own array metadata locally, so it can avoid
-global locking for each append where $(LREF capacity) is non-zero.
+the $(DDSUBLINK spec/arrays, capacity-reserve, performance hit of looking up slice `capacity`)
+for each append.
 
 Params:
     A = the array type to simulate.
@@ -3587,7 +3588,7 @@ if (isDynamicArray!A)
     private template canPutItem(U)
     {
         enum bool canPutItem =
-            isImplicitlyConvertible!(Unqual!U, Unqual!T) ||
+            is(Unqual!U : Unqual!T) ||
             isSomeChar!T && isSomeChar!U;
     }
     private template canPutConstRange(Range)

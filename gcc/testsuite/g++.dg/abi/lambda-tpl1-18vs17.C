@@ -14,3 +14,8 @@
 // { dg-regexp {[^\n]*lambda-tpl1.h:[:0-9]* warning: the mangled name [^\n]* \('_ZNK10l_tpl_autoMUlT_T0_E_clIiiEEDaS_S0_'\) and '-fabi-version=18' \('_ZNK10l_tpl_autoMUlTyT_T0_E_clIiiEEDaS0_S1_'\) [^\n]*\n} }
 // { dg-regexp {[^\n]*lambda-tpl1.h:[:0-9]* warning: the mangled name [^\n]* \('_ZNK5l_tplMUlT_E_clIiEEDaS_'\) and '-fabi-version=18' \('_ZNK5l_tplMUlTyT_E_clIiEEDaS0_'\) [^\n]*\n} }
 // { dg-regexp {[^\n]*lambda-tpl1.h:[:0-9]* warning: the mangled name [^\n]* \('_ZNK6l_autoMUlT_E_clIiEEDaS_'\) and '-fabi-version=18' \('_ZNK6l_autoMUlT_E_clIiEEDaS0_'\) [^\n]*\n} }
+// { dg-regexp {[^\n]*lambda-tpl1.h:[:0-9]* warning: the mangled name [^\n]* \('_ZZ1fvENKUlT_E_clIiLi0EEEDaS_'\) and '-fabi-version=18' \('_ZZ1fvENKUlTyTnT_S_E_clIiLi0EEEDaS_'\) [^\n]*\n} }
+// { dg-regexp {[^\n]*lambda-tpl1.h:[:0-9]* warning: the mangled name [^\n]* \('_ZZZ1fvENKUlT_E_clIiLi0EEEDaS_ENKUliS_E_clIiEEDaiS_'\) and '-fabi-version=18' \('_ZZZ1fvENKUlTyTnT_S_E_clIiLi0EEEDaS_ENKUlTyiS_E_clIiEEDaiS_'\) [^\n]*\n} }
+// { dg-regexp {[^\n]*lambda-tpl1.h:[:0-9]* warning: the mangled name [^\n]* \('_ZZ1fvENKUlT_E_clIcLc0EEEDaS_'\) and '-fabi-version=18' \('_ZZ1fvENKUlTyTnT_S_E_clIcLc0EEEDaS_'\) [^\n]*\n} }
+// { dg-regexp {[^\n]*lambda-tpl1.h:[:0-9]* warning: the mangled name [^\n]* \('_ZZZ1fvENKUlT_E_clIcLc0EEEDaS_ENKUlcS_E_clIcEEDacS_'\) and '-fabi-version=18' \('_ZZZ1fvENKUlTyTnT_S_E_clIcLc0EEEDaS_ENKUlTycS_E_clIcEEDacS_'\) [^\n]*\n} }
+// { dg-regexp {[^\n]*lambda-tpl1.h:[:0-9]* warning: the mangled name [^\n]* \('_ZZ1fvENKUlP1UIT_Lj0EEPS_IiLj0EEE0_clIcEEDaS2_S4_'\) and '-fabi-version=18' \('_ZZ1fvENKUlTyP1UIT_Lj0EEPS_IiLj0EEE_clIcEEDaS2_S4_'\) [^\n]*\n} }

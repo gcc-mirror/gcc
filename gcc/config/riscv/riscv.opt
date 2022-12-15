@@ -204,6 +204,9 @@ TargetVariable
 int riscv_zi_subext
 
 TargetVariable
+int riscv_za_subext
+
+TargetVariable
 int riscv_zb_subext
 
 TargetVariable

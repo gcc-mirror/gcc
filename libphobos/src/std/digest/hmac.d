@@ -202,14 +202,14 @@ if (hashBlockSize % 8 == 0)
         import std.string : representation;
         string data1 = "Hello, world", data2 = "Hola mundo";
         auto hmac = HMAC!SHA1("My s3cR3T keY".representation);
-        auto digest = hmac.put(data1.representation)
+        auto testDigest = hmac.put(data1.representation)
                           .put(data2.representation)
                           .finish();
         static immutable expected = [
             197, 57, 52, 3, 13, 194, 13,
             36, 117, 228, 8, 11, 111, 51,
             165, 3, 123, 31, 251, 113];
-        assert(digest == expected);
+        assert(testDigest == expected);
     }
 }
 

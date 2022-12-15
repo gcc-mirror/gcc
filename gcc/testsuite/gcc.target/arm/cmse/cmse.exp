@@ -44,6 +44,17 @@ if {[is-effective-target arm_cmse_hw]} then {
 set saved-lto_torture_options ${LTO_TORTURE_OPTIONS}
 set LTO_TORTURE_OPTIONS ""
 
+# Return the start address of the .gnu.sgstubs section.
+proc cmse_sgstubs {} {
+    # Allow to override the location of .gnu.sgstubs section.
+    set tboard [target_info name]
+    if {[board_info $tboard exists cmse_sgstubs]} {
+	return [board_info $tboard cmse_sgstubs]
+    }
+
+    return "0x00400000"
+}
+
 # These are for both baseline and mainline.
 gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] \
 	"" $DEFAULT_CFLAGS

@@ -1,3 +1,5 @@
+#include "analyzer-decls.h"
+
 #include <stdlib.h>
 
 extern void foo(void *ptrA, void *ptrB, void *ptrC) /* { dg-message "argument 1 of 'foo' must be non-null" } */
@@ -80,4 +82,20 @@ void test_5 (void *q, void *r)
   cb(p, q, r);
 
   free(p);
+}
+
+__attribute__((nonnull(1, 3)))
+void test_6 (void *p, void *q, void *r)
+{
+  __analyzer_eval (p != NULL); /* { dg-warning "TRUE" } */
+  __analyzer_eval (q != NULL); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (r != NULL); /* { dg-warning "TRUE" } */
+}
+
+__attribute__((nonnull))
+void test_7 (void *p, void *q, void *r)
+{
+  __analyzer_eval (p != NULL); /* { dg-warning "TRUE" } */
+  __analyzer_eval (q != NULL); /* { dg-warning "TRUE" } */
+  __analyzer_eval (r != NULL); /* { dg-warning "TRUE" } */
 }

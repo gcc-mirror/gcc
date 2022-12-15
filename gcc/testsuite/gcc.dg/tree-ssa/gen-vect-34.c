@@ -13,4 +13,4 @@ float summul(int n, float *arg1, float *arg2)
     return res1;                                       
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { ! { avr-*-* pru-*-* riscv*-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_masked_load } } } */

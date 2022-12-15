@@ -1,6 +1,6 @@
 /* PR target/93002 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-unroll-loops" } */
 /* { dg-final { scan-assembler-not "cmp\[^\n\r]*-1" } } */
 
 volatile int sink;

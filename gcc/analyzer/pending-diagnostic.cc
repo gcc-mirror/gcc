@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -49,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/exploded-graph.h"
 #include "diagnostic-path.h"
 #include "analyzer/checker-path.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -151,7 +153,7 @@ fixup_location_in_macro_p (cpp_hashnode *macro)
    Don't unwind inside macros for which fixup_location_in_macro_p is true.  */
 
 location_t
-pending_diagnostic::fixup_location (location_t loc) const
+pending_diagnostic::fixup_location (location_t loc, bool) const
 {
   if (linemap_location_from_macro_expansion_p (line_table, loc))
     {
@@ -163,6 +165,18 @@ pending_diagnostic::fixup_location (location_t loc) const
 					LRK_MACRO_EXPANSION_POINT, NULL);
     }
   return loc;
+}
+
+/* Base implementation of pending_diagnostic::add_function_entry_event.
+   Add a function_entry_event to EMISSION_PATH.  */
+
+void
+pending_diagnostic::add_function_entry_event (const exploded_edge &eedge,
+					      checker_path *emission_path)
+{
+  const exploded_node *dst_node = eedge.m_dest;
+  const program_point &dst_point = dst_node->get_point ();
+  emission_path->add_event (make_unique<function_entry_event> (dst_point));
 }
 
 /* Base implementation of pending_diagnostic::add_call_event.
@@ -177,12 +191,48 @@ pending_diagnostic::add_call_event (const exploded_edge &eedge,
   const int src_stack_depth = src_point.get_stack_depth ();
   const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
   emission_path->add_event
-    (new call_event (eedge,
-		     (last_stmt
-		      ? last_stmt->location
-		      : UNKNOWN_LOCATION),
-		     src_point.get_fndecl (),
-		     src_stack_depth));
+    (make_unique<call_event> (eedge,
+			      event_loc_info (last_stmt
+					      ? last_stmt->location
+					      : UNKNOWN_LOCATION,
+					      src_point.get_fndecl (),
+					      src_stack_depth)));
+}
+
+/* Base implementation of pending_diagnostic::add_region_creation_events.
+   See the comment for class region_creation_event.  */
+
+void
+pending_diagnostic::add_region_creation_events (const region *reg,
+						tree capacity,
+						const event_loc_info &loc_info,
+						checker_path &emission_path)
+{
+  emission_path.add_event
+    (make_unique<region_creation_event_memory_space> (reg->get_memory_space (),
+						      loc_info));
+
+  if (capacity)
+    emission_path.add_event
+      (make_unique<region_creation_event_capacity> (capacity, loc_info));
+}
+
+/* Base implementation of pending_diagnostic::add_final_event.
+   Add a warning_event to the end of EMISSION_PATH.  */
+
+void
+pending_diagnostic::add_final_event (const state_machine *sm,
+				     const exploded_node *enode,
+				     const gimple *stmt,
+				     tree var, state_machine::state_t state,
+				     checker_path *emission_path)
+{
+  emission_path->add_event
+    (make_unique<warning_event>
+     (event_loc_info (get_stmt_location (stmt, enode->get_function ()),
+		      enode->get_function ()->decl,
+		      enode->get_stack_depth ()),
+      sm, var, state));
 }
 
 } // namespace ana

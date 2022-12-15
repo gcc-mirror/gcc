@@ -148,7 +148,6 @@ package Atree is
    --  This is a count of errors that are serious enough to stop expansion,
    --  and hence to prevent generation of an object file even if the
    --  switch -gnatQ is set. Initialized to zero at the start of compilation.
-   --  Initialized for -gnatVa use, see comment above.
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
 
@@ -156,12 +155,11 @@ package Atree is
    --  Number of errors detected so far. Includes count of serious errors and
    --  non-serious errors, so this value is always greater than or equal to the
    --  Serious_Errors_Detected value. Initialized to zero at the start of
-   --  compilation. Initialized for -gnatVa use, see comment above.
+   --  compilation.
 
    Warnings_Detected : Nat := 0;
    --  Number of warnings detected. Initialized to zero at the start of
-   --  compilation. Initialized for -gnatVa use, see comment above. This
-   --  count includes the count of style and info messages.
+   --  compilation. This count includes the count of style and info messages.
 
    Warning_Info_Messages : Nat := 0;
    --  Number of info messages generated as warnings. Info messages are never

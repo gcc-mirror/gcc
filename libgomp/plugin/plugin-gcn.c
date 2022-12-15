@@ -42,6 +42,7 @@
 #include <dlfcn.h>
 #include <signal.h>
 #include "libgomp-plugin.h"
+#include "config/gcn/libgomp-gcn.h"  /* For struct output.  */
 #include "gomp-constants.h"
 #include <elf.h>
 #include "oacc-plugin.h"
@@ -252,21 +253,7 @@ struct kernargs {
   int64_t arena_ptr;
 
   /* Output data.  */
-  struct output {
-    int return_value;
-    unsigned int next_output;
-    struct printf_data {
-      int written;
-      char msg[128];
-      int type;
-      union {
-	int64_t ivalue;
-	double dvalue;
-	char text[128];
-      };
-    } queue[1024];
-    unsigned int consumed;
-  } output_data;
+  struct output output_data;
 };
 
 /* A queue entry for a future asynchronous launch.  */
@@ -1163,6 +1150,18 @@ limit_worker_threads (int threads)
   return threads;
 }
 
+/* This sets the maximum number of teams to twice the number of GPU Compute
+   Units to avoid memory waste and corresponding memory access faults.  */
+
+static int
+limit_teams (int teams, struct agent_info *agent)
+{
+  int max_teams = 2 * get_cu_count (agent);
+  if (teams > max_teams)
+    teams = max_teams;
+  return teams;
+}
+
 /* Parse the target attributes INPUT provided by the compiler and return true
    if we should run anything all.  If INPUT is NULL, fill DEF with default
    values, then store INPUT or DEF into *RESULT.
@@ -1207,7 +1206,7 @@ parse_target_attributes (void **input,
 	  switch (id & GOMP_TARGET_ARG_ID_MASK)
 	    {
 	    case GOMP_TARGET_ARG_NUM_TEAMS:
-	      gcn_teams = val;
+	      gcn_teams = limit_teams (val, agent);
 	      break;
 	    case GOMP_TARGET_ARG_THREAD_LIMIT:
 	      gcn_threads = limit_worker_threads (val);
@@ -1931,6 +1930,15 @@ create_kernel_dispatch (struct kernel_info *kernel, int num_teams)
   return shadow;
 }
 
+static void
+process_reverse_offload (uint64_t fn, uint64_t mapnum, uint64_t hostaddrs,
+			 uint64_t sizes, uint64_t kinds, uint64_t dev_num64)
+{
+  int dev_num = dev_num64;
+  GOMP_PLUGIN_target_rev (fn, mapnum, hostaddrs, sizes, kinds, dev_num,
+			  NULL, NULL, NULL);
+}
+
 /* Output any data written to console output from the kernel.  It is expected
    that this function is polled during kernel execution.
 
@@ -1975,6 +1983,11 @@ console_output (struct kernel_info *kernel, struct kernargs *kernargs,
 	case 1: printf ("%.128s%f\n", data->msg, data->dvalue); break;
 	case 2: printf ("%.128s%.128s\n", data->msg, data->text); break;
 	case 3: printf ("%.128s%.128s", data->msg, data->text); break;
+	case 4:
+	  process_reverse_offload (data->value_u64[0], data->value_u64[1],
+				   data->value_u64[2], data->value_u64[3],
+				   data->value_u64[4], data->value_u64[5]);
+	  break;
 	default: printf ("GCN print buffer error!\n"); break;
 	}
       data->written = 0;

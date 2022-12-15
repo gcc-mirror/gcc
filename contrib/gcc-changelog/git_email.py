@@ -37,7 +37,7 @@ unidiff_supports_renaming = hasattr(PatchedFile(), 'is_rename')
 class GitEmail(GitCommit):
     def __init__(self, filename):
         self.filename = filename
-        diff = PatchSet.from_filename(filename)
+        diff = PatchSet.from_filename(filename, newline='\n')
         date = None
         author = None
         subject = ''

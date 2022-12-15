@@ -76,6 +76,7 @@ with Style;
 with Table;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 package body Sem_Ch8 is
 
@@ -960,7 +961,7 @@ package body Sem_Ch8 is
             Set_Etype (Nam, T);
          end if;
       elsif Present (Subtype_Mark (N))
-        or else not Present (Access_Definition (N))
+        or else No (Access_Definition (N))
       then
          if Present (Subtype_Mark (N)) then
             Find_Type (Subtype_Mark (N));
@@ -4702,7 +4703,7 @@ package body Sem_Ch8 is
       --  want to deal with AST_Handler in ZFP mode.
 
       if not Configurable_Run_Time_Mode
-        and then not Present (Corresponding_Formal_Spec (N))
+        and then No (Corresponding_Formal_Spec (N))
         and then not Is_RTE (Etype (Nam), RE_AST_Handler)
       then
          declare
@@ -4887,6 +4888,18 @@ package body Sem_Ch8 is
 
          if Present (P)
            and then Nkind (P) = N_Parameter_Specification
+         then
+            null;
+
+         --  Don't replace the discriminant in strict preanalysis mode since
+         --  it can lead to errors during full analysis when the discriminant
+         --  gets referenced later.
+
+         --  This can occur in situations where a protected type contains
+         --  an expression function which references a discriminant.
+
+         elsif Preanalysis_Active
+           and then Inside_Preanalysis_Without_Freezing = 0
          then
             null;
 
@@ -6047,21 +6060,6 @@ package body Sem_Ch8 is
          if Is_Type (Entity (N)) then
             Set_Etype (N, Entity (N));
 
-         --  The exception to this general rule are constants associated with
-         --  discriminals of protected types because for each protected op
-         --  a new set of discriminals is internally created by the frontend
-         --  (see Exp_Ch9.Set_Discriminals), and the current decoration of the
-         --  entity pointer may have been set as part of a preanalysis, where
-         --  discriminals still reference the first subprogram or entry to be
-         --  expanded (see Expand_Protected_Body_Declarations).
-
-         elsif Full_Analysis
-           and then Ekind (Entity (N)) = E_Constant
-           and then Present (Discriminal_Link (Entity (N)))
-           and then Is_Protected_Type (Scope (Discriminal_Link (Entity (N))))
-         then
-            goto Find_Name;
-
          else
             declare
                Entyp : constant Entity_Id := Etype (Entity (N));
@@ -6100,8 +6098,6 @@ package body Sem_Ch8 is
 
          return;
       end if;
-
-      <<Find_Name>>
 
       --  Preserve relevant elaboration-related attributes of the context which
       --  are no longer available or very expensive to recompute once analysis,
@@ -7918,7 +7914,7 @@ package body Sem_Ch8 is
 
          if Is_Type (P_Type)
            and then (Has_Components (P_Type)
-                      or else (Extensions_Allowed
+                      or else (Core_Extensions_Allowed
                                 and then not Is_Concurrent_Type (P_Type)))
            and then not Is_Overloadable (P_Name)
            and then not Is_Type (P_Name)
@@ -8173,7 +8169,7 @@ package body Sem_Ch8 is
                        ("prefixed call is only allowed for objects of a "
                         & "tagged type unless -gnatX is used", N);
 
-                     if not Extensions_Allowed
+                     if not Core_Extensions_Allowed
                        and then
                          Try_Object_Operation (N, Allow_Extensions => True)
                      then
@@ -9272,9 +9268,9 @@ package body Sem_Ch8 is
          Scope1 := Scope (Scope1);
          Scope2 := Scope (Scope2);
 
-         if not Present (Scope1) then
+         if No (Scope1) then
             return Clause1;
-         elsif not Present (Scope2) then
+         elsif No (Scope2) then
             return Clause2;
          end if;
       end loop;
@@ -9717,10 +9713,10 @@ package body Sem_Ch8 is
       --  we saved (we use Remove, since this list will not be used again).
 
       loop
-         Elmt := Last_Elmt (List);
+         Elmt := First_Elmt (List);
          exit when Elmt = No_Elmt;
          Set_Is_Immediately_Visible (Node (Elmt));
-         Remove_Last_Elmt (List);
+         Remove_Elmt (List, Elmt);
       end loop;
 
       --  Restore use clauses

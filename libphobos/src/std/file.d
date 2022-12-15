@@ -4986,21 +4986,20 @@ auto dirEntries(bool useDIP1000 = dip1000Enabled)
 {
     string[] listdir(string pathname)
     {
-        import std.algorithm;
-        import std.array;
-        import std.file;
-        import std.path;
+        import std.algorithm.iteration : map, filter;
+        import std.array : array;
+        import std.path : baseName;
 
-        return std.file.dirEntries(pathname, SpanMode.shallow)
+        return dirEntries(pathname, SpanMode.shallow)
             .filter!(a => a.isFile)
-            .map!((return a) => std.path.baseName(a.name))
+            .map!((return a) => baseName(a.name))
             .array;
     }
 
     // Can be safe only with -preview=dip1000
     @safe void main(string[] args)
     {
-        import std.stdio;
+        import std.stdio : writefln;
 
         string[] files = listdir(args[1]);
         writefln("%s", files);

@@ -74,7 +74,12 @@ __do_catch (const type_info *thr_type,
     // Therefore there must at least be a qualification conversion involved
     // But for that to be valid, our outer pointers must be const qualified.
     return false;
-  
+
+#if !__cpp_rtti
+  if (!thr_type->__is_pointer_p ())
+    return false;
+#endif
+
   const __pbase_type_info *thrown_type =
     static_cast <const __pbase_type_info *> (thr_type);
 

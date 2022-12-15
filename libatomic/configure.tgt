@@ -49,6 +49,7 @@ case "${target_cpu}" in
 		fi
 		;;
 	esac
+	XCFLAGS="${XCFLAGS} -mno-outline-atomics"
 	;;
   arm*)
 	ARCH=arm

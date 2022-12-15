@@ -821,7 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_GLIBCXX20_CONSTEXPR
 	void
 	assign(_InputIterator __first, _InputIterator __last)
-	{ _M_assign_dispatch(__first, __last, __false_type()); }
+	{ _M_assign_aux(__first, __last, std::__iterator_category(__first)); }
 #else
       template<typename _InputIterator>
 	void
@@ -1478,8 +1478,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       _InputIterator __last)
 	{
 	  difference_type __offset = __position - cbegin();
-	  _M_insert_dispatch(begin() + __offset,
-			     __first, __last, __false_type());
+	  _M_range_insert(begin() + __offset, __first, __last,
+			  std::__iterator_category(__first));
 	  return begin() + __offset;
 	}
 #else

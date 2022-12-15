@@ -249,7 +249,7 @@ according to `less`.
      */
     @property ElementType!Store front()
     {
-        enforce(!empty, "Cannot call front on an empty heap.");
+        assert(!empty, "Cannot call front on an empty heap.");
         return _store.front;
     }
 
@@ -317,7 +317,7 @@ Removes the largest element from the heap.
      */
     void removeFront()
     {
-        enforce(!empty, "Cannot call removeFront on an empty heap.");
+        assert(!empty, "Cannot call removeFront on an empty heap.");
         if (_length > 1)
         {
             auto t1 = _store[].moveFront();

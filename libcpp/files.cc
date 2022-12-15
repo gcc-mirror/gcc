@@ -1833,7 +1833,7 @@ remap_filename (cpp_reader *pfile, _cpp_file *file)
 #ifdef HAVE_DOS_BASED_FILE_SYSTEM
       {
 	const char *p2 = strchr (fname, '\\');
-	if (!p || (p > p2))
+	if (!p || (p2 && p > p2))
 	  p = p2;
       }
 #endif

@@ -73,6 +73,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
   public:
     // overload construct for non-standard pointer types
     template<typename _Ptr, typename... _Args>
+      [[__gnu__::__always_inline__]]
       static _GLIBCXX14_CONSTEXPR
       std::__enable_if_t<__is_custom_pointer<_Ptr>::value>
       construct(_Alloc& __a, _Ptr __p, _Args&&... __args)
@@ -85,30 +86,38 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
 
     // overload destroy for non-standard pointer types
     template<typename _Ptr>
+      [[__gnu__::__always_inline__]]
       static _GLIBCXX14_CONSTEXPR
       std::__enable_if_t<__is_custom_pointer<_Ptr>::value>
       destroy(_Alloc& __a, _Ptr __p)
       noexcept(noexcept(_Base_type::destroy(__a, std::__to_address(__p))))
       { _Base_type::destroy(__a, std::__to_address(__p)); }
 
+    [[__gnu__::__always_inline__]]
     static constexpr _Alloc _S_select_on_copy(const _Alloc& __a)
     { return _Base_type::select_on_container_copy_construction(__a); }
 
+    [[__gnu__::__always_inline__]]
     static _GLIBCXX14_CONSTEXPR void _S_on_swap(_Alloc& __a, _Alloc& __b)
     { std::__alloc_on_swap(__a, __b); }
 
+    [[__gnu__::__always_inline__]]
     static constexpr bool _S_propagate_on_copy_assign()
     { return _Base_type::propagate_on_container_copy_assignment::value; }
 
+    [[__gnu__::__always_inline__]]
     static constexpr bool _S_propagate_on_move_assign()
     { return _Base_type::propagate_on_container_move_assignment::value; }
 
+    [[__gnu__::__always_inline__]]
     static constexpr bool _S_propagate_on_swap()
     { return _Base_type::propagate_on_container_swap::value; }
 
+    [[__gnu__::__always_inline__]]
     static constexpr bool _S_always_equal()
     { return _Base_type::is_always_equal::value; }
 
+    __attribute__((__always_inline__))
     static constexpr bool _S_nothrow_move()
     { return _S_propagate_on_move_assign() || _S_always_equal(); }
 
@@ -125,30 +134,38 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     typedef typename _Alloc::size_type              size_type;
     typedef typename _Alloc::difference_type        difference_type;
 
-    _GLIBCXX_NODISCARD static pointer
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+    static pointer
     allocate(_Alloc& __a, size_type __n)
     { return __a.allocate(__n); }
 
     template<typename _Hint>
-      _GLIBCXX_NODISCARD static pointer
+      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      static pointer
       allocate(_Alloc& __a, size_type __n, _Hint __hint)
       { return __a.allocate(__n, __hint); }
 
+    __attribute__((__always_inline__))
     static void deallocate(_Alloc& __a, pointer __p, size_type __n)
     { __a.deallocate(__p, __n); }
 
     template<typename _Tp>
+      __attribute__((__always_inline__))
       static void construct(_Alloc& __a, pointer __p, const _Tp& __arg)
       { __a.construct(__p, __arg); }
 
+    __attribute__((__always_inline__))
     static void destroy(_Alloc& __a, pointer __p)
     { __a.destroy(__p); }
 
+    __attribute__((__always_inline__))
     static size_type max_size(const _Alloc& __a)
     { return __a.max_size(); }
 
+    __attribute__((__always_inline__))
     static const _Alloc& _S_select_on_copy(const _Alloc& __a) { return __a; }
 
+    __attribute__((__always_inline__))
     static void _S_on_swap(_Alloc& __a, _Alloc& __b)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS

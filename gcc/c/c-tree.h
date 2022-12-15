@@ -34,6 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is volatile.  */
 #define C_TYPE_FIELDS_VOLATILE(TYPE) TREE_LANG_FLAG_2 (TYPE)
 
+/* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is
+   volatile, restrict-qualified or atomic; that is, has a type not
+   permitted for a constexpr object.  */
+#define C_TYPE_FIELDS_NON_CONSTEXPR(TYPE) TREE_LANG_FLAG_4 (TYPE)
+
 /* In a RECORD_TYPE or UNION_TYPE or ENUMERAL_TYPE
    nonzero if the definition of the type has already started.  */
 #define C_TYPE_BEING_DEFINED(TYPE) TYPE_LANG_FLAG_0 (TYPE)
@@ -99,6 +104,14 @@ along with GCC; see the file COPYING3.  If not see
 /* Set on VAR_DECLs for compound literals.  */
 #define C_DECL_COMPOUND_LITERAL_P(DECL) \
   DECL_LANG_FLAG_5 (VAR_DECL_CHECK (DECL))
+
+/* Set on decls used as placeholders for a C2x underspecified object
+   definition.  */
+#define C_DECL_UNDERSPECIFIED(DECL) DECL_LANG_FLAG_7 (DECL)
+
+/* Set on VAR_DECLs declared as 'constexpr'.  */
+#define C_DECL_DECLARED_CONSTEXPR(DECL) \
+  DECL_LANG_FLAG_8 (VAR_DECL_CHECK (DECL))
 
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
@@ -430,6 +443,13 @@ struct c_declspecs {
      enum-type-specifier;", but such an empty declaration is valid in
      C2x when "enum identifier;" would not be).  */
   BOOL_BITFIELD enum_type_specifier_ref_p : 1;
+  /* Whether "auto" was specified in C2X (or later) mode and means the
+     type is to be deduced from an initializer, or would mean that if
+     no type specifier appears later in these declaration
+     specifiers.  */
+  BOOL_BITFIELD c2x_auto_p : 1;
+  /* Whether "constexpr" was specified.  */
+  BOOL_BITFIELD constexpr_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -592,6 +612,8 @@ extern bool switch_statement_break_seen_p;
 
 extern bool global_bindings_p (void);
 extern tree pushdecl (tree);
+extern unsigned int start_underspecified_init (location_t, tree);
+extern void finish_underspecified_init (tree, unsigned int);
 extern void push_scope (void);
 extern tree pop_scope (void);
 extern void c_bindings_start_stmt_expr (struct c_spot_bindings *);
@@ -651,7 +673,7 @@ extern void shadow_tag_warned (const struct c_declspecs *, int);
 extern tree start_enum (location_t, struct c_enum_contents *, tree, tree);
 extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
-			tree, location_t * = NULL);
+			tree, bool = true, location_t * = NULL);
 extern tree start_struct (location_t, enum tree_code, tree,
 			  class c_struct_parse_info **);
 extern void store_parm_decls (void);
@@ -722,7 +744,7 @@ extern struct c_expr default_function_array_conversion (location_t,
 extern struct c_expr default_function_array_read_conversion (location_t,
 							     struct c_expr);
 extern struct c_expr convert_lvalue_to_rvalue (location_t, struct c_expr,
-					       bool, bool);
+					       bool, bool, bool = false);
 extern tree decl_constant_value_1 (tree, bool);
 extern void mark_exp_read (tree);
 extern tree composite_type (tree, tree);
@@ -745,7 +767,7 @@ extern tree c_cast_expr (location_t, struct c_type_name *, tree);
 extern tree build_c_cast (location_t, tree, tree);
 extern void store_init_value (location_t, tree, tree, tree);
 extern void maybe_warn_string_init (location_t, tree, struct c_expr);
-extern void start_init (tree, tree, int, rich_location *);
+extern void start_init (tree, tree, bool, bool, rich_location *);
 extern void finish_init (void);
 extern void really_start_incremental_init (tree);
 extern void finish_implicit_inits (location_t, struct obstack *);

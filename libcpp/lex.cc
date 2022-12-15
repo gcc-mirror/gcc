@@ -1076,6 +1076,9 @@ _cpp_clean_line (cpp_reader *pfile)
   buffer->next_line = s + 1;
 }
 
+template <bool lexing_raw_string>
+static bool get_fresh_line_impl (cpp_reader *pfile);
+
 /* Return true if the trigraph indicated by NOTE should be warned
    about in a comment.  */
 static bool
@@ -2132,8 +2135,14 @@ maybe_va_opt_error (cpp_reader *pfile)
       /* __VA_OPT__ should not be accepted at all, but allow it in
 	 system headers.  */
       if (!_cpp_in_system_header (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "__VA_OPT__ is not available until C++20");
+	{
+	  if (CPP_OPTION (pfile, cplusplus))
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "__VA_OPT__ is not available until C++20");
+	  else
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "__VA_OPT__ is not available until C2X");
+	}
     }
   else if (!pfile->state.va_args_ok)
     {
@@ -2695,9 +2704,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	{
 	  pos--;
 	  pfile->buffer->cur = pos;
-	  if (pfile->state.in_directive
-	      || (pfile->state.parsing_args
-		  && pfile->buffer->next_line >= pfile->buffer->rlimit))
+	  if ((pfile->state.in_directive || pfile->state.parsing_args)
+	      && pfile->buffer->next_line >= pfile->buffer->rlimit)
 	    {
 	      cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, 0,
 				   "unterminated raw string");
@@ -2712,7 +2720,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	    CPP_INCREMENT_LINE (pfile, 0);
 	  pfile->buffer->need_line = true;
 
-	  if (!_cpp_get_fresh_line (pfile))
+	  if (!get_fresh_line_impl<true> (pfile))
 	    {
 	      /* We ran out of file and failed to get a line.  */
 	      location_t src_loc = token->src_loc;
@@ -2724,8 +2732,15 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 		_cpp_release_buff (pfile, accum.first);
 	      cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
 				   "unterminated raw string");
-	      /* Now pop the buffer that _cpp_get_fresh_line did not.  */
+
+	      /* Now pop the buffer that get_fresh_line_impl() did not.  Popping
+		 is not safe if processing a directive, however this cannot
+		 happen as we already checked above that a line would be
+		 available, and get_fresh_line_impl() can't fail in this
+		 case.  */
+	      gcc_assert (!pfile->state.in_directive);
 	      _cpp_pop_buffer (pfile);
+
 	      return;
 	    }
 
@@ -3659,11 +3674,14 @@ _cpp_lex_token (cpp_reader *pfile)
 }
 
 /* Returns true if a fresh line has been loaded.  */
-bool
-_cpp_get_fresh_line (cpp_reader *pfile)
+template <bool lexing_raw_string>
+static bool
+get_fresh_line_impl (cpp_reader *pfile)
 {
-  /* We can't get a new line until we leave the current directive.  */
-  if (pfile->state.in_directive)
+  /* We can't get a new line until we leave the current directive, unless we
+     are lexing a raw string, in which case it will be OK as long as we don't
+     pop the current buffer.  */
+  if (!lexing_raw_string && pfile->state.in_directive)
     return false;
 
   for (;;)
@@ -3678,6 +3696,10 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 	  _cpp_clean_line (pfile);
 	  return true;
 	}
+
+      /* We can't change buffers until we leave the current directive.  */
+      if (lexing_raw_string && pfile->state.in_directive)
+	return false;
 
       /* First, get out of parsing arguments state.  */
       if (pfile->state.parsing_args)
@@ -3705,6 +3727,13 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 	}
     }
 }
+
+bool
+_cpp_get_fresh_line (cpp_reader *pfile)
+{
+  return get_fresh_line_impl<false> (pfile);
+}
+
 
 #define IF_NEXT_IS(CHAR, THEN_TYPE, ELSE_TYPE)		\
   do							\

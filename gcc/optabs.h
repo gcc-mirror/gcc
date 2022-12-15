@@ -268,6 +268,10 @@ extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
 				     machine_mode, int, rtx,
 				     profile_probability prob
 					= profile_probability::uninitialized ());
+extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
+				     machine_mode, int, tree, rtx,
+				     profile_probability prob
+					= profile_probability::uninitialized ());
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump (rtx);

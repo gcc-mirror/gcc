@@ -19,10 +19,10 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VALL_F16 0 "nonimmediate_operand")
-	(match_operand:VALL_F16 1 "general_operand"))]
+  [(set (match_operand:VMOVE 0 "nonimmediate_operand")
+	(match_operand:VMOVE 1 "general_operand"))]
   "TARGET_FLOAT"
-  "
+{
   /* Force the operand into a register if it is not an
      immediate whose use can be replaced with xzr.
      If the mode is 16 bytes wide, then we will be doing
@@ -46,12 +46,11 @@
       aarch64_expand_vector_init (operands[0], operands[1]);
       DONE;
     }
-  "
-)
+})
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:VALL_F16 0 "nonimmediate_operand")
-        (match_operand:VALL_F16 1 "general_operand"))]
+  [(set (match_operand:VMOVE 0 "nonimmediate_operand")
+        (match_operand:VMOVE 1 "general_operand"))]
   "TARGET_FLOAT && !STRICT_ALIGNMENT"
 {
   /* This pattern is not permitted to fail during expansion: if both arguments
@@ -73,6 +72,16 @@
   [(set_attr "type" "neon_dup<q>, neon_from_gp<q>")]
 )
 
+(define_insn "aarch64_simd_dupv2hf"
+  [(set (match_operand:V2HF 0 "register_operand" "=w")
+	(vec_duplicate:V2HF
+	  (match_operand:HF 1 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "@
+   sli\\t%d0, %d0, 16"
+  [(set_attr "type" "neon_shift_imm")]
+)
+
 (define_insn "aarch64_simd_dup<mode>"
   [(set (match_operand:VDQF_F16 0 "register_operand" "=w,w")
 	(vec_duplicate:VDQF_F16
@@ -85,10 +94,10 @@
 )
 
 (define_insn "aarch64_dup_lane<mode>"
-  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
-	(vec_duplicate:VALL_F16
+  [(set (match_operand:VMOVE 0 "register_operand" "=w")
+	(vec_duplicate:VMOVE
 	  (vec_select:<VEL>
-	    (match_operand:VALL_F16 1 "register_operand" "w")
+	    (match_operand:VMOVE 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")])
           )))]
   "TARGET_SIMD"
@@ -150,6 +159,29 @@
    (set_attr "arch" "*,*,*,*,*,*,*,simd,*")]
 )
 
+(define_insn "*aarch64_simd_movv2hf"
+  [(set (match_operand:V2HF 0 "nonimmediate_operand"
+		"=w, m,  m,  w, ?r, ?w, ?r, w, w")
+	(match_operand:V2HF 1 "general_operand"
+		"m,  Dz, w,  w,  w,  r,  r, Dz, Dn"))]
+  "TARGET_SIMD_F16INST
+   && (register_operand (operands[0], V2HFmode)
+       || aarch64_simd_reg_or_zero (operands[1], V2HFmode))"
+   "@
+    ldr\\t%s0, %1
+    str\\twzr, %0
+    str\\t%s1, %0
+    mov\\t%0.2s[0], %1.2s[0]
+    umov\\t%w0, %1.s[0]
+    fmov\\t%s0, %w1
+    mov\\t%w0, %w1
+    movi\\t%d0, 0
+    * return aarch64_output_simd_mov_immediate (operands[1], 32);"
+  [(set_attr "type" "neon_load1_1reg, store_8, neon_store1_1reg,\
+		     neon_logic, neon_to_gp, f_mcr,\
+		     mov_reg, neon_move, neon_move")]
+)
+
 (define_insn "*aarch64_simd_mov<VQMOV:mode>"
   [(set (match_operand:VQMOV 0 "nonimmediate_operand"
 		"=w, Umn,  m,  w, ?r, ?w, ?r, w,  w")
@@ -193,7 +225,7 @@
 
 (define_insn "aarch64_store_lane0<mode>"
   [(set (match_operand:<VEL> 0 "memory_operand" "=m")
-	(vec_select:<VEL> (match_operand:VALL_F16 1 "register_operand" "w")
+	(vec_select:<VEL> (match_operand:VMOVE 1 "register_operand" "w")
 			(parallel [(match_operand 2 "const_int_operand" "n")])))]
   "TARGET_SIMD
    && ENDIAN_LANE_N (<nunits>, INTVAL (operands[2])) == 0"
@@ -1058,11 +1090,11 @@
 )
 
 (define_insn "aarch64_simd_vec_set<mode>"
-  [(set (match_operand:VALL_F16 0 "register_operand" "=w,w,w")
-	(vec_merge:VALL_F16
-	    (vec_duplicate:VALL_F16
+  [(set (match_operand:VMOVE 0 "register_operand" "=w,w,w")
+	(vec_merge:VMOVE
+	    (vec_duplicate:VMOVE
 		(match_operand:<VEL> 1 "aarch64_simd_nonimmediate_operand" "w,?r,Utv"))
-	    (match_operand:VALL_F16 3 "register_operand" "0,0,0")
+	    (match_operand:VMOVE 3 "register_operand" "0,0,0")
 	    (match_operand:SI 2 "immediate_operand" "i,i,i")))]
   "TARGET_SIMD"
   {
@@ -1084,14 +1116,14 @@
 )
 
 (define_insn "@aarch64_simd_vec_copy_lane<mode>"
-  [(set (match_operand:VALL_F16 0 "register_operand" "=w")
-	(vec_merge:VALL_F16
-	    (vec_duplicate:VALL_F16
+  [(set (match_operand:VMOVE 0 "register_operand" "=w")
+	(vec_merge:VMOVE
+	    (vec_duplicate:VMOVE
 	      (vec_select:<VEL>
-		(match_operand:VALL_F16 3 "register_operand" "w")
+		(match_operand:VMOVE 3 "register_operand" "w")
 		(parallel
 		  [(match_operand:SI 4 "immediate_operand" "i")])))
-	    (match_operand:VALL_F16 1 "register_operand" "0")
+	    (match_operand:VMOVE 1 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
   {
@@ -1399,7 +1431,7 @@
 )
 
 (define_expand "vec_set<mode>"
-  [(match_operand:VALL_F16 0 "register_operand")
+  [(match_operand:VMOVE 0 "register_operand")
    (match_operand:<VEL> 1 "aarch64_simd_nonimmediate_operand")
    (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
@@ -3518,7 +3550,7 @@
 ;; gimple_fold'd to the IFN_REDUC_(MAX|MIN) function.  (This is FP smax/smin).
 (define_expand "reduc_<optab>_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
-   (unspec:<VEL> [(match_operand:VHSDF 1 "register_operand")]
+   (unspec:<VEL> [(match_operand:VHSDF_P 1 "register_operand")]
 		 FMAXMINV)]
   "TARGET_SIMD"
   {
@@ -3533,7 +3565,7 @@
 
 (define_expand "reduc_<fmaxmin>_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
-   (unspec:<VEL> [(match_operand:VHSDF 1 "register_operand")]
+   (unspec:<VEL> [(match_operand:VHSDF_P 1 "register_operand")]
 		 FMAXMINNMV)]
   "TARGET_SIMD"
   {
@@ -3577,8 +3609,8 @@
 )
 
 (define_insn "aarch64_reduc_<optab>_internal<mode>"
- [(set (match_operand:VHSDF 0 "register_operand" "=w")
-       (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")]
+ [(set (match_operand:VHSDF_P 0 "register_operand" "=w")
+       (unspec:VHSDF_P [(match_operand:VHSDF_P 1 "register_operand" "w")]
 		      FMAXMINV))]
  "TARGET_SIMD"
  "<maxmin_uns_op><vp>\\t%<Vetype>0, %1.<Vtype>"
@@ -4223,7 +4255,7 @@
 (define_insn_and_split "aarch64_get_lane<mode>"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=?r, w, Utv")
 	(vec_select:<VEL>
-	  (match_operand:VALL_F16 1 "register_operand" "w, w, w")
+	  (match_operand:VMOVE 1 "register_operand" "w, w, w")
 	  (parallel [(match_operand:SI 2 "immediate_operand" "i, i, i")])))]
   "TARGET_SIMD"
   {
@@ -4866,6 +4898,63 @@
     DONE;
   }
 )
+
+;; div optimizations using narrowings
+;; we can do the division e.g. shorts by 255 faster by calculating it as
+;; (x + ((x + 257) >> 8)) >> 8 assuming the operation is done in
+;; double the precision of x.
+;;
+;; If we imagine a short as being composed of two blocks of bytes then
+;; adding 257 or 0b0000_0001_0000_0001 to the number is equivalent to
+;; adding 1 to each sub component:
+;;
+;;      short value of 16-bits
+;; ┌──────────────┬────────────────┐
+;; │              │                │
+;; └──────────────┴────────────────┘
+;;   8-bit part1 ▲  8-bit part2   ▲
+;;               │                │
+;;               │                │
+;;              +1               +1
+;;
+;; after the first addition, we have to shift right by 8, and narrow the
+;; results back to a byte.  Remember that the addition must be done in
+;; double the precision of the input.  Since 8 is half the size of a short
+;; we can use a narrowing halfing instruction in AArch64, addhn which also
+;; does the addition in a wider precision and narrows back to a byte.  The
+;; shift itself is implicit in the operation as it writes back only the top
+;; half of the result. i.e. bits 2*esize-1:esize.
+;;
+;; Since we have narrowed the result of the first part back to a byte, for
+;; the second addition we can use a widening addition, uaddw.
+;;
+;; For the final shift, since it's unsigned arithmetic we emit an ushr by 8.
+;;
+;; The shift is later optimized by combine to a uzp2 with movi #0.
+(define_expand "@aarch64_bitmask_udiv<mode>3"
+  [(match_operand:VQN 0 "register_operand")
+   (match_operand:VQN 1 "register_operand")
+   (match_operand:VQN 2 "immediate_operand")]
+  "TARGET_SIMD"
+{
+  unsigned HOST_WIDE_INT size
+    = (1ULL << GET_MODE_UNIT_BITSIZE (<VNARROWQ>mode)) - 1;
+  rtx elt = unwrap_const_vec_duplicate (operands[2]);
+  if (!CONST_INT_P (elt) || UINTVAL (elt) != size)
+    FAIL;
+
+  rtx addend = gen_reg_rtx (<MODE>mode);
+  rtx val = aarch64_simd_gen_const_vector_dup (<VNARROWQ2>mode, 1);
+  emit_move_insn (addend, lowpart_subreg (<MODE>mode, val, <VNARROWQ2>mode));
+  rtx tmp1 = gen_reg_rtx (<VNARROWQ>mode);
+  rtx tmp2 = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_aarch64_addhn<mode> (tmp1, operands[1], addend));
+  unsigned bitsize = GET_MODE_UNIT_BITSIZE (<VNARROWQ>mode);
+  rtx shift_vector = aarch64_simd_gen_const_vector_dup (<MODE>mode, bitsize);
+  emit_insn (gen_aarch64_uaddw<Vnarrowq> (tmp2, operands[1], tmp1));
+  emit_insn (gen_aarch64_simd_lshr<mode> (operands[0], tmp2, shift_vector));
+  DONE;
+})
 
 ;; pmul.
 
@@ -7971,7 +8060,7 @@
 ;; Standard pattern name vec_init<mode><Vel>.
 
 (define_expand "vec_init<mode><Vel>"
-  [(match_operand:VALL_F16 0 "register_operand")
+  [(match_operand:VMOVE 0 "register_operand")
    (match_operand 1 "" "")]
   "TARGET_SIMD"
 {
@@ -8050,7 +8139,7 @@
 
 (define_expand "vec_extract<mode><Vel>"
   [(match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand")
-   (match_operand:VALL_F16 1 "register_operand")
+   (match_operand:VMOVE 1 "register_operand")
    (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
 {

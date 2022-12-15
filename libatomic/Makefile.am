@@ -127,6 +127,8 @@ if HAVE_IFUNC
 if ARCH_AARCH64_LINUX
 IFUNC_OPTIONS	     = -march=armv8-a+lse
 libatomic_la_LIBADD += $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))
+libatomic_la_SOURCES += atomic_16.S
+
 endif
 if ARCH_ARM_LINUX
 IFUNC_OPTIONS	     = -march=armv7-a+fp -DHAVE_KERNEL64

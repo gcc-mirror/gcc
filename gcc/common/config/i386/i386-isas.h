@@ -180,4 +180,8 @@ ISA_NAMES_TABLE_START
 			P_NONE, "-mavxvnniint8")
   ISA_NAMES_TABLE_ENTRY("avxneconvert", FEATURE_AVXNECONVERT,
 			P_NONE, "-mavxneconvert")
+  ISA_NAMES_TABLE_ENTRY("cmpccxadd", FEATURE_CMPCCXADD, P_NONE, "-mcmpccxadd")
+  ISA_NAMES_TABLE_ENTRY("amx-fp16", FEATURE_AMX_FP16, P_NONE, "-mamx-fp16")
+  ISA_NAMES_TABLE_ENTRY("prefetchi", FEATURE_PREFETCHI, P_NONE, "-mprefetchi")
+  ISA_NAMES_TABLE_ENTRY("raoint", FEATURE_RAOINT, P_NONE, "-mraoint")
 ISA_NAMES_TABLE_END

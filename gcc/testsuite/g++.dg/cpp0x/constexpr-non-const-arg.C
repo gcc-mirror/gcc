@@ -10,7 +10,7 @@ struct B {
 int global;			// { dg-message "not const" }
 
 struct D : B {
-  constexpr D() : B(global) { }   // { dg-error "global|argument" }
+  constexpr D() : B(global) { }   // { dg-error "global|argument" "" { target c++20_down } }
 };
 
 struct A2 {

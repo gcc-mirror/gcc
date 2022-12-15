@@ -207,6 +207,9 @@ compute_on_bytes (uint8_t *in_data, int in_len, uint8_t *out_data, int out_len)
     from bb 31 to bb 33"
     When -m32, Power and X86 will sink 3 instructions, but arm ilp32 couldn't
     sink due to ivopts chooses two IV candidates instead of one, which is
-    expected, so this case is restricted to lp64 only so far.  */
+    expected, so this case is restricted to lp64 only so far.  This different
+    ivopts choice affects riscv64 as well, probably because it also lacks
+    base+index addressing modes, so the ip[len] address computation can't be
+    made from the IV computation above.  */
 
- /* { dg-final { scan-tree-dump-times "Sunk statements: 4" 1 "sink2" { target lp64 } } } */
+ /* { dg-final { scan-tree-dump-times "Sunk statements: 4" 1 "sink2" { target lp64 xfail { riscv64-*-* } } } } */

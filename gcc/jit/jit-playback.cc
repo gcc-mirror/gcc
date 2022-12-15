@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_PTHREAD_H
+#define INCLUDE_MUTEX
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -1213,7 +1213,7 @@ playback::rvalue *
 playback::context::
 new_comparison (location *loc,
 		enum gcc_jit_comparison op,
-		rvalue *a, rvalue *b)
+		rvalue *a, rvalue *b, type *vec_result_type)
 {
   // FIXME: type-checking, or coercion?
   enum tree_code inner_op;
@@ -1252,10 +1252,27 @@ new_comparison (location *loc,
   tree node_b = b->as_tree ();
   node_b = fold_const_var (node_b);
 
-  tree inner_expr = build2 (inner_op,
-			    boolean_type_node,
-			    node_a,
-			    node_b);
+  tree inner_expr;
+  tree a_type = TREE_TYPE (node_a);
+  if (VECTOR_TYPE_P (a_type))
+  {
+    /* Build a vector comparison.  See build_vec_cmp in c-typeck.cc for
+       reference.  */
+    tree t_vec_result_type = vec_result_type->as_tree ();
+    tree zero_vec = build_zero_cst (t_vec_result_type);
+    tree minus_one_vec = build_minus_one_cst (t_vec_result_type);
+    tree cmp_type = truth_type_for (a_type);
+    tree cmp = build2 (inner_op, cmp_type, node_a, node_b);
+    inner_expr = build3 (VEC_COND_EXPR, t_vec_result_type, cmp, minus_one_vec,
+			 zero_vec);
+  }
+  else
+  {
+    inner_expr = build2 (inner_op,
+			 boolean_type_node,
+			 node_a,
+			 node_b);
+  }
 
   /* Try to fold.  */
   inner_expr = fold (inner_expr);
@@ -1647,7 +1664,7 @@ bool
 playback::lvalue::
 mark_addressable (location *loc)
 {
-  tree x = as_tree ();;
+  tree x = as_tree ();
 
   while (1)
     switch (TREE_CODE (x))
@@ -2302,6 +2319,20 @@ block (function *func,
   m_label_expr = NULL;
 }
 
+// This is basically std::lock_guard but it can call the private lock/unlock
+// members of playback::context.
+struct playback::context::scoped_lock
+{
+  scoped_lock (context &ctx) : m_ctx (&ctx) { m_ctx->lock (); }
+  ~scoped_lock () { m_ctx->unlock (); }
+
+  context *m_ctx;
+
+  // Not movable or copyable.
+  scoped_lock (scoped_lock &&) = delete;
+  scoped_lock &operator= (scoped_lock &&) = delete;
+};
+
 /* Compile a playback::context:
 
    - Use the context's options to cconstruct command-line options, and
@@ -2353,15 +2384,12 @@ compile ()
   m_recording_ctxt->get_all_requested_dumps (&requested_dumps);
 
   /* Acquire the JIT mutex and set "this" as the active playback ctxt.  */
-  acquire_mutex ();
+  scoped_lock lock(*this);
 
   auto_string_vec fake_args;
   make_fake_args (&fake_args, ctxt_progname, &requested_dumps);
   if (errors_occurred ())
-    {
-      release_mutex ();
-      return;
-    }
+    return;
 
   /* This runs the compiler.  */
   toplev toplev (get_timer (), /* external_timer */
@@ -2388,10 +2416,7 @@ compile ()
      followup activities use timevars, which are global state.  */
 
   if (errors_occurred ())
-    {
-      release_mutex ();
-      return;
-    }
+    return;
 
   if (get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE))
     dump_generated_code ();
@@ -2403,8 +2428,6 @@ compile ()
      convert the .s file to the requested output format, and copy it to a
      given file (playback::compile_to_file).  */
   postprocess (ctxt_progname);
-
-  release_mutex ();
 }
 
 /* Implementation of class gcc::jit::playback::compile_to_memory,
@@ -2662,18 +2685,18 @@ playback::compile_to_file::copy_file (const char *src_path,
 /* This mutex guards gcc::jit::recording::context::compile, so that only
    one thread can be accessing the bulk of GCC's state at once.  */
 
-static pthread_mutex_t jit_mutex = PTHREAD_MUTEX_INITIALIZER;
+static std::mutex jit_mutex;
 
 /* Acquire jit_mutex and set "this" as the active playback ctxt.  */
 
 void
-playback::context::acquire_mutex ()
+playback::context::lock ()
 {
   auto_timevar tv (get_timer (), TV_JIT_ACQUIRING_MUTEX);
 
   /* Acquire the big GCC mutex. */
   JIT_LOG_SCOPE (get_logger ());
-  pthread_mutex_lock (&jit_mutex);
+  jit_mutex.lock ();
   gcc_assert (active_playback_ctxt == NULL);
   active_playback_ctxt = this;
 }
@@ -2681,13 +2704,13 @@ playback::context::acquire_mutex ()
 /* Release jit_mutex and clear the active playback ctxt.  */
 
 void
-playback::context::release_mutex ()
+playback::context::unlock ()
 {
   /* Release the big GCC mutex. */
   JIT_LOG_SCOPE (get_logger ());
   gcc_assert (active_playback_ctxt == this);
   active_playback_ctxt = NULL;
-  pthread_mutex_unlock (&jit_mutex);
+  jit_mutex.unlock ();
 }
 
 /* Callback used by gcc::jit::playback::context::make_fake_args when

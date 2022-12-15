@@ -4556,7 +4556,7 @@ extern (C++) final class TypeFunction : TypeNext
         Parameters* params = parameterList.parameters;
         if (mod & MODFlags.wild)
             params = parameterList.parameters.copy();
-        for (size_t i = 0; i < params.dim; i++)
+        for (size_t i = 0; i < params.length; i++)
         {
             Parameter p = (*params)[i];
             Type t = p.type.substWildTo(m);
@@ -4686,7 +4686,7 @@ extern (C++) final class TypeFunction : TypeNext
         if (parameterList.varargs == VarArg.none && nparams > nargs && !parameterList[nargs].defaultArg)
         {
             OutBuffer buf;
-            buf.printf("too few arguments, expected `%d`, got `%d`", cast(int)nparams, cast(int)nargs);
+            buf.printf("too few arguments, expected %d, got %d", cast(int)nparams, cast(int)nargs);
             if (pMessage)
                 *pMessage = buf.extractChars();
             return MATCH.nomatch;
@@ -5108,8 +5108,8 @@ extern (C++) abstract class TypeQualified : Type
     final void syntaxCopyHelper(TypeQualified t)
     {
         //printf("TypeQualified::syntaxCopyHelper(%s) %s\n", t.toChars(), toChars());
-        idents.setDim(t.idents.dim);
-        for (size_t i = 0; i < idents.dim; i++)
+        idents.setDim(t.idents.length);
+        for (size_t i = 0; i < idents.length; i++)
         {
             RootObject id = t.idents[i];
             with (DYNCAST) final switch (id.dyncast())
@@ -5251,7 +5251,7 @@ extern (C++) final class TypeInstance : TypeQualified
 
     override TypeInstance syntaxCopy()
     {
-        //printf("TypeInstance::syntaxCopy() %s, %d\n", toChars(), idents.dim);
+        //printf("TypeInstance::syntaxCopy() %s, %d\n", toChars(), idents.length);
         auto t = new TypeInstance(loc, tempinst.syntaxCopy(null));
         t.syntaxCopyHelper(this);
         t.mod = mod;
@@ -5432,7 +5432,7 @@ extern (C++) final class TypeStruct : Type
 
         auto structelems = new Expressions(sym.nonHiddenFields());
         uint offset = 0;
-        foreach (j; 0 .. structelems.dim)
+        foreach (j; 0 .. structelems.length)
         {
             VarDeclaration vd = sym.fields[j];
             Expression e;
@@ -5487,7 +5487,7 @@ extern (C++) final class TypeStruct : Type
         /* If any of the fields are const or immutable,
          * then one cannot assign this struct.
          */
-        for (size_t i = 0; i < sym.fields.dim; i++)
+        for (size_t i = 0; i < sym.fields.length; i++)
         {
             VarDeclaration v = sym.fields[i];
             //printf("%s [%d] v = (%s) %s, v.offset = %d, v.parent = %s\n", sym.toChars(), i, v.kind(), v.toChars(), v.offset, v.parent.kind());
@@ -5541,7 +5541,7 @@ extern (C++) final class TypeStruct : Type
         if (sym.isNested())
             return true;
 
-        for (size_t i = 0; i < sym.fields.dim; i++)
+        for (size_t i = 0; i < sym.fields.length; i++)
         {
             VarDeclaration v = sym.fields[i];
             if (!v.isDataseg() && v.type.needsNested())
@@ -5599,7 +5599,7 @@ extern (C++) final class TypeStruct : Type
                      * allow the conversion.
                      */
                     uint offset = ~0; // dead-store to prevent spurious warning
-                    for (size_t i = 0; i < sym.fields.dim; i++)
+                    for (size_t i = 0; i < sym.fields.length; i++)
                     {
                         VarDeclaration v = sym.fields[i];
                         if (i == 0)
@@ -6072,7 +6072,7 @@ extern (C++) final class TypeTuple : Type
         {
             if (arguments)
             {
-                for (size_t i = 0; i < arguments.dim; i++)
+                for (size_t i = 0; i < arguments.length; i++)
                 {
                     Parameter arg = (*arguments)[i];
                     assert(arg && arg.type);
@@ -6088,10 +6088,10 @@ extern (C++) final class TypeTuple : Type
     extern (D) this(Expressions* exps)
     {
         super(Ttuple);
-        auto arguments = new Parameters(exps ? exps.dim : 0);
+        auto arguments = new Parameters(exps ? exps.length : 0);
         if (exps)
         {
-            for (size_t i = 0; i < exps.dim; i++)
+            for (size_t i = 0; i < exps.length; i++)
             {
                 Expression e = (*exps)[i];
                 if (e.type.ty == Ttuple)
@@ -6169,9 +6169,9 @@ extern (C++) final class TypeTuple : Type
             return true;
         if (auto tt = t.isTypeTuple())
         {
-            if (arguments.dim == tt.arguments.dim)
+            if (arguments.length == tt.arguments.length)
             {
-                for (size_t i = 0; i < tt.arguments.dim; i++)
+                for (size_t i = 0; i < tt.arguments.length; i++)
                 {
                     const Parameter arg1 = (*arguments)[i];
                     Parameter arg2 = (*tt.arguments)[i];
@@ -6190,10 +6190,10 @@ extern (C++) final class TypeTuple : Type
             return MATCH.exact;
         if (auto tt = to.isTypeTuple())
         {
-            if (arguments.dim == tt.arguments.dim)
+            if (arguments.length == tt.arguments.length)
             {
                 MATCH m = MATCH.exact;
-                for (size_t i = 0; i < tt.arguments.dim; i++)
+                for (size_t i = 0; i < tt.arguments.length; i++)
                 {
                     Parameter arg1 = (*arguments)[i];
                     Parameter arg2 = (*tt.arguments)[i];
@@ -6595,8 +6595,8 @@ extern (C++) final class Parameter : ASTNode
         Parameters* params = null;
         if (parameters)
         {
-            params = new Parameters(parameters.dim);
-            for (size_t i = 0; i < params.dim; i++)
+            params = new Parameters(parameters.length);
+            for (size_t i = 0; i < params.length; i++)
                 (*params)[i] = (*parameters)[i].syntaxCopy();
         }
         return params;

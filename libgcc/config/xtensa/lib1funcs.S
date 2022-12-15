@@ -23,7 +23,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "xtensa-config.h"
+#include "xtensa-config-builtin.h"
 
 /* Define macros for the ABS and ADDX* instructions to handle cases
    where they are not included in the Xtensa processor configuration.  */

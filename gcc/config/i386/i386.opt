@@ -109,8 +109,8 @@ TargetVariable
 enum cmodel ix86_cmodel = CM_32
 
 ;; -mabi=
-TargetSave
-enum calling_abi x_ix86_abi
+TargetVariable
+enum calling_abi ix86_abi = SYSV_ABI
 
 ;; -masm=
 TargetSave
@@ -1229,3 +1229,40 @@ mavxneconvert
 Target Mask(ISA2_AVXNECONVERT) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
 AVXNECONVERT build-in functions and code generation.
+
+mcmpccxadd
+Target Mask(ISA2_CMPCCXADD) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
+CMPCCXADD build-in functions and code generation.
+
+mamx-fp16
+Target Mask(ISA2_AMX_FP16) Var(ix86_isa_flags2) Save
+Support AMX-FP16 built-in functions and code generation.
+
+mprefetchi
+Target Mask(ISA2_PREFETCHI) Var(ix86_isa_flags2) Save
+Support PREFETCHI built-in functions and code generation.
+
+mraoint
+Target Mask(ISA2_RAOINT) Var(ix86_isa_flags2) Save
+Support RAOINT built-in functions and code generation.
+
+munroll-only-small-loops
+Target Var(ix86_unroll_only_small_loops) Init(0) Save
+Enable conservative small loop unrolling.
+
+mlam=
+Target RejectNegative Joined Enum(lam_type) Var(ix86_lam_type) Init(lam_none)
+-mlam=[none|u48|u57] Instrument meta data position in user data pointers.
+
+Enum
+Name(lam_type) Type(enum lam_type) UnknownError(unknown lam type %qs)
+
+EnumValue
+Enum(lam_type) String(none) Value(lam_none)
+
+EnumValue
+Enum(lam_type) String(u48) Value(lam_u48)
+
+EnumValue
+Enum(lam_type) String(u57) Value(lam_u57)

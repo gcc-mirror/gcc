@@ -845,6 +845,13 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   if (!gfc_numeric_ts (&op1->ts) || !gfc_numeric_ts (&op2->ts))
     return ARITH_INVALID_TYPE;
 
+  /* The result type is derived from op1 and must be compatible with the
+     result of the simplification.  Otherwise postpone simplification until
+     after operand conversions usually done by gfc_type_convert_binary.  */
+  if ((op1->ts.type == BT_INTEGER && op2->ts.type != BT_INTEGER)
+      || (op1->ts.type == BT_REAL && op2->ts.type == BT_COMPLEX))
+    return ARITH_NOT_REDUCED;
+
   rc = ARITH_OK;
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
@@ -1335,8 +1342,16 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
   else
     {
       gfc_constructor *c = gfc_constructor_first (head);
-      r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
-			      &op->where);
+      if (c == NULL)
+	{
+	  /* Handle zero-sized arrays.  */
+	  r = gfc_get_array_expr (op->ts.type, op->ts.kind, &op->where);
+	}
+      else
+	{
+	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
+				  &op->where);
+	}
       r->shape = gfc_copy_shape (op->shape, op->rank);
       r->rank = op->rank;
       r->value.constructor = head;
@@ -1494,8 +1509,16 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   else
     {
       gfc_constructor *c = gfc_constructor_first (head);
-      r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
-			      &op1->where);
+      if (c == NULL)
+	{
+	  /* Handle zero-sized arrays.  */
+	  r = gfc_get_array_expr (op1->ts.type, op1->ts.kind, &op1->where);
+	}
+      else
+	{
+	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
+				  &op1->where);
+	}
       r->shape = gfc_copy_shape (op1->shape, op1->rank);
       r->rank = op1->rank;
       r->value.constructor = head;

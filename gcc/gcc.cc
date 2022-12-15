@@ -706,6 +706,13 @@ proper position among the other output files.  */
 #define CPP_SPEC ""
 #endif
 
+/* Operating systems can define OS_CC1_SPEC to provide extra args to cc1 and
+   cc1plus or extra switch-translations.  The OS_CC1_SPEC is appended
+   to CC1_SPEC in the initialization of cc1_spec.  */
+#ifndef OS_CC1_SPEC
+#define OS_CC1_SPEC ""
+#endif
+
 /* config.h can define CC1_SPEC to provide extra args to cc1 and cc1plus
    or extra switch-translations.  */
 #ifndef CC1_SPEC
@@ -877,7 +884,7 @@ proper position among the other output files.  */
 #endif
 
 #ifdef HAVE_AS_DEBUG_PREFIX_MAP
-#define ASM_MAP " %{fdebug-prefix-map=*:--debug-prefix-map %*}"
+#define ASM_MAP " %{ffile-prefix-map=*:--debug-prefix-map %*} %{fdebug-prefix-map=*:--debug-prefix-map %*}"
 #else
 #define ASM_MAP ""
 #endif
@@ -1174,7 +1181,7 @@ proper position among the other output files.  */
 static const char *asm_debug = ASM_DEBUG_SPEC;
 static const char *asm_debug_option = ASM_DEBUG_OPTION_SPEC;
 static const char *cpp_spec = CPP_SPEC;
-static const char *cc1_spec = CC1_SPEC;
+static const char *cc1_spec = CC1_SPEC OS_CC1_SPEC;
 static const char *cc1plus_spec = CC1PLUS_SPEC;
 static const char *link_gcc_c_sequence_spec = LINK_GCC_C_SEQUENCE_SPEC;
 static const char *link_ssp_spec = LINK_SSP_SPEC;
@@ -1327,7 +1334,11 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 
 static const char *const driver_self_specs[] = {
   "%{fdump-final-insns:-fdump-final-insns=.} %<fdump-final-insns",
-  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS
+  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS,
+  /* This discards -fmultiflags at the end of self specs processing in the
+     driver, so that it is effectively Ignored, without actually marking it as
+     Ignored, which would get it discarded before self specs could remap it.  */
+  "%<fmultiflags"
 };
 
 #ifndef OPTION_DEFAULT_SPECS
@@ -9288,12 +9299,15 @@ validate_switches (const char *start, bool user_spec, bool braced)
   const char *atom;
   size_t len;
   int i;
-  bool suffix = false;
-  bool starred = false;
+  bool suffix;
+  bool starred;
 
 #define SKIP_WHITE() do { while (*p == ' ' || *p == '\t') p++; } while (0)
 
 next_member:
+  suffix = false;
+  starred = false;
+
   SKIP_WHITE ();
 
   if (*p == '!')

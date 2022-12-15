@@ -32,6 +32,9 @@ extern GTY(()) class line_maps *saved_line_table;
 /* The location for declarations in "<built-in>" */
 #define BUILTINS_LOCATION ((location_t) 1)
 
+/* Returns the translated string referring to the special location.  */
+const char *special_fname_builtin ();
+
 /* line-map.cc reserves RESERVED_LOCATION_COUNT to the user.  Ensure
    both UNKNOWN_LOCATION and BUILTINS_LOCATION fit into that.  */
 STATIC_ASSERT (BUILTINS_LOCATION < RESERVED_LOCATION_COUNT);
@@ -111,6 +114,7 @@ class char_span
 };
 
 extern char_span location_get_source_line (const char *file_path, int line);
+extern char *get_source_text_between (location_t, location_t);
 
 extern bool location_missing_trailing_newline (const char *file_path);
 

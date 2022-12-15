@@ -27,3 +27,6 @@ void test01()
   d(nullptr);   // { dg-error "here" }
   // { dg-error "delete pointer to incomplete type" "" { target *-*-* } 0 }
 }
+
+// { dg-prune-output "invalid application of 'sizeof' to a void type" }
+// { dg-prune-output "deleting 'void*' is undefined" }

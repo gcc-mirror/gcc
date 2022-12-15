@@ -186,6 +186,9 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
+/* Define if valgrind's memcheck.h header is installed. */
+#undef HAVE_MEMCHECK_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -233,6 +236,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define if valgrind's valgrind/memcheck.h header is installed. */
+#undef HAVE_VALGRIND_MEMCHECK_H
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST

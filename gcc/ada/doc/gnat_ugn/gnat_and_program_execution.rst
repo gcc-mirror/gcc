@@ -859,16 +859,18 @@ bug occurs, and then be able to retrieve the sequence of calls with the same
 program compiled with debug information.
 
 However the ``addr2line`` tool does not work with Position-Independent Code
-(PIC), the historical example being Windows DLLs, which nowadays encompasses
-Position-Independent Executables (PIE) on recent Windows versions.
+(PIC), the historical example being Linux dynamic libraries and Windows DLLs,
+which nowadays encompasse Position-Independent Executables (PIE) on recent
+Linux and Windows versions.
 
-In order to translate addresses into the source lines with Position-Independent
-Executables on recent Windows versions, in other words without using the switch
-:switch:`-no-pie` during linking, you need to use the ``gnatsymbolize`` tool
-with :switch:`--load` instead of the ``addr2line`` tool. The main difference
-is that you need to copy the Load Address output in the traceback ahead of the
-sequence of addresses. And the default mode of ``gnatsymbolize`` is equivalent
-to that of ``addr2line`` with the above switches, so none of them is needed::
+In order to translate addresses the source lines with Position-Independent
+Executables on recent Linux and Windows versions, in other words without
+using the switch :switch:`-no-pie` during linking, you need to use the
+``gnatsymbolize`` tool with :switch:`--load` instead of the ``addr2line``
+tool. The main difference is that you need to copy the Load Address output
+in the traceback ahead of the sequence of addresses. And the default mode
+of ``gnatsymbolize`` is equivalent to that of ``addr2line`` with the above
+switches, so none of them is needed::
 
      $ gnatmake stb -g -bargs -E
      $ stb
@@ -879,7 +881,7 @@ to that of ``addr2line`` with the above switches, so none of them is needed::
      Call stack traceback locations:
      0x401373 0x40138b 0x40139c 0x401335 0x4011c4 0x4011f1 0x77e892a4
 
-     $ gnatsymbolize --load stb 0x400000 0x401373 0x40138b 0x40139c 0x401335
+     $ gnatsymbolize --load stb 0x400000 0x401373 0x40138b 0x40139c 0x401335 \
         0x4011c4 0x4011f1 0x77e892a4
 
      0x00401373 Stb.P1 at stb.adb:5
@@ -926,10 +928,9 @@ Ada facilities defined in ``Ada.Exceptions``. Here is a simple example:
          P2;
       end STB;
 
-This program will output:
-
   ::
 
+     $ gnatmake stb -g -bargs -E -largs -no-pie
      $ stb
 
      raised CONSTRAINT_ERROR : stb.adb:12 range check failed
@@ -957,12 +958,17 @@ addresses to strings:
       with Ada.Text_IO;
       with GNAT.Traceback;
       with GNAT.Debug_Utilities;
+      with System;
 
       procedure STB is
 
          use Ada;
+         use Ada.Text_IO;
          use GNAT;
          use GNAT.Traceback;
+         use System;
+
+         LA : constant Address := Executable_Load_Address;
 
          procedure P1 is
             TB  : Tracebacks_Array (1 .. 10);
@@ -972,14 +978,14 @@ addresses to strings:
          begin
             Call_Chain (TB, Len);
 
-            Text_IO.Put ("In STB.P1 : ");
+            Put ("In STB.P1 : ");
 
             for K in 1 .. Len loop
-               Text_IO.Put (Debug_Utilities.Image (TB (K)));
-               Text_IO.Put (' ');
+               Put (Debug_Utilities.Image_C (TB (K)));
+               Put (' ');
             end loop;
 
-            Text_IO.New_Line;
+            New_Line;
          end P1;
 
          procedure P2 is
@@ -988,6 +994,10 @@ addresses to strings:
          end P2;
 
       begin
+         if LA /= Null_Address then
+            Put_Line ("Load address: " & Debug_Utilities.Image_C (LA));
+         end if;
+
          P2;
       end STB;
 
@@ -996,8 +1006,9 @@ addresses to strings:
      $ gnatmake stb -g
      $ stb
 
-     In STB.P1 : 16#0040_F1E4# 16#0040_14F2# 16#0040_170B# 16#0040_171C#
-     16#0040_1461# 16#0040_11C4# 16#0040_11F1# 16#77E8_92A4#
+     Load address: 0x400000
+     In STB.P1 : 0x40F1E4 0x4014F2 0x40170B 0x40171C 0x401461 0x4011C4 \
+       0x4011F1 0x77E892A4
 
 
 You can then get further information by invoking the ``addr2line`` tool or
@@ -1058,7 +1069,7 @@ Here is an example:
 
   ::
 
-      $ gnatmake -g .\stb -bargs -E
+      $ gnatmake -g stb -bargs -E
       $ stb
 
       0040149F in stb.p1 at stb.adb:8
@@ -1069,16 +1080,6 @@ Here is an example:
       004011C4 in __mingw_CRTStartup at crt1.c:200
       004011F1 in mainCRTStartup at crt1.c:222
       77E892A4 in ?? at ??:0
-
-In the above example the ``.\`` syntax in the ``gnatmake`` command
-is currently required by ``addr2line`` for files that are in
-the current working directory.
-Moreover, the exact sequence of linker options may vary from platform
-to platform.
-The above :switch:`-largs` section is for Windows platforms. By contrast,
-under Unix there is no need for the :switch:`-largs` section.
-Differences across platforms are due to details of linker implementation.
-
 
 .. rubric:: Tracebacks From Anywhere in a Program
 
@@ -1252,8 +1253,8 @@ most often, and are therefore the most time-consuming.
 better handle Ada programs and multitasking.
 It is currently supported on the following platforms
 
-* linux x86/x86_64
-* windows x86
+* Linux x86/x86_64
+* Windows x86/x86_64 (without PIE support)
 
 In order to profile a program using ``gprof``, several steps are needed:
 
@@ -1290,6 +1291,10 @@ be specified once when using gnatmake:
 Note that only the objects that were compiled with the ``-pg`` switch will
 be profiled; if you need to profile your whole project, use the ``-f``
 gnatmake switch to force full recompilation.
+
+Note that on Windows, gprof does not support PIE. The ``-no-pie`` switch
+should be added to the linker flags to disable this feature.
+
 
 .. _Program_execution:
 
@@ -2321,7 +2326,7 @@ erroneous, and the compiler would be entitled to assume that
 
 However, in practice, this would cause some existing code that
 seems to work with no optimization to start failing at high
-levels of optimzization.
+levels of optimization.
 
 What the compiler does for such cases is to assume that marking
 a variable as aliased indicates that some "funny business" may
@@ -2728,7 +2733,7 @@ To deal with the portability issue, and with the problem of
 mathematical versus run-time interpretation of the expressions in
 assertions, GNAT provides comprehensive control over the handling
 of intermediate overflow. GNAT can operate in three modes, and
-furthemore, permits separate selection of operating modes for
+furthermore, permits separate selection of operating modes for
 the expressions within assertions (here the term 'assertions'
 is used in the technical sense, which includes preconditions and so forth)
 and for expressions appearing outside assertions.

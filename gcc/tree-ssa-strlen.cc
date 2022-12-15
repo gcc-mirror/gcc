@@ -1987,7 +1987,7 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 	 suggests if it's treated as a poor-man's flexible array member.  */
       src = TREE_OPERAND (src, 0);
       if (TREE_CODE (src) != MEM_REF
-	  && !array_at_struct_end_p (src))
+	  && !array_ref_flexible_size_p (src))
 	{
 	  tree type = TREE_TYPE (src);
 	  tree size = TYPE_SIZE_UNIT (type);
@@ -4735,7 +4735,7 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
 
   /* Compute the number of leading nonzero bytes in the representation
      and update the minimum and maximum.  */
-  unsigned n = prep ? strnlen (prep, nbytes) : nbytes;
+  unsigned HOST_WIDE_INT n = prep ? strnlen (prep, nbytes) : nbytes;
 
   if (n < lenrange[0])
     lenrange[0] = n;

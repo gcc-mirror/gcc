@@ -1,3 +1,330 @@
+2022-12-07  Antoni Boucher  <bouanto@zoho.com>
+	    Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	PR jit/107770
+	* jit-playback.cc: Fix vector float comparison
+	* jit-playback.h: Update comparison function signature
+	* jit-recording.cc: Update call for "new_comparison" function
+	* jit-recording.h: Fix vector float comparison
+
+2022-11-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR other/104044
+	* jit-playback.cc (playback::lvale::mark_addressable): Remove
+	extraeous semicolon
+
+2022-11-19  Jonathan Wakely  <jwakely@redhat.com>
+	    LIU Hao  <lh_mouse@126.com>
+
+	* jit-playback.cc (playback::context::scoped_lock): Define RAII
+	lock type.
+	(playback::context::compile): Use scoped_lock to acquire mutex
+	for the active playback context.
+	(jit_mutex): Change to std::mutex.
+	(playback::context::acquire_mutex): Rename to ...
+	(playback::context::lock): ... this.
+	(playback::context::release_mutex): Rename to ...
+	(playback::context::unlock): ... this.
+	* jit-playback.h (playback::context): Rename members and declare
+	scoped_lock.
+	* jit-recording.cc (INCLUDE_PTHREAD_H): Remove unused define.
+	* libgccjit.cc (version_mutex): Change to std::mutex.
+	(struct jit_version_info): Use std::lock_guard to acquire and
+	release mutex.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	* docs/cp/index.rst: Moved to...
+	* doc/cp/index.rst: ...here.
+	* docs/cp/intro/index.rst: Moved to...
+	* doc/cp/intro/index.rst: ...here.
+	* docs/cp/intro/tutorial01.rst: Moved to...
+	* doc/cp/intro/tutorial01.rst: ...here.
+	* docs/cp/intro/tutorial02.rst: Moved to...
+	* doc/cp/intro/tutorial02.rst: ...here.
+	* docs/cp/intro/tutorial03.rst: Moved to...
+	* doc/cp/intro/tutorial03.rst: ...here.
+	* docs/cp/intro/tutorial04.rst: Moved to...
+	* doc/cp/intro/tutorial04.rst: ...here.
+	* docs/cp/topics/asm.rst: Moved to...
+	* doc/cp/topics/asm.rst: ...here.
+	* docs/cp/topics/compilation.rst: Moved to...
+	* doc/cp/topics/compilation.rst: ...here.
+	* docs/cp/topics/contexts.rst: Moved to...
+	* doc/cp/topics/contexts.rst: ...here.
+	* docs/cp/topics/expressions.rst: Moved to...
+	* doc/cp/topics/expressions.rst: ...here.
+	* docs/cp/topics/functions.rst: Moved to...
+	* doc/cp/topics/functions.rst: ...here.
+	* docs/cp/topics/index.rst: Moved to...
+	* doc/cp/topics/index.rst: ...here.
+	* docs/cp/topics/locations.rst: Moved to...
+	* doc/cp/topics/locations.rst: ...here.
+	* docs/cp/topics/objects.rst: Moved to...
+	* doc/cp/topics/objects.rst: ...here.
+	* docs/cp/topics/types.rst: Moved to...
+	* doc/cp/topics/types.rst: ...here.
+	* docs/examples/emit-alphabet.bf: Moved to...
+	* doc/examples/emit-alphabet.bf: ...here.
+	* docs/examples/tut01-hello-world.c: Moved to...
+	* doc/examples/tut01-hello-world.c: ...here.
+	* docs/examples/tut01-hello-world.cc: Moved to...
+	* doc/examples/tut01-hello-world.cc: ...here.
+	* docs/examples/tut02-square.c: Moved to...
+	* doc/examples/tut02-square.c: ...here.
+	* docs/examples/tut02-square.cc: Moved to...
+	* doc/examples/tut02-square.cc: ...here.
+	* docs/examples/tut03-sum-of-squares.c: Moved to...
+	* doc/examples/tut03-sum-of-squares.c: ...here.
+	* docs/examples/tut03-sum-of-squares.cc: Moved to...
+	* doc/examples/tut03-sum-of-squares.cc: ...here.
+	* docs/examples/tut04-toyvm/Makefile: Moved to...
+	* doc/examples/tut04-toyvm/Makefile: ...here.
+	* docs/examples/tut04-toyvm/factorial.toy: Moved to...
+	* doc/examples/tut04-toyvm/factorial.toy: ...here.
+	* docs/examples/tut04-toyvm/fibonacci.toy: Moved to...
+	* doc/examples/tut04-toyvm/fibonacci.toy: ...here.
+	* docs/examples/tut04-toyvm/toyvm.c: Moved to...
+	* doc/examples/tut04-toyvm/toyvm.c: ...here.
+	* docs/examples/tut04-toyvm/toyvm.cc: Moved to...
+	* doc/examples/tut04-toyvm/toyvm.cc: ...here.
+	* docs/examples/tut05-bf.c: Moved to...
+	* doc/examples/tut05-bf.c: ...here.
+	* docs/index.rst: Moved to...
+	* doc/index.rst: ...here.
+	* docs/internals/index.rst: Moved to...
+	* doc/internals/index.rst: ...here.
+	* docs/internals/test-hello-world.exe.log.txt: Moved to...
+	* doc/internals/test-hello-world.exe.log.txt: ...here.
+	* docs/_build/texinfo/libgccjit-figures/factorial.png: Moved to...
+	* doc/intro/factorial.png: ...here.
+	* docs/intro/index.rst: Moved to...
+	* doc/intro/index.rst: ...here.
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares.png: Moved to...
+	* doc/intro/sum-of-squares.png: ...here.
+	* docs/intro/tutorial01.rst: Moved to...
+	* doc/intro/tutorial01.rst: ...here.
+	* docs/intro/tutorial02.rst: Moved to...
+	* doc/intro/tutorial02.rst: ...here.
+	* docs/intro/tutorial03.rst: Moved to...
+	* doc/intro/tutorial03.rst: ...here.
+	* docs/intro/tutorial04.rst: Moved to...
+	* doc/intro/tutorial04.rst: ...here.
+	* docs/intro/tutorial05.rst: Moved to...
+	* doc/intro/tutorial05.rst: ...here.
+	* docs/topics/asm.rst: Moved to...
+	* doc/topics/asm.rst: ...here.
+	* docs/topics/compatibility.rst: Moved to...
+	* doc/topics/compatibility.rst: ...here.
+	* docs/topics/compilation.rst: Moved to...
+	* doc/topics/compilation.rst: ...here.
+	* docs/topics/contexts.rst: Moved to...
+	* doc/topics/contexts.rst: ...here.
+	* docs/topics/expressions.rst: Moved to...
+	* doc/topics/expressions.rst: ...here.
+	* docs/topics/function-pointers.rst: Moved to...
+	* doc/topics/function-pointers.rst: ...here.
+	* docs/topics/functions.rst: Moved to...
+	* doc/topics/functions.rst: ...here.
+	* docs/topics/index.rst: Moved to...
+	* doc/topics/index.rst: ...here.
+	* docs/topics/locations.rst: Moved to...
+	* doc/topics/locations.rst: ...here.
+	* docs/topics/objects.rst: Moved to...
+	* doc/topics/objects.rst: ...here.
+	* docs/topics/performance.rst: Moved to...
+	* doc/topics/performance.rst: ...here.
+	* docs/topics/types.rst: Moved to...
+	* doc/topics/types.rst: ...here.
+	* docs/Makefile: Removed.
+	* docs/_build/texinfo/Makefile: Removed.
+	* docs/_build/texinfo/libgccjit-figures/factorial1.png: Removed.
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares1.png: Removed.
+	* docs/_build/texinfo/libgccjit.texi: Removed.
+	* docs/conf.py: Removed.
+	* docs/intro/factorial.png: Removed.
+	* docs/intro/sum-of-squares.png: Removed.
+	* doc/conf.py: New file.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support --with-sphinx-build.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/internals/index.rst: Fix cross manual refs.
+	* doc/topics/contexts.rst: Likewise.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/cp/index.rst: Remove trailing .rst in toctree.
+	* doc/cp/intro/index.rst: Likewise.
+	* doc/cp/topics/index.rst: Likewise.
+	* doc/index.rst: Likewise.
+	* doc/intro/index.rst: Likewise.
+	* doc/topics/index.rst: Likewise.
+	* doc/indices-and-tables.rst: New file.
+
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* doc/cp/index.rst: Remove trailing .rst in toctree.
+	* doc/cp/intro/index.rst: Likewise.
+	* doc/cp/topics/index.rst: Likewise.
+	* doc/index.rst: Likewise.
+	* doc/intro/index.rst: Likewise.
+	* doc/topics/index.rst: Likewise.
+	* doc/indices-and-tables.rst: New file.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/internals/index.rst: Fix cross manual refs.
+	* doc/topics/contexts.rst: Likewise.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support --with-sphinx-build.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	* docs/cp/index.rst: Moved to...
+	* doc/cp/index.rst: ...here.
+	* docs/cp/intro/index.rst: Moved to...
+	* doc/cp/intro/index.rst: ...here.
+	* docs/cp/intro/tutorial01.rst: Moved to...
+	* doc/cp/intro/tutorial01.rst: ...here.
+	* docs/cp/intro/tutorial02.rst: Moved to...
+	* doc/cp/intro/tutorial02.rst: ...here.
+	* docs/cp/intro/tutorial03.rst: Moved to...
+	* doc/cp/intro/tutorial03.rst: ...here.
+	* docs/cp/intro/tutorial04.rst: Moved to...
+	* doc/cp/intro/tutorial04.rst: ...here.
+	* docs/cp/topics/asm.rst: Moved to...
+	* doc/cp/topics/asm.rst: ...here.
+	* docs/cp/topics/compilation.rst: Moved to...
+	* doc/cp/topics/compilation.rst: ...here.
+	* docs/cp/topics/contexts.rst: Moved to...
+	* doc/cp/topics/contexts.rst: ...here.
+	* docs/cp/topics/expressions.rst: Moved to...
+	* doc/cp/topics/expressions.rst: ...here.
+	* docs/cp/topics/functions.rst: Moved to...
+	* doc/cp/topics/functions.rst: ...here.
+	* docs/cp/topics/index.rst: Moved to...
+	* doc/cp/topics/index.rst: ...here.
+	* docs/cp/topics/locations.rst: Moved to...
+	* doc/cp/topics/locations.rst: ...here.
+	* docs/cp/topics/objects.rst: Moved to...
+	* doc/cp/topics/objects.rst: ...here.
+	* docs/cp/topics/types.rst: Moved to...
+	* doc/cp/topics/types.rst: ...here.
+	* docs/examples/emit-alphabet.bf: Moved to...
+	* doc/examples/emit-alphabet.bf: ...here.
+	* docs/examples/tut01-hello-world.c: Moved to...
+	* doc/examples/tut01-hello-world.c: ...here.
+	* docs/examples/tut01-hello-world.cc: Moved to...
+	* doc/examples/tut01-hello-world.cc: ...here.
+	* docs/examples/tut02-square.c: Moved to...
+	* doc/examples/tut02-square.c: ...here.
+	* docs/examples/tut02-square.cc: Moved to...
+	* doc/examples/tut02-square.cc: ...here.
+	* docs/examples/tut03-sum-of-squares.c: Moved to...
+	* doc/examples/tut03-sum-of-squares.c: ...here.
+	* docs/examples/tut03-sum-of-squares.cc: Moved to...
+	* doc/examples/tut03-sum-of-squares.cc: ...here.
+	* docs/examples/tut04-toyvm/Makefile: Moved to...
+	* doc/examples/tut04-toyvm/Makefile: ...here.
+	* docs/examples/tut04-toyvm/factorial.toy: Moved to...
+	* doc/examples/tut04-toyvm/factorial.toy: ...here.
+	* docs/examples/tut04-toyvm/fibonacci.toy: Moved to...
+	* doc/examples/tut04-toyvm/fibonacci.toy: ...here.
+	* docs/examples/tut04-toyvm/toyvm.c: Moved to...
+	* doc/examples/tut04-toyvm/toyvm.c: ...here.
+	* docs/examples/tut04-toyvm/toyvm.cc: Moved to...
+	* doc/examples/tut04-toyvm/toyvm.cc: ...here.
+	* docs/examples/tut05-bf.c: Moved to...
+	* doc/examples/tut05-bf.c: ...here.
+	* docs/index.rst: Moved to...
+	* doc/index.rst: ...here.
+	* docs/internals/index.rst: Moved to...
+	* doc/internals/index.rst: ...here.
+	* docs/internals/test-hello-world.exe.log.txt: Moved to...
+	* doc/internals/test-hello-world.exe.log.txt: ...here.
+	* docs/_build/texinfo/libgccjit-figures/factorial.png: Moved to...
+	* doc/intro/factorial.png: ...here.
+	* docs/intro/index.rst: Moved to...
+	* doc/intro/index.rst: ...here.
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares.png: Moved to...
+	* doc/intro/sum-of-squares.png: ...here.
+	* docs/intro/tutorial01.rst: Moved to...
+	* doc/intro/tutorial01.rst: ...here.
+	* docs/intro/tutorial02.rst: Moved to...
+	* doc/intro/tutorial02.rst: ...here.
+	* docs/intro/tutorial03.rst: Moved to...
+	* doc/intro/tutorial03.rst: ...here.
+	* docs/intro/tutorial04.rst: Moved to...
+	* doc/intro/tutorial04.rst: ...here.
+	* docs/intro/tutorial05.rst: Moved to...
+	* doc/intro/tutorial05.rst: ...here.
+	* docs/topics/asm.rst: Moved to...
+	* doc/topics/asm.rst: ...here.
+	* docs/topics/compatibility.rst: Moved to...
+	* doc/topics/compatibility.rst: ...here.
+	* docs/topics/compilation.rst: Moved to...
+	* doc/topics/compilation.rst: ...here.
+	* docs/topics/contexts.rst: Moved to...
+	* doc/topics/contexts.rst: ...here.
+	* docs/topics/expressions.rst: Moved to...
+	* doc/topics/expressions.rst: ...here.
+	* docs/topics/function-pointers.rst: Moved to...
+	* doc/topics/function-pointers.rst: ...here.
+	* docs/topics/functions.rst: Moved to...
+	* doc/topics/functions.rst: ...here.
+	* docs/topics/index.rst: Moved to...
+	* doc/topics/index.rst: ...here.
+	* docs/topics/locations.rst: Moved to...
+	* doc/topics/locations.rst: ...here.
+	* docs/topics/objects.rst: Moved to...
+	* doc/topics/objects.rst: ...here.
+	* docs/topics/performance.rst: Moved to...
+	* doc/topics/performance.rst: ...here.
+	* docs/topics/types.rst: Moved to...
+	* doc/topics/types.rst: ...here.
+	* docs/Makefile: Removed.
+	* docs/_build/texinfo/Makefile: Removed.
+	* docs/_build/texinfo/libgccjit-figures/factorial1.png: Removed.
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares1.png: Removed.
+	* docs/_build/texinfo/libgccjit.texi: Removed.
+	* docs/conf.py: Removed.
+	* docs/intro/factorial.png: Removed.
+	* docs/intro/sum-of-squares.png: Removed.
+	* doc/conf.py: New file.
+
 2022-09-15  Richard Biener  <rguenther@suse.de>
 
 	* dummy-frontend.cc (jit_langhook_init): Do not initialize
@@ -627,10 +954,10 @@
 2021-09-10  Petter Tomner  <tomner@kth.se>
 
 	* jit-playback.c: Moved global var processing to after loc handling.
-	  Setting TYPE_NAME for fundamental types.
-	  Using common functions for finalizing globals.
+	Setting TYPE_NAME for fundamental types.
+	Using common functions for finalizing globals.
 	* jit-playback.h: New method init_types().
-	  Changed get_tree_node_for_type() to method.
+	Changed get_tree_node_for_type() to method.
 
 2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
 
@@ -1385,7 +1712,7 @@
 	(memento_of_get_vector::write_reproducer): New method.
 	* jit-recording.h: In namespace gcc::jit::recording::
 	(type::get_vector): New
-	 method.
+	method.
 	(class memento_of_get_vector): New class.
 	* libgccjit++.h (gccjit::type::get_vector): New method.
 	* libgccjit.c (gcc_jit_type_get_vector): New public entrypoint.

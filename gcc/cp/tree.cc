@@ -46,6 +46,7 @@ static tree verify_stmt_tree_r (tree *, int *, void *);
 
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 static tree handle_abi_tag_attribute (tree *, tree, tree, int, bool *);
+static tree handle_contract_attribute (tree *, tree, tree, int, bool *);
 
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  */
@@ -3885,6 +3886,50 @@ called_fns_equal (tree t1, tree t2)
     return cp_tree_equal (t1, t2);
 }
 
+bool comparing_override_contracts;
+
+/* In a component reference, return the innermost object of
+   the postfix-expression.  */
+
+static tree
+get_innermost_component (tree t)
+{
+  gcc_assert (TREE_CODE (t) == COMPONENT_REF);
+  while (TREE_CODE (t) == COMPONENT_REF)
+    t = TREE_OPERAND (t, 0);
+  return t;
+}
+
+/* Returns true if T is a possibly converted 'this' or '*this' expression.  */
+
+static bool
+is_this_expression (tree t)
+{
+  t = get_innermost_component (t);
+  /* See through deferences and no-op conversions.  */
+  if (TREE_CODE (t) == INDIRECT_REF)
+    t = TREE_OPERAND (t, 0);
+  if (TREE_CODE (t) == NOP_EXPR)
+    t = TREE_OPERAND (t, 0);
+  return is_this_parameter (t);
+}
+
+static bool
+comparing_this_references (tree t1, tree t2)
+{
+  return is_this_expression (t1) && is_this_expression (t2);
+}
+
+static bool
+equivalent_member_references (tree t1, tree t2)
+{
+  if (!comparing_this_references (t1, t2))
+    return false;
+  t1 = TREE_OPERAND (t1, 1);
+  t2 = TREE_OPERAND (t2, 1);
+  return t1 == t2;
+}
+
 /* Return truthvalue of whether T1 is the same tree structure as T2.
    Return 1 if they are the same. Return 0 if they are different.  */
 
@@ -4218,6 +4263,13 @@ cp_tree_equal (tree t1, tree t2)
 			       PACK_EXPANSION_EXTRA_ARGS (t2)))
 	return false;
       return true;
+
+    case COMPONENT_REF:
+      /* If we're comparing contract conditions of overrides, member references
+	 compare equal if they designate the same member.  */
+      if (comparing_override_contracts)
+	return equivalent_member_references (t1, t2);
+      break;
 
     default:
       break;
@@ -4923,6 +4975,32 @@ structural_type_p (tree t, bool explain)
   return true;
 }
 
+/* Partially handle the C++11 [[carries_dependency]] attribute.
+   Just emit a different diagnostics when it is used on something the
+   spec doesn't allow vs. where it allows and we just choose to ignore
+   it.  */
+
+static tree
+handle_carries_dependency_attribute (tree *node, tree name,
+				     tree ARG_UNUSED (args),
+				     int ARG_UNUSED (flags),
+				     bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL
+      && TREE_CODE (*node) != PARM_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute can only be applied to "
+	       "functions or parameters", name);
+      *no_add_attrs = true;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
 /* Handle the C++17 [[nodiscard]] attribute, which is similar to the GNU
    warn_unused_result attribute.  */
 
@@ -5034,6 +5112,12 @@ const struct attribute_spec std_attribute_table[] =
     handle_likeliness_attribute, attr_cold_hot_exclusions },
   { "noreturn", 0, 0, true, false, false, false,
     handle_noreturn_attribute, attr_noreturn_exclusions },
+  { "carries_dependency", 0, 0, true, false, false, false,
+    handle_carries_dependency_attribute, NULL },
+  { "pre", 0, -1, false, false, false, false,
+    handle_contract_attribute, NULL },
+  { "post", 0, -1, false, false, false, false,
+    handle_contract_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -5046,6 +5130,11 @@ handle_init_priority_attribute (tree* node,
 				int /*flags*/,
 				bool* no_add_attrs)
 {
+  if (!SUPPORTS_INIT_PRIORITY)
+    /* Treat init_priority as an unrecognized attribute (mirroring
+       __has_attribute) if the target doesn't support init priorities.  */
+    return error_mark_node;
+
   tree initp_expr = TREE_VALUE (args);
   tree decl = *node;
   tree type = TREE_TYPE (decl);
@@ -5103,18 +5192,9 @@ handle_init_priority_attribute (tree* node,
 	 pri);
     }
 
-  if (SUPPORTS_INIT_PRIORITY)
-    {
-      SET_DECL_INIT_PRIORITY (decl, pri);
-      DECL_HAS_INIT_PRIORITY_P (decl) = 1;
-      return NULL_TREE;
-    }
-  else
-    {
-      error ("%qE attribute is not supported on this platform", name);
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
+  SET_DECL_INIT_PRIORITY (decl, pri);
+  DECL_HAS_INIT_PRIORITY_P (decl) = 1;
+  return NULL_TREE;
 }
 
 /* DECL is being redeclared; the old declaration had the abi tags in OLD,
@@ -5279,6 +5359,17 @@ handle_abi_tag_attribute (tree* node, tree name, tree args,
 
  fail:
   *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+/* Perform checking for contract attributes.  */
+
+tree
+handle_contract_attribute (tree *ARG_UNUSED (node), tree ARG_UNUSED (name),
+			   tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			   bool *ARG_UNUSED (no_add_attrs))
+{
+  /* TODO: Is there any checking we could do here?  */
   return NULL_TREE;
 }
 
@@ -5512,15 +5603,18 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
  
     case REQUIRES_EXPR:
-      // Only recurse through the nested expression. Do not
-      // walk the parameter list. Doing so causes false
-      // positives in the pack expansion checker since the
-      // requires parameters are introduced as pack expansions.
-      ++cp_unevaluated_operand;
-      result = cp_walk_tree (&REQUIRES_EXPR_REQS (*tp), func, data, pset);
-      --cp_unevaluated_operand;
-      *walk_subtrees_p = 0;
-      break;
+      {
+	cp_unevaluated u;
+	for (tree parm = REQUIRES_EXPR_PARMS (*tp); parm; parm = DECL_CHAIN (parm))
+	  /* Walk the types of each parameter, but not the parameter itself,
+	     since doing so would cause false positives in the unexpanded pack
+	     checker if the requires-expr introduces a function parameter pack,
+	     e.g. requires (Ts... ts) { }.   */
+	  WALK_SUBTREE (TREE_TYPE (parm));
+	WALK_SUBTREE (REQUIRES_EXPR_REQS (*tp));
+	*walk_subtrees_p = 0;
+	break;
+      }
 
     case DECL_EXPR:
       /* User variables should be mentioned in BIND_EXPR_VARS

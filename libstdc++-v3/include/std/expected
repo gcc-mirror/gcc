@@ -359,7 +359,7 @@ namespace __expected
       requires is_copy_constructible_v<_Tp> && is_copy_constructible_v<_Er>
       && (!is_trivially_copy_constructible_v<_Tp>
 	  || !is_trivially_copy_constructible_v<_Er>)
-      : _M_invalid(), _M_has_value(__x._M_has_value)
+      : _M_has_value(__x._M_has_value)
       {
 	if (_M_has_value)
 	  std::construct_at(__builtin_addressof(_M_val), __x._M_val);
@@ -376,7 +376,7 @@ namespace __expected
       requires is_move_constructible_v<_Tp> && is_move_constructible_v<_Er>
       && (!is_trivially_move_constructible_v<_Tp>
 	  || !is_trivially_move_constructible_v<_Er>)
-      : _M_invalid(), _M_has_value(__x._M_has_value)
+      : _M_has_value(__x._M_has_value)
       {
 	if (_M_has_value)
 	  std::construct_at(__builtin_addressof(_M_val),
@@ -394,7 +394,7 @@ namespace __expected
 	expected(const expected<_Up, _Gr>& __x)
 	noexcept(__and_v<is_nothrow_constructible<_Tp, const _Up&>,
 			 is_nothrow_constructible<_Er, const _Gr&>>)
-	: _M_invalid(), _M_has_value(__x._M_has_value)
+	: _M_has_value(__x._M_has_value)
 	{
 	  if (_M_has_value)
 	    std::construct_at(__builtin_addressof(_M_val), __x._M_val);
@@ -410,7 +410,7 @@ namespace __expected
 	expected(expected<_Up, _Gr>&& __x)
 	noexcept(__and_v<is_nothrow_constructible<_Tp, _Up>,
 			 is_nothrow_constructible<_Er, _Gr>>)
-	: _M_invalid(), _M_has_value(__x._M_has_value)
+	: _M_has_value(__x._M_has_value)
 	{
 	  if (_M_has_value)
 	    std::construct_at(__builtin_addressof(_M_val),
@@ -890,7 +890,6 @@ namespace __expected
       }
 
       union {
-	struct { } _M_invalid;
 	_Tp _M_val;
 	_Er _M_unex;
       };

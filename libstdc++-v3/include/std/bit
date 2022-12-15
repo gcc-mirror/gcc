@@ -361,7 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    constexpr _Tp
+    constexpr int
     __bit_width(_Tp __x) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
@@ -448,9 +448,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bit_floor(_Tp __x) noexcept
     { return std::__bit_floor(__x); }
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3656. Inconsistent bit operations returning a count
   /// The smallest integer greater than the base-2 logarithm of `x`.
   template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp>
+    constexpr _If_is_unsigned_integer<_Tp, int>
     bit_width(_Tp __x) noexcept
     { return std::__bit_width(__x); }
 

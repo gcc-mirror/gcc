@@ -7043,7 +7043,7 @@ nvptx_goacc_reduction_fini (gcall *call, offload_attrs *oa)
   enum tree_code op
     = (enum tree_code)TREE_INT_CST_LOW (gimple_call_arg (call, 4));
   gimple_seq seq = NULL;
-  tree r = NULL_TREE;;
+  tree r = NULL_TREE;
 
   push_gimplify_context (true);
 

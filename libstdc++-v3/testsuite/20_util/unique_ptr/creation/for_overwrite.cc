@@ -41,8 +41,8 @@ void* operator new(std::size_t n)
   return p;
 }
 
-void operator delete(void* p) { std::free(p); }
-void operator delete(void* p, std::size_t) { std::free(p); }
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete(void* p, std::size_t) noexcept { std::free(p); }
 
 void
 test01()

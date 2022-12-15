@@ -166,7 +166,12 @@ def is_member_of_namespace(typ, *namespaces):
     return False
 
 def is_specialization_of(x, template_name):
-    "Test if a type is a given template instantiation."
+    """
+    Test whether a type is a specialization of the named class template.
+    The type can be specified as a string or a gdb.Type object.
+    The template should be the name of a class template as a string,
+    without any 'std' qualification.
+    """
     global _versioned_namespace
     if type(x) is gdb.Type:
         x = x.tag
@@ -1267,9 +1272,34 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
             mgrname = m.group(1)
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
             if 'std::string' in mgrname:
-                mgrname = re.sub("std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
-
-            mgrtype = gdb.lookup_type(mgrname)
+                # This lookup for std::string might return the __cxx11 version,
+                # but that's not necessarily the one used by the std::any
+                # manager function we're trying to find.
+                strings = {str(gdb.lookup_type('std::string').strip_typedefs())}
+                # So also consider all the other possible std::string types!
+                s = 'basic_string<char, std::char_traits<char>, std::allocator<char> >'
+                quals = ['std::', 'std::__cxx11::', 'std::' + _versioned_namespace]
+                strings |= {q+s for q in quals} # set of unique strings
+                mgrtypes = []
+                for s in strings:
+                    try:
+                        x = re.sub("std::string(?!\w)", s, m.group(1))
+                        # The following lookup might raise gdb.error if the
+                        # manager function was never instantiated for 's' in the
+                        # program, because there will be no such type.
+                        mgrtypes.append(gdb.lookup_type(x))
+                    except gdb.error:
+                        pass
+                if len(mgrtypes) != 1:
+                    # FIXME: this is unlikely in practice, but possible for
+                    # programs that use both old and new string types with
+                    # std::any in a single program. Can we do better?
+                    # Maybe find the address of each type's _S_manage and
+                    # compare to the address stored in _M_manager?
+                    raise ValueError('Cannot uniquely determine std::string type used in std::any')
+                mgrtype = mgrtypes[0]
+            else:
+                mgrtype = gdb.lookup_type(mgrname)
             self.contained_type = mgrtype.template_argument(0)
             valptr = None
             if '::_Manager_internal' in mgrname:
@@ -1815,6 +1845,32 @@ class StdAtomicPrinter:
             val = self.val['_M_i']
         return '%s<%s> = { %s }' % (self.typename, str(self.value_type), val)
 
+class StdFormatArgsPrinter:
+    "Print a std::basic_format_args"
+    # TODO: add printer for basic_format_arg<C> and print out children
+    # TODO: add printer for basic_format_args<C>::_Store<Args...>
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        targs = get_template_arg_list(self.val.type)
+        char_type = get_template_arg_list(targs[0])[1]
+        if char_type == gdb.lookup_type('char'):
+            typ = 'std::format_args'
+        elif char_type == gdb.lookup_type('wchar_t'):
+            typ = 'std::wformat_args'
+        else:
+            typ = 'std::basic_format_args'
+
+        size = self.val['_M_packed_size']
+        if size == 1:
+            return "%s with 1 argument" % (typ)
+        if size == 0:
+            size = self.val['_M_unpacked_size']
+        return "%s with %d arguments" % (typ, size)
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -2043,59 +2099,68 @@ class FilteringTypePrinter(object):
     A type printer that uses typedef names for common template specializations.
 
     Args:
-        match (str): The class template to recognize.
+        template (str): The class template to recognize.
         name (str): The typedef-name that will be used instead.
+        targ1 (str, optional): The first template argument. Defaults to None.
 
-    Checks if a specialization of the class template 'match' is the same type
+    Checks if a specialization of the class template 'template' is the same type
     as the typedef 'name', and prints it as 'name' instead.
 
     e.g. if an instantiation of std::basic_istream<C, T> is the same type as
     std::istream then print it as std::istream.
+
+    If targ1 is provided (not None), match only template specializations with
+    this type as the first template argument, e.g. if template='basic_string'
+    and targ1='char' then only match 'basic_string<char,...>' and not
+    'basic_string<wchar_t,...>'. This rejects non-matching specializations
+    more quickly, without needing to do GDB type lookups.
     """
 
-    def __init__(self, match, name):
-        self.match = match
+    def __init__(self, template, name, targ1 = None):
+        self.template = template
         self.name = name
+        self.targ1 = targ1
         self.enabled = True
 
     class _recognizer(object):
         "The recognizer class for FilteringTypePrinter."
 
-        def __init__(self, match, name):
-            self.match = match
+        def __init__(self, template, name, targ1):
+            self.template = template
             self.name = name
+            self.targ1 = targ1
             self.type_obj = None
 
         def recognize(self, type_obj):
             """
-            If type_obj starts with self.match and is the same type as
+            If type_obj starts with self.template and is the same type as
             self.name then return self.name, otherwise None.
             """
             if type_obj.tag is None:
                 return None
 
             if self.type_obj is None:
-                if not type_obj.tag.startswith(self.match):
+                if self.targ1 is not None:
+                    if not type_obj.tag.startswith('{}<{}'.format(self.template, self.targ1)):
+                        # Filter didn't match.
+                        return None
+                elif not type_obj.tag.startswith(self.template):
                     # Filter didn't match.
                     return None
+
                 try:
                     self.type_obj = gdb.lookup_type(self.name).strip_typedefs()
                 except:
                     pass
-            if self.type_obj == type_obj:
-                return strip_inline_namespaces(self.name)
 
             if self.type_obj is None:
                 return None
 
-            # Workaround ambiguous typedefs matching both std:: and std::__cxx11:: symbols.
-            ambiguous = False
-            for ch in ('', 'w', 'u8', 'u16', 'u32'):
-                if self.name == 'std::' + ch + 'string':
-                    ambiguous = True
-                    break
+            if gdb.types.get_basic_type(self.type_obj) == gdb.types.get_basic_type(type_obj):
+                return strip_inline_namespaces(self.name)
 
-            if ambiguous:
+            # Workaround ambiguous typedefs matching both std:: and std::__cxx11:: symbols.
+            if self.template.split('::')[-1] == 'basic_string':
                 if self.type_obj.tag.replace('__cxx11::', '') == type_obj.tag.replace('__cxx11::', ''):
                     return strip_inline_namespaces(self.name)
 
@@ -2103,14 +2168,14 @@ class FilteringTypePrinter(object):
 
     def instantiate(self):
         "Return a recognizer object for this type printer."
-        return self._recognizer(self.match, self.name)
+        return self._recognizer(self.template, self.name, self.targ1)
 
-def add_one_type_printer(obj, match, name):
-    printer = FilteringTypePrinter('std::' + match, 'std::' + name)
+def add_one_type_printer(obj, template, name, targ1 = None):
+    printer = FilteringTypePrinter('std::' + template, 'std::' + name, targ1)
     gdb.types.register_type_printer(obj, printer)
-    if _versioned_namespace and not '__cxx11' in match:
+    if _versioned_namespace and not '__cxx11' in template:
         ns = 'std::' + _versioned_namespace
-        printer = FilteringTypePrinter(ns + match, ns + name)
+        printer = FilteringTypePrinter(ns + template, ns + name, targ1)
         gdb.types.register_type_printer(obj, printer)
 
 def register_type_printers(obj):
@@ -2120,29 +2185,33 @@ def register_type_printers(obj):
         return
 
     # Add type printers for typedefs std::string, std::wstring etc.
-    for ch in ('', 'w', 'u8', 'u16', 'u32'):
-        add_one_type_printer(obj, 'basic_string', ch + 'string')
-        add_one_type_printer(obj, '__cxx11::basic_string', ch + 'string')
+    for ch in (('', 'char'),
+               ('w', 'wchar_t'),
+               ('u8', 'char8_t'),
+               ('u16', 'char16_t'),
+               ('u32', 'char32_t')):
+        add_one_type_printer(obj, 'basic_string', ch[0] + 'string', ch[1])
+        add_one_type_printer(obj, '__cxx11::basic_string', ch[0] + 'string', ch[1])
         # Typedefs for __cxx11::basic_string used to be in namespace __cxx11:
         add_one_type_printer(obj, '__cxx11::basic_string',
-                             '__cxx11::' + ch + 'string')
-        add_one_type_printer(obj, 'basic_string_view', ch + 'string_view')
+                             '__cxx11::' + ch[0] + 'string', ch[1])
+        add_one_type_printer(obj, 'basic_string_view', ch[0] + 'string_view', ch[1])
 
     # Add type printers for typedefs std::istream, std::wistream etc.
-    for ch in ('', 'w'):
+    for ch in (('', 'char'), ('w', 'wchar_t')):
         for x in ('ios', 'streambuf', 'istream', 'ostream', 'iostream',
                   'filebuf', 'ifstream', 'ofstream', 'fstream'):
-            add_one_type_printer(obj, 'basic_' + x, ch + x)
+            add_one_type_printer(obj, 'basic_' + x, ch[0] + x, ch[1])
         for x in ('stringbuf', 'istringstream', 'ostringstream',
                   'stringstream'):
-            add_one_type_printer(obj, 'basic_' + x, ch + x)
+            add_one_type_printer(obj, 'basic_' + x, ch[0] + x, ch[1])
             # <sstream> types are in __cxx11 namespace, but typedefs aren't:
-            add_one_type_printer(obj, '__cxx11::basic_' + x, ch + x)
+            add_one_type_printer(obj, '__cxx11::basic_' + x, ch[0] + x, ch[1])
 
     # Add type printers for typedefs regex, wregex, cmatch, wcmatch etc.
     for abi in ('', '__cxx11::'):
-        for ch in ('', 'w'):
-            add_one_type_printer(obj, abi + 'basic_regex', abi + ch + 'regex')
+        for ch in (('', 'char'), ('w', 'wchar_t')):
+            add_one_type_printer(obj, abi + 'basic_regex', abi + ch[0] + 'regex', ch[1])
         for ch in ('c', 's', 'wc', 'ws'):
             add_one_type_printer(obj, abi + 'match_results', abi + ch + 'match')
             for x in ('sub_match', 'regex_iterator', 'regex_token_iterator'):
@@ -2170,9 +2239,13 @@ def register_type_printers(obj):
 
     # Add type printers for experimental::basic_string_view typedefs.
     ns = 'experimental::fundamentals_v1::'
-    for ch in ('', 'w', 'u8', 'u16', 'u32'):
+    for ch in (('', 'char'),
+               ('w', 'wchar_t'),
+               ('u8', 'char8_t'),
+               ('u16', 'char16_t'),
+               ('u32', 'char32_t')):
         add_one_type_printer(obj, ns + 'basic_string_view',
-                             ns + ch + 'string_view')
+                             ns + ch[0] + 'string_view', ch[1])
 
     # Do not show defaulted template arguments in class templates.
     add_one_template_type_printer(obj, 'unique_ptr',
@@ -2355,6 +2428,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'weak_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'strong_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'span', StdSpanPrinter)
+    libstdcxx_printer.add_version('std::', 'basic_format_args', StdFormatArgsPrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)

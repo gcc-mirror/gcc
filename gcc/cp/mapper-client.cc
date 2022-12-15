@@ -227,6 +227,8 @@ module_client::open_module_client (location_t loc, const char *o,
 		int fd = -1;
 #if CODY_NETWORKING
 		fd = Cody::OpenLocal (&errmsg, name.c_str () + 1);
+#else
+		errmsg = "disabled";
 #endif
 		if (fd >= 0)
 		  c = new module_client (fd, fd);
@@ -254,6 +256,8 @@ module_client::open_module_client (location_t loc, const char *o,
 			int fd = -1;
 #if CODY_NETWORKING
 			fd = Cody::OpenInet6 (&errmsg, name.c_str (), port);
+#else
+			errmsg = "disabled";
 #endif
 			name[colon] = ':';
 

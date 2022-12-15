@@ -1,6 +1,6 @@
 // PR c++/66092
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 #include <type_traits>
 

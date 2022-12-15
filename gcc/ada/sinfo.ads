@@ -440,7 +440,7 @@ package Sinfo is
    --  documents the restriction.
 
    --  Note that most of these restrictions apply only to trees generated when
-   --  code is being generated, since they involved expander actions that
+   --  code is being generated, since they involve expander actions that
    --  destroy the tree.
 
    ----------------
@@ -528,7 +528,7 @@ package Sinfo is
    --  function.
    --
    --  If the mode of a Ghost region is Ignore, any newly created nodes as well
-   --  as source entities are marked as ignored Ghost. In additon, the marking
+   --  as source entities are marked as ignored Ghost. In addition, the marking
    --  process signals all enclosing scopes that an ignored Ghost node resides
    --  within. The compilation unit where the node resides is also added to an
    --  auxiliary table for post processing.
@@ -629,7 +629,7 @@ package Sinfo is
    --  specified by means of an aspect or a pragma.
 
    --  The following entities may be subject to a SPARK mode. Entities marked
-   --  with * may possess two differente SPARK modes.
+   --  with * may possess two different SPARK modes.
 
    --     E_Entry
    --     E_Entry_Family
@@ -715,9 +715,9 @@ package Sinfo is
    --    This flag is set if the node comes directly from an explicit construct
    --    in the source. It is normally on for any nodes built by the scanner or
    --    parser from the source program, with the exception that in a few cases
-   --    the parser adds nodes to normalize the representation (in particular
+   --    the parser adds nodes to normalize the representation (in particular,
    --    a null statement is added to a package body if there is no begin/end
-   --    initialization section.
+   --    initialization section).
    --
    --    Most nodes inserted by the analyzer or expander are not considered
    --    as coming from source, so the flag is off for such nodes. In a few
@@ -842,10 +842,6 @@ package Sinfo is
    --    known at compile time, this field points to an N_Range node with those
    --    bounds. Otherwise Empty.
 
-   --  Alloc_For_BIP_Return
-   --    Present in N_Allocator nodes. True if the allocator is one of those
-   --    generated for a build-in-place return statement.
-
    --  All_Others
    --    Present in an N_Others_Choice node. This flag is set for an others
    --    exception where all exceptions are to be caught, even those that are
@@ -952,6 +948,11 @@ package Sinfo is
    --  Comes_From_Extended_Return_Statement
    --    Present in N_Simple_Return_Statement nodes. True if this node was
    --    constructed as part of the N_Extended_Return_Statement expansion.
+
+   --  Comes_From_Iterator
+   --    Present in N_Object_Renaming_Declaration nodes. True if this node was
+   --    was constructed as part of the expansion of an iterator
+   --    specification.
 
    --  Compile_Time_Known_Aggregate
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
@@ -1339,6 +1340,10 @@ package Sinfo is
    --    cannot figure it out. If both flags Forwards_OK and Backwards_OK are
    --    set, it means that the front end can assure no overlap of operands.
 
+   --  For_Special_Return_Object
+   --    Present in N_Allocator nodes. True if the allocator is generated for
+   --    the initialization of a special return object.
+
    --  From_Aspect_Specification
    --    Processing of aspect specifications typically results in insertion in
    --    the tree of corresponding pragma or attribute definition clause nodes.
@@ -1549,7 +1554,7 @@ package Sinfo is
 
    --  Is_Analyzed_Pragma
    --    Present in N_Pragma nodes. Set for delayed pragmas that require a two
-   --    step analysis. The initial step is peformed by routine Analyze_Pragma
+   --    step analysis. The initial step is performed by routine Analyze_Pragma
    --    and verifies the overall legality of the pragma. The second step takes
    --    place in the various Analyze_xxx_In_Decl_Part routines which perform
    --    full analysis. The flag prevents the reanalysis of a delayed pragma.
@@ -1641,8 +1646,9 @@ package Sinfo is
    --      variable reference marker
    --
    --    Set when the node appears within a context which allows the generation
-   --    of run-time ABE checks. This flag detemines whether the ABE Processing
-   --    phase generates conditional ABE checks and guaranteed ABE failures.
+   --    of run-time ABE checks. This flag determines whether the ABE
+   --    Processing phase generates conditional ABE checks and guaranteed ABE
+   --    failures.
 
    --  Is_Elaboration_Code
    --    Present in assignment statements. Set for an assignment which updates
@@ -4771,7 +4777,7 @@ package Sinfo is
       --  Subpool_Handle_Name (set to Empty if not present)
       --  Storage_Pool
       --  Procedure_To_Call
-      --  Alloc_For_BIP_Return
+      --  For_Special_Return_Object
       --  Null_Exclusion_Present
       --  No_Initialization
       --  Is_Static_Coextension
@@ -5570,7 +5576,7 @@ package Sinfo is
 
       --  The term "return statement" is defined in 6.5 to mean either a
       --  SIMPLE_RETURN_STATEMENT or an EXTENDED_RETURN_STATEMENT. We avoid
-      --  the use of this term, since it used to mean someting else in earlier
+      --  the use of this term, since it used to mean something else in earlier
       --  versions of Ada.
 
       --  N_Simple_Return_Statement
@@ -7815,7 +7821,7 @@ package Sinfo is
       --      ABE mechanism, regardless of whether expansion took place.
 
       --    * The call marker captures the target of the related call along
-      --      with other attributes which are either unavailabe or expensive
+      --      with other attributes which are either unavailable or expensive
       --      to recompute once analysis, resolution, and expansion are over.
 
       --    * The call marker aids the ABE Processing phase by signaling the

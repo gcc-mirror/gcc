@@ -7,16 +7,18 @@ template <class>
 void f() {
   int x[] = {1,2};
   int y[] = {3};
-  C1 auto [a,b] = x;
-  C1 auto [c] = y; // { dg-error "constraints" }
+  C1 auto [a,b] = x;	// { dg-error "structured binding declaration cannot have constrained 'auto' type 'auto \\\[requires ::C1<<placeholder>, >\\\]'" }
+  C1 auto [c] = y;	// { dg-error "structured binding declaration cannot have constrained 'auto' type 'auto \\\[requires ::C1<<placeholder>, >\\\]'" }
+			// { dg-error "constraints" "" { target *-*-* } .-1 }
 }
 
 template <class T>
 void g() {
   T x[] = {1,2};
   T y[] = {3};
-  C1 auto [a,b] = x;
-  C1 auto [c] = y; // { dg-error "constraints" }
+  C1 auto [a,b] = x;	// { dg-error "structured binding declaration cannot have constrained 'auto' type 'auto \\\[requires ::C1<<placeholder>, >\\\]'" }
+  C1 auto [c] = y;	// { dg-error "structured binding declaration cannot have constrained 'auto' type 'auto \\\[requires ::C1<<placeholder>, >\\\]'" }
+			// { dg-error "constraints" "" { target *-*-* } .-1 }
 }
 template void g<int>();
 
@@ -27,6 +29,6 @@ struct S { int a, b; } s;
 
 template <class T>
 void h() {
-  const C2<T> auto& [a, b] = s;
+  const C2<T> auto& [a, b] = s;	// { dg-error "structured binding declaration cannot have constrained 'auto' type 'const auto \\\[requires ::C2<<placeholder>, >\\\]'" }
 }
 template void h<int>();

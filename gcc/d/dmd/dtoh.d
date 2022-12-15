@@ -1945,7 +1945,7 @@ public:
         }
         if (tf.parameterList.varargs)
         {
-            if (tf.parameterList.parameters.dim && tf.parameterList.varargs == 1)
+            if (tf.parameterList.parameters.length && tf.parameterList.varargs == 1)
                 buf.writestring(", ");
             buf.writestring("...");
         }
@@ -2280,7 +2280,7 @@ public:
         }
         if (tf.parameterList.varargs)
         {
-            if (tf.parameterList.parameters.dim && tf.parameterList.varargs == 1)
+            if (tf.parameterList.parameters.length && tf.parameterList.varargs == 1)
                 buf.writestring(", ");
             buf.writestring("...");
         }

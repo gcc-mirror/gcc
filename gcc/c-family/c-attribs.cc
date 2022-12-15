@@ -4211,7 +4211,8 @@ handle_deprecated_attribute (tree *node, tree name,
 	  || VAR_OR_FUNCTION_DECL_P (decl)
 	  || TREE_CODE (decl) == FIELD_DECL
 	  || TREE_CODE (decl) == CONST_DECL
-	  || objc_method_decl (TREE_CODE (decl)))
+	  || objc_method_decl (TREE_CODE (decl))
+	  || TREE_CODE (decl) == CONCEPT_DECL)
 	TREE_DEPRECATED (decl) = 1;
       else if (TREE_CODE (decl) == LABEL_DECL)
 	{
@@ -4239,7 +4240,7 @@ handle_deprecated_attribute (tree *node, tree name,
       if (type && TYPE_NAME (type))
 	{
 	  if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	    what = TYPE_NAME (*node);
+	    what = TYPE_NAME (type);
 	  else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 		   && DECL_NAME (TYPE_NAME (type)))
 	    what = DECL_NAME (TYPE_NAME (type));

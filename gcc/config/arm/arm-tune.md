@@ -46,7 +46,7 @@
 	cortexa73cortexa53,cortexa55,cortexa75,
 	cortexa76,cortexa76ae,cortexa77,
 	cortexa78,cortexa78ae,cortexa78c,
-	cortexa710,cortexx1,neoversen1,
+	cortexa710,cortexx1,cortexx1c,neoversen1,
 	cortexa75cortexa55,cortexa76cortexa55,neoversev1,
 	neoversen2,cortexm23,cortexm33,
 	cortexm35p,cortexm55,starmc1,

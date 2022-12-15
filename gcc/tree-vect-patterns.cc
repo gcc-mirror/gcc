@@ -3749,7 +3749,7 @@ vect_recog_divmod_pattern (vec_info *vinfo,
   gimple *pattern_stmt, *def_stmt;
   enum tree_code rhs_code;
   optab optab;
-  tree q;
+  tree q, cst;
   int dummy_int, prec;
 
   if (!is_gimple_assign (last_stmt))
@@ -3912,6 +3912,14 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	}
 
       return pattern_stmt;
+    }
+  else if ((cst = uniform_integer_cst_p (oprnd1))
+	   && targetm.vectorize.can_special_div_by_const (rhs_code, vectype,
+							  wi::to_wide (cst),
+							  NULL, NULL_RTX,
+							  NULL_RTX))
+    {
+      return NULL;
     }
 
   if (prec > HOST_BITS_PER_WIDE_INT
@@ -4956,6 +4964,8 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
       else
 	{
 	  lhs = gimple_call_lhs (last_stmt);
+	  if (!lhs)
+	    return NULL;
 	  vectype1 = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
 	}
 

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -812,7 +813,11 @@ same_binding_p (const region *reg_a, const region *reg_b,
 {
   if (reg_a->get_base_region () != reg_b->get_base_region ())
     return false;
+  if (reg_a->empty_p ())
+    return false;
   const binding_key *bind_key_a = binding_key::make (store_mgr, reg_a);
+  if (reg_b->empty_p ())
+    return false;
   const binding_key *bind_key_b = binding_key::make (store_mgr, reg_b);
   return bind_key_a == bind_key_b;
 }

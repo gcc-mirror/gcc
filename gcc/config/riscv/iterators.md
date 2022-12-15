@@ -136,6 +136,10 @@
 ;; from the same template.
 (define_code_iterator any_bitwise [and ior xor])
 
+;; This code iterator allows ior and xor instructions to be generated
+;; from the same template.
+(define_code_iterator any_or [ior xor])
+
 ;; This code iterator allows unsigned and signed division to be generated
 ;; from the same template.
 (define_code_iterator any_div [div udiv mod umod])
@@ -194,6 +198,10 @@
 			 (plus "add")
 			 (minus "sub")])
 
+;; <or_optab> code attributes
+(define_code_attr or_optab [(ior "ior")
+			    (xor "xor")])
+
 ;; <insn> expands to the name of the insn that implements a particular code.
 (define_code_attr insn [(ashift "sll")
 			(ashiftrt "sra")
@@ -213,6 +221,10 @@
   [(plus "add") (ior "or") (xor "xor") (and "and")])
 
 ; bitmanip code attributes
+(define_code_attr minmax_optab [(smin "smin")
+				(smax "smax")
+				(umin "umin")
+				(umax "umax")])
 (define_code_attr bitmanip_optab [(smin "smin")
 				  (smax "smax")
 				  (umin "umin")

@@ -1,21 +1,41 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vaddva.s16	(?:ip|fp|r[0-9]+), q[0-9]+(?:	@.*|)
+**	...
+*/
 int32_t
 foo (int32_t a, int16x8_t b)
 {
   return vaddvaq_s16 (a, b);
 }
 
-/* { dg-final { scan-assembler "vaddva.s16"  }  } */
 
+/*
+**foo1:
+**	...
+**	vaddva.s16	(?:ip|fp|r[0-9]+), q[0-9]+(?:	@.*|)
+**	...
+*/
 int32_t
 foo1 (int32_t a, int16x8_t b)
 {
   return vaddvaq (a, b);
 }
 
-/* { dg-final { scan-assembler "vaddva.s16"  }  } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

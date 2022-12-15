@@ -553,7 +553,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{I}    @tab The type shall be @code{INTEGER}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -920,7 +920,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A}    @tab The type of the argument shall be @code{REAL}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -1202,7 +1202,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A}    @tab The type of the argument shall be @code{REAL}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -3406,7 +3406,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A} @tab The type shall be @code{REAL}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -3452,7 +3452,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -3636,7 +3636,7 @@ Elemental function
 or @code{COMPLEX}.
 @item @var{Y} @tab (Optional; only allowed if @var{X} is not
 @code{COMPLEX}.)  May be @code{INTEGER} or @code{REAL}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -4527,7 +4527,7 @@ Transformational function
 @multitable @columnfractions .15 .70
 @item @var{MASK} @tab The type shall be @code{LOGICAL}.
 @item @var{DIM}  @tab (Optional) The type shall be @code{INTEGER}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -6186,7 +6186,7 @@ conformance with @var{ARRAY}.
 inclusive.  It may not be an optional dummy argument.
 @item @var{MASK} @tab (Optional) Shall be of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
 @end multitable
@@ -6215,7 +6215,7 @@ is of default kind.
 
 @table @asis
 @item @emph{Description}:
-@code{FLOOR(A)} returns the greatest integer less than or equal to @var{X}.
+@code{FLOOR(A)} returns the greatest integer less than or equal to @var{A}.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -6229,7 +6229,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A} @tab The type shall be @code{REAL}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -7550,7 +7550,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{C}    @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -8007,7 +8007,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{C}    @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -8279,7 +8279,7 @@ Elemental function
 @code{INTENT(IN)}
 @item @var{BACK} @tab (Optional) Shall be a scalar @code{LOGICAL}, with
 @code{INTENT(IN)}
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -8324,7 +8324,7 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{A}    @tab Shall be of type @code{INTEGER},
 @code{REAL}, or @code{COMPLEX} or a boz-literal-constant.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -9109,7 +9109,7 @@ Inquiry function
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array, of any type.
 @item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -9152,7 +9152,7 @@ Inquiry function
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an coarray, of any type.
 @item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -9239,7 +9239,7 @@ Inquiry function
 @multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar or array of type
 @code{CHARACTER}, with @code{INTENT(IN)}
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -9285,7 +9285,7 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER},
 with @code{INTENT(IN)}
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -9823,7 +9823,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{L}    @tab The type shall be @code{LOGICAL}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -10312,7 +10312,7 @@ Transformational function
 inclusive.  It may not be an optional dummy argument.
 @item @var{MASK}  @tab Shall be of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
 @end multitable
@@ -10679,7 +10679,7 @@ Transformational function
 inclusive.  It may not be an optional dummy argument.
 @item @var{MASK}  @tab Shall be of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
 @end multitable
@@ -11111,7 +11111,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A}    @tab The type of the argument shall be @code{REAL}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -12216,7 +12216,7 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{A}    @tab Shall be @code{INTEGER}, @code{REAL}, or
 @code{COMPLEX}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -12594,7 +12594,7 @@ Elemental function
 @item @var{STRING} @tab Shall be of type @code{CHARACTER}.
 @item @var{SET}    @tab Shall be of type @code{CHARACTER}.
 @item @var{BACK}   @tab (Optional) shall be of type @code{LOGICAL}.
-@item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND}   @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -12956,7 +12956,7 @@ Inquiry function
 @item @var{SOURCE} @tab Shall be an array or scalar of any type. 
 If @var{SOURCE} is a pointer it must be associated and allocatable 
 arrays must be allocated.
-@item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND}   @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -13417,7 +13417,7 @@ a pointer it must be associated and allocatable arrays must be allocated.
 @item @var{DIM}   @tab (Optional) shall be a scalar of type @code{INTEGER} 
 and its value shall be in the range from 1 to n, where n equals the rank 
 of @var{ARRAY}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -14680,8 +14680,8 @@ Inquiry function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array, of any type.
-@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER}.
-@item @var{KIND}@tab (Optional) An @code{INTEGER} initialization
+@item @var{DIM}   @tab (Optional) Shall be a scalar @code{INTEGER}.
+@item @var{KIND}  @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -14725,7 +14725,7 @@ Inquiry function
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an coarray, of any type.
 @item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 
@@ -14900,7 +14900,7 @@ Elemental function
 @item @var{STRING} @tab Shall be of type @code{CHARACTER}.
 @item @var{SET}    @tab Shall be of type @code{CHARACTER}.
 @item @var{BACK}   @tab (Optional) shall be of type @code{LOGICAL}.
-@item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
+@item @var{KIND}   @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
 

@@ -93,6 +93,9 @@ public:
   virtual bool range_on_edge (vrange &r, edge, tree expr);
   virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL);
 
+  // When the IL in a stmt is changed, call this for better results.
+  virtual void update_stmt (gimple *) { }
+
   // Query if there is any relation between SSA1 and SSA2.
   relation_kind query_relation (gimple *s, tree ssa1, tree ssa2,
 				bool get_range = true);
@@ -103,13 +106,10 @@ public:
 
   // DEPRECATED: This method is used from vr-values.  The plan is to
   // rewrite all uses of it to the above API.
-  virtual const class value_range_equiv *get_value_range (const_tree,
-							  gimple * = NULL);
+  virtual const value_range *get_value_range (const_tree, gimple * = NULL);
   virtual void dump (FILE *);
 
 protected:
-  class value_range_equiv *allocate_value_range_equiv ();
-  void free_value_range_equiv (class value_range_equiv *);
   bool get_tree_range (vrange &v, tree expr, gimple *stmt);
   bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
   relation_oracle *m_oracle;

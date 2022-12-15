@@ -5536,7 +5536,7 @@ private static:
     }
 
     // handle each overload set
-    private string generateCodeForOverloadSet(alias oset)() @property
+    string generateCodeForOverloadSet(alias oset)() @property
     {
         string code = "";
 
@@ -5666,7 +5666,7 @@ private static:
      * "ref int a0, real a1, ..."
      */
     static struct GenParams { string imports, params; }
-    private GenParams generateParameters(string myFuncInfo, func...)()
+    GenParams generateParameters(string myFuncInfo, func...)()
     {
         alias STC = ParameterStorageClass;
         alias stcs = ParameterStorageClassTuple!(func);
@@ -5716,7 +5716,7 @@ private static:
 
     // Returns D code which enumerates n parameter variables using comma as the
     // separator.  "a0, a1, a2, a3"
-    private string enumerateParameters(size_t n)() @property
+    string enumerateParameters(size_t n)() @property
     {
         string params = "";
 
@@ -8782,7 +8782,7 @@ if (alignment > 0 && !((alignment - 1) & alignment))
     {
         void test(size_t size)
         {
-            import core.stdc.stdlib;
+            import core.stdc.stdlib : alloca;
             cast(void) alloca(size);
             alignmentTest();
         }
@@ -9253,7 +9253,7 @@ public:
     }
 
     Base opCast(B)() const
-        if (isImplicitlyConvertible!(Base, B))
+        if (is(Base : B))
     {
         return mValue;
     }

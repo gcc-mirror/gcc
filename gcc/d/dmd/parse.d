@@ -425,8 +425,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             case TOK.traits:
             Ldeclaration:
                 a = parseDeclarations(false, pAttrs, pAttrs.comment);
-                if (a && a.dim)
-                    *pLastDecl = (*a)[a.dim - 1];
+                if (a && a.length)
+                    *pLastDecl = (*a)[a.length - 1];
                 break;
 
             case TOK.this_:
@@ -491,6 +491,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                  */
                 if (mod.isRoot() && (global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput))
                 {
+                    linkage = LINK.d; // unittests have D linkage
                     s = parseUnitTest(pAttrs);
                     if (*pLastDecl)
                         (*pLastDecl).ddocUnittest = cast(AST.UnitTestDeclaration)s;
@@ -698,8 +699,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 if (token.value == TOK.identifier && hasOptionalParensThen(peek(&token), TOK.assign))
                 {
                     a = parseAutoDeclarations(getStorageClass!AST(pAttrs), pAttrs.comment);
-                    if (a && a.dim)
-                        *pLastDecl = (*a)[a.dim - 1];
+                    if (a && a.length)
+                        *pLastDecl = (*a)[a.length - 1];
                     if (pAttrs.udas)
                     {
                         s = new AST.UserAttributeDeclaration(pAttrs.udas, a);
@@ -725,8 +726,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         deprecation("usage of the `body` keyword is deprecated. Use `do` instead.");
 
                     a = parseDeclarations(true, pAttrs, pAttrs.comment);
-                    if (a && a.dim)
-                        *pLastDecl = (*a)[a.dim - 1];
+                    if (a && a.length)
+                        *pLastDecl = (*a)[a.length - 1];
                     if (pAttrs.udas)
                     {
                         s = new AST.UserAttributeDeclaration(pAttrs.udas, a);
@@ -817,8 +818,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     if (res.idents)
                     {
                         assert(res.link == LINK.cpp);
-                        assert(res.idents.dim);
-                        for (size_t i = res.idents.dim; i;)
+                        assert(res.idents.length);
+                        for (size_t i = res.idents.length; i;)
                         {
                             Identifier id = (*res.idents)[--i];
                             if (s)
@@ -833,8 +834,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     else if (res.identExps)
                     {
                         assert(res.link == LINK.cpp);
-                        assert(res.identExps.dim);
-                        for (size_t i = res.identExps.dim; i;)
+                        assert(res.identExps.length);
+                        for (size_t i = res.identExps.length; i;)
                         {
                             AST.Expression exp = (*res.identExps)[--i];
                             if (s)
@@ -1059,7 +1060,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 decldefs.push(s);
                 addComment(s, pAttrs.comment);
             }
-            else if (a && a.dim)
+            else if (a && a.length)
             {
                 decldefs.append(a);
             }
@@ -3786,10 +3787,10 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                                 break;
                             }
                         }
-                        assert(dimStack.dim > 0);
+                        assert(dimStack.length > 0);
                         // We're good. Replay indices in the reverse order.
                         tid = cast(AST.TypeQualified)t;
-                        while (dimStack.dim)
+                        while (dimStack.length)
                         {
                             tid.addIndex(dimStack.pop());
                         }
@@ -4341,6 +4342,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         /* Declarations that start with `alias`
          */
         bool isAliasDeclaration = false;
+        auto aliasLoc = token.loc;
         if (token.value == TOK.alias_)
         {
             if (auto a = parseAliasDeclarations(comment))
@@ -4488,7 +4490,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             if (ident)
                 checkCstyleTypeSyntax(loc, t, alt, ident);
             else if (!isThis && (t != AST.Type.terror))
-                error("no identifier for declarator `%s`", t.toChars());
+                noIdentifierForDeclarator(t);
 
             if (isAliasDeclaration)
             {
@@ -4517,7 +4519,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     else
                         error("alias cannot have initializer");
                 }
-                v = new AST.AliasDeclaration(loc, ident, t);
+                v = new AST.AliasDeclaration(aliasLoc, ident, t);
 
                 v.storage_class = storage_class;
                 if (pAttrs)
@@ -4706,6 +4708,19 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         return a;
     }
 
+    /// Report an error that a declaration of type `t` is missing an identifier
+    /// The parser is expected to sit on the next token after the type.
+    private void noIdentifierForDeclarator(AST.Type t)
+    {
+        error("no identifier for declarator `%s`", t.toChars());
+        // A common mistake is to use a reserved keyword as an identifier, e.g. `in` or `out`
+        if (token.isKeyword)
+        {
+            errorSupplemental(token.loc, "`%s` is a keyword, perhaps append `_` to make it an identifier", token.toChars());
+            nextToken();
+        }
+    }
+
     /********************************
      * Parse AliasReassignment:
      *   identifier = type;
@@ -4881,7 +4896,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         // parseAttributes shouldn't have set these variables
                         assert(link == linkage && !setAlignment && ealign is null);
                         auto tpl_ = cast(AST.TemplateDeclaration) s;
-                        if (tpl_ is null || tpl_.members.dim != 1)
+                        if (tpl_ is null || tpl_.members.length != 1)
                         {
                             error("user-defined attributes are not allowed on `alias` declarations");
                         }
@@ -4889,7 +4904,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         {
                             auto fd = cast(AST.FuncLiteralDeclaration) (*tpl_.members)[0];
                             auto tf = cast(AST.TypeFunction) fd.type;
-                            assert(tf.parameterList.parameters.dim > 0);
+                            assert(tf.parameterList.parameters.length > 0);
                             auto as = new AST.Dsymbols();
                             (*tf.parameterList.parameters)[0].userAttribDecl = new AST.UserAttributeDeclaration(udas, as);
                         }
@@ -5489,7 +5504,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             }
             at = parseType(&ai);
             if (!ai)
-                error("no identifier for declarator `%s`", at.toChars());
+                noIdentifierForDeclarator(at);
         Larg:
             auto p = new AST.Parameter(storageClass, at, ai, null, null);
             parameters.push(p);
@@ -5513,7 +5528,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         nextToken();
 
         AST.Expression aggr = parseExpression();
-        if (token.value == TOK.slice && parameters.dim == 1)
+        if (token.value == TOK.slice && parameters.length == 1)
         {
             AST.Parameter p = (*parameters)[0];
             nextToken();
@@ -5897,11 +5912,11 @@ LagainStc:
         Ldeclaration:
             {
                 AST.Dsymbols* a = parseDeclarations(false, null, null);
-                if (a.dim > 1)
+                if (a.length > 1)
                 {
                     auto as = new AST.Statements();
-                    as.reserve(a.dim);
-                    foreach (i; 0 .. a.dim)
+                    as.reserve(a.length);
+                    foreach (i; 0 .. a.length)
                     {
                         AST.Dsymbol d = (*a)[i];
                         s = new AST.ExpStatement(loc, d);
@@ -5909,7 +5924,7 @@ LagainStc:
                     }
                     s = new AST.CompoundDeclarationStatement(loc, as);
                 }
-                else if (a.dim == 1)
+                else if (a.length == 1)
                 {
                     AST.Dsymbol d = (*a)[0];
                     s = new AST.ExpStatement(loc, d);
@@ -6283,7 +6298,7 @@ LagainStc:
                  */
                 if (token.value == TOK.slice)
                 {
-                    if (cases.dim > 1)
+                    if (cases.length > 1)
                         error("only one `case` allowed for start of case range");
                     nextToken();
                     check(TOK.case_);
@@ -6322,7 +6337,7 @@ LagainStc:
                 else
                 {
                     // Keep cases in order by building the case statements backwards
-                    for (size_t i = cases.dim; i; i--)
+                    for (size_t i = cases.length; i; i--)
                     {
                         exp = cases[i - 1];
                         s = new AST.CaseStatement(loc, exp, s);
@@ -6741,7 +6756,7 @@ LagainStc:
         case TOK.leftBracket:
             /* Scan ahead to see if it is an array initializer or
              * an expression.
-             * If it ends with a ';' ',' or '}', it is an array initializer.
+             * If it ends with a ';' ',' or ']', it is an array initializer.
              */
             int brackets = 1;
             for (auto t = peek(&token); 1; t = peek(t))
@@ -8242,6 +8257,13 @@ LagainStc:
             t = AST.Type.tdchar;
             goto LabelX;
         LabelX:
+            const next = peekNext();
+            if (next != TOK.leftParenthesis && next != TOK.dot)
+            {
+                // defer error for better diagnostics
+                e = new AST.TypeExp(loc, parseType);
+                break;
+            }
             nextToken();
             if (token.value == TOK.leftParenthesis)
             {
@@ -8249,7 +8271,7 @@ LagainStc:
                 e = new AST.CallExp(loc, e, parseArguments());
                 break;
             }
-            check(TOK.dot, t.toChars());
+            check(TOK.dot);
             if (token.value != TOK.identifier)
             {
                 error("found `%s` when expecting identifier following `%s`.", token.toChars(), t.toChars());
@@ -8477,7 +8499,7 @@ LagainStc:
                 while (token.value != TOK.rightBracket && token.value != TOK.endOfFile)
                 {
                     e = parseAssignExp();
-                    if (token.value == TOK.colon && (keys || values.dim == 0))
+                    if (token.value == TOK.colon && (keys || values.length == 0))
                     {
                         nextToken();
                         if (!keys)

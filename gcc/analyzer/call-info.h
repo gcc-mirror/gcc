@@ -51,17 +51,36 @@ private:
 };
 
 /* Subclass of call_info for a "success" outcome of a call,
-   adding a "when `FNDECL' succeeds" message.
+   adding either a
+     "when `FNDECL' succeeds" message (when 'success' is true)
+   or a
+     "when `FNDECL' fails" message    (when 'success' is false).
    This is still abstract: the custom_edge_info::update_model vfunc
    must be implemented.  */
 
-class success_call_info : public call_info
+class succeed_or_fail_call_info : public call_info
 {
 public:
   label_text get_desc (bool can_colorize) const final override;
 
 protected:
-  success_call_info (const call_details &cd) : call_info (cd) {}
+  succeed_or_fail_call_info (const call_details &cd, bool success)
+   : call_info (cd), m_success (success) {}
+
+  bool m_success;
+};
+
+/* Subclass of call_info for a "success" outcome of a call,
+   adding a "when `FNDECL' succeeds" message.
+   This is still abstract: the custom_edge_info::update_model vfunc
+   must be implemented.  */
+
+class success_call_info : public succeed_or_fail_call_info
+{
+protected:
+  success_call_info (const call_details &cd)
+  : succeed_or_fail_call_info (cd, true)
+  {}
 };
 
 /* Subclass of call_info for a "failure" outcome of a call,
@@ -69,13 +88,12 @@ protected:
    This is still abstract: the custom_edge_info::update_model vfunc
    must be implemented.  */
 
-class failed_call_info : public call_info
+class failed_call_info : public succeed_or_fail_call_info
 {
-public:
-  label_text get_desc (bool can_colorize) const final override;
-
 protected:
-  failed_call_info (const call_details &cd) : call_info (cd) {}
+  failed_call_info (const call_details &cd)
+  : succeed_or_fail_call_info (cd, false)
+  {}
 };
 
 } // namespace ana

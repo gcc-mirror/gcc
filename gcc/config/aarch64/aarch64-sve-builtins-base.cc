@@ -45,6 +45,7 @@
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-functions.h"
 #include "ssa.h"
+#include "gimple-fold.h"
 
 using namespace aarch64_sve;
 
@@ -1209,7 +1210,8 @@ public:
        vectype is the corresponding ADVSIMD type.  */
 
     if (!BYTES_BIG_ENDIAN
-	&& integer_all_onesp (arg0))
+	&& integer_all_onesp (arg0)
+	&& !flag_non_call_exceptions)
       {
 	tree lhs = gimple_call_lhs (f.call);
 	tree lhs_type = TREE_TYPE (lhs);
@@ -1232,7 +1234,9 @@ public:
 	tree mem_ref_op = fold_build2 (MEM_REF, access_type, arg1, zero);
 	gimple *mem_ref_stmt
 	  = gimple_build_assign (mem_ref_lhs, mem_ref_op);
-	gsi_insert_before (f.gsi, mem_ref_stmt, GSI_SAME_STMT);
+
+	gimple_seq stmts = NULL;
+	gimple_seq_add_stmt_without_update (&stmts, mem_ref_stmt);
 
 	int source_nelts = TYPE_VECTOR_SUBPARTS (access_type).to_constant ();
 	vec_perm_builder sel (lhs_len, source_nelts, 1);
@@ -1245,8 +1249,11 @@ public:
 						   indices));
 	tree mask_type = build_vector_type (ssizetype, lhs_len);
 	tree mask = vec_perm_indices_to_tree (mask_type, indices);
-	return gimple_build_assign (lhs, VEC_PERM_EXPR,
-				    mem_ref_lhs, mem_ref_lhs, mask);
+	gimple *g2 = gimple_build_assign (lhs, VEC_PERM_EXPR,
+					  mem_ref_lhs, mem_ref_lhs, mask);
+	gimple_seq_add_stmt_without_update (&stmts, g2);
+	gsi_replace_with_seq_vops (f.gsi, stmts);
+	return g2;
       }
 
     return NULL;

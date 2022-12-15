@@ -57,7 +57,6 @@ consteval int
 f13 (int x)
 {
   static int a = 5;		// { dg-error "'a' defined 'static' in 'consteval' function only available with" "" { target c++20_only } }
-				// { dg-error "'a' defined 'static' in 'constexpr' context" "" { target c++23 } .-1 }
   thread_local int b = 6;	// { dg-error "'b' defined 'thread_local' in 'consteval' function only available with" "" { target c++20_only } }
   return x;
 }

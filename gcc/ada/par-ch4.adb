@@ -1775,7 +1775,7 @@ package body Ch4 is
             if Token = Tok_Identifier then
                Id := P_Defining_Identifier;
                if Token = Tok_Greater then
-                  if Extensions_Allowed then
+                  if Core_Extensions_Allowed then
                      Set_Box_Present (Assoc_Node);
                      Set_Binding_Chars (Assoc_Node, Chars (Id));
                      Box_Present := True;
@@ -1813,7 +1813,7 @@ package body Ch4 is
             if Token = Tok_Identifier then
                Id := P_Defining_Identifier;
 
-               if not Extensions_Allowed then
+               if not Core_Extensions_Allowed then
                   Error_Msg_GNAT_Extension
                     ("IS following component association", Token_Ptr);
                elsif Box_With_Identifier_Present then

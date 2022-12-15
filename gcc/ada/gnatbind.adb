@@ -215,6 +215,9 @@ procedure Gnatbind is
          No_Specification_Of_Aspect      => False,
          --  Requires a parameter value, not a count
 
+         No_Task_Hierarchy_Implicit      => False,
+         --  A compiler implementation artifact, not a documented restriction
+
          No_Use_Of_Attribute             => False,
          --  Requires a parameter value, not a count
 

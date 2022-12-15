@@ -296,8 +296,9 @@ builtin_memref::builtin_memref (pointer_query &ptrqry, gimple *stmt, tree expr,
   tree basetype = TREE_TYPE (base);
   if (TREE_CODE (basetype) == ARRAY_TYPE)
     {
-      if (ref && array_at_struct_end_p (ref))
-	;   /* Use the maximum possible offset for last member arrays.  */
+      if (ref && array_ref_flexible_size_p (ref))
+	;   /* Use the maximum possible offset for an array that might
+	       have flexible size.  */
       else if (tree basesize = TYPE_SIZE_UNIT (basetype))
 	if (TREE_CODE (basesize) == INTEGER_CST)
 	  /* Size could be non-constant for a variable-length type such
@@ -1733,7 +1734,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
   if (!oobref)
     return no_warning;
 
-  const opt_code opt = OPT_Warray_bounds;
+  const opt_code opt = OPT_Warray_bounds_;
   /* Return true without issuing a warning.  */
   if (!do_warn)
     return opt;

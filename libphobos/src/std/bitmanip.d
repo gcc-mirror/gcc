@@ -1418,9 +1418,9 @@ public:
     /**
       Flips a single bit, specified by `pos`
      */
-    void flip(size_t i) @nogc pure nothrow
+    void flip(size_t pos) @nogc pure nothrow
     {
-        bt(_ptr, i) ? btr(_ptr, i) : bts(_ptr, i);
+        bt(_ptr, pos) ? btr(_ptr, pos) : bts(_ptr, pos);
     }
 
     ///
