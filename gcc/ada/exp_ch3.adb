@@ -6230,6 +6230,11 @@ package body Exp_Ch3 is
       Base_Typ : constant Entity_Id  := Base_Type (Typ);
       Next_N   : constant Node_Id    := Next (N);
 
+      Special_Ret_Obj : constant Boolean := Is_Special_Return_Object (Def_Id);
+      --  If this is a special return object, it will be allocated differently
+      --  and ultimately rewritten as a renaming, so initialization activities
+      --  need to be deferred until after that is done.
+
       function Build_Equivalent_Aggregate return Boolean;
       --  If the object has a constrained discriminated type and no initial
       --  value, it may be possible to build an equivalent aggregate instead,
@@ -7343,7 +7348,7 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-         if not Is_Special_Return_Object (Def_Id) then
+         if not Special_Ret_Obj then
             Default_Initialize_Object (Init_After);
          end if;
 
@@ -7403,7 +7408,7 @@ package body Exp_Ch3 is
                Expander_Mode_Restore;
             end if;
 
-            if not Is_Special_Return_Object (Def_Id) then
+            if not Special_Ret_Obj then
                Convert_Aggr_In_Object_Decl (N);
             end if;
 
@@ -7479,7 +7484,7 @@ package body Exp_Ch3 is
             --  case, the expansion of the return statement will take care of
             --  creating the object (via allocator) and initializing it.
 
-            if Is_Special_Return_Object (Def_Id) then
+            if Special_Ret_Obj then
 
                --  If the type needs finalization and is not inherently
                --  limited, then the target is adjusted after the copy
@@ -7791,7 +7796,7 @@ package body Exp_Ch3 is
             if Present (Tag_Assign) then
                if Present (Following_Address_Clause (N)) then
                   Ensure_Freeze_Node (Def_Id);
-               elsif not Is_Special_Return_Object (Def_Id) then
+               elsif not Special_Ret_Obj then
                   Insert_Action_After (Init_After, Tag_Assign);
                end if;
 
@@ -7931,7 +7936,7 @@ package body Exp_Ch3 is
                 and then
                   ((not Is_Library_Level_Entity (Def_Id)
                      and then Is_Captured_Function_Call (Expr_Q)
-                     and then (not Is_Special_Return_Object (Def_Id)
+                     and then (not Special_Ret_Obj
                                 or else Is_Related_To_Func_Return
                                           (Entity (Prefix (Expr_Q))))
                      and then not Is_Class_Wide_Type (Typ))
@@ -7945,12 +7950,14 @@ package body Exp_Ch3 is
 
                    --     Obj : Typ renames Expr;
 
-                   or else OK_To_Rename_Ref (Expr_Q)
+                   or else (OK_To_Rename_Ref (Expr_Q)
+                             and then not Special_Ret_Obj)
 
                    --  Likewise if it is a slice of such a variable
 
                    or else (Nkind (Expr_Q) = N_Slice
-                             and then OK_To_Rename_Ref (Prefix (Expr_Q))));
+                             and then OK_To_Rename_Ref (Prefix (Expr_Q))
+                             and then not Special_Ret_Obj));
 
             --  If the type needs finalization and is not inherently limited,
             --  then the target is adjusted after the copy and attached to the
@@ -7971,9 +7978,7 @@ package body Exp_Ch3 is
                    Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
                    Typ     => Base_Typ);
 
-               if Present (Adj_Call)
-                 and then not Is_Special_Return_Object (Def_Id)
-               then
+               if Present (Adj_Call) and then not Special_Ret_Obj then
                   Insert_Action_After (Init_After, Adj_Call);
                end if;
             end if;
@@ -8601,9 +8606,7 @@ package body Exp_Ch3 is
             end;
          end if;
 
-         if Is_Special_Return_Object (Def_Id)
-           and then Present (Tag_Assign)
-         then
+         if Special_Ret_Obj and then Present (Tag_Assign) then
             Insert_Action_After (Init_After, Tag_Assign);
          end if;
 
