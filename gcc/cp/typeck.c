@@ -6582,9 +6582,13 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 				   build_zero_cst (TREE_TYPE (arg)), complain);
       arg = perform_implicit_conversion (boolean_type_node, arg,
 					 complain);
-      val = invert_truthvalue_loc (location, arg);
       if (arg != error_mark_node)
-	return val;
+	{
+	  val = invert_truthvalue_loc (location, arg);
+	  if (obvalue_p (val))
+	    val = non_lvalue_loc (location, val);
+	  return val;
+	}
       errstring = _("in argument to unary !");
       break;
 
