@@ -2569,13 +2569,17 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	  && !old_edge->src->aux)
 	new_bb->count -= old_edge->count ().apply_scale (num, den);
 
-  for (si = gsi_start_bb (new_bb); !gsi_end_p (si);)
+  /* Walk stmts from end to start so that splitting will adjust the BB
+     pointer for each stmt at most once, even when we split the block
+     multiple times.  */
+  bool seen_nondebug = false;
+  for (si = gsi_last_bb (new_bb); !gsi_end_p (si);)
     {
       bool can_throw, nonlocal_goto;
       gimple *copy_stmt = gsi_stmt (si);
 
       /* Do this before the possible split_block.  */
-      gsi_next (&si);
+      gsi_prev (&si);
 
       /* If this tree could throw an exception, there are two
          cases where we need to add abnormal edge(s): the
@@ -2595,24 +2599,22 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 
       if (can_throw || nonlocal_goto)
 	{
-	  if (!gsi_end_p (si))
+	  /* If there's only debug insns after copy_stmt don't split
+	     the block but instead mark the block for cleanup.  */
+	  if (!seen_nondebug)
+	    need_debug_cleanup = true;
+	  else
 	    {
-	      while (!gsi_end_p (si) && is_gimple_debug (gsi_stmt (si)))
-		gsi_next (&si);
-	      if (gsi_end_p (si))
-		need_debug_cleanup = true;
-	    }
-	  if (!gsi_end_p (si))
-	    /* Note that bb's predecessor edges aren't necessarily
-	       right at this point; split_block doesn't care.  */
-	    {
+	      /* Note that bb's predecessor edges aren't necessarily
+		 right at this point; split_block doesn't care.  */
 	      edge e = split_block (new_bb, copy_stmt);
-
-	      new_bb = e->dest;
-	      new_bb->aux = e->src->aux;
-	      si = gsi_start_bb (new_bb);
+	      e->dest->aux = new_bb->aux;
+	      seen_nondebug = false;
 	    }
 	}
+
+      if (!is_gimple_debug (copy_stmt))
+	seen_nondebug = true;
 
       bool update_probs = false;
 
