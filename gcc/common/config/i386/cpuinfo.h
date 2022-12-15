@@ -551,6 +551,8 @@ get_intel_cpu (struct __processor_model *cpu_model,
       break;
     case 0x8f:
       /* Sapphire Rapids.  */
+    case 0xcf:
+      /* Emerald Rapids.  */
       cpu = "sapphirerapids";
       CHECK___builtin_cpu_is ("corei7");
       CHECK___builtin_cpu_is ("sapphirerapids");
