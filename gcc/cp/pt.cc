@@ -185,6 +185,7 @@ static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
 static void tsubst_each_template_parm_constraints (tree, tree, tsubst_flags_t);
 tree most_specialized_partial_spec (tree, tsubst_flags_t);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
+static tree tsubst_aggr_type_1 (tree, tree, tsubst_flags_t, tree, int);
 static tree tsubst_arg_types (tree, tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
 static bool check_specialization_scope (void);
@@ -13828,57 +13829,80 @@ tsubst_aggr_type (tree t,
   if (t == NULL_TREE)
     return NULL_TREE;
 
-  /* If T is an alias template specialization, we want to substitute that
-     rather than strip it, especially if it's dependent_alias_template_spec_p.
-     It should be OK not to handle entering_scope in this case, since
-     DECL_CONTEXT will never be an alias template specialization.  We only get
-     here with an alias when tsubst calls us for TYPENAME_TYPE.  */
-  if (alias_template_specialization_p (t, nt_transparent))
-    return tsubst (t, args, complain, in_decl);
+  /* Handle typedefs via tsubst so that they get consistently reused.  */
+  if (typedef_variant_p (t))
+    {
+      t = tsubst (t, args, complain, in_decl);
+      if (t == error_mark_node)
+	return error_mark_node;
+
+      /* The effect of entering_scope is that for a dependent specialization
+	 A<T>, lookup_template_class prefers to return A's primary template
+	 type instead of the implicit instantiation.  So when entering_scope,
+	 we mirror this behavior by inspecting TYPE_CANONICAL appropriately,
+	 taking advantage of the fact that lookup_template_class links the two
+	 types by setting TYPE_CANONICAL of the latter to the former.  */
+      if (entering_scope
+	  && CLASS_TYPE_P (t)
+	  && dependent_type_p (t)
+	  && TYPE_CANONICAL (t) == TREE_TYPE (TYPE_TI_TEMPLATE (t)))
+	t = TYPE_CANONICAL (t);
+
+      return t;
+    }
 
   switch (TREE_CODE (t))
     {
-    case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (t))
-	return tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, complain, in_decl);
+      case RECORD_TYPE:
+      case ENUMERAL_TYPE:
+      case UNION_TYPE:
+	return tsubst_aggr_type_1 (t, args, complain, in_decl, entering_scope);
 
-      /* Fall through.  */
-    case ENUMERAL_TYPE:
-    case UNION_TYPE:
-      if (TYPE_TEMPLATE_INFO (t) && uses_template_parms (t))
-	{
-	  tree argvec;
-	  tree r;
-
-	  /* Figure out what arguments are appropriate for the
-	     type we are trying to find.  For example, given:
-
-	       template <class T> struct S;
-	       template <class T, class U> void f(T, U) { S<U> su; }
-
-	     and supposing that we are instantiating f<int, double>,
-	     then our ARGS will be {int, double}, but, when looking up
-	     S we only want {double}.  */
-	  argvec = tsubst_template_args (TYPE_TI_ARGS (t), args,
-					 complain, in_decl);
-	  if (argvec == error_mark_node)
-	    r = error_mark_node;
-	  else
-	    {
-	      r = lookup_template_class (t, argvec, in_decl, NULL_TREE,
-					 entering_scope, complain);
-	      r = cp_build_qualified_type (r, cp_type_quals (t), complain);
-	    }
-
-	  return r;
-	}
-      else
-	/* This is not a template type, so there's nothing to do.  */
-	return t;
-
-    default:
-      return tsubst (t, args, complain, in_decl);
+      default:
+	return tsubst (t, args, complain, in_decl);
     }
+}
+
+/* The part of tsubst_aggr_type that's shared with the RECORD_, UNION_
+   and ENUMERAL_TYPE cases of tsubst.  */
+
+static tree
+tsubst_aggr_type_1 (tree t,
+		    tree args,
+		    tsubst_flags_t complain,
+		    tree in_decl,
+		    int entering_scope)
+{
+  if (TYPE_TEMPLATE_INFO (t) && uses_template_parms (t))
+    {
+      tree argvec;
+      tree r;
+
+      /* Figure out what arguments are appropriate for the
+	 type we are trying to find.  For example, given:
+
+	   template <class T> struct S;
+	   template <class T, class U> void f(T, U) { S<U> su; }
+
+	 and supposing that we are instantiating f<int, double>,
+	 then our ARGS will be {int, double}, but, when looking up
+	 S we only want {double}.  */
+      argvec = tsubst_template_args (TYPE_TI_ARGS (t), args,
+				     complain, in_decl);
+      if (argvec == error_mark_node)
+	r = error_mark_node;
+      else
+	{
+	  r = lookup_template_class (t, argvec, in_decl, NULL_TREE,
+				     entering_scope, complain);
+	  r = cp_build_qualified_type (r, cp_type_quals (t), complain);
+	}
+
+      return r;
+    }
+  else
+    /* This is not a template type, so there's nothing to do.  */
+    return t;
 }
 
 /* Map from a FUNCTION_DECL to a vec of default argument instantiations,
@@ -15795,10 +15819,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   switch (code)
     {
     case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (t))
+	return tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, complain, in_decl);
+      /* Fall through.  */
     case UNION_TYPE:
     case ENUMERAL_TYPE:
-      return tsubst_aggr_type (t, args, complain, in_decl,
-			       /*entering_scope=*/0);
+      return tsubst_aggr_type_1 (t, args, complain, in_decl,
+				 /*entering_scope=*/0);
 
     case ERROR_MARK:
     case IDENTIFIER_NODE:
