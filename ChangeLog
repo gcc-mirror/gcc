@@ -2,24 +2,27 @@
 
 	* configure.ac (target_libraries): Add target-libgm2.
 	Add NCN_STRICT_CHECK_TARGET_TOOLS entry for gm2.
-	Add GCC_TARGET_TOOL entry for gm2.  (compare_exclusions)
-	add gcc/m2/gm2-compiler/M2Version,
+	Add GCC_TARGET_TOOL entry for gm2.
+	(compare_exclusions): Add gcc/m2/gm2-compiler/M2Version,
 	gcc/m2/gm2-compiler-boot/SYSTEM and gcc/m2/gm2version.
-	* Makefile.def (target_modules): Add libgm2.  (flags_to_pass)
-	Add GM2_FOR_TARGET, GM2FLAGS_FOR_TARGET.  (dependencies) Add
-	all-target-libgm2 and on=all-target-libatomic.  (languages)
-	Add entry for language=m2 with gcc-check-target=check-m2
+	* Makefile.def (target_modules): Add libgm2.
+	(flags_to_pass): Add GM2_FOR_TARGET, GM2FLAGS_FOR_TARGET.
+	(dependencies): Add all-target-libgm2 and on=all-target-libatomic.
+	(languages): Add entry for language=m2 with gcc-check-target=check-m2
 	and lib-check-target=check-target-libgm2.
-	* Makefile.tpl (BUILD_EXPORTS): Add definition for GM2
-	and GM2FLAGS.  (HOST_EXPORTS) Add definition for GM2.
-	(BASE_TARGET_EXPORTS) Add definition for GM2.
-	(GM2_FOR_BUILD) Defined.  (GM2FLAGS) Defined.
-	(GM2_FOR_TARGET) Defined.  (GM2FLAGS_FOR_TARGET) Defined.
-	(EXTRA_HOST_FLAGS) Defined.  (POSTSTAGE1_FLAGS_TO_PASS)
-	Add GM2 and GM2_FOR_BUILD.  (EXTRA_TARGET_FLAGS) Add
-	GM2 and GM2FLAGS.  (EXTRA_GCC_FLAGS) Add GM2_FOR_TARGET.
-	* configure: (Rebuilt).
-	* Makefile.in: (Rebuilt).
+	* Makefile.tpl (BUILD_EXPORTS): Add definition for GM2 and GM2FLAGS.
+	(HOST_EXPORTS): Add definition for GM2.
+	(BASE_TARGET_EXPORTS): Add definition for GM2.
+	(GM2_FOR_BUILD): Defined.
+	(GM2FLAGS): Defined.
+	(GM2_FOR_TARGET): Defined.
+	(GM2FLAGS_FOR_TARGET): Defined.
+	(EXTRA_HOST_FLAGS): Defined.
+	(POSTSTAGE1_FLAGS_TO_PASS): Add GM2 and GM2_FOR_BUILD.
+	(EXTRA_TARGET_FLAGS): Add GM2 and GM2FLAGS.
+	(EXTRA_GCC_FLAGS): Add GM2_FOR_TARGET.
+	* configure: Rebuilt.
+	* Makefile.in: Rebuilt.
 
 2022-12-13  Philip Herron  <philip.herron@embecosm.com>
 

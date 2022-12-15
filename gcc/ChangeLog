@@ -41,13 +41,15 @@
 	* configure.ac (HAVE_PYTHON): Test for Python3 added.
 	* dwarf2out.cc (gen_compile_unit_die): Check language_string
 	and language to DW_LANG_Modula2.
-	* doc/install.texi: Add m2 as a language.  (--disable-libgm2)
-	Documented.  Add make check-m2 to testing selected tests.
+	* doc/install.texi: Add m2 as a language.
+	(--disable-libgm2): Documented.  Add make check-m2 to testing selected
+	tests.
 	* doc/sourcebuild.texi (GM2): New prerequisite item.
-	(Python3 modules) New item.  (libgm2) Added.
+	(Python3 modules) New item.
+	(libgm2) Added.
 	(gcc/m2) Added.
-	* configure: (Rebuilt).
-	* config.in: (Rebuilt).
+	* configure: Rebuilt.
+	* config.in: Rebuilt.
 	* doc/gm2.texi: New file.
 
 2022-12-14  Martin Jambor  <mjambor@suse.cz>
