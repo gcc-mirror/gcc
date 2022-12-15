@@ -31,6 +31,16 @@ GM2_1 = ./gm2 -B./stage1/m2 -g -fm2-g
 
 GM2_FOR_TARGET = $(STAGE_CC_WRAPPER) ./gm2 -B./ -B$(build_tooldir)/bin/ -L$(objdir)/../ld $(TFLAGS)
 
+# FIXME: Get from gcc-plugin.m4 instead of hardcoding.
+ifeq (,$(findstring darwin,$(host)))
+  soext=.so
+else
+  soext=.dylib
+  PLUGINLDFLAGS = -Wl,-undefined,dynamic_lookup
+  PLUGINLDFLAGS += -Wl,-install_name,m2rte$(soext)
+  PLUGINLDFLAGS += -nodefaultlibs
+endif
+
 TEXISRC = $(objdir)/m2/images/gnu.eps \
           $(srcdir)/doc/gm2.texi \
           m2/gm2-libs.texi \
@@ -114,9 +124,9 @@ po-generated:
 
 # Build hooks:
 
-m2.all.cross: gm2-cross$(exeext) plugin/m2rte$(exeext).so
+m2.all.cross: gm2-cross$(exeext) plugin/m2rte$(soext)
 
-m2.start.encap: gm2$(exeext) plugin/m2rte$(exeext).so
+m2.start.encap: gm2$(exeext) plugin/m2rte$(soext)
 m2.rest.encap:
 
 
@@ -403,14 +413,16 @@ m2.uninstall:
 
 m2.install-plugin: installdirs
 	$(mkinstalldirs) $(DESTDIR)$(plugin_resourcesdir)
-	$(INSTALL_PROGRAM) plugin/m2rte$(exeext).so $(DESTDIR)$(plugin_resourcesdir)/m2rte$(exeext).so
-	chmod a+x $(DESTDIR)$(plugin_resourcesdir)/m2rte$(exeext).so
+	$(INSTALL_PROGRAM) plugin/m2rte$(soext) $(DESTDIR)$(plugin_resourcesdir)/m2rte$(soext)
+	chmod a+x $(DESTDIR)$(plugin_resourcesdir)/m2rte$(soext)
 
-plugin/m2rte$(exeext).so: $(srcdir)/m2/plugin/m2rte.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2) \
+override PLUGINCFLAGS := $(filter-out -mdynamic-no-pic,$(PLUGINCFLAGS))
+
+plugin/m2rte$(soext): $(srcdir)/m2/plugin/m2rte.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2) \
         insn-attr-common.h insn-flags.h $(generated_files)
 	test -d plugin || mkdir plugin
-	$(PLUGINCC) $(PLUGINCFLAGS) -fno-rtti -I. -I$(srcdir) -I$(srcdir)/m2 -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/../include -I$(srcdir)/../libcpp/include -Wall $(GMPINC) -Wno-literal-suffix -fPIC -c -o plugin/m2rte.o $(srcdir)/m2/plugin/m2rte.cc
-	$(PLUGINCC) $(PLUGINCFLAGS) $(PLUGINLIBS) -fno-rtti plugin/m2rte.o -shared -o $@
+	$(PLUGINCC) $(PLUGINCFLAGS) -fno-rtti -I. -I$(srcdir) $(INCINTL) -I$(srcdir)/m2 -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/../include -I$(srcdir)/../libcpp/include -Wall $(GMPINC) -Wno-literal-suffix -fPIC -c -o plugin/m2rte.o $(srcdir)/m2/plugin/m2rte.cc
+	$(PLUGINCC) $(PLUGINCFLAGS) $(PLUGINLDFLAGS) $(PLUGINLIBS) $(LIBINTL) -fno-rtti plugin/m2rte.o -shared -o $@
 
 
 # Clean hooks:
@@ -526,7 +538,7 @@ cc1gm2$(exeext): stage1/m2/cc1gm2$(exeext) $(m2.prev)
 
 stage2/m2/cc1gm2$(exeext): stage1/m2/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(P) \
                             $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so m2/gm2-libs-boot/M2LINK.o
+                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext) m2/gm2-libs-boot/M2LINK.o
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
 	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler/m2flex.o \
                             attribs.o \
@@ -538,7 +550,7 @@ stage2/m2/cc1gm2$(exeext): stage1/m2/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(
 stage1/m2/cc1gm2$(exeext): gm2$(exeext) m2/gm2-compiler-boot/m2flex.o \
                             $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
                             $(GM2_LIBS_BOOT) $(MC_LIBS) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so \
+                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext) \
                             m2/gm2-libs-boot/M2LINK.o \
                             $(m2.prev)
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
@@ -572,7 +584,7 @@ m2/gm2-gcc/m2configure.o: $(srcdir)/m2/gm2-gcc/m2configure.cc \
                 -c $(srcdir)/m2/gm2-gcc/m2configure.cc $(OUTPUT_OPTION)
 
 m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.cc gt-m2-gm2-lang.h $(GCC_HEADER_DEPENDENCIES_FOR_M2)
-	$(COMPILER) -c -g -I$(GM2GCC) $(ALL_COMPILERFLAGS) \
+	$(COMPILER) -c -g $(GM2GCC) $(ALL_COMPILERFLAGS) \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 m2/stor-layout.o: $(srcdir)/stor-layout.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
@@ -585,7 +597,7 @@ m2/m2pp.o : $(srcdir)/m2/m2pp.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
 
 m2/gm2-gcc/rtegraph.o: $(srcdir)/m2/gm2-gcc/rtegraph.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2) \
                        gt-m2-rtegraph.h
-	$(COMPILER) -c -g -I$(GM2GCC) $(ALL_COMPILERFLAGS) \
+	$(COMPILER) -c -g $(GM2GCC) $(ALL_COMPILERFLAGS) \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 c-family/m2pp.o : $(srcdir)/m2/m2pp.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
