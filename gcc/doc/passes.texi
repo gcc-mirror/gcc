@@ -843,12 +843,15 @@ foo()}, this pass tries to change the call so that the address of
 pass is located in @code{tree-nrv.cc} and is described by
 @code{pass_return_slot}.
 
-@item Optimize calls to @code{__builtin_object_size}
+@item Optimize calls to @code{__builtin_object_size} or
+@code{__builtin_dynamic_object_size}
 
-This is a propagation pass similar to CCP that tries to remove calls
-to @code{__builtin_object_size} when the size of the object can be
-computed at compile-time.  This pass is located in
-@file{tree-object-size.cc} and is described by
+This is a propagation pass similar to CCP that tries to remove calls to
+@code{__builtin_object_size} when the upper or lower bound for the size
+of the object can be computed at compile-time.  It also tries to replace
+calls to @code{__builtin_dynamic_object_size} with an expression that
+evaluates the upper or lower bound for the size of the object.  This
+pass is located in @file{tree-object-size.cc} and is described by
 @code{pass_object_sizes}.
 
 @item Loop invariant motion

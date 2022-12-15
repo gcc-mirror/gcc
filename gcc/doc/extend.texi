@@ -14291,8 +14291,14 @@ and GCC does not issue a warning.
 @end deftypefn
 
 @deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
-Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size
-Checking}, for a detailed description of the function.
+Returns a constant size estimate of an object pointed to by @var{ptr}.
+@xref{Object Size Checking}, for a detailed description of the function.
+@end deftypefn
+
+@deftypefn {Built-in Function}{size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})
+Similar to @code{__builtin_object_size} except that the return value
+need not be a constant.  @xref{Object Size Checking}, for a detailed
+description of the function.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_huge_val (void)
