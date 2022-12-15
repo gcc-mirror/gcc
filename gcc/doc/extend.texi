@@ -12796,7 +12796,9 @@ __atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @end smallexample
 
 @node Object Size Checking
-@section Object Size Checking Built-in Functions
+@section Object Size Checking
+
+@subsection Object Size Checking Built-in Functions
 @findex __builtin_object_size
 @findex __builtin_dynamic_object_size
 @findex __builtin___memcpy_chk
@@ -12878,11 +12880,17 @@ which objects @var{ptr} points to at compile time are the same as in the case
 of @code{__builtin_object_size}.
 @end deftypefn
 
-There are built-in functions added for many common string operation
-functions, e.g., for @code{memcpy} @code{__builtin___memcpy_chk}
-built-in is provided.  This built-in has an additional last argument,
-which is the number of bytes remaining in the object the @var{dest}
-argument points to or @code{(size_t) -1} if the size is not known.
+@subsection Object Size Checking and Source Fortification
+
+Hardening of function calls using the @code{_FORTIFY_SOURCE} macro is
+one of the key uses of the object size checking built-in functions.  To
+make implementation of these features more convenient and improve
+optimization and diagnostics, there are built-in functions added for
+many common string operation functions, e.g., for @code{memcpy}
+@code{__builtin___memcpy_chk} built-in is provided.  This built-in has
+an additional last argument, which is the number of bytes remaining in
+the object the @var{dest} argument points to or @code{(size_t) -1} if
+the size is not known.
 
 The built-in functions are optimized into the normal string functions
 like @code{memcpy} if the last argument is @code{(size_t) -1} or if
