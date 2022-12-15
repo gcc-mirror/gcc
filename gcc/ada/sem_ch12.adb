@@ -12150,13 +12150,42 @@ package body Sem_Ch12 is
          end;
 
          --  If it is a child unit, make the parent instance (which is an
-         --  instance of the parent of the generic) visible. The parent
-         --  instance is the prefix of the name of the generic unit.
+         --  instance of the parent of the generic) visible.
+
+         --  1) The child unit's parent is an explicit parent instance (the
+         --  prefix of the name of the generic unit):
+
+         --    package Child_Package is new Parent_Instance.Child_Unit;
+
+         --  2) The child unit's parent is an implicit parent instance (e.g.
+         --  when instantiating a sibling package):
+
+         --  generic
+         --  package Parent.Second_Child is
+         --    ...
+
+         --  generic
+         --  package Parent.First_Child is
+         --    package Sibling_Package is new Second_Child;
+
+         --  3) The child unit's parent is not an instance, so the scope is
+         --  simply the one of the unit.
 
          if Ekind (Scope (Gen_Unit)) = E_Generic_Package
            and then Nkind (Gen_Id) = N_Expanded_Name
          then
             Par_Ent := Entity (Prefix (Gen_Id));
+            Par_Vis := Is_Immediately_Visible (Par_Ent);
+            Install_Parent (Par_Ent, In_Body => True);
+            Par_Installed := True;
+
+         elsif Ekind (Scope (Gen_Unit)) = E_Generic_Package
+           and then Ekind (Scope (Act_Decl_Id)) = E_Package
+           and then Is_Generic_Instance (Scope (Act_Decl_Id))
+         then
+            Par_Ent := Entity
+              (Prefix (Name (Get_Unit_Instantiation_Node
+                               (Scope (Act_Decl_Id)))));
             Par_Vis := Is_Immediately_Visible (Par_Ent);
             Install_Parent (Par_Ent, In_Body => True);
             Par_Installed := True;
