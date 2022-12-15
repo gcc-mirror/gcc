@@ -1,3 +1,15 @@
+2022-12-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108065
+	* region.cc (decl_region::get_svalue_for_initializer): Bail out to
+	avoid calling binding_key::make with an empty region.
+	* store.cc (binding_map::apply_ctor_val_to_range): Likewise.
+	(binding_map::apply_ctor_pair_to_child_region): Likewise.
+	(binding_cluster::bind): Likewise.
+	(binding_cluster::purge_region): Likewise.
+	(binding_cluster::maybe_get_compound_binding): Likewise.
+	(binding_cluster::maybe_get_simple_value): Likewise.
+
 2022-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (class known_function): Expand comment.

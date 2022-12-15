@@ -1,3 +1,24 @@
+2022-12-14  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add copyright header.
+	* analyze_brprob_spec.py: Likewise.
+	* check-params-in-docs.py: Likewise.
+	* check_GNU_style.py: Likewise.
+	* check_GNU_style_lib.py: Likewise.
+	* filter-clang-warnings.py: Likewise.
+	* gcc-changelog/git_check_commit.py: Likewise.
+	* gcc-changelog/git_commit.py: Likewise.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/git_update_version.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* mark_spam.py: Likewise.
+
+2022-12-14  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Check for number of hunks and not if a modified
+	file is binary.
+
 2022-12-12  Martin Liska  <mliska@suse.cz>
 
 	* mklog.py: Do not search PR entry in a file that is binary.

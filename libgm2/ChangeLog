@@ -1,0 +1,39 @@
+2022-12-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Makefile.am: (New file).
+	* autogen.sh: (New file).
+	* config.h.in: (New file).
+	* configure.ac: (New file).
+	* libm2cor/KeyBoardLEDs.cc: (New file).
+	* libm2cor/Makefile.am: (New file).
+	* libm2iso/ChanConsts.h: (New file).
+	* libm2iso/ErrnoCategory.cc: (New file).
+	* libm2iso/Makefile.am: (New file).
+	* libm2iso/RTco.cc: (New file).
+	* libm2iso/m2rts.h: (New file).
+	* libm2iso/wrapsock.c: (New file).
+	* libm2iso/wraptime.c: (New file).
+	* libm2log/Break.c: (New file).
+	* libm2log/Makefile.am: (New file).
+	* libm2min/Makefile.am: (New file).
+	* libm2min/libc.c: (New file).
+	* libm2pim/Makefile.am: (New file).
+	* libm2pim/Selective.cc: (New file).
+	* libm2pim/SysExceptions.cc: (New file).
+	* libm2pim/UnixArgs.cc: (New file).
+	* libm2pim/cgetopt.cc: (New file).
+	* libm2pim/dtoa.cc: (New file).
+	* libm2pim/errno.cc: (New file).
+	* libm2pim/ldtoa.cc: (New file).
+	* libm2pim/sckt.cc: (New file).
+	* libm2pim/target.c: (New file).
+	* libm2pim/termios.cc: (New file).
+	* libm2pim/wrapc.c: (New file).
+	* configure: (Rebuilt).
+	* libm2log/Makefile.in: (Rebuilt).
+	* libm2min/Makefile.in: (Rebuilt).
+	* libm2cor/Makefile.in: (Rebuilt).
+	* libm2pim/Makefile.in: (Rebuilt).
+	* libm2iso/Makefile.in: (Rebuilt).
+	* Makefile.in: New file.
+	* aclocal.m4: New file.
