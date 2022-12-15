@@ -60,15 +60,15 @@ proc check_compile {basename type contents args} {
 	set options ""
     }
     switch -glob -- $contents {
-	"*/\* Assembly*" { set src ${basename}[pid].S }
+	"*/\\* Assembly*" { set src ${basename}[pid].S }
 	"*! Fortran*" { set src ${basename}[pid].f90 }
 	"*// C++*" { set src ${basename}[pid].cc }
 	"*// D*" { set src ${basename}[pid].d }
 	"*// ObjC++*" { set src ${basename}[pid].mm }
-	"*/* ObjC*" { set src ${basename}[pid].m }
+	"*/\\* ObjC*" { set src ${basename}[pid].m }
 	"*// Go*" { set src ${basename}[pid].go }
 	"*// Rust*" { set src ${basename}[pid].rs }
-	"*(\* Modula-2*" { set src ${basename}[pid].mod }
+	"*(\\* Modula-2*" { set src ${basename}[pid].mod }
 	default {
 	    switch -- $tool {
 		"objc" { set src ${basename}[pid].m }
