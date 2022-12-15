@@ -191,6 +191,24 @@ test_value_or()
   return true;
 }
 
+constexpr bool
+test_error_or()
+{
+  std::expected<int, int> e1(1), e2(std::unexpect, 3);
+  VERIFY( e1.error_or(2) == 2 );
+  VERIFY( std::move(e1).error_or(2) == 2 );
+  VERIFY( e2.error_or(2) == 3 );
+  VERIFY( std::move(e2).error_or(2) == 3 );
+
+  std::expected<void, int> e3, e4(std::unexpect, 3);
+  VERIFY( e3.error_or(2) == 2 );
+  VERIFY( std::move(e3).error_or(2) == 2 );
+  VERIFY( e4.error_or(2) == 3 );
+  VERIFY( std::move(e4).error_or(2) == 3 );
+
+  return true;
+}
+
 int main()
 {
   static_assert( test_arrow() );
@@ -206,4 +224,6 @@ int main()
   test_error();
   static_assert( test_value_or() );
   test_value_or();
+  static_assert( test_error_or() );
+  test_error_or();
 }

@@ -35,6 +35,7 @@
 
 #include <initializer_list>
 #include <bits/exception.h>	// exception
+#include <bits/invoke.h>	// __invoke
 #include <bits/stl_construct.h>	// construct_at
 #include <bits/utility.h>	// in_place_t
 
@@ -49,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#define __cpp_lib_expected 202202L
+#define __cpp_lib_expected 202211L
 
   /// Discriminated union that holds an expected value or an error value.
   /**
@@ -151,11 +152,20 @@ namespace __expected
   template<typename _Tp>
     constexpr bool __is_unexpected<unexpected<_Tp>> = true;
 
+  template<typename _Fn, typename _Tp>
+    using __result = remove_cvref_t<invoke_result_t<_Fn&&, _Tp&&>>;
+  template<typename _Fn>
+    using __result0 = remove_cvref_t<invoke_result_t<_Fn&&>>;
+
   template<typename _Er>
     concept __can_be_unexpected
       = is_object_v<_Er> && (!is_array_v<_Er>)
 	  && (!__expected::__is_unexpected<_Er>)
 	  && (!is_const_v<_Er>) && (!is_volatile_v<_Er>);
+
+  // Tag types for in-place construction from an invocation result.
+  struct __in_place_inv { };
+  struct __unexpect_inv { };
 }
 /// @endcond
 
@@ -333,6 +343,14 @@ namespace __expected
 	  = __or_v<__not_<is_convertible<_Up, _Tp>>,
 		   __not_<is_convertible<_Err, _Er>>
 		  >;
+
+      template<typename _Up>
+	static constexpr bool __same_val
+	  = is_same_v<typename _Up::value_type, _Tp>;
+
+      template<typename _Up>
+	static constexpr bool __same_err
+	  = is_same_v<typename _Up::error_type, _Er>;
 
     public:
       using value_type = _Tp;
@@ -791,6 +809,274 @@ namespace __expected
 	  return static_cast<_Tp>(std::forward<_Up>(__v));
 	}
 
+      template<typename _Gr = _Er>
+	constexpr _Er
+	error_or(_Gr&& __e) const&
+	{
+	  static_assert( is_copy_constructible_v<_Er> );
+	  static_assert( is_convertible_v<_Gr, _Er> );
+
+	  if (_M_has_value)
+	    return std::forward<_Gr>(__e);
+	  return _M_unex;
+	}
+
+      template<typename _Gr = _Er>
+	constexpr _Er
+	error_or(_Gr&& __e) &&
+	{
+	  static_assert( is_move_constructible_v<_Er> );
+	  static_assert( is_convertible_v<_Gr, _Er> );
+
+	  if (_M_has_value)
+	    return std::forward<_Gr>(__e);
+	  return std::move(_M_unex);
+	}
+
+      // monadic operations
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	and_then(_Fn&& __f) &
+	{
+	  using _Up = __expected::__result<_Fn, _Tp&>;
+	  static_assert(__expected::__is_expected<_Up>);
+	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), value());
+	  else
+	    return _Up(unexpect, error());
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	and_then(_Fn&& __f) const &
+	{
+	  using _Up = __expected::__result<_Fn, const _Tp&>;
+	  static_assert(__expected::__is_expected<_Up>);
+	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), value());
+	  else
+	    return _Up(unexpect, error());
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	and_then(_Fn&& __f) &&
+	{
+	  using _Up = __expected::__result<_Fn, _Tp&&>;
+	  static_assert(__expected::__is_expected<_Up>);
+	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), std::move(value()));
+	  else
+	    return _Up(unexpect, std::move(error()));
+	}
+
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	and_then(_Fn&& __f) const &&
+	{
+	  using _Up = __expected::__result<_Fn, const _Tp&&>;
+	  static_assert(__expected::__is_expected<_Up>);
+	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), std::move(value()));
+	  else
+	    return _Up(unexpect, std::move(error()));
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	or_else(_Fn&& __f) &
+	{
+	  using _Gr = __expected::__result<_Fn, _Er&>;
+	  static_assert(__expected::__is_expected<_Gr>);
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+
+	  if (has_value())
+	    return _Gr(in_place, value());
+	  else
+	    return std::__invoke(std::forward<_Fn>(__f), error());
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	or_else(_Fn&& __f) const &
+	{
+	  using _Gr = __expected::__result<_Fn, const _Er&>;
+	  static_assert(__expected::__is_expected<_Gr>);
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+
+	  if (has_value())
+	    return _Gr(in_place, value());
+	  else
+	    return std::__invoke(std::forward<_Fn>(__f), error());
+	}
+
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	or_else(_Fn&& __f) &&
+	{
+	  using _Gr = __expected::__result<_Fn, _Er&&>;
+	  static_assert(__expected::__is_expected<_Gr>);
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+
+	  if (has_value())
+	    return _Gr(in_place, std::move(value()));
+	  else
+	    return std::__invoke(std::forward<_Fn>(__f), std::move(error()));
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	or_else(_Fn&& __f) const &&
+	{
+	  using _Gr = __expected::__result<_Fn, const _Er&&>;
+	  static_assert(__expected::__is_expected<_Gr>);
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+
+	  if (has_value())
+	    return _Gr(in_place, std::move(value()));
+	  else
+	    return std::__invoke(std::forward<_Fn>(__f), std::move(error()));
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	transform(_Fn&& __f) &
+	{
+	  using _Up = __expected::__result<_Fn, _Tp&>;
+	  using _Res = expected<_Up, _Er>;
+
+	  if (has_value())
+	    return _Res(__in_place_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       _M_val);
+			});
+	  else
+	    return _Res(unexpect, std::move(error()));
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	transform(_Fn&& __f) const &
+	{
+	  using _Up = __expected::__result<_Fn, const _Tp&>;
+	  using _Res = expected<_Up, _Er>;
+
+	  if (has_value())
+	    return _Res(__in_place_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       _M_val);
+			});
+	  else
+	    return _Res(unexpect, std::move(error()));
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	transform(_Fn&& __f) &&
+	{
+	  using _Up = __expected::__result<_Fn, _Tp>;
+	  using _Res = expected<_Up, _Er>;
+
+	  if (has_value())
+	    return _Res(__in_place_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       std::move(_M_val));
+			});
+	  else
+	    return _Res(unexpect, std::move(error()));
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	transform(_Fn&& __f) const &&
+	{
+	  using _Up = __expected::__result<_Fn, const _Tp>;
+	  using _Res = expected<_Up, _Er>;
+
+	  if (has_value())
+	    return _Res(__in_place_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       std::move(_M_val));
+			});
+	  else
+	    return _Res(unexpect, std::move(error()));
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Tp>
+	constexpr auto
+	transform_error(_Fn&& __f) &
+	{
+	  using _Gr = __expected::__result<_Fn, _Er&>;
+	  using _Res = expected<_Tp, _Gr>;
+
+	  if (has_value())
+	    return _Res(in_place, value());
+	  else
+	    return _Res(__unexpect_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       _M_unex);
+			});
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Tp>
+	constexpr auto
+	transform_error(_Fn&& __f) const &
+	{
+	  using _Gr = __expected::__result<_Fn, const _Er&>;
+	  using _Res = expected<_Tp, _Gr>;
+
+	  if (has_value())
+	    return _Res(in_place, value());
+	  else
+	    return _Res(__unexpect_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       _M_unex);
+			});
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Tp>
+	constexpr auto
+	transform_error(_Fn&& __f) &&
+	{
+	  using _Gr = __expected::__result<_Fn, _Er&&>;
+	  using _Res = expected<_Tp, _Gr>;
+
+	  if (has_value())
+	    return _Res(in_place, std::move(value()));
+	  else
+	    return _Res(__unexpect_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       std::move(_M_unex));
+			});
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Tp>
+	constexpr auto
+	transform_error(_Fn&& __f) const &&
+	{
+	  using _Gr = __expected::__result<_Fn, const _Er&&>;
+	  using _Res = expected<_Tp, _Gr>;
+
+	  if (has_value())
+	    return _Res(in_place, std::move(value()));
+	  else
+	    return _Res(__unexpect_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       std::move(_M_unex));
+			});
+	}
+
       // equality operators
 
       template<typename _Up, typename _Er2>
@@ -888,6 +1174,21 @@ namespace __expected
 	  }
       }
 
+      using __in_place_inv = __expected::__in_place_inv;
+      using __unexpect_inv = __expected::__unexpect_inv;
+
+      template<typename _Fn>
+	explicit constexpr
+	expected(__in_place_inv, _Fn&& __fn)
+	: _M_val(std::forward<_Fn>(__fn)()), _M_has_value(true)
+	{ }
+
+      template<typename _Fn>
+	explicit constexpr
+	expected(__unexpect_inv, _Fn&& __fn)
+	: _M_unex(std::forward<_Fn>(__fn)()), _M_has_value(false)
+	{ }
+
       union {
 	_Tp _M_val;
 	_Er _M_unex;
@@ -909,6 +1210,14 @@ namespace __expected
 		   is_constructible<_Unex, const expected<_Up, _Err>&>,
 		   is_constructible<_Unex, const expected<_Up, _Err>>
 		  >;
+
+      template<typename _Up>
+	static constexpr bool __same_val
+	  = is_same_v<typename _Up::value_type, _Tp>;
+
+      template<typename _Up>
+	static constexpr bool __same_err
+	  = is_same_v<typename _Up::error_type, _Er>;
 
     public:
       using value_type = _Tp;
@@ -1180,6 +1489,260 @@ namespace __expected
 	return std::move(_M_unex);
       }
 
+      template<typename _Gr = _Er>
+	constexpr _Er
+	error_or(_Gr&& __e) const&
+	{
+	  static_assert( is_copy_constructible_v<_Er> );
+	  static_assert( is_convertible_v<_Gr, _Er> );
+
+	  if (_M_has_value)
+	    return std::forward<_Gr>(__e);
+	  return _M_unex;
+	}
+
+      template<typename _Gr = _Er>
+	constexpr _Er
+	error_or(_Gr&& __e) &&
+	{
+	  static_assert( is_move_constructible_v<_Er> );
+	  static_assert( is_convertible_v<_Gr, _Er> );
+
+	  if (_M_has_value)
+	    return std::forward<_Gr>(__e);
+	  return std::move(_M_unex);
+	}
+
+      // monadic operations
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	and_then(_Fn&& __f) &
+	{
+	  using _Up = __expected::__result0<_Fn>;
+	  static_assert(__expected::__is_expected<_Up>);
+	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f));
+	  else
+	    return _Up(unexpect, error());
+	}
+
+     template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	and_then(_Fn&& __f) const &
+	{
+	  using _Up = __expected::__result0<_Fn>;
+	  static_assert(__expected::__is_expected<_Up>);
+	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f));
+	  else
+	    return _Up(unexpect, error());
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	and_then(_Fn&& __f) &&
+	{
+	  using _Up = __expected::__result0<_Fn>;
+	  static_assert(__expected::__is_expected<_Up>);
+	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f));
+	  else
+	    return _Up(unexpect, std::move(error()));
+	}
+
+       template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	and_then(_Fn&& __f) const &&
+	{
+	  using _Up = __expected::__result0<_Fn>;
+	  static_assert(__expected::__is_expected<_Up>);
+	  static_assert(is_same_v<typename _Up::error_type, _Er>);
+
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f));
+	  else
+	    return _Up(unexpect, std::move(error()));
+	}
+
+      template<typename _Fn>
+	constexpr auto
+	or_else(_Fn&& __f) &
+	{
+	  using _Gr = __expected::__result<_Fn, _Er&>;
+	  static_assert(__expected::__is_expected<_Gr>);
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+
+	  if (has_value())
+	    return _Gr();
+	  else
+	    return std::__invoke(std::forward<_Fn>(__f), error());
+	}
+
+      template<typename _Fn>
+	constexpr auto
+	or_else(_Fn&& __f) const &
+	{
+	  using _Gr = __expected::__result<_Fn, const _Er&>;
+	  static_assert(__expected::__is_expected<_Gr>);
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+
+	  if (has_value())
+	    return _Gr();
+	  else
+	    return std::__invoke(std::forward<_Fn>(__f), error());
+	}
+
+      template<typename _Fn>
+	constexpr auto
+	or_else(_Fn&& __f) &&
+	{
+	  using _Gr = __expected::__result<_Fn, _Er&&>;
+	  static_assert(__expected::__is_expected<_Gr>);
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+
+	  if (has_value())
+	    return _Gr();
+	  else
+	    return std::__invoke(std::forward<_Fn>(__f), std::move(error()));
+	}
+
+      template<typename _Fn>
+	constexpr auto
+	or_else(_Fn&& __f) const &&
+	{
+	  using _Gr = __expected::__result<_Fn, const _Er&&>;
+	  static_assert(__expected::__is_expected<_Gr>);
+	  static_assert(is_same_v<typename _Gr::value_type, _Tp>);
+
+	  if (has_value())
+	    return _Gr();
+	  else
+	    return std::__invoke(std::forward<_Fn>(__f), std::move(error()));
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	transform(_Fn&& __f) &
+	{
+	  using _Up = __expected::__result0<_Fn>;
+	  using _Res = expected<_Up, _Er>;
+
+	  if (has_value())
+	    return _Res(__in_place_inv{}, std::forward<_Fn>(__f));
+	  else
+	    return _Res(unexpect, error());
+	}
+
+      template<typename _Fn> requires is_copy_constructible_v<_Er>
+	constexpr auto
+	transform(_Fn&& __f) const &
+	{
+	  using _Up = __expected::__result0<_Fn>;
+	  using _Res = expected<_Up, _Er>;
+
+	  if (has_value())
+	    return _Res(__in_place_inv{}, std::forward<_Fn>(__f));
+	  else
+	    return _Res(unexpect, error());
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	transform(_Fn&& __f) &&
+	{
+	  using _Up = __expected::__result0<_Fn>;
+	  using _Res = expected<_Up, _Er>;
+
+	  if (has_value())
+	    return _Res(__in_place_inv{}, std::forward<_Fn>(__f));
+	  else
+	    return _Res(unexpect, std::move(error()));
+	}
+
+      template<typename _Fn> requires is_move_constructible_v<_Er>
+	constexpr auto
+	transform(_Fn&& __f) const &&
+	{
+	  using _Up = __expected::__result0<_Fn>;
+	  using _Res = expected<_Up, _Er>;
+
+	  if (has_value())
+	    return _Res(__in_place_inv{}, std::forward<_Fn>(__f));
+	  else
+	    return _Res(unexpect, std::move(error()));
+	}
+
+      template<typename _Fn>
+	constexpr auto
+	transform_error(_Fn&& __f) &
+	{
+	  using _Gr = __expected::__result<_Fn, _Er&>;
+	  using _Res = expected<_Tp, _Gr>;
+
+	  if (has_value())
+	    return _Res();
+	  else
+	    return _Res(__unexpect_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       _M_unex);
+			});
+	}
+
+      template<typename _Fn>
+	constexpr auto
+	transform_error(_Fn&& __f) const &
+	{
+	  using _Gr = __expected::__result<_Fn, const _Er&>;
+	  using _Res = expected<_Tp, _Gr>;
+
+	  if (has_value())
+	    return _Res();
+	  else
+	    return _Res(__unexpect_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       _M_unex);
+			});
+	}
+
+      template<typename _Fn>
+	constexpr auto
+	transform_error(_Fn&& __f) &&
+	{
+	  using _Gr = __expected::__result<_Fn, _Er&&>;
+	  using _Res = expected<_Tp, _Gr>;
+
+	  if (has_value())
+	    return _Res();
+	  else
+	    return _Res(__unexpect_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       std::move(_M_unex));
+			});
+	}
+
+      template<typename _Fn>
+	constexpr auto
+	transform_error(_Fn&& __f) const &&
+	{
+	  using _Gr = __expected::__result<_Fn, const _Er&&>;
+	  using _Res = expected<_Tp, _Gr>;
+
+	  if (has_value())
+	    return _Res();
+	  else
+	    return _Res(__unexpect_inv{}, [&]() {
+			  return std::__invoke(std::forward<_Fn>(__f),
+					       std::move(_M_unex));
+			});
+	}
+
       // equality operators
 
       template<typename _Up, typename _Er2>
@@ -1223,6 +1786,20 @@ namespace __expected
 	    _M_unex = std::forward<_Vp>(__v);
 	}
 
+      using __in_place_inv = __expected::__in_place_inv;
+      using __unexpect_inv = __expected::__unexpect_inv;
+
+      template<typename _Fn>
+	explicit constexpr
+	expected(__in_place_inv, _Fn&& __fn)
+	: _M_void(), _M_has_value(true)
+	{ std::forward<_Fn>(__fn)(); }
+
+      template<typename _Fn>
+	explicit constexpr
+	expected(__unexpect_inv, _Fn&& __fn)
+	: _M_unex(std::forward<_Fn>(__fn)()), _M_has_value(false)
+	{ }
 
       union {
 	struct { } _M_void;
