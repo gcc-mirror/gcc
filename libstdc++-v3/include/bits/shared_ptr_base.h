@@ -1666,9 +1666,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __weak_ptr&
       operator=(__weak_ptr&& __r) noexcept
       {
-	_M_ptr = __r._M_ptr;
-	_M_refcount = std::move(__r._M_refcount);
-	__r._M_ptr = nullptr;
+	__weak_ptr(std::move(__r)).swap(*this);
 	return *this;
       }
 
