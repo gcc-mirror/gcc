@@ -1477,9 +1477,18 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	if (!(flags & TFF_UNQUALIFIED_NAME))
 	  {
 	    tree scope = USING_DECL_SCOPE (t);
+	    tree name = DECL_NAME (t);
 	    if (PACK_EXPANSION_P (scope))
 	      {
 		scope = PACK_EXPANSION_PATTERN (scope);
+		variadic = true;
+	      }
+	    if (identifier_p (name)
+		&& IDENTIFIER_CONV_OP_P (name)
+		&& PACK_EXPANSION_P (TREE_TYPE (name)))
+	      {
+		name = make_conv_op_name (PACK_EXPANSION_PATTERN
+					  (TREE_TYPE (name)));
 		variadic = true;
 	      }
 	    dump_type (pp, scope, flags);

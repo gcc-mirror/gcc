@@ -14962,43 +14962,81 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
       if (DECL_DEPENDENT_P (t)
 	  || uses_template_parms (USING_DECL_SCOPE (t)))
 	{
+	  /* True iff this using-decl was written as a pack expansion
+	     (and a pack appeared in its scope or name).  If a pack
+	     appeared in both, we expand the packs separately and
+	     manually merge them.  */
+	  bool variadic_p = false;
+
 	  tree scope = USING_DECL_SCOPE (t);
-	  tree name = tsubst_copy (DECL_NAME (t), args, complain, in_decl);
 	  if (PACK_EXPANSION_P (scope))
 	    {
-	      tree vec = tsubst_pack_expansion (scope, args, complain, in_decl);
-	      int len = TREE_VEC_LENGTH (vec);
-	      r = make_tree_vec (len);
-	      for (int i = 0; i < len; ++i)
-		{
-		  tree escope = TREE_VEC_ELT (vec, i);
-		  tree elt = do_class_using_decl (escope, name);
-		  if (!elt)
-		    {
-		      r = error_mark_node;
-		      break;
-		    }
-		  else
-		    {
-		      TREE_PROTECTED (elt) = TREE_PROTECTED (t);
-		      TREE_PRIVATE (elt) = TREE_PRIVATE (t);
-		    }
-		  TREE_VEC_ELT (r, i) = elt;
-		}
+	      scope = tsubst_pack_expansion (scope, args, complain, in_decl);
+	      variadic_p = true;
 	    }
 	  else
+	    scope = tsubst_copy (scope, args, complain, in_decl);
+
+	  tree name = DECL_NAME (t);
+	  if (IDENTIFIER_CONV_OP_P (name)
+	      && PACK_EXPANSION_P (TREE_TYPE (name)))
 	    {
-	      tree inst_scope = tsubst_copy (USING_DECL_SCOPE (t), args,
-					     complain, in_decl);
-	      r = do_class_using_decl (inst_scope, name);
-	      if (!r)
-		r = error_mark_node;
-	      else
+	      name = tsubst_pack_expansion (TREE_TYPE (name), args,
+					    complain, in_decl);
+	      if (name == error_mark_node)
 		{
-		  TREE_PROTECTED (r) = TREE_PROTECTED (t);
-		  TREE_PRIVATE (r) = TREE_PRIVATE (t);
+		  r = error_mark_node;
+		  break;
 		}
+	      for (tree& elt : tree_vec_range (name))
+		elt = make_conv_op_name (elt);
+	      variadic_p = true;
 	    }
+	  else
+	    name = tsubst_copy (name, args, complain, in_decl);
+
+	  int len;
+	  if (!variadic_p)
+	    len = 1;
+	  else if (TREE_CODE (scope) == TREE_VEC
+		   && TREE_CODE (name) == TREE_VEC)
+	    {
+	      if (TREE_VEC_LENGTH (scope) != TREE_VEC_LENGTH (name))
+		{
+		  error ("mismatched argument pack lengths (%d vs %d)",
+			 TREE_VEC_LENGTH (scope), TREE_VEC_LENGTH (name));
+		  r = error_mark_node;
+		  break;
+		}
+	      len = TREE_VEC_LENGTH (scope);
+	    }
+	  else if (TREE_CODE (scope) == TREE_VEC)
+	    len = TREE_VEC_LENGTH (scope);
+	  else /* TREE_CODE (name) == TREE_VEC  */
+	    len = TREE_VEC_LENGTH (name);
+
+	  r = make_tree_vec (len);
+	  for (int i = 0; i < len; ++i)
+	    {
+	      tree escope = (TREE_CODE (scope) == TREE_VEC
+			     ? TREE_VEC_ELT (scope, i)
+			     : scope);
+	      tree ename = (TREE_CODE (name) == TREE_VEC
+			    ? TREE_VEC_ELT (name, i)
+			    : name);
+	      tree elt = do_class_using_decl (escope, ename);
+	      if (!elt)
+		{
+		  r = error_mark_node;
+		  break;
+		}
+	      TREE_PROTECTED (elt) = TREE_PROTECTED (t);
+	      TREE_PRIVATE (elt) = TREE_PRIVATE (t);
+	      TREE_VEC_ELT (r, i) = elt;
+	    }
+
+	  if (!variadic_p && r != error_mark_node)
+	    r = TREE_VEC_ELT (r, 0);
 	}
       else
 	{
