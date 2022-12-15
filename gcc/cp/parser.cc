@@ -21673,6 +21673,13 @@ cp_parser_using_declaration (cp_parser* parser,
 
   cp_warn_deprecated_use_scopes (qscope);
 
+  if (access_declaration_p
+      && !MAYBE_CLASS_TYPE_P (qscope)
+      && TREE_CODE (qscope) != ENUMERAL_TYPE)
+    /* If the qualifying scope of an access-declaration isn't a class
+       or enumeration type then it can't be valid.  */
+    cp_parser_simulate_error (parser);
+
   if (access_declaration_p && cp_parser_error_occurred (parser))
     /* Something has already gone wrong; there's no need to parse
        further.  Since an error has occurred, the return value of
