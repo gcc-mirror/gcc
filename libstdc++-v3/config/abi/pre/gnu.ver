@@ -2794,6 +2794,16 @@ CXXABI_1.3.13 {
 
 } CXXABI_1.3.12;
 
+CXXABI_1.3.14 {
+
+    # typeinfo for _Float{16,32,64,128,32x,64x,128x} and
+    # __bf16
+    _ZTIDF[0-9]*[_bx];
+    _ZTIPDF[0-9]*[_bx];
+    _ZTIPKDF[0-9]*[_bx];
+
+} CXXABI_1.3.13;
+
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {
 

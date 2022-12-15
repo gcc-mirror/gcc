@@ -1603,7 +1603,9 @@ emit_support_tinfos (void)
     &long_long_integer_type_node, &long_long_unsigned_type_node,
     &float_type_node, &double_type_node, &long_double_type_node,
     &dfloat32_type_node, &dfloat64_type_node, &dfloat128_type_node,
-    &nullptr_type_node,
+    &bfloat16_type_node, &float16_type_node, &float32_type_node,
+    &float64_type_node, &float128_type_node, &float32x_type_node,
+    &float64x_type_node, &float128x_type_node, &nullptr_type_node,
     0
   };
   int ix;
