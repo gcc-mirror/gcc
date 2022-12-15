@@ -59,13 +59,127 @@ BuiltinsContext::setup_overflow_fns ()
 void
 BuiltinsContext::setup_math_fns ()
 {
-  tree math_function_type_f32
+  tree fn_type_f32_to_f32
     = build_function_type_list (float_type_node, float_type_node, NULL_TREE);
+  tree fn_type_f64_to_f64
+    = build_function_type_list (double_type_node, double_type_node, NULL_TREE);
+  tree fn_type_f32_f32_to_f32
+    = build_function_type_list (float_type_node, float_type_node,
+				float_type_node, NULL_TREE);
+  tree fn_type_f64_f64_to_f64
+    = build_function_type_list (double_type_node, double_type_node,
+				double_type_node, NULL_TREE);
+  tree fn_type_f32_i32_to_f32
+    = build_function_type_list (float_type_node, float_type_node,
+				integer_type_node, NULL_TREE);
+  tree fn_type_f64_i32_to_f64
+    = build_function_type_list (double_type_node, double_type_node,
+				integer_type_node, NULL_TREE);
+
+  define_builtin ("sqrtf32", BUILT_IN_SQRTF, "__builtin_sqrtf", "sqrtf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("sqrtf64", BUILT_IN_SQRT, "__builtin_sqrt", "sqrt",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("powif32", BUILT_IN_POWIF, "__builtin_powif", "powif",
+		  fn_type_f32_i32_to_f32, builtin_const);
+  define_builtin ("powif64", BUILT_IN_POWI, "__builtin_powi", "powi",
+		  fn_type_f64_i32_to_f64, builtin_const);
 
   define_builtin ("sinf32", BUILT_IN_SINF, "__builtin_sinf", "sinf",
-		  math_function_type_f32, builtin_const);
-  define_builtin ("sqrtf32", BUILT_IN_SQRTF, "__builtin_sqrtf", "sqrtf",
-		  math_function_type_f32, builtin_const);
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("sinf64", BUILT_IN_SIN, "__builtin_sin", "sin",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("cosf32", BUILT_IN_COSF, "__builtin_cosf", "cosf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("cosf64", BUILT_IN_COS, "__builtin_cos", "cos",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("powf32", BUILT_IN_POWF, "__builtin_powf", "powf",
+		  fn_type_f32_f32_to_f32, builtin_const);
+  define_builtin ("powf64", BUILT_IN_POW, "__builtin_pow", "pow",
+		  fn_type_f64_f64_to_f64, builtin_const);
+
+  define_builtin ("expf32", BUILT_IN_EXPF, "__builtin_expf", "expf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("expf64", BUILT_IN_EXP, "__builtin_exp", "exp",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("exp2f32", BUILT_IN_EXP2F, "__builtin_exp2f", "exp2f",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("exp2f64", BUILT_IN_EXP2, "__builtin_exp2", "exp2",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("logf32", BUILT_IN_LOGF, "__builtin_logf", "logf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("logf64", BUILT_IN_LOG, "__builtin_log", "log",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("log10f32", BUILT_IN_LOG10F, "__builtin_log10f", "log10f",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("log10f64", BUILT_IN_LOG10, "__builtin_log10", "log10",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("log2f32", BUILT_IN_LOG2F, "__builtin_log2f", "log2f",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("log2f64", BUILT_IN_LOG2, "__builtin_log2", "log2",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("fmaf32", BUILT_IN_FMAF, "__builtin_fmaf", "fmaf",
+		  fn_type_f32_f32_to_f32, builtin_const);
+  define_builtin ("fmaf64", BUILT_IN_FMA, "__builtin_fma", "fma",
+		  fn_type_f64_f64_to_f64, builtin_const);
+
+  define_builtin ("fabsf32", BUILT_IN_FABSF, "__builtin_fabsf", "fabsf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("fabsf64", BUILT_IN_FABS, "__builtin_fabs", "fabs",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("minnumf32", BUILT_IN_FMINF, "__builtin_fminf", "fminf",
+		  fn_type_f32_f32_to_f32, builtin_const);
+  define_builtin ("minnumf64", BUILT_IN_FMIN, "__builtin_fmin", "fmin",
+		  fn_type_f64_f64_to_f64, builtin_const);
+
+  define_builtin ("maxnumf32", BUILT_IN_FMAXF, "__builtin_fmaxf", "fmaxf",
+		  fn_type_f32_f32_to_f32, builtin_const);
+  define_builtin ("maxnumf64", BUILT_IN_FMAX, "__builtin_fmax", "fmax",
+		  fn_type_f64_f64_to_f64, builtin_const);
+
+  define_builtin ("copysignf32", BUILT_IN_COPYSIGNF, "__builtin_copysignf",
+		  "copysignf", fn_type_f32_f32_to_f32, builtin_const);
+  define_builtin ("copysignf64", BUILT_IN_COPYSIGN, "__builtin_copysign",
+		  "copysign", fn_type_f64_f64_to_f64, builtin_const);
+
+  define_builtin ("floorf32", BUILT_IN_FLOORF, "__builtin_floorf", "floorf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("floorf64", BUILT_IN_FLOOR, "__builtin_floor", "floor",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("ceilf32", BUILT_IN_CEILF, "__builtin_ceilf", "ceilf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("ceilf64", BUILT_IN_CEIL, "__builtin_ceil", "ceil",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("truncf32", BUILT_IN_TRUNCF, "__builtin_truncf", "truncf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("truncf64", BUILT_IN_TRUNC, "__builtin_trunc", "trunc",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("rintf32", BUILT_IN_RINTF, "__builtin_rintf", "rintf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("rintf64", BUILT_IN_RINT, "__builtin_rint", "rint",
+		  fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("nearbyintf32", BUILT_IN_NEARBYINTF, "__builtin_nearbyintf",
+		  "nearbyintf", fn_type_f32_to_f32, builtin_const);
+  define_builtin ("nearbyintf64", BUILT_IN_NEARBYINT, "__builtin_nearbyint",
+		  "nearbyint", fn_type_f64_to_f64, builtin_const);
+
+  define_builtin ("roundf32", BUILT_IN_ROUNDF, "__builtin_roundf", "roundf",
+		  fn_type_f32_to_f32, builtin_const);
+  define_builtin ("roundf64", BUILT_IN_ROUND, "__builtin_round", "round",
+		  fn_type_f64_to_f64, builtin_const);
 }
 
 void
