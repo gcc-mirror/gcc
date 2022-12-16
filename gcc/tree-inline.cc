@@ -1535,7 +1535,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       if (id->reset_location)
 	gimple_set_location (bind, input_location);
       id->debug_stmts.safe_push (bind);
-      gimple_seq_add_stmt (&stmts, bind);
+      gimple_seq_add_stmt_without_update (&stmts, bind);
       return stmts;
     }
 
@@ -1765,7 +1765,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
     }
   else
     {
-      if (gimple_assign_copy_p (stmt)
+      if (gimple_assign_single_p (stmt)
 	  && gimple_assign_lhs (stmt) == gimple_assign_rhs1 (stmt)
 	  && auto_var_in_fn_p (gimple_assign_lhs (stmt), id->src_fn))
 	{
@@ -1833,7 +1833,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  if (id->reset_location)
 	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
-	  gimple_seq_add_stmt (&stmts, copy);
+	  gimple_seq_add_stmt_without_update (&stmts, copy);
 	  return stmts;
 	}
       if (gimple_debug_source_bind_p (stmt))
@@ -1845,7 +1845,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  if (id->reset_location)
 	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
-	  gimple_seq_add_stmt (&stmts, copy);
+	  gimple_seq_add_stmt_without_update (&stmts, copy);
 	  return stmts;
 	}
       if (gimple_debug_nonbind_marker_p (stmt))
@@ -1859,7 +1859,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
 	  id->debug_stmts.safe_push (copy);
-	  gimple_seq_add_stmt (&stmts, copy);
+	  gimple_seq_add_stmt_without_update (&stmts, copy);
 	  return stmts;
 	}
 
@@ -1967,7 +1967,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	       !gsi_end_p (egsi);
 	       gsi_next (&egsi))
 	    walk_gimple_op (gsi_stmt (egsi), remap_gimple_op_r, &wi);
-	  gimple_seq_add_seq (&stmts, extra_stmts);
+	  gimple_seq_add_seq_without_update (&stmts, extra_stmts);
 	}
     }
 
@@ -2006,14 +2006,14 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 				     gimple_cond_code (cond),
 				     gimple_cond_lhs (cond),
 				     gimple_cond_rhs (cond));
-	    gimple_seq_add_stmt (&stmts, cmp);
+	    gimple_seq_add_stmt_without_update (&stmts, cmp);
 	    gimple_cond_set_code (cond, NE_EXPR);
 	    gimple_cond_set_lhs (cond, gimple_assign_lhs (cmp));
 	    gimple_cond_set_rhs (cond, boolean_false_node);
 	  }
     }
 
-  gimple_seq_add_stmt (&stmts, copy);
+  gimple_seq_add_stmt_without_update (&stmts, copy);
   return stmts;
 }
 
