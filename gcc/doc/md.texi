@@ -1511,7 +1511,7 @@ operand 1 (meaning it must match operand 0), and @samp{dKs} for operand
 2.  The second alternative has @samp{d} (data register) for operand 0,
 @samp{0} for operand 1, and @samp{dmKs} for operand 2.  The @samp{=} and
 @samp{%} in the constraints apply to all the alternatives; their
-meaning is explained in the next section (@pxref{Class Preferences}).
+meaning is explained in a later section (@pxref{Modifiers}).
 
 If all the operands fit any one alternative, the instruction is valid.
 Otherwise, for each alternative, the compiler counts how many instructions
