@@ -2074,21 +2074,6 @@ copy_bb (copy_body_data *id, basic_block bb,
 	  gimple_duplicate_stmt_histograms (cfun, stmt, id->src_cfun,
 					    orig_stmt);
 
-	  /* With return slot optimization we can end up with
-	     non-gimple (foo *)&this->m, fix that here.  */
-	  if (is_gimple_assign (stmt)
-	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
-	      && !is_gimple_val (gimple_assign_rhs1 (stmt)))
-	    {
-	      tree new_rhs;
-	      new_rhs = force_gimple_operand_gsi (&seq_gsi,
-						  gimple_assign_rhs1 (stmt),
-						  true, NULL, false,
-						  GSI_CONTINUE_LINKING);
-	      gimple_assign_set_rhs1 (stmt, new_rhs);
-	      id->regimplify = false;
-	    }
-
 	  gsi_insert_after (&seq_gsi, stmt, GSI_NEW_STMT);
 
 	  if (id->regimplify)
