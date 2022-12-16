@@ -1,3 +1,81 @@
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102104
+	PR c++/108090
+	* error.cc (dump_decl) <case USING_DECL>: Look through a
+	pack expansion in the name as well.
+	* parser.cc (cp_parser_using_declaration): Handle a parameter
+	pack appearing in the terminal name of a variadic using-decl.
+	* pt.cc (tsubst_decl) <case USING_DECL>: Likewise.  Combine the
+	handling of variadic and non-variadic using-decls.
+
+2022-12-15  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (build_vec_init): Rename "flags" to "cleanup_flags"
+	to distinguish from LOOKUP_*.
+
+2022-12-15  Arsen Arsenović  <arsen@aarsen.me>
+
+	* mangle.cc (write_encoding): Move contract pre/post function
+	mangling from here...
+	(write_mangled_name): ... to here, and make it happen always.
+
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107188
+	* parser.cc (cp_parser_using_declaration): Give up early if the
+	scope of an access-declaration isn't possibly a class type.
+
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100295
+	PR c++/107579
+	* pt.cc (el_data::skip_unevaluated_operands): New data member.
+	(extract_locals_r): If skip_unevaluated_operands is true,
+	don't walk into unevaluated contexts.
+	(extract_local_specs): Walk the pattern twice, first with
+	skip_unevaluated_operands true followed by it set to false.
+
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105518
+	* pt.cc (tsubst_aggr_type): Handle typedefs by delegating to
+	tsubst and adjusting the result if entering_scope.  Split out
+	the main part of the function into ...
+	(tsubst_aggr_type_1) ... here.
+	(tsubst): Use tsubst_aggr_type_1 instead of tsubst_aggr_type.
+	Handle TYPE_PTRMEMFUNC_P RECORD_TYPEs here instead of in
+	tsubst_aggr_type_1.
+
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108104
+	* pt.cc (unify) <default>: Relax assert to accept any
+	CONSTRUCTOR parm, not just COMPOUND_LITERAL_P one.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107065
+	* typeck.cc (cp_build_unary_op) <case TRUTH_NOT_EXPR>: If
+	invert_truthvalue_loc returns obvalue_p, wrap it into NON_LVALUE_EXPR.
+	* parser.cc (cp_parser_binary_expression): Don't call
+	warn_logical_not_parentheses if current.lhs is a NON_LVALUE_EXPR
+	of a decl with boolean type.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/108075
+	* rtti.cc (emit_support_tinfos): Add pointers to
+	{bfloat16,float{16,32,64,128,32x,64x,128x}}_type_node to fundamentals
+	array.
+
+2022-12-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108071
+	PR c++/105838
+	* call.cc (struct conversion_obstack_sentinel): New.
+	(maybe_init_list_as_array): Compare conversion of dummy argument.
+
 2022-12-12  Jason Merrill  <jason@redhat.com>
 
 	Revert:

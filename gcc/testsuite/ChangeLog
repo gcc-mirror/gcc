@@ -1,3 +1,77 @@
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102104
+	PR c++/108090
+	* g++.dg/cpp1z/using-variadic1.C: New test.
+	* g++.dg/cpp1z/using-variadic1a.C: New test.
+	* g++.dg/cpp1z/using-variadic1b.C: New test.
+	* g++.dg/cpp1z/using-variadic1c.C: New test.
+	* g++.dg/cpp1z/using-variadic2.C: New test.
+	* g++.dg/cpp1z/using-variadic3.C: New test.
+
+2022-12-15  Arsen Arsenović  <arsen@aarsen.me>
+
+	* g++.dg/contracts/contracts-externC.C: New test.
+
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107188
+	* g++.dg/cpp2a/concepts-placeholder11.C: New test.
+
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100295
+	PR c++/107579
+	* g++.dg/cpp1z/constexpr-if-lambda5.C: New test.
+
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105518
+	* g++.dg/cpp0x/lambda/lambda-alias1.C: New test.
+
+2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108104
+	* g++.dg/template/ptrmem33.C: New test.
+
+2022-12-15  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/avr/pr90706.c: New.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107065
+	* g++.dg/cpp0x/pr107065.C: New test.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/108075
+	* g++.dg/cpp23/ext-floating13.C: New test.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/target-supports.exp (check_compile): Further quoting
+	fixes for /* Assembly, /* ObjC and (* Modula-2 *) checks.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/target-supports.exp (check_compile): Add support for
+	Rust and Modula-2.  Use \* rather than * for /* comment for
+	Assembly.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108095
+	* gcc.dg/pr108095.c: New test.
+
+2022-12-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108071
+	PR c++/105838
+	* g++.dg/cpp0x/initlist131.C: New test.
+	* g++.dg/cpp0x/initlist132.C: New test.
+	* g++.dg/cpp0x/initlist133.C: New test.
+
 2022-12-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108065

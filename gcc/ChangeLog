@@ -1,3 +1,54 @@
+2022-12-15  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc: Include print-rtl.h.
+	(record_reg_classes, scan_one_insn): Add code to print debug info.
+	* ira.cc (ira_init_register_move_cost): Check that at least one hard
+	reg of the mode are in the class contents to calculate the
+	register move costs.
+
+2022-12-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* doc/extend.texi (__builtin_dynamic_object_size): Document
+	builtin.
+	* doc/passes.texi
+	(Optimize calls to @code{__builtin_object_size}): Also mention
+	__builtin_dynamic_object_size.
+
+2022-12-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* doc/invoke.texi (-fsanitize=object-size): Use
+	__builtin_dynamic_object_size instead of
+	__builtin_object_size.
+
+2022-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108086
+	* tree-inline.cc (copy_edges_for_bb): Walk stmts backwards for
+	splitting the block to avoid quadratic behavior with setting
+	stmts BB on multliple splits.
+
+2022-12-15  Spacetown  <michael.foerderer@gmx.de>
+
+	PR gcov-profile/107537
+	* gcov.cc (output_branch_count): Add annotation '(fallthrough)'
+	or '(throw)' also to uncovered branches.
+
+2022-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108086
+	* tree-inline.cc (copy_edges_for_bb): Do not update all
+	stmts again.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108095
+	* tree-into-ssa.cc (maybe_register_def): Insert debug stmt
+	on all non-EH edges from asm goto if they have a single
+	predecessor rather than asserting there is at most one such edge.
+	Test whether there are no PHI nodes next to the single predecessor
+	test.
+
 2022-12-14  David Faust  <david.faust@oracle.com>
 
 	PR target/106773

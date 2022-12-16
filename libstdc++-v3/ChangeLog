@@ -1,3 +1,11 @@
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/108075
+	* config/abi/pre/gnu.ver (CXXABI_1.3.14): Export
+	_ZTIDF[0-9]*[_bx], _ZTIPDF[0-9]*[_bx] and _ZTIPKDF[0-9]*[_bx].
+	* testsuite/util/testsuite_abi.cc (check_version): Handle
+	CXXABI_1.3.14.
+
 2022-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108097
