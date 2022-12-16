@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc-details" } */
+/* { dg-options "-O2 -fdump-tree-crc-details -fdisable-tree-phiopt2 -fdisable-tree-phiopt3" } */
 
 #include <stdio.h>
 #include <stdint.h>

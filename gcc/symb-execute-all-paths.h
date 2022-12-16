@@ -43,11 +43,11 @@ class crc_symb_execution {
 
  private:
   /* A vector of states to keep the current state of each executed path.  */
-  vec<state*> states;
+  vec<state *> states;
 
   /* A vector of final states
      to keep the returned_value and path conditions.  */
-  vec<state*> final_states;
+  vec<state *> final_states;
 
 /* Assign symbolic values to the arguments of the function
    and keep in the state.  */
@@ -60,22 +60,22 @@ class crc_symb_execution {
 
   /* Add next basic blocks of the conditional block
      for the execution path into the stack.  */
-  void add_next_bbs (basic_block, state *, auto_vec<edge, 20>&);
+  void add_next_bbs (basic_block, state *, auto_vec<edge, 20> &);
 
   /* Keep conditions depending on symbolic variables in the states.  */
-  static bool add_condition (const gcond*, state*, state*);
+  static bool add_condition (const gcond *, state *, state *);
 
   /* Create new state for true and false branch.
      Keep conditions in new created states.  */
-  bool resolve_condition (const gcond*, auto_vec<edge, 20>&);
+  bool resolve_condition (const gcond *, auto_vec<edge, 20> &);
 
   /* Keep the calculated value of the return value
      and the conditions of the executed path.  */
-  bool keep_return_val_and_conditions (const greturn*);
+  bool keep_return_val_and_conditions (const greturn *);
 
   /* Execute gimple statements of the basic block.
      Keeping values of variables in the state.  */
-  bool execute_bb_gimple_statements (basic_block, auto_vec<edge, 20>&);
+  bool execute_bb_gimple_statements (basic_block, auto_vec<edge, 20> &);
 
   /* Assign values of phi instruction to its result.
      Keep updated values in the state.  */
@@ -83,7 +83,7 @@ class crc_symb_execution {
 
   /* Execute all statements of the basic block.
     Keeping values of variables in the state.  */
-  bool execute_bb_statements (basic_block, edge, auto_vec<edge, 20>&);
+  bool execute_bb_statements (basic_block, edge, auto_vec<edge, 20> &);
 
 /* Traverse function fun's all paths from the first basic block to the last.
    Each time iterate loops only once.
@@ -92,10 +92,23 @@ class crc_symb_execution {
 
   /* Execute the loop, which calculates crc with initial values,
    to calculate the polynomial.  */
-  bool execute_crc_loop (loop *, gphi *, gphi *, bool);
+  bool execute_crc_loop (class loop *, gphi *, gphi *, bool);
 
   /* Returns true if the state matches the LFSR, otherwise - false.  */
-  bool state_matches_lfsr (const vec<value*> &, const vec<value*> &);
+  bool state_matches_lfsr_all_cases (const vec<value *> &, const vec<value *> &,
+				     bool);
+
+  /* Returns true if the state matches the LFSR, otherwise - false.  */
+  bool match_lfsr_case1 (const vec<value *> &, const vec<value *> &,
+			 bool, symbolic_bit *, size_t, size_t);
+
+  bool state_matches_lfsr (const vec<value *> &, const vec<value *> &, bool);
+
+  bool condition_is_true (value *);
+
+  bool condition_is_false (value *);
+
+  bool marginal_case_matches (value *, value *, value *);
 
  public:
 
@@ -104,10 +117,11 @@ class crc_symb_execution {
 
   /* Returns calculated polynomial by executing the loop
      with concrete values.  */
-  vec<value*> * extract_poly_and_create_lfsr (loop *, gphi *, gphi *, bool);
+  vec<value *> *extract_poly_and_create_lfsr (class loop *, gphi *,
+					      gphi *, bool);
 
   /* Returns true if all states match the LFSR, otherwise - false.  */
-  bool states_match_lfsr (vec<value*> *lfsr);
+  bool states_match_lfsr (vec<value *> *, bool);
 
   crc_symb_execution ()
   {
@@ -118,7 +132,7 @@ class crc_symb_execution {
 
   ~crc_symb_execution ()
   {
-     /* Free memory.  */
+    /* Free memory.  */
     states.release ();
     final_states.release ();
   }

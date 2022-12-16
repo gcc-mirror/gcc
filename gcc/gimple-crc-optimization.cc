@@ -59,7 +59,7 @@ class crc_optimization {
   gphi * data;
 
   /* The loop, which probably calculates CRC.  */
-  loop *crc_loop;
+  class loop *crc_loop;
 
   unsigned HOST_WIDE_INT loop_iteration_number;
 
@@ -186,7 +186,7 @@ class crc_optimization {
 
 /* Set GIMPLE_PHI and GIMPLE statements of the crc loop not visited.  */
 void
-set_loop_statements_not_visited (loop *loop)
+set_loop_statements_not_visited (class loop *loop)
 {
   basic_block *bbs = get_loop_body_in_dom_order (loop);
   for (unsigned int i = 0; i < loop->num_nodes; i++)
@@ -958,7 +958,7 @@ crc_optimization::execute (function *fun)
 	    }
 	}
 
-      if (symb_exec.states_match_lfsr (lfsr))
+      if (symb_exec.states_match_lfsr (lfsr, is_left_shift))
 	{
 	  if (dump_file)
 	    {

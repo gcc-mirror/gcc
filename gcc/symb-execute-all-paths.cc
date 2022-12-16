@@ -526,7 +526,7 @@ crc_symb_execution::execute_bb_phi_statements (basic_block bb,
       if (!current_state->do_assign (rhs, lhs))
 	return false;
     }
-    return true;
+  return true;
 }
 
 /* Execute all statements of BB.
@@ -534,10 +534,10 @@ crc_symb_execution::execute_bb_phi_statements (basic_block bb,
 bool
 crc_symb_execution::execute_bb_statements (basic_block bb,
 					   edge incoming_edge,
-					   auto_vec<edge, 20>& stack)
+					   auto_vec<edge, 20> &stack)
 {
   if (!execute_bb_phi_statements (bb, incoming_edge))
-      return false;
+    return false;
 
   return execute_bb_gimple_statements (bb, stack);
 }
@@ -577,7 +577,7 @@ crc_symb_execution::traverse_function (function *fun)
       if (!execute_bb_statements (bb, e, stack))
 	return false;
     }
-    return true;
+  return true;
 }
 
 bool
@@ -611,11 +611,10 @@ determine_index (tree data, bool is_shift_left)
     return 0;
 }
 
-
 /* Assign appropriate values to data, crc
    and other phi results to calculate the polynomial.  */
 void
-assign_vals_to_header_phis (state * polynomial_state, basic_block bb,
+assign_vals_to_header_phis (state *polynomial_state, basic_block bb,
 			    gphi *crc, gphi *data,
 			    bool is_shift_left)
 {
@@ -630,7 +629,6 @@ assign_vals_to_header_phis (state * polynomial_state, basic_block bb,
       if (virtual_operand_p (lhs))
 	continue;
 
-
       if ((data && phi == data) || (!data && phi == crc))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -641,7 +639,7 @@ assign_vals_to_header_phis (state * polynomial_state, basic_block bb,
 	    }
 	  polynomial_state->do_assign_pow2 (lhs,
 					    determine_index (lhs,
-							      is_shift_left));
+							     is_shift_left));
 	}
       else if (phi == crc)
 	{
@@ -653,7 +651,7 @@ assign_vals_to_header_phis (state * polynomial_state, basic_block bb,
 	    }
 	  polynomial_state->do_assign (build_zero_cst (TREE_TYPE (lhs)), lhs);
 	}
-      else if (TREE_CODE (PHI_ARG_DEF (phi, phi->nargs-1)) == INTEGER_CST)
+      else if (TREE_CODE (PHI_ARG_DEF (phi, phi->nargs - 1)) == INTEGER_CST)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -662,7 +660,7 @@ assign_vals_to_header_phis (state * polynomial_state, basic_block bb,
 	      print_generic_expr (dump_file, lhs, dump_flags);
 	      fprintf (dump_file, " variable.\n");
 	    }
-	  polynomial_state->do_assign (PHI_ARG_DEF (phi, phi->nargs-1), lhs);
+	  polynomial_state->do_assign (PHI_ARG_DEF (phi, phi->nargs - 1), lhs);
 	}
       else
 	{
@@ -682,7 +680,8 @@ assign_vals_to_header_phis (state * polynomial_state, basic_block bb,
 /* Execute the loop, which calculates crc with initial values,
    to calculate the polynomial.  */
 bool
-crc_symb_execution::execute_crc_loop (loop *crc_loop, gphi *crc, gphi *data,
+crc_symb_execution::execute_crc_loop (class loop *crc_loop, gphi *crc,
+				      gphi *data,
 				      bool is_shift_left)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -729,19 +728,19 @@ crc_symb_execution::execute_crc_loop (loop *crc_loop, gphi *crc, gphi *data,
 
 /* Return true if all bits of the polynomial are constants (0 or 1).
    Otherwise return false.  */
-bool polynomial_is_known (const vec<value*> &polynomial)
+bool polynomial_is_known (const vec<value *> &polynomial)
 {
-  for (size_t i=0; i<polynomial.length (); i++)
+  for (size_t i = 0; i < polynomial.length (); i++)
     {
-      if (!is_a <bit *> (polynomial[i]))
-      return false;
+      if (!is_a<bit *> (polynomial[i]))
+	return false;
     }
-    return true;
+  return true;
 }
 /* Execute the loop, which is expected to calculate CRC,
    to extract polynomial, assigning real numbers to crc and data.  */
-vec<value*> *
-crc_symb_execution::extract_poly_and_create_lfsr (loop *crc_loop,
+vec<value *> *
+crc_symb_execution::extract_poly_and_create_lfsr (class loop *crc_loop,
 						  gphi *crc, gphi *data,
 						  bool is_shift_left)
 {
@@ -761,8 +760,8 @@ crc_symb_execution::extract_poly_and_create_lfsr (loop *crc_loop,
       fprintf (dump_file, " variable.\n");
     }
 
-  /* Get the value of the tree.  */
-  vec<value*> * polynomial = polynomial_state->get_bits (calculated_crc);
+  /* Get the value (bit vector) of the tree (it may be the polynomial).  */
+  vec<value *> *polynomial = polynomial_state->get_bits (calculated_crc);
   if (!polynomial)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -772,13 +771,15 @@ crc_symb_execution::extract_poly_and_create_lfsr (loop *crc_loop,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      /* Note: It may not be the real polynomial.  If it's a bit reflected crc,
+      /* Note: It may not be the real polynomial.
+	 If it's a bit reflected crc,
 	 then to get a real polynomial,
 	 it must be reflected and 1 bit added.  */
       fprintf (dump_file, "Polynomial's value is ");
       state::print_bits (polynomial);
     }
 
+  /* Check that polynomial's all bits are constants.  */
   if (!polynomial_is_known (*polynomial))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -791,26 +792,105 @@ crc_symb_execution::extract_poly_and_create_lfsr (loop *crc_loop,
   return state::create_lfsr (calculated_crc, polynomial, is_shift_left);
 }
 
-bool
-condition_is_true ()
+
+bool acceptable_diff (size_t index1, size_t index2)
 {
-  return true;
+  size_t diff;
+  if (index1 > index2)
+    diff = index1 - index2;
+  else
+    diff = index2 - index1;
+
+  /* Indexes of the symbolic bit may differ by 0, 8, 16, 24, 32, ...  */
+  return diff % 8 == 0;
 }
 
-bool
-condition_is_false ()
+/* Check whether the condition_exp and refernce_exp match.  */
+bool may_be_xors_condition (value *reference_exp, value *condition_exp)
 {
-  return true;
+  if (is_a<symbolic_bit *> (reference_exp)
+      && is_a<symbolic_bit *> (condition_exp))
+    {
+      symbolic_bit *condition_symbolic = as_a<symbolic_bit *> (condition_exp);
+      symbolic_bit *reference_symbolic = as_a<symbolic_bit *> (reference_exp);
+      return reference_symbolic->get_origin ()
+	     == condition_symbolic->get_origin ()
+	// FixMe: check correct index
+	/* && acceptable_diff (index, condition_symbolic->get_index ())*/;
+    }
+  if (is_a<symbolic_bit *> (reference_exp)
+      && is_a<bit_xor_expression *> (condition_exp))
+    {
+      return may_be_xors_condition (reference_exp,
+				    as_a<bit_xor_expression *>
+					(condition_exp)->get_left ())
+	     || may_be_xors_condition (reference_exp,
+				       as_a<bit_xor_expression *>
+					   (condition_exp)->get_right ());
+    }
+  if (is_a<bit_xor_expression *> (reference_exp)
+      && is_a<bit_xor_expression *> (condition_exp))
+    {
+      return may_be_xors_condition (as_a<bit_xor_expression *>
+					(reference_exp)->get_left (),
+				    as_a<bit_xor_expression *>
+					(condition_exp)->get_left ())
+	     && may_be_xors_condition (as_a<bit_xor_expression *>
+					   (reference_exp)->get_right (),
+				       as_a<bit_xor_expression *>
+					   (condition_exp)->get_right ());
+    }
+  return false;
+}
+
+
+/* Check whether there is a condition containing symb_exp
+   and the value is 1.  */
+bool
+crc_symb_execution::condition_is_true (value *symb_exp)
+{
+  state *final_state = final_states.last ();
+  for (auto iter = final_state->get_conditions ().begin ();
+       iter != final_state->get_conditions ().end (); ++iter)
+    {
+      value *cond_exp = (*iter)->get_left ();
+      if (may_be_xors_condition (symb_exp, cond_exp))
+	{
+	  //todo check is true
+	  return true;
+	}
+    }
+  return false;
+}
+
+
+/* Check whether there is a condition containing symb_exp
+   and the value is 0.  */
+bool
+crc_symb_execution::condition_is_false (value *symb_exp)
+{
+  state *final_state = final_states.last ();
+  for (auto iter = final_state->get_conditions ().begin ();
+       iter != final_state->get_conditions ().end (); ++iter)
+    {
+      value *cond_exp = (*iter)->get_left ();
+      if (may_be_xors_condition (symb_exp, cond_exp))
+	{
+	  //todo check is false
+	  return true;
+	}
+    }
+  return false;
 }
 
 
 /* Returns true if the symb_exp is a bit_xor_expression and const_bit equals 1.
    Otherwise, returns false.  */
 bool
-is_one (value * const_bit)
+is_one (value *const_bit)
 {
-  return is_a <bit *> (const_bit)
-      && (as_a <bit *> (const_bit))->get_val () == 1;
+  return is_a<bit *> (const_bit)
+	 && (as_a<bit *> (const_bit))->get_val () == 1;
 }
 
 
@@ -819,21 +899,13 @@ is_one (value * const_bit)
    Sometimes calculated crc value is returned
    after being shifted by 8's factor.  */
 bool
-is_a_valid_symb (value* bit, size_t lfsr_bit_index)
+is_a_valid_symb (value *bit, size_t lfsr_bit_index)
 {
-  if (!is_a <symbolic_bit *> (bit))
+  if (!is_a<symbolic_bit *> (bit))
     return false;
 
-  size_t sym_bit_index = (as_a <symbolic_bit *> (bit))->get_index ();
-
-  size_t diff;
-  if (sym_bit_index > lfsr_bit_index)
-    diff = sym_bit_index - lfsr_bit_index;
-  else
-    diff = lfsr_bit_index - sym_bit_index;
-
-  /* Indexes of the symbolic bit may differ by 0, 8, 16, 24, 32, ...  */
-  return  diff % 8 == 0;
+  size_t sym_bit_index = (as_a<symbolic_bit *> (bit))->get_index ();
+  return acceptable_diff (sym_bit_index, lfsr_bit_index);
 }
 
 
@@ -841,100 +913,296 @@ is_a_valid_symb (value* bit, size_t lfsr_bit_index)
    and xor-ed values are valid symbolic bits.
    Otherwise, returns false.  */
 bool
-is_a_valid_xor (value* bit, size_t index)
+is_a_valid_xor (value *bit, size_t index)
 {
-  return is_a <bit_xor_expression *> (bit)
-	 && is_a_valid_symb ((as_a <bit_xor_expression *> (bit))->get_left (),
+  return is_a<bit_xor_expression *> (bit)
+	 && is_a_valid_symb ((as_a<bit_xor_expression *> (bit))->get_left (),
 			     index)
-	 && is_a_valid_symb ((as_a <bit_xor_expression *> (bit))->get_right (),
+	 && is_a_valid_symb ((as_a<bit_xor_expression *> (bit))->get_right (),
 			     index);
 }
 
 
-/* Returns true if bit is a valid bit_xor_expression with 1.
+/* Returns true if the bit is a valid bit_xor_expression with 1.
    Otherwise, returns false.  */
 bool
-is_a_valid_xor_one (value* bit, size_t index)
+is_a_valid_xor_one (value *bit, size_t index)
 {
-   if (is_a <bit_xor_expression *> (bit))
-     {
-       value * symb_exp = nullptr;
-       bit_xor_expression * xor_exp = as_a <bit_xor_expression *> (bit);
-       if (is_one (xor_exp->get_right ()))
-	 symb_exp = xor_exp->get_left ();
-       else if (is_one (xor_exp->get_left ()))
-	 symb_exp = xor_exp->get_right ();
-       else
-	 return false;
-       return is_a_valid_xor (symb_exp, index)
-	      || is_a_valid_symb (symb_exp, index);
-     }
-   else
-     return false;
+  if (is_a<bit_xor_expression *> (bit))
+    {
+      value *symb_exp = nullptr;
+      bit_xor_expression *xor_exp = as_a<bit_xor_expression *> (bit);
+      if (is_one (xor_exp->get_right ()))
+	symb_exp = xor_exp->get_left ();
+      else if (is_one (xor_exp->get_left ()))
+	symb_exp = xor_exp->get_right ();
+      else
+	return false;
+      return is_a_valid_xor (symb_exp, index)
+	     || is_a_valid_symb (symb_exp, index);
+    }
+  else
+    return false;
 }
 
 
-/* Returns true if the state matches the LFSR, otherwise - false.  */
-bool
-crc_symb_execution::state_matches_lfsr (const vec<value*> &lfsr,
-					const vec<value*> &crc_state)
+bool crc_symb_execution::marginal_case_matches (value *crc, value *lfsr,
+						value *conditions_crc)
 {
-  for (size_t i = 0; i < lfsr.length () && crc_state.length (); i++)
+  if (is_a<bit *> (lfsr))
     {
-       if (dump_file && (dump_flags & TDF_DETAILS))
-	 fprintf (dump_file, "Checking %lu-th bit.\n", i);
+      if (!((is_a<bit *> (crc)
+	     && as_a<bit *> (crc)->get_val ()
+		== as_a<bit *> (lfsr)->get_val ())))
+	return false;
+      return true;
+    }
+  else if (is_a<symbolic_bit *> (lfsr))
+    {
+      if (!(is_a<bit *> (crc) && ((as_a<bit *> (crc)->get_val () == 0
+				   && condition_is_false (conditions_crc))
+				  || (as_a<bit *> (crc)->get_val () == 1
+				      && condition_is_true (conditions_crc)))))
+	return false;
+      return true;
+    }
+  /* else if (is_a <bit_xor_expression *> (lfsr))
+     {
+       size_t index = (as_a<bit_xor_expression *> (lfsr))->get_left ()
+	   ->get_index ();
+       if (!((is_a_valid_xor_one (crc, index)
+	      && condition_is_true (
+		  as_a <bit_xor_expression *> (crc)->get_left ()))
+	     || (is_a_valid_symb (crc, index)
+		 && condition_is_false (crc))))
+	 return false;
+       return true;
+     }*/
+  return false;
+}
 
-      if (is_a <bit_xor_expression *> (lfsr[i]))
+
+/* Match the crc to the lfsr, where crc's all bit values are symbolic_bits
+   or symbolic_bits ^ 1, besides MSB/LSB (it may be constant).
+
+  Under this are considered the cases,
+  1.  When sizes of crc and data are same.
+
+  2.  When data is xored with crc before the loop.
+  3.  When data is xor-ed with crc only for the condition.
+      xor is done on crc only.  */
+bool
+crc_symb_execution::match_lfsr_case1 (const vec<value *> &lfsr,
+				      const vec<value *> &crc_state,
+				      bool is_left_shift,
+				      symbolic_bit *symb_val,
+				      size_t i, size_t it_end)
+{
+  /* Check whether significant bits of LFSR and CRC match.  */
+  if (is_left_shift)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Checking 0 bit.\n");
+
+      if (!marginal_case_matches (crc_state[0], lfsr[0], symb_val))
+	return false;
+    }
+  else
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Checking %lu bit.\n", it_end);
+
+      if (!marginal_case_matches (crc_state[it_end],
+				  lfsr[it_end], symb_val))
+	return false;
+    }
+
+  for (; i < it_end; i++)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Checking %lu bit.\n", i);
+
+      if (is_a<bit_xor_expression *> (lfsr[i]))
 	{
-	  size_t index = (as_a <bit_xor_expression *> (lfsr[i]))->get_left ()
+	  size_t index = (as_a<bit_xor_expression *> (lfsr[i]))->get_left ()
 	      ->get_index ();
-	  if (!(((is_a_valid_xor_one (crc_state[i], index)
-		&& condition_is_true ())
-	  || (is_a_valid_symb (crc_state[i], index) && condition_is_false ()))
-	  || ((is_a_valid_xor_one (crc_state[i], index) && condition_is_true ())
-	  || (is_a_valid_xor (crc_state[i], index) && condition_is_false ()))))
+	  if (!((is_a_valid_xor_one (crc_state[i], index)
+		 && condition_is_true (
+		     as_a<bit_xor_expression *> (crc_state[i])->get_left ()))
+		|| (is_a_valid_symb (crc_state[i], index)
+		    && condition_is_false (crc_state[i]))))
 	    return false;
 	}
-      else if (is_a <symbolic_bit *> (lfsr[i]))
+      else if (is_a<symbolic_bit *> (lfsr[i]))
 	{
 	  size_t index = (as_a<symbolic_bit *> (lfsr[i]))->get_index ();
 	  if (!(is_a_valid_symb (crc_state[i], index)
-		|| is_a_valid_xor (crc_state[i], index)
-		|| condition_is_false ()))
-	    return false;
-	}
-      else if (is_a <bit *> (lfsr[i]))
-	{
-	  if (!is_a <bit*> (crc_state[i]) || as_a <bit*> (lfsr[i])->get_val ()
-	      != as_a <bit*> (crc_state[i])->get_val ())
+		&& condition_is_false (crc_state[i])))
 	    return false;
 	}
       else
 	{
-	 if (dump_file && (dump_flags & TDF_DETAILS))
-	   fprintf (dump_file, "Not expected expression in LFSR.\n");
-	 return false;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Not expected expression in LFSR.\n");
+	  return false;
 	}
     }
   return true;
 }
 
+
+/* Returns true if the state matches the LFSR, otherwise - false.  */
+bool
+crc_symb_execution::state_matches_lfsr_all_cases (const vec<value *> &lfsr,
+						  const vec<value *> &crc_state,
+						  bool is_left_shift)
+{
+  size_t i = 0, it_end = lfsr.length () < crc_state.length ()
+			 ? lfsr.length () : crc_state.length ();
+  if (is_left_shift)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Checking 0 bit.\n");
+
+      i = 1;
+      if (!marginal_case_matches (crc_state[0], lfsr[0], crc_state[1]))
+	return false;
+    }
+  else
+    {
+      --it_end;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Checking %lu bit.\n", it_end);
+
+      if (!marginal_case_matches (crc_state[it_end],
+				  lfsr[it_end], crc_state[it_end - 1]))
+	return false;
+    }
+
+  for (; i < it_end; i++)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Checking %lu bit.\n", i);
+
+      if (is_a<bit_xor_expression *> (lfsr[i]))
+	{
+	  size_t index = (as_a<bit_xor_expression *> (lfsr[i]))->get_left ()
+	      ->get_index ();
+	  if (!(((is_a_valid_xor_one (crc_state[i], index)
+		  && condition_is_true (crc_state[i]))
+		 || (is_a_valid_symb (crc_state[i], index)
+		     && condition_is_false (crc_state[i])))
+		|| ((is_a_valid_xor_one (crc_state[i], index)
+		     && condition_is_true (crc_state[i]))
+		    || (is_a_valid_xor (crc_state[i], index)
+			&& condition_is_false (crc_state[i])))))
+	    return false;
+	}
+      else if (is_a<symbolic_bit *> (lfsr[i]))
+	{
+	  size_t index = (as_a<symbolic_bit *> (lfsr[i]))->get_index ();
+	  // TODO: check the case when calculated crc is constant.
+	  if (!((is_a_valid_symb (crc_state[i], index)
+		 || is_a_valid_xor (crc_state[i], index))
+		&& condition_is_false (crc_state[i])))
+	    return false;
+	}
+      else
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Not expected expression in LFSR.\n");
+	  return false;
+	}
+    }
+  return true;
+}
+
+
+/* Returns true if the state matches the LFSR, otherwise - false.  */
+bool
+crc_symb_execution::state_matches_lfsr (const vec<value *> &lfsr,
+					const vec<value *> &crc_state,
+					bool is_left_shift)
+{
+  unsigned constant = 0;
+  symbolic_bit *symb_bit = nullptr;
+  value *simple_xor_left = nullptr, *simple_xor_right = nullptr;
+  bit_xor_expression *xor_exp = nullptr, *complicated_xor = nullptr;
+  bool has_const = false, has_other_val = false;
+
+  size_t it_beg = 0, it_end = lfsr.length () < crc_state.length ()
+			      ? lfsr.length () : crc_state.length ();
+  if (is_left_shift)
+    it_beg = 1;
+  else
+    --it_end;
+
+  for (unsigned j = it_beg; j < crc_state.length (); ++j)
+    {
+      (crc_state[j])->print ();
+      switch (crc_state[j]->get_type ())
+	{
+	  case SYMBOLIC_BIT:
+	    symb_bit = as_a<symbolic_bit *> (crc_state[j]);
+	    break;
+	  case BIT:
+	    has_const = true;
+	    constant = as_a<bit *> (crc_state[j])->get_val ();
+	    break;
+	  case BIT_XOR_EXPRESSION:
+	    {
+	      /* Calculated CRC may contain crc[]^data[],
+		 or crc[]^1, or crc[]^data[]^1.  */
+	      xor_exp
+		  = as_a<bit_xor_expression *> (crc_state[j]);
+
+	      if (is_a<symbolic_bit *> (xor_exp->get_left ()))
+		simple_xor_left = xor_exp->get_left ();
+	      else if (is_a<bit_xor_expression *> (xor_exp->get_left ()))
+		complicated_xor = as_a<bit_xor_expression *>
+		    (xor_exp->get_left ());
+
+	      if (is_a<bit *> (xor_exp->get_right ())
+		  || is_a<symbolic_bit *> (xor_exp->get_right ()))
+		simple_xor_right = xor_exp->get_right ();
+	      break;
+	    }
+	  default:
+	    has_other_val = true;
+	}
+    }
+
+  if (has_other_val)
+    return false;
+
+  if (symb_bit && !complicated_xor
+      && (!simple_xor_right
+	  || (simple_xor_right && is_a<bit *> (simple_xor_right)))
+      && !has_other_val)
+    return match_lfsr_case1 (lfsr, crc_state, is_left_shift,
+			     symb_bit, it_beg, it_end);
+  return false;
+}
+
+
 /* Returns true if all states match the LFSR, otherwise - false.  */
 bool
-crc_symb_execution::states_match_lfsr (vec<value*> * lfsr)
+crc_symb_execution::states_match_lfsr (vec<value *> *lfsr, bool is_left_shift)
 {
   while (!final_states.is_empty ())
     {
-      state * final_state = final_states.last ();
+      state *final_state = final_states.last ();
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Matching LFSR and following returned state.\n");
 	  state::print_bits (final_state->get_first_value ());
+	  final_state->print_conditions ();
 	}
-      if (!state_matches_lfsr (*lfsr, *(final_state->get_first_value ())))
+      if (!state_matches_lfsr (*lfsr, *(final_state->get_first_value ()),
+			       is_left_shift))
 	return false;
       final_states.pop ();
       delete final_state;
     }
- return true;
+  return true;
 }
