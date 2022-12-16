@@ -377,7 +377,7 @@ commutative arithmetic operators of RTL and whose mode is @var{mode}:
 
 @smallexample
 int
-commutative_integer_operator (x, mode)
+commutative_operator (x, mode)
      rtx x;
      machine_mode mode;
 @{
