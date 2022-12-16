@@ -7,10 +7,8 @@ enum condition_type
 {
   GREAT_THAN,
   LESS_THAN,
-  NOT_ZERO,
   EQUAL,
   NOT_EQUAL,
-  GREAT_OR_EQUAL,
   IS_FALSE,
   IS_TRUE
 };

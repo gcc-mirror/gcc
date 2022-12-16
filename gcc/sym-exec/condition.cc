@@ -6,6 +6,37 @@ bit_condition::bit_condition (value* left, value* right, condition_type type)
   this->left = left;
   this->right = right;
   this->type = type;
+
+  switch (this->type)
+    {
+      case GREAT_THAN:
+	op_sign[0] = '>';
+	op_sign[1] = '\0';
+	break;
+      case LESS_THAN:
+	op_sign[0] = '<';
+	op_sign[1] = '\0';
+	break;
+      case EQUAL:
+	op_sign[0] = '=';
+	op_sign[1] = '=';
+	break;
+      case NOT_EQUAL:
+	op_sign[0] = '!';
+	op_sign[1] = '=';
+	break;
+      case IS_FALSE:
+	op_sign[0] = '0';
+	op_sign[1] = '\0';
+	break;
+      case IS_TRUE:
+	op_sign[0] = '1';
+	op_sign[1] = '\0';
+	break;
+      default:
+	op_sign[0] = '\0';
+	op_sign[1] = '\0';
+    }
 }
 
 

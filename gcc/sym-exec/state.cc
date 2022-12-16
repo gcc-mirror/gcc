@@ -183,7 +183,7 @@ state::clear_conditions ()
 }
 
 
-/* performs AND operation for 2 symbolic_bit operands.  */
+/* Performs AND operation for 2 symbolic_bit operands.  */
 
 value *
 state::and_sym_bits (const value * var1, const value * var2)
@@ -192,7 +192,7 @@ state::and_sym_bits (const value * var1, const value * var2)
 }
 
 
-/* performs AND operation for a symbolic_bit and const_bit operands.  */
+/* Performs AND operation for a symbolic_bit and const_bit operands.  */
 
 value *
 state::and_var_const (const value * var1, const bit * const_bit)
@@ -204,7 +204,7 @@ state::and_var_const (const value * var1, const bit * const_bit)
 }
 
 
-/* performs AND operation for 2 constant bit operands.  */
+/* Performs AND operation for 2 constant bit operands.  */
 
 bit *
 state::and_const_bits (const bit * const_bit1, const bit * const_bit2)
@@ -216,7 +216,7 @@ state::and_const_bits (const bit * const_bit1, const bit * const_bit2)
 }
 
 
-/* performs OR operation for 2 symbolic_bit operands.  */
+/* Performs OR operation for 2 symbolic_bit operands.  */
 
 value *
 state::or_sym_bits (const value * var1, const value * var2)
@@ -225,7 +225,7 @@ state::or_sym_bits (const value * var1, const value * var2)
 }
 
 
-/* performs OR operation for a symbolic_bit and a constant bit operands.  */
+/* Performs OR operation for a symbolic_bit and a constant bit operands.  */
 
 value *
 state::or_var_const (const value * var1, const bit * const_bit)
@@ -237,7 +237,7 @@ state::or_var_const (const value * var1, const bit * const_bit)
 }
 
 
-/* performs OR operation for 2 constant bit operands.  */
+/* Performs OR operation for 2 constant bit operands.  */
 
 bit *
 state::or_const_bits (const bit * const_bit1, const bit * const_bit2)
@@ -544,7 +544,7 @@ state::get_value (const vec <value *> * bits_value)
 }
 
 
-/* shift_left operation.  Case: var2 is a sym_bit.  */
+/* Shift_left operation.  Case: var2 is a sym_bit.  */
 
 void
 state::shift_left_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
@@ -622,7 +622,7 @@ state::do_shift_right (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
 
 
 /* Adds two bits and carry value.
-Resturn result and stores new carry bit in "carry".  */
+   Resturn result and stores new carry bit in "carry".  */
 
 value*
 state::full_adder (value* var1, value* var2, value*& carry)
@@ -1224,6 +1224,8 @@ state::add_equal_cond (tree arg1, tree arg2)
 void
 state::add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 {
+
+  /* If both arguments are constants then we can evaluate it.  */
   if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
     {
       bool result = check_const_bit_equality (arg1_bits, arg2_bits);
@@ -1231,8 +1233,27 @@ state::add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 				: condition_status::CS_FALSE;
       return;
     }
+
+  /* When some of bits are constants and they differ by value,
+     then we can evalate it to be false.  */
   for (size_t i = 0; i < arg1_bits->length (); i++)
     {
+      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i])
+	  && as_a<bit*> ((*arg1_bits)[i])->get_val ()
+	     != as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	{
+	  last_cond_status = condition_status::CS_FALSE;
+	  return;
+	}
+    }
+
+  for (size_t i = 0; i < arg1_bits->length (); i++)
+    {
+      /* If there is a constant bit pair, then they are equal
+	 as we checked not equality above.  */
+      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i]))
+	continue;
+
       conditions.add (new bit_condition ((*arg1_bits)[i]->copy (),
 					 (*arg2_bits)[i]->copy (),
 					 condition_type::EQUAL));
@@ -1273,9 +1294,27 @@ state::add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
       return;
     }
 
+  /* When some of bits are constants and they differ by value,
+     then we can evalate it to be true.  */
+  for (size_t i = 0; i < arg1_bits->length (); i++)
+    {
+      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i])
+	  && as_a<bit*> ((*arg1_bits)[i])->get_val ()
+	     != as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	{
+	  last_cond_status = condition_status::CS_TRUE;
+	  return;
+	}
+    }
+
   bit_expression * prev = nullptr;
   for (size_t i = 0; i < arg1_bits->length (); i++)
     {
+      /* If there is a constant bit pair, then they are equal
+	 as we checked not equality above.  */
+      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i]))
+	continue;
+
       bit_condition* new_cond = new bit_condition ((*arg1_bits)[i]->copy (),
 						   (*arg2_bits)[i]->copy (),
 						   condition_type::NOT_EQUAL);
@@ -1328,8 +1367,30 @@ state::add_greater_than_cond (vec<value*> * arg1_bits,
       return;
     }
 
-  last_cond_status = condition_status::CS_SYM;
-  conditions.add (construct_great_than_cond (arg1_bits, arg2_bits));
+  if (is_bit_vector (arg2_bits) && is_a<bit*> (arg1_bits->last ())
+      && get_value (arg2_bits) == 0 /* && is_signed (arg1_bits).  */)
+    {
+      if (as_a<bit*> (arg1_bits->last ())->get_val () == 1)
+	last_cond_status = condition_status::CS_FALSE;
+      else
+	{
+	  for (size_t i = 0; i < arg1_bits->length (); i++)
+	    if (is_a<bit*> ((*arg1_bits)[i])
+		&& as_a<bit*> ((*arg1_bits)[i])->get_val ())
+	      {
+		last_cond_status = condition_status::CS_TRUE;
+		return;
+	      }
+	}
+    }
+
+  bit_expression * gt_cond = construct_great_than_cond (arg1_bits, arg2_bits);
+  if (gt_cond)
+    {
+      /* Otherwise its status is already set.  */
+      last_cond_status = condition_status::CS_SYM;
+      conditions.add (gt_cond);
+    }
 }
 
 
@@ -1341,26 +1402,61 @@ state::construct_great_than_cond (vec<value*> * arg1_bits,
 				  vec<value*> * arg2_bits)
 {
   bit_expression* prev = nullptr;
-  size_t i = 0;
-  for ( ; i < arg1_bits->length () - 1; i++)
+  int i = arg1_bits->length () - 1;
+  for ( ; i >= 0; i--)
     {
-      bit_condition* greater_cond
-      = new bit_condition ((*arg1_bits)[i]->copy (), (*arg2_bits)[i]->copy (),
-			   condition_type::GREAT_THAN);
-      bit_condition* eq_cond = new bit_condition ((*arg1_bits)[i + 1]->copy (),
-						  (*arg2_bits)[i + 1]->copy (),
-						  condition_type::EQUAL);
-      bit_expression* and_expr = new bit_and_expression (eq_cond, greater_cond);
-      if (prev)
-	prev = new bit_or_expression (and_expr, prev);
+      if (is_a<bit *> ((*arg1_bits)[i]) && is_a<bit *> ((*arg2_bits)[i]))
+	{
+	  if (as_a<bit*> ((*arg1_bits)[i])->get_val ()
+	      > as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	    {
+	      if (!prev)
+		last_cond_status = condition_status::CS_TRUE;
+	      return prev;
+	    }
+	  else if (as_a<bit*> ((*arg1_bits)[i])->get_val ()
+		   < as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	    {
+	      if (prev)
+		{
+		  bit_expression* ret_val
+		  = as_a<bit_expression*> (prev->get_left ()->copy ());
+		  delete prev;
+		  return ret_val;
+		}
+	      else
+		{
+		  last_cond_status = condition_status::CS_FALSE;
+		  return nullptr;
+		}
+	    }
+	}
       else
-	prev = and_expr;
+	{
+	  bit_condition* gt_cond
+	  = new bit_condition ((*arg1_bits)[i]->copy (),
+			       (*arg2_bits)[i]->copy (),
+			       condition_type::GREAT_THAN);
+	  bit_expression* expr = nullptr;
+	  if (i)
+	    {
+	      bit_condition* eq_cond
+	      = new bit_condition ((*arg1_bits)[i]->copy (),
+				   (*arg2_bits)[i]->copy (),
+				   condition_type::EQUAL);
+	      expr = new bit_or_expression (gt_cond, eq_cond);
+	    }
+	  else
+	    expr = gt_cond;
+
+	  if (prev)
+	    prev = new bit_and_expression (expr, prev);
+	  else
+	    prev = expr;
+	}
     }
 
-  bit_condition* greater_cond = new bit_condition ((*arg1_bits)[i]->copy (),
-						   (*arg2_bits)[i]->copy (),
-						   condition_type::GREAT_THAN);
-  return new bit_or_expression (greater_cond, prev);
+  return prev;
 }
 
 
@@ -1393,7 +1489,9 @@ state::add_less_than_cond (tree arg1, tree arg2)
 void
 state::add_less_than_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 {
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits)
+      /* Fix this after adding signed numbers support.  */
+      && get_value (arg2_bits) != 0)
     {
       bool result = check_const_bit_is_less_than (arg1_bits, arg2_bits);
       last_cond_status = result ? condition_status::CS_TRUE
@@ -1402,7 +1500,27 @@ state::add_less_than_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
     }
 
   last_cond_status = condition_status::CS_SYM;
-  conditions.add (construct_less_than_cond (arg1_bits, arg2_bits));
+  if (is_bit_vector (arg2_bits) && get_value (arg2_bits) == 0)
+    {
+      /* TODO: handle is_signed (arg1_bits) case properly.  */
+      if (is_a<bit*> (arg1_bits->last ()))
+	{
+	  if (as_a<bit*> (arg1_bits->last ())->get_val () == 1)
+	    last_cond_status = condition_status::CS_TRUE;
+	  else
+	    last_cond_status = condition_status::CS_FALSE;
+	}
+      else
+	conditions.add (new bit_condition (arg1_bits->last ()->copy (),
+					   new bit (1), condition_type::EQUAL));
+
+      return;
+    }
+
+  bit_expression * lt_cond = construct_less_than_cond (arg1_bits, arg2_bits);
+  if (lt_cond)
+    /* Otherwise its status is already set.  */
+    conditions.add (lt_cond);
 }
 
 
@@ -1414,26 +1532,61 @@ state::construct_less_than_cond (vec<value*> * arg1_bits,
 				 vec<value*> * arg2_bits)
 {
   bit_expression* prev = nullptr;
-  size_t i = 0;
-  for ( ; i < arg1_bits->length () - 1; i++)
+  int i = arg1_bits->length () - 1;
+  for ( ; i >= 0; i--)
     {
-      bit_condition* less_cond = new bit_condition ((*arg1_bits)[i]->copy (),
-						    (*arg2_bits)[i]->copy (),
-						    condition_type::LESS_THAN);
-      bit_condition* eq_cond = new bit_condition ((*arg1_bits)[i + 1]->copy (),
-						  (*arg2_bits)[i + 1]->copy (),
-						  condition_type::EQUAL);
-      bit_expression* and_expr = new bit_and_expression (eq_cond, less_cond);
-      if (prev)
-	prev = new bit_or_expression (and_expr, prev);
+      if (is_a<bit *> ((*arg1_bits)[i]) && is_a<bit *> ((*arg2_bits)[i]))
+	{
+	  if (as_a<bit*> ((*arg1_bits)[i])->get_val ()
+	      < as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	    {
+	      if (!prev)
+		last_cond_status = condition_status::CS_TRUE;
+	      return prev;
+	    }
+	  else if (as_a<bit*> ((*arg1_bits)[i])->get_val ()
+		   > as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	    {
+	      if (prev)
+		{
+		  bit_expression* ret_val
+		  = as_a<bit_expression*> (prev->get_left ()->copy ());
+		  delete prev;
+		  return ret_val;
+		}
+	      else
+		{
+		  last_cond_status = condition_status::CS_FALSE;
+		  return nullptr;
+		}
+	    }
+	}
       else
-	prev = and_expr;
+	{
+	  bit_condition* lt_cond
+	  = new bit_condition ((*arg1_bits)[i]->copy (),
+			       (*arg2_bits)[i]->copy (),
+			       condition_type::LESS_THAN);
+	  bit_expression* expr = nullptr;
+	  if (i)
+	    {
+	      bit_condition* eq_cond
+	      = new bit_condition ((*arg1_bits)[i]->copy (),
+				   (*arg2_bits)[i]->copy (),
+				    condition_type::EQUAL);
+	      expr = new bit_or_expression (lt_cond, eq_cond);
+	    }
+	  else
+	    expr = lt_cond;
+
+	  if (prev)
+	    prev = new bit_and_expression (expr, prev);
+	  else
+	    prev = expr;
+	}
     }
 
-  bit_condition* less_cond = new bit_condition ((*arg1_bits)[i]->copy (),
-						(*arg2_bits)[i]->copy (),
-						condition_type::LESS_THAN);
-  return new bit_or_expression (less_cond, prev);
+  return prev;
 }
 
 
@@ -1450,7 +1603,9 @@ void
 state::add_greater_or_equal_cond (vec<value*> * arg1_bits,
 				  vec<value*> * arg2_bits)
 {
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits)
+      /* Fix this after adding signed numbers support.  */
+      && get_value (arg2_bits) == 0)
     {
       bool is_greater_than = check_const_bit_is_greater_than (arg1_bits,
 							      arg2_bits);
@@ -1462,9 +1617,31 @@ state::add_greater_or_equal_cond (vec<value*> * arg1_bits,
     }
 
   last_cond_status = condition_status::CS_SYM;
-  conditions.add (
-	new bit_or_expression (construct_great_than_cond (arg1_bits, arg2_bits),
-			       construct_equal_cond (arg1_bits, arg2_bits)));
+  if (is_bit_vector (arg2_bits) && get_value (arg2_bits) == 0)
+    {
+      /* TODO: handle is_signed (arg1_bits) case properly.  */
+      if (is_a<bit*> (arg1_bits->last ()))
+	{
+	  if (as_a<bit*> (arg1_bits->last ())->get_val () == 1)
+	    last_cond_status = condition_status::CS_FALSE;
+	else
+	    last_cond_status = condition_status::CS_TRUE;
+	}
+      else
+	conditions.add (new bit_condition (arg1_bits->last ()->copy (),
+					   new bit (0), condition_type::EQUAL));
+
+      return;
+    }
+
+  bit_expression * eq_cond = construct_equal_cond (arg1_bits, arg2_bits);
+  if (!eq_cond)
+    return;
+
+  bit_expression * gt_cond = construct_great_than_cond (arg1_bits, arg2_bits);
+  if (gt_cond)
+    /* Otherwise its status is already set.  */
+    conditions.add (new bit_or_expression (eq_cond, gt_cond));
 }
 
 
@@ -1492,9 +1669,14 @@ state::add_less_or_equal_cond (vec<value*> * arg1_bits,
     }
 
   last_cond_status = condition_status::CS_SYM;
-  conditions.add (
-	new bit_or_expression (construct_less_than_cond (arg1_bits, arg2_bits),
-			       construct_equal_cond (arg1_bits, arg2_bits)));
+  bit_expression * eq_cond = construct_equal_cond (arg1_bits, arg2_bits);
+  if (!eq_cond)
+    return;
+
+  bit_expression * lt_cond = construct_less_than_cond (arg1_bits, arg2_bits);
+  if (lt_cond)
+    /* Otherwise its status is already set.  */
+    conditions.add (new bit_or_expression (eq_cond, lt_cond));
 }
 
 
@@ -1509,22 +1691,30 @@ state::add_bool_cond (tree arg)
 
       return false;
     }
+
   vec<value *> * arg_bits = var_states.get (arg);
+  for (size_t i = 0; i < arg_bits->length (); i++)
+    if (is_a<bit *>((*arg_bits)[i])
+	&& as_a<bit *>((*arg_bits)[i])->get_val () != 0)
+      {
+	last_cond_status = condition_status::CS_TRUE;
+	print_conditions ();
+	return true;
+      }
+
   if (is_bit_vector (arg_bits))
     {
       last_cond_status = condition_status::CS_FALSE;
-      for (size_t i = 0; i < arg_bits->length (); i++)
-	if (as_a<bit *>((*arg_bits)[i])->get_val () != 0)
-	  {
-	    last_cond_status = condition_status::CS_TRUE;
-	    break;
-	  }
+      print_conditions ();
       return true;
     }
 
   bit_expression* prev = nullptr;
   for (size_t i = 0; i < arg_bits->length (); i++)
     {
+      if (is_a<bit*> ((*arg_bits)[i]))
+	continue;
+
       bit_condition* not_eq_cond
       = new bit_condition ((*arg_bits)[i], new bit (0),
 			   condition_type::NOT_EQUAL);
@@ -1536,6 +1726,7 @@ state::add_bool_cond (tree arg)
 
   last_cond_status = condition_status::CS_SYM;
   conditions.add (prev);
+  print_conditions ();
   return true;
 }
 
@@ -1586,6 +1777,7 @@ state::add_binary_cond (tree arg1, tree arg2, binary_cond_func cond_func)
   (this->*cond_func)(arg1_bits, arg2_bits);
   free_bits (&arg1_const_bits);
   free_bits (&arg2_const_bits);
+  print_conditions ();
   return true;
 }
 
@@ -1597,6 +1789,28 @@ bit_expression*
 state::construct_equal_cond (vec<value*> * arg1_bits,
 			     vec<value*> * arg2_bits)
 {
+  /* If both arguments are constants then we can evaluate it.  */
+  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
+    {
+      bool result = check_const_bit_equality (arg1_bits, arg2_bits);
+      last_cond_status = result ? condition_status::CS_TRUE
+				: condition_status::CS_FALSE;
+      return nullptr;
+    }
+
+  /* When some of bits are constants and they differ by value,
+     then we can evalate it to be false.  */
+  for (size_t i = 0; i < arg1_bits->length (); i++)
+    {
+      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i])
+	  && as_a<bit*> ((*arg1_bits)[i])->get_val ()
+	     != as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	{
+	  last_cond_status = condition_status::CS_FALSE;
+	  return nullptr;
+	}
+    }
+
   bit_expression* prev = nullptr;
   for (size_t i = 0; i < arg1_bits->length (); i++)
     {
@@ -1672,12 +1886,16 @@ state::make_copy (vec<value *> *bits)
 }
 
 
+/* Returns status of last added condition.  */
+
 condition_status
 state::get_last_cond_status ()
 {
   return last_cond_status;
 }
 
+
+/* Prints given bits as expressions.  */
 
 void
 state::print_bits (vec<value *> * bits)
@@ -1828,4 +2046,31 @@ state::create_lfsr (tree crc, vec<value *> *polynomial, bool is_bit_forward)
   delete crc_value;
 
   return lfsr;
+}
+
+
+/* Prints added conditions.  */
+
+void
+state::print_conditions ()
+{
+  if (!dump_file || !(dump_flags & TDF_DETAILS))
+    return;
+
+  fprintf (dump_file, "Conditions {");
+  auto iter = conditions.begin ();
+  while (true)
+    {
+      if (iter != conditions.end ())
+	{
+	  (*iter)->print ();
+	  ++iter;
+	}
+
+      if (iter != conditions.end ())
+	fprintf (dump_file, ", ");
+      else
+	break;
+    }
+  fprintf (dump_file, "}\n");
 }

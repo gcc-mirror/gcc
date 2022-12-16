@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc" } */
+/* { dg-options "-O2 -fdump-tree-crc-details" } */
 
 #include <stdint.h>
 
@@ -19,5 +19,5 @@ uint16_t crc_xmodem_update(uint16_t crc, uint8_t data) {
 /* { dg-final { scan-tree-dump "Return size is 16" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit forward" "crc"} } */
-
-
+/* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \\\^ \[a-zA-Z0-9_\]+\(\\\(\[a-zA-Z\]\\\)\)?;" "crc" } } */
+/* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \(<<|>>\) \[0-9]+;" "crc" } } */

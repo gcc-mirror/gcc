@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc" } */
+/* { dg-options "-O2 -fdump-tree-crc-details" } */
 
 unsigned short crc16(char *data_p, unsigned short length) {
     unsigned char i;
@@ -30,4 +30,5 @@ unsigned short crc16(char *data_p, unsigned short length) {
 /* { dg-final { scan-tree-dump "Return size is 16" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit reversed" "crc"} } */
-
+/* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \\\^ \[a-zA-Z0-9_\]+\(\\\(\[a-zA-Z\]\\\)\)?;" "crc" } } */
+/* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \(<<|>>\) \[0-9]+;" "crc" } } */

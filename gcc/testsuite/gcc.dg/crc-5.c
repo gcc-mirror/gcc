@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc" } */
+/* { dg-options "-O2 -fdump-tree-crc-details" } */
 
 typedef unsigned short ee_u16;
 typedef unsigned char ee_u8;
@@ -26,4 +26,5 @@ ee_u16 crcu8(ee_u8 data, ee_u16 crc) {
 /* { dg-final { scan-tree-dump "Return size is 16" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit reversed" "crc"} } */
-
+/* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \\\^ \[a-zA-Z0-9_\]+\(\\\(\[a-zA-Z\]\\\)\)?;" "crc" } } */
+/* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \(<<|>>\) \[0-9]+;" "crc" } } */

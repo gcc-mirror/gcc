@@ -198,7 +198,7 @@ bit_or_expression::bit_or_expression (value *left, value *right)
   this->left = left;
   this->right = right;
   op_sign[0] = '|';
-  op_sign[0] = '\0';
+  op_sign[1] = '\0';
 }
 
 

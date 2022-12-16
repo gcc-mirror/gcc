@@ -152,11 +152,11 @@ class state {
   /* Performs XOR operation for a symbolic_bit and const_bit operands.  */
   static value *xor_var_const (const value * var, const bit * const_bit);
 
-  /* shift_right operation.  Case: var2 is a sym_bit.  */
+  /* Shift_right operation.  Case: var2 is a sym_bit.  */
   void shift_right_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
 			     tree dest);
 
-  /* shift_left operation.  Case: var2 is a sym_bit.  */
+  /* Shift_left operation.  Case: var2 is a sym_bit.  */
   void shift_left_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
 			    tree dest);
 
@@ -242,9 +242,13 @@ class state {
   /* Returns size of the given variable.  */
   unsigned get_var_size (tree var);
 
+  /* Prints given bits as expressions.  */
   static void print_bits (vec<value *> * bits);
 
-  /* returns the value of the number represented as a bit vector.  */
+  /* Prints added conditions.  */
+  void print_conditions ();
+
+  /* Returns the value of the number represented as a bit vector.  */
   static unsigned HOST_WIDE_INT get_value (const vec <value *> *bit_vector);
 
   /* Does bit-level XOR operation for given variables.  */
