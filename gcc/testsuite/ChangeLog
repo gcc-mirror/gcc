@@ -1,3 +1,10 @@
+2022-12-15  Sebastian Pop  <spop@amazon.com>
+
+	PR target/98776
+	* gcc.target/aarch64/pr98776.c: New.
+	* gcc.target/aarch64/pr92424-2.c: Adjust pattern.
+	* gcc.target/aarch64/pr92424-3.c: Adjust pattern.
+
 2022-12-12  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
