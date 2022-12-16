@@ -72,7 +72,7 @@ args = parser.parse_args()
 
 lines = [line.strip() for line in open(args.log)]
 total = 0
-messages = []
+messages = set()
 for line in lines:
     token = ': warning: '
     i = line.find(token)
@@ -81,7 +81,7 @@ for line in lines:
         message = line[i + len(token):]
         if not skip_warning(location, message):
             total += 1
-            messages.append(line)
+            messages.add(line)
 
 for line in sorted(messages):
     print(line)
