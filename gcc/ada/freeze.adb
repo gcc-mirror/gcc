@@ -6281,7 +6281,10 @@ package body Freeze is
          end if;
 
          --  Otherwise, loop through scopes checking if an enclosing scope
-         --  comes from source or is a generic.
+         --  comes from source or is a generic. Note that, for the purpose
+         --  of this test, we need to consider that the internally generated
+         --  subprogram described above comes from source too if the original
+         --  subprogram itself does.
 
          declare
             S : Entity_Id;
@@ -6291,6 +6294,8 @@ package body Freeze is
             while Present (S) loop
                if Is_Overloadable (S) then
                   if Comes_From_Source (S)
+                    or else (Chars (S) = Name_uWrapped_Statements
+                              and then Comes_From_Source (Scope (S)))
                     or else Is_Generic_Instance (S)
                     or else Is_Child_Unit (S)
                   then
