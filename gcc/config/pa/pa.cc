@@ -567,6 +567,9 @@ pa_option_override (void)
       flag_reorder_blocks = 1;
     }
 
+  /* Disable -fstack-protector to suppress warning.  */
+  flag_stack_protect = 0;
+
   /* We can't guarantee that .dword is available for 32-bit targets.  */
   if (UNITS_PER_WORD == 4)
     targetm.asm_out.aligned_op.di = NULL;

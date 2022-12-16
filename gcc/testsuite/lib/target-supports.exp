@@ -1218,6 +1218,9 @@ proc check_effective_target_static {} {
 
 # Return 1 if the target supports -fstack-protector
 proc check_effective_target_fstack_protector {} {
+    if { [istarget hppa*-*-*] } {
+	return 0;
+    }
     return [check_runtime fstack_protector {
 	#include <string.h>
 	int main (int argc, char *argv[]) {
