@@ -1629,6 +1629,7 @@ tree gimple_call_nonnull_arg (gcall *);
 bool gimple_assign_copy_p (gimple *);
 bool gimple_assign_ssa_name_copy_p (gimple *);
 bool gimple_assign_unary_nop_p (gimple *);
+bool gimple_assign_load_p (const gimple *);
 void gimple_set_bb (gimple *, basic_block);
 void gimple_assign_set_rhs_from_tree (gimple_stmt_iterator *, tree);
 void gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *, enum tree_code,
@@ -2951,23 +2952,6 @@ gimple_store_p (const gimple *gs)
   tree lhs = gimple_get_lhs (gs);
   return lhs && !is_gimple_reg (lhs);
 }
-
-/* Return true if GS is an assignment that loads from its rhs1.  */
-
-inline bool
-gimple_assign_load_p (const gimple *gs)
-{
-  tree rhs;
-  if (!gimple_assign_single_p (gs))
-    return false;
-  rhs = gimple_assign_rhs1 (gs);
-  if (TREE_CODE (rhs) == WITH_SIZE_EXPR)
-    return true;
-  rhs = get_base_address (rhs);
-  return (DECL_P (rhs)
-	  || TREE_CODE (rhs) == MEM_REF || TREE_CODE (rhs) == TARGET_MEM_REF);
-}
-
 
 /* Return true if S is a type-cast assignment.  */
 
