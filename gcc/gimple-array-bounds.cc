@@ -252,25 +252,33 @@ get_up_bounds_for_array_ref (tree ref, tree *decl,
 
 /* Given the LOW_SUB_ORG, LOW_SUB and UP_SUB, and the computed UP_BOUND
    and UP_BOUND_P1, check whether the array reference REF is out of bound.
-   Issue warnings if out of bound, return TRUE if warnings are issued.  */
+   When out of bounds, set OUT_OF_BOUND to true.
+   Issue warnings if FOR_ARRAY_BOUND is true.
+   return TRUE if warnings are issued.  */
 
 static bool
 check_out_of_bounds_and_warn (location_t location, tree ref,
 			      tree low_sub_org, tree low_sub, tree up_sub,
 			      tree up_bound, tree up_bound_p1,
 			      const value_range *vr,
-			      bool ignore_off_by_one)
+			      bool ignore_off_by_one, bool for_array_bound,
+			      bool *out_of_bound)
 {
   tree low_bound = array_ref_low_bound (ref);
   tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
 
   bool warned = false;
+  *out_of_bound = false;
 
   /* Empty array.  */
   if (up_bound && tree_int_cst_equal (low_bound, up_bound_p1))
-    warned = warning_at (location, OPT_Warray_bounds_,
-			 "array subscript %E is outside array bounds of %qT",
-			 low_sub_org, artype);
+    {
+      *out_of_bound = true;
+      if (for_array_bound)
+	warned = warning_at (location, OPT_Warray_bounds_,
+			     "array subscript %E is outside array"
+			     " bounds of %qT", low_sub_org, artype);
+    }
 
   if (warned)
     ; /* Do nothing.  */
@@ -283,24 +291,36 @@ check_out_of_bounds_and_warn (location_t location, tree ref,
 	      : tree_int_cst_le (up_bound, up_sub))
 	  && TREE_CODE (low_sub) == INTEGER_CST
 	  && tree_int_cst_le (low_sub, low_bound))
-	warned = warning_at (location, OPT_Warray_bounds_,
-			     "array subscript [%E, %E] is outside "
-			     "array bounds of %qT",
-			     low_sub, up_sub, artype);
+	{
+	  *out_of_bound = true;
+	  if (for_array_bound)
+	    warned = warning_at (location, OPT_Warray_bounds_,
+				 "array subscript [%E, %E] is outside "
+				 "array bounds of %qT",
+				 low_sub, up_sub, artype);
+	}
     }
   else if (up_bound
 	   && TREE_CODE (up_sub) == INTEGER_CST
 	   && (ignore_off_by_one
 	       ? !tree_int_cst_le (up_sub, up_bound_p1)
 	       : !tree_int_cst_le (up_sub, up_bound)))
-    warned = warning_at (location, OPT_Warray_bounds_,
-			 "array subscript %E is above array bounds of %qT",
-			 up_sub, artype);
+    {
+      *out_of_bound = true;
+      if (for_array_bound)
+	warned = warning_at (location, OPT_Warray_bounds_,
+			     "array subscript %E is above array bounds of %qT",
+			     up_sub, artype);
+    }
   else if (TREE_CODE (low_sub) == INTEGER_CST
 	   && tree_int_cst_lt (low_sub, low_bound))
-    warned = warning_at (location, OPT_Warray_bounds_,
-			 "array subscript %E is below array bounds of %qT",
-			 low_sub, artype);
+    {
+      *out_of_bound = true;
+      if (for_array_bound)
+	warned = warning_at (location, OPT_Warray_bounds_,
+			     "array subscript %E is below array bounds of %qT",
+			     low_sub, artype);
+    }
   return warned;
 }
 
@@ -333,14 +353,21 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 
   tree arg = TREE_OPERAND (ref, 0);
   const bool compref = TREE_CODE (arg) == COMPONENT_REF;
+  unsigned int strict_flex_array_level = flag_strict_flex_arrays;
 
   if (compref)
-    /* Try to determine special array member type for this COMPONENT_REF.  */
-    sam = component_ref_sam_type (arg);
+    {
+      /* Try to determine special array member type for this COMPONENT_REF.  */
+      sam = component_ref_sam_type (arg);
+      /* Get the level of strict_flex_array for this array field.  */
+      tree afield_decl = TREE_OPERAND (arg, 1);
+      strict_flex_array_level = strict_flex_array_level_of (afield_decl);
+    }
 
   get_up_bounds_for_array_ref (ref, &decl, &up_bound, &up_bound_p1);
 
   bool warned = false;
+  bool out_of_bound = false;
 
   tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
   tree low_sub_org = TREE_OPERAND (ref, 1);
@@ -361,7 +388,8 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   warned = check_out_of_bounds_and_warn (location, ref,
 					 low_sub_org, low_sub, up_sub,
 					 up_bound, up_bound_p1, vr,
-					 ignore_off_by_one);
+					 ignore_off_by_one, warn_array_bounds,
+					 &out_of_bound);
 
 
   if (!warned && sam == special_array_member::int_0)
@@ -373,19 +401,56 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 			       "of an interior zero-length array %qT")),
 			 low_sub, artype);
 
-  if (warned)
+  if (warned || out_of_bound)
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
+      if (warned && dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Array bound warning for ");
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
 	  fprintf (dump_file, "\n");
 	}
 
+      /* issue warnings for -Wstrict-flex-arrays according to the level of
+	 flag_strict_flex_arrays.  */
+      if (out_of_bound && warn_strict_flex_arrays)
+      switch (strict_flex_array_level)
+	{
+	  case 3:
+	    /* Issue additional warnings for trailing arrays [0].  */
+	    if (sam == special_array_member::trail_0)
+	      warned = warning_at (location, OPT_Wstrict_flex_arrays,
+				   "trailing array %qT should not be used as "
+				   "a flexible array member for level 3",
+				   artype);
+	    /* FALLTHROUGH.  */
+	  case 2:
+	    /* Issue additional warnings for trailing arrays [1].  */
+	    if (sam == special_array_member::trail_1)
+	      warned = warning_at (location, OPT_Wstrict_flex_arrays,
+				   "trailing array %qT should not be used as "
+				   "a flexible array member for level 2 and "
+				   "above", artype);
+	    /* FALLTHROUGH.  */
+	  case 1:
+	    /* Issue warnings for trailing arrays [n].  */
+	    if (sam == special_array_member::trail_n)
+	      warned = warning_at (location, OPT_Wstrict_flex_arrays,
+				   "trailing array %qT should not be used as "
+				   "a flexible array member for level 1 and "
+				   "above", artype);
+	    break;
+	  case 0:
+	    /* Do nothing.  */
+	    break;
+	  default:
+	    gcc_unreachable ();
+	}
+
       /* Avoid more warnings when checking more significant subscripts
 	 of the same expression.  */
       ref = TREE_OPERAND (ref, 0);
       suppress_warning (ref, OPT_Warray_bounds_);
+      suppress_warning (ref, OPT_Wstrict_flex_arrays);
 
       if (decl)
 	ref = decl;

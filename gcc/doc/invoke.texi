@@ -398,7 +398,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
 -Wstring-compare @gol
 -Wno-stringop-overflow -Wno-stringop-overread @gol
--Wno-stringop-truncation @gol
+-Wno-stringop-truncation -Wstrict-flex-arrays @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
@@ -7834,6 +7834,31 @@ however, are not suitable arguments to functions that expect
 @code{NUL}-terminated strings.  To help detect accidental misuses of
 such arrays GCC issues warnings unless it can prove that the use is
 safe.  @xref{Common Variable Attributes}.
+
+@item -Wstrict-flex-arrays
+@opindex Wstrict-flex-arrays
+@opindex Wno-strict-flex-arrays
+Warn about inproper usages of flexible array members
+according to the @var{level} of the @code{strict_flex_array (@var{level})}
+attribute attached to the trailing array field of a structure if it's
+available, otherwise according to the @var{level} of the option
+@option{-fstrict-flex-arrays=@var{level}}.
+
+This option is effective only when @var{level} is bigger than 0.  Otherwise,
+it will be ignored with a warning.
+
+when @var{level}=1, warnings will be issued for a trailing array reference
+of a structure that have 2 or more elements if the trailing array is referenced
+as a flexible array member.
+
+when @var{level}=2, in addition to @var{level}=1, additional warnings will be
+issued for a trailing one-element array reference of a structure
+if the array is referenced as a flexible array member.
+
+when @var{level}=3, in addition to @var{level}=2, additional warnings will be
+issued for a trailing zero-length array reference of a structure
+if the array is referenced as a flexible array member.
+
 
 @item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
 @opindex Wsuggest-attribute=
