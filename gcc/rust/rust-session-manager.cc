@@ -438,7 +438,7 @@ Session::compile_crate (const char *filename)
       "manner by passing the following flag:\n\n"
       "`-frust-incomplete-and-experimental-compiler-do-not-use`\n\nor by "
       "defining the following environment variable (any value will "
-      "do)\n\nGCCRS_INCOMPLETE_AND_EXPERIMENTAL_COMPILER_DO_NOT_USE\n\nFor"
+      "do)\n\nGCCRS_INCOMPLETE_AND_EXPERIMENTAL_COMPILER_DO_NOT_USE\n\nFor "
       "cargo-gccrs, this means passing\n\n"
       "GCCRS_EXTRA_FLAGS=\"-frust-incomplete-and-experimental-compiler-do-not-"
       "use\"\n\nas an environment variable.");
