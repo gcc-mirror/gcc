@@ -1004,11 +1004,13 @@ due_to_ifn_deferred_init_p (const gassign *assign_stmt)
 
 /* Check for SVAL being poisoned, adding a warning to CTXT.
    Return SVAL, or, if a warning is added, another value, to avoid
-   repeatedly complaining about the same poisoned value in followup code.  */
+   repeatedly complaining about the same poisoned value in followup code.
+   SRC_REGION is a hint about where SVAL came from, and can be NULL.  */
 
 const svalue *
 region_model::check_for_poison (const svalue *sval,
 				tree expr,
+				const region *src_region,
 				region_model_context *ctxt) const
 {
   if (!ctxt)
@@ -1046,8 +1048,7 @@ region_model::check_for_poison (const svalue *sval,
 	 the tree other than via the def stmts, using
 	 fixup_tree_for_diagnostic.  */
       tree diag_arg = fixup_tree_for_diagnostic (expr);
-      const region *src_region = NULL;
-      if (pkind == POISON_KIND_UNINIT)
+      if (src_region == NULL && pkind == POISON_KIND_UNINIT)
 	src_region = get_region_for_poisoned_expr (expr);
       if (ctxt->warn (make_unique<poisoned_value_diagnostic> (diag_arg,
 							      pkind,
@@ -1100,7 +1101,7 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
   if (const svalue *sval = get_gassign_result (assign, ctxt))
     {
       tree expr = get_diagnostic_tree_for_gassign (assign);
-      check_for_poison (sval, expr, ctxt);
+      check_for_poison (sval, expr, NULL, ctxt);
       set_value (lhs_reg, sval, ctxt);
       return;
     }
@@ -2227,7 +2228,7 @@ region_model::get_rvalue (path_var pv, region_model_context *ctxt) const
 
   assert_compat_types (result_sval->get_type (), TREE_TYPE (pv.m_tree));
 
-  result_sval = check_for_poison (result_sval, pv.m_tree, ctxt);
+  result_sval = check_for_poison (result_sval, pv.m_tree, NULL, ctxt);
 
   return result_sval;
 }

@@ -6,7 +6,7 @@
 
 int test_memmove_within_uninit (void)
 {
-  char s[5]; /* { dg-message "region created on stack here" "" { xfail riscv*-*-* } } */
+  char s[5]; /* { dg-message "region created on stack here" } */
   memmove(s, s + 1, 2); /* { dg-warning "use of uninitialized value" } */
   return 0;
 }

@@ -1992,6 +1992,7 @@ fd_state_machine::on_accept (const call_details &cd,
 				  build_int_cst (TREE_TYPE (len_ptr), 0));
       old_len_sval = model->check_for_poison (old_len_sval,
 					      star_len_ptr,
+					      len_reg,
 					      cd.get_ctxt ());
       if (successful)
 	{

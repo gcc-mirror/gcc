@@ -723,6 +723,7 @@ kf_va_copy::impl_call_pre (const call_details &cd) const
   in_va_list
     = model->check_for_poison (in_va_list,
 			       get_va_list_diag_arg (cd.get_arg_tree (1)),
+			       NULL,
 			       cd.get_ctxt ());
 
   const region *out_dst_reg
@@ -1004,7 +1005,7 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
     ap_sval = cast;
 
   tree va_list_tree = get_va_list_diag_arg (cd.get_arg_tree (0));
-  ap_sval = model->check_for_poison (ap_sval, va_list_tree, ctxt);
+  ap_sval = model->check_for_poison (ap_sval, va_list_tree, ap_reg, ctxt);
 
   if (const region *impl_reg = ap_sval->maybe_get_region ())
     {
