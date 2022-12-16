@@ -8872,6 +8872,10 @@ package body Sem_Ch13 is
       --  Given a type, if it has a static predicate, then set Result to the
       --  predicate as a range list, otherwise set Static.all to False.
 
+      procedure Warn_If_Test_Ineffective (REntry : REnt; N : Node_Id);
+      --  Issue a warning if REntry includes only values that are
+      --  outside the range TLo .. THi.
+
       -----------
       -- "and" --
       -----------
@@ -9126,8 +9130,9 @@ package body Sem_Ch13 is
         (Exp    : Node_Id;
          Static : access Boolean) return RList
       is
-         Op  : Node_Kind;
-         Val : Uint;
+         Op         : Node_Kind;
+         Val        : Uint;
+         Val_Bearer : Node_Id;
 
       begin
          --  Static expression can only be true or false
@@ -9178,14 +9183,14 @@ package body Sem_Ch13 is
                if Is_Type_Ref (Left_Opnd (Exp))
                  and then Is_OK_Static_Expression (Right_Opnd (Exp))
                then
-                  Val := Expr_Value (Right_Opnd (Exp));
+                  Val_Bearer := Right_Opnd (Exp);
 
                --  Typ is right operand
 
                elsif Is_Type_Ref (Right_Opnd (Exp))
                  and then Is_OK_Static_Expression (Left_Opnd (Exp))
                then
-                  Val := Expr_Value (Left_Opnd (Exp));
+                  Val_Bearer := Left_Opnd (Exp);
 
                   --  Invert sense of comparison
 
@@ -9204,30 +9209,41 @@ package body Sem_Ch13 is
                   return False_Range;
                end if;
 
+               Val := Expr_Value (Val_Bearer);
+
                --  Construct range according to comparison operation
 
-               case Op is
-                  when N_Op_Eq =>
-                     return RList'(1 => REnt'(Val, Val));
+               declare
+                  REntry : REnt;
+               begin
+                  case Op is
+                     when N_Op_Eq =>
+                        REntry := (Val, Val);
 
-                  when N_Op_Ge =>
-                     return RList'(1 => REnt'(Val, BHi));
+                     when N_Op_Ge =>
+                        REntry := (Val, THi);
 
-                  when N_Op_Gt =>
-                     return RList'(1 => REnt'(Val + 1, BHi));
+                     when N_Op_Gt =>
+                        REntry := (Val + 1, THi);
 
-                  when N_Op_Le =>
-                     return RList'(1 => REnt'(BLo, Val));
+                     when N_Op_Le =>
+                        REntry := (TLo, Val);
 
-                  when N_Op_Lt =>
-                     return RList'(1 => REnt'(BLo, Val - 1));
+                     when N_Op_Lt =>
+                        REntry := (TLo, Val - 1);
 
-                  when N_Op_Ne =>
-                     return RList'(REnt'(BLo, Val - 1), REnt'(Val + 1, BHi));
+                     when N_Op_Ne =>
+                        Warn_If_Test_Ineffective ((Val, Val), Val_Bearer);
+                        return RList'(REnt'(TLo, Val - 1),
+                                      REnt'(Val + 1, THi));
 
-                  when others  =>
-                     raise Program_Error;
-               end case;
+                     when others  =>
+                        raise Program_Error;
+                  end case;
+
+                  Warn_If_Test_Ineffective (REntry, Val_Bearer);
+                  return RList'(1 => REntry);
+               end;
 
             --  Membership (IN)
 
@@ -9443,7 +9459,12 @@ package body Sem_Ch13 is
             else
                SLo := Expr_Value (Low_Bound  (N));
                SHi := Expr_Value (High_Bound (N));
-               return RList'(1 => REnt'(SLo, SHi));
+               declare
+                  REntry : constant REnt := (SLo, SHi);
+               begin
+                  Warn_If_Test_Ineffective (REntry, N);
+                  return RList'(1 => REntry);
+               end;
             end if;
 
          --  Others case
@@ -9469,7 +9490,12 @@ package body Sem_Ch13 is
 
          elsif Is_OK_Static_Expression (N) then
             Val := Expr_Value (N);
-            return RList'(1 => REnt'(Val, Val));
+            declare
+               REntry : constant REnt := (Val, Val);
+            begin
+               Warn_If_Test_Ineffective (REntry, N);
+               return RList'(1 => REntry);
+            end;
 
          --  Identifier (other than static expression) case
 
@@ -9540,6 +9566,49 @@ package body Sem_Ch13 is
             return Result;
          end;
       end Stat_Pred;
+
+      procedure Warn_If_Test_Ineffective (REntry : REnt; N : Node_Id) is
+
+         procedure IPT_Warning (Msg : String);
+         --  Emit warning
+
+         -----------------
+         -- IPT_Warning --
+         -----------------
+         procedure IPT_Warning (Msg : String) is
+         begin
+            Error_Msg_N ("ineffective predicate test " & Msg & "?_s?", N);
+         end IPT_Warning;
+
+      --  Start of processing for Warn_If_Test_Ineffective
+
+      begin
+         --  Do nothing if warning disabled
+
+         if not Warn_On_Ineffective_Predicate_Test then
+            null;
+
+         --  skip null-range corner cases
+
+         elsif (REntry.Lo > REntry.Hi) or else (TLo > THi) then
+            null;
+
+         --  warn if no overlap between subtype bounds and the given range
+
+         elsif REntry.Lo > THi or else REntry.Hi < TLo then
+            Error_Msg_Uint_1 := REntry.Lo;
+            if REntry.Lo /= REntry.Hi then
+               Error_Msg_Uint_2 := REntry.Hi;
+               IPT_Warning ("range: ^ .. ^");
+            elsif Is_Enumeration_Type (Typ) and then
+               Nkind (N) in N_Identifier | N_Expanded_Name
+            then
+               IPT_Warning ("value: &");
+            else
+               IPT_Warning ("value: ^");
+            end if;
+         end if;
+      end Warn_If_Test_Ineffective;
 
    --  Start of processing for Build_Discrete_Static_Predicate
 

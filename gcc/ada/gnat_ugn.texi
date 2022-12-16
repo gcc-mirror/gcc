@@ -10743,6 +10743,9 @@ switch are:
 @code{-gnatw.s} (overridden size clause)
 
 @item 
+@code{-gnatw_s} (ineffective predicate test)
+
+@item 
 @code{-gnatwt} (tracking of deleted conditional code)
 
 @item 
@@ -12153,6 +12156,36 @@ component type.
 This switch suppresses warnings on component clauses in record
 representation clauses that override size clauses, and similar
 warnings when an array component size overrides a size clause.
+@end table
+
+@geindex -gnatw_s (gcc)
+
+@geindex Warnings
+
+
+@table @asis
+
+@item @code{-gnatw_s}
+
+`Activate warnings on ineffective predicate tests.'
+
+This switch activates warnings on Static_Predicate aspect
+specifications that test for values that do not belong to
+the parent subtype. Not all such ineffective tests are detected.
+@end table
+
+@geindex -gnatw_S (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_S}
+
+`Suppress warnings on ineffective predicate tests.'
+
+This switch suppresses warnings on Static_Predicate aspect
+specifications that test for values that do not belong to
+the parent subtype.
 @end table
 
 @geindex -gnatwt (gcc)
@@ -29433,8 +29466,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{cf}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye

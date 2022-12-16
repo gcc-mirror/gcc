@@ -2801,6 +2801,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   * :switch:`-gnatw.s` (overridden size clause)
 
+  * :switch:`-gnatw_s` (ineffective predicate test)
+
   * :switch:`-gnatwt` (tracking of deleted conditional code)
 
   * :switch:`-gnatw.u` (unordered enumeration)
@@ -3833,6 +3835,25 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   representation clauses that override size clauses, and similar
   warnings when an array component size overrides a size clause.
 
+
+.. index:: -gnatw_s  (gcc)
+.. index:: Warnings
+
+:switch:`-gnatw_s`
+  *Activate warnings on ineffective predicate tests.*
+
+  This switch activates warnings on Static_Predicate aspect
+  specifications that test for values that do not belong to
+  the parent subtype. Not all such ineffective tests are detected.
+
+.. index:: -gnatw_S  (gcc)
+
+:switch:`-gnatw_S`
+  *Suppress warnings on ineffective predicate tests.*
+
+  This switch suppresses warnings on Static_Predicate aspect
+  specifications that test for values that do not belong to
+  the parent subtype.
 
 .. index:: -gnatwt  (gcc)
 .. index:: Deactivated code, warnings
