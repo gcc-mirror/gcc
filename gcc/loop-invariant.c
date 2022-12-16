@@ -1829,6 +1829,8 @@ move_invariant_reg (class loop *loop, unsigned invno)
       else if (dump_file)
 	fprintf (dump_file, "Invariant %d moved without introducing a new "
 			    "temporary register\n", invno);
+      if (JUMP_P (BB_END (preheader)))
+	preheader = split_edge (loop_preheader_edge (loop));
       reorder_insns (inv->insn, inv->insn, BB_END (preheader));
       df_recompute_luids (preheader);
 
