@@ -39,18 +39,15 @@ unidiff_supports_renaming = hasattr(PatchedFile(), 'is_rename')
 class GitEmail(GitCommit):
     def __init__(self, filename):
         self.filename = filename
-        try:
-          diff = PatchSet.from_filename(filename, newline='\n')
-        except TypeError:
-          # Older versions don't have the newline argument
-          diff = PatchSet.from_filename(filename)
         date = None
         author = None
         subject = ''
 
         subject_last = False
-        with open(self.filename, 'r') as f:
-            lines = f.read().splitlines()
+        with open(self.filename, newline='\n') as f:
+            data = f.read()
+            diff = PatchSet(data)
+            lines = data.splitlines()
         lines = list(takewhile(lambda line: line != '---', lines))
         for line in lines:
             if line.startswith(DATE_PREFIX):
