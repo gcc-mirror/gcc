@@ -492,8 +492,6 @@ match_array_element_spec (gfc_array_spec *as)
   if (!gfc_expr_check_typed (*upper, gfc_current_ns, false))
     return AS_UNKNOWN;
 
-  gfc_try_simplify_expr (*upper, 0);
-
   if (((*upper)->expr_type == EXPR_CONSTANT
 	&& (*upper)->ts.type != BT_INTEGER) ||
       ((*upper)->expr_type == EXPR_FUNCTION
@@ -525,8 +523,6 @@ match_array_element_spec (gfc_array_spec *as)
     return AS_ASSUMED_SHAPE;
   if (!gfc_expr_check_typed (*upper, gfc_current_ns, false))
     return AS_UNKNOWN;
-
-  gfc_try_simplify_expr (*upper, 0);
 
   if (((*upper)->expr_type == EXPR_CONSTANT
 	&& (*upper)->ts.type != BT_INTEGER) ||
