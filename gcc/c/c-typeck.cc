@@ -641,7 +641,8 @@ struct composite_cache {
 };
 
 tree
-composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
+composite_type_internal (tree t1, tree t2, tree cond,
+			 struct composite_cache* cache)
 {
   enum tree_code code1;
   enum tree_code code2;
@@ -686,8 +687,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
       {
 	tree pointed_to_1 = TREE_TYPE (t1);
 	tree pointed_to_2 = TREE_TYPE (t2);
-	tree target = composite_type_internal (pointed_to_1,
-					       pointed_to_2, cache);
+	tree target = composite_type_internal (pointed_to_1, pointed_to_2,
+					       cond, cache);
 	t1 = c_build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
 	t1 = c_build_type_attribute_variant (t1, attributes);
 	return qualify_type (t1, t2);
@@ -695,25 +696,20 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 
     case ARRAY_TYPE:
       {
-	tree elt = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
-					    cache);
-	int quals;
-	tree unqual_elt;
 	tree d1 = TYPE_DOMAIN (t1);
 	tree d2 = TYPE_DOMAIN (t2);
-	bool d1_variable, d2_variable;
-	bool d1_zero, d2_zero;
-	bool t1_complete, t2_complete;
 
 	/* We should not have any type quals on arrays at all.  */
 	gcc_assert (!TYPE_QUALS_NO_ADDR_SPACE (t1)
 		    && !TYPE_QUALS_NO_ADDR_SPACE (t2));
 
-	t1_complete = COMPLETE_TYPE_P (t1);
-	t2_complete = COMPLETE_TYPE_P (t2);
+	bool t1_complete = COMPLETE_TYPE_P (t1);
+	bool t2_complete = COMPLETE_TYPE_P (t2);
 
-	d1_zero = d1 == NULL_TREE || !TYPE_MAX_VALUE (d1);
-	d2_zero = d2 == NULL_TREE || !TYPE_MAX_VALUE (d2);
+	bool d1_zero = d1 == NULL_TREE || !TYPE_MAX_VALUE (d1);
+	bool d2_zero = d2 == NULL_TREE || !TYPE_MAX_VALUE (d2);
+
+	bool d1_variable, d2_variable;
 
 	d1_variable = (!d1_zero
 		       && (TREE_CODE (TYPE_MIN_VALUE (d1)) != INTEGER_CST
@@ -722,10 +718,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
 
-	bool use1 = TYPE_DOMAIN (t1)
-		    && (d2_variable || d2_zero || !d1_variable);
-	bool use2 = TYPE_DOMAIN (t2)
-		    && (d1_variable || d1_zero || !d2_variable);
+	bool use1 = d1 && (d2_variable || d2_zero || !d1_variable);
+	bool use2 = d2 && (d1_variable || d1_zero || !d2_variable);
 
 	/* If the first is an unspecified size pick the other one.  */
 	if (d2_variable && c_type_unspecified_p (t1))
@@ -734,25 +728,53 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	    use1 = false;
 	  }
 
-	/* Save space: see if the result is identical to one of the args.  */
-	if (elt == TREE_TYPE (t1) && use1)
-	  return c_build_type_attribute_variant (t1, attributes);
-	if (elt == TREE_TYPE (t2) && use2)
-	  return c_build_type_attribute_variant (t2, attributes);
+	/* If both are VLAs but not unspecified and we are in the
+	   conditional operator, we create a conditional to select
+	   the size of the active branch.  */
+	bool use0 = cond && d1_variable && !c_type_unspecified_p (t1)
+			 && d2_variable && !c_type_unspecified_p (t2);
 
-	if (elt == TREE_TYPE (t1) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
-	  return c_build_type_attribute_variant (t1, attributes);
-	if (elt == TREE_TYPE (t2) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
-	  return c_build_type_attribute_variant (t2, attributes);
+	tree td;
+	tree elt = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
+					    cond, cache);
+
+	if (!use0)
+	  {
+	    /* Save space: see if the result is identical to one of the args.  */
+	    if (elt == TREE_TYPE (t1) && use1)
+	      return c_build_type_attribute_variant (t1, attributes);
+	    if (elt == TREE_TYPE (t2) && use2)
+	      return c_build_type_attribute_variant (t2, attributes);
+
+	    if (elt == TREE_TYPE (t1) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
+	      return c_build_type_attribute_variant (t1, attributes);
+	    if (elt == TREE_TYPE (t2) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
+	      return c_build_type_attribute_variant (t2, attributes);
+
+	    td = TYPE_DOMAIN (use1 ? t1 : t2);
+	  }
+	else
+	  {
+	    /* Not used in C.  */
+	    gcc_assert (size_zero_node == TYPE_MIN_VALUE (d1));
+	    gcc_assert (size_zero_node == TYPE_MIN_VALUE (d2));
+
+	    tree d = fold_build3_loc (UNKNOWN_LOCATION, COND_EXPR, sizetype,
+				      cond, TYPE_MAX_VALUE (d1),
+				      TYPE_MAX_VALUE (d2));
+
+	    td = build_index_type (d);
+	  }
 
 	/* Merge the element types, and have a size if either arg has
 	   one.  We may have qualifiers on the element types.  To set
 	   up TYPE_MAIN_VARIANT correctly, we need to form the
 	   composite of the unqualified types and add the qualifiers
 	   back at the end.  */
-	quals = TYPE_QUALS (strip_array_types (elt));
-	unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
-	t1 = c_build_array_type (unqual_elt, TYPE_DOMAIN (use1 ? t1 : t2));
+	int quals = TYPE_QUALS (strip_array_types (elt));
+	tree unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
+
+	t1 = c_build_array_type (unqual_elt, td);
 
 	/* Check that a type which has a varying outermost dimension
 	   got marked has having a variable size.  */
@@ -819,7 +841,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	      gcc_assert (DECL_NAME (a) == DECL_NAME (b));
 	      gcc_checking_assert (!DECL_NAME (a) || comptypes (ta, tb));
 
-	      tree t = composite_type_internal (ta, tb, cache);
+	      tree t = composite_type_internal (ta, tb, cond, cache);
 	      tree f = build_decl (input_location, FIELD_DECL, DECL_NAME (a), t);
 
 	      DECL_PACKED (f) = DECL_PACKED (a);
@@ -876,8 +898,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
       /* Function types: prefer the one that specified arg types.
 	 If both do, merge the arg types.  Also merge the return types.  */
       {
-	tree valtype = composite_type_internal (TREE_TYPE (t1),
-						TREE_TYPE (t2), cache);
+	tree valtype = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
+						cond, cache);
 	tree p1 = TYPE_ARG_TYPES (t1);
 	tree p2 = TYPE_ARG_TYPES (t2);
 	int len;
@@ -956,7 +978,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 		      {
 			TREE_VALUE (n) = composite_type_internal (TREE_TYPE (memb),
 								  TREE_VALUE (p2),
-								  cache);
+								  cond, cache);
 			pedwarn (input_location, OPT_Wpedantic,
 				 "function types not truly compatible in ISO C");
 			goto parm_done;
@@ -979,14 +1001,14 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 			TREE_VALUE (n)
 				= composite_type_internal (TREE_TYPE (memb),
 							   TREE_VALUE (p1),
-							   cache);
+							   cond, cache);
 			pedwarn (input_location, OPT_Wpedantic,
 				 "function types not truly compatible in ISO C");
 			goto parm_done;
 		      }
 		  }
 	      }
-	    TREE_VALUE (n) = composite_type_internal (mv1, mv2, cache);
+	    TREE_VALUE (n) = composite_type_internal (mv1, mv2, cond, cache);
 	  parm_done: ;
 	  }
 
@@ -1001,16 +1023,23 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 }
 
 tree
-composite_type (tree t1, tree t2)
+composite_type_cond (tree t1, tree t2, tree cond)
 {
   gcc_checking_assert (comptypes_check_for_composite (t1, t2));
 
   struct composite_cache cache = { };
-  tree n = composite_type_internal (t1, t2, &cache);
+  tree n = composite_type_internal (t1, t2, cond, &cache);
 
   gcc_checking_assert (comptypes_check_for_composite (n, t1));
   gcc_checking_assert (comptypes_check_for_composite (n, t2));
   return n;
+}
+
+
+tree
+composite_type (tree t1, tree t2)
+{
+  return composite_type_cond (t1, t2, NULL_TREE);
 }
 
 /* Return the type of a conditional expression between pointers to
@@ -1020,7 +1049,7 @@ composite_type (tree t1, tree t2)
    true; if that isn't so, this may crash.  */
 
 static tree
-common_pointer_type (tree t1, tree t2)
+common_pointer_type (tree t1, tree t2, tree cond)
 {
   tree attributes;
   unsigned target_quals;
@@ -1047,8 +1076,8 @@ common_pointer_type (tree t1, tree t2)
      qualifiers of the two types' targets.  */
   tree pointed_to_1 = TREE_TYPE (t1);
   tree pointed_to_2 = TREE_TYPE (t2);
-  tree target = composite_type (TYPE_MAIN_VARIANT (pointed_to_1),
-				TYPE_MAIN_VARIANT (pointed_to_2));
+  tree target = composite_type_cond (TYPE_MAIN_VARIANT (pointed_to_1),
+				     TYPE_MAIN_VARIANT (pointed_to_2), cond);
 
   /* Strip array types to get correct qualifier for pointers to arrays */
   quals1 = TYPE_QUALS_NO_ADDR_SPACE (strip_array_types (pointed_to_1));
@@ -4929,7 +4958,7 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
       if (!addr_space_superset (as0, as1, &as_common))
 	gcc_unreachable ();
 
-      common_type = common_pointer_type (TREE_TYPE (op0), TREE_TYPE (op1));
+      common_type = common_pointer_type (TREE_TYPE (op0), TREE_TYPE (op1), NULL_TREE);
       op0 = convert (common_type, op0);
       op1 = convert (common_type, op1);
     }
@@ -6383,7 +6412,10 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       addr_space_t as_common;
 
       if (comp_target_types (colon_loc, type1, type2))
-	result_type = common_pointer_type (type1, type2);
+	{
+	  ifexp = save_expr (ifexp);
+	  result_type = common_pointer_type (type1, type2, ifexp);
+	}
       else if (null_pointer_constant_p (orig_op1))
 	result_type = type2;
       else if (null_pointer_constant_p (orig_op2))
@@ -14393,7 +14425,7 @@ build_binary_op (location_t location, enum tree_code code,
 	     Otherwise, the targets must be compatible
 	     and both must be object or both incomplete.  */
 	  if (comp_target_types (location, type0, type1))
-	    result_type = common_pointer_type (type0, type1);
+	    result_type = common_pointer_type (type0, type1, NULL_TREE);
 	  else if (!addr_space_superset (as0, as1, &as_common))
 	    {
 	      error_at (location, "comparison of pointers to "
@@ -14532,7 +14564,7 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  if (comp_target_types (location, type0, type1))
 	    {
-	      result_type = common_pointer_type (type0, type1);
+	      result_type = common_pointer_type (type0, type1, NULL_TREE);
 	      if (!COMPLETE_TYPE_P (TREE_TYPE (type0))
 		  != !COMPLETE_TYPE_P (TREE_TYPE (type1)))
 		pedwarn_c99 (location, OPT_Wpedantic,
