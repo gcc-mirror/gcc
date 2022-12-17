@@ -1,3 +1,24 @@
+2022-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106479
+	* kf.cc (kf_memcpy_memmove::impl_call_pre): Pass in source region
+	to region_model::check_for_poison.
+	* region-model-asm.cc (region_model::on_asm_stmt): Pass NULL
+	region to region_model::check_for_poison.
+	* region-model.cc (region_model::check_for_poison): Add
+	"src_region" param, and pass it to poisoned_value_diagnostic.
+	(region_model::on_assignment): Pass NULL region to
+	region_model::check_for_poison.
+	(region_model::get_rvalue): Likewise.
+	* region-model.h (region_model::check_for_poison): Add
+	"src_region" param.
+	* sm-fd.cc (fd_state_machine::on_accept): Pass in source region
+	to region_model::check_for_poison.
+	* varargs.cc (kf_va_copy::impl_call_pre): Pass NULL region to
+	region_model::check_for_poison.
+	(kf_va_arg::impl_call_pre): Pass in source region to
+	region_model::check_for_poison.
+
 2022-12-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108065

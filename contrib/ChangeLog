@@ -1,3 +1,19 @@
+2022-12-16  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Print each warning only one time.
+
+2022-12-16  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_email.py: Use PatchSet constructor
+	as newline argument is not supported with older unidiff
+	library.
+
+2022-12-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_email.py (GitEmail:__init__): Support older
+	unidiff.PatchSet that do not have a newline= argument
+	of from_filename.
+
 2022-12-14  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: Add copyright header.

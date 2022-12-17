@@ -1,3 +1,51 @@
+2022-12-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_effective_target_static): Return 0
+	on hppa*-*-*.
+
+2022-12-16  Andrew Pinski  <pinskia@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/107768
+	* g++.dg/coroutines/pr107768.C: New test.
+
+2022-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106479
+	* gcc.dg/analyzer/pr104308.c (test_memmove_within_uninit): Remove
+	xfail on region creation event.
+
+2022-12-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2022-12-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/avr/pr90706.c: New.
+
+2022-12-16  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/Warray-bounds-flex-arrays-1.c: Update testing case with
+	-Wstrict-flex-arrays.
+	* gcc.dg/Warray-bounds-flex-arrays-2.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-3.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-4.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-5.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-6.c: Likewise.
+	* c-c++-common/Wstrict-flex-arrays.c: New test.
+	* gcc.dg/Wstrict-flex-arrays-2.c: New test.
+	* gcc.dg/Wstrict-flex-arrays-3.c: New test.
+	* gcc.dg/Wstrict-flex-arrays.c: New test.
+
+2022-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106751
+	* gcc.c-torture/compile/pr106751.c: New test.
+
+2022-12-16  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/cmpccxadd-1.c: Fix intrin name.
+	* gcc.target/i386/cmpccxadd-2.c: Ditto.
+
 2022-12-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/102104

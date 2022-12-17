@@ -1,3 +1,12 @@
+2022-12-16  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: Initialize fde object lazily when
+	the first exception tries to pass through.
+
+2022-12-16  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: Use radix sort instead of split+sort+merge.
+
 2022-12-08  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa-config-builtin.h (XCHAL_NUM_AREGS)

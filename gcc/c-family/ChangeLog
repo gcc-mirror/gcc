@@ -1,3 +1,7 @@
+2022-12-16  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c.opt (Wstrict-flex-arrays): New option.
+
 2022-12-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-attribs.cc (handle_deprecated_attribute): Use type when

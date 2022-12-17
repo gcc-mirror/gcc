@@ -1,3 +1,10 @@
+2022-12-16  Andrew Pinski  <pinskia@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/107768
+	* coroutines.cc (coro_rewrite_function_body): Initialize pointers
+	from nullptr_node.  (morph_fn_to_coro): Likewise.
+
 2022-12-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/102104

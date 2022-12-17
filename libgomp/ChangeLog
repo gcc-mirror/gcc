@@ -1,3 +1,9 @@
+2022-12-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/108056
+	* testsuite/libgomp.fortran/allocate-4.f90: Remove
+	accidentally added file.
+
 2022-12-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libfortran/108056

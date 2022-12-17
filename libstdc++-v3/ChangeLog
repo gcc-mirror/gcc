@@ -1,3 +1,60 @@
+2022-12-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2022-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected): Add monadic operations.
+	(expected<void, E>): Likewise.
+	* include/std/version (__cpp_lib_expected): Bump value.
+	* testsuite/20_util/expected/synopsis.cc: Adjust expected macro
+	value.
+	* testsuite/20_util/expected/version.cc: Likewise.
+	* testsuite/20_util/expected/illformed_neg.cc: Prune additional
+	errors from ill-formed monadic operations.
+	* testsuite/20_util/expected/observers.cc: Check error_or.
+	* testsuite/20_util/expected/monadic.cc: New test.
+
+2022-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::_M_swap_val_unex): Guard the
+	correct object.
+	(expected::swap): Move is_swappable
+	requirement from static_assert to constraint.
+	(swap): Likewise.
+	(operator==): Remove noexcept-specifier.
+	* testsuite/20_util/expected/swap.cc: Check swapping of
+	types without non-throwing move constructor. Check constraints
+	on swap.
+	* testsuite/20_util/expected/unexpected.cc: Check constraints on
+	swap.
+	* testsuite/20_util/expected/equality.cc: New test.
+
+2022-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (__allocator_traits_base::__rebind):
+	Add static assert for rebind requirement.
+	* testsuite/20_util/allocator_traits/members/rebind_alloc.cc:
+	Fix invalid rebind member in test allocator.
+	* testsuite/20_util/allocator_traits/requirements/rebind_neg.cc:
+	New test.
+	* testsuite/20_util/scoped_allocator/outermost.cc: Add rebind to
+	test allocator.
+	* testsuite/23_containers/forward_list/48101_neg.cc: Prune new
+	static assert error.
+	* testsuite/23_containers/unordered_multiset/48101_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/48101_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/52591.cc: Fix typo in rebind.
+
+2022-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108118
+	* include/bits/shared_ptr_base.h (weak_ptr::operator=):
+	Implement as move-and-swap exactly as specified in the standard.
+	* testsuite/20_util/weak_ptr/cons/self_move.cc: New test.
+
 2022-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/108075
