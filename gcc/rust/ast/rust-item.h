@@ -2210,18 +2210,18 @@ public:
     return std::unique_ptr<EnumItem> (clone_item_impl ());
   }
 
-  virtual std::string as_string () const;
+  virtual std::string as_string () const override;
 
   // not pure virtual as not abstract
-  virtual void accept_vis (ASTVisitor &vis);
+  virtual void accept_vis (ASTVisitor &vis) override;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   Identifier get_identifier () const { return variant_name; }
 
   // Based on idea that name is never empty.
-  void mark_for_strip () { variant_name = ""; }
-  bool is_marked_for_strip () const { return variant_name.empty (); }
+  void mark_for_strip () override { variant_name = ""; }
+  bool is_marked_for_strip () const override { return variant_name.empty (); }
 
 protected:
   EnumItem *clone_item_impl () const override { return new EnumItem (*this); }

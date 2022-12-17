@@ -277,7 +277,7 @@ private:
   // InputSource input_source;
   // Input file queue.
   std::unique_ptr<InputSource> raw_input_source;
-  buffered_queue<int, InputSource &> input_queue;
+  buffered_queue<int, std::reference_wrapper<InputSource>> input_queue;
 
   // Token source wrapper thing.
   struct TokenSource
@@ -287,6 +287,9 @@ private:
 
     // Create a new TokenSource with given lexer.
     TokenSource (Lexer *parLexer) : lexer (parLexer) {}
+
+    // Used to mimic std::reference_wrapper that is used for InputSource.
+    TokenSource &get () { return *this; }
 
     // Overload operator () to build token in lexer.
     TokenPtr next () { return lexer->build_token (); }

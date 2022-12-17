@@ -387,6 +387,8 @@ public:
 
   TypeBoundPredicate (const TypeBoundPredicate &other);
 
+  virtual ~TypeBoundPredicate (){};
+
   TypeBoundPredicate &operator= (const TypeBoundPredicate &other);
 
   static TypeBoundPredicate error ();

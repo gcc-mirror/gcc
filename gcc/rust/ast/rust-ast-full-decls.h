@@ -240,7 +240,7 @@ class StructPatternField;
 class StructPatternFieldTuplePat;
 class StructPatternFieldIdentPat;
 class StructPatternFieldIdent;
-struct StructPatternElements;
+class StructPatternElements;
 class StructPattern;
 class TupleStructItems;
 class TupleStructItemsNoRange;
