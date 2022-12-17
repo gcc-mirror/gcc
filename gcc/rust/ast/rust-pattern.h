@@ -919,7 +919,7 @@ public:
    * is empty). */
   bool has_struct_pattern_elems () const { return !elems.is_empty (); }
 
-  Location get_locus () const { return path.get_locus (); }
+  Location get_locus () const override { return path.get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
