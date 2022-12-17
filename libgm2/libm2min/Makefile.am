@@ -106,7 +106,12 @@ libm2min_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2min_la_
 libm2min_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs
 libm2min_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs -fno-exceptions \
    -fno-m2-plugin -fno-scaffold-dynamic -fno-scaffold-main
-libm2min_la_LINK = $(LINK) -version-info $(libtool_VERSION)
+if TARGET_DARWIN
+libm2min_la_link_flags = -Wl,-undefined,dynamic_lookup
+else
+libm2min_la_link_flags =
+endif
+libm2min_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2min_la_link_flags)
 BUILT_SOURCES = SYSTEM.def
 CLEANFILES = SYSTEM.def
 

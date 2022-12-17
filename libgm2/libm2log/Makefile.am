@@ -132,7 +132,12 @@ libm2log_la_SOURCES = $(M2MODS) Break.c
 libm2log_la_DEPENDENCIES = ../libm2pim/SYSTEM.def $(addsuffix .lo, $(basename $(libm2log_la_SOURCES)))
 libm2log_la_CFLAGS = -I. -DBUILD_GM2_LIBS -I@srcdir@/../
 libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-pim -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso
-libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION)
+if TARGET_DARWIN
+libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
+else
+libm2log_la_link_flags =
+endif
+libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags)
 BUILT_SOURCES = ../libm2pim/SYSTEM.def
 
 M2LIBDIR = /m2/m2log/
