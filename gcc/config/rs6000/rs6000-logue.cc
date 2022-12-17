@@ -5350,6 +5350,7 @@ rs6000_output_function_epilogue (FILE *file)
 	  || ! strcmp (language_string, "GNU GIMPLE")
 	  || ! strcmp (language_string, "GNU Go")
 	  || ! strcmp (language_string, "GNU D")
+	  || ! strcmp (language_string, "GNU Rust")
 	  || ! strcmp (language_string, "libgccjit"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77")
