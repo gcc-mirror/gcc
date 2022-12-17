@@ -1,3 +1,18 @@
+2022-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102780
+	PR c++/108138
+	* constexpr.c (potential_constant_expression_1) <case TRUTH_*_EXPR>:
+	When tf_error isn't set, preemptively check potentiality of the
+	second operand before performing trial evaluation of the first
+	operand.
+	(potential_constant_expression_1): When tf_error is set, first check
+	potentiality quietly and return true if successful, otherwise
+	proceed noisily to give errors.
+
 2022-11-18  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2022-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102780
+	PR c++/108138
+	* g++.dg/cpp1z/fold13.C: New test.
+
 2022-12-15  Sebastian Pop  <spop@amazon.com>
 
 	PR target/98776
