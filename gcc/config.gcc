@@ -246,14 +246,25 @@ target_type_format_char='@'
 xm_file=
 md_file=
 
+# Determine Solaris minor version
+case ${target}:`uname -v` in
+  # Only do this on Solaris.  Illumos uses illumos-* instead.
+  *-*-solaris2.11*:11.*)
+    # Restrict to native configurations.
+    if test x$host = x$target; then
+      uname_version="`uname -v`"
+      # Prepend dot as needed below.
+      target_min=".`expr "$uname_version" : '11\.\([0-9]*\)'`"
+    fi
+    ;;
+esac
+
 # Obsolete configurations.
-case ${target} in
-  *)
-  ;;
-  obsoleted-target \
+case ${target}${target_min} in
+    *-*-solaris2.11.[0-3]*		\
  )
     if test "x$enable_obsolete" != xyes; then
-      echo "*** Configuration ${target} is obsolete." >&2
+      echo "*** Configuration ${target}${target_min} is obsolete." >&2
       echo "*** Specify --enable-obsolete to build it anyway." >&2
       echo "*** Support will be REMOVED in the next major release of GCC," >&2
       echo "*** unless a maintainer comes forward." >&2

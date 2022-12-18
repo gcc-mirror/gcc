@@ -4867,6 +4867,8 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
+Support for Solaris 11.3 and earlier has been obsoleted in GCC 13, but
+can still be enabled by configuring with @option{--enable-obsolete}.
 Support for Solaris 10 has been removed in GCC 10.  Support for Solaris
 9 has been removed in GCC 5.  Support for Solaris 8 has been removed in
 GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
