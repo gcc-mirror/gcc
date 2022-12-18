@@ -9321,6 +9321,11 @@ so here's a silly made-up example:
   "")
 @end smallexample
 
+@noindent
+If we had not added the @code{(match_dup 4)} in the middle of the input
+sequence, it might have been the case that the register we chose at the
+beginning of the sequence is killed by the first or second @code{set}.
+
 There are two special macros defined for use in the preparation statements:
 @code{DONE} and @code{FAIL}.  Use them with a following semicolon,
 as a statement.
@@ -9347,11 +9352,6 @@ prevents the input insn from being split at all.)
 If the preparation falls through (invokes neither @code{DONE} nor
 @code{FAIL}), then the @code{define_peephole2} uses the replacement
 template.
-
-@noindent
-If we had not added the @code{(match_dup 4)} in the middle of the input
-sequence, it might have been the case that the register we chose at the
-beginning of the sequence is killed by the first or second @code{set}.
 
 @end ifset
 @ifset INTERNALS
