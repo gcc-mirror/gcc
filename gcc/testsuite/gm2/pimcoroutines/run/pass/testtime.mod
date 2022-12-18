@@ -1,4 +1,4 @@
-(* Copyright (C) 2005-2020
+(* Copyright (C) 2005-2022
                  Free Software Foundation, Inc. *)
 (* This file is part of GNU Modula-2.
 
@@ -31,54 +31,58 @@ FROM SYSTEM IMPORT ADR ;
 FROM libc IMPORT write, printf ;
 
 
+CONST
+   TicksPerTimeUnit = 1 ;
+
+
 (*
-   OneSecond -
+   OneUnit -
 *)
 
-PROCEDURE OneSecond ;
+PROCEDURE OneUnit ;
 VAR
    n: CARDINAL ;
 BEGIN
    OldInts := TurnInterrupts (MIN (PROTECTION)) ;
-   printf ("1 second process has come to life\n");
+   printf ("1 unit process has come to life\n");
    n := 0 ;
    LOOP
-      Sleep (1*TicksPerSecond) ;
+      Sleep (1*TicksPerTimeUnit) ;
       INC (n) ;
-      printf ("%d seconds\n", n);
+      printf ("%d units\n", n);
    END
-END OneSecond ;
+END OneUnit ;
 
 
 (*
-   FourSeconds -
+   FourUnits -
 *)
 
-PROCEDURE FourSeconds ;
+PROCEDURE FourUnits ;
 VAR
    n: CARDINAL ;
 BEGIN
    OldInts := TurnInterrupts (MIN (PROTECTION)) ;
-   printf ("4 seconds process has come to life\n");
+   printf ("4 units process has come to life\n");
    n := 0 ;
    LOOP
-      Sleep (4*TicksPerSecond) ;
+      Sleep (4*TicksPerTimeUnit) ;
       INC (n) ;
-      printf ("4 second alarm (%d occurance)\n", n);
+      printf ("4 units alarm (%d occurance)\n", n);
    END
-END FourSeconds ;
+END FourUnits ;
 
 
 (*
-   SixSeconds -
+   SixUnits -
 *)
 
-PROCEDURE SixSeconds ;
+PROCEDURE SixUnits ;
 VAR
    n: CARDINAL ;
 BEGIN
    OldInts := TurnInterrupts (MAX (PROTECTION)) ;
-   printf ("6 seconds process has come to life\n");
+   printf ("6 units process has come to life\n");
    n := 0 ;
    LOOP
       Timeout := ArmEvent (6*TicksPerSecond) ;
@@ -87,10 +91,10 @@ BEGIN
          WriteString ('...someone cancelled it...')
       ELSE
          INC (n) ;
-         printf ("6 second alarm (%d occurance)\n", n)
+         printf ("6 unit alarm (%d occurance)\n", n)
       END
    END
-END SixSeconds ;
+END SixUnits ;
 
 
 CONST
@@ -107,10 +111,10 @@ BEGIN
 
    printf ("now to create three processes...\n") ;
 
-   p1 := Resume (InitProcess (OneSecond  , StackSize, '1')) ;
-   p4 := Resume (InitProcess (FourSeconds, StackSize, '4')) ;
-   p6 := Resume (InitProcess (SixSeconds , StackSize, '6')) ;
+   p1 := Resume (InitProcess (OneUnit  , StackSize, '1')) ;
+   p4 := Resume (InitProcess (FourUnits, StackSize, '4')) ;
+   p6 := Resume (InitProcess (SixUnits , StackSize, '6')) ;
 
-   Sleep (20*TicksPerSecond) ;
+   Sleep (20*TicksPerTimeUnit) ;
    printf ("successfully completed, finishing now.\n")
 END testtime.
