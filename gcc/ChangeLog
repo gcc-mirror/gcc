@@ -1,3 +1,8 @@
+2022-12-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-logue.cc (rs6000_output_function_epilogue):
+	Handle GNU Rust for the tbtab lang field.
+
 2022-12-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_option_override): Disable -fstack-protector.

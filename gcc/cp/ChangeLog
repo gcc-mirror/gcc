@@ -1,3 +1,10 @@
+2022-12-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107437
+	PR c++/87765
+	* pt.cc (convert_nontype_argument): Relax is_nondep_const_expr
+	test to !inst_dep_expr_p.
+
 2022-12-16  Andrew Pinski  <pinskia@gmail.com>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 

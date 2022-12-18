@@ -1,3 +1,17 @@
+2022-12-17  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_fetch_backward_init): New static function.
+	(ZSTD_TABLE_SIZE): Use huffman scratch space size rather than
+	literal size.
+	(ZSTD_TABLE_WORK_LIT_SIZE): Don't define.
+	(elf_zstd_read_huff): Use elf_fetch_backward_init.
+	(elf_zstd_read_literals): New static function.
+	(ZSTD_LIT_RAW, ZSTD_LIT_RLE, ZSTD_LIT_HUFF): Don't define.
+	(struct elf_zstd_literals): Don't define.
+	(elf_zstd_literal_output): Remove static function.
+	(elf_zstd_decompress): Use elf_fetch_backward_init and
+	elf_zstd_read_literals.  Rewrite literal copying.<
+
 2022-12-10  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (ZSTD_TABLE_*): Use elf_zstd_fse_baseline_entry.
