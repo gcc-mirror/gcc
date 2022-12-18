@@ -1350,11 +1350,6 @@ protected:
   }
 };
 
-// A macro item AST node - abstract base class
-class MacroItem : public Item
-{
-};
-
 // Item used in trait declarations - abstract base class
 class TraitItem
 {

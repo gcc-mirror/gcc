@@ -4391,8 +4391,6 @@ protected:
   }
 };
 
-// Replaced with forward decls - defined in "rust-macro.h"
-class MacroItem;
 class MacroRulesDefinition;
 } // namespace AST
 } // namespace Rust

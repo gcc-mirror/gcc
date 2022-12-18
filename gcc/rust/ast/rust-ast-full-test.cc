@@ -1284,6 +1284,7 @@ MacroRulesDefinition::as_string () const
   // get outer attrs
   str += append_attributes (outer_attrs, OUTER);
 
+  // TODO: deal with macro_2_0
   str += "macro_rules!";
 
   str += rule_name;

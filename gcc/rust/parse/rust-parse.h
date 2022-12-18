@@ -197,6 +197,8 @@ private:
   AST::DelimTokenTree parse_delim_token_tree ();
   std::unique_ptr<AST::MacroRulesDefinition>
   parse_macro_rules_def (AST::AttrVec outer_attrs);
+  std::unique_ptr<AST::MacroRulesDefinition>
+  parse_decl_macro_def (AST::Visibility vis, AST::AttrVec outer_attrs);
   std::unique_ptr<AST::MacroInvocation>
   parse_macro_invocation_semi (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::MacroInvocation>
@@ -209,7 +211,6 @@ private:
 
   // Top-level item-related
   std::unique_ptr<AST::VisItem> parse_vis_item (AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::MacroItem> parse_macro_item (AST::AttrVec outer_attrs);
 
   // VisItem subclass-related
   std::unique_ptr<AST::Module> parse_module (AST::Visibility vis,
