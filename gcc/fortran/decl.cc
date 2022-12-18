@@ -2220,6 +2220,14 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	    sym->ts.f90_type = init->ts.f90_type;
 	}
 
+      /* Catch the case:  type(t), parameter :: x = z'1'.  */
+      if (sym->ts.type == BT_DERIVED && init->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Entity %qs at %L is incompatible with a BOZ "
+		     "literal constant", name, &sym->declared_at);
+	  return false;
+	}
+
       /* Add initializer.  Make sure we keep the ranks sane.  */
       if (sym->attr.dimension && init->rank == 0)
 	{
