@@ -1576,14 +1576,16 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 
       if (induction_type == vect_step_op_add)
 	{
-	  off = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
-			     fold_convert (TREE_TYPE (step_expr), niters),
-			     step_expr);
+	  tree stype = TREE_TYPE (step_expr);
+	  off = fold_build2 (MULT_EXPR, stype,
+			     fold_convert (stype, niters), step_expr);
 	  if (POINTER_TYPE_P (type))
 	    ni = fold_build_pointer_plus (init_expr, off);
 	  else
-	    ni = fold_build2 (PLUS_EXPR, type,
-			      init_expr, fold_convert (type, off));
+	    ni = fold_convert (type,
+			       fold_build2 (PLUS_EXPR, stype,
+					    fold_convert (stype, init_expr),
+					    off));
 	}
       /* Don't bother call vect_peel_nonlinear_iv_init.  */
       else if (induction_type == vect_step_op_neg)
