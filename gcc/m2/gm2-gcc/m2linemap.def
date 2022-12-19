@@ -47,11 +47,6 @@ PROCEDURE GetLineNoFromLocation (location: location_t) : INTEGER ;
 PROCEDURE GetColumnNoFromLocation (location: location_t) : INTEGER ;
 PROCEDURE GetFilenameFromLocation (location: location_t) : ADDRESS ;
 PROCEDURE ErrorAt (location: location_t; message: ADDRESS) ;
-(*
-PROCEDURE ErrorAtf (location: location_t; message: ADDRESS; ...) ;
-PROCEDURE WarningAtf (location: location_t; message: ADDRESS; ...) ;
-PROCEDURE NoteAtf (location: location_t; message: ADDRESS; ...) ;
-*)
 PROCEDURE ErrorAtf (location: location_t; message: ADDRESS) ;
 PROCEDURE WarningAtf (location: location_t; message: ADDRESS) ;
 PROCEDURE NoteAtf (location: location_t; message: ADDRESS) ;
