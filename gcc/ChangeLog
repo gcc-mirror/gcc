@@ -1,3 +1,9 @@
+2022-12-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Determine Solaris minor version.
+	Obsolete *-*-solaris2.11.[0-3]*.
+	* doc/install.texi (Specific, *-*-solaris2*): Document it.
+
 2022-12-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000-logue.cc (rs6000_output_function_epilogue):

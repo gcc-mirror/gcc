@@ -1,3 +1,8 @@
+2022-12-18  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107397
+	* decl.cc (add_init_expr_to_sym): Add check with new error message.
+
 2022-12-14  Julian Brown  <julian@codesourcery.com>
 
 	PR fortran/107214
