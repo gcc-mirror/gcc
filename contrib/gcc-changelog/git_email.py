@@ -119,11 +119,13 @@ if __name__ == '__main__':
 
         success = 0
         for full in sorted(allfiles):
-            email = GitEmail(full, False)
+            email = GitEmail(full)
             print(email.filename)
             if email.success:
                 success += 1
                 print('  OK')
+                for warning in email.warnings:
+                    print('  WARN: %s' % warning)
             else:
                 for error in email.errors:
                     print('  ERR: %s' % error)
@@ -135,6 +137,7 @@ if __name__ == '__main__':
         if email.success:
             print('OK')
             email.print_output()
+            email.print_warnings()
         else:
             if not email.info.lines:
                 print('Error: patch contains no parsed lines', file=sys.stderr)

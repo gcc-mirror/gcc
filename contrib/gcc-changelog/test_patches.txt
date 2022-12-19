@@ -3636,3 +3636,99 @@ index 0000000..d75da75
 -- 
 2.38.1
 
+=== 0001-Auto-Add-File.patch ====
+From e205ec03f0794aeac3e8a89e947c12624d5a274e Mon Sep 17 00:00:00 2001
+From: Tobias Burnus <tobias@codesourcery.com>
+Date: Thu, 15 Dec 2022 12:25:07 +0100
+Subject: [PATCH] libgfortran's ISO_Fortran_binding.c: Use GCC11 version for
+ backward-only code [PR108056]
+
+libgfortran/ChangeLog:
+
+	PR libfortran/108056
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc,
+	gfc_desc_to_cfi_desc): Mostly revert to GCC 11 version for
+	those backward-compatiblity-only functions.
+---
+ libgfortran/runtime/ISO_Fortran_binding.c     | 151 +++---------------
+ .../testsuite/libgomp.fortran/allocate-4.f90  |  42 +++++
+ 2 files changed, 64 insertions(+), 129 deletions(-)
+ create mode 100644 libgomp/testsuite/libgomp.fortran/allocate-4.f90
+
+diff --git a/libgfortran/runtime/ISO_Fortran_binding.c b/libgfortran/runtime/ISO_Fortran_binding.c
+index 342df4275b9..e63a717a69b 100644
+--- a/libgfortran/runtime/ISO_Fortran_binding.c
++++ b/libgfortran/runtime/ISO_Fortran_binding.c
+@@ -41,1 +41,1 @@ export_proto(cfi_desc_to_gfc_desc);
+-  signed char type;
++  size_t type;
+diff --git a/libgomp/testsuite/libgomp.fortran/allocate-4.f90 b/libgomp/testsuite/libgomp.fortran/allocate-4.f90
+new file mode 100644
+index 00000000000..ddb507ba8e4
+--- /dev/null
++++ b/libgomp/testsuite/libgomp.fortran/allocate-4.f90
+@@ -0,0 +1,1 @@
++end
+-- 
+2.25.1
+
+=== 0002-Auto-Add-File.patch ====
+From 1eee94d351774cdc2efc8ee508b82d065184c6ee Mon Sep 17 00:00:00 2001
+From: Gaius Mulley <gaiusmod2@gmail.com>
+Date: Wed, 14 Dec 2022 17:43:08 +0000
+Subject: [PATCH 363/400] Merge modula-2 front end onto gcc.
+
+This commit merges the devel/modula2 into master.
+The libraries reside in libgm2, the compiler in gcc/m2
+and the testsuite in gcc/testsuite/gm2.
+
+gcc/ChangeLog:
+
+	* configure.ac (HAVE_PYTHON): Test for Python3 added.
+	* doc/install.texi: Add m2 as a language.  (--disable-libgm2)
+
+Signed-off-by: Gaius Mulley <gaiusmod2@gmail.com>
+---
+ gcc/configure.ac                              |    15 +-
+ gcc/doc/gm2.texi                              |  2838 ++
+ gcc/doc/install.texi                          |    53 +-
+ gcc/m2/COPYING.FDL                            |   397 +
+ gcc/m2/COPYING.RUNTIME                        |    73 +
+diff --git a/gcc/configure.ac b/gcc/configure.ac
+index 7ca08726efa..5efbf11793c 100644
+--- a/gcc/configure.ac
++++ b/gcc/configure.ac
+@@ -7651,3 +7665,2 @@ done
+ [subdirs='$subdirs'])
+ AC_OUTPUT
+-
+diff --git a/gcc/doc/gm2.texi b/gcc/doc/gm2.texi
+new file mode 100644
+index 00000000000..513fdd3ec7f
+--- /dev/null
++++ b/gcc/doc/gm2.texi
+@@ -0,0 +1,1 @@
++\input texinfo
+diff --git a/gcc/doc/install.texi b/gcc/doc/install.texi
+index 89ff6a6734b..6884a74936b 100644
+--- a/gcc/doc/install.texi
++++ b/gcc/doc/install.texi
+@@ -308,1 +308,2 @@ On some targets, @samp{libphobos} isn't enabled by default, but compiles
+ 
++@item @anchor{GM2-prerequisite}GM2
+diff --git a/gcc/m2/COPYING.FDL b/gcc/m2/COPYING.FDL
+new file mode 100644
+index 00000000000..9854856fa81
+--- /dev/null
++++ b/gcc/m2/COPYING.FDL
+@@ -0,0 +1,1 @@
++		GNU Free Documentation License
+diff --git a/gcc/m2/COPYING.RUNTIME b/gcc/m2/COPYING.RUNTIME
+new file mode 100644
+index 00000000000..649af5e573a
+--- /dev/null
++++ b/gcc/m2/COPYING.RUNTIME
+@@ -0,0 +1,1 @@
++GCC RUNTIME LIBRARY EXCEPTION
+-- 
+2.25.1
