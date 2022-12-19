@@ -1220,7 +1220,7 @@ nvptx_record_libfunc (rtx callee, rtx retval, rtx pat)
    is prototyped, record it now.  Otherwise record it as needed at end
    of compilation, when we might have more information about it.  */
 
-void
+static void
 nvptx_record_needed_fndecl (tree decl)
 {
   if (TYPE_ARG_TYPES (TREE_TYPE (decl)) == NULL_TREE)
