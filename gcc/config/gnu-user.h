@@ -138,7 +138,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
 #undef LIBHWASAN_EARLY_SPEC
-#define LIBHWASAN_EARLY_SPEC "%{static-libhwasan:%{!shared:" \
+#define LIBHWASAN_EARLY_SPEC "%{!shared:libhwasan_preinit%O%s} " \
+  "%{static-libhwasan:%{!shared:" \
   LD_STATIC_OPTION " --whole-archive -lhwasan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libhwasan:-lhwasan}"
 #undef LIBTSAN_EARLY_SPEC
