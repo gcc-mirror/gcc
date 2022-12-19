@@ -177,7 +177,7 @@ EXTERN
 void
 m2linemap_ErrorAt (location_t location, char *message)
 {
-  error_at (location, message);
+  error_at (location, "%s", message);
 }
 
 /* m2linemap_ErrorAtf - wraps up an error message.  */
@@ -198,7 +198,7 @@ m2linemap_ErrorAtf_1 (location_t location, const char *message, ...)
 void
 m2linemap_ErrorAtf (location_t location, const char *message)
 {
-  m2linemap_ErrorAtf_1 (location, message);
+  m2linemap_ErrorAtf_1 (location, "%s", message);
 }
 
 /* m2linemap_WarningAtf - wraps up a warning message.  */
@@ -219,7 +219,7 @@ m2linemap_WarningAtf_1 (location_t location, const char *message, ...)
 void
 m2linemap_WarningAtf (location_t location, const char *message)
 {
-  m2linemap_WarningAtf_1 (location, message);
+  m2linemap_WarningAtf_1 (location, "%s", message);
 }
 
 /* m2linemap_NoteAtf - wraps up a note message.  */
@@ -240,7 +240,7 @@ m2linemap_NoteAtf_1 (location_t location, const char *message, ...)
 void
 m2linemap_NoteAtf (location_t location, const char *message)
 {
-  m2linemap_NoteAtf_1 (location, message);
+  m2linemap_NoteAtf_1 (location, "%s", message);
 }
 
 /* m2linemap_internal_error - allow Modula-2 to use the GCC internal error.  */
@@ -248,7 +248,7 @@ m2linemap_NoteAtf (location_t location, const char *message)
 void
 m2linemap_internal_error (const char *message)
 {
-  internal_error (message);
+  internal_error ("%s", message);
 }
 
 /* UnknownLocation - return the predefined location representing an
