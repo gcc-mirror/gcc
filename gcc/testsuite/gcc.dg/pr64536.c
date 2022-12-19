@@ -40,7 +40,7 @@ bar (int x)
 	      h->q = *f;
 	    }
 	  else
-	    i = (long *) (h->q = *f);
+	    i = (long *) (__INTPTR_TYPE__) (h->q = *f);
 	  *c++ = (__INTPTR_TYPE__) f;
 	  e += 6;
 	}
@@ -54,7 +54,7 @@ bar (int x)
 	      h->q = *f;
 	    }
 	  else
-	    i = (long *) (h->q = *f);
+	    i = (long *) (__INTPTR_TYPE__) (h->q = *f);
 	  *c++ = (__INTPTR_TYPE__) f;
 	  e += 6;
 	}
