@@ -112,8 +112,8 @@ vlmax_avl_p (rtx x)
 static bool
 vlmax_avl_insn_p (rtx_insn *rinsn)
 {
-  return INSN_CODE (rinsn) == CODE_FOR_vlmax_avlsi
-	 || INSN_CODE (rinsn) == CODE_FOR_vlmax_avldi;
+  return (INSN_CODE (rinsn) == CODE_FOR_vlmax_avlsi
+	  || INSN_CODE (rinsn) == CODE_FOR_vlmax_avldi);
 }
 
 static bool
@@ -156,24 +156,24 @@ vector_config_insn_p (rtx_insn *rinsn)
 static bool
 vsetvl_insn_p (rtx_insn *rinsn)
 {
-  return INSN_CODE (rinsn) == CODE_FOR_vsetvldi
-	 || INSN_CODE (rinsn) == CODE_FOR_vsetvlsi;
+  return (INSN_CODE (rinsn) == CODE_FOR_vsetvldi
+	 || INSN_CODE (rinsn) == CODE_FOR_vsetvlsi);
 }
 
 /* Return true if INSN1 comes befeore INSN2 in the same block.  */
 static bool
 same_bb_and_before_p (const insn_info *insn1, const insn_info *insn2)
 {
-  return (insn1->bb ()->index () == insn2->bb ()->index ())
-	 && (*insn1 < *insn2);
+  return ((insn1->bb ()->index () == insn2->bb ()->index ())
+	 && (*insn1 < *insn2));
 }
 
 /* Return true if INSN1 comes after or equal INSN2 in the same block.  */
 static bool
 same_bb_and_after_or_equal_p (const insn_info *insn1, const insn_info *insn2)
 {
-  return (insn1->bb ()->index () == insn2->bb ()->index ())
-	 && (*insn1 >= *insn2);
+  return ((insn1->bb ()->index () == insn2->bb ()->index ())
+	 && (*insn1 >= *insn2));
 }
 
 /* An "anticipatable occurrence" is one that is the first occurrence in the
