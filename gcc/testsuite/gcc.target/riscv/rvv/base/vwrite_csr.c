@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3" } */
-/* { dg-skip-if "test intrinsic using rvv" { *-*-* } { "*" } { "-march=rv*v*zfh*" } } */
+/* { dg-options "-O3 -march=rv32gcv -mabi=ilp32d" } */
 
 #include "riscv_vector.h"
 
