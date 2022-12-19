@@ -10924,6 +10924,11 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
       error_at (type_loc, "compound literal has variable size");
       type = error_mark_node;
     }
+  else if (TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      error_at (type_loc, "compound literal has function type");
+      type = error_mark_node;
+    }
   if (constexpr_p && type != error_mark_node)
     {
       tree type_no_array = strip_array_types (type);
