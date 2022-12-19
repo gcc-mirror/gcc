@@ -3732,3 +3732,28 @@ index 00000000000..649af5e573a
 +GCC RUNTIME LIBRARY EXCEPTION
 -- 
 2.25.1
+
+=== modula-PR-component.patch ===
+From 1052d89a0b9769453561e18da32b1558d059b320 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 19 Dec 2022 14:34:18 +0100
+Subject: [PATCH] gcc-changelog: allow digit in component name
+
+	PR modula2/123456
+
+contrib/ChangeLog:
+
+	* gcc-changelog/git_commit.py: Allow digit in component name.
+---
+ contrib/gcc-changelog/git_commit.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/contrib/gcc-changelog/git_commit.py b/contrib/gcc-changelog/git_commit.py
+index e82fbcacd3e..7fde02cba85 100755
+--- a/contrib/gcc-changelog/git_commit.py
++++ b/contrib/gcc-changelog/git_commit.py
+@@ -0,0 +1,1 @@
++		GNU Free Documentation License
+-- 
+2.39.0
+

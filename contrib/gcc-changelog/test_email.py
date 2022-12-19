@@ -475,3 +475,7 @@ class TestGccChangelog(unittest.TestCase):
         assert (len(email.warnings) == 2)
         assert (email.warnings[0] == "Auto-added new file 'gcc/doc/gm2.texi'")
         assert (email.warnings[1] == "Auto-added 2 new files in 'gcc/m2'")
+
+    def test_digit_in_PR_component(self):
+        email = self.from_patch_glob('modula-PR-component.patch')
+        assert not email.errors
