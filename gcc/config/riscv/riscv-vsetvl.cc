@@ -186,7 +186,7 @@ anticipatable_occurrence_p (const insn_info *insn, const vector_insn_info dem)
   /* The only possible operand we care of VSETVL is AVL.  */
   if (dem.has_avl_reg ())
     {
-      /* The operands shoule not be modified in the basic block prior
+      /* The operands should not be modified in the basic block prior
 	 to the occurrence.  */
       if (!vlmax_avl_p (dem.get_avl ()))
 	{
@@ -223,7 +223,7 @@ available_occurrence_p (const insn_info *insn, const vector_insn_info dem)
   /* The only possible operand we care of VSETVL is AVL.  */
   if (dem.has_avl_reg ())
     {
-      /* The operands shoule not be modified in the basic block prior
+      /* The operands should not be modified in the basic block prior
 	 to the occurrence.
 	 e.g.
 	    bb:
@@ -284,7 +284,7 @@ backward_propagate_worthwhile_p (const basic_block cfg_bb,
 			     |_________|
 			  reaching_out
 	  Header is incompatible with reaching_out and the block is loop itself,
-	  we don't backward propagete the local_dem since we can't avoid emit
+	  we don't backward propagate the local_dem since we can't avoid emit
 	  vsetvl for the local_dem.  */
       edge e;
       edge_iterator ei;
@@ -334,10 +334,10 @@ can_backward_propagate_p (const function_info *ssa, const basic_block cfg_bb,
   insn_info *insn = prop.get_insn ();
 
   /* TODO: We don't backward propagate the explict VSETVL here
-     since we will change vsetvl and vsetvlmax intrinsiscs into
-     no side effects which can be optimized into optimzal location
-     by GCC internal PASSes. We only need to support these backward
-     propagation if vsetvl instrinsics have side effects.  */
+     since we will change vsetvl and vsetvlmax intrinsics into
+     no side effects which can be optimized into optimal location
+     by GCC internal passes. We only need to support these backward
+     propagation if vsetvl intrinsics have side effects.  */
   if (vsetvl_insn_p (insn->rtl ()))
     return false;
 
@@ -369,7 +369,7 @@ can_backward_propagate_p (const function_info *ssa, const basic_block cfg_bb,
   def_info *def = find_access (insn->uses (), REGNO (reg))->def ();
 
   /* If the definition is in the current block, we can't propagate it
-     acrocss blocks.  */
+     across blocks.  */
   if (def->bb ()->cfg_bb ()->index == insn->bb ()->cfg_bb ()->index)
     {
       set_info *set = safe_dyn_cast<set_info *> (def);
@@ -406,7 +406,7 @@ can_backward_propagate_p (const function_info *ssa, const basic_block cfg_bb,
   if (def->bb ()->cfg_bb ()->index == cfg_bb->index)
     return true;
 
-  /* Make sure we don't backward propagete the VL/VTYPE info over the
+  /* Make sure we don't backward propagate the VL/VTYPE info over the
      definition blocks.  */
   bool visited_p = false;
   for (const bb_info *bb : ssa->reverse_bbs ())
