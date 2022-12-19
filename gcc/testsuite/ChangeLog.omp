@@ -1,5 +1,9 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gcc.target/nvptx/softstack-decl-1.c: Make 'dg-do assemble',
+	adjust.
+	* gcc.target/nvptx/uniform-simt-decl-1.c: Likewise.
+
 	* gcc.target/nvptx/softstack-decl-1.c: New.
 	* gcc.target/nvptx/uniform-simt-decl-1.c: Likewise.
 

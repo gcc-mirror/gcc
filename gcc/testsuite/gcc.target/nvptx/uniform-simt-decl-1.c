@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do assemble } */
 /* { dg-options {-save-temps -O0 -muniform-simt} } */
 
 extern unsigned __nvptx_uni[32] __attribute__((shared,nocommon));
@@ -23,7 +23,7 @@ int f (void)
 				      MEMMODEL_RELAXED);
 }
 
-/* The implicit (via 'need_unisimt_decl') and explicit declarations of
-   '__nvptx_uni' are both emitted:
-   { dg-final { scan-assembler-times {(?n)\.extern .* __nvptx_uni\[32\];} 2 } }
+/* Of the implicit (via 'need_unisimt_decl') and explicit declarations of
+   '__nvptx_uni', only one is emitted:
+   { dg-final { scan-assembler-times {(?n)\.extern .* __nvptx_uni\[32\];} 1 } }
 */
