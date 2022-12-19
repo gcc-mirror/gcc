@@ -10251,17 +10251,42 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
       if (ud1 != 0)
 	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
+  else if (ud4 == 0xffff && ud3 == 0xffff && (ud1 & 0x8000))
+    {
+      /* li; xoris */
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud1, 16)));
+      emit_move_insn (dest, gen_rtx_XOR (DImode, temp,
+					 GEN_INT ((ud2 ^ 0xffff) << 16)));
+    }
   else if (ud3 == 0 && ud4 == 0)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
       gcc_assert (ud2 & 0x8000);
-      emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
-      if (ud1 != 0)
-	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
-      emit_move_insn (dest,
-		      gen_rtx_ZERO_EXTEND (DImode,
-					   gen_lowpart (SImode,temp)));
+
+      if (ud1 == 0)
+	{
+	  /* lis; rldicl */
+	  emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
+	  emit_move_insn (dest,
+			  gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff)));
+	}
+      else if (!(ud1 & 0x8000))
+	{
+	  /* li; oris */
+	  emit_move_insn (temp, GEN_INT (ud1));
+	  emit_move_insn (dest,
+			  gen_rtx_IOR (DImode, temp, GEN_INT (ud2 << 16)));
+	}
+      else
+	{
+	  /* lis; ori; rldicl */
+	  emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
+	  emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+	  emit_move_insn (dest,
+			  gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff)));
+	}
     }
   else if (ud1 == ud3 && ud2 == ud4)
     {
