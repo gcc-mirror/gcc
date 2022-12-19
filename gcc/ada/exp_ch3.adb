@@ -6235,6 +6235,10 @@ package body Exp_Ch3 is
       --  and ultimately rewritten as a renaming, so initialization activities
       --  need to be deferred until after that is done.
 
+      Func_Id : constant Entity_Id :=
+       (if Special_Ret_Obj then Return_Applies_To (Scope (Def_Id)) else Empty);
+      --  The function if this is a special return object, otherwise Empty
+
       function Build_Equivalent_Aggregate return Boolean;
       --  If the object has a constrained discriminated type and no initial
       --  value, it may be possible to build an equivalent aggregate instead,
@@ -6243,7 +6247,6 @@ package body Exp_Ch3 is
       function Build_Heap_Or_Pool_Allocator
         (Temp_Id    : Entity_Id;
          Temp_Typ   : Entity_Id;
-         Func_Id    : Entity_Id;
          Ret_Typ    : Entity_Id;
          Alloc_Expr : Node_Id) return Node_Id;
       --  Create the statements necessary to allocate a return object on the
@@ -6442,7 +6445,6 @@ package body Exp_Ch3 is
       function Build_Heap_Or_Pool_Allocator
         (Temp_Id    : Entity_Id;
          Temp_Typ   : Entity_Id;
-         Func_Id    : Entity_Id;
          Ret_Typ    : Entity_Id;
          Alloc_Expr : Node_Id) return Node_Id
       is
@@ -7103,8 +7105,6 @@ package body Exp_Ch3 is
       -------------------------------
 
       function Make_Allocator_For_Return (Expr : Node_Id) return Node_Id is
-         Func_Id : constant Entity_Id := Return_Applies_To (Scope (Def_Id));
-
          Alloc : Node_Id;
 
       begin
@@ -7933,13 +7933,19 @@ package body Exp_Ch3 is
                 --  finalize it prematurely (see Expand_Simple_Function_Return
                 --  for the same test in the case of a simple return).
 
+                --  Moreover, in the case of a special return object, we also
+                --  need to make sure that the two functions return on the same
+                --  stack, otherwise we would create a dangling reference.
+
                 and then
                   ((not Is_Library_Level_Entity (Def_Id)
                      and then Is_Captured_Function_Call (Expr_Q)
-                     and then (not Special_Ret_Obj
-                                or else Is_Related_To_Func_Return
-                                          (Entity (Prefix (Expr_Q))))
-                     and then not Is_Class_Wide_Type (Typ))
+                     and then
+                       (not Special_Ret_Obj
+                         or else
+                          (Is_Related_To_Func_Return (Entity (Prefix (Expr_Q)))
+                            and then Needs_Secondary_Stack (Etype (Expr_Q)) =
+                                     Needs_Secondary_Stack (Etype (Func_Id)))))
 
                    --  If the initializing expression is a variable with the
                    --  flag OK_To_Rename set, then transform:
@@ -8148,8 +8154,6 @@ package body Exp_Ch3 is
 
       if Is_Build_In_Place_Return_Object (Def_Id) then
          declare
-            Func_Id : constant Entity_Id := Return_Applies_To (Scope (Def_Id));
-
             Init_Stmt       : Node_Id;
             Obj_Acc_Formal  : Entity_Id;
 
@@ -8441,7 +8445,6 @@ package body Exp_Ch3 is
                             Build_Heap_Or_Pool_Allocator
                               (Temp_Id    => Alloc_Obj_Id,
                                Temp_Typ   => Acc_Typ,
-                               Func_Id    => Func_Id,
                                Ret_Typ    => Desig_Typ,
                                Alloc_Expr => Heap_Allocator))),
 
@@ -8465,7 +8468,6 @@ package body Exp_Ch3 is
                             Build_Heap_Or_Pool_Allocator
                               (Temp_Id    => Alloc_Obj_Id,
                                Temp_Typ   => Acc_Typ,
-                               Func_Id    => Func_Id,
                                Ret_Typ    => Desig_Typ,
                                Alloc_Expr => Pool_Allocator)))),
 
@@ -8586,11 +8588,8 @@ package body Exp_Ch3 is
       --  and that the tag is assigned in the case of any return object.
 
       elsif Rewrite_As_Renaming then
-         if Is_Secondary_Stack_Return_Object (Def_Id) then
+         if Special_Ret_Obj then
             declare
-               Func_Id  : constant Entity_Id  :=
-                 Return_Applies_To (Scope (Def_Id));
-
                Desig_Typ : constant Entity_Id :=
                  (if Ekind (Typ) = E_Array_Subtype
                   then Etype (Func_Id) else Typ);
@@ -8603,11 +8602,23 @@ package body Exp_Ch3 is
                   Set_Etype (Def_Id, Desig_Typ);
                   Set_Actual_Subtype (Def_Id, Typ);
                end if;
-            end;
-         end if;
 
-         if Special_Ret_Obj and then Present (Tag_Assign) then
-            Insert_Action_After (Init_After, Tag_Assign);
+               if Present (Tag_Assign) then
+                  Insert_Action_After (Init_After, Tag_Assign);
+               end if;
+
+               --  Ada 2005 (AI95-344): If the result type is class-wide,
+               --  insert a check that the level of the return expression's
+               --  underlying type is not deeper than the level of the master
+               --  enclosing the function.
+
+               --  AI12-043: The check is made immediately after the return
+               --  object is created.
+
+               if Is_Class_Wide_Type (Etype (Func_Id)) then
+                  Apply_CW_Accessibility_Check (Expr_Q, Func_Id);
+               end if;
+            end;
          end if;
 
       --  If this is the return object of a function returning on the secondary
@@ -8628,9 +8639,6 @@ package body Exp_Ch3 is
 
       elsif Is_Secondary_Stack_Return_Object (Def_Id) then
          declare
-            Func_Id  : constant Entity_Id  :=
-              Return_Applies_To (Scope (Def_Id));
-
             Desig_Typ : constant Entity_Id :=
               (if Ekind (Typ) = E_Array_Subtype
                then Etype (Func_Id) else Typ);

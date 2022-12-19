@@ -9669,7 +9669,7 @@ package body Exp_Util is
 
    --   type Equiv_T is record
    --     _parent : T (List of discriminant constraints taken from Exp);
-   --     Ext__50 : Storage_Array (1 .. (Exp'size - Typ'object_size)/8);
+   --     Cnn : Storage_Array (1 .. (Exp'size - Typ'object_size)/Storage_Unit);
    --   end Equiv_T;
    --
    --  Note that this type does not guarantee same alignment as all derived
@@ -9693,7 +9693,63 @@ package body Exp_Util is
       Range_Type  : Entity_Id;
       Str_Type    : Entity_Id;
       Constr_Root : Entity_Id;
-      Sizexpr     : Node_Id;
+      Size_Expr   : Node_Id;
+      Size_Pref   : Node_Id;
+
+      function Has_Tag_Of_Type (Exp : Node_Id) return Boolean;
+      --  Return True if expression Exp of a tagged type is known to statically
+      --  have the tag of this tagged type as specified by RM 3.9(19-25).
+
+      ---------------------
+      -- Has_Tag_Of_Type --
+      ---------------------
+
+      function Has_Tag_Of_Type (Exp : Node_Id) return Boolean is
+         Typ : constant Entity_Id := Etype (Exp);
+
+      begin
+         pragma Assert (Is_Tagged_Type (Typ));
+
+         --  The tag of an object of a class-wide type is that of its
+         --  initialization expression.
+
+         if Is_Class_Wide_Type (Typ) then
+            return False;
+         end if;
+
+         --  The tag of a stand-alone object of a specific tagged type T
+         --  identifies T.
+
+         if Is_Entity_Name (Exp)
+           and then Ekind (Entity (Exp)) in Constant_Or_Variable_Kind
+         then
+            return True;
+
+         else
+            case Nkind (E) is
+               --  The tag of a component or an aggregate of a specific tagged
+               --  type T identifies T.
+
+               when N_Indexed_Component
+                 |  N_Selected_Component
+                 |  N_Aggregate
+               =>
+                  return True;
+
+               --  The tag of the result returned by a function whose result
+               --  type is a specific tagged type T identifies T.
+
+               when N_Function_Call =>
+                  return True;
+
+               when N_Explicit_Dereference =>
+                  return Is_Captured_Function_Call (Exp);
+
+               when others =>
+                  return False;
+            end case;
+         end if;
+      end Has_Tag_Of_Type;
 
    begin
       --  If the root type is already constrained, there are no discriminants
@@ -9728,18 +9784,28 @@ package body Exp_Util is
 
       Range_Type := Make_Temporary (Loc, 'G');
 
+      --  If the expression is known to have the tag of its type, then we can
+      --  use it directly for the prefix of the Size attribute; otherwise we
+      --  need to convert it first to the class-wide type to force a call to
+      --  the _Size primitive operation.
+
+      if Has_Tag_Of_Type (E) then
+         Size_Pref := Duplicate_Subexpr_No_Checks (E);
+      else
+         Size_Pref := OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E));
+      end if;
+
       if not Is_Interface (Root_Typ) then
 
          --  subtype rg__xx is
-         --    Storage_Offset range 1 .. (Expr'size - typ'object_size)
+         --    Storage_Offset range 1 .. (Exp'size - Typ'object_size)
          --                                / Storage_Unit
 
-         Sizexpr :=
+         Size_Expr :=
            Make_Op_Subtract (Loc,
              Left_Opnd =>
                Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
+                 Prefix => Size_Pref,
                  Attribute_Name => Name_Size),
              Right_Opnd =>
                Make_Attribute_Reference (Loc,
@@ -9747,15 +9813,14 @@ package body Exp_Util is
                  Attribute_Name => Name_Object_Size));
       else
          --  subtype rg__xx is
-         --    Storage_Offset range 1 .. (Expr'size - Ada.Tags.Tag'object_size)
+         --    Storage_Offset range 1 .. (Exp'size - Ada.Tags.Tag'object_size)
          --                                / Storage_Unit
 
-         Sizexpr :=
+         Size_Expr :=
            Make_Op_Subtract (Loc,
              Left_Opnd =>
                Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
+                 Prefix => Size_Pref,
                  Attribute_Name => Name_Size),
              Right_Opnd =>
                Make_Attribute_Reference (Loc,
@@ -9763,7 +9828,7 @@ package body Exp_Util is
                  Attribute_Name => Name_Object_Size));
       end if;
 
-      Set_Paren_Count (Sizexpr, 1);
+      Set_Paren_Count (Size_Expr, 1);
 
       Append_To (List_Def,
         Make_Subtype_Declaration (Loc,
@@ -9777,7 +9842,7 @@ package body Exp_Util is
                     Low_Bound => Make_Integer_Literal (Loc, 1),
                     High_Bound =>
                       Make_Op_Divide (Loc,
-                        Left_Opnd => Sizexpr,
+                        Left_Opnd => Size_Expr,
                         Right_Opnd => Make_Integer_Literal (Loc,
                             Intval => System_Storage_Unit)))))));
 
