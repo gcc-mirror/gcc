@@ -1,5 +1,9 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/nvptx/nvptx.cc (nvptx_assemble_undefined_decl): Notice
+	'__nvptx_stacks', '__nvptx_uni' declarations.
+	(nvptx_file_end): Don't emit duplicate declarations for those.
+
 	* config/nvptx/nvptx.md (nvptx_uniform_warp_check): Make fit for
 	non-full-warp execution.
 

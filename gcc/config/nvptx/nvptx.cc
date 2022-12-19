@@ -180,9 +180,11 @@ static GTY(()) tree global_lock_var;
 
 /* True if any function references __nvptx_stacks.  */
 static bool need_softstack_decl;
+static bool have_softstack_decl;
 
 /* True if any function references __nvptx_uni.  */
 static bool need_unisimt_decl;
+static bool have_unisimt_decl;
 
 static int nvptx_mach_max_workers ();
 
@@ -2571,6 +2573,13 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
 			     TREE_TYPE (decl), size ? tree_to_shwi (size) : 0,
 			     DECL_ALIGN (decl), true);
   nvptx_assemble_decl_end ();
+
+  static tree softstack_id = get_identifier ("__nvptx_stacks");
+  static tree unisimt_id = get_identifier ("__nvptx_uni");
+  if (DECL_NAME (decl) == softstack_id)
+    have_softstack_decl = true;
+  else if (DECL_NAME (decl) == unisimt_id)
+    have_unisimt_decl = true;
 }
 
 /* Output a pattern for a move instruction.  */
@@ -6051,7 +6060,7 @@ nvptx_file_end (void)
     write_shared_buffer (asm_out_file, gang_private_shared_sym,
 			 gang_private_shared_align, gang_private_shared_size);
 
-  if (need_softstack_decl)
+  if (need_softstack_decl && !have_softstack_decl)
     {
       write_var_marker (asm_out_file, false, true, "__nvptx_stacks");
       /* 32 is the maximum number of warps in a block.  Even though it's an
@@ -6060,7 +6069,8 @@ nvptx_file_end (void)
       fprintf (asm_out_file, ".extern .shared .u%d __nvptx_stacks[32];\n",
 	       POINTER_SIZE);
     }
-  if (need_unisimt_decl)
+
+  if (need_unisimt_decl && !have_unisimt_decl)
     {
       write_var_marker (asm_out_file, false, true, "__nvptx_uni");
       fprintf (asm_out_file, ".extern .shared .u32 __nvptx_uni[32];\n");
