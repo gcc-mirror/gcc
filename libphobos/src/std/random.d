@@ -2516,7 +2516,7 @@ if (!is(T == enum) && (isIntegral!T || isSomeChar!T))
     assert(rnd.uniform!ulong == 4838462006927449017);
 
     enum Fruit { apple, mango, pear }
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
     assert(rnd.uniform!Fruit == Fruit.mango);
 }
 
@@ -2783,7 +2783,7 @@ auto ref choice(Range)(auto ref Range range)
     auto rnd = MinstdRand0(42);
 
     auto elem  = [1, 2, 3, 4, 5].choice(rnd);
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
     assert(elem == 3);
 }
 
@@ -2865,7 +2865,7 @@ if (isRandomAccessRange!Range)
     auto rnd = MinstdRand0(42);
 
     auto arr = [1, 2, 3, 4, 5].randomShuffle(rnd);
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
     assert(arr == [3, 5, 2, 4, 1]);
 }
 
@@ -2955,15 +2955,15 @@ if (isRandomAccessRange!Range)
     auto arr = [1, 2, 3, 4, 5, 6];
     arr = arr.dup.partialShuffle(1, rnd);
 
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
     assert(arr == [2, 1, 3, 4, 5, 6]); // 1<->2
 
     arr = arr.dup.partialShuffle(2, rnd);
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
     assert(arr == [1, 4, 3, 2, 5, 6]); // 1<->2, 2<->4
 
     arr = arr.dup.partialShuffle(3, rnd);
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
     assert(arr == [5, 4, 6, 2, 1, 3]); // 1<->5, 2<->4, 3<->6
 }
 
@@ -3369,7 +3369,7 @@ if (isRandomAccessRange!Range)
     import std.range : iota;
     auto rnd = MinstdRand0(42);
 
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
     assert(10.iota.randomCover(rnd).equal([7, 4, 2, 0, 1, 6, 8, 3, 9, 5]));
 }
 

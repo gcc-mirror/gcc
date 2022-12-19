@@ -10648,21 +10648,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return error_mark_node;
       break;
 
-    case REQUIRES_EXPR:
-      {
-	if (!fn)
-	  return error_mark_node;
-
-	/* Recursively walk the type of each constraint variable.  */
-	tree p = TREE_OPERAND (t, 0);
-	while (p)
-	  {
-	    WALK_SUBTREE (TREE_TYPE (p));
-	    p = TREE_CHAIN (p);
-	  }
-      }
-      break;
-
     default:
       break;
     }
@@ -13007,16 +12992,25 @@ public:
   /* List of local_specializations used within the pattern.  */
   tree extra;
   tsubst_flags_t complain;
+  /* True iff we don't want to walk into unevaluated contexts.  */
+  bool skip_unevaluated_operands = false;
 
   el_data (tsubst_flags_t c)
     : extra (NULL_TREE), complain (c) {}
 };
 static tree
-extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
+extract_locals_r (tree *tp, int *walk_subtrees, void *data_)
 {
   el_data &data = *reinterpret_cast<el_data*>(data_);
   tree *extra = &data.extra;
   tsubst_flags_t complain = data.complain;
+
+  if (data.skip_unevaluated_operands
+      && unevaluated_p (TREE_CODE (*tp)))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
 
   if (TYPE_P (*tp) && typedef_variant_p (*tp))
     /* Remember local typedefs (85214).  */
@@ -13109,6 +13103,14 @@ static tree
 extract_local_specs (tree pattern, tsubst_flags_t complain)
 {
   el_data data (complain);
+  /* Walk the pattern twice, ignoring unevaluated operands the first time
+     around, so that if a local specialization appears in both an evaluated
+     and unevaluated context we prefer to process it in the evaluated context
+     (since e.g. process_outer_var_ref is a no-op inside an unevaluated
+     context).  */
+  data.skip_unevaluated_operands = true;
+  cp_walk_tree (&pattern, extract_locals_r, &data, &data.visited);
+  data.skip_unevaluated_operands = false;
   cp_walk_tree (&pattern, extract_locals_r, &data, &data.visited);
   return data.extra;
 }
@@ -16968,13 +16970,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (DECL_TEMPLATE_PARM_P (t))
 	  return tsubst_copy (DECL_INITIAL (t), args, complain, in_decl);
-	/* There is no need to substitute into namespace-scope
-	   enumerators.  */
-	if (DECL_NAMESPACE_SCOPE_P (t))
+	if (!uses_template_parms (DECL_CONTEXT (t)))
 	  return t;
-	/* If ARGS is NULL, then T is known to be non-dependent.  */
-	if (args == NULL_TREE)
-	  return scalar_constant_value (t);
 
 	if (tree ref = maybe_dependent_member_ref (t, args, complain, in_decl))
 	  return ref;
@@ -24839,7 +24836,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       if (is_overloaded_fn (parm) || type_unknown_p (parm))
 	return unify_success (explain_p);
       gcc_assert (EXPR_P (parm)
-		  || COMPOUND_LITERAL_P (parm)
+		  || TREE_CODE (parm) == CONSTRUCTOR
 		  || TREE_CODE (parm) == TRAIT_EXPR);
     expr:
       /* We must be looking at an expression.  This can happen with
