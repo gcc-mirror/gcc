@@ -1492,7 +1492,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
       temp_override<tree> ovr (current_function_decl);
       if (ctx->call && ctx->call->fundef)
 	current_function_decl = ctx->call->fundef->decl;
-      return fold_builtin_source_location (EXPR_LOCATION (t));
+      return fold_builtin_source_location (t);
     }
 
   int strops = 0;

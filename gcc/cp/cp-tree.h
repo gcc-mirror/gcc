@@ -235,8 +235,6 @@ enum cp_tree_index
 
     CPTI_PSEUDO_CONTRACT_VIOLATION,
 
-    CPTI_SOURCE_LOCATION_IMPL,
-
     CPTI_FALLBACK_DFLOAT32_TYPE,
     CPTI_FALLBACK_DFLOAT64_TYPE,
     CPTI_FALLBACK_DFLOAT128_TYPE,
@@ -394,9 +392,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 /* A node which matches any template argument.  */
 #define any_targ_node			cp_global_trees[CPTI_ANY_TARG]
-
-/* std::source_location::__impl class.  */
-#define source_location_impl		cp_global_trees[CPTI_SOURCE_LOCATION_IMPL]
 
 /* Node to indicate default access. This must be distinct from the
    access nodes in tree.h.  */
@@ -8296,7 +8291,8 @@ extern tree process_stmt_hotness_attribute	(tree, location_t);
 extern tree build_assume_call			(location_t, tree);
 extern tree process_stmt_assume_attribute	(tree, tree, location_t);
 extern bool simple_empty_class_p		(tree, tree, tree_code);
-extern tree fold_builtin_source_location	(location_t);
+extern tree fold_builtin_source_location	(const_tree);
+extern tree get_source_location_impl_type	();
 
 /* in name-lookup.cc */
 extern tree strip_using_decl                    (tree);
