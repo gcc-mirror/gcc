@@ -2648,7 +2648,7 @@ static rtx
 aarch64_expand_builtin_data_intrinsic (unsigned int fcode, tree exp, rtx target)
 {
   expand_operand ops[2];
-  machine_mode mode = GET_MODE (target);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], expand_normal (CALL_EXPR_ARG (exp, 0)), mode);
   enum insn_code icode;
