@@ -585,6 +585,32 @@
   [(set_attr "type" "vsetvl")
    (set_attr "mode" "<MODE>")])
 
+;; It's emit by vsetvl/vsetvlmax intrinsics with no side effects.
+;; Since we have many optmization passes from "expand" to "reload_completed",
+;; such pattern can allow us gain benefits of these optimizations.
+(define_insn_and_split "@vsetvl<mode>_no_side_effects"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "csr_operand" "rK")
+		   (match_operand 2 "const_int_operand" "i")
+		   (match_operand 3 "const_int_operand" "i")
+		   (match_operand 4 "const_int_operand" "i")
+		   (match_operand 5 "const_int_operand" "i")] UNSPEC_VSETVL))]
+  "TARGET_VECTOR"
+  "#"
+  "&& epilogue_completed"
+  [(parallel
+    [(set (match_dup 0)
+	  (unspec:P [(match_dup 1) (match_dup 2) (match_dup 3)
+		     (match_dup 4) (match_dup 5)] UNSPEC_VSETVL))
+     (set (reg:SI VL_REGNUM)
+	  (unspec:SI [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPEC_VSETVL))
+     (set (reg:SI VTYPE_REGNUM)
+	  (unspec:SI [(match_dup 2) (match_dup 3) (match_dup 4)
+		      (match_dup 5)] UNSPEC_VSETVL))])]
+  ""
+  [(set_attr "type" "vsetvl")
+   (set_attr "mode" "SI")])
+
 ;; RVV machine description matching format
 ;; (define_insn ""
 ;;   [(set (match_operand:MODE 0)

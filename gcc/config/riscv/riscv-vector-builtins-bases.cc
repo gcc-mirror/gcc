@@ -75,7 +75,7 @@ public:
 
     /* MU.  */
     e.add_input_operand (Pmode, gen_int_mode (0, Pmode));
-    return e.generate_insn (code_for_vsetvl (Pmode));
+    return e.generate_insn (code_for_vsetvl_no_side_effects (Pmode));
   }
 };
 
