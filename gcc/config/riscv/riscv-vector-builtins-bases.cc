@@ -53,11 +53,6 @@ template<bool VLMAX_P>
 class vsetvl : public function_base
 {
 public:
-  unsigned int call_properties (const function_instance &) const
-  {
-    return CP_READ_CSR | CP_WRITE_CSR;
-  }
-
   rtx expand (function_expander &e) const override
   {
     if (VLMAX_P)
