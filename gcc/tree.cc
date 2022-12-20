@@ -11310,12 +11310,12 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	if (len == 0)
 	  break;
 
-	/* Walk all elements but the first.  */
-	while (--len)
-	  WALK_SUBTREE (TREE_VEC_ELT (*tp, len));
+	/* Walk all elements but the last.  */
+	for (int i = 0; i < len - 1; ++i)
+	  WALK_SUBTREE (TREE_VEC_ELT (*tp, i));
 
-	/* Now walk the first one as a tail call.  */
-	WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, 0));
+	/* Now walk the last one as a tail call.  */
+	WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, len - 1));
       }
 
     case VECTOR_CST:
@@ -11323,11 +11323,11 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	unsigned len = vector_cst_encoded_nelts (*tp);
 	if (len == 0)
 	  break;
-	/* Walk all elements but the first.  */
-	while (--len)
-	  WALK_SUBTREE (VECTOR_CST_ENCODED_ELT (*tp, len));
-	/* Now walk the first one as a tail call.  */
-	WALK_SUBTREE_TAIL (VECTOR_CST_ENCODED_ELT (*tp, 0));
+	/* Walk all elements but the last.  */
+	for (unsigned i = 0; i < len - 1; ++i)
+	  WALK_SUBTREE (VECTOR_CST_ENCODED_ELT (*tp, i));
+	/* Now walk the last one as a tail call.  */
+	WALK_SUBTREE_TAIL (VECTOR_CST_ENCODED_ELT (*tp, len - 1));
       }
 
     case COMPLEX_CST:

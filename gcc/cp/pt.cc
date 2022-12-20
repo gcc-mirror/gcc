@@ -10640,14 +10640,14 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
 struct find_template_parameter_info
 {
   explicit find_template_parameter_info (tree ctx_parms)
-    : parm_list (NULL_TREE),
-      ctx_parms (ctx_parms),
+    : ctx_parms (ctx_parms),
       max_depth (TMPL_PARMS_DEPTH (ctx_parms))
   {}
 
   hash_set<tree> visited;
   hash_set<tree> parms;
-  tree parm_list;
+  tree parm_list = NULL_TREE;
+  tree *parm_list_tail = &parm_list;
   tree ctx_parms;
   int max_depth;
 };
@@ -10693,7 +10693,12 @@ keep_template_parm (tree t, void* data)
   if (TYPE_P (t))
     t = TYPE_MAIN_VARIANT (t);
   if (!ftpi->parms.add (t))
-    ftpi->parm_list = tree_cons (NULL_TREE, t, ftpi->parm_list);
+    {
+      /* Append T to PARM_LIST.  */
+      tree node = build_tree_list (NULL_TREE, t);
+      *ftpi->parm_list_tail = node;
+      ftpi->parm_list_tail = &TREE_CHAIN (node);
+    }
 
   /* Verify the parameter we found has a valid index.  */
   if (flag_checking)
