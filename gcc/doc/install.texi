@@ -287,7 +287,7 @@ section.
 @item @anchor{GDC-prerequisite}GDC
 
 In order to build GDC, the D compiler, you need a working GDC
-compiler (GCC version 9.1 or later) and D runtime library,
+compiler (GCC version 9.4 or later) and D runtime library,
 @samp{libphobos}, as the D front end is written in D.
 
 Versions of GDC prior to 12 can be built with an ISO C++11 compiler, which can
