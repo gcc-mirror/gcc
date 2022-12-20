@@ -8715,8 +8715,8 @@ package body Exp_Ch3 is
       --    type Txx is access all ...;
       --    Rxx : constant Txx :=
       --      new <expression-type>['(<expression>)][storage_pool =
-      --        system__secondary_stack__rs_pool][procedure_to_call =
-      --        system__secondary_stack__rs_allocate];
+      --        system__return_stack__rs_pool][procedure_to_call =
+      --        system__return_stack__rs_allocate];
 
       --    Result : T renames Rxx.all;
 
