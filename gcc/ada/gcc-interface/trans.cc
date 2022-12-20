@@ -4398,13 +4398,31 @@ static void
 get_storage_model_access (Node_Id gnat_node, Entity_Id *gnat_smo)
 {
   const Node_Id gnat_parent = Parent (gnat_node);
+  *gnat_smo = Empty;
+
+  switch (Nkind (gnat_parent))
+    {
+    case N_Attribute_Reference:
+      /* If the parent is an attribute reference that requires an lvalue and
+         gnat_node is the Prefix (i.e. not a parameter), we do not need to
+         actually access any storage. */
+      if (lvalue_required_for_attribute_p (gnat_parent)
+          && Prefix (gnat_parent) == gnat_node)
+        return;
+      break;
+
+    case N_Object_Renaming_Declaration:
+      /* Nothing to do for the identifier in an object renaming declaration,
+         the renaming itself does not need storage model access. */
+      return;
+
+    default:
+      break;
+    }
 
   /* If we are the prefix of the parent, then the access is above us.  */
   if (node_is_component (gnat_parent) && Prefix (gnat_parent) == gnat_node)
-    {
-      *gnat_smo = Empty;
-      return;
-    }
+    return;
 
   /* Now strip any type conversion from GNAT_NODE.  */
   if (Nkind (gnat_node) == N_Type_Conversion
