@@ -1,3 +1,54 @@
+2022-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100295
+	PR c++/107579
+	* pt.cc (el_data::skip_unevaluated_operands): New data member.
+	(extract_locals_r): If skip_unevaluated_operands is true,
+	don't walk into unevaluated contexts.
+	(extract_local_specs): Walk the pattern twice, first with
+	skip_unevaluated_operands true followed by it set to false.
+
+2022-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108104
+	* pt.cc (unify) <default>: Relax assert to accept any
+	CONSTRUCTOR parm, not just COMPOUND_LITERAL_P one.
+
+2022-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107417
+	* pt.cc (for_each_template_parm_r) <case REQUIRES_EXPR>: Move
+	walking of the TREE_TYPE of each parameter to ...
+	* tree.cc (cp_walk_subtrees) <case REQUIRES_EXPR>: ... here.
+
+2022-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103081
+	* pt.cc (tsubst_copy) <case CONST_DECL>: Generalize
+	early exit test for namespace-scope decls to check dependence of
+	the enclosing scope instead.  Remove dead early exit test.
+
+2022-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-11-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107542
+	* typeck.cc (cp_build_binary_op): In the SPACESHIP_EXPR case,
+	handle an error_mark_node result type.
+
 2022-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
