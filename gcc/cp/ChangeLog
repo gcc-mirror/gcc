@@ -1,3 +1,37 @@
+2022-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100881
+	* constexpr.cc (cxx_eval_builtin_function_call): Adjust calls
+	to fold_builtin_source_location.
+	* cp-gimplify.cc (cp_gimplify_expr): Likewise.
+	(cp_fold): Likewise.
+	(get_source_location_impl_type): Remove location_t parameter and
+	adjust accordingly.  No longer static.
+	(fold_builtin_source_location): Take a CALL_EXPR tree instead of a
+	location and obtain the impl type from its return type.
+	* cp-tree.h (enum cp_tree_index): Remove CPTI_SOURCE_LOCATION_IMPL
+	enumerator.
+	(source_location_impl): Remove.
+	(fold_builtin_source_location): Adjust parameter type.
+	(get_source_location_impl_type): Declare.
+	* decl.cc (cxx_init_decl_processing): Declare
+	__builtin_source_location with auto return type instead of
+	const void*.
+	(require_deduced_type): Update the return type of
+	__builtin_source_location.
+
+2022-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101886
+	* pt.cc (extract_autos_r): Recompute TYPE_CANONICAL after
+	adjusting the template type parameter's index.  Simplify
+	by using TEMPLATE_TYPE_IDX.  Add some sanity checks.
+
+2022-12-19  Arsen Arsenović  <arsen@aarsen.me>
+
+	* contracts.cc: Rename references to
+	contract_violation_continuation_mode constants to be lowercase.
+
 2022-12-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/107437

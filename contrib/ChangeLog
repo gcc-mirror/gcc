@@ -1,3 +1,34 @@
+2022-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support digits in PR's
+	component in subject.
+
+2022-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_email.py: Add new test.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2022-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow digit in component name.
+
+2022-12-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_check_commit.py (__main__): With -v print a
+	warning for the auto-added files.
+	* gcc-changelog/git_commit.py (GitCommit.__init__): Add self.warnings.
+	(GitCommit.check_mentioned_files): Add warning for auto-added files.
+	(GitCommit.print_warnings): New function.
+	* gcc-changelog/git_email.py (__main__): Remove bogus argument to
+	GitEmail constructor; print auto-added-files warning.
+	* gcc-changelog/test_email.py (test_auto_add_file_1,
+	test_auto_add_file_2): New tests.
+	* gcc-changelog/test_patches.txt: Add two test cases.
+
+2022-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/setup.cfg: Do not use flake8 pytest plug-in.
+
 2022-12-16  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Print each warning only one time.

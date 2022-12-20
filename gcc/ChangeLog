@@ -1,3 +1,96 @@
+2022-12-19  Jason Merrill  <jason@redhat.com>
+
+	* sort.cc: Disable -Wconditionally-supported in
+	CHECKING_P code.
+
+2022-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64867
+	* configure.ac (strict_warn): Add -Wconditionally-supported.
+	* configure: Regenerate.
+
+2022-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108164
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Perform vect_step_op_add update in the appropriate type.
+
+2022-12-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-c.cc (__ARM_FEATURE_CLZ): Fix definition of
+	preprocessor macro when target has CLZ in another ISA.
+
+2022-12-19  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Remove vste.
+
+2022-12-19  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config.gcc: Add riscv-vsetvl.o.
+	* config/riscv/riscv-passes.def (INSERT_PASS_BEFORE): Add VSETVL PASS
+	location.
+	* config/riscv/riscv-protos.h (make_pass_vsetvl): New function.
+	(enum avl_type): New enum.
+	(get_ta): New function.
+	(get_ma): Ditto.
+	(get_avl_type): Ditto.
+	(calculate_ratio): Ditto.
+	(enum tail_policy): New enum.
+	(enum mask_policy): Ditto.
+	* config/riscv/riscv-v.cc (calculate_ratio): New function.
+	(emit_pred_op): change the VLMAX mov codgen.
+	(get_ta): New function.
+	(get_ma): Ditto.
+	(enum tail_policy): Change enum.
+	(get_prefer_tail_policy): New function.
+	(enum mask_policy): Change enum.
+	(get_prefer_mask_policy): New function.
+	* config/riscv/t-riscv: Add riscv-vsetvl.o
+	* config/riscv/vector.md: Adjust attribute and pattern for VSETVL
+	PASS.
+	(@vlmax_avl<mode>): Ditto.
+	(@vsetvl<mode>_no_side_effects): Delete.
+	(vsetvl_vtype_change_only): New MD pattern.
+	(@vsetvl_discard_result<mode>): Ditto.
+	* config/riscv/riscv-vsetvl.cc: New file.
+	* config/riscv/riscv-vsetvl.h: New file.
+
+2022-12-19  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-switch.def (ENTRY): Correct attributes.
+
+2022-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108140
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_expand_builtin_data_intrinsic): Handle NULL target.
+
+2022-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/gnu-user.h (LIBHWASAN_EARLY_SPEC): Add libhwasan_preinit.o
+	to link spec if not -shared.
+
+2022-12-19  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_vsetvl): Pass through VLMUL enum
+	instead of machine mode.
+	* config/riscv/riscv-vector-builtins-bases.cc: Ditto.
+	* config/riscv/riscv.cc (riscv_print_operand): Print LMUL by enum vlmul
+	instead of machine mode.
+
+2022-12-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/106708
+	* config/rs6000/rs6000.cc (rs6000_emit_set_long_const): Add using
+	"li; x?oris" to build constant.
+
+2022-12-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/55522
+	* config/i386/gnu-user-common.h (GNU_USER_TARGET_MATHFILE_SPEC):
+	Don't add crtfastmath.o for -shared.
+	* doc/invoke.texi (-shared): Add related documentation.
+
 2022-12-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc: Determine Solaris minor version.

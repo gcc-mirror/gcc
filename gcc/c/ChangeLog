@@ -1,3 +1,9 @@
+2022-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108043
+	* c-parser.cc (c_parser_postfix_expression_after_paren_type): Diagnose
+	compound literals with function type.
+
 2022-12-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (declspecs_add_type, declspecs_add_scspec): Check for

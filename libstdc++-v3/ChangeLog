@@ -1,3 +1,8 @@
+2022-12-19  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/experimental/contract: Lowercase the constants in
+	contract_violation_continuation_mode.
+
 2022-12-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
