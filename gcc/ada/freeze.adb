@@ -473,6 +473,12 @@ package body Freeze is
          Set_Is_Overloaded (Call_Name, False);
       end if;
 
+      if Nkind (Decl) /= N_Subprogram_Declaration then
+         Rewrite (N,
+           Make_Subprogram_Declaration (Loc,
+             Specification => Specification (N)));
+      end if;
+
       --  For simple renamings, subsequent calls can be expanded directly as
       --  calls to the renamed entity. The body must be generated in any case
       --  for calls that may appear elsewhere. This is not done in the case
@@ -480,7 +486,6 @@ package body Freeze is
       --  body has not been built yet.
 
       if Ekind (Old_S) in E_Function | E_Procedure
-        and then Nkind (Decl) = N_Subprogram_Declaration
         and then not Is_Generic_Instance (Old_S)
       then
          Set_Body_To_Inline (Decl, Old_S);
@@ -653,12 +658,6 @@ package body Freeze is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (Call_Node)));
-      end if;
-
-      if Nkind (Decl) /= N_Subprogram_Declaration then
-         Rewrite (N,
-           Make_Subprogram_Declaration (Loc,
-             Specification => Specification (N)));
       end if;
 
       --  Link the body to the entity whose declaration it completes. If
