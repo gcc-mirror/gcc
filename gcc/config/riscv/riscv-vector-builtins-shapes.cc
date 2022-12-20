@@ -93,6 +93,7 @@ struct vsetvl_def : public build_base
     /* vsetvl* instruction doesn't have C++ overloaded functions.  */
     if (overloaded_p)
       return nullptr;
+    b.append_name ("__riscv_");
     b.append_name (instance.base_name);
     b.append_name (type_suffixes[instance.type.index].vsetvl);
     return b.finish_name ();
