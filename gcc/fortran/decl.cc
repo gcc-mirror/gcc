@@ -5998,10 +5998,14 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 	    }
 	  else
 	    {
-              if (tmp_sym->ts.type == BT_DERIVED || ts->type == BT_DERIVED)
-                gfc_error ("Type declaration %qs at %L is not C "
-                           "interoperable but it is BIND(C)",
-                           tmp_sym->name, &(tmp_sym->declared_at));
+	      if (tmp_sym->ts.type == BT_DERIVED || ts->type == BT_DERIVED
+		  || tmp_sym->ts.type == BT_CLASS || ts->type == BT_CLASS)
+		{
+		  gfc_error ("Type declaration %qs at %L is not C "
+			     "interoperable but it is BIND(C)",
+			     tmp_sym->name, &(tmp_sym->declared_at));
+		  retval = false;
+		}
               else if (warn_c_binding_type)
                 gfc_warning (OPT_Wc_binding_type, "Variable %qs at %L "
                              "may not be a C interoperable "
