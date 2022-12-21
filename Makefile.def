@@ -415,6 +415,8 @@ dependencies = { module=configure-isl; on=all-gmp; };
 dependencies = { module=all-intl; on=all-libiconv; };
 
 // Host modules specific to gdb.
+dependencies = { module=configure-gdb; on=all-gmp; };
+dependencies = { module=configure-gdb; on=all-mpfr; };
 dependencies = { module=configure-gdb; on=all-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
