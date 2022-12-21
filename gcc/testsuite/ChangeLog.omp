@@ -3,6 +3,21 @@
 	Backported from master:
 	2022-12-14  Julian Brown  <julian@codesourcery.com>
 
+	PR fortran/107214
+	* gfortran.dg/gomp/pr107214.f90: New test.
+	* gfortran.dg/gomp/pr107214-2.f90: New test.
+	* gfortran.dg/gomp/pr107214-3.f90: New test.
+	* gfortran.dg/gomp/pr107214-4.f90: New test.
+	* gfortran.dg/gomp/pr107214-5.f90: New test.
+	* gfortran.dg/gomp/pr107214-6.f90: New test.
+	* gfortran.dg/gomp/pr107214-7.f90: New test.
+	* gfortran.dg/gomp/pr107214-8.f90: New test.
+
+2022-12-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-12-14  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.fortran/combined-directive-splitting-1.f90: New
 	test.
 
