@@ -1,3 +1,23 @@
+2022-12-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-12-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_print_operand): Add 'p' case, adjust
+	comments.
+	(enum nvptx_builtins): Add NVPTX_BUILTIN_BAR_RED_AND,
+	NVPTX_BUILTIN_BAR_RED_OR, and NVPTX_BUILTIN_BAR_RED_POPC.
+	(nvptx_expand_bar_red): New function.
+	(nvptx_init_builtins):
+	Add DEFs of __builtin_nvptx_bar_red_[and/or/popc].
+	(nvptx_expand_builtin): Use nvptx_expand_bar_red to expand
+	NVPTX_BUILTIN_BAR_RED_[AND/OR/POPC] cases.
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add
+	UNSPECV_BARRED_AND, UNSPECV_BARRED_OR, and UNSPECV_BARRED_POPC.
+	(BARRED): New int iterator.
+	(barred_op,barred_mode,barred_ptxtype): New int attrs.
+	(nvptx_barred_<barred_op>): New define_insn.
+
 2022-12-06  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Backported from master:
