@@ -12182,6 +12182,9 @@ package body Sem_Ch12 is
          elsif Ekind (Scope (Gen_Unit)) = E_Generic_Package
            and then Ekind (Scope (Act_Decl_Id)) = E_Package
            and then Is_Generic_Instance (Scope (Act_Decl_Id))
+           and then Nkind
+             (Name (Get_Unit_Instantiation_Node
+                      (Scope (Act_Decl_Id)))) = N_Expanded_Name
          then
             Par_Ent := Entity
               (Prefix (Name (Get_Unit_Instantiation_Node
