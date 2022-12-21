@@ -150,6 +150,7 @@ lto_write_options (void)
 	case OPT_ffile_prefix_map_:
 	case OPT_fmacro_prefix_map_:
 	case OPT_fprofile_prefix_map_:
+	case OPT_fwhole_program:
 	  continue;
 
 	default:
