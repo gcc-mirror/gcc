@@ -79,6 +79,8 @@ for line in lines:
     if i != -1:
         location = line[:i]
         message = line[i + len(token):]
+        if '/libffi/' in location or location.startswith('Makefile'):
+            continue
         if not skip_warning(location, message):
             total += 1
             messages.add(line)
