@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Dec 01, 2022
+GNAT Reference Manual , May 09, 2023
 
 AdaCore
 
@@ -3880,7 +3880,165 @@ private
    -- ...
 end Stacks;
 @end example
+
+@item 
+String Interpolation
+
+The syntax for string literals is extended to support string interpolation.
+
+Within an interpolated string literal, an arbitrary expression, when
+enclosed in @{ … @}, is expanded at run time into the result of calling
+‘Image on the result of evaluating the expression enclosed by the brace
+characters, unless it is already a string or a single character.
+
+Here is an example of this feature where the expressions “Name” and
+“X + Y” will be evaluated and included in the string.
+
+@example
+Put_Line (f"The name is @{Name@} and the sum is @{X + Y@}.");
+@end example
+
+In addition, an escape character ('\') is provided for inserting certain
+standard control characters (such as '\t' for tabulation or '\n' for
+newline) or to escape characters with special significance to the
+interpolated string syntax, namely '”', '@{', '@}',and '\' itself.
 @end itemize
+
+
+@multitable {xxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx} 
+@item
+
+escaped_character
+
+@tab
+
+meaning
+
+@item
+
+‘\a’
+
+@tab
+
+ALERT
+
+@item
+
+‘\b’
+
+@tab
+
+BACKSPACE
+
+@item
+
+‘\f’
+
+@tab
+
+FORM FEED
+
+@item
+
+‘\n’
+
+@tab
+
+LINE FEED
+
+@item
+
+‘\r’
+
+@tab
+
+CARRIAGE RETURN
+
+@item
+
+‘\t’
+
+@tab
+
+CHARACTER TABULATION
+
+@item
+
+‘\v’
+
+@tab
+
+LINE TABULATION
+
+@item
+
+‘\0’
+
+@tab
+
+NUL
+
+@item
+
+‘\\’
+
+@tab
+
+‘\’
+
+@item
+
+‘\”’
+
+@tab
+
+‘”’
+
+@item
+
+‘\@{’
+
+@tab
+
+‘@{’
+
+@item
+
+‘\@}’
+
+@tab
+
+‘@}’
+
+@end multitable
+
+
+@quotation
+
+Note that, unlike normal string literals, doubled characters have no
+special significance. So to include a double-quote or a brace character
+in an interpolated string, they must be preceded by a '\'.
+For example:
+
+@example
+Put_Line
+  (f"X = @{X@} and Y = @{Y@} and X+Y = @{X+Y@};\n" &
+   f" a double quote is \" and" &
+   f" an open brace is \@{");
+@end example
+
+Finally, a syntax is provided for creating multi-line string literals,
+without having to explicitly use an escape sequence such as '\n'. For
+example:
+
+@example
+Put_Line
+  (f"This is a multi-line"
+    "string literal"
+    "There is no ambiguity about how many"
+    "spaces are included in each line");
+@end example
+@end quotation
 
 @node Pragma Extensions_Visible,Pragma External,Pragma Extensions_Allowed,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas id12}@anchor{65}@anchor{gnat_rm/implementation_defined_pragmas pragma-extensions-visible}@anchor{66}

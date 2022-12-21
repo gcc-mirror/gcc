@@ -2425,6 +2425,69 @@ are identified below.
          -- ...
       end Stacks;
 
+* String Interpolation
+
+  The syntax for string literals is extended to support string interpolation.
+
+  Within an interpolated string literal, an arbitrary expression, when
+  enclosed in { ... }, is expanded at run time into the result of calling
+  'Image on the result of evaluating the expression enclosed by the brace
+  characters, unless it is already a string or a single character.
+
+  Here is an example of this feature where the expressions "Name" and
+  "X + Y" will be evaluated and included in the string.
+
+  .. code-block:: ada
+
+      Put_Line (f"The name is {Name} and the sum is {X + Y}.");
+
+  In addition, an escape character (\'\\\') is provided for inserting certain
+  standard control characters (such as \'\\t\' for tabulation or \'\\n\' for
+  newline) or to escape characters with special significance to the
+  interpolated string syntax, namely \'"\', \'{\', \'}\',and \'\\\' itself.
+
+=================   =================
+escaped_character   meaning
+-----------------   -----------------
+'\\a'                ALERT
+'\\b'                BACKSPACE
+'\\f'                FORM FEED
+'\\n'                LINE FEED
+'\\r'                CARRIAGE RETURN
+'\\t'                CHARACTER TABULATION
+'\\v'                LINE TABULATION
+'\\0'                NUL
+-----------------   -----------------
+'\\\\'               '\\'
+'\\"'                '"'
+'\\{'                '{'
+'\\}'                '}'
+=================   =================
+
+  Note that, unlike normal string literals, doubled characters have no
+  special significance. So to include a double-quote or a brace character
+  in an interpolated string, they must be preceded by a \'\\\'.
+  For example:
+
+  .. code-block:: ada
+
+      Put_Line
+        (f"X = {X} and Y = {Y} and X+Y = {X+Y};\n" &
+         f" a double quote is \" and" &
+         f" an open brace is \{");
+
+  Finally, a syntax is provided for creating multi-line string literals,
+  without having to explicitly use an escape sequence such as \'\\n\'. For
+  example:
+
+  .. code-block:: ada
+
+      Put_Line
+        (f"This is a multi-line"
+          "string literal"
+          "There is no ambiguity about how many"
+          "spaces are included in each line");
+
 .. _Pragma-Extensions_Visible:
 
 Pragma Extensions_Visible
