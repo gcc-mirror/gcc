@@ -13719,9 +13719,12 @@ compiled.  All public functions and variables with the exception of @code{main}
 and those merged by attribute @code{externally_visible} become static functions
 and in effect are optimized more aggressively by interprocedural optimizers.
 
-This option should not be used in combination with @option{-flto}.
-Instead relying on a linker plugin should provide safer and more precise
-information.
+With @option{-flto} this option has a limited use.  In most cases the
+precise list of symbols used or exported from the binary is known the
+resolution info passed to the link-time optimizer by the linker plugin.  It is
+still useful if no linker plugin is used or during incremental link step when
+final code is produced (with @option{-flto}
+@option{-flinker-output=nolto-rel}).
 
 @item -flto[=@var{n}]
 @opindex flto
