@@ -36,9 +36,16 @@ test(std::chars_format fmt = std::chars_format{})
   for (int i = 0; i <= (unsigned short) ~0; ++i)
     {
       u.s = i;
-      auto [ptr1, ec1] = std::to_chars(str1, str1 + sizeof(str1), u.f, fmt);
-      auto [ptr2, ec2] = std::to_chars(str2, str2 + sizeof(str2), std::float32_t(u.f), fmt);
-      VERIFY( ec1 == std::errc() && ec2 == std::errc());
+      auto [ptr1, ec1] = (fmt == std::chars_format{}
+			  ? std::to_chars(str1, str1 + sizeof(str1), u.f)
+			  : std::to_chars(str1, str1 + sizeof(str1), u.f,
+					  fmt));
+      auto [ptr2, ec2] = (fmt == std::chars_format{}
+			  ? std::to_chars(str2, str2 + sizeof(str2),
+					  std::float32_t(u.f))
+			  : std::to_chars(str2, str2 + sizeof(str2),
+					  std::float32_t(u.f), fmt));
+      VERIFY( ec1 == std::errc() && ec2 == std::errc() );
 //    std::cout << i << ' ' << std::string_view (str1, ptr1)
 //	<< '\t' << std::string_view (str2, ptr2) << '\n';
       if (fmt == std::chars_format::fixed)
