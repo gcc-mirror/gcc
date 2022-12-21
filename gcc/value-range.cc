@@ -979,7 +979,9 @@ irange::copy_legacy_to_multi_range (const irange &src)
     set_varying (src.type ());
   else
     {
-      if (range_has_numeric_bounds_p (&src))
+      if (!src.undefined_p ()
+	  && TREE_CODE (src.min ()) == INTEGER_CST
+	  && TREE_CODE (src.max ()) == INTEGER_CST)
 	set (src.min (), src.max (), src.kind ());
       else
 	{
@@ -3066,14 +3068,6 @@ ranges_from_anti_range (const value_range *ar,
     }
 
   return !vr0->undefined_p ();
-}
-
-bool
-range_has_numeric_bounds_p (const irange *vr)
-{
-  return (!vr->undefined_p ()
-	  && TREE_CODE (vr->min ()) == INTEGER_CST
-	  && TREE_CODE (vr->max ()) == INTEGER_CST);
 }
 
 /* Return whether VAL is equal to the maximum value of its type.

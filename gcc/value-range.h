@@ -669,7 +669,6 @@ irange::legacy_mode_p () const
   return m_max_ranges == 1;
 }
 
-extern bool range_has_numeric_bounds_p (const irange *);
 extern bool ranges_from_anti_range (const value_range *,
 				    value_range *, value_range *);
 extern value_range_kind get_legacy_range (const irange &, tree &min, tree &max);
