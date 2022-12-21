@@ -8339,8 +8339,9 @@ package body Exp_Util is
 
       --  is rewritten into:
 
-      --     Temp : ... := Function_Call (...)'reference;
-      --     Obj  : CW_Type renames (... Ada.Tags.Displace (Temp));
+      --     Tmp : ... := Function_Call (...)'reference;
+      --     Rnn : constant access CW_Type := (... Ada.Tags.Displace (Tmp));
+      --     Obj : CW_Type renames Rnn.all;
 
       --  where the return type of the function and the class-wide type require
       --  dispatch table pointer displacement.
@@ -8351,8 +8352,9 @@ package body Exp_Util is
 
       --  is rewritten into:
 
-      --     Temp : ... := Function_Call (Container, ...)'reference;
-      --     Obj  : CW_Type renames (... Ada.Tags.Displace (Temp));
+      --     Tmp : ... := Function_Call (Container, ...)'reference;
+      --     Rnn : constant access CW_Type := (... Ada.Tags.Displace (Tmp));
+      --     Obj : CW_Type renames Rnn.all;
 
       --  where the container element type and the class-wide type require
       --  dispatch table pointer dispacement.
@@ -8363,14 +8365,21 @@ package body Exp_Util is
 
       --  is rewritten into:
 
-      --     Obj : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
+      --     Rnn : constant access CW_Type := (...Ada.Tags.Displace (Src_Obj));
+      --     Obj : CW_Type renames Rnn.all;
 
       --  where the type of the source object and the class-wide type require
       --  dispatch table pointer displacement.
 
       if Nkind (Obj_Decl) = N_Object_Renaming_Declaration
         and then Is_Class_Wide_Type (Obj_Typ)
-        and then Is_Displace_Call (Renamed_Object (Obj_Id))
+        and then not Is_Special_Return_Object (Obj_Id)
+        and then Nkind (Renamed_Object (Obj_Id)) = N_Explicit_Dereference
+        and then Is_Entity_Name (Prefix (Renamed_Object (Obj_Id)))
+        and then Ekind (Entity (Prefix (Renamed_Object (Obj_Id)))) = E_Constant
+        and then
+          Is_Displace_Call
+            (Constant_Value (Entity (Prefix (Renamed_Object (Obj_Id)))))
         and then Nkind (Orig_Decl) = N_Object_Declaration
         and then Comes_From_Source (Orig_Decl)
       then
@@ -8380,9 +8389,10 @@ package body Exp_Util is
            Is_Controlled_Function_Call (Orig_Expr)
              or else Is_Controlled_Indexing (Orig_Expr)
              or else Is_Source_Object (Orig_Expr);
-      end if;
 
-      return False;
+      else
+         return False;
+      end if;
    end Is_Displacement_Of_Object_Or_Function_Result;
 
    ------------------------------
@@ -12968,14 +12978,17 @@ package body Exp_Util is
 
             --  Detect a case where a source object has been initialized by
             --  a controlled function call or another object which was later
-            --  rewritten as a class-wide conversion of Ada.Tags.Displace.
+            --  rewritten as a class-wide conversion of Ada.Tags.Displace:
 
-            --     Obj1 : CW_Type := Src_Obj;
-            --     Obj2 : CW_Type := Function_Call (...);
+            --     Obj1 : CW_Type := Function_Call (...);
+            --     Obj2 : CW_Type := Src_Obj;
 
-            --     Obj1 : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
             --     Tmp  : ... := Function_Call (...)'reference;
-            --     Obj2 : CW_Type renames (... Ada.Tags.Displace (Tmp));
+            --     Rnn  : access CW_Type := (... Ada.Tags.Displace (Tmp));
+            --     Obj1 : CW_Type renames Rnn.all;
+
+            --     Rnn  : access CW_Type := (... Ada.Tags.Displace (Src_Obj));
+            --     Obj2 : CW_Type renames Rnn.all;
 
             elsif Is_Displacement_Of_Object_Or_Function_Result (Obj_Id) then
                return True;

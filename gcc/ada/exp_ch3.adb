@@ -7501,12 +7501,14 @@ package body Exp_Ch3 is
 
             elsif Tagged_Type_Expansion then
                declare
-                  Iface    : constant Entity_Id := Root_Type (Typ);
-                  Expr_N   : Node_Id := Expr;
-                  Expr_Typ : Entity_Id;
-                  New_Expr : Node_Id;
-                  Obj_Id   : Entity_Id;
-                  Tag_Comp : Node_Id;
+                  Iface : constant Entity_Id := Root_Type (Typ);
+
+                  Expr_Typ     : Entity_Id;
+                  New_Expr     : Node_Id;
+                  Obj_Id       : Entity_Id;
+                  Ptr_Obj_Decl : Node_Id;
+                  Ptr_Obj_Id   : Entity_Id;
+                  Tag_Comp     : Node_Id;
 
                begin
                   --  If the original node of the expression was a conversion
@@ -7516,26 +7518,27 @@ package body Exp_Ch3 is
                   --  component. This code must be kept synchronized with the
                   --  expansion done by routine Expand_Interface_Conversion
 
-                  if not Comes_From_Source (Expr_N)
-                    and then Nkind (Expr_N) = N_Explicit_Dereference
-                    and then Nkind (Original_Node (Expr_N)) = N_Type_Conversion
-                    and then Etype (Original_Node (Expr_N)) = Typ
+                  if not Comes_From_Source (Expr)
+                    and then Nkind (Expr) = N_Explicit_Dereference
+                    and then Nkind (Original_Node (Expr)) = N_Type_Conversion
+                    and then Etype (Original_Node (Expr)) = Typ
                   then
-                     Rewrite (Expr_N, Original_Node (Expression (N)));
+                     Rewrite (Expr, Original_Node (Expression (N)));
                   end if;
 
                   --  Avoid expansion of redundant interface conversion
 
-                  if Is_Interface (Etype (Expr_N))
-                    and then Nkind (Expr_N) = N_Type_Conversion
-                    and then Etype (Expr_N) = Typ
+                  if Is_Interface (Etype (Expr))
+                    and then Nkind (Expr) = N_Type_Conversion
+                    and then Etype (Expr) = Typ
                   then
-                     Expr_N := Expression (Expr_N);
-                     Set_Expression (N, Expr_N);
+                     Expr_Q := Expression (Expr);
+                  else
+                     Expr_Q := Expr;
                   end if;
 
-                  Obj_Id   := Make_Temporary (Loc, 'D', Expr_N);
-                  Expr_Typ := Base_Type (Etype (Expr_N));
+                  Obj_Id   := Make_Temporary (Loc, 'D', Expr_Q);
+                  Expr_Typ := Base_Type (Etype (Expr_Q));
 
                   if Is_Class_Wide_Type (Expr_Typ) then
                      Expr_Typ := Root_Type (Expr_Typ);
@@ -7544,12 +7547,13 @@ package body Exp_Ch3 is
                   --  Replace
                   --     CW : I'Class := Obj;
                   --  by
-                  --     Tmp : T := Obj;
+                  --     Tmp : Typ := Obj;
                   --     type Ityp is not null access I'Class;
-                  --     CW  : I'Class renames Ityp (Tmp.I_Tag'Address).all;
+                  --     Rnn : constant Ityp := Ityp (Tmp.I_Tag'Address);
+                  --     CW  : I'Class renames Rnn.all;
 
-                  if Comes_From_Source (Expr_N)
-                    and then Nkind (Expr_N) = N_Identifier
+                  if Comes_From_Source (Expr_Q)
+                    and then Is_Entity_Name (Expr_Q)
                     and then not Is_Interface (Expr_Typ)
                     and then Interface_Present_In_Ancestor (Expr_Typ, Typ)
                     and then (Expr_Typ = Etype (Expr_Typ)
@@ -7563,7 +7567,7 @@ package body Exp_Ch3 is
                          Defining_Identifier => Obj_Id,
                          Object_Definition   =>
                            New_Occurrence_Of (Expr_Typ, Loc),
-                         Expression          => Relocate_Node (Expr_N)));
+                         Expression          => Relocate_Node (Expr_Q)));
 
                      --  Statically reference the tag associated with the
                      --  interface
@@ -7582,8 +7586,9 @@ package body Exp_Ch3 is
                   --     implicit subtype CW is <Class_Wide_Subtype>;
                   --     Tmp : CW := CW!(Obj);
                   --     type Ityp is not null access I'Class;
-                  --     IW : I'Class renames
-                  --            Ityp!(Displace (Temp'Address, I'Tag)).all;
+                  --     Rnn : constant Ityp :=
+                  --             Ityp!(Displace (Tmp'Address, I'Tag));
+                  --     IW : I'Class renames Rnn.all;
 
                   else
                      --  Generate the equivalent record type and update the
@@ -7593,10 +7598,10 @@ package body Exp_Ch3 is
                        (N             => N,
                         Unc_Type      => Typ,
                         Subtype_Indic => Obj_Def,
-                        Exp           => Expr_N);
+                        Exp           => Expr_Q);
 
-                     if not Is_Interface (Etype (Expr_N)) then
-                        New_Expr := Relocate_Node (Expr_N);
+                     if not Is_Interface (Etype (Expr_Q)) then
+                        New_Expr := Relocate_Node (Expr_Q);
 
                      --  For interface types we use 'Address which displaces
                      --  the pointer to the base of the object (if required)
@@ -7607,7 +7612,7 @@ package body Exp_Ch3 is
                             Make_Explicit_Dereference (Loc,
                               Unchecked_Convert_To (RTE (RE_Tag_Ptr),
                                 Make_Attribute_Reference (Loc,
-                                  Prefix => Relocate_Node (Expr_N),
+                                  Prefix => Relocate_Node (Expr_Q),
                                   Attribute_Name => Name_Address))));
                      end if;
 
@@ -7625,7 +7630,7 @@ package body Exp_Ch3 is
                      --  This case occurs when the initialization expression
                      --  has been previously expanded into a temporary object.
 
-                     else pragma Assert (not Comes_From_Source (Expr_Q));
+                     else
                         Insert_Action (N,
                           Make_Object_Renaming_Declaration (Loc,
                             Defining_Identifier => Obj_Id,
@@ -7651,79 +7656,37 @@ package body Exp_Ch3 is
                               Loc)));
                   end if;
 
-                  Rewrite (N,
-                    Make_Object_Renaming_Declaration (Loc,
-                      Defining_Identifier => Make_Temporary (Loc, 'D'),
-                      Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
-                      Name                =>
-                        Convert_Tag_To_Interface (Typ, Tag_Comp)));
+                  --  As explained in Exp_Disp, we use Convert_Tag_To_Interface
+                  --  to do the final conversion, but we insert an intermediate
+                  --  temporary before the dereference so that we can process
+                  --  the expansion as part of the analysis of the declaration
+                  --  of this temporary, and then rewrite manually the original
+                  --  object as the simple renaming of this dereference.
 
-                  --  If the original entity comes from source, then mark the
-                  --  new entity as needing debug information, even though it's
-                  --  defined by a generated renaming that does not come from
-                  --  source, so that Materialize_Entity will be set on the
-                  --  entity when Debug_Renaming_Declaration is called during
-                  --  analysis.
+                  Tag_Comp := Convert_Tag_To_Interface (Typ, Tag_Comp);
+                  pragma Assert (Nkind (Tag_Comp) = N_Explicit_Dereference
+                    and then
+                      Nkind (Prefix (Tag_Comp)) = N_Unchecked_Type_Conversion);
 
-                  if Comes_From_Source (Def_Id) then
-                     Set_Debug_Info_Needed (Defining_Identifier (N));
-                  end if;
+                  Ptr_Obj_Id := Make_Temporary (Loc, 'R');
 
-                  Analyze (N, Suppress => All_Checks);
+                  Ptr_Obj_Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Ptr_Obj_Id,
+                      Constant_Present    => True,
+                      Object_Definition   =>
+                        New_Occurrence_Of
+                          (Entity (Subtype_Mark (Prefix (Tag_Comp))), Loc),
+                      Expression => Prefix (Tag_Comp));
 
-                  --  Replace internal identifier of rewritten node by the
-                  --  identifier found in the sources. We also have to exchange
-                  --  entities containing their defining identifiers to ensure
-                  --  the correct replacement of the object declaration by this
-                  --  object renaming declaration because these identifiers
-                  --  were previously added by Enter_Name to the current scope.
-                  --  We must preserve the homonym chain of the source entity
-                  --  as well. We must also preserve the kind of the entity,
-                  --  which may be a constant. Preserve entity chain because
-                  --  itypes may have been generated already, and the full
-                  --  chain must be preserved for final freezing. Finally,
-                  --  preserve Comes_From_Source setting, so that debugging
-                  --  and cross-referencing information is properly kept, and
-                  --  preserve source location, to prevent spurious errors when
-                  --  entities are declared (they must have their own Sloc).
+                  Insert_Action (N, Ptr_Obj_Decl, Suppress => All_Checks);
 
-                  declare
-                     New_Id    : constant Entity_Id := Defining_Identifier (N);
-                     Next_Temp : constant Entity_Id := Next_Entity (New_Id);
-                     Save_CFS  : constant Boolean   :=
-                                   Comes_From_Source (Def_Id);
-                     Save_SP   : constant Node_Id   := SPARK_Pragma (Def_Id);
-                     Save_SPI  : constant Boolean   :=
-                                   SPARK_Pragma_Inherited (Def_Id);
+                  Set_Prefix (Tag_Comp, New_Occurrence_Of (Ptr_Obj_Id, Loc));
+                  Expr_Q := Tag_Comp;
+                  Set_Etype (Expr_Q, Typ);
 
-                  begin
-                     Link_Entities (New_Id, Next_Entity (Def_Id));
-                     Link_Entities (Def_Id, Next_Temp);
-
-                     Set_Chars (Defining_Identifier (N), Chars (Def_Id));
-                     Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
-                     Mutate_Ekind (Defining_Identifier (N), Ekind (Def_Id));
-                     Set_Sloc (Defining_Identifier (N), Sloc (Def_Id));
-
-                     Set_Comes_From_Source (Def_Id, False);
-
-                     --  ??? This is extremely dangerous!!! Exchanging entities
-                     --  is very low level, and as a result it resets flags and
-                     --  fields which belong to the original Def_Id. Several of
-                     --  these attributes are saved and restored, but there may
-                     --  be many more that need to be preserverd.
-
-                     Exchange_Entities (Defining_Identifier (N), Def_Id);
-
-                     --  Restore clobbered attributes
-
-                     Set_Comes_From_Source      (Def_Id, Save_CFS);
-                     Set_SPARK_Pragma           (Def_Id, Save_SP);
-                     Set_SPARK_Pragma_Inherited (Def_Id, Save_SPI);
-                  end;
+                  Rewrite_As_Renaming := True;
                end;
-
-               return;
 
             else
                return;

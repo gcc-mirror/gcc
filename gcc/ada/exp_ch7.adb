@@ -2391,14 +2391,17 @@ package body Exp_Ch7 is
 
                --  Detect a case where a source object has been initialized by
                --  a controlled function call or another object which was later
-               --  rewritten as a class-wide conversion of Ada.Tags.Displace.
+               --  rewritten as a class-wide conversion of Ada.Tags.Displace:
 
-               --     Obj1 : CW_Type := Src_Obj;
-               --     Obj2 : CW_Type := Function_Call (...);
+               --     Obj1 : CW_Type := Function_Call (...);
+               --     Obj2 : CW_Type := Src_Obj;
 
-               --     Obj1 : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
                --     Tmp  : ... := Function_Call (...)'reference;
-               --     Obj2 : CW_Type renames (... Ada.Tags.Displace (Tmp));
+               --     Rnn  : access CW_Type := (... Ada.Tags.Displace (Tmp));
+               --     Obj1 : CW_Type renames Rnn.all;
+
+               --     Rnn : access CW_Type := (...Ada.Tags.Displace (Src_Obj));
+               --     Obj2 : CW_Type renames Rnn.all;
 
                elsif Is_Displacement_Of_Object_Or_Function_Result (Obj_Id) then
                   Processing_Actions (Has_No_Init => True);
