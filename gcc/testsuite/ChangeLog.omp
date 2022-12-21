@@ -1,5 +1,13 @@
 2022-12-21  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backport from mainline:
+	2022-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108180
+	* testsuite/libgomp.c++/pr108180.C: New test.
+
+2022-12-21  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backported from master:
 	2022-12-14  Julian Brown  <julian@codesourcery.com>
 
