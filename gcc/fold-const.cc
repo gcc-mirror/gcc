@@ -2178,6 +2178,15 @@ fold_convert_const_real_from_real (tree type, const_tree arg1)
   REAL_VALUE_TYPE value;
   tree t;
 
+  /* If the underlying modes are the same, simply treat it as
+     copy and rebuild with TREE_REAL_CST information and the
+     given type.  */
+  if (TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (arg1)))
+    {
+      t = build_real (type, TREE_REAL_CST (arg1));
+      return t;
+    }
+
   /* Don't perform the operation if flag_signaling_nans is on
      and the operand is a signaling NaN.  */
   if (HONOR_SNANS (arg1)
