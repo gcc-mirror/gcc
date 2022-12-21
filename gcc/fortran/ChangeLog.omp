@@ -1,3 +1,11 @@
+2022-12-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-12-14  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_add_firstprivate_if_unmapped): New function.
+	(gfc_split_omp_clauses): Call above.
+
 2022-12-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
