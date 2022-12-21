@@ -1014,46 +1014,6 @@ irange::copy_to_legacy (const irange &src)
     set (src.tree_lower_bound (), src.tree_upper_bound ());
 }
 
-// Swap MIN/MAX if they are out of order and adjust KIND appropriately.
-
-static void
-swap_out_of_order_endpoints (tree &min, tree &max, value_range_kind &kind)
-{
-  gcc_checking_assert (kind != VR_UNDEFINED);
-  if (kind == VR_VARYING)
-    return;
-  /* Wrong order for min and max, to swap them and the VR type we need
-     to adjust them.  */
-  if (tree_int_cst_lt (max, min))
-    {
-      tree one, tmp;
-
-      /* For one bit precision if max < min, then the swapped
-	 range covers all values, so for VR_RANGE it is varying and
-	 for VR_ANTI_RANGE empty range, so drop to varying as well.  */
-      if (TYPE_PRECISION (TREE_TYPE (min)) == 1)
-	{
-	  kind = VR_VARYING;
-	  return;
-	}
-
-      one = build_int_cst (TREE_TYPE (min), 1);
-      tmp = int_const_binop (PLUS_EXPR, max, one);
-      max = int_const_binop (MINUS_EXPR, min, one);
-      min = tmp;
-
-      /* There's one corner case, if we had [C+1, C] before we now have
-	 that again.  But this represents an empty value range, so drop
-	 to varying in this case.  */
-      if (tree_int_cst_lt (max, min))
-	{
-	  kind = VR_VARYING;
-	  return;
-	}
-      kind = kind == VR_RANGE ? VR_ANTI_RANGE : VR_RANGE;
-    }
-}
-
 void
 irange::irange_set (tree min, tree max)
 {
@@ -1191,13 +1151,6 @@ irange::set (tree min, tree max, value_range_kind kind)
   // Symbolics are not allowed in an irange.
   gcc_checking_assert (TREE_CODE (min) == INTEGER_CST
 		       && TREE_CODE (max) == INTEGER_CST);
-
-  swap_out_of_order_endpoints (min, max, kind);
-  if (kind == VR_VARYING)
-    {
-      set_varying (TREE_TYPE (min));
-      return;
-    }
 
   // Anti-ranges that can be represented as ranges should be so.
   if (kind == VR_ANTI_RANGE)

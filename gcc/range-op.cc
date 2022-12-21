@@ -2876,8 +2876,9 @@ operator_cast::op1_range (irange &r, tree type,
 	  // Start by building the positive signed outer range for the type.
 	  wide_int lim = wi::set_bit_in_zero (TYPE_PRECISION (lhs_type),
 					      TYPE_PRECISION (type));
-	  r = int_range<1> (type, lim, wi::max_value (TYPE_PRECISION (type),
-						      SIGNED));
+	  create_possibly_reversed_range (r, type, lim,
+					  wi::max_value (TYPE_PRECISION (type),
+							 SIGNED));
 	  // For the signed part, we need to simply union the 2 ranges now.
 	  r.union_ (converted_lhs);
 
@@ -3367,7 +3368,7 @@ operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
   if (we_know_nothing)
     r.set_varying (type);
   else
-    r = int_range<1> (type, minv, maxv);
+    create_possibly_reversed_range (r, type, minv, maxv);
 
   // Solve [-INF, lhs.upper_bound ()] = x & MASK.
   //
@@ -3398,7 +3399,8 @@ operator_bitwise_and::simple_op1_range_solver (irange &r, tree type,
     }
   maxv |= ~cst2v;
   minv = sgnbit;
-  int_range<1> upper_bits (type, minv, maxv);
+  int_range<2> upper_bits;
+  create_possibly_reversed_range (upper_bits, type, minv, maxv);
   r.intersect (upper_bits);
 }
 
