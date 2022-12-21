@@ -1,3 +1,29 @@
+2022-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101886
+	* pt.cc (find_template_parameter_info::parm_list_tail):
+	New data member.
+	(keep_template_parm): Use parm_list_tail to append rather
+	than prepend to parm_list.
+
+2022-12-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mangle.cc (write_mangled_name): Append the helper function
+	suffixes here...
+	(write_encoding): ... rather than here.
+
+2022-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103346
+	PR c++/104278
+	PR c++/102553
+	* pt.cc (tsubst_copy) <case VIEW_CONVERT_EXPR>: Move the
+	handling of C++20 template parameter object wrappers to ...
+	(tsubst_copy_and_build) <case VIEW_CONVERT_EXPR>: ... here.
+	Accept non-TEMPLATE_PARM_INDEX inner operand.  Handle empty
+	TREE_TYPE on substituted inner operand.  Remove same_type_p
+	assert.  Also handle REF_PARENTHESIZED_P VIEW_CONVERT_EXPRs.
+
 2022-12-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100881

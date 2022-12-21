@@ -1,3 +1,9 @@
+2022-12-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95375
+	* decl.cc (verify_bind_c_sym): Extend interoperability check to
+	CLASS variables.
+
 2022-12-18  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/107397

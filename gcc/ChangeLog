@@ -1,3 +1,34 @@
+2022-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101886
+	* tree.cc (walk_tree_1) <case TREE_VEC>: Walk the elements
+	in forward instead of reverse order.
+	<case VECTOR_CST>: Likewise.
+
+2022-12-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108139
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Do not
+	use equivalences originating from PHIS.
+
+2022-12-20  Richard Biener  <rguenther@suse.de>
+
+	PR d/104749
+	* doc/install.texi (GDC): Document GDC 9.4 or later is required
+	to build the D language frontend.
+
+2022-12-20  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/103743
+	* config/rs6000/rs6000-protos.h (can_be_rotated_to_lowbits): New.
+	(can_be_rotated_to_positive_16bits): New.
+	(can_be_rotated_to_negative_15bits): New.
+	* config/rs6000/rs6000.cc (can_be_rotated_to_lowbits): New definition.
+	(can_be_rotated_to_positive_16bits): New definition.
+	(can_be_rotated_to_negative_15bits): New definition.
+	* config/rs6000/rs6000.md (*rotate_on_cmpdi): New define_insn_and_split.
+	(eqne): Move earlier.
+
 2022-12-19  Jason Merrill  <jason@redhat.com>
 
 	* sort.cc: Disable -Wconditionally-supported in

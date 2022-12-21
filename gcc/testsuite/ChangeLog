@@ -1,3 +1,40 @@
+2022-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101886
+	* g++.dg/concepts/diagnostic12.C: Adjust expected order of
+	template parameters within pretty printed parameter mapping.
+	* g++.dg/concepts/auto6.C: New test.
+
+2022-12-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95375
+	* gfortran.dg/bind_c_procs_4.f90: New test.
+
+2022-12-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/extern-c-coroutine.C: New test.
+
+2022-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103346
+	PR c++/104278
+	PR c++/102553
+	* g++.dg/cpp2a/nontype-class52a.C: New test.
+	* g++.dg/cpp2a/nontype-class53.C: New test.
+	* g++.dg/cpp2a/nontype-class54.C: New test.
+	* g++.dg/cpp2a/nontype-class55.C: New test.
+
+2022-12-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108139
+	* gcc.dg/pr108139.c: New.
+
+2022-12-20  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/103743
+	* gcc.target/powerpc/pr103743.c: New test.
+	* gcc.target/powerpc/pr103743_1.c: New test.
+
 2022-12-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100881
