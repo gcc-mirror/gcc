@@ -1,3 +1,11 @@
+2022-12-19  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/98487
+	* c-format.cc (check_function_format): Use get_attribute_name.
+
 2022-09-27  Marek Polacek  <polacek@redhat.com>
 
 	* c-format.cc (c_keywords): Drop nothrow.

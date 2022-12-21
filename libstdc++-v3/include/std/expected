@@ -217,8 +217,8 @@ namespace __expected
 
       constexpr void
       swap(unexpected& __other) noexcept(is_nothrow_swappable_v<_Er>)
+      requires is_swappable_v<_Er>
       {
-	static_assert( is_swappable_v<_Er> );
 	using std::swap;
 	swap(_M_unex, __other._M_unex);
       }
@@ -230,9 +230,8 @@ namespace __expected
 	{ return __x._M_unex == __y.error(); }
 
       friend constexpr void
-      swap(unexpected& __x, unexpected& __y)
-      noexcept(noexcept(__x.swap(__y)))
-      requires requires {__x.swap(__y);}
+      swap(unexpected& __x, unexpected& __y) noexcept(noexcept(__x.swap(__y)))
+      requires is_swappable_v<_Er>
       { __x.swap(__y); }
 
     private:
@@ -798,8 +797,8 @@ namespace __expected
 	requires (!is_void_v<_Up>)
 	friend constexpr bool
 	operator==(const expected& __x, const expected<_Up, _Er2>& __y)
-	noexcept(noexcept(bool(*__x == *__y))
-		  && noexcept(bool(__x.error() == __y.error())))
+	// FIXME: noexcept(noexcept(bool(*__x == *__y))
+		  // && noexcept(bool(__x.error() == __y.error())))
 	{
 	  if (__x.has_value())
 	    return __y.has_value() && bool(*__x == *__y);
@@ -810,13 +809,13 @@ namespace __expected
       template<typename _Up>
 	friend constexpr bool
 	operator==(const expected& __x, const _Up& __v)
-	noexcept(noexcept(bool(*__x == __v)))
+	// FIXME: noexcept(noexcept(bool(*__x == __v)))
 	{ return __x.has_value() && bool(*__x == __v); }
 
       template<typename _Er2>
 	friend constexpr bool
 	operator==(const expected& __x, const unexpected<_Er2>& __e)
-	noexcept(noexcept(bool(__x.error() == __e.error())))
+	// FIXME: noexcept(noexcept(bool(__x.error() == __e.error())))
 	{ return !__x.has_value() && bool(__x.error() == __e.error()); }
 
       friend constexpr void
@@ -878,7 +877,7 @@ namespace __expected
 	  }
 	else
 	  {
-	    __expected::_Guard<_Tp> __guard(__rhs._M_val);
+	    __expected::_Guard<_Tp> __guard(_M_val);
 	    std::construct_at(__builtin_addressof(_M_unex),
 			      std::move(__rhs._M_unex)); // might throw
 	    _M_has_value = false;
@@ -1187,7 +1186,7 @@ namespace __expected
 	requires is_void_v<_Up>
 	friend constexpr bool
 	operator==(const expected& __x, const expected<_Up, _Er2>& __y)
-	noexcept(noexcept(bool(__x.error() == __y.error())))
+	// FIXME: noexcept(noexcept(bool(__x.error() == __y.error())))
 	{
 	  if (__x.has_value())
 	    return __y.has_value();
@@ -1198,7 +1197,7 @@ namespace __expected
       template<typename _Er2>
 	friend constexpr bool
 	operator==(const expected& __x, const unexpected<_Er2>& __e)
-	noexcept(noexcept(bool(__x.error() == __e.error())))
+	// FIXME: noexcept(noexcept(bool(__x.error() == __e.error())))
 	{ return !__x.has_value() && bool(__x.error() == __e.error()); }
 
       friend constexpr void

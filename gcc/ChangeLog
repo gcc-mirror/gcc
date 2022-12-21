@@ -1,3 +1,17 @@
+2022-12-20  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-20  Richard Biener  <rguenther@suse.de>
+
+	PR d/104749
+	* doc/install.texi (GDC): Document GDC 9.4 or later is required
+	to build the D language frontend.
+
+2022-12-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS): Add
+	m_SAPPHIRERAPIDS, m_ALDERLAKE.
+
 2022-12-15  Sebastian Pop  <spop@amazon.com>
 
 	PR target/98776
