@@ -28899,7 +28899,44 @@ constant_generates_xxspltidp (vec_const_128bit_type *vsx_const)
   return sf_value;
 }
 
-
+/* Now we have only two opaque types, they are __vector_quad and
+   __vector_pair built-in types.  They are target specific and
+   only available when MMA is supported.  With MMA supported, it
+   simply returns true, otherwise it checks if the given gimple
+   STMT is an assignment stmt and uses either of these two opaque
+   types unexpectedly, if yes, it would raise an error message
+   and returns true, otherwise it returns false.  */
+
+bool
+rs6000_opaque_type_invalid_use_p (gimple *stmt)
+{
+  if (TARGET_MMA)
+    return false;
+
+  if (stmt)
+    {
+      /* The usage of MMA opaque types is very limited for now,
+	 to check with gassign is enough so far.  */
+      if (gassign *ga = dyn_cast<gassign *> (stmt))
+	{
+	  tree lhs = gimple_assign_lhs (ga);
+	  tree type = TREE_TYPE (lhs);
+	  if (type == vector_quad_type_node)
+	    {
+	      error ("type %<__vector_quad%> requires the %qs option", "-mmma");
+	      return true;
+	    }
+	  else if (type == vector_pair_type_node)
+	    {
+	      error ("type %<__vector_pair%> requires the %qs option", "-mmma");
+	      return true;
+	    }
+	}
+    }
+
+  return false;
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rs6000.h"
