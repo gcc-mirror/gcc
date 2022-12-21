@@ -646,7 +646,8 @@ compute_distributive_range (tree type, value_range &op0_range,
   if (!op.fold_range (wide_range, ssizetype, op0_range, op1_range))
     wide_range.set_varying (ssizetype);;
   flag_wrapv = saved_flag_wrapv;
-  if (wide_range.num_pairs () != 1 || !range_int_cst_p (&wide_range))
+  if (wide_range.num_pairs () != 1
+      || wide_range.varying_p () || wide_range.undefined_p ())
     return false;
 
   wide_int lb = wide_range.lower_bound ();

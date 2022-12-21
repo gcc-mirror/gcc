@@ -125,16 +125,16 @@ check_for_binary_op_overflow (range_query *query,
     vr1.set_varying (TREE_TYPE (op1));
 
   tree vr0min, vr0max, vr1min, vr1max;
-  get_legacy_range (vr0, vr0min, vr0max);
-  get_legacy_range (vr1, vr1min, vr1max);
-  if (!range_int_cst_p (&vr0)
+  value_range_kind kind0 = get_legacy_range (vr0, vr0min, vr0max);
+  value_range_kind kind1 = get_legacy_range (vr1, vr1min, vr1max);
+  if (kind0 != VR_RANGE
       || TREE_OVERFLOW (vr0min)
       || TREE_OVERFLOW (vr0max))
     {
       vr0min = vrp_val_min (TREE_TYPE (op0));
       vr0max = vrp_val_max (TREE_TYPE (op0));
     }
-  if (!range_int_cst_p (&vr1)
+  if (kind1 != VR_RANGE
       || TREE_OVERFLOW (vr1min)
       || TREE_OVERFLOW (vr1max))
     {
@@ -1000,10 +1000,11 @@ simplify_using_ranges::simplify_div_or_mod_using_ranges
     {
       if (!query->range_of_expr (vr, op0, stmt))
 	vr.set_varying (TREE_TYPE (op0));
-      if (range_int_cst_p (&vr))
+      if (!vr.varying_p () && !vr.undefined_p ())
 	{
-	  op0min = vr.min ();
-	  op0max = vr.max ();
+	  tree type = vr.type ();
+	  op0min = wide_int_to_tree (type, vr.lower_bound ());
+	  op0max = wide_int_to_tree (type, vr.upper_bound ());
 	}
     }
 
@@ -1013,8 +1014,8 @@ simplify_using_ranges::simplify_div_or_mod_using_ranges
       value_range vr1;
       if (!query->range_of_expr (vr1, op1, stmt))
 	vr1.set_varying (TREE_TYPE (op1));
-      if (range_int_cst_p (&vr1))
-	op1min = vr1.min ();
+      if (!vr1.varying_p () && !vr1.undefined_p ())
+	op1min = wide_int_to_tree (vr1.type (), vr1.lower_bound ());
     }
   if (rhs_code == TRUNC_MOD_EXPR
       && TREE_CODE (op1min) == INTEGER_CST
@@ -1217,21 +1218,19 @@ simplify_using_ranges::simplify_abs_using_ranges (gimple_stmt_iterator *gsi,
 
 static bool
 vr_set_zero_nonzero_bits (const tree expr_type,
-			  const value_range *vr,
+			  const irange *vr,
 			  wide_int *may_be_nonzero,
 			  wide_int *must_be_nonzero)
 {
-  if (range_int_cst_p (vr))
+  if (vr->varying_p () || vr->undefined_p ())
     {
-      wi_set_zero_nonzero_bits (expr_type,
-				wi::to_wide (vr->min ()),
-				wi::to_wide (vr->max ()),
-				*may_be_nonzero, *must_be_nonzero);
-      return true;
+      *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
+      *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
+      return false;
     }
-  *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
-  *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
-  return false;
+  wi_set_zero_nonzero_bits (expr_type, vr->lower_bound (), vr->upper_bound (),
+			    *may_be_nonzero, *must_be_nonzero);
+  return true;
 }
 
 /* Optimize away redundant BIT_AND_EXPR and BIT_IOR_EXPR.
@@ -1418,7 +1417,9 @@ range_fits_type_p (const value_range *vr,
     return true;
 
   /* Now we can only handle ranges with constant bounds.  */
-  if (!range_int_cst_p (vr))
+  tree vrmin, vrmax;
+  value_range_kind kind = get_legacy_range (*vr, vrmin, vrmax);
+  if (kind != VR_RANGE)
     return false;
 
   /* For sign changes, the MSB of the wide_int has to be clear.
@@ -1426,17 +1427,17 @@ range_fits_type_p (const value_range *vr,
      a signed wide_int, while a negative value cannot be represented
      by an unsigned wide_int.  */
   if (src_sgn != dest_sgn
-      && (wi::lts_p (wi::to_wide (vr->min ()), 0)
-	  || wi::lts_p (wi::to_wide (vr->max ()), 0)))
+      && (wi::lts_p (wi::to_wide (vrmin), 0)
+	  || wi::lts_p (wi::to_wide (vrmax), 0)))
     return false;
 
   /* Then we can perform the conversion on both ends and compare
      the result for equality.  */
-  tem = wi::ext (wi::to_widest (vr->min ()), dest_precision, dest_sgn);
-  if (tem != wi::to_widest (vr->min ()))
+  tem = wi::ext (wi::to_widest (vrmin), dest_precision, dest_sgn);
+  if (tem != wi::to_widest (vrmin))
     return false;
-  tem = wi::ext (wi::to_widest (vr->max ()), dest_precision, dest_sgn);
-  if (tem != wi::to_widest (vr->max ()))
+  tem = wi::ext (wi::to_widest (vrmax), dest_precision, dest_sgn);
+  if (tem != wi::to_widest (vrmax))
     return false;
 
   return true;
@@ -1682,7 +1683,8 @@ simplify_using_ranges::simplify_casted_cond (gcond *stmt)
 	  value_range vr;
 
 	  if (query->range_of_expr (vr, innerop)
-	      && range_int_cst_p (&vr)
+	      && !vr.varying_p ()
+	      && !vr.undefined_p ()
 	      && range_fits_type_p (&vr,
 				    TYPE_PRECISION (TREE_TYPE (op0)),
 				    TYPE_SIGN (TREE_TYPE (op0)))
@@ -2024,7 +2026,8 @@ simplify_using_ranges::simplify_float_conversion_using_ranges
 
   /* We can only handle constant ranges.  */
   if (!query->range_of_expr (vr, rhs1, stmt)
-      || !range_int_cst_p (&vr))
+      || vr.varying_p ()
+      || vr.undefined_p ())
     return false;
 
   /* First check if we can use a signed type in place of an unsigned.  */

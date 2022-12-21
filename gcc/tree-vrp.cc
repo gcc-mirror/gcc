@@ -312,15 +312,6 @@ intersect_range_with_nonzero_bits (enum value_range_kind vr_type,
   return vr_type;
 }
 
-/* Return true if max and min of VR are INTEGER_CST.  It's not necessary
-   a singleton.  */
-
-bool
-range_int_cst_p (const value_range *vr)
-{
-  return (vr->kind () == VR_RANGE && range_has_numeric_bounds_p (vr));
-}
-
 /* Return the single symbol (an SSA_NAME) contained in T if any, or NULL_TREE
    otherwise.  We only handle additive operations and set NEG to true if the
    symbol is negated and INV to the invariant part, if any.  */

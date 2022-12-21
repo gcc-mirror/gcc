@@ -1222,13 +1222,14 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 	    {
 	      value_range vr;
 	      ptr_qry->rvals->range_of_expr (vr, si->nonzero_chars, si->stmt);
-	      if (range_int_cst_p (&vr))
-		{
-		  pdata->minlen = vr.min ();
-		  pdata->maxlen = vr.max ();
-		}
-	      else
+	      if (vr.undefined_p () || vr.varying_p ())
 		pdata->minlen = build_zero_cst (size_type_node);
+	      else
+		{
+		  tree type = vr.type ();
+		  pdata->minlen = wide_int_to_tree (type, vr.lower_bound ());
+		  pdata->maxlen = wide_int_to_tree (type, vr.upper_bound ());
+		}
 	    }
 	  else
 	    pdata->minlen = build_zero_cst (size_type_node);
@@ -1266,20 +1267,21 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 	{
 	  value_range vr;
 	  ptr_qry->rvals->range_of_expr (vr, si->nonzero_chars, stmt);
-	  if (range_int_cst_p (&vr))
+	  if (vr.varying_p () || vr.undefined_p ())
 	    {
-	      pdata->minlen = vr.min ();
-	      pdata->maxlen = vr.max ();
+	      pdata->minlen = build_zero_cst (size_type_node);
+	      pdata->maxlen = build_all_ones_cst (size_type_node);
+	    }
+	  else
+	    {
+	      tree type = vr.type ();
+	      pdata->minlen = wide_int_to_tree (type, vr.lower_bound ());
+	      pdata->maxlen = wide_int_to_tree (type, vr.upper_bound ());
 	      offset_int max = offset_int::from (vr.upper_bound (0), SIGNED);
 	      if (tree maxbound = get_maxbound (si->ptr, stmt, max, ptr_qry))
 		pdata->maxbound = maxbound;
 	      else
 		pdata->maxbound = pdata->maxlen;
-	    }
-	  else
-	    {
-	      pdata->minlen = build_zero_cst (size_type_node);
-	      pdata->maxlen = build_all_ones_cst (size_type_node);
 	    }
 	}
       else if (pdata->minlen && TREE_CODE (pdata->minlen) == INTEGER_CST)

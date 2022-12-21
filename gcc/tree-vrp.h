@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "value-range.h"
 
-extern bool range_int_cst_p (const value_range *);
-
 extern int compare_values (tree, tree);
 extern int compare_values_warnv (tree, tree, bool *);
 extern int operand_less_p (tree, tree);
