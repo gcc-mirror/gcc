@@ -285,8 +285,11 @@
 	 expanding to RTL and have seen errors.  It would not cause further ICEs
 	 as the compilation would stop soon after expanding.  */
     }
+  else if (rs6000_opaque_type_invalid_use_p (currently_expanding_gimple_stmt))
+    ;
   else
-    gcc_unreachable ();
+    /* Catch unexpected cases.  */
+    gcc_assert (false);
 })
 
 (define_insn_and_split "*movoo"
@@ -329,8 +332,11 @@
 	 some missing required conditions.  So do the same handlings for XOmode
 	 as OOmode here.  */
     }
+  else if (rs6000_opaque_type_invalid_use_p (currently_expanding_gimple_stmt))
+    ;
   else
-    gcc_unreachable ();
+    /* Catch unexpected cases.  */
+    gcc_assert (false);
 })
 
 (define_insn_and_split "*movxo"
