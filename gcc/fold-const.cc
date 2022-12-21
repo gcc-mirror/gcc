@@ -2618,7 +2618,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
       gcc_unreachable ();
     }
  fold_convert_exit:
-  protected_set_expr_location_unshare (tem, loc);
+  tem = protected_set_expr_location_unshare (tem, loc);
   return tem;
 }
 
