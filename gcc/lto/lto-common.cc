@@ -1189,6 +1189,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	  compare_values (DECL_FIELD_ABI_IGNORED);
 	  compare_values (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD);
 	  compare_values (DECL_OFFSET_ALIGN);
+	  compare_values (DECL_NOT_FLEXARRAY);
 	}
       else if (code == VAR_DECL)
 	{
