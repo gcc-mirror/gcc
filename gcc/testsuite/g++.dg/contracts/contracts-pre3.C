@@ -403,123 +403,123 @@ member::S member::T1::funend(int m, double n)
   return s;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 37 member::T1::vfun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 38 member::T1::vfun .*(\n|\r\n|\r)*" }
-// { dg-output "vfun::x: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 45 member::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "fun::x: 10(\n|\r\n|\r)*" }
-// { dg-output "main::f: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 52 member::T1::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 53 member::T1::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 54 member::T1::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 55 member::T1::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "fun2::x: 10 fun2::y: 10.500000(\n|\r\n|\r)*" }
-// { dg-output "main::d: 10.500000(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 397 member::T1::funend .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 398 member::T1::funend .*(\n|\r\n|\r)*" }
-// { dg-output "funend::x: 10(\n|\r\n|\r)*" }
-// { dg-output "main::s.z: 1(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 85 special::T1::T1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 86 special::T1::T1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 99 special::T1::operator- .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 100 special::T1::operator- .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 92 special::T1::operator. .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 93 special::T1::operator. .*(\n|\r\n|\r)*" }
-// { dg-output "==========(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 113 special::T2::T2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 114 special::T2::T2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 127 special::T2::operator- .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 128 special::T2::operator- .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 120 special::T2::operator. .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 121 special::T2::operator. .*(\n|\r\n|\r)*" }
-// { dg-output "==========(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 144 special::TC::TC .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 145 special::TC::TC .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 85 special::T1::T1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 86 special::T1::T1 .*(\n|\r\n|\r)*" }
-// { dg-output "==========(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 156 special::TC::TC .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 144 special::TC::TC .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 145 special::TC::TC .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 85 special::T1::T1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 86 special::T1::T1 .*(\n|\r\n|\r)*" }
-// { dg-output "==========(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 151 special::TC::~TC .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 106 special::T1::~T1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 151 special::TC::~TC .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 106 special::T1::~T1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 134 special::T2::~T2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 106 special::T1::~T1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 196 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 197 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 198 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T1::fun::m: -10, T1::fun::n: -20, T1::v: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 196 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 197 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 198 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T1::fun::m: -10, T1::fun::n: -20, T1::v: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 211 virt::T3::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 212 virt::T3::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 213 virt::T3::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T3::fun::m: -10, T3::fun::n: -20, T3::v: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 247 virt::T3b::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 248 virt::T3b::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 249 virt::T3b::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T3b::fun::m: -10, T3b::fun::n: -20, T3b::v: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 288 virt::T3c::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 289 virt::T3c::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 290 virt::T3c::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T3c::fun::m: -10, T3c::fun::n: -20, T3c::v: -10(\n|\r\n|\r)*" }
-// { dg-output "=================(\n|\r\n|\r)*" }
-// { dg-output "T1:(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 196 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 197 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 198 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T1::fun::m: -1, T1::fun::n: -2, T1::v: -10(\n|\r\n|\r)*" }
-// { dg-output "=================(\n|\r\n|\r)*" }
-// { dg-output "T2:(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 196 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 197 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 198 virt::T1::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T1::fun::m: -1, T1::fun::n: -2, T1::v: -10(\n|\r\n|\r)*" }
-// { dg-output "=================(\n|\r\n|\r)*" }
-// { dg-output "T3:(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 211 virt::T3::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 212 virt::T3::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 213 virt::T3::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T3::fun::m: -1, T3::fun::n: -2, T3::v: -10(\n|\r\n|\r)*" }
-// { dg-output "=================(\n|\r\n|\r)*" }
-// { dg-output "T3b:(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 247 virt::T3b::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 248 virt::T3b::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 249 virt::T3b::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T3b::fun::m: -1, T3b::fun::n: -2, T3b::v: -10(\n|\r\n|\r)*" }
-// { dg-output "=================(\n|\r\n|\r)*" }
-// { dg-output "T3c:(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 288 virt::T3c::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 289 virt::T3c::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 290 virt::T3c::fun .*(\n|\r\n|\r)*" }
-// { dg-output "T3c::fun::m: -1, T3c::fun::n: -2, T3c::v: -10(\n|\r\n|\r)*" }
-// { dg-output "=============(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 256 virt::T3b::p .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 257 virt::T3b::p .*(\n|\r\n|\r)*" }
-// { dg-output "T3b::p: a: -3, v: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 264 virt::T3b::u .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 265 virt::T3b::u .*(\n|\r\n|\r)*" }
-// { dg-output "T3b::u: a: -3, z: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 272 virt::T3b::n .*(\n|\r\n|\r)*" }
-// { dg-output "T3b::n: a: -3(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 279 virt::T3b::Sn .*(\n|\r\n|\r)*" }
-// { dg-output "T3b::Sn: a: -3(\n|\r\n|\r)*" }
-// { dg-output "=============(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 297 virt::T3c::p .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 298 virt::T3c::p .*(\n|\r\n|\r)*" }
-// { dg-output "T3c::p: a: -3, v: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 305 virt::T3c::u .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 306 virt::T3c::u .*(\n|\r\n|\r)*" }
-// { dg-output "T3c::u: a: -3, z: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 313 virt::T3c::n .*(\n|\r\n|\r)*" }
-// { dg-output "T3c::n: a: -3(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 320 virt::T3c::Sn .*(\n|\r\n|\r)*" }
-// { dg-output "T3c::Sn: a: -3(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function member::T1::vfun at .*.C:37:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function member::T1::vfun at .*.C:38:  .*(\n|\r\n|\r)" }
+// { dg-output "vfun::x: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function member::T1::fun at .*.C:45:  .*(\n|\r\n|\r)" }
+// { dg-output "fun::x: 10(\n|\r\n|\r)" }
+// { dg-output "main::f: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function member::T1::fun2 at .*.C:52:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function member::T1::fun2 at .*.C:53:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function member::T1::fun2 at .*.C:54:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function member::T1::fun2 at .*.C:55:  .*(\n|\r\n|\r)" }
+// { dg-output "fun2::x: 10 fun2::y: 10.500000(\n|\r\n|\r)" }
+// { dg-output "main::d: 10.500000(\n|\r\n|\r)" }
+// { dg-output "contract violation in function member::T1::funend at .*.C:397:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function member::T1::funend at .*.C:398:  .*(\n|\r\n|\r)" }
+// { dg-output "funend::x: 10(\n|\r\n|\r)" }
+// { dg-output "main::s.z: 1(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::T1 at .*.C:85:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::T1 at .*.C:86:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::operator- at .*.C:99:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::operator- at .*.C:100:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::operator. at .*.C:92:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::operator. at .*.C:93:  .*(\n|\r\n|\r)" }
+// { dg-output "==========(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T2::T2 at .*.C:113:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T2::T2 at .*.C:114:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T2::operator- at .*.C:127:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T2::operator- at .*.C:128:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T2::operator. at .*.C:120:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T2::operator. at .*.C:121:  .*(\n|\r\n|\r)" }
+// { dg-output "==========(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::TC::TC at .*.C:144:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::TC::TC at .*.C:145:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::T1 at .*.C:85:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::T1 at .*.C:86:  .*(\n|\r\n|\r)" }
+// { dg-output "==========(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::TC::TC at .*.C:156:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::TC::TC at .*.C:144:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::TC::TC at .*.C:145:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::T1 at .*.C:85:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::T1 at .*.C:86:  .*(\n|\r\n|\r)" }
+// { dg-output "==========(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::TC::~TC at .*.C:151:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::~T1 at .*.C:106:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::TC::~TC at .*.C:151:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::~T1 at .*.C:106:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T2::~T2 at .*.C:134:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function special::T1::~T1 at .*.C:106:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:196:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:197:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:198:  .*(\n|\r\n|\r)" }
+// { dg-output "T1::fun::m: -10, T1::fun::n: -20, T1::v: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:196:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:197:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:198:  .*(\n|\r\n|\r)" }
+// { dg-output "T1::fun::m: -10, T1::fun::n: -20, T1::v: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3::fun at .*.C:211:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3::fun at .*.C:212:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3::fun at .*.C:213:  .*(\n|\r\n|\r)" }
+// { dg-output "T3::fun::m: -10, T3::fun::n: -20, T3::v: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::fun at .*.C:247:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::fun at .*.C:248:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::fun at .*.C:249:  .*(\n|\r\n|\r)" }
+// { dg-output "T3b::fun::m: -10, T3b::fun::n: -20, T3b::v: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::fun at .*.C:288:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::fun at .*.C:289:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::fun at .*.C:290:  .*(\n|\r\n|\r)" }
+// { dg-output "T3c::fun::m: -10, T3c::fun::n: -20, T3c::v: -10(\n|\r\n|\r)" }
+// { dg-output "=================(\n|\r\n|\r)" }
+// { dg-output "T1:(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:196:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:197:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:198:  .*(\n|\r\n|\r)" }
+// { dg-output "T1::fun::m: -1, T1::fun::n: -2, T1::v: -10(\n|\r\n|\r)" }
+// { dg-output "=================(\n|\r\n|\r)" }
+// { dg-output "T2:(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:196:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:197:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T1::fun at .*.C:198:  .*(\n|\r\n|\r)" }
+// { dg-output "T1::fun::m: -1, T1::fun::n: -2, T1::v: -10(\n|\r\n|\r)" }
+// { dg-output "=================(\n|\r\n|\r)" }
+// { dg-output "T3:(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3::fun at .*.C:211:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3::fun at .*.C:212:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3::fun at .*.C:213:  .*(\n|\r\n|\r)" }
+// { dg-output "T3::fun::m: -1, T3::fun::n: -2, T3::v: -10(\n|\r\n|\r)" }
+// { dg-output "=================(\n|\r\n|\r)" }
+// { dg-output "T3b:(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::fun at .*.C:247:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::fun at .*.C:248:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::fun at .*.C:249:  .*(\n|\r\n|\r)" }
+// { dg-output "T3b::fun::m: -1, T3b::fun::n: -2, T3b::v: -10(\n|\r\n|\r)" }
+// { dg-output "=================(\n|\r\n|\r)" }
+// { dg-output "T3c:(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::fun at .*.C:288:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::fun at .*.C:289:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::fun at .*.C:290:  .*(\n|\r\n|\r)" }
+// { dg-output "T3c::fun::m: -1, T3c::fun::n: -2, T3c::v: -10(\n|\r\n|\r)" }
+// { dg-output "=============(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::p at .*.C:256:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::p at .*.C:257:  .*(\n|\r\n|\r)" }
+// { dg-output "T3b::p: a: -3, v: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::u at .*.C:264:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::u at .*.C:265:  .*(\n|\r\n|\r)" }
+// { dg-output "T3b::u: a: -3, z: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::n at .*.C:272:  .*(\n|\r\n|\r)" }
+// { dg-output "T3b::n: a: -3(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3b::Sn at .*.C:279:  .*(\n|\r\n|\r)" }
+// { dg-output "T3b::Sn: a: -3(\n|\r\n|\r)" }
+// { dg-output "=============(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::p at .*.C:297:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::p at .*.C:298:  .*(\n|\r\n|\r)" }
+// { dg-output "T3c::p: a: -3, v: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::u at .*.C:305:  .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::u at .*.C:306:  .*(\n|\r\n|\r)" }
+// { dg-output "T3c::u: a: -3, z: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::n at .*.C:313:  .*(\n|\r\n|\r)" }
+// { dg-output "T3c::n: a: -3(\n|\r\n|\r)" }
+// { dg-output "contract violation in function virt::T3c::Sn at .*.C:320:  .*(\n|\r\n|\r)" }
+// { dg-output "T3c::Sn: a: -3(\n|\r\n|\r)" }
 

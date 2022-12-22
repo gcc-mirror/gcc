@@ -124,54 +124,54 @@ int main(int, char**)
 };
 
 // test0
-// { dg-output "default std::handle_contract_violation called: .*.C 11 S::S .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 11 S::S .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 20 SInline::SInline .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 20 SInline::SInline .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 26 SDelegate0::SDelegate0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 26 SDelegate0::SDelegate0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 34 SDelegate1::SDelegate1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 34 SDelegate1::SDelegate1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 41 SDelegate2::SDelegate2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 40 SDelegate2::SDelegate2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 40 SDelegate2::SDelegate2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 41 SDelegate2::SDelegate2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 48 SDelegate3::SDelegate3 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 47 SDelegate3::SDelegate3 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 47 SDelegate3::SDelegate3 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 48 SDelegate3::SDelegate3 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 55 S1<int>::S1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 55 S1<int>::S1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 55 S1<double>::S1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 55 S1<double>::S1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 61 S2::S2<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 61 S2::S2<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 61 S2::S2<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 61 S2::S2<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 S3<int>::S3<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 S3<int>::S3<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 S3<int>::S3<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 S3<int>::S3<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 S3<double>::S3<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 S3<double>::S3<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 S3<double>::S3<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 S3<double>::S3<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 49 SDelegate3::~SDelegate3 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 49 SDelegate3::~SDelegate3 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 42 SDelegate2::~SDelegate2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 42 SDelegate2::~SDelegate2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 35 SDelegate1::~SDelegate1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 35 SDelegate1::~SDelegate1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 28 SDelegate0::~SDelegate0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 28 SDelegate0::~SDelegate0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 21 SInline::~SInline .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 21 SInline::~SInline .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 S::~S .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 S::~S .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function S::S at .*.C:11 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S::S at .*.C:11 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SInline::SInline at .*.C:20 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SInline::SInline at .*.C:20 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate0::SDelegate0 at .*.C:26 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate0::SDelegate0 at .*.C:26 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate1::SDelegate1 at .*.C:34 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate1::SDelegate1 at .*.C:34 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate2::SDelegate2 at .*.C:41 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate2::SDelegate2 at .*.C:40 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate2::SDelegate2 at .*.C:40 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate2::SDelegate2 at .*.C:41 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate3::SDelegate3 at .*.C:48 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate3::SDelegate3 at .*.C:47 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate3::SDelegate3 at .*.C:47 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate3::SDelegate3 at .*.C:48 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S1<int>::S1 at .*.C:55 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S1<int>::S1 at .*.C:55 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S1<double>::S1 at .*.C:55 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S1<double>::S1 at .*.C:55 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S2::S2<int> at .*.C:61 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S2::S2<int> at .*.C:61 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S2::S2<double> at .*.C:61 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S2::S2<double> at .*.C:61 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S3<int>::S3<int> at .*.C:68 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S3<int>::S3<int> at .*.C:68 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S3<int>::S3<double> at .*.C:68 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S3<int>::S3<double> at .*.C:68 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S3<double>::S3<int> at .*.C:68 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S3<double>::S3<int> at .*.C:68 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S3<double>::S3<double> at .*.C:68 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S3<double>::S3<double> at .*.C:68 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate3::~SDelegate3 at .*.C:49 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate3::~SDelegate3 at .*.C:49 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate2::~SDelegate2 at .*.C:42 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate2::~SDelegate2 at .*.C:42 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate1::~SDelegate1 at .*.C:35 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate1::~SDelegate1 at .*.C:35 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate0::~SDelegate0 at .*.C:28 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SDelegate0::~SDelegate0 at .*.C:28 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SInline::~SInline at .*.C:21 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function SInline::~SInline at .*.C:21 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S::~S at .*.C:12 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S::~S at .*.C:12 .*(\n|\r\n|\r)" }
 
 // test1
-// { dg-output "default std::handle_contract_violation called: .*.C 73 G0::G0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 80 G1::G1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 81 G1::~G1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 74 G0::~G0 .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function G0::G0 at .*.C:73 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function G1::G1 at .*.C:80 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function G1::~G1 at .*.C:81 .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function G0::~G0 at .*.C:74 .*(\n|\r\n|\r)" }
 

@@ -31,4 +31,4 @@ int main(int, char**) {
   return fun(x);
 }
 
-// { dg-output "-1: test x>0(\n|\r\n|\r)*" }
+// { dg-output "-1: test x>0(\n|\r\n|\r)" }

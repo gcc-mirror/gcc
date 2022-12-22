@@ -107,22 +107,22 @@ int main()
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 11 Base::b .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 Base::b .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 13 Base::b .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 26 Child::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 27 Child::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 28 Child::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 37 VChild::b .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 38 VChild::b .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 39 VChild::b .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 49 TChild<Base>::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 50 TChild<Base>::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 51 TChild<Base>::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 67 PubChild::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 68 PubChild::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 69 PubChild::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 79 TPubChild<PubBase>::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 80 TPubChild<PubBase>::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 81 TPubChild<PubBase>::fun .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function Base::b at .*.C:11: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base::b at .*.C:12: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base::b at .*.C:13: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child::fun at .*.C:26: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child::fun at .*.C:27: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child::fun at .*.C:28: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function VChild::b at .*.C:37: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function VChild::b at .*.C:38: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function VChild::b at .*.C:39: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TChild<Base>::fun at .*.C:49: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TChild<Base>::fun at .*.C:50: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TChild<Base>::fun at .*.C:51: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function PubChild::fun at .*.C:67: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function PubChild::fun at .*.C:68: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function PubChild::fun at .*.C:69: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TPubChild<PubBase>::fun at .*.C:79: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TPubChild<PubBase>::fun at .*.C:80: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TPubChild<PubBase>::fun at .*.C:81: .*(\n|\r\n|\r)" }
 
