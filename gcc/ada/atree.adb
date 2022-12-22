@@ -1378,7 +1378,7 @@ package body Atree is
             New_N := Union_Id (Copy_Separate_Tree (Node_Id (Field)));
 
             if Present (Node_Id (Field))
-              and then Parent (Node_Id (Field)) = Source
+              and then Is_Syntactic_Node (Source, Node_Id (Field))
             then
                Set_Parent (Node_Id (New_N), New_Id);
             end if;
@@ -1618,6 +1618,66 @@ package body Atree is
    begin
       return Nkind (N) in N_Entity;
    end Is_Entity;
+
+   -----------------------
+   -- Is_Syntactic_Node --
+   -----------------------
+
+   function Is_Syntactic_Node
+     (Source : Node_Id;
+      Field  : Node_Id)
+      return Boolean
+   is
+      function Has_More_Ids (N : Node_Id) return Boolean;
+      --  Return True when N has attribute More_Ids set to True
+
+      ------------------
+      -- Has_More_Ids --
+      ------------------
+
+      function Has_More_Ids (N : Node_Id) return Boolean is
+      begin
+         if Nkind (N) in N_Component_Declaration
+                       | N_Discriminant_Specification
+                       | N_Exception_Declaration
+                       | N_Formal_Object_Declaration
+                       | N_Number_Declaration
+                       | N_Object_Declaration
+                       | N_Parameter_Specification
+                       | N_Use_Package_Clause
+                       | N_Use_Type_Clause
+         then
+            return More_Ids (N);
+         else
+            return False;
+         end if;
+      end Has_More_Ids;
+
+   --  Start of processing for Is_Syntactic_Node
+
+   begin
+      if Parent (Field) = Source then
+         return True;
+
+      --  Perform the check using the last id in the syntactic chain
+
+      elsif Has_More_Ids (Source) then
+         declare
+            N : Node_Id := Source;
+
+         begin
+            while Present (N) and then More_Ids (N) loop
+               Next (N);
+            end loop;
+
+            pragma Assert (Prev_Ids (N));
+            return Parent (Field) = N;
+         end;
+
+      else
+         return False;
+      end if;
+   end Is_Syntactic_Node;
 
    ----------------
    -- Initialize --

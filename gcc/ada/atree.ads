@@ -225,6 +225,14 @@ package Atree is
    pragma Inline (Is_Entity);
    --  Returns True if N is an entity
 
+   function Is_Syntactic_Node
+     (Source : Node_Id;
+      Field  : Node_Id)
+      return Boolean;
+   --  Return True when Field is a syntactic child of node Source. It is called
+   --  when creating a copy of Source to preserve the Parent link in the copy
+   --  of Field.
+
    function New_Node
      (New_Node_Kind : Node_Kind;
       New_Sloc      : Source_Ptr) return Node_Id;

@@ -23323,65 +23323,6 @@ package body Sem_Util is
          New_Par  : Node_Id := Empty;
          Semantic : Boolean := False) return Union_Id
       is
-         function Has_More_Ids (N : Node_Id) return Boolean;
-         --  Return True when N has attribute More_Ids set to True
-
-         function Is_Syntactic_Node return Boolean;
-         --  Return True when Field is a syntactic node
-
-         ------------------
-         -- Has_More_Ids --
-         ------------------
-
-         function Has_More_Ids (N : Node_Id) return Boolean is
-         begin
-            if Nkind (N) in N_Component_Declaration
-                          | N_Discriminant_Specification
-                          | N_Exception_Declaration
-                          | N_Formal_Object_Declaration
-                          | N_Number_Declaration
-                          | N_Object_Declaration
-                          | N_Parameter_Specification
-                          | N_Use_Package_Clause
-                          | N_Use_Type_Clause
-            then
-               return More_Ids (N);
-            else
-               return False;
-            end if;
-         end Has_More_Ids;
-
-         -----------------------
-         -- Is_Syntactic_Node --
-         -----------------------
-
-         function Is_Syntactic_Node return Boolean is
-            Old_N : constant Node_Id := Node_Id (Field);
-
-         begin
-            if Parent (Old_N) = Old_Par then
-               return True;
-
-            elsif not Has_More_Ids (Old_Par) then
-               return False;
-
-            --  Perform the check using the last last id in the syntactic chain
-
-            else
-               declare
-                  N : Node_Id := Old_Par;
-
-               begin
-                  while Present (N) and then More_Ids (N) loop
-                     Next (N);
-                  end loop;
-
-                  pragma Assert (Prev_Ids (N));
-                  return Parent (Old_N) = N;
-               end;
-            end if;
-         end Is_Syntactic_Node;
-
       begin
          --  The field is empty
 
@@ -23393,7 +23334,8 @@ package body Sem_Util is
          elsif Field in Node_Range then
             declare
                Old_N     : constant Node_Id := Node_Id (Field);
-               Syntactic : constant Boolean := Is_Syntactic_Node;
+               Syntactic : constant Boolean :=
+                 Is_Syntactic_Node (Source => Old_Par, Field => Old_N);
 
                New_N : Node_Id;
 
