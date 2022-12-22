@@ -64,6 +64,6 @@ int main ()
       PRINTF ("something happened in the wrong order %d, %d, %d, %d, %d, %d, %d\n", a, b, c, d, e, f, g);
       abort ();
     }
-  puts ("main: done");
+  PRINT ("main: done");
   return 0;
 }

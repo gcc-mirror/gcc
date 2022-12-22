@@ -129,10 +129,6 @@ namespace coro = std;
 
 #endif // __has_include(<experimental/coroutine>)
 
-/* just to avoid cluttering dump files. */
-extern "C" int puts (const char *);
-extern "C" int printf (const char *, ...);
-
 #include <cstdlib> /* for abort () */
 
 #include <utility> /* for std::forward */
@@ -141,6 +137,7 @@ extern "C" int printf (const char *, ...);
 #  define PRINT(X)
 #  define PRINTF (void)
 #else
+#include <stdio.h>
 #  define PRINT(X) puts(X)
 #  define PRINTF printf
 #endif
