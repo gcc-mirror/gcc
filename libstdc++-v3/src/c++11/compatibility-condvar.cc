@@ -63,6 +63,24 @@ _GLIBCXX_END_NAMESPACE_VERSION
     && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
+namespace
+{
+  // Pointer-to-member for private std::condition_variable::_M_cond member.
+  std::__condvar std::condition_variable::* __base_member;
+
+  template<std::__condvar std::condition_variable::*X>
+    struct cracker
+    { static std::__condvar std::condition_variable::* value; };
+
+  // Initializer for this static member also initializes __base_member.
+  template<std::__condvar std::condition_variable::*X>
+    std::__condvar std::condition_variable::*
+      cracker<X>::value = __base_member = X;
+
+  // Explicit instantiation is allowed to access the private member.
+  template class cracker<&std::condition_variable::_M_cond>;
+}
+
 struct __nothrow_wait_cv : std::condition_variable
 {
   void wait(std::unique_lock<std::mutex>&) noexcept;
@@ -72,7 +90,9 @@ __attribute__((used))
 void
 __nothrow_wait_cv::wait(std::unique_lock<std::mutex>& lock) noexcept
 {
-  this->condition_variable::wait(lock);
+  // In theory this could be simply this->std::condition_variable::wait(lock)
+  // but with uclibc that binds to the @GLIBCXX_3.4.11 symbol, see PR 105730.
+  (this->*__base_member).wait(*lock.mutex());
 }
 } // namespace __gnu_cxx
 
