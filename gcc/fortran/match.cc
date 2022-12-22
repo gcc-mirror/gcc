@@ -5915,6 +5915,30 @@ recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
 }
 
 
+/* Check for invalid uses of statement function dummy arguments in body.  */
+
+static bool
+chk_stmt_fcn_body (gfc_expr *e, gfc_symbol *sym, int *f ATTRIBUTE_UNUSED)
+{
+  gfc_formal_arglist *formal;
+
+  if (e == NULL || e->symtree == NULL || e->expr_type != EXPR_FUNCTION)
+    return false;
+
+  for (formal = sym->formal; formal; formal = formal->next)
+    {
+      if (formal->sym == e->symtree->n.sym)
+	{
+	  gfc_error ("Invalid use of statement function argument at %L",
+		     &e->where);
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+
 /* Match a statement function declaration.  It is so easy to match
    non-statement function statements with a MATCH_ERROR as opposed to
    MATCH_NO that we suppress error message in most cases.  */
@@ -5982,6 +6006,9 @@ gfc_match_st_function (void)
 		 sym->name, &expr->where);
       return MATCH_ERROR;
     }
+
+  if (gfc_traverse_expr (expr, sym, chk_stmt_fcn_body, 0))
+    return MATCH_ERROR;
 
   sym->value = expr;
 
