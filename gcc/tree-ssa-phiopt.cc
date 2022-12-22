@@ -1491,6 +1491,12 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 		  default:
 		    break;
 		  }
+	      if (equal_p)
+		/* After the optimization PHI result can have value
+		   which it couldn't have previously.
+		   We could instead of resetting it union the range
+		   info with oarg.  */
+		reset_flow_sensitive_info (gimple_phi_result (phi));
 	      if (equal_p && MAY_HAVE_DEBUG_BIND_STMTS)
 		{
 		  imm_use_iterator imm_iter;
