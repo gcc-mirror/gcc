@@ -1,3 +1,12 @@
+2022-12-21  Andrew Pinski  <apinski@marvell.com>
+
+	* Makefile.def: Add configure-gdb dependencies
+	on all-gmp and all-mpfr.
+	* configure.ac: Split out MPC checking from MPFR.
+	Require GMP and MPFR if the gdb directory exist.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2022-12-14  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* configure.ac (target_libraries): Add target-libgm2.

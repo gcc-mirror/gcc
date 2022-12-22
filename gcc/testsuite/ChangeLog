@@ -1,3 +1,35 @@
+2022-12-21  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.c-torture/compile/pr55569.c: fix excess errors.
+
+2022-12-21  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/compile/vector-shift-1.c: New test.
+
+2022-12-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/read_dir-aux.c: New; provides my_mkdir, my_rmdir,
+	my_verify_not_exists and expect_open_to_fail.
+	* gfortran.dg/read_dir.f90: Call those; expect that opening a
+	directory fails on Windows.
+
+2022-12-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106736
+	* gcc.target/powerpc/pr106736-1.c: New test.
+	* gcc.target/powerpc/pr106736-2.c: Likewise.
+	* gcc.target/powerpc/pr106736-3.c: Likewise.
+	* gcc.target/powerpc/pr106736-4.c: Likewise.
+	* gcc.target/powerpc/pr106736-5.c: Likewise.
+
+2022-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84471
+	PR c++/107504
+	* g++.dg/tree-ssa/value-expr1.C: New test.
+	* g++.dg/tree-ssa/value-expr2.C: New test.
+	* g++.dg/analyzer/pr93212.C: Move warning.
+
 2022-12-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101886

@@ -1,3 +1,17 @@
+2022-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108180
+	* pt.cc (tsubst_expr): Don't call cp_finish_decl on
+	DECL_OMP_PRIVATIZED_MEMBER vars.
+
+2022-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84471
+	PR c++/107504
+	* coroutines.cc (transform_local_var_uses): Don't
+	specify a location for DECL_VALUE_EXPR.
+	* decl.cc (cp_finish_decomp): Likewise.
+
 2022-12-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101886

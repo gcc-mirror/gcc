@@ -1,3 +1,29 @@
+2022-12-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR target/99555
+	* config/nvptx/bar.c (generation_to_barrier): Remove.
+	(futex_wait,futex_wake,do_spin,do_wait): Remove.
+	(GOMP_WAIT_H): Remove.
+	(#include "../linux/bar.c"): Remove.
+	(gomp_barrier_wait_end): New function.
+	(gomp_barrier_wait): Likewise.
+	(gomp_barrier_wait_last): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait): Likewise.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	(gomp_team_barrier_wait_cancel): Likewise.
+	(gomp_team_barrier_cancel): Likewise.
+	* config/nvptx/bar.h (gomp_barrier_t): Remove waiters, lock fields.
+	(gomp_barrier_init): Remove init of waiters, lock fields.
+	(gomp_team_barrier_wake): Remove prototype, add new static inline
+	function.
+
+2022-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108180
+	* testsuite/libgomp.c++/pr108180.C: New test.
+
 2022-12-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libfortran/108056

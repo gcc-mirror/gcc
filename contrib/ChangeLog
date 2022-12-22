@@ -1,3 +1,11 @@
+2022-12-21  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Simplify.
+
+2022-12-21  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Skip Makefile and libffi warnings.
+
 2022-12-19  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Support digits in PR's

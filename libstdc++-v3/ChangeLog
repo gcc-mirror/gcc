@@ -1,3 +1,10 @@
+2022-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/20_util/to_chars/float16_c++23.cc (test): Use 3 argument
+	std::to_chars if fmt is std::chars_format{}, rather than 4 argument.
+	* testsuite/20_util/to_chars/float128_c++23.cc (test): Likewise, and
+	skip second part of testing that requires 5 argument std::to_chars.
+
 2022-12-19  Arsen Arsenović  <arsen@aarsen.me>
 
 	* include/experimental/contract: Lowercase the constants in

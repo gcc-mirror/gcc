@@ -1,3 +1,85 @@
+2022-12-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/105532
+	* match.pd (~(X >> Y) -> ~X >> Y): Check if it is an integral
+	type before calling tree_nonzero_bits.
+	(popcount(X) + popcount(Y)): Likewise.
+	(popcount(X&C1)): Likewise.
+
+2022-12-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_print_operand): Add 'p' case, adjust
+	comments.
+	(enum nvptx_builtins): Add NVPTX_BUILTIN_BAR_RED_AND,
+	NVPTX_BUILTIN_BAR_RED_OR, and NVPTX_BUILTIN_BAR_RED_POPC.
+	(nvptx_expand_bar_red): New function.
+	(nvptx_init_builtins):
+	Add DEFs of __builtin_nvptx_bar_red_[and/or/popc].
+	(nvptx_expand_builtin): Use nvptx_expand_bar_red to expand
+	NVPTX_BUILTIN_BAR_RED_[AND/OR/POPC] cases.
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add
+	UNSPECV_BARRED_AND, UNSPECV_BARRED_OR, and UNSPECV_BARRED_POPC.
+	(BARRED): New int iterator.
+	(barred_op,barred_mode,barred_ptxtype): New int attrs.
+	(nvptx_barred_<barred_op>): New define_insn.
+
+2022-12-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/107994
+	* gimplify.cc (gimplify_expr): Catch errorneous comparison
+	operand.
+
+2022-12-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-opts.cc (lto_write_options): Also skip -fwhole-program.
+
+2022-12-21  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.cc (lto_output_node): When doing WPA in incremental link
+	pass down resolution info.
+
+2022-12-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi: Fix documentation of -fwhole-program with LTO
+	and document behaviour for incremental linking.
+
+2022-12-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Fix the
+	location for OPTION_MASK_P10_FUSION flag setting.
+
+2022-12-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* fold-const.cc (fold_convert_const_real_from_real): Treat floating
+	point conversion to a type with same mode as copy instead of normal
+	convertFormat.
+
+2022-12-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106736
+	* config/rs6000/mma.md (define_expand movoo): Call function
+	rs6000_opaque_type_invalid_use_p to check and emit error message for
+	the invalid use of opaque type.
+	(define_expand movxo): Likewise.
+	* config/rs6000/rs6000-protos.h
+	(rs6000_opaque_type_invalid_use_p): New function declaration.
+	(currently_expanding_gimple_stmt): New extern declaration.
+	* config/rs6000/rs6000.cc (rs6000_opaque_type_invalid_use_p): New
+	function.
+
+2022-12-21  Jason Merrill  <jason@redhat.com>
+
+	* fold-const.cc (fold_convert_loc): Check return value of
+	protected_set_expr_location_unshare.
+
+2022-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84471
+	PR c++/107504
+	* fold-const.cc (protected_set_expr_location_unshare): Not static.
+	* tree.h: Declare it.
+	* tree.cc (decl_value_expr_insert): Use it.
+
 2022-12-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101886

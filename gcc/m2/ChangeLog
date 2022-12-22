@@ -1,3 +1,8 @@
+2022-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR modula2/108153
+	* gm2-gcc/m2linemap.def (location_t): Use CARDINAL instead of INTEGER.
+
 2022-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gm2-gcc/m2linemap.cc (m2linemap_ErrorAt, m2linemap_ErrorAtf,
