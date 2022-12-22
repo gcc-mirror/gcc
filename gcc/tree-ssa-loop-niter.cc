@@ -2305,6 +2305,167 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
 }
 
 /* See comment below for number_of_iterations_bitcount.
+   For c[lt]z, we have:
+
+   modify:
+   iv_2 = iv_1 << 1 OR iv_1 >> 1
+
+   test:
+   if (iv & 1 << (prec-1)) OR (iv & 1)
+
+   modification count:
+   src precision - c[lt]z (src)
+
+ */
+
+static bool
+number_of_iterations_cltz (loop_p loop, edge exit,
+			       enum tree_code code,
+			       class tree_niter_desc *niter)
+{
+  bool modify_before_test = true;
+  HOST_WIDE_INT max;
+  int checked_bit;
+  tree iv_2;
+
+  /* Check that condition for staying inside the loop is like
+     if (iv == 0).  */
+  gimple *cond_stmt = last_stmt (exit->src);
+  if (!cond_stmt
+      || gimple_code (cond_stmt) != GIMPLE_COND
+      || (code != EQ_EXPR && code != GE_EXPR)
+      || !integer_zerop (gimple_cond_rhs (cond_stmt))
+      || TREE_CODE (gimple_cond_lhs (cond_stmt)) != SSA_NAME)
+    return false;
+
+  if (code == EQ_EXPR)
+    {
+      /* Make sure we check a bitwise and with a suitable constant */
+      gimple *and_stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (cond_stmt));
+      if (!is_gimple_assign (and_stmt)
+	  || gimple_assign_rhs_code (and_stmt) != BIT_AND_EXPR
+	  || !integer_pow2p (gimple_assign_rhs2 (and_stmt)))
+	return false;
+
+      checked_bit = tree_log2 (gimple_assign_rhs2 (and_stmt));
+
+      iv_2 = gimple_assign_rhs1 (and_stmt);
+    }
+  else
+    {
+      /* We have a GE_EXPR - a signed comparison with zero is equivalent to
+	 testing the leading bit, so check for this pattern too.  */
+
+      iv_2 = gimple_cond_lhs (cond_stmt);
+      tree test_value_type = TREE_TYPE (iv_2);
+
+      if (TYPE_UNSIGNED (test_value_type))
+	return false;
+
+      gimple *test_value_stmt = SSA_NAME_DEF_STMT (iv_2);
+
+      if (is_gimple_assign (test_value_stmt)
+	  && gimple_assign_rhs_code (test_value_stmt) == NOP_EXPR)
+	{
+	  /* If the test value comes from a NOP_EXPR, then we need to unwrap
+	     this.  We conservatively require that both types have the same
+	     precision.  */
+	  iv_2 = gimple_assign_rhs1 (test_value_stmt);
+	  tree rhs_type = TREE_TYPE (iv_2);
+	  if (TREE_CODE (rhs_type) != INTEGER_TYPE
+	      || (TYPE_PRECISION (rhs_type)
+		  != TYPE_PRECISION (test_value_type)))
+	    return false;
+	}
+
+      checked_bit = TYPE_PRECISION (test_value_type) - 1;
+    }
+
+  gimple *iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
+
+  /* If the test comes before the iv modification, then these will actually be
+     iv_1 and a phi node.  */
+  if (gimple_code (iv_2_stmt) == GIMPLE_PHI
+      && gimple_bb (iv_2_stmt) == loop->header
+      && gimple_phi_num_args (iv_2_stmt) == 2
+      && (TREE_CODE (gimple_phi_arg_def (iv_2_stmt,
+					 loop_latch_edge (loop)->dest_idx))
+	  == SSA_NAME))
+    {
+      /* iv_2 is actually one of the inputs to the phi.  */
+      iv_2 = gimple_phi_arg_def (iv_2_stmt, loop_latch_edge (loop)->dest_idx);
+      iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
+      modify_before_test = false;
+    }
+
+  /* Make sure iv_2_stmt is a logical shift by one stmt:
+     iv_2 = iv_1 {<<|>>} 1  */
+  if (!is_gimple_assign (iv_2_stmt)
+      || (gimple_assign_rhs_code (iv_2_stmt) != LSHIFT_EXPR
+	  && (gimple_assign_rhs_code (iv_2_stmt) != RSHIFT_EXPR
+	      || !TYPE_UNSIGNED (TREE_TYPE (gimple_assign_lhs (iv_2_stmt)))))
+      || !integer_onep (gimple_assign_rhs2 (iv_2_stmt)))
+    return false;
+
+  bool left_shift = (gimple_assign_rhs_code (iv_2_stmt) == LSHIFT_EXPR);
+
+  tree iv_1 = gimple_assign_rhs1 (iv_2_stmt);
+
+  /* Check the recurrence.  */
+  gimple *phi = SSA_NAME_DEF_STMT (iv_1);
+  if (gimple_code (phi) != GIMPLE_PHI
+      || (gimple_bb (phi) != loop_latch_edge (loop)->dest)
+      || (iv_2 != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx)))
+    return false;
+
+  /* We found a match.  */
+  tree src = gimple_phi_arg_def (phi, loop_preheader_edge (loop)->dest_idx);
+  int src_precision = TYPE_PRECISION (TREE_TYPE (src));
+
+  /* Apply any needed preprocessing to src.  */
+  int num_ignored_bits;
+  if (left_shift)
+    num_ignored_bits = src_precision - checked_bit - 1;
+  else
+    num_ignored_bits = checked_bit;
+
+  if (modify_before_test)
+    num_ignored_bits++;
+
+  if (num_ignored_bits != 0)
+    src = fold_build2 (left_shift ? LSHIFT_EXPR : RSHIFT_EXPR,
+		       TREE_TYPE (src), src,
+		       build_int_cst (integer_type_node, num_ignored_bits));
+
+  /* Get the corresponding c[lt]z builtin.  */
+  tree expr = build_cltz_expr (src, left_shift, false);
+
+  if (!expr)
+    return false;
+
+  max = src_precision - num_ignored_bits - 1;
+
+  expr = fold_convert (unsigned_type_node, expr);
+
+  tree assumptions = fold_build2 (NE_EXPR, boolean_type_node, src,
+				  build_zero_cst (TREE_TYPE (src)));
+
+  niter->assumptions = simplify_using_initial_conditions (loop, assumptions);
+  niter->may_be_zero = boolean_false_node;
+  niter->niter = simplify_using_initial_conditions (loop, expr);
+
+  if (TREE_CODE (niter->niter) == INTEGER_CST)
+    niter->max = tree_to_uhwi (niter->niter);
+  else
+    niter->max = max;
+
+  niter->bound = NULL_TREE;
+  niter->cmp = ERROR_MARK;
+
+  return true;
+}
+
+/* See comment below for number_of_iterations_bitcount.
    For c[lt]z complement, we have:
 
    modify:
@@ -2464,6 +2625,7 @@ number_of_iterations_bitcount (loop_p loop, edge exit,
 			       class tree_niter_desc *niter)
 {
   return (number_of_iterations_popcount (loop, exit, code, niter)
+	  || number_of_iterations_cltz (loop, exit, code, niter)
 	  || number_of_iterations_cltz_complement (loop, exit, code, niter));
 }
 
@@ -2991,6 +3153,9 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
     case LE_EXPR:
     case NE_EXPR:
       break;
+
+    case EQ_EXPR:
+      return number_of_iterations_cltz (loop, exit, code, niter);
 
     default:
       return false;
