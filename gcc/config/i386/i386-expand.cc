@@ -8661,6 +8661,8 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
       if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 128)
 	move_mode = TImode;
+      if (TARGET_AVX512_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 256)
+	move_mode = OImode;
 
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
 	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
