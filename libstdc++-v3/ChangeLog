@@ -1,3 +1,30 @@
+2022-12-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107814
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Use a static buffer with space after it.
+
+2022-12-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::_M_swap_val_unex): Guard the
+	correct object.
+	(expected::swap): Move is_swappable
+	requirement from static_assert to constraint.
+	(swap): Likewise.
+	(operator==): Remove noexcept-specifier.
+	* testsuite/20_util/expected/swap.cc: Check swapping of
+	types without non-throwing move constructor. Check constraints
+	on swap.
+	* testsuite/20_util/expected/unexpected.cc: Check constraints on
+	swap.
+	* testsuite/20_util/expected/equality.cc: New test.
+
 2022-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
