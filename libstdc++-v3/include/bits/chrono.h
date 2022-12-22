@@ -244,6 +244,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __disable_if_is_duration
 	= typename enable_if<!__is_duration<_Tp>::value, _Tp>::type;
 
+#if __cpp_variable_templates
+    template<typename _Tp>
+      inline constexpr bool __is_duration_v = false;
+    template<typename _Rep, typename _Period>
+      inline constexpr bool __is_duration_v<duration<_Rep, _Period>> = true;
+    template<typename _Tp>
+      inline constexpr bool __is_time_point_v = false;
+    template<typename _Clock, typename _Dur>
+      inline constexpr bool __is_time_point_v<time_point<_Clock, _Dur>> = true;
+#endif
+
     /// @endcond
 
     /** Convert a `duration` to type `ToDur`.
@@ -261,13 +272,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr __enable_if_is_duration<_ToDur>
       duration_cast(const duration<_Rep, _Period>& __d)
       {
-	typedef typename _ToDur::period				__to_period;
-	typedef typename _ToDur::rep				__to_rep;
-	typedef ratio_divide<_Period, __to_period> 		__cf;
-	typedef typename common_type<__to_rep, _Rep, intmax_t>::type __cr;
-	typedef  __duration_cast_impl<_ToDur, __cf, __cr,
-				      __cf::num == 1, __cf::den == 1> __dc;
-	return __dc::__cast(__d);
+#if __cpp_inline_variables && __cpp_if_constexpr
+	if constexpr (is_same_v<_ToDur, duration<_Rep, _Period>>)
+	  return __d;
+	else
+#endif
+	{
+	  using __to_period = typename _ToDur::period;
+	  using __to_rep = typename _ToDur::rep;
+	  using __cf = ratio_divide<_Period, __to_period>;
+	  using __cr = typename common_type<__to_rep, _Rep, intmax_t>::type;
+	  using __dc = __duration_cast_impl<_ToDur, __cf, __cr,
+					    __cf::num == 1, __cf::den == 1>;
+	  return __dc::__cast(__d);
+	}
       }
 
     /** Trait indicating whether to treat a type as a floating-point type.
@@ -290,6 +308,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template <typename _Rep>
       inline constexpr bool treat_as_floating_point_v =
 	treat_as_floating_point<_Rep>::value;
+
+    template<>
+      inline constexpr bool treat_as_floating_point_v<int> = false;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<long> = false;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<long long> = false;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<float> = true;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<double> = true;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<long double> = true;
 #endif // C++17
 
 #if __cplusplus > 201703L
@@ -632,8 +663,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// DR 934.
 	template<typename _Rep2 = rep>
 	  _GLIBCXX17_CONSTEXPR
-	  typename enable_if<!treat_as_floating_point<_Rep2>::value,
-			     duration&>::type
+	  __enable_if_t<!treat_as_floating_point<_Rep2>::value, duration&>
 	  operator%=(const rep& __rhs)
 	  {
 	    __r %= __rhs;
@@ -642,8 +672,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template<typename _Rep2 = rep>
 	  _GLIBCXX17_CONSTEXPR
-	  typename enable_if<!treat_as_floating_point<_Rep2>::value,
-			     duration&>::type
+	  __enable_if_t<!treat_as_floating_point<_Rep2>::value, duration&>
 	  operator%=(const duration& __d)
 	  {
 	    __r %= __d.count();
@@ -1019,7 +1048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      */
     template<typename _ToDur, typename _Clock, typename _Dur>
       [[nodiscard]] constexpr
-      enable_if_t<__is_duration<_ToDur>::value, time_point<_Clock, _ToDur>>
+      enable_if_t<__is_duration_v<_ToDur>, time_point<_Clock, _ToDur>>
       floor(const time_point<_Clock, _Dur>& __tp)
       {
 	return time_point<_Clock, _ToDur>{
@@ -1040,7 +1069,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      */
     template<typename _ToDur, typename _Clock, typename _Dur>
       [[nodiscard]] constexpr
-      enable_if_t<__is_duration<_ToDur>::value, time_point<_Clock, _ToDur>>
+      enable_if_t<__is_duration_v<_ToDur>, time_point<_Clock, _ToDur>>
       ceil(const time_point<_Clock, _Dur>& __tp)
       {
 	return time_point<_Clock, _ToDur>{
@@ -1062,10 +1091,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      */
     template<typename _ToDur, typename _Clock, typename _Dur>
       [[nodiscard]] constexpr
-      enable_if_t<
-	__and_<__is_duration<_ToDur>,
-	       __not_<treat_as_floating_point<typename _ToDur::rep>>>::value,
-	time_point<_Clock, _ToDur>>
+      enable_if_t<__is_duration_v<_ToDur>
+		    && !treat_as_floating_point_v<typename _ToDur::rep>,
+		  time_point<_Clock, _ToDur>>
       round(const time_point<_Clock, _Dur>& __tp)
       {
 	return time_point<_Clock, _ToDur>{
