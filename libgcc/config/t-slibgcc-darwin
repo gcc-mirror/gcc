@@ -72,13 +72,14 @@ all: libgcc_ehs$(SHLIB_EXT)
 LGCC_FILES += libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)
 
 endif
-
-# Provide libgcc_s.1 for backwards compatibility.
-LGCC_FILES += libgcc_s.1.dylib
-
 endif
 
 INSTALL_FILES=$(LGCC_FILES)
+
+ifeq ($(BUILD_LIBGCCS1),YES)
+# Provide libgcc_s.1 for backwards compatibility.
+INSTALL_FILES += libgcc_s.1.dylib
+endif
 
 # For the toplevel multilib, build FAT dylibs including all the multilibs.
 ifeq ($(MULTIBUILDTOP),)
@@ -158,9 +159,15 @@ endif
 
 install-darwin-libgcc-stubs :
 	$(mkinstalldirs) $(DESTDIR)$(slibdir)
-	for d in $(INSTALL_FILES) ; do \
-	  $(INSTALL_DATA) $$d $(DESTDIR)$(slibdir)/$$d || exit 1 ; \
-	done
+	if test x$(slibdir) = x; then \
+	  for d in $(LGCC_FILES) ; do \
+	    $(INSTALL_DATA) $$d $(DESTDIR)$(slibdir)/$$d || exit 1 ; \
+	  done; \
+	else \
+	  for d in $(INSTALL_FILES) ; do \
+	    $(INSTALL_DATA) $$d $(DESTDIR)$(slibdir)/$$d || exit 1 ; \
+	  done; \
+	fi
 
 else
 
