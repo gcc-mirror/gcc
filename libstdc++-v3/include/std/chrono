@@ -128,11 +128,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using time_point                = chrono::time_point<utc_clock>;
       static constexpr bool is_steady = false;
 
+      [[nodiscard]]
       static time_point
       now()
       { return from_sys(system_clock::now()); }
 
       template<typename _Duration>
+	[[nodiscard]]
 	static sys_time<common_type_t<_Duration, seconds>>
 	to_sys(const utc_time<_Duration>& __t)
 	{
@@ -145,6 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Duration>
+	[[nodiscard]]
 	static utc_time<common_type_t<_Duration, seconds>>
 	from_sys(const sys_time<_Duration>& __t)
 	{
@@ -171,11 +174,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr bool is_steady = false; // XXX true for CLOCK_TAI?
 
       // TODO move into lib, use CLOCK_TAI on linux, add extension point.
+      [[nodiscard]]
       static time_point
       now()
       { return from_utc(utc_clock::now()); }
 
       template<typename _Duration>
+	[[nodiscard]]
 	static utc_time<common_type_t<_Duration, seconds>>
 	to_utc(const tai_time<_Duration>& __t)
 	{
@@ -184,6 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Duration>
+	[[nodiscard]]
 	static tai_time<common_type_t<_Duration, seconds>>
 	from_utc(const utc_time<_Duration>& __t)
 	{
@@ -208,11 +214,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr bool is_steady = false; // XXX
 
       // TODO move into lib, add extension point.
+      [[nodiscard]]
       static time_point
       now()
       { return from_utc(utc_clock::now()); }
 
       template<typename _Duration>
+	[[nodiscard]]
 	static utc_time<common_type_t<_Duration, seconds>>
 	to_utc(const gps_time<_Duration>& __t)
 	{
@@ -221,6 +229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Duration>
+	[[nodiscard]]
 	static gps_time<common_type_t<_Duration, seconds>>
 	from_utc(const utc_time<_Duration>& __t)
 	{
@@ -394,6 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Convert a time point to a different clock.
     template<typename _DestClock, typename _SourceClock, typename _Duration>
+      [[nodiscard]]
       inline auto
       clock_cast(const time_point<_SourceClock, _Duration>& __t)
       requires __detail::__clock_convs<_DestClock, _SourceClock, _Duration>
@@ -2620,6 +2630,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       leap_second(const leap_second&) = default;
       leap_second& operator=(const leap_second&) = default;
 
+      [[nodiscard]]
       constexpr sys_seconds
       date() const noexcept
       {
@@ -2628,6 +2639,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return sys_seconds(-_M_s);
       }
 
+      [[nodiscard]]
       constexpr seconds
       value() const noexcept
       {
@@ -2638,71 +2650,71 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // This can be defaulted because the database will never contain two
       // leap_second objects with the same date but different signs.
-      friend constexpr bool
+      [[nodiscard]] friend constexpr bool
       operator==(const leap_second&, const leap_second&) noexcept = default;
 
-      friend constexpr strong_ordering
+      [[nodiscard]] friend constexpr strong_ordering
       operator<=>(const leap_second& __x, const leap_second& __y) noexcept
       { return __x.date() <=> __y.date(); }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator==(const leap_second& __x,
 		   const sys_time<_Duration>& __y) noexcept
 	{ return __x.date() == __y; }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator<(const leap_second& __x,
 		  const sys_time<_Duration>& __y) noexcept
 	{ return __x.date() < __y; }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator<(const sys_time<_Duration>& __x,
 		  const leap_second& __y) noexcept
 	{ return __x < __y.date(); }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator>(const leap_second& __x,
 		  const sys_time<_Duration>& __y) noexcept
 	{ return __y < __x.date(); }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator>(const sys_time<_Duration>& __x,
 		  const leap_second& __y) noexcept
 	{ return __y.date() < __x; }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator<=(const leap_second& __x,
-		  const sys_time<_Duration>& __y) noexcept
+		   const sys_time<_Duration>& __y) noexcept
 	{ return !(__y < __x.date()); }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator<=(const sys_time<_Duration>& __x,
-		  const leap_second& __y) noexcept
+		   const leap_second& __y) noexcept
 	{ return !(__y.date() < __x); }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator>=(const leap_second& __x,
-		  const sys_time<_Duration>& __y) noexcept
+		   const sys_time<_Duration>& __y) noexcept
 	{ return !(__x.date() < __y); }
 
       template<typename _Duration>
-	friend constexpr bool
+	[[nodiscard]] friend constexpr bool
 	operator>=(const sys_time<_Duration>& __x,
-		  const leap_second& __y) noexcept
+		   const leap_second& __y) noexcept
 	{ return !(__x < __y.date()); }
 
       template<three_way_comparable_with<seconds> _Duration>
-	friend constexpr auto
+	[[nodiscard]] friend constexpr auto
 	operator<=>(const leap_second& __x,
-		   const sys_time<_Duration>& __y) noexcept
+		    const sys_time<_Duration>& __y) noexcept
 	{ return __x.date() <=> __y; }
 
     private:
