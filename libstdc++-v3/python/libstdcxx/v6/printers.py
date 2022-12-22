@@ -19,6 +19,7 @@ import gdb
 import itertools
 import re
 import sys, os, errno
+from datetime import datetime, timezone
 
 ### Python 2 + Python 3 compatibility code
 
@@ -1871,6 +1872,239 @@ class StdFormatArgsPrinter:
             size = self.val['_M_unpacked_size']
         return "%s with %d arguments" % (typ, size)
 
+def std_ratio_t_tuple(ratio_type):
+    # TODO use reduced period i.e. duration::period
+    period = self.val.type.template_argument(1)
+    num = period.template_argument(0)
+    den = period.template_argument(1)
+    return (num, den)
+
+class StdChronoDurationPrinter:
+    "Print a std::chrono::duration"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def _ratio(self):
+        # TODO use reduced period i.e. duration::period
+        period = self.val.type.template_argument(1)
+        num = period.template_argument(0)
+        den = period.template_argument(1)
+        return (num, den)
+
+    def _suffix(self):
+        num, den = self._ratio()
+        if num == 1:
+            if den == 1:
+                return 's'
+            if den == 1000:
+                return 'ms'
+            if den == 1000000:
+                return 'us'
+            if den == 1000000000:
+                return 'ns'
+        elif den == 1:
+            if num == 60:
+                return 'min'
+            if num == 3600:
+                return 'h'
+            if num == 86400:
+                return 'd'
+            return '[{}]s'.format(num)
+        return "[{}/{}]s".format(num, den)
+
+    def to_string(self):
+        return "std::chrono::duration = { %d%s }" % (self.val['__r'], self._suffix())
+
+
+class StdChronoTimePointPrinter:
+    "Print a std::chrono::time_point"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def _clock(self):
+        clock = self.val.type.template_argument(0)
+        name = strip_versioned_namespace(clock.name)
+        if name == 'std::chrono::_V2::system_clock' \
+                or name == 'std::chrono::system_clock':
+            return ('std::chrono::sys_time', 0)
+        # XXX need to remove leap seconds from utc, gps, and tai
+        #if name == 'std::chrono::utc_clock':
+        #    return ('std::chrono::utc_time', 0)
+        #if name == 'std::chrono::gps_clock':
+        #    return ('std::chrono::gps_clock time_point', 315964809)
+        #if name == 'std::chrono::tai_clock':
+        #    return ('std::chrono::tai_clock time_point', -378691210)
+        if name == 'std::filesystem::__file_clock':
+            return ('std::chrono::file_time', 6437664000)
+        if name == 'std::chrono::local_t':
+            return ('std::chrono::local_time', 0)
+        return ('{} time_point'.format(name), None)
+
+    def to_string(self):
+        clock, offset = self._clock()
+        d = self.val['__d']
+        r = d['__r']
+        printer = StdChronoDurationPrinter(d.type.name, d)
+        suffix = printer._suffix()
+        time = ''
+        if offset is not None:
+            num, den = printer._ratio()
+            secs = (r * num / den) + offset
+            try:
+                dt = datetime.fromtimestamp(secs, timezone.utc)
+                time = ' [{:%Y-%m-%d %H:%M:%S}]'.format(dt)
+            except:
+                pass
+        return '%s = {%d%s%s}' % (clock, r, suffix, time)
+
+class StdChronoZonedTimePrinter:
+    "Print a std::chrono::zoned_time"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        zone = self.val['_M_zone'].dereference()
+        time = self.val['_M_tp']
+        return 'std::chrono::zoned_time = {{{} {}}}'.format(zone, time)
+
+
+months = [None, 'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December']
+
+weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+            'Saturday', 'Sunday']
+
+class StdChronoCalendarPrinter:
+    "Print a std::chrono::day, std::chrono::month, std::chrono::year etc."
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        val = self.val
+        typ = self.typename
+        if 'month' in typ and typ != 'std::chrono::year_month_day_last':
+            m = val['_M_m']
+        if typ.startswith('std::chrono::year'):
+            y = val['_M_y']
+
+        if typ == 'std::chrono::day':
+            return '{}'.format(int(val['_M_d']))
+        if typ == 'std::chrono::month':
+            return months[m]
+        if typ == 'std::chrono::year':
+            return '{}y'.format(y)
+        if typ == 'std::chrono::weekday':
+            return '{}'.format(weekdays[val['_M_wd']])
+        if typ == 'std::chrono::weekday_indexed':
+            return '{}[{}]'.format(val['_M_wd'], int(val['_M_index']))
+        if typ == 'std::chrono::weekday_last':
+            return '{}[last]'.format(val['_M_wd'])
+        if typ == 'std::chrono::month_day':
+            return '{}/{}'.format(m, val['_M_d'])
+        if typ == 'std::chrono::month_day_last':
+            return '{}/last'.format(m)
+        if typ == 'std::chrono::month_weekday':
+            return '{}/{}'.format(m, val['_M_wdi'])
+        if typ == 'std::chrono::month_weekday_last':
+            return '{}/{}'.format(m, val['_M_wdl'])
+        if typ == 'std::chrono::year_month':
+            return '{}/{}'.format(y, m)
+        if typ == 'std::chrono::year_month_day':
+            return '{}/{}/{}'.format(y, m, val['_M_d'])
+        if typ == 'std::chrono::year_month_day_last':
+            return '{}/{}'.format(y, val['_M_mdl'])
+        if typ == 'std::chrono::year_month_weekday':
+            return '{}/{}'.format(y, m, val['_M_wdi'])
+        if typ == 'std::chrono::year_month_weekday_last':
+            return '{}/{}'.format(y, m, val['_M_wdl'])
+        if typ.startswith('std::chrono::hh_mm_ss'):
+            fract = ''
+            if val['fractional_width'] != 0:
+                fract = '.{:0{}d}'.format(int(val['_M_ss']['__r']),
+                                          int(val['fractional_width']))
+            h = int(val['_M_h']['__r'])
+            m = int(val['_M_m']['__r'])
+            s = int(val['_M_s']['__r'])
+            if val['_M_is_neg']:
+                h = -h
+            return '{:02}:{:02}:{:02}{}'.format(h, m, s, fract)
+
+class StdChronoTimeZonePrinter:
+    "Print a chrono::time_zone or chrono::time_zone_link"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        str = '%s %s' % (self.typename, self.val['_M_name'])
+        if self.typename.endswith("_link"):
+            str += ' -> %s' % (self.val['_M_target'])
+        return str
+
+class StdChronoLeapSecondPrinter:
+    "Print a chrono::leap_second"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        date = self.val['_M_s']['__r']
+        neg = '+-'[date < 0]
+        return '%s %d (%c)' % (self.typename, abs(date), neg)
+
+class StdChronoTzdbPrinter:
+    "Print a chrono::tzdb"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        return '%s %s' % (self.typename, self.val['version'])
+
+class StdChronoTimeZoneRulePrinter:
+    "Print a chrono::time_zone rule"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        on = self.val['on']
+        kind = on['kind']
+        month = months[on['month']]
+        suffixes = {1:'st', 2:'nd', 3:'rd', 21:'st', 22:'nd', 23:'rd', 31:'st'}
+        day = on['day_of_month']
+        ordinal_day = '{}{}'.format(day, suffixes.get(day, 'th'))
+        if kind == 0: # DayOfMonth
+                start = '{} {}{}'.format(month, ordinal_day)
+        else:
+            weekday = weekdays[on['day_of_week']]
+            if kind == 1: # LastWeekDay
+                start = 'last {} in {}'.format(weekday, month)
+            else:
+                if kind == 2: # LessEq
+                    direction = ('last', '<=')
+                else:
+                    direction = ('first', '>=')
+                day = on['day_of_month']
+                start = '{} {} {} {} {}'.format(direction[0], weekday,
+                                                direction[1], month,
+                                                ordinal_day)
+        return 'time_zone rule {} from {} to {} starting on {}'.format(
+                self.val['name'], self.val['from'], self.val['to'], start)
+
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -2222,9 +2456,9 @@ def register_type_printers(obj):
     add_one_type_printer(obj, 'fpos', 'streampos')
 
     # Add type printers for <chrono> typedefs.
-    for dur in ('nanoseconds', 'microseconds', 'milliseconds',
-                'seconds', 'minutes', 'hours'):
-        add_one_type_printer(obj, 'duration', dur)
+    for dur in ('nanoseconds', 'microseconds', 'milliseconds', 'seconds',
+                'minutes', 'hours', 'days', 'weeks', 'years', 'months'):
+        add_one_type_printer(obj, 'chrono::duration', 'chrono::' + dur)
 
     # Add type printers for <random> typedefs.
     add_one_type_printer(obj, 'linear_congruential_engine', 'minstd_rand0')
@@ -2376,6 +2610,11 @@ def build_libstdcxx_dictionary ():
         libstdcxx_printer.add_version('std::', 'basic_' + sstream, StdStringStreamPrinter)
         libstdcxx_printer.add_version('std::__cxx11::', 'basic_' + sstream, StdStringStreamPrinter)
 
+    libstdcxx_printer.add_version('std::chrono::', 'duration',
+                                  StdChronoDurationPrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'time_point',
+                                  StdChronoTimePointPrinter)
+
     # std::regex components
     libstdcxx_printer.add_version('std::__detail::', '_State',
                                   StdRegexStatePrinter)
@@ -2428,7 +2667,25 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'weak_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'strong_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'span', StdSpanPrinter)
-    libstdcxx_printer.add_version('std::', 'basic_format_args', StdFormatArgsPrinter)
+    libstdcxx_printer.add_version('std::', 'basic_format_args',
+                                  StdFormatArgsPrinter)
+    for c in ['day','month','year','weekday','weekday_indexed','weekday_last',
+              'month_day','month_day_last','month_weekday','month_weekday_last',
+              'year_month','year_month_day','year_month_day_last',
+              'year_month_weekday','year_month_weekday_last', 'hh_mm_ss']:
+        libstdcxx_printer.add_version('std::chrono::', c,
+                                      StdChronoCalendarPrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'time_zone',
+                                  StdChronoTimeZonePrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'time_zone_link',
+                                  StdChronoTimeZonePrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'zoned_time',
+                                  StdChronoZonedTimePrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'leap_second',
+                                  StdChronoLeapSecondPrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'tzdb', StdChronoTzdbPrinter)
+    #libstdcxx_printer.add_version('std::chrono::(anonymous namespace)', 'Rule',
+    #                              StdChronoTimeZoneRulePrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)
