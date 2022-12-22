@@ -1190,14 +1190,14 @@ compute_const_anchors (rtx cst,
 		       HOST_WIDE_INT *lower_base, HOST_WIDE_INT *lower_offs,
 		       HOST_WIDE_INT *upper_base, HOST_WIDE_INT *upper_offs)
 {
-  HOST_WIDE_INT n = INTVAL (cst);
+  unsigned HOST_WIDE_INT n = UINTVAL (cst);
 
   *lower_base = n & ~(targetm.const_anchor - 1);
-  if (*lower_base == n)
+  if ((unsigned HOST_WIDE_INT) *lower_base == n)
     return false;
 
-  *upper_base =
-    (n + (targetm.const_anchor - 1)) & ~(targetm.const_anchor - 1);
+  *upper_base = ((n + (targetm.const_anchor - 1))
+		 & ~(targetm.const_anchor - 1));
   *upper_offs = n - *upper_base;
   *lower_offs = n - *lower_base;
   return true;
@@ -1214,7 +1214,7 @@ insert_const_anchor (HOST_WIDE_INT anchor, rtx reg, HOST_WIDE_INT offs,
   rtx anchor_exp;
   rtx exp;
 
-  anchor_exp = GEN_INT (anchor);
+  anchor_exp = gen_int_mode (anchor, mode);
   hash = HASH (anchor_exp, mode);
   elt = lookup (anchor_exp, hash, mode);
   if (!elt)
