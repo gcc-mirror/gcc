@@ -4613,7 +4613,7 @@ package body Sem_Attr is
 
          if Comes_From_Source (N) then
 
-            --  This attribute be prefixed with references to objects or
+            --  This attribute can be prefixed with references to objects or
             --  values (such as a current instance value given within a type
             --  or subtype aspect).
 
@@ -4621,6 +4621,13 @@ package body Sem_Attr is
               and then not Is_Current_Instance_Reference_In_Type_Aspect (P)
             then
                Error_Attr_P ("prefix of % attribute must be object");
+
+            --  Just like attribute 'Valid_Scalars this attribute is illegal
+            --  on unchecked union types.
+
+            elsif Has_Unchecked_Union (Validated_View (P_Type)) then
+               Error_Attr_P
+                 ("attribute % not allowed for Unchecked_Union type");
             end if;
          end if;
 
