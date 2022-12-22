@@ -20,7 +20,7 @@ test_nonexistent()
 			 local_days{Sunday[2]/March/2016} + 2h + 30min};
     VERIFY(false);
   } catch (const nonexistent_local_time& e) {
-    // VERIFY( e.what() == expected );
+    VERIFY( e.what() == expected );
   }
 }
 
@@ -38,7 +38,7 @@ test_ambiguous()
 			 local_days{Sunday[1]/November/2016} + 1h + 30min};
     VERIFY(false);
   } catch (const ambiguous_local_time& e) {
-    // VERIFY( e.what() == expected );
+    VERIFY( e.what() == expected );
   }
 }
 

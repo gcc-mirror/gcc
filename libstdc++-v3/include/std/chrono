@@ -45,7 +45,6 @@
 # include <sstream>
 # include <string>
 # include <vector>
-# include <bits/charconv.h> // __to_chars_len, __to_chars_10_impl
 # include <bits/stl_algo.h> // upper_bound
 # include <bits/shared_ptr.h>
 # include <bits/unique_ptr.h>
@@ -627,8 +626,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_day
       operator/(const year_month& __ym, const day& __d) noexcept;
-
-      // TODO: Implement operator<<, to_stream, from_stream.
     };
 
     // MONTH
@@ -751,8 +748,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr month_weekday_last
       operator/(const weekday_last& __wdl, const month& __m) noexcept;
-
-      // TODO: Implement operator<<, to_stream, from_stream.
     };
 
     inline constexpr month January{1};
@@ -929,8 +924,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_weekday_last
       operator/(const month_weekday_last& __mwdl, const year& __y) noexcept;
-
-      // TODO: Implement operator<<, to_stream, from_stream.
     };
 
     // WEEKDAY
@@ -1052,8 +1045,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __n = static_cast<long long>(__x._M_wd) - __y._M_wd;
 	return days{__detail::__modulo(__n, 7)};
       }
-
-      // TODO: operator<<, from_stream.
     };
 
     inline constexpr weekday Sunday{0};
@@ -1110,8 +1101,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_weekday
       operator/(const year_month& __ym, const weekday_indexed& __wdi) noexcept;
-
-      // TODO: Implement operator<<.
     };
 
     constexpr weekday_indexed
@@ -1151,8 +1140,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_weekday_last
       operator/(const year_month& __ym, const weekday_last& __wdl) noexcept;
-
-      // TODO: Implement operator<<.
     };
 
     constexpr weekday_last
@@ -1224,8 +1211,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_day
       operator/(const month_day& __md, int __y) noexcept;
-
-      // TODO: Implement operator<<, from_stream.
     };
 
     // MONTH_DAY_LAST
@@ -1278,8 +1263,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_day_last
       operator/(const month_day_last& __mdl, int __y) noexcept;
-
-      // TODO: Implement operator<<.
     };
 
     // MONTH_WEEKDAY
@@ -1339,8 +1322,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_weekday
       operator/(const month_weekday& __mwd, int __y) noexcept;
-
-      // TODO: Implement operator<<.
     };
 
     // MONTH_WEEKDAY_LAST
@@ -1401,8 +1382,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_weekday_last
       operator/(const month_weekday_last& __mwdl, int __y) noexcept;
-
-      // TODO: Implement operator<<.
     };
 
     // YEAR_MONTH
@@ -1544,8 +1523,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr year_month_day_last
       operator/(const year_month& __ym, last_spec) noexcept;
-
-      // TODO: Implement operator<<, from_stream.
     };
 
     // YEAR_MONTH_DAY
@@ -1697,8 +1674,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr year_month_day
       operator/(const month_day& __md, int __y) noexcept
       { return chrono::year(__y) / __md; }
-
-      // TODO: Implement operator<<, from_stream.
     };
 
     // Construct from days since 1970/01/01.
@@ -1928,8 +1903,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr year_month_day_last
       operator/(const chrono::month_day_last& __mdl, int __y) noexcept
       { return chrono::year(__y) / __mdl; }
-
-      // TODO: Implement operator<<.
     };
 
     // year_month_day ctor from year_month_day_last
@@ -2118,8 +2091,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr year_month_weekday
       operator/(const month_weekday& __mwd, int __y) noexcept
       { return chrono::year(__y) / __mwd; }
-
-      // TODO: Implement operator<<.
     };
 
     // YEAR_MONTH_WEEKDAY_LAST
@@ -2267,8 +2238,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr year_month_weekday_last
       operator/(const chrono::month_weekday_last& __mwdl, int __y) noexcept
       { return chrono::year(__y) / __mwdl; }
-
-      // TODO: Implement operator<<.
     };
 
     // HH_MM_SS
@@ -2284,6 +2253,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __r *= 10;
 	return __r;
       }
+
+      template<typename _Duration> struct __utc_leap_second;
     }
     /// @endcond
 
@@ -2389,8 +2360,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _M_h + _M_m + _M_s + subseconds();
 	}
 
-	// TODO: Implement operator<<.
-
       private:
 	static constexpr bool _S_is_unsigned
 	  = __and_v<is_integral<typename _Duration::rep>,
@@ -2459,7 +2428,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__byte_duration<ratio<1>>   _M_s{};
 	bool			    _M_is_neg{};
 	__subseconds<precision>	    _M_ss{};
+
+	template<typename> friend struct __detail::__utc_leap_second;
       };
+
+    /// @cond undocumented
+    namespace __detail
+    {
+      // Represents a time that is within a leap second insertion.
+      template<typename _Duration>
+	struct __utc_leap_second
+	{
+	  explicit
+	  __utc_leap_second(const sys_time<_Duration>& __s)
+	  : _M_date(chrono::floor<days>(__s)), _M_time(__s - _M_date)
+	  {
+	    ++_M_time._M_s;
+	  }
+
+	  sys_days _M_date;
+	  hh_mm_ss<common_type_t<_Duration, days>> _M_time;
+	};
+    }
+    /// @endcond
 
     // 12/24 HOURS FUNCTIONS
 
@@ -2540,9 +2531,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_make_what_str(const local_time<_Duration>& __tp,
 			 const local_info& __i)
 	{
-#if 1
-	  return "local time is non-existent";
-#else
 	  std::ostringstream __os;
 	  __os << __tp << " is in a gap between\n"
 	       << local_seconds(__i.first.end.time_since_epoch())
@@ -2552,7 +2540,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       << " which are both equivalent to\n"
 	       << __i.first.end << " UTC";
 	  return std::move(__os).str();
-#endif
 	}
     };
 
@@ -2571,9 +2558,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_make_what_str(const local_time<_Duration>& __tp,
 			 const local_info& __i)
 	{
-#if 1
-	  return "local time is ambiguous";
-#else
 	  std::ostringstream __os;
 	  __os << __tp << " is ambiguous.  It could be\n"
 	       << __tp << ' ' << __i.first.abbrev << " == "
@@ -2581,7 +2565,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       << __tp << ' ' << __i.second.abbrev << " == "
 	       << __tp - __i.second.offset << " UTC";
 	  return std::move(__os).str();
-#endif
 	}
     };
 
@@ -3329,105 +3312,14 @@ namespace __detail
     /// @}
   } // inline namespace chrono_literals
   } // inline namespace literals
-
-  namespace chrono
-  {
-    /// @addtogroup chrono
-    /// @{
-
-    /// @cond undocumented
-    namespace __detail
-    {
-      template<typename _Period>
-	const char*
-	__units_suffix_misc(char* __buf, size_t __n) noexcept
-	{
-	  namespace __tc = std::__detail;
-	  char* __p = __buf;
-	  __p[0] = '[';
-	  unsigned __nlen = __tc::__to_chars_len((uintmax_t)_Period::num);
-	  __tc::__to_chars_10_impl(__p + 1, __nlen, (uintmax_t)_Period::num);
-	  __p += 1 + __nlen;
-	  if constexpr (_Period::den != 1)
-	    {
-	      __p[0] = '/';
-	      unsigned __dlen = __tc::__to_chars_len((uintmax_t)_Period::den);
-	      __tc::__to_chars_10_impl(__p + 1, __dlen, (uintmax_t)_Period::den);
-	      __p += 1 + __dlen;
-	    }
-	  __p[0] = ']';
-	  __p[1] = 's';
-	  __p[2] = '\0';
-	  return __buf;
-	}
-
-      template<typename _Period, typename _CharT>
-	auto
-	__units_suffix(char* __buf, size_t __n) noexcept
-	{
-#define _GLIBCXX_UNITS_SUFFIX(period, suffix) \
-	if constexpr (is_same_v<_Period, period>)	\
-	  {						\
-	    if constexpr (is_same_v<_CharT, wchar_t>)	\
-	      return L##suffix;				\
-	    else					\
-	      return suffix;				\
-	  }						\
-	else
-
-	  _GLIBCXX_UNITS_SUFFIX(atto, "as")
-	  _GLIBCXX_UNITS_SUFFIX(femto, "fs")
-	  _GLIBCXX_UNITS_SUFFIX(pico, "ps")
-	  _GLIBCXX_UNITS_SUFFIX(nano, "ns")
-	  _GLIBCXX_UNITS_SUFFIX(micro, "\u00b5s")
-	  _GLIBCXX_UNITS_SUFFIX(milli, "ms")
-	  _GLIBCXX_UNITS_SUFFIX(centi, "cs")
-	  _GLIBCXX_UNITS_SUFFIX(deci, "ds")
-	  _GLIBCXX_UNITS_SUFFIX(ratio<1>, "s")
-	  _GLIBCXX_UNITS_SUFFIX(deca, "das")
-	  _GLIBCXX_UNITS_SUFFIX(hecto, "hs")
-	  _GLIBCXX_UNITS_SUFFIX(kilo, "ks")
-	  _GLIBCXX_UNITS_SUFFIX(mega, "Ms")
-	  _GLIBCXX_UNITS_SUFFIX(giga, "Gs")
-	  _GLIBCXX_UNITS_SUFFIX(tera, "Ts")
-	  _GLIBCXX_UNITS_SUFFIX(tera, "Ts")
-	  _GLIBCXX_UNITS_SUFFIX(peta, "Ps")
-	  _GLIBCXX_UNITS_SUFFIX(exa, "Es")
-	  _GLIBCXX_UNITS_SUFFIX(ratio<60>, "min")
-	  _GLIBCXX_UNITS_SUFFIX(ratio<3600>, "h")
-	  _GLIBCXX_UNITS_SUFFIX(ratio<86400>, "d")
-#undef _GLIBCXX_UNITS_SUFFIX
-	  return __detail::__units_suffix_misc<_Period>(__buf, __n);
-	}
-    } // namespace __detail
-    /// @endcond
-
-    template<typename _CharT, typename _Traits,
-	     typename _Rep, typename _Period>
-      inline basic_ostream<_CharT, _Traits>&
-      operator<<(std::basic_ostream<_CharT, _Traits>& __os,
-		const duration<_Rep, _Period>& __d)
-      {
-	using period = typename _Period::type;
-	char __buf[sizeof("[/]s") + 2 * numeric_limits<intmax_t>::digits10];
-	std::basic_ostringstream<_CharT, _Traits> __s;
-	__s.flags(__os.flags());
-	__s.imbue(__os.getloc());
-	__s.precision(__os.precision());
-	__s << __d.count();
-	__s << __detail::__units_suffix<period, _CharT>(__buf, sizeof(__buf));
-	__os << std::move(__s).str();
-	return __os;
-      }
-
-    // TODO: from_stream for duration
-
-    /// @} group chrono
-  } // namespace chrono
 #endif // C++20
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#if __cplusplus >= 202002L
+# include <bits/chrono_io.h>
+#endif
 
 #endif // C++11
 

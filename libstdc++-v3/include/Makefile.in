@@ -528,6 +528,7 @@ bits_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/char_traits.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/charconv.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/chrono.h \
+@GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/chrono_io.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/codecvt.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/cow_string.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/deque.tcc \

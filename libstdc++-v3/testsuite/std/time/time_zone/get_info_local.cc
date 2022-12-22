@@ -148,7 +148,6 @@ test_egypt()
   VERIFY( info.second.save == 1h );
   VERIFY( info.second.abbrev == "EEST" );
 
-#if 0
   std::ostringstream out;
   local_seconds lt(local_days(2001y/January/1));
   const local_days end(2021y/January/1);
@@ -209,7 +208,6 @@ test_egypt()
 [[2014-09-25 21:00:00,32767-12-31 00:00:00,02:00:00,0min,EET]]
 )";
   VERIFY( out.str() == expected );
-#endif
 }
 
 int main()

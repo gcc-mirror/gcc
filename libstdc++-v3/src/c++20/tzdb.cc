@@ -511,27 +511,25 @@ namespace std::chrono
       friend ostream& operator<<(ostream& out, const Rule& r)
       {
 	out << "Rule " << r.name << ' ' << (int)r.from << ' ' << (int)r.to
-	    << ' ' << (unsigned)r.when.day.get_month() << ' ';
+	    << ' ' << r.when.day.get_month() << ' ';
 	switch (r.when.day.kind)
 	{
 	case on_day::DayOfMonth:
 	  out << (unsigned)r.when.day.get_day();
 	  break;
 	case on_day::LastWeekday:
-	  out << "last" << weekday(r.when.day.day_of_week).c_encoding();
+	  out << "last" << weekday(r.when.day.day_of_week);
 	  break;
 	case on_day::LessEq:
-	  out << weekday(r.when.day.day_of_week).c_encoding() << " <= "
+	  out << weekday(r.when.day.day_of_week) << " <= "
 	    << r.when.day.day_of_month;
 	  break;
 	case on_day::GreaterEq:
-	  out << weekday(r.when.day.day_of_week).c_encoding() << " >= "
+	  out << weekday(r.when.day.day_of_week) << " >= "
 	    << r.when.day.day_of_month;
 	  break;
 	}
-	hh_mm_ss hms(r.when.time);
-	out << ' ' << hms.hours().count() << ':' << hms.minutes().count()
-	    << ':' << hms.seconds().count() << "wusd"[r.when.indicator];
+	out << ' ' << hh_mm_ss(r.when.time) << "wusd"[r.when.indicator];
 	out << ' ' << r.save.count();
 	if (!r.letters.empty())
 	  out << ' ' << r.letters;

@@ -124,8 +124,7 @@ namespace __gnu_test
   using std::chrono::time_zone_link;
 #endif
 
-  // FIXME
-  // using std::chrono::local_time_format;
+  using std::chrono::local_time_format;
 
   // FIXME
   // using std::chrono::parse;
