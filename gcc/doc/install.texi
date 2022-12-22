@@ -227,7 +227,9 @@ described below.
 @heading Tools/packages necessary for building GCC
 @table @asis
 @item ISO C++11 compiler
-Necessary to bootstrap GCC.
+Necessary to bootstrap GCC.  GCC 4.8.3 or newer has sufficient
+support for used C++11 features, with earlier GCC versions you
+might run into implementation bugs.
 
 Versions of GCC prior to 11 also allow bootstrapping with an ISO C++98
 compiler, versions of GCC prior to 4.8 also allow bootstrapping with a
@@ -236,7 +238,7 @@ bootstrapping with a traditional (K&R) C compiler.
 
 To build all languages in a cross-compiler or other configuration where
 3-stage bootstrap is not performed, you need to start with an existing
-GCC binary (version 4.8 or later) because source code for language
+GCC binary (version 4.8.3 or later) because source code for language
 frontends other than C might use GCC extensions.
 
 @item C standard library and headers
