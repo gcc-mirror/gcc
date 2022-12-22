@@ -2636,6 +2636,9 @@ Test environment appears to run executables on a simulator that
 accepts only @code{EM_SPARC} executables and chokes on @code{EM_SPARC32PLUS}
 or @code{EM_SPARCV9} executables.
 
+@item user_msr
+Target supports the execution of @code{user_msr} instructions.
+
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
 

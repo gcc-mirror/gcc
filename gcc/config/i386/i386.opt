@@ -1344,3 +1344,7 @@ hook reg or mem constraint in inline asm to GPR16.
 mevex512
 Target Mask(ISA2_EVEX512) Var(ix86_isa_flags2) Save
 Support 512 bit vector built-in functions and code generation.
+
+musermsr
+Target Mask(ISA2_USER_MSR) Var(ix86_isa_flags2) Save
+Support USER_MSR built-in functions and code generation.

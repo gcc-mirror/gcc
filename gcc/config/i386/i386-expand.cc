@@ -13471,6 +13471,41 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	return 0;
       }
 
+    case IX86_BUILTIN_URDMSR:
+    case IX86_BUILTIN_UWRMSR:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	op0 = expand_normal (arg0);
+
+	if (CONST_INT_P (op0))
+	  {
+	    unsigned HOST_WIDE_INT val = UINTVAL (op0);
+	    if (val > 0xffffffff)
+	      op0 = force_reg (DImode, op0);
+	  }
+	else
+	  op0 = force_reg (DImode, op0);
+
+	if (fcode == IX86_BUILTIN_UWRMSR)
+	  {
+	    arg1 = CALL_EXPR_ARG (exp, 1);
+	    op1 = expand_normal (arg1);
+	    op1 = force_reg (DImode, op1);
+	    icode = CODE_FOR_uwrmsr;
+	    target = 0;
+	  }
+	else
+	  {
+	    if (target == 0)
+	      target = gen_reg_rtx (DImode);
+	    icode = CODE_FOR_urdmsr;
+	    op1 = op0;
+	    op0 = target;
+	  }
+	emit_insn (GEN_FCN (icode) (op0, op1));
+	return target;
+      }
+
     case IX86_BUILTIN_VEC_INIT_V2SI:
     case IX86_BUILTIN_VEC_INIT_V4HI:
     case IX86_BUILTIN_VEC_INIT_V8QI:

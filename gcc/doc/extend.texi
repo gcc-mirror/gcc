@@ -7210,6 +7210,11 @@ Enable/disable the generation of the SHA512 instructions.
 @itemx no-sm4
 Enable/disable the generation of the SM4 instructions.
 
+@cindex @code{target("usermsr")} function attribute, x86
+@item usermsr
+@itemx no-usermsr
+Enable/disable the generation of the USER_MSR instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld

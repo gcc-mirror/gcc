@@ -1262,6 +1262,14 @@ ix86_init_mmx_sse_builtins (void)
 	       "__builtin_ia32_testui",
 	       UINT8_FTYPE_VOID, IX86_BUILTIN_TESTUI);
 
+  /* USER_MSR.  */
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_USER_MSR,
+	       "__builtin_ia32_urdmsr", UINT64_FTYPE_UINT64,
+	       IX86_BUILTIN_URDMSR);
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_USER_MSR,
+	       "__builtin_ia32_uwrmsr", VOID_FTYPE_UINT64_UINT64,
+	       IX86_BUILTIN_UWRMSR);
+
   /* CLDEMOTE.  */
   def_builtin (0, OPTION_MASK_ISA2_CLDEMOTE, "__builtin_ia32_cldemote",
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLDEMOTE);

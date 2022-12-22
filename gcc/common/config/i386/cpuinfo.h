@@ -838,6 +838,8 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_IBT);
       if (edx & bit_UINTR)
 	set_feature (FEATURE_UINTR);
+      if (edx & bit_USER_MSR)
+	set_feature (FEATURE_USER_MSR);
       if (amx_usable)
 	{
 	  if (edx & bit_AMX_TILE)

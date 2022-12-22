@@ -712,6 +712,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__SM4__");
   if (isa_flag2 & OPTION_MASK_ISA2_EVEX512)
     def_or_undef (parse_in, "__EVEX512__");
+  if (isa_flag2 & OPTION_MASK_ISA2_USER_MSR)
+    def_or_undef (parse_in, "__USER_MSR__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
