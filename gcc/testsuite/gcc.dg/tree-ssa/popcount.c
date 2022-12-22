@@ -39,4 +39,4 @@ void PopCount3 (long b1) {
       }
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin_popcount" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_popcount|\\.POPCOUNT" 3 "optimized" } } */

@@ -2033,11 +2033,18 @@ static tree
 build_popcount_expr (tree src)
 {
   tree fn;
+  bool use_ifn = false;
   int prec = TYPE_PRECISION (TREE_TYPE (src));
   int i_prec = TYPE_PRECISION (integer_type_node);
   int li_prec = TYPE_PRECISION (long_integer_type_node);
   int lli_prec = TYPE_PRECISION (long_long_integer_type_node);
-  if (prec <= i_prec)
+
+  tree utype = unsigned_type_for (TREE_TYPE (src));
+  src = fold_convert (utype, src);
+
+  if (direct_internal_fn_supported_p (IFN_POPCOUNT, utype, OPTIMIZE_FOR_BOTH))
+    use_ifn = true;
+  else if (prec <= i_prec)
     fn = builtin_decl_implicit (BUILT_IN_POPCOUNT);
   else if (prec == li_prec)
     fn = builtin_decl_implicit (BUILT_IN_POPCOUNTL);
@@ -2046,12 +2053,11 @@ build_popcount_expr (tree src)
   else
     return NULL_TREE;
 
-  tree utype = unsigned_type_for (TREE_TYPE (src));
-  src = fold_convert (utype, src);
-  if (prec < i_prec)
-    src = fold_convert (unsigned_type_node, src);
   tree call;
-  if (prec == 2 * lli_prec)
+  if (use_ifn)
+      call = build_call_expr_internal_loc (UNKNOWN_LOCATION, IFN_POPCOUNT,
+					   integer_type_node, 1, src);
+  else if (prec == 2 * lli_prec)
     {
       tree src1 = fold_convert (long_long_unsigned_type_node,
 				fold_build2 (RSHIFT_EXPR, TREE_TYPE (src),
@@ -2064,7 +2070,12 @@ build_popcount_expr (tree src)
       call = fold_build2 (PLUS_EXPR, integer_type_node, call1, call2);
     }
   else
-    call = build_call_expr (fn, 1, src);
+    {
+      if (prec < i_prec)
+	src = fold_convert (unsigned_type_node, src);
+
+      call = build_call_expr (fn, 1, src);
+    }
 
   return call;
 }
