@@ -36,7 +36,7 @@ else
 inst_sources =
 endif
 
-sources =
+sources = tzdb.cc
 
 vpath % $(top_srcdir)/src/c++20
 

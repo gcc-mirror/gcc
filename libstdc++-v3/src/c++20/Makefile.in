@@ -121,7 +121,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__20convenience_la_LIBADD =
-am__objects_1 =
+am__objects_1 = tzdb.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = sstream-inst.lo
 am_libc__20convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
 libc__20convenience_la_OBJECTS = $(am_libc__20convenience_la_OBJECTS)
@@ -431,7 +431,7 @@ headers =
 @ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc
 
-sources = 
+sources = tzdb.cc
 libc__20convenience_la_SOURCES = $(sources)  $(inst_sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be

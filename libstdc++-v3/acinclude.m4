@@ -5140,6 +5140,33 @@ AC_DEFUN([GLIBCXX_EMERGENCY_EH_ALLOC], [
   AC_SUBST(EH_POOL_FLAGS)
 ])
 
+dnl
+dnl Allow the location of tzdata files to be configured.
+dnl
+dnl --with-libstdcxx-zoneinfo-dir=PATH will set the directory to PATH.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_ZONEINFO_DIR if std::chrono::tzdb should use a non-default
+dnl    directory for the tzdata.zi and leapseconds files.
+dnl
+AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
+  AC_ARG_WITH([libstdcxx-zoneinfo-dir],
+    AC_HELP_STRING([--with-libstdcxx-zoneinfo-dir],
+		   [the directory to search for tzdata files]),
+    [zoneinfo_dir="${withval}"
+     AC_DEFINE(_GLIBCXX_ZONEINFO_DIR, "${withval}",
+       [Define if a non-default location should be used for tzdata files.])
+    ],
+    [
+    case "$host" in
+      # *-*-aix*) zoneinfo_dir="/usr/share/lib/zoneinfo" ;;
+      *) zoneinfo_dir="/usr/share/zoneinfo" ;;
+    esac
+    ])
+
+  AC_MSG_NOTICE([zoneinfo data directory: ${zoneinfo_dir}])
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])

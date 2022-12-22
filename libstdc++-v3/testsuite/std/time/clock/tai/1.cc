@@ -34,8 +34,26 @@ test02()
   VERIFY( clock_cast<tai_clock>(clock_cast<utc_clock>(t)) == t );
 }
 
+void
+test03()
+{
+  using namespace std::chrono;
+
+  tai_time<tai_clock::duration> tai1 = tai_clock::now();
+  utc_time<utc_clock::duration> utc = utc_clock::now();
+  tai_time<tai_clock::duration> tai2 = tai_clock::now();
+
+  auto delta = tai2 - tai1;
+  VERIFY( (utc - clock_cast<utc_clock>(tai1)) <= delta );
+  VERIFY( (clock_cast<utc_clock>(tai2) - utc) <= delta );
+
+  tai_seconds s = time_point_cast<seconds>(tai1);
+  VERIFY( tai1 - s < 1s );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
 }

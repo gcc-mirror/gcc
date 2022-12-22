@@ -43,8 +43,6 @@ namespace __gnu_test
   using std::chrono::sys_seconds;
   using std::chrono::sys_days;
 
-  // FIXME
-#if 0
   using std::chrono::utc_clock;
   using std::chrono::utc_time;
   using std::chrono::utc_seconds;
@@ -59,7 +57,6 @@ namespace __gnu_test
   using std::chrono::gps_clock;
   using std::chrono::gps_time;
   using std::chrono::gps_seconds;
-#endif
 
   using std::chrono::file_clock;
   using std::chrono::file_time;
@@ -69,13 +66,10 @@ namespace __gnu_test
   using std::chrono::local_seconds;
   using std::chrono::local_days;
 
-  // FIXME
-#if 0
   using std::chrono::clock_time_conversion;
   using std::chrono::clock_cast;
 
   using std::chrono::last_spec;
-#endif
 
   using std::chrono::day;
   using std::chrono::month;
@@ -101,8 +95,7 @@ namespace __gnu_test
   using std::chrono::make12;
   using std::chrono::make24;
 
-  // FIXME
-#if 0
+#if _GLIBCXX_USE_CXX11_ABI
   using std::chrono::tzdb;
   using std::chrono::tzdb_list;
   using std::chrono::get_tzdb;
@@ -129,11 +122,13 @@ namespace __gnu_test
   using std::chrono::leap_second;
 
   using std::chrono::time_zone_link;
-
-  using std::chrono::local_time_format;
-
-  using std::chrono::parse;
 #endif
+
+  // FIXME
+  // using std::chrono::local_time_format;
+
+  // FIXME
+  // using std::chrono::parse;
 
   using std::chrono::last;
   using std::chrono::Sunday;

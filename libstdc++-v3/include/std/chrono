@@ -46,9 +46,15 @@
 # include <string>
 # include <vector>
 # include <bits/charconv.h> // __to_chars_len, __to_chars_10_impl
-# include <bits/stl_algo.h> // upper_bound TODO: move leap_second_info to .so
+# include <bits/stl_algo.h> // upper_bound
 # include <bits/shared_ptr.h>
 # include <bits/unique_ptr.h>
+#endif
+
+#if __cplusplus >= 202002L
+// TODO formatting and parsing
+// # undef __cpp_lib_chrono
+// # define __cpp_lib_chrono 201907L
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -140,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  using _CDur = common_type_t<_Duration, seconds>;
 	  const auto __li = chrono::get_leap_second_info(__t);
-	  sys_time<_CDur> __s{__t.time_since_epoch() - seconds{__li.elapsed}};
+	  sys_time<_CDur> __s{__t.time_since_epoch() - __li.elapsed};
 	  if (__li.is_leap_second)
 	    __s = chrono::floor<seconds>(__s) + seconds{1} - _CDur{1};
 	  return __s;
@@ -149,13 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Duration>
 	[[nodiscard]]
 	static utc_time<common_type_t<_Duration, seconds>>
-	from_sys(const sys_time<_Duration>& __t)
-	{
-	  using _CDur = common_type_t<_Duration, seconds>;
-	  utc_time<_Duration> __u(__t.time_since_epoch());
-	  const auto __li = chrono::get_leap_second_info(__u);
-	  return utc_time<_CDur>{__u} + seconds{__li.elapsed};
-	}
+	from_sys(const sys_time<_Duration>& __t);
     };
 
     /** A clock that measures International Atomic Time.
@@ -2056,7 +2056,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    - chrono::weekday{sys_days{_M_y / _M_m / 1}}
 		    + days((_M_wdi.index()-1)*7 + 1));
 	__glibcxx_assert(__d.count() >= 1);
-	return __d.count() <= unsigned{(_M_y / _M_m / last).day()};
+	return (unsigned)__d.count() <= (unsigned)(_M_y / _M_m / last).day();
       }
 
       friend constexpr bool
@@ -2500,7 +2500,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
     // C++20 [time.zones] Time zones
+
+    struct tzdb;
 
     struct sys_info
     {
@@ -2532,9 +2535,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ __glibcxx_assert(__i.result == local_info::nonexistent); }
 
     private:
-      template<typename _Duration> // TODO
+      template<typename _Duration>
 	static string
-	_S_make_what_str(const local_time<_Duration>&, const local_info&);
+	_S_make_what_str(const local_time<_Duration>& __tp,
+			 const local_info& __i)
+	{
+#if 1
+	  return "local time is non-existent";
+#else
+	  std::ostringstream __os;
+	  __os << __tp << " is in a gap between\n"
+	       << local_seconds(__i.first.end.time_since_epoch())
+	       + __i.first.offset << ' ' << __i.first.abbrev << " and\n"
+	       << local_seconds(__i.second.begin.time_since_epoch())
+	       + __i.second.offset << ' ' << __i.second.abbrev
+	       << " which are both equivalent to\n"
+	       << __i.first.end << " UTC";
+	  return std::move(__os).str();
+#endif
+	}
     };
 
     class ambiguous_local_time : public runtime_error
@@ -2542,15 +2561,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       template<typename _Duration>
 	ambiguous_local_time(const local_time<_Duration>& __tp,
-			       const local_info& __i)
+			     const local_info& __i)
 	: runtime_error(_S_make_what_str(__tp, __i))
-	{ __glibcxx_assert(__i.result == local_info::nonexistent); }
+	{ __glibcxx_assert(__i.result == local_info::ambiguous); }
 
     private:
-      template<typename _Duration> // TODO
+      template<typename _Duration>
 	static string
-	_S_make_what_str(const local_time<_Duration>&, const local_info&);
+	_S_make_what_str(const local_time<_Duration>& __tp,
+			 const local_info& __i)
+	{
+#if 1
+	  return "local time is ambiguous";
+#else
+	  std::ostringstream __os;
+	  __os << __tp << " is ambiguous.  It could be\n"
+	       << __tp << ' ' << __i.first.abbrev << " == "
+	       << __tp - __i.first.offset << " UTC or\n"
+	       << __tp << ' ' << __i.second.abbrev << " == "
+	       << __tp - __i.second.offset << " UTC";
+	  return std::move(__os).str();
+#endif
+	}
     };
+
+    template<typename _Duration>
+      [[noreturn]] void
+      __throw_bad_local_time(const local_time<_Duration>& __tp,
+			     const local_info& __i)
+      {
+#if __cpp_exceptions
+	if (__i.result == local_info::nonexistent)
+	  throw nonexistent_local_time(__tp, __i);
+	throw ambiguous_local_time(__tp, __i);
+#else
+	__builtin_abort();
+#endif
+      }
 
     enum class choose { earliest, latest };
 
@@ -2560,45 +2607,187 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       time_zone(time_zone&&) = default;
       time_zone& operator=(time_zone&&) = default;
 
+      ~time_zone();
+
+      [[nodiscard]]
       string_view name() const noexcept { return _M_name; }
 
       template<typename _Duration>
 	sys_info
-	get_info(const sys_time<_Duration>& __st) const;
+	get_info(const sys_time<_Duration>& __st) const
+	{ return _M_get_sys_info(chrono::floor<seconds>(__st)); }
 
       template<typename _Duration>
 	local_info
-	get_info(const local_time<_Duration>& __tp) const;
+	get_info(const local_time<_Duration>& __tp) const
+	{ return _M_get_local_info(chrono::floor<seconds>(__tp)); }
 
       template<typename _Duration>
 	sys_time<common_type_t<_Duration, seconds>>
-	to_sys(const local_time<_Duration>& __tp) const;
+	to_sys(const local_time<_Duration>& __tp) const
+	{
+	  local_info __info = get_info(__tp);
+
+	  if (__info.result != local_info::unique)
+	    __throw_bad_local_time(__tp, __info);
+
+	  return sys_time<_Duration>(__tp.time_since_epoch())
+		   - __info.first.offset;
+	}
 
       template<typename _Duration>
 	sys_time<common_type_t<_Duration, seconds>>
-	to_sys(const local_time<_Duration>& __tp, choose __z) const;
+	to_sys(const local_time<_Duration>& __tp, choose __z) const
+	{
+	  local_info __info = get_info(__tp);
+
+	  if (__info.result == local_info::nonexistent)
+	    return __info.first.end; // Last second of the previous sys_info.
+
+	  sys_time<_Duration> __st(__tp.time_since_epoch());
+
+	  if (__info.result == local_info::ambiguous && __z == choose::latest)
+	    return __st - __info.second.offset; // Time in the later sys_info.
+	  // else if __z == earliest, use __info.first.offset as below:
+
+	  return __st - __info.first.offset;
+	}
 
       template<typename _Duration>
 	local_time<common_type_t<_Duration, seconds>>
-	to_local(const sys_time<_Duration>& __tp) const;
+	to_local(const sys_time<_Duration>& __tp) const
+	{
+	  auto __d = (__tp + get_info(__tp).offset).time_since_epoch();
+	  return local_time<common_type_t<_Duration, seconds>>(__d);
+	}
 
-      friend bool
+      [[nodiscard]] friend bool
       operator==(const time_zone& __x, const time_zone& __y) noexcept
-      { return __x.name() == __y.name(); }
+      { return __x._M_name == __y._M_name; }
 
-      friend strong_ordering
+      [[nodiscard]] friend strong_ordering
       operator<=>(const time_zone& __x, const time_zone& __y) noexcept
-      { return __x.name() <=> __y.name(); }
+      { return __x._M_name <=> __y._M_name; }
 
     private:
-      string _M_name;
+      sys_info _M_get_sys_info(sys_seconds) const;
+      local_info _M_get_local_info(local_seconds) const;
+
+      friend const tzdb& reload_tzdb();
+      friend struct tzdb;
+      friend class tzdb_list;
+
       struct _Impl;
+
+      explicit time_zone(unique_ptr<_Impl> __p);
+      string _M_name;
       unique_ptr<_Impl> _M_impl;
     };
 
-    struct tzdb;
     const time_zone* locate_zone(string_view __tz_name);
     const time_zone* current_zone();
+
+    /** The list of `chrono::tzdb` objects
+     *
+     * A single object of this type is constructed by the C++ runtime,
+     * and can be accessed by calling `chrono::get_tzdb_list()`.
+     *
+     * The front of the list is the current `tzdb` object and can be accessed
+     * via `chrono::get_tzdb_list().front()` or `chrono::get_tzdb()` or
+     * `*chrono::get_tzdb_list().begin()`.
+     *
+     * The `chrono::reload_tzdb()` function will check for a newer version
+     * and if found, insert it at the front of the list.
+     *
+     * @since C++20
+     */
+    class tzdb_list
+    {
+      struct _Node;
+
+    public:
+      tzdb_list(const tzdb_list&) = delete;
+      tzdb_list& operator=(const tzdb_list&) = delete;
+
+      /** An iterator into the `tzdb_list`
+       *
+       * As a extension, in libstdc++ each `tzdb` is reference-counted
+       * and the `const_iterator` type shares ownership of the object it
+       * refers to. This ensures that a `tzdb` erased from the list will
+       * not be destroyed while there is an iterator that refers to it.
+       */
+      class const_iterator
+      {
+      public:
+	using value_type        = tzdb;
+	using reference         = const tzdb&;
+	using pointer           = const tzdb*;
+	using difference_type   = ptrdiff_t;
+	using iterator_category = forward_iterator_tag;
+
+	constexpr const_iterator() = default;
+	const_iterator(const const_iterator&) = default;
+	const_iterator(const_iterator&&) = default;
+	const_iterator& operator=(const const_iterator&) = default;
+	const_iterator& operator=(const_iterator&&) = default;
+
+	reference operator*() const noexcept;
+	pointer operator->() const noexcept { return &**this; }
+	const_iterator& operator++();
+	const_iterator operator++(int);
+
+	bool operator==(const const_iterator&) const noexcept = default;
+
+      private:
+	explicit const_iterator(const shared_ptr<_Node>&) noexcept;
+
+	friend class tzdb_list;
+
+	shared_ptr<_Node> _M_node;
+	void* _M_reserved = nullptr;
+      };
+
+      /** Access the current `tzdb` at the front of the list.
+       *
+       * This returns a reference to the same object as `chrono::get_tzdb()`.
+       *
+       * @returns A reference to the current tzdb object.
+       * @since C++20
+       */
+      const tzdb& front() const noexcept;
+
+      /** Remove the tzdb object _after_ the one the iterator refers to.
+       *
+       * Calling this function concurently with any of `front()`, `begin()`,
+       * or `end()` does not cause a data race, but in general this function
+       * is not thread-safe. The behaviour may be undefined if erasing an
+       * element from the list while another thread is calling the same
+       * function, or incrementing an iterator into the list, or accessing
+       * the element being erased (unless it is accessed through an iterator).
+       *
+       * @param __p A dereferenceable iterator.
+       * @returns An iterator the element after the one that was erased
+       *          (or `end()` if there is no such element).
+       * @since C++20
+       */
+      const_iterator erase_after(const_iterator __p);
+
+      const_iterator begin() const noexcept;
+      const_iterator end() const noexcept { return {}; }
+      const_iterator cbegin() const noexcept { return begin(); }
+      const_iterator cend() const noexcept { return end(); }
+
+    private:
+      constexpr explicit tzdb_list(nullptr_t);
+
+      friend tzdb_list& get_tzdb_list();
+      friend const tzdb& get_tzdb();
+      friend const tzdb& reload_tzdb();
+      friend struct tzdb;
+      friend class leap_second;
+      friend struct time_zone::_Impl;
+      friend class time_zone_link;
+    };
 
     class time_zone_link
     {
@@ -2619,7 +2808,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       friend const tzdb& reload_tzdb();
-      // TODO unspecified additional constructors
+      friend class tzdb_list::_Node;
+
+      explicit time_zone_link(nullptr_t) { }
+
       string _M_name;
       string _M_target;
     };
@@ -2720,10 +2912,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       explicit leap_second(seconds::rep __s) : _M_s(__s) { }
 
+      friend class tzdb_list::_Node;
+
       friend const tzdb& reload_tzdb();
-      template<typename _Dur>
+
+      template<typename _Duration>
 	friend leap_second_info
-	get_leap_second_info(const utc_time<_Dur>&);
+	get_leap_second_info(const utc_time<_Duration>&);
 
       seconds _M_s; // == date().time_since_epoch() * value().count()
     };
@@ -2745,9 +2940,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct tzdb
     {
       string version;
-      vector<time_zone> zones;
-      vector<time_zone_link> links;
-      vector<leap_second> leap_seconds;
+      _GLIBCXX_STD_C::vector<time_zone> zones;
+      _GLIBCXX_STD_C::vector<time_zone_link> links;
+      _GLIBCXX_STD_C::vector<leap_second> leap_seconds;
 
       const time_zone*
       locate_zone(string_view __tz_name) const;
@@ -2757,146 +2952,353 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       friend const tzdb& reload_tzdb();
-
-      struct _Rule;
-      vector<_Rule> _M_rules;
+      friend class time_zone;
+      friend class tzdb_list::_Node;
     };
 
-    class tzdb_list
-    {
-      struct _Node;
-    public:
-      tzdb_list(const tzdb_list&) = delete;
-      tzdb_list& operator=(const tzdb_list&) = delete;
+    tzdb_list& get_tzdb_list();
+    const tzdb& get_tzdb();
 
-      class const_iterator
-      {
-      public:
-	using value_type        = tzdb;
-	using reference         = const tzdb&;
-	using pointer           = const tzdb*;
-	using difference_type   = ptrdiff_t;
-	using iterator_category = forward_iterator_tag;
-
-	constexpr const_iterator() = default;
-	const_iterator(const const_iterator&) = default;
-	const_iterator(const_iterator&&) = default;
-	const_iterator& operator=(const const_iterator&) = default;
-	const_iterator& operator=(const_iterator&&) = default;
-
-	reference operator*() const noexcept;
-	pointer operator->() const noexcept { return &**this; }
-	const_iterator& operator++();
-	const_iterator operator++(int);
-
-	bool operator==(const const_iterator&) const noexcept = default;
-
-      private:
-	explicit const_iterator(const shared_ptr<_Node>&) noexcept;
-
-	shared_ptr<_Node> _M_node;
-	void* _M_reserved = nullptr;
-      };
-
-      // TODO const tzdb& front() const noexcept;
-
-      const_iterator erase_after(const_iterator);
-
-      const_iterator begin() const noexcept;
-      const_iterator end() const noexcept { return {}; }
-      const_iterator cbegin() const noexcept { return begin(); }
-      const_iterator cend() const noexcept { return end(); }
-
-    private:
-      constexpr explicit tzdb_list(nullptr_t);
-
-      friend const tzdb_list& get_tzdb_list();
-      friend const tzdb& get_tzdb();
-      friend const tzdb& reload_tzdb();
-
-      static _Node* _S_head;
-      static shared_ptr<_Node> _S_head_owner;
-    };
-
-    // TODO
-    // const tzdb_list& get_tzdb_list();
-    // const tzdb& get_tzdb();
-
-    // const tzdb& reload_tzdb();
-    // string remove_version();
+    const tzdb& reload_tzdb();
+    string remote_version();
 
     template<typename _Duration, typename _TimeZonePtr = const time_zone*>
-      class zoned_time; // TODO
+      class zoned_time
+      {
+	static_assert(__is_duration_v<_Duration>);
 
-    using zoned_seconds = zoned_time<seconds>;
+	using _Traits = zoned_traits<_TimeZonePtr>;
+
+	// Every constructor that accepts a string_view as its first parameter
+	// does not participate in class template argument deduction.
+	using string_view = type_identity_t<std::string_view>;
+
+      public:
+	using duration = common_type_t<_Duration, seconds>;
+
+	zoned_time() requires requires { _Traits::default_zone(); }
+	{ }
+
+	zoned_time(const zoned_time&) = default;
+	zoned_time& operator=(const zoned_time&) = default;
+
+	zoned_time(const sys_time<_Duration>& __st)
+	  requires requires { _Traits::default_zone(); }
+	: _M_tp(__st)
+	{ }
+
+	explicit
+	zoned_time(_TimeZonePtr __z) : _M_zone(std::move(__z)) { }
+
+	explicit
+	zoned_time(string_view __name)
+	  requires requires {
+	    _TimeZonePtr{_Traits::locate_zone(std::string_view{})};
+	  }
+	: _M_zone(_Traits::locate_zone(__name))
+	{ }
+
+	template<typename _Duration2>
+	  zoned_time(const zoned_time<_Duration2, _TimeZonePtr>& __zt)
+	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
+	  : _M_zone(__zt._M_zone), _M_tp(__zt._M_tp)
+	  { }
+
+	zoned_time(_TimeZonePtr __z, const sys_time<_Duration>& __st)
+	: _M_zone(std::move(__z)), _M_tp(__st)
+	{ }
+
+	zoned_time(string_view __name, const sys_time<_Duration>& __st)
+	: zoned_time(_Traits::locate_zone(__name), __st)
+	{ }
+
+	zoned_time(_TimeZonePtr __z, const local_time<_Duration>& __tp)
+	requires requires {
+	  { __z->to_sys(__tp) } -> convertible_to<sys_time<_Duration>>;
+	}
+	: _M_zone(std::move(__z)), _M_tp(_M_zone->to_sys(__tp))
+	{ }
+
+	zoned_time(string_view __name, const local_time<_Duration>& __tp)
+	requires requires (_TimeZonePtr __z) {
+	  { _Traits::locate_zone(__name) } -> convertible_to<_TimeZonePtr>;
+	  { __z->to_sys(__tp) } -> convertible_to<sys_time<_Duration>>;
+	}
+	: zoned_time(_Traits::locate_zone(__name), __tp)
+	{ }
+
+	zoned_time(_TimeZonePtr __z, const local_time<_Duration>& __tp,
+		   choose __c)
+	requires requires {
+	  { __z->to_sys(__tp, __c) } -> convertible_to<sys_time<_Duration>>;
+	}
+	: _M_zone(std::move(__z)), _M_tp(_M_zone->to_sys(__tp, __c))
+	{ }
+
+	zoned_time(string_view __name, const local_time<_Duration>& __tp,
+		   choose __c)
+	requires requires (_TimeZonePtr __z) {
+	  { _Traits::locate_zone(__name) } -> convertible_to<_TimeZonePtr>;
+	  { __z->to_sys(__tp, __c) } -> convertible_to<sys_time<_Duration>>;
+	}
+	: _M_zone(_Traits::locate_zone(__name)),
+	  _M_tp(_M_zone->to_sys(__tp, __c))
+	{ }
+
+	template<typename _Duration2, typename _TimeZonePtr2>
+	  zoned_time(_TimeZonePtr __z,
+		     const zoned_time<_Duration2, _TimeZonePtr2>& __zt)
+	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
+	  : _M_zone(__z), _M_tp(__zt._M_tp)
+	  { }
+
+	template<typename _Duration2, typename _TimeZonePtr2>
+	  zoned_time(_TimeZonePtr __z,
+		     const zoned_time<_Duration2, _TimeZonePtr2>& __zt,
+		     choose __c)
+	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
+	  : _M_zone(__z), _M_tp(__zt._M_tp)
+	  { }
+
+	template<typename _Duration2, typename _TimeZonePtr2>
+	  zoned_time(string_view __name,
+		     const zoned_time<_Duration2, _TimeZonePtr2>& __zt)
+	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
+	  && requires {
+	    { _Traits::locate_zone(__name) } -> convertible_to<_TimeZonePtr>;
+	  }
+	  : _M_zone(_Traits::locate_zone(__name)), _M_tp(__zt._M_tp)
+	  { }
+
+	template<typename _Duration2, typename _TimeZonePtr2>
+	  zoned_time(string_view __name,
+		     const zoned_time<_Duration2, _TimeZonePtr2>& __zt,
+		     choose __c)
+	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
+	  && requires {
+	    { _Traits::locate_zone(__name) } -> convertible_to<_TimeZonePtr>;
+	  }
+	  : _M_zone(_Traits::locate_zone(__name)), _M_tp(__zt._M_tp)
+	  { }
+
+	zoned_time&
+	operator=(const sys_time<_Duration>& __st)
+	{
+	  _M_tp = __st;
+	  return *this;
+	}
+
+	zoned_time&
+	operator=(const local_time<_Duration>& __lt)
+	{
+	  _M_tp = _M_zone->to_sys(__lt);
+	  return *this;
+	}
+
+	[[nodiscard]]
+	operator sys_time<duration>() const { return _M_tp; }
+
+	[[nodiscard]]
+	explicit operator local_time<duration>() const
+	{ return get_local_time(); }
+
+	[[nodiscard]]
+	_TimeZonePtr
+	get_time_zone() const
+	{ return _M_zone; }
+
+	[[nodiscard]]
+	local_time<duration>
+	get_local_time() const
+	{ return _M_zone->to_local(_M_tp); }
+
+	[[nodiscard]]
+	sys_time<duration>
+	get_sys_time() const
+	{ return _M_tp; }
+
+	[[nodiscard]]
+	sys_info
+	get_info() const
+	{ return _M_zone->get_info(_M_tp); }
+
+	[[nodiscard]] friend bool
+	operator==(const zoned_time&, const zoned_time&) = default;
+
+      private:
+	_TimeZonePtr       _M_zone{ _Traits::default_zone() };
+	sys_time<duration> _M_tp{};
+
+	template<typename _Duration2, typename _TimeZonePtr2>
+	  friend class zoned_time;
+      };
+
+    zoned_time() -> zoned_time<seconds>;
 
     template<typename _Duration>
-      leap_second_info
+    zoned_time(sys_time<_Duration>)
+      -> zoned_time<common_type_t<_Duration, seconds>>;
+
+  /// @cond undocumented
+  template<typename _TimeZonePtrOrName>
+    using __time_zone_representation
+      = __conditional_t<is_convertible_v<_TimeZonePtrOrName, string_view>,
+			const time_zone*,
+			remove_cvref_t<_TimeZonePtrOrName>>;
+  /// @endcond
+
+  template<typename _TimeZonePtrOrName>
+    zoned_time(_TimeZonePtrOrName&&)
+      -> zoned_time<seconds, __time_zone_representation<_TimeZonePtrOrName>>;
+
+  template<typename _TimeZonePtrOrName, typename _Duration>
+    zoned_time(_TimeZonePtrOrName&&, sys_time<_Duration>)
+      -> zoned_time<common_type_t<_Duration, seconds>,
+                    __time_zone_representation<_TimeZonePtrOrName>>;
+
+  template<typename _TimeZonePtrOrName, typename _Duration>
+    zoned_time(_TimeZonePtrOrName&&, local_time<_Duration>,
+               choose = choose::earliest)
+      -> zoned_time<common_type_t<_Duration, seconds>,
+                    __time_zone_representation<_TimeZonePtrOrName>>;
+
+  template<typename _Duration, typename _TimeZonePtrOrName,
+	   typename _TimeZonePtr2>
+    zoned_time(_TimeZonePtrOrName&&, zoned_time<_Duration, _TimeZonePtr2>,
+               choose = choose::earliest)
+      -> zoned_time<common_type_t<_Duration, seconds>,
+                    __time_zone_representation<_TimeZonePtrOrName>>;
+
+  template<typename _Dur1, typename _TZPtr1, typename _Dur2, typename _TZPtr2>
+    [[nodiscard]]
+    inline bool
+    operator==(const zoned_time<_Dur1, _TZPtr1>& __x,
+	       const zoned_time<_Dur2, _TZPtr2>& __y)
+    {
+      return __x.get_time_zone() == __y.get_time_zone()
+	       && __x.get_sys_time() == __y.get_sys_time();
+    }
+
+    using zoned_seconds = zoned_time<seconds>;
+#endif // _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+
+namespace __detail
+{
+    inline leap_second_info
+    __get_leap_second_info(sys_seconds __ss, bool __is_utc)
+    {
+      if (__ss < sys_seconds{}) [[unlikely]]
+	return {};
+
+      const seconds::rep __leaps[] {
+	  78796800, // 1 Jul 1972
+	  94694400, // 1 Jan 1973
+	 126230400, // 1 Jan 1974
+	 157766400, // 1 Jan 1975
+	 189302400, // 1 Jan 1976
+	 220924800, // 1 Jan 1977
+	 252460800, // 1 Jan 1978
+	 283996800, // 1 Jan 1979
+	 315532800, // 1 Jan 1980
+	 362793600, // 1 Jul 1981
+	 394329600, // 1 Jul 1982
+	 425865600, // 1 Jul 1983
+	 489024000, // 1 Jul 1985
+	 567993600, // 1 Jan 1988
+	 631152000, // 1 Jan 1990
+	 662688000, // 1 Jan 1991
+	 709948800, // 1 Jul 1992
+	 741484800, // 1 Jul 1993
+	 773020800, // 1 Jul 1994
+	 820454400, // 1 Jan 1996
+	 867715200, // 1 Jul 1997
+	 915148800, // 1 Jan 1999
+	1136073600, // 1 Jan 2006
+	1230768000, // 1 Jan 2009
+	1341100800, // 1 Jul 2012
+	1435708800, // 1 Jul 2015
+	1483228800, // 1 Jan 2017
+      };
+      // The list above is known to be valid until (at least) this date
+      // and only contains positive leap seconds.
+      const sys_seconds __expires(1687910400s); // 2023-06-28 00:00:00 UTC
+
+#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+      if (__ss > __expires)
+	{
+	  // Use updated leap_seconds from tzdb.
+	  size_t __n = std::size(__leaps);
+
+	  auto __db = get_tzdb_list().begin();
+	  auto __first = __db->leap_seconds.begin() + __n;
+	  auto __last = __db->leap_seconds.end();
+	  auto __pos = std::upper_bound(__first, __last, __ss);
+	  seconds __elapsed(__n);
+	  for (auto __i = __first; __i != __pos; ++__i)
+	    __elapsed += __i->value();
+
+	  if (__is_utc)
+	    {
+	      // Convert utc_time to sys_time:
+	      __ss -= __elapsed;
+	      // See if that sys_time is before (or during) previous leap sec:
+	      if (__pos != __first && __ss < __pos[-1])
+		{
+		  if ((__ss + 1s) >= __pos[-1])
+		    return {true, __elapsed};
+		  __elapsed -= __pos[-1].value();
+		}
+	    }
+	  return {false, __elapsed};
+	}
+      else
+#endif
+	{
+	  seconds::rep __s = __ss.time_since_epoch().count();
+	  const seconds::rep* __first = std::begin(__leaps);
+	  const seconds::rep* __last = std::end(__leaps);
+
+	  // Don't bother searching the list if we're after the last one.
+	  if (__s > (__last[-1] + (__last - __first) + 1))
+	    return { false, seconds(__last - __first) };
+
+	  auto __pos = std::upper_bound(__first, __last, __s);
+	  seconds __elapsed{__pos - __first};
+	  if (__is_utc)
+	    {
+	      // Convert utc_time to sys_time:
+	      __s -= __elapsed.count();
+	      // See if that sys_time is before (or during) previous leap sec:
+	      if (__pos != __first && __s < __pos[-1])
+		{
+		  if ((__s + 1) >= __pos[-1])
+		    return {true, __elapsed};
+		  --__elapsed;
+		}
+	    }
+	  return {false, __elapsed};
+	}
+    }
+} // namespace __detail
+
+    template<typename _Duration>
+      [[nodiscard]]
+      inline leap_second_info
       get_leap_second_info(const utc_time<_Duration>& __ut)
       {
-	if constexpr (is_same_v<_Duration, seconds>)
-	  {
-	    const seconds::rep __leaps[] {
-		78796800, // 1 Jul 1972
-		94694400, // 1 Jan 1973
-	       126230400, // 1 Jan 1974
-	       157766400, // 1 Jan 1975
-	       189302400, // 1 Jan 1976
-	       220924800, // 1 Jan 1977
-	       252460800, // 1 Jan 1978
-	       283996800, // 1 Jan 1979
-	       315532800, // 1 Jan 1980
-	       362793600, // 1 Jul 1981
-	       394329600, // 1 Jul 1982
-	       425865600, // 1 Jul 1983
-	       489024000, // 1 Jul 1985
-	       567993600, // 1 Jan 1988
-	       631152000, // 1 Jan 1990
-	       662688000, // 1 Jan 1991
-	       709948800, // 1 Jul 1992
-	       741484800, // 1 Jul 1993
-	       773020800, // 1 Jul 1994
-	       820454400, // 1 Jan 1996
-	       867715200, // 1 Jul 1997
-	       915148800, // 1 Jan 1999
-	      1136073600, // 1 Jan 2006
-	      1230768000, // 1 Jan 2009
-	      1341100800, // 1 Jul 2012
-	      1435708800, // 1 Jul 2015
-	      1483228800, // 1 Jan 2017
-	    };
-	    // The list above is known to be valid until 2023-06-28 00:00:00 UTC
-	    const seconds::rep __expires = 1687910400;
-	    const seconds::rep __s = __ut.time_since_epoch().count();
+	auto __s = chrono::duration_cast<seconds>(__ut.time_since_epoch());
+	return __detail::__get_leap_second_info(sys_seconds(__s), true);
+      }
 
-	    const seconds::rep* __first = std::begin(__leaps);
-	    const seconds::rep* __last = std::end(__leaps);
-
-	    if (__s > __expires)
-	      {
-		// TODO: use updated leap_seconds from tzdb
-#if 0
-		auto __db = get_tzdb_list().begin();
-		__first = __db->leap_seconds.data();
-		__last = __first + __db->leap_seconds.size();
-#endif
-	      }
-
-	    // Don't bother searching the list if we're after the last one.
-	    if (__s > __last[-1])
-	      return { false, seconds(__last - __first) };
-
-	    auto __pos = std::upper_bound(__first, __last, __s);
-	    return {
-	      __pos != begin(__leaps) && __pos[-1] == __s,
-	      seconds{__pos - __first}
-	    };
-	  }
-	else
-	  {
-	    auto __s = chrono::time_point_cast<seconds>(__ut);
-	    return chrono::get_leap_second_info(__s);
-	  }
+    template<typename _Duration>
+      [[nodiscard]]
+      inline utc_time<common_type_t<_Duration, seconds>>
+      utc_clock::from_sys(const sys_time<_Duration>& __t)
+      {
+	using _CDur = common_type_t<_Duration, seconds>;
+	auto __s = chrono::time_point_cast<seconds>(__t);
+	const auto __li = __detail::__get_leap_second_info(__s, false);
+	return utc_time<_CDur>{__t.time_since_epoch()} + __li.elapsed;
       }
 
     /// @} group chrono

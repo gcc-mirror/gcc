@@ -28,7 +28,8 @@ GLIBCXX_3.4 {
       std::a[a-c]*;
       std::ad[a-n]*;
       std::ad[p-z]*;
-      std::a[e-z]*;
+      std::a[e-s]*;
+      std::a[u-z]*;
 #     std::ba[a-r]*;
       std::basic_[a-e]*;
       std::basic_f[a-h]*;
@@ -2484,6 +2485,23 @@ GLIBCXX_3.4.31 {
     _ZSt10from_charsPKcS0_RDF128_St12chars_format;
 
     _ZSt15__try_use_facet*;
+
+    _ZNSt6chrono11reload_tzdbEv;
+    _ZNSt6chrono8get_tzdbEv;
+    _ZNSt6chrono13get_tzdb_listEv;
+    _ZNSt6chrono14remote_version*;
+    _ZNSt6chrono12current_zoneEv;
+    _ZNSt6chrono11locate_zoneESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNKSt6chrono9time_zone15_M_get_sys_info*;
+    _ZNKSt6chrono9time_zone17_M_get_local_info*;
+    _ZNKSt6chrono4tzdb12current_zoneEv;
+    _ZNKSt6chrono4tzdb11locate_zoneESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNKSt6chrono9tzdb_list5beginEv;
+    _ZNKSt6chrono9tzdb_list5frontEv;
+    _ZNSt6chrono9tzdb_list11erase_afterENS0_14const_iteratorE;
+    _ZNKSt6chrono9tzdb_list14const_iteratordeEv;
+    _ZNSt6chrono9tzdb_list14const_iteratorppEv;
+    _ZNSt6chrono9tzdb_list14const_iteratorppEi;
 
 } GLIBCXX_3.4.30;
 

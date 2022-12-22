@@ -1037,6 +1037,9 @@
 /* Defined if as can handle rdseed. */
 #undef _GLIBCXX_X86_RDSEED
 
+/* Define if a non-default location should be used for tzdata files. */
+#undef _GLIBCXX_ZONEINFO_DIR
+
 /* Define to 1 if mutex_timedlock is available. */
 #undef _GTHREAD_USE_MUTEX_TIMEDLOCK
 

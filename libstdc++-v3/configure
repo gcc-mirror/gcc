@@ -961,6 +961,7 @@ enable_libstdcxx_filesystem_ts
 enable_libstdcxx_backtrace
 enable_libstdcxx_static_eh_pool
 with_libstdcxx_eh_pool_obj_count
+with_libstdcxx_zoneinfo_dir
 enable_cet
 with_gxx_include_dir
 enable_version_specific_runtime_libs
@@ -1704,6 +1705,8 @@ Optional Packages:
   --with-libstdcxx-eh-pool-obj-count
                           the number of exceptions that can be allocated from
                           the pool if malloc fails
+  --with-libstdcxx-zoneinfo-dir
+                          the directory to search for tzdata files
   --with-gxx-include-dir=DIR
                           installation directory for include files
   --with-toolexeclibdir=DIR
@@ -12182,7 +12185,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12185 "configure"
+#line 12188 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12288,7 +12291,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12291 "configure"
+#line 12294 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16012,7 +16015,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16015 "configure"
+#line 16018 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16047,7 +16050,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16050 "configure"
+#line 16053 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16082,7 +16085,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16085 "configure"
+#line 16088 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16118,7 +16121,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16121 "configure"
+#line 16124 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16274,7 +16277,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16277 "configure"
+#line 16280 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16316,7 +16319,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16319 "configure"
+#line 16322 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -71509,6 +71512,30 @@ fi
 
   EH_POOL_FLAGS="$eh_pool_static $eh_pool_obj_count"
 
+
+
+# For src/c++20/tzdb.cc defaults.
+
+
+# Check whether --with-libstdcxx-zoneinfo-dir was given.
+if test "${with_libstdcxx_zoneinfo_dir+set}" = set; then :
+  withval=$with_libstdcxx_zoneinfo_dir; zoneinfo_dir="${withval}"
+
+$as_echo "#define _GLIBCXX_ZONEINFO_DIR \"\${withval}\"" >>confdefs.h
+
+
+else
+
+    case "$host" in
+      # *-*-aix*) zoneinfo_dir="/usr/share/lib/zoneinfo" ;;
+      *) zoneinfo_dir="/usr/share/zoneinfo" ;;
+    esac
+
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: zoneinfo data directory: ${zoneinfo_dir}" >&5
+$as_echo "$as_me: zoneinfo data directory: ${zoneinfo_dir}" >&6;}
 
 
 # Define documentation rules conditionally.
