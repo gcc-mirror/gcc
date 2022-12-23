@@ -1756,6 +1756,19 @@ pseudo_reg_set (rtx_insn *insn)
   return set;
 }
 
+/* Return true if the register REG is defined in a single DEF chain.
+   If it is defined in more than one DEF chains, we may not be able
+   to convert it in all chains.  */
+
+static bool
+single_def_chain_p (rtx reg)
+{
+  df_ref ref = DF_REG_DEF_CHAIN (REGNO (reg));
+  if (!ref)
+    return false;
+  return DF_REF_NEXT_REG (ref) == nullptr;
+}
+
 /* Check if comparison INSN may be transformed into vector comparison.
    Currently we transform equality/inequality checks which look like:
    (set (reg:CCZ 17 flags) (compare:CCZ (reg:TI x) (reg:TI y)))  */
@@ -1972,9 +1985,14 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
       && !TARGET_SSE_UNALIGNED_STORE_OPTIMAL)
     return false;
 
+  if (REG_P (dst) && !single_def_chain_p (dst))
+    return false;
+
   switch (GET_CODE (src))
     {
     case REG:
+      return single_def_chain_p (src);
+
     case CONST_WIDE_INT:
       return true;
 
