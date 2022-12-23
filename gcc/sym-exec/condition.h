@@ -29,10 +29,10 @@ class bit_condition : public bit_expression
   condition_type type;
 
  public:
-  bit_condition (value* left, value* right, condition_type type);
+  bit_condition (value_bit* left, value_bit* right, condition_type type);
   bit_condition (const bit_condition &expr);
   condition_type get_cond_type () const;
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
 };
 

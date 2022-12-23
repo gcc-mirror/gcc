@@ -95,20 +95,19 @@ class crc_symb_execution {
   bool execute_crc_loop (class loop *, gphi *, gphi *, bool);
 
   /* Returns true if the state matches the LFSR, otherwise - false.  */
-  bool state_matches_lfsr_all_cases (const vec<value *> &, const vec<value *> &,
-				     bool);
+  bool state_matches_lfsr_all_cases (const value *, const value *, bool);
 
   /* Returns true if the state matches the LFSR, otherwise - false.  */
-  bool match_lfsr_case1 (const vec<value *> &, const vec<value *> &,
+  bool match_lfsr_case1 (const value *, const value *,
 			 bool, symbolic_bit *, size_t, size_t);
 
-  bool state_matches_lfsr (const vec<value *> &, const vec<value *> &, bool);
+  bool state_matches_lfsr (const value *, const value *, bool);
 
-  bool condition_is_true (value *);
+  bool condition_is_true (value_bit *);
 
-  bool condition_is_false (value *);
+  bool condition_is_false (value_bit *);
 
-  bool marginal_case_matches (value *, value *, value *);
+  bool marginal_case_matches (value_bit *, value_bit *, value_bit *);
 
  public:
 
@@ -117,11 +116,10 @@ class crc_symb_execution {
 
   /* Returns calculated polynomial by executing the loop
      with concrete values.  */
-  vec<value *> *extract_poly_and_create_lfsr (class loop *, gphi *,
-					      gphi *, bool);
+  value * extract_poly_and_create_lfsr (class loop *, gphi *, gphi *, bool);
 
   /* Returns true if all states match the LFSR, otherwise - false.  */
-  bool states_match_lfsr (vec<value *> *, bool);
+  bool states_match_lfsr (value *, bool);
 
   crc_symb_execution ()
   {

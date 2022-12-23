@@ -9,17 +9,15 @@ state::state ()
 {
 }
 
-
 state::state (const state& s)
 {
   for (auto iter = s.var_states.begin (); iter != s.var_states.end (); ++iter)
     {
-      vec < value * > bits;
-      bits.create ((*iter).second.length ());
+      value val ((*iter).second.length (), (*iter).second.is_unsigned);
       for (size_t i = 0; i < (*iter).second.length (); i++)
-	bits.quick_push ((*iter).second[i]->copy ());
+	val.push ((*iter).second[i]->copy ());
 
-      var_states.put ((*iter).first, bits);
+      var_states.put ((*iter).first, val);
     }
 
   for (auto iter = s.conditions.begin (); iter != s.conditions.end (); ++iter)
@@ -44,23 +42,27 @@ state::is_declared (tree var)
 }
 
 
-void
+bool
 state::declare_if_needed (tree var, size_t size)
 {
   if (TREE_CODE (var) != INTEGER_CST && !is_declared (var))
-    make_symbolic (var, size);
+    {
+      make_symbolic (var, size);
+      return true;
+    }
+  return false;
 }
 
 
-vec<value*> *
-state::get_bits (tree var)
+value *
+state::get_value (tree var)
 {
   return var_states.get (var);
 }
 
 /* Get the value of the tree, which is in the beginning of the var_states.  */
 
-vec<value*> *
+value *
 state::get_first_value ()
 {
   return &(*(var_states.begin ())).second;
@@ -94,29 +96,35 @@ state::check_args_compatibility (tree arg1, tree arg2, tree dest)
 }
 
 
-/* Creates bit sequence of given constant tree.  */
+/* Creates value for given constant tree.  */
 
-vec<value*>
-state::create_bits_for_const (tree var, size_t size)
+value
+state::create_val_for_const (tree var, size_t size)
 {
   HOST_WIDE_INT val = tree_to_shwi (var);
-  vec<value *> bits;
-  bits.create (size);
+  value result (size, TYPE_UNSIGNED (TREE_TYPE (var)));
 
   for (size_t i = 0; i < size; i++)
     {
-      bits.quick_push (new bit (val & 1));
+      result.push (new bit (val & 1));
       val >>= 1;
     }
 
-  return bits;
+  return result;
 }
 
 
-/* Removes given sequence of bits.  */
+/* Removes given value.  */
 
 void
-state::free_bits (vec<value*> * bits)
+state::free_val (value * val)
+{
+  free_bits (&val->number);
+}
+
+
+void
+state::free_bits (vec<value_bit*> * bits)
 {
   if (bits == nullptr || !bits->exists ())
     return;
@@ -130,15 +138,15 @@ state::free_bits (vec<value*> * bits)
 
 
 bool
-state::add_var_state (tree var, vec<value*> * vstate)
+state::add_var_state (tree var, value * vstate)
 {
-  vec<value* > bits;
-  bits.create (vstate->length ());
-  for (size_t i = 0; i < vstate->length (); i++)
-    bits.quick_push ((*vstate)[i]->copy ());
+  size_t size = vstate->length ();
+  value val (size, vstate->is_unsigned);
+  for (size_t i = 0; i < size; i++)
+    val.push ((*vstate)[i]->copy ());
 
-  free_bits (var_states.get (var));
-  return var_states.put (var, bits);
+  free_val (var_states.get (var));
+  return var_states.put (var, val);
 }
 
 
@@ -165,11 +173,10 @@ state::clear_states ()
 {
   for (auto iter = var_states.begin (); iter != var_states.end (); ++iter)
     {
-      vec < value * > *bits = &(*iter).second;
-      for (size_t i = 0; i < bits->length (); i++)
-	delete (*bits)[i];
+      value * var = &(*iter).second;
+      for (size_t i = 0; i < var->length (); i++)
+	delete (*var)[i];
     }
-
   var_states.empty ();
 }
 
@@ -185,8 +192,8 @@ state::clear_conditions ()
 
 /* Performs AND operation for 2 symbolic_bit operands.  */
 
-value *
-state::and_sym_bits (const value * var1, const value * var2)
+value_bit *
+state::and_sym_bits (const value_bit * var1, const value_bit * var2)
 {
   return new bit_and_expression (var1->copy (), var2->copy ());
 }
@@ -194,8 +201,8 @@ state::and_sym_bits (const value * var1, const value * var2)
 
 /* Performs AND operation for a symbolic_bit and const_bit operands.  */
 
-value *
-state::and_var_const (const value * var1, const bit * const_bit)
+value_bit *
+state::and_var_const (const value_bit * var1, const bit * const_bit)
 {
   if (const_bit->get_val () == 1)
     return var1->copy ();
@@ -218,8 +225,8 @@ state::and_const_bits (const bit * const_bit1, const bit * const_bit2)
 
 /* Performs OR operation for 2 symbolic_bit operands.  */
 
-value *
-state::or_sym_bits (const value * var1, const value * var2)
+value_bit *
+state::or_sym_bits (const value_bit * var1, const value_bit * var2)
 {
   return new bit_or_expression (var1->copy (), var2->copy ());
 }
@@ -227,8 +234,8 @@ state::or_sym_bits (const value * var1, const value * var2)
 
 /* Performs OR operation for a symbolic_bit and a constant bit operands.  */
 
-value *
-state::or_var_const (const value * var1, const bit * const_bit)
+value_bit *
+state::or_var_const (const value_bit * var1, const bit * const_bit)
 {
   if (const_bit->get_val () == 0)
     return var1->copy ();
@@ -257,12 +264,11 @@ state::decl_var (tree var, unsigned size)
   if (is_declared (var))
     return false;
 
-  vec < value * > content;
-  content.create (size);
+  value val (size, TYPE_UNSIGNED (TREE_TYPE (var)));
   for (unsigned i = 0; i < size; i++)
-    content.quick_push (nullptr);
+    val.push (nullptr);
 
-  return var_states.put (var, content);
+  return var_states.put (var, val);
 }
 
 
@@ -271,7 +277,7 @@ state::decl_var (tree var, unsigned size)
 unsigned
 state::get_var_size (tree var)
 {
-  vec < value * > *content = var_states.get (var);
+  value *content = var_states.get (var);
   if (content == NULL)
     return 0;
 
@@ -288,45 +294,42 @@ state::make_symbolic (tree var, unsigned size)
   if (is_declared (var))
     return false;
 
-  vec < value * > bits;
-  bits.create (size);
-
+  value val (size, TYPE_UNSIGNED (TREE_TYPE (var)));
   /* Initialize each bit of a variable with unknown value.  */
   for (size_t i = 0; i < size; i++)
-    bits.quick_push (new symbolic_bit (i, var));
+    val.push (new symbolic_bit (i, var));
 
-  return var_states.put (var, bits);
+  return var_states.put (var, val);
 }
 
 
-/* Performs AND operation on two bits.  */
+/* Performs AND operation on two values.  */
 
-value *
-state::and_two_bits (value *arg1_bit, value* arg2_bit)
+value_bit *
+state::and_two_bits (value_bit *arg1, value_bit* arg2)
 {
-  value *result = nullptr;
+  value_bit *result = nullptr;
 
-  if (is_a<bit *> (arg1_bit) && is_a<bit *> (arg2_bit))
-    result = and_const_bits (as_a<bit *> (arg1_bit), as_a<bit *> (arg2_bit));
+  if (is_a<bit *> (arg1) && is_a<bit *> (arg2))
+    result = and_const_bits (as_a<bit *> (arg1), as_a<bit *> (arg2));
 
-  else if (is_a<bit *> (arg1_bit) && (is_a<symbolic_bit *> (arg2_bit)
-			|| (is_a<bit_expression *> (arg2_bit))))
-    result = and_var_const (arg2_bit, as_a<bit *> (arg1_bit));
+  else if (is_a<bit *> (arg1) && (is_a<symbolic_bit *> (arg2)
+			|| (is_a<bit_expression *> (arg2))))
+    result = and_var_const (arg2, as_a<bit *> (arg1));
 
-  else if ((is_a<symbolic_bit *> (arg1_bit)
-	   || (is_a<bit_expression *> (arg1_bit))) && is_a<bit *> (arg2_bit))
-    result = and_var_const (arg1_bit, as_a<bit *> (arg2_bit));
+  else if ((is_a<symbolic_bit *> (arg1)
+	   || (is_a<bit_expression *> (arg1))) && is_a<bit *> (arg2))
+    result = and_var_const (arg1, as_a<bit *> (arg2));
 
   else
-    result = and_sym_bits (arg1_bit, arg2_bit);
+    result = and_sym_bits (arg1, arg2);
 
   return result;
 }
 
 
 /* Does preprocessing and postprocessing for expressions with tree operands.
-   Handles bit sequence creation for constant values
-   and their removement in the end.  */
+   Handles value creation for constant and their removement in the end.  */
 
 bool
 state::do_binary_operation (tree arg1, tree arg2, tree dest,
@@ -339,29 +342,29 @@ state::do_binary_operation (tree arg1, tree arg2, tree dest,
   if (!check_args_compatibility (arg1, arg2, dest))
     return false;
 
-  vec<value*> * arg1_bits = var_states.get (arg1);
-  vec<value*> arg1_const_bits (vNULL);
-  if (arg1_bits == NULL && TREE_CODE (arg1) == INTEGER_CST)
+  size_t dest_size = var_states.get (dest)->length ();
+
+  value *arg1_val = var_states.get (arg1);
+  value arg1_const_val (dest_size, false);
+  if (arg1_val == NULL && TREE_CODE (arg1) == INTEGER_CST)
     {
-      arg1_const_bits = create_bits_for_const (arg1,
-				var_states.get (dest)->length ());
-      arg1_bits = &arg1_const_bits;
+      arg1_const_val = create_val_for_const (arg1, dest_size);
+      arg1_val = &arg1_const_val;
     }
 
-  vec<value*> * arg2_bits = var_states.get (arg2);
-  vec<value*> arg2_const_bits (vNULL);
-  if (arg2_bits == NULL && TREE_CODE (arg2) == INTEGER_CST)
+  value *arg2_val = var_states.get (arg2);
+  value arg2_const_val (dest_size, false);
+  if (arg2_val == NULL && TREE_CODE (arg2) == INTEGER_CST)
     {
-      arg2_const_bits = create_bits_for_const (arg2,
-				var_states.get (dest)->length ());
-      arg2_bits = &arg2_const_bits;
+      arg2_const_val = create_val_for_const (arg2, dest_size);
+      arg2_val = &arg2_const_val;
     }
 
-  (this->*bin_func)(arg1_bits, arg2_bits, dest);
-  free_bits (&arg1_const_bits);
-  free_bits (&arg2_const_bits);
+  (this->*bin_func)(arg1_val, arg2_val, dest);
+  free_val (&arg1_const_val);
+  free_val (&arg2_const_val);
 
-  print_bits (var_states.get (dest));
+  print_value (var_states.get (dest));
   return true;
 }
 
@@ -376,16 +379,15 @@ state::do_and (tree arg1, tree arg2, tree dest)
 
 
 void
-state::do_and (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
+state::do_and (value * arg1, value * arg2, tree dest)
 {
   /* Creating AND expressions for every bit pair of given arguments
      and store them as a new state for given destination.  */
 
   for (size_t i = 0; i < get_var_size (dest); i++)
     {
-      value* temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = and_two_bits ((*arg1_bits)[i],
-						  (*arg2_bits)[i]);
+      value_bit* temp = (*var_states.get (dest))[i];
+      (*var_states.get (dest))[i] = and_two_bits ((*arg1)[i], (*arg2)[i]);
       delete temp;
     }
 }
@@ -393,20 +395,21 @@ state::do_and (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 
 /* Performs OR operation on two bits.  */
 
-value *
-state::or_two_bits (value *arg1_bit, value* arg2_bit)
+value_bit *
+state::or_two_bits (value_bit *arg1_bit, value_bit* arg2_bit)
 {
-  value *result = nullptr;
+  value_bit *result = nullptr;
 
   if (is_a<bit *> (arg1_bit) && is_a<bit *> (arg2_bit))
     result = or_const_bits (as_a<bit *> (arg1_bit), as_a<bit *> (arg2_bit));
 
   else if (is_a<bit *> (arg1_bit) && (is_a<symbolic_bit *> (arg2_bit)
-  				|| (is_a<bit_expression *> (arg2_bit))))
+	   || is_a<bit_expression *> (arg2_bit)))
     result = or_var_const (arg2_bit, as_a<bit *> (arg1_bit));
 
   else if ((is_a<symbolic_bit *> (arg1_bit)
-	     || (is_a<bit_expression *> (arg1_bit))) && is_a<bit *> (arg2_bit))
+	    || is_a<bit_expression *> (arg1_bit))
+	   && is_a<bit *> (arg2_bit))
     result = or_var_const (arg1_bit, as_a<bit *> (arg2_bit));
 
   else
@@ -426,15 +429,14 @@ state::do_or (tree arg1, tree arg2, tree dest)
 
 
 void
-state::do_or (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
+state::do_or (value * arg1, value * arg2, tree dest)
 {
   /* Creating OR expressions for every bit pair of given arguments
      and store them as a new state for given destination.  */
   for (size_t i = 0; i < get_var_size (dest); i++)
     {
-      value * temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = or_two_bits ((*arg1_bits)[i],
-						 (*arg2_bits)[i]);
+      value_bit * temp = (*var_states.get (dest))[i];
+      (*var_states.get (dest))[i] = or_two_bits ((*arg1)[i], (*arg2)[i]);
       delete temp;
     }
 }
@@ -442,20 +444,21 @@ state::do_or (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
 
 /* Performs XOR operation on two bits.  */
 
-value *
-state::xor_two_bits (value *arg1_bit, value* arg2_bit)
+value_bit *
+state::xor_two_bits (value_bit *arg1_bit, value_bit* arg2_bit)
 {
-  value *result = nullptr;
+  value_bit *result = nullptr;
 
   if (is_a<bit *> (arg1_bit) && is_a<bit *> (arg2_bit))
     result = xor_const_bits (as_a<bit *> (arg1_bit), as_a<bit *> (arg2_bit));
 
    else if (is_a<bit *> (arg1_bit) && (is_a<symbolic_bit *> (arg2_bit)
-			  	|| (is_a<bit_expression *> (arg2_bit))))
+	    || is_a<bit_expression *> (arg2_bit)))
     result = xor_var_const (arg2_bit, as_a<bit *> (arg1_bit));
 
    else if ((is_a<symbolic_bit *> (arg1_bit)
-	     || (is_a<bit_expression *> (arg1_bit))) && is_a<bit *> (arg2_bit))
+	     || is_a<bit_expression *> (arg1_bit))
+	    && is_a<bit *> (arg2_bit))
     result = xor_var_const (arg1_bit, as_a<bit *> (arg2_bit));
 
    else
@@ -475,68 +478,66 @@ state::do_xor (tree arg1, tree arg2, tree dest)
 
 
 void
-state::do_xor (vec<value*> * arg1_bits, vec<value *> * arg2_bits, tree dest)
+state::do_xor (value * arg1, value * arg2, tree dest)
 {
   for (size_t i = 0; i < get_var_size (dest); i++)
     {
-      value * temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = xor_two_bits ((*arg1_bits)[i],
-						  (*arg2_bits)[i]);
+      value_bit * temp = (*var_states.get (dest))[i];
+      (*var_states.get (dest))[i] = xor_two_bits ((*arg1)[i], (*arg2)[i]);
       delete temp;
     }
 }
 
 
-/* Shifts value_vector right by shift_value bits.  */
+/* Shifts value right by size of shift_value.  */
 
-vec <value *>
-state::shift_right_by_const (const vec <value *> * number,
-			     size_t shift_value)
+value *
+state::shift_right_by_const (value * var, size_t shift_value)
 {
-  vec <value *> shift_result;
-  shift_result.create (number->length ());
-  if (number->length () <= shift_value)
-    for (size_t i = 0; i < number->length (); i++)
-      shift_result.quick_push (new bit (0));
+  value * shift_result = new value (var->length (), var->is_unsigned);
+  if (var->length () <= shift_value)
+    for (size_t i = 0; i < var->length (); i++)
+      shift_result->push (new bit (0));
   else
     {
       size_t i = 0;
-      for (; i < number->length () - shift_value; ++i)
-	shift_result.quick_push (((*number)[shift_value + i])->copy ());
+      for (; i < var->length () - shift_value; ++i)
+	shift_result->push (((*var)[shift_value + i])->copy ());
 
-      for (; i < number->length (); ++i)
-	shift_result.quick_push (new bit (0));
+      for (; i < var->length (); ++i)
+	shift_result->push (var->is_unsigned ? new bit (0)
+					     : var->last ()->copy ());
     }
   return shift_result;
 }
 
 
-/* Checks if all vector elements are const_bit_expressions.  */
+/* Checks if all bits of the given value have constant bit type.  */
 
 bool
-state::is_bit_vector (const vec <value *>* bits)
+state::is_bit_vector (const value* var)
 {
-  if (bits == nullptr)
+  if (var == nullptr || !var->exists ())
     return false;
 
-  for (size_t i = 0; i < bits->length (); i++)
-    if (!(is_a <bit *> ((*bits)[i])))
-	return false;
+  for (size_t i = 0; i < var->length (); i++)
+    if (!(is_a <bit *> ((*var)[i])))
+      return false;
   return true;
 }
 
 
-/* Returns the value of the number represented as a bit vector.  */
+/* Returns the number represented by the value.  */
 
 unsigned HOST_WIDE_INT
-state::get_value (const vec <value *> * bits_value)
+state::make_number (const value * var)
 {
   unsigned HOST_WIDE_INT number = 0;
-  int bits_value_size = bits_value->length ();
-  for (int i = bits_value_size - 1; i >= 0; i--)
+  int value_size = var->length ();
+  for (int i = value_size - 1; i >= 0; i--)
     {
-      if (is_a<bit *> ((*bits_value)[i]))
-	number = (number << 1) | as_a<bit*> ((*bits_value)[i])->get_val ();
+      if (is_a<bit *> ((*var)[i]))
+	number = (number << 1) | as_a<bit*> ((*var)[i])->get_val ();
       else
 	return 0;
     }
@@ -544,20 +545,19 @@ state::get_value (const vec <value *> * bits_value)
 }
 
 
-/* Shift_left operation.  Case: var2 is a sym_bit.  */
+/* Shift_left operation.  Case: var2 is a symbolic value.  */
 
 void
-state::shift_left_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
-			    tree dest)
+state::shift_left_sym_values (value * arg1, value * arg2, tree dest)
 {
   for (size_t i = 0; i < get_var_size (dest); i++)
     {
-      value *var1_elem = (*arg1_bits)[i];
-      value *var2_elem = (*arg2_bits)[i];
-      value *new_elem = new shift_left_expression (var1_elem->copy (),
-						   var2_elem->copy ());
+      value_bit *var1_bit = (*arg1)[i];
+      value_bit *var2_bit = (*arg2)[i];
+      value_bit *new_bit = new shift_left_expression (var1_bit->copy (),
+						      var2_bit->copy ());
       delete (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = new_elem;
+      (*var_states.get (dest))[i] = new_bit;
     }
 }
 
@@ -572,13 +572,12 @@ state::do_shift_left (tree arg1, tree arg2, tree dest)
 
 
 void
-state::do_shift_left (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
-		      tree dest)
+state::do_shift_left (value * arg1, value * arg2, tree dest)
 {
-  if (is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg2))
     {
-      size_t shift_value = get_value (arg2_bits);
-      vec <value *> * result = shift_left_by_const (arg1_bits, shift_value);
+      size_t shift_value = make_number (arg2);
+      value * result = shift_left_by_const (arg1, shift_value);
       for (size_t i = 0; i < get_var_size (dest); i++)
 	{
 	  delete (*var_states.get (dest))[i];
@@ -587,7 +586,7 @@ state::do_shift_left (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
       delete result;
     }
   else
-    shift_left_sym_bits (arg1_bits, arg2_bits, dest);
+    shift_left_sym_values (arg1, arg2, dest);
 }
 
 
@@ -602,36 +601,34 @@ state::do_shift_right (tree arg1, tree arg2, tree dest)
 
 
 void
-state::do_shift_right (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
-		       tree dest)
+state::do_shift_right (value * arg1, value * arg2, tree dest)
 {
-  /* TODO: Add support for signed var shift.  */
-  if (is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg2))
     {
-      size_t shift_value = get_value (arg2_bits);
-      vec < value * > result = shift_right_by_const (arg1_bits, shift_value);
+      size_t shift_value = make_number (arg2);
+      value *result = shift_right_by_const (arg1, shift_value);
       for (size_t i = 0; i < get_var_size (dest); i++)
 	{
 	  delete (*var_states.get (dest))[i];
-	  (*var_states.get (dest))[i] = result[i];
+	  (*var_states.get (dest))[i] = (*result)[i];
 	}
     }
   else
-    shift_right_sym_bits (arg1_bits, arg2_bits, dest);
+    shift_right_sym_values (arg1, arg2, dest);
 }
 
 
 /* Adds two bits and carry value.
    Resturn result and stores new carry bit in "carry".  */
 
-value*
-state::full_adder (value* var1, value* var2, value*& carry)
+value_bit*
+state::full_adder (value_bit* var1, value_bit* var2, value_bit*& carry)
 {
-  value * new_carry = and_two_bits (var1, var2);
-  value * sum = xor_two_bits (var1, var2);
+  value_bit * new_carry = and_two_bits (var1, var2);
+  value_bit * sum = xor_two_bits (var1, var2);
 
-  value* result = xor_two_bits (sum, carry);
-  value * sum_and_carry = and_two_bits (sum, carry);
+  value_bit * result = xor_two_bits (sum, carry);
+  value_bit * sum_and_carry = and_two_bits (sum, carry);
 
   delete carry;
   delete sum;
@@ -655,47 +652,43 @@ state::do_add (tree arg1, tree arg2, tree dest)
 
 
 void
-state::do_add (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
+state::do_add (value * arg1, value * arg2, tree dest)
 {
-  value * carry = new bit (0);
+  value_bit * carry = new bit (0);
   for (size_t i = 0; i < get_var_size (dest); ++i)
     {
-      value * temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = full_adder ((*arg1_bits)[i],
-						(*arg2_bits)[i],
-						carry);
+      value_bit * temp = (*var_states.get (dest))[i];
+      (*var_states.get (dest))[i] = full_adder ((*arg1)[i], (*arg2)[i], carry);
       delete temp;
     }
   delete carry;
 }
 
 
-/* Returns the additive inverse of the number stored in number verctor.  */
+/* Returns the additive inverse of the given number.  */
 
-vec < value * > *
-state::additive_inverse (const vec <value *> *number)
+value *
+state::additive_inverse (const value *number)
 {
-  vec <value *> * result = new vec <value *> ();
-  vec <value *> * one = new vec <value *> ();
+  value * result = new value (number->length (), number->is_unsigned);
+  value one (number->length (), number->is_unsigned);
 
-  result->create (number->length ());
-  one->create (number -> length ());
+  size_t size = number->length ();
+  one.push (new bit (1));
+  result->push (complement_a_bit ((*number)[0]->copy ()));
 
-  size_t vec_len = number->length ();
-  one->quick_push (new bit (1));
-  result->quick_push (complement_a_bit ((*number)[0]->copy ()));
-
-  for (size_t i = 1; i < vec_len; i++)
+  for (size_t i = 1; i < size; i++)
     {
-      one->quick_push (new bit (0));
-      result->quick_push (complement_a_bit ((*number)[i]->copy ()));
+      one.push (new bit (0));
+      result->push (complement_a_bit ((*number)[i]->copy ()));
     }
 
-  value * carry = new bit (0);
-  for (size_t i = 0; i < vec_len; ++i)
-    (*result)[i] = full_adder ((*result)[i], (*one)[i], carry);
+  value_bit * carry = new bit (0);
+  for (size_t i = 0; i < size; ++i)
+    (*result)[i] = full_adder ((*result)[i], one[i], carry);
 
   delete carry;
+  free_val (&one);
   return result;
 }
 
@@ -710,22 +703,22 @@ state::do_sub (tree arg1, tree arg2, tree dest)
 
 
 void
-state::do_sub (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
+state::do_sub (value * arg1, value * arg2, tree dest)
 {
-  vec < value * > * neg_arg2 = additive_inverse (arg2_bits);
-  do_add (arg1_bits, neg_arg2, dest);
+  value * neg_arg2 = additive_inverse (arg2);
+  do_add (arg1, neg_arg2, dest);
 
-  free_bits (neg_arg2);
+  free_val (neg_arg2);
   delete neg_arg2;
 }
 
 
 /* Performs complement operation on a bit.  */
 
-value *
-state::complement_a_bit (value *var)
+value_bit *
+state::complement_a_bit (value_bit *var)
 {
-  value *result = nullptr;
+  value_bit *result = nullptr;
   bit* const_bit = dyn_cast<bit *> (var);
   if (const_bit)
     result = complement_const_bit (const_bit);
@@ -757,13 +750,13 @@ state::do_complement (tree arg, tree dest)
      and store it as a new state for given destination.  */
   for (size_t i = 0; i < get_var_size (dest); i++)
     {
-      value *result = complement_a_bit ((*var_states.get (arg))[i]);
+      value_bit *result = complement_a_bit ((*var_states.get (arg))[i]);
 
       delete (*var_states.get (dest))[i];
       (*var_states.get (dest))[i] = result;
     }
 
-  print_bits (var_states.get (dest));
+  print_value (var_states.get (dest));
   return true;
 }
 
@@ -771,34 +764,38 @@ state::do_complement (tree arg, tree dest)
 bool
 state::do_assign (tree arg, tree dest)
 {
-  declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
+  bool dest_declared
+  = declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
   declare_if_needed (arg, var_states.get (dest)->allocated ());
-  vec<value*> * dest_bits = var_states.get (dest);
+
+  value * dest_val = var_states.get (dest);
 
   /* If the argument is already defined, then we must just copy its bits.  */
-  if (auto bits = var_states.get (arg))
+  if (auto arg_val = var_states.get (arg))
     {
-      for (size_t i = 0; i < dest_bits->length (); i++)
+      for (size_t i = 0; i < dest_val->length (); i++)
 	{
-	  value *new_val = nullptr;
-	  if (i < bits->length ())
-	    new_val = (*bits)[i]->copy ();
+	  value_bit *new_val = nullptr;
+	  if (i < arg_val->length ())
+	    new_val = (*arg_val)[i]->copy ();
 	  else
 	    new_val = new bit (0);
 
-	  delete (*dest_bits)[i];
-	  (*dest_bits)[i] = new_val;
+	  delete (*dest_val)[i];
+	  (*dest_val)[i] = new_val;
 	}
+      if (dest_declared)
+	dest_val->is_unsigned = arg_val->is_unsigned;
     }
   /* If the argument is a constant, we must save it as sequence of bits.  */
   else if (TREE_CODE (arg) == INTEGER_CST)
     {
-      vec <value *> arg_bits
-      = create_bits_for_const (arg, dest_bits->length ());
-      for (size_t i = 0; i < dest_bits->length (); i++)
+      value arg_val
+      = create_val_for_const (arg, dest_val->length ());
+      for (size_t i = 0; i < dest_val->length (); i++)
 	{
-	  delete (*dest_bits)[i];
-	  (*dest_bits)[i] = arg_bits[i];
+	  delete (*dest_val)[i];
+	  (*dest_val)[i] = arg_val[i];
 	}
     }
   else
@@ -810,7 +807,7 @@ state::do_assign (tree arg, tree dest)
       return false;
     }
 
-  print_bits (var_states.get (dest));
+  print_value (var_states.get (dest));
   return true;
 }
 
@@ -820,9 +817,9 @@ state::do_assign (tree arg, tree dest)
 bool
 state::do_assign_pow2 (tree dest, unsigned pow)
 {
-  vec<value *> * dest_bits = var_states.get (dest);
-  unsigned dest_size = dest_bits ? dest_bits->allocated ()
-				 : tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest)));
+  value * dest_val = var_states.get (dest);
+  unsigned dest_size = dest_val ? dest_val->allocated ()
+				: tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest)));
   if (pow > dest_size)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -831,20 +828,20 @@ state::do_assign_pow2 (tree dest, unsigned pow)
       return false;
     }
 
-  if (!dest_bits)
+  if (!dest_val)
     {
       decl_var (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
-      dest_bits = var_states.get (dest);
+      dest_val = var_states.get (dest);
     }
   else
-    free_bits (dest_bits);
+    free_val (dest_val);
 
-  for (unsigned i = 0; i < dest_bits->length (); i++)
+  for (unsigned i = 0; i < dest_val->length (); i++)
     {
       if (i == pow)
-	(*dest_bits)[i] = new bit (1);
+	(*dest_val)[i] = new bit (1);
       else
-	(*dest_bits)[i] = new bit (0);
+	(*dest_val)[i] = new bit (0);
     }
 
   return true;
@@ -862,8 +859,8 @@ state::complement_const_bit (const bit * const_bit)
 
 /* Performs NOT operation for symbolic_bit.  */
 
-value *
-state::complement_sym_bit (const value * var)
+value_bit *
+state::complement_sym_bit (const value_bit * var)
 {
   return new bit_complement_expression (var->copy ());
 }
@@ -871,10 +868,10 @@ state::complement_sym_bit (const value * var)
 
 /* Performs XOR operation for 2 symbolic_bit operands.  */
 
-value *
-state::xor_sym_bits (const value * var1, const value * var2)
+value_bit *
+state::xor_sym_bits (const value_bit * var1, const value_bit * var2)
 {
-  value * var2_copy = var2->copy ();
+  value_bit * var2_copy = var2->copy ();
   bit_expression * node2_with_const_child = nullptr;
   bit_expression * parent_of_node2_with_child = nullptr;
   get_parent_with_const_child (var2_copy, node2_with_const_child,
@@ -882,7 +879,7 @@ state::xor_sym_bits (const value * var1, const value * var2)
 
   if (node2_with_const_child != nullptr)
     {
-      value *var1_copy = var1->copy ();
+      value_bit *var1_copy = var1->copy ();
       bit_expression * node1_with_const_child = nullptr;
       bit_expression * parent_of_node1_with_child = nullptr;
       get_parent_with_const_child (var1_copy, node1_with_const_child,
@@ -892,82 +889,62 @@ state::xor_sym_bits (const value * var1, const value * var2)
 	 we can merge them together.  */
       if (node1_with_const_child != nullptr)
 	{
+	  value_bit *var1_reformed = nullptr;
+	  value_bit *var2_reformed = nullptr;
+
 	  /* If var1's const bit is in its left subtree.  */
-	  value *var1_left = node1_with_const_child->get_left ();
+	  value_bit *var1_left = node1_with_const_child->get_left ();
 	  if (var1_left != nullptr && is_a<bit *> (var1_left))
 	    {
+	      var1_reformed = node1_with_const_child->get_right ()->copy ();
+	      value_bit *var2_left = node2_with_const_child->get_left ();
+
 	      /* If var2's const bit is in its left subtree.  */
-	      value *var2_left = node2_with_const_child->get_left ();
 	      if (var2_left != nullptr && is_a<bit *> (var2_left))
-		{
-		  bit *new_left = xor_const_bits (as_a<bit *> (var1_left),
-						  as_a<bit *> (var2_left));
-
-		  value* reformed_elem = node2_with_const_child->get_right ()
-					 ->copy ();
-		  parent_of_node2_with_child->get_left ()
-		  == node2_with_const_child
-		    ? parent_of_node2_with_child->set_left (reformed_elem)
-		    : parent_of_node2_with_child->set_right (reformed_elem);
-
-		  delete var1_left;
-		  node1_with_const_child->set_left (new_left);
-		}
+		var2_reformed = node2_with_const_child->get_right ()->copy ();
 	      else /* Var2's const bit is in its right subtree.  */
-		{
-		  value *var2_right = node2_with_const_child->get_right ();
-		  bit *new_left = xor_const_bits (as_a<bit *> (var1_left),
-						  as_a<bit *> (var2_right));
-
-		  value* reformed_elem = node2_with_const_child->get_left ()
-					 ->copy ();
-		  parent_of_node2_with_child->get_left ()
-		  == node2_with_const_child
-		    ? parent_of_node2_with_child->set_left (reformed_elem)
-		    : parent_of_node2_with_child->set_right (reformed_elem);
-
-		  delete var1_left;
-		  node1_with_const_child->set_left (new_left);
-		}
+		var2_reformed = node2_with_const_child->get_left ()->copy ();
 	    }
 	  else /* Var1's const bit is in its right subtree.  */
 	    {
-	      value *var1_right = node1_with_const_child->get_right ();
-	      value *var2_left = node2_with_const_child->get_left ();
+	      var1_reformed = node1_with_const_child->get_left ()->copy ();
+	      value_bit *var2_left = node2_with_const_child->get_left ();
+
 	      /* If var2's const bit is in its left subtree.  */
 	      if (var2_left != nullptr && is_a<bit *> (var2_left))
-		{
-		  bit *new_right = xor_const_bits (as_a<bit *> (var1_left),
-						   as_a<bit *> (var2_left));
-
-		  value* reformed_elem = node2_with_const_child->get_right ()
-					 ->copy ();
-		  parent_of_node2_with_child->get_left ()
-		  == node2_with_const_child
-		    ? parent_of_node2_with_child->set_left (reformed_elem)
-		    : parent_of_node2_with_child->set_right (reformed_elem);
-
-		  delete var1_right;
-		  node1_with_const_child->set_right (new_right);
-		}
+		var2_reformed = node2_with_const_child->get_right ()->copy ();
 	      else /* Var2's const bit is in its right subtree.  */
-		{
-		  value *var2_right = node2_with_const_child->get_right ();
-		  bit *new_right = xor_const_bits (as_a<bit *> (var1_right),
-						   as_a<bit *> (var2_right));
-
-		  value* reformed_elem = node2_with_const_child->get_left ()
-					 ->copy ();
-		  parent_of_node2_with_child->get_left ()
-		  == node2_with_const_child
-		    ? parent_of_node2_with_child->set_left (reformed_elem)
-		    : parent_of_node2_with_child->set_right (reformed_elem);
-
-		  delete var1_right;
-		  node1_with_const_child->set_right (new_right);
-		}
+		var2_reformed = node2_with_const_child->get_left ()->copy ();
 	    }
-	  delete node2_with_const_child;
+
+	  if (parent_of_node1_with_child)
+	    {
+	      parent_of_node1_with_child->get_left ()
+	      == node1_with_const_child
+		? parent_of_node1_with_child->set_left (var1_reformed)
+		: parent_of_node1_with_child->set_right (var1_reformed);
+	      delete node1_with_const_child;
+	    }
+	  else
+	    {
+	      delete var1_copy;
+	      var1_copy = var1_reformed;
+	    }
+
+	  if (parent_of_node2_with_child)
+	    {
+	      parent_of_node2_with_child->get_left ()
+	      == node2_with_const_child
+		? parent_of_node2_with_child->set_left (var2_reformed)
+		: parent_of_node2_with_child->set_right (var2_reformed);
+	      delete node2_with_const_child;
+	    }
+	  else
+	    {
+	      delete var2_copy;
+	      var2_copy = var2_reformed;
+	    }
+
 	  return new bit_xor_expression (var1_copy, var2_copy);
 	}
       delete var1_copy;
@@ -989,10 +966,10 @@ state::xor_const_bits (const bit * const_bit1, const bit * const_bit2)
 
 /* Performs XOR operation for a symbolic_bit and const_bit operands.  */
 
-value *
-state::xor_var_const (const value * var, const bit * const_bit)
+value_bit *
+state::xor_var_const (const value_bit * var, const bit * const_bit)
 {
-  value *var_copy = var->copy ();
+  value_bit *var_copy = var->copy ();
   bit_expression *node_with_const_child = nullptr;
   bit_expression *tmp = nullptr;
   get_parent_with_const_child (var_copy, node_with_const_child, tmp);
@@ -1001,7 +978,7 @@ state::xor_var_const (const value * var, const bit * const_bit)
     return var->copy ();
   else if (node_with_const_child != nullptr)
     {
-      value *left = node_with_const_child->get_left ();
+      value_bit *left = node_with_const_child->get_left ();
       if (left != nullptr && is_a<bit *> (left))
 	{
 	  bit *new_left = xor_const_bits (as_a<bit *> (left), const_bit);
@@ -1010,7 +987,7 @@ state::xor_var_const (const value * var, const bit * const_bit)
 	}
       else
 	{
-	  value *right = node_with_const_child->get_right ();
+	  value_bit *right = node_with_const_child->get_right ();
 	  bit *new_right = xor_const_bits (as_a<bit *> (right), const_bit);
 	  delete right;
 	  node_with_const_child->set_right (new_right);
@@ -1027,7 +1004,7 @@ state::xor_var_const (const value * var, const bit * const_bit)
    on safe branching.  */
 
 void
-state::get_parent_with_const_child (value* root, bit_expression*& parent,
+state::get_parent_with_const_child (value_bit* root, bit_expression*& parent,
 				    bit_expression*& parent_of_parent)
 {
   parent_of_parent = nullptr;
@@ -1050,8 +1027,8 @@ state::get_parent_with_const_child (value* root, bit_expression*& parent,
       bit_expression *cur_element = *nodes_to_consider.begin ();
       nodes_to_consider.remove (cur_element);
 
-      value *left = cur_element->get_left ();
-      value *right = cur_element->get_right ();
+      value_bit *left = cur_element->get_left ();
+      value_bit *right = cur_element->get_right ();
 
       if ((left != nullptr && is_a<bit *> (left))
 	  || (right != nullptr && is_a<bit *> (right)))
@@ -1060,14 +1037,14 @@ state::get_parent_with_const_child (value* root, bit_expression*& parent,
 	  parent_of_parent = *node_to_parent.get (cur_element);
 	}
 
-      if (left != nullptr && is_safe_branching (left))
+      if (left != nullptr && is_a<bit_xor_expression *> (left))
 	{
 	  nodes_to_consider.add (as_a<bit_expression *> (left));
 	  node_to_parent.put (as_a<bit_expression *> (left), cur_element);
 	}
 
 
-      if (right != nullptr && is_safe_branching (right))
+      if (right != nullptr && is_a<bit_xor_expression *> (left))
 	{
 	  nodes_to_consider.add (as_a<bit_expression *> (right));
 	  node_to_parent.put (as_a<bit_expression *> (right), cur_element);
@@ -1076,67 +1053,54 @@ state::get_parent_with_const_child (value* root, bit_expression*& parent,
 }
 
 
-/* Checks if node is AND, OR or XOR expression as they are comutative.  */
+/* Shifts number left by size of shift_value.  */
 
-bool
-state::is_safe_branching (value* node)
+value *
+state::shift_left_by_const (const value * number, size_t shift_value)
 {
-  return is_a<bit_and_expression *> (node) || is_a<bit_or_expression *> (node)
-	 || is_a<bit_xor_expression *> (node);
-}
-
-
-/* Shifts number left by shift_value bits.  */
-
-vec <value *> *
-state::shift_left_by_const (const vec <value *> * number,
-			    size_t shift_value)
-{
-  vec <value *> *shift_result = new vec< value * > ();
-  shift_result->create (number->length ());
-
+  value * shift_result = new value (number->length (), number->is_unsigned);
   if (number->length () <= shift_value)
     for (size_t i = 0; i < number->length (); i++)
-      shift_result->quick_push (new bit (0));
+      shift_result->push (new bit (0));
+
   else
     {
       size_t i = 0;
       for ( ; i < shift_value; ++i)
-	shift_result->quick_push (new bit (0));
+	shift_result->push (new bit (0));
       for (size_t j = 0; i < number->length (); ++i, j++)
-	shift_result->quick_push (((*number)[j])->copy ());
+	shift_result->push (((*number)[j])->copy ());
     }
   return shift_result;
 }
 
 
-/* shift_right operation.  Case: var2 is a sym_bit.  */
+/* Shift_right operation.  Case: var2 is a symbolic value.  */
 
 void
-state::shift_right_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
-			     tree dest)
+state::shift_right_sym_values (value * arg1, value * arg2, tree dest)
 {
   for (size_t i = 0; i < get_var_size (dest); i++)
     {
-      value *var1_elem = (*arg1_bits)[i];
-      value *var2_elem = (*arg2_bits)[i];
-      value *new_elem = new shift_right_expression (var1_elem->copy (),
-						    var2_elem->copy ());
+      value_bit *var1_bit = (*arg1)[i];
+      value_bit *var2_bit = (*arg2)[i];
+      value_bit *new_bit = new shift_right_expression (var1_bit->copy (),
+						       var2_bit->copy ());
       delete (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = new_elem;
+      (*var_states.get (dest))[i] = new_bit;
     }
 }
 
 
-/* Adds two variables, stores the result in the first one.  */
+/* Adds two values, stores the result in the first one.  */
 
 void
-state::add_numbers (vec<value *> *var1, const vec<value *> *var2)
+state::add_numbers (value *var1, const value *var2)
 {
-  value * carry = new bit (0);
+  value_bit * carry = new bit (0);
   for (unsigned i = 0; i < var1->length (); i++)
     {
-      value *temp = (*var1)[i];
+      value_bit *temp = (*var1)[i];
       (*var1)[i] = full_adder ((*var1)[i], (*var2)[i], carry);
       delete temp;
     }
@@ -1147,11 +1111,11 @@ state::add_numbers (vec<value *> *var1, const vec<value *> *var2)
 /* ANDs every bit of the vector with var_bit, stroes the result in var1.  */
 
 void
-state::and_number_bit (vec< value * > *var1, value *var_bit)
+state::and_number_bit (value *var1, value_bit *var_bit)
 {
   for (unsigned i = 0; i < var1->length (); i++)
     {
-      value *tmp = (*var1)[i];
+      value_bit *tmp = (*var1)[i];
       (*var1)[i] = and_two_bits ((*var1)[i], var_bit);
       delete tmp;
     }
@@ -1169,44 +1133,44 @@ state::do_mul (tree arg1, tree arg2, tree dest)
 
 
 void
-state::do_mul (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest)
+state::do_mul (value * arg1, value * arg2, tree dest)
 {
-  vec <value *> * dest_bits = var_states.get (dest);
-  vec <value *> * shifted = make_copy (arg1_bits);
+  value *shifted = new value (*arg1);
+  value *dest_val = var_states.get (dest);
 
-  for (unsigned i = 0; i < dest_bits->length (); i++)
+  for (unsigned i = 0; i < dest_val->length (); i++)
     {
-      delete (*dest_bits)[i];
-      (*dest_bits)[i] = new bit (0);
+      delete (*dest_val)[i];
+      (*dest_val)[i] = new bit (0);
     }
 
-  for (unsigned i = arg2_bits->length (); i != 0; --i)
+  for (unsigned i = arg2->length (); i != 0; --i)
     {
-      if (is_a<bit *> ((*arg2_bits)[i - 1])
-	  && as_a<bit *> ((*arg2_bits)[i - 1])->get_val () != 0)
-	add_numbers (dest_bits, shifted);
-      else if (is_a<symbolic_bit *> ((*arg2_bits)[i - 1]))
+      if (is_a<bit *> ((*arg2)[i - 1])
+	  && as_a<bit *> ((*arg2)[i - 1])->get_val () != 0)
+	add_numbers (dest_val, shifted);
+      else if (is_a<symbolic_bit *> ((*arg2)[i - 1]))
 	{
-	  and_number_bit (shifted, as_a<symbolic_bit *> ((*arg2_bits)[i - 1]));
-	  add_numbers (dest_bits, shifted);
+	  and_number_bit (shifted, as_a<symbolic_bit *> ((*arg2)[i - 1]));
+	  add_numbers (dest_val, shifted);
 	}
-      vec <value *> * temp = shifted;
+
+      value * temp = shifted;
       shifted = shift_left_by_const (shifted, 1);
-      free_bits (temp);
+      free_val (temp);
       delete temp;
     }
-  free_bits (shifted);
+  free_val (shifted);
   delete shifted;
 }
 
 
 bool
-state::check_const_bit_equality (vec<value *> * arg1_bits,
-				 vec<value *> * arg2_bits)
+state::check_const_value_equality (value * arg1, value * arg2)
 {
-  for (size_t i = 1; i < arg1_bits->length (); i++)
-    if (as_a<bit *>((*arg1_bits)[i])->get_val ()
-	!= as_a<bit *>((*arg2_bits)[i])->get_val ())
+  for (size_t i = 1; i < arg1->length (); i++)
+    if (as_a<bit *>((*arg1)[i])->get_val ()
+	!= as_a<bit *>((*arg2)[i])->get_val ())
       return false;
   return true;
 }
@@ -1219,16 +1183,16 @@ state::add_equal_cond (tree arg1, tree arg2)
 }
 
 
-/* Adds equality condition for two sequences of bits.  */
+/* Adds equality condition for two values.  */
 
 void
-state::add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
+state::add_equal_cond (value * arg1, value * arg2)
 {
 
   /* If both arguments are constants then we can evaluate it.  */
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg1) && is_bit_vector (arg2))
     {
-      bool result = check_const_bit_equality (arg1_bits, arg2_bits);
+      bool result = check_const_value_equality (arg1, arg2);
       last_cond_status = result ? condition_status::CS_TRUE
 				: condition_status::CS_FALSE;
       return;
@@ -1236,26 +1200,26 @@ state::add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 
   /* When some of bits are constants and they differ by value,
      then we can evalate it to be false.  */
-  for (size_t i = 0; i < arg1_bits->length (); i++)
+  for (size_t i = 0; i < arg1->length (); i++)
     {
-      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i])
-	  && as_a<bit*> ((*arg1_bits)[i])->get_val ()
-	     != as_a<bit*> ((*arg2_bits)[i])->get_val ())
+      if (is_a<bit*> ((*arg1)[i]) && is_a<bit*> ((*arg2)[i])
+	  && as_a<bit*> ((*arg1)[i])->get_val ()
+	     != as_a<bit*> ((*arg2)[i])->get_val ())
 	{
 	  last_cond_status = condition_status::CS_FALSE;
 	  return;
 	}
     }
 
-  for (size_t i = 0; i < arg1_bits->length (); i++)
+  for (size_t i = 0; i < arg1->length (); i++)
     {
       /* If there is a constant bit pair, then they are equal
 	 as we checked not equality above.  */
-      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i]))
+      if (is_a<bit*> ((*arg1)[i]) && is_a<bit*> ((*arg2)[i]))
 	continue;
 
-      conditions.add (new bit_condition ((*arg1_bits)[i]->copy (),
-					 (*arg2_bits)[i]->copy (),
+      conditions.add (new bit_condition ((*arg1)[i]->copy (),
+					 (*arg2)[i]->copy (),
 					 condition_type::EQUAL));
     }
   last_cond_status = condition_status::CS_SYM;
@@ -1263,12 +1227,11 @@ state::add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 
 
 bool
-state::check_const_bit_are_not_equal (vec<value *> * arg1_bits,
-				      vec<value *> * arg2_bits)
+state::check_const_value_are_not_equal (value * arg1, value * arg2)
 {
-  for (size_t i = 0; i < arg1_bits->length (); i++)
-    if (as_a<bit *>((*arg1_bits)[i])->get_val ()
-	!= as_a<bit*>((*arg2_bits)[i])->get_val ())
+  for (size_t i = 0; i < arg1->length (); i++)
+    if (as_a<bit *>((*arg1)[i])->get_val ()
+	!= as_a<bit*>((*arg2)[i])->get_val ())
       return true;
   return false;
 }
@@ -1281,14 +1244,14 @@ state::add_not_equal_cond (tree arg1, tree arg2)
 }
 
 
-/* Adds not equal condition for two sequences of bits.  */
+/* Adds not equal condition for two values.  */
 
 void
-state::add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
+state::add_not_equal_cond (value * arg1, value * arg2)
 {
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg1) && is_bit_vector (arg2))
     {
-      bool result = check_const_bit_are_not_equal (arg1_bits, arg2_bits);
+      bool result = check_const_value_are_not_equal (arg1, arg2);
       last_cond_status = result ? condition_status::CS_TRUE
 				: condition_status::CS_FALSE;
       return;
@@ -1296,11 +1259,11 @@ state::add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 
   /* When some of bits are constants and they differ by value,
      then we can evalate it to be true.  */
-  for (size_t i = 0; i < arg1_bits->length (); i++)
+  for (size_t i = 0; i < arg1->length (); i++)
     {
-      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i])
-	  && as_a<bit*> ((*arg1_bits)[i])->get_val ()
-	     != as_a<bit*> ((*arg2_bits)[i])->get_val ())
+      if (is_a<bit*> ((*arg1)[i]) && is_a<bit*> ((*arg2)[i])
+	  && as_a<bit*> ((*arg1)[i])->get_val ()
+	     != as_a<bit*> ((*arg2)[i])->get_val ())
 	{
 	  last_cond_status = condition_status::CS_TRUE;
 	  return;
@@ -1308,15 +1271,15 @@ state::add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
     }
 
   bit_expression * prev = nullptr;
-  for (size_t i = 0; i < arg1_bits->length (); i++)
+  for (size_t i = 0; i < arg1->length (); i++)
     {
       /* If there is a constant bit pair, then they are equal
 	 as we checked not equality above.  */
-      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i]))
+      if (is_a<bit*> ((*arg1)[i]) && is_a<bit*> ((*arg2)[i]))
 	continue;
 
-      bit_condition* new_cond = new bit_condition ((*arg1_bits)[i]->copy (),
-						   (*arg2_bits)[i]->copy (),
+      bit_condition* new_cond = new bit_condition ((*arg1)[i]->copy (),
+						   (*arg2)[i]->copy (),
 						   condition_type::NOT_EQUAL);
       if (prev)
 	prev = new bit_or_expression (prev, new_cond);
@@ -1330,16 +1293,15 @@ state::add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
 
 
 bool
-state::check_const_bit_is_greater_than (vec<value *> * arg1_bits,
-					vec<value *> * arg2_bits)
+state::check_const_value_is_greater_than (value * arg1,	value * arg2)
 {
-  for (int i = arg1_bits->length () - 1; i >= 0; i--)
+  for (int i = arg1->length () - 1; i >= 0; i--)
     {
-      if (as_a<bit *>((*arg1_bits)[i])->get_val ()
-	  > as_a<bit *>((*arg2_bits)[i])->get_val ())
+      if (as_a<bit *>((*arg1)[i])->get_val ()
+	  > as_a<bit *>((*arg2)[i])->get_val ())
 	return true;
-      else if (as_a<bit *>((*arg1_bits)[i])->get_val ()
-	       < as_a<bit *>((*arg2_bits)[i])->get_val ())
+      else if (as_a<bit *>((*arg1)[i])->get_val ()
+	       < as_a<bit *>((*arg2)[i])->get_val ())
 	return false;
     }
   return false;
@@ -1353,30 +1315,29 @@ state::add_greater_than_cond (tree arg1, tree arg2)
 }
 
 
-/* Adds greater than condition for two sequences of bits.  */
+/* Adds greater than condition for two values.  */
 
 void
-state::add_greater_than_cond (vec<value*> * arg1_bits,
-			      vec<value*> * arg2_bits)
+state::add_greater_than_cond (value * arg1, value * arg2)
 {
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg1) && is_bit_vector (arg2))
     {
-      bool result = check_const_bit_is_greater_than (arg1_bits, arg2_bits);
+      bool result = check_const_value_is_greater_than (arg1, arg2);
       last_cond_status = result ? condition_status::CS_TRUE
 				: condition_status::CS_FALSE;
       return;
     }
 
-  if (is_bit_vector (arg2_bits) && is_a<bit*> (arg1_bits->last ())
-      && get_value (arg2_bits) == 0 /* && is_signed (arg1_bits).  */)
+  if (is_bit_vector (arg2) && is_a<bit*> (arg1->last ())
+      && make_number (arg2) == 0 && !arg1->is_unsigned)
     {
-      if (as_a<bit*> (arg1_bits->last ())->get_val () == 1)
+      if (as_a<bit*> (arg1->last ())->get_val () == 1)
 	last_cond_status = condition_status::CS_FALSE;
       else
 	{
-	  for (size_t i = 0; i < arg1_bits->length (); i++)
-	    if (is_a<bit*> ((*arg1_bits)[i])
-		&& as_a<bit*> ((*arg1_bits)[i])->get_val ())
+	  for (size_t i = 0; i < arg1->length (); i++)
+	    if (is_a<bit*> ((*arg1)[i])
+		&& as_a<bit*> ((*arg1)[i])->get_val ())
 	      {
 		last_cond_status = condition_status::CS_TRUE;
 		return;
@@ -1384,7 +1345,7 @@ state::add_greater_than_cond (vec<value*> * arg1_bits,
 	}
     }
 
-  bit_expression * gt_cond = construct_great_than_cond (arg1_bits, arg2_bits);
+  bit_expression * gt_cond = construct_great_than_cond (arg1, arg2);
   if (gt_cond)
     {
       /* Otherwise its status is already set.  */
@@ -1394,28 +1355,26 @@ state::add_greater_than_cond (vec<value*> * arg1_bits,
 }
 
 
-/* Constructs expression trees of greater than condition
-   for given sequences of bits.  */
+/* Constructs expression trees of greater than condition for given values.  */
 
 bit_expression*
-state::construct_great_than_cond (vec<value*> * arg1_bits,
-				  vec<value*> * arg2_bits)
+state::construct_great_than_cond (value * arg1, value * arg2)
 {
   bit_expression* prev = nullptr;
-  int i = arg1_bits->length () - 1;
+  int i = arg1->length () - 1;
   for ( ; i >= 0; i--)
     {
-      if (is_a<bit *> ((*arg1_bits)[i]) && is_a<bit *> ((*arg2_bits)[i]))
+      if (is_a<bit *> ((*arg1)[i]) && is_a<bit *> ((*arg2)[i]))
 	{
-	  if (as_a<bit*> ((*arg1_bits)[i])->get_val ()
-	      > as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	  if (as_a<bit*> ((*arg1)[i])->get_val ()
+	      > as_a<bit*> ((*arg2)[i])->get_val ())
 	    {
 	      if (!prev)
 		last_cond_status = condition_status::CS_TRUE;
 	      return prev;
 	    }
-	  else if (as_a<bit*> ((*arg1_bits)[i])->get_val ()
-		   < as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	  else if (as_a<bit*> ((*arg1)[i])->get_val ()
+		   < as_a<bit*> ((*arg2)[i])->get_val ())
 	    {
 	      if (prev)
 		{
@@ -1434,15 +1393,15 @@ state::construct_great_than_cond (vec<value*> * arg1_bits,
       else
 	{
 	  bit_condition* gt_cond
-	  = new bit_condition ((*arg1_bits)[i]->copy (),
-			       (*arg2_bits)[i]->copy (),
+	  = new bit_condition ((*arg1)[i]->copy (),
+			       (*arg2)[i]->copy (),
 			       condition_type::GREAT_THAN);
 	  bit_expression* expr = nullptr;
 	  if (i)
 	    {
 	      bit_condition* eq_cond
-	      = new bit_condition ((*arg1_bits)[i]->copy (),
-				   (*arg2_bits)[i]->copy (),
+	      = new bit_condition ((*arg1)[i]->copy (),
+				   (*arg2)[i]->copy (),
 				   condition_type::EQUAL);
 	      expr = new bit_or_expression (gt_cond, eq_cond);
 	    }
@@ -1461,16 +1420,15 @@ state::construct_great_than_cond (vec<value*> * arg1_bits,
 
 
 bool
-state::check_const_bit_is_less_than (vec<value *> * arg1_bits,
-				     vec<value *> * arg2_bits)
+state::check_const_value_is_less_than (value * arg1, value * arg2)
 {
-  for (int i = arg1_bits->length () - 1; i >= 0; i--)
+  for (int i = arg1->length () - 1; i >= 0; i--)
     {
-      if (as_a<bit *>((*arg1_bits)[i])->get_val ()
-	  < as_a<bit *>((*arg2_bits)[i])->get_val ())
+      if (as_a<bit *>((*arg1)[i])->get_val ()
+	  < as_a<bit *>((*arg2)[i])->get_val ())
 	return true;
-      else if (as_a<bit *>((*arg1_bits)[i])->get_val ()
-	       > as_a<bit *>((*arg2_bits)[i])->get_val ())
+      else if (as_a<bit *>((*arg1)[i])->get_val ()
+	       > as_a<bit *>((*arg2)[i])->get_val ())
 	return false;
     }
   return false;
@@ -1484,68 +1442,64 @@ state::add_less_than_cond (tree arg1, tree arg2)
 }
 
 
-/* Adds less than condition for two sequences of bits.  */
+/* Adds less than condition for two values.  */
 
 void
-state::add_less_than_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits)
+state::add_less_than_cond (value * arg1, value * arg2)
 {
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits)
-      /* Fix this after adding signed numbers support.  */
-      && get_value (arg2_bits) != 0)
+  if (is_bit_vector (arg1) && is_bit_vector (arg2)
+      && (make_number (arg2) != 0 || arg1->is_unsigned))
     {
-      bool result = check_const_bit_is_less_than (arg1_bits, arg2_bits);
+      bool result = check_const_value_is_less_than (arg1, arg2);
       last_cond_status = result ? condition_status::CS_TRUE
 				: condition_status::CS_FALSE;
       return;
     }
 
   last_cond_status = condition_status::CS_SYM;
-  if (is_bit_vector (arg2_bits) && get_value (arg2_bits) == 0)
+  if (is_bit_vector (arg2) && make_number (arg2) == 0 && !arg1->is_unsigned)
     {
-      /* TODO: handle is_signed (arg1_bits) case properly.  */
-      if (is_a<bit*> (arg1_bits->last ()))
+      if (is_a<bit*> (arg1->last ()))
 	{
-	  if (as_a<bit*> (arg1_bits->last ())->get_val () == 1)
+	  if (as_a<bit*> (arg1->last ())->get_val () == 1)
 	    last_cond_status = condition_status::CS_TRUE;
 	  else
 	    last_cond_status = condition_status::CS_FALSE;
 	}
       else
-	conditions.add (new bit_condition (arg1_bits->last ()->copy (),
+	conditions.add (new bit_condition (arg1->last ()->copy (),
 					   new bit (1), condition_type::EQUAL));
 
       return;
     }
 
-  bit_expression * lt_cond = construct_less_than_cond (arg1_bits, arg2_bits);
+  bit_expression * lt_cond = construct_less_than_cond (arg1, arg2);
   if (lt_cond)
     /* Otherwise its status is already set.  */
     conditions.add (lt_cond);
 }
 
 
-/* Constructs expression trees of less than condition
-   for given sequences of bits.  */
+/* Constructs expression trees of less than condition for given values.  */
 
 bit_expression*
-state::construct_less_than_cond (vec<value*> * arg1_bits,
-				 vec<value*> * arg2_bits)
+state::construct_less_than_cond (value * arg1, value * arg2)
 {
   bit_expression* prev = nullptr;
-  int i = arg1_bits->length () - 1;
+  int i = arg1->length () - 1;
   for ( ; i >= 0; i--)
     {
-      if (is_a<bit *> ((*arg1_bits)[i]) && is_a<bit *> ((*arg2_bits)[i]))
+      if (is_a<bit *> ((*arg1)[i]) && is_a<bit *> ((*arg2)[i]))
 	{
-	  if (as_a<bit*> ((*arg1_bits)[i])->get_val ()
-	      < as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	  if (as_a<bit*> ((*arg1)[i])->get_val ()
+	      < as_a<bit*> ((*arg2)[i])->get_val ())
 	    {
 	      if (!prev)
 		last_cond_status = condition_status::CS_TRUE;
 	      return prev;
 	    }
-	  else if (as_a<bit*> ((*arg1_bits)[i])->get_val ()
-		   > as_a<bit*> ((*arg2_bits)[i])->get_val ())
+	  else if (as_a<bit*> ((*arg1)[i])->get_val ()
+		   > as_a<bit*> ((*arg2)[i])->get_val ())
 	    {
 	      if (prev)
 		{
@@ -1564,15 +1518,15 @@ state::construct_less_than_cond (vec<value*> * arg1_bits,
       else
 	{
 	  bit_condition* lt_cond
-	  = new bit_condition ((*arg1_bits)[i]->copy (),
-			       (*arg2_bits)[i]->copy (),
+	  = new bit_condition ((*arg1)[i]->copy (),
+			       (*arg2)[i]->copy (),
 			       condition_type::LESS_THAN);
 	  bit_expression* expr = nullptr;
 	  if (i)
 	    {
 	      bit_condition* eq_cond
-	      = new bit_condition ((*arg1_bits)[i]->copy (),
-				   (*arg2_bits)[i]->copy (),
+	      = new bit_condition ((*arg1)[i]->copy (),
+				   (*arg2)[i]->copy (),
 				    condition_type::EQUAL);
 	      expr = new bit_or_expression (lt_cond, eq_cond);
 	    }
@@ -1597,19 +1551,17 @@ state::add_greater_or_equal_cond (tree arg1, tree arg2)
 }
 
 
-/* Adds greater or equal condition for two sequences of bits.  */
+/* Adds greater or equal condition for two values.  */
 
 void
-state::add_greater_or_equal_cond (vec<value*> * arg1_bits,
-				  vec<value*> * arg2_bits)
+state::add_greater_or_equal_cond (value* arg1, value* arg2)
 {
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits)
-      /* Fix this after adding signed numbers support.  */
-      && get_value (arg2_bits) == 0)
+  if (is_bit_vector (arg1) && is_bit_vector (arg2)
+      && (make_number (arg2) != 0 || arg1->is_unsigned))
     {
-      bool is_greater_than = check_const_bit_is_greater_than (arg1_bits,
-							      arg2_bits);
-      bool is_equal = check_const_bit_equality (arg1_bits, arg2_bits);
+      bool is_greater_than = check_const_value_is_greater_than (arg1,
+							      arg2);
+      bool is_equal = check_const_value_equality (arg1, arg2);
       last_cond_status = (is_greater_than | is_equal)
 			 ? condition_status::CS_TRUE
 			 : condition_status::CS_FALSE;
@@ -1617,28 +1569,27 @@ state::add_greater_or_equal_cond (vec<value*> * arg1_bits,
     }
 
   last_cond_status = condition_status::CS_SYM;
-  if (is_bit_vector (arg2_bits) && get_value (arg2_bits) == 0)
+  if (is_bit_vector (arg2) && make_number (arg2) == 0 && !arg1->is_unsigned)
     {
-      /* TODO: handle is_signed (arg1_bits) case properly.  */
-      if (is_a<bit*> (arg1_bits->last ()))
+      if (is_a<bit*> (arg1->last ()))
 	{
-	  if (as_a<bit*> (arg1_bits->last ())->get_val () == 1)
+	  if (as_a<bit*> (arg1->last ())->get_val () == 1)
 	    last_cond_status = condition_status::CS_FALSE;
 	else
 	    last_cond_status = condition_status::CS_TRUE;
 	}
       else
-	conditions.add (new bit_condition (arg1_bits->last ()->copy (),
+	conditions.add (new bit_condition (arg1->last ()->copy (),
 					   new bit (0), condition_type::EQUAL));
 
       return;
     }
 
-  bit_expression * eq_cond = construct_equal_cond (arg1_bits, arg2_bits);
+  bit_expression * eq_cond = construct_equal_cond (arg1, arg2);
   if (!eq_cond)
     return;
 
-  bit_expression * gt_cond = construct_great_than_cond (arg1_bits, arg2_bits);
+  bit_expression * gt_cond = construct_great_than_cond (arg1, arg2);
   if (gt_cond)
     /* Otherwise its status is already set.  */
     conditions.add (new bit_or_expression (eq_cond, gt_cond));
@@ -1654,14 +1605,15 @@ state::add_less_or_equal_cond (tree arg1, tree arg2)
 }
 
 
+/* Adds less or equal condition for two values.  */
+
 void
-state::add_less_or_equal_cond (vec<value*> * arg1_bits,
-			       vec<value*> * arg2_bits)
+state::add_less_or_equal_cond (value * arg1, value * arg2)
 {
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg1) && is_bit_vector (arg2))
     {
-      bool is_less_than = check_const_bit_is_less_than (arg1_bits, arg2_bits);
-      bool is_equal = check_const_bit_equality (arg1_bits, arg2_bits);
+      bool is_less_than = check_const_value_is_less_than (arg1, arg2);
+      bool is_equal = check_const_value_equality (arg1, arg2);
       last_cond_status = (is_less_than | is_equal)
 			 ? condition_status::CS_TRUE
 			 : condition_status::CS_FALSE;
@@ -1669,11 +1621,11 @@ state::add_less_or_equal_cond (vec<value*> * arg1_bits,
     }
 
   last_cond_status = condition_status::CS_SYM;
-  bit_expression * eq_cond = construct_equal_cond (arg1_bits, arg2_bits);
+  bit_expression * eq_cond = construct_equal_cond (arg1, arg2);
   if (!eq_cond)
     return;
 
-  bit_expression * lt_cond = construct_less_than_cond (arg1_bits, arg2_bits);
+  bit_expression * lt_cond = construct_less_than_cond (arg1, arg2);
   if (lt_cond)
     /* Otherwise its status is already set.  */
     conditions.add (new bit_or_expression (eq_cond, lt_cond));
@@ -1692,7 +1644,7 @@ state::add_bool_cond (tree arg)
       return false;
     }
 
-  vec<value *> * arg_bits = var_states.get (arg);
+  value* arg_bits = var_states.get (arg);
   for (size_t i = 0; i < arg_bits->length (); i++)
     if (is_a<bit *>((*arg_bits)[i])
 	&& as_a<bit *>((*arg_bits)[i])->get_val () != 0)
@@ -1732,8 +1684,7 @@ state::add_bool_cond (tree arg)
 
 
 /* Does preprocessing and postprocessing for condition adding.
-   Handles bit sequence creation for constant values
-   and their removement in the end.  */
+   Handles value creation for constants and their removement in the end.  */
 
 bool
 state::add_binary_cond (tree arg1, tree arg2, binary_cond_func cond_func)
@@ -1756,43 +1707,42 @@ state::add_binary_cond (tree arg1, tree arg2, binary_cond_func cond_func)
   if (arg2_is_declared)
     declare_if_needed (arg1, var_states.get (arg2)->length ());
 
-  vec<value*> * arg1_bits = var_states.get (arg1);
-  vec<value*> arg1_const_bits (vNULL);
-  if (arg1_bits == NULL && TREE_CODE (arg1) == INTEGER_CST)
+  value *arg1_val = var_states.get (arg1);
+  value arg1_const_val (MAX_VALUE_SIZE, false);
+
+  if (arg1_val == NULL && TREE_CODE (arg1) == INTEGER_CST)
     {
-      arg1_const_bits = create_bits_for_const (arg1,
+      arg1_const_val = create_val_for_const (arg1,
 				var_states.get (arg2)->length ());
-      arg1_bits = &arg1_const_bits;
+      arg1_val = &arg1_const_val;
     }
 
-  vec<value*> * arg2_bits = var_states.get (arg2);
-  vec<value*> arg2_const_bits (vNULL);
-  if (arg2_bits == NULL && TREE_CODE (arg2) == INTEGER_CST)
+  value *arg2_val = var_states.get (arg2);
+  value arg2_const_val (MAX_VALUE_SIZE, false);
+  if (arg2_val == NULL && TREE_CODE (arg2) == INTEGER_CST)
     {
-      arg2_const_bits = create_bits_for_const (arg2,
+      arg2_const_val = create_val_for_const (arg2,
 				var_states.get (arg1)->length ());
-      arg2_bits = &arg2_const_bits;
+      arg2_val = &arg2_const_val;
     }
 
-  (this->*cond_func)(arg1_bits, arg2_bits);
-  free_bits (&arg1_const_bits);
-  free_bits (&arg2_const_bits);
+  (this->*cond_func)(arg1_val, arg2_val);
+  free_val (&arg1_const_val);
+  free_val (&arg2_const_val);
   print_conditions ();
   return true;
 }
 
 
-/* Constructs expression trees of equal condition
-   for given sequences of bits.  */
+/* Constructs expression trees of equal condition for given values.  */
 
 bit_expression*
-state::construct_equal_cond (vec<value*> * arg1_bits,
-			     vec<value*> * arg2_bits)
+state::construct_equal_cond (value * arg1, value * arg2)
 {
   /* If both arguments are constants then we can evaluate it.  */
-  if (is_bit_vector (arg1_bits) && is_bit_vector (arg2_bits))
+  if (is_bit_vector (arg1) && is_bit_vector (arg2))
     {
-      bool result = check_const_bit_equality (arg1_bits, arg2_bits);
+      bool result = check_const_value_equality (arg1, arg2);
       last_cond_status = result ? condition_status::CS_TRUE
 				: condition_status::CS_FALSE;
       return nullptr;
@@ -1800,11 +1750,11 @@ state::construct_equal_cond (vec<value*> * arg1_bits,
 
   /* When some of bits are constants and they differ by value,
      then we can evalate it to be false.  */
-  for (size_t i = 0; i < arg1_bits->length (); i++)
+  for (size_t i = 0; i < arg1->length (); i++)
     {
-      if (is_a<bit*> ((*arg1_bits)[i]) && is_a<bit*> ((*arg2_bits)[i])
-	  && as_a<bit*> ((*arg1_bits)[i])->get_val ()
-	     != as_a<bit*> ((*arg2_bits)[i])->get_val ())
+      if (is_a<bit*> ((*arg1)[i]) && is_a<bit*> ((*arg2)[i])
+	  && as_a<bit*> ((*arg1)[i])->get_val ()
+	     != as_a<bit*> ((*arg2)[i])->get_val ())
 	{
 	  last_cond_status = condition_status::CS_FALSE;
 	  return nullptr;
@@ -1812,10 +1762,10 @@ state::construct_equal_cond (vec<value*> * arg1_bits,
     }
 
   bit_expression* prev = nullptr;
-  for (size_t i = 0; i < arg1_bits->length (); i++)
+  for (size_t i = 0; i < arg1->length (); i++)
     {
-      bit_condition* eq_expr = new bit_condition ((*arg1_bits)[i]->copy (),
-						  (*arg2_bits)[i]->copy (),
+      bit_condition* eq_expr = new bit_condition ((*arg1)[i]->copy (),
+						  (*arg2)[i]->copy (),
 						  condition_type::EQUAL);
       if (prev)
 	prev = new bit_and_expression (eq_expr, prev);
@@ -1849,7 +1799,7 @@ state::do_mem_ref (tree arg1, tree dest)
       (*var_states.get (dest))[i] = new symbolic_bit (i, arg1);
     }
 
-  print_bits (var_states.get (dest));
+  print_value (var_states.get (dest));
   return true;
 }
 
@@ -1874,10 +1824,101 @@ state::do_pointer_diff (tree arg1, tree arg2, tree dest)
 }
 
 
-vec<value *> *
-state::make_copy (vec<value *> *bits)
+
+value::value (unsigned size, bool is_unsigned) : is_unsigned (is_unsigned)
 {
-  vec<value *> * copied_bits = new vec<value*> ();
+  number.create (size);
+}
+
+
+value::value (const value &other)
+{
+  this->is_unsigned = other.is_unsigned;
+  number.create (other.length ());
+  for (size_t i = 0; i < other.length (); ++i)
+    {
+      value_bit *temp = other[i] ? other[i]->copy () : other[i];
+      number.quick_push (temp);
+    }
+}
+
+
+size_t
+value::length () const
+{
+  return number.length ();
+}
+
+
+value_bit*&
+value::operator[] (unsigned i)
+{
+  return number[i];
+}
+
+
+value&
+value::operator= (const value &other)
+{
+  unsigned smallest = number.allocated () < other.length ()
+		    ? number.allocated () : other.length ();
+
+  for (size_t i = 0; i < smallest; i++)
+    if (i < number.length ())
+      {
+	delete number[i];
+	number[i] = other[i]->copy ();
+      }
+    else
+      number.quick_push (other[i]->copy ());
+
+  for (size_t i = smallest; i < number.allocated (); i++)
+    if (i < number.length ())
+      {
+	delete number[i];
+	number[i] = other.is_unsigned ? new bit (0)
+				      : other[other.length () - 1]->copy ();
+      }
+    else
+      number.quick_push (other.is_unsigned
+			 ? new bit (0) : other[other.length () - 1]->copy ());
+
+  return (*this);
+}
+
+
+value_bit*
+value::operator[] (unsigned i) const
+{
+  return number[i];
+}
+
+
+bool
+value::exists () const
+{
+  return number.exists ();
+}
+
+
+unsigned
+value::allocated () const
+{
+  return number.allocated ();
+}
+
+
+value_bit*&
+value::last ()
+{
+  return number.last ();
+}
+
+
+vec<value_bit *> *
+state::make_copy (vec<value_bit *> *bits)
+{
+  vec<value_bit *> * copied_bits = new vec<value_bit*> ();
   copied_bits->create (bits->length ());
   for (size_t i = 0; i < bits->length (); i++)
     copied_bits->quick_push ((*bits)[i]->copy ());
@@ -1895,25 +1936,24 @@ state::get_last_cond_status ()
 }
 
 
-/* Prints given bits as expressions.  */
+/* Prints the given value.  */
 
 void
-state::print_bits (vec<value *> * bits)
+state::print_value (value * var)
 {
   if (!dump_file || !(dump_flags & TDF_DETAILS))
     return;
 
   fprintf (dump_file, "{");
-  for (int i = bits->length () - 1; i >= 0; i--)
+  for (int i = var->length () - 1; i >= 0; i--)
     {
-      (*bits)[i]->print ();
+      (*var)[i]->print ();
 
       if (i)
 	fprintf (dump_file, ", ");
     }
   fprintf (dump_file, "}\n");
 }
-
 
 
 size_t min (size_t a, size_t b, size_t c)
@@ -1923,7 +1963,7 @@ size_t min (size_t a, size_t b, size_t c)
 }
 
 
-/* Casts arg_bits to cast_size size, stores value in dest.  */
+/* Casts arg to cast_size size, stores value in dest.  */
 
 bool
 state::do_cast (tree var, tree dest, size_t cast_size)
@@ -1938,34 +1978,36 @@ state::do_cast (tree var, tree dest, size_t cast_size)
       return false;
     }
 
-  //TODO: add case for signed numbers
+  value *arg = var_states.get (var);
+  value *dest_val = var_states.get (dest);
 
-  vec<value *> *arg = var_states.get (var);
-  vec<value *> *dest_bits = var_states.get (dest);
-
-  size_t arg_size = min (arg->length (), dest_bits->length (), cast_size);
+  size_t arg_size = min (arg->length (), dest_val->length (), cast_size);
 
   for (size_t i = 0; i < arg_size; i++)
     {
-      value *temp = (*dest_bits)[i];
-      (*dest_bits)[i] = (*arg)[i]->copy ();
+      value_bit *temp = (*dest_val)[i];
+      (*dest_val)[i] = (*arg)[i]->copy ();
       delete temp;
     }
 
-  value * sign_bit = arg->last ();
-  for (size_t i = arg_size; i < dest_bits->length (); i++)
+  value_bit *sign_bit = arg->is_unsigned
+			? new bit (0) : arg->last ()->copy ();
+  for (size_t i = arg_size; i < dest_val->length (); i++)
     {
-      value *temp = (*dest_bits)[i];
-      (*dest_bits)[i] = sign_bit->copy ();
+      value_bit *temp = (*dest_val)[i];
+      (*dest_val)[i] = sign_bit->copy ();
       delete temp;
     }
+  delete sign_bit;
   return true;
 }
 
+
 /* Create LFSR value for the reversed CRC.  */
+
 void
-state::create_reversed_lfsr (vec<value *> &lfsr, const vec<value *> &crc,
-			     const vec<value *> &polynomial)
+state::create_reversed_lfsr (value &lfsr, const value &crc,
+			     const value &polynomial)
 {
   size_t size = crc.length ();
 
@@ -1973,44 +2015,48 @@ state::create_reversed_lfsr (vec<value *> &lfsr, const vec<value *> &crc,
   for (size_t i = 0; i < size - 1; i++)
     {
       if (as_a<bit *> (polynomial[i])->get_val ())
-	lfsr.quick_push (state::xor_two_bits (crc[i + 1], crc[0]));
+	lfsr.push (state::xor_two_bits (crc[i + 1], crc[0]));
       else
-	lfsr.quick_push (crc[i+1]->copy ());
+	lfsr.push (crc[i+1]->copy ());
     }
 
     /* Determine value of MSB.  */
   if (as_a<bit *> (polynomial[size-1])->get_val ())
-    lfsr.quick_push (crc[0]->copy ());
+    lfsr.push (crc[0]->copy ());
   else
-    lfsr.quick_push (new bit (0));
+    lfsr.push (new bit (0));
 }
 
+
 /* Create LFSR value for the forward CRC.  */
+
 void
-state::create_forward_lfsr (vec<value *> &lfsr, const vec<value *> &crc,
-			    const vec<value *> &polynomial)
+state::create_forward_lfsr (value& lfsr, const value &crc,
+			    const value &polynomial)
 {
   size_t size = crc.length ();
 
   /* Determine value of LSB.  */
   if (as_a<bit *> (polynomial[0])->get_val ())
-    lfsr.quick_push (crc[size - 1]->copy ());
+    lfsr.push (crc[size - 1]->copy ());
   else
-    lfsr.quick_push (new bit (0));
+    lfsr.push (new bit (0));
 
   /* Determine values of remaining bits.  */
   for (size_t i = 1; i < size; i++)
     {
       if (as_a<bit *> (polynomial[i])->get_val ())
-	lfsr.quick_push (state::xor_two_bits (crc[i - 1], crc[size - 1]));
+	lfsr.push (state::xor_two_bits (crc[i - 1], crc[size - 1]));
       else
-	lfsr.quick_push (crc[i - 1]->copy ());
+	lfsr.push (crc[i - 1]->copy ());
     }
 }
 
+
 /* Create LFSR value.  */
-vec<value *> *
-state::create_lfsr (tree crc, vec<value *> *polynomial, bool is_bit_forward)
+
+value *
+state::create_lfsr (tree crc, value *polynomial, bool is_bit_forward)
 {
   /* Check size compatibility․  */
   unsigned HOST_WIDE_INT size = polynomial->length ();
@@ -2025,15 +2071,13 @@ state::create_lfsr (tree crc, vec<value *> *polynomial, bool is_bit_forward)
     }
 
   /* Create vector of symbolic bits for crc.  */
-  vec<value *> *crc_value = new vec<value *> ();
-  crc_value->create (size);
+  value * crc_value = new value (size, TYPE_UNSIGNED (TREE_TYPE (crc)));
 
   for (unsigned HOST_WIDE_INT i = 0; i < size; i++)
-    crc_value->quick_push (new symbolic_bit (i, crc));
+    crc_value->push (new symbolic_bit (i, crc));
 
   /* create LFSR vector.  */
-  vec<value *> *lfsr = new vec<value *> ();
-  lfsr->create (size);
+  value *lfsr = new value (size, TYPE_UNSIGNED (TREE_TYPE (crc)));
 
   /* Calculate values for LFSR.  */
   if (is_bit_forward)
@@ -2042,7 +2086,7 @@ state::create_lfsr (tree crc, vec<value *> *polynomial, bool is_bit_forward)
     create_reversed_lfsr (*lfsr, *crc_value, *polynomial);
 
   /* crc_value is no more needed, delete.  */
-  free_bits (crc_value);
+  free_val (crc_value);
   delete crc_value;
 
   return lfsr;
@@ -2073,4 +2117,11 @@ state::print_conditions ()
 	break;
     }
   fprintf (dump_file, "}\n");
+}
+
+
+value_bit **
+value::push (value_bit * elem)
+{
+  return number.quick_push (elem);
 }

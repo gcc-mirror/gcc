@@ -5,14 +5,14 @@
 #include "expression-is-a-helper.h"
 
 
-value *
+value_bit *
 bit_expression::get_left ()
 {
   return left;
 }
 
 
-value *
+value_bit *
 bit_expression::get_right ()
 {
   return right;
@@ -20,21 +20,21 @@ bit_expression::get_right ()
 
 
 void
-bit_expression::set_left (value *expr)
+bit_expression::set_left (value_bit *expr)
 {
   left = expr;
 }
 
 
 void
-bit_expression::set_right (value *expr)
+bit_expression::set_right (value_bit *expr)
 {
   right = expr;
 }
 
 
 size_t
-value::get_index () const
+value_bit::get_index () const
 {
   return index;
 }
@@ -54,7 +54,7 @@ bit::set_val (unsigned char new_val)
 }
 
 
-bit_complement_expression::bit_complement_expression (value *right)
+bit_complement_expression::bit_complement_expression (value_bit *right)
 {
   this->left = nullptr;
   this->right = right;
@@ -79,14 +79,14 @@ bit_expression::~bit_expression ()
 }
 
 
-value*
+value_bit*
 symbolic_bit::copy () const
 {
   return new symbolic_bit (*this);
 }
 
 
-value *
+value_bit *
 bit::copy () const
 {
   return new bit (*this);
@@ -107,63 +107,63 @@ bit_expression::copy (const bit_expression *expr)
 }
 
 
-value *
+value_bit *
 bit_xor_expression::copy () const
 {
   return new bit_xor_expression (*this);
 }
 
 
-value *
+value_bit *
 bit_and_expression::copy () const
 {
   return new bit_and_expression (*this);
 }
 
 
-value *
+value_bit *
 bit_or_expression::copy () const
 {
   return new bit_or_expression (*this);
 }
 
 
-value *
+value_bit *
 shift_right_expression::copy () const
 {
   return new shift_right_expression (*this);
 }
 
 
-value *
+value_bit *
 shift_left_expression::copy () const
 {
   return new shift_left_expression (*this);
 }
 
 
-value *
+value_bit *
 add_expression::copy () const
 {
   return new add_expression (*this);
 }
 
 
-value *
+value_bit *
 sub_expression::copy () const
 {
   return new sub_expression (*this);
 }
 
 
-value *
+value_bit *
 bit_complement_expression::copy () const
 {
   return new bit_complement_expression (*this);
 }
 
 
-bit_xor_expression::bit_xor_expression (value *left, value *right)
+bit_xor_expression::bit_xor_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
@@ -178,7 +178,7 @@ bit_xor_expression::bit_xor_expression (const bit_xor_expression &expr)
 }
 
 
-bit_and_expression::bit_and_expression (value *left, value *right)
+bit_and_expression::bit_and_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
@@ -193,7 +193,7 @@ bit_and_expression::bit_and_expression (const bit_and_expression& expr)
 }
 
 
-bit_or_expression::bit_or_expression (value *left, value *right)
+bit_or_expression::bit_or_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
@@ -208,7 +208,8 @@ bit_or_expression::bit_or_expression (const bit_or_expression& expr)
 }
 
 
-shift_right_expression::shift_right_expression (value *left, value *right)
+shift_right_expression::shift_right_expression (value_bit *left,
+						value_bit *right)
 {
   this->left = left;
   this->right = right;
@@ -224,7 +225,7 @@ shift_right_expression::shift_right_expression (
 }
 
 
-shift_left_expression::shift_left_expression (value *left, value *right)
+shift_left_expression::shift_left_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
@@ -239,7 +240,7 @@ shift_left_expression::shift_left_expression (const shift_left_expression& expr)
 }
 
 
-add_expression::add_expression (value *left, value *right)
+add_expression::add_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
@@ -254,7 +255,7 @@ add_expression::add_expression (const add_expression& expr)
 }
 
 
-sub_expression::sub_expression (value *left, value *right)
+sub_expression::sub_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;

@@ -1,7 +1,8 @@
 #include "condition.h"
 
 
-bit_condition::bit_condition (value* left, value* right, condition_type type)
+bit_condition::bit_condition (value_bit* left, value_bit* right,
+			      condition_type type)
 {
   this->left = left;
   this->right = right;
@@ -54,7 +55,7 @@ bit_condition::get_cond_type () const
 }
 
 
-value *
+value_bit *
 bit_condition::copy () const
 {
   return new bit_condition (*this);

@@ -44,43 +44,42 @@ enum value_type {
 
 /* Base class for single bit value.  */
 
-class value {
+class value_bit {
  protected:
   /* This will help us to understand where is moved the bit
      from its initial position.  */
   const size_t index;
 
  public:
-  value () : index (0)
+  value_bit () : index (0)
   {};
-  value (size_t i) : index (i)
+  value_bit (size_t i) : index (i)
   {};
-  value (value &val) : index (val.index)
+  value_bit (value_bit &val) : index (val.index)
   {};
   size_t get_index () const;
 
   /* This will support deep copy of objects' values.  */
-  virtual value *copy () const = 0;
+  virtual value_bit *copy () const = 0;
   virtual value_type get_type () const = 0;
   virtual void print () = 0;
-  virtual ~value ()
+  virtual ~value_bit ()
   {};
 };
 
-
 /* Represents value of a single bit of symbolic marked variables.  */
 
-class symbolic_bit : public value {
+class symbolic_bit : public value_bit {
   tree origin = nullptr;
 
  public:
-  symbolic_bit (size_t i, tree orig) : value (i), origin (orig)
+  symbolic_bit (size_t i, tree orig) : value_bit (i), origin (orig)
   {};
   symbolic_bit (const symbolic_bit &sym_bit) : symbolic_bit (sym_bit.index,
 							     sym_bit.origin)
   {};
 
-  value *copy () const;
+  value_bit *copy () const;
   void print ();
   value_type get_type () const;
   tree get_origin ();
@@ -89,7 +88,7 @@ class symbolic_bit : public value {
 
 /* Represents value of a single bit.  */
 
-class bit : public value {
+class bit : public value_bit {
  private:
   /* This is the value of a bit.  It must be either 1 or 0.  */
   unsigned char val = 0;
@@ -101,7 +100,7 @@ class bit : public value {
   {};
   unsigned char get_val () const;
   void set_val (unsigned char new_val);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
   void print ();
 };
@@ -110,23 +109,23 @@ class bit : public value {
 /* Bit-level base expression class.  In general expressions consist of
    two operands.  Here we named them left and right.  */
 
-class bit_expression : public value {
+class bit_expression : public value_bit {
  protected:
-  value *left = nullptr;
-  value *right = nullptr;
+  value_bit *left = nullptr;
+  value_bit *right = nullptr;
   char op_sign[2];
 
   void copy (const bit_expression *expr);
 
  public:
-  value *get_left ();
-  value *get_right ();
+  value_bit *get_left ();
+  value_bit *get_right ();
 
   ~bit_expression ();
 
-  void set_left (value *expr);
-  void set_right (value *expr);
-  value *copy () const = 0;
+  void set_left (value_bit *expr);
+  void set_right (value_bit *expr);
+  value_bit *copy () const = 0;
   value_type get_type () const = 0;
   void print ();
 };
@@ -138,9 +137,9 @@ class bit_expression : public value {
 
 class bit_xor_expression : public bit_expression {
  public:
-  bit_xor_expression (value *left, value *right);
+  bit_xor_expression (value_bit *left, value_bit *right);
   bit_xor_expression (const bit_xor_expression &expr);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
 };
 
@@ -151,9 +150,9 @@ class bit_xor_expression : public bit_expression {
 
 class bit_and_expression : public bit_expression {
  public:
-  bit_and_expression (value *left, value *right);
+  bit_and_expression (value_bit *left, value_bit *right);
   bit_and_expression (const bit_and_expression &expr);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
 };
 
@@ -164,9 +163,9 @@ class bit_and_expression : public bit_expression {
 
 class bit_or_expression : public bit_expression {
  public:
-  bit_or_expression (value *left, value *right);
+  bit_or_expression (value_bit *left, value_bit *right);
   bit_or_expression (const bit_or_expression &expr);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
 };
 
@@ -175,9 +174,9 @@ class bit_or_expression : public bit_expression {
 
 class shift_right_expression : public bit_expression {
  public:
-  shift_right_expression (value *left, value *right);
+  shift_right_expression (value_bit *left, value_bit *right);
   shift_right_expression (const shift_right_expression &expr);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
 };
 
@@ -186,9 +185,9 @@ class shift_right_expression : public bit_expression {
 
 class shift_left_expression : public bit_expression {
  public:
-  shift_left_expression (value *left, value *right);
+  shift_left_expression (value_bit *left, value_bit *right);
   shift_left_expression (const shift_left_expression &expr);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
 };
 
@@ -197,9 +196,9 @@ class shift_left_expression : public bit_expression {
 
 class add_expression : public bit_expression {
  public:
-  add_expression (value *left, value *right);
+  add_expression (value_bit *left, value_bit *right);
   add_expression (const add_expression &expr);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
 };
 
@@ -208,9 +207,9 @@ class add_expression : public bit_expression {
 
 class sub_expression : public bit_expression {
  public:
-  sub_expression (value *left, value *right);
+  sub_expression (value_bit *left, value_bit *right);
   sub_expression (const sub_expression &expr);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
 };
 
@@ -218,9 +217,9 @@ class sub_expression : public bit_expression {
 
 class bit_complement_expression : public bit_expression {
  public:
-  bit_complement_expression (value *right);
+  bit_complement_expression (value_bit *right);
   bit_complement_expression (const bit_complement_expression &expr);
-  value *copy () const;
+  value_bit *copy () const;
   value_type get_type () const;
   void print ();
 };

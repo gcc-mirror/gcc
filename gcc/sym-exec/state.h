@@ -6,21 +6,38 @@
 #ifndef SYM_EXEC_STATE_H
 #define SYM_EXEC_STATE_H
 
+#define MAX_VALUE_SIZE 64
+
 #include "expression-is-a-helper.h"
 
+
+struct value {
+  vec <value_bit *> number;
+  bool is_unsigned;
+
+  value (unsigned size, bool is_unsigned);
+  value (const value &other);
+  value_bit ** push (value_bit * elem);
+  size_t length () const;
+  value_bit*& last ();
+  unsigned allocated () const;
+  bool exists () const;
+  value_bit* &operator[] (unsigned i);
+  value& operator= (const value &other);
+  value_bit* operator[] (unsigned i) const;
+};
 
 /* Stores states of variables' values on bit-level.  */
 
 class state {
- typedef void (state::*binary_func) (vec<value*> * arg1_bits,
-				     vec<value*> * arg2_bits, tree dest);
+ typedef void (state::*binary_func) (value * arg1, value * arg2, tree dest);
 
- typedef void (state::*binary_cond_func) (vec<value*> * arg1_bits,
-					  vec<value*> * arg2_bits);
+ typedef void (state::*binary_cond_func) (value* arg1, value* arg2);
 
  private:
-  /* Here is stored values of bit of each variable.  */
-  hash_map<tree, vec < value * >> var_states;
+
+  /* Here is stored values by bits of each variable.  */
+  hash_map<tree, value> var_states;
 
   /* Here is stored conditions of symbolic bits.  */
   hash_set<bit_expression *> conditions;
@@ -28,185 +45,175 @@ class state {
   /* The result of last added condition.  */
   condition_status last_cond_status = condition_status::CS_NO_COND;
 
-  /* Creates bit sequence of given constant tree.  */
-  vec<value*> create_bits_for_const (tree var, size_t size);
+  /* Removes given value.  */
+  static void free_val (value * val);
+
+  /* Creates value for given constant tree.  */
+  static value create_val_for_const (tree var, size_t size);
 
   /* Removes given sequence of bits.  */
-  static void free_bits (vec<value*> * bits);
+  static void free_bits (vec<value_bit*> * bits);
 
   /* Checks if sizes of arguments and destination are compatible.  */
   bool check_args_compatibility (tree arg1, tree arg2, tree dest);
 
-  /* Adds equality condition for two sequences of bits.  */
-  void add_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits);
+  /* Adds equality condition for two values.  */
+  void add_equal_cond (value * arg1, value * arg2);
 
-  /* Adds not equal condition for two sequences of bits.  */
-  void add_not_equal_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits);
+  /* Adds not equal condition for two values.  */
+  void add_not_equal_cond (value * arg1, value * arg2);
 
-  /* Adds greater than condition for two sequences of bits.  */
-  void add_greater_than_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits);
+  /* Adds greater than condition for two values.  */
+  void add_greater_than_cond (value * arg1, value * arg2);
 
-  /* Adds less than condition for two sequences of bits.  */
-  void add_less_than_cond (vec<value*> * arg1_bits, vec<value*> * arg2_bits);
+  /* Adds less than condition for two values.  */
+  void add_less_than_cond (value * arg1, value * arg2);
 
-  /* Adds greater or equal condition for two sequences of bits.  */
-  void add_greater_or_equal_cond (vec<value*> * arg1_bits,
-				  vec<value*> * arg2_bits);
+  /* Adds greater or equal condition for two values.  */
+  void add_greater_or_equal_cond (value * arg1, value * arg2);
 
-  /* Adds less or equal condition for two sequences of bits.  */
-  void add_less_or_equal_cond (vec<value*> * arg1_bits,
-			       vec<value*> * arg2_bits);
+  /* Adds less or equal condition for two values.  */
+  void add_less_or_equal_cond (value * arg1, value * arg2);
 
   /* Does preprocessing and postprocessing for condition adding.
-     Handles bit sequence creation for constant values
-     and their removement in the end.  */
+     Handles value creation for constants and their removement in the end.  */
   bool add_binary_cond (tree arg1, tree arg2, binary_cond_func cond_func);
 
-  /* Constructs expression trees of greater than condition
-     for given sequences of bits.  */
-  bit_expression* construct_great_than_cond (vec<value*> * arg1_bits,
-					     vec<value*> * arg2_bits);
+  /* Constructs expression trees of greater than condition for given values.  */
+  bit_expression* construct_great_than_cond (value * arg1, value * arg2);
 
-  /* Constructs expression trees of less than condition
-     for given sequences of bits.  */
-  bit_expression* construct_less_than_cond (vec<value*> * arg1_bits,
-					    vec<value*> * arg2_bits);
+  /* Constructs expression trees of less than condition for given values.  */
+  bit_expression* construct_less_than_cond (value * arg1, value * arg2);
 
-  /* Constructs expression trees of equal condition
-     for given sequences of bits.  */
-  bit_expression* construct_equal_cond (vec<value*> * arg1_bits,
-					vec<value*> * arg2_bits);
+  /* Constructs expression trees of equal condition for given values.  */
+  bit_expression* construct_equal_cond (value * arg1, value * arg2);
 
   /* Does preprocessing and postprocessing for expressions with tree operands.
-     Handles bit sequence creation for constant values
-     and their removement in the end.  */
+     Handles value creation for constant and their removement in the end.  */
   bool do_binary_operation (tree arg1, tree arg2, tree dest,
 			    binary_func bin_func);
 
-  void do_and (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+  void do_and (value * arg1, value * arg2, tree dest);
 
-  void do_or (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+  void do_or (value * arg1, value * arg2, tree dest);
 
-  void do_xor (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+  void do_xor (value * arg1, value * arg2, tree dest);
 
-  void do_shift_right (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
-		       tree dest);
+  void do_shift_right (value * arg1, value * arg2, tree dest);
 
-  void do_shift_left (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
-		      tree dest);
+  void do_shift_left (value * arg1, value * arg2, tree dest);
 
-  void do_add (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+  void do_add (value * arg1, value * arg2, tree dest);
 
-  void do_sub (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+  void do_sub (value * arg1, value * arg2, tree dest);
 
-  /* Casts arg_bits to cast_size size, stores value in dest.  */
+  /* Casts arg to cast_size size, stores value in dest.  */
   bool do_cast (tree arg, tree dest, size_t cast_size);
 
-  /* Performs AND operation on two bits.  */
-  static value *and_two_bits (value *arg1_bit, value* arg2_bit);
+  /* Performs AND operation on two values.  */
+  static value_bit *and_two_bits (value_bit *arg1, value_bit* arg2);
 
-  /* ANDs every bit of the vector with var_bit, stroes the result in var1.  */
-  void and_number_bit (vec<value *> *var1, value *var_bit);
+  /* ANDs every bit of the value with var_bit, stroes the result in var1.  */
+  void and_number_bit (value *var1, value_bit *var_bit);
 
-  void do_mul (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+  void do_mul (value * arg1, value * arg2, tree dest);
 
   /* Performs AND operation for 2 symbolic_bit operands.  */
-  static value *and_sym_bits (const value * var1, const value * var2);
+  static value_bit *and_sym_bits (const value_bit * var1,
+				  const value_bit * var2);
 
   /* Performs AND operation for a symbolic_bit and const_bit operands.  */
-  static value *and_var_const (const value * var1, const bit * const_bit);
+  static value_bit *and_var_const (const value_bit * var1,
+				   const bit * const_bit);
 
   /* Performs AND operation for 2 constant bit operands.  */
   static bit *and_const_bits (const bit * const_bit1, const bit * const_bit2);
 
   /* Performs OR operation on two bits.  */
-  static value *or_two_bits (value *arg1_bit, value* arg2_bit);
+  static value_bit *or_two_bits (value_bit *arg1_bit, value_bit* arg2_bit);
 
   /* Performs OR operation for 2 symbolic_bit operands.  */
-  static value *or_sym_bits (const value * var1, const value * var2);
+  static value_bit *or_sym_bits (const value_bit * var1,
+				 const value_bit * var2);
 
   /* Performs OR operation for a symbolic_bit and a constant bit operands.  */
-  static value *or_var_const (const value * var1, const bit * const_bit);
+  static value_bit *or_var_const (const value_bit * var1,
+				  const bit * const_bit);
 
   /* Performs OR operation for 2 constant bit operands.  */
   static bit *or_const_bits (const bit * const_bit1, const bit * const_bit2);
 
   /* Performs complement operation on a bit.  */
-  static value * complement_a_bit (value *var);
+  static value_bit * complement_a_bit (value_bit *var);
 
   /* Performs NOT operation for constant bit.  */
   static bit *complement_const_bit (const bit * const_bit);
 
   /* Performs NOT operation for symbolic_bit.  */
-  static value *complement_sym_bit (const value * var);
+  static value_bit *complement_sym_bit (const value_bit * var);
 
   /* Performs XOR operation on two bits.  */
-  static value * xor_two_bits (value *var1, value* var2);
+  static value_bit * xor_two_bits (value_bit *var1, value_bit* var2);
 
   /* Performs XOR operation for 2 symbolic_bit operands.  */
-  static value *xor_sym_bits (const value * var1, const value * var2);
+  static value_bit *xor_sym_bits (const value_bit * var1,
+				  const value_bit * var2);
 
   /* Performs XOR operation for 2 constant bit operands.  */
   static bit *xor_const_bits (const bit * const_bit1, const bit * const_bit2);
 
   /* Performs XOR operation for a symbolic_bit and const_bit operands.  */
-  static value *xor_var_const (const value * var, const bit * const_bit);
+  static value_bit *xor_var_const (const value_bit * var,
+				   const bit * const_bit);
 
-  /* Shift_right operation.  Case: var2 is a sym_bit.  */
-  void shift_right_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
-			     tree dest);
+  /* Shift_right operation.  Case: var2 is a symbolic value.  */
+  void shift_right_sym_values (value * arg1, value * arg2, tree dest);
 
-  /* Shift_left operation.  Case: var2 is a sym_bit.  */
-  void shift_left_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
-			    tree dest);
+  /* Shift_left operation.  Case: var2 is a symbolic value.  */
+  void shift_left_sym_values (value * arg1, value * arg2, tree dest);
 
-  /* Shifts value_vector right by shift_value bits.  */
-  vec <value *> shift_right_by_const (const vec <value *> * value_vector,
-				      size_t shift_value);
+  /* Shifts var right by size of shift_value.  */
+  value *shift_right_by_const (value * var, size_t shift_value);
 
   /* Return node which has a const bit child.  Traversal is done based
      on safe branching.  */
-  static void get_parent_with_const_child (value* root, bit_expression*& parent,
+  static void get_parent_with_const_child (value_bit* root,
+					   bit_expression*& parent,
 					   bit_expression*& parent_of_parent);
-
-  /* Checks if node is AND, OR or XOR expression.  */
-  static bool is_safe_branching (value* node);
 
   /* Checks whether state for variable with specified name already
      exists or not.  */
   bool is_declared (tree var);
 
-  void declare_if_needed (tree var, size_t size);
+  bool declare_if_needed (tree var, size_t size);
 
- /* Shifts value_vector left by shift_value bits.  */
-  vec <value *> *shift_left_by_const (const vec <value *> * number,
-				      size_t shift_value);
+ /* Shifts number left by size of shift_value.  */
+  value *shift_left_by_const (const value * number, size_t shift_value);
 
-  /* Checks if all vector elements are const_bit_expressions.  */
-  bool is_bit_vector (const vec <value *> *bits);
+  /* Checks if all bits of the given value have constant bit type.  */
+  bool is_bit_vector (const value *var);
 
   /* Adds two bits and carry value.
      Resturn result and stores new carry bit in "carry".  */
-  value* full_adder (value* var1, value* var2, value*& carry);
+  value_bit* full_adder (value_bit* var1, value_bit* var2, value_bit*& carry);
 
-  /* Returns the additive inverse of the number stored in number verctor.  */
-  vec <value *> * additive_inverse (const vec <value *> *number);
+  /* Returns the additive inverse of the given number.  */
+  value * additive_inverse (const value *number);
 
-  /* Adds two vectors, stores the result in the first one.  */
-  void add_numbers (vec<value *> *var1, const vec<value *> *var2);
+  /* Adds two values, stores the result in the first one.  */
+  void add_numbers (value *var1, const value *var2);
 
-  static vec<value *> * make_copy (vec<value *> *bits);
-
+  static vec<value_bit *> * make_copy (vec<value_bit *> *bits);
 
   /* Create LFSR value for the reversed CRC.  */
   static void
-  create_reversed_lfsr (vec<value *> &lfsr, const vec<value *> &crc,
-			const vec<value *> &polynomial);
+  create_reversed_lfsr (value &lfsr, const value &crc,
+			const value &polynomial);
 
   /* Create LFSR value for the forward CRC.  */
   static void
-  create_forward_lfsr (vec<value *> &lfsr, const vec<value *> &crc,
-		       const vec<value *> &polynomial);
+  create_forward_lfsr (value &lfsr, const value &crc,
+		       const value &polynomial);
 
  public:
    state ();
@@ -218,7 +225,7 @@ class state {
 
   state (const state& s);
 
-  bool add_var_state (tree var, vec<value*> * state);
+  bool add_var_state (tree var, value * state);
 
   void clear_states ();
 
@@ -228,10 +235,10 @@ class state {
 
   bool bulk_add_conditions (const hash_set<bit_expression*>& conds);
 
-  vec<value*> * get_bits (tree var);
+  value * get_value (tree var);
 
   /* Get the value of the tree, which is in the beginning of the var_states.  */
-  vec<value*> * get_first_value ();
+  value * get_first_value ();
 
   const hash_set<bit_expression *>& get_conditions ();
 
@@ -242,14 +249,14 @@ class state {
   /* Returns size of the given variable.  */
   unsigned get_var_size (tree var);
 
-  /* Prints given bits as expressions.  */
-  static void print_bits (vec<value *> * bits);
+  /* Prints the given value.  */
+  static void print_value (value * var);
 
   /* Prints added conditions.  */
   void print_conditions ();
 
-  /* Returns the value of the number represented as a bit vector.  */
-  static unsigned HOST_WIDE_INT get_value (const vec <value *> *bit_vector);
+  /* Returns the number represented by the value.  */
+  static unsigned HOST_WIDE_INT make_number (const value *var);
 
   /* Does bit-level XOR operation for given variables.  */
   bool do_xor (tree arg1, tree arg2, tree dest);
@@ -306,24 +313,19 @@ class state {
 
   bool add_bool_cond (tree arg);
 
-  static bool check_const_bit_equality (vec<value *> * arg1_bits,
-					vec<value *> * arg2_bits);
+  static bool check_const_value_equality (value * arg1, value * arg2);
 
-  static bool check_const_bit_are_not_equal (vec<value *> * arg1_bits,
-					     vec<value *> * arg2_bits);
+  static bool check_const_value_are_not_equal (value * arg1, value * arg2);
 
-  static bool check_const_bit_is_greater_than (vec<value *> * arg1_bits,
-					       vec<value *> * arg2_bits);
+  static bool check_const_value_is_greater_than (value * arg1, value * arg2);
 
-  static bool check_const_bit_is_less_than (vec<value *> * arg1_bits,
-					    vec<value *> * arg2_bits);
+  static bool check_const_value_is_less_than (value * arg1, value * arg2);
 
   /* Returns status of last added condition.  */
   condition_status get_last_cond_status ();
 
   /* Create LFSR value.  */
-  static vec<value *> * create_lfsr (tree crc, vec<value *> *polynomial,
-				     bool is_bit_forward);
+  static value * create_lfsr (tree crc, value *polynomial, bool is_bit_forward);
 };
 
 #endif /* SYM_EXEC_STATE_H.  */

@@ -939,7 +939,7 @@ crc_optimization::execute (function *fun)
       }
 
       crc_symb_execution execute_loop;
-      vec<value*> * lfsr
+      value * lfsr
       = execute_loop.extract_poly_and_create_lfsr (crc_loop, first_phi_for_crc,
 						   data, is_left_shift);
 
@@ -954,7 +954,7 @@ crc_optimization::execute (function *fun)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "\nLFSR value is \n");
-	      state::print_bits (lfsr);
+	      state::print_value (lfsr);
 	    }
 	}
 
