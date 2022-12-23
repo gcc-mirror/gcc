@@ -540,9 +540,9 @@ record_edge_info (basic_block bb)
             {
               tree cond = build2 (code, boolean_type_node, op0, op1);
               tree inverted = invert_truthvalue_loc (loc, cond);
-              bool can_infer_simple_equiv
-                = !(HONOR_SIGNED_ZEROS (op0)
-                    && real_zerop (op0));
+	      bool can_infer_simple_equiv
+		= !(HONOR_SIGNED_ZEROS (op0) && real_maybe_zerop (op0))
+		  && !DECIMAL_FLOAT_MODE_P (element_mode (TREE_TYPE (op0)));
 	      class edge_info *edge_info;
 
 	      edge_info = new class edge_info (true_edge);
@@ -564,9 +564,9 @@ record_edge_info (basic_block bb)
             {
               tree cond = build2 (code, boolean_type_node, op0, op1);
               tree inverted = invert_truthvalue_loc (loc, cond);
-              bool can_infer_simple_equiv
-                = !(HONOR_SIGNED_ZEROS (op1)
-                    && (TREE_CODE (op1) == SSA_NAME || real_zerop (op1)));
+	      bool can_infer_simple_equiv
+		= !(HONOR_SIGNED_ZEROS (op1) && real_maybe_zerop (op1))
+		  && !DECIMAL_FLOAT_MODE_P (element_mode (TREE_TYPE (op1)));
 	      class edge_info *edge_info;
 
 	      edge_info = new class edge_info (true_edge);
