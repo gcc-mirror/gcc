@@ -302,10 +302,6 @@ get_vl (rtx_insn *rinsn)
 {
   if (has_vl_op (rinsn))
     {
-      /* We only call get_vl for VLMAX use VTYPE instruction.
-	 It's used to get the VL operand to emit VLMAX VSETVL instruction:
-	 vsetvl a5,zero,e32,m1,ta,ma.  */
-      gcc_assert (get_attr_avl_type (rinsn) == VLMAX);
       extract_insn_cached (rinsn);
       return recog_data.operand[get_attr_vl_op_idx (rinsn)];
     }

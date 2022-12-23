@@ -48,6 +48,7 @@ build_one (function_builder &b, const function_group_info &group,
   tree return_type = group.ops_infos.ret.get_tree_type (
     group.ops_infos.types[vec_type_idx].index);
   b.allocate_argument_types (function_instance, argument_types);
+  b.apply_predication (function_instance, return_type, argument_types);
   b.add_unique_function (function_instance, (*group.shape), return_type,
 			 argument_types);
 }
@@ -93,13 +94,46 @@ struct vsetvl_def : public build_base
     /* vsetvl* instruction doesn't have C++ overloaded functions.  */
     if (overloaded_p)
       return nullptr;
-    b.append_name ("__riscv_");
-    b.append_name (instance.base_name);
+    b.append_base_name (instance.base_name);
     b.append_name (type_suffixes[instance.type.index].vsetvl);
     return b.finish_name ();
   }
 };
+
+/* loadstore_def class.  */
+struct loadstore_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    /* Return nullptr if it can not be overloaded.  */
+    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
+      return nullptr;
+
+    b.append_base_name (instance.base_name);
+
+    tree type = builtin_types[instance.type.index].vector;
+    machine_mode mode = TYPE_MODE (type);
+    int sew = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+    /* vop --> vop<sew>.  */
+    b.append_sew (sew);
+
+    /* vop<sew>_v --> vop<sew>_v_<type>.  */
+    if (!overloaded_p)
+      {
+	/* vop<sew> --> vop<sew>_v.  */
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	/* vop<sew>_v --> vop<sew>_v_<type>.  */
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
+SHAPE(loadstore, loadstore)
 
 } // end namespace riscv_vector

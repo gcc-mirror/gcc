@@ -26,6 +26,7 @@ namespace riscv_vector {
 namespace shapes {
 extern const function_shape *const vsetvl;
 extern const function_shape *const vsetvlmax;
+extern const function_shape *const loadstore;
 }
 
 } // end namespace riscv_vector
