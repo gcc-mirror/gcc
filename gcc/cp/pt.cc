@@ -4958,6 +4958,28 @@ generic_targs_for (tree tmpl)
   return template_parms_to_args (DECL_TEMPLATE_PARMS (tmpl));
 }
 
+/* Return the template arguments corresponding to the template parameters of
+   TMPL's enclosing scope.  When TMPL is a member of a partial specialization,
+   this returns the arguments for the partial specialization as opposed to those
+   for the primary template, which is the main difference between this function
+   and simply using e.g. the TYPE_TI_ARGS of TMPL's DECL_CONTEXT.  */
+
+tree
+outer_template_args (tree tmpl)
+{
+  tree ti = get_template_info (DECL_TEMPLATE_RESULT (tmpl));
+  if (!ti)
+    return NULL_TREE;
+  tree args = TI_ARGS (ti);
+  if (!PRIMARY_TEMPLATE_P (tmpl))
+    return args;
+  if (TMPL_ARGS_DEPTH (args) == 1)
+    return NULL_TREE;
+  args = copy_node (args);
+  --TREE_VEC_LENGTH (args);
+  return args;
+}
+
 /* Update the declared TYPE by doing any lookups which were thought to be
    dependent, but are not now that we know the SCOPE of the declarator.  */
 
@@ -30081,16 +30103,8 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 static tree
 ctor_deduction_guides_for (tree tmpl, tsubst_flags_t complain)
 {
-  tree type = TREE_TYPE (tmpl);
-  tree outer_args = NULL_TREE;
-  if (DECL_CLASS_SCOPE_P (tmpl)
-      && CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (tmpl)))
-    {
-      outer_args = copy_node (CLASSTYPE_TI_ARGS (type));
-      gcc_assert (TMPL_ARGS_DEPTH (outer_args) > 1);
-      --TREE_VEC_LENGTH (outer_args);
-      type = TREE_TYPE (most_general_template (tmpl));
-    }
+  tree outer_args = outer_template_args (tmpl);
+  tree type = TREE_TYPE (most_general_template (tmpl));
 
   tree cands = NULL_TREE;
 
