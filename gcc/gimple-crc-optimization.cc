@@ -958,7 +958,7 @@ crc_optimization::execute (function *fun)
 	    }
 	}
 
-      if (symb_exec.states_match_lfsr (lfsr, is_left_shift))
+      if (symb_exec.all_states_match_lfsr (lfsr, is_left_shift))
 	{
 	  if (dump_file)
 	    {

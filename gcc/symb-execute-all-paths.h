@@ -94,21 +94,6 @@ class crc_symb_execution {
    to calculate the polynomial.  */
   bool execute_crc_loop (class loop *, gphi *, gphi *, bool);
 
-  /* Returns true if the state matches the LFSR, otherwise - false.  */
-  bool state_matches_lfsr_all_cases (const value *, const value *, bool);
-
-  /* Returns true if the state matches the LFSR, otherwise - false.  */
-  bool match_lfsr_case1 (const value *, const value *,
-			 bool, symbolic_bit *, size_t, size_t);
-
-  bool state_matches_lfsr (const value *, const value *, bool);
-
-  bool condition_is_true (value_bit *);
-
-  bool condition_is_false (value_bit *);
-
-  bool marginal_case_matches (value_bit *, value_bit *, value_bit *);
-
  public:
 
   /* Symbolically execute the function and keep final states.  */
@@ -119,7 +104,7 @@ class crc_symb_execution {
   value * extract_poly_and_create_lfsr (class loop *, gphi *, gphi *, bool);
 
   /* Returns true if all states match the LFSR, otherwise - false.  */
-  bool states_match_lfsr (value *, bool);
+  bool all_states_match_lfsr (value *, bool);
 
   crc_symb_execution ()
   {
