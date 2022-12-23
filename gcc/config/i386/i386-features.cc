@@ -429,6 +429,11 @@ scalar_chain::add_insn (bitmap candidates, unsigned int insn_uid)
   for (ref = DF_INSN_UID_DEFS (insn_uid); ref; ref = DF_REF_NEXT_LOC (ref))
     if (!HARD_REGISTER_P (DF_REF_REG (ref)))
       analyze_register_chain (candidates, ref);
+
+  /* The operand(s) of VEC_SELECT don't need to be converted/convertible.  */
+  if (def_set && GET_CODE (SET_SRC (def_set)) == VEC_SELECT)
+    return;
+
   for (ref = DF_INSN_UID_USES (insn_uid); ref; ref = DF_REF_NEXT_LOC (ref))
     if (!DF_REF_REG_MEM_P (ref))
       analyze_register_chain (candidates, ref);
@@ -626,6 +631,23 @@ general_scalar_chain::compute_convert_gain ()
 		igain += (m * ix86_cost->int_store[2]
 			  - ix86_cost->sse_store[sse_cost_idx]);
 		igain -= vector_const_cost (src);
+	      }
+	    break;
+
+	  case VEC_SELECT:
+	    if (XVECEXP (XEXP (src, 1), 0, 0) == const0_rtx)
+	      {
+		// movd (4 bytes) replaced with movdqa (4 bytes).
+		if (!optimize_insn_for_size_p ())
+		  igain += ix86_cost->sse_to_integer - ix86_cost->xmm_move;
+	      }
+	    else
+	      {
+		// pshufd; movd replaced with pshufd.
+		if (optimize_insn_for_size_p ())
+		  igain += COSTS_N_BYTES (4);
+		else
+		  igain += ix86_cost->sse_to_integer;
 	      }
 	    break;
 
@@ -1165,6 +1187,24 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 
     case CONST_INT:
       convert_op (&src, insn);
+      break;
+
+    case VEC_SELECT:
+      if (XVECEXP (XEXP (src, 1), 0, 0) == const0_rtx)
+	src = XEXP (src, 0);
+      else if (smode == DImode)
+	{
+	  rtx tmp = gen_lowpart (V1TImode, XEXP (src, 0));
+	  dst = gen_lowpart (V1TImode, dst);
+	  src = gen_rtx_LSHIFTRT (V1TImode, tmp, GEN_INT (64));
+	}
+      else
+	{
+	  rtx tmp = XVECEXP (XEXP (src, 1), 0, 0);
+	  rtvec vec = gen_rtvec (4, tmp, tmp, tmp, tmp);
+	  rtx par = gen_rtx_PARALLEL (VOIDmode, vec);
+	  src = gen_rtx_VEC_SELECT (vmode, XEXP (src, 0), par);
+	}
       break;
 
     default:
@@ -1929,6 +1969,16 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
     case MEM:
     case CONST_INT:
       return REG_P (dst);
+
+    case VEC_SELECT:
+      /* Excluding MEM_P (dst) avoids intefering with vpextr[dq].  */
+      return REG_P (dst)
+	     && REG_P (XEXP (src, 0))
+	     && GET_MODE (XEXP (src, 0)) == (mode == DImode ? V2DImode
+							    : V4SImode)
+	     && GET_CODE (XEXP (src, 1)) == PARALLEL
+	     && XVECLEN (XEXP (src, 1), 0) == 1
+	     && CONST_INT_P (XVECEXP (XEXP (src, 1), 0, 0));
 
     default:
       return false;
