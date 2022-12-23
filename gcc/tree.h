@@ -5216,6 +5216,7 @@ extern bool needs_to_live_in_memory (const_tree);
 extern tree reconstruct_complex_type (tree, tree);
 extern bool real_onep (const_tree);
 extern bool real_minus_onep (const_tree);
+extern bool real_maybe_zerop (const_tree);
 extern void init_ttree (void);
 extern void build_common_tree_nodes (bool);
 extern void build_common_builtin_nodes (void);

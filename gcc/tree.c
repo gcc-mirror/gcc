@@ -2927,6 +2927,35 @@ real_minus_onep (const_tree expr)
     }
 }
 
+/* Return true if T could be a floating point zero.  */
+
+bool
+real_maybe_zerop (const_tree expr)
+{
+  switch (TREE_CODE (expr))
+    {
+    case REAL_CST:
+      /* Can't use real_zerop here, as it always returns false for decimal
+	 floats.  And can't use TREE_REAL_CST (expr).cl == rvc_zero
+	 either, as decimal zeros are rvc_normal.  */
+      return real_equal (&TREE_REAL_CST (expr), &dconst0);
+    case COMPLEX_CST:
+      return (real_maybe_zerop (TREE_REALPART (expr))
+	      || real_maybe_zerop (TREE_IMAGPART (expr)));
+    case VECTOR_CST:
+      {
+	unsigned count = vector_cst_encoded_nelts (expr);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (real_maybe_zerop (VECTOR_CST_ENCODED_ELT (expr, i)))
+	    return true;
+	return false;
+      }
+    default:
+      /* Perhaps for SSA_NAMEs we could query frange.  */
+      return true;
+    }
+}
+
 /* Nonzero if EXP is a constant or a cast of a constant.  */
 
 bool
