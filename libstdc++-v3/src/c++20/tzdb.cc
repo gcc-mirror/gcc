@@ -448,7 +448,6 @@ namespace std::chrono
       // This allows on_day to reuse padding of at_time.
       // This keeps the size to 8 bytes and the alignment to 4 bytes.
       struct datetime : at_time { on_day day; };
-      static_assert(sizeof(datetime) == 8 && alignof(datetime) == 4);
 
       // TODO combining name+letters into a single string (like in ZoneInfo)
       // would save sizeof(string) and make Rule fit in a single cacheline.
