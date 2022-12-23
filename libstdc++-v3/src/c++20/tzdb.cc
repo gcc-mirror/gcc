@@ -52,6 +52,10 @@
 # endif
 #endif
 
+#ifndef _GLIBCXX_ZONEINFO_DIR
+# define _GLIBCXX_ZONEINFO_DIR "/usr/share/zoneinfo"
+#endif
+
 namespace __gnu_cxx
 {
 #ifdef _AIX
@@ -59,6 +63,12 @@ namespace __gnu_cxx
   const char* (*zoneinfo_dir_override)() = nullptr;
 #else
   [[gnu::weak]] const char* zoneinfo_dir_override();
+
+#ifdef __APPLE__
+  // Need a weak definition for Mach-O.
+  [[gnu::weak]] const char* zoneinfo_dir_override()
+  { return _GLIBCXX_ZONEINFO_DIR; }
+#endif
 #endif
 }
 
@@ -934,9 +944,6 @@ namespace std::chrono
     return info;
   }
 
-#ifndef _GLIBCXX_ZONEINFO_DIR
-# define _GLIBCXX_ZONEINFO_DIR "/usr/share/zoneinfo"
-#endif
  namespace
  {
     string
