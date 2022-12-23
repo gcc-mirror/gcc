@@ -1136,14 +1136,15 @@ get_range_strlen_phi (tree src, gphi *phi,
 
       /* Adjust the minimum and maximum length determined so far and
 	 the upper bound on the array size.  */
-      if (!pdata->minlen
-	  || tree_int_cst_lt (argdata.minlen, pdata->minlen))
+      if (TREE_CODE (argdata.minlen) == INTEGER_CST
+	  && (!pdata->minlen
+	      || tree_int_cst_lt (argdata.minlen, pdata->minlen)))
 	pdata->minlen = argdata.minlen;
 
-      if (!pdata->maxlen
-	  || (argdata.maxlen
-	      && TREE_CODE (argdata.maxlen) == INTEGER_CST
-	      && tree_int_cst_lt (pdata->maxlen, argdata.maxlen)))
+      if (TREE_CODE (argdata.maxlen) == INTEGER_CST
+	  && (!pdata->maxlen
+	      || (argdata.maxlen
+		  && tree_int_cst_lt (pdata->maxlen, argdata.maxlen))))
 	pdata->maxlen = argdata.maxlen;
 
       if (!pdata->maxbound
