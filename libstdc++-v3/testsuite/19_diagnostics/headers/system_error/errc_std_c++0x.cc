@@ -70,7 +70,10 @@ void test01()
   TEST_ERRC(network_reset);
   TEST_ERRC(network_unreachable);
   TEST_ERRC(no_buffer_space);
+
+#ifdef ECHILD
   TEST_ERRC(no_child_process);
+#endif
 
 #ifdef ENOLINK
   TEST_ERRC(no_link);
@@ -86,7 +89,10 @@ void test01()
   TEST_ERRC(no_message);
 #endif
   TEST_ERRC(no_protocol_option);
+
+#ifdef ENOSPC
   TEST_ERRC(no_space_on_device);
+#endif
 
 #ifdef ENOSR
   TEST_ERRC(no_stream_resources);
@@ -105,16 +111,26 @@ void test01()
 
   TEST_ERRC(not_connected);
   TEST_ERRC(not_enough_memory);
+
+#ifdef ENOTSUP
   TEST_ERRC(not_supported);
+#endif
 
 #ifdef ECANCELED
   TEST_ERRC(operation_canceled);
 #endif
 
   TEST_ERRC(operation_in_progress);
+
+#ifdef EPERM
   TEST_ERRC(operation_not_permitted);
+#endif
+
   TEST_ERRC(operation_not_supported);
+
+#ifdef EWOULDBLOCK
   TEST_ERRC(operation_would_block);
+#endif
 
 #ifdef EOWNERDEAD
   TEST_ERRC(owner_dead);
@@ -144,7 +160,10 @@ void test01()
   TEST_ERRC(text_file_busy);
 #endif
 
+#ifdef ETIMEDOUT
   TEST_ERRC(timed_out);
+#endif
+
   TEST_ERRC(too_many_files_open_in_system);
   TEST_ERRC(too_many_files_open);
   TEST_ERRC(too_many_links);

@@ -20523,6 +20523,10 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
       cygwin*)
         ac_has_nanosleep=yes
         ;;
+      mingw*)
+        ac_has_win32_sleep=yes
+        ac_has_sched_yield=yes
+        ;;
       darwin*)
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
@@ -21056,6 +21060,10 @@ $as_echo "#define _GLIBCXX_USE_SCHED_YIELD 1" >>confdefs.h
 
 $as_echo "#define _GLIBCXX_USE_NANOSLEEP 1" >>confdefs.h
 
+  elif test x"$ac_has_win32_sleep" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_WIN32_SLEEP 1" >>confdefs.h
+
   else
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sleep" >&5
 $as_echo_n "checking for sleep... " >&6; }
@@ -21112,38 +21120,7 @@ $as_echo "#define HAVE_USLEEP 1" >>confdefs.h
 $as_echo "$ac_has_usleep" >&6; }
   fi
 
-  if test x"$ac_has_nanosleep$ac_has_sleep" = x"nono"; then
-      ac_no_sleep=yes
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Sleep" >&5
-$as_echo_n "checking for Sleep... " >&6; }
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <windows.h>
-int
-main ()
-{
-Sleep(1)
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_has_win32_sleep=yes
-else
-  ac_has_win32_sleep=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-      if test x"$ac_has_win32_sleep" = x"yes"; then
-
-$as_echo "#define HAVE_WIN32_SLEEP 1" >>confdefs.h
-
-	ac_no_sleep=no
-      fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_win32_sleep" >&5
-$as_echo "$ac_has_win32_sleep" >&6; }
-  fi
-
-  if test x"$ac_no_sleep" = x"yes"; then
+  if test x"$ac_has_nanosleep$ac_has_win32_sleep$ac_has_sleep" = x"nonono"; then
 
 $as_echo "#define _GLIBCXX_NO_SLEEP 1" >>confdefs.h
 
@@ -69715,6 +69692,15 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   case $target_thread_file in
     posix)
       CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+      ;;
+    win32)
+      CXXFLAGS="$CXXFLAGS -D_WIN32_THREADS"
+      # The support of condition variables is disabled by default in
+      # the Win32 gthreads library, so enable it on explicit request.
+      if test x$enable_libstdcxx_threads = xyes; then
+        CXXFLAGS="$CXXFLAGS -D_WIN32_WINNT=0x0600"
+      fi
+      ;;
   esac
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether it can be safely assumed that mutex_timedlock is available" >&5
@@ -69730,6 +69716,9 @@ main ()
       // In case of POSIX threads check _POSIX_TIMEOUTS.
       #if (defined(_PTHREADS) \
 	  && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
+      #error
+      // In case of Win32 threads there is no support.
+      #elif defined(_WIN32_THREADS)
       #error
       #endif
 
@@ -69826,6 +69815,11 @@ $as_echo "#define _GLIBCXX_USE_PTHREAD_RWLOCK_T 1" >>confdefs.h
 
 fi
 
+    fi
+
+    # See above for the rationale.
+    if test $target_thread_file = win32; then
+      CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
     fi
   fi
 
@@ -72599,6 +72593,8 @@ $as_echo "$gxx_include_dir" >&6; }
   TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/libgcc'
 
   # Now, export this to all the little Makefiles....
+
+
 
 
 
