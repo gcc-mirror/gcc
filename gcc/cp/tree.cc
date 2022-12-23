@@ -3342,6 +3342,10 @@ break_out_target_exprs (tree t, bool clear_location /* = false */)
   static int target_remap_count;
   static splay_tree target_remap;
 
+  /* We shouldn't be called on templated trees, nor do we want to
+     produce them.  */
+  gcc_checking_assert (!processing_template_decl);
+
   if (!target_remap_count++)
     target_remap = splay_tree_new (splay_tree_compare_pointers,
 				   /*splay_tree_delete_key_fn=*/NULL,

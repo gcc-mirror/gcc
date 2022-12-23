@@ -8170,6 +8170,10 @@ maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
       r = *cached;
       if (r != t)
 	{
+	  /* Clear processing_template_decl for sake of break_out_target_exprs;
+	     entries in the cv_cache are non-templated.  */
+	  processing_template_decl_sentinel ptds;
+
 	  r = break_out_target_exprs (r, /*clear_loc*/true);
 	  protected_set_expr_location (r, EXPR_LOCATION (t));
 	}
