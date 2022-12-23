@@ -656,18 +656,18 @@
 ;;    2. (const_vector:VNx1SF repeat [
 ;;                (const_double:SF 0.0 [0x0.0p+0])]).
 (define_insn_and_split "@pred_mov<mode>"
-  [(set (match_operand:V 0 "nonimmediate_operand"        "=vd,  vr,     m,    vr,    vr")
+  [(set (match_operand:V 0 "nonimmediate_operand"          "=vd,    vr,     m,    vr,    vr")
 	(if_then_else:V
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand" " vm, Wc1, vmWc1,   Wc1,   Wc1")
-	     (match_operand 4 "vector_length_operand"    " rK,  rK,    rK,    rK,    rK")
-	     (match_operand 5 "const_int_operand"        "  i,   i,     i,     i,     i")
-	     (match_operand 6 "const_int_operand"        "  i,   i,     i,     i,     i")
-	     (match_operand 7 "const_int_operand"        "  i,   i,     i,     i,     i")
+	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1, vmWc1, vmWc1,   Wc1,   Wc1")
+	     (match_operand 4 "vector_length_operand"    "   rK,    rK,    rK,    rK,    rK")
+	     (match_operand 5 "const_int_operand"        "    i,     i,     i,     i,     i")
+	     (match_operand 6 "const_int_operand"        "    i,     i,     i,     i,     i")
+	     (match_operand 7 "const_int_operand"        "    i,     i,     i,     i,     i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (match_operand:V 3 "vector_move_operand"       "  m,   m,    vr,    vr, viWc0")
-	  (match_operand:V 2 "vector_merge_operand"      "  0,  vu,   vu0,   vu0,   vu0")))]
+	  (match_operand:V 3 "vector_move_operand"       "    m,     m,    vr,    vr, viWc0")
+	  (match_operand:V 2 "vector_merge_operand"      "    0,    vu,   vu0,   vu0,   vu0")))]
   "TARGET_VECTOR"
   "@
    vle<sew>.v\t%0,%3%p1
