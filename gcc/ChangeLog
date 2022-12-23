@@ -1,3 +1,24 @@
+2022-12-22  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	* opts-jobserver.h: Add one member.
+	* opts-common.c (jobserver_info::jobserver_info): Parse FIFO
+	format of --jobserver-auth.
+
+2022-12-22  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.c (driver::detect_jobserver): Remove and move to
+	jobserver.h.
+	* lto-wrapper.c (jobserver_active_p): Likewise.
+	(run_gcc): Likewise.
+	* opts-jobserver.h: New file.
+	* opts-common.c (jobserver_info::jobserver_info): New function.
+
 2022-12-15  Sebastian Pop  <spop@amazon.com>
 
 	PR target/98776
