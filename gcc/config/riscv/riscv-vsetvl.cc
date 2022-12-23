@@ -810,15 +810,6 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
       fprintf (dump_file, "\nChange PATTERN of insn %d from:\n",
 	       INSN_UID (rinsn));
       print_rtl_single (dump_file, PATTERN (rinsn));
-      if (dump_flags & TDF_DETAILS)
-	{
-	  fprintf (dump_file, "RTL_SSA info:\n");
-	  pretty_printer pp;
-	  pp.buffer->stream = dump_file;
-	  insn->print_full (&pp);
-	  pp_printf (&pp, "\n");
-	  pp_flush (&pp);
-	}
     }
 
   insn_change_watermark watermark;
@@ -834,17 +825,14 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
     {
       fprintf (dump_file, "\nto:\n");
       print_rtl_single (dump_file, PATTERN (rinsn));
-      if (dump_flags & TDF_DETAILS)
-	{
-	  fprintf (dump_file, "RTL_SSA info:\n");
-	  pretty_printer pp;
-	  pp.buffer->stream = dump_file;
-	  insn->print_full (&pp);
-	  pp_printf (&pp, "\n");
-	  pp_flush (&pp);
-	}
     }
   return true;
+}
+
+avl_info::avl_info (const avl_info &other)
+{
+  m_value = other.get_value ();
+  m_source = other.get_source ();
 }
 
 avl_info::avl_info (rtx value_in, set_info *source_in)
@@ -1355,12 +1343,8 @@ vector_insn_info::dump (FILE *file) const
     {
       if (get_insn ())
 	{
-	  fprintf (file, "RTL_SSA insn_info=");
-	  pretty_printer pp;
-	  pp.buffer->stream = file;
-	  get_insn ()->print_full (&pp);
-	  pp_printf (&pp, "\n");
-	  pp_flush (&pp);
+	  fprintf (file, "The real INSN=");
+	  print_rtl_single (file, get_insn ()->rtl ());
 	}
       if (get_dirty_pat ())
 	{

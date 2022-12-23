@@ -125,6 +125,7 @@ private:
 
 public:
   avl_info () : m_value (NULL_RTX), m_source (nullptr) {}
+  avl_info (const avl_info &);
   avl_info (rtx, rtl_ssa::set_info *);
   rtx get_value () const { return m_value; }
   rtl_ssa::set_info *get_source () const { return m_source; }
