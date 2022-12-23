@@ -1,3 +1,107 @@
+2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105730
+	* src/c++11/compatibility-condvar.cc (__nothrow_wait_cv::wait):
+	Access private data member of base class and call its wait
+	member.
+
+2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/chrono (operator<<): Move to new header.
+	(nonexistent_local_time::_M_make_what_str): Define correctly.
+	(ambiguous_local_time::_M_make_what_str): Likewise.
+	* include/bits/chrono_io.h: New file.
+	* src/c++20/tzdb.cc (operator<<(ostream&, const Rule&)): Use
+	new ostream output for month and weekday types.
+	* testsuite/20_util/duration/io.cc: Test std::format support.
+	* testsuite/std/time/exceptions.cc: Check what() strings.
+	* testsuite/std/time/syn_c++20.cc: Uncomment local_time_format.
+	* testsuite/std/time/time_zone/get_info_local.cc: Enable check
+	for formatted output of local_info objects.
+	* testsuite/std/time/clock/file/io.cc: New test.
+	* testsuite/std/time/clock/gps/io.cc: New test.
+	* testsuite/std/time/clock/system/io.cc: New test.
+	* testsuite/std/time/clock/tai/io.cc: New test.
+	* testsuite/std/time/clock/utc/io.cc: New test.
+	* testsuite/std/time/day/io.cc: New test.
+	* testsuite/std/time/format.cc: New test.
+	* testsuite/std/time/hh_mm_ss/io.cc: New test.
+	* testsuite/std/time/month/io.cc: New test.
+	* testsuite/std/time/weekday/io.cc: New test.
+	* testsuite/std/time/year/io.cc: New test.
+	* testsuite/std/time/year_month_day/io.cc: New test.
+
+2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::__write_padded_as_spec): New
+	function.
+	(__format::__formatter_str, __format::__formatter_int::format)
+	(formatter<const void*, charT>): Use it.
+
+2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdChronoDurationPrinter)
+	(StdChronoTimePointPrinter, StdChronoZonedTimePrinter)
+	(StdChronoCalendarPrinter, StdChronoTimeZonePrinter)
+	(StdChronoLeapSecondPrinter, StdChronoTzdbPrinter)
+	(StdChronoTimeZoneRulePrinter): New printers.
+
+2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR): New macro.
+	* config.h.in: Regenerate.
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* configure: Regenerate.
+	* configure.ac (GLIBCXX_ZONEINFO_DIR): Use new macro.
+	* include/std/chrono (utc_clock::from_sys): Correct handling
+	of leap seconds.
+	(nonexistent_local_time::_M_make_what_str): Define.
+	(ambiguous_local_time::_M_make_what_str): Define.
+	(__throw_bad_local_time): Define new function.
+	(time_zone, tzdb_list, tzdb): Implement all members.
+	(remote_version, zoned_time, get_leap_second_info): Define.
+	* include/std/version: Add comment for __cpp_lib_chrono.
+	* src/c++20/Makefile.am: Add new file.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++20/tzdb.cc: New file.
+	* testsuite/lib/libstdc++.exp: Define effective target tzdb.
+	* testsuite/std/time/clock/file/members.cc: Check file_time
+	alias and file_clock::now() member.
+	* testsuite/std/time/clock/gps/1.cc: Likewise for gps_clock.
+	* testsuite/std/time/clock/tai/1.cc: Likewise for tai_clock.
+	* testsuite/std/time/syn_c++20.cc: Uncomment everything except
+	parse.
+	* testsuite/std/time/clock/utc/leap_second_info.cc: New test.
+	* testsuite/std/time/exceptions.cc: New test.
+	* testsuite/std/time/time_zone/get_info_local.cc: New test.
+	* testsuite/std/time/time_zone/get_info_sys.cc: New test.
+	* testsuite/std/time/time_zone/requirements.cc: New test.
+	* testsuite/std/time/tzdb/1.cc: New test.
+	* testsuite/std/time/tzdb/leap_seconds.cc: New test.
+	* testsuite/std/time/tzdb_list/1.cc: New test.
+	* testsuite/std/time/tzdb_list/requirements.cc: New test.
+	* testsuite/std/time/zoned_time/1.cc: New test.
+	* testsuite/std/time/zoned_time/custom.cc: New test.
+	* testsuite/std/time/zoned_time/deduction.cc: New test.
+	* testsuite/std/time/zoned_time/req_neg.cc: New test.
+	* testsuite/std/time/zoned_time/requirements.cc: New test.
+	* testsuite/std/time/zoned_traits.cc: New test.
+
+2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (__is_duration_v, __is_time_point_v):
+	New variable templates.
+	(duration_cast): Add simplified definition for noconv case.
+	(treat_as_floating_point_v): Add explicit specializations.
+	(duration::operator%=, floor, ceil, round): Simplify SFINAE
+	constraints.
+
+2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono: Use nodiscard attribute.
+
 2022-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/20_util/to_chars/float16_c++23.cc (test): Use 3 argument

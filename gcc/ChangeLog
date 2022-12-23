@@ -1,3 +1,77 @@
+2022-12-22  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/md.texi: Move example code remark next to it's code block.
+
+2022-12-22  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/md.texi: Fix inconsistent example name.
+
+2022-12-22  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/md.texi: Fix incorrect pxref.
+
+2022-12-22  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/106482
+	* doc/install.texi (ISO C++11 Compiler): Document GCC version
+	known to work.
+
+2022-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108166
+	* tree-ssa-phiopt.cc (value_replacement): For the maybe_equal_p
+	case turned into equal_p reset SSA_NAME_RANGE_INFO of phi result.
+
+2022-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/108193
+	* cse.cc (compute_const_anchors): Change n type to
+	unsigned HOST_WIDE_INT, adjust comparison against it to avoid
+	warnings.  Formatting fix.
+	(insert_const_anchor): Use gen_int_mode instead of GEN_INT.
+
+2022-12-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107451
+	* tree-vect-stmts.cc (vectorizable_load): Avoid loading
+	SLP group members from group numbers in excess of the
+	vectorization factor.
+
+2022-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/aarch64/t-aarch64 (TM_H): Don't add aarch64-cores.def,
+	add aarch64-fusion-pairs.def, aarch64-tuning-flags.def and
+	aarch64-option-extensions.def.
+	(OPTIONS_H_EXTRA): Don't add aarch64-fusion-pairs.def nor
+	aarch64-tuning-flags.def.
+
+2022-12-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-expand.cc (ix86_expand_set_or_cpymem): Add
+	TARGET_AVX512_SPLIT_REGS
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Honor x86_TONE_AVOID_256FMA_CHAINS.
+	* config/i386/i386.cc (ix86_vec_cost): Honor TARGET_AVX512_SPLIT_REGS.
+	(ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (TARGET_AVX512_SPLIT_REGS): New tune.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Disable
+	for znver4.
+	(X86_TUNE_USE_GATHER_4PARTS): Likewise.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Set for znver4.
+	(X86_TUNE_AVOID_512FMA_CHAINS): New utne; set for znver4.
+	(X86_TUNE_AVX256_OPTIMAL): Add znver4.
+	(X86_TUNE_AVX512_SPLIT_REGS): New tune.
+	(X86_TUNE_AVX256_MOVE_BY_PIECES): Add znver1-3.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Add znver1-3.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Add znver4.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Add znver4.
+
+2022-12-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver4_cost): Upate costs of FP and SSE
+	moves, division multiplication, gathers, L2 cache size, and more
+	complex FP instrutions.
+
 2022-12-21  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/105532

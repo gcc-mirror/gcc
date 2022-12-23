@@ -1,3 +1,7 @@
+2022-12-22  Richard Biener  <rguenther@suse.de>
+
+	* lto-common.cc (compare_tree_sccs_1): Compare DECL_NOT_FLEXARRAY.
+
 2022-12-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-common.cc (lto_resolution_read): With incremental linking

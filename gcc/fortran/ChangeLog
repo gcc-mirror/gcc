@@ -1,3 +1,10 @@
+2022-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69604
+	* match.cc (chk_stmt_fcn_body): New function.  Check for invalid uses
+	of statement functions arguments.
+	(gfc_match_st_function): Use above.
+
 2022-12-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95375
