@@ -1060,16 +1060,11 @@ namespace std::chrono
   namespace
   {
     // Read the version number from a tzdata.zi file.
+    // Note that some systems do not have this file available by default
+    // but we can configure the library to point to an alternate installation.
     string
     remote_version(istream* zif)
     {
-#if defined __NetBSD__
-    if (string ver; ifstream(zoneinfo_dir() + "/TZDATA_VERSION") >> ver)
-      return ver;
-#elif defined __APPLE__
-    if (string ver; ifstream(zoneinfo_dir() + "/+VERSION") >> ver)
-      return ver;
-#else
       ifstream f;
       if (!zif)
 	{
@@ -1082,6 +1077,14 @@ namespace std::chrono
       if (*zif >> hash >> label >> version)
 	if (hash == '#' && label == "version")
 	  return version;
+#if defined __NetBSD__
+      if (string ver; ifstream(zoneinfo_dir() + "/TZDATA_VERSION") >> ver)
+	return ver;
+#elif defined __APPLE__
+      // The standard install on macOS has no tzdata.zi, but we can find the
+      // version from +VERSION.
+      if (string ver; ifstream(zoneinfo_dir() + "/+VERSION") >> ver)
+	return ver;
 #endif
       __throw_runtime_error("tzdb: no version found in tzdata.zi");
     }
