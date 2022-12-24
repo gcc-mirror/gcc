@@ -9,5 +9,5 @@ unsigned long long foo(v2di a, v2di b)
 }
 
 /* { dg-final { scan-assembler-not "\taddq\t" } } */
-/* { dg-final { scan-assembler-times "paddq" 2 } } */
-/* { dg-final { scan-assembler "psrldq" } } */
+/* { dg-final { scan-assembler-times "v?paddq" 2 } } */
+/* { dg-final { scan-assembler "v?psrldq" } } */

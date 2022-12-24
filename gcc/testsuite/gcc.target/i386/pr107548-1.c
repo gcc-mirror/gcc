@@ -20,6 +20,6 @@ unsigned int foo3 (v4si a, v4si b)
   return a[0] + a[3];
 }
 
-/* { dg-final { scan-assembler-times "\tmovd\t" 3 } } */
-/* { dg-final { scan-assembler-times "paddd" 6 } } */
+/* { dg-final { scan-assembler-times "\tv?movd\t" 3 } } */
+/* { dg-final { scan-assembler-times "v?paddd" 6 } } */
 /* { dg-final { scan-assembler-not "addl" } } */
