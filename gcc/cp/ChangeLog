@@ -1,3 +1,29 @@
+2022-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108116
+	* constexpr.cc (maybe_constant_value): Clear
+	processing_template_decl before calling break_out_target_exprs.
+	* init.cc (get_nsdmi): Likewise.
+	* tree.cc (break_out_target_exprs): Assert processing_template_decl
+	is cleared.
+
+2022-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107853
+	* constraint.cc (maybe_substitute_reqs_for): Substitute into
+	the template-head requirements of a template friend using only
+	its outer arguments via outer_template_args.
+	* cp-tree.h (outer_template_args): Declare.
+	* pt.cc (outer_template_args): Define, factored out and
+	generalized from ...
+	(ctor_deduction_guides_for): ... here.
+
+2022-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++spec.cc (lang_specific_driver): Preserve -static-libstdc++ in
+	the driver command line for targets without -Bstatic/dynamic support
+	in their static linker.
+
 2022-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/108180

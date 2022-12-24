@@ -1,3 +1,187 @@
+2022-12-23  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-phiopt.cc (value_replacement): Instead of resetting
+	phires range info, union it with carg.
+
+2022-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108068
+	* tree.h (real_maybe_zerop): Declare.
+	* tree.cc (real_maybe_zerop): Define.
+	* tree-ssa-dom.cc (record_edge_info): Use it instead of
+	real_zerop or TREE_CODE (op1) == SSA_NAME || real_zerop.  Always set
+	can_infer_simple_equiv to false for decimal floating point types.
+
+2022-12-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/107548
+	* config/i386/i386-features.cc (scalar_chain::add_insn): The
+	operands of a VEC_SELECT don't need to added to the scalar chain.
+	(general_scalar_chain::compute_convert_gain) <case VEC_SELECT>:
+	Provide gains for performing STV on a VEC_SELECT.
+	(general_scalar_chain::convert_insn): Convert VEC_SELECT to pshufd,
+	psrldq or no-op.
+	(general_scalar_to_vector_candidate_p): Handle VEC_SELECT of a
+	single element from a vector register to a scalar register.
+
+2022-12-23  H.J. Lu  <hjl.tools@gmail.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106933
+	PR target/106959
+	* config/i386/i386-features.cc (single_def_chain_p): New predicate
+	function to check that a pseudo's use-def chain is in SSA form.
+	(timode_scalar_to_vector_candidate_p): Check that TImode regs that
+	are SET_DEST or SET_SRC of an insn match/are single_def_chain_p.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix contraints.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (get_avl_type_rtx): New function.
+	* config/riscv/riscv-v.cc (get_avl_type_rtx): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc (class loadstore): New
+	class.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vle): Ditto.
+	(vse): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (build_one): Ditto.
+	(struct loadstore_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_U_OPS): New
+	macro.
+	(DEF_RVV_F_OPS): Ditto.
+	(vuint8mf8_t): Add corresponding mask type.
+	(vuint8mf4_t): Ditto.
+	(vuint8mf2_t): Ditto.
+	(vuint8m1_t): Ditto.
+	(vuint8m2_t): Ditto.
+	(vuint8m4_t): Ditto.
+	(vuint8m8_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	(vfloat32mf2_t): Ditto.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	(vfloat64m1_t): Ditto.
+	(vfloat64m2_t): Ditto.
+	(vfloat64m4_t): Ditto.
+	(vfloat64m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_TYPE): Adjust for new
+	macro.
+	(DEF_RVV_I_OPS): Ditto.
+	(DEF_RVV_U_OPS): New macro.
+	(DEF_RVV_F_OPS): New macro.
+	(use_real_mask_p): New function.
+	(use_real_merge_p): Ditto.
+	(get_tail_policy_for_pred): Ditto.
+	(get_mask_policy_for_pred): Ditto.
+	(function_builder::apply_predication): Ditto.
+	(function_builder::append_base_name): Ditto.
+	(function_builder::append_sew): Ditto.
+	(function_expander::add_vundef_operand): Ditto.
+	(function_expander::add_mem_operand): Ditto.
+	(function_expander::use_contiguous_load_insn): Ditto.
+	(function_expander::use_contiguous_store_insn): Ditto.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_TYPE): Adjust for
+	adding mask type.
+	(vbool64_t): Ditto.
+	(vbool32_t): Ditto.
+	(vbool16_t): Ditto.
+	(vbool8_t): Ditto.
+	(vbool4_t): Ditto.
+	(vbool2_t): Ditto.
+	(vbool1_t): Ditto.
+	(vint8mf8_t): Ditto.
+	(vint8mf4_t): Ditto.
+	(vint8mf2_t): Ditto.
+	(vint8m1_t): Ditto.
+	(vint8m2_t): Ditto.
+	(vint8m4_t): Ditto.
+	(vint8m8_t): Ditto.
+	(vint16mf4_t): Ditto.
+	(vint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vfloat32mf2_t): Ditto.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	(vfloat64m1_t): Ditto.
+	(vfloat64m4_t): Ditto.
+	* config/riscv/riscv-vector-builtins.h
+	(function_expander::add_output_operand): New function.
+	(function_expander::add_all_one_mask_operand): Ditto.
+	(function_expander::add_fixed_operand): Ditto.
+	(function_expander::vector_mode): Ditto.
+	(function_base::apply_vl_p): Ditto.
+	(function_base::can_be_overloaded_p): Ditto.
+	* config/riscv/riscv-vsetvl.cc (get_vl): Remove restrict of supporting
+	AVL is not VLMAX.
+	* config/riscv/t-riscv: Add include file.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct vsetvl_def): Add
+	"__riscv_" prefix.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Change it to no side effects.
+	* config/riscv/vector.md (@vsetvl<mode>_no_side_effects): New pattern.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Remove side effects.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (anticipatable_occurrence_p): Fix
+	incorrect annotations.
+	(available_occurrence_p): Ditto.
+	(backward_propagate_worthwhile_p): Ditto.
+	(can_backward_propagate_p): Ditto.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vlmax_avl_insn_p): Fix multi-line
+	conditional.
+	(vsetvl_insn_p): Ditto.
+	(same_bb_and_before_p): Ditto.
+	(same_bb_and_after_or_equal_p): Ditto.
+
 2022-12-22  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* doc/md.texi: Move example code remark next to it's code block.

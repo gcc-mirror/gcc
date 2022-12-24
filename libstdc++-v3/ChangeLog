@@ -1,3 +1,44 @@
+2022-12-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* acinclude.m4 (GLIBCXX_EXPORT_FLAGS): Substitute CPPFLAGS.
+	(GLIBCXX_ENABLE_LIBSTDCXX_TIME): Set ac_has_sched_yield and
+	ac_has_win32_sleep to yes for MinGW.  Change HAVE_WIN32_SLEEP
+	into _GLIBCXX_USE_WIN32_SLEEP.
+	(GLIBCXX_CHECK_GTHREADS): Add _WIN32_THREADS to compilation flags for
+	Win32 threads and force _GTHREAD_USE_MUTEX_TIMEDLOCK to 0 for them.
+	Add -D_WIN32_WINNT=0x0600 to compilation flags if yes was configured
+	and add it to CPPFLAGS on success.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_USE_GET_NPROCS_WIN32):
+	Define to 1.
+	* config/os/mingw32/os_defines.h (_GLIBCXX_USE_GET_NPROCS_WIN32): Ditto
+	* src/c++11/thread.cc (get_nprocs): Provide Win32 implementation if
+	_GLIBCXX_USE_GET_NPROCS_WIN32 is defined.  Replace HAVE_WIN32_SLEEP
+	with USE_WIN32_SLEEP.
+	* testsuite/19_diagnostics/headers/system_error/errc_std_c++0x.cc: Add
+	missing conditional compilation.
+	* testsuite/lib/libstdc++.exp (check_v3_target_sleep): Add support for
+	_GLIBCXX_USE_WIN32_SLEEP.
+	(check_v3_target_nprocs): Likewise for _GLIBCXX_USE_GET_NPROCS_WIN32.
+
+2022-12-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc [__APPLE__] (zoneinfo_dir_override): Add
+	definition.
+
+2022-12-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc: Remove static_assert.
+
+2022-12-23  Arsen Arsenović  <arsen@aarsen.me>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107792
+	PR libstdc++/107778
+	* src/experimental/contract.cc (handle_contract_violation): Make
+	output more readable.
+
 2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105730

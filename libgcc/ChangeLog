@@ -1,3 +1,100 @@
+2022-12-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.host (i[34567]86-*-mingw*): Add thread fragment after EH one
+	as well as new i386/t-slibgcc-mingw fragment.
+	(x86_64-*-mingw*): Likewise.
+	* config/i386/gthr-win32.h: If _WIN32_WINNT is at least 0x0600, define
+	both __GTHREAD_HAS_COND and __GTHREADS_CXX0X to 1.
+	Error out if _GTHREAD_USE_MUTEX_TIMEDLOCK is 1.
+	Include stdlib.h instead of errno.h and do not include _mingw.h.
+	(CONST_CAST2): Add specific definition for C++.
+	(ATTRIBUTE_UNUSED): New macro.
+	(__UNUSED_PARAM): Delete.
+	Define WIN32_LEAN_AND_MEAN before including windows.h.
+	(__gthread_objc_data_tls): Use TLS_OUT_OF_INDEXES instead of (DWORD)-1.
+	(__gthread_objc_init_thread_system): Likewise.
+	(__gthread_objc_thread_get_data): Minor tweak.
+	(__gthread_objc_condition_allocate): Use ATTRIBUTE_UNUSED.
+	(__gthread_objc_condition_deallocate): Likewise.
+	(__gthread_objc_condition_wait): Likewise.
+	(__gthread_objc_condition_broadcast): Likewise.
+	(__gthread_objc_condition_signal): Likewise.
+	Include sys/time.h.
+	(__gthr_win32_DWORD): New typedef.
+	(__gthr_win32_HANDLE): Likewise.
+	(__gthr_win32_CRITICAL_SECTION): Likewise.
+	(__gthr_win32_CONDITION_VARIABLE): Likewise.
+	(__gthread_t): Adjust.
+	(__gthread_key_t): Likewise.
+	(__gthread_mutex_t): Likewise.
+	(__gthread_recursive_mutex_t): Likewise.
+	(__gthread_cond_t): New typedef.
+	(__gthread_time_t): Likewise.
+	(__GTHREAD_MUTEX_INIT_DEFAULT): Delete.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT_DEFAULT): Likewise.
+	(__GTHREAD_COND_INIT_FUNCTION): Define.
+	(__GTHREAD_TIME_INIT): Likewise.
+	(__gthr_i486_lock_cmp_xchg): Delete.
+	(__gthr_win32_create): Declare.
+	(__gthr_win32_join): Likewise.
+	(__gthr_win32_self): Likewise.
+	(__gthr_win32_detach): Likewise.
+	(__gthr_win32_equal): Likewise.
+	(__gthr_win32_yield): Likewise.
+	(__gthr_win32_mutex_destroy): Likewise.
+	(__gthr_win32_cond_init_function): Likewise if __GTHREADS_HAS_COND is 1.
+	(__gthr_win32_cond_broadcast): Likewise.
+	(__gthr_win32_cond_signal): Likewise.
+	(__gthr_win32_cond_wait): Likewise.
+	(__gthr_win32_cond_timedwait): Likewise.
+	(__gthr_win32_recursive_mutex_init_function): Delete.
+	(__gthr_win32_recursive_mutex_lock): Likewise.
+	(__gthr_win32_recursive_mutex_unlock): Likewise.
+	(__gthr_win32_recursive_mutex_destroy): Likewise.
+	(__gthread_create): New inline function.
+	(__gthread_join): Likewise.
+	(__gthread_self): Likewise.
+	(__gthread_detach): Likewise.
+	(__gthread_equal): Likewise.
+	(__gthread_yield): Likewise.
+	(__gthread_cond_init_function): Likewise if __GTHREADS_HAS_COND is 1.
+	(__gthread_cond_broadcast): Likewise.
+	(__gthread_cond_signal): Likewise.
+	(__gthread_cond_wait): Likewise.
+	(__gthread_cond_timedwait): Likewise.
+	(__GTHREAD_WIN32_INLINE): New macro.
+	(__GTHREAD_WIN32_COND_INLINE): Likewise.
+	(__GTHREAD_WIN32_ACTIVE_P): Likewise.
+	Define WIN32_LEAN_AND_MEAN before including windows.h.
+	(__gthread_once): Minor tweaks.
+	(__gthread_key_create): Use ATTRIBUTE_UNUSED and TLS_OUT_OF_INDEXES.
+	(__gthread_key_delete): Minor tweak.
+	(__gthread_getspecific): Likewise.
+	(__gthread_setspecific): Likewise.
+	(__gthread_mutex_init_function): Reimplement.
+	(__gthread_mutex_destroy): Likewise.
+	(__gthread_mutex_lock): Likewise.
+	(__gthread_mutex_trylock): Likewise.
+	(__gthread_mutex_unlock): Likewise.
+	(__gthr_win32_abs_to_rel_time): Declare.
+	(__gthread_recursive_mutex_init_function): Reimplement.
+	(__gthread_recursive_mutex_destroy): Likewise.
+	(__gthread_recursive_mutex_lock): Likewise.
+	(__gthread_recursive_mutex_trylock): Likewise.
+	(__gthread_recursive_mutex_unlock): Likewise.
+	(__gthread_cond_destroy): New inline function.
+	(__gthread_cond_wait_recursive): Likewise.
+	* config/i386/gthr-win32.c: Delete everything.
+	Include gthr-win32.h to get the out-of-line version of inline routines.
+	Add compile-time checks for the local version of the Win32 types.
+	* config/i386/gthr-win32-cond.c: New file.
+	* config/i386/gthr-win32-thread.c: Likewise.
+	* config/i386/t-gthr-win32: Add config/i386/gthr-win32-thread.c to the
+	EH part, config/i386/gthr-win32-cond.c and config/i386/gthr-win32.c to
+	the static version of libgcc.
+	* config/i386/t-slibgcc-mingw: New file.
+	* config/i386/libgcc-mingw.ver: Likewise.
+
 2022-12-16  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* unwind-dw2-fde.c: Initialize fde object lazily when

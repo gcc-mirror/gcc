@@ -1,3 +1,96 @@
+2022-12-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108131
+	* gfortran.dg/pr103505.f90: Adjust expected patterns.
+	* gfortran.dg/pr108131.f90: New test.
+
+2022-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108116
+	* g++.dg/cpp0x/nsdmi-template24.C: New test.
+
+2022-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108068
+	* gcc.dg/dfp/pr108068.c: New test.
+
+2022-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107853
+	* g++.dg/cpp2a/concepts-friend12.C: New test.
+	* g++.dg/cpp2a/concepts-friend13.C: New test.
+
+2022-12-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/107548
+	* gcc.target/i386/pr107548-1.c: New test V4SI case.
+	* gcc.target/i386/pr107548-2.c: New test V2DI case.
+
+2022-12-23  H.J. Lu  <hjl.tools@gmail.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106933
+	PR target/106959
+	* gcc.target/i386/pr106933-1.c: New test case.
+	* gcc.target/i386/pr106933-2.c: Likewise.
+	* gcc.target/i386/pr106959-1.c: Likewise.
+	* gcc.target/i386/pr106959-2.c: Likewise.
+	* gcc.target/i386/pr106959-3.c: Likewise.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vle-constraint-1.c: New test.
+
+2022-12-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vsetvl-1.c: Add "__riscv_" prefix.
+
+2022-12-23  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/106731
+	* gfortran.dg/pr106731.f90: New test.
+
+2022-12-23  Arsen Arsenović  <arsen@aarsen.me>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/contracts/contracts-access1.C: Convert to new default
+	violation handler.
+	* g++.dg/contracts/contracts-assume2.C: Ditto.
+	* g++.dg/contracts/contracts-config1.C: Ditto.
+	* g++.dg/contracts/contracts-constexpr1.C: Ditto.
+	* g++.dg/contracts/contracts-ctor-dtor1.C: Ditto.
+	* g++.dg/contracts/contracts-deduced2.C: Ditto.
+	* g++.dg/contracts/contracts-friend1.C: Ditto.
+	* g++.dg/contracts/contracts-multiline1.C: Ditto.
+	* g++.dg/contracts/contracts-post3.C: Ditto.
+	* g++.dg/contracts/contracts-pre10.C: Ditto.
+	* g++.dg/contracts/contracts-pre2.C: Ditto.
+	* g++.dg/contracts/contracts-pre2a2.C: Ditto.
+	* g++.dg/contracts/contracts-pre3.C: Ditto.
+	* g++.dg/contracts/contracts-pre4.C: Ditto.
+	* g++.dg/contracts/contracts-pre5.C: Ditto.
+	* g++.dg/contracts/contracts-pre7.C: Ditto.
+	* g++.dg/contracts/contracts-pre9.C: Ditto.
+	* g++.dg/contracts/contracts-redecl3.C: Ditto.
+	* g++.dg/contracts/contracts-redecl4.C: Ditto.
+	* g++.dg/contracts/contracts-redecl6.C: Ditto.
+	* g++.dg/contracts/contracts-redecl7.C: Ditto.
+	* g++.dg/contracts/contracts-tmpl-spec1.C: Ditto.
+	* g++.dg/contracts/contracts-tmpl-spec2.C: Ditto.
+	* g++.dg/contracts/contracts-tmpl-spec3.C: Ditto.
+	* g++.dg/contracts/contracts10.C: Ditto.
+	* g++.dg/contracts/contracts14.C: Ditto.
+	* g++.dg/contracts/contracts15.C: Ditto.
+	* g++.dg/contracts/contracts16.C: Ditto.
+	* g++.dg/contracts/contracts17.C: Ditto.
+	* g++.dg/contracts/contracts19.C: Ditto.
+	* g++.dg/contracts/contracts25.C: Ditto.
+	* g++.dg/contracts/contracts3.C: Ditto.
+	* g++.dg/contracts/contracts35.C: Ditto.
+	* g++.dg/contracts/contracts5.C: Ditto.
+	* g++.dg/contracts/contracts7.C: Ditto.
+	* g++.dg/contracts/contracts9.C: Ditto.
+
 2022-12-22  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/coroutines/coro.h: #include <stdio.h> instead of

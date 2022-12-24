@@ -1,3 +1,21 @@
+2022-12-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108131
+	* array.cc (match_array_element_spec): Avoid too early simplification
+	of matched array element specs that can lead to a misinterpretation
+	when used as array bounds in array declarations.
+
+2022-12-23  Julian Brown  <julian@codesourcery.com>
+
+	* dump-parse-tree.cc (show_attr): Fix OMP-UDR-ARTIFICIAL-VAR typo.
+	* trans-openmp.cc (gfc_trans_omp_array_section): Replace stray unicode
+	m-dash character with hyphen.
+
+2022-12-23  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/106731
+	* trans-array.cc (gfc_trans_auto_array_allocation): Remove gcc_assert (!TREE_STATIC()).
+
 2022-12-22  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/69604
