@@ -7,7 +7,7 @@
 #include <fstream>
 #include <testsuite_hooks.h>
 
-static bool override_used = true;
+static bool override_used = false;
 
 namespace __gnu_cxx
 {
