@@ -1104,6 +1104,9 @@ GLIBCXX_3.4 {
     # std::uncaught_exception()
     _ZSt18uncaught_exceptionv;
 
+    # __gnu_cxx::zoneinfo_dir_override()
+    _ZN9__gnu_cxx21zoneinfo_dir_overrideEv;
+
   # DO NOT DELETE THIS LINE.  Port-specific symbols, if any, will be here.
 
   local:
