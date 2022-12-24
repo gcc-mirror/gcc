@@ -1962,12 +1962,10 @@ pass_vsetvl::compute_global_backward_infos (void)
   if (dump_file)
     {
       fprintf (dump_file, "\n\nDirty blocks list: ");
-      for (size_t i = 0; i < m_vector_manager->vector_block_infos.length ();
-	   i++)
-	{
-	  if (m_vector_manager->vector_block_infos[i].reaching_out.dirty_p ())
-	    fprintf (dump_file, "%ld ", i);
-	}
+      for (const bb_info *bb : crtl->ssa->bbs ())
+	if (m_vector_manager->vector_block_infos[bb->index ()]
+	      .reaching_out.dirty_p ())
+	  fprintf (dump_file, "%d ", bb->index ());
       fprintf (dump_file, "\n\n");
     }
 }
@@ -1976,15 +1974,16 @@ pass_vsetvl::compute_global_backward_infos (void)
 void
 pass_vsetvl::prune_expressions (void)
 {
-  for (size_t i = 0; i < m_vector_manager->vector_block_infos.length (); i++)
+  for (const bb_info *bb : crtl->ssa->bbs ())
     {
-      if (m_vector_manager->vector_block_infos[i].local_dem.valid_or_dirty_p ())
+      if (m_vector_manager->vector_block_infos[bb->index ()]
+	    .local_dem.valid_or_dirty_p ())
 	m_vector_manager->create_expr (
-	  m_vector_manager->vector_block_infos[i].local_dem);
-      if (m_vector_manager->vector_block_infos[i]
+	  m_vector_manager->vector_block_infos[bb->index ()].local_dem);
+      if (m_vector_manager->vector_block_infos[bb->index ()]
 	    .reaching_out.valid_or_dirty_p ())
 	m_vector_manager->create_expr (
-	  m_vector_manager->vector_block_infos[i].reaching_out);
+	  m_vector_manager->vector_block_infos[bb->index ()].reaching_out);
     }
 
   if (dump_file)
