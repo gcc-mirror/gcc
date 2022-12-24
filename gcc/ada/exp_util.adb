@@ -9731,7 +9731,7 @@ package body Exp_Util is
          --  identifies T.
 
          if Is_Entity_Name (Exp)
-           and then Ekind (Entity (Exp)) in Constant_Or_Variable_Kind
+           and then Ekind (Entity (Exp)) in E_Constant | E_Variable
          then
             return True;
 
