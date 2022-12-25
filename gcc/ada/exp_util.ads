@@ -765,13 +765,6 @@ package Exp_Util is
    --    Rnn : constant Ann := Func (...)'reference;
    --    Rnn.all
 
-   function Is_Displacement_Of_Object_Or_Function_Result
-     (Obj_Id : Entity_Id) return Boolean;
-   --  Determine whether Obj_Id is a source entity that has been initialized by
-   --  either a controlled function call or the assignment of another source
-   --  object. In both cases the initialization expression is rewritten as a
-   --  class-wide conversion of Ada.Tags.Displace.
-
    function Is_Finalizable_Transient
      (Decl     : Node_Id;
       Rel_Node : Node_Id) return Boolean;
@@ -850,11 +843,6 @@ package Exp_Util is
    --  Determine whether Id denotes a secondary stack thunk
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
-
-   function Is_Tag_To_Class_Wide_Conversion
-     (Obj_Id : Entity_Id) return Boolean;
-   --  Determine whether object Obj_Id is the result of a tag-to-class-wide
-   --  type conversion.
 
    function Is_Untagged_Derivation (T : Entity_Id) return Boolean;
    --  Returns true if type T is not tagged and is a derived type,

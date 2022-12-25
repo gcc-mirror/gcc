@@ -168,9 +168,10 @@ package body Exp_Util is
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
 
-   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
-   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
-   --  an assertion expression that should be verified at run time.
+   function Is_Temporary_For_Interface_Object
+     (Obj_Id : Entity_Id) return Boolean;
+   --  Determine whether Obj_Id is a temporary created for the handling of a
+   --  (class-wide) interface object.
 
    function Is_Uninitialized_Aggregate
      (Exp : Node_Id;
@@ -181,6 +182,10 @@ package body Exp_Util is
    --  optimized away to prevent the copying of uninitialized data, and
    --  the bounds of the aggregate can be propagated directly to the
    --  object declaration.
+
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
+   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
+   --  an assertion expression that should be verified at run time.
 
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
@@ -8185,216 +8190,6 @@ package body Exp_Util is
       end if;
    end Is_Captured_Function_Call;
 
-   --------------------------------------------------
-   -- Is_Displacement_Of_Object_Or_Function_Result --
-   --------------------------------------------------
-
-   function Is_Displacement_Of_Object_Or_Function_Result
-     (Obj_Id : Entity_Id) return Boolean
-   is
-      function Is_Controlled_Function_Call (N : Node_Id) return Boolean;
-      --  Determine whether node N denotes a controlled function call
-
-      function Is_Controlled_Indexing (N : Node_Id) return Boolean;
-      --  Determine whether node N denotes a generalized indexing form which
-      --  involves a controlled result.
-
-      function Is_Displace_Call (N : Node_Id) return Boolean;
-      --  Determine whether node N denotes a call to Ada.Tags.Displace
-
-      function Is_Source_Object (N : Node_Id) return Boolean;
-      --  Determine whether a particular node denotes a source object
-
-      function Strip (N : Node_Id) return Node_Id;
-      --  Examine arbitrary node N by stripping various indirections and return
-      --  the "real" node.
-
-      ---------------------------------
-      -- Is_Controlled_Function_Call --
-      ---------------------------------
-
-      function Is_Controlled_Function_Call (N : Node_Id) return Boolean is
-         Expr : Node_Id;
-
-      begin
-         --  When a function call appears in Object.Operation format, the
-         --  original representation has several possible forms depending on
-         --  the availability and form of actual parameters:
-
-         --    Obj.Func                    N_Selected_Component
-         --    Obj.Func (Actual)           N_Indexed_Component
-         --    Obj.Func (Formal => Actual) N_Function_Call, whose Name is an
-         --                                N_Selected_Component
-
-         Expr := Original_Node (N);
-         loop
-            if Nkind (Expr) = N_Function_Call then
-               Expr := Name (Expr);
-
-            --  "Obj.Func (Actual)" case
-
-            elsif Nkind (Expr) = N_Indexed_Component then
-               Expr := Prefix (Expr);
-
-            --  "Obj.Func" or "Obj.Func (Formal => Actual) case
-
-            elsif Nkind (Expr) = N_Selected_Component then
-               Expr := Selector_Name (Expr);
-
-            else
-               exit;
-            end if;
-         end loop;
-
-         return
-           Nkind (Expr) in N_Has_Entity
-             and then Present (Entity (Expr))
-             and then Ekind (Entity (Expr)) = E_Function
-             and then Needs_Finalization (Etype (Entity (Expr)));
-      end Is_Controlled_Function_Call;
-
-      ----------------------------
-      -- Is_Controlled_Indexing --
-      ----------------------------
-
-      function Is_Controlled_Indexing (N : Node_Id) return Boolean is
-         Expr : constant Node_Id := Original_Node (N);
-
-      begin
-         return
-           Nkind (Expr) = N_Indexed_Component
-             and then Present (Generalized_Indexing (Expr))
-             and then Needs_Finalization (Etype (Expr));
-      end Is_Controlled_Indexing;
-
-      ----------------------
-      -- Is_Displace_Call --
-      ----------------------
-
-      function Is_Displace_Call (N : Node_Id) return Boolean is
-         Call : constant Node_Id := Strip (N);
-
-      begin
-         return
-           Present (Call)
-             and then Nkind (Call) = N_Function_Call
-             and then Nkind (Name (Call)) in N_Has_Entity
-             and then Is_RTE (Entity (Name (Call)), RE_Displace);
-      end Is_Displace_Call;
-
-      ----------------------
-      -- Is_Source_Object --
-      ----------------------
-
-      function Is_Source_Object (N : Node_Id) return Boolean is
-         Obj : constant Node_Id := Strip (N);
-
-      begin
-         return
-           Present (Obj)
-             and then Comes_From_Source (Obj)
-             and then Nkind (Obj) in N_Has_Entity
-             and then Is_Object (Entity (Obj));
-      end Is_Source_Object;
-
-      -----------
-      -- Strip --
-      -----------
-
-      function Strip (N : Node_Id) return Node_Id is
-         Result : Node_Id;
-
-      begin
-         Result := N;
-         loop
-            if Nkind (Result) = N_Explicit_Dereference then
-               Result := Prefix (Result);
-
-            elsif Nkind (Result) in
-                    N_Type_Conversion | N_Unchecked_Type_Conversion
-            then
-               Result := Expression (Result);
-
-            else
-               exit;
-            end if;
-         end loop;
-
-         return Result;
-      end Strip;
-
-      --  Local variables
-
-      Obj_Decl  : constant Node_Id   := Declaration_Node (Obj_Id);
-      Obj_Typ   : constant Entity_Id := Base_Type (Etype (Obj_Id));
-      Orig_Decl : constant Node_Id   := Original_Node (Obj_Decl);
-      Orig_Expr : Node_Id;
-
-   --  Start of processing for Is_Displacement_Of_Object_Or_Function_Result
-
-   begin
-      --  Case 1:
-
-      --     Obj : CW_Type := Function_Call (...);
-
-      --  is rewritten into:
-
-      --     Tmp : ... := Function_Call (...)'reference;
-      --     Rnn : constant access CW_Type := (... Ada.Tags.Displace (Tmp));
-      --     Obj : CW_Type renames Rnn.all;
-
-      --  where the return type of the function and the class-wide type require
-      --  dispatch table pointer displacement.
-
-      --  Case 2:
-
-      --     Obj : CW_Type := Container (...);
-
-      --  is rewritten into:
-
-      --     Tmp : ... := Function_Call (Container, ...)'reference;
-      --     Rnn : constant access CW_Type := (... Ada.Tags.Displace (Tmp));
-      --     Obj : CW_Type renames Rnn.all;
-
-      --  where the container element type and the class-wide type require
-      --  dispatch table pointer dispacement.
-
-      --  Case 3:
-
-      --     Obj : CW_Type := Src_Obj;
-
-      --  is rewritten into:
-
-      --     Rnn : constant access CW_Type := (...Ada.Tags.Displace (Src_Obj));
-      --     Obj : CW_Type renames Rnn.all;
-
-      --  where the type of the source object and the class-wide type require
-      --  dispatch table pointer displacement.
-
-      if Nkind (Obj_Decl) = N_Object_Renaming_Declaration
-        and then Is_Class_Wide_Type (Obj_Typ)
-        and then not Is_Special_Return_Object (Obj_Id)
-        and then Nkind (Renamed_Object (Obj_Id)) = N_Explicit_Dereference
-        and then Is_Entity_Name (Prefix (Renamed_Object (Obj_Id)))
-        and then Ekind (Entity (Prefix (Renamed_Object (Obj_Id)))) = E_Constant
-        and then
-          Is_Displace_Call
-            (Constant_Value (Entity (Prefix (Renamed_Object (Obj_Id)))))
-        and then Nkind (Orig_Decl) = N_Object_Declaration
-        and then Comes_From_Source (Orig_Decl)
-      then
-         Orig_Expr := Expression (Orig_Decl);
-
-         return
-           Is_Controlled_Function_Call (Orig_Expr)
-             or else Is_Controlled_Indexing (Orig_Expr)
-             or else Is_Source_Object (Orig_Expr);
-
-      else
-         return False;
-      end if;
-   end Is_Displacement_Of_Object_Or_Function_Result;
-
    ------------------------------
    -- Is_Finalizable_Transient --
    ------------------------------
@@ -8845,9 +8640,10 @@ package body Exp_Util is
 
           and then not Initialized_By_Aliased_BIP_Func_Call (Obj_Id)
 
-          --  Do not consider conversions of tags to class-wide types
+          --  Do not consider temporaries created for (class-wide) interface
+          --  objects because they must exist as long as the object is around.
 
-          and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
+          and then not Is_Temporary_For_Interface_Object (Obj_Id)
 
           --  Do not consider iterators because those are treated as normal
           --  controlled objects and are processed by the usual finalization
@@ -9356,22 +9152,23 @@ package body Exp_Util is
         and then Has_Controlling_Result (Id);
    end Is_Secondary_Stack_Thunk;
 
-   -------------------------------------
-   -- Is_Tag_To_Class_Wide_Conversion --
-   -------------------------------------
+   ---------------------------------------
+   -- Is_Temporary_For_Interface_Object --
+   ---------------------------------------
 
-   function Is_Tag_To_Class_Wide_Conversion
+   function Is_Temporary_For_Interface_Object
      (Obj_Id : Entity_Id) return Boolean
    is
-      Expr : constant Node_Id := Expression (Parent (Obj_Id));
+      Expr : constant Node_Id := Expression (Declaration_Node (Obj_Id));
 
    begin
-      return
-        Is_Class_Wide_Type (Etype (Obj_Id))
-          and then Present (Expr)
-          and then Nkind (Expr) = N_Unchecked_Type_Conversion
-          and then Is_RTE (Etype (Expression (Expr)), RE_Tag);
-   end Is_Tag_To_Class_Wide_Conversion;
+      --  This must be kept synchronized with Expand_N_Object_Declaration
+
+      return Is_Class_Wide_Type (Etype (Obj_Id))
+        and then Present (Expr)
+        and then Nkind (Expr) = N_Unchecked_Type_Conversion
+        and then Is_RTE (Etype (Expression (Expr)), RE_Tag);
+   end Is_Temporary_For_Interface_Object;
 
    --------------------------------
    -- Is_Uninitialized_Aggregate --
@@ -12880,16 +12677,13 @@ package body Exp_Util is
             --  The object is of the form:
             --    Obj : [constant] Typ [:= Expr];
             --
-            --  Do not process tag-to-class-wide conversions because they do
-            --  not yield an object. Do not process the incomplete view of a
-            --  deferred constant. Note that an object initialized by means
-            --  of a build-in-place function call may appear as a deferred
-            --  constant after expansion activities. These kinds of objects
-            --  must be finalized.
+            --  Do not process the incomplete view of a deferred constant.
+            --  Note that an object initialized by means of a BIP function
+            --  call may appear as a deferred constant after expansion
+            --  activities. These kinds of objects must be finalized.
 
             elsif not Is_Imported (Obj_Id)
               and then Needs_Finalization (Obj_Typ)
-              and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
               and then not (Ekind (Obj_Id) = E_Constant
                              and then not Has_Completion (Obj_Id)
                              and then No (BIP_Initialization_Call (Obj_Id)))
@@ -12974,23 +12768,6 @@ package body Exp_Util is
               and then Is_Return_Object (Obj_Id)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
             then
-               return True;
-
-            --  Detect a case where a source object has been initialized by
-            --  a controlled function call or another object which was later
-            --  rewritten as a class-wide conversion of Ada.Tags.Displace:
-
-            --     Obj1 : CW_Type := Function_Call (...);
-            --     Obj2 : CW_Type := Src_Obj;
-
-            --     Tmp  : ... := Function_Call (...)'reference;
-            --     Rnn  : access CW_Type := (... Ada.Tags.Displace (Tmp));
-            --     Obj1 : CW_Type renames Rnn.all;
-
-            --     Rnn  : access CW_Type := (... Ada.Tags.Displace (Src_Obj));
-            --     Obj2 : CW_Type renames Rnn.all;
-
-            elsif Is_Displacement_Of_Object_Or_Function_Result (Obj_Id) then
                return True;
             end if;
 
