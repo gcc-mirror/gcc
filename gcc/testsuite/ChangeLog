@@ -1,3 +1,9 @@
+2022-12-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/107548
+	* gcc.target/i386/pr107548-1.c: Match both vmovd and movd.
+	* gcc.target/i386/pr107548-2.c: Match both vpaddq and paddq.
+
 2022-12-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108131

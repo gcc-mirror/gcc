@@ -1,3 +1,14 @@
+2022-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* src/c++20/tzdb.cc (remote_version): Look for the tzdata.zi
+	file before falling back to system-specific ones on Darwin and
+	BSD.
+
+2022-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/std/time/tzdb/leap_seconds.cc: Initialize the
+	override_used test var to false.
+
 2022-12-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* acinclude.m4 (GLIBCXX_EXPORT_FLAGS): Substitute CPPFLAGS.

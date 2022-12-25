@@ -1,3 +1,9 @@
+2022-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-slibgcc-darwin (install-darwin-libgcc-stubs): Skip the
+	install of libgcc_s.1.dylib when the installation is into the build
+	gcc directory.
+
 2022-12-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.host (i[34567]86-*-mingw*): Add thread fragment after EH one
