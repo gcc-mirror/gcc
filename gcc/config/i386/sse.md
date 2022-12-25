@@ -6825,7 +6825,7 @@
   if (!MEM_P (operands[3]))
     operands[3] = force_reg (V8HFmode, operands[3]);
   op1 = lowpart_subreg (V4SFmode, operands[3], V8HFmode);
-  emit_insn (gen_sse_movss (dest, op1, op0));
+  emit_insn (gen_sse_movss_v4sf (dest, op1, op0));
   emit_move_insn (operands[0], lowpart_subreg (V8HFmode, dest, V4SFmode));
   DONE;
 })
@@ -6855,7 +6855,7 @@
   if (!MEM_P (operands[3]))
     operands[3] = force_reg (V8HFmode, operands[3]);
   op1 = lowpart_subreg (V4SFmode, operands[3], V8HFmode);
-  emit_insn (gen_sse_movss (dest, op1, op0));
+  emit_insn (gen_sse_movss_v4sf (dest, op1, op0));
   emit_move_insn (operands[0], lowpart_subreg (V8HFmode, dest, V4SFmode));
   DONE;
 })
@@ -10498,11 +10498,11 @@
    (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex,maybe_vex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF,V2SF")])
 
-(define_insn "sse_movss"
-  [(set (match_operand:V4SF 0 "register_operand"   "=x,v")
-	(vec_merge:V4SF
-	  (match_operand:V4SF 2 "register_operand" " x,v")
-	  (match_operand:V4SF 1 "register_operand" " 0,v")
+(define_insn "sse_movss_<mode>"
+  [(set (match_operand:VI4F_128 0 "register_operand"   "=x,v")
+	(vec_merge:VI4F_128
+	  (match_operand:VI4F_128 2 "register_operand" " x,v")
+	  (match_operand:VI4F_128 1 "register_operand" " 0,v")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
@@ -13481,11 +13481,11 @@
   [(set (match_dup 0) (match_dup 1))]
   "operands[0] = adjust_address (operands[0], DFmode, 0);")
 
-(define_insn "sse2_movsd"
-  [(set (match_operand:V2DF 0 "nonimmediate_operand"   "=x,v,x,v,m,x,x,v,o")
-	(vec_merge:V2DF
-	  (match_operand:V2DF 2 "nonimmediate_operand" " x,v,m,m,v,0,0,v,0")
-	  (match_operand:V2DF 1 "nonimmediate_operand" " 0,v,0,v,0,x,o,o,v")
+(define_insn "sse2_movsd_<mode>"
+  [(set (match_operand:VI8F_128 0 "nonimmediate_operand"   "=x,v,x,v,m,x,x,v,o")
+	(vec_merge:VI8F_128
+	  (match_operand:VI8F_128 2 "nonimmediate_operand" " x,v,m,m,v,0,0,v,0")
+	  (match_operand:VI8F_128 1 "nonimmediate_operand" " 0,v,0,v,0,x,o,o,v")
 	  (const_int 1)))]
   "TARGET_SSE2"
   "@
