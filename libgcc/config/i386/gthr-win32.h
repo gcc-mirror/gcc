@@ -93,8 +93,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-/* Now undef the windows BOOL.  */
+/* Now undef the windows BOOL and CC_NONE */
 #undef BOOL
+#undef CC_NONE
 
 /* Key structure for maintaining thread specific storage */
 static DWORD __gthread_objc_data_tls = TLS_OUT_OF_INDEXES;
@@ -604,6 +605,7 @@ __gthread_cond_timedwait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex,
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef CC_NONE
 
 __GTHREAD_WIN32_INLINE int
 __gthread_detach (__gthread_t __thr)
