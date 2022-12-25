@@ -1,3 +1,9 @@
+2022-12-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/guality/guality.exp: Skip on hppa*-*-hpux*.
+	* gcc.dg/guality/guality.exp: Likewise.
+	* gfortran.dg/guality/guality.exp: Likewise.
+
 2022-12-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
