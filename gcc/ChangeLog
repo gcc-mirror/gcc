@@ -1,3 +1,24 @@
+2022-12-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-builtin.def (__builtin_ia32_movss): Update
+	CODE_FOR_sse_movss to CODE_FOR_sse_movss_v4sf.
+	(__builtin_ia32_movsd): Likewise, update CODE_FOR_sse2_movsd to
+	CODE_FOR_sse2_movsd_v2df.
+	* config/i386/i386-expand.cc (split_convert_uns_si_sse): Update
+	gen_sse_movss call to gen_sse_movss_v4sf, and gen_sse2_movsd call
+	to gen_sse2_movsd_v2df.
+	(expand_vec_perm_movs): Also allow V4SImode with TARGET_SSE and
+	V2DImode with TARGET_SSE2.
+	* config/i386/sse.md
+	(avx512fp16_fcmaddcsh_v8hf_mask3<round_expand_name>): Update
+	gen_sse_movss call to gen_sse_movss_v4sf.
+	(avx512fp16_fmaddcsh_v8hf_mask3<round_expand_name>): Likewise.
+	(sse_movss_<mode>): Renamed from sse_movss using VI4F_128 mode
+	iterator to handle both V4SF and V4SI.
+	(sse2_movsd_<mode>): Likewise, renamed from sse2_movsd using
+	VI8F_128 mode iterator to handle both V2DF and V2DI.
+
 2022-12-23  Jakub Jelinek  <jakub@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 

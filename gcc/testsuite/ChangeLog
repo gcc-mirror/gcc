@@ -1,3 +1,9 @@
+2022-12-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-movss-4.c: New test case.
+	* gcc.target/i386/sse2-movsd-3.c: New test case.
+
 2022-12-24  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/107548

@@ -1,3 +1,7 @@
+2022-12-25  Jonathan Yong  <10walls@gmail.com>
+
+	* config/i386/gthr-win32.h: undef CC_NONE
+
 2022-12-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/t-slibgcc-darwin (install-darwin-libgcc-stubs): Skip the
