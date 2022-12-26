@@ -44,6 +44,11 @@ if {[is_remote host]} {
     return
 }
 
+if { [istarget "powerpc-ibm-aix*"] } {
+    set torture_execute_xfail "powerpc-ibm-aix*"
+    return
+}
+
 global module_do
 global module_cmis
 
