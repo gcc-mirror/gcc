@@ -8743,7 +8743,9 @@ attr_decl1 (void)
   /* Update symbol table.  DIMENSION attribute is set in
      gfc_set_array_spec().  For CLASS variables, this must be applied
      to the first component, or '_data' field.  */
-  if (sym->ts.type == BT_CLASS && sym->ts.u.derived->attr.is_class)
+  if (sym->ts.type == BT_CLASS
+      && sym->ts.u.derived
+      && sym->ts.u.derived->attr.is_class)
     {
       /* gfc_set_array_spec sets sym->attr not CLASS_DATA(sym)->attr.  Check
 	 for duplicate attribute here.  */
