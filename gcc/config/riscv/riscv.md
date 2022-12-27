@@ -1670,6 +1670,23 @@
 		      MAX_MACHINE_MODE, &operands[3], TRUE);
 })
 
+;; Pretend to have the ability to load complex const_int in order to get
+;; better code generation around them.
+;;
+;; But avoid constants that are special cased elsewhere.
+(define_insn_and_split "*mvconst_internal"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+        (match_operand:GPR 1 "splittable_const_int_operand" "i"))]
+  "!(p2m1_shift_operand (operands[1]) || high_mask_shift_operand (operands[1]))"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_move_integer (operands[0], operands[0], INTVAL (operands[1]),
+                      <MODE>mode, TRUE);
+  DONE;
+})
+
 ;; 64-bit integer moves
 
 (define_expand "movdi"
