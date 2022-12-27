@@ -1,3 +1,33 @@
+2022-12-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-22  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/106482
+	* doc/install.texi (ISO C++11 Compiler): Document GCC version
+	known to work.
+
+2022-12-22  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	* opts-jobserver.h: Add one member.
+	* opts-common.cc (jobserver_info::jobserver_info): Parse FIFO
+	format of --jobserver-auth.
+
+2022-12-22  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.cc (driver::detect_jobserver): Remove and move to
+	jobserver.h.
+	* lto-wrapper.cc (jobserver_active_p): Likewise.
+	(run_gcc): Likewise.
+	* opts-jobserver.h: New file.
+	* opts-common.cc (jobserver_info::jobserver_info): New function.
+
 2022-12-20  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
