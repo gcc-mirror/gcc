@@ -173,7 +173,7 @@ public:
   bool has_non_zero_avl () const;
 
   rtx get_avl () const { return m_avl.get_value (); }
-  avl_info get_avl_info () const { return m_avl; }
+  const avl_info &get_avl_info () const { return m_avl; }
   void set_avl_info (const avl_info &avl) { m_avl = avl; }
   uint8_t get_sew () const { return m_sew; }
   riscv_vector::vlmul_type get_vlmul () const { return m_vlmul; }
