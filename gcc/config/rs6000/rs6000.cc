@@ -3645,17 +3645,12 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_pointer_size = 32;
     }
 
-  /* Some OSs don't support saving the high part of 64-bit registers on context
-     switch.  Other OSs don't support saving Altivec registers.  On those OSs,
-     we don't touch the OPTION_MASK_POWERPC64 or OPTION_MASK_ALTIVEC settings;
-     if the user wants either, the user must explicitly specify them and we
-     won't interfere with the user's specification.  */
+  /* Some OSs don't support saving Altivec registers.  On those OSs, we don't
+     touch the OPTION_MASK_ALTIVEC settings; if the user wants it, the user
+     must explicitly specify it and we won't interfere with the user's
+     specification.  */
 
   set_masks = POWERPC_MASKS;
-#ifdef OS_MISSING_POWERPC64
-  if (OS_MISSING_POWERPC64)
-    set_masks &= ~OPTION_MASK_POWERPC64;
-#endif
 #ifdef OS_MISSING_ALTIVEC
   if (OS_MISSING_ALTIVEC)
     set_masks &= ~(OPTION_MASK_ALTIVEC | OPTION_MASK_VSX
@@ -3664,6 +3659,18 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Don't override by the processor default if given explicitly.  */
   set_masks &= ~rs6000_isa_flags_explicit;
+
+  /* Without option powerpc64 specified explicitly, we need to ensure
+     powerpc64 always enabled for 64 bit here, otherwise some following
+     checks can use unexpected TARGET_POWERPC64 value.  Meanwhile, we
+     need to ensure set_masks doesn't have OPTION_MASK_POWERPC64 on,
+     otherwise later processing can clear it.  */
+  if (!(rs6000_isa_flags_explicit & OPTION_MASK_POWERPC64)
+      && TARGET_64BIT)
+    {
+      rs6000_isa_flags |= OPTION_MASK_POWERPC64;
+      set_masks &= ~OPTION_MASK_POWERPC64;
+    }
 
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
      the cpu in a target attribute or pragma, but did not specify a tuning
@@ -3714,6 +3721,18 @@ rs6000_option_override_internal (bool global_init_p)
 	}
       rs6000_isa_flags |= (flags & ~rs6000_isa_flags_explicit);
     }
+
+  /* Don't expect powerpc64 enabled on those OSes with OS_MISSING_POWERPC64,
+     since they do not save and restore the high half of the GPRs correctly
+     in all cases.  If the user explicitly specifies it, we won't interfere
+     with the user's specification.  */
+#ifdef OS_MISSING_POWERPC64
+  if (OS_MISSING_POWERPC64
+      && TARGET_32BIT
+      && TARGET_POWERPC64
+      && !(rs6000_isa_flags_explicit & OPTION_MASK_POWERPC64))
+    rs6000_isa_flags &= ~OPTION_MASK_POWERPC64;
+#endif
 
   if (rs6000_tune_index >= 0)
     tune_index = rs6000_tune_index;
