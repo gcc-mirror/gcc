@@ -3327,12 +3327,18 @@ xtensa_expand_prologue (void)
 	     ref; ref = DF_REF_NEXT_REG (ref))
 	  if (DF_REF_CLASS (ref) == DF_REF_REGULAR
 	      && NONJUMP_INSN_P (DF_REF_INSN (ref)))
-	    stack_pointer_needed = true;
+	    {
+	      stack_pointer_needed = true;
+	      break;
+	    }
       /* Check if callee-saved registers really need saving to the stack.  */
       if (!stack_pointer_needed)
 	for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	  if (xtensa_call_save_reg (regno))
-	    stack_pointer_needed = true;
+	    {
+	      stack_pointer_needed = true;
+	      break;
+	    }
 
       cfun->machine->inhibit_logues_a1_adjusts = !stack_pointer_needed;
 
