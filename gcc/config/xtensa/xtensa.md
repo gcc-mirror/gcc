@@ -2562,12 +2562,15 @@
   ""
 {
   if (frame_pointer_needed)
-    return "mov\ta7, sp";
+    return (TARGET_DENSITY ? "mov.n\ta7, sp" : "mov\ta7, sp");
   return "";
 }
   [(set_attr "type"	"move")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 2)
+		      (const_int 3)))])
 
 ;; Post-reload splitter to remove fp assignment when it's not needed.
 (define_split
