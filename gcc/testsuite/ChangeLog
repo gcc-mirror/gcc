@@ -1,3 +1,24 @@
+2022-12-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/analyzer/fd-accept.c: Skip.
+	* gcc.dg/analyzer/fd-access-mode-target-headers.c: Skip.
+	* gcc.dg/analyzer/fd-bind.c: Skip.
+	* gcc.dg/analyzer/fd-connect.c: Skip.
+	* gcc.dg/analyzer/fd-datagram-socket.c: Skip.
+	* gcc.dg/analyzer/fd-glibc-datagram-client.c: Skip.
+	* gcc.dg/analyzer/fd-glibc-datagram-socket.c: Skip.
+	* gcc.dg/analyzer/fd-listen.c: Skip.
+	* gcc.dg/analyzer/fd-socket-misuse.c: Skip.
+	* gcc.dg/analyzer/fd-stream-socket-active-open.c: Skip.
+	* gcc.dg/analyzer/fd-stream-socket-passive-open.c: Skip.
+	* gcc.dg/analyzer/fd-stream-socket.c: Skip.
+	* gcc.dg/analyzer/fd-symbolic-socket.c: Skip.
+	* gcc.dg/analyzer/flex-with-call-summaries.c: Skip.
+	* gcc.dg/analyzer/getchar-1.c: Skip.
+	* gcc.dg/analyzer/isatty-1.c: Skip.
+	* gcc.dg/analyzer/pr94851-1.c: Skip.
+	* gcc.dg/analyzer/pragma-2.c: Skip.
+
 2022-12-25  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

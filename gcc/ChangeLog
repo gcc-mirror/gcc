@@ -1,3 +1,13 @@
+2022-12-26  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/55522
+	PR target/36821
+	* config/i386/gnu-user-common.h (GNU_USER_TARGET_MATHFILE_SPEC):
+	Link crtfastmath.o whenever -mdaz-ftz is specified. Don't link
+	crtfastmath.o when -share or -mno-daz-ftz is specified.
+	* config/i386/i386.opt (mdaz-ftz): New option.
+	* doc/invoke.texi (x86 options): Document mftz-daz.
+
 2022-12-25  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 
