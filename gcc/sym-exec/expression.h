@@ -10,15 +10,6 @@
 #include "coretypes.h"
 #include "backend.h"
 #include "tree.h"
-#include "gimple.h"
-#include "tree-pass.h"
-#include "ssa.h"
-#include "gimple-iterator.h"
-#include "tree-cfg.h"
-#include "tree-ssa-loop-niter.h"
-#include "cfgloop.h"
-#include "gimple-range.h"
-#include "tree-scalar-evolution.h"
 #include "hwint.h"
 #include "gimple-pretty-print.h"
 #include "is-a.h"
@@ -26,7 +17,6 @@
 #include "hash-map.h"
 #include "hash-set.h"
 #include "stddef.h"
-
 
 enum value_type {
   SYMBOLIC_BIT,
@@ -223,6 +213,5 @@ class bit_complement_expression : public bit_expression {
   value_type get_type () const;
   void print ();
 };
-
 
 #endif /* SYM_EXEC_EXPRESSION_H.  */

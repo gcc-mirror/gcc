@@ -1,8 +1,6 @@
 #include "condition.h"
 
-
-bit_condition::bit_condition (value_bit* left, value_bit* right,
-			      condition_type type)
+bit_condition::bit_condition (value_bit *left, value_bit *right, tree_code type)
 {
   this->left = left;
   this->right = right;
@@ -10,29 +8,21 @@ bit_condition::bit_condition (value_bit* left, value_bit* right,
 
   switch (this->type)
     {
-      case GREAT_THAN:
+      case GT_EXPR:
 	op_sign[0] = '>';
 	op_sign[1] = '\0';
 	break;
-      case LESS_THAN:
+      case LT_EXPR:
 	op_sign[0] = '<';
 	op_sign[1] = '\0';
 	break;
-      case EQUAL:
+      case EQ_EXPR:
 	op_sign[0] = '=';
 	op_sign[1] = '=';
 	break;
-      case NOT_EQUAL:
+      case NE_EXPR:
 	op_sign[0] = '!';
 	op_sign[1] = '=';
-	break;
-      case IS_FALSE:
-	op_sign[0] = '0';
-	op_sign[1] = '\0';
-	break;
-      case IS_TRUE:
-	op_sign[0] = '1';
-	op_sign[1] = '\0';
 	break;
       default:
 	op_sign[0] = '\0';
@@ -48,7 +38,7 @@ bit_condition::bit_condition (const bit_condition &expr)
 }
 
 
-condition_type
+tree_code
 bit_condition::get_cond_type () const
 {
   return type;

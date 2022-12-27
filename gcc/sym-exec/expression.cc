@@ -4,7 +4,6 @@
 
 #include "expression-is-a-helper.h"
 
-
 value_bit *
 bit_expression::get_left ()
 {
@@ -64,7 +63,7 @@ bit_complement_expression::bit_complement_expression (value_bit *right)
 
 
 bit_complement_expression::bit_complement_expression (
-	const bit_complement_expression& expr)
+  const bit_complement_expression &expr)
 {
   bit_expression::copy (&expr);
 }
@@ -79,7 +78,7 @@ bit_expression::~bit_expression ()
 }
 
 
-value_bit*
+value_bit *
 symbolic_bit::copy () const
 {
   return new symbolic_bit (*this);
@@ -187,7 +186,7 @@ bit_and_expression::bit_and_expression (value_bit *left, value_bit *right)
 }
 
 
-bit_and_expression::bit_and_expression (const bit_and_expression& expr)
+bit_and_expression::bit_and_expression (const bit_and_expression &expr)
 {
   bit_expression::copy (&expr);
 }
@@ -202,7 +201,7 @@ bit_or_expression::bit_or_expression (value_bit *left, value_bit *right)
 }
 
 
-bit_or_expression::bit_or_expression (const bit_or_expression& expr)
+bit_or_expression::bit_or_expression (const bit_or_expression &expr)
 {
   bit_expression::copy (&expr);
 }
@@ -219,7 +218,7 @@ shift_right_expression::shift_right_expression (value_bit *left,
 
 
 shift_right_expression::shift_right_expression (
-	const shift_right_expression& expr)
+  const shift_right_expression &expr)
 {
   bit_expression::copy (&expr);
 }
@@ -234,7 +233,7 @@ shift_left_expression::shift_left_expression (value_bit *left, value_bit *right)
 }
 
 
-shift_left_expression::shift_left_expression (const shift_left_expression& expr)
+shift_left_expression::shift_left_expression (const shift_left_expression &expr)
 {
   bit_expression::copy (&expr);
 }
@@ -249,7 +248,7 @@ add_expression::add_expression (value_bit *left, value_bit *right)
 }
 
 
-add_expression::add_expression (const add_expression& expr)
+add_expression::add_expression (const add_expression &expr)
 {
   bit_expression::copy (&expr);
 }
@@ -264,7 +263,7 @@ sub_expression::sub_expression (value_bit *left, value_bit *right)
 }
 
 
-sub_expression::sub_expression (const sub_expression& expr)
+sub_expression::sub_expression (const sub_expression &expr)
 {
   bit_expression::copy (&expr);
 }
