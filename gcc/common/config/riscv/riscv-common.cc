@@ -1538,7 +1538,7 @@ riscv_check_conds (
 
   for (itr = conds.begin (); itr != conds.end (); ++itr)
     {
-      /* We'll check march= and mabi= in ohter place.  */
+      /* We'll check march= and mabi= in other place.  */
       if (prefixed_with (*itr, "march=") || prefixed_with (*itr, "mabi="))
 	continue;
 
