@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
   "crt1-sim%O%s crt0%O%s crti%O%s crtbegin%O%s _vectors%O%s"
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend%O%s crtn%O%s"  
+#define ENDFILE_SPEC "crtend%O%s crtn%O%s"
 
 #undef LINK_SPEC
 #define LINK_SPEC \
@@ -86,19 +86,17 @@ along with GCC; see the file COPYING3.  If not see
 /* Search for headers in $tooldir/arch/include and for libraries and
    startfiles in $tooldir/arch/lib.  */
 #define GCC_DRIVER_HOST_INITIALIZATION \
-do \
-{ \
-  char *tooldir, *archdir; \
-  tooldir = concat (tooldir_base_prefix, spec_machine, \
-		    dir_separator_str, NULL); \
-  if (!IS_ABSOLUTE_PATH (tooldir)) \
-    tooldir = concat (standard_exec_prefix, spec_machine, dir_separator_str, \
-		      spec_version, dir_separator_str, tooldir, NULL); \
-  archdir = concat (tooldir, "arch", dir_separator_str, NULL); \
-  add_prefix (&startfile_prefixes, \
-	      concat (archdir, "lib", dir_separator_str, NULL), \
-	      "GCC", PREFIX_PRIORITY_LAST, 0, 1); \
-  add_prefix (&include_prefixes, archdir, \
-	      "GCC", PREFIX_PRIORITY_LAST, 0, 0); \
-  } \
-while (0)
+  do { \
+    char *tooldir, *archdir; \
+    tooldir = concat (tooldir_base_prefix, spec_machine, \
+		      dir_separator_str, NULL); \
+    if (!IS_ABSOLUTE_PATH (tooldir)) \
+      tooldir = concat (standard_exec_prefix, spec_machine, dir_separator_str, \
+			spec_version, dir_separator_str, tooldir, NULL); \
+    archdir = concat (tooldir, "arch", dir_separator_str, NULL); \
+    add_prefix (&startfile_prefixes, \
+		concat (archdir, "lib", dir_separator_str, NULL), \
+		"GCC", PREFIX_PRIORITY_LAST, 0, 1); \
+    add_prefix (&include_prefixes, archdir, \
+		"GCC", PREFIX_PRIORITY_LAST, 0, 0); \
+  } while (0)

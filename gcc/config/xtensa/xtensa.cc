@@ -176,7 +176,7 @@ static bool constantpool_address_p (const_rtx addr);
 static bool xtensa_legitimate_constant_p (machine_mode, rtx);
 static void xtensa_reorg (void);
 static bool xtensa_can_use_doloop_p (const widest_int &, const widest_int &,
-                                     unsigned int, bool);
+				     unsigned int, bool);
 static const char *xtensa_invalid_within_doloop (const rtx_insn *);
 
 static bool xtensa_member_type_forces_blk (const_tree,
@@ -2115,7 +2115,7 @@ xtensa_emit_loop_end (rtx_insn *insn, rtx *operands)
 	      done = 1;
 	  }
 	  break;
-        }
+	}
     }
 
   output_asm_insn ("%1_LEND:", operands);
@@ -2314,7 +2314,7 @@ xtensa_tls_module_base (void)
       xtensa_tls_module_base_symbol =
 	gen_rtx_SYMBOL_REF (Pmode, "_TLS_MODULE_BASE_");
       SYMBOL_REF_FLAGS (xtensa_tls_module_base_symbol)
-        |= TLS_MODEL_GLOBAL_DYNAMIC << SYMBOL_FLAG_TLS_SHIFT;
+	|= TLS_MODEL_GLOBAL_DYNAMIC << SYMBOL_FLAG_TLS_SHIFT;
     }
 
   return xtensa_tls_module_base_symbol;
@@ -3409,7 +3409,7 @@ xtensa_expand_prologue (void)
 	    }
 	}
       else
-        {
+	{
 	  insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
 				       stack_pointer_rtx));
 	  if (!TARGET_WINDOWED_ABI)
@@ -3532,11 +3532,12 @@ xtensa_set_return_address (rtx address, rtx scratch)
 			  gen_rtx_REG (SImode, A0_REG));
   rtx insn;
 
-  if (total_size > 1024) {
-    emit_move_insn (scratch, GEN_INT (total_size - UNITS_PER_WORD));
-    emit_insn (gen_addsi3 (scratch, frame, scratch));
-    a0_addr = scratch;
-  }
+  if (total_size > 1024)
+    {
+      emit_move_insn (scratch, GEN_INT (total_size - UNITS_PER_WORD));
+      emit_insn (gen_addsi3 (scratch, frame, scratch));
+      a0_addr = scratch;
+    }
 
   insn = emit_move_insn (gen_frame_mem (SImode, a0_addr), address);
   RTX_FRAME_RELATED_P (insn) = 1;
@@ -3818,8 +3819,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   /* Check if the argument is in registers:
 
      if ((AP).__va_ndx <= __MAX_ARGS_IN_REGISTERS * 4
-         && !must_pass_in_stack (type))
-        __array = (AP).__va_reg; */
+	 && !must_pass_in_stack (type))
+	__array = (AP).__va_reg; */
 
   array = create_tmp_var (ptr_type_node);
 
@@ -4515,8 +4516,8 @@ xtensa_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 /* Worker function for TARGET_FUNCTION_VALUE.  */
 
 rtx
-xtensa_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED, 
-                      bool outgoing)
+xtensa_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
+		       bool outgoing)
 {
   return gen_rtx_REG ((INTEGRAL_TYPE_P (valtype)
                       && TYPE_PRECISION (valtype) < BITS_PER_WORD)
@@ -4719,7 +4720,7 @@ xtensa_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 
 static bool
 xtensa_can_use_doloop_p (const widest_int &, const widest_int &,
-                         unsigned int loop_depth, bool entered_at_top)
+			 unsigned int loop_depth, bool entered_at_top)
 {
   /* Considering limitations in the hardware, only use doloop
      for innermost loops which must be entered from the top.  */
@@ -4758,32 +4759,32 @@ hwloop_optimize (hwloop_info loop)
   if (loop->depth > 1)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d is not innermost\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d is not innermost\n",
+		 loop->loop_no);
       return false;
     }
 
   if (!loop->incoming_dest)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d has more than one entry\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d has more than one entry\n",
+		 loop->loop_no);
       return false;
     }
 
   if (loop->incoming_dest != loop->head)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d is not entered from head\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d is not entered from head\n",
+		 loop->loop_no);
       return false;
     }
 
   if (loop->has_call || loop->has_asm)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d has invalid insn\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d has invalid insn\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -4791,8 +4792,8 @@ hwloop_optimize (hwloop_info loop)
   if (loop->iter_reg_used || loop->iter_reg_used_outside)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d uses iterator\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d uses iterator\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -4804,8 +4805,8 @@ hwloop_optimize (hwloop_info loop)
   if (!insn)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -4829,8 +4830,8 @@ hwloop_optimize (hwloop_info loop)
   start_sequence ();
 
   insn = emit_insn (gen_zero_cost_loop_start (loop->iter_reg,
-                                              loop->start_label,
-                                              loop->iter_reg));
+					      loop->start_label,
+					      loop->iter_reg));
 
   seq = get_insns ();
 
@@ -4846,21 +4847,21 @@ hwloop_optimize (hwloop_info loop)
       seq = emit_label_before (gen_label_rtx (), seq);
       new_bb = create_basic_block (seq, insn, entry_bb);
       FOR_EACH_EDGE (e, ei, loop->incoming)
-        {
-          if (!(e->flags & EDGE_FALLTHRU))
-            redirect_edge_and_branch_force (e, new_bb);
-          else
-            redirect_edge_succ (e, new_bb);
-        }
+	{
+	  if (!(e->flags & EDGE_FALLTHRU))
+	    redirect_edge_and_branch_force (e, new_bb);
+	  else
+	    redirect_edge_succ (e, new_bb);
+	}
 
       make_edge (new_bb, loop->head, 0);
     }
   else
     {
       while (DEBUG_INSN_P (entry_after)
-             || (NOTE_P (entry_after)
+	     || (NOTE_P (entry_after)
 		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))
-        entry_after = PREV_INSN (entry_after);
+	entry_after = PREV_INSN (entry_after);
 
       emit_insn_after (seq, entry_after);
     }
@@ -4881,15 +4882,15 @@ hwloop_fail (hwloop_info loop)
   rtx_insn *insn = loop->loop_end;
 
   emit_insn_before (gen_addsi3 (loop->iter_reg,
-                                loop->iter_reg,
-                                constm1_rtx),
-                    loop->loop_end);
+				loop->iter_reg,
+				constm1_rtx),
+		    loop->loop_end);
 
   test = gen_rtx_NE (VOIDmode, loop->iter_reg, const0_rtx);
   insn = emit_jump_insn_before (gen_cbranchsi4 (test,
-                                                loop->iter_reg, const0_rtx,
-                                                loop->start_label),
-                                loop->loop_end);
+						loop->iter_reg, const0_rtx,
+						loop->start_label),
+				loop->loop_end);
 
   JUMP_LABEL (insn) = loop->start_label;
   LABEL_NUSES (loop->start_label)++;

@@ -70,13 +70,13 @@
 
 ;; This code iterator is for floating-point comparisons.
 (define_code_iterator any_scc_sf [eq lt le uneq unlt unle unordered])
-(define_code_attr scc_sf [(eq "oeq") (lt "olt") (le "ole") 
+(define_code_attr scc_sf [(eq "oeq") (lt "olt") (le "ole")
 			  (uneq "ueq") (unlt "ult") (unle "ule")
 			  (unordered "un")])
 
 ;; This iterator and attribute allow to combine most atomic operations.
 (define_code_iterator ATOMIC [and ior xor plus minus mult])
-(define_code_attr atomic [(and "and") (ior "ior") (xor "xor") 
+(define_code_attr atomic [(and "and") (ior "ior") (xor "xor")
 			  (plus "add") (minus "sub") (mult "nand")])
 
 ;; This mode iterator allows the HI and QI patterns to be defined from
@@ -195,7 +195,7 @@
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=a")
-        (minus:SI (match_operand:SI 1 "register_operand" "r")
+	(minus:SI (match_operand:SI 1 "register_operand" "r")
 		  (match_operand:SI 2 "register_operand" "r")))]
   ""
   "sub\t%0, %1, %2"
@@ -434,7 +434,7 @@
 
 (define_insn "<code>si3"
   [(set (match_operand:SI 0 "register_operand" "=a")
-        (any_minmax:SI (match_operand:SI 1 "register_operand" "%r")
+	(any_minmax:SI (match_operand:SI 1 "register_operand" "%r")
 		       (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_MINMAX"
   "<minmax>\t%0, %1, %2"
@@ -507,7 +507,7 @@
 
 (define_expand "bswapsi2"
   [(set (match_operand:SI 0 "register_operand" "")
-        (bswap:SI (match_operand:SI 1 "register_operand" "")))]
+	(bswap:SI (match_operand:SI 1 "register_operand" "")))]
   "!optimize_debug && optimize > 1"
 {
   /* GIMPLE manual byte-swapping recognition is now activated.
@@ -1022,7 +1022,7 @@
    %v0s32i\t%1, %0
    rsr\t%0, ACCLO
    wsr\t%1, ACCLO"
-  [(set_attr "type" "move,move,move,load,store,store,move,move,move,move,move,load,load,store,rsr,wsr")
+  [(set_attr "type"	"move,move,move,load,store,store,move,move,move,move,move,load,load,store,rsr,wsr")
    (set_attr "mode"	"SI")
    (set_attr "length"	"2,2,2,2,2,2,3,3,3,3,6,3,3,3,3,3")])
 
@@ -1170,7 +1170,7 @@
   "((register_operand (operands[0], SFmode)
      || register_operand (operands[1], SFmode))
     && !(FP_REG_P (xt_true_regnum (operands[0]))
-         && (constantpool_mem_p (operands[1]) || CONSTANT_P (operands[1]))))"
+	 && (constantpool_mem_p (operands[1]) || CONSTANT_P (operands[1]))))"
   "@
    mov.s\t%0, %1
    %v1lsi\t%0, %1
@@ -1355,7 +1355,7 @@
   [(set (match_operand:SI 0 "register_operand" "=a,a")
 	(ashift:SI (match_operand:SI 1 "register_operand" "r,r")
 		   (match_operand:SI 2 "arith_operand" "J,r")))]
-  ""      
+  ""
   "@
    slli\t%0, %1, %R2
    ssl\t%2\;sll\t%0, %1"
@@ -1941,13 +1941,13 @@
 
 (define_insn "zero_cost_loop_start"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 2 "register_operand" "0")
-                          (const_int 1))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
+	(if_then_else (ne (match_operand:SI 2 "register_operand" "0")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
    (set (match_operand:SI 0 "register_operand" "=a")
-        (plus (match_dup 0)
-              (const_int -1)))
+	(plus (match_dup 0)
+	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_START)]
   "TARGET_LOOPS && optimize"
   "loop\t%0, %l1_LEND"
@@ -1957,13 +1957,13 @@
 
 (define_insn "zero_cost_loop_end"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0")
-                          (const_int 1))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
+	(if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
    (set (match_operand:SI 0 "nonimmediate_operand" "=a,m")
-        (plus (match_dup 0)
-              (const_int -1)))
+	(plus (match_dup 0)
+	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
    (clobber (match_scratch:SI 3 "=X,&r"))]
   "TARGET_LOOPS && optimize"
@@ -1974,13 +1974,13 @@
 
 (define_insn "loop_end"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 2 "register_operand" "0")
-                          (const_int 1))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
+	(if_then_else (ne (match_operand:SI 2 "register_operand" "0")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
    (set (match_operand:SI 0 "register_operand" "=a")
-        (plus (match_dup 0)
-              (const_int -1)))
+	(plus (match_dup 0)
+	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)]
   "TARGET_LOOPS && optimize"
 {
@@ -1993,13 +1993,13 @@
 
 (define_split
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "")
-                          (const_int 1))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
+	(if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
    (set (match_operand:SI 2 "nonimmediate_operand" "")
-        (plus:SI (match_dup 0)
-                 (const_int -1)))
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
    (clobber (match_scratch 3))]
   "TARGET_LOOPS && optimize && reload_completed"
@@ -2015,7 +2015,7 @@
       emit_move_insn (operands[0], operands[3]);
       test = gen_rtx_NE (VOIDmode, operands[3], const0_rtx);
       emit_jump_insn (gen_cbranchsi4 (test, operands[3],
-                                      const0_rtx, operands[1]));
+				      const0_rtx, operands[1]));
     }
   else
     {
@@ -2029,15 +2029,15 @@
 ; operand 1 is the label to jump to at the top of the loop
 (define_expand "doloop_end"
   [(parallel [(set (pc) (if_then_else
-                          (ne (match_operand:SI 0 "" "")
-                              (const_int 1))
-                          (label_ref (match_operand 1 "" ""))
-                          (pc)))
-              (set (match_dup 0)
-                   (plus:SI (match_dup 0)
-                            (const_int -1)))
-              (unspec [(const_int 0)] UNSPEC_LSETUP_END)
-              (clobber (match_dup 2))])] ; match_scratch
+			  (ne (match_operand:SI 0 "" "")
+			      (const_int 1))
+			  (label_ref (match_operand 1 "" ""))
+			  (pc)))
+	      (set (match_dup 0)
+		   (plus:SI (match_dup 0)
+			    (const_int -1)))
+	      (unspec [(const_int 0)] UNSPEC_LSETUP_END)
+	      (clobber (match_dup 2))])] ; match_scratch
   "TARGET_LOOPS && optimize"
 {
   /* The loop optimizer doesn't check the predicates... */
@@ -2276,8 +2276,8 @@
 
 (define_insn "call_value_internal"
   [(set (match_operand 0 "register_operand" "=a")
-        (call (mem (match_operand:SI 1 "call_insn_operand" "nir"))
-              (match_operand 2 "" "i")))]
+	(call (mem (match_operand:SI 1 "call_insn_operand" "nir"))
+	      (match_operand 2 "" "i")))]
   "!SIBLING_CALL_P (insn)"
 {
   return xtensa_emit_call (1, operands);
@@ -2382,9 +2382,9 @@
 
 (define_expand "allocate_stack"
   [(set (match_operand 0 "nonimmed_operand")
-        (minus (reg A1_REG) (match_operand 1 "add_operand")))
+	(minus (reg A1_REG) (match_operand 1 "add_operand")))
    (set (reg A1_REG)
-        (minus (reg A1_REG) (match_dup 1)))]
+	(minus (reg A1_REG) (match_dup 1)))]
   "TARGET_WINDOWED_ABI"
 {
   if (CONST_INT_P (operands[1]))
@@ -2509,7 +2509,7 @@
 
 (define_expand "frame_blockage"
   [(set (match_dup 0)
-        (unspec:BLK [(match_dup 1)] UNSPEC_FRAME_BLOCKAGE))]
+	(unspec:BLK [(match_dup 1)] UNSPEC_FRAME_BLOCKAGE))]
   ""
 {
   operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
@@ -2519,7 +2519,7 @@
 
 (define_insn "*frame_blockage"
   [(set (match_operand:BLK 0 "" "")
-        (unspec:BLK [(match_operand:SI 1 "" "")] UNSPEC_FRAME_BLOCKAGE))]
+	(unspec:BLK [(match_operand:SI 1 "" "")] UNSPEC_FRAME_BLOCKAGE))]
   ""
   ""
   [(set_attr "type"	"nop")
@@ -2796,7 +2796,7 @@
 (define_expand "sync_new_<atomic><mode>"
   [(set (match_operand:HQI 0 "register_operand")
 	(ATOMIC:HQI (match_operand:HQI 1 "memory_operand")
-		    (match_operand:HQI 2 "register_operand"))) 
+		    (match_operand:HQI 2 "register_operand")))
    (set (match_dup 1) (ATOMIC:HQI (match_dup 1) (match_dup 2)))]
   "TARGET_S32C1I"
 {

@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_S32C1I		XCHAL_HAVE_S32C1I
 #define TARGET_ABSOLUTE_LITERALS XSHAL_USE_ABSOLUTE_LITERALS
 #define TARGET_THREADPTR	XCHAL_HAVE_THREADPTR
-#define TARGET_LOOPS	        XCHAL_HAVE_LOOPS
+#define TARGET_LOOPS		XCHAL_HAVE_LOOPS
 #define TARGET_WINDOWED_ABI_DEFAULT (XSHAL_ABI == XTHAL_ABI_WINDOWED)
 #define TARGET_WINDOWED_ABI	xtensa_windowed_abi
 #define TARGET_DEBUG		XCHAL_HAVE_DEBUG
@@ -286,7 +286,7 @@ extern int leaf_function;
 
 /* Coprocessor registers */
 #define BR_REG_FIRST 18
-#define BR_REG_LAST  18 
+#define BR_REG_LAST  18
 #define BR_REG_NUM   (BR_REG_LAST - BR_REG_FIRST + 1)
 
 /* 16 floating-point registers */
@@ -742,7 +742,7 @@ typedef struct xtensa_args
 
 
 /* Define output to appear before the constant pool.  */
-#define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, FUNDECL, SIZE)          \
+#define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, FUNDECL, SIZE)		\
   do {									\
     if ((SIZE) > 0 || !TARGET_WINDOWED_ABI)				\
       {									\
