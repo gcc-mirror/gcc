@@ -4526,9 +4526,9 @@ xtensa_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
 		       bool outgoing)
 {
   return gen_rtx_REG ((INTEGRAL_TYPE_P (valtype)
-                      && TYPE_PRECISION (valtype) < BITS_PER_WORD)
-                     ? SImode : TYPE_MODE (valtype),
-                     outgoing ? GP_OUTGOING_RETURN : GP_RETURN);
+		       && TYPE_PRECISION (valtype) < BITS_PER_WORD)
+		      ? SImode : TYPE_MODE (valtype),
+		      outgoing ? GP_OUTGOING_RETURN : GP_RETURN_FIRST);
 }
 
 /* Worker function for TARGET_LIBCALL_VALUE.  */
@@ -4538,7 +4538,7 @@ xtensa_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG ((GET_MODE_CLASS (mode) == MODE_INT
 		       && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
-		      ? SImode : mode, GP_RETURN);
+		      ? SImode : mode, GP_RETURN_FIRST);
 }
 
 /* Worker function TARGET_FUNCTION_VALUE_REGNO_P.  */
@@ -4546,7 +4546,7 @@ xtensa_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 static bool
 xtensa_function_value_regno_p (const unsigned int regno)
 {
-  return (regno >= GP_RETURN && regno < GP_RETURN + GP_RETURN_REG_COUNT);
+  return IN_RANGE (regno, GP_RETURN_FIRST, GP_RETURN_LAST);
 }
 
 /* The static chain is passed in memory.  Provide rtx giving 'mem'
