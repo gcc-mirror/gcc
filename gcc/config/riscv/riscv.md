@@ -1677,7 +1677,8 @@
 (define_insn_and_split "*mvconst_internal"
   [(set (match_operand:GPR 0 "register_operand" "=r")
         (match_operand:GPR 1 "splittable_const_int_operand" "i"))]
-  "!(p2m1_shift_operand (operands[1]) || high_mask_shift_operand (operands[1]))"
+  "!(p2m1_shift_operand (operands[1], <MODE>mode)
+     || high_mask_shift_operand (operands[1], <MODE>mode))"
   "#"
   "&& 1"
   [(const_int 0)]
