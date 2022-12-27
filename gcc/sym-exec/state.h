@@ -226,7 +226,9 @@ class state {
 
   bool add_var_state (tree var, value *state);
 
-  void clear_states ();
+  static void clear_states (vec<state *> *states);
+
+  void clear_var_states ();
 
   void clear_conditions ();
 

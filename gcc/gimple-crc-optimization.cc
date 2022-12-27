@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "tree-scalar-evolution.h"
 #include "hwint.h"
-#include "symb-execute-all-paths.h"
+#include "crc_verification.h"
 
 class crc_optimization {
  private:
@@ -56,7 +56,7 @@ class crc_optimization {
   gphi *second_phi_for_crc;
 
   /* Phi statement, result maybe data (if exists).  */
-  gphi * data;
+  gphi *data;
 
   /* The loop, which probably calculates CRC.  */
   class loop *crc_loop;
@@ -66,7 +66,10 @@ class crc_optimization {
   /* Function's return value size.  */
   unsigned HOST_WIDE_INT return_size;
 
-  /* Depending on the value, may be forward or reversed CRC.  */
+  /* Depending on the value of is_left_shift,
+     may be forward or reversed CRC.
+     If is_left_shift, then it is bit_forward implementations,
+     otherwise bit_reversed.  */
   bool is_left_shift;
 
   /* Will be true, if crc variable and if condition depend on each other.  */
@@ -75,7 +78,6 @@ class crc_optimization {
   /* If the value is false, then xor operation isn't for CRC calculation,
      otherwise it may calculate CRC.  */
   bool clean_xor_maybe_crc;
-
 
   void set_initial_values ()
   {
@@ -99,12 +101,12 @@ class crc_optimization {
 
   /* Checks the loop iteration number.
    The loop for CRC calculation may do 8, 16, 24, 32 iterations.  */
-  bool is_loop_of_crc_calculation (class loop *func_loop);
+  bool maybe_crc_iteration_count (class loop *func_loop);
 
   /* Check whether found xor_stmt is for calculating crc.
-   The function fun calculates crc only if there is a shift operation
+   The function crc_fun calculates crc only if there is a shift operation
    in the crc_loop.  */
-  bool xor_calculates_crc (function *fun, class loop *crc_loop,
+  bool xor_calculates_crc (function *crc_fun, class loop *crc_loop,
 			   const gimple *stmt);
 
   /* This function goes up through the def-chain of the name,
@@ -115,7 +117,7 @@ class crc_optimization {
    or check_def_stmt_for_if function.  */
   void
   get_dep (tree name,
-	   bool (crc_optimization::*continue_to_check_dep) (gimple* stmt));
+	   bool (crc_optimization::*continue_to_check_dep) (gimple *stmt));
 
 /* Checks whether the def_stmt statement, dependent from xor's operands,
    does shift operation for calculating crc
@@ -123,20 +125,20 @@ class crc_optimization {
    Returns false, if there is an instruction which may not exist
    in the CRC loop.
    Returns true, if the def-chain examination must be continued.  */
-  bool continue_to_check_dep_for_xor (gimple* stmt);
+  bool continue_to_check_dep_for_xor (gimple *stmt);
 
 /* Checks whether if's condition and xor-ed variable
    are dependent from the same variable.
    (The crc variable is xor-ed if variable's MSB/LSB is 1).
    Also determines phi instruction's of data and crc
    (for further polynomial extraction).  */
-  bool continue_to_check_dep_for_if (gimple* stmt);
+  bool continue_to_check_dep_for_if (gimple *stmt);
 
   /* This function checks that xor is done under the condition
    of MSB/LSB being one.
    Checks that if condition's variable and xor-ed variable
-   depend on same variable and if there is a shift1 in the same block with xor,
-   on the opposite branch must be another shift1 to the same direction.
+   depend on same variable and if there is a shift 1 in the same block with xor,
+   on the opposite branch must be another shift 1 to the same direction.
    xor_bb is the basic block, where xor operation is done.
    pred_bb is the predecessor basic block of the xor_bb,
    it is assumed that the last stmt of pred_bb checks the condition
@@ -168,7 +170,7 @@ class crc_optimization {
 
   /* Get the return value size of the function
      and assign to return_size member.  */
-  void set_return_value_size (function *fun);
+  void set_return_value_size (function *crc_fun);
 
   /* This function checks whether calculated crc value
      (maybe modified) is returned.
@@ -184,7 +186,9 @@ class crc_optimization {
 };
 
 
-/* Set GIMPLE_PHI and GIMPLE statements of the crc loop not visited.  */
+/* TODO use existing code or move the function.
+   Set GIMPLE_PHI and GIMPLE statements of the crc loop not visited.  */
+
 void
 set_loop_statements_not_visited (class loop *loop)
 {
@@ -210,7 +214,10 @@ set_loop_statements_not_visited (class loop *loop)
     }
 }
 
-/* Set GIMPLE_PHI and GIMPLE statements of the function not visited.  */
+
+/* TODO use existing code or move the function.
+   Set GIMPLE_PHI and GIMPLE statements of the function not visited.  */
+
 static void
 set_all_statements_not_visited (function *fun)
 {
@@ -234,6 +241,7 @@ set_all_statements_not_visited (function *fun)
 
 
 /* Prints extracted details of CRC calculation.  */
+
 void
 crc_optimization::print_crc_information ()
 {
@@ -293,10 +301,10 @@ crc_optimization::returned_value_depends_on_crc (tree lhs)
    and assign to return_size member.  */
 
 void
-crc_optimization::set_return_value_size (function *fun)
+crc_optimization::set_return_value_size (function *crc_fun)
 {
   return_size = 0;
-  tree tree_return_value_size = DECL_SIZE (DECL_RESULT (fun->decl));
+  tree tree_return_value_size = DECL_SIZE (DECL_RESULT (crc_fun->decl));
   if (tree_fits_uhwi_p (tree_return_value_size))
     {
       return_size = tree_to_uhwi (tree_return_value_size);
@@ -343,12 +351,12 @@ crc_optimization::find_shift_after_xor (class loop *crc_loop, tree lhs)
 	  find_shift_after_xor
 	      (crc_loop, gimple_phi_result (stmt));
 	}
-      else if (is_gimple_assign (stmt))
-	if (can_not_be_shift_of_crc (stmt, false))
-	  {
-	    shift_after_xor = nullptr;
-	    return;
-	  }
+      else if (is_gimple_assign (stmt)
+	       && can_not_be_shift_of_crc (stmt, false))
+	{
+	  shift_after_xor = nullptr;
+	  return;
+	}
     }
 }
 
@@ -431,6 +439,9 @@ crc_optimization::crc_cond_and_shift (const basic_block &pred_bb,
 				      const basic_block &xor_bb)
 {
   gcond *cond = nullptr;
+  /* Check whether pred_bb contains condition.
+     We will consider only those cases
+     when xor is done immediately under condition.  */
   if (is_a<gcond *> (last_stmt (pred_bb)))
     cond = as_a<gcond *> (last_stmt (pred_bb));
   if (!cond)
@@ -509,6 +520,7 @@ crc_optimization::is_acceptable_statement (const tree_code &stmt_code)
 	 || TREE_CODE_CLASS (stmt_code) == tcc_unary;
 }
 
+
 /* Checks whether assigment statement does shift operation
    (checks that shift 1 is done),
    if it doesn't - checks whether it is acceptable operation
@@ -547,7 +559,7 @@ crc_optimization::can_not_be_shift_of_crc (gimple *assign_stmt,
 	      shift_after_xor = assign_stmt;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file,
-			 "Found shift1 after xor.\n");
+			 "Found <<1 or >>1 after xor.\n");
 	    }
 	  return false;
 	}
@@ -567,9 +579,9 @@ crc_optimization::can_not_be_shift_of_crc (gimple *assign_stmt,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "\nStmt with following operation "
+		 "\nStmt with the following operation "
 		 "code %s between xor and shift, "
-		 "may not be crc.\n", get_tree_code_name (stmt_code));
+		 "may not be CRC.\n", get_tree_code_name (stmt_code));
 
       return true;
     }
@@ -587,7 +599,7 @@ crc_optimization::can_not_be_shift_of_crc (gimple *assign_stmt,
 void
 crc_optimization::get_dep (tree name,
 			   bool (crc_optimization::*continue_to_check_dep) (
-			       gimple* ssa))
+			       gimple *ssa))
 {
   if (!(name && TREE_CODE (name) == SSA_NAME))
     return;
@@ -622,7 +634,7 @@ crc_optimization::get_dep (tree name,
       get_dep (ssa1, continue_to_check_dep);
       get_dep (ssa2, continue_to_check_dep);
     }
-   else if (is_a<gphi *> (stmt) && !bb_loop_header_p (gimple_bb (stmt)))
+  else if (is_a<gphi *> (stmt) && !bb_loop_header_p (gimple_bb (stmt)))
     {
       for (unsigned i = 0; i < gimple_phi_num_args (stmt); i++)
 	{
@@ -668,13 +680,13 @@ crc_optimization::continue_to_check_dep_for_xor (gimple *def_stmt)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
-		     "Phi's definition is in loop header.\n");
+		     "Phi's definition is in the loop header.\n");
 
 	  /* The case when polynomial's value is determined by
 	     a phi statement.  */
 	  if (first_phi_for_crc)
 	    {
-	      second_phi_for_crc = as_a <gphi *> (def_stmt);
+	      second_phi_for_crc = as_a<gphi *> (def_stmt);
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Set second phi.\n");
 	    }
@@ -682,12 +694,12 @@ crc_optimization::continue_to_check_dep_for_xor (gimple *def_stmt)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Set first phi.\n");
-	      first_phi_for_crc = as_a <gphi *> (def_stmt);
+	      first_phi_for_crc = as_a<gphi *> (def_stmt);
 	    }
 	  return true;
 	}
     }
-    return true;
+  return true;
 }
 
 
@@ -723,7 +735,7 @@ crc_optimization::continue_to_check_dep_for_if (gimple *def_stmt)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file,
-		       "If condition has dependence "
+		       "The condition of if statement has dependence "
 		       "from the same variable as xor.\n"
 		       "CRC's phi statement is:\n");
 	      print_gimple_stmt (dump_file, def_stmt, dump_flags);
@@ -743,7 +755,7 @@ crc_optimization::continue_to_check_dep_for_if (gimple *def_stmt)
 	      return false;
 	    }
 
-	  data = as_a <gphi *> (def_stmt);
+	  data = as_a<gphi *> (def_stmt);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file,
@@ -757,11 +769,11 @@ crc_optimization::continue_to_check_dep_for_if (gimple *def_stmt)
 
 
 /* Check whether found xor_stmt is for calculating crc.
-   The function fun calculates crc only if there is a shift operation
+   The function crc_fun calculates crc only if there is a shift operation
    in the crc_loop.  */
 
 bool
-crc_optimization::xor_calculates_crc (function *fun, class loop *crc_loop,
+crc_optimization::xor_calculates_crc (function *crc_fun, class loop *crc_loop,
 				      const gimple *xor_stmt)
 {
   tree crc_var = gimple_assign_lhs (xor_stmt);
@@ -770,11 +782,10 @@ crc_optimization::xor_calculates_crc (function *fun, class loop *crc_loop,
   get_dep (crc_var,
 	   &crc_optimization::continue_to_check_dep_for_xor);
 
-
   if (!clean_xor_maybe_crc)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Xor doesn't calculate crc.\n");
+	fprintf (dump_file, "Xor isn't used for CRC calculation.\n");
       return false;
     }
 
@@ -803,21 +814,22 @@ crc_optimization::xor_calculates_crc (function *fun, class loop *crc_loop,
     {
       if (crc_cond_and_shift (single_pred (bb), bb))
 	{
-	  set_all_statements_not_visited (fun);
+	  set_all_statements_not_visited (crc_fun);
 	  bool crc_is_returned = returned_value_depends_on_crc (crc_var);
 	  if (dump_file)
 	    {
 	      if (crc_is_returned)
 		{
 		  fprintf (dump_file,
-			   "\nAttention! %s function calculates CRC.\n",
-			   function_name (fun));
+			   "\n%s function maybe calculates CRC "
+			   "and returns it.\n",
+			   function_name (crc_fun));
 		}
 	      else
 		{
 		  fprintf (dump_file,
-			   "\nFound naive crc implementation in %s.\n",
-			   function_name (fun));
+			   "\n%s function maybe calculates CRC.\n",
+			   function_name (crc_fun));
 		}
 	    }
 	  return true;
@@ -837,7 +849,7 @@ crc_optimization::xor_calculates_crc (function *fun, class loop *crc_loop,
    The loop for CRC calculation may do 8, 16, 24, 32 iterations.  */
 
 bool
-crc_optimization::is_loop_of_crc_calculation (class loop *func_loop)
+crc_optimization::maybe_crc_iteration_count (class loop *func_loop)
 {
   loop_iteration_number = 0;
   tree n_inters = number_of_latch_executions (func_loop);
@@ -846,6 +858,7 @@ crc_optimization::is_loop_of_crc_calculation (class loop *func_loop)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Loop iteration number is chrec_dont_know.\n");
+      return false;
 
     }
   else if (tree_fits_uhwi_p (n_inters))
@@ -856,7 +869,8 @@ crc_optimization::is_loop_of_crc_calculation (class loop *func_loop)
 		 loop_iteration_number);
 
       if (!(loop_iteration_number == 7 || loop_iteration_number == 15
-	    || loop_iteration_number == 23 || loop_iteration_number == 31))
+	    || loop_iteration_number == 23 || loop_iteration_number == 31
+	    || loop_iteration_number == 63))
 	return false;
     }
   return true;
@@ -888,7 +902,7 @@ crc_optimization::function_may_calculate_crc (function *fun)
       if (!loop || loop->inner)
 	continue;
 
-      if (!is_loop_of_crc_calculation (loop))
+      if (!maybe_crc_iteration_count (loop))
 	continue;
 
       crc_loop = loop;
@@ -925,55 +939,53 @@ crc_optimization::function_may_calculate_crc (function *fun)
   return false;
 }
 
+
 unsigned int
 crc_optimization::execute (function *fun)
 {
   if (function_may_calculate_crc (fun))
-  {
-    crc_symb_execution symb_exec;
-    if (!symb_exec.execute_function (fun))
-      {
-	if (dump_file)
-	  fprintf (dump_file, "\nAttention! Not the CRC we want!\n");
-	return 0;
-      }
-
-      crc_symb_execution execute_loop;
-      value * lfsr
-      = execute_loop.extract_poly_and_create_lfsr (crc_loop, first_phi_for_crc,
-						   data, is_left_shift);
-
-      if (!lfsr)
-	{
-	if (dump_file)
-	  fprintf (dump_file, "Couldn't create LFSR!\n");
-	return 0;
-	}
-      else
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "\nLFSR value is \n");
-	      state::print_value (lfsr);
-	    }
-	}
-
-      if (symb_exec.all_states_match_lfsr (lfsr, is_left_shift))
+    {
+      crc_symbolic_execution symbolically_execute_function;
+      if (!symbolically_execute_function.execute (fun))
 	{
 	  if (dump_file)
-	    {
-	      fprintf (dump_file, "The function really calculates CRC "
-				  "and returns it!\n");
-	    }
+	    fprintf (dump_file, "\nCRC verification didn't succeed "
+				"during symbolic execution!\n");
+	  return 0;
+	}
+
+      crc_symbolic_execution execute_loop;
+      value *lfsr
+	  = execute_loop.extract_poly_and_create_lfsr (crc_loop,
+						       first_phi_for_crc,
+						       data, is_left_shift);
+      if (!lfsr)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Couldn't create LFSR!\n");
+	  return 0;
+	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "\nLFSR value is \n");
+	  state::print_value (lfsr);
+	}
+
+      if (all_states_match_lfsr (lfsr, is_left_shift,
+				 symbolically_execute_function
+				     .get_final_states ()))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "%s function calculates CRC!\n",
+		     function_name (fun));
 	}
       else
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Returned state and LFSR differ.\n");
-	    }
+	    fprintf (dump_file, "Returned state and LFSR differ.\n");
 	}
-  }
+    }
   return 0;
 }
 

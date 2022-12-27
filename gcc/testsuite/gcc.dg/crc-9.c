@@ -20,7 +20,7 @@ uint8_t gencrc(uint8_t *data, size_t len) {
     return crc;
 }
 
-/* { dg-final { scan-tree-dump "Attention! gencrc function calculates CRC." "crc"} } */
+/* { dg-final { scan-tree-dump "gencrc function maybe calculates CRC and returns it." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 8" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit forward" "crc"} } */

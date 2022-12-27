@@ -15,9 +15,10 @@ uint8_t _crc_ibutton_update(uint8_t crc, uint8_t data) {
     return crc;
 }
 
-/* { dg-final { scan-tree-dump "Attention! _crc_ibutton_update function calculates CRC." "crc"} } */
+/* { dg-final { scan-tree-dump "_crc_ibutton_update function maybe calculates CRC and returns it." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 8" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit reversed" "crc"} } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \\\^ \[a-zA-Z0-9_\]+\(\\\(\[a-zA-Z\]\\\)\)?;" "crc" } } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \(<<|>>\) \[0-9]+;" "crc" } } */
+/* { dg-final { scan-tree-dump "_crc_ibutton_update function calculates CRC!" "crc"} } */

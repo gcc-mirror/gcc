@@ -15,9 +15,10 @@ uint16_t crc_xmodem_update(uint16_t crc, uint8_t data) {
     return crc;
 }
 
-/* { dg-final { scan-tree-dump "Attention! crc_xmodem_update function calculates CRC." "crc"} } */
+/* { dg-final { scan-tree-dump "crc_xmodem_update function maybe calculates CRC and returns it." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 16" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit forward" "crc"} } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \\\^ \[a-zA-Z0-9_\]+\(\\\(\[a-zA-Z\]\\\)\)?;" "crc" } } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \(<<|>>\) \[0-9]+;" "crc" } } */
+/* { dg-final { scan-tree-dump "crc_xmodem_update function calculates CRC!" "crc"} } */

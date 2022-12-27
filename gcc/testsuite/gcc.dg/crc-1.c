@@ -48,7 +48,7 @@ uint16_t gen_crc16(const uint8_t *data, uint16_t size) {
     return crc;
 }
 
-/* { dg-final { scan-tree-dump "Found naive crc implementation in gen_crc16." "crc"} } */
+/* { dg-final { scan-tree-dump "gen_crc16 function maybe calculates CRC." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 16" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 15" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit forward" "crc"} } */

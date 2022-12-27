@@ -23,5 +23,5 @@ ee_u16 not_crcu8(ee_u8 data, ee_u16 crc) {
     }
     return crc;
 }
-/* { dg-final { scan-tree-dump-times "Attention! crcu8 function calculates CRC." 0 "crc"} } */
+/* { dg-final { scan-tree-dump-times "crcu8 function maybe calculates CRC" 0 "crc"} } */
 

@@ -17,7 +17,7 @@ u8 crc8(u16 data) {
     return (u8)(data >> 8);
 }
 
-/* { dg-final { scan-tree-dump "Attention! crc8 function calculates CRC." "crc"} } */
+/* { dg-final { scan-tree-dump "crc8 function maybe calculates CRC and returns it." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 8" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit forward" "crc"} } */

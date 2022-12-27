@@ -23,5 +23,5 @@ notCrc(uint8_t const message[], int nBytes) {
     return (remainder);
 }
 
-/* { dg-final { scan-tree-dump-times "Attention! notCrc function calculates CRC." 0 "crc"} } */
+/* { dg-final { scan-tree-dump-times "notCrc function maybe calculates CRC" 0 "crc"} } */
 

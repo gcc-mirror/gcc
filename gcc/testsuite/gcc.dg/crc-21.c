@@ -22,4 +22,4 @@ ee_u16 not_crc(ee_u8 data, ee_u16 crc) {
     return crc;
 }
 
-/* { dg-final { scan-tree-dump-times "Attention! not_crc function calculates CRC." 0 "crc"} } */
+/* { dg-final { scan-tree-dump-times "not_crc function maybe calculates CRC" 0 "crc"} } */

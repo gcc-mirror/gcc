@@ -17,5 +17,5 @@ uint16_t not_crc16_update(uint16_t crc, uint8_t a) {
     return crc;
 }
 
-/* { dg-final { scan-tree-dump-times "Attention! not_crc16_update function calculates CRC." 0 "crc"} } */
+/* { dg-final { scan-tree-dump-times "not_crc16_update function maybe calculates CRC" 0 "crc"} } */
 

@@ -15,7 +15,7 @@ uint16_t crc16(uint16_t crc, uint8_t a, uint16_t polynom) {
   return crc;
 }
 
-/* { dg-final { scan-tree-dump "Attention! crc16 function calculates CRC." "crc"} } */
+/* { dg-final { scan-tree-dump "crc16 function maybe calculates CRC and returns it." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 16" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit reversed" "crc"} } */

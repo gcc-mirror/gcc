@@ -18,6 +18,6 @@ u8 not_crc(u16 data) {
     return (u8)(data >> 8);
 }
 
-/* { dg-final { scan-tree-dump-times "Attention! not_crc function calculates CRC." 0 "crc"} } */
+/* { dg-final { scan-tree-dump-times "not_crc function maybe calculates CRC" 0 "crc"} } */
 
 

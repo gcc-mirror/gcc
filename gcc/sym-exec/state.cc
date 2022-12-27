@@ -26,7 +26,7 @@ state::state (const state &s)
 
 state::~state ()
 {
-  clear_states ();
+  clear_var_states ();
   clear_conditions ();
 }
 
@@ -164,7 +164,19 @@ state::bulk_add_conditions (const hash_set<bit_expression *> &conds)
 
 
 void
-state::clear_states ()
+state::clear_states (vec<state *> *states)
+{
+  while (!states->is_empty ())
+    {
+      delete states->last ();
+      states->pop ();
+    }
+  states->release ();
+}
+
+
+void
+state::clear_var_states ()
 {
   for (auto iter = var_states.begin (); iter != var_states.end (); ++iter)
     {

@@ -26,7 +26,7 @@ crcSlow(uint8_t const message[], int nBytes) {
     return (remainder);
 }
 
-/* { dg-final { scan-tree-dump "Attention! crcSlow function calculates CRC." "crc"} } */
+/* { dg-final { scan-tree-dump "crcSlow function maybe calculates CRC and returns it." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 8" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit forward" "crc"} } */

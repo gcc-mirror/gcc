@@ -14,4 +14,4 @@ uint8_t not_crc(uint8_t crc, uint8_t data) {
     }
     return crc;
 }
-/* { dg-final { scan-tree-dump-times "Attention! not_crc function calculates CRC." 0 "crc"} } */
+/* { dg-final { scan-tree-dump-times "not_crc function maybe calculates CRC" 0 "crc"} } */

@@ -26,7 +26,7 @@ unsigned short crc16(char *data_p, unsigned short length) {
     return (crc);
 }
 
-/* { dg-final { scan-tree-dump "Attention! crc16 function calculates CRC." "crc"} } */
+/* { dg-final { scan-tree-dump "crc16 function maybe calculates CRC and returns it." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 16" "crc"} } */
 /* { dg-final { scan-tree-dump "Loop iteration number is 7" "crc"} } */
 /* { dg-final { scan-tree-dump "Bit reversed" "crc"} } */
