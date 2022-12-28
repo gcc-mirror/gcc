@@ -2088,10 +2088,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  type shall be a POD type suitable for use as uninitialized
    *  storage for any object whose size is at most _Len and whose
    *  alignment is a divisor of _Align.
+   *
+   *  @deprecated Deprecated in C++23. Uses can be replaced by an
+   *  array std::byte[_Len] declared with alignas(_Align).
   */
   template<std::size_t _Len, std::size_t _Align =
 	   __alignof__(typename __aligned_storage_msa<_Len>::__type)>
-    struct aligned_storage
+    struct
+    _GLIBCXX23_DEPRECATED
+    aligned_storage
     {
       union type
       {
@@ -2127,9 +2132,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  least size _Len.
    *
    *  @see aligned_storage
+   *
+   *  @deprecated Deprecated in C++23.
    */
   template <size_t _Len, typename... _Types>
-    struct aligned_union
+    struct
+    _GLIBCXX23_DEPRECATED
+    aligned_union
     {
     private:
       static_assert(sizeof...(_Types) != 0, "At least one type is required");
@@ -2580,10 +2589,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Alias template for aligned_storage
   template<size_t _Len, size_t _Align =
 	    __alignof__(typename __aligned_storage_msa<_Len>::__type)>
-    using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
+    using aligned_storage_t _GLIBCXX23_DEPRECATED = typename aligned_storage<_Len, _Align>::type;
 
   template <size_t _Len, typename... _Types>
-    using aligned_union_t = typename aligned_union<_Len, _Types...>::type;
+    using aligned_union_t _GLIBCXX23_DEPRECATED = typename aligned_union<_Len, _Types...>::type;
 
   /// Alias template for decay
   template<typename _Tp>
