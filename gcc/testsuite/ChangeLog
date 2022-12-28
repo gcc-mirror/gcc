@@ -1,3 +1,23 @@
+2022-12-27  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/95632
+	PR target/106602
+	* gcc.target/riscv/pr95632.c: New test.
+	* gcc.target/riscv/pr106602.c: New test.
+
+2022-12-27  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/vsetvl/riscv_vector.h: New.
+
+2022-12-27  Kewen Lin  <linkw@linux.ibm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/106680
+	* gcc.target/powerpc/pr106680-1.c: New test.
+	* gcc.target/powerpc/pr106680-2.c: New test.
+	* gcc.target/powerpc/pr106680-3.c: New test.
+	* gcc.target/powerpc/pr106680-4.c: New test.
+
 2022-12-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/analyzer/fd-accept.c: Skip.

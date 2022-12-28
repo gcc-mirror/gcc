@@ -1,3 +1,91 @@
+2022-12-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md: Add missing modes to last patch.t
+
+2022-12-27  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/95632
+	PR target/106602
+	* config/riscv/riscv.md: New pattern to simulate complex
+	const_int loads.
+
+2022-12-27  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_next_saved_reg): New function.
+	(riscv_is_eh_return_data_register): New function.
+	(riscv_for_each_saved_reg): Restructure loop.
+
+2022-12-27  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.md: Sync comments with code.
+
+2022-12-27  jinma  <jinma@linux.alibaba.com>
+
+	* common/config/riscv/riscv-common.cc:
+
+2022-12-27  Jonathan Yong  <10walls@gmail.com>
+
+	* configure.ac: use grep -i for case insensitive test.
+	* configure: Regenerate.
+
+2022-12-27  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.md (unspec): Extract UNSPEC_* constants
+	into this enum.
+	(unspecv): Extract UNSPECV_* constants into this enum.
+
+2022-12-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (set_frame_ptr): Fix to reflect
+	TARGET_DENSITY.
+
+2022-12-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h (GP_RETURN, GP_RETURN_REG_COUNT):
+	Change to GP_RETURN_FIRST and GP_RETURN_LAST, respectively.
+	* config/xtensa/xtensa.cc (xtensa_function_value,
+	xtensa_libcall_value, xtensa_function_value_regno_p): Ditto.
+
+2022-12-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_expand_prologue): Modify to
+	exit the inspection loops as soon as the necessity of stack
+	pointer is found.
+
+2022-12-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/elf.h: Tabify, and trim trailing spaces.
+	* config/xtensa/linux.h: Likewise.
+	* config/xtensa/uclinux.h: Likewise.
+	* config/xtensa/xtensa-dynconfig.c: Likewise.
+	* config/xtensa/xtensa.cc: Likewise.
+	* config/xtensa/xtensa.h: Likewise.
+	* config/xtensa/xtensa.md: Likewise.
+
+2022-12-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc
+	(pass_vsetvl::compute_global_backward_infos): Change to visit CFG.
+	(pass_vsetvl::prune_expressions): Ditto.
+
+2022-12-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (change_insn): Remove pp_print.
+	(avl_info::avl_info): Add copy function.
+	(vector_insn_info::dump): Remove pp_print.
+	* config/riscv/riscv-vsetvl.h: Add copy function.
+
+2022-12-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106680
+	* common/config/rs6000/rs6000-common.cc (rs6000_handle_option): Remove
+	the adjustment for option powerpc64 in -m64 handling, and remove the
+	whole -m32 handling.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): When no
+	explicit powerpc64 option is provided, enable it for -m64.  For 32 bit
+	and OS_MISSING_POWERPC64, disable powerpc64 if it's enabled but not
+	specified explicitly.
+
 2022-12-26  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/55522
