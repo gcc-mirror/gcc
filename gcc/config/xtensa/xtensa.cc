@@ -4516,7 +4516,7 @@ static bool
 xtensa_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return ((unsigned HOST_WIDE_INT) int_size_in_bytes (type)
-	  > 4 * UNITS_PER_WORD);
+	  > (unsigned) (GP_RETURN_LAST - GP_RETURN_FIRST + 1) * UNITS_PER_WORD);
 }
 
 /* Worker function for TARGET_FUNCTION_VALUE.  */
