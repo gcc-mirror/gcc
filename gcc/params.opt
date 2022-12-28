@@ -323,11 +323,11 @@ Common Joined UInteger Var(param_iv_max_considered_uses) Init(250) Param Optimiz
 Bound on number of iv uses in loop optimized in iv optimizations.
 
 -param=jump-table-max-growth-ratio-for-size=
-Common Joined UInteger Var(param_jump_table_max_growth_ratio_for_size) Init(300) Param Optimization
+Common Joined UInteger Var(param_jump_table_max_growth_ratio_for_size) Init(300) IntegerRange(0, 10000) Param Optimization
 The maximum code size growth ratio when expanding into a jump table (in percent).  The parameter is used when optimizing for size.
 
 -param=jump-table-max-growth-ratio-for-speed=
-Common Joined UInteger Var(param_jump_table_max_growth_ratio_for_speed) Init(800) Param Optimization
+Common Joined UInteger Var(param_jump_table_max_growth_ratio_for_speed) Init(800) IntegerRange(0, 10000) Param Optimization
 The maximum code size growth ratio when expanding into a jump table (in percent).  The parameter is used when optimizing for speed.
 
 -param=l1-cache-line-size=
