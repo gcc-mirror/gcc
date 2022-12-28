@@ -158,7 +158,7 @@ static CONSTEXPR const rvv_arg_type_info scalar_const_ptr_args[]
 
 /* A list of args for void func (scalar_type *, vector_type) function.  */
 static CONSTEXPR const rvv_arg_type_info scalar_ptr_args[]
-  = {rvv_arg_type_info (RVV_BASE_scalar_const_ptr),
+  = {rvv_arg_type_info (RVV_BASE_scalar_ptr),
      rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
