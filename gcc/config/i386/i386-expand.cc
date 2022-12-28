@@ -6211,7 +6211,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, machine_mode mode)
       if (count >= half_width)
 	{
 	  emit_move_insn (high[0], low[1]);
-	  emit_move_insn (low[0], const0_rtx);
+	  ix86_expand_clear (low[0]);
 
 	  if (count > half_width)
 	    ix86_expand_ashl_const (high[0], count - half_width, mode);
