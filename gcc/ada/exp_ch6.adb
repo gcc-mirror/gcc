@@ -687,7 +687,11 @@ package body Exp_Ch6 is
       Loc : constant Source_Ptr := Sloc (Exp);
 
    begin
+       --  CodePeer does not do anything useful on Ada.Tags.Type_Specific_Data
+       --  components.
+
       if Ada_Version >= Ada_2005
+        and then not CodePeer_Mode
         and then Tagged_Type_Expansion
         and then not Scope_Suppress.Suppress (Accessibility_Check)
         and then
@@ -770,20 +774,18 @@ package body Exp_Ch6 is
                    Attribute_Name => Name_Tag);
             end if;
 
-            --  CodePeer does not do anything useful with
-            --  Ada.Tags.Type_Specific_Data components.
+            --  Suppress junk access chacks on RE_Tag_Ptr
 
-            if not CodePeer_Mode then
-               Insert_Action (Exp,
-                 Make_Raise_Program_Error (Loc,
-                   Condition =>
-                     Make_Op_Gt (Loc,
-                       Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
-                       Right_Opnd =>
-                         Make_Integer_Literal (Loc,
-                           Scope_Depth (Enclosing_Dynamic_Scope (Func)))),
-                   Reason    => PE_Accessibility_Check_Failed));
-            end if;
+            Insert_Action (Exp,
+              Make_Raise_Program_Error (Loc,
+                Condition =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
+                    Right_Opnd =>
+                      Make_Integer_Literal (Loc,
+                        Scope_Depth (Enclosing_Dynamic_Scope (Func)))),
+                Reason    => PE_Accessibility_Check_Failed),
+              Suppress => Access_Check);
          end;
       end if;
    end Apply_CW_Accessibility_Check;
