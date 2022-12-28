@@ -2394,8 +2394,8 @@ PREDEFINED             = __cplusplus=202002L \
                          "_GLIBCXX11_DEPRECATED_SUGGEST(E)= " \
                          "_GLIBCXX17_DEPRECATED= " \
                          "_GLIBCXX17_DEPRECATED_SUGGEST(E)= " \
-                         "_GLIBCXX20_DEPRECATED(E)= " \
-                         "_GLIBCXX20_DEPRECATED(E)= " \
+                         "_GLIBCXX20_DEPRECATED= " \
+                         "_GLIBCXX20_DEPRECATED_SUGGEST(E)= " \
                          _GLIBCXX17_INLINE=inline \
                          _GLIBCXX_CHRONO_INT64_T=int64_t \
                          _GLIBCXX_DEFAULT_ABI_TAG \

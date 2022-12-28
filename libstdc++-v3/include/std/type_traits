@@ -815,7 +815,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Could use is_standard_layout && is_trivial instead of the builtin.
   template<typename _Tp>
     struct
-    _GLIBCXX20_DEPRECATED("use is_standard_layout && is_trivial instead")
+    _GLIBCXX20_DEPRECATED_SUGGEST("is_standard_layout && is_trivial")
     is_pod
     : public integral_constant<bool, __is_pod(_Tp)>
     {
@@ -3210,7 +3210,7 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr bool is_standard_layout_v = __is_standard_layout(_Tp);
 template <typename _Tp>
-  _GLIBCXX20_DEPRECATED("use is_standard_layout_v && is_trivial_v instead")
+  _GLIBCXX20_DEPRECATED_SUGGEST("is_standard_layout_v && is_trivial_v")
   inline constexpr bool is_pod_v = __is_pod(_Tp);
 template <typename _Tp>
   _GLIBCXX17_DEPRECATED
