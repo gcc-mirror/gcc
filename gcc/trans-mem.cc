@@ -3215,7 +3215,7 @@ split_bb_make_tm_edge (gimple *stmt, basic_block dest_bb,
   struct tm_restart_node *n = *slot;
   if (n == NULL)
     {
-      n = ggc_alloc<tm_restart_node> ();
+      *slot = n = ggc_alloc<tm_restart_node> ();
       *n = dummy;
     }
   else
