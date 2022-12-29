@@ -777,14 +777,16 @@ normalize_concept_check (tree check, tree args, norm_info info)
   norm_entry entry = {tmpl, targs, NULL_TREE};
   norm_entry **slot = nullptr;
   hashval_t hash = 0;
+  bool insert = false;
   if (!info.generate_diagnostics ())
     {
       /* Cache the normal form of the substituted concept-id (when not
 	 diagnosing).  */
       hash = norm_hasher::hash (&entry);
-      slot = norm_cache->find_slot_with_hash (&entry, hash, INSERT);
-      if (*slot)
+      slot = norm_cache->find_slot_with_hash (&entry, hash, NO_INSERT);
+      if (slot)
 	return (*slot)->norm;
+      insert = true;
     }
 
   /* The concept may have been ill-formed.  */
@@ -794,7 +796,7 @@ normalize_concept_check (tree check, tree args, norm_info info)
 
   info.update_context (check, args);
   tree norm = normalize_expression (def, targs, info);
-  if (slot)
+  if (insert)
     {
       /* Recompute SLOT since norm_cache may have been expanded during
 	 the recursive call.  */
