@@ -173,8 +173,9 @@ public:
       if (ins)
 	{
 	  e->m_key = k;
-	  new ((void *) &e->m_value) Value (v);
-	  gcc_checking_assert (!Traits::is_empty (*e));
+	  new ((void *)&e->m_value) Value (v);
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
 	}
       else
 	e->m_value = v;
@@ -204,7 +205,8 @@ public:
 	{
 	  e->m_key = k;
 	  new ((void *)&e->m_value) Value ();
-	  gcc_checking_assert (!Traits::is_empty (*e));
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
 	}
 
       if (existed != NULL)

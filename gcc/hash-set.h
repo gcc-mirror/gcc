@@ -61,7 +61,8 @@ public:
 	{
 	  new (e) Key (k);
 	  // Catch attempts to insert e.g. a NULL pointer.
-	  gcc_checking_assert (!Traits::is_empty (*e));
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
 	}
 
       return existed;
