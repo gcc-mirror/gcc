@@ -3322,7 +3322,7 @@ xtensa_expand_prologue (void)
 				  || crtl->calls_eh_return;
 
       /* Check if the function body really needs the stack pointer.  */
-      if (!stack_pointer_needed)
+      if (!stack_pointer_needed && df)
 	for (ref = DF_REG_USE_CHAIN (A1_REG);
 	     ref; ref = DF_REF_NEXT_REG (ref))
 	  if (DF_REF_CLASS (ref) == DF_REF_REGULAR
