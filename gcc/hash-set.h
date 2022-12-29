@@ -58,7 +58,11 @@ public:
       Key *e = m_table.find_slot_with_hash (k, Traits::hash (k), INSERT);
       bool existed = !Traits::is_empty (*e);
       if (!existed)
-	new (e) Key (k);
+	{
+	  new (e) Key (k);
+	  // Catch attempts to insert e.g. a NULL pointer.
+	  gcc_checking_assert (!Traits::is_empty (*e));
+	}
 
       return existed;
     }
