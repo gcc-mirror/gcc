@@ -1,3 +1,13 @@
+2022-12-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-12-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108131
+	* array.cc (match_array_element_spec): Avoid too early simplification
+	of matched array element specs that can lead to a misinterpretation
+	when used as array bounds in array declarations.
+
 2022-12-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
