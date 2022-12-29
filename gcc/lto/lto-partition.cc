@@ -333,7 +333,6 @@ lto_1_to_1_map (void)
       else
 	{
 	  partition = new_partition ("");
-	  pmap.put (NULL, partition);
 	  npartitions++;
 	}
 
