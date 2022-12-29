@@ -2325,6 +2325,8 @@ expand_simple_operations (tree expr, tree stop, hash_map<tree, tree> &cache)
       for (i = 0; i < n; i++)
 	{
 	  e = TREE_OPERAND (expr, i);
+	  if (!e)
+	    continue;
 	  /* SCEV analysis feeds us with a proper expression
 	     graph matching the SSA graph.  Avoid turning it
 	     into a tree here, thus handle tree sharing
