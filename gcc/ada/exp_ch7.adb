@@ -6043,11 +6043,7 @@ package body Exp_Ch7 is
       --  Derivations from [Limited_]Controlled
 
       elsif Is_Controlled (Utyp) then
-         if Has_Controlled_Component (Utyp) then
-            Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
-         else
-            Adj_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Adjust_Case));
-         end if;
+         Adj_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Adjust_Case));
 
       --  Tagged types
 
@@ -8396,11 +8392,7 @@ package body Exp_Ch7 is
       --  Derivations from [Limited_]Controlled
 
       elsif Is_Controlled (Utyp) then
-         if Has_Controlled_Component (Utyp) then
-            Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
-         else
-            Fin_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Finalize_Case));
-         end if;
+         Fin_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Finalize_Case));
 
       --  Tagged types
 
