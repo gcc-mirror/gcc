@@ -3000,13 +3000,15 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
       /* If we have seen this call before, we are done.  */
       maybe_initialize_constexpr_call_table ();
+      bool insert = depth_ok < constexpr_cache_depth;
       constexpr_call **slot
-	= constexpr_call_table->find_slot (&new_call, INSERT);
-      entry = *slot;
+	= constexpr_call_table->find_slot (&new_call,
+					   insert ? INSERT : NO_INSERT);
+      entry = slot ? *slot : NULL;
       if (entry == NULL)
 	{
 	  /* Only cache up to constexpr_cache_depth to limit memory use.  */
-	  if (depth_ok < constexpr_cache_depth)
+	  if (insert)
 	    {
 	      /* We need to keep a pointer to the entry, not just the slot, as
 		 the slot can move during evaluation of the body.  */
