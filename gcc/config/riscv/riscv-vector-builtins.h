@@ -317,12 +317,12 @@ public:
   rtx expand ();
 
   void add_input_operand (machine_mode, rtx);
-  void add_input_operand (unsigned argno);
+  void add_input_operand (unsigned);
   void add_output_operand (machine_mode, rtx);
-  void add_all_one_mask_operand (machine_mode mode);
-  void add_vundef_operand (machine_mode mode);
+  void add_all_one_mask_operand (machine_mode);
+  void add_vundef_operand (machine_mode);
   void add_fixed_operand (rtx);
-  rtx add_mem_operand (machine_mode, rtx);
+  void add_mem_operand (machine_mode, unsigned);
 
   machine_mode vector_mode (void) const;
 

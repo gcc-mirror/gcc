@@ -209,7 +209,7 @@
 
 ;; The index of operand[] to get the merge op.
 (define_attr "merge_op_idx" ""
-	(cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vlds,vmalu")
+	(cond [(eq_attr "type" "vlde,vimov,vfmov,vldm,vstm,vlds,vmalu")
 	 (const_int 2)]
 	(const_int INVALID_ATTRIBUTE)))
 
@@ -667,7 +667,7 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operand:V 3 "vector_move_operand"       "    m,     m,    vr,    vr, viWc0")
-	  (match_operand:V 2 "vector_merge_operand"      "    0,    vu,   vu0,   vu0,   vu0")))]
+	  (match_operand:V 2 "vector_merge_operand"      "    0,    vu,    vu,   vu0,   vu0")))]
   "TARGET_VECTOR"
   "@
    vle<sew>.v\t%0,%3%p1
@@ -682,6 +682,25 @@
   ""
   [(set_attr "type" "vlde,vlde,vste,vimov,vimov")
    (set_attr "mode" "<MODE>")])
+
+;; Dedicated pattern for vse.v instruction since we can't reuse pred_mov pattern to include
+;; memory operand as input which will produce inferior codegen.
+(define_insn "@pred_store<mode>"
+  [(set (match_operand:V 0 "memory_operand"                 "+m")
+	(if_then_else:V
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1")
+	     (match_operand 3 "vector_length_operand"    "   rK")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (match_operand:V 2 "register_operand"         "    vr")
+	  (match_dup 0)))]
+  "TARGET_VECTOR"
+  "vse<sew>.v\t%2,%0%p1"
+  [(set_attr "type" "vste")
+   (set_attr "mode" "<MODE>")
+   (set (attr "avl_type") (symbol_ref "riscv_vector::NONVLMAX"))
+   (set_attr "vl_op_idx" "3")])
 
 ;; vlm.v/vsm.v/vmclr.m/vmset.m.
 ;; constraint alternative 0 match vlm.v.

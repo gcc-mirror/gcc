@@ -106,7 +106,7 @@ class loadstore : public function_base
   rtx expand (function_expander &e) const override
   {
     if (STORE_P)
-      return e.use_contiguous_store_insn (code_for_pred_mov (e.vector_mode ()));
+      return e.use_contiguous_store_insn (code_for_pred_store (e.vector_mode ()));
     else
       return e.use_contiguous_load_insn (code_for_pred_mov (e.vector_mode ()));
   }
