@@ -169,11 +169,12 @@ public:
     {
       hash_entry *e = m_table.find_slot_with_hash (k, Traits::hash (k),
 						   INSERT);
-      bool ins = hash_entry::is_empty (*e);
+      bool ins = Traits::is_empty (*e);
       if (ins)
 	{
 	  e->m_key = k;
 	  new ((void *) &e->m_value) Value (v);
+	  gcc_checking_assert (!Traits::is_empty (*e));
 	}
       else
 	e->m_value = v;
@@ -203,6 +204,7 @@ public:
 	{
 	  e->m_key = k;
 	  new ((void *)&e->m_value) Value ();
+	  gcc_checking_assert (!Traits::is_empty (*e));
 	}
 
       if (existed != NULL)
