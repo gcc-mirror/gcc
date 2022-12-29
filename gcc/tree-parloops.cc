@@ -1221,8 +1221,11 @@ take_address_of (tree obj, tree type, edge entry,
   uid = DECL_UID (TREE_OPERAND (TREE_OPERAND (*var_p, 0), 0));
   int_tree_map elt;
   elt.uid = uid;
-  int_tree_map *slot = decl_address->find_slot (elt, INSERT);
-  if (!slot->to)
+  int_tree_map *slot = decl_address->find_slot (elt,
+						gsi == NULL
+						? NO_INSERT
+						: INSERT);
+  if (!slot || !slot->to)
     {
       if (gsi == NULL)
 	return NULL;
