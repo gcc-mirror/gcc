@@ -680,10 +680,12 @@ symbol_table::remove_unreferenced_decls (void)
 	    enqueue_node (vnode, &first);
 	  else
 	    {
-	      referenced.add (vnode);
+	      if (vnode)
+		referenced.add (vnode);
 	      while (vnode && vnode->alias && vnode->definition)
 		{
 		  vnode = vnode->get_alias_target ();
+		  gcc_checking_assert (vnode);
 	          referenced.add (vnode);
 		}
 	    }
