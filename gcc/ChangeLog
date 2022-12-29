@@ -1,3 +1,36 @@
+2022-12-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*clzsi2_lzcnt_zext_2): define_insn_and_split
+	to match ZERO_EXTEND form of *clzsi2_lzcnt_zext.
+	(*clzsi2_lzcnt_zext_2_falsedep): Likewise, new define_insn to match
+	ZERO_EXTEND form of *clzsi2_lzcnt_zext_falsedep.
+	(*bmi2_bzhi_zero_extendsidi_5): Likewise, new define_insn to match
+	ZERO_EXTEND form of *bmi2_bzhi_zero_extendsidi.
+	(*popcountsi2_zext_2): Likewise, new define_insn_and_split to match
+	ZERO_EXTEND form of *popcountsi2_zext.
+	(*popcountsi2_zext_2_falsedep): Likewise, new define_insn to match
+	ZERO_EXTEND form of *popcountsi2_zext_falsedep.
+	(*popcounthi2_2): Likewise, new define_insn_and_split to match
+	ZERO_EXTEND form of *popcounthi2.
+	(define_peephole2): ZERO_EXTEND variant of HImode popcount&1 using
+	parity flag peephole2.
+
+2022-12-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_split_ashl): Call
+	ix86_expand_clear to generate an xor instruction.
+
+2022-12-28  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/108137
+	* tree-ssa-strlen.cc (get_range_strlen_phi): Reject anything
+	different from INTEGER_CST.
+
+2022-12-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vsetvl.h (vl_vtype_info::get_avl_info):
+	Return const reference rather than value.
+
 2022-12-27  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv.md: Add missing modes to last patch.t
