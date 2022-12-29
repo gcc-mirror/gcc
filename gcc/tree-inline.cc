@@ -148,7 +148,7 @@ insert_decl_map (copy_body_data *id, tree key, tree value)
 
   /* Always insert an identity map as well.  If we see this same new
      node again, we won't want to duplicate it a second time.  */
-  if (key != value)
+  if (key != value && value)
     id->decl_map->put (value, value);
 }
 
