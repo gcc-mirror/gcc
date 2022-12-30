@@ -1,3 +1,13 @@
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* constexpr.cc (cxx_eval_call_expression): Do not request an
+	INSERT that would not be completed.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* constraint.cc (normalize_concept_check): Use NO_INSERT for
+	pre-insertion check.
+
 2022-12-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108116

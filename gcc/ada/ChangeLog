@@ -1,3 +1,7 @@
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/trans.cc (Sloc_to_locus): Don't map NULL decl.
+
 2022-12-06  Yannick Moy  <moy@adacore.com>
 
 	* contracts.adb (Add_Contract_Item): Allow No_Caching on types.

@@ -1,3 +1,8 @@
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* lto-partition.cc (lto_1_to_1_map): Drop NULL partition
+	mapping.
+
 2022-12-22  Richard Biener  <rguenther@suse.de>
 
 	* lto-common.cc (compare_tree_sccs_1): Compare DECL_NOT_FLEXARRAY.

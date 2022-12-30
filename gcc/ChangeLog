@@ -1,3 +1,68 @@
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* hash-map.h (put, get_or_insert): Check that added entry
+	doesn't look deleted either.
+	* hash-set.h (add): Likewise.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-parloops.cc (take_address_of): Skip INSERT if !gsi.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* hash-map.h (put, get_or_insert): Check that entry does not
+	look empty after insertion.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* hash-set.h (add): Check that the inserted entry does not
+	look empty.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* trans-mem.cc (split_bb_make_tm_edge): Record new node in
+	tm_restart.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* postreload-gcse.cc (lookup_expr_in_table): Use NO_INSERT.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-inline.cc (declare_return_variable): Don't remap NULL
+	default def of result.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-loop-niter.cc (expand_simple_operands): Refrain
+	from caching NULL TREE_OPERANDs.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-inline.cc (insert_decl_map): Skip mapping a NULL decl
+	as value to itself.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* varpool.cc (symbol_table::remove_unreferenced_decls): Do not
+	add NULL vnodes to referenced table.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-scopedtables.cc
+	(avail_exprs_stack::lookup_avail_expr): Finish hash table
+	insertion before further lookups.
+
+2022-12-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.cc (xtensa_return_in_memory): Use
+	GP_RETURN_* instead of magic constant.
+
+2022-12-29  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_expand_prologue): Fix to check
+	DF availability before use of DF_* macros.
+
 2022-12-28  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386.md (*clzsi2_lzcnt_zext_2): define_insn_and_split
