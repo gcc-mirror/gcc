@@ -61,9 +61,8 @@ _M2_errno_dep (void)
 {
 }
 
-struct _M2_errno_ctor { _M2_errno_ctor (); } _M2_errno_ctor;
-
-_M2_errno_ctor::_M2_errno_ctor (void)
+extern "C" void __attribute__((__constructor__))
+_M2_errno_ctor (void)
 {
   M2RTS_RegisterModule ("errno", _M2_errno_init, _M2_errno_fini,
 			_M2_errno_dep);

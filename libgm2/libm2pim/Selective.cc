@@ -310,9 +310,8 @@ _M2_Selective_dep (void)
 {
 }
 
-struct _M2_Selective_ctor { _M2_Selective_ctor (); } _M2_Selective_ctor;
-
-_M2_Selective_ctor::_M2_Selective_ctor (void)
+extern "C" void __attribute__((__constructor__))
+_M2_Selective_ctor (void)
 {
   M2RTS_RegisterModule ("Selective", _M2_Selective_init, _M2_Selective_fini,
 			_M2_Selective_dep);

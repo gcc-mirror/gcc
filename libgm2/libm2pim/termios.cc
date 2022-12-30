@@ -1978,9 +1978,8 @@ _M2_termios_dep (void)
 {
 }
 
-struct _M2_termios_ctor { _M2_termios_ctor (); } _M2_termios_ctor;
-
-_M2_termios_ctor::_M2_termios_ctor (void)
+extern "C" void __attribute__((__constructor__))
+_M2_termios_ctor (void)
 {
   M2RTS_RegisterModule ("termios", _M2_termios_init, _M2_termios_fini,
 			_M2_termios_dep);

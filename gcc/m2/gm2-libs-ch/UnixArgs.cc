@@ -82,9 +82,8 @@ _M2_UnixArgs_dep (void)
 {
 }
 
-struct _M2_UnixArgs_ctor { _M2_UnixArgs_ctor (); } _M2_UnixArgs_ctor;
-
-_M2_UnixArgs_ctor::_M2_UnixArgs_ctor (void)
+extern "C" void __attribute__((__constructor__))
+_M2_UnixArgs_ctor (void)
 {
   M2RTS_RegisterModule ("UnixArgs", _M2_UnixArgs_init, _M2_UnixArgs_finish,
 			_M2_UnixArgs_dep);

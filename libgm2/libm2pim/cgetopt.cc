@@ -149,9 +149,8 @@ _M2_cgetopt_dep (void)
 {
 }
 
-struct _M2_cgetopt_ctor { _M2_cgetopt_ctor (); } _M2_cgetopt_ctor;
-
-_M2_cgetopt_ctor::_M2_cgetopt_ctor (void)
+extern "C" void __attribute__((__constructor__))
+_M2_cgetopt_ctor (void)
 {
   M2RTS_RegisterModule ("cgetopt", _M2_cgetopt_init, _M2_cgetopt_fini,
 			_M2_cgetopt_dep);

@@ -148,9 +148,8 @@ _M2_KeyBoardLEDs_dep (void)
 {
 }
 
-struct _M2_KeyBoardLEDs_ctor { _M2_KeyBoardLEDs_ctor (); } _M2_KeyBoardLEDs_ctor;
-
-_M2_KeyBoardLEDs_ctor::_M2_KeyBoardLEDs_ctor (void)
+extern "C" void __attribute__((__constructor__))
+ _M2_KeyBoardLEDs_ctor (void)
 {
   M2RTS_RegisterModule ("KeyBoardLEDs", _M2_KeyBoardLEDs_init, _M2_KeyBoardLEDs_finish,
 			_M2_KeyBoardLEDs_dep);
