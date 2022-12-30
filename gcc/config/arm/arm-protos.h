@@ -122,6 +122,7 @@ extern int arm_coproc_mem_operand_wb (rtx, int);
 extern int neon_vector_mem_operand (rtx, int, bool);
 extern int mve_vector_mem_operand (machine_mode, rtx, bool);
 extern int neon_struct_mem_operand (rtx);
+extern int mve_struct_mem_operand (rtx);
 
 extern rtx *neon_vcmla_lane_prepare_operands (rtx *);
 
