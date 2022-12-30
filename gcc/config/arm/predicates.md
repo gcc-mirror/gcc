@@ -876,6 +876,10 @@
   (and (match_code "mem")
        (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 2, true)")))
 
+(define_predicate "mve_struct_operand"
+  (and (match_code "mem")
+       (match_test "TARGET_HAVE_MVE && mve_struct_mem_operand (op)")))
+
 (define_predicate "neon_permissive_struct_operand"
   (and (match_code "mem")
        (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 2, false)")))
