@@ -474,6 +474,11 @@
  (and (match_code "mem")
       (match_test "TARGET_32BIT && arm_coproc_mem_operand (op, FALSE)")))
 
+(define_memory_constraint "Ug"
+ "@internal
+  In Thumb-2 state a valid MVE struct load/store address."
+ (match_operand 0 "mve_struct_operand"))
+
 (define_memory_constraint "Uj"
  "@internal
   In ARM/Thumb-2 state a VFP load/store address that supports writeback

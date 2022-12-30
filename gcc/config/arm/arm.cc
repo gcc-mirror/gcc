@@ -13737,6 +13737,24 @@ neon_vector_mem_operand (rtx op, int type, bool strict)
   return FALSE;
 }
 
+/* Return TRUE if OP is a mem suitable for loading/storing an MVE struct
+   type.  */
+int
+mve_struct_mem_operand (rtx op)
+{
+  rtx ind = XEXP (op, 0);
+
+  /* Match: (mem (reg)).  */
+  if (REG_P (ind))
+    return arm_address_register_rtx_p (ind, 0);
+
+  /* Allow only post-increment by the mode size.  */
+  if (GET_CODE (ind) == POST_INC)
+    return arm_address_register_rtx_p (XEXP (ind, 0), 0);
+
+  return FALSE;
+}
+
 /* Return TRUE if OP is a mem suitable for loading/storing a Neon struct
    type.  */
 int

@@ -99,7 +99,7 @@
 ;; [vst4q])
 ;;
 (define_insn "mve_vst4q<mode>"
-  [(set (match_operand:XI 0 "neon_struct_operand" "=Um")
+  [(set (match_operand:XI 0 "mve_struct_operand" "=Ug")
 	(unspec:XI [(match_operand:XI 1 "s_register_operand" "w")
 		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VST4Q))
@@ -9961,7 +9961,7 @@
 ;; [vst2q])
 ;;
 (define_insn "mve_vst2q<mode>"
-  [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
+  [(set (match_operand:OI 0 "mve_struct_operand" "=Ug")
 	(unspec:OI [(match_operand:OI 1 "s_register_operand" "w")
 		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VST2Q))
@@ -9990,7 +9990,7 @@
 ;;
 (define_insn "mve_vld2q<mode>"
   [(set (match_operand:OI 0 "s_register_operand" "=w")
-	(unspec:OI [(match_operand:OI 1 "neon_struct_operand" "Um")
+	(unspec:OI [(match_operand:OI 1 "mve_struct_operand" "Ug")
 		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VLD2Q))
   ]
@@ -10018,7 +10018,7 @@
 ;;
 (define_insn "mve_vld4q<mode>"
   [(set (match_operand:XI 0 "s_register_operand" "=w")
-	(unspec:XI [(match_operand:XI 1 "neon_struct_operand" "Um")
+	(unspec:XI [(match_operand:XI 1 "mve_struct_operand" "Ug")
 		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VLD4Q))
   ]
