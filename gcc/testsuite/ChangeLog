@@ -1,3 +1,20 @@
+2022-12-30  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/pr103770.c: New test.
+	* gcc.dg/pr103859.c: New test.
+	* gcc.dg/pr105065.c: New test.
+
+2022-12-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/107714
+	* gcc.target/arm/mve/intrinsics/vldst24q_reg_offset.c: New test.
+
+2022-12-30  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/102595
+	* gfortran.dg/class_result_4.f90: Update error message check.
+	* gfortran.dg/pr85779_3.f90: Update error message check.
+
 2022-12-28  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/i386/ashlti3-1.c: New test case.

@@ -1,3 +1,26 @@
+2022-12-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* hash-table.h (check_complete_insertion, check_insert_slot):
+	New hash_table methods.
+	(m_inserting_slot): New hash_table field.
+	(begin, hash_table ctors, ~hash_table): Check previous insert.
+	(expand, empty_slow, clear_slot, find_with_hash): Likewise.
+	(remote_elt_with_hash, traverse_noresize): Likewise.
+	(gt_pch_nx): Likewise.
+	(find_slot_with_hash): Likewise.  Record requested insert.
+
+2022-12-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/107714
+	* config/arm/arm-protos.h (mve_struct_mem_operand): New protoype.
+	* config/arm/arm.cc (mve_struct_mem_operand): New function.
+	* config/arm/constraints.md (Ug): New constraint.
+	* config/arm/mve.md (mve_vst4q<mode>): Change constraint.
+	(mve_vst2q<mode>): Likewise.
+	(mve_vld4q<mode>): Likewise.
+	(mve_vld2q<mode>): Likewise.
+	* config/arm/predicates.md (mve_struct_operand): New predicate.
+
 2022-12-29  Alexandre Oliva  <oliva@adacore.com>
 
 	* hash-map.h (put, get_or_insert): Check that added entry
