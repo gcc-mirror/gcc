@@ -141,18 +141,22 @@ $(DESTDIR)$(man1dir)/$(GM2_INSTALL_NAME)$(man1ext): doc/m2.1 installdirs
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
 
-m2.dvi: $(TEXISRC)
-	$(TEXI2DVI) -I $(objdir)/m2 -I $(srcdir)/doc/include $(srcdir)/doc/gm2.texi -o $@
+m2.dvi: doc/m2.dvi
 
-m2.ps: m2.dvi
+doc/m2.dvi: $(TEXISRC)
+	$(TEXI2DVI) -c -I $(objdir)/m2 -I $(srcdir)/doc/include -o $@ $(srcdir)/doc/gm2.texi
+
+doc/m2.ps: doc/m2.dvi
 	dvips -o $@ $<
 
-m2.pdf: m2.ps
-	gs -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=$@ $<
+m2.pdf: doc/m2.pdf
+
+doc/m2.pdf: $(TEXISRC)
+	$(TEXI2PDF) -I $(objdir)/m2 -I $(srcdir)/doc/include $(srcdir)/doc/gm2.texi -o $@
 
 .INTERMEDIATE: m2.pod
 
-m2.pod: doc/gm2.texi $(TEXISRC)
+m2.pod: $(TEXISRC)
 	-$(TEXI2POD) -I $(objdir)/m2 -D m2 < $< > $@
 
 doc/m2.info: $(TEXISRC)
