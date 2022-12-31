@@ -179,6 +179,31 @@ UnsafeChecker::check_function_call (HirId node_id, Location locus)
 		       locus);
 }
 
+static void
+check_target_attr (HIR::Function *fn, Location locus)
+{
+  if (std::any_of (fn->get_outer_attrs ().begin (),
+		   fn->get_outer_attrs ().end (),
+		   [] (const AST::Attribute &attr) {
+		     return attr.get_path ().as_string () == "target_feature";
+		   }))
+    rust_error_at (locus,
+		   "call to function with %<#[target_feature]%> requires "
+		   "unsafe function or block");
+}
+
+void
+UnsafeChecker::check_function_attr (HirId node_id, Location locus)
+{
+  if (unsafe_context.is_in_context ())
+    return;
+
+  auto maybe_fn = mappings.lookup_hir_item (node_id);
+
+  if (maybe_fn && maybe_fn->get_item_kind () == Item::ItemKind::Function)
+    check_target_attr (static_cast<Function *> (maybe_fn), locus);
+}
+
 void
 UnsafeChecker::visit (Lifetime &)
 {}
@@ -398,11 +423,13 @@ UnsafeChecker::visit (CallExpr &expr)
 
   rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
 
-  // At this point we have the function's HIR Id. There are two checks we
+  // At this point we have the function's HIR Id. There are three checks we
   // must perform:
   //     1. The function is an unsafe one
   //     2. The function is an extern one
+  //     3. The function is marked with a target_feature attribute
   check_function_call (definition_id, expr.get_locus ());
+  check_function_attr (definition_id, expr.get_locus ());
 
   if (expr.has_params ())
     for (auto &arg : expr.get_arguments ())

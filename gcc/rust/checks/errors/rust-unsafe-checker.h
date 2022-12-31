@@ -46,6 +46,11 @@ private:
    */
   void check_function_call (HirId node_id, Location locus);
 
+  /**
+   * Check if any unsafe attributes are present on a function
+   */
+  void check_function_attr (HirId node_id, Location locus);
+
   StackedContexts<HirId> unsafe_context;
 
   Resolver::TypeCheckContext &context;
