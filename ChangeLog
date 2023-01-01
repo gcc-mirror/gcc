@@ -1,3 +1,8 @@
+2022-12-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Do not build shared libffi.
+	* Makefile.in: Regenerate.
+
 2022-12-21  Andrew Pinski  <apinski@marvell.com>
 
 	* Makefile.def: Add configure-gdb dependencies

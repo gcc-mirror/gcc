@@ -1,3 +1,19 @@
+2022-12-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Make a conditional for configurations targeting
+	Darwin.
+	* libm2cor/Makefile.am: Use -undefined,dynamic_lookup on Darwin.
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise
+	* libm2min/Makefile.am: Likewise
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
 2022-12-14  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Makefile.am: New file.

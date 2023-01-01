@@ -1,3 +1,10 @@
+2022-12-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/107612
+	* Makefile.in: Make the configured libintl includes avaiable in INCINTL.
+	(BUILD_CPPFLAGS): Use INCINTL.
+
 2022-12-30  Alexandre Oliva  <oliva@adacore.com>
 
 	* hash-table.h (check_complete_insertion, check_insert_slot):
