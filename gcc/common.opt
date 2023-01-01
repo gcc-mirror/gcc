@@ -3622,6 +3622,10 @@ static-libgfortran
 Driver
 ; Documented for Fortran, but always accepted by driver.
 
+static-libgm2
+Driver
+; Documented for Modula-2, but always accepted by driver.
+
 static-libphobos
 Driver
 ; Documented for D, but always accepted by driver.

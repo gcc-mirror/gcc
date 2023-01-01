@@ -573,6 +573,10 @@ the they provide the base modules which all other dialects utilize.
 The option @samp{-fno-libs=-} disables the @samp{gm2} driver from
 modifying the search and library paths.
 
+@item -static-libgm2
+On systems that provide the m2 runtimes as both shared and static libraries,
+this option forces the use of the static version.
+
 @c flocation=
 @c Modula-2 Joined
 @c set all location values to a specific value (internal switch)

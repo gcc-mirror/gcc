@@ -586,6 +586,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Should the driver perform a link?  */
   bool linking = true;
 
+  /* Should the driver link the shared gm2 libs?  */
+  bool shared_libgm2 = true;
+
   /* "-lm" or "-lmath" if it appears on the command line.  */
   const struct cl_decoded_option *saw_math = NULL;
 
@@ -595,7 +598,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
 
-  /* 1 if we should add -lpthread to the command-line.  */
+  /* 1 if we should add -lpthread to the command-line.
+    FIXME: the default should be a configuration choice.  */
   int need_pthread = 1;
 
   /* True if we saw -static.  */
@@ -775,6 +779,16 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
 	  break;
 
+	case OPT_static_libgm2:
+	  shared_libgm2 = false;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+	  /* Remove -static-libgm2 from the command only if target supports
+	     LD_STATIC_DYNAMIC.  When not supported, it is left in so that a
+	     back-end target can use outfile substitution.  */
+	  args[i] |= SKIPOPT;
+#endif
+	  break;
+
 	case OPT_stdlib_:
 	  which_library = (stdcxxlib_kind) decoded_options[i].value;
 	  break;
@@ -875,8 +889,16 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   if (linking)
     {
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (allow_libraries && !shared_libgm2)
+	append_option (OPT_Wl_, LD_STATIC_OPTION, 1);
+#endif
       if (allow_libraries)
 	add_default_archives (libpath, libraries);
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (allow_libraries && !shared_libgm2)
+	append_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1);
+#endif
       /* Add `-lstdc++' if we haven't already done so.  */
 #ifdef HAVE_LD_STATIC_DYNAMIC
       if (library > 1 && !static_link)
