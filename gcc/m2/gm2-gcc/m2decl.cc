@@ -276,7 +276,7 @@ m2decl_DeclareModuleCtor (tree decl)
   /* Declare module_ctor ().  */
   TREE_PUBLIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
   DECL_STATIC_CONSTRUCTOR (decl) = 1;
   return decl;
