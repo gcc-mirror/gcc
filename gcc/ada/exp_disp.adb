@@ -1222,8 +1222,92 @@ package body Exp_Disp is
    ---------------------------------
 
    procedure Expand_Interface_Conversion (N : Node_Id) is
+
+      function Has_Dispatching_Constructor_Call
+        (Expr : Node_Id) return Boolean;
+      --  Determines if the expression has a dispatching constructor call
+
       function Underlying_Record_Type (Typ : Entity_Id) return Entity_Id;
       --  Return the underlying record type of Typ
+
+      --------------------------------------
+      -- Has_Dispatching_Constructor_Call --
+      --------------------------------------
+
+      function Has_Dispatching_Constructor_Call (Expr : Node_Id) return Boolean
+      is
+         function Is_Dispatching_Constructor_Call (N : Node_Id) return Boolean;
+         --  Determines if N is a dispatching constructor call
+
+         function Process (Nod : Node_Id) return Traverse_Result;
+         --  Traverse the expression searching for constructor calls
+
+         -------------------------------------
+         -- Is_Dispatching_Constructor_Call --
+         -------------------------------------
+
+         function Is_Dispatching_Constructor_Call (N : Node_Id) return Boolean
+         is
+            Param       : Node_Id;
+            Param_Type  : Entity_Id;
+            Assoc_Node  : Node_Id;
+            Gen_Func_Id : Entity_Id;
+
+         begin
+            if Nkind (N) = N_Function_Call
+              and then Present (Parameter_Associations (N))
+            then
+               Param := First (Parameter_Associations (N));
+
+               if Nkind (Param) = N_Parameter_Association then
+                  Param := Selector_Name (Param);
+               end if;
+
+               Param_Type := Etype (Param);
+
+               if Is_Itype (Param_Type) then
+                  Assoc_Node := Associated_Node_For_Itype (Param_Type);
+
+                  if Nkind (Assoc_Node) = N_Function_Specification
+                    and then Present (Generic_Parent (Assoc_Node))
+                  then
+                     Gen_Func_Id := Generic_Parent (Assoc_Node);
+
+                     if Is_Intrinsic_Subprogram (Gen_Func_Id)
+                       and then Chars (Gen_Func_Id)
+                                  = Name_Generic_Dispatching_Constructor
+                     then
+                        return True;
+                     end if;
+                  end if;
+               end if;
+            end if;
+
+            return False;
+         end Is_Dispatching_Constructor_Call;
+
+         -------------
+         -- Process --
+         -------------
+
+         function Process (Nod : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (Nod) = N_Function_Call
+              and then Is_Dispatching_Constructor_Call (Nod)
+            then
+               return Abandon;
+            end if;
+
+            return OK;
+         end Process;
+
+         function Traverse_Expression is new Traverse_Func (Process);
+
+      --  Start of processing for Has_Dispatching_Constructor_Call
+
+      begin
+         return Traverse_Expression (Expr) = Abandon;
+      end Has_Dispatching_Constructor_Call;
 
       ----------------------------
       -- Underlying_Record_Type --
@@ -1327,16 +1411,16 @@ package body Exp_Disp is
          --  object to reference the corresponding secondary dispatch table
          --  (cf. Make_DT and Expand_Dispatching_Constructor_Call)).
 
-         --  At this stage we cannot identify whether the underlying object is
-         --  a BIP object and hence we cannot skip generating the code to try
-         --  displacing the pointer to the object. However, under configurable
-         --  runtime it is safe to skip generating code to displace the pointer
-         --  to the object, because generic dispatching constructors are not
-         --  supported.
+         --  Under regular runtime this is a minor optimization that improves
+         --  the generated code; under configurable runtime (where generic
+         --  dispatching constructors are not supported) this optimization
+         --  allows supporting this interface conversion, which otherwise
+         --  would require calling the runtime routine to displace the
+         --  pointer to the object.
 
          elsif Is_Interface (Iface_Typ)
            and then Is_Ancestor (Iface_Typ, Opnd, Use_Full_View => True)
-           and then not RTE_Available (RE_Displace)
+           and then not Has_Dispatching_Constructor_Call (Operand)
          then
             return;
          end if;
