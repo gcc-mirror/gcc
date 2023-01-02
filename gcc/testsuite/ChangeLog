@@ -1,3 +1,9 @@
+2023-01-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/extendditi2-1.c: New test case.
+	* gcc.target/i386/extendditi2-2.c: Likewise.
+
 
 Copyright (C) 2023 Free Software Foundation, Inc.
 
