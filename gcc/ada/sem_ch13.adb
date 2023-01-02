@@ -17742,12 +17742,12 @@ package body Sem_Ch13 is
         and then Is_Descendant_Of_Address (Source)
         and then In_Same_Source_Unit (Target, N)
       then
-         Set_Can_Use_Internal_Rep (Target, False);
+         Set_Can_Use_Internal_Rep (Base_Type (Target), False);
       elsif Is_Access_Subprogram_Type (Source)
         and then Is_Descendant_Of_Address (Target)
         and then In_Same_Source_Unit (Source, N)
       then
-         Set_Can_Use_Internal_Rep (Source, False);
+         Set_Can_Use_Internal_Rep (Base_Type (Source), False);
       end if;
 
       --  Generate N_Validate_Unchecked_Conversion node for back end in case
