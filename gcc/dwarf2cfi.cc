@@ -334,6 +334,29 @@ generate_dwarf_reg_sizes (poly_uint16 *sizes)
     targetm.init_dwarf_reg_sizes_extra (sizes);
 }
 
+/* Return 0 if the DWARF register sizes are not constant, otherwise
+   return the size constant.  */
+
+int
+dwarf_reg_sizes_constant ()
+{
+  poly_uint16 *sizes = XALLOCAVEC (poly_uint16, DWARF_FRAME_REGISTERS);
+  generate_dwarf_reg_sizes (sizes);
+
+  int result;
+  for (unsigned int i = 0; i < DWARF_FRAME_REGISTERS; i++)
+    {
+      unsigned short value;
+      if (!sizes[i].is_constant (&value))
+	return 0;
+      if (i == 0)
+	result = value;
+      else if (result != value)
+	return 0;
+    }
+  return result;
+}
+
 /* Generate code to initialize the dwarf register size table located
    at the provided ADDRESS.  */
 

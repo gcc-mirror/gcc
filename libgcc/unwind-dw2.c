@@ -148,8 +148,24 @@ struct _Unwind_Context
   char by_value[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
 };
 
+#ifdef __LIBGCC_DWARF_REG_SIZES_CONSTANT__
+static inline unsigned char
+dwarf_reg_size (int index __attribute__ ((__unused__)))
+{
+  return __LIBGCC_DWARF_REG_SIZES_CONSTANT__;
+}
+#else
 /* Byte size of every register managed by these routines.  */
 static unsigned char dwarf_reg_size_table[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
+
+
+static inline unsigned char
+dwarf_reg_size (unsigned index)
+{
+  gcc_assert (index < sizeof (dwarf_reg_size_table));
+  return dwarf_reg_size_table[index];
+}
+#endif
 
 
 /* Read unaligned data from the instruction buffer.  */
@@ -232,8 +248,7 @@ _Unwind_GetGR (struct _Unwind_Context *context, int regno)
 #endif
 
   index = DWARF_REG_TO_UNWIND_COLUMN (regno);
-  gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
-  size = dwarf_reg_size_table[index];
+  size = dwarf_reg_size (index);
   val = context->reg[index];
 
   if (_Unwind_IsExtendedContext (context) && context->by_value[index])
@@ -280,8 +295,7 @@ _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
   void *ptr;
 
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
-  gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
-  size = dwarf_reg_size_table[index];
+  size = dwarf_reg_size (index);
 
   if (_Unwind_IsExtendedContext (context) && context->by_value[index])
     {
@@ -329,9 +343,8 @@ _Unwind_SetGRValue (struct _Unwind_Context *context, int index,
 		    _Unwind_Word val)
 {
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
-  gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
   /* Return column size may be smaller than _Unwind_Context_Reg_Val.  */
-  gcc_assert (dwarf_reg_size_table[index] <= sizeof (_Unwind_Context_Reg_Val));
+  gcc_assert (dwarf_reg_size (index) <= sizeof (_Unwind_Context_Reg_Val));
 
   context->by_value[index] = 1;
   context->reg[index] = _Unwind_Get_Unwind_Context_Reg_Val (val);
@@ -1387,7 +1400,7 @@ static inline void
 _Unwind_SetSpColumn (struct _Unwind_Context *context, void *cfa,
 		     _Unwind_SpTmp *tmp_sp)
 {
-  int size = dwarf_reg_size_table[__builtin_dwarf_sp_column ()];
+  int size = dwarf_reg_size (__builtin_dwarf_sp_column ());
 
   if (size == sizeof(_Unwind_Ptr))
     tmp_sp->ptr = (_Unwind_Ptr) cfa;
@@ -1573,11 +1586,13 @@ uw_advance_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     }									   \
   while (0)
 
+#ifndef __LIBGCC_DWARF_REG_SIZES_CONSTANT__
 static inline void
 init_dwarf_reg_size_table (void)
 {
   __builtin_init_dwarf_reg_size_table (dwarf_reg_size_table);
 }
+#endif
 
 static void __attribute__((noinline))
 uw_init_context_1 (struct _Unwind_Context *context,
@@ -1596,16 +1611,18 @@ uw_init_context_1 (struct _Unwind_Context *context,
   code = uw_frame_state_for (context, &fs);
   gcc_assert (code == _URC_NO_REASON);
 
-#if __GTHREADS
+#ifndef __LIBGCC_DWARF_REG_SIZES_CONSTANT__
+# if __GTHREADS
   {
     static __gthread_once_t once_regsizes = __GTHREAD_ONCE_INIT;
     if (__gthread_once (&once_regsizes, init_dwarf_reg_size_table) != 0
 	&& dwarf_reg_size_table[0] == 0)
       init_dwarf_reg_size_table ();
   }
-#else
+# else
   if (dwarf_reg_size_table[0] == 0)
     init_dwarf_reg_size_table ();
+# endif
 #endif
 
   /* Force the frame state to use the known cfa value.  */
@@ -1682,20 +1699,20 @@ uw_install_context_1 (struct _Unwind_Context *current,
 	{
 	  _Unwind_Word w;
 	  _Unwind_Ptr p;
-	  if (dwarf_reg_size_table[i] == sizeof (_Unwind_Word))
+	  if (dwarf_reg_size (i) == sizeof (_Unwind_Word))
 	    {
 	      w = (_Unwind_Internal_Ptr) t;
 	      memcpy (c, &w, sizeof (_Unwind_Word));
 	    }
 	  else
 	    {
-	      gcc_assert (dwarf_reg_size_table[i] == sizeof (_Unwind_Ptr));
+	      gcc_assert (dwarf_reg_size (i) == sizeof (_Unwind_Ptr));
 	      p = (_Unwind_Internal_Ptr) t;
 	      memcpy (c, &p, sizeof (_Unwind_Ptr));
 	    }
 	}
       else if (t && c && t != c)
-	memcpy (c, t, dwarf_reg_size_table[i]);
+	memcpy (c, t, dwarf_reg_size (i));
     }
 
   /* If the current frame doesn't have a saved stack pointer, then we
