@@ -7965,10 +7965,10 @@ package body Exp_Ch3 is
 
               Is_Entity_Name (Original_Node (Obj_Def))
 
-                --  The aliased case has to be excluded because the expression
-                --  will not be aliased in the general case.
+                --  Nor if it is effectively an unconstrained declaration
 
-                and then not Aliased_Present (N)
+                and then not (Is_Array_Type (Typ)
+                               and then Is_Constr_Subt_For_UN_Aliased (Typ))
 
                 --  We may use a renaming if the initializing expression is a
                 --  captured function call that meets a few conditions.
