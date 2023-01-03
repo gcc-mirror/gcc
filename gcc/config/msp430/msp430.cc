@@ -3202,9 +3202,11 @@ msp430_expand_eh_return (rtx eh_handler)
 #undef  TARGET_INIT_DWARF_REG_SIZES_EXTRA
 #define TARGET_INIT_DWARF_REG_SIZES_EXTRA msp430_init_dwarf_reg_sizes_extra
 void
-msp430_init_dwarf_reg_sizes_extra (poly_uint16 *sizes)
+msp430_init_dwarf_reg_sizes_extra (tree address)
 {
   int i;
+  rtx addr = expand_normal (address);
+  rtx mem = gen_rtx_MEM (BLKmode, addr);
 
   /* This needs to match msp430_unwind_word_mode (above).  */
   if (!msp430x)
@@ -3216,7 +3218,12 @@ msp430_init_dwarf_reg_sizes_extra (poly_uint16 *sizes)
       unsigned int rnum = DWARF2_FRAME_REG_OUT (dnum, 1);
 
       if (rnum < DWARF_FRAME_REGISTERS)
-	sizes[rnum] = 4;
+	{
+	  HOST_WIDE_INT offset = rnum * GET_MODE_SIZE (QImode);
+
+	  emit_move_insn (adjust_address (mem, QImode, offset),
+			  gen_int_mode (4, QImode));
+	}
     }
 }
 

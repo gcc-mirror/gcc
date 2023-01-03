@@ -4039,11 +4039,11 @@ DEFHOOK
  "If some registers are represented in Dwarf-2 unwind information in\n\
 multiple pieces, define this hook to fill in information about the\n\
 sizes of those pieces in the table used by the unwinder at runtime.\n\
-It will be called by @code{generate_dwarf_reg_sizes} after\n\
+It will be called by @code{expand_builtin_init_dwarf_reg_sizes} after\n\
 filling in a single size corresponding to each hard register;\n\
-@var{sizes} is the address of the table.  It will contain\n\
-@code{DWARF_FRAME_REGISTERS} elements when this hook is called.",
- void, (poly_uint16 *sizes), nullptr)
+@var{address} is the address of the table.",
+ void, (tree address),
+ hook_void_tree)
 
 /* Fetch the fixed register(s) which hold condition codes, for
    targets where it makes sense to look for duplicate assignments to
