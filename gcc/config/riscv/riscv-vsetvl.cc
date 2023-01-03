@@ -787,7 +787,7 @@ change_insn (rtx_insn *rinsn, rtx new_pat)
       print_rtl_single (dump_file, PATTERN (rinsn));
     }
 
-  validate_change (rinsn, &PATTERN (rinsn), new_pat, true);
+  validate_change (rinsn, &PATTERN (rinsn), new_pat, false);
 
   if (dump_file)
     {
