@@ -3910,6 +3910,7 @@ fixup_reorder_chain (void)
       rtx ret_label = NULL_RTX;
       basic_block nb;
       edge_iterator ei;
+      bool asm_goto = false;
 
       if (EDGE_COUNT (bb->succs) == 0)
 	continue;
@@ -4016,7 +4017,9 @@ fixup_reorder_chain (void)
 		  || e_fall->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 		continue;
 
-	      /* Otherwise we'll have to use the fallthru fixup below.  */
+	      /* Otherwise we'll have to use the fallthru fixup below.
+		 But avoid redirecting asm goto to EXIT.  */
+	      asm_goto = true;
 	    }
 	  else
 	    {
@@ -4048,7 +4051,8 @@ fixup_reorder_chain (void)
 	 return rather than a jump to the return block.  */
       rtx_insn *ret, *use;
       basic_block dest;
-      if (bb_is_just_return (e_fall->dest, &ret, &use)
+      if (!asm_goto
+	  && bb_is_just_return (e_fall->dest, &ret, &use)
 	  && ((PATTERN (ret) == simple_return_rtx && targetm.have_simple_return ())
 	      || (PATTERN (ret) == ret_rtx && targetm.have_return ())))
 	{
