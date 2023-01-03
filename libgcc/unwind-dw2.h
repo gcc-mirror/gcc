@@ -29,6 +29,7 @@ enum {
   REG_SAVED_EXP,
   REG_SAVED_VAL_OFFSET,
   REG_SAVED_VAL_EXP,
+  REG_UNSAVED_ARCHEXT,		/* Target specific extension.  */
   REG_UNDEFINED
 };
 
