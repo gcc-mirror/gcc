@@ -891,7 +891,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       versionable (false), can_change_signature (false),
       redefined_extern_inline (false), tm_may_enter_irr (false),
       ipcp_clone (false), declare_variant_alt (false),
-      calls_declare_variant_alt (false), m_uid (uid), m_summary_id (-1)
+      calls_declare_variant_alt (false), gc_candidate (false),
+      m_uid (uid), m_summary_id (-1)
   {}
 
   /* Remove the node from cgraph and all inline clones inlined into it.
@@ -1490,6 +1491,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned declare_variant_alt : 1;
   /* True if the function calls declare_variant_alt functions.  */
   unsigned calls_declare_variant_alt : 1;
+  /* True if the function should only be emitted if it is used.  This flag
+     is set for local SIMD clones when they are created and cleared if the
+     vectorizer uses them.  */
+  unsigned gc_candidate : 1;
 
 private:
   /* Unique id of the node.  */

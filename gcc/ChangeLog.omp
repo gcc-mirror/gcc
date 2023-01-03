@@ -1,3 +1,18 @@
+2023-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+	2023-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* cgraph.h (struct cgraph_node): Add gc_candidate bit, modify
+	default constructor to initialize it.
+	* cgraphunit.cc (expand_all_functions): Save gc_candidate functions
+	for last and iterate to handle recursive calls.  Delete leftover
+	candidates at the end.
+	* omp-simd-clone.cc (simd_clone_create): Set gc_candidate bit
+	on local clones.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Clear
+	gc_candidate bit when a clone is used.
+
 2022-12-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
