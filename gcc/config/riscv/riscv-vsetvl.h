@@ -333,6 +333,9 @@ public:
   /* Get all relaxer expression id for corresponding vector info.  */
   auto_vec<size_t> get_all_available_exprs (const vector_insn_info &) const;
 
+  /* Return true if all expression set in bitmap are same AVL.  */
+  bool all_same_avl_p (const basic_block, sbitmap) const;
+
   /* Return true if all expression set in bitmap are same ratio.  */
   bool all_same_ratio_p (sbitmap) const;
 

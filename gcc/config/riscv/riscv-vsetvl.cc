@@ -1440,6 +1440,29 @@ vector_infos_manager::all_same_ratio_p (sbitmap bitdata) const
   return true;
 }
 
+bool
+vector_infos_manager::all_same_avl_p (const basic_block cfg_bb,
+				      sbitmap bitdata) const
+{
+  if (bitmap_empty_p (bitdata))
+    return false;
+
+  const auto &block_info = vector_block_infos[cfg_bb->index];
+  if (!block_info.local_dem.demand_p (DEMAND_AVL))
+    return true;
+
+  avl_info avl = block_info.local_dem.get_avl_info ();
+  unsigned int bb_index;
+  sbitmap_iterator sbi;
+
+  EXECUTE_IF_SET_IN_BITMAP (bitdata, 0, bb_index, sbi)
+  {
+    if (vector_exprs[bb_index]->get_avl_info () != avl)
+      return false;
+  }
+  return true;
+}
+
 size_t
 vector_infos_manager::expr_set_num (sbitmap bitdata) const
 {
@@ -2111,6 +2134,10 @@ pass_vsetvl::can_refine_vsetvl_p (const basic_block cfg_bb, uint8_t ratio) const
 	m_vector_manager->vector_avin[cfg_bb->index]))
     return false;
 
+  if (!m_vector_manager->all_same_avl_p (
+	cfg_bb, m_vector_manager->vector_avin[cfg_bb->index]))
+    return false;
+
   size_t expr_id
     = bitmap_first_set_bit (m_vector_manager->vector_avin[cfg_bb->index]);
   if (m_vector_manager->vector_exprs[expr_id]->get_ratio () != ratio)
@@ -2225,11 +2252,11 @@ pass_vsetvl::commit_vsetvls (void)
 
 	      insn_info *insn = require->get_insn ();
 	      vector_insn_info prev_info = vector_insn_info ();
-	      if (m_vector_manager->all_same_ratio_p (
-		    m_vector_manager->vector_avout[eg->src->index]))
+	      sbitmap bitdata = m_vector_manager->vector_avout[eg->src->index];
+	      if (m_vector_manager->all_same_ratio_p (bitdata)
+		  && m_vector_manager->all_same_avl_p (eg->dest, bitdata))
 		{
-		  size_t first = bitmap_first_set_bit (
-		    m_vector_manager->vector_avout[eg->src->index]);
+		  size_t first = bitmap_first_set_bit (bitdata);
 		  prev_info = *m_vector_manager->vector_exprs[first];
 		}
 
