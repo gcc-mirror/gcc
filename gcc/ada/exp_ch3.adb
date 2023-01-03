@@ -7185,7 +7185,7 @@ package body Exp_Ch3 is
             --  remove earlier in the processing.
 
             if Is_Interface (Typ)
-              and then Is_Interface (Etype (Alloc_Expr))
+              and then Is_Class_Wide_Type (Etype (Alloc_Expr))
               and then Typ /= Etype (Alloc_Expr)
             then
                Alloc_Expr := Convert_To (Typ, Alloc_Expr);
