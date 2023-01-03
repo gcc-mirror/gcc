@@ -1521,12 +1521,6 @@ c_cpp_builtins (cpp_reader *pfile)
 #endif
       builtin_define_with_int_value ("__LIBGCC_DWARF_FRAME_REGISTERS__",
 				     DWARF_FRAME_REGISTERS);
-      {
-	int value = dwarf_reg_sizes_constant ();
-	if (value > 0)
-	  builtin_define_with_int_value ("__LIBGCC_DWARF_REG_SIZES_CONSTANT__",
-					 value);
-      }
 #ifdef EH_RETURN_STACKADJ_RTX
       cpp_define (pfile, "__LIBGCC_EH_RETURN_STACKADJ_RTX__");
 #endif

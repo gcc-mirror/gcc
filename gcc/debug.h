@@ -245,8 +245,6 @@ extern const struct gcc_debug_hooks vmsdbg_debug_hooks;
 
 /* Dwarf2 frame information.  */
 
-extern int dwarf_reg_sizes_constant ();
-
 extern void dwarf2out_begin_prologue (unsigned int, unsigned int,
 				      const char *);
 extern void dwarf2out_vms_end_prologue (unsigned int, const char *);
