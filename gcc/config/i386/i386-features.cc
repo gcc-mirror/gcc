@@ -567,6 +567,14 @@ general_scalar_chain::compute_convert_gain ()
 	      igain -= vector_const_cost (XEXP (src, 0));
 	    if (CONST_INT_P (XEXP (src, 1)))
 	      igain -= vector_const_cost (XEXP (src, 1));
+	    if (MEM_P (XEXP (src, 1)))
+	      {
+		if (optimize_insn_for_size_p ())
+		  igain -= COSTS_N_BYTES (m == 2 ? 3 : 5);
+		else
+		  igain += m * ix86_cost->int_load[2]
+			   - ix86_cost->sse_load[sse_cost_idx];
+	      }
 	    break;
 
 	  case NEG:
