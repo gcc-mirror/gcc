@@ -1048,12 +1048,10 @@ vector_insn_info::operator>= (const vector_insn_info &other) const
 	}
     }
 
-  if (demand_p (DEMAND_TAIL_POLICY) && !other.demand_p (DEMAND_TAIL_POLICY)
-      && get_ta () != other.get_ta ())
+  if (!demand_p (DEMAND_TAIL_POLICY) && other.demand_p (DEMAND_TAIL_POLICY))
     return false;
 
-  if (demand_p (DEMAND_MASK_POLICY) && !other.demand_p (DEMAND_MASK_POLICY)
-      && get_ma () != other.get_ma ())
+  if (!demand_p (DEMAND_MASK_POLICY) && other.demand_p (DEMAND_MASK_POLICY))
     return false;
 
   return true;
