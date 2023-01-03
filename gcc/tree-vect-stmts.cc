@@ -4620,6 +4620,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     }
   vargs.release ();
 
+  /* Mark the clone as no longer being a candidate for GC.  */
+  bestn->gc_candidate = false;
+
   /* The call in STMT might prevent it from being removed in dce.
      We however cannot remove it here, due to the way the ssa name
      it defines is mapped to the new definition.  So just replace

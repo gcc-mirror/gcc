@@ -1996,18 +1996,51 @@ expand_all_functions (void)
 
   /* Output functions in RPO so callees get optimized before callers.  This
      makes ipa-ra and other propagators to work.
-     FIXME: This is far from optimal code layout.  */
-  for (i = new_order_pos - 1; i >= 0; i--)
-    {
-      node = order[i];
+     FIXME: This is far from optimal code layout.
+     Make multiple passes over the list to defer processing of gc
+     candidates until all potential uses are seen.  */
+  int gc_candidates = 0;
+  int prev_gc_candidates = 0;
 
-      if (node->process)
+  while (1)
+    {
+      for (i = new_order_pos - 1; i >= 0; i--)
 	{
-	  expanded_func_count++;
-	  node->process = 0;
-	  node->expand ();
+	  node = order[i];
+
+	  if (node->gc_candidate)
+	    gc_candidates++;
+	  else if (node->process)
+	    {
+	      expanded_func_count++;
+	      node->process = 0;
+	      node->expand ();
+	    }
 	}
+      if (!gc_candidates || gc_candidates == prev_gc_candidates)
+	break;
+      prev_gc_candidates = gc_candidates;
+      gc_candidates = 0;
     }
+
+  /* Free any unused gc_candidate functions.  */
+  if (gc_candidates)
+    for (i = new_order_pos - 1; i >= 0; i--)
+      {
+	node = order[i];
+	if (node->gc_candidate)
+	  {
+	    struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+	    if (symtab->dump_file)
+	      fprintf (symtab->dump_file,
+		       "Deleting unused function %s\n",
+		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
+	    node->process = false;
+	    free_dominance_info (fn, CDI_DOMINATORS);
+	    free_dominance_info (fn, CDI_POST_DOMINATORS);
+	    node->release_body (false);
+	  }
+      }
 
   if (dump_file)
     fprintf (dump_file, "Expanded functions with time profile (%s):%u/%u\n",
