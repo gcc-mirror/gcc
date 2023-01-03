@@ -1,3 +1,71 @@
+2023-01-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/87832
+	* config/i386/lujiazui.md (lujiazui_div): New automaton.
+	(lua_div): New unit.
+	(lua_idiv_qi): Correct unit in the reservation.
+	(lua_idiv_qi_load): Ditto.
+	(lua_idiv_hi): Ditto.
+	(lua_idiv_hi_load): Ditto.
+	(lua_idiv_si): Ditto.
+	(lua_idiv_si_load): Ditto.
+	(lua_idiv_di): Ditto.
+	(lua_idiv_di_load): Ditto.
+	(lua_fdiv_SF): Ditto.
+	(lua_fdiv_SF_load): Ditto.
+	(lua_fdiv_DF): Ditto.
+	(lua_fdiv_DF_load): Ditto.
+	(lua_fdiv_XF): Ditto.
+	(lua_fdiv_XF_load): Ditto.
+	(lua_ssediv_SF): Ditto.
+	(lua_ssediv_load_SF): Ditto.
+	(lua_ssediv_V4SF): Ditto.
+	(lua_ssediv_load_V4SF): Ditto.
+	(lua_ssediv_V8SF): Ditto.
+	(lua_ssediv_load_V8SF): Ditto.
+	(lua_ssediv_SD): Ditto.
+	(lua_ssediv_load_SD): Ditto.
+	(lua_ssediv_V2DF): Ditto.
+	(lua_ssediv_load_V2DF): Ditto.
+	(lua_ssediv_V4DF): Ditto.
+	(lua_ssediv_load_V4DF): Ditto.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* debug.h (dwarf_reg_sizes_constant): Declare.
+	* dwarf2cfi.cc (dwarf_reg_sizes_constant): New function.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* dwarf2cfi.cc (init_return_column_size): Remove.
+	(init_one_dwarf_reg_size): Adjust.
+	(generate_dwarf_reg_sizes): New function.  Extracted
+	from expand_builtin_init_dwarf_reg_sizes.
+	(expand_builtin_init_dwarf_reg_sizes): Call
+	generate_dwarf_reg_sizes.
+	* target.def (init_dwarf_reg_sizes_extra): Adjust
+	hook signature.
+	* config/msp430/msp430.cc
+	(msp430_init_dwarf_reg_sizes_extra): Adjust.
+	* config/rs6000/rs6000.cc
+	(rs6000_init_dwarf_reg_sizes_extra): Likewise.
+	* doc/tm.texi: Update.
+
+2023-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.cc (process_command): Update copyright notice dates.
+	* gcov-dump.cc (print_version): Ditto.
+	* gcov.cc (print_version): Ditto.
+	* gcov-tool.cc (print_version): Ditto.
+	* gengtype.cc (create_file): Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
 2023-01-01  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

@@ -1,3 +1,13 @@
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (__LIBGCC_DWARF_REG_SIZES_CONSTANT__):
+	Define if constant is known.
+
 2022-12-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/98487

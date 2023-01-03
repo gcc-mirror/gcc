@@ -1,3 +1,16 @@
+2023-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR ada/108202
+	* gcc-interface/Make-lang.in (GCC_LINKERFLAGS, GCC_LDFLAGS):
+	Versions of ALL_LINKERFLAGS, LDFLAGS with -Werror and
+	-static-libgcc filtered out for Darwin8 and 9 (-Werror is filtered
+	out for other hosts).
+
+2023-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnat_ugn.texi: Bump @copying's copyright year.
+	* gnat_rm.texi: Likewise.
+
 
 Copyright (C) 2023 Free Software Foundation, Inc.
 
