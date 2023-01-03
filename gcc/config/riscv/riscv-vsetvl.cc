@@ -116,10 +116,27 @@ vlmax_avl_insn_p (rtx_insn *rinsn)
 	  || INSN_CODE (rinsn) == CODE_FOR_vlmax_avldi);
 }
 
+/* Return true if the block is a loop itself:
+	  local_dem
+	     __________
+	 ____|____     |
+	|        |     |
+	|________|     |
+	     |_________|
+	  reaching_out
+*/
 static bool
 loop_basic_block_p (const basic_block cfg_bb)
 {
-  return JUMP_P (BB_END (cfg_bb)) && any_condjump_p (BB_END (cfg_bb));
+  if (JUMP_P (BB_END (cfg_bb)) && any_condjump_p (BB_END (cfg_bb)))
+    {
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, cfg_bb->succs)
+	if (e->dest->index == cfg_bb->index)
+	  return true;
+    }
+  return false;
 }
 
 /* Return true if it is an RVV instruction depends on VTYPE global
@@ -271,26 +288,60 @@ backward_propagate_worthwhile_p (const basic_block cfg_bb,
 {
   if (loop_basic_block_p (cfg_bb))
     {
-      if (block_info.local_dem.compatible_p (block_info.reaching_out))
-	return true;
-
-      /* There is a obvious case that is not worthwhile and meaningless
-	 to propagate the demand information:
-			  local_dem
-			     __________
-			 ____|____     |
-			|        |     |
-			|________|     |
-			     |_________|
-			  reaching_out
-	  Header is incompatible with reaching_out and the block is loop itself,
-	  we don't backward propagate the local_dem since we can't avoid emit
-	  vsetvl for the local_dem.  */
-      edge e;
-      edge_iterator ei;
-      FOR_EACH_EDGE (e, ei, cfg_bb->succs)
-	if (e->dest->index == cfg_bb->index)
+      if (block_info.reaching_out.valid_or_dirty_p ())
+	{
+	  if (block_info.local_dem.compatible_p (block_info.reaching_out))
+	    {
+	      /* Case 1 (Can backward propagate):
+		 ....
+		 bb0:
+		 ...
+		 for (int i = 0; i < n; i++)
+		   {
+		     vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
+		     __riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
+		   }
+		 The local_dem is compatible with reaching_out. Such case is
+		 worthwhile backward propagation.  */
+	      return true;
+	    }
+	  else
+	    {
+	      /* Case 2 (Don't backward propagate):
+		    ....
+		    bb0:
+		    ...
+		    for (int i = 0; i < n; i++)
+		      {
+			vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
+			__riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
+			vint16mf2_t v2 = __riscv_vle16_v_i16mf2 (in + i + 6, 8);
+			__riscv_vse16_v_i16mf2 (out + i + 6, v, 8);
+		      }
+		 The local_dem is incompatible with reaching_out.
+		 It makes no sense to backward propagate the local_dem since we
+		 can't avoid VSETVL inside the loop.  */
+	      return false;
+	    }
+	}
+      else
+	{
+	  gcc_assert (block_info.reaching_out.unknown_p ());
+	  /* Case 3 (Don't backward propagate):
+		....
+		bb0:
+		...
+		for (int i = 0; i < n; i++)
+		  {
+		    vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
+		    __riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
+		    fn3 ();
+		  }
+	    The local_dem is VALID, but the reaching_out is UNKNOWN.
+	    It makes no sense to backward propagate the local_dem since we
+	    can't avoid VSETVL inside the loop.  */
 	  return false;
+	}
     }
 
   return true;
