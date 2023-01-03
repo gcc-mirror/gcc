@@ -880,6 +880,25 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
   return true;
 }
 
+static void
+change_vsetvl_insn (const insn_info *insn, const vector_insn_info &info)
+{
+  rtx_insn *rinsn;
+  if (vector_config_insn_p (insn->rtl ()))
+    {
+      rinsn = insn->rtl ();
+      gcc_assert (vsetvl_insn_p (rinsn) && "Can't handle X0, rs1 vsetvli yet");
+    }
+  else
+    {
+      gcc_assert (has_vtype_op (insn->rtl ()));
+      rinsn = PREV_INSN (insn->rtl ());
+      gcc_assert (vector_config_insn_p (rinsn));
+    }
+  rtx new_pat = gen_vsetvl_pat (rinsn, info);
+  change_insn (rinsn, new_pat);
+}
+
 avl_info::avl_info (const avl_info &other)
 {
   m_value = other.get_value ();
@@ -1941,7 +1960,6 @@ pass_vsetvl::compute_global_backward_infos (void)
       /* Backward propagate to each predecessor.  */
       FOR_EACH_EDGE (e, ei, cfg_bb->preds)
 	{
-	  rtx new_pat;
 	  auto &block_info
 	    = m_vector_manager->vector_block_infos[e->src->index];
 
@@ -2011,21 +2029,7 @@ pass_vsetvl::compute_global_backward_infos (void)
 		be_merged = block_info.local_dem;
 	      vector_insn_info new_info = be_merged.merge (prop, true);
 
-	      rtx_insn *rinsn;
-	      if (vector_config_insn_p (new_info.get_insn ()->rtl ()))
-		{
-		  rinsn = new_info.get_insn ()->rtl ();
-		  gcc_assert (vsetvl_insn_p (rinsn)
-			      && "Can't handle X0, rs1 vsetvli yet");
-		}
-	      else
-		{
-		  gcc_assert (has_vtype_op (new_info.get_insn ()->rtl ()));
-		  rinsn = PREV_INSN (new_info.get_insn ()->rtl ());
-		  gcc_assert (vector_config_insn_p (rinsn));
-		}
-	      new_pat = gen_vsetvl_pat (rinsn, new_info);
-	      change_insn (rinsn, new_pat);
+	      change_vsetvl_insn (new_info.get_insn (), new_info);
 	      if (block_info.local_dem == block_info.reaching_out)
 		block_info.local_dem = new_info;
 	      block_info.reaching_out = new_info;
