@@ -581,7 +581,7 @@
 		    (match_operand 3 "const_int_operand" "i")
 		    (match_operand 4 "const_int_operand" "i")] UNSPEC_VSETVL))]
   "TARGET_VECTOR"
-  "vsetvli\tzero,%0,e%1,%m2,t%p3,m%p4"
+  "vset%i0vli\tzero,%0,e%1,%m2,t%p3,m%p4"
   [(set_attr "type" "vsetvl")
    (set_attr "mode" "<MODE>")])
 
