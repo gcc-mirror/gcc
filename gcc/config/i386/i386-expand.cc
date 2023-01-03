@@ -3284,8 +3284,8 @@ ix86_expand_int_movcc (rtx operands[])
 	  || negate_cc_compare_p
 	  || ix86_expand_carry_flag_compare (code, op0, op1, &compare_op))
 	{
-	  /* Detect overlap between destination and compare sources.  */
-	  rtx tmp = out;
+	  /* Place comparison result in its own pseudo.  */
+	  rtx tmp = gen_reg_rtx (mode);
 
 	  if (negate_cc_compare_p)
 	    {
@@ -3295,7 +3295,6 @@ ix86_expand_int_movcc (rtx operands[])
 		emit_insn (gen_x86_negsi_ccc (gen_reg_rtx (SImode),
 					      gen_lowpart (SImode, op0)));
 
-	      tmp = gen_reg_rtx (mode);
 	      if (mode == DImode)
 		emit_insn (gen_x86_movdicc_0_m1_neg (tmp));
 	      else
@@ -3337,9 +3336,6 @@ ix86_expand_int_movcc (rtx operands[])
 		}
 	      diff = ct - cf;
 
-	      if (reg_overlap_mentioned_p (out, compare_op))
-		tmp = gen_reg_rtx (mode);
-
 	      if (mode == DImode)
 		emit_insn (gen_x86_movdicc_0_m1 (tmp, flags, compare_op));
 	      else
@@ -3358,6 +3354,11 @@ ix86_expand_int_movcc (rtx operands[])
 	      tmp = emit_store_flag (tmp, code, op0, op1, VOIDmode, 0, -1);
 	    }
 
+	  /* Add a REG_EQUAL note to allow condition to be shared.  */
+	  rtx note = gen_rtx_fmt_ee (code, mode, op0, op1);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+			       gen_rtx_NEG (mode, note));
+
 	  if (diff == 1)
 	    {
 	      /*
@@ -3368,9 +3369,8 @@ ix86_expand_int_movcc (rtx operands[])
 	       * Size 5 - 8.
 	       */
 	      if (ct)
-		tmp = expand_simple_binop (mode, PLUS,
-					   tmp, GEN_INT (ct),
-					   copy_rtx (tmp), 1, OPTAB_DIRECT);
+		tmp = expand_simple_binop (mode, PLUS, tmp, GEN_INT (ct),
+					   NULL_RTX, 1, OPTAB_DIRECT);
 	    }
 	  else if (cf == -1)
 	    {
@@ -3381,9 +3381,8 @@ ix86_expand_int_movcc (rtx operands[])
 	       *
 	       * Size 8.
 	       */
-	      tmp = expand_simple_binop (mode, IOR,
-					 tmp, GEN_INT (ct),
-					 copy_rtx (tmp), 1, OPTAB_DIRECT);
+	      tmp = expand_simple_binop (mode, IOR, tmp, GEN_INT (ct),
+					 NULL_RTX, 1, OPTAB_DIRECT);
 	    }
 	  else if (diff == -1 && ct)
 	    {
@@ -3395,11 +3394,10 @@ ix86_expand_int_movcc (rtx operands[])
 	       *
 	       * Size 8 - 11.
 	       */
-	      tmp = expand_simple_unop (mode, NOT, tmp, copy_rtx (tmp), 1);
+	      tmp = expand_simple_unop (mode, NOT, tmp, NULL_RTX, 1);
 	      if (cf)
-		tmp = expand_simple_binop (mode, PLUS,
-					   copy_rtx (tmp), GEN_INT (cf),
-					   copy_rtx (tmp), 1, OPTAB_DIRECT);
+		tmp = expand_simple_binop (mode, PLUS, tmp, GEN_INT (cf),
+					   NULL_RTX, 1, OPTAB_DIRECT);
 	    }
 	  else
 	    {
@@ -3417,22 +3415,18 @@ ix86_expand_int_movcc (rtx operands[])
 		{
 		  cf = ct;
 		  ct = 0;
-		  tmp = expand_simple_unop (mode, NOT, tmp, copy_rtx (tmp), 1);
+		  tmp = expand_simple_unop (mode, NOT, tmp, NULL_RTX, 1);
 		}
 
-	      tmp = expand_simple_binop (mode, AND,
-					 copy_rtx (tmp),
+	      tmp = expand_simple_binop (mode, AND, tmp,
 					 gen_int_mode (cf - ct, mode),
-					 copy_rtx (tmp), 1, OPTAB_DIRECT);
+					 NULL_RTX, 1, OPTAB_DIRECT);
 	      if (ct)
-		tmp = expand_simple_binop (mode, PLUS,
-					   copy_rtx (tmp), GEN_INT (ct),
-					   copy_rtx (tmp), 1, OPTAB_DIRECT);
+		tmp = expand_simple_binop (mode, PLUS, tmp, GEN_INT (ct),
+					   NULL_RTX, 1, OPTAB_DIRECT);
 	    }
 
-	  if (!rtx_equal_p (tmp, out))
-	    emit_move_insn (copy_rtx (out), copy_rtx (tmp));
-
+	  emit_move_insn (out, tmp);
 	  return true;
 	}
 
