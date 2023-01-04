@@ -59,5 +59,57 @@ constexpr_hh_mm_ss()
 
   static_assert(seconds{hh_mm_ss{100min}} == 100min);
 
-  // TODO: treat_as_floating_point_v
+  // treat_as_floating_point_v
+  using fseconds = duration<double, ratio<1>>;
+  constexpr hh_mm_ss<fseconds> fsec{0x123.0004p5s};
+  static_assert(std::is_same_v<hh_mm_ss<fseconds>::precision, fseconds>);
+  static_assert(fsec.hours() == 2h);
+  static_assert(fsec.minutes() == 35min);
+  static_assert(fsec.seconds() == 12s);
+  static_assert(fsec.subseconds() == 0x.0004p5s);
+  static_assert(!fsec.is_negative());
+  static_assert(fsec.to_duration() == 0x123.0004p5s);
+
+  using fminutes = duration<double, ratio<60>>;
+  constexpr hh_mm_ss<fminutes> fmin{-0x1.23p4min};
+  static_assert(std::is_same_v<hh_mm_ss<fminutes>::precision, fseconds>);
+  static_assert(fmin.hours() == 0h);
+  static_assert(fmin.minutes() == 18min);
+  static_assert(fmin.seconds() == 11s);
+  static_assert(fmin.subseconds() == 0.25s);
+  static_assert(fmin.is_negative());
+  static_assert(fmin.to_duration() == -0x1.23p4min);
+}
+
+constexpr void
+default_construction()
+{
+  using namespace std::chrono;
+
+  constexpr hh_mm_ss<seconds> s1;
+  static_assert(s1.to_duration() == s1.to_duration().zero());
+  constexpr hh_mm_ss<duration<char>> s2;
+  static_assert(s2.to_duration() == s2.to_duration().zero());
+  constexpr hh_mm_ss<duration<int, std::centi>> s3;
+  static_assert(s3.to_duration() == s3.to_duration().zero());
+  constexpr hh_mm_ss<duration<long long, std::femto>> s4;
+  static_assert(s4.to_duration() == s4.to_duration().zero());
+  constexpr hh_mm_ss<duration<double>> s5;
+  static_assert(s5.to_duration() == s5.to_duration().zero());
+}
+
+constexpr void
+unsigned_rep()
+{
+  using namespace std::chrono;
+
+  constexpr duration<unsigned, std::milli> ms(3690001);
+
+  constexpr hh_mm_ss hms(ms); // PR libstdc++/108265
+  static_assert( ! hms.is_negative() );
+  static_assert( hms.to_duration() == milliseconds(ms.count()) );
+  static_assert( hms.hours() == 1h );
+  static_assert( hms.minutes() == 1min );
+  static_assert( hms.seconds() == 30s );
+  static_assert( hms.subseconds() == 1ms );
 }
