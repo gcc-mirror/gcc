@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "optabs-tree.h"
 #include "dbgcnt.h"
+#include "tm.h"
+#include "tree-pass.h"
 
 /* Routine to determine if the types T1 and T2 are effectively
    the same for GENERIC.  If T1 or T2 is not a type, the test
@@ -68,7 +70,7 @@ single_use (tree t ATTRIBUTE_UNUSED)
 static inline bool
 canonicalize_math_p ()
 {
-  return true;
+  return !cfun || (cfun->curr_properties & PROP_gimple_opt_math) == 0;
 }
 
 /* Return true if math operations that are beneficial only after
@@ -87,7 +89,7 @@ canonicalize_math_after_vectorization_p ()
 static inline bool
 optimize_vectors_before_lowering_p ()
 {
-  return true;
+  return !cfun || (cfun->curr_properties & PROP_gimple_lvec) == 0;
 }
 
 /* Return true if successive divisions can be optimized.
