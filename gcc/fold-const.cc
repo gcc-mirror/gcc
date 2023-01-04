@@ -9574,7 +9574,9 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (op0) == MULT_EXPR
 	  && INTEGRAL_TYPE_P (TREE_TYPE (op0))
-	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (op0)))
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (op0))
+	  && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0))
+	      || !sanitize_flags_p (SANITIZE_SI_OVERFLOW)))
 	{
 	  /* Be careful not to introduce new overflows.  */
 	  tree mult_type;

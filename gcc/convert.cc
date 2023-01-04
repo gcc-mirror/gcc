@@ -384,6 +384,14 @@ do_narrow (location_t loc,
       && sanitize_flags_p (SANITIZE_SI_OVERFLOW))
     return NULL_TREE;
 
+  /* Similarly for multiplication, but in that case it can be
+     problematic even if typex is unsigned type - 0xffff * 0xffff
+     overflows in int.  */
+  if (ex_form == MULT_EXPR
+      && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr))
+      && sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+    return NULL_TREE;
+
   /* But now perhaps TYPEX is as wide as INPREC.
      In that case, do nothing special here.
      (Otherwise would recurse infinitely in convert.  */
