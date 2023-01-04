@@ -536,6 +536,8 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-secsta.o	\
  ada/libgnat/s-soflin.o	\
  ada/libgnat/s-soliin.o	\
+ ada/libgnat/s-spark.o	\
+ ada/libgnat/s-spcuop.o	\
  ada/libgnat/s-stache.o	\
  ada/libgnat/s-stalib.o	\
  ada/libgnat/s-stoele.o	\
