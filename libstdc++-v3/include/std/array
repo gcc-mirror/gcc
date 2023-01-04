@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
        // Conversion to a pointer produces a null pointer.
        __attribute__((__always_inline__))
-       operator _Tp*() const noexcept { return nullptr; }
+       constexpr operator _Tp*() const noexcept { return nullptr; }
      };
 
      using _Is_swappable = true_type;
