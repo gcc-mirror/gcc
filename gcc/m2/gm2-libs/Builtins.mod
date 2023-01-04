@@ -222,21 +222,6 @@ BEGIN
    RETURN cbuiltin.ilogbl (x)
 END ilogbl ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_significand)) significand (r: REAL) : REAL ;
-BEGIN
-   RETURN cbuiltin.significand (r)
-END significand ;
-
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_significandf)) significandf (s: SHORTREAL) : SHORTREAL ;
-BEGIN
-   RETURN cbuiltin.significandf (s)
-END significandf ;
-
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_significandl)) significandl (l: LONGREAL) : LONGREAL ;
-BEGIN
-   RETURN cbuiltin.significandl (l)
-END significandl ;
-
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_modf)) modf (x: REAL; VAR y: REAL) : REAL ;
 BEGIN
    RETURN cbuiltin.modf (x, y)
@@ -296,21 +281,6 @@ PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_nexttowardl)) nexttowardl (x, y
 BEGIN
    RETURN cbuiltin.nexttowardl (x, y)
 END nexttowardl ;
-
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_scalb)) scalb (x, n: REAL) : REAL ;
-BEGIN
-   RETURN cbuiltin.scalb (x, n)
-END scalb ;
-
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_scalbf)) scalbf (x, n: SHORTREAL) : SHORTREAL ;
-BEGIN
-   RETURN cbuiltin.scalbf (x, n)
-END scalbf ;
-
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_scalbl)) scalbl (x, n: LONGREAL) : LONGREAL ;
-BEGIN
-   RETURN cbuiltin.scalbl (x, n)
-END scalbl ;
 
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_scalbln)) scalbln (x: REAL; n: LONGINT) : REAL ;
 BEGIN

@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE LowReal ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-FROM Builtins IMPORT ilogb, significand, modf, signbit, scalbn, huge_val, nextafter ;
+FROM Builtins IMPORT ilogb, modf, signbit, scalbn, huge_val, nextafter ;
 FROM dtoa IMPORT Mode, strtod, dtoa ;
 FROM libc IMPORT free ;
 FROM RealMath IMPORT power ;
@@ -64,7 +64,7 @@ END exponent ;
 
 PROCEDURE fraction (x: REAL) : REAL ;
 BEGIN
-   RETURN significand(x)
+   RETURN scalbn (x, -ilogb (x))
 END fraction ;
 
 

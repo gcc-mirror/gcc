@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE LowShort ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-FROM Builtins IMPORT ilogbf, significandf, modff, signbitf, scalbnf, huge_valf, nextafterf ;
+FROM Builtins IMPORT ilogbf, modff, signbitf, scalbnf, huge_valf, nextafterf ;
 FROM dtoa IMPORT Mode, strtod, dtoa ;
 FROM libc IMPORT free ;
 FROM RealMath IMPORT power ;
@@ -64,7 +64,7 @@ END exponent ;
 
 PROCEDURE fraction (x: SHORTREAL) : SHORTREAL ;
 BEGIN
-   RETURN significandf(x)
+   RETURN scalbnf (x, -ilogbf (x))
 END fraction ;
 
 

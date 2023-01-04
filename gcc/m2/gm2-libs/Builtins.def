@@ -78,10 +78,6 @@ PROCEDURE __BUILTIN__ huge_val () : REAL ;
 PROCEDURE __BUILTIN__ huge_valf () : SHORTREAL ;
 PROCEDURE __BUILTIN__ huge_vall () : LONGREAL ;
 
-PROCEDURE __BUILTIN__ significand (r: REAL) : REAL ;
-PROCEDURE __BUILTIN__ significandf (s: SHORTREAL) : SHORTREAL ;
-PROCEDURE __BUILTIN__ significandl (l: LONGREAL) : LONGREAL ;
-
 PROCEDURE __BUILTIN__ modf (x: REAL; VAR y: REAL) : REAL ;
 PROCEDURE __BUILTIN__ modff (x: SHORTREAL;
                              VAR y: SHORTREAL) : SHORTREAL ;
@@ -98,10 +94,6 @@ PROCEDURE __BUILTIN__ nextafterl (x, y: LONGREAL) : LONGREAL ;
 PROCEDURE __BUILTIN__ nexttoward (x, y: REAL) : LONGREAL ;
 PROCEDURE __BUILTIN__ nexttowardf (x, y: SHORTREAL) : LONGREAL ;
 PROCEDURE __BUILTIN__ nexttowardl (x, y: LONGREAL) : LONGREAL ;
-
-PROCEDURE __BUILTIN__ scalb (x, n: REAL) : REAL ;
-PROCEDURE __BUILTIN__ scalbf (x, n: SHORTREAL) : SHORTREAL ;
-PROCEDURE __BUILTIN__ scalbl (x, n: LONGREAL) : LONGREAL ;
 
 PROCEDURE __BUILTIN__ scalbln (x: REAL; n: LONGINT) : REAL ;
 PROCEDURE __BUILTIN__ scalblnf (x: SHORTREAL; n: LONGINT) : SHORTREAL ;
