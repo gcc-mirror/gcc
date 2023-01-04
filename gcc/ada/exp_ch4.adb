@@ -698,11 +698,14 @@ package body Exp_Ch4 is
          --  recursion and inappropriate call to Initialize.
 
          --  We don't want to remove side effects when the expression must be
-         --  built in place. In the case of a build-in-place function call,
-         --  that could lead to a duplication of the call, which was already
-         --  substituted for the allocator.
+         --  built in place and we don't need it when there is no storage pool
+         --  or this is a return/secondary stack allocation.
 
-         if not Aggr_In_Place then
+         if not Aggr_In_Place
+           and then Present (Storage_Pool (N))
+           and then not Is_RTE (Storage_Pool (N), RE_RS_Pool)
+           and then not Is_RTE (Storage_Pool (N), RE_SS_Pool)
+         then
             Remove_Side_Effects (Exp);
          end if;
 
@@ -747,7 +750,7 @@ package body Exp_Ch4 is
 
          --  Processing for allocators returning non-interface types
 
-         if not Is_Interface (Directly_Designated_Type (PtrT)) then
+         if not Is_Interface (DesigT) then
             if Aggr_In_Place then
                Temp_Decl :=
                  Make_Object_Declaration (Loc,
@@ -960,8 +963,9 @@ package body Exp_Ch4 is
 
          if Needs_Finalization (DesigT)
            and then Needs_Finalization (T)
-           and then not Aggr_In_Place
            and then not Is_Limited_View (T)
+           and then not Aggr_In_Place
+           and then Nkind (Exp) /= N_Function_Call
            and then not For_Special_Return_Object (N)
          then
             --  An unchecked conversion is needed in the classwide case because
@@ -993,7 +997,7 @@ package body Exp_Ch4 is
          --  component containing the secondary dispatch table of the interface
          --  type.
 
-         if Is_Interface (Directly_Designated_Type (PtrT)) then
+         if Is_Interface (DesigT) then
             Displace_Allocator_Pointer (N);
          end if;
 

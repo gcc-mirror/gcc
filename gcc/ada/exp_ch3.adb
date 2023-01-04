@@ -7589,6 +7589,13 @@ package body Exp_Ch3 is
                       Typ     => Base_Typ);
                end if;
 
+            --  Renaming an expression of the object's type is immediate
+
+            elsif Rewrite_As_Renaming
+              and then Base_Type (Etype (Expr_Q)) = Base_Type (Typ)
+            then
+               null;
+
             elsif Tagged_Type_Expansion then
                declare
                   Iface : constant Entity_Id := Root_Type (Typ);
