@@ -273,6 +273,7 @@ public:
   void set_dirty () { m_state = DIRTY; }
   void set_dirty_pat (rtx pat) { m_dirty_pat = pat; }
   void set_insn (rtl_ssa::insn_info *insn) { m_insn = insn; }
+  void set_demand_info (const vector_insn_info &);
 
   bool demand_p (enum demand_type type) const { return m_demands[type]; }
   void demand (enum demand_type type) { m_demands[type] = true; }
