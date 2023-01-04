@@ -3083,6 +3083,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __width;
 	}
 
+	constexpr
+	hh_mm_ss(_Duration __d, bool __is_neg)
+	: _M_is_neg(__is_neg),
+	  _M_h (duration_cast<chrono::hours>(__d)),
+	  _M_m (duration_cast<chrono::minutes>(__d - hours())),
+	  _M_s (duration_cast<chrono::seconds>(__d - hours() - minutes()))
+	{
+	  auto __ss = __d - hours() - minutes() - seconds();
+	  if constexpr (treat_as_floating_point_v<typename precision::rep>)
+	    _M_ss = __ss;
+	  else
+	    _M_ss = duration_cast<precision>(__ss);
+	}
+
+	static constexpr _Duration
+	_S_abs(_Duration __d)
+	{
+	  if constexpr (numeric_limits<typename _Duration::rep>::is_signed)
+	    return chrono::abs(__d);
+	  else
+	    return __d;
+	}
+
       public:
 	static constexpr unsigned fractional_width = {_S_fractional_width()};
 
@@ -3097,18 +3120,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
 	constexpr explicit
-	hh_mm_ss(_Duration __d) noexcept
-	: _M_is_neg (__d < _Duration::zero()),
-	  _M_h (duration_cast<chrono::hours>(abs(__d))),
-	  _M_m (duration_cast<chrono::minutes>(abs(__d) - hours())),
-	  _M_s (duration_cast<chrono::seconds>(abs(__d) - hours() - minutes()))
-	{
-	  if constexpr (treat_as_floating_point_v<typename precision::rep>)
-	    _M_ss = abs(__d) - hours() - minutes() - seconds();
-	  else
-	    _M_ss = duration_cast<precision>(abs(__d) - hours()
-					     - minutes() - seconds());
-	}
+	hh_mm_ss(_Duration __d)
+	: hh_mm_ss(_S_abs(__d), __d < _Duration::zero())
+	{ }
 
 	constexpr bool
 	is_negative() const noexcept
