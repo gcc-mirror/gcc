@@ -5600,7 +5600,7 @@ mark_single_function (tree expr, tsubst_flags_t complain)
 
   if (is_overloaded_fn (expr) == 1
       && !mark_used (expr, complain)
-      && (complain & tf_error))
+      && !(complain & tf_error))
     return false;
   return true;
 }
