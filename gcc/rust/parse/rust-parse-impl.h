@@ -6198,6 +6198,23 @@ Parser<ManagedTokenSource>::parse_generic_arg ()
 	    else
 	      return AST::GenericArg::create_error ();
 	  }
+	else if (next_tok->get_id () == COLON)
+	  {
+	    lexer.skip_token (); // skip ident
+	    lexer.skip_token (); // skip colon
+
+	    auto tok = lexer.peek_token ();
+	    std::vector<std::unique_ptr<AST::TypeParamBound>> bounds
+	      = parse_type_param_bounds ();
+
+	    auto type = std::unique_ptr<AST::TraitObjectType> (
+	      new AST::TraitObjectType (std::move (bounds), tok->get_locus (),
+					false));
+	    if (type)
+	      return AST::GenericArg::create_type (std::move (type));
+	    else
+	      return AST::GenericArg::create_error ();
+	  }
 	lexer.skip_token ();
 	return AST::GenericArg::create_ambiguous (tok->get_str (),
 						  tok->get_locus ());
