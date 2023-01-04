@@ -991,12 +991,17 @@ package body Repinfo is
       procedure List_Structural_Record_Layout
         (Ent       : Entity_Id;
          Ext_Ent   : Entity_Id;
-         Ext_Level : Nat := 0;
+         Ext_Level : Integer := 0;
          Variant   : Node_Id := Empty;
          Indent    : Natural := 0);
       --  Internal recursive procedure to display the structural layout.
       --  If Ext_Ent is not equal to Ent, it is an extension of Ent and
-      --  Ext_Level is the number of successive extensions between them.
+      --  Ext_Level is the number of successive extensions between them,
+      --  with the convention that this number is positive when we are
+      --  called from the fixed part of Ext_Ent and negative when we are
+      --  called from the variant part of Ext_Ent, if any; this is needed
+      --  because the fixed and variant parts of a parent of an extension
+      --  cannot be listed contiguously from this extension's viewpoint.
       --  If Variant is present, it's for a variant in the variant part
       --  instead of the common part of Ent. Indent is the indentation.
 
@@ -1362,7 +1367,7 @@ package body Repinfo is
       procedure List_Structural_Record_Layout
         (Ent       : Entity_Id;
          Ext_Ent   : Entity_Id;
-         Ext_Level : Nat := 0;
+         Ext_Level : Integer := 0;
          Variant   : Node_Id := Empty;
          Indent    : Natural := 0)
       is
@@ -1381,7 +1386,16 @@ package body Repinfo is
             Derived_Disc : Entity_Id;
 
          begin
-            Derived_Disc := First_Discriminant (Ext_Ent);
+            --  Deal with an extension of a type with unknown discriminants
+
+            if Has_Unknown_Discriminants (Ext_Ent)
+              and then Present (Underlying_Record_View (Ext_Ent))
+            then
+               Derived_Disc :=
+                 First_Discriminant (Underlying_Record_View (Ext_Ent));
+            else
+               Derived_Disc := First_Discriminant (Ext_Ent);
+            end if;
 
             --  Loop over the discriminants of the extension
 
@@ -1418,6 +1432,7 @@ package body Repinfo is
          Comp       : Node_Id;
          Comp_List  : Node_Id;
          First      : Boolean := True;
+         Parent_Ent : Entity_Id := Empty;
          Var        : Node_Id;
 
       --  Start of processing for List_Structural_Record_Layout
@@ -1471,8 +1486,11 @@ package body Repinfo is
                         raise Not_In_Extended_Main;
                      end if;
 
-                     List_Structural_Record_Layout
-                       (Parent_Type, Ext_Ent, Ext_Level + 1);
+                     Parent_Ent := Parent_Type;
+                     if Ext_Level >= 0 then
+                        List_Structural_Record_Layout
+                          (Parent_Ent, Ext_Ent, Ext_Level + 1);
+                     end if;
                   end if;
 
                   First := False;
@@ -1488,6 +1506,7 @@ package body Repinfo is
 
                if Has_Discriminants (Ent)
                  and then not Is_Unchecked_Union (Ent)
+                 and then Ext_Level >= 0
                then
                   Disc := First_Discriminant (Ent);
                   while Present (Disc) loop
@@ -1509,7 +1528,12 @@ package body Repinfo is
 
                         if No (Listed_Disc) then
                            goto Continue_Disc;
+
+                        elsif not Known_Normalized_Position (Listed_Disc) then
+                           Listed_Disc :=
+                             Original_Record_Component (Listed_Disc);
                         end if;
+
                      else
                         Listed_Disc := Disc;
                      end if;
@@ -1543,7 +1567,9 @@ package body Repinfo is
 
          --  Now deal with the regular components, if any
 
-         if Present (Component_Items (Comp_List)) then
+         if Present (Component_Items (Comp_List))
+           and then (Present (Variant) or else Ext_Level >= 0)
+         then
             Comp := First_Non_Pragma (Component_Items (Comp_List));
             while Present (Comp) loop
 
@@ -1571,6 +1597,20 @@ package body Repinfo is
             end loop;
          end if;
 
+         --  Stop there if we are called from the fixed part of Ext_Ent,
+         --  we'll do the variant part when called from its variant part.
+
+         if Ext_Level > 0 then
+            return;
+         end if;
+
+         --  List the layout of the variant part of the parent, if any
+
+         if Present (Parent_Ent) then
+            List_Structural_Record_Layout
+              (Parent_Ent, Ext_Ent, Ext_Level - 1);
+         end if;
+
          --  We are done if there is no variant part
 
          if No (Variant_Part (Comp_List)) then
@@ -1582,7 +1622,7 @@ package body Repinfo is
          Write_Line ("  ],");
          Spaces (Indent);
          Write_Str ("  """);
-         for J in 1 .. Ext_Level loop
+         for J in Ext_Level .. -1 loop
             Write_Str ("parent_");
          end loop;
          Write_Str ("variant"" : [");
