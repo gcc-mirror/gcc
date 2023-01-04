@@ -2294,7 +2294,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
 	constexpr
-	hh_mm_ss(_Duration __d, bool __is_neg) noexcept
+	hh_mm_ss(_Duration __d, bool __is_neg)
 	: _M_h (duration_cast<chrono::hours>(__d)),
 	  _M_m (duration_cast<chrono::minutes>(__d - hours())),
 	  _M_s (duration_cast<chrono::seconds>(__d - hours() - minutes())),
@@ -2305,6 +2305,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_ss._M_r = __ss.count();
 	  else if constexpr (precision::period::den != 1)
 	    _M_ss._M_r = duration_cast<precision>(__ss).count();
+	}
+
+	static constexpr _Duration
+	_S_abs(_Duration __d)
+	{
+	  if constexpr (numeric_limits<typename _Duration::rep>::is_signed)
+	    return chrono::abs(__d);
+	  else
+	    return __d;
 	}
 
       public:
@@ -2318,8 +2327,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr hh_mm_ss() noexcept = default;
 
 	constexpr explicit
-	hh_mm_ss(_Duration __d) noexcept
-	: hh_mm_ss(chrono::abs(__d), __d < _Duration::zero())
+	hh_mm_ss(_Duration __d)
+	: hh_mm_ss(_S_abs(__d), __d < _Duration::zero())
 	{ }
 
 	constexpr bool

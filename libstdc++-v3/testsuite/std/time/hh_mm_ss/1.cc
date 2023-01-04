@@ -115,3 +115,19 @@ size()
   struct S4 { long long h; char m, s; bool neg; double ss; };
   static_assert(sizeof(hh_mm_ss<duration<double, std::micro>>) == sizeof(S4));
 }
+
+constexpr void
+unsigned_rep()
+{
+  using namespace std::chrono;
+
+  constexpr duration<unsigned, std::milli> ms(3690001);
+
+  constexpr hh_mm_ss hms(ms); // PR libstdc++/108265
+  static_assert( ! hms.is_negative() );
+  static_assert( hms.to_duration() == milliseconds(ms.count()) );
+  static_assert( hms.hours() == 1h );
+  static_assert( hms.minutes() == 1min );
+  static_assert( hms.seconds() == 30s );
+  static_assert( hms.subseconds() == 1ms );
+}
