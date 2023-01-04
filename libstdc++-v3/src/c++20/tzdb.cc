@@ -1501,8 +1501,11 @@ namespace std::chrono
 	if (std::distance(first, last) > 2)
 	  {
 	    --last;
-	    string name = std::prev(last)->string() + '/';
-	    name += last->string();
+	    string name = last->string();
+	    if (auto tz = do_locate_zone(this->zones, this->links, name))
+	      return tz;
+	    --last;
+	    name = last->string() + '/' + name;
 	    if (auto tz = do_locate_zone(this->zones, this->links, name))
 	      return tz;
 	  }
