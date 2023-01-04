@@ -1,3 +1,35 @@
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-execute_cfa.h: New file.  Extracted from
+	the execute_cfa_program function in unwind-dw2.c.
+	* unwind-dw2.c (execute_cfa_program_generic): New function.
+	(execute_cfa_program_specialized): Likewise.
+	(execute_cfa_program): Call execute_cfa_program_specialized
+	or execute_cfa_program_generic, as appropriate.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2.c (dwarf_reg_size): New function.
+	(_Unwind_GetGR, _Unwind_SetGR, _Unwind_SetGRPtr)
+	(_Unwind_SetSpColumn, uw_install_context_1): Use it.
+	(uw_init_context_1): Do not initialize dwarf_reg_size_table
+	if not in use.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-execute_cfa.h: New file.  Extracted from
+	the execute_cfa_program function in unwind-dw2.c.
+	* unwind-dw2.c (execute_cfa_program_generic): New function.
+	(execute_cfa_program_specialized): Likewise.
+	(execute_cfa_program): Call execute_cfa_program_specialized
+	or execute_cfa_program_generic, as appropriate.
+
 2023-01-02  Florian Weimer  <fweimer@redhat.com>
 
 	* unwind-dw2-execute_cfa.h: New file.  Extracted from

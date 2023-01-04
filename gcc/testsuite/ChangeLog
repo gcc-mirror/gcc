@@ -1,3 +1,28 @@
+2023-01-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/modules/modules.exp: Skip on AIX.
+	* gcc.target/powerpc/pr99708.c: Skip on AIX.
+
+2023-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/gomp/target-simd-clone-1.C: Tweak to test
+	that the unused clone is GC'ed.
+	* gcc.dg/gomp/target-simd-clone-1.c: Likewise.
+
+2023-01-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/cmov10.c: New test case.
+
+2023-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108264
+	* gcc.dg/pr108264.c: New test.
+
+2023-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/108263
+	* gcc.dg/pr108263.c: New test.
+
 2023-01-01  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

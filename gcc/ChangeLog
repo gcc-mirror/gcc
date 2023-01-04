@@ -1,3 +1,74 @@
+2023-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* cgraph.h (struct cgraph_node): Add gc_candidate bit, modify
+	default constructor to initialize it.
+	* cgraphunit.cc (expand_all_functions): Save gc_candidate functions
+	for last and iterate to handle recursive calls.  Delete leftover
+	candidates at the end.
+	* omp-simd-clone.cc (simd_clone_create): Set gc_candidate bit
+	on local clones.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Clear
+	gc_candidate bit when a clone is used.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* dwarf2cfi.cc (init_return_column_size): Remove.
+	(init_one_dwarf_reg_size): Adjust.
+	(generate_dwarf_reg_sizes): New function.  Extracted
+	from expand_builtin_init_dwarf_reg_sizes.
+	(expand_builtin_init_dwarf_reg_sizes): Call
+	generate_dwarf_reg_sizes.
+	* target.def (init_dwarf_reg_sizes_extra): Adjust
+	hook signature.
+	* config/msp430/msp430.cc
+	(msp430_init_dwarf_reg_sizes_extra): Adjust.
+	* config/rs6000/rs6000.cc
+	(rs6000_init_dwarf_reg_sizes_extra): Likewise.
+	* doc/tm.texi: Update.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* debug.h (dwarf_reg_sizes_constant): Declare.
+	* dwarf2cfi.cc (dwarf_reg_sizes_constant): New function.
+
+2023-01-03  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/105043
+	* doc/extend.texi (Object Size Checking): Split out into two
+	subsections and mention _FORTIFY_SOURCE.
+
+2023-01-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_int_movcc): Rewrite
+	RTL expansion to allow condition (mask) to be shared/reused,
+	by avoiding overwriting pseudos and adding REG_EQUAL notes.
+
+2023-01-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/108229
+	* config/i386/i386-features.cc
+	(general_scalar_chain::compute_convert_gain) <case PLUS>: Consider
+	the gain/cost of converting a MEM operand.
+
+2023-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108264
+	* expr.cc (store_expr): For stores into SUBREG_PROMOTED_* targets
+	from source which doesn't have scalar integral mode first convert
+	it to outer_mode.
+
+2023-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/108263
+	* cfgrtl.cc (fixup_reorder_chain): Avoid trying to redirect
+	asm goto to EXIT.
+
 2023-01-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/87832
