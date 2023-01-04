@@ -34,14 +34,22 @@
 #include <mutex>      // mutex
 #include <filesystem> // filesystem::read_symlink
 
-#ifdef __GTHREADS
-# if _WIN32
+#ifndef __GTHREADS
+# define USE_ATOMIC_SHARED_PTR 0
+#elif _WIN32
 // std::mutex cannot be constinit, so Windows must use atomic<shared_ptr<>>.
-#  define USE_ATOMIC_SHARED_PTR 1
-# else
+# define USE_ATOMIC_SHARED_PTR 1
+#elif ATOMIC_POINTER_LOCK_FREE < 2
+# define USE_ATOMIC_SHARED_PTR 0
+#else
 // TODO benchmark atomic<shared_ptr<>> vs mutex.
-#  define USE_ATOMIC_SHARED_PTR 1
-# endif
+# define USE_ATOMIC_SHARED_PTR 1
+#endif
+
+#if defined __GTHREADS && ATOMIC_POINTER_LOCK_FREE == 2
+# define USE_ATOMIC_LIST_HEAD 1
+#else
+# define USE_ATOMIC_LIST_HEAD 0
 #endif
 
 #if ! __cpp_constinit
@@ -64,7 +72,7 @@ namespace __gnu_cxx
 #else
   [[gnu::weak]] const char* zoneinfo_dir_override();
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__hpux__)
   // Need a weak definition for Mach-O.
   [[gnu::weak]] const char* zoneinfo_dir_override()
   { return _GLIBCXX_ZONEINFO_DIR; }
@@ -76,6 +84,15 @@ namespace std::chrono
 {
   namespace
   {
+#if ! USE_ATOMIC_SHARED_PTR
+#ifndef __GTHREADS
+    // Dummy no-op mutex type for single-threaded targets.
+    struct mutex { void lock() { } void unlock() { } };
+#endif
+    /// XXX std::mutex::mutex() not constexpr on Windows, so can't be constinit
+    constinit mutex list_mutex;
+#endif
+
     struct Rule;
   }
 
@@ -103,8 +120,29 @@ namespace std::chrono
     // This is the owning reference to the first tzdb in the list.
     static head_ptr _S_head_owner;
 
+#if USE_ATOMIC_LIST_HEAD
     // Lock-free access to the head of the list.
-    static atomic<_Node*> _S_head;
+    static atomic<_Node*> _S_head_cache;
+
+    static _Node*
+    _S_list_head(memory_order ord) noexcept
+    { return _S_head_cache.load(ord); }
+
+    static void
+    _S_cache_list_head(_Node* new_head) noexcept
+    { _S_head_cache = new_head; }
+#else
+    static _Node*
+    _S_list_head(memory_order)
+    {
+      lock_guard<mutex> l(list_mutex);
+      return _S_head_owner.get();
+    }
+
+    static void
+    _S_cache_list_head(_Node*) noexcept
+    { }
+#endif
 
     static const tzdb& _S_init_tzdb();
     static const tzdb& _S_replace_head(shared_ptr<_Node>, shared_ptr<_Node>);
@@ -122,8 +160,10 @@ namespace std::chrono
   // Shared pointer to the first Node in the list.
   constinit tzdb_list::_Node::head_ptr tzdb_list::_Node::_S_head_owner{nullptr};
 
+#if USE_ATOMIC_LIST_HEAD
   // Lock-free access to the first Node in the list.
-  constinit atomic<tzdb_list::_Node*> tzdb_list::_Node::_S_head{nullptr};
+  constinit atomic<tzdb_list::_Node*> tzdb_list::_Node::_S_head_cache{nullptr};
+#endif
 
   // The data structures defined in this file (Rule, on_day, at_time etc.)
   // are used to represent the information parsed from the tzdata.zi file
@@ -135,15 +175,6 @@ namespace std::chrono
 
   namespace
   {
-#if ! USE_ATOMIC_SHARED_PTR
-#ifndef __GTHREADS
-    // Dummy no-op mutex type for single-threaded targets.
-    struct mutex { void lock() { } void unlock() { } };
-#endif
-    /// XXX std::mutex::mutex() not constexpr on Windows, so can't be constinit
-    constinit mutex list_mutex;
-#endif
-
     // Used for reading a possibly-quoted string from a stream.
     struct quoted
     {
@@ -1101,30 +1132,28 @@ namespace std::chrono
   tzdb_list::_Node::_S_replace_head(shared_ptr<_Node> curr [[maybe_unused]],
 				    shared_ptr<_Node> new_head)
   {
+    _Node* new_head_ptr = new_head.get();
 #if USE_ATOMIC_SHARED_PTR
-    new_head->next = curr;
+    new_head_ptr->next = curr;
     while (!_S_head_owner.compare_exchange_strong(curr, new_head))
       {
-	if (curr->db.version == new_head->db.version)
+	if (curr->db.version == new_head_ptr->db.version)
 	  return curr->db;
-	new_head->next = curr;
+	new_head_ptr->next = curr;
       }
-    // XXX small window here where _S_head still points to previous tzdb.
-    _Node::_S_head = new_head.get();
-    return new_head->db;
+    // XXX small window here where _S_head_cache still points to previous tzdb.
 #else
     lock_guard<mutex> l(list_mutex);
-    if (const _Node* h = _S_head)
+    if (const _Node* h = _S_head_owner.get())
       {
-	if (h->db.version == new_head->db.version)
+	if (h->db.version == new_head_ptr->db.version)
 	  return h->db;
-	new_head->next = _S_head_owner;
+	new_head_ptr->next = _S_head_owner;
       }
-    auto* pnode = new_head.get();
     _S_head_owner = std::move(new_head);
-    _S_head = pnode;
-    return pnode->db;
 #endif
+    _S_cache_list_head(new_head_ptr);
+    return new_head_ptr->db;
   }
 
   // Called to populate the list for the first time. If reload_tzdb() fails,
@@ -1207,7 +1236,7 @@ namespace std::chrono
   get_tzdb_list()
   {
     using Node = tzdb_list::_Node;
-    if (Node::_S_head.load(memory_order::acquire) == nullptr) [[unlikely]]
+    if (Node::_S_list_head(memory_order::acquire) == nullptr) [[unlikely]]
       Node::_S_init_tzdb(); // populates list
     return Node::_S_the_list;
   }
@@ -1217,7 +1246,7 @@ namespace std::chrono
   get_tzdb()
   {
     using Node = tzdb_list::_Node;
-    if (auto* __p = Node::_S_head.load(memory_order::acquire)) [[likely]]
+    if (auto* __p = Node::_S_list_head(memory_order::acquire)) [[likely]]
       return __p->db;
     return Node::_S_init_tzdb(); // populates list
   }
@@ -1236,7 +1265,7 @@ namespace std::chrono
     if (head != nullptr && head->db.version == version)
       return head->db;
 #else
-    if (Node::_S_head.load(memory_order::relaxed) != nullptr) [[likely]]
+    if (Node::_S_list_head(memory_order::relaxed) != nullptr) [[likely]]
     {
       lock_guard<mutex> l(list_mutex);
       const tzdb& current = Node::_S_head_owner->db;
@@ -1346,7 +1375,7 @@ namespace std::chrono
   const tzdb&
   tzdb_list::front() const noexcept
   {
-    return _Node::_S_head.load()->db;
+    return _Node::_S_list_head(memory_order::seq_cst)->db;
   }
 
   // Implementation of std::chrono::tzdb_list::begin().
