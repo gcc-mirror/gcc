@@ -64,7 +64,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // and __platform_notify() if there is a more efficient primitive supported
 // by the platform (e.g. __ulock_wait()/__ulock_wake()) which is better than
 // a mutex/condvar based wait.
-    using __platform_wait_t = uint64_t;
+# if ATOMIC_LONG_LOCK_FREE == 2
+    using __platform_wait_t = unsigned long;
+# else
+    using __platform_wait_t = unsigned int;
+# endif
     inline constexpr size_t __platform_wait_alignment
       = __alignof__(__platform_wait_t);
 #endif
