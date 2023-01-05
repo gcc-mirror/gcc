@@ -1,3 +1,32 @@
+2023-01-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108282
+	* g++.dg/cpp2a/concepts-requires34.C: New test.
+
+2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108206
+	* g++.dg/template/pr108206.C: New test.
+
+2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gm2/iso/pass/realbitscast.mod: Disable REAL96 on Darwin.
+
+2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108253
+	* g++.dg/opt/pr108253.C: New test.
+
+2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108237
+	* gcc.c-torture/compile/pr108237.c: New test.
+
+2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108256
+	* c-c++-common/ubsan/pr108256.c: New test.
+
 2023-01-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/modules/modules.exp: Skip on AIX.

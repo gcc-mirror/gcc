@@ -1,3 +1,7 @@
+2023-01-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* MAINTAINERS: Add Gaius Mulley as Modula-2 front-end maintainer.
+
 2022-12-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.def: Do not build shared libffi.

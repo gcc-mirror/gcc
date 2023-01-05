@@ -1,3 +1,8 @@
+2023-01-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.cc (may_need_named_section_p): Clones with no body
+	need no remaning.
+
 2022-12-29  Alexandre Oliva  <oliva@adacore.com>
 
 	* lto-partition.cc (lto_1_to_1_map): Drop NULL partition

@@ -1,3 +1,21 @@
+2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/108183
+	* libm2cor/KeyBoardLEDs.cc (_M2_KeyBoardLEDs_ctor): Rework to use
+	an extern "C" function with 'constructor' attribute.
+	* libm2iso/ErrnoCategory.cc (_M2_ErrnoCategory_ctor): Likewise.
+	* libm2iso/RTco.cc (_M2_RTco_ctor): Likewise.
+	* libm2pim/Selective.cc (_M2_Selective_ctor): Likewise.
+	* libm2pim/SysExceptions.cc (_M2_SysExceptions_ctor): Likewise.
+	* libm2pim/UnixArgs.cc (_M2_UnixArgs_ctor): Likewise.
+	* libm2pim/cgetopt.cc (_M2_cgetopt_ctor): Likewise.
+	* libm2pim/dtoa.cc (_M2_dtoa_ctor): Likewise.
+	* libm2pim/errno.cc (_M2_errno_ctor): Likewise.
+	* libm2pim/ldtoa.cc (_M2_ldtoa_ctor): Likewise.
+	* libm2pim/sckt.cc (_M2_sckt_ctor): Likewise.
+	* libm2pim/termios.cc (_M2_termios_ctor): Likewise.
+	* libm2pim/wrapc.c: Add a new line to the file end.
+
 2022-12-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

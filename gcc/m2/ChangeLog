@@ -1,3 +1,22 @@
+2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/108183
+	* gm2-libs-ch/UnixArgs.cc (_M2_UnixArgs_ctor): Rework to use
+	an extern "C" function with 'constructor' attribute.
+	* gm2-libs-ch/dtoa.cc (_M2_dtoa_ctor): Likewise.
+	* gm2-libs-ch/ldtoa.cc (_M2_ldtoa_ctor): Likewise.
+
+2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/108259
+	* gm2-gcc/m2decl.cc (m2decl_DeclareModuleCtor): Make module
+	registration constructors visible.
+
+2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Make-lang.in (dvi, ps, pdf): Build in the gcc/doc directory, also
+	use the configured tools for texi -> dvi and texi -> pdf.
+
 2023-01-01  Iain Sandoe  <iain@sandoe.co.uk>
 	    Gaius Mulley  <gaiusmod2@gmail.com>
 

@@ -1,3 +1,15 @@
+2023-01-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108282
+	* decl2.cc (mark_single_function): Ignore mark_used failure
+	only in a non-SFINAE context rather than in a SFINAE one.
+
+2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108206
+	* decl.cc (merge_default_template_args): Return false if either
+	new_parm or old_parm are erroneous.
+
 
 Copyright (C) 2023 Free Software Foundation, Inc.
 

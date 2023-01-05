@@ -1,3 +1,35 @@
+2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108253
+	* tree-vrp.cc (maybe_set_nonzero_bits): Handle var with pointer
+	types.
+
+2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108237
+	* generic-match-head.cc: Include tree-pass.h.
+	(canonicalize_math_p, optimize_vectors_before_lowering_p): Define
+	to false if cfun and cfun->curr_properties has PROP_gimple_opt_math
+	resp. PROP_gimple_lvec property set.
+
+2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108256
+	* convert.cc (do_narrow): Punt for MULT_EXPR if original
+	type doesn't wrap around and -fsanitize=signed-integer-overflow
+	is on.
+	* fold-const.cc (fold_unary_loc) <CASE_CONVERT>: Likewise.
+
+2023-01-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Handle Emeraldrapids.
+	* common/config/i386/i386-common.cc: Add Emeraldrapids.
+
+2023-01-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Remove case 0xb5
+	for meteorlake.
+
 2023-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* cgraph.h (struct cgraph_node): Add gc_candidate bit, modify
