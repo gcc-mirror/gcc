@@ -25,6 +25,15 @@
 #include <bits/c++config.h>
 #include <ext/atomicity.h>
 
+/* Perform ldcw operation in cache when possible.  */
+#ifndef _PA_LDCW_INSN
+# ifdef _PA_RISC2_0
+# define _PA_LDCW_INSN "ldcw,co"
+# else
+# define _PA_LDCW_INSN "ldcw"
+# endif
+#endif
+
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -51,19 +60,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     int tmp;
     volatile int& lock = _Atomicity_lock<0>::_S_atomicity_lock;
 
-    __asm__ __volatile__ ("ldcw 0(%1),%0\n\t"
+    __asm__ __volatile__ (_PA_LDCW_INSN " 0(%1),%0\n\t"
 			  "cmpib,<>,n 0,%0,.+20\n\t"
-			  "ldw 0(%1),%0\n\t"
-			  "cmpib,= 0,%0,.-4\n\t"
+			  "ldw,ma 0(%1),%0\n\t"
+			  "cmpib,<> 0,%0,.-12\n\t"
 			  "nop\n\t"
-			  "b,n .-20"
+			  "b,n .-12"
 			  : "=&r" (tmp)
 			  : "r" (&lock)
 			  : "memory");
 
     result = *__mem;
     *__mem = result + __val;
-    __asm__ __volatile__ ("stw %1,0(%0)"
+    __asm__ __volatile__ ("stw,ma %1,0(%0)"
 			  : : "r" (&lock), "r" (tmp) : "memory");
     return result;
   }
@@ -75,18 +84,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     int tmp;
     volatile int& lock = _Atomicity_lock<0>::_S_atomicity_lock;
 
-    __asm__ __volatile__ ("ldcw 0(%1),%0\n\t"
+    __asm__ __volatile__ (_PA_LDCW_INSN " 0(%1),%0\n\t"
 			  "cmpib,<>,n 0,%0,.+20\n\t"
-			  "ldw 0(%1),%0\n\t"
-			  "cmpib,= 0,%0,.-4\n\t"
+			  "ldw,ma 0(%1),%0\n\t"
+			  "cmpib,<> 0,%0,.-12\n\t"
 			  "nop\n\t"
-			  "b,n .-20"
+			  "b,n .-12"
 			  : "=&r" (tmp)
 			  : "r" (&lock)
 			  : "memory");
 
     *__mem += __val;
-    __asm__ __volatile__ ("stw %1,0(%0)"
+    __asm__ __volatile__ ("stw,ma %1,0(%0)"
 			  : : "r" (&lock), "r" (tmp) : "memory");
   }
 
