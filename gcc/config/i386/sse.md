@@ -685,10 +685,6 @@
 (define_mode_iterator VF4_128_8_256
   [V4DF V4SF])
 
-(define_mode_iterator VI1_AVX512VLBW
-  [(V64QI "TARGET_AVX512BW") (V32QI  "TARGET_AVX512VL")
-	(V16QI  "TARGET_AVX512VL")])
-
 (define_mode_attr avx512
   [(V16QI "avx512vl") (V32QI "avx512vl") (V64QI "avx512bw")
    (V8HI  "avx512vl") (V16HI  "avx512vl") (V32HI "avx512bw")
@@ -28854,8 +28850,8 @@
 (define_insn "avx512vl_vpshufbitqmb<mode><mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(unspec:<avx512fmaskmode>
-	  [(match_operand:VI1_AVX512VLBW 1 "register_operand" "v")
-	   (match_operand:VI1_AVX512VLBW 2 "nonimmediate_operand" "vm")]
+	  [(match_operand:VI1_AVX512VL 1 "register_operand" "v")
+	   (match_operand:VI1_AVX512VL 2 "nonimmediate_operand" "vm")]
 	  UNSPEC_VPSHUFBIT))]
   "TARGET_AVX512BITALG"
   "vpshufbitqmb\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}"

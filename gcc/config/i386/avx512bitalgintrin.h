@@ -48,17 +48,6 @@ _mm512_popcnt_epi16 (__m512i __A)
   return (__m512i) __builtin_ia32_vpopcountw_v32hi ((__v32hi) __A);
 }
 
-#ifdef __DISABLE_AVX512BITALG__
-#undef __DISABLE_AVX512BITALG__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512BITALG__ */
-
-#if !defined(__AVX512BITALG__) || !defined(__AVX512BW__)
-#pragma GCC push_options
-#pragma GCC target("avx512bitalg,avx512bw")
-#define __DISABLE_AVX512BITALGBW__
-#endif /* __AVX512VLBW__ */
-
 extern __inline __m512i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_popcnt_epi8 (__m512i __W, __mmask64 __U, __m512i __A)
@@ -114,16 +103,16 @@ _mm512_mask_bitshuffle_epi64_mask (__mmask64 __M, __m512i __A, __m512i __B)
 						 (__mmask64) __M);
 }
 
-#ifdef __DISABLE_AVX512BITALGBW__
-#undef __DISABLE_AVX512BITALGBW__
+#ifdef __DISABLE_AVX512BITALG__
+#undef __DISABLE_AVX512BITALG__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX512BITALGBW__ */
+#endif /* __DISABLE_AVX512BITALG__ */
 
-#if !defined(__AVX512BITALG__) || !defined(__AVX512VL__) || !defined(__AVX512BW__)
+#if !defined(__AVX512BITALG__) || !defined(__AVX512VL__)
 #pragma GCC push_options
-#pragma GCC target("avx512bitalg,avx512vl,avx512bw")
-#define __DISABLE_AVX512BITALGVLBW__
-#endif /* __AVX512VLBW__ */
+#pragma GCC target("avx512bitalg,avx512vl")
+#define __DISABLE_AVX512BITALGVL__
+#endif /* __AVX512BITALGVL__ */
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -161,18 +150,6 @@ _mm256_mask_bitshuffle_epi64_mask (__mmask32 __M, __m256i __A, __m256i __B)
 						 (__v32qi) __B,
 						 (__mmask32) __M);
 }
-
-#ifdef __DISABLE_AVX512BITALGVLBW__
-#undef __DISABLE_AVX512BITALGVLBW__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512BITALGVLBW__ */
-
-
-#if !defined(__AVX512BITALG__) || !defined(__AVX512VL__)
-#pragma GCC push_options
-#pragma GCC target("avx512bitalg,avx512vl")
-#define __DISABLE_AVX512BITALGVL__
-#endif /* __AVX512VLBW__ */
 
 extern __inline __mmask16
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -278,6 +255,6 @@ _mm_maskz_popcnt_epi16 (__mmask8 __U, __m128i __A)
 #ifdef __DISABLE_AVX512BITALGVL__
 #undef __DISABLE_AVX512BITALGVL__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX512BITALGBW__ */
+#endif /* __DISABLE_AVX512BITALGVL__ */
 
 #endif /* _AVX512BITALGINTRIN_H_INCLUDED */
