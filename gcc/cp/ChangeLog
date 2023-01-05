@@ -1,3 +1,12 @@
+2023-01-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-01-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108282
+	* decl2.cc (mark_single_function): Ignore mark_used failure
+	only in a non-SFINAE context rather than in a SFINAE one.
+
 2022-12-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

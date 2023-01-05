@@ -1,3 +1,12 @@
+2023-01-04  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2022-10-18  Florian Weimer  <fweimer@redhat.com>
+
+	* configure.ac (sanitizer_supported): Include <unistd.h> for
+	syscall prototype.
+	* configure: Regenerate.
+
 2022-08-19  Release Manager
 
 	* GCC 12.2.0 released.
