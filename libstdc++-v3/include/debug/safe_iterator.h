@@ -761,12 +761,9 @@ namespace __gnu_debug
       _Safe_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
-			      _M_message(__msg_bad_inc)
-			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(this->base()++, this->_M_sequence,
-			      _Attach_single());
+	_Safe_iterator __ret = *this;
+	++*this;
+	return __ret;
       }
 
       // ------ Bidirectional iterator requirements ------
@@ -788,12 +785,9 @@ namespace __gnu_debug
       _Safe_iterator
       operator--(int) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
-			      _M_message(__msg_bad_dec)
-			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(this->base()--, this->_M_sequence,
-			      _Attach_single());
+	_Safe_iterator __ret = *this;
+	--*this;
+	return __ret;
       }
 
       // ------ Random access iterator requirements ------
