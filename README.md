@@ -70,7 +70,7 @@ The path of header dir and sysroot should be specified when you configure the pr
 ```bash
 $ mkdir mac-build
 $ cd mac-build
-$ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-multilib --enable-languages=rust --with-native-system-header-dir=/usr/include --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk 
+$ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-multilib --enable-languages=rust --with-native-system-header-dir=/usr/include --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 $ make
 
 ```
@@ -96,7 +96,7 @@ $ $HOME/gccrs-install/gccrs -g -O2 -c test.rs -o test.o
 $ $HOME/gccrs-install/gccrs -o test test.o
 ```
 
-You can also setup your shell to automatically find the installed compiler. For example for `bash`, 
+You can also setup your shell to automatically find the installed compiler. For example for `bash`,
 add the following in your `$HOME/.bashrc`:
 
 ```bash
@@ -140,7 +140,7 @@ test cases referencing any issues on Github.
 
 ### Enabling internal checks
 
-GCC has several internal checks that can be enabled during configuration. In the case of `gccrs`, 
+GCC has several internal checks that can be enabled during configuration. In the case of `gccrs`,
 you can enable the following:
 ```bash
 $ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-multilib --enable-languages=rust --enable-checking=gimple,tree,types
@@ -159,7 +159,7 @@ $ gdb --args  /some/path/../../rust1 test.rs -quiet -dumpbase arithmetic_express
  -mtune=generic -march=x86-64 -O0 -w -version -fdiagnostics-color=never -fno-diagnostics-show-caret -fno-diagnostics-show-line-numbers -fdiagnostics-urls=never -fdiagnostics-path-format=separate-events -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu
 ```
 
-Or simply add the `-wrapper gdb,--args` option. 
+Or simply add the `-wrapper gdb,--args` option.
 This will call each subcommand in `gdb` and you simply have to break/debug in `rust1`:
 ```bash
 $ gccrs test.rs -O0 -S -o arithmetic_expressions1.s -wrapper gdb,--args
@@ -167,7 +167,7 @@ $ gccrs test.rs -O0 -S -o arithmetic_expressions1.s -wrapper gdb,--args
 
 ## Docker image
 
-There is a docker image hosted over on: 
+There is a docker image hosted over on:
 
 https://hub.docker.com/repository/docker/philberty/gccrs
 
@@ -180,7 +180,7 @@ Or you can build your own image:
 ```bash
 $ docker build . -t gccrs-dev
 ```
-If you want to build an object file: 
+If you want to build an object file:
 
 ```bash
 $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
@@ -199,7 +199,7 @@ To emit assembly :
 ```bash
 $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
     gccrs-dev:latest gccrs -g -O2 \
-    gcc/testsuite/rust/compile/torture/type_infer1.rs -S -o type_infer1.s 
+    gcc/testsuite/rust/compile/torture/type_infer1.rs -S -o type_infer1.s
 ```
 
 To emit Rust front end debug output, you may add options like `-frust-debug`, `-frust-dump-all`.
@@ -209,11 +209,11 @@ To emit Rust front end debug output, you may add options like `-frust-debug`, `-
 
 If you want to contribute to GCC Rust, you can find more information in [CONTRIBUTING.md](https://github.com/Rust-GCC/gccrs/blob/master/CONTRIBUTING.md).
 
-Please be aware this project is designed to be pushed upstream to GCC when we reach some milestones, 
-and this means we require copyright assignment or the Developer's Certificate of Origin sign-off. 
+Please be aware this project is designed to be pushed upstream to GCC when we reach some milestones,
+and this means we require copyright assignment or the Developer's Certificate of Origin sign-off.
 Please see the [Contributing to GCC](https://gcc.gnu.org/contribute.html) guide or [Developer's Certificate of Origin (DCO) Sign-off](https://gcc.gnu.org/dco.html) guide.
 
-Not all contributions must be code; we would love to see new test cases or bugs and issues to be reported. 
+Not all contributions must be code; we would love to see new test cases or bugs and issues to be reported.
 Feel free to add any comments on open PRs
 
 
