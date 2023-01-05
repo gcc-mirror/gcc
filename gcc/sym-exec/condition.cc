@@ -34,12 +34,12 @@ bit_condition::bit_condition (value_bit *left, value_bit *right, tree_code type)
 bit_condition::bit_condition (const bit_condition &expr)
 {
   bit_expression::copy (&expr);
-  type = expr.get_cond_type ();
+  type = expr.get_code ();
 }
 
 
 tree_code
-bit_condition::get_cond_type () const
+bit_condition::get_code () const
 {
   return type;
 }

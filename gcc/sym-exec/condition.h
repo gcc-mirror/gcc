@@ -18,7 +18,7 @@ class bit_condition : public bit_expression {
  public:
   bit_condition (value_bit *left, value_bit *right, tree_code type);
   bit_condition (const bit_condition &expr);
-  tree_code get_cond_type () const;
+  tree_code get_code () const;
   value_bit *copy () const;
   value_type get_type () const;
 };

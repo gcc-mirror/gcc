@@ -1067,9 +1067,9 @@ check_condition (value_bit *symb_exp, unsigned char is_one,
 
 	  unsigned char comparison_val = as_a<bit *> ((*iter)->get_right ())
 	      ->get_val ();
-	  if (condition->get_cond_type () == EQ_EXPR)
+	  if (condition->get_code () == EQ_EXPR)
 	    return comparison_val == is_one;
-	  if (condition->get_cond_type () == NE_EXPR)
+	  if (condition->get_code () == NE_EXPR)
 	    return comparison_val != is_one;
 	  return false;
 	}

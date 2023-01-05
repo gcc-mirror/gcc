@@ -45,7 +45,7 @@ class value_bit {
   {};
   value_bit (size_t i) : index (i)
   {};
-  value_bit (value_bit &val) : index (val.index)
+  value_bit (const value_bit &val) : index (val.index)
   {};
   size_t get_index () const;
 
@@ -53,8 +53,7 @@ class value_bit {
   virtual value_bit *copy () const = 0;
   virtual value_type get_type () const = 0;
   virtual void print () = 0;
-  virtual ~value_bit ()
-  {};
+  virtual ~value_bit () = default;
 };
 
 /* Represents value of a single bit of symbolic marked variables.  */

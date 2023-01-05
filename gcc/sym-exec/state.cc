@@ -4,9 +4,13 @@
 
 #include "state.h"
 
-state::state ()
+
+size_t min (size_t a, size_t b, size_t c)
 {
+  size_t min = (a < b ? a : b);
+  return min < c ? min : c;
 }
+
 
 state::state (const state &s)
 {
@@ -96,7 +100,8 @@ state::check_args_compatibility (tree arg1, tree arg2, tree dest)
 value
 state::create_val_for_const (tree var, size_t size)
 {
-  HOST_WIDE_INT val = tree_to_shwi (var);
+  unsigned HOST_WIDE_INT val = TYPE_UNSIGNED (TREE_TYPE (var))
+			       ? tree_to_uhwi (var) : tree_to_shwi (var);
   value result (size, TYPE_UNSIGNED (TREE_TYPE (var)));
 
   for (size_t i = 0; i < size; i++)
@@ -288,7 +293,7 @@ state::get_var_size (tree var)
   if (content == NULL)
     return 0;
 
-  return content->length ();
+  return content->allocated ();
 }
 
 
@@ -332,6 +337,22 @@ state::and_two_bits (value_bit *arg1, value_bit *arg2)
     result = and_sym_bits (arg1, arg2);
 
   return result;
+}
+
+
+value_bit *
+state::operate_bits (bit_func bit_op, value_bit *bit1, value_bit *bit2,
+		     value_bit **bit3)
+{
+  return (bit_op) (bit1, bit2);
+}
+
+
+value_bit *
+state::operate_bits (bit_func3 bit_op, value_bit *bit1, value_bit *bit2,
+		     value_bit **bit3)
+{
+  return (bit_op) (bit1, bit2, bit3);
 }
 
 
@@ -391,12 +412,7 @@ state::do_and (value *arg1, value *arg2, tree dest)
   /* Creating AND expressions for every bit pair of given arguments
      and store them as a new state for given destination.  */
 
-  for (size_t i = 0; i < get_var_size (dest); i++)
-    {
-      value_bit *temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = and_two_bits ((*arg1)[i], (*arg2)[i]);
-      delete temp;
-    }
+  operate (arg1, arg2, nullptr, dest, &state::and_two_bits);
 }
 
 
@@ -440,12 +456,7 @@ state::do_or (value *arg1, value *arg2, tree dest)
 {
   /* Creating OR expressions for every bit pair of given arguments
      and store them as a new state for given destination.  */
-  for (size_t i = 0; i < get_var_size (dest); i++)
-    {
-      value_bit *temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = or_two_bits ((*arg1)[i], (*arg2)[i]);
-      delete temp;
-    }
+  operate (arg1, arg2, nullptr, dest, &state::or_two_bits);
 }
 
 
@@ -487,12 +498,7 @@ state::do_xor (tree arg1, tree arg2, tree dest)
 void
 state::do_xor (value *arg1, value *arg2, tree dest)
 {
-  for (size_t i = 0; i < get_var_size (dest); i++)
-    {
-      value_bit *temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = xor_two_bits ((*arg1)[i], (*arg2)[i]);
-      delete temp;
-    }
+  operate (arg1, arg2, nullptr, dest, &state::xor_two_bits);
 }
 
 
@@ -555,18 +561,10 @@ state::make_number (const value *var)
 
 /* Shift_left operation.  Case: var2 is a symbolic value.  */
 
-void
-state::shift_left_sym_values (value *arg1, value *arg2, tree dest)
+value_bit *
+state::shift_left_sym_bits (value_bit *var1, value_bit *var2)
 {
-  for (size_t i = 0; i < get_var_size (dest); i++)
-    {
-      value_bit *var1_bit = (*arg1)[i];
-      value_bit *var2_bit = (*arg2)[i];
-      value_bit *new_bit = new shift_left_expression (var1_bit->copy (),
-						      var2_bit->copy ());
-      delete (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = new_bit;
-    }
+  return new shift_left_expression (var1->copy (), var2->copy ());
 }
 
 
@@ -594,7 +592,7 @@ state::do_shift_left (value *arg1, value *arg2, tree dest)
       delete result;
     }
   else
-    shift_left_sym_values (arg1, arg2, dest);
+    operate (arg1, arg2, nullptr, dest, &state::shift_left_sym_bits);
 }
 
 
@@ -621,7 +619,7 @@ state::do_shift_right (value *arg1, value *arg2, tree dest)
 	}
     }
   else
-    shift_right_sym_values (arg1, arg2, dest);
+    operate (arg1, arg2, nullptr, dest, &state::shift_right_sym_bits);
 }
 
 
@@ -629,18 +627,18 @@ state::do_shift_right (value *arg1, value *arg2, tree dest)
    Resturn result and stores new carry bit in "carry".  */
 
 value_bit *
-state::full_adder (value_bit *var1, value_bit *var2, value_bit *&carry)
+state::full_adder (value_bit *var1, value_bit *var2, value_bit **carry)
 {
   value_bit *new_carry = and_two_bits (var1, var2);
   value_bit *sum = xor_two_bits (var1, var2);
 
-  value_bit *result = xor_two_bits (sum, carry);
-  value_bit *sum_and_carry = and_two_bits (sum, carry);
+  value_bit *result = xor_two_bits (sum, *carry);
+  value_bit *sum_and_carry = and_two_bits (sum, *carry);
 
-  delete carry;
+  delete *carry;
   delete sum;
 
-  carry = or_two_bits (sum_and_carry, new_carry);
+  *carry = or_two_bits (sum_and_carry, new_carry);
 
   delete sum_and_carry;
   delete new_carry;
@@ -662,12 +660,7 @@ void
 state::do_add (value *arg1, value *arg2, tree dest)
 {
   value_bit *carry = new bit (0);
-  for (size_t i = 0; i < get_var_size (dest); ++i)
-    {
-      value_bit *temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = full_adder ((*arg1)[i], (*arg2)[i], carry);
-      delete temp;
-    }
+  operate (arg1, arg2, &carry, dest, &state::full_adder);
   delete carry;
 }
 
@@ -692,7 +685,7 @@ state::additive_inverse (const value *number)
 
   value_bit *carry = new bit (0);
   for (size_t i = 0; i < size; ++i)
-    (*result)[i] = full_adder ((*result)[i], one[i], carry);
+    (*result)[i] = full_adder ((*result)[i], one[i], &carry);
 
   delete carry;
   free_val (&one);
@@ -714,7 +707,6 @@ state::do_sub (value *arg1, value *arg2, tree dest)
 {
   value *neg_arg2 = additive_inverse (arg2);
   do_add (arg1, neg_arg2, dest);
-
   free_val (neg_arg2);
   delete neg_arg2;
 }
@@ -744,23 +736,29 @@ state::do_complement (tree arg, tree dest)
   declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
   declare_if_needed (arg, var_states.get (dest)->allocated ());
 
-  if (get_var_size (arg) != get_var_size (dest))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: Incompatible destination"
-			    " and argument sizes.\n");
-
-      return false;
-    }
-
   /* Creating complement expressions for every bit the given argument
      and store it as a new state for given destination.  */
-  for (size_t i = 0; i < get_var_size (dest); i++)
+  size_t iter_count = min (get_var_size (dest), get_var_size (arg),
+			   get_var_size (arg));
+
+  size_t i = 0;
+  for (; i < iter_count; i++)
     {
       value_bit *result = complement_a_bit ((*var_states.get (arg))[i]);
-
       delete (*var_states.get (dest))[i];
       (*var_states.get (dest))[i] = result;
+    }
+
+  if (i >= get_var_size (dest))
+    {
+      print_value (var_states.get (dest));
+      return true;
+    }
+
+  for (; i < get_var_size (dest); i++)
+    {
+      delete (*var_states.get (dest))[i];
+      (*var_states.get (dest))[i] = complement_a_bit (new bit (0));
     }
 
   print_value (var_states.get (dest));
@@ -1047,7 +1045,7 @@ state::get_parent_with_const_child (value_bit *root, bit_expression *&parent,
 	  node_to_parent.put (as_a<bit_expression *> (left), cur_element);
 	}
 
-      if (right != nullptr && is_a<bit_xor_expression *> (left))
+      if (right != nullptr && is_a<bit_xor_expression *> (right))
 	{
 	  nodes_to_consider.add (as_a<bit_expression *> (right));
 	  node_to_parent.put (as_a<bit_expression *> (right), cur_element);
@@ -1080,18 +1078,10 @@ state::shift_left_by_const (const value *number, size_t shift_value)
 
 /* Shift_right operation.  Case: var2 is a symbolic value.  */
 
-void
-state::shift_right_sym_values (value *arg1, value *arg2, tree dest)
+value_bit *
+state::shift_right_sym_bits (value_bit *var1, value_bit *var2)
 {
-  for (size_t i = 0; i < get_var_size (dest); i++)
-    {
-      value_bit *var1_bit = (*arg1)[i];
-      value_bit *var2_bit = (*arg2)[i];
-      value_bit *new_bit = new shift_right_expression (var1_bit->copy (),
-						       var2_bit->copy ());
-      delete (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = new_bit;
-    }
+  return new shift_right_expression (var1->copy (), var2->copy ());
 }
 
 
@@ -1104,7 +1094,7 @@ state::add_numbers (value *var1, const value *var2)
   for (unsigned i = 0; i < var1->length (); i++)
     {
       value_bit *temp = (*var1)[i];
-      (*var1)[i] = full_adder ((*var1)[i], (*var2)[i], carry);
+      (*var1)[i] = full_adder ((*var1)[i], (*var2)[i], &carry);
       delete temp;
     }
   delete carry;
@@ -1949,13 +1939,6 @@ state::print_value (value *var)
 	fprintf (dump_file, ", ");
     }
   fprintf (dump_file, "}\n");
-}
-
-
-size_t min (size_t a, size_t b, size_t c)
-{
-  size_t min = (a < b ? a : b);
-  return min < c ? min : c;
 }
 
 

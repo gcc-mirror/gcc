@@ -30,7 +30,9 @@ struct value {
 
 class state {
   typedef void (state::*binary_func) (value *arg1, value *arg2, tree dest);
-
+  typedef value_bit *(*bit_func) (value_bit *bit1, value_bit *bit2);
+  typedef value_bit *(*bit_func3) (value_bit *var1, value_bit *var2,
+				   value_bit **var3);
   typedef void (state::*binary_cond_func) (value *arg1, value *arg2);
 
  private:
@@ -86,6 +88,16 @@ class state {
 
   /* Constructs expression trees of equal condition for given values.  */
   bit_expression *construct_equal_cond (value *arg1, value *arg2);
+
+  static value_bit *operate_bits (bit_func bit_op, value_bit *bit1,
+				  value_bit *bit2, value_bit **bit3);
+
+  static value_bit *operate_bits (bit_func3 bit_op, value_bit *bit1,
+				  value_bit *bit2, value_bit **bit3);
+
+  template<class func>
+  void operate (value *arg1, value *arg2, value_bit **bit_arg, tree dest,
+		func bit_op);
 
   /* Does preprocessing and postprocessing for expressions with tree operands.
      Handles value creation for constant and their removement in the end.  */
@@ -166,10 +178,10 @@ class state {
 				   const bit *const_bit);
 
   /* Shift_right operation.  Case: var2 is a symbolic value.  */
-  void shift_right_sym_values (value *arg1, value *arg2, tree dest);
+  static value_bit *shift_right_sym_bits (value_bit *var1, value_bit *var2);
 
   /* Shift_left operation.  Case: var2 is a symbolic value.  */
-  void shift_left_sym_values (value *arg1, value *arg2, tree dest);
+  static value_bit *shift_left_sym_bits (value_bit *var1, value_bit *var2);
 
   /* Shifts var right by size of shift_value.  */
   value *shift_right_by_const (value *var, size_t shift_value);
@@ -194,7 +206,8 @@ class state {
 
   /* Adds two bits and carry value.
      Resturn result and stores new carry bit in "carry".  */
-  value_bit *full_adder (value_bit *var1, value_bit *var2, value_bit *&carry);
+  static value_bit *full_adder (value_bit *var1, value_bit *var2,
+				value_bit **carry);
 
   /* Returns the additive inverse of the given number.  */
   value *additive_inverse (const value *number);
@@ -215,7 +228,7 @@ class state {
 		       const value &polynomial);
 
  public:
-  state ();
+  state () = default;
 
   ~state ();
 
@@ -329,5 +342,55 @@ class state {
   /* Create LFSR value.  */
   static value *create_lfsr (tree crc, value *polynomial, bool is_bit_forward);
 };
+
+
+size_t min (size_t a, size_t b, size_t c);
+
+
+template<class func>
+void
+state::operate (value *arg1, value *arg2, value_bit **bit_arg, tree dest,
+		func bit_op)
+{
+  value *dest_var = var_states.get (dest);
+  size_t min_iter = min (arg1->length (), arg2->length (), dest_var->length ());
+
+  size_t i = 0;
+  for (; i < min_iter; i++)
+    {
+      value_bit *temp = (*var_states.get (dest))[i];
+      (*var_states.get (dest))[i] = operate_bits (bit_op, (*arg1)[i],
+						  (*arg2)[i], bit_arg);
+      delete temp;
+    }
+
+  if (i >= dest_var->length ())
+    return;
+
+  value *biggest = arg1;
+  if (arg2->length () > arg1->length ())
+    biggest = arg2;
+
+  min_iter = min (biggest->length (), dest_var->length (), dest_var->length ());
+  value_bit *zero_bit = new bit (0);
+  for (; i < min_iter; i++)
+    {
+      value_bit *temp = (*var_states.get (dest))[i];
+      (*var_states.get (dest))[i] = operate_bits (bit_op, (*biggest)[i],
+						  zero_bit, bit_arg);
+      delete temp;
+    }
+
+  if (i >= dest_var->length ())
+    return;
+
+  for (; i < dest_var->length (); i++)
+    {
+      value_bit *temp = (*var_states.get (dest))[i];
+      (*var_states.get (dest))[i] = operate_bits (bit_op, zero_bit, zero_bit,
+						  bit_arg);
+      delete temp;
+    }
+}
 
 #endif /* SYM_EXEC_STATE_H.  */
