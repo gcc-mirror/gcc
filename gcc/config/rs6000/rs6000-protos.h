@@ -309,4 +309,6 @@ extern bool rs6000_quadword_masked_address_p (const_rtx exp);
 extern rtx rs6000_gen_lvx (enum machine_mode, rtx, rtx);
 extern rtx rs6000_gen_stvx (enum machine_mode, rtx, rtx);
 
+extern gimple *currently_expanding_gimple_stmt;
+extern bool rs6000_opaque_type_invalid_use_p (gimple *);
 #endif  /* rs6000-protos.h */
