@@ -3034,6 +3034,7 @@ namespace __format
 	      return std::forward<_Visitor>(__vis)(_M_val._M_ll);
 	    case _Arg_ull:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_ull);
+#if __cpp_lib_to_chars // FIXME: need to be able to format these types!
 	    case _Arg_flt:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_flt);
 	    case _Arg_dbl:
@@ -3046,6 +3047,7 @@ namespace __format
 	      return std::forward<_Visitor>(__vis)(_M_val._M_f128);
 	    case _Arg_ibm128:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_ibm128);
+#endif
 #endif
 	    case _Arg_str:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_str);
