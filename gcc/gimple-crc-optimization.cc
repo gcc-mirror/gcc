@@ -186,12 +186,13 @@ class crc_optimization {
 };
 
 
-/* TODO use existing code or move the function.
+/* TODO: Move the function.
    Set GIMPLE_PHI and GIMPLE statements of the crc loop not visited.  */
 
 void
 set_loop_statements_not_visited (class loop *loop)
 {
+  // TODO: find faster way.
   basic_block *bbs = get_loop_body_in_dom_order (loop);
   for (unsigned int i = 0; i < loop->num_nodes; i++)
     {
@@ -215,7 +216,7 @@ set_loop_statements_not_visited (class loop *loop)
 }
 
 
-/* TODO use existing code or move the function.
+/* TODO: Move the function.
    Set GIMPLE_PHI and GIMPLE statements of the function not visited.  */
 
 static void
@@ -517,6 +518,8 @@ crc_optimization::is_acceptable_statement (const tree_code &stmt_code)
   return stmt_code == BIT_IOR_EXPR
 	 || stmt_code == BIT_AND_EXPR
 	 || stmt_code == BIT_XOR_EXPR
+	 || stmt_code == MINUS_EXPR
+	 || stmt_code == PLUS_EXPR
 	 || TREE_CODE_CLASS (stmt_code) == tcc_unary;
 }
 
@@ -563,15 +566,6 @@ crc_optimization::can_not_be_shift_of_crc (gimple *assign_stmt,
 	    }
 	  return false;
 	}
-      else
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "Found shift, but not with 1, not crc.\n");
-	  clean_xor_maybe_crc = false;
-	  return true;
-	}
-
     }
     /* No need for more strict checks,
        not CRCs may be filtered by the verification stage.  */
@@ -985,6 +979,8 @@ crc_optimization::execute (function *fun)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Returned state and LFSR differ.\n");
 	}
+
+      delete lfsr;
     }
   return 0;
 }

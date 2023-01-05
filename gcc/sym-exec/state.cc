@@ -1981,6 +1981,16 @@ state::do_cast (tree var, tree dest, size_t cast_size)
   return true;
 }
 
+/* Get the last 1 bit index.  */
+size_t
+last_set_bit (const value &polynomial)
+{
+  for (size_t i = 0; i < polynomial.length (); ++i)
+    {
+      if (as_a<bit *> (polynomial[polynomial.length () - i - 1])->get_val ())
+	return polynomial.length () - i - 1;
+    }
+}
 
 /* Create LFSR value for the reversed CRC.  */
 
@@ -1988,7 +1998,9 @@ void
 state::create_reversed_lfsr (value &lfsr, const value &crc,
 			     const value &polynomial)
 {
-  size_t size = crc.length ();
+  /* Get the minimal byte size to keep the polynomial.
+     Ie, if the last 1 bit of the polynomial is at 6 index, size will be 8.  */
+  size_t size = ((last_set_bit (polynomial)/8) + 1) * 8;
 
   /* Determine values of all bits, except MSB.  */
   for (size_t i = 0; i < size - 1; i++)
@@ -2038,10 +2050,8 @@ value *
 state::create_lfsr (tree crc, value *polynomial, bool is_bit_forward)
 {
   /* Check size compatibility․  */
-  unsigned HOST_WIDE_INT
-  size = polynomial->length ();
-  unsigned HOST_WIDE_INT
-  crc_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (crc)));
+  unsigned HOST_WIDE_INT size = polynomial->length ();
+  unsigned HOST_WIDE_INT crc_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (crc)));
   if (crc_size < size)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2052,24 +2062,19 @@ state::create_lfsr (tree crc, value *polynomial, bool is_bit_forward)
     }
 
   /* Create vector of symbolic bits for crc.  */
-  value *crc_value = new value (size, TYPE_UNSIGNED (TREE_TYPE (crc)));
+  value crc_value (size, TYPE_UNSIGNED (TREE_TYPE (crc)));
 
-  for (unsigned HOST_WIDE_INT i = 0; i < size;
-  i++)
-  crc_value->push (new symbolic_bit (i, crc));
+  for (unsigned HOST_WIDE_INT i = 0; i < size; i++)
+    crc_value.push (new symbolic_bit (i, crc));
 
   /* create LFSR vector.  */
   value *lfsr = new value (size, TYPE_UNSIGNED (TREE_TYPE (crc)));
 
   /* Calculate values for LFSR.  */
   if (is_bit_forward)
-    create_forward_lfsr (*lfsr, *crc_value, *polynomial);
+    create_forward_lfsr (*lfsr, crc_value, *polynomial);
   else
-    create_reversed_lfsr (*lfsr, *crc_value, *polynomial);
-
-  /* crc_value is no more needed, delete.  */
-  free_val (crc_value);
-  delete crc_value;
+    create_reversed_lfsr (*lfsr, crc_value, *polynomial);
 
   return lfsr;
 }

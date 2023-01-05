@@ -168,6 +168,12 @@ crc_symbolic_execution::execute_assign_statement (const gassign *gs)
 		return true;
 	      return false;
 	    }
+	  case INTEGER_CST:
+	    {
+	      if (current_state->do_assign (op1, lhs))
+		return true;
+	      return false;
+	    }
 	  default:
 	    {
 	      if (dump_file)
@@ -1291,30 +1297,42 @@ maybe_neighbour_vals_of_crc (symbolic_bit *curr_bit_val,
 }
 
 
-/* Check the case when current bit's value is crc[]^1 or crc[]^data[]^1.  */
+/* Check the case when current bit's value is crc[]^1 or crc[]^data[]^1.
+   Thus curr_xor_exp_left value is crc[] or crc[]^data[].  */
 
 bool
 check_xor_right_1_case (value_bit *curr_xor_exp_left,
 			value_bit *next_bit_val)
 {
-/* The case when current bit's value is crc[]^1 or crc[]^data[]^1,
-      next bit's - crc[].
-      There may not be ^ 0 case, as expressions are optimized.  */
-  if (is_a<symbolic_bit *> (next_bit_val))
+  /* The case when current bit's value is crc[]^1.  */
+  if (is_a<symbolic_bit *> (curr_xor_exp_left))
     {
-      if (is_a<symbolic_bit *> (curr_xor_exp_left))
+      /* The case when current bit's value is crc[]^1,
+	 next bit's - crc[].
+	 There may not be ^ 0 case, as expressions are optimized.  */
+      if (is_a<symbolic_bit *> (next_bit_val))
 	return maybe_neighbour_vals_of_crc (as_a<symbolic_bit *>
 						(curr_xor_exp_left),
 					    next_bit_val);
-      if (is_a<bit_xor_expression *> (curr_xor_exp_left))
-	return maybe_neighbour_vals_of_crc (as_a<bit_xor_expression *>
-						(curr_xor_exp_left),
-					    next_bit_val);
+
+      if (is_a<bit_xor_expression *> (next_bit_val))
+	{
+	  bit_xor_expression *next_bit_xor
+	      = as_a<bit_xor_expression *> (next_bit_val);
+	  /* Check the case when current bit's value is crc[]^1,
+	      next bit's something ^ 1.  */
+	  if (is_a<bit *> (
+	      next_bit_xor->get_right ()))
+	    return maybe_neighbour_vals_of_crc (as_a<symbolic_bit *>
+						    (curr_xor_exp_left),
+						next_bit_xor->get_left ());
+	}
     }
-    /* The case when current bit's value is crc[]^data[]^1,
-      next bit's - crc[]^data[].  */
-  else if (is_a<bit_xor_expression *> (curr_xor_exp_left)
-	   && is_a<bit_xor_expression *> (next_bit_val))
+
+  /* The case when current bit's value is crc[]^data[]^1,
+    next bit's - crc[]^data[] or crc[]^1 or crc[]^data[]^1.  */
+  if (is_a<bit_xor_expression *> (curr_xor_exp_left)
+      && is_a<bit_xor_expression *> (next_bit_val))
     return maybe_neighbour_vals_of_crc
 	(as_a<bit_xor_expression *> (curr_xor_exp_left),
 	 next_bit_val);
