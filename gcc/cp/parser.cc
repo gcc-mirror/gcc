@@ -26559,7 +26559,23 @@ cp_parser_class_head (cp_parser* parser,
   if (cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false))
     qualified_p = true;
 
-  push_deferring_access_checks (dk_no_check);
+  /* It is OK to define an inaccessible class; for example:
+
+       class A { class B; };
+       class A::B {};
+
+     So we want to ignore access when parsing the class name.
+     However, we might be tentatively parsing what is really an
+     elaborated-type-specifier naming a template-id, e.g.
+
+       struct C<&D::m> c;
+
+     In this case the tentative parse as a class-head will fail, but not
+     before cp_parser_template_id splices in a CPP_TEMPLATE_ID token.
+     Since dk_no_check is sticky, we must instead use dk_deferred so that
+     any such CPP_TEMPLATE_ID token created during this tentative parse
+     will correctly capture the access checks imposed by the template-id . */
+  push_deferring_access_checks (dk_deferred);
 
   /* Determine the name of the class.  Begin by looking for an
      optional nested-name-specifier.  */
@@ -26585,11 +26601,6 @@ cp_parser_class_head (cp_parser* parser,
 
 	 The proposed resolution for Core Issue 180 says that wherever
 	 you see `class T::X' you should treat `X' as a type-name.
-
-	 It is OK to define an inaccessible class; for example:
-
-	   class A { class B; };
-	   class A::B {};
 
 	 We do not know if we will see a class-name, or a
 	 template-name.  We look for a class-name first, in case the
