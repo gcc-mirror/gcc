@@ -1202,9 +1202,6 @@ rust_flatten_list (void)
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_list (list, paths);
 
-  for (auto &path : paths)
-    fprintf (stderr, "%s\n", path.as_string ().c_str ());
-
   ASSERT_TRUE (!paths.empty ());
   ASSERT_EQ (paths.size (), 2);
   ASSERT_EQ (paths[0].get_segments ()[0].as_string (), "foo");
