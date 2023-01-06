@@ -263,6 +263,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { using type = _Tp1; };
 #endif
 
+#if __cplusplus > 202002L
+#define __cpp_lib_ranges_zip 202110L // for <tuple> and <utility>
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

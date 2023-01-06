@@ -4364,6 +4364,9 @@ namespace views::__adaptor
   } // namespace views
 
 #if __cplusplus > 202002L
+
+#define __cpp_lib_ranges_zip 202110L
+
   namespace __detail
   {
     template<typename... _Rs>
@@ -5802,6 +5805,8 @@ namespace views::__adaptor
     inline constexpr auto pairwise_transform = adjacent_transform<2>;
   }
 
+#define __cpp_lib_ranges_chunk 202202L
+
   namespace __detail
   {
     template<typename _Tp>
@@ -6339,6 +6344,8 @@ namespace views::__adaptor
     inline constexpr _Chunk chunk;
   }
 
+#define __cpp_lib_ranges_slide 202202L
+
   namespace __detail
   {
     template<typename _Vp>
@@ -6702,6 +6709,8 @@ namespace views::__adaptor
     inline constexpr _Slide slide;
   }
 
+#define __cpp_lib_ranges_chunk_by 202202L
+
   template<forward_range _Vp,
 	   indirect_binary_predicate<iterator_t<_Vp>, iterator_t<_Vp>> _Pred>
     requires view<_Vp> && is_object_v<_Pred>
@@ -6894,6 +6903,8 @@ namespace views::__adaptor
 
     inline constexpr _ChunkBy chunk_by;
   }
+
+#define __cpp_lib_ranges_join_with 202202L
 
   namespace __detail
   {
@@ -7375,6 +7386,8 @@ namespace views::__adaptor
     inline constexpr _JoinWith join_with;
   } // namespace views
 
+#define __cpp_lib_ranges_repeat 202207L
+
   template<copy_constructible _Tp, semiregular _Bound = unreachable_sentinel_t>
     requires (is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
       && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>))
@@ -7625,6 +7638,8 @@ namespace views::__adaptor
 	}
     }
   }
+
+#define __cpp_lib_ranges_stride 202207L
 
   template<input_range _Vp>
     requires view<_Vp>
@@ -7976,6 +7991,8 @@ namespace views::__adaptor
 
     inline constexpr _Stride stride;
   }
+
+#define __cpp_lib_ranges_cartesian_product 202207L
 
   namespace __detail
   {
@@ -8486,6 +8503,8 @@ namespace views::__adaptor
 
     inline constexpr _CartesianProduct cartesian_product;
   }
+
+#define __cpp_lib_ranges_as_rvalue 202207L
 
   template<input_range _Vp>
     requires view<_Vp>
