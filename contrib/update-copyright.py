@@ -785,6 +785,7 @@ class GCCCmdLine (CmdLine):
 
         self.default_dirs = [
             'c++tools',
+            'contrib',
             'gcc',
             'include',
             'libada',
