@@ -42,8 +42,29 @@ void test01()
   VERIFY( ss.rdstate() == ios_base::goodbit ); // LWG 3199
 }
 
+void
+test02()
+{
+  std::bitset<4> a(0b1100), b;
+  std::stringstream ss;
+  ss << a;
+  ss >> b; // PR libstdc++/108214
+  VERIFY( b == a );
+
+  ss.str("");
+  ss.clear();
+
+  std::bitset<4000> c, d;
+  for (int i = 0; i < 4000; i += 5)
+    c.flip(i);
+  ss << c;
+  ss >> d;
+  VERIFY( d == c );
+}
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }
