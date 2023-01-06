@@ -1150,13 +1150,14 @@ begin
          -------------------------------------
 
          function First_Arg_Is_Matching_Tool_Name return Boolean is
+            Expr : constant Node_Id := Get_Pragma_Arg (Arg1);
          begin
-            return Nkind (Arg1) = N_Identifier
+            return Nkind (Expr) = N_Identifier
 
               --  Return True if the tool name is GNAT, and we're not in
               --  GNATprove or CodePeer mode...
 
-              and then ((Chars (Arg1) = Name_Gnat
+              and then ((Chars (Expr) = Name_Gnat
                           and then not
                             (CodePeer_Mode or GNATprove_Mode))
 
@@ -1164,7 +1165,7 @@ begin
               --  mode.
 
                         or else
-                        (Chars (Arg1) = Name_Gnatprove
+                        (Chars (Expr) = Name_Gnatprove
                           and then GNATprove_Mode));
          end First_Arg_Is_Matching_Tool_Name;
 
@@ -1189,7 +1190,7 @@ begin
          --------------
 
          function Last_Arg return Node_Id is
-               Last_Arg : Node_Id;
+            Last_Arg : Node_Id;
 
          begin
             if Arg_Count = 1 then
