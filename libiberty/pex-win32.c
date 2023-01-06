@@ -20,6 +20,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "pex-common.h"
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #ifdef HAVE_STDLIB_H

@@ -70,6 +70,7 @@ int __gnat_rt_init_count = 0;
    and finalize properly the run-time. */
 
 #if defined (__MINGW32__)
+#define WIN32_LEAN_AND_MEAN
 #include "mingw32.h"
 #include <windows.h>
 

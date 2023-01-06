@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 namespace gcc {

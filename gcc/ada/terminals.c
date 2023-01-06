@@ -151,6 +151,7 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 #include <stdio.h>
 #include <stdlib.h>
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winternl.h>
 #include <io.h>

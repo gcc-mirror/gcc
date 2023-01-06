@@ -53,6 +53,7 @@
 #define _X86INTRIN_H_INCLUDED
 #define _EMMINTRIN_H_INCLUDED
 #endif
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* After including this file it is possible to use the character t as prefix

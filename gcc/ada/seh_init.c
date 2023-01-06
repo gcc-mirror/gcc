@@ -34,6 +34,7 @@
 
 #if defined (_WIN32) || (defined (__CYGWIN__) && defined (__SEH__))
 /* Include system headers, before system.h poisons malloc.  */
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <excpt.h>
 #endif

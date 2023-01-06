@@ -35,6 +35,7 @@
 # ifdef _GLIBCXX_HAVE_SLEEP
 #  include <unistd.h>
 # elif defined(_GLIBCXX_USE_WIN32_SLEEP)
+#  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 # elif defined _GLIBCXX_NO_SLEEP && defined _GLIBCXX_HAS_GTHREADS
 // We expect to be able to sleep for targets that support multiple threads:
@@ -63,7 +64,7 @@ static inline int get_nprocs()
 }
 # define _GLIBCXX_NPROCS get_nprocs()
 #elif defined(_GLIBCXX_USE_GET_NPROCS_WIN32)
-#define WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 static inline int get_nprocs()
 {
@@ -79,6 +80,7 @@ static inline int get_nprocs()
 # include <unistd.h>
 # define _GLIBCXX_NPROCS sysconf(_SC_NPROC_ONLN)
 #elif defined(_WIN32)
+# define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 static inline int get_nprocs()
 {

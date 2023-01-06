@@ -46,6 +46,7 @@ extern int __gnat_rt_init_count;
 /*  see initialize.c  */
 
 #if defined (__MINGW32__)
+#define WIN32_LEAN_AND_MEAN
 #include "mingw32.h"
 #include <windows.h>
 

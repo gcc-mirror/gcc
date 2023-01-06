@@ -217,6 +217,7 @@ __gnat_ttyname (int filedes)
 #endif /* __CYGWIN__ */
 
 #if defined (__CYGWIN__) || defined (__MINGW32__)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 int __gnat_is_windows_xp (void);
@@ -589,6 +590,7 @@ getc_immediate_common (FILE *stream,
    Ada programs.  */
 
 #ifdef WINNT
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* Provide functions to echo the values passed to WinMain (windows bindings

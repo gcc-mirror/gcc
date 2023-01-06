@@ -30,6 +30,7 @@
    The following implementation uses win32 API routines.  */
 
 #include "libgomp.h"
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* Count the CPU's currently available to this process.  */

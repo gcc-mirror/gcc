@@ -126,6 +126,7 @@ __gnat_uninstall_int_handler (void)
 
 #elif defined (__MINGW32__)
 
+#define WIN32_LEAN_AND_MEAN
 #include "mingw32.h"
 #include <windows.h>
 

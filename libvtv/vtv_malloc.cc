@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #if defined (__CYGWIN__) || defined (__MINGW32__)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
 #include <sys/mman.h>

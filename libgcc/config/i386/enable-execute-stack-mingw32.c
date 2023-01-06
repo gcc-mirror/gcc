@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 extern void __enable_execute_stack (void *);
