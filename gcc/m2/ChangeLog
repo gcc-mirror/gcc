@@ -1,3 +1,35 @@
+2023-01-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/107631
+	* gm2-gcc/m2builtins.cc: Remove scalb, scalbf, scalbl,
+	significand, significandf, significandl.
+	* gm2-libs/Builtins.def (significand): Likewise.
+	* gm2-libs/Builtins.mod: Likewise.
+	* target-independent/Builtins.texi: Likewise.
+	* gm2-libs-iso/LowLong.mod: Implement fraction with scalbn*() and
+	ilogb*().
+	* gm2-libs-iso/LowReal.mod: Likewise.
+	* gm2-libs-iso/LowShort.mod: Likewise.
+
+2023-01-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs-min/M2RTS.def (ConstructModules): New procedure
+	declaration.
+	(DeconstructModules): New procedure declaration.
+	* gm2-libs-min/M2RTS.mod (ConstructModules): New procedure
+	dummy implementation.
+	(DeconstructModules): New procedure dummy implementation.
+
+2023-01-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gm2spec.cc (lang_specific_driver): Handle static-libgm2.
+	* lang.opt: Add static-libgm2.
+
+2023-01-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gm2spec.cc (lang_specific_driver): Pass -static-libstdc++ on to
+	the target driver if the linker does not support Bstatic/dynamic.
+
 2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR modula2/108183

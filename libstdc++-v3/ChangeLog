@@ -1,3 +1,56 @@
+2023-01-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/cpu/hppa/atomicity.h (_PA_LDCW_INSN): Define.
+	(__exchange_and_add): Use _PA_LDCW_INSN.  Use ordered store for
+	lock release.  Revise loop.
+	(__atomic_add): Likewise.
+
+2023-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108212
+	* python/libstdcxx/v6/printers.py (_utc_timezone): New global
+	variable.
+	(StdChronoTimePointPrinter::to_string): Use it.
+
+2023-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108290
+	* include/std/functional (_Bind_front): Add no_unique_address
+	attribute to data members.
+	* testsuite/20_util/function_objects/bind_front/107784.cc: Check
+	size of call wrappers with empty types for targets and bound
+	arguments.
+
+2023-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108211
+	* src/c++20/tzdb.cc (chrono::current_zone()): Check for zone
+	using only last component of the name.
+
+2023-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108228
+	PR libstdc++/108235
+	* config/abi/pre/gnu.ver: Move zoneinfo_dir_override export to
+	the latest symbol version.
+	* src/c++20/tzdb.cc (USE_ATOMIC_SHARED_PTR): Define to 0 if
+	atomic<_Node*> is not always lock free.
+	(USE_ATOMIC_LIST_HEAD): New macro.
+	[__hpux__] (__gnu_cxx::zoneinfo_dir_override()): Provide
+	definition of weak symbol.
+	(tzdb_list::_Node::_S_head): Rename to _S_head_cache.
+	(tzdb_list::_Node::_S_list_head): New function for accessing
+	list head efficiently.
+	(tzdb_list::_Node::_S_cache_list_head): New function for
+	updating _S_list_head.
+
+2023-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108265
+	* include/std/chrono (hh_mm_ss): Do not use chrono::abs if
+	duration rep is unsigned.
+	* testsuite/std/time/hh_mm_ss/1.cc: Check unsigned rep.
+
 2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR libstdc++/108228

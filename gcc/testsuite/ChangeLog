@@ -1,3 +1,23 @@
+2023-01-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Revert:
+	2023-01-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/cmov10.c: New test case.
+
+2023-01-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108275
+	* g++.dg/parse/access14.C: New test.
+
+2023-01-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp (gm2_init_minx): New procedure.
+	(gm2_init_min): New procedure calls gm2_init_min with
+	dialect flags.
+	* gm2/link/min/pass/tiny.mod: New test case.
+	* gm2/link/min/pass/link-min-pass.exp: New file.
+
 2023-01-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108282

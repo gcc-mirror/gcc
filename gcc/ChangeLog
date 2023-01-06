@@ -1,3 +1,26 @@
+2023-01-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Revert:
+	2023-01-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_int_movcc): Rewrite
+	RTL expansion to allow condition (mask) to be shared/reused,
+	by avoiding overwriting pseudos and adding REG_EQUAL notes.
+
+2023-01-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* common.opt: Add -static-libgm2.
+	* config/darwin.h (LINK_SPEC): Handle static-libgm2.
+	* doc/gm2.texi: Document static-libgm2.
+	* gcc.cc (driver_handle_option): Allow static-libgm2.
+
+2023-01-05  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.cc (processor_alias_table):
+	Use CPU_ZNVER4 for znver4.
+	* config/i386/i386.md: Add znver4.md.
+	* config/i386/znver4.md: New.
+
 2023-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/108253

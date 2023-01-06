@@ -1,3 +1,13 @@
+2023-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* resolve/rust-ast-resolve-item.cc (selftest::rust_flatten_list):
+	Remove output to stderr.
+
+2023-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-rust-gdb): New.
+	(selftest-rust-valgrind): New.
+
 2022-12-20  Marc Poulhiès  <dkm@kataplop.net>
 
 	PR rust/108113

@@ -1,3 +1,227 @@
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Make_CW_Equivalent_Type) <Has_Tag_Of_Type>: Tweak.
+
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Rewrite the end of the
+	handling of objects with (class-wide) interface type by using the
+	same idiom as the other cases generating a renaming.
+	* exp_util.adb (Is_Displacement_Of_Object_Or_Function_Result): Tweak
+	pattern matching code and exclude special return objects.
+	(Requires_Cleanup_Actions): Adjust comment.
+	* exp_ch7.adb (Build_Finalizer): Likewise.
+
+2023-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* freeze.adb (Build_Renamed_Body): Rewrite subprogram renaming to
+	subprogram declaration early and then set the Body_To_Inling flag.
+
+2023-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* freeze.adb (Build_Renamed_Body): Revert a special case for
+	GNATprove; remove unnecessary initialization of a local variable.
+
+2023-01-05  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body): Better filtering when
+	installing parent on the scope stack.
+
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads (The JSON output format): Document change.
+	* urealp.adb (UR_Write_To_JSON): Output a fraction instead of a
+	decimal approximation.
+
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): New local variable
+	Func_Id holding the function for a special return object.
+	Use a direct renaming in the class-wide case when the initializing
+	expression is a captured function call, except for a special return
+	object when the two functions do not return on the same stack.
+	Apply the accessibility check for class-wide special return objects.
+	* exp_util.adb (Make_CW_Equivalent_Type) <Has_Tag_Of_Type>: New.
+	Do not force a dispatching call to the primitive operation _Size if
+	the expression is known to statically have the tag of its type.
+
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Fix pasto in comment.
+
+2023-01-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Tweak conditions for
+	warning about use of parentheses for array aggregates.
+
+2023-01-05  Javier Miranda  <miranda@adacore.com>
+
+	* scans.ads (Tok_Left_Curly_Bracket, Tok_Right_Curly_Bracket)
+	(Tok_Left_Interpolated_String): Placed in no category since they
+	don't fit well in the existing categories. Fix typo in comment.
+	(Inside_Interpolated_String_Literal): New scan state variable.
+	* scng.adb (Slit): Scan interpolated string literals,
+	continuations of interpolated string literals and escaped
+	characters found in interpolated string literals.
+	(Scan): Handle consecutive interpolated expressions. Handle ending
+	delimiter placed immediately after an interpolated expression.
+	Handle string literal placed after interpolated expression. Handle
+	left and right curly brackets; when extensions are not allowed
+	they are treated as left and right paren; when extensions are
+	allowed they are handled as delimiters of interpolated string
+	literals.
+	* sinfo.ads (N_Interpolated_String_Literal): New node.
+	* gen_il-gen-gen_nodes.adb (N_Interpolated_String_Literal): Define
+	N_String_Literal node.
+	* gen_il-types.ads (Opt_Type_Enum): Define N_String_Literal as
+	concrete node type.
+	* par-ch2.adb (P_Interpolated_String_Literal): New subprogram.
+	* par-ch4.adb (P_Simple_Expression): Handle '}' as expression
+	terminator when scanning an interpolated expression; disable error
+	recovery machinery for binary operator when we are processing an
+	interpolated string literal and reach the expression terminator
+	'}'.
+	(P_Primary): Call P_Interpolated_String_Literal when the opening
+	interpolated-string-literal delimiter is found (that is, the left
+	curly bracket '{').
+	* par-tchk.adb (T_Right_Curly_Bracket): New subprogram.
+	* par.adb (P_Interpolated_String_Literal): New declaration.
+	(T_Right_Curly_Bracket): New declaration.
+	* sem.adb (Analyze): Call Analyze_Interpolated_String_Literal.
+	* sem_ch2.ads (Analyze_Interpolated_String_Literal): New
+	subprogram
+	* sem_ch2.adb (Analyze_Interpolated_String_Literal): Likewise.
+	* sem_util.adb (Is_User_Defined_Literal): Complete mapping of
+	literal aspects adding that interpolated string literals have no
+	correspondence with any aspect.
+	* sem_res.adb (Resolve_Interpolated_String_Literal): New
+	subprogram.
+	(Has_Applicable_User_Defined_Literal): Complete mapping of literal
+	aspects adding that interpolated string literals have no
+	correspondency with any aspect.
+	* expander.adb (Expand): Add call to
+	Expand_N_Interpolated_String_Literal.
+	* exp_util.adb (Insert_Actions): Handle
+	N_Interpolated_String_Literal nodes; that is, continue climbing.
+	* exp_ch2.ads (Expand_N_Interpolated_String_Literal): New
+	subprogram.
+	* exp_ch2.adb (Expand_N_Interpolated_String_Literal): Likewise.
+	* exp_put_image.adb (Build_Elementary_Put_Image_Call): Add missing
+	conversion to force dispatching call. Required to handle calls to
+	descendants.
+	(Build_String_Put_Image_Call): Do not output string delimiters
+	when the put_image call is part of an interpolated string literal.
+	* rtsfind.ads (RTU_Id): Add RE_Set_Trim_Leading_Spaces.
+	* sprint.adb (Sprint_Node): Output interpolated string contents.
+	* libgnat/a-stbubo.adb (Get_UTF_8): Add default value for
+	Trim_Leading_White_Spaces component in aggregate.
+	(Buffer_Type_Implementation): Update Trim_Leading_White_Spaces.
+	* libgnat/a-stbuun.adb (Get_UTF_8): Likewise.
+	(Buffer_Type_Implementation): Likewise.
+	* libgnat/a-sttebu.ads (Set_Trim_Leading_Spaces): New subprogram.
+	(Trim_Leading_Spaces): New subprogram.
+	(Root_Buffer_Type): Adding Trim_Leading_While_Spaces component.
+	* libgnat/a-sttebu.adb (procedure Set_Trim_Leading_Spaces): New
+	subprogram.
+	(Trim_Leading_Space): New subprogram.
+	(Put_UTF_8): Handle Trim_Leading_White_Spaces.
+	(New_Line): Likewise.
+	* libgnat/s-putima.ads (Put_Image_String): Adding formal
+	(with_delimiters).
+	(Put_Image_Wide_String): Likewise.
+	(Put_Image_Wide_Wide_String): Likewise.
+	* libgnat/s-putima.adb (Put_Image_String): Adding support for new
+	formal.
+	(Put_Image_Wide_String): Likewise.
+	(Put_Image_Wide_Wide_String): Likewise.
+
+2023-01-05  Joao Azevedo  <azevedo@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: add gnatpp --layout
+	switch and update legacy switches.
+
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Entity): For the purpose of deciding whether to
+	freeze an entity coming from an outer scope in an inner scope, treat
+	the internal subprogram generated because of post-conditions as also
+	coming from source if the original subprogram itself does.
+
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* contracts.adb (Build_Subprogram_Contract_Wrapper): Generate an
+	extended return statement in all cases.
+	(Expand_Subprogram_Contract): Adjust comment.
+
+2023-01-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/g-forstr.adb (F_Kind): Rename enumeration literal.
+	(P_Flt_Format): Adjust handling of "%g".
+	(Determine_Notation_And_Aft): New procedure.
+	(Decimal_Exponent): New function.
+	(Increment_Integral_Part): New procedure.
+	(Remove_Extraneous_Decimal_Digit): New procedure.
+	(Trim_Fractional_Part): New procedure.
+	* libgnat/g-forstr.ads: Change description of "%g" specifier.
+
+2023-01-05  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body): Correctly find the
+	parent instance to place on the scope stack.
+
+2023-01-05  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Set_Entity_Or_Discriminal): Verify we are actually
+	resetting the entity field of a non-prefixed discriminant
+	reference.
+
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): New local variable used
+	throughout instead of testing Is_Special_Return_Object every time.
+	Do not rename an OK_To_Rename object for a special return object.
+	* exp_ch4.adb (Expand_Concatenate): Revert to constrained allocation
+	if the result is allocated on the secondary stack.
+
+2023-01-05  Steve Baird  <baird@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Fix Is_Configuration_Pragma
+	function to handle case where the pragma's parent is an
+	N_Aspect_Specification node. In analyzing a Discard_Names pragma,
+	do not assume that a nonzero number of arguments implies that the
+	pragma is not a configuration pragma; that assumption only holds
+	for legal programs.
+
+2023-01-05  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Add RM references.
+	* gnat_ugn.texi: Regenerate.
+
+2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): For a special return
+	object of an interface type that is not inherently limited, make
+	a call to the Adjust primitive after doing the copy.  For a special
+	return object of a non-class-wide type initialized by a function
+	call, use a direct renaming only if the object doing the capture
+	is flagged by Is_Related_To_Func_Return.  For a special return
+	object using a direct renaming, reassign the tag, if need be.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Fix comment.
+	* exp_util.adb (Is_Related_To_Func_Return): Accept both regular and
+	renaming object declarations for return objects.
+
+2023-01-05  Bob Duff  <duff@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Fix the bug by checking
+	Original_Node. The renaming might be elsewhere, but the (original)
+	reference is right here.
+	* errout.adb: Remove pragma Unreferenced which was added because
+	of the above bug.
+	* einfo.ads: Misc cleanup.
+	* lib.adb: Likewise.
+	* lib.ads: Likewise.
+
 2023-01-03  Ghjuvan Lacambre  <lacambre@adacore.com>
 
 	* errout.adb (Write_JSON_Span): Escape subprogram name.

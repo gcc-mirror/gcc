@@ -1,3 +1,8 @@
+2023-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108286
+	* testsuite/libgomp.c++/pr108286.C: New test.
+
 2023-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi: Bump @copying's copyright year.
