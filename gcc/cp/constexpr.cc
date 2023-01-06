@@ -485,7 +485,7 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 }
 
 /* Subroutine of check_constexpr_ctor_body_1 and constexpr_fn_retval.
-   In C++11 mode checks that the TYPE_DECLs in the BIND_EXPR_VARS of a 
+   In C++11 mode checks that the TYPE_DECLs in the BIND_EXPR_VARS of a
    BIND_EXPR conform to 7.1.5/3/4 on typedef and alias declarations.  */
 
 static bool
@@ -813,7 +813,7 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
     return false;
 
   unsigned nelts = 0;
-  
+
   if (body)
     {
       if (TREE_CODE (body) != CONSTRUCTOR)
@@ -1169,7 +1169,7 @@ public:
     : constexpr_ops_count (0), cleanups (NULL), modifiable (nullptr),
       heap_dealloc_count (0) {}
 
- tree get_value (tree t)
+  tree get_value (tree t)
   {
     if (tree *p = values.get (t))
       return *p;
@@ -1892,7 +1892,7 @@ pop_cx_call_context (void)
   call_stack.pop ();
 }
 
-vec<tree> 
+vec<tree>
 cx_error_context (void)
 {
   vec<tree> r = vNULL;
@@ -2459,7 +2459,7 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
      (refers) to the C subobject of the most derived object.
 
      But it can also be an invalid case.  */
-      
+
   /* Get the most derived object.  */
   obj = get_component_with_type (obj, mdtype, NULL_TREE);
   if (obj == error_mark_node)
@@ -6068,7 +6068,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  vec_safe_reserve (CONSTRUCTOR_ELTS (ary_ctor), num_elts);
 	  for (unsigned ix = 0; ix != num_elts; ix++)
 	    {
-	      constructor_elt elt = 
+	      constructor_elt elt =
 		{
 		  build_int_cst (size_type_node, ix),
 		  extract_string_elt (string, chars_per_elt, ix)
@@ -6830,6 +6830,40 @@ maybe_warn_about_constant_value (location_t loc, tree decl)
     }
 }
 
+// type: is from TREE_TYPE (t) and is the cast to type.
+static bool is_cast_pointer_to_object(tree type)
+{
+  return TYPE_PTR_P (type) && TYPE_OBJ_P (TREE_TYPE (type));
+}
+
+// op: is the result of evaluating the constant expression.
+static bool is_cast_pointer_to_void(tree op)
+{
+  tree op_type = TREE_TYPE(op);
+  return TYPE_PTR_P (op_type) && VOID_TYPE_P (TREE_TYPE (op_type));
+}
+
+
+// type: is from TREE_TYPE (t) and is the cast to type.
+// op: is the result of evaluating the constant expression.
+static bool is_cast_from_void_ptr_to_obj_ptr(tree type, tree op)
+{
+  return is_cast_pointer_to_object(type) && is_cast_pointer_to_void(op);
+}
+
+static bool is_permitted_void_cast(tree type, tree op)
+{
+  tree op_value = TREE_VALUE(op);
+}
+
+/* Inside a call to std::construct_at or to
+    std::allocator<T>::{,de}allocate, we permit casting from void*
+    because that is compiler-generated code.  */
+static bool is_magic_cast_stdlib_function(constexpr_call const * call)
+{
+  return is_std_construct_at(call) or is_std_allocator_allocate(call);
+}
+
 /* For element type ELT_TYPE, return the appropriate type of the heap object
    containing such element(s).  COOKIE_SIZE is NULL or the size of cookie
    in bytes.  If COOKIE_SIZE is NULL, return array type
@@ -7520,7 +7554,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case COMPONENT_REF:
       if (is_overloaded_fn (t))
 	{
-	  /* We can only get here in checking mode via 
+	  /* We can only get here in checking mode via
 	     build_non_dependent_expr,  because any expression that
 	     calls or takes the address of the function will have
 	     pulled a FUNCTION_DECL out of the COMPONENT_REF.  */
@@ -7657,14 +7691,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* [expr.const]: a conversion from type cv void* to a pointer-to-object
 	   type cannot be part of a core constant expression as a resolution to
 	   DR 1312.  */
-	if (TYPE_PTROB_P (type)
-	    && TYPE_PTR_P (TREE_TYPE (op))
-	    && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (op)))
-	    /* Inside a call to std::construct_at or to
-	       std::allocator<T>::{,de}allocate, we permit casting from void*
-	       because that is compiler-generated code.  */
-	    && !is_std_construct_at (ctx->call)
-	    && !is_std_allocator_allocate (ctx->call))
+	if (is_cast_from_void_ptr_to_obj_ptr(type, op)
+	    && !is_permitted_void_cast(type, op)
+	    && !is_magic_cast_stdlib_function (ctx->call))
 	  {
 	    /* Likewise, don't error when casting from void* when OP is
 	       &heap uninit and similar.  */
@@ -9680,8 +9709,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return RECUR (TREE_OPERAND (t, 1), want_rval);
 
     case TARGET_EXPR:
-      if (!TARGET_EXPR_DIRECT_INIT_P (t)
-	  && !literal_type_p (TREE_TYPE (t)))
+      if (!TARGET_EXPR_DIRECT_INIT_P (tliteral_type_p(t)))
 	{
 	  if (flags & tf_error)
 	    {
