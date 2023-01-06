@@ -71,10 +71,11 @@ else
   ADAFLAGS=$(COMMON_ADAFLAGS)
 endif
 
-ALL_ADAFLAGS = \
-  $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS) $(CHECKING_ADAFLAGS) $(WARN_ADAFLAGS)
-FORCE_DEBUG_ADAFLAGS = -g
 ADA_CFLAGS =
+ALL_ADAFLAGS = \
+  $(CFLAGS) $(NO_PIE_CFLAGS) $(ADA_CFLAGS) \
+  $(ADAFLAGS) $(CHECKING_ADAFLAGS) $(WARN_ADAFLAGS)
+FORCE_DEBUG_ADAFLAGS = -g
 COMMON_ADA_INCLUDES = -I- -I. -Iada/generated -Iada -I$(srcdir)/ada
 
 STAGE1_LIBS=
@@ -1173,17 +1174,6 @@ ada/generated/gnatvsn.ads: ada/gnatvsn.ads BASE-VER ada/GNAT_DATE
 ada/gnatvsn.o : ada/gnatvsn.adb ada/generated/gnatvsn.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
-
-# Dependencies for windows specific tool (mdll)
-
-ada/mdll.o : ada/mdll.adb ada/mdll.ads ada/mdll-fil.ads ada/mdll-utl.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
-
-ada/mdll-fil.o : ada/mdll-fil.adb ada/mdll.ads ada/mdll-fil.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
-
-ada/mdll-utl.o : ada/mdll-utl.adb ada/mdll.ads ada/mdll-utl.ads ada/sdefault.ads ada/types.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 
 # All generated files.  Perhaps we should build all of these in the same
 # subdirectory, and get rid of ada/bldtools.
