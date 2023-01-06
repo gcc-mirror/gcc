@@ -820,7 +820,7 @@ This definition is determined by the underlying operating system.
   "The circumstances where an environment variable cannot be defined.
   See A.17(16)."
 
-  There are no such implementation-defined circumstances.
+There are no such implementation-defined circumstances.
 
 *
   "Environment names for which Set has the effect of Clear.  See A.17(17)."
@@ -1154,8 +1154,8 @@ Execution is erroneous in that case.
 * "Whether the use of pragma Restrictions results in a reduction in program
   code or data size or execution time.  See D.7(20)."
 
-  Yes it can, but the precise circumstances and properties of such reductions
-  are difficult to characterize.
+Yes it can, but the precise circumstances and properties of such reductions
+are difficult to characterize.
 
 *
   "The value of Barrier_Limit'Last in Synchronous_Barriers.  See D.10.1(4)."
