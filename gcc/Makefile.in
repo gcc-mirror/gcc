@@ -532,7 +532,11 @@ LINKER_PLUGIN_API_H = $(srcdir)/../include/plugin-api.h
 # Default native SYSTEM_HEADER_DIR, to be overridden by targets.
 NATIVE_SYSTEM_HEADER_DIR = @NATIVE_SYSTEM_HEADER_DIR@
 # Default cross SYSTEM_HEADER_DIR, to be overridden by targets.
-CROSS_SYSTEM_HEADER_DIR = @CROSS_SYSTEM_HEADER_DIR@
+ifeq (@includedir@,$(prefix)/include)
+  CROSS_SYSTEM_HEADER_DIR = @CROSS_SYSTEM_HEADER_DIR@
+else
+  CROSS_SYSTEM_HEADER_DIR = @includedir@
+endif
 
 # autoconf sets SYSTEM_HEADER_DIR to one of the above.
 # Purge it of unnecessary internal relative paths
