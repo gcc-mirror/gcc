@@ -1,3 +1,14 @@
+2023-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108265
+	* include/std/chrono (hh_mm_ss): Do not use chrono::abs if
+	duration rep is unsigned. Remove incorrect noexcept-specifier.
+	* testsuite/std/time/hh_mm_ss/1.cc: Check unsigned rep. Check
+	floating-point representations. Check default construction.
+
 2022-12-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
