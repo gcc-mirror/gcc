@@ -3299,6 +3299,7 @@ package body Sem_Attr is
             --  Check for missing/bad expression (result of previous error)
 
             if No (E1) or else Etype (E1) = Any_Type then
+               Check_Error_Detected;
                raise Bad_Attribute;
             end if;
          end if;
