@@ -29,7 +29,7 @@
 #include <fstream>    // ifstream
 #include <sstream>    // istringstream
 #include <algorithm>  // ranges::upper_bound, ranges::lower_bound, ranges::sort
-#include <atomic>     // atomic<T*>, atomic<int_least32_t>
+#include <atomic>     // atomic<T*>, atomic<int>
 #include <memory>     // atomic<shared_ptr<T>>
 #include <mutex>      // mutex
 #include <filesystem> // filesystem::read_symlink
@@ -598,13 +598,86 @@ namespace std::chrono
     // Needed to access the list of rules for the time zones.
     weak_ptr<tzdb_list::_Node> node;
 
-#ifndef __GTHREADS
-    // Don't need synchronization for accessing the infos vector.
-#elif __cpp_lib_atomic_wait
-    atomic<int_least32_t> rules_counter;
-#else
-    mutex infos_mutex;
+    // In the simple case, we don't actual keep count. No concurrent access
+    // to the infos vector is possible, even if all infos are expanded.
+    template<typename _Tp>
+      struct RulesCounter
+      {
+	// Called for each rule-based ZoneInfo added to the infos vector.
+	// Called when the time_zone::_Impl is created, so no concurrent calls.
+	void increment() { }
+	// Called when a rule-based ZoneInfo is expanded.
+	// The caller must have called lock() for exclusive access to infos.
+	void decrement() { }
+
+	// Use a mutex to synchronize all access to the infos vector.
+	mutex infos_mutex;
+
+	void lock() { infos_mutex.lock(); }
+	void unlock() { infos_mutex.unlock(); }
+      };
+
+#if defined __GTHREADS && __cpp_lib_atomic_wait
+    // Atomic count of unexpanded ZoneInfo objects in the infos vector.
+    // Concurrent access is allowed when all objects have been expanded.
+    // Only use an atomic counter if it would not require libatomic,
+    // because we don't want libstdc++.so to depend on libatomic.
+    template<typename _Tp> requires _Tp::is_always_lock_free
+      struct RulesCounter<_Tp>
+      {
+	atomic_signed_lock_free counter{0};
+
+	void
+	increment()
+	{ counter.fetch_add(1, memory_order::relaxed); }
+
+	void
+	decrement()
+	{
+	  // The current thread holds the lock, so the counter is negative
+	  // and so we need to increment it to decrement it!
+	  // If the count reaches zero then there are no more unexpanded infos,
+	  // so notify all waiting threads that they can access the infos.
+	  // We must do this here, because unlock() is a no-op if counter==0.
+	  if (++counter == 0)
+	    counter.notify_all();
+	}
+
+	void
+	lock()
+	{
+	  // If counter is zero then concurrent access is allowed, so lock()
+	  // and unlock() are no-ops and multiple threads can "lock" at once.
+	  // If counter is non-zero then the contents of the infos vector might
+	  // need to be changed, so only one thread is allowed to access it.
+	  for (auto c = counter.load(memory_order::relaxed); c != 0;)
+	    {
+	      // Setting counter to negative means this thread has the lock.
+	      if (c > 0 && counter.compare_exchange_strong(c, -c))
+		return;
+
+	      if (c < 0)
+		{
+		  // Counter is negative, another thread already has the lock.
+		  counter.wait(c);
+		  c = counter.load();
+		}
+	    }
+	}
+
+	void
+	unlock()
+	{
+	  if (auto c = counter.load(memory_order::relaxed); c < 0)
+	  {
+	    counter.store(-c, memory_order::release);
+	    counter.notify_one();
+	  }
+	}
+      };
 #endif
+
+    RulesCounter<atomic_signed_lock_free> rules_counter;
   };
 
   namespace
@@ -666,46 +739,8 @@ namespace std::chrono
     const auto node = _M_impl->node.lock();
     auto& infos = _M_impl->infos;
 
-#ifndef __GTHREADS
-#elif __cpp_lib_atomic_wait
     // Prevent concurrent access to _M_impl->infos if it might need to change.
-    struct Lock
-    {
-      Lock(atomic<int_least32_t>& counter) : counter(counter)
-      {
-	// If counter is non-zero then the contents of _M_impl->info might
-	// need to be changed, so only one thread is allowed to access it.
-	for (auto c = counter.load(memory_order::relaxed); c != 0;)
-	  {
-	    // Setting counter to negative means this thread has the lock.
-	    if (c > 0 && counter.compare_exchange_strong(c, -c))
-	      return;
-
-	    if (c < 0)
-	      {
-		// Counter is negative, another thread already has the lock.
-		counter.wait(c);
-		c = counter.load();
-	      }
-	  }
-      }
-
-      ~Lock()
-      {
-	if (auto c = counter.load(memory_order::relaxed); c < 0)
-	  {
-	    counter.store(-c, memory_order::release);
-	    counter.notify_one();
-	  }
-      }
-
-      atomic<int_least32_t>& counter;
-    };
-    Lock lock{_M_impl->rules_counter};
-#else
-    // Keep it simple, just use a mutex for all access.
-    lock_guard<mutex> lock(_M_impl->infos_mutex);
-#endif
+    lock_guard lock(_M_impl->rules_counter);
 
     // Find the transition info for the time point.
     auto i = ranges::upper_bound(infos, tp, ranges::less{}, &ZoneInfo::until);
@@ -894,10 +929,8 @@ namespace std::chrono
 	std::rotate(infos.begin() + result_index + 1, i, infos.end());
 	// Then replace the original rules_info object with new_infos.front():
 	infos[result_index] = ZoneInfo(new_infos.front());
-#if defined __GTHREADS && __cpp_lib_atomic_wait
-	if (++_M_impl->rules_counter == 0) // No more unexpanded infos.
-	  _M_impl->rules_counter.notify_all();
-#endif
+	// Decrement count of rule-based infos (might also release lock).
+	_M_impl->rules_counter.decrement();
       }
 
     return info;
@@ -1339,11 +1372,9 @@ namespace std::chrono
 		ZoneInfo& info = impl.infos.emplace_back();
 		is >> info;
 
-#if defined __GTHREADS && __cpp_lib_atomic_wait
 		// Keep count of ZoneInfo objects that refer to named Rules.
 		if (!info.rules().empty())
-		    impl.rules_counter.fetch_add(1, memory_order::relaxed);
-#endif
+		  impl.rules_counter.increment();
 	      }
 	    }
 	  }
