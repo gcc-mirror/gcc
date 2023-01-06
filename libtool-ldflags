@@ -36,6 +36,11 @@ prev_arg=
 for arg
 do
     case $arg in
+	-framework)
+	    # libtool handles this option. It should not be prefixed with
+	    # -Xcompiler, as that would split it from the argument that
+	    # follows.
+	    ;;
 	-f*|--*|-static-lib*|-shared-lib*|-B*)
 	    # Libtool does not ascribe any special meaning options
 	    # that begin with -f or with a double-dash.  So, it will

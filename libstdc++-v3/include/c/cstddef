@@ -35,6 +35,6 @@
 #define __need_ptrdiff_t
 #define __need_NULL
 #define __need_offsetof
-#include_next <stddef.h>
+#include <stddef.h>
 
 #endif

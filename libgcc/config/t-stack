@@ -1,4 +1,6 @@
 # Makefile fragment to provide generic support for -fsplit-stack.
 # This should be used in config.host for any host which supports
 # -fsplit-stack.
+ifeq ($(enable_threads),yes)
 LIB2ADD_ST += $(srcdir)/generic-morestack.c $(srcdir)/generic-morestack-thread.c
+endif

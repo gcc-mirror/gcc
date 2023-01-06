@@ -39,7 +39,7 @@
 #include <cwchar>
 
 #if _GLIBCXX_USE_C11_UCHAR_CXX11
-# include_next <uchar.h>
+# include <uchar.h>
 #endif
 
 #endif // C++11

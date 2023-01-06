@@ -36,7 +36,7 @@
 #include <ctime>
 
 #if _GLIBCXX_HAVE_WCHAR_H
-#include_next <wchar.h>
+#include <wchar.h>
 #endif
 
 // Need to do a bit of trickery here with mbstate_t as char_traits

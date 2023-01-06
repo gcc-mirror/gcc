@@ -34,7 +34,7 @@
 #include <bits/c++config.h>
 
 #if _GLIBCXX_HAVE_WCTYPE_H
-#include_next <wctype.h>
+#include <wctype.h>
 #endif
 
 #endif

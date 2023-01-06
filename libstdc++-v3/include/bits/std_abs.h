@@ -35,9 +35,9 @@
 #include <bits/c++config.h>
 
 #define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
-#include_next <stdlib.h>
+#include <stdlib.h>
 #ifdef __CORRECT_ISO_CPP_MATH_H_PROTO
-# include_next <math.h>
+# include <math.h>
 #endif
 #undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 

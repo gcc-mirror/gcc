@@ -42,7 +42,7 @@
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
 #define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
-#include_next <math.h>
+#include <math.h>
 #undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 #include <bits/std_abs.h>
 

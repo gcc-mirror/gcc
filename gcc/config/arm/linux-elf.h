@@ -58,7 +58,7 @@
    %{shared:-lc} \
    %{!shared:%{profile:-lc_p}%{!profile:-lc}}"
 
-#define LIBGCC_SPEC "%{mfloat-abi=soft*:-lfloat} -lgcc"
+#define LIBGCC_SPEC "-lgcc"
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
