@@ -1013,9 +1013,12 @@ namespace std::chrono
     string
     zoneinfo_dir()
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress"
       static const string dir = __gnu_cxx::zoneinfo_dir_override
 				  ? __gnu_cxx::zoneinfo_dir_override()
 				  : _GLIBCXX_ZONEINFO_DIR;
+#pragma GCC diagnostic pop
       return dir;
     }
 
