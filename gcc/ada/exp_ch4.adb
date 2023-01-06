@@ -9048,7 +9048,7 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  Deal with optimizing 2 ** expression to shift where possible
+      --  Optimize 2 ** expression to shift where possible
 
       --  Note: we used to check that Exptyp was an unsigned type. But that is
       --  an unnecessary check, since if Exp is negative, we have a run-time
@@ -9063,14 +9063,8 @@ package body Exp_Ch4 is
         and then CRT_Safe_Compile_Time_Known_Value (Base)
         and then Expr_Value (Base) = Uint_2
 
-        --  We only handle cases where the right type is a integer
-
-        and then Is_Integer_Type (Root_Type (Exptyp))
-        and then Esize (Root_Type (Exptyp)) <= Standard_Integer_Size
-
         --  This transformation is not applicable for a modular type with a
-        --  nonbinary modulus because we do not handle modular reduction in
-        --  a correct manner if we attempt this transformation in this case.
+        --  nonbinary modulus because shifting makes no sense in that case.
 
         and then not Non_Binary_Modulus (Typ)
       then
@@ -9107,61 +9101,26 @@ package body Exp_Ch4 is
                end if;
             end;
 
-         --  Here we just have 2 ** N on its own, so we can convert this to a
-         --  shift node. We are prepared to deal with overflow here, and we
-         --  also have to handle proper modular reduction for binary modular.
+         --  Here we have 2 ** N on its own, so we can convert this into a
+         --  shift.
 
          else
-            declare
-               OK : Boolean;
-               Lo : Uint;
-               Hi : Uint;
+            --  Op_Shift_Left (generated below) has modular-shift semantics;
+            --  therefore we might need to generate an overflow check here
+            --  if the type is signed.
 
-               MaxS : Uint;
-               --  Maximum shift count with no overflow
+            if Is_Signed_Integer_Type (Typ) and then Ovflo then
+               declare
+                  OK : Boolean;
+                  Lo : Uint;
+                  Hi : Uint;
 
-               TestS : Boolean;
-               --  Set True if we must test the shift count
+                  MaxS : constant Uint := Esize (Rtyp) - 2;
+                  --  Maximum shift count with no overflow
+               begin
+                  Determine_Range (Exp, OK, Lo, Hi, Assume_Valid => True);
 
-               Test_Gt : Node_Id;
-               --  Node for test against TestS
-
-            begin
-               --  Compute maximum shift based on the underlying size. For a
-               --  modular type this is one less than the size.
-
-               if Is_Modular_Integer_Type (Typ) then
-
-                  --  For modular integer types, this is the size of the value
-                  --  being shifted minus one. Any larger values will cause
-                  --  modular reduction to a result of zero. Note that we do
-                  --  want the RM_Size here (e.g. mod 2 ** 7, we want a result
-                  --  of 6, since 2**7 should be reduced to zero).
-
-                  MaxS := RM_Size (Rtyp) - 1;
-
-                  --  For signed integer types, we use the size of the value
-                  --  being shifted minus 2. Larger values cause overflow.
-
-               else
-                  MaxS := Esize (Rtyp) - 2;
-               end if;
-
-               --  Determine range to see if it can be larger than MaxS
-
-               Determine_Range (Exp, OK, Lo, Hi, Assume_Valid => True);
-               TestS := (not OK) or else Hi > MaxS;
-
-               --  Signed integer case
-
-               if Is_Signed_Integer_Type (Typ) then
-
-                  --  Generate overflow check if overflow is active. Note that
-                  --  we can simply ignore the possibility of overflow if the
-                  --  flag is not set (means that overflow cannot happen or
-                  --  that overflow checks are suppressed).
-
-                  if Ovflo and TestS then
+                  if (not OK) or else Hi > MaxS then
                      Insert_Action (N,
                        Make_Raise_Constraint_Error (Loc,
                          Condition =>
@@ -9170,56 +9129,18 @@ package body Exp_Ch4 is
                              Right_Opnd => Make_Integer_Literal (Loc, MaxS)),
                          Reason    => CE_Overflow_Check_Failed));
                   end if;
+               end;
+            end if;
 
-                  --  Now rewrite node as Shift_Left (1, right-operand)
+            --  Generate Shift_Left (1, Exp)
 
-                  Rewrite (N,
-                    Make_Op_Shift_Left (Loc,
-                      Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
-                      Right_Opnd => Exp));
+            Rewrite (N,
+              Make_Op_Shift_Left (Loc,
+                Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
+                Right_Opnd => Exp));
 
-               --  Modular integer case
-
-               else pragma Assert (Is_Modular_Integer_Type (Typ));
-
-                  --  If shift count can be greater than MaxS, we need to wrap
-                  --  the shift in a test that will reduce the result value to
-                  --  zero if this shift count is exceeded.
-
-                  if TestS then
-
-                     --  Note: build node for the comparison first, before we
-                     --  reuse the Right_Opnd, so that we have proper parents
-                     --  in place for the Duplicate_Subexpr call.
-
-                     Test_Gt :=
-                       Make_Op_Gt (Loc,
-                         Left_Opnd  => Duplicate_Subexpr (Exp),
-                         Right_Opnd => Make_Integer_Literal (Loc, MaxS));
-
-                     Rewrite (N,
-                       Make_If_Expression (Loc,
-                         Expressions => New_List (
-                           Test_Gt,
-                           Make_Integer_Literal (Loc, Uint_0),
-                           Make_Op_Shift_Left (Loc,
-                             Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
-                             Right_Opnd => Exp))));
-
-                  --  If we know shift count cannot be greater than MaxS, then
-                  --  it is safe to just rewrite as a shift with no test.
-
-                  else
-                     Rewrite (N,
-                       Make_Op_Shift_Left (Loc,
-                         Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
-                         Right_Opnd => Exp));
-                  end if;
-               end if;
-
-               Analyze_And_Resolve (N, Typ);
-               return;
-            end;
+            Analyze_And_Resolve (N, Typ);
+            return;
          end if;
       end if;
 
