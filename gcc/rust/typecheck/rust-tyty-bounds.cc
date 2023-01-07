@@ -145,11 +145,10 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path)
       break;
     }
 
-  // FIXME
-  // I think this should really be just be if the !args.is_empty() because
-  // someone might wrongly apply generic arguments where they should not and
-  // they will be missing error diagnostics
-  if (predicate.requires_generic_args ())
+  // we try to apply generic arguments when they are non empty and or when the
+  // predicate requires them so that we get the relevant Foo expects x number
+  // arguments but got zero see test case rust/compile/traits12.rs
+  if (!args.is_empty () || predicate.requires_generic_args ())
     {
       // this is applying generic arguments to a trait reference
       predicate.apply_generic_arguments (&args);
@@ -222,7 +221,7 @@ TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
     }
 
   used_arguments
-    = SubstitutionArgumentMappings (copied_arg_mappings,
+    = SubstitutionArgumentMappings (copied_arg_mappings, {},
 				    other.used_arguments.get_locus ());
 }
 
@@ -258,7 +257,7 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
     }
 
   used_arguments
-    = SubstitutionArgumentMappings (copied_arg_mappings,
+    = SubstitutionArgumentMappings (copied_arg_mappings, {},
 				    other.used_arguments.get_locus ());
 
   return *this;
@@ -331,6 +330,19 @@ TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args)
       if (ok && arg.get_tyty () != nullptr)
 	sub.fill_param_ty (subst_mappings, subst_mappings.get_locus ());
     }
+
+  // associated argument mappings
+  for (auto &it : subst_mappings.get_binding_args ())
+    {
+      std::string identifier = it.first;
+      TyTy::BaseType *type = it.second;
+
+      TypeBoundPredicateItem item = lookup_associated_item (identifier);
+      rust_assert (!item.is_error ());
+
+      const auto item_ref = item.get_raw_item ();
+      item_ref->associated_type_set (type);
+    }
 }
 
 bool
@@ -389,7 +401,8 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
       adjusted_mappings.push_back (std::move (arg));
     }
 
-  SubstitutionArgumentMappings adjusted (adjusted_mappings, gargs.get_locus (),
+  SubstitutionArgumentMappings adjusted (adjusted_mappings, {},
+					 gargs.get_locus (),
 					 gargs.get_subst_cb (),
 					 true /* trait-mode-flag */);
   return Resolver::SubstMapperInternal::Resolve (trait_item_tyty, adjusted);
@@ -421,6 +434,19 @@ TypeBoundPredicate::handle_substitions (
       p->set_ty_ref (s->get_ty_ref ());
     }
 
+  // associated argument mappings
+  for (auto &it : subst_mappings.get_binding_args ())
+    {
+      std::string identifier = it.first;
+      TyTy::BaseType *type = it.second;
+
+      TypeBoundPredicateItem item = lookup_associated_item (identifier);
+      rust_assert (!item.is_error ());
+
+      const auto item_ref = item.get_raw_item ();
+      item_ref->associated_type_set (type);
+    }
+
   // FIXME more error handling at some point
   // used_arguments = subst_mappings;
   // error_flag |= used_arguments.is_error ();
@@ -440,6 +466,13 @@ TypeBoundPredicate::requires_generic_args () const
 bool
 TypeBoundPredicate::contains_associated_types () const
 {
+  return get_num_associated_bindings () > 0;
+}
+
+size_t
+TypeBoundPredicate::get_num_associated_bindings () const
+{
+  size_t count = 0;
   auto trait_ref = get ();
   for (const auto &trait_item : trait_ref->get_trait_items ())
     {
@@ -447,9 +480,45 @@ TypeBoundPredicate::contains_associated_types () const
 	= trait_item.get_trait_item_type ()
 	  == Resolver::TraitItemReference::TraitItemType::TYPE;
       if (is_associated_type)
-	return true;
+	count++;
     }
-  return false;
+  return count;
+}
+
+TypeBoundPredicateItem
+TypeBoundPredicate::lookup_associated_type (const std::string &search)
+{
+  TypeBoundPredicateItem item = lookup_associated_item (search);
+
+  // only need to check that it is infact an associated type because other wise
+  // if it was not found it will just be an error node anyway
+  if (!item.is_error ())
+    {
+      const auto raw = item.get_raw_item ();
+      if (raw->get_trait_item_type ()
+	  != Resolver::TraitItemReference::TraitItemType::TYPE)
+	return TypeBoundPredicateItem::error ();
+    }
+  return item;
+}
+
+std::vector<TypeBoundPredicateItem>
+TypeBoundPredicate::get_associated_type_items ()
+{
+  std::vector<TypeBoundPredicateItem> items;
+  auto trait_ref = get ();
+  for (const auto &trait_item : trait_ref->get_trait_items ())
+    {
+      bool is_associated_type
+	= trait_item.get_trait_item_type ()
+	  == Resolver::TraitItemReference::TraitItemType::TYPE;
+      if (is_associated_type)
+	{
+	  TypeBoundPredicateItem item (this, &trait_item);
+	  items.push_back (std::move (item));
+	}
+    }
+  return items;
 }
 
 // trait item reference

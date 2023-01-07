@@ -362,7 +362,8 @@ protected:
 	mappings.push_back (TyTy::SubstitutionArg (param, receiver->clone ()));
 
 	Location locus; // FIXME
-	TyTy::SubstitutionArgumentMappings args (std::move (mappings), locus);
+	TyTy::SubstitutionArgumentMappings args (std::move (mappings), {},
+						 locus);
 	trait_item_tyty = SubstMapperInternal::Resolve (trait_item_tyty, args);
       }
 

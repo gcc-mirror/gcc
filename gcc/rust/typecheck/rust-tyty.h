@@ -675,16 +675,17 @@ class SubstitutionArgumentMappings
 {
 public:
   SubstitutionArgumentMappings (std::vector<SubstitutionArg> mappings,
+				std::map<std::string, BaseType *> binding_args,
 				Location locus,
 				ParamSubstCb param_subst_cb = nullptr,
 				bool trait_item_flag = false)
-    : mappings (mappings), locus (locus), param_subst_cb (param_subst_cb),
-      trait_item_flag (trait_item_flag)
+    : mappings (mappings), binding_args (binding_args), locus (locus),
+      param_subst_cb (param_subst_cb), trait_item_flag (trait_item_flag)
   {}
 
   SubstitutionArgumentMappings (const SubstitutionArgumentMappings &other)
-    : mappings (other.mappings), locus (other.locus),
-      param_subst_cb (other.param_subst_cb),
+    : mappings (other.mappings), binding_args (other.binding_args),
+      locus (other.locus), param_subst_cb (other.param_subst_cb),
       trait_item_flag (other.trait_item_flag)
   {}
 
@@ -692,6 +693,7 @@ public:
   operator= (const SubstitutionArgumentMappings &other)
   {
     mappings = other.mappings;
+    binding_args = other.binding_args;
     locus = other.locus;
     param_subst_cb = other.param_subst_cb;
     trait_item_flag = other.trait_item_flag;
@@ -705,7 +707,7 @@ public:
 
   static SubstitutionArgumentMappings error ()
   {
-    return SubstitutionArgumentMappings ({}, Location (), nullptr, false);
+    return SubstitutionArgumentMappings ({}, {}, Location (), nullptr, false);
   }
 
   bool is_error () const { return mappings.size () == 0; }
@@ -759,6 +761,16 @@ public:
 
   const std::vector<SubstitutionArg> &get_mappings () const { return mappings; }
 
+  std::map<std::string, BaseType *> &get_binding_args ()
+  {
+    return binding_args;
+  }
+
+  const std::map<std::string, BaseType *> &get_binding_args () const
+  {
+    return binding_args;
+  }
+
   std::string as_string () const
   {
     std::string buffer;
@@ -783,6 +795,7 @@ public:
 
 private:
   std::vector<SubstitutionArg> mappings;
+  std::map<std::string, BaseType *> binding_args;
   Location locus;
   ParamSubstCb param_subst_cb;
   bool trait_item_flag;
@@ -811,6 +824,24 @@ public:
       }
 
     return buffer.empty () ? "" : "<" + buffer + ">";
+  }
+
+  bool supports_associated_bindings () const
+  {
+    return get_num_associated_bindings () > 0;
+  }
+
+  // this is overridden in TypeBoundPredicate
+  // which support bindings we don't add them directly to the SubstitutionRef
+  // base class because this class represents the fn<X: Foo, Y: Bar>. The only
+  // construct which supports associated types
+  virtual size_t get_num_associated_bindings () const { return 0; }
+
+  // this is overridden in TypeBoundPredicate
+  virtual TypeBoundPredicateItem
+  lookup_associated_type (const std::string &search)
+  {
+    return TypeBoundPredicateItem::error ();
   }
 
   size_t get_num_substitutions () const { return substitutions.size (); }
@@ -1039,6 +1070,13 @@ public:
   bool contains_associated_types () const;
 
   DefId get_id () const { return reference; }
+
+  std::vector<TypeBoundPredicateItem> get_associated_type_items ();
+
+  size_t get_num_associated_bindings () const override final;
+
+  TypeBoundPredicateItem
+  lookup_associated_type (const std::string &search) override final;
 
 private:
   DefId reference;
