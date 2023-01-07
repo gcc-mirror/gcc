@@ -1,3 +1,33 @@
+2023-01-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/extend.texi (__builtin_tgmath): Do not restate standard rule
+	for handling real integer types.
+
+2023-01-06  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2022-12-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_movv2hf): New.
+	(mov<mode>, movmisalign<mode>, aarch64_dup_lane<mode>,
+	aarch64_store_lane0<mode>, aarch64_simd_vec_set<mode>,
+	@aarch64_simd_vec_copy_lane<mode>, vec_set<mode>,
+	reduc_<optab>_scal_<mode>, reduc_<fmaxmin>_scal_<mode>,
+	aarch64_reduc_<optab>_internal<mode>, aarch64_get_lane<mode>,
+	vec_init<mode><Vel>, vec_extract<mode><Vel>): Support V2HF.
+	(aarch64_simd_dupv2hf): New.
+	* config/aarch64/aarch64.cc (aarch64_classify_vector_mode):
+	Add E_V2HFmode.
+	* config/aarch64/iterators.md (VHSDF_P): New.
+	(V2F, VMOVE, nunits, Vtype, Vmtype, Vetype, stype, VEL,
+	Vel, q, vp): Add V2HF.
+	* config/arm/types.md (neon_fp_reduc_add_h): New.
+
+2023-01-06  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/107966
+	* doc/options.texi: Fix Var documentation in internal manual.
+
 2023-01-05  Roger Sayle  <roger@nextmovesoftware.com>
 
 	Revert:

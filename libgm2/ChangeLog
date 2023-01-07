@@ -1,3 +1,8 @@
+2023-01-06  v  <gaiusmod2@gmail.com>
+
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Bump to 18:0:0.
+
 2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR modula2/108183

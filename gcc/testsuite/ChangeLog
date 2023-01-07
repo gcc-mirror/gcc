@@ -1,3 +1,23 @@
+2023-01-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/builtin-tgmath-3.c: Update expectations and add more
+	tests.
+
+2023-01-06  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2023-01-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/slp_1.c: Update testcase.
+
+2023-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108292
+	PR target/108308
+	* gcc.c-torture/execute/pr108292.c: New test.
+	* gcc.target/i386/pr108292.c: New test.
+	* gcc.dg/pr108308.c: New test.
+
 2023-01-05  Roger Sayle  <roger@nextmovesoftware.com>
 
 	Revert:

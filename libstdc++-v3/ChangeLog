@@ -1,3 +1,64 @@
+2023-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108228
+	* src/c++20/tzdb.cc (zoneinfo_dir): Add diagnostic pragma.
+
+2023-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108235
+	* src/c++20/tzdb.cc (time_zone::_Impl::RulesCounter): New class
+	template and partial specialization for synchronizing access to
+	time_zone::_Impl::infos.
+	(time_zone::_M_get_sys_info, reload_tzdb): Adjust uses of
+	rules_counter.
+
+2023-01-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108260
+	* include/bits/utility.h (__cpp_lib_ranges_zip): Define for C++23.
+	* include/std/ranges (__cpp_lib_ranges_zip): Likewise.
+	(__cpp_lib_ranges_chunk): Likewise.
+	(__cpp_lib_ranges_slide): Likewise.
+	(__cpp_lib_ranges_chunk_by): Likewise.
+	(__cpp_lib_ranges_join_with): Likewise.
+	(__cpp_lib_ranges_repeat): Likewise.
+	(__cpp_lib_ranges_stride): Likewise.
+	(__cpp_lib_ranges_cartesian_product): Likewise.
+	(__cpp_lib_ranges_as_rvalue): Likewise.
+	* include/std/version: Ditto.
+	* testsuite/20_util/tuple/p2321r2.cc: Verify value of
+	feature-test macro.
+	* testsuite/std/ranges/adaptors/as_rvalue/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/chunk/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/chunk_by/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/join_with/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/slide/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/stride/1.cc: Likewise.
+	* testsuite/std/ranges/cartesian_product/1.cc: Likewise.
+	* testsuite/std/ranges/repeat/1.cc: Likewise.
+	* testsuite/std/ranges/zip/1.cc: Likewise.
+	* testsuite/std/ranges/version_c++23.cc: New test.
+
+2023-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108214
+	* include/std/bitset (operator>>): Use alloca in the right
+	scope, not in a constructor.
+	* testsuite/20_util/bitset/io/input.cc: Check case from PR.
+
+2023-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108221
+	* include/std/format (basic_format_arg) [!__cpp_lib_to_chars]:
+	Disable visiting floating-point types.
+
+2023-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108288
+	* include/debug/safe_iterator.h (_Safe_iterator::operator++(int))
+	(_Safe_iterator::operator--(int)): Do not hold lock around
+	construction of return value.
+
 2023-01-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/cpu/hppa/atomicity.h (_PA_LDCW_INSN): Define.

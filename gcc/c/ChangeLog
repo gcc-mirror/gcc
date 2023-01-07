@@ -1,3 +1,11 @@
+2023-01-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_postfix_expression): Handle integer
+	generic arguments to functions passed to __builtin_tgmath as
+	_Float32x if any argument has _FloatNx or _Complex _FloatNx type.
+	Do not handle integer arguments to some narrowing functions as
+	_Float64.
+
 2022-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/108043
