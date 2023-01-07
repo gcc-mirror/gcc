@@ -7186,6 +7186,63 @@ package body Exp_Util is
       end if;
    end Has_Access_Constraint;
 
+   ---------------------
+   -- Has_Tag_Of_Type --
+   ---------------------
+
+   function Has_Tag_Of_Type (Exp : Node_Id) return Boolean is
+      Typ : constant Entity_Id := Etype (Exp);
+
+   begin
+      pragma Assert (Is_Tagged_Type (Typ));
+
+      --  The tag of an object of a class-wide type is that of its
+      --  initialization expression.
+
+      if Is_Class_Wide_Type (Typ) then
+         return False;
+      end if;
+
+      --  The tag of a stand-alone object of a specific tagged type T
+      --  identifies T.
+
+      if Is_Entity_Name (Exp)
+        and then Ekind (Entity (Exp)) in E_Constant | E_Variable
+      then
+         return True;
+
+      else
+         case Nkind (Exp) is
+            --  The tag of a component or an aggregate of a specific tagged
+            --  type T identifies T.
+
+            when N_Indexed_Component
+              |  N_Selected_Component
+              |  N_Aggregate
+            =>
+               return True;
+
+            --  The tag of the result returned by a function whose result
+            --  type is a specific tagged type T identifies T.
+
+            when N_Function_Call =>
+               return True;
+
+            when N_Explicit_Dereference =>
+               return Is_Captured_Function_Call (Exp);
+
+            --  For a tagged type, the operand of a qualified expression
+            --  shall resolve to be of the type of the expression.
+
+            when N_Qualified_Expression =>
+               return Has_Tag_Of_Type (Expression (Exp));
+
+            when others =>
+               return False;
+         end case;
+      end if;
+   end Has_Tag_Of_Type;
+
    --------------------
    -- Homonym_Number --
    --------------------
@@ -9490,61 +9547,6 @@ package body Exp_Util is
       Constr_Root : Entity_Id;
       Size_Attr   : Node_Id;
       Size_Expr   : Node_Id;
-
-      function Has_Tag_Of_Type (Exp : Node_Id) return Boolean;
-      --  Return True if expression Exp of a tagged type is known to statically
-      --  have the tag of this tagged type as specified by RM 3.9(19-25).
-
-      ---------------------
-      -- Has_Tag_Of_Type --
-      ---------------------
-
-      function Has_Tag_Of_Type (Exp : Node_Id) return Boolean is
-         Typ : constant Entity_Id := Etype (Exp);
-
-      begin
-         pragma Assert (Is_Tagged_Type (Typ));
-
-         --  The tag of an object of a class-wide type is that of its
-         --  initialization expression.
-
-         if Is_Class_Wide_Type (Typ) then
-            return False;
-         end if;
-
-         --  The tag of a stand-alone object of a specific tagged type T
-         --  identifies T.
-
-         if Is_Entity_Name (Exp)
-           and then Ekind (Entity (Exp)) in E_Constant | E_Variable
-         then
-            return True;
-
-         else
-            case Nkind (Exp) is
-               --  The tag of a component or an aggregate of a specific tagged
-               --  type T identifies T.
-
-               when N_Indexed_Component
-                 |  N_Selected_Component
-                 |  N_Aggregate
-               =>
-                  return True;
-
-               --  The tag of the result returned by a function whose result
-               --  type is a specific tagged type T identifies T.
-
-               when N_Function_Call =>
-                  return True;
-
-               when N_Explicit_Dereference =>
-                  return Is_Captured_Function_Call (Exp);
-
-               when others =>
-                  return False;
-            end case;
-         end if;
-      end Has_Tag_Of_Type;
 
    begin
       --  If the root type is already constrained, there are no discriminants

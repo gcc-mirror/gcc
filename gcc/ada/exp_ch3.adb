@@ -7564,7 +7564,7 @@ package body Exp_Ch3 is
                Expr_Q := Expr;
             end if;
 
-            --  We may use a renaming if the initializing expression is a
+            --  We may use a renaming if the initialization expression is a
             --  captured function call that meets a few conditions.
 
             Rewrite_As_Renaming := Is_Renamable_Function_Call (Expr_Q);
@@ -7622,41 +7622,6 @@ package body Exp_Ch3 is
                   Obj_Id := Make_Temporary (Loc, 'D', Expr_Q);
 
                   --  Replace
-                  --     CW : I'Class := Obj;
-                  --  by
-                  --     Dnn : Typ := Obj;
-                  --     type Ityp is not null access I'Class;
-                  --     Rnn : constant Ityp := Ityp (Dnn.I_Tag'Address);
-                  --     CW  : I'Class renames Rnn.all;
-
-                  if Comes_From_Source (Expr_Q)
-                    and then Is_Entity_Name (Expr_Q)
-                    and then not Is_Interface (Expr_Typ)
-                    and then Interface_Present_In_Ancestor (Expr_Typ, Typ)
-                    and then (Expr_Typ = Etype (Expr_Typ)
-                               or else not
-                                 Is_Variable_Size_Record (Etype (Expr_Typ)))
-                  then
-                     --  Copy the object
-
-                     Insert_Action (N,
-                       Make_Object_Declaration (Loc,
-                         Defining_Identifier => Obj_Id,
-                         Object_Definition   =>
-                           New_Occurrence_Of (Expr_Typ, Loc),
-                         Expression          => Relocate_Node (Expr_Q)));
-
-                     --  Statically reference the tag associated with the
-                     --  interface
-
-                     Tag_Comp :=
-                       Make_Selected_Component (Loc,
-                         Prefix        => New_Occurrence_Of (Obj_Id, Loc),
-                         Selector_Name =>
-                           New_Occurrence_Of
-                             (Find_Interface_Tag (Expr_Typ, Iface), Loc));
-
-                  --  Replace
                   --     IW : I'Class := Expr;
                   --  by
                   --     Dnn : Tag renames Tag_Ptr!(Expr'Address).all;
@@ -7665,7 +7630,7 @@ package body Exp_Ch3 is
                   --             Ityp!(Displace (Dnn'Address, I'Tag));
                   --     IW : I'Class renames Rnn.all;
 
-                  elsif Rewrite_As_Renaming then
+                  if Rewrite_As_Renaming then
                      New_Expr :=
                        Make_Explicit_Dereference (Loc,
                          Unchecked_Convert_To (RTE (RE_Tag_Ptr),
@@ -7696,6 +7661,37 @@ package body Exp_Ch3 is
                            New_Occurrence_Of
                              (Node (First_Elmt (Access_Disp_Table (Iface))),
                               Loc)));
+
+                  --  Replace
+                  --     IW : I'Class := Expr;
+                  --  by
+                  --     Dnn : Typ := Expr;
+                  --     type Ityp is not null access I'Class;
+                  --     Rnn : constant Ityp := Ityp (Dnn.I_Tag'Address);
+                  --     IW  : I'Class renames Rnn.all;
+
+                  elsif Has_Tag_Of_Type (Expr_Q)
+                    and then Interface_Present_In_Ancestor (Expr_Typ, Typ)
+                    and then (Expr_Typ = Etype (Expr_Typ)
+                               or else not
+                                 Is_Variable_Size_Record (Etype (Expr_Typ)))
+                  then
+                     Insert_Action (N,
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Obj_Id,
+                         Object_Definition   =>
+                           New_Occurrence_Of (Expr_Typ, Loc),
+                         Expression          => Relocate_Node (Expr_Q)));
+
+                     --  Statically reference the tag associated with the
+                     --  interface
+
+                     Tag_Comp :=
+                       Make_Selected_Component (Loc,
+                         Prefix        => New_Occurrence_Of (Obj_Id, Loc),
+                         Selector_Name =>
+                           New_Occurrence_Of
+                             (Find_Interface_Tag (Expr_Typ, Iface), Loc));
 
                   --  Replace
                   --     IW : I'Class := Expr;
@@ -7977,7 +7973,7 @@ package body Exp_Ch3 is
                 and then not (Is_Array_Type (Typ)
                                and then Is_Constr_Subt_For_UN_Aliased (Typ))
 
-                --  We may use a renaming if the initializing expression is a
+                --  We may use a renaming if the initialization expression is a
                 --  captured function call that meets a few conditions.
 
                 and then
