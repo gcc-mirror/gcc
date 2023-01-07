@@ -9521,7 +9521,7 @@ package body Exp_Util is
             return True;
 
          else
-            case Nkind (E) is
+            case Nkind (Exp) is
                --  The tag of a component or an aggregate of a specific tagged
                --  type T identifies T.
 
