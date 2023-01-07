@@ -1,3 +1,21 @@
+2023-01-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2021-12-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/47334
+	PR testsuite/103823
+	* lib/prune.exp: Prune some warnings related to LTO and
+	visibility.
+
+2023-01-06  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lib/lto.exp: When running tests without jobserver, one can see
+	the following warning for tests that use 1to1 partitioning.
+
 2023-01-05  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR target/106736
