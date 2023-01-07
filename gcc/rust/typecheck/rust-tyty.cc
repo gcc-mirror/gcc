@@ -674,14 +674,58 @@ SubstitutionParamMapping::override_context ()
 SubstitutionArgumentMappings
 SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 {
+  std::map<std::string, BaseType *> binding_arguments;
   if (args.get_binding_args ().size () > 0)
     {
-      RichLocation r (args.get_locus ());
-      for (auto &binding : args.get_binding_args ())
-	r.add_range (binding.get_locus ());
+      if (supports_associated_bindings ())
+	{
+	  if (args.get_binding_args ().size () > get_num_associated_bindings ())
+	    {
+	      RichLocation r (args.get_locus ());
 
-      rust_error_at (r, "associated type bindings are not allowed here");
-      return SubstitutionArgumentMappings::error ();
+	      rust_error_at (r,
+			     "generic item takes at most %lu type binding "
+			     "arguments but %lu were supplied",
+			     (unsigned long) get_num_associated_bindings (),
+			     (unsigned long) args.get_binding_args ().size ());
+	      return SubstitutionArgumentMappings::error ();
+	    }
+
+	  for (auto &binding : args.get_binding_args ())
+	    {
+	      BaseType *resolved
+		= Resolver::TypeCheckType::Resolve (binding.get_type ().get ());
+	      if (resolved == nullptr
+		  || resolved->get_kind () == TyTy::TypeKind::ERROR)
+		{
+		  rust_error_at (binding.get_locus (),
+				 "failed to resolve type arguments");
+		  return SubstitutionArgumentMappings::error ();
+		}
+
+	      // resolve to relevant binding
+	      auto binding_item
+		= lookup_associated_type (binding.get_identifier ());
+	      if (binding_item.is_error ())
+		{
+		  rust_error_at (binding.get_locus (),
+				 "unknown associated type binding: %s",
+				 binding.get_identifier ().c_str ());
+		  return SubstitutionArgumentMappings::error ();
+		}
+
+	      binding_arguments[binding.get_identifier ()] = resolved;
+	    }
+	}
+      else
+	{
+	  RichLocation r (args.get_locus ());
+	  for (auto &binding : args.get_binding_args ())
+	    r.add_range (binding.get_locus ());
+
+	  rust_error_at (r, "associated type bindings are not allowed here");
+	  return SubstitutionArgumentMappings::error ();
+	}
     }
 
   // for inherited arguments
@@ -745,6 +789,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	  if (resolved->contains_type_parameters ())
 	    {
 	      SubstitutionArgumentMappings intermediate (mappings,
+							 binding_arguments,
 							 args.get_locus ());
 	      resolved = Resolver::SubstMapperInternal::Resolve (resolved,
 								 intermediate);
@@ -758,7 +803,8 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	}
     }
 
-  return SubstitutionArgumentMappings (mappings, args.get_locus ());
+  return SubstitutionArgumentMappings (mappings, binding_arguments,
+				       args.get_locus ());
 }
 
 BaseType *
@@ -791,7 +837,13 @@ SubstitutionRef::infer_substitions (Location locus)
 	}
     }
 
-  SubstitutionArgumentMappings infer_arguments (std::move (args), locus);
+  // FIXME do we need to add inference variables to all the possible bindings?
+  // it might just lead to inference variable hell not 100% sure if rustc does
+  // this i think the language might needs this to be explicitly set
+
+  SubstitutionArgumentMappings infer_arguments (std::move (args),
+						{} /* binding_arguments */,
+						locus);
   return handle_substitions (std::move (infer_arguments));
 }
 
@@ -835,7 +887,9 @@ SubstitutionRef::adjust_mappings_for_this (
   if (resolved_mappings.empty ())
     return SubstitutionArgumentMappings::error ();
 
-  return SubstitutionArgumentMappings (resolved_mappings, mappings.get_locus (),
+  return SubstitutionArgumentMappings (resolved_mappings,
+				       mappings.get_binding_args (),
+				       mappings.get_locus (),
 				       mappings.get_subst_cb (),
 				       mappings.trait_item_mode ());
 }
@@ -901,6 +955,7 @@ SubstitutionRef::solve_mappings_from_receiver_for_self (
     }
 
   return SubstitutionArgumentMappings (resolved_mappings,
+				       mappings.get_binding_args (),
 				       mappings.get_locus ());
 }
 
@@ -952,7 +1007,7 @@ SubstitutionRef::solve_missing_mappings_from_this (SubstitutionRef &ref,
       resolved_mappings.push_back (std::move (argument));
     }
 
-  return SubstitutionArgumentMappings (resolved_mappings, locus);
+  return SubstitutionArgumentMappings (resolved_mappings, {}, locus);
 }
 
 bool
