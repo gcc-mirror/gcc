@@ -24,10 +24,10 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-void abort (int);
-void exit (int);
+extern void abort (void)  __attribute__ ((__noreturn__));
+extern void exit (int) __attribute__ ((__noreturn__));
 
-void abort (int i)
+void abort (void)
 {
   while (1)
     ;
