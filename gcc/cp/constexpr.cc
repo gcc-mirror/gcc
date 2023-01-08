@@ -5615,7 +5615,7 @@ cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
 static tree
 cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 		       value_cat lval,
-		       bool *non_constant_p, bool *overflow_p)
+		       bool *non_constant_p, bool *overflow_p, bool null_tree_on_error = false)
 {
   tree orig_op0 = TREE_OPERAND (t, 0);
   bool empty_base = false;
@@ -5646,8 +5646,10 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 
       if (!lval && integer_zerop (op0))
 	{
-	  if (!ctx->quiet)
+	  if (!ctx->quiet and not null_tree_on_error)
 	    error ("dereferencing a null pointer");
+	  if (null_tree_on_error)
+	    return NULL_TREE;
 	  *non_constant_p = true;
 	  return t;
 	}
@@ -5665,11 +5667,13 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 	      gcc_assert (!similar_type_p
 			  (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
 	      /* DR 1188 says we don't have to deal with this.  */
-	      if (!ctx->quiet)
+	      if (!ctx->quiet and not null_tree_on_error)
 		error_at (cp_expr_loc_or_input_loc (t),
 			  "accessing value of %qE through a %qT glvalue in a "
 			  "constant expression", build_fold_indirect_ref (sub),
 			  TREE_TYPE (t));
+	      if (null_tree_on_error)
+	        return NULL_TREE;
 	      *non_constant_p = true;
 	      return t;
 	    }
@@ -6832,64 +6836,48 @@ maybe_warn_about_constant_value (location_t loc, tree decl)
 
 // type: is from TREE_TYPE (t) and is the cast to type.
 // op: is the result of evaluating the constant expression.
-// static bool is_cast_from_void_ptr_to_obj_ptr(tree type, tree op)
-// {
-//   return TYPE_PTROB_P (type) && TYPE_PTR_P (TREE_TYPE (op)) && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (op)));
-// }
+static bool is_cast_from_void_ptr_to_obj_ptr(tree type, tree op)
+{
+  return TYPE_PTROB_P (type) && TYPE_PTR_P (TREE_TYPE (op)) && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (op)));
+}
 
-// /* Inside a call to std::construct_at or to
-//     std::allocator<T>::{,de}allocate, we permit casting from void*
-//     because that is compiler-generated code.  */
-// static bool is_permitted_void_cast_function(constexpr_call const * call)
-// {
-//   return is_std_construct_at(call) or is_std_allocator_allocate(call);
-// }
+/* Inside a call to std::construct_at or to
+    std::allocator<T>::{,de}allocate, we permit casting from void*
+    because that is compiler-generated code.  */
+static bool is_permitted_void_cast_function(constexpr_call const * call)
+{
+  return is_std_construct_at(call) or is_std_allocator_allocate(call);
+}
 
-// static bool is_permitted_void_cast(const constexpr_ctx */**ctx**/, tree t, tree /**type**/, tree /**op**/)
-// {
-//   internal_error ("tree type is %qT", TREE_TYPE (t));
-//   return false;
-// 	// r = cxx_fold_indirect_ref (ctx, EXPR_LOCATION (t), TREE_TYPE (t), op0, &empty_base);
-// 	// if (r == NULL_TREE)
-// 	// {
-// 	// 	/* We couldn't fold to a constant value.  Make sure it's not
-// 	// 	something we should have been able to fold.  */
-// 	// 	tree sub = op0;
-// 	// 	STRIP_NOPS (sub);
-// 	// 	if (TREE_CODE (sub) == ADDR_EXPR)
-// 	// 	{
-// 	// 	gcc_assert (!similar_type_p
-// 	// 			(TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
-// 	// 	/* DR 1188 says we don't have to deal with this.  */
-// 	// 	if (!ctx->quiet)
-// 	// 	error_at (cp_expr_loc_or_input_loc (t),
-// 	// 			"accessing value of %qE through a %qT glvalue in a "
-// 	// 			"constant expression", build_fold_indirect_ref (sub),
-// 	// 			TREE_TYPE (t));
-// 	// 	*non_constant_p = true;
-// 	// 	return t;
-// 	// }
-// }
+static bool is_permitted_void_cast(const constexpr_ctx * ctx, tree t, tree type, tree op)
+{
+  tree_code tcode = TREE_CODE (t);
+  tree r = fold_build1 (tcode, type, op);
+  bool non_constant_p = false;
+  bool overflow_p = false;
+  tree eval_result = cxx_eval_indirect_ref (ctx, r, value_cat::vc_glvalue, &non_constant_p, &overflow_p, true);
+  return (eval_result != NULL_TREE);
+}
 
-// /* [expr.const]: a conversion from type cv void* to a pointer-to-object
-//  type cannot be part of a core constant expression as a resolution to
-//  DR 1312.  */
-// static bool is_banned_void_cast(const constexpr_ctx *ctx, tree t, tree type, tree op)
-// {
-//   if (not is_cast_from_void_ptr_to_obj_ptr(type, op))
-//   {
-// 	return false;
-//   }
-//   if (is_permitted_void_cast(ctx, t, type, op))
-//   {
-// 	return false;
-//   }
-//   if (is_permitted_void_cast_function(ctx->call))
-//   {
-// 	return false;
-//   }
-//   return true;
-// }
+/* [expr.const]: a conversion from type cv void* to a pointer-to-object
+ type cannot be part of a core constant expression as a resolution to
+ DR 1312.  */
+static bool is_banned_void_cast(const constexpr_ctx *ctx, tree t, tree type, tree op)
+{
+  if (not is_cast_from_void_ptr_to_obj_ptr(type, op))
+  {
+    return false;
+  }
+  if (is_permitted_void_cast(ctx, t, type, op))
+  {
+    return false;
+  }
+  if (is_permitted_void_cast_function(ctx->call))
+  {
+    return false;
+  }
+  return true;
+}
 
 /* For element type ELT_TYPE, return the appropriate type of the heap object
    containing such element(s).  COOKIE_SIZE is NULL or the size of cookie
@@ -7714,14 +7702,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    *non_constant_p = true;
 	    return t;
 	  }
-	if (TYPE_PTROB_P (type)
-	    && TYPE_PTR_P (TREE_TYPE (op))
-	    && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (op)))
-	    /* Inside a call to std::construct_at or to
-	       std::allocator<T>::{,de}allocate, we permit casting from void*
-	       because that is compiler-generated code.  */
-	    && !is_std_construct_at (ctx->call)
-	    && !is_std_allocator_allocate (ctx->call))
+	if (is_banned_void_cast(ctx, t, type, op))
 	  {
 	    /* Likewise, don't error when casting from void* when OP is
 	       &heap uninit and similar.  */
