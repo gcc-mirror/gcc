@@ -389,8 +389,55 @@ MacroBuiltin::include_str_handler (Location invoc_locus,
 
   std::vector<uint8_t> bytes = load_file_bytes (target_filename.c_str ());
 
-  /* FIXME: Enforce that the file contents are valid UTF-8.  */
-  std::string str ((const char *) &bytes[0], bytes.size ());
+  /* FIXME: reuse lexer */
+  int expect_single = 0;
+  for (uint8_t b : bytes)
+    {
+      if (expect_single)
+	{
+	  if ((b & 0xC0) != 0x80)
+	    /* character was truncated, exit with expect_single != 0 */
+	    break;
+	  expect_single--;
+	}
+      else if (b & 0x80)
+	{
+	  if (b >= 0xF8)
+	    {
+	      /* more than 4 leading 1s */
+	      expect_single = 1;
+	      break;
+	    }
+	  else if (b >= 0xF0)
+	    {
+	      /* 4 leading 1s */
+	      expect_single = 3;
+	    }
+	  else if (b >= 0xE0)
+	    {
+	      /* 3 leading 1s */
+	      expect_single = 2;
+	    }
+	  else if (b >= 0xC0)
+	    {
+	      /* 2 leading 1s */
+	      expect_single = 1;
+	    }
+	  else
+	    {
+	      /* only 1 leading 1 */
+	      expect_single = 1;
+	      break;
+	    }
+	}
+    }
+
+  std::string str;
+  if (expect_single)
+    rust_error_at (invoc_locus, "%s was not a valid utf-8 file",
+		   target_filename.c_str ());
+  else
+    str = std::string ((const char *) &bytes[0], bytes.size ());
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, str));
   auto str_tok = make_token (Token::make_string (invoc_locus, std::move (str)));
