@@ -1,3 +1,9 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* config/mingw32/proc.c: Define `WIN32_LEAN_AND_MEAN` before
+	<windows.h>.
+
 2023-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/108286

@@ -1,3 +1,21 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* adaint.c: Define `WIN32_LEAN_AND_MEAN` before `#include
+	<windows.h>`.
+	* cio.c: Likewise.
+	* ctrl_c.c: Likewise.
+	* expect.c: Likewise.
+	* gsocket.h: Likewise.
+	* mingw32.h: Likewise.
+	* mkdir.c: Likewise.
+	* rtfinal.c: Likewise.
+	* rtinit.c: Likewise.
+	* seh_init.c: Likewise.
+	* sysdep.c: Likewise.
+	* terminals.c: Likewise.
+	* tracebak.c: Likewise.
+
 2023-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_util.adb (Make_CW_Equivalent_Type) <Has_Tag_Of_Type>: Tweak.

@@ -1,3 +1,11 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* config/i386/enable-execute-stack-mingw32.c: Define
+	`WIN32_LEAN_AND_MEAN` before <windows.h>.
+	* libgcc2.c: Likewise.
+	* unwind-generic.h: Likewise.
+
 2023-01-03  Florian Weimer  <fweimer@redhat.com>
 
 	* unwind-dw2-execute_cfa.h: New file.  Extracted from

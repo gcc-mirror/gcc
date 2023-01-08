@@ -1,3 +1,9 @@
+2023-01-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gm2-libs-min/libc.c (abort): Update declaration to match the
+	expected form, add no-return attribute.
+	(exit): Add no-return attribute.
+
 2023-01-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR modula2/107631

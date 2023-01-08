@@ -1,3 +1,23 @@
+2023-01-07  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc
+	(xtensa_split_imm_two_addends, xtensa_emit_add_imm):
+	New helper functions.
+	(xtensa_set_return_address, xtensa_output_mi_thunk):
+	Change to use the helper function.
+	(xtensa_emit_adjust_stack_ptr): Ditto.
+	And also change to try reusing the content of scratch register
+	A9 if the register is not modified in the function body.
+
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* config/xtensa/xtensa-dynconfig.c: Define `WIN32_LEAN_AND_MEAN`
+	before <windows.h>.
+	* diagnostic-color.cc: Likewise.
+	* plugin.cc: Likewise.
+	* prefix.cc: Likewise.
+
 2023-01-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/extend.texi (__builtin_tgmath): Do not restate standard rule

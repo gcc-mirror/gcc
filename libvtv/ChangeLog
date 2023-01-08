@@ -1,3 +1,10 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* vtv_malloc.cc: Define `WIN32_LEAN_AND_MEAN` before <windows.h>.
+	* vtv_rts.cc: Likewise.
+	* vtv_utils.cc: Likewise.
+
 2022-10-31  Lulu Cheng  <chenglulu@loongson.cn>
 	    qijingwen  <qijingwen@loongson.cn>
 

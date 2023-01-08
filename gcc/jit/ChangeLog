@@ -1,3 +1,8 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* jit-w32.h: Define `WIN32_LEAN_AND_MEAN` before <windows.h>.
+
 2022-12-21  Martin Liska  <mliska@suse.cz>
 
 	* jit-playback.h: Use unused attribute.

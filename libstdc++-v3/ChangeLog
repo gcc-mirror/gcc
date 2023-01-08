@@ -1,3 +1,12 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* src/c++11/system_error.cc: Define `WIN32_LEAN_AND_MEAN` before
+	<windows.h>.
+	* src/c++11/thread.cc: Likewise.
+	* src/c++17/fs_ops.cc: Likewise.
+	* src/filesystem/ops.cc: Likewise.
+
 2023-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108228
