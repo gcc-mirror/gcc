@@ -897,6 +897,9 @@ package body Sem_Ch7 is
       --  current node otherwise. Note that N was rewritten above, so we must
       --  be sure to get the latest Body_Id value.
 
+      if Ekind (Body_Id) = E_Package then
+         Reinit_Field_To_Zero (Body_Id, F_Body_Needed_For_Inlining);
+      end if;
       Mutate_Ekind (Body_Id, E_Package_Body);
       Set_Body_Entity (Spec_Id, Body_Id);
       Set_Spec_Entity (Body_Id, Spec_Id);

@@ -6462,13 +6462,6 @@ package body Sem_Ch3 is
       end if;
 
       if Nkind (Def) = N_Constrained_Array_Definition then
-
-         if Ekind (T) in Incomplete_Or_Private_Kind then
-            Reinit_Field_To_Zero (T, F_Stored_Constraint);
-         else
-            pragma Assert (Ekind (T) = E_Void);
-         end if;
-
          --  Establish Implicit_Base as unconstrained base type
 
          Implicit_Base := Create_Itype (E_Array_Type, P, Related_Id, 'B');
@@ -6509,13 +6502,6 @@ package body Sem_Ch3 is
       --  Unconstrained array case
 
       else pragma Assert (Nkind (Def) = N_Unconstrained_Array_Definition);
-
-         if Ekind (T) in Incomplete_Or_Private_Kind then
-            Reinit_Field_To_Zero (T, F_Stored_Constraint);
-         else
-            pragma Assert (Ekind (T) = E_Void);
-         end if;
-
          Mutate_Ekind                 (T, E_Array_Type);
          Reinit_Size_Align            (T);
          Set_Etype                    (T, T);
@@ -10030,9 +10016,9 @@ package body Sem_Ch3 is
       --  Set common attributes
 
       if Ekind (Derived_Type) in Incomplete_Or_Private_Kind
-        and then Ekind (Parent_Base) in Modular_Integer_Kind | Array_Kind
+        and then Ekind (Parent_Base) in Elementary_Kind
       then
-         Reinit_Field_To_Zero (Derived_Type, F_Stored_Constraint);
+         Reinit_Field_To_Zero (Derived_Type, F_Discriminant_Constraint);
       end if;
 
       Set_Scope                  (Derived_Type, Current_Scope);
@@ -17367,8 +17353,8 @@ package body Sem_Ch3 is
             Error_Msg_N ("type cannot be used in its own definition", Indic);
          end if;
 
-         Mutate_Ekind     (T, Ekind (Parent_Type));
-         Set_Etype        (T, Any_Type);
+         Mutate_Ekind (T, Ekind (Parent_Type));
+         Set_Etype (T, Any_Type);
          Set_Scalar_Range (T, Scalar_Range (Any_Type));
 
          --  Initialize the list of primitive operations to an empty list,
@@ -19726,6 +19712,9 @@ package body Sem_Ch3 is
          if Ekind (CW_Type) in E_Task_Type | E_Protected_Type then
             Reinit_Field_To_Zero (CW_Type, F_SPARK_Aux_Pragma_Inherited);
          end if;
+
+      elsif Ekind (CW_Type) = E_Record_Type then
+         Reinit_Field_To_Zero (CW_Type, F_Corresponding_Concurrent_Type);
       end if;
 
       Mutate_Ekind                    (CW_Type, E_Class_Wide_Type);
@@ -20111,10 +20100,6 @@ package body Sem_Ch3 is
       --  Proceed with analysis of mod expression
 
       Analyze_And_Resolve (Mod_Expr, Any_Integer);
-
-      if Ekind (T) in Incomplete_Or_Private_Kind then
-         Reinit_Field_To_Zero (T, F_Stored_Constraint);
-      end if;
 
       Set_Etype (T, T);
       Mutate_Ekind (T, E_Modular_Integer_Type);

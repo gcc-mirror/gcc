@@ -4194,6 +4194,10 @@ package body Sem_Ch10 is
                      Set_Subtype_Indication (Decl,
                        New_Occurrence_Of (Non_Lim_View, Sloc (Def_Id)));
                      Set_Etype (Def_Id, Non_Lim_View);
+                     Reinit_Field_To_Zero (Def_Id, F_Non_Limited_View,
+                       Old_Ekind => (E_Incomplete_Subtype => True,
+                                     others => False));
+                     Reinit_Field_To_Zero (Def_Id, F_Private_Dependents);
                      Mutate_Ekind
                        (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
                      Set_Analyzed (Decl, False);

@@ -4324,6 +4324,12 @@ package body Exp_Ch5 is
 
       Analyze (Init_Decl);
       Init_Name := Defining_Identifier (Init_Decl);
+      Reinit_Field_To_Zero (Init_Name, F_Has_Initial_Value,
+        Old_Ekind => (E_Variable => True, others => False));
+      Reinit_Field_To_Zero (Init_Name, F_Is_Elaboration_Checks_OK_Id);
+      Reinit_Field_To_Zero (Init_Name, F_Is_Elaboration_Warnings_OK_Id);
+      Reinit_Field_To_Zero (Init_Name, F_SPARK_Pragma);
+      Reinit_Field_To_Zero (Init_Name, F_SPARK_Pragma_Inherited);
       Mutate_Ekind (Init_Name, E_Loop_Parameter);
 
       --  The cursor was marked as a loop parameter to prevent user assignments
@@ -5526,6 +5532,12 @@ package body Exp_Ch5 is
          Set_Assignment_OK (Cursor_Decl);
 
          Insert_Action (N, Cursor_Decl);
+         Reinit_Field_To_Zero (Cursor, F_Has_Initial_Value,
+           Old_Ekind => (E_Variable => True, others => False));
+         Reinit_Field_To_Zero (Cursor, F_Is_Elaboration_Checks_OK_Id);
+         Reinit_Field_To_Zero (Cursor, F_Is_Elaboration_Warnings_OK_Id);
+         Reinit_Field_To_Zero (Cursor, F_SPARK_Pragma);
+         Reinit_Field_To_Zero (Cursor, F_SPARK_Pragma_Inherited);
          Mutate_Ekind (Cursor, Id_Kind);
       end;
 

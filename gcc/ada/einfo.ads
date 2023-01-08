@@ -1346,12 +1346,13 @@ package Einfo is
 --       find the first discriminant if discriminants are present.
 
 --    First_Entity
---       Defined in all entities which act as scopes to which a list of
---       associated entities is attached (blocks, class subtypes and types,
---       entries, functions, loops, packages, procedures, protected objects,
---       record types and subtypes, private types, task types and subtypes).
+--       Defined in all entities that act as scopes to which a list of
+--       associated entities is attached. This is defined in all [sub]types,
+--       including things like scalars that cannot have nested entities,
+--       which makes it more convenient to Mutate_Entity between type kinds.
 --       Points to a list of associated entities using the Next_Entity field
 --       as a chain pointer with Empty marking the end of the list.
+--       See also Last_Entity.
 
 --    First_Exit_Statement
 --       Defined in E_Loop entity. The exit statements for a loop are chained
@@ -3510,12 +3511,8 @@ package Einfo is
 --       statements whose value is not used.
 
 --    Last_Entity
---       Defined in all entities which act as scopes to which a list of
---       associated entities is attached (blocks, class subtypes and types,
---       entries, functions, loops, packages, procedures, protected objects,
---       record types and subtypes, private types, task types and subtypes).
---       Points to the last entry in the list of associated entities chained
---       through the Next_Entity field. Empty if no entities are chained.
+--       Defined for the same entity kinds as First_Entity. Last_Entity
+--       is the last entry in the list. Empty if no entities are chained.
 
 --    Last_Formal (synthesized)
 --       Applies to subprograms and subprogram types, and also in entries
@@ -3538,7 +3535,7 @@ package Einfo is
 --       field may be set as a result of a linker section pragma applied to the
 --       type of the object.
 
---    Lit_Hash
+--    Lit_Hash [root type only]
 --       Defined in enumeration types and subtypes. Non-empty only for the
 --       case of an enumeration root type, where it contains the entity for
 --       the generated hash function. See unit Exp_Imgv for full details of
@@ -4535,11 +4532,9 @@ package Einfo is
 --       share the same storage pool).
 
 --    Stored_Constraint
---       Defined in entities that can have discriminants (concurrent types
---       subtypes, record types and subtypes, private types and subtypes,
---       limited private types and subtypes and incomplete types). Points
---       to an element list containing the expressions for each of the
---       stored discriminants for the record (sub)type.
+--       Defined in type entities. Points to an element list containing the
+--       expressions for each of the stored discriminants, if any, for the
+--       (sub)type.
 
 --    Stores_Attribute_Old_Prefix
 --       Defined in constants, variables, and types which are created during

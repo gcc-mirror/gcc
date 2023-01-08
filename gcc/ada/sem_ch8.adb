@@ -3485,9 +3485,13 @@ package body Sem_Ch8 is
          --  constructed later at the freeze point, so indicate that the
          --  completion has not been seen yet.
 
-         Reinit_Field_To_Zero (New_S, F_Has_Out_Or_In_Out_Parameter);
-         Reinit_Field_To_Zero (New_S, F_Needs_No_Actuals,
+         Reinit_Field_To_Zero (New_S, F_Has_Out_Or_In_Out_Parameter,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
+         Reinit_Field_To_Zero (New_S, F_Needs_No_Actuals);
+         Reinit_Field_To_Zero (New_S, F_Is_Predicate_Function);
+         Reinit_Field_To_Zero (New_S, F_Protected_Subprogram);
+         Reinit_Field_To_Zero (New_S, F_Is_Inlined_Always);
+         Reinit_Field_To_Zero (New_S, F_Is_Generic_Actual_Subprogram);
          Mutate_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);

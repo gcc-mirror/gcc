@@ -249,6 +249,8 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  resolution on calls).
        (Sm (Alignment, Unat),
         Sm (Contract, Node_Id),
+        Sm (First_Entity, Node_Id),
+        Sm (Last_Entity, Node_Id),
         Sm (Is_Elaboration_Warnings_OK_Id, Flag),
         Sm (Original_Record_Component, Node_Id),
         Sm (Scope_Depth_Value, Unat),
@@ -284,14 +286,12 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Esize, Uint),
         Sm (RM_Size, Uint),
         Sm (Extra_Formal, Node_Id),
-        Sm (First_Entity, Node_Id),
         Sm (Generic_Homonym, Node_Id),
         Sm (Generic_Renamings, Elist_Id),
         Sm (Handler_Records, List_Id),
         Sm (Has_Static_Discriminants, Flag),
         Sm (Inner_Instances, Elist_Id),
         Sm (Interface_Name, Node_Id),
-        Sm (Last_Entity, Node_Id),
         Sm (Next_Inlined_Subprogram, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id), -- See Einfo.Utils
         Sm (Return_Applies_To, Node_Id),
@@ -467,6 +467,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Predicates_Ignored, Flag),
         Sm (Esize, Uint),
         Sm (Finalize_Storage_Only, Flag, Base_Type_Only),
+        Sm (First_Entity, Node_Id),
+        Sm (Last_Entity, Node_Id),
         Sm (Full_View, Node_Id),
         Sm (Has_Completion_In_Body, Flag),
         Sm (Has_Constrained_Partial_View, Flag, Base_Type_Only),
@@ -525,7 +527,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Subprograms_For_Type, Elist_Id),
         Sm (Suppress_Initialization, Flag),
         Sm (Universal_Aliasing, Flag, Impl_Base_Type_Only),
-        Sm (Renamed_Or_Alias, Node_Id)));
+        Sm (Renamed_Or_Alias, Node_Id),
+        Sm (Stored_Constraint, Elist_Id)));
 
    Ab (Elementary_Kind, Type_Kind);
 
@@ -550,8 +553,7 @@ begin -- Gen_IL.Gen.Gen_Entities
 
    Cc (E_Enumeration_Type, Enumeration_Kind,
        --  Enumeration types, created by an enumeration type declaration
-       (Sm (Enum_Pos_To_Rep, Node_Id),
-        Sm (First_Entity, Node_Id)));
+       (Sm (Enum_Pos_To_Rep, Node_Id)));
 
    Cc (E_Enumeration_Subtype, Enumeration_Kind);
        --  Enumeration subtypes, created by an explicit or implicit subtype
@@ -560,8 +562,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Ab (Integer_Kind, Discrete_Kind,
        (Sm (Has_Shift_Operator, Flag, Base_Type_Only)));
 
-   Ab (Signed_Integer_Kind, Integer_Kind,
-       (Sm (First_Entity, Node_Id)));
+   Ab (Signed_Integer_Kind, Integer_Kind);
 
    Cc (E_Signed_Integer_Type, Signed_Integer_Kind);
        --  Signed integer type, used for the anonymous base type of the
@@ -669,10 +670,9 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  context does not provide one, the backend will see Allocator_Type
        --  itself (which will already have been frozen).
 
-   Cc (E_General_Access_Type, Access_Kind,
+   Cc (E_General_Access_Type, Access_Kind);
        --  An access type created by an access type declaration with the all
        --  keyword present.
-       (Sm (First_Entity, Node_Id)));
 
    Ab (Access_Subprogram_Kind, Access_Kind);
 
@@ -728,14 +728,12 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Array_Type, Array_Kind,
        --  An array type created by an array type declaration. Includes all
        --  cases of arrays, except for string types.
-       (Sm (First_Entity, Node_Id),
-        Sm (Static_Real_Or_String_Predicate, Node_Id)));
+       (Sm (Static_Real_Or_String_Predicate, Node_Id)));
 
    Cc (E_Array_Subtype, Array_Kind,
        --  An array subtype, created by an explicit array subtype declaration,
        --  or the use of an anonymous array subtype.
        (Sm (Predicated_Parent, Node_Id),
-        Sm (First_Entity, Node_Id),
         Sm (Static_Real_Or_String_Predicate, Node_Id)));
 
    Cc (E_String_Literal_Subtype, Array_Kind,
@@ -747,16 +745,13 @@ begin -- Gen_IL.Gen.Gen_Entities
    Ab (Class_Wide_Kind, Aggregate_Kind,
        (Sm (C_Pass_By_Copy, Flag, Impl_Base_Type_Only),
         Sm (Equivalent_Type, Node_Id),
-        Sm (First_Entity, Node_Id),
         Sm (Has_Complex_Representation, Flag, Impl_Base_Type_Only),
         Sm (Has_Record_Rep_Clause, Flag, Impl_Base_Type_Only),
         Sm (Interfaces, Elist_Id),
-        Sm (Last_Entity, Node_Id),
         Sm (No_Reordering, Flag, Impl_Base_Type_Only),
         Sm (Non_Limited_View, Node_Id),
         Sm (Parent_Subtype, Node_Id, Base_Type_Only),
-        Sm (Reverse_Bit_Order, Flag, Base_Type_Only),
-        Sm (Stored_Constraint, Elist_Id)));
+        Sm (Reverse_Bit_Order, Flag, Base_Type_Only)));
 
    Cc (E_Class_Wide_Type, Class_Wide_Kind,
        --  A class wide type, created by any tagged type declaration (i.e. if
@@ -778,15 +773,12 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Corresponding_Concurrent_Type, Node_Id),
         Sm (Corresponding_Remote_Type, Node_Id),
         Sm (Dispatch_Table_Wrappers, Elist_Id, Impl_Base_Type_Only),
-        Sm (First_Entity, Node_Id),
         Sm (Has_Complex_Representation, Flag, Impl_Base_Type_Only),
         Sm (Has_Record_Rep_Clause, Flag, Impl_Base_Type_Only),
         Sm (Interfaces, Elist_Id),
-        Sm (Last_Entity, Node_Id),
         Sm (No_Reordering, Flag, Impl_Base_Type_Only),
         Sm (Parent_Subtype, Node_Id, Base_Type_Only),
         Sm (Reverse_Bit_Order, Flag, Base_Type_Only),
-        Sm (Stored_Constraint, Elist_Id),
         Sm (Underlying_Record_View, Node_Id)));
 
    Cc (E_Record_Subtype, Aggregate_Kind,
@@ -798,22 +790,16 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Corresponding_Remote_Type, Node_Id),
         Sm (Predicated_Parent, Node_Id),
         Sm (Dispatch_Table_Wrappers, Elist_Id, Impl_Base_Type_Only),
-        Sm (First_Entity, Node_Id),
         Sm (Has_Complex_Representation, Flag, Impl_Base_Type_Only),
         Sm (Has_Record_Rep_Clause, Flag, Impl_Base_Type_Only),
         Sm (Interfaces, Elist_Id),
-        Sm (Last_Entity, Node_Id),
         Sm (No_Reordering, Flag, Impl_Base_Type_Only),
         Sm (Parent_Subtype, Node_Id, Base_Type_Only),
         Sm (Reverse_Bit_Order, Flag, Base_Type_Only),
-        Sm (Stored_Constraint, Elist_Id),
         Sm (Underlying_Record_View, Node_Id)));
 
    Ab (Incomplete_Or_Private_Kind, Composite_Kind,
-       (Sm (First_Entity, Node_Id),
-        Sm (Last_Entity, Node_Id),
-        Sm (Private_Dependents, Elist_Id),
-        Sm (Stored_Constraint, Elist_Id)));
+       (Sm (Private_Dependents, Elist_Id)));
 
    Ab (Private_Kind, Incomplete_Or_Private_Kind,
        (Sm (Underlying_Full_View, Node_Id)));
@@ -893,11 +879,8 @@ begin -- Gen_IL.Gen.Gen_Entities
 
    Ab (Concurrent_Kind, Composite_Kind,
        (Sm (Corresponding_Record_Type, Node_Id),
-        Sm (First_Entity, Node_Id),
         Sm (First_Private_Entity, Node_Id),
-        Sm (Last_Entity, Node_Id),
-        Sm (Scope_Depth_Value, Unat),
-        Sm (Stored_Constraint, Elist_Id)));
+        Sm (Scope_Depth_Value, Unat)));
 
    Ab (Task_Kind, Concurrent_Kind,
        (Sm (Has_Storage_Size_Clause, Flag, Impl_Base_Type_Only),
@@ -951,8 +934,6 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Access_Subprogram_Wrapper, Node_Id),
         Sm (Extra_Accessibility_Of_Result, Node_Id),
         Sm (Extra_Formals, Node_Id),
-        Sm (First_Entity, Node_Id),
-        Sm (Last_Entity, Node_Id),
         Sm (Needs_No_Actuals, Flag)));
 
    Ab (Overloadable_Kind, Entity_Kind,
