@@ -2011,15 +2011,15 @@ pass_vsetvl::backward_demand_fusion (void)
   for (const bb_info *bb : crtl->ssa->reverse_bbs ())
     {
       basic_block cfg_bb = bb->cfg_bb ();
-      const auto &prop
-	= m_vector_manager->vector_block_infos[cfg_bb->index].local_dem;
+      const auto &curr_block_info
+	= m_vector_manager->vector_block_infos[cfg_bb->index];
+      const auto &prop = curr_block_info.local_dem;
 
       /* If there is nothing to propagate, just skip it.  */
       if (!prop.valid_or_dirty_p ())
 	continue;
 
-      if (!backward_propagate_worthwhile_p (
-	    cfg_bb, m_vector_manager->vector_block_infos[cfg_bb->index]))
+      if (!backward_propagate_worthwhile_p (cfg_bb, curr_block_info))
 	continue;
 
       edge e;
