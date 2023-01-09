@@ -51,6 +51,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-into-ssa.h"
 #include "omp-general.h"
 #include "gimple-range.h"
+#include "tree-cfgcleanup.h"
 
 /* ??? For lang_hooks.types.type_for_mode, but is there a word_mode
    type in the GIMPLE type system that is language-independent?  */
@@ -132,16 +133,42 @@ switch_conversion::collect (gswitch *swtch)
   /* Require that all switch destinations are either that common
      FINAL_BB or a forwarder to it, except for the default
      case if contiguous range.  */
+  auto_vec<edge, 10> fw_edges;
+  m_uniq = 0;
   if (m_final_bb)
     FOR_EACH_EDGE (e, ei, m_switch_bb->succs)
       {
+	edge phi_e = nullptr;
 	if (e->dest == m_final_bb)
-	  continue;
-
-	if (single_pred_p (e->dest)
-	    && single_succ_p (e->dest)
-	    && single_succ (e->dest) == m_final_bb)
-	  continue;
+	  phi_e = e;
+	else if (single_pred_p (e->dest)
+		 && single_succ_p (e->dest)
+		 && single_succ (e->dest) == m_final_bb)
+	  phi_e = single_succ_edge (e->dest);
+	if (phi_e)
+	  {
+	    if (e == e_default)
+	      ;
+	    else if (phi_e == e || empty_block_p (e->dest))
+	      {
+		/* For empty blocks consider forwarders with equal
+		   PHI arguments in m_final_bb as unique.  */
+		unsigned i;
+		for (i = 0; i < fw_edges.length (); ++i)
+		  if (phi_alternatives_equal (m_final_bb, fw_edges[i], phi_e))
+		    break;
+		if (i == fw_edges.length ())
+		  {
+		    /* But limit the above possibly quadratic search.  */
+		    if (fw_edges.length () < 10)
+		      fw_edges.quick_push (phi_e);
+		    m_uniq++;
+		  }
+	      }
+	    else
+	      m_uniq++;
+	    continue;
+	  }
 
 	if (e == e_default && m_contiguous_range)
 	  {
@@ -152,6 +179,11 @@ switch_conversion::collect (gswitch *swtch)
 	m_final_bb = NULL;
 	break;
       }
+
+  /* When there's not a single common successor block conservatively
+     approximate the number of unique non-default targets.  */
+  if (!m_final_bb)
+    m_uniq = EDGE_COUNT (gimple_bb (swtch)->succs) - 1;
 
   m_range_size
     = int_const_binop (MINUS_EXPR, m_range_max, m_range_min);
@@ -168,11 +200,6 @@ switch_conversion::collect (gswitch *swtch)
 	  && ! tree_int_cst_equal (CASE_LOW (elt), CASE_HIGH (elt)))
 	m_count++;
     }
-
-  /* Get the number of unique non-default targets out of the GIMPLE_SWITCH
-     block.  Assume a CFG cleanup would have already removed degenerate
-     switch statements, this allows us to just use EDGE_COUNT.  */
-  m_uniq = EDGE_COUNT (gimple_bb (swtch)->succs) - 1;
 }
 
 /* Checks whether the range given by individual case statements of the switch
