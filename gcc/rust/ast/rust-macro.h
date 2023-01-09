@@ -23,13 +23,11 @@
 #include "rust-ast.h"
 #include "rust-ast-fragment.h"
 #include "rust-location.h"
+#include "rust-item.h"
+#include "rust-make-unique.h"
 
 namespace Rust {
 namespace AST {
-
-// Decls as definitions moved to rust-ast.h
-class MacroItem;
-
 class MacroFragSpec
 {
 public:
@@ -446,8 +444,18 @@ public:
 };
 
 // A macro rules definition item AST node
-class MacroRulesDefinition : public MacroItem
+class MacroRulesDefinition : public VisItem
 {
+public:
+  enum MacroKind
+  {
+    // Macro by Example (legacy macro rules)
+    MBE,
+    // Declarative macros 2.0
+    DeclMacro,
+  };
+
+private:
   std::vector<Attribute> outer_attrs;
   Identifier rule_name;
   // MacroRulesDef rules_def;
@@ -460,6 +468,7 @@ class MacroRulesDefinition : public MacroItem
   std::function<Fragment (Location, MacroInvocData &)> associated_transcriber;
   // Since we can't compare std::functions, we need to use an extra boolean
   bool is_builtin_rule;
+  MacroKind kind;
 
   /**
    * Default function to use as an associated transcriber. This function should
@@ -479,26 +488,50 @@ class MacroRulesDefinition : public MacroItem
    * I am not aware of the implications of this decision. The rustc spec does
    * mention that using the same parser for macro definitions and invocations
    * is "extremely self-referential and non-intuitive". */
-
-public:
-  std::string as_string () const override;
-
   MacroRulesDefinition (Identifier rule_name, DelimType delim_type,
 			std::vector<MacroRule> rules,
-			std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), rule_name (std::move (rule_name)),
+			std::vector<Attribute> outer_attrs, Location locus,
+			MacroKind kind, Visibility vis)
+    : VisItem (std::move (vis), outer_attrs),
+      outer_attrs (std::move (outer_attrs)), rule_name (std::move (rule_name)),
       delim_type (delim_type), rules (std::move (rules)), locus (locus),
-      associated_transcriber (dummy_builtin), is_builtin_rule (false)
+      associated_transcriber (dummy_builtin), is_builtin_rule (false),
+      kind (kind)
   {}
 
   MacroRulesDefinition (
     Identifier builtin_name, DelimType delim_type,
-    std::function<Fragment (Location, MacroInvocData &)> associated_transcriber)
-    : outer_attrs (std::vector<Attribute> ()), rule_name (builtin_name),
+    std::function<Fragment (Location, MacroInvocData &)> associated_transcriber,
+    MacroKind kind, Visibility vis)
+    : VisItem (std::move (vis), std::vector<Attribute> ()),
+      outer_attrs (std::vector<Attribute> ()), rule_name (builtin_name),
       delim_type (delim_type), rules (std::vector<MacroRule> ()),
       locus (Location ()), associated_transcriber (associated_transcriber),
-      is_builtin_rule (true)
+      is_builtin_rule (true), kind (kind)
   {}
+
+public:
+  std::string as_string () const override;
+
+  static std::unique_ptr<MacroRulesDefinition>
+  mbe (Identifier rule_name, DelimType delim_type, std::vector<MacroRule> rules,
+       std::vector<Attribute> outer_attrs, Location locus)
+  {
+    return Rust::make_unique<MacroRulesDefinition> (
+      MacroRulesDefinition (rule_name, delim_type, rules, outer_attrs, locus,
+			    AST::MacroRulesDefinition::MacroKind::MBE,
+			    AST::Visibility::create_error ()));
+  }
+
+  static std::unique_ptr<MacroRulesDefinition>
+  decl_macro (Identifier rule_name, std::vector<MacroRule> rules,
+	      std::vector<Attribute> outer_attrs, Location locus,
+	      Visibility vis)
+  {
+    return Rust::make_unique<MacroRulesDefinition> (MacroRulesDefinition (
+      rule_name, AST::DelimType::CURLY, rules, outer_attrs, locus,
+      AST::MacroRulesDefinition::MacroKind::DeclMacro, vis));
+  }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -549,7 +582,7 @@ protected:
  * compile time */
 class MacroInvocation : public TypeNoBounds,
 			public Pattern,
-			public MacroItem,
+			public Item,
 			public TraitItem,
 			public TraitImplItem,
 			public InherentImplItem,
