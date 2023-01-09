@@ -1657,10 +1657,10 @@ BUILD-PGE-O = \
 ifeq ($(M2_MAINTAINER),yes)
 include m2/Make-maintainer
 else
-m2/pge-boot/%.o: m2/pge-boot/%.c m2/gm2-libs/gm2-libs-host.h
+m2/pge-boot/%.o: m2/pge-boot/%.c m2/gm2-libs/gm2-libs-host.h m2/gm2config.h
 	$(CXX) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
 
-m2/pge-boot/%.o: m2/pge-boot/%.cc m2/gm2-libs/gm2-libs-host.h
+m2/pge-boot/%.o: m2/pge-boot/%.cc m2/gm2-libs/gm2-libs-host.h m2/gm2config.h
 	$(CXX) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
 
 $(PGE): $(BUILD-PGE-O)
