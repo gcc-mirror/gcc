@@ -4285,7 +4285,8 @@ maybe_init_list_as_array (tree elttype, tree init)
 static tree
 maybe_init_list_as_range (tree fn, tree expr)
 {
-  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+  if (!processing_template_decl
+      && BRACE_ENCLOSED_INITIALIZER_P (expr)
       && is_list_ctor (fn)
       && decl_in_std_namespace_p (fn))
     {
