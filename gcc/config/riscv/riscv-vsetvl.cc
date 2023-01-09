@@ -683,7 +683,7 @@ insert_vsetvl (enum emit_type emit_type, rtx_insn *rinsn,
    necessary REG_LABEL_OPERAND and REG_LABEL_TARGET notes.  */
 
 static void
-add_label_notes (rtx x, rtx_insn *insn)
+add_label_notes (rtx x, rtx_insn *rinsn)
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
@@ -700,8 +700,8 @@ add_label_notes (rtx x, rtx_insn *insn)
       /* There's no reason for current users to emit jump-insns with
 	 such a LABEL_REF, so we don't have to handle REG_LABEL_TARGET
 	 notes.  */
-      gcc_assert (!JUMP_P (insn));
-      add_reg_note (insn, REG_LABEL_OPERAND, label_ref_label (x));
+      gcc_assert (!JUMP_P (rinsn));
+      add_reg_note (rinsn, REG_LABEL_OPERAND, label_ref_label (x));
 
       if (LABEL_P (label_ref_label (x)))
 	LABEL_NUSES (label_ref_label (x))++;
@@ -712,10 +712,10 @@ add_label_notes (rtx x, rtx_insn *insn)
   for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	add_label_notes (XEXP (x, i), insn);
+	add_label_notes (XEXP (x, i), rinsn);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  add_label_notes (XVECEXP (x, i, j), insn);
+	  add_label_notes (XVECEXP (x, i, j), rinsn);
     }
 }
 
