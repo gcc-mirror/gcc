@@ -291,6 +291,9 @@ struct vector_block_info
   /* The reaching_out vector insn_info of the block.  */
   vector_insn_info reaching_out;
 
+  /* The static execute probability of the demand info.  */
+  profile_probability probability;
+
   vector_block_info () = default;
 };
 

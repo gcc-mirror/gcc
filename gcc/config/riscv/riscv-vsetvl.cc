@@ -1466,6 +1466,7 @@ vector_infos_manager::vector_infos_manager ()
 	  vector_block_infos[bb->index ()].reaching_out = vector_insn_info ();
 	  for (insn_info *insn : bb->real_insns ())
 	    vector_insn_infos[insn->uid ()].parse_insn (insn);
+	  vector_block_infos[bb->index ()].probability = profile_probability ();
 	}
     }
 }
@@ -1643,6 +1644,8 @@ vector_infos_manager::dump (FILE *file) const
 	}
       fprintf (file, "<FOOTER>=");
       vector_block_infos[cfg_bb->index].reaching_out.dump (file);
+      fprintf (file, "<Probability>=");
+      vector_block_infos[cfg_bb->index].probability.dump (file);
       fprintf (file, "\n\n");
     }
 
@@ -1765,6 +1768,7 @@ private:
 
   void init (void);
   void done (void);
+  void compute_probabilities (void);
 
 public:
   pass_vsetvl (gcc::context *ctxt) : rtl_opt_pass (pass_data_vsetvl, ctxt) {}
@@ -2623,6 +2627,41 @@ pass_vsetvl::done (void)
   m_vector_manager->release ();
   delete m_vector_manager;
   m_vector_manager = nullptr;
+}
+
+/* Compute probability for each block.  */
+void
+pass_vsetvl::compute_probabilities (void)
+{
+  /* Don't compute it in -O0 since we don't need it.  */
+  if (!optimize)
+    return;
+  edge e;
+  edge_iterator ei;
+
+  for (const bb_info *bb : crtl->ssa->bbs ())
+    {
+      basic_block cfg_bb = bb->cfg_bb ();
+      auto &curr_prob
+	= m_vector_manager->vector_block_infos[cfg_bb->index].probability;
+      if (ENTRY_BLOCK_PTR_FOR_FN (cfun) == cfg_bb)
+	curr_prob = profile_probability::always ();
+      gcc_assert (curr_prob.initialized_p ());
+      FOR_EACH_EDGE (e, ei, cfg_bb->succs)
+	{
+	  auto &new_prob
+	    = m_vector_manager->vector_block_infos[e->dest->index].probability;
+	  if (!new_prob.initialized_p ())
+	    new_prob = curr_prob * e->probability;
+	  else if (new_prob == profile_probability::always ())
+	    continue;
+	  else
+	    new_prob += curr_prob * e->probability;
+	}
+    }
+  auto &exit_block
+    = m_vector_manager->vector_block_infos[EXIT_BLOCK_PTR_FOR_FN (cfun)->index];
+  exit_block.probability = profile_probability::always ();
 }
 
 /* Lazy vsetvl insertion for optimize > 0. */
