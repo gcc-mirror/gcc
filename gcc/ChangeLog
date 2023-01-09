@@ -1,3 +1,16 @@
+2023-01-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106736
+	* config/rs6000/mma.md (define_expand movoo): Call function
+	rs6000_opaque_type_invalid_use_p to check and emit error message for
+	the invalid use of opaque type.
+	(define_expand movxo): Likewise.
+	* config/rs6000/rs6000-protos.h
+	(rs6000_opaque_type_invalid_use_p): New function declaration.
+	(currently_expanding_gimple_stmt): New extern declaration.
+	* config/rs6000/rs6000.cc (rs6000_opaque_type_invalid_use_p): New
+	function.
+
 2022-12-22  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
