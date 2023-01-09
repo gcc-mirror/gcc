@@ -2141,6 +2141,9 @@ pass_vsetvl::forward_demand_fusion (void)
       if (!prop.valid_or_dirty_p ())
 	continue;
 
+      if (cfg_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	continue;
+
       edge e;
       edge_iterator ei;
       /* Forward propagate to each successor.  */
@@ -2153,6 +2156,11 @@ pass_vsetvl::forward_demand_fusion (void)
 
 	  /* It's quite obvious, we don't need to propagate itself.  */
 	  if (e->dest->index == cfg_bb->index)
+	    continue;
+	  /* We don't propagate through critical edges.  */
+	  if (e->flags & EDGE_COMPLEX)
+	    continue;
+	  if (e->dest->index == EXIT_BLOCK_PTR_FOR_FN (cfun)->index)
 	    continue;
 
 	  /* If there is nothing to propagate, just skip it.  */
