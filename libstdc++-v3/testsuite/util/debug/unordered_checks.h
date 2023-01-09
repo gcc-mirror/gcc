@@ -126,6 +126,40 @@ namespace __gnu_test
     }
 
   template<typename _Tp>
+    void invalid_local_iterator_pre_increment()
+    {
+      typedef _Tp cont_type;
+      typedef typename cont_type::value_type cont_val_type;
+      typedef typename CopyableValueType<cont_val_type>::value_type val_type;
+      generate_unique<val_type> gu;
+
+      cont_type c;
+      for (size_t i = 0; i != 5; ++i)
+	c.insert(gu.build());
+
+      auto lit = c.begin(0);
+      for (size_t i = 0; i != 6; ++i)
+	++lit;
+    }
+
+  template<typename _Tp>
+    void invalid_local_iterator_post_increment()
+    {
+      typedef _Tp cont_type;
+      typedef typename cont_type::value_type cont_val_type;
+      typedef typename CopyableValueType<cont_val_type>::value_type val_type;
+      generate_unique<val_type> gu;
+
+      cont_type c;
+      for (size_t i = 0; i != 5; ++i)
+	c.insert(gu.build());
+
+      auto lit = c.begin(0);
+      for (size_t i = 0; i != 6; ++i)
+	lit++;
+    }
+
+  template<typename _Tp>
     void invalid_local_iterator_compare()
     {
       typedef _Tp cont_type;

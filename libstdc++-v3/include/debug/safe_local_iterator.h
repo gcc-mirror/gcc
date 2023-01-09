@@ -84,14 +84,6 @@ namespace __gnu_debug
       typedef _Safe_local_iterator _Self;
       typedef _Safe_local_iterator<_OtherIterator, _Sequence> _OtherSelf;
 
-      struct _Attach_single
-      { };
-
-      _Safe_local_iterator(_Iterator __i, _Safe_sequence_base* __cont,
-			   _Attach_single) noexcept
-      : _Iter_base(__i)
-      { _M_attach_single(__cont); }
-
     public:
       typedef _Iterator					iterator_type;
       typedef typename _Traits::iterator_category	iterator_category;
@@ -290,9 +282,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_local_iterator(base()++, this->_M_sequence,
-				    _Attach_single());
+	_Safe_local_iterator __ret = *this;
+	++*this;
+	return __ret;
       }
 
       // ------ Utilities ------

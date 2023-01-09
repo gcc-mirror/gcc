@@ -129,14 +129,6 @@ namespace __gnu_debug
 	typename _Sequence::_Base::iterator,
 	typename _Sequence::_Base::const_iterator>::__type _OtherIterator;
 
-      struct _Attach_single
-      { };
-
-      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
-      _GLIBCXX_NOEXCEPT
-      : _Iter_base(__i)
-      { _M_attach_single(__seq); }
-
     public:
       typedef _Iterator					iterator_type;
       typedef typename _Traits::iterator_category	iterator_category;
@@ -347,8 +339,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(base()++, this->_M_sequence, _Attach_single());
+	_Safe_iterator __ret = *this;
+	++*this;
+	return __ret;
       }
 
       // ------ Utilities ------
@@ -520,12 +513,6 @@ namespace __gnu_debug
 
     protected:
       typedef typename _Safe_base::_OtherIterator _OtherIterator;
-      typedef typename _Safe_base::_Attach_single _Attach_single;
-
-      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
-      _GLIBCXX_NOEXCEPT
-      : _Safe_base(__i, __seq, _Attach_single())
-      { }
 
     public:
       /// @post the iterator is singular and unattached
@@ -609,9 +596,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(this->base()++, this->_M_sequence,
-			      _Attach_single());
+	_Safe_iterator __ret = *this;
+	++*this;
+	return __ret;
       }
 
       // ------ Bidirectional iterator requirements ------
@@ -640,9 +627,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
 			      _M_message(__msg_bad_dec)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(this->base()--, this->_M_sequence,
-			      _Attach_single());
+	_Safe_iterator __ret = *this;
+	--*this;
+	return __ret;
       }
 
       // ------ Utilities ------
@@ -665,13 +652,6 @@ namespace __gnu_debug
       typedef typename _Safe_base::_Self _Self;
       typedef _Safe_iterator<_OtherIterator, _Sequence,
 			     std::random_access_iterator_tag> _OtherSelf;
-
-      typedef typename _Safe_base::_Attach_single _Attach_single;
-
-      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
-      _GLIBCXX_NOEXCEPT
-      : _Safe_base(__i, __seq, _Attach_single())
-      { }
 
     public:
       typedef typename _Safe_base::difference_type	difference_type;
@@ -761,6 +741,9 @@ namespace __gnu_debug
       _Safe_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
+			      _M_message(__msg_bad_inc)
+			      ._M_iterator(*this, "this"));
 	_Safe_iterator __ret = *this;
 	++*this;
 	return __ret;
@@ -785,6 +768,9 @@ namespace __gnu_debug
       _Safe_iterator
       operator--(int) _GLIBCXX_NOEXCEPT
       {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
+			      _M_message(__msg_bad_dec)
+			      ._M_iterator(*this, "this"));
 	_Safe_iterator __ret = *this;
 	--*this;
 	return __ret;
