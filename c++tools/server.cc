@@ -753,8 +753,10 @@ server (bool ipv6, int sock_fd, module_resolver *resolver)
 		      }
 		  }
 
+#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
 	      if (active < 0 && sock_fd >= 0 && FD_ISSET (sock_fd, &readers))
 		active = -1;
+#endif
 	    }
 
 	  if (active >= 0)
