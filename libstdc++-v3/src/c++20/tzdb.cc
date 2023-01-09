@@ -1197,11 +1197,11 @@ namespace std::chrono
   const tzdb&
   tzdb_list::_Node::_S_init_tzdb()
   {
-    try
+    __try
       {
 	return reload_tzdb();
       }
-    catch (const std::exception&)
+    __catch (const std::exception&)
       {
 	auto [leaps, ok] = _S_read_leap_seconds();
 
