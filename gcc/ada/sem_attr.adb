@@ -1068,9 +1068,11 @@ package body Sem_Attr is
                   Analyze (N);
                   return;
 
-               --  OK if a task type, this test needs sharpening up ???
+               --  OK if current task.
 
-               elsif Is_Task_Type (Typ) then
+               elsif Is_Task_Type (Typ)
+                 and then In_Open_Scopes (Typ)
+               then
                   null;
 
                --  OK if self-reference in an aggregate in Ada 2005, and
