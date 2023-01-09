@@ -220,13 +220,6 @@ private:
      (with AVL included) before vmv.x.s, but vmv.x.s is not the INSN holding the
      definition of AVL.  */
   rtl_ssa::insn_info *m_insn;
-  /* Save instruction pattern for Dirty block.
-     Since empty block may be polluted as a dirty block during dem backward
-     propagation (phase 3) which is intending to cheat LCM there is a VSETVL
-     instruction here to gain better LCM optimization. Such instruction is not
-     emit yet, we save this here and then emit it in the 4th phase if it is
-     necessary.  */
-  rtx m_dirty_pat;
 
   /* Parse the instruction to get VL/VTYPE information and demanding
    * information.  */
@@ -243,7 +236,7 @@ private:
 public:
   vector_insn_info ()
     : vl_vtype_info (), m_state (UNINITIALIZED), m_demands{false},
-      m_insn (nullptr), m_dirty_pat (NULL_RTX)
+      m_insn (nullptr)
   {}
 
   bool operator> (const vector_insn_info &) const;
@@ -271,7 +264,6 @@ public:
   void set_unknown () { m_state = UNKNOWN; }
   void set_empty () { m_state = EMPTY; }
   void set_dirty () { m_state = DIRTY; }
-  void set_dirty_pat (rtx pat) { m_dirty_pat = pat; }
   void set_insn (rtl_ssa::insn_info *insn) { m_insn = insn; }
   void set_demand_info (const vector_insn_info &);
 
@@ -287,7 +279,6 @@ public:
   vector_insn_info merge (const vector_insn_info &, bool) const;
 
   rtl_ssa::insn_info *get_insn () const { return m_insn; }
-  rtx get_dirty_pat () const { return m_dirty_pat; }
 
   void dump (FILE *) const;
 };

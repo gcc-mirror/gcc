@@ -1084,10 +1084,10 @@ vector_insn_info::operator== (const vector_insn_info &other) const
     if (m_demands[i] != other.demand_p ((enum demand_type) i))
       return false;
 
-  if (m_insn != other.get_insn ())
-    return false;
-  if (m_dirty_pat != other.get_dirty_pat ())
-    return false;
+  if (vector_config_insn_p (m_insn->rtl ())
+      || vector_config_insn_p (other.get_insn ()->rtl ()))
+    if (m_insn != other.get_insn ())
+      return false;
 
   if (!same_avl_p (other))
     return false;
@@ -1318,8 +1318,6 @@ vector_insn_info::merge (const vector_insn_info &merge_info,
 	new_info.set_insn (merge_info.get_insn ());
     }
 
-  new_info.set_dirty_pat (merge_info.get_dirty_pat ());
-
   if (!demand_p (DEMAND_AVL) && !merge_info.demand_p (DEMAND_AVL))
     new_info.undemand (DEMAND_AVL);
   if (!demand_p (DEMAND_SEW) && !merge_info.demand_p (DEMAND_SEW))
@@ -1431,11 +1429,6 @@ vector_insn_info::dump (FILE *file) const
 	{
 	  fprintf (file, "The real INSN=");
 	  print_rtl_single (file, get_insn ()->rtl ());
-	}
-      if (get_dirty_pat ())
-	{
-	  fprintf (file, "Dirty RTL Pattern=");
-	  print_rtl_single (file, get_dirty_pat ());
 	}
     }
 }
@@ -1968,7 +1961,6 @@ pass_vsetvl::merge_successors (const basic_block father,
 
       new_info.set_dirty ();
       rtx new_pat = gen_vsetvl_pat (new_info.get_insn ()->rtl (), new_info);
-      new_info.set_dirty_pat (new_pat);
 
       father_info.local_dem = new_info;
       father_info.reaching_out = new_info;
@@ -2049,7 +2041,6 @@ pass_vsetvl::backward_demand_fusion (void)
 
 		  block_info.reaching_out = prop;
 		  block_info.reaching_out.set_dirty ();
-		  block_info.reaching_out.set_dirty_pat (new_pat);
 		  block_info.local_dem = block_info.reaching_out;
 		  changed_p = true;
 		}
@@ -2078,7 +2069,6 @@ pass_vsetvl::backward_demand_fusion (void)
 	      rtx new_pat
 		= gen_vsetvl_pat (new_info.get_insn ()->rtl (), new_info);
 	      new_info.set_dirty ();
-	      new_info.set_dirty_pat (new_pat);
 	      block_info.local_dem = new_info;
 	      block_info.reaching_out = new_info;
 	      changed_p = true;
@@ -2176,7 +2166,6 @@ pass_vsetvl::forward_demand_fusion (void)
 		    = gen_vsetvl_pat (prop.get_insn ()->rtl (), prop);
 		  local_dem = prop;
 		  local_dem.set_dirty ();
-		  local_dem.set_dirty_pat (dirty_pat);
 		  reaching_out = local_dem;
 		}
 	      else
@@ -2503,10 +2492,17 @@ pass_vsetvl::commit_vsetvls (void)
       if (!reaching_out.dirty_p ())
 	continue;
 
-      rtx new_pat = reaching_out.get_dirty_pat ();
+
+      rtx new_pat;
       if (can_refine_vsetvl_p (cfg_bb, reaching_out.get_ratio ()))
 	new_pat
 	  = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, reaching_out, NULL_RTX);
+      else if (vlmax_avl_p (reaching_out.get_avl ()))
+	new_pat = gen_vsetvl_pat (VSETVL_NORMAL, reaching_out,
+				  get_vl (reaching_out.get_insn ()->rtl ()));
+      else
+	new_pat
+	  = gen_vsetvl_pat (VSETVL_DISCARD_RESULT, reaching_out, NULL_RTX);
 
       start_sequence ();
       emit_insn (new_pat);
