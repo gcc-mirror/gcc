@@ -1570,18 +1570,62 @@ vector_infos_manager::release (void)
     vector_exprs.release ();
 
   if (optimize > 0)
-    {
-      /* Finished. Free up all the things we've allocated.  */
-      free_edge_list (vector_edge_list);
-      sbitmap_vector_free (vector_del);
-      sbitmap_vector_free (vector_insert);
-      sbitmap_vector_free (vector_kill);
-      sbitmap_vector_free (vector_antic);
-      sbitmap_vector_free (vector_transp);
-      sbitmap_vector_free (vector_comp);
-      sbitmap_vector_free (vector_avin);
-      sbitmap_vector_free (vector_avout);
-    }
+    free_bitmap_vectors ();
+}
+
+void
+vector_infos_manager::create_bitmap_vectors (void)
+{
+  /* Create the bitmap vectors.  */
+  vector_antic = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+				       vector_exprs.length ());
+  vector_transp = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+					vector_exprs.length ());
+  vector_comp = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+				      vector_exprs.length ());
+  vector_avin = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+				      vector_exprs.length ());
+  vector_avout = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+				       vector_exprs.length ());
+  vector_kill = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+				      vector_exprs.length ());
+
+  bitmap_vector_ones (vector_transp, last_basic_block_for_fn (cfun));
+  bitmap_vector_clear (vector_antic, last_basic_block_for_fn (cfun));
+  bitmap_vector_clear (vector_comp, last_basic_block_for_fn (cfun));
+}
+
+void
+vector_infos_manager::free_bitmap_vectors (void)
+{
+  /* Finished. Free up all the things we've allocated.  */
+  free_edge_list (vector_edge_list);
+  if (vector_del)
+    sbitmap_vector_free (vector_del);
+  if (vector_insert)
+    sbitmap_vector_free (vector_insert);
+  if (vector_kill)
+    sbitmap_vector_free (vector_kill);
+  if (vector_antic)
+    sbitmap_vector_free (vector_antic);
+  if (vector_transp)
+    sbitmap_vector_free (vector_transp);
+  if (vector_comp)
+    sbitmap_vector_free (vector_comp);
+  if (vector_avin)
+    sbitmap_vector_free (vector_avin);
+  if (vector_avout)
+    sbitmap_vector_free (vector_avout);
+
+  vector_edge_list = nullptr;
+  vector_kill = nullptr;
+  vector_del = nullptr;
+  vector_insert = nullptr;
+  vector_antic = nullptr;
+  vector_transp = nullptr;
+  vector_comp = nullptr;
+  vector_avin = nullptr;
+  vector_avout = nullptr;
 }
 
 void
@@ -2479,32 +2523,7 @@ pass_vsetvl::pre_vsetvl (void)
   /* Compute entity list.  */
   prune_expressions ();
 
-  /* Create the bitmap vectors.  */
-  m_vector_manager->vector_antic
-    = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
-			    m_vector_manager->vector_exprs.length ());
-  m_vector_manager->vector_transp
-    = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
-			    m_vector_manager->vector_exprs.length ());
-  m_vector_manager->vector_comp
-    = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
-			    m_vector_manager->vector_exprs.length ());
-  m_vector_manager->vector_avin
-    = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
-			    m_vector_manager->vector_exprs.length ());
-  m_vector_manager->vector_avout
-    = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
-			    m_vector_manager->vector_exprs.length ());
-  m_vector_manager->vector_kill
-    = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
-			    m_vector_manager->vector_exprs.length ());
-
-  bitmap_vector_ones (m_vector_manager->vector_transp,
-		      last_basic_block_for_fn (cfun));
-  bitmap_vector_clear (m_vector_manager->vector_antic,
-		       last_basic_block_for_fn (cfun));
-  bitmap_vector_clear (m_vector_manager->vector_comp,
-		       last_basic_block_for_fn (cfun));
+  m_vector_manager->create_bitmap_vectors ();
   compute_local_properties ();
   m_vector_manager->vector_edge_list = pre_edge_lcm_avs (
     m_vector_manager->vector_exprs.length (), m_vector_manager->vector_transp,

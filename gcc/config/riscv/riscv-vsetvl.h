@@ -341,6 +341,8 @@ public:
   bool all_same_ratio_p (sbitmap) const;
 
   void release (void);
+  void create_bitmap_vectors (void);
+  void free_bitmap_vectors (void);
 
   void dump (FILE *) const;
 };
