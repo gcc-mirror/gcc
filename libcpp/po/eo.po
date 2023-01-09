@@ -1,14 +1,14 @@
 # Translation of cpplib to Esperanto
-# Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2023 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021.
+# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 11.1-b20210207\n"
+"Project-Id-Version: cpplib 12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-02-11 23:02+0000\n"
-"PO-Revision-Date: 2021-03-07 10:29-0300\n"
+"PO-Revision-Date: 2023-01-08 14:43-0300\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "Language: eo\n"
@@ -208,10 +208,9 @@ msgid "style of line directive is a GCC extension"
 msgstr "stilo de lini-direktivoj estas aldono de GCC"
 
 #: directives.cc:541
-#, fuzzy, c-format
-#| msgid "invalid preprocessing directive #%s"
+#, c-format
 msgid "invalid preprocessing directive #%s; did you mean #%s?"
-msgstr "malvalida antaŭproceza direktivo #%s"
+msgstr "malvalida antaŭproceza direktivo #%s; ĉu vi intencis #%s?"
 
 #: directives.cc:547
 #, c-format
@@ -394,28 +393,24 @@ msgid "the conditional began here"
 msgstr "la kondiĉo komencis ĉi tie"
 
 #: directives.cc:2108
-#, fuzzy, c-format
-#| msgid "#else without #if"
+#, c-format
 msgid "#%s without #if"
-msgstr "#else sen #if"
+msgstr "#%s sen #if"
 
 #: directives.cc:2113
-#, fuzzy, c-format
-#| msgid "#else after #else"
+#, c-format
 msgid "#%s after #else"
-msgstr "#else post #else"
+msgstr "#%s post #else"
 
 #: directives.cc:2136 directives.cc:2175
-#, fuzzy, c-format
-#| msgid "#%s is a GCC extension"
+#, c-format
 msgid "#%s before C++23 is a GCC extension"
-msgstr "#%s estas aldono de GCC"
+msgstr "#%s antaŭ C++23 estas aldono de GCC"
 
 #: directives.cc:2140 directives.cc:2179
-#, fuzzy, c-format
-#| msgid "#%s is a GCC extension"
+#, c-format
 msgid "#%s before C2X is a GCC extension"
-msgstr "#%s estas aldono de GCC"
+msgstr "#%s antaŭ C2X estas aldono de GCC"
 
 #: directives.cc:2215
 msgid "#endif without #if"
@@ -724,30 +719,30 @@ msgstr "trigrafikaĵo ??%c preteratentita, uzu -trigraphs por ebligi"
 
 #: lex.cc:1536
 msgid "end of bidirectional context"
-msgstr ""
+msgstr "fino de dudirekta kunteksto"
 
 #: lex.cc:1577
 msgid "unpaired UTF-8 bidirectional control characters detected"
-msgstr ""
+msgstr "neparigitaj dudirektaj regaj signoj de UTF-8 estas detektitaj"
 
 #: lex.cc:1581
 msgid "unpaired UTF-8 bidirectional control character detected"
-msgstr ""
+msgstr "neparigita dudirekta rega signo de UTF-8 estas detektita"
 
 #: lex.cc:1619
 #, c-format
 msgid "UTF-8 vs UCN mismatch when closing a context by \"%s\""
-msgstr ""
+msgstr "Malkongruo inter UTF-8 kaj UCN dum fermo de kunteksto farite de \"%s\""
 
 #: lex.cc:1628
 #, c-format
 msgid "\"%s\" is closing an unopened context"
-msgstr ""
+msgstr "\"%s\" fermas malfermitan kuntekston"
 
 #: lex.cc:1632
 #, c-format
 msgid "found problematic Unicode character \"%s\""
-msgstr ""
+msgstr "estas trovita problema unikoda signo \"%s\""
 
 #: lex.cc:1682
 msgid "\"/*\" within comment"
@@ -800,7 +795,7 @@ msgstr "la identiganto \"%s\" estas speciala operator-nomo en C++"
 
 #: lex.cc:2132
 msgid "adjacent digit separators"
-msgstr ""
+msgstr "apudaj cifero-apartigiloj"
 
 #: lex.cc:2450
 msgid "raw string delimiter longer than 16 characters"
@@ -884,20 +879,16 @@ msgid "'##' cannot appear at either end of __VA_OPT__"
 msgstr "'##' ne povas aperi ĉe iu ajn flanko de __VA_OPT__"
 
 #: macro.cc:144
-#, fuzzy
-#| msgid "'##' cannot appear at either end of __VA_OPT__"
 msgid "__VA_OPT__ may not appear in a __VA_OPT__"
-msgstr "'##' ne povas aperi ĉe iu ajn flanko de __VA_OPT__"
+msgstr "__VA_OPT__ ne povas aperi ene de __VA_OPT__"
 
 #: macro.cc:157
 msgid "__VA_OPT__ must be followed by an open parenthesis"
-msgstr ""
+msgstr "__VA_OPT__ devas esti sekvata de malferma ronda krampo"
 
 #: macro.cc:235
-#, fuzzy
-#| msgid "unterminated #%s"
 msgid "unterminated __VA_OPT__"
-msgstr "nefinigita #%s"
+msgstr "nefinigita __VA_OPT__"
 
 #: macro.cc:397
 #, c-format
@@ -951,10 +942,9 @@ msgid "invalid string literal, ignoring final '\\'"
 msgstr "malvalida ĉena literaĵo, ni preterpasas finan '\\'"
 
 #: macro.cc:980
-#, fuzzy, c-format
-#| msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
+#, c-format
 msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
-msgstr "algluo de \"%s\" kaj \"%s\" ne rezultas en valida antaŭproceza ĵetono"
+msgstr "algluo de \"%.*s\" kaj \"%.*s\" ne rezultas en valida antaŭproceza ĵetono"
 
 #: macro.cc:1112
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
@@ -975,10 +965,9 @@ msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "la makroo \"%s\" pasis %u argumentojn, sed ĝi prenas nur %u"
 
 #: macro.cc:1132
-#, fuzzy, c-format
-#| msgid "macro \"%s\" is not used"
+#, c-format
 msgid "macro \"%s\" defined here"
-msgstr "makroo \"%s\" ne estas uzata"
+msgstr "makroo \"%s\" difinita ĉi tie"
 
 #: macro.cc:1326 traditional.cc:822
 #, c-format
