@@ -274,12 +274,6 @@
    V32HF (V16HF "TARGET_AVX512VL") (V8HF "TARGET_AVX512VL")
    V32BF (V16BF "TARGET_AVX512VL") (V8BF "TARGET_AVX512VL")])
 
-;; Same iterator, but without supposed TARGET_AVX512BW
-(define_mode_iterator VI12_AVX512VLBW
-  [(V64QI "TARGET_AVX512BW") (V16QI "TARGET_AVX512VL")
-   (V32QI "TARGET_AVX512VL && TARGET_AVX512BW") (V32HI "TARGET_AVX512BW")
-   (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
-
 (define_mode_iterator VI1_AVX512VL
   [V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")])
 
@@ -862,16 +856,15 @@
    (V4DI "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")
    (V4SI "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
    (V2DI "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
-(define_mode_iterator VI12_VI48F_AVX512VLBW
+(define_mode_iterator VI12_VI48F_AVX512VL
   [(V16SI "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
    (V8DI "TARGET_AVX512F") (V8DF "TARGET_AVX512F")
    (V8SI "TARGET_AVX512VL") (V8SF "TARGET_AVX512VL")
    (V4DI "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")
    (V4SI "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
    (V2DI "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")
-   (V64QI "TARGET_AVX512BW") (V16QI "TARGET_AVX512VL")
-   (V32QI "TARGET_AVX512VL && TARGET_AVX512BW") (V32HI "TARGET_AVX512BW")
-   (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
+   V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")
+   V32HI (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
 
 (define_mode_iterator VI48F_256 [V8SI V8SF V4DI V4DF])
 
@@ -27454,10 +27447,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "compress<mode>_mask"
-  [(set (match_operand:VI12_AVX512VLBW 0 "register_operand" "=v")
-	(unspec:VI12_AVX512VLBW
-	  [(match_operand:VI12_AVX512VLBW 1 "register_operand" "v")
-	   (match_operand:VI12_AVX512VLBW 2 "nonimm_or_0_operand" "0C")
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI12_AVX512VL
+	  [(match_operand:VI12_AVX512VL 1 "register_operand" "v")
+	   (match_operand:VI12_AVX512VL 2 "nonimm_or_0_operand" "0C")
 	   (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")]
 	  UNSPEC_COMPRESS))]
   "TARGET_AVX512VBMI2"
@@ -27481,9 +27474,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "compressstore<mode>_mask"
-  [(set (match_operand:VI12_AVX512VLBW 0 "memory_operand" "=m")
-	(unspec:VI12_AVX512VLBW
-	  [(match_operand:VI12_AVX512VLBW 1 "register_operand" "x")
+  [(set (match_operand:VI12_AVX512VL 0 "memory_operand" "=m")
+	(unspec:VI12_AVX512VL
+	  [(match_operand:VI12_AVX512VL 1 "register_operand" "x")
 	   (match_dup 0)
 	   (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")]
 	  UNSPEC_COMPRESS_STORE))]
@@ -27519,10 +27512,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "expand<mode>_mask"
-  [(set (match_operand:VI12_AVX512VLBW 0 "register_operand" "=v,v")
-	(unspec:VI12_AVX512VLBW
-	  [(match_operand:VI12_AVX512VLBW 1 "nonimmediate_operand" "v,m")
-	   (match_operand:VI12_AVX512VLBW 2 "nonimm_or_0_operand" "0C,0C")
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v,v")
+	(unspec:VI12_AVX512VL
+	  [(match_operand:VI12_AVX512VL 1 "nonimmediate_operand" "v,m")
+	   (match_operand:VI12_AVX512VL 2 "nonimm_or_0_operand" "0C,0C")
 	   (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")]
 	  UNSPEC_EXPAND))]
   "TARGET_AVX512VBMI2"
@@ -27533,10 +27526,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "*expand<mode>_mask"
-  [(set (match_operand:VI12_VI48F_AVX512VLBW 0 "register_operand")
-	(unspec:VI12_VI48F_AVX512VLBW
-	  [(match_operand:VI12_VI48F_AVX512VLBW 1 "nonimmediate_operand")
-	   (match_operand:VI12_VI48F_AVX512VLBW 2 "nonimm_or_0_operand")
+  [(set (match_operand:VI12_VI48F_AVX512VL 0 "register_operand")
+	(unspec:VI12_VI48F_AVX512VL
+	  [(match_operand:VI12_VI48F_AVX512VL 1 "nonimmediate_operand")
+	   (match_operand:VI12_VI48F_AVX512VL 2 "nonimm_or_0_operand")
 	   (match_operand 3 "const_int_operand")]
 	  UNSPEC_EXPAND))]
   "ix86_pre_reload_split ()
@@ -27589,10 +27582,10 @@
 })
 
 (define_expand "expand<mode>_maskz"
-  [(set (match_operand:VI12_AVX512VLBW 0 "register_operand")
-	(unspec:VI12_AVX512VLBW
-	  [(match_operand:VI12_AVX512VLBW 1 "nonimmediate_operand")
-	   (match_operand:VI12_AVX512VLBW 2 "nonimm_or_0_operand")
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand")
+	(unspec:VI12_AVX512VL
+	  [(match_operand:VI12_AVX512VL 1 "nonimmediate_operand")
+	   (match_operand:VI12_AVX512VL 2 "nonimm_or_0_operand")
 	   (match_operand:<avx512fmaskmode> 3 "register_operand")]
 	  UNSPEC_EXPAND))]
   "TARGET_AVX512VBMI2"

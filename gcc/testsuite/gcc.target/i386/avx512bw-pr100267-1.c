@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512bw -mavx512vbmi2 -O2" } */
+/* { dg-options "-mavx512vbmi2 -O2" } */
 /* { dg-final { scan-assembler-times "vpexpandb\[ \\t\]+\[^\{\n\]*\\(\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vpexpandb\[ \\t\]+\[^\{\n\(]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vpexpandw\[ \\t\]+\[^\{\n\]*\\(\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
