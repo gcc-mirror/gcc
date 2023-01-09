@@ -1,3 +1,8 @@
+2023-01-08  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*splice_bits):
+	New insn_and_split pattern.
+
 2023-01-07  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.cc
