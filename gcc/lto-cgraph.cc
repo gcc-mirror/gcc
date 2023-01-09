@@ -918,7 +918,8 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      vec <cgraph_node *>targets
 		= possible_polymorphic_call_targets
 		    (edge, &final, &cache_token);
-	      if (!reachable_call_targets.add (cache_token))
+	      if (cache_token != NULL
+		  && !reachable_call_targets.add (cache_token))
 		{
 		  for (i = 0; i < targets.length (); i++)
 		    {
