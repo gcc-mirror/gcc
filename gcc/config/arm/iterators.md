@@ -393,6 +393,10 @@
 		     VSUBQ_N_F
 		     ])
 
+(define_int_iterator MVE_FP_CREATE_ONLY [
+		     VCREATEQ_F
+		     ])
+
 (define_code_attr mve_addsubmul [
 		 (minus "vsub")
 		 (mult "vmul")
@@ -407,6 +411,7 @@
 		 (VBICQ_M_N_S "vbic") (VBICQ_M_N_U "vbic")
 		 (VBICQ_M_S "vbic") (VBICQ_M_U "vbic") (VBICQ_M_F "vbic")
 		 (VBICQ_N_S "vbic") (VBICQ_N_U "vbic")
+		 (VCREATEQ_S "vcreate") (VCREATEQ_U "vcreate") (VCREATEQ_F "vcreate")
 		 (VEORQ_M_S "veor") (VEORQ_M_U "veor") (VEORQ_M_F "veor")
 		 (VMULQ_M_N_S "vmul") (VMULQ_M_N_U "vmul") (VMULQ_M_N_F "vmul")
 		 (VMULQ_M_S "vmul") (VMULQ_M_U "vmul") (VMULQ_M_F "vmul")

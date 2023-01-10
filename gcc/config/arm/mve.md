@@ -700,12 +700,12 @@
 
 ;; [vcreateq_f])
 ;;
-(define_insn "mve_vcreateq_f<mode>"
+(define_insn "@mve_<mve_insn>q_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:DI 1 "s_register_operand" "r")
 		       (match_operand:DI 2 "s_register_operand" "r")]
-	 VCREATEQ_F))
+	 MVE_FP_CREATE_ONLY))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vmov %q0[2], %q0[0], %Q1, %Q2\;vmov %q0[3], %q0[1], %R1, %R2"
@@ -715,7 +715,7 @@
 ;;
 ;; [vcreateq_u, vcreateq_s])
 ;;
-(define_insn "mve_vcreateq_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:MVE_1 0 "s_register_operand" "=w")
 	(unspec:MVE_1 [(match_operand:DI 1 "s_register_operand" "r")
