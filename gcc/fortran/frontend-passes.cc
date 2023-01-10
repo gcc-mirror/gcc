@@ -2892,7 +2892,12 @@ do_subscript (gfc_expr **e)
 
 		  cmp = mpz_cmp (do_end, do_start);
 		  if ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0))
-		    break;
+		    {
+		      mpz_clear (do_start);
+		      mpz_clear (do_end);
+		      mpz_clear (do_step);
+		      break;
+		    }
 		}
 
 	      /* May have to correct the end value if the step does not equal
@@ -2965,6 +2970,12 @@ do_subscript (gfc_expr **e)
 		      mpz_clear (val);
 		    }
 		}
+
+	      if (have_do_start)
+		mpz_clear (do_start);
+	      if (have_do_end)
+		mpz_clear (do_end);
+	      mpz_clear (do_step);
 	    }
 	}
     }
