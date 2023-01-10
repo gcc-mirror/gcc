@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #define RISCV_FTYPE_NAME1(A, B) RISCV_##A##_FTYPE_##B
 #define RISCV_FTYPE_NAME2(A, B, C) RISCV_##A##_FTYPE_##B##_##C
 #define RISCV_FTYPE_NAME3(A, B, C, D) RISCV_##A##_FTYPE_##B##_##C##_##D
+#define RISCV_FTYPE_NAME4(A, B, C, D, E) \
+  RISCV_##A##_FTYPE_##B##_##C##_##D##_##E
 
 /* Classifies the prototype of a built-in function.  */
 enum riscv_function_type {
@@ -124,6 +126,9 @@ AVAIL (clmulr_zbc32, TARGET_ZBC && !TARGET_64BIT)
 AVAIL (clmulr_zbc64, TARGET_ZBC && TARGET_64BIT)
 AVAIL (always,     (!0))
 
+//COREV AVAIL
+AVAIL (cvmac, TARGET_XCOREVMAC && !TARGET_64BIT)
+
 /* Construct a riscv_builtin_description from the given arguments.
 
    INSN is the name of the associated instruction pattern, without the
@@ -155,6 +160,7 @@ AVAIL (always,     (!0))
 
 /* Argument types.  */
 #define RISCV_ATYPE_VOID void_type_node
+#define RISCV_ATYPE_UQI unsigned_intQI_type_node
 #define RISCV_ATYPE_USI unsigned_intSI_type_node
 #define RISCV_ATYPE_QI intQI_type_node
 #define RISCV_ATYPE_HI intHI_type_node
@@ -172,10 +178,14 @@ AVAIL (always,     (!0))
   RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C
 #define RISCV_FTYPE_ATYPES3(A, B, C, D) \
   RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C, RISCV_ATYPE_##D
+#define RISCV_FTYPE_ATYPES4(A, B, C, D, E) \
+  RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C, RISCV_ATYPE_##D, \
+  RISCV_ATYPE_##E
 
 static const struct riscv_builtin_description riscv_builtins[] = {
   #include "riscv-cmo.def"
   #include "riscv-scalar-crypto.def"
+  #include "corev.def"
 
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float),

@@ -21583,6 +21583,82 @@ vector intrinsic specification, which is available at the following link:
 @uref{https://github.com/riscv-non-isa/rvv-intrinsic-doc/tree/v0.11.x}.
 All of these functions are declared in the include file @file{riscv_vector.h}.
 
+These built-in functions are available for the CORE-V MAC machine
+architecture. For more information on CORE-V built-ins, please see
+@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-hardware-loop-builtins-xcvhwlp}
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mac (int32_t, int32_t, int32_t)
+Generated assembler @code{cv.mac}
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_msu (int32_t, int32_t, int32_t)
+Generates the @code{cv.msu} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_muluN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.muluN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_mulhhuN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.mulhhuN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mulsN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.mulsN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mulhhsN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.mulhhsN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_muluRN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.muluRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_mulhhuRN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.mulhhuRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mulsRN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.mulsRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mulhhsRN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.mulhhsRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_macuN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.macuN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_machhuN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.machhuN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_macsN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.macsN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_machhsN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.machhsN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_macuRN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.macuRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_mac_machhuRN (uint32_t, uint32_t, uint8_t)
+Generates the @code{cv.machhuRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_macsRN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.macsRN} machine instruction.
+@end deftypefn
+
+@deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_machhsRN (int32_t, int32_t, uint8_t)
+Generates the @code{cv.machhsRN} machine instruction.
+@end deftypefn
+
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in
