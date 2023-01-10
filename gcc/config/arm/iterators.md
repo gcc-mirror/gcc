@@ -339,10 +339,22 @@
 		     VSUBQ_M_S VSUBQ_M_U
 		     ])
 
+(define_int_iterator MVE_INT_M_BINARY_LOGIC   [
+		     VANDQ_M_S VANDQ_M_U
+		     VBICQ_M_S VBICQ_M_U
+		     VEORQ_M_S VEORQ_M_U
+		     VORRQ_M_S VORRQ_M_U
+		     ])
+
 (define_int_iterator MVE_INT_M_N_BINARY [
 		     VADDQ_M_N_S VADDQ_M_N_U
 		     VMULQ_M_N_S VMULQ_M_N_U
 		     VSUBQ_M_N_S VSUBQ_M_N_U
+		     ])
+
+(define_int_iterator MVE_INT_M_N_BINARY_LOGIC [
+		     VBICQ_M_N_S VBICQ_M_N_U
+		     VORRQ_M_N_S VORRQ_M_N_U
 		     ])
 
 (define_int_iterator MVE_INT_N_BINARY   [
@@ -351,10 +363,22 @@
 		     VSUBQ_N_S VSUBQ_N_U
 		     ])
 
+(define_int_iterator MVE_INT_N_BINARY_LOGIC   [
+		     VBICQ_N_S VBICQ_N_U
+		     VORRQ_N_S VORRQ_N_U
+		     ])
+
 (define_int_iterator MVE_FP_M_BINARY   [
 		     VADDQ_M_F
 		     VMULQ_M_F
 		     VSUBQ_M_F
+		     ])
+
+(define_int_iterator MVE_FP_M_BINARY_LOGIC   [
+		     VANDQ_M_F
+		     VBICQ_M_F
+		     VEORQ_M_F
+		     VORRQ_M_F
 		     ])
 
 (define_int_iterator MVE_FP_M_N_BINARY [
@@ -379,9 +403,17 @@
 		 (VADDQ_M_N_S "vadd") (VADDQ_M_N_U "vadd") (VADDQ_M_N_F "vadd")
 		 (VADDQ_M_S "vadd") (VADDQ_M_U "vadd") (VADDQ_M_F "vadd")
 		 (VADDQ_N_S "vadd") (VADDQ_N_U "vadd") (VADDQ_N_F "vadd")
+		 (VANDQ_M_S "vand") (VANDQ_M_U "vand") (VANDQ_M_F "vand")
+		 (VBICQ_M_N_S "vbic") (VBICQ_M_N_U "vbic")
+		 (VBICQ_M_S "vbic") (VBICQ_M_U "vbic") (VBICQ_M_F "vbic")
+		 (VBICQ_N_S "vbic") (VBICQ_N_U "vbic")
+		 (VEORQ_M_S "veor") (VEORQ_M_U "veor") (VEORQ_M_F "veor")
 		 (VMULQ_M_N_S "vmul") (VMULQ_M_N_U "vmul") (VMULQ_M_N_F "vmul")
 		 (VMULQ_M_S "vmul") (VMULQ_M_U "vmul") (VMULQ_M_F "vmul")
 		 (VMULQ_N_S "vmul") (VMULQ_N_U "vmul") (VMULQ_N_F "vmul")
+		 (VORRQ_M_N_S "vorr") (VORRQ_M_N_U "vorr")
+		 (VORRQ_M_S "vorr") (VORRQ_M_U "vorr") (VORRQ_M_F "vorr")
+		 (VORRQ_N_S "vorr") (VORRQ_N_U "vorr")
 		 (VSUBQ_M_N_S "vsub") (VSUBQ_M_N_U "vsub") (VSUBQ_M_N_F "vsub")
 		 (VSUBQ_M_S "vsub") (VSUBQ_M_U "vsub") (VSUBQ_M_F "vsub")
 		 (VSUBQ_N_S "vsub") (VSUBQ_N_U "vsub") (VSUBQ_N_F "vsub")
