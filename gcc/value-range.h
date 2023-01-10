@@ -1300,6 +1300,7 @@ inline bool
 frange::known_isinf () const
 {
   return (m_kind == VR_RANGE
+	  && !maybe_isnan ()
 	  && real_identical (&m_min, &m_max)
 	  && real_isinf (&m_min));
 }

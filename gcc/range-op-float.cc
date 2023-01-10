@@ -91,6 +91,27 @@ range_operator_float::fold_range (frange &r, tree type,
   else
     r.clear_nan ();
 
+  // If the result has overflowed and flag_trapping_math, folding this
+  // operation could elide an overflow or division by zero exception.
+  // Avoid returning a singleton +-INF, to keep the propagators (DOM
+  // and substitute_and_fold_engine) from folding.  See PR107608.
+  if (flag_trapping_math
+      && MODE_HAS_INFINITIES (TYPE_MODE (type))
+      && r.known_isinf () && !op1.known_isinf () && !op2.known_isinf ())
+    {
+      REAL_VALUE_TYPE inf = r.lower_bound ();
+      if (real_isneg (&inf))
+	{
+	  REAL_VALUE_TYPE min = real_min_representable (type);
+	  r.set (type, inf, min);
+	}
+      else
+	{
+	  REAL_VALUE_TYPE max = real_max_representable (type);
+	  r.set (type, max, inf);
+	}
+    }
+
   return true;
 }
 
