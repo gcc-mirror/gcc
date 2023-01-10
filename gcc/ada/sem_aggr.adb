@@ -1180,6 +1180,7 @@ package body Sem_Aggr is
                                  | N_Component_Declaration
                                  | N_Parameter_Specification
                                  | N_Qualified_Expression
+                                 | N_Unchecked_Type_Conversion
                                  | N_Reference
                                  | N_Aggregate
                                  | N_Extension_Aggregate
