@@ -396,6 +396,11 @@ csky_cpu_cpp_builtins (cpp_reader *pfile)
 	  builtin_define ("__csky_hard_float_abi__");
 	  builtin_define ("__CSKY_HARD_FLOAT_ABI__");
 	}
+      else
+	{
+	  builtin_define ("__csky_soft_float_abi__");
+	  builtin_define ("__CSKY_SOFT_FLOAT_ABI__");
+	}
       if (TARGET_SINGLE_FPU)
 	{
 	  builtin_define ("__csky_hard_float_fpu_sf__");
