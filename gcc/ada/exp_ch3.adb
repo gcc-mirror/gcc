@@ -7797,6 +7797,25 @@ package body Exp_Ch3 is
          --  Common case of explicit object initialization
 
          else
+            --  Small optimization: if the expression is a function call and
+            --  the object is stand-alone, not declared at library level and of
+            --  a class-wide type, then we capture the result of the call into
+            --  a temporary, with the benefit that, if the result's type does
+            --  not need finalization, nothing will be finalized and, if it
+            --  does, the temporary only will be finalized by means of a direct
+            --  call to the Finalize primitive if the result's type is not a
+            --  class-wide type; whereas, in both cases, the stand-alone object
+            --  itself would be finalized by means of a dispatching call to the
+            --  Deep_Finalize routine.
+
+            if Nkind (Expr_Q) = N_Function_Call
+              and then not Special_Ret_Obj
+              and then not Is_Library_Level_Entity (Def_Id)
+              and then Is_Class_Wide_Type (Typ)
+            then
+               Remove_Side_Effects (Expr_Q);
+            end if;
+
             --  In most cases, we must check that the initial value meets any
             --  constraint imposed by the declared type. However, there is one
             --  very important exception to this rule. If the entity has an
