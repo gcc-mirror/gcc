@@ -4519,13 +4519,15 @@ xtensa_insn_cost (rtx_insn *insn, bool speed)
 {
   if (!(recog_memoized (insn) < 0))
     {
-      int len = get_attr_length (insn), n = (len + 2) / 3;
+      int len = get_attr_length (insn);
 
       if (len == 0)
 	return COSTS_N_INSNS (0);
 
       if (speed)  /* For speed cost.  */
 	{
+	  int n = (len + 2) / 3;
+
 	  /* "L32R" may be particular slow (implementation-dependent).  */
 	  if (xtensa_is_insn_L32R_p (insn))
 	    return COSTS_N_INSNS (1 + xtensa_extra_l32r_costs);
@@ -4572,10 +4574,11 @@ xtensa_insn_cost (rtx_insn *insn, bool speed)
 	    {
 	      /* "L32R" itself plus constant in litpool.  */
 	      if (xtensa_is_insn_L32R_p (insn))
-		return COSTS_N_INSNS (2) + 1;
+		len = 3 + 4;
 
-	      /* Consider ".n" short instructions.  */
-	      return COSTS_N_INSNS (n) - (n * 3 - len);
+	      /* Consider fractional instruction length (for example, ".n"
+		 short instructions or "L32R" litpool constants.  */
+	      return (COSTS_N_INSNS (len) + 1) / 3;
 	    }
 	}
     }
