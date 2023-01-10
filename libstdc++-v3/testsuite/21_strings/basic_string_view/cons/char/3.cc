@@ -20,7 +20,6 @@
 // basic_string_view constructors.
 
 #include <string_view>
-#include <vector>
 #include <testsuite_hooks.h>
 
 void
