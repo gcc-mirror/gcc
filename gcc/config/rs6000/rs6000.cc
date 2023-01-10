@@ -10411,6 +10411,64 @@ can_be_built_by_li_lis_and_rldicr (HOST_WIDE_INT c, int *shift,
   return false;
 }
 
+/* Check if value C can be built by 2 instructions: one is 'li', another is
+   rldic.
+
+   If so, *SHIFT is set to the 'shift' operand of rldic; and *MASK is set
+   to the mask value about the 'mb' operand of rldic; and return true.
+   Return false otherwise.  */
+
+static bool
+can_be_built_by_li_and_rldic (HOST_WIDE_INT c, int *shift, HOST_WIDE_INT *mask)
+{
+  /* There are 49 successive ones in the negative value of 'li'.  */
+  int ones = 49;
+
+  /* 1..1xx1..1: negative value of li --> 0..01..1xx0..0:
+     right bits are shifted as 0's, and left 1's(and x's) are cleaned.  */
+  int tz = ctz_hwi (c);
+  int lz = clz_hwi (c);
+  int middle_ones = clz_hwi (~(c << lz));
+  if (tz + lz + middle_ones >= ones)
+    {
+      *mask = ((1LL << (HOST_BITS_PER_WIDE_INT - tz - lz)) - 1LL) << tz;
+      *shift = tz;
+      return true;
+    }
+
+  /* 1..1xx1..1 --> 1..1xx0..01..1: some 1's(following x's) are cleaned. */
+  int leading_ones = clz_hwi (~c);
+  int tailing_ones = ctz_hwi (~c);
+  int middle_zeros = ctz_hwi (c >> tailing_ones);
+  if (leading_ones + tailing_ones + middle_zeros >= ones)
+    {
+      *mask = ~(((1ULL << middle_zeros) - 1ULL) << tailing_ones);
+      *shift = tailing_ones + middle_zeros;
+      return true;
+    }
+
+  /* xx1..1xx: --> xx0..01..1xx: some 1's(following x's) are cleaned. */
+  /* Get the position for the first bit of successive 1.
+     The 24th bit would be in successive 0 or 1.  */
+  HOST_WIDE_INT low_mask = (1LL << 24) - 1LL;
+  int pos_first_1 = ((c & (low_mask + 1)) == 0)
+		      ? clz_hwi (c & low_mask)
+		      : HOST_BITS_PER_WIDE_INT - ctz_hwi (~(c | low_mask));
+  middle_ones = clz_hwi (~c << pos_first_1);
+  middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_first_1));
+  if (pos_first_1 < HOST_BITS_PER_WIDE_INT
+      && middle_ones + middle_zeros < HOST_BITS_PER_WIDE_INT
+      && middle_ones + middle_zeros >= ones)
+    {
+      *mask = ~(((1ULL << middle_zeros) - 1LL)
+		<< (HOST_BITS_PER_WIDE_INT - pos_first_1));
+      *shift = HOST_BITS_PER_WIDE_INT - pos_first_1 + middle_zeros;
+      return true;
+    }
+
+  return false;
+}
+
 /* Subroutine of rs6000_emit_set_const, handling PowerPC64 DImode.
    Output insns to set DEST equal to the constant C as a series of
    lis, ori and shl instructions.  */
@@ -10459,7 +10517,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
     }
   else if (can_be_built_by_li_lis_and_rotldi (c, &shift, &mask)
 	   || can_be_built_by_li_lis_and_rldicl (c, &shift, &mask)
-	   || can_be_built_by_li_lis_and_rldicr (c, &shift, &mask))
+	   || can_be_built_by_li_lis_and_rldicr (c, &shift, &mask)
+	   || can_be_built_by_li_and_rldic (c, &shift, &mask))
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
       unsigned HOST_WIDE_INT imm = (c | ~mask);
