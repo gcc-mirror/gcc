@@ -82,7 +82,7 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 {
   infered = TyTy::TupleType::get_unit_type (stmt.get_mappings ().get_hirid ());
 
-  const HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
+  HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
   TyTy::BaseType *init_expr_ty = nullptr;
   Location init_expr_locus;
   if (stmt.has_init_expr ())
@@ -111,27 +111,25 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 		     TyTy::TyWithLocation (specified_ty, specified_ty_locus),
 		     TyTy::TyWithLocation (init_expr_ty, init_expr_locus),
 		     stmt.get_locus ());
-      context->insert_type (stmt_pattern.get_pattern_mappings (), specified_ty);
+      TypeCheckPattern::Resolve (&stmt_pattern, specified_ty);
     }
   else
     {
       // let x:i32;
       if (specified_ty != nullptr)
 	{
-	  context->insert_type (stmt_pattern.get_pattern_mappings (),
-				specified_ty);
+	  TypeCheckPattern::Resolve (&stmt_pattern, specified_ty);
 	}
       // let x = 123;
       else if (init_expr_ty != nullptr)
 	{
-	  context->insert_type (stmt_pattern.get_pattern_mappings (),
-				init_expr_ty);
+	  TypeCheckPattern::Resolve (&stmt_pattern, init_expr_ty);
 	}
       // let x;
       else
 	{
-	  context->insert_type (
-	    stmt_pattern.get_pattern_mappings (),
+	  TypeCheckPattern::Resolve (
+	    &stmt_pattern,
 	    new TyTy::InferType (
 	      stmt_pattern.get_pattern_mappings ().get_hirid (),
 	      TyTy::InferType::InferTypeKind::GENERAL, stmt.get_locus ()));
