@@ -441,8 +441,8 @@ AssociatedImplTrait::setup_associated_types (
 	param_mappings[p.get_symbol ()] = a.get_tyty ()->get_ref ();
       };
 
-  TyTy::SubstitutionArgumentMappings infer_arguments (std::move (args), locus,
-						      param_subst_cb);
+  TyTy::SubstitutionArgumentMappings infer_arguments (std::move (args), {},
+						      locus, param_subst_cb);
   TyTy::BaseType *impl_self_infer
     = (associated_self->needs_generic_substitutions ())
 	? SubstMapperInternal::Resolve (associated_self, infer_arguments)
@@ -489,8 +489,9 @@ AssociatedImplTrait::setup_associated_types (
       hrtb_bound_arguments.push_back (r);
     }
 
-  rust_assert (impl_trait_predicate_args.size ()
-	       == hrtb_bound_arguments.size ());
+  if (impl_trait_predicate_args.size () != hrtb_bound_arguments.size ())
+    return;
+
   for (size_t i = 0; i < impl_trait_predicate_args.size (); i++)
     {
       TyTy::BaseType *a = impl_trait_predicate_args.at (i);
@@ -521,7 +522,7 @@ AssociatedImplTrait::setup_associated_types (
     }
 
   TyTy::SubstitutionArgumentMappings associated_type_args (
-    std::move (associated_arguments), locus);
+    std::move (associated_arguments), {}, locus);
 
   ImplTypeIterator iter (*impl, [&] (HIR::TypeAlias &type) {
     TraitItemReference *resolved_trait_item = nullptr;

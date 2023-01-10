@@ -618,7 +618,8 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, unified));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
+					    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -664,7 +665,8 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, from_ty));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
+					    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -709,7 +711,8 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, from_ty));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
+					    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -792,7 +795,8 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, unified));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
+					    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
