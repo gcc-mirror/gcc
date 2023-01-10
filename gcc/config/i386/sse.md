@@ -444,8 +444,9 @@
   [(V32HF "TARGET_AVX512FP16") (V16HF "TARGET_AVX512FP16")
    (V8HF "TARGET_AVX512FP16") V32BF V16BF V8BF])
 
-(define_mode_iterator VF_AVX512BWHFBF16
-  [V32HF V16HF V8HF V32BF V16BF V8BF])
+(define_mode_iterator VF_AVX512HFBFVL
+  [V32HF (V16HF "TARGET_AVX512VL") (V8HF "TARGET_AVX512VL")
+   V32BF (V16BF "TARGET_AVX512VL") (V8BF "TARGET_AVX512VL")])
 
 (define_mode_iterator VF_AVX512FP16VL
   [V32HF (V16HF "TARGET_AVX512VL") (V8HF "TARGET_AVX512VL")])
@@ -1585,10 +1586,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx512>_blendm<mode>"
-  [(set (match_operand:VF_AVX512BWHFBF16 0 "register_operand" "=v,v")
-	(vec_merge:VF_AVX512BWHFBF16
-	  (match_operand:VF_AVX512BWHFBF16 2 "nonimmediate_operand" "vm,vm")
-	  (match_operand:VF_AVX512BWHFBF16 1 "nonimm_or_0_operand" "0C,v")
+  [(set (match_operand:VF_AVX512HFBFVL 0 "register_operand" "=v,v")
+	(vec_merge:VF_AVX512HFBFVL
+	  (match_operand:VF_AVX512HFBFVL 2 "nonimmediate_operand" "vm,vm")
+	  (match_operand:VF_AVX512HFBFVL 1 "nonimm_or_0_operand" "0C,v")
 	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512BW"
   "@
@@ -4544,10 +4545,6 @@
   gcc_assert (ok);
   DONE;
 })
-
-(define_mode_iterator VF_AVX512HFBFVL
-  [V32HF (V16HF "TARGET_AVX512VL") (V8HF "TARGET_AVX512VL")
-   V32BF (V16BF "TARGET_AVX512VL") (V8BF "TARGET_AVX512VL")])
 
 (define_expand "vcond<mode><sseintvecmodelower>"
   [(set (match_operand:VF_AVX512HFBFVL 0 "register_operand")

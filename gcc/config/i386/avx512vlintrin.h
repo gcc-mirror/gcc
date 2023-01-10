@@ -935,6 +935,78 @@ _mm_mask_storeu_epi32 (void *__P, __mmask8 __U, __m128i __A)
 				     (__mmask8) __U);
 }
 
+extern __inline __m256d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_blend_pd (__mmask8 __U, __m256d __A, __m256d __W)
+{
+  return (__m256d) __builtin_ia32_blendmpd_256_mask ((__v4df) __A,
+						     (__v4df) __W,
+						     (__mmask8) __U);
+}
+
+extern __inline __m256
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_blend_ps (__mmask8 __U, __m256 __A, __m256 __W)
+{
+  return (__m256) __builtin_ia32_blendmps_256_mask ((__v8sf) __A,
+						    (__v8sf) __W,
+						    (__mmask8) __U);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_blend_epi64 (__mmask8 __U, __m256i __A, __m256i __W)
+{
+  return (__m256i) __builtin_ia32_blendmq_256_mask ((__v4di) __A,
+						    (__v4di) __W,
+						    (__mmask8) __U);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_blend_epi32 (__mmask8 __U, __m256i __A, __m256i __W)
+{
+  return (__m256i) __builtin_ia32_blendmd_256_mask ((__v8si) __A,
+						    (__v8si) __W,
+						    (__mmask8) __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_blend_pd (__mmask8 __U, __m128d __A, __m128d __W)
+{
+  return (__m128d) __builtin_ia32_blendmpd_128_mask ((__v2df) __A,
+						     (__v2df) __W,
+						     (__mmask8) __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_blend_ps (__mmask8 __U, __m128 __A, __m128 __W)
+{
+  return (__m128) __builtin_ia32_blendmps_128_mask ((__v4sf) __A,
+						    (__v4sf) __W,
+						    (__mmask8) __U);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_blend_epi64 (__mmask8 __U, __m128i __A, __m128i __W)
+{
+  return (__m128i) __builtin_ia32_blendmq_128_mask ((__v2di) __A,
+						    (__v2di) __W,
+						    (__mmask8) __U);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_blend_epi32 (__mmask8 __U, __m128i __A, __m128i __W)
+{
+  return (__m128i) __builtin_ia32_blendmd_128_mask ((__v4si) __A,
+						    (__v4si) __W,
+						    (__mmask8) __U);
+}
+
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_abs_epi32 (__m256i __W, __mmask8 __U, __m256i __A)
@@ -12262,78 +12334,6 @@ _mm_maskz_permute_ps (__mmask8 __U, __m128 __X, const int __C)
 						 (__mmask8) __U);
 }
 
-extern __inline __m256d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_blend_pd (__mmask8 __U, __m256d __A, __m256d __W)
-{
-  return (__m256d) __builtin_ia32_blendmpd_256_mask ((__v4df) __A,
-						     (__v4df) __W,
-						     (__mmask8) __U);
-}
-
-extern __inline __m256
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_blend_ps (__mmask8 __U, __m256 __A, __m256 __W)
-{
-  return (__m256) __builtin_ia32_blendmps_256_mask ((__v8sf) __A,
-						    (__v8sf) __W,
-						    (__mmask8) __U);
-}
-
-extern __inline __m256i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_blend_epi64 (__mmask8 __U, __m256i __A, __m256i __W)
-{
-  return (__m256i) __builtin_ia32_blendmq_256_mask ((__v4di) __A,
-						    (__v4di) __W,
-						    (__mmask8) __U);
-}
-
-extern __inline __m256i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_blend_epi32 (__mmask8 __U, __m256i __A, __m256i __W)
-{
-  return (__m256i) __builtin_ia32_blendmd_256_mask ((__v8si) __A,
-						    (__v8si) __W,
-						    (__mmask8) __U);
-}
-
-extern __inline __m128d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_blend_pd (__mmask8 __U, __m128d __A, __m128d __W)
-{
-  return (__m128d) __builtin_ia32_blendmpd_128_mask ((__v2df) __A,
-						     (__v2df) __W,
-						     (__mmask8) __U);
-}
-
-extern __inline __m128
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_blend_ps (__mmask8 __U, __m128 __A, __m128 __W)
-{
-  return (__m128) __builtin_ia32_blendmps_128_mask ((__v4sf) __A,
-						    (__v4sf) __W,
-						    (__mmask8) __U);
-}
-
-extern __inline __m128i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_blend_epi64 (__mmask8 __U, __m128i __A, __m128i __W)
-{
-  return (__m128i) __builtin_ia32_blendmq_128_mask ((__v2di) __A,
-						    (__v2di) __W,
-						    (__mmask8) __U);
-}
-
-extern __inline __m128i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_blend_epi32 (__mmask8 __U, __m128i __A, __m128i __W)
-{
-  return (__m128i) __builtin_ia32_blendmd_128_mask ((__v4si) __A,
-						    (__v4si) __W,
-						    (__mmask8) __U);
-}
-
 extern __inline __mmask8
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cmp_epi64_mask (__m256i __X, __m256i __Y, const int __P)
@@ -13716,46 +13716,6 @@ _mm256_permutex_pd (__m256d __X, const int __M)
   ((__m128) __builtin_ia32_vpermilps_mask ((__v4sf)(__m128)(X), (int)(C),	    \
 					  (__v4sf)(__m128)_mm_setzero_ps (),	    \
 					  (__mmask8)(U)))
-
-#define _mm256_mask_blend_pd(__U, __A, __W)			      \
-  ((__m256d) __builtin_ia32_blendmpd_256_mask ((__v4df) (__A),	      \
-						     (__v4df) (__W),  \
-						     (__mmask8) (__U)))
-
-#define _mm256_mask_blend_ps(__U, __A, __W)			      \
-  ((__m256) __builtin_ia32_blendmps_256_mask ((__v8sf) (__A),	      \
-						    (__v8sf) (__W),   \
-						    (__mmask8) (__U)))
-
-#define _mm256_mask_blend_epi64(__U, __A, __W)			      \
-  ((__m256i) __builtin_ia32_blendmq_256_mask ((__v4di) (__A),	      \
-						    (__v4di) (__W),   \
-						    (__mmask8) (__U)))
-
-#define _mm256_mask_blend_epi32(__U, __A, __W)			      \
-  ((__m256i) __builtin_ia32_blendmd_256_mask ((__v8si) (__A),	      \
-						    (__v8si) (__W),   \
-						    (__mmask8) (__U)))
-
-#define _mm_mask_blend_pd(__U, __A, __W)			      \
-  ((__m128d) __builtin_ia32_blendmpd_128_mask ((__v2df) (__A),	      \
-						     (__v2df) (__W),  \
-						     (__mmask8) (__U)))
-
-#define _mm_mask_blend_ps(__U, __A, __W)			      \
-  ((__m128) __builtin_ia32_blendmps_128_mask ((__v4sf) (__A),	      \
-						    (__v4sf) (__W),   \
-						    (__mmask8) (__U)))
-
-#define _mm_mask_blend_epi64(__U, __A, __W)			      \
-  ((__m128i) __builtin_ia32_blendmq_128_mask ((__v2di) (__A),	      \
-						    (__v2di) (__W),   \
-						    (__mmask8) (__U)))
-
-#define _mm_mask_blend_epi32(__U, __A, __W)			      \
-  ((__m128i) __builtin_ia32_blendmd_128_mask ((__v4si) (__A),	      \
-						    (__v4si) (__W),   \
-						    (__mmask8) (__U)))
 
 #define _mm256_cmp_epu32_mask(X, Y, P)					\
   ((__mmask8) __builtin_ia32_ucmpd256_mask ((__v8si)(__m256i)(X),	\
