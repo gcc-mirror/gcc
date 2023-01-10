@@ -94,7 +94,17 @@ namespace arm_mve {
     UNSPEC##_M_S, UNSPEC##_M_U, UNSPEC##_M_F,				\
     UNSPEC##_M_N_S, UNSPEC##_M_N_U, UNSPEC##_M_N_F))
 
+  /* Helper for builtins with RTX codes, and _m predicated overrides.  */
+#define FUNCTION_WITH_RTX_M(NAME, RTX, UNSPEC) FUNCTION			\
+  (NAME, unspec_based_mve_function_exact_insn,				\
+   (RTX, RTX, RTX,							\
+    -1, -1, -1,								\
+    UNSPEC##_M_S, UNSPEC##_M_U, UNSPEC##_M_F,				\
+    -1, -1, -1))
+
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
+FUNCTION_WITH_RTX_M (vandq, AND, VANDQ)
+FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION_WITH_RTX_M_N (vmulq, MULT, VMULQ)
 FUNCTION (vreinterpretq, vreinterpretq_impl,)
 FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
