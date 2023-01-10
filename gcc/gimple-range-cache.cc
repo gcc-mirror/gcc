@@ -998,7 +998,7 @@ bool
 ranger_cache::range_on_edge (vrange &r, edge e, tree expr)
 {
   if (gimple_range_ssa_p (expr))
-    return edge_range (r, e, expr, RFD_NONE);
+    return edge_range (r, e, expr, RFD_READ_ONLY);
   return get_tree_range (r, expr, NULL);
 }
 
