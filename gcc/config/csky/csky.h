@@ -952,7 +952,7 @@ while (0)
    specially when using MULTILIB_OPTIONS.  */
 #undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS    \
-    {"mlittle-endian", "mcpu=ck810f", "msoft-float"}
+    {"mlittle-endian", "mcpu=ck810f", "mfloat-abi=soft"}
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu are specified.
