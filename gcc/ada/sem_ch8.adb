@@ -5066,7 +5066,6 @@ package body Sem_Ch8 is
          if Id /= Current_Entity (Id) then
             Prev := Current_Entity (Id);
             while Present (Prev)
-              and then Present (Homonym (Prev))
               and then Homonym (Prev) /= Id
             loop
                Prev := Homonym (Prev);
@@ -5074,7 +5073,7 @@ package body Sem_Ch8 is
 
             --  Skip to end of loop if Id is not in the visibility chain
 
-            if No (Prev) or else Homonym (Prev) /= Id then
+            if No (Prev) then
                goto Next_Ent;
             end if;
 
