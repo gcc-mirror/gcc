@@ -1316,7 +1316,7 @@ m2/boot-bin/mc$(exeext): $(BUILD-MC-BOOT-O) $(BUILD-MC-INTERFACE-O) \
          $(BUILD-MC-INTERFACE-O) m2/mc-boot/main.o \
          mcflex.o m2/gm2-libs-boot/RTcodummy.o -lm
 
-m2/mc-boot/$(SRC_PREFIX)%.o: m2/mc-boot/$(SRC_PREFIX)%.c
+m2/mc-boot/$(SRC_PREFIX)%.o: m2/mc-boot/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-libs-host.h
 	-test -d m2/mc-boot || $(mkinstalldirs) m2/mc-boot
 	$(CXX) -g -c -I. -I$(srcdir)/m2/mc-boot-ch -I$(srcdir)/m2/mc-boot -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) $< -o $@
 
@@ -1333,7 +1333,7 @@ m2/mc-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 	unset CC ; $(M2LINK) -s --langc++ --exit --name m2/mc-boot/main.c $(srcdir)/m2/init/mcinit
 	$(CXX) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.c -o $@
 
-mcflex.o: mcflex.c
+mcflex.o: mcflex.c m2/gm2-libs/gm2-libs-host.h
 	$(CC) -I$(srcdir)/m2/mc -g -c $< -o $@   # remember that mcReserved.h is copied into m2/mc
 
 mcflex.c: $(srcdir)/m2/mc/mc.flex
