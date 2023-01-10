@@ -1,3 +1,11 @@
+2023-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105838
+	PR c++/108047
+	PR c++/108266
+	* call.cc (maybe_init_list_as_range): Always return NULL_TREE if
+	processing_template_decl.
+
 2023-01-05  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108275

@@ -1,3 +1,36 @@
+2023-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105838
+	PR c++/108047
+	PR c++/108266
+	* g++.dg/tree-ssa/initlist-opt2.C: New test.
+	* g++.dg/tree-ssa/initlist-opt3.C: New test.
+
+2023-01-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-complit-8.c: New test.
+
+2023-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69482
+	* gcc.target/i386/pr69482-1.c: New testcase.
+	* gcc.target/i386/pr69482-2.c: Likewise.
+
+2023-01-09  Martin Liska  <mliska@suse.cz>
+
+	PR lto/108330
+	* g++.dg/ipa/pr108830.C: New test.
+
+2023-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101912
+	* gcc.dg/uninit-pr101912.c: New testcase.
+
+2023-01-09  Martin Liska  <mliska@suse.cz>
+
+	PR c/107993
+	* gcc.target/i386/pr107993.c: New test.
+
 2023-01-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/atomic/c11-atomic-exec-4.c: Add "-D_HPUX_SOURCE" option
