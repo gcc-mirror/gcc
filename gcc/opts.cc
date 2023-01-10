@@ -2878,9 +2878,13 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_format_:
-      diagnostic_output_format_init (dc, opts->x_dump_base_name,
-				     (enum diagnostics_output_format)value);
-      break;
+	{
+	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
+				  : opts->x_main_input_basename);
+	  diagnostic_output_format_init (dc, basename,
+					 (enum diagnostics_output_format)value);
+	  break;
+	}
 
     case OPT_fdiagnostics_parseable_fixits:
       dc->extra_output_kind = (value
