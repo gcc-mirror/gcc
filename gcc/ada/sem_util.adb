@@ -24167,14 +24167,12 @@ package body Sem_Util is
          --  Note that the element of a syntactic list is always a node, never
          --  an entity or itype, hence the call to Visit_Node.
 
-         if Present (List) then
-            Elmt := First (List);
-            while Present (Elmt) loop
-               Visit_Node (Elmt);
+         Elmt := First (List);
+         while Present (Elmt) loop
+            Visit_Node (Elmt);
 
-               Next (Elmt);
-            end loop;
-         end if;
+            Next (Elmt);
+         end loop;
       end Visit_List;
 
       ----------------
@@ -24206,8 +24204,7 @@ package body Sem_Util is
          --  If the node is a block, we need to process all declarations
          --  in the block and make new entities for each.
 
-         if Nkind (N) = N_Block_Statement and then Present (Declarations (N))
-         then
+         if Nkind (N) = N_Block_Statement then
             declare
                Decl : Node_Id := First (Declarations (N));
 
