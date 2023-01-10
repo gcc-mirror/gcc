@@ -3,8 +3,10 @@
 
 #include <version>
 
-#if __cpp_lib_ranges != 202110L
-# error "Feature-test macro __cpp_lib_ranges has wrong value in <version>"
+#if __STDC_HOSTED__
+# if __cpp_lib_ranges != 202110L
+#  error "Feature-test macro __cpp_lib_ranges has wrong value in <version>"
+# endif
 #endif
 
 #if __cpp_lib_ranges_zip != 202110L

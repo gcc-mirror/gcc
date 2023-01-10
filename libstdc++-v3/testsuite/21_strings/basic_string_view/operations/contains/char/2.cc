@@ -20,8 +20,11 @@
 
 #include <version>
 
-#ifndef __cpp_lib_string_contains
-# error "Feature-test macro for contains missing in <string_view>"
-#elif __cpp_lib_string_contains != 202011L
-# error "Feature-test macro for contains has wrong value in <string_view>"
+#if __STDC_HOSTED__
+// This FTM is omitted since <string> is not freestanding.
+# ifndef __cpp_lib_string_contains
+#  error "Feature-test macro for contains missing in <string_view>"
+# elif __cpp_lib_string_contains != 202011L
+#  error "Feature-test macro for contains has wrong value in <string_view>"
+# endif
 #endif
