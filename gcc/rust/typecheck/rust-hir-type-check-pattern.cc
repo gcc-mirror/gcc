@@ -387,10 +387,12 @@ TypeCheckPattern::visit (HIR::IdentifierPattern &)
 }
 
 void
-TypeCheckPattern::visit (HIR::GroupedPattern &)
+TypeCheckPattern::visit (HIR::GroupedPattern &pattern)
 {
-  // TODO
-  gcc_unreachable ();
+  TyTy::BaseType *inner_ty
+    = TypeCheckPattern::Resolve (pattern.get_item ().get (), parent);
+  infered = inner_ty->clone ();
+  infered->set_ref (pattern.get_pattern_mappings ().get_hirid ());
 }
 
 void
