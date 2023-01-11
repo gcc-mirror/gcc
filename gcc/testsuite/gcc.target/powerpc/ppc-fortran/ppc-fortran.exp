@@ -16,6 +16,11 @@
 
 # GCC testsuite that uses the `dg.exp' driver.
 
+# Exit immediately if this isn't a PowerPC target.
+if { ![istarget powerpc*-*-*] && ![istarget rs6000-*-*] } then {
+  return
+}
+
 # Load support procs.
 load_lib gfortran-dg.exp
 
