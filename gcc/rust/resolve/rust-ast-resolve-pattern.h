@@ -77,6 +77,11 @@ public:
       pattern.get_node_id (), pattern.get_locus (), type);
   }
 
+  void visit (AST::GroupedPattern &pattern) override
+  {
+    pattern.get_pattern_in_parens ()->accept_vis (*this);
+  }
+
   // cases in a match expression
   void visit (AST::PathInExpression &pattern) override;
 
