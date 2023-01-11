@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -fdump-tree-dse1" } */
 
 int a;
-static long b = 4073709551612, d;
+static long b, d;
 short c;
 void foo();
 char e(int **f) {
