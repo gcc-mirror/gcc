@@ -50,6 +50,50 @@ M
 Modula-2
 ; Documented in c.opt
 
+MD
+Modula-2
+; Documented in c.opt
+
+MF
+Modula-2
+; Documented in c.opt
+
+MG
+Modula-2
+; Documented in c.opt
+
+MM
+Modula-2
+; Documented in c.opt
+
+MMD
+Modula-2
+; Documented in c.opt
+
+Mmodules
+Modula-2
+; Documented in c.opt
+
+Mno-modules
+Modula-2
+; Documented in c.opt
+
+MP
+Modula-2
+; Documented in c.opt
+
+MQ
+Modula-2
+; Documented in c.opt
+
+MT
+Modula-2
+; Documented in c.opt
+
+P
+Modula-2
+; Documented in c.opt
+
 O
 Modula-2
 ; Documented in c.opt
@@ -307,6 +351,10 @@ Modula-2
 turns on runtime checking to check whether a whole number is about to exceed range
 
 iprefix
+Modula-2
+; Documented in c.opt
+
+iquote
 Modula-2
 ; Documented in c.opt
 

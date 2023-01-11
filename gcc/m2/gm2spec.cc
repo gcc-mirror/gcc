@@ -103,6 +103,7 @@ enum stdcxxlib_kind
 };
 
 #define DEFAULT_DIALECT "pim"
+
 #undef DEBUG_ARG
 
 typedef enum { iso, pim, min, logitech, pimcoroutine, maxlib } libs;
@@ -132,14 +133,13 @@ static const char *add_include (const char *libpath, const char *library);
 
 static bool seen_scaffold_static = false;
 static bool seen_scaffold_dynamic = false;
+static bool scaffold_dynamic = true; // Default uses -fscaffold-dynamic.
 static bool scaffold_static = false;
-static bool scaffold_dynamic = true;  // Default uses -fscaffold-dynamic.
 static bool seen_gen_module_list = false;
 static bool seen_uselist = false;
 static bool uselist = false;
 static bool gen_module_list = true;  // Default uses -fgen-module-list=-.
 static const char *gen_module_filename = "-";
-static const char *multilib_dir = NULL;
 /* The original argument list and related info is copied here.  */
 static unsigned int gm2_xargc;
 static const struct cl_decoded_option *gm2_x_decoded_options;
@@ -148,6 +148,8 @@ static void append_arg (const struct cl_decoded_option *);
 /* The new argument list will be built here.  */
 static unsigned int gm2_newargc;
 static struct cl_decoded_option *gm2_new_decoded_options;
+static const char *full_libraries = NULL;
+static const char *libraries = NULL;  /* Abbreviated libraries.  */
 
 
 /* Return whether strings S1 and S2 are both NULL or both the same
@@ -227,50 +229,6 @@ append_option (size_t opt_index, const char *arg, int value)
   append_arg (&decoded);
 }
 
-/* build_archive_path returns a string containing the path to the
-   archive defined by libpath and dialectLib.  */
-
-static const char *
-build_archive_path (const char *libpath, const char *library)
-{
-  if (library != NULL)
-    {
-      const char *libdir = (const char *)library;
-
-      if (libdir != NULL)
-        {
-	  int machine_length = 0;
-          char dir_sep[2];
-
-          dir_sep[0] = DIR_SEPARATOR;
-          dir_sep[1] = (char)0;
-
-	  if (multilib_dir != NULL)
-	    {
-	      machine_length = strlen (multilib_dir);
-	      machine_length += strlen (dir_sep);
-	    }
-
-	  int l = strlen (libpath) + 1 + strlen ("m2") + 1
-	    + strlen (libdir) + 1 + machine_length + 1;
-          char *s = (char *)xmalloc (l);
-
-          strcpy (s, libpath);
-          strcat (s, dir_sep);
-	  if (machine_length > 0)
-	    {
-	      strcat (s, multilib_dir);
-	      strcat (s, dir_sep);
-	    }
-          strcat (s, "m2");
-          strcat (s, dir_sep);
-          strcat (s, libdir);
-          return s;
-        }
-    }
-  return NULL;
-}
-
 /* safe_strdup safely duplicates a string.  */
 
 static char *
@@ -281,203 +239,63 @@ safe_strdup (const char *s)
   return NULL;
 }
 
-/* add_default_combination adds the correct link path and then the
-   library name.  */
-
-static bool
-add_default_combination (const char *libpath, const char *library)
+static char *
+concat_option (char *dest, const char *pre, const char *path, const char *post)
 {
-  if (library != NULL)
+  if (dest == NULL)
     {
-      append_option (OPT_L, build_archive_path (libpath, library), 1);
-      append_option (OPT_l, safe_strdup (library), 1);
-      return true;
+      dest = (char *) xmalloc (strlen (pre) + strlen (path) + strlen (post) + 1);
+      strcpy (dest, pre);
+      strcat (dest, path);
+      strcat (dest, post);
+      return dest;
     }
-  return false;
+  else
+    {
+      char *result = (char *) xmalloc (strlen (dest) + strlen (pre)
+				       + strlen (path) + strlen (post) + 1 + 1);
+      strcpy (result, dest);
+      strcat (result, " ");
+      strcat (result, pre);
+      strcat (result, path);
+      strcat (result, post);
+      free (dest);
+      return result;
+    }
 }
 
-/* add_default_archives adds the default archives to the end of the
-   current command line.  */
+/* add_default_libs adds the -l option which is derived from the
+   libraries.  */
 
 static int
-add_default_archives (const char *libpath, const char *libraries)
+add_default_libs (const char *libraries)
 {
   const char *l = libraries;
   const char *e;
   char *libname;
   unsigned int libcount = 0;
 
-  do
+  while ((l != NULL) && (l[0] != (char)0))
     {
       e = index (l, ',');
       if (e == NULL)
         {
           libname = xstrdup (l);
           l = NULL;
-	  if (add_default_combination (libpath, libname))
-	    libcount++;
+	  append_option (OPT_l, safe_strdup (libname), 1);
+	  libcount++;
 	  free (libname);
         }
       else
         {
           libname = xstrndup (l, e - l);
           l = e + 1;
-	  if (add_default_combination (libpath, libname))
-	    libcount++;
+	  append_option (OPT_l, safe_strdup (libname), 1);
+	  libcount++;
 	  free (libname);
         }
     }
-  while ((l != NULL) && (l[0] != (char)0));
   return libcount;
-}
-
-/* build_include_path builds the component of the include path
-   referenced by the library.  */
-
-static const char *
-build_include_path (const char *libpath, const char *library)
-{
-  char dir_sep[2];
-  char *gm2libs;
-  unsigned int machine_length = 0;
-
-  dir_sep[0] = DIR_SEPARATOR;
-  dir_sep[1] = (char)0;
-
-  if (multilib_dir != NULL)
-    {
-      machine_length = strlen (multilib_dir);
-      machine_length += strlen (dir_sep);
-    }
-
-  gm2libs = (char *)alloca (strlen (libpath) + strlen (dir_sep) + strlen ("m2")
-                            + strlen (dir_sep) + strlen (library) + 1
-			    + machine_length + 1);
-  strcpy (gm2libs, libpath);
-  strcat (gm2libs, dir_sep);
-  if (machine_length > 0)
-    {
-      strcat (gm2libs, multilib_dir);
-      strcat (gm2libs, dir_sep);
-    }
-  strcat (gm2libs, "m2");
-  strcat (gm2libs, dir_sep);
-  strcat (gm2libs, library);
-
-  return xstrdup (gm2libs);
-}
-
-/* add_include add the correct include path given the libpath and
-   library.  The new path is returned.  */
-
-static const char *
-add_include (const char *libpath, const char *library)
-{
-  if (library == NULL)
-    return NULL;
-  else
-    return build_include_path (libpath, library);
-}
-
-/* add_default_includes add the appropriate default include paths
-   depending upon the style of libraries chosen.  */
-
-static void
-add_default_includes (const char *libpath, const char *libraries)
-{
-  const char *l = libraries;
-  const char *e;
-  const char *c;
-  const char *path;
-
-  do
-    {
-      e = index (l, ',');
-      if (e == NULL)
-        {
-          c = xstrdup (l);
-          l = NULL;
-        }
-      else
-        {
-          c = xstrndup (l, e - l);
-          l = e + 1;
-        }
-      path = add_include (libpath, c);
-      append_option (OPT_I, path, 1);
-    }
-  while ((l != NULL) && (l[0] != (char)0));
-}
-
-/* library_installed returns true if directory library is found under
-   libpath.  */
-
-static bool
-library_installed (const char *libpath, const char *library)
-{
-#if defined(HAVE_OPENDIR) && defined(HAVE_DIRENT_H)
-  const char *complete = build_archive_path (libpath, library);
-  DIR *directory = opendir (complete);
-
-  if (directory == NULL || (errno == ENOENT))
-    return false;
-  /* Directory exists and therefore the library also exists.  */
-  closedir (directory);
-  return true;
-#else
-  return false;
-#endif
-}
-
-/* check_valid check to see that the library is valid.
-   It check the library against the default library set in gm2 and
-   also against any additional libraries installed in the prefix tree.  */
-
-static bool
-check_valid_library (const char *libpath, const char *library)
-{
-  /* Firstly check against the default libraries (which might not be
-     installed yet).  */
-  for (int i = 0; i < maxlib; i++)
-    if (strcmp (library, library_name[i]) == 0)
-      return true;
-  /* Secondly check whether it is installed (a third party library).  */
-  return library_installed (libpath, library);
-}
-
-/* check_valid_list check to see that the libraries specified are valid.
-   It checks against the default library set in gm2 and also against
-   any additional libraries installed in the libpath tree.  */
-
-static bool
-check_valid_list (const char *libpath, const char *libraries)
-{
-  const char *start = libraries;
-  const char *end;
-  const char *copy;
-
-  do
-    {
-      end = index (start, ',');
-      if (end == NULL)
-        {
-          copy = xstrdup (start);
-          start = NULL;
-        }
-      else
-        {
-          copy = xstrndup (start, end - start);
-          start = end + 1;
-        }
-      if (! check_valid_library (libpath, copy))
-	{
-	  error ("library specified %sq is either not installed or does not exist",
-		 copy);
-	  return false;
-	}
-    }
-  while ((start != NULL) && (start[0] != (char)0));
-  return true;
 }
 
 /* add_word returns a new string which has the contents of lib
@@ -509,8 +327,14 @@ convert_abbreviation (const char *full_libraries, const char *abbreviation)
   for (int i = 0; i < maxlib; i++)
     if (strcmp (abbreviation, library_abbrev[i]) == 0)
       return add_word (full_libraries, library_name[i]);
-  /* No abbreviation found therefore assume user specified full library name.  */
-  return add_word (full_libraries, abbreviation);
+  /* Perhaps the user typed in the whole lib name rather than an abbrev.  */
+  for (int i = 0; i < maxlib; i++)
+    if (strcmp (abbreviation, library_name[i]) == 0)
+      return add_word (full_libraries, abbreviation);
+  /* Not found, probably a user typo.  */
+  error ("%qs is not a valid Modula-2 system library name or abbreviation",
+	 abbreviation);
+  return full_libraries;
 }
 
 /* convert_abbreviations checks each element in the library list to
@@ -535,7 +359,8 @@ convert_abbreviations (const char *libraries)
         }
       else
         {
-          full_libraries = convert_abbreviation (full_libraries, xstrndup (start, end - start));
+	  full_libraries = convert_abbreviation (full_libraries,
+						 xstrndup (start, end - start));
           start = end + 1;
         }
     }
@@ -572,9 +397,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Which c++ runtime library to link.  */
   stdcxxlib_kind which_library = USE_LIBSTDCXX;
 
-  const char *libraries = NULL;
   const char *dialect = DEFAULT_DIALECT;
-  const char *libpath = LIBSUBDIR;
 
   /* An array used to flag each argument that needs a bit set for
      LANGSPEC, MATHLIB, or WITHLIBC.  */
@@ -673,12 +496,15 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	case OPT_flibs_:
 	  libraries = xstrdup (arg);
 	  allow_libraries = decoded_options[i].value;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
 	case OPT_fmod_:
 	  seen_module_extension = true;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
         case OPT_fpthread:
           need_pthread = decoded_options[i].value;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
           break;
         case OPT_fm2_plugin:
           need_plugin = decoded_options[i].value;
@@ -687,24 +513,29 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    error ("plugin support is disabled; configure with "
 		   "%<--enable-plugin%>");
 #endif
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
           break;
 	case OPT_fscaffold_dynamic:
 	  seen_scaffold_dynamic = true;
 	  scaffold_dynamic = decoded_options[i].value;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
 	case OPT_fscaffold_static:
 	  seen_scaffold_static = true;
 	  scaffold_static = decoded_options[i].value;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
 	case OPT_fgen_module_list_:
 	  seen_gen_module_list = true;
 	  gen_module_list = decoded_options[i].value;
 	  if (gen_module_list)
 	    gen_module_filename = decoded_options[i].arg;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
 	case OPT_fuse_list_:
 	  seen_uselist = true;
 	  uselist = decoded_options[i].value;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
 
 	case OPT_nostdlib:
@@ -794,24 +625,23 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  break;
 
 	default:
-	  if ((decoded_options[i].orig_option_with_args_text != NULL)
-	      && (strncmp (decoded_options[i].orig_option_with_args_text,
-			   "-m", 2) == 0))
-	    multilib_dir = xstrdup (decoded_options[i].orig_option_with_args_text
-				    + 2);
+	  break;
 	}
     }
   if (language != NULL && (strcmp (language, "modula-2") != 0))
     return;
 
-  if (scaffold_static && scaffold_dynamic)
-    {
-      if (! seen_scaffold_dynamic)
-	scaffold_dynamic = false;
-      if (scaffold_dynamic && scaffold_static)
-	error ("%qs and %qs cannot both be enabled",
-	       "-fscaffold-dynamic", "-fscaffold-static");
-    }
+  /* Override the default when the user specifies it.  */
+  if (seen_scaffold_static && scaffold_static && !seen_scaffold_dynamic)
+    scaffold_dynamic = false;
+
+  /* If both options have been seen and both are true, that means the user
+     tried to set both.  */
+  if (seen_scaffold_dynamic && scaffold_dynamic
+     && seen_scaffold_static && scaffold_static)
+    error ("%qs and %qs cannot both be enabled",
+	   "-fscaffold-dynamic", "-fscaffold-static");
+
   if (uselist && gen_module_list)
     {
       if (! seen_gen_module_list)
@@ -855,32 +685,44 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
     }
 
-  /* We now add in extra arguments to facilitate a successful
-     compile or link.  For example include paths for dialect of Modula-2,
-     library paths and default scaffold linking options.  */
+  /* We now add in extra arguments to facilitate a successful link.
+     Note that the libraries are added to the end of the link here
+     and also placed earlier into the link by lang-specs.h.  Possibly
+     this is needed because the m2pim,m2iso libraries are cross linked
+     (--fixme-- combine all the m2 libraries into a single archive).
+
+     We also add default scaffold linking options.  */
 
   /* If we have not seen either uselist or gen_module_list and we need
      to link then we turn on -fgen_module_list=- as the default.  */
   if ((! (seen_uselist || seen_gen_module_list)) && linking)
     append_option (OPT_fgen_module_list_, "-", 1);
 
+  /* We checked that they were not both enabled above, if there was a set
+     value (even iff that is 'off'), pass that to the FE.  */
+  if (seen_scaffold_dynamic || scaffold_dynamic)
+    append_option (OPT_fscaffold_dynamic, NULL, scaffold_dynamic);
+  if (seen_scaffold_static)
+    append_option (OPT_fscaffold_static, NULL, scaffold_static);
+
   if (allow_libraries)
     {
-      /* If the libraries have not been specified by the user but the
-	 dialect has been specified then select the appropriate libraries.  */
+      /* If the libraries have not been specified by the user, select the
+	 appropriate libraries for the active dialect.  */
       if (libraries == NULL)
 	{
 	  if (strcmp (dialect, "iso") == 0)
-	    libraries = xstrdup ("m2iso,m2pim");
+	    libraries = xstrdup ("m2iso,m2cor,m2pim,m2log");
 	  else
-	    /* Default to pim libraries if none specified.  */
-	    libraries = xstrdup ("m2pim,m2log,m2iso");
+	    /* Default to pim libraries otherwise.  */
+	    libraries = xstrdup ("m2pim,m2iso,m2cor,m2log");
 	}
       libraries = convert_abbreviations (libraries);
-      if (! check_valid_list (libpath, libraries))
-	return;
-      add_default_includes (libpath, libraries);
+      append_option (OPT_flibs_, xstrdup (libraries), 1);
     }
+  else
+    append_option (OPT_flibs_, xstrdup ("-"), 0); /* no system libs.  */
+
   if ((! seen_x_flag) && seen_module_extension)
     append_option (OPT_x, "modula-2", 1);
 
@@ -889,16 +731,19 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   if (linking)
     {
-#ifdef HAVE_LD_STATIC_DYNAMIC
-      if (allow_libraries && !shared_libgm2)
-	append_option (OPT_Wl_, LD_STATIC_OPTION, 1);
-#endif
       if (allow_libraries)
-	add_default_archives (libpath, libraries);
+	{
 #ifdef HAVE_LD_STATIC_DYNAMIC
-      if (allow_libraries && !shared_libgm2)
-	append_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1);
+	  if (!shared_libgm2)
+	    append_option (OPT_Wl_, LD_STATIC_OPTION, 1);
 #endif
+	  added_libraries += add_default_libs (libraries);
+#ifdef HAVE_LD_STATIC_DYNAMIC
+	  if (!shared_libgm2)
+	    append_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1);
+#endif
+	}
+
       /* Add `-lstdc++' if we haven't already done so.  */
 #ifdef HAVE_LD_STATIC_DYNAMIC
       if (library > 1 && !static_link)
@@ -961,6 +806,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   *in_decoded_options = gm2_new_decoded_options;
   *in_added_libraries = added_libraries;
 }
+
 
 /* Called before linking.  Returns 0 on success and -1 on failure.  */
 int

@@ -20,6 +20,7 @@ along with GNU Modula-2; see the file COPYING.  If not, write to the
 Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
+#define INCLUDE_VECTOR
 #include "gm2-gcc/gcc-consolidation.h"
 
 #include "langhooks-def.h" /* FIXME: for lhd_set_decl_assembler_name.  */
@@ -44,6 +45,18 @@ Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 static void write_globals (void);
 
 static int insideCppArgs = FALSE;
+
+/* We default to pim in the absence of fiso.  */
+static bool iso = false;
+
+/* The language include paths are based on the libraries in use.  */
+static bool allow_libraries = true;
+static const char *flibs = nullptr;
+static const char *iprefix = nullptr;
+static const char *imultilib = nullptr;
+static std::vector<const char*>Ipaths;
+static std::vector<const char*>isystem;
+static std::vector<const char*>iquote;
 
 #define EXPR_STMT_EXPR(NODE) TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
 
@@ -198,34 +211,41 @@ gm2_langhook_handle_option (
       return 1;
     case OPT_I:
       if (insideCppArgs)
-        {
-          const struct cl_option *option = &cl_options[scode];
-          const char *opt = (const char *)option->opt_text;
-          M2Options_CppArg (opt, arg, TRUE);
-        }
+	{
+	  const struct cl_option *option = &cl_options[scode];
+	  const char *opt = (const char *)option->opt_text;
+	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+				       && !(option->flags & CL_SEPARATE));
+	}
       else
-        M2Options_SetSearchPath (arg);
+	Ipaths.push_back (arg);
       return 1;
     case OPT_fiso:
       M2Options_SetISO (value);
+      iso = value;
       return 1;
     case OPT_fpim:
       M2Options_SetPIM (value);
+      iso = value ? false : iso;
       return 1;
     case OPT_fpim2:
       M2Options_SetPIM2 (value);
+      iso = value ? false : iso;
       return 1;
     case OPT_fpim3:
       M2Options_SetPIM3 (value);
+      iso = value ? false : iso;
       return 1;
     case OPT_fpim4:
       M2Options_SetPIM4 (value);
+      iso = value ? false : iso;
       return 1;
     case OPT_fpositive_mod_floor_div:
       M2Options_SetPositiveModFloor (value);
       return 1;
     case OPT_flibs_:
-      /* handled in the gm2 driver.  */
+      allow_libraries = value;
+      flibs = arg;
       return 1;
     case OPT_fgen_module_list_:
       M2Options_SetGenModuleList (value, arg);
@@ -374,6 +394,30 @@ gm2_langhook_handle_option (
     case OPT_fm2_g:
       M2Options_SetM2g (value);
       return 1;
+      break;
+    case OPT_iprefix:
+    case OPT_imultilib:
+    case OPT_isystem:
+    case OPT_iquote:
+    case OPT_isysroot:
+      if (insideCppArgs)
+	{
+	  const struct cl_option *option = &cl_options[scode];
+	  const char *opt = (const char *)option->opt_text;
+	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+				       && !(option->flags & CL_SEPARATE));
+	}
+      if (code == OPT_iprefix)
+	iprefix = arg;
+      else if (code == OPT_imultilib)
+	imultilib = arg;
+      else if (code == OPT_iquote)
+	iquote.push_back (arg);
+      else if (code == OPT_isystem)
+	isystem.push_back (arg);
+      /* Otherwise, ignored, at least for now. */
+      return 1;
+      break;
     case OPT_O:
       M2Options_SetOptimizing (value);
       return 1;
@@ -412,16 +456,75 @@ gm2_langhook_handle_option (
       return 1;
     default:
       if (insideCppArgs)
-        {
-          const struct cl_option *option = &cl_options[scode];
-          const char *opt = (const char *)option->opt_text;
-
-          M2Options_CppArg (opt, arg, TRUE);
-          return 1;
-        }
+	{
+	  const struct cl_option *option = &cl_options[scode];
+	  const char *opt = (const char *)option->opt_text;
+	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+				       && !(option->flags & CL_SEPARATE));
+	  return 1;
+	}
       return 0;
     }
   return 0;
+}
+
+/* This prefixes LIBNAME with the current compiler prefix (if it has been
+   relocated) or the LIBSUBDIR, if not.  */
+static void
+add_one_import_path (const char *libname)
+{
+  const char *libpath = iprefix ? iprefix : LIBSUBDIR;
+  const char dir_sep[] = {DIR_SEPARATOR, (char)0};
+  size_t dir_sep_size = strlen (dir_sep);
+  unsigned int mlib_len = 0;
+
+  if (imultilib)
+    {
+      mlib_len = strlen (imultilib);
+      mlib_len += strlen (dir_sep);
+    }
+
+  char *lib = (char *)alloca (strlen (libpath) + dir_sep_size
+			      + strlen ("m2") + dir_sep_size
+			      + strlen (libname) + 1
+			      + mlib_len + 1);
+  strcpy (lib, libpath);
+  /* iprefix has a trailing dir separator, LIBSUBDIR does not.  */
+  if (!iprefix)
+    strcat (lib, dir_sep);
+
+  if (imultilib)
+    {
+      strcat (lib, imultilib);
+      strcat (lib, dir_sep);
+    }
+  strcat (lib, "m2");
+  strcat (lib, dir_sep);
+  strcat (lib, libname);
+  M2Options_SetSearchPath (lib);
+}
+
+/* For each comma-separated standard library name in LIBLIST, add the
+   corresponding include path.  */
+static void
+add_m2_import_paths (const char *liblist)
+{
+  while (*liblist != 0 && *liblist != '-')
+    {
+      const char *comma = strstr (liblist, ",");
+      size_t len;
+      if (comma)
+	len = comma - liblist;
+      else
+	len = strlen (liblist);
+      char *libname = (char *) alloca (len+1);
+      strncpy (libname, liblist, len);
+      libname[len] = 0;
+      add_one_import_path (libname);
+      liblist += len;
+      if (*liblist == ',')
+	liblist++;
+    }
 }
 
 /* Run after parsing options.  */
@@ -435,7 +538,42 @@ gm2_langhook_post_options (const char **pfilename)
   M2Options_FinaliseOptions ();
   main_input_filename = filename;
 
-  /* Returning false means that the backend should be used.  */
+  /* Add the include paths as per the libraries specified.
+     NOTE: This assumes that the driver has validated the input and makes
+     no attempt to be defensive of nonsense input in flibs=.  */
+  if (allow_libraries)
+    {
+      if (!flibs)
+	{
+	  if (iso)
+	    flibs = "m2iso,m2cor,m2pim,m2log";
+	  else
+	    flibs = "m2pim,m2iso,m2cor,m2log";
+	}
+    }
+
+  /* Add search paths.
+     We are not handling all of the cases yet (e.g idirafter).
+     This (barring the missing cases) is intended to follow the directory
+     search rules used for c-family.  It would be less confusing if the
+     presence of absence of these search paths was not dependent on the
+     flibs= option. */
+
+  for (auto *s : iquote)
+    M2Options_SetSearchPath (s);
+  iquote.clear();
+  for (auto *s : Ipaths)
+    M2Options_SetSearchPath (s);
+  Ipaths.clear();
+  for (auto *s : isystem)
+    M2Options_SetSearchPath (s);
+  isystem.clear();
+  /* FIXME: this is not a good way to suppress the addition of the import
+     paths.  */
+  if (allow_libraries)
+    add_m2_import_paths (flibs);
+
+ /* Returning false means that the backend should be used.  */
   return false;
 }
 
