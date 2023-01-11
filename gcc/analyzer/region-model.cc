@@ -1441,6 +1441,8 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
   if (ctxt)
     check_call_args (cd);
 
+  tree callee_fndecl = get_fndecl_for_call (call, ctxt);
+
   /* Some of the cases below update the lhs of the call based on the
      return value, but not all.  Provide a default value, which may
      get overwritten below.  */
@@ -1450,13 +1452,22 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
       const svalue *sval = maybe_get_const_fn_result (cd);
       if (!sval)
 	{
-	  /* For the common case of functions without __attribute__((const)),
-	     use a conjured value, and purge any prior state involving that
-	     value (in case this is in a loop).  */
-	  sval = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
-						       lhs_region,
-						       conjured_purge (this,
-								       ctxt));
+	  if (callee_fndecl
+	      && lookup_attribute ("malloc", DECL_ATTRIBUTES (callee_fndecl)))
+	    {
+	      const region *new_reg
+		= get_or_create_region_for_heap_alloc (NULL, ctxt);
+	      mark_region_as_unknown (new_reg, NULL);
+	      sval = m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	    }
+	  else
+	    /* For the common case of functions without __attribute__((const)),
+	       use a conjured value, and purge any prior state involving that
+	       value (in case this is in a loop).  */
+	    sval = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
+							 lhs_region,
+							 conjured_purge (this,
+									 ctxt));
 	}
       set_value (lhs_region, sval, ctxt);
     }
@@ -1469,7 +1480,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	return false;
       }
 
-  if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
+  if (callee_fndecl)
     {
       int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
 
@@ -4909,8 +4920,9 @@ region_model::get_or_create_region_for_heap_alloc (const svalue *size_in_bytes,
   get_referenced_base_regions (base_regs_in_use);
   const region *reg
     = m_mgr->get_or_create_region_for_heap_alloc (base_regs_in_use);
-  if (compat_types_p (size_in_bytes->get_type (), size_type_node))
-    set_dynamic_extents (reg, size_in_bytes, ctxt);
+  if (size_in_bytes)
+    if (compat_types_p (size_in_bytes->get_type (), size_type_node))
+      set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
 }
 

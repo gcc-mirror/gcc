@@ -2578,6 +2578,8 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	  const region *ptr_base_reg = ptr_dst->get_base_region ();
 	  mark_as_escaped (ptr_base_reg);
 	}
+      if (uncertainty)
+	uncertainty->on_maybe_bound_sval (rhs_sval);
     }
   else if (lhs_base_reg->tracked_p ())
     {
