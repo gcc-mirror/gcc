@@ -84,8 +84,7 @@
 
 #define ISA_3_1_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\
 				 | OPTION_MASK_POWER10			\
-				 | OTHER_POWER10_MASKS			\
-				 | OPTION_MASK_P10_FUSION)
+				 | OTHER_POWER10_MASKS)
 
 /* Flags that need to be turned off if -mno-power9-vector.  */
 #define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\
