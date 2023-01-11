@@ -725,6 +725,8 @@ public:
     return path;
   }
 
+  Location get_locus () const override { return path.get_locus (); }
+
   bool check_cfg_predicate (const Session &session) const override;
 
   Attribute to_attribute () const override;
@@ -778,6 +780,8 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  Location get_locus () const override { return path.get_locus (); }
+
   bool check_cfg_predicate (const Session &session) const override;
 
   Attribute to_attribute () const override;
@@ -804,6 +808,8 @@ public:
   std::string as_string () const override { return ident; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Location get_locus () const override { return ident_locus; }
 
   bool check_cfg_predicate (const Session &session) const override;
 
@@ -847,6 +853,8 @@ public:
     return std::unique_ptr<MetaNameValueStr> (clone_meta_item_inner_impl ());
   }
 
+  Location get_locus () const override { return ident_locus; }
+
   bool check_cfg_predicate (const Session &session) const override;
 
   Attribute to_attribute () const override;
@@ -885,6 +893,8 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  Location get_locus () const override { return ident_locus; }
+
   bool check_cfg_predicate (const Session &session) const override;
 
   Attribute to_attribute () const override;
@@ -918,6 +928,8 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Location get_locus () const override { return ident_locus; }
 
   bool check_cfg_predicate (const Session &session) const override;
 
