@@ -1,5 +1,5 @@
 // { dg-additional-options "-w" }
-// { dg-output "mut_deref\nfoobar: 123\n" }
+// { dg-output "mut_deref\r*\nfoobar: 123\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

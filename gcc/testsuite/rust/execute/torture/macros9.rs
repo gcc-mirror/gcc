@@ -1,4 +1,4 @@
-// { dg-output "oom\noom\noom\n" }
+// { dg-output "oom\r*\noom\r*\noom\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }
