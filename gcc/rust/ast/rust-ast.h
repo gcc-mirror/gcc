@@ -630,6 +630,8 @@ public:
 
   virtual ~MetaItemInner ();
 
+  virtual Location get_locus () const = 0;
+
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
