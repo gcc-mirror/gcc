@@ -457,9 +457,7 @@ HIRCompileBase::compile_locals_for_block (Context *ctx, Resolver::Rib &rib,
 
       // compile the local
       tree type = TyTyResolveCompile::compile (ctx, tyty);
-      Bvariable *compiled
-	= CompileVarDecl::compile (fndecl, type, pattern, ctx);
-      locals.push_back (compiled);
+      CompileVarDecl::compile (fndecl, type, pattern, locals, ctx);
     }
   return locals;
 }
