@@ -692,31 +692,34 @@ gfc_init_builtin_functions (void)
                                                 float_type_node, NULL_TREE);
 
   func_cdouble_double = build_function_type_list (double_type_node,
-                                                  complex_double_type_node,
-                                                  NULL_TREE);
+						  complex_double_type_node,
+						  NULL_TREE);
 
   func_double_cdouble = build_function_type_list (complex_double_type_node,
-                                                  double_type_node, NULL_TREE);
+						  double_type_node, NULL_TREE);
 
-  func_clongdouble_longdouble =
-    build_function_type_list (long_double_type_node,
-                              complex_long_double_type_node, NULL_TREE);
+  func_clongdouble_longdouble
+    = build_function_type_list (long_double_type_node,
+				complex_long_double_type_node, NULL_TREE);
 
-  func_longdouble_clongdouble =
-    build_function_type_list (complex_long_double_type_node,
-                              long_double_type_node, NULL_TREE);
+  func_longdouble_clongdouble
+    = build_function_type_list (complex_long_double_type_node,
+				long_double_type_node, NULL_TREE);
 
   ptype = build_pointer_type (float_type_node);
-  func_float_floatp_floatp =
-    build_function_type_list (void_type_node, ptype, ptype, NULL_TREE);
+  func_float_floatp_floatp
+    = build_function_type_list (void_type_node, float_type_node, ptype, ptype,
+				NULL_TREE);
 
   ptype = build_pointer_type (double_type_node);
-  func_double_doublep_doublep =
-    build_function_type_list (void_type_node, ptype, ptype, NULL_TREE);
+  func_double_doublep_doublep
+    = build_function_type_list (void_type_node, double_type_node, ptype,
+				ptype, NULL_TREE);
 
   ptype = build_pointer_type (long_double_type_node);
-  func_longdouble_longdoublep_longdoublep =
-    build_function_type_list (void_type_node, ptype, ptype, NULL_TREE);
+  func_longdouble_longdoublep_longdoublep
+    = build_function_type_list (void_type_node, long_double_type_node, ptype,
+				ptype, NULL_TREE);
 
 /* Non-math builtins are defined manually, so they're not included here.  */
 #define OTHER_BUILTIN(ID,NAME,TYPE,CONST)
@@ -970,9 +973,8 @@ gfc_init_builtin_functions (void)
 		      "calloc", ATTR_NOTHROW_LEAF_MALLOC_LIST);
   DECL_IS_MALLOC (builtin_decl_explicit (BUILT_IN_CALLOC)) = 1;
 
-  ftype = build_function_type_list (pvoid_type_node,
-                                    size_type_node, pvoid_type_node,
-                                    NULL_TREE);
+  ftype = build_function_type_list (pvoid_type_node, pvoid_type_node,
+				    size_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_realloc", ftype, BUILT_IN_REALLOC,
 		      "realloc", ATTR_NOTHROW_LEAF_LIST);
 
