@@ -5385,6 +5385,32 @@ visit_nary_op (tree lhs, gassign *stmt)
 	    }
 	}
       break;
+    case LSHIFT_EXPR:
+      /* For X << C, use the value number of X * (1 << C).  */
+      if (INTEGRAL_TYPE_P (type)
+	  && TYPE_OVERFLOW_WRAPS (type)
+	  && !TYPE_SATURATING (type))
+	{
+	  tree rhs2 = gimple_assign_rhs2 (stmt);
+	  if (TREE_CODE (rhs2) == INTEGER_CST
+	      && tree_fits_uhwi_p (rhs2)
+	      && tree_to_uhwi (rhs2) < TYPE_PRECISION (type))
+	    {
+	      wide_int w = wi::set_bit_in_zero (tree_to_uhwi (rhs2),
+						TYPE_PRECISION (type));
+	      gimple_match_op match_op (gimple_match_cond::UNCOND,
+					MULT_EXPR, type, rhs1,
+					wide_int_to_tree (type, w));
+	      result = vn_nary_build_or_lookup (&match_op);
+	      if (result)
+		{
+		  bool changed = set_ssa_val_to (lhs, result);
+		  vn_nary_op_insert_stmt (stmt, result);
+		  return changed;
+		}
+	    }
+	}
+      break;
     default:
       break;
     }
