@@ -1,3 +1,11 @@
+2023-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	Backported from master:
+	2022-12-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/107714
+	* gcc.target/arm/mve/intrinsics/vldst24q_reg_offset.c: New test.
+
 2023-01-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

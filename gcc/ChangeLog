@@ -1,3 +1,18 @@
+2023-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	Backported from master:
+	2022-12-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/107714
+	* config/arm/arm-protos.h (mve_struct_mem_operand): New protoype.
+	* config/arm/arm.c (mve_struct_mem_operand): New function.
+	* config/arm/constraints.md (Ug): New constraint.
+	* config/arm/mve.md (mve_vst4q<mode>): Change constraint.
+	(mve_vst2q<mode>): Likewise.
+	(mve_vld4q<mode>): Likewise.
+	(mve_vld2q<mode>): Likewise.
+	* config/arm/predicates.md (mve_struct_operand): New predicate.
+
 2023-01-05  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR target/106736
