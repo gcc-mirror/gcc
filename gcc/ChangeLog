@@ -1,3 +1,81 @@
+2023-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106293
+	* tree-ssa-dse.cc (dse_classify_store): Use a worklist to
+	process degenerate PHI defs.
+
+2023-01-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/106421
+	* cprop.cc (bypass_block): Check that DEST is local to this
+	function (non-NULL) before calling find_edge.
+
+2023-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108110
+	* ipa-param-manipulation.h (ipa_param_body_adjustments): New members
+	sort_replacements, lookup_first_base_replacement and
+	m_sorted_replacements_p.
+	* ipa-param-manipulation.cc: Define INCLUDE_ALGORITHM.
+	(ipa_param_body_adjustments::register_replacement): Set
+	m_sorted_replacements_p to false.
+	(compare_param_body_replacement): New function.
+	(ipa_param_body_adjustments::sort_replacements): Likewise.
+	(ipa_param_body_adjustments::common_initialization): Call
+	sort_replacements.
+	(ipa_param_body_adjustments::ipa_param_body_adjustments): Initialize
+	m_sorted_replacements_p.
+	(ipa_param_body_adjustments::lookup_replacement_1): Rework to use
+	std::lower_bound.
+	(ipa_param_body_adjustments::lookup_first_base_replacement): New
+	function.
+	(ipa_param_body_adjustments::modify_call_stmt): Use
+	lookup_first_base_replacement.
+	* omp-simd-clone.cc (ipa_simd_modify_function_body): Call
+	adjustments->sort_replacements.
+
+2023-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108314
+	* tree-vect-stmts.cc (vectorizable_condition): Do not
+	perform BIT_NOT_EXPR optimization for EXTRACT_LAST_REDUCTION.
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky-linux-elf.h (SYSROOT_SUFFIX_SPEC): New.
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky.h (MULTILIB_DEFAULTS): Fix float abi option.
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky.cc (csky_cpu_cpp_builtins): Add builtin
+	defines for soft float abi.
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky.md (smart_bseti): Change condition to CSKY_ISA_FEATURE (E1).
+	(smart_bclri): Likewise.
+	(fast_bseti): Change condition to CSKY_ISA_FEATURE (E2).
+	(fast_bclri): Likewise.
+	(fast_cmpnesi_i): Likewise.
+	(*fast_cmpltsi_i): Likewise.
+	(*fast_cmpgeusi_i): Likewise.
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky_insn_fpuv3.md (l<frm_pattern><fixsuop><mode>si2): Test
+	flag_fp_int_builtin_inexact || !flag_trapping_math.
+	(<frm_pattern><mode>2): Likewise.
+
+2023-01-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_register_info): Check call_used_regs
+	instead of hard-coding the register numbers for call saved
+	registers.
+	(s390_optimize_register_info): Likewise.
+
 2023-01-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gm2.texi (Overview): Fix @node markers.

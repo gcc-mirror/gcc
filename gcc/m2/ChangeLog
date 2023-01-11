@@ -1,3 +1,114 @@
+2023-01-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (m2/mc-boot/$(SRC_PREFIX)%.o): Add
+	m2/gm2-libs/gm2-libs-host.h dependency.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Add
+	m2/gm2-libs/gm2-libs-host.h dependency.
+
+2023-01-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (GM2_1): Change -B path to m2/stage1.
+	($(objdir)/m2/images/gnu.eps): Check and create dest dir
+	if necessary.
+	(gm2-libs.texi-check): Check and create dir m2/gm2-libs-pim,
+	m2/gm2-libs-iso and m2/gm2-libs if necessary.
+	($(objdir)/m2/gm2-compiler-boot): Remove.
+	($(objdir)/m2/gm2-libs-boot): Remove.
+	($(objdir)/m2/gm2-libs-libiberty): Remove.
+	($(objdir)/m2/gm2-libiberty): Remove.
+	($(objdir)/m2/gm2-gcc): Remove.
+	($(objdir)/m2/gm2-compiler): Remove.
+	($(objdir)/m2/gm2-libs): Remove.
+	($(objdir)/m2/gm2-libs-iso): Remove.
+	($(objdir)/m2/gm2-libs-min): Remove.
+	($(objdir)/m2/gm2-compiler-paranoid): Remove.
+	($(objdir)/m2/gm2-libs-paranoid): Remove.
+	($(objdir)/m2/gm2-compiler-verify): Remove.
+	($(objdir)/m2/boot-bin): Remove.
+	($(objdir)/m2/gm2-libs-pim): Remove.
+	($(objdir)/m2/gm2-libs-coroutines): Remove.
+	(stage1/m2): Remove.
+	(stage2/m2): Remove.
+	(stage3/m2): Remove.
+	(m2.stageprofile): New rule.
+	(m2.stagefeedback): New rule.
+	(cc1gm2$(exeext)): Change dependent name.
+	(m2/stage2/cc1gm2$(exeext)): Change dependent name.
+	Check and create dest dir.
+	(m2/stage1/cc1gm2$(exeext)): Check and create dest dir
+	if necessary.
+	(m2/gm2-gcc/%.o): Ditto.
+	(m2/gm2-gcc/rtegraph.o): Ditto.
+	(m2/gm2-gcc/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-gcc/$(SRC_PREFIX)%.h): Ditto.
+	(m2/mc-boot): Ditto.
+	(m2/mc-boot-ch): Ditto.
+	(m2/gm2-libs-boot): Ditto.
+	(m2/gm2-compiler-boot): Ditto.
+	(m2/gm2-compiler): Ditto.
+	(m2/gm2-libiberty): Ditto.
+	(m2/gm2-compiler): Ditto.
+	(m2/gm2-libs-iso): Ditto.
+	(m2/gm2-libs): Ditto.
+	(m2/gm2-libs-min): Ditto.
+	(m2/gm2-libs-coroutines): Ditto.
+	(m2/boot-bin): Ditto.
+	(m2/pge-boot): Ditto.
+	(m2/pge-boot): Ditto.
+	* Make-maintainer.in (m2/gm2-ppg-boot): Check and create
+	dest dir if necessary.
+	(m2): Ditto.
+	(m2/gm2-ppg-boot): Ditto.
+	(m2/gm2-pg-boot): Ditto.
+	(m2/gm2-auto): Ditto.
+	(m2/gm2-pg-boot): Ditto.
+	(m2/gm2-pge-boot): Ditto.
+	($(objdir)/plugin): Ditto.
+	($(objdir)/m2/mc-boot-ch): Ditto.
+	($(objdir)/m2/mc-boot-gen): Ditto.
+	(m2/boot-bin): Ditto.
+	(m2/mc): Ditto.
+	(m2/mc-obj): Ditto.
+	($(objdir)/m2/gm2-ppg-boot): Ditto.
+	($(objdir)/m2/gm2-pg-boot): Ditto.
+	($(objdir)/m2/gm2-pge-boot): Ditto.
+	(m2/mc-boot-gen): Ditto.
+	(m2/m2obj3): Ditto.
+	(m2/gm2-libs-paranoid): Ditto.
+	(m2/gm2-compiler-paranoid): Ditto.
+	(m2/gm2-libs-paranoid): Ditto.
+	(m2/gm2-compiler-paranoid): Ditto.
+	(m2/gm2-libs-paranoid): Ditto.
+	(m2/gm2-compiler-paranoid): Ditto.
+	* config-lang.in (m2/gm2-compiler-boot): Remove mkdir.
+	(m2/gm2-libs-boot): Ditto.
+	(m2/gm2-ici-boot): Ditto.
+	(m2/gm2-libiberty): Ditto.
+	(m2/gm2-gcc): Ditto.
+	(m2/gm2-compiler): Ditto.
+	(m2/gm2-libs): Ditto.
+	(m2/gm2-libs-iso): Ditto.
+	(m2/gm2-compiler-paranoid): Ditto.
+	(m2/gm2-libs-paranoid): Ditto.
+	(m2/gm2-compiler-verify): Ditto.
+	(m2/boot-bin): Ditto.
+	(m2/gm2-libs-pim): Ditto.
+	(m2/gm2-libs-coroutines): Ditto.
+	(m2/gm2-libs-min): Ditto.
+	(m2/pge-boot): Ditto.
+	(plugin): Ditto.
+	(stage1/m2): Ditto.
+	(stage2/m2): Ditto.
+	(stage3/m2): Ditto.
+	(stage4/m2): Ditto.
+	(m2/gm2-auto): Ditto.
+	(m2/gm2-pg-boot): Ditto.
+	(m2/gm2-pge-boot): Ditto.
+	(m2/gm2-ppg-boot): Ditto.
+	(m2/mc-boot): Ditto.
+	(m2/mc-boot-ch): Ditto.
+	(m2/mc-boot-gen): Ditto.
+
 2023-01-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (m2/pge-boot/%.o): Add m2/gm2config.h.

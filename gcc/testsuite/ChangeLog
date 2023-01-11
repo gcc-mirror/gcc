@@ -1,3 +1,43 @@
+2023-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106293
+	* gcc.dg/tree-ssa/ssa-dse-46.c: New testcase.
+
+2023-01-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/106421
+	* gcc.dg/pr106421.c: New test case.
+
+2023-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108110
+	* g++.dg/ipa/pr108110.C: New test.
+
+2023-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108314
+	* gcc.dg/vect/pr108314.c: New testcase.
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/csky/ldbs.c : Fix exclude-opts, should not
+	be "*".
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/csky/and3a.c: Rename to ...
+	* gcc.target/csky/ck801-and.c: ... this.
+	* gcc.target/csky/constpool-3.c: Rename to ...
+	* gcc.target/csky/constpool-2.c: ... this, Rename to ...
+	* gcc.target/csky/constpool-1.c: ... this, Rename to ...
+	* gcc.target/csky/ck801-constpool.c: ... this, and skip
+	if the CPU is not ck801.
+	* gcc.target/csky/ck801-branch.c: Skip if the CPU is not ck801.
+
+2023-01-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/fcall-saved.c: New test.
+
 2023-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/105838

@@ -1,3 +1,22 @@
+2023-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdb_list::_S_init_tzdb): Use __try and
+	__catch macros for exception handling.
+
+2023-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108221
+	* include/bits/stl_algobase.h (__lg): Replace six overloads with
+	a single function template for all integer types.
+	* include/bits/stl_algo.h (__merge_adaptive_resize): Cast
+	arithmetic results back to _Distance.
+
+2023-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108221
+	* include/std/span (span::span()): Un-simplify constraint to
+	work for size_t of lesser rank than int.
+
 2023-01-07  LIU Hao  <lh_mouse@126.com>
 
 	PR middle-end/108300
