@@ -1,4 +1,4 @@
-// { dg-output "invok\ninvok\ninvok\ninvok\ninvok\n" }
+// { dg-output "invok\r*\ninvok\r*\ninvok\r*\ninvok\r*\ninvok\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

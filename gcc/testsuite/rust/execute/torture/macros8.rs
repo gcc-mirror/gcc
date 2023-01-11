@@ -1,4 +1,4 @@
-// { dg-output "zo1\nzo1\n" }
+// { dg-output "zo1\r*\nzo1\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

@@ -1,4 +1,4 @@
-// { dg-output "14\n42\n" }
+// { dg-output "14\r*\n42\r*\n" }
 #[rustc_builtin_macro]
 macro_rules! column {
     () => {{}};
@@ -19,10 +19,9 @@ fn main() -> i32 {
 
     print(c0);
 
-    let c1 =                             column!();
+    let c1 = /* --------------------- */ column!();
 
     print(c1);
 
     0
 }
-
