@@ -578,8 +578,30 @@ protected:
   }
 };
 
+/**
+ * All builtin macros possible
+ */
+enum class BuiltinMacro
+{
+  Assert,
+  File,
+  Line,
+  Column,
+  IncludeBytes,
+  IncludeStr,
+  CompileError,
+  Concat,
+  Env,
+  Cfg,
+  Include
+};
+
 /* AST node of a macro invocation, which is replaced by the macro result at
- * compile time */
+ * compile time. This is technically a sum-type/tagged-union, which represents
+ * both classic macro invocations and builtin macro invocations. Regular macro
+ * invocations are expanded lazily, but builtin macro invocations need to be
+ * expanded eagerly, hence the differentiation.
+ */
 class MacroInvocation : public TypeNoBounds,
 			public Pattern,
 			public Item,
@@ -589,26 +611,47 @@ class MacroInvocation : public TypeNoBounds,
 			public ExternalItem,
 			public ExprWithoutBlock
 {
-  std::vector<Attribute> outer_attrs;
-  MacroInvocData invoc_data;
-  Location locus;
-
-  // Important for when we actually expand the macro
-  bool is_semi_coloned;
-
-  NodeId node_id;
-
 public:
+  enum class InvocKind
+  {
+    Regular,
+    Builtin,
+  };
+
   std::string as_string () const override;
 
-  MacroInvocation (MacroInvocData invoc_data,
-		   std::vector<Attribute> outer_attrs, Location locus,
-		   bool is_semi_coloned = false)
-    : outer_attrs (std::move (outer_attrs)),
-      invoc_data (std::move (invoc_data)), locus (locus),
-      is_semi_coloned (is_semi_coloned),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
-  {}
+  /**
+   * The default constructor you should use. Whenever we parse a macro call, we
+   * cannot possibly know whether or not this call refers to a builtin macro or
+   * a regular macro. With name resolution and scopes and nested macro calls,
+   * this is literally impossible. Hence, always start by creating a `Regular`
+   * MacroInvocation which will then (maybe!) become a `Builtin` macro
+   * invocation in the expander.
+   */
+  static std::unique_ptr<MacroInvocation>
+  Regular (MacroInvocData invoc_data, std::vector<Attribute> outer_attrs,
+	   Location locus, bool is_semi_coloned = false)
+  {
+    return std::unique_ptr<MacroInvocation> (
+      new MacroInvocation (InvocKind::Regular, Optional<BuiltinMacro>::none (),
+			   invoc_data, outer_attrs, locus, is_semi_coloned));
+  }
+
+  /**
+   * Create a builtin macro invocation. This can only be done after macro
+   * name-resolution and within the macro expander, so unless you're modifying
+   * these visitors, you probably do not want to use this function.
+   */
+  static std::unique_ptr<MacroInvocation>
+  Builtin (BuiltinMacro kind, MacroInvocData invoc_data,
+	   std::vector<Attribute> outer_attrs, Location locus,
+	   bool is_semi_coloned = false)
+  {
+    return std::unique_ptr<MacroInvocation> (
+      new MacroInvocation (InvocKind::Builtin,
+			   Optional<BuiltinMacro>::some (kind), invoc_data,
+			   outer_attrs, locus, is_semi_coloned));
+  }
 
   Location get_locus () const override final { return locus; }
 
@@ -641,6 +684,37 @@ public:
   MacroInvocData &get_invoc_data () { return invoc_data; }
 
   bool has_semicolon () const { return is_semi_coloned; }
+
+  InvocKind get_kind () const { return kind; }
+  Optional<BuiltinMacro> get_builtin_kind () const { return builtin_kind; }
+
+private:
+  /* Full constructor */
+  MacroInvocation (InvocKind kind, Optional<BuiltinMacro> builtin_kind,
+		   MacroInvocData invoc_data,
+		   std::vector<Attribute> outer_attrs, Location locus,
+		   bool is_semi_coloned)
+    : outer_attrs (std::move (outer_attrs)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      invoc_data (std::move (invoc_data)), is_semi_coloned (is_semi_coloned),
+      kind (kind), builtin_kind (builtin_kind)
+  {}
+
+  std::vector<Attribute> outer_attrs;
+  Location locus;
+  NodeId node_id;
+
+  /* The data given to the macro invocation */
+  MacroInvocData invoc_data;
+
+  /* Important for when we actually expand the macro */
+  bool is_semi_coloned;
+
+  /* Is this a builtin macro or a regular macro */
+  InvocKind kind;
+
+  /* If it is a builtin macro, which one */
+  Optional<BuiltinMacro> builtin_kind = Optional<BuiltinMacro>::none ();
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

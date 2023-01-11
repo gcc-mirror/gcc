@@ -1752,10 +1752,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 	    {
 	      // as this is the end, allow recovery (probably) - may change
 
-	      return std::unique_ptr<AST::MacroInvocation> (
-		new AST::MacroInvocation (std::move (invoc_data),
-					  std::move (outer_attrs), macro_locus,
-					  true));
+	      return AST::MacroInvocation::Regular (std::move (invoc_data),
+						    std::move (outer_attrs),
+						    macro_locus, true);
 	    }
 	}
 
@@ -1764,9 +1763,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 		  t->get_token_description (),
 		  lexer.peek_token ()->get_token_description ());
 
-      return std::unique_ptr<AST::MacroInvocation> (
-	new AST::MacroInvocation (std::move (invoc_data),
-				  std::move (outer_attrs), macro_locus, true));
+      return AST::MacroInvocation::Regular (std::move (invoc_data),
+					    std::move (outer_attrs),
+					    macro_locus, true);
     }
   else
     {
@@ -1814,10 +1813,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation (AST::AttrVec outer_attrs)
 
   Location macro_locus = macro_path.get_locus ();
 
-  return std::unique_ptr<AST::MacroInvocation> (
-    new AST::MacroInvocation (AST::MacroInvocData (std::move (macro_path),
-						   std::move (delim_tok_tree)),
-			      std::move (outer_attrs), macro_locus));
+  return AST::MacroInvocation::Regular (
+    AST::MacroInvocData (std::move (macro_path), std::move (delim_tok_tree)),
+    std::move (outer_attrs), macro_locus);
 }
 
 // Parses a macro rule definition - does not parse semicolons.
@@ -9308,11 +9306,10 @@ Parser<ManagedTokenSource>::parse_type (bool save_errors)
 
 	      AST::DelimTokenTree tok_tree = parse_delim_token_tree ();
 
-	      return std::unique_ptr<AST::MacroInvocation> (
-		new AST::MacroInvocation (
-		  AST::MacroInvocData (std::move (macro_path),
-				       std::move (tok_tree)),
-		  {}, locus));
+	      return AST::MacroInvocation::Regular (
+		AST::MacroInvocData (std::move (macro_path),
+				     std::move (tok_tree)),
+		{}, locus);
 	    }
 	    case PLUS: {
 	      // type param bounds
@@ -10146,11 +10143,10 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
 
 	      AST::DelimTokenTree tok_tree = parse_delim_token_tree ();
 
-	      return std::unique_ptr<AST::MacroInvocation> (
-		new AST::MacroInvocation (
-		  AST::MacroInvocData (std::move (macro_path),
-				       std::move (tok_tree)),
-		  {}, locus));
+	      return AST::MacroInvocation::Regular (
+		AST::MacroInvocData (std::move (macro_path),
+				     std::move (tok_tree)),
+		{}, locus);
 	    }
 	  default:
 	    // assume that this is a type path and not an error
@@ -12010,18 +12006,17 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	      {
 		lexer.skip_token ();
 
-		std::unique_ptr<AST::MacroInvocation> stmt (
-		  new AST::MacroInvocation (std::move (invoc_data),
-					    std::move (outer_attrs),
-					    stmt_or_expr_loc, true));
+		auto stmt
+		  = AST::MacroInvocation::Regular (std::move (invoc_data),
+						   std::move (outer_attrs),
+						   stmt_or_expr_loc, true);
 		return ExprOrStmt (std::move (stmt));
 	      }
 
 	    // otherwise, create macro invocation
-	    std::unique_ptr<AST::MacroInvocation> expr (
-	      new AST::MacroInvocation (std::move (invoc_data),
-					std::move (outer_attrs),
-					stmt_or_expr_loc, false));
+	    auto expr = AST::MacroInvocation::Regular (std::move (invoc_data),
+						       std::move (outer_attrs),
+						       stmt_or_expr_loc, false);
 	    return ExprOrStmt (std::move (expr));
 	  }
 	else
@@ -12330,17 +12325,16 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
 	{
 	  lexer.skip_token ();
 
-	  std::unique_ptr<AST::MacroInvocation> stmt (
-	    new AST::MacroInvocation (std::move (invoc_data),
-				      std::move (outer_attrs), macro_locus,
-				      true));
+	  auto stmt = AST::MacroInvocation::Regular (std::move (invoc_data),
+						     std::move (outer_attrs),
+						     macro_locus, true);
 	  return ExprOrStmt (std::move (stmt));
 	}
 
       // otherwise, create macro invocation
-      std::unique_ptr<AST::MacroInvocation> expr (
-	new AST::MacroInvocation (std::move (invoc_data),
-				  std::move (outer_attrs), macro_locus));
+      auto expr
+	= AST::MacroInvocation::Regular (std::move (invoc_data),
+					 std::move (outer_attrs), macro_locus);
       return ExprOrStmt (std::move (expr));
     }
   else
@@ -14552,9 +14546,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_partial (
 
   Location macro_locus = converted_path.get_locus ();
 
-  return std::unique_ptr<AST::MacroInvocation> (new AST::MacroInvocation (
+  return AST::MacroInvocation::Regular (
     AST::MacroInvocData (std::move (converted_path), std::move (tok_tree)),
-    std::move (outer_attrs), macro_locus, restrictions.expr_can_be_stmt));
+    std::move (outer_attrs), macro_locus, restrictions.expr_can_be_stmt);
 }
 
 /* Parses a struct expr struct with a path in expression already parsed (but

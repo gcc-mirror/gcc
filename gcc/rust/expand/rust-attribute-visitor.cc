@@ -389,6 +389,8 @@ AttrVisitor::visit (AST::ConstGenericParam &)
 void
 AttrVisitor::visit (AST::MacroInvocation &macro_invoc)
 {
+  // FIXME: Probably need to check macro_invoc.kind
+
   // initial strip test based on outer attrs
   expander.expand_cfg_attrs (macro_invoc.get_outer_attrs ());
   if (expander.fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
