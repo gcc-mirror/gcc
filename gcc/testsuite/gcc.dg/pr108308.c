@@ -1,5 +1,5 @@
 /* PR target/108308 */
-/* { dg-do run { target { ilp32 || lp64 } } } */
+/* { dg-do run { target int32 } } */
 /* { dg-options "-Os -fno-tree-ccp" } */
 
 int a = 1, *d = &a, f = 2766708631, h;
