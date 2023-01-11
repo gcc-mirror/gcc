@@ -376,6 +376,156 @@ public:
   }
 };
 
+/* Map the function directly to CODE (UNSPEC, M) for vshl-like
+   builtins. The difference with unspec_mve_function_exact_insn is
+   that this function handles MODE_r and the related unspecs..  */
+class unspec_mve_function_exact_insn_vshl : public function_base
+{
+public:
+  CONSTEXPR unspec_mve_function_exact_insn_vshl (int unspec_for_sint,
+						 int unspec_for_uint,
+						 int unspec_for_n_sint,
+						 int unspec_for_n_uint,
+						 int unspec_for_m_sint,
+						 int unspec_for_m_uint,
+						 int unspec_for_m_n_sint,
+						 int unspec_for_m_n_uint,
+						 int unspec_for_m_r_sint,
+						 int unspec_for_m_r_uint,
+						 int unspec_for_r_sint,
+						 int unspec_for_r_uint)
+    : m_unspec_for_sint (unspec_for_sint),
+      m_unspec_for_uint (unspec_for_uint),
+      m_unspec_for_n_sint (unspec_for_n_sint),
+      m_unspec_for_n_uint (unspec_for_n_uint),
+      m_unspec_for_m_sint (unspec_for_m_sint),
+      m_unspec_for_m_uint (unspec_for_m_uint),
+      m_unspec_for_m_n_sint (unspec_for_m_n_sint),
+      m_unspec_for_m_n_uint (unspec_for_m_n_uint),
+      m_unspec_for_m_r_sint (unspec_for_m_r_sint),
+      m_unspec_for_m_r_uint (unspec_for_m_r_uint),
+      m_unspec_for_r_sint (unspec_for_r_sint),
+      m_unspec_for_r_uint (unspec_for_r_uint)
+  {}
+
+  /* The unspec code associated with signed-integer, unsigned-integer
+     and floating-point operations respectively.  It covers the cases
+     with the _n suffix, and/or the _m predicate.  */
+  int m_unspec_for_sint;
+  int m_unspec_for_uint;
+  int m_unspec_for_n_sint;
+  int m_unspec_for_n_uint;
+  int m_unspec_for_m_sint;
+  int m_unspec_for_m_uint;
+  int m_unspec_for_m_n_sint;
+  int m_unspec_for_m_n_uint;
+  int m_unspec_for_m_r_sint;
+  int m_unspec_for_m_r_uint;
+  int m_unspec_for_r_sint;
+  int m_unspec_for_r_uint;
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code code;
+    switch (e.pred)
+      {
+      case PRED_none:
+	switch (e.mode_suffix_id)
+	  {
+	  case MODE_none:
+	    /* No predicate, no suffix.  */
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q (m_unspec_for_uint, m_unspec_for_uint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q (m_unspec_for_sint, m_unspec_for_sint, e.vector_mode (0));
+	    break;
+
+	  case MODE_n:
+	    /* No predicate, _n suffix.  */
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_n (m_unspec_for_n_uint, m_unspec_for_n_uint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_n (m_unspec_for_n_sint, m_unspec_for_n_sint, e.vector_mode (0));
+	    break;
+
+	  case MODE_r:
+	    /* No predicate, _r suffix.  */
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_r (m_unspec_for_r_uint, m_unspec_for_r_uint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_r (m_unspec_for_r_sint, m_unspec_for_r_sint, e.vector_mode (0));
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	  }
+	return e.use_exact_insn (code);
+
+      case PRED_m:
+	switch (e.mode_suffix_id)
+	  {
+	  case MODE_none:
+	    /* No suffix, "m" predicate.  */
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_m (m_unspec_for_m_uint, m_unspec_for_m_uint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_m (m_unspec_for_m_sint, m_unspec_for_m_sint, e.vector_mode (0));
+	    break;
+
+	  case MODE_n:
+	    /* _n suffix, "m" predicate.  */
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_m_n (m_unspec_for_m_n_uint, m_unspec_for_m_n_uint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_m_n (m_unspec_for_m_n_sint, m_unspec_for_m_n_sint, e.vector_mode (0));
+	    break;
+
+	  case MODE_r:
+	    /* _r suffix, "m" predicate.  */
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_m_r (m_unspec_for_m_r_uint, m_unspec_for_m_r_uint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_m_r (m_unspec_for_m_r_sint, m_unspec_for_m_r_sint, e.vector_mode (0));
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	  }
+	return e.use_cond_insn (code, 0);
+
+      case PRED_x:
+	switch (e.mode_suffix_id)
+	  {
+	  case MODE_none:
+	    /* No suffix, "x" predicate.  */
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_m (m_unspec_for_m_uint, m_unspec_for_m_uint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_m (m_unspec_for_m_sint, m_unspec_for_m_sint, e.vector_mode (0));
+	    break;
+
+	  case MODE_n:
+	    /* _n suffix, "x" predicate.  */
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_m_n (m_unspec_for_m_n_uint, m_unspec_for_m_n_uint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_m_n (m_unspec_for_m_n_sint, m_unspec_for_m_n_sint, e.vector_mode (0));
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	  }
+	return e.use_pred_x_insn (code);
+
+      default:
+	gcc_unreachable ();
+      }
+
+    gcc_unreachable ();
+  }
+};
+
 } /* end namespace arm_mve */
 
 /* Declare the global function base NAME, creating it from an instance
