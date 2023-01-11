@@ -15981,15 +15981,12 @@ Max. size of loc list for which reverse ops should be added.
 
 @item fsm-scale-path-stmts
 Scale factor to apply to the number of statements in a threading path
-when comparing to the number of (scaled) blocks.
+crossing a loop backedge when comparing to
+@option{--param=max-jump-thread-duplication-stmts}.
 
 @item uninit-control-dep-attempts
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
-
-@item fsm-scale-path-blocks
-Scale factor to apply to the number of blocks in a threading path
-when comparing to the number of (scaled) statements.
 
 @item sched-autopref-queue-depth
 Hardware autoprefetcher scheduler model control flag.

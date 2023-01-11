@@ -134,13 +134,9 @@ Maximum number of basic blocks before EVRP uses a sparse cache.
 Common Joined UInteger Var(param_evrp_switch_limit) Init(50) Optimization Param
 Maximum number of outgoing edges in a switch before EVRP will not process it.
 
--param=fsm-scale-path-blocks=
-Common Joined UInteger Var(param_fsm_scale_path_blocks) Init(3) IntegerRange(1, 10) Param Optimization
-Scale factor to apply to the number of blocks in a threading path when comparing to the number of (scaled) statements.
-
 -param=fsm-scale-path-stmts=
 Common Joined UInteger Var(param_fsm_scale_path_stmts) Init(2) IntegerRange(1, 10) Param Optimization
-Scale factor to apply to the number of statements in a threading path when comparing to the number of (scaled) blocks.
+Scale factor to apply to the number of statements in a threading path crossing a loop backedge when comparing to max-jump-thread-duplication-stmts.
 
 -param=gcse-after-reload-critical-fraction=
 Common Joined UInteger Var(param_gcse_after_reload_critical_fraction) Init(10) Param Optimization
