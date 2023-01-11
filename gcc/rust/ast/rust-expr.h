@@ -150,6 +150,8 @@ public:
 
   std::string as_string () const override { return lit_expr.as_string (); }
 
+  Location get_locus () const override { return lit_expr.get_locus (); }
+
   void accept_vis (ASTVisitor &vis) override;
 
   bool check_cfg_predicate (const Session &session) const override;
@@ -177,6 +179,12 @@ public:
   {
     return path.as_string () + " = " + lit.as_string ();
   }
+
+  // There are two Locations in MetaItemPathLit (path and lit_expr),
+  //  we have no idea use which of them, just simply return UNKNOWN_LOCATION
+  //  now.
+  // Maybe we will figure out when we really need the location in the future.
+  Location get_locus () const override { return Location (UNKNOWN_LOCATION); }
 
   void accept_vis (ASTVisitor &vis) override;
 
