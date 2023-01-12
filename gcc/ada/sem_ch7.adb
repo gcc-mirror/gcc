@@ -446,7 +446,11 @@ package body Sem_Ch7 is
                   else
                      Decl_Id := Defining_Entity (Decl);
 
+                     --  See the N_Subprogram_Declaration case below
+
                      if not Set_Referencer_Of_Non_Subprograms
+                       and then (not In_Nested_Instance
+                                  or else not Subprogram_Table.Get_First)
                        and then not Subprogram_Table.Get (Decl_Id)
                      then
                         --  We can reset Is_Public right away
