@@ -1650,8 +1650,8 @@ building specialized scripts.
 
   .. _The_Body_Stub_Generator_gnatstub:
 
-  The Body Stub Generator *gnatstub*
-  ==================================
+  The Body Stub Generator ``gnatstub``
+  ====================================
 
   .. index:: ! gnatstub
 
