@@ -1,3 +1,9 @@
+2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105972
+	* c-parser.cc (c_parser_declaration_or_fndef): Disable debug non-bind
+	markers for K&R function parameter declarations of nested functions.
+
 2023-01-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (build_compound_literal): Call record_inline_static.

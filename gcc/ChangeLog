@@ -1,3 +1,77 @@
+2023-01-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/71343
+	* tree-ssa-sccvn.cc (visit_nary_op) <case LSHIFT_EXPR>: Make
+	the value number of the expression X << C the same as the value
+	number for the multiplication X * (1<<C).
+
+2023-01-11  David Faust  <david.faust@oracle.com>
+
+	PR target/108293
+	* config/bpf/bpf.cc (bpf_print_operand): Correct handling for
+	floating point modes.
+
+2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/108199
+	* tree-sra.cc (sra_modify_expr): Deal with reverse storage order
+	for bit-field references.
+
+2023-01-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Make
+	OPTION_MASK_P10_FUSION implicit setting honour Power10 tuning setting.
+	* config/rs6000/rs6000-cpus.def (ISA_3_1_MASKS_SERVER): Remove
+	OPTION_MASK_P10_FUSION.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107767
+	* tree-cfgcleanup.cc (phi_alternatives_equal): Export.
+	* tree-cfgcleanup.h (phi_alternatives_equal): Declare.
+	* tree-switch-conversion.cc (switch_conversion::collect):
+	Count unique non-default targets accounting for later
+	merging opportunities.
+
+2023-01-11  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/107976
+	* params.opt: Limit JT params.
+	* stmt.cc (emit_case_dispatch_table): Use auto_vec.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108352
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): Adjust
+	heuristic that allows non-multi-way branch threads creating
+	irreducible loops.
+	* doc/invoke.texi (--param fsm-scale-path-blocks): Remove.
+	(--param fsm-scale-path-stmts): Adjust.
+	* params.opt (--param=fsm-scale-path-blocks=): Remove.
+	(-param=fsm-scale-path-stmts=): Adjust description.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108353
+	* tree-ssa-propagate.cc (cfg_blocks_back, ssa_edge_worklist_back):
+	Remove.
+	(add_ssa_edge): Simplify.
+	(add_control_edge): Likewise.
+	(ssa_prop_init): Likewise.
+	(ssa_prop_fini): Likewise.
+	(ssa_propagation_engine::ssa_propagate): Likewise.
+
+2023-01-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md (*not<mode>): New pattern.
+
+2023-01-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_insn_cost):
+	Let insn cost for size be obtained by applying COSTS_N_INSNS()
+	to instruction length and then dividing by 3.
+
 2023-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/106293

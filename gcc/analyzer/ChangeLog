@@ -1,3 +1,17 @@
+2023-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108252
+	* kf.cc (class kf_strdup): New.
+	(class kf_strndup): New.
+	(register_known_functions): Register them.
+	* region-model.cc (region_model::on_call_pre): Use
+	&HEAP_ALLOCATED_REGION for the default result of an external
+	function with the "malloc" attribute, rather than CONJURED_SVALUE.
+	(region_model::get_or_create_region_for_heap_alloc): Allow
+	"size_in_bytes" to be NULL.
+	* store.cc (store::set_value): When handling *UNKNOWN = VAL,
+	mark VAL as "maybe bound".
+
 2022-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106479

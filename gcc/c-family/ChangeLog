@@ -1,3 +1,10 @@
+2023-01-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/108244
+	* c-pragma.cc (c_register_pragma_1): Don't attempt to register any
+	deferred pragmas if -fdirectives-only.
+	(init_pragma): Likewise.
+
 2023-01-09  Martin Liska  <mliska@suse.cz>
 
 	PR c/107993

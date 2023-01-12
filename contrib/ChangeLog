@@ -1,3 +1,8 @@
+2023-01-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config-list.mk: Remove i486-freebsd4, ia64-freebsd6, and
+	sparc64-freebsd6.
+
 2023-01-06  Martin Liska  <mliska@suse.cz>
 
 	* update-copyright.py: Add contrib as a default dir.

@@ -1,3 +1,77 @@
+2023-01-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-c++-common/cpp/pr108244-1.c: New test.
+	* c-c++-common/cpp/pr108244-2.c: New test.
+	* c-c++-common/gomp/pr108244-3.c: New test.
+
+2023-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108252
+	* gcc.dg/analyzer/attr-malloc-pr108252.c: New test.
+	* gcc.dg/analyzer/fd-leak-pr108252.c: New test.
+	* gcc.dg/analyzer/flex-with-call-summaries.c: Remove xfail from
+	warning false +ve directives.
+	* gcc.dg/analyzer/pr103217-2.c: Add -Wno-analyzer-too-complex.
+	* gcc.dg/analyzer/pr103217-3.c: Likewise.
+	* gcc.dg/analyzer/strdup-pr108252.c: New test.
+	* gcc.dg/analyzer/strndup-pr108252.c: New test.
+
+2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105972
+	* gcc.dg/pr105972.c: New test.
+
+2023-01-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/71343
+	* gcc.dg/pr71343-2.c: New test case.
+
+2023-01-11  David Faust  <david.faust@oracle.com>
+
+	PR target/108293
+	* gcc.target/bpf/double-1.c: New test.
+	* gcc.target/bpf/double-2.c: New test.
+	* gcc.target/bpf/float-1.c: New test.
+
+2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-17.c: New test.
+
+2023-01-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp: Exit immediately if
+	the testing target isn't a PowerPC target.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107767
+	* gcc.dg/tree-ssa/pr107767.c: New testcase.
+
+2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108308
+	* gcc.dg/pr108308.c: Use int32 target rather than { ilp32 || lp64 }.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108352
+	* gcc.dg/tree-ssa/ssa-thread-21.c: New testcase.
+	* gcc.dg/tree-ssa/vrp46.c: Remove --param fsm-scale-path-blocks=1.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108353
+	* gcc.dg/tree-ssa/ssa-copyprop-3.c: New testcase.
+
+2023-01-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/not.c: New test.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106293
+	* gcc.dg/tree-ssa/ssa-dse-46.c: Remove long initializer.
+
 2023-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/106293
