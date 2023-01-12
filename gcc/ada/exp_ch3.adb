@@ -7181,11 +7181,13 @@ package body Exp_Ch3 is
 
             Alloc_Expr := New_Copy_Tree (Expr);
 
+            --  In the constrained array case, deal with a potential sliding.
             --  In the interface case, put back a conversion that we may have
-            --  remove earlier in the processing.
+            --  removed earlier in the processing.
 
-            if Is_Interface (Typ)
-              and then Is_Class_Wide_Type (Etype (Alloc_Expr))
+            if (Ekind (Typ) = E_Array_Subtype
+                 or else (Is_Interface (Typ)
+                           and then Is_Class_Wide_Type (Etype (Alloc_Expr))))
               and then Typ /= Etype (Alloc_Expr)
             then
                Alloc_Expr := Convert_To (Typ, Alloc_Expr);
