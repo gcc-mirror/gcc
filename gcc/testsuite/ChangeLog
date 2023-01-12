@@ -1,3 +1,7 @@
+2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-17.c: New test.
+
 2023-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	Backported from master:
