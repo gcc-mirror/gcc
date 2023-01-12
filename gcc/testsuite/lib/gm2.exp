@@ -22,7 +22,7 @@ load_lib libgloss.exp
 load_lib prune.exp
 load_lib gcc-defs.exp
 load_lib target-libpath.exp
-
+load_lib timeout.exp
 
 #
 # GCC_UNDER_TEST is the compiler under test.
@@ -183,9 +183,7 @@ proc gm2_target_compile_default { source dest type options } {
     if [info exists TOOL_OPTIONS] {
 	lappend options "additional_flags=$TOOL_OPTIONS"
     }
-    if [target_info exists gcc,timeout] {
-	lappend options "timeout=[target_info gcc,timeout]"
-    }
+    lappend options "timeout=[timeout_value]"
     lappend options "compiler=$GCC_UNDER_TEST"
     # puts stderr "options = $options\n"
     # puts stderr "***** target_compile: $source $dest $type $options\n"
