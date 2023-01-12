@@ -38,6 +38,7 @@
 #else
 
 #include <bits/chrono.h>
+#include <bits/error_constants.h>
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #include <bits/alloc_traits.h>
@@ -372,7 +373,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
         {
           return __p();
         }
- 
+
       std::stop_callback __cb(__stoken, [this] { notify_all(); });
       shared_ptr<mutex> __mutex = _M_mutex;
       while (!__p())

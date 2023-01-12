@@ -36,7 +36,6 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <system_error>
 #include <bits/functexcept.h>
 #include <bits/gthr.h>
 
