@@ -533,5 +533,6 @@ proc gm2_init_minx { dialect {path ""} args } {
 #
 
 proc gm2_init_min { {path ""} args } {
+    append args " -fno-exceptions"
     gm2_init_minx -fpim {*}${path} {*}${args};
 }
