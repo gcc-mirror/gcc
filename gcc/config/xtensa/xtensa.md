@@ -1679,7 +1679,7 @@
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
 			[(match_operand:SI 0 "register_operand" "r,r")
-			 (match_operand:SI 1 "branch_operand" "K,r")])
+			 (match_operand:SI 1 "branch_operand" "K,?r")])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
@@ -1688,7 +1688,14 @@
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
-   (set_attr "length"	"3,3")])
+   (set (attr "length")
+        (if_then_else (match_test "TARGET_DENSITY
+				   && CONST_INT_P (operands[1])
+				   && INTVAL (operands[1]) == 0
+				   && (GET_CODE (operands[3]) == EQ
+				       || GET_CODE (operands[3]) == NE)")
+                      (const_int 2)
+                      (const_int 3)))])
 
 (define_insn "*ubtrue"
   [(set (pc)
