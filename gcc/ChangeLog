@@ -1,3 +1,18 @@
+2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/108199
+	* tree-sra.cc (sra_modify_expr): Deal with reverse storage order
+	for bit-field references.
+
+2023-01-11  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-12-28  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/108137
+	* tree-ssa-strlen.cc (get_range_strlen_phi): Reject anything
+	different from INTEGER_CST.
+
 2023-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	Backported from master:
