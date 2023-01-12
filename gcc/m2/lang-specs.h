@@ -33,6 +33,6 @@ along with GCC; see the file COPYING3.  If not see
       "cc1gm2 " M2CPP
       "      %(cc1_options) %{B*} %{c*} %{f*} %{+e*} %{I*} "
       "      %{MD} %{MMD} %{M} %{MM} %{MA} %{MT*} %{MF*} %V"
-      "      %{save-temps*}"
+      "      %{save-temps*} %{v} "
       "      %i %{!fsyntax-only:%(invoke_as)}",
       0, 0, 0},
