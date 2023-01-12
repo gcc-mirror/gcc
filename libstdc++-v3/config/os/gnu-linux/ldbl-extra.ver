@@ -45,6 +45,10 @@ GLIBCXX_LDBL_3.4.29 {
   _ZSt8to_charsPcS_g*;
 } GLIBCXX_LDBL_3.4.21;
 
+GLIBCXX_LDBL_3.4.31 {
+  _ZSt15__try_use_facetINSt17__gnu_cxx_ldbl128[789]*;
+} GLIBCXX_LDBL_3.4.29;
+
 CXXABI_LDBL_1.3 {
   _ZT[IS]g;
   _ZT[IS]Pg;
