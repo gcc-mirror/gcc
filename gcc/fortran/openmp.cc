@@ -6911,9 +6911,11 @@ void
 gfc_resolve_omp_assumptions (gfc_omp_assumptions *assume)
 {
   for (gfc_expr_list *el = assume->holds; el; el = el->next)
-    if (!gfc_resolve_expr (el->expr) || el->expr->ts.type != BT_LOGICAL)
-	gfc_error ("HOLDS expression at %L must be a logical expression",
-		   &el->expr->where);
+    if (!gfc_resolve_expr (el->expr)
+	|| el->expr->ts.type != BT_LOGICAL
+	|| el->expr->rank != 0)
+      gfc_error ("HOLDS expression at %L must be a scalar logical expression",
+		 &el->expr->where);
 }
 
 
