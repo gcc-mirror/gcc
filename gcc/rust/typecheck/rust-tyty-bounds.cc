@@ -364,6 +364,30 @@ TypeBoundPredicate::lookup_associated_item (const std::string &search) const
   return TypeBoundPredicateItem (this, trait_item_ref);
 }
 
+TypeBoundPredicateItem::TypeBoundPredicateItem (
+  const TypeBoundPredicate *parent,
+  const Resolver::TraitItemReference *trait_item_ref)
+  : parent (parent), trait_item_ref (trait_item_ref)
+{}
+
+TypeBoundPredicateItem
+TypeBoundPredicateItem::error ()
+{
+  return TypeBoundPredicateItem (nullptr, nullptr);
+}
+
+bool
+TypeBoundPredicateItem::is_error () const
+{
+  return parent == nullptr || trait_item_ref == nullptr;
+}
+
+const TypeBoundPredicate *
+TypeBoundPredicateItem::get_parent () const
+{
+  return parent;
+}
+
 TypeBoundPredicateItem
 TypeBoundPredicate::lookup_associated_item (
   const Resolver::TraitItemReference *ref) const

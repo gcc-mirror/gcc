@@ -82,19 +82,11 @@ class TypeBoundPredicateItem
 {
 public:
   TypeBoundPredicateItem (const TypeBoundPredicate *parent,
-			  const Resolver::TraitItemReference *trait_item_ref)
-    : parent (parent), trait_item_ref (trait_item_ref)
-  {}
+			  const Resolver::TraitItemReference *trait_item_ref);
 
-  static TypeBoundPredicateItem error ()
-  {
-    return TypeBoundPredicateItem (nullptr, nullptr);
-  }
+  static TypeBoundPredicateItem error ();
 
-  bool is_error () const
-  {
-    return parent == nullptr || trait_item_ref == nullptr;
-  }
+  bool is_error () const;
 
   BaseType *get_tyty_for_receiver (const TyTy::BaseType *receiver);
 
@@ -102,7 +94,7 @@ public:
 
   bool needs_implementation () const;
 
-  const TypeBoundPredicate *get_parent () const { return parent; }
+  const TypeBoundPredicate *get_parent () const;
 
   Location get_locus () const;
 
