@@ -477,8 +477,8 @@
   emit_insn (gen_negsi2 (temp, operands[1]));
   emit_insn (gen_andsi3 (temp, temp, operands[1]));
   emit_insn (gen_clzsi2 (temp, temp));
-  emit_insn (gen_negsi2 (temp, temp));
-  emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (31)));
+  emit_move_insn (operands[0], GEN_INT (31));
+  emit_insn (gen_subsi3 (operands[0], operands[0], temp));
   DONE;
 })
 
@@ -491,8 +491,8 @@
   emit_insn (gen_negsi2 (temp, operands[1]));
   emit_insn (gen_andsi3 (temp, temp, operands[1]));
   emit_insn (gen_clzsi2 (temp, temp));
-  emit_insn (gen_negsi2 (temp, temp));
-  emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (32)));
+  emit_move_insn (operands[0], GEN_INT (32));
+  emit_insn (gen_subsi3 (operands[0], operands[0], temp));
   DONE;
 })
 
