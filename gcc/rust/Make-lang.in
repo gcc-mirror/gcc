@@ -115,6 +115,7 @@ GRS_OBJS = \
     rust/rust-pub-restricted-visitor.o \
     rust/rust-privacy-reporter.o \
     rust/rust-tyty.o \
+    rust/rust-tyty-util.o \
     rust/rust-tyty-call.o \
     rust/rust-tyctx.o \
     rust/rust-tyty-bounds.o \

@@ -25,6 +25,8 @@
 #include "rust-abi.h"
 #include "rust-common.h"
 #include "rust-identifier.h"
+#include "rust-tyty-bounds.h"
+#include "rust-tyty-util.h"
 
 namespace Rust {
 
@@ -74,57 +76,6 @@ class TypeKindFormat
 {
 public:
   static std::string to_string (TypeKind kind);
-};
-
-class BaseType;
-class TypeBoundPredicate;
-class TypeBoundPredicateItem
-{
-public:
-  TypeBoundPredicateItem (const TypeBoundPredicate *parent,
-			  const Resolver::TraitItemReference *trait_item_ref);
-
-  static TypeBoundPredicateItem error ();
-
-  bool is_error () const;
-
-  BaseType *get_tyty_for_receiver (const TyTy::BaseType *receiver);
-
-  const Resolver::TraitItemReference *get_raw_item () const;
-
-  bool needs_implementation () const;
-
-  const TypeBoundPredicate *get_parent () const;
-
-  Location get_locus () const;
-
-private:
-  const TypeBoundPredicate *parent;
-  const Resolver::TraitItemReference *trait_item_ref;
-};
-
-class TypeBoundsMappings
-{
-protected:
-  TypeBoundsMappings (std::vector<TypeBoundPredicate> specified_bounds);
-
-public:
-  std::vector<TypeBoundPredicate> &get_specified_bounds ();
-
-  const std::vector<TypeBoundPredicate> &get_specified_bounds () const;
-
-  size_t num_specified_bounds () const;
-
-  std::string raw_bounds_as_string () const;
-
-  std::string bounds_as_string () const;
-
-  std::string raw_bounds_as_name () const;
-
-protected:
-  void add_bound (TypeBoundPredicate predicate);
-
-  std::vector<TypeBoundPredicate> specified_bounds;
 };
 
 extern void
@@ -266,43 +217,6 @@ protected:
   RustIdent ident;
 
   Analysis::Mappings *mappings;
-};
-
-// this is a placeholder for types that can change like inference variables
-class TyVar
-{
-public:
-  explicit TyVar (HirId ref);
-
-  HirId get_ref () const { return ref; }
-
-  BaseType *get_tyty () const;
-
-  TyVar clone () const;
-
-  TyVar monomorphized_clone () const;
-
-  static TyVar get_implicit_infer_var (Location locus);
-
-  static TyVar subst_covariant_var (TyTy::BaseType *orig,
-				    TyTy::BaseType *subst);
-
-private:
-  HirId ref;
-};
-
-class TyWithLocation
-{
-public:
-  explicit TyWithLocation (BaseType *ty, Location locus);
-  explicit TyWithLocation (BaseType *ty);
-
-  BaseType *get_ty () const { return ty; }
-  Location get_locus () const { return locus; }
-
-private:
-  BaseType *ty;
-  Location locus;
 };
 
 class InferType : public BaseType
