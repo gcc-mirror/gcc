@@ -273,6 +273,7 @@ compatible.
     <listitem><para>GCC 9.3.0: libstdc++.so.6.0.28</para></listitem>
     <listitem><para>GCC 10.1.0: libstdc++.so.6.0.28</para></listitem>
     <listitem><para>GCC 11.1.0: libstdc++.so.6.0.29</para></listitem>
+    <listitem><para>GCC 12.1.0: libstdc++.so.6.0.30</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
