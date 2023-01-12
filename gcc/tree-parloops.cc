@@ -3228,6 +3228,9 @@ build_new_reduction (reduction_info_table_type *reduction_list,
   /* Check for OpenMP supported reduction.  */
   switch (reduction_code)
     {
+    case MINUS_EXPR:
+      reduction_code = PLUS_EXPR;
+      /* Fallthru.  */
     case PLUS_EXPR:
     case MULT_EXPR:
     case MAX_EXPR:
