@@ -273,6 +273,8 @@ compatible.
     <listitem><para>GCC 9.3.0: libstdc++.so.6.0.28</para></listitem>
     <listitem><para>GCC 10.1.0: libstdc++.so.6.0.28</para></listitem>
     <listitem><para>GCC 11.1.0: libstdc++.so.6.0.29</para></listitem>
+    <listitem><para>GCC 12.1.0: libstdc++.so.6.0.30</para></listitem>
+    <listitem><para>GCC 13.1.0: libstdc++.so.6.0.31</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -349,7 +351,7 @@ compatible.
     <listitem><para>GCC 10.1.0: GLIBCXX_3.4.28, CXXABI_1.3.12</para></listitem>
     <listitem><para>GCC 11.1.0: GLIBCXX_3.4.29, CXXABI_1.3.13</para></listitem>
     <listitem><para>GCC 12.1.0: GLIBCXX_3.4.30, CXXABI_1.3.13</para></listitem>
-    <listitem><para>GCC 13.1.0: GLIBCXX_3.4.31, CXXABI_1.3.13</para></listitem>
+    <listitem><para>GCC 13.1.0: GLIBCXX_3.4.31, CXXABI_1.3.14</para></listitem>
 
     </itemizedlist>
     </listitem>
