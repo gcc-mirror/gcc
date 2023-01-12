@@ -27,6 +27,7 @@
 #include "rust-hir-type-check.h"
 #include "rust-privacy-check.h"
 #include "rust-const-checker.h"
+#include "rust-feature-gate.h"
 #include "rust-tycheck-dump.h"
 #include "rust-compile.h"
 #include "rust-cfg-parser.h"
@@ -557,6 +558,9 @@ Session::compile_crate (const char *filename)
       dump_ast_pretty (parsed_crate, true);
       rust_debug ("END POST-EXPANSION AST DUMP");
     }
+
+  // feature gating
+  FeatureGate ().check (parsed_crate);
 
   if (last_step == CompileOptions::CompileStep::NameResolution)
     return;
