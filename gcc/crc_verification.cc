@@ -548,6 +548,9 @@ crc_symbolic_execution::execute_bb_gimple_statements (basic_block bb,
 		return false;
 	      return true;
 	    }
+	    /* Just skip debug statements.  */
+	  case GIMPLE_DEBUG:
+	    break;
 	  default:
 	    {
 	      if (dump_file)
@@ -817,7 +820,8 @@ crc_symbolic_execution::execute_crc_loop (class loop *crc_loop, gphi *crc,
   if (states.length () != 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "The number of states is not one.\n");
+	fprintf (dump_file, "The number of states is not one when executed "
+			    "the loop for calculating the polynomial.\n");
       return false;
     }
   return true;

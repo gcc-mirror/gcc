@@ -1955,6 +1955,7 @@ last_set_bit (const value &polynomial)
       if (as_a<bit *> (polynomial[polynomial.length () - i - 1])->get_val ())
 	return polynomial.length () - i - 1;
     }
+    return 0;
 }
 
 /* Create LFSR value for the reversed CRC.  */
@@ -1966,6 +1967,8 @@ state::create_reversed_lfsr (value &lfsr, const value &crc,
   /* Get the minimal byte size to keep the polynomial.
      Ie, if the last 1 bit of the polynomial is at 6 index, size will be 8.  */
   size_t size = ((last_set_bit (polynomial)/8) + 1) * 8;
+  if (size == 0)
+    return;
 
   /* Determine values of all bits, except MSB.  */
   for (size_t i = 0; i < size - 1; i++)
@@ -1990,7 +1993,9 @@ void
 state::create_forward_lfsr (value &lfsr, const value &crc,
 			    const value &polynomial)
 {
-  size_t size = crc.length ();
+  size_t size = ((last_set_bit (polynomial)/8) + 1) * 8;
+  if (size == 0)
+    return;
 
   /* Determine value of LSB.  */
   if (as_a<bit *> (polynomial[0])->get_val ())

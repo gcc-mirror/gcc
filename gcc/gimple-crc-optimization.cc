@@ -92,29 +92,34 @@ class crc_optimization {
   }
 
   /* This is the main function which checks whether given function
-    calculates CRC and extracts the details of the CRC calculation.
-   The main idea is to find innermost loop with 8, 16, 24, 32 iterations.
-   Find xor in the loop (xor is the key operation for naive crc calculation).
-   Check that before/after being xor-ed the variable is shifted by one.
-   Xor must be done under condition of MSB/LSB being 1.  */
+     calculates CRC and extracts the details of the CRC calculation.
+     The main idea is to find innermost loop with 8, 16, 24, 32 iterations.
+     Find xor in the loop (xor is the key operation for naive crc calculation).
+     Check that before/after being xor-ed the variable is shifted by one.
+     Xor must be done under condition of MSB/LSB being 1.  */
   bool function_may_calculate_crc (function *fun);
 
   /* Checks the loop iteration number.
-   The loop for CRC calculation may do 8, 16, 24, 32 iterations.  */
+     The loop for CRC calculation may do 8, 16, 24, 32 iterations.  */
   bool maybe_crc_iteration_count (class loop *func_loop);
 
+  /* Finds and returns the block of a condition which is the destination
+     block of the block containing the check of MSB/LSB being 1.
+     If the block is found returns it, else returns nullptr.  */
+  basic_block find_block_of_internal_condition (basic_block xor_bb);
+
   /* Check whether found xor_stmt is for calculating crc.
-   The function crc_fun calculates crc only if there is a shift operation
-   in the crc_loop.  */
+     The function crc_fun calculates crc only if there is a shift operation
+     in the crc_loop.  */
   bool xor_calculates_crc (function *crc_fun, class loop *crc_loop,
 			   const gimple *stmt);
 
   /* This function goes up through the def-chain of the name,
-   until doesn't encounter a phi statement or
-   if it does not meet certain conditions
-   depending on the passed continue_to_check_dep function.
-   The continue_to_check_dep may be the check_def_stmt_for_xor
-   or check_def_stmt_for_if function.  */
+     until doesn't encounter a phi statement or
+     if it does not meet certain conditions
+     depending on the passed continue_to_check_dep function.
+     The continue_to_check_dep may be the check_def_stmt_for_xor
+     or check_def_stmt_for_if function.  */
   void
   get_dep (tree name,
 	   bool (crc_optimization::*continue_to_check_dep) (gimple *stmt));
@@ -135,14 +140,14 @@ class crc_optimization {
   bool continue_to_check_dep_for_if (gimple *stmt);
 
   /* This function checks that xor is done under the condition
-   of MSB/LSB being one.
-   Checks that if condition's variable and xor-ed variable
-   depend on same variable and if there is a shift 1 in the same block with xor,
-   on the opposite branch must be another shift 1 to the same direction.
-   xor_bb is the basic block, where xor operation is done.
-   pred_bb is the predecessor basic block of the xor_bb,
-   it is assumed that the last stmt of pred_bb checks the condition
-   under which xor is done.  */
+     of MSB/LSB being one.
+     Checks that if condition's variable and xor-ed variable
+     depend on same variable and if there is a shift 1 in the same block with
+     xor, on the opposite branch must be another shift 1 to the same direction.
+     xor_bb is the basic block, where xor operation is done.
+     pred_bb is the predecessor basic block of the xor_bb,
+     it is assumed that the last stmt of pred_bb checks the condition
+     under which xor is done.  */
   bool
   crc_cond_and_shift (const basic_block &pred_bb, const basic_block &xor_bb);
 
@@ -161,6 +166,12 @@ class crc_optimization {
      otherwise the loop isn't calculating CRC.  */
   void find_shift_after_xor (class loop *crc_loop, tree lhs);
 
+  /* Checks whether assigment statement does shift operation
+     (checks that shift 1 is done),
+     if it doesn't - checks whether it is acceptable operation
+     to be between shift and xor.
+     find_shift_before_xor argument is for checking whether we search for shift
+     before xor or after.  */
   bool can_not_be_shift_of_crc (gimple *assign_stmt,
 				bool find_shift_before_xor);
 
@@ -213,6 +224,7 @@ set_loop_statements_not_visited (class loop *loop)
 	  gimple_set_visited (stmt, false);
 	}
     }
+  free (bbs);
 }
 
 
@@ -761,6 +773,47 @@ crc_optimization::continue_to_check_dep_for_if (gimple *def_stmt)
   return true;
 }
 
+/* In the case when xor's block doesn't have single predecessor,
+   we need to check whether it's parent blocks have single predecessor,
+   and it's the same block for both predecessor blocks.
+   If it is, most probably that block's predecessor may contain the check
+   for MSB/LSB being one.
+
+   This function searches the block of a condition which is the destination
+   block of the block containing the check of MSB/LSB being 1.
+   If the block is found returns it, else returns nullptr.
+
+   Here we can detect implementations like the following:
+   if ((crc & 0x80) != 0)
+   {
+     crc = (byte)(crc << 1);
+     crc = ((byte)(b & (1 << i)) != 0) //block_of_internal_condition
+	   ? (byte)(crc | 0x01) : (byte)(crc & 0xFE);
+     crc = (byte)(crc ^ generator);
+   }
+   else
+   {
+     crc = (byte)(crc << 1);
+     crc = ((byte)(b & (1 << i)) != 0)
+	   ? (byte)(crc | 0x01) : (byte)(crc & 0xFE);
+   }
+*/
+
+basic_block
+crc_optimization::find_block_of_internal_condition (basic_block xor_bb)
+{
+  basic_block parent_bb = EDGE_PRED (xor_bb, 0)->src;
+  basic_block block_of_internal_condition = EDGE_PRED (parent_bb, 0)->src;
+
+  for (size_t i = 1; i < EDGE_COUNT (xor_bb->preds); ++i)
+    {
+      edge e = EDGE_PRED (xor_bb, i);
+      if (!(single_pred_p (e->src)
+      && EDGE_PRED (e->src, 0)->src == block_of_internal_condition))
+	return nullptr;
+    }
+    return block_of_internal_condition;
+}
 
 /* Check whether found xor_stmt is for calculating crc.
    The function crc_fun calculates crc only if there is a shift operation
@@ -804,37 +857,43 @@ crc_optimization::xor_calculates_crc (function *crc_fun, class loop *crc_loop,
      check for its pair in another branch.
      If all checks succeed, then it is a crc.  */
   basic_block bb = gimple_bb (xor_stmt);
-  if (single_pred_p (bb))
+  if (!single_pred_p (bb))
     {
-      if (crc_cond_and_shift (single_pred (bb), bb))
+      bb = find_block_of_internal_condition (bb);
+      if (!bb || !single_pred_p (bb))
 	{
-	  set_all_statements_not_visited (crc_fun);
-	  bool crc_is_returned = returned_value_depends_on_crc (crc_var);
 	  if (dump_file)
-	    {
-	      if (crc_is_returned)
-		{
-		  fprintf (dump_file,
-			   "\n%s function maybe calculates CRC "
-			   "and returns it.\n",
-			   function_name (crc_fun));
-		}
-	      else
-		{
-		  fprintf (dump_file,
-			   "\n%s function maybe calculates CRC.\n",
-			   function_name (crc_fun));
-		}
-	    }
-	  return true;
+	    fprintf (dump_file,
+		     "Xor bb doesn't have single predecessor.\n");
+	  return false;
 	}
     }
-  else
+
+  basic_block block_of_condition = single_pred (bb);
+
+  if (crc_cond_and_shift (block_of_condition, bb))
     {
+      set_all_statements_not_visited (crc_fun);
+      bool crc_is_returned = returned_value_depends_on_crc (crc_var);
       if (dump_file)
-	fprintf (dump_file,
-		 "Xor bb doesn't have single predecessor.\n");
+	{
+	  if (crc_is_returned)
+	    {
+	      fprintf (dump_file,
+		       "\n%s function maybe calculates CRC "
+		       "and returns it.\n",
+		       function_name (crc_fun));
+	    }
+	  else
+	    {
+	      fprintf (dump_file,
+		       "\n%s function maybe calculates CRC.\n",
+		       function_name (crc_fun));
+	    }
+	}
+      return true;
     }
+
   return false;
 }
 
@@ -924,11 +983,13 @@ crc_optimization::function_may_calculate_crc (function *fun)
 		    {
 		      set_return_value_size (fun);
 		      print_crc_information ();
+		      free (bbs);
 		      return true;
 		    }
 		}
 	    }
 	}
+      free (bbs);
     }
   return false;
 }
