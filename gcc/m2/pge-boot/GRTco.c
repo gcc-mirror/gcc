@@ -110,6 +110,7 @@ RTco_select (__attribute__ ((unused)) int p1,
 	     __attribute__ ((unused)) void *p4,
 	     __attribute__ ((unused)) void *p5)
 {
+  return 0;
 }
 
 
