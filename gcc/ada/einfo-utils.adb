@@ -3219,11 +3219,7 @@ package body Einfo.Utils is
 
    procedure Proc_Next_Component_Or_Discriminant (N : in out Node_Id) is
    begin
-      N := Next_Entity (N);
-      while Present (N) loop
-         exit when Ekind (N) in E_Component | E_Discriminant;
-         N := Next_Entity (N);
-      end loop;
+      N := Next_Component_Or_Discriminant (N);
    end Proc_Next_Component_Or_Discriminant;
 
    procedure Proc_Next_Discriminant              (N : in out Node_Id) is
