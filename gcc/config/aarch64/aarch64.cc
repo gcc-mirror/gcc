@@ -15348,7 +15348,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   if (!new_stmt)
     return false;
 
-  gsi_replace (gsi, new_stmt, true);
+  gsi_replace (gsi, new_stmt, false);
   return true;
 }
 
