@@ -6266,7 +6266,10 @@ thread_prologue_and_epilogue_insns (void)
 
   /* Threading the prologue and epilogue changes the artificial refs in the
      entry and exit blocks, and may invalidate DF info for tail calls.  */
-  if (optimize)
+  if (optimize
+      || flag_optimize_sibling_calls
+      || flag_ipa_icf_functions
+      || in_lto_p)
     df_update_entry_exit_and_calls ();
   else
     {
