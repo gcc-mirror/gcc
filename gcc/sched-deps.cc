@@ -3688,7 +3688,14 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
 
       CANT_MOVE (insn) = 1;
 
-      if (find_reg_note (insn, REG_SETJMP, NULL))
+      if (!reload_completed)
+	{
+	  /* Scheduling across calls may increase register pressure by extending
+	     live ranges of pseudos over the call.  Worse, in presence of setjmp
+	     it may incorrectly move up an assignment over a longjmp.  */
+	  reg_pending_barrier = MOVE_BARRIER;
+	}
+      else if (find_reg_note (insn, REG_SETJMP, NULL))
         {
           /* This is setjmp.  Assume that all registers, not just
              hard registers, may be clobbered by this call.  */
