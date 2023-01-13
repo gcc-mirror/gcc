@@ -1347,11 +1347,12 @@ package Einfo is
 
 --    First_Entity
 --       Defined in all entities that act as scopes to which a list of
---       associated entities is attached. This is defined in all [sub]types,
---       including things like scalars that cannot have nested entities,
---       which makes it more convenient to Mutate_Entity between type kinds.
---       Points to a list of associated entities using the Next_Entity field
---       as a chain pointer with Empty marking the end of the list.
+--       associated entities is attached, and also in all [sub]types. Some
+--       entities are both; for example E_Record_Type acts as a scope and
+--       is a type. [Sub]types that do not act as scopes (e.g. scalars) are
+--       included to make it more convenient to Mutate_Entity between type
+--       kinds. Points to a list of associated entities linked through the
+--       Next_Entity field with Empty marking end-of-list.
 --       See also Last_Entity.
 
 --    First_Exit_Statement
