@@ -22168,6 +22168,10 @@ floating-point instructions on @samp{cortex-m55}.
 Disable the M-Profile Vector Extension (MVE) single precision floating-point
 instructions on @samp{cortex-m55}.
 
+@item +cdecp0, +cdecp1, ... , +cdecp7
+Enable the Custom Datapath Extension (CDE) on selected coprocessors according
+to the numbers given in the options in the range 0 to 7 on @samp{cortex-m55}.
+
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},
