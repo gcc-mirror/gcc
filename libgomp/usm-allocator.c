@@ -57,7 +57,8 @@ static int usm_lock = 0;
 static struct usm_splay_tree_s usm_allocations = { NULL };
 static struct usm_splay_tree_s usm_free_space = { NULL };
 
-#define ALIGN(VAR) (((VAR) + 7) & ~7)    /* 8-byte granularity.  */
+/* 128-byte granularity means GPU cache-line aligned.  */
+#define ALIGN(VAR) (((VAR) + 127) & ~127)
 
 /* Coalesce contiguous free space into one entry.  This considers the entries
    either side of the root node only, so it should be called each time a new
