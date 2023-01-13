@@ -368,9 +368,7 @@ package Einfo.Utils is
    -- Iterators --
    ---------------
 
-   --  The call to Next_xxx (obj) is equivalent to obj := Next_xxx (obj)
-   --  We define the set of Proc_Next_xxx routines simply for the purposes
-   --  of inlining them without necessarily inlining the function.
+   --  Next_xxx (obj) is equivalent to obj := Next_xxx (obj)
 
    procedure Next_Component                 (N : in out Node_Id) with Inline;
    procedure Next_Component_Or_Discriminant (N : in out Node_Id) with Inline;
