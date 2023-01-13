@@ -2673,7 +2673,8 @@ template <typename _Tp, size_t _Width>
 	  else
 	    __execute_n_times<_Width>(
 	      [&](auto __i) { __r &= _M_data[__i.value] == _Tp(); });
-	  return __r;
+	  if (__builtin_constant_p(__r))
+	    return __r;
 	}
       return false;
     }
@@ -2693,7 +2694,8 @@ template <typename _Tp, size_t _Width>
 	  else
 	    __execute_n_times<_Width>(
 	      [&](auto __i) { __r &= _M_data[__i.value] == ~_Tp(); });
-	  return __r;
+	  if (__builtin_constant_p(__r))
+	    return __r;
 	}
       return false;
     }
