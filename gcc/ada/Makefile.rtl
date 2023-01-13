@@ -2185,6 +2185,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
       EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
     endif
   else
+    LIBGNAT_TARGET_PAIRS += s-atopri.ads<libgnat/s-atopri__32.ads
     ifeq ($(strip $(MULTISUBDIR)),/64)
       LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
       EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
