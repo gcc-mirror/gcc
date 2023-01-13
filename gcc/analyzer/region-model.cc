@@ -4341,6 +4341,72 @@ region_model::apply_constraints_for_gcond (const cfg_superedge &sedge,
   return add_constraint (lhs, op, rhs, ctxt, out);
 }
 
+/* Return true iff SWITCH_STMT has a non-default label that contains
+   INT_CST.  */
+
+static bool
+has_nondefault_case_for_value_p (const gswitch *switch_stmt, tree int_cst)
+{
+  /* We expect the initial label to be the default; skip it.  */
+  gcc_assert (CASE_LOW (gimple_switch_label (switch_stmt, 0)) == NULL);
+  unsigned min_idx = 1;
+  unsigned max_idx = gimple_switch_num_labels (switch_stmt) - 1;
+
+  /* Binary search: try to find the label containing INT_CST.
+     This requires the cases to be sorted by CASE_LOW (done by the
+     gimplifier).  */
+  while (max_idx >= min_idx)
+    {
+      unsigned case_idx = (min_idx + max_idx) / 2;
+      tree label =  gimple_switch_label (switch_stmt, case_idx);
+      tree low = CASE_LOW (label);
+      gcc_assert (low);
+      tree high = CASE_HIGH (label);
+      if (!high)
+	high = low;
+      if (tree_int_cst_compare (int_cst, low) < 0)
+	{
+	  /* INT_CST is below the range of this label.  */
+	  gcc_assert (case_idx > 0);
+	  max_idx = case_idx - 1;
+	}
+      else if (tree_int_cst_compare (int_cst, high) > 0)
+	{
+	  /* INT_CST is above the range of this case.  */
+	  min_idx = case_idx + 1;
+	}
+      else
+	/* This case contains INT_CST.  */
+	return true;
+    }
+  /* Not found.  */
+  return false;
+}
+
+/* Return true iff SWITCH_STMT (which must be on an enum value)
+   has nondefault cases handling all values in the enum.  */
+
+static bool
+has_nondefault_cases_for_all_enum_values_p (const gswitch *switch_stmt)
+{
+  gcc_assert (switch_stmt);
+  tree type = TREE_TYPE (gimple_switch_index (switch_stmt));
+  gcc_assert (TREE_CODE (type) == ENUMERAL_TYPE);
+
+  for (tree enum_val_iter = TYPE_VALUES (type);
+       enum_val_iter;
+       enum_val_iter = TREE_CHAIN (enum_val_iter))
+    {
+      tree enum_val = TREE_VALUE (enum_val_iter);
+      gcc_assert (TREE_CODE (enum_val) == CONST_DECL);
+      gcc_assert (TREE_CODE (DECL_INITIAL (enum_val)) == INTEGER_CST);
+      if (!has_nondefault_case_for_value_p (switch_stmt,
+					    DECL_INITIAL (enum_val)))
+	return false;
+    }
+  return true;
+}
+
 /* Given an EDGE guarded by SWITCH_STMT, determine appropriate constraints
    for the edge to be taken.
 
@@ -4357,11 +4423,37 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 					     region_model_context *ctxt,
 					     rejected_constraint **out)
 {
+  tree index  = gimple_switch_index (switch_stmt);
+  const svalue *index_sval = get_rvalue (index, ctxt);
+
+  /* If we're switching based on an enum type, assume that the user is only
+     working with values from the enum.  Hence if this is an
+     implicitly-created "default", assume it doesn't get followed.
+     This fixes numerous "uninitialized" false positives where we otherwise
+     consider jumping past the initialization cases.  */
+
+  if (/* Don't check during feasibility-checking (when ctxt is NULL).  */
+      ctxt
+      /* Must be an enum value.  */
+      && index_sval->get_type ()
+      && TREE_CODE (TREE_TYPE (index)) == ENUMERAL_TYPE
+      && TREE_CODE (index_sval->get_type ()) == ENUMERAL_TYPE
+      /* If we have a constant, then we can check it directly.  */
+      && index_sval->get_kind () != SK_CONSTANT
+      && edge.implicitly_created_default_p ()
+      && has_nondefault_cases_for_all_enum_values_p (switch_stmt)
+      /* Don't do this if there's a chance that the index is
+	 attacker-controlled.  */
+      && !ctxt->possibly_tainted_p (index_sval))
+    {
+      if (out)
+	*out = new rejected_default_case (*this);
+      return false;
+    }
+
   bounded_ranges_manager *ranges_mgr = get_range_manager ();
   const bounded_ranges *all_cases_ranges
     = ranges_mgr->get_or_create_ranges_for_switch (&edge, switch_stmt);
-  tree index  = gimple_switch_index (switch_stmt);
-  const svalue *index_sval = get_rvalue (index, ctxt);
   bool sat = m_constraints->add_bounded_ranges (index_sval, all_cases_ranges);
   if (!sat && out)
     *out = new rejected_ranges_constraint (*this, index, all_cases_ranges);
@@ -5684,6 +5776,14 @@ rejected_op_constraint::dump_to_pp (pretty_printer *pp) const
   lhs_sval->dump_to_pp (pp, true);
   pp_printf (pp, " %s ", op_symbol_code (m_op));
   rhs_sval->dump_to_pp (pp, true);
+}
+
+/* class rejected_default_case : public rejected_constraint.  */
+
+void
+rejected_default_case::dump_to_pp (pretty_printer *pp) const
+{
+  pp_string (pp, "implicit default for enum");
 }
 
 /* class rejected_ranges_constraint : public rejected_constraint.  */
