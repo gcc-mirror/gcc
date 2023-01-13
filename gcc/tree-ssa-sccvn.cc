@@ -5405,7 +5405,8 @@ visit_nary_op (tree lhs, gassign *stmt)
 	      if (result)
 		{
 		  bool changed = set_ssa_val_to (lhs, result);
-		  vn_nary_op_insert_stmt (stmt, result);
+		  if (TREE_CODE (result) == SSA_NAME)
+		    vn_nary_op_insert_stmt (stmt, result);
 		  return changed;
 		}
 	    }
