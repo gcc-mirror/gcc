@@ -25,7 +25,7 @@
 #define STARTFILE_SPEC " crti%O%s crtbegin%O%s crt0%O%s"
 #define ENDFILE_SPEC \
   " crtend%O%s crtn%O%s " \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+  "%{Ofast|ffast-math|funsafe-math-optimizations:%{!shared:crtfastmath.o%s}}"
 
 #ifndef LINK_SPEC
 #define LINK_SPEC "%{h*}			\
