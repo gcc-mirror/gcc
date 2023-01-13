@@ -17696,8 +17696,9 @@ needs to build supplementary stub code for constructors to work.  On
 multi-libbed systems, @samp{gcc -shared} must select the correct support
 libraries to link against.  Failing to supply the correct flags may lead
 to subtle defects.  Supplying them in cases where they are not necessary
-is innocuous. For x86, crtfastmath.o will not be added when
-@option{-shared} is specified. }
+is innocuous.  @option{-shared} suppresses the addition of startup code
+to alter the floating-point environment as done with @option{-ffast-math},
+@option{-Ofast} or @option{-funsafe-math-optimizations} on some targets.}
 
 @item -shared-libgcc
 @itemx -static-libgcc
