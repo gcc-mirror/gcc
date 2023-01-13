@@ -3443,6 +3443,20 @@ aarch64_debugger_regno (unsigned regno)
    return DWARF_FRAME_REGISTERS;
 }
 
+/* Implement TARGET_DWARF_FRAME_REG_MODE.  */
+static machine_mode
+aarch64_dwarf_frame_reg_mode (int regno)
+{
+  /* Predicate registers are call-clobbered in the EH ABI (which is
+     ARM_PCS_AAPCS64), so they should not be described by CFI.
+     Their size changes as VL changes, so any values computed by
+     __builtin_init_dwarf_reg_size_table might not be valid for
+     all frames.  */
+  if (PR_REGNUM_P (regno))
+    return VOIDmode;
+  return default_dwarf_frame_reg_mode (regno);
+}
+
 /* If X is a CONST_DOUBLE, return its bit representation as a constant
    integer, otherwise return X unmodified.  */
 static rtx
@@ -27899,6 +27913,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH aarch64_reassociation_width
+
+#undef TARGET_DWARF_FRAME_REG_MODE
+#define TARGET_DWARF_FRAME_REG_MODE aarch64_dwarf_frame_reg_mode
 
 #undef TARGET_PROMOTED_TYPE
 #define TARGET_PROMOTED_TYPE aarch64_promoted_type
