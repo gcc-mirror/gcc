@@ -652,8 +652,10 @@ cp_convert (tree type, tree expr, tsubst_flags_t complain)
 tree
 cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
 {
-  tree result;
+  tree result, expr_for_warning = expr;
 
+  if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+    expr = TREE_OPERAND (expr, 0);
   if (TREE_TYPE (expr) == type)
     return expr;
   if (expr == error_mark_node)
@@ -663,7 +665,7 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
   if ((complain & tf_warning)
       && c_inhibit_evaluation_warnings == 0)
     {
-      tree folded = cp_fully_fold (expr);
+      tree folded = cp_fully_fold (expr_for_warning);
       tree folded_result;
       if (folded == expr)
 	folded_result = result;
