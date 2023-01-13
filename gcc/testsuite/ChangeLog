@@ -1,3 +1,70 @@
+2023-01-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp: Use timeout.exp.
+
+2023-01-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp (gm2_init_min): Append -fno-exceptions
+	to args.
+
+2023-01-12  Andrew Pinski  <apinski@marvell.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/92342
+	* gcc.dg/tree-ssa/andnegcmp-1.c: New test.
+	* gcc.dg/tree-ssa/andnegcmp-2.c: New test.
+	* gcc.dg/tree-ssa/multcmp-1.c: New test.
+	* gcc.dg/tree-ssa/multcmp-2.c: New test.
+
+2023-01-12  Christophe Lyon  <christophe.lyon@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/105549
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2.c: Update.
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2-extra.c: Update.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2.c: Update.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2-extra.c: Update.
+	* gcc.target/aarch64/aapcs64/va_arg-17.c: New test.
+	* gcc.target/aarch64/pr105549.c: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2.C: Update.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2-extra.C: Update.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2.C: Update.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2-extra.C: Update.
+
+2023-01-12  Christophe Lyon  <christophe.lyon@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2-extra.c: New
+	test.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2-extra.c: New
+	test.
+	* gcc.target/aarch64/bitfield-abi-warning-align8-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning.h: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2-extra.C: New
+	test.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2-extra.C: New
+	test.
+	* g++.target/aarch64/bitfield-abi-warning-align8-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning.h: New test.
+
+2023-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99412
+	* gcc.dg/vect/pr99412.c: New testcase.
+	* gcc.dg/tree-ssa/reassoc-47.c: Adjust comment.
+	* gcc.dg/tree-ssa/reassoc-48.c: Remove.
+
+2023-01-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107706
+	* gfortran.dg/gomp/assume-2.f90: Update dg-error.
+	* gfortran.dg/gomp/assumes-2.f90: Likewise.
+	* gfortran.dg/gomp/assume-5.f90: New test.
+
 2023-01-12  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* c-c++-common/cpp/pr108244-1.c: New test.

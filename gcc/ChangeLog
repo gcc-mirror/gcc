@@ -1,3 +1,60 @@
+2023-01-12  Andrew Pinski  <apinski@marvell.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/92342
+	* match.pd ((m1 CMP m2) * d -> (m1 CMP m2) ? d : 0):
+	Use tcc_comparison and :c for the multiply.
+	(b & -(a CMP c) -> (a CMP c)?b:0): New pattern.
+
+2023-01-12  Christophe Lyon  <christophe.lyon@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/105549
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment):
+	Check DECL_PACKED for bitfield.
+	(aarch64_layout_arg): Warn when parameter passing ABI changes.
+	(aarch64_function_arg_boundary): Do not warn here.
+	(aarch64_gimplify_va_arg_expr): Warn when parameter passing ABI
+	changes.
+
+2023-01-12  Christophe Lyon  <christophe.lyon@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Fix
+	comment.
+	(aarch64_layout_arg): Factorize warning conditions.
+	(aarch64_function_arg_boundary): Fix typo.
+	* function.cc (currently_expanding_function_start): New variable.
+	(expand_function_start): Handle
+	currently_expanding_function_start.
+	* function.h (currently_expanding_function_start): Declare.
+
+2023-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99412
+	* tree-ssa-reassoc.cc (is_phi_for_stmt): Remove.
+	(swap_ops_for_binary_stmt): Remove reduction handling.
+	(rewrite_expr_tree_parallel): Adjust.
+	(reassociate_bb): Likewise.
+	* tree-parloops.cc (build_new_reduction): Handle MINUS_EXPR.
+
+2023-01-12  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (ctzsi2, ffssi2):
+	Rearrange the emitting codes.
+
+2023-01-12  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*btrue):
+	Correct value of the attribute "length" that depends on
+	TARGET_DENSITY and operands, and add '?' character to the register
+	constraint of the compared operand.
+
+2023-01-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* hash-table.h (expand): Check elements and deleted counts.
+	(verify): Likewise.
+
 2023-01-11  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR tree-optimization/71343

@@ -1,3 +1,49 @@
+2023-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108327
+	* config/os/gnu-linux/ldbl-extra.ver (GLIBCXX_LDBL_3.4.31):
+	Export __try_use_facet specializations for facets in namespace
+	__gnu_cxx_ldbl128.
+	* config/os/gnu-linux/ldbl-ieee128-extra.ver
+	(GLIBCXX_IEEE128_3.4.31): Likewise for facets in namespace
+	__gnu_cxx_ieee128.
+	* testsuite/util/testsuite_abi.cc: Add to lists of known and
+	latest versions.
+
+2023-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_mutex.h: Remove <system_error> include.
+	* include/std/condition_variable: Add <bits/error_constants.h>
+	include.
+	* include/std/mutex: Likewise.
+	* include/std/shared_mutex: Likewise.
+
+2023-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77691
+	* include/experimental/memory_resource
+	(_GLIBCXX_MAX_ALIGN_MATCHES_MALLOC): Define.
+	(do_allocate, do_deallocate): Check it.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Relax expected behaviour for 64-bit hppa-hp-hpux11.11.
+
+2023-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Add latest library versions.
+	* doc/html/manual/abi.html: Regenerate.
+
+2023-01-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/107189
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_insert_range_equal): Remove
+	unused _Alloc_node instance.
+
+2023-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__detail::__platform_wait_t):
+	Define as unsigned long if always lock-free, and unsigned int
+	otherwise.
+
 2023-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++20/tzdb.cc (tzdb_list::_S_init_tzdb): Use __try and

@@ -1,3 +1,8 @@
+2023-01-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107706
+	* openmp.cc (gfc_resolve_omp_assumptions): Reject nonscalars.
+
 2023-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/108349
