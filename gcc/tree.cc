@@ -13074,38 +13074,15 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 	  || *sam == special_array_member::trail_n)
 	return memsize;
 
-      /* flag_strict_flex_arrays will control how to treat
-	 the trailing arrays as flexiable array members.  */
-
       tree afield_decl = TREE_OPERAND (ref, 1);
-      unsigned int strict_flex_array_level
-	= strict_flex_array_level_of (afield_decl);
+      gcc_assert (TREE_CODE (afield_decl) == FIELD_DECL);
+      /* if the trailing array is a not a flexible array member, treat it as
+	 a normal array.  */
+      if (DECL_NOT_FLEXARRAY (afield_decl)
+	  && *sam != special_array_member::int_0)
+	return memsize;
 
-      switch (strict_flex_array_level)
-	{
-	  case 3:
-	    /* Treaing 0-length trailing arrays as normal array.  */
-	    if (*sam == special_array_member::trail_0)
-	      return size_zero_node;
-	    /* FALLTHROUGH.  */
-	  case 2:
-	    /* Treating 1-element trailing arrays as normal array.  */
-	    if (*sam == special_array_member::trail_1)
-	      return memsize;
-	    /* FALLTHROUGH.  */
-	  case 1:
-	    /* Treating 2-or-more elements trailing arrays as normal
-	       array.  */
-	    if (*sam == special_array_member::trail_n)
-	      return memsize;
-	    /* FALLTHROUGH.  */
-	  case 0:
-	    break;
-	  default:
-	    gcc_unreachable ();
-	}
-
-	if (*sam == special_array_member::int_0)
+      if (*sam == special_array_member::int_0)
 	  memsize = NULL_TREE;
 
       /* For a reference to a flexible array member of a union

@@ -32,9 +32,9 @@ void __attribute__((__noinline__)) stuff(
     struct trailing_array_4 *trailing_flex)
 {
     normal->c[5] = 5; 	/*{ dg-warning "array subscript 5 is above array bounds of" } */
-    			/*{ dg-warning "should not be used as a flexible array member for level 1 and above" "" { target *-*-* } .-1 } */
+    			/*{ dg-warning "should not be used as a flexible array member" "" { target *-*-* } .-1 } */
     trailing_1->c[2] = 2; /* { dg-warning "array subscript 2 is above array bounds of"  } */
-    			  /* { dg-warning "should not be used as a flexible array member for level 2 and above" "" { target *-*-* } .-1 } */
+    			  /* { dg-warning "should not be used as a flexible array member" "" { target *-*-* } .-1 } */
     trailing_0->c[1] = 1; /* { dg-bogus "array subscript " } */
     trailing_flex->c[10] = 10; /* { dg-bogus "array subscript " } */
 

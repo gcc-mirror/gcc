@@ -2456,36 +2456,6 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree attrs)
     }
 }
 
-/* Get the LEVEL of the strict_flex_array for the ARRAY_FIELD based on the
-   values of attribute strict_flex_array and the flag_strict_flex_arrays.  */
-unsigned int
-strict_flex_array_level_of (tree array_field)
-{
-  gcc_assert (TREE_CODE (array_field) == FIELD_DECL);
-  unsigned int strict_flex_array_level = flag_strict_flex_arrays;
-
-  tree attr_strict_flex_array
-    = lookup_attribute ("strict_flex_array", DECL_ATTRIBUTES (array_field));
-  /* If there is a strict_flex_array attribute attached to the field,
-     override the flag_strict_flex_arrays.  */
-  if (attr_strict_flex_array)
-    {
-      /* Get the value of the level first from the attribute.  */
-      unsigned HOST_WIDE_INT attr_strict_flex_array_level = 0;
-      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
-      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
-      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
-      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
-      gcc_assert (tree_fits_uhwi_p (attr_strict_flex_array));
-      attr_strict_flex_array_level = tree_to_uhwi (attr_strict_flex_array);
-
-      /* The attribute has higher priority than flag_struct_flex_array.  */
-      strict_flex_array_level = attr_strict_flex_array_level;
-    }
-  return strict_flex_array_level;
-}
-
-
 /* Return the access specification for a function parameter PARM
    or null if the current function has no such specification.  */
 
