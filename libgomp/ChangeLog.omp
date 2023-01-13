@@ -1,3 +1,7 @@
+2023-01-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* usm-allocator.c (ALIGN): Use 128-byte alignment.
+
 2023-01-11  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c: Include sys/mman.h and unistd.h.
