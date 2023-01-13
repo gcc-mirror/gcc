@@ -37,6 +37,10 @@ march=2.0
 Target RejectNegative
 Generate PA2.0 code (requires binutils 2.10 or later).
 
+matomic-libcalls
+Target Var(TARGET_ATOMIC_LIBCALLS) Init(1)
+Generate libcalls for atomic loads and stores when sync libcalls are disabled.
+
 mbig-switch
 Target Ignore
 Does nothing.  Preserved for backward compatibility.

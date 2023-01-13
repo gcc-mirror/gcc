@@ -1,0 +1,4 @@
+LIB2ADD = $(srcdir)/config/pa/quadlib.c
+LIB2ADD_ST = $(srcdir)/config/pa/sync-libfuncs.c
+
+HOST_LIBGCC2_CFLAGS += -frandom-seed=fixed-seed -Dpa64=1 -DELF=1 -mlong-calls

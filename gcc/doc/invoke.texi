@@ -975,17 +975,18 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{HPPA Options}
 @gccoptlist{-march=@var{architecture-type} @gol
+-matomic-libcalls  -mbig-switch @gol
 -mcaller-copies  -mdisable-fpregs  -mdisable-indexing @gol
--mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld @gol
+-mordered  -mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld @gol
 -mfixed-range=@var{register-range} @gol
--mjump-in-delay  -mlinker-opt  -mlong-calls @gol
--mlong-load-store  -mno-disable-fpregs @gol
+-mcoherent-ldcw -mjump-in-delay  -mlinker-opt  -mlong-calls @gol
+-mlong-load-store  -mno-atomic-libcalls  -mno-disable-fpregs @gol
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas @gol
 -mno-jump-in-delay  -mno-long-load-store @gol
 -mno-portable-runtime  -mno-soft-float @gol
 -mno-space-regs  -msoft-float  -mpa-risc-1-0 @gol
 -mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime @gol
--mschedule=@var{cpu-type}  -mspace-regs  -msio  -mwsio @gol
+-mschedule=@var{cpu-type}  -mspace-regs  -msoft-mult  -msio  -mwsio @gol
 -munix=@var{unix-std}  -nolibdld  -static  -threads}
 
 @emph{IA-64 Options}
@@ -24895,6 +24896,33 @@ other way around.
 @opindex mpa-risc-2-0
 Synonyms for @option{-march=1.0}, @option{-march=1.1}, and @option{-march=2.0} respectively.
 
+@item -matomic-libcalls
+@opindex matomic-libcalls
+@opindex mno-atomic-libcalls
+Generate libcalls for atomic loads and stores when sync libcalls are disabled.
+This option is enabled by default.  It only affects the generation of
+atomic libcalls by the HPPA backend.
+
+Both the sync and @file{libatomic} libcall implementations use locking.
+As a result, processor stores are not atomic with respect to other
+atomic operations.  Processor loads up to DImode are atomic with
+respect to other atomic operations provided they are implemented as
+a single access.
+
+The PA-RISC architecture does not support any atomic operations in
+hardware except for the @code{ldcw} instruction.  Thus, all atomic
+support is implemented using sync and atomic libcalls.  Sync libcall
+support is in @file{libgcc.a}.  Atomic libcall support is in
+@file{libatomic}.
+
+This option generates @code{__atomic_exchange} calls for atomic stores.
+It also provides special handling for atomic DImode accesses on 32-bit
+targets.
+
+@item -mbig-switch
+@opindex mbig-switch
+Does nothing.  Preserved for backward compatibility.
+
 @item -mcaller-copies
 @opindex mcaller-copies
 The caller copies function arguments passed by hidden reference.  This
@@ -24903,29 +24931,18 @@ option should be used with care as it is not compatible with the default
 passed by hidden reference and the option provides better compatibility
 with OpenMP.
 
-@item -mjump-in-delay
-@opindex mjump-in-delay
-This option is ignored and provided for compatibility purposes only.
+@item -mcoherent-ldcw
+@opindex mcoherent-ldcw
+Use ldcw/ldcd coherent cache-control hint.
 
 @item -mdisable-fpregs
 @opindex mdisable-fpregs
-Prevent floating-point registers from being used in any manner.  This is
-necessary for compiling kernels that perform lazy context switching of
-floating-point registers.  If you use this option and attempt to perform
-floating-point operations, the compiler aborts.
+Disable floating-point registers.  Equivalent to @code{-msoft-float}.
 
 @item -mdisable-indexing
 @opindex mdisable-indexing
 Prevent the compiler from using indexing address modes.  This avoids some
 rather obscure problems when compiling MIG generated code under MACH@.
-
-@item -mno-space-regs
-@opindex mno-space-regs
-@opindex mspace-regs
-Generate code that assumes the target has no space registers.  This allows
-GCC to generate faster indirect calls and use unscaled index address modes.
-
-Such code is suitable for level 0 PA systems and kernels.
 
 @item -mfast-indirect-calls
 @opindex mfast-indirect-calls
@@ -24943,56 +24960,9 @@ useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
 
-@item -mlong-load-store
-@opindex mlong-load-store
-Generate 3-instruction load and store sequences as sometimes required by
-the HP-UX 10 linker.  This is equivalent to the @samp{+k} option to
-the HP compilers.
-
-@item -mportable-runtime
-@opindex mportable-runtime
-Use the portable calling conventions proposed by HP for ELF systems.
-
 @item -mgas
 @opindex mgas
 Enable the use of assembler directives only GAS understands.
-
-@item -mschedule=@var{cpu-type}
-@opindex mschedule
-Schedule code according to the constraints for the machine type
-@var{cpu-type}.  The choices for @var{cpu-type} are @samp{700}
-@samp{7100}, @samp{7100LC}, @samp{7200}, @samp{7300} and @samp{8000}.  Refer
-to @file{/usr/lib/sched.models} on an HP-UX system to determine the
-proper scheduling option for your machine.  The default scheduling is
-@samp{8000}.
-
-@item -mlinker-opt
-@opindex mlinker-opt
-Enable the optimization pass in the HP-UX linker.  Note this makes symbolic
-debugging impossible.  It also triggers a bug in the HP-UX 8 and HP-UX 9
-linkers in which they give bogus error messages when linking some programs.
-
-@item -msoft-float
-@opindex msoft-float
-Generate output containing library calls for floating point.
-@strong{Warning:} the requisite libraries are not available for all HPPA
-targets.  Normally the facilities of the machine's usual C compiler are
-used, but this cannot be done directly in cross-compilation.  You must make
-your own arrangements to provide suitable library functions for
-cross-compilation.
-
-@option{-msoft-float} changes the calling convention in the output file;
-therefore, it is only useful if you compile @emph{all} of a program with
-this option.  In particular, you need to compile @file{libgcc.a}, the
-library that comes with GCC, with @option{-msoft-float} in order for
-this to work.
-
-@item -msio
-@opindex msio
-Generate the predefine, @code{_SIO}, for server IO@.  The default is
-@option{-mwsio}.  This generates the predefines, @code{__hp9000s700},
-@code{__hp9000s700__} and @code{_WSIO}, for workstation IO@.  These
-options are available under HP-UX and HI-UX@.
 
 @item -mgnu-ld
 @opindex mgnu-ld
@@ -25023,6 +24993,12 @@ configure option, GCC's program search path, and finally by the user's
 `gcc -print-prog-name=ld`}.  This option is only available on the 64-bit
 HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 
+@item -mlinker-opt
+@opindex mlinker-opt
+Enable the optimization pass in the HP-UX linker.  Note this makes symbolic
+debugging impossible.  It also triggers a bug in the HP-UX 8 and HP-UX 9
+linkers in which they give bogus error messages when linking some programs.
+
 @item -mlong-calls
 @opindex mno-long-calls
 @opindex mlong-calls
@@ -25050,6 +25026,69 @@ impact on systems that support long absolute calls, and long pic
 symbol-difference or pc-relative calls should be relatively small.
 However, an indirect call is used on 32-bit ELF systems in pic code
 and it is quite long.
+
+@item -mlong-load-store
+@opindex mlong-load-store
+Generate 3-instruction load and store sequences as sometimes required by
+the HP-UX 10 linker.  This is equivalent to the @samp{+k} option to
+the HP compilers.
+
+@item -mjump-in-delay
+@opindex mjump-in-delay
+This option is ignored and provided for compatibility purposes only.
+
+@item -mno-space-regs
+@opindex mno-space-regs
+@opindex mspace-regs
+Generate code that assumes the target has no space registers.  This allows
+GCC to generate faster indirect calls and use unscaled index address modes.
+
+Such code is suitable for level 0 PA systems and kernels.
+
+@item -mordered
+@opindex mordered
+Assume memory references are ordered and barriers are not needed.
+
+@item -mportable-runtime
+@opindex mportable-runtime
+Use the portable calling conventions proposed by HP for ELF systems.
+
+@item -mschedule=@var{cpu-type}
+@opindex mschedule
+Schedule code according to the constraints for the machine type
+@var{cpu-type}.  The choices for @var{cpu-type} are @samp{700}
+@samp{7100}, @samp{7100LC}, @samp{7200}, @samp{7300} and @samp{8000}.  Refer
+to @file{/usr/lib/sched.models} on an HP-UX system to determine the
+proper scheduling option for your machine.  The default scheduling is
+@samp{8000}.
+
+@item -msio
+@opindex msio
+Generate the predefine, @code{_SIO}, for server IO@.  The default is
+@option{-mwsio}.  This generates the predefines, @code{__hp9000s700},
+@code{__hp9000s700__} and @code{_WSIO}, for workstation IO@.  These
+options are available under HP-UX and HI-UX@.
+
+@item -msoft-float
+@opindex msoft-float
+Generate output containing library calls for floating point.
+@strong{Warning:} the requisite libraries are not available for all HPPA
+targets.  Normally the facilities of the machine's usual C compiler are
+used, but this cannot be done directly in cross-compilation.  You must make
+your own arrangements to provide suitable library functions for
+cross-compilation.
+
+@option{-msoft-float} changes the calling convention in the output file;
+therefore, it is only useful if you compile @emph{all} of a program with
+this option.  In particular, you need to compile @file{libgcc.a}, the
+library that comes with GCC, with @option{-msoft-float} in order for
+this to work.
+
+@item -msoft-mult
+@opindex msoft-mult
+Use software integer multiplication.
+
+This disables the use of the @code{xmpyu} instruction.
 
 @item -munix=@var{unix-std}
 @opindex march

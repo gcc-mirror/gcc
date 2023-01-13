@@ -133,9 +133,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_GAS
 #define TARGET_GAS 1
 
-#undef TARGET_SYNC_LIBCALL
-#define TARGET_SYNC_LIBCALL 1
-
 /* The SYNC operations are implemented as library functions, not
    INSN patterns.  As a result, the HAVE defines for the patterns are
    not defined.  We need to define them to generate the corresponding
