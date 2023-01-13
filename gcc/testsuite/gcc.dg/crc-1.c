@@ -54,3 +54,5 @@ uint16_t gen_crc16(const uint8_t *data, uint16_t size) {
 /* { dg-final { scan-tree-dump "Bit forward" "crc"} } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \\\^ \[a-zA-Z0-9_\]+(\(\[a-zA-Z\]\))?;" "crc" } } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \(<<|>>\) \[0-9]+;" "crc" } } */
+/* { dg-final { scan-tree-dump-times "Return value is \\\{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\\}" 3 "crc" } } */
+/* { dg-final { scan-tree-dump "Polynomial's value is \\\{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1\\\}" "crc" } } */

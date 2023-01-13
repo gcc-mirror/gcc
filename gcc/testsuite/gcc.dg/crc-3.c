@@ -32,3 +32,7 @@ unsigned short crc16(char *data_p, unsigned short length) {
 /* { dg-final { scan-tree-dump "Bit reversed" "crc"} } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \\\^ \[a-zA-Z0-9_\]+\(\\\(\[a-zA-Z\]\\\)\)?;" "crc" } } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \(<<|>>\) \[0-9]+;" "crc" } } */
+/* { dg-final { scan-tree-dump "Return value is \\\{\(0, \)*0\\\}" "crc" } } */
+/* { dg-final { scan-tree-dump "Return value is \\\{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\\\}" "crc" } } */
+/* { dg-final { scan-tree-dump "Return value is \\\{0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0\\\}" "crc" } } */
+/* { dg-final { scan-tree-dump "Polynomial's value is \\\{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\\\}" "crc" } } */

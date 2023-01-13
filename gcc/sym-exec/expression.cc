@@ -4,6 +4,25 @@
 
 #include "expression-is-a-helper.h"
 
+value_type
+value_bit::get_type () const
+{
+  return type;
+}
+
+
+symbolic_bit::symbolic_bit (size_t i, tree orig) : value_bit (i), origin (orig)
+{
+  type = SYMBOLIC_BIT;
+}
+
+
+bit::bit (unsigned char i) : val (i)
+{
+  type = BIT;
+}
+
+
 value_bit *
 bit_expression::get_left ()
 {
@@ -57,8 +76,7 @@ bit_complement_expression::bit_complement_expression (value_bit *right)
 {
   this->left = nullptr;
   this->right = right;
-  op_sign[0] = '!';
-  op_sign[1] = '\0';
+  type = BIT_COMPLEMENT_EXPRESSION;
 }
 
 
@@ -101,8 +119,7 @@ bit_expression::copy (const bit_expression *expr)
   if (expr->right)
     right = expr->right->copy ();
 
-  op_sign[0] = (expr->op_sign)[0];
-  op_sign[1] = (expr->op_sign)[1];
+  type = expr->type;
 }
 
 
@@ -166,8 +183,7 @@ bit_xor_expression::bit_xor_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
-  op_sign[0] = '^';
-  op_sign[1] = '\0';
+  type = BIT_XOR_EXPRESSION;
 }
 
 
@@ -181,8 +197,7 @@ bit_and_expression::bit_and_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
-  op_sign[0] = '&';
-  op_sign[1] = '\0';
+  type = BIT_AND_EXPRESSION;
 }
 
 
@@ -196,8 +211,7 @@ bit_or_expression::bit_or_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
-  op_sign[0] = '|';
-  op_sign[1] = '\0';
+  type = BIT_OR_EXPRESSION;
 }
 
 
@@ -212,8 +226,7 @@ shift_right_expression::shift_right_expression (value_bit *left,
 {
   this->left = left;
   this->right = right;
-  op_sign[0] = '>';
-  op_sign[1] = '>';
+  type = SHIFT_RIGHT_EXPRESSION;
 }
 
 
@@ -228,8 +241,7 @@ shift_left_expression::shift_left_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
-  op_sign[0] = '<';
-  op_sign[1] = '<';
+  type = SHIFT_LEFT_EXPRESSION;
 }
 
 
@@ -243,8 +255,7 @@ add_expression::add_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
-  op_sign[0] = '+';
-  op_sign[1] = '\0';
+  type = ADD_EXPRESSION;
 }
 
 
@@ -258,84 +269,13 @@ sub_expression::sub_expression (value_bit *left, value_bit *right)
 {
   this->left = left;
   this->right = right;
-  op_sign[0] = '-';
-  op_sign[1] = '\0';
+  type = SUB_EXPRESSION;
 }
 
 
 sub_expression::sub_expression (const sub_expression &expr)
 {
   bit_expression::copy (&expr);
-}
-
-
-value_type
-symbolic_bit::get_type () const
-{
-  return value_type::SYMBOLIC_BIT;
-}
-
-
-value_type
-bit::get_type () const
-{
-  return value_type::BIT;
-}
-
-
-value_type
-bit_and_expression::get_type () const
-{
-  return value_type::BIT_AND_EXPRESSION;
-}
-
-
-value_type
-bit_or_expression::get_type () const
-{
-  return value_type::BIT_OR_EXPRESSION;
-}
-
-
-value_type
-bit_xor_expression::get_type () const
-{
-  return value_type::BIT_XOR_EXPRESSION;
-}
-
-
-value_type
-bit_complement_expression::get_type () const
-{
-  return value_type::BIT_COMPLEMENT_EXPRESSION;
-}
-
-
-value_type
-shift_left_expression::get_type () const
-{
-  return value_type::SHIFT_LEFT_EXPRESSION;
-}
-
-
-value_type
-shift_right_expression::get_type () const
-{
-  return value_type::SHIFT_RIGHT_EXPRESSION;
-}
-
-
-value_type
-add_expression::get_type () const
-{
-  return value_type::ADD_EXPRESSION;
-}
-
-
-value_type
-sub_expression::get_type () const
-{
-  return value_type::SUB_EXPRESSION;
 }
 
 
@@ -366,6 +306,38 @@ bit::print ()
 
 
 void
+bit_expression::print_expr_sign ()
+{
+  switch (type)
+    {
+      case BIT_XOR_EXPRESSION:
+	fprintf (dump_file, " ^ ");
+	break;
+      case BIT_AND_EXPRESSION:
+	fprintf (dump_file, " & ");
+	break;
+      case BIT_OR_EXPRESSION:
+	fprintf (dump_file, " | ");
+	break;
+      case SHIFT_RIGHT_EXPRESSION:
+	fprintf (dump_file, " >> ");
+	break;
+      case SHIFT_LEFT_EXPRESSION:
+	fprintf (dump_file, " << ");
+	break;
+      case ADD_EXPRESSION:
+	fprintf (dump_file, " + ");
+	break;
+      case SUB_EXPRESSION:
+	fprintf (dump_file, " - ");
+	break;
+      default:
+	fprintf (dump_file, " ?? ");
+    }
+}
+
+
+void
 bit_expression::print ()
 {
   if (dump_file)
@@ -376,7 +348,7 @@ bit_expression::print ()
       else
 	fprintf (dump_file, "null");
 
-      fprintf (dump_file, " %.2s ", op_sign);
+      print_expr_sign ();
 
       if (right)
 	right->print ();
@@ -393,7 +365,7 @@ bit_complement_expression::print ()
 {
   if (dump_file)
     {
-      fprintf (dump_file, "%.2s", op_sign);
+      fprintf (dump_file, "!");
       if (right)
 	right->print ();
       else

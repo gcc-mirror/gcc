@@ -1,47 +1,25 @@
 #include "condition.h"
 
-bit_condition::bit_condition (value_bit *left, value_bit *right, tree_code type)
+bit_condition::bit_condition (value_bit *left, value_bit *right, tree_code code)
 {
   this->left = left;
   this->right = right;
-  this->type = type;
-
-  switch (this->type)
-    {
-      case GT_EXPR:
-	op_sign[0] = '>';
-	op_sign[1] = '\0';
-	break;
-      case LT_EXPR:
-	op_sign[0] = '<';
-	op_sign[1] = '\0';
-	break;
-      case EQ_EXPR:
-	op_sign[0] = '=';
-	op_sign[1] = '=';
-	break;
-      case NE_EXPR:
-	op_sign[0] = '!';
-	op_sign[1] = '=';
-	break;
-      default:
-	op_sign[0] = '\0';
-	op_sign[1] = '\0';
-    }
+  this->code = code;
+  type = BIT_CONDITION;
 }
 
 
 bit_condition::bit_condition (const bit_condition &expr)
 {
   bit_expression::copy (&expr);
-  type = expr.get_code ();
+  code = expr.get_code ();
 }
 
 
 tree_code
 bit_condition::get_code () const
 {
-  return type;
+  return code;
 }
 
 
@@ -52,8 +30,24 @@ bit_condition::copy () const
 }
 
 
-value_type
-bit_condition::get_type () const
+void
+bit_condition::print_expr_sign ()
 {
-  return value_type::BIT_CONDITION;
+  switch (code)
+    {
+      case GT_EXPR:
+	fprintf (dump_file, " > ");
+	break;
+      case LT_EXPR:
+	fprintf (dump_file, " < ");
+	break;
+      case EQ_EXPR:
+	fprintf (dump_file, " == ");
+	break;
+      case NE_EXPR:
+	fprintf (dump_file, " != ");
+	break;
+      default:
+	fprintf (dump_file, " ? ");
+    }
 }

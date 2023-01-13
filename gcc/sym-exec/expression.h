@@ -39,6 +39,7 @@ class value_bit {
   /* This will help us to understand where is moved the bit
      from its initial position.  */
   const size_t index;
+  value_type type;
 
  public:
   value_bit () : index (0)
@@ -48,10 +49,10 @@ class value_bit {
   value_bit (const value_bit &val) : index (val.index)
   {};
   size_t get_index () const;
+  value_type get_type () const;
 
   /* This will support deep copy of objects' values.  */
   virtual value_bit *copy () const = 0;
-  virtual value_type get_type () const = 0;
   virtual void print () = 0;
   virtual ~value_bit () = default;
 };
@@ -62,15 +63,13 @@ class symbolic_bit : public value_bit {
   tree origin = nullptr;
 
  public:
-  symbolic_bit (size_t i, tree orig) : value_bit (i), origin (orig)
-  {};
+  symbolic_bit (size_t i, tree orig);
   symbolic_bit (const symbolic_bit &sym_bit) : symbolic_bit (sym_bit.index,
 							     sym_bit.origin)
   {};
 
   value_bit *copy () const;
   void print ();
-  value_type get_type () const;
   tree get_origin ();
 };
 
@@ -83,14 +82,12 @@ class bit : public value_bit {
   unsigned char val = 0;
 
  public:
-  bit (unsigned char i) : val (i)
-  {};
+  bit (unsigned char i);
   bit (const bit &b) : bit (b.val)
   {};
   unsigned char get_val () const;
   void set_val (unsigned char new_val);
   value_bit *copy () const;
-  value_type get_type () const;
   void print ();
 };
 
@@ -102,9 +99,9 @@ class bit_expression : public value_bit {
  protected:
   value_bit *left = nullptr;
   value_bit *right = nullptr;
-  char op_sign[2];
 
   void copy (const bit_expression *expr);
+  virtual void print_expr_sign ();
 
  public:
   value_bit *get_left ();
@@ -115,7 +112,6 @@ class bit_expression : public value_bit {
   void set_left (value_bit *expr);
   void set_right (value_bit *expr);
   value_bit *copy () const = 0;
-  value_type get_type () const = 0;
   void print ();
 };
 
@@ -129,7 +125,6 @@ class bit_xor_expression : public bit_expression {
   bit_xor_expression (value_bit *left, value_bit *right);
   bit_xor_expression (const bit_xor_expression &expr);
   value_bit *copy () const;
-  value_type get_type () const;
 };
 
 
@@ -142,7 +137,6 @@ class bit_and_expression : public bit_expression {
   bit_and_expression (value_bit *left, value_bit *right);
   bit_and_expression (const bit_and_expression &expr);
   value_bit *copy () const;
-  value_type get_type () const;
 };
 
 
@@ -155,7 +149,6 @@ class bit_or_expression : public bit_expression {
   bit_or_expression (value_bit *left, value_bit *right);
   bit_or_expression (const bit_or_expression &expr);
   value_bit *copy () const;
-  value_type get_type () const;
 };
 
 
@@ -166,7 +159,6 @@ class shift_right_expression : public bit_expression {
   shift_right_expression (value_bit *left, value_bit *right);
   shift_right_expression (const shift_right_expression &expr);
   value_bit *copy () const;
-  value_type get_type () const;
 };
 
 
@@ -177,7 +169,6 @@ class shift_left_expression : public bit_expression {
   shift_left_expression (value_bit *left, value_bit *right);
   shift_left_expression (const shift_left_expression &expr);
   value_bit *copy () const;
-  value_type get_type () const;
 };
 
 
@@ -188,7 +179,6 @@ class add_expression : public bit_expression {
   add_expression (value_bit *left, value_bit *right);
   add_expression (const add_expression &expr);
   value_bit *copy () const;
-  value_type get_type () const;
 };
 
 
@@ -199,7 +189,6 @@ class sub_expression : public bit_expression {
   sub_expression (value_bit *left, value_bit *right);
   sub_expression (const sub_expression &expr);
   value_bit *copy () const;
-  value_type get_type () const;
 };
 
 /* Bit-level negation expression.  */
@@ -209,7 +198,6 @@ class bit_complement_expression : public bit_expression {
   bit_complement_expression (value_bit *right);
   bit_complement_expression (const bit_complement_expression &expr);
   value_bit *copy () const;
-  value_type get_type () const;
   void print ();
 };
 

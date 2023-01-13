@@ -13,14 +13,14 @@ enum condition_status {
 
 class bit_condition : public bit_expression {
  private:
-  tree_code type;
+  tree_code code;
+  void print_expr_sign ();
 
  public:
   bit_condition (value_bit *left, value_bit *right, tree_code type);
   bit_condition (const bit_condition &expr);
   tree_code get_code () const;
   value_bit *copy () const;
-  value_type get_type () const;
 };
 
 #endif /* SYM_EXEC_CONDITION_H.  */

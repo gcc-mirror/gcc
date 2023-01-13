@@ -4,7 +4,6 @@
 
 #include "state.h"
 
-
 size_t min (size_t a, size_t b, size_t c)
 {
   size_t min = (a < b ? a : b);
@@ -30,7 +29,6 @@ state::state (const state &s)
 
 state::~state ()
 {
-  clear_var_states ();
   clear_conditions ();
 }
 
@@ -114,29 +112,6 @@ state::create_val_for_const (tree var, size_t size)
 }
 
 
-/* Removes given value.  */
-
-void
-state::free_val (value *val)
-{
-  free_bits (&val->number);
-}
-
-
-void
-state::free_bits (vec<value_bit *> *bits)
-{
-  if (bits == nullptr || !bits->exists ())
-    return;
-
-  for (size_t i = 0; i < bits->length (); i++)
-    {
-      delete (*bits)[i];
-      (*bits)[i] = nullptr;
-    }
-}
-
-
 bool
 state::add_var_state (tree var, value *vstate)
 {
@@ -145,7 +120,6 @@ state::add_var_state (tree var, value *vstate)
   for (size_t i = 0; i < size; i++)
     val.push ((*vstate)[i]->copy ());
 
-  free_val (var_states.get (var));
   return var_states.put (var, val);
 }
 
@@ -183,12 +157,6 @@ state::clear_states (vec<state *> *states)
 void
 state::clear_var_states ()
 {
-  for (auto iter = var_states.begin (); iter != var_states.end (); ++iter)
-    {
-      value *var = &(*iter).second;
-      for (size_t i = 0; i < var->length (); i++)
-	delete (*var)[i];
-    }
   var_states.empty ();
 }
 
@@ -389,9 +357,6 @@ state::do_binary_operation (tree arg1, tree arg2, tree dest,
     }
 
   (this->*bin_func) (arg1_val, arg2_val, dest);
-  free_val (&arg1_const_val);
-  free_val (&arg2_const_val);
-
   print_value (var_states.get (dest));
   return true;
 }
@@ -587,7 +552,7 @@ state::do_shift_left (value *arg1, value *arg2, tree dest)
       for (size_t i = 0; i < get_var_size (dest); i++)
 	{
 	  delete (*var_states.get (dest))[i];
-	  (*var_states.get (dest))[i] = (*result)[i];
+	  (*var_states.get (dest))[i] = (*result)[i]->copy ();
 	}
       delete result;
     }
@@ -615,8 +580,10 @@ state::do_shift_right (value *arg1, value *arg2, tree dest)
       for (size_t i = 0; i < get_var_size (dest); i++)
 	{
 	  delete (*var_states.get (dest))[i];
-	  (*var_states.get (dest))[i] = (*result)[i];
+	  (*var_states.get (dest))[i] = (*result)[i]->copy ();
 	}
+
+      delete result;
     }
   else
     operate (arg1, arg2, nullptr, dest, &state::shift_right_sym_bits);
@@ -675,20 +642,23 @@ state::additive_inverse (const value *number)
 
   size_t size = number->length ();
   one.push (new bit (1));
-  result->push (complement_a_bit ((*number)[0]->copy ()));
+  result->push (complement_a_bit ((*number)[0]));
 
   for (size_t i = 1; i < size; i++)
     {
       one.push (new bit (0));
-      result->push (complement_a_bit ((*number)[i]->copy ()));
+      result->push (complement_a_bit ((*number)[i]));
     }
 
   value_bit *carry = new bit (0);
   for (size_t i = 0; i < size; ++i)
-    (*result)[i] = full_adder ((*result)[i], one[i], &carry);
+    {
+      value_bit *cur_bit = (*result)[i];
+      (*result)[i] = full_adder (cur_bit, one[i], &carry);
+      delete cur_bit;
+    }
 
   delete carry;
-  free_val (&one);
   return result;
 }
 
@@ -707,7 +677,6 @@ state::do_sub (value *arg1, value *arg2, tree dest)
 {
   value *neg_arg2 = additive_inverse (arg2);
   do_add (arg1, neg_arg2, dest);
-  free_val (neg_arg2);
   delete neg_arg2;
 }
 
@@ -718,9 +687,8 @@ value_bit *
 state::complement_a_bit (value_bit *var)
 {
   value_bit *result = nullptr;
-  bit *const_bit = dyn_cast<bit *> (var);
-  if (const_bit)
-    result = complement_const_bit (const_bit);
+  if (is_a<bit *> (var))
+    result = complement_const_bit (as_a<bit *> (var));
   else
     result = complement_sym_bit (var);
 
@@ -758,7 +726,8 @@ state::do_complement (tree arg, tree dest)
   for (; i < get_var_size (dest); i++)
     {
       delete (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = complement_a_bit (new bit (0));
+      bit tmp (0);
+      (*var_states.get (dest))[i] = complement_a_bit (&tmp);
     }
 
   print_value (var_states.get (dest));
@@ -797,7 +766,7 @@ state::do_assign (tree arg, tree dest)
       for (size_t i = 0; i < dest_val->length (); i++)
 	{
 	  delete (*dest_val)[i];
-	  (*dest_val)[i] = arg_val[i];
+	  (*dest_val)[i] = arg_val[i]->copy ();
 	}
     }
   else
@@ -836,7 +805,7 @@ state::do_assign_pow2 (tree dest, unsigned pow)
       dest_val = var_states.get (dest);
     }
   else
-    free_val (dest_val);
+    dest_val->free_bits ();
 
   for (unsigned i = 0; i < dest_val->length (); i++)
     {
@@ -971,14 +940,15 @@ state::xor_const_bits (const bit *const_bit1, const bit *const_bit2)
 value_bit *
 state::xor_var_const (const value_bit *var, const bit *const_bit)
 {
+  if (const_bit->get_val () == 0)
+    return var->copy ();
+
   value_bit *var_copy = var->copy ();
   bit_expression *node_with_const_child = nullptr;
   bit_expression *tmp = nullptr;
   get_parent_with_const_child (var_copy, node_with_const_child, tmp);
 
-  if (const_bit->get_val () == 0)
-    return var->copy ();
-  else if (node_with_const_child != nullptr)
+  if (node_with_const_child != nullptr)
     {
       value_bit *left = node_with_const_child->get_left ();
       if (left != nullptr && is_a<bit *> (left))
@@ -1150,10 +1120,8 @@ state::do_mul (value *arg1, value *arg2, tree dest)
 
       value *temp = shifted;
       shifted = shift_left_by_const (shifted, 1);
-      free_val (temp);
       delete temp;
     }
-  free_val (shifted);
   delete shifted;
 }
 
@@ -1715,8 +1683,6 @@ state::add_binary_cond (tree arg1, tree arg2, binary_cond_func cond_func)
     }
 
   (this->*cond_func) (arg1_val, arg2_val);
-  free_val (&arg1_const_val);
-  free_val (&arg2_const_val);
   print_conditions ();
   return true;
 }
@@ -1817,9 +1783,8 @@ value::value (unsigned size, bool is_unsigned) : is_unsigned (is_unsigned)
 }
 
 
-value::value (const value &other)
+value::value (const value &other) : is_unsigned (other.is_unsigned)
 {
-  this->is_unsigned = other.is_unsigned;
   number.create (other.length ());
   for (size_t i = 0; i < other.length (); ++i)
     {
@@ -2111,4 +2076,27 @@ value_bit **
 value::push (value_bit *elem)
 {
   return number.quick_push (elem);
+}
+
+
+value::~value ()
+{
+  free_bits ();
+  number.release ();
+}
+
+
+/* Removes given sequence of bits.  */
+
+void
+value::free_bits ()
+{
+  if (!number.exists ())
+    return;
+
+  for (size_t i = 0; i < number.length (); i++)
+    {
+      delete number[i];
+      number[i] = nullptr;
+    }
 }

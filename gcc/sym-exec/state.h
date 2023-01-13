@@ -11,8 +11,11 @@
 #include "expression-is-a-helper.h"
 
 struct value {
+ private:
   vec<value_bit *> number;
-  bool is_unsigned;
+
+ public:
+  const bool is_unsigned;
 
   value (unsigned size, bool is_unsigned);
   value (const value &other);
@@ -24,6 +27,10 @@ struct value {
   value_bit *&operator[] (unsigned i);
   value &operator= (const value &other);
   value_bit *operator[] (unsigned i) const;
+  ~value ();
+
+  /* Removes given sequence of bits.  */
+  void free_bits ();
 };
 
 /* Stores states of variables' values on bit-level.  */
@@ -46,14 +53,8 @@ class state {
   /* The result of last added condition.  */
   condition_status last_cond_status = condition_status::CS_NO_COND;
 
-  /* Removes given value.  */
-  static void free_val (value *val);
-
   /* Creates value for given constant tree.  */
   static value create_val_for_const (tree var, size_t size);
-
-  /* Removes given sequence of bits.  */
-  static void free_bits (vec<value_bit *> *bits);
 
   /* Checks if sizes of arguments and destination are compatible.  */
   bool check_args_compatibility (tree arg1, tree arg2, tree dest);
@@ -368,26 +369,30 @@ state::operate (value *arg1, value *arg2, value_bit **bit_arg, tree dest,
     return;
 
   value *biggest = arg1;
+  value_bit *sign_bit = (*arg2)[i - 1];
   if (arg2->length () > arg1->length ())
-    biggest = arg2;
+    {
+      biggest = arg2;
+      sign_bit = (*arg1)[i - 1];
+    }
 
   min_iter = min (biggest->length (), dest_var->length (), dest_var->length ());
-  value_bit *zero_bit = new bit (0);
   for (; i < min_iter; i++)
     {
       value_bit *temp = (*var_states.get (dest))[i];
       (*var_states.get (dest))[i] = operate_bits (bit_op, (*biggest)[i],
-						  zero_bit, bit_arg);
+						  sign_bit, bit_arg);
       delete temp;
     }
 
   if (i >= dest_var->length ())
     return;
 
+  sign_bit = (*biggest)[i - 1];
   for (; i < dest_var->length (); i++)
     {
       value_bit *temp = (*var_states.get (dest))[i];
-      (*var_states.get (dest))[i] = operate_bits (bit_op, zero_bit, zero_bit,
+      (*var_states.get (dest))[i] = operate_bits (bit_op, sign_bit, sign_bit,
 						  bit_arg);
       delete temp;
     }
