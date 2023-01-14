@@ -89,20 +89,15 @@ class TyConstVisitor;
 class BaseType : public TypeBoundsMappings
 {
 public:
-  virtual ~BaseType () {}
+  virtual ~BaseType ();
 
-  HirId get_ref () const { return ref; }
+  HirId get_ref () const;
 
-  void set_ref (HirId id)
-  {
-    if (id != ref)
-      append_reference (ref);
-    ref = id;
-  }
+  void set_ref (HirId id);
 
-  HirId get_ty_ref () const { return ty_ref; }
+  HirId get_ty_ref () const;
 
-  void set_ty_ref (HirId id) { ty_ref = id; }
+  void set_ty_ref (HirId id);
 
   virtual void accept_vis (TyVisitor &vis) = 0;
 
@@ -133,10 +128,7 @@ public:
   //   ty are considered equal if they're of the same kind, and
   //     1. (For ADTs, arrays, tuples, refs) have the same underlying ty
   //     2. (For functions) have the same signature
-  virtual bool is_equal (const BaseType &other) const
-  {
-    return get_kind () == other.get_kind ();
-  }
+  virtual bool is_equal (const BaseType &other) const;
 
   bool satisfies_bound (const TypeBoundPredicate &predicate) const;
 
@@ -148,11 +140,11 @@ public:
   void inherit_bounds (
     const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
 
-  virtual bool is_unit () const { return false; }
+  virtual bool is_unit () const;
 
   virtual bool is_concrete () const = 0;
 
-  TypeKind get_kind () const { return kind; }
+  TypeKind get_kind () const;
 
   /* Returns a pointer to a clone of this. The caller is responsible for
    * releasing the memory of the returned ty. */
@@ -162,22 +154,19 @@ public:
   virtual BaseType *monomorphized_clone () const = 0;
 
   // get_combined_refs returns the chain of node refs involved in unification
-  std::set<HirId> get_combined_refs () const { return combined; }
+  std::set<HirId> get_combined_refs () const;
 
-  void append_reference (HirId id) { combined.insert (id); }
+  void append_reference (HirId id);
 
-  virtual bool supports_substitutions () const { return false; }
+  virtual bool supports_substitutions () const;
 
-  virtual bool has_subsititions_defined () const { return false; }
+  virtual bool has_subsititions_defined () const;
 
-  virtual bool can_substitute () const
-  {
-    return supports_substitutions () && has_subsititions_defined ();
-  }
+  virtual bool can_substitute () const;
 
-  virtual bool needs_generic_substitutions () const { return false; }
+  virtual bool needs_generic_substitutions () const;
 
-  bool contains_type_parameters () const { return !is_concrete (); }
+  bool contains_type_parameters () const;
 
   std::string mappings_str () const;
 
@@ -192,24 +181,17 @@ public:
   // Projections if available or error
   const BaseType *destructure () const;
 
-  const RustIdent &get_ident () const { return ident; }
+  const RustIdent &get_ident () const;
 
-  Location get_locus () const { return ident.locus; }
+  Location get_locus () const;
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
-	    std::set<HirId> refs = std::set<HirId> ())
-    : TypeBoundsMappings ({}), kind (kind), ref (ref), ty_ref (ty_ref),
-      combined (refs), ident (ident), mappings (Analysis::Mappings::get ())
-  {}
+	    std::set<HirId> refs = std::set<HirId> ());
 
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	    std::vector<TypeBoundPredicate> specified_bounds,
-	    std::set<HirId> refs = std::set<HirId> ())
-    : TypeBoundsMappings (specified_bounds), kind (kind), ref (ref),
-      ty_ref (ty_ref), combined (refs), ident (ident),
-      mappings (Analysis::Mappings::get ())
-  {}
+	    std::set<HirId> refs = std::set<HirId> ());
 
   TypeKind kind;
   HirId ref;
@@ -231,18 +213,10 @@ public:
   };
 
   InferType (HirId ref, InferTypeKind infer_kind, Location locus,
-	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::INFER,
-		{Resolver::CanonicalPath::create_empty (), locus}, refs),
-      infer_kind (infer_kind)
-  {}
+	     std::set<HirId> refs = std::set<HirId> ());
 
   InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind, Location locus,
-	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::INFER,
-		{Resolver::CanonicalPath::create_empty (), locus}, refs),
-      infer_kind (infer_kind)
-  {}
+	     std::set<HirId> refs = std::set<HirId> ());
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -256,13 +230,13 @@ public:
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
 
-  InferTypeKind get_infer_kind () const { return infer_kind; }
+  InferTypeKind get_infer_kind () const;
 
-  std::string get_name () const override final { return as_string (); }
+  std::string get_name () const override final;
 
   bool default_type (BaseType **type) const;
 
-  bool is_concrete () const final override { return true; }
+  bool is_concrete () const final override;
 
 private:
   InferTypeKind infer_kind;
@@ -271,20 +245,15 @@ private:
 class ErrorType : public BaseType
 {
 public:
-  ErrorType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ERROR,
-		{Resolver::CanonicalPath::create_empty (), Location ()}, refs)
-  {}
+  ErrorType (HirId ref, std::set<HirId> refs = std::set<HirId> ());
 
-  ErrorType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ERROR,
-		{Resolver::CanonicalPath::create_empty (), Location ()}, refs)
-  {}
+  ErrorType (HirId ref, HirId ty_ref,
+	     std::set<HirId> refs = std::set<HirId> ());
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
 
-  bool is_unit () const override { return true; }
+  bool is_unit () const override;
 
   std::string as_string () const override;
 
@@ -294,12 +263,11 @@ public:
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
 
-  std::string get_name () const override final { return as_string (); }
+  std::string get_name () const override final;
 
-  bool is_concrete () const final override { return false; }
+  bool is_concrete () const final override;
 };
 
-class SubstitutionArgumentMappings;
 class ParamType : public BaseType
 {
 public:
