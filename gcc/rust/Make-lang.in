@@ -117,6 +117,7 @@ GRS_OBJS = \
     rust/rust-tyty.o \
     rust/rust-tyty-util.o \
     rust/rust-tyty-call.o \
+    rust/rust-tyty-subst.o \
     rust/rust-tyctx.o \
     rust/rust-tyty-bounds.o \
     rust/rust-hir-type-check-util.o \
