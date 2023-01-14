@@ -537,16 +537,17 @@ struct _CommonImplX86 : _CommonImplBuiltin
     _S_store_bool_array(const _BitMask<_Np, _Sanitized> __x, bool* __mem)
     {
       if constexpr (__have_avx512bw_vl) // don't care for BW w/o VL
-	_S_store<_Np>(1 & __vector_bitcast<_UChar, _Np>([=]() constexpr {
-			if constexpr (_Np <= 16)
-			  return _mm_movm_epi8(__x._M_to_bits());
-			else if constexpr (_Np <= 32)
-			  return _mm256_movm_epi8(__x._M_to_bits());
-			else if constexpr (_Np <= 64)
-			  return _mm512_movm_epi8(__x._M_to_bits());
-			else
-			  __assert_unreachable<_SizeConstant<_Np>>();
-		      }()),
+	_S_store<_Np>(1 & __vector_bitcast<_UChar, _Np>(
+			    [=]() constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+			      if constexpr (_Np <= 16)
+				return _mm_movm_epi8(__x._M_to_bits());
+			      else if constexpr (_Np <= 32)
+				return _mm256_movm_epi8(__x._M_to_bits());
+			      else if constexpr (_Np <= 64)
+				return _mm512_movm_epi8(__x._M_to_bits());
+			      else
+				__assert_unreachable<_SizeConstant<_Np>>();
+			    }()),
 		      __mem);
       else if constexpr (__have_bmi2)
 	{
@@ -554,7 +555,7 @@ struct _CommonImplX86 : _CommonImplBuiltin
 	    _S_store<_Np>(_pdep_u32(__x._M_to_bits(), 0x01010101U), __mem);
 	  else
 	    __execute_n_times<__div_roundup(_Np, sizeof(size_t))>(
-	      [&](auto __i) {
+	      [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		constexpr size_t __offset = __i * sizeof(size_t);
 		constexpr int __todo = std::min(sizeof(size_t), _Np - __offset);
 		if constexpr (__todo == 1)
@@ -575,7 +576,7 @@ struct _CommonImplX86 : _CommonImplBuiltin
 	      });
 	}
       else if constexpr (__have_sse2 && _Np > 7)
-	__execute_n_times<__div_roundup(_Np, 16)>([&](auto __i) {
+	__execute_n_times<__div_roundup(_Np, 16)>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	  constexpr int __offset = __i * 16;
 	  constexpr int __todo = std::min(16, int(_Np) - __offset);
 	  const int __bits = __x.template _M_extract<__offset>()._M_to_bits();
@@ -765,9 +766,10 @@ struct _CommonImplX86 : _CommonImplBuiltin
       static_assert(is_same_v<_Tp, _Tp> && __have_avx512f);
       if (__k._M_is_constprop() && __at0._M_is_constprop()
 	  && __at1._M_is_constprop())
-	return __generate_from_n_evaluations<_Np,
-					     __vector_type_t<_Tp, _Np>>([&](
-	  auto __i) constexpr { return __k[__i] ? __at1[__i] : __at0[__i]; });
+	return __generate_from_n_evaluations<_Np, __vector_type_t<_Tp, _Np>>(
+		 [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		   return __k[__i] ? __at1[__i] : __at0[__i];
+		 });
       else if constexpr (sizeof(__at0) == 64
 			 || (__have_avx512vl && sizeof(__at0) >= 16))
 	return _S_blend_avx512(__k._M_data, __at0._M_data, __at1._M_data);
@@ -994,9 +996,8 @@ template <typename _Abi, typename>
 	      }
 	    else
 	      _BitOps::_S_bit_iteration(_MaskImpl::_S_to_bits(__k),
-					[&](auto __i) {
-					  __merge._M_set(__i, static_cast<_Tp>(
-								__mem[__i]));
+					[&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+					  __merge._M_set(__i, static_cast<_Tp>(__mem[__i]));
 					});
 	  }
 	/* Very uncertain, that the following improves anything. Needs
@@ -1417,11 +1418,12 @@ template <typename _Abi, typename>
 	      const auto __yf = __convert_all<_FloatV, __n_floatv>(
 		_Abi::__make_padding_nonzero(__as_vector(__y)));
 	      return __call_with_n_evaluations<__n_floatv>(
-		[](auto... __quotients) {
+		[](auto... __quotients) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		  return __vector_convert<_R>(__quotients...);
 		},
-		[&__xf,
-		 &__yf](auto __i) -> _SimdWrapper<_Float, __n_intermediate> {
+		[&__xf, &__yf](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
+		  -> _SimdWrapper<_Float, __n_intermediate>
+		{
 #if __RECIPROCAL_MATH__
 		  // If -freciprocal-math is active, using the `/` operator is
 		  // incorrect because it may be translated to an imprecise
@@ -1980,7 +1982,7 @@ template <typename _Abi, typename>
 	      {
 		auto __mask = __vector_bitcast<_UChar>(
 		  __vector_bitcast<_UShort>(__iy) << 5);
-		auto __maskl = [&]() {
+		auto __maskl = [&]() _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		  return __to_intrin(__vector_bitcast<_UShort>(__mask) << 8);
 		};
 		auto __xh = __vector_bitcast<short>(__ix);
@@ -2067,19 +2069,20 @@ template <typename _Abi, typename>
 	  }                                                      //}}}
 	else if constexpr (sizeof(_Up) == 2 && sizeof(__x) >= 4) //{{{
 	  {
-	    [[maybe_unused]] auto __blend_0xaa = [](auto __a, auto __b) {
-	      if constexpr (sizeof(__a) == 16)
-		return _mm_blend_epi16(__to_intrin(__a), __to_intrin(__b),
-				       0xaa);
-	      else if constexpr (sizeof(__a) == 32)
-		return _mm256_blend_epi16(__to_intrin(__a), __to_intrin(__b),
-					  0xaa);
-	      else if constexpr (sizeof(__a) == 64)
-		return _mm512_mask_blend_epi16(0xaaaa'aaaaU, __to_intrin(__a),
-					       __to_intrin(__b));
-	      else
-		__assert_unreachable<decltype(__a)>();
-	    };
+	    [[maybe_unused]] auto __blend_0xaa
+	      = [](auto __a, auto __b) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		if constexpr (sizeof(__a) == 16)
+		  return _mm_blend_epi16(__to_intrin(__a), __to_intrin(__b),
+					 0xaa);
+		else if constexpr (sizeof(__a) == 32)
+		  return _mm256_blend_epi16(__to_intrin(__a), __to_intrin(__b),
+					    0xaa);
+		else if constexpr (sizeof(__a) == 64)
+		  return _mm512_mask_blend_epi16(0xaaaa'aaaaU, __to_intrin(__a),
+						 __to_intrin(__b));
+		else
+		  __assert_unreachable<decltype(__a)>();
+	      };
 	    if constexpr (__have_avx512bw_vl && sizeof(_Tp) <= 16)
 	      return __intrin_bitcast<_V>(is_signed_v<_Up>
 					    ? _mm_srav_epi16(__ix, __iy)
@@ -2136,9 +2139,10 @@ template <typename _Abi, typename>
 	      {
 		auto __k = __vector_bitcast<_UShort>(__iy) << 11;
 		auto __x128 = __vector_bitcast<_Up>(__ix);
-		auto __mask = [](__vector_type16_t<_UShort> __kk) {
-		  return __vector_bitcast<short>(__kk) < 0;
-		};
+		auto __mask
+		  = [](__vector_type16_t<_UShort> __kk) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		    return __vector_bitcast<short>(__kk) < 0;
+		  };
 		// do __x128 = 0 where __y[4] is set
 		__x128 = __mask(__k) ? decltype(__x128)() : __x128;
 		// do __x128 =>> 8 where __y[3] is set
@@ -2178,7 +2182,7 @@ template <typename _Abi, typename>
 	      }
 	    else
 	      {
-		auto __shift = [](auto __a, auto __b) {
+		auto __shift = [](auto __a, auto __b) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		  if constexpr (is_signed_v<_Up>)
 		    return _mm_sra_epi32(__a, __b);
 		  else
@@ -3495,7 +3499,7 @@ struct _MaskImplX86Mixin
 	return _S_to_maskvector<_Up, _ToN>(__k);
       else if (__x._M_is_constprop() || __builtin_is_constant_evaluated())
 	return __generate_from_n_evaluations<std::min(_ToN, _Np), _UV>(
-	  [&](auto __i) -> _Up { return -__x[__i.value]; });
+	  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA -> _Up { return -__x[__i.value]; });
       else if constexpr (sizeof(_Up) == 1)
 	{
 	  if constexpr (sizeof(_UI) == 16)
@@ -3740,9 +3744,9 @@ struct _MaskImplX86Mixin
       else if constexpr (__bits_per_element >= _ToN)
 	{
 	  constexpr auto __bitmask
-	    = __generate_vector<_V>([](auto __i) constexpr->_UpUInt {
-		return __i < _ToN ? 1ull << __i : 0;
-	      });
+	    = __generate_vector<_V>([](auto __i)
+				    constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA -> _UpUInt
+				    { return __i < _ToN ? 1ull << __i : 0; });
 	  const auto __bits
 	    = __vector_broadcast<_ToN, _UpUInt>(__k) & __bitmask;
 	  if constexpr (__bits_per_element > _ToN)
@@ -3753,11 +3757,11 @@ struct _MaskImplX86Mixin
       else
 	{
 	  const _V __tmp
-	    = __generate_vector<_V>([&](auto __i) constexpr {
+	    = __generate_vector<_V>([&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		return static_cast<_UpUInt>(
 		  __k >> (__bits_per_element * (__i / __bits_per_element)));
 	      })
-	      & __generate_vector<_V>([](auto __i) constexpr {
+	      & __generate_vector<_V>([](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		  return static_cast<_UpUInt>(1ull
 					      << (__i % __bits_per_element));
 		}); // mask bit index
@@ -3793,7 +3797,7 @@ struct _MaskImplX86Mixin
 	      const auto __y = __vector_bitcast<__int_for_sizeof_t<_Tp>>(__x);
 	      return __generate_from_n_evaluations<std::min(_ToN, _Np),
 						   __vector_type_t<_Up, _ToN>>(
-		[&](auto __i) -> _Up { return __y[__i.value]; });
+		[&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA -> _Up { return __y[__i.value]; });
 	    }
 	  using _To = __vector_type_t<_Up, _ToN>;
 	  [[maybe_unused]] constexpr size_t _FromN = _Np;
@@ -4128,8 +4132,11 @@ struct _MaskImplX86Mixin
 	    {
 	      const auto __bools = -__x._M_data;
 	      const _ULLong __k = __call_with_n_evaluations<_Np>(
-		[](auto... __bits) { return (__bits | ...); },
-		[&](auto __i) { return _ULLong(__bools[+__i]) << __i; });
+		[](auto... __bits) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		  return (__bits | ...);
+		}, [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		  return _ULLong(__bools[+__i]) << __i;
+		});
 	      if (__builtin_is_constant_evaluated()
 		  || __builtin_constant_p(__k))
 		return __k;
@@ -4285,13 +4292,14 @@ template <typename _Abi, typename>
 	static_assert(is_same_v<_Tp, __int_for_sizeof_t<_Tp>>);
 	if constexpr (__have_avx512bw)
 	  {
-	    const auto __to_vec_or_bits = [](auto __bits) -> decltype(auto) {
-	      if constexpr (__is_avx512_abi<_Abi>())
-		return __bits;
-	      else
-		return _S_to_maskvector<_Tp>(
-		  _BitMask<_S_size<_Tp>>(__bits)._M_sanitized());
-	    };
+	    const auto __to_vec_or_bits
+	      = [](auto __bits) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA -> decltype(auto) {
+		if constexpr (__is_avx512_abi<_Abi>())
+		  return __bits;
+		else
+		  return _S_to_maskvector<_Tp>(
+			   _BitMask<_S_size<_Tp>>(__bits)._M_sanitized());
+	      };
 
 	    if constexpr (_S_size<_Tp> <= 16 && __have_avx512vl)
 	      {
@@ -4478,7 +4486,7 @@ template <typename _Abi, typename>
 	      }
 	    else
 	      {
-		_BitOps::_S_bit_iteration(__mask, [&](auto __i) {
+		_BitOps::_S_bit_iteration(__mask, [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		  __merge._M_set(__i, __mem[__i]);
 		});
 		return __merge;
@@ -4557,7 +4565,7 @@ template <typename _Abi, typename>
 	  {
 	    if constexpr (__have_avx512bw_vl)
 	      _CommonImplX86::_S_store<_Np>(
-		__vector_bitcast<char>([](auto __data) {
+		__vector_bitcast<char>([](auto __data) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		  if constexpr (_Np <= 16)
 		    return _mm_maskz_set1_epi8(__data, 1);
 		  else if constexpr (_Np <= 32)

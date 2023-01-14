@@ -262,6 +262,7 @@
 #define _GLIBCXX_SIMD_INTRINSIC                                                \
   [[__gnu__::__always_inline__, __gnu__::__artificial__]] inline
 #define _GLIBCXX_SIMD_ALWAYS_INLINE [[__gnu__::__always_inline__]] inline
+#define _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA __attribute__((__always_inline__))
 #define _GLIBCXX_SIMD_IS_UNLIKELY(__x) __builtin_expect(__x, 0)
 #define _GLIBCXX_SIMD_IS_LIKELY(__x) __builtin_expect(__x, 1)
 
@@ -294,6 +295,8 @@
 #ifdef _GLIBCXX_SIMD_NO_ALWAYS_INLINE
 #undef _GLIBCXX_SIMD_ALWAYS_INLINE
 #define _GLIBCXX_SIMD_ALWAYS_INLINE inline
+#undef _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
+#define _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
 #undef _GLIBCXX_SIMD_INTRINSIC
 #define _GLIBCXX_SIMD_INTRINSIC inline
 #endif

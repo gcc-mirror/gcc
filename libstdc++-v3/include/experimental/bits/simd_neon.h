@@ -61,7 +61,7 @@ template <typename _Abi, typename>
       _S_masked_load(_SimdWrapper<_Tp, _Np> __merge, _MaskMember<_Tp> __k,
 		     const _Up* __mem) noexcept
       {
-	__execute_n_times<_Np>([&](auto __i) {
+	__execute_n_times<_Np>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	  if (__k[__i] != 0)
 	    __merge._M_set(__i, static_cast<_Tp>(__mem[__i]));
 	});
@@ -75,7 +75,7 @@ template <typename _Abi, typename>
       _S_masked_store_nocvt(_SimdWrapper<_Tp, _Np> __v, _Tp* __mem,
 			    _MaskMember<_Tp> __k)
       {
-	__execute_n_times<_Np>([&](auto __i) {
+	__execute_n_times<_Np>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	  if (__k[__i] != 0)
 	    __mem[__i] = __v[__i];
 	});
@@ -286,7 +286,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<16, __vector_type_t<_I, 16>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(
 		      __i < _Np ? (__i < 8 ? 1 << __i : 1 << (__i - 8)) : 0);
 		  });
@@ -306,7 +306,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<8, __vector_type_t<_I, 8>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
@@ -322,7 +322,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<4, __vector_type_t<_I, 4>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
@@ -346,7 +346,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<8, __vector_type_t<_I, 8>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
@@ -361,7 +361,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<4, __vector_type_t<_I, 4>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
