@@ -82,6 +82,14 @@ namespace __gnu_cxx
 #endif
 }
 
+#if ! defined _GLIBCXX_ZONEINFO_DIR && ! defined _GLIBCXX_STATIC_TZDATA
+# define TZDB_DISABLED
+  [[noreturn]] void __throw_disabled()
+  {
+    std::__throw_runtime_error("tzdb: support for loading tzdata is disabled");
+  }
+#endif
+
 namespace std::chrono
 {
   namespace
@@ -105,7 +113,9 @@ namespace std::chrono
   {
     shared_ptr<_Node> next;
     tzdb db;
+#ifndef TZDB_DISABLED
     vector<Rule> rules;
+#endif
 
     // The following static members are here because making them members
     // of this type gives them access to the private members of time_zone
@@ -175,6 +185,7 @@ namespace std::chrono
   // assume that setting failbit will throw an exception, so individual
   // input operations are not always checked for success.
 
+#ifndef TZDB_DISABLED
   namespace
   {
     // Used for reading a possibly-quoted string from a stream.
@@ -582,6 +593,7 @@ namespace std::chrono
 #endif
     };
   } // namespace
+#endif // TZDB_DISABLED
 
   // Private constructor used by reload_tzdb() to create time_zone objects.
   time_zone::time_zone(unique_ptr<_Impl> __p) : _M_impl(std::move(__p)) { }
@@ -591,6 +603,7 @@ namespace std::chrono
   // The opaque pimpl class stored in a time_zone object.
   struct time_zone::_Impl
   {
+#ifndef TZDB_DISABLED
     explicit
     _Impl(weak_ptr<tzdb_list::_Node> node) : node(std::move(node)) { }
 
@@ -677,11 +690,19 @@ namespace std::chrono
 	  }
 	}
       };
-#endif
+#endif // __GTHREADS && __cpp_lib_atomic_wait
 
     RulesCounter<atomic_signed_lock_free> rules_counter;
+#else // TZDB_DISABLED
+    _Impl(weak_ptr<tzdb_list::_Node>) { }
+    struct {
+      sys_info info;
+      void push_back(sys_info i) { info = std::move(i); }
+    } infos;
+#endif // TZDB_DISABLED
   };
 
+#ifndef TZDB_DISABLED
   namespace
   {
     bool
@@ -731,11 +752,13 @@ namespace std::chrono
 	select_std_or_dst_abbrev(info.abbrev, info.save);
     }
   }
+#endif // TZDB_DISABLED
 
   // Implementation of std::chrono::time_zone::get_info(const sys_time<D>&)
   sys_info
   time_zone::_M_get_sys_info(sys_seconds tp) const
   {
+#ifndef TZDB_DISABLED
     // This gives us access to the node->rules vector, but also ensures
     // that the tzdb node won't get erased while we're still using it.
     const auto node = _M_impl->node.lock();
@@ -934,17 +957,20 @@ namespace std::chrono
 	// Decrement count of rule-based infos (might also release lock).
 	_M_impl->rules_counter.decrement();
       }
-
     return info;
+#else
+    return _M_impl->infos.info;
+#endif // TZDB_DISABLED
   }
 
   // Implementation of std::chrono::time_zone::get_info(const local_time<D>&)
   local_info
   time_zone::_M_get_local_info(local_seconds tp) const
   {
+    local_info info{};
+#ifndef TZDB_DISABLED
     const auto node = _M_impl->node.lock();
 
-    local_info info{};
     // Get sys_info assuming no offset between local time and UTC:
     info.first = _M_get_sys_info(sys_seconds(tp.time_since_epoch()));
 
@@ -1007,9 +1033,13 @@ namespace std::chrono
 	  }
 	// else tp is a unique local time, info.first is the correct sys_info.
       }
+#else
+    info.first = _M_impl->infos.info;
+#endif // TZDB_DISABLED
     return info;
   }
 
+#ifndef TZDB_DISABLED
   namespace
   {
     // If a zoneinfo directory is defined (either when the library was built,
@@ -1088,14 +1118,13 @@ namespace std::chrono
       bool using_static_data() const { return this->rdbuf() == &sb; }
     };
   }
+#endif // TZDB_DISABLED
 
   // Return leap_second values, and a bool indicating whether the values are
   // current (true), or potentially out of date (false).
   pair<vector<leap_second>, bool>
   tzdb_list::_Node::_S_read_leap_seconds()
   {
-    const string filename = zoneinfo_file(leaps_file);
-
     // This list is valid until at least 2023-06-28 00:00:00 UTC.
     auto expires = sys_days{2023y/6/28};
     vector<leap_second> leaps
@@ -1137,10 +1166,10 @@ namespace std::chrono
       return {std::move(leaps), true};
 #endif
 
-    auto exp_year = year_month_day(expires).year();
-
-    if (ifstream ls{filename})
+#ifndef TZDB_DISABLED
+    if (ifstream ls{zoneinfo_file(leaps_file)})
       {
+	auto exp_year = year_month_day(expires).year();
 	std::string s, w;
 	s.reserve(80); // Avoid later reallocations.
 	while (std::getline(ls, s))
@@ -1183,10 +1212,11 @@ namespace std::chrono
 	  }
 	return {std::move(leaps), true};
       }
-    else
-      return {std::move(leaps), false};
+#endif
+    return {std::move(leaps), false};
   }
 
+#ifndef TZDB_DISABLED
   namespace
   {
     // Read the version number from a tzdata.zi file.
@@ -1213,12 +1243,17 @@ namespace std::chrono
       __throw_runtime_error("tzdb: no version found in tzdata.zi");
     }
   }
+#endif
 
   // Definition of std::chrono::remote_version()
   string remote_version()
   {
+#ifndef TZDB_DISABLED
     tzdata_stream zif;
     return remote_version(zif);
+#else
+    __throw_disabled();
+#endif
   }
 
   // Used by chrono::reload_tzdb() to add a new node to the front of the list.
@@ -1255,11 +1290,13 @@ namespace std::chrono
   const tzdb&
   tzdb_list::_Node::_S_init_tzdb()
   {
+#ifndef TZDB_DISABLED
     __try
       {
 	return reload_tzdb();
       }
     __catch (const std::exception&)
+#endif
       {
 	auto [leaps, ok] = _S_read_leap_seconds();
 
@@ -1349,6 +1386,7 @@ namespace std::chrono
   const tzdb&
   reload_tzdb()
   {
+#ifndef TZDB_DISABLED
     using Node = tzdb_list::_Node;
 
     tzdata_stream zif;
@@ -1458,6 +1496,9 @@ namespace std::chrono
     shared_ptr<Node> head;
 #endif
     return Node::_S_replace_head(std::move(head), std::move(node));
+#else
+    __throw_disabled();
+#endif // TZDB_DISABLED
   }
 
   // Any call to tzdb_list::front() or tzdb_list::begin() must follow
@@ -1641,6 +1682,7 @@ namespace std::chrono
     return get_tzdb_list().begin()->current_zone();
   }
 
+#ifndef TZDB_DISABLED
   namespace
   {
     istream& operator>>(istream& in, abbrev_month& am)
@@ -1933,5 +1975,5 @@ namespace std::chrono
       return in;
     }
   } // namespace
-
+#endif // TZDB_DISABLED
 } // namespace std::chrono
