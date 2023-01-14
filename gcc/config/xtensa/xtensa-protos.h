@@ -78,7 +78,7 @@ extern long compute_frame_size (poly_int64);
 extern bool xtensa_use_return_instruction_p (void);
 extern void xtensa_expand_prologue (void);
 extern void xtensa_expand_epilogue (bool);
-extern void order_regs_for_local_alloc (void);
+extern void xtensa_adjust_reg_alloc_order (void);
 extern enum reg_class xtensa_regno_to_class (int regno);
 extern HOST_WIDE_INT xtensa_initial_elimination_offset (int from, int to);
 extern const char **xtensa_get_config_strings (void);

@@ -107,18 +107,6 @@ struct GTY(()) machine_function
   rtx last_logues_a9_content;
 };
 
-/* Vector, indexed by hard register number, which contains 1 for a
-   register that is allowable in a candidate for leaf function
-   treatment.  */
-
-const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER] =
-{
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1
-};
-
 static void xtensa_option_override (void);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx);
@@ -4140,58 +4128,25 @@ xtensa_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
   return NO_REGS;
 }
 
+/* Called once at the start of IRA, by ADJUST_REG_ALLOC_ORDER.  */
 
 void
-order_regs_for_local_alloc (void)
+xtensa_adjust_reg_alloc_order (void)
 {
-  if (!leaf_function_p ())
-    {
-      static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
+  static const int reg_windowed_alloc_order[FIRST_PSEUDO_REGISTER] =
 	REG_ALLOC_ORDER;
-      static const int reg_nonleaf_alloc_order_call0[FIRST_PSEUDO_REGISTER] =
-	{
-	  11, 10,  9,  8,  7,  6,  5,  4,  3,  2, 12, 13, 14, 15,
-	  18,
-	  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-	  0,  1, 16, 17,
-	  35,
-	};
+  static const int reg_call0_alloc_order[FIRST_PSEUDO_REGISTER] =
+  {
+     9, 10, 11,  7,  6,  5,  4,  3,  2,  8,  0, 12, 13, 14, 15,
+    18,
+    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+     1, 16, 17,
+    35,
+  };
 
-      memcpy (reg_alloc_order, TARGET_WINDOWED_ABI ?
-	      reg_nonleaf_alloc_order : reg_nonleaf_alloc_order_call0,
-	      FIRST_PSEUDO_REGISTER * sizeof (int));
-    }
-  else
-    {
-      int i, num_arg_regs;
-      int nxt = 0;
-
-      /* Use the AR registers in increasing order (skipping a0 and a1)
-	 but save the incoming argument registers for a last resort.  */
-      num_arg_regs = crtl->args.info.arg_words;
-      if (num_arg_regs > MAX_ARGS_IN_REGISTERS)
-	num_arg_regs = MAX_ARGS_IN_REGISTERS;
-      for (i = GP_ARG_FIRST; i < 16 - num_arg_regs; i++)
-	reg_alloc_order[nxt++] = i + num_arg_regs;
-      for (i = 0; i < num_arg_regs; i++)
-	reg_alloc_order[nxt++] = GP_ARG_FIRST + i;
-
-      /* List the coprocessor registers in order.  */
-      for (i = 0; i < BR_REG_NUM; i++)
-	reg_alloc_order[nxt++] = BR_REG_FIRST + i;
-
-      /* List the FP registers in order for now.  */
-      for (i = 0; i < 16; i++)
-	reg_alloc_order[nxt++] = FP_REG_FIRST + i;
-
-      /* GCC requires that we list *all* the registers....  */
-      reg_alloc_order[nxt++] = 0;	/* a0 = return address */
-      reg_alloc_order[nxt++] = 1;	/* a1 = stack pointer */
-      reg_alloc_order[nxt++] = 16;	/* pseudo frame pointer */
-      reg_alloc_order[nxt++] = 17;	/* pseudo arg pointer */
-
-      reg_alloc_order[nxt++] = ACC_REG_FIRST;	/* MAC16 accumulator */
-    }
+  memcpy (reg_alloc_order, TARGET_WINDOWED_ABI ?
+	  reg_windowed_alloc_order : reg_call0_alloc_order,
+	  FIRST_PSEUDO_REGISTER * sizeof (int));
 }
 
 
