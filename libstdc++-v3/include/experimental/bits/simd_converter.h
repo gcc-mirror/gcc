@@ -121,7 +121,7 @@ template <typename _From, typename _To, int _Np>
 	{
 	  return __call_with_subscripts(
 	    __x, make_index_sequence<_Np>(),
-	    [](auto... __values) constexpr->_Ret {
+	    [](auto... __values) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA -> _Ret {
 	      return __make_simd_tuple<_To, decltype((void) __values,
 						     simd_abi::scalar())...>(
 		static_cast<_To>(__values)...);
@@ -233,7 +233,9 @@ template <typename _From, typename _To, int _Np>
 	  static_assert(_Ret::_FirstAbi::template _S_is_partial<_To>);
 	  return _Ret{__generate_from_n_evaluations<
 	    _Np, typename _VectorTraits<typename _Ret::_FirstType>::type>(
-	    [&](auto __i) { return static_cast<_To>(__x[__i]); })};
+	    [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	      return static_cast<_To>(__x[__i]);
+	    })};
 	}
       else
 	{
@@ -241,7 +243,7 @@ template <typename _From, typename _To, int _Np>
 	  constexpr auto __n
 	    = __div_roundup(_Ret::_S_first_size, _Arg::_S_first_size);
 	  return __call_with_n_evaluations<__n>(
-	    [&__x](auto... __uncvted) {
+	    [&__x](auto... __uncvted) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	      // assuming _Arg Abi tags for all __i are _Arg::_FirstAbi
 	      _SimdConverter<_From, typename _Arg::_FirstAbi, _To,
 			     typename _Ret::_FirstAbi>
@@ -255,8 +257,9 @@ template <typename _From, typename _To, int _Np>
 		    _From, simd_abi::fixed_size<_Np - _Ret::_S_first_size>, _To,
 		    simd_abi::fixed_size<_Np - _Ret::_S_first_size>>()(
 		    __simd_tuple_pop_front<_Ret::_S_first_size>(__x))};
-	    },
-	    [&__x](auto __i) { return __get_tuple_at<__i>(__x); });
+	    }, [&__x](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	      return __get_tuple_at<__i>(__x);
+	    });
 	}
     }
   };
@@ -322,13 +325,14 @@ template <typename _From, int _Np, typename _To, typename _Ap>
 	return __vector_convert<__vector_type_t<_To, _Np>>(__x.first);
       else if constexpr (_Arg::_S_is_homogeneous)
 	return __call_with_n_evaluations<_Arg::_S_tuple_size>(
-	  [](auto... __members) {
+	  [](auto... __members) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	    if constexpr ((is_convertible_v<decltype(__members), _To> && ...))
 	      return __vector_type_t<_To, _Np>{static_cast<_To>(__members)...};
 	    else
 	      return __vector_convert<__vector_type_t<_To, _Np>>(__members...);
-	  },
-	  [&](auto __i) { return __get_tuple_at<__i>(__x); });
+	  }, [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	    return __get_tuple_at<__i>(__x);
+	  });
       else if constexpr (__fixed_size_storage_t<_To, _Np>::_S_tuple_size == 1)
 	{
 	  _SimdConverter<_From, simd_abi::fixed_size<_Np>, _To,
@@ -340,7 +344,7 @@ template <typename _From, int _Np, typename _To, typename _Ap>
 	{
 	  const _SimdWrapper<_From, _Np> __xv
 	    = __generate_from_n_evaluations<_Np, __vector_type_t<_From, _Np>>(
-	      [&](auto __i) { return __x[__i]; });
+		[&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA { return __x[__i]; });
 	  return __vector_convert<__vector_type_t<_To, _Np>>(__xv);
 	}
     }
