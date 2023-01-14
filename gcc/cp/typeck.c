@@ -4779,7 +4779,12 @@ cp_build_binary_op (const op_location_t &location,
 		 it was unsigned.  */
 	      tree stripped_op1 = tree_strip_any_location_wrapper (op1);
 	      shorten = ((TREE_CODE (op0) == NOP_EXPR
-			  && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
+			  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (op0,
+								       0)))
+			  && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0)))
+			  && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0,
+								       0)))
+			      < TYPE_PRECISION (type0)))
 			 || (TREE_CODE (stripped_op1) == INTEGER_CST
 			     && ! integer_all_onesp (stripped_op1)));
 	    }
@@ -4815,7 +4820,10 @@ cp_build_binary_op (const op_location_t &location,
 	     only if unsigned or if dividing by something we know != -1.  */
 	  tree stripped_op1 = tree_strip_any_location_wrapper (op1);
 	  shorten = ((TREE_CODE (op0) == NOP_EXPR
-		      && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
+		      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0)))
+		      && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0)))
+		      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0, 0)))
+			  < TYPE_PRECISION (type0)))
 		     || (TREE_CODE (stripped_op1) == INTEGER_CST
 			 && ! integer_all_onesp (stripped_op1)));
 	  common = 1;
