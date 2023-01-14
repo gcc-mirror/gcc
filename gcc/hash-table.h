@@ -534,6 +534,11 @@ private:
   void expand ();
   static bool is_deleted (value_type &v)
   {
+    /* Traits are supposed to avoid recognizing elements as both empty
+       and deleted, but to fail safe in case custom traits fail to do
+       that, make sure we never test for is_deleted without having
+       first ruled out is_empty.  */
+    gcc_checking_assert (!Descriptor::is_empty (v));
     return Descriptor::is_deleted (v);
   }
 
@@ -545,6 +550,11 @@ private:
   static void mark_deleted (value_type &v)
   {
     Descriptor::mark_deleted (v);
+    /* Traits are supposed to refuse to set elements as deleted if
+       those would be indistinguishable from empty, but to fail safe
+       in case custom traits fail to do that, check that the
+       just-deleted element does not look empty.  */
+    gcc_checking_assert (!Descriptor::is_empty (v));
   }
 
   static void mark_empty (value_type &v)
@@ -700,9 +710,11 @@ hash_table<Descriptor, Lazy, Allocator>::hash_table (const hash_table &h,
       for (size_t i = 0; i < size; ++i)
 	{
 	  value_type &entry = h.m_entries[i];
-	  if (is_deleted (entry))
+	  if (is_empty (entry))
+	    continue;
+	  else if (is_deleted (entry))
 	    mark_deleted (nentries[i]);
-	  else if (!is_empty (entry))
+	  else
 	    new ((void*) (nentries + i)) value_type (entry);
 	}
       m_entries = nentries;
