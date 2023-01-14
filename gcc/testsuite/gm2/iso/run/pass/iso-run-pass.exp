@@ -24,7 +24,6 @@ if $tracelevel then {
 # load support procs
 load_lib gm2-torture.exp
 
-gm2_link_lib "m2iso m2pim"
 gm2_init_iso "${srcdir}/gm2/iso/run/pass" -fsoft-check-all
 gm2_link_obj fileio.o
 

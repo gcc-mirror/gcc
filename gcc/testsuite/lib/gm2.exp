@@ -352,6 +352,7 @@ proc gm2_init_pimx { dialect {path ""} args } {
 	append theIpath " -I"
 	append theIpath ${path}
     }
+    gm2_link_lib "m2pim m2iso"
     gm2_init {*}${theIpath} {*}${dialect} {*}${theLpath} {*}${args};
 }
 
@@ -422,6 +423,7 @@ proc gm2_init_iso { {path ""} args } {
 	append theIpath ${path}
     }
 
+    gm2_link_lib "m2iso m2pim m2cor"
     gm2_init {*}${theIpath} -fiso {*}${theLpath} {*}${args};
 }
 
@@ -450,6 +452,7 @@ proc gm2_init_ulm { {path ""} args } {
 	append theIpath ${path}
     }
 
+    gm2_link_lib "m2ulm m2pim"
     gm2_init {*}${theIpath} -fpim {*}${theLpath} {*}${args};
 }
 
@@ -540,24 +543,26 @@ proc gm2_init_cor { {path ""} args } {
 proc gm2_init_minx { dialect {path ""} args } {
     global srcdir;
     global gccpath;
-
     set gm2src ${srcdir}/../m2;
 
     send_log "srcdir is $srcdir\n"
     send_log "gccpath is $gccpath\n"
     send_log "gm2src is $gm2src\n"
 
-    set minIpath "${gccpath}/libgm2/libm2min";
-    set minLpath "${gccpath}/libgm2/libm2min/.libs";
+    set theIpath " -I${gccpath}/libgm2/libm2min"
+    append theIpath " -I${gm2src}/gm2-libs-min"
 
-    set theIpath "-I${minIpath}";
-    set theLpath "-L${minLpath}";
+    set theLpath " -L${gccpath}/libgm2/libm2min/.libs";
 
     if { $path != "" } then {
 	append theIpath " -I"
 	append theIpath ${path}
     }
-    gm2_init {*}${theIpath} {*}${dialect} {*}${theLpath} {*}${args};
+
+    gm2_link_lib "m2min"
+    append args " -fno-exceptions "
+    append args " -fno-libs=- "
+    gm2_init {*}${theIpath} {*}${dialect} {*}${theLpath} {*}${args}
 }
 
 #
@@ -566,6 +571,5 @@ proc gm2_init_minx { dialect {path ""} args } {
 #
 
 proc gm2_init_min { {path ""} args } {
-    append args " -fno-exceptions"
-    gm2_init_minx -fpim {*}${path} {*}${args};
+    gm2_init_minx -fpim {*}${path} {*}${args}
 }
