@@ -34,6 +34,10 @@
 #include <mutex>      // mutex
 #include <filesystem> // filesystem::read_symlink
 
+#ifndef _AIX
+# include <cstdlib>   // getenv
+#endif
+
 #ifndef __GTHREADS
 # define USE_ATOMIC_SHARED_PTR 0
 #elif _WIN32
@@ -1625,6 +1629,7 @@ namespace std::chrono
   {
     // TODO cache this function's result?
 
+#ifndef _AIX
     error_code ec;
     // This should be a symlink to e.g. /usr/share/zoneinfo/Europe/London
     auto path = filesystem::read_symlink("/etc/localtime", ec);
@@ -1655,11 +1660,25 @@ namespace std::chrono
 	  if (auto tz = do_locate_zone(this->zones, this->links, name))
 	    return tz;
       }
-
-    // TODO AIX stores current zone in $TZ in /etc/environment but the value
+#else
+    // AIX stores current zone in $TZ in /etc/environment but the value
     // is typically a POSIX time zone name, not IANA zone.
     // https://developer.ibm.com/articles/au-aix-posix/
     // https://www.ibm.com/support/pages/managing-time-zone-variable-posix
+    if (const char* env = std::getenv("TZ"))
+      {
+	string_view s(env);
+	if (s == "GMT0")
+	  s = "Etc/GMT";
+	else if (s.size() == 4 && s[3] == '0')
+	  s = "Etc/UTC";
+
+	// This will fail unless TZ contains an IANA time zone name,
+	// or one of the special cases above.
+	if (auto tz = do_locate_zone(this->zones, this->links, s))
+	  return tz;
+      }
+#endif
 
     __throw_runtime_error("tzdb: cannot determine current zone");
   }
