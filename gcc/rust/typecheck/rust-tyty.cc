@@ -146,6 +146,122 @@ is_primitive_type_kind (TypeKind kind)
     }
 }
 
+// BASE TYPE
+
+BaseType::BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
+		    std::set<HirId> refs)
+  : TypeBoundsMappings ({}), kind (kind), ref (ref), ty_ref (ty_ref),
+    combined (refs), ident (ident), mappings (Analysis::Mappings::get ())
+{}
+
+BaseType::BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
+		    std::vector<TypeBoundPredicate> specified_bounds,
+		    std::set<HirId> refs)
+  : TypeBoundsMappings (specified_bounds), kind (kind), ref (ref),
+    ty_ref (ty_ref), combined (refs), ident (ident),
+    mappings (Analysis::Mappings::get ())
+{}
+
+BaseType::~BaseType () {}
+
+HirId
+BaseType::get_ref () const
+{
+  return ref;
+}
+
+void
+BaseType::set_ref (HirId id)
+{
+  if (id != ref)
+    append_reference (ref);
+  ref = id;
+}
+
+HirId
+BaseType::get_ty_ref () const
+{
+  return ty_ref;
+}
+
+void
+BaseType::set_ty_ref (HirId id)
+{
+  ty_ref = id;
+}
+
+bool
+BaseType::is_equal (const BaseType &other) const
+{
+  return get_kind () == other.get_kind ();
+}
+
+bool
+BaseType::is_unit () const
+{
+  return false;
+}
+
+TypeKind
+BaseType::get_kind () const
+{
+  return kind;
+}
+
+std::set<HirId>
+BaseType::get_combined_refs () const
+{
+  return combined;
+}
+
+void
+BaseType::append_reference (HirId id)
+{
+  combined.insert (id);
+}
+
+bool
+BaseType::supports_substitutions () const
+{
+  return false;
+}
+
+bool
+BaseType::has_subsititions_defined () const
+{
+  return false;
+}
+
+bool
+BaseType::can_substitute () const
+{
+  return supports_substitutions () && has_subsititions_defined ();
+}
+
+bool
+BaseType::needs_generic_substitutions () const
+{
+  return false;
+}
+
+bool
+BaseType::contains_type_parameters () const
+{
+  return !is_concrete ();
+}
+
+const RustIdent &
+BaseType::get_ident () const
+{
+  return ident;
+}
+
+Location
+BaseType::get_locus () const
+{
+  return ident.locus;
+}
+
 bool
 BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 {
@@ -330,6 +446,40 @@ BaseType::debug () const
 	      debug_str ().c_str ());
 }
 
+// InferType
+
+InferType::InferType (HirId ref, InferTypeKind infer_kind, Location locus,
+		      std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::INFER,
+	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
+    infer_kind (infer_kind)
+{}
+
+InferType::InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind,
+		      Location locus, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::INFER,
+	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
+    infer_kind (infer_kind)
+{}
+
+InferType::InferTypeKind
+InferType::get_infer_kind () const
+{
+  return infer_kind;
+}
+
+std::string
+InferType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+InferType::is_concrete () const
+{
+  return true;
+}
+
 void
 InferType::accept_vis (TyVisitor &vis)
 {
@@ -435,6 +585,35 @@ InferType::default_type (BaseType **type) const
   return false;
 }
 
+// ErrorType
+
+ErrorType::ErrorType (HirId ref, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::ERROR,
+	      {Resolver::CanonicalPath::create_empty (), Location ()}, refs)
+{}
+
+ErrorType::ErrorType (HirId ref, HirId ty_ref, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::ERROR,
+	      {Resolver::CanonicalPath::create_empty (), Location ()}, refs)
+{}
+
+bool
+ErrorType::is_unit () const
+{
+  return true;
+}
+bool
+ErrorType::is_concrete () const
+{
+  return false;
+}
+
+std::string
+ErrorType::get_name () const
+{
+  return as_string ();
+}
+
 void
 ErrorType::accept_vis (TyVisitor &vis)
 {
@@ -476,6 +655,8 @@ ErrorType::monomorphized_clone () const
 {
   return clone ();
 }
+
+// Struct Field type
 
 std::string
 StructFieldType::as_string () const
