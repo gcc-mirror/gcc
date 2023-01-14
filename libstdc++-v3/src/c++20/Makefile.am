@@ -40,6 +40,19 @@ sources = tzdb.cc
 
 vpath % $(top_srcdir)/src/c++20
 
+if USE_STATIC_TZDATA
+tzdata.zi.h: $(top_srcdir)/src/c++20/tzdata.zi
+	echo 'static const char tzdata_chars[] = R"__libstdcxx__(' > $@.tmp
+	cat $^ >> $@.tmp
+	echo ')__libstdcxx__";' >> $@.tmp
+	mv $@.tmp $@
+
+tzdb.lo: tzdb.cc tzdata.zi.h
+	$(LTCXXCOMPILE) -I. -c $<
+tzdb.o: tzdb.cc tzdata.zi.h
+	$(CXXCOMPILE) -I. -c $<
+endif
+
 libc__20convenience_la_SOURCES = $(sources)  $(inst_sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be

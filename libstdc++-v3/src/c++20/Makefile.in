@@ -742,6 +742,17 @@ uninstall-am:
 
 vpath % $(top_srcdir)/src/c++20
 
+@USE_STATIC_TZDATA_TRUE@tzdata.zi.h: $(top_srcdir)/src/c++20/tzdata.zi
+@USE_STATIC_TZDATA_TRUE@	echo 'static const char tzdata_chars[] = R"__libstdcxx__(' > $@.tmp
+@USE_STATIC_TZDATA_TRUE@	cat $^ >> $@.tmp
+@USE_STATIC_TZDATA_TRUE@	echo ')__libstdcxx__";' >> $@.tmp
+@USE_STATIC_TZDATA_TRUE@	mv $@.tmp $@
+
+@USE_STATIC_TZDATA_TRUE@tzdb.lo: tzdb.cc tzdata.zi.h
+@USE_STATIC_TZDATA_TRUE@	$(LTCXXCOMPILE) -I. -c $<
+@USE_STATIC_TZDATA_TRUE@tzdb.o: tzdb.cc tzdata.zi.h
+@USE_STATIC_TZDATA_TRUE@	$(CXXCOMPILE) -I. -c $<
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

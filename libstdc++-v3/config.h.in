@@ -854,6 +854,9 @@
 /* Define if size_t is unsigned int. */
 #undef _GLIBCXX_SIZE_T_IS_UINT
 
+/* Define if static tzdata should be compiled into the library. */
+#undef _GLIBCXX_STATIC_TZDATA
+
 /* Define to the value of the EOF integer constant. */
 #undef _GLIBCXX_STDIO_EOF
 
@@ -1037,7 +1040,7 @@
 /* Defined if as can handle rdseed. */
 #undef _GLIBCXX_X86_RDSEED
 
-/* Define if a non-default location should be used for tzdata files. */
+/* Define if a directory should be searched for tzdata files. */
 #undef _GLIBCXX_ZONEINFO_DIR
 
 /* Define to 1 if mutex_timedlock is available. */

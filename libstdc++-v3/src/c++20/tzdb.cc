@@ -60,10 +60,6 @@
 # endif
 #endif
 
-#ifndef _GLIBCXX_ZONEINFO_DIR
-# define _GLIBCXX_ZONEINFO_DIR "/usr/share/zoneinfo"
-#endif
-
 namespace __gnu_cxx
 {
 #ifdef _AIX
@@ -75,7 +71,13 @@ namespace __gnu_cxx
 #if defined(__APPLE__) || defined(__hpux__)
   // Need a weak definition for Mach-O.
   [[gnu::weak]] const char* zoneinfo_dir_override()
-  { return _GLIBCXX_ZONEINFO_DIR; }
+  {
+#ifdef _GLIBCXX_ZONEINFO_DIR
+    return _GLIBCXX_ZONEINFO_DIR;
+#else
+    return nullptr;
+#endif
+  }
 #endif
 #endif
 }
@@ -1008,22 +1010,83 @@ namespace std::chrono
     return info;
   }
 
- namespace
- {
+  namespace
+  {
+    // If a zoneinfo directory is defined (either when the library was built,
+    // or via the zoneinfo_dir_override function) then append filename to it.
+    // The filename should have a leading '/' as one is not added explicitly.
     string
-    zoneinfo_dir()
+    zoneinfo_file(string_view filename)
     {
+      string path;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Waddress"
-      static const string dir = __gnu_cxx::zoneinfo_dir_override
-				  ? __gnu_cxx::zoneinfo_dir_override()
-				  : _GLIBCXX_ZONEINFO_DIR;
+      if (__gnu_cxx::zoneinfo_dir_override)
+      {
+	if (auto override_dir = __gnu_cxx::zoneinfo_dir_override())
+	  path = override_dir;
 #pragma GCC diagnostic pop
-      return dir;
+      }
+#ifdef _GLIBCXX_ZONEINFO_DIR
+      else
+	path = _GLIBCXX_ZONEINFO_DIR;
+#endif
+      if (!path.empty())
+	path.append(filename);
+      return path;
     }
 
+    // N.B. Leading slash as required by zoneinfo_file function.
     const string tzdata_file = "/tzdata.zi";
     const string leaps_file = "/leapseconds";
+
+#ifdef _GLIBCXX_STATIC_TZDATA
+// Static copy of tzdata.zi embedded in the library as tzdata_chars[]
+#include "tzdata.zi.h"
+#endif
+
+    // An istream type that can read from a file or from a string.
+    struct tzdata_stream : istream
+    {
+      // std::spanbuf not available until C++23
+      struct ispanbuf : streambuf
+      {
+	ispanbuf() : streambuf()
+	{
+#ifdef _GLIBCXX_STATIC_TZDATA
+	  char* p = const_cast<char*>(tzdata_chars);
+	  this->setg(p, p, p + std::size(tzdata_chars) - 1);
+#endif
+	}
+
+	// N.B. seekoff and seekpos not overridden, not currently needed.
+      };
+
+      union {
+	filebuf fb;
+	ispanbuf sb;
+      };
+
+      tzdata_stream() : istream(nullptr)
+      {
+	if (string path = zoneinfo_file("/tzdata.zi"); !path.empty())
+	{
+	  filebuf fbuf;
+	  if (fbuf.open(path, std::ios::in))
+	    {
+	      std::construct_at(&fb, std::move(fbuf));
+	      this->init(&fb);
+	      return;
+	    }
+	}
+	std::construct_at(&sb);
+	this->init(&sb);
+      }
+
+      ~tzdata_stream() { std::destroy_at(this->rdbuf()); } // use virtual dtor
+
+      bool using_static_data() const { return this->rdbuf() == &sb; }
+    };
   }
 
   // Return leap_second values, and a bool indicating whether the values are
@@ -1031,7 +1094,7 @@ namespace std::chrono
   pair<vector<leap_second>, bool>
   tzdb_list::_Node::_S_read_leap_seconds()
   {
-    const string filename = zoneinfo_dir() + leaps_file;
+    const string filename = zoneinfo_file(leaps_file);
 
     // This list is valid until at least 2023-06-28 00:00:00 UTC.
     auto expires = sys_days{2023y/6/28};
@@ -1127,31 +1190,25 @@ namespace std::chrono
   namespace
   {
     // Read the version number from a tzdata.zi file.
-    // Note that some systems do not have this file available by default
-    // but we can configure the library to point to an alternate installation.
     string
-    remote_version(istream* zif)
+    remote_version(istream& zif)
     {
-      ifstream f;
-      if (!zif)
-	{
-	  f.open(zoneinfo_dir() + tzdata_file);
-	  zif = &f;
-	}
       char hash;
       string label;
       string version;
-      if (*zif >> hash >> label >> version)
+      if (zif >> hash >> label >> version)
 	if (hash == '#' && label == "version")
 	  return version;
+#if 0 // Ignore these files, because we're not using them anyway.
 #if defined __NetBSD__
-      if (string ver; ifstream(zoneinfo_dir() + "/TZDATA_VERSION") >> ver)
+      if (string ver; ifstream(zoneinfo_file("/TZDATA_VERSION")) >> ver)
 	return ver;
 #elif defined __APPLE__
       // The standard install on macOS has no tzdata.zi, but we can find the
       // version from +VERSION.
-      if (string ver; ifstream(zoneinfo_dir() + "/+VERSION") >> ver)
+      if (string ver; ifstream(zoneinfo_file("/+VERSION")) >> ver)
 	return ver;
+#endif
 #endif
       __throw_runtime_error("tzdb: no version found in tzdata.zi");
     }
@@ -1160,7 +1217,8 @@ namespace std::chrono
   // Definition of std::chrono::remote_version()
   string remote_version()
   {
-    return remote_version(nullptr);
+    tzdata_stream zif;
+    return remote_version(zif);
   }
 
   // Used by chrono::reload_tzdb() to add a new node to the front of the list.
@@ -1293,8 +1351,8 @@ namespace std::chrono
   {
     using Node = tzdb_list::_Node;
 
-    ifstream zif(zoneinfo_dir() + tzdata_file);
-    const string version = remote_version(&zif);
+    tzdata_stream zif;
+    const string version = remote_version(zif);
 
 #if USE_ATOMIC_SHARED_PTR
     auto head = Node::_S_head_owner.load(memory_order::acquire);
@@ -1311,7 +1369,7 @@ namespace std::chrono
 #endif
 
     auto [leaps, leaps_ok] = Node::_S_read_leap_seconds();
-    if (!leaps_ok)
+    if (!leaps_ok && !zif.using_static_data())
       __throw_runtime_error("tzdb: cannot parse leapseconds file");
 
     auto node = std::make_shared<Node>();

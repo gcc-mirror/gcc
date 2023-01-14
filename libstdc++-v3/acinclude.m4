@@ -5157,28 +5157,87 @@ AC_DEFUN([GLIBCXX_EMERGENCY_EH_ALLOC], [
 dnl
 dnl Allow the location of tzdata files to be configured.
 dnl
-dnl --with-libstdcxx-zoneinfo-dir=PATH will set the directory to PATH.
+dnl --with-libstdcxx-zoneinfo=ARG where ARG can be:
+dnl   DIR - use DIR/tzdata.zi and DIR/leapseconds files.
+dnl   static - use static copy of tzdata.zi embedded in the library.
+dnl   DIR,static - use DIR, but use embedded static copy as fallback.
+dnl   yes - equivalent to DIR,static with a system-specific value for DIR.
+dnl   no - disable most tzdb functionality.
 dnl
 dnl Defines:
-dnl  _GLIBCXX_ZONEINFO_DIR if std::chrono::tzdb should use a non-default
+dnl  _GLIBCXX_ZONEINFO_DIR if std::chrono::tzdb should use the specified
 dnl    directory for the tzdata.zi and leapseconds files.
+dnl  _GLIBCXX_STATIC_TZDATA if std::chrono::tzdb should use an embedded
+dnl    static copy of the tzdata.zi file.
 dnl
 AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
-  AC_ARG_WITH([libstdcxx-zoneinfo-dir],
-    AC_HELP_STRING([--with-libstdcxx-zoneinfo-dir],
-		   [the directory to search for tzdata files]),
-    [zoneinfo_dir="${withval}"
-     AC_DEFINE(_GLIBCXX_ZONEINFO_DIR, "${withval}",
-       [Define if a non-default location should be used for tzdata files.])
-    ],
-    [
-    case "$host" in
-      # *-*-aix*) zoneinfo_dir="/usr/share/lib/zoneinfo" ;;
-      *) zoneinfo_dir="/usr/share/zoneinfo" ;;
-    esac
-    ])
+  AC_ARG_WITH([libstdcxx-zoneinfo],
+    AC_HELP_STRING([--with-libstdcxx-zoneinfo],
+		   [the location to use for tzdata]),
+    [],[with_libstdcxx_zoneinfo=yes])
 
+  if test "x${with_libstdcxx_zoneinfo}" = xyes; then
+    # Pick a default when no specific path is set.
+    case "$host" in
+      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+	# Not all distros ship tzdata.zi in this dir.
+	zoneinfo_dir="/usr/share/zoneinfo"
+	;;
+      *-*-aix*)
+	# Binary tzfile files are in /usr/share/lib/zoneinfo
+	# but tzdata.zi is not present there.
+	zoneinfo_dir=none
+	;;
+      *-*-darwin2*)
+	# Binary tzfile files are in /usr/share/lib/zoneinfo.default
+	# but tzdata.zi is not present there.
+	zoneinfo_dir=none
+	;;
+      *)
+	# Binary tzfile files are commonly found in /usr/share/zoneinfo
+	# but tzdata.zi is not present there.
+	zoneinfo_dir=none
+	;;
+    esac
+    # Also embed a copy of the tzdata.zi file as a static string.
+    embed_zoneinfo=yes
+  elif test "x${with_libstdcxx_zoneinfo}" = xno; then
+    # Disable tzdb support completely.
+    zoneinfo_dir=none
+    embed_zoneinfo=no
+  else
+    case "${with_libstdcxx_zoneinfo}" in
+      static)
+	# Do not attempt to read from disk, always use embedded data.
+	zoneinfo_dir=none
+	embed_zoneinfo=yes
+	;;
+      static,* | *,static)
+	# Try to read from disk, use embedded data as fallback.
+	zoneinfo_dir="${with_libstdcxx_zoneinfo#static,}"
+	zoneinfo_dir="${with_libstdcxx_zoneinfo%,static}"
+	embed_zoneinfo=yes
+	;;
+      *)
+	zoneinfo_dir="${with_libstdcxx_zoneinfo}"
+	embed_zoneinfo=no
+	;;
+    esac
+  fi
   AC_MSG_NOTICE([zoneinfo data directory: ${zoneinfo_dir}])
+  if test "x${zoneinfo_dir}" != xnone; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_ZONEINFO_DIR, "${zoneinfo_dir}",
+      [Define if a directory should be searched for tzdata files.])
+    if $GLIBCXX_IS_NATIVE -a ! test -f "$zoneinfo_dir/tzdata.zi"; then
+      AC_MSG_WARN("$zoneinfo_dir does not contain tzdata.zi file")
+    fi
+  fi
+  GLIBCXX_CONDITIONAL(USE_STATIC_TZDATA, test "${embed_zoneinfo}" = yes)
+  if test "x${embed_zoneinfo}" = xyes; then
+    AC_MSG_NOTICE([static tzdata.zi file will be compiled into the library])
+    AC_DEFINE_UNQUOTED(_GLIBCXX_STATIC_TZDATA, 1,
+      [Define if static tzdata should be compiled into the library.])
+  fi
 ])
 
 # Macros from the top-level gcc directory.
