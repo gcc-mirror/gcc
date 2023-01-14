@@ -2,9 +2,9 @@
    sufficiently close) results as their scalar equivalents.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "AMD GCN only" { ! amdgcn_offloading_enabled } } */
 /* { dg-options "-O2 -ftree-vectorize -fno-math-errno" } */
-/* { dg-additional-options "-foffload=-mstack-size=3000000 -foffload=-lm" } */
+/* { dg-additional-options -foffload-options=amdgcn-amdhsa=-mstack-size=3000000 } */
+/* { dg-additional-options -foffload-options=-lm } */
 
 #undef PRINT_RESULT
 #define VERBOSE 0

@@ -1,3 +1,7 @@
+2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/simd-math-1.c: Fix configuration.
+
 2023-01-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
