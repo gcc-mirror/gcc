@@ -68,7 +68,7 @@ const HIR::TypeParam &
 SubstitutionParamMapping::get_generic_param ()
 {
   return generic;
-};
+}
 
 bool
 SubstitutionParamMapping::needs_substitution () const
