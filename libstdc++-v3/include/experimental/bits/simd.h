@@ -1798,15 +1798,15 @@ template <typename _Tp, typename... _Args>
 
 // }}}
 // __vector_broadcast{{{
+template <size_t _Np, typename _Tp, size_t... _I>
+  _GLIBCXX_SIMD_INTRINSIC constexpr __vector_type_t<_Tp, _Np>
+  __vector_broadcast_impl(_Tp __x, index_sequence<_I...>)
+  { return __vector_type_t<_Tp, _Np>{((void)_I, __x)...}; }
+
 template <size_t _Np, typename _Tp>
   _GLIBCXX_SIMD_INTRINSIC constexpr __vector_type_t<_Tp, _Np>
   __vector_broadcast(_Tp __x)
-  {
-    return __call_with_n_evaluations<_Np>(
-      [](auto... __xx) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
-	return __vector_type_t<_Tp, _Np>{__xx...};
-      }, [&__x](int) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA { return __x; });
-  }
+  { return __vector_broadcast_impl<_Np, _Tp>(__x, make_index_sequence<_Np>()); }
 
 // }}}
 // __generate_vector{{{
