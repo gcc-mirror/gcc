@@ -2134,7 +2134,7 @@ namespace chrono
       // either "{:L}[{}]" or "{:L}[{} is not a valid index]". The {:L} spec
       // means to format the weekday using ostringstream, so just do that.
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       __os2 << __wdi.weekday();
       const auto __i = __wdi.index();
       if constexpr (is_same_v<_CharT, char>)
@@ -2157,7 +2157,7 @@ namespace chrono
     {
       // As above, just write straight to a stringstream, as if by "{:L}[last]"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       __os2 << __wdl.weekday() << _GLIBCXX_WIDEN("[last]");
       __os << __os2.view();
       return __os;
@@ -2169,7 +2169,7 @@ namespace chrono
     {
       // As above, just write straight to a stringstream, as if by "{:L}/{}"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       __os2 << __md.month();
       if constexpr (is_same_v<_CharT, char>)
 	__os2 << '/';
@@ -2189,7 +2189,7 @@ namespace chrono
     {
       // As above, just write straight to a stringstream, as if by "{:L}/last"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       __os2 << __mdl.month();
       if constexpr (is_same_v<_CharT, char>)
 	__os2 << "/last";
@@ -2206,7 +2206,7 @@ namespace chrono
     {
       // As above, just write straight to a stringstream, as if by "{:L}/{:L}"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       __os2 << __mwd.month();
       if constexpr (is_same_v<_CharT, char>)
 	__os2 << '/';
@@ -2224,7 +2224,7 @@ namespace chrono
     {
       // As above, just write straight to a stringstream, as if by "{:L}/{:L}"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       __os2 << __mwdl.month();
       if constexpr (is_same_v<_CharT, char>)
 	__os2 << '/';
@@ -2241,7 +2241,7 @@ namespace chrono
     {
       // As above, just write straight to a stringstream, as if by "{}/{:L}"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       __os2 << __ym.year();
       if constexpr (is_same_v<_CharT, char>)
 	__os2 << '/';
@@ -2277,7 +2277,7 @@ namespace chrono
     {
       // As above, just write straight to a stringstream, as if by "{}/{:L}"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       __os2 << __ymdl.year();
       if constexpr (is_same_v<_CharT, char>)
 	__os2 << '/';
@@ -2296,7 +2296,7 @@ namespace chrono
       // As above, just write straight to a stringstream, as if by
       // "{}/{:L}/{:L}"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       _CharT __slash;
       if constexpr (is_same_v<_CharT, char>)
 	__slash = '/';
@@ -2316,7 +2316,7 @@ namespace chrono
       // As above, just write straight to a stringstream, as if by
       // "{}/{:L}/{:L}"
       basic_stringstream<_CharT> __os2;
-      __os2.imbue(__os.getloc);
+      __os2.imbue(__os.getloc());
       _CharT __slash;
       if constexpr (is_same_v<_CharT, char>)
 	__slash = '/';
