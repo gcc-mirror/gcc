@@ -1996,7 +1996,12 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
 int
 _cpp_do__Pragma (cpp_reader *pfile, location_t expansion_loc)
 {
+  /* Make sure we don't invalidate the string token, if the closing parenthesis
+   ended up on a different line.  */
+  ++pfile->keep_tokens;
   const cpp_token *string = get__Pragma_string (pfile);
+  --pfile->keep_tokens;
+
   pfile->directive_result.type = CPP_PADDING;
 
   if (string)
