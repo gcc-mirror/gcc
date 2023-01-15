@@ -723,8 +723,10 @@ MulOperator := "*"                                                         % Pus
                                                                              RecordOp %
             =:
 
-ConstFactor := Number | ConstString | ConstSetOrQualidentOrFunction |
-               "(" ConstExpression ")" | "NOT" ConstFactor                 % BuildNot %
+ConstFactor :=                                                             % VAR tokpos: CARDINAL ; %
+               Number | ConstString | ConstSetOrQualidentOrFunction |
+               "(" ConstExpression ")" | "NOT"                             % tokpos := GetTokenNo() -1 %
+                                               ConstFactor                 % BuildNot (tokpos) %
                | ConstAttribute =:
 
 -- to help satisfy LL1
@@ -1087,11 +1089,14 @@ UnaryOrTerm := "+"                                                         % Pus
                  Term                                                      % BuildUnaryOp %
                | Term =:
 
-Term := Factor { MulOperator Factor                                        % BuildBinaryOp %
+Term := Factor
+               { MulOperator Factor                                        % BuildBinaryOp %
                } =:
 
-Factor := Number | string | SetOrDesignatorOrFunction |
-          "(" Expression ")" | "NOT" ( Factor                              % BuildNot %
+Factor :=                                                                  % VAR tokpos: CARDINAL ; %
+          Number | string | SetOrDesignatorOrFunction |
+          "(" Expression ")" | "NOT"                                       % tokpos := GetTokenNo ()-1 %
+                                     ( Factor                              % BuildNot (tokpos) %
           | ConstAttribute
                                 ) =:
 

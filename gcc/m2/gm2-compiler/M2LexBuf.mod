@@ -1117,7 +1117,8 @@ END PrintTokenNo ;
 
 
 (*
-   isSrcToken -
+   isSrcToken - returns TRUE if tokenno is associated with
+                program source code.
 *)
 
 PROCEDURE isSrcToken (tokenno: CARDINAL) : BOOLEAN ;
@@ -1138,10 +1139,6 @@ VAR
    bufLeft, bufRight: TokenBucket ;
    lc, ll, lr       : location_t ;
 BEGIN
-   IF FALSE
-   THEN
-      RETURN caret
-   END ;
    IF isSrcToken (caret) AND isSrcToken (left) AND isSrcToken (right)
    THEN
       lc := TokenToLocation (caret) ;
