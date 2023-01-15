@@ -1,3 +1,32 @@
+2023-01-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.host (hppa*64*-*-linux*): Adjust tmake_file to use
+	pa/t-pa64-linux.
+	(hppa*64*-*-hpux11*): Adjust tmake_file to use pa/t-pa64-hpux
+	instead of pa/t-hpux and pa/t-pa64.
+	* config/pa/linux-atomic.c: Define u32 type.
+	(ATOMIC_LOAD): Define new macro to implement atomic_load_1,
+	atomic_load_2, atomic_load_4 and atomic_load_8.  Update sync
+	defines to use atomic_load calls for type.
+	(SYNC_LOCK_LOAD_2): New macro to implement __sync_lock_load_8.
+	* config/pa/sync-libfuncs.c: New file.
+	* config/pa/t-netbsd (LIB2ADD_ST): Define.
+	* config/pa/t-openbsd (LIB2ADD_ST): Define.
+	* config/pa/t-pa64-hpux: New file.
+	* config/pa/t-pa64-linux: New file.
+
+2023-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108331
+	* config/i386/gthr-win32.h (__gthr_win32_legacy_mutex_t): New
+	struct matching the previous __gthread_mutex_t struct.
+	(__GTHREAD_LEGACY_MUTEX_T): Define.
+
+2023-01-13  Seija Kijin  <doremylover456@gmail.com>
+
+	* config/arm/lib1funcs.S (clear_cache): Use SVC to conform to
+	unified syntax.
+
 2023-01-07  LIU Hao  <lh_mouse@126.com>
 
 	PR middle-end/108300

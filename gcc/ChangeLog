@@ -1,3 +1,115 @@
+2023-01-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (order_regs_for_local_alloc):
+	Rename to xtensa_adjust_reg_alloc_order.
+	* config/xtensa/xtensa.cc (xtensa_adjust_reg_alloc_order):
+	Ditto.  And also remove code to reorder register numbers for
+	leaf functions, rename the tables, and adjust the allocation
+	order for the call0 ABI to use register A0 more.
+	(xtensa_leaf_regs): Remove.
+	* config/xtensa/xtensa.h (REG_ALLOC_ORDER): Cosmetics.
+	(order_regs_for_local_alloc): Rename as the above.
+	(LEAF_REGISTERS, LEAF_REG_REMAP, leaf_function): Remove.
+
+2023-01-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64-sve.md (aarch64_vec_duplicate_vq<mode>_le):
+	Change to define_insn_and_split to fold ldr+dup to ld1rq.
+	* config/aarch64/predicates.md (aarch64_sve_dup_ld1rq_operand): New.
+
+2023-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* hash-table.h (is_deleted): Precheck !is_empty.
+	(mark_deleted): Postcheck !is_empty.
+	(copy constructor): Test is_empty before is_deleted.
+
+2023-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/40457
+	* config/arm/arm.md (movmisaligndi): Prefer aligned SImode
+	moves.
+
+2023-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/108274
+	* function.cc (thread_prologue_and_epilogue_insns): Also update the
+	DF information for calls in a few more cases.
+
+2023-01-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (TARGET_SYNC_LIBCALL): Delete define.
+	* config/pa/pa.cc (pa_init_libfuncs): Use MAX_SYNC_LIBFUNC_SIZE
+	define.
+	* config/pa/pa.h (TARGET_SYNC_LIBCALLS): Use flag_sync_libcalls.
+	(MAX_SYNC_LIBFUNC_SIZE): Define.
+	(TARGET_CPU_CPP_BUILTINS): Define __SOFTFP__ when soft float is
+	enabled.
+	* config/pa/pa.md (atomic_storeqi): Emit __atomic_exchange_1
+	libcall when sync libcalls are disabled.
+	(atomic_storehi, atomic_storesi, atomic_storedi): Likewise.
+	(atomic_loaddi): Emit __atomic_load_8 libcall when sync libcalls
+	are disabled on 32-bit target.
+	* config/pa/pa.opt (matomic-libcalls): New option.
+	* doc/invoke.texi (HPPA Options): Update.
+
+2023-01-13  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/108117
+	PR rtl-optimization/108132
+	* sched-deps.cc (deps_analyze_insn): Do not schedule across
+	calls before reload.
+
+2023-01-13  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* common/config/arm/arm-common.cc (arm_canon_arch_option_1): Ignore cde
+	options for -mlibarch.
+	* config/arm/arm-cpus.in (begin cpu cortex-m55): Add cde options.
+	* doc/invoke.texi (CDE): Document options for Cortex-M55 CPU.
+
+2023-01-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	* attribs.cc (strict_flex_array_level_of): Move this function to ...
+	* attribs.h (strict_flex_array_level_of): Remove the declaration.
+	* gimple-array-bounds.cc (array_bounds_checker::check_array_ref):
+	replace the referece to strict_flex_array_level_of with
+	DECL_NOT_FLEXARRAY.
+	* tree.cc (component_ref_size): Likewise.
+
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* config/arm/linux-eabi.h (ENDFILE_SPEC): Don't add
+	crtfastmath.o for -shared.
+	* config/arm/unknown-elf.h (STARTFILE_SPEC): Likewise.
+
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* config/aarch64/aarch64-elf-raw.h (ENDFILE_SPEC): Don't add
+	crtfastmath.o for -shared.
+	* config/aarch64/aarch64-freebsd.h (GNU_USER_TARGET_MATHFILE_SPEC):
+	Likewise.
+	* config/aarch64/aarch64-linux.h (GNU_USER_TARGET_MATHFILE_SPEC):
+	Likewise.
+
+2023-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_dwarf_frame_reg_mode): New
+	function.
+	(TARGET_DWARF_FRAME_REG_MODE): Define.
+
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR target/107209
+	* config/aarch64/aarch64.cc (aarch64_gimple_fold_builtin): Don't
+	update EH info on the fly.
+
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108387
+	* tree-ssa-sccvn.cc (visit_nary_op): Check for SSA_NAME
+	value before inserting expression into the tables.
+
 2023-01-12  Andrew Pinski  <apinski@marvell.com>
 	    Roger Sayle  <roger@nextmovesoftware.com>
 

@@ -1,3 +1,22 @@
+2023-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105273
+	* region-model.cc (has_nondefault_case_for_value_p): New.
+	(has_nondefault_cases_for_all_enum_values_p): New.
+	(region_model::apply_constraints_for_gswitch): Skip
+	implicitly-created "default" when switching on an enum
+	and all enum values have non-default cases.
+	(rejected_default_case::dump_to_pp): New.
+	* region-model.h (region_model_context::possibly_tainted_p): New
+	decl.
+	(class rejected_default_case): New.
+	* sm-taint.cc (region_model_context::possibly_tainted_p): New.
+	* supergraph.cc (switch_cfg_superedge::dump_label_to_pp): Dump
+	when implicitly_created_default_p.
+	(switch_cfg_superedge::implicitly_created_default_p): New.
+	* supergraph.h
+	(switch_cfg_superedge::implicitly_created_default_p): New decl.
+
 2023-01-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108252

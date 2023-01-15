@@ -1,3 +1,15 @@
+2023-01-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gm2-gcc/m2options.h (M2Options_SetVerbose): Export the
+	function.
+	* gm2-lang.cc: Handle OPT_v, passing it to the compiler.
+	* lang-specs.h: Pass -v to cc1gm2.
+
+2023-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* mc-boot-ch/GRTco.c (RTco_select): Add return 0.
+	* pge-boot/GRTco.c (RTco_select): Add return 0.
+
 2023-01-10  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (m2/mc-boot/$(SRC_PREFIX)%.o): Add

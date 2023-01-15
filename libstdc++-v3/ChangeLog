@@ -1,3 +1,155 @@
+2023-01-14  Björn Schäpers  <bjoern@hazardy.de>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Add check for
+	windows.h. Add pecoff as FORMAT_FILE.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/libbacktrace/Makefile.am: Regenerate.
+	* src/libbacktrace/Makefile.in: Add pecoff.c as FORMAT_FILE.
+
+2023-01-14  Björn Schäpers  <bjoern@hazardy.de>
+
+	* include/std/stacktrace (stacktrace_entry::_S_demangle): Use
+	raw __name if __cxa_demangle could not demangle it.
+
+2023-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108409
+	* src/c++20/tzdb.cc (current_zone()) [_AIX]: Use TZ environment
+	variable.
+
+2023-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (TZDB_DISABLED): Disable all code for
+	loading tzdb.
+	* testsuite/std/time/tzdb/leap_seconds.cc: Require tzdb
+	effective target.
+	* testsuite/std/time/tzdb_list/1.cc: Likewise.
+
+2023-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR): Replace the
+	--with-libstdcxx-zoneinfo-dir configure option with
+	--with-libstdcxx-zoneinfo with yes/no/static choices as well as
+	a directory.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml: Document configure option.
+	* doc/html/manual/configure.html: Regenerate.
+	* src/c++20/Makefile.am: Generate tzdata.zi.h header.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++20/tzdb.cc (__gnu_cxx::zoneinfo_dir_override): Return a
+	null pointer if no directory is configured.
+	(zoneinfo_dir): Replace with ...
+	(zoneinfo_file): New function.
+	(tzdata_stream): New istream class.
+	(remote_version, reload_tzdb): Use tzdata_stream.
+	* testsuite/lib/libstdc++.exp (check_effective_target_tzdb):
+	Check new _GLIBCXX_STATIC_TZDATA macro and ignore presence of
+	tzdata.zi file in default location.
+	* src/c++20/tzdata.zi: New file.
+
+2023-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (operator<<): Fix syntax errors.
+	* testsuite/std/time/month_day/io.cc: New test.
+	* testsuite/std/time/month_day_last/io.cc: New test.
+	* testsuite/std/time/month_weekday/io.cc: New test.
+	* testsuite/std/time/month_weekday_last/io.cc: New test.
+	* testsuite/std/time/weekday_indexed/io.cc: New test.
+	* testsuite/std/time/weekday_last/io.cc: New test.
+	* testsuite/std/time/year_month/io.cc: New test.
+	* testsuite/std/time/year_month_day_last/io.cc: New test.
+	* testsuite/std/time/year_month_weekday/io.cc: New test.
+	* testsuite/std/time/year_month_weekday_last/io.cc: New test.
+
+2023-01-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/format [_GLIBCXX_INLINE_VERSION](to_chars): Adapt __asm symbol
+	specifications.
+	* config/abi/pre/gnu-versioned-namespace.ver: Add to_chars/from_chars symbols
+	export.
+
+2023-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_mutex.h: Include <errno.h>.
+
+2023-01-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* testsuite/20_util/to_chars/version.cc: Mark hosted-only.
+	* testsuite/20_util/uses_allocator/lwg3677.cc: Ditto.
+	* testsuite/20_util/weak_ptr/cons/self_move.cc: Ditto.
+	* testsuite/std/ranges/adaptors/as_rvalue/1.cc: Replace usage of
+	std::make_unique with a freestanding-compatible wrapper around
+	unique_ptr.
+	* testsuite/21_strings/basic_string_view/operations/contains/char.cc:
+	Don't test for presence of __cpp_lib_string_contains on !HOSTED.
+	* testsuite/21_strings/basic_string_view/operations/contains/char/2.cc:
+	Ditto.
+	* testsuite/std/ranges/version_c++23.cc: Don't test for presence
+	of __cpp_lib_ranges in !HOSTED.
+
+2023-01-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/Makefile.am: Install bits/char_traits.h,
+	std/string_view
+	* include/Makefile.in: Regenerate.
+	* include/bits/char_traits.h: Gate hosted-only, wchar-only and
+	mbstate-only bits behind appropriate #ifs.
+	* include/std/string_view: Gate <iostream> functionality behind
+	HOSTED.
+	* include/std/version: Enable __cpp_lib_constexpr_string_view
+	and __cpp_lib_starts_ends_with in !HOSTED.
+	* include/std/ranges: Re-enable __is_basic_string_view on
+	freestanding, include <string_view> directly.
+	* include/precompiled/stdc++.h: Include <string_view> when
+	!HOSTED too.
+	* testsuite/20_util/function_objects/searchers.cc: Skip testing
+	boyer_moore searchers on freestanding
+	* testsuite/21_strings/basic_string_view/capacity/1.cc: Guard
+	<string>-related tests behind __STDC_HOSTED__.
+	* testsuite/21_strings/basic_string_view/cons/char/1.cc: Ditto.
+	* testsuite/21_strings/basic_string_view/cons/char/2.cc: Remove
+	unused <stdexcept> include.
+	* testsuite/21_strings/basic_string_view/cons/char/3.cc: Remove
+	unused <vector> include.
+	* testsuite/21_strings/basic_string_view/cons/char/range.cc:
+	Guard <string> related testing behind __STDC_HOSTED__.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/1.cc:
+	Guard <stdexcept> related tests behind __STDC_HOSTED__.
+	* testsuite/21_strings/basic_string_view/element_access/char/1.cc:
+	Ditto.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/1.cc:
+	Guard <stdexcept> tests behind __STDC_HOSTED__.
+	* testsuite/21_strings/basic_string_view/operations/contains/char/2.cc:
+	Enable test on freestanding, guard <stdexcept> bits behind
+	__STDC_HOSTED__.
+	* testsuite/21_strings/basic_string_view/operations/substr/char.cc:
+	Guard <stdexcept> bits behind __STDC_HOSTED__.
+	* testsuite/21_strings/basic_string_view/operations/substr/wchar_t.cc:
+	Ditto.
+
+2023-01-13  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	PR libstdc++/86419
+	* src/c++11/codecvt.cc (read_utf8_code_point): Correctly detect
+	errors in incomplete multibyte sequences.
+	(utf16_in): Remove surrogates parameter. Fix conditions for
+	returning partial.
+	(utf16_out): Fix condition for returning partial.
+	(ucs2_in): Do not pass surrogates argument to utf16_in.
+	* testsuite/22_locale/codecvt/codecvt_unicode.cc: New test.
+	* testsuite/22_locale/codecvt/codecvt_unicode.h: New header for
+	tests.
+	* testsuite/22_locale/codecvt/codecvt_unicode_wchar_t.cc: New
+	test.
+
+2023-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108331
+	* config/io/c_io_stdio.h (__c_lock): Define as a typedef for
+	__GTHREAD_LEGACY_MUTEX_T if defined.
+
 2023-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108327

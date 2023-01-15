@@ -1,3 +1,19 @@
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* typeck.cc (cp_build_binary_op): Use may_shorten_divmod for integral
+	division or modulo.
+
+2023-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108285
+	* cvt.cc (cp_convert_and_check): For EXCESS_PRECISION_EXPR
+	use its operand except that for warning purposes use the original
+	EXCESS_PRECISION_EXPR.
+	* call.cc (convert_like_internal): Only look through
+	EXCESS_PRECISION_EXPR when calling cp_convert, not when calling
+	cp_convert_and_check.
+
 2023-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/105838

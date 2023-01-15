@@ -1,3 +1,15 @@
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* c-common.h (may_shorten_divmod): New static inline function.
+
+2023-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (is_float32): New function.
+	(is_float64): Likewise.
+	(is_float128): Tweak.
+	(dump_ada_node) <REAL_TYPE>: Call them to recognize more types.
+
 2023-01-12  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/108244

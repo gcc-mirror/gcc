@@ -1,3 +1,13 @@
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* c-typeck.cc (build_binary_op): Use may_shorten_divmod for integral
+	division or modulo.
+
+2023-01-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (strict_flex_array_level_of): ... here.
+
 2023-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/105972

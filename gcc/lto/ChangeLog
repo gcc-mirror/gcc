@@ -1,3 +1,8 @@
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	* lto-lang.cc (lto_type_for_mode): Sync with
+	c_common_type_for_mode.
+
 2023-01-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.cc (may_need_named_section_p): Clones with no body

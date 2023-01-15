@@ -1,3 +1,117 @@
+2023-01-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/sve/acle/general/pr96463-2.c: Adjust.
+
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* c-c++-common/pr108365.c: New test.
+	* g++.dg/opt/pr108365.C: New test.
+	* g++.dg/warn/pr108365.C: New test.
+
+2023-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/42093
+	* gcc.target/arm/pr42093.c: Disable tree-dce.
+
+2023-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105273
+	* gcc.dg/analyzer/switch-enum-1.c: New test.
+	* gcc.dg/analyzer/switch-enum-2.c: New test.
+	* gcc.dg/analyzer/switch-enum-pr105273-git-vreportf-2.c: New test.
+	* gcc.dg/analyzer/switch-enum-taint-1.c: New test.
+	* gcc.dg/analyzer/switch-wrong-enum.c: New test.
+	* gcc.dg/analyzer/torture/switch-enum-pr105273-doom-p_floor.c: New
+	test.
+	* gcc.dg/analyzer/torture/switch-enum-pr105273-doom-p_maputl.c:
+	New test.
+	* gcc.dg/analyzer/torture/switch-enum-pr105273-git-vreportf-1.c:
+	New test.
+
+2023-01-13  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/108117
+	PR rtl-optimization/108132
+	* gcc.dg/pr108117.c: New test.
+
+2023-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108285
+	* g++.dg/warn/pr108285.C: New test.
+
+2023-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/examples/map/pass/examples-map-pass.exp:
+	Call gm2_push_timeout 30 before foreach testcase.
+	Call gm2_pop_timeout after the foreach statement.
+	* gm2/pimlib/base/run/pass/pimlib-base-run-pass.exp:
+	Call gm2_push_timeout 20 before foreach testcase.
+	Call gm2_pop_timeout after the foreach statement.
+
+2023-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107131
+	* gcc.c-torture/execute/pr107131.c: New test.
+
+2023-01-13  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add multilib tests for Cortex-M55 CPU.
+
+2023-01-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/Warray-bounds-flex-arrays-1.c: Delete the level information
+	from the message issued by -Wstrict-flex-arrays.
+	* gcc.dg/Warray-bounds-flex-arrays-2.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-3.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-4.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-5.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-6.c: Likewise.
+	* gcc.dg/Wstrict-flex-arrays-2.c: Likewise.
+	* gcc.dg/Wstrict-flex-arrays-3.c: Likewise.
+	* gcc.dg/Wstrict-flex-arrays.c: Likewise.
+
+2023-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107131
+	* gcc.dg/pr107131.c: New test.
+
+2023-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/dwarf_reg_size_1.c: New test.
+	* gcc.target/aarch64/dwarf_reg_size_2.c: Likewise.
+
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/aarch64/pr107209.c: New test.
+
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108387
+	* gcc.dg/pr108387.c: New testcase.
+
+2023-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/coroutines/pim/run/pass/coroutines-pim-run-pass.exp
+	(timeout-dg.exp): Load.
+	Call gm2_push_timeout 15.
+	Call gm2_pop_timeout at the end.
+	* gm2/link/min/pass/link-min-pass.exp: Set path
+	argument to "".
+	* gm2/switches/whole-program/pass/run/switches-whole-program-pass-run.exp:
+	Call gm2_push_timeout 60.
+	Call gm2_pop_timeout at the end.
+	* lib/gm2-torture.exp (gm2_previous_timeout): Set to 10 or
+	individual_timeout.
+	Configure dejagnu to timeout for 10 seconds.
+	(gm2_push_timeout): New proc.
+	(gm2_pop_timeout): New proc.
+	* lib/gm2.exp (gm2_previous_timeout): Set to 10 or
+	individual_timeout.
+	Configure dejagnu to timeout for 10 seconds.
+	(gm2_push_timeout): New proc.
+	(gm2_pop_timeout): New proc.
+
 2023-01-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* lib/gm2.exp: Use timeout.exp.
