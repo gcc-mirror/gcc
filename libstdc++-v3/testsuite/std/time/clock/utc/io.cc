@@ -46,6 +46,7 @@ test_format()
 
   std::ostringstream ss;
   std::wostringstream wss;
+  const auto& ct = std::use_facet<std::ctype<wchar_t>>(wss.getloc());
 
   for (char c : specs)
   {
@@ -68,7 +69,7 @@ test_format()
 		    "required by the chrono-specs") != s.npos);
     }
 
-    wchar_t wfmt[] = { L'{', L':', L'%', c, L'}' };
+    wchar_t wfmt[] = { L'{', L':', L'%', ct.widen(c), L'}' };
     try
     {
       wss << std::vformat(std::wstring_view(wfmt, 5),
