@@ -1616,7 +1616,7 @@ csky-*-*)
 	fi
 	if test x${with_float} != x; then
 	    case ${with_float} in
-		soft | hard) ;;
+		soft | hard | softfp) ;;
 		*) echo
 		    "Unknown floating point type used in --with-float=$with_float"
 		    exit 1
