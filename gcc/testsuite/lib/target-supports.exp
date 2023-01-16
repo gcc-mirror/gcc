@@ -869,8 +869,8 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 # Add to FLAGS all the target-specific flags needed to use thread-local storage.
 
 proc add_options_for_tls { flags } {
-    # On Solaris 9, __tls_get_addr/___tls_get_addr only lives in
-    # libthread, so always pass -pthread for native TLS. Same for AIX.
+    # On AIX, __tls_get_addr/___tls_get_addr only lives in
+    # libthread, so always pass -pthread for native TLS.
     # Need to duplicate native TLS check from
     # check_effective_target_tls_native to avoid recursion.
     if { ([istarget powerpc-ibm-aix*]) &&
