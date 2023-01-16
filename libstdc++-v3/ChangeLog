@@ -1,3 +1,41 @@
+2023-01-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/status_cxx2014.xml: Switch www.open-std.org to
+	https.
+	* doc/xml/manual/status_cxx2017.xml: Ditto.
+	* doc/xml/manual/status_cxx2020.xml: Ditto.
+	* doc/xml/manual/status_cxx2023.xml: Ditto.
+	* doc/html/manual/status.html: Regenerate.
+
+2023-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/tzdb_list/1.cc: Remove dg-xfail-run-if
+	and fail gracefully if defining the weak symbol doesn't work.
+
+2023-01-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/108288
+	* include/debug/safe_iterator.h (_Safe_iterator<>::operator++(int)): Extend deadlock
+	fix to other iterator category.
+	(_Safe_iterator<>::operator--(int)): Likewise.
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>::operator++(int)):
+	Fix deadlock.
+	* testsuite/util/debug/unordered_checks.h (invalid_local_iterator_pre_increment): New.
+	(invalid_local_iterator_post_increment): New.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_post_increment_neg.cc:
+	New test.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_pre_increment_neg.cc:
+	New test.
+
+2023-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/jthread/jthread.cc: Remove -pthread from
+	dg-options.
+
+2023-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/utc/io.cc: Use ctype to widen char.
+
 2023-01-14  Björn Schäpers  <bjoern@hazardy.de>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Add check for

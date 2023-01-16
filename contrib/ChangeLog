@@ -1,3 +1,8 @@
+2023-01-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config-list.mk: Update FreeBSD targets to version 13.
+	Add aarch64-freebsd13.
+
 2023-01-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config-list.mk: Remove i486-freebsd4, ia64-freebsd6, and

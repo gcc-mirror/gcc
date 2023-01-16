@@ -1,3 +1,24 @@
+2023-01-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2LexBuf.mod (isSrcToken): Add block comment.
+	Remove dead code.
+	* gm2-compiler/M2Quads.def (BuildNot): Add notTokPos parameter.
+	* gm2-compiler/M2Quads.mod (BuildNot): Add notTokPos parameter.
+	Create and push virtual token.
+	(PopBooltok): New procedure.
+	(PushBooltok): New procedure.
+	(PushBool): Re-implement using PushBooltok.
+	(PopBool): Re-implement using PopBooltok.
+	* gm2-compiler/P3Build.bnf (ConstFactor): Record token
+	position of NOT.
+	(Factor): Record token position	of NOT.
+	* gm2-compiler/PHBuild.bnf (ConstFactor): Record token
+	position of NOT.
+	(Relation): Push token position.
+	(UnaryOrConstTerm): Push token position.
+	(AddOperator): Push token position.
+	(MulOperator): Push token position.
+
 2023-01-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gm2-gcc/m2options.h (M2Options_SetVerbose): Export the

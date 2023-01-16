@@ -1,3 +1,14 @@
+2023-01-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107608
+	* range-op-float.cc (range_operator_float::fold_range): Avoid
+	folding into INF when flag_trapping_math.
+	* value-range.h (frange::known_isinf): Return false for possible NANs.
+
+2023-01-15  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config.gcc (csky-*-*): Support --with-float=softfp.
+
 2023-01-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa-protos.h (order_regs_for_local_alloc):
