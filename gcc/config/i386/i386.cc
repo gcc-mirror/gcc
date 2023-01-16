@@ -19051,6 +19051,13 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
   if (!TARGET_AVX512F)
     return NULL_TREE;
 
+  if (known_eq (TYPE_VECTOR_SUBPARTS (vectype), 2u)
+      ? !TARGET_USE_SCATTER_2PARTS
+      : (known_eq (TYPE_VECTOR_SUBPARTS (vectype), 4u)
+	 ? !TARGET_USE_SCATTER_4PARTS
+	 : !TARGET_USE_SCATTER))
+    return NULL_TREE;
+
   if ((TREE_CODE (index_type) != INTEGER_TYPE
        && !POINTER_TYPE_P (index_type))
       || (TYPE_MODE (index_type) != SImode
