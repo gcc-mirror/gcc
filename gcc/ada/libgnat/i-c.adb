@@ -186,7 +186,7 @@ is
      (Item     : char_array;
       Trim_Nul : Boolean := True) return String
    is
-      Count : Natural := 0;
+      Count : Natural;
       From  : size_t;
 
    begin
@@ -200,6 +200,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                  Item (J) /= nul);
+            pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
                raise Terminator_Error;
@@ -257,6 +258,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                 Item (J) /= nul);
+            pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
                raise Terminator_Error;
@@ -333,6 +335,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                  Item (J) /= wide_nul);
+            pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
                raise Terminator_Error;
@@ -390,6 +393,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                 Item (J) /= wide_nul);
+            pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
                raise Terminator_Error;
@@ -466,6 +470,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                  Item (J) /= char16_nul);
+            pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
                raise Terminator_Error;
@@ -523,6 +528,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                 Item (J) /= char16_nul);
+            pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
                raise Terminator_Error;
@@ -599,6 +605,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                  Item (J) /= char32_nul);
+            pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
                raise Terminator_Error;
@@ -656,6 +663,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                 Item (J) /= char32_nul);
+            pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
                raise Terminator_Error;
