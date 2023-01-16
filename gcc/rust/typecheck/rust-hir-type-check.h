@@ -38,37 +38,17 @@ public:
     TRAIT_ITEM,
   };
 
-  TypeCheckContextItem (HIR::Function *item)
-    : type (ItemType::ITEM), item (item)
-  {}
+  TypeCheckContextItem (HIR::Function *item);
+  TypeCheckContextItem (HIR::ImplBlock *impl_block, HIR::Function *item);
+  TypeCheckContextItem (HIR::TraitItemFunc *trait_item);
 
-  TypeCheckContextItem (HIR::ImplBlock *impl_block, HIR::Function *item)
-    : type (ItemType::IMPL_ITEM), item (impl_block, item)
-  {}
+  ItemType get_type () const;
 
-  TypeCheckContextItem (HIR::TraitItemFunc *trait_item)
-    : type (ItemType::TRAIT_ITEM), item (trait_item)
-  {}
+  HIR::Function *get_item ();
 
-  ItemType get_type () const { return type; }
+  std::pair<HIR::ImplBlock *, HIR::Function *> &get_impl_item ();
 
-  HIR::Function *get_item ()
-  {
-    rust_assert (get_type () == ItemType::ITEM);
-    return item.item;
-  }
-
-  std::pair<HIR::ImplBlock *, HIR::Function *> &get_impl_item ()
-  {
-    rust_assert (get_type () == ItemType::IMPL_ITEM);
-    return item.impl_item;
-  };
-
-  HIR::TraitItemFunc *get_trait_item ()
-  {
-    rust_assert (get_type () == ItemType::TRAIT_ITEM);
-    return item.trait_item;
-  }
+  HIR::TraitItemFunc *get_trait_item ();
 
   TyTy::FnType *get_context_type ();
 
@@ -79,13 +59,9 @@ private:
     std::pair<HIR::ImplBlock *, HIR::Function *> impl_item;
     HIR::TraitItemFunc *trait_item;
 
-    Item (HIR::Function *item) : item (item) {}
-
-    Item (HIR::ImplBlock *impl_block, HIR::Function *item)
-      : impl_item ({impl_block, item})
-    {}
-
-    Item (HIR::TraitItemFunc *trait_item) : trait_item (trait_item) {}
+    Item (HIR::Function *item);
+    Item (HIR::ImplBlock *impl_block, HIR::Function *item);
+    Item (HIR::TraitItemFunc *trait_item);
   };
 
   ItemType type;
@@ -118,283 +94,71 @@ public:
   void push_return_type (TypeCheckContextItem item,
 			 TyTy::BaseType *return_type);
   void pop_return_type ();
+  void iterate (std::function<bool (HirId, TyTy::BaseType *)> cb);
 
-  void iterate (std::function<bool (HirId, TyTy::BaseType *)> cb)
-  {
-    for (auto it = resolved.begin (); it != resolved.end (); it++)
-      {
-	if (!cb (it->first, it->second))
-	  return;
-      }
-  }
+  bool have_loop_context () const;
+  void push_new_loop_context (HirId id, Location locus);
+  void push_new_while_loop_context (HirId id);
+  TyTy::BaseType *peek_loop_context ();
+  TyTy::BaseType *pop_loop_context ();
 
-  bool have_loop_context () const { return !loop_type_stack.empty (); }
+  void swap_head_loop_context (TyTy::BaseType *val);
 
-  void push_new_loop_context (HirId id, Location locus)
-  {
-    TyTy::BaseType *infer_var
-      = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,
-			     locus);
-    loop_type_stack.push_back (infer_var);
-  }
+  void insert_trait_reference (DefId id, TraitReference &&ref);
+  bool lookup_trait_reference (DefId id, TraitReference **ref);
 
-  void push_new_while_loop_context (HirId id)
-  {
-    TyTy::BaseType *infer_var = new TyTy::ErrorType (id);
-    loop_type_stack.push_back (infer_var);
-  }
+  void insert_receiver (HirId id, TyTy::BaseType *t);
+  bool lookup_receiver (HirId id, TyTy::BaseType **ref);
 
-  TyTy::BaseType *peek_loop_context () { return loop_type_stack.back (); }
+  void insert_associated_trait_impl (HirId id,
+				     AssociatedImplTrait &&associated);
+  bool lookup_associated_trait_impl (HirId id,
+				     AssociatedImplTrait **associated);
 
-  TyTy::BaseType *pop_loop_context ()
-  {
-    auto back = peek_loop_context ();
-    loop_type_stack.pop_back ();
-    return back;
-  }
-
-  void swap_head_loop_context (TyTy::BaseType *val)
-  {
-    loop_type_stack.pop_back ();
-    loop_type_stack.push_back (val);
-  }
-
-  void insert_trait_reference (DefId id, TraitReference &&ref)
-  {
-    rust_assert (trait_context.find (id) == trait_context.end ());
-    trait_context.emplace (id, std::move (ref));
-  }
-
-  bool lookup_trait_reference (DefId id, TraitReference **ref)
-  {
-    auto it = trait_context.find (id);
-    if (it == trait_context.end ())
-      return false;
-
-    *ref = &it->second;
-    return true;
-  }
-
-  void insert_receiver (HirId id, TyTy::BaseType *t)
-  {
-    receiver_context[id] = t;
-  }
-
-  bool lookup_receiver (HirId id, TyTy::BaseType **ref)
-  {
-    auto it = receiver_context.find (id);
-    if (it == receiver_context.end ())
-      return false;
-
-    *ref = it->second;
-    return true;
-  }
-
-  void insert_associated_trait_impl (HirId id, AssociatedImplTrait &&associated)
-  {
-    rust_assert (associated_impl_traits.find (id)
-		 == associated_impl_traits.end ());
-    associated_impl_traits.emplace (id, std::move (associated));
-  }
-
-  bool lookup_associated_trait_impl (HirId id, AssociatedImplTrait **associated)
-  {
-    auto it = associated_impl_traits.find (id);
-    if (it == associated_impl_traits.end ())
-      return false;
-
-    *associated = &it->second;
-    return true;
-  }
-
-  void insert_associated_type_mapping (HirId id, HirId mapping)
-  {
-    associated_type_mappings[id] = mapping;
-  }
-
-  void clear_associated_type_mapping (HirId id)
-  {
-    auto it = associated_type_mappings.find (id);
-    if (it != associated_type_mappings.end ())
-      associated_type_mappings.erase (it);
-  }
+  void insert_associated_type_mapping (HirId id, HirId mapping);
+  void clear_associated_type_mapping (HirId id);
 
   // lookup any associated type mappings, the out parameter of mapping is
   // allowed to be nullptr which allows this interface to do a simple does exist
   // check
-  bool lookup_associated_type_mapping (HirId id, HirId *mapping)
-  {
-    auto it = associated_type_mappings.find (id);
-    if (it == associated_type_mappings.end ())
-      return false;
-
-    if (mapping != nullptr)
-      *mapping = it->second;
-
-    return true;
-  }
+  bool lookup_associated_type_mapping (HirId id, HirId *mapping);
 
   void insert_associated_impl_mapping (HirId trait_id,
 				       const TyTy::BaseType *impl_type,
-				       HirId impl_id)
-  {
-    auto it = associated_traits_to_impls.find (trait_id);
-    if (it == associated_traits_to_impls.end ())
-      {
-	associated_traits_to_impls[trait_id] = {};
-      }
-
-    associated_traits_to_impls[trait_id].push_back ({impl_type, impl_id});
-  }
-
+				       HirId impl_id);
   bool lookup_associated_impl_mapping_for_self (HirId trait_id,
 						const TyTy::BaseType *self,
-						HirId *mapping)
-  {
-    auto it = associated_traits_to_impls.find (trait_id);
-    if (it == associated_traits_to_impls.end ())
-      return false;
-
-    for (auto &item : it->second)
-      {
-	if (item.first->can_eq (self, false))
-	  {
-	    *mapping = item.second;
-	    return true;
-	  }
-      }
-    return false;
-  }
+						HirId *mapping);
 
   void insert_autoderef_mappings (HirId id,
-				  std::vector<Adjustment> &&adjustments)
-  {
-    rust_assert (autoderef_mappings.find (id) == autoderef_mappings.end ());
-    autoderef_mappings.emplace (id, std::move (adjustments));
-  }
-
+				  std::vector<Adjustment> &&adjustments);
   bool lookup_autoderef_mappings (HirId id,
-				  std::vector<Adjustment> **adjustments)
-  {
-    auto it = autoderef_mappings.find (id);
-    if (it == autoderef_mappings.end ())
-      return false;
-
-    *adjustments = &it->second;
-    return true;
-  }
+				  std::vector<Adjustment> **adjustments);
 
   void insert_cast_autoderef_mappings (HirId id,
-				       std::vector<Adjustment> &&adjustments)
-  {
-    rust_assert (cast_autoderef_mappings.find (id)
-		 == cast_autoderef_mappings.end ());
-    cast_autoderef_mappings.emplace (id, std::move (adjustments));
-  }
-
+				       std::vector<Adjustment> &&adjustments);
   bool lookup_cast_autoderef_mappings (HirId id,
-				       std::vector<Adjustment> **adjustments)
-  {
-    auto it = cast_autoderef_mappings.find (id);
-    if (it == cast_autoderef_mappings.end ())
-      return false;
+				       std::vector<Adjustment> **adjustments);
 
-    *adjustments = &it->second;
-    return true;
-  }
+  void insert_variant_definition (HirId id, HirId variant);
+  bool lookup_variant_definition (HirId id, HirId *variant);
 
-  void insert_variant_definition (HirId id, HirId variant)
-  {
-    auto it = variants.find (id);
-    rust_assert (it == variants.end ());
+  void insert_operator_overload (HirId id, TyTy::FnType *call_site);
+  bool lookup_operator_overload (HirId id, TyTy::FnType **call);
 
-    variants[id] = variant;
-  }
+  void insert_unconstrained_check_marker (HirId id, bool status);
+  bool have_checked_for_unconstrained (HirId id, bool *result);
 
-  bool lookup_variant_definition (HirId id, HirId *variant)
-  {
-    auto it = variants.find (id);
-    if (it == variants.end ())
-      return false;
+  void insert_resolved_predicate (HirId id, TyTy::TypeBoundPredicate predicate);
+  bool lookup_predicate (HirId id, TyTy::TypeBoundPredicate *result);
 
-    *variant = it->second;
-    return true;
-  }
+  void insert_query (HirId id);
+  void query_completed (HirId id);
+  bool query_in_progress (HirId id) const;
 
-  void insert_operator_overload (HirId id, TyTy::FnType *call_site)
-  {
-    auto it = operator_overloads.find (id);
-    rust_assert (it == operator_overloads.end ());
-
-    operator_overloads[id] = call_site;
-  }
-
-  bool lookup_operator_overload (HirId id, TyTy::FnType **call)
-  {
-    auto it = operator_overloads.find (id);
-    if (it == operator_overloads.end ())
-      return false;
-
-    *call = it->second;
-    return true;
-  }
-
-  void insert_unconstrained_check_marker (HirId id, bool status)
-  {
-    unconstrained[id] = status;
-  }
-
-  bool have_checked_for_unconstrained (HirId id, bool *result)
-  {
-    auto it = unconstrained.find (id);
-    bool found = it != unconstrained.end ();
-    if (!found)
-      return false;
-
-    *result = it->second;
-    return true;
-  }
-
-  void insert_resolved_predicate (HirId id, TyTy::TypeBoundPredicate predicate)
-  {
-    auto it = predicates.find (id);
-    rust_assert (it == predicates.end ());
-
-    predicates.insert ({id, predicate});
-  }
-
-  bool lookup_predicate (HirId id, TyTy::TypeBoundPredicate *result)
-  {
-    auto it = predicates.find (id);
-    bool found = it != predicates.end ();
-    if (!found)
-      return false;
-
-    *result = it->second;
-    return true;
-  }
-
-  void insert_query (HirId id) { querys_in_progress.insert (id); }
-
-  void query_completed (HirId id) { querys_in_progress.erase (id); }
-
-  bool query_in_progress (HirId id) const
-  {
-    return querys_in_progress.find (id) != querys_in_progress.end ();
-  }
-
-  void insert_trait_query (DefId id) { trait_queries_in_progress.insert (id); }
-
-  void trait_query_completed (DefId id)
-  {
-    trait_queries_in_progress.erase (id);
-  }
-
-  bool trait_query_in_progress (DefId id) const
-  {
-    return trait_queries_in_progress.find (id)
-	   != trait_queries_in_progress.end ();
-  }
+  void insert_trait_query (DefId id);
+  void trait_query_completed (DefId id);
+  bool trait_query_in_progress (DefId id) const;
 
 private:
   TypeCheckContext ();
