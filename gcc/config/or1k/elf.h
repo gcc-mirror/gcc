@@ -1,5 +1,5 @@
 /* Target Newlib Definitions for OpenRISC.
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
    Contributed by Stafford Horne.
 
    This file is part of GCC.
