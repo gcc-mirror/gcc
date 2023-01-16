@@ -1570,6 +1570,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                     (for all K in 1 .. Indx =>
                        Result.Data (K) =
                          Item (Item'First + (K - 1) mod Ilen));
+                  pragma Loop_Variant (Increases => Indx);
                end loop;
 
                Result.Data (Indx + 1 .. Max_Length) := Super_String_Data
@@ -1609,6 +1610,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                     (for all K in Indx + 1 .. Max_Length =>
                        Result.Data (K) =
                          Item (Item'Last - (Max_Length - K) mod Ilen));
+                  pragma Loop_Variant (Decreases => Indx);
                end loop;
 
                Result.Data (1 .. Indx) :=
@@ -1845,10 +1847,16 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
    begin
       for J in 1 .. Source.Current_Length loop
          Result.Data (J) := Mapping.all (Source.Data (J));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
          pragma Loop_Invariant (Result.Data (1 .. J)'Initialized);
          pragma Loop_Invariant
            (for all K in 1 .. J =>
               Result.Data (K) = Mapping (Source.Data (K)));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
       end loop;
 
       Result.Current_Length := Source.Current_Length;
@@ -1862,9 +1870,15 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
    begin
       for J in 1 .. Source.Current_Length loop
          Source.Data (J) := Mapping.all (Source.Data (J));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
          pragma Loop_Invariant
            (for all K in 1 .. J =>
               Source.Data (K) = Mapping (Source'Loop_Entry.Data (K)));
+         pragma Annotate (GNATprove, False_Positive,
+                          "call via access-to-subprogram",
+                          "function Mapping must always terminate");
       end loop;
    end Super_Translate;
 

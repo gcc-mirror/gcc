@@ -74,6 +74,9 @@ package Ada.Strings.Search with SPARK_Mode is
        and then Source'Length > 0
        and then From in Source'First .. Source'Last - (Pattern'Length - 1),
      Global => null;
+   pragma Annotate (GNATprove, False_Positive,
+                    "call via access-to-subprogram",
+                    "function Mapping must always terminate");
 
    function Match
      (Source  : String;
