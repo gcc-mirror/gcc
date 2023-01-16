@@ -35659,9 +35659,9 @@ extern void *__ARM_undef;
 #define __ARM_mve_coerce1(param, type) \
     _Generic(param, type: param, const type: param, default: *(type *)__ARM_undef)
 #define __ARM_mve_coerce2(param, type) \
-    _Generic(param, type: param, float16_t: param, float32_t: param, default: *(type *)__ARM_undef)
+    _Generic(param, type: param, __fp16: param, default: _Generic (param, _Float16: param, float16_t: param, float32_t: param, default: *(type *)__ARM_undef))
 #define __ARM_mve_coerce3(param, type) \
-    _Generic(param, type: param, int8_t: param, int16_t: param, int32_t: param, int64_t: param, uint8_t: param, uint16_t: param, uint32_t: param, uint64_t: param, default: *(type *)__ARM_undef)
+    _Generic(param, type: param, default: _Generic (param, int8_t: param, int16_t: param, int32_t: param, int64_t: param, uint8_t: param, uint16_t: param, uint32_t: param, uint64_t: param, default: *(type *)__ARM_undef))
 
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 
