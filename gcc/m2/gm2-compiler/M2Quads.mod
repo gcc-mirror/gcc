@@ -6327,7 +6327,10 @@ BEGIN
    ELSIF IsVar(Sym)
    THEN
       Type := GetDType(Sym) ;
-      IF IsUnbounded(Type)
+      IF Type = NulSym
+      THEN
+         MetaErrorT1 (tok, '{%1ad} has no type and cannot be passed to a VAR formal parameter', Sym)
+      ELSIF IsUnbounded(Type)
       THEN
          IF Type = GetSType (UnboundedSym)
          THEN
@@ -6382,7 +6385,10 @@ BEGIN
    ELSIF IsVar (Sym)
    THEN
       Type := GetDType (Sym) ;
-      IF IsUnbounded (Type)
+      IF Type = NulSym
+      THEN
+         MetaErrorT1 (tok, '{%1ad} has no type and cannot be passed to a non VAR formal parameter', Sym)
+      ELSIF IsUnbounded (Type)
       THEN
          UnboundedNonVarLinkToArray (tok, Sym, ArraySym, UnboundedSym, ParamType, dim)
       ELSIF IsArray (Type) OR IsGenericSystemType (ParamType)
@@ -11386,7 +11392,10 @@ VAR
 BEGIN
    PopTFrwtok (Sym1, Type1, rw, exprtok) ;
    Type1 := SkipType (Type1) ;
-   IF IsUnknown (Sym1)
+   IF Type1 = NulSym
+   THEN
+      MetaErrorT1 (ptrtok, '{%1ad} has no type and therefore cannot be dereferenced by ^', Sym1)
+   ELSIF IsUnknown (Sym1)
    THEN
       MetaError1 ('{%1EMad} is undefined and therefore {%1ad}^ cannot be resolved', Sym1)
    ELSIF IsPointer (Type1)
