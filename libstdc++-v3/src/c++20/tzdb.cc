@@ -25,6 +25,9 @@
 // The -Wabi warnings in this file are all for non-exported symbols.
 #pragma GCC diagnostic ignored "-Wabi"
 
+// In the usual dual-abi build, std::chrono::tzdb is only defined for cxx11.
+#define _GLIBCXX_USE_CXX11_ABI 1
+
 #include <chrono>
 #include <fstream>    // ifstream
 #include <sstream>    // istringstream
