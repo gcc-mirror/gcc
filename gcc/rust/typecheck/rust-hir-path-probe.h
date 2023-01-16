@@ -73,89 +73,37 @@ struct PathProbeCandidate
     ImplItemCandidate impl;
     TraitItemCandidate trait;
 
-    Candidate (EnumItemCandidate enum_field) : enum_field (enum_field) {}
-    Candidate (ImplItemCandidate impl) : impl (impl) {}
-    Candidate (TraitItemCandidate trait) : trait (trait) {}
+    Candidate (EnumItemCandidate enum_field);
+    Candidate (ImplItemCandidate impl);
+    Candidate (TraitItemCandidate trait);
   } item;
 
   PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
-		      EnumItemCandidate enum_field)
-    : type (type), ty (ty), locus (locus), item (enum_field)
-  {}
+		      EnumItemCandidate enum_field);
 
   PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
-		      ImplItemCandidate impl)
-    : type (type), ty (ty), locus (locus), item (impl)
-  {}
+		      ImplItemCandidate impl);
 
   PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
-		      TraitItemCandidate trait)
-    : type (type), ty (ty), locus (locus), item (trait)
-  {}
+		      TraitItemCandidate trait);
 
-  std::string as_string () const
-  {
-    return "PathProbe candidate TODO - as_string";
-  }
+  std::string as_string () const;
 
-  bool is_enum_candidate () const { return type == ENUM_VARIANT; }
+  bool is_enum_candidate () const;
 
-  bool is_impl_candidate () const
-  {
-    return type == IMPL_CONST || type == IMPL_TYPE_ALIAS || type == IMPL_FUNC;
-  }
+  bool is_impl_candidate () const;
 
-  bool is_trait_candidate () const
-  {
-    return type == TRAIT_ITEM_CONST || type == TRAIT_TYPE_ALIAS
-	   || type == TRAIT_FUNC;
-  }
+  bool is_trait_candidate () const;
 
-  bool is_full_trait_item_candidate () const
-  {
-    return is_trait_candidate () && item.trait.impl == nullptr;
-  }
+  bool is_full_trait_item_candidate () const;
 
-  static PathProbeCandidate get_error ()
-  {
-    return PathProbeCandidate (ERROR, nullptr, Location (),
-			       ImplItemCandidate{nullptr, nullptr});
-  }
+  static PathProbeCandidate get_error ();
 
-  bool is_error () const { return type == ERROR; }
+  bool is_error () const;
 
-  DefId get_defid () const
-  {
-    switch (type)
-      {
-      case ENUM_VARIANT:
-	return item.enum_field.variant->get_defid ();
-	break;
+  DefId get_defid () const;
 
-      case IMPL_CONST:
-      case IMPL_TYPE_ALIAS:
-      case IMPL_FUNC:
-	return item.impl.impl_item->get_impl_mappings ().get_defid ();
-	break;
-
-      case TRAIT_ITEM_CONST:
-      case TRAIT_TYPE_ALIAS:
-      case TRAIT_FUNC:
-	return item.trait.item_ref->get_mappings ().get_defid ();
-	break;
-
-      case ERROR:
-      default:
-	return UNKNOWN_DEFID;
-      }
-
-    return UNKNOWN_DEFID;
-  }
-
-  bool operator<(const PathProbeCandidate &c) const
-  {
-    return get_defid () < c.get_defid ();
-  }
+  bool operator< (const PathProbeCandidate &c) const;
 };
 
 class PathProbeType : public TypeCheckBase, public HIR::HIRImplVisitor
