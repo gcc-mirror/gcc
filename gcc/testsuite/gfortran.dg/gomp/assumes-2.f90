@@ -4,7 +4,7 @@ module m
   !$omp assumes contains(target) holds(x > 0.0)
   !$omp assumes absent(target)
   !$omp assumes holds(0.0)
-! { dg-error "HOLDS expression at .1. must be a logical expression" "" { target *-*-* } .-1 }
+! { dg-error "HOLDS expression at .1. must be a scalar logical expression" "" { target *-*-* } .-1 }
 end module
 
 module m2
