@@ -32,12 +32,21 @@ TypeCheckTopLevelExternItem::TypeCheckTopLevelExternItem (
   : TypeCheckBase (), parent (parent)
 {}
 
-void
+TyTy::BaseType *
 TypeCheckTopLevelExternItem::Resolve (HIR::ExternalItem *item,
 				      const HIR::ExternBlock &parent)
 {
+  // is it already resolved?
+  auto context = TypeCheckContext::get ();
+  TyTy::BaseType *resolved = nullptr;
+  bool already_resolved
+    = context->lookup_type (item->get_mappings ().get_hirid (), &resolved);
+  if (already_resolved)
+    return resolved;
+
   TypeCheckTopLevelExternItem resolver (parent);
   item->accept_vis (resolver);
+  return resolver.resolved;
 }
 
 void
@@ -47,6 +56,7 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalStaticItem &item)
     = TypeCheckType::Resolve (item.get_item_type ().get ());
 
   context->insert_type (item.get_mappings (), actual_type);
+  resolved = actual_type;
 }
 
 void
@@ -142,79 +152,40 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 				  ret_type, std::move (substitutions));
 
   context->insert_type (function.get_mappings (), fnType);
+  resolved = fnType;
 }
 
-TypeCheckTopLevelImplItem::TypeCheckTopLevelImplItem (
-  TyTy::BaseType *self,
+TypeCheckImplItem::TypeCheckImplItem (
+  HIR::ImplBlock *parent, TyTy::BaseType *self,
   std::vector<TyTy::SubstitutionParamMapping> substitutions)
-  : TypeCheckBase (), self (self), substitutions (substitutions)
+  : TypeCheckBase (), parent (parent), self (self),
+    substitutions (substitutions)
 {}
 
-void
-TypeCheckTopLevelImplItem::Resolve (
-  HIR::ImplItem *item, TyTy::BaseType *self,
+TyTy::BaseType *
+TypeCheckImplItem::Resolve (
+  HIR::ImplBlock *parent, HIR::ImplItem *item, TyTy::BaseType *self,
   std::vector<TyTy::SubstitutionParamMapping> substitutions)
 {
-  TypeCheckTopLevelImplItem resolver (self, substitutions);
+  // is it already resolved?
+  auto context = TypeCheckContext::get ();
+  TyTy::BaseType *resolved = nullptr;
+  bool already_resolved
+    = context->lookup_type (item->get_impl_mappings ().get_hirid (), &resolved);
+  if (already_resolved)
+    return resolved;
+
+  // resolve
+  TypeCheckImplItem resolver (parent, self, substitutions);
   item->accept_vis (resolver);
+  return resolver.result;
 }
 
 void
-TypeCheckTopLevelImplItem::visit (HIR::TypeAlias &alias)
-{
-  TyTy::BaseType *actual_type
-    = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
-
-  context->insert_type (alias.get_mappings (), actual_type);
-
-  for (auto &where_clause_item : alias.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
-    }
-}
-
-void
-TypeCheckTopLevelImplItem::visit (HIR::ConstantItem &constant)
-{
-  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
-  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
-
-  TyTy::BaseType *unified = unify_site (
-    constant.get_mappings ().get_hirid (),
-    TyTy::TyWithLocation (type, constant.get_type ()->get_locus ()),
-    TyTy::TyWithLocation (expr_type, constant.get_expr ()->get_locus ()),
-    constant.get_locus ());
-  context->insert_type (constant.get_mappings (), unified);
-}
-
-void
-TypeCheckTopLevelImplItem::visit (HIR::Function &function)
+TypeCheckImplItem::visit (HIR::Function &function)
 {
   if (function.has_generics ())
-    {
-      for (auto &generic_param : function.get_generic_params ())
-	{
-	  switch (generic_param.get ()->get_kind ())
-	    {
-	    case HIR::GenericParam::GenericKind::LIFETIME:
-	    case HIR::GenericParam::GenericKind::CONST:
-	      // FIXME: Skipping Lifetime and Const completely until better
-	      // handling.
-	      break;
-
-	      case HIR::GenericParam::GenericKind::TYPE: {
-		auto param_type
-		  = TypeResolveGenericParam::Resolve (generic_param.get ());
-		context->insert_type (generic_param->get_mappings (),
-				      param_type);
-
-		substitutions.push_back (TyTy::SubstitutionParamMapping (
-		  static_cast<HIR::TypeParam &> (*generic_param), param_type));
-	      }
-	      break;
-	    }
-	}
-    }
+    resolve_generic_params (function.get_generic_params (), substitutions);
 
   for (auto &where_clause_item : function.get_where_clause ().get_items ())
     {
@@ -328,41 +299,10 @@ TypeCheckTopLevelImplItem::visit (HIR::Function &function)
 				  std::move (substitutions));
 
   context->insert_type (function.get_mappings (), fnType);
-}
-
-TypeCheckImplItem::TypeCheckImplItem (HIR::ImplBlock *parent,
-				      TyTy::BaseType *self)
-  : TypeCheckBase (), parent (parent), self (self)
-{}
-
-void
-TypeCheckImplItem::Resolve (HIR::ImplBlock *parent, HIR::ImplItem *item,
-			    TyTy::BaseType *self)
-{
-  TypeCheckImplItem resolver (parent, self);
-  item->accept_vis (resolver);
-}
-
-void
-TypeCheckImplItem::visit (HIR::Function &function)
-{
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
-    {
-      rust_error_at (function.get_locus (), "failed to lookup function type");
-      return;
-    }
-
-  if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
-    {
-      rust_error_at (function.get_locus (),
-		     "found invalid type for function [%s]",
-		     lookup->as_string ().c_str ());
-      return;
-    }
+  result = fnType;
 
   // need to get the return type from this
-  TyTy::FnType *resolve_fn_type = static_cast<TyTy::FnType *> (lookup);
+  TyTy::FnType *resolve_fn_type = fnType;
   auto expected_ret_tyty = resolve_fn_type->get_return_type ();
   context->push_return_type (TypeCheckContextItem (parent, &function),
 			     expected_ret_tyty);
@@ -383,20 +323,41 @@ TypeCheckImplItem::visit (HIR::Function &function)
 }
 
 void
-TypeCheckImplItem::visit (HIR::ConstantItem &const_item)
-{}
+TypeCheckImplItem::visit (HIR::ConstantItem &constant)
+{
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
+  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+
+  TyTy::BaseType *unified = unify_site (
+    constant.get_mappings ().get_hirid (),
+    TyTy::TyWithLocation (type, constant.get_type ()->get_locus ()),
+    TyTy::TyWithLocation (expr_type, constant.get_expr ()->get_locus ()),
+    constant.get_locus ());
+  context->insert_type (constant.get_mappings (), unified);
+  result = unified;
+}
 
 void
-TypeCheckImplItem::visit (HIR::TypeAlias &type_alias)
-{}
+TypeCheckImplItem::visit (HIR::TypeAlias &alias)
+{
+  TyTy::BaseType *actual_type
+    = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
+
+  context->insert_type (alias.get_mappings (), actual_type);
+  result = actual_type;
+  for (auto &where_clause_item : alias.get_where_clause ().get_items ())
+    {
+      ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+    }
+}
 
 TypeCheckImplItemWithTrait::TypeCheckImplItemWithTrait (
   HIR::ImplBlock *parent, TyTy::BaseType *self,
   TyTy::TypeBoundPredicate &trait_reference,
   std::vector<TyTy::SubstitutionParamMapping> substitutions)
-  : TypeCheckImplItem (parent, self), trait_reference (trait_reference),
+  : TypeCheckBase (), trait_reference (trait_reference),
     resolved_trait_item (TyTy::TypeBoundPredicateItem::error ()),
-    substitutions (substitutions)
+    parent (parent), self (self), substitutions (substitutions)
 {
   rust_assert (is_trait_impl_block ());
 }
@@ -417,10 +378,8 @@ void
 TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
 {
   // normal resolution of the item
-  TypeCheckImplItem::visit (constant);
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (constant.get_mappings ().get_hirid (), &lookup))
-    return;
+  TyTy::BaseType *lookup
+    = TypeCheckImplItem::Resolve (parent, &constant, self, substitutions);
 
   // map the impl item to the associated trait item
   const auto tref = trait_reference.get ();
@@ -468,10 +427,8 @@ void
 TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
 {
   // normal resolution of the item
-  TypeCheckImplItem::visit (type);
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
-    return;
+  TyTy::BaseType *lookup
+    = TypeCheckImplItem::Resolve (parent, &type, self, substitutions);
 
   // map the impl item to the associated trait item
   const auto tref = trait_reference.get ();
@@ -528,11 +485,9 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
 void
 TypeCheckImplItemWithTrait::visit (HIR::Function &function)
 {
-  // we get the error checking from the base method here
-  TypeCheckImplItem::visit (function);
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
-    return;
+  // normal resolution of the item
+  TyTy::BaseType *lookup
+    = TypeCheckImplItem::Resolve (parent, &function, self, substitutions);
 
   // map the impl item to the associated trait item
   const auto tref = trait_reference.get ();

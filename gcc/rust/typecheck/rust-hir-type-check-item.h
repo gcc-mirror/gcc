@@ -27,29 +27,48 @@ namespace Resolver {
 class TypeCheckItem : private TypeCheckBase, private HIR::HIRVisItemVisitor
 {
 public:
-  static void Resolve (HIR::Item &item);
+  static TyTy::BaseType *Resolve (HIR::Item &item);
 
-  void visit (HIR::ImplBlock &impl_block) override;
-  void visit (HIR::Function &function) override;
+  static TyTy::BaseType *ResolveImplItem (HIR::ImplBlock &impl_block,
+					  HIR::ImplItem &item);
+
+  static TyTy::BaseType *ResolveImplBlockSelf (HIR::ImplBlock &impl_block);
+
   void visit (HIR::Module &module) override;
-  void visit (HIR::Trait &trait) override;
-
-  // FIXME - get rid of toplevel pass
-  void visit (HIR::TypeAlias &alias) override{};
-  void visit (HIR::TupleStruct &struct_decl) override{};
-  void visit (HIR::StructStruct &struct_decl) override{};
-  void visit (HIR::Enum &enum_decl) override{};
-  void visit (HIR::Union &union_decl) override{};
-  void visit (HIR::StaticItem &var) override{};
-  void visit (HIR::ConstantItem &constant) override{};
-  void visit (HIR::ExternBlock &extern_block) override{};
+  void visit (HIR::Function &function) override;
+  void visit (HIR::TypeAlias &alias) override;
+  void visit (HIR::TupleStruct &struct_decl) override;
+  void visit (HIR::StructStruct &struct_decl) override;
+  void visit (HIR::Enum &enum_decl) override;
+  void visit (HIR::Union &union_decl) override;
+  void visit (HIR::StaticItem &var) override;
+  void visit (HIR::ConstantItem &constant) override;
+  void visit (HIR::ImplBlock &impl_block) override;
+  void visit (HIR::ExternBlock &extern_block) override;
+  void visit (HIR::Trait &trait_block) override;
 
   // nothing to do
   void visit (HIR::ExternCrate &crate) override {}
   void visit (HIR::UseDeclaration &use_decl) override {}
 
+protected:
+  std::vector<TyTy::SubstitutionParamMapping>
+  resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
+				    bool &failure_flag);
+
+  void validate_trait_impl_block (
+    HIR::ImplBlock &impl_block, TyTy::BaseType *self,
+    std::vector<TyTy::SubstitutionParamMapping> &substitutions);
+
+  TyTy::BaseType *resolve_impl_item (HIR::ImplBlock &impl_block,
+				     HIR::ImplItem &item);
+
+  TyTy::BaseType *resolve_impl_block_self (HIR::ImplBlock &impl_block);
+
 private:
   TypeCheckItem ();
+
+  TyTy::BaseType *infered;
 };
 
 } // namespace Resolver

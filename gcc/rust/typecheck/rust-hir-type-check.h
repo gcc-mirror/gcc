@@ -337,6 +337,41 @@ public:
     return true;
   }
 
+  void insert_unconstrained_check_marker (HirId id, bool status)
+  {
+    unconstrained[id] = status;
+  }
+
+  bool have_checked_for_unconstrained (HirId id, bool *result)
+  {
+    auto it = unconstrained.find (id);
+    bool found = it != unconstrained.end ();
+    if (!found)
+      return false;
+
+    *result = it->second;
+    return true;
+  }
+
+  void insert_resolved_predicate (HirId id, TyTy::TypeBoundPredicate predicate)
+  {
+    auto it = predicates.find (id);
+    rust_assert (it == predicates.end ());
+
+    predicates.insert ({id, predicate});
+  }
+
+  bool lookup_predicate (HirId id, TyTy::TypeBoundPredicate *result)
+  {
+    auto it = predicates.find (id);
+    bool found = it != predicates.end ();
+    if (!found)
+      return false;
+
+    *result = it->second;
+    return true;
+  }
+
 private:
   TypeCheckContext ();
 
@@ -365,6 +400,12 @@ private:
 
   // variants
   std::map<HirId, HirId> variants;
+
+  // unconstrained type-params check
+  std::map<HirId, bool> unconstrained;
+
+  // predicates
+  std::map<HirId, TyTy::TypeBoundPredicate> predicates;
 };
 
 class TypeResolution

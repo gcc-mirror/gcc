@@ -18,6 +18,7 @@
 
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-hir-type-check-item.h"
 
 namespace Rust {
 namespace Resolver {
@@ -33,11 +34,8 @@ TypeBoundsProbe::scan ()
       if (!impl->has_trait_ref ())
 	return true;
 
-      TyTy::BaseType *impl_type = nullptr;
-      bool ok
-	= context->lookup_type (impl->get_type ()->get_mappings ().get_hirid (),
-				&impl_type);
-      if (!ok)
+      TyTy::BaseType *impl_type = TypeCheckItem::ResolveImplBlockSelf (*impl);
+      if (impl_type->get_kind () == TyTy::TypeKind::ERROR)
 	return true;
 
       if (!receiver->can_eq (impl_type, false))
@@ -69,6 +67,13 @@ TypeCheckBase::resolve_trait_path (HIR::TypePath &path)
 TyTy::TypeBoundPredicate
 TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path)
 {
+  TyTy::TypeBoundPredicate lookup = TyTy::TypeBoundPredicate::error ();
+  bool already_resolved
+    = context->lookup_predicate (type_path.get_mappings ().get_hirid (),
+				 &lookup);
+  if (already_resolved)
+    return lookup;
+
   TraitReference *trait = resolve_trait_path (type_path);
   if (trait->is_error ())
     return TyTy::TypeBoundPredicate::error ();
@@ -94,6 +99,8 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path)
       predicate.apply_generic_arguments (&args);
     }
 
+  context->insert_resolved_predicate (type_path.get_mappings ().get_hirid (),
+				      predicate);
   return predicate;
 }
 
@@ -470,6 +477,13 @@ TypeBoundsMappings::raw_bounds_as_name () const
 void
 TypeBoundsMappings::add_bound (TypeBoundPredicate predicate)
 {
+  for (auto &bound : specified_bounds)
+    {
+      bool same_trait_ref_p = bound.get_id () == predicate.get_id ();
+      if (same_trait_ref_p)
+	return;
+    }
+
   specified_bounds.push_back (predicate);
 }
 

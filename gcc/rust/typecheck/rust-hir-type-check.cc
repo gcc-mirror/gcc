@@ -18,7 +18,6 @@
 
 #include "rust-hir-type-check.h"
 #include "rust-hir-full.h"
-#include "rust-hir-type-check-toplevel.h"
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-pattern.h"
@@ -35,18 +34,12 @@ void
 TypeResolution::Resolve (HIR::Crate &crate)
 {
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    TypeCheckTopLevel::Resolve (*it->get ());
+    TypeCheckItem::Resolve (*it->get ());
 
   if (saw_errors ())
     return;
 
   OverlappingImplItemPass::go ();
-  if (saw_errors ())
-    return;
-
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    TypeCheckItem::Resolve (*it->get ());
-
   if (saw_errors ())
     return;
 

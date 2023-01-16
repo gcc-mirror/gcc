@@ -48,6 +48,14 @@ TypeCheckResolveGenericArguments::visit (HIR::TypePathSegmentGeneric &generic)
 TyTy::BaseType *
 TypeCheckType::Resolve (HIR::Type *type)
 {
+  // is it already resolved?
+  auto context = TypeCheckContext::get ();
+  TyTy::BaseType *resolved = nullptr;
+  bool already_resolved
+    = context->lookup_type (type->get_mappings ().get_hirid (), &resolved);
+  if (already_resolved)
+    return resolved;
+
   TypeCheckType resolver (type->get_mappings ().get_hirid ());
   type->accept_vis (resolver);
   rust_assert (resolver.translated != nullptr);
@@ -103,77 +111,29 @@ TypeCheckType::visit (HIR::TupleType &tuple)
 void
 TypeCheckType::visit (HIR::TypePath &path)
 {
-  // lookup the Node this resolves to
-  NodeId ref;
-  auto nid = path.get_mappings ().get_nodeid ();
-  bool is_fully_resolved = resolver->lookup_resolved_type (nid, &ref);
+  // this can happen so we need to look up the root then resolve the
+  // remaining segments if possible
+  size_t offset = 0;
+  NodeId resolved_node_id = UNKNOWN_NODEID;
+  TyTy::BaseType *root = resolve_root_path (path, &offset, &resolved_node_id);
+  if (root->get_kind () == TyTy::TypeKind::ERROR)
+    return;
 
-  TyTy::BaseType *lookup = nullptr;
-  if (!is_fully_resolved)
-    {
-      // this can happen so we need to look up the root then resolve the
-      // remaining segments if possible
-      size_t offset = 0;
-      NodeId resolved_node_id = UNKNOWN_NODEID;
-      TyTy::BaseType *root
-	= resolve_root_path (path, &offset, &resolved_node_id);
-
-      rust_assert (root != nullptr);
-      if (root->get_kind () == TyTy::TypeKind::ERROR)
-	return;
-
-      translated
-	= resolve_segments (resolved_node_id, path.get_mappings ().get_hirid (),
-			    path.get_segments (), offset, root,
-			    path.get_mappings (), path.get_locus ());
-      return;
-    }
-
-  HirId hir_lookup;
-  if (!context->lookup_type_by_node_id (ref, &hir_lookup))
-    {
-      rust_error_at (path.get_locus (), "failed to lookup HIR %d for node '%s'",
-		     ref, path.as_string ().c_str ());
-      return;
-    }
-
-  if (!context->lookup_type (hir_lookup, &lookup))
-    {
-      rust_error_at (path.get_locus (), "failed to lookup HIR TyTy");
-      return;
-    }
-
-  TyTy::BaseType *path_type = lookup->clone ();
+  TyTy::BaseType *path_type = root->clone ();
   path_type->set_ref (path.get_mappings ().get_hirid ());
+  context->insert_implicit_type (path.get_mappings ().get_hirid (), path_type);
 
-  HIR::TypePathSegment *final_seg = path.get_final_segment ().get ();
-  HIR::GenericArgs args = TypeCheckResolveGenericArguments::resolve (final_seg);
-
-  bool is_big_self = final_seg->is_ident_only ()
-		     && (final_seg->as_string ().compare ("Self") == 0);
-
-  if (path_type->needs_generic_substitutions ())
-    {
-      if (is_big_self)
-	{
-	  translated = path_type;
-	  return;
-	}
-
-      translated = SubstMapper::Resolve (path_type, path.get_locus (), &args);
-    }
-  else if (!args.is_empty ())
-    {
-      rust_error_at (path.get_locus (),
-		     "TypePath %s declares generic arguments but "
-		     "the type %s does not have any",
-		     path.as_string ().c_str (),
-		     path_type->as_string ().c_str ());
-    }
-  else
+  bool fully_resolved = offset >= path.get_segments ().size ();
+  if (fully_resolved)
     {
       translated = path_type;
+      return;
     }
+
+  translated
+    = resolve_segments (resolved_node_id, path.get_mappings ().get_hirid (),
+			path.get_segments (), offset, path_type,
+			path.get_mappings (), path.get_locus ());
 }
 
 void
@@ -389,7 +349,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	}
 
       TyTy::BaseType *lookup = nullptr;
-      if (!context->lookup_type (ref, &lookup))
+      if (!query_type (ref, &lookup))
 	{
 	  if (is_root)
 	    {
@@ -428,13 +388,21 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 
 	  if (!lookup->can_substitute ())
 	    {
-	      rust_error_at (seg->get_locus (),
-			     "substitutions not supported for %s",
+	      rust_error_at (path.get_locus (),
+			     "TypePath %s declares generic arguments but the "
+			     "type %s does not have any",
+			     path.as_string ().c_str (),
 			     lookup->as_string ().c_str ());
 	      return new TyTy::ErrorType (lookup->get_ref ());
 	    }
 	  lookup = SubstMapper::Resolve (lookup, path.get_locus (),
 					 &generic_segment->get_generic_args ());
+	}
+      else if (lookup->needs_generic_substitutions ())
+	{
+	  HIR::GenericArgs empty
+	    = HIR::GenericArgs::create_empty (path.get_locus ());
+	  lookup = SubstMapper::Resolve (lookup, path.get_locus (), &empty);
 	}
 
       *root_resolved_node_id = ref_node_id;
@@ -531,7 +499,7 @@ TypeCheckType::resolve_segments (
   context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
   if (tyseg->needs_generic_substitutions ())
     {
-      Location locus = segments.back ()->get_locus ();
+      // Location locus = segments.back ()->get_locus ();
       if (!prev_segment->needs_generic_substitutions ())
 	{
 	  auto used_args_in_prev_segment
@@ -539,10 +507,6 @@ TypeCheckType::resolve_segments (
 	  if (!used_args_in_prev_segment.is_error ())
 	    tyseg
 	      = SubstMapperInternal::Resolve (tyseg, used_args_in_prev_segment);
-	}
-      else
-	{
-	  tyseg = SubstMapper::InferSubst (tyseg, locus);
 	}
 
       if (tyseg->get_kind () == TyTy::TypeKind::ERROR)

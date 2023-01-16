@@ -25,8 +25,7 @@ namespace Resolver {
 
 MethodResolver::MethodResolver (bool autoderef_flag,
 				const HIR::PathIdentSegment &segment_name)
-  : AutoderefCycle (autoderef_flag), mappings (Analysis::Mappings::get ()),
-    context (TypeCheckContext::get ()), segment_name (segment_name),
+  : AutoderefCycle (autoderef_flag), segment_name (segment_name),
     try_result (MethodCandidate::get_error ())
 {}
 
@@ -80,8 +79,9 @@ MethodResolver::select (const TyTy::BaseType &receiver)
 	return true;
 
       TyTy::BaseType *ty = nullptr;
-      if (!context->lookup_type (func->get_mappings ().get_hirid (), &ty))
+      if (!query_type (func->get_mappings ().get_hirid (), &ty))
 	return true;
+      rust_assert (ty != nullptr);
       if (ty->get_kind () == TyTy::TypeKind::ERROR)
 	return true;
 
@@ -127,7 +127,7 @@ MethodResolver::select (const TyTy::BaseType &receiver)
 	  continue;
 
 	TyTy::BaseType *ty = nullptr;
-	if (!context->lookup_type (func->get_mappings ().get_hirid (), &ty))
+	if (!query_type (func->get_mappings ().get_hirid (), &ty))
 	  continue;
 	if (ty->get_kind () == TyTy::TypeKind::ERROR)
 	  continue;

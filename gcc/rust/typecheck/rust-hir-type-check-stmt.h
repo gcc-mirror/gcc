@@ -40,49 +40,31 @@ public:
   void visit (HIR::StructStruct &struct_decl) override;
   void visit (HIR::Union &union_decl) override;
   void visit (HIR::Function &function) override;
+  void visit (HIR::Module &module) override;
+  void visit (HIR::TypeAlias &type_alias) override;
+  void visit (HIR::StaticItem &static_item) override;
+  void visit (HIR::Trait &trait) override;
+  void visit (HIR::ImplBlock &impl) override;
+  void visit (HIR::TypePath &path) override;
+  void visit (HIR::QualifiedPathInType &path) override;
 
-  void visit (HIR::EnumItemTuple &) override
-  { /* TODO? */
-  }
-  void visit (HIR::EnumItemStruct &) override
-  { /* TODO? */
-  }
-  void visit (HIR::EnumItem &item) override
-  { /* TODO? */
-  }
-  void visit (HIR::EnumItemDiscriminant &) override
-  { /* TODO? */
-  }
+  // FIXME
+  // this seems like it should not be part of this visitor
   void visit (HIR::TypePathSegmentFunction &segment) override
-  { /* TODO? */
+  {
+    gcc_unreachable ();
   }
-  void visit (HIR::TypePath &path) override
-  { /* TODO? */
-  }
-  void visit (HIR::QualifiedPathInType &path) override
-  { /* TODO? */
-  }
-  void visit (HIR::Module &module) override
-  { /* TODO? */
-  }
-  void visit (HIR::ExternCrate &crate) override
-  { /* TODO? */
-  }
-  void visit (HIR::UseDeclaration &use_decl) override
-  { /* TODO? */
-  }
-  void visit (HIR::TypeAlias &type_alias) override
-  { /* TODO? */
-  }
-  void visit (HIR::StaticItem &static_item) override
-  { /* TODO? */
-  }
-  void visit (HIR::Trait &trait) override
-  { /* TODO? */
-  }
-  void visit (HIR::ImplBlock &impl) override
-  { /* TODO? */
-  }
+
+  // nothing to do for these
+  void visit (HIR::ExternCrate &crate) override {}
+  void visit (HIR::UseDeclaration &use_decl) override {}
+
+  // nothing to do for these as they are taken care of by the
+  // hir-type-check-enumitem.h
+  void visit (HIR::EnumItemTuple &) override {}
+  void visit (HIR::EnumItemStruct &) override {}
+  void visit (HIR::EnumItem &) override {}
+  void visit (HIR::EnumItemDiscriminant &) override {}
 
 private:
   TypeCheckStmt () : TypeCheckBase (), infered (nullptr) {}
