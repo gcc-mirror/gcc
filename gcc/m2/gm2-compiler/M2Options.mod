@@ -54,7 +54,12 @@ CONST
 
 VAR
    Barg,
+   MDarg,
+   MMDarg,
+   MQarg,
+   CmdLineObj,
    SaveTempsDir,
+   DumpDir,
    GenModuleListFilename,
    UselistFilename,
    RuntimeModuleOverride,
@@ -130,6 +135,94 @@ PROCEDURE GetB () : ADDRESS ;
 BEGIN
    RETURN string (Barg)
 END GetB ;
+
+
+(*
+   SetMD - assigns MDarg to the filename from arg.
+   This overrides any previous MMD.
+*)
+
+PROCEDURE SetMD (arg: ADDRESS) ;
+BEGIN
+   MMDarg := KillString (MMDarg) ;
+   MDarg := KillString (MDarg) ;
+   MDarg := InitStringCharStar (arg)
+END SetMD ;
+
+
+(*
+   GetMD - returns MDarg filename as a c-string or NIL if it was never set.
+*)
+
+PROCEDURE GetMD () : ADDRESS ;
+BEGIN
+   RETURN string (MDarg)
+END GetMD ;
+
+
+(*
+   SetMMD - assigns MMDarg to the filename from arg.
+   This overrides any previous MD.
+*)
+
+PROCEDURE SetMMD (arg: ADDRESS) ;
+BEGIN
+   MDarg := KillString (MDarg) ;
+   MMDarg := KillString (MMDarg) ;
+   MMDarg := InitStringCharStar (arg)
+END SetMMD ;
+
+
+(*
+   GetMMD - returns MMDarg filename as a c-string or NIL if it was never set.
+*)
+
+PROCEDURE GetMMD () : ADDRESS ;
+BEGIN
+   RETURN string (MMDarg)
+END GetMMD ;
+
+
+(*
+   SetMQ - assigns MQarg to the filename from arg.
+*)
+
+PROCEDURE SetMQ (arg: ADDRESS) ;
+BEGIN
+   MQarg := KillString (MQarg) ;
+   MQarg := InitStringCharStar (arg)
+END SetMQ ;
+
+
+(*
+   GetMMD - returns MQarg filename as a c-string or NIL if it was never set.
+*)
+
+PROCEDURE GetMQ () : ADDRESS ;
+BEGIN
+   RETURN string (MQarg)
+END GetMQ ;
+
+
+(*
+   SetObj - assigns CmdLineObj to the filename from arg.
+*)
+
+PROCEDURE SetObj (arg: ADDRESS) ;
+BEGIN
+   CmdLineObj := KillString (CmdLineObj) ;
+   CmdLineObj := InitStringCharStar (arg)
+END SetObj ;
+
+
+(*
+   GetObj - returns CmdLineObj filename as a c-string or NIL if it was never set.
+*)
+
+PROCEDURE GetObj () : ADDRESS ;
+BEGIN
+   RETURN string (CmdLineObj)
+END GetObj ;
 
 
 (*
@@ -362,6 +455,25 @@ PROCEDURE GetCpp () : BOOLEAN ;
 BEGIN
    RETURN CPreProcessor
 END GetCpp ;
+
+
+(*
+   SetPPOnly - set the PPonly (preprocess only) to value.
+*)
+
+PROCEDURE SetPPOnly (value: BOOLEAN) ;
+BEGIN
+   PPonly := value
+END SetPPOnly ;
+
+(*
+   GetPPOnly - get the PPonly (preprocess only).
+*)
+
+PROCEDURE GetPPOnly () : BOOLEAN ;
+BEGIN
+   RETURN PPonly
+END GetPPOnly ;
 
 
 (*
@@ -1050,7 +1162,8 @@ END SetSaveTemps ;
 
 PROCEDURE SetSaveTempsDir (arg: ADDRESS) ;
 BEGIN
-   SaveTempsDir := InitStringCharStar (arg)
+   SaveTempsDir := InitStringCharStar (arg) ;
+   SaveTemps := TRUE
 END SetSaveTempsDir ;
 
 
@@ -1063,6 +1176,24 @@ BEGIN
    RETURN SaveTempsDir
 END GetSaveTempsDir ;
 
+(*
+   SetDumpDir - Set the dump dir.
+*)
+
+PROCEDURE SetDumpDir (arg: ADDRESS) ;
+BEGIN
+   DumpDir := InitStringCharStar (arg)
+END SetDumpDir ;
+
+
+(*
+   GetDumpDir - return DumpDir or NIL.
+*)
+
+PROCEDURE GetDumpDir () : String ;
+BEGIN
+   RETURN DumpDir
+END GetDumpDir ;
 
 (*
    SetScaffoldDynamic - set the -fscaffold-dynamic flag.
@@ -1247,5 +1378,9 @@ BEGIN
    GenModuleListFilename        := NIL ;
    SharedFlag                   := FALSE ;
    Barg                         := NIL ;
-   SaveTempsDir                 := NIL
+   MDarg                        := NIL ;
+   MMDarg                       := NIL ;
+   MQarg                        := NIL ;
+   SaveTempsDir                 := NIL ;
+   DumpDir                      := NIL
 END M2Options.

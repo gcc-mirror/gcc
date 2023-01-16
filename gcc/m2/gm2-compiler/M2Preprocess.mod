@@ -25,7 +25,7 @@ IMPLEMENTATION MODULE M2Preprocess ;
 FROM SYSTEM IMPORT WORD ;
 
 FROM DynamicStrings IMPORT string, InitString, Mark, KillString, EqualArray, InitStringCharStar,
-                           Dup, ConCat, ConCatChar, RIndex, Slice ;
+                           Dup, ConCat, ConCatChar, RIndex, Slice, Length ;
 
 FROM choosetemp IMPORT make_temp_file ;
 FROM pexecute IMPORT pexecute ;
@@ -33,7 +33,8 @@ FROM libc IMPORT system, exit, unlink, printf, atexit ;
 FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, ForeachItemInListDo ;
 FROM FIO IMPORT StdErr, StdOut ;
 FROM M2Printf IMPORT fprintf1 ;
-FROM M2Options IMPORT Verbose, CppCommandLine, SaveTemps ;
+FROM M2Options IMPORT Verbose, PPonly, GetObj, GetMD, GetMMD, GetMQ,
+                      CppCommandLine, SaveTemps, GetSaveTempsDir, GetDumpDir ;
 FROM NameKey IMPORT Name, MakeKey, KeyToCharStar, makekey ;
 
 
@@ -77,14 +78,80 @@ BEGIN
    RETURN 0
 END RemoveFiles ;
 
+(*
+   Return the filename with no path.
+*)
+
+PROCEDURE GetFileName (Path: String) : String ;
+VAR
+   fstart: INTEGER ;
+BEGIN
+   fstart := RIndex(Path, '/', 0) ;
+   IF fstart=-1
+   THEN
+      fstart := 0
+   ELSE
+      fstart := fstart + 1
+   END ;
+   RETURN Dup (Slice(Path, fstart, Length (Path)))
+END GetFileName ;
+
 
 (*
-   MakeSaveTempsFileName - return a temporary file "filename.i".
+   Return basename.
+*)
+
+PROCEDURE BaseName (Path: String) : String ;
+VAR
+   ext,
+   basename: INTEGER ;
+BEGIN
+   basename := RIndex(Path, '/', 0) ;
+   IF basename=-1
+   THEN
+      basename := 0
+   ELSE
+      basename := basename + 1
+   END ;
+   ext := RIndex(Path, '.', 0) ;
+   IF ext=-1
+   THEN
+      ext := 0
+   END ;
+   RETURN Dup (Slice(Path, basename, ext))
+END BaseName ;
+
+(*
+   MakeSaveTempsFileName - return a temporary file like 
+   "./filename.{def,mod}.m2i" in the CWD unless SaveTempsDir = obj,
+   when we put it in the dumpdir if that is specified (or fallback to '.'
+   if not).
+   We have to keep the original extension because that disambiguates .def
+   and .mod files (otherwise, we'd need two 'preprocessed' extensions).
 *)
 
 PROCEDURE MakeSaveTempsFileName (filename: String) : String ;
+VAR
+   NewName,
+   DumpDir,
+   NewDir: String ;
 BEGIN
-   RETURN ConCat (Dup (filename), InitString ('.i'))
+   NewName := ConCat (GetFileName (filename), InitString ('.m2i')) ;
+   NewDir := GetSaveTempsDir () ;
+   DumpDir := GetDumpDir () ;
+(*   IF Verbose
+   THEN
+      fprintf1 (StdOut, "newname: %s", NewName) ;
+      fprintf1 (StdOut, " NewDir: %s", NewDir) ;
+      fprintf1 (StdOut, " DumpDir: %s\n", DumpDir)
+   END ;
+*)
+   IF (NewDir AND EqualArray (NewDir, 'obj')) AND DumpDir
+   THEN
+      RETURN Dup (ConCat (DumpDir, NewName))
+   ELSE
+      RETURN Dup (ConCat (InitString ('./'), NewName))
+   END ;
 END MakeSaveTempsFileName ;
 
 
@@ -98,7 +165,7 @@ END MakeSaveTempsFileName ;
                       All temporary files will be deleted when the compiler exits.
 *)
 
-PROCEDURE PreprocessModule (filename: String) : String ;
+PROCEDURE PreprocessModule (filename: String; isMain: BOOLEAN) : String ;
 VAR
    tempfile,
    command,
@@ -107,18 +174,55 @@ BEGIN
    command := CppCommandLine () ;
    IF (command = NIL) OR EqualArray (command, '')
    THEN
-      RETURN filename
+      RETURN Dup (filename)
    ELSE
-      IF SaveTemps
-      THEN
-         tempfile := InitStringCharStar (MakeSaveTempsFileName (filename))
-      ELSE
-         tempfile := InitStringCharStar (make_temp_file (KeyToCharStar (MakeKey('i'))))
-      END ;
       commandLine := Dup (command) ;
-      commandLine := ConCat (ConCat (ConCat (ConCatChar (Dup (commandLine), ' '), filename),
-                                     Mark (InitString(' -o '))),
-                             tempfile) ;
+      tempfile := NIL ;
+      (* We support MD and MMD for the main file only, at present.  *)
+      IF isMain OR PPonly
+      THEN
+         IF GetMD ()
+         THEN
+            tempfile := ConCat( Mark (InitString(' -MD ')),
+                                InitStringCharStar (GetMD ()))
+         ELSIF GetMMD ()
+         THEN
+            tempfile := ConCat( Mark (InitString(' -MMD ')),
+                                InitStringCharStar (GetMMD ()))
+         END ;
+         IF tempfile
+         THEN
+            commandLine := ConCat (Dup (commandLine), Dup (tempfile)) ;
+            (* We can only add MQ if we already have an MD/MMD.  *)
+            IF GetMQ ()
+            THEN
+               tempfile := ConCat( Mark (InitString(' -MQ ')),
+                                 InitStringCharStar (GetMQ ())) ;
+               commandLine := ConCat (Dup (commandLine), Dup (tempfile))
+            END ;
+         END ;
+      END ;
+      (* The output file depends on whether we are in stand-alone PP mode, and
+         if an output file is specified.  *)
+      tempfile := NIL ;
+      IF PPonly
+      THEN
+         IF GetObj()
+         THEN
+           tempfile := InitStringCharStar (GetObj ())
+         END ;
+      ELSIF SaveTemps
+      THEN
+         tempfile := MakeSaveTempsFileName (filename)
+      ELSE
+         tempfile := InitStringCharStar (make_temp_file (KeyToCharStar (MakeKey('.m2i'))))
+      END ;
+      commandLine := ConCat (ConCatChar (Dup (commandLine), ' '), filename) ;
+      IF tempfile
+      THEN
+         commandLine := ConCat (ConCat (Dup (commandLine),
+                                        Mark (InitString(' -o '))), tempfile) ;
+      END ;
 (*  use pexecute in the future
       res := pexecute(string(Slice(commandLine, 0, Index(commandLine, ' ', 0))), etc etc );
 *)

@@ -45,7 +45,7 @@ EXPORT QUALIFIED PreprocessModule ;
                       All temporary files will be deleted when the compiler exits.
 *)
 
-PROCEDURE PreprocessModule (filename: String) : String ;
+PROCEDURE PreprocessModule (filename: String; isMain: BOOLEAN) : String ;
 
 
 END M2Preprocess.

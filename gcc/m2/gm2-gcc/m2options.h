@@ -61,6 +61,8 @@ EXTERN int M2Options_GetWholeValueCheck (void);
 
 EXTERN void M2Options_Setc (int value);
 EXTERN int M2Options_Getc (void);
+EXTERN void M2Options_SetPPOnly (int value);
+EXTERN int M2Options_GetPPOnly (void);
 
 EXTERN void M2Options_SetUselist (int value, const char *filename);
 EXTERN void M2Options_SetAutoInit (int value);
@@ -112,6 +114,7 @@ EXTERN void M2Options_SetStrictTypeChecking (int value);
 EXTERN void M2Options_SetWall (int value);
 EXTERN void M2Options_SetSaveTemps (int value);
 EXTERN void M2Options_SetSaveTempsDir (const char *arg);
+EXTERN void M2Options_SetDumpDir (const char *arg);
 EXTERN int M2Options_GetSaveTemps (void);
 EXTERN void M2Options_SetScaffoldStatic (int value);
 EXTERN void M2Options_SetScaffoldDynamic (int value);
@@ -121,6 +124,14 @@ EXTERN void M2Options_SetGenModuleList (int value, const char *filename);
 EXTERN void M2Options_SetShared (int value);
 EXTERN void M2Options_SetB (const char *arg);
 EXTERN char *M2Options_GetB (void);
+EXTERN void M2Options_SetMD (const char *arg);
+EXTERN char *M2Options_GetMD (void);
+EXTERN void M2Options_SetMMD (const char *arg);
+EXTERN char *M2Options_GetMMD (void);
+EXTERN void M2Options_SetMQ (const char *arg);
+EXTERN char *M2Options_GetMQ (void);
+EXTERN void M2Options_SetObj (const char *arg);
+EXTERN char *M2Options_GetObj (void);
 
 #undef EXTERN
 #endif /* m2options_h.  */

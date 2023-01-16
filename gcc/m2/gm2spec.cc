@@ -133,8 +133,10 @@ static const char *add_include (const char *libpath, const char *library);
 
 static bool seen_scaffold_static = false;
 static bool seen_scaffold_dynamic = false;
-static bool scaffold_dynamic = true; // Default uses -fscaffold-dynamic.
+static bool seen_scaffold_main = false;
 static bool scaffold_static = false;
+static bool scaffold_dynamic = true; // Default uses -fscaffold-dynamic.
+static bool scaffold_main = false;
 static bool seen_gen_module_list = false;
 static bool seen_uselist = false;
 static bool uselist = false;
@@ -525,17 +527,20 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  scaffold_static = decoded_options[i].value;
 	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
+	case OPT_fscaffold_main:
+	  seen_scaffold_main = true;
+	  scaffold_main = decoded_options[i].value;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
+	  break;
 	case OPT_fgen_module_list_:
 	  seen_gen_module_list = true;
 	  gen_module_list = decoded_options[i].value;
 	  if (gen_module_list)
 	    gen_module_filename = decoded_options[i].arg;
-	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
 	case OPT_fuse_list_:
 	  seen_uselist = true;
 	  uselist = decoded_options[i].value;
-	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
 
 	case OPT_nostdlib:
@@ -590,6 +595,14 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	     cause a warning.  */
 	  linking = false;
 	  library = -1;
+	  break;
+
+	/* PCH makes no sense here, we do not catch -output-pch on purpose,
+	   that should flag an error.  */
+	case OPT_fpch_deps:
+	case OPT_fpch_preprocess:
+	case OPT_Winvalid_pch:
+	  args[i] |= SKIPOPT;
 	  break;
 
 	case OPT_static:
@@ -694,8 +707,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
      We also add default scaffold linking options.  */
 
   /* If we have not seen either uselist or gen_module_list and we need
-     to link then we turn on -fgen_module_list=- as the default.  */
-  if ((! (seen_uselist || seen_gen_module_list)) && linking)
+     to link or compile a module list then we turn on -fgen_module_list=-
+     as the default.  */
+  if (!seen_uselist && !seen_gen_module_list
+      && (linking || scaffold_main))
     append_option (OPT_fgen_module_list_, "-", 1);
 
   /* We checked that they were not both enabled above, if there was a set
@@ -704,6 +719,14 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     append_option (OPT_fscaffold_dynamic, NULL, scaffold_dynamic);
   if (seen_scaffold_static)
     append_option (OPT_fscaffold_static, NULL, scaffold_static);
+
+  /* If the user has set fscaffold-main specifically, use that.  Otherwise, if
+     we are linking then set it so that we generate the relevant code for the
+     main module.  */
+  if (seen_scaffold_main)
+    append_option (OPT_fscaffold_main, NULL, scaffold_main);
+  else if (linking)
+    append_option (OPT_fscaffold_main, NULL, true);
 
   if (allow_libraries)
     {

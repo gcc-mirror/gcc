@@ -21,19 +21,35 @@ along with GCC; see the file COPYING3.  If not see
 /* This is the contribution to the `default_compilers' array in gcc.c for
    GNU Modula-2.  */
 
-/* Pass the preprocessor options on the command line together with
-   the exec prefix.  */
-
+/* A spec for the 'integrated' preprocessor implementation for Modula-2.  */
 #define M2CPP \
-  "%{fcpp:-fcpp-begin " \
-  "      -E -lang-asm -traditional-cpp " \
-  "      %(cpp_unique_options) -fcpp-end; \
-     : %I } "
+  "%{E|M|MM|fcpp: %{E} -fcpp-begin " \
+  "      %{!E:-E} %(cpp_unique_options) -traditional-cpp -ansi " \
+  "      -fcpp-end %{B*} %{save-temps*} ; \
+     : %{v} %I } "
+
+/* We have three modes:
+   1. When the preprocessing step is explict and there is no following
+      compilation.  Here we do a similar process to cc1 -E where most of
+      the compilation is short-circuited.
+   2. When we are mimicking an integrated preprocessor.  Here we use the
+      modula-2 'fcpp' to construct a command line for the preprocessor and
+      snarf save-temps and dumpdir inputs to try and be consistent.
+   3. We can consume a pre-processed modula-2 source.  */
 
   {".mod", "@modula-2", 0, 0, 0},
   {"@modula-2",
-      "cc1gm2 " M2CPP
-      "      %(cc1_options) %{B*} %{c*} %{+e*} %{I*} "
-      "      %{i*} %{save-temps*} %{v} "
-      "      %i %{!fsyntax-only:%(invoke_as)}",
-      0, 0, 0},
+   /* For preprocessing we use cc1 but wrap it in cc1gm2.  */
+   "%{E|M|MM:\
+      cc1gm2 " M2CPP " %{!fcpp:-fcpp;:%{fcpp}} %{I*} %i } \
+    %{!E:%{!M:%{!MM:\
+      cc1gm2 " M2CPP " %(cc1_options) %{I*} %i %{c} \
+      %{MF*:%eto generate dependencies you must specify either '-M' or '-MM'} \
+      %{!fsyntax-only:%(invoke_as)} \
+    }}}", 0, 0, 0},
+  {".m2i", "@modula-2-cpp-output", 0, 0, 0},
+  {"@modula-2-cpp-output",
+   "%{!M:%{!MM:%{!E: \
+      cc1gm2 %<fcpp %(cc1_options) %{v} %I -fmod=.mod.m2i -fdef=.def.m2i %{I*} \
+	-fpreprocessed %i %{c} \
+    %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},

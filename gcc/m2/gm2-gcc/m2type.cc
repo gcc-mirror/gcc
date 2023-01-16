@@ -36,6 +36,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2tree.h"
 #include "m2treelib.h"
 #include "m2type.h"
+#include "m2options.h"
 
 #undef USE_BOOLEAN
 static int broken_set_debugging_info = TRUE;
@@ -1781,6 +1782,9 @@ m2type_InitBaseTypes (location_t location)
       = build_m2_cardinal_address_type_node (location);
 
   m2_packed_boolean_type_node = build_nonstandard_integer_type (1, TRUE);
+
+  if (M2Options_GetPPOnly ())
+    return;
 
   m2builtins_init (location);
   m2except_InitExceptions (location);

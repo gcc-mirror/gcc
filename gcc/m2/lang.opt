@@ -26,78 +26,6 @@
 Language
 Modula-2
 
-B
-Modula-2
-; Documented in c.opt
-
-D
-Modula-2
-; Documented in c.opt
-
-E
-Modula-2
-; Documented in c.opt (passed to the preprocessor if -fcpp is used)
-
-I
-Modula-2 Joined Separate
-; Documented in c.opt
-
-L
-Modula-2 Joined Separate
-; Not documented
-
-M
-Modula-2
-; Documented in c.opt
-
-MD
-Modula-2
-; Documented in c.opt
-
-MF
-Modula-2
-; Documented in c.opt
-
-MG
-Modula-2
-; Documented in c.opt
-
-MM
-Modula-2
-; Documented in c.opt
-
-MMD
-Modula-2
-; Documented in c.opt
-
-Mmodules
-Modula-2
-; Documented in c.opt
-
-Mno-modules
-Modula-2
-; Documented in c.opt
-
-MP
-Modula-2
-; Documented in c.opt
-
-MQ
-Modula-2
-; Documented in c.opt
-
-MT
-Modula-2
-; Documented in c.opt
-
-P
-Modula-2
-; Documented in c.opt
-
-O
-Modula-2
-; Documented in c.opt
-
 Wall
 Modula-2
 ; Documented in c.opt
@@ -274,6 +202,10 @@ fpositive-mod-floor-div
 Modula-2
 force positive result from MOD and DIV result floor
 
+fpreprocessed
+Modula-2
+; Documented in c.opt
+
 fpthread
 Modula-2
 link against the pthread library (default on)
@@ -350,52 +282,13 @@ fwholevalue
 Modula-2
 turns on runtime checking to check whether a whole number is about to exceed range
 
-iprefix
-Modula-2
-; Documented in c.opt
-
-iquote
-Modula-2
-; Documented in c.opt
-
-isystem
-Modula-2
-; Documented in c.opt
-
-idirafter
-Modula-2
-; Documented in c.opt
-
-imultilib
-Modula-2
+;fworking-directory
+;Modula-2
 ; Documented in c.opt
 
 lang-asm
 Modula-2
 ; Documented in c.opt
-
--save-temps
-Modula-2 Alias(save-temps)
-
-save-temps
-Modula-2
-save temporary preprocessed files
-
-save-temps=
-Modula-2 Joined
-save temporary preprocessed files
-
-traditional-cpp
-Modula-2
-; Documented in c.opt
-
-v
-Modula-2
-; Documented in c.opt
-
-x
-Modula-2 Joined
-specify the language from the compiler driver
 
 static-libgm2
 Driver
