@@ -7196,7 +7196,7 @@ package body Exp_Ch3 is
             --  We always use the type of the expression for the qualified
             --  expression, rather than the return object's type. We cannot
             --  always use the return object's type because the expression
-            --  might be of a specific type and the return object mignt not.
+            --  might be of a specific type and the return object might not.
 
             Alloc :=
               Make_Allocator (Loc,
