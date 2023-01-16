@@ -18438,6 +18438,8 @@
   mask = INTVAL (operands[3]) / 2;
   mask |= (INTVAL (operands[5]) - 4) / 2 << 1;
   operands[3] = GEN_INT (mask);
+  if (INTVAL (operands[3]) == 2 && !<mask_applied>)
+    return "vblendps\t{$240, %2, %1, %0|%0, %1, %2, 240}";
   return "vshuf<shuffletype>64x2\t{%3, %2, %1, %0<mask_operand7>|%0<mask_operand7>, %1, %2, %3}";
 }
   [(set_attr "type" "sselog")
@@ -18595,6 +18597,9 @@
   mask = INTVAL (operands[3]) / 4;
   mask |= (INTVAL (operands[7]) - 8) / 4 << 1;
   operands[3] = GEN_INT (mask);
+
+  if (INTVAL (operands[3]) == 2 && !<mask_applied>)
+    return "vblendps\t{$240, %2, %1, %0|%0, %1, %2, 240}";
 
   return "vshuf<shuffletype>32x4\t{%3, %2, %1, %0<mask_operand11>|%0<mask_operand11>, %1, %2, %3}";
 }
@@ -25664,7 +25669,28 @@
 	   (match_operand:SI 3 "const_0_to_255_operand")]
 	  UNSPEC_VPERMTI))]
   "TARGET_AVX2"
-  "vperm2i128\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  {
+    int mask = INTVAL (operands[3]);
+    if ((mask & 0xbb) == 16)
+      {
+	if (rtx_equal_p (operands[0], operands[1]))
+	  return "";
+	else
+	  return "vmovaps\t{%1, %0|%0, %1}";
+      }
+    if ((mask & 0xbb) == 50)
+      {
+	if (rtx_equal_p (operands[0], operands[2]))
+	  return "";
+	else
+	  return "vmovaps\t{%2, %0|%0, %2}";
+      }
+    if ((mask & 0xbb) == 18)
+      return "vblendps\t{$15, %2, %1, %0|%0, %1, %2, 15}";
+    if ((mask & 0xbb) == 48)
+      return "vblendps\t{$240, %2, %1, %0|%0, %1, %2, 240}";
+    return "vperm2i128\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+  }
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
@@ -26227,9 +26253,11 @@
    && avx_vperm2f128_parallel (operands[3], <MODE>mode)"
 {
   int mask = avx_vperm2f128_parallel (operands[3], <MODE>mode) - 1;
-  if (mask == 0x12)
-    return "vinsert<i128>\t{$0, %x2, %1, %0|%0, %1, %x2, 0}";
-  if (mask == 0x20)
+  if ((mask & 0xbb) == 0x12)
+    return "vblendps\t{$15, %2, %1, %0|%0, %1, %2, 15}";
+  if ((mask & 0xbb) == 0x30)
+    return "vblendps\t{$240, %2, %1, %0|%0, %1, %2, 240}";
+  if ((mask & 0xbb) == 0x20)
     return "vinsert<i128>\t{$1, %x2, %1, %0|%0, %1, %x2, 1}";
   operands[3] = GEN_INT (mask);
   return "vperm2<i128>\t{%3, %2, %1, %0|%0, %1, %2, %3}";
