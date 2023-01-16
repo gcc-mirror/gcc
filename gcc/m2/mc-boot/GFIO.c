@@ -555,7 +555,7 @@ static FIO_File GetNextFreeDescriptor (void)
         return f;  /* create new slot  */
       }
   }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -1703,7 +1703,7 @@ extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * 
 extern "C" void FIO_ReadAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 {
   CheckAccess (f, FIO_openedforread, FALSE);
-  if ((BufferedRead (f, _a_high, a)) == _a_high)
+  if ((BufferedRead (f, _a_high, a)) == ((int ) (_a_high)))
     {
       SetEndOfLine (f, static_cast<char> (a[_a_high]));
     }
@@ -1762,7 +1762,7 @@ extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void *
 extern "C" void FIO_WriteAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 {
   CheckAccess (f, FIO_openedforwrite, TRUE);
-  if ((BufferedWrite (f, _a_high, a)) == _a_high)
+  if ((BufferedWrite (f, _a_high, a)) == ((int ) (_a_high)))
     {}  /* empty.  */
 }
 
@@ -1774,7 +1774,7 @@ extern "C" void FIO_WriteAny (FIO_File f, unsigned char *a, unsigned int _a_high
 extern "C" void FIO_WriteChar (FIO_File f, char ch)
 {
   CheckAccess (f, FIO_openedforwrite, TRUE);
-  if ((BufferedWrite (f, sizeof (ch), &ch)) == sizeof (ch))
+  if ((BufferedWrite (f, sizeof (ch), &ch)) == ((int ) (sizeof (ch))))
     {}  /* empty.  */
 }
 
@@ -1873,7 +1873,7 @@ extern "C" char FIO_ReadChar (FIO_File f)
   char ch;
 
   CheckAccess (f, FIO_openedforread, FALSE);
-  if ((BufferedRead (f, sizeof (ch), &ch)) == sizeof (ch))
+  if ((BufferedRead (f, sizeof (ch), &ch)) == ((int ) (sizeof (ch))))
     {
       SetEndOfLine (f, ch);
       return ch;
@@ -2266,7 +2266,7 @@ extern "C" void * FIO_getFileName (FIO_File f)
           return fd->name.address;
         }
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -2293,7 +2293,7 @@ extern "C" unsigned int FIO_getFileNameLength (FIO_File f)
           return fd->name.size;
         }
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 

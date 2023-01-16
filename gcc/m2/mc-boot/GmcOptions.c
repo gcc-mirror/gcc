@@ -50,7 +50,6 @@ Boston, MA 02110-1301, USA.  */
 #   include "GFIO.h"
 #   include "GSFIO.h"
 
-#   define YEAR "2021"
 static unsigned int langC;
 static unsigned int langCPP;
 static unsigned int langM2;
@@ -170,6 +169,12 @@ extern "C" unsigned int mcOptions_getScaffoldMain (void);
 */
 
 extern "C" void mcOptions_writeGPLheader (FIO_File f);
+
+/*
+   getYear - return the year.
+*/
+
+static unsigned int getYear (void);
 
 /*
    displayVersion - displays the version of the compiler.
@@ -294,13 +299,33 @@ static void handleOption (DynamicStrings_String arg);
 
 
 /*
+   getYear - return the year.
+*/
+
+static unsigned int getYear (void)
+{
+  libc_time_t epoch;
+  libc_ptrToTM localTime;
+
+  epoch = libc_time (NULL);
+  localTime = static_cast<libc_ptrToTM> (libc_localtime (&epoch));
+  return localTime->tm_year+1900;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    displayVersion - displays the version of the compiler.
 */
 
 static void displayVersion (unsigned int mustExit)
 {
-  mcPrintf_printf0 ((const char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.\\n", 55);
-  mcPrintf_printf0 ((const char *) "License GPLv2: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\\n", 78);
+  unsigned int year;
+
+  year = getYear ();
+  mcPrintf_printf1 ((const char *) "Copyright (C) %d Free Software Foundation, Inc.\\n", 49, (const unsigned char *) &year, (sizeof (year)-1));
+  mcPrintf_printf0 ((const char *) "License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\\n", 78);
   mcPrintf_printf0 ((const char *) "This is free software: you are free to change and redistribute it.\\n", 68);
   mcPrintf_printf0 ((const char *) "There is NO WARRANTY, to the extent permitted by law.\\n", 55);
   if (mustExit)
@@ -424,7 +449,10 @@ static void commentS (FIO_File f, DynamicStrings_String s)
 
 static void gplBody (FIO_File f)
 {
-  comment (f, (const char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.", 53);
+  unsigned int year;
+
+  year = getYear ();
+  mcPrintf_printf1 ((const char *) "Copyright (C) %d Free Software Foundation, Inc.\\n", 49, (const unsigned char *) &year, (sizeof (year)-1));
   if (contributed)
     {
       FIO_WriteString (f, (const char *) "Contributed by ", 15);
@@ -464,7 +492,10 @@ static void gplBody (FIO_File f)
 
 static void glplBody (FIO_File f)
 {
-  comment (f, (const char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.", 53);
+  unsigned int year;
+
+  year = getYear ();
+  mcPrintf_printf1 ((const char *) "Copyright (C) %d Free Software Foundation, Inc.\\n", 49, (const unsigned char *) &year, (sizeof (year)-1));
   if (contributed)
     {
       FIO_WriteString (f, (const char *) "Contributed by ", 15);

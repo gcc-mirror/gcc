@@ -545,7 +545,7 @@ static DynamicStrings_String HandlePercent (DynamicStrings_String fmt, DynamicSt
   int prevpos;
   DynamicStrings_String result;
 
-  if ((startpos == (DynamicStrings_Length (fmt))) || (startpos < 0))
+  if ((startpos == ((int ) (DynamicStrings_Length (fmt)))) || (startpos < 0))
     {
       return s;
     }

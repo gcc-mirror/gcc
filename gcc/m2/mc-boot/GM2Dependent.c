@@ -263,6 +263,13 @@ static void combine (M2Dependent_DependencyState src, M2Dependent_DependencyStat
 static void ForceDependencies (void);
 
 /*
+   CheckApplication - check to see that the application is the last entry in the list.
+                      This might happen if the application only imports FOR C modules.
+*/
+
+static void CheckApplication (void);
+
+/*
    equal - return TRUE if C string cstr is equal to str.
 */
 
@@ -730,6 +737,7 @@ static void ResolveDependencies (void * currentmodule)
 static void DisplayModuleInfo (M2Dependent_DependencyState state, const char *name_, unsigned int _name_high)
 {
   M2Dependent_ModuleChain mptr;
+  unsigned int count;
   char name[_name_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -739,8 +747,10 @@ static void DisplayModuleInfo (M2Dependent_DependencyState state, const char *na
     {
       libc_printf ((const char *) "%s modules\\n", 12, &name);
       mptr = Modules.array[state-M2Dependent_unregistered];
+      count = 0;
       do {
-        libc_printf ((const char *) "  %s", 4, mptr->name);
+        libc_printf ((const char *) "  %d  %s", 8, count, mptr->name);
+        count += 1;
         if (mptr->dependency.appl)
           {
             libc_printf ((const char *) " application", 12);
@@ -847,6 +857,38 @@ static void ForceDependencies (void)
             }
         }
       combine (M2Dependent_user, M2Dependent_ordered);
+    }
+}
+
+
+/*
+   CheckApplication - check to see that the application is the last entry in the list.
+                      This might happen if the application only imports FOR C modules.
+*/
+
+static void CheckApplication (void)
+{
+  M2Dependent_ModuleChain mptr;
+  M2Dependent_ModuleChain appl;
+
+  mptr = Modules.array[M2Dependent_ordered-M2Dependent_unregistered];
+  if (mptr != NULL)
+    {
+      appl = NULL;
+      do {
+        if (mptr->dependency.appl)
+          {
+            appl = mptr;
+          }
+        else
+          {
+            mptr = mptr->next;
+          }
+      } while (! ((appl != NULL) || (mptr == Modules.array[M2Dependent_ordered-M2Dependent_unregistered])));
+      if (appl != NULL)
+        {
+          Modules.array[M2Dependent_ordered-M2Dependent_unregistered] = appl->next;
+        }
     }
 }
 
@@ -1005,6 +1047,9 @@ extern "C" void M2Dependent_ConstructModules (void * applicationmodule, int argc
   DumpModuleData (PostTrace);
   ForceDependencies ();
   traceprintf (ForceTrace, (const char *) "After user forcing ordering\\n", 29);
+  DumpModuleData (ForceTrace);
+  CheckApplication ();
+  traceprintf (ForceTrace, (const char *) "After runtime forces application to the end\\n", 45);
   DumpModuleData (ForceTrace);
   if (Modules.array[M2Dependent_ordered-M2Dependent_unregistered] == NULL)
     {

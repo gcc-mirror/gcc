@@ -20,8 +20,8 @@ IMPLEMENTATION MODULE mcOptions ;
 
 FROM SArgs IMPORT GetArg, Narg ;
 FROM mcSearch IMPORT prependSearchPath ;
-FROM libc IMPORT exit, printf ;
-FROM mcPrintf IMPORT printf0 ;
+FROM libc IMPORT exit, printf, time, localtime, time_t, ptrToTM ;
+FROM mcPrintf IMPORT printf0, printf1 ;
 FROM Debug IMPORT Halt ;
 FROM StrLib IMPORT StrLen ;
 FROM decl IMPORT setLangC, setLangCP, setLangM2 ;
@@ -32,9 +32,6 @@ FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
 
 IMPORT FIO ;
 IMPORT SFIO ;
-
-CONST
-   YEAR = '2023' ;
 
 VAR
    langC,
@@ -65,13 +62,32 @@ VAR
    cppProgram       : String ;
 
 
+
+(*
+   getYear - return the year.
+*)
+
+PROCEDURE getYear () : CARDINAL ;
+VAR
+   epoch    : time_t ;
+   localTime: ptrToTM ;
+BEGIN
+   epoch := time (NIL) ;
+   localTime := localtime (epoch) ;
+   RETURN localTime^.tm_year + 1900
+END getYear ;
+
+
 (*
    displayVersion - displays the version of the compiler.
 *)
 
 PROCEDURE displayVersion (mustExit: BOOLEAN) ;
+VAR
+   year: CARDINAL ;
 BEGIN
-   printf0 ('Copyright (C) ' + YEAR + ' Free Software Foundation, Inc.\n') ;
+   year := getYear () ;
+   printf1 ('Copyright (C) %d Free Software Foundation, Inc.\n', year) ;
    printf0 ('License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n') ;
    printf0 ('This is free software: you are free to change and redistribute it.\n') ;
    printf0 ('There is NO WARRANTY, to the extent permitted by law.\n') ;
@@ -183,8 +199,11 @@ END commentS ;
 *)
 
 PROCEDURE gplBody (f: File) ;
+VAR
+   year: CARDINAL ;
 BEGIN
-   comment (f, 'Copyright (C) ' + YEAR + ' Free Software Foundation, Inc.') ;
+   year := getYear () ;
+   printf1 ('Copyright (C) %d Free Software Foundation, Inc.\n', year) ;
    IF contributed
    THEN
       FIO.WriteString (f, "Contributed by ") ;
@@ -222,8 +241,11 @@ END gplBody ;
 *)
 
 PROCEDURE glplBody (f: File) ;
+VAR
+   year: CARDINAL ;
 BEGIN
-   comment (f, 'Copyright (C) ' + YEAR + ' Free Software Foundation, Inc.') ;
+   year := getYear () ;
+   printf1 ('Copyright (C) %d Free Software Foundation, Inc.\n', year) ;
    IF contributed
    THEN
       FIO.WriteString (f, "Contributed by ") ;
