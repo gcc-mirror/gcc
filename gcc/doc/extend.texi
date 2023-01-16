@@ -3383,7 +3383,7 @@ Attribute @code{malloc} indicates that a function is @code{malloc}-like,
 i.e., that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
 pointers to valid objects occur in any storage addressed by @var{P}. In
-addition, the GCC predicts that a function with the attribute returns
+addition, GCC predicts that a function with the attribute returns
 non-null in most cases.
 
 Independently, the form of the attribute with one or two arguments
