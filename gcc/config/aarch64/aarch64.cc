@@ -7659,7 +7659,18 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
        && (currently_expanding_function_start
 	   || currently_expanding_gimple_stmt));
 
-  /* There are several things to note here:
+  /* HFAs and HVAs can have an alignment greater than 16 bytes.  For example:
+
+       typedef struct foo {
+         __Int8x16_t foo[2] __attribute__((aligned(32)));
+       } foo;
+
+     is still a HVA despite its larger-than-normal alignment.
+     However, such over-aligned HFAs and HVAs are guaranteed to have
+     no padding.
+
+     If we exclude HFAs and HVAs from the discussion below, then there
+     are several things to note:
 
      - Both the C and AAPCS64 interpretations of a type's alignment should
        give a value that is no greater than the type's size.
@@ -7704,12 +7715,6 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
        would treat the alignment as though it was *equal to* 16 bytes.
 
      Both behaviors were wrong, but in different cases.  */
-  unsigned int alignment
-    = aarch64_function_arg_alignment (mode, type, &abi_break,
-				      &abi_break_packed);
-  gcc_assert (alignment <= 16 * BITS_PER_UNIT
-	      && (!alignment || abi_break < alignment)
-	      && (!abi_break_packed || alignment < abi_break_packed));
 
   pcum->aapcs_arg_processed = true;
 
@@ -7779,6 +7784,14 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 						 type,
 						 &nregs);
   gcc_assert (!sve_p || !allocate_nvrn);
+
+  unsigned int alignment
+    = aarch64_function_arg_alignment (mode, type, &abi_break,
+				      &abi_break_packed);
+
+  gcc_assert ((allocate_nvrn || alignment <= 16 * BITS_PER_UNIT)
+	      && (!alignment || abi_break < alignment)
+	      && (!abi_break_packed || alignment < abi_break_packed));
 
   /* allocate_ncrn may be false-positive, but allocate_nvrn is quite reliable.
      The following code thus handles passing by SIMD/FP registers first.  */
