@@ -596,6 +596,8 @@ class TestsuiteFilter (GenericFilter):
                 '.go',
                 '.inc',
                 '.java',
+                '.mod',
+                '.rs'
                 ])
 
     def skip_file (self, dir, filename):
@@ -733,6 +735,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Stephen L. Moshier')
         self.add_external_author ('Sun Microsystems, Inc. All rights reserved.')
         self.add_external_author ('The D Language Foundation, All Rights Reserved')
+        self.add_external_author ('The fast_float authors')
         self.add_external_author ('The Go Authors.  All rights reserved.')
         self.add_external_author ('The Go Authors. All rights reserved.')
         self.add_external_author ('The Go Authors.')
