@@ -309,6 +309,7 @@ is
             Lemma_Mod_Mod (Rest * Rest, Big (Modulus));
             Lemma_Mod_Ident (Big (Result), Big (Modulus));
             Lemma_Mult_Mod (Big (Result), Rest * Rest, Big (Modulus));
+            pragma Assert (Big (Factor) >= 0);
             Lemma_Mult_Mod (Big (Result), Big (Factor) ** Exp,
                                Big (Modulus));
             pragma Assert (Equal_Modulo

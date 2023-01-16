@@ -1654,6 +1654,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       Low    : Positive;
       High   : Natural) return Super_String
    is
+      Len : constant Natural := (if Low > High then 0 else High - Low + 1);
    begin
       return Result : Super_String (Source.Max_Length) do
          if Low - 1 > Source.Current_Length
@@ -1662,9 +1663,8 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
             raise Index_Error;
          end if;
 
-         Result.Current_Length := (if Low > High then 0 else High - Low + 1);
-         Result.Data (1 .. Result.Current_Length) :=
-           Source.Data (Low .. High);
+         Result.Data (1 .. Len) := Source.Data (Low .. High);
+         Result.Current_Length := Len;
       end return;
    end Super_Slice;
 
@@ -1674,6 +1674,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       Low    : Positive;
       High   : Natural)
    is
+      Len : constant Natural := (if Low > High then 0 else High - Low + 1);
    begin
       if Low - 1 > Source.Current_Length
         or else High > Source.Current_Length
@@ -1681,8 +1682,8 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          raise Index_Error;
       end if;
 
-      Target.Current_Length := (if Low > High then 0 else High - Low + 1);
-      Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
+      Target.Data (1 .. Len) := Source.Data (Low .. High);
+      Target.Current_Length := Len;
    end Super_Slice;
 
    ----------------
