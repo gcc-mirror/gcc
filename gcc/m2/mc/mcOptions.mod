@@ -34,7 +34,7 @@ IMPORT FIO ;
 IMPORT SFIO ;
 
 CONST
-   YEAR = '2021' ;
+   YEAR = '2023' ;
 
 VAR
    langC,
@@ -72,7 +72,7 @@ VAR
 PROCEDURE displayVersion (mustExit: BOOLEAN) ;
 BEGIN
    printf0 ('Copyright (C) ' + YEAR + ' Free Software Foundation, Inc.\n') ;
-   printf0 ('License GPLv2: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n') ;
+   printf0 ('License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n') ;
    printf0 ('This is free software: you are free to change and redistribute it.\n') ;
    printf0 ('There is NO WARRANTY, to the extent permitted by law.\n') ;
    IF mustExit
