@@ -1,3 +1,31 @@
+2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-17.c: New test.
+
+2023-01-11  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-12-28  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/108137
+	* gcc.dg/tree-ssa/pr108137.c: New test.
+
+2023-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	Backported from master:
+	2022-12-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/107714
+	* gcc.target/arm/mve/intrinsics/vldst24q_reg_offset.c: New test.
+
+2023-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2022-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108140
+	* gcc.target/aarch64/acle/pr108140.c: New test.
+
 2023-01-05  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR target/106736

@@ -1,3 +1,42 @@
+2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/108199
+	* tree-sra.cc (sra_modify_expr): Deal with reverse storage order
+	for bit-field references.
+
+2023-01-11  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-12-28  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/108137
+	* tree-ssa-strlen.cc (get_range_strlen_phi): Reject anything
+	different from INTEGER_CST.
+
+2023-01-10  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	Backported from master:
+	2022-12-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/107714
+	* config/arm/arm-protos.h (mve_struct_mem_operand): New protoype.
+	* config/arm/arm.cc (mve_struct_mem_operand): New function.
+	* config/arm/constraints.md (Ug): New constraint.
+	* config/arm/mve.md (mve_vst4q<mode>): Change constraint.
+	(mve_vst2q<mode>): Likewise.
+	(mve_vld4q<mode>): Likewise.
+	(mve_vld2q<mode>): Likewise.
+	* config/arm/predicates.md (mve_struct_operand): New predicate.
+
+2023-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2022-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108140
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_expand_builtin_data_intrinsic): Handle NULL target.
+
 2023-01-05  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR target/106736
