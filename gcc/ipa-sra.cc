@@ -2529,7 +2529,8 @@ process_scan_results (cgraph_node *node, struct function *fun,
      TODO: Measure the overhead and the effect of just being pessimistic.
      Maybe this is only -O3 material?  */
 
-  bool pdoms_calculated = false;
+  hash_map<gimple *, bool> analyzed_stmts;
+  bitmap always_executed_bbs = NULL;
   if (check_pass_throughs)
     for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
       {
@@ -2566,27 +2567,46 @@ process_scan_results (cgraph_node *node, struct function *fun,
 		continue;
 	      }
 
-	    /* Post-dominator check placed last, hoping that it usually won't
-	       be needed.  */
-	    if (!pdoms_calculated)
+	    /* Walk basic block and see if its execution can terminate earlier.
+	       Keep the info for later re-use to avoid quadratic behavoiur here.  */
+	    gimple_stmt_iterator gsi = gsi_for_stmt (call_stmt);
+	    bool safe = true;
+	    int n = 0;
+	    for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
 	      {
-		gcc_checking_assert (cfun);
-		connect_infinite_loops_to_exit ();
-		calculate_dominance_info (CDI_POST_DOMINATORS);
-		pdoms_calculated = true;
+		bool *b = analyzed_stmts.get (gsi_stmt (gsi));
+		if (b)
+		  {
+		    safe = *b;
+		    gsi_next (&gsi);
+		    break;
+		  }
+		n++;
+		if (stmt_may_terminate_function_p (fun, gsi_stmt (gsi), false))
+		  {
+		    safe = false;
+		    break;
+		  }
 	      }
-	    if (dominated_by_p (CDI_POST_DOMINATORS,
-				gimple_bb (call_stmt),
-				single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun))))
+	    if (n)
+	      {
+		if (gsi_end_p (gsi))
+		  gsi = gsi_start_bb (gimple_bb (call_stmt));
+		for (; gsi_stmt (gsi) != call_stmt; gsi_next (&gsi))
+		  analyzed_stmts.get_or_insert (gsi_stmt (gsi)) = safe;
+	      }
+
+	    if (safe && !always_executed_bbs)
+	      {
+		mark_dfs_back_edges ();
+		always_executed_bbs = find_always_executed_bbs (fun, false);
+	      }
+	    if (safe && bitmap_bit_p (always_executed_bbs, gimple_bb (call_stmt)->index))
 	      csum->m_arg_flow[argidx].safe_to_import_accesses = true;
 	  }
 
       }
-  if (pdoms_calculated)
-    {
-      free_dominance_info (CDI_POST_DOMINATORS);
-      remove_fake_exit_edges ();
-    }
+  BITMAP_FREE (always_executed_bbs);
 
   /* TODO: Add early exit if we disqualified everything.  This also requires
      that we either relax the restriction that
