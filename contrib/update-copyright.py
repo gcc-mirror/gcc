@@ -638,8 +638,9 @@ class LibPhobosFilter (GenericFilter):
         GenericFilter.__init__ (self)
 
         self.skip_files |= set ([
-                # Source module imported from upstream.
+                # Source modules imported from upstream.
                 'object.d',
+                '__builtins.di'
                 ])
 
         self.skip_dirs |= set ([
