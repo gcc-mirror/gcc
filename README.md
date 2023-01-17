@@ -80,7 +80,7 @@ $ make
 Running the compiler itself without make install we can simply invoke the compiler proper:
 
 ```bash
-$ ./gcc/rust1 test.rs -frust-debug -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
+$ ./gcc/rust1 test.rs -frust-debug -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -frust-incomplete-and-experimental-compiler-do-not-use
 ```
 
 To invoke the compiler driver (gccrs) we need to:
@@ -92,8 +92,8 @@ $ make install
 Then invoke the compiler from the installation directory:
 
 ```bash
-$ $HOME/gccrs-install/gccrs -g -O2 -c test.rs -o test.o
-$ $HOME/gccrs-install/gccrs -o test test.o
+$ $HOME/gccrs-install/bin/gccrs -g -O2 -c test.rs -o test.o -frust-incomplete-and-experimental-compiler-do-not-use
+$ $HOME/gccrs-install/bin/gccrs -o test test.o
 ```
 
 You can also setup your shell to automatically find the installed compiler. For example for `bash`,
