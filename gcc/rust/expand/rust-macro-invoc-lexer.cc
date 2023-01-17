@@ -26,4 +26,18 @@ MacroInvocLexer::split_current_token (TokenId new_left __attribute__ ((unused)),
   // FIXME
   gcc_unreachable ();
 }
+
+std::vector<std::unique_ptr<AST::Token>>
+MacroInvocLexer::get_token_slice (size_t start_idx, size_t end_idx) const
+{
+  std::vector<std::unique_ptr<AST::Token>> slice;
+
+  rust_assert (end_idx < token_stream.size ());
+
+  for (size_t i = start_idx; i < end_idx; i++)
+    slice.emplace_back (token_stream[i]->clone_token ());
+
+  return slice;
+}
+
 } // namespace Rust
