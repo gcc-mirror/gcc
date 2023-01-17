@@ -71536,17 +71536,17 @@ fi
 
   if test "x${with_libstdcxx_zoneinfo}" = xyes; then
     # Pick a default when no specific path is set.
-    case "$host" in
+    case "$target_os" in
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
 	# Not all distros ship tzdata.zi in this dir.
 	zoneinfo_dir="/usr/share/zoneinfo"
 	;;
-      *-*-aix*)
+      aix*)
 	# Binary tzfile files are in /usr/share/lib/zoneinfo
 	# but tzdata.zi is not present there.
 	zoneinfo_dir=none
 	;;
-      *-*-darwin2*)
+      darwin2*)
 	# Binary tzfile files are in /usr/share/lib/zoneinfo.default
 	# but tzdata.zi is not present there.
 	zoneinfo_dir=none
@@ -71590,7 +71590,7 @@ cat >>confdefs.h <<_ACEOF
 #define _GLIBCXX_ZONEINFO_DIR "${zoneinfo_dir}"
 _ACEOF
 
-    if $GLIBCXX_IS_NATIVE -a ! test -f "$zoneinfo_dir/tzdata.zi"; then
+    if $GLIBCXX_IS_NATIVE && ! test -f "$zoneinfo_dir/tzdata.zi"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"$zoneinfo_dir does not contain tzdata.zi file\"" >&5
 $as_echo "$as_me: WARNING: \"$zoneinfo_dir does not contain tzdata.zi file\"" >&2;}
     fi
