@@ -1,3 +1,83 @@
+2023-01-16  Andrew Pinski  <apinski@marvell.com>
+
+	* lib/target-supports.exp (add_options_for_tls): Remove
+	reference to Solaris 9 in comments.
+
+2023-01-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105980
+	* g++.target/i386/pr105980.C: New test.
+
+2023-01-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr106077.C: New test.
+
+2023-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/96795
+	PR target/107515
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-fp.c: New test.
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-int.c: New test.
+
+2023-01-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* g++.dg/tree-ssa/pr86544.C: Add .POPCOUNT to tree scan regex.
+	* gcc.dg/tree-ssa/popcount.c: Likewise.
+	* gcc.dg/tree-ssa/popcount2.c: Likewise.
+	* gcc.dg/tree-ssa/popcount3.c: Likewise.
+	* gcc.target/aarch64/popcount4.c: Likewise.
+	* gcc.target/i386/pr95771.c: Likewise, and...
+	* gcc.target/i386/pr95771-2.c: ...split int128 test from above,
+	since this would emit just a single IFN if a TI optab is added.
+
+2023-01-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.dg/tree-ssa/cltz-max.c: New test.
+	* gcc.dg/tree-ssa/clz-char.c: New test.
+	* gcc.dg/tree-ssa/clz-int.c: New test.
+	* gcc.dg/tree-ssa/clz-long-long.c: New test.
+	* gcc.dg/tree-ssa/clz-long.c: New test.
+	* gcc.dg/tree-ssa/ctz-char.c: New test.
+	* gcc.dg/tree-ssa/ctz-int.c: New test.
+	* gcc.dg/tree-ssa/ctz-long-long.c: New test.
+	* gcc.dg/tree-ssa/ctz-long.c: New test.
+
+2023-01-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_clz)
+	(check_effective_target_clzl, check_effective_target_clzll)
+	(check_effective_target_ctz, check_effective_target_clzl)
+	(check_effective_target_ctzll): New.
+	* gcc.dg/tree-ssa/cltz-complement-max.c: New test.
+	* gcc.dg/tree-ssa/clz-complement-char.c: New test.
+	* gcc.dg/tree-ssa/clz-complement-int.c: New test.
+	* gcc.dg/tree-ssa/clz-complement-long-long.c: New test.
+	* gcc.dg/tree-ssa/clz-complement-long.c: New test.
+	* gcc.dg/tree-ssa/ctz-complement-char.c: New test.
+	* gcc.dg/tree-ssa/ctz-complement-int.c: New test.
+	* gcc.dg/tree-ssa/ctz-complement-long-long.c: New test.
+	* gcc.dg/tree-ssa/ctz-complement-long.c: New test.
+
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* g++.target/i386/pr105593.C: New test.
+
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* c-c++-common/Winit-self3.c: New test.
+	* c-c++-common/Winit-self4.c: New test.
+	* c-c++-common/Winit-self5.c: New test.
+
+2023-01-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108272
+	* gcc.target/powerpc/pr108272-1.c: New test.
+	* gcc.target/powerpc/pr108272-2.c: New test.
+	* gcc.target/powerpc/pr108272-3.c: New test.
+	* gcc.target/powerpc/pr108272-4.c: New test.
+
 2023-01-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.target/aarch64/sve/acle/general/pr96463-2.c: Adjust.

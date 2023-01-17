@@ -1,3 +1,15 @@
+2023-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (_GLIBCXX_USE_CXX11_ABI): Define to 1.
+
+2023-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108413
+	* include/c_compatibility/stdatomic.h: Change copyright line to
+	be consistent with other headers contributed under DCO terms.
+	* include/std/expected: Add full stop to copyright line.
+	* src/c++20/tzdb.cc: Likewise.
+
 2023-01-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/status_cxx2014.xml: Switch www.open-std.org to

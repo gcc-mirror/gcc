@@ -1,3 +1,98 @@
+2023-01-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105980
+	* config/i386/i386.cc (x86_output_mi_thunk): Disable
+	-mforce-indirect-call for PIC in 32-bit mode.
+
+2023-01-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/106077
+	* ipa-modref.cc (modref_access_analysis::analyze): Use
+	find_always_executed_bbs.
+	* ipa-sra.cc (process_scan_results): Likewise.
+	* ipa-utils.cc (stmt_may_terminate_function_p): New function.
+	(find_always_executed_bbs): New function.
+	* ipa-utils.h (stmt_may_terminate_function_p): Declare.
+	(find_always_executed_bbs): Declare.
+
+2023-01-16  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.cc (ix86_vectorize_builtin_scatter): Guard scatter
+	by TARGET_USE_SCATTER.
+	* config/i386/i386.h (TARGET_USE_SCATTER_2PARTS,
+	TARGET_USE_SCATTER_4PARTS, TARGET_USE_SCATTER): New macros.
+	* config/i386/x86-tune.def (TARGET_USE_SCATTER_2PARTS,
+	TARGET_USE_SCATTER_4PARTS, TARGET_USE_SCATTER): New tunes.
+	(X86_TUNE_AVOID_256FMA_CHAINS, X86_TUNE_AVOID_512FMA_CHAINS): Disable
+	for znver4.  (X86_TUNE_USE_GATHER): Disable for zen4.
+
+2023-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* config/sol2.h (ENDFILE_SPEC): Don't add crtfastmath.o for -shared.
+
+2023-01-16  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/96795
+	PR target/107515
+	* config/arm/arm_mve.h (__ARM_mve_coerce2): Split types.
+	(__ARM_mve_coerce3): Likewise.
+
+2023-01-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-ssa-loop-niter.cc (build_popcount_expr): Add IFN support.
+
+2023-01-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-ssa-loop-niter.cc (number_of_iterations_cltz): New.
+	(number_of_iterations_bitcount): Add call to the above.
+	(number_of_iterations_exit_assumptions): Add EQ_EXPR case for
+	c[lt]z idiom recognition.
+
+2023-01-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/sourcebuild.texi: Add missing target attributes.
+
+2023-01-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR tree-optimization/94793
+	* tree-scalar-evolution.cc (expression_expensive_p): Add checks
+	for c[lt]z optabs.
+	* tree-ssa-loop-niter.cc (build_cltz_expr): New.
+	(number_of_iterations_cltz_complement): New.
+	(number_of_iterations_bitcount): Add call to the above.
+
+2023-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Function Attributes): Fix grammar.
+
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/108413
+	* config/riscv/riscv-vsetvl.h: Add space in between Copyright and (C).
+	* config/riscv/riscv-vsetvl.cc: Likewise.
+
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* config/i386/xmmintrin.h (_mm_undefined_ps): Temporarily
+	disable -Winit-self using pragma GCC diagnostic ignored.
+	* config/i386/emmintrin.h (_mm_undefined_pd, _mm_undefined_si128):
+	Likewise.
+	* config/i386/avxintrin.h (_mm256_undefined_pd, _mm256_undefined_ps,
+	_mm256_undefined_si256): Likewise.
+	* config/i386/avx512fintrin.h (_mm512_undefined_pd,
+	_mm512_undefined_ps, _mm512_undefined_epi32): Likewise.
+	* config/i386/avx512fp16intrin.h (_mm_undefined_ph,
+	_mm256_undefined_ph, _mm512_undefined_ph): Likewise.
+
+2023-01-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108272
+	* config/rs6000/rs6000.cc (rs6000_opaque_type_invalid_use_p): Add the
+	support for invalid uses in inline asm, factor out the checking and
+	erroring to lambda function check_and_error_invalid_use.
+
 2023-01-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/107608

@@ -1,3 +1,15 @@
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/108413
+	* update-copyright.py (LibPhobosFilter): Add __builtins.di to
+	skipped files.
+
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/108413
+	* update-copyright.py (TestsuiteFilter): Add .mod and .rs extensions.
+	(GCCCopyright): Add 'The fast_float authors' as external author.
+
 2023-01-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config-list.mk: Update FreeBSD targets to version 13.

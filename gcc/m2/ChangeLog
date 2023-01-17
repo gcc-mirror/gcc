@@ -1,3 +1,52 @@
+2023-01-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* mc-boot-ch/Glibc.c (libc_time): New function.
+	(libc_localtime): New function.
+	* mc-boot/GDynamicStrings.c: Regenerate.
+	* mc-boot/GFIO.c: Regenerate.
+	* mc-boot/GFormatStrings.c: Regenerate.
+	* mc-boot/GIndexing.c: Regenerate.
+	* mc-boot/GM2Dependent.c: Regenerate.
+	* mc-boot/GM2EXCEPTION.c: Regenerate.
+	* mc-boot/GPushBackInput.c: Regenerate.
+	* mc-boot/GRTExceptions.c: Regenerate.
+	* mc-boot/GRTint.c: Regenerate.
+	* mc-boot/GStdIO.c: Regenerate.
+	* mc-boot/GStringConvert.c: Regenerate.
+	* mc-boot/GSysStorage.c: Regenerate.
+	* mc-boot/Gdecl.c: Regenerate.
+	* mc-boot/GmcComment.c: Regenerate.
+	* mc-boot/GmcComp.c: Regenerate.
+	* mc-boot/GmcDebug.c: Regenerate.
+	* mc-boot/GmcMetaError.c: Regenerate.
+	* mc-boot/GmcOptions.c: Regenerate.
+	* mc-boot/GmcStack.c: Regenerate.
+	* mc-boot/GnameKey.c: Regenerate.
+	* mc-boot/GsymbolKey.c: Regenerate.
+	* mc-boot/Gkeyc.c: Regenerate.
+	* mc/decl.mod (putFieldRecord): Change NulName to NulKey
+	and fix type comparision.
+	* mc/mcOptions.mod (YEAR): Remove.
+	(getYear): New procedure function.
+	(displayVersion): Use result from getYear instead of YEAR.
+	Emit boilerplate for GPL v3.
+	(gplBody): Use result from getYear instead of YEAR.
+	(glplBody): Use result from getYear instead of YEAR.
+
+2023-01-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Quads.mod (AssignUnboundedVar): Check Type
+	against NulSym and call MetaErrorT1 if necessary.
+	(AssignUnboundedNonVar): Check Type against NulSym and
+	call MetaErrorT1 if necessary.
+	(BuildDesignatorPointer): Check Type1 against NulSym and
+	call MetaErrorT1 if necessary.
+
+2023-01-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* mc/mcOptions.mod (displayVersion): Change GPLv2 to GPLv3.
+	(YEAR) set to 2023.
+
 2023-01-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2LexBuf.mod (isSrcToken): Add block comment.

@@ -1,3 +1,10 @@
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* decl.cc (cp_finish_decl): Check warning_enabled_at
+	at the DECL_SOURCE_LOCATION (decl) for OPT_Winit_self instead
+	of warn_init_self.
+
 2023-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/108365
