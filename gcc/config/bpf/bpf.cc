@@ -253,6 +253,14 @@ bpf_option_override (void)
   if (bpf_has_jmp32 == -1)
     bpf_has_jmp32 = (bpf_isa >= ISA_V3);
 
+  /* Disable -fstack-protector as it is not supported in BPF.  */
+  if (flag_stack_protect)
+    {
+      inform (input_location,
+              "%<-fstack-protector%> does not work "
+              " on this architecture");
+      flag_stack_protect = 0;
+    }
 }
 
 #undef TARGET_OPTION_OVERRIDE
