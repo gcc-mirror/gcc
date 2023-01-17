@@ -324,7 +324,10 @@ static void displayVersion (unsigned int mustExit)
   unsigned int year;
 
   year = getYear ();
-  mcPrintf_printf1 ((const char *) "Copyright (C) %d Free Software Foundation, Inc.\\n", 49, (const unsigned char *) &year, (sizeof (year)-1));
+  /* These first three calls to printf hide the first line of text away from the year change script.  */
+  mcPrintf_printf0 ((const char *) "Copyright ", 10);
+  mcPrintf_printf0 ((const char *) "(C)", 3);  /* A unicode char here would be good.  */
+  mcPrintf_printf1 ((const char *) " %d Free Software Foundation, Inc.\\n", 36, (const unsigned char *) &year, (sizeof (year)-1));  /* A unicode char here would be good.  */
   mcPrintf_printf0 ((const char *) "License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\\n", 78);
   mcPrintf_printf0 ((const char *) "This is free software: you are free to change and redistribute it.\\n", 68);
   mcPrintf_printf0 ((const char *) "There is NO WARRANTY, to the extent permitted by law.\\n", 55);

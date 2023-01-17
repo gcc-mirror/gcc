@@ -87,7 +87,10 @@ VAR
    year: CARDINAL ;
 BEGIN
    year := getYear () ;
-   printf1 ('Copyright (C) %d Free Software Foundation, Inc.\n', year) ;
+   (* These first three calls to printf hide the first line of text away from the year change script.  *)
+   printf0 ('Copyright ') ;
+   printf0 ('(C)') ;  (* A unicode char here would be good.  *)
+   printf1 (' %d Free Software Foundation, Inc.\n', year) ;
    printf0 ('License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n') ;
    printf0 ('This is free software: you are free to change and redistribute it.\n') ;
    printf0 ('There is NO WARRANTY, to the extent permitted by law.\n') ;

@@ -293,15 +293,15 @@ typedef enum {mcComment_unknown, mcComment_procedureHeading, mcComment_inBody, m
 
 typedef struct DynamicStrings_stringRecord_r DynamicStrings_stringRecord;
 
-typedef struct wlists__T9_r wlists__T9;
-
 typedef struct DynamicStrings_Contents_r DynamicStrings_Contents;
 
-typedef struct DynamicStrings__T7_a DynamicStrings__T7;
+typedef struct wlists__T9_r wlists__T9;
 
 typedef struct mcPretty__T12_r mcPretty__T12;
 
 typedef struct wlists__T10_a wlists__T10;
+
+typedef struct DynamicStrings__T7_a DynamicStrings__T7;
 
 typedef Indexing__T5 *Indexing_Index;
 
@@ -665,8 +665,8 @@ struct mcComment__T6_r {
                          unsigned int used;
                        };
 
-struct DynamicStrings__T7_a { char array[(MaxBuf-1)+1]; };
 struct wlists__T10_a { unsigned int array[maxNoOfElements-1+1]; };
+struct DynamicStrings__T7_a { char array[(MaxBuf-1)+1]; };
 struct alists__T13_r {
                        unsigned int noOfelements;
                        alists__T14 elements;
@@ -830,17 +830,17 @@ struct decl_impT_r {
                      decl_commentPair com;
                    };
 
-struct wlists__T9_r {
-                      unsigned int noOfElements;
-                      wlists__T10 elements;
-                      wlists_wlist next;
-                    };
-
 struct DynamicStrings_Contents_r {
                                    DynamicStrings__T7 buf;
                                    unsigned int len;
                                    DynamicStrings_String next;
                                  };
+
+struct wlists__T9_r {
+                      unsigned int noOfElements;
+                      wlists__T10 elements;
+                      wlists_wlist next;
+                    };
 
 struct mcPretty__T12_r {
                          mcPretty_writeProc write_;
@@ -1037,9 +1037,10 @@ extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p);
 extern "C" void M2RTS_ExecuteTerminationProcedures (void);
 extern "C" void M2RTS_Terminate (void) __attribute__ ((noreturn));
 extern "C" void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
-extern "C" void M2RTS_Halt (const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description);
 extern "C" void M2RTS_ExitOnHalt (int e);
-extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
 extern "C" unsigned int M2RTS_Length (const char *a_, unsigned int _a_high);
 extern "C" void M2RTS_AssignmentException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
 extern "C" void M2RTS_ReturnException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);

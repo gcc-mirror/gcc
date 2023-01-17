@@ -61,6 +61,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 
+#   define stderrFd 2
 typedef struct M2RTS_ProcedureList_r M2RTS_ProcedureList;
 
 typedef char *M2RTS_PtrToChar;
@@ -175,10 +176,19 @@ extern "C" void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
 
 /*
    Halt - provides a more user friendly version of HALT, which takes
-          four parameters to aid debugging.
+          four parameters to aid debugging.  It writes an error message
+          to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_Halt (const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+
+/*
+   HaltC - provides a more user friendly version of HALT, which takes
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
+*/
+
+extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description);
 
 /*
    ExitOnHalt - if HALT is executed then call exit with the exit code, e.
@@ -190,7 +200,7 @@ extern "C" void M2RTS_ExitOnHalt (int e);
    ErrorMessage - emits an error message to stderr and then calls exit (1).
 */
 
-extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
 
 /*
    Length - returns the length of a string, a. This is called whenever
@@ -244,6 +254,18 @@ static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc);
 */
 
 static void ErrorString (const char *a_, unsigned int _a_high);
+
+/*
+   ErrorStringC - writes a string to stderr.
+*/
+
+static void ErrorStringC (void * str);
+
+/*
+   ErrorMessageC - emits an error message to stderr and then calls exit (1).
+*/
+
+static void ErrorMessageC (void * message, void * filename, unsigned int line, void * function) __attribute__ ((noreturn));
 
 /*
    InitProcList - initialize the head and tail pointers to NIL.
@@ -319,7 +341,49 @@ static void ErrorString (const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  n = static_cast<int> (libc_write (2, &a, static_cast<size_t> (StrLib_StrLen ((const char *) a, _a_high))));
+  n = static_cast<int> (libc_write (stderrFd, &a, static_cast<size_t> (StrLib_StrLen ((const char *) a, _a_high))));
+}
+
+
+/*
+   ErrorStringC - writes a string to stderr.
+*/
+
+static void ErrorStringC (void * str)
+{
+  int len;
+
+  len = static_cast<int> (libc_write (stderrFd, str, libc_strlen (str)));
+}
+
+
+/*
+   ErrorMessageC - emits an error message to stderr and then calls exit (1).
+*/
+
+static void ErrorMessageC (void * message, void * filename, unsigned int line, void * function)
+{
+  typedef struct ErrorMessageC__T2_a ErrorMessageC__T2;
+
+  struct ErrorMessageC__T2_a { char array[10+1]; };
+  ErrorMessageC__T2 buffer;
+
+  ErrorStringC (filename);
+  ErrorString ((const char *) ":", 1);
+  NumberIO_CardToStr (line, 0, (char *) &buffer.array[0], 10);
+  ErrorString ((const char *) &buffer.array[0], 10);
+  ErrorString ((const char *) ":", 1);
+  if ((libc_strlen (function)) > 0)
+    {
+      ErrorString ((const char *) "in ", 3);
+      ErrorStringC (function);
+      ErrorString ((const char *) " has caused ", 12);
+    }
+  ErrorStringC (message);
+  buffer.array[0] = ASCII_nl;
+  buffer.array[1] = ASCII_nul;
+  ErrorString ((const char *) &buffer.array[0], 10);
+  libc_exit (1);
 }
 
 
@@ -516,23 +580,34 @@ extern "C" void M2RTS_HALT (int exitcode)
 
 /*
    Halt - provides a more user friendly version of HALT, which takes
-          four parameters to aid debugging.
+          four parameters to aid debugging.  It writes an error message
+          to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_Halt (const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high)
+extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high)
 {
-  char file[_file_high+1];
+  char filename[_filename_high+1];
   char function[_function_high+1];
   char description[_description_high+1];
 
   /* make a local copy of each unbounded array.  */
-  memcpy (file, file_, _file_high+1);
+  memcpy (filename, filename_, _filename_high+1);
   memcpy (function, function_, _function_high+1);
   memcpy (description, description_, _description_high+1);
 
-  M2RTS_ErrorMessage ((const char *) description, _description_high, (const char *) file, _file_high, line, (const char *) function, _function_high);
-  M2RTS_HALT (-1);
-  __builtin_unreachable ();
+  M2RTS_ErrorMessage ((const char *) description, _description_high, (const char *) filename, _filename_high, line, (const char *) function, _function_high);
+}
+
+
+/*
+   HaltC - provides a more user friendly version of HALT, which takes
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
+*/
+
+extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description)
+{
+  ErrorMessageC (description, filename, line, function);
 }
 
 
@@ -551,25 +626,25 @@ extern "C" void M2RTS_ExitOnHalt (int e)
    ErrorMessage - emits an error message to stderr and then calls exit (1).
 */
 
-extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high)
+extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high)
 {
-  typedef struct ErrorMessage__T2_a ErrorMessage__T2;
+  typedef struct ErrorMessage__T3_a ErrorMessage__T3;
 
-  struct ErrorMessage__T2_a { char array[10+1]; };
-  ErrorMessage__T2 LineNo;
+  struct ErrorMessage__T3_a { char array[10+1]; };
+  ErrorMessage__T3 buffer;
   char message[_message_high+1];
-  char file[_file_high+1];
+  char filename[_filename_high+1];
   char function[_function_high+1];
 
   /* make a local copy of each unbounded array.  */
   memcpy (message, message_, _message_high+1);
-  memcpy (file, file_, _file_high+1);
+  memcpy (filename, filename_, _filename_high+1);
   memcpy (function, function_, _function_high+1);
 
-  ErrorString ((const char *) file, _file_high);
+  ErrorString ((const char *) filename, _filename_high);
   ErrorString ((const char *) ":", 1);
-  NumberIO_CardToStr (line, 0, (char *) &LineNo.array[0], 10);
-  ErrorString ((const char *) &LineNo.array[0], 10);
+  NumberIO_CardToStr (line, 0, (char *) &buffer.array[0], 10);
+  ErrorString ((const char *) &buffer.array[0], 10);
   ErrorString ((const char *) ":", 1);
   if (! (StrLib_StrEqual ((const char *) function, _function_high, (const char *) "", 0)))
     {
@@ -578,9 +653,9 @@ extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_
       ErrorString ((const char *) " has caused ", 12);
     }
   ErrorString ((const char *) message, _message_high);
-  LineNo.array[0] = ASCII_nl;
-  LineNo.array[1] = ASCII_nul;
-  ErrorString ((const char *) &LineNo.array[0], 10);
+  buffer.array[0] = ASCII_nl;
+  buffer.array[1] = ASCII_nul;
+  ErrorString ((const char *) &buffer.array[0], 10);
   libc_exit (1);
 }
 
