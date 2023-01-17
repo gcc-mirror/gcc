@@ -1,3 +1,8 @@
+2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/abort-3.c: Force
+	'--param openacc-kernels=parloops'.
+
 2023-01-13  Andrew Stubbs  <ams@codesourcery.com>
 
 	* usm-allocator.c (ALIGN): Use 128-byte alignment.
