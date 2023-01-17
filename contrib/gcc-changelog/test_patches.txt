@@ -3631,8 +3631,7 @@ index 0000000..d75da75
 +pub fn main ()
 +{
 +// { dg-error "Isolated CR" "" { target *-*-* } .+1 }
-+  //! doc cr
- comment
++  //! doc cr comment
 +}
 -- 
 2.38.1
