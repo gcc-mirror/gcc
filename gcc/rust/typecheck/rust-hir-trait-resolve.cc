@@ -22,6 +22,16 @@
 namespace Rust {
 namespace Resolver {
 
+TraitItemReference
+ResolveTraitItemToRef::Resolve (
+  HIR::TraitItem &item, TyTy::BaseType *self,
+  std::vector<TyTy::SubstitutionParamMapping> substitutions)
+{
+  ResolveTraitItemToRef resolver (self, std::move (substitutions));
+  item.accept_vis (resolver);
+  return std::move (resolver.resolved);
+}
+
 void
 ResolveTraitItemToRef::visit (HIR::TraitItemType &type)
 {

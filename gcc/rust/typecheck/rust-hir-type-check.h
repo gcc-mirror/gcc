@@ -22,7 +22,7 @@
 #include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
 #include "rust-tyty.h"
-#include "rust-hir-trait-ref.h"
+#include "rust-hir-trait-reference.h"
 #include "rust-autoderef.h"
 
 namespace Rust {
