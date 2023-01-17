@@ -346,14 +346,15 @@ register_builtin_type (vector_type_index type, tree eltype, machine_mode mode)
 static void
 register_builtin_types ()
 {
-  /* int32_t/uint32_t defined as `long`/`unsigned long` in RV32,
-     but intSI_type_node/unsigned_intSI_type_node is
-     `int` and `unsigned int`, so use long_integer_type_node and
-     long_unsigned_type_node here for type consistent.  */
-  tree int32_type_node
-    = TARGET_64BIT ? intSI_type_node : long_integer_type_node;
-  tree unsigned_int32_type_node
-    = TARGET_64BIT ? unsigned_intSI_type_node : long_unsigned_type_node;
+  /* Get type node from get_typenode_from_name to prevent we have different type
+     node define in different target libraries, e.g. int32_t defined as
+     `long` in RV32/newlib-stdint, but `int` for RV32/glibc-stdint.h.
+     NOTE: uint[16|32|64]_type_node already defined in tree.h.  */
+  tree int8_type_node = get_typenode_from_name (INT8_TYPE);
+  tree uint8_type_node = get_typenode_from_name (UINT8_TYPE);
+  tree int16_type_node = get_typenode_from_name (INT16_TYPE);
+  tree int32_type_node = get_typenode_from_name (INT32_TYPE);
+  tree int64_type_node = get_typenode_from_name (INT64_TYPE);
 
   machine_mode mode;
 #define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,         \
