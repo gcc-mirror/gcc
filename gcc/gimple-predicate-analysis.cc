@@ -307,7 +307,8 @@ find_var_cmp_const (pred_chain_union preds, gphi *phi, gimple **flag_def,
 	  value_range r;
 	  if (!INTEGRAL_TYPE_P (type)
 	      || !get_range_query (cfun)->range_of_expr (r, cond_rhs)
-	      || r.kind () != VR_RANGE)
+	      || r.undefined_p ()
+	      || r.varying_p ())
 	    continue;
 
 	  wide_int min = r.lower_bound ();

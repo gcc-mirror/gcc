@@ -525,7 +525,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       value_range vr0;
       if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
 	  && get_global_range_query ()->range_of_expr (vr0, @4)
-	  && vr0.kind () == VR_RANGE)
+	  && !vr0.varying_p () && !vr0.undefined_p ())
 	{
 	  wide_int wmin0 = vr0.lower_bound ();
 	  wide_int wmax0 = vr0.upper_bound ();
@@ -566,7 +566,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       value_range vr0;
       if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
 	  && get_global_range_query ()->range_of_expr (vr0, @0)
-	  && vr0.kind () == VR_RANGE)
+	  && !vr0.varying_p () && !vr0.undefined_p ())
 	{
 	  wide_int wmin0 = vr0.lower_bound ();
 	  wide_int wmax0 = vr0.upper_bound ();
@@ -853,8 +853,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        if (INTEGRAL_TYPE_P (type)
 	   && get_global_range_query ()->range_of_expr (vr0, @0)
 	   && get_global_range_query ()->range_of_expr (vr1, @1)
-	   && vr0.kind () == VR_RANGE
-	   && vr1.kind () == VR_RANGE)
+	   && !vr0.varying_p () && !vr0.undefined_p ()
+	   && !vr1.varying_p () && !vr1.undefined_p ())
 	 {
 	   wide_int wmin0 = vr0.lower_bound ();
 	   wide_int wmax0 = vr0.upper_bound ();
@@ -3010,7 +3010,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 	value_range vr;
 	if (get_global_range_query ()->range_of_expr (vr, @0)
-	    && vr.kind () == VR_RANGE)
+	    && !vr.varying_p () && !vr.undefined_p ())
           {
 	    wide_int wmin0 = vr.lower_bound ();
 	    wide_int wmax0 = vr.upper_bound ();

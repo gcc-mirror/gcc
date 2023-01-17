@@ -687,22 +687,13 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
 	      <= TYPE_PRECISION (TREE_TYPE (lhs)))))
     return false;
 
-  wide_int min, max;
   value_range r;
   get_range_query (cfun)->range_of_expr (r, lhs);
+  if (r.undefined_p ())
+    r.set_varying (TREE_TYPE (lhs));
+  wide_int min = r.lower_bound ();
+  wide_int max = r.upper_bound ();
 
-  if (r.kind () == VR_RANGE)
-    {
-      min = r.lower_bound ();
-      max = r.upper_bound ();
-    }
-  else
-    {
-      int prec = TYPE_PRECISION (TREE_TYPE (lhs));
-      signop sgn = TYPE_SIGN (TREE_TYPE (lhs));
-      min = wi::min_value (prec, sgn);
-      max = wi::max_value (prec, sgn);
-    }
   if (min + 1 != max
       || (wi::to_wide (rhs) != min
 	  && wi::to_wide (rhs) != max))

@@ -14296,7 +14296,8 @@ get_range_pos_neg (tree arg)
   if (TREE_CODE (arg) != SSA_NAME)
     return 3;
   value_range r;
-  while (!get_global_range_query ()->range_of_expr (r, arg) || r.kind () != VR_RANGE)
+  while (!get_global_range_query ()->range_of_expr (r, arg)
+	 || r.undefined_p () || r.varying_p ())
     {
       gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)

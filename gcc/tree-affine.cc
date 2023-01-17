@@ -351,7 +351,8 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 		&& TYPE_OVERFLOW_WRAPS (itype)
 		&& TREE_CODE (op1) == INTEGER_CST
 		&& get_range_query (cfun)->range_of_expr (vr, op0)
-		&& vr.kind () == VR_RANGE)
+		&& !vr.varying_p ()
+		&& !vr.undefined_p ())
 	      {
 		wide_int minv = vr.lower_bound ();
 		wide_int maxv = vr.upper_bound ();

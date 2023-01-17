@@ -3494,7 +3494,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
   wide_int min, max;
   value_range r;
   get_global_range_query ()->range_of_expr (r, bound);
-  if (r.kind () != VR_RANGE)
+  if (r.varying_p () || r.undefined_p ())
     return NULL_RTX;
   min = r.lower_bound ();
   max = r.upper_bound ();

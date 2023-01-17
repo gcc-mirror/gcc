@@ -4598,7 +4598,7 @@ vect_recog_divmod_pattern (vec_info *vinfo,
       int msb = 1;
       value_range r;
       get_range_query (cfun)->range_of_expr (r, oprnd0);
-      if (r.kind () == VR_RANGE)
+      if (!r.varying_p () && !r.undefined_p ())
 	{
 	  if (!wi::neg_p (r.lower_bound (), TYPE_SIGN (itype)))
 	    msb = 0;

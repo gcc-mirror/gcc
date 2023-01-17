@@ -3032,7 +3032,8 @@ iv_can_overflow_p (class loop *loop, tree type, tree base, tree step)
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (base))
       || !get_range_query (cfun)->range_of_expr (r, base)
-      || r.kind () != VR_RANGE)
+      || r.varying_p ()
+      || r.undefined_p ())
     return true;
 
   base_min = r.lower_bound ();
@@ -3040,7 +3041,8 @@ iv_can_overflow_p (class loop *loop, tree type, tree base, tree step)
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (step))
       || !get_range_query (cfun)->range_of_expr (r, step)
-      || r.kind () != VR_RANGE)
+      || r.varying_p ()
+      || r.undefined_p ())
     return true;
 
   step_min = r.lower_bound ();

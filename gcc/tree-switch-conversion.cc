@@ -1590,7 +1590,8 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   value_range r;
   if (TREE_CODE (index_expr) == SSA_NAME
       && get_range_query (cfun)->range_of_expr (r, index_expr)
-      && r.kind () == VR_RANGE
+      && !r.undefined_p ()
+      && !r.varying_p ()
       && wi::leu_p (r.upper_bound () - r.lower_bound (), prec - 1))
     {
       wide_int min = r.lower_bound ();

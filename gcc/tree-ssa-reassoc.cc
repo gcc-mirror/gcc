@@ -3372,7 +3372,8 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
       value_range r;
       if (TREE_CODE (exp) == SSA_NAME
 	  && get_range_query (cfun)->range_of_expr (r, exp)
-	  && r.kind () == VR_RANGE
+	  && !r.undefined_p ()
+	  && !r.varying_p ()
 	  && wi::leu_p (r.upper_bound () - r.lower_bound (), prec - 1))
 	{
 	  wide_int min = r.lower_bound ();

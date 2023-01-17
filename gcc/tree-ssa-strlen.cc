@@ -350,18 +350,19 @@ compare_nonzero_chars (strinfo *si, gimple *stmt,
     return -1;
 
   value_range vr;
-  if (!rvals->range_of_expr (vr, si->nonzero_chars, stmt))
-    return -1;
-  value_range_kind rng = vr.kind ();
-  if (rng != VR_RANGE)
+  if (!rvals->range_of_expr (vr, si->nonzero_chars, stmt)
+      || vr.varying_p ()
+      || vr.undefined_p ())
     return -1;
 
   /* If the offset is less than the minimum length or if the bounds
      of the length range are equal return the result of the comparison
      same as in the constant case.  Otherwise return a conservative
      result.  */
-  int cmpmin = compare_tree_int (vr.min (), off);
-  if (cmpmin > 0 || tree_int_cst_equal (vr.min (), vr.max ()))
+  tree lower = wide_int_to_tree (vr.type (), vr.lower_bound ());
+  tree upper = wide_int_to_tree (vr.type (), vr.upper_bound ());
+  int cmpmin = compare_tree_int (lower, off);
+  if (cmpmin > 0 || tree_int_cst_equal (lower, upper))
     return cmpmin;
 
   return -1;

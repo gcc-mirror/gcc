@@ -3247,7 +3247,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
     {
       value_range r;
       if (get_range_query (cfun)->range_of_expr (r, expr->u.nary->op[0])
-	  && r.kind () == VR_RANGE
+	  && !r.undefined_p ()
+	  && !r.varying_p ()
 	  && !wi::neg_p (r.lower_bound (), SIGNED)
 	  && !wi::neg_p (r.upper_bound (), SIGNED))
 	{

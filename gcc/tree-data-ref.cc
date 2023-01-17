@@ -6351,7 +6351,7 @@ dr_step_indicator (struct data_reference *dr, int useful_min)
       value_range vr;
       if (TREE_CODE (step) != SSA_NAME
 	  || !get_range_query (cfun)->range_of_expr (vr, step)
-	  || vr.kind () != VR_RANGE)
+	  || vr.undefined_p ())
 	{
 	  step_min = wi::to_wide (TYPE_MIN_VALUE (type));
 	  step_max = wi::to_wide (TYPE_MAX_VALUE (type));
