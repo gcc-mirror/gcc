@@ -1,5 +1,8 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/abort-3.c: Force
+	'--param openacc-kernels=parloops'.
+
 	* testsuite/libgomp.c/simd-math-1.c: Fix configuration.
 
 2023-01-19  Tobias Burnus  <tobias@codesourcery.com>
