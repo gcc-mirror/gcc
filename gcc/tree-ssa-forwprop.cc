@@ -1837,7 +1837,7 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
    ((T) ((T2) X << Y)) | ((T) ((T2) X >> ((-Y) & (B - 1))))
    ((T) ((T2) X << (int) Y)) | ((T) ((T2) X >> (int) ((-Y) & (B - 1))))
 
-   transform these into:
+   transform these into (last 2 only if ranger can prove Y < B):
    X r<< Y
 
    Or for:
@@ -1866,6 +1866,8 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   int i;
   bool swapped_p = false;
   gimple *g;
+  gimple *def_arg_stmt[2] = { NULL, NULL };
+  int wider_prec = 0;
 
   arg[0] = gimple_assign_rhs1 (stmt);
   arg[1] = gimple_assign_rhs2 (stmt);
@@ -1878,7 +1880,11 @@ simplify_rotate (gimple_stmt_iterator *gsi)
     return false;
 
   for (i = 0; i < 2; i++)
-    defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+    {
+      defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+      if (TREE_CODE (arg[i]) == SSA_NAME)
+	def_arg_stmt[i] = SSA_NAME_DEF_STMT (arg[i]);
+    }
 
   /* Look through narrowing (or same precision) conversions.  */
   if (CONVERT_EXPR_CODE_P (def_code[0])
@@ -1891,10 +1897,13 @@ simplify_rotate (gimple_stmt_iterator *gsi)
       && has_single_use (arg[0])
       && has_single_use (arg[1]))
     {
+      wider_prec = TYPE_PRECISION (TREE_TYPE (def_arg1[0]));
       for (i = 0; i < 2; i++)
 	{
 	  arg[i] = def_arg1[i];
 	  defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+	  if (TREE_CODE (arg[i]) == SSA_NAME)
+	    def_arg_stmt[i] = SSA_NAME_DEF_STMT (arg[i]);
 	}
     }
   else
@@ -1910,6 +1919,8 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	{
 	  arg[i] = def_arg1[i];
 	  defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+	  if (TREE_CODE (arg[i]) == SSA_NAME)
+	    def_arg_stmt[i] = SSA_NAME_DEF_STMT (arg[i]);
 	}
     }
 
@@ -1983,6 +1994,9 @@ simplify_rotate (gimple_stmt_iterator *gsi)
     {
       tree cdef_arg1[2], cdef_arg2[2], def_arg2_alt[2];
       enum tree_code cdef_code[2];
+      gimple *def_arg_alt_stmt[2] = { NULL, NULL };
+      bool check_range = false;
+      gimple *check_range_stmt = NULL;
       /* Look through conversion of the shift count argument.
 	 The C/C++ FE cast any shift count argument to integer_type_node.
 	 The only problem might be if the shift count type maximum value
@@ -1999,9 +2013,13 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	      && type_has_mode_precision_p (TREE_TYPE (cdef_arg1[i])))
 	    {
 	      def_arg2_alt[i] = cdef_arg1[i];
+	      if (TREE_CODE (def_arg2[i]) == SSA_NAME)
+		def_arg_alt_stmt[i] = SSA_NAME_DEF_STMT (def_arg2[i]);
 	      defcodefor_name (def_arg2_alt[i], &cdef_code[i],
 			       &cdef_arg1[i], &cdef_arg2[i]);
 	    }
+	  else
+	    def_arg_alt_stmt[i] = def_arg_stmt[i];
 	}
       for (i = 0; i < 2; i++)
 	/* Check for one shift count being Y and the other B - Y,
@@ -2024,7 +2042,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	    if (CONVERT_EXPR_CODE_P (code)
 		&& INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		&& TYPE_PRECISION (TREE_TYPE (tem))
-		 > floor_log2 (TYPE_PRECISION (rtype))
+		   > floor_log2 (TYPE_PRECISION (rtype))
 		&& type_has_mode_precision_p (TREE_TYPE (tem))
 		&& (tem == def_arg2[1 - i]
 		    || tem == def_arg2_alt[1 - i]))
@@ -2053,7 +2071,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	    if (CONVERT_EXPR_CODE_P (code)
 		&& INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		&& TYPE_PRECISION (TREE_TYPE (tem))
-		 > floor_log2 (TYPE_PRECISION (rtype))
+		   > floor_log2 (TYPE_PRECISION (rtype))
 		&& type_has_mode_precision_p (TREE_TYPE (tem)))
 	      defcodefor_name (tem, &code, &tem, NULL);
 
@@ -2062,6 +2080,11 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		if (tem == def_arg2[1 - i] || tem == def_arg2_alt[1 - i])
 		  {
 		    rotcnt = tem;
+		    check_range = true;
+		    if (tem == def_arg2[1 - i])
+		      check_range_stmt = def_arg_stmt[1 - i];
+		    else
+		      check_range_stmt = def_arg_alt_stmt[1 - i];
 		    break;
 		  }
 		tree tem2;
@@ -2076,6 +2099,11 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 			|| tem2 == def_arg2_alt[1 - i])
 		      {
 			rotcnt = tem2;
+			check_range = true;
+			if (tem2 == def_arg2[1 - i])
+			  check_range_stmt = def_arg_stmt[1 - i];
+			else
+			  check_range_stmt = def_arg_alt_stmt[1 - i];
 			break;
 		      }
 		  }
@@ -2111,6 +2139,23 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		  }
 	      }
 	  }
+      if (check_range && wider_prec > TYPE_PRECISION (rtype))
+	{
+	  if (TREE_CODE (rotcnt) != SSA_NAME)
+	    return false;
+	  int_range_max r;
+	  if (!get_global_range_query ()->range_of_expr (r, rotcnt,
+							 check_range_stmt))
+	    return false;
+	  int prec = TYPE_PRECISION (TREE_TYPE (rotcnt));
+	  signop sign = TYPE_SIGN (TREE_TYPE (rotcnt));
+	  wide_int min = wide_int::from (TYPE_PRECISION (rtype), prec, sign);
+	  wide_int max = wide_int::from (wider_prec - 1, prec, sign);
+	  int_range<2> r2 (TREE_TYPE (rotcnt), min, max);
+	  r.intersect (r2);
+	  if (!r.undefined_p ())
+	    return false;
+	}
       if (rotcnt == NULL_TREE)
 	return false;
       swapped_p = i != 1;
