@@ -4212,6 +4212,10 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1,
+			  relation_trio = TRIO_VARYING) const;
 } op_pointer_plus;
 
 void
@@ -4258,6 +4262,25 @@ pointer_plus_operator::wi_fold (irange &r, tree type,
    r.set_varying (type);
 }
 
+bool
+pointer_plus_operator::op2_range (irange &r, tree type,
+				  const irange &lhs ATTRIBUTE_UNUSED,
+				  const irange &op1 ATTRIBUTE_UNUSED,
+				  relation_trio trio) const
+{
+  relation_kind rel = trio.lhs_op1 ();
+  r.set_varying (type);
+
+  // If the LHS and OP1 are equal, the op2 must be zero.
+  if (rel == VREL_EQ)
+    r.set_zero (type);
+  // If the LHS and OP1 are not equal, the offset must be non-zero.
+  else if (rel == VREL_NE)
+    r.set_nonzero (type);
+  else
+    return false;
+  return true;
+}
 
 class pointer_min_max_operator : public range_operator
 {

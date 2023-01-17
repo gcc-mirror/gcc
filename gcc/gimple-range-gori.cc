@@ -607,10 +607,6 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
 {
   value_relation vrel;
   value_relation *vrel_ptr = rel;
-  // If the lhs doesn't tell us anything, neither will unwinding further.
-  if (lhs.varying_p ())
-    return false;
-
   // Empty ranges are viral as they are on an unexecutable path.
   if (lhs.undefined_p ())
     {
@@ -657,10 +653,19 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
+  // If the lhs doesn't tell us anything and there are no relations, there
+  // is nothing to be learned.
+  if (lhs.varying_p () && !vrel_ptr)
+    return false;
+
   bool res;
   // Process logicals as they have special handling.
   if (is_gimple_logical_p (stmt))
     {
+      // If the lhs doesn't tell us anything, neither will combining operands.
+      if (lhs.varying_p ())
+	return false;
+
       unsigned idx;
       if ((idx = tracer.header ("compute_operand ")))
 	{
