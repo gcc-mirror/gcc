@@ -160,6 +160,38 @@ range_operator::wi_fold (irange &r, tree type,
   r.set_varying (type);
 }
 
+// Call wi_fold when both op1 and op2 are equivalent. Further split small
+// subranges into constants.  This can provide better precision.
+// For x + y,  when x == y with a range of [0,4] instead of [0, 8] produce
+// [0,0][2, 2][4,4][6, 6][8, 8]
+// LIMIT is the maximum number of elements in range allowed before we
+// do not processs them individually.
+
+void
+range_operator::wi_fold_in_parts_equiv (irange &r, tree type,
+					const wide_int &lh_lb,
+					const wide_int &lh_ub,
+					unsigned limit) const
+{
+  int_range_max tmp;
+  widest_int lh_range = wi::sub (widest_int::from (lh_ub, TYPE_SIGN (type)),
+				 widest_int::from (lh_lb, TYPE_SIGN (type)));
+  // if there are 1 to 8 values in the LH range, split them up.
+  r.set_undefined ();
+  if (lh_range >= 0 && lh_range < limit)
+    {
+      for (unsigned x = 0; x <= lh_range; x++)
+	{
+	  wide_int val = lh_lb + x;
+	  wi_fold (tmp, type, val, val, val, val);
+	  r.union_ (tmp);
+	}
+    }
+  // Otherwise just call wi_fold.
+  else
+    wi_fold (r, type, lh_lb, lh_ub, lh_lb, lh_ub);
+}
+
 // Call wi_fold, except further split small subranges into constants.
 // This can provide better precision. For something   8 >> [0,1]
 // Instead of [8, 16], we will produce [8,8][16,16]
@@ -233,6 +265,28 @@ range_operator::fold_range (irange &r, tree type,
   relation_kind rel = trio.op1_op2 ();
   unsigned num_lh = lh.num_pairs ();
   unsigned num_rh = rh.num_pairs ();
+
+  // If op1 and op2 are equivalences, then we don't need a complete cross
+  // product, just pairs of matching elements.
+  if (relation_equiv_p (rel) && lh == rh)
+    {
+      int_range_max tmp;
+      r.set_undefined ();
+      for (unsigned x = 0; x < num_lh; ++x)
+	{
+	  // If the number of subranges is too high, limit subrange creation.
+	  unsigned limit = (r.num_pairs () > 32) ? 0 : 8;
+	  wide_int lh_lb = lh.lower_bound (x);
+	  wide_int lh_ub = lh.upper_bound (x);
+	  wi_fold_in_parts_equiv (tmp, type, lh_lb, lh_ub, limit);
+	  r.union_ (tmp);
+	  if (r.varying_p ())
+	    break;
+	}
+      op1_op2_relation_effect (r, type, lh, rh, rel);
+      update_known_bitmask (r, m_code, lh, rh);
+      return true;
+    }
 
   // If both ranges are single pairs, fold directly into the result range.
   // If the number of subranges grows too high, produce a summary result as the
