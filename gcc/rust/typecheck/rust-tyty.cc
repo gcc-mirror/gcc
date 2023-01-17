@@ -27,7 +27,7 @@
 #include "rust-linemap.h"
 
 #include "rust-substitution-mapper.h"
-#include "rust-hir-trait-ref.h"
+#include "rust-hir-trait-reference.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-tyty-rules.h"
