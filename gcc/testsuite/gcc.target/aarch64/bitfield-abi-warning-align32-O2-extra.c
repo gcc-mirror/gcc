@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -save-temps" } */
+/* { dg-options "-O2 -fno-stack-protector -save-temps" } */
 
 #define ALIGN 32
 //#define EXTRA

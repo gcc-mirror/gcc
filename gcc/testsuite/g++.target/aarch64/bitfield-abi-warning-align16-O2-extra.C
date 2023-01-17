@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -save-temps -Wno-narrowing" } */
+/* { dg-options "-O2 -fno-stack-protector -save-temps -Wno-narrowing" } */
 
 #define ALIGN 16
 //#define EXTRA
