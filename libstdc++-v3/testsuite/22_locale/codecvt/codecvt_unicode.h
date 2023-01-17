@@ -15,17 +15,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include <algorithm>
 #include <locale>
 #include <string>
-#include <memory>
 #include <testsuite_hooks.h>
-
-template <typename T>
-std::unique_ptr<T>
-to_unique_ptr (T *ptr)
-{
-  return std::unique_ptr<T> (ptr);
-}
 
 struct test_offsets_ok
 {
