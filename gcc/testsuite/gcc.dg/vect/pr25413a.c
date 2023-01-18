@@ -123,7 +123,6 @@ int main (void)
   return 0;
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { ! vect_scatter_store } } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target vect_scatter_store } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vector alignment may not be reachable" 1 "vect" { target { ! vector_alignment_reachable  } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { ! vector_alignment_reachable } } } } */
