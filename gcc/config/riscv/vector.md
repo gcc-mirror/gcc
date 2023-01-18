@@ -95,13 +95,7 @@
 	 (const_int 32)
 	 (eq_attr "mode" "VNx1DI,VNx2DI,VNx4DI,VNx8DI,\
 			  VNx1DF,VNx2DF,VNx4DF,VNx8DF")
-	 (const_int 64)
-
-	 (eq_attr "type" "vsetvl")
-	 (if_then_else (eq_attr "INSN_CODE (curr_insn) == CODE_FOR_vsetvldi
-				 || INSN_CODE (curr_insn) == CODE_FOR_vsetvlsi")
-		       (symbol_ref "INTVAL (operands[2])")
-		       (const_int INVALID_ATTRIBUTE))]
+	 (const_int 64)]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; Ditto to LMUL.
@@ -149,12 +143,7 @@
 	 (eq_attr "mode" "VNx4DI,VNx4DF")
 	   (symbol_ref "riscv_vector::get_vlmul(E_VNx4DImode)")
 	 (eq_attr "mode" "VNx8DI,VNx8DF")
-	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8DImode)")
-	 (eq_attr "type" "vsetvl")
-	 (if_then_else (eq_attr "INSN_CODE (curr_insn) == CODE_FOR_vsetvldi
-				 || INSN_CODE (curr_insn) == CODE_FOR_vsetvlsi")
-		       (symbol_ref "INTVAL (operands[3])")
-		       (const_int INVALID_ATTRIBUTE))]
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8DImode)")]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; It is valid for instruction that require sew/lmul ratio.
@@ -551,7 +540,11 @@
   "TARGET_VECTOR"
   "vset%i1vli\t%0,%1,e%2,%m3,t%p4,m%p5"
   [(set_attr "type" "vsetvl")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "sew") (symbol_ref "INTVAL (operands[2])"))
+   (set (attr "vlmul") (symbol_ref "INTVAL (operands[3])"))
+   (set (attr "ta") (symbol_ref "INTVAL (operands[4])"))
+   (set (attr "ma") (symbol_ref "INTVAL (operands[5])"))])
 
 ;; vsetvl zero,zero,vtype instruction.
 ;; This pattern has no side effects and does not set X0 register.
@@ -583,7 +576,11 @@
   "TARGET_VECTOR"
   "vset%i0vli\tzero,%0,e%1,%m2,t%p3,m%p4"
   [(set_attr "type" "vsetvl")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "sew") (symbol_ref "INTVAL (operands[1])"))
+   (set (attr "vlmul") (symbol_ref "INTVAL (operands[2])"))
+   (set (attr "ta") (symbol_ref "INTVAL (operands[3])"))
+   (set (attr "ma") (symbol_ref "INTVAL (operands[4])"))])
 
 ;; It's emit by vsetvl/vsetvlmax intrinsics with no side effects.
 ;; Since we have many optmization passes from "expand" to "reload_completed",
