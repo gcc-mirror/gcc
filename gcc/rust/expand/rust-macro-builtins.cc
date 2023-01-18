@@ -29,6 +29,16 @@
 
 namespace Rust {
 namespace {
+
+/**
+ * Shorthand function for creating unique_ptr tokens
+ */
+static std::unique_ptr<AST::Token>
+make_token (const TokenPtr tok)
+{
+  return std::unique_ptr<AST::Token> (new AST::Token (tok));
+}
+
 std::unique_ptr<AST::Expr>
 make_string (Location locus, std::string value)
 {
@@ -38,35 +48,60 @@ make_string (Location locus, std::string value)
 }
 
 // TODO: Is this correct?
-static std::unique_ptr<AST::Expr>
-make_macro_invocation (AST::BuiltinMacro kind, AST::DelimTokenTree arguments)
+static AST::Fragment
+make_eager_builtin_invocation (
+  AST::BuiltinMacro kind, Location locus, AST::DelimTokenTree arguments,
+  std::vector<std::unique_ptr<AST::MacroInvocation>> &&pending_invocations)
 {
   std::string path_str;
 
   switch (kind)
     {
+    // TODO: Should this be a table lookup?
     case AST::BuiltinMacro::Assert:
+      path_str = "assert";
+      break;
     case AST::BuiltinMacro::File:
+      path_str = "file";
+      break;
     case AST::BuiltinMacro::Line:
+      path_str = "line";
+      break;
     case AST::BuiltinMacro::Column:
+      path_str = "column";
+      break;
     case AST::BuiltinMacro::IncludeBytes:
+      path_str = "include_bytes";
+      break;
     case AST::BuiltinMacro::IncludeStr:
+      path_str = "include_str";
+      break;
     case AST::BuiltinMacro::CompileError:
+      path_str = "compile_error";
+      break;
     case AST::BuiltinMacro::Concat:
       path_str = "concat";
       break;
     case AST::BuiltinMacro::Env:
+      path_str = "env";
+      break;
     case AST::BuiltinMacro::Cfg:
+      path_str = "cfg";
+      break;
     case AST::BuiltinMacro::Include:
+      path_str = "include";
       break;
     }
 
-  return AST::MacroInvocation::builtin (
+  std::unique_ptr<AST::Expr> node = AST::MacroInvocation::Builtin (
     kind,
     AST::MacroInvocData (AST::SimplePath (
-			   {AST::SimplePathSegment (path_str, Location ())}),
+			   {AST::SimplePathSegment (path_str, locus)}),
 			 std::move (arguments)),
-    {}, Location ());
+    {}, locus, std::move (pending_invocations));
+
+  return AST::Fragment ({AST::SingleASTNode (std::move (node))},
+			arguments.to_token_stream ());
 }
 
 /* Match the end token of a macro given the start delimiter of the macro */
@@ -95,22 +130,7 @@ macro_end_token (AST::DelimTokenTree &invoc_token_tree,
   return last_token_id;
 }
 
-/* Expand and extract an expression from the macro */
-
-static inline AST::Fragment
-try_expand_macro_expression (AST::Expr *expr, MacroExpander *expander)
-{
-  rust_assert (expander);
-
-  auto attr_visitor = Rust::AttrVisitor (*expander);
-  auto early_name_resolver = Resolver::EarlyNameResolver ();
-  expr->accept_vis (early_name_resolver);
-  expr->accept_vis (attr_visitor);
-  return expander->take_expanded_fragment (attr_visitor);
-}
-
 /* Expand and then extract a string literal from the macro */
-
 static std::unique_ptr<AST::LiteralExpr>
 try_extract_string_literal_from_fragment (const Location &parent_locus,
 					  std::unique_ptr<AST::Expr> &node)
@@ -126,22 +146,6 @@ try_extract_string_literal_from_fragment (const Location &parent_locus,
     }
   return std::unique_ptr<AST::LiteralExpr> (
     static_cast<AST::LiteralExpr *> (node->clone_expr ().release ()));
-}
-
-static std::unique_ptr<AST::LiteralExpr>
-try_expand_single_string_literal (AST::Expr *input_expr,
-				  MacroExpander *expander)
-{
-  auto nodes = try_expand_macro_expression (input_expr, expander);
-  if (nodes.is_error () || nodes.is_expression_fragment ())
-    {
-      rust_error_at (input_expr->get_locus (),
-		     "argument must be a string literal");
-      return nullptr;
-    }
-  auto expr = nodes.take_expression_fragment ();
-  return try_extract_string_literal_from_fragment (input_expr->get_locus (),
-						   expr);
 }
 
 static std::vector<std::unique_ptr<AST::Expr>>
@@ -171,22 +175,7 @@ try_expand_many_expr (Parser<MacroInvocLexer> &parser,
       auto expr = parser.parse_expr (AST::AttrVec (), restrictions);
       // something must be so wrong that the expression could not be parsed
       rust_assert (expr);
-      auto nodes = try_expand_macro_expression (expr.get (), expander);
-      if (nodes.is_error ())
-	{
-	  // not macro
-	  result.push_back (std::move (expr));
-	}
-      else if (!nodes.is_expression_fragment ())
-	{
-	  rust_error_at (expr->get_locus (), "expected expression");
-	  has_error = true;
-	  return empty_expr;
-	}
-      else
-	{
-	  result.push_back (nodes.take_expression_fragment ());
-	}
+      result.push_back (std::move (expr));
 
       auto next_token = parser.peek_current_token ();
       if (!parser.skip_token (COMMA) && next_token->get_id () != last_token_id)
@@ -230,12 +219,7 @@ parse_single_string_literal (AST::DelimTokenTree &invoc_token_tree,
   else if (parser.peek_current_token ()->get_id () == last_token_id)
     rust_error_at (invoc_locus, "macro takes 1 argument");
   else
-    {
-      // when the expression does not seem to be a string literal, we then try
-      // to parse/expand it as macro to see if it expands to a string literal
-      auto expr = parser.parse_expr ();
-      lit_expr = try_expand_single_string_literal (expr.get (), expander);
-    }
+    rust_error_at (invoc_locus, "argument must be a string literal");
 
   parser.skip_token (last_token_id);
 
@@ -307,8 +291,10 @@ MacroBuiltin::file_handler (Location invoc_locus, AST::MacroInvocData &)
   auto current_file
     = Session::get_instance ().linemap->location_file (invoc_locus);
   auto file_str = AST::SingleASTNode (make_string (invoc_locus, current_file));
+  auto str_token
+    = make_token (Token::make_string (invoc_locus, std::move (current_file)));
 
-  return AST::Fragment::complete ({file_str});
+  return AST::Fragment ({file_str}, std::move (str_token));
 }
 
 AST::Fragment
@@ -317,11 +303,13 @@ MacroBuiltin::column_handler (Location invoc_locus, AST::MacroInvocData &)
   auto current_column
     = Session::get_instance ().linemap->location_to_column (invoc_locus);
 
+  auto column_tok = make_token (
+    Token::make_int (invoc_locus, std::to_string (current_column)));
   auto column_no = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
     new AST::LiteralExpr (std::to_string (current_column), AST::Literal::INT,
 			  PrimitiveCoreType::CORETYPE_U32, {}, invoc_locus)));
 
-  return AST::Fragment::complete ({column_no});
+  return AST::Fragment ({column_no}, std::move (column_tok));
 }
 
 /* Expand builtin macro include_bytes!("filename"), which includes the contents
@@ -347,13 +335,24 @@ MacroBuiltin::include_bytes_handler (Location invoc_locus,
 
   /* Is there a more efficient way to do this?  */
   std::vector<std::unique_ptr<AST::Expr>> elts;
+
+  // We create the tokens for a borrow expression of a byte array, so
+  // & [ <byte0>, <byte1>, ... ]
+  std::vector<std::unique_ptr<AST::Token>> toks;
+  toks.emplace_back (make_token (Token::make (AMP, invoc_locus)));
+  toks.emplace_back (make_token (Token::make (LEFT_SQUARE, invoc_locus)));
+
   for (uint8_t b : bytes)
     {
       elts.emplace_back (
 	new AST::LiteralExpr (std::string (1, (char) b), AST::Literal::BYTE,
 			      PrimitiveCoreType::CORETYPE_U8,
 			      {} /* outer_attrs */, invoc_locus));
+      toks.emplace_back (make_token (Token::make_byte_char (invoc_locus, b)));
+      toks.emplace_back (make_token (Token::make (COMMA, invoc_locus)));
     }
+
+  toks.emplace_back (make_token (Token::make (RIGHT_SQUARE, invoc_locus)));
 
   auto elems = std::unique_ptr<AST::ArrayElems> (
     new AST::ArrayElemsValues (std::move (elts), invoc_locus));
@@ -365,8 +364,9 @@ MacroBuiltin::include_bytes_handler (Location invoc_locus,
     new AST::BorrowExpr (std::move (array), false, false, {}, invoc_locus));
 
   auto node = AST::SingleASTNode (std::move (borrow));
-  return AST::Fragment::complete ({node});
-}
+
+  return AST::Fragment ({node}, std::move (toks));
+} // namespace Rust
 
 /* Expand builtin macro include_str!("filename"), which includes the contents
    of the given file as a string. The file must be UTF-8 encoded. Yields an
@@ -393,7 +393,10 @@ MacroBuiltin::include_str_handler (Location invoc_locus,
   std::string str ((const char *) &bytes[0], bytes.size ());
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, str));
-  return AST::Fragment::complete ({node});
+  auto str_tok = make_token (Token::make_string (invoc_locus, std::move (str)));
+
+  // FIXME: Do not return an empty token vector here
+  return AST::Fragment ({node}, std::move (str_tok));
 }
 
 /* Expand builtin macro compile_error!("error"), which forces a compile error
@@ -412,6 +415,20 @@ MacroBuiltin::compile_error_handler (Location invoc_locus,
   rust_error_at (invoc_locus, "%s", error_string.c_str ());
 
   return AST::Fragment::create_error ();
+}
+
+static std::vector<std::unique_ptr<AST::MacroInvocation>>
+check_for_eager_invocations (
+  std::vector<std::unique_ptr<AST::Expr>> &expressions)
+{
+  std::vector<std::unique_ptr<AST::MacroInvocation>> pending;
+
+  for (auto &expr : expressions)
+    if (expr->get_ast_kind () == AST::Kind::MACRO_INVOCATION)
+      pending.emplace_back (std::unique_ptr<AST::MacroInvocation> (
+	static_cast<AST::MacroInvocation *> (expr->clone_expr ().release ())));
+
+  return pending;
 }
 
 /* Expand builtin macro concat!(), which joins all the literal parameters
@@ -468,12 +485,25 @@ MacroBuiltin::concat_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 
   auto last_token_id = macro_end_token (invoc_token_tree, parser);
 
+  auto start = lex.get_offs ();
   /* NOTE: concat! could accept no argument, so we don't have any checks here */
   auto expanded_expr = try_expand_many_expr (parser, last_token_id,
 					     invoc.get_expander (), has_error);
+  auto end = lex.get_offs ();
+
+  auto tokens = lex.get_token_slice (start, end);
+
+  auto pending_invocations = check_for_eager_invocations (expanded_expr);
+  if (!pending_invocations.empty ())
+    return make_eager_builtin_invocation (AST::BuiltinMacro::Concat,
+					  invoc_locus,
+					  invoc.get_delim_tok_tree (),
+					  std::move (pending_invocations));
+
   for (auto &expr : expanded_expr)
     {
-      if (!expr->is_literal ())
+      if (!expr->is_literal ()
+	  && expr->get_ast_kind () != AST::MACRO_INVOCATION)
 	{
 	  has_error = true;
 	  rust_error_at (expr->get_locus (), "expected a literal");
@@ -501,12 +531,13 @@ MacroBuiltin::concat_handler (Location invoc_locus, AST::MacroInvocData &invoc)
     return AST::Fragment::create_error ();
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, str));
-  return AST::Fragment::complete ({node});
+  auto str_tok = make_token (Token::make_string (invoc_locus, std::move (str)));
+
+  return AST::Fragment ({node}, std::move (str_tok));
 }
 
 /* Expand builtin macro env!(), which inspects an environment variable at
    compile time. */
-
 AST::Fragment
 MacroBuiltin::env_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
@@ -519,10 +550,22 @@ MacroBuiltin::env_handler (Location invoc_locus, AST::MacroInvocData &invoc)
   std::unique_ptr<AST::LiteralExpr> lit_expr = nullptr;
   bool has_error = false;
 
+  auto start = lex.get_offs ();
   auto expanded_expr = try_expand_many_expr (parser, last_token_id,
 					     invoc.get_expander (), has_error);
+  auto end = lex.get_offs ();
+
+  auto tokens = lex.get_token_slice (start, end);
+
   if (has_error)
     return AST::Fragment::create_error ();
+
+  auto pending = check_for_eager_invocations (expanded_expr);
+  if (!pending.empty ())
+    return make_eager_builtin_invocation (AST::BuiltinMacro::Env, invoc_locus,
+					  invoc_token_tree,
+					  std::move (pending));
+
   if (expanded_expr.size () < 1 || expanded_expr.size () > 2)
     {
       rust_error_at (invoc_locus, "env! takes 1 or 2 arguments");
@@ -562,7 +605,11 @@ MacroBuiltin::env_handler (Location invoc_locus, AST::MacroInvocData &invoc)
     }
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, env_value));
-  return AST::Fragment::complete ({node});
+  auto tok
+    = make_token (Token::make_string (invoc_locus, std::move (env_value)));
+
+  // FIXME: Do not return an empty token vector here
+  return AST::Fragment ({node}, std::move (tok));
 }
 
 AST::Fragment
@@ -597,8 +644,11 @@ MacroBuiltin::cfg_handler (Location invoc_locus, AST::MacroInvocData &invoc)
   auto literal_exp = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
     new AST::LiteralExpr (result ? "true" : "false", AST::Literal::BOOL,
 			  PrimitiveCoreType::CORETYPE_BOOL, {}, invoc_locus)));
+  auto tok = make_token (
+    Token::make (result ? TRUE_LITERAL : FALSE_LITERAL, invoc_locus));
 
-  return AST::Fragment::complete ({literal_exp});
+  // FIXME: Do not return an empty token vector here
+  return AST::Fragment ({literal_exp}, std::move (tok));
 }
 
 /* Expand builtin macro include!(), which includes a source file at the current
@@ -655,7 +705,8 @@ MacroBuiltin::include_handler (Location invoc_locus, AST::MacroInvocData &invoc)
       nodes.push_back (node);
     }
 
-  return AST::Fragment::complete (nodes);
+  // FIXME: Do not return an empty token vector here
+  return AST::Fragment (nodes, nullptr);
 }
 
 AST::Fragment
@@ -667,8 +718,11 @@ MacroBuiltin::line_handler (Location invoc_locus, AST::MacroInvocData &)
   auto line_no = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
     new AST::LiteralExpr (std::to_string (current_line), AST::Literal::INT,
 			  PrimitiveCoreType::CORETYPE_U32, {}, invoc_locus)));
+  auto tok
+    = make_token (Token::make_int (invoc_locus, std::to_string (current_line)));
 
-  return AST::Fragment::complete ({line_no});
+  // FIXME: Do not return an empty token vector here
+  return AST::Fragment ({line_no}, std::move (tok));
 }
 
 } // namespace Rust

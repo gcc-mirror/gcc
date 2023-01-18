@@ -35,6 +35,71 @@ public:
   void go (AST::Crate &crate);
 
 private:
+  /**
+   * Execute a lambda within a scope. This is equivalent to calling
+   * `enter_scope` before your code and `exit_scope` after. This ensures
+   * no errors can be committed
+   */
+  void scoped (NodeId scope_id, std::function<void ()> fn)
+  {
+    auto old_scope = current_scope;
+    current_scope = scope_id;
+    resolver.get_macro_scope ().push (scope_id);
+    resolver.push_new_macro_rib (resolver.get_macro_scope ().peek ());
+
+    fn ();
+
+    resolver.get_macro_scope ().pop ();
+    current_scope = old_scope;
+  }
+
+  /**
+   * The "scope" we are currently in.
+   *
+   * This involves lexical scopes:
+   *
+   * ```rust
+   * // current_scope = crate_id;
+   * macro_rules! foo { () => {} )
+   *
+   * {
+   *     // current_scope = current_block_id;
+   *     macro_rules! foo { () => { something!(); } }
+   * }
+   * // current_scope = crate_id;
+   * ```
+   *
+   * as well as any sort of scope-like structure that might impact import name
+   * resolution or macro name resolution:
+   *
+   * ```rust
+   * macro_rules! foo {
+   *     () => { fn empty() {} }
+   * }
+   *
+   *
+   * trait Foo {
+   *     fn foo() {
+   *         fn inner_foo() {
+   *             macro_rules! foo { () => {} )
+   *
+   *             foo!();
+   *         }
+   *
+   *         foo!();
+   *     }
+   *
+   *     foo!();
+   * }
+   *
+   * foo!();
+   * ```
+   */
+  NodeId current_scope;
+
+  /* The crate's scope */
+  NodeId crate_scope;
+
   Resolver &resolver;
   Analysis::Mappings &mappings;
 

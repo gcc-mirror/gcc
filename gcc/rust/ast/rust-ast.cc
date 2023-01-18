@@ -1323,6 +1323,12 @@ std::string
 MacroInvocation::as_string () const
 {
   std::string str = "MacroInvocation: ";
+  auto is_builtin = kind == InvocKind::Builtin;
+
+  if (is_builtin)
+    str += "[builtin] ";
+  else
+    str += "[regular] ";
 
   str += append_attributes (outer_attrs, OUTER);
 
@@ -1330,6 +1336,16 @@ MacroInvocation::as_string () const
 
   str += "\n has semicolon: ";
   str += has_semicolon () ? "true" : "false";
+
+  if (is_builtin)
+    {
+      str += "[PENDING EAGER INVOCATIONS]: ";
+      for (auto &pending : pending_eager_invocs)
+	{
+	  str += pending->as_string ();
+	  str += "\n";
+	}
+    }
 
   return str;
 }

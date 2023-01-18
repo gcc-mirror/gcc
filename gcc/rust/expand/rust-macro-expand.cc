@@ -111,6 +111,114 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 }
 
 void
+MacroExpander::expand_eager_invocations (AST::MacroInvocation &invoc)
+{
+  if (invoc.get_pending_eager_invocations ().empty ())
+    return;
+
+  // We have to basically create a new delimited token tree which contains the
+  // result of one step of expansion. In the case of builtin macros called with
+  // other macro invocations, such as `concat!("h", 'a', a!())`, we need to
+  // expand `a!()` before expanding the concat macro.
+  // This will, ideally, give us a new token tree containing the various
+  // existing tokens + the result of the expansion of a!().
+  // To do this, we "parse" the given token tree to find anything that "looks
+  // like a macro invocation". Then, we get the corresponding macro invocation
+  // from the `pending_eager_invocations` vector and expand it.
+  // Because the `pending_eager_invocations` vector is created in the same order
+  // that the DelimTokenTree is parsed, we know that the first macro invocation
+  // within the DelimTokenTree corresponds to the first element in
+  // `pending_eager_invocations`. The idea is thus to:
+  // 1. Find a macro invocation in the token tree, noting the index of the start
+  //    token and of the end token
+  // 2. Get its associated invocation in `pending_eager_invocations`
+  // 3. Expand that element
+  // 4. Get the token tree associated with that AST fragment
+  // 5. Replace the original tokens corresponding to the invocation with the new
+  //    tokens from the fragment
+  // pseudo-code:
+  //
+  // i = 0;
+  // for tok in dtt:
+  //   if tok is identifier && tok->next() is !:
+  //     start = index(tok);
+  //     l_delim = tok->next()->next();
+  //     tok = skip_until_r_delim();
+  //     end = index(tok);
+  //
+  //     new_tt = expand_eager_invoc(eagers[i++]);
+  //     old_tt[start..end] = new_tt;
+
+  auto dtt = invoc.get_invoc_data ().get_delim_tok_tree ();
+  auto stream = dtt.to_token_stream ();
+  std::vector<std::unique_ptr<AST::TokenTree>> new_stream;
+  size_t current_pending = 0;
+
+  // we need to create a clone of the delimited token tree as the lexer
+  // expects ownership of the tokens
+  std::vector<std::unique_ptr<Rust::AST::Token>> dtt_clone;
+  for (auto &tok : stream)
+    dtt_clone.emplace_back (tok->clone_token ());
+
+  MacroInvocLexer lex (std::move (dtt_clone));
+  Parser<MacroInvocLexer> parser (lex);
+
+  // we want to build a substitution map - basically, associating a `start` and
+  // `end` index for each of the pending macro invocations
+  std::map<std::pair<size_t, size_t>, std::unique_ptr<AST::MacroInvocation> &>
+    substitution_map;
+
+  for (size_t i = 0; i < stream.size (); i++)
+    {
+      // FIXME: Can't these offsets be figure out when we actually parse the
+      // pending_eager_invocation in the first place?
+      auto invocation = parser.parse_macro_invocation ({});
+
+      // if we've managed to parse a macro invocation, we look at the current
+      // offset and store them in the substitution map. Otherwise, we skip one
+      // token and try parsing again
+      if (invocation)
+	substitution_map.insert (
+	  {{i, parser.get_token_source ().get_offs ()},
+	   invoc.get_pending_eager_invocations ()[current_pending++]});
+      else
+	parser.skip_token (stream[i]->get_id ());
+    }
+
+  size_t current_idx = 0;
+  for (auto kv : substitution_map)
+    {
+      auto &to_expand = kv.second;
+      expand_invoc (*to_expand, false);
+
+      auto fragment = take_expanded_fragment ();
+      auto &new_tokens = fragment.get_tokens ();
+
+      auto start = kv.first.first;
+      auto end = kv.first.second;
+
+      // TODO: Add doc
+      for (size_t i = current_idx; i < start; i++)
+	new_stream.emplace_back (stream[i]->clone_token ());
+
+      // TODO: Add doc
+      for (auto &tok : new_tokens)
+	new_stream.emplace_back (tok->clone_token ());
+
+      current_idx = end;
+    }
+  // TODO: Add doc
+  for (size_t i = current_idx; i < stream.size (); i++)
+    new_stream.emplace_back (stream[i]->clone_token ());
+
+  auto new_dtt
+    = AST::DelimTokenTree (dtt.get_delim_type (), std::move (new_stream));
+
+  invoc.get_pending_eager_invocations ().clear ();
+  invoc.get_invoc_data ().set_delim_tok_tree (new_dtt);
+}
+
+void
 MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
 {
   if (depth_exceeds_recursion_limit ())
@@ -118,6 +226,9 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
       rust_error_at (invoc.get_locus (), "reached recursion limit");
       return;
     }
+
+  if (invoc.get_kind () == AST::MacroInvocation::InvocKind::Builtin)
+    expand_eager_invocations (invoc);
 
   AST::MacroInvocData &invoc_data = invoc.get_invoc_data ();
 
@@ -150,6 +261,11 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
   // early. The early name resolver will have already emitted an error.
   if (!ok)
     return;
+
+  // We store the last expanded invocation and macro definition for error
+  // reporting in case the recursion limit is reached
+  last_invoc = &invoc;
+  last_def = rules_def;
 
   if (rules_def->is_builtin ())
     fragment
@@ -292,7 +408,7 @@ MacroExpander::expand_crate ()
       // mark for stripping if required
       item->accept_vis (attr_visitor);
 
-      auto fragment = take_expanded_fragment (attr_visitor);
+      auto fragment = take_expanded_fragment ();
       if (fragment.should_expand ())
 	{
 	  // Remove the current expanded invocation
@@ -711,6 +827,9 @@ static AST::Fragment
 parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
 	    std::function<AST::SingleASTNode ()> parse_fn)
 {
+  auto &lexer = parser.get_token_source ();
+  auto start = lexer.get_offs ();
+
   std::vector<AST::SingleASTNode> nodes;
   while (true)
     {
@@ -728,8 +847,9 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
 
       nodes.emplace_back (std::move (node));
     }
+  auto end = lexer.get_offs ();
 
-  return AST::Fragment::complete (std::move (nodes));
+  return AST::Fragment (std::move (nodes), lexer.get_token_slice (start, end));
 }
 
 /**
@@ -838,11 +958,16 @@ transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 static AST::Fragment
 transcribe_expression (Parser<MacroInvocLexer> &parser)
 {
+  auto &lexer = parser.get_token_source ();
+  auto start = lexer.get_offs ();
+
   auto expr = parser.parse_expr ();
   if (expr == nullptr)
     return AST::Fragment::create_error ();
 
-  return AST::Fragment::complete ({std::move (expr)});
+  auto end = lexer.get_offs ();
+
+  return AST::Fragment ({std::move (expr)}, lexer.get_token_slice (start, end));
 }
 
 /**
@@ -853,11 +978,16 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
 static AST::Fragment
 transcribe_type (Parser<MacroInvocLexer> &parser)
 {
+  auto &lexer = parser.get_token_source ();
+  auto start = lexer.get_offs ();
+
   auto type = parser.parse_type (true);
   for (auto err : parser.get_errors ())
     err.emit_error ();
 
-  return AST::Fragment::complete ({std::move (type)});
+  auto end = lexer.get_offs ();
+
+  return AST::Fragment ({std::move (type)}, lexer.get_token_slice (start, end));
 }
 
 static AST::Fragment

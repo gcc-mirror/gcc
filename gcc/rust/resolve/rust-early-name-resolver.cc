@@ -24,20 +24,17 @@ namespace Rust {
 namespace Resolver {
 
 EarlyNameResolver::EarlyNameResolver ()
-  : resolver (*Resolver::get ()), mappings (*Analysis::Mappings::get ())
+  : current_scope (UNKNOWN_NODEID), resolver (*Resolver::get ()),
+    mappings (*Analysis::Mappings::get ())
 {}
 
 void
 EarlyNameResolver::go (AST::Crate &crate)
 {
-  // FIXME: Is that valid? Why is the regular name resolution doing
-  // mappings->get_next_node_id()?
-  resolver.get_macro_scope ().push (crate.get_node_id ());
-
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
-
-  // FIXME: Should we pop the macro scope?
+  scoped (crate.get_node_id (), [&crate, this] () {
+    for (auto &item : crate.items)
+      item->accept_vis (*this);
+  });
 }
 
 void
@@ -335,11 +332,13 @@ EarlyNameResolver::visit (AST::ClosureExprInner &expr)
 void
 EarlyNameResolver::visit (AST::BlockExpr &expr)
 {
-  for (auto &stmt : expr.get_statements ())
-    stmt->accept_vis (*this);
+  scoped (expr.get_node_id (), [&expr, this] () {
+    for (auto &stmt : expr.get_statements ())
+      stmt->accept_vis (*this);
 
-  if (expr.has_tail_expr ())
-    expr.get_tail_expr ()->accept_vis (*this);
+    if (expr.has_tail_expr ())
+      expr.get_tail_expr ()->accept_vis (*this);
+  });
 }
 
 void
@@ -434,8 +433,11 @@ EarlyNameResolver::visit (AST::WhileLetLoopExpr &expr)
 void
 EarlyNameResolver::visit (AST::ForLoopExpr &expr)
 {
-  expr.get_iterator_expr ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
+  scoped (expr.get_node_id (), [&expr, this] () {
+    expr.get_pattern ()->accept_vis (*this);
+    expr.get_iterator_expr ()->accept_vis (*this);
+    expr.get_loop_block ()->accept_vis (*this);
+  });
 }
 
 void
@@ -473,7 +475,9 @@ void
 EarlyNameResolver::visit (AST::IfLetExpr &expr)
 {
   expr.get_value_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
+
+  scoped (expr.get_node_id (),
+	  [&expr, this] () { expr.get_if_block ()->accept_vis (*this); });
 }
 
 void
@@ -504,16 +508,21 @@ void
 EarlyNameResolver::visit (AST::MatchExpr &expr)
 {
   expr.get_scrutinee_expr ()->accept_vis (*this);
-  for (auto &match_arm : expr.get_match_cases ())
-    {
-      if (match_arm.get_arm ().has_match_arm_guard ())
-	match_arm.get_arm ().get_guard_expr ()->accept_vis (*this);
 
-      for (auto &pattern : match_arm.get_arm ().get_patterns ())
-	pattern->accept_vis (*this);
+  scoped (expr.get_node_id (), [&expr, this] () {
+    for (auto &arm : expr.get_match_cases ())
+      {
+	scoped (arm.get_node_id (), [&arm, this] () {
+	  if (arm.get_arm ().has_match_arm_guard ())
+	    arm.get_arm ().get_guard_expr ()->accept_vis (*this);
 
-      match_arm.get_expr ()->accept_vis (*this);
-    }
+	  for (auto &pattern : arm.get_arm ().get_patterns ())
+	    pattern->accept_vis (*this);
+
+	  arm.get_expr ()->accept_vis (*this);
+	});
+      }
+  });
 }
 
 void
@@ -571,8 +580,10 @@ EarlyNameResolver::visit (AST::Method &method)
 void
 EarlyNameResolver::visit (AST::Module &module)
 {
-  for (auto &item : module.get_items ())
-    item->accept_vis (*this);
+  scoped (module.get_node_id (), [&module, this] () {
+    for (auto &item : module.get_items ())
+      item->accept_vis (*this);
+  });
 }
 
 void
@@ -722,8 +733,13 @@ EarlyNameResolver::visit (AST::TraitItemType &)
 void
 EarlyNameResolver::visit (AST::Trait &trait)
 {
-  for (auto &item : trait.get_trait_items ())
-    item->accept_vis (*this);
+  for (auto &generic : trait.get_generic_params ())
+    generic->accept_vis (*this);
+
+  scoped (trait.get_node_id (), [&trait, this] () {
+    for (auto &item : trait.get_trait_items ())
+      item->accept_vis (*this);
+  });
 }
 
 void
@@ -734,8 +750,10 @@ EarlyNameResolver::visit (AST::InherentImpl &impl)
   for (auto &generic : impl.get_generic_params ())
     generic->accept_vis (*this);
 
-  for (auto &item : impl.get_impl_items ())
-    item->accept_vis (*this);
+  scoped (impl.get_node_id (), [&impl, this] () {
+    for (auto &item : impl.get_impl_items ())
+      item->accept_vis (*this);
+  });
 }
 
 void
@@ -746,8 +764,10 @@ EarlyNameResolver::visit (AST::TraitImpl &impl)
   for (auto &generic : impl.get_generic_params ())
     generic->accept_vis (*this);
 
-  for (auto &item : impl.get_impl_items ())
-    item->accept_vis (*this);
+  scoped (impl.get_node_id (), [&impl, this] () {
+    for (auto &item : impl.get_impl_items ())
+      item->accept_vis (*this);
+  });
 }
 
 void
@@ -772,8 +792,10 @@ EarlyNameResolver::visit (AST::ExternalFunctionItem &item)
 void
 EarlyNameResolver::visit (AST::ExternBlock &block)
 {
-  for (auto &item : block.get_extern_items ())
-    item->accept_vis (*this);
+  scoped (block.get_node_id (), [&block, this] () {
+    for (auto &item : block.get_extern_items ())
+      item->accept_vis (*this);
+  });
 }
 
 void
@@ -795,6 +817,15 @@ EarlyNameResolver::visit (AST::MacroRulesDefinition &rules_def)
 				      rules_def.get_rule_name ());
   resolver.get_macro_scope ().insert (path, rules_def.get_node_id (),
 				      rules_def.get_locus ());
+
+  /* Since the EarlyNameResolver runs multiple time (fixed point algorithm)
+   * we could be inserting the same macro def over and over again until we
+   * implement some optimizations */
+  // FIXME: ARTHUR: Remove that lookup and add proper optimizations instead
+  AST::MacroRulesDefinition *tmp = nullptr;
+  if (mappings.lookup_macro_def (rules_def.get_node_id (), &tmp))
+    return;
+
   mappings.insert_macro_def (&rules_def);
   rust_debug_loc (rules_def.get_locus (), "inserting macro def: [%s]",
 		  path.get ().c_str ());
@@ -805,6 +836,10 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
 {
   auto &invoc_data = invoc.get_invoc_data ();
   auto has_semicolon = invoc.has_semicolon ();
+
+  if (invoc.get_kind () == AST::MacroInvocation::InvocKind::Builtin)
+    for (auto &pending_invoc : invoc.get_pending_eager_invocations ())
+      pending_invoc->accept_vis (*this);
 
   // ??
   // switch on type of macro:
@@ -846,6 +881,30 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
   AST::MacroRulesDefinition *rules_def = nullptr;
   bool ok = mappings.lookup_macro_def (resolved_node, &rules_def);
   rust_assert (ok);
+
+  auto &outer_attrs = rules_def->get_outer_attrs ();
+  bool is_builtin
+    = std::any_of (outer_attrs.begin (), outer_attrs.end (),
+		   [] (AST::Attribute attr) {
+		     return attr.get_path () == "rustc_builtin_macro";
+		   });
+
+  if (is_builtin)
+    {
+      auto builtin_kind
+	= AST::builtin_macro_from_string (rules_def->get_rule_name ());
+      invoc.map_to_builtin (builtin_kind);
+    }
+
+  auto attributes = rules_def->get_outer_attrs ();
+
+  /* Since the EarlyNameResolver runs multiple time (fixed point algorithm)
+   * we could be inserting the same macro def over and over again until we
+   * implement some optimizations */
+  // FIXME: ARTHUR: Remove that lookup and add proper optimizations instead
+  AST::MacroRulesDefinition *tmp_def = nullptr;
+  if (mappings.lookup_macro_invocation (invoc, &tmp_def))
+    return;
 
   mappings.insert_macro_invocation (invoc, rules_def);
 }
