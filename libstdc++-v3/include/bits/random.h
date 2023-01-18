@@ -1639,10 +1639,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit
     random_device(const std::string& __token) { _M_init(__token); }
 
-#if defined _GLIBCXX_USE_DEV_RANDOM
     ~random_device()
     { _M_fini(); }
-#endif
 
     static constexpr result_type
     min()
@@ -1654,13 +1652,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     double
     entropy() const noexcept
-    {
-#ifdef _GLIBCXX_USE_DEV_RANDOM
-      return this->_M_getentropy();
-#else
-      return 0.0;
-#endif
-    }
+    { return this->_M_getentropy(); }
 
     result_type
     operator()()
