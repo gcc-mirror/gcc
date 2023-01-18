@@ -41,6 +41,13 @@ int vfscanf(FILE *, const char *, __builtin_va_list) __asm__ (_BSD_STRING(__USER
 #endif  /* BSD_STDIO_ATTRS_CONFLICT_CHECK */
 
 
+#if defined( APPLE_LOCAL_STDIO_FN_DEPRECATION_CHECK )
+#if defined(__APPLE_LOCAL_DEPRECATIONS)
+__deprecated_msg("This function is provided for compat...")
+#endif
+#endif  /* APPLE_LOCAL_STDIO_FN_DEPRECATION_CHECK */
+
+
 #if defined( HPUX10_STDIO_DECLARATIONS_CHECK )
 #  define _iob __iob
 

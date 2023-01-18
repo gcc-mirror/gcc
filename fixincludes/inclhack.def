@@ -1269,6 +1269,18 @@ fix = {
     test_text = '#define  vfscanf	__svfscanf';
 };
 
+fix = {
+    hackname  = apple_local_stdio_fn_deprecation;
+    mach      = "*-*-*darwin2*";
+    files     = stdio.h;
+    select    = "__deprecated_msg([^\n]*)$";
+    c_fix     = format;
+    c_fix_arg = "#if defined(__APPLE_LOCAL_DEPRECATIONS)\n"
+                "%0\n"
+                "#endif";
+    test_text = '__deprecated_msg("This function is provided for compat...")';
+};
+
 /*
  *  Fix various macros used to define ioctl numbers.
  *  The traditional syntax was:
