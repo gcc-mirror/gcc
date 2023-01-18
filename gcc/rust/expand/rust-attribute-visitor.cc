@@ -389,8 +389,6 @@ AttrVisitor::visit (AST::ConstGenericParam &)
 void
 AttrVisitor::visit (AST::MacroInvocation &macro_invoc)
 {
-  // FIXME: Probably need to check macro_invoc.kind
-
   // initial strip test based on outer attrs
   expander.expand_cfg_attrs (macro_invoc.get_outer_attrs ());
   if (expander.fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
@@ -1124,7 +1122,7 @@ AttrVisitor::visit (AST::CallExpr &expr)
 
       stmt->accept_vis (*this);
 
-      auto final_fragment = expand_macro_fragment_recursive ();
+      auto final_fragment = expander.take_expanded_fragment ();
       if (final_fragment.should_expand ())
 	{
 	  // Remove the current expanded invocation
@@ -3423,7 +3421,7 @@ AttrVisitor::visit (AST::BareFunctionType &type)
 void
 AttrVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
 {
-  auto final_fragment = expand_macro_fragment_recursive ();
+  auto final_fragment = expander.take_expanded_fragment ();
   if (final_fragment.should_expand ()
       && final_fragment.is_expression_fragment ())
     expr = final_fragment.take_expression_fragment ();
@@ -3432,7 +3430,7 @@ AttrVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
 void
 AttrVisitor::maybe_expand_type (std::unique_ptr<AST::Type> &type)
 {
-  auto final_fragment = expand_macro_fragment_recursive ();
+  auto final_fragment = expander.take_expanded_fragment ();
   if (final_fragment.should_expand () && final_fragment.is_type_fragment ())
     type = final_fragment.take_type_fragment ();
 }

@@ -90,6 +90,7 @@ GRS_OBJS = \
     rust/rust-hir-map.o \
     rust/rust-attributes.o \
     rust/rust-abi.o \
+	rust/rust-macro.o \
     rust/rust-ast-lower.o \
     rust/rust-ast-lower-base.o \
     rust/rust-ast-lower-pattern.o \

@@ -21,8 +21,9 @@
 namespace Rust {
 namespace AST {
 
-Fragment::Fragment (FragmentKind kind, std::vector<SingleASTNode> nodes)
-  : kind (kind), nodes (std::move (nodes))
+Fragment::Fragment (FragmentKind kind, std::vector<SingleASTNode> nodes,
+		    std::vector<std::unique_ptr<AST::Token>> tokens)
+  : kind (kind), nodes (std::move (nodes)), tokens (std::move (tokens))
 {}
 
 Fragment::Fragment (Fragment const &other) : kind (other.get_kind ())
@@ -33,13 +34,17 @@ Fragment::Fragment (Fragment const &other) : kind (other.get_kind ())
 Fragment &
 Fragment::operator= (Fragment const &other)
 {
+  kind = other.get_kind ();
+
   nodes.clear ();
   nodes.reserve (other.nodes.size ());
-  kind = other.get_kind ();
   for (auto &n : other.nodes)
-    {
-      nodes.push_back (n);
-    }
+    nodes.push_back (n);
+
+  tokens.clear ();
+  tokens.reserve (other.tokens.size ());
+  for (auto &t : other.tokens)
+    tokens.emplace_back (t->clone_token ());
 
   return *this;
 }
@@ -47,25 +52,32 @@ Fragment::operator= (Fragment const &other)
 Fragment
 Fragment::create_error ()
 {
-  return Fragment (FragmentKind::Error, {});
+  return Fragment (FragmentKind::Error, {}, {});
 }
 
-Fragment
-Fragment::complete (std::vector<AST::SingleASTNode> nodes)
-{
-  return Fragment (FragmentKind::Complete, std::move (nodes));
-}
+Fragment::Fragment (std::vector<AST::SingleASTNode> nodes,
+		    std::vector<std::unique_ptr<AST::Token>> tokens)
+  : kind (FragmentKind::Complete), nodes (std::move (nodes)),
+    tokens (std::move (tokens))
+{}
 
-Fragment
-Fragment::unexpanded ()
+Fragment::Fragment (std::vector<AST::SingleASTNode> nodes,
+		    std::unique_ptr<AST::Token> token)
+  : kind (FragmentKind::Complete), nodes (std::move (nodes))
 {
-  return Fragment (FragmentKind::Unexpanded, {});
+  tokens.emplace_back (std::move (token));
 }
 
 std::vector<SingleASTNode> &
 Fragment::get_nodes ()
 {
   return nodes;
+}
+
+std::vector<std::unique_ptr<AST::Token>> &
+Fragment::get_tokens ()
+{
+  return tokens;
 }
 
 FragmentKind
