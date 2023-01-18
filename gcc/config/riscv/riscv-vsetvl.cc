@@ -579,7 +579,7 @@ has_vector_insn (function *fn)
 
 /* Emit vsetvl instruction.  */
 static rtx
-gen_vsetvl_pat (enum vsetvl_type insn_type, vl_vtype_info info, rtx vl)
+gen_vsetvl_pat (enum vsetvl_type insn_type, const vl_vtype_info &info, rtx vl)
 {
   rtx avl = info.get_avl ();
   rtx sew = gen_int_mode (info.get_sew (), Pmode);
@@ -599,7 +599,7 @@ gen_vsetvl_pat (enum vsetvl_type insn_type, vl_vtype_info info, rtx vl)
 }
 
 static rtx
-gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info info)
+gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info &info)
 {
   rtx new_pat;
   if (vsetvl_insn_p (rinsn) || vlmax_avl_p (info.get_avl ()))
@@ -616,7 +616,7 @@ gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info info)
 
 static void
 emit_vsetvl_insn (enum vsetvl_type insn_type, enum emit_type emit_type,
-		  vl_vtype_info info, rtx vl, rtx_insn *rinsn)
+		  const vl_vtype_info &info, rtx vl, rtx_insn *rinsn)
 {
   rtx pat = gen_vsetvl_pat (insn_type, info, vl);
   if (dump_file)
