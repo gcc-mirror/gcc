@@ -65,6 +65,21 @@ enum merge_type
   GLOBAL_MERGE
 };
 
+enum def_type
+{
+  REAL_SET = 1 << 0,
+  PHI_SET = 1 << 1,
+  BB_HEAD_SET = 1 << 2,
+  BB_END_SET = 1 << 3,
+  /* ??? TODO: In RTL_SSA framework, we have REAL_SET,
+     PHI_SET, BB_HEAD_SET, BB_END_SET and
+     CLOBBER_DEF def_info types. Currently,
+     we conservatively do not optimize clobber
+     def since we don't see the case that we
+     need to optimize it.  */
+  CLOBBER_DEF = 1 << 4
+};
+
 /* AVL info for RVV instruction. Most RVV instructions have AVL operand in
    implicit dependency. The AVL comparison between 2 RVV instructions is
    very important since it affects our decision whether we should insert
@@ -143,6 +158,7 @@ public:
   rtx get_value () const { return m_value; }
   rtl_ssa::set_info *get_source () const { return m_source; }
   bool single_source_equal_p (const avl_info &) const;
+  bool multiple_source_equal_p (const avl_info &) const;
   avl_info &operator= (const avl_info &);
   bool operator== (const avl_info &) const;
   bool operator!= (const avl_info &) const;
@@ -210,6 +226,8 @@ private:
     VALID,
     UNKNOWN,
     EMPTY,
+    /* The empty block can not be polluted as dirty.  */
+    HARD_EMPTY,
 
     /* The block is polluted as containing VSETVL instruction during dem
        backward propagation to gain better LCM optimization even though
@@ -280,7 +298,8 @@ public:
   bool uninit_p () const { return m_state == UNINITIALIZED; }
   bool valid_p () const { return m_state == VALID; }
   bool unknown_p () const { return m_state == UNKNOWN; }
-  bool empty_p () const { return m_state == EMPTY; }
+  bool empty_p () const { return m_state == EMPTY || m_state == HARD_EMPTY; }
+  bool hard_empty_p () const { return m_state == HARD_EMPTY; }
   bool dirty_p () const
   {
     return m_state == DIRTY || m_state == DIRTY_WITH_KILLED_AVL;
@@ -295,6 +314,7 @@ public:
     return m_state == VALID || m_state == DIRTY
 	   || m_state == DIRTY_WITH_KILLED_AVL;
   }
+  bool available_p (const vector_insn_info &) const;
 
   static vector_insn_info get_unknown ()
   {
@@ -303,9 +323,17 @@ public:
     return info;
   }
 
+  static vector_insn_info get_hard_empty ()
+  {
+    vector_insn_info info;
+    info.set_hard_empty ();
+    return info;
+  }
+
   void set_valid () { m_state = VALID; }
   void set_unknown () { m_state = UNKNOWN; }
   void set_empty () { m_state = EMPTY; }
+  void set_hard_empty () { m_state = HARD_EMPTY; }
   void set_dirty (enum fusion_type type)
   {
     gcc_assert (type == VALID_AVL_FUSION || type == KILLED_AVL_FUSION);
