@@ -17,6 +17,7 @@
 
 // { dg-options "-fchar8_t -Wno-stringop-overread" }
 // { dg-do run { target c++17 } }
+// { dg-additional-options "-Wno-deprecated-declarations" { target c++20 } }
 
 #include <filesystem>
 #include <string_view>
