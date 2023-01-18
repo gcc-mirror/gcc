@@ -1,3 +1,8 @@
+2023-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sanitizer_common/sanitizer_platform_interceptors.h: Cherry-pick
+	llvm-project revision 951cf656b2faaf6fc0baa867293c0cb0ab131951.
+
 2022-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* hwasan/Makefile.am (nodist_toolexeclib_HEADERS): Set to

@@ -1,3 +1,16 @@
+2023-01-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_option_override): Disable
+	-fstack-protector.
+
+2023-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106523
+	* tree-ssa-forwprop.cc (simplify_rotate): For the
+	patterns with (-Y) & (B - 1) in one operand's shift
+	count and Y in another, if T2 has wider precision than T,
+	punt if Y could have a value in [B, B2 - 1] range.
+
 2023-01-16  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/105980

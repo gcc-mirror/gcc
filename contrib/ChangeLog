@@ -1,3 +1,12 @@
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* update-copyright.py: Ignore test_patches.txt.
+
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_patches.txt: The CR character was removed
+	with ./contrib/update-copyright.py which I'm going to change.
+
 2023-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/108413

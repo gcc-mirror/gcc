@@ -1,3 +1,30 @@
+2023-01-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* mc-boot/GM2RTS.c: Rebuilt.
+	* mc-boot/GM2RTS.h: Rebuilt.
+	* mc-boot/Gdecl.c: Rebuilt.
+	* mc-boot/GmcOptions.c: Rebuilt.
+	* mc/mcOptions.mod (displayVersion):
+	Split first printf into three components
+
+2023-01-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs-iso/M2RTS.def (Halt): Parameter file renamed to filename.
+	(HaltC): New procedure declaration.
+	(ErrorMessage): Parameter file renamed to filename.
+	* gm2-libs-iso/M2RTS.mod (Halt): Parameter file renamed to
+	filename.
+	(HaltC): New procedure implementation.
+	(ErrorStringC): New procedure implementation.
+	(ErrorMessageC): New procedure implementation.
+	* gm2-libs/M2RTS.def (Halt): Parameter file renamed to filename.
+	(HaltC): New procedure declaration.
+	(ErrorMessage): Parameter file renamed to filename.
+	* gm2-libs/M2RTS.mod (Halt): Parameter file renamed to filename.
+	(HaltC): New procedure implementation.
+	(ErrorStringC): New procedure implementation.
+	(ErrorMessageC): New procedure implementation.
+
 2023-01-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* mc-boot-ch/Glibc.c (libc_time): New function.

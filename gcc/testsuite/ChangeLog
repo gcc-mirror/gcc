@@ -1,3 +1,21 @@
+2023-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108421
+	* gfortran.dg/pr108421.f90: New test.
+
+2023-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106523
+	* c-c++-common/rotate-2.c (f5, f6, f7, f8, f13, f14, f15, f16,
+	f37, f38, f39, f40, f45, f46, f47, f48): Add assertions using
+	__builtin_unreachable about shift count.
+	* c-c++-common/rotate-2b.c: New test.
+	* c-c++-common/rotate-4.c (f5, f6, f7, f8, f13, f14, f15, f16,
+	f37, f38, f39, f40, f45, f46, f47, f48): Add assertions using
+	__builtin_unreachable about shift count.
+	* c-c++-common/rotate-4b.c: New test.
+	* gcc.c-torture/execute/pr106523.c: New test.
+
 2023-01-16  Andrew Pinski  <apinski@marvell.com>
 
 	* lib/target-supports.exp (add_options_for_tls): Remove

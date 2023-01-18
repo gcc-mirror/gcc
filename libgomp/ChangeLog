@@ -1,3 +1,8 @@
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2023-01-07  LIU Hao  <lh_mouse@126.com>
 
 	PR middle-end/108300

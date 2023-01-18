@@ -1,3 +1,9 @@
+2023-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108421
+	* interface.cc (get_expr_storage_size): Check that we actually have
+	an integer value before trying to extract it with mpz_get_si.
+
 2023-01-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/107706

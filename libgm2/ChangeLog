@@ -1,3 +1,15 @@
+2023-01-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2iso/RTco.cc (_M2_RTco_fini): Call M2RTS_HaltC.
+	(newSem): Call M2RTS_HaltC.
+	(currentThread): Call M2RTS_HaltC.
+	(never): Call M2RTS_HaltC.
+	(defined): Call M2RTS_HaltC.
+	(initThread): Call M2RTS_HaltC.
+	(RTco_transfer): Call M2RTS_HaltC.
+	* libm2iso/m2rts.h (M2RTS_Halt): Provide parameter names.
+	(M2RTS_HaltC): New procedure declaration.
+
 2023-01-06  v  <gaiusmod2@gmail.com>
 
 	* configure: Regenerate.
