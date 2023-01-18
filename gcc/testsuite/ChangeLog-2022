@@ -11,7 +11,7 @@
 
 2022-12-30  Steve Kargl  <kargl@gcc.gnu.org>
 
-	PR fortran/102595
+	PR fortran/102331
 	* gfortran.dg/class_result_4.f90: Update error message check.
 	* gfortran.dg/pr85779_3.f90: Update error message check.
 
