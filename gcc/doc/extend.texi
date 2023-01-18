@@ -10402,8 +10402,10 @@ ensures that modifying @var{a} does not affect the address referenced by
 is undefined if @var{a} is modified before using @var{b}.
 
 @code{asm} supports operand modifiers on operands (for example @samp{%k2} 
-instead of simply @samp{%2}). Typically these qualifiers are hardware 
-dependent. The list of supported modifiers for x86 is found at 
+instead of simply @samp{%2}). @ref{GenericOperandmodifiers,
+Generic Operand modifiers} lists the modifiers that are available
+on all targets.  Other modifiers are hardware dependent.
+For example, the list of supported modifiers for x86 is found at
 @ref{x86Operandmodifiers,x86 Operand modifiers}.
 
 If the C code that follows the @code{asm} makes no use of any of the output 
@@ -10671,8 +10673,10 @@ optimizers may discard the @code{asm} statement as unneeded
 (see @ref{Volatile}).
 
 @code{asm} supports operand modifiers on operands (for example @samp{%k2} 
-instead of simply @samp{%2}). Typically these qualifiers are hardware 
-dependent. The list of supported modifiers for x86 is found at 
+instead of simply @samp{%2}). @ref{GenericOperandmodifiers,
+Generic Operand modifiers} lists the modifiers that are available
+on all targets.  Other modifiers are hardware dependent.
+For example, the list of supported modifiers for x86 is found at
 @ref{x86Operandmodifiers,x86 Operand modifiers}.
 
 In this example using the fictitious @code{combine} instruction, the 
@@ -11024,6 +11028,30 @@ lab:
 @}
 @end example
 
+@anchor{GenericOperandmodifiers}
+@subsubsection Generic Operand Modifiers
+@noindent
+The following table shows the modifiers supported by all targets and their effects:
+
+@multitable {Modifier} {Description} {Example}
+@headitem Modifier @tab Description @tab Example
+@item @code{c}
+@tab Require a constant operand and print the constant expression with no punctuation.
+@tab @code{%c0}
+@item @code{n}
+@tab Like @samp{%c} except that the value of the constant is negated before printing.
+@tab @code{%n0}
+@item @code{a}
+@tab Substitute a memory reference, with the actual operand treated as the address.
+This may be useful when outputting a ``load address'' instruction, because
+often the assembler syntax for such an instruction requires you to write the
+operand as if it were a memory reference.
+@tab @code{%a0}
+@item @code{l}
+@tab Print the label name with no punctuation.
+@tab @code{%l0}
+@end multitable
+
 @anchor{x86Operandmodifiers}
 @subsubsection x86 Operand Modifiers
 
@@ -11373,6 +11401,21 @@ constant.  Used to select the specified bit position.
 @item @code{r} @tab Inverse of condition code, for signed comparisons.
 @item @code{x} @tab Equivialent to @code{X}, but only for pointers.
 @end multitable
+
+@anchor{loongarchOperandmodifiers}
+@subsubsection LoongArch Operand Modifiers
+
+The list below describes the supported modifiers and their effects for LoongArch.
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{d} @tab Same as @code{c}.
+@item @code{i} @tab Print the character ''@code{i}'' if the operand is not a register.
+@item @code{m} @tab Same as @code{c}, but the printed value is @code{operand - 1}.
+@item @code{X} @tab Print a constant integer operand in hexadecimal.
+@item @code{z} @tab Print the operand in its unmodified form, followed by a comma.
+@end multitable
+
 
 @lowersections
 @include md.texi
