@@ -736,7 +736,31 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "xorsi3"
+(define_expand "xorsi3"
+  [(set (match_operand:SI 0 "register_operand")
+	(xor:SI (match_operand:SI 1 "register_operand")
+		(match_operand:SI 2 "nonmemory_operand")))]
+  ""
+{
+  if (register_operand (operands[2], SImode))
+    emit_insn (gen_xorsi3_internal (operands[0], operands[1],
+				    operands[2]));
+  else
+    {
+      rtx (*gen_op)(rtx, rtx, rtx);
+      if (TARGET_DENSITY
+	  && CONST_INT_P (operands[2])
+	  && INTVAL (operands[2]) == -2147483648L)
+	gen_op = gen_addsi3;
+      else
+	gen_op = gen_xorsi3_internal;
+      emit_insn (gen_op (operands[0], operands[1],
+			 force_reg (SImode, operands[2])));
+    }
+  DONE;
+})
+
+(define_insn "xorsi3_internal"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(xor:SI (match_operand:SI 1 "register_operand" "%r")
 		(match_operand:SI 2 "register_operand" "r")))]
