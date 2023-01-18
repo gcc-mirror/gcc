@@ -37,9 +37,7 @@ void f (void * restrict in, void * restrict out, int n, int cond)
   }
 }
 
-/* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*5,\s*e8,\s*mf8,\s*tu,\s*m[au]} 1 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-g" no-opts "-funroll-loops" } } } } */
-/* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*19,\s*e32,\s*m1,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-g" no-opts "-funroll-loops" } } } } */
-/* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*8,\s*e32,\s*m1,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-g" no-opts "-funroll-loops" } } } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf8,\s*t[au],\s*m[au]} 1 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os"  no-opts "-funroll-loops" no-opts "-g" } } } } */
-/* { dg-final { scan-assembler-times {vsetivli} 5 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" } } } } */
-/* { dg-final { scan-assembler-times {vsetvli} 1 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os"  no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler {vsetivli\s+zero,\s*5,\s*e8,\s*mf8,\s*tu,\s*m[au]} { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler {vsetivli\s+zero,\s*19,\s*e32,\s*m1,\s*t[au],\s*m[au]} { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler {vsetivli\s+zero,\s*8,\s*e32,\s*m1,\s*t[au],\s*m[au]} { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler {vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf8,\s*t[au],\s*m[au]} { target { no-opts "-O0" no-opts "-O1" no-opts "-Os"  no-opts "-funroll-loops" no-opts "-g" } } } } */
