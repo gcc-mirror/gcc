@@ -6673,6 +6673,10 @@ range_cannot_be_superflat (Node_Id gnat_range)
   Node_Id gnat_scalar_range;
   tree gnu_lb, gnu_hb, gnu_lb_minus_one;
 
+  /* This is the easy case.  */
+  if (Cannot_Be_Superflat (gnat_range))
+    return true;
+
   /* If the low bound is not constant, take the worst case by finding an upper
      bound for its type, repeatedly if need be.  */
   while (Nkind (gnat_lb) != N_Integer_Literal
