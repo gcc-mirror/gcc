@@ -5,6 +5,10 @@
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 **foo:
 **	...
@@ -29,5 +33,9 @@ foo1 (int32x4_t add, int32x4_t m1, int32_t m2)
 {
   return vqdmlahq (add, m1, m2);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */
