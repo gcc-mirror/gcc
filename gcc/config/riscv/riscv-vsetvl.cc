@@ -3086,12 +3086,10 @@ pass_vsetvl::execute (function *)
   if (n_basic_blocks_for_fn (cfun) <= 0)
     return 0;
 
-  /* The reason we have this since we didn't finish splitting yet
-     when optimize == 0. In this case, we should conservatively
-     split all instructions here to make sure we don't miss any
-     RVV instruction.  */
-  if (!optimize)
-    split_all_insns ();
+  /* The RVV instruction may change after split which is not a stable
+     instruction. We need to split it here to avoid potential issue
+     since the VSETVL PASS is insert before split PASS.  */
+  split_all_insns ();
 
   /* Early return for there is no vector instructions.  */
   if (!has_vector_insn (cfun))
