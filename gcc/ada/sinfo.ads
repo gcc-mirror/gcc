@@ -932,6 +932,12 @@ package Sinfo is
    --    a pragma Import or Interface applies, in which case no body is
    --    permitted (in Ada 83 or Ada 95).
 
+   --  Cannot_Be_Superflat
+   --    This flag is present in N_Range nodes. It is set if the range is of a
+   --    discrete type and cannot be superflat, i.e. it is guaranteed that the
+   --    inequality High_Bound >= Low_Bound - 1 is true. At the time of this
+   --    writing, it is only used by the code generator to streamline things.
+
    --  Cleanup_Actions
    --    Present in block statements created for transient blocks, contains
    --    additional cleanup actions carried over from the transient scope.
@@ -3081,6 +3087,7 @@ package Sinfo is
       --  Sloc points to ..
       --  Low_Bound
       --  High_Bound
+      --  Cannot_Be_Superflat
       --  Includes_Infinities
       --  plus fields for expression
 

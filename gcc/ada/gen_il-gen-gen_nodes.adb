@@ -531,7 +531,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Range, N_Subexpr,
        (Sy (Low_Bound, Node_Id),
         Sy (High_Bound, Node_Id),
-        Sy (Includes_Infinities, Flag)));
+        Sm (Cannot_Be_Superflat, Flag),
+        Sm (Includes_Infinities, Flag)));
 
    Cc (N_Reference, N_Subexpr,
        (Sy (Prefix, Node_Id)));
