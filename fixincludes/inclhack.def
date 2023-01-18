@@ -1492,6 +1492,41 @@ fix = {
 };
 
 /*
+ *  macOSX 13.0 SDK objc/runtime.h uses Apple Blocks extension without a guard.
+ */
+
+fix = {
+  hackname  = darwin_objc_runtime_1;
+  mach      = "*-*-darwin2*";
+  files     = objc/runtime.h;
+  select    =   <<- _EOSelect_
+	OBJC_EXPORT void.*
+	objc_enumerateClasses.*
+	.*
+	.*
+	.*
+	.*void \(\^ _Nonnull block.*
+	.*
+	.*
+	.*OBJC_REFINED_FOR_SWIFT.*
+	_EOSelect_;
+  c_fix     = format;
+  c_fix_arg = "#if __BLOCKS__\n%0\n#endif";
+  test_text = <<- _OBJC_RUNTIME_1
+OBJC_EXPORT void
+objc_enumerateClasses(const void * _Nullable image,
+                      const char * _Nullable namePrefix,
+                      Protocol * _Nullable conformingTo,
+                      Class _Nullable subclassing,
+                      void (^ _Nonnull block)(Class _Nonnull aClass, BOOL * _Nonnull stop)
+                      OBJC_NOESCAPE)
+OBJC_AVAILABLE(13.0, 16.0, 16.0, 9.0, 7.0)
+OBJC_REFINED_FOR_SWIFT;
+_OBJC_RUNTIME_1;
+};
+
+
+/*
  *  In Mac OS X 10.1[012] <os/trace.h>, need to guard users of
  *  os_trace_payload_t typedef, too.
  */
