@@ -3,4 +3,4 @@
 
 #include "pr88531-2a.c"
 
-/* { dg-final { scan-assembler-times "vmulps" 2 } } */
+/* { dg-final { scan-assembler-times "vmulps" 1 } } */
