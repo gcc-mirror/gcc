@@ -18,4 +18,4 @@
    <http://www.gnu.org/licenses/>.  */
 
 INSERT_PASS_AFTER (pass_rtl_store_motion, 1, pass_shorten_memrefs);
-INSERT_PASS_BEFORE (pass_sched2, 1, pass_vsetvl);
+INSERT_PASS_BEFORE (pass_fast_rtl_dce, 1, pass_vsetvl);
