@@ -1788,6 +1788,12 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                   Source.Data (1 .. Npad) := [others => Pad];
                   Source.Data (Npad + 1 .. Max_Length) :=
                     Temp (1 .. Max_Length - Npad);
+
+                  pragma Assert
+                    (Source.Data (1 .. Npad) = [1 .. Npad => Pad]);
+                  pragma Assert
+                    (Source.Data (Npad + 1 .. Max_Length)
+                     = Temp (1 .. Max_Length - Npad));
                end if;
 
             when Strings.Left =>
