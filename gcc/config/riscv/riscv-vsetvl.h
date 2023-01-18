@@ -260,9 +260,6 @@ private:
      Since RTL_SSA can not be enabled when optimize == 0, we don't initialize
      the m_insn.  */
   void parse_insn (rtx_insn *);
-  /* This is only called by lazy_vsetvl subroutine when optimize > 0.
-     We use RTL_SSA framework to initialize the insn_info.  */
-  void parse_insn (rtl_ssa::insn_info *);
 
   friend class vector_infos_manager;
 
@@ -271,6 +268,10 @@ public:
     : vl_vtype_info (), m_state (UNINITIALIZED), m_demands{false},
       m_insn (nullptr)
   {}
+
+  /* This is only called by lazy_vsetvl subroutine when optimize > 0.
+     We use RTL_SSA framework to initialize the insn_info.  */
+  void parse_insn (rtl_ssa::insn_info *);
 
   bool operator> (const vector_insn_info &) const;
   bool operator>= (const vector_insn_info &) const;
