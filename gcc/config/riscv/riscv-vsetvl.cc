@@ -187,7 +187,7 @@ real_insn_and_same_bb_p (const insn_info *insn, const bb_info *bb)
 static bool
 before_p (const insn_info *insn1, const insn_info *insn2)
 {
-  return insn1->compare_with (insn2) == -1;
+  return insn1->compare_with (insn2) < 0;
 }
 
 static bool
