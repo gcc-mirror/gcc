@@ -115,7 +115,7 @@ relation_kind rr_union_table[VREL_LAST][VREL_LAST] = {
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
     VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_UNDEFINED
-  { VREL_VARYING, VREL_LT, VREL_LE, VREL_GT, VREL_GE, VREL_UNDEFINED,
+  { VREL_VARYING, VREL_UNDEFINED, VREL_LT, VREL_LE, VREL_GT, VREL_GE,
     VREL_EQ, VREL_NE },
 // VREL_LT
   { VREL_VARYING, VREL_LT, VREL_LT, VREL_LE, VREL_NE, VREL_VARYING, VREL_LE,
@@ -1718,3 +1718,26 @@ equiv_relation_iterator::get_name (relation_kind *rel)
     }
   return NULL_TREE;
 }
+
+#if CHECKING_P
+#include "selftest.h"
+
+namespace selftest
+{
+void
+relation_tests ()
+{
+  // Verify commutativity of relation_intersect and relation_union.
+  for (relation_kind r1 = VREL_VARYING; r1 < VREL_PE8;
+       r1 = relation_kind (r1 + 1))
+    for (relation_kind r2 = VREL_VARYING; r2 < VREL_PE8;
+	 r2 = relation_kind (r2 + 1))
+      {
+	ASSERT_EQ (relation_intersect (r1, r2), relation_intersect (r2, r1));
+	ASSERT_EQ (relation_union (r1, r2), relation_union (r2, r1));
+      }
+}
+
+} // namespace selftest
+
+#endif // CHECKING_P

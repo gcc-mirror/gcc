@@ -583,6 +583,7 @@ test_ranges ()
   push_cfun (fun);
   range_tests ();
   range_op_tests ();
+  relation_tests ();
 
   build_cfg (fndecl);
   convert_to_ssa (fndecl);
