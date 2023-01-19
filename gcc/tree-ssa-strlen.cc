@@ -981,42 +981,14 @@ dump_strlen_info (FILE *fp, gimple *stmt, range_query *rvals)
 		  print_generic_expr (fp, si->nonzero_chars);
 		  if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 		    {
-		      value_range_kind rng = VR_UNDEFINED;
-		      wide_int min, max;
+		      value_range vr;
 		      if (rvals)
-			{
-			  value_range vr;
-			  rvals->range_of_expr (vr, si->nonzero_chars,
-						si->stmt);
-			  rng = vr.kind ();
-			  if (range_int_cst_p (&vr))
-			    {
-			      min = wi::to_wide (vr.min ());
-			      max = wi::to_wide (vr.max ());
-			    }
-			  else
-			    rng = VR_UNDEFINED;
-			}
+			rvals->range_of_expr (vr, si->nonzero_chars,
+					      si->stmt);
 		      else
-			{
-			  value_range vr;
-			  get_range_query (cfun)
-			    ->range_of_expr (vr, si->nonzero_chars);
-			  rng = vr.kind ();
-			  if (!vr.undefined_p ())
-			    {
-			      min = wi::to_wide (vr.min ());
-			      max = wi::to_wide (vr.max ());
-			    }
-			}
-
-		      if (rng == VR_RANGE || rng == VR_ANTI_RANGE)
-			{
-			  fprintf (fp, " %s[%llu, %llu]",
-				   rng == VR_RANGE ? "" : "~",
-				   (long long) min.to_uhwi (),
-				   (long long) max.to_uhwi ());
-			}
+			get_range_query (cfun)->range_of_expr (vr,
+							si->nonzero_chars);
+		      vr.dump (fp);
 		    }
 		}
 

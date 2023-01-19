@@ -56,7 +56,7 @@ vrange_printer::visit (const irange &r) const
       pp_string (pp, "UNDEFINED");
       return;
     }
-  dump_generic_node (pp, r.type (), 0, TDF_NONE, false);
+  dump_generic_node (pp, r.type (), 0, TDF_NONE | TDF_NOUID, false);
   pp_character (pp, ' ');
   if (r.varying_p ())
     {
