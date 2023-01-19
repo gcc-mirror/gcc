@@ -1,3 +1,8 @@
+2023-01-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* intrinsics/execute_command_line.c (execute_command_line): On
+	Windows, regard system()'s return value of 9009 as EXEC_INVALIDCOMMAND.
+
 2023-01-07  LIU Hao  <lh_mouse@126.com>
 
 	PR middle-end/108300

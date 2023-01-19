@@ -1,3 +1,8 @@
+2023-01-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108424
+	* c-common.cc (check_case_value): Check INTEGRAL_TYPE_P.
+
 2023-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/108365

@@ -1,3 +1,14 @@
+2023-01-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/107678
+	* unwind-dw2.h (REG_UNSAVED_ARCHEXT): Add new enum.
+	* unwind-dw2.c (uw_update_context_1): Add REG_UNSAVED_ARCHEXT case.
+	* unwind-dw2-execute_cfa.h: Use REG_UNSAVED_ARCHEXT/REG_UNSAVED to
+	encode the return address signing state.
+	* config/aarch64/aarch64-unwind.h (aarch64_demangle_return_addr)
+	Check current return address signing state.
+	(aarch64_frob_update_contex): Remove.
+
 2023-01-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.host (hppa*64*-*-linux*): Adjust tmake_file to use

@@ -1,3 +1,39 @@
+2023-01-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108424
+	* gcc.dg/c2x-nullptr-6.c: New test.
+
+2023-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/SARD-tc117-basic-00001-min.c: New test, adapted
+	from https://samate.nist.gov/SARD/test-suites/81.
+	* gcc.dg/analyzer/SARD-tc1909-stack_overflow_loop.c: Likewise.
+	* gcc.dg/analyzer/SARD-tc249-basic-00034-min.c: Likewise.
+	* gcc.dg/analyzer/SARD-tc293-basic-00045-min.c: Likewise.
+	* gcc.dg/analyzer/SARD-tc841-basic-00182-min.c: Likewise.
+
+2023-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR lto/108445
+	* gcc.dg/lto/pr108445_0.c: New testcase.
+	* gcc.dg/lto/pr108445_1.c: Likewise.
+
+2023-01-18  Murray Steele  <murray.steele@arm.com>
+
+	* gcc.target/arm/mve/general/preserve_user_namespace_1.c: New test.
+
+2023-01-18  Kewen Lin  <linkw@linux.ibm.com>
+	    Andrew Pinski  <apinski@marvell.com>
+
+	PR target/108396
+	* gcc.target/powerpc/pr108396.c: New test.
+
+2023-01-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108348
+	* gcc.target/powerpc/pr108348-1.c: New test.
+	* gcc.target/powerpc/pr108348-2.c: New test.
+
 2023-01-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108421

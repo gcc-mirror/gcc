@@ -1,3 +1,69 @@
+2023-01-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107944
+	* cgraph.cc (cgraph_node::remove): Check whether nodes up the
+	lcone_of chain also do not need the body.
+
+2023-01-18  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2022-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108086
+	* tree-inline.cc (remap_ssa_name): Do not unshare the
+	result from the decl_map.
+
+2023-01-18  Murray Steele  <murray.steele@arm.com>
+
+	PR target/108442
+	* config/arm/arm_mve.h (__arm_vst1q_p_u8): Use prefixed intrinsic
+	function.
+	(__arm_vst1q_p_s8): Likewise.
+	(__arm_vld1q_z_u8): Likewise.
+	(__arm_vld1q_z_s8): Likewise.
+	(__arm_vst1q_p_u16): Likewise.
+	(__arm_vst1q_p_s16): Likewise.
+	(__arm_vld1q_z_u16): Likewise.
+	(__arm_vld1q_z_s16): Likewise.
+	(__arm_vst1q_p_u32): Likewise.
+	(__arm_vst1q_p_s32): Likewise.
+	(__arm_vld1q_z_u32): Likewise.
+	(__arm_vld1q_z_s32): Likewise.
+	(__arm_vld1q_z_f16): Likewise.
+	(__arm_vst1q_p_f16): Likewise.
+	(__arm_vld1q_z_f32): Likewise.
+	(__arm_vst1q_p_f32): Likewise.
+
+2023-01-18  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (xorsi3_internal):
+	Rename from the original of "xorsi3".
+	(xorsi3): New expansion pattern that emits addition rather than
+	bitwise-XOR when the second source is a constant of -2147483648
+	if TARGET_DENSITY.
+
+2023-01-18  Kewen Lin  <linkw@linux.ibm.com>
+	    Andrew Pinski  <apinski@marvell.com>
+
+	PR target/108396
+	* config/rs6000/rs6000-overload.def (VEC_VSUBCUQ): Fix typo
+	vec_vsubcuqP with vec_vsubcuq.
+
+2023-01-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108348
+	* config/rs6000/rs6000.cc (rs6000_opaque_type_invalid_use_p): Add the
+	support for invalid uses of MMA opaque type in function arguments.
+
+2023-01-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/55522
+	* config/i386/cygwin.h (ENDFILE_SPEC): Link crtfastmath.o
+	whenever -mdaz-ftz is specified. Don't link crtfastmath.o when
+	-share or -mno-daz-ftz is specified.
+	* config/i386/darwin.h (ENDFILE_SPEC): Ditto.
+	* config/i386/mingw32.h (ENDFILE_SPEC): Ditto.
+
 2023-01-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* config/bpf/bpf.cc (bpf_option_override): Disable

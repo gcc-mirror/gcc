@@ -1,3 +1,33 @@
+2023-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (u8path): Add deprecated attribute.
+	* testsuite/27_io/filesystem/path/construct/90281.cc: Add
+	-Wno-deprecated-declarations for C++20 and later.
+	* testsuite/27_io/filesystem/path/factory/u8path-char8_t.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/factory/u8path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/native/string.cc: Likewise.
+	* testsuite/27_io/filesystem/path/factory/u8path-depr.cc: New test.
+
+2023-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (random_device) [!_GLIBCXX_USE_DEV_RANDOM]:
+	Always call _M_fini and _M_getentropy.
+
+2023-01-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Adjust links
+	to www.open-std.org to use https.
+	(COM: Component Model Object Technologies): Rename from...
+	(The Component Object Model): ...to.
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
+2023-01-18  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	* testsuite/22_locale/codecvt/codecvt_unicode.cc: Simplify.
+	* testsuite/22_locale/codecvt/codecvt_unicode.h: Simplify.
+	* testsuite/22_locale/codecvt/codecvt_unicode_wchar_t.cc: Simplify.
+
 2023-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR): Check $target_os instead
