@@ -1572,7 +1572,8 @@ public:
 					src_sm_val,
 					dst_sm_val,
 					NULL,
-					dst_state));
+					dst_state,
+					src_node));
     return false;
   }
 
@@ -1616,7 +1617,8 @@ public:
 					src_sm_val,
 					dst_sm_val,
 					dst_origin_sval,
-					dst_state));
+					dst_state,
+					src_node));
     return false;
   }
 
@@ -1760,7 +1762,8 @@ struct null_assignment_sm_context : public sm_context
 					var_new_sval,
 					from, to,
 					NULL,
-					*m_new_state));
+					*m_new_state,
+					NULL));
   }
 
   void set_next_state (const gimple *stmt,
@@ -1785,7 +1788,8 @@ struct null_assignment_sm_context : public sm_context
 					sval,
 					from, to,
 					NULL,
-					*m_new_state));
+					*m_new_state,
+					NULL));
   }
 
   void warn (const supernode *, const gimple *,

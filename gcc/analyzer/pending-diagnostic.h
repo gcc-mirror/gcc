@@ -131,13 +131,15 @@ struct return_of_state : public event_desc
 struct final_event : public event_desc
 {
   final_event (bool colorize,
-	       tree expr, state_machine::state_t state)
+	       tree expr, state_machine::state_t state,
+	       const warning_event &event)
   : event_desc (colorize),
-    m_expr (expr), m_state (state)
+    m_expr (expr), m_state (state), m_event (event)
   {}
 
   tree m_expr;
   state_machine::state_t m_state;
+  const warning_event &m_event;
 };
 
 } /* end of namespace evdesc */
