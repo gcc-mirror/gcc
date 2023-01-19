@@ -1982,8 +1982,8 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	    t = fold_build2 (MINUS_EXPR, itype, unshare_expr (fd->loops[i].m2),
 			     unshare_expr (fd->loops[i].m1));
 	  else if (fd->loops[i].m1)
-	    t = fold_unary (NEGATE_EXPR, itype,
-			    unshare_expr (fd->loops[i].m1));
+	    t = fold_build1 (NEGATE_EXPR, itype,
+			     unshare_expr (fd->loops[i].m1));
 	  else
 	    t = unshare_expr (fd->loops[i].m2);
 	  tree m2minusm1
