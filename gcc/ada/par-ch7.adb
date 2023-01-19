@@ -261,7 +261,7 @@ package body Ch7 is
                        and then Start_Column /= Error_Msg_Col
                      then
                         Error_Msg_SC
-                          ("(style) PRIVATE in wrong column, should be@");
+                          ("(style) PRIVATE in wrong column, should be@?l?");
                      end if;
                   end if;
 

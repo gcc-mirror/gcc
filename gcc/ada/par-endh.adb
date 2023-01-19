@@ -1131,7 +1131,7 @@ package body Endh is
                then
                   Error_Msg_Col := Scopes (Scope.Last).Ecol;
                   Error_Msg
-                    ("(style) END in wrong column, should be@", End_Sloc);
+                    ("(style) END in wrong column, should be@?l?", End_Sloc);
                end if;
             end if;
 

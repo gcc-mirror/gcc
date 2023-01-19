@@ -1196,7 +1196,7 @@ package body Ch5 is
            and then Start_Column /= Scopes (Scope.Last).Ecol
          then
             Error_Msg_Col := Scopes (Scope.Last).Ecol;
-            Error_Msg_SC ("(style) this token should be@");
+            Error_Msg_SC ("(style) this token should be@?l?");
          end if;
       end Check_If_Column;
 
@@ -2206,7 +2206,7 @@ package body Ch5 is
               and then Token_Is_At_Start_Of_Line
               and then Start_Column /= Error_Msg_Col
             then
-               Error_Msg_SC ("(style) BEGIN in wrong column, should be@");
+               Error_Msg_SC ("(style) BEGIN in wrong column, should be@?l?");
 
             else
                Scopes (Scope.Last).Ecol := Start_Column;

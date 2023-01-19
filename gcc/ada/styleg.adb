@@ -173,7 +173,7 @@ package body Styleg is
       if Style_Check_Attribute_Casing then
          if Determine_Token_Casing /= Mixed_Case then
             Error_Msg_SC -- CODEFIX
-              ("(style) bad capitalization, mixed case required");
+              ("(style) bad capitalization, mixed case required?a?");
          end if;
       end if;
    end Check_Attribute_Name;
@@ -263,10 +263,10 @@ package body Styleg is
 
                   elsif Nkind (Orig) = N_Op_And then
                      Error_Msg -- CODEFIX
-                       ("(style) `AND THEN` required", Sloc (Orig));
+                       ("(style) `AND THEN` required?B?", Sloc (Orig));
                   else
                      Error_Msg -- CODEFIX
-                       ("(style) `OR ELSE` required", Sloc (Orig));
+                       ("(style) `OR ELSE` required?B?", Sloc (Orig));
                   end if;
                end;
             end if;
@@ -506,7 +506,7 @@ package body Styleg is
            and then Source (Scan_Ptr - 1) > ' '
          then
             Error_Msg_S -- CODEFIX
-              ("(style) space required");
+              ("(style) space required?c?");
          end if;
       end if;
 
@@ -520,7 +520,7 @@ package body Styleg is
               and then not Is_Special_Character (Source (Scan_Ptr + 2))
             then
                Error_Msg -- CODEFIX
-                 ("(style) space required", Scan_Ptr + 2);
+                 ("(style) space required?c?", Scan_Ptr + 2);
             end if;
          end if;
 
@@ -537,7 +537,7 @@ package body Styleg is
                  and then not Same_Column_As_Previous_Line
                then
                   Error_Msg_S -- CODEFIX
-                    ("(style) bad column");
+                    ("(style) bad column?0?");
                end if;
 
                return;
@@ -583,7 +583,7 @@ package body Styleg is
                      Error_Space_Required (Scan_Ptr + 2);
                   else
                      Error_Msg -- CODEFIX
-                       ("(style) two spaces required", Scan_Ptr + 2);
+                       ("(style) two spaces required?c?", Scan_Ptr + 2);
                   end if;
 
                   return;
@@ -624,7 +624,7 @@ package body Styleg is
                | All_Upper_Case
             =>
                Error_Msg_SC -- CODEFIX
-                 ("(style) bad capitalization, mixed case required");
+                 ("(style) bad capitalization, mixed case required?D?");
 
             --  The Unknown case is something like A_B_C, which is both all
             --  caps and mixed case.
@@ -665,12 +665,12 @@ package body Styleg is
 
          if Blank_Lines = 2 then
             Error_Msg -- CODEFIX
-              ("(style) blank line not allowed at end of file",
+              ("(style) blank line not allowed at end of file?u?",
                Blank_Line_Location);
 
          elsif Blank_Lines >= 3 then
             Error_Msg -- CODEFIX
-              ("(style) blank lines not allowed at end of file",
+              ("(style) blank lines not allowed at end of file?u?",
                Blank_Line_Location);
          end if;
       end if;
@@ -697,7 +697,7 @@ package body Styleg is
    begin
       if Style_Check_Horizontal_Tabs then
          Error_Msg_S -- CODEFIX
-           ("(style) horizontal tab not allowed");
+           ("(style) horizontal tab not allowed?h?");
       end if;
    end Check_HT;
 
@@ -716,7 +716,7 @@ package body Styleg is
            and then Start_Column rem Style_Check_Indentation /= 0
          then
             Error_Msg_SC -- CODEFIX
-              ("(style) bad indentation");
+              ("(style) bad indentation?0?");
          end if;
       end if;
    end Check_Indentation;
@@ -755,7 +755,7 @@ package body Styleg is
       if Style_Check_Max_Line_Length then
          if Len > Style_Max_Line_Length then
             Error_Msg
-              ("(style) this line is too long",
+              ("(style) this line is too long?M?",
                Current_Line_Start + Source_Ptr (Style_Max_Line_Length));
          end if;
       end if;
@@ -792,10 +792,10 @@ package body Styleg is
       if Style_Check_Form_Feeds then
          if Source (Scan_Ptr) = ASCII.FF then
             Error_Msg_S -- CODEFIX
-              ("(style) form feed not allowed");
+              ("(style) form feed not allowed?f?");
          elsif Source (Scan_Ptr) = ASCII.VT then
             Error_Msg_S -- CODEFIX
-              ("(style) vertical tab not allowed");
+              ("(style) vertical tab not allowed?f?");
          end if;
       end if;
 
@@ -813,7 +813,7 @@ package body Styleg is
          --  Bad terminator if we don't have an LF
 
          elsif Source (Scan_Ptr) /= LF then
-            Error_Msg_S ("(style) incorrect line terminator");
+            Error_Msg_S ("(style) incorrect line terminator?d?");
          end if;
       end if;
 
@@ -829,7 +829,7 @@ package body Styleg is
 
       if Style_Check_Blanks_At_End and then L < Len then
          Error_Msg -- CODEFIX
-           ("(style) trailing spaces not permitted", S);
+           ("(style) trailing spaces not permitted?b?", S);
       end if;
 
       --  Deal with empty (blank) line
@@ -851,7 +851,7 @@ package body Styleg is
       else
          if Style_Check_Blank_Lines and then Blank_Lines > 1 then
             Error_Msg -- CODEFIX
-              ("(style) multiple blank lines", Blank_Line_Location);
+              ("(style) multiple blank lines?u?", Blank_Line_Location);
          end if;
 
          --  And reset blank line count
@@ -873,7 +873,8 @@ package body Styleg is
            or else Token_Ptr - Prev_Token_Ptr /= 4
          then -- CODEFIX?
             Error_Msg
-              ("(style) single space must separate NOT and IN", Token_Ptr - 1);
+              ("(style) single space must separate NOT and IN?t?",
+               Token_Ptr - 1);
          end if;
       end if;
    end Check_Not_In;
@@ -933,7 +934,7 @@ package body Styleg is
       if Style_Check_Pragma_Casing then
          if Determine_Token_Casing /= Mixed_Case then
             Error_Msg_SC -- CODEFIX
-              ("(style) bad capitalization, mixed case required");
+              ("(style) bad capitalization, mixed case required?p?");
          end if;
       end if;
    end Check_Pragma_Name;
@@ -1043,10 +1044,10 @@ package body Styleg is
       else
          if Token = Tok_Then then
             Error_Msg -- CODEFIX
-              ("(style) no statements may follow THEN on same line", S);
+              ("(style) no statements may follow THEN on same line?S?", S);
          else
             Error_Msg
-              ("(style) no statements may follow ELSE on same line", S);
+              ("(style) no statements may follow ELSE on same line?S?", S);
          end if;
       end if;
    end Check_Separate_Stmt_Lines_Cont;
@@ -1071,7 +1072,7 @@ package body Styleg is
             if If_Line = Then_Line then
                null;
             elsif Token_Ptr /= First_Non_Blank_Location then
-               Error_Msg_SC ("(style) misplaced THEN");
+               Error_Msg_SC ("(style) misplaced THEN?i?");
             end if;
          end;
       end if;
@@ -1121,7 +1122,7 @@ package body Styleg is
    begin
       if Style_Check_Xtra_Parens then
          Error_Msg -- CODEFIX
-           ("(style) redundant parentheses", Loc);
+           ("(style) redundant parentheses?x?", Loc);
       end if;
    end Check_Xtra_Parens;
 
@@ -1141,7 +1142,7 @@ package body Styleg is
    procedure Error_Space_Not_Allowed (S : Source_Ptr) is
    begin
       Error_Msg -- CODEFIX
-        ("(style) space not allowed", S);
+        ("(style) space not allowed?t?", S);
    end Error_Space_Not_Allowed;
 
    --------------------------
@@ -1151,7 +1152,7 @@ package body Styleg is
    procedure Error_Space_Required (S : Source_Ptr) is
    begin
       Error_Msg -- CODEFIX
-        ("(style) space required", S);
+        ("(style) space required?t?", S);
    end Error_Space_Required;
 
    --------------------
@@ -1184,7 +1185,7 @@ package body Styleg is
       if Style_Check_End_Labels then
          Error_Msg_Node_1 := Name;
          Error_Msg_SP -- CODEFIX
-           ("(style) `END &` required");
+           ("(style) `END &` required?e?");
       end if;
    end No_End_Name;
 
@@ -1200,7 +1201,7 @@ package body Styleg is
       if Style_Check_End_Labels then
          Error_Msg_Node_1 := Name;
          Error_Msg_SP -- CODEFIX
-           ("(style) `EXIT &` required");
+           ("(style) `EXIT &` required?e?");
       end if;
    end No_Exit_Name;
 
@@ -1216,7 +1217,7 @@ package body Styleg is
    begin
       if Style_Check_Keyword_Casing then
          Error_Msg_SC -- CODEFIX
-           ("(style) reserved words must be all lower case");
+           ("(style) reserved words must be all lower case?k?");
       end if;
    end Non_Lower_Case_Keyword;
 

@@ -3976,7 +3976,8 @@ package body Errout is
             P := P + 1;
 
          elsif P < Text'Last and then Text (P + 1) = C
-           and then Text (P) in 'a' .. 'z' | '*' | '$'
+           and then Text (P) in 'a' .. 'z' | 'A' .. 'Z' |
+                                '0' .. '9' | '*' | '$'
          then
             P := P + 2;
 
