@@ -24,10 +24,10 @@ VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs-coroutines
 # Multilib support.
 MAKEOVERRIDES=
 
-version := $(shell $(CC) -dumpversion)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(target_alias)/$(version)
+libsubdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)
 # Used to install the shared libgcc.
 slibdir = @slibdir@
 

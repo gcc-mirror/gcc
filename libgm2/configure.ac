@@ -381,6 +381,9 @@ AM_CONDITIONAL([BUILD_CORLIB], [test x$BUILD_CORLIB = xtrue])
 AM_CONDITIONAL([BUILD_LOGLIB], [test x$BUILD_LOGLIB = xtrue])
 AM_CONDITIONAL([TARGET_DARWIN], [test x$M2_TARGET_OS = xdarwin])
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_FILES([Makefile libm2min/Makefile libm2pim/Makefile libm2iso/Makefile
                  libm2cor/Makefile libm2log/Makefile])

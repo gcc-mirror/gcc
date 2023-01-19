@@ -32,7 +32,7 @@ MAKEOVERRIDES=
 
 AM_CFLAGS = -I $(srcdir)/../libgcc -I $(MULTIBUILDTOP)../../gcc/include
 
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 TOP_GCCDIR := $(shell cd $(top_srcdir) && cd .. && pwd)
 
 GCC_DIR = $(TOP_GCCDIR)/gcc

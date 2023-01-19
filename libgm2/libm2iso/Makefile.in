@@ -364,6 +364,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -412,10 +413,10 @@ ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
 # Multilib support.
 MAKEOVERRIDES = 
-version := $(shell $(CC) -dumpversion)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(target_alias)/$(version)
+libsubdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)
 MULTIDIR := $(shell $(CC) $(CFLAGS) -print-multi-directory)
 MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)
 MULTIOSSUBDIR := $(shell if test x$(MULTIOSDIR) != x.; then echo /$(MULTIOSDIR); fi)
