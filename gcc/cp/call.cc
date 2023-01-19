@@ -5187,7 +5187,7 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
    or static operator(), in which cases the source expression
    would be `obj[...]' or `obj(...)'.  */
 
-static tree
+tree
 keep_unused_object_arg (tree result, tree obj, tree fn)
 {
   if (result == NULL_TREE

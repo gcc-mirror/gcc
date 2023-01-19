@@ -6599,6 +6599,7 @@ inline tree build_new_op (const op_location_t &loc, enum tree_code code,
   return build_new_op (loc, code, flags, arg1, arg2, NULL_TREE, NULL_TREE,
 		       NULL, complain);
 }
+extern tree keep_unused_object_arg		(tree, tree, tree);
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern tree build_op_subscript			(const op_location_t &, tree,
