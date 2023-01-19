@@ -1064,7 +1064,7 @@
 		(match_operand:<VEL> 1 "aarch64_simd_nonimmediate_operand" "w,?r,Utv"))
 	    (match_operand:VALL_F16 3 "register_operand" "0,0,0")
 	    (match_operand:SI 2 "immediate_operand" "i,i,i")))]
-  "TARGET_SIMD"
+  "TARGET_SIMD && exact_log2 (INTVAL (operands[2])) >= 0"
   {
    int elt = ENDIAN_LANE_N (<nunits>, exact_log2 (INTVAL (operands[2])));
    operands[2] = GEN_INT ((HOST_WIDE_INT) 1 << elt);
@@ -1093,7 +1093,7 @@
 		  [(match_operand:SI 4 "immediate_operand" "i")])))
 	    (match_operand:VALL_F16 1 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
-  "TARGET_SIMD"
+  "TARGET_SIMD && exact_log2 (INTVAL (operands[2])) >= 0"
   {
     int elt = ENDIAN_LANE_N (<nunits>, exact_log2 (INTVAL (operands[2])));
     operands[2] = GEN_INT (HOST_WIDE_INT_1 << elt);
@@ -1114,7 +1114,7 @@
 		  [(match_operand:SI 4 "immediate_operand" "i")])))
 	    (match_operand:VALL_F16_NO_V2Q 1 "register_operand" "0")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
-  "TARGET_SIMD"
+  "TARGET_SIMD && exact_log2 (INTVAL (operands[2])) >= 0"
   {
     int elt = ENDIAN_LANE_N (<nunits>, exact_log2 (INTVAL (operands[2])));
     operands[2] = GEN_INT (HOST_WIDE_INT_1 << elt);
