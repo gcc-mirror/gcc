@@ -653,22 +653,23 @@
 ;;    2. (const_vector:VNx1SF repeat [
 ;;                (const_double:SF 0.0 [0x0.0p+0])]).
 (define_insn_and_split "@pred_mov<mode>"
-  [(set (match_operand:V 0 "nonimmediate_operand"          "=vd,    vr,     m,    vr,    vr")
-	(if_then_else:V
-	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1, vmWc1, vmWc1,   Wc1,   Wc1")
-	     (match_operand 4 "vector_length_operand"    "   rK,    rK,    rK,    rK,    rK")
-	     (match_operand 5 "const_int_operand"        "    i,     i,     i,     i,     i")
-	     (match_operand 6 "const_int_operand"        "    i,     i,     i,     i,     i")
-	     (match_operand 7 "const_int_operand"        "    i,     i,     i,     i,     i")
-	     (reg:SI VL_REGNUM)
-	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (match_operand:V 3 "vector_move_operand"       "    m,     m,    vr,    vr, viWc0")
-	  (match_operand:V 2 "vector_merge_operand"      "    0,    vu,    vu,   vu0,   vu0")))]
+  [(set (match_operand:V 0 "nonimmediate_operand"      "=vr,    vr,    vd,     m,    vr,    vr")
+    (if_then_else:V
+      (unspec:<VM>
+        [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1,   Wc1,    vm, vmWc1,   Wc1,   Wc1")
+         (match_operand 4 "vector_length_operand"    "   rK,    rK,    rK,    rK,    rK,    rK")
+         (match_operand 5 "const_int_operand"        "    i,     i,     i,     i,     i,     i")
+         (match_operand 6 "const_int_operand"        "    i,     i,     i,     i,     i,     i")
+         (match_operand 7 "const_int_operand"        "    i,     i,     i,     i,     i,     i")
+         (reg:SI VL_REGNUM)
+         (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (match_operand:V 3 "vector_move_operand"       "    m,     m,     m,    vr,    vr, viWc0")
+      (match_operand:V 2 "vector_merge_operand"      "    0,    vu,    vu,    vu,   vu0,   vu0")))]
   "TARGET_VECTOR"
   "@
    vle<sew>.v\t%0,%3%p1
-   vle<sew>.v\t%0,%3%p1
+   vle<sew>.v\t%0,%3
+   vle<sew>.v\t%0,%3,%1.t
    vse<sew>.v\t%3,%0%p1
    vmv.v.v\t%0,%3
    vmv.v.i\t%0,%v3"
@@ -677,7 +678,7 @@
    && satisfies_constraint_vu (operands[2])"
   [(set (match_dup 0) (match_dup 3))]
   ""
-  [(set_attr "type" "vlde,vlde,vste,vimov,vimov")
+  [(set_attr "type" "vlde,vlde,vlde,vste,vimov,vimov")
    (set_attr "mode" "<MODE>")])
 
 ;; Dedicated pattern for vse.v instruction since we can't reuse pred_mov pattern to include
