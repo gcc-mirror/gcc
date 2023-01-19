@@ -101,7 +101,7 @@ package body Exp_SPARK is
    --  expanded body would compare the _parent component, which is
    --  intentionally not generated in the GNATprove mode.
    --
-   --  We build the DIC procedure body here as well.
+   --  We build the DIC and Type_Invariant procedure bodies here as well.
 
    ------------------
    -- Expand_SPARK --
@@ -920,15 +920,53 @@ package body Exp_SPARK is
 
       Set_Ghost_Mode (Typ);
 
-      --  When a DIC is inherited by a tagged type, it may need to be
-      --  specialized to the descendant type, hence build a separate DIC
-      --  procedure for it as done during regular expansion for compilation.
+      --  Generate the [spec and] body of the invariant procedure tasked with
+      --  the runtime verification of all invariants that pertain to the type.
+      --  This includes invariants on the partial and full view, inherited
+      --  class-wide invariants from parent types or interfaces, and invariants
+      --  on array elements or record components. But skip internal types.
 
-      if Has_DIC (Typ) and then Is_Tagged_Type (Typ) then
-         --  Why is this needed for DIC, but not for other aspects (such as
-         --  Type_Invariant)???
+      if Is_Itype (Typ) then
+         null;
 
-         Build_DIC_Procedure_Body (Typ);
+      elsif Is_Interface (Typ) then
+
+         --  Interfaces are treated as the partial view of a private type in
+         --  order to achieve uniformity with the general case. As a result, an
+         --  interface receives only a "partial" invariant procedure which is
+         --  never called.
+
+         if Has_Own_Invariants (Typ) then
+            Build_Invariant_Procedure_Body
+              (Typ               => Typ,
+               Partial_Invariant => Is_Interface (Typ));
+         end if;
+
+      --  Non-interface types
+
+      --  Do not generate invariant procedure within other assertion
+      --  subprograms, which may involve local declarations of local
+      --  subtypes to which these checks do not apply.
+
+      else
+         if Has_Invariants (Typ) then
+            if not Predicate_Check_In_Scope (Typ)
+              or else (Ekind (Current_Scope) = E_Function
+                        and then Is_Predicate_Function (Current_Scope))
+            then
+               null;
+            else
+               Build_Invariant_Procedure_Body (Typ);
+            end if;
+         end if;
+
+         --  Generate the [spec and] body of the procedure tasked with the
+         --  run-time verification of pragma Default_Initial_Condition's
+         --  expression.
+
+         if Has_DIC (Typ) then
+            Build_DIC_Procedure_Body (Typ);
+         end if;
       end if;
 
       if Ekind (Typ) = E_Record_Type
