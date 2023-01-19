@@ -260,6 +260,7 @@ package Snames is
 
    --  Some miscellaneous names used for error detection/recovery
 
+   Name_ASCII                          : constant Name_Id := N + $;
    Name_Const                          : constant Name_Id := N + $;
    Name_Error                          : constant Name_Id := N + $;
    Name_False                          : constant Name_Id := N + $;

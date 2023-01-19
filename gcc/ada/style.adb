@@ -35,9 +35,8 @@ with Nlists;         use Nlists;
 with Opt;            use Opt;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
-with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
-with Stand;          use Stand;
+with Snames;         use Snames;
 with Stylesw;        use Stylesw;
 
 package body Style is
@@ -201,7 +200,7 @@ package body Style is
             else
                --  ASCII is all upper case
 
-               if Entity (Ref) = Standard_ASCII then
+               if Chars (Ref) = Name_ASCII then
                   Cas := All_Upper_Case;
 
                --  Special handling for names in package ASCII
