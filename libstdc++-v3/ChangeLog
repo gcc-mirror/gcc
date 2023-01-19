@@ -1,3 +1,17 @@
+2023-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106183
+	* include/bits/atomic_wait.h (__waiter_pool_base::_M_notify):
+	Move increment of _M_ver here.
+	[!_GLIBCXX_HAVE_PLATFORM_WAIT]: Lock mutex around increment.
+	Use relaxed memory order and always notify all waiters.
+	(__waiter_base::_M_do_wait) [!_GLIBCXX_HAVE_PLATFORM_WAIT]:
+	Check value again after locking mutex.
+	(__waiter_base::_M_notify): Remove increment of _M_ver.
+
 2022-12-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
