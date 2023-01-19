@@ -28,6 +28,8 @@ extern const function_base *const vsetvl;
 extern const function_base *const vsetvlmax;
 extern const function_base *const vle;
 extern const function_base *const vse;
+extern const function_base *const vlm;
+extern const function_base *const vsm;
 }
 
 } // end namespace riscv_vector

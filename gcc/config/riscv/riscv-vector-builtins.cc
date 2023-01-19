@@ -141,6 +141,12 @@ static const rvv_type_info all_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of all bool will be registered for intrinsic functions.  */
+static const rvv_type_info b_ops[] = {
+#define DEF_RVV_B_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -201,6 +207,22 @@ static CONSTEXPR const rvv_op_info all_v_scalar_const_ptr_ops
  * function registration. */
 static CONSTEXPR const rvv_op_info all_v_scalar_ptr_ops
   = {all_ops,				/* Types */
+     OP_TYPE_v,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     scalar_ptr_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *)
+ * function registration. */
+static CONSTEXPR const rvv_op_info b_v_scalar_const_ptr_ops
+  = {b_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_args /* Args */};
+
+/* A static operand information for void func (scalar_type *, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info b_v_scalar_ptr_ops
+  = {b_ops,				/* Types */
      OP_TYPE_v,				/* Suffix */
      rvv_arg_type_info (RVV_BASE_void), /* Return type */
      scalar_ptr_args /* Args */};
@@ -463,9 +485,19 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
     case RVV_BASE_vector_ptr:
       return builtin_types[type_idx].vector_ptr;
     case RVV_BASE_scalar_ptr:
-      return builtin_types[type_idx].scalar_ptr;
+      /* According to the latest rvv-intrinsic-doc, it defines vsm.v intrinsic:
+	 __riscv_vsm (uint8_t *base, vbool1_t value, size_t vl).  */
+      if (type_idx >= VECTOR_TYPE_vbool64_t && type_idx <= VECTOR_TYPE_vbool1_t)
+	return builtin_types[VECTOR_TYPE_vuint8mf8_t].scalar_ptr;
+      else
+	return builtin_types[type_idx].scalar_ptr;
     case RVV_BASE_scalar_const_ptr:
-      return builtin_types[type_idx].scalar_const_ptr;
+      /* According to the latest rvv-intrinsic-doc, it defines vlm.v intrinsic:
+	 __riscv_vlm_v_b1 (const uint8_t *base, size_t vl).  */
+      if (type_idx >= VECTOR_TYPE_vbool64_t && type_idx <= VECTOR_TYPE_vbool1_t)
+	return builtin_types[VECTOR_TYPE_vuint8mf8_t].scalar_const_ptr;
+      else
+	return builtin_types[type_idx].scalar_const_ptr;
     case RVV_BASE_void:
       return void_type_node;
     case RVV_BASE_size:
@@ -884,8 +916,11 @@ function_expander::use_contiguous_load_insn (insn_code icode)
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
     add_input_operand (argno);
 
-  add_input_operand (Pmode, get_tail_policy_for_pred (pred));
-  add_input_operand (Pmode, get_mask_policy_for_pred (pred));
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+    {
+      add_input_operand (Pmode, get_tail_policy_for_pred (pred));
+      add_input_operand (Pmode, get_mask_policy_for_pred (pred));
+    }
   add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
 
   return generate_insn (icode);

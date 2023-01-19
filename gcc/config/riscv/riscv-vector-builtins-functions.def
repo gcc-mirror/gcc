@@ -42,5 +42,7 @@ DEF_RVV_FUNCTION (vsetvlmax, vsetvlmax, none_preds, i_none_size_void_ops)
 /* 7. Vector Loads and Stores. */
 DEF_RVV_FUNCTION (vle, loadstore, full_preds, all_v_scalar_const_ptr_ops)
 DEF_RVV_FUNCTION (vse, loadstore, none_m_preds, all_v_scalar_ptr_ops)
+DEF_RVV_FUNCTION (vlm, loadstore, none_preds, b_v_scalar_const_ptr_ops)
+DEF_RVV_FUNCTION (vsm, loadstore, none_preds, b_v_scalar_ptr_ops)
 
 #undef DEF_RVV_FUNCTION

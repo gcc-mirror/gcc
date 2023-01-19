@@ -198,7 +198,7 @@
 
 ;; The index of operand[] to get the merge op.
 (define_attr "merge_op_idx" ""
-	(cond [(eq_attr "type" "vlde,vimov,vfmov,vldm,vstm,vlds,vmalu")
+	(cond [(eq_attr "type" "vlde,vimov,vfmov,vldm,vlds,vmalu")
 	 (const_int 2)]
 	(const_int INVALID_ATTRIBUTE)))
 
@@ -715,7 +715,7 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operand:VB 3 "vector_move_operand"      "  m,  vr,  vr, Wc0, Wc1")
-	  (match_operand:VB 2 "vector_merge_operand"     " vu, vu0,  vu,  vu,  vu")))]
+	  (match_operand:VB 2 "vector_merge_operand"     " vu,  vu,  vu,  vu,  vu")))]
   "TARGET_VECTOR"
   "@
    vlm.v\t%0,%3
@@ -729,6 +729,25 @@
   ""
   [(set_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
    (set_attr "mode" "<MODE>")])
+
+;; Dedicated pattern for vsm.v instruction since we can't reuse pred_mov pattern to include
+;; memory operand as input which will produce inferior codegen.
+(define_insn "@pred_store<mode>"
+  [(set (match_operand:VB 0 "memory_operand"            "+m")
+	(if_then_else:VB
+	  (unspec:VB
+	    [(match_operand:VB 1 "vector_mask_operand" "Wc1")
+	     (match_operand 3 "vector_length_operand"  " rK")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (match_operand:VB 2 "register_operand"       " vr")
+	  (match_dup 0)))]
+  "TARGET_VECTOR"
+  "vsm.v\t%2,%0"
+  [(set_attr "type" "vstm")
+   (set_attr "mode" "<MODE>")
+   (set (attr "avl_type") (symbol_ref "riscv_vector::NONVLMAX"))
+   (set_attr "vl_op_idx" "3")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated Broadcast

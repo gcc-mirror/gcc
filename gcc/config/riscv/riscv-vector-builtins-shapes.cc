@@ -116,7 +116,8 @@ struct loadstore_def : public build_base
     machine_mode mode = TYPE_MODE (type);
     int sew = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
     /* vop --> vop<sew>.  */
-    b.append_sew (sew);
+    if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+      b.append_sew (sew);
 
     /* vop<sew>_v --> vop<sew>_v_<type>.  */
     if (!overloaded_p)
