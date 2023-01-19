@@ -66496,13 +66496,14 @@ all-stageautoprofile-binutils: maybe-all-stageautoprofile-libsframe
 all-stageautofeedback-binutils: maybe-all-stageautofeedback-libsframe
 install-binutils: maybe-install-opcodes
 install-strip-binutils: maybe-install-strip-opcodes
-install-bfd: maybe-install-libsframe
 install-libctf: maybe-install-bfd
 install-ld: maybe-install-bfd
 install-ld: maybe-install-libctf
 install-strip-libctf: maybe-install-strip-bfd
 install-strip-ld: maybe-install-strip-bfd
 install-strip-ld: maybe-install-strip-libctf
+install-bfd: maybe-install-libsframe
+install-strip-bfd: maybe-install-strip-libsframe
 configure-opcodes: configure-bfd
 configure-stage1-opcodes: configure-stage1-bfd
 configure-stage2-opcodes: configure-stage2-bfd

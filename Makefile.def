@@ -492,13 +492,16 @@ dependencies = { module=install-binutils; on=install-opcodes; };
 dependencies = { module=install-strip-binutils; on=install-strip-opcodes; };
 
 // Likewise for ld, libctf, and bfd.
-dependencies = { module=install-bfd; on=install-libsframe; };
 dependencies = { module=install-libctf; on=install-bfd; };
 dependencies = { module=install-ld; on=install-bfd; };
 dependencies = { module=install-ld; on=install-libctf; };
 dependencies = { module=install-strip-libctf; on=install-strip-bfd; };
 dependencies = { module=install-strip-ld; on=install-strip-bfd; };
 dependencies = { module=install-strip-ld; on=install-strip-libctf; };
+
+// libbfd depends on libsframe
+dependencies = { module=install-bfd; on=install-libsframe; };
+dependencies = { module=install-strip-bfd; on=install-strip-libsframe; };
 
 // libopcodes depends on libbfd
 dependencies = { module=configure-opcodes; on=configure-bfd; hard=true; };
