@@ -58,11 +58,4 @@
 #endif
 
 
-/* The 'exit (EXIT_FAILURE);' of an Fortran (only, huh?) OpenMP 'error'
-   directive with 'severity (fatal)' causes a hang, so 'abort' instead of
-   'exit'.  */
-#undef exit
-#define exit(status) abort ()
-
-
 #include "../../error.c"
