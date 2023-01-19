@@ -1,3 +1,12 @@
+2023-01-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108459
+	* omp-expand.cc (expand_omp_for_init_counts): Use fold_build1 rather
+	than fold_unary for NEGATE_EXPR.
+
 2023-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
