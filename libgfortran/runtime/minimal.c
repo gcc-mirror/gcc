@@ -32,14 +32,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 #if __nvptx__
-/* Map "exit" to "abort"; see PR85463 '[nvptx] "exit" in offloaded region
-   doesn't terminate process'.  */
-# undef exit
-# define exit(status) do { (void) (status); abort (); } while (0)
-#endif
-
-
-#if __nvptx__
 /* 'printf' is all we have.  */
 # undef estr_vprintf
 # define estr_vprintf vprintf

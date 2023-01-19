@@ -1,0 +1,4 @@
+2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/85463
+	* runtime/minimal.c [__nvptx__] (exit): Don't override.

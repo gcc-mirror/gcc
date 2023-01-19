@@ -1,5 +1,16 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR target/85463
+	* config/nvptx/error.c (exit): Don't override.
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Update.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-3.f: Likewise.
+
+2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* testsuite/libgomp.oacc-c-c++-common/abort-3.c: Force
 	'--param openacc-kernels=parloops'.
 
