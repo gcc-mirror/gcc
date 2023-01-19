@@ -2605,26 +2605,26 @@ sched_analyze_2 (class deps_desc *deps, rtx x, rtx_insn *insn)
 
     case MEM:
       {
-	/* Reading memory.  */
-	rtx_insn_list *u;
-	rtx_insn_list *pending;
-	rtx_expr_list *pending_mem;
-	rtx t = x;
-
-	if (sched_deps_info->use_cselib)
-	  {
-	    machine_mode address_mode = get_address_mode (t);
-
-	    t = shallow_copy_rtx (t);
-	    cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
-				     GET_MODE (t), insn);
-	    XEXP (t, 0)
-	      = cselib_subst_to_values_from_insn (XEXP (t, 0), GET_MODE (t),
-						  insn);
-	  }
-
 	if (!DEBUG_INSN_P (insn))
 	  {
+	    /* Reading memory.  */
+	    rtx_insn_list *u;
+	    rtx_insn_list *pending;
+	    rtx_expr_list *pending_mem;
+	    rtx t = x;
+
+	    if (sched_deps_info->use_cselib)
+	      {
+		machine_mode address_mode = get_address_mode (t);
+
+		t = shallow_copy_rtx (t);
+		cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
+					 GET_MODE (t), insn);
+		XEXP (t, 0)
+		  = cselib_subst_to_values_from_insn (XEXP (t, 0), GET_MODE (t),
+						      insn);
+	      }
+
 	    t = canon_rtx (t);
 	    pending = deps->pending_read_insns;
 	    pending_mem = deps->pending_read_mems;
