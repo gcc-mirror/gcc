@@ -711,8 +711,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	return error_mark_node;
       if (e == TREE_OPERAND (expr, 1))
 	return expr;
-      return build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR, TREE_TYPE (e),
-			 TREE_OPERAND (expr, 0), e);
+      e = build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR, TREE_TYPE (e),
+		      TREE_OPERAND (expr, 0), e);
+      copy_warning (e, expr);
+      return e;
     }
 
   complete_type (type);
