@@ -1,3 +1,58 @@
+2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108447
+	* value-relation.cc (rr_union_table): Fix VREL_UNDEFINED row order.
+	(relation_tests): Add self-tests for relation_{intersect,union}
+	commutativity.
+	* selftest.h (relation_tests): Declare.
+	* function-tests.cc (test_ranges): Call it.
+
+2023-01-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/108436
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Check
+	invalid third argument to __builtin_ia32_prefetch.
+
+2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108459
+	* omp-expand.cc (expand_omp_for_init_counts): Use fold_build1 rather
+	than fold_unary for NEGATE_EXPR.
+
+2023-01-19  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/108411
+	* config/aarch64/aarch64.cc (aarch64_layout_arg): Improve
+	comment. Move assert about alignment a bit later.
+
+2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108440
+	* tree-ssa-forwprop.cc: Include gimple-range.h.
+	(simplify_rotate): For the forms with T2 wider than T and shift counts of
+	Y and B - Y add & (B - 1) masking for the rotate count if Y could be equal
+	to B.  For the forms with T2 wider than T and shift counts of
+	Y and (-Y) & (B - 1), don't punt if range could be [B, B2], but only if
+	range doesn't guarantee Y < B or Y = N * B.  If range doesn't guarantee
+	Y < B, also add & (B - 1) masking for the rotate count.  Use lazily created
+	pass specific ranger instead of get_global_range_query.
+	(pass_forwprop::execute): Disable that ranger at the end of pass if it has
+	been created.
+
+2023-01-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set<mode>): Use
+	exact_log2 (INTVAL (operands[2])) >= 0 as condition for gating
+	the pattern.
+	(aarch64_simd_vec_copy_lane<mode>): Likewise.
+	(aarch64_simd_vec_copy_lane_<vswap_width_name><mode>): Likewise.
+
+2023-01-19  Alexandre Oliva  <oliva@adacore.com>
+
+	PR debug/106746
+	* sched-deps.cc (sched_analyze_2): Skip cselib address lookup
+	within debug insns.
+
 2023-01-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/107944

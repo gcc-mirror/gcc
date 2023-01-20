@@ -1,3 +1,18 @@
+2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108437
+	* cp-tree.h (keep_unused_object_arg): Declare.
+	* call.cc (keep_unused_object_arg): No longer static.
+	* tree.cc (build_min_non_dep_op_overload): Handle ARRAY_REF
+	with overload being static member function.
+
+2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53932
+	* cp-gimplify.cc (cp_fold_r): During cp_fully_fold_init replace
+	DECL_ANON_UNION_VAR_P VAR_DECLs with their corresponding
+	DECL_VALUE_EXPR.
+
 2023-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/105593

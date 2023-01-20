@@ -1,3 +1,22 @@
+2023-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR modula2/108144
+	* configure.ac: Add GCC_BASE_VER.
+	* configure: Re-generate.
+	* Makefile.am: Use @get_gcc_base_ver@ for gcc_version.
+	* libm2cor/Makefile.am: Likewise.  Use gcc_version instead
+	of version.
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2min/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise.
+	* Makefile.in: Re-generate.
+	* libm2cor/Makefile.in: Likewise.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
 2023-01-17  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2iso/RTco.cc (_M2_RTco_fini): Call M2RTS_HaltC.

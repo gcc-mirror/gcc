@@ -1,3 +1,45 @@
+2023-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108455
+	* analyzer.h (class checker_event): New forward decl.
+	(class state_change_event): Indent.
+	(class warning_event): New forward decl.
+	* checker-event.cc (state_change_event::state_change_event): Add
+	"enode" param.
+	(warning_event::get_desc): Update for new param of
+	evdesc::final_event ctor.
+	* checker-event.h (state_change_event::state_change_event): Add
+	"enode" param.
+	(state_change_event::get_exploded_node): New accessor.
+	(state_change_event::m_enode): New field.
+	(warning_event::warning_event): New "enode" param.
+	(warning_event::get_exploded_node): New accessor.
+	(warning_event::m_enode): New field.
+	* diagnostic-manager.cc
+	(state_change_event_creator::on_global_state_change): Pass
+	src_node to state_change_event ctor.
+	(state_change_event_creator::on_state_change): Likewise.
+	(null_assignment_sm_context::set_next_state): Pass NULL for
+	new param of state_change_event ctor.
+	* infinite-recursion.cc
+	(infinite_recursion_diagnostic::add_final_event): Update for new
+	param of warning_event ctor.
+	* pending-diagnostic.cc (pending_diagnostic::add_final_event):
+	Pass enode to warning_event ctor.
+	* pending-diagnostic.h (evdesc::final_event): Add reference to
+	warning_event.
+	* sm-malloc.cc: Include "analyzer/checker-event.h" and
+	"analyzer/exploded-graph.h".
+	(deref_before_check::deref_before_check): Initialize new fields.
+	(deref_before_check::emit): Reject warnings in which we were
+	unable to determine the enodes of the dereference and the check.
+	Reject warnings interprocedural warnings. Reject warnings in which
+	the dereference doesn't dominate the check.
+	(deref_before_check::describe_state_change): Set m_deref_enode.
+	(deref_before_check::describe_final_event): Set m_check_enode.
+	(deref_before_check::m_deref_enode): New field.
+	(deref_before_check::m_check_enode): New field.
+
 2023-01-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105273

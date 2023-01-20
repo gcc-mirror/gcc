@@ -1,3 +1,10 @@
+2023-01-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108434
+	* expr.cc (class_allocatable): Prevent NULL pointer dereference
+	or invalid read.
+	(class_pointer): Likewise.
+
 2023-01-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108421

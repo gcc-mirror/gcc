@@ -1,3 +1,12 @@
+2023-01-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gcc_update (files_and_dependencies): Add dependencies for
+	gcc/m2/gm2config.h.in, gcc/m2/configure,
+	gcc/m2/gm2-libs/config-host, libgm2/Makefile.in,
+	libgm2/aclocal.m4, libgm2/libm2cor/Makefile.in,
+	libgm2/libm2pim/Makefile.in, libgm2/libm2iso/Makefile.in,
+	libgm2/libm2log/Makefile.in and libgm2/libm2min/Makefile.in.
+
 2023-01-17  Martin Liska  <mliska@suse.cz>
 
 	* update-copyright.py: Ignore test_patches.txt.

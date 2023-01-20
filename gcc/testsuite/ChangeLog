@@ -1,3 +1,80 @@
+2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108437
+	* g++.dg/cpp23/subscript12.C: New test.
+	* g++.dg/cpp23/subscript13.C: New test.
+
+2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53932
+	* g++.dg/init/pr53932.C: New test.
+
+2023-01-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr108436.c: New test.
+
+2023-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108455
+	* gcc.dg/analyzer/deref-before-check-1.c: Add test coverage
+	involving dominance.
+	* gcc.dg/analyzer/deref-before-check-pr108455-1.c: New test.
+	* gcc.dg/analyzer/deref-before-check-pr108455-git-pack-revindex.c:
+	New test.
+
+2023-01-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108434
+	* gfortran.dg/pr108434.f90: New test.
+
+2023-01-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gm2/complex/run/pass/complex-run-pass.exp: Remove gm2_link_lib.
+	* gm2/iso/run/pass/iso-run-pass.exp: Likewise.
+	* gm2/link/externalscaffold/pass/link-externalscaffold-pass.exp:
+	* gm2/pimlib/logitech/run/pass/pimlib-logitech-run-pass.exp: Likewise.
+	* gm2/pimlib/run/pass/pimlib-run-pass.exp: Likewise.
+	* gm2/projects/iso/run/pass/halma/projects-iso-run-pass-halma.exp:
+	Likewise.
+	* gm2/projects/iso/run/pass/hello/projects-iso-run-pass-hello.exp:
+	Likewise.
+	* gm2/projects/pim/run/pass/hello/projects-pim-run-pass-hello.exp:
+	Likewise.
+	* gm2/sets/run/pass/sets-run-pass.exp: Likewise.
+	* gm2/switches/none/run/pass/gm2-none.exp: Likewise.
+	* gm2/switches/pic/run/pass/switches-pic-run-pass.exp: Likewise.
+	* gm2/projects/pim/run/pass/random/projects-pim-run-pass-random.exp:
+	Likewise, and also ensure that the -g option is appended to avoid it
+	being taken as a path.
+	* lib/gm2.exp: Ensure for each gm2_init_xxxx function that the set of
+	libraries added matches the set of -I and -L options.
+
+2023-01-19  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/108411
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2-extra.C: Add
+	-fno-stack-protector.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2.C: Likewise.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2-extra.C: Likewise.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2.C: Likewise.
+	* g++.target/aarch64/bitfield-abi-warning-align8-O2.C: Likewise.
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2-extra.c: Likewise.
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2.c: Likewise.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2-extra.c: Likewise.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2.c: Likewise.
+	* gcc.target/aarch64/bitfield-abi-warning-align8-O2.c: Likewise.
+
+2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108440
+	* c-c++-common/rotate-10.c: New test.
+	* c-c++-common/rotate-11.c: New test.
+
+2023-01-19  Alexandre Oliva  <oliva@adacore.com>
+
+	PR debug/106746
+	* gcc.target/i386/pr106746.c: New.
+
 2023-01-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/108424
