@@ -243,8 +243,8 @@ set_all_statements_not_visited (function *fun)
 	  gphi *stmt = gsi.phi ();
 	  gimple_set_visited (stmt, false);
 	}
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_start_nondebug_bb (bb);
+	   !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  gimple_set_visited (stmt, false);
@@ -383,9 +383,8 @@ bool
 crc_optimization::exists_shift_for_opp_xor_shift (basic_block bb)
 {
   /* Walk through the instructions of given basic block.  */
-  for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (
-      bsi); gsi_next (
-      &bsi))
+  for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb);
+       !gsi_end_p (bsi); gsi_next_nondebug (&bsi))
     {
       gimple *stmt = gsi_stmt (bsi);
       /* Find assigment statement with shift operation.
@@ -965,8 +964,8 @@ crc_optimization::function_may_calculate_crc (function *fun)
 	{
 	  basic_block bb = bbs[i];
 	  /* Walk instructions of bb.  */
-	  for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (
-	      bsi); gsi_next (&bsi))
+	  for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb);
+	       !gsi_end_p (bsi); gsi_next_nondebug (&bsi))
 	    {
 	      gimple *stmt = gsi_stmt (bsi);
 	      /* If there is an xor instruction,

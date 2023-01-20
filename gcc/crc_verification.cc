@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 
 bool
 crc_symbolic_execution::make_symbolic_func_args_and_sizes (function *fun,
-						       state *initial_state)
+							   state *initial_state)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nMaking symbolic the following arguments "
@@ -46,9 +46,9 @@ crc_symbolic_execution::make_symbolic_func_args_and_sizes (function *fun,
     {
       /* If the argument has a name and the size is integer
 	 print that information.  */
-      if (TREE_CODE (DECL_SIZE (arg)) == INTEGER_CST && DECL_NAME (arg))
+      if (tree_fits_uhwi_p (DECL_NAME (arg)))
 	{
-	  unsigned HOST_WIDE_INT size = tree_to_uhwi (DECL_SIZE (arg));
+	  unsigned HOST_WIDE_INT size = TREE_INT_CST_LOW (DECL_SIZE (arg));
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "%s : %lu; ",
 		     IDENTIFIER_POINTER (DECL_NAME (arg)), size);
@@ -63,11 +63,12 @@ crc_symbolic_execution::make_symbolic_func_args_and_sizes (function *fun,
 }
 
 
-/* Add declared ssa variables to the state.  */
+/* Add declared ssa variables to the state.
+   Return true, if added successfully, otherwise return false.  */
 
 bool
 crc_symbolic_execution::add_function_local_ssa_vars (function *fun,
-						 state *initial_state)
+						     state *initial_state)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n\nAdding the following ssa name declarations: \n");
@@ -105,7 +106,7 @@ crc_symbolic_execution::add_function_local_ssa_vars (function *fun,
 	  }
 
 	unsigned HOST_WIDE_INT size
-	    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (name)));
+	= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (name)));
 
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  {
@@ -316,8 +317,8 @@ add_edge (edge edge1, edge edge2, auto_vec<edge, 20> &stack)
 
 void
 crc_symbolic_execution::add_next_bbs (basic_block cond_bb,
-				  state *new_branch_state,
-				  auto_vec<edge, 20> &stack)
+				      state *new_branch_state,
+				      auto_vec<edge, 20> &stack)
 {
   edge true_edge;
   edge false_edge;
@@ -368,8 +369,8 @@ crc_symbolic_execution::add_next_bbs (basic_block cond_bb,
 
 bool
 crc_symbolic_execution::add_condition (const gcond *cond,
-				   state *current_state,
-				   state *new_branch_state)
+				       state *current_state,
+				       state *new_branch_state)
 {
   /* Keep conditions of each branch execution in its state.
      Ex.
@@ -445,7 +446,7 @@ crc_symbolic_execution::add_condition (const gcond *cond,
 
 bool
 crc_symbolic_execution::resolve_condition (const gcond *cond,
-				       auto_vec<edge, 20> &stack)
+					   auto_vec<edge, 20> &stack)
 {
   /* Remove last state.  */
   state *current_state = states.last ();
@@ -517,7 +518,7 @@ crc_symbolic_execution::keep_return_val_and_conditions (const greturn *ret)
 
 bool
 crc_symbolic_execution::execute_bb_gimple_statements (basic_block bb,
-						  auto_vec<edge, 20> &stack)
+						      auto_vec<edge, 20> &stack)
 {
   for (gimple_stmt_iterator bsi = gsi_start_bb (bb);
        !gsi_end_p (bsi); gsi_next (&bsi))
@@ -548,7 +549,7 @@ crc_symbolic_execution::execute_bb_gimple_statements (basic_block bb,
 		return false;
 	      return true;
 	    }
-	    /* Just skip debug statements.  */
+	  /* Just skip debug statements.  */
 	  case GIMPLE_DEBUG:
 	    break;
 	  default:
@@ -590,7 +591,7 @@ crc_symbolic_execution::execute_bb_gimple_statements (basic_block bb,
 
 bool
 crc_symbolic_execution::execute_bb_phi_statements (basic_block bb,
-					       edge incoming_edge)
+						   edge incoming_edge)
 {
   for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
@@ -624,8 +625,8 @@ crc_symbolic_execution::execute_bb_phi_statements (basic_block bb,
 
 bool
 crc_symbolic_execution::execute_bb_statements (basic_block bb,
-					   edge incoming_edge,
-					   auto_vec<edge, 20> &stack)
+					       edge incoming_edge,
+					       auto_vec<edge, 20> &stack)
 {
   if (!execute_bb_phi_statements (bb, incoming_edge))
     return false;
@@ -702,8 +703,8 @@ unsigned HOST_WIDE_INT
 determine_index (tree data, bool is_shift_left)
 {
   if (is_shift_left)
-    // FIXME: may be the data's size is larger,
-    //  but MSB is checked for the middle bit.
+   /* FIXME: may be the data's size is larger,
+      but MSB is checked for the middle bit.  */
     return tree_to_uhwi (TYPE_SIZE (TREE_TYPE (data))) - 1;
   return 0;
 }
@@ -781,8 +782,8 @@ assign_vals_to_header_phis (state *polynomial_state, basic_block bb,
 
 bool
 crc_symbolic_execution::execute_crc_loop (class loop *crc_loop, gphi *crc,
-				      gphi *data,
-				      bool is_shift_left)
+					  gphi *data,
+					  bool is_shift_left)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n\nTrying to calculate the polynomial.\n\n");
@@ -848,8 +849,8 @@ polynomial_is_known (const value *polynomial)
 
 value *
 crc_symbolic_execution::extract_poly_and_create_lfsr (class loop *crc_loop,
-						  gphi *crc, gphi *data,
-						  bool is_shift_left)
+						      gphi *crc, gphi *data,
+						      bool is_shift_left)
 {
   if (!execute_crc_loop (crc_loop, crc, data, is_shift_left))
     return nullptr;
@@ -890,7 +891,7 @@ crc_symbolic_execution::extract_poly_and_create_lfsr (class loop *crc_loop,
   if (!polynomial_is_known (polynomial))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	  fprintf (dump_file, "Polynomial's value is not constant.\n");
+	fprintf (dump_file, "Polynomial's value is not constant.\n");
       return nullptr;
     }
 
@@ -1421,7 +1422,7 @@ maybe_neighbour_vals_of_crc (bit_xor_expression *curr_xor_exp,
 
 bool
 state_matches_lfsr (const value *lfsr,
-		    const value *crc_state,
+		    value *crc_state,
 		    bool is_left_shift, state *final_state)
 {
   /* Depending on whether it is bit forward or reversed CRC,
@@ -1473,6 +1474,34 @@ state_matches_lfsr (const value *lfsr,
 	      xor_exp = as_a<bit_xor_expression *> ((*crc_state)[j]);
 	      if (!maybe_neighbour_vals_of_crc (xor_exp, (*crc_state)[j + 1]))
 		return false;
+	      break;
+	    }
+	  case BIT_COMPLEMENT_EXPRESSION:
+	    {
+		/* If bits of calculated CRC are negated, change it's symbolic
+		   value to not negated one.  In this case we won't add new
+		   matching algorithm for negated values.  */
+	      bit_complement_expression * bit_complement_exp
+	      = as_a<bit_complement_expression *> ((*crc_state)[j]);
+	      value_bit * complemented_bit = bit_complement_exp->get_right ();
+	      if (is_a <symbolic_bit *> (complemented_bit))
+		{
+		  tree origin_of_sym_bit = (as_a <symbolic_bit *>
+		      (complemented_bit))->get_origin ();
+		  state::complement_val_bits_with_origin (crc_state,
+							  origin_of_sym_bit);
+		  final_state->complement_conditions_with_origin
+		  (origin_of_sym_bit);
+		  j--;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Changed complemented values from "
+					  "returned state and conditions. "
+					  "New value is ");
+		      state::print_value (crc_state);
+		      final_state->print_conditions ();
+		    }
+		}
 	      break;
 	    }
 	  default:
