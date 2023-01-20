@@ -1,4 +1,4 @@
-// { dg-output "lowercase\nuppercase\nother\n" }
+// { dg-output "lowercase\r*\nuppercase\r*\nother\r*\n" }
 
 extern "C" {
     fn printf(s: *const i8, ...);

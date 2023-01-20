@@ -1,4 +1,4 @@
-// { dg-output "Foo::bar\n" }
+// { dg-output "Foo::bar\r*\n" }
 // { dg-additional-options "-w" }
 extern "C" {
     fn printf(s: *const i8, ...);

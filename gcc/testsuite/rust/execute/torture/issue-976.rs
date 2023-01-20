@@ -1,4 +1,4 @@
-/* { dg-output "hi" } */
+/* { dg-output "hi\r*" } */
 fn main() -> i32 {
     {
         extern "C" {

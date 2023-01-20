@@ -1,4 +1,4 @@
-// { dg-output "arg\narg\narg\n" }
+// { dg-output "arg\r*\narg\r*\narg\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

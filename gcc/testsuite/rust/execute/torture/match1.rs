@@ -1,4 +1,4 @@
-// { dg-output "Foo::A\nFoo::B\nFoo::C x\nFoo::D 20 80\n" }
+// { dg-output "Foo::A\r*\nFoo::B\r*\nFoo::C x\r*\nFoo::D 20 80\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

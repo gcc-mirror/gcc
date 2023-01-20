@@ -1,5 +1,5 @@
 // { dg-additional-options "-w" }
-// { dg-output "outer\ninner\n" }
+// { dg-output "outer\r*\ninner\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

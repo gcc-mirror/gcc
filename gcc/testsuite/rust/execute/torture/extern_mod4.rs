@@ -1,5 +1,5 @@
 // { dg-additional-options "-w" }
-// { dg-output "12" }
+// { dg-output "12\r*" }
 mod modules;
 
 extern "C" {

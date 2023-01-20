@@ -1,5 +1,4 @@
 // { dg-options "-w" }
-// { dg-output "" }
 mod intrinsics {
     extern "rust-intrinsic" {
         #[rustc_const_stable(feature = "const_ptr_offset", since = "1.61.0")]

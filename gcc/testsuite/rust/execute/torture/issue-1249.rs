@@ -1,5 +1,5 @@
 // { dg-options "-w" }
-// { dg-output "1\n2\n" }
+// { dg-output "1\r*\n2\r*\n" }
 
 extern "C" {
     fn printf(s: *const i8, ...);
