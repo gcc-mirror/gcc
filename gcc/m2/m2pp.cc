@@ -547,6 +547,7 @@ m2pp_types (pretty *s)
     }
 }
 
+#ifdef DEBUGGING
 /* hextree displays the critical fields for function, block and
    bind_expr trees in raw hex.  */
 
@@ -607,6 +608,7 @@ hextree (tree t)
       killPretty (state);
     }
 }
+#endif
 
 /* translation produce a pseudo implementation module from the tree t.  */
 

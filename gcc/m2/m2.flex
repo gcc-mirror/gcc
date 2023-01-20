@@ -131,8 +131,9 @@ extern  void  yylex                   (void);
                                pushLine();
                                skippos();
                                BEGIN COMMENT1;
-                             } else
+                             } else {
                                updatepos(); skippos();
+			     }
                            }
 <COMMENT>\n.*              { consumeLine(); }
 <COMMENT>.                 { updatepos(); skippos(); }
