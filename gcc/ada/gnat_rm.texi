@@ -12727,7 +12727,38 @@ delay statements and no semantic dependences on package Calendar.
 [RM 13.12.1] This restriction ensures at compile time that there are no
 dependences on a library unit. For GNAT, this includes implicit implementation
 dependences on units of the runtime library that are created by the compiler
-to support specific constructs of the language.
+to support specific constructs of the language. Here are some examples:
+
+
+@itemize *
+
+@item 
+@code{System.Arith_64}: 64-bit arithmetics for 32-bit platforms,
+
+@item 
+@code{System.Arith_128}: 128-bit arithmetics for 64-bit platforms,
+
+@item 
+@code{System.Memory}: heap memory allocation routines,
+
+@item 
+@code{System.Memory_Compare}: memory comparison routine (aka @code{memcmp} for C),
+
+@item 
+@code{System.Memory_Copy}: memory copy routine (aka @code{memcpy} for C),
+
+@item 
+@code{System.Memory_Move}: memoy move routine (aka @code{memmove} for C),
+
+@item 
+@code{System.Memory_Set}: memory set routine (aka @code{memset} for C),
+
+@item 
+@code{System.Stack_Checking[.Operations]}: stack checking without MMU,
+
+@item 
+@code{System.GCC}: support routines from the GCC library.
+@end itemize
 
 @node No_Direct_Boolean_Operators,No_Dispatch,No_Dependence,Partition-Wide Restrictions
 @anchor{gnat_rm/standard_and_implementation_defined_restrictions no-direct-boolean-operators}@anchor{1ca}

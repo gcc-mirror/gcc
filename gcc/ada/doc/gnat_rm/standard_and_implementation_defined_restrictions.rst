@@ -186,7 +186,17 @@ No_Dependence
 [RM 13.12.1] This restriction ensures at compile time that there are no
 dependences on a library unit. For GNAT, this includes implicit implementation
 dependences on units of the runtime library that are created by the compiler
-to support specific constructs of the language.
+to support specific constructs of the language. Here are some examples:
+
+* ``System.Arith_64``: 64-bit arithmetics for 32-bit platforms,
+* ``System.Arith_128``: 128-bit arithmetics for 64-bit platforms,
+* ``System.Memory``: heap memory allocation routines,
+* ``System.Memory_Compare``: memory comparison routine (aka ``memcmp`` for C),
+* ``System.Memory_Copy``: memory copy routine (aka ``memcpy`` for C),
+* ``System.Memory_Move``: memoy move routine (aka ``memmove`` for C),
+* ``System.Memory_Set``: memory set routine (aka ``memset`` for C),
+* ``System.Stack_Checking[.Operations]``: stack checking without MMU,
+* ``System.GCC``: support routines from the GCC library.
 
 No_Direct_Boolean_Operators
 ---------------------------
