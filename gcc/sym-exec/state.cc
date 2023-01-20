@@ -2105,3 +2105,128 @@ value::free_bits ()
       number[i] = nullptr;
     }
 }
+
+
+value_bit *
+state::complement_bits_with_origin (value_bit *root, tree origin)
+{
+  /* Be careful.  This function doesn't make a full copy of the bit.  */
+  if (!is_a<bit_expression *> (root))
+    {
+      if (is_a<symbolic_bit *> (root)
+	  && as_a<symbolic_bit *> (root)->get_origin () == origin)
+	root = new bit_complement_expression (root);
+
+      return root;
+    }
+
+  bit_expression *expr_root = as_a<bit_expression *> (root);
+  hash_set <value_bit *> nodes_to_consider;
+  nodes_to_consider.add (expr_root);
+  hash_map <value_bit *, value_bit *> node_to_parent;
+  node_to_parent.put (expr_root, nullptr);
+
+  /* Traversing expression tree.  */
+  while (!nodes_to_consider.is_empty ())
+    {
+      value_bit *cur_element = *nodes_to_consider.begin ();
+      nodes_to_consider.remove (cur_element);
+
+      if (is_a<symbolic_bit *> (cur_element))
+	{
+	  if (as_a<symbolic_bit *> (cur_element)->get_origin () != origin)
+	    continue;
+
+	  bit_expression *parent
+	  = as_a<bit_expression *> (*node_to_parent.get (cur_element));
+	  if (is_a<bit_complement_expression *> (parent))
+	    {
+	      value_bit *parent_of_parent = *node_to_parent.get (parent);
+	      if (parent_of_parent)
+		{
+		  bit_expression *parent_of_parent_expr
+		  = as_a<bit_expression *> (parent_of_parent);
+		  parent->set_right (nullptr);
+		  delete parent;
+		  parent_of_parent_expr->get_left () == parent
+		    ? parent_of_parent_expr->set_left (cur_element)
+		    : parent_of_parent_expr->set_right (cur_element);
+		}
+	      else
+		{
+		  /* Parent is our root.  */
+		  as_a<bit_expression *> (root)->set_right (nullptr);
+		  delete root;
+		  root = cur_element;
+		}
+	    }
+	  else
+	    {
+	      value_bit* new_bit = new bit_complement_expression (cur_element);
+	      parent->get_left () == cur_element ? parent->set_left (new_bit)
+						 : parent->set_right (new_bit);
+	    }
+	  continue;
+	}
+
+      bit_expression* cur_elem_expr = as_a<bit_expression *> (cur_element);
+      value_bit *left = cur_elem_expr->get_left ();
+      value_bit *right = cur_elem_expr->get_right ();
+      if (left != nullptr && !is_a<bit *> (left))
+	{
+	  nodes_to_consider.add (left);
+	  node_to_parent.put (left, cur_element);
+	}
+
+      if (right != nullptr && !is_a<bit *> (right))
+	{
+	  nodes_to_consider.add (right);
+	  node_to_parent.put (right, cur_element);
+	}
+    }
+
+  return root;
+}
+
+
+void
+state::complement_val_bits_with_origin (value *val, tree origin)
+{
+  for (size_t i = 0; i < val->length (); i++)
+    {
+      (*val)[i] = complement_bits_with_origin ((*val)[i], origin);
+    }
+}
+
+
+void
+state::complement_all_vars_bits_with_origin (tree origin)
+{
+  for (auto iter = var_states.begin (); iter != var_states.end (); ++iter)
+    {
+      complement_val_bits_with_origin (&(*iter).second, origin);
+    }
+}
+
+
+void
+state::complement_conditions_with_origin (tree origin)
+{
+  hash_set<bit_expression *> updated_conditions;
+  for (auto iter = conditions.begin (); iter != conditions.end (); ++iter)
+    updated_conditions.add (as_a<bit_expression *> (
+      complement_bits_with_origin (*iter, origin)));
+
+  conditions.empty ();
+  for (auto iter = updated_conditions.begin ();
+       iter != updated_conditions.end (); ++iter)
+    conditions.add (*iter);
+}
+
+
+void
+state::complement_state_with_origin (tree origin)
+{
+  complement_all_vars_bits_with_origin (origin);
+  complement_conditions_with_origin (origin);
+}

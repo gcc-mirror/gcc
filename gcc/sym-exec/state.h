@@ -337,6 +337,16 @@ class state {
 
   static bool check_const_value_is_less_than (value *arg1, value *arg2);
 
+  static value_bit *complement_bits_with_origin (value_bit *root, tree origin);
+
+  static void complement_val_bits_with_origin (value *val, tree origin);
+
+  void complement_all_vars_bits_with_origin (tree origin);
+
+  void complement_conditions_with_origin (tree origin);
+
+  void complement_state_with_origin (tree origin);
+
   /* Returns status of last added condition.  */
   condition_status get_last_cond_status ();
 
