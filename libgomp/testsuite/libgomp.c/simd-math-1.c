@@ -3,7 +3,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize -fno-math-errno" } */
-/* { dg-additional-options -foffload-options=amdgcn-amdhsa=-mstack-size=3000000 } */
+/* { dg-additional-options -foffload-options=amdgcn-amdhsa=-mstack-size=3000000 { target offload_target_amdgcn } } */
 /* { dg-additional-options -foffload-options=-lm } */
 
 #undef PRINT_RESULT
