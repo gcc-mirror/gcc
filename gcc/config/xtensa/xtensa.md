@@ -2973,45 +2973,47 @@
 {
   auto_sbitmap bmp (FIRST_PSEUDO_REGISTER);
   rtx_insn *insn;
-  rtx reg = gen_rtx_REG (SImode, 0);
+  rtx reg = gen_rtx_REG (SImode, 0), dest;
+  unsigned int regno;
+  sbitmap_iterator iter;
   bitmap_set_range (bmp, REGNO (operands[0]), REG_NREGS (operands[0]));
   for (insn = next_nonnote_nondebug_insn_bb (curr_insn);
        insn; insn = next_nonnote_nondebug_insn_bb (insn))
-    {
-      sbitmap_iterator iter;
-      unsigned int regno;
-      if (NONJUMP_INSN_P (insn))
-	{
-	  EXECUTE_IF_SET_IN_BITMAP (bmp, 2, regno, iter)
-	    {
-	      set_regno_raw (reg, regno, REG_NREGS (reg));
-	      if (reg_overlap_mentioned_p (reg, PATTERN (insn)))
-		break;
-	    }
-	  if (GET_CODE (PATTERN (insn)) == SET)
-	    {
-	      rtx x = SET_DEST (PATTERN (insn));
-	      if (REG_P (x) && HARD_REGISTER_P (x))
-		bitmap_clear_range (bmp, REGNO (x), REG_NREGS (x));
-	      else if (SUBREG_P (x) && HARD_REGISTER_P (SUBREG_REG (x)))
-		{
-		  struct subreg_info info;
-		  subreg_get_info (regno = REGNO (SUBREG_REG (x)),
-				   GET_MODE (SUBREG_REG (x)),
-				   SUBREG_BYTE (x), GET_MODE (x), &info);
-		  if (!info.representable_p)
-		    break;
-		  bitmap_clear_range (bmp, regno + info.offset, info.nregs);
-		}
-	    }
-	  if (bitmap_empty_p (bmp))
-	    goto FALLTHRU;
-	}
-      else if (CALL_P (insn))
+    if (NONJUMP_INSN_P (insn))
+      {
 	EXECUTE_IF_SET_IN_BITMAP (bmp, 2, regno, iter)
-	 if (call_used_or_fixed_reg_p (regno))
-	   break;
-    }
+	  {
+	    set_regno_raw (reg, regno, REG_NREGS (reg));
+	    if (reg_referenced_p (reg, PATTERN (insn)))
+	      goto ABORT;
+	  }
+	if (GET_CODE (PATTERN (insn)) == SET
+	    || GET_CODE (PATTERN (insn)) == CLOBBER)
+	  {
+	    dest = SET_DEST (PATTERN (insn));
+	    if (REG_P (dest) && HARD_REGISTER_P (dest))
+	      bitmap_clear_range (bmp, REGNO (dest), REG_NREGS (dest));
+	    else if (SUBREG_P (dest)
+		     && HARD_REGISTER_P (SUBREG_REG (dest)))
+	      {
+		struct subreg_info info;
+		subreg_get_info (regno = REGNO (SUBREG_REG (dest)),
+				 GET_MODE (SUBREG_REG (dest)),
+				 SUBREG_BYTE (dest), GET_MODE (dest),
+				 &info);
+		if (!info.representable_p)
+		  break;
+		bitmap_clear_range (bmp, regno + info.offset, info.nregs);
+	      }
+	  }
+	if (bitmap_empty_p (bmp))
+	  goto FALLTHRU;
+      }
+    else if (CALL_P (insn))
+      EXECUTE_IF_SET_IN_BITMAP (bmp, 2, regno, iter)
+	if (call_used_or_fixed_reg_p (regno))
+	  goto ABORT;
+ABORT:
   FAIL;
 FALLTHRU:;
 })
