@@ -457,7 +457,7 @@ static void toCString (char *str, unsigned int _str_high)
   high = _str_high;
   while (i < high)
     {
-      if ((str[i] == '\\') && (i < high))
+      if ((i < high) && (str[i] == '\\'))
         {
           if (str[i+1] == 'n')
             {

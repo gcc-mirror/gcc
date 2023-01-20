@@ -81,7 +81,7 @@ extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int
   if (i < (UnixArgs_GetArgC ()))
     {
       Source = static_cast<Args__T1> (UnixArgs_GetArgV ());
-      while (((*(*Source).array[i]).array[j] != ASCII_nul) && (j < High))
+      while ((j < High) && ((*(*Source).array[i]).array[j] != ASCII_nul))
         {
           a[j] = (*(*Source).array[i]).array[j];
           j += 1;
