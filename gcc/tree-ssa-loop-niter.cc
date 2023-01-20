@@ -2252,16 +2252,16 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
       call = build_call_expr_internal_loc (UNKNOWN_LOCATION, ifn,
 					   integer_type_node, 1, src);
       int val;
-      scalar_int_mode mode = SCALAR_INT_TYPE_MODE (utype);
       int optab_defined_at_zero
-	= leading ? CLZ_DEFINED_VALUE_AT_ZERO (mode, val)
-		  : CTZ_DEFINED_VALUE_AT_ZERO (mode, val);
+	= (leading
+	   ? CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (utype), val)
+	   : CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (utype), val));
       if (define_at_zero && !(optab_defined_at_zero == 2 && val == prec))
 	{
 	  tree is_zero = fold_build2 (NE_EXPR, boolean_type_node, src,
 				      build_zero_cst (TREE_TYPE (src)));
-	  call = fold_build3(COND_EXPR, integer_type_node, is_zero, call,
-			     build_int_cst (integer_type_node, prec));
+	  call = fold_build3 (COND_EXPR, integer_type_node, is_zero, call,
+			      build_int_cst (integer_type_node, prec));
 	}
     }
   else if (prec == 2 * lli_prec)
@@ -2275,22 +2275,22 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
       /* We count the zeroes in src1, and add the number in src2 when src1
 	 is 0.  */
       if (!leading)
-	std::swap(src1, src2);
+	std::swap (src1, src2);
       tree call1 = build_call_expr (fn, 1, src1);
       tree call2 = build_call_expr (fn, 1, src2);
       if (define_at_zero)
 	{
 	  tree is_zero2 = fold_build2 (NE_EXPR, boolean_type_node, src2,
 				       build_zero_cst (TREE_TYPE (src2)));
-	  call2 = fold_build3(COND_EXPR, integer_type_node, is_zero2, call2,
-			      build_int_cst (integer_type_node, lli_prec));
+	  call2 = fold_build3 (COND_EXPR, integer_type_node, is_zero2, call2,
+			       build_int_cst (integer_type_node, lli_prec));
 	}
       tree is_zero1 = fold_build2 (NE_EXPR, boolean_type_node, src1,
 				   build_zero_cst (TREE_TYPE (src1)));
-      call = fold_build3(COND_EXPR, integer_type_node, is_zero1, call1,
-			 fold_build2 (PLUS_EXPR, integer_type_node, call2,
-				      build_int_cst (integer_type_node,
-						     lli_prec)));
+      call = fold_build3 (COND_EXPR, integer_type_node, is_zero1, call1,
+			  fold_build2 (PLUS_EXPR, integer_type_node, call2,
+				       build_int_cst (integer_type_node,
+						      lli_prec)));
     }
   else
     {
@@ -2302,14 +2302,13 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
 	{
 	  tree is_zero = fold_build2 (NE_EXPR, boolean_type_node, src,
 				      build_zero_cst (TREE_TYPE (src)));
-	  call = fold_build3(COND_EXPR, integer_type_node, is_zero, call,
-			     build_int_cst (integer_type_node, prec));
+	  call = fold_build3 (COND_EXPR, integer_type_node, is_zero, call,
+			      build_int_cst (integer_type_node, prec));
 	}
 
       if (leading && prec < i_prec)
-	call = fold_build2(MINUS_EXPR, integer_type_node, call,
-			   build_int_cst (integer_type_node,
-					  i_prec - prec));
+	call = fold_build2 (MINUS_EXPR, integer_type_node, call,
+			    build_int_cst (integer_type_node, i_prec - prec));
     }
 
   return call;
