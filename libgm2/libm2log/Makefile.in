@@ -782,21 +782,21 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_LOGLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2log_la_M2FLAGS) $< -o $@
 
 @BUILD_LOGLIB_TRUE@install-data-local: force
-@BUILD_LOGLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-@BUILD_LOGLIB_TRUE@	$(INSTALL_DATA) .libs/libm2log.la $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-@BUILD_LOGLIB_TRUE@	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2log.la
-@BUILD_LOGLIB_TRUE@	$(INSTALL_DATA) .libs/libm2log.a $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-@BUILD_LOGLIB_TRUE@	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2log.a
-@BUILD_LOGLIB_TRUE@	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2log.a
+@BUILD_LOGLIB_TRUE@	mkdir -p $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+@BUILD_LOGLIB_TRUE@	$(INSTALL_DATA) .libs/libm2log.la $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+@BUILD_LOGLIB_TRUE@	chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2log.la
+@BUILD_LOGLIB_TRUE@	$(INSTALL_DATA) .libs/libm2log.a $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+@BUILD_LOGLIB_TRUE@	chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2log.a
+@BUILD_LOGLIB_TRUE@	$(RANLIB) $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2log.a
 @BUILD_LOGLIB_TRUE@	for i in $(M2DEFS) $(M2MODS) ; do \
 @BUILD_LOGLIB_TRUE@           if [ -f $$i ] ; then \
-@BUILD_LOGLIB_TRUE@              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+@BUILD_LOGLIB_TRUE@              $(INSTALL_DATA) $$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
 @BUILD_LOGLIB_TRUE@           elif [ -f @srcdir@/../../gcc/m2/gm2-libs-pim/$$i ] ; then \
-@BUILD_LOGLIB_TRUE@              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-pim/$$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+@BUILD_LOGLIB_TRUE@              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-pim/$$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
 @BUILD_LOGLIB_TRUE@           else \
 @BUILD_LOGLIB_TRUE@              echo "cannot find $$i" ; exit 1 ; \
 @BUILD_LOGLIB_TRUE@           fi ; \
-@BUILD_LOGLIB_TRUE@           chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)$$i ; \
+@BUILD_LOGLIB_TRUE@           chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)$$i ; \
 @BUILD_LOGLIB_TRUE@	done
 
 @BUILD_LOGLIB_TRUE@force:

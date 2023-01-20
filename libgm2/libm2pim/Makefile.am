@@ -192,20 +192,20 @@ SYSTEM.def: Makefile
 	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2pim_la_CFLAGS) $< -o $@
 
 install-data-local: force
-	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	$(INSTALL_DATA) .libs/libm2pim.la $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2pim.la
-	$(INSTALL_DATA) .libs/libm2pim.a $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2pim.a
+	mkdir -p $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	$(INSTALL_DATA) .libs/libm2pim.la $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2pim.la
+	$(INSTALL_DATA) .libs/libm2pim.a $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	$(RANLIB) $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2pim.a
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
-              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) $$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
            elif [ -f @srcdir@/../../gcc/m2/gm2-libs/$$i ] ; then \
-              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs/$$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs/$$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
            else \
               echo "cannot find $$i" ; exit 1 ; \
            fi ; \
-           chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)$$i ; \
+           chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)$$i ; \
 	done
 
 force:

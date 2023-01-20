@@ -177,11 +177,16 @@ AC_PATH_PROG(PERL, perl, perl-not-found-in-path-error)
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
-LT_INIT
 AC_LIBTOOL_DLOPEN
-# AM_PROG_LIBTOOL
+AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
+
+if test "${multilib}" = "yes"; then
+  multilib_arg="--enable-multilib"
+else
+  multilib_arg=
+fi
 
 AC_CHECK_TYPES([struct timezone, struct stat, struct timeval])
 
@@ -385,8 +390,20 @@ AM_CONDITIONAL([TARGET_DARWIN], [test x$M2_TARGET_OS = xdarwin])
 GCC_BASE_VER
 
 AC_CONFIG_SRCDIR([Makefile.am])
-AC_CONFIG_FILES([Makefile libm2min/Makefile libm2pim/Makefile libm2iso/Makefile
-                 libm2cor/Makefile libm2log/Makefile])
+AC_CONFIG_FILES([Makefile])
+
+AC_CONFIG_FILES(AC_FOREACH([DIR], [libm2min libm2pim libm2iso libm2cor libm2log], [DIR/Makefile ]),
+ [ cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   AS_UNSET([ml_norecursion])
+])
 
 AC_MSG_NOTICE([libgm2 has been configured.])
 

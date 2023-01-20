@@ -139,21 +139,21 @@ SYSTEM.def: Makefile
 	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2cor_la_CFLAGS) $< -o $@
 
 install-data-local: force
-	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	$(INSTALL_DATA) .libs/libm2cor.la $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2cor.la
-	$(INSTALL_DATA) .libs/libm2cor.a $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2cor.a
-	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2cor.a
+	mkdir -p $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	$(INSTALL_DATA) .libs/libm2cor.la $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2cor.la
+	$(INSTALL_DATA) .libs/libm2cor.a $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2cor.a
+	$(RANLIB) $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2cor.a
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
-              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) $$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
            elif [ -f @srcdir@/../../gcc/m2/gm2-libs-coroutines/$$i ] ; then \
-              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-coroutines/$$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-coroutines/$$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
            else \
               echo "cannot find $$i" ; exit 1 ; \
            fi ; \
-           chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)$$i ; \
+           chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)$$i ; \
 	done
 
 force:

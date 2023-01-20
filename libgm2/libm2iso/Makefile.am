@@ -219,29 +219,29 @@ SYSTEM.def: Makefile
 	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 install-data-local: force
-	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	$(INSTALL_DATA) .libs/libm2iso.la $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2iso.la
-	$(INSTALL_DATA) .libs/libm2iso.a $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)/libm2iso.a
-	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)/libm2iso.a
+	mkdir -p $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	$(INSTALL_DATA) .libs/libm2iso.la $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)libm2iso.la
+	$(INSTALL_DATA) .libs/libm2iso.a $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)
+	chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)/libm2iso.a
+	$(RANLIB) $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)/libm2iso.a
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
-              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) $$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
            elif [ -f @srcdir@/../../gcc/m2/gm2-libs-iso/$$i ] ; then \
-              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-iso/$$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-iso/$$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
            else \
               echo "cannot find $$i" ; exit 1 ; \
            fi ; \
-           chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)$$i ; \
+           chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)$$i ; \
 	done
 	for i in $(M2HEADER_FILES) ; do \
            if [ -f @srcdir@/$$i ] ; then \
-              $(INSTALL_DATA) @srcdir@/$$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) @srcdir@/$$i '$(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)'; \
            else \
               echo "cannot find $$i" ; exit 1 ; \
            fi ; \
-           chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)$$i ; \
+           chmod 644 $(DESTDIR)$(toolexeclibdir)$(M2LIBDIR)$$i ; \
 	done
 
 force:
