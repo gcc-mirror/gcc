@@ -7,8 +7,8 @@ C { dg-do run }
 C { dg-output "^" }
  10   format(1H1)
  20   format(6H     6)
-      write(*,10)        ! { dg-output "1(\n|\r\n|\r)" }
-      write(*,20)        ! { dg-output "     6(\n|\r\n|\r)" }
-      write(*,'(16H''apostrophe'' fun)') ! { dg-output "'apostrophe' fun(\n|\r\n|\r)" }
+      write(*,10)        ! { dg-output "1(\r*\n+)" }
+      write(*,20)        ! { dg-output "     6(\r*\n+)" }
+      write(*,'(16H''apostrophe'' fun)') ! { dg-output "'apostrophe' fun(\r*\n+)" }
 C { dg-output "\$" }
       end
