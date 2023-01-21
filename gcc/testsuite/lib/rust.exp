@@ -168,10 +168,7 @@ proc rust_target_compile { source dest type options } {
     global gluefile wrap_flags
     global ALWAYS_RUSTFLAGS
     global RUST_UNDER_TEST
-    global individual_timeout
-
-    # HACK: guard against infinite loops in the compiler
-    set individual_timeout 10
+    
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
