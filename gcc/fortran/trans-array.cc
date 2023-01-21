@@ -6614,7 +6614,6 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
   type = TREE_TYPE (type);
 
   gcc_assert (!sym->attr.use_assoc);
-  gcc_assert (!TREE_STATIC (decl));
   gcc_assert (!sym->module);
 
   if (sym->ts.type == BT_CHARACTER
