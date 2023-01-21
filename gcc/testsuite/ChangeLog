@@ -1,3 +1,16 @@
+2023-01-20  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/acle/pmull64.c: New.
+	* gcc.target/aarch64/aes-fuse-1.c: Replace '+crypto' with corresponding
+	feature flag based on the intrinsic.
+	* gcc.target/aarch64/aes-fuse-2.c: Likewise.
+	* gcc.target/aarch64/aes_1.c: Likewise.
+	* gcc.target/aarch64/aes_2.c: Likewise.
+	* gcc.target/aarch64/aes_xor_combine.c: Likewise.
+	* gcc.target/aarch64/sha1_1.c: Likewise.
+	* gcc.target/aarch64/sha256_1.c: Likewise.
+	* gcc.target/aarch64/target_attr_crypto_ice_1.c: Likewise.
+
 2023-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/108437

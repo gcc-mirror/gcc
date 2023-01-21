@@ -1,3 +1,16 @@
+2023-01-20  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/arm_neon.h (vmull_p64, vmull_high_p64, vaeseq_u8,
+	vaesdq_u8, vaesmcq_u8, vaesimcq_u8): Gate under "nothing+aes".
+	(vsha1*_u32, vsha256*_u32): Gate under "nothing+sha2".
+
+2023-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108457
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Use
+	SCALAR_INT_TYPE_MODE (utype) directly as C[LT]Z_DEFINED_VALUE_AT_ZERO
+	argument instead of a temporary.  Formatting fixes.
+
 2023-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/108447

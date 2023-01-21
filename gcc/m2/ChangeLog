@@ -1,3 +1,39 @@
+2023-01-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/Args.mod (GetArg): Check index before
+	accessing array.
+	* gm2-libs/M2Dependent.mod (toCString): Check index
+	before accessing array.
+	* mc-boot/GArgs.c: Rebuilt.
+	* mc-boot/GM2Dependent.c: Rebuilt.
+	* mc-boot/Gkeyc.c: Rebuilt.
+	* mc/keyc.mod (seenUIntMin): Initialize once.
+	(seenUIntMax): Initialize once.
+	(checkLimits): Only test seenUIntMin and seenUIntMax
+	once.
+	* pge-boot/GArgs.c:  Rebuilt.
+	* pge-boot/GM2Dependent.c: Rebuilt.
+
+2023-01-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-gcc/m2statement.cc (gm2_gimplify_function_node):
+	Remove.
+	* gm2-libs/DynamicStrings.mod (Equal): Remove dead code.
+	* m2.flex (<COMMENT>"<*"): Add {} for else statement.
+	* m2pp.cc (hextree): Add conditional #ifdef DEBUGGING.
+	* mc-boot/GDynamicStrings.c: Rebuild.
+	* pge-boot/GDynamicStrings.c: Rebuild.
+	* pge-boot/GFIO.c: Rebuild.
+	* pge-boot/GIndexing.c: Rebuild.
+	* pge-boot/GM2EXCEPTION.c: Rebuild.
+	* pge-boot/GM2RTS.c: Rebuild.
+	* pge-boot/GNameKey.c: Rebuild.
+	* pge-boot/GPushBackInput.c: Rebuild.
+	* pge-boot/GRTExceptions.c: Rebuild.
+	* pge-boot/GStdIO.c: Rebuild.
+	* pge-boot/GSymbolKey.c: Rebuild.
+	* pge-boot/GSysStorage.c: Rebuild.
+
 2023-01-17  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* mc-boot/GM2RTS.c: Rebuilt.
