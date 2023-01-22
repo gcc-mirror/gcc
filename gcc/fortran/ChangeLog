@@ -1,3 +1,9 @@
+2023-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/102595
+	* data.cc (gfc_assign_data_value): Remove check for PARAMETER in DATA.
+	* primary.cc (match_variable): Add check for PARAMETER in DATA.
+
 2023-01-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108434

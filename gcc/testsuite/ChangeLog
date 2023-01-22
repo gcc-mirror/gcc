@@ -1,3 +1,9 @@
+2023-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/102595
+	* gfortran.dg/pr88048.f90: Adjust for changed error message.
+	* gfortran.dg/parameter_data0.f90: New test.
+
 2023-01-20  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* gcc.target/aarch64/acle/pmull64.c: New.
