@@ -28,7 +28,7 @@ load_lib timeout-dg.exp
 
 set gm2src ${srcdir}/../gm2
 
-gm2_init_cor
+gm2_init_cor ""
 
 # We should be able to compile, link or run in 15 seconds.
 gm2_push_timeout 15

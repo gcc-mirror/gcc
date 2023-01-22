@@ -27,7 +27,7 @@ load_lib gm2-torture.exp
 
 set gm2src ${srcdir}/../gm2
 
-gm2_init_iso "-I${srcdir}/gm2/iso/run/pass"
+gm2_init_iso "${srcdir}/gm2/iso/run/pass"
 
 set cmd [exec cp $srcdir/$subdir/testinput .]
 set cmd [exec cp $srcdir/$subdir/testnumber .]

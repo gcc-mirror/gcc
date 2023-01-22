@@ -24,7 +24,7 @@ if $tracelevel then {
 # load support procs
 load_lib gm2-torture.exp
 
-gm2_init_iso ${srcdir}/gm2/iso/fail:${srcdir}/gm2/iso/pass "-fsoft-check-all -O2"
+gm2_init_iso "${srcdir}/gm2/iso/fail:${srcdir}/gm2/iso/pass" "-fsoft-check-all -O2"
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.

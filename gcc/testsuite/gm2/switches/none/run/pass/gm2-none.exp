@@ -26,7 +26,7 @@ load_lib gm2-simple.exp
 
 set gm2src ${srcdir}/../m2
 
-gm2_init_pim
+gm2_init_pim ""
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.
