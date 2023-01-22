@@ -1358,7 +1358,7 @@ process_options (bool no_backend)
      option flags in use.  */
   if (version_flag)
     {
-      print_version (stderr, "", true);
+      /* We already printed the version header in main ().  */
       if (!quiet_flag)
 	{
 	  fputs ("options passed: ", stderr);
