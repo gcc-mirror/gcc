@@ -4581,7 +4581,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   if (tree iters = maybe_init_list_as_range (cand->fn, expr))
     if (z_candidate *cand2
 	= build_user_type_conversion_1 (totype, iters, flags, tf_none))
-      if (cand2->viable == 1)
+      if (cand2->viable == 1 && !is_list_ctor (cand2->fn))
 	{
 	  cand = cand2;
 	  expr = iters;
