@@ -22564,8 +22564,7 @@ The opposite @option{-mno-fdpic} option is useful (and required) to
 build the Linux kernel using the same (@code{arm-*-uclinuxfdpiceabi})
 toolchain as the one used to build the userland programs.
 
-@item
--mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}][+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]
+@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}][+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]
 @opindex mbranch-protection
 Enable branch protection features (armv8.1-m.main only).
 @samp{none} generate code without branch protection or return address
