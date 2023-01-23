@@ -107,7 +107,9 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
   _uw op;
   int set_pc;
   int set_pac = 0;
+  int set_pac_sp = 0;
   _uw reg;
+  _uw sp;
 
   set_pc = 0;
   for (;;)
@@ -124,10 +126,11 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 #if defined(TARGET_HAVE_PACBTI)
 	  if (set_pac)
 	    {
-	      _uw sp;
 	      _uw lr;
 	      _uw pac;
-	      _Unwind_VRS_Get (context, _UVRSC_CORE, R_SP, _UVRSD_UINT32, &sp);
+	      if (!set_pac_sp)
+		_Unwind_VRS_Get (context, _UVRSC_CORE, R_SP, _UVRSD_UINT32,
+				 &sp);
 	      _Unwind_VRS_Get (context, _UVRSC_CORE, R_LR, _UVRSD_UINT32, &lr);
 	      _Unwind_VRS_Get (context, _UVRSC_PAC, R_IP,
 			       _UVRSD_UINT32, &pac);
@@ -256,6 +259,14 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 		  != _UVRSR_OK)
 		return _URC_FAILURE;
 	      set_pac = 1;
+	      continue;
+	    }
+
+	  /* Use current VSP as modifier in PAC validation.  */
+	  if (op == 0xb5)
+	    {
+	      _Unwind_VRS_Get (context, _UVRSC_CORE, R_SP, _UVRSD_UINT32, &sp);
+	      set_pac_sp = 1;
 	      continue;
 	    }
 
