@@ -783,11 +783,6 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 @BUILD_LOGLIB_TRUE@install-data-local: force
 @BUILD_LOGLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-@BUILD_LOGLIB_TRUE@	$(INSTALL_DATA) .libs/libm2log.la $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-@BUILD_LOGLIB_TRUE@	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.la
-@BUILD_LOGLIB_TRUE@	$(INSTALL_DATA) .libs/libm2log.a $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-@BUILD_LOGLIB_TRUE@	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.a
-@BUILD_LOGLIB_TRUE@	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.a
 @BUILD_LOGLIB_TRUE@	for i in $(M2DEFS) $(M2MODS) ; do \
 @BUILD_LOGLIB_TRUE@           if [ -f $$i ] ; then \
 @BUILD_LOGLIB_TRUE@              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \

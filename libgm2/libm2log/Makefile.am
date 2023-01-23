@@ -150,11 +150,6 @@ M2LIBDIR = /m2/m2log/
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	$(INSTALL_DATA) .libs/libm2log.la $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.la
-	$(INSTALL_DATA) .libs/libm2log.a $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.a
-	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.a
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
               $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \

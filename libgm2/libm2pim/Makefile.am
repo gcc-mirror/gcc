@@ -193,10 +193,6 @@ SYSTEM.def: Makefile
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	$(INSTALL_DATA) .libs/libm2pim.la $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2pim.la
-	$(INSTALL_DATA) .libs/libm2pim.a $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2pim.a
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
               $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
