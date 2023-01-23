@@ -1774,6 +1774,24 @@ gcc_jit_context_new_array_constructor (gcc_jit_context *ctxt,
     reinterpret_cast<gcc::jit::recording::rvalue**>(values));
 }
 
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::get_target_builtin_function method, in
+   jit-recording.c.  */
+
+gcc_jit_function *
+gcc_jit_context_get_target_builtin_function (gcc_jit_context *ctxt,
+					     const char *name)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL (name, ctxt, NULL, "NULL name");
+
+  return static_cast <gcc_jit_function *> (
+    ctxt->get_target_builtin_function (name));
+}
+
 /* Public entrypoint.  See description in libgccjit.h.  */
 
 extern gcc_jit_lvalue *

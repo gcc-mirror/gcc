@@ -215,7 +215,8 @@ builtins_manager::make_builtin_function (enum built_in_function builtin_id)
 			     param_types.length (),
 			     params,
 			     func_type->is_variadic (),
-			     builtin_id);
+			     builtin_id,
+			     false);
   delete[] params;
 
   /* PR/64020 - If the client code is using builtin cos or sin,
@@ -582,7 +583,8 @@ builtins_manager::make_fn_type (enum jit_builtin_type,
   result = m_ctxt->new_function_type (return_type,
 				      num_args,
 				      param_types,
-				      is_variadic);
+				      is_variadic,
+				      false);
 
  error:
   delete[] param_types;

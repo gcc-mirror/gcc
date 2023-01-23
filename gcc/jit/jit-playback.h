@@ -121,7 +121,8 @@ public:
 					    std::string>> &string_attributes,
 		const std::vector<std::pair<gcc_jit_fn_attribute,
 					    std::vector<int>>>
-					    &int_array_attributes);
+					    &int_array_attributes,
+		bool is_target_builtin);
 
   lvalue *
   new_global (location *loc,
@@ -868,5 +869,7 @@ extern playback::context *active_playback_ctxt;
 } // namespace gcc::jit
 
 } // namespace gcc
+
+extern hash_map<nofree_string_hash, tree> target_builtins;
 
 #endif /* JIT_PLAYBACK_H */

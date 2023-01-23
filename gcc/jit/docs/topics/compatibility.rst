@@ -418,7 +418,6 @@ on functions and variables:
 --------------------
 ``LIBGCCJIT_ABI_30`` covers the addition of
 :func:`gcc_jit_context_convert_vector`
-=======
 
 .. _LIBGCCJIT_ABI_31:
 
@@ -428,3 +427,12 @@ on functions and variables:
 
   * :func:`gcc_jit_context_new_rvalue_vector_perm`
   * :func:`gcc_jit_context_new_vector_access`
+
+.. _LIBGCCJIT_ABI_32:
+
+``LIBGCCJIT_ABI_32``
+--------------------
+
+``LIBGCCJIT_ABI_32`` covers the addition of a function to get target builtins:
+
+  * :func:`gcc_jit_context_get_target_builtin_function`

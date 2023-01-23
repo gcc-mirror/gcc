@@ -28,12 +28,16 @@ along with GCC; see the file COPYING3.  If not see
 #include <string>
 #include <vector>
 
+#include <unordered_map>
+
 class timer;
+
+extern std::unordered_map<std::string, gcc::jit::recording::function_type*>
+  target_function_types;
 
 namespace gcc {
 
 namespace jit {
-
 extern const char * const unary_op_reproducer_strings[];
 extern const char * const binary_op_reproducer_strings[];
 
@@ -125,7 +129,8 @@ public:
   new_function_type (type *return_type,
 		     int num_params,
 		     type **param_types,
-		     int is_variadic);
+		     int is_variadic,
+		     bool is_target_builtin);
 
   type *
   new_function_ptr_type (location *loc,
@@ -151,6 +156,9 @@ public:
 
   function *
   get_builtin_function (const char *name);
+
+  function *
+  get_target_builtin_function (const char *name);
 
   lvalue *
   new_global (location *loc,
@@ -574,6 +582,8 @@ public:
      these types.  */
   virtual size_t get_size () { gcc_unreachable (); }
 
+  virtual type* copy (context* ctxt) = 0;
+
   /* Dynamic casts.  */
   virtual function_type *dyn_cast_function_type () { return NULL; }
   virtual function_type *as_a_function_type() { gcc_unreachable (); return NULL; }
@@ -661,6 +671,11 @@ public:
 
   size_t get_size () final override;
 
+  type* copy (context* ctxt) final override
+  {
+    return ctxt->get_type (m_kind);
+  }
+
   bool accepts_writes_from (type *rtype) final override
   {
     if (m_kind == GCC_JIT_TYPE_VOID_PTR)
@@ -704,6 +719,13 @@ public:
     m_other_type (other_type) {}
 
   type *dereference () final override { return m_other_type; }
+
+  type* copy (context* ctxt) final override
+  {
+    type* result = new memento_of_get_pointer (m_other_type->copy (ctxt));
+    ctxt->record (result);
+    return result;
+  }
 
   size_t get_size () final override;
 
@@ -768,6 +790,13 @@ public:
     return false;
   }
 
+  type* copy (context* ctxt) final override
+  {
+    type* result = new memento_of_get_const (m_other_type->copy (ctxt));
+    ctxt->record (result);
+    return result;
+  }
+
   /* Strip off the "const", giving the underlying type.  */
   type *unqualified () final override { return m_other_type; }
 
@@ -801,6 +830,13 @@ public:
     return m_other_type->is_same_type_as (other->is_volatile ());
   }
 
+  type* copy (context* ctxt) final override
+  {
+    type* result = new memento_of_get_volatile (m_other_type->copy (ctxt));
+    ctxt->record (result);
+    return result;
+  }
+
   /* Strip off the "volatile", giving the underlying type.  */
   type *unqualified () final override { return m_other_type; }
 
@@ -825,6 +861,13 @@ public:
     if (!other->is_restrict ())
       return false;
     return m_other_type->is_same_type_as (other->is_restrict ());
+  }
+
+  type* copy (context* ctxt) final override
+  {
+    type* result = new memento_of_get_restrict (m_other_type->copy (ctxt));
+    ctxt->record (result);
+    return result;
   }
 
   /* Strip off the "restrict", giving the underlying type.  */
@@ -859,6 +902,14 @@ public:
   }
 
   type *is_aligned () final override { return m_other_type; }
+
+  type* copy (context* ctxt) final override
+  {
+    type* result = new memento_of_get_aligned (m_other_type->copy (ctxt),
+					       m_alignment_in_bytes);
+    ctxt->record (result);
+    return result;
+  }
 
   /* Strip off the alignment, giving the underlying type.  */
   type *unqualified () final override { return m_other_type; }
@@ -900,6 +951,13 @@ public:
 
   bool is_numeric_vector () const final override {
     return true;
+  }
+
+  type* copy (context* ctxt) final override
+  {
+    type* result = new vector_type (m_other_type->copy (ctxt), m_num_units);
+    ctxt->record (result);
+    return result;
   }
 
   size_t get_num_units () const { return m_num_units; }
@@ -955,6 +1013,14 @@ class array_type : public type
 
   array_type *dyn_cast_array_type () final override { return this; }
 
+  type* copy (context* ctxt) final override
+  {
+    type* result = new array_type (ctxt, m_loc, m_element_type->copy (ctxt),
+				   m_num_elements);
+    ctxt->record (result);
+    return result;
+  }
+
   bool is_int () const final override { return false; }
   bool is_float () const final override { return false; }
   bool is_bool () const final override { return false; }
@@ -982,13 +1048,28 @@ public:
 		 type *return_type,
 		 int num_params,
 		 type **param_types,
-		 int is_variadic);
+		 int is_variadic,
+		 bool is_target_builtin);
 
   type *dereference () final override;
   function_type *dyn_cast_function_type () final override { return this; }
   function_type *as_a_function_type () final override { return this; }
 
   bool is_same_type_as (type *other) final override;
+
+  type* copy (context* ctxt) final override
+  {
+    auto_vec<type *> new_params{};
+    for (size_t i = 0; i < m_param_types.length (); i++)
+      new_params.safe_push (m_param_types[i]->copy (ctxt));
+
+    type* result = new function_type (ctxt, m_return_type->copy (ctxt),
+				      m_param_types.length (),
+				      new_params.address (),
+				      m_is_variadic, m_is_target_builtin);
+    ctxt->record (result);
+    return result;
+  }
 
   bool is_int () const final override { return false; }
   bool is_float () const final override { return false; }
@@ -1018,6 +1099,7 @@ private:
   type *m_return_type;
   auto_vec<type *> m_param_types;
   int m_is_variadic;
+  bool m_is_target_builtin;
 };
 
 class field : public memento
@@ -1119,9 +1201,11 @@ public:
     return static_cast <playback::compound_type *> (m_playback_obj);
   }
 
-private:
+protected:
   location *m_loc;
   string *m_name;
+
+private:
   fields *m_fields;
 };
 
@@ -1133,6 +1217,13 @@ public:
 	   string *name);
 
   struct_ *dyn_cast_struct () final override { return this; }
+
+  type* copy (context* ctxt) final override
+  {
+    type* result = new struct_ (ctxt, m_loc, m_name);
+    ctxt->record (result);
+    return result;
+  }
 
   type *
   as_type () { return this; }
@@ -1180,6 +1271,13 @@ public:
 	  string *name);
 
   void replay_into (replayer *r) final override;
+
+  type* copy (context* ctxt) final override
+  {
+    type* result = new union_ (ctxt, m_loc, m_name);
+    ctxt->record (result);
+    return result;
+  }
 
   bool is_union () const final override { return true; }
 
@@ -1407,7 +1505,8 @@ public:
 	    int num_params,
 	    param **params,
 	    int is_variadic,
-	    enum built_in_function builtin_id);
+	    enum built_in_function builtin_id,
+	    bool is_target_builtin);
 
   void replay_into (replayer *r) final override;
 
@@ -1469,6 +1568,7 @@ private:
   std::vector<gcc_jit_fn_attribute> m_attributes;
   std::vector<std::pair<gcc_jit_fn_attribute, std::string>> m_string_attributes;
   std::vector<std::pair<gcc_jit_fn_attribute, std::vector<int>>> m_int_array_attributes;
+  bool m_is_target_builtin;
 };
 
 class block : public memento
