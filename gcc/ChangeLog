@@ -1,3 +1,15 @@
+2023-01-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.h (CLZ_DEFINED_VALUE_AT_ZERO): Fix value for QI
+	and HI input modes.
+	* config/pru/pru.md (clz): Fix generated code for QI and HI
+	input modes.
+
+2023-01-22  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/v850/v850.cc (v850_select_section): Put const volatile
+	objects into read-only sections.
+
 2023-01-20  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/arm_neon.h (vmull_p64, vmull_high_p64, vaeseq_u8,

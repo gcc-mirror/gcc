@@ -1,3 +1,8 @@
+2023-01-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libffi.exp: Search for both shared and archive
+	in each path in turn.
+
 2023-01-07  LIU Hao  <lh_mouse@126.com>
 
 	PR middle-end/108300

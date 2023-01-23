@@ -1,3 +1,40 @@
+2023-01-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gm2/case/pass/case-pass.exp: Update for removal of concatenated
+	paths.
+	* gm2/complex/pass/complex-pass.exp: Likewise.
+	* gm2/coroutines/pim/run/pass/coroutines-pim-run-pass.exp: Likewise.
+	* gm2/iso/analysis/fail/iso-analysis-fail.exp: Likewise.
+	* gm2/iso/check/fail/iso-check-fail.exp: Likewise.
+	* gm2/iso/fail/iso-fail.exp: Likewise.
+	* gm2/iso/pass/iso-pass.exp: Likewise.
+	* gm2/isolib/run/pass/isolib-run-pass.exp: Likewise.
+	* gm2/pim/fail/pim-fail.exp: Likewise.
+	* gm2/pim/pass/pim-pass.exp: Likewise.
+	* gm2/pimlib/logitech/run/pass/pimlib-logitech-run-pass.exp: Likewise.
+	* gm2/pimlib/pass/pimlib-pass.exp: Likewise.
+	* gm2/pimlib/run/pass/pimlib-run-pass.exp: Likewise.
+	* gm2/projects/iso/run/pass/halma/projects-iso-run-pass-halma.exp: Likewise.
+	* gm2/projects/iso/run/pass/hello/projects-iso-run-pass-hello.exp: Likewise.
+	* gm2/projects/log/run/pass/hello/projects-log-run-pass-hello.exp: Likewise.
+	* gm2/projects/pim/run/pass/hello/projects-pim-run-pass-hello.exp: Likewise.
+	* gm2/recover/pass/recover-pass.exp: Likewise.
+	* gm2/switches/makeall/fail/switches-makeall-fail.exp: Likewise.
+	* gm2/switches/makeall/pass/switches-makeall-pass.exp: Likewise.
+	* gm2/switches/none/run/pass/gm2-none.exp: Likewise.
+	* gm2/switches/pim2/run/pass/switches-pim2-run-pass.exp: Likewise.
+	* gm2/ulmlib/pass/ulmlib-pass.exp: Likewise.
+	* gm2/ulmlib/std/pass/ulmlib-std-pass.exp: Likewise.
+	* gm2/ulmlib/sys/pass/ulmlib-sys-pass.exp: Likewise.
+	* lib/gm2.exp: Make the paths list a mandatory entry for each gm2_init_xxx
+	function. Remove the use of concatenated include and library paths.
+	Remove string processing where possible.
+
+2023-01-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/clz-hi-2.c: New test.
+	* gcc.target/pru/clz-hi.c: New test.
+
 2023-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/102595
