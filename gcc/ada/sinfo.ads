@@ -830,7 +830,7 @@ package Sinfo is
    --    an unconstrained packed array and the dereference is the prefix of
    --    a 'Size attribute reference, or 2) when the dereference node is
    --    created for the expansion of an allocator with a subtype_indication
-   --    and the designated subtype is an unconstrained discriminated type.
+   --    and the designated subtype is an unconstrained composite type.
 
    --  Address_Warning_Posted
    --    Present in N_Attribute_Definition nodes. Set to indicate that we have
@@ -2311,7 +2311,7 @@ package Sinfo is
    --    can be set in N_Object_Declaration nodes, to similarly suppress any
    --    checks on the initializing value. In assignment statements it also
    --    suppresses access checks in the generated code for out- and in-out
-   --    parameters in entry calls, as well as length checks.
+   --    parameters in entry calls, as well as discriminant and length checks.
 
    --  Suppress_Loop_Warnings
    --    Used in N_Loop_Statement node to indicate that warnings within the

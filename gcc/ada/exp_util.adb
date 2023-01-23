@@ -4699,6 +4699,55 @@ package body Exp_Util is
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Record_Image;
 
+   ----------------------------------------
+   -- Build_Temporary_On_Secondary_Stack --
+   ----------------------------------------
+
+   function Build_Temporary_On_Secondary_Stack
+     (Loc  : Source_Ptr;
+      Typ  : Entity_Id;
+      Code : List_Id) return Entity_Id
+   is
+      Acc_Typ   : Entity_Id;
+      Alloc     : Node_Id;
+      Alloc_Obj : Entity_Id;
+
+   begin
+      pragma Assert (RTE_Available (RE_SS_Pool)
+        and then not Needs_Finalization (Typ));
+
+      Acc_Typ := Make_Temporary (Loc, 'A');
+      Mutate_Ekind (Acc_Typ, E_Access_Type);
+      Set_Associated_Storage_Pool (Acc_Typ, RTE (RE_SS_Pool));
+
+      Append_To (Code,
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Acc_Typ,
+          Type_Definition     =>
+            Make_Access_To_Object_Definition (Loc,
+              All_Present        => True,
+              Subtype_Indication =>
+                New_Occurrence_Of (Typ, Loc))));
+
+      Alloc :=
+        Make_Allocator (Loc, Expression => New_Occurrence_Of (Typ, Loc));
+      Set_No_Initialization (Alloc);
+
+      Alloc_Obj := Make_Temporary (Loc, 'R');
+
+      Append_To (Code,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Alloc_Obj,
+          Constant_Present    => True,
+          Object_Definition   =>
+            New_Occurrence_Of (Acc_Typ, Loc),
+          Expression          => Alloc));
+
+      Set_Uses_Sec_Stack (Current_Scope);
+
+      return Alloc_Obj;
+   end Build_Temporary_On_Secondary_Stack;
+
    ---------------------------------------
    -- Build_Transient_Object_Statements --
    ---------------------------------------

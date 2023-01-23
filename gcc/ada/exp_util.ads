@@ -351,6 +351,18 @@ package Exp_Util is
    --  is false, the call is for a stand-alone object, and the generated
    --  function itself must do its own cleanups.
 
+   function Build_Temporary_On_Secondary_Stack
+     (Loc  : Source_Ptr;
+      Typ  : Entity_Id;
+      Code : List_Id) return Entity_Id;
+   --  Build a temporary of type Typ on the secondary stack, appending the
+   --  necessary actions to Code, and return a constant holding the access
+   --  value designating this temporary, under the assumption that Typ does
+   --  not need finalization.
+
+   --  This should be used when Typ can potentially be large, to avoid putting
+   --  too much pressure on the primary stack, for example with storage models.
+
    procedure Build_Transient_Object_Statements
      (Obj_Decl     : Node_Id;
       Fin_Call     : out Node_Id;

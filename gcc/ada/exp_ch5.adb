@@ -59,6 +59,7 @@ with Sem_Ch13;       use Sem_Ch13;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
+                     use Sem_Util.Storage_Model_Support;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
@@ -2658,8 +2659,48 @@ package body Exp_Ch5 is
          Convert_Aggr_In_Assignment (N);
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
-
          return;
+      end if;
+
+      --  An assignment between nonnative storage models requires creating an
+      --  intermediate temporary on the host, which can potentially be large.
+
+      if Nkind (Lhs) = N_Explicit_Dereference
+        and then Has_Designated_Storage_Model_Aspect (Etype (Prefix (Lhs)))
+        and then Present (Storage_Model_Copy_To
+                           (Storage_Model_Object (Etype (Prefix (Lhs)))))
+        and then Nkind (Rhs) = N_Explicit_Dereference
+        and then Has_Designated_Storage_Model_Aspect (Etype (Prefix (Rhs)))
+        and then Present (Storage_Model_Copy_From
+                           (Storage_Model_Object (Etype (Prefix (Rhs)))))
+      then
+         declare
+            Assign_Code : List_Id;
+            Tmp         : Entity_Id;
+
+         begin
+            Assign_Code := New_List;
+
+            Tmp := Build_Temporary_On_Secondary_Stack (Loc, Typ, Assign_Code);
+
+            Append_To (Assign_Code,
+              Make_Assignment_Statement (Loc,
+                Name       =>
+                  Make_Explicit_Dereference (Loc,
+                    Prefix => New_Occurrence_Of (Tmp, Loc)),
+                Expression => Relocate_Node (Rhs)));
+
+            Append_To (Assign_Code,
+              Make_Assignment_Statement (Loc,
+                Name       => Relocate_Node (Lhs),
+                Expression =>
+                  Make_Explicit_Dereference (Loc,
+                    Prefix => New_Occurrence_Of (Tmp, Loc))));
+
+            Insert_Actions (N, Assign_Code);
+            Rewrite (N, Make_Null_Statement (Loc));
+            return;
+         end;
       end if;
 
       --  Apply discriminant check if required. If Lhs is an access type to a
@@ -2672,7 +2713,7 @@ package body Exp_Ch5 is
          --  Skip discriminant check if change of representation. Will be
          --  done when the change of representation is expanded out.
 
-         if not Crep then
+         if not Crep and then not Suppress_Assignment_Checks (N) then
             Apply_Discriminant_Check (Rhs, Etype (Lhs), Lhs);
          end if;
 
@@ -2712,7 +2753,9 @@ package body Exp_Ch5 is
 
             Set_Etype (Lhs, Ubt);
             Rewrite (Rhs, OK_Convert_To (Base_Type (Ubt), Rhs));
-            Apply_Discriminant_Check (Rhs, Ubt, Lhs);
+            if not Suppress_Assignment_Checks (N) then
+               Apply_Discriminant_Check (Rhs, Ubt, Lhs);
+            end if;
             Set_Etype (Lhs, Lt);
          end;
 
@@ -2732,12 +2775,16 @@ package body Exp_Ch5 is
          then
             Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
-            Apply_Discriminant_Check (Rhs, Typ, Lhs);
+            if not Suppress_Assignment_Checks (N) then
+               Apply_Discriminant_Check (Rhs, Typ, Lhs);
+            end if;
 
          elsif Is_Array_Type (Typ) and then Is_Constrained (Typ) then
             Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
-            Apply_Length_Check (Rhs, Typ);
+            if not Suppress_Assignment_Checks (N) then
+               Apply_Length_Check (Rhs, Typ);
+            end if;
          end if;
 
       --  In the access type case, we need the same discriminant check, and
@@ -2745,6 +2792,7 @@ package body Exp_Ch5 is
 
       elsif Is_Access_Type (Etype (Lhs))
         and then Is_Constrained (Designated_Type (Etype (Lhs)))
+        and then not Suppress_Assignment_Checks (N)
       then
          if Has_Discriminants (Designated_Type (Etype (Lhs))) then
 

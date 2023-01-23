@@ -62,7 +62,7 @@ with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
-use Sem_Util.Storage_Model_Support;
+                     use Sem_Util.Storage_Model_Support;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
@@ -78,12 +78,10 @@ package body Exp_Aggr is
 
    function Build_Assignment_With_Temporary
      (Target : Node_Id;
-      Typ    : Node_Id;
+      Typ    : Entity_Id;
       Source : Node_Id) return List_Id;
    --  Returns a list of actions to assign Source to Target of type Typ using
-   --  an extra temporary:
-   --   Tmp := Source;
-   --   Target := Tmp;
+   --  an extra temporary, which can potentially be large.
 
    type Case_Bounds is record
      Choice_Lo   : Node_Id;
@@ -2524,33 +2522,33 @@ package body Exp_Aggr is
 
    function Build_Assignment_With_Temporary
      (Target : Node_Id;
-      Typ    : Node_Id;
+      Typ    : Entity_Id;
       Source : Node_Id) return List_Id
    is
       Loc : constant Source_Ptr := Sloc (Source);
 
       Aggr_Code : List_Id;
       Tmp       : Entity_Id;
-      Tmp_Decl  : Node_Id;
 
    begin
-      Tmp := Make_Temporary (Loc, 'A', Source);
-      Tmp_Decl :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Tmp,
-          Object_Definition   => New_Occurrence_Of (Typ, Loc));
-      Set_No_Initialization (Tmp_Decl, True);
+      Aggr_Code := New_List;
 
-      Aggr_Code := New_List (Tmp_Decl);
+      Tmp := Build_Temporary_On_Secondary_Stack (Loc, Typ, Aggr_Code);
+
       Append_To (Aggr_Code,
         Make_OK_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (Tmp, Loc),
+          Name       =>
+            Make_Explicit_Dereference (Loc,
+              Prefix => New_Occurrence_Of (Tmp, Loc)),
           Expression => Source));
 
       Append_To (Aggr_Code,
         Make_OK_Assignment_Statement (Loc,
           Name       => Target,
-          Expression => New_Occurrence_Of (Tmp, Loc)));
+          Expression =>
+            Make_Explicit_Dereference (Loc,
+              Prefix => New_Occurrence_Of (Tmp, Loc))));
+
       return Aggr_Code;
    end Build_Assignment_With_Temporary;
 
@@ -4571,8 +4569,9 @@ package body Exp_Aggr is
                                (Storage_Model_Object
                                   (Etype (Prefix (Expression (Target))))))
          then
-            Aggr_Code := Build_Assignment_With_Temporary (Target,
-                           Typ, New_Aggr);
+            Aggr_Code :=
+              Build_Assignment_With_Temporary (Target, Typ, New_Aggr);
+
          else
             Aggr_Code :=
               New_List (
@@ -7139,20 +7138,20 @@ package body Exp_Aggr is
                                   (Storage_Model_Object
                                      (Etype (Prefix (Name (Parent_Node))))))
             then
-               Aggr_Code := Build_Assignment_With_Temporary (Target,
-                              Typ, New_Copy_Tree (N));
+               Aggr_Code := Build_Assignment_With_Temporary
+                              (Target, Typ, New_Copy_Tree (N));
+
             else
                if Maybe_In_Place_OK then
                   return;
                end if;
 
-               Aggr_Code :=
-                 New_List (
-                   Make_Assignment_Statement (Loc,
-                     Name       => Target,
-                     Expression => New_Copy_Tree (N)));
-
+               Aggr_Code := New_List (
+                 Make_Assignment_Statement (Loc,
+                   Name       => Target,
+                   Expression => New_Copy_Tree (N)));
             end if;
+
          else
             Aggr_Code :=
               Build_Array_Aggr_Code (N,

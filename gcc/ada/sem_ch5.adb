@@ -324,10 +324,13 @@ package body Sem_Ch5 is
          then
             Opnd_Type := Get_Actual_Subtype (Opnd);
 
-         --  If assignment operand is a component reference, then we get the
-         --  actual subtype of the component for the unconstrained case.
+         --  If the assignment operand is a component reference, then we build
+         --  the actual subtype of the component for the unconstrained case,
+         --  unless there is already one or the type is an unchecked union.
 
-         elsif Nkind (Opnd) in N_Selected_Component | N_Explicit_Dereference
+         elsif (Nkind (Opnd) = N_Selected_Component
+                 or else (Nkind (Opnd) = N_Explicit_Dereference
+                           and then No (Actual_Designated_Subtype (Opnd))))
            and then not Is_Unchecked_Union (Opnd_Type)
          then
             Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
