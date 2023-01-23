@@ -250,7 +250,10 @@ cp_gimplify_init_expr (tree *expr_p)
   if (TREE_CODE (from) == TARGET_EXPR)
     if (tree init = TARGET_EXPR_INITIAL (from))
       {
-	gcc_checking_assert (TARGET_EXPR_ELIDING_P (from));
+	/* Make sure that we expected to elide this temporary.  But also allow
+	   gimplify_modify_expr_rhs to elide temporaries of trivial type.  */
+	gcc_checking_assert (TARGET_EXPR_ELIDING_P (from)
+			     || !TREE_ADDRESSABLE (TREE_TYPE (from)));
 	if (target_expr_needs_replace (from))
 	  {
 	    /* If this was changed by cp_genericize_target_expr, we need to
