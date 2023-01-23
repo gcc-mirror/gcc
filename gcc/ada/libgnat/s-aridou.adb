@@ -1543,7 +1543,7 @@ is
          Div2 : constant Double_Uns := Double_Uns'(2);
          Left : constant Double_Uns := X / Div1 / Div2;
          R2   : constant Double_Uns := X / Div1 - Left * Div2;
-         pragma Assert (R2 < Div2);
+         pragma Assert (R2 <= Div2 - 1);
          R1   : constant Double_Uns := X - X / Div1 * Div1;
          pragma Assert (R1 < Div1);
       begin

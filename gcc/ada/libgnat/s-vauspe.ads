@@ -492,7 +492,8 @@ is
      Pre  => Str'Last /= Positive'Last
        and then From in Str'Range
        and then To in From .. Str'Last
-       and then Str (From) in '0' .. '9';
+       and then Str (From) in '0' .. '9',
+     Post => Raw_Unsigned_Last_Ghost'Result >= From;
    --  Ghost function that returns the position of the cursor once an unsigned
    --  number has been seen.
 

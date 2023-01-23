@@ -195,12 +195,6 @@ is
        or else (X >= Big_0 and then Y <= Big_0),
      Post => X * Y <= Big_0;
 
-   procedure Lemma_Neg_Div (X, Y : Big_Integer)
-   with
-     Ghost,
-     Pre  => Y /= 0,
-     Post => X / Y = (-X) / (-Y);
-
    procedure Lemma_Neg_Rem (X, Y : Big_Integer)
    with
      Ghost,
@@ -223,6 +217,7 @@ is
    -----------------------------
 
    procedure Lemma_Abs_Commutation (X : Int32) is null;
+   procedure Lemma_Abs_Div_Commutation (X, Y : Big_Integer) is null;
    procedure Lemma_Abs_Mult_Commutation (X, Y : Big_Integer) is null;
    procedure Lemma_Div_Commutation (X, Y : Uns64) is null;
    procedure Lemma_Div_Ge (X, Y, Z : Big_Integer) is null;
@@ -233,22 +228,6 @@ is
    procedure Lemma_Neg_Rem (X, Y : Big_Integer) is null;
    procedure Lemma_Not_In_Range_Big2xx32 is null;
    procedure Lemma_Rem_Commutation (X, Y : Uns64) is null;
-
-   -------------------------------
-   -- Lemma_Abs_Div_Commutation --
-   -------------------------------
-
-   procedure Lemma_Abs_Div_Commutation (X, Y : Big_Integer) is
-   begin
-      if Y < 0 then
-         if X < 0 then
-            pragma Assert (abs (X / Y) = abs (X / (-Y)));
-         else
-            Lemma_Neg_Div (X, Y);
-            pragma Assert (abs (X / Y) = abs ((-X) / (-Y)));
-         end if;
-      end if;
-   end Lemma_Abs_Div_Commutation;
 
    -------------------------------
    -- Lemma_Abs_Rem_Commutation --
@@ -276,16 +255,6 @@ is
       pragma Assert (Uns64 (Xhi) = Xu / Uns64'(2 ** 32));
       pragma Assert (Uns64 (Xlo) = Xu mod 2 ** 32);
    end Lemma_Hi_Lo;
-
-   -------------------
-   -- Lemma_Neg_Div --
-   -------------------
-
-   procedure Lemma_Neg_Div (X, Y : Big_Integer) is
-   begin
-      pragma Assert ((-X) / (-Y) = -(X / (-Y)));
-      pragma Assert (X / (-Y) = -(X / Y));
-   end Lemma_Neg_Div;
 
    -----------------
    -- Raise_Error --

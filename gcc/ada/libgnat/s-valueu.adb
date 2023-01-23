@@ -483,12 +483,12 @@ package body System.Value_U is
       pragma Assert
         (By
            (Ptr.all = Spec.Raw_Unsigned_Last_Ghost (Str, Ptr_Old, Max),
-            (if not Starts_As_Exponent_Format_Ghost (Str (First_Exp .. Max))
-             then Ptr.all = First_Exp
-             elsif Str (First_Exp + 1) in '-' | '+' then
-                Ptr.all = Last_Number_Ghost (Str (First_Exp + 2 .. Max)) + 1
-             else Ptr.all =
-                Last_Number_Ghost (Str (First_Exp + 1 .. Max)) + 1)));
+            Ptr.all =
+              (if not Starts_As_Exponent_Format_Ghost (Str (First_Exp .. Max))
+               then First_Exp
+               elsif Str (First_Exp + 1) in '-' | '+' then
+                 Last_Number_Ghost (Str (First_Exp + 2 .. Max)) + 1
+               else Last_Number_Ghost (Str (First_Exp + 1 .. Max)) + 1)));
       pragma Assert
         (if not Overflow
          then Spec.Scan_Split_Value_Ghost (Str, Ptr_Old, Max) =
