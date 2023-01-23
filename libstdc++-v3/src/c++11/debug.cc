@@ -181,86 +181,139 @@ namespace __gnu_debug
   const char* const _S_debug_messages[] =
   {
     // General Checks
+    // __msg_valid_range
     "function requires a valid iterator range [%1.name;, %2.name;)",
+    // __msg_insert_singular
     "attempt to insert into container with a singular iterator",
+    // __msg_insert_different
     "attempt to insert into container with an iterator"
     " from a different container",
+    // __msg_erase_bad
     "attempt to erase from container with a %2.state; iterator",
+    // __msg_erase_different
     "attempt to erase from container with an iterator"
     " from a different container",
+    // __msg_subscript_oob
     "attempt to subscript container with out-of-bounds index %2;,"
     " but container only holds %3; elements",
+    // __msg_empty
     "attempt to access an element in an empty container",
+    // __msg_unpartitioned
     "elements in iterator range [%1.name;, %2.name;)"
     " are not partitioned by the value %3;",
+    // __msg_unpartitioned_pred
     "elements in iterator range [%1.name;, %2.name;)"
     " are not partitioned by the predicate %3; and value %4;",
+    // __msg_unsorted
     "elements in iterator range [%1.name;, %2.name;) are not sorted",
+    // __msg_unsorted_pred
     "elements in iterator range [%1.name;, %2.name;)"
     " are not sorted according to the predicate %3;",
+    // __msg_not_heap
     "elements in iterator range [%1.name;, %2.name;) do not form a heap",
+    // __msg_not_heap_pred
     "elements in iterator range [%1.name;, %2.name;)"
     " do not form a heap with respect to the predicate %3;",
     // std::bitset checks
+    // __msg_bad_bitset_write
     "attempt to write through a singular bitset reference",
+    // __msg_bad_bitset_read
     "attempt to read from a singular bitset reference",
+    // __msg_bad_bitset_flip
     "attempt to flip a singular bitset reference",
     // std::list checks
+    // __msg_self_splice
     "attempt to splice a list into itself",
+    // __msg_splice_alloc
     "attempt to splice lists with unequal allocators",
+    // __msg_splice_bad
     "attempt to splice elements referenced by a %1.state; iterator",
+    // __msg_splice_other
     "attempt to splice an iterator from a different container",
+    // __msg_splice_overlap
     "splice destination %1.name;"
     " occurs within source range [%2.name;, %3.name;)",
     // iterator checks
+    // __msg_init_singular
     "attempt to initialize an iterator that will immediately become singular",
+    // __msg_init_copy_singular
     "attempt to copy-construct an iterator from a singular iterator",
+    // __msg_init_const_singular
     "attempt to construct a constant iterator"
     " from a singular mutable iterator",
+    // __msg_copy_singular
     "attempt to copy from a singular iterator",
+    // __msg_bad_deref
     "attempt to dereference a %1.state; iterator",
+    // __msg_bad_inc
     "attempt to increment a %1.state; iterator",
+    // __msg_bad_dec
     "attempt to decrement a %1.state; iterator",
+    // __msg_iter_subscript_oob
     "attempt to subscript a %1.state; iterator %2; step from"
     " its current position, which falls outside its dereferenceable range",
+    // __msg_advance_oob
     "attempt to advance a %1.state; iterator %2; steps,"
     " which falls outside its valid range",
+    // __msg_retreat_oob
     "attempt to retreat a %1.state; iterator %2; steps,"
     " which falls outside its valid range",
+    // __msg_iter_compare_bad
     "attempt to compare a %1.state; iterator to a %2.state; iterator",
+    // __msg_compare_different
     "attempt to compare iterators from different sequences",
+    // __msg_iter_order_bad
     "attempt to order a %1.state; iterator to a %2.state; iterator",
+    // __msg_order_different
     "attempt to order iterators from different sequences",
+    // __msg_distance_bad
     "attempt to compute the difference between a %1.state;"
     " iterator to a %2.state; iterator",
+    // __msg_distance_different
     "attempt to compute the different between two iterators"
     " from different sequences",
     // istream_iterator
+    // __msg_deref_istream
     "attempt to dereference an end-of-stream istream_iterator",
+    // __msg_inc_istream
     "attempt to increment an end-of-stream istream_iterator",
     // ostream_iterator
+    // __msg_output_ostream
     "attempt to output via an ostream_iterator with no associated stream",
     // istreambuf_iterator
+    // __msg_deref_istreambuf
     "attempt to dereference an end-of-stream istreambuf_iterator"
     " (this is a GNU extension)",
+    // __msg_inc_istreambuf
     "attempt to increment an end-of-stream istreambuf_iterator",
     // std::forward_list
+    // __msg_insert_after_end
     "attempt to insert into container after an end iterator",
+    // __msg_erase_after_bad
     "attempt to erase from container after a %2.state; iterator not followed"
     " by a dereferenceable one",
+    // __msg_valid_range2
     "function requires a valid iterator range (%2.name;, %3.name;)"
     ", \"%2.name;\" shall be before and not equal to \"%3.name;\"",
     // std::unordered_container::local_iterator
+    // __msg_local_iter_compare_bad
     "attempt to compare local iterators from different unordered container"
     " buckets",
+    // __msg_non_empty_range
     "function requires a non-empty iterator range [%1.name;, %2.name;)",
+    // __msg_self_move_assign
     "attempt to self move assign",
+    // __msg_bucket_index_oob
     "attempt to access container with out-of-bounds bucket index %2;,"
     " container only holds %3; buckets",
+    // __msg_valid_load_factor
     "load factor shall be positive",
+    // __msg_equal_allocs
     "allocators must be equal",
+    // __msg_insert_range_from_self
     "attempt to insert with an iterator range [%1.name;, %2.name;) from this"
     " container",
+    // __msg_irreflexive_ordering
     "comparison doesn't meet irreflexive requirements, assert(!(a < a))"
   };
 
