@@ -195,7 +195,7 @@ The OpenMP 4.5 specification is fully supported.
       @tab complete but no non-host devices provides @code{unified_address},
       @code{unified_shared_memory} or @code{reverse_offload}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
-@item Non-rectangular loop nests @tab Y @tab
+@item Non-rectangular loop nests @tab P @tab Full support for C/C++, partial for Fortran
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
 @item @code{nonmonotonic} as default loop schedule modifier for worksharing-loop
       constructs @tab Y @tab
