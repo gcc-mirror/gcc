@@ -33397,6 +33397,22 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 
 	  opts->x_arm_arch_string = xstrndup (arch, strlen (arch));
 	}
+      else if (startswith (q, "branch-protection="))
+	{
+	  char *bp_str = q + strlen ("branch-protection=");
+
+	  opts->x_arm_branch_protection_string
+	    = xstrndup (bp_str, strlen (bp_str));
+
+	  /* Capture values from target attribute.  */
+	  aarch_validate_mbranch_protection
+	    (opts->x_arm_branch_protection_string);
+
+	  /* Init function target attr values.  */
+	  opts->x_aarch_ra_sign_scope = aarch_ra_sign_scope;
+	  opts->x_aarch_enable_bti = aarch_enable_bti;
+
+	}
       else if (q[0] == '+')
 	{
 	  opts->x_arm_arch_string
