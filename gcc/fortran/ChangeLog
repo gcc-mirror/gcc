@@ -1,3 +1,8 @@
+2023-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/106731
+	* trans-array.cc (gfc_trans_auto_array_allocation): Remove gcc_assert (!TREE_STATIC()).
+
 2022-12-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
