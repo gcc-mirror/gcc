@@ -22272,7 +22272,33 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
     {
       if (mask & (1 << i))
 	{
-	  reg = gen_rtx_REG (SImode, i);
+	  /* NOTE: Dwarf code emitter handle reg-reg copies correctly and in the
+	     following example reg-reg copy of SP to IP register is handled
+	     through .cfi_def_cfa_register directive and the .cfi_offset
+	     directive for IP register is skipped by dwarf code emitter.
+	     Example:
+		mov     ip, sp
+		.cfi_def_cfa_register 12
+		push    {fp, ip, lr, pc}
+		.cfi_offset 11, -16
+		.cfi_offset 13, -12
+		.cfi_offset 14, -8
+
+	     Where as Arm-specific .save directive handling is different to that
+	     of dwarf code emitter and it doesn't consider reg-reg copies while
+	     updating the register list.  When PACBTI is enabled we manually
+	     updated the .save directive register list to use "ra_auth_code"
+	     (pseduo register 143) instead of IP register as shown in following
+	     pseduo code.
+	     Example:
+		pacbti  ip, lr, sp
+		.cfi_register 143, 12
+		push    {r3, r7, ip, lr}
+		.save {r3, r7, ra_auth_code, lr}
+	  */
+	  rtx dwarf_reg = reg = gen_rtx_REG (SImode, i);
+	  if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
+	    dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
 
 	  XVECEXP (par, 0, 0)
 	    = gen_rtx_SET (gen_frame_mem
@@ -22290,7 +22316,7 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 	  if (dwarf_regs_mask & (1 << i))
 	    {
 	      tmp = gen_rtx_SET (gen_frame_mem (SImode, stack_pointer_rtx),
-				 reg);
+				 dwarf_reg);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
 	      XVECEXP (dwarf, 0, dwarf_par_index++) = tmp;
 	    }
@@ -22303,7 +22329,9 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
     {
       if (mask & (1 << i))
 	{
-	  reg = gen_rtx_REG (SImode, i);
+	  rtx dwarf_reg = reg = gen_rtx_REG (SImode, i);
+	  if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
+	    dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
 
 	  XVECEXP (par, 0, j) = gen_rtx_USE (VOIDmode, reg);
 
@@ -22314,7 +22342,7 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 			       (SImode,
 				plus_constant (Pmode, stack_pointer_rtx,
 					       4 * j)),
-			       reg);
+			       dwarf_reg);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
 	      XVECEXP (dwarf, 0, dwarf_par_index++) = tmp;
 	    }
@@ -22399,7 +22427,9 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
   for (j = 0, i = 0; j < num_regs; i++)
     if (saved_regs_mask & (1 << i))
       {
-        reg = gen_rtx_REG (SImode, i);
+	rtx dwarf_reg = reg = gen_rtx_REG (SImode, i);
+	if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
+	  dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
         if ((num_regs == 1) && emit_update && !return_in_pc)
           {
             /* Emit single load with writeback.  */
@@ -22407,7 +22437,8 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
                                  gen_rtx_POST_INC (Pmode,
                                                    stack_pointer_rtx));
             tmp = emit_insn (gen_rtx_SET (reg, tmp));
-            REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+	    REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg,
+					      dwarf);
             return;
           }
 
@@ -22421,7 +22452,7 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
         /* We need to maintain a sequence for DWARF info too.  As dwarf info
            should not have PC, skip PC.  */
         if (i != PC_REGNUM)
-          dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+	  dwarf = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg, dwarf);
 
         j++;
       }
@@ -23603,6 +23634,8 @@ arm_expand_prologue (void)
 					      -fp_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+	  if (arm_current_function_pac_enabled_p ())
+	    cfun->machine->pacspval_needed = 1;
 	}
       else
 	{
@@ -23638,6 +23671,8 @@ arm_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  fp_offset = args_to_push;
 	  args_to_push = 0;
+	  if (arm_current_function_pac_enabled_p ())
+	    cfun->machine->pacspval_needed = 1;
 	}
     }
 
@@ -23647,9 +23682,13 @@ arm_expand_prologue (void)
          one will be added before the push of the clobbered IP (if
          necessary) by the bti pass.  */
       if (aarch_bti_enabled () && !clobber_ip)
-	emit_insn (gen_pacbti_nop ());
+	insn = emit_insn (gen_pacbti_nop ());
       else
-	emit_insn (gen_pac_nop ());
+	insn = emit_insn (gen_pac_nop ());
+
+      rtx dwarf = gen_rtx_SET (ip_rtx, gen_rtx_REG (SImode, RA_AUTH_CODE));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_REGISTER, dwarf);
     }
 
   if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
@@ -25731,6 +25770,9 @@ arm_regno_class (int regno)
   if (IS_VPR_REGNUM (regno))
     return VPR_REG;
 
+  if (IS_PAC_REGNUM (regno))
+    return PAC_REG;
+
   if (TARGET_THUMB1)
     {
       if (regno == STACK_POINTER_REGNUM)
@@ -26891,6 +26933,7 @@ arm_init_machine_status (void)
   machine->func_type = ARM_FT_UNKNOWN;
 #endif
   machine->static_chain_stack_bytes = -1;
+  machine->pacspval_needed = 0;
   return machine;
 }
 
@@ -29700,6 +29743,9 @@ arm_debugger_regno (unsigned int regno)
   if (IS_IWMMXT_REGNUM (regno))
     return 112 + regno - FIRST_IWMMXT_REGNUM;
 
+  if (IS_PAC_REGNUM (regno))
+    return DWARF_PAC_REGNUM;
+
   return DWARF_FRAME_REGISTERS;
 }
 
@@ -29793,7 +29839,7 @@ arm_unwind_emit_sequence (FILE * out_file, rtx p)
   gcc_assert (nregs);
 
   reg = REGNO (SET_SRC (XVECEXP (p, 0, 1)));
-  if (reg < 16)
+  if (reg < 16 || IS_PAC_REGNUM (reg))
     {
       /* For -Os dummy registers can be pushed at the beginning to
 	 avoid separate stack pointer adjustment.  */
@@ -29850,6 +29896,8 @@ arm_unwind_emit_sequence (FILE * out_file, rtx p)
 	 double precision register names.  */
       if (IS_VFP_REGNUM (reg))
 	asm_fprintf (out_file, "d%d", (reg - FIRST_VFP_REGNUM) / 2);
+      else if (IS_PAC_REGNUM (reg))
+	asm_fprintf (asm_out_file, "ra_auth_code");
       else
 	asm_fprintf (out_file, "%r", reg);
 
@@ -29944,7 +29992,7 @@ arm_unwind_emit_set (FILE * out_file, rtx p)
 	  /* Move from sp to reg.  */
 	  asm_fprintf (out_file, "\t.movsp %r\n", REGNO (e0));
 	}
-     else if (GET_CODE (e1) == PLUS
+      else if (GET_CODE (e1) == PLUS
 	      && REG_P (XEXP (e1, 0))
 	      && REGNO (XEXP (e1, 0)) == SP_REGNUM
 	      && CONST_INT_P (XEXP (e1, 1)))
@@ -29952,6 +30000,11 @@ arm_unwind_emit_set (FILE * out_file, rtx p)
 	  /* Set reg to offset from sp.  */
 	  asm_fprintf (out_file, "\t.movsp %r, #%d\n",
 		       REGNO (e0), (int)INTVAL(XEXP (e1, 1)));
+	}
+      else if (REGNO (e0) == IP_REGNUM && arm_current_function_pac_enabled_p ())
+	{
+	  if (cfun->machine->pacspval_needed)
+	    asm_fprintf (out_file, "\t.pacspval\n");
 	}
       else
 	abort ();
@@ -30007,10 +30060,15 @@ arm_unwind_emit (FILE * out_file, rtx_insn *insn)
 	    src = SET_SRC (pat);
 	    dest = SET_DEST (pat);
 
-	    gcc_assert (src == stack_pointer_rtx);
+	    gcc_assert (src == stack_pointer_rtx
+			|| IS_PAC_REGNUM (REGNO (src)));
 	    reg = REGNO (dest);
-	    asm_fprintf (out_file, "\t.unwind_raw 0, 0x%x @ vsp = r%d\n",
-			 reg + 0x90, reg);
+
+	    if (IS_PAC_REGNUM (REGNO (src)))
+	      arm_unwind_emit_set (out_file, PATTERN (insn));
+	    else
+	      asm_fprintf (out_file, "\t.unwind_raw 0, 0x%x @ vsp = r%d\n",
+			   reg + 0x90, reg);
 	  }
 	  handled_one = true;
 	  break;
