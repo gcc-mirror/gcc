@@ -1,3 +1,8 @@
+2023-01-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.texi (nvptx): Update for
+	'nvptx, libgfortran: Switch out of "minimal" mode'.
+
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.fortran/target-print-1.f90: Adjust.
