@@ -1190,8 +1190,12 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
     {
     case VAR_DECL:
       /* In initializers replace anon union artificial VAR_DECLs
-	 with their DECL_VALUE_EXPRs, as nothing will do it later.  */
-      if (DECL_ANON_UNION_VAR_P (stmt) && !data->genericize)
+	 with their DECL_VALUE_EXPRs, as nothing will do it later.
+	 Ditto for structured bindings.  */
+      if (!data->genericize
+	  && DECL_HAS_VALUE_EXPR_P (stmt)
+	  && (DECL_ANON_UNION_VAR_P (stmt)
+	      || (DECL_DECOMPOSITION_P (stmt) && DECL_DECOMP_BASE (stmt))))
 	{
 	  *stmt_p = stmt = unshare_expr (DECL_VALUE_EXPR (stmt));
 	  break;
