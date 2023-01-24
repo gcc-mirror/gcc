@@ -4560,14 +4560,13 @@ elaborate_profile (Entity_Id first_formal, Entity_Id result_type)
    N_Assignment_Statement and the result is to be placed into that object.
    ATOMIC_ACCESS is the type of atomic access to be used for the assignment
    to GNU_TARGET.  If, in addition, ATOMIC_SYNC is true, then the assignment
-   to GNU_TARGET requires atomic synchronization.  GNAT_STORAGE_MODEL is the
-   storage model object to be used for the assignment to GNU_TARGET or Empty
-   if there is none.  */
+   to GNU_TARGET requires atomic synchronization.  GNAT_SMO is the storage
+   model object to be used for the assignment to GNU_TARGET or Empty if there
+   is none.  */
 
 static tree
 Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
-	     atomic_acces_t atomic_access, bool atomic_sync,
-	     Entity_Id gnat_storage_model)
+	     atomic_acces_t atomic_access, bool atomic_sync, Entity_Id gnat_smo)
 {
   const bool function_call = (Nkind (gnat_node) == N_Function_Call);
   const bool returning_value = (function_call && !gnu_target);
@@ -4599,7 +4598,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   Node_Id gnat_actual;
   atomic_acces_t aa_type;
   bool aa_sync;
-  Entity_Id gnat_smo;
 
   /* The only way we can make a call via an access type is if GNAT_NAME is an
      explicit dereference.  In that case, get the list of formal args from the
@@ -4751,8 +4749,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		 != TYPE_SIZE (TREE_TYPE (gnu_target))
 	      && type_is_padding_self_referential (gnu_result_type))
 	  || (gnu_target
-	      && Present (gnat_storage_model)
-	      && Present (Storage_Model_Copy_To (gnat_storage_model)))))
+	      && Present (gnat_smo)
+	      && Present (Storage_Model_Copy_To (gnat_smo)))))
     {
       gnu_retval = create_temporary ("R", gnu_result_type);
       DECL_RETURN_VALUE_P (gnu_retval) = 1;
@@ -4823,19 +4821,12 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      = build_compound_expr (TREE_TYPE (gnu_name), init, gnu_name);
 	}
 
-      get_storage_model_access (gnat_actual, &gnat_smo);
-
-      /* If we are passing a non-addressable actual parameter by reference,
-	 pass the address of a copy.  Likewise if it needs to be accessed with
-	 a storage model.  In the In Out or Out case, set up to copy back out
-	 after the call.  */
+      /* If we are passing a non-addressable parameter by reference, pass the
+	 address of a copy.  In the In Out or Out case, set up to copy back
+	 out after the call.  */
       if (is_by_ref_formal_parm
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
-	  && (!addressable_p (gnu_name, gnu_name_type)
-	      || (Present (gnat_smo)
-		  && (Present (Storage_Model_Copy_From (gnat_smo))
-		      || (!in_param
-			  && Present (Storage_Model_Copy_To (gnat_smo)))))))
+	  && !addressable_p (gnu_name, gnu_name_type))
 	{
 	  tree gnu_orig = gnu_name, gnu_temp, gnu_stmt;
 
@@ -4906,40 +4897,21 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	    }
 
 	  /* Create an explicit temporary holding the copy.  */
-	  tree gnu_temp_type;
-	  if (Nkind (gnat_actual) == N_Explicit_Dereference
-	      && Present (Actual_Designated_Subtype (gnat_actual)))
-	    gnu_temp_type
-	      = gnat_to_gnu_type (Actual_Designated_Subtype (gnat_actual));
-	  else
-	    gnu_temp_type = TREE_TYPE (gnu_name);
 
 	  /* Do not initialize it for the _Init parameter of an initialization
 	     procedure since no data is meant to be passed in.  */
 	  if (Ekind (gnat_formal) == E_Out_Parameter
 	      && Is_Entity_Name (gnat_subprog)
 	      && Is_Init_Proc (Entity (gnat_subprog)))
-	    gnu_name = gnu_temp = create_temporary ("A", gnu_temp_type);
+	    gnu_name = gnu_temp = create_temporary ("A", TREE_TYPE (gnu_name));
 
 	  /* Initialize it on the fly like for an implicit temporary in the
 	     other cases, as we don't necessarily have a statement list.  */
 	  else
 	    {
-	      if (Present (gnat_smo)
-		  && Present (Storage_Model_Copy_From (gnat_smo)))
-		{
-		  gnu_temp = create_temporary ("A", gnu_temp_type);
-		  gnu_stmt
-		    = build_storage_model_load (gnat_smo, gnu_temp,
-						gnu_name,
-						TYPE_SIZE_UNIT (gnu_temp_type));
-		  set_expr_location_from_node (gnu_stmt, gnat_actual);
-		}
-	      else
-		gnu_temp = create_init_temporary ("A", gnu_name, &gnu_stmt,
-						  gnat_actual);
-
-	      gnu_name = build_compound_expr (gnu_temp_type, gnu_stmt,
+	      gnu_temp = create_init_temporary ("A", gnu_name, &gnu_stmt,
+						gnat_actual);
+	      gnu_name = build_compound_expr (TREE_TYPE (gnu_name), gnu_stmt,
 					      gnu_temp);
 	    }
 
@@ -4955,16 +4927,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		     (TREE_OPERAND (TREE_OPERAND (gnu_orig, 1), 1)))
 		gnu_orig = TREE_OPERAND (gnu_orig, 2);
 
-	      if (Present (gnat_smo)
-		  && Present (Storage_Model_Copy_To (gnat_smo)))
-		gnu_stmt
-		  = build_storage_model_store (gnat_smo, gnu_orig,
-					       gnu_temp,
-					       TYPE_SIZE_UNIT (gnu_temp_type));
-	      else
-		gnu_stmt
-		  = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig,
-				     gnu_temp);
+	      gnu_stmt
+		= build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig, gnu_temp);
 	      set_expr_location_from_node (gnu_stmt, gnat_node);
 
 	      append_to_statement_list (gnu_stmt, &gnu_after_list);
@@ -4975,19 +4939,12 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       tree gnu_actual = gnu_name;
 
       /* If atomic access is required for an In or In Out actual parameter,
-	 build the atomic load.  Or else, if storage model access is required,
-	 build the special load.  */
+	 build the atomic load.  */
       if (is_true_formal_parm
 	  && !is_by_ref_formal_parm
-	  && Ekind (gnat_formal) != E_Out_Parameter)
-	{
-	  if (simple_atomic_access_required_p (gnat_actual, &aa_sync))
-	    gnu_actual = build_atomic_load (gnu_actual, aa_sync);
-
-	  else if (Present (gnat_smo)
-		   && Present (Storage_Model_Copy_From (gnat_smo)))
-	    gnu_actual = build_storage_model_load (gnat_smo, gnu_actual);
-	}
+	  && Ekind (gnat_formal) != E_Out_Parameter
+	  && simple_atomic_access_required_p (gnat_actual, &aa_sync))
+	gnu_actual = build_atomic_load (gnu_actual, aa_sync);
 
       /* If this was a procedure call, we may not have removed any padding.
 	 So do it here for the part we will use as an input, if any.  */
@@ -5351,7 +5308,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      }
 
 	    get_atomic_access (gnat_actual, &aa_type, &aa_sync);
-	    get_storage_model_access (gnat_actual, &gnat_smo);
 
 	    /* If an outer atomic access is required for an actual parameter,
 	       build the load-modify-store sequence.  */
@@ -5364,13 +5320,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	    else if (aa_type == SIMPLE_ATOMIC)
 	      gnu_result
 		= build_atomic_store (gnu_actual, gnu_result, aa_sync);
-
-	    /* Or else, if a storage model access is required, build the special
-	       store.  */
-	    else if (Present (gnat_smo)
-		     && Present (Storage_Model_Copy_To (gnat_smo)))
-	      gnu_result
-		= build_storage_model_store (gnat_smo, gnu_actual, gnu_result);
 
 	    /* Otherwise build a regular assignment.  */
 	    else
@@ -5446,11 +5395,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      = build_load_modify_store (gnu_target, gnu_call, gnat_node);
 	  else if (atomic_access == SIMPLE_ATOMIC)
 	    gnu_call = build_atomic_store (gnu_target, gnu_call, atomic_sync);
-	  else if (Present (gnat_storage_model)
-		   && Present (Storage_Model_Copy_To (gnat_storage_model)))
+	  else if (Present (gnat_smo)
+		   && Present (Storage_Model_Copy_To (gnat_smo)))
 	    gnu_call
-	      = build_storage_model_store (gnat_storage_model, gnu_target,
-					   gnu_call);
+	      = build_storage_model_store (gnat_smo, gnu_target, gnu_call);
 	  else
 	    gnu_call
 	      = build_binary_op (op_code, NULL_TREE, gnu_target, gnu_call);
@@ -7482,36 +7430,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	      /* We obviously cannot use memset in this case.  */
 	      gcc_assert (!use_memset_p);
 
+	      /* We cannot directly move between nonnative storage models.  */
 	      tree t = remove_conversions (gnu_rhs, false);
+	      gcc_assert (TREE_CODE (t) != LOAD_EXPR);
 
-	      /* If a storage model load is present on the RHS then instantiate
-		 the temporary associated with it now, lest it be of variable
-		 size and thus could not be instantiated by gimplification.  */
-	      if (TREE_CODE (t) == LOAD_EXPR)
-		{
-		  t = TREE_OPERAND (t, 1);
-		  gcc_assert (TREE_CODE (t) == CALL_EXPR);
-
-		  tree elem
-		    = build_nonstandard_integer_type (BITS_PER_UNIT, 1);
-		  tree size = fold_convert (sizetype, CALL_EXPR_ARG (t, 3));
-		  tree index = build_index_type (size);
-		  tree temp
-		    = create_temporary ("L", build_array_type (elem, index));
-		  tree arg = CALL_EXPR_ARG (t, 1);
-		  CALL_EXPR_ARG (t, 1)
-		    = build_unary_op (ADDR_EXPR, TREE_TYPE (arg), temp);
-
-		  start_stmt_group ();
-		  add_stmt (t);
-		  t = build_storage_model_store (gnat_smo, gnu_lhs, temp);
-		  add_stmt (t);
-		  gnu_result = end_stmt_group ();
-		}
-
-	      else
-		gnu_result
-		  = build_storage_model_store (gnat_smo, gnu_lhs, gnu_rhs);
+	      gnu_result
+		= build_storage_model_store (gnat_smo, gnu_lhs, gnu_rhs);
 	    }
 
 	  /* Or else, use memset when the conditions are met.  This has already
