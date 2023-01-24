@@ -4446,7 +4446,7 @@ The used sizes are
 
 The implementation remark:
 @itemize
-@item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
+@item I/O within OpenMP target regions and OpenACC compute regions is supported
       using the C library @code{printf} functions and the Fortran
       @code{print}/@code{write} statements.
 @item Reverse offload regions (i.e. @code{target} regions with
@@ -4503,9 +4503,11 @@ CUDA version and hardware.
 
 The implementation remark:
 @itemize
-@item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
-      using the C library @code{printf} functions. Note that the Fortran
-      @code{print}/@code{write} statements are not supported, yet.
+@item I/O within OpenMP target regions and OpenACC compute regions is supported
+      using the C library @code{printf} functions.
+      Additionally, the Fortran @code{print}/@code{write} statements are
+      supported within OpenMP target regions, but not yet OpenACC compute
+      regions.
 @item Compilation OpenMP code that contains @code{requires reverse_offload}
       requires at least @code{-march=sm_35}, compiling for @code{-march=sm_30}
       is not supported.
