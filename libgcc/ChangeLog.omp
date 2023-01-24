@@ -1,3 +1,8 @@
+2023-01-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/crt0.c [!HAVE_STDLIB_H]: Don't '#include <stdlib.h>'.
+	(atexit): Prototype.
+
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 	    Andrew Stubbs  <ams@codesourcery.com>
 

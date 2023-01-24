@@ -19,11 +19,16 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include <stdlib.h>
+#include "auto-target.h"
+
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
 #include "gbl-ctors.h"
 
 int *__exitval_ptr;
 
+extern int atexit (void (*function) (void));
 extern void __attribute__((noreturn)) exit (int status);
 extern int main (int, void **);
 
