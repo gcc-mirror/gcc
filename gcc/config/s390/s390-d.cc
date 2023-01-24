@@ -30,10 +30,11 @@ along with GCC; see the file COPYING3.  If not see
 void
 s390_d_target_versions (void)
 {
-  if (TARGET_ZARCH)
-    d_add_builtin_version ("SystemZ");
-  else if (TARGET_64BIT)
-    d_add_builtin_version ("S390X");
+  if (TARGET_64BIT)
+    {
+      d_add_builtin_version ("S390X");
+      d_add_builtin_version ("SystemZ");
+    }
   else
     d_add_builtin_version ("S390");
 
