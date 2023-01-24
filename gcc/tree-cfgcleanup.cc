@@ -1106,9 +1106,11 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
       timevar_push (TV_TREE_CLEANUP_CFG);
     }
 
-  /* Compute dominator info which we need for the iterative process below.  */
+  /* Compute dominator info which we need for the iterative process below.
+     Avoid computing the fast query DFS numbers since any block merging
+     done will invalidate them anyway.  */
   if (!dom_info_available_p (CDI_DOMINATORS))
-    calculate_dominance_info (CDI_DOMINATORS);
+    calculate_dominance_info (CDI_DOMINATORS, false);
   else
     checking_verify_dominators (CDI_DOMINATORS);
 
