@@ -7269,15 +7269,13 @@
 }
   [(set_attr "length" "8")])
 
-;;
-;; [vstrbq_p_s vstrbq_p_u]
-;;
 (define_insn "mve_vstrbq_p_<supf><mode>"
   [(set (match_operand:<MVE_B_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_B_ELEM> [(match_operand:MVE_2 1 "s_register_operand" "w")
-			      (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
-	 VSTRBQ))
-  ]
+	(unspec:<MVE_B_ELEM>
+	 [(match_operand:MVE_2 1 "s_register_operand" "w")
+	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
+	 VSTRBQ))]
   "TARGET_HAVE_MVE"
 {
    rtx ops[2];
@@ -8076,10 +8074,11 @@
 ;;
 (define_insn "mve_vstrhq_p_fv8hf"
   [(set (match_operand:V8HI 0 "mve_memory_operand" "=Ux")
-	(unspec:V8HI [(match_operand:V8HF 1 "s_register_operand" "w")
-		      (match_operand:V8BI 2 "vpr_register_operand" "Up")]
-	 VSTRHQ_F))
-  ]
+	(unspec:V8HI
+	 [(match_operand:V8HF 1 "s_register_operand" "w")
+	  (match_operand:V8BI 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
+	 VSTRHQ_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
    rtx ops[2];
@@ -8096,8 +8095,10 @@
 ;;
 (define_insn "mve_vstrhq_p_<supf><mode>"
   [(set (match_operand:<MVE_H_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_H_ELEM> [(match_operand:MVE_6 1 "s_register_operand" "w")
-			      (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
+	(unspec:<MVE_H_ELEM>
+	 [(match_operand:MVE_6 1 "s_register_operand" "w")
+	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
 	 VSTRHQ))
   ]
   "TARGET_HAVE_MVE"
@@ -8275,10 +8276,11 @@
 ;;
 (define_insn "mve_vstrwq_p_fv4sf"
   [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
-	(unspec:V4SI [(match_operand:V4SF 1 "s_register_operand" "w")
-		      (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
-	 VSTRWQ_F))
-  ]
+	(unspec:V4SI
+	 [(match_operand:V4SF 1 "s_register_operand" "w")
+	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
+	 VSTRWQ_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
    rtx ops[2];
@@ -8295,10 +8297,11 @@
 ;;
 (define_insn "mve_vstrwq_p_<supf>v4si"
   [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
-	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
-		      (match_operand:V4BI 2 "vpr_register_operand" "Up")]
-	 VSTRWQ))
-  ]
+	(unspec:V4SI
+	 [(match_operand:V4SI 1 "s_register_operand" "w")
+	  (match_operand:V4BI 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
+	 VSTRWQ))]
   "TARGET_HAVE_MVE"
 {
    rtx ops[2];
