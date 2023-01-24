@@ -1642,7 +1642,12 @@ csky-*-*)
 		;;
 	    csky-*-linux*)
 		tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} csky/csky-linux-elf.h"
-		tmake_file="${tmake_file} csky/t-csky csky/t-csky-linux"
+		tmake_file="${tmake_file} csky/t-csky"
+
+		if test "x${enable_multilib}" = xyes ; then
+		    tm_defines="$tm_defines CSKY_ENABLE_MULTILIB"
+		    tmake_file="${tmake_file} csky/t-csky-linux"
+		fi
 
 		case ${target} in
 		    csky-*-linux-gnu*)
