@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "ipa-utils.h"
 #include "except.h"
+#include "gimplify.h"
 
 /* Context of record_reference.  */
 struct record_reference_ctx
@@ -79,6 +80,17 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 
       if (VAR_P (decl))
 	{
+	  /* Replace vars with their DECL_VALUE_EXPR if any.
+	     This is normally done during gimplification, but
+	     static var initializers are never gimplified.  */
+	  if (DECL_HAS_VALUE_EXPR_P (decl))
+	    {
+	      tree *p;
+	      for (p = tp; *p != decl; p = &TREE_OPERAND (*p, 0))
+		;
+	      *p = unshare_expr (DECL_VALUE_EXPR (decl));
+	      return record_reference (tp, walk_subtrees, data);
+	    }
 	  varpool_node *vnode = varpool_node::get_create (decl);
 	  ctx->varpool_node->create_reference (vnode, IPA_REF_ADDR);
 	}
