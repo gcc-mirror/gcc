@@ -119,7 +119,7 @@ namespace inchash
 class GTY((user)) irange : public vrange
 {
   friend value_range_kind get_legacy_range (const irange &, tree &, tree &);
-  friend class vrange_allocator;
+  friend class irange_storage;
 public:
   // In-place setters.
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
@@ -310,7 +310,7 @@ nan_state::neg_p () const
 
 class GTY((user)) frange : public vrange
 {
-  friend class frange_storage_slot;
+  friend class frange_storage;
   friend class vrange_printer;
   friend void gt_ggc_mx (frange *);
   friend void gt_pch_nx (frange *);

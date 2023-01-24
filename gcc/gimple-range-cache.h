@@ -65,7 +65,7 @@ public:
   void dump (FILE *f = stderr);
 protected:
   virtual bool dump_range_query (vrange &r, tree name) const;
-  vec<vrange *> m_tab;
+  vec<vrange_storage *> m_tab;
   vrange_allocator *m_range_allocator;
 };
 

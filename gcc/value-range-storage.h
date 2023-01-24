@@ -21,97 +21,101 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VALUE_RANGE_STORAGE_H
 #define GCC_VALUE_RANGE_STORAGE_H
 
-// This class is used to allocate the minimum amount of storage needed
-// for a given range.  Storage is automatically freed at destruction
-// of the class.
+// This class is used to allocate chunks of memory that can store
+// ranges as memory efficiently as possible.
 
 class vrange_allocator
 {
 public:
-  vrange_allocator () { }
-  virtual ~vrange_allocator () { }
-  // Allocate a range of TYPE.
-  vrange *alloc_vrange (tree type);
-  // Allocate a memory block of BYTES.
-  virtual void *alloc (unsigned bytes) = 0;
-  virtual void free (void *p) = 0;
-  // Return a clone of SRC.
-  template <typename T> T *clone (const T &src);
+  // Use GC memory when GC is true, otherwise use obstacks.
+  vrange_allocator (bool gc = false);
+  ~vrange_allocator ();
+  class vrange_storage *clone (const vrange &r);
+  vrange_storage *clone_varying (tree type);
+  vrange_storage *clone_undefined (tree type);
+  void *alloc (size_t size);
+  void free (void *);
 private:
-  irange *alloc_irange (unsigned pairs);
-  frange *alloc_frange ();
-  void operator= (const vrange_allocator &) = delete;
+  DISABLE_COPY_AND_ASSIGN (vrange_allocator);
+  class vrange_internal_alloc *m_alloc;
+  bool m_gc;
 };
 
-// This class is used to allocate chunks of memory that can store
-// ranges as memory efficiently as possible.  It is meant to be used
-// when long term storage of a range is needed.  The class can be used
-// with any vrange_allocator (i.e. alloca or GC).
+// Efficient memory storage for a vrange.
+//
+// The GTY marker here does nothing but get gengtype to generate the
+// ggc_test_and_set_mark calls.  We ignore the derived classes, since
+// they don't contain any pointers.
 
-class vrange_storage
+class GTY(()) vrange_storage
 {
 public:
-  vrange_storage (vrange_allocator *alloc) : m_alloc (alloc) { }
-  void *alloc_slot (const vrange &r);
-  void free (void *slot) { m_alloc->free (slot); }
-  void get_vrange (const void *slot, vrange &r, tree type);
-  void set_vrange (void *slot, const vrange &r);
-  static bool fits_p (const void *slot, const vrange &r);
-private:
-  DISABLE_COPY_AND_ASSIGN (vrange_storage);
-  vrange_allocator *m_alloc;
+  static vrange_storage *alloc (vrange_internal_alloc &, const vrange &);
+  void get_vrange (vrange &r, tree type) const;
+  void set_vrange (const vrange &r);
+  bool fits_p (const vrange &r) const;
+  bool equal_p (const vrange &r, tree type) const;
+protected:
+  // Stack initialization disallowed.
+  vrange_storage () { }
 };
 
-// A chunk of memory pointing to an irange storage.
+// Efficient memory storage for an irange.
 
-class GTY ((variable_size)) irange_storage_slot
+class irange_storage : public vrange_storage
 {
 public:
-  static irange_storage_slot *alloc_slot (vrange_allocator &, const irange &r);
+  static irange_storage *alloc (vrange_internal_alloc &, const irange &);
   void set_irange (const irange &r);
   void get_irange (irange &r, tree type) const;
-  wide_int get_nonzero_bits () const { return m_ints[0]; }
+  bool equal_p (const irange &r, tree type) const;
   bool fits_p (const irange &r) const;
-  static size_t size (const irange &r);
   void dump () const;
 private:
-  DISABLE_COPY_AND_ASSIGN (irange_storage_slot);
-  friend void gt_ggc_mx_irange_storage_slot (void *);
-  friend void gt_pch_p_19irange_storage_slot (void *, void *,
+  DISABLE_COPY_AND_ASSIGN (irange_storage);
+  static size_t size (const irange &r);
+  const unsigned char *lengths_address () const;
+  unsigned char *write_lengths_address ();
+  friend void gt_ggc_mx_irange_storage (void *);
+  friend void gt_pch_p_14irange_storage (void *, void *,
 					      gt_pointer_operator, void *);
-  friend void gt_pch_nx_irange_storage_slot (void *);
+  friend void gt_pch_nx_irange_storage (void *);
 
-  // This is the maximum number of wide_int's allowed in the trailing
-  // ints structure, without going over 16 bytes (128 bits) in the
-  // control word that precedes the HOST_WIDE_INTs in
-  // trailing_wide_ints::m_val[].
-  static const unsigned MAX_INTS = 12;
+  // The shared precision of each number.
+  unsigned short m_precision;
 
-  // Maximum number of range pairs we can handle, considering the
-  // nonzero bits take one wide_int.
-  static const unsigned MAX_PAIRS = (MAX_INTS - 1) / 2;
+  // The max number of sub-ranges that fit in this storage.
+  const unsigned char m_max_ranges;
 
-  // Constructor is private to disallow stack initialization.  Use
-  // alloc_slot() to create objects.
-  irange_storage_slot (const irange &r);
+  // The number of stored sub-ranges.
+  unsigned char m_num_ranges;
 
-  static unsigned num_wide_ints_needed (const irange &r);
+  enum value_range_kind m_kind : 3;
 
-  trailing_wide_ints<MAX_INTS> m_ints;
+  // The length of this is m_num_ranges * 2 + 1 to accomodate the nonzero bits.
+  HOST_WIDE_INT m_val[1];
+
+  // Another variable-length part of the structure following the HWIs.
+  // This is the length of each wide_int in m_val.
+  //
+  // unsigned char m_len[];
+
+  irange_storage (const irange &r);
 };
 
-// A chunk of memory to store an frange to long term memory.
+// Efficient memory storage for an frange.
 
-class GTY (()) frange_storage_slot
+class frange_storage : public vrange_storage
 {
  public:
-  static frange_storage_slot *alloc_slot (vrange_allocator &, const frange &r);
+  static frange_storage *alloc (vrange_internal_alloc &, const frange &r);
   void set_frange (const frange &r);
   void get_frange (frange &r, tree type) const;
+  bool equal_p (const frange &r, tree type) const;
   bool fits_p (const frange &) const;
  private:
-  frange_storage_slot (const frange &r) { set_frange (r); }
-  DISABLE_COPY_AND_ASSIGN (frange_storage_slot);
+  frange_storage (const frange &r) { set_frange (r); }
+  DISABLE_COPY_AND_ASSIGN (frange_storage);
 
   enum value_range_kind m_kind;
   REAL_VALUE_TYPE m_min;
@@ -120,113 +124,7 @@ class GTY (()) frange_storage_slot
   bool m_neg_nan;
 };
 
-class obstack_vrange_allocator final: public vrange_allocator
-{
-public:
-  obstack_vrange_allocator ()
-  {
-    obstack_init (&m_obstack);
-  }
-  virtual ~obstack_vrange_allocator () final override
-  {
-    obstack_free (&m_obstack, NULL);
-  }
-  virtual void *alloc (unsigned bytes) final override
-  {
-    return obstack_alloc (&m_obstack, bytes);
-  }
-  virtual void free (void *) final override { }
-private:
-  obstack m_obstack;
-};
-
-class ggc_vrange_allocator final: public vrange_allocator
-{
-public:
-  ggc_vrange_allocator () { }
-  virtual ~ggc_vrange_allocator () final override { }
-  virtual void *alloc (unsigned bytes) final override
-  {
-    return ggc_internal_alloc (bytes);
-  }
-  virtual void free (void *p) final override
-  {
-    return ggc_free (p);
-  }
-};
-
-// Return a new range to hold ranges of TYPE.  The newly allocated
-// range is initialized to VR_UNDEFINED.
-
-inline vrange *
-vrange_allocator::alloc_vrange (tree type)
-{
-  if (irange::supports_p (type))
-    return alloc_irange (2);
-  if (frange::supports_p (type))
-    return alloc_frange ();
-  return NULL;
-  gcc_unreachable ();
-}
-
-// Return a new range with NUM_PAIRS.
-
-inline irange *
-vrange_allocator::alloc_irange (unsigned num_pairs)
-{
-  // Never allocate 0 pairs.
-  if (num_pairs < 1)
-    num_pairs = 2;
-
-  size_t nbytes = sizeof (tree) * 2 * num_pairs;
-
-  // Allocate the irange and required memory for the vector.
-  void *r = alloc (sizeof (irange));
-  tree *mem = static_cast <tree *> (alloc (nbytes));
-  return new (r) irange (mem, num_pairs);
-}
-
-inline frange *
-vrange_allocator::alloc_frange ()
-{
-  void *r = alloc (sizeof (frange));
-  return new (r) frange ();
-}
-
-// Return a clone of an irange.
-
-template <>
-inline irange *
-vrange_allocator::clone <irange> (const irange &src)
-{
-  irange *r = alloc_irange (src.num_pairs ());
-  *r = src;
-  return r;
-}
-
-// Return a clone of an frange.
-
-template <>
-inline frange *
-vrange_allocator::clone <frange> (const frange &src)
-{
-  frange *r = alloc_frange ();
-  *r = src;
-  return r;
-}
-
-// Return a clone of a vrange.
-
-template <>
-inline vrange *
-vrange_allocator::clone <vrange> (const vrange &src)
-{
-  if (is_a <irange> (src))
-    return clone <irange> (as_a <irange> (src));
-  if (is_a <frange> (src))
-    return clone <frange> (as_a <frange> (src));
-  return NULL;
-  gcc_unreachable ();
-}
+extern vrange_storage *ggc_alloc_vrange_storage (tree type);
+extern vrange_storage *ggc_alloc_vrange_storage (const vrange &);
 
 #endif // GCC_VALUE_RANGE_STORAGE_H

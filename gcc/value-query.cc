@@ -261,13 +261,10 @@ get_ssa_name_range_info (vrange &r, const_tree name)
   gcc_checking_assert (!POINTER_TYPE_P (type));
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
 
-  void *ri = SSA_NAME_RANGE_INFO (name);
+  vrange_storage *ri = SSA_NAME_RANGE_INFO (name);
 
   if (ri)
-    {
-      vrange_storage vstore (NULL);
-      vstore.get_vrange (ri, r, TREE_TYPE (name));
-    }
+    ri->get_vrange (r, TREE_TYPE (name));
   else
     r.set_varying (type);
 }

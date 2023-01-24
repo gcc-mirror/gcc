@@ -69,7 +69,7 @@ gimple_outgoing_range::gimple_outgoing_range (int max_sw_edges)
 {
   m_edge_table = NULL;
   m_max_edges = max_sw_edges;
-  m_range_allocator = new obstack_vrange_allocator;
+  m_range_allocator = new vrange_allocator;
 }
 
 
@@ -97,16 +97,16 @@ gimple_outgoing_range::switch_edge_range (irange &r, gswitch *sw, edge e)
     return false;
 
    if (!m_edge_table)
-     m_edge_table = new hash_map<edge, irange *> (n_edges_for_fn (cfun));
+     m_edge_table = new hash_map<edge, vrange_storage *> (n_edges_for_fn (cfun));
 
-   irange **val = m_edge_table->get (e);
+   vrange_storage **val = m_edge_table->get (e);
    if (!val)
      {
        calc_switch_ranges (sw);
        val = m_edge_table->get (e);
        gcc_checking_assert (val);
      }
-    r = **val;
+   (*val)->get_vrange (r, TREE_TYPE (gimple_switch_index (sw)));
   return true;
 }
 
@@ -150,29 +150,30 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
       // Create/union this case with anything on else on the edge.
       int_range_max case_range (low, high);
       range_cast (case_range, type);
-      irange *&slot = m_edge_table->get_or_insert (e, &existed);
+      vrange_storage *&slot = m_edge_table->get_or_insert (e, &existed);
       if (existed)
 	{
 	  // If this doesn't change the value, move on.
-	  if (!case_range.union_ (*slot))
+	  int_range_max tmp;
+	  slot->get_vrange (tmp, type);
+	  if (!case_range.union_ (tmp))
 	   continue;
 	  if (slot->fits_p (case_range))
 	    {
-	      *slot = case_range;
+	      slot->set_vrange (case_range);
 	      continue;
 	    }
 	}
       // If there was an existing range and it doesn't fit, we lose the memory.
       // It'll get reclaimed when the obstack is freed.  This seems less
       // intrusive than allocating max ranges for each case.
-      slot = m_range_allocator->clone <irange> (case_range);
+      slot = m_range_allocator->clone (case_range);
     }
 
-  irange *&slot = m_edge_table->get_or_insert (default_edge, &existed);
+  vrange_storage *&slot = m_edge_table->get_or_insert (default_edge, &existed);
   // This should be the first call into this switch.
   gcc_checking_assert (!existed);
-  irange *dr = m_range_allocator->clone <irange> (default_range);
-  slot = dr;
+  slot = m_range_allocator->clone (default_range);
 }
 
 
