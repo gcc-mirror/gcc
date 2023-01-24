@@ -223,7 +223,8 @@ refine_value_range_using_guard (tree type, tree var,
   else if (TREE_CODE (varc1) == SSA_NAME
 	   && INTEGRAL_TYPE_P (type)
 	   && get_range_query (cfun)->range_of_expr (r, varc1)
-	   && r.kind () == VR_RANGE)
+	   && !r.undefined_p ()
+	   && !r.varying_p ())
     {
       gcc_assert (wi::le_p (r.lower_bound (), r.upper_bound (), sgn));
       wi::to_mpz (r.lower_bound (), minc1, sgn);
@@ -368,7 +369,10 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
       /* Either for VAR itself...  */
       Value_Range var_range (TREE_TYPE (var));
       get_range_query (cfun)->range_of_expr (var_range, var);
-      rtype = var_range.kind ();
+      if (var_range.varying_p () || var_range.undefined_p ())
+	rtype = VR_VARYING;
+      else
+	rtype = VR_RANGE;
       if (!var_range.undefined_p ())
 	{
 	  minv = var_range.lower_bound ();
@@ -384,7 +388,8 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var
 	      && get_range_query (cfun)->range_of_expr (phi_range,
 						    gimple_phi_result (phi))
-	      && phi_range.kind () == VR_RANGE)
+	      && !phi_range.varying_p ()
+	      && !phi_range.undefined_p ())
 	    {
 	      if (rtype != VR_RANGE)
 		{
@@ -404,7 +409,10 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 		    {
 		      Value_Range vr (TREE_TYPE (var));
 		      get_range_query (cfun)->range_of_expr (vr, var);
-		      rtype = vr.kind ();
+		      if (vr.varying_p () || vr.undefined_p ())
+			rtype = VR_VARYING;
+		      else
+			rtype = VR_RANGE;
 		      if (!vr.undefined_p ())
 			{
 			  minv = vr.lower_bound ();
@@ -4045,7 +4053,8 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (high) == INTEGER_CST
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
-	  && (base_range.kind () == VR_RANGE
+	  && ((!base_range.varying_p ()
+	       && !base_range.undefined_p ())
 	      || get_cst_init_from_scev (orig_base, &max, false))
 	  && wi::gts_p (wi::to_wide (high), max))
 	base = wide_int_to_tree (unsigned_type, max);
@@ -4067,7 +4076,8 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (low) == INTEGER_CST
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
-	  && (base_range.kind () == VR_RANGE
+	  && ((!base_range.varying_p ()
+	       && !base_range.undefined_p ())
 	      || get_cst_init_from_scev (orig_base, &min, true))
 	  && wi::gts_p (min, wi::to_wide (low)))
 	base = wide_int_to_tree (unsigned_type, min);
@@ -4335,7 +4345,7 @@ infer_loop_bounds_from_signedness (class loop *loop, gimple *stmt)
   high = upper_bound_in_type (type, type);
   Value_Range r (TREE_TYPE (def));
   get_range_query (cfun)->range_of_expr (r, def);
-  if (r.kind () == VR_RANGE)
+  if (!r.varying_p () && !r.undefined_p ())
     {
       low = wide_int_to_tree (type, r.lower_bound ());
       high = wide_int_to_tree (type, r.upper_bound ());
@@ -5385,7 +5395,7 @@ scev_var_range_cant_overflow (tree var, tree step, class loop *loop)
 
   Value_Range r (TREE_TYPE (var));
   get_range_query (cfun)->range_of_expr (r, var);
-  if (r.kind () != VR_RANGE)
+  if (r.varying_p () || r.undefined_p ())
     return false;
 
   /* VAR is a scev whose evolution part is STEP and value range info

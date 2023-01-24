@@ -907,15 +907,10 @@ irange::operator= (const irange &src)
 value_range_kind
 get_legacy_range (const irange &r, tree &min, tree &max)
 {
-  value_range_kind old_kind = r.kind ();
-  tree old_min = r.min ();
-  tree old_max = r.max ();
-
   if (r.undefined_p ())
     {
       min = NULL_TREE;
       max = NULL_TREE;
-      gcc_checking_assert (old_kind == VR_UNDEFINED);
       return VR_UNDEFINED;
     }
 
@@ -924,9 +919,6 @@ get_legacy_range (const irange &r, tree &min, tree &max)
     {
       min = wide_int_to_tree (type, r.lower_bound ());
       max = wide_int_to_tree (type, r.upper_bound ());
-      gcc_checking_assert (old_kind == VR_VARYING);
-      gcc_checking_assert (vrp_operand_equal_p (old_min, min));
-      gcc_checking_assert (vrp_operand_equal_p (old_max, max));
       return VR_VARYING;
     }
 
@@ -946,9 +938,6 @@ get_legacy_range (const irange &r, tree &min, tree &max)
 
   min = wide_int_to_tree (type, r.lower_bound ());
   max = wide_int_to_tree (type, r.upper_bound ());
-  gcc_checking_assert (old_kind == VR_RANGE);
-  gcc_checking_assert (vrp_operand_equal_p (old_min, min));
-  gcc_checking_assert (vrp_operand_equal_p (old_max, max));
   return VR_RANGE;
 }
 
@@ -1163,44 +1152,6 @@ irange::singleton_p (tree *result) const
       return true;
     }
   return false;
-}
-
-/* Return 1 if VAL is inside value range.
-	  0 if VAL is not inside value range.
-	 -2 if we cannot tell either way.
-
-   Benchmark compile/20001226-1.c compilation time after changing this
-   function.  */
-
-int
-irange::value_inside_range (tree val) const
-{
-  if (varying_p ())
-    return 1;
-
-  if (undefined_p ())
-    return 0;
-
-  gcc_checking_assert (TREE_CODE (val) == INTEGER_CST);
-
-  // FIXME:
-  if (TREE_CODE (val) == INTEGER_CST)
-    return contains_p (val);
-
-  int cmp1 = operand_less_p (val, min ());
-  if (cmp1 == -2)
-    return -2;
-  if (cmp1 == 1)
-    return m_kind != VR_RANGE;
-
-  int cmp2 = operand_less_p (max (), val);
-  if (cmp2 == -2)
-    return -2;
-
-  if (m_kind == VR_RANGE)
-    return !cmp2;
-  else
-    return !!cmp2;
 }
 
 /* Return TRUE if range contains INTEGER_CST.  */

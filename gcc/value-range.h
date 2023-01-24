@@ -166,10 +166,6 @@ public:
   wide_int get_nonzero_bits () const;
   void set_nonzero_bits (const wide_int_ref &bits);
 
-  // Deprecated legacy public methods.
-  tree min () const;				// DEPRECATED
-  tree max () const;				// DEPRECATED
-
 protected:
   irange (tree *, unsigned);
   // potential promotion to public?
@@ -188,7 +184,6 @@ protected:
   void normalize_kind ();
 
   void verify_range ();
-  int value_inside_range (tree) const;
 
 private:
   friend void gt_ggc_mx (irange *);
@@ -499,7 +494,6 @@ public:
   void set (tree min, tree max, value_range_kind kind = VR_RANGE)
     { return m_vrange->set (min, max, kind); }
   tree type () { return m_vrange->type (); }
-  enum value_range_kind kind () { return m_vrange->kind (); }
   bool varying_p () const { return m_vrange->varying_p (); }
   bool undefined_p () const { return m_vrange->undefined_p (); }
   void set_varying (tree type) { m_vrange->set_varying (type); }
@@ -645,26 +639,12 @@ extern bool vrp_operand_equal_p (const_tree, const_tree);
 inline REAL_VALUE_TYPE frange_val_min (const_tree type);
 inline REAL_VALUE_TYPE frange_val_max (const_tree type);
 
-inline value_range_kind
-vrange::kind () const
-{
-  return m_kind;
-}
-
 // Number of sub-ranges in a range.
 
 inline unsigned
 irange::num_pairs () const
 {
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      bool constant_p = (TREE_CODE (min ()) == INTEGER_CST
-			 && TREE_CODE (max ()) == INTEGER_CST);
-      gcc_checking_assert (constant_p);
-      return 2;
-    }
-  else
-    return m_num_ranges;
+  return m_num_ranges;
 }
 
 inline tree
@@ -699,21 +679,6 @@ irange::tree_upper_bound () const
 {
   gcc_checking_assert (m_num_ranges);
   return tree_upper_bound (m_num_ranges - 1);
-}
-
-inline tree
-irange::min () const
-{
-  return tree_lower_bound (0);
-}
-
-inline tree
-irange::max () const
-{
-  if (m_num_ranges)
-    return tree_upper_bound ();
-  else
-    return NULL;
 }
 
 inline bool

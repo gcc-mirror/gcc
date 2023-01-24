@@ -367,30 +367,6 @@ get_single_symbol (tree t, bool *neg, tree *inv)
   return t;
 }
 
-/* Return
-   1 if VAL < VAL2
-   0 if !(VAL < VAL2)
-   -2 if those are incomparable.  */
-int
-operand_less_p (tree val, tree val2)
-{
-  /* LT is folded faster than GE and others.  Inline the common case.  */
-  if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
-    return tree_int_cst_lt (val, val2);
-  else if (TREE_CODE (val) == SSA_NAME && TREE_CODE (val2) == SSA_NAME)
-    return val == val2 ? 0 : -2;
-  else
-    {
-      int cmp = compare_values (val, val2);
-      if (cmp == -1)
-	return 1;
-      else if (cmp == 0 || cmp == 1)
-	return 0;
-      else
-	return -2;
-    }
-}
-
 /* Compare two values VAL1 and VAL2.  Return
 
    	-2 if VAL1 and VAL2 cannot be compared at compile-time,
