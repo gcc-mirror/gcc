@@ -1,3 +1,213 @@
+2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* doc/invoke.texi (-mbranch-protection): Update documentation.
+
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* config/sparc/freebsd.h (ENDFILE_SPEC): Don't add crtfastmath.o
+	for -shared.
+	* config/sparc/linux.h (ENDFILE_SPEC): Likewise.
+	* config/sparc/linux64.h (ENDFILE_SPEC): Likewise.
+	* config/sparc/sp-elf.h (ENDFILE_SPEC): Likewise.
+	* config/sparc/sp64-elf.h (ENDFILE_SPEC): Likewise.
+
+2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/aout.h (ra_auth_code): Add entry in enum.
+	* config/arm/arm.cc (emit_multi_reg_push): Add RA_AUTH_CODE register
+	to dwarf frame expression.
+	(arm_emit_multi_reg_pop): Restore RA_AUTH_CODE register.
+	(arm_expand_prologue): Update frame related information and reg notes
+	for pac/pacbit insn.
+	(arm_regno_class): Check for pac pseudo reigster.
+	(arm_dbx_register_number): Assign ra_auth_code register number in dwarf.
+	(arm_init_machine_status): Set pacspval_needed to zero.
+	(arm_debugger_regno): Check for PAC register.
+	(arm_unwind_emit_sequence): Print .save directive with ra_auth_code
+	register.
+	(arm_unwind_emit_set): Add entry for IP_REGNUM in switch case.
+	(arm_unwind_emit): Update REG_CFA_REGISTER case._
+	* config/arm/arm.h (FIRST_PSEUDO_REGISTER): Modify.
+	(DWARF_PAC_REGNUM): Define.
+	(IS_PAC_REGNUM): Likewise.
+	(enum reg_class): Add PAC_REG entry.
+	(machine_function): Add pacbti_needed state to structure.
+	* config/arm/arm.md (RA_AUTH_CODE): Define.
+
+2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config.gcc ($tm_file): Update variable.
+	* config/arm/arm-mlib.h: Create new header file.
+	* config/arm/t-rmprofile (MULTI_ARCH_DIRS_RM): Rename mbranch-protection
+	multilib arch directory.
+	(MULTILIB_REUSE): Add multilib reuse rules.
+	(MULTILIB_MATCHES): Add multilib match rules.
+
+2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-m85): Define new CPU.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* doc/invoke.texi (Arm Options): Document -mcpu=cortex-m85.
+	* (-mfix-cmse-cve-2021-35465): Likewise.
+
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108482
+	* tree-vect-generic.cc (expand_vector_operations): Fold remaining
+	.LOOP_DIST_ALIAS calls.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config.gcc (arm*-*-*): Add 'aarch-bti-insert.o' object.
+	* config/arm/arm-protos.h: Update.
+	* config/arm/aarch-common-protos.h: Declare
+	'aarch_bti_arch_check'.
+	* config/arm/arm.cc (aarch_bti_enabled) Update.
+	(aarch_bti_j_insn_p, aarch_pac_insn_p, aarch_gen_bti_c)
+	(aarch_gen_bti_j, aarch_bti_arch_check): New functions.
+	* config/arm/arm.md (bti_nop): New insn.
+	* config/arm/t-arm (PASSES_EXTRA): Add 'arm-passes.def'.
+	(aarch-bti-insert.o): New target.
+	* config/arm/unspecs.md (VUNSPEC_BTI_NOP): New unspec.
+	* config/arm/aarch-bti-insert.cc (rest_of_insert_bti): Verify arch
+	compatibility.
+	(gate): Make use of 'aarch_bti_arch_check'.
+	* config/arm/arm-passes.def: New file.
+	* config/aarch64/aarch64.cc (aarch_bti_arch_check): New function.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config.gcc (aarch64*-*-*): Rename 'aarch64-bti-insert.o' into
+	'aarch-bti-insert.o'.
+	* config/aarch64/aarch64-protos.h: Remove 'aarch64_bti_enabled'
+	proto.
+	* config/aarch64/aarch64.cc (aarch_bti_enabled): Rename.
+	(aarch_bti_j_insn_p, aarch_pac_insn_p): New functions.
+	(aarch64_output_mi_thunk)
+	(aarch64_print_patchable_function_entry)
+	(aarch64_file_end_indicate_exec_stack): Update renamed function
+	calls to renamed functions.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Likewise.
+	* config/aarch64/t-aarch64 (aarch-bti-insert.o): Update
+	target.
+	* config/aarch64/aarch64-bti-insert.cc: Delete.
+	* config/arm/aarch-bti-insert.cc: New file including and
+	generalizing code from aarch64-bti-insert.cc.
+	* config/arm/aarch-common-protos.h: Update.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm.h (arm_arch8m_main): Declare it.
+	* config/arm/arm-protos.h (arm_current_function_pac_enabled_p):
+	Declare it.
+	* config/arm/arm.cc (arm_arch8m_main): Define it.
+	(arm_option_reconfigure_globals): Set arm_arch8m_main.
+	(arm_compute_frame_layout, arm_expand_prologue)
+	(thumb2_expand_return, arm_expand_epilogue)
+	(arm_conditional_register_usage): Update for pac codegen.
+	(arm_current_function_pac_enabled_p): New function.
+	(aarch_bti_enabled) New function.
+	(use_return_insn): Return zero when pac is enabled.
+	* config/arm/arm.md (pac_ip_lr_sp, pacbti_ip_lr_sp, aut_ip_lr_sp):
+	Add new patterns.
+	* config/arm/unspecs.md (UNSPEC_PAC_NOP)
+	(VUNSPEC_PACBTI_NOP, VUNSPEC_AUT_NOP): Add unspecs.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/t-rmprofile: Add multilib rules for march +pacbti and
+	mbranch-protection.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+
+	* config/arm/arm.cc (arm_file_start): Emit EABI attributes for
+	Tag_PAC_extension, Tag_BTI_extension, TAG_BTI_use, TAG_PACRET_use.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* ginclude/unwind-arm-common.h (_Unwind_VRS_RegClass): Introduce
+	new pseudo register class _UVRSC_PAC.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+
+	* config/arm/arm-c.cc (arm_cpu_builtins): Define
+	__ARM_FEATURE_BTI_DEFAULT, __ARM_FEATURE_PAC_DEFAULT,
+	__ARM_FEATURE_PAUTH and __ARM_FEATURE_BTI.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+
+	* doc/sourcebuild.texi: Document arm_pacbti_hw.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+	    Richard Earnshaw  <Richard.Earnshaw@arm.com>
+
+	* config/arm/arm.cc (arm_configure_build_target): Parse and validate
+	-mbranch-protection option and initialize appropriate data structures.
+	* config/arm/arm.opt (-mbranch-protection): New option.
+	* doc/invoke.texi (Arm Options): Document it.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+
+	* config/arm/arm.h (TARGET_HAVE_PACBTI): New macro.
+	* config/arm/arm-cpus.in (pacbti): New feature.
+	* doc/invoke.texi (Arm Options): Document it.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc: Include aarch-common.h.
+	(all_architectures): Fix comment.
+	(aarch64_parse_extension): Rename return type, enum value names.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Rename
+	factored out aarch_ra_sign_scope and aarch_ra_sign_key variables.
+	Also rename corresponding enum values.
+	* config/aarch64/aarch64-opts.h (aarch64_function_type): Factor
+	out aarch64_function_type and move it to common code as
+	aarch_function_type in aarch-common.h.
+	* config/aarch64/aarch64-protos.h: Include common types header,
+	move out types aarch64_parse_opt_result and aarch64_key_type to
+	aarch-common.h
+	* config/aarch64/aarch64.cc: Move mbranch-protection parsing types
+	and functions out into aarch-common.h and aarch-common.cc.  Fix up
+	all the name changes resulting from the move.
+	* config/aarch64/aarch64.md: Fix up aarch64_ra_sign_key type name change
+	and enum value.
+	* config/aarch64/aarch64.opt: Include aarch-common.h to import
+	type move.  Fix up name changes from factoring out common code and
+	data.
+	* config/arm/aarch-common-protos.h: Export factored out routines to both
+	backends.
+	* config/arm/aarch-common.cc: Include newly factored out types.
+	Move all mbranch-protection code and data structures from
+	aarch64.cc.
+	* config/arm/aarch-common.h: New header that declares types shared
+	between aarch32 and aarch64 backends.
+	* config/arm/arm-protos.h: Declare types and variables that are
+	made common to aarch64 and aarch32 backends - aarch_ra_sign_key,
+	aarch_ra_sign_scope and aarch_enable_bti.
+	* config/arm/arm.opt (config/arm/aarch-common.h): Include header.
+	(aarch_ra_sign_scope, aarch_enable_bti): Declare variable.
+	* config/arm/arm.cc: Add missing includes.
+
+2023-01-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/install.texi (amdgcn, nvptx): Require newlib 4.3.0.
+
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108449
+	* cgraphunit.cc (check_global_declaration): Do not turn
+	undefined statics into externs.
+
 2023-01-22  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* config/pru/pru.h (CLZ_DEFINED_VALUE_AT_ZERO): Fix value for QI

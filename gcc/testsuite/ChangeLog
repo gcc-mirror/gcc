@@ -1,3 +1,123 @@
+2023-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107267
+	* g++.dg/cpp0x/move2.C: New test.
+
+2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108502
+	* gfortran.dg/pr108502.f90: New test.
+
+2023-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107797
+	* g++.dg/warn/Wunused-value-1.C: New test.
+
+2023-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108195
+	* g++.dg/cpp0x/initlist-vect2.C: New test.
+
+2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108501
+	* gfortran.dg/pr108501.f90: New test.
+
+2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108420
+	* gfortran.dg/pr108420.f90: New test.
+
+2023-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108496
+	* g++.dg/template/explicit-instantiation5.C: New test.
+
+2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* g++.target/arm/pac-1.C: New test.
+	* gcc.target/arm/pac-15.c: Likewise.
+
+2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/multilib.exp (multilib_config "rmprofile"): Update
+	tests.
+	* gcc.target/arm/pac-12.c: New test.
+	* gcc.target/arm/pac-13.c: Likewise.
+	* gcc.target/arm/pac-14.c: Likewise.
+
+2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add tests for cortex-m85.
+
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108482
+	* gcc.dg/torture/pr108482.c: New testcase.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/bti-1.c: New testcase.
+	* gcc.target/arm/bti-2.c: Likewise.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/pac.h : New file.
+	* gcc.target/arm/pac-1.c : New test case.
+	* gcc.target/arm/pac-2.c : Likewise.
+	* gcc.target/arm/pac-3.c : Likewise.
+	* gcc.target/arm/pac-4.c : Likewise.
+	* gcc.target/arm/pac-5.c : Likewise.
+	* gcc.target/arm/pac-6.c : Likewise.
+	* gcc.target/arm/pac-7.c : Likewise.
+	* gcc.target/arm/pac-8.c : Likewise.
+	* gcc.target/arm/pac-9.c : Likewise.
+	* gcc.target/arm/pac-10.c : Likewise.
+	* gcc.target/arm/pac-11.c : Likewise.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add pacbti related entries.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+
+	* gcc.target/arm/acle/pacbti-m-predef-1.c: New test.
+	* gcc.target/arm/acle/pacbti-m-predef-3.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-6.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-7.c: Likewise.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_mbranch_protection_ok): New function.
+	* gcc.target/arm/acle/pacbti-m-predef-2.c: New test.
+	* gcc.target/arm/acle/pacbti-m-predef-4.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-5.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-8.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-9.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-10.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-11.c: Likewise.
+	* gcc.target/arm/acle/pacbti-m-predef-12.c: Likewise.
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+
+	* lib/target-supports.exp:
+	(check_effective_target_arm_pacbti_hw): New.
+
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108449
+	* gcc.dg/pr108449.c: New testcase.
+
+2023-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53288
+	DR 1299
+	* g++.dg/init/lifetime4.C: New test.
+
 2023-01-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gm2/case/pass/case-pass.exp: Update for removal of concatenated

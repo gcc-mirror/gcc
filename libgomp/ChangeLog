@@ -1,3 +1,8 @@
+2023-01-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.0): Set non-rectangular
+	loop nest back to 'P' as Fortran support is incomplete.
+
 2023-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/108459

@@ -1,3 +1,42 @@
+2023-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/108182
+	PR modula2/108480
+	* Make-lang.in: Pass libsubdir to the language init
+	build.
+	* gm2-lang.cc (INCLUDE_VECTOR): Define.
+	(add_one_import_path): New.
+	(add_m2_import_paths): New.
+	(gm2_langhook_post_options): Arrange to add the include
+	paths (and add the system ones) in the same order as C
+	uses.
+	* gm2spec.cc (build_archive_path): Remove.
+	(add_default_combination): Remove.
+	(add_default_archives): Remove.
+	(add_default_libs): We no longer need a '-L' option, just
+	emit the -l and each library in use.
+	(build_include_path): Remove.
+	(add_include): Remove.
+	(add_default_includes): Remove.
+	(library_installed): Remove.
+	(check_valid_library): Remove.
+	(check_valid_list): Remove.
+	(convert_abbreviation): Diagnose unhandled cases.
+	(lang_specific_driver): Skip options where we will add back
+	a validated version.
+	* lang-specs.h (M2CPP): Reformat, append %I when -fcpp is not
+	in use.  Revise the cc1gm2 spec to omit mentioning options that
+	are handled in the c pre-processor line.
+	* lang.opt: Allow preprocessing and path options as input to the
+	cc1gm2 invocation, so that they can be passed to the preprocessor
+	invocation.
+
+2023-01-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/108405
+	* gm2-libs-iso/Preemptive.mod (initPreemptive): Use a value for
+	extra space that is divisible by common OS pagesizes.
+
 2023-01-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-libs/Args.mod (GetArg): Check index before

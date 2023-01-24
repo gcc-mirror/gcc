@@ -1,3 +1,38 @@
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR modula2/108144
+	* libm2cor/Makefile.am: Revert previous change, instead
+	drop the redundant $(MULTIDIR).
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2min/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR modula2/108144
+	* configure.ac: Apply config-ml.pl to the generated Makefiles.
+	Set multilib_arg, use AM_PROG_LIBTOOL.
+	* configure: Regenerate.
+	* Makefile.am (AM_MAKEFLAGS): Do not override MULTI* flags.
+	* Makefile.in: Regenerate.
+	* libm2cor/Makefile.am: Install to $(toolexeclibdir)$(M2LIBDIR)
+	rather than $(inst_libdir)/$(MULTIDIR)$(M2LIBDIR).
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2min/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
 2023-01-19  Richard Biener  <rguenther@suse.de>
 
 	PR modula2/108144

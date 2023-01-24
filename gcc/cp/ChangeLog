@@ -1,3 +1,35 @@
+2023-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107267
+	* cp-gimplify.cc (cp_gimplify_init_expr): Allow unexpected elision
+	of trivial types.
+
+2023-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107797
+	* cvt.cc (ocp_convert): copy_warning when creating a new
+	COMPOUND_EXPR.
+	* init.cc (build_new_1): Suppress -Wunused-value on
+	compiler-generated COMPOUND_EXPRs.
+
+2023-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108195
+	* call.cc (build_user_type_conversion_1): Check whether the
+	iterators also find a list ctor.
+
+2023-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108496
+	* decl.cc (grokdeclarator): Check whether DECL_RESULT is already
+	set.
+
+2023-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53288
+	DR 1299
+	* call.cc (extend_ref_init_temps_1): Handle ptrmem expression.
+
 2023-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/108437

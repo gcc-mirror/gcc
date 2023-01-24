@@ -1,3 +1,22 @@
+2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/pr-support.c (__gnu_unwind_execute): Decode opcode
+	"0xb5".
+
+2023-01-23  Andrea Corallo  <andrea.corallo@arm.com>
+	    Tejas Belagod   <tbelagod@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/arm/pr-support.c (__gnu_unwind_execute): Decode
+	exception opcode (0xb4) for saving RA_AUTH_CODE and authenticate
+	with AUTG if found.
+	* config/arm/unwind-arm.c (struct pseudo_regs): New.
+	(phase1_vrs): Introduce new field to store pseudo-reg state.
+	(phase2_vrs): Likewise.
+	(_Unwind_VRS_Get): Load pseudo register state from virtual reg set.
+	(_Unwind_VRS_Set): Store pseudo register state to virtual reg set.
+	(_Unwind_VRS_Pop): Load pseudo register value from stack into VRS.
+
 2023-01-18  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR target/107678

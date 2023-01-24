@@ -1,3 +1,18 @@
+2023-01-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_Unchecked): New.
+	(_Safe_iterator(const _Safe_iterator&, _Unchecked)): New.
+	(_Safe_iterator::operator++(int)): Use latter.
+	(_Safe_iterator::operator--(int)): Likewise.
+	(_Safe_iterator(_Iterator, const _Safe_sequence_base*)): Remove !_M_insular()
+	check.
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>::_Unchecked):
+	New.
+	(_Safe_local_iterator(const _Safe_local_iterator&, _Unchecked)): New.
+	(_Safe_local_iterator::operator++(int)): Use latter.
+	* src/c++11/debug.cc (_S_debug_messages): Add as comment the _Debug_msg_id
+	entry associated to the array entry.
+
 2023-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_path.h (u8path): Add deprecated attribute.
