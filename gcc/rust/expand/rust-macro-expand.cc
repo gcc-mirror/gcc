@@ -839,6 +839,8 @@ static AST::Fragment
 transcribe_expression (Parser<MacroInvocLexer> &parser)
 {
   auto expr = parser.parse_expr ();
+  if (expr == nullptr)
+    return AST::Fragment::create_error ();
 
   return AST::Fragment::complete ({std::move (expr)});
 }
