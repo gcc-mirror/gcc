@@ -27,6 +27,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "input.h"
 #include "m2options.h"
 
+static int cpreprocessor = 0;  /* Replace this with correct getter.  */
 
 #if defined(GM2USEGGC)
 #  include "ggc.h"
@@ -70,6 +71,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
   static int                  lineno      =1;   /* a running count of the file line number */
   static char                *filename    =NULL;
   static int                  commentLevel=0;
+  static int                  commentCLevel=0;
   static struct lineInfo     *currentLine=NULL;
   static struct functionInfo *currentFunction=NULL;
   static int                  seenFunctionStart=FALSE;
@@ -87,6 +89,8 @@ static  void updatepos                (void);
 static  void skippos                  (void);
 static  void poperrorskip             (const char *);
 static  void endOfComment             (void);
+static  void endOfCComment            (void);
+static  void splitSlashStar           (void);
 static  void handleDate               (void);
 static  void handleLine               (void);
 static  void handleFile               (void);
@@ -117,7 +121,7 @@ extern  void  yylex                   (void);
 %}
 
 %option nounput
-%x COMMENT COMMENT1 LINE0 LINE1 LINE2
+%x COMMENT COMMENT1 COMMENTC LINE0 LINE1 LINE2
 
 %%
 
@@ -145,6 +149,24 @@ extern  void  yylex                   (void);
 <COMMENT1><<EOF>>          { poperrorskip("unterminated source code directive, missing *>"); BEGIN COMMENT; }
 <COMMENT><<EOF>>           { poperrorskip("unterminated comment found at the end of the file, missing *)"); BEGIN INITIAL; }
 
+"/*"                       { /* Possibly handle C preprocessor comment.  */
+                             if (cpreprocessor)
+			       {
+				 updatepos ();
+				 commentCLevel++;
+				 if (commentCLevel == 1)
+				   {
+				     pushLine ();
+				     skippos ();
+				   }
+				 BEGIN COMMENTC;
+			       }
+			     else
+			       splitSlashStar ();
+                           }
+<COMMENTC>.                { updatepos(); skippos(); }
+<COMMENTC>\n.*             { consumeLine(); }
+<COMMENTC>"*/"             { endOfCComment(); }
 ^\#.*                      { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */ BEGIN LINE0; }
 \n\#.*                     { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */ BEGIN LINE0; }
 <LINE0>\#[ \t]*            { updatepos(); }
@@ -437,6 +459,19 @@ static void endOfComment (void)
 }
 
 /*
+ *  endOfCComment - handles the end of C comment.
+ */
+
+static void endOfCComment (void)
+{
+  commentCLevel = 0;
+  updatepos();
+  skippos();
+  BEGIN INITIAL;
+  finishedLine();
+}
+
+/*
  *  m2flex_M2Error - displays the error message, s, after the code line and pointer
  *                   to the erroneous token.
  */
@@ -503,6 +538,39 @@ static void assert_location (location_t location ATTRIBUTE_UNUSED)
   }
 #endif
 }
+
+/*
+ *  splitSlashStar - called if we are not tokenizing source code after it
+ *                   has been preprocessed by cpp.  It is only called
+ *                   if the current token was /* and therefore it will
+ *                   be split into two m2 tokens:  / and *.
+ */
+
+static void splitSlashStar (void)
+{
+  seenFunctionStart    = FALSE;
+  seenEnd              = FALSE;
+  seenModuleStart      = FALSE;
+  currentLine->nextpos = currentLine->tokenpos+1;  /* "/".  */
+  currentLine->toklen  = 1;
+  currentLine->column = currentLine->tokenpos+1;
+  currentLine->location =
+    M2Options_OverrideLocation (GET_LOCATION (currentLine->column,
+                                              currentLine->column+currentLine->toklen-1));
+  assert_location (GET_LOCATION (currentLine->column,
+                                 currentLine->column+currentLine->toklen-1));
+  M2LexBuf_AddTok (M2Reserved_dividetok);
+  currentLine->nextpos = currentLine->tokenpos+1;  /* "*".  */
+  currentLine->toklen  = 1;
+  currentLine->column = currentLine->tokenpos+1;
+  currentLine->location =
+    M2Options_OverrideLocation (GET_LOCATION (currentLine->column,
+                                              currentLine->column+currentLine->toklen-1));
+  assert_location (GET_LOCATION (currentLine->column,
+                                 currentLine->column+currentLine->toklen-1));
+  M2LexBuf_AddTok (M2Reserved_timestok);
+}
+
 
 /*
  *  updatepos - updates the current token position.
