@@ -168,10 +168,6 @@ public:
 
 protected:
   irange (tree *, unsigned);
-  // potential promotion to public?
-  tree tree_lower_bound (unsigned = 0) const;
-  tree tree_upper_bound (unsigned) const;
-  tree tree_upper_bound () const;
 
    // In-place operators.
   bool irange_union (const irange &);
@@ -654,33 +650,6 @@ irange::type () const
   return TREE_TYPE (m_base[0]);
 }
 
-// Return the lower bound of a sub-range expressed as a tree.  PAIR is
-// the sub-range in question.
-
-inline tree
-irange::tree_lower_bound (unsigned pair) const
-{
-  return m_base[pair * 2];
-}
-
-// Return the upper bound of a sub-range expressed as a tree.  PAIR is
-// the sub-range in question.
-
-inline tree
-irange::tree_upper_bound (unsigned pair) const
-{
-  return m_base[pair * 2 + 1];
-}
-
-// Return the highest bound of a range expressed as a tree.
-
-inline tree
-irange::tree_upper_bound () const
-{
-  gcc_checking_assert (m_num_ranges);
-  return tree_upper_bound (m_num_ranges - 1);
-}
-
 inline bool
 irange::varying_compatible_p () const
 {
@@ -730,8 +699,8 @@ inline bool
 irange::zero_p () const
 {
   return (m_kind == VR_RANGE && m_num_ranges == 1
-	  && integer_zerop (tree_lower_bound (0))
-	  && integer_zerop (tree_upper_bound (0)));
+	  && lower_bound (0) == 0
+	  && upper_bound (0) == 0);
 }
 
 inline bool
@@ -910,7 +879,7 @@ irange::lower_bound (unsigned pair) const
 {
   gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
-  return wi::to_wide (tree_lower_bound (pair));
+  return wi::to_wide (m_base[pair * 2]);
 }
 
 // Return the upper bound of a sub-range.  PAIR is the sub-range in
@@ -921,7 +890,7 @@ irange::upper_bound (unsigned pair) const
 {
   gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
-  return wi::to_wide (tree_upper_bound (pair));
+  return wi::to_wide (m_base[pair * 2 + 1]);
 }
 
 // Return the highest bound of a range.

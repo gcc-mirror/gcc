@@ -1010,7 +1010,7 @@ irange::irange_set_anti_range (tree min, tree max)
     {
       wide_int lim1 = wi::sub (w_min, 1, sign, &ovf);
       gcc_checking_assert (ovf != wi::OVF_OVERFLOW);
-      m_base[0] = type_range.tree_lower_bound (0);
+      m_base[0] = wide_int_to_tree (type, type_range.lower_bound (0));
       m_base[1] = wide_int_to_tree (type, lim1);
       m_num_ranges = 1;
     }
@@ -1025,7 +1025,8 @@ irange::irange_set_anti_range (tree min, tree max)
       wide_int lim2 = wi::add (w_max, 1, sign, &ovf);
       gcc_checking_assert (ovf != wi::OVF_OVERFLOW);
       m_base[m_num_ranges * 2] = wide_int_to_tree (type, lim2);
-      m_base[m_num_ranges * 2 + 1] = type_range.tree_upper_bound (0);
+      m_base[m_num_ranges * 2 + 1]
+	= wide_int_to_tree (type, type_range.upper_bound (0));
       ++m_num_ranges;
     }
 
@@ -1104,9 +1105,9 @@ irange::verify_range ()
   gcc_checking_assert (!varying_compatible_p ());
   for (unsigned i = 0; i < m_num_ranges; ++i)
     {
-      tree lb = tree_lower_bound (i);
-      tree ub = tree_upper_bound (i);
-      int c = compare_values (lb, ub);
+      wide_int lb = lower_bound (i);
+      wide_int ub = upper_bound (i);
+      int c = wi::cmp (lb, ub, TYPE_SIGN (type ()));
       gcc_checking_assert (c == 0 || c == -1);
     }
 }
@@ -1120,20 +1121,20 @@ irange::operator== (const irange &other) const
   if (m_num_ranges == 0)
     return true;
 
+  signop sign1 = TYPE_SIGN (type ());
+  signop sign2 = TYPE_SIGN (other.type ());
+
   for (unsigned i = 0; i < m_num_ranges; ++i)
     {
-      tree lb = tree_lower_bound (i);
-      tree ub = tree_upper_bound (i);
-      tree lb_other = other.tree_lower_bound (i);
-      tree ub_other = other.tree_upper_bound (i);
-      if (!operand_equal_p (lb, lb_other, 0)
-	  || !operand_equal_p (ub, ub_other, 0))
+      widest_int lb = widest_int::from (lower_bound (i), sign1);
+      widest_int ub = widest_int::from (upper_bound (i), sign1);
+      widest_int lb_other = widest_int::from (other.lower_bound (i), sign2);
+      widest_int ub_other = widest_int::from (other.upper_bound (i), sign2);
+      if (lb != lb_other || ub != ub_other)
 	return false;
     }
-  widest_int nz1 = widest_int::from (get_nonzero_bits (),
-				     TYPE_SIGN (type ()));
-  widest_int nz2 = widest_int::from (other.get_nonzero_bits (),
-				     TYPE_SIGN (other.type ()));
+  widest_int nz1 = widest_int::from (get_nonzero_bits (), sign1);
+  widest_int nz2 = widest_int::from (other.get_nonzero_bits (), sign2);
   return nz1 == nz2;
 }
 
@@ -1144,11 +1145,10 @@ irange::operator== (const irange &other) const
 bool
 irange::singleton_p (tree *result) const
 {
-  if (num_pairs () == 1 && (wi::to_wide (tree_lower_bound ())
-			    == wi::to_wide (tree_upper_bound ())))
+  if (num_pairs () == 1 && lower_bound () == upper_bound ())
     {
       if (result)
-	*result = tree_lower_bound ();
+	*result = wide_int_to_tree (type (), lower_bound ());
       return true;
     }
   return false;
