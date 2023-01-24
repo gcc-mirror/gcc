@@ -1000,7 +1000,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
     = possible_polymorphic_call_targets
 	(edge, &final, &cache_token);
 
-  if (!reachable_call_targets->add (cache_token))
+  if (cache_token != NULL && !reachable_call_targets->add (cache_token))
     {
       if (symtab->dump_file)
 	dump_possible_polymorphic_call_targets 
