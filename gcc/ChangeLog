@@ -1,3 +1,21 @@
+2023-01-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2022-08-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/106101
+	* config/s390/predicates.md (subreg_register_operand): New
+	predicate.
+	* config/s390/s390-protos.h (s390_gen_lowpart_subreg): New
+	function prototype.
+	* config/s390/s390.cc (s390_gen_lowpart_subreg): New function.
+	(s390_expand_insv): Use s390_gen_lowpart_subreg instead of
+	gen_lowpart.
+	* config/s390/s390.md ("*get_tp_64", "*zero_extendhisi2_31")
+	("*zero_extendqisi2_31", "*zero_extendqihi2_31"): Likewise.
+	("movstrictqi", "movstricthi", "movstrictsi"): Use the
+	subreg_register_operand predicate instead of register_operand.
+
 2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/108199
