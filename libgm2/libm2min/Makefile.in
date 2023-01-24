@@ -754,7 +754,7 @@ SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
              $(GM2_SRC)/gm2-libs-min/SYSTEM.def \
              $(GM2_SRC)/gm2-libs-min/SYSTEM.mod \
-             -I$(GM2_SRC)/gm2-libs-min:$(GM2_SRC)/gm2-libs \
+             -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs \
              "$(GM2_FOR_TARGET) -fno-exceptions" $@
 
 install-data-local: force

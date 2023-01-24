@@ -38,7 +38,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "input.h"
 
-EXTERN void M2Options_SetMakeIncludePath (const char *arg);
 EXTERN void M2Options_SetSearchPath (const char *arg);
 EXTERN void M2Options_setdefextension (const char *arg);
 EXTERN void M2Options_setmodextension (const char *arg);

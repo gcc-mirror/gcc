@@ -23,7 +23,7 @@
 
 
 Usage () {
-   echo "Usage: makesystem dialectflag SYSTEM.def SYSTEM.mod librarypath compiler"
+   echo "Usage: makesystem dialectflag SYSTEM.def SYSTEM.mod { librarypath } compiler"
 }
 
 if [ $# -lt 6 ] ; then
@@ -34,9 +34,18 @@ fi
 DIALECT=$1
 SYSTEMDEF=$2
 SYSTEMMOD=$3
-LIBRARY=$4
-COMPILER=$5
-OUTPUTFILE=$6
+shift 3
+LIBRARY=""
+while [ $# -gt 2 ] ; do
+    if [ "$LIBRARY" = "" ] ; then
+	LIBRARY=$1
+    else
+	LIBRARY="${LIBRARY} $1"
+    fi
+    shift
+done
+COMPILER=$1
+OUTPUTFILE=$2
 
 if [ "$COMPILER" = "" ] ; then
     echo "parameter 5 of makeSystem is incorrect, GM2_FOR_TARGET was unset"

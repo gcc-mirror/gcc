@@ -129,7 +129,7 @@ SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
              $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.def \
              $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.mod \
-             -I$(GM2_SRC)/gm2-libs-coroutines:$(GM2_SRC)/gm2-libs:$(GM2_SRC)/gm2-libs-iso \
+             -I$(GM2_SRC)/gm2-libs-coroutines -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
              "$(GM2_FOR_TARGET)" $@
 
 .mod.lo:

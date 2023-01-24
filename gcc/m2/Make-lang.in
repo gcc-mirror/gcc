@@ -690,6 +690,7 @@ GM2-COMP-BOOT-DEFS = \
    M2DebugStack.def \
    M2Defaults.def \
    M2DriverOptions.def \
+   DynamicStringPath.def \
    M2Emit.def \
    M2Error.def \
    M2EvalSym.def \
@@ -761,6 +762,7 @@ GM2-COMP-BOOT-MODS = \
    M2DebugStack.mod \
    M2Defaults.mod \
    M2DriverOptions.mod \
+   DynamicStringPath.mod \
    M2Emit.mod \
    M2Error.mod \
    M2FileName.mod \
@@ -965,6 +967,7 @@ GM2-COMP-DEFS = \
    M2DebugStack.def \
    M2Defaults.def \
    M2DriverOptions.def \
+   DynamicStringPath.def \
    M2Emit.def \
    M2Error.def \
    M2FileName.def \
@@ -1032,6 +1035,7 @@ GM2-COMP-MODS = \
    M2DebugStack.mod \
    M2Defaults.mod \
    M2DriverOptions.mod \
+   DynamicStringPath.mod \
    M2Emit.mod \
    M2Error.mod \
    M2FileName.mod \
@@ -1522,7 +1526,7 @@ $(objdir)/m2/gm2-libs-min/SYSTEM.def: $(GM2_PROG_DEP)
 	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fpim \
              $(srcdir)/m2/gm2-libs-min/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-min/SYSTEM.mod \
-             -I$(srcdir)/m2/gm2-libs-min:$(srcdir)/m2/gm2-libs \
+             -I$(srcdir)/m2/gm2-libs-min -I$(srcdir)/m2/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
 
 $(objdir)/m2/gm2-libs/SYSTEM.def: $(GM2_PROG_DEP)
@@ -1540,7 +1544,7 @@ $(objdir)/m2/gm2-libs-iso/SYSTEM.def: $(GM2_PROG_DEP)
 	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fiso \
              $(srcdir)/m2/gm2-libs-iso/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-iso/SYSTEM.mod \
-             -I$(srcdir)/m2/gm2-libs-iso:$(srcdir)/m2/gm2-libs \
+             -I$(srcdir)/m2/gm2-libs-iso -I$(srcdir)/m2/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
 
 $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def: $(GM2_PROG_DEP)
@@ -1548,7 +1552,7 @@ $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def: $(GM2_PROG_DEP)
 	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fpim \
              $(srcdir)/m2/gm2-libs-coroutines/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-coroutines/SYSTEM.mod \
-             -I$(srcdir)/m2/gm2-libs-coroutines:$(srcdir)/m2/gm2-libs-iso:$(srcdir)/m2/gm2-libs \
+             -I$(srcdir)/m2/gm2-libs-coroutines -I$(srcdir)/m2/gm2-libs-iso -I$(srcdir)/m2/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
 
 build-compiler: $(GM2-COMP-MODS:%.mod=m2/gm2-compiler/%.o) \

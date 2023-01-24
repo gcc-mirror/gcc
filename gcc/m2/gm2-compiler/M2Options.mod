@@ -24,8 +24,10 @@ IMPLEMENTATION MODULE M2Options ;
 
 IMPORT CmdArgs ;
 FROM SArgs IMPORT GetArg, Narg ;
-FROM M2Search IMPORT PrependSearchPath, SetDefExtension, SetModExtension ;
-FROM M2Printf IMPORT printf0, printf1 ;
+FROM M2Search IMPORT SetDefExtension, SetModExtension ;
+FROM DynamicStringPath IMPORT Cons, GetUserPath, SetUserPath, Cons ;
+FROM M2Printf IMPORT printf0, printf1, fprintf1 ;
+FROM FIO IMPORT StdErr ;
 FROM libc IMPORT exit ;
 FROM Debug IMPORT Halt ;
 FROM m2linemap IMPORT location_t ;
@@ -789,10 +791,10 @@ BEGIN
    s := InitStringCharStar(arg) ;
    IF Debugging
    THEN
-      printf1("setting search path to: %s\n", s)
+      fprintf1 (StdErr, "M2Search.SetSearchPath setting search path to: %s\n", s)
    END ;
-   PrependSearchPath(s) ;
-   s := KillString(s)
+   SetUserPath (Cons (GetUserPath (), s)) ;
+   s := KillString (s)
 END SetSearchPath ;
 
 

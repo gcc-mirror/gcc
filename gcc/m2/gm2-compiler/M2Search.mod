@@ -22,9 +22,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE M2Search ;
 
 
-FROM SFIO IMPORT Exists ;
 FROM M2FileName IMPORT CalculateFileName ;
 FROM Assertion IMPORT Assert ;
+FROM DynamicStringPath IMPORT GetUserPath, GetSystemPath, FindFileName ;
 
 FROM DynamicStrings IMPORT InitString, InitStringChar,
                            KillString, ConCat, ConCatChar, Index, Slice,
@@ -35,13 +35,10 @@ FROM DynamicStrings IMPORT InitString, InitStringChar,
 
 
 CONST
-   Directory        =   '/' ;
    GarbageDebugging = FALSE ;
 
 VAR
-   Def, Mod,
-   UserPath,
-   InitialPath: String ;
+   Def, Mod: String ;
 
 (* Internal garbage collection debugging routines.  *)
 
@@ -110,24 +107,6 @@ END DSdbExit ;
 
 
 (*
-   PrependSearchPath - prepends a new path to the initial search path.
-*)
-
-PROCEDURE PrependSearchPath (path: String) ;
-BEGIN
-   DSdbEnter ;
-   IF EqualArray(UserPath, '')
-   THEN
-      UserPath := KillString(UserPath) ;
-      UserPath := Dup(path)
-   ELSE
-      UserPath := ConCat(ConCatChar(UserPath, ':'), path)
-   END ;
-   DSdbExit (UserPath)
-END PrependSearchPath ;
-
-
-(*
    FindSourceFile - attempts to locate the source file FileName.
                     If a file is found then TRUE is returned otherwise
                     FALSE is returned.
@@ -143,55 +122,13 @@ END PrependSearchPath ;
 
 PROCEDURE FindSourceFile (FileName: String;
                           VAR FullPath: String) : BOOLEAN ;
-VAR
-   CompleteSearchPath: String ;
-   start, end        : INTEGER ;
-   newpath           : String ;
 BEGIN
-   IF EqualArray(UserPath, '')
+   FullPath := FindFileName (FileName, GetUserPath ()) ;
+   IF FullPath = NIL
    THEN
-      IF EqualArray(InitialPath, '')
-      THEN
-         CompleteSearchPath := InitString('.')
-      ELSE
-         CompleteSearchPath := Dup(InitialPath)
-      END
-   ELSE
-      CompleteSearchPath := ConCat(ConCatChar(Dup(UserPath), ':'), InitialPath)
+      FullPath := FindFileName (FileName, GetSystemPath ())
    END ;
-   start := 0 ;
-   end   := Index(CompleteSearchPath, ':', CARDINAL(start)) ;
-   REPEAT
-      IF end=-1
-      THEN
-         end := 0
-      END ;
-      newpath := Slice(CompleteSearchPath, start, end) ;
-      IF EqualArray(newpath, '.')
-      THEN
-         newpath := KillString(newpath) ;
-         newpath := Dup(FileName)
-      ELSE
-         newpath := ConCat(ConCatChar(newpath, Directory), FileName)
-      END ;
-      IF Exists(newpath)
-      THEN
-         FullPath := newpath ;
-         CompleteSearchPath := KillString(CompleteSearchPath) ;
-         RETURN( TRUE )
-      END ;
-      newpath := KillString(newpath) ;
-      IF end#0
-      THEN
-         start := end+1 ;
-         end   := Index(CompleteSearchPath, ':', CARDINAL(start))
-      END
-   UNTIL end=0 ;
-
-   FullPath := NIL ;
-   newpath := KillString(newpath) ;
-   CompleteSearchPath :=  KillString(CompleteSearchPath) ;
-   RETURN( FALSE )
+   RETURN FullPath # NIL
 END FindSourceFile ;
 
 
@@ -206,18 +143,18 @@ PROCEDURE FindSourceDefFile (Stem: String; VAR FullPath: String) : BOOLEAN ;
 VAR
    f: String ;
 BEGIN
-   IF Def#NIL
+   IF Def # NIL
    THEN
-      f := CalculateFileName(Stem, Def) ;
-      IF FindSourceFile(f, FullPath)
+      f := CalculateFileName (Stem, Def) ;
+      IF FindSourceFile (f, FullPath)
       THEN
-         RETURN( TRUE )
+         RETURN TRUE
       END ;
-      f := KillString(f)
+      f := KillString (f)
    END ;
-   (* and try the GNU Modula-2 default extension *)
-   f := CalculateFileName(Stem, Mark(InitString('def'))) ;
-   RETURN( FindSourceFile(f, FullPath) )
+   (* Try the GNU Modula-2 default extension.  *)
+   f := CalculateFileName (Stem, Mark(InitString ('def'))) ;
+   RETURN FindSourceFile (f, FullPath)
 END FindSourceDefFile ;
 
 
@@ -234,16 +171,16 @@ VAR
 BEGIN
    IF Mod#NIL
    THEN
-      f := CalculateFileName(Stem, Mod) ;
-      IF FindSourceFile(f, FullPath)
+      f := CalculateFileName (Stem, Mod) ;
+      IF FindSourceFile (f, FullPath)
       THEN
-         RETURN( TRUE )
+         RETURN TRUE
       END ;
-      f := KillString(f)
+      f := KillString (f)
    END ;
-   (* and try the GNU Modula-2 default extension *)
-   f := CalculateFileName(Stem, Mark(InitString('mod'))) ;
-   RETURN( FindSourceFile(f, FullPath) )
+   (* Try the GNU Modula-2 default extension.  *)
+   f := CalculateFileName (Stem, Mark(InitString ('mod'))) ;
+   RETURN FindSourceFile (f, FullPath)
 END FindSourceModFile ;
 
 
@@ -274,35 +211,11 @@ END SetModExtension ;
 
 
 (*
-   InitSearchPath - assigns the search path to Path.
-                    The string Path may take the form:
-
-                    Path           ::= IndividualPath { ":" IndividualPath }
-                    IndividualPath ::= "." | DirectoryPath
-                    DirectoryPath  ::= [ "/" ] Name { "/" Name }
-                    Name           ::= Letter { (Letter | Number) }
-                    Letter         ::= A..Z | a..z
-                    Number         ::= 0..9
-*)
-
-PROCEDURE InitSearchPath (Path: String) ;
-BEGIN
-   IF InitialPath#NIL
-   THEN
-      InitialPath := KillString(InitialPath)
-   END ;
-   InitialPath := Path
-END InitSearchPath ;
-
-
-(*
-   Init - initializes the search path.
+   Init - initializes the def and mod default string names to NIL.
 *)
 
 PROCEDURE Init ;
 BEGIN
-   UserPath    := InitString('') ;
-   InitialPath := InitStringChar('.') ;
    Def := NIL ;
    Mod := NIL
 END Init ;

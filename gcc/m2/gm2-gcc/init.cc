@@ -55,6 +55,7 @@ EXTERN void _M2_CmdArgs_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2Preprocess_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2Error_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2Search_init (int argc, char *argv[], char *envp[]);
+EXTERN void _M2_DynamicStringPath_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_Indexing_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_NameKey_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_NumberIO_init (int argc, char *argv[], char *envp[]);
@@ -141,6 +142,7 @@ init_FrontEndInit (void)
   _M2_StrLib_init (0, NULL, NULL);
   _M2_dtoa_init (0, NULL, NULL);
   _M2_ldtoa_init (0, NULL, NULL);
+  _M2_DynamicStringPath_init (0, NULL, NULL);
   _M2_M2Search_init (0, NULL, NULL);
   _M2_M2Options_init (0, NULL, NULL);
 }

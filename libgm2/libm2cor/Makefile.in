@@ -795,7 +795,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_CORLIB_TRUE@	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
 @BUILD_CORLIB_TRUE@             $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.def \
 @BUILD_CORLIB_TRUE@             $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.mod \
-@BUILD_CORLIB_TRUE@             -I$(GM2_SRC)/gm2-libs-coroutines:$(GM2_SRC)/gm2-libs:$(GM2_SRC)/gm2-libs-iso \
+@BUILD_CORLIB_TRUE@             -I$(GM2_SRC)/gm2-libs-coroutines -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_CORLIB_TRUE@             "$(GM2_FOR_TARGET)" $@
 
 @BUILD_CORLIB_TRUE@.mod.lo:
