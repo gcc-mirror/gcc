@@ -4575,11 +4575,10 @@ compare_bound_int (gfc_expr *a, int b)
 {
   int i;
 
-  if (a == NULL || a->expr_type != EXPR_CONSTANT)
+  if (a == NULL
+      || a->expr_type != EXPR_CONSTANT
+      || a->ts.type != BT_INTEGER)
     return CMP_UNKNOWN;
-
-  if (a->ts.type != BT_INTEGER)
-    gfc_internal_error ("compare_bound_int(): Bad expression");
 
   i = mpz_cmp_si (a->value.integer, b);
 
@@ -4598,11 +4597,10 @@ compare_bound_mpz_t (gfc_expr *a, mpz_t b)
 {
   int i;
 
-  if (a == NULL || a->expr_type != EXPR_CONSTANT)
+  if (a == NULL
+      || a->expr_type != EXPR_CONSTANT
+      || a->ts.type != BT_INTEGER)
     return CMP_UNKNOWN;
-
-  if (a->ts.type != BT_INTEGER)
-    gfc_internal_error ("compare_bound_int(): Bad expression");
 
   i = mpz_cmp (a->value.integer, b);
 
@@ -4733,23 +4731,24 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
 #define AR_END (ar->end[i] ? ar->end[i] : as->upper[i])
 
 	compare_result comp_start_end = compare_bound (AR_START, AR_END);
+	compare_result comp_stride_zero = compare_bound_int (ar->stride[i], 0);
 
 	/* Check for zero stride, which is not allowed.  */
-	if (compare_bound_int (ar->stride[i], 0) == CMP_EQ)
+	if (comp_stride_zero == CMP_EQ)
 	  {
 	    gfc_error ("Illegal stride of zero at %L", &ar->c_where[i]);
 	    return false;
 	  }
 
-	/* if start == len || (stride > 0 && start < len)
-			   || (stride < 0 && start > len),
+	/* if start == end || (stride > 0 && start < end)
+			   || (stride < 0 && start > end),
 	   then the array section contains at least one element.  In this
 	   case, there is an out-of-bounds access if
 	   (start < lower || start > upper).  */
-	if (compare_bound (AR_START, AR_END) == CMP_EQ
-	    || ((compare_bound_int (ar->stride[i], 0) == CMP_GT
-		 || ar->stride[i] == NULL) && comp_start_end == CMP_LT)
-	    || (compare_bound_int (ar->stride[i], 0) == CMP_LT
+	if (comp_start_end == CMP_EQ
+	    || ((comp_stride_zero == CMP_GT || ar->stride[i] == NULL)
+		&& comp_start_end == CMP_LT)
+	    || (comp_stride_zero == CMP_LT
 	        && comp_start_end == CMP_GT))
 	  {
 	    if (compare_bound (AR_START, as->lower[i]) == CMP_LT)
