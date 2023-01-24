@@ -6806,7 +6806,7 @@ be presented in subsequent sections.
 
     The underlying scalar is set to a value consisting of repeated bytes, whose
     value corresponds to the given value. For example if ``BF`` is given,
-    then a 32-bit scalar value will be set to the bit patterm ``16#BFBFBFBF#``.
+    then a 32-bit scalar value will be set to the bit pattern ``16#BFBFBFBF#``.
 
   .. index:: GNAT_INIT_SCALARS
 

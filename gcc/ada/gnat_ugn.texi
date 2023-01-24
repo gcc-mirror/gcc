@@ -16030,7 +16030,7 @@ one bits. For floating-point, a large value is set
 
 The underlying scalar is set to a value consisting of repeated bytes, whose
 value corresponds to the given value. For example if @code{BF} is given,
-then a 32-bit scalar value will be set to the bit patterm @code{16#BFBFBFBF#}.
+then a 32-bit scalar value will be set to the bit pattern @code{16#BFBFBFBF#}.
 @end itemize
 
 @geindex GNAT_INIT_SCALARS
@@ -29466,8 +29466,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{cf}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{cf}@w{                              }
 
 @c %**end of body
 @bye
