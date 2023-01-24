@@ -1,3 +1,5 @@
+/* { dg-require-effective-target vect_float } */
+
 #ifndef TYPE
 #define TYPE double
 #define FN __builtin_fmin
