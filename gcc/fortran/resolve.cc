@@ -6087,7 +6087,6 @@ check_host_association (gfc_expr *e)
       gfc_find_symbol (e->symtree->name, gfc_current_ns, 1, &sym);
 
       if (sym && old_sym != sym
-	      && sym->ts.type == old_sym->ts.type
 	      && sym->attr.flavor == FL_PROCEDURE
 	      && sym->attr.contained)
 	{
@@ -6131,6 +6130,9 @@ check_host_association (gfc_expr *e)
 			      &old_sym->declared_at, &e->where);
 		  return false;
 		}
+
+	      if (ref == NULL)
+		return false;
 
 	      gcc_assert (ref->type == REF_ARRAY);
 
