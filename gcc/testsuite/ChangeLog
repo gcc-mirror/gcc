@@ -1,3 +1,28 @@
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108164
+	* gcc.dg/pr108164.c: New testcase.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108076
+	* gcc.dg/torture/pr108076.c: New testcase.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-11-11  Richard Biener  <rguenther@suse.de>
+		    Nikita Voronov  <nik_1357@mail.ru>
+
+	PR tree-optimization/107554
+	* gcc.dg/pr107554.c: New testcase.
+
 2023-01-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
