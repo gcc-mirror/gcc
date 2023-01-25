@@ -1520,7 +1520,7 @@ namespace {
    then VAL represents the constant and all the other fields are zero, or
    a memory load, then VAL represents the reference, BASE_ADDR is non-NULL
    and the other fields also reflect the memory load, or an SSA name, then
-   VAL represents the SSA name and all the other fields are zero,  */
+   VAL represents the SSA name and all the other fields are zero.  */
 
 class store_operand_info
 {
@@ -2221,6 +2221,10 @@ merged_store_group::apply_stores ()
 
   /* Really do string concatenation for large strings only.  */
   if (buf_size <= MOVE_MAX)
+    string_concatenation = false;
+
+  /* String concatenation only works for byte aligned start and end.  */
+  if (start % BITS_PER_UNIT != 0 || width % BITS_PER_UNIT != 0)
     string_concatenation = false;
 
   /* Create a power-of-2-sized buffer for native_encode_expr.  */
@@ -3548,7 +3552,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 
   /* For bswap framework using sets of stores, all the checking has been done
      earlier in try_coalesce_bswap and the result always needs to be emitted
-     as a single store.  Likewise for string concatenation,  */
+     as a single store.  Likewise for string concatenation.  */
   if (group->stores[0]->rhs_code == LROTATE_EXPR
       || group->stores[0]->rhs_code == NOP_EXPR
       || group->string_concatenation)
