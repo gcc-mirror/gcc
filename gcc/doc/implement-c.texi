@@ -293,7 +293,7 @@ The accuracy is unknown.
 
 @item
 @cite{The rounding behaviors characterized by non-standard values
-of @code{FLT_ROUNDS} @gol
+of @code{FLT_ROUNDS}
 (C90, C99 and C11 5.2.4.2.2).}
 
 GCC does not use such values.

@@ -465,10 +465,6 @@ that of @samp{@@option} but for man page output a different effect is
 wanted.
 @item @@gccoptlist
 Use for summary lists of options in manuals.
-@item @@gol
-Use at the end of each line inside @samp{@@gccoptlist}.  This is
-necessary to avoid problems with differences in how the
-@samp{@@gccoptlist} macro is handled by different Texinfo formatters.
 @end table
 
 FIXME: describe the @file{texi2pod.pl} input language and magic

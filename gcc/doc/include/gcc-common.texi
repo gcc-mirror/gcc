@@ -20,16 +20,6 @@
 \body\
 @end smallexample
 @end macro
-@c Makeinfo handles the above macro OK, TeX needs manual line breaks;
-@c they get lost at some point in handling the macro.  But if @macro is
-@c used here rather than @alias, it produces double line breaks.
-@iftex
-@alias gol = *
-@end iftex
-@ifnottex
-@macro gol
-@end macro
-@end ifnottex
 
 @c For FSF printing, define FSFPRINT.  Also update the ISBN and last
 @c printing date for the manual being printed.

@@ -116,17 +116,17 @@ by type.  Explanations are in the following sections.
 @table @emph
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
-@gccoptlist{-fall-intrinsics -fallow-argument-mismatch -fallow-invalid-boz @gol
--fbackslash -fcray-pointer -fd-lines-as-code -fd-lines-as-comments @gol
--fdec -fdec-char-conversions -fdec-structure -fdec-intrinsic-ints @gol
--fdec-static -fdec-math -fdec-include -fdec-format-defaults @gol
--fdec-blank-format-item -fdefault-double-8 -fdefault-integer-8 @gol
--fdefault-real-8 -fdefault-real-10 -fdefault-real-16 -fdollar-ok @gol
--ffixed-line-length-@var{n} -ffixed-line-length-none -fpad-source @gol
--ffree-form -ffree-line-length-@var{n} -ffree-line-length-none @gol
--fimplicit-none -finteger-4-integer-8 -fmax-identifier-length @gol
--fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp @gol
--freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10 @gol
+@gccoptlist{-fall-intrinsics -fallow-argument-mismatch -fallow-invalid-boz
+-fbackslash -fcray-pointer -fd-lines-as-code -fd-lines-as-comments
+-fdec -fdec-char-conversions -fdec-structure -fdec-intrinsic-ints
+-fdec-static -fdec-math -fdec-include -fdec-format-defaults
+-fdec-blank-format-item -fdefault-double-8 -fdefault-integer-8
+-fdefault-real-8 -fdefault-real-10 -fdefault-real-16 -fdollar-ok
+-ffixed-line-length-@var{n} -ffixed-line-length-none -fpad-source
+-ffree-form -ffree-line-length-@var{n} -ffree-line-length-none
+-fimplicit-none -finteger-4-integer-8 -fmax-identifier-length
+-fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp
+-freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10
 -freal-8-real-16 -freal-8-real-4 -std=@var{std} -ftest-forall-temp
 }
 
@@ -134,33 +134,33 @@ by type.  Explanations are in the following sections.
 @xref{Preprocessing Options,,Enable and customize preprocessing}.
 @gccoptlist{-A-@var{question}@r{[}=@var{answer}@r{]}
 -A@var{question}=@var{answer} -C -CC -D@var{macro}@r{[}=@var{defn}@r{]}
--H -P @gol
+-H -P
 -U@var{macro} -cpp -dD -dI -dM -dN -dU -fworking-directory
--imultilib @var{dir} @gol
+-imultilib @var{dir}
 -iprefix @var{file} -iquote -isysroot @var{dir} -isystem @var{dir} -nocpp 
--nostdinc @gol
+-nostdinc
 -undef
 }
 
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
 and warnings}.
-@gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds @gol
--Wc-binding-type -Wcharacter-truncation -Wconversion @gol
--Wdo-subscript -Wfunction-elimination -Wimplicit-interface @gol
--Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only @gol
--Wintrinsics-std -Wline-truncation -Wno-align-commons @gol
--Wno-overwrite-recursive -Wno-tabs -Wreal-q-constant -Wsurprising @gol
--Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all @gol
--Wfrontend-loop-interchange -Wtarget-lifetime -fmax-errors=@var{n} @gol
--fsyntax-only -pedantic @gol
--pedantic-errors @gol
+@gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds
+-Wc-binding-type -Wcharacter-truncation -Wconversion
+-Wdo-subscript -Wfunction-elimination -Wimplicit-interface
+-Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only
+-Wintrinsics-std -Wline-truncation -Wno-align-commons
+-Wno-overwrite-recursive -Wno-tabs -Wreal-q-constant -Wsurprising
+-Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all
+-Wfrontend-loop-interchange -Wtarget-lifetime -fmax-errors=@var{n}
+-fsyntax-only -pedantic
+-pedantic-errors
 }
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
-@gccoptlist{-fbacktrace -fdump-fortran-optimized -fdump-fortran-original @gol
--fdebug-aux-vars -fdump-fortran-global -fdump-parse-tree -ffpe-trap=@var{list} @gol
+@gccoptlist{-fbacktrace -fdump-fortran-optimized -fdump-fortran-original
+-fdebug-aux-vars -fdump-fortran-global -fdump-parse-tree -ffpe-trap=@var{list}
 -ffpe-summary=@var{list}
 }
 
@@ -174,7 +174,7 @@ and warnings}.
 
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
-@gccoptlist{-fconvert=@var{conversion} -fmax-subrecord-length=@var{length} @gol
+@gccoptlist{-fconvert=@var{conversion} -fmax-subrecord-length=@var{length}
 -frecord-marker=@var{length} -fsign-zero
 }
 
@@ -184,20 +184,20 @@ and warnings}.
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
-@gccoptlist{-faggressive-function-elimination -fblas-matmul-limit=@var{n} @gol
--fbounds-check -ftail-call-workaround -ftail-call-workaround=@var{n} @gol
--fcheck-array-temporaries @gol
--fcheck=@var{<all|array-temps|bits|bounds|do|mem|pointer|recursion>} @gol
--fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c @gol
--ffrontend-loop-interchange -ffrontend-optimize @gol
--finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
--finit-derived -finit-logical=@var{<true|false>} @gol
+@gccoptlist{-faggressive-function-elimination -fblas-matmul-limit=@var{n}
+-fbounds-check -ftail-call-workaround -ftail-call-workaround=@var{n}
+-fcheck-array-temporaries
+-fcheck=@var{<all|array-temps|bits|bounds|do|mem|pointer|recursion>}
+-fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
+-ffrontend-loop-interchange -ffrontend-optimize
+-finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero
+-finit-derived -finit-logical=@var{<true|false>}
 -finit-real=@var{<zero|inf|-inf|nan|snan>}
--finline-matmul-limit=@var{n} @gol
--finline-arg-packing -fmax-array-constructor=@var{n} @gol
--fmax-stack-var-size=@var{n} -fno-align-commons -fno-automatic @gol
--fno-protect-parens -fno-underscoring -fsecond-underscore @gol
--fpack-derived -frealloc-lhs -frecursive -frepack-arrays @gol
+-finline-matmul-limit=@var{n}
+-finline-arg-packing -fmax-array-constructor=@var{n}
+-fmax-stack-var-size=@var{n} -fno-align-commons -fno-automatic
+-fno-protect-parens -fno-underscoring -fsecond-underscore
+-fpack-derived -frealloc-lhs -frecursive -frepack-arrays
 -fshort-enums -fstack-arrays
 }
 @end table

@@ -186,483 +186,483 @@ in the following sections.
 @table @emph
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
-@gccoptlist{-c  -S  -E  -o @var{file} @gol
--dumpbase @var{dumpbase}  -dumpbase-ext @var{auxdropsuf} @gol
--dumpdir @var{dumppfx}  -x @var{language}  @gol
--v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version @gol
--pass-exit-codes  -pipe  -specs=@var{file}  -wrapper  @gol
-@@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  -fcanon-prefix-map  @gol
--fplugin=@var{file}  -fplugin-arg-@var{name}=@var{arg}  @gol
+@gccoptlist{-c  -S  -E  -o @var{file}
+-dumpbase @var{dumpbase}  -dumpbase-ext @var{auxdropsuf}
+-dumpdir @var{dumppfx}  -x @var{language}
+-v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version
+-pass-exit-codes  -pipe  -specs=@var{file}  -wrapper
+@@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  -fcanon-prefix-map
+-fplugin=@var{file}  -fplugin-arg-@var{name}=@var{arg}
 -fdump-ada-spec@r{[}-slim@r{]}  -fada-spec-parent=@var{unit}  -fdump-go-spec=@var{file}}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
-@gccoptlist{-ansi  -std=@var{standard}  -aux-info @var{filename} @gol
--fno-asm  @gol
--fno-builtin  -fno-builtin-@var{function}  -fcond-mismatch @gol
--ffreestanding  -fgimple  -fgnu-tm  -fgnu89-inline  -fhosted @gol
--flax-vector-conversions  -fms-extensions @gol
--foffload=@var{arg}  -foffload-options=@var{arg} @gol
--fopenacc  -fopenacc-dim=@var{geom} @gol
--fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]} @gol
--fpermitted-flt-eval-methods=@var{standard} @gol
--fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields @gol
--fsigned-char  -funsigned-char -fstrict-flex-arrays[=@var{n}] @gol
+@gccoptlist{-ansi  -std=@var{standard}  -aux-info @var{filename}
+-fno-asm
+-fno-builtin  -fno-builtin-@var{function}  -fcond-mismatch
+-ffreestanding  -fgimple  -fgnu-tm  -fgnu89-inline  -fhosted
+-flax-vector-conversions  -fms-extensions
+-foffload=@var{arg}  -foffload-options=@var{arg}
+-fopenacc  -fopenacc-dim=@var{geom}
+-fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]}
+-fpermitted-flt-eval-methods=@var{standard}
+-fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields
+-fsigned-char  -funsigned-char -fstrict-flex-arrays[=@var{n}]
 -fsso-struct=@var{endianness}}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
-@gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
--faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
--fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n} @gol
--fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n} @gol
--fno-elide-constructors @gol
--fno-enforce-eh-specs @gol
--fno-gnu-keywords @gol
--fno-implicit-templates @gol
--fno-implicit-inline-templates @gol
--fno-implement-inlines  @gol
--fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules-ts @gol
--fmodule-implicit-inline @gol
--fno-module-lazy @gol
--fmodule-mapper=@var{specification} @gol
--fmodule-version-ignore @gol
--fms-extensions @gol
--fnew-inheriting-ctors @gol
--fnew-ttp-matching @gol
--fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
--fno-optional-diags  -fpermissive @gol
--fno-pretty-templates @gol
--fno-rtti  -fsized-deallocation @gol
--ftemplate-backtrace-limit=@var{n} @gol
--ftemplate-depth=@var{n} @gol
--fno-threadsafe-statics  -fuse-cxa-atexit @gol
--fno-weak  -nostdinc++ @gol
--fvisibility-inlines-hidden @gol
--fvisibility-ms-compat @gol
--fext-numeric-literals @gol
--flang-info-include-translate@r{[}=@var{header}@r{]} @gol
--flang-info-include-translate-not @gol
--flang-info-module-cmi@r{[}=@var{module}@r{]} @gol
--stdlib=@var{libstdc++,libc++} @gol
--Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
--Wno-class-conversion  -Wclass-memaccess @gol
--Wcomma-subscript  -Wconditionally-supported @gol
--Wno-conversion-null  -Wctad-maybe-unsupported @gol
--Wctor-dtor-privacy  -Wdangling-reference @gol
--Wno-delete-incomplete @gol
--Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare @gol
--Wdeprecated-copy -Wdeprecated-copy-dtor @gol
--Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
--Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
--Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
--Winvalid-constexpr -Winvalid-imported-macros @gol
--Wno-invalid-offsetof  -Wno-literal-suffix @gol
--Wmismatched-new-delete -Wmismatched-tags @gol
--Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
--Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor @gol
--Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n} @gol
--Wrange-loop-construct -Wredundant-move -Wredundant-tags @gol
--Wreorder  -Wregister @gol
--Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates @gol
--Wno-non-template-friend  -Wold-style-cast @gol
--Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo @gol
--Wsized-deallocation  -Wsuggest-final-methods @gol
--Wsuggest-final-types  -Wsuggest-override  @gol
--Wno-terminate  -Wuseless-cast  -Wno-vexing-parse  @gol
--Wvirtual-inheritance  @gol
+@gccoptlist{-fabi-version=@var{n}  -fno-access-control
+-faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new
+-fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
+-fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n}
+-fno-elide-constructors
+-fno-enforce-eh-specs
+-fno-gnu-keywords
+-fno-implicit-templates
+-fno-implicit-inline-templates
+-fno-implement-inlines
+-fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules-ts
+-fmodule-implicit-inline
+-fno-module-lazy
+-fmodule-mapper=@var{specification}
+-fmodule-version-ignore
+-fms-extensions
+-fnew-inheriting-ctors
+-fnew-ttp-matching
+-fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names
+-fno-optional-diags  -fpermissive
+-fno-pretty-templates
+-fno-rtti  -fsized-deallocation
+-ftemplate-backtrace-limit=@var{n}
+-ftemplate-depth=@var{n}
+-fno-threadsafe-statics  -fuse-cxa-atexit
+-fno-weak  -nostdinc++
+-fvisibility-inlines-hidden
+-fvisibility-ms-compat
+-fext-numeric-literals
+-flang-info-include-translate@r{[}=@var{header}@r{]}
+-flang-info-include-translate-not
+-flang-info-module-cmi@r{[}=@var{module}@r{]}
+-stdlib=@var{libstdc++,libc++}
+-Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n}
+-Wno-class-conversion  -Wclass-memaccess
+-Wcomma-subscript  -Wconditionally-supported
+-Wno-conversion-null  -Wctad-maybe-unsupported
+-Wctor-dtor-privacy  -Wdangling-reference
+-Wno-delete-incomplete
+-Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare
+-Wdeprecated-copy -Wdeprecated-copy-dtor
+-Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion
+-Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base
+-Wno-inherited-variadic-ctor  -Wno-init-list-lifetime
+-Winvalid-constexpr -Winvalid-imported-macros
+-Wno-invalid-offsetof  -Wno-literal-suffix
+-Wmismatched-new-delete -Wmismatched-tags
+-Wmultiple-inheritance  -Wnamespaces  -Wnarrowing
+-Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor
+-Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n}
+-Wrange-loop-construct -Wredundant-move -Wredundant-tags
+-Wreorder  -Wregister
+-Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates
+-Wno-non-template-friend  -Wold-style-cast
+-Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
+-Wsized-deallocation  -Wsuggest-final-methods
+-Wsuggest-final-types  -Wsuggest-override
+-Wno-terminate  -Wuseless-cast  -Wno-vexing-parse
+-Wvirtual-inheritance
 -Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
 @item Objective-C and Objective-C++ Language Options
 @xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
 Objective-C and Objective-C++ Dialects}.
-@gccoptlist{-fconstant-string-class=@var{class-name} @gol
--fgnu-runtime  -fnext-runtime @gol
--fno-nil-receivers @gol
--fobjc-abi-version=@var{n} @gol
--fobjc-call-cxx-cdtors @gol
--fobjc-direct-dispatch @gol
--fobjc-exceptions @gol
--fobjc-gc @gol
--fobjc-nilcheck @gol
--fobjc-std=objc1 @gol
--fno-local-ivars @gol
--fivar-visibility=@r{[}public@r{|}protected@r{|}private@r{|}package@r{]} @gol
--freplace-objc-classes @gol
--fzero-link @gol
--gen-decls @gol
--Wassign-intercept  -Wno-property-assign-default @gol
--Wno-protocol -Wobjc-root-class -Wselector @gol
--Wstrict-selector-match @gol
+@gccoptlist{-fconstant-string-class=@var{class-name}
+-fgnu-runtime  -fnext-runtime
+-fno-nil-receivers
+-fobjc-abi-version=@var{n}
+-fobjc-call-cxx-cdtors
+-fobjc-direct-dispatch
+-fobjc-exceptions
+-fobjc-gc
+-fobjc-nilcheck
+-fobjc-std=objc1
+-fno-local-ivars
+-fivar-visibility=@r{[}public@r{|}protected@r{|}private@r{|}package@r{]}
+-freplace-objc-classes
+-fzero-link
+-gen-decls
+-Wassign-intercept  -Wno-property-assign-default
+-Wno-protocol -Wobjc-root-class -Wselector
+-Wstrict-selector-match
 -Wundeclared-selector}
 
 @item Diagnostic Message Formatting Options
 @xref{Diagnostic Message Formatting Options,,Options to Control Diagnostic Messages Formatting}.
-@gccoptlist{-fmessage-length=@var{n}  @gol
--fdiagnostics-plain-output @gol
--fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
--fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
--fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
--fdiagnostics-format=@r{[}text@r{|}sarif-stderr@r{|}sarif-file@r{|}json@r{|}json-stderr@r{|}json-file@r{]}  @gol
--fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
--fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers @gol
--fno-diagnostics-show-cwe  @gol
--fno-diagnostics-show-rule  @gol
--fdiagnostics-minimum-margin-width=@var{width} @gol
--fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
--fdiagnostics-show-template-tree  -fno-elide-type @gol
--fdiagnostics-path-format=@r{[}none@r{|}separate-events@r{|}inline-events@r{]} @gol
--fdiagnostics-show-path-depths @gol
--fno-show-column @gol
--fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]} @gol
--fdiagnostics-column-origin=@var{origin} @gol
+@gccoptlist{-fmessage-length=@var{n}
+-fdiagnostics-plain-output
+-fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}
+-fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}
+-fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}
+-fdiagnostics-format=@r{[}text@r{|}sarif-stderr@r{|}sarif-file@r{|}json@r{|}json-stderr@r{|}json-file@r{]}
+-fno-diagnostics-show-option  -fno-diagnostics-show-caret
+-fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers
+-fno-diagnostics-show-cwe
+-fno-diagnostics-show-rule
+-fdiagnostics-minimum-margin-width=@var{width}
+-fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch
+-fdiagnostics-show-template-tree  -fno-elide-type
+-fdiagnostics-path-format=@r{[}none@r{|}separate-events@r{|}inline-events@r{]}
+-fdiagnostics-show-path-depths
+-fno-show-column
+-fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]}
+-fdiagnostics-column-origin=@var{origin}
 -fdiagnostics-escape-format=@r{[}unicode@r{|}bytes@r{]}}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
-@gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
--pedantic-errors @gol
--w  -Wextra  -Wall  -Wabi=@var{n} @gol
--Waddress  -Wno-address-of-packed-member  -Waggregate-return @gol
--Walloc-size-larger-than=@var{byte-size}  -Walloc-zero @gol
--Walloca  -Walloca-larger-than=@var{byte-size} @gol
--Wno-aggressive-loop-optimizations @gol
--Warith-conversion @gol
--Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare @gol
--Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
--Wno-attribute-warning  @gol
--Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]} @gol
--Wbool-compare  -Wbool-operation @gol
--Wno-builtin-declaration-mismatch @gol
--Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
--Wc11-c2x-compat @gol
--Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
--Wc++20-compat   @gol
--Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions  @gol
--Wno-c++20-extensions  -Wno-c++23-extensions  @gol
--Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
--Wchar-subscripts @gol
--Wclobbered  -Wcomment @gol
--Wno-complain-wrong-lang @gol
--Wconversion  -Wno-coverage-mismatch  -Wno-cpp @gol
--Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}  @gol
--Wdate-time @gol
--Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init @gol
--Wdisabled-optimization @gol
--Wno-discarded-array-qualifiers  -Wno-discarded-qualifiers @gol
--Wno-div-by-zero  -Wdouble-promotion @gol
--Wduplicated-branches  -Wduplicated-cond @gol
--Wempty-body  -Wno-endif-labels  -Wenum-compare  -Wenum-conversion @gol
--Wenum-int-mismatch @gol
--Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors @gol
--Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2 @gol
--Wno-format-contains-nul  -Wno-format-extra-args  @gol
--Wformat-nonliteral  -Wformat-overflow=@var{n} @gol
--Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
--Wformat-y2k  -Wframe-address @gol
--Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
--Wno-if-not-aligned  -Wno-ignored-attributes @gol
--Wignored-qualifiers  -Wno-incompatible-pointer-types @gol
--Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
--Wno-implicit-function-declaration  -Wno-implicit-int @gol
--Winfinite-recursion @gol
--Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
--Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
--Winvalid-pch  -Winvalid-utf8  -Wno-unicode  -Wjump-misses-init  @gol
--Wlarger-than=@var{byte-size}  -Wlogical-not-parentheses  -Wlogical-op  @gol
--Wlong-long  -Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized @gol
--Wmemset-elt-size  -Wmemset-transposed-args @gol
--Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces @gol
--Wmissing-field-initializers  -Wmissing-format-attribute @gol
--Wmissing-include-dirs  -Wmissing-noreturn  -Wno-missing-profile @gol
--Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
--Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
--Wnull-dereference  -Wno-odr  @gol
--Wopenacc-parallelism  @gol
--Wopenmp-simd  @gol
--Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects @gol
--Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded @gol
--Wparentheses  -Wno-pedantic-ms-format @gol
--Wpointer-arith  -Wno-pointer-compare  -Wno-pointer-to-int-cast @gol
--Wno-pragmas  -Wno-prio-ctor-dtor  -Wredundant-decls @gol
--Wrestrict  -Wno-return-local-addr  -Wreturn-type @gol
--Wno-scalar-storage-order  -Wsequence-point @gol
--Wshadow  -Wshadow=global  -Wshadow=local  -Wshadow=compatible-local @gol
--Wno-shadow-ivar @gol
--Wno-shift-count-negative  -Wno-shift-count-overflow  -Wshift-negative-value @gol
--Wno-shift-overflow  -Wshift-overflow=@var{n} @gol
--Wsign-compare  -Wsign-conversion @gol
--Wno-sizeof-array-argument @gol
--Wsizeof-array-div @gol
--Wsizeof-pointer-div  -Wsizeof-pointer-memaccess @gol
--Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
--Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
--Wstring-compare @gol
--Wno-stringop-overflow -Wno-stringop-overread @gol
--Wno-stringop-truncation -Wstrict-flex-arrays @gol
--Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
--Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
--Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
--Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
--Wtrivial-auto-var-init -Wtsan -Wtype-limits  -Wundef @gol
--Wuninitialized  -Wunknown-pragmas @gol
--Wunsuffixed-float-constants  -Wunused @gol
--Wunused-but-set-parameter  -Wunused-but-set-variable @gol
--Wunused-const-variable  -Wunused-const-variable=@var{n} @gol
--Wunused-function  -Wunused-label  -Wunused-local-typedefs @gol
--Wunused-macros @gol
--Wunused-parameter  -Wno-unused-result @gol
--Wunused-value  -Wunused-variable @gol
--Wno-varargs  -Wvariadic-macros @gol
--Wvector-operation-performance @gol
--Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than @gol
--Wvolatile-register-var  -Wwrite-strings @gol
--Wxor-used-as-pow @gol
+@gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic
+-pedantic-errors
+-w  -Wextra  -Wall  -Wabi=@var{n}
+-Waddress  -Wno-address-of-packed-member  -Waggregate-return
+-Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
+-Walloca  -Walloca-larger-than=@var{byte-size}
+-Wno-aggressive-loop-optimizations
+-Warith-conversion
+-Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare
+-Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias
+-Wno-attribute-warning
+-Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]}
+-Wbool-compare  -Wbool-operation
+-Wno-builtin-declaration-mismatch
+-Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat
+-Wc11-c2x-compat
+-Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat
+-Wc++20-compat
+-Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
+-Wno-c++20-extensions  -Wno-c++23-extensions
+-Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual
+-Wchar-subscripts
+-Wclobbered  -Wcomment
+-Wno-complain-wrong-lang
+-Wconversion  -Wno-coverage-mismatch  -Wno-cpp
+-Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}
+-Wdate-time
+-Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init
+-Wdisabled-optimization
+-Wno-discarded-array-qualifiers  -Wno-discarded-qualifiers
+-Wno-div-by-zero  -Wdouble-promotion
+-Wduplicated-branches  -Wduplicated-cond
+-Wempty-body  -Wno-endif-labels  -Wenum-compare  -Wenum-conversion
+-Wenum-int-mismatch
+-Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors
+-Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2
+-Wno-format-contains-nul  -Wno-format-extra-args
+-Wformat-nonliteral  -Wformat-overflow=@var{n}
+-Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n}
+-Wformat-y2k  -Wframe-address
+-Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object
+-Wno-if-not-aligned  -Wno-ignored-attributes
+-Wignored-qualifiers  -Wno-incompatible-pointer-types
+-Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n}
+-Wno-implicit-function-declaration  -Wno-implicit-int
+-Winfinite-recursion
+-Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context
+-Wno-int-to-pointer-cast  -Wno-invalid-memory-model
+-Winvalid-pch  -Winvalid-utf8  -Wno-unicode  -Wjump-misses-init
+-Wlarger-than=@var{byte-size}  -Wlogical-not-parentheses  -Wlogical-op
+-Wlong-long  -Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized
+-Wmemset-elt-size  -Wmemset-transposed-args
+-Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces
+-Wmissing-field-initializers  -Wmissing-format-attribute
+-Wmissing-include-dirs  -Wmissing-noreturn  -Wno-missing-profile
+-Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare
+-Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
+-Wnull-dereference  -Wno-odr
+-Wopenacc-parallelism
+-Wopenmp-simd
+-Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects
+-Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded
+-Wparentheses  -Wno-pedantic-ms-format
+-Wpointer-arith  -Wno-pointer-compare  -Wno-pointer-to-int-cast
+-Wno-pragmas  -Wno-prio-ctor-dtor  -Wredundant-decls
+-Wrestrict  -Wno-return-local-addr  -Wreturn-type
+-Wno-scalar-storage-order  -Wsequence-point
+-Wshadow  -Wshadow=global  -Wshadow=local  -Wshadow=compatible-local
+-Wno-shadow-ivar
+-Wno-shift-count-negative  -Wno-shift-count-overflow  -Wshift-negative-value
+-Wno-shift-overflow  -Wshift-overflow=@var{n}
+-Wsign-compare  -Wsign-conversion
+-Wno-sizeof-array-argument
+-Wsizeof-array-div
+-Wsizeof-pointer-div  -Wsizeof-pointer-memaccess
+-Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing
+-Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n}
+-Wstring-compare
+-Wno-stringop-overflow -Wno-stringop-overread
+-Wno-stringop-truncation -Wstrict-flex-arrays
+-Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]}
+-Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum
+-Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand
+-Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs
+-Wtrivial-auto-var-init -Wtsan -Wtype-limits  -Wundef
+-Wuninitialized  -Wunknown-pragmas
+-Wunsuffixed-float-constants  -Wunused
+-Wunused-but-set-parameter  -Wunused-but-set-variable
+-Wunused-const-variable  -Wunused-const-variable=@var{n}
+-Wunused-function  -Wunused-label  -Wunused-local-typedefs
+-Wunused-macros
+-Wunused-parameter  -Wno-unused-result
+-Wunused-value  -Wunused-variable
+-Wno-varargs  -Wvariadic-macros
+-Wvector-operation-performance
+-Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than
+-Wvolatile-register-var  -Wwrite-strings
+-Wxor-used-as-pow
 -Wzero-length-bounds}
 
 @item Static Analyzer Options
 @gccoptlist{
--fanalyzer @gol
--fanalyzer-call-summaries @gol
--fanalyzer-checker=@var{name} @gol
--fno-analyzer-feasibility @gol
--fanalyzer-fine-grained @gol
--fno-analyzer-state-merge @gol
--fno-analyzer-state-purge @gol
--fno-analyzer-suppress-followups @gol
--fanalyzer-transitivity @gol
--fno-analyzer-undo-inlining @gol
--fanalyzer-verbose-edges @gol
--fanalyzer-verbose-state-changes @gol
--fanalyzer-verbosity=@var{level} @gol
--fdump-analyzer @gol
--fdump-analyzer-callgraph @gol
--fdump-analyzer-exploded-graph @gol
--fdump-analyzer-exploded-nodes @gol
--fdump-analyzer-exploded-nodes-2 @gol
--fdump-analyzer-exploded-nodes-3 @gol
--fdump-analyzer-exploded-paths @gol
--fdump-analyzer-feasibility @gol
--fdump-analyzer-json @gol
--fdump-analyzer-state-purge @gol
--fdump-analyzer-stderr @gol
--fdump-analyzer-supergraph @gol
--fdump-analyzer-untracked @gol
--Wno-analyzer-double-fclose @gol
--Wno-analyzer-double-free @gol
--Wno-analyzer-exposure-through-output-file @gol
--Wno-analyzer-exposure-through-uninit-copy @gol
--Wno-analyzer-fd-access-mode-mismatch @gol
--Wno-analyzer-fd-double-close @gol
--Wno-analyzer-fd-leak @gol
--Wno-analyzer-fd-phase-mismatch @gol
--Wno-analyzer-fd-type-mismatch @gol
--Wno-analyzer-fd-use-after-close @gol
--Wno-analyzer-fd-use-without-check @gol
--Wno-analyzer-file-leak @gol
--Wno-analyzer-free-of-non-heap @gol
--Wno-analyzer-imprecise-fp-arithmetic @gol
--Wno-analyzer-infinite-recursion @gol
--Wno-analyzer-jump-through-null @gol
--Wno-analyzer-malloc-leak @gol
--Wno-analyzer-mismatching-deallocation @gol
--Wno-analyzer-null-argument @gol
--Wno-analyzer-null-dereference @gol
--Wno-analyzer-out-of-bounds @gol
--Wno-analyzer-possible-null-argument @gol
--Wno-analyzer-possible-null-dereference @gol
--Wno-analyzer-putenv-of-auto-var @gol
--Wno-analyzer-shift-count-negative @gol
--Wno-analyzer-shift-count-overflow @gol
--Wno-analyzer-stale-setjmp-buffer @gol
--Wno-analyzer-tainted-allocation-size @gol
--Wno-analyzer-tainted-assertion @gol
--Wno-analyzer-tainted-array-index @gol
--Wno-analyzer-tainted-divisor @gol
--Wno-analyzer-tainted-offset @gol
--Wno-analyzer-tainted-size @gol
--Wanalyzer-too-complex @gol
--Wno-analyzer-unsafe-call-within-signal-handler @gol
--Wno-analyzer-use-after-free @gol
--Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
--Wno-analyzer-use-of-uninitialized-value @gol
--Wno-analyzer-va-arg-type-mismatch @gol
--Wno-analyzer-va-list-exhausted @gol
--Wno-analyzer-va-list-leak @gol
--Wno-analyzer-va-list-use-after-va-end @gol
--Wno-analyzer-write-to-const @gol
--Wno-analyzer-write-to-string-literal @gol
+-fanalyzer
+-fanalyzer-call-summaries
+-fanalyzer-checker=@var{name}
+-fno-analyzer-feasibility
+-fanalyzer-fine-grained
+-fno-analyzer-state-merge
+-fno-analyzer-state-purge
+-fno-analyzer-suppress-followups
+-fanalyzer-transitivity
+-fno-analyzer-undo-inlining
+-fanalyzer-verbose-edges
+-fanalyzer-verbose-state-changes
+-fanalyzer-verbosity=@var{level}
+-fdump-analyzer
+-fdump-analyzer-callgraph
+-fdump-analyzer-exploded-graph
+-fdump-analyzer-exploded-nodes
+-fdump-analyzer-exploded-nodes-2
+-fdump-analyzer-exploded-nodes-3
+-fdump-analyzer-exploded-paths
+-fdump-analyzer-feasibility
+-fdump-analyzer-json
+-fdump-analyzer-state-purge
+-fdump-analyzer-stderr
+-fdump-analyzer-supergraph
+-fdump-analyzer-untracked
+-Wno-analyzer-double-fclose
+-Wno-analyzer-double-free
+-Wno-analyzer-exposure-through-output-file
+-Wno-analyzer-exposure-through-uninit-copy
+-Wno-analyzer-fd-access-mode-mismatch
+-Wno-analyzer-fd-double-close
+-Wno-analyzer-fd-leak
+-Wno-analyzer-fd-phase-mismatch
+-Wno-analyzer-fd-type-mismatch
+-Wno-analyzer-fd-use-after-close
+-Wno-analyzer-fd-use-without-check
+-Wno-analyzer-file-leak
+-Wno-analyzer-free-of-non-heap
+-Wno-analyzer-imprecise-fp-arithmetic
+-Wno-analyzer-infinite-recursion
+-Wno-analyzer-jump-through-null
+-Wno-analyzer-malloc-leak
+-Wno-analyzer-mismatching-deallocation
+-Wno-analyzer-null-argument
+-Wno-analyzer-null-dereference
+-Wno-analyzer-out-of-bounds
+-Wno-analyzer-possible-null-argument
+-Wno-analyzer-possible-null-dereference
+-Wno-analyzer-putenv-of-auto-var
+-Wno-analyzer-shift-count-negative
+-Wno-analyzer-shift-count-overflow
+-Wno-analyzer-stale-setjmp-buffer
+-Wno-analyzer-tainted-allocation-size
+-Wno-analyzer-tainted-assertion
+-Wno-analyzer-tainted-array-index
+-Wno-analyzer-tainted-divisor
+-Wno-analyzer-tainted-offset
+-Wno-analyzer-tainted-size
+-Wanalyzer-too-complex
+-Wno-analyzer-unsafe-call-within-signal-handler
+-Wno-analyzer-use-after-free
+-Wno-analyzer-use-of-pointer-in-stale-stack-frame
+-Wno-analyzer-use-of-uninitialized-value
+-Wno-analyzer-va-arg-type-mismatch
+-Wno-analyzer-va-list-exhausted
+-Wno-analyzer-va-list-leak
+-Wno-analyzer-va-list-use-after-va-end
+-Wno-analyzer-write-to-const
+-Wno-analyzer-write-to-string-literal
 }
 
 @item C and Objective-C-only Warning Options
-@gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
--Wmissing-parameter-type  -Wmissing-prototypes  -Wnested-externs @gol
--Wold-style-declaration  -Wold-style-definition @gol
--Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion @gol
+@gccoptlist{-Wbad-function-cast  -Wmissing-declarations
+-Wmissing-parameter-type  -Wmissing-prototypes  -Wnested-externs
+-Wold-style-declaration  -Wold-style-definition
+-Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion
 -Wdeclaration-after-statement  -Wpointer-sign}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program}.
-@gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version} @gol
--gbtf -gctf  -gctf@var{level} @gol
--ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
--gstrict-dwarf  -gno-strict-dwarf @gol
--gas-loc-support  -gno-as-loc-support @gol
--gas-locview-support  -gno-as-locview-support @gol
--gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64 @gol
--gstatement-frontiers  -gno-statement-frontiers @gol
--gvariable-location-views  -gno-variable-location-views @gol
--ginternal-reset-location-views  -gno-internal-reset-location-views @gol
--ginline-points  -gno-inline-points @gol
--gvms -gz@r{[}=@var{type}@r{]} @gol
--gsplit-dwarf  -gdescribe-dies  -gno-describe-dies @gol
--fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
--fno-eliminate-unused-debug-types @gol
--femit-struct-debug-baseonly  -femit-struct-debug-reduced @gol
--femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]} @gol
--fno-eliminate-unused-debug-symbols  -femit-class-debug-always @gol
--fno-merge-debug-strings  -fno-dwarf2-cfi-asm @gol
+@gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version}
+-gbtf -gctf  -gctf@var{level}
+-ggdb  -grecord-gcc-switches  -gno-record-gcc-switches
+-gstrict-dwarf  -gno-strict-dwarf
+-gas-loc-support  -gno-as-loc-support
+-gas-locview-support  -gno-as-locview-support
+-gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64
+-gstatement-frontiers  -gno-statement-frontiers
+-gvariable-location-views  -gno-variable-location-views
+-ginternal-reset-location-views  -gno-internal-reset-location-views
+-ginline-points  -gno-inline-points
+-gvms -gz@r{[}=@var{type}@r{]}
+-gsplit-dwarf  -gdescribe-dies  -gno-describe-dies
+-fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section
+-fno-eliminate-unused-debug-types
+-femit-struct-debug-baseonly  -femit-struct-debug-reduced
+-femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]}
+-fno-eliminate-unused-debug-symbols  -femit-class-debug-always
+-fno-merge-debug-strings  -fno-dwarf2-cfi-asm
 -fvar-tracking  -fvar-tracking-assignments}
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
-@gccoptlist{-faggressive-loop-optimizations @gol
--falign-functions[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
--falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
--falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
--falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
--fno-allocation-dce -fallow-store-data-races @gol
--fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
--fauto-inc-dec  -fbranch-probabilities @gol
--fcaller-saves @gol
--fcombine-stack-adjustments  -fconserve-stack @gol
--fcompare-elim  -fcprop-registers  -fcrossjumping @gol
--fcse-follow-jumps  -fcse-skip-blocks  -fcx-fortran-rules @gol
--fcx-limited-range @gol
--fdata-sections  -fdce  -fdelayed-branch @gol
--fdelete-null-pointer-checks  -fdevirtualize  -fdevirtualize-speculatively @gol
--fdevirtualize-at-ltrans  -fdse @gol
--fearly-inlining  -fipa-sra  -fexpensive-optimizations  -ffat-lto-objects @gol
--ffast-math  -ffinite-math-only  -ffloat-store  -fexcess-precision=@var{style} @gol
--ffinite-loops @gol
--fforward-propagate  -ffp-contract=@var{style}  -ffunction-sections @gol
--fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity @gol
--fgcse-sm  -fhoist-adjacent-loads  -fif-conversion @gol
--fif-conversion2  -findirect-inlining @gol
--finline-functions  -finline-functions-called-once  -finline-limit=@var{n} @gol
--finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone @gol
--fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const @gol
--fipa-reference  -fipa-reference-addressable @gol
--fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm} @gol
--flive-patching=@var{level} @gol
--fira-region=@var{region}  -fira-hoist-pressure @gol
--fira-loop-pressure  -fno-ira-share-save-slots @gol
--fno-ira-share-spill-slots @gol
--fisolate-erroneous-paths-dereference  -fisolate-erroneous-paths-attribute @gol
--fivopts  -fkeep-inline-functions  -fkeep-static-functions @gol
--fkeep-static-consts  -flimit-function-alignment  -flive-range-shrinkage @gol
--floop-block  -floop-interchange  -floop-strip-mine @gol
--floop-unroll-and-jam  -floop-nest-optimize @gol
--floop-parallelize-all  -flra-remat  -flto  -flto-compression-level @gol
--flto-partition=@var{alg}  -fmerge-all-constants @gol
--fmerge-constants  -fmodulo-sched  -fmodulo-sched-allow-regmoves @gol
--fmove-loop-invariants  -fmove-loop-stores  -fno-branch-count-reg @gol
--fno-defer-pop  -fno-fp-int-builtin-inexact  -fno-function-cse @gol
--fno-guess-branch-probability  -fno-inline  -fno-math-errno  -fno-peephole @gol
--fno-peephole2  -fno-printf-return-value  -fno-sched-interblock @gol
--fno-sched-spec  -fno-signed-zeros @gol
--fno-toplevel-reorder  -fno-trapping-math  -fno-zero-initialized-in-bss @gol
--fomit-frame-pointer  -foptimize-sibling-calls @gol
--fpartial-inlining  -fpeel-loops  -fpredictive-commoning @gol
--fprefetch-loop-arrays @gol
--fprofile-correction @gol
--fprofile-use  -fprofile-use=@var{path} -fprofile-partial-training @gol
--fprofile-values -fprofile-reorder-functions @gol
--freciprocal-math  -free  -frename-registers  -freorder-blocks @gol
--freorder-blocks-algorithm=@var{algorithm} @gol
--freorder-blocks-and-partition  -freorder-functions @gol
--frerun-cse-after-loop  -freschedule-modulo-scheduled-loops @gol
--frounding-math  -fsave-optimization-record @gol
--fsched2-use-superblocks  -fsched-pressure @gol
--fsched-spec-load  -fsched-spec-load-dangerous @gol
--fsched-stalled-insns-dep[=@var{n}]  -fsched-stalled-insns[=@var{n}] @gol
--fsched-group-heuristic  -fsched-critical-path-heuristic @gol
--fsched-spec-insn-heuristic  -fsched-rank-heuristic @gol
--fsched-last-insn-heuristic  -fsched-dep-count-heuristic @gol
--fschedule-fusion @gol
--fschedule-insns  -fschedule-insns2  -fsection-anchors @gol
--fselective-scheduling  -fselective-scheduling2 @gol
--fsel-sched-pipelining  -fsel-sched-pipelining-outer-loops @gol
--fsemantic-interposition  -fshrink-wrap  -fshrink-wrap-separate @gol
--fsignaling-nans @gol
--fsingle-precision-constant  -fsplit-ivs-in-unroller  -fsplit-loops@gol
--fsplit-paths @gol
--fsplit-wide-types  -fsplit-wide-types-early  -fssa-backprop  -fssa-phiopt @gol
--fstdarg-opt  -fstore-merging  -fstrict-aliasing -fipa-strict-aliasing @gol
--fthread-jumps  -ftracer  -ftree-bit-ccp @gol
--ftree-builtin-call-dce  -ftree-ccp  -ftree-ch @gol
--ftree-coalesce-vars  -ftree-copy-prop  -ftree-dce  -ftree-dominator-opts @gol
--ftree-dse  -ftree-forwprop  -ftree-fre  -fcode-hoisting @gol
--ftree-loop-if-convert  -ftree-loop-im @gol
--ftree-phiprop  -ftree-loop-distribution  -ftree-loop-distribute-patterns @gol
--ftree-loop-ivcanon  -ftree-loop-linear  -ftree-loop-optimize @gol
--ftree-loop-vectorize @gol
--ftree-parallelize-loops=@var{n}  -ftree-pre  -ftree-partial-pre  -ftree-pta @gol
--ftree-reassoc  -ftree-scev-cprop  -ftree-sink  -ftree-slsr  -ftree-sra @gol
--ftree-switch-conversion  -ftree-tail-merge @gol
--ftree-ter  -ftree-vectorize  -ftree-vrp  -ftrivial-auto-var-init @gol
--funconstrained-commons -funit-at-a-time  -funroll-all-loops @gol
--funroll-loops -funsafe-math-optimizations  -funswitch-loops @gol
--fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt @gol
--fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs @gol
+@gccoptlist{-faggressive-loop-optimizations
+-falign-functions[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
+-falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
+-falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
+-falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
+-fno-allocation-dce -fallow-store-data-races
+-fassociative-math  -fauto-profile  -fauto-profile[=@var{path}]
+-fauto-inc-dec  -fbranch-probabilities
+-fcaller-saves
+-fcombine-stack-adjustments  -fconserve-stack
+-fcompare-elim  -fcprop-registers  -fcrossjumping
+-fcse-follow-jumps  -fcse-skip-blocks  -fcx-fortran-rules
+-fcx-limited-range
+-fdata-sections  -fdce  -fdelayed-branch
+-fdelete-null-pointer-checks  -fdevirtualize  -fdevirtualize-speculatively
+-fdevirtualize-at-ltrans  -fdse
+-fearly-inlining  -fipa-sra  -fexpensive-optimizations  -ffat-lto-objects
+-ffast-math  -ffinite-math-only  -ffloat-store  -fexcess-precision=@var{style}
+-ffinite-loops
+-fforward-propagate  -ffp-contract=@var{style}  -ffunction-sections
+-fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity
+-fgcse-sm  -fhoist-adjacent-loads  -fif-conversion
+-fif-conversion2  -findirect-inlining
+-finline-functions  -finline-functions-called-once  -finline-limit=@var{n}
+-finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone
+-fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
+-fipa-reference  -fipa-reference-addressable
+-fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm}
+-flive-patching=@var{level}
+-fira-region=@var{region}  -fira-hoist-pressure
+-fira-loop-pressure  -fno-ira-share-save-slots
+-fno-ira-share-spill-slots
+-fisolate-erroneous-paths-dereference  -fisolate-erroneous-paths-attribute
+-fivopts  -fkeep-inline-functions  -fkeep-static-functions
+-fkeep-static-consts  -flimit-function-alignment  -flive-range-shrinkage
+-floop-block  -floop-interchange  -floop-strip-mine
+-floop-unroll-and-jam  -floop-nest-optimize
+-floop-parallelize-all  -flra-remat  -flto  -flto-compression-level
+-flto-partition=@var{alg}  -fmerge-all-constants
+-fmerge-constants  -fmodulo-sched  -fmodulo-sched-allow-regmoves
+-fmove-loop-invariants  -fmove-loop-stores  -fno-branch-count-reg
+-fno-defer-pop  -fno-fp-int-builtin-inexact  -fno-function-cse
+-fno-guess-branch-probability  -fno-inline  -fno-math-errno  -fno-peephole
+-fno-peephole2  -fno-printf-return-value  -fno-sched-interblock
+-fno-sched-spec  -fno-signed-zeros
+-fno-toplevel-reorder  -fno-trapping-math  -fno-zero-initialized-in-bss
+-fomit-frame-pointer  -foptimize-sibling-calls
+-fpartial-inlining  -fpeel-loops  -fpredictive-commoning
+-fprefetch-loop-arrays
+-fprofile-correction
+-fprofile-use  -fprofile-use=@var{path} -fprofile-partial-training
+-fprofile-values -fprofile-reorder-functions
+-freciprocal-math  -free  -frename-registers  -freorder-blocks
+-freorder-blocks-algorithm=@var{algorithm}
+-freorder-blocks-and-partition  -freorder-functions
+-frerun-cse-after-loop  -freschedule-modulo-scheduled-loops
+-frounding-math  -fsave-optimization-record
+-fsched2-use-superblocks  -fsched-pressure
+-fsched-spec-load  -fsched-spec-load-dangerous
+-fsched-stalled-insns-dep[=@var{n}]  -fsched-stalled-insns[=@var{n}]
+-fsched-group-heuristic  -fsched-critical-path-heuristic
+-fsched-spec-insn-heuristic  -fsched-rank-heuristic
+-fsched-last-insn-heuristic  -fsched-dep-count-heuristic
+-fschedule-fusion
+-fschedule-insns  -fschedule-insns2  -fsection-anchors
+-fselective-scheduling  -fselective-scheduling2
+-fsel-sched-pipelining  -fsel-sched-pipelining-outer-loops
+-fsemantic-interposition  -fshrink-wrap  -fshrink-wrap-separate
+-fsignaling-nans
+-fsingle-precision-constant  -fsplit-ivs-in-unroller  -fsplit-loops
+-fsplit-paths
+-fsplit-wide-types  -fsplit-wide-types-early  -fssa-backprop  -fssa-phiopt
+-fstdarg-opt  -fstore-merging  -fstrict-aliasing -fipa-strict-aliasing
+-fthread-jumps  -ftracer  -ftree-bit-ccp
+-ftree-builtin-call-dce  -ftree-ccp  -ftree-ch
+-ftree-coalesce-vars  -ftree-copy-prop  -ftree-dce  -ftree-dominator-opts
+-ftree-dse  -ftree-forwprop  -ftree-fre  -fcode-hoisting
+-ftree-loop-if-convert  -ftree-loop-im
+-ftree-phiprop  -ftree-loop-distribution  -ftree-loop-distribute-patterns
+-ftree-loop-ivcanon  -ftree-loop-linear  -ftree-loop-optimize
+-ftree-loop-vectorize
+-ftree-parallelize-loops=@var{n}  -ftree-pre  -ftree-partial-pre  -ftree-pta
+-ftree-reassoc  -ftree-scev-cprop  -ftree-sink  -ftree-slsr  -ftree-sra
+-ftree-switch-conversion  -ftree-tail-merge
+-ftree-ter  -ftree-vectorize  -ftree-vrp  -ftrivial-auto-var-init
+-funconstrained-commons -funit-at-a-time  -funroll-all-loops
+-funroll-loops -funsafe-math-optimizations  -funswitch-loops
+-fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt
+-fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os  -Ofast  -Og  -Oz}
 
 @item Program Instrumentation Options
 @xref{Instrumentation Options,,Program Instrumentation Options}.
-@gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
--fprofile-abs-path @gol
--fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
--fprofile-info-section  -fprofile-info-section=@var{name} @gol
--fprofile-note=@var{path} -fprofile-prefix-path=@var{path} @gol
--fprofile-update=@var{method} -fprofile-filter-files=@var{regex} @gol
--fprofile-exclude-files=@var{regex} @gol
--fprofile-reproducible=@r{[}multithreaded@r{|}parallel-runs@r{|}serial@r{]} @gol
--fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
--fsanitize-trap   -fsanitize-trap=@var{style}  @gol
--fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
--fsanitize-undefined-trap-on-error  -fbounds-check @gol
--fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]} @gol
--fharden-compares -fharden-conditional-branches @gol
--fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
--fstack-protector-explicit  -fstack-check @gol
--fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
--fno-stack-limit  -fsplit-stack @gol
--fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]} @gol
--fvtv-counts  -fvtv-debug @gol
--finstrument-functions  -finstrument-functions-once @gol
--finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{} @gol
--finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}} @gol
--fprofile-prefix-map=@var{old}=@var{new}
+@gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage
+-fprofile-abs-path
+-fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path}
+-fprofile-info-section  -fprofile-info-section=@var{name}
+-fprofile-note=@var{path} -fprofile-prefix-path=@var{path}
+-fprofile-update=@var{method} -fprofile-filter-files=@var{regex}
+-fprofile-exclude-files=@var{regex}
+-fprofile-reproducible=@r{[}multithreaded@r{|}parallel-runs@r{|}serial@r{]}
+-fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style}
+-fsanitize-trap   -fsanitize-trap=@var{style}
+-fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},...
+-fsanitize-undefined-trap-on-error  -fbounds-check
+-fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
+-fharden-compares -fharden-conditional-branches
+-fstack-protector  -fstack-protector-all  -fstack-protector-strong
+-fstack-protector-explicit  -fstack-check
+-fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym}
+-fno-stack-limit  -fsplit-stack
+-fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]}
+-fvtv-counts  -fvtv-debug
+-finstrument-functions  -finstrument-functions-once
+-finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{}
+-finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}
+-fprofile-prefix-map=@var{old}=@var{new}}
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
-@gccoptlist{-A@var{question}=@var{answer} @gol
--A-@var{question}@r{[}=@var{answer}@r{]} @gol
--C  -CC  -D@var{macro}@r{[}=@var{defn}@r{]} @gol
--dD  -dI  -dM  -dN  -dU @gol
--fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
--fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset}  -flarge-source-files  @gol
--fmacro-prefix-map=@var{old}=@var{new} -fmax-include-depth=@var{depth} @gol
--fno-canonical-system-headers  -fpch-deps  -fpch-preprocess  @gol
--fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
--fwide-exec-charset=@var{charset}  -fworking-directory @gol
--H  -imacros @var{file}  -include @var{file} @gol
--M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT -Mno-modules @gol
--no-integrated-cpp  -P  -pthread  -remap @gol
--traditional  -traditional-cpp  -trigraphs @gol
--U@var{macro}  -undef  @gol
+@gccoptlist{-A@var{question}=@var{answer}
+-A-@var{question}@r{[}=@var{answer}@r{]}
+-C  -CC  -D@var{macro}@r{[}=@var{defn}@r{]}
+-dD  -dI  -dM  -dN  -dU
+-fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers
+-fexec-charset=@var{charset}  -fextended-identifiers
+-finput-charset=@var{charset}  -flarge-source-files
+-fmacro-prefix-map=@var{old}=@var{new} -fmax-include-depth=@var{depth}
+-fno-canonical-system-headers  -fpch-deps  -fpch-preprocess
+-fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion
+-fwide-exec-charset=@var{charset}  -fworking-directory
+-H  -imacros @var{file}  -include @var{file}
+-M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT -Mno-modules
+-no-integrated-cpp  -P  -pthread  -remap
+-traditional  -traditional-cpp  -trigraphs
+-U@var{macro}  -undef
 -Wp,@var{option}  -Xpreprocessor @var{option}}
 
 @item Assembler Options
@@ -671,88 +671,88 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
-@gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
--nostartfiles  -nodefaultlibs  -nolibc  -nostdlib  -nostdlib++ @gol
--e @var{entry}  --entry=@var{entry} @gol
--pie  -pthread  -r  -rdynamic @gol
--s  -static  -static-pie  -static-libgcc  -static-libstdc++ @gol
--static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
--shared  -shared-libgcc  -symbolic @gol
--T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
+@gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library}
+-nostartfiles  -nodefaultlibs  -nolibc  -nostdlib  -nostdlib++
+-e @var{entry}  --entry=@var{entry}
+-pie  -pthread  -r  -rdynamic
+-s  -static  -static-pie  -static-libgcc  -static-libstdc++
+-static-libasan  -static-libtsan  -static-liblsan  -static-libubsan
+-shared  -shared-libgcc  -symbolic
+-T @var{script}  -Wl,@var{option}  -Xlinker @var{option}
 -u @var{symbol}  -z @var{keyword}}
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
-@gccoptlist{-B@var{prefix}  -I@var{dir}  -I- @gol
--idirafter @var{dir} @gol
--imacros @var{file}  -imultilib @var{dir} @gol
--iplugindir=@var{dir}  -iprefix @var{file} @gol
--iquote @var{dir}  -isysroot @var{dir}  -isystem @var{dir} @gol
--iwithprefix @var{dir}  -iwithprefixbefore @var{dir}  @gol
--L@var{dir}  -no-canonical-prefixes  --no-sysroot-suffix @gol
+@gccoptlist{-B@var{prefix}  -I@var{dir}  -I-
+-idirafter @var{dir}
+-imacros @var{file}  -imultilib @var{dir}
+-iplugindir=@var{dir}  -iprefix @var{file}
+-iquote @var{dir}  -isysroot @var{dir}  -isystem @var{dir}
+-iwithprefix @var{dir}  -iwithprefixbefore @var{dir}
+-L@var{dir}  -no-canonical-prefixes  --no-sysroot-suffix
 -nostdinc  -nostdinc++  --sysroot=@var{dir}}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
-@gccoptlist{-fcall-saved-@var{reg}  -fcall-used-@var{reg} @gol
--ffixed-@var{reg}  -fexceptions @gol
--fnon-call-exceptions  -fdelete-dead-exceptions  -funwind-tables @gol
--fasynchronous-unwind-tables @gol
--fno-gnu-unique @gol
--finhibit-size-directive  -fcommon  -fno-ident @gol
--fpcc-struct-return  -fpic  -fPIC  -fpie  -fPIE  -fno-plt @gol
--fno-jump-tables -fno-bit-tests @gol
--frecord-gcc-switches @gol
--freg-struct-return  -fshort-enums  -fshort-wchar @gol
--fverbose-asm  -fpack-struct[=@var{n}]  @gol
--fleading-underscore  -ftls-model=@var{model} @gol
--fstack-reuse=@var{reuse_level} @gol
--ftrampolines  -ftrapv  -fwrapv @gol
--fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]} @gol
+@gccoptlist{-fcall-saved-@var{reg}  -fcall-used-@var{reg}
+-ffixed-@var{reg}  -fexceptions
+-fnon-call-exceptions  -fdelete-dead-exceptions  -funwind-tables
+-fasynchronous-unwind-tables
+-fno-gnu-unique
+-finhibit-size-directive  -fcommon  -fno-ident
+-fpcc-struct-return  -fpic  -fPIC  -fpie  -fPIE  -fno-plt
+-fno-jump-tables -fno-bit-tests
+-frecord-gcc-switches
+-freg-struct-return  -fshort-enums  -fshort-wchar
+-fverbose-asm  -fpack-struct[=@var{n}]
+-fleading-underscore  -ftls-model=@var{model}
+-fstack-reuse=@var{reuse_level}
+-ftrampolines  -ftrapv  -fwrapv
+-fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
 -fstrict-volatile-bitfields  -fsync-libcalls}
 
 @item Developer Options
 @xref{Developer Options,,GCC Developer Options}.
-@gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
+@gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion
 -dumpfullversion  -fcallgraph-info@r{[}=su,da@r{]}
--fchecking  -fchecking=@var{n} @gol
--fdbg-cnt-list  -fdbg-cnt=@var{counter-value-list} @gol
--fdisable-ipa-@var{pass_name} @gol
--fdisable-rtl-@var{pass_name} @gol
--fdisable-rtl-@var{pass-name}=@var{range-list} @gol
--fdisable-tree-@var{pass_name} @gol
--fdisable-tree-@var{pass-name}=@var{range-list} @gol
--fdump-debug  -fdump-earlydebug @gol
--fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links @gol
--fdump-final-insns@r{[}=@var{file}@r{]} @gol
--fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline @gol
--fdump-lang-all @gol
--fdump-lang-@var{switch} @gol
--fdump-lang-@var{switch}-@var{options} @gol
--fdump-lang-@var{switch}-@var{options}=@var{filename} @gol
--fdump-passes @gol
--fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename} @gol
--fdump-statistics @gol
--fdump-tree-all @gol
--fdump-tree-@var{switch} @gol
--fdump-tree-@var{switch}-@var{options} @gol
--fdump-tree-@var{switch}-@var{options}=@var{filename} @gol
--fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
--fenable-@var{kind}-@var{pass} @gol
--fenable-@var{kind}-@var{pass}=@var{range-list} @gol
--fira-verbose=@var{n} @gol
--flto-report  -flto-report-wpa  -fmem-report-wpa @gol
--fmem-report  -fpre-ipa-mem-report  -fpost-ipa-mem-report @gol
--fopt-info  -fopt-info-@var{options}@r{[}=@var{file}@r{]} @gol
--fmultiflags  -fprofile-report @gol
--frandom-seed=@var{string}  -fsched-verbose=@var{n} @gol
--fsel-sched-verbose  -fsel-sched-dump-cfg  -fsel-sched-pipelining-verbose @gol
--fstats  -fstack-usage  -ftime-report  -ftime-report-details @gol
--fvar-tracking-assignments-toggle  -gtoggle @gol
--print-file-name=@var{library}  -print-libgcc-file-name @gol
--print-multi-directory  -print-multi-lib  -print-multi-os-directory @gol
--print-prog-name=@var{program}  -print-search-dirs  -Q @gol
--print-sysroot  -print-sysroot-headers-suffix @gol
+-fchecking  -fchecking=@var{n}
+-fdbg-cnt-list  -fdbg-cnt=@var{counter-value-list}
+-fdisable-ipa-@var{pass_name}
+-fdisable-rtl-@var{pass_name}
+-fdisable-rtl-@var{pass-name}=@var{range-list}
+-fdisable-tree-@var{pass_name}
+-fdisable-tree-@var{pass-name}=@var{range-list}
+-fdump-debug  -fdump-earlydebug
+-fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links
+-fdump-final-insns@r{[}=@var{file}@r{]}
+-fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline
+-fdump-lang-all
+-fdump-lang-@var{switch}
+-fdump-lang-@var{switch}-@var{options}
+-fdump-lang-@var{switch}-@var{options}=@var{filename}
+-fdump-passes
+-fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename}
+-fdump-statistics
+-fdump-tree-all
+-fdump-tree-@var{switch}
+-fdump-tree-@var{switch}-@var{options}
+-fdump-tree-@var{switch}-@var{options}=@var{filename}
+-fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second
+-fenable-@var{kind}-@var{pass}
+-fenable-@var{kind}-@var{pass}=@var{range-list}
+-fira-verbose=@var{n}
+-flto-report  -flto-report-wpa  -fmem-report-wpa
+-fmem-report  -fpre-ipa-mem-report  -fpost-ipa-mem-report
+-fopt-info  -fopt-info-@var{options}@r{[}=@var{file}@r{]}
+-fmultiflags  -fprofile-report
+-frandom-seed=@var{string}  -fsched-verbose=@var{n}
+-fsel-sched-verbose  -fsel-sched-dump-cfg  -fsel-sched-pipelining-verbose
+-fstats  -fstack-usage  -ftime-report  -ftime-report-details
+-fvar-tracking-assignments-toggle  -gtoggle
+-print-file-name=@var{library}  -print-libgcc-file-name
+-print-multi-directory  -print-multi-lib  -print-multi-os-directory
+-print-prog-name=@var{program}  -print-search-dirs  -Q
+-print-sysroot  -print-sysroot-headers-suffix
 -save-temps  -save-temps=cwd  -save-temps=obj  -time@r{[}=@var{file}@r{]}}
 
 @item Machine-Dependent Options
@@ -762,183 +762,183 @@ Objective-C and Objective-C++ Dialects}.
 @c so users have a clue at guessing where the ones they want will be.
 
 @emph{AArch64 Options}
-@gccoptlist{-mabi=@var{name}  -mbig-endian  -mlittle-endian @gol
--mgeneral-regs-only @gol
--mcmodel=tiny  -mcmodel=small  -mcmodel=large @gol
--mstrict-align  -mno-strict-align @gol
--momit-leaf-frame-pointer @gol
--mtls-dialect=desc  -mtls-dialect=traditional @gol
--mtls-size=@var{size} @gol
--mfix-cortex-a53-835769  -mfix-cortex-a53-843419 @gol
--mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div @gol
--mpc-relative-literal-loads @gol
--msign-return-address=@var{scope} @gol
+@gccoptlist{-mabi=@var{name}  -mbig-endian  -mlittle-endian
+-mgeneral-regs-only
+-mcmodel=tiny  -mcmodel=small  -mcmodel=large
+-mstrict-align  -mno-strict-align
+-momit-leaf-frame-pointer
+-mtls-dialect=desc  -mtls-dialect=traditional
+-mtls-size=@var{size}
+-mfix-cortex-a53-835769  -mfix-cortex-a53-843419
+-mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div
+-mpc-relative-literal-loads
+-msign-return-address=@var{scope}
 -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}
-+@var{b-key}]|@var{bti} @gol
--mharden-sls=@var{opts} @gol
--march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
--moverride=@var{string}  -mverbose-cost-dump @gol
--mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
--mstack-protector-guard-offset=@var{offset} -mtrack-speculation @gol
++@var{b-key}]|@var{bti}
+-mharden-sls=@var{opts}
+-march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}
+-moverride=@var{string}  -mverbose-cost-dump
+-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg}
+-mstack-protector-guard-offset=@var{offset} -mtrack-speculation
 -moutline-atomics }
 
 @emph{Adapteva Epiphany Options}
-@gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
--mbranch-cost=@var{num}  -mcmove  -mnops=@var{num}  -msoft-cmpsf @gol
--msplit-lohi  -mpost-inc  -mpost-modify  -mstack-offset=@var{num} @gol
--mround-nearest  -mlong-calls  -mshort-calls  -msmall16 @gol
--mfp-mode=@var{mode}  -mvect-double  -max-vect-align=@var{num} @gol
+@gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs
+-mbranch-cost=@var{num}  -mcmove  -mnops=@var{num}  -msoft-cmpsf
+-msplit-lohi  -mpost-inc  -mpost-modify  -mstack-offset=@var{num}
+-mround-nearest  -mlong-calls  -mshort-calls  -msmall16
+-mfp-mode=@var{mode}  -mvect-double  -max-vect-align=@var{num}
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
 @emph{AMD GCN Options}
 @gccoptlist{-march=@var{gpu} -mtune=@var{gpu} -mstack-size=@var{bytes}}
 
 @emph{ARC Options}
-@gccoptlist{-mbarrel-shifter  -mjli-always @gol
--mcpu=@var{cpu}  -mA6  -mARC600  -mA7  -mARC700 @gol
--mdpfp  -mdpfp-compact  -mdpfp-fast  -mno-dpfp-lrsr @gol
--mea  -mno-mpy  -mmul32x16  -mmul64  -matomic @gol
--mnorm  -mspfp  -mspfp-compact  -mspfp-fast  -msimd  -msoft-float  -mswap @gol
--mcrc  -mdsp-packa  -mdvbf  -mlock  -mmac-d16  -mmac-24  -mrtsc  -mswape @gol
--mtelephony  -mxy  -misize  -mannotate-align  -marclinux  -marclinux_prof @gol
--mlong-calls  -mmedium-calls  -msdata  -mirq-ctrl-saved @gol
--mrgf-banked-regs  -mlpc-width=@var{width}  -G @var{num} @gol
--mvolatile-cache  -mtp-regno=@var{regno} @gol
--malign-call  -mauto-modify-reg  -mbbit-peephole  -mno-brcc @gol
--mcase-vector-pcrel  -mcompact-casesi  -mno-cond-exec  -mearly-cbranchsi @gol
--mexpand-adddi  -mindexed-loads  -mlra  -mlra-priority-none @gol
--mlra-priority-compact -mlra-priority-noncompact  -mmillicode @gol
--mmixed-code  -mq-class  -mRcq  -mRcw  -msize-level=@var{level} @gol
--mtune=@var{cpu}  -mmultcost=@var{num}  -mcode-density-frame @gol
--munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo} @gol
+@gccoptlist{-mbarrel-shifter  -mjli-always
+-mcpu=@var{cpu}  -mA6  -mARC600  -mA7  -mARC700
+-mdpfp  -mdpfp-compact  -mdpfp-fast  -mno-dpfp-lrsr
+-mea  -mno-mpy  -mmul32x16  -mmul64  -matomic
+-mnorm  -mspfp  -mspfp-compact  -mspfp-fast  -msimd  -msoft-float  -mswap
+-mcrc  -mdsp-packa  -mdvbf  -mlock  -mmac-d16  -mmac-24  -mrtsc  -mswape
+-mtelephony  -mxy  -misize  -mannotate-align  -marclinux  -marclinux_prof
+-mlong-calls  -mmedium-calls  -msdata  -mirq-ctrl-saved
+-mrgf-banked-regs  -mlpc-width=@var{width}  -G @var{num}
+-mvolatile-cache  -mtp-regno=@var{regno}
+-malign-call  -mauto-modify-reg  -mbbit-peephole  -mno-brcc
+-mcase-vector-pcrel  -mcompact-casesi  -mno-cond-exec  -mearly-cbranchsi
+-mexpand-adddi  -mindexed-loads  -mlra  -mlra-priority-none
+-mlra-priority-compact -mlra-priority-noncompact  -mmillicode
+-mmixed-code  -mq-class  -mRcq  -mRcw  -msize-level=@var{level}
+-mtune=@var{cpu}  -mmultcost=@var{num}  -mcode-density-frame
+-munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo}
 -mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu}  -mrf16  -mbranch-index}
 
 @emph{ARM Options}
-@gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
--mabi=@var{name} @gol
--mapcs-stack-check  -mno-apcs-stack-check @gol
--mapcs-reentrant  -mno-apcs-reentrant @gol
--mgeneral-regs-only @gol
--msched-prolog  -mno-sched-prolog @gol
--mlittle-endian  -mbig-endian @gol
--mbe8  -mbe32 @gol
--mfloat-abi=@var{name} @gol
+@gccoptlist{-mapcs-frame  -mno-apcs-frame
+-mabi=@var{name}
+-mapcs-stack-check  -mno-apcs-stack-check
+-mapcs-reentrant  -mno-apcs-reentrant
+-mgeneral-regs-only
+-msched-prolog  -mno-sched-prolog
+-mlittle-endian  -mbig-endian
+-mbe8  -mbe32
+-mfloat-abi=@var{name}
 -mfp16-format=@var{name}
--mthumb-interwork  -mno-thumb-interwork @gol
--mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}  @gol
--mtune=@var{name}  -mprint-tune-info @gol
--mstructure-size-boundary=@var{n} @gol
--mabort-on-noreturn @gol
--mlong-calls  -mno-long-calls @gol
--msingle-pic-base  -mno-single-pic-base @gol
--mpic-register=@var{reg} @gol
--mnop-fun-dllimport @gol
--mpoke-function-name @gol
--mthumb  -marm  -mflip-thumb @gol
--mtpcs-frame  -mtpcs-leaf-frame @gol
--mcaller-super-interworking  -mcallee-super-interworking @gol
--mtp=@var{name}  -mtls-dialect=@var{dialect} @gol
--mword-relocations @gol
--mfix-cortex-m3-ldrd @gol
--mfix-cortex-a57-aes-1742098 @gol
--mfix-cortex-a72-aes-1655431 @gol
--munaligned-access @gol
--mneon-for-64bits @gol
--mslow-flash-data @gol
--masm-syntax-unified @gol
--mrestrict-it @gol
--mverbose-cost-dump @gol
--mpure-code @gol
--mcmse @gol
--mfix-cmse-cve-2021-35465 @gol
--mstack-protector-guard=@var{guard} -mstack-protector-guard-offset=@var{offset} @gol
--mfdpic @gol
+-mthumb-interwork  -mno-thumb-interwork
+-mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}
+-mtune=@var{name}  -mprint-tune-info
+-mstructure-size-boundary=@var{n}
+-mabort-on-noreturn
+-mlong-calls  -mno-long-calls
+-msingle-pic-base  -mno-single-pic-base
+-mpic-register=@var{reg}
+-mnop-fun-dllimport
+-mpoke-function-name
+-mthumb  -marm  -mflip-thumb
+-mtpcs-frame  -mtpcs-leaf-frame
+-mcaller-super-interworking  -mcallee-super-interworking
+-mtp=@var{name}  -mtls-dialect=@var{dialect}
+-mword-relocations
+-mfix-cortex-m3-ldrd
+-mfix-cortex-a57-aes-1742098
+-mfix-cortex-a72-aes-1655431
+-munaligned-access
+-mneon-for-64bits
+-mslow-flash-data
+-masm-syntax-unified
+-mrestrict-it
+-mverbose-cost-dump
+-mpure-code
+-mcmse
+-mfix-cmse-cve-2021-35465
+-mstack-protector-guard=@var{guard} -mstack-protector-guard-offset=@var{offset}
+-mfdpic
 -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]
 [+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]}
 
 @emph{AVR Options}
-@gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args @gol
--mbranch-cost=@var{cost} @gol
--mcall-prologues  -mgas-isr-prologues  -mint8 @gol
--mdouble=@var{bits} -mlong-double=@var{bits} @gol
--mn_flash=@var{size}  -mno-interrupts @gol
--mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
--mfract-convert-truncate @gol
--mshort-calls  -nodevicelib  -nodevicespecs @gol
+@gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args
+-mbranch-cost=@var{cost}
+-mcall-prologues  -mgas-isr-prologues  -mint8
+-mdouble=@var{bits} -mlong-double=@var{bits}
+-mn_flash=@var{size}  -mno-interrupts
+-mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
+-mfract-convert-truncate
+-mshort-calls  -nodevicelib  -nodevicespecs
 -Waddr-space-convert  -Wmisspelled-isr}
 
 @emph{Blackfin Options}
-@gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
--msim  -momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer @gol
--mspecld-anomaly  -mno-specld-anomaly  -mcsync-anomaly  -mno-csync-anomaly @gol
--mlow-64k  -mno-low64k  -mstack-check-l1  -mid-shared-library @gol
--mno-id-shared-library  -mshared-library-id=@var{n} @gol
--mleaf-id-shared-library  -mno-leaf-id-shared-library @gol
--msep-data  -mno-sep-data  -mlong-calls  -mno-long-calls @gol
--mfast-fp  -minline-plt  -mmulticore  -mcorea  -mcoreb  -msdram @gol
+@gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]}
+-msim  -momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer
+-mspecld-anomaly  -mno-specld-anomaly  -mcsync-anomaly  -mno-csync-anomaly
+-mlow-64k  -mno-low64k  -mstack-check-l1  -mid-shared-library
+-mno-id-shared-library  -mshared-library-id=@var{n}
+-mleaf-id-shared-library  -mno-leaf-id-shared-library
+-msep-data  -mno-sep-data  -mlong-calls  -mno-long-calls
+-mfast-fp  -minline-plt  -mmulticore  -mcorea  -mcoreb  -msdram
 -micplb}
 
 @emph{C6X Options}
-@gccoptlist{-mbig-endian  -mlittle-endian  -march=@var{cpu} @gol
+@gccoptlist{-mbig-endian  -mlittle-endian  -march=@var{cpu}
 -msim  -msdata=@var{sdata-type}}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}
--mtune=@var{cpu} -mmax-stack-frame=@var{n} @gol
--metrax4  -metrax100  -mpdebug  -mcc-init  -mno-side-effects @gol
--mstack-align  -mdata-align  -mconst-align @gol
--m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue @gol
--melf  -maout  -sim  -sim2 @gol
+-mtune=@var{cpu} -mmax-stack-frame=@var{n}
+-metrax4  -metrax100  -mpdebug  -mcc-init  -mno-side-effects
+-mstack-align  -mdata-align  -mconst-align
+-m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue
+-melf  -maout  -sim  -sim2
 -mmul-bug-workaround  -mno-mul-bug-workaround}
 
 @emph{C-SKY Options}
-@gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
--mbig-endian  -EB  -mlittle-endian  -EL @gol
--mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu @gol
--mfloat-abi=@var{name} @gol
--melrw  -mistack  -mmp  -mcp  -mcache  -msecurity  -mtrust @gol
--mdsp  -medsp  -mvdsp @gol
--mdiv  -msmart  -mhigh-registers  -manchor @gol
--mpushpop  -mmultiple-stld  -mconstpool  -mstack-size  -mccrt @gol
+@gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}
+-mbig-endian  -EB  -mlittle-endian  -EL
+-mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu
+-mfloat-abi=@var{name}
+-melrw  -mistack  -mmp  -mcp  -mcache  -msecurity  -mtrust
+-mdsp  -medsp  -mvdsp
+-mdiv  -msmart  -mhigh-registers  -manchor
+-mpushpop  -mmultiple-stld  -mconstpool  -mstack-size  -mccrt
 -mbranch-cost=@var{n}  -mcse-cc  -msched-prolog -msim}
 
 @emph{Darwin Options}
-@gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
--arch_only  -bind_at_load  -bundle  -bundle_loader @gol
--client_name  -compatibility_version  -current_version @gol
--dead_strip @gol
--dependency-file  -dylib_file  -dylinker_install_name @gol
--dynamic  -dynamiclib  -exported_symbols_list @gol
--filelist  -flat_namespace  -force_cpusubtype_ALL @gol
--force_flat_namespace  -headerpad_max_install_names @gol
--iframework @gol
--image_base  -init  -install_name  -keep_private_externs @gol
--multi_module  -multiply_defined  -multiply_defined_unused @gol
--noall_load   -no_dead_strip_inits_and_terms @gol
--nofixprebinding  -nomultidefs  -noprebind  -noseglinkedit @gol
--pagezero_size  -prebind  -prebind_all_twolevel_modules @gol
--private_bundle  -read_only_relocs  -sectalign @gol
--sectobjectsymbols  -whyload  -seg1addr @gol
--sectcreate  -sectobjectsymbols  -sectorder @gol
--segaddr  -segs_read_only_addr  -segs_read_write_addr @gol
--seg_addr_table  -seg_addr_table_filename  -seglinkedit @gol
--segprot  -segs_read_only_addr  -segs_read_write_addr @gol
--single_module  -static  -sub_library  -sub_umbrella @gol
--twolevel_namespace  -umbrella  -undefined @gol
--unexported_symbols_list  -weak_reference_mismatches @gol
--whatsloaded  -F  -gused  -gfull  -mmacosx-version-min=@var{version} @gol
+@gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal
+-arch_only  -bind_at_load  -bundle  -bundle_loader
+-client_name  -compatibility_version  -current_version
+-dead_strip
+-dependency-file  -dylib_file  -dylinker_install_name
+-dynamic  -dynamiclib  -exported_symbols_list
+-filelist  -flat_namespace  -force_cpusubtype_ALL
+-force_flat_namespace  -headerpad_max_install_names
+-iframework
+-image_base  -init  -install_name  -keep_private_externs
+-multi_module  -multiply_defined  -multiply_defined_unused
+-noall_load   -no_dead_strip_inits_and_terms
+-nofixprebinding  -nomultidefs  -noprebind  -noseglinkedit
+-pagezero_size  -prebind  -prebind_all_twolevel_modules
+-private_bundle  -read_only_relocs  -sectalign
+-sectobjectsymbols  -whyload  -seg1addr
+-sectcreate  -sectobjectsymbols  -sectorder
+-segaddr  -segs_read_only_addr  -segs_read_write_addr
+-seg_addr_table  -seg_addr_table_filename  -seglinkedit
+-segprot  -segs_read_only_addr  -segs_read_write_addr
+-single_module  -static  -sub_library  -sub_umbrella
+-twolevel_namespace  -umbrella  -undefined
+-unexported_symbols_list  -weak_reference_mismatches
+-whatsloaded  -F  -gused  -gfull  -mmacosx-version-min=@var{version}
 -mkernel  -mone-byte-bool}
 
 @emph{DEC Alpha Options}
-@gccoptlist{-mno-fp-regs  -msoft-float @gol
--mieee  -mieee-with-inexact  -mieee-conformant @gol
--mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode} @gol
--mtrap-precision=@var{mode}  -mbuild-constants @gol
--mcpu=@var{cpu-type}  -mtune=@var{cpu-type} @gol
--mbwx  -mmax  -mfix  -mcix @gol
--mfloat-vax  -mfloat-ieee @gol
--mexplicit-relocs  -msmall-data  -mlarge-data @gol
--msmall-text  -mlarge-text @gol
+@gccoptlist{-mno-fp-regs  -msoft-float
+-mieee  -mieee-with-inexact  -mieee-conformant
+-mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode}
+-mtrap-precision=@var{mode}  -mbuild-constants
+-mcpu=@var{cpu-type}  -mtune=@var{cpu-type}
+-mbwx  -mmax  -mfix  -mcix
+-mfloat-vax  -mfloat-ieee
+-mexplicit-relocs  -msmall-data  -mlarge-data
+-msmall-text  -mlarge-text
 -mmemory-latency=@var{time}}
 
 @emph{eBPF Options}
@@ -953,526 +953,526 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-msim  -mlra  -mnodiv  -mft32b  -mcompress  -mnopm}
 
 @emph{FRV Options}
-@gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64 @gol
--mhard-float  -msoft-float @gol
--malloc-cc  -mfixed-cc  -mdword  -mno-dword @gol
--mdouble  -mno-double @gol
--mmedia  -mno-media  -mmuladd  -mno-muladd @gol
--mfdpic  -minline-plt  -mgprel-ro  -multilib-library-pic @gol
--mlinked-fp  -mlong-calls  -malign-labels @gol
--mlibrary-pic  -macc-4  -macc-8 @gol
--mpack  -mno-pack  -mno-eflags  -mcond-move  -mno-cond-move @gol
--moptimize-membar  -mno-optimize-membar @gol
--mscc  -mno-scc  -mcond-exec  -mno-cond-exec @gol
--mvliw-branch  -mno-vliw-branch @gol
--mmulti-cond-exec  -mno-multi-cond-exec  -mnested-cond-exec @gol
--mno-nested-cond-exec  -mtomcat-stats @gol
--mTLS  -mtls @gol
+@gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64
+-mhard-float  -msoft-float
+-malloc-cc  -mfixed-cc  -mdword  -mno-dword
+-mdouble  -mno-double
+-mmedia  -mno-media  -mmuladd  -mno-muladd
+-mfdpic  -minline-plt  -mgprel-ro  -multilib-library-pic
+-mlinked-fp  -mlong-calls  -malign-labels
+-mlibrary-pic  -macc-4  -macc-8
+-mpack  -mno-pack  -mno-eflags  -mcond-move  -mno-cond-move
+-moptimize-membar  -mno-optimize-membar
+-mscc  -mno-scc  -mcond-exec  -mno-cond-exec
+-mvliw-branch  -mno-vliw-branch
+-mmulti-cond-exec  -mno-multi-cond-exec  -mnested-cond-exec
+-mno-nested-cond-exec  -mtomcat-stats
+-mTLS  -mtls
 -mcpu=@var{cpu}}
 
 @emph{GNU/Linux Options}
-@gccoptlist{-mglibc  -muclibc  -mmusl  -mbionic  -mandroid @gol
+@gccoptlist{-mglibc  -muclibc  -mmusl  -mbionic  -mandroid
 -tno-android-cc  -tno-android-ld}
 
 @emph{H8/300 Options}
 @gccoptlist{-mrelax  -mh  -ms  -mn  -mexr  -mno-exr  -mint32  -malign-300}
 
 @emph{HPPA Options}
-@gccoptlist{-march=@var{architecture-type} @gol
--matomic-libcalls  -mbig-switch @gol
--mcaller-copies  -mdisable-fpregs  -mdisable-indexing @gol
--mordered  -mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld @gol
--mfixed-range=@var{register-range} @gol
--mcoherent-ldcw -mjump-in-delay  -mlinker-opt  -mlong-calls @gol
--mlong-load-store  -mno-atomic-libcalls  -mno-disable-fpregs @gol
--mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas @gol
--mno-jump-in-delay  -mno-long-load-store @gol
--mno-portable-runtime  -mno-soft-float @gol
--mno-space-regs  -msoft-float  -mpa-risc-1-0 @gol
--mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime @gol
--mschedule=@var{cpu-type}  -mspace-regs  -msoft-mult  -msio  -mwsio @gol
+@gccoptlist{-march=@var{architecture-type}
+-matomic-libcalls  -mbig-switch
+-mcaller-copies  -mdisable-fpregs  -mdisable-indexing
+-mordered  -mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld
+-mfixed-range=@var{register-range}
+-mcoherent-ldcw -mjump-in-delay  -mlinker-opt  -mlong-calls
+-mlong-load-store  -mno-atomic-libcalls  -mno-disable-fpregs
+-mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas
+-mno-jump-in-delay  -mno-long-load-store
+-mno-portable-runtime  -mno-soft-float
+-mno-space-regs  -msoft-float  -mpa-risc-1-0
+-mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime
+-mschedule=@var{cpu-type}  -mspace-regs  -msoft-mult  -msio  -mwsio
 -munix=@var{unix-std}  -nolibdld  -static  -threads}
 
 @emph{IA-64 Options}
-@gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
--mvolatile-asm-stop  -mregister-names  -msdata  -mno-sdata @gol
--mconstant-gp  -mauto-pic  -mfused-madd @gol
--minline-float-divide-min-latency @gol
--minline-float-divide-max-throughput @gol
--mno-inline-float-divide @gol
--minline-int-divide-min-latency @gol
--minline-int-divide-max-throughput  @gol
--mno-inline-int-divide @gol
--minline-sqrt-min-latency  -minline-sqrt-max-throughput @gol
--mno-inline-sqrt @gol
--mdwarf2-asm  -mearly-stop-bits @gol
--mfixed-range=@var{register-range}  -mtls-size=@var{tls-size} @gol
--mtune=@var{cpu-type}  -milp32  -mlp64 @gol
--msched-br-data-spec  -msched-ar-data-spec  -msched-control-spec @gol
--msched-br-in-data-spec  -msched-ar-in-data-spec  -msched-in-control-spec @gol
--msched-spec-ldc  -msched-spec-control-ldc @gol
--msched-prefer-non-data-spec-insns  -msched-prefer-non-control-spec-insns @gol
--msched-stop-bits-after-every-cycle  -msched-count-spec-in-critical-path @gol
--msel-sched-dont-check-control-spec  -msched-fp-mem-deps-zero-cost @gol
+@gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic
+-mvolatile-asm-stop  -mregister-names  -msdata  -mno-sdata
+-mconstant-gp  -mauto-pic  -mfused-madd
+-minline-float-divide-min-latency
+-minline-float-divide-max-throughput
+-mno-inline-float-divide
+-minline-int-divide-min-latency
+-minline-int-divide-max-throughput
+-mno-inline-int-divide
+-minline-sqrt-min-latency  -minline-sqrt-max-throughput
+-mno-inline-sqrt
+-mdwarf2-asm  -mearly-stop-bits
+-mfixed-range=@var{register-range}  -mtls-size=@var{tls-size}
+-mtune=@var{cpu-type}  -milp32  -mlp64
+-msched-br-data-spec  -msched-ar-data-spec  -msched-control-spec
+-msched-br-in-data-spec  -msched-ar-in-data-spec  -msched-in-control-spec
+-msched-spec-ldc  -msched-spec-control-ldc
+-msched-prefer-non-data-spec-insns  -msched-prefer-non-control-spec-insns
+-msched-stop-bits-after-every-cycle  -msched-count-spec-in-critical-path
+-msel-sched-dont-check-control-spec  -msched-fp-mem-deps-zero-cost
 -msched-max-memory-insns-hard-limit  -msched-max-memory-insns=@var{max-insns}}
 
 @emph{LM32 Options}
-@gccoptlist{-mbarrel-shift-enabled  -mdivide-enabled  -mmultiply-enabled @gol
+@gccoptlist{-mbarrel-shift-enabled  -mdivide-enabled  -mmultiply-enabled
 -msign-extend-enabled  -muser-enabled}
 
 @emph{LoongArch Options}
-@gccoptlist{-march=@var{cpu-type}  -mtune=@var{cpu-type} -mabi=@var{base-abi-type} @gol
--mfpu=@var{fpu-type} -msoft-float -msingle-float -mdouble-float @gol
--mbranch-cost=@var{n}  -mcheck-zero-division -mno-check-zero-division @gol
--mcond-move-int  -mno-cond-move-int @gol
--mcond-move-float  -mno-cond-move-float @gol
--memcpy  -mno-memcpy -mstrict-align -mno-strict-align @gol
--mmax-inline-memcpy-size=@var{n} @gol
--mexplicit-relocs -mno-explicit-relocs @gol
--mdirect-extern-access -mno-direct-extern-access @gol
+@gccoptlist{-march=@var{cpu-type}  -mtune=@var{cpu-type} -mabi=@var{base-abi-type}
+-mfpu=@var{fpu-type} -msoft-float -msingle-float -mdouble-float
+-mbranch-cost=@var{n}  -mcheck-zero-division -mno-check-zero-division
+-mcond-move-int  -mno-cond-move-int
+-mcond-move-float  -mno-cond-move-float
+-memcpy  -mno-memcpy -mstrict-align -mno-strict-align
+-mmax-inline-memcpy-size=@var{n}
+-mexplicit-relocs -mno-explicit-relocs
+-mdirect-extern-access -mno-direct-extern-access
 -mcmodel=@var{code-model}}
 
 @emph{M32R/D Options}
-@gccoptlist{-m32r2  -m32rx  -m32r @gol
--mdebug @gol
--malign-loops  -mno-align-loops @gol
--missue-rate=@var{number} @gol
--mbranch-cost=@var{number} @gol
--mmodel=@var{code-size-model-type} @gol
--msdata=@var{sdata-type} @gol
--mno-flush-func  -mflush-func=@var{name} @gol
--mno-flush-trap  -mflush-trap=@var{number} @gol
+@gccoptlist{-m32r2  -m32rx  -m32r
+-mdebug
+-malign-loops  -mno-align-loops
+-missue-rate=@var{number}
+-mbranch-cost=@var{number}
+-mmodel=@var{code-size-model-type}
+-msdata=@var{sdata-type}
+-mno-flush-func  -mflush-func=@var{name}
+-mno-flush-trap  -mflush-trap=@var{number}
 -G @var{num}}
 
 @emph{M32C Options}
 @gccoptlist{-mcpu=@var{cpu}  -msim  -memregs=@var{number}}
 
 @emph{M680x0 Options}
-@gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}  -mtune=@var{tune} @gol
--m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
--m68060  -mcpu32  -m5200  -m5206e  -m528x  -m5307  -m5407 @gol
--mcfv4e  -mbitfield  -mno-bitfield  -mc68000  -mc68020 @gol
--mnobitfield  -mrtd  -mno-rtd  -mdiv  -mno-div  -mshort @gol
--mno-short  -mhard-float  -m68881  -msoft-float  -mpcrel @gol
--malign-int  -mstrict-align  -msep-data  -mno-sep-data @gol
--mshared-library-id=n  -mid-shared-library  -mno-id-shared-library @gol
+@gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}  -mtune=@var{tune}
+-m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040
+-m68060  -mcpu32  -m5200  -m5206e  -m528x  -m5307  -m5407
+-mcfv4e  -mbitfield  -mno-bitfield  -mc68000  -mc68020
+-mnobitfield  -mrtd  -mno-rtd  -mdiv  -mno-div  -mshort
+-mno-short  -mhard-float  -m68881  -msoft-float  -mpcrel
+-malign-int  -mstrict-align  -msep-data  -mno-sep-data
+-mshared-library-id=n  -mid-shared-library  -mno-id-shared-library
 -mxgot  -mno-xgot  -mlong-jump-table-offsets}
 
 @emph{MCore Options}
-@gccoptlist{-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates @gol
--mno-relax-immediates  -mwide-bitfields  -mno-wide-bitfields @gol
--m4byte-functions  -mno-4byte-functions  -mcallgraph-data @gol
--mno-callgraph-data  -mslow-bytes  -mno-slow-bytes  -mno-lsim @gol
+@gccoptlist{-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates
+-mno-relax-immediates  -mwide-bitfields  -mno-wide-bitfields
+-m4byte-functions  -mno-4byte-functions  -mcallgraph-data
+-mno-callgraph-data  -mslow-bytes  -mno-slow-bytes  -mno-lsim
 -mlittle-endian  -mbig-endian  -m210  -m340  -mstack-increment}
 
 @emph{MicroBlaze Options}
-@gccoptlist{-msoft-float  -mhard-float  -msmall-divides  -mcpu=@var{cpu} @gol
--mmemcpy  -mxl-soft-mul  -mxl-soft-div  -mxl-barrel-shift @gol
--mxl-pattern-compare  -mxl-stack-check  -mxl-gp-opt  -mno-clearbss @gol
--mxl-multiply-high  -mxl-float-convert  -mxl-float-sqrt @gol
--mbig-endian  -mlittle-endian  -mxl-reorder  -mxl-mode-@var{app-model} @gol
+@gccoptlist{-msoft-float  -mhard-float  -msmall-divides  -mcpu=@var{cpu}
+-mmemcpy  -mxl-soft-mul  -mxl-soft-div  -mxl-barrel-shift
+-mxl-pattern-compare  -mxl-stack-check  -mxl-gp-opt  -mno-clearbss
+-mxl-multiply-high  -mxl-float-convert  -mxl-float-sqrt
+-mbig-endian  -mlittle-endian  -mxl-reorder  -mxl-mode-@var{app-model}
 -mpic-data-is-text-relative}
 
 @emph{MIPS Options}
-@gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
--mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips32r3  -mips32r5 @gol
--mips32r6  -mips64  -mips64r2  -mips64r3  -mips64r5  -mips64r6 @gol
--mips16  -mno-mips16  -mflip-mips16 @gol
--minterlink-compressed  -mno-interlink-compressed @gol
--minterlink-mips16  -mno-interlink-mips16 @gol
--mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
--mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
--mgp32  -mgp64  -mfp32  -mfpxx  -mfp64  -mhard-float  -msoft-float @gol
--mno-float  -msingle-float  -mdouble-float @gol
--modd-spreg  -mno-odd-spreg @gol
--mabs=@var{mode}  -mnan=@var{encoding} @gol
--mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
--mmcu  -mmno-mcu @gol
--meva  -mno-eva @gol
--mvirt  -mno-virt @gol
--mxpa  -mno-xpa @gol
--mcrc  -mno-crc @gol
--mginv  -mno-ginv @gol
--mmicromips  -mno-micromips @gol
--mmsa  -mno-msa @gol
--mloongson-mmi  -mno-loongson-mmi @gol
--mloongson-ext  -mno-loongson-ext @gol
--mloongson-ext2  -mno-loongson-ext2 @gol
--mfpu=@var{fpu-type} @gol
--msmartmips  -mno-smartmips @gol
--mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
--mips3d  -mno-mips3d  -mmt  -mno-mt  -mllsc  -mno-llsc @gol
--mlong64  -mlong32  -msym32  -mno-sym32 @gol
--G@var{num}  -mlocal-sdata  -mno-local-sdata @gol
--mextern-sdata  -mno-extern-sdata  -mgpopt  -mno-gopt @gol
--membedded-data  -mno-embedded-data @gol
--muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
--mcode-readable=@var{setting} @gol
--msplit-addresses  -mno-split-addresses @gol
--mexplicit-relocs  -mno-explicit-relocs @gol
--mcheck-zero-division  -mno-check-zero-division @gol
--mdivide-traps  -mdivide-breaks @gol
--mload-store-pairs  -mno-load-store-pairs @gol
--munaligned-access  -mno-unaligned-access @gol
--mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
--mmad  -mno-mad  -mimadd  -mno-imadd  -mfused-madd  -mno-fused-madd  -nocpp @gol
--mfix-24k  -mno-fix-24k @gol
--mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
--mfix-r5900  -mno-fix-r5900 @gol
--mfix-r10000  -mno-fix-r10000  -mfix-rm7000  -mno-fix-rm7000 @gol
--mfix-vr4120  -mno-fix-vr4120 @gol
--mfix-vr4130  -mno-fix-vr4130  -mfix-sb1  -mno-fix-sb1 @gol
--mflush-func=@var{func}  -mno-flush-func @gol
--mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely @gol
--mcompact-branches=@var{policy} @gol
--mfp-exceptions  -mno-fp-exceptions @gol
--mvr4130-align  -mno-vr4130-align  -msynci  -mno-synci @gol
--mlxc1-sxc1  -mno-lxc1-sxc1  -mmadd4  -mno-madd4 @gol
--mrelax-pic-calls  -mno-relax-pic-calls  -mmcount-ra-address @gol
+@gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch}
+-mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips32r3  -mips32r5
+-mips32r6  -mips64  -mips64r2  -mips64r3  -mips64r5  -mips64r6
+-mips16  -mno-mips16  -mflip-mips16
+-minterlink-compressed  -mno-interlink-compressed
+-minterlink-mips16  -mno-interlink-mips16
+-mabi=@var{abi}  -mabicalls  -mno-abicalls
+-mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot
+-mgp32  -mgp64  -mfp32  -mfpxx  -mfp64  -mhard-float  -msoft-float
+-mno-float  -msingle-float  -mdouble-float
+-modd-spreg  -mno-odd-spreg
+-mabs=@var{mode}  -mnan=@var{encoding}
+-mdsp  -mno-dsp  -mdspr2  -mno-dspr2
+-mmcu  -mmno-mcu
+-meva  -mno-eva
+-mvirt  -mno-virt
+-mxpa  -mno-xpa
+-mcrc  -mno-crc
+-mginv  -mno-ginv
+-mmicromips  -mno-micromips
+-mmsa  -mno-msa
+-mloongson-mmi  -mno-loongson-mmi
+-mloongson-ext  -mno-loongson-ext
+-mloongson-ext2  -mno-loongson-ext2
+-mfpu=@var{fpu-type}
+-msmartmips  -mno-smartmips
+-mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx
+-mips3d  -mno-mips3d  -mmt  -mno-mt  -mllsc  -mno-llsc
+-mlong64  -mlong32  -msym32  -mno-sym32
+-G@var{num}  -mlocal-sdata  -mno-local-sdata
+-mextern-sdata  -mno-extern-sdata  -mgpopt  -mno-gopt
+-membedded-data  -mno-embedded-data
+-muninit-const-in-rodata  -mno-uninit-const-in-rodata
+-mcode-readable=@var{setting}
+-msplit-addresses  -mno-split-addresses
+-mexplicit-relocs  -mno-explicit-relocs
+-mcheck-zero-division  -mno-check-zero-division
+-mdivide-traps  -mdivide-breaks
+-mload-store-pairs  -mno-load-store-pairs
+-munaligned-access  -mno-unaligned-access
+-mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls
+-mmad  -mno-mad  -mimadd  -mno-imadd  -mfused-madd  -mno-fused-madd  -nocpp
+-mfix-24k  -mno-fix-24k
+-mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400
+-mfix-r5900  -mno-fix-r5900
+-mfix-r10000  -mno-fix-r10000  -mfix-rm7000  -mno-fix-rm7000
+-mfix-vr4120  -mno-fix-vr4120
+-mfix-vr4130  -mno-fix-vr4130  -mfix-sb1  -mno-fix-sb1
+-mflush-func=@var{func}  -mno-flush-func
+-mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely
+-mcompact-branches=@var{policy}
+-mfp-exceptions  -mno-fp-exceptions
+-mvr4130-align  -mno-vr4130-align  -msynci  -mno-synci
+-mlxc1-sxc1  -mno-lxc1-sxc1  -mmadd4  -mno-madd4
+-mrelax-pic-calls  -mno-relax-pic-calls  -mmcount-ra-address
 -mframe-header-opt  -mno-frame-header-opt}
 
 @emph{MMIX Options}
-@gccoptlist{-mlibfuncs  -mno-libfuncs  -mepsilon  -mno-epsilon  -mabi=gnu @gol
--mabi=mmixware  -mzero-extend  -mknuthdiv  -mtoplevel-symbols @gol
--melf  -mbranch-predict  -mno-branch-predict  -mbase-addresses @gol
+@gccoptlist{-mlibfuncs  -mno-libfuncs  -mepsilon  -mno-epsilon  -mabi=gnu
+-mabi=mmixware  -mzero-extend  -mknuthdiv  -mtoplevel-symbols
+-melf  -mbranch-predict  -mno-branch-predict  -mbase-addresses
 -mno-base-addresses  -msingle-exit  -mno-single-exit}
 
 @emph{MN10300 Options}
-@gccoptlist{-mmult-bug  -mno-mult-bug @gol
--mno-am33  -mam33  -mam33-2  -mam34 @gol
--mtune=@var{cpu-type} @gol
--mreturn-pointer-on-d0 @gol
+@gccoptlist{-mmult-bug  -mno-mult-bug
+-mno-am33  -mam33  -mam33-2  -mam34
+-mtune=@var{cpu-type}
+-mreturn-pointer-on-d0
 -mno-crt0  -mrelax  -mliw  -msetlb}
 
 @emph{Moxie Options}
 @gccoptlist{-meb  -mel  -mmul.x  -mno-crt0}
 
 @emph{MSP430 Options}
-@gccoptlist{-msim  -masm-hex  -mmcu=  -mcpu=  -mlarge  -msmall  -mrelax @gol
--mwarn-mcu @gol
--mcode-region=  -mdata-region= @gol
--msilicon-errata=  -msilicon-errata-warn= @gol
+@gccoptlist{-msim  -masm-hex  -mmcu=  -mcpu=  -mlarge  -msmall  -mrelax
+-mwarn-mcu
+-mcode-region=  -mdata-region=
+-msilicon-errata=  -msilicon-errata-warn=
 -mhwmult=  -minrt  -mtiny-printf  -mmax-inline-shift=}
 
 @emph{NDS32 Options}
-@gccoptlist{-mbig-endian  -mlittle-endian @gol
--mreduced-regs  -mfull-regs @gol
--mcmov  -mno-cmov @gol
--mext-perf  -mno-ext-perf @gol
--mext-perf2  -mno-ext-perf2 @gol
--mext-string  -mno-ext-string @gol
--mv3push  -mno-v3push @gol
--m16bit  -mno-16bit @gol
--misr-vector-size=@var{num} @gol
--mcache-block-size=@var{num} @gol
--march=@var{arch} @gol
--mcmodel=@var{code-model} @gol
+@gccoptlist{-mbig-endian  -mlittle-endian
+-mreduced-regs  -mfull-regs
+-mcmov  -mno-cmov
+-mext-perf  -mno-ext-perf
+-mext-perf2  -mno-ext-perf2
+-mext-string  -mno-ext-string
+-mv3push  -mno-v3push
+-m16bit  -mno-16bit
+-misr-vector-size=@var{num}
+-mcache-block-size=@var{num}
+-march=@var{arch}
+-mcmodel=@var{code-model}
 -mctor-dtor  -mrelax}
 
 @emph{Nios II Options}
-@gccoptlist{-G @var{num}  -mgpopt=@var{option}  -mgpopt  -mno-gpopt @gol
--mgprel-sec=@var{regexp}  -mr0rel-sec=@var{regexp} @gol
--mel  -meb @gol
--mno-bypass-cache  -mbypass-cache @gol
--mno-cache-volatile  -mcache-volatile @gol
--mno-fast-sw-div  -mfast-sw-div @gol
--mhw-mul  -mno-hw-mul  -mhw-mulx  -mno-hw-mulx  -mno-hw-div  -mhw-div @gol
--mcustom-@var{insn}=@var{N}  -mno-custom-@var{insn} @gol
--mcustom-fpu-cfg=@var{name} @gol
--mhal  -msmallc  -msys-crt0=@var{name}  -msys-lib=@var{name} @gol
+@gccoptlist{-G @var{num}  -mgpopt=@var{option}  -mgpopt  -mno-gpopt
+-mgprel-sec=@var{regexp}  -mr0rel-sec=@var{regexp}
+-mel  -meb
+-mno-bypass-cache  -mbypass-cache
+-mno-cache-volatile  -mcache-volatile
+-mno-fast-sw-div  -mfast-sw-div
+-mhw-mul  -mno-hw-mul  -mhw-mulx  -mno-hw-mulx  -mno-hw-div  -mhw-div
+-mcustom-@var{insn}=@var{N}  -mno-custom-@var{insn}
+-mcustom-fpu-cfg=@var{name}
+-mhal  -msmallc  -msys-crt0=@var{name}  -msys-lib=@var{name}
 -march=@var{arch}  -mbmx  -mno-bmx  -mcdx  -mno-cdx}
 
 @emph{Nvidia PTX Options}
 @gccoptlist{-m64  -mmainkernel  -moptimize}
 
 @emph{OpenRISC Options}
-@gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div @gol
--msoft-mul  -msoft-div @gol
--msoft-float  -mhard-float  -mdouble-float -munordered-float @gol
--mcmov  -mror  -mrori  -msext  -msfimm  -mshftimm @gol
+@gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div
+-msoft-mul  -msoft-div
+-msoft-float  -mhard-float  -mdouble-float -munordered-float
+-mcmov  -mror  -mrori  -msext  -msfimm  -mshftimm
 -mcmodel=@var{code-model}}
 
 @emph{PDP-11 Options}
-@gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
--mint32  -mno-int16  -mint16  -mno-int32 @gol
+@gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10
+-mint32  -mno-int16  -mint16  -mno-int32
 -msplit  -munix-asm  -mdec-asm  -mgnu-asm  -mlra}
 
 @emph{PowerPC Options}
 See RS/6000 and PowerPC Options.
 
 @emph{PRU Options}
-@gccoptlist{-mmcu=@var{mcu}  -minrt  -mno-relax  -mloop @gol
+@gccoptlist{-mmcu=@var{mcu}  -minrt  -mno-relax  -mloop
 -mabi=@var{variant}}
 
 @emph{RISC-V Options}
-@gccoptlist{-mbranch-cost=@var{N-instruction} @gol
--mplt  -mno-plt @gol
--mabi=@var{ABI-string} @gol
--mfdiv  -mno-fdiv @gol
--mdiv  -mno-div @gol
--misa-spec=@var{ISA-spec-string} @gol
--march=@var{ISA-string} @gol
--mtune=@var{processor-string} @gol
--mpreferred-stack-boundary=@var{num} @gol
--msmall-data-limit=@var{N-bytes} @gol
--msave-restore  -mno-save-restore @gol
--mshorten-memrefs  -mno-shorten-memrefs @gol
--mstrict-align  -mno-strict-align @gol
--mcmodel=medlow  -mcmodel=medany @gol
--mexplicit-relocs  -mno-explicit-relocs @gol
--mrelax  -mno-relax @gol
--mriscv-attribute  -mno-riscv-attribute @gol
--malign-data=@var{type} @gol
--mbig-endian  -mlittle-endian @gol
--mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset} @gol
+@gccoptlist{-mbranch-cost=@var{N-instruction}
+-mplt  -mno-plt
+-mabi=@var{ABI-string}
+-mfdiv  -mno-fdiv
+-mdiv  -mno-div
+-misa-spec=@var{ISA-spec-string}
+-march=@var{ISA-string}
+-mtune=@var{processor-string}
+-mpreferred-stack-boundary=@var{num}
+-msmall-data-limit=@var{N-bytes}
+-msave-restore  -mno-save-restore
+-mshorten-memrefs  -mno-shorten-memrefs
+-mstrict-align  -mno-strict-align
+-mcmodel=medlow  -mcmodel=medany
+-mexplicit-relocs  -mno-explicit-relocs
+-mrelax  -mno-relax
+-mriscv-attribute  -mno-riscv-attribute
+-malign-data=@var{type}
+-mbig-endian  -mlittle-endian
+-mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
+-mstack-protector-guard-offset=@var{offset}
 -mcsr-check -mno-csr-check}
 
 @emph{RL78 Options}
-@gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
--mcpu=g10  -mcpu=g13  -mcpu=g14  -mg10  -mg13  -mg14 @gol
+@gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs
+-mcpu=g10  -mcpu=g13  -mcpu=g14  -mg10  -mg13  -mg14
 -m64bit-doubles  -m32bit-doubles  -msave-mduc-in-interrupts}
 
 @emph{RS/6000 and PowerPC Options}
-@gccoptlist{-mcpu=@var{cpu-type} @gol
--mtune=@var{cpu-type} @gol
--mcmodel=@var{code-model} @gol
--mpowerpc64 @gol
--maltivec  -mno-altivec @gol
--mpowerpc-gpopt  -mno-powerpc-gpopt @gol
--mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
--mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb  -mpopcntd  -mno-popcntd @gol
--mfprnd  -mno-fprnd @gol
--mcmpb  -mno-cmpb  -mhard-dfp  -mno-hard-dfp @gol
--mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
--m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
--malign-power  -malign-natural @gol
--msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
--mupdate  -mno-update @gol
--mavoid-indexed-addresses  -mno-avoid-indexed-addresses @gol
--mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align @gol
--mstrict-align  -mno-strict-align  -mrelocatable @gol
--mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
--mtoc  -mno-toc  -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
--mdynamic-no-pic  -mswdiv  -msingle-pic-base @gol
--mprioritize-restricted-insns=@var{priority} @gol
--msched-costly-dep=@var{dependence_type} @gol
--minsert-sched-nops=@var{scheme} @gol
--mcall-aixdesc  -mcall-eabi  -mcall-freebsd  @gol
--mcall-linux  -mcall-netbsd  -mcall-openbsd  @gol
--mcall-sysv  -mcall-sysv-eabi  -mcall-sysv-noeabi @gol
--mtraceback=@var{traceback_type} @gol
--maix-struct-return  -msvr4-struct-return @gol
--mabi=@var{abi-type}  -msecure-plt  -mbss-plt @gol
--mlongcall  -mno-longcall  -mpltseq  -mno-pltseq  @gol
--mblock-move-inline-limit=@var{num} @gol
--mblock-compare-inline-limit=@var{num} @gol
--mblock-compare-inline-loop-limit=@var{num} @gol
--mno-block-ops-unaligned-vsx @gol
--mstring-compare-inline-limit=@var{num} @gol
--misel  -mno-isel @gol
--mvrsave  -mno-vrsave @gol
--mmulhw  -mno-mulhw @gol
--mdlmzb  -mno-dlmzb @gol
--mprototype  -mno-prototype @gol
--msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
--msdata=@var{opt}  -mreadonly-in-sdata  -mvxworks  -G @var{num} @gol
--mrecip  -mrecip=@var{opt}  -mno-recip  -mrecip-precision @gol
--mno-recip-precision @gol
--mveclibabi=@var{type}  -mfriz  -mno-friz @gol
--mpointers-to-nested-functions  -mno-pointers-to-nested-functions @gol
--msave-toc-indirect  -mno-save-toc-indirect @gol
--mpower8-fusion  -mno-mpower8-fusion  -mpower8-vector  -mno-power8-vector @gol
--mcrypto  -mno-crypto  -mhtm  -mno-htm @gol
--mquad-memory  -mno-quad-memory @gol
--mquad-memory-atomic  -mno-quad-memory-atomic @gol
--mcompat-align-parm  -mno-compat-align-parm @gol
--mfloat128  -mno-float128  -mfloat128-hardware  -mno-float128-hardware @gol
--mgnu-attribute  -mno-gnu-attribute @gol
--mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed @gol
--mpcrel -mno-pcrel -mmma -mno-mmma -mrop-protect -mno-rop-protect @gol
+@gccoptlist{-mcpu=@var{cpu-type}
+-mtune=@var{cpu-type}
+-mcmodel=@var{code-model}
+-mpowerpc64
+-maltivec  -mno-altivec
+-mpowerpc-gpopt  -mno-powerpc-gpopt
+-mpowerpc-gfxopt  -mno-powerpc-gfxopt
+-mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb  -mpopcntd  -mno-popcntd
+-mfprnd  -mno-fprnd
+-mcmpb  -mno-cmpb  -mhard-dfp  -mno-hard-dfp
+-mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc
+-m64  -m32  -mxl-compat  -mno-xl-compat  -mpe
+-malign-power  -malign-natural
+-msoft-float  -mhard-float  -mmultiple  -mno-multiple
+-mupdate  -mno-update
+-mavoid-indexed-addresses  -mno-avoid-indexed-addresses
+-mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align
+-mstrict-align  -mno-strict-align  -mrelocatable
+-mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib
+-mtoc  -mno-toc  -mlittle  -mlittle-endian  -mbig  -mbig-endian
+-mdynamic-no-pic  -mswdiv  -msingle-pic-base
+-mprioritize-restricted-insns=@var{priority}
+-msched-costly-dep=@var{dependence_type}
+-minsert-sched-nops=@var{scheme}
+-mcall-aixdesc  -mcall-eabi  -mcall-freebsd
+-mcall-linux  -mcall-netbsd  -mcall-openbsd
+-mcall-sysv  -mcall-sysv-eabi  -mcall-sysv-noeabi
+-mtraceback=@var{traceback_type}
+-maix-struct-return  -msvr4-struct-return
+-mabi=@var{abi-type}  -msecure-plt  -mbss-plt
+-mlongcall  -mno-longcall  -mpltseq  -mno-pltseq
+-mblock-move-inline-limit=@var{num}
+-mblock-compare-inline-limit=@var{num}
+-mblock-compare-inline-loop-limit=@var{num}
+-mno-block-ops-unaligned-vsx
+-mstring-compare-inline-limit=@var{num}
+-misel  -mno-isel
+-mvrsave  -mno-vrsave
+-mmulhw  -mno-mulhw
+-mdlmzb  -mno-dlmzb
+-mprototype  -mno-prototype
+-msim  -mmvme  -mads  -myellowknife  -memb  -msdata
+-msdata=@var{opt}  -mreadonly-in-sdata  -mvxworks  -G @var{num}
+-mrecip  -mrecip=@var{opt}  -mno-recip  -mrecip-precision
+-mno-recip-precision
+-mveclibabi=@var{type}  -mfriz  -mno-friz
+-mpointers-to-nested-functions  -mno-pointers-to-nested-functions
+-msave-toc-indirect  -mno-save-toc-indirect
+-mpower8-fusion  -mno-mpower8-fusion  -mpower8-vector  -mno-power8-vector
+-mcrypto  -mno-crypto  -mhtm  -mno-htm
+-mquad-memory  -mno-quad-memory
+-mquad-memory-atomic  -mno-quad-memory-atomic
+-mcompat-align-parm  -mno-compat-align-parm
+-mfloat128  -mno-float128  -mfloat128-hardware  -mno-float128-hardware
+-mgnu-attribute  -mno-gnu-attribute
+-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg}
+-mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed
+-mpcrel -mno-pcrel -mmma -mno-mmma -mrop-protect -mno-rop-protect
 -mprivileged -mno-privileged}
 
 @emph{RX Options}
-@gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
--mcpu=@gol
--mbig-endian-data  -mlittle-endian-data @gol
--msmall-data @gol
--msim  -mno-sim@gol
--mas100-syntax  -mno-as100-syntax@gol
--mrelax@gol
--mmax-constant-size=@gol
--mint-register=@gol
--mpid@gol
--mallow-string-insns  -mno-allow-string-insns@gol
--mjsr@gol
--mno-warn-multiple-fast-interrupts@gol
+@gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu
+-mcpu=
+-mbig-endian-data  -mlittle-endian-data
+-msmall-data
+-msim  -mno-sim
+-mas100-syntax  -mno-as100-syntax
+-mrelax
+-mmax-constant-size=
+-mint-register=
+-mpid
+-mallow-string-insns  -mno-allow-string-insns
+-mjsr
+-mno-warn-multiple-fast-interrupts
 -msave-acc-in-interrupts}
 
 @emph{S/390 and zSeries Options}
-@gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
--mhard-float  -msoft-float  -mhard-dfp  -mno-hard-dfp @gol
--mlong-double-64  -mlong-double-128 @gol
--mbackchain  -mno-backchain  -mpacked-stack  -mno-packed-stack @gol
--msmall-exec  -mno-small-exec  -mmvcle  -mno-mvcle @gol
--m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
--mhtm  -mvx  -mzvector @gol
--mtpf-trace  -mno-tpf-trace  -mtpf-trace-skip  -mno-tpf-trace-skip @gol
--mfused-madd  -mno-fused-madd @gol
--mwarn-framesize  -mwarn-dynamicstack  -mstack-size  -mstack-guard @gol
+@gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type}
+-mhard-float  -msoft-float  -mhard-dfp  -mno-hard-dfp
+-mlong-double-64  -mlong-double-128
+-mbackchain  -mno-backchain  -mpacked-stack  -mno-packed-stack
+-msmall-exec  -mno-small-exec  -mmvcle  -mno-mvcle
+-m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch
+-mhtm  -mvx  -mzvector
+-mtpf-trace  -mno-tpf-trace  -mtpf-trace-skip  -mno-tpf-trace-skip
+-mfused-madd  -mno-fused-madd
+-mwarn-framesize  -mwarn-dynamicstack  -mstack-size  -mstack-guard
 -mhotpatch=@var{halfwords},@var{halfwords}}
 
 @emph{SH Options}
-@gccoptlist{-m1  -m2  -m2e @gol
--m2a-nofpu  -m2a-single-only  -m2a-single  -m2a @gol
--m3  -m3e @gol
--m4-nofpu  -m4-single-only  -m4-single  -m4 @gol
--m4a-nofpu  -m4a-single-only  -m4a-single  -m4a  -m4al @gol
--mb  -ml  -mdalign  -mrelax @gol
--mbigtable  -mfmovd  -mrenesas  -mno-renesas  -mnomacsave @gol
--mieee  -mno-ieee  -mbitops  -misize  -minline-ic_invalidate  -mpadstruct @gol
--mprefergot  -musermode  -multcost=@var{number}  -mdiv=@var{strategy} @gol
--mdivsi3_libfunc=@var{name}  -mfixed-range=@var{register-range} @gol
--maccumulate-outgoing-args @gol
--matomic-model=@var{atomic-model} @gol
--mbranch-cost=@var{num}  -mzdcbranch  -mno-zdcbranch @gol
--mcbranch-force-delay-slot @gol
--mfused-madd  -mno-fused-madd  -mfsca  -mno-fsca  -mfsrra  -mno-fsrra @gol
+@gccoptlist{-m1  -m2  -m2e
+-m2a-nofpu  -m2a-single-only  -m2a-single  -m2a
+-m3  -m3e
+-m4-nofpu  -m4-single-only  -m4-single  -m4
+-m4a-nofpu  -m4a-single-only  -m4a-single  -m4a  -m4al
+-mb  -ml  -mdalign  -mrelax
+-mbigtable  -mfmovd  -mrenesas  -mno-renesas  -mnomacsave
+-mieee  -mno-ieee  -mbitops  -misize  -minline-ic_invalidate  -mpadstruct
+-mprefergot  -musermode  -multcost=@var{number}  -mdiv=@var{strategy}
+-mdivsi3_libfunc=@var{name}  -mfixed-range=@var{register-range}
+-maccumulate-outgoing-args
+-matomic-model=@var{atomic-model}
+-mbranch-cost=@var{num}  -mzdcbranch  -mno-zdcbranch
+-mcbranch-force-delay-slot
+-mfused-madd  -mno-fused-madd  -mfsca  -mno-fsca  -mfsrra  -mno-fsrra
 -mpretend-cmove  -mtas}
 
 @emph{Solaris 2 Options}
-@gccoptlist{-mclear-hwcap  -mno-clear-hwcap  -mimpure-text  -mno-impure-text @gol
+@gccoptlist{-mclear-hwcap  -mno-clear-hwcap  -mimpure-text  -mno-impure-text
 -pthreads}
 
 @emph{SPARC Options}
-@gccoptlist{-mcpu=@var{cpu-type} @gol
--mtune=@var{cpu-type} @gol
--mcmodel=@var{code-model} @gol
--mmemory-model=@var{mem-model} @gol
--m32  -m64  -mapp-regs  -mno-app-regs @gol
--mfaster-structs  -mno-faster-structs  -mflat  -mno-flat @gol
--mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
--mhard-quad-float  -msoft-quad-float @gol
--mstack-bias  -mno-stack-bias @gol
--mstd-struct-return  -mno-std-struct-return @gol
--munaligned-doubles  -mno-unaligned-doubles @gol
--muser-mode  -mno-user-mode @gol
--mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
--mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
--mvis4  -mno-vis4  -mvis4b  -mno-vis4b @gol
--mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  -mfsmuld  -mno-fsmuld  @gol
--mpopc  -mno-popc  -msubxc  -mno-subxc @gol
--mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc @gol
+@gccoptlist{-mcpu=@var{cpu-type}
+-mtune=@var{cpu-type}
+-mcmodel=@var{code-model}
+-mmemory-model=@var{mem-model}
+-m32  -m64  -mapp-regs  -mno-app-regs
+-mfaster-structs  -mno-faster-structs  -mflat  -mno-flat
+-mfpu  -mno-fpu  -mhard-float  -msoft-float
+-mhard-quad-float  -msoft-quad-float
+-mstack-bias  -mno-stack-bias
+-mstd-struct-return  -mno-std-struct-return
+-munaligned-doubles  -mno-unaligned-doubles
+-muser-mode  -mno-user-mode
+-mv8plus  -mno-v8plus  -mvis  -mno-vis
+-mvis2  -mno-vis2  -mvis3  -mno-vis3
+-mvis4  -mno-vis4  -mvis4b  -mno-vis4b
+-mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  -mfsmuld  -mno-fsmuld
+-mpopc  -mno-popc  -msubxc  -mno-subxc
+-mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc
 -mlra  -mno-lra}
 
 @emph{System V Options}
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
 
 @emph{V850 Options}
-@gccoptlist{-mlong-calls  -mno-long-calls  -mep  -mno-ep @gol
--mprolog-function  -mno-prolog-function  -mspace @gol
--mtda=@var{n}  -msda=@var{n}  -mzda=@var{n} @gol
--mapp-regs  -mno-app-regs @gol
--mdisable-callt  -mno-disable-callt @gol
--mv850e2v3  -mv850e2  -mv850e1  -mv850es @gol
--mv850e  -mv850  -mv850e3v5 @gol
--mloop @gol
--mrelax @gol
--mlong-jumps @gol
--msoft-float @gol
--mhard-float @gol
--mgcc-abi @gol
--mrh850-abi @gol
+@gccoptlist{-mlong-calls  -mno-long-calls  -mep  -mno-ep
+-mprolog-function  -mno-prolog-function  -mspace
+-mtda=@var{n}  -msda=@var{n}  -mzda=@var{n}
+-mapp-regs  -mno-app-regs
+-mdisable-callt  -mno-disable-callt
+-mv850e2v3  -mv850e2  -mv850e1  -mv850es
+-mv850e  -mv850  -mv850e3v5
+-mloop
+-mrelax
+-mlong-jumps
+-msoft-float
+-mhard-float
+-mgcc-abi
+-mrh850-abi
 -mbig-switch}
 
 @emph{VAX Options}
 @gccoptlist{-mg  -mgnu  -munix  -mlra}
 
 @emph{Visium Options}
-@gccoptlist{-mdebug  -msim  -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
+@gccoptlist{-mdebug  -msim  -mfpu  -mno-fpu  -mhard-float  -msoft-float
 -mcpu=@var{cpu-type}  -mtune=@var{cpu-type}  -msv-mode  -muser-mode}
 
 @emph{VMS Options}
-@gccoptlist{-mvms-return-codes  -mdebug-main=@var{prefix}  -mmalloc64 @gol
+@gccoptlist{-mvms-return-codes  -mdebug-main=@var{prefix}  -mmalloc64
 -mpointer-size=@var{size}}
 
 @emph{VxWorks Options}
-@gccoptlist{-mrtp  -non-static  -Bstatic  -Bdynamic @gol
+@gccoptlist{-mrtp  -non-static  -Bstatic  -Bdynamic
 -Xbind-lazy  -Xbind-now}
 
 @emph{x86 Options}
-@gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
--mtune-ctrl=@var{feature-list}  -mdump-tune-features  -mno-default @gol
--mfpmath=@var{unit} @gol
--masm=@var{dialect}  -mno-fancy-math-387 @gol
--mno-fp-ret-in-387  -m80387  -mhard-float  -msoft-float @gol
--mno-wide-multiply  -mrtd  -malign-double @gol
--mpreferred-stack-boundary=@var{num} @gol
--mincoming-stack-boundary=@var{num} @gol
--mcld  -mcx16  -msahf  -mmovbe  -mcrc32 -mmwait @gol
--mrecip  -mrecip=@var{opt} @gol
--mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt} @gol
--mmove-max=@var{bits} -mstore-max=@var{bits} @gol
--mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
--mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
--mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
--mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma  -mpconfig  -mwbnoinvd  @gol
--mptwrite  -mprefetchwt1  -mclflushopt  -mclwb  -mxsavec  -mxsaves @gol
--msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
--madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp @gol
--mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
--mshstk -mmanual-endbr -mcet-switch -mforce-indirect-call @gol
--mavx512vbmi2 -mavx512bf16 -menqcmd @gol
--mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
--mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
--mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
--mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni@gol
--mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16 @gol
--mprefetchi -mraoint @gol
--mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
--minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
--mkl -mwidekl @gol
--mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
--mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
--m96bit-long-double  -mlong-double-64  -mlong-double-80  -mlong-double-128 @gol
--mregparm=@var{num}  -msseregparm @gol
--mveclibabi=@var{type}  -mvect8-ret-in-mem @gol
--mpc32  -mpc64  -mpc80  -mdaz-ftz -mstackrealign @gol
--momit-leaf-frame-pointer  -mno-red-zone  -mno-tls-direct-seg-refs @gol
--mcmodel=@var{code-model}  -mabi=@var{name}  -maddress-mode=@var{mode} @gol
--m32  -m64  -mx32  -m16  -miamcu  -mlarge-data-threshold=@var{num} @gol
--msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv @gol
--minstrument-return=@var{type} -mfentry-name=@var{name} -mfentry-section=@var{name} @gol
--mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
--malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
--mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset} @gol
--mstack-protector-guard-symbol=@var{symbol} @gol
--mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop @gol
--mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
--mindirect-branch-register -mharden-sls=@var{choice} @gol
--mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access @gol
+@gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type}
+-mtune-ctrl=@var{feature-list}  -mdump-tune-features  -mno-default
+-mfpmath=@var{unit}
+-masm=@var{dialect}  -mno-fancy-math-387
+-mno-fp-ret-in-387  -m80387  -mhard-float  -msoft-float
+-mno-wide-multiply  -mrtd  -malign-double
+-mpreferred-stack-boundary=@var{num}
+-mincoming-stack-boundary=@var{num}
+-mcld  -mcx16  -msahf  -mmovbe  -mcrc32 -mmwait
+-mrecip  -mrecip=@var{opt}
+-mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt}
+-mmove-max=@var{bits} -mstore-max=@var{bits}
+-mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx
+-mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl
+-mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes
+-mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma  -mpconfig  -mwbnoinvd
+-mptwrite  -mprefetchwt1  -mclflushopt  -mclwb  -mxsavec  -mxsaves
+-msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop
+-madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp
+-mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg
+-mshstk -mmanual-endbr -mcet-switch -mforce-indirect-call
+-mavx512vbmi2 -mavx512bf16 -menqcmd
+-mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq
+-mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid
+-mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk
+-mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni
+-mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
+-mprefetchi -mraoint
+-mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
+-minline-stringops-dynamically  -mstringop-strategy=@var{alg}
+-mkl -mwidekl
+-mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy}
+-mpush-args  -maccumulate-outgoing-args  -m128bit-long-double
+-m96bit-long-double  -mlong-double-64  -mlong-double-80  -mlong-double-128
+-mregparm=@var{num}  -msseregparm
+-mveclibabi=@var{type}  -mvect8-ret-in-mem
+-mpc32  -mpc64  -mpc80  -mdaz-ftz -mstackrealign
+-momit-leaf-frame-pointer  -mno-red-zone  -mno-tls-direct-seg-refs
+-mcmodel=@var{code-model}  -mabi=@var{name}  -maddress-mode=@var{mode}
+-m32  -m64  -mx32  -m16  -miamcu  -mlarge-data-threshold=@var{num}
+-msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv
+-minstrument-return=@var{type} -mfentry-name=@var{name} -mfentry-section=@var{name}
+-mavx256-split-unaligned-load  -mavx256-split-unaligned-store
+-malign-data=@var{type}  -mstack-protector-guard=@var{guard}
+-mstack-protector-guard-reg=@var{reg}
+-mstack-protector-guard-offset=@var{offset}
+-mstack-protector-guard-symbol=@var{symbol}
+-mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop
+-mindirect-branch=@var{choice}  -mfunction-return=@var{choice}
+-mindirect-branch-register -mharden-sls=@var{choice}
+-mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access
 -munroll-only-small-loops -mlam=@var{choice}}
 
 @emph{x86 Windows Options}
-@gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
--mnop-fun-dllimport  -mthread @gol
+@gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll
+-mnop-fun-dllimport  -mthread
 -municode  -mwin32  -mwindows  -fno-set-stack-executable}
 
 @emph{Xstormy16 Options}
 @gccoptlist{-msim}
 
 @emph{Xtensa Options}
-@gccoptlist{-mconst16  -mno-const16 @gol
--mfused-madd  -mno-fused-madd @gol
--mforce-no-pic @gol
--mserialize-volatile  -mno-serialize-volatile @gol
--mtext-section-literals  -mno-text-section-literals @gol
--mauto-litpools  -mno-auto-litpools @gol
--mtarget-align  -mno-target-align @gol
--mlongcalls  -mno-longcalls @gol
--mabi=@var{abi-type} @gol
+@gccoptlist{-mconst16  -mno-const16
+-mfused-madd  -mno-fused-madd
+-mforce-no-pic
+-mserialize-volatile  -mno-serialize-volatile
+-mtext-section-literals  -mno-text-section-literals
+-mauto-litpools  -mno-auto-litpools
+-mtarget-align  -mno-target-align
+-mlongcalls  -mno-longcalls
+-mabi=@var{abi-type}
 -mextra-l32r-costs=@var{cycles}}
 
 @emph{zSeries Options}
@@ -5057,10 +5057,10 @@ may be useful when running @command{dejagnu} or other utilities that need to
 parse diagnostics output and prefer that it remain more stable over time.
 @option{-fdiagnostics-plain-output} is currently equivalent to the following
 options:
-@gccoptlist{-fno-diagnostics-show-caret @gol
--fno-diagnostics-show-line-numbers @gol
--fdiagnostics-color=never @gol
--fdiagnostics-urls=never @gol
+@gccoptlist{-fno-diagnostics-show-caret
+-fno-diagnostics-show-line-numbers
+-fdiagnostics-color=never
+-fdiagnostics-urls=never
 -fdiagnostics-path-format=separate-events}
 In the future, if GCC changes the default appearance of its diagnostics, the
 corresponding option to disable the new behavior will be added to this list.
@@ -6042,70 +6042,70 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @option{-Wall} turns on the following warning flags:
 
-@gccoptlist{-Waddress   @gol
--Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
--Warray-compare @gol
--Warray-parameter=2 @r{(C and Objective-C only)} @gol
--Wbool-compare  @gol
--Wbool-operation  @gol
--Wc++11-compat  -Wc++14-compat  @gol
--Wcatch-value @r{(C++ and Objective-C++ only)}  @gol
--Wchar-subscripts  @gol
--Wcomment  @gol
--Wdangling-pointer=2  @gol
--Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
--Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
--Wenum-int-mismatch @r{(C and Objective-C only)} @gol
--Wformat   @gol
--Wformat-overflow  @gol
--Wformat-truncation  @gol
--Wint-in-bool-context  @gol
--Wimplicit @r{(C and Objective-C only)} @gol
--Wimplicit-int @r{(C and Objective-C only)} @gol
--Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
--Winit-self @r{(only for C++)} @gol
--Wlogical-not-parentheses @gol
--Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
--Wmaybe-uninitialized @gol
--Wmemset-elt-size @gol
--Wmemset-transposed-args @gol
--Wmisleading-indentation @r{(only for C/C++)} @gol
--Wmismatched-dealloc @gol
--Wmismatched-new-delete @r{(only for C/C++)} @gol
--Wmissing-attributes @gol
--Wmissing-braces @r{(only for C/ObjC)} @gol
--Wmultistatement-macros  @gol
--Wnarrowing @r{(only for C++)}  @gol
--Wnonnull  @gol
--Wnonnull-compare  @gol
--Wopenmp-simd @gol
--Wparentheses  @gol
--Wpessimizing-move @r{(only for C++)}  @gol
--Wpointer-sign  @gol
--Wrange-loop-construct @r{(only for C++)}  @gol
--Wreorder   @gol
--Wrestrict   @gol
--Wreturn-type  @gol
--Wself-move @r{(only for C++)}  @gol
--Wsequence-point  @gol
--Wsign-compare @r{(only in C++)}  @gol
--Wsizeof-array-div @gol
--Wsizeof-pointer-div @gol
--Wsizeof-pointer-memaccess @gol
--Wstrict-aliasing  @gol
--Wstrict-overflow=1  @gol
--Wswitch  @gol
--Wtautological-compare  @gol
--Wtrigraphs  @gol
--Wuninitialized  @gol
--Wunknown-pragmas  @gol
--Wunused-function  @gol
--Wunused-label     @gol
--Wunused-value     @gol
--Wunused-variable  @gol
--Wuse-after-free=2  @gol
--Wvla-parameter @r{(C and Objective-C only)} @gol
--Wvolatile-register-var  @gol
+@gccoptlist{-Waddress
+-Warray-bounds=1 @r{(only with} @option{-O2}@r{)}
+-Warray-compare
+-Warray-parameter=2 @r{(C and Objective-C only)}
+-Wbool-compare
+-Wbool-operation
+-Wc++11-compat  -Wc++14-compat
+-Wcatch-value @r{(C++ and Objective-C++ only)}
+-Wchar-subscripts
+-Wcomment
+-Wdangling-pointer=2
+-Wduplicate-decl-specifier @r{(C and Objective-C only)}
+-Wenum-compare @r{(in C/ObjC; this is on by default in C++)}
+-Wenum-int-mismatch @r{(C and Objective-C only)}
+-Wformat
+-Wformat-overflow
+-Wformat-truncation
+-Wint-in-bool-context
+-Wimplicit @r{(C and Objective-C only)}
+-Wimplicit-int @r{(C and Objective-C only)}
+-Wimplicit-function-declaration @r{(C and Objective-C only)}
+-Winit-self @r{(only for C++)}
+-Wlogical-not-parentheses
+-Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}
+-Wmaybe-uninitialized
+-Wmemset-elt-size
+-Wmemset-transposed-args
+-Wmisleading-indentation @r{(only for C/C++)}
+-Wmismatched-dealloc
+-Wmismatched-new-delete @r{(only for C/C++)}
+-Wmissing-attributes
+-Wmissing-braces @r{(only for C/ObjC)}
+-Wmultistatement-macros
+-Wnarrowing @r{(only for C++)}
+-Wnonnull
+-Wnonnull-compare
+-Wopenmp-simd
+-Wparentheses
+-Wpessimizing-move @r{(only for C++)}
+-Wpointer-sign
+-Wrange-loop-construct @r{(only for C++)}
+-Wreorder
+-Wrestrict
+-Wreturn-type
+-Wself-move @r{(only for C++)}
+-Wsequence-point
+-Wsign-compare @r{(only in C++)}
+-Wsizeof-array-div
+-Wsizeof-pointer-div
+-Wsizeof-pointer-memaccess
+-Wstrict-aliasing
+-Wstrict-overflow=1
+-Wswitch
+-Wtautological-compare
+-Wtrigraphs
+-Wuninitialized
+-Wunknown-pragmas
+-Wunused-function
+-Wunused-label
+-Wunused-value
+-Wunused-variable
+-Wuse-after-free=2
+-Wvla-parameter @r{(C and Objective-C only)}
+-Wvolatile-register-var
 -Wzero-length-bounds}
 
 Note that some warning flags are not implied by @option{-Wall}.  Some of
@@ -6124,24 +6124,24 @@ This enables some extra warning flags that are not enabled by
 @option{-Wall}. (This option used to be called @option{-W}.  The older
 name is still supported, but the newer name is more descriptive.)
 
-@gccoptlist{-Wclobbered  @gol
--Wcast-function-type  @gol
--Wdeprecated-copy @r{(C++ only)} @gol
--Wempty-body  @gol
--Wenum-conversion @r{(C only)} @gol
--Wignored-qualifiers @gol
--Wimplicit-fallthrough=3 @gol
--Wmissing-field-initializers  @gol
--Wmissing-parameter-type @r{(C only)}  @gol
--Wold-style-declaration @r{(C only)}  @gol
--Woverride-init  @gol
--Wsign-compare @r{(C only)} @gol
--Wstring-compare @gol
--Wredundant-move @r{(only for C++)}  @gol
--Wtype-limits  @gol
--Wuninitialized  @gol
--Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}  @gol
--Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)} @gol
+@gccoptlist{-Wclobbered
+-Wcast-function-type
+-Wdeprecated-copy @r{(C++ only)}
+-Wempty-body
+-Wenum-conversion @r{(C only)}
+-Wignored-qualifiers
+-Wimplicit-fallthrough=3
+-Wmissing-field-initializers
+-Wmissing-parameter-type @r{(C only)}
+-Wold-style-declaration @r{(C only)}
+-Woverride-init
+-Wsign-compare @r{(C only)}
+-Wstring-compare
+-Wredundant-move @r{(only for C++)}
+-Wtype-limits
+-Wuninitialized
+-Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}
+-Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}}
 
 
@@ -10134,53 +10134,53 @@ The analyzer is only suitable for use on C code in this release.
 
 Enabling this option effectively enables the following warnings:
 
-@gccoptlist{ @gol
--Wanalyzer-allocation-size @gol
--Wanalyzer-deref-before-check @gol
--Wanalyzer-double-fclose @gol
--Wanalyzer-double-free @gol
--Wanalyzer-exposure-through-output-file @gol
--Wanalyzer-exposure-through-uninit-copy @gol
--Wanalyzer-fd-access-mode-mismatch @gol
--Wanalyzer-fd-double-close @gol
--Wanalyzer-fd-leak @gol
--Wanalyzer-fd-phase-mismatch @gol
--Wanalyzer-fd-type-mismatch @gol
--Wanalyzer-fd-use-after-close @gol
--Wanalyzer-fd-use-without-check @gol
--Wanalyzer-file-leak @gol
--Wanalyzer-free-of-non-heap @gol
--Wanalyzer-imprecise-fp-arithmetic @gol
--Wanalyzer-infinite-recursion @gol
--Wanalyzer-jump-through-null @gol
--Wanalyzer-malloc-leak @gol
--Wanalyzer-mismatching-deallocation @gol
--Wanalyzer-null-argument @gol
--Wanalyzer-null-dereference @gol
--Wanalyzer-out-of-bounds @gol
--Wanalyzer-possible-null-argument @gol
--Wanalyzer-possible-null-dereference @gol
--Wanalyzer-putenv-of-auto-var @gol
--Wanalyzer-shift-count-negative @gol
--Wanalyzer-shift-count-overflow @gol
--Wanalyzer-stale-setjmp-buffer @gol
--Wanalyzer-unsafe-call-within-signal-handler @gol
--Wanalyzer-use-after-free @gol
--Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
--Wanalyzer-use-of-uninitialized-value @gol
--Wanalyzer-va-arg-type-mismatch @gol
--Wanalyzer-va-list-exhausted @gol
--Wanalyzer-va-list-leak @gol
--Wanalyzer-va-list-use-after-va-end @gol
--Wanalyzer-write-to-const @gol
--Wanalyzer-write-to-string-literal @gol
+@gccoptlist{
+-Wanalyzer-allocation-size
+-Wanalyzer-deref-before-check
+-Wanalyzer-double-fclose
+-Wanalyzer-double-free
+-Wanalyzer-exposure-through-output-file
+-Wanalyzer-exposure-through-uninit-copy
+-Wanalyzer-fd-access-mode-mismatch
+-Wanalyzer-fd-double-close
+-Wanalyzer-fd-leak
+-Wanalyzer-fd-phase-mismatch
+-Wanalyzer-fd-type-mismatch
+-Wanalyzer-fd-use-after-close
+-Wanalyzer-fd-use-without-check
+-Wanalyzer-file-leak
+-Wanalyzer-free-of-non-heap
+-Wanalyzer-imprecise-fp-arithmetic
+-Wanalyzer-infinite-recursion
+-Wanalyzer-jump-through-null
+-Wanalyzer-malloc-leak
+-Wanalyzer-mismatching-deallocation
+-Wanalyzer-null-argument
+-Wanalyzer-null-dereference
+-Wanalyzer-out-of-bounds
+-Wanalyzer-possible-null-argument
+-Wanalyzer-possible-null-dereference
+-Wanalyzer-putenv-of-auto-var
+-Wanalyzer-shift-count-negative
+-Wanalyzer-shift-count-overflow
+-Wanalyzer-stale-setjmp-buffer
+-Wanalyzer-unsafe-call-within-signal-handler
+-Wanalyzer-use-after-free
+-Wanalyzer-use-of-pointer-in-stale-stack-frame
+-Wanalyzer-use-of-uninitialized-value
+-Wanalyzer-va-arg-type-mismatch
+-Wanalyzer-va-list-exhausted
+-Wanalyzer-va-list-leak
+-Wanalyzer-va-list-use-after-va-end
+-Wanalyzer-write-to-const
+-Wanalyzer-write-to-string-literal
 }
 @ignore
--Wanalyzer-tainted-allocation-size @gol
--Wanalyzer-tainted-array-index @gol
--Wanalyzer-tainted-divisor @gol
--Wanalyzer-tainted-offset @gol
--Wanalyzer-tainted-size @gol
+-Wanalyzer-tainted-allocation-size
+-Wanalyzer-tainted-array-index
+-Wanalyzer-tainted-divisor
+-Wanalyzer-tainted-offset
+-Wanalyzer-tainted-size
 @end ignore
 
 This option is only available if GCC was configured with analyzer
@@ -10980,28 +10980,28 @@ to enable them.
 @emph{Note:} currently, @option{-fanalyzer-checker=taint} disables the
 following warnings from @option{-fanalyzer}:
 
-@gccoptlist{ @gol
--Wanalyzer-deref-before-check @gol
--Wanalyzer-double-fclose @gol
--Wanalyzer-double-free @gol
--Wanalyzer-exposure-through-output-file @gol
--Wanalyzer-fd-access-mode-mismatch @gol
--Wanalyzer-fd-double-close @gol
--Wanalyzer-fd-leak @gol
--Wanalyzer-fd-use-after-close @gol
--Wanalyzer-fd-use-without-check @gol
--Wanalyzer-file-leak @gol
--Wanalyzer-free-of-non-heap @gol
--Wanalyzer-malloc-leak @gol
--Wanalyzer-mismatching-deallocation @gol
--Wanalyzer-null-argument @gol
--Wanalyzer-null-dereference @gol
--Wanalyzer-possible-null-argument @gol
--Wanalyzer-possible-null-dereference @gol
--Wanalyzer-unsafe-call-within-signal-handler @gol
--Wanalyzer-use-after-free @gol
--Wanalyzer-va-list-leak @gol
--Wanalyzer-va-list-use-after-va-end @gol
+@gccoptlist{
+-Wanalyzer-deref-before-check
+-Wanalyzer-double-fclose
+-Wanalyzer-double-free
+-Wanalyzer-exposure-through-output-file
+-Wanalyzer-fd-access-mode-mismatch
+-Wanalyzer-fd-double-close
+-Wanalyzer-fd-leak
+-Wanalyzer-fd-use-after-close
+-Wanalyzer-fd-use-without-check
+-Wanalyzer-file-leak
+-Wanalyzer-free-of-non-heap
+-Wanalyzer-malloc-leak
+-Wanalyzer-mismatching-deallocation
+-Wanalyzer-null-argument
+-Wanalyzer-null-dereference
+-Wanalyzer-possible-null-argument
+-Wanalyzer-possible-null-dereference
+-Wanalyzer-unsafe-call-within-signal-handler
+-Wanalyzer-use-after-free
+-Wanalyzer-va-list-leak
+-Wanalyzer-va-list-use-after-va-end
 }
 
 @opindex fanalyzer-feasibility
@@ -11754,52 +11754,52 @@ compilation time.
 @option{-O} turns on the following optimization flags:
 
 @c Please keep the following list alphabetized.
-@gccoptlist{-fauto-inc-dec @gol
--fbranch-count-reg @gol
--fcombine-stack-adjustments @gol
--fcompare-elim @gol
--fcprop-registers @gol
--fdce @gol
--fdefer-pop @gol
--fdelayed-branch @gol
--fdse @gol
--fforward-propagate @gol
--fguess-branch-probability @gol
--fif-conversion @gol
--fif-conversion2 @gol
--finline-functions-called-once @gol
--fipa-modref @gol
--fipa-profile @gol
--fipa-pure-const @gol
--fipa-reference @gol
--fipa-reference-addressable @gol
--fmerge-constants @gol
--fmove-loop-invariants @gol
--fmove-loop-stores@gol
--fomit-frame-pointer @gol
--freorder-blocks @gol
--fshrink-wrap @gol
--fshrink-wrap-separate @gol
--fsplit-wide-types @gol
--fssa-backprop @gol
--fssa-phiopt @gol
--ftree-bit-ccp @gol
--ftree-ccp @gol
--ftree-ch @gol
--ftree-coalesce-vars @gol
--ftree-copy-prop @gol
--ftree-dce @gol
--ftree-dominator-opts @gol
--ftree-dse @gol
--ftree-forwprop @gol
--ftree-fre @gol
--ftree-phiprop @gol
--ftree-pta @gol
--ftree-scev-cprop @gol
--ftree-sink @gol
--ftree-slsr @gol
--ftree-sra @gol
--ftree-ter @gol
+@gccoptlist{-fauto-inc-dec
+-fbranch-count-reg
+-fcombine-stack-adjustments
+-fcompare-elim
+-fcprop-registers
+-fdce
+-fdefer-pop
+-fdelayed-branch
+-fdse
+-fforward-propagate
+-fguess-branch-probability
+-fif-conversion
+-fif-conversion2
+-finline-functions-called-once
+-fipa-modref
+-fipa-profile
+-fipa-pure-const
+-fipa-reference
+-fipa-reference-addressable
+-fmerge-constants
+-fmove-loop-invariants
+-fmove-loop-stores
+-fomit-frame-pointer
+-freorder-blocks
+-fshrink-wrap
+-fshrink-wrap-separate
+-fsplit-wide-types
+-fssa-backprop
+-fssa-phiopt
+-ftree-bit-ccp
+-ftree-ccp
+-ftree-ch
+-ftree-coalesce-vars
+-ftree-copy-prop
+-ftree-dce
+-ftree-dominator-opts
+-ftree-dse
+-ftree-forwprop
+-ftree-fre
+-ftree-phiprop
+-ftree-pta
+-ftree-scev-cprop
+-ftree-sink
+-ftree-slsr
+-ftree-sra
+-ftree-ter
 -funit-at-a-time}
 
 @opindex O2
@@ -11813,43 +11813,43 @@ and the performance of the generated code.
 also turns on the following optimization flags:
 
 @c Please keep the following list alphabetized!
-@gccoptlist{-falign-functions  -falign-jumps @gol
--falign-labels  -falign-loops @gol
--fcaller-saves @gol
--fcode-hoisting @gol
--fcrossjumping @gol
--fcse-follow-jumps  -fcse-skip-blocks @gol
--fdelete-null-pointer-checks @gol
--fdevirtualize  -fdevirtualize-speculatively @gol
--fexpensive-optimizations @gol
--ffinite-loops @gol
--fgcse  -fgcse-lm  @gol
--fhoist-adjacent-loads @gol
--finline-functions @gol
--finline-small-functions @gol
--findirect-inlining @gol
--fipa-bit-cp  -fipa-cp  -fipa-icf @gol
--fipa-ra  -fipa-sra  -fipa-vrp @gol
--fisolate-erroneous-paths-dereference @gol
--flra-remat @gol
--foptimize-sibling-calls @gol
--foptimize-strlen @gol
--fpartial-inlining @gol
--fpeephole2 @gol
--freorder-blocks-algorithm=stc @gol
--freorder-blocks-and-partition  -freorder-functions @gol
--frerun-cse-after-loop  @gol
--fschedule-insns  -fschedule-insns2 @gol
--fsched-interblock  -fsched-spec @gol
--fstore-merging @gol
--fstrict-aliasing @gol
--fthread-jumps @gol
--ftree-builtin-call-dce @gol
--ftree-loop-vectorize @gol
--ftree-pre @gol
--ftree-slp-vectorize @gol
--ftree-switch-conversion  -ftree-tail-merge @gol
--ftree-vrp @gol
+@gccoptlist{-falign-functions  -falign-jumps
+-falign-labels  -falign-loops
+-fcaller-saves
+-fcode-hoisting
+-fcrossjumping
+-fcse-follow-jumps  -fcse-skip-blocks
+-fdelete-null-pointer-checks
+-fdevirtualize  -fdevirtualize-speculatively
+-fexpensive-optimizations
+-ffinite-loops
+-fgcse  -fgcse-lm
+-fhoist-adjacent-loads
+-finline-functions
+-finline-small-functions
+-findirect-inlining
+-fipa-bit-cp  -fipa-cp  -fipa-icf
+-fipa-ra  -fipa-sra  -fipa-vrp
+-fisolate-erroneous-paths-dereference
+-flra-remat
+-foptimize-sibling-calls
+-foptimize-strlen
+-fpartial-inlining
+-fpeephole2
+-freorder-blocks-algorithm=stc
+-freorder-blocks-and-partition  -freorder-functions
+-frerun-cse-after-loop
+-fschedule-insns  -fschedule-insns2
+-fsched-interblock  -fsched-spec
+-fstore-merging
+-fstrict-aliasing
+-fthread-jumps
+-ftree-builtin-call-dce
+-ftree-loop-vectorize
+-ftree-pre
+-ftree-slp-vectorize
+-ftree-switch-conversion  -ftree-tail-merge
+-ftree-vrp
 -fvect-cost-model=very-cheap}
 
 Please note the warning under @option{-fgcse} about
@@ -11861,18 +11861,18 @@ Optimize yet more.  @option{-O3} turns on all optimizations specified
 by @option{-O2} and also turns on the following optimization flags:
 
 @c Please keep the following list alphabetized!
-@gccoptlist{-fgcse-after-reload @gol
+@gccoptlist{-fgcse-after-reload
 -fipa-cp-clone
--floop-interchange @gol
--floop-unroll-and-jam @gol
--fpeel-loops @gol
--fpredictive-commoning @gol
--fsplit-loops @gol
--fsplit-paths @gol
--ftree-loop-distribution @gol
--ftree-partial-pre @gol
--funswitch-loops @gol
--fvect-cost-model=dynamic @gol
+-floop-interchange
+-floop-unroll-and-jam
+-fpeel-loops
+-fpredictive-commoning
+-fsplit-loops
+-fsplit-paths
+-ftree-loop-distribution
+-ftree-partial-pre
+-funswitch-loops
+-fvect-cost-model=dynamic
 -fversion-loops-for-strides}
 
 @opindex O0
@@ -11885,8 +11885,8 @@ results.  This is the default.
 Optimize for size.  @option{-Os} enables all @option{-O2} optimizations 
 except those that often increase code size:
 
-@gccoptlist{-falign-functions  -falign-jumps @gol
--falign-labels  -falign-loops @gol
+@gccoptlist{-falign-functions  -falign-jumps
+-falign-labels  -falign-loops
 -fprefetch-loop-arrays  -freorder-blocks-algorithm=stc}
 
 It also enables @option{-finline-functions}, causes the compiler to tune for
@@ -11917,10 +11917,10 @@ optimization passes so that individual options controlling them have
 no effect.  Otherwise @option{-Og} enables all @option{-O1} 
 optimization flags except for those that may interfere with debugging:
 
-@gccoptlist{-fbranch-count-reg  -fdelayed-branch @gol
--fdse  -fif-conversion  -fif-conversion2  @gol
--finline-functions-called-once @gol
--fmove-loop-invariants  -fmove-loop-stores  -fssa-phiopt @gol
+@gccoptlist{-fbranch-count-reg  -fdelayed-branch
+-fdse  -fif-conversion  -fif-conversion2
+-finline-functions-called-once
+-fmove-loop-invariants  -fmove-loop-stores  -fssa-phiopt
 -ftree-bit-ccp  -ftree-dse  -ftree-pta  -ftree-sra}
 
 @opindex Oz
@@ -12965,10 +12965,10 @@ As a result, when patching a function, all its callers and its clones'
 callers are impacted, therefore need to be patched as well.
 
 @option{-flive-patching=inline-clone} disables the following optimization flags:
-@gccoptlist{-fwhole-program  -fipa-pta  -fipa-reference  -fipa-ra @gol
--fipa-icf  -fipa-icf-functions  -fipa-icf-variables @gol
--fipa-bit-cp  -fipa-vrp  -fipa-pure-const @gol
--fipa-reference-addressable @gol
+@gccoptlist{-fwhole-program  -fipa-pta  -fipa-reference  -fipa-ra
+-fipa-icf  -fipa-icf-functions  -fipa-icf-variables
+-fipa-bit-cp  -fipa-vrp  -fipa-pure-const
+-fipa-reference-addressable
 -fipa-stack-alignment -fipa-modref}
 
 @item inline-only-static
@@ -14175,12 +14175,12 @@ Enable profile feedback-directed optimizations,
 and the following optimizations, many of which
 are generally profitable only with profile feedback available:
 
-@gccoptlist{-fbranch-probabilities  -fprofile-values @gol
--funroll-loops  -fpeel-loops  -ftracer  -fvpt @gol
--finline-functions  -fipa-cp  -fipa-cp-clone  -fipa-bit-cp @gol
--fpredictive-commoning  -fsplit-loops  -funswitch-loops @gol
--fgcse-after-reload  -ftree-loop-vectorize  -ftree-slp-vectorize @gol
--fvect-cost-model=dynamic  -ftree-loop-distribute-patterns @gol
+@gccoptlist{-fbranch-probabilities  -fprofile-values
+-funroll-loops  -fpeel-loops  -ftracer  -fvpt
+-finline-functions  -fipa-cp  -fipa-cp-clone  -fipa-bit-cp
+-fpredictive-commoning  -fsplit-loops  -funswitch-loops
+-fgcse-after-reload  -ftree-loop-vectorize  -ftree-slp-vectorize
+-fvect-cost-model=dynamic  -ftree-loop-distribute-patterns
 -fprofile-reorder-functions}
 
 Before you can use this option, you must first generate profiling information.
@@ -14203,12 +14203,12 @@ Enable sampling-based feedback-directed optimizations,
 and the following optimizations,
 many of which are generally profitable only with profile feedback available:
 
-@gccoptlist{-fbranch-probabilities  -fprofile-values @gol
--funroll-loops  -fpeel-loops  -ftracer  -fvpt @gol
--finline-functions  -fipa-cp  -fipa-cp-clone  -fipa-bit-cp @gol
--fpredictive-commoning  -fsplit-loops  -funswitch-loops @gol
--fgcse-after-reload  -ftree-loop-vectorize  -ftree-slp-vectorize @gol
--fvect-cost-model=dynamic  -ftree-loop-distribute-patterns @gol
+@gccoptlist{-fbranch-probabilities  -fprofile-values
+-funroll-loops  -fpeel-loops  -ftracer  -fvpt
+-finline-functions  -fipa-cp  -fipa-cp-clone  -fipa-bit-cp
+-fpredictive-commoning  -fsplit-loops  -funswitch-loops
+-fgcse-after-reload  -ftree-loop-vectorize  -ftree-slp-vectorize
+-fvect-cost-model=dynamic  -ftree-loop-distribute-patterns
 -fprofile-correction}
 
 @var{path} is the name of a file containing AutoFDO profile information.
@@ -28450,51 +28450,51 @@ This option enables a predefined, named set of custom instruction encodings
 Currently, the following sets are defined:
 
 @option{-mcustom-fpu-cfg=60-1} is equivalent to:
-@gccoptlist{-mcustom-fmuls=252 @gol
--mcustom-fadds=253 @gol
--mcustom-fsubs=254 @gol
+@gccoptlist{-mcustom-fmuls=252
+-mcustom-fadds=253
+-mcustom-fsubs=254
 -fsingle-precision-constant}
 
 @option{-mcustom-fpu-cfg=60-2} is equivalent to:
-@gccoptlist{-mcustom-fmuls=252 @gol
--mcustom-fadds=253 @gol
--mcustom-fsubs=254 @gol
--mcustom-fdivs=255 @gol
+@gccoptlist{-mcustom-fmuls=252
+-mcustom-fadds=253
+-mcustom-fsubs=254
+-mcustom-fdivs=255
 -fsingle-precision-constant}
 
 @option{-mcustom-fpu-cfg=72-3} is equivalent to:
-@gccoptlist{-mcustom-floatus=243 @gol
--mcustom-fixsi=244 @gol
--mcustom-floatis=245 @gol
--mcustom-fcmpgts=246 @gol
--mcustom-fcmples=249 @gol
--mcustom-fcmpeqs=250 @gol
--mcustom-fcmpnes=251 @gol
--mcustom-fmuls=252 @gol
--mcustom-fadds=253 @gol
--mcustom-fsubs=254 @gol
--mcustom-fdivs=255 @gol
+@gccoptlist{-mcustom-floatus=243
+-mcustom-fixsi=244
+-mcustom-floatis=245
+-mcustom-fcmpgts=246
+-mcustom-fcmples=249
+-mcustom-fcmpeqs=250
+-mcustom-fcmpnes=251
+-mcustom-fmuls=252
+-mcustom-fadds=253
+-mcustom-fsubs=254
+-mcustom-fdivs=255
 -fsingle-precision-constant}
 
 @option{-mcustom-fpu-cfg=fph2} is equivalent to:
-@gccoptlist{-mcustom-fabss=224 @gol
--mcustom-fnegs=225 @gol
--mcustom-fcmpnes=226 @gol
--mcustom-fcmpeqs=227 @gol
--mcustom-fcmpges=228 @gol
--mcustom-fcmpgts=229 @gol
--mcustom-fcmples=230 @gol
--mcustom-fcmplts=231 @gol
--mcustom-fmaxs=232 @gol
--mcustom-fmins=233 @gol
--mcustom-round=248 @gol
--mcustom-fixsi=249 @gol
--mcustom-floatis=250 @gol
--mcustom-fsqrts=251 @gol
--mcustom-fmuls=252 @gol
--mcustom-fadds=253 @gol
--mcustom-fsubs=254 @gol
--mcustom-fdivs=255 @gol}
+@gccoptlist{-mcustom-fabss=224
+-mcustom-fnegs=225
+-mcustom-fcmpnes=226
+-mcustom-fcmpeqs=227
+-mcustom-fcmpges=228
+-mcustom-fcmpgts=229
+-mcustom-fcmples=230
+-mcustom-fcmplts=231
+-mcustom-fmaxs=232
+-mcustom-fmins=233
+-mcustom-round=248
+-mcustom-fixsi=249
+-mcustom-floatis=250
+-mcustom-fsqrts=251
+-mcustom-fmuls=252
+-mcustom-fadds=253
+-mcustom-fsubs=254
+-mcustom-fdivs=255}
 
 Custom instruction assignments given by individual
 @option{-mcustom-@var{insn}=} options override those given by
@@ -29319,13 +29319,13 @@ others.
 The @option{-mcpu} options automatically enable or disable the
 following options:
 
-@gccoptlist{-maltivec  -mfprnd  -mhard-float  -mmfcrf  -mmultiple @gol
--mpopcntb  -mpopcntd  -mpowerpc64 @gol
--mpowerpc-gpopt  -mpowerpc-gfxopt @gol
--mmulhw  -mdlmzb  -mmfpgpr  -mvsx @gol
--mcrypto  -mhtm  -mpower8-fusion  -mpower8-vector @gol
--mquad-memory  -mquad-memory-atomic  -mfloat128 @gol
--mfloat128-hardware -mprefixed -mpcrel -mmma @gol
+@gccoptlist{-maltivec  -mfprnd  -mhard-float  -mmfcrf  -mmultiple
+-mpopcntb  -mpopcntd  -mpowerpc64
+-mpowerpc-gpopt  -mpowerpc-gfxopt
+-mmulhw  -mdlmzb  -mmfpgpr  -mvsx
+-mcrypto  -mhtm  -mpower8-fusion  -mpower8-vector
+-mquad-memory  -mquad-memory-atomic  -mfloat128
+-mfloat128-hardware -mprefixed -mpcrel -mmma
 -mrop-protect}
 
 The particular options set for any particular CPU varies between
@@ -35382,9 +35382,9 @@ which options are safe to change and which are not; the safest choice
 is to use exactly the same options when generating and using the
 precompiled header.  The following are known to be safe:
 
-@gccoptlist{-fmessage-length=  -fpreprocessed  -fsched-interblock @gol
--fsched-spec  -fsched-spec-load  -fsched-spec-load-dangerous @gol
--fsched-verbose=@var{number}  -fschedule-insns  -fvisibility= @gol
+@gccoptlist{-fmessage-length=  -fpreprocessed  -fsched-interblock
+-fsched-spec  -fsched-spec-load  -fsched-spec-load-dangerous
+-fsched-verbose=@var{number}  -fschedule-insns  -fvisibility=
 -pedantic-errors}
 
 @item Address space layout randomization (ASLR) can lead to not binary identical
