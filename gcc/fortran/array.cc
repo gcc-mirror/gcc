@@ -967,7 +967,7 @@ gfc_copy_array_spec (gfc_array_spec *src)
 
 
 /* Returns nonzero if the two expressions are equal.
-   We should not need to support more than constant values, as that’s what is
+   We should not need to support more than constant values, as that's what is
    allowed in derived type component array spec.  However, we may create types
    with non-constant array spec for dummy variable class container types, for
    which the _data component holds the array spec of the variable declaration.
@@ -979,7 +979,7 @@ compare_bounds (gfc_expr *bound1, gfc_expr *bound2)
   if (bound1 == NULL || bound2 == NULL
       || bound1->ts.type != BT_INTEGER
       || bound2->ts.type != BT_INTEGER)
-    gfc_internal_error ("gfc_compare_array_spec(): Array spec clobbered");
+    return false;
 
   /* What qualifies as identical bounds?  We could probably just check that the
      expressions are exact clones.  We avoid rewriting a specific comparison
