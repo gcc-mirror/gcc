@@ -2417,6 +2417,7 @@ riscv*-*-linux*)
 	*) echo "Unknown value for enable_multilib"; exit 1
 	esac
 	tmake_file="${tmake_file} riscv/t-riscv riscv/t-linux"
+	tm_defines="${tm_defines} TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
 	gnu_ld=yes
 	gas=yes
 	case $target in
