@@ -7125,7 +7125,8 @@ proc check_effective_target_vect_long_long { } {
 		 && [check_effective_target_s390_vx])
 	     || ([istarget powerpc*-*-*]
 		 && ![istarget powerpc-*-linux*paired*]
-		 && [check_effective_target_has_arch_pwr8]) }}]
+		 && [check_effective_target_has_arch_pwr8])
+	     || [istarget aarch64*-*-*] }}]
 }
 
 
