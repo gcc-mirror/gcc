@@ -4457,8 +4457,9 @@
   {
     if (aarch64_sve_cnt_immediate (operands[1], <MODE>mode))
       std::swap (operands[1], operands[2]);
-    else if (!aarch64_sve_cnt_immediate (operands[2], <MODE>mode)
-	     && TARGET_CSSC)
+    else if (aarch64_sve_cnt_immediate (operands[2], <MODE>mode))
+      ;
+    else if (TARGET_CSSC)
       {
 	if (aarch64_uminmax_immediate (operands[1], <MODE>mode))
 	  std::swap (operands[1], operands[2]);
