@@ -331,13 +331,16 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 		      || initvr.undefined_p ())
 		    return false;
 
-		  tree initvr_min, initvr_max;
+		  tree initvr_type = initvr.type ();
+		  tree initvr_min = wide_int_to_tree (initvr_type,
+						      initvr.lower_bound ());
+		  tree initvr_max = wide_int_to_tree (initvr_type,
+						      initvr.upper_bound ());
 		  tree maxvr_type = maxvr.type ();
 		  tree maxvr_min = wide_int_to_tree (maxvr_type,
 						     maxvr.lower_bound ());
 		  tree maxvr_max = wide_int_to_tree (maxvr_type,
 						     maxvr.upper_bound ());
-		  get_legacy_range (initvr, initvr_min, initvr_max);
 
 		  /* Check if init + nit * step overflows.  Though we checked
 		     scev {init, step}_loop doesn't wrap, it is not enough
