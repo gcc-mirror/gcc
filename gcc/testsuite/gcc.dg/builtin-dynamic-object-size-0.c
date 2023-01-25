@@ -314,6 +314,20 @@ test_dynarray_struct_subobj2 (size_t sz, size_t off, size_t *objsz)
   return __builtin_dynamic_object_size (&bin.c[off], 1);
 }
 
+/* See pr #108522.  */
+size_t
+__attribute__ ((noinline))
+test_dynarray_struct_member (size_t sz)
+{
+  struct
+    {
+      char a[sz];
+      char b;
+    } s;
+
+  return __builtin_dynamic_object_size (&s.b, 0);
+}
+
 size_t
 __attribute__ ((noinline))
 test_substring (size_t sz, size_t off)
@@ -618,6 +632,8 @@ main (int argc, char **argv)
   size_t objsz = 0;
   if (test_dynarray_struct_subobj2 (42, 4, &objsz)
     != objsz - 4 - sizeof (long) - sizeof (int))
+    FAIL ();
+  if (test_dynarray_struct_member (42) != sizeof (char))
     FAIL ();
   if (test_substring_ptrplus (128, 4) != (128 - 4) * sizeof (int))
     FAIL ();

@@ -412,7 +412,9 @@ compute_object_offset (const_tree expr, const_tree var)
 	return base;
 
       t = TREE_OPERAND (expr, 1);
-      off = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (t),
+      off = size_binop (PLUS_EXPR,
+			(TREE_OPERAND (expr, 2) ? TREE_OPERAND (expr, 2)
+			 : DECL_FIELD_OFFSET (t)),
 			size_int (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (t))
 				  / BITS_PER_UNIT));
       break;
