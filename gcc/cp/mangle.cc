@@ -1816,7 +1816,7 @@ write_closure_type_name (const tree type)
       if (abi_warn_or_compat_version_crosses (18))
 	G.need_abi_warning = true;
 
-  write_method_parms (parms, /*method_p=*/1, fn);
+  write_method_parms (parms, TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE, fn);
   write_char ('E');
   if ((LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda)
        != LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda))
