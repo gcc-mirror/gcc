@@ -1,3 +1,27 @@
+2023-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108504
+	* parser.cc (cp_lexer_new_main): Pass C_LEX_STRING_NO_JOIN for first
+	token, too.
+
+2023-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108526
+	* pt.cc (tsubst_function_decl): Handle static lambda.
+
+2023-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108474
+	* cp-gimplify.cc (cp_fold_r): Revert 2023-01-19 changes.
+
+2023-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107303
+	PR c++/107329
+	* cp-gimplify.cc (cp_fold_r) [TARGET_EXPR]: In case of double
+	TARGET_EXPR, keep the outer one instead of the inner one.
+	(maybe_replace_decl): New.
+
 2023-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107267

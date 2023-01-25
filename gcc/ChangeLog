@@ -1,3 +1,73 @@
+2023-01-24  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md:
+	Fix exit from loops detecting references before overwriting in the
+	split pattern.
+
+2023-01-24  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (get_hard_regno): Remove final_p arg.  Always
+	do elimination but only for hard register.
+	(operands_match_p, uses_hard_regs_p, process_alt_operands): Adjust
+	calls of get_hard_regno.
+
+2023-01-24  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390-d.cc (s390_d_target_versions): Fix detection
+	of CPU version.
+
+2023-01-24  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/108177
+	* config/arm/mve.md (mve_vstrbq_p_<supf><mode>, mve_vstrhq_p_fv8hf,
+	mve_vstrhq_p_<supf><mode>, mve_vstrwq_p_<supf>v4si): Add memory operand
+	as input operand.
+
+2023-01-24  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config.gcc(csky-*-linux*): Define CSKY_ENABLE_MULTILIB
+	and only include 'csky/t-csky-linux' when enable multilib.
+	* config/csky/csky-linux-elf.h(SYSROOT_SUFFIX_SPEC): Don't
+	define it when disable multilib.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108500
+	* dominance.h (calculate_dominance_info): Add parameter
+	to indicate fast-query compute, defaulted to true.
+	* dominance.cc (calculate_dominance_info): Honor
+	fast-query compute parameter.
+	* tree-cfgcleanup.cc (cleanup_tree_cfg_noloop): Do
+	not compute the dominator fast-query DFS numbers.
+
+2023-01-24  Eric Biggers  <ebiggers@google.com>
+
+	PR bootstrap/90543
+	* optc-save-gen.awk: Fix copy-and-paste error.
+
+2023-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108474
+	* cgraphbuild.cc: Include gimplify.h.
+	(record_reference): Replace VAR_DECLs with DECL_HAS_VALUE_EXPR_P with
+	their corresponding DECL_VALUE_EXPR expressions after unsharing.
+
+2023-01-24  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/108505
+	* config.gcc (tm_file): Move the variable out of loop.
+
+2023-01-24  Lulu Cheng  <chenglulu@loongson.cn>
+	    Yang Yujie  <yangyujie@loongson.cn>
+
+	PR target/107731
+	* config/loongarch/loongarch.cc (loongarch_classify_address):
+	Add precessint for CONST_INT.
+	(loongarch_print_operand_reloc): Operand modifier 'c' is supported.
+	(loongarch_print_operand): Increase the processing of '%c'.
+	* doc/extend.texi: Adds documents for LoongArch operand modifiers.
+	And port the public operand modifiers information to this document.
+
 2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* doc/invoke.texi (-mbranch-protection): Update documentation.

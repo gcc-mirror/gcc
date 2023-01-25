@@ -1,3 +1,15 @@
+2023-01-24  Co-Authored by: Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libm2cor/Makefile.am (SYSTEM.def): Split path into
+	multiple -I components.
+	* libm2cor/Makefile.in: Rebuild.
+	* libm2min/Makefile.am (SYSTEM.def): Split path into
+	multiple -I components.
+	* libm2min/Makefile.in: Rebuild.
+	* libm2iso/Makefile.am (SYSTEM.def): Split path into
+	multiple -I components.
+	* libm2iso/Makefile.in: Rebuild.
+
 2023-01-23  Richard Biener  <rguenther@suse.de>
 
 	PR modula2/108144

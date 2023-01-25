@@ -1,3 +1,20 @@
+2023-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108530
+	* src/c++20/tzdb.cc (current_zone): Look for DEFAULT_TIMEZONE in
+	/etc/sysconfig/clock.
+
+2023-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102301
+	* include/bits/ranges_base.h: Include <bits/stl_iterator.h> for
+	std::make_reverse_iterator.
+	* include/std/tuple: Include <bits/ranges_util.h> for subrange.
+	(make_from_tuple): Add static assertion from P2255 to diagnose
+	dangling references.
+	* testsuite/20_util/tuple/make_from_tuple/dangling_ref.cc: New test.
+	* testsuite/20_util/tuple/make_from_tuple/tuple_like.cc: New test.
+
 2023-01-23  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_iterator.h (_Safe_iterator<>::_Unchecked): New.

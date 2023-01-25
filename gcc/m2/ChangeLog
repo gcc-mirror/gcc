@@ -1,3 +1,58 @@
+2023-01-24  Co-Authored by: Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Make-lang.in (GM2-COMP-BOOT-DEFS): Add
+	DynamicStringPath.def.
+	(GM2-COMP-BOOT-MODS): Add DynamicStringPath.mod.
+	(GM2-COMP-DEFS): Add DynamicStringPath.def.
+	(GM2-COMP-MODS): Add DynamicStringPath.mod.
+	($(objdir)/m2/gm2-libs-min/SYSTEM.def): Split path into
+	multiple -I components.
+	($(objdir)/m2/gm2-libs/SYSTEM.def): Ditto.
+	($(objdir)/m2/gm2-libs-coroutines/SYSTEM.def): Ditto.
+	* gm2-compiler/M2Options.mod: Import DynamicStringPath.
+	(SetSearchPath): Reimplement using DynamicStringPath
+	procedures.
+	* gm2-compiler/M2Search.def (InitSearchPath): Remove.
+	(PrependSearchPath): Remove.
+	* gm2-compiler/M2Search.mod (SFIO): Remove import.
+	(DynamicStringPath): Add import.
+	(Directory): Remove.
+	(UserPath): Remove.
+	(InitialPath): Remove.
+	(InitSearchPath): Remove.
+	(PrependSearchPath): Remove.
+	(FindSourceFile): Re-implement.
+	(FindSourceDefFile): Re-implement.
+	(FindSourceModFile): Re-implement.
+	* gm2-gcc/init.cc (_M2_DynamicStringPath_init):
+	New prototype.
+	(init_FrontEndInit): Call _M2_DynamicStringPath_init.
+	* tools-src/makeSystem: Allow multiple -I paths.
+	* gm2-compiler/DynamicStringPath.def: New file.
+	* gm2-compiler/DynamicStringPath.mod: New file.
+	* gm2-gcc/m2options.h (M2Options_SetMakeIncludePath): Add
+	prototype.
+
+2023-01-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* m2.flex (cpreprocessor): Add temporary variable
+	which is initialized to 0.
+	(commentCLevel): New variable.
+	(endOfCComment): New function.
+	(splitSlashStar): New function to split /* into / and *
+	tokens.
+	(COMMENTC): New flex state.
+	("/*"): New rule to test whether we should treat /*
+	as a single token or as two tokens.
+	(<COMMENTC>.): New rule to skip a character.
+	(<COMMENTC>\n.*): New rule to consume the line.
+	(<COMMENTC>"*/"): New rule to call endOfCComment.
+
+2023-01-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs-iso/RTco.def: Import RTentity.
+	Declare RTco as a definition for C module.
+
 2023-01-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR modula2/108182

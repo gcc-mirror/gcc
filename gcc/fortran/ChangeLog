@@ -1,3 +1,9 @@
+2023-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108529
+	* simplify.cc (simplify_transformation): Do not try to simplify
+	transformational intrinsic when the ARRAY argument has a NULL shape.
+
 2023-01-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108502
