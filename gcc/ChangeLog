@@ -1,3 +1,12 @@
+2023-01-24  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2022-08-16  Sergei Trofimovich  <siarheit@google.com>
+
+	PR driver/106624
+	* gcc.c (driver::detect_jobserver): Allocate storage xputenv()
+	argument using xstrdup().
+
 2023-01-05  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR target/106736
