@@ -883,6 +883,40 @@ value_relation::apply_transitive (const value_relation &rel)
   return false;
 }
 
+// Create a trio from this value relation given LHS, OP1 and OP2.
+
+relation_trio
+value_relation::create_trio (tree lhs, tree op1, tree op2)
+{
+  relation_kind lhs_1;
+  if (lhs == name1 && op1 == name2)
+    lhs_1 = related;
+  else if (lhs == name2 && op1 == name1)
+    lhs_1 = relation_swap (related);
+  else
+    lhs_1 = VREL_VARYING;
+
+  relation_kind lhs_2;
+  if (lhs == name1 && op2 == name2)
+    lhs_2 = related;
+  else if (lhs == name2 && op2 == name1)
+    lhs_2 = relation_swap (related);
+  else
+    lhs_2 = VREL_VARYING;
+
+  relation_kind op_op;
+  if (op1 == name1 && op2 == name2)
+    op_op = related;
+  else if (op1 == name2 && op2 == name1)
+    op_op = relation_swap (related);
+  else if  (op1 == op2)
+    op_op = VREL_EQ;
+  else
+    op_op = VREL_VARYING;
+
+  return relation_trio (lhs_1, lhs_2, op_op);
+}
+
 // Dump the relation to file F.
 
 void

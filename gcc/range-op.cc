@@ -1460,7 +1460,7 @@ operator_plus::op1_range (irange &r, tree type,
   if (!minus)
     return false;
   bool res = minus.fold_range (r, type, lhs, op2);
-  relation_kind rel = trio.lhs_op2 ();
+  relation_kind rel = trio.lhs_op1 ();
   // Check for a relation refinement.
   if (res)
     adjust_op1_for_overflow (r, op2, rel, true /* PLUS_EXPR */);
@@ -1632,7 +1632,7 @@ operator_minus::op1_range (irange &r, tree type,
   if (!minus)
     return false;
   bool res = minus.fold_range (r, type, lhs, op2);
-  relation_kind rel = trio.lhs_op2 ();
+  relation_kind rel = trio.lhs_op1 ();
   if (res)
     adjust_op1_for_overflow (r, op2, rel, false /* PLUS_EXPR */);
   return res;
