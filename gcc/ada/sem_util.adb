@@ -10017,6 +10017,14 @@ package body Sem_Util is
       then
          return Actual_Subtype (Entity (N));
 
+      --  Similarly, if we have an explicit dereference, then we get the
+      --  actual subtype from the node itself if one has been built.
+
+      elsif Nkind (N) = N_Explicit_Dereference
+        and then Present (Actual_Designated_Subtype (N))
+      then
+         return Actual_Designated_Subtype (N);
+
       --  Actual subtype of unchecked union is always itself. We never need
       --  the "real" actual subtype. If we did, we couldn't get it anyway
       --  because the discriminant is not available. The restrictions on
@@ -10129,6 +10137,14 @@ package body Sem_Util is
         and then Present (Actual_Subtype (Entity (N)))
       then
          return Actual_Subtype (Entity (N));
+
+      --  Similarly, if we have an explicit dereference, then we get the
+      --  actual subtype from the node itself if one has been built.
+
+      elsif Nkind (N) = N_Explicit_Dereference
+        and then Present (Actual_Designated_Subtype (N))
+      then
+         return Actual_Designated_Subtype (N);
 
       --  Otherwise the Etype of N is returned unchanged
 
