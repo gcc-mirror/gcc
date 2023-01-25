@@ -5826,7 +5826,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
   poly_int64 soff, doff;
   unsigned n_executable = 0;
   edge_iterator ei;
-  edge e;
+  edge e, sameval_e = NULL;
 
   /* TODO: We could check for this in initialization, and replace this
      with a gcc_assert.  */
@@ -5867,7 +5867,10 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		 && ssa_undefined_value_p (def, false))
 	  seen_undef = def;
 	else if (sameval == VN_TOP)
-	  sameval = def;
+	  {
+	    sameval = def;
+	    sameval_e = e;
+	  }
 	else if (!expressions_equal_p (def, sameval))
 	  {
 	    /* We know we're arriving only with invariant addresses here,
@@ -5916,6 +5919,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 			    fprintf (dump_file, " are equal on edge %d -> %d\n",
 				     e->src->index, e->dest->index);
 			  }
+			if (sameval_e && (sameval_e->flags & EDGE_DFS_BACK))
+			  sameval = def;
 			continue;
 		      }
 		    /* If on all previous edges the value was equal to def
@@ -5935,7 +5940,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 				     EDGE_PRED (bb, 0)->src->index,
 				     EDGE_PRED (bb, 0)->dest->index);
 			  }
-			sameval = def;
+			if (!(e->flags & EDGE_DFS_BACK))
+			  sameval = def;
 			continue;
 		      }
 		  }
@@ -5943,6 +5949,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	    sameval = NULL_TREE;
 	    break;
 	  }
+	else
+	  sameval_e = NULL;
       }
 
   /* If the value we want to use is flowing over the backedge and we
