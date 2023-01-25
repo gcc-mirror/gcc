@@ -243,5 +243,21 @@ ASTLoweringPattern::visit (AST::RangePattern &pattern)
 			     std::move (upper_bound), pattern.get_locus ());
 }
 
+void
+ASTLoweringPattern::visit (AST::GroupedPattern &pattern)
+{
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  HIR::Pattern *inner
+    = ASTLoweringPattern::translate (pattern.get_pattern_in_parens ().get ());
+
+  translated
+    = new HIR::GroupedPattern (mapping, std::unique_ptr<HIR::Pattern> (inner),
+			       pattern.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust
