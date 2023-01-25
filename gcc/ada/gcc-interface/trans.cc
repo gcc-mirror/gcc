@@ -1945,24 +1945,20 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  /* If this is a dereference and we have a special dynamic constrained
 	     subtype on the prefix, use it to compute the size; otherwise, use
 	     the designated subtype.  */
-	  if (Nkind (gnat_prefix) == N_Explicit_Dereference)
+	  if (Nkind (gnat_prefix) == N_Explicit_Dereference
+	      && Present (Actual_Designated_Subtype (gnat_prefix)))
 	    {
-	      Node_Id gnat_actual_subtype
-		= Actual_Designated_Subtype (gnat_prefix);
+	      tree gnu_actual_obj_type
+		= gnat_to_gnu_type (Actual_Designated_Subtype (gnat_prefix));
 	      tree gnu_ptr_type
 		= TREE_TYPE (gnat_to_gnu (Prefix (gnat_prefix)));
 
-	      if (TYPE_IS_FAT_OR_THIN_POINTER_P (gnu_ptr_type)
-		  && Present (gnat_actual_subtype))
-		{
-		  tree gnu_actual_obj_type
-		    = gnat_to_gnu_type (gnat_actual_subtype);
-		  gnu_type
-		    = build_unc_object_type_from_ptr (gnu_ptr_type,
-						      gnu_actual_obj_type,
-						      get_identifier ("SIZE"),
-						      false);
-		}
+	      if (TYPE_IS_FAT_OR_THIN_POINTER_P (gnu_ptr_type))
+		gnu_type
+		  = build_unc_object_type_from_ptr (gnu_ptr_type,
+						    gnu_actual_obj_type,
+						    get_identifier ("SIZE"),
+						    false);
 	    }
 
 	  gnu_result = TYPE_SIZE (gnu_type);
@@ -7378,13 +7374,13 @@ gnat_to_gnu (Node_Id gnat_node)
       /* Otherwise we need to build the assignment statement manually.  */
       else
 	{
+	  const Node_Id gnat_name = Name (gnat_node);
 	  const Node_Id gnat_expr = Expression (gnat_node);
 	  const Node_Id gnat_inner
 	    = Nkind (gnat_expr) == N_Qualified_Expression
 	      ? Expression (gnat_expr)
 	      : gnat_expr;
-	  const Entity_Id gnat_type
-	    = Underlying_Type (Etype (Name (gnat_node)));
+	  const Entity_Id gnat_type = Underlying_Type (Etype (gnat_name));
 	  const bool use_memset_p
 	    = Is_Array_Type (gnat_type)
 	      && Nkind (gnat_inner) == N_Aggregate
@@ -7409,8 +7405,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	  gigi_checking_assert (!Do_Range_Check (gnat_expr));
 
-	  get_atomic_access (Name (gnat_node), &aa_type, &aa_sync);
-	  get_storage_model_access (Name (gnat_node), &gnat_smo);
+	  get_atomic_access (gnat_name, &aa_type, &aa_sync);
+	  get_storage_model_access (gnat_name, &gnat_smo);
 
 	  /* If an outer atomic access is required on the LHS, build the load-
 	     modify-store sequence.  */
@@ -7427,15 +7423,26 @@ gnat_to_gnu (Node_Id gnat_node)
 	  else if (Present (gnat_smo)
 		   && Present (Storage_Model_Copy_To (gnat_smo)))
 	    {
+	      tree gnu_size;
+
 	      /* We obviously cannot use memset in this case.  */
 	      gcc_assert (!use_memset_p);
 
-	      /* We cannot directly move between nonnative storage models.  */
-	      tree t = remove_conversions (gnu_rhs, false);
-	      gcc_assert (TREE_CODE (t) != LOAD_EXPR);
+	      /* If this is a dereference with a special dynamic constrained
+		 subtype on the node, use it to compute the size.  */
+	      if (Nkind (gnat_name) == N_Explicit_Dereference
+		  && Present (Actual_Designated_Subtype (gnat_name)))
+		{
+		  tree gnu_actual_obj_type
+		    = gnat_to_gnu_type (Actual_Designated_Subtype (gnat_name));
+		  gnu_size = TYPE_SIZE_UNIT (gnu_actual_obj_type);
+		}
+	      else
+		gnu_size = NULL_TREE;
 
 	      gnu_result
-		= build_storage_model_store (gnat_smo, gnu_lhs, gnu_rhs);
+		= build_storage_model_store (gnat_smo, gnu_lhs, gnu_rhs,
+					     gnu_size);
 	    }
 
 	  /* Or else, use memset when the conditions are met.  This has already
