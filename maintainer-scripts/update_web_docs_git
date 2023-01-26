@@ -35,7 +35,7 @@ MANUALS="cpp
   porting"
 
 BUGURL="http://gcc.gnu.org/bugs/"
-CSS=/gcc.css
+CSS=/texinfo-manuals.css
 
 WWWBASE=${WWWBASE:-"/www/gcc/htdocs"}
 WWWBASE_PREFORMATTED=/www/gcc/htdocs-preformatted
