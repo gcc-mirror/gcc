@@ -1,3 +1,67 @@
+2023-01-25  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2023-01-12  Christophe Lyon  <christophe.lyon@arm.com>
+		    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2-extra.c: New
+	test.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2-extra.c: New
+	test.
+	* gcc.target/aarch64/bitfield-abi-warning-align8-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning.h: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2-extra.C: New
+	test.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2-extra.C: New
+	test.
+	* g++.target/aarch64/bitfield-abi-warning-align8-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning.h: New test.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108164
+	* gcc.dg/pr108164.c: New testcase.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108076
+	* gcc.dg/torture/pr108076.c: New testcase.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-11-11  Richard Biener  <rguenther@suse.de>
+		    Nikita Voronov  <nik_1357@mail.ru>
+
+	PR tree-optimization/107554
+	* gcc.dg/pr107554.c: New testcase.
+
+2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108434
+	* gfortran.dg/pr108434.f90: New test.
+
+2023-01-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2022-08-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/106101
+	* gcc.c-torture/compile/pr106101.c: New test.
+
 2023-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/106731

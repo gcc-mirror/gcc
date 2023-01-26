@@ -1,3 +1,83 @@
+2023-01-25  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2023-01-12  Christophe Lyon  <christophe.lyon@arm.com>
+		    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Fix
+	comment.
+	(aarch64_layout_arg): Factorize warning conditions.
+	(aarch64_function_arg_boundary): Fix typo.
+	* function.cc (currently_expanding_function_start): New variable.
+	(expand_function_start): Handle
+	currently_expanding_function_start.
+	* function.h (currently_expanding_function_start): Declare.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108164
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Perform vect_step_op_add update in the appropriate type.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108076
+	* tree-if-conv.cc (if_convertible_loop_p_1): Reject blocks
+	with non-local or forced labels that we later remove
+	labels from.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/107994
+	* gimplify.cc (gimplify_expr): Catch errorneous comparison
+	operand.
+
+2023-01-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-11-11  Richard Biener  <rguenther@suse.de>
+		    Nikita Voronov  <nik_1357@mail.ru>
+
+	PR tree-optimization/107554
+	* tree-ssa-strlen.cc (strlen_pass::count_nonzero_bytes):
+	Use unsigned HOST_WIDE_INT type for the strlen.
+
+2023-01-24  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2022-08-16  Sergei Trofimovich  <siarheit@google.com>
+
+	PR driver/106624
+	* gcc.cc (driver::detect_jobserver): Allocate storage xputenv()
+	argument using xstrdup().
+
+2023-01-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2022-08-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/106101
+	* config/s390/predicates.md (subreg_register_operand): New
+	predicate.
+	* config/s390/s390-protos.h (s390_gen_lowpart_subreg): New
+	function prototype.
+	* config/s390/s390.cc (s390_gen_lowpart_subreg): New function.
+	(s390_expand_insv): Use s390_gen_lowpart_subreg instead of
+	gen_lowpart.
+	* config/s390/s390.md ("*get_tp_64", "*zero_extendhisi2_31")
+	("*zero_extendqisi2_31", "*zero_extendqihi2_31"): Likewise.
+	("movstrictqi", "movstricthi", "movstrictsi"): Use the
+	subreg_register_operand predicate instead of register_operand.
+
 2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/108199
