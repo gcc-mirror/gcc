@@ -2535,7 +2535,7 @@ warn_duplicated_cond_add_or_warn (location_t loc, tree cond, vec<tree> **chain)
   if (*chain == NULL)
     return;
 
-  if (TREE_SIDE_EFFECTS (cond))
+  if (TREE_SIDE_EFFECTS (cond) || instantiation_dependent_expression_p (cond))
     {
       /* Uh-oh!  This condition has a side-effect, thus invalidates
 	 the whole chain.  */

@@ -1101,6 +1101,7 @@ extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
 extern int maybe_adjust_arg_pos_for_attribute (const_tree);
+extern bool instantiation_dependent_expression_p (tree);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
