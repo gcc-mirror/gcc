@@ -681,9 +681,6 @@ frange::operator== (const frange &src) const
       if (varying_p ())
 	return types_compatible_p (m_type, src.m_type);
 
-      if (known_isnan () || src.known_isnan ())
-	return false;
-
       return (real_identical (&m_min, &src.m_min)
 	      && real_identical (&m_max, &src.m_max)
 	      && m_pos_nan == src.m_pos_nan
@@ -3800,13 +3797,6 @@ range_tests_nan ()
       r0.union_ (r1);
       ASSERT_TRUE (r0.maybe_isnan ());
     }
-
-  // NAN ranges are not equal to each other.
-  r0.set_nan (float_type_node);
-  r1 = r0;
-  ASSERT_FALSE (r0 == r1);
-  ASSERT_FALSE (r0 == r0);
-  ASSERT_TRUE (r0 != r0);
 
   // [5,6] U NAN = [5,6] NAN.
   r0 = frange_float ("5", "6");
