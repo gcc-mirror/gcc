@@ -1366,8 +1366,27 @@ package body Sem_Attr is
          --  yet on its definite context.
 
          if Inside_Class_Condition_Preanalysis then
-            Legal   := True;
-            Spec_Id := Current_Scope;
+            Legal := True;
+
+            --  Search for the subprogram that has this class-wide condition;
+            --  required to avoid reporting spurious errors since the current
+            --  scope may not be appropriate because the attribute may be
+            --  referenced from the inner scope of, for example, quantified
+            --  expressions.
+
+            --  Although the expression is not installed on its definite
+            --  context, we know that the subprogram has been placed in the
+            --  scope stack by Preanalyze_Condition; we also know that it is
+            --  not a generic subprogram since class-wide pre/postconditions
+            --  can only be applied for primitive operations of tagged types.
+
+            if Is_Subprogram (Current_Scope) then
+               Spec_Id := Current_Scope;
+            else
+               Spec_Id := Enclosing_Subprogram (Current_Scope);
+            end if;
+
+            pragma Assert (Is_Dispatching_Operation (Spec_Id));
             return;
          end if;
 
