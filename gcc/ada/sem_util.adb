@@ -477,7 +477,7 @@ package body Sem_Util is
       --  this breaks the name resolution mechanism for generic instances.
 
       if not Expander_Active
-        and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
+        and not (GNATprove_Mode and not Inside_A_Generic)
       then
          return;
       end if;
