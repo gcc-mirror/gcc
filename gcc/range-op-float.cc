@@ -607,6 +607,10 @@ foperator_equal::fold_range (irange &r, tree type,
     {
       if (op1 == op2)
 	r = range_true (type);
+      // If one operand is -0.0 and other 0.0, they are still equal.
+      else if (real_iszero (&op1.lower_bound ())
+	       && real_iszero (&op2.lower_bound ()))
+	r = range_true (type);
       else
 	r = range_false (type);
     }
@@ -617,7 +621,18 @@ foperator_equal::fold_range (irange &r, tree type,
       frange tmp = op1;
       tmp.intersect (op2);
       if (tmp.undefined_p ())
-	r = range_false (type);
+	{
+	  // If one range is [whatever, -0.0] and another
+	  // [0.0, whatever2], we don't know anything either,
+	  // because -0.0 == 0.0.
+	  if ((real_iszero (&op1.upper_bound ())
+	       && real_iszero (&op2.lower_bound ()))
+	      || (real_iszero (&op1.lower_bound ())
+		  && real_iszero (&op2.upper_bound ())))
+	    r = range_true_and_false (type);
+	  else
+	    r = range_false (type);
+	}
       else
 	r = range_true_and_false (type);
     }
@@ -708,10 +723,14 @@ foperator_not_equal::fold_range (irange &r, tree type,
   // consist of a single value, and then compare them.
   else if (op1.singleton_p () && op2.singleton_p ())
     {
-      if (op1 != op2)
-	r = range_true (type);
-      else
+      if (op1 == op2)
 	r = range_false (type);
+      // If one operand is -0.0 and other 0.0, they are still equal.
+      else if (real_iszero (&op1.lower_bound ())
+	       && real_iszero (&op2.lower_bound ()))
+	r = range_false (type);
+      else
+	r = range_true (type);
     }
   else if (!maybe_isnan (op1, op2))
     {
@@ -720,7 +739,18 @@ foperator_not_equal::fold_range (irange &r, tree type,
       frange tmp = op1;
       tmp.intersect (op2);
       if (tmp.undefined_p ())
-	r = range_true (type);
+	{
+	  // If one range is [whatever, -0.0] and another
+	  // [0.0, whatever2], we don't know anything either,
+	  // because -0.0 == 0.0.
+	  if ((real_iszero (&op1.upper_bound ())
+	       && real_iszero (&op2.lower_bound ()))
+	      || (real_iszero (&op1.lower_bound ())
+		  && real_iszero (&op2.upper_bound ())))
+	    r = range_true_and_false (type);
+	  else
+	    r = range_true (type);
+	}
       else
 	r = range_true_and_false (type);
     }
