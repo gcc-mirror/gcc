@@ -315,17 +315,68 @@ test_dynarray_struct_subobj2 (size_t sz, size_t off, size_t *objsz)
 }
 
 /* See pr #108522.  */
+
+#define DEFSTRUCT(_s, _n) \
+  struct DS								      \
+    {									      \
+      char a[_n];							      \
+      unsigned long long b;						      \
+      int c;								      \
+      char d[2 * _n];							      \
+    } _s
+
 size_t
 __attribute__ ((noinline))
-test_dynarray_struct_member (size_t sz)
+test_dynarray_struct_member_b (size_t sz)
 {
-  struct
-    {
-      char a[sz];
-      char b;
-    } s;
+  DEFSTRUCT (s, sz);
 
   return __builtin_dynamic_object_size (&s.b, 0);
+}
+
+size_t
+__attribute__ ((noinline))
+test_dynarray_struct_member_c (size_t sz)
+{
+  DEFSTRUCT (s, sz);
+
+  return __builtin_dynamic_object_size (&s.c, 0);
+}
+
+size_t
+__attribute__ ((noinline))
+test_dynarray_struct_member_d (size_t sz, size_t offset)
+{
+  DEFSTRUCT (s, sz);
+
+  return __builtin_dynamic_object_size (&s.d[offset], 0);
+}
+
+size_t
+__attribute__ ((noinline))
+test_dynarray_struct_member_subobj_b (size_t sz)
+{
+  DEFSTRUCT (s, sz);
+
+  return __builtin_dynamic_object_size (&s.b, 1);
+}
+
+size_t
+__attribute__ ((noinline))
+test_dynarray_struct_member_subobj_c (size_t sz)
+{
+  DEFSTRUCT (s, sz);
+
+  return __builtin_dynamic_object_size (&s.c, 1);
+}
+
+size_t
+__attribute__ ((noinline))
+test_dynarray_struct_member_subobj_d (size_t sz, size_t offset)
+{
+  DEFSTRUCT (s, sz);
+
+  return __builtin_dynamic_object_size (&s.d[offset], 1);
 }
 
 size_t
@@ -633,7 +684,23 @@ main (int argc, char **argv)
   if (test_dynarray_struct_subobj2 (42, 4, &objsz)
     != objsz - 4 - sizeof (long) - sizeof (int))
     FAIL ();
-  if (test_dynarray_struct_member (42) != sizeof (char))
+  DEFSTRUCT(ds, 64);
+  const size_t n = sizeof (ds.a);
+  if (test_dynarray_struct_member_b (n)
+      != sizeof (ds) - __builtin_offsetof (struct DS, b))
+    FAIL ();
+  if (test_dynarray_struct_member_c (n)
+      != sizeof (ds) - __builtin_offsetof (struct DS, c))
+    FAIL ();
+  if (test_dynarray_struct_member_d (n, 0)
+      != sizeof (ds) - __builtin_offsetof (struct DS, d))
+    FAIL ();
+  if (test_dynarray_struct_member_subobj_b (n) != sizeof (ds.b))
+    FAIL ();
+  if (test_dynarray_struct_member_subobj_c (n) != sizeof (ds.c))
+    FAIL ();
+  if (test_dynarray_struct_member_subobj_d (n, n - 2)
+      != sizeof (ds) - __builtin_offsetof (struct DS, d) - n + 2)
     FAIL ();
   if (test_substring_ptrplus (128, 4) != (128 - 4) * sizeof (int))
     FAIL ();
