@@ -1667,21 +1667,23 @@ namespace std::chrono
     if (ifstream tzf{"/etc/sysconfig/clock"})
       {
 	string line;
-	string_view key = "DEFAULT_TIMEZONE=";
+	// Old versions of Suse use TIMEZONE. Old versions of RHEL use ZONE.
+	const string_view keys[] = { "TIMEZONE=" , "ZONE=" };
 	while (std::getline(tzf, line))
-	  if (line.starts_with(key))
-	    {
-	      string_view name = line;
-	      name.remove_prefix(key.size());
-	      if (name.size() != 0 && name.front() == '"')
-		{
-		  name.remove_prefix(1);
-		  if (auto pos = name.find('"'); pos != name.npos)
-		    name = name.substr(0, pos);
-		}
-	      if (auto tz = do_locate_zone(this->zones, this->links, name))
-		return tz;
-	    }
+	  for (string_view key : keys)
+	    if (line.starts_with(key))
+	      {
+		string_view name = line;
+		name.remove_prefix(key.size());
+		if (name.size() != 0 && name.front() == '"')
+		  {
+		    name.remove_prefix(1);
+		    if (auto pos = name.find('"'); pos != name.npos)
+		      name = name.substr(0, pos);
+		  }
+		if (auto tz = do_locate_zone(this->zones, this->links, name))
+		  return tz;
+	      }
       }
 #else
     // AIX stores current zone in $TZ in /etc/environment but the value
