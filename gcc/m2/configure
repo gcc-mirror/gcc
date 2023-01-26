@@ -3645,7 +3645,7 @@ $as_echo "#define HAVE_OPENDIR 1" >>confdefs.h
 
 fi
 
-ac_config_headers="$ac_config_headers gm2config.h"
+ac_config_headers="$ac_config_headers gm2config.aci"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4319,7 +4319,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "gm2config.h") CONFIG_HEADERS="$CONFIG_HEADERS gm2config.h" ;;
+    "gm2config.aci") CONFIG_HEADERS="$CONFIG_HEADERS gm2config.aci" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -4630,7 +4630,7 @@ $as_echo "$as_me: $ac_file is unchanged" >&6;}
 
 
   case $ac_file$ac_mode in
-    "gm2config.h":H) echo timestamp > stamp-h ;;
+    "gm2config.aci":H) echo timestamp > stamp-h ;;
 
   esac
 done # for ac_tag

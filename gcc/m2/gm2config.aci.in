@@ -1,4 +1,4 @@
-/* gm2config.h.in.  Generated from configure.ac by autoheader.  */
+/* gm2config.aci.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */

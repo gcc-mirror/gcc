@@ -347,6 +347,7 @@ END DebugSetNumbers ;
                    lists.
 *)
 
+(*
 PROCEDURE AddSymToWatch (sym: WORD) ;
 BEGIN
    IF (sym#NulSym) AND (NOT IsElementInSet(WatchList, sym))
@@ -357,6 +358,7 @@ BEGIN
       FIO.FlushBuffer(FIO.StdOut)
    END
 END AddSymToWatch ;
+*)
 
 
 (*

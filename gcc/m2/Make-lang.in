@@ -1503,7 +1503,10 @@ m2/gm2-libs/gm2-libs-host.h:
 # Autoconf inserts -DCROSS_DIRECTORY_STRUCTURE if we are building a
 # cross compiler and the ../Makefile.in above appends this to INTERNAL_CFLAGS.
 
-m2/gm2config.h:
+m2/gm2config.h: m2/gm2config.aci
+	grep -v define\ PACKAGE_ $< > $@
+
+m2/gm2config.aci:
 	NEW_SRCDIR=`${srcdir}/m2/tools-src/calcpath ../ ${srcdir} m2` ; \
         export NEW_SRCDIR ; \
 	cd m2 ; \
