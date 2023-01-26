@@ -2498,12 +2498,31 @@ package body Exp_Imgv is
       Attr_Name : Name_Id;
       Str_Typ   : Entity_Id)
    is
+      Ptyp : Entity_Id;
+
    begin
+      Ptyp := Etype (Pref);
+
+      --  If the prefix is a component that depends on a discriminant, then
+      --  create an actual subtype for it.
+
+      if Nkind (Pref) = N_Selected_Component then
+         declare
+            Decl : constant Node_Id :=
+                     Build_Actual_Subtype_Of_Component (Ptyp, Pref);
+         begin
+            if Present (Decl) then
+               Insert_Action (N, Decl);
+               Ptyp := Defining_Identifier (Decl);
+            end if;
+         end;
+      end if;
+
       Rewrite (N,
         Make_Attribute_Reference (Sloc (N),
-          Prefix         => New_Occurrence_Of (Etype (Pref), Sloc (N)),
+          Prefix         => New_Occurrence_Of (Ptyp, Sloc (N)),
           Attribute_Name => Attr_Name,
-          Expressions    => New_List (Relocate_Node (Pref))));
+          Expressions    => New_List (Unchecked_Convert_To (Ptyp, Pref))));
 
       Analyze_And_Resolve (N, Str_Typ);
    end Rewrite_Object_Image;
