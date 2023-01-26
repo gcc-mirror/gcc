@@ -1,3 +1,10 @@
+2023-01-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-01-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/install.texi (amdgcn, nvptx): Require newlib 4.3.0.
+
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* collect2.cc (write_c_file_glob): Allow for
