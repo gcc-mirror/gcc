@@ -405,12 +405,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Base_ptr _M_node;
     };
 
+  __attribute__((__nonnull__))
   void
   _Rb_tree_insert_and_rebalance(const bool __insert_left,
 				_Rb_tree_node_base* __x,
 				_Rb_tree_node_base* __p,
 				_Rb_tree_node_base& __header) throw ();
 
+  __attribute__((__nonnull__,__returns_nonnull__))
   _Rb_tree_node_base*
   _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* const __z,
 			       _Rb_tree_node_base& __header) throw ();
