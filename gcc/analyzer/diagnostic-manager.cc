@@ -88,6 +88,7 @@ public:
 
   std::unique_ptr<exploded_path>
   get_best_epath (const exploded_node *target_enode,
+		  const pending_diagnostic &pd,
 		  const char *desc, unsigned diag_idx,
 		  std::unique_ptr<feasibility_problem> *out_problem);
 
@@ -96,12 +97,14 @@ private:
 
   std::unique_ptr<exploded_path>
   explore_feasible_paths (const exploded_node *target_enode,
+			  const pending_diagnostic &pd,
 			  const char *desc, unsigned diag_idx);
   bool
   process_worklist_item (feasible_worklist *worklist,
 			 const trimmed_graph &tg,
 			 feasible_graph *fg,
 			 const exploded_node *target_enode,
+			 const pending_diagnostic &pd,
 			 unsigned diag_idx,
 			 std::unique_ptr<exploded_path> *out_best_path) const;
   void dump_trimmed_graph (const exploded_node *target_enode,
@@ -138,6 +141,7 @@ private:
 
 std::unique_ptr<exploded_path>
 epath_finder::get_best_epath (const exploded_node *enode,
+			      const pending_diagnostic &pd,
 			      const char *desc, unsigned diag_idx,
 			      std::unique_ptr<feasibility_problem> *out_problem)
 {
@@ -161,7 +165,7 @@ epath_finder::get_best_epath (const exploded_node *enode,
       if (logger)
 	logger->log ("trying to find shortest feasible path");
       if (std::unique_ptr<exploded_path> epath
-	    = explore_feasible_paths (enode, desc, diag_idx))
+	    = explore_feasible_paths (enode, pd, desc, diag_idx))
 	{
 	  if (logger)
 	    logger->log ("accepting %qs at EN: %i, SN: %i (sd: %i)"
@@ -374,6 +378,7 @@ private:
 
 std::unique_ptr<exploded_path>
 epath_finder::explore_feasible_paths (const exploded_node *target_enode,
+				      const pending_diagnostic &pd,
 				      const char *desc, unsigned diag_idx)
 {
   logger *logger = get_logger ();
@@ -415,8 +420,8 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
   {
     auto_checking_feasibility sentinel (mgr);
 
-    while (process_worklist_item (&worklist, tg, &fg, target_enode, diag_idx,
-				  &best_path))
+    while (process_worklist_item (&worklist, tg, &fg, target_enode, pd,
+				  diag_idx, &best_path))
       {
 	/* Empty; the work is done within process_worklist_item.  */
       }
@@ -449,7 +454,10 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
    Return false if the processing of the worklist should stop
    (either due to reaching TARGET_ENODE, or hitting a limit).
    Write to *OUT_BEST_PATH if stopping due to finding a feasible path
-   to TARGET_ENODE.  */
+   to TARGET_ENODE.
+   Use PD to provide additional restrictions on feasibility of
+   the final path in the feasible_graph before converting to
+   an exploded_path.  */
 
 bool
 epath_finder::
@@ -457,6 +465,7 @@ process_worklist_item (feasible_worklist *worklist,
 		       const trimmed_graph &tg,
 		       feasible_graph *fg,
 		       const exploded_node *target_enode,
+		       const pending_diagnostic &pd,
 		       unsigned diag_idx,
 		       std::unique_ptr<exploded_path> *out_best_path) const
 {
@@ -514,6 +523,13 @@ process_worklist_item (feasible_worklist *worklist,
 			     " (length: %i)",
 			     target_enode->m_index, diag_idx,
 			     succ_fnode->get_path_length ());
+	      if (!pd.check_valid_fpath_p (succ_fnode))
+		{
+		  if (logger)
+		    logger->log ("rejecting feasible path due to"
+				 " pending_diagnostic");
+		  return false;
+		}
 	      *out_best_path = fg->make_epath (succ_fnode);
 	      if (flag_dump_analyzer_feasibility)
 		dump_feasible_path (target_enode, diag_idx, *fg, *succ_fnode);
@@ -808,7 +824,7 @@ saved_diagnostic::calc_best_epath (epath_finder *pf)
   LOG_SCOPE (logger);
   m_problem = NULL;
 
-  m_best_epath = pf->get_best_epath (m_enode, m_d->get_kind (), m_idx,
+  m_best_epath = pf->get_best_epath (m_enode, *m_d, m_d->get_kind (), m_idx,
 				     &m_problem);
 
   /* Handle failure to find a feasible path.  */

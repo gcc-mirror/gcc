@@ -126,6 +126,8 @@ class call_summary_replay;
 struct per_function_data;
 struct interesting_t;
 
+class feasible_node;
+
 /* Forward decls of functions.  */
 
 extern void dump_tree (pretty_printer *pp, tree t);

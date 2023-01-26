@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/exploded-graph.h"
 #include "make-unique.h"
 #include "analyzer/checker-path.h"
+#include "analyzer/feasible-graph.h"
 
 /* A subclass of pending_diagnostic for complaining about suspected
    infinite recursion.  */
@@ -199,7 +200,106 @@ public:
 	NULL, NULL, NULL));
   }
 
+  /* Reject paths in which conjured svalues have affected control flow
+     since m_prev_entry_enode.  */
+
+  bool check_valid_fpath_p (const feasible_node *final_fnode)
+    const final override
+  {
+    /* Reject paths in which calls with unknown side effects have occurred
+       since m_prev_entry_enode.
+       Find num calls with side effects.  Walk backward until we reach the
+       pref */
+    gcc_assert (final_fnode->get_inner_node () == m_new_entry_enode);
+
+    /* FG is actually a tree.  Walk backwards from FINAL_FNODE until we
+       reach the prev_entry_enode (or the origin).  */
+    const feasible_node *iter_fnode = final_fnode;
+    while (iter_fnode->get_inner_node ()->m_index != 0)
+      {
+	gcc_assert (iter_fnode->m_preds.length () == 1);
+
+	feasible_edge *pred_fedge
+	  = static_cast <feasible_edge *> (iter_fnode->m_preds[0]);
+
+	/* Determine if conjured svalues have affected control flow
+	   since the prev entry node.  */
+	if (fedge_uses_conjured_svalue_p (pred_fedge))
+	  /* If so, then reject this diagnostic.  */
+	  return false;
+	iter_fnode = static_cast <feasible_node *> (pred_fedge->m_src);
+	if (iter_fnode->get_inner_node () == m_prev_entry_enode)
+	  /* Accept this diagnostic.  */
+	  return true;
+    }
+
+    /* We shouldn't get here; if we do, reject the diagnostic.  */
+    gcc_unreachable ();
+    return false;
+  }
+
 private:
+  /* Return true iff control flow along FEDGE was affected by
+     a conjured_svalue.  */
+  static bool fedge_uses_conjured_svalue_p (feasible_edge *fedge)
+  {
+    const exploded_edge *eedge = fedge->get_inner_edge ();
+    const superedge *sedge = eedge->m_sedge;
+    if (!sedge)
+      return false;
+    const cfg_superedge *cfg_sedge = sedge->dyn_cast_cfg_superedge ();
+    if (!cfg_sedge)
+      return false;
+    const gimple *last_stmt = sedge->m_src->get_last_stmt ();
+    if (!last_stmt)
+      return false;
+
+    const feasible_node *dst_fnode
+      = static_cast<const feasible_node *> (fedge->m_dest);
+    const region_model &model = dst_fnode->get_state ().get_model ();
+
+    if (const gcond *cond_stmt = dyn_cast <const gcond *> (last_stmt))
+      {
+	if (expr_uses_conjured_svalue_p (model, gimple_cond_lhs (cond_stmt)))
+	  return true;
+	if (expr_uses_conjured_svalue_p (model, gimple_cond_rhs (cond_stmt)))
+	  return true;
+      }
+    else if (const gswitch *switch_stmt
+	       = dyn_cast <const gswitch *> (last_stmt))
+      {
+	if (expr_uses_conjured_svalue_p (model,
+					 gimple_switch_index (switch_stmt)))
+	  return true;
+      }
+    return false;
+  }
+
+  /* Return true iff EXPR is affected by a conjured_svalue.  */
+  static bool expr_uses_conjured_svalue_p (const region_model &model,
+					   tree expr)
+  {
+    class conjured_svalue_finder : public visitor
+    {
+    public:
+      conjured_svalue_finder () : m_found_conjured_svalues (false)
+      {
+      }
+      void
+      visit_conjured_svalue (const conjured_svalue *) final override
+      {
+	m_found_conjured_svalues = true;
+      }
+
+      bool m_found_conjured_svalues;
+    };
+
+    const svalue *sval = model.get_rvalue (expr, NULL);
+    conjured_svalue_finder v;
+    sval->accept (&v);
+    return v.m_found_conjured_svalues;
+  }
+
   const exploded_node *m_prev_entry_enode;
   const exploded_node *m_new_entry_enode;
   tree m_callee_fndecl;

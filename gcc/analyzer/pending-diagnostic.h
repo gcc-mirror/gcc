@@ -347,6 +347,15 @@ class pending_diagnostic
   {
     /* Default no-op implementation.  */
   }
+
+  /* Vfunc to give diagnostic subclasses the opportunity to reject diagnostics
+     by imposing their own additional feasibility checks on the path to a
+     given feasible_node.  */
+  virtual bool check_valid_fpath_p (const feasible_node *) const
+  {
+    /* Default implementation: accept this path.  */
+    return true;
+  }
 };
 
 /* A template to make it easier to make subclasses of pending_diagnostic.
