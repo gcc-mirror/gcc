@@ -73,10 +73,10 @@ The runtime support library for atomic operations (e.g.@: for @code{__sync}
 and @code{__atomic}).
 
 @item libbacktrace
-A library that allows gcc to produce backtraces when it crashes.
+A library that allows GCC to produce backtraces when it crashes.
 
 @item libcc1
-A library that allows gdb to make use of the compiler.
+A library that allows GDB to make use of the compiler.
 
 @item libcody
 A compiler dynamism library to allow communication between compilers and
