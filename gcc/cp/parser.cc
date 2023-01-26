@@ -43039,6 +43039,7 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
 {
   tree begin, end, range_temp_decl = NULL_TREE;
   tree iter_type, begin_expr, end_expr;
+  bool clear_has_value_expr = false;
 
   if (processing_template_decl)
     {
@@ -43185,6 +43186,8 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
 	      ++processing_template_decl;
 	      cp_finish_decomp (orig_decl, decomp_first_name, decomp_cnt);
 	      --processing_template_decl;
+	      if (!processing_template_decl)
+		clear_has_value_expr = true;
 	    }
 	}
     }
@@ -43193,8 +43196,20 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
   TREE_VEC_ELT (v, 0) = range_temp_decl;
   TREE_VEC_ELT (v, 1) = end;
   TREE_VEC_ELT (v, 2) = orig_decl;
+  if (clear_has_value_expr)
+    TREE_PUBLIC (v) = 1;
   for (unsigned i = 0; i < decomp_cnt; i++)
     {
+      if (clear_has_value_expr)
+	{
+	  /* If cp_finish_decomp was called with processing_template_decl
+	     temporarily set to 1, then decomp names will have deduced
+	     name but the DECL_VALUE_EXPR will be dependent.  Hide those
+	     from folding of other loop initializers e.g. for warning
+	     purposes until cp_finish_omp_range_for.  */
+	  gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (decomp_first_name));
+	  DECL_HAS_VALUE_EXPR_P (decomp_first_name) = 0;
+	}
       TREE_VEC_ELT (v, i + 3) = decomp_first_name;
       decomp_first_name = DECL_CHAIN (decomp_first_name);
     }
@@ -43217,6 +43232,18 @@ cp_finish_omp_range_for (tree orig, tree begin)
     {
       decomp_first_name = TREE_VEC_ELT (TREE_CHAIN (orig), 3);
       decomp_cnt = TREE_VEC_LENGTH (TREE_CHAIN (orig)) - 3;
+      if (TREE_PUBLIC (TREE_CHAIN (orig)))
+	{
+	  /* Undo temporary clearing of DECL_HAS_VALUE_EXPR_P done
+	     by cp_convert_omp_range_for above.  */
+	  TREE_PUBLIC (TREE_CHAIN (orig)) = 0;
+	  tree d = decomp_first_name;
+	  for (unsigned i = 0; i < decomp_cnt; i++)
+	    {
+	      DECL_HAS_VALUE_EXPR_P (d) = 1;
+	      d = DECL_CHAIN (d);
+	    }
+	}
       cp_maybe_mangle_decomp (decl, decomp_first_name, decomp_cnt);
     }
 
