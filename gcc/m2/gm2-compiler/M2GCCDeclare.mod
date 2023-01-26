@@ -105,7 +105,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsAModula2Type, UsesVarArgs,
                         GetSymName, GetParent,
                         GetDeclaredMod, GetVarBackEndType,
-                        GetProcedureBeginEnd,
+                        GetProcedureBeginEnd, IsProcedureNoReturn,
                         GetString, GetStringLength, IsConstString,
                         IsConstStringM2, IsConstStringC, IsConstStringM2nul, IsConstStringCnul,
                         GetAlignment, IsDeclaredPacked, PutDeclaredPacked,
@@ -2347,6 +2347,7 @@ END IsExternalToWholeProgram ;
 
 PROCEDURE DeclareProcedureToGccWholeProgram (Sym: CARDINAL) ;
 VAR
+   returnType,
    GccParam  : Tree ;
    scope,
    Son,
@@ -2391,20 +2392,17 @@ BEGIN
       PushBinding(scope) ;
       IF GetSType(Sym)=NulSym
       THEN
-         PreAddModGcc(Sym, BuildEndFunctionDeclaration(begin, end,
-                                                       KeyToCharStar(GetFullSymName(Sym)),
-                                                       NIL,
-                                                       IsExternalToWholeProgram(Sym),
-                                                       IsProcedureGccNested(Sym),
-                                                       IsExported(GetModuleWhereDeclared(Sym), Sym)))
+         returnType := NIL
       ELSE
-         PreAddModGcc(Sym, BuildEndFunctionDeclaration(begin, end,
-                                                       KeyToCharStar(GetFullSymName(Sym)),
-                                                       Mod2Gcc(GetSType(Sym)),
-                                                       IsExternalToWholeProgram(Sym),
-                                                       IsProcedureGccNested(Sym),
-                                                       IsExported(GetModuleWhereDeclared(Sym), Sym)))
+         returnType := Mod2Gcc(GetSType(Sym))
       END ;
+      PreAddModGcc(Sym, BuildEndFunctionDeclaration(begin, end,
+                                                    KeyToCharStar(GetFullSymName(Sym)),
+                                                    returnType,
+                                                    IsExternalToWholeProgram(Sym),
+                                                    IsProcedureGccNested(Sym),
+                                                    IsExported(GetModuleWhereDeclared(Sym), Sym),
+                                                    IsProcedureNoReturn(Sym))) ;
       PopBinding(scope) ;
       WatchRemoveList(Sym, todolist) ;
       WatchIncludeList(Sym, fullydeclared)
@@ -2481,7 +2479,8 @@ BEGIN
                                                       IsExternal (Sym),  (* Extern relative to the main module.  *)
                                                       IsProcedureGccNested (Sym),
                                                       (* Exported from the module where it was declared.  *)
-                                                      IsExported (GetModuleWhereDeclared (Sym), Sym) OR IsExtern (Sym))) ;
+                                                      IsExported (GetModuleWhereDeclared (Sym), Sym) OR IsExtern (Sym),
+                                                      IsProcedureNoReturn(Sym))) ;
       PopBinding(scope) ;
       WatchRemoveList(Sym, todolist) ;
       WatchIncludeList(Sym, fullydeclared)

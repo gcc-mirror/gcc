@@ -2469,6 +2469,7 @@ BEGIN
             }
             catch (...) {
                RTExceptions_DefaultErrorCatch ();
+               return 0;
             }
          }
       *)
@@ -2492,10 +2493,11 @@ BEGIN
       PushTtok (RequestSym (tokno, MakeKey ("envp")), tokno) ;
       PushT (3) ;
       BuildProcedureCall (tokno) ;
-
       PushZero (tokno, Integer) ;
       BuildReturn (tokno) ;
       BuildExcept (tokno) ;
+      PushZero (tokno, Integer) ;
+      BuildReturn (tokno) ;
       EndScope ;
       BuildProcedureEnd ;
       PopN (1)

@@ -108,6 +108,7 @@ FROM SymbolTable IMPORT NulSym,
                         ParametersDefinedInDefinition,
                         ParametersDefinedInImplementation,
                         ProcedureParametersDefined,
+                        PutProcedureNoReturn,
                         CheckForUnImplementedExports,
                         CheckForUndeclaredExports,
                         IsHiddenTypeDeclared,
@@ -2096,6 +2097,17 @@ BEGIN
 *)
    PushT(ProcSym)
 END BuildOptFunction ;
+
+
+(*
+   BuildNoReturnAttribute - provide an interface to the symbol table module.
+*)
+
+PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
+BEGIN
+   Assert (IsProcedure (procedureSym)) ;
+   PutProcedureNoReturn (procedureSym, TRUE)
+END BuildNoReturnAttribute ;
 
 
 (*

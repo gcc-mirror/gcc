@@ -864,6 +864,13 @@ PROCEDURE EndBuildProcedure ;
 
 
 (*
+   BuildNoReturnAttribute - provide an interface to the symbol table module.
+*)
+
+PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
+
+
+(*
    BuildPointerType - builds a pointer type.
                       The Stack:
 

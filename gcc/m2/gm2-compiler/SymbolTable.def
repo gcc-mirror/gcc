@@ -191,6 +191,7 @@ EXPORT QUALIFIED NulSym,
                  PutProcedureEndQuad,
                  PutProcedureScopeQuad,
                  PutProcedureReachable,
+                 PutProcedureNoReturn, IsProcedureNoReturn,
                  PutReadQuad, RemoveReadQuad,
                  PutWriteQuad, RemoveWriteQuad,
                  PutGnuAsm, PutGnuAsmOutput, PutGnuAsmInput, PutGnuAsmTrash,
@@ -1274,7 +1275,7 @@ PROCEDURE PutProcedureInline (Sym: CARDINAL) ;
 
 
 (*
-   IsProcedureBuiltin - returns TRUE if this procedure was declared as inlined.
+   IsProcedureInline - returns TRUE if this procedure was declared as inlined.
 *)
 
 PROCEDURE IsProcedureInline (Sym: CARDINAL) : BOOLEAN ;
@@ -1634,6 +1635,21 @@ PROCEDURE PutProcedureReachable (Sym: CARDINAL) ;
 *)
 
 PROCEDURE IsProcedureReachable (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutProcedureNoReturn - places value into the no return attribute
+                          field of procedure sym.
+*)
+
+PROCEDURE PutProcedureNoReturn (Sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsProcedureNoReturn - returns TRUE if this procedure never returns.
+*)
+
+PROCEDURE IsProcedureNoReturn (Sym: CARDINAL) : BOOLEAN ;
 
 
 (*

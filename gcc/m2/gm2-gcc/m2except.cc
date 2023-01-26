@@ -103,18 +103,19 @@ m2except_InitExceptions (location_t location)
 
   m2decl_BuildStartFunctionDeclaration (FALSE);
   fn_rethrow_tree = m2decl_BuildEndFunctionDeclaration (
-      location, location, "__cxa_rethrow", void_type_node, TRUE, FALSE, TRUE);
+     location, location, "__cxa_rethrow", void_type_node, TRUE, FALSE,
+     TRUE, FALSE);
   TREE_NOTHROW (fn_rethrow_tree) = 0;
 
   m2decl_BuildStartFunctionDeclaration (FALSE);
   m2decl_BuildParameterDeclaration (location, NULL, ptr_type_node, FALSE);
   fn_begin_catch_tree = m2decl_BuildEndFunctionDeclaration (
       location, location, "__cxa_begin_catch", ptr_type_node, TRUE, FALSE,
-      TRUE);
+      TRUE, FALSE);
   m2decl_BuildStartFunctionDeclaration (FALSE);
   fn_end_catch_tree = m2decl_BuildEndFunctionDeclaration (
       location, location, "__cxa_end_catch", void_type_node, TRUE, FALSE,
-      TRUE);
+      TRUE, FALSE);
   /* This can throw if the destructor for the exception throws.  */
   TREE_NOTHROW (fn_end_catch_tree) = 0;
 
@@ -130,26 +131,28 @@ m2except_InitExceptions (location_t location)
   m2decl_BuildParameterDeclaration (location, NULL, ptr_type_node, FALSE);
   m2decl_BuildParameterDeclaration (location, NULL, ptr_type_node, FALSE);
   fn_throw_tree = m2decl_BuildEndFunctionDeclaration (
-      location, location, "__cxa_throw", void_type_node, TRUE, FALSE, TRUE);
+      location, location, "__cxa_throw", void_type_node, TRUE, FALSE, TRUE,
+      FALSE);
 
   /* Declare void __cxa_rethrow (void).  */
   m2decl_BuildStartFunctionDeclaration (FALSE);
   fn_rethrow_tree = m2decl_BuildEndFunctionDeclaration (
-      location, location, "__cxa_rethrow", void_type_node, TRUE, FALSE, TRUE);
+     location, location, "__cxa_rethrow", void_type_node, TRUE, FALSE, TRUE,
+     FALSE);
 
   /* Declare void *__cxa_allocate_exception (size_t).  */
   m2decl_BuildStartFunctionDeclaration (FALSE);
   m2decl_BuildParameterDeclaration (location, NULL, size_type_node, FALSE);
   fn_allocate_exception_tree = m2decl_BuildEndFunctionDeclaration (
       location, location, "__cxa_allocate_exception", ptr_type_node, TRUE,
-      FALSE, TRUE);
+      FALSE, TRUE, FALSE);
 
   /* Declare void *__cxa_free_exception (void *).  */
   m2decl_BuildStartFunctionDeclaration (FALSE);
   m2decl_BuildParameterDeclaration (location, NULL, ptr_type_node, FALSE);
   fn_free_exception_tree = m2decl_BuildEndFunctionDeclaration (
       location, location, "__cxa_free_exception", ptr_type_node, TRUE, FALSE,
-      TRUE);
+      TRUE, FALSE);
 
   /* Define integer type exception type which will match C++ int type
      in the C++ runtime library.  */
