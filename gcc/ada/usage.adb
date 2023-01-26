@@ -655,6 +655,7 @@ begin
    Write_Line ("        c    check comment format (two spaces)");
    Write_Line ("        C    check comment format (one space)");
    Write_Line ("        d    check no DOS line terminators");
+   Write_Line ("        D    check declared identifiers in mixed case");
    Write_Line ("        e    check end/exit labels present");
    Write_Line ("        f    check no form feeds/vertical tabs in source");
    Write_Line ("        g    check standard GNAT style rules, same as ydISux");
