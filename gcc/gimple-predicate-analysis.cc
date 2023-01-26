@@ -728,11 +728,11 @@ value_sat_pred_p (tree val, tree boundary, tree_code cmpc,
   if (cmpc != BIT_AND_EXPR)
     return is_value_included_in (val, boundary, cmpc);
 
-  wide_int andw = wi::to_wide (val) & wi::to_wide (boundary);
+  widest_int andw = wi::to_widest (val) & wi::to_widest (boundary);
   if (exact_p)
-    return andw == wi::to_wide (val);
+    return andw == wi::to_widest (val);
 
-  return andw.to_uhwi ();
+  return wi::ne_p (andw, 0);
 }
 
 /* Return true if the domain of single predicate expression PRED1
