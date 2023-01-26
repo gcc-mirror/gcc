@@ -1269,6 +1269,12 @@ public:
     return PatternType::GROUPED;
   }
 
+  std::unique_ptr<Pattern> &get_item () { return pattern_in_parens; }
+  const std::unique_ptr<Pattern> &get_item () const
+  {
+    return pattern_in_parens;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
