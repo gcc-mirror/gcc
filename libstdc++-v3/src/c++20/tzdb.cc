@@ -1967,6 +1967,22 @@ namespace std::chrono
       return in;
     }
 
+    // Test whether the RULES field of a Zone line is a valid Rule name.
+    inline bool
+    is_rule_name(string_view rules) noexcept
+    {
+      // The NAME field of a Rule line must start with a character that is
+      // neither an ASCII digit nor '-' nor '+'.
+      if (('0' <= rules[0] && rules[0] <= '9') || rules[0] == '-')
+	return false;
+      // However, some older tzdata.zi files (e.g. in tzdata-2018e-3.el6 RPM)
+      // used "+" as a Rule name, so we need to handle that special case.
+      if (rules[0] == '+')
+	return rules.size() == 1; // "+" is a rule name, "+1" is not.
+      // Everything else is the name of a Rule.
+      return true;
+    }
+
     istream& operator>>(istream& in, ZoneInfo& inf)
     {
       // STDOFF  RULES  FORMAT  [UNTIL]
@@ -1976,25 +1992,28 @@ namespace std::chrono
 
       in >> off >> quoted{rules} >> fmt;
       inf.m_offset = off.time;
-      if (rules == "-")
+      if (is_rule_name(rules))
 	{
-	  // Standard time always applies, no DST.
-	  inf.set_abbrev(fmt);
-	}
-      else if (string_view("0123456789-+").find(rules[0]) != string_view::npos)
-	{
-	  // rules specifies the difference from standard time.
-	  at_time rules_time;
-	  istringstream in2(std::move(rules));
-	  in2 >> rules_time;
-	  inf.m_save = duration_cast<minutes>(rules_time.time);
-	  select_std_or_dst_abbrev(fmt, inf.m_save);
-	  inf.set_abbrev(fmt);
+	  // `rules` refers to a named Rule which describes transitions.
+	  inf.set_rules_and_format(rules, fmt);
 	}
       else
 	{
-	  // rules refers to a named Rule which describes transitions.
-	  inf.set_rules_and_format(rules, fmt);
+	  if (rules == "-")
+	    {
+	      // Standard time always applies, no DST.
+	    }
+	  else
+	    {
+	      // `rules` specifies the difference from standard time,
+	      // e.g., "-2:30"
+	      at_time rules_time;
+	      istringstream in2(std::move(rules));
+	      in2 >> rules_time;
+	      inf.m_save = duration_cast<minutes>(rules_time.time);
+	      select_std_or_dst_abbrev(fmt, inf.m_save);
+	    }
+	  inf.set_abbrev(fmt);
 	}
 
       // YEAR [MONTH [DAY [TIME]]]
