@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
   "%{E|M|MM|fcpp: %{E} -fcpp-begin " \
   "      %{!E:-E} %(cpp_unique_options) -traditional-cpp -ansi " \
   "      -fcpp-end %{B*} %{save-temps*} ; \
-     : %{v} %I } "
+     : %{v} %I %{B*} %{save-temps*} } "
 
 /* We have three modes:
    1. When the preprocessing step is explict and there is no following
@@ -44,7 +44,8 @@ along with GCC; see the file COPYING3.  If not see
       cc1gm2 " M2CPP " %{!fcpp:-fcpp;:%{fcpp}} %{I*} %i } \
     %{!E:%{!M:%{!MM:\
       cc1gm2 " M2CPP " %(cc1_options) %{I*} %i %{c} \
-      %{MF*:%eto generate dependencies you must specify either '-M' or '-MM'} \
+      %{!fcpp:%{MD|MMD|MF*: \
+		%eto generate dependencies you must specify '-fcpp' }} \
       %{!fsyntax-only:%(invoke_as)} \
     }}}", 0, 0, 0},
   {".m2i", "@modula-2-cpp-output", 0, 0, 0},

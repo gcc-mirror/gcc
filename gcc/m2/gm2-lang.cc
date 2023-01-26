@@ -137,9 +137,7 @@ gm2_langhook_init (void)
 static unsigned int
 gm2_langhook_option_lang_mask (void)
 {
-  /* We need to process some driver options and pass through some C
-     ones to build our preprocessing lines.  */
-  return CL_ModulaX2 | CL_C | CL_DRIVER;
+  return CL_ModulaX2;
 }
 
 /* Initialize the options structure.  */
@@ -262,26 +260,33 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 	     For now skip all plugins to avoid fails with the m2 one.  */
 	  break;
 
-	/* Preprocessor arguments with a following filename.  */
+	/* Preprocessor arguments with a following filename, we add these
+	   back to the main file preprocess line, but not to dependents
+	   TODO Handle MF.  */
 	case OPT_MD:
+	  M2Options_SetMD (arg);
+	  break;
 	case OPT_MMD:
-	  /* Save the filename associated with the MD/MMD which will also
-	     mark the option as used.  FIXME: maybe we should diagnose a
-	     missing filename here, rather than assert.  */
-	  gcc_checking_assert (i+1 < decoded_options_count);
-	  gcc_checking_assert (decoded_options[i+1].opt_index
-			       == OPT_SPECIAL_input_file);
-	  /* Pick up the following filename.  */
-	  arg = decoded_options[i+1].arg;
-	  if (code == OPT_MD)
-	    M2Options_SetMD (arg);
-	  else
-	    M2Options_SetMMD (arg);
+	  M2Options_SetMMD (arg);
+	  break;
+
+	/* Modula 2 claimed options we pass to the preprocessor.  */
+	case OPT_ansi:
+	case OPT_traditional_cpp:
+	  if (building_cpp_command)
+	    M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+			      && !(option->flags & CL_SEPARATE));
 	  break;
 
 	/* Options we act on and also pass to the preprocessor.  */
 	case OPT_O:
 	  M2Options_SetOptimizing (value);
+	  if (building_cpp_command)
+	    M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+			      && !(option->flags & CL_SEPARATE));
+	  break;
+	case OPT_quiet:
+	  M2Options_SetQuiet (value);
 	  if (building_cpp_command)
 	    M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
 			      && !(option->flags & CL_SEPARATE));
@@ -533,9 +538,6 @@ gm2_langhook_handle_option (
       /* Otherwise, ignored, at least for now. */
       return 1;
       break;
-    case OPT_quiet:
-      M2Options_SetQuiet (value);
-      return 1;
     case OPT_fm2_whole_program:
       M2Options_SetWholeProgram (value);
       return 1;
@@ -557,20 +559,19 @@ gm2_langhook_handle_option (
         }
       else
         return 0;
-    case OPT_o:
-      /* Options we ignore, always.  */
-      return 1;
     default:
       if (insideCppArgs)
-	/* Already handled.  */
+	/* Handled in gm2_langhook_init_options ().  */
 	return 1;
       else if (option->flags & CL_DRIVER)
-	/* Ignore driver options we do not specifically use.  */
+	/* Driver options (unless specifically claimed above) should be handled
+	   in gm2_langhook_init_options ().  */
 	return 1;
       else if (option->flags & CL_C)
-	/* Ignore C options we do not specifically use.  */
+	/* C options (unless specifically claimed above) should be handled
+	   in gm2_langhook_init_options ().  */
 	return 1;
-      return 0;
+      break;
     }
   return 0;
 }
