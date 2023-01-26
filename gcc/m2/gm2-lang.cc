@@ -290,12 +290,9 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 	  M2Options_SetVerbose (value);
 	  /* FALLTHROUGH */
 	default:
+	  /* We handled input files above.  */
 	  if (code >= N_OPTS)
-	    {
-	      // FIXME remove debug.
-	      fprintf(stderr, "%s : %s\n", opt, (arg ? arg : ""));
-	      break;
-	    }
+	    break;
 	  /* Do not pass Modula-2 args to the preprocessor, any that we care
 	     about here should already have been handled above.  */
 	  if (option->flags & CL_ModulaX2)
