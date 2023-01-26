@@ -4,6 +4,9 @@
      Black, P. , Koo, H. and Irish, T. (2013), A Basic CWE-121 Buffer Overflow Effectiveness Test Suite, Proc. 6th Latin-American Symposium on Dependable Computing, Rio de Janeiro, -1, [online], https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=913117 (Accessed January 17, 2023)
 */
 
+/* The purpose of this testcase is to see if -fanalyzer can detect the bug.  */
+/* { dg-additional-options "-Wno-stringop-overflow" } */
+
 /* Taxonomy Classification: 0000300602130000031110 */
 
 /*
