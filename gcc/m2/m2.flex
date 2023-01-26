@@ -542,8 +542,8 @@ static void assert_location (location_t location ATTRIBUTE_UNUSED)
 /*
  *  splitSlashStar - called if we are not tokenizing source code after it
  *                   has been preprocessed by cpp.  It is only called
- *                   if the current token was /* and therefore it will
- *                   be split into two m2 tokens:  / and *.
+ *                   if the current token was a / immediately followed by * and
+ *                   therefore it will be split into two m2 tokens:  / and *.
  */
 
 static void splitSlashStar (void)
