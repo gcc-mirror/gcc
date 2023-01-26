@@ -1,3 +1,519 @@
+2023-01-25  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/108528
+	* gfortran.dg/pr108528.f90: New test.
+
+2023-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108525
+	* g++.dg/cpp23/static-operator-call5.C: New test.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vhaddq_n_s16.c: Add missing extern
+	"C".
+	* gcc.target/arm/mve/intrinsics/vhaddq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhaddq_x_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vhsubq_x_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmladavaxq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmladavaxq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmladavaxq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmladavaxq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmladavaxq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmladavaxq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_n_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_n_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqaddq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vld2q_f16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vld2q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vld2q_u8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqnegq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqnegq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqnegq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqnegq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqnegq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqnegq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_m_n_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_m_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_m_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_m_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmulhq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhxq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhxq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhxq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhxq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhxq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhxq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlsdhq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhxq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhxq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhxq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhxq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhxq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhxq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmlsdhq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqrdmladhxq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhxq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhxq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhxq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhxq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhxq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqrdmladhq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqrdmladhq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqdmladhxq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqdmladhxq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmladhxq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmladhxq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmladhxq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmladhxq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqdmladhq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqdmladhq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmladhq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmladhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmladhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqdmladhq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vqabsq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vqabsq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqabsq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqabsq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqabsq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vqabsq_s8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vcmulq_f16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vcmulq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot180_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot180_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot180_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot180_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot180_x_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot180_x_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot270_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot270_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot270_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot270_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot270_x_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot270_x_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot90_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot90_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot90_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot90_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot90_x_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_rot90_x_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_x_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmulq_x_f32.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vcmlaq_f16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot180_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot180_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot180_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot180_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot270_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot270_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot270_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot270_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot90_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot90_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot90_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmlaq_rot90_m_f32.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_f16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_m_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_m_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_m_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_x_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_x_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_x_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_x_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_x_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot270_x_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_m_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_m_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_m_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_x_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_x_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_x_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_x_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_x_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcaddq_rot90_x_u8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_m_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_m_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_x_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_x_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_x_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_int_x_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_poly_m_p16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_poly_m_p8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_poly_p16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_poly_p8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_poly_x_p16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulltq_poly_x_p8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_m_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_m_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_x_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_x_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_x_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_int_x_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_poly_m_p16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_poly_m_p8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_poly_p16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_poly_p8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_poly_x_p16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmullbq_poly_x_p8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vmulhq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vmulhq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_m_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_m_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_x_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_x_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_x_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmulhq_x_u8.c: Likewise.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vnegq_f16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vnegq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_m_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_m_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_m_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_x_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_x_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vnegq_x_s8.c: Likewise.
+	* gcc.target/arm/simd/mve-vneg.c: Update test.
+	* gcc.target/arm/simd/mve-vshr.c: Likewise
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vclzq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks.  Use
+	extern "C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vclzq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_m_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_m_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_x_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_x_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_x_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclzq_x_u8.c: Likewise.
+	* gcc.target/arm/simd/mve-vclz.c: Update test.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vclsq_m_s16.c: Use
+	check-function-bodies instead of scan-assembler checks. Use extern
+	"C" for C++ testing.
+	* gcc.target/arm/mve/intrinsics/vclsq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclsq_m_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclsq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclsq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclsq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclsq_x_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclsq_x_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vclsq_x_s8.c: Likewise.
+
+2023-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Avoid
+	"initializer element is not constant" error.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Likewise.
+
+2023-01-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_long_long): Add
+	aarch64 to list of targets supporting long long vectorization.
+
+2023-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108498
+	* gcc.c-torture/execute/pr108498-1.c: New test.
+	* gcc.c-torture/execute/pr108498-2.c: New test.
+
+2023-01-25  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108522
+	* gcc.dg/builtin-dynamic-object-size-0.c
+	(test_dynarray_struct_member): New test.
+	(main): Call it.
+
 2023-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/107329

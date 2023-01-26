@@ -1,3 +1,69 @@
+2023-01-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/102343
+	PR modula2/108182
+	* gcc.cc: Provide default specs for Modula-2 so that when the
+	language is not built-in better diagnostics are emitted for
+	attempts to use .mod or .m2i file extensions.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vqnegq_s<mode>): Fix spacing.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vqabsq_s<mode>): Fix spacing.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vnegq_f<mode>, mve_vnegq_s<mode>):
+	Fix spacing.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (@mve_vclzq_s<mode>): Fix spacing.
+
+2023-01-25  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vclsq_s<mode>): Fix spacing.
+
+2023-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108523
+	* tree-ssa-sccvn.cc (visit_phi): Avoid using the exclusive
+	backedge value for the result when using predication to
+	prove equivalence.
+
+2023-01-25  Richard Biener  <rguenther@suse.de>
+
+	* doc/lto.texi (Command line options): Reword and update reference
+	to removed lto_read_all_file_options.
+
+2023-01-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (umax<mode>3): Separate the CNT and CSSC
+	tests.
+
+2023-01-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi: Add Jose E. Marchesi.
+
+2023-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108498
+	* gimple-ssa-store-merging.cc (class store_operand_info):
+	End coment with full stop rather than comma.
+	(split_group): Likewise.
+	(merged_store_group::apply_stores): Clear string_concatenation if
+	start or end aren't on a byte boundary.
+
+2023-01-25  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108522
+	* tree-object-size.cc (compute_object_offset): Use
+	TREE_OPERAND(ref, 2) for COMPONENT_REF when available.
+
 2023-01-24  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.md:

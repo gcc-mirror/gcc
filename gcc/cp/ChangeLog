@@ -1,3 +1,9 @@
+2023-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108525
+	* mangle.cc (write_closure_type_name): Don't assume all
+	lambda operator() fns are methods.
+
 2023-01-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108504

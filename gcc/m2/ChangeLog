@@ -1,3 +1,41 @@
+2023-01-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/102343
+	PR modula2/108182
+	* gm2-compiler/M2Comp.mod: Early exit for pre-processor-only jobs.
+	* gm2-compiler/M2Options.def (SetPPOnly, GetPPOnly, SetMD, GetMD,
+	SetMMD, GetMMD, SetMQ, GetMQ, SetObj, GetObj, SetDumpDir,
+	GetDumpDir):New.
+	* gm2-compiler/M2Options.mod:(SetPPOnly, GetPPOnly, SetMD, GetMD,
+	SetMMD, GetMMD, SetMQ, GetMQ, SetObj, GetObj, SetDumpDir,
+	GetDumpDir):New.
+	* gm2-compiler/M2Preprocess.def (PreprocessModule): Add flag to
+	indicate the main file.
+	* gm2-compiler/M2Preprocess.mod: Handle Preprocess-only jobs,
+	handle MD, MMD and MQ options.
+	* gm2-gcc/m2options.h (M2Options_SetPPOnly, M2Options_GetPPOnly,
+	M2Options_SetDumpDir, M2Options_SetMD, M2Options_GetMD,
+	M2Options_SetMMD, M2Options_GetMMD, M2Options_SetMQ, M2Options_GetMQ,
+	M2Options_SetObj, M2Options_GetObj): New.
+	* gm2-gcc/m2type.cc (m2type_InitBaseTypes): Early exit for pre-
+	processor-only jobs.
+	* gm2-lang.cc (gm2_langhook_init): Handle preprocess-only commands.
+	(gm2_langhook_option_lang_mask): Claim C and Driver options so that
+	we can intercept them for building pre-processor commands.
+	(gm2_langhook_init_options): Collect the preprocessor line here.
+	Save options that have different actions for preprocessor and compile
+	commands.
+	(gm2_langhook_handle_option): Only handle the modula-2 options here.
+	(gm2_langhook_post_options): Do not create a back-end for pre-
+	processor-only jobs.
+	* gm2spec.cc (lang_specific_driver): Ignore PCH options, append a
+	scaffold-main for cases where we are building a main module with
+	-c.
+	* lang-specs.h: Revise to handle preprocessor-only jobs and to
+	consume pre-processed files.
+	* lang.opt: Remove Driver and C options copies (we claim these
+	separately).
+
 2023-01-24  Co-Authored by: Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Make-lang.in (GM2-COMP-BOOT-DEFS): Add
