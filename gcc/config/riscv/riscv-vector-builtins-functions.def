@@ -44,5 +44,7 @@ DEF_RVV_FUNCTION (vle, loadstore, full_preds, all_v_scalar_const_ptr_ops)
 DEF_RVV_FUNCTION (vse, loadstore, none_m_preds, all_v_scalar_ptr_ops)
 DEF_RVV_FUNCTION (vlm, loadstore, none_preds, b_v_scalar_const_ptr_ops)
 DEF_RVV_FUNCTION (vsm, loadstore, none_preds, b_v_scalar_ptr_ops)
+DEF_RVV_FUNCTION (vlse, loadstore, full_preds, all_v_scalar_const_ptr_ptrdiff_ops)
+DEF_RVV_FUNCTION (vsse, loadstore, none_m_preds, all_v_scalar_ptr_ptrdiff_ops)
 
 #undef DEF_RVV_FUNCTION

@@ -84,8 +84,8 @@ public:
   }
 };
 
-/* Implements vle.v/vse.v/vlm.v/vsm.v codegen.  */
-template <bool STORE_P>
+/* Implements vle.v/vse.v/vlm.v/vsm.v/vlse.v/vsse.v codegen.  */
+template <bool STORE_P, bool STRIDED_P = false>
 class loadstore : public function_base
 {
   unsigned int call_properties (const function_instance &) const override
@@ -106,9 +106,23 @@ class loadstore : public function_base
   rtx expand (function_expander &e) const override
   {
     if (STORE_P)
-      return e.use_contiguous_store_insn (code_for_pred_store (e.vector_mode ()));
+      {
+	if (STRIDED_P)
+	  return e.use_contiguous_store_insn (
+	    code_for_pred_strided_store (e.vector_mode ()));
+	else
+	  return e.use_contiguous_store_insn (
+	    code_for_pred_store (e.vector_mode ()));
+      }
     else
-      return e.use_contiguous_load_insn (code_for_pred_mov (e.vector_mode ()));
+      {
+	if (STRIDED_P)
+	  return e.use_contiguous_load_insn (
+	    code_for_pred_strided_load (e.vector_mode ()));
+	else
+	  return e.use_contiguous_load_insn (
+	    code_for_pred_mov (e.vector_mode ()));
+      }
   }
 };
 
@@ -118,6 +132,8 @@ static CONSTEXPR const loadstore<false> vle_obj;
 static CONSTEXPR const loadstore<true> vse_obj;
 static CONSTEXPR const loadstore<false> vlm_obj;
 static CONSTEXPR const loadstore<true> vsm_obj;
+static CONSTEXPR const loadstore<false, true> vlse_obj;
+static CONSTEXPR const loadstore<true, true> vsse_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -130,5 +146,7 @@ BASE (vle)
 BASE (vse)
 BASE (vlm)
 BASE (vsm)
+BASE (vlse)
+BASE (vsse)
 
 } // end namespace riscv_vector

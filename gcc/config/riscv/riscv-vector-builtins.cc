@@ -167,6 +167,19 @@ static CONSTEXPR const rvv_arg_type_info scalar_ptr_args[]
   = {rvv_arg_type_info (RVV_BASE_scalar_ptr),
      rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (const scalar_type *, ptrdiff_t)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info scalar_const_ptr_ptrdiff_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar_const_ptr),
+     rvv_arg_type_info (RVV_BASE_ptrdiff), rvv_arg_type_info_end};
+
+/* A list of args for void func (scalar_type *, ptrdiff_t, vector_type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info scalar_ptr_ptrdiff_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar_ptr),
+     rvv_arg_type_info (RVV_BASE_ptrdiff), rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info_end};
+
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
   = {PRED_TYPE_none, NUM_PRED_TYPES};
@@ -226,6 +239,22 @@ static CONSTEXPR const rvv_op_info b_v_scalar_ptr_ops
      OP_TYPE_v,				/* Suffix */
      rvv_arg_type_info (RVV_BASE_void), /* Return type */
      scalar_ptr_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *,
+ * ptrdiff_t) function registration. */
+static CONSTEXPR const rvv_op_info all_v_scalar_const_ptr_ptrdiff_ops
+  = {all_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_ptrdiff_args /* Args */};
+
+/* A static operand information for void func (scalar_type *, ptrdiff_t,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info all_v_scalar_ptr_ptrdiff_ops
+  = {all_ops,				/* Types */
+     OP_TYPE_v,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     scalar_ptr_ptrdiff_args /* Args */};
 
 /* A list of all RVV intrinsic functions.  */
 static function_group_info function_groups[] = {
@@ -921,7 +950,9 @@ function_expander::use_contiguous_load_insn (insn_code icode)
       add_input_operand (Pmode, get_tail_policy_for_pred (pred));
       add_input_operand (Pmode, get_mask_policy_for_pred (pred));
     }
-  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+
+  if (opno != insn_data[icode].n_generator_args)
+    add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
 
   return generate_insn (icode);
 }

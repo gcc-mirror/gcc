@@ -33,6 +33,7 @@
   UNSPEC_VUNDEF
   UNSPEC_VPREDICATE
   UNSPEC_VLMAX
+  UNSPEC_STRIDED
 ])
 
 (define_constants [
@@ -204,28 +205,56 @@
 
 ;; The index of operand[] to get the avl op.
 (define_attr "vl_op_idx" ""
-	(cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vlds,vmalu")
-	 (const_int 4)]
-	(const_int INVALID_ATTRIBUTE)))
+  (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vmalu,vsts")
+	   (const_int 4)
+
+	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
+	 ;; wheras it is pred_strided_load if operands[3] is vector mode.
+         (eq_attr "type" "vlds")
+	   (if_then_else (match_test "VECTOR_MODE_P (GET_MODE (operands[3]))")
+             (const_int 5)
+             (const_int 4))]
+  (const_int INVALID_ATTRIBUTE)))
 
 ;; The tail policy op value.
 (define_attr "ta" ""
-  (cond [(eq_attr "type" "vlde,vimov,vfmov,vlds")
-	   (symbol_ref "riscv_vector::get_ta(operands[5])")]
+  (cond [(eq_attr "type" "vlde,vimov,vfmov")
+	   (symbol_ref "riscv_vector::get_ta(operands[5])")
+
+	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
+	 ;; wheras it is pred_strided_load if operands[3] is vector mode.
+	 (eq_attr "type" "vlds")
+	   (if_then_else (match_test "VECTOR_MODE_P (GET_MODE (operands[3]))")
+	     (symbol_ref "riscv_vector::get_ta(operands[6])")
+	     (symbol_ref "riscv_vector::get_ta(operands[5])"))]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; The mask policy op value.
 (define_attr "ma" ""
-  (cond [(eq_attr "type" "vlde,vlds")
-	   (symbol_ref "riscv_vector::get_ma(operands[6])")]
+  (cond [(eq_attr "type" "vlde")
+	   (symbol_ref "riscv_vector::get_ma(operands[6])")
+
+	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
+	 ;; wheras it is pred_strided_load if operands[3] is vector mode.
+	 (eq_attr "type" "vlds")
+	   (if_then_else (match_test "VECTOR_MODE_P (GET_MODE (operands[3]))")
+	     (symbol_ref "riscv_vector::get_ma(operands[7])")
+	     (symbol_ref "riscv_vector::get_ma(operands[6])"))]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; The avl type value.
 (define_attr "avl_type" ""
-  (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov,vlds,vlds")
+  (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov")
 	   (symbol_ref "INTVAL (operands[7])")
 	 (eq_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
-	   (symbol_ref "INTVAL (operands[5])")]
+	   (symbol_ref "INTVAL (operands[5])")
+
+	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
+	 ;; wheras it is pred_strided_load if operands[3] is vector mode.
+	 (eq_attr "type" "vlds")
+	   (if_then_else (match_test "VECTOR_MODE_P (GET_MODE (operands[3]))")
+	     (const_int INVALID_ATTRIBUTE)
+	     (symbol_ref "INTVAL (operands[7])"))]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; -----------------------------------------------------------------
@@ -759,4 +788,47 @@
    vlse<sew>.v\t%0,%3,zero,%1.t
    vlse<sew>.v\t%0,%3,zero"
   [(set_attr "type" "vimov,vfmov,vlds,vlds")
+   (set_attr "mode" "<MODE>")])
+
+;; -------------------------------------------------------------------------------
+;; ---- Predicated Strided loads/stores
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - 7.5. Vector Strided Instructions
+;; -------------------------------------------------------------------------------
+
+(define_insn "@pred_strided_load<mode>"
+  [(set (match_operand:V 0 "register_operand"              "=vr,    vr,    vd")
+	(if_then_else:V
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1,   Wc1,    vm")
+	     (match_operand 5 "vector_length_operand"    "   rK,    rK,    rK")
+	     (match_operand 6 "const_int_operand"        "    i,     i,     i")
+	     (match_operand 7 "const_int_operand"        "    i,     i,     i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:V
+	    [(match_operand:V 3 "memory_operand"         "    m,     m,     m")
+	     (match_operand 4 "pmode_reg_or_0_operand"   "   rJ,    rJ,    rJ")] UNSPEC_STRIDED)
+	  (match_operand:V 2 "vector_merge_operand"      "    0,    vu,    vu")))]
+  "TARGET_VECTOR"
+  "vlse<sew>.v\t%0,%3,%z4%p1"
+  [(set_attr "type" "vlds")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_strided_store<mode>"
+  [(set (match_operand:V 0 "memory_operand"                 "+m")
+	(if_then_else:V
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1")
+	     (match_operand 4 "vector_length_operand"    "   rK")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:V
+	    [(match_operand 2 "pmode_reg_or_0_operand"   "   rJ")
+	     (match_operand:V 3 "register_operand"       "   vr")] UNSPEC_STRIDED)
+	  (match_dup 0)))]
+  "TARGET_VECTOR"
+  "vsse<sew>.v\t%3,%0,%z2%p1"
+  [(set_attr "type" "vsts")
    (set_attr "mode" "<MODE>")])
