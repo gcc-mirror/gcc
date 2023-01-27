@@ -1106,7 +1106,7 @@ namespace std::chrono
 
       tzdata_stream() : istream(nullptr)
       {
-	if (string path = zoneinfo_file("/tzdata.zi"); !path.empty())
+	if (string path = zoneinfo_file(tzdata_file); !path.empty())
 	{
 	  filebuf fbuf;
 	  if (fbuf.open(path, std::ios::in))
