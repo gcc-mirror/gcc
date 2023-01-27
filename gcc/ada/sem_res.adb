@@ -492,7 +492,6 @@ package body Sem_Res is
          Name := Make_Identifier (Loc, Chars (Callee));
 
          if Is_Derived_Type (Typ)
-           and then Is_Tagged_Type (Typ)
            and then Base_Type (Etype (Callee)) /= Base_Type (Typ)
          then
             Callee :=

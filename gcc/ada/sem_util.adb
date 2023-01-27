@@ -6483,15 +6483,42 @@ package body Sem_Util is
      (Ancestor_Op     : Entity_Id;
       Descendant_Type : Entity_Id) return Entity_Id
    is
-      Typ  : constant Entity_Id := Find_Dispatching_Type (Ancestor_Op);
-      Elmt : Elmt_Id;
-      Subp : Entity_Id;
+      function Find_Untagged_Type_Of (Prim : Entity_Id) return Entity_Id;
+      --  Search for the untagged type of the primitive operation Prim.
 
       function Profile_Matches_Ancestor (S : Entity_Id) return Boolean;
       --  Returns True if subprogram S has the proper profile for an
       --  overriding of Ancestor_Op (that is, corresponding formals either
       --  have the same type, or are corresponding controlling formals,
       --  and similarly for result types).
+
+      ---------------------------
+      -- Find_Untagged_Type_Of --
+      ---------------------------
+
+      function Find_Untagged_Type_Of (Prim : Entity_Id) return Entity_Id is
+         E : Entity_Id := First_Entity (Scope (Prim));
+
+      begin
+         while Present (E) and then E /= Prim loop
+            if not Is_Tagged_Type (E)
+              and then Present (Direct_Primitive_Operations (E))
+              and then Contains (Direct_Primitive_Operations (E), Prim)
+            then
+               return E;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         pragma Assert (False);
+         return Empty;
+      end Find_Untagged_Type_Of;
+
+      Typ  : constant Entity_Id :=
+               (if Is_Dispatching_Operation (Ancestor_Op)
+                 then Find_Dispatching_Type (Ancestor_Op)
+                 else Find_Untagged_Type_Of (Ancestor_Op));
 
       ------------------------------
       -- Profile_Matches_Ancestor --
@@ -6529,10 +6556,14 @@ package body Sem_Util is
                       or else Is_Ancestor (Typ, Etype (S)));
       end Profile_Matches_Ancestor;
 
+      --  Local variables
+
+      Elmt : Elmt_Id;
+      Subp : Entity_Id;
+
    --  Start of processing for Corresponding_Primitive_Op
 
    begin
-      pragma Assert (Is_Dispatching_Operation (Ancestor_Op));
       pragma Assert (Is_Ancestor (Typ, Descendant_Type)
                       or else Is_Progenitor (Typ, Descendant_Type));
 

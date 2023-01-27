@@ -618,9 +618,9 @@ package Sem_Util is
    --  Possible optimization???
 
    function Corresponding_Primitive_Op
-       (Ancestor_Op     : Entity_Id;
-        Descendant_Type : Entity_Id) return Entity_Id;
-   --  Given a primitive subprogram of a tagged type and a (distinct)
+     (Ancestor_Op     : Entity_Id;
+      Descendant_Type : Entity_Id) return Entity_Id;
+   --  Given a primitive subprogram of a first type and a (distinct)
    --  descendant type of that type, find the corresponding primitive
    --  subprogram of the descendant type.
 
