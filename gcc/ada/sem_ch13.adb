@@ -38,6 +38,7 @@ with Exp_Ch3;          use Exp_Ch3;
 with Exp_Disp;         use Exp_Disp;
 with Exp_Tss;          use Exp_Tss;
 with Exp_Util;         use Exp_Util;
+with Expander;         use Expander;
 with Freeze;           use Freeze;
 with Ghost;            use Ghost;
 with Lib;              use Lib;
@@ -15625,15 +15626,29 @@ package body Sem_Ch13 is
                      --  Preanalyze expression after type replacement to catch
                      --  name resolution errors if the predicate function has
                      --  not been built yet.
+
                      --  Note that we cannot use Preanalyze_Spec_Expression
-                     --  because of the special handling required for
-                     --  quantifiers, see comments on Resolve_Aspect_Expression
-                     --  above.
+                     --  directly because of the special handling required for
+                     --  quantifiers (see comments on Resolve_Aspect_Expression
+                     --  above) but we need to emulate it properly.
 
                      if No (Predicate_Function (E)) then
-                        Push_Type (E);
-                        Resolve_Aspect_Expression (Expr);
-                        Pop_Type (E);
+                        declare
+                           Save_In_Spec_Expression : constant Boolean :=
+                                                       In_Spec_Expression;
+                           Save_Full_Analysis : constant Boolean :=
+                                                  Full_Analysis;
+                        begin
+                           In_Spec_Expression := True;
+                           Full_Analysis := False;
+                           Expander_Mode_Save_And_Set (False);
+                           Push_Type (E);
+                           Resolve_Aspect_Expression (Expr);
+                           Pop_Type (E);
+                           Expander_Mode_Restore;
+                           Full_Analysis := Save_Full_Analysis;
+                           In_Spec_Expression := Save_In_Spec_Expression;
+                        end;
                      end if;
 
                   when Pre_Post_Aspects =>
