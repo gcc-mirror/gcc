@@ -2646,6 +2646,7 @@ package Sem_Util is
    --
    --        First_Named_Actual
    --        Next_Named_Actual
+   --        Controlling_Argument
    --
    --      If applicable, the Etype field (if any) is updated to refer to a
    --      local itype or type (see below).

@@ -23136,6 +23136,13 @@ package body Sem_Util is
       pragma Inline (Update_CFS_Sloc);
       --  Update the Comes_From_Source and Sloc attributes of node or entity N
 
+      procedure Update_Controlling_Argument
+        (Old_Call : Node_Id;
+         New_Call : Node_Id);
+      pragma Inline (Update_Controlling_Argument);
+      --  Update Controlling_Argument of New_Call base on Old_Call to make it
+      --  points to the corresponding newly copied actual parameter.
+
       procedure Update_Named_Associations
         (Old_Call : Node_Id;
          New_Call : Node_Id);
@@ -23574,16 +23581,21 @@ package body Sem_Util is
               (Old_Assoc => N,
                New_Assoc => Result);
 
-            --  Update the First/Next_Named_Association chain for a replicated
-            --  call.
+            --  Update the First/Next_Named_Association chain and the
+            --  Controlling_Argument for a replicated call.
 
             if Nkind (N) in N_Entry_Call_Statement
-                          | N_Function_Call
-                          | N_Procedure_Call_Statement
+                          | N_Subprogram_Call
             then
                Update_Named_Associations
                  (Old_Call => N,
                   New_Call => Result);
+
+               if Nkind (N) in N_Subprogram_Call then
+                  Update_Controlling_Argument
+                    (Old_Call => N,
+                     New_Call => Result);
+               end if;
 
             --  Update the Renamed_Object attribute of a replicated object
             --  declaration.
@@ -23693,6 +23705,59 @@ package body Sem_Util is
             Set_Sloc              (N, New_Sloc);
          end if;
       end Update_CFS_Sloc;
+
+      ---------------------------------
+      -- Update_Controlling_Argument --
+      ---------------------------------
+
+      procedure Update_Controlling_Argument
+        (Old_Call : Node_Id;
+         New_Call : Node_Id)
+      is
+         New_Act : Node_Id;
+         Old_Act : Node_Id;
+
+         Old_Ctrl_Arg : constant Node_Id := Controlling_Argument (Old_Call);
+         --  Controlling argument of the old call node
+
+         Replaced : Boolean := False;
+         --  Flag to make sure that replacement works as expected
+
+      begin
+         if No (Old_Ctrl_Arg) then
+            return;
+         end if;
+
+         --  Recreate the Controlling_Argument of a call by traversing both the
+         --  old and new actual parameters in parallel.
+
+         New_Act := First (Parameter_Associations (New_Call));
+         Old_Act := First (Parameter_Associations (Old_Call));
+         while Present (Old_Act) loop
+
+            --  Actual parameter appears either in a named parameter
+            --  association or directly.
+
+            if Nkind (Old_Act) = N_Parameter_Association then
+               if Explicit_Actual_Parameter (Old_Act) = Old_Ctrl_Arg then
+                  Set_Controlling_Argument
+                    (New_Call, Explicit_Actual_Parameter (New_Act));
+                  Replaced := True;
+                  exit;
+               end if;
+
+            elsif Old_Act = Old_Ctrl_Arg then
+               Set_Controlling_Argument (New_Call, New_Act);
+               Replaced := True;
+               exit;
+            end if;
+
+            Next (New_Act);
+            Next (Old_Act);
+         end loop;
+
+         pragma Assert (Replaced);
+      end Update_Controlling_Argument;
 
       -------------------------------
       -- Update_Named_Associations --
