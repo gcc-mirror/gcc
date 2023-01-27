@@ -62,3 +62,10 @@ f5 ()
 {
   static int auto e10 = 3; /* { dg-error "multiple storage classes in declaration specifiers" } */
 }
+
+void
+f6 ()
+{
+  static auto l = { 0L }; /* { dg-error "expected expression" } */
+  const auto i3 [[]] = { 4, }; /* { dg-error "expected expression" } */
+}
