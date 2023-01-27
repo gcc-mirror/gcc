@@ -1,3 +1,13 @@
+2023-01-26  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	Backported from master:
+	2023-01-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.h (CLZ_DEFINED_VALUE_AT_ZERO): Fix value for QI
+	and HI input modes.
+	* config/pru/pru.md (clz): Fix generated code for QI and HI
+	input modes.
+
 2023-01-25  Christophe Lyon  <christophe.lyon@arm.com>
 
 	Backported from master:
