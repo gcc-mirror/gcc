@@ -1,3 +1,46 @@
+2023-01-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-11-11  Richard Biener  <rguenther@suse.de>
+		    Nikita Voronov  <nik_1357@mail.ru>
+
+	PR tree-optimization/107554
+	* tree-ssa-strlen.c (strlen_pass::count_nonzero_bytes):
+	Use unsigned HOST_WIDE_INT type for the strlen.
+
+2023-01-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107323
+	* tree-loop-distribution.c (pg_unmark_merged_alias_ddrs):
+	New function.
+	(loop_distribution::break_alias_scc_partitions): Revert
+	postorder save/restore from the PR94125 fix.  Instead
+	make sure to not ignore edges from SCCs we are going to
+	merge.
+
+2023-01-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107107
+	* tree-ssa-sccvn.c (visit_reference_op_store): Do not
+	affect value-numbering when doing the tail merging
+	MODIFY_EXPR lookup.
+
+2023-01-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106934
+	* tree-ssa.c (non_rewritable_mem_ref_base): Avoid BIT_FIELD_REFs
+	of bitfields.
+	(maybe_rewrite_mem_ref_base): Likewise.
+
 2023-01-25  Christophe Lyon  <christophe.lyon@arm.com>
 
 	Backported from master:
