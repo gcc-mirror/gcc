@@ -93,7 +93,8 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetScaffoldMain, ScaffoldMain,
                  SetRuntimeModuleOverride, GetRuntimeModuleOverride,
                  SetGenModuleList, GetGenModuleFilename, SharedFlag,
-                 SetB, GetB, SetMD, GetMD, SetMMD, GetMMD, SetObj, GetObj ;
+                 SetB, GetB, SetMD, GetMD, SetMMD, GetMMD, SetObj, GetObj,
+                 GetMQ, SetMQ ;
 
 
 VAR

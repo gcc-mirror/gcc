@@ -134,7 +134,7 @@ PROCEDURE MakeSaveTempsFileName (filename: String) : String ;
 VAR
    NewName,
    DumpDir,
-   NewDir: String ;
+   NewDir : String ;
 BEGIN
    NewName := ConCat (GetFileName (filename), InitString ('.m2i')) ;
    NewDir := GetSaveTempsDir () ;
@@ -146,7 +146,7 @@ BEGIN
       fprintf1 (StdOut, " DumpDir: %s\n", DumpDir)
    END ;
 *)
-   IF (NewDir AND EqualArray (NewDir, 'obj')) AND DumpDir
+   IF (NewDir#NIL) AND EqualArray (NewDir, 'obj') AND (DumpDir#NIL)
    THEN
       RETURN Dup (ConCat (DumpDir, NewName))
    ELSE
@@ -181,20 +181,20 @@ BEGIN
       (* We support MD and MMD for the main file only, at present.  *)
       IF isMain OR PPonly
       THEN
-         IF GetMD ()
+         IF GetMD () # NIL
          THEN
             tempfile := ConCat( Mark (InitString(' -MD ')),
                                 InitStringCharStar (GetMD ()))
-         ELSIF GetMMD ()
+         ELSIF GetMMD () # NIL
          THEN
             tempfile := ConCat( Mark (InitString(' -MMD ')),
                                 InitStringCharStar (GetMMD ()))
          END ;
-         IF tempfile
+         IF tempfile#NIL
          THEN
             commandLine := ConCat (Dup (commandLine), Dup (tempfile)) ;
             (* We can only add MQ if we already have an MD/MMD.  *)
-            IF GetMQ ()
+            IF GetMQ () # NIL
             THEN
                tempfile := ConCat( Mark (InitString(' -MQ ')),
                                  InitStringCharStar (GetMQ ())) ;
@@ -207,7 +207,7 @@ BEGIN
       tempfile := NIL ;
       IF PPonly
       THEN
-         IF GetObj()
+         IF GetObj () # NIL
          THEN
            tempfile := InitStringCharStar (GetObj ())
          END ;
@@ -218,7 +218,7 @@ BEGIN
          tempfile := InitStringCharStar (make_temp_file (KeyToCharStar (MakeKey('.m2i'))))
       END ;
       commandLine := ConCat (ConCatChar (Dup (commandLine), ' '), filename) ;
-      IF tempfile
+      IF tempfile # NIL
       THEN
          commandLine := ConCat (ConCat (Dup (commandLine),
                                         Mark (InitString(' -o '))), tempfile) ;
