@@ -26,3 +26,4 @@ uint8_t gencrc (uint8_t *data)
 /* { dg-final { scan-tree-dump "Bit forward" "crc"} } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \\\^ \[a-zA-Z0-9_\]+\(\\\(\[a-zA-Z\]\\\)\)?;" "crc" } } */
 /* { dg-final { scan-tree-dump "Executing \[a-zA-Z_\]\[a-zA-Z0-9_\]* = \[a-zA-Z_\]\[a-zA-Z0-9_\]* \(<<|>>\) \[0-9]+;" "crc" } } */
+/* { dg-final { scan-tree-dump "gencrc function calculates CRC." "crc"} } */
