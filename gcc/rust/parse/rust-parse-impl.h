@@ -6131,7 +6131,15 @@ Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
       /* if any of these (should be all possible VisItem prefixes), parse a
        * VisItem can't parse item because would require reparsing outer
        * attributes */
-      return parse_vis_item (std::move (outer_attrs));
+      // may also be unsafe block
+      if (lexer.peek_token (1)->get_id () == LEFT_CURLY)
+	{
+	  return parse_expr_stmt (std::move (outer_attrs), restrictions);
+	}
+      else
+	{
+	  return parse_vis_item (std::move (outer_attrs));
+	}
       break;
     case SUPER:
     case SELF:
