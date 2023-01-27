@@ -688,7 +688,7 @@ myprintf (FILE *f, const char *format, ...)
 @end smallexample
 @end deftypefn
 
-@deftypefn {Built-in Function} {size_t} __builtin_va_arg_pack_len ()
+@deftypefn {Built-in Function} {int} __builtin_va_arg_pack_len ()
 This built-in function returns the number of anonymous arguments of
 an inline function.  It can be used only in inline functions that
 are always inlined, never compiled as a separate function, such
