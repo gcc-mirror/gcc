@@ -3248,9 +3248,11 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
   node = node->ultimate_alias_target ();
 
   /* Optimizers can redirect unreachable calls or calls triggering undefined
-     behavior to builtin_unreachable.  */
+     behavior to __builtin_unreachable or __builtin_trap.  */
 
-  if (fndecl_built_in_p (callee->decl, BUILT_IN_UNREACHABLE))
+  if (fndecl_built_in_p (callee->decl, BUILT_IN_NORMAL)
+      && (DECL_FUNCTION_CODE (callee->decl) == BUILT_IN_UNREACHABLE
+	  || DECL_FUNCTION_CODE (callee->decl) == BUILT_IN_TRAP))
     return false;
 
   if (callee->former_clone_of != node->decl
