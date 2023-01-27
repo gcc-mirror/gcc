@@ -208,26 +208,6 @@
 	 (const_int 4)]
 	(const_int INVALID_ATTRIBUTE)))
 
-;; The index of operand[] to get the tail policy op.
-(define_attr "tail_policy_op_idx" ""
-  (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vlds")
-	 (const_int 5)]
-	(const_int INVALID_ATTRIBUTE)))
-
-;; The index of operand[] to get the mask policy op.
-(define_attr "mask_policy_op_idx" ""
-  (cond [(eq_attr "type" "vlde,vste,vlds")
-	 (const_int 6)]
-	(const_int INVALID_ATTRIBUTE)))
-
-;; The index of operand[] to get the mask policy op.
-(define_attr "avl_type_op_idx" ""
-  (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov,vlds,vlds")
-	 (const_int 7)
-	 (eq_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
-	 (const_int 5)]
-	(const_int INVALID_ATTRIBUTE)))
-
 ;; The tail policy op value.
 (define_attr "ta" ""
   (cond [(eq_attr "type" "vlde,vimov,vfmov,vlds")
