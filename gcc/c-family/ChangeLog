@@ -1,3 +1,8 @@
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105300
+	* c-pragma.cc (handle_pragma_message): Warn for CPP_STRING_USERDEF.
+
 2023-01-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/108424

@@ -1,3 +1,29 @@
+2023-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (operator>>(istream&, ZoneInfo&)): Allow
+	rules named "+" for compatibility with older tzdata.zi files.
+
+2023-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108554
+	* include/bits/stl_tree.h (_Rb_tree_insert_and_rebalance): Add
+	nonnull attribute.
+	(_Rb_tree_rebalance_for_erase): Add nonnull and returns_nonnull
+	attributes.
+	* testsuite/23_containers/map/modifiers/108554.cc: New test.
+
+2023-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108530
+	* src/c++20/tzdb.cc (current_zone): Look for TIMEZONE or ZONE in
+	/etc/sysconfig/clock, not DEFAULT_TIMEZONE.
+
+2023-01-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/intro.xml: Update links to www.open-std.org to
+	use https.
+	* doc/html/manual/bugs.html: Regenerate.
+
 2023-01-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108530

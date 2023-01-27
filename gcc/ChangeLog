@@ -1,3 +1,204 @@
+2023-01-26  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vector-builtins.cc (register_builtin_types):
+	Use get_typenode_from_name to get fixed-width integer type
+	nodes.
+	* config/riscv/riscv-vector-builtins.def: Update define with
+	fixed-width integer type nodes.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (same_bb_and_before_p): Remove it.
+	(real_insn_and_same_bb_p): New function.
+	(same_bb_and_after_or_equal_p): Remove it.
+	(before_p): New function.
+	(reg_killed_by_bb_p): Ditto.
+	(has_vsetvl_killed_avl_p): Ditto.
+	(get_vl): Move location so that we can call it.
+	(anticipatable_occurrence_p): Fix issue of AVL=REG support.
+	(available_occurrence_p): Ditto.
+	(dominate_probability_p): Remove it.
+	(can_backward_propagate_p): Remove it.
+	(get_all_nonphi_defs): New function.
+	(get_all_predecessors): Ditto.
+	(any_insn_in_bb_p): Ditto.
+	(insert_vsetvl): Adjust AVL REG.
+	(source_equal_p): New function.
+	(extract_single_source): Ditto.
+	(avl_info::single_source_equal_p): Ditto.
+	(avl_info::operator==): Adjust for AVL=REG.
+	(vl_vtype_info::same_avl_p): Ditto.
+	(vector_insn_info::set_demand_info): Remove it.
+	(vector_insn_info::compatible_p): Adjust for AVL=REG.
+	(vector_insn_info::compatible_avl_p): New function.
+	(vector_insn_info::merge): Adjust AVL=REG.
+	(vector_insn_info::dump): Ditto.
+	(pass_vsetvl::merge_successors): Remove it.
+	(enum fusion_type): New enum.
+	(pass_vsetvl::get_backward_fusion_type): New function.
+	(pass_vsetvl::backward_demand_fusion): Adjust for AVL=REG.
+	(pass_vsetvl::forward_demand_fusion): Ditto.
+	(pass_vsetvl::demand_fusion): Ditto.
+	(pass_vsetvl::prune_expressions): Ditto.
+	(pass_vsetvl::compute_local_properties): Ditto.
+	(pass_vsetvl::cleanup_vsetvls): Ditto.
+	(pass_vsetvl::commit_vsetvls): Ditto.
+	(pass_vsetvl::init): Ditto.
+	* config/riscv/riscv-vsetvl.h (enum fusion_type): New enum.
+	(enum merge_type): New enum.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc
+	(vector_infos_manager::vector_infos_manager): Add probability.
+	(vector_infos_manager::dump): Ditto.
+	(pass_vsetvl::compute_probabilities): Ditto.
+	* config/riscv/riscv-vsetvl.h (struct vector_block_info): Ditto.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_insn_info::operator==): Remove dirty_pat.
+	(vector_insn_info::merge): Ditto.
+	(vector_insn_info::dump): Ditto.
+	(pass_vsetvl::merge_successors): Ditto.
+	(pass_vsetvl::backward_demand_fusion): Ditto.
+	(pass_vsetvl::forward_demand_fusion): Ditto.
+	(pass_vsetvl::commit_vsetvls): Ditto.
+	* config/riscv/riscv-vsetvl.h: Ditto.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (add_label_notes): Rename insn to
+	rinsn.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::backward_demand_fusion): Refine codes.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::forward_demand_fusion):
+	Add pre-check for redundant flow.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_infos_manager::create_bitmap_vectors): New function.
+	(vector_infos_manager::free_bitmap_vectors): Ditto.
+	(pass_vsetvl::pre_vsetvl): Adjust codes.
+	* config/riscv/riscv-vsetvl.h: New function declaration.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (can_backward_propagate_p): Fix for null iter_bb.
+	(vector_insn_info::set_demand_info): New function.
+	(pass_vsetvl::emit_local_forward_vsetvls): Adjust for refinement of Phase 3.
+	(pass_vsetvl::merge_successors): Ditto.
+	(pass_vsetvl::compute_global_backward_infos): Ditto.
+	(pass_vsetvl::backward_demand_fusion): Ditto.
+	(pass_vsetvl::forward_demand_fusion): Ditto.
+	(pass_vsetvl::demand_fusion): New function.
+	(pass_vsetvl::lazy_vsetvl): Adjust for refinement of phase 3.
+	* config/riscv/riscv-vsetvl.h: New function declaration.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_insn_info::operator>=): Fix available condition.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (change_vsetvl_insn): New function.
+	(pass_vsetvl::compute_global_backward_infos): Simplify codes.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (loop_basic_block_p): Adjust function.
+	(backward_propagate_worthwhile_p): Fix non-worthwhile.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (change_insn): Adjust in_group in validate_change.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_infos_manager::all_same_avl_p): New function.
+	(pass_vsetvl::can_refine_vsetvl_p): Add AVL check.
+	(pass_vsetvl::commit_vsetvls): Ditto.
+	* config/riscv/riscv-vsetvl.h: New function declaration.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md:
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class loadstore): use
+	pred_store for vse.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::add_mem_operand): Refine function.
+	(function_expander::use_contiguous_load_insn): Adjust new
+	implementation.
+	(function_expander::use_contiguous_store_insn): Ditto.
+	* config/riscv/riscv-vector-builtins.h: Refine function.
+	* config/riscv/vector.md (@pred_store<mode>): New pattern.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc: Change to scalar pointer.
+
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/108543
+	* opts.cc (parse_sanitizer_options): Don't always clear SANITIZE_ADDRESS
+	if it was previously set.
+
+2023-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108540
+	* range-op-float.cc (foperator_equal::fold_range): If both op1 and op2
+	are singletons, use range_true even if op1 != op2
+	when one range is [-0.0, -0.0] and another [0.0, 0.0].  Similarly,
+	even if intersection of the ranges is empty and one has
+	zero low bound and another zero high bound, use range_true_and_false
+	rather than range_false.
+	(foperator_not_equal::fold_range): If both op1 and op2
+	are singletons, use range_false even if op1 != op2
+	when one range is [-0.0, -0.0] and another [0.0, 0.0].  Similarly,
+	even if intersection of the ranges is empty and one has
+	zero low bound and another zero high bound, use range_true_and_false
+	rather than range_true.
+
+2023-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* value-relation.cc (kind_string): Add const.
+	(rr_negate_table, rr_swap_table, rr_intersect_table,
+	rr_union_table, rr_transitive_table): Add static const, change
+	element type from relation_kind to unsigned char.
+	(relation_negate, relation_swap, relation_intersect, relation_union,
+	relation_transitive): Cast rr_*_table element to relation_kind.
+	(relation_to_code): Add static const.
+	(relation_tests): Assert VREL_LAST is smaller than UCHAR_MAX.
+
+2023-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108547
+	* gimple-predicate-analysis.cc (value_sat_pred_p):
+	Use widest_int.
+
+2023-01-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/108522
+	* tree-object-size.cc (compute_object_offset): Make EXPR
+	argument non-const.  Call component_ref_field_offset.
+
+2023-01-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (cssc): Specify
+	FEATURE_STRING field.
+
+2023-01-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/sourcebuild.texi: Refer to projects as GCC and GDB.
+
 2023-01-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR modula2/102343

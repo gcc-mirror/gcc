@@ -1,3 +1,71 @@
+2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GCCDeclare.mod: Import IsProcedureNoReturn.
+	(DeclareProcedureToGccWholeProgram): New variable declared and set
+	returnType.  Pass returnType to BuildEndFunctionDeclaration.
+	Extra parameter IsProcedureNoReturn passed to
+	BuildEndFunctionDeclaration.
+	* gm2-compiler/M2Quads.mod (BuildM2MainFunction): Correct
+	scaffold comment and add extra return 0.
+	* gm2-compiler/P2Build.bnf: Import BuildNoReturnAttribute.
+	(ProcedureHeading): Process EndBuildFormalParameters before
+	parsing AttributeNoReturn.
+	(DefProcedureHeading): Process EndBuildFormalParameters before
+	parsing AttributeNoReturn.
+	(AttributeNoReturn): Call BuildNoReturnAttribute.
+	* gm2-compiler/P2SymBuild.def (BuildNoReturnAttribute): New
+	procedure.
+	* gm2-compiler/P2SymBuild.mod (BuildNoReturnAttribute): New
+	procedure.
+	* gm2-compiler/SymbolTable.def (PutProcedureInline): Corrected
+	comment.
+	(PutProcedureNoReturn): New procedure.
+	(IsProcedureNoReturn): New procedure function.
+	* gm2-compiler/SymbolTable.mod (SymProcedure): IsNoReturn
+	new field.
+	(MakeProcedure): Initialize IsNoReturn to FALSE.
+	(PutProcedureNoReturn): New procedure.
+	(IsProcedureNoReturn): New procedure function.
+	* gm2-gcc/m2decl.cc (m2decl_BuildEndFunctionDeclaration):
+	Add extra parameter isnoreturn.  Set TREE_THIS_VOLATILE
+	to isnoreturn.
+	* gm2-gcc/m2decl.def (BuildEndFunctionDeclaration): Add
+	extra parameter isnoreturn.
+	* gm2-gcc/m2decl.h (m2decl_BuildEndFunctionDeclaration): Add
+	extra parameter isnoreturn.
+	* gm2-gcc/m2except.cc (m2except_InitExceptions): Change all
+	function decl to pass an extra parameter isnoreturn.
+
+2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* m2.flex (splitSlashStar): Fix comment so that /* does not
+	appear inside the comment.
+
+2023-01-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/108553
+	* gm2-lang.cc (gm2_langhook_init_options): Remove debug code.
+
+2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (m2/gm2config.h): Rewrite rule to be
+	dependent upon m2/gm2config.aci.
+	(m2/gm2config.aci): Newrule.
+	* configure.ac (AC_CONFIG_HEADERS): Change destination
+	to gm2config.aci.
+	* configure: Regenerate.
+	* gm2-libs/config-host: Regenerate.
+	* gm2-compiler/M2GCCDeclare.mod (AddSymToWatch): Comment
+	out.
+	* gm2-compiler/M2Quads.mod (BuildConstHighFromSym): Remove
+	Dim.
+	(StartBuildWith): Call BuildStmtNoteTok.
+	(BuildStmtNoteTok): New procedure.
+	(BuildStmtNote): Re-implement re-factor into two
+	procedures and call BuildStmtNoteTok.
+	* gm2config.h.in: Remove.
+	* gm2config.aci.in: New file.
+
 2023-01-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR modula2/102343

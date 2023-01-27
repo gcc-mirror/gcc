@@ -1,3 +1,248 @@
+2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/warnings/returntype/fail/badreturn.mod: New test.
+	* gm2/warnings/returntype/fail/warnings-returntype-fail.exp:
+	New test.
+	* gm2/warnings/returntype/pass/Termbase.mod: New test.
+	* gm2/warnings/returntype/pass/goodreturn.mod: New test.
+	* gm2/warnings/returntype/pass/keypressedsimple.mod: New test.
+	* gm2/warnings/returntype/pass/warnings-returntype-pass.exp:
+	New test.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_single-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-20.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-21.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-22.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-23.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-24.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-25.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-26.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-27.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-28.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-29.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-30.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-31.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-32.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-33.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-34.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-35.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-36.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-37.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-38.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-39.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-4.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-40.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-41.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-42.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-43.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-44.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-45.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-46.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-47.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-48.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-49.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-50.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-51.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-52.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-53.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-54.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-55.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-56.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-57.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-58.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-59.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-60.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-61.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-62.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-63.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-64.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-65.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-66.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-67.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-68.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-69.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-10.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-11.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-12.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-13.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-14.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-15.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-16.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-17.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-18.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-19.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-7.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-70.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-71.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-8.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-9.c: New test.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-10.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-11.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-12.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-13.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-4.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-7.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-8.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-9.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-4.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-10.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-11.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-12.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-13.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-14.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-15.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-16.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-17.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-4.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-7.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-8.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-9.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-4.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-7.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-8.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-9.c: New test.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-27.c: Update
+	testcase.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-28.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-45.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-27.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-28.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-12.c: Ditto.
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vle-constraint-1.c:
+
+2023-01-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vse-constraint-1.c: New test.
+
+2023-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108544
+	* gfortran.dg/pr108544.f90: New test.
+	* gfortran.dg/pr96102b.f90: New test.
+
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/108543
+	* c-c++-common/asan/pointer-subtract-5.c: New test.
+	* c-c++-common/asan/pointer-subtract-6.c: New test.
+	* c-c++-common/asan/pointer-subtract-7.c: New test.
+	* c-c++-common/asan/pointer-subtract-8.c: New test.
+
+2023-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108540
+	* gcc.c-torture/execute/ieee/pr108540-1.c: New test.
+	* gcc.c-torture/execute/ieee/pr108540-2.c: New test.
+
+2023-01-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-c++-common/hwasan/arguments-3.c: Remove extraneous .*s.
+
+2023-01-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/bfloat16_scalar_typecheck.c: Accept empty
+	compound literals.
+
+2023-01-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/guality/pr36728-2.c: Update XFAILs for aarch64*-*-*.
+	* gcc.dg/guality/pr54519-1.c: Likewise.
+	* gcc.dg/guality/pr54519-3.c: Likewise.
+	* gcc.dg/guality/pr54693-2.c: Likewise.
+	* gcc.dg/guality/sra-1.c: Likewise.
+
+2023-01-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/pr99766.C: Disable warnings.
+
+2023-01-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/slp_13.c: Remove XFAILs.
+
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105300
+	* g++.dg/cpp0x/udlit-error1.C: New test.
+
+2023-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108507
+	* gcc.dg/analyzer/SARD-tc841-basic-00182-min.c: Add
+	-Wno-stringop-overflow.
+
+2023-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108524
+	* gcc.dg/analyzer/infinite-recursion-pr108524-1.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-pr108524-2.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-pr108524-qobject-json-parser.c:
+	New test.
+
+2023-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108547
+	* gcc.dg/uninit-pr108547.c: New testcase.
+
+2023-01-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/108522
+	* gcc.dg/builtin-dynamic-object-size-0.c (DEFSTRUCT): New
+	macro.
+	(test_dynarray_struct_member_b, test_dynarray_struct_member_c,
+	test_dynarray_struct_member_d,
+	test_dynarray_struct_member_subobj_b,
+	test_dynarray_struct_member_subobj_c,
+	test_dynarray_struct_member_subobj_d): New tests.
+	(main): Call them.
+
+2023-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108503
+	* g++.dg/gomp/pr108503.C: New test.
+
+2023-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108523
+	* gcc.dg/torture/pr108523.c: New testcase.
+
 2023-01-25  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/108528

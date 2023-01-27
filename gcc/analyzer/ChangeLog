@@ -1,3 +1,23 @@
+2023-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108524
+	* analyzer.h (class feasible_node): New forward decl.
+	* diagnostic-manager.cc (epath_finder::get_best_epath): Add "pd"
+	param.
+	(epath_finder::explore_feasible_paths): Likewise.
+	(epath_finder::process_worklist_item): Likewise.  Use it to call
+	pending_diagnostic::check_valid_fpath_p on the final fpath to
+	give pending_diagnostic a way to add additional restrictions on
+	feasibility.
+	(saved_diagnostic::calc_best_epath): Pass pending_diagnostic to
+	epath_finder::get_best_epath.
+	* infinite-recursion.cc: Include "analyzer/feasible-graph.h".
+	(infinite_recursion_diagnostic::check_valid_fpath_p): New.
+	(infinite_recursion_diagnostic::fedge_uses_conjured_svalue_p): New.
+	(infinite_recursion_diagnostic::expr_uses_conjured_svalue_p): New.
+	* pending-diagnostic.h (pending_diagnostic::check_valid_fpath_p):
+	New vfunc.
+
 2023-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108455

@@ -1,3 +1,36 @@
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105300
+	* parser.cc: Remove unnecessary forward declarations.
+	(cp_parser_string_literal): New wrapper.
+	(cp_parser_string_literal_common): Renamed from
+	cp_parser_string_literal.  Add a bool parameter.  Give an error when
+	UDLs are not permitted.
+	(cp_parser_userdef_string_literal): New wrapper.
+	(finish_userdef_string_literal): Renamed from
+	cp_parser_userdef_string_literal.
+	(cp_parser_primary_expression): Call cp_parser_userdef_string_literal
+	instead of cp_parser_string_literal.
+	(cp_parser_linkage_specification): Move a variable declaration closer
+	to its first use.
+	(cp_parser_static_assert): Likewise.
+	(cp_parser_operator): Call cp_parser_userdef_string_literal instead of
+	cp_parser_string_literal.
+	(cp_parser_asm_definition): Move a variable declaration closer to its
+	first use.
+	(cp_parser_asm_specification_opt): Move variable declarations closer to
+	their first use.
+	(cp_parser_asm_operand_list): Likewise.
+	(cp_parser_asm_clobber_list): Likewise.
+
+2023-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108503
+	* parser.cc (cp_convert_omp_range_for): If cp_finish_decomp has been
+	called in !processing_template_decl with processing_template_decl
+	temporarily set, clear DECL_HAS_VALUE_EXPR_P on the vars temporarily.
+	(cp_finish_omp_range_for): And set it back again here.
+
 2023-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/108525

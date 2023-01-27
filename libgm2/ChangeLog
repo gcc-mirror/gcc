@@ -1,3 +1,7 @@
+2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* configure.ac (AM_INIT_AUTOMAKE): Specify 1.15.1.
+
 2023-01-24  Co-Authored by: Iain Sandoe  <iain@sandoe.co.uk>
 
 	* libm2cor/Makefile.am (SYSTEM.def): Split path into
