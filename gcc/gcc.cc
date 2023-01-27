@@ -842,7 +842,7 @@ proper position among the other output files.  */
 #define LINK_COMPRESS_DEBUG_SPEC \
 	" %{gz|gz=zlib:"  LD_COMPRESS_DEBUG_OPTION "=zlib}" \
 	" %{gz=none:"	  LD_COMPRESS_DEBUG_OPTION "=none}" \
-	" %{gz*:%e-gz=zstd is not supported in this configuration} " \
+	" %{gz=zstd:%e-gz=zstd is not supported in this configuration} " \
 	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
 #elif HAVE_LD_COMPRESS_DEBUG == 2
 /* ELF gABI style and ZSTD.  */
