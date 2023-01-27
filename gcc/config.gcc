@@ -1971,7 +1971,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
 		;;
 	esac
 	;;
-x86_64-*-linux* | x86_64-*-kfreebsd*-gnu)
+x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-gnu*)
 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h glibc-stdint.h \
 		 i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h"
 	case ${target} in
@@ -1981,6 +1981,9 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu)
 	  	;;
 	x86_64-*-kfreebsd*-gnu)
 		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
+		;;
+	x86_64-*-gnu*)
+		tm_file="${tm_file} gnu.h i386/gnu64.h"
 		;;
 	esac
 	tmake_file="${tmake_file} i386/t-linux64"
