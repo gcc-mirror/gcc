@@ -141,6 +141,7 @@ SubstitutionParamMapping::fill_param_ty (
 	bound.handle_substitions (subst_mappings);
 
       param->set_ty_ref (type.get_ref ());
+      subst_mappings.on_param_subst (*param, arg);
     }
 
   return true;
