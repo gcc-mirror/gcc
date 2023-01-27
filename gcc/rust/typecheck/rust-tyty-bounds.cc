@@ -444,7 +444,7 @@ TypeBoundPredicate::is_error () const
 
 BaseType *
 TypeBoundPredicate::handle_substitions (
-  SubstitutionArgumentMappings subst_mappings)
+  SubstitutionArgumentMappings &subst_mappings)
 {
   for (auto &sub : get_substs ())
     {

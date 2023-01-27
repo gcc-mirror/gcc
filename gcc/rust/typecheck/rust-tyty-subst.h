@@ -199,7 +199,8 @@ public:
 
   bool was_substituted () const;
 
-  SubstitutionArgumentMappings get_substitution_arguments () const;
+  SubstitutionArgumentMappings &get_substitution_arguments ();
+  const SubstitutionArgumentMappings &get_substitution_arguments () const;
 
   // this is the count of type params that are not substituted fuly
   size_t num_required_substitutions () const;
@@ -301,7 +302,7 @@ public:
   bool monomorphize ();
 
   // TODO comment
-  virtual BaseType *handle_substitions (SubstitutionArgumentMappings mappings)
+  virtual BaseType *handle_substitions (SubstitutionArgumentMappings &mappings)
     = 0;
 
   SubstitutionArgumentMappings get_used_arguments () const;
