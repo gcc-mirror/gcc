@@ -82,6 +82,8 @@ VAR
    ListOfTokens     : ListDesc ;
    CurrentTokNo     : CARDINAL ;
    InsertionIndex   : CARDINAL ;
+   SeenEof          : BOOLEAN ;  (* Have we seen eof since the last call
+                                    to OpenSource.  *)
 
 
 (*
@@ -122,6 +124,7 @@ END InitTokenList ;
 
 PROCEDURE Init ;
 BEGIN
+   SeenEof := FALSE ;
    InsertionIndex := 0 ;
    currenttoken := eoftok ;
    CurrentTokNo := InitialSourceToken ;
@@ -337,6 +340,7 @@ END SetFile ;
 
 PROCEDURE OpenSource (s: String) : BOOLEAN ;
 BEGIN
+   SeenEof := FALSE ;
    IF UseBufferedTokens
    THEN
       GetToken ;
@@ -606,6 +610,27 @@ END DumpTokens ;
 
 
 (*
+   GetNonEofToken - providing that we have not already seen an eof for this source
+                    file call m2flex.GetToken and GetToken if requested.
+*)
+
+PROCEDURE GetNonEofToken (callGetToken: BOOLEAN) ;
+BEGIN
+   IF SeenEof
+   THEN
+      currenttoken := eoftok
+   ELSE
+      (* Call the lexical phase to place a new token into the last bucket.  *)
+      m2flex.GetToken () ;
+      IF callGetToken
+      THEN
+         GetToken
+      END
+   END
+END GetNonEofToken ;
+
+
+(*
    GetToken - gets the next token into currenttoken.
 *)
 
@@ -622,7 +647,7 @@ BEGIN
    ELSE
       IF ListOfTokens.tail=NIL
       THEN
-         m2flex.GetToken () ;
+         GetNonEofToken (FALSE) ;
          IF ListOfTokens.tail=NIL
          THEN
             HALT
@@ -630,16 +655,14 @@ BEGIN
       END ;
       IF CurrentTokNo>=ListOfTokens.LastBucketOffset
       THEN
-         (* CurrentTokNo is in the last bucket or needs to be read *)
+         (* CurrentTokNo is in the last bucket or needs to be read.  *)
          IF CurrentTokNo-ListOfTokens.LastBucketOffset<ListOfTokens.tail^.len
          THEN
             UpdateFromBucket (ListOfTokens.tail,
                               CurrentTokNo-ListOfTokens.LastBucketOffset)
          ELSE
-            (* call the lexical phase to place a new token into the last bucket *)
-            m2flex.GetToken () ;
-            GetToken ;  (* and call ourselves again to collect the token from bucket *)
-            RETURN
+            (* and call ourselves again to collect the token from bucket *)
+            GetNonEofToken (TRUE)
          END
       ELSE
          t := CurrentTokNo ;
@@ -1175,6 +1198,10 @@ PROCEDURE AddTok (t: toktype) ;
 VAR
    s: String ;
 BEGIN
+   IF t = eoftok
+   THEN
+      SeenEof := TRUE
+   END ;
    IF NOT ((t=eoftok) AND IsLastTokenEof())
    THEN
       AddTokToList(t, NulName, 0,

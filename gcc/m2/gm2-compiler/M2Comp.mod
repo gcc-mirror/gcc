@@ -39,7 +39,7 @@ FROM libc IMPORT exit ;
 FROM M2Error IMPORT ErrorStringAt, ErrorStringAt2, ErrorStringsAt2,
                     WriteFormat0, FlushErrors, FlushWarnings, ResetErrorScope ;
 
-FROM M2MetaError IMPORT MetaErrorString1, MetaError0, MetaError1 ;
+FROM M2MetaError IMPORT MetaErrorString0, MetaErrorString1, MetaError0, MetaError1, MetaString0 ;
 FROM FormatStrings IMPORT Sprintf1 ;
 FROM P0SymBuild IMPORT P0Init, P1Init ;
 
@@ -173,6 +173,8 @@ END compile ;
 *)
 
 PROCEDURE ExamineCompilationUnit (VAR name: ADDRESS; VAR isdefimp: BOOLEAN) ;
+VAR
+   Message: String ;
 BEGIN
    isdefimp := FALSE ;   (* default to program module *)
    (* stop if we see eof, ';' or '[' *)
@@ -189,8 +191,9 @@ BEGIN
       END ;
       GetToken
    END ;
-   m2flex.M2Error(string(InitString('failed to find module name'))) ;
-   exit(1)
+   Message := MetaString0 (InitString ('no {%kMODULE} name found')) ;
+   m2flex.M2Error (string (Message)) ;
+   exit (1)
 END ExamineCompilationUnit ;
 
 
@@ -204,20 +207,20 @@ VAR
    name    : ADDRESS ;
    isdefimp: BOOLEAN ;
 BEGIN
-   IF OpenSource(s)
+   IF OpenSource (s)
    THEN
-      ExamineCompilationUnit(name, isdefimp) ;
+      ExamineCompilationUnit (name, isdefimp) ;
       IF isdefimp
       THEN
-         SetMainModule(MakeImplementationSource(GetTokenNo(), makekey(name)))
+         SetMainModule (MakeImplementationSource (GetTokenNo (), makekey (name)))
       ELSE
-         SetMainModule(MakeProgramSource(GetTokenNo(), makekey(name)))
+         SetMainModule (MakeProgramSource (GetTokenNo (), makekey (name)))
       END ;
       CloseSource ;
       ReInitialize
    ELSE
-      fprintf1(StdErr, 'failed to open %s\n', s) ;
-      exit(1)
+      fprintf1 (StdErr, 'failed to open %s\n', s) ;
+      exit (1)
    END
 END PeepInto ;
 
