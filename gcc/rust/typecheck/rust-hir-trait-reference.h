@@ -497,8 +497,9 @@ public:
 
   TyTy::BaseType *get_self () { return self; }
 
-  void setup_associated_types (const TyTy::BaseType *self,
-			       const TyTy::TypeBoundPredicate &bound);
+  TyTy::BaseType *
+  setup_associated_types (const TyTy::BaseType *self,
+			  const TyTy::TypeBoundPredicate &bound);
 
   void reset_associated_types ();
 

@@ -85,7 +85,6 @@ TypeCheckCallExpr::visit (ADTType &type)
 void
 TypeCheckCallExpr::visit (FnType &type)
 {
-  type.monomorphize ();
   if (call.num_params () != type.num_params ())
     {
       if (type.is_varadic ())

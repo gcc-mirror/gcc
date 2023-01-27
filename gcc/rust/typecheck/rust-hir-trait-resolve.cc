@@ -377,13 +377,10 @@ TraitItemReference::associated_type_reset () const
   placeholder->clear_associated_type ();
 }
 
-void
+TyTy::BaseType *
 AssociatedImplTrait::setup_associated_types (
   const TyTy::BaseType *self, const TyTy::TypeBoundPredicate &bound)
 {
-  if (!bound.contains_associated_types ())
-    return;
-
   // compute the constrained impl block generic arguments based on self and the
   // higher ranked trait bound
   TyTy::BaseType *receiver = self->clone ();
@@ -486,6 +483,7 @@ AssociatedImplTrait::setup_associated_types (
     TyTy::TyWithLocation (receiver), TyTy::TyWithLocation (impl_self_infer),
     impl_predicate.get_locus ());
   rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
+  TyTy::BaseType *self_result = result;
 
   // unify the bounds arguments
   std::vector<TyTy::BaseType *> hrtb_bound_arguments;
@@ -500,7 +498,7 @@ AssociatedImplTrait::setup_associated_types (
     }
 
   if (impl_trait_predicate_args.size () != hrtb_bound_arguments.size ())
-    return;
+    return self_result;
 
   for (size_t i = 0; i < impl_trait_predicate_args.size (); i++)
     {
@@ -554,6 +552,8 @@ AssociatedImplTrait::setup_associated_types (
     resolved_trait_item->associated_type_set (substituted);
   });
   iter.go ();
+
+  return self_result;
 }
 
 void
