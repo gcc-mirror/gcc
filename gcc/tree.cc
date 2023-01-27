@@ -2695,6 +2695,35 @@ build_zero_cst (tree type)
     }
 }
 
+/* If floating-point type TYPE has an IEEE-style sign bit, return an
+   unsigned constant in which only the sign bit is set.  Return null
+   otherwise.  */
+
+tree
+sign_mask_for (tree type)
+{
+  /* Avoid having to choose between a real-only sign and a pair of signs.
+     This could be relaxed if the choice becomes obvious later.  */
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    return NULL_TREE;
+
+  auto eltmode = as_a<scalar_float_mode> (element_mode (type));
+  auto bits = REAL_MODE_FORMAT (eltmode)->ieee_bits;
+  if (!bits || !pow2p_hwi (bits))
+    return NULL_TREE;
+
+  tree inttype = unsigned_type_for (type);
+  if (!inttype)
+    return NULL_TREE;
+
+  auto mask = wi::set_bit_in_zero (bits - 1, bits);
+  if (TREE_CODE (inttype) == VECTOR_TYPE)
+    {
+      tree elt = wide_int_to_tree (TREE_TYPE (inttype), mask);
+      return build_vector_from_val (inttype, elt);
+    }
+  return wide_int_to_tree (inttype, mask);
+}
 
 /* Build a BINFO with LEN language slots.  */
 
@@ -10987,6 +11016,10 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
 	return NULL_TREE;
       if (inner == inner2)
 	return type;
+      machine_mode new_mode;
+      if (VECTOR_MODE_P (TYPE_MODE (type))
+	  && related_int_vector_mode (TYPE_MODE (type)).exists (&new_mode))
+	return build_vector_type_for_mode (inner2, new_mode);
       return build_vector_type (inner2, TYPE_VECTOR_SUBPARTS (type));
     }
 
