@@ -1,3 +1,22 @@
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/108543
+	* opts.cc (parse_sanitizer_options): Don't always clear SANITIZE_ADDRESS
+	if it was previously set.
+
+2023-01-26  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	Backported from master:
+	2023-01-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.h (CLZ_DEFINED_VALUE_AT_ZERO): Fix value for QI
+	and HI input modes.
+	* config/pru/pru.md (clz): Fix generated code for QI and HI
+	input modes.
+
 2023-01-25  Christophe Lyon  <christophe.lyon@arm.com>
 
 	Backported from master:
