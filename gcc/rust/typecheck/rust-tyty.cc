@@ -1148,7 +1148,7 @@ handle_substitions (SubstitutionArgumentMappings &subst_mappings,
 }
 
 ADTType *
-ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+ADTType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
   ADTType *adt = static_cast<ADTType *> (clone ());
   adt->set_ty_ref (mappings->get_next_hir_id ());
@@ -1333,7 +1333,7 @@ TupleType::monomorphized_clone () const
 }
 
 TupleType *
-TupleType::handle_substitions (SubstitutionArgumentMappings mappings)
+TupleType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -1474,7 +1474,7 @@ FnType::monomorphized_clone () const
 }
 
 FnType *
-FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+FnType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
   FnType *fn = static_cast<FnType *> (clone ());
   fn->set_ty_ref (mappings->get_next_hir_id ());
@@ -1742,7 +1742,7 @@ ClosureType::monomorphized_clone () const
 }
 
 ClosureType *
-ClosureType::handle_substitions (SubstitutionArgumentMappings mappings)
+ClosureType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   gcc_unreachable ();
   return nullptr;
@@ -1862,7 +1862,7 @@ ArrayType::monomorphized_clone () const
 }
 
 ArrayType *
-ArrayType::handle_substitions (SubstitutionArgumentMappings mappings)
+ArrayType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -1945,7 +1945,7 @@ SliceType::monomorphized_clone () const
 }
 
 SliceType *
-SliceType::handle_substitions (SubstitutionArgumentMappings mappings)
+SliceType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -2704,7 +2704,7 @@ ReferenceType::monomorphized_clone () const
 }
 
 ReferenceType *
-ReferenceType::handle_substitions (SubstitutionArgumentMappings mappings)
+ReferenceType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -2870,7 +2870,7 @@ PointerType::monomorphized_clone () const
 }
 
 PointerType *
-PointerType::handle_substitions (SubstitutionArgumentMappings mappings)
+PointerType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -3047,7 +3047,7 @@ ParamType::is_equal (const BaseType &other) const
 }
 
 ParamType *
-ParamType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+ParamType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
   SubstitutionArg arg = SubstitutionArg::error ();
   bool ok = subst_mappings.get_argument_for_symbol (this, &arg);
@@ -3492,7 +3492,8 @@ ProjectionType::monomorphized_clone () const
 }
 
 ProjectionType *
-ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+ProjectionType::handle_substitions (
+  SubstitutionArgumentMappings &subst_mappings)
 {
   // // do we really need to substitute this?
   // if (base->needs_generic_substitutions () || base->contains_type_parameters

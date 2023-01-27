@@ -304,7 +304,7 @@ public:
 
   bool is_concrete () const override final;
 
-  ParamType *handle_substitions (SubstitutionArgumentMappings mappings);
+  ParamType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
 private:
   std::string symbol;
@@ -379,7 +379,7 @@ public:
 
   std::string get_name () const override final;
 
-  TupleType *handle_substitions (SubstitutionArgumentMappings mappings);
+  TupleType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
 private:
   std::vector<TyVar> fields;
@@ -427,7 +427,7 @@ public:
 
   // WARNING THIS WILL ALWAYS RETURN NULLPTR
   BaseType *
-  handle_substitions (SubstitutionArgumentMappings mappings) override final;
+  handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
   bool is_error () const;
 
@@ -682,7 +682,7 @@ public:
   }
 
   ADTType *
-  handle_substitions (SubstitutionArgumentMappings mappings) override final;
+  handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
 private:
   std::string identifier;
@@ -815,7 +815,7 @@ public:
   }
 
   FnType *
-  handle_substitions (SubstitutionArgumentMappings mappings) override final;
+  handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
   ABI get_abi () const { return abi; }
 
@@ -965,7 +965,7 @@ public:
   }
 
   ClosureType *
-  handle_substitions (SubstitutionArgumentMappings mappings) override final;
+  handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
   TyTy::TupleType &get_parameters () const { return *parameters; }
   TyTy::BaseType &get_result_type () const { return *result_type.get_tyty (); }
@@ -1024,7 +1024,7 @@ public:
 
   HIR::Expr &get_capacity_expr () const { return capacity_expr; }
 
-  ArrayType *handle_substitions (SubstitutionArgumentMappings mappings);
+  ArrayType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
 private:
   TyVar element_type;
@@ -1070,7 +1070,7 @@ public:
     return get_element_type ()->is_concrete ();
   }
 
-  SliceType *handle_substitions (SubstitutionArgumentMappings mappings);
+  SliceType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
 private:
   TyVar element_type;
@@ -1321,7 +1321,7 @@ public:
 
   bool is_concrete () const override final;
 
-  ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
+  ReferenceType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
   Mutability mutability () const;
 
@@ -1364,7 +1364,7 @@ public:
 
   bool is_concrete () const override final;
 
-  PointerType *handle_substitions (SubstitutionArgumentMappings mappings);
+  PointerType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
   Mutability mutability () const;
   bool is_mutable () const;
@@ -1500,7 +1500,7 @@ public:
   bool is_concrete () const override final;
 
   ProjectionType *
-  handle_substitions (SubstitutionArgumentMappings mappings) override final;
+  handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
 private:
   BaseType *base;

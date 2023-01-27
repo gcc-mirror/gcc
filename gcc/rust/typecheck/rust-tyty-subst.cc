@@ -488,7 +488,13 @@ SubstitutionRef::was_substituted () const
   return !needs_substitution ();
 }
 
-SubstitutionArgumentMappings
+SubstitutionArgumentMappings &
+SubstitutionRef::get_substitution_arguments ()
+{
+  return used_arguments;
+}
+
+const SubstitutionArgumentMappings &
 SubstitutionRef::get_substitution_arguments () const
 {
   return used_arguments;
@@ -697,7 +703,7 @@ SubstitutionRef::infer_substitions (Location locus)
   SubstitutionArgumentMappings infer_arguments (std::move (args),
 						{} /* binding_arguments */,
 						locus);
-  return handle_substitions (std::move (infer_arguments));
+  return handle_substitions (infer_arguments);
 }
 
 SubstitutionArgumentMappings
