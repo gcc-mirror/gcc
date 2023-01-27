@@ -241,7 +241,7 @@ SubstitutionArgumentMappings::SubstitutionArgumentMappings (
 SubstitutionArgumentMappings::SubstitutionArgumentMappings (
   const SubstitutionArgumentMappings &other)
   : mappings (other.mappings), binding_args (other.binding_args),
-    locus (other.locus), param_subst_cb (other.param_subst_cb),
+    locus (other.locus), param_subst_cb (nullptr),
     trait_item_flag (other.trait_item_flag)
 {}
 
@@ -252,7 +252,7 @@ SubstitutionArgumentMappings::operator= (
   mappings = other.mappings;
   binding_args = other.binding_args;
   locus = other.locus;
-  param_subst_cb = other.param_subst_cb;
+  param_subst_cb = nullptr;
   trait_item_flag = other.trait_item_flag;
 
   return *this;
