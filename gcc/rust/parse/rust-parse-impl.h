@@ -7188,18 +7188,9 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	  }
       }
       case UNSAFE: {
-	/* FIXME: are there any expressions without blocks that can have
-	 * unsafe as their first token? Or is unsafe the only one? */
-	// safe side for now
-	if (lexer.peek_token (1)->get_id () == LEFT_CURLY)
-	  {
-	    return parse_expr_stmt_with_block (std::move (outer_attrs));
-	  }
-	else
-	  {
-	    return parse_expr_stmt_without_block (std::move (outer_attrs),
-						  restrictions);
-	  }
+	// unsafe block
+	// https://doc.rust-lang.org/reference/unsafe-keyword.html
+	return parse_expr_stmt_with_block (std::move (outer_attrs));
       }
     default:
       // not a parse expr with block, so must be expr without block
