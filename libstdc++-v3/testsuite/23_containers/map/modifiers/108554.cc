@@ -4,6 +4,8 @@
 // PR libstdc++/108554
 // Warning from -Wnull-dereference when extracting a unique_ptr from a map.
 
+// { dg-bogus "null pointer dereference" "PR 108554" { target *-*-* } 0 }
+
 #include <map>
 #include <memory>
 #include <string>
