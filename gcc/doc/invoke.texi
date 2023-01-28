@@ -16563,7 +16563,7 @@ this can be achieved with @samp{setarch `uname -m` -R ./prog}.
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
-See @uref{https://github.com/google/kasan} for more details.
+See @uref{https://github.com/google/kernel-sanitizers} for more details.
 
 @item -fsanitize=hwaddress
 @opindex fsanitize=hwaddress
