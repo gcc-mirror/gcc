@@ -1,3 +1,13 @@
+2023-01-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2022-12-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/107987
+	* config/arm/mve.md (mve_vcmp<mve_cmp_op>q_n_<mode>,
+	@mve_vcmp<mve_cmp_op>q_n_f<mode>): Apply vec_duplicate to scalar
+	operand.
+
 2023-01-26  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
