@@ -1002,6 +1002,11 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       if (!single_pred_p (middle_bb))
 	return false;
 
+      /* The middle bb cannot have phi nodes as we don't
+	 move those assignments yet. */
+      if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
+	return false;
+
       stmt_to_move = last_and_only_stmt (middle_bb);
       if (!stmt_to_move)
 	return false;
