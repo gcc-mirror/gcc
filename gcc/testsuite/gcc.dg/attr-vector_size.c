@@ -22,7 +22,7 @@ DEFVEC (extern, 30);
 
 #if __SIZEOF_SIZE_T__ > 4
 
-VEC (POW2 (63)) char v63;     /* { dg-error  "'vector_size' attribute argument value '9223372036854775808' exceeds 9223372036854775807" "LP64" { target lp64 } } */
+VEC (POW2 (63)) char v63;     /* { dg-error  "'vector_size' attribute argument value '9223372036854775808' exceeds 9223372036854775807" "not-ILP32" { target { ! ilp32 } } } */
 
 #else
 
@@ -41,7 +41,7 @@ void test_local_scope (void)
 
 #if __SIZEOF_SIZE_T__ > 4
 
-  VEC (POW2 (63)) char v63;   /* { dg-error  "'vector_size' attribute argument value '9223372036854775808' exceeds 9223372036854775807" "LP64" { target lp64 } } */
+  VEC (POW2 (63)) char v63;   /* { dg-error  "'vector_size' attribute argument value '9223372036854775808' exceeds 9223372036854775807" "not-ILP32" { target { ! ilp32 } } } */
 
 #else
 

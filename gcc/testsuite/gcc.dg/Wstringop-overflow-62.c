@@ -41,7 +41,7 @@ void test_min (void)
     memset (q, 0, DIFF_MAX - 2);
     memset (q, 0, DIFF_MAX);
     // { dg-warning "writing 2147483647 bytes into a region of size 2147483646" "ilp32" { target ilp32 } .-1 }
-    // { dg-warning "writing 9223372036854775807 bytes into a region of size 9223372036854775806" "lp64" { target lp64 } .-2 }
+    // { dg-warning "writing 9223372036854775807 bytes into a region of size 9223372036854775806" "not-ilp32" { target { ! ilp32 } } .-2 }
   }
 
   {

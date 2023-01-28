@@ -13,12 +13,12 @@ fn (int ap[])
   int r = 0;
 
   r += sizeof (arr) / sizeof (*arr);
-  r += sizeof (arr) / sizeof (p); /* { dg-warning "expression does not compute" "" { target { lp64 } } } */
-  r += sizeof (arr) / sizeof p; /* { dg-warning "expression does not compute" "" { target { lp64 } } } */
+  r += sizeof (arr) / sizeof (p); /* { dg-warning "expression does not compute" "" { target { ! ilp32 } } } */
+  r += sizeof (arr) / sizeof p; /* { dg-warning "expression does not compute" "" { target { ! ilp32 } } } */
   r += sizeof (arr) / (sizeof p);
   r += sizeof (arr) / (sizeof (p));
   r += sizeof (arr2) / sizeof p;
-  r += sizeof (arr2) / sizeof (int); /* { dg-warning "expression does not compute" "" { target { lp64 } } } */
+  r += sizeof (arr2) / sizeof (int); /* { dg-warning "expression does not compute" "" { target { ! ilp32 } } } */
   r += sizeof (arr2) / sizeof (int *);
   r += sizeof (arr2) / sizeof (short *);
   r += sizeof (arr) / sizeof (int);
