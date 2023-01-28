@@ -1578,7 +1578,7 @@ locates data in flash but
 accesses to these data read from generic address space, i.e.@:
 from RAM,
 so that you need special accessors like @code{pgm_read_byte}
-from @w{@uref{http://nongnu.org/avr-libc/user-manual/,AVR-LibC}}
+from @w{@uref{https://www.nongnu.org/avr-libc/user-manual/,AVR-LibC}}
 together with attribute @code{progmem}.
 
 @noindent
