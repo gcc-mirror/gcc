@@ -779,7 +779,7 @@
 
       <para>
 	For PDF output, something that transforms valid Docbook XML to PDF is
-	required. Possible solutions include <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://dblatex.sourceforge.net">dblatex</link>,
+	required. Possible solutions include <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://dblatex.sourceforge.net">dblatex</link>,
 	<command>xmlto</command>, or <command>prince</command>. Of
 	these, <command>dblatex</command> is the default.
 	Please consult the <email>libstdc++@gcc.gnu.org</email> list when
@@ -789,7 +789,7 @@
 
       <para>
 	For Texinfo output, something that transforms valid Docbook
-	XML to Texinfo is required. The default choice is <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://docbook2x.sourceforge.net/">docbook2X</link>.
+	XML to Texinfo is required. The default choice is <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://docbook2x.sourceforge.net/">docbook2X</link>.
       </para>
 
       <para>
