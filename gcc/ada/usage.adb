@@ -580,6 +580,10 @@ begin
    Write_Line ("        s    suppress all info/warnings");
    Write_Line ("        .s   turn on warnings for overridden size clause");
    Write_Line ("        .S*  turn off warnings for overridden size clause");
+   Write_Line ("        _s+  turn on warnings for ineffective predicate " &
+                                                  "tests");
+   Write_Line ("        _S*  turn off warnings for ineffective predicate " &
+                                                   "tests");
    Write_Line ("        t    turn on warnings for tracking deleted code");
    Write_Line ("        T*   turn off warnings for tracking deleted code");
    Write_Line ("        .t*+ turn on warnings for suspicious contract");
