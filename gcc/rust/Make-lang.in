@@ -73,7 +73,7 @@ GRS_OBJS = \
     rust/rust-lex.o \
     rust/rust-cfg-parser.o \
     rust/rust-parse.o \
-    rust/rust-ast-full-test.o \
+    rust/rust-ast.o \
     rust/rust-ast-fragment.o \
     rust/rust-ast-dump.o \
     rust/rust-hir-dump.o \
