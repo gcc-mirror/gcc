@@ -1,3 +1,21 @@
+2023-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/108568
+	* testsuite/17_intro/names.cc (__unused): For linux or GNU hurd
+	include features.h if present and then check __GLIBC__ and
+	__GLIBC_MINOR__ macros for glibc prior to 2.19, instead of testing
+	__GLIBC_PREREQ which isn't defined yet.
+
+2023-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdata_stream): Use constant instead of
+	string literal.
+
+2023-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108554
+	* testsuite/23_containers/map/modifiers/108554.cc: Use dg-bogus.
+
 2023-01-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++20/tzdb.cc (operator>>(istream&, ZoneInfo&)): Allow

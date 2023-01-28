@@ -1,3 +1,251 @@
+2023-01-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/pim/fail/empty.mod: New test.
+
+2023-01-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-auto-1.c, gcc.dg/c2x-auto-3.c: Expect braces around
+	auto initializers to be disallowed.
+
+2023-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c:
+	Remove XFAIL.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Fix names
+	of dump files.
+
+2023-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/simd/vfma_f64.c: Use a wrapper function
+	rather than an asm barrier.
+	* gcc.target/aarch64/simd/vfms_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vmul_f64_1.c: Use a wrapper function
+	rather than volatile.
+	* gcc.target/aarch64/simd/vmul_n_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlalh_laneq_s16_1.c: Use a wrapper
+	function.  Remove -fno-inline.
+	* gcc.target/aarch64/simd/vqdmlals_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlslh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsls_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhs_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhs_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhs_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhs_lane_s32.c: Likewise.
+	Allow the scalar form to be used when operating on lane 0.
+	Add a test for lane 1.
+
+2023-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96373
+	* gcc.target/aarch64/sve/cond_xorsign_1.c: New test.
+	* gcc.target/aarch64/sve/cond_xorsign_2.c: Likewise.
+
+2023-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cond_asrd_1.c: Tune for a 256-bit
+	vector length.
+	* gcc.target/aarch64/sve/cond_cnot_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_5.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_4_costly.c: Remove XFAILs.
+
+2023-01-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108306
+	* gcc.dg/pr108306.c: New.
+
+2023-01-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108447
+	* gcc.dg/pr108447.c: New.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-7.c: Fix testcase check.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-18.c: Ditto.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/base/vle-1.C: New test.
+	* g++.target/riscv/rvv/base/vle_tu-1.C: New test.
+	* g++.target/riscv/rvv/base/vle_tum-1.C: New test.
+	* g++.target/riscv/rvv/base/vle_tumu-1.C: New test.
+	* g++.target/riscv/rvv/base/vse-1.C: New test.
+	* g++.target/riscv/rvv/base/riscv_vector.h: New.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vse-1.c: New test.
+	* gcc.target/riscv/rvv/base/vse-2.c: New test.
+	* gcc.target/riscv/rvv/base/vse-3.c: New test.
+	* gcc.target/riscv/rvv/base/vse_m-1.c: New test.
+	* gcc.target/riscv/rvv/base/vse_m-2.c: New test.
+	* gcc.target/riscv/rvv/base/vse_m-3.c: New test.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vle-1.c: New test.
+	* gcc.target/riscv/rvv/base/vle-2.c: New test.
+	* gcc.target/riscv/rvv/base/vle-3.c: New test.
+	* gcc.target/riscv/rvv/base/vle_m-1.c: New test.
+	* gcc.target/riscv/rvv/base/vle_m-2.c: New test.
+	* gcc.target/riscv/rvv/base/vle_m-3.c: New test.
+	* gcc.target/riscv/rvv/base/vle_mu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vle_mu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vle_mu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tum-1.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tum-2.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tum-3.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tumu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tumu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vle_tumu-3.c: New test.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/base/vsm-1.C: New test.
+	* g++.target/riscv/rvv/rvv.exp: New test.
+	* gcc.target/riscv/rvv/base/vlm_vsm-1.c: New test.
+	* gcc.target/riscv/rvv/base/vlm_vsm-2.c: New test.
+	* gcc.target/riscv/rvv/base/vlm_vsm-3.c: New test.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_single-14.c: Adjust for final implementation.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-30.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-44.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-47.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-50.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-51.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-65.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-66.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-67.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-68.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-70.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-71.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-21.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-22.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-10.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-11.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-12.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-13.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-14.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-15.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-16.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-4.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-7.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-8.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-9.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-73.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-74.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-75.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-10.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-11.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-12.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-13.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-14.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-15.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-16.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-17.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-18.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-19.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-20.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-4.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-7.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-8.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-9.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-10.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-11.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-12.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-13.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-14.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-15.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-16.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-17.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-18.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-19.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-20.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-4.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-7.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-8.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-9.c: New test.
+
+2023-01-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.dg/pr95115.c (x): Add noipa attribute.
+
+2023-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/106061
+	* gcc.dg/pr106061.c: New test.
+
+2023-01-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-variant-10.f90: Update scan-tree's
+	target selector to handle Windows.
+	* gfortran.dg/gomp/declare-variant-11.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-12.f90: Likewise.
+
 2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2/warnings/returntype/fail/badreturn.mod: New test.

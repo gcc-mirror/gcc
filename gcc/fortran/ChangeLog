@@ -1,3 +1,8 @@
+2023-01-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/108558
+	* trans-openmp.cc (gfc_split_omp_clauses): Handle has_device_addr.
+
 2023-01-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108544

@@ -1,3 +1,188 @@
+2023-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96373
+	* tree.h (sign_mask_for): Declare.
+	* tree.cc (sign_mask_for): New function.
+	(signed_or_unsigned_type_for): For vector types, try to use the
+	related_int_vector_mode.
+	* genmatch.cc (commutative_op): Handle conditional internal functions.
+	* match.pd: Fold an IFN_COND_MUL+copysign into an IFN_COND_XOR+and.
+
+2023-01-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.cc (vector_costs::compare_inside_loop_cost):
+	Use the likely minimum VF when bounding the denominators to
+	the estimated number of iterations.
+
+2023-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* doc/invoke.texi (-shared): Clarify effect on -ffast-math
+	and -Ofast FP environment side-effects.
+
+2023-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* config/mips/gnu-user.h (GNU_USER_TARGET_MATHFILE_SPEC):
+	Don't add crtfastmath.o for -shared.
+
+2023-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* config/ia64/linux.h (ENDFILE_SPEC): Don't add crtfastmath.o
+	for -shared.
+
+2023-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* config/alpha/linux.h (ENDFILE_SPEC): Don't add
+	crtfastmath.o for -shared.
+
+2023-01-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108306
+	* range-op.cc (operator_lshift::fold_range): Return [0, 0] not
+	varying for shifts that are always out of void range.
+	(operator_rshift::fold_range): Return [0, 0] not
+	varying for shifts that are always out of void range.
+
+2023-01-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108447
+	* gimple-range-fold.cc (old_using_range::relation_fold_and_or):
+	Do not attempt to fold HONOR_NAN types.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct loadstore_def):
+	Remove _m suffix for "vop_m" C++ overloaded API name.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (BASE): Add vlm/vsm support.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vlm): New define.
+	(vsm): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct loadstore_def): Add vlm/vsm support.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_B_OPS): Ditto.
+	(vbool64_t): Ditto.
+	(vbool32_t): Ditto.
+	(vbool16_t): Ditto.
+	(vbool8_t): Ditto.
+	(vbool4_t): Ditto.
+	(vbool2_t): Ditto.
+	(vbool1_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_B_OPS): Ditto.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	(function_expander::use_contiguous_load_insn): Ditto.
+	* config/riscv/vector.md (@pred_store<mode>): Ditto.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vsetvl_insn_p): Add condition to avoid ICE.
+	(vsetvl_discard_result_insn_p): New function.
+	(reg_killed_by_bb_p): rename to find_reg_killed_by.
+	(find_reg_killed_by): New name.
+	(get_vl): allow it to be called by more functions.
+	(has_vsetvl_killed_avl_p): Add condition.
+	(get_avl): allow it to be called by more functions.
+	(insn_should_be_added_p): New function.
+	(get_all_nonphi_defs): Refine function.
+	(get_all_sets): Ditto.
+	(get_same_bb_set): New function.
+	(any_insn_in_bb_p): Ditto.
+	(any_set_in_bb_p): Ditto.
+	(get_vl_vtype_info): Add VLMAX forward optimization.
+	(source_equal_p): Fix issues.
+	(extract_single_source): Refine.
+	(avl_info::multiple_source_equal_p): New function.
+	(avl_info::operator==): Adjust for final version.
+	(vl_vtype_info::operator==): Ditto.
+	(vl_vtype_info::same_avl_p): Ditto.
+	(vector_insn_info::parse_insn): Ditto.
+	(vector_insn_info::available_p): New function.
+	(vector_insn_info::merge): Adjust for final version.
+	(vector_insn_info::dump): Add hard_empty.
+	(pass_vsetvl::hard_empty_block_p): New function.
+	(pass_vsetvl::backward_demand_fusion): Adjust for final version.
+	(pass_vsetvl::forward_demand_fusion): Ditto.
+	(pass_vsetvl::demand_fusion): Ditto.
+	(pass_vsetvl::cleanup_illegal_dirty_blocks): New function.
+	(pass_vsetvl::compute_local_properties): Adjust for final version.
+	(pass_vsetvl::can_refine_vsetvl_p): Ditto.
+	(pass_vsetvl::refine_vsetvls): Ditto.
+	(pass_vsetvl::commit_vsetvls): Ditto.
+	(pass_vsetvl::propagate_avl): New function.
+	(pass_vsetvl::lazy_vsetvl): Adjust for new version.
+	* config/riscv/riscv-vsetvl.h (enum def_type): New enum.
+
+2023-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/108560
+	* doc/extend.texi: Fix up return type of __builtin_va_arg_pack_len
+	from size_t to int.
+
+2023-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/106061
+	* cgraph.cc (cgraph_edge::verify_corresponds_to_fndecl): Allow
+	redirection of calls to __builtin_trap in addition to redirection
+	to __builtin_unreachable.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (before_p): Fix bug.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (gen_vsetvl_pat): Refine function args.
+	(emit_vsetvl_insn): Ditto.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix constraints.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Add TARGET_MIN_VLEN > 32 predicates.
+
+2023-01-27  Patrick Palka  <ppalka@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (tree_code_type, tree_code_length): For
+	C++17 and later, add inline keyword, otherwise don't define
+	the arrays, but declare extern arrays.
+	* tree.cc (tree_code_type, tree_code_length): Define these
+	arrays for C++14 and older.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.h: Change it into public.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-passes.def (INSERT_PASS_BEFORE): Reorder VSETVL
+	pass.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::execute): Always call split_all_insns.
+
+2023-01-27  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix incorrect attributes.
+
+2023-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR target/55522
+	* config/loongarch/gnu-user.h (GNU_USER_TARGET_MATHFILE_SPEC):
+	Don't add crtfastmath.o for -shared.
+
+2023-01-27  Alexandre Oliva  <oliva@gnu.org>
+
+	* doc/options.texi (option, RejectNegative): Mention that
+	-g-started options are also implicitly negatable.
+
 2023-01-26  Kito Cheng  <kito.cheng@sifive.com>
 
 	* config/riscv/riscv-vector-builtins.cc (register_builtin_types):

@@ -1,3 +1,39 @@
+2023-01-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Comp.mod:  Import MetaString0.
+	(ExamineCompilationUnit): New variable Message.
+	Create and format error string.
+	* gm2-compiler/M2LexBuf.mod: New variable SeenEof.
+	(GetNonEofToken): New procedure.
+	(Init): Set SeenEof to FALSE.
+	(GetToken): Use GetNonEofToken instead of calls to
+	m2flex.GetToken and GetToken.
+	(AddTok): Detect eoftok and set SeenEof.
+
+2023-01-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Options.def: Export GetMQ, SetMQ.
+	* gm2-compiler/M2Preprocess.mod: (MakeSaveTempsFileName):
+	Test NewDir against NIL.  Test Dumpdir against NIL.
+	Test GetMD () against NIL.  Test GetMMD () against NIL.
+	Test GetMQ () against NIL.  Test GetObj () against NIL.
+	Test tempfile against NIL.
+	* gm2-compiler/P2SymBuild.def: Export
+	BuildNoReturnAttribute.
+
+2023-01-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/108555
+	PR modula2/108182
+	PR modula2/102343
+	* gm2-lang.cc (gm2_langhook_option_lang_mask): Do not claim CL_C
+	or CL_DRIVER.
+	(gm2_langhook_init_options): Handle options that we want to pass
+	to the preprocessor.
+	* lang-specs.h: Pass -B and -save-temps to regular compile lines.
+	* lang.opt: Add C and Driver options that Modula-2 intercepts for
+	internal use. Reorder options into two sections and to collate.
+
 2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2GCCDeclare.mod: Import IsProcedureNoReturn.
