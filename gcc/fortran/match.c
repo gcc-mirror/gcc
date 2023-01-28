@@ -5297,6 +5297,16 @@ gfc_match_common (void)
 		goto cleanup;
 	    }
 
+	  /* F2018:R874:  common-block-object is variable-name [ (array-spec) ]
+	     F2018:C8121: A variable-name shall not be a name made accessible
+	     by use association.  */
+	  if (sym->attr.use_assoc)
+	    {
+	      gfc_error ("Symbol %qs at %C is USE associated from module %qs "
+			 "and cannot occur in COMMON", sym->name, sym->module);
+	      goto cleanup;
+	    }
+
 	  /* Deal with an optional array specification after the
 	     symbol name.  */
 	  m = gfc_match_array_spec (&as, true, true);
