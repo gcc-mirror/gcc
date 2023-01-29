@@ -1,3 +1,59 @@
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108529
+	* simplify.cc (simplify_transformation): Do not try to simplify
+	transformational intrinsic when the ARRAY argument has a NULL shape.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-07-14  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/106209
+	* decl.cc (add_init_expr_to_sym): Handle bad initializers for
+	implied-shape arrays.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108421
+	* interface.cc (get_expr_storage_size): Check that we actually have
+	an integer value before trying to extract it with mpz_get_si.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108420
+	* iresolve.cc (check_charlen_present): Preserve character length if
+	there is no array constructor.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108501
+	* interface.cc (get_expr_storage_size): Check array subscript triplets
+	that we actually have integer values before trying to extract with
+	mpz_get_si.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108502
+	* dependency.cc (gfc_check_dependency): Prevent NULL pointer
+	dereference while recursively checking expressions.
+
 2023-01-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

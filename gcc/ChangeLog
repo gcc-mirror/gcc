@@ -1,3 +1,55 @@
+2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2023-01-05  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.cc (processor_alias_table):
+	Use CPU_ZNVER4 for znver4.
+	* config/i386/i386.md: Add znver4.md.
+	* config/i386/znver4.md: New.
+
+2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2022-10-25  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.cc (processor_alias_table): Use
+	CPU_ZNVER3 for znver4.
+	* config/i386/znver.md: Remove znver4 reservations.
+
+2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2022-10-21  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu): Recognize znver4.
+	* common/config/i386/i386-common.cc (processor_names): Add znver4.
+	(processor_alias_table): Add znver4 and modularize old znvers.
+	* common/config/i386/i386-cpuinfo.h (processor_subtypes):
+	AMDFAM19H_ZNVER4.
+	* config.gcc (x86_64-*-* |...): Likewise.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Let
+	-march=native recognize znver4 cpus.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add znver4.
+	* config/i386/i386-options.cc (m_ZNVER4): New definition.
+	(m_ZNVER): Include m_ZNVER4.
+	(processor_cost_table): Add znver4.
+	* config/i386/i386.cc (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (processor_type): Add PROCESSOR_ZNVER4.
+	(PTA_ZNVER1): New definition.
+	(PTA_ZNVER2): Likewise.
+	(PTA_ZNVER3): Likewise.
+	(PTA_ZNVER4): Likewise.
+	* config/i386/i386.md (define_attr "cpu"): Add znver4 and rename
+	md file.
+	* config/i386/x86-tune-costs.h (znver4_cost): New definition.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Add znver4.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/znver1.md: Rename to znver.md.
+	* config/i386/znver.md: Add new reservations for znver4.
+	* doc/extend.texi: Add details about znver4.
+	* doc/invoke.texi: Likewise.
+
 2023-01-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:
