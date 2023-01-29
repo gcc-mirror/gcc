@@ -13021,6 +13021,12 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
     case UNSAFE:
       return parse_unsafe_block_expr (std::move (outer_attrs),
 				      tok->get_locus ());
+    case UNDERSCORE:
+      add_error (
+	Error (tok->get_locus (),
+	       "use of %qs is not allowed on the right-side of an assignment",
+	       tok->get_token_description ()));
+      return nullptr;
     default:
       if (!restrictions.expr_can_be_null)
 	add_error (Error (tok->get_locus (),
