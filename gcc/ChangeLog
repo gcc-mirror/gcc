@@ -1,3 +1,50 @@
+2023-01-28  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64.cc (aarch64_uxt_size): fix an
+	off-by-one in checking the permissible shift-amount.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Named Address Spaces): Update link to the
+	AVR-Libc manual.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (Standards): Fix markup.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (Standards): Update link to Objective-C book.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Instrumentation Options): Update reference to
+	AddressSanitizer.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi: Update Go1 link.
+
+2023-01-28  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md (pmode_reg_or_0_operand): New predicate.
+	* config/riscv/riscv-vector-builtins-bases.cc (class loadstore):
+	Support vlse/vsse.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vlse): New class.
+	(vsse): New class.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_contiguous_load_insn): Support vlse/vsse.
+	* config/riscv/vector.md (@pred_strided_load<mode>): New md pattern.
+	(@pred_strided_store<mode>): Ditto.
+
+2023-01-28  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md (tail_policy_op_idx): Remove.
+	(mask_policy_op_idx): Remove.
+	(avl_type_op_idx): Remove.
+
 2023-01-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/96373

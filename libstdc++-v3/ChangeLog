@@ -1,3 +1,21 @@
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Adjust link to
+	ISO C++ standard at ANSI.
+	Move link to www.open-std.org to https.
+	* doc/html/manual/appendix_contributing.html: Regenerate.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Move sourceforge.net
+	links to https.
+	* doc/html/manual/documentation_hacking.html: Regenerate.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Update www.open-std.org link to https.
+	* doc/html/manual/abi.html: Regenerate.
+
 2023-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/108568

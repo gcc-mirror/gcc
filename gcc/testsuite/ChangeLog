@@ -1,3 +1,87 @@
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/108527
+	* gfortran.dg/pr108527.f90: New test.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108453
+	* gfortran.dg/common_27.f90: New test.
+
+2023-01-28  Jonathan Yong  <10walls@gmail.com>
+
+	PR c/108192
+	* g++.dg/cet-notrack-1.C: Use puts instead of printf,
+	so function call is not mangled by __mingw_printf when
+	doing assembly symbol inspection.
+
+2023-01-28  Jonathan Yong  <10walls@gmail.com>
+
+	PR c/108150
+	* gcc.dg/attr-aligned.c: Make errors emitted on Windows
+	target same as on Linux.
+
+2023-01-28  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/base/vlse-1.C: New test.
+	* g++.target/riscv/rvv/base/vlse_tu-1.C: New test.
+	* g++.target/riscv/rvv/base/vlse_tum-1.C: New test.
+	* g++.target/riscv/rvv/base/vlse_tumu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsse-1.C: New test.
+	* gcc.target/riscv/rvv/base/vlse-1.c: New test.
+	* gcc.target/riscv/rvv/base/vlse-2.c: New test.
+	* gcc.target/riscv/rvv/base/vlse-3.c: New test.
+	* gcc.target/riscv/rvv/base/vlse-vsse-constraint-1.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_m-1.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_m-2.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_m-3.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_mu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_mu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_mu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tum-1.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tum-2.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tum-3.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tumu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tumu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vlse_tumu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsse-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsse-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsse-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsse_m-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsse_m-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsse_m-3.c: New test.
+
+2023-01-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/ISO_Fortran_binding_17.f90: Replace (\n|\r\n|\r)
+	with (\r*\n+).
+	* gfortran.dg/array_temporaries_2.f90: Likewise.
+	* gfortran.dg/bind-c-contiguous-1.f90: Likewise.
+	* gfortran.dg/bind-c-contiguous-4.f90: Likewise.
+	* gfortran.dg/bind-c-contiguous-5.f90: Likewise.
+	* gfortran.dg/fmt_error_4.f90: Likewise.
+	* gfortran.dg/fmt_error_5.f90: Likewise.
+	* gfortran.dg/fmt_float.f90: Likewise.
+	* gfortran.dg/fmt_l.f90: Likewise.
+	* gfortran.dg/fmt_nonchar_2.f90: Likewise.
+	* gfortran.dg/fmt_zero_precision.f90: Likewise.
+	* gfortran.dg/g77/f77-edit-apostrophe-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-colon-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-h-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-i-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-s-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-slash-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-t-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-x-out.f: Likewise.
+	* gfortran.dg/namelist_40.f90: Likewise.
+	* gfortran.dg/namelist_47.f90: Likewise.
+	* gfortran.dg/namelist_print_1.f: Likewise.
+	* gfortran.dg/parameter_array_dummy.f90: Likewise.
+
 2023-01-27  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2/pim/fail/empty.mod: New test.

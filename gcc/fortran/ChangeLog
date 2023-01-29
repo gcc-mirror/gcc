@@ -1,3 +1,19 @@
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/108527
+	* resolve.cc (compare_bound_int): Expression to compare must be of
+	type INTEGER.
+	(compare_bound_mpz_t): Likewise.
+	(check_dimension): Fix comment on checks applied to array section
+	and clean up associated logic.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108453
+	* match.cc (gfc_match_common): A USE associated name shall not appear
+	in a COMMON block (F2018:C8121).
+
 2023-01-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/108558
