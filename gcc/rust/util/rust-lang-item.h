@@ -17,7 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-system.h"
-#include "operator.h"
+#include "rust-operators.h"
 
 namespace Rust {
 namespace Analysis {

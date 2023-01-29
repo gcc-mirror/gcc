@@ -23,7 +23,7 @@
 #include "rust-ast-full-decls.h"
 #include "rust-hir.h"
 #include "rust-hir-path.h"
-#include "operator.h"
+#include "rust-operators.h"
 
 namespace Rust {
 namespace HIR {

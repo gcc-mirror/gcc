@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-session-manager.h"
 #include "rust-lex.h"
 #include "rust-parse.h"
-#include "operator.h"
+#include "rust-operators.h"
 
 /* Compilation unit used for various AST-related functions that would make
  * the headers too long if they were defined inline and don't receive any
