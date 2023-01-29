@@ -162,6 +162,15 @@ d_gimplify_call_expr (tree *expr_p, gimple_seq *pre_p)
   if (!has_side_effects)
     return GS_UNHANDLED;
 
+  /* Evaluate the callee before calling it.  */
+  tree new_call_fn = CALL_EXPR_FN (*expr_p);
+
+  if (gimplify_expr (&new_call_fn, pre_p, NULL,
+		     is_gimple_call_addr, fb_rvalue) == GS_ERROR)
+    return GS_ERROR;
+
+  CALL_EXPR_FN (*expr_p) = new_call_fn;
+
   /* Leave the last argument for gimplify_call_expr.  */
   for (int i = 0; i < nargs - 1; i++)
     {
