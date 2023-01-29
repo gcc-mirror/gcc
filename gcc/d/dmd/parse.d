@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/grammar.html, D Grammar)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/parse.d, _parse.d)
@@ -20,6 +20,7 @@ import dmd.globals;
 import dmd.id;
 import dmd.identifier;
 import dmd.lexer;
+import dmd.location;
 import dmd.errors;
 import dmd.root.filename;
 import dmd.common.outbuffer;
@@ -52,7 +53,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
      */
     extern (D) this(const ref Loc loc, AST.Module _module, const(char)[] input, bool doDocComment)
     {
-        super(_module ? _module.srcfile.toChars() : null, input.ptr, 0, input.length, doDocComment, false);
+        super(_module ? _module.srcfile.toChars() : null, input.ptr, 0, input.length, doDocComment, false,
+                global.vendor, global.versionNumber());
 
         //printf("Parser::Parser()\n");
         scanloc = loc;
@@ -74,7 +76,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
     extern (D) this(AST.Module _module, const(char)[] input, bool doDocComment)
     {
-        super(_module ? _module.srcfile.toChars() : null, input.ptr, 0, input.length, doDocComment, false);
+        super(_module ? _module.srcfile.toChars() : null, input.ptr, 0, input.length, doDocComment, false,
+              global.vendor, global.versionNumber());
 
         //printf("Parser::Parser()\n");
         mod = _module;
@@ -1982,7 +1985,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
     {
         const loc = token.loc;
         AST.Expression exp;
-        AST.Expression msg = null;
+        AST.Expressions* msg = null;
 
         //printf("parseStaticAssert()\n");
         nextToken();
@@ -1991,15 +1994,16 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         exp = parseAssignExp();
         if (token.value == TOK.comma)
         {
-            nextToken();
-            if (token.value != TOK.rightParenthesis)
+            if (peekNext() == TOK.rightParenthesis)
             {
-                msg = parseAssignExp();
-                if (token.value == TOK.comma)
-                    nextToken();
+                nextToken(); // consume `,`
+                nextToken(); // consume `)`
             }
+            else
+                msg = parseArguments();
         }
-        check(TOK.rightParenthesis);
+        else
+            check(TOK.rightParenthesis);
         check(TOK.semicolon, "static assert");
         return new AST.StaticAssert(loc, exp, msg);
     }
@@ -5719,6 +5723,8 @@ LagainStc:
                         s = null;
                     else if (token.value == TOK.leftCurly)
                         s = parseStatement(ParseStatementFlags.curly | ParseStatementFlags.scope_);
+                    else if (flags & ParseStatementFlags.curlyScope)
+                        s = parseStatement(ParseStatementFlags.semiOk | ParseStatementFlags.curlyScope);
                     else
                         s = parseStatement(ParseStatementFlags.semiOk);
                     s = new AST.LabelStatement(loc, ident, s);

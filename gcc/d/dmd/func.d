@@ -8,7 +8,7 @@
  * - `invariant`
  * - `unittest`
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/func.d, _func.d)
@@ -43,6 +43,7 @@ import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
+import dmd.location;
 import dmd.mtype;
 import dmd.objc;
 import dmd.root.aav;
@@ -2924,89 +2925,100 @@ Expression addInvariant(AggregateDeclaration ad, VarDeclaration vthis)
  */
 extern (D) int overloadApply(Dsymbol fstart, scope int delegate(Dsymbol) dg, Scope* sc = null)
 {
-    Dsymbol next;
-    for (auto d = fstart; d; d = next)
+    Dsymbols visited;
+
+    int overloadApplyRecurse(Dsymbol fstart, scope int delegate(Dsymbol) dg, Scope* sc)
     {
-        import dmd.access : checkSymbolAccess;
-        if (auto od = d.isOverDeclaration())
+        // Detect cyclic calls.
+        if (visited.contains(fstart))
+            return 0;
+        visited.push(fstart);
+
+        Dsymbol next;
+        for (auto d = fstart; d; d = next)
         {
-            /* The scope is needed here to check whether a function in
-               an overload set was added by means of a private alias (or a
-               selective import). If the scope where the alias is created
-               is imported somewhere, the overload set is visible, but the private
-               alias is not.
-            */
-            if (sc)
+            import dmd.access : checkSymbolAccess;
+            if (auto od = d.isOverDeclaration())
             {
-                if (checkSymbolAccess(sc, od))
+                /* The scope is needed here to check whether a function in
+                   an overload set was added by means of a private alias (or a
+                   selective import). If the scope where the alias is created
+                   is imported somewhere, the overload set is visible, but the private
+                   alias is not.
+                */
+                if (sc)
                 {
-                    if (int r = overloadApply(od.aliassym, dg, sc))
+                    if (checkSymbolAccess(sc, od))
+                    {
+                        if (int r = overloadApplyRecurse(od.aliassym, dg, sc))
+                            return r;
+                    }
+                }
+                else if (int r = overloadApplyRecurse(od.aliassym, dg, sc))
+                    return r;
+                next = od.overnext;
+            }
+            else if (auto fa = d.isFuncAliasDeclaration())
+            {
+                if (fa.hasOverloads)
+                {
+                    if (int r = overloadApplyRecurse(fa.funcalias, dg, sc))
                         return r;
                 }
+                else if (auto fd = fa.toAliasFunc())
+                {
+                    if (int r = dg(fd))
+                        return r;
+                }
+                else
+                {
+                    d.error("is aliased to a function");
+                    break;
+                }
+                next = fa.overnext;
             }
-            else if (int r = overloadApply(od.aliassym, dg, sc))
-                return r;
-            next = od.overnext;
-        }
-        else if (auto fa = d.isFuncAliasDeclaration())
-        {
-            if (fa.hasOverloads)
+            else if (auto ad = d.isAliasDeclaration())
             {
-                if (int r = overloadApply(fa.funcalias, dg, sc))
-                    return r;
+                if (sc)
+                {
+                    if (checkSymbolAccess(sc, ad))
+                        next = ad.toAlias();
+                }
+                else
+                   next = ad.toAlias();
+                if (next == ad)
+                    break;
+                if (next == fstart)
+                    break;
             }
-            else if (auto fd = fa.toAliasFunc())
+            else if (auto td = d.isTemplateDeclaration())
+            {
+                if (int r = dg(td))
+                    return r;
+                next = td.overnext;
+            }
+            else if (auto fd = d.isFuncDeclaration())
             {
                 if (int r = dg(fd))
                     return r;
+                next = fd.overnext;
+            }
+            else if (auto os = d.isOverloadSet())
+            {
+                foreach (ds; os.a)
+                    if (int r = dg(ds))
+                        return r;
             }
             else
             {
                 d.error("is aliased to a function");
                 break;
+                // BUG: should print error message?
             }
-            next = fa.overnext;
         }
-        else if (auto ad = d.isAliasDeclaration())
-        {
-            if (sc)
-            {
-                if (checkSymbolAccess(sc, ad))
-                    next = ad.toAlias();
-            }
-            else
-               next = ad.toAlias();
-            if (next == ad)
-                break;
-            if (next == fstart)
-                break;
-        }
-        else if (auto td = d.isTemplateDeclaration())
-        {
-            if (int r = dg(td))
-                return r;
-            next = td.overnext;
-        }
-        else if (auto fd = d.isFuncDeclaration())
-        {
-            if (int r = dg(fd))
-                return r;
-            next = fd.overnext;
-        }
-        else if (auto os = d.isOverloadSet())
-        {
-            foreach (ds; os.a)
-                if (int r = dg(ds))
-                    return r;
-        }
-        else
-        {
-            d.error("is aliased to a function");
-            break;
-            // BUG: should print error message?
-        }
+        return 0;
     }
-    return 0;
+    return overloadApplyRecurse(fstart, dg, sc);
 }
 
 /**

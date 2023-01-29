@@ -436,7 +436,7 @@ public:
     static @property size_t dig()
     {
         auto shiftcnt = precision - ((flags&Flags.storeNormalized) == 0);
-        return shiftcnt == 64 ? 19 : cast(size_t) log10(1uL << shiftcnt);
+        return shiftcnt == 64 ? 19 : cast(size_t) log10(real(1uL << shiftcnt));
     }
 
     /// Returns: smallest increment to the value 1

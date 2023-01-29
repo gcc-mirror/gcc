@@ -2134,7 +2134,7 @@ pure @safe:
  */
 char[] demangle(return scope const(char)[] buf, return scope char[] dst = null, CXX_DEMANGLER __cxa_demangle = null) nothrow pure @safe
 {
-    if (buf.length > 2 && buf[0..2] == "_Z")
+    if (__cxa_demangle && buf.length > 2 && buf[0..2] == "_Z")
         return demangleCXX(buf, __cxa_demangle, dst);
     auto d = Demangle!()(buf, dst);
     // fast path (avoiding throwing & catching exception) for obvious
@@ -2734,6 +2734,9 @@ unittest
     s ~= "FiZi";
     expected ~= "F";
     assert(s.demangle == expected);
+
+    // https://issues.dlang.org/show_bug.cgi?id=23562
+    assert(demangle("_Zv") == "_Zv");
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=22235
@@ -2929,6 +2932,7 @@ CXX_DEMANGLER getCXXDemangler() nothrow @trusted
         version (FreeBSD) import core.sys.freebsd.dlfcn : RTLD_DEFAULT;
         version (linux) import core.sys.linux.dlfcn : RTLD_DEFAULT;
         version (NetBSD) import core.sys.netbsd.dlfcn : RTLD_DEFAULT;
+        version (OpenBSD) import core.sys.openbsd.dlfcn : RTLD_DEFAULT;
         version (OSX) import core.sys.darwin.dlfcn : RTLD_DEFAULT;
         version (Solaris) import core.sys.solaris.dlfcn : RTLD_DEFAULT;
 

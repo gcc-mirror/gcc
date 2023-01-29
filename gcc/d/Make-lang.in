@@ -147,6 +147,7 @@ D_FRONTEND_OBJS = \
 	d/json.o \
 	d/lambdacomp.o \
 	d/lexer.o \
+	d/location.o \
 	d/mtype.o \
 	d/mustuse.o \
 	d/nogc.o \

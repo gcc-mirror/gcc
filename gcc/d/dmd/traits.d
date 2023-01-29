@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/traits.html, Traits)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/traits.d, _traits.d)
@@ -38,6 +38,7 @@ import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.nogc;
 import dmd.parse;
@@ -86,82 +87,6 @@ private Dsymbol getDsymbolWithoutExpCtx(RootObject oarg)
             return dte.td;
     }
     return getDsymbol(oarg);
-}
-
-private const StringTable!bool traitsStringTable;
-
-shared static this()
-{
-    static immutable string[] names =
-    [
-        "isAbstractClass",
-        "isArithmetic",
-        "isAssociativeArray",
-        "isDisabled",
-        "isDeprecated",
-        "isFuture",
-        "isFinalClass",
-        "isPOD",
-        "isNested",
-        "isFloating",
-        "isIntegral",
-        "isScalar",
-        "isStaticArray",
-        "isUnsigned",
-        "isVirtualFunction",
-        "isVirtualMethod",
-        "isAbstractFunction",
-        "isFinalFunction",
-        "isOverrideFunction",
-        "isStaticFunction",
-        "isModule",
-        "isPackage",
-        "isRef",
-        "isOut",
-        "isLazy",
-        "isReturnOnStack",
-        "hasMember",
-        "identifier",
-        "getProtection",
-        "getVisibility",
-        "parent",
-        "child",
-        "getLinkage",
-        "getMember",
-        "getOverloads",
-        "getVirtualFunctions",
-        "getVirtualMethods",
-        "classInstanceSize",
-        "classInstanceAlignment",
-        "allMembers",
-        "derivedMembers",
-        "isSame",
-        "compiles",
-        "getAliasThis",
-        "getAttributes",
-        "getFunctionAttributes",
-        "getFunctionVariadicStyle",
-        "getParameterStorageClasses",
-        "getUnitTests",
-        "getVirtualIndex",
-        "getPointerBitmap",
-        "isZeroInit",
-        "getTargetInfo",
-        "getLocation",
-        "hasPostblit",
-        "hasCopyConstructor",
-        "isCopyable",
-        "parameters"
-    ];
-
-    StringTable!(bool)* stringTable = cast(StringTable!(bool)*) &traitsStringTable;
-    stringTable._init(names.length);
-
-    foreach (s; names)
-    {
-        auto sv = stringTable.insert(s, true);
-        assert(sv);
-    }
 }
 
 /**
@@ -2122,20 +2047,11 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         auto tup = new TupleExp(e.loc, exps);
         return tup.expressionSemantic(sc);
     }
-    static const(char)[] trait_search_fp(const(char)[] seed, out int cost)
-    {
-        //printf("trait_search_fp('%s')\n", seed);
-        if (!seed.length)
-            return null;
-        cost = 0;       // all the same cost
-        const sv = traitsStringTable.lookup(seed);
-        return sv ? sv.toString() : null;
-    }
 
-    if (auto sub = speller!trait_search_fp(e.ident.toString()))
-        e.error("unrecognized trait `%s`, did you mean `%.*s`?", e.ident.toChars(), cast(int) sub.length, sub.ptr);
-    else
-        e.error("unrecognized trait `%s`", e.ident.toChars());
+    /* Can't find the identifier. Try a spell check for a better error message
+     */
+    traitNotFound(e);
+
     return ErrorExp.get();
 }
 
@@ -2262,4 +2178,109 @@ Lnext:
         return false;
     }
     return true;
+}
+
+
+/***********************************
+ * A trait was not found. Give a decent error message
+ * by trying a spell check.
+ * Params:
+ *      e = the offending trait
+ */
+private void traitNotFound(TraitsExp e)
+{
+    __gshared const StringTable!bool traitsStringTable;
+    __gshared bool initialized;
+
+    if (!initialized)
+    {
+        initialized = true;     // lazy initialization
+
+        // All possible traits
+        __gshared Identifier*[58] idents =
+        [
+            &Id.isAbstractClass,
+            &Id.isArithmetic,
+            &Id.isAssociativeArray,
+            &Id.isDisabled,
+            &Id.isDeprecated,
+            &Id.isFuture,
+            &Id.isFinalClass,
+            &Id.isPOD,
+            &Id.isNested,
+            &Id.isFloating,
+            &Id.isIntegral,
+            &Id.isScalar,
+            &Id.isStaticArray,
+            &Id.isUnsigned,
+            &Id.isVirtualFunction,
+            &Id.isVirtualMethod,
+            &Id.isAbstractFunction,
+            &Id.isFinalFunction,
+            &Id.isOverrideFunction,
+            &Id.isStaticFunction,
+            &Id.isModule,
+            &Id.isPackage,
+            &Id.isRef,
+            &Id.isOut,
+            &Id.isLazy,
+            &Id.isReturnOnStack,
+            &Id.hasMember,
+            &Id.identifier,
+            &Id.getProtection,
+            &Id.getVisibility,
+            &Id.parent,
+            &Id.child,
+            &Id.getLinkage,
+            &Id.getMember,
+            &Id.getOverloads,
+            &Id.getVirtualFunctions,
+            &Id.getVirtualMethods,
+            &Id.classInstanceSize,
+            &Id.classInstanceAlignment,
+            &Id.allMembers,
+            &Id.derivedMembers,
+            &Id.isSame,
+            &Id.compiles,
+            &Id.getAliasThis,
+            &Id.getAttributes,
+            &Id.getFunctionAttributes,
+            &Id.getFunctionVariadicStyle,
+            &Id.getParameterStorageClasses,
+            &Id.getUnitTests,
+            &Id.getVirtualIndex,
+            &Id.getPointerBitmap,
+            &Id.isZeroInit,
+            &Id.getTargetInfo,
+            &Id.getLocation,
+            &Id.hasPostblit,
+            &Id.hasCopyConstructor,
+            &Id.isCopyable,
+            &Id.parameters,
+        ];
+
+        StringTable!(bool)* stringTable = cast(StringTable!(bool)*) &traitsStringTable;
+        stringTable._init(idents.length);
+
+        foreach (id; idents)
+        {
+            auto sv = stringTable.insert((*id).toString(), true);
+            assert(sv);
+        }
+    }
+
+    static const(char)[] trait_search_fp(const(char)[] seed, out int cost)
+    {
+        //printf("trait_search_fp('%s')\n", seed);
+        if (!seed.length)
+            return null;
+        cost = 0;       // all the same cost
+        const sv = traitsStringTable.lookup(seed);
+        return sv ? sv.toString() : null;
+    }
+
+    if (auto sub = speller!trait_search_fp(e.ident.toString()))
+        e.error("unrecognized trait `%s`, did you mean `%.*s`?", e.ident.toChars(), cast(int) sub.length, sub.ptr);
+    else
+        e.error("unrecognized trait `%s`", e.ident.toChars());
 }

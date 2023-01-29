@@ -1793,7 +1793,7 @@ if (isFloatingPoint!T)
         }
 
         import std.math.exponential : log2;
-        enum log2_max_exp = cast(int) log2(T.max_exp);
+        enum log2_max_exp = cast(int) log2(T(T.max_exp));
 
         ret.mantissa = ival & ((1L << (T.mant_dig - 1)) - 1);
         ret.exponent = (ival >> (T.mant_dig - 1)) & ((1L << (log2_max_exp + 1)) - 1);

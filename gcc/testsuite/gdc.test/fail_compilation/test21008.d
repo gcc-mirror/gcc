@@ -12,7 +12,6 @@ fail_compilation/test21008.d(117): Error: `Monitor` has no effect
 fail_compilation/test21008.d(117): Error: function `object.Object.factory(string classname)` is not callable using argument types `()`
 fail_compilation/test21008.d(117):        too few arguments, expected 1, got 0
 fail_compilation/test21008.d(105):        called from here: `handleMiddlewareAnnotation()`
-fail_compilation/test21008.d(108): Error: class `test21008.C` no size because of forward reference
 ---
 */
 

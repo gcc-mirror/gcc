@@ -110,13 +110,23 @@ alias GC gc_t;
 /* ============================ GC =============================== */
 
 // register GC in C constructor (_STI_)
-extern(C) pragma(crt_constructor) void _d_register_conservative_gc()
+private pragma(crt_constructor) void gc_conservative_ctor()
+{
+    _d_register_conservative_gc();
+}
+
+extern(C) void _d_register_conservative_gc()
 {
     import core.gc.registry;
     registerGCFactory("conservative", &initialize);
 }
 
-extern(C) pragma(crt_constructor) void _d_register_precise_gc()
+private pragma(crt_constructor) void gc_precise_ctor()
+{
+    _d_register_precise_gc();
+}
+
+extern(C) void _d_register_precise_gc()
 {
     import core.gc.registry;
     registerGCFactory("precise", &initialize_precise);

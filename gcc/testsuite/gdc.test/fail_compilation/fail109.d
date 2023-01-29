@@ -90,3 +90,19 @@ enum RegValueType2b : DWORD
     DWORD = REG_DWORD,
     Unknown = DWORD.min,
 }
+
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fail109.d(107): Error: enum member `fail109.d` initialization with `__anonymous.c+1` causes overflow for type `Q`
+---
+*/
+
+struct Q {
+	enum max = Q();
+}
+
+enum {
+	c = Q(),
+	d
+}

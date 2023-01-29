@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/ddoc.html, Documentation Generator)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/doc.d, _doc.d)
@@ -41,6 +41,7 @@ import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.lexer;
+import dmd.location;
 import dmd.mtype;
 import dmd.root.array;
 import dmd.root.file;
@@ -5181,7 +5182,8 @@ private void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t of
 {
     uint errorsave = global.startGagging();
 
-    scope Lexer lex = new Lexer(null, cast(char*)buf[].ptr, 0, buf.length - 1, 0, 1);
+    scope Lexer lex = new Lexer(null, cast(char*)buf[].ptr, 0, buf.length - 1, 0, 1,
+        global.vendor, global.versionNumber());
     OutBuffer res;
     const(char)* lastp = cast(char*)buf[].ptr;
     //printf("highlightCode2('%.*s')\n", cast(int)(buf.length - 1), buf[].ptr);

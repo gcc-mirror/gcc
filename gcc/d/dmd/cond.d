@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/version.html, Conditional Compilation)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cond.d, _cond.d)
@@ -26,6 +26,7 @@ import dmd.expression;
 import dmd.expressionsem;
 import dmd.globals;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.typesem;
 import dmd.common.outbuffer;
@@ -76,6 +77,11 @@ extern (C++) abstract class Condition : ASTNode
     }
 
     inout(VersionCondition) isVersionCondition() inout
+    {
+        return null;
+    }
+
+    inout(StaticIfCondition) isStaticIfCondition() inout
     {
         return null;
     }
@@ -218,12 +224,12 @@ extern (C++) final class StaticForeach : RootObject
     {
         if (aggrfe)
         {
-            return new ForeachStatement(loc, aggrfe.op, parameters, aggrfe.aggr.syntaxCopy(), s, loc);
+            return new ForeachStatement(loc, aggrfe.op, parameters, aggrfe.aggr, s, loc);
         }
         else
         {
             assert(rangefe && parameters.length == 1);
-            return new ForeachRangeStatement(loc, rangefe.op, (*parameters)[0], rangefe.lwr.syntaxCopy(), rangefe.upr.syntaxCopy(), s, loc);
+            return new ForeachRangeStatement(loc, rangefe.op, (*parameters)[0], rangefe.lwr, rangefe.upr, s, loc);
         }
     }
 
@@ -951,6 +957,11 @@ extern (C++) final class StaticIfCondition : Condition
     override void accept(Visitor v)
     {
         v.visit(this);
+    }
+
+    override inout(StaticIfCondition) isStaticIfCondition() inout
+    {
+        return this;
     }
 
     override const(char)* toChars() const

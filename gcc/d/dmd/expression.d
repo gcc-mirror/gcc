@@ -3,7 +3,7 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/expression.html, Expressions)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/expression.d, _expression.d)
@@ -50,6 +50,7 @@ import dmd.id;
 import dmd.identifier;
 import dmd.init;
 import dmd.inline;
+import dmd.location;
 import dmd.mtype;
 import dmd.nspace;
 import dmd.objc;
@@ -1291,12 +1292,16 @@ extern (C++) abstract class Expression : ASTNode
             return false; // ...or manifest constants
 
         // accessing empty structs is pure
+        // https://issues.dlang.org/show_bug.cgi?id=18694
+        // https://issues.dlang.org/show_bug.cgi?id=21464
+        // https://issues.dlang.org/show_bug.cgi?id=23589
         if (v.type.ty == Tstruct)
         {
             StructDeclaration sd = (cast(TypeStruct)v.type).sym;
             if (sd.members) // not opaque
             {
-                sd.determineSize(v.loc);
+                if (sd.semanticRun >= PASS.semanticdone)
+                    sd.determineSize(v.loc);
                 if (sd.hasNoFields)
                     return false;
             }

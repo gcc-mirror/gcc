@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/lex.html, Lexical)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/lexer.d, _lexer.d)
@@ -26,6 +26,7 @@ import dmd.errors;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.root.array;
 import dmd.root.ctfloat;
 import dmd.common.outbuffer;
@@ -79,15 +80,14 @@ class Lexer
         bool commentToken;      // comments are TOK.comment's
         bool tokenizeNewlines;  // newlines are turned into TOK.endOfLine's
 
-        version (DMDLIB)
-        {
-            bool whitespaceToken;   // tokenize whitespaces
-        }
+        bool whitespaceToken;   // tokenize whitespaces (only for DMDLIB)
 
         int inTokenStringConstant; // can be larger than 1 when in nested q{} strings
         int lastDocLine;        // last line of previous doc comment
 
         Token* tokenFreelist;
+        uint versionNumber;
+        const(char)[] vendor;
     }
 
   nothrow:
@@ -103,9 +103,12 @@ class Lexer
      *  endoffset = the last offset to read into base[]
      *  doDocComment = handle documentation comments
      *  commentToken = comments become TOK.comment's
+     *  vendor = name of the vendor
+     *  versionNumber = version of the caller
      */
     this(const(char)* filename, const(char)* base, size_t begoffset,
-        size_t endoffset, bool doDocComment, bool commentToken) pure
+        size_t endoffset, bool doDocComment, bool commentToken,
+        const(char)[] vendor = "DLF", uint versionNumber = 1) pure
     {
         scanloc = Loc(filename, 1, 1);
         // debug printf("Lexer::Lexer(%p)\n", base);
@@ -120,6 +123,8 @@ class Lexer
         this.tokenizeNewlines = false;
         this.inTokenStringConstant = 0;
         this.lastDocLine = 0;
+        this.versionNumber = versionNumber;
+        this.vendor = vendor;
         //initKeywords();
         /* If first line starts with '#!', ignore the line
          */
@@ -154,6 +159,16 @@ class Lexer
         }
     }
 
+    /***********************
+     * Alternative entry point for DMDLIB, adds `whitespaceToken`
+     */
+    this(const(char)* filename, const(char)* base, size_t begoffset, size_t endoffset,
+        bool doDocComment, bool commentToken, bool whitespaceToken)
+    {
+        this(filename, base, begoffset, endoffset, doDocComment, commentToken);
+        this.whitespaceToken = whitespaceToken;
+    }
+
     /******************
      * Used for unittests for a mock Lexer
      */
@@ -184,29 +199,23 @@ class Lexer
         tokenizeNewlines = true;
     }
 
-    version (DMDLIB)
+    /***************
+     * Range interface
+     */
+
+    final bool empty() const pure @property @nogc @safe
     {
-        this(const(char)* filename, const(char)* base, size_t begoffset, size_t endoffset,
-            bool doDocComment, bool commentToken, bool whitespaceToken)
-        {
-            this(filename, base, begoffset, endoffset, doDocComment, commentToken);
-            this.whitespaceToken = whitespaceToken;
-        }
+        return front() == TOK.endOfFile;
+    }
 
-        bool empty() const pure @property @nogc @safe
-        {
-            return front() == TOK.endOfFile;
-        }
+    final TOK front() const pure @property @nogc @safe
+    {
+        return token.value;
+    }
 
-        TOK front() const pure @property @nogc @safe
-        {
-            return token.value;
-        }
-
-        void popFront()
-        {
-            nextToken();
-        }
+    final void popFront()
+    {
+        nextToken();
     }
 
     /// Returns: a newly allocated `Token`.
@@ -570,7 +579,7 @@ class Lexer
                         }
                         else if (id == Id.VENDOR)
                         {
-                            t.ustring = global.vendor.xarraydup.ptr;
+                            t.ustring = vendor.xarraydup.ptr;
                             goto Lstr;
                         }
                         else if (id == Id.TIMESTAMP)
@@ -584,7 +593,7 @@ class Lexer
                         else if (id == Id.VERSIONX)
                         {
                             t.value = TOK.int64Literal;
-                            t.unsvalue = global.versionNumber();
+                            t.unsvalue = versionNumber;
                         }
                         else if (id == Id.EOFX)
                         {
@@ -1965,7 +1974,7 @@ class Lexer
     {
         int base = 10;
         const start = p;
-        uinteger_t n = 0; // unsigned >=64 bit integer type
+        ulong n = 0; // unsigned >=64 bit integer type
         int d;
         bool err = false;
         bool overflow = false;
@@ -2274,7 +2283,7 @@ class Lexer
      * Returns:
      *  token value
      */
-    private TOK cnumber(int base, uinteger_t n)
+    private TOK cnumber(int base, ulong n)
     {
         /* C11 6.4.4.1
          * Parse trailing suffixes:

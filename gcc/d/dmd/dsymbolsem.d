@@ -2,7 +2,7 @@
  * Does the semantic 1 pass on the AST, which looks at symbol declarations but not initializers
  * or function bodies.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dsymbolsem.d, _dsymbolsem.d)
@@ -51,6 +51,7 @@ import dmd.init;
 import dmd.initsem;
 import dmd.intrange;
 import dmd.hdrgen;
+import dmd.location;
 import dmd.mtype;
 import dmd.mustuse;
 import dmd.nogc;
@@ -1594,6 +1595,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 if (pd.ident == Id.printf || pd.ident == Id.scanf)
                 {
                     s.setPragmaPrintf(pd.ident == Id.printf);
+                    s.dsymbolSemantic(sc2);
                     continue;
                 }
 
@@ -2310,6 +2312,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             auto inneruda = em.userAttribDecl.userAttribDecl;
             em.userAttribDecl.setScope(sc);
             em.userAttribDecl.userAttribDecl = inneruda;
+            em.userAttribDecl.dsymbolSemantic(sc);
         }
 
         // The first enum member is special
@@ -2464,8 +2467,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             e = e.ctfeInterpret();
             if (e.toInteger())
             {
+                auto mt = em.ed.memtype;
+                if (!mt)
+                    mt = eprev.type;
                 em.error("initialization with `%s.%s+1` causes overflow for type `%s`",
-                    emprev.ed.toChars(), emprev.toChars(), em.ed.memtype.toChars());
+                    emprev.ed.toChars(), emprev.toChars(), mt.toChars());
                 return errorReturn();
             }
 
@@ -5165,6 +5171,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 }
 
                 // Copy vtbl[] from base class
+                assert(cldec.vtbl.length == 0);
                 cldec.vtbl.setDim(cldec.baseClass.vtbl.length);
                 memcpy(cldec.vtbl.tdata(), cldec.baseClass.vtbl.tdata(), (void*).sizeof * cldec.vtbl.length);
 
@@ -5205,7 +5212,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                             cldec.baseClass.toChars(),
                             cldec.baseClass.toParentLocal().toChars());
                     }
-                    cldec.enclosing = null;
                 }
                 if (cldec.vthis2)
                 {
@@ -5378,10 +5384,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             cldec.error("already exists at %s. Perhaps in another function with the same name?", cd.loc.toChars());
         }
 
-        if (global.errors != errors)
+        if (global.errors != errors || (cldec.baseClass && cldec.baseClass.errors))
         {
-            // The type is no good.
-            cldec.type = Type.terror;
+            // The type is no good, but we should keep the
+            // the type so that we have more accurate error messages
+            // See: https://issues.dlang.org/show_bug.cgi?id=23552
             cldec.errors = true;
             if (cldec.deferred)
                 cldec.deferred.errors = true;
@@ -7073,33 +7080,13 @@ bool determineFields(AggregateDeclaration ad)
 /// Do an atomic operation (currently tailored to [shared] static ctors|dtors) needs
 private CallExp doAtomicOp (string op, Identifier var, Expression arg)
 {
-    __gshared Import imp = null;
-    __gshared Identifier[1] id;
-
     assert(op == "-=" || op == "+=");
 
-    const loc = Loc.initial;
+    Module mod = Module.loadCoreAtomic();
+    if (!mod)
+        return null;    // core.atomic couldn't be loaded
 
-    // Below code is similar to `loadStdMath` (used for `^^` operator)
-    if (!imp)
-    {
-        id[0] = Id.core;
-        auto s = new Import(Loc.initial, id[], Id.atomic, null, true);
-        // Module.load will call fatal() if there's no std.math available.
-        // Gag the error here, pushing the error handling to the caller.
-        uint errors = global.startGagging();
-        s.load(null);
-        if (s.mod)
-        {
-            s.mod.importAll(null);
-            s.mod.dsymbolSemantic(null);
-        }
-        global.endGagging(errors);
-        imp = s;
-    }
-    // Module couldn't be loaded
-    if (imp.mod is null)
-        return null;
+    const loc = Loc.initial;
 
     Objects* tiargs = new Objects(1);
     (*tiargs)[0] = new StringExp(loc, op);
@@ -7108,7 +7095,7 @@ private CallExp doAtomicOp (string op, Identifier var, Expression arg)
     (*args)[0] = new IdentifierExp(loc, var);
     (*args)[1] = arg;
 
-    auto sc = new ScopeExp(loc, imp.mod);
+    auto sc = new ScopeExp(loc, mod);
     auto dti = new DotTemplateInstanceExp(
         loc, sc, Id.atomicOp, tiargs);
 

@@ -2,7 +2,7 @@
  * Miscellaneous declarations, including typedef, alias, variable declarations including the
  * implicit this declaration, type tuples, ClassInfo, ModuleInfo and various TypeInfos.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/declaration.d, _declaration.d)
@@ -35,6 +35,7 @@ import dmd.identifier;
 import dmd.init;
 import dmd.initsem;
 import dmd.intrange;
+import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.root.rootobject;
@@ -81,6 +82,9 @@ bool checkFrameAccess(Loc loc, Scope* sc, AggregateDeclaration ad, size_t iStart
 /***********************************************
  * Mark variable v as modified if it is inside a constructor that var
  * is a field in.
+ * Also used to allow immutable globals to be initialized inside a static constructor.
+ * Returns:
+ *    true if it's an initialization of v
  */
 bool modifyFieldVar(Loc loc, Scope* sc, VarDeclaration var, Expression e1)
 {
@@ -93,7 +97,7 @@ bool modifyFieldVar(Loc loc, Scope* sc, VarDeclaration var, Expression e1)
             fd = s.isFuncDeclaration();
         if (fd &&
             ((fd.isCtorDeclaration() && var.isField()) ||
-             (fd.isStaticCtorDeclaration() && !var.isField())) &&
+             ((fd.isStaticCtorDeclaration() || fd.isCrtCtor) && !var.isField())) &&
             fd.toParentDecl() == var.toParent2() &&
             (!e1 || e1.op == EXP.this_))
         {

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -30,11 +30,10 @@ enum
     DIAGNOSTICoff     // disable diagnostic
 };
 
-typedef unsigned char MessageStyle;
-enum
+enum class MessageStyle : unsigned char
 {
-    MESSAGESTYLEdigitalmars, // file(line,column): message
-    MESSAGESTYLEgnu          // file:line:column: message
+    digitalmars, // file(line,column): message
+    gnu          // file:line:column: message
 };
 
 // The state of array bounds checking
@@ -342,6 +341,11 @@ struct Loc
     unsigned linnum;
     unsigned charnum;
 
+    static void set(bool showColumns, MessageStyle messageStyle);
+
+    static bool showColumns;
+    static MessageStyle messageStyle;
+
     Loc()
     {
         linnum = 0;
@@ -357,8 +361,8 @@ struct Loc
     }
 
     const char *toChars(
-        bool showColumns = global.params.showColumns,
-        MessageStyle messageStyle = global.params.messageStyle) const;
+        bool showColumns = Loc::showColumns,
+        MessageStyle messageStyle = Loc::messageStyle) const;
     bool equals(const Loc& loc) const;
 };
 

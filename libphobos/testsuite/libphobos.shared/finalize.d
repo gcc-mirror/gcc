@@ -7,9 +7,9 @@ import core.sys.posix.dlfcn;
 void runTest()
 {
     Object obj;
-    obj = Object.factory("lib.MyFinalizer");
+    obj = Object.factory("lib.MyFinalizer");    // { dg-warning "is deprecated" } 
     assert(obj.toString() == "lib.MyFinalizer");
-    obj = Object.factory("lib.MyFinalizerBig");
+    obj = Object.factory("lib.MyFinalizerBig"); // { dg-warning "is deprecated" }
     assert(obj.toString() == "lib.MyFinalizerBig");
 }
 

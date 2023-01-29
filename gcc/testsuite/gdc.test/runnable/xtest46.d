@@ -1,4 +1,4 @@
-// REQUIRED_ARGS: -preview=rvaluerefparam
+// REQUIRED_ARGS: -d -preview=rvaluerefparam
 //
 /* TEST_OUTPUT:
 ---
