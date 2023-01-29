@@ -172,6 +172,7 @@ enum mask_policy
 enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
+opt_machine_mode get_vector_mode (scalar_mode, poly_uint64);
 }
 
 /* We classify builtin types into two classes:

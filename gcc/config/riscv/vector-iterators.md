@@ -18,6 +18,18 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_c_enum "unspec" [
+  UNSPEC_VSETVL
+  UNSPEC_VUNDEF
+  UNSPEC_VPREDICATE
+  UNSPEC_VLMAX
+  UNSPEC_STRIDED
+
+  ;; It's used to specify ordered/unorderd operation.
+  UNSPEC_ORDERED
+  UNSPEC_UNORDERED
+])
+
 (define_mode_iterator V [
   VNx1QI VNx2QI VNx4QI VNx8QI VNx16QI VNx32QI (VNx64QI "TARGET_MIN_VLEN > 32")
   VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI (VNx32HI "TARGET_MIN_VLEN > 32")
@@ -33,6 +45,75 @@
   (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
   (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
   (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VNX1_QHSD [
+  VNx1QI VNx1HI VNx1SI
+  (VNx1DI "TARGET_MIN_VLEN > 32")
+  (VNx1SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VNX2_QHSD [
+  VNx2QI VNx2HI VNx2SI
+  (VNx2DI "TARGET_MIN_VLEN > 32")
+  (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VNX4_QHSD [
+  VNx4QI VNx4HI VNx4SI
+  (VNx4DI "TARGET_MIN_VLEN > 32")
+  (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VNX8_QHSD [
+  VNx8QI VNx8HI VNx8SI
+  (VNx8DI "TARGET_MIN_VLEN > 32")
+  (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VNX16_QHS [
+  VNx16QI VNx16HI (VNx16SI "TARGET_MIN_VLEN > 32")
+  (VNx16SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VNX32_QH [
+  VNx32QI (VNx32HI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VNX64_Q [
+  (VNx64QI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VNX1_QHSDI [
+  VNx1QI VNx1HI VNx1SI
+  (VNx1DI "TARGET_64BIT && TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VNX2_QHSDI [
+  VNx2QI VNx2HI VNx2SI
+  (VNx2DI "TARGET_64BIT && TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VNX4_QHSDI [
+  VNx4QI VNx4HI VNx4SI
+  (VNx4DI "TARGET_64BIT && TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VNX8_QHSDI [
+  VNx8QI VNx8HI VNx8SI
+  (VNx8DI "TARGET_64BIT && TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VNX16_QHSI [
+  VNx16QI VNx16HI (VNx16SI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VNX32_QHI [
+  VNx32QI (VNx32HI "TARGET_MIN_VLEN > 32")
 ])
 
 (define_mode_iterator V_WHOLE [
@@ -89,4 +170,10 @@
   (VNx1DI "64") (VNx2DI "64") (VNx4DI "64") (VNx8DI "64")
   (VNx1SF "32") (VNx2SF "32") (VNx4SF "32") (VNx8SF "32") (VNx16SF "32")
   (VNx1DF "64") (VNx2DF "64") (VNx4DF "64") (VNx8DF "64")
+])
+
+(define_int_iterator ORDER [UNSPEC_ORDERED UNSPEC_UNORDERED])
+
+(define_int_attr order [
+  (UNSPEC_ORDERED "o") (UNSPEC_UNORDERED "u")
 ])

@@ -32,6 +32,22 @@ extern const function_base *const vlm;
 extern const function_base *const vsm;
 extern const function_base *const vlse;
 extern const function_base *const vsse;
+extern const function_base *const vluxei8;
+extern const function_base *const vluxei16;
+extern const function_base *const vluxei32;
+extern const function_base *const vluxei64;
+extern const function_base *const vloxei8;
+extern const function_base *const vloxei16;
+extern const function_base *const vloxei32;
+extern const function_base *const vloxei64;
+extern const function_base *const vsuxei8;
+extern const function_base *const vsuxei16;
+extern const function_base *const vsuxei32;
+extern const function_base *const vsuxei64;
+extern const function_base *const vsoxei8;
+extern const function_base *const vsoxei16;
+extern const function_base *const vsoxei32;
+extern const function_base *const vsoxei64;
 }
 
 } // end namespace riscv_vector
