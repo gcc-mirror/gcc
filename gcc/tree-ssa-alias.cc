@@ -3522,6 +3522,7 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 			       "ipa-modref: call to %s kills ",
 			       node->dump_name ());
 		      print_generic_expr (dump_file, ref->base);
+		      fprintf (dump_file, "\n");
 		    }
 		    ++alias_stats.modref_kill_yes;
 		    return true;

@@ -40,6 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
 #include "tree-ssa-loop-niter.h"
+#include "calls.h"
+#include "cfgloop.h"
+#include "cfganal.h"
 
 /* Debugging function for postorder and inorder code. NOTE is a string
    that is printed before the nodes are printed.  ORDER is an array of
@@ -796,11 +799,11 @@ stmt_may_terminate_function_p (function *fun, gimple *stmt, bool assume_return_o
 {
   if (stmt_can_throw_external (fun, stmt))
     return true;
+  if (assume_return_or_eh)
+    return false;
   gasm *astmt = dyn_cast <gasm *> (stmt);
   if (astmt && gimple_asm_volatile_p (astmt))
     return true;
-  if (assume_return_or_eh)
-    return false;
   if (gimple_could_trap_p (stmt))
     return true;
   if (gcall *call = dyn_cast <gcall *> (stmt))
@@ -832,8 +835,14 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
   auto_vec<basic_block, 20> stack;
   auto_vec<basic_block, 20> terminating_bbs;
   hash_set<basic_block> visited;
+  hash_set<basic_block> terminating_bbs_set;
   edge e;
   edge_iterator ei;
+  int flags = flags_from_decl_or_type (fun->decl);
+  /* PUre and const functions always return.  */
+  assume_return_or_eh |= (flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE);
+  if (!assume_return_or_eh)
+    mark_dfs_back_edges (fun);
 
   /* First walk all BBs reachable from entry stopping on statements that may
      terminate execution.  Everything past this statement is not going to be executed
@@ -843,9 +852,8 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
     {
       basic_block bb = stack.pop ();
       bool found = false, found_exit = false;
-      if (!assume_return_or_eh
-	  && (EDGE_COUNT (bb->succs) == 0 || (bb->flags & BB_IRREDUCIBLE_LOOP)))
-	found = true;
+      if (bb->index == EXIT_BLOCK)
+	continue;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (e->dest == EXIT_BLOCK_PTR_FOR_FN (fun))
@@ -854,10 +862,28 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
 	      break;
 	    }
 	  /* Watch for infinite loops.  */
-	  if (!found && (assume_return_or_eh & EDGE_DFS_BACK)
-	      && !finite_loop_p (e->src->loop_father))
-	    found = true;
+	  if (!found
+	      && !assume_return_or_eh && (e->flags & EDGE_DFS_BACK))
+	    {
+	      if (!dom_info_available_p (CDI_DOMINATORS))
+		calculate_dominance_info (CDI_DOMINATORS);
+	      /* If this is not a loop latch edge it is an irreducible region.
+		 Assume that it is infinite.
+		 TODO: with C++ forced progression we can still walk the
+		 irreducible region and see if it contains any side effects.
+		 Similarly for loops.  -ffinite-loops does not really imply
+		 this since we allow inlining across -ffinite-loops bondary
+		 and thus it can be used only as a loop flag.  */
+	      if (e->dest->loop_father->header != e->dest
+		  || !dominated_by_p (CDI_DOMINATORS, bb, e->dest))
+		found = true;
+	      else if (!finite_loop_p (e->dest->loop_father))
+		found = true;
+	    }
 	}
+      if (!assume_return_or_eh
+	  && (EDGE_COUNT (bb->succs) == 0 || (bb->flags & BB_IRREDUCIBLE_LOOP)))
+	found = true;
       for (gimple_stmt_iterator si = gsi_start_nondebug_after_labels_bb (bb);
 	   !gsi_end_p (si) && !found; gsi_next_nondebug (&si))
 	if (stmt_may_terminate_function_p (fun, gsi_stmt (si), assume_return_or_eh))
@@ -869,7 +895,10 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
 	{
 	  visited.add (EXIT_BLOCK_PTR_FOR_FN (fun));
 	  if (!found_exit)
-	    terminating_bbs.safe_push (bb);
+	    {
+	      terminating_bbs.safe_push (bb);
+	      terminating_bbs_set.add (bb);
+	    }
 	}
       else
 	FOR_EACH_EDGE (e, ei, bb->succs)
@@ -883,8 +912,7 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
 
   bitmap ret = BITMAP_ALLOC (NULL);
   /* A degenerated case when there is no path to exit.  */
-  if (!visited.contains (EXIT_BLOCK_PTR_FOR_FN (fun))
-      && terminating_bbs.is_empty ())
+  if (!visited.contains (EXIT_BLOCK_PTR_FOR_FN (fun)))
     {
       bitmap_set_bit (ret,
 		      single_succ_edge
@@ -945,7 +973,7 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
 	    }
 	  /* DFS is visiting BB for first time.  */
 	  *slot = cstate = XOBNEW (&state_obstack, struct astate);
-	  cstate->low = cstate->dfs_preorder = next_dfs_num++;
+	  cstate->low = cstate->high = cstate->dfs_preorder = next_dfs_num++;
 	  w.cstate = cstate;
 	  /* Exit block is special; process all fake edges we identified.  */
 	  if (bb == EXIT_BLOCK_PTR_FOR_FN (fun))
@@ -981,25 +1009,38 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
 	  if (!cstate2)
 	    {
 	      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (fun))
-	        cstate->low = 0;
+		cstate->low = 0;
 	      continue;
 	    }
 	  cstate->low = MIN (cstate->low, (*cstate2)->low);
 	  cstate->high = MAX (cstate->high, (*cstate2)->high);
 	}
+      if (dump_file && (dump_flags & TDF_DETAILS) && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
+	fprintf (dump_file, "BB %i %s preorder %i posorder %i low %i high %i\n",
+		 bb->index, terminating_bbs_set.contains (bb) ? "(terminating)": "",
+		 cstate->dfs_preorder, cstate->dfs_postorder, cstate->low, cstate->high);
       if (cstate->low == cstate->dfs_preorder && cstate->high == cstate->dfs_postorder
 	  && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
 	bitmap_set_bit (ret, bb->index);
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  astate **cstate2 = state.get (e->dest);
-	  if (!cstate2)
-	    continue;
-	  cstate->low = MIN (cstate->low, (*cstate2)->low);
-	  cstate->high = MAX (cstate->high, (*cstate2)->high);
-	}
-    }
+      if (terminating_bbs_set.contains (bb))
+	cstate->low = 0;
+      else
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  {
+	    astate **cstate2 = state.get (e->dest);
+	    if (!cstate2)
+	      continue;
+	    cstate->low = MIN (cstate->low, (*cstate2)->low);
+	    cstate->high = MAX (cstate->high, (*cstate2)->high);
+	  }
+      }
   obstack_free (&state_obstack, NULL);
+  if (dump_file)
+    {
+      fprintf (dump_file, "Always executed bbbs %s: ",
+	       assume_return_or_eh ? "(assuming return or EH)": "");
+      bitmap_print (dump_file, ret, "", "\n");
+    }
 
   return ret;
 }
