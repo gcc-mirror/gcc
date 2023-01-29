@@ -8712,17 +8712,19 @@ package body Freeze is
 
             --  The current scope may be that of a constrained component of
             --  an enclosing record declaration, or of a loop of an enclosing
-            --  quantified expression, which is above the current scope in the
-            --  scope stack. Indeed in the context of a quantified expression,
-            --  a scope is created and pushed above the current scope in order
-            --  to emulate the loop-like behavior of the quantified expression.
+            --  quantified expression or aggregate with an iterated component
+            --  in Ada 2022, which is above the current scope in the scope
+            --  stack. Indeed in the context of a quantified expression or
+            --  an aggregate with an iterated component, an internal scope is
+            --  created and pushed above the current scope in order to emulate
+            --  the loop-like behavior of the construct.
             --  If the expression is within a top-level pragma, as for a pre-
             --  condition on a library-level subprogram, nothing to do.
 
             if not Is_Compilation_Unit (Current_Scope)
               and then (Is_Record_Type (Scope (Current_Scope))
-                         or else Nkind (Parent (Current_Scope)) =
-                                                     N_Quantified_Expression)
+                         or else (Ekind (Current_Scope) = E_Loop
+                                   and then Is_Internal (Current_Scope)))
             then
                Pos := Pos - 1;
             end if;
