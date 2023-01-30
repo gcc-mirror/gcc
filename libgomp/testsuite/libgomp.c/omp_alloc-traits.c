@@ -1,7 +1,7 @@
 /* { dg-do run } */
 
 /* { dg-require-effective-target offload_device } */
-/* { dg-xfail-if "not implemented" { ! offload_target_nvptx } } */
+/* { dg-xfail-if "not implemented" { ! { offload_target_nvptx || offload_target_amdgcn } } } */
 
 /* Test that GPU low-latency allocation is limited to team access.  */
 
