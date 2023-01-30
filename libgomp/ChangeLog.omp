@@ -1,5 +1,7 @@
 2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.fortran/allocate-5.f90: Paste.
+
 	* testsuite/libgomp.c++/c++.exp (check_effective_target_c)
 	(check_effective_target_c++): New.
 	* testsuite/libgomp.c/c.exp (check_effective_target_c)
