@@ -105,11 +105,6 @@ public:
 
   virtual std::string get_name () const = 0;
 
-  // Unify two types. Returns a pointer to the newly-created unified ty, or
-  // nullptr if the two ty cannot be unified. The caller is responsible for
-  // releasing the memory of the returned ty.
-  virtual BaseType *unify (BaseType *other) = 0;
-
   // similar to unify but does not actually perform type unification but
   // determines whether they are compatible. Consider the following
   //
@@ -177,6 +172,7 @@ public:
 
   // This will get the monomorphized type from Params, Placeholders or
   // Projections if available or error
+  BaseType *destructure ();
   const BaseType *destructure () const;
 
   const RustIdent &get_ident () const;
@@ -221,8 +217,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
-
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -255,7 +249,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -284,7 +277,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -361,7 +353,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -598,7 +589,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -738,7 +728,6 @@ public:
 
   std::string get_identifier () const { return identifier; }
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -858,7 +847,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -938,7 +926,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final { return as_string (); }
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -1007,7 +994,6 @@ public:
 
   std::string get_name () const override final { return as_string (); }
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -1055,7 +1041,6 @@ public:
 
   std::string get_name () const override final { return as_string (); }
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -1089,7 +1074,6 @@ public:
 
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -1120,7 +1104,6 @@ public:
 
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   IntKind get_int_kind () const;
@@ -1159,7 +1142,6 @@ public:
 
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   UintKind get_uint_kind () const;
@@ -1194,7 +1176,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   FloatKind get_float_kind () const;
@@ -1222,7 +1203,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -1243,7 +1223,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -1263,7 +1242,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -1284,7 +1262,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -1311,7 +1288,6 @@ public:
 
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -1354,7 +1330,6 @@ public:
   std::string as_string () const override;
   std::string get_name () const override final;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;
@@ -1401,7 +1376,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -1428,7 +1402,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -1478,7 +1451,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
@@ -1524,7 +1496,6 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   bool is_equal (const BaseType &other) const override;

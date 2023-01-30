@@ -22,6 +22,7 @@
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-implitem.h"
 #include "rust-coercion.h"
+#include "rust-unify.h"
 #include "rust-casts.h"
 
 namespace Rust {
@@ -359,18 +360,8 @@ TypeCheckBase::unify_site (HirId id, TyTy::TyWithLocation lhs,
   rust_debug ("unify_site id={%u} expected={%s} expr={%s}", id,
 	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
 
-  TyTy::BaseType *unified = expected->unify (expr);
-  if (unified->get_kind () == TyTy::TypeKind::ERROR)
-    {
-      RichLocation r (unify_locus);
-      r.add_range (lhs.get_locus ());
-      r.add_range (rhs.get_locus ());
-      rust_error_at (r, "expected %<%s%> got %<%s%>",
-		     expected->get_name ().c_str (),
-		     expr->get_name ().c_str ());
-    }
-
-  return unified;
+  return UnifyRules::Resolve (lhs, rhs, unify_locus, true /*commit*/,
+			      true /*emit_error*/);
 }
 
 TyTy::BaseType *

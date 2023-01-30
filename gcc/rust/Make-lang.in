@@ -134,6 +134,7 @@ GRS_OBJS = \
     rust/rust-hir-path-probe.o \
     rust/rust-coercion.o \
     rust/rust-casts.o \
+    rust/rust-unify.o \
     rust/rust-hir-type-check-base.o \
     rust/rust-autoderef.o \
     rust/rust-substitution-mapper.o \

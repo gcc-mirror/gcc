@@ -30,7 +30,6 @@
 #include "rust-hir-trait-reference.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-trait-resolve.h"
-#include "rust-tyty-rules.h"
 #include "rust-tyty-cmp.h"
 
 #include "options.h"
@@ -376,6 +375,58 @@ BaseType::get_root () const
   return root;
 }
 
+BaseType *
+BaseType::destructure ()
+{
+  int recurisve_ops = 0;
+  BaseType *x = this;
+  while (true)
+    {
+      if (recurisve_ops++ >= rust_max_recursion_depth)
+	{
+	  rust_error_at (
+	    Location (),
+	    "%<recursion depth%> count exceeds limit of %i (use "
+	    "%<frust-max-recursion-depth=%> to increase the limit)",
+	    rust_max_recursion_depth);
+	  return new ErrorType (get_ref ());
+	}
+
+      switch (x->get_kind ())
+	{
+	  case TyTy::TypeKind::PARAM: {
+	    TyTy::ParamType *p = static_cast<TyTy::ParamType *> (x);
+	    TyTy::BaseType *pr = p->resolve ();
+	    if (pr == x)
+	      return pr;
+
+	    x = pr;
+	  }
+	  break;
+
+	  case TyTy::TypeKind::PLACEHOLDER: {
+	    TyTy::PlaceholderType *p = static_cast<TyTy::PlaceholderType *> (x);
+	    if (!p->can_resolve ())
+	      return p;
+
+	    x = p->resolve ();
+	  }
+	  break;
+
+	  case TyTy::TypeKind::PROJECTION: {
+	    TyTy::ProjectionType *p = static_cast<TyTy::ProjectionType *> (x);
+	    x = p->get ();
+	  }
+	  break;
+
+	default:
+	  return x;
+	}
+    }
+
+  return x;
+}
+
 const BaseType *
 BaseType::destructure () const
 {
@@ -397,14 +448,20 @@ BaseType::destructure () const
 	{
 	  case TyTy::TypeKind::PARAM: {
 	    const TyTy::ParamType *p = static_cast<const TyTy::ParamType *> (x);
-	    x = p->resolve ();
+	    const TyTy::BaseType *pr = p->resolve ();
+	    if (pr == x)
+	      return pr;
+
+	    x = pr;
 	  }
 	  break;
 
 	  case TyTy::TypeKind::PLACEHOLDER: {
 	    const TyTy::PlaceholderType *p
 	      = static_cast<const TyTy::PlaceholderType *> (x);
-	    rust_assert (p->can_resolve ());
+	    if (!p->can_resolve ())
+	      return p;
+
 	    x = p->resolve ();
 	  }
 	  break;
@@ -510,13 +567,6 @@ InferType::as_string () const
       return "<float>";
     }
   return "<infer::error>";
-}
-
-BaseType *
-InferType::unify (BaseType *other)
-{
-  InferRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -635,12 +685,6 @@ std::string
 ErrorType::as_string () const
 {
   return "<tyty::error>";
-}
-
-BaseType *
-ErrorType::unify (BaseType *other)
-{
-  return this;
 }
 
 bool
@@ -1009,13 +1053,6 @@ ADTType::as_string () const
   return identifier + subst_as_string () + "{" + variants_buffer + "}";
 }
 
-BaseType *
-ADTType::unify (BaseType *other)
-{
-  ADTRules r (this);
-  return r.unify (other);
-}
-
 bool
 ADTType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1278,13 +1315,6 @@ TupleType::get_field (size_t index) const
   return fields.at (index).get_tyty ();
 }
 
-BaseType *
-TupleType::unify (BaseType *other)
-{
-  TupleRules r (this);
-  return r.unify (other);
-}
-
 bool
 TupleType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1383,13 +1413,6 @@ FnType::as_string () const
 
   std::string ret_str = type->as_string ();
   return "fn" + subst_as_string () + " (" + params_str + ") -> " + ret_str;
-}
-
-BaseType *
-FnType::unify (BaseType *other)
-{
-  FnRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -1616,13 +1639,6 @@ FnPtr::as_string () const
   return "fnptr (" + params_str + ") -> " + get_return_type ()->as_string ();
 }
 
-BaseType *
-FnPtr::unify (BaseType *other)
-{
-  FnptrRules r (this);
-  return r.unify (other);
-}
-
 bool
 FnPtr::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1694,13 +1710,6 @@ ClosureType::as_string () const
 {
   std::string params_buf = parameters->as_string ();
   return "|" + params_buf + "| {" + result_type.get_tyty ()->as_string () + "}";
-}
-
-BaseType *
-ClosureType::unify (BaseType *other)
-{
-  ClosureRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -1812,13 +1821,6 @@ ArrayType::as_string () const
   return "[" + get_element_type ()->as_string () + ":" + "CAPACITY" + "]";
 }
 
-BaseType *
-ArrayType::unify (BaseType *other)
-{
-  ArrayRules r (this);
-  return r.unify (other);
-}
-
 bool
 ArrayType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1893,13 +1895,6 @@ std::string
 SliceType::as_string () const
 {
   return "[" + get_element_type ()->as_string () + "]";
-}
-
-BaseType *
-SliceType::unify (BaseType *other)
-{
-  SliceRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2006,13 +2001,6 @@ BoolType::as_string () const
   return "bool";
 }
 
-BaseType *
-BoolType::unify (BaseType *other)
-{
-  BoolRules r (this);
-  return r.unify (other);
-}
-
 bool
 BoolType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2092,13 +2080,6 @@ IntType::as_string () const
     }
   gcc_unreachable ();
   return "__unknown_int_type";
-}
-
-BaseType *
-IntType::unify (BaseType *other)
-{
-  IntRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2200,13 +2181,6 @@ UintType::as_string () const
   return "__unknown_uint_type";
 }
 
-BaseType *
-UintType::unify (BaseType *other)
-{
-  UintRules r (this);
-  return r.unify (other);
-}
-
 bool
 UintType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2306,13 +2280,6 @@ FloatType::as_string () const
   return "__unknown_float_type";
 }
 
-BaseType *
-FloatType::unify (BaseType *other)
-{
-  FloatRules r (this);
-  return r.unify (other);
-}
-
 bool
 FloatType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2389,13 +2356,6 @@ USizeType::as_string () const
   return "usize";
 }
 
-BaseType *
-USizeType::unify (BaseType *other)
-{
-  USizeRules r (this);
-  return r.unify (other);
-}
-
 bool
 USizeType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2461,13 +2421,6 @@ ISizeType::as_string () const
   return "isize";
 }
 
-BaseType *
-ISizeType::unify (BaseType *other)
-{
-  ISizeRules r (this);
-  return r.unify (other);
-}
-
 bool
 ISizeType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2531,13 +2484,6 @@ std::string
 CharType::as_string () const
 {
   return "char";
-}
-
-BaseType *
-CharType::unify (BaseType *other)
-{
-  CharRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2653,13 +2599,6 @@ ReferenceType::get_name () const
 {
   return std::string ("&") + (is_mutable () ? "mut" : "") + " "
 	 + get_base ()->get_name ();
-}
-
-BaseType *
-ReferenceType::unify (BaseType *other)
-{
-  ReferenceRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2821,13 +2760,6 @@ PointerType::get_name () const
 	 + get_base ()->get_name ();
 }
 
-BaseType *
-PointerType::unify (BaseType *other)
-{
-  PointerRules r (this);
-  return r.unify (other);
-}
-
 bool
 PointerType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2962,13 +2894,6 @@ ParamType::get_name () const
     return get_symbol ();
 
   return resolve ()->get_name ();
-}
-
-BaseType *
-ParamType::unify (BaseType *other)
-{
-  ParamRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -3130,13 +3055,6 @@ StrType::as_string () const
   return "str";
 }
 
-BaseType *
-StrType::unify (BaseType *other)
-{
-  StrRules r (this);
-  return r.unify (other);
-}
-
 bool
 StrType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -3200,13 +3118,6 @@ std::string
 NeverType::as_string () const
 {
   return "!";
-}
-
-BaseType *
-NeverType::unify (BaseType *other)
-{
-  NeverRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -3293,13 +3204,6 @@ PlaceholderType::as_string () const
 {
   return "<placeholder:" + (can_resolve () ? resolve ()->as_string () : "")
 	 + ">";
-}
-
-BaseType *
-PlaceholderType::unify (BaseType *other)
-{
-  PlaceholderRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -3465,12 +3369,6 @@ ProjectionType::as_string () const
   return "<Projection=" + subst_as_string () + "::" + base->as_string () + ">";
 }
 
-BaseType *
-ProjectionType::unify (BaseType *other)
-{
-  return base->unify (other);
-}
-
 bool
 ProjectionType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -3600,13 +3498,6 @@ std::string
 DynamicObjectType::as_string () const
 {
   return "dyn [" + raw_bounds_as_string () + "]";
-}
-
-BaseType *
-DynamicObjectType::unify (BaseType *other)
-{
-  DynamicRules r (this);
-  return r.unify (other);
 }
 
 bool
