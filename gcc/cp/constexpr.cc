@@ -4301,10 +4301,6 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
   if (!SCALAR_TYPE_P (elem_type))
     {
       new_ctx = *ctx;
-      if (ctx->object)
-	/* If there was no object, don't add one: it could confuse us
-	   into thinking we're modifying a const object.  */
-	new_ctx.object = t;
       new_ctx.ctor = build_constructor (elem_type, NULL);
       ctx = &new_ctx;
     }
