@@ -6235,6 +6235,19 @@ package body Sem_Util is
          --  Examine parent type
 
          if Etype (Typ) /= Typ then
+            --  Prevent infinite recursion, which can happen in illegal
+            --  programs. Silently return if illegal. For now, just deal
+            --  with the 2-type cycle case. Larger cycles will get
+            --  SIGSEGV at compile time from running out of stack.
+
+            if Etype (Etype (Typ)) = Typ then
+               if Total_Errors_Detected = 0 then
+                  raise Program_Error;
+               else
+                  return;
+               end if;
+            end if;
+
             Process_Type (Etype (Typ));
          end if;
 
