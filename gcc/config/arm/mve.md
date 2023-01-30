@@ -4979,7 +4979,7 @@
   "TARGET_HAVE_MVE"
   "vpst\;vabavt.<supf>%#<V_sz_elem>\t%0, %q2, %q3"
   [(set_attr "type" "mve_move")
-])
+   (set_attr "length" "8")])
 
 ;;
 ;; [vqshluq_m_n_s])
@@ -4995,7 +4995,8 @@
   ]
   "TARGET_HAVE_MVE"
   "vpst\n\tvqshlut.s%#<V_sz_elem>\t%q0, %q2, %3"
-  [(set_attr "type" "mve_move")])
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "8")])
 
 ;;
 ;; [vshlq_m_s, vshlq_m_u])
@@ -5011,7 +5012,8 @@
   ]
   "TARGET_HAVE_MVE"
   "vpst\;vshlt.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")])
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "8")])
 
 ;;
 ;; [vsriq_m_n_s, vsriq_m_n_u])
@@ -5027,7 +5029,8 @@
   ]
   "TARGET_HAVE_MVE"
   "vpst\;vsrit.%#<V_sz_elem>\t%q0, %q2, %3"
-  [(set_attr "type" "mve_move")])
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "8")])
 
 ;;
 ;; [vsubq_m_u, vsubq_m_s])
@@ -5043,7 +5046,8 @@
   ]
   "TARGET_HAVE_MVE"
   "vpst\;vsubt.i%#<V_sz_elem>\t%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")])
+  [(set_attr "type" "mve_move")
+   (set_attr "length" "8")])
 
 ;;
 ;; [vcvtq_m_n_to_f_u, vcvtq_m_n_to_f_s])
