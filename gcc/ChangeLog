@@ -1,3 +1,50 @@
+2023-01-29  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2023-01-16  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.cc (ix86_vectorize_builtin_scatter): Guard scatter
+	by TARGET_USE_SCATTER.
+	* config/i386/i386.h (TARGET_USE_SCATTER_2PARTS,
+	TARGET_USE_SCATTER_4PARTS, TARGET_USE_SCATTER): New macros.
+	* config/i386/x86-tune.def (TARGET_USE_SCATTER_2PARTS,
+	TARGET_USE_SCATTER_4PARTS, TARGET_USE_SCATTER): New tunes.
+	(X86_TUNE_AVOID_256FMA_CHAINS, X86_TUNE_AVOID_512FMA_CHAINS): Disable
+	for znver4.  (X86_TUNE_USE_GATHER): Disable for zen4.
+
+2023-01-29  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-12-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-expand.cc (ix86_expand_set_or_cpymem): Add
+	TARGET_AVX512_SPLIT_REGS
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Honor x86_TONE_AVOID_256FMA_CHAINS.
+	* config/i386/i386.cc (ix86_vec_cost): Honor TARGET_AVX512_SPLIT_REGS.
+	(ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (TARGET_AVX512_SPLIT_REGS): New tune.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Disable
+	for znver4.
+	(X86_TUNE_USE_GATHER_4PARTS): Likewise.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Set for znver4.
+	(X86_TUNE_AVOID_512FMA_CHAINS): New utne; set for znver4.
+	(X86_TUNE_AVX256_OPTIMAL): Add znver4.
+	(X86_TUNE_AVX512_SPLIT_REGS): New tune.
+	(X86_TUNE_AVX256_MOVE_BY_PIECES): Add znver1-3.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Add znver1-3.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Add znver4.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Add znver4.
+
+2023-01-29  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-12-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver4_cost): Upate costs of FP and SSE
+	moves, division multiplication, gathers, L2 cache size, and more
+	complex FP instrutions.
+
 2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
 
 	Backported from master:
