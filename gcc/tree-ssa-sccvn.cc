@@ -5908,7 +5908,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		if (! val && vnresult && vnresult->predicated_values)
 		  {
 		    val = vn_nary_op_get_predicated_value (vnresult, e->src);
-		    if (val && integer_truep (val))
+		    if (val && integer_truep (val)
+			&& !(sameval_e && (sameval_e->flags & EDGE_DFS_BACK)))
 		      {
 			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
@@ -5919,8 +5920,6 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 			    fprintf (dump_file, " are equal on edge %d -> %d\n",
 				     e->src->index, e->dest->index);
 			  }
-			if (sameval_e && (sameval_e->flags & EDGE_DFS_BACK))
-			  sameval = def;
 			continue;
 		      }
 		    /* If on all previous edges the value was equal to def
@@ -5928,7 +5927,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		    if (EDGE_COUNT (bb->preds) == 2
 			&& (val = vn_nary_op_get_predicated_value
 				    (vnresult, EDGE_PRED (bb, 0)->src))
-			&& integer_truep (val))
+			&& integer_truep (val)
+			&& !(e->flags & EDGE_DFS_BACK))
 		      {
 			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
@@ -5940,8 +5940,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 				     EDGE_PRED (bb, 0)->src->index,
 				     EDGE_PRED (bb, 0)->dest->index);
 			  }
-			if (!(e->flags & EDGE_DFS_BACK))
-			  sameval = def;
+			sameval = def;
 			continue;
 		      }
 		  }
