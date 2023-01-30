@@ -1,3 +1,131 @@
+2023-01-29  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2023-01-16  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.cc (ix86_vectorize_builtin_scatter): Guard scatter
+	by TARGET_USE_SCATTER.
+	* config/i386/i386.h (TARGET_USE_SCATTER_2PARTS,
+	TARGET_USE_SCATTER_4PARTS, TARGET_USE_SCATTER): New macros.
+	* config/i386/x86-tune.def (TARGET_USE_SCATTER_2PARTS,
+	TARGET_USE_SCATTER_4PARTS, TARGET_USE_SCATTER): New tunes.
+	(X86_TUNE_AVOID_256FMA_CHAINS, X86_TUNE_AVOID_512FMA_CHAINS): Disable
+	for znver4.  (X86_TUNE_USE_GATHER): Disable for zen4.
+
+2023-01-29  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-12-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-expand.cc (ix86_expand_set_or_cpymem): Add
+	TARGET_AVX512_SPLIT_REGS
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Honor x86_TONE_AVOID_256FMA_CHAINS.
+	* config/i386/i386.cc (ix86_vec_cost): Honor TARGET_AVX512_SPLIT_REGS.
+	(ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (TARGET_AVX512_SPLIT_REGS): New tune.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Disable
+	for znver4.
+	(X86_TUNE_USE_GATHER_4PARTS): Likewise.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Set for znver4.
+	(X86_TUNE_AVOID_512FMA_CHAINS): New utne; set for znver4.
+	(X86_TUNE_AVX256_OPTIMAL): Add znver4.
+	(X86_TUNE_AVX512_SPLIT_REGS): New tune.
+	(X86_TUNE_AVX256_MOVE_BY_PIECES): Add znver1-3.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Add znver1-3.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Add znver4.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Add znver4.
+
+2023-01-29  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-12-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver4_cost): Upate costs of FP and SSE
+	moves, division multiplication, gathers, L2 cache size, and more
+	complex FP instrutions.
+
+2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2023-01-05  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.cc (processor_alias_table):
+	Use CPU_ZNVER4 for znver4.
+	* config/i386/i386.md: Add znver4.md.
+	* config/i386/znver4.md: New.
+
+2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2022-10-25  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.cc (processor_alias_table): Use
+	CPU_ZNVER3 for znver4.
+	* config/i386/znver.md: Remove znver4 reservations.
+
+2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2022-10-21  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu): Recognize znver4.
+	* common/config/i386/i386-common.cc (processor_names): Add znver4.
+	(processor_alias_table): Add znver4 and modularize old znvers.
+	* common/config/i386/i386-cpuinfo.h (processor_subtypes):
+	AMDFAM19H_ZNVER4.
+	* config.gcc (x86_64-*-* |...): Likewise.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Let
+	-march=native recognize znver4 cpus.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add znver4.
+	* config/i386/i386-options.cc (m_ZNVER4): New definition.
+	(m_ZNVER): Include m_ZNVER4.
+	(processor_cost_table): Add znver4.
+	* config/i386/i386.cc (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (processor_type): Add PROCESSOR_ZNVER4.
+	(PTA_ZNVER1): New definition.
+	(PTA_ZNVER2): Likewise.
+	(PTA_ZNVER3): Likewise.
+	(PTA_ZNVER4): Likewise.
+	* config/i386/i386.md (define_attr "cpu"): Add znver4 and rename
+	md file.
+	* config/i386/x86-tune-costs.h (znver4_cost): New definition.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Add znver4.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/znver1.md: Rename to znver.md.
+	* config/i386/znver.md: Add new reservations for znver4.
+	* doc/extend.texi: Add details about znver4.
+	* doc/invoke.texi: Likewise.
+
+2023-01-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2022-12-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/107987
+	* config/arm/mve.md (mve_vcmp<mve_cmp_op>q_n_<mode>,
+	@mve_vcmp<mve_cmp_op>q_n_f<mode>): Apply vec_duplicate to scalar
+	operand.
+
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/108543
+	* opts.cc (parse_sanitizer_options): Don't always clear SANITIZE_ADDRESS
+	if it was previously set.
+
+2023-01-26  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	Backported from master:
+	2023-01-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.h (CLZ_DEFINED_VALUE_AT_ZERO): Fix value for QI
+	and HI input modes.
+	* config/pru/pru.md (clz): Fix generated code for QI and HI
+	input modes.
+
 2023-01-25  Christophe Lyon  <christophe.lyon@arm.com>
 
 	Backported from master:

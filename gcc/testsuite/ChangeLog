@@ -1,3 +1,85 @@
+2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	Backported from master:
+	2022-10-21  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+	* g++.target/i386/mv29.C: Likewise.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108529
+	* gfortran.dg/pr108529.f90: New test.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-07-14  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/106209
+	* gfortran.dg/pr106209.f90: New test.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108421
+	* gfortran.dg/pr108421.f90: New test.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108420
+	* gfortran.dg/pr108420.f90: New test.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108501
+	* gfortran.dg/pr108501.f90: New test.
+
+2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108502
+	* gfortran.dg/pr108502.f90: New test.
+
+2023-01-27  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2022-12-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/pr107987.c: New test.
+
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/108543
+	* c-c++-common/asan/pointer-subtract-5.c: New test.
+	* c-c++-common/asan/pointer-subtract-6.c: New test.
+	* c-c++-common/asan/pointer-subtract-7.c: New test.
+	* c-c++-common/asan/pointer-subtract-8.c: New test.
+
+2023-01-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-11-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/pr107554.c: Restrict to lp64.
+
 2023-01-25  Christophe Lyon  <christophe.lyon@arm.com>
 
 	Backported from master:
