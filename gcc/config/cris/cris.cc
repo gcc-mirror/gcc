@@ -2134,12 +2134,12 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
   /* The operands may be swapped.  Canonicalize them in reg_rtx and
      val_rtx, where reg_rtx always is a reg (for this constraint to
      match).  */
-  if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
+  if (! cris_base_p (reg_rtx, lra_in_progress || reload_completed))
     reg_rtx = val_rtx, val_rtx = ops[rreg];
 
   /* Don't forget to check that reg_rtx really is a reg.  If it isn't,
      we have no business.  */
-  if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
+  if (! cris_base_p (reg_rtx, lra_in_progress || reload_completed))
     return 0;
 
   /* Don't do this when -mno-split.  */
@@ -2164,9 +2164,9 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
       /* Check if the lvalue register is the same as the "other
 	 operand".  If so, the result is undefined and we shouldn't do
 	 this.  FIXME:  Check again.  */
-      if ((cris_base_p (ops[lreg], reload_in_progress || reload_completed)
+      if ((cris_base_p (ops[lreg], lra_in_progress || reload_completed)
 	   && cris_base_p (ops[other_op],
-			   reload_in_progress || reload_completed)
+			   lra_in_progress || reload_completed)
 	   && REGNO (ops[lreg]) == REGNO (ops[other_op]))
 	  || rtx_equal_p (ops[other_op], ops[lreg]))
       return 0;
@@ -2179,7 +2179,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
     return 0;
 
   if (code == PLUS
-      && ! cris_base_p (val_rtx, reload_in_progress || reload_completed))
+      && ! cris_base_p (val_rtx, lra_in_progress || reload_completed))
     {
 
       /* Do not allow rx = rx + n if a normal add or sub with same size
@@ -2195,13 +2195,13 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
 
       if (MEM_P (val_rtx)
 	  && cris_base_or_autoincr_p (XEXP (val_rtx, 0),
-				      reload_in_progress || reload_completed))
+				      lra_in_progress || reload_completed))
 	return 1;
 
       if (GET_CODE (val_rtx) == SIGN_EXTEND
 	  && MEM_P (XEXP (val_rtx, 0))
 	  && cris_base_or_autoincr_p (XEXP (XEXP (val_rtx, 0), 0),
-				      reload_in_progress || reload_completed))
+				      lra_in_progress || reload_completed))
 	return 1;
 
       /* If we got here, it's not a valid addressing mode.  */
@@ -2210,7 +2210,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
   else if (code == MULT
 	   || (code == PLUS
 	       && cris_base_p (val_rtx,
-			       reload_in_progress || reload_completed)))
+			       lra_in_progress || reload_completed)))
     {
       /* Do not allow rx = rx + ry.S, since it doesn't give better code.  */
       if (rtx_equal_p (ops[lreg], reg_rtx)
@@ -2222,7 +2222,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
 	return 0;
 
       /* Only allow  r + ...  */
-      if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
+      if (! cris_base_p (reg_rtx, lra_in_progress || reload_completed))
 	return 0;
 
       /* If we got here, all seems ok.

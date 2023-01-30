@@ -528,7 +528,7 @@
      emitted) is the final value.  */
   if ((CONST_INT_P (operands[1]) || GET_CODE (operands[1]) == CONST_DOUBLE)
       && ! reload_completed
-      && ! reload_in_progress)
+      && ! lra_in_progress)
     {
       rtx insns;
       rtx op0 = operands[0];
@@ -1328,7 +1328,7 @@
    && operands[1] != frame_pointer_rtx
    && CONST_INT_P (operands[3])
    && (INTVAL (operands[3]) == 2 || INTVAL (operands[3]) == 4)
-   && (reload_in_progress || reload_completed)"
+   && (lra_in_progress || reload_completed)"
   "#"
   "&& 1"
   [(set (match_dup 0)
