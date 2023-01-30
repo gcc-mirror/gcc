@@ -106,8 +106,10 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 {
   _uw op;
   int set_pc;
+#if defined(TARGET_HAVE_PACBTI)
   int set_pac = 0;
   int set_pac_sp = 0;
+#endif
   _uw reg;
   _uw sp;
 
@@ -258,7 +260,9 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	      if (_Unwind_VRS_Pop (context, _UVRSC_PAC, 0, _UVRSD_UINT32)
 		  != _UVRSR_OK)
 		return _URC_FAILURE;
+#if defined(TARGET_HAVE_PACBTI)
 	      set_pac = 1;
+#endif
 	      continue;
 	    }
 
@@ -266,7 +270,9 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	  if (op == 0xb5)
 	    {
 	      _Unwind_VRS_Get (context, _UVRSC_CORE, R_SP, _UVRSD_UINT32, &sp);
+#if defined(TARGET_HAVE_PACBTI)
 	      set_pac_sp = 1;
+#endif
 	      continue;
 	    }
 
