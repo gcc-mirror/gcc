@@ -185,10 +185,8 @@ package body Pprint is
             return "...";
          end if;
 
-         case Nkind (Expr) is
-            when N_Defining_Identifier
-               | N_Identifier
-            =>
+         case N_Subexpr'(Nkind (Expr)) is
+            when N_Identifier =>
                return Ident_Image (Expr, Expression_Image.Expr, Expand_Type);
 
             when N_Character_Literal =>
@@ -379,14 +377,6 @@ package body Pprint is
                   return "." & Expr_Name (Selector_Name (Expr));
                end if;
 
-            when N_Component_Association =>
-               return "("
-                 & List_Name
-                     (List      => First (Choices (Expr)),
-                      Add_Space => False,
-                      Add_Paren => False)
-                 & " => " & Expr_Name (Expression (Expr)) & ")";
-
             when N_If_Expression =>
                declare
                   Cond_Expr : constant Node_Id := First (Expressions (Expr));
@@ -434,6 +424,15 @@ package body Pprint is
                       & Expr_Name (Condition (Expr)) & "]";
                else
                   return "[program_error]";
+               end if;
+
+            when N_Raise_Storage_Error =>
+               if Present (Condition (Expr)) then
+                  return
+                    "[storage_error when "
+                      & Expr_Name (Condition (Expr)) & "]";
+               else
+                  return "[storage_error]";
                end if;
 
             when N_Range =>
@@ -573,9 +572,6 @@ package body Pprint is
             when N_Op_Not =>
                return "not (" & Expr_Name (Right_Opnd (Expr)) & ")";
 
-            when N_Parameter_Association =>
-               return Expr_Name (Explicit_Actual_Parameter (Expr));
-
             when N_Type_Conversion =>
 
                --  Most conversions are not very interesting (used inside
@@ -627,10 +623,18 @@ package body Pprint is
             when N_Null =>
                return "null";
 
-            when N_Others_Choice =>
-               return "others";
-
-            when others =>
+            when N_Case_Expression
+               | N_Delta_Aggregate
+               | N_Interpolated_String_Literal
+               | N_Op_Rotate_Left
+               | N_Op_Rotate_Right
+               | N_Operator_Symbol
+               | N_Procedure_Call_Statement
+               | N_Quantified_Expression
+               | N_Raise_Expression
+               | N_Reference
+               | N_Target_Name
+            =>
                return "...";
          end case;
       end Expr_Name;
