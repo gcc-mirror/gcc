@@ -1,3 +1,12 @@
+2023-01-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.cc: Include calls.h, cfgloop.h and cfganal.h
+	(stmt_may_terminate_function_p): If assuming return or EH
+	volatile asm is safe.
+	(find_always_executed_bbs): Fix handling of terminating BBS and
+	infinite loops; add debug output.
+	* tree-ssa-alias.cc (stmt_kills_ref_p): Fix debug output
+
 2023-01-28  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* config/aarch64/aarch64.cc (aarch64_uxt_size): fix an

@@ -1,3 +1,15 @@
+2023-01-29  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/108450
+	* check.cc (gfc_check_minloc_maxloc): Explicitly set argument name.
+	(gfc_check_findloc): Ditto.
+
+2023-01-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/103506
+	* parse.cc (parse_module): Remove use of a bool error value
+	that prevented proper setting of the namespace pointer.
+
 2023-01-28  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

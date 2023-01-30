@@ -1,3 +1,19 @@
+2023-01-29  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/108450
+	* gfortran.dg/gomp/minmaxloc_1.f90: New test.
+
+2023-01-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/103506
+	* gfortran.dg/pr103506_1.f90: New test.
+
+2023-01-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ipa-sra-30.c: New test.
+	* gcc.dg/ipa/ipa-sra-31.c: New test.
+	* gcc.dg/tree-ssa/modref-dse-7.c: New test.
+
 2023-01-28  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
