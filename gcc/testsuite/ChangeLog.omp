@@ -1,5 +1,7 @@
 2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gfortran.dg/gomp/allocate-4.f90: Cut.
+
 	* c-c++-common/gomp/uses_allocators-1.c: Cut.
 	* c-c++-common/gomp/uses_allocators-2.c: Likewise.
 	* c-c++-common/gomp/uses_allocators-3.c: Likewise.
