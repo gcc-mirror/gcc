@@ -86,7 +86,7 @@ GRS_OBJS = \
     rust/rust-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
     rust/rust-macro-builtins.o \
-    rust/rust-hir-full-test.o \
+    rust/rust-hir.o \
     rust/rust-hir-map.o \
     rust/rust-attributes.o \
     rust/rust-abi.o \
