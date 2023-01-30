@@ -1,3 +1,10 @@
+2023-02-16  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (DISPATCH_PTR): New built-in.
+	* config/gcn/gcn.cc (gcn_init_machine_status): Disable global
+	addressing.
+	(gcn_expand_builtin_1): Implement GCN_BUILTIN_DISPATCH_PTR.
+
 2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gimplify.cc (omp_notice_variable): Apply GOVD_MAP_ALLOC_ONLY flag

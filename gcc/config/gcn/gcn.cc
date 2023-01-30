@@ -114,7 +114,8 @@ gcn_init_machine_status (void)
 
   f = ggc_cleared_alloc<machine_function> ();
 
-  if (TARGET_GCN3)
+  // FIXME: re-enable global addressing with safety for LDS-flat addresses
+  //if (TARGET_GCN3)
     f->use_flat_addressing = true;
 
   return f;
@@ -4650,6 +4651,19 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	if (cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG] >= 0)
 	   ptr = gen_rtx_REG (DImode,
 			      cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG]);
+	else
+	  {
+	    ptr = gen_reg_rtx (DImode);
+	    emit_move_insn (ptr, const0_rtx);
+	  }
+	return ptr;
+      }
+    case GCN_BUILTIN_DISPATCH_PTR:
+      {
+	rtx ptr;
+	if (cfun->machine->args.reg[DISPATCH_PTR_ARG] >= 0)
+	   ptr = gen_rtx_REG (DImode,
+			      cfun->machine->args.reg[DISPATCH_PTR_ARG]);
 	else
 	  {
 	    ptr = gen_reg_rtx (DImode);

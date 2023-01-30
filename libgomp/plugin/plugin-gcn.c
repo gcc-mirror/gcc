@@ -563,6 +563,7 @@ static size_t gcn_kernel_heap_size = DEFAULT_GCN_HEAP_SIZE;
 
 static int team_arena_size = DEFAULT_TEAM_ARENA_SIZE;
 static int stack_size = DEFAULT_GCN_STACK_SIZE;
+static int lowlat_size = -1;
 
 /* Flag to decide whether print to stderr information about what is going on.
    Set in init_debug depending on environment variables.  */
@@ -1047,8 +1048,8 @@ print_kernel_dispatch (struct kernel_dispatch *dispatch, unsigned indent)
   fprintf (stderr, "%*sobject: %lu\n", indent, "", dispatch->object);
   fprintf (stderr, "%*sprivate_segment_size: %u\n", indent, "",
 	   dispatch->private_segment_size);
-  fprintf (stderr, "%*sgroup_segment_size: %u\n", indent, "",
-	   dispatch->group_segment_size);
+  fprintf (stderr, "%*sgroup_segment_size: %u (low-latency pool)\n", indent,
+	   "", dispatch->group_segment_size);
   fprintf (stderr, "\n");
 }
 
@@ -1119,6 +1120,10 @@ init_environment_variables (void)
       if (tmp)
 	stack_size = tmp;;
     }
+
+  const char *lowlat = secure_getenv ("GOMP_GCN_LOWLAT_POOL");
+  if (lowlat)
+    lowlat_size = atoi (lowlat);
 }
 
 /* Return malloc'd string with name of SYMBOL.  */
@@ -1939,7 +1944,25 @@ create_kernel_dispatch (struct kernel_info *kernel, int num_teams,
 
   shadow->signal = sync_signal.handle;
   shadow->private_segment_size = kernel->private_segment_size;
-  shadow->group_segment_size = kernel->group_segment_size;
+
+  if (lowlat_size < 0)
+    {
+      /* Divide the LDS between the number of running teams.
+	 Allocate not less than is defined in the kernel metadata.  */
+      int teams_per_cu = num_teams / get_cu_count (agent);
+      int LDS_per_team = (teams_per_cu ? 65536 / teams_per_cu : 65536);
+      shadow->group_segment_size
+	= (kernel->group_segment_size > LDS_per_team
+	   ? kernel->group_segment_size
+	   : LDS_per_team);;
+    }
+  else if (lowlat_size < GCN_LOWLAT_HEAP+8)
+    /* Ensure that there's space for the OpenMP libgomp data.  */
+    shadow->group_segment_size = GCN_LOWLAT_HEAP+8;
+  else
+    shadow->group_segment_size = (lowlat_size > 65536
+				  ? 65536
+				  : lowlat_size);
 
   /* We expect kernels to request a single pointer, explicitly, and the
      rest of struct kernargs, implicitly.  If they request anything else
@@ -2298,9 +2321,9 @@ run_kernel (struct kernel_info *kernel, void *vars,
       print_kernel_dispatch (shadow, 2);
     }
 
-  packet->private_segment_size = kernel->private_segment_size;
-  packet->group_segment_size = kernel->group_segment_size;
-  packet->kernel_object = kernel->object;
+  packet->private_segment_size = shadow->private_segment_size;
+  packet->group_segment_size = shadow->group_segment_size;
+  packet->kernel_object = shadow->object;
   packet->kernarg_address = shadow->kernarg_address;
   hsa_signal_t s;
   s.handle = shadow->signal;

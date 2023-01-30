@@ -1,5 +1,24 @@
 2023-02-16  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/libgomp-gcn.h (TEAM_ARENA_START): Move to here.
+	(TEAM_ARENA_FREE): Likewise.
+	(TEAM_ARENA_END): Likewise.
+	(GCN_LOWLAT_HEAP): New.
+	* config/gcn/team.c (LITTLEENDIAN_CPU): New, and import hsa.h.
+	(__gcn_lowlat_init): New prototype.
+	(gomp_gcn_enter_kernel): Initialize the low-latency heap.
+	* libgomp.h (TEAM_ARENA_START): Move to libgomp.h.
+	(TEAM_ARENA_FREE): Likewise.
+	(TEAM_ARENA_END): Likewise.
+	* plugin/plugin-gcn.c (lowlat_size): New variable.
+	(print_kernel_dispatch): Label the group_segment_size purpose.
+	(init_environment_variables): Read GOMP_GCN_LOWLAT_POOL.
+	(create_kernel_dispatch): Pass low-latency head allocation to kernel.
+	(run_kernel): Use shadow; don't assume values.
+	* testsuite/libgomp.c/allocators-7.c: Enable for amdgcn.
+
+2023-02-16  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/nvptx/allocator.c (BASIC_ALLOC_PREFIX): New define, and
 	include basic-allocator.c.
 	(__nvptx_lowlat_heap_root): Remove.
