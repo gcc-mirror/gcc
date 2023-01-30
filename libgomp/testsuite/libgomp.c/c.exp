@@ -12,6 +12,13 @@ if [info exists lang_include_flags] then {
 load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 
+proc check_effective_target_c { } {
+    return 1
+}
+proc check_effective_target_c++ { } {
+    return 0
+}
+
 # If a testcase doesn't have special options, use these.
 if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS "-O2"
