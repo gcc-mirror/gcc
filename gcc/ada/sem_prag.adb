@@ -20035,7 +20035,11 @@ package body Sem_Prag is
                 N : Node_Id) return Boolean
             is
             begin
-               if Ekind (E) = E_Procedure then
+               if Ekind (E) in E_Function | E_Generic_Function then
+                  Error_Msg_Ada_2022_Feature ("No_Return function", Sloc (N));
+                  return Ada_Version >= Ada_2022;
+
+               elsif Ekind (E) = E_Procedure then
 
                   --  If E is a generic instance, marking it with No_Return
                   --  is forbidden, but having it inherit the No_Return of
@@ -20106,9 +20110,7 @@ package body Sem_Prag is
                   --  Ada 2022 (AI12-0269): A function can be No_Return
 
                   if Ekind (E) in E_Generic_Procedure | E_Procedure
-                    or else (Ada_Version >= Ada_2022
-                              and then
-                             Ekind (E) in E_Generic_Function | E_Function)
+                                   | E_Generic_Function | E_Function
                   then
                      --  Check that the pragma is not applied to a body.
                      --  First check the specless body case, to give a
