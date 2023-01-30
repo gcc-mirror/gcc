@@ -164,6 +164,8 @@ DEF_BUILTIN (FIRST_CALL_THIS_THREAD_P, -1, "first_call_this_thread_p", B_INSN,
 	     _A1 (GCN_BTI_BOOL), gcn_expand_builtin_1)
 DEF_BUILTIN (KERNARG_PTR, -1, "kernarg_ptr", B_INSN, _A1 (GCN_BTI_VOIDPTR),
 	     gcn_expand_builtin_1)
+DEF_BUILTIN (DISPATCH_PTR, -1, "dispatch_ptr", B_INSN, _A1 (GCN_BTI_VOIDPTR),
+	     gcn_expand_builtin_1)
 DEF_BUILTIN (GET_STACK_LIMIT, -1, "get_stack_limit", B_INSN,
 	     _A1 (GCN_BTI_VOIDPTR), gcn_expand_builtin_1)
 

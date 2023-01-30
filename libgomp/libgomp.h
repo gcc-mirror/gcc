@@ -114,9 +114,6 @@ extern void gomp_aligned_free (void *);
 #ifdef __AMDGCN__
 #include "libgomp-gcn.h"
 /* The arena is initialized in config/gcn/team.c.  */
-#define TEAM_ARENA_START 16  /* LDS offset of free pointer.  */
-#define TEAM_ARENA_FREE  24  /* LDS offset of free pointer.  */
-#define TEAM_ARENA_END   32  /* LDS offset of end pointer.  */
 
 static inline void * __attribute__((malloc))
 team_malloc (size_t size)

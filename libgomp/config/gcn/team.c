@@ -29,6 +29,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define LITTLEENDIAN_CPU
+#include "hsa.h"
+
+/* Defined in basic-allocator.c via config/amdgcn/allocator.c.  */
+void __gcn_lowlat_init (void *heap, size_t size);
+
 static void gomp_thread_start (struct gomp_thread_pool *);
 
 /* This externally visible function handles target region entry.  It
@@ -70,6 +76,12 @@ gomp_gcn_enter_kernel (void)
       *arena_start = team_arena;
       *arena_free = team_arena;
       *arena_end = team_arena + kernargs->arena_size_per_team;
+
+      /* Initialize the low-latency heap.  The header is the size.  */
+      void __lds *lowlat = (void __lds *)GCN_LOWLAT_HEAP;
+      hsa_kernel_dispatch_packet_t *queue_ptr = __builtin_gcn_dispatch_ptr ();
+      __gcn_lowlat_init ((void*)(uintptr_t)(void __flat*)lowlat,
+			 queue_ptr->group_segment_size - GCN_LOWLAT_HEAP);
 
       /* Allocate and initialize the team-local-storage data.  */
       struct gomp_thread *thrs = team_malloc_cleared (sizeof (*thrs)
