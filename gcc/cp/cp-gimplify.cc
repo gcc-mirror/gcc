@@ -893,6 +893,21 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
     }
 }
 
+/* True if any of the element initializers in CTOR are TARGET_EXPRs that are
+   not expected to elide, e.g. because unsafe_copy_elision_p is true.  */
+
+static bool
+any_non_eliding_target_exprs (tree ctor)
+{
+  for (const constructor_elt &e : *CONSTRUCTOR_ELTS (ctor))
+    {
+      if (TREE_CODE (e.value) == TARGET_EXPR
+	  && !TARGET_EXPR_ELIDING_P (e.value))
+	return true;
+    }
+  return false;
+}
+
 /* If we might need to clean up a partially constructed object, break down the
    CONSTRUCTOR with split_nonconstant_init.  Also expand VEC_INIT_EXPR at this
    point.  If initializing TO with FROM is non-trivial, overwrite *REPLACE with
@@ -904,10 +919,11 @@ cp_genericize_init (tree *replace, tree from, tree to)
   tree init = NULL_TREE;
   if (TREE_CODE (from) == VEC_INIT_EXPR)
     init = expand_vec_init_expr (to, from, tf_warning_or_error);
-  else if (flag_exceptions
-	   && TREE_CODE (from) == CONSTRUCTOR
+  else if (TREE_CODE (from) == CONSTRUCTOR
 	   && TREE_SIDE_EFFECTS (from)
-	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (from)))
+	   && ((flag_exceptions
+		&& TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (from)))
+	       || any_non_eliding_target_exprs (from)))
     {
       to = cp_stabilize_reference (to);
       replace_placeholders (from, to);
