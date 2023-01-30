@@ -423,7 +423,7 @@ be private.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm">
+	      xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm">
       Improving shared_ptr for C++0x, Revision 2
 	</link>
       </title>
@@ -436,7 +436,7 @@ be private.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html">
+	      xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html">
       C++ Standard Library Active Issues List
 	</link>
       </title>
@@ -449,7 +449,7 @@ be private.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">
+	      xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">
       Working Draft, Standard for Programming Language C++
 	</link>
       </title>
