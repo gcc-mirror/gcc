@@ -195,7 +195,7 @@ package body Pprint is
                declare
                   Char : constant Int := UI_To_Int (Char_Literal_Value (Expr));
                begin
-                  if Char in 32 .. 127 then
+                  if Char in 32 .. 126 then
                      return "'" & Character'Val (Char) & "'";
                   else
                      UI_Image (Char_Literal_Value (Expr));
