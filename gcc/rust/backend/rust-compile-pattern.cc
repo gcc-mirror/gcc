@@ -341,5 +341,63 @@ CompilePatternBindings::visit (HIR::GroupedPattern &pattern)
   pattern.get_item ()->accept_vis (*this);
 }
 
+void
+CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
+{
+  Bvariable *var = nullptr;
+  rust_assert (
+    ctx->lookup_var_decl (pattern.get_pattern_mappings ().get_hirid (), &var));
+
+  auto fnctx = ctx->peek_fn ();
+  if (ty->is_unit ())
+    {
+      ctx->add_statement (init_expr);
+
+      tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
+
+      auto unit_type_init_expr
+	= ctx->get_backend ()->constructor_expression (stmt_type, false, {}, -1,
+						       rval_locus);
+      auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var,
+						    unit_type_init_expr);
+      ctx->add_statement (s);
+    }
+  else
+    {
+      auto s
+	= ctx->get_backend ()->init_statement (fnctx.fndecl, var, init_expr);
+      ctx->add_statement (s);
+    }
+}
+
+void
+CompilePatternLet::visit (HIR::WildcardPattern &pattern)
+{
+  Bvariable *var = nullptr;
+  rust_assert (
+    ctx->lookup_var_decl (pattern.get_pattern_mappings ().get_hirid (), &var));
+
+  auto fnctx = ctx->peek_fn ();
+  if (ty->is_unit ())
+    {
+      ctx->add_statement (init_expr);
+
+      tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
+
+      auto unit_type_init_expr
+	= ctx->get_backend ()->constructor_expression (stmt_type, false, {}, -1,
+						       rval_locus);
+      auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var,
+						    unit_type_init_expr);
+      ctx->add_statement (s);
+    }
+  else
+    {
+      auto s
+	= ctx->get_backend ()->init_statement (fnctx.fndecl, var, init_expr);
+      ctx->add_statement (s);
+    }
+}
+
 } // namespace Compile
 } // namespace Rust
