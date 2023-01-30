@@ -4183,7 +4183,7 @@ cgraph_edge::possibly_call_in_translation_unit_p (void)
     node = node->previous_sharing_asm_name;
   if (node->previous_sharing_asm_name)
     node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (callee->decl));
-  gcc_assert (TREE_PUBLIC (node->decl));
+  gcc_assert (TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
   return node->get_availability () >= AVAIL_INTERPOSABLE;
 }
 
