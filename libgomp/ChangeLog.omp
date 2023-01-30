@@ -1,3 +1,7 @@
+2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/alloc-pinned-1.c: Paste.
+
 2023-01-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp.texi (nvptx): Update for

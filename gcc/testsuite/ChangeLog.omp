@@ -1,5 +1,9 @@
 2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-c++-common/gomp/alloc-pinned-1.c: Cut.
+
+2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* gfortran.dg/gomp/allocate-4.f90: Fix 'omp_allocator_handle_kind'
 	example.
 
