@@ -28,6 +28,8 @@ load_lib gm2-torture.exp
 gm2_init_pim "${srcdir}/gm2/warnings/returntype/fail"
 
 global TORTURE_OPTIONS
+
+set old_options $TORTURE_OPTIONS
 set TORTURE_OPTIONS { { -O0 -g -Werror=return-type } }
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
@@ -38,3 +40,5 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
 
     gm2-torture-fail $testcase
 }
+
+set TORTURE_OPTIONS $old_options
