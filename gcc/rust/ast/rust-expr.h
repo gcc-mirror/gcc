@@ -3,7 +3,7 @@
 
 #include "rust-ast.h"
 #include "rust-path.h"
-#include "operator.h"
+#include "rust-operators.h"
 
 namespace Rust {
 namespace AST {
