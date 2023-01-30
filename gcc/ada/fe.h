@@ -220,8 +220,11 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 #define Unnest_Subprogram_Mode		opt__unnest_subprogram_mode
 
 typedef enum {
-  Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022, Ada_With_Extensions
+  Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022
 } Ada_Version_Type;
+// Ada_With_Core_Extensions and Ada_With_All_Extensions (see opt.ads) are not
+// used on the C side for now. If we decide to use them, we should import
+// All_Extensions_Allowed and Core_Extensions_Allowed functions.
 
 extern Ada_Version_Type Ada_Version;
 extern Boolean Back_End_Inlining;
