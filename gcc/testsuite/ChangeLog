@@ -1,3 +1,8 @@
+2023-01-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108306
+	* gcc.dg/pr108306.c: New.
+
 2023-01-28  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
 
 	Backported from master:

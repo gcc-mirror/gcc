@@ -1,3 +1,16 @@
+2023-01-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108306
+	* range-op.cc (operator_lshift::fold_range): Return [0, 0] not
+	varying for shifts that are always out of void range.
+	(operator_rshift::fold_range): Return [0, 0] not
+	varying for shifts that are always out of void range.
+
+2023-01-30  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.opt: Change AVX512FP16 to AVX512-FP16.
+	* doc/invoke.texi: Ditto.
+
 2023-01-29  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:
