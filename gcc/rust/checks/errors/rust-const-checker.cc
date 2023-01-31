@@ -835,10 +835,6 @@ ConstChecker::visit (TuplePattern &)
 {}
 
 void
-ConstChecker::visit (GroupedPattern &)
-{}
-
-void
 ConstChecker::visit (SlicePattern &)
 {}
 
