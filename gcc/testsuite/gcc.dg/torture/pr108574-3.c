@@ -1,7 +1,7 @@
 /* { dg-do run } */
 
 int a = 3557301289, d;
-char b, f;
+signed char b, f;
 unsigned short c = 241;
 short e, g;
 static void h() {
