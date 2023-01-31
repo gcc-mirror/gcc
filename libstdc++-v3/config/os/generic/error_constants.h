@@ -167,6 +167,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef EOVERFLOW
       value_too_large = 			EOVERFLOW,
+#elif defined __AVR__
+      value_too_large = 			999,
 #endif
 
       wrong_protocol_type = 			EPROTOTYPE

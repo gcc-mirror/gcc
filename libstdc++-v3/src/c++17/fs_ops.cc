@@ -735,7 +735,7 @@ fs::path
 fs::current_path(error_code& ec)
 {
   path p;
-#ifdef _GLIBCXX_HAVE_UNISTD_H
+#if defined _GLIBCXX_HAVE_UNISTD_H && ! defined __AVR__
 #if defined __GLIBC__ || defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
   if (char_ptr cwd = char_ptr{posix::getcwd(nullptr, 0)})
     {
@@ -1301,6 +1301,7 @@ fs::remove_all(const path& p)
     }
     // Directory is empty now, will remove it below.
     break;
+#ifndef __AVR__
   case ENOENT:
     // Our work here is done.
     return 0;
@@ -1308,6 +1309,7 @@ fs::remove_all(const path& p)
   case ELOOP:
     // Not a directory, will remove below.
     break;
+#endif
   default:
     // An error occurred.
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
@@ -1338,6 +1340,7 @@ fs::remove_all(const path& p, error_code& ec)
     }
     // Directory is empty now, will remove it below.
     break;
+#ifndef __AVR__
   case ENOENT:
     // Our work here is done.
     ec.clear();
@@ -1346,6 +1349,7 @@ fs::remove_all(const path& p, error_code& ec)
   case ELOOP:
     // Not a directory, will remove below.
     break;
+#endif
   default:
     // An error occurred.
     return -1;
