@@ -548,6 +548,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       }
 #endif
 
+#ifdef _GLIBCXX_USE_DEV_RANDOM
 #ifdef USE_POSIX_FILE_IO
     ::close(_M_fd);
     _M_fd = -1;
@@ -555,6 +556,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     std::fclose(static_cast<FILE*>(_M_file));
 #endif
     _M_file = nullptr;
+#endif
   }
 
   random_device::result_type
