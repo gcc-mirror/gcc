@@ -639,18 +639,25 @@ dom_info::calc_idoms ()
 static void
 assign_dfs_numbers (struct et_node *node, int *num)
 {
-  struct et_node *son;
-
-  node->dfs_num_in = (*num)++;
-
-  if (node->son)
+  et_node *n = node;
+  while (1)
     {
-      assign_dfs_numbers (node->son, num);
-      for (son = node->son->right; son != node->son; son = son->right)
-	assign_dfs_numbers (son, num);
+      n->dfs_num_in = (*num)++;
+      if (n->son)
+	n = n->son;
+      else
+	{
+	  while (!n->right || n->right == n->father->son)
+	    {
+	      n->dfs_num_out = (*num)++;
+	      if (n == node)
+		return;
+	      n = n->father;
+	    }
+	  n->dfs_num_out = (*num)++;
+	  n = n->right;
+	}
     }
-
-  node->dfs_num_out = (*num)++;
 }
 
 /* Compute the data necessary for fast resolving of dominator queries in a
