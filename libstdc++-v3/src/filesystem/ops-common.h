@@ -167,7 +167,7 @@ namespace __gnu_posix
     return ret;
   }
   using char_type = wchar_t;
-#elif defined _GLIBCXX_HAVE_UNISTD_H
+#elif defined _GLIBCXX_HAVE_UNISTD_H && ! defined __AVR__
   using ::open;
   using ::close;
 # ifdef _GLIBCXX_HAVE_SYS_STAT_H
