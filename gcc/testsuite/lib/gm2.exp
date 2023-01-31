@@ -334,18 +334,18 @@ proc gm2_init_pimx { dialect paths args } {
     global gccpath
 
     set gm2src ${srcdir}/../m2
-    
+
 
     send_log "srcdir is $srcdir\n"
     send_log "gccpath is $gccpath\n"
     send_log "gm2src is $gm2src\n"
 
     set theIpath -I${gccpath}/libgm2/libm2pim
-    lappend theIpath -I${gm2src}/gm2-libs-pim
+    lappend theIpath -I${gm2src}/gm2-libs-log
 
     # NOTE:
     lappend theIpath -I${gm2src}/gm2-libs
-    
+
     set theLpath -L${gccpath}/libgm2/libm2pim/.libs
 
     lappend theIpath -I${gccpath}/libgm2/libm2iso
@@ -418,7 +418,7 @@ proc gm2_init_iso { paths args } {
     set theLpath -L${gccpath}/libgm2/libm2iso/.libs
 
     lappend theIpath -I${gccpath}/libgm2/libm2pim
-    lappend theIpath -I${gm2src}/gm2-libs-pim
+    lappend theIpath -I${gm2src}/gm2-libs-log
 
     # NOTE:
     lappend theIpath -I${gm2src}/gm2-libs
@@ -456,7 +456,7 @@ proc gm2_init_ulm { paths args } {
     set theLpath -L${gccpath}/libgm2/libm2ulm/.libs
 
     lappend theIpath -I${gccpath}/libgm2/libm2pim
-    lappend theIpath -I${gm2src}/gm2-libs-pim
+    lappend theIpath -I${gm2src}/gm2-libs-log
 
     # NOTE:
     lappend theIpath -I${gm2src}/gm2-libs
@@ -490,8 +490,8 @@ proc gm2_init_log { paths args } {
 
     # FIXME: this seems to interleave the library defs.
     set theIpath -I${gccpath}/libgm2/libm2log
-    lappend theIpath -I${gm2src}/gm2-libs-pim
-    
+    lappend theIpath -I${gm2src}/gm2-libs-log
+
     set theLpath -L${gccpath}/libgm2/libm2log/.libs
 
     lappend theIpath -I${gccpath}/libgm2/libm2pim
@@ -536,7 +536,7 @@ proc gm2_init_cor { paths args } {
     set theLpath -L${gccpath}/libgm2/libm2cor/.libs
 
     lappend theIpath -I${gccpath}/libgm2/libm2pim
-    lappend theIpath -I${gm2src}/gm2-libs-pim
+    lappend theIpath -I${gm2src}/gm2-libs-log
 
     lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
 

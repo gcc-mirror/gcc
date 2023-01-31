@@ -229,7 +229,7 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs-pim
+VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs-log
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -471,7 +471,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_LOGLIB_TRUE@libm2log_la_SOURCES = $(M2MODS) Break.c
 @BUILD_LOGLIB_TRUE@libm2log_la_DEPENDENCIES = ../libm2pim/SYSTEM.def $(addsuffix .lo, $(basename $(libm2log_la_SOURCES)))
 @BUILD_LOGLIB_TRUE@libm2log_la_CFLAGS = -I. -DBUILD_GM2_LIBS -I@srcdir@/../
-@BUILD_LOGLIB_TRUE@libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-pim -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso
+@BUILD_LOGLIB_TRUE@libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-log -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_FALSE@libm2log_la_link_flags = 
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_TRUE@libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 @BUILD_LOGLIB_TRUE@libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags)
@@ -791,8 +791,8 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_LOGLIB_TRUE@	for i in $(M2DEFS) $(M2MODS) ; do \
 @BUILD_LOGLIB_TRUE@           if [ -f $$i ] ; then \
 @BUILD_LOGLIB_TRUE@              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
-@BUILD_LOGLIB_TRUE@           elif [ -f @srcdir@/../../gcc/m2/gm2-libs-pim/$$i ] ; then \
-@BUILD_LOGLIB_TRUE@              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-pim/$$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
+@BUILD_LOGLIB_TRUE@           elif [ -f @srcdir@/../../gcc/m2/gm2-libs-log/$$i ] ; then \
+@BUILD_LOGLIB_TRUE@              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-log/$$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
 @BUILD_LOGLIB_TRUE@           else \
 @BUILD_LOGLIB_TRUE@              echo "cannot find $$i" ; exit 1 ; \
 @BUILD_LOGLIB_TRUE@           fi ; \

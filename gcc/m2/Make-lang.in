@@ -176,7 +176,7 @@ m2/gm2-libs.texi: gm2-libs.texi-check; @true
 ifeq ($(HAVE_PYTHON),yes)
 gm2-libs.texi-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
                      $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def
-	test -d m2/gm2-libs-pim || $(mkinstalldirs) m2/gm2-libs-pim
+	test -d m2/gm2-libs-log || $(mkinstalldirs) m2/gm2-libs-log
 	test -d m2/gm2-libs-iso || $(mkinstalldirs) m2/gm2-libs-iso
 	test -d m2/gm2-libs || $(mkinstalldirs) m2/gm2-libs
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.texi

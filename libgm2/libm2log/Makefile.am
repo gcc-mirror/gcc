@@ -19,7 +19,7 @@ SUFFIXES = .c .mod .def .o .obj .lo .a .la
 
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
-VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs-pim
+VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs-log
 
 # Multilib support.
 MAKEOVERRIDES=
@@ -131,7 +131,7 @@ libm2log_la_SOURCES = $(M2MODS) Break.c
 
 libm2log_la_DEPENDENCIES = ../libm2pim/SYSTEM.def $(addsuffix .lo, $(basename $(libm2log_la_SOURCES)))
 libm2log_la_CFLAGS = -I. -DBUILD_GM2_LIBS -I@srcdir@/../
-libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-pim -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso
+libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-log -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso
 if TARGET_DARWIN
 libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
@@ -158,8 +158,8 @@ install-data-local: force
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
               $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
-           elif [ -f @srcdir@/../../gcc/m2/gm2-libs-pim/$$i ] ; then \
-              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-pim/$$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
+           elif [ -f @srcdir@/../../gcc/m2/gm2-libs-log/$$i ] ; then \
+              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-log/$$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
            else \
               echo "cannot find $$i" ; exit 1 ; \
            fi ; \
