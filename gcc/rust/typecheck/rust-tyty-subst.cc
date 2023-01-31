@@ -213,8 +213,8 @@ SubstitutionArg::is_error () const
 bool
 SubstitutionArg::is_conrete () const
 {
-  if (argument != nullptr)
-    return true;
+  if (argument == nullptr)
+    return false;
 
   if (argument->get_kind () == TyTy::TypeKind::PARAM)
     return false;
