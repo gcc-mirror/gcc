@@ -1998,6 +1998,7 @@ fix_up_fall_thru_edges (void)
 		     becomes EDGE_CROSSING.  */
 
 		  fall_thru->flags &= ~EDGE_CROSSING;
+		  unsigned old_count = EDGE_COUNT (cur_bb->succs);
 		  basic_block new_bb = force_nonfallthru (fall_thru);
 
 		  if (new_bb)
@@ -2009,7 +2010,25 @@ fix_up_fall_thru_edges (void)
 		      gcc_assert (BB_PARTITION (new_bb)
                                   == BB_PARTITION (cur_bb));
 
-		      single_succ_edge (new_bb)->flags |= EDGE_CROSSING;
+		      edge e = single_succ_edge (new_bb);
+		      e->flags |= EDGE_CROSSING;
+		      if (EDGE_COUNT (cur_bb->succs) > old_count)
+			{
+			  /* If asm goto has a crossing fallthrough edge
+			     and at least one of the labels to the same bb,
+			     force_nonfallthru can result in the fallthrough
+			     edge being redirected and a new edge added for the
+			     label or more labels to e->dest.  As we've
+			     temporarily cleared EDGE_CROSSING flag on the
+			     fallthrough edge, we need to restore it again.
+			     See PR108596.  */
+			  rtx_insn *j = BB_END (cur_bb);
+			  gcc_checking_assert (JUMP_P (j)
+					       && asm_noperands (PATTERN (j)));
+			  edge e2 = find_edge (cur_bb, e->dest);
+			  if (e2)
+			    e2->flags |= EDGE_CROSSING;
+			}
 		    }
 		  else
 		    {
