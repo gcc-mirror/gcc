@@ -291,7 +291,9 @@ ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
      broadcast only if vector broadcast is available.  */
   if (!TARGET_AVX
       || !CONST_WIDE_INT_P (op)
-      || standard_sse_constant_p (op, mode))
+      || standard_sse_constant_p (op, mode)
+      || (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT
+	  != GET_MODE_BITSIZE (mode)))
     return nullptr;
 
   HOST_WIDE_INT val = CONST_WIDE_INT_ELT (op, 0);
