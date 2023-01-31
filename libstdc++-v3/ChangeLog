@@ -1,3 +1,10 @@
+2023-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/shared_ptr.xml: Move links from both
+	http://open-std.org and http://www.open-std.org to
+	https://www.open-std.org.
+	* doc/html/manual/memory.html: Regenerate.
+
 2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Adjust link to

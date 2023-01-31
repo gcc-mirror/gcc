@@ -1,3 +1,9 @@
+2023-01-30  Flavio Cruz  <flaviocruz@gmail.com>
+
+	* config.host: Recognize x86_64-*-gnu* targets.
+	* config/i386/gnu-unwind.h: Update to handle __x86_64__ with a
+	TODO for now.
+
 2023-01-23  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* config/arm/pr-support.c (__gnu_unwind_execute): Decode opcode

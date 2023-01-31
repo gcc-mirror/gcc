@@ -1,3 +1,117 @@
+2023-01-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/include/fdl.texi: Change fsf.org to www.fsf.org.
+
+2023-01-30  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (get_vector_mode): New function.
+	* config/riscv/riscv-v.cc (get_vector_mode): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc (enum lst_type): New enum.
+	(class loadstore): Adjust for indexed loads/stores support.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: New function declare.
+	* config/riscv/riscv-vector-builtins-functions.def (vluxei8): Ditto.
+	(vluxei16): Ditto.
+	(vluxei32): Ditto.
+	(vluxei64): Ditto.
+	(vloxei8): Ditto.
+	(vloxei16): Ditto.
+	(vloxei32): Ditto.
+	(vloxei64): Ditto.
+	(vsuxei8): Ditto.
+	(vsuxei16): Ditto.
+	(vsuxei32): Ditto.
+	(vsuxei64): Ditto.
+	(vsoxei8): Ditto.
+	(vsoxei16): Ditto.
+	(vsoxei32): Ditto.
+	(vsoxei64): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(struct indexed_loadstore_def): New class.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc (required_extensions_p): Adjust
+	for indexed loads/stores support.
+	(check_required_extensions): Ditto.
+	(rvv_arg_type_info::get_base_vector_type): New function.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	(function_builder::add_unique_function): Adjust for indexed loads/stores
+	support.
+	(function_expander::use_exact_insn): New function.
+	* config/riscv/riscv-vector-builtins.h (enum rvv_base_type): Adjust for
+	indexed loads/stores support.
+	(struct rvv_arg_type_info): Ditto.
+	(function_expander::index_mode): New function.
+	(function_base::apply_tail_policy_p): Ditto.
+	(function_base::apply_mask_policy_p): Ditto.
+	* config/riscv/vector-iterators.md (unspec): New unspec.
+	* config/riscv/vector.md (unspec): Ditto.
+	(@pred_indexed_<order>load<VNX1_QHSD:mode><VNX1_QHSDI:mode>): New
+	pattern.
+	(@pred_indexed_<order>store<VNX1_QHSD:mode><VNX1_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX2_QHSD:mode><VNX2_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX2_QHSD:mode><VNX2_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX4_QHSD:mode><VNX4_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX4_QHSD:mode><VNX4_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX8_QHSD:mode><VNX8_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX8_QHSD:mode><VNX8_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX16_QHS:mode><VNX16_QHSI:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX16_QHS:mode><VNX16_QHSI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX32_QH:mode><VNX32_QHI:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX32_QH:mode><VNX32_QHI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX64_Q:mode><VNX64_Q:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX64_Q:mode><VNX64_Q:mode>): Ditto.
+
+2023-01-30  Flavio Cruz  <flaviocruz@gmail.com>
+
+	* config.gcc: Recognize x86_64-*-gnu* targets and include
+	i386/gnu64.h.
+	* config/i386/gnu64.h: Define configuration for new target
+	including ld.so location.
+
+2023-01-30  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Update
+	ampere1a to include SM4.
+
+2023-01-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108582
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Add check
+	for middlebb to have no phi nodes.
+
+2023-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108574
+	* tree-ssa-sccvn.cc (visit_phi): Instead of swapping
+	sameval and def, ignore the equivalence if there's the
+	danger of oscillating between two values.
+
+2023-01-30  Andreas Schwab  <schwab@suse.de>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_option_optimization_table)
+	[TARGET_DEFAULT_ASYNC_UNWIND_TABLES]: Enable
+	-fasynchronous-unwind-tables and -funwind-tables.
+	* config.gcc (riscv*-*-linux*): Define
+	TARGET_DEFAULT_ASYNC_UNWIND_TABLES.
+
+2023-01-30  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* Makefile.in (CROSS_SYSTEM_HEADER_DIR): set according the
+	value of includedir.
+
+2023-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/108511
+	* cgraph.cc (possibly_call_in_translation_unit_p): Relax
+	assert.
+
+2023-01-30  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.opt: Change AVX512FP16 to AVX512-FP16.
+	* doc/invoke.texi: Ditto.
+
 2023-01-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.cc: Include calls.h, cfgloop.h and cfganal.h
