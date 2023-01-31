@@ -5653,14 +5653,17 @@ package body Exp_Ch4 is
             return Skip;
 
          --  Avoid processing temporary function results multiple times when
-         --  dealing with nested expression_with_actions.
+         --  dealing with nested expression_with_actions or nested blocks.
          --  Similarly, do not process temporary function results in loops.
          --  This is done by Expand_N_Loop_Statement and Build_Finalizer.
          --  Note that we used to wrongly return Abandon instead of Skip here:
          --  this is wrong since it means that we were ignoring lots of
          --  relevant subsequent statements.
 
-         elsif Nkind (Act) in N_Expression_With_Actions | N_Loop_Statement then
+         elsif Nkind (Act) in N_Expression_With_Actions
+                            | N_Block_Statement
+                            | N_Loop_Statement
+         then
             return Skip;
          end if;
 
