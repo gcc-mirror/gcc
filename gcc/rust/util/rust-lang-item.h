@@ -80,6 +80,12 @@ public:
     FN_ONCE,
     FN_ONCE_OUTPUT,
 
+    // markers
+    COPY,
+    CLONE,
+    SIZED,
+
+    // delimiter
     UNKNOWN,
   };
 
@@ -237,6 +243,18 @@ public:
       {
 	return ItemType::FN_ONCE_OUTPUT;
       }
+    else if (item.compare ("copy") == 0)
+      {
+	return ItemType::COPY;
+      }
+    else if (item.compare ("clone") == 0)
+      {
+	return ItemType::CLONE;
+      }
+    else if (item.compare ("sized") == 0)
+      {
+	return ItemType::SIZED;
+      }
 
     return ItemType::UNKNOWN;
   }
@@ -321,6 +339,12 @@ public:
 	return "fn_once";
       case FN_ONCE_OUTPUT:
 	return "fn_once_output";
+      case COPY:
+	return "copy";
+      case CLONE:
+	return "clone";
+      case SIZED:
+	return "sized";
 
       case UNKNOWN:
 	return "<UNKNOWN>";
