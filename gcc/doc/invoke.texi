@@ -6287,6 +6287,23 @@ union U @{
 
 @end itemize
 
+@item -Wno-changes-meaning @r{(C++ and Objective-C++ only)}
+C++ requires that unqualified uses of a name within a class have the
+same meaning in the complete scope of the class, so declaring the name
+after using it is ill-formed:
+@smallexample
+struct A;
+struct B1 @{ A a; typedef A A; @}; // warning, 'A' changes meaning
+struct B2 @{ A a; struct A @{ @}; @}; // error, 'A' changes meaning
+@end smallexample
+By default, the B1 case is only a warning because the two declarations
+have the same type, while the B2 case is an error.  Both diagnostics
+can be disabled with @option{-Wno-changes-meaning}.  Alternately, the
+error case can be reduced to a warning with
+@option{-Wno-error=changes-meaning} or @option{-fpermissive}.
+
+Both diagnostics are also suppressed by @option{-fms-extensions}.
+
 @item -Wchar-subscripts
 @opindex Wchar-subscripts
 @opindex Wno-char-subscripts

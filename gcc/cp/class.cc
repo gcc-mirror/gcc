@@ -9016,7 +9016,7 @@ note_name_declared_in_class (tree name, tree decl)
     return;
   /* The C language allows members to be declared with a type of the same
      name, and the C++ standard says this diagnostic is not required.  So
-     allow it in extern "C" blocks unless predantic is specified.
+     allow it in extern "C" blocks unless pedantic is specified.
      Allow it in all cases if -ms-extensions is specified.  */
   if ((!pedantic && current_lang_name == lang_name_c)
       || flag_ms_extensions)
@@ -9032,9 +9032,19 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      if (permerror (location_of (decl),
-		     "declaration of %q#D changes meaning of %qD",
-		     decl, OVL_NAME (decl)))
+      auto ov = make_temp_override (global_dc->pedantic_errors);
+      if (TREE_CODE (decl) == TYPE_DECL
+	  && TREE_CODE (olddecl) == TYPE_DECL
+	  && same_type_p (TREE_TYPE (decl), TREE_TYPE (olddecl)))
+	/* Different declaration, but same meaning; just warn.  */;
+      else if (flag_permissive)
+	/* Let -fpermissive make it a warning like past versions.  */;
+      else
+	/* Make it an error.  */
+	global_dc->pedantic_errors = 1;
+      if (pedwarn (location_of (decl), OPT_Wchanges_meaning,
+		   "declaration of %q#D changes meaning of %qD",
+		   decl, OVL_NAME (decl)))
 	{
 	  inform (loc, "used here to mean %q#D", olddecl);
 	  inform (location_of (olddecl), "declared here" );
