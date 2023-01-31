@@ -51,9 +51,8 @@ extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_exp2a23_round_pd (__m512d __A, int __R)
 {
-  __m512d __W;
   return (__m512d) __builtin_ia32_exp2pd_mask ((__v8df) __A,
-					       (__v8df) __W,
+					       (__v8df) _mm512_undefined_pd (),
 					       (__mmask8) -1, __R);
 }
 
@@ -79,9 +78,8 @@ extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_exp2a23_round_ps (__m512 __A, int __R)
 {
-  __m512 __W;
   return (__m512) __builtin_ia32_exp2ps_mask ((__v16sf) __A,
-					      (__v16sf) __W,
+					      (__v16sf) _mm512_undefined_ps (),
 					      (__mmask16) -1, __R);
 }
 
@@ -107,9 +105,8 @@ extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_rcp28_round_pd (__m512d __A, int __R)
 {
-  __m512d __W;
   return (__m512d) __builtin_ia32_rcp28pd_mask ((__v8df) __A,
-						(__v8df) __W,
+						(__v8df) _mm512_undefined_pd (),
 						(__mmask8) -1, __R);
 }
 
@@ -135,9 +132,8 @@ extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_rcp28_round_ps (__m512 __A, int __R)
 {
-  __m512 __W;
   return (__m512) __builtin_ia32_rcp28ps_mask ((__v16sf) __A,
-					       (__v16sf) __W,
+					       (__v16sf) _mm512_undefined_ps (),
 					       (__mmask16) -1, __R);
 }
 
@@ -229,9 +225,8 @@ extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_rsqrt28_round_pd (__m512d __A, int __R)
 {
-  __m512d __W;
   return (__m512d) __builtin_ia32_rsqrt28pd_mask ((__v8df) __A,
-						  (__v8df) __W,
+						  (__v8df) _mm512_undefined_pd (),
 						  (__mmask8) -1, __R);
 }
 
@@ -257,9 +252,8 @@ extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_rsqrt28_round_ps (__m512 __A, int __R)
 {
-  __m512 __W;
   return (__m512) __builtin_ia32_rsqrt28ps_mask ((__v16sf) __A,
-						 (__v16sf) __W,
+						 (__v16sf) _mm512_undefined_ps (),
 						 (__mmask16) -1, __R);
 }
 
