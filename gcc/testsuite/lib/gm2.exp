@@ -316,6 +316,9 @@ proc gm2_link_flags { paths } {
 	    }
 	    send_log "ld_library_path is ${ld_library_path}\n"
 	}
+
+	global GCC_UNDER_TEST
+	append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
     }
 
     set_ld_library_path_env_vars
