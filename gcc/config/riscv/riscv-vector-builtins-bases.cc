@@ -163,7 +163,15 @@ class binop : public function_base
 public:
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vx:
+	return e.use_exact_insn (code_for_pred_scalar (CODE, e.vector_mode ()));
+      case OP_TYPE_vv:
+	return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
   }
 };
 

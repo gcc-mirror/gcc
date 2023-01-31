@@ -80,5 +80,8 @@ DEF_RVV_FUNCTION (vdiv, binop, full_preds, iu_vvv_ops)
 DEF_RVV_FUNCTION (vrem, binop, full_preds, iu_vvv_ops)
 DEF_RVV_FUNCTION (vdivu, binop, full_preds, iu_vvv_ops)
 DEF_RVV_FUNCTION (vremu, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vsll, binop, full_preds, iu_shift_vvx_ops)
+DEF_RVV_FUNCTION (vsra, binop, full_preds, iu_shift_vvx_ops)
+DEF_RVV_FUNCTION (vsrl, binop, full_preds, iu_shift_vvx_ops)
 
 #undef DEF_RVV_FUNCTION
