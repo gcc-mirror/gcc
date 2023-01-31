@@ -65,7 +65,7 @@ SubstitutionParamMapping::get_param_ty () const
 }
 
 const HIR::TypeParam &
-SubstitutionParamMapping::get_generic_param ()
+SubstitutionParamMapping::get_generic_param () const
 {
   return generic;
 }
@@ -892,8 +892,7 @@ SubstitutionRef::monomorphize ()
 	  // setup any associated type mappings for the specified bonds and this
 	  // type
 	  auto candidates = Resolver::TypeBoundsProbe::Probe (binding);
-
-	  Resolver::AssociatedImplTrait *associated_impl_trait = nullptr;
+	  std::vector<Resolver::AssociatedImplTrait *> associated_impl_traits;
 	  for (auto &probed_bound : candidates)
 	    {
 	      const Resolver::TraitReference *bound_trait_ref
@@ -914,15 +913,109 @@ SubstitutionRef::monomorphize ()
 		    = associated->get_self ()->can_eq (binding, false);
 		  if (found_trait && found_self)
 		    {
-		      associated_impl_trait = associated;
-		      break;
+		      associated_impl_traits.push_back (associated);
 		    }
 		}
 	    }
 
-	  if (associated_impl_trait != nullptr)
+	  if (!associated_impl_traits.empty ())
 	    {
-	      associated_impl_trait->setup_associated_types (binding, bound);
+	      // This code is important when you look at slices for example when
+	      // you have a slice such as:
+	      //
+	      // let slice = &array[1..3]
+	      //
+	      // the higher ranked bounds will end up having an Index trait
+	      // implementation for Range<usize> so we need this code to resolve
+	      // that we have an integer inference variable that needs to become
+	      // a usize
+	      //
+	      // The other complicated issue is that we might have an intrinsic
+	      // which requires the :Clone or Copy bound but the libcore adds
+	      // implementations for all the integral types so when there are
+	      // multiple candidates we need to resolve to the default
+	      // implementation for that type otherwise its an error for
+	      // ambiguous type bounds
+
+	      if (associated_impl_traits.size () == 1)
+		{
+		  Resolver::AssociatedImplTrait *associate_impl_trait
+		    = associated_impl_traits.at (0);
+		  associate_impl_trait->setup_associated_types (binding, bound);
+		}
+	      else
+		{
+		  // if we have a non-general inference variable we need to be
+		  // careful about the selection here
+		  bool is_infer_var
+		    = binding->get_kind () == TyTy::TypeKind::INFER;
+		  bool is_integer_infervar
+		    = is_infer_var
+		      && static_cast<const TyTy::InferType *> (binding)
+			     ->get_infer_kind ()
+			   == TyTy::InferType::InferTypeKind::INTEGRAL;
+		  bool is_float_infervar
+		    = is_infer_var
+		      && static_cast<const TyTy::InferType *> (binding)
+			     ->get_infer_kind ()
+			   == TyTy::InferType::InferTypeKind::FLOAT;
+
+		  Resolver::AssociatedImplTrait *associate_impl_trait = nullptr;
+		  if (is_integer_infervar)
+		    {
+		      TyTy::BaseType *type = nullptr;
+		      bool ok = context->lookup_builtin ("i32", &type);
+		      rust_assert (ok);
+
+		      for (auto &impl : associated_impl_traits)
+			{
+			  bool found = impl->get_self ()->is_equal (*type);
+			  if (found)
+			    {
+			      associate_impl_trait = impl;
+			      break;
+			    }
+			}
+		    }
+		  else if (is_float_infervar)
+		    {
+		      TyTy::BaseType *type = nullptr;
+		      bool ok = context->lookup_builtin ("f64", &type);
+		      rust_assert (ok);
+
+		      for (auto &impl : associated_impl_traits)
+			{
+			  bool found = impl->get_self ()->is_equal (*type);
+			  if (found)
+			    {
+			      associate_impl_trait = impl;
+			      break;
+			    }
+			}
+		    }
+
+		  if (associate_impl_trait == nullptr)
+		    {
+		      // go for the first one? or error out?
+		      auto &mappings = *Analysis::Mappings::get ();
+		      const auto &type_param = subst.get_generic_param ();
+		      const auto *trait_ref = bound.get ();
+
+		      RichLocation r (type_param.get_locus ());
+		      r.add_range (bound.get_locus ());
+		      r.add_range (
+			mappings.lookup_location (binding->get_ref ()));
+
+		      rust_error_at (
+			r, "ambiguous type bound for trait %s and type %s",
+			trait_ref->get_name ().c_str (),
+			binding->get_name ().c_str ());
+
+		      return false;
+		    }
+
+		  associate_impl_trait->setup_associated_types (binding, bound);
+		}
 	    }
 	}
     }
