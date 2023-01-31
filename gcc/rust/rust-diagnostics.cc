@@ -21,6 +21,9 @@
 #include "rust-system.h"
 #include "rust-diagnostics.h"
 
+#include "options.h"
+#include "diagnostic-metadata.h"
+
 static std::string
 mformat_value ()
 {
@@ -130,6 +133,13 @@ expand_message (const char *fmt, va_list ap)
 static const char *cached_open_quote = NULL;
 static const char *cached_close_quote = NULL;
 
+void
+rust_be_get_quotechars (const char **open_qu, const char **close_qu)
+{
+  *open_qu = open_quote;
+  *close_qu = close_quote;
+}
+
 const char *
 rust_open_quote ()
 {
@@ -147,6 +157,16 @@ rust_close_quote ()
 }
 
 void
+rust_be_internal_error_at (const Location location, const std::string &errmsg)
+{
+  std::string loc_str = Linemap::location_to_string (location);
+  if (loc_str.empty ())
+    internal_error ("%s", errmsg.c_str ());
+  else
+    internal_error ("at %s, %s", loc_str.c_str (), errmsg.c_str ());
+}
+
+void
 rust_internal_error_at (const Location location, const char *fmt, ...)
 {
   va_list ap;
@@ -157,6 +177,13 @@ rust_internal_error_at (const Location location, const char *fmt, ...)
 }
 
 void
+rust_be_error_at (const Location location, const std::string &errmsg)
+{
+  location_t gcc_loc = location.gcc_location ();
+  error_at (gcc_loc, "%s", errmsg.c_str ());
+}
+
+void
 rust_error_at (const Location location, const char *fmt, ...)
 {
   va_list ap;
@@ -164,6 +191,38 @@ rust_error_at (const Location location, const char *fmt, ...)
   va_start (ap, fmt);
   rust_be_error_at (location, expand_message (fmt, ap));
   va_end (ap);
+}
+
+class rust_error_code_rule : public diagnostic_metadata::rule
+{
+public:
+  rust_error_code_rule (const ErrorCode code) : m_code (code) {}
+
+  char *make_description () const final override
+  {
+    return xstrdup (m_code.m_str);
+  }
+
+  char *make_url () const final override
+  {
+    return concat ("https://doc.rust-lang.org/error-index.html#", m_code.m_str,
+		   NULL);
+  }
+
+private:
+  const ErrorCode m_code;
+};
+
+void
+rust_be_error_at (const RichLocation &location, const ErrorCode code,
+		  const std::string &errmsg)
+{
+  /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
+  rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
+  diagnostic_metadata m;
+  rust_error_code_rule rule (code);
+  m.add_rule (rule);
+  error_meta (&gcc_loc, m, "%s", errmsg.c_str ());
 }
 
 void
@@ -178,6 +237,14 @@ rust_error_at (const RichLocation &location, const ErrorCode code,
 }
 
 void
+rust_be_warning_at (const Location location, int opt,
+		    const std::string &warningmsg)
+{
+  location_t gcc_loc = location.gcc_location ();
+  warning_at (gcc_loc, opt, "%s", warningmsg.c_str ());
+}
+
+void
 rust_warning_at (const Location location, int opt, const char *fmt, ...)
 {
   va_list ap;
@@ -188,6 +255,13 @@ rust_warning_at (const Location location, int opt, const char *fmt, ...)
 }
 
 void
+rust_be_fatal_error (const Location location, const std::string &fatalmsg)
+{
+  location_t gcc_loc = location.gcc_location ();
+  fatal_error (gcc_loc, "%s", fatalmsg.c_str ());
+}
+
+void
 rust_fatal_error (const Location location, const char *fmt, ...)
 {
   va_list ap;
@@ -195,6 +269,13 @@ rust_fatal_error (const Location location, const char *fmt, ...)
   va_start (ap, fmt);
   rust_be_fatal_error (location, expand_message (fmt, ap));
   va_end (ap);
+}
+
+void
+rust_be_inform (const Location location, const std::string &infomsg)
+{
+  location_t gcc_loc = location.gcc_location ();
+  inform (gcc_loc, "%s", infomsg.c_str ());
 }
 
 void
@@ -209,6 +290,14 @@ rust_inform (const Location location, const char *fmt, ...)
 
 // Rich Locations
 void
+rust_be_error_at (const RichLocation &location, const std::string &errmsg)
+{
+  /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
+  rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
+  error_at (&gcc_loc, "%s", errmsg.c_str ());
+}
+
+void
 rust_error_at (const RichLocation &location, const char *fmt, ...)
 {
   va_list ap;
@@ -216,6 +305,12 @@ rust_error_at (const RichLocation &location, const char *fmt, ...)
   va_start (ap, fmt);
   rust_be_error_at (location, expand_message (fmt, ap));
   va_end (ap);
+}
+
+bool
+rust_be_debug_p (void)
+{
+  return !!flag_rust_debug;
 }
 
 void
