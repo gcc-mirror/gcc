@@ -7335,7 +7335,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      if (complain & tf_warning)
+      if ((complain & tf_warning) && !processing_template_decl)
 	warn_logical_operator (loc, code, boolean_type_node,
 			       code_orig_arg1, arg1,
 			       code_orig_arg2, arg2);
