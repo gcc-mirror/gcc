@@ -2368,6 +2368,16 @@ package body Sem_Ch4 is
       procedure Check_Action_OK (A : Node_Id) is
       begin
          if not Comes_From_Source (N) or else not Comes_From_Source (A) then
+
+            --  If, for example, an (illegal) expression function is
+            --  transformed into a"vanilla" function then we don't want to
+            --  allow it just because Comes_From_Source is now False. So look
+            --  at the Original_Node.
+
+            if A /= Original_Node (A) then
+               Check_Action_OK (Original_Node (A));
+            end if;
+
             return; -- Allow anything in generated code
          end if;
 
