@@ -151,6 +151,7 @@ enum rvv_base_type
   RVV_BASE_uint16_index,
   RVV_BASE_uint32_index,
   RVV_BASE_uint64_index,
+  RVV_BASE_shift_vector,
   NUM_BASE_TYPES
 };
 

@@ -28,6 +28,7 @@ extern const function_shape *const vsetvl;
 extern const function_shape *const vsetvlmax;
 extern const function_shape *const loadstore;
 extern const function_shape *const indexed_loadstore;
+extern const function_shape *const binop;
 }
 
 } // end namespace riscv_vector

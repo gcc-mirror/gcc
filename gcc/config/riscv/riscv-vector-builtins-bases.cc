@@ -154,6 +154,19 @@ public:
   }
 };
 
+/* Implements
+ * vadd/vsub/vrsub/vand/vor/vxor/vsll/vsra/vsrl/vmin/vmax/vminu/vmaxu/vdiv/vrem/vdivu/vremu/vsadd/vsaddu/vssub/vssubu.
+ */
+template<rtx_code CODE>
+class binop : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -178,6 +191,24 @@ static CONSTEXPR const loadstore<true, LST_INDEXED, true> vsoxei8_obj;
 static CONSTEXPR const loadstore<true, LST_INDEXED, true> vsoxei16_obj;
 static CONSTEXPR const loadstore<true, LST_INDEXED, true> vsoxei32_obj;
 static CONSTEXPR const loadstore<true, LST_INDEXED, true> vsoxei64_obj;
+static CONSTEXPR const binop<PLUS> vadd_obj;
+static CONSTEXPR const binop<MINUS> vsub_obj;
+static CONSTEXPR const binop<MINUS> vrsub_obj;
+static CONSTEXPR const binop<AND> vand_obj;
+static CONSTEXPR const binop<IOR> vor_obj;
+static CONSTEXPR const binop<XOR> vxor_obj;
+static CONSTEXPR const binop<ASHIFT> vsll_obj;
+static CONSTEXPR const binop<ASHIFTRT> vsra_obj;
+static CONSTEXPR const binop<LSHIFTRT> vsrl_obj;
+static CONSTEXPR const binop<SMIN> vmin_obj;
+static CONSTEXPR const binop<SMAX> vmax_obj;
+static CONSTEXPR const binop<UMIN> vminu_obj;
+static CONSTEXPR const binop<UMAX> vmaxu_obj;
+static CONSTEXPR const binop<MULT> vmul_obj;
+static CONSTEXPR const binop<DIV> vdiv_obj;
+static CONSTEXPR const binop<MOD> vrem_obj;
+static CONSTEXPR const binop<UDIV> vdivu_obj;
+static CONSTEXPR const binop<UMOD> vremu_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -208,5 +239,22 @@ BASE (vsoxei8)
 BASE (vsoxei16)
 BASE (vsoxei32)
 BASE (vsoxei64)
+BASE (vadd)
+BASE (vsub)
+BASE (vand)
+BASE (vor)
+BASE (vxor)
+BASE (vsll)
+BASE (vsra)
+BASE (vsrl)
+BASE (vmin)
+BASE (vmax)
+BASE (vminu)
+BASE (vmaxu)
+BASE (vmul)
+BASE (vdiv)
+BASE (vrem)
+BASE (vdivu)
+BASE (vremu)
 
 } // end namespace riscv_vector

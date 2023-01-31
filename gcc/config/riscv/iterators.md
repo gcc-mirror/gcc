@@ -196,7 +196,12 @@
 			 (xor "xor")
 			 (and "and")
 			 (plus "add")
-			 (minus "sub")])
+			 (minus "sub")
+			 (smin "smin")
+			 (smax "smax")
+			 (umin "umin")
+			 (umax "umax")
+			 (mult "mul")])
 
 ;; <or_optab> code attributes
 (define_code_attr or_optab [(ior "ior")
@@ -214,7 +219,12 @@
 			(xor "xor")
 			(and "and")
 			(plus "add")
-			(minus "sub")])
+			(minus "sub")
+			(smin "min")
+			(smax "max")
+			(umin "minu")
+			(umax "maxu")
+			(mult "mul")])
 
 ; atomics code attribute
 (define_code_attr atomic_optab

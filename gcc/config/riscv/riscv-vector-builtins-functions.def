@@ -62,5 +62,23 @@ DEF_RVV_FUNCTION (vsoxei8, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uin
 DEF_RVV_FUNCTION (vsoxei16, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint16_index_ops)
 DEF_RVV_FUNCTION (vsoxei32, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint32_index_ops)
 DEF_RVV_FUNCTION (vsoxei64, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint64_index_ops)
+/* 11. Vector Integer Arithmetic Instructions.  */
+DEF_RVV_FUNCTION (vadd, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vsub, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vand, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vor, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vxor, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vsll, binop, full_preds, iu_shift_vvv_ops)
+DEF_RVV_FUNCTION (vsra, binop, full_preds, iu_shift_vvv_ops)
+DEF_RVV_FUNCTION (vsrl, binop, full_preds, iu_shift_vvv_ops)
+DEF_RVV_FUNCTION (vmin, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vmax, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vminu, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vmaxu, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vmul, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vdiv, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vrem, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vdivu, binop, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vremu, binop, full_preds, iu_vvv_ops)
 
 #undef DEF_RVV_FUNCTION

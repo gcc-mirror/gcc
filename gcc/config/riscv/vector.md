@@ -141,7 +141,8 @@
 
 ;; It is valid for instruction that require sew/lmul ratio.
 (define_attr "ratio" ""
-  (cond [(eq_attr "type" "vimov,vfmov,vldux,vldox,vstux,vstox")
+  (cond [(eq_attr "type" "vimov,vfmov,vldux,vldox,vstux,vstox,\
+			  vialu,vshift,vicmp,vimul,vidiv,vsalu")
 	   (const_int INVALID_ATTRIBUTE)
 	 (eq_attr "mode" "VNx1QI,VNx1BI")
 	   (symbol_ref "riscv_vector::get_ratio(E_VNx1QImode)")
@@ -191,7 +192,8 @@
 
 ;; The index of operand[] to get the merge op.
 (define_attr "merge_op_idx" ""
-	(cond [(eq_attr "type" "vlde,vimov,vfmov,vldm,vlds,vmalu,vldux,vldox")
+	(cond [(eq_attr "type" "vlde,vimov,vfmov,vldm,vlds,vmalu,vldux,vldox,\
+				vialu,vshift,vicmp,vimul,vidiv,vsalu")
 	 (const_int 2)]
 	(const_int INVALID_ATTRIBUTE)))
 
@@ -207,7 +209,7 @@
              (const_int 5)
              (const_int 4))
 
-	 (eq_attr "type" "vldux,vldox")
+	 (eq_attr "type" "vldux,vldox,vialu,vshift,vicmp,vimul,vidiv,vsalu")
 	   (const_int 5)]
   (const_int INVALID_ATTRIBUTE)))
 
@@ -223,7 +225,7 @@
 	     (symbol_ref "riscv_vector::get_ta(operands[6])")
 	     (symbol_ref "riscv_vector::get_ta(operands[5])"))
 
-	 (eq_attr "type" "vldux,vldox")
+	 (eq_attr "type" "vldux,vldox,vialu,vshift,vicmp,vimul,vidiv,vsalu")
 	   (symbol_ref "riscv_vector::get_ta(operands[6])")]
 	(const_int INVALID_ATTRIBUTE)))
 
@@ -239,7 +241,7 @@
 	     (symbol_ref "riscv_vector::get_ma(operands[7])")
 	     (symbol_ref "riscv_vector::get_ma(operands[6])"))
 
-	 (eq_attr "type" "vldux,vldox")
+	 (eq_attr "type" "vldux,vldox,vialu,vshift,vicmp,vimul,vidiv,vsalu")
 	   (symbol_ref "riscv_vector::get_ma(operands[7])")]
 	(const_int INVALID_ATTRIBUTE)))
 
@@ -257,7 +259,7 @@
 	     (const_int INVALID_ATTRIBUTE)
 	     (symbol_ref "INTVAL (operands[7])"))
 
-	 (eq_attr "type" "vldux,vldox")
+	 (eq_attr "type" "vldux,vldox,vialu,vshift,vicmp,vimul,vidiv,vsalu")
 	   (symbol_ref "INTVAL (operands[8])")
 	 (eq_attr "type" "vstux,vstox")
 	   (symbol_ref "INTVAL (operands[5])")]
@@ -1111,3 +1113,38 @@
   "vs<order>xei<VNX64_Q:sew>.v\t%3,(%1),%2%p0"
   [(set_attr "type" "vst<order>x")
    (set_attr "mode" "<VNX64_Q:MODE>")])
+
+;; -------------------------------------------------------------------------------
+;; ---- Predicated integer binary operations
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - 11.1 Vector Single-Width Integer Add and Subtract
+;; - 11.5 Vector Bitwise Logical Instructions
+;; - 11.6 Vector Single-Width Bit Shift Instructions
+;; - 11.9 Vector Integer Min/Max Instructions
+;; - 11.11 Vector Integer Divide Instructions
+;; - 12.1 Vector Single-Width Saturating Add and Subtract
+;; -------------------------------------------------------------------------------
+
+(define_insn "@pred_<optab><mode>"
+  [(set (match_operand:VI 0 "register_operand"                   "=vr,   vr,   vr")
+	(if_then_else:VI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" "      vmWc1,vmWc1,vmWc1")
+	     (match_operand 5 "vector_length_operand"    "         rK,   rK,   rK")
+	     (match_operand 6 "const_int_operand"        "          i,    i,    i")
+	     (match_operand 7 "const_int_operand"        "          i,    i,    i")
+	     (match_operand 8 "const_int_operand"        "          i,    i,    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (any_int_binop:VI
+	    (match_operand:VI 3 "<binop_rhs1_predicate>" "<binop_rhs1_constraint>")
+	    (match_operand:VI 4 "<binop_rhs2_predicate>" "<binop_rhs2_constraint>"))
+	  (match_operand:VI 2 "vector_merge_operand"     "        0vu,  0vu,  0vu")))]
+  "TARGET_VECTOR"
+  "@
+   v<insn>.vv\t%0,%3,%4%p1
+   v<binop_alt1_insn>\t%0,<binop_alt1_op>%p1
+   v<binop_alt2_insn>\t%0,<binop_alt2_op>%p1"
+  [(set_attr "type" "<int_binop_insn_type>")
+   (set_attr "mode" "<MODE>")])

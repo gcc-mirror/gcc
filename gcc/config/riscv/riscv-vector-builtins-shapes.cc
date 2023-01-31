@@ -185,9 +185,34 @@ struct indexed_loadstore_def : public function_shape
   }
 };
 
+/* binop_def class.  */
+struct binop_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+    /* vop<sew>_v --> vop<sew>_v_<type>.  */
+    if (!overloaded_p)
+      {
+	/* vop<sew> --> vop<sew>_v.  */
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	/* vop<sew>_v --> vop<sew>_v_<type>.  */
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
 SHAPE(indexed_loadstore, indexed_loadstore)
+SHAPE(binop, binop)
 
 } // end namespace riscv_vector
