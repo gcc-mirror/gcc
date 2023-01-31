@@ -4477,12 +4477,6 @@ TuplePattern::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-GroupedPattern::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 SlicePattern::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4604,12 +4598,6 @@ ParenthesisedType::accept_vis (HIRTypeVisitor &vis)
 
 void
 EmptyStmt::accept_vis (HIRStmtVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-GroupedPattern::accept_vis (HIRPatternVisitor &vis)
 {
   vis.visit (*this);
 }

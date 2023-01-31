@@ -902,10 +902,6 @@ UnsafeChecker::visit (TuplePattern &)
 {}
 
 void
-UnsafeChecker::visit (GroupedPattern &)
-{}
-
-void
 UnsafeChecker::visit (SlicePattern &)
 {}
 

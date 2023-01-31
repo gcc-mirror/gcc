@@ -161,12 +161,6 @@ CompilePatternCaseLabelExpr::visit (HIR::RangePattern &pattern)
   case_label_expr = build_case_label (lower, upper, associated_case_label);
 }
 
-void
-CompilePatternCaseLabelExpr::visit (HIR::GroupedPattern &pattern)
-{
-  pattern.get_item ()->accept_vis (*this);
-}
-
 // setup the bindings
 
 void
@@ -333,12 +327,6 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	  break;
 	}
     }
-}
-
-void
-CompilePatternBindings::visit (HIR::GroupedPattern &pattern)
-{
-  pattern.get_item ()->accept_vis (*this);
 }
 
 void

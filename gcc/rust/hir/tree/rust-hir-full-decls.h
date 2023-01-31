@@ -206,7 +206,6 @@ class TuplePatternItems;
 class TuplePatternItemsMultiple;
 class TuplePatternItemsRanged;
 class TuplePattern;
-class GroupedPattern;
 class SlicePattern;
 
 // rust-type.h
