@@ -41,9 +41,14 @@
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_LVAL_REF_QUAL &
+# define _GLIBCXX_SSTREAM_ALWAYS_INLINE
 #else
 # define _GLIBCXX_LVAL_REF_QUAL
+// For symbols that are not exported from libstdc++.so for the COW string ABI.
+# define _GLIBCXX_SSTREAM_ALWAYS_INLINE [[__gnu__::__always_inline__]]
 #endif
+
+
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -249,7 +254,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return __ret;
       }
 
-#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#if __cplusplus > 201703L
+#if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
       template<__allocator_like _SAlloc>
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -273,7 +279,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_M_sync(_M_string.data(), 0, 0);
 	return __str;
       }
+#endif // cxx11 ABI
 
+      _GLIBCXX_SSTREAM_ALWAYS_INLINE
       basic_string_view<char_type, traits_type>
       view() const noexcept
       {
@@ -696,7 +704,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       str() const _GLIBCXX_LVAL_REF_QUAL
       { return _M_stringbuf.str(); }
 
-#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#if __cplusplus > 201703L
+#if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
       template<__allocator_like _SAlloc>
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -707,11 +716,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       __string_type
       str() &&
       { return std::move(_M_stringbuf).str(); }
+#endif // cxx11 ABI
 
+      _GLIBCXX_SSTREAM_ALWAYS_INLINE
       basic_string_view<char_type, traits_type>
       view() const noexcept
       { return _M_stringbuf.view(); }
-#endif
+#endif // C++20
 
       /**
        *  @brief  Setting a new buffer.
@@ -917,7 +928,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       str() const _GLIBCXX_LVAL_REF_QUAL
       { return _M_stringbuf.str(); }
 
-#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#if __cplusplus > 201703L
+#if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
       template<__allocator_like _SAlloc>
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -928,11 +940,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       __string_type
       str() &&
       { return std::move(_M_stringbuf).str(); }
+#endif // cxx11 ABI
 
+      _GLIBCXX_SSTREAM_ALWAYS_INLINE
       basic_string_view<char_type, traits_type>
       view() const noexcept
       { return _M_stringbuf.view(); }
-#endif
+#endif // C++20
 
       /**
        *  @brief  Setting a new buffer.
@@ -1136,7 +1150,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       str() const _GLIBCXX_LVAL_REF_QUAL
       { return _M_stringbuf.str(); }
 
-#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#if __cplusplus > 201703L
+#if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
       template<__allocator_like _SAlloc>
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -1147,11 +1162,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       __string_type
       str() &&
       { return std::move(_M_stringbuf).str(); }
+#endif // cxx11 ABI
 
+      _GLIBCXX_SSTREAM_ALWAYS_INLINE
       basic_string_view<char_type, traits_type>
       view() const noexcept
       { return _M_stringbuf.view(); }
-#endif
+#endif // C++20
 
       /**
        *  @brief  Setting a new buffer.
@@ -1213,6 +1230,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
+#undef _GLIBCXX_SSTREAM_ALWAYS_INLINE
 #undef _GLIBCXX_LVAL_REF_QUAL
 
 #include <bits/sstream.tcc>
