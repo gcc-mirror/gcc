@@ -53,13 +53,6 @@ package body Pprint is
      (Expr    : Node_Id;
       Default : String) return String
    is
-      From_Source  : constant Boolean :=
-                       Comes_From_Source (Expr)
-                         and then not Opt.Debug_Generated_Code;
-      Append_Paren : Natural := 0;
-      Left         : Node_Id := Original_Node (Expr);
-      Right        : Node_Id := Original_Node (Expr);
-
       function Expr_Name
         (Expr        : Node_Id;
          Take_Prefix : Boolean := True;
@@ -302,7 +295,7 @@ package body Pprint is
                      return Str;
                   end;
                else
-                  return "'" & Get_Name_String (Attribute_Name (Expr));
+                  return ''' & Get_Name_String (Attribute_Name (Expr));
                end if;
 
             when N_Explicit_Dereference =>
@@ -639,10 +632,20 @@ package body Pprint is
          end case;
       end Expr_Name;
 
+      --  Local variables
+
+      Append_Paren : Natural := 0;
+      Left         : Node_Id := Original_Node (Expr);
+      Right        : Node_Id := Original_Node (Expr);
+
+      Left_Sloc, Right_Sloc : Source_Ptr;
+
    --  Start of processing for Expression_Image
 
    begin
-      if not From_Source then
+      if not Comes_From_Source (Expr)
+        or else Opt.Debug_Generated_Code
+      then
          declare
             S : constant String := Expr_Name (Expr);
          begin
@@ -661,8 +664,6 @@ package body Pprint is
       end if;
 
       --  Compute left (start) and right (end) slocs for the expression
-      --  Consider using Sinput.Sloc_Range instead, except that it does not
-      --  work properly currently???
 
       loop
          case Nkind (Left) is
@@ -706,12 +707,23 @@ package body Pprint is
 
       loop
          case Nkind (Right) is
-            when N_And_Then
-               | N_Membership_Test
+            when N_Membership_Test
                | N_Op
-               | N_Or_Else
+               | N_Short_Circuit
             =>
                Right := Original_Node (Right_Opnd (Right));
+
+            when N_Attribute_Reference =>
+               declare
+                  Exprs : constant List_Id := Expressions (Right);
+               begin
+                  if Present (Exprs) then
+                     Right := Original_Node (Last (Expressions (Right)));
+                     Append_Paren := Append_Paren + 1;
+                  else
+                     exit;
+                  end if;
+               end;
 
             when N_Expanded_Name
                | N_Selected_Component
@@ -755,40 +767,37 @@ package body Pprint is
                Append_Paren := Append_Paren + 1;
 
             when N_Function_Call =>
-               if Present (Parameter_Associations (Right)) then
-                  declare
-                     Rover : Node_Id;
-                     Found : Boolean;
+               declare
+                  Has_Source_Param : Boolean := False;
+                  --  True iff function call has a parameter coming from source
 
-                  begin
-                     --  Avoid source position confusion associated with
-                     --  parameters for which Comes_From_Source is False.
+                  Param : Node_Id;
 
-                     Rover := First (Parameter_Associations (Right));
-                     Found := False;
-                     while Present (Rover) loop
-                        if Comes_From_Source (Original_Node (Rover)) then
-                           Right := Original_Node (Rover);
-                           Found := True;
+               begin
+                  --  Avoid source position confusion associated with
+                  --  parameters for which Comes_From_Source is False.
+
+                  Param := First (Parameter_Associations (Right));
+                  while Present (Param) loop
+                     if Comes_From_Source (Original_Node (Param)) then
+                        if Nkind (Param) = N_Parameter_Association then
+                           Right :=
+                             Original_Node (Explicit_Actual_Parameter (Param));
+                        else
+                           Right := Original_Node (Param);
                         end if;
-
-                        Next (Rover);
-                     end loop;
-
-                     if Found then
-                        Append_Paren := Append_Paren + 1;
+                        Has_Source_Param := True;
                      end if;
 
-                     --  Quit loop if no Comes_From_Source parameters
+                     Next (Param);
+                  end loop;
 
-                     exit when not Found;
-                  end;
-
-               --  Quit loop if no parameters
-
-               else
-                  exit;
-               end if;
+                  if Has_Source_Param then
+                     Append_Paren := Append_Paren + 1;
+                  else
+                     Right := Original_Node (Name (Right));
+                  end if;
+               end;
 
             when N_Quantified_Expression =>
                Right        := Original_Node (Condition (Right));
@@ -823,6 +832,45 @@ package body Pprint is
                   Append_Paren := Append_Paren + 1;
                end;
 
+            when N_Slice =>
+               declare
+                  Rng : constant Node_Id := Discrete_Range (Right);
+               begin
+                  if Nkind (Rng) = N_Subtype_Indication then
+                     Right :=
+                       Original_Node (Range_Expression (Constraint (Rng)));
+                  else
+                     Right := Original_Node (High_Bound (Rng));
+                  end if;
+               end;
+
+            when N_Raise_Expression =>
+               declare
+                  Exp : constant Node_Id := Expression (Right);
+               begin
+                  if Present (Exp) then
+                     Right := Original_Node (Exp);
+                  else
+                     Right := Original_Node (Name (Right));
+                  end if;
+               end;
+
+            when N_If_Expression =>
+               declare
+                  Cond_Expr : constant Node_Id := First (Expressions (Right));
+                  Then_Expr : constant Node_Id := Next (Cond_Expr);
+                  Else_Expr : constant Node_Id := Next (Then_Expr);
+               begin
+                  if Present (Else_Expr) then
+                     Right := Original_Node (Else_Expr);
+                  else
+                     Right := Original_Node (Then_Expr);
+                  end if;
+               end;
+
+            when N_Allocator =>
+               Right := Original_Node (Expression (Right));
+
             --  For all other items, quit the loop
 
             when others =>
@@ -830,10 +878,17 @@ package body Pprint is
          end case;
       end loop;
 
+      --  We could just use Sinput.Sloc_Range, but we still need Append_Paren.
+      --  Make sure that we indeed got the left and right-most nodes.
+
+      Sinput.Sloc_Range (Expr, Left_Sloc, Right_Sloc);
+
+      pragma Assert (Left_Sloc = Sloc (Left));
+      pragma Assert (Right_Sloc = Sloc (Right));
+
       declare
-         Scn      : Source_Ptr := Original_Location (Sloc (Left));
-         End_Sloc : constant Source_Ptr :=
-                      Original_Location (Sloc (Right));
+         Scn      : Source_Ptr := Left_Sloc;
+         End_Sloc : constant Source_Ptr := Right_Sloc;
          Src      : constant Source_Buffer_Ptr :=
                       Source_Text (Get_Source_File_Index (Scn));
 
