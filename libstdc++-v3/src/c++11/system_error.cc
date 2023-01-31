@@ -93,6 +93,16 @@ namespace
       // and system category otherwise.
       switch (ev)
       {
+#if defined __AVR__
+      // avr-libc only defines a few distinct error numbers. Most <errno.h>
+      // constants are not usable in #if directives and have the same value.
+      case EDOM:
+      case ERANGE:
+      case ENOSYS:
+      case EINTR:
+      case 0:
+	return std::error_condition(ev, generic_category_instance.obj);
+#else
       // List of errno macros from [cerrno.syn].
       // C11 only defines EDOM, EILSEQ and ERANGE, the rest are from POSIX.
       // They expand to integer constant expressions with type int,
@@ -339,7 +349,7 @@ namespace
       case EBLAH:
 	return std::error_condition(EINVAL, std::generic_category());
        */
-
+#endif
       default:
 	return std::error_condition(ev, *this);
       }
