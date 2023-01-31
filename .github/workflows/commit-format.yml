@@ -1,0 +1,93 @@
+name: GNU Commit Format Checker
+
+on:
+  pull_request:
+    branches:
+      - master
+      - gcc-patch-dev
+
+jobs:
+  check_commit_changelogs:
+    runs-on: ubuntu-latest
+    name: check-changelogs
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Install Deps
+        run: |
+          sudo apt-get update;
+          sudo apt-get install -y \
+            python3 \
+            python3-git
+      
+      - name: GCC check PR Commits
+        run: |
+          python3 contrib/gcc-changelog/git_check_commit.py origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.sha }}
+
+  check_commit_prefixes:
+    runs-on: ubuntu-latest
+    name: check-gccrs-prefix
+    
+    steps:
+      - uses: actions/checkout@v3
+        if: ${{ github.base_ref == 'gcc-patch-dev' }} # master commits don't need the gccrs prefix
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Check for `gccrs` prefix
+        run: |
+          retval=0
+          for commit in $(git rev-list origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.sha }});
+          do
+            echo -n "Checking gccrs prefix for $commit: " >> results
+            if [[ $(git log -1 --format="%s" $commit) = gccrs:* ]]; then
+              echo "OK" >> results
+            else
+              retval=1
+              echo "KO" >> results
+            fi
+          done
+          exit $retval
+
+  check_commit_signoff:
+    runs-on: ubuntu-latest
+    name: check-commit-signoff
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Check for DCO Sign-Off line/possible FSF Copyright Assignment
+        run: |
+          retval=0;
+          rev_list="origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.sha }}"
+
+          for commit in $(git rev-list --reverse "$rev_list"); do
+            echo -n "Checking for DCO Sign-Off for commit $commit... ";
+
+            if [[ $(git log "$commit" -1 --format="%B" | tail -n 2) = Signed-off-by:* ]]; then
+              echo "OK";
+              continue;
+            fi
+
+            author=$(git log -1 --format=%an "$commit");
+
+            if [[ "$(( $(git log --author="$author"|wc -l) - $(git log --author="$author" --grep='Signed-off-by'|wc -l )))" -ne 0 ]]; then
+              echo "OK"
+              echo "$author probably has FSF Copyright Assignment. Check manually that the lack of DCO Sign-Off is allowed."
+            else
+              echo "KO"
+              retval=1;
+            fi
+          done;
+
+          exit $retval;
+
+  
