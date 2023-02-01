@@ -2808,14 +2808,6 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
 };
 
-/* An ISA extension in the co-processor and main instruction set space.  */
-struct aarch64_option_extension
-{
-  const char *const name;
-  const unsigned long flags_on;
-  const unsigned long flags_off;
-};
-
 typedef enum aarch64_cond_code
 {
   AARCH64_EQ = 0, AARCH64_NE, AARCH64_CS, AARCH64_CC, AARCH64_MI, AARCH64_PL,
