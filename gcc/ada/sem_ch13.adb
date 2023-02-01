@@ -14261,7 +14261,7 @@ package body Sem_Ch13 is
       --   transformed into just "(S /= 0)", which would appear to be
       --   a predicate-static expression (and therefore legal).
 
-      if Original_Node (Expr) /= Expr then
+      if Is_Rewrite_Substitution (Expr) then
 
          --  Emit warnings for predicates that are always True or always False
          --  and were not originally expressed as Boolean literals.
