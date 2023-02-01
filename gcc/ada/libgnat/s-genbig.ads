@@ -117,6 +117,18 @@ package System.Generic_Bignums is
    --  Convert Bignum to Long_Long_Integer. Constraint_Error raised with
    --  appropriate message if value is out of range of Long_Long_Integer.
 
+   function From_Bignum (X : Bignum) return Long_Long_Long_Integer;
+   --  Convert Bignum to Long_Long_Long_Integer. Constraint_Error raised with
+   --  appropriate message if value is out of range of Long_Long_Long_Integer.
+
+   function From_Bignum (X : Bignum) return Interfaces.Unsigned_64;
+   --  Convert Bignum to Unsigned_64. Constraint_Error raised with
+   --  appropriate message if value is out of range of Unsigned_64.
+
+   function From_Bignum (X : Bignum) return Interfaces.Unsigned_128;
+   --  Convert Bignum to Unsigned_128. Constraint_Error raised with
+   --  appropriate message if value is out of range of Unsigned_128.
+
    function To_String
      (X : Bignum; Width : Natural := 0; Base : Positive := 10)
       return String;
