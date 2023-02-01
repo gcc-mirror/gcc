@@ -1875,6 +1875,6 @@ extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc,__attribu
 {
 }
 
-extern "C" void _M2_mcMetaError_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcMetaError_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

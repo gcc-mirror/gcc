@@ -579,6 +579,6 @@ extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc,__attribute__
   binaryTree->left = NULL;
 }
 
-extern "C" void _M2_nameKey_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_nameKey_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

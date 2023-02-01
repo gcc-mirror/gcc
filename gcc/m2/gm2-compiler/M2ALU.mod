@@ -4636,12 +4636,12 @@ BEGIN
                ELSE
                   MetaErrorT2 (tokenno,
                                'the {%1EN} element does not exist in the {%2ad} array declaration used by the compound literal', i, constructorType) ;
-                  RETURN NulSym
                END
             END
          END
       END
-   END
+   END ;
+   RETURN NulSym
 END GetConstructorElement ;
 
 

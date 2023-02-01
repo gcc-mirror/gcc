@@ -41,6 +41,7 @@ extern "C" {
 #   endif
 
 #   include "GSYSTEM.h"
+#   include "GRTentity.h"
 
 #   if defined (_RTco_C)
 #      define EXTERN

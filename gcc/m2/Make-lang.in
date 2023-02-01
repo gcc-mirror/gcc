@@ -441,11 +441,14 @@ GM2_G=-g -fm2-g
 GM2_CPP=
 # GM2_DEBUG_STRMEM=-fcpp
 GM2_DEBUG_STRMEM=
-GM2_FLAGS=-Wunused-variable -fsoft-check-all $(GM2_G) $(GM2_O) \
+GM2_FLAGS=-Wunused-variable -fsoft-check-all \
+ -fno-return -Wreturn-type \
+ $(GM2_G) $(GM2_O) \
  -funbounded-by-reference -fpim -fextended-opaque \
  -Wpedantic-cast -Wpedantic-param-names -ffunction-sections \
  -fdata-sections $(GM2_CPP) # -fauto-init
 GM2_ISO_FLAGS=-fsoft-check-all $(GM2_G) $(GM2_O) \
+ -fno-return -Wreturn-type \
  -funbounded-by-reference -fiso -fextended-opaque \
  -Wpedantic-cast -Wpedantic-param-names -ffunction-sections \
  -fdata-sections $(GM2_CPP)
@@ -1138,6 +1141,7 @@ MC-LIB-DEFS = \
    PushBackInput.def \
    RTExceptions.def \
    RTco.def \
+   RTentity.def \
    RTint.def \
    SArgs.def \
    SFIO.def \

@@ -2000,6 +2000,6 @@ extern "C" void _M2_StringConvert_init (__attribute__((unused)) int argc,__attri
 {
 }
 
-extern "C" void _M2_StringConvert_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StringConvert_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

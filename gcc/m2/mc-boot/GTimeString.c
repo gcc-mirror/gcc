@@ -86,6 +86,6 @@ extern "C" void _M2_TimeString_init (__attribute__((unused)) int argc,__attribut
 {
 }
 
-extern "C" void _M2_TimeString_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_TimeString_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

@@ -14129,7 +14129,7 @@ BEGIN
    setNeedSpace (p) ;
    outText (p, "_M2_") ;
    doFQNameC (p, n) ;
-   outText (p, "_finish") ;
+   outText (p, "_fini") ;
    setNeedSpace (p) ;
    outText (p, "(__attribute__((unused)) int argc") ;
    outText (p, ",__attribute__((unused)) char *argv[]") ;
@@ -14487,7 +14487,7 @@ BEGIN
    setNeedSpace (p) ;
    outText (p, "_M2_") ;
    doFQNameC (p, n) ;
-   outText (p, "_finish") ;
+   outText (p, "_fini") ;
    setNeedSpace (p) ;
    outText (p, "(__attribute__((unused)) int argc") ;
    outText (p, ",__attribute__((unused)) char *argv[]") ;

@@ -1933,12 +1933,12 @@ EXPORT (SetChar) (struct termios *t, ControlChar c, char ch)
 }
 
 void
-_M2_termios_init (void)
+_M2_termios_init (int argc, char *argv[], char *envp[])
 {
 }
 
 void
-_M2_termios_finish (void)
+_M2_termios_fini (int argc, char *argv[], char *envp[])
 {
 }
 

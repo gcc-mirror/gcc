@@ -174,7 +174,7 @@ _M2_dtoa_init (void)
 }
 
 void
-_M2_dtoa_finish (void)
+_M2_dtoa_fini (void)
 {
 }
 #endif

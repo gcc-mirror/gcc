@@ -176,6 +176,6 @@ extern "C" void _M2_mcPreprocess_init (__attribute__((unused)) int argc,__attrib
     }
 }
 
-extern "C" void _M2_mcPreprocess_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcPreprocess_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
