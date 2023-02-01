@@ -1,3 +1,11 @@
+2023-02-02  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	Backported from master:
+	2023-02-02  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (cond_<expander><mode>): Add
+	cond_{ashl|ashr|lshr}
+
 2023-02-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

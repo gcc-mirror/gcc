@@ -1,3 +1,17 @@
+2023-02-02  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	Backported from master:
+	2023-02-02  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* gcc.target/gcn/cond_shift_3.c: New test.
+	* gcc.target/gcn/cond_shift_3_run.c: New test.
+	* gcc.target/gcn/cond_shift_4.c: New test.
+	* gcc.target/gcn/cond_shift_4_run.c: New test.
+	* gcc.target/gcn/cond_shift_8.c: New test.
+	* gcc.target/gcn/cond_shift_8_run.c: New test.
+	* gcc.target/gcn/cond_shift_9.c: New test.
+	* gcc.target/gcn/cond_shift_9_run.c: New test.
+
 2023-02-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
