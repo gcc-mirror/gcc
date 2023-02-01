@@ -28,9 +28,10 @@ void f1 (void * in, void *out)
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
 **	...
 **	vsetivli\tzero,4,e32,m1,ta,ma
+**	...
 **	vle32.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vsll\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+
-**	vsll\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t
+**	vsll\.vx\tv[1-9][0-9]?,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t
 **	vse32.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
@@ -53,7 +54,7 @@ void f2 (void * in, void *out)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vsll\.vi\tv[0-9]+,\s*v[0-9]+,\s*17
-**	vsll\.vi\tv[0-9]+,\s*v[0-9]+,\s*17,\s*v0.t
+**	vsll\.vi\tv[1-9][0-9]?,\s*v[0-9]+,\s*17,\s*v0.t
 **	vse32.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
@@ -94,7 +95,7 @@ void f4 (void * in, void *out, size_t x)
 **	vsetivli\tzero,4,e8,mf8,ta,ma
 **	vle8.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vsll\.vi\tv[0-9]+,\s*v[0-9]+,\s*5
-**	vsll\.vi\tv[0-9]+,\s*v[0-9]+,\s*5,\s*v0.t
+**	vsll\.vi\tv[1-9][0-9]?,\s*v[0-9]+,\s*5,\s*v0.t
 **	vse8.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
@@ -117,7 +118,7 @@ void f5 (void * in, void *out)
 **	vle8\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle8.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vsll\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+
-**	vsll\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t
+**	vsll\.vx\tv[1-9][0-9]?,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t
 **	vse8.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
