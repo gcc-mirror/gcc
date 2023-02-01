@@ -10064,6 +10064,13 @@ code, and issues warnings for problems found on them.
 
 This analysis is much more expensive than other GCC warnings.
 
+In technical terms, it performs coverage-guided symbolic execution of
+the code being compiled.  It is neither sound nor complete: it can
+have false positives and false negatives.  It is a bug-finding tool,
+rather than a tool for proving program correctness.
+
+The analyzer is only suitable for use on C code in this release.
+
 Enabling this option effectively enables the following warnings:
 
 @gccoptlist{ @gol
