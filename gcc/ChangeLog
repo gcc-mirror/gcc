@@ -1,3 +1,123 @@
+2023-01-31  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (vj): New.
+	(vk): Ditto
+	* config/riscv/iterators.md: Add more opcode.
+	* config/riscv/predicates.md (vector_arith_operand): New.
+	(vector_neg_arith_operand): New.
+	(vector_shift_operand): New.
+	* config/riscv/riscv-vector-builtins-bases.cc (class binop): New.
+	* config/riscv/riscv-vector-builtins-bases.h: (vadd): New.
+	(vsub): Ditto.
+	(vand): Ditto.
+	(vor): Ditto.
+	(vxor): Ditto.
+	(vsll): Ditto.
+	(vsra): Ditto.
+	(vsrl): Ditto.
+	(vmin): Ditto.
+	(vmax): Ditto.
+	(vminu): Ditto.
+	(vmaxu): Ditto.
+	(vmul): Ditto.
+	(vdiv): Ditto.
+	(vrem): Ditto.
+	(vdivu): Ditto.
+	(vremu): Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vadd): New.
+	(vsub): Ditto.
+	(vand): Ditto.
+	(vor): Ditto.
+	(vxor): Ditto.
+	(vsll): Ditto.
+	(vsra): Ditto.
+	(vsrl): Ditto.
+	(vmin): Ditto.
+	(vmax): Ditto.
+	(vminu): Ditto.
+	(vmaxu): Ditto.
+	(vmul): Ditto.
+	(vdiv): Ditto.
+	(vrem): Ditto.
+	(vdivu): Ditto.
+	(vremu): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct binop_def): New.
+	* config/riscv/riscv-vector-builtins-shapes.h (binop): New.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_I_OPS): New.
+	(DEF_RVV_U_OPS): New.
+	(rvv_arg_type_info::get_base_vector_type): Handle
+	RVV_BASE_shift_vector.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum rvv_base_type): Add
+	RVV_BASE_shift_vector.
+	* config/riscv/riscv.cc (riscv_print_operand): Handle 'V'.
+	* config/riscv/vector-iterators.md: Handle more opcode.
+	* config/riscv/vector.md (@pred_<optab><mode>): New.
+
+2023-01-31  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR target/108589
+	* config/aarch64/aarch64.cc (aarch_macro_fusion_pair_p): Check
+	REG_P on SET_DEST.
+
+2023-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108608
+	* tree-vect-loop.cc (vect_transform_reduction): Handle single
+	def-use cycles that involve function calls rather than tree codes.
+
+2023-01-31  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108385
+	* gimple-range-gori.cc (gori_compute::compute_operand_range):
+	Allow VARYING computations to continue if there is a relation.
+	* range-op.cc (pointer_plus_operator::op2_range): New.
+
+2023-01-31  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108359
+	* range-op.cc (range_operator::wi_fold_in_parts_equiv): New.
+	(range_operator::fold_range): If op1 is equivalent to op2 then
+	invoke new fold_in_parts_equiv to operate on sub-components.
+	* range-op.h (wi_fold_in_parts_equiv): New prototype.
+
+2023-01-31  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::compute_operand_range): Do
+	not abort calculations if there is a valid relation available.
+	(gori_compute::refine_using_relation): Pass correct relation trio.
+	(gori_compute::compute_operand1_range): Create trio and use it.
+	(gori_compute::compute_operand2_range): Ditto.
+	* range-op.cc (operator_plus::op1_range): Use correct trio member.
+	(operator_minus::op1_range): Use correct trio member.
+	* value-relation.cc (value_relation::create_trio): New.
+	* value-relation.h (value_relation::create_trio): New prototype.
+
+2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108599
+	* config/i386/i386-expand.cc
+	(ix86_convert_const_wide_int_to_broadcast): Return nullptr if
+	CONST_WIDE_INT_NUNITS (op) times HOST_BITS_PER_WIDE_INT isn't
+	equal to bitsize of mode.
+
+2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/108596
+	* bb-reorder.cc (fix_up_fall_thru_edges): Handle the case where cur_bb
+	ends with asm goto and has a crossing fallthrough edge to the same bb
+	that contains at least one of its labels by restoring EDGE_CROSSING
+	flag even on possible edge from cur_bb to new_bb successor.
+
+2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* config/i386/avx512erintrin.h (_mm512_exp2a23_round_pd,
+	_mm512_exp2a23_round_ps, _mm512_rcp28_round_pd, _mm512_rcp28_round_ps,
+	_mm512_rsqrt28_round_pd, _mm512_rsqrt28_round_ps): Use
+	_mm512_undefined_pd () or _mm512_undefined_ps () instead of using
+	uninitialized automatic variable __W.
+
 2023-01-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/include/fdl.texi: Change fsf.org to www.fsf.org.

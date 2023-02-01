@@ -1,3 +1,21 @@
+2023-01-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR sanitizer/108106
+	* hwasan/hwasan_setjmp_x86_64.S (__interceptor_setjmp): Jump
+	to .Linterceptor_sigsetjmp instead of __interceptor_sigsetjmp.
+	(__interceptor_sigsetjmp): Add a local alias,
+	.Linterceptor_sigsetjmp.
+
+2023-01-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2023-01-31  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* configure.ac: set -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+	always for mips*.
+	* configure: Regenerate.
+
 2023-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* sanitizer_common/sanitizer_platform_interceptors.h: Cherry-pick

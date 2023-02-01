@@ -1,3 +1,28 @@
+2023-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR modula2/108462
+	* libm2cor/Makefile.am: Remove static lib install from
+	install-data-local.
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2min/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
+2023-01-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2log/Makefile.am (VPATH): Replace gm2-libs-pim
+	with gm2-libs-log.
+	(libm2log_la_M2FLAGS): Replace gm2-libs-pim with
+	gm2-libs-log.
+	(install-data-local): Replace gm2-libs-pim with
+	gm2-libs-log.
+	* libm2log/Makefile.in: Rebuilt.
+
 2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* configure.ac (AM_INIT_AUTOMAKE): Specify 1.15.1.

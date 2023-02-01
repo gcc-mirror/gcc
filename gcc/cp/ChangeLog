@@ -1,3 +1,16 @@
+2023-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108559
+	* cp-gimplify.cc (any_non_eliding_target_exprs): New.
+	(cp_genericize_init): Check it.
+
+2023-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107593
+	PR c++/108597
+	* cp-tree.h (instantiation_dependent_expression_p): Don't
+	declare here.
+
 2023-01-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105300
