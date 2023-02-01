@@ -9251,9 +9251,13 @@ package body Exp_Ch3 is
          --  this is indeed the case, associate the Finalize_Address routine
          --  of the full view with the finalization masters of all pending
          --  access types. This scenario applies to anonymous access types as
-         --  well.
+         --  well. But the Finalize_Address routine is missing if the type is
+         --  class-wide and we are under restriction No_Dispatching_Calls, see
+         --  Expand_Freeze_Class_Wide_Type above for the rationale.
 
          elsif Needs_Finalization (Typ)
+           and then (not Is_Class_Wide_Type (Typ)
+                      or else not Restriction_Active (No_Dispatching_Calls))
            and then Present (Pending_Access_Types (Typ))
          then
             E := First_Elmt (Pending_Access_Types (Typ));
