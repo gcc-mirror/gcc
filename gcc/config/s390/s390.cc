@@ -10898,9 +10898,7 @@ save_gprs (rtx base, int offset, int first, int last)
   int i;
 
   addr = plus_constant (Pmode, base, offset);
-  addr = gen_rtx_MEM (Pmode, addr);
-
-  set_mem_alias_set (addr, get_frame_alias_set ());
+  addr = gen_frame_mem (Pmode, addr);
 
   /* Special-case single register.  */
   if (first == last)
@@ -11012,8 +11010,7 @@ restore_gprs (rtx base, int offset, int first, int last)
   rtx addr, insn;
 
   addr = plus_constant (Pmode, base, offset);
-  addr = gen_rtx_MEM (Pmode, addr);
-  set_mem_alias_set (addr, get_frame_alias_set ());
+  addr = gen_frame_mem (Pmode, addr);
 
   /* Special-case single register.  */
   if (first == last)
@@ -11062,10 +11059,11 @@ s390_load_got (void)
 static void
 s390_emit_stack_tie (void)
 {
-  rtx mem = gen_frame_mem (BLKmode,
-			   gen_rtx_REG (Pmode, STACK_POINTER_REGNUM));
-
-  emit_insn (gen_stack_tie (mem));
+  rtx mem = gen_frame_mem (BLKmode, stack_pointer_rtx);
+  if (frame_pointer_needed)
+    emit_insn (gen_stack_tie (Pmode, mem, hard_frame_pointer_rtx));
+  else
+    emit_insn (gen_stack_tie (Pmode, mem, stack_pointer_rtx));
 }
 
 /* Copy GPRS into FPR save slots.  */
@@ -11676,6 +11674,7 @@ s390_emit_prologue (void)
 
   if (frame_pointer_needed)
     {
+      s390_emit_stack_tie ();
       insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
