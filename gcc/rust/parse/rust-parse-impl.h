@@ -9237,6 +9237,7 @@ Parser<ManagedTokenSource>::parse_type (bool save_errors)
       // raw pointer type
       return parse_raw_pointer_type ();
     case AMP: // does this also include AMP_AMP?
+    case LOGICAL_AND:
       // reference type
       return parse_reference_type ();
       case LIFETIME: {
@@ -9886,14 +9887,10 @@ Parser<ManagedTokenSource>::parse_bare_function_type (
 			       std::move (return_type), best_try_locus));
 }
 
-// Parses a reference type (mutable or immutable, with given lifetime).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ReferenceType>
-Parser<ManagedTokenSource>::parse_reference_type ()
+Parser<ManagedTokenSource>::parse_reference_type_inner (Location locus)
 {
-  Location locus = lexer.peek_token ()->get_locus ();
-  skip_token (AMP);
-
   // parse optional lifetime
   AST::Lifetime lifetime = AST::Lifetime::error ();
   if (lexer.peek_token ()->get_id () == LIFETIME)
@@ -9930,6 +9927,29 @@ Parser<ManagedTokenSource>::parse_reference_type ()
   return std::unique_ptr<AST::ReferenceType> (
     new AST::ReferenceType (is_mut, std::move (type), locus,
 			    std::move (lifetime)));
+}
+
+// Parses a reference type (mutable or immutable, with given lifetime).
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::ReferenceType>
+Parser<ManagedTokenSource>::parse_reference_type ()
+{
+  auto t = lexer.peek_token ();
+  auto locus = t->get_locus ();
+
+  switch (t->get_id ())
+    {
+    case AMP:
+      skip_token (AMP);
+      return parse_reference_type_inner (locus);
+    case LOGICAL_AND:
+      skip_token (LOGICAL_AND);
+      return std::unique_ptr<AST::ReferenceType> (
+	new AST::ReferenceType (false, parse_reference_type_inner (locus),
+				locus));
+    default:
+      gcc_unreachable ();
+    }
 }
 
 // Parses a raw (unsafe) pointer type.
@@ -10079,7 +10099,8 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
     case ASTERISK:
       // raw pointer type
       return parse_raw_pointer_type ();
-    case AMP: // does this also include AMP_AMP?
+    case AMP: // does this also include AMP_AMP? Yes! Which is... LOGICAL_AND?
+    case LOGICAL_AND:
       // reference type
       return parse_reference_type ();
     case LIFETIME:
