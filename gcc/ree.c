@@ -876,7 +876,8 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 
 	  for (df_link *use = uses; use; use = use->next)
 	    if (paradoxical_subreg_p (GET_MODE (*DF_REF_LOC (use->ref)),
-				      GET_MODE (SET_DEST (*dest_sub_rtx))))
+				      GET_MODE (SET_DEST (*dest_sub_rtx)))
+		&& !DEBUG_INSN_P (DF_REF_INSN (use->ref)))
 	      return false;
 	}
 
@@ -965,7 +966,8 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	      rtx dest2 = SET_DEST (*dest_sub_rtx2);
 	      for (use = uses; use; use = use->next)
 		if (paradoxical_subreg_p (GET_MODE (*DF_REF_LOC (use->ref)),
-					  GET_MODE (dest2)))
+					  GET_MODE (dest2))
+		    && !DEBUG_INSN_P (DF_REF_INSN (use->ref)))
 		  break;
 	      if (use)
 		break;
