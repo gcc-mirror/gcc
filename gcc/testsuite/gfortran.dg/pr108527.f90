@@ -4,7 +4,7 @@
 
 program p
   integer, parameter :: a((2.)) = [4,8] ! { dg-error "must be of INTEGER type" }
-  integer(a(1:1)) :: b                  ! { dg-error "out of bounds" }
+  integer(a(1:1)) :: b                  ! { dg-error "Unclassifiable statement" }
 end
 
 ! { dg-prune-output "Parameter array" }

@@ -1552,7 +1552,11 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
       lower = ref->u.ar.as->lower[d];
       upper = ref->u.ar.as->upper[d];
 
-      if (!lower || !upper)
+      if (!lower || !upper
+	  || lower->expr_type != EXPR_CONSTANT
+	  || upper->expr_type != EXPR_CONSTANT
+	  || lower->ts.type != BT_INTEGER
+	  || upper->ts.type != BT_INTEGER)
 	{
 	  t = false;
 	  goto cleanup;
