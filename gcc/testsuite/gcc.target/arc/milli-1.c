@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os" } */
+/* { dg-options "-Os -mmillicode" } */
 
 /* Test if we restore correctly blink when using millicode.  */
 extern void bar (void);
