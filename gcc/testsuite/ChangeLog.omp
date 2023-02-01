@@ -1,3 +1,8 @@
+2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-4.f90: Fix 'omp_allocator_handle_kind'
+	example.
+
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.dg/no_profile_instrument_function-attr-1.c: GCC/nvptx is
