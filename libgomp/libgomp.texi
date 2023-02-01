@@ -192,8 +192,8 @@ The OpenMP 4.5 specification is fully supported.
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab complete but no non-host devices provides @code{unified_address},
-      @code{unified_shared_memory} or @code{reverse_offload}
+      @tab complete but no non-host devices provides @code{unified_address} or
+      @code{unified_shared_memory}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
 @item Non-rectangular loop nests @tab P @tab Full support for C/C++, partial for Fortran
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
@@ -228,7 +228,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause
-      @tab Y @tab See comment for @code{requires}
+      @tab Y @tab Host fallback with GCN devices
 @item Implicit declare target directive @tab Y @tab
 @item Discontiguous array section with @code{target update} construct
       @tab N @tab
@@ -288,7 +288,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{append_args} @tab N @tab
 @item @code{dispatch} construct @tab N @tab
 @item device-specific ICV settings with environment variables @tab Y @tab
-@item @code{assume} directive @tab Y @tab
+@item @code{assume} and @code{assumes} directives @tab Y @tab
 @item @code{nothing} directive @tab Y @tab
 @item @code{error} directive @tab Y @tab
 @item @code{masked} construct @tab Y @tab
@@ -351,7 +351,7 @@ The OpenMP 4.5 specification is fully supported.
 to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item For Fortran, diagnose placing declarative before/between @code{USE},
       @code{IMPORT}, and @code{IMPLICIT} as invalid @tab N @tab
-@item Optional comma beween directive and clause in the @code{#pragma} form @tab Y @tab
+@item Optional comma between directive and clause in the @code{#pragma} form @tab Y @tab
 @item @code{indirect} clause in @code{declare target} @tab N @tab
 @item @code{device_type(nohost)}/@code{device_type(host)} for variables @tab N @tab
 @end multitable
@@ -3956,7 +3956,7 @@ same context.
 @section First invocation: OpenACC library API
 
 In this second use case (see below), a function in the OpenACC library is
-called prior to any of the functions in the CUBLAS library. More specificially,
+called prior to any of the functions in the CUBLAS library. More specifically,
 the function @code{acc_set_device_num()}.
 
 In the use case presented here, the function @code{acc_set_device_num()}
@@ -4456,6 +4456,9 @@ The implementation remark:
 @item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
       using the C library @code{printf} functions and the Fortran
       @code{print}/@code{write} statements.
+@item OpenMP code that has a requires directive with @code{unified_address},
+      @code{unified_shared_memory} or @code{reverse_offload} will remove
+      any GCN device from the list of available devices (``host fallback'').
 @end itemize
 
 
@@ -4496,7 +4499,7 @@ which caches the JIT in the user's directory (see CUDA documentation; can be
 tuned by the environment variables @code{CUDA_CACHE_@{DISABLE,MAXSIZE,PATH@}}.
 
 Note: While PTX ISA is generic, the @code{-mptx=} and @code{-march=} commandline
-options still affect the used PTX ISA code and, thus, the requirments on
+options still affect the used PTX ISA code and, thus, the requirements on
 CUDA version and hardware.
 
 The implementation remark:
@@ -4507,6 +4510,15 @@ The implementation remark:
 @item Compilation OpenMP code that contains @code{requires reverse_offload}
       requires at least @code{-march=sm_35}, compiling for @code{-march=sm_30}
       is not supported.
+@item For code containing reverse offload (i.e. @code{target} regions with
+      @code{device(ancestor:1)}), there is a slight performance penalty
+      for @emph{all} target regions, consisting mostly of shutdown delay
+      Per device, reverse offload regions are processed serially such that
+      the next reverse offload region is only executed after the previous
+      one returned.
+@item OpenMP code that has a requires directive with @code{unified_address}
+      or @code{unified_shared_memory} will remove any nvptx device from the
+      list of available devices (``host fallback'').
 @end itemize
 
 
