@@ -1,3 +1,11 @@
+2023-02-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108607
+	* g++.dg/gomp/pr108607.C: New test.
+
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.dg/no_profile_instrument_function-attr-1.c: GCC/nvptx is
