@@ -7,7 +7,7 @@ on:
       - gcc-patch-dev
 
 jobs:
-  check_commit_changelogs:
+  check-commit-changelogs:
     runs-on: ubuntu-latest
     name: check-changelogs
     
@@ -28,7 +28,7 @@ jobs:
         run: |
           python3 contrib/gcc-changelog/git_check_commit.py origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.sha }}
 
-  check_commit_prefixes:
+  check-commit-prefixes:
     runs-on: ubuntu-latest
     name: check-gccrs-prefix
     
@@ -54,7 +54,7 @@ jobs:
           done
           exit $retval
 
-  check_commit_signoff:
+  check-commit-signoff:
     runs-on: ubuntu-latest
     name: check-commit-signoff
     
