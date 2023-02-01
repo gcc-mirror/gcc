@@ -22,7 +22,12 @@ subroutine foo(x, y)
   integer, allocatable :: var8(:)
   integer, allocatable :: var9(:)
 
-  !$omp allocate (var1) allocator(10) ! { dg-error "Expected integer expression of the 'omp_allocator_handle_kind' kind at .1." }
+  ! Don't use a hard-coded value (..., but it does pass the checks).
+  !$omp allocate (var1) allocator(10_omp_allocator_handle_kind) ! { dg-bogus "Expected integer expression of the 'omp_allocator_handle_kind' kind" }
+  allocate (var1(x))
+
+  ! Assumption is that 'omp_allocator_handle_kind' ('c_intptr_t') isn't 1.
+  !$omp allocate (var1) allocator(10_1) ! { dg-error "Expected integer expression of the 'omp_allocator_handle_kind' kind at .1." }
   allocate (var1(x))
 
   !$omp allocate (var2)  ! { dg-error "'var2' in 'allocate' directive at .1. is not present in associated 'allocate' statement." }

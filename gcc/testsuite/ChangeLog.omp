@@ -1,3 +1,8 @@
+2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-4.f90: Fix 'omp_allocator_handle_kind'
+	example.
+
 2023-02-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.c-torture/execute/pr47237.c: Xfail on amdgcn.
