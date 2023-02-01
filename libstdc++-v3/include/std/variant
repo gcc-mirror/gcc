@@ -1481,7 +1481,9 @@ namespace __variant
 			    || !is_nothrow_move_constructible_v<_Tj>)
 		this->emplace<__index>(std::forward<_Tp>(__rhs));
 	      else
-		operator=(variant(std::forward<_Tp>(__rhs)));
+		// _GLIBCXX_RESOLVE_LIB_DEFECTS
+		// 3585. converting assignment with immovable alternative
+		this->emplace<__index>(_Tj(std::forward<_Tp>(__rhs)));
 	    }
 	  return *this;
 	}
