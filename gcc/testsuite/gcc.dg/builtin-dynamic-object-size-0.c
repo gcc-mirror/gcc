@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
+#include "builtin-object-size-common.h"
+
 typedef __SIZE_TYPE__ size_t;
 #define abort __builtin_abort
 
@@ -604,13 +606,6 @@ test_pr105736 (struct TV4 *a)
   return &a->v[0];
 }
 
-unsigned nfails = 0;
-
-#define FAIL() ({ \
-  __builtin_printf ("Failure at line: %d\n", __LINE__);			      \
-  nfails++;								      \
-})
-
 int
 main (int argc, char **argv)
 {
@@ -790,8 +785,5 @@ main (int argc, char **argv)
   if (test_strndup_min (str, 4) != 1)
     FAIL ();
 
-  if (nfails > 0)
-    __builtin_abort ();
-
-  return 0;
+  DONE ();
 }
