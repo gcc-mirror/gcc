@@ -1072,8 +1072,6 @@ Dump::visit (TypeBoundWhereClauseItem &item)
 void
 Dump::visit (Method &method)
 {
-  // FIXME: Do we really need to dump the indentation here?
-  stream << indentation;
   visit (method.get_visibility ());
   stream << "fn " << method.get_method_name () << '(';
 
@@ -1326,7 +1324,7 @@ void
 Dump::visit (TraitItemFunc &item)
 {
   auto func = item.get_trait_function_decl ();
-  stream << indentation << "fn " << func.get_identifier () << '(';
+  stream << "fn " << func.get_identifier () << '(';
 
   visit_items_joined_by_separator (func.get_function_params ());
 
@@ -1339,9 +1337,6 @@ void
 Dump::visit (TraitItemMethod &item)
 {
   auto method = item.get_trait_method_decl ();
-
-  // FIXME: Do we really need to dump the indentation here?
-  stream << indentation;
 
   // FIXME: Can we have visibility here?
   // emit_visibility (method.get_visibility ());
