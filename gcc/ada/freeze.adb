@@ -6127,8 +6127,7 @@ package body Freeze is
 
             Bod :=
               Make_Subprogram_Body (Loc,
-                Specification              =>
-                  Copy_Separate_Tree (Spec),
+                Specification              => Copy_Subprogram_Spec (Spec),
                 Declarations               => New_List (
                   Make_Subprogram_Declaration (Loc,
                     Specification => Copy_Separate_Tree (Spec)),
@@ -6438,7 +6437,9 @@ package body Freeze is
 
             --  Check for needing to wrap imported subprogram
 
-            Wrap_Imported_Subprogram (E);
+            if not Inside_A_Generic then
+               Wrap_Imported_Subprogram (E);
+            end if;
 
             --  Freeze all parameter types and the return type (RM 13.14(14)).
             --  However skip this for internal subprograms. This is also where
