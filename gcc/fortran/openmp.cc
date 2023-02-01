@@ -7392,11 +7392,12 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      || n->u.align->ts.type != BT_INTEGER
 	      || n->u.align->rank != 0
 	      || gfc_extract_int (n->u.align, &alignment)
-	      || alignment <= 0)
+	      || alignment <= 0
+	      || !pow2p_hwi (alignment))
 	    {
-	      gfc_error ("ALIGN modifier requires a scalar positive "
-			 "constant integer alignment expression at %L",
-			 &n->u.align->where);
+	      gfc_error ("ALIGN modifier requires at %L a scalar positive "
+			 "constant integer alignment expression that is a "
+			 "power of two", &n->u.align->where);
 	      break;
 	    }
 	}
