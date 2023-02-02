@@ -40,6 +40,7 @@ public:
   void visit (AST::LiteralPattern &pattern) override;
   void visit (AST::RangePattern &pattern) override;
   void visit (AST::GroupedPattern &pattern) override;
+  void visit (AST::ReferencePattern &pattern) override;
 
 private:
   ASTLoweringPattern ();
