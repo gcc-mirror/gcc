@@ -469,6 +469,10 @@ public:
     return pattern;
   }
 
+  bool is_double_reference () const { return has_two_amps; }
+
+  bool get_is_mut () const { return is_mut; }
+
   NodeId get_node_id () const { return node_id; }
 
   NodeId get_pattern_node_id () const override final { return node_id; }
