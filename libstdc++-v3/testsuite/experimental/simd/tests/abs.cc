@@ -16,11 +16,9 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/metahelpers.h"
+#include "bits/main.h"
 #include <cmath>    // abs & sqrt
 #include <cstdlib>  // integer abs
-#include "bits/test_values.h"
 
 template <typename V>
   void

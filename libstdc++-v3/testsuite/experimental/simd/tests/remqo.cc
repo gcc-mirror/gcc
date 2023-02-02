@@ -17,9 +17,7 @@
 
 // only: float|double|ldouble * * *
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/metahelpers.h"
-#include "bits/test_values.h"
+#include "bits/main.h"
 
 template <typename V>
   void

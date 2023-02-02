@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef SIMD_TESTS_BITS_CONVERSIONS_H_
+#define SIMD_TESTS_BITS_CONVERSIONS_H_
 #include <array>
 
 // is_conversion_undefined
@@ -86,22 +88,12 @@ template <typename To, typename T, typename A>
 template <class T>
   constexpr T
   genHalfBits()
-  { return std::__finite_max_v<T> >> (std::__digits_v<T> / 2); }
-
-template <>
-  constexpr long double
-  genHalfBits<long double>()
-  { return 0; }
-
-template <>
-  constexpr double
-  genHalfBits<double>()
-  { return 0; }
-
-template <>
-  constexpr float
-  genHalfBits<float>()
-  { return 0; }
+  {
+    if constexpr (std::is_floating_point_v<T>)
+      return 0;
+    else
+      return std::__finite_max_v<T> >> (std::__digits_v<T> / 2);
+  }
 
 template <class U, class T, class UU>
   constexpr U
@@ -182,3 +174,4 @@ template <class T, class U>
     operator[](size_t i) const
     { return cvt_input_data<U, T>[i]; }
   };
+#endif  // SIMD_TESTS_BITS_CONVERSIONS_H_

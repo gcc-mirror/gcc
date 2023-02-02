@@ -16,9 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/make_vec.h"
-#include "bits/metahelpers.h"
+// timeout-factor: 2
+#include "bits/main.h"
 
 template <typename T, T Begin, T End, T Stride = 1, typename F>
   void
