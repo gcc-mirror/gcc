@@ -1448,29 +1448,29 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  break;
 
 	case OMP_CLAUSE_LASTPRIVATE:
-	  {
-	    tree save_local_var_chain = info->new_local_var_chain;
-	    info->new_local_var_chain = NULL;
-	    gimple_seq *seq = &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause);
-	    walk_body (convert_nonlocal_reference_stmt,
-		       convert_nonlocal_reference_op, info, seq);
-	    if (info->new_local_var_chain)
-	      declare_vars (info->new_local_var_chain,
-			    gimple_seq_first_stmt (*seq), false);
-	    info->new_local_var_chain = save_local_var_chain;
-	  }
-	  break;
-
 	case OMP_CLAUSE_LINEAR:
 	  {
 	    tree save_local_var_chain = info->new_local_var_chain;
 	    info->new_local_var_chain = NULL;
-	    gimple_seq *seq = &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause);
+	    gimple_seq *seq;
+	    if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LASTPRIVATE)
+	      seq = &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause);
+	    else
+	      seq = &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause);
 	    walk_body (convert_nonlocal_reference_stmt,
 		       convert_nonlocal_reference_op, info, seq);
 	    if (info->new_local_var_chain)
-	      declare_vars (info->new_local_var_chain,
-			    gimple_seq_first_stmt (*seq), false);
+	      {
+		gimple *g = gimple_seq_first_stmt (*seq);
+		if (gimple_code (g) != GIMPLE_BIND)
+		  {
+		    g = gimple_build_bind (NULL_TREE, *seq, NULL_TREE);
+		    *seq = NULL;
+		    gimple_seq_add_stmt_without_update (seq, g);
+		  }
+		declare_vars (info->new_local_var_chain,
+			      gimple_seq_first_stmt (*seq), false);
+	      }
 	    info->new_local_var_chain = save_local_var_chain;
 	  }
 	  break;
