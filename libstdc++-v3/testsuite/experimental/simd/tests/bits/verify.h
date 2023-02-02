@@ -137,7 +137,7 @@ public:
     {
       if (m_failed)
 	[&] {
-	  __builtin_fprintf(stderr, "%s:%d: (%s):\nInstruction Pointer: %x\n"
+	  __builtin_fprintf(stderr, "%s:%d: (%s):\nInstruction Pointer: %zx\n"
 				    "Assertion '%s' failed.\n",
 			    file, line, func, m_ip, cond);
 	  (print(extra_info, int()), ...);
