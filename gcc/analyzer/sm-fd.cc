@@ -1339,11 +1339,14 @@ fd_state_machine::check_for_fd_attrs (
 	  if (!(is_valid_fd_p (state) || (state == m_stop)))
 	    {
 	      if (!is_constant_fd_p (state))
-		sm_ctxt->warn (node, stmt, arg,
-			       make_unique<fd_use_without_check>
+		{
+		  sm_ctxt->warn (node, stmt, arg,
+				 make_unique<fd_use_without_check>
 				 (*this, diag_arg,
 				  callee_fndecl, attr_name,
 				  arg_idx));
+		  continue;
+		}
 	    }
 
 	  switch (fd_attr_access_dir)
@@ -1906,6 +1909,7 @@ fd_state_machine::on_listen (const call_details &cd,
   if (!(old_state == m_start
 	|| old_state == m_constant_fd
 	|| old_state == m_stop
+	|| old_state == m_invalid
 	|| old_state == m_bound_stream_socket
 	|| old_state == m_bound_unknown_socket
 	/* Assume it's OK to call "listen" more than once.  */
