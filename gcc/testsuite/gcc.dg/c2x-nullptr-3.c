@@ -19,21 +19,6 @@ test1 (int *p)
   (void) (nullptr != 1); /* { dg-error "invalid operands" } */
   (void) (1 != nullptr); /* { dg-error "invalid operands" } */
   (void) (1 > nullptr); /* { dg-error "invalid operands" } */
-
-  /* "(nullptr_t)nullptr" has type nullptr_t but isn't an NPC.  */
-  (void) ((nullptr_t)nullptr == p); /* { dg-error "invalid operands" } */
-  (void) ((nullptr_t)nullptr != p); /* { dg-error "invalid operands" } */
-  (void) (p == (nullptr_t)nullptr); /* { dg-error "invalid operands" } */
-  (void) (p != (nullptr_t)nullptr); /* { dg-error "invalid operands" } */
-  (void) (cmp () == p); /* { dg-error "invalid operands" } */
-  (void) (cmp () != p); /* { dg-error "invalid operands" } */
-  (void) (p == cmp ()); /* { dg-error "invalid operands" } */
-  (void) (p != cmp ()); /* { dg-error "invalid operands" } */
-  /* "(void *)nullptr" is not an NPC, either.  */
-  (void) ((void *)nullptr == cmp ()); /* { dg-error "invalid operands" } */
-  (void) ((void *)nullptr != cmp ()); /* { dg-error "invalid operands" } */
-  (void) (cmp () == (void *)nullptr); /* { dg-error "invalid operands" } */
-  (void) (cmp () != (void *)nullptr); /* { dg-error "invalid operands" } */
 }
 
 void

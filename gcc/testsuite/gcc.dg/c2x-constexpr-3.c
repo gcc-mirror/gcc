@@ -219,7 +219,6 @@ f0 ()
   (constexpr signed char []) { u8"\xff" }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   constexpr typeof (nullptr) not_npc = nullptr;
   int *ptr = 0;
-  (void) (ptr == not_npc); /* { dg-error "invalid operands" } */
   /* auto may only be used with another storage class specifier, such as
      constexpr, if the type is inferred.  */
   auto constexpr int a_c_t = 1; /* { dg-error "'auto' used with 'constexpr'" } */

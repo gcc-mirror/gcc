@@ -141,6 +141,23 @@ test2 (int *p)
   (void) (p != _Generic(0, int : nullptr));
   (void) (_Generic(0, int : nullptr) == p);
   (void) (_Generic(0, int : nullptr) != p);
+
+  /* "(nullptr_t)nullptr" has type nullptr_t but isn't an NPC; these
+     comparisons are valid after C2X CD comments GB-071 and FR-073 were
+     resolved by the wording in N3077.  */
+  (void) ((nullptr_t)nullptr == p);
+  (void) ((nullptr_t)nullptr != p);
+  (void) (p == (nullptr_t)nullptr);
+  (void) (p != (nullptr_t)nullptr);
+  (void) (cmp () == p);
+  (void) (cmp () != p);
+  (void) (p == cmp ());
+  (void) (p != cmp ());
+  /* "(void *)nullptr" is not an NPC, either.  */
+  (void) ((void *)nullptr == cmp ());
+  (void) ((void *)nullptr != cmp ());
+  (void) (cmp () == (void *)nullptr);
+  (void) (cmp () != (void *)nullptr);
 }
 
 /* Test ?:.  */
