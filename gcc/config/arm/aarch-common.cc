@@ -661,7 +661,6 @@ arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 
 #define BRANCH_PROTECT_STR_MAX 255
 extern char *accepted_branch_protection_string;
-extern enum aarch_key_type aarch_ra_sign_key;
 
 static enum aarch_parse_opt_result
 aarch_handle_no_branch_protection (char* str, char* rest)

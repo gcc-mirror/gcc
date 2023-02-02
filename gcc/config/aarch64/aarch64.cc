@@ -2745,8 +2745,6 @@ static const struct processor *selected_arch;
 static const struct processor *selected_cpu;
 static const struct processor *selected_tune;
 
-enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A;
-
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
 
