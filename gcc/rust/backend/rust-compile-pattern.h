@@ -38,7 +38,6 @@ public:
   void visit (HIR::TupleStructPattern &pattern) override;
   void visit (HIR::WildcardPattern &pattern) override;
   void visit (HIR::RangePattern &pattern) override;
-  void visit (HIR::GroupedPattern &pattern) override;
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::IdentifierPattern &) override {}
@@ -70,7 +69,6 @@ public:
 
   void visit (HIR::StructPattern &pattern) override;
   void visit (HIR::TupleStructPattern &pattern) override;
-  void visit (HIR::GroupedPattern &) override;
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::IdentifierPattern &) override {}
@@ -105,12 +103,6 @@ public:
   void visit (HIR::WildcardPattern &) override;
 
   // check for unimplemented Pattern HIR nodes.
-  void visit (HIR::GroupedPattern &pattern) override
-  {
-    rust_sorry_at (pattern.get_locus (),
-		   "grouped pattern let statements not supported");
-  }
-
   void visit (HIR::LiteralPattern &pattern) override
   {
     rust_sorry_at (pattern.get_locus (),

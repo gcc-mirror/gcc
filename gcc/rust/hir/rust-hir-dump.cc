@@ -457,9 +457,6 @@ void
 Dump::visit (TuplePattern &)
 {}
 void
-Dump::visit (GroupedPattern &)
-{}
-void
 Dump::visit (SlicePattern &)
 {}
 

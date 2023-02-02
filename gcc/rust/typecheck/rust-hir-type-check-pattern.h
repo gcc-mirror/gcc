@@ -39,7 +39,6 @@ public:
   void visit (HIR::LiteralPattern &pattern) override;
   void visit (HIR::RangePattern &pattern) override;
   void visit (HIR::IdentifierPattern &pattern) override;
-  void visit (HIR::GroupedPattern &pattern) override;
   void visit (HIR::QualifiedPathInExpression &pattern) override;
   void visit (HIR::ReferencePattern &pattern) override;
   void visit (HIR::SlicePattern &pattern) override;
