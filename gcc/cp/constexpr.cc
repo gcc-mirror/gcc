@@ -7662,7 +7662,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  }
 
 	if (TREE_CODE (op) == PTRMEM_CST && !TYPE_PTRMEM_P (type))
-	  op = cplus_expand_constant (op);
+	  {
+	    op = cplus_expand_constant (op);
+	    if (TREE_CODE (op) == PTRMEM_CST)
+	      {
+		if (!ctx->quiet)
+		  error_at (loc, "%qE is not a constant expression when the "
+			    "class %qT is still incomplete", op,
+			    PTRMEM_CST_CLASS (op));
+		*non_constant_p = true;
+		return t;
+	      }
+	  }
 
 	if (TREE_CODE (op) == PTRMEM_CST && tcode == NOP_EXPR)
 	  {
