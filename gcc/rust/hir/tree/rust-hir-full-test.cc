@@ -2583,11 +2583,6 @@ ReferencePattern::as_string () const
 {
   std::string str ("&");
 
-  if (has_two_amps)
-    {
-      str += "&";
-    }
-
   if (is_mut ())
     {
       str += "mut ";
