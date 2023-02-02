@@ -1700,7 +1700,10 @@ riscv_compute_multilib (
 
       /* Record highest match score multi-lib setting.  */
       if (match_score > max_match_score)
-	best_match_multi_lib = i;
+	{
+	  best_match_multi_lib = i;
+	  max_match_score = match_score;
+	}
     }
 
   if (best_match_multi_lib == -1)
