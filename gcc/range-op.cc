@@ -1970,7 +1970,7 @@ operator_lshift::fold_range (irange &r, tree type,
       if (op2.undefined_p ())
 	r.set_undefined ();
       else
-	r.set_varying (type);
+	r.set_zero (type);
       return true;
     }
 
@@ -2240,7 +2240,7 @@ operator_rshift::fold_range (irange &r, tree type,
       if (op2.undefined_p ())
 	r.set_undefined ();
       else
-	r.set_varying (type);
+	r.set_zero (type);
       return true;
     }
 

@@ -394,3 +394,11 @@ c_get_alias_set (tree t)
 
   return c_common_get_alias_set (t);
 }
+
+/* In C, no expression is dependent.  */
+
+bool
+instantiation_dependent_expression_p (tree)
+{
+  return false;
+}
