@@ -25656,10 +25656,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return false;
 
   if (IS_VPR_REGNUM (regno))
-    return mode == HImode
-      || mode == V16BImode
-      || mode == V8BImode
-      || mode == V4BImode;
+    return VALID_MVE_PRED_MODE (mode);
 
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in
@@ -25736,6 +25733,10 @@ static bool
 arm_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
+    return true;
+
+  if (TARGET_HAVE_MVE
+      && (VALID_MVE_PRED_MODE (mode1) && VALID_MVE_PRED_MODE (mode2)))
     return true;
 
   /* We specifically want to allow elements of "structure" modes to

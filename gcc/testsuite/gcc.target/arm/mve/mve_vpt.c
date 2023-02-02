@@ -16,12 +16,9 @@ void test0 (uint8_t *a, uint8_t *b, uint8_t *c)
 **	vldrb.8	q[0-9]+, \[r[0-9]+\]
 **	vldrb.8	q[0-9]+, \[r[0-9]+\]
 **	vcmp.i8	eq, q[0-9]+, q[0-9]+
-**	vmrs	(r[0-9]+), p0	@ movhi
-**	uxth	\1, \1
-**	vmsr	p0, \1	@ movhi
 **	vpst
 **	vaddt.i8	(q[0-9]+), q[0-9]+, q[0-9]+
 **	vpst
-**	vstrbt.8	\2, \[r[0-9]+\]
+**	vstrbt.8	\1, \[r[0-9]+\]
 **	bx	lr
 */
