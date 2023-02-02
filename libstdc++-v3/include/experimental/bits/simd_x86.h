@@ -2344,15 +2344,16 @@ template <typename _Abi, typename>
 	    else
 	      __assert_unreachable<_Tp>();
 	  }                                                   // }}}
-	else if constexpr (!__builtin_is_constant_evaluated() // {{{
-			   && sizeof(__x) == 8)
+	else if (__builtin_is_constant_evaluated())
+	  return _Base::_S_not_equal_to(__x, __y);
+	else if constexpr (sizeof(__x) == 8)
 	  {
 	    const auto __r128 = __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__x)
 				!= __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__y);
 	    _MaskMember<_Tp> __r64;
 	    __builtin_memcpy(&__r64._M_data, &__r128, sizeof(__r64));
 	    return __r64;
-	  } // }}}
+	  }
 	else
 	  return _Base::_S_not_equal_to(__x, __y);
       }
@@ -2451,15 +2452,16 @@ template <typename _Abi, typename>
 	    else
 	      __assert_unreachable<_Tp>();
 	  }                                                   // }}}
-	else if constexpr (!__builtin_is_constant_evaluated() // {{{
-			   && sizeof(__x) == 8)
+	else if (__builtin_is_constant_evaluated())
+	  return _Base::_S_less(__x, __y);
+	else if constexpr (sizeof(__x) == 8)
 	  {
 	    const auto __r128 = __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__x)
 				< __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__y);
 	    _MaskMember<_Tp> __r64;
 	    __builtin_memcpy(&__r64._M_data, &__r128, sizeof(__r64));
 	    return __r64;
-	  } // }}}
+	  }
 	else
 	  return _Base::_S_less(__x, __y);
       }
@@ -2558,15 +2560,16 @@ template <typename _Abi, typename>
 	    else
 	      __assert_unreachable<_Tp>();
 	  }                                                   // }}}
-	else if constexpr (!__builtin_is_constant_evaluated() // {{{
-			   && sizeof(__x) == 8)
+	else if (__builtin_is_constant_evaluated())
+	  return _Base::_S_less_equal(__x, __y);
+	else if constexpr (sizeof(__x) == 8)
 	  {
 	    const auto __r128 = __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__x)
 				<= __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__y);
 	    _MaskMember<_Tp> __r64;
 	    __builtin_memcpy(&__r64._M_data, &__r128, sizeof(__r64));
 	    return __r64;
-	  } // }}}
+	  }
 	else
 	  return _Base::_S_less_equal(__x, __y);
       }
