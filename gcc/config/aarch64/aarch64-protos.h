@@ -662,8 +662,6 @@ enum simd_immediate_check {
   AARCH64_CHECK_MOV  = AARCH64_CHECK_ORR | AARCH64_CHECK_BIC
 };
 
-extern enum aarch_key_type aarch_ra_sign_key;
-
 extern struct tune_params aarch64_tune_params;
 
 /* The available SVE predicate patterns, known in the ACLE as "svpattern".  */

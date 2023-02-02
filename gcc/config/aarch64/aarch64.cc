@@ -2759,8 +2759,6 @@ static const struct processor all_cores[] =
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 
-enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A;
-
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
 
