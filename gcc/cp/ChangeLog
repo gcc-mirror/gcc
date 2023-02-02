@@ -1,3 +1,12 @@
+2023-02-01  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107755
+	* call.cc (build_new_op): Don't call warn_logical_operator when
+	processing a template.
+
 2023-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107593
