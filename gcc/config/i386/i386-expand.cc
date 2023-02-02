@@ -1326,9 +1326,10 @@ ix86_fixup_binary_operands (enum rtx_code code, machine_mode mode,
 
 void
 ix86_fixup_binary_operands_no_copy (enum rtx_code code,
-				    machine_mode mode, rtx operands[])
+				    machine_mode mode, rtx operands[],
+				    bool use_ndd)
 {
-  rtx dst = ix86_fixup_binary_operands (code, mode, operands);
+  rtx dst = ix86_fixup_binary_operands (code, mode, operands, use_ndd);
   gcc_assert (dst == operands[0]);
 }
 

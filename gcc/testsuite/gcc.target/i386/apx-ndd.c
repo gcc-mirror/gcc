@@ -42,3 +42,16 @@ FOO (long, add, +)
 FOO1 (long, add, +)
 FOO2 (long, add, +)
 
+FOO (char, sub, -)
+FOO1 (char, sub, -)
+FOO (short, sub, -)
+FOO1 (short, sub, -)
+FOO (int, sub, -)
+FOO1 (int, sub, -)
+FOO (long, sub, -)
+FOO1 (long, sub, -)
+/* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "lea(?:l|q)\[^\n\r]\\(%r(?:d|s)i,%r(?:d|s)i\\), %(?:|r|e)ax" 4 } } */
+/* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]%(?:|r|e)si(?:|l), \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "sub(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "sub(?:b|l|w|q)\[^\n\r]%(?:|r|e)si(?:|l), %(?:|r|e)di, %(?:|r|e)a(?:x|l)" 4 } } */
