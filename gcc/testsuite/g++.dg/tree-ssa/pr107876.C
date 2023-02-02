@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-require-effective-target c++11 }
-// { dg-options "-O2 -funswitch-loops --param max-unswitch-insns=5 -fdump-tree-unswitch-details" }
+// { dg-options "-O2 -funswitch-loops --param max-unswitch-insns=5 --param case-values-threshold=4 -fdump-tree-unswitch-details" }
 
 class X {
 public:
