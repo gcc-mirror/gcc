@@ -7590,6 +7590,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
     case PIPE:
       // actually may have parameters
       lexer.skip_token ();
+      t = lexer.peek_token ();
 
       while (t->get_id () != PIPE)
 	{
@@ -7606,6 +7607,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
 
 	  if (lexer.peek_token ()->get_id () != COMMA)
 	    {
+	      lexer.skip_token ();
 	      // not an error but means param list is done
 	      break;
 	    }
