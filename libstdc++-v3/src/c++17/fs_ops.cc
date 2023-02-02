@@ -61,6 +61,10 @@
 #define _GLIBCXX_END_NAMESPACE_FILESYSTEM }
 #include "../filesystem/ops-common.h"
 
+#ifdef __AVR__
+# define not_supported function_not_supported
+#endif
+
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 namespace fs = std::filesystem;

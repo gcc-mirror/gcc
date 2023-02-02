@@ -170,6 +170,10 @@ namespace __gnu_posix
 # endif
   using char_type = char;
 #else // ! _GLIBCXX_FILESYSTEM_IS_WINDOWS && ! _GLIBCXX_HAVE_UNISTD_H
+#ifdef __AVR__
+# define ENOTSUP ENOSYS
+#endif
+
   inline int open(const char*, int, ...) { errno = ENOTSUP; return -1; }
   inline int close(int) { errno = ENOTSUP; return -1; }
   using mode_t = int;
