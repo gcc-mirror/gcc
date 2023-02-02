@@ -2951,6 +2951,7 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 	  switch (DECL_FUNCTION_CODE (callee))
 	    {
 	    case BUILT_IN_UNREACHABLE:
+	    case BUILT_IN_UNREACHABLE_TRAP:
 	    case BUILT_IN_TRAP:
 	      /* Don't instrument these.  */
 	      return false;

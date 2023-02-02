@@ -7844,6 +7844,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       break;
 
     case BUILT_IN_TRAP:
+    case BUILT_IN_UNREACHABLE_TRAP:
       expand_builtin_trap ();
       return const0_rtx;
 
@@ -11310,6 +11311,7 @@ is_inexpensive_builtin (tree decl)
       case BUILT_IN_VA_ARG_PACK_LEN:
       case BUILT_IN_VA_COPY:
       case BUILT_IN_TRAP:
+      case BUILT_IN_UNREACHABLE_TRAP:
       case BUILT_IN_SAVEREGS:
       case BUILT_IN_POPCOUNTL:
       case BUILT_IN_POPCOUNTLL:

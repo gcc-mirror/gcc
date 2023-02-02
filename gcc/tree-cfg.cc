@@ -3503,6 +3503,7 @@ verify_gimple_call (gcall *stmt)
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
 	case BUILT_IN_UNREACHABLE:
+	case BUILT_IN_UNREACHABLE_TRAP:
 	case BUILT_IN_TRAP:
 	  if (gimple_call_num_args (stmt) > 0)
 	    {
@@ -9681,6 +9682,8 @@ pass_warn_function_return::execute (function *fun)
 		  && ((LOCATION_LOCUS (gimple_location (last))
 		       == BUILTINS_LOCATION
 		       && (gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE)
+			   || gimple_call_builtin_p (last,
+						     BUILT_IN_UNREACHABLE_TRAP)
 			   || gimple_call_builtin_p (last, BUILT_IN_TRAP)))
 		      || gimple_call_builtin_p (last, ubsan_missing_ret)))
 		{
