@@ -1,3 +1,18 @@
+2023-02-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108435
+	* tree-nested.cc (convert_nonlocal_omp_clauses)
+	<case OMP_CLAUSE_LASTPRIVATE>: If info->new_local_var_chain and *seq
+	is not a GIMPLE_BIND, wrap the sequence into a new GIMPLE_BIND
+	before calling declare_vars.
+	(convert_nonlocal_omp_clauses) <case OMP_CLAUSE_LINEAR>: Merge
+	with the OMP_CLAUSE_LASTPRIVATE handling except for whether
+	seq is initialized to &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause)
+	or &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause).
+
 2023-01-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
