@@ -96,7 +96,7 @@ LIST = aarch64-elf aarch64-freebsd13 aarch64-linux-gnu aarch64-rtems \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux \
   sparc64-netbsd sparc64-openbsd \
   v850e1-elf v850e-elf v850-elf v850-rtems vax-linux-gnu \
-  vax-netbsdelf visium-elf x86_64-apple-darwin \
+  vax-netbsdelf visium-elf x86_64-apple-darwin x86_64-gnu \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd13 x86_64-netbsd \
   x86_64-w64-mingw32 \
