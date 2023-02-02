@@ -174,6 +174,8 @@ constexpr int v94 = alignof (int);
 alignas (v94) int v95;
 constexpr int v97[100] = { [v82.x.f] = 7 };
 static int v98[v94];
+constexpr _Complex double v99 = 1.0;
+constexpr _Complex float v100 = 12345;
 
 void
 f0 ()
@@ -247,6 +249,8 @@ f0 ()
   (constexpr union u58) { 0 };
   (constexpr union u58) { { } }; /* { dg-warning "braces around scalar initializer" } */
   (constexpr union u58) { { 0 } }; /* { dg-warning "braces around scalar initializer" } */
+  (constexpr _Complex double) { 1.0 };
+  (constexpr _Complex float) { 12345 };
   /* It's not entirely clear if constexpr declarations are allowed in this
      position in a for loop; presume they are, as implicitly auto just as if no
      storage class specifiers were used.  */

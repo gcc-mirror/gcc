@@ -112,13 +112,9 @@ constexpr int v95 = (unsigned int) -1; /* { dg-error "'constexpr' initializer no
 constexpr unsigned char v96 = -1; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr signed char v97 = 1234567LL; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 /* { dg-warning "overflow in conversion" "overflow warning" { target *-*-* } .-1 } */
-/* Disallow all real/complex conversions (the C2x CD is unclear about
-   real-to-complex and about complex-to-real with imaginary part positive 0, if
-   the real parts can be exactly represented in the relevant types).  */
 constexpr double v98 = __builtin_complex (1.0, 0.0); /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
 constexpr double v99 = __builtin_complex (1.0, 1.0); /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
 constexpr double v100 = __builtin_complex (1.0, -0.0); /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
-constexpr _Complex double v101 = 1.0; /* { dg-error "'constexpr' initializer for a complex type is of real type" } */
 constexpr float v102 = (unsigned long long) -1; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr double v103 = (unsigned long long) -1; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr float v104 = __LONG_LONG_MAX__; /* { dg-error "'constexpr' initializer not representable in type of object" } */
@@ -216,7 +212,6 @@ f0 ()
   (constexpr double) { __builtin_complex (1.0, 0.0) }; /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
   (constexpr double) { __builtin_complex (1.0, 1.0) }; /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
   (constexpr double) { __builtin_complex (1.0, -0.0) }; /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
-  (constexpr _Complex double) { 1.0 }; /* { dg-error "'constexpr' initializer for a complex type is of real type" } */
   (constexpr float) { (unsigned long long) -1 }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   (constexpr double) { (unsigned long long) -1 }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   (constexpr float) { __LONG_LONG_MAX__ }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
