@@ -1489,12 +1489,14 @@ arm_lookup_simd_builtin_type (machine_mode mode,
 }
 
 static tree
-arm_simd_builtin_type (machine_mode mode, bool unsigned_p, bool poly_p)
+arm_simd_builtin_type (machine_mode mode, arm_type_qualifiers qualifiers)
 {
-  if (poly_p)
+  if ((qualifiers & qualifier_poly) != 0)
     return arm_lookup_simd_builtin_type (mode, qualifier_poly);
-  else if (unsigned_p)
+  else if ((qualifiers & qualifier_unsigned) != 0)
     return arm_lookup_simd_builtin_type (mode, qualifier_unsigned);
+  else if ((qualifiers & qualifier_predicate) != 0)
+    return unsigned_intHI_type_node;
   else
     return arm_lookup_simd_builtin_type (mode, qualifier_none);
 }
@@ -1755,9 +1757,7 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
       else
 	{
 	  eltype
-	    = arm_simd_builtin_type (op_mode,
-				     (qualifiers & qualifier_unsigned) != 0,
-				     (qualifiers & qualifier_poly) != 0);
+	    = arm_simd_builtin_type (op_mode, qualifiers);
 	  gcc_assert (eltype != NULL);
 
 	  /* Add qualifiers.  */
@@ -1929,10 +1929,10 @@ static void
 arm_init_crypto_builtins (void)
 {
   tree V16UQI_type_node
-    = arm_simd_builtin_type (V16QImode, true, false);
+    = arm_simd_builtin_type (V16QImode, qualifier_unsigned);
 
   tree V4USI_type_node
-    = arm_simd_builtin_type (V4SImode, true, false);
+    = arm_simd_builtin_type (V4SImode, qualifier_unsigned);
 
   tree v16uqi_ftype_v16uqi
     = build_function_type_list (V16UQI_type_node, V16UQI_type_node,
