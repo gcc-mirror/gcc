@@ -8682,6 +8682,11 @@ thumb2_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
   bool use_ldrd;
   enum rtx_code code = GET_CODE (x);
 
+  /* If we are dealing with a MVE predicate mode, then treat it as a HImode as
+     can store and load it like any other 16-bit value.  */
+  if (TARGET_HAVE_MVE && VALID_MVE_PRED_MODE (mode))
+    mode = HImode;
+
   if (TARGET_HAVE_MVE && VALID_MVE_MODE (mode))
     return mve_vector_mem_operand (mode, x, strict_p);
 
@@ -12960,7 +12965,7 @@ simd_valid_immediate (rtx op, machine_mode mode, int inverse,
   /* Only support 128-bit vectors for MVE.  */
   if (TARGET_HAVE_MVE
       && (!vector
-	  || (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	  || VALID_MVE_PRED_MODE (mode)
 	  || n_elts * innersize != 16))
     return -1;
 
@@ -13333,9 +13338,15 @@ neon_vdup_constant (rtx vals, bool generate)
 rtx
 mve_bool_vec_to_const (rtx const_vec)
 {
-  int n_elts = GET_MODE_NUNITS ( GET_MODE (const_vec));
-  int repeat = 16 / n_elts;
-  int i;
+  machine_mode mode = GET_MODE (const_vec);
+
+  if (!VECTOR_MODE_P (mode))
+    return const_vec;
+
+  unsigned n_elts = GET_MODE_NUNITS (mode);
+  unsigned el_prec = GET_MODE_PRECISION (GET_MODE_INNER (mode));
+  unsigned shift_c = 16 / n_elts;
+  unsigned i;
   int hi_val = 0;
 
   for (i = 0; i < n_elts; i++)
@@ -13344,12 +13355,16 @@ mve_bool_vec_to_const (rtx const_vec)
       unsigned HOST_WIDE_INT elpart;
 
       gcc_assert (CONST_INT_P (el));
-      elpart = INTVAL (el);
+      elpart = INTVAL (el) & ((1U << el_prec) - 1);
 
-      for (int j = 0; j < repeat; j++)
-	hi_val |= elpart << (i * repeat + j);
+      unsigned index = BYTES_BIG_ENDIAN ? n_elts - i - 1 : i;
+
+      hi_val |= elpart << (index * shift_c);
     }
-  return gen_int_mode (hi_val, HImode);
+  /* We are using mov immediate to encode this constant which writes 32-bits
+     so we need to make sure the top 16-bits are all 0, otherwise we can't
+     guarantee we can actually write this immediate.  */
+  return gen_int_mode (hi_val, SImode);
 }
 
 /* Return a non-NULL RTX iff VALS, which is a PARALLEL containing only
@@ -13392,7 +13407,7 @@ neon_make_constant (rtx vals, bool generate)
       && simd_immediate_valid_for_move (const_vec, mode, NULL, NULL))
     /* Load using VMOV.  On Cortex-A8 this takes one cycle.  */
     return const_vec;
-  else if (TARGET_HAVE_MVE && (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL))
+  else if (TARGET_HAVE_MVE && VALID_MVE_PRED_MODE(mode))
     return mve_bool_vec_to_const (const_vec);
   else if ((target = neon_vdup_constant (vals, generate)) != NULL_RTX)
     /* Loaded using VDUP.  On Cortex-A8 the VDUP takes one NEON
@@ -29583,14 +29598,12 @@ arm_vector_mode_supported_p (machine_mode mode)
     return true;
 
   if (TARGET_HAVE_MVE
-      && (mode == V2DImode || mode == V4SImode || mode == V8HImode
-	  || mode == V16QImode
-	  || mode == V16BImode || mode == V8BImode || mode == V4BImode))
-      return true;
+      && (VALID_MVE_SI_MODE (mode) || VALID_MVE_PRED_MODE (mode)))
+    return true;
 
   if (TARGET_HAVE_MVE_FLOAT
       && (mode == V2DFmode || mode == V4SFmode || mode == V8HFmode))
-      return true;
+    return true;
 
   return false;
 }
@@ -31409,6 +31422,7 @@ arm_mode_to_pred_mode (machine_mode mode)
     case 16: return V16BImode;
     case 8: return V8BImode;
     case 4: return V4BImode;
+    case 2: return V2QImode;
     }
   return opt_machine_mode ();
 }

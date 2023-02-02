@@ -91,6 +91,7 @@ BOOL_MODE (B4I, 4, 1);
 VECTOR_BOOL_MODE (V16BI, 16, BI, 2);
 VECTOR_BOOL_MODE (V8BI, 8, B2I, 2);
 VECTOR_BOOL_MODE (V4BI, 4, B4I, 2);
+VECTOR_MODE (INT, QI, 2);
 
 /* Fraction and accumulator vector modes.  */
 VECTOR_MODES (FRACT, 4);      /* V4QQ  V2HQ */

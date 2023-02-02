@@ -316,7 +316,7 @@
  "@internal
   In ARM/Thumb-2 state with MVE a constant vector of booleans."
  (and (match_code "const_vector")
-      (match_test "TARGET_HAVE_MVE && GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL")))
+      (match_test "TARGET_HAVE_MVE && VALID_MVE_PRED_MODE (mode)")))
 
 (define_constraint "Da"
  "@internal
