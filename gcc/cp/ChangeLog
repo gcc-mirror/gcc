@@ -1,3 +1,21 @@
+2023-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107755
+	* call.cc (build_new_op): Don't call warn_logical_operator when
+	processing a template.
+
+2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108607
+	* constexpr.cc (cxx_eval_constant_expression): Handle OMP_*
+	and OACC_* constructs as non-constant.
+	(potential_constant_expression_1): Handle OMP_SCAN and OMP_SCOPE.
+
+2023-02-01  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (note_name_declared_in_class): Change from permerror to
+	-Wchanges-meaning pedwarn, forcing -pedantic-errors for most cases.
+
 2023-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108559

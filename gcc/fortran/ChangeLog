@@ -1,3 +1,14 @@
+2023-02-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108609
+	* expr.cc (find_array_section): Add check to prevent interpreting an
+	mpz non-integer constant as an integer.
+
+2023-02-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (resolve_omp_clauses): Check also for
+	power of two.
+
 2023-01-29  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/108450

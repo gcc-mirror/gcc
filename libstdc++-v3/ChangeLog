@@ -1,3 +1,34 @@
+2023-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc (random_device::_M_fini): Do not try to
+	close the file handle if the target doesn't support the
+	/dev/random and /dev/urandom files.
+
+2023-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/os/generic/error_constants.h (errc::value_too_large)
+	[__AVR__]: Define.
+	* src/c++11/system_error.cc
+	(system_category::default_error_condition) [__AVR__]: Only match
+	recognize values equal to EDOM, ERANGE, ENOSYS and EINTR.
+	* src/c++17/fs_ops.cc (fs::current_path) [__AVR__]: Do not check
+	for ENOENT etc. in switch.
+	(fs::remove_all) [__AVR__]: Likewise.
+	* src/filesystem/ops-common.h [__AVR__]: Do not use POSIX open,
+	close etc.
+
+2023-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR) [avr-*-*, msp430-*-*]: Set
+	embed_zoneinfo=no
+	* configure: Regenerate.
+
+2023-02-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/108632
+	* testsuite/std/time/hh_mm_ss/1.cc (size): Add empty
+	struct at end of S0.
+
 2023-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/shared_ptr.xml: Move links from both

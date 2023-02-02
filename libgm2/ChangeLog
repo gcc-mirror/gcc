@@ -1,3 +1,20 @@
+2023-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108612
+	PR modula2/108551
+	* libm2cor/Makefile.am (libm2cor_la_M2FLAGS): Add -Wreturn-type
+	-fcase.
+	* libm2cor/Makefile.in: Rebuild.
+	* libm2iso/Makefile.am (libm2iso_la_M2FLAGS): Add -Wreturn-type
+	-fcase.
+	* libm2iso/Makefile.in: Rebuild.
+	* libm2log/Makefile.am (libm2log_la_M2FLAGS): Add -Wreturn-type
+	-fcase.
+	* libm2log/Makefile.in: Rebuild.
+	* libm2pim/Makefile.am (libm2pim_la_M2FLAGS): Add -Wreturn-type
+	-fcase.
+	* libm2pim/Makefile.in: Rebuild.
+
 2023-01-31  Richard Biener  <rguenther@suse.de>
 
 	PR modula2/108462

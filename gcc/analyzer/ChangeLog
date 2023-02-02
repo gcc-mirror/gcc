@@ -1,3 +1,9 @@
+2023-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108616
+	* pending-diagnostic.cc (fixup_location_in_macro_p): Add "alloca"
+	to macros that we shouldn't unwind inside.
+
 2023-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108524

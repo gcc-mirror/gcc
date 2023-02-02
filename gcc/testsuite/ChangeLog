@@ -1,3 +1,102 @@
+2023-02-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108609
+	* gfortran.dg/pr108527.f90: Adjust test pattern.
+
+2023-02-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/cpunative/info_19: New test.
+	* gcc.target/aarch64/cpunative/info_20: New test.
+	* gcc.target/aarch64/cpunative/info_21: New test.
+	* gcc.target/aarch64/cpunative/info_22: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_19.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_20.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_21.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_22.c: New test.
+
+2023-02-01  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/builtin-dynamic-object-size-0.c: Move FAIL and nfail
+	into...
+	* gcc.dg/builtin-object-size-common.h: ... new file.
+	* g++.dg/ext/builtin-object-size1.C: Include
+	builtin-object-size-common.h.  Replace all abort with FAIL.
+	(main): Call DONE.
+	* g++.dg/ext/builtin-object-size2.C: Likewise.
+	* gcc.dg/builtin-object-size-1.c: Likewise.
+	* gcc.dg/builtin-object-size-12.c: Likewise.
+	* gcc.dg/builtin-object-size-13.c: Likewise.
+	* gcc.dg/builtin-object-size-15.c: Likewise.
+	* gcc.dg/builtin-object-size-2.c: Likewise.
+	* gcc.dg/builtin-object-size-3.c: Likewise.
+	* gcc.dg/builtin-object-size-4.c: Likewise.
+	* gcc.dg/builtin-object-size-6.c: Likewise.
+	* gcc.dg/builtin-object-size-7.c: Likewise.
+	* gcc.dg/builtin-object-size-8.c: Likewise.
+	* gcc.dg/pr101836.c: Likewise.
+	* gcc.dg/strict-flex-array-3.c: Likewise.
+
+2023-02-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108356
+	* gcc.dg/pr108356.c: New.
+
+2023-02-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/108509
+	* g++.dg/ipa/pr108509.C: New test.
+
+2023-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107755
+	* g++.dg/warn/Wlogical-op-4.C: New test.
+
+2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108573
+	* gcc.dg/pr108573.c: New test.
+
+2023-02-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/gomp/attrs-10.C: Update warning strings for aarch64.
+	* g++.dg/gomp/declare-simd-8.C: Add expected warning for aarch64.
+
+2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108607
+	* g++.dg/gomp/pr108607.C: New test.
+
+2023-02-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/preserve-args-1.c: New test.
+	* gcc.target/s390/preserve-args-2.c: New test.
+	* gcc.target/s390/preserve-args-3.c: New file.
+
+2023-02-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/changes-meaning2.C: New test.
+	* g++.dg/warn/changes-meaning3.C: New test.
+
+2023-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/call-summaries-2.c: Add
+	dg-require-effective-target alloca.
+	* gcc.dg/analyzer/imprecise-floating-point-1.c: Likewise.
+	* gcc.dg/analyzer/infinite-recursion-alloca.c: Likewise.
+	* gcc.dg/analyzer/malloc-callbacks.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-5.c: Likewise.  Remove includes
+	of <stdio.h> and <alloca.h>.  Use "__builtin_free" rather than
+	"free", to match uses of "__builtin_malloc".
+	* gcc.dg/analyzer/putenv-1.c: Add dg-require-effective-target
+	alloca.
+	* gcc.dg/analyzer/write-to-string-literal-5.c: Likewise.
+
+2023-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108616
+	* gcc.dg/analyzer/allocation-size-multiline-3.c: New test.
+	* gcc.dg/analyzer/test-alloca.h: New test.
+
 2023-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108559

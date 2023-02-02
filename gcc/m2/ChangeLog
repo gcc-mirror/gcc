@@ -1,3 +1,205 @@
+2023-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (GM2_FLAGS): Add -fno-return -Wreturn-type.
+	(GM2_ISO_FLAGS): Add -fno-return -Wreturn-type.
+	* Make-maintainer.in (GM2PATH): Split into separate -I components.
+	(MC-LIB-DEFS): Add RTentity.def.
+	(m2/boot-bin/mc-devel$(exeext)): Changed -I$(GM2PATH) to
+	$(GM2PATH).
+	(m2/boot-bin/mc-opt$(exeext)): Separate -I paths.
+	(m2/mc/decl.o): Separate -I paths.
+	(gm2-bootstrap): Separate -I paths.
+	(m2/mc-boot-gen/$(SRC_PREFIX)%.h): Separate -I paths.
+	(m2/mc-boot-gen/$(SRC_PREFIX)decl.c): Separate -I paths.
+	(m2/mc-boot-gen/$(SRC_PREFIX)%.c): Separate -I paths.
+	(gm2.verifyparanoid): Separate -I paths.
+	(gm2.verifystage12): Separate -I paths.
+	* gm2-compiler/M2ALU.mod (GetConstructorElement): Add default
+	Return NulSym.  Remove return from the error case.
+	* gm2-compiler/M2Base.mod (ComplexToScalar): Return RType
+	from the error case.
+	(MixMetaTypes):  Return MakeError as a default.
+	* gm2-compiler/M2GCCDeclare.mod (GetTypeMin): Return NulSym
+	from the error case.
+	(GetTypeMax): Return NulSym from the error case.
+	* gm2-compiler/M2GenGCC.mod (IsExportedGcc): Replace Assert
+	by InternalError.
+	* gm2-compiler/M2Quads.mod (GetItemPointedTo): Add InternalError.
+	(GetTypeMin): Add InternalError.
+	(GetTypeMax): Add InternalError.
+	* gm2-compiler/M2System.mod (InitSystem): Call
+	PutProcedureNoReturn on Throw.
+	* gm2-gcc/m2except.cc (m2except_InitExceptions): fn_throw_tree
+	declare as noreturn.  fn_rethrow_tree declare as noreturn.
+	* gm2-libs-coroutines/Debug.def (Halt): Add noreturn attribute.
+	* gm2-libs-coroutines/SYSTEM.def (THROW): Add noreturn attribute.
+	* gm2-libs-iso/ClientSocket.mod (dorbytes): Add return FALSE.
+	* gm2-libs-iso/EXCEPTIONS.def (RAISE): Add noreturn attribute.
+	* gm2-libs-iso/IOLink.def (RAISEdevException): Add noreturn attribute.
+	* gm2-libs-iso/M2RTS.def (HALT): Add noreturn attribute.
+	(Halt): Ditto.
+	(HaltC): Ditto.
+	(ErrorMessage): Ditto.
+	(AssignmentException): Ditto.
+	(ReturnException): Ditto.
+	(IncException): Ditto.
+	(DecException): Ditto.
+	(InclException): Ditto.
+	(ExclException): Ditto.
+	(ShiftException): Ditto.
+	(RotateException): Ditto.
+	(StaticArraySubscriptException): Ditto.
+	(DynamicArraySubscriptException): Ditto.
+	(ForLoopBeginException): Ditto.
+	(ForLoopToException): Ditto.
+	(ForLoopEndException): Ditto.
+	(PointerNilException): Ditto.
+	(NoReturnException): Ditto.
+	(CaseException): Ditto.
+	(WholeNonPosDivException): Ditto.
+	(WholeNonPosModException): Ditto.
+	(WholeZeroDivException): Ditto.
+	(WholeZeroRemException): Ditto.
+	(WholeValueException): Ditto.
+	(RealValueException): Ditto.
+	(ParameterException): Ditto.
+	(NoException): Ditto.
+	* gm2-libs-iso/SYSTEM.def (THROW): Ditto.
+	* gm2-libs-iso/TermFile.mod (dorbytes): Add default return FALSE.
+	* gm2-libs-min/M2RTS.def: Add noreturn attribute.
+	* gm2-libs/FIO.mod (BufferedRead): Return -1.
+	(getFileName): Return NIL.
+	(getFileNameLength): Return 0.
+	* gm2-libs/M2RTS.def (HaltC): Add noreturn attribute.
+	(AssignmentException): Ditto.
+	(ReturnException): Ditto.
+	(IncException): Ditto.
+	(DecException): Ditto.
+	(InclException): Ditto.
+	(ExclException): Ditto.
+	(ShiftException): Ditto.
+	(RotateException): Ditto.
+	(StaticArraySubscriptException): Ditto.
+	(DynamicArraySubscriptException): Ditto.
+	(ForLoopBeginException): Ditto.
+	(ForLoopToException): Ditto.
+	(ForLoopEndException): Ditto.
+	(PointerNilException): Ditto.
+	(NoReturnException): Ditto.
+	(CaseException): Ditto.
+	(WholeNonPosDivException): Ditto.
+	(WholeNonPosModException): Ditto.
+	(WholeZeroDivException): Ditto.
+	(WholeZeroRemException): Ditto.
+	(WholeValueException): Ditto.
+	(RealValueException): Ditto.
+	(ParameterException): Ditto.
+	(NoException): Ditto.
+	* gm2-libs/RTExceptions.def (Raise): Ditto.
+	* gm2-libs/RTExceptions.mod (InvokeHandler): Ditto.
+	* gm2-libs/SYSTEM.def (THROW): Ditto.
+	* m2.flex (_M2_m2flex_fini): Remamed to...
+	(_M2_m2flex_finish): ...here.
+	* mc-boot-ch/GBuiltins.c (_M2_Builtins_finish): Remamed to...
+	(_M2_Builtins_fini): ...this.
+	* mc-boot-ch/GRTco.c (_M2_RTco_finish): Remamed to...
+	(_M2_RTco_fini): ...this.
+	* mc-boot-ch/GSYSTEM.c (_M2_SYSTEM_finish): Remamed to...
+	(_M2_SYSTEM_fini): ...this.
+	* mc-boot-ch/GSelective.c (_M2_Selective_finish): Remamed to...
+	(_M2_Selective_fini): ...this.
+	* mc-boot-ch/GSysExceptions.c (_M2_SysExceptions_init): Add
+	parameters.
+	(_M2_SysExceptions_finish): Remamed to...
+	(_M2_SysExceptions_fini): ...this.
+	* mc-boot-ch/GUnixArgs.cc (_M2_UnixArgs_finish): Remamed to...
+	(_M2_UnixArgs_fini): ...this.
+	(_M2_UnixArgs_ctor::_M2_UnixArgs_ctor): Change parameter
+	to _M2_UnixArgs_fini.
+	* mc-boot-ch/Gdtoa.c (_M2_dtoa_finish): Remamed to...
+	(_M2_dtoa_fini): ...this.
+	* mc-boot-ch/Gerrno.c (_M2_errno_finish): Remamed to...
+	(_M2_errno_fini): ...this.
+	* mc-boot-ch/Gldtoa.c (_M2_ldtoa_finish): Remamed to...
+	(_M2_ldtoa_fini): ...this.
+	* mc-boot-ch/Gtermios.cc (_M2_termios_init): Add parameters.
+	(_M2_termios_finish): Remamed to...
+	(_M2_termios_fini): ...this.
+	* mc-boot-ch/Gwrapc.c (_M2_wrapc_init): Add parameters.
+	(_M2_wrapc_finish): Remamed to...
+	(_M2_wrapc_fini): ...this.
+	* mc-boot/GASCII.c: Rebuild.
+	* mc-boot/GArgs.c: Rebuild.
+	* mc-boot/GAssertion.c: Rebuild.
+	* mc-boot/GBreak.c: Rebuild.
+	* mc-boot/GCmdArgs.c: Rebuild.
+	* mc-boot/GDebug.c: Rebuild.
+	* mc-boot/GDynamicStrings.c: Rebuild.
+	* mc-boot/GEnvironment.c: Rebuild.
+	* mc-boot/GFIO.c: Rebuild.
+	* mc-boot/GFormatStrings.c: Rebuild.
+	* mc-boot/GFpuIO.c: Rebuild.
+	* mc-boot/GIO.c: Rebuild.
+	* mc-boot/GIndexing.c: Rebuild.
+	* mc-boot/GM2Dependent.c: Rebuild.
+	* mc-boot/GM2EXCEPTION.c: Rebuild.
+	* mc-boot/GM2RTS.c: Rebuild.
+	* mc-boot/GM2RTS.h: Rebuild.
+	* mc-boot/GMemUtils.c: Rebuild.
+	* mc-boot/GNumberIO.c: Rebuild.
+	* mc-boot/GPushBackInput.c: Rebuild.
+	* mc-boot/GRTExceptions.c: Rebuild.
+	* mc-boot/GRTExceptions.h: Rebuild.
+	* mc-boot/GRTco.h: Rebuild.
+	* mc-boot/GRTint.c: Rebuild.
+	* mc-boot/GSArgs.c: Rebuild.
+	* mc-boot/GSFIO.c: Rebuild.
+	* mc-boot/GStdIO.c: Rebuild.
+	* mc-boot/GStorage.c: Rebuild.
+	* mc-boot/GStrCase.c: Rebuild.
+	* mc-boot/GStrIO.c: Rebuild.
+	* mc-boot/GStrLib.c: Rebuild.
+	* mc-boot/GStringConvert.c: Rebuild.
+	* mc-boot/GSysStorage.c: Rebuild.
+	* mc-boot/GTimeString.c: Rebuild.
+	* mc-boot/Galists.c: Rebuild.
+	* mc-boot/Gdecl.c: Rebuild.
+	* mc-boot/Gkeyc.c: Rebuild.
+	* mc-boot/Glists.c: Rebuild.
+	* mc-boot/GmcComment.c: Rebuild.
+	* mc-boot/GmcComp.c: Rebuild.
+	* mc-boot/GmcDebug.c: Rebuild.
+	* mc-boot/GmcError.c: Rebuild.
+	* mc-boot/GmcFileName.c: Rebuild.
+	* mc-boot/GmcLexBuf.c: Rebuild.
+	* mc-boot/GmcMetaError.c: Rebuild.
+	* mc-boot/GmcOptions.c: Rebuild.
+	* mc-boot/GmcPreprocess.c: Rebuild.
+	* mc-boot/GmcPretty.c: Rebuild.
+	* mc-boot/GmcPrintf.c: Rebuild.
+	* mc-boot/GmcQuiet.c: Rebuild.
+	* mc-boot/GmcReserved.c: Rebuild.
+	* mc-boot/GmcSearch.c: Rebuild.
+	* mc-boot/GmcStack.c: Rebuild.
+	* mc-boot/GmcStream.c: Rebuild.
+	* mc-boot/Gmcp1.c: Rebuild.
+	* mc-boot/Gmcp2.c: Rebuild.
+	* mc-boot/Gmcp3.c: Rebuild.
+	* mc-boot/Gmcp4.c: Rebuild.
+	* mc-boot/Gmcp5.c: Rebuild.
+	* mc-boot/GnameKey.c: Rebuild.
+	* mc-boot/GsymbolKey.c: Rebuild.
+	* mc-boot/Gtop.c: Rebuild.
+	* mc-boot/Gvarargs.c: Rebuild.
+	* mc-boot/Gwlists.c: Rebuild.
+	* mc-boot/GRTentity.h: New file.
+	* mc/decl.mod (scaffoldStatic): Change _finish to _fini.
+	* mc/mc.flex (_M2_mcflex_fini): New function.
+	(_M2_mcflex_finish): Remove function.
+	* tools-src/mklink.c (GenerateFinishCalls): Change
+	_finish to _fini.
+	(GeneratePrototypes): Change _finish to _fini.
+
 2023-01-31  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (gm2-libs.texi-check): Rename
