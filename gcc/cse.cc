@@ -4623,6 +4623,7 @@ cse_insn (rtx_insn *insn)
       rtx src_eqv_here;
       rtx src_const = 0;
       rtx src_related = 0;
+      rtx dest_related = 0;
       bool src_related_is_const_anchor = false;
       struct table_elt *src_const_elt = 0;
       int src_cost = MAX_COST;
@@ -5094,10 +5095,11 @@ cse_insn (rtx_insn *insn)
 	    src_related = 0;
 
 	  /* This is the same as the destination of the insns, we want
-	     to prefer it.  Copy it to src_related.  The code below will
-	     then give it a negative cost.  */
-	  if (GET_CODE (dest) == code && rtx_equal_p (p->exp, dest))
-	    src_related = p->exp;
+	     to prefer it.  The code below will then give it a negative
+	     cost.  */
+	  if (!dest_related
+	      && GET_CODE (dest) == code && rtx_equal_p (p->exp, dest))
+	    dest_related = p->exp;
 	}
 
       /* Find the cheapest valid equivalent, trying all the available
@@ -5139,27 +5141,28 @@ cse_insn (rtx_insn *insn)
 	    }
 	}
 
-      if (src_related)
+      if (dest_related)
 	{
-	  if (rtx_equal_p (src_related, dest))
-	    src_related_cost = src_related_regcost = -1;
-	  else
-	    {
-	      src_related_cost = COST (src_related, mode);
-	      src_related_regcost = approx_reg_cost (src_related);
+	  src_related_cost = src_related_regcost = -1;
+	  /* Handle it as src_related.  */
+	  src_related = dest_related;
+	}
+      else if (src_related)
+	{
+	  src_related_cost = COST (src_related, mode);
+	  src_related_regcost = approx_reg_cost (src_related);
 
-	      /* If a const-anchor is used to synthesize a constant that
-		 normally requires multiple instructions then slightly prefer
-		 it over the original sequence.  These instructions are likely
-		 to become redundant now.  We can't compare against the cost
-		 of src_eqv_here because, on MIPS for example, multi-insn
-		 constants have zero cost; they are assumed to be hoisted from
-		 loops.  */
-	      if (src_related_is_const_anchor
-		  && src_related_cost == src_cost
-		  && src_eqv_here)
-		src_related_cost--;
-	    }
+	  /* If a const-anchor is used to synthesize a constant that
+	     normally requires multiple instructions then slightly prefer
+	     it over the original sequence.  These instructions are likely
+	     to become redundant now.  We can't compare against the cost
+	     of src_eqv_here because, on MIPS for example, multi-insn
+	     constants have zero cost; they are assumed to be hoisted from
+	     loops.  */
+	  if (src_related_is_const_anchor
+	      && src_related_cost == src_cost
+	      && src_eqv_here)
+	    src_related_cost--;
 	}
 
       /* If this was an indirect jump insn, a known label will really be
