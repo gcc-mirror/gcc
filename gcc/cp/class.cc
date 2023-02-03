@@ -4808,9 +4808,23 @@ check_methods (tree t)
 	     in that class with an empty argument list to select the destructor
 	     for the class, also known as the selected destructor. The program
 	     is ill-formed if overload resolution fails. */
+	  int viable = 0;
+	  for (tree fn : ovl_range (dtor))
+	    if (constraints_satisfied_p (fn))
+	      ++viable;
+	  gcc_checking_assert (viable != 1);
+
 	  auto_diagnostic_group d;
-	  error_at (location_of (t), "destructor for %qT is ambiguous", t);
+	  if (viable == 0)
+	    error_at (location_of (t), "no viable destructor for %qT", t);
+	  else
+	    error_at (location_of (t), "destructor for %qT is ambiguous", t);
 	  print_candidates (dtor);
+
+	  /* Arbitrarily prune the overload set to a single function for
+	     sake of error recovery.  */
+	  tree *slot = find_member_slot (t, dtor_identifier);
+	  *slot = get_first_fn (dtor);
 	}
       else if (user_provided_p (dtor))
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = true;
@@ -6048,10 +6062,12 @@ check_bases_and_members (tree t)
   check_bases (t, &cant_have_const_ctor, &no_const_asn_ref);
 
   /* Deduce noexcept on destructor.  This needs to happen after we've set
-     triviality flags appropriately for our bases.  */
+     triviality flags appropriately for our bases, and before checking
+     overriden virtual functions via check_methods.  */
   if (cxx_dialect >= cxx11)
     if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
-      deduce_noexcept_on_destructor (dtor);
+      for (tree fn : ovl_range (dtor))
+	deduce_noexcept_on_destructor (fn);
 
   /* Check all the method declarations.  */
   check_methods (t);
