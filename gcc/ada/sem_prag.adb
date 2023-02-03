@@ -2105,6 +2105,298 @@ package body Sem_Prag is
    end Analyze_Depends_In_Decl_Part;
 
    --------------------------------------------
+   -- Analyze_Exceptional_Cases_In_Decl_Part --
+   --------------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
+   procedure Analyze_Exceptional_Cases_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty)
+   is
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
+      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
+
+      procedure Analyze_Exceptional_Contract (Exceptional_Contract : Node_Id);
+      --  Verify the legality of a single exceptional contract
+
+      procedure Check_Duplication (Id : Node_Id; Contracts : List_Id);
+      --  Iterate through the identifiers in each contract to find duplicates
+
+      ----------------------------------
+      -- Analyze_Exceptional_Contract --
+      ----------------------------------
+
+      procedure Analyze_Exceptional_Contract (Exceptional_Contract : Node_Id)
+      is
+         Exception_Choice : Node_Id;
+         Consequence      : Node_Id;
+         Errors           : Nat;
+
+      begin
+         if Nkind (Exceptional_Contract) /= N_Component_Association then
+            Error_Msg_N
+              ("wrong syntax in exceptional contract", Exceptional_Contract);
+            return;
+         end if;
+
+         Exception_Choice := First (Choices (Exceptional_Contract));
+         Consequence      := Expression (Exceptional_Contract);
+
+         while Present (Exception_Choice) loop
+            if Nkind (Exception_Choice) = N_Others_Choice then
+               if Present (Next (Exception_Choice))
+                 or else Present (Next (Exceptional_Contract))
+                 or else Present (Prev (Exception_Choice))
+               then
+                  Error_Msg_N
+                    ("OTHERS must appear alone and last", Exception_Choice);
+               end if;
+
+            else
+               Analyze (Exception_Choice);
+
+               if Is_Entity_Name (Exception_Choice)
+                 and then Ekind (Entity (Exception_Choice)) = E_Exception
+               then
+                  if Present (Renamed_Entity (Entity (Exception_Choice)))
+                    and then Entity (Exception_Choice) = Standard_Numeric_Error
+                  then
+                     Check_Restriction
+                       (No_Obsolescent_Features, Exception_Choice);
+
+                     if Warn_On_Obsolescent_Feature then
+                        Error_Msg_N
+                          ("Numeric_Error is an obsolescent feature " &
+                             "(RM J.6(1))?j?",
+                           Exception_Choice);
+                        Error_Msg_N
+                          ("\use Constraint_Error instead?j?",
+                           Exception_Choice);
+                     end if;
+                  end if;
+
+                  Check_Duplication
+                    (Exception_Choice, List_Containing (Exceptional_Contract));
+
+                  --  Check for exception declared within generic formal
+                  --  package (which is illegal, see RM 11.2(8)).
+
+                  declare
+                     Ent  : Entity_Id := Entity (Exception_Choice);
+                     Scop : Entity_Id;
+
+                  begin
+                     if Present (Renamed_Entity (Ent)) then
+                        Ent := Renamed_Entity (Ent);
+                     end if;
+
+                     Scop := Scope (Ent);
+                     while Scop /= Standard_Standard
+                       and then Ekind (Scop) = E_Package
+                     loop
+                        if Nkind (Declaration_Node (Scop)) =
+                             N_Package_Specification
+                          and then
+                            Nkind (Original_Node (Parent
+                                    (Declaration_Node (Scop)))) =
+                              N_Formal_Package_Declaration
+                        then
+                           Error_Msg_NE
+                             ("exception& is declared in generic formal "
+                              & "package", Exception_Choice, Ent);
+                           Error_Msg_N
+                             ("\and therefore cannot appear in contract "
+                              & "(RM 11.2(8))", Exception_Choice);
+                           exit;
+
+                        --  If the exception is declared in an inner instance,
+                        --  nothing else to check.
+
+                        elsif Is_Generic_Instance (Scop) then
+                           exit;
+                        end if;
+
+                        Scop := Scope (Scop);
+                     end loop;
+                  end;
+               else
+                  Error_Msg_N ("exception name expected", Exception_Choice);
+               end if;
+            end if;
+
+            Next (Exception_Choice);
+         end loop;
+
+         --  Now analyze the expressions of this contract
+
+         Errors := Serious_Errors_Detected;
+
+         --  Preanalyze_Assert_Expression, but without enforcing any of the two
+         --  acceptable types.
+
+         Preanalyze_Assert_Expression (Consequence, Any_Boolean);
+
+         --  Emit a clarification message when the consequence contains at
+         --  least one undefined reference, possibly due to contract freezing.
+
+         if Errors /= Serious_Errors_Detected
+           and then Present (Freeze_Id)
+           and then Has_Undefined_Reference (Consequence)
+         then
+            Contract_Freeze_Error (Spec_Id, Freeze_Id);
+         end if;
+      end Analyze_Exceptional_Contract;
+
+      -----------------------
+      -- Check_Duplication --
+      -----------------------
+
+      procedure Check_Duplication (Id : Node_Id; Contracts : List_Id) is
+         Contract  : Node_Id;
+         Id1       : Node_Id;
+         Id_Entity : Entity_Id := Entity (Id);
+
+      begin
+         if Present (Renamed_Entity (Id_Entity)) then
+            Id_Entity := Renamed_Entity (Id_Entity);
+         end if;
+
+         Contract := First (Contracts);
+         while Present (Contract) loop
+            Id1 := First (Choices (Contract));
+            while Present (Id1) loop
+
+               --  Only check against the exception choices which precede
+               --  Id in the contract, since the ones that follow Id have not
+               --  been analyzed yet and will be checked in a subsequent call.
+
+               if Id = Id1 then
+                  return;
+
+               --  Duplication both simple and via a renaming across different
+               --  exceptional contracts is illegal.
+
+               elsif Nkind (Id1) /= N_Others_Choice
+                 and then
+                   (Id_Entity = Entity (Id1)
+                     or else Id_Entity = Renamed_Entity (Entity (Id1)))
+                 and then Contract /= Parent (Id)
+               then
+                  Error_Msg_Sloc := Sloc (Id1);
+                  Error_Msg_NE ("exception choice duplicates &#", Id, Id1);
+               end if;
+
+               Next (Id1);
+            end loop;
+
+            Next (Contract);
+         end loop;
+      end Check_Duplication;
+
+      --  Local variables
+
+      Exceptional_Contracts : constant Node_Id :=
+        Expression (Get_Argument (N, Spec_Id));
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
+      Exceptional_Contract : Node_Id;
+      Restore_Scope        : Boolean := False;
+
+   --  Start of processing for Analyze_Subprogram_Variant_In_Decl_Part
+
+   begin
+      --  Do not analyze the pragma multiple times
+
+      if Is_Analyzed_Pragma (N) then
+         return;
+      end if;
+
+      --  Set the Ghost mode in effect from the pragma. Due to the delayed
+      --  analysis of the pragma, the Ghost mode at point of declaration and
+      --  point of analysis may not necessarily be the same. Use the mode in
+      --  effect at the point of declaration.
+
+      Set_Ghost_Mode (N);
+
+      --  Single and multiple contracts must appear in aggregate form. If this
+      --  is not the case, then either the parser of the analysis of the pragma
+      --  failed to produce an aggregate, e.g. when the contract is "null" or a
+      --  "(null record)".
+
+      pragma Assert
+        (if Nkind (Exceptional_Contracts) = N_Aggregate
+         then Null_Record_Present (Exceptional_Contracts)
+           xor (Present (Component_Associations (Exceptional_Contracts))
+                  or
+                Present (Expressions (Exceptional_Contracts)))
+         else Nkind (Exceptional_Contracts) = N_Null);
+
+      --  Only clauses of the following form are allowed:
+      --
+      --    exceptional_contract ::=
+      --      [choice_parameter_specification:]
+      --        exception_choice {'|' exception_choice} => consequence
+      --
+      --  where
+      --
+      --    consequence ::= Boolean_expression
+
+      if Nkind (Exceptional_Contracts) = N_Aggregate
+        and then Present (Component_Associations (Exceptional_Contracts))
+        and then No (Expressions (Exceptional_Contracts))
+      then
+
+         --  Check that the expression is a proper aggregate (no parentheses)
+
+         if Paren_Count (Exceptional_Contracts) /= 0 then
+            Error_Msg_F -- CODEFIX
+              ("redundant parentheses", Exceptional_Contracts);
+         end if;
+
+         --  Ensure that the formal parameters are visible when analyzing all
+         --  clauses. This falls out of the general rule of aspects pertaining
+         --  to subprogram declarations.
+
+         if not In_Open_Scopes (Spec_Id) then
+            Restore_Scope := True;
+            Push_Scope (Spec_Id);
+
+            if Is_Generic_Subprogram (Spec_Id) then
+               Install_Generic_Formals (Spec_Id);
+            else
+               Install_Formals (Spec_Id);
+            end if;
+         end if;
+
+         Exceptional_Contract :=
+           First (Component_Associations (Exceptional_Contracts));
+         while Present (Exceptional_Contract) loop
+            Analyze_Exceptional_Contract (Exceptional_Contract);
+            Next (Exceptional_Contract);
+         end loop;
+
+         if Restore_Scope then
+            End_Scope;
+         end if;
+
+      --  Otherwise the pragma is illegal
+
+      else
+         Error_Msg_N ("wrong syntax for exceptional cases", N);
+      end if;
+
+      Set_Is_Analyzed_Pragma (N);
+
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+   end Analyze_Exceptional_Cases_In_Decl_Part;
+
+   --------------------------------------------
    -- Analyze_External_Property_In_Decl_Part --
    --------------------------------------------
 
@@ -16279,6 +16571,142 @@ package body Sem_Prag is
          when Pragma_Enable_Atomic_Synchronization =>
             GNAT_Pragma;
             Process_Disable_Enable_Atomic_Sync (Name_Unsuppress);
+
+         -----------------------
+         -- Exceptional_Cases --
+         -----------------------
+
+         --  pragma Exceptional_Cases ( EXCEPTIONAL_CONTRACT_LIST );
+
+         --    EXCEPTIONAL_CONTRACT_LIST ::=
+         --      ( EXCEPTIONAL_CONTRACT {, EXCEPTIONAL_CONTRACT })
+
+         --    EXCEPTIONAL_CONTRACT ::=
+         --      EXCEPTION_CHOICE {'|' EXCEPTION_CHOICE} => CONSEQUENCE
+         --
+         --  where
+         --
+         --    CONSEQUENCE ::= boolean_EXPRESSION
+
+         --  Characteristics:
+
+         --    * Analysis - The annotation undergoes initial checks to verify
+         --    the legal placement and context. Secondary checks preanalyze the
+         --    expressions in:
+
+         --       Analyze_Exceptional_Cases_In_Decl_Part
+
+         --    * Expansion - The annotation is expanded during the expansion of
+         --    the related subprogram [body] contract as performed in:
+
+         --       Expand_Subprogram_Contract
+
+         --    * Template - The annotation utilizes the generic template of the
+         --    related subprogram [body] when it is:
+
+         --       aspect on subprogram declaration
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
+
+         --    The annotation must prepare its own template when it is:
+
+         --       pragma on subprogram declaration
+
+         --    * Globals - Capture of global references must occur after full
+         --    analysis.
+
+         --    * Instance - The annotation is instantiated automatically when
+         --    the related generic subprogram [body] is instantiated except for
+         --    the "pragma on subprogram declaration" case. In that scenario
+         --    the annotation must instantiate itself.
+
+         when Pragma_Exceptional_Cases => Exceptional_Cases : declare
+            Spec_Id   : Entity_Id;
+            Subp_Decl : Node_Id;
+            Subp_Spec : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Exceptional_Cases
+            --  must be associated with a subprogram declaration or a body that
+            --  acts as a spec.
+
+            Subp_Decl :=
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
+
+            --  Generic subprogram
+
+            if Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
+            then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            --  Subprogram
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               Subp_Spec := Specification (Subp_Decl);
+
+               --  Pragma Exceptional_Cases is forbidden on null procedures,
+               --  as this may lead to potential ambiguities in behavior when
+               --  interface null procedures are involved. Also, it just
+               --  wouldn't make sense, because null procedures do not raise
+               --  exceptions.
+
+               if Nkind (Subp_Spec) = N_Procedure_Specification
+                 and then Null_Present (Subp_Spec)
+               then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to null procedure"), N);
+                  return;
+               end if;
+
+            else
+               Pragma_Misplaced;
+            end if;
+
+            Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Spec_Id);
+            Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
+
+            --  Chain the pragma on the contract for further processing by
+            --  Analyze_Subprogram_Variant_In_Decl_Part.
+
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+
+            --  Fully analyze the pragma when it appears inside a subprogram
+            --  body because it cannot benefit from forward references.
+
+            if Nkind (Subp_Decl) in N_Subprogram_Body
+                                  | N_Subprogram_Body_Stub
+            then
+               --  The legality checks of pragma Subprogram_Variant are
+               --  affected by the SPARK mode in effect and the volatility
+               --  of the context. Analyze all pragmas in a specific order.
+
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_Subprogram_Variant_In_Decl_Part (N);
+            end if;
+         end Exceptional_Cases;
 
          ------------
          -- Export --
@@ -31580,6 +32008,7 @@ package body Sem_Prag is
       Pragma_Elaboration_Checks             =>  0,
       Pragma_Eliminate                      =>  0,
       Pragma_Enable_Atomic_Synchronization  =>  0,
+      Pragma_Exceptional_Cases              => -1,
       Pragma_Export                         => -1,
       Pragma_Export_Function                => -1,
       Pragma_Export_Object                  => -1,

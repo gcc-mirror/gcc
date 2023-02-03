@@ -1410,6 +1410,7 @@ package body Sem_Ch13 is
       --    Attach_Handler
       --    Contract_Cases
       --    Depends
+      --    Exceptional_Cases
       --    Ghost
       --    Global
       --    Initial_Condition
@@ -1666,10 +1667,10 @@ package body Sem_Ch13 is
       --  analyzed right now.
 
       --  Note that there is a special handling for Pre, Post, Test_Case,
-      --  Contract_Cases and Subprogram_Variant aspects. In these cases, we do
-      --  not have to worry about delay issues, since the pragmas themselves
-      --  deal with delay of visibility for the expression analysis. Thus, we
-      --  just insert the pragma after the node N.
+      --  Contract_Cases, Exceptional_Cases and Subprogram_Variant aspects.
+      --  In these cases, we do not have to worry about delay issues, since the
+      --  pragmas themselves deal with delay of visibility for the expression
+      --  analysis. Thus, we just insert the pragma after the node N.
 
       --  Loop through aspects
 
@@ -4287,8 +4288,9 @@ package body Sem_Ch13 is
 
                --  Case 4: Aspects requiring special handling
 
-               --  Pre/Post/Test_Case/Contract_Cases/Subprogram_Variant whose
-               --  corresponding pragmas take care of the delay.
+               --  Pre/Post/Test_Case/Contract_Cases/Exceptional_Cases and
+               --  Subprogram_Variant whose corresponding pragmas take care
+               --  of the delay.
 
                --  Pre/Post
 
@@ -4515,6 +4517,19 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Contract_Cases);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Exceptional_Cases
+
+               when Aspect_Exceptional_Cases =>
+                  Aitem := Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Exceptional_Cases);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -11280,6 +11295,7 @@ package body Sem_Ch13 is
             | Aspect_Depends
             | Aspect_Dimension
             | Aspect_Dimension_System
+            | Aspect_Exceptional_Cases
             | Aspect_Effective_Reads
             | Aspect_Effective_Writes
             | Aspect_Extensions_Visible

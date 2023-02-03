@@ -138,6 +138,7 @@ package Sem_Prag is
       Pragma_Compile_Time_Error        => True,
       Pragma_Contract_Cases            => True,
       Pragma_Default_Initial_Condition => True,
+      Pragma_Exceptional_Cases         => True,
       Pragma_Initial_Condition         => True,
       Pragma_Invariant                 => True,
       Pragma_Loop_Invariant            => True,
@@ -246,6 +247,13 @@ package Sem_Prag is
    procedure Analyze_Depends_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Depends. This routine is also
    --  capable of performing basic analysis of pragma Refined_Depends.
+
+   procedure Analyze_Exceptional_Cases_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Exceptional_Cases. Freeze_Id is
+   --  the entity of [generic] package body or [generic] subprogram body which
+   --  caused "freezing" of the related contract where the pragma resides.
 
    procedure Analyze_External_Property_In_Decl_Part
      (N        : Node_Id;

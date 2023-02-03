@@ -1371,6 +1371,7 @@ begin
          | Pragma_Elaboration_Checks
          | Pragma_Eliminate
          | Pragma_Enable_Atomic_Synchronization
+         | Pragma_Exceptional_Cases
          | Pragma_Export
          | Pragma_Export_Function
          | Pragma_Export_Object

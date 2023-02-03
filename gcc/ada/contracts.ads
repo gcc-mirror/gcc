@@ -81,6 +81,7 @@ package Contracts is
    --
    --    Contract_Cases     (stand alone subprogram body)
    --    Depends            (stand alone subprogram body)
+   --    Exceptional_Cases  (stand alone subprogram body)
    --    Global             (stand alone subprogram body)
    --    Postcondition      (stand alone subprogram body)
    --    Precondition       (stand alone subprogram body)
@@ -99,6 +100,7 @@ package Contracts is
    --
    --    Contract_Cases
    --    Depends
+   --    Exceptional_Cases
    --    Global
    --    Postcondition
    --    Precondition

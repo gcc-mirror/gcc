@@ -104,8 +104,9 @@ package body Contracts is
    procedure Expand_Subprogram_Contract (Body_Id : Entity_Id);
    --  Expand the contracts of a subprogram body and its correspoding spec (if
    --  any). This routine processes all [refined] pre- and postconditions as
-   --  well as Contract_Cases, Subprogram_Variant, invariants and predicates.
-   --  Body_Id denotes the entity of the subprogram body.
+   --  well as Contract_Cases, Exceptional_Cases, Subprogram_Variant,
+   --  invariants and predicates. Body_Id denotes the entity of the
+   --  subprogram body.
 
    procedure Preanalyze_Condition
      (Subp : Entity_Id;
@@ -253,6 +254,7 @@ package body Contracts is
             Add_Classification;
 
          elsif Prag_Nam in Name_Contract_Cases
+                         | Name_Exceptional_Cases
                          | Name_Subprogram_Variant
                          | Name_Test_Case
          then
@@ -629,8 +631,9 @@ package body Contracts is
       end if;
 
       --  Deal with preconditions, [refined] postconditions, Contract_Cases,
-      --  Subprogram_Variant, invariants and predicates associated with body
-      --  and its spec. Do not expand the contract of subprogram body stubs.
+      --  Exceptional_Cases, Subprogram_Variant, invariants and predicates
+      --  associated with body and its spec. Do not expand the contract of
+      --  subprogram body stubs.
 
       if Nkind (Body_Decl) = N_Subprogram_Body then
          Expand_Subprogram_Contract (Body_Id);
@@ -765,6 +768,9 @@ package body Contracts is
                else
                   Analyze_Contract_Cases_In_Decl_Part (Prag, Freeze_Id);
                end if;
+
+            elsif Prag_Nam = Name_Exceptional_Cases then
+               Analyze_Exceptional_Cases_In_Decl_Part (Prag);
 
             elsif Prag_Nam = Name_Subprogram_Variant then
                Analyze_Subprogram_Variant_In_Decl_Part (Prag);
@@ -1493,6 +1499,7 @@ package body Contracts is
       --  The stub acts as its own spec, the applicable pragmas are:
       --    Contract_Cases
       --    Depends
+      --    Exceptional_Cases
       --    Global
       --    Postcondition
       --    Precondition
@@ -2829,6 +2836,9 @@ package body Contracts is
                            Subp_Id => Subp_Id,
                            Decls   => Decls,
                            Stmts   => Stmts);
+
+                     elsif Pragma_Name (Prag) = Name_Exceptional_Cases then
+                        Expand_Pragma_Exceptional_Cases (Prag);
 
                      elsif Pragma_Name (Prag) = Name_Subprogram_Variant then
                         Expand_Pragma_Subprogram_Variant

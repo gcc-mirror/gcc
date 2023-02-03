@@ -2343,6 +2343,7 @@ package Sem_Util is
    --  following subprogram contract annotations:
    --    Contract_Cases
    --    Depends
+   --    Exceptional_Cases
    --    Extensions_Visible
    --    Global
    --    Post

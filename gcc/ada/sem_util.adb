@@ -20576,6 +20576,7 @@ package body Sem_Util is
 
       return    Nam = Name_Contract_Cases
         or else Nam = Name_Depends
+        or else Nam = Name_Exceptional_Cases
         or else Nam = Name_Extensions_Visible
         or else Nam = Name_Global
         or else Nam = Name_Post

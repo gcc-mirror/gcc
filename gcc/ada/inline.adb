@@ -315,6 +315,7 @@ package body Inline is
    --    Contract_Cases
    --    Global
    --    Depends
+   --    Exceptional_Cases
    --    Postcondition
    --    Precondition
    --    Refined_Global
@@ -5165,6 +5166,7 @@ package body Inline is
               and then Chars (Item_Id) in Name_Contract_Cases
                                         | Name_Global
                                         | Name_Depends
+                                        | Name_Exceptional_Cases
                                         | Name_Postcondition
                                         | Name_Precondition
                                         | Name_Refined_Global

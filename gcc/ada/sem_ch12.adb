@@ -263,7 +263,8 @@ package body Sem_Ch12 is
    --     package                  subprogram [body]
    --       Abstract_State           Contract_Cases
    --       Initial_Condition        Depends
-   --       Initializes              Extensions_Visible
+   --       Initializes              Exceptional_Cases
+   --                                Extensions_Visible
    --                                Global
    --     package body               Post
    --       Refined_State            Post_Class

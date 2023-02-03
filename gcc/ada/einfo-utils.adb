@@ -1018,6 +1018,7 @@ package body Einfo.Utils is
 
       Is_CTC : constant Boolean :=
                   Id = Pragma_Contract_Cases            or else
+                  Id = Pragma_Exceptional_Cases         or else
                   Id = Pragma_Subprogram_Variant        or else
                   Id = Pragma_Test_Case;
 

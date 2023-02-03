@@ -447,6 +447,7 @@ package Einfo.Utils is
    --    Depends
    --    Effective_Reads
    --    Effective_Writes
+   --    Exceptional_Cases
    --    Global
    --    Initial_Condition
    --    Initializes
