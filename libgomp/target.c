@@ -3521,7 +3521,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
     gomp_fatal ("Cannot find reverse-offload function");
   void (*host_fn)() = (void (*)()) n->k->host_start;
 
-  if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+  if ((devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM) || mapnum == 0)
     {
       devaddrs = (uint64_t *) (uintptr_t) devaddrs_ptr;
       sizes = (uint64_t *) (uintptr_t) sizes_ptr;
@@ -3599,7 +3599,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	  }
     }
 
-  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM))
+  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM) && mapnum > 0)
     {
       size_t j, struct_cpy = 0;
       splay_tree_key n2;
@@ -3835,7 +3835,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 
   host_fn (devaddrs);
 
-  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM))
+  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM) && mapnum > 0)
     {
       uint64_t struct_cpy = 0;
       bool clean_struct = false;
@@ -3877,7 +3877,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	      clean_struct = true;
 	      struct_cpy = sizes[i];
 	    }
-	  else if (cdata[i].aligned)
+	  else if (!cdata[i].present && cdata[i].aligned)
 	    gomp_aligned_free ((void *) (uintptr_t) devaddrs[i]);
 	  else if (!cdata[i].present)
 	    free ((void *) (uintptr_t) devaddrs[i]);
