@@ -419,20 +419,6 @@ struct table_elt
 #define HASH_SIZE	(1 << HASH_SHIFT)
 #define HASH_MASK	(HASH_SIZE - 1)
 
-/* Compute hash code of X in mode M.  Special-case case where X is a pseudo
-   register (hard registers may require `do_not_record' to be set).  */
-
-#define HASH(X, M)	\
- ((REG_P (X) && REGNO (X) >= FIRST_PSEUDO_REGISTER	\
-  ? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (X)))	\
-  : canon_hash (X, M)) & HASH_MASK)
-
-/* Like HASH, but without side-effects.  */
-#define SAFE_HASH(X, M)	\
- ((REG_P (X) && REGNO (X) >= FIRST_PSEUDO_REGISTER	\
-  ? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (X)))	\
-  : safe_hash (X, M)) & HASH_MASK)
-
 /* Determine whether register number N is considered a fixed register for the
    purpose of approximating register costs.
    It is desirable to replace other regs with fixed regs, to reduce need for
@@ -585,6 +571,29 @@ static machine_mode cse_cc_succs (basic_block, basic_block, rtx, rtx,
 
 static const struct rtl_hooks cse_rtl_hooks = RTL_HOOKS_INITIALIZER;
 
+/* Compute hash code of X in mode M.  Special-case case where X is a pseudo
+   register (hard registers may require `do_not_record' to be set).  */
+
+static inline unsigned
+HASH (rtx x, machine_mode mode)
+{
+  unsigned h = (REG_P (x) && REGNO (x) >= FIRST_PSEUDO_REGISTER
+		? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (x)))
+		: canon_hash (x, mode));
+  return (h ^ (h >> HASH_SHIFT)) & HASH_MASK;
+}
+
+/* Like HASH, but without side-effects.  */
+
+static inline unsigned
+SAFE_HASH (rtx x, machine_mode mode)
+{
+  unsigned h = (REG_P (x) && REGNO (x) >= FIRST_PSEUDO_REGISTER
+		? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (x)))
+		: safe_hash (x, mode));
+  return (h ^ (h >> HASH_SHIFT)) & HASH_MASK;
+}
+
 /* Nonzero if X has the form (PLUS frame-pointer integer).  */
 
 static bool
