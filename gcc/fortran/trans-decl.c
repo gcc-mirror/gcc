@@ -5431,7 +5431,11 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	      /* Sometimes, generic interfaces wind up being over-ruled by a
 		 local symbol (see PR41062).  */
 	      if (!st->n.sym->attr.use_assoc)
-		continue;
+		{
+		  *slot = error_mark_node;
+		  entry->decls->clear_slot (slot);
+		  continue;
+		}
 
 	      if (st->n.sym->backend_decl
 		  && DECL_P (st->n.sym->backend_decl)
