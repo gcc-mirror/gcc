@@ -604,6 +604,8 @@ private:
   std::unique_ptr<AST::TypeNoBounds> parse_type_no_bounds ();
   std::unique_ptr<AST::TypeNoBounds> parse_slice_or_array_type ();
   std::unique_ptr<AST::RawPointerType> parse_raw_pointer_type ();
+  std::unique_ptr<AST::ReferenceType>
+  parse_reference_type_inner (Location locus);
   std::unique_ptr<AST::ReferenceType> parse_reference_type ();
   std::unique_ptr<AST::BareFunctionType>
   parse_bare_function_type (std::vector<AST::LifetimeParam> for_lifetimes);
