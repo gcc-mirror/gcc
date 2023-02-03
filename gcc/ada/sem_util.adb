@@ -15235,18 +15235,6 @@ package body Sem_Util is
       end case;
    end Is_Actual_Parameter;
 
-   --------------------------------
-   -- Is_Actual_Tagged_Parameter --
-   --------------------------------
-
-   function Is_Actual_Tagged_Parameter (N : Node_Id) return Boolean is
-      Formal : Entity_Id;
-      Call   : Node_Id;
-   begin
-      Find_Actual (N, Formal, Call);
-      return Present (Formal) and then Is_Tagged_Type (Etype (Formal));
-   end Is_Actual_Tagged_Parameter;
-
    ---------------------
    -- Is_Aliased_View --
    ---------------------
