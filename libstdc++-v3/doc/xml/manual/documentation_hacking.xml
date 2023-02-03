@@ -273,7 +273,7 @@
 	graphs, the
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.graphviz.org">Graphviz</link> package
 	will need to be installed. For PDF
-	output, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.tug.org/applications/pdftex/">
+	output, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://tug.org/applications/pdftex/">
 	pdflatex</link> is required as well as a number of TeX packages
 	such as <package>texlive-xtab</package> and
 	<package>texlive-tocloft</package>.
