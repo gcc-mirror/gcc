@@ -5082,8 +5082,9 @@ riscv_adjust_libcall_cfi_prologue ()
       }
 
   /* Debug info for adjust sp.  */
-  adjust_sp_rtx = gen_add3_insn (stack_pointer_rtx,
-				 stack_pointer_rtx, GEN_INT (-saved_size));
+  adjust_sp_rtx =
+    gen_rtx_SET (stack_pointer_rtx,
+		 gen_rtx_PLUS (GET_MODE(stack_pointer_rtx), stack_pointer_rtx, GEN_INT (-saved_size)));
   dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx,
 			  dwarf);
   return dwarf;
@@ -5204,8 +5205,9 @@ riscv_adjust_libcall_cfi_epilogue ()
   int saved_size = cfun->machine->frame.save_libcall_adjustment;
 
   /* Debug info for adjust sp.  */
-  adjust_sp_rtx = gen_add3_insn (stack_pointer_rtx,
-				 stack_pointer_rtx, GEN_INT (saved_size));
+  adjust_sp_rtx =
+    gen_rtx_SET (stack_pointer_rtx,
+		 gen_rtx_PLUS (GET_MODE(stack_pointer_rtx), stack_pointer_rtx, GEN_INT (saved_size)));
   dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx,
 			  dwarf);
 
