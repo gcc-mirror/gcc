@@ -642,7 +642,8 @@ operator_equal::op1_range (irange &r, tree type,
     case BRS_FALSE:
       // If the result is false, the only time we know anything is
       // if OP2 is a constant.
-      if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
+      if (!op2.undefined_p ()
+	  && wi::eq_p (op2.lower_bound(), op2.upper_bound()))
 	{
 	  r = op2;
 	  r.invert ();
@@ -755,7 +756,8 @@ operator_not_equal::op1_range (irange &r, tree type,
     case BRS_TRUE:
       // If the result is true, the only time we know anything is if
       // OP2 is a constant.
-      if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
+      if (!op2.undefined_p ()
+	  && wi::eq_p (op2.lower_bound(), op2.upper_bound()))
 	{
 	  r = op2;
 	  r.invert ();
@@ -920,6 +922,9 @@ operator_lt::op1_range (irange &r, tree type,
 			const irange &op2,
 			relation_trio) const
 {
+  if (op2.undefined_p ())
+    return false;
+
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
@@ -942,6 +947,9 @@ operator_lt::op2_range (irange &r, tree type,
 			const irange &op1,
 			relation_trio) const
 {
+  if (op1.undefined_p ())
+    return false;
+
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
@@ -1031,6 +1039,9 @@ operator_le::op1_range (irange &r, tree type,
 			const irange &op2,
 			relation_trio) const
 {
+  if (op2.undefined_p ())
+    return false;
+
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
@@ -1053,6 +1064,9 @@ operator_le::op2_range (irange &r, tree type,
 			const irange &op1,
 			relation_trio) const
 {
+  if (op1.undefined_p ())
+    return false;
+
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
@@ -1141,6 +1155,9 @@ operator_gt::op1_range (irange &r, tree type,
 			const irange &lhs, const irange &op2,
 			relation_trio) const
 {
+  if (op2.undefined_p ())
+    return false;
+
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
@@ -1163,6 +1180,9 @@ operator_gt::op2_range (irange &r, tree type,
 			const irange &op1,
 			relation_trio) const
 {
+  if (op1.undefined_p ())
+    return false;
+
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
@@ -1252,6 +1272,9 @@ operator_ge::op1_range (irange &r, tree type,
 			const irange &op2,
 			relation_trio) const
 {
+  if (op2.undefined_p ())
+    return false;
+
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
@@ -1274,6 +1297,9 @@ operator_ge::op2_range (irange &r, tree type,
 			const irange &op1,
 			relation_trio) const
 {
+  if (op1.undefined_p ())
+    return false;
+
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
