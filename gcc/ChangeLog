@@ -1,3 +1,12 @@
+2023-02-02  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2023-01-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107944
+	* cgraph.c (cgraph_node::remove): Check whether nodes up the
+	lcone_of chain also do not need the body.
+
 2023-01-26  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	Backported from master:
