@@ -1,3 +1,42 @@
+2023-02-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/libgomp-gcn.h (DEFAULT_GCN_STACK_SIZE): New define.
+	(DEFAULT_TEAM_ARENA_SIZE): New define.
+	(struct heap): Move to this file.
+	(struct kernargs_abi): Likewise.
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Use team arena size from
+	the kernargs.
+	* libgomp.h: Include libgomp-gcn.h.
+	(TEAM_ARENA_SIZE): Remove.
+	(team_malloc): Update the error message.
+	* plugin/plugin-gcn.c (struct kernargs): Move common content to
+	struct kernargs_abi.
+	(struct agent_info): Rename team arenas to ephemeral memories.
+	(struct team_arena_list): Rename ....
+	(struct ephemeral_memories_list): to this.
+	(struct heap): Delete.
+	(team_arena_size): New variable.
+	(stack_size): New variable.
+	(print_kernel_dispatch): Update debug messages.
+	(init_environment_variables): Read GCN_TEAM_ARENA_SIZE.
+	Read GCN_STACK_SIZE.
+	(get_team_arena): Rename ...
+	(configure_ephemeral_memories): ... to this, and set up stacks.
+	(release_team_arena): Rename ...
+	(release_ephemeral_memories): ... to this.
+	(destroy_team_arenas): Rename ...
+	(destroy_ephemeral_memories): ... to this.
+	(create_kernel_dispatch): Add num_threads parameter.
+	Adjust for kernargs_abi refactor and ephemeral memories.
+	(release_kernel_dispatch): Adjust for ephemeral memories.
+	(run_kernel): Pass thread-count to create_kernel_dispatch.
+	(GOMP_OFFLOAD_init_device): Adjust for ephemeral memories.
+	(GOMP_OFFLOAD_fini_device): Adjust for ephemeral memories.
+
+2023-02-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP TR11): Fix item for 'strict' modifier.
+
 2023-02-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-3.f90: Fix ALIGN

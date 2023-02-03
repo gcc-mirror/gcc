@@ -1,3 +1,207 @@
+2023-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* toplev.cc (toplev::main): Only print the version information header
+	from toplevel main().
+
+2023-02-02  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (cond_<expander><mode>): Add
+	cond_{ashl|ashr|lshr}
+
+2023-02-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108086
+	* rtl-ssa/insns.h (insn_info): Make m_num_defs a full unsigned int.
+	Adjust size-related commentary accordingly.
+
+2023-02-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108508
+	* rtl-ssa/accesses.cc (function_info::split_clobber_group): When
+	the splay tree search gives the first clobber in the second group,
+	make sure that the root of the first clobber group is updated
+	correctly.  Enter the new clobber group into the definition splay
+	tree.
+
+2023-02-02  Jin Ma  <jinma@linux.alibaba.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_compute_multilib):
+	Fix finding best match score.
+
+2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106746
+	PR rtl-optimization/108463
+	PR target/108484
+	* cselib.cc (cselib_current_insn): Move declaration earlier.
+	(cselib_hasher::equal): For debug only locs, temporarily override
+	cselib_current_insn to their l->setting_insn for the
+	rtx_equal_for_cselib_1 call, so that unsuccessful comparisons don't
+	promote some debug locs.
+	* sched-deps.cc (sched_analyze_2) <case MEM>: For MEMs in DEBUG_INSNs
+	when using cselib call cselib_lookup_from_insn on the address but
+	don't substitute it.
+
+2023-02-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108625
+	* genmatch.cc (expr::gen_transform): Also disallow resimplification
+	from pushing to lseq with force_leaf.
+	(dt_simplify::gen_1): Likewise.
+
+2023-02-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-run.cc: Include libgomp-gcn.h.
+	(struct kernargs): Replace the common content with kernargs_abi.
+	(struct heap): Delete.
+	(main): Read GCN_STACK_SIZE envvar.
+	Allocate space for the device stacks.
+	Write the new kernargs fields.
+	* config/gcn/gcn.cc (gcn_option_override): Remove stack_size_opt.
+	(default_requested_args): Remove PRIVATE_SEGMENT_BUFFER_ARG and
+	PRIVATE_SEGMENT_WAVE_OFFSET_ARG.
+	(gcn_addr_space_convert): Mask the QUEUE_PTR_ARG content.
+	(gcn_expand_prologue): Move the TARGET_PACKED_WORK_ITEMS to the top.
+	Set up the stacks from the values in the kernargs, not private.
+	(gcn_expand_builtin_1): Match the stack configuration in the prologue.
+	(gcn_hsa_declare_function_name): Turn off the private segment.
+	(gcn_conditional_register_usage): Ensure QUEUE_PTR is fixed.
+	* config/gcn/gcn.h (FIXED_REGISTERS): Fix the QUEUE_PTR register.
+	* config/gcn/gcn.opt (mstack-size): Change the description.
+
+2023-02-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/108443
+	* config/arm/arm.h (VALID_MVE_PRED_MODE): Add V2QI.
+	* config/arm/arm.cc (thumb2_legitimate_address_p): Use HImode for
+	addressing MVE predicate modes.
+	(mve_bool_vec_to_const): Change to represent correct MVE predicate
+	format.
+	(arm_hard_regno_mode_ok): Use VALID_MVE_PRED_MODE instead of checking
+	modes.
+	(arm_vector_mode_supported_p): Likewise.
+	(arm_mode_to_pred_mode): Add V2QI.
+	* config/arm/arm-builtins.cc (UNOP_PRED_UNONE_QUALIFIERS): New
+	qualifier.
+	(UNOP_PRED_PRED_QUALIFIERS): New qualifier
+	(BINOP_PRED_UNONE_PRED_QUALIFIERS): New qualifier.
+	(v2qi_UP): New macro.
+	(v4bi_UP): New macro.
+	(v8bi_UP): New macro.
+	(v16bi_UP): New macro.
+	(arm_expand_builtin_args): Make it able to expand the new predicate
+	modes.
+	* config/arm/arm-modes.def (V2QI): New mode.
+	* config/arm/arm-simd-builtin-types.def (Pred1x16_t, Pred2x8_t
+	Pred4x4_t): Remove unused predicate builtin types.
+	* config/arm/arm_mve.h (__arm_vctp16q, __arm_vctp32q, __arm_vctp64q,
+	__arm_vctp8q, __arm_vpnot, __arm_vctp8q_m, __arm_vctp64q_m,
+	__arm_vctp32q_m, __arm_vctp16q_m): Use predicate modes.
+	* config/arm/arm_mve_builtins.def (vctp16q, vctp32q, vctp64q, vctp8q,
+	vpnot, vctp8q_m, vctp16q_m, vctp32q_m, vctp64q_m): Likewise.
+	* config/arm/constraints.md (DB): Check for VALID_MVE_PRED_MODE instead
+	of MODE_VECTOR_BOOL.
+	* config/arm/iterators.md (MVE_7, MVE_7_HI): Add V2QI
+	(MVE_VPRED): Likewise.
+	(MVE_vpred): Add V2QI and map upper case predicate modes to lower case.
+	(MVE_vctp): New mode attribute.
+	(mode1): Remove.
+	(VCTPQ): Remove.
+	(VCTPQ_M): Remove.
+	* config/arm/mve.md (mve_vctp<mode1>qhi): Rename this...
+	(mve_vctp<MVE_vctp>q<MVE_vpred>): ... to this. And use new mode
+	attributes.
+	(mve_vpnothi): Rename this...
+	(mve_vpnotv16bi): ... to this.
+	(mve_vctp<mode1>q_mhi): Rename this...
+	(mve_vctp<MVE_vctp>q_m<MVE_vpred>):... to this.
+	(mve_vldrdq_gather_base_z_<supf>v2di,
+	mve_vldrdq_gather_offset_z_<supf>v2di,
+	mve_vldrdq_gather_shifted_offset_z_<supf>v2di,
+	mve_vstrdq_scatter_base_p_<supf>v2di,
+	mve_vstrdq_scatter_offset_p_<supf>v2di,
+	mve_vstrdq_scatter_offset_p_<supf>v2di_insn,
+	mve_vstrdq_scatter_shifted_offset_p_<supf>v2di,
+	mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn,
+	mve_vstrdq_scatter_base_wb_p_<supf>v2di,
+	mve_vldrdq_gather_base_wb_z_<supf>v2di,
+	mve_vldrdq_gather_base_nowb_z_<supf>v2di,
+	mve_vldrdq_gather_base_wb_z_<supf>v2di_insn):  Use V2QI insead of HI for
+	predicates.
+	* config/arm/unspecs.md (VCTP8Q, VCTP16Q, VCTP32Q, VCTP64Q): Replace
+	these...
+	(VCTP): ... with this.
+	(VCTP8Q_M, VCTP16Q_M, VCTP32Q_M, VCTP64Q_M): Replace these...
+	(VCTP_M): ... with this.
+	* config/arm/vfp.md (*thumb2_movhi_vfp, *thumb2_movhi_fp16): Use
+	VALID_MVE_PRED_MODE instead of checking for MODE_VECTOR_BOOL class.
+
+2023-02-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/107674
+	* config/arm/arm.cc (arm_hard_regno_mode_ok): Use new MACRO.
+	(arm_modes_tieable_p): Make MVE predicate modes tieable.
+	* config/arm/arm.h (VALID_MVE_PRED_MODE):  New define.
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Teach
+	simplify_subreg to simplify subregs where the outermode is not scalar.
+
+2023-02-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/107674
+	* config/arm/arm-builtins.cc (arm_simd_builtin_type): Rewrite to use
+	new qualifiers parameter and use unsigned short type for MVE predicate.
+	(arm_init_builtin): Call arm_simd_builtin_type with qualifiers
+	parameter.
+	(arm_init_crypto_builtins): Likewise.
+
+2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/107300
+	* builtins.def (BUILT_IN_UNREACHABLE_TRAP): New builtin.
+	* internal-fn.def (TRAP): Remove.
+	* internal-fn.cc (expand_TRAP): Remove.
+	* tree.cc (build_common_builtin_nodes): Define
+	BUILT_IN_UNREACHABLE_TRAP if not yet defined.
+	(builtin_decl_unreachable): Use BUILT_IN_UNREACHABLE_TRAP
+	instead of BUILT_IN_TRAP.
+	* gimple.cc (gimple_build_builtin_unreachable): Remove
+	emitting internal function for BUILT_IN_TRAP.
+	* asan.cc (maybe_instrument_call): Handle BUILT_IN_UNREACHABLE_TRAP.
+	* cgraph.cc (cgraph_edge::verify_corresponds_to_fndecl): Handle
+	BUILT_IN_UNREACHABLE_TRAP instead of BUILT_IN_TRAP.
+	* ipa-devirt.cc (possible_polymorphic_call_target_p): Handle
+	BUILT_IN_UNREACHABLE_TRAP.
+	* builtins.cc (expand_builtin, is_inexpensive_builtin): Likewise.
+	* tree-cfg.cc (verify_gimple_call,
+	pass_warn_function_return::execute): Likewise.
+	* attribs.cc (decl_attributes): Don't report exclusions on
+	BUILT_IN_UNREACHABLE_TRAP either.
+
+2023-02-02  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/108601
+	* tree-vectorizer.h (vect_can_peel_nonlinear_iv_p): Removed.
+	* tree-vect-loop.cc
+	(vectorizable_nonlinear_induction): Remove
+	vect_can_peel_nonlinear_iv_p.
+	(vect_can_peel_nonlinear_iv_p): Don't peel
+	nonlinear iv(mult or shift) for epilog when vf is not
+	constant and moved the defination to ..
+	* tree-vect-loop-manip.cc (vect_can_peel_nonlinear_iv_p):
+	.. Here.
+
+2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108435
+	* tree-nested.cc (convert_nonlocal_omp_clauses)
+	<case OMP_CLAUSE_LASTPRIVATE>: If info->new_local_var_chain and *seq
+	is not a GIMPLE_BIND, wrap the sequence into a new GIMPLE_BIND
+	before calling declare_vars.
+	(convert_nonlocal_omp_clauses) <case OMP_CLAUSE_LINEAR>: Merge
+	with the OMP_CLAUSE_LASTPRIVATE handling except for whether
+	seq is initialized to &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause)
+	or &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause).
+
 2023-02-01  Tamar Christina  <tamar.christina@arm.com>
 
 	* common/config/aarch64/aarch64-common.cc

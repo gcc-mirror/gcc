@@ -1,3 +1,18 @@
+2023-02-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.cc (build_binary_op): Allow comparisons between
+	pointers and nullptr_t values that are not null pointer constants.
+
+2023-02-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.cc: Include "realmpfr.h".
+	(constexpr_init_fits_real_type): Do not allow signaling NaN
+	conversions to different types with the same mode.  Handle
+	conversions from binary to decimal types.
+	(check_constexpr_init): Do not disallow real initializers for
+	complex types.  Do not disallow binary initializers for decimal
+	floating types.
+
 2023-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107593

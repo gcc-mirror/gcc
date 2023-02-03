@@ -1,3 +1,104 @@
+2023-02-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-constexpr-3.c: Do not expect comparison of nullptr_t
+	and pointer to be disallowed.
+	* gcc.dg/c2x-nullptr-1.c: Test comparisons of nullptr_t and
+	pointers are allowed.
+	* gcc.dg/c2x-nullptr-3.c: Do not test that comparisons of
+	nullptr_t and pointers are disallowed.
+
+2023-02-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-constexpr-1.c: Test constexpr initializers of complex
+	types with real initializers are allowed.
+	* gcc.dg/c2x-constexpr-3.c: Do not test for constexpr initializers
+	of complex types with real initializers being disallowed.
+	* gcc.dg/c2x-constexpr-8.c: Add tests of signaling NaN complex
+	initializers.
+	* gcc.dg/c2x-constexpr-9.c: Add more tests.
+	* gcc.dg/dfp/c2x-constexpr-dfp-1.c: Add tests of binary floating
+	initializers for decimal types.
+	* gcc.dg/dfp/c2x-constexpr-dfp-2.c: Change tests of binary
+	initializers for decimal types.  Add more tests of decimal
+	initializers for binary types.
+
+2023-02-02  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* gcc.target/gcn/cond_shift_3.c: New test.
+	* gcc.target/gcn/cond_shift_3_run.c: New test.
+	* gcc.target/gcn/cond_shift_4.c: New test.
+	* gcc.target/gcn/cond_shift_4_run.c: New test.
+	* gcc.target/gcn/cond_shift_8.c: New test.
+	* gcc.target/gcn/cond_shift_8_run.c: New test.
+	* gcc.target/gcn/cond_shift_9.c: New test.
+	* gcc.target/gcn/cond_shift_9_run.c: New test.
+
+2023-02-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108508
+	* gcc.target/aarch64/pr108508.c: New test.
+
+2023-02-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/tree-ssa/pr107876.C: Add --param case-values-threshold=4.
+
+2023-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108633
+	* gcc.dg/analyzer/fd-pr108633.c: New test.
+
+2023-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/deref-before-check-qemu-qtest_rsp_args.c: New test.
+
+2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106746
+	PR rtl-optimization/108463
+	PR target/108484
+	* gcc.dg/pr108463.c: New test.
+
+2023-02-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108625
+	* gcc.dg/pr108625.c: New testcase.
+
+2023-02-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.c-torture/execute/pr47237.c: Xfail on amdgcn.
+	* gcc.dg/builtin-apply3.c: Xfail for amdgcn.
+	* gcc.dg/builtin-apply4.c: Xfail for amdgcn.
+	* gcc.dg/torture/stackalign/builtin-apply-3.c: Xfail for amdgcn.
+	* gcc.dg/torture/stackalign/builtin-apply-4.c: Xfail for amdgcn.
+
+2023-02-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/pr108443-run.c: New test.
+	* gcc.target/arm/mve/pr108443.c: New test.
+
+2023-02-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/mve_vpt.c: Change to remove unecessary zero-extend.
+
+2023-02-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/107674
+	* gcc.target/arm/mve/mve_vpt.c: New test.
+
+2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/107300
+	* gcc.dg/pr107300.c: New test.
+
+2023-02-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/aarch64/pr108601.c: New test.
+
+2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108435
+	* gcc.dg/gomp/pr108435.c: New test.
+
 2023-02-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108609

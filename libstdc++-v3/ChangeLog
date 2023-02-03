@@ -1,3 +1,61 @@
+2023-02-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Tweak link to ABIcheck project.
+	* doc/html/manual/abi.html: Regenerate.
+
+2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h [AVR] (__unsupported): Always use
+	errc::function_not_supported instead of errc::not_supported.
+
+2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream  (basic_stringbuf::view): Define for old
+	std::string ABI.
+	(basic_istringstream::view, basic_0stringstream::view)
+	(basic_stringstream::view): Likewise.
+	* testsuite/27_io/basic_istringstream/view/char/1.cc: Remove
+	{ dg-require-effective-target cxx11_abi }.
+	* testsuite/27_io/basic_istringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/view/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/view/wchar_t/1.cc:
+	Likewise.
+
+2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108636
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.31): Export shared_ptr
+	conversion operators for directory iterator comparisons with
+	std::default_sentinel_t.
+	* include/bits/fs_path.h (path::path(string_view, _Type))
+	(path::_Cmpt::_Cmpt(string_view, _Type, size_t)): Move inline
+	definitions to ...
+	* src/c++17/fs_path.cc: ... here.
+	* testsuite/27_io/filesystem/path/108636.cc: New test.
+
+2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (variant::operator=): Implement resolution
+	of LWG 3585.
+	* testsuite/20_util/variant/lwg3585.cc: New test.
+
+2023-02-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/using_exceptions.xml: Update a www.open-std.org
+	link to https.
+	* doc/html/manual/using_exceptions.html: Regenerate.
+
+2023-02-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/debug.xml: Fix link to online GDB manual.
+	* doc/html/manual/debug.html: Regenerate.
+
 2023-02-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/random.cc (random_device::_M_fini): Do not try to

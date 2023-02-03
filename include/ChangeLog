@@ -1,3 +1,7 @@
+2023-02-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION_GCN): Bump.
+
 2022-12-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84471

@@ -1,3 +1,11 @@
+2023-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108633
+	* sm-fd.cc (fd_state_machine::check_for_fd_attrs): Add missing
+	"continue".
+	(fd_state_machine::on_listen): Don't issue phase-mismatch or
+	type-mismatch warnings for the "invalid" state.
+
 2023-02-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108616
