@@ -1441,7 +1441,7 @@ package body Sem_Disp is
       --  where it can be a dispatching op is when it overrides an operation
       --  before the freezing point of the type.
 
-      elsif ((not Is_Package_Or_Generic_Package (Scope (Subp)))
+      elsif (not Is_Package_Or_Generic_Package (Scope (Subp))
                or else In_Package_Body (Scope (Subp)))
         and then not Has_Dispatching_Parent
       then
@@ -1488,7 +1488,7 @@ package body Sem_Disp is
 
                   Decl_Item := Next (Parent (Tagged_Type));
                   while Present (Decl_Item)
-                    and then (Decl_Item /= Subp_Body)
+                    and then Decl_Item /= Subp_Body
                   loop
                      if Comes_From_Source (Decl_Item)
                        and then (Nkind (Decl_Item) in N_Proper_Body
@@ -2969,7 +2969,7 @@ package body Sem_Disp is
          end loop;
       end if;
 
-      if (not Is_Package_Or_Generic_Package (Current_Scope))
+      if not Is_Package_Or_Generic_Package (Current_Scope)
         or else not In_Private_Part (Current_Scope)
       then
          --  Not a private primitive

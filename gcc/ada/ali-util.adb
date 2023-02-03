@@ -447,7 +447,7 @@ package body ALI.Util is
             Stringt.Release;
          end if;
 
-         if (not Read_Only) or else Source.Table (Src).Source_Found then
+         if not Read_Only or else Source.Table (Src).Source_Found then
             if not Source.Table (Src).Source_Found
               or else Sdep.Table (D).Stamp /= Source.Table (Src).Stamp
             then

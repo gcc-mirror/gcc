@@ -1033,8 +1033,8 @@ package body Sem_Type is
         and then Ekind (BT1) = E_General_Access_Type
         and then Ekind (BT2) = E_Anonymous_Access_Type
         and then Covers (Designated_Type (T1), Designated_Type (T2))
-        and then (Is_Class_Wide_Type (Designated_Type (T1)) >=
-                  Is_Class_Wide_Type (Designated_Type (T2)))
+        and then Is_Class_Wide_Type (Designated_Type (T1)) >=
+                 Is_Class_Wide_Type (Designated_Type (T2))
       then
          return True;
 
@@ -3210,7 +3210,7 @@ package body Sem_Type is
 
          elsif Op_Name = Name_Op_Concat then
             return Is_Array_Type (T)
-              and then (Base_Type (T) = Base_Type (Etype (Op)))
+              and then Base_Type (T) = Base_Type (Etype (Op))
               and then (Base_Type (T1) = Base_Type (T)
                           or else
                         Base_Type (T1) = Base_Type (Component_Type (T)))

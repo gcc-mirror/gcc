@@ -4883,10 +4883,9 @@ package body Sem_Ch4 is
       function Constraint_Has_Unprefixed_Discriminant_Reference
         (Typ : Entity_Id) return Boolean
       is
-
          function Is_Discriminant_Name (N : Node_Id) return Boolean is
-           ((Nkind (N) = N_Identifier)
-              and then (Ekind (Entity (N)) = E_Discriminant));
+           (Nkind (N) = N_Identifier
+              and then Ekind (Entity (N)) = E_Discriminant);
       begin
          if Is_Array_Type (Typ) then
             declare

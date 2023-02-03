@@ -7041,7 +7041,7 @@ package body Sem_Ch3 is
       Desig_Type := Designated_Type (Derived_Type);
 
       if Is_Composite_Type (Desig_Type)
-        and then (not Is_Array_Type (Desig_Type))
+        and then not Is_Array_Type (Desig_Type)
         and then Has_Discriminants (Desig_Type)
         and then Base_Type (Desig_Type) /= Desig_Type
       then

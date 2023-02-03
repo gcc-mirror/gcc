@@ -2027,7 +2027,7 @@ package body Uintp is
       begin
          Init_Operand (Left, L_Vec);
          Init_Operand (Right, R_Vec);
-         Neg := (L_Vec (1) < Int_0) xor (R_Vec (1) < Int_0);
+         Neg := L_Vec (1) < Int_0 xor R_Vec (1) < Int_0;
          L_Vec (1) := abs (L_Vec (1));
          R_Vec (1) := abs (R_Vec (1));
 

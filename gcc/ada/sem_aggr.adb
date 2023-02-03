@@ -2302,8 +2302,8 @@ package body Sem_Aggr is
                      --  this discrete choice specifies a single value.
 
                      Single_Choice :=
-                       (Nb_Discrete_Choices = Prev_Nb_Discrete_Choices + 1)
-                         and then (Low = High);
+                       Nb_Discrete_Choices = Prev_Nb_Discrete_Choices + 1
+                         and then Low = High;
 
                      exit;
                   end if;

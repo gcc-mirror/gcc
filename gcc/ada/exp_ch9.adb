@@ -618,7 +618,7 @@ package body Exp_Ch9 is
 
       Prev := First_Entity (Ttyp);
       while Chars (Prev) /= Chars (Ent)
-        or else (Ekind (Prev) /= Ekind (Ent))
+        or else Ekind (Prev) /= Ekind (Ent)
         or else not Sem_Ch6.Type_Conformant (Ent, Prev)
       loop
          if Ekind (Prev) = E_Entry then
@@ -5468,7 +5468,7 @@ package body Exp_Ch9 is
 
       Prev := First_Entity (Ttyp);
       while Chars (Prev) /= Chars (Ent)
-        or else (Ekind (Prev) /= Ekind (Ent))
+        or else Ekind (Prev) /= Ekind (Ent)
         or else not Sem_Ch6.Type_Conformant (Ent, Prev)
       loop
          if Ekind (Prev) = E_Entry then

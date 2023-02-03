@@ -19617,7 +19617,7 @@ package body Sem_Elab is
                     Etype (First (Parameter_Associations (Call)));
          begin
             Elab_Unit := Scope (Typ);
-            while (Present (Elab_Unit))
+            while Present (Elab_Unit)
               and then not Is_Compilation_Unit (Elab_Unit)
             loop
                Elab_Unit := Scope (Elab_Unit);

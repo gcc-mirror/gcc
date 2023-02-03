@@ -284,9 +284,8 @@ package body System.Mmap is
       if (File.File.Write or else Region.Mutable = Mutable)
         and then
         Req_Offset >= Region.System_Offset
-        and then
-            (Req_Offset + Req_Length
-             <= Region.System_Offset + Region.System_Size)
+        and then Req_Offset + Req_Length <=
+                 Region.System_Offset + Region.System_Size
       then
          Region.User_Offset := Req_Offset;
          Compute_Data (Region);

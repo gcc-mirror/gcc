@@ -2051,8 +2051,8 @@ package body Sem_Ch10 is
          Decl := First (Declarations (Parent (N)));
          while Present (Decl) and then Decl /= N loop
             if Nkind (Decl) = N_Subprogram_Body_Stub
-              and then (Chars (Defining_Unit_Name (Specification (Decl))) =
-                        Chars (Defining_Unit_Name (Specification (N))))
+              and then Chars (Defining_Unit_Name (Specification (Decl))) =
+                       Chars (Defining_Unit_Name (Specification (N)))
             then
                Error_Msg_N ("identifier for stub is not unique", N);
             end if;
@@ -4700,9 +4700,9 @@ package body Sem_Ch10 is
                --  Save for subsequent examination of import pragmas.
 
                if Comes_From_Source (Decl)
-                 and then (Nkind (Decl) in N_Subprogram_Declaration
-                                         | N_Subprogram_Renaming_Declaration
-                                         | N_Generic_Subprogram_Declaration)
+                 and then Nkind (Decl) in N_Subprogram_Declaration
+                                        | N_Subprogram_Renaming_Declaration
+                                        | N_Generic_Subprogram_Declaration
                then
                   Append_Elmt (Defining_Entity (Decl), Subp_List);
 

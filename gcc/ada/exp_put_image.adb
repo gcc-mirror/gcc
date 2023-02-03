@@ -814,7 +814,7 @@ package body Exp_Put_Image is
    --  Start of processing for Build_Record_Put_Image_Procedure
 
    begin
-      if (Ada_Version < Ada_2022)
+      if Ada_Version < Ada_2022
         or else not Enable_Put_Image (Btyp)
       then
          --  generate a very simple Put_Image implementation

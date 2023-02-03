@@ -643,8 +643,8 @@ package body GNAT.Altivec.Low_Level_Vectors is
 
       begin
          for J in Varray_Type'Range loop
-            All_Element := All_Element and then (D (J) = Bool_True);
-            Any_Element := Any_Element or else  (D (J) = Bool_True);
+            All_Element := All_Element and then D (J) = Bool_True;
+            Any_Element := Any_Element or else  D (J) = Bool_True;
          end loop;
 
          if A = CR6_LT then
@@ -1089,8 +1089,8 @@ package body GNAT.Altivec.Low_Level_Vectors is
 
       begin
          for J in Varray_Type'Range loop
-            All_Element := All_Element and then (D (J) = Bool_True);
-            Any_Element := Any_Element or else  (D (J) = Bool_True);
+            All_Element := All_Element and then D (J) = Bool_True;
+            Any_Element := Any_Element or else  D (J) = Bool_True;
          end loop;
 
          if A = CR6_LT then
@@ -1582,7 +1582,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
       D : C_float;
 
    begin
-      if (Bits (VSCR, NJ_POS, NJ_POS) = 1)
+      if Bits (VSCR, NJ_POS, NJ_POS) = 1
         and then abs (X) < 2.0 ** (-126)
       then
          D := (if X < 0.0 then -0.0 else +0.0);

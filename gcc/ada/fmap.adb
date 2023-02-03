@@ -319,7 +319,7 @@ package body Fmap is
 
             exit when First > Last;
 
-            if (Last < First + 2) or else (Src (Last - 1) /= '%')
+            if Last < First + 2 or else Src (Last - 1) /= '%'
               or else (Src (Last) /= 's' and then Src (Last) /= 'b')
             then
                Write_Line

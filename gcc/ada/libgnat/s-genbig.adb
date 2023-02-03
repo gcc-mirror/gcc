@@ -322,7 +322,7 @@ package body System.Generic_Bignums is
 
       elsif X.Len = 1 and then X.D (1) = 1 then
          return Normalize
-           (X.D, Neg => X.Neg and then ((Y.D (Y.Len) and 1) = 1));
+           (X.D, Neg => X.Neg and then (Y.D (Y.Len) and 1) = 1);
 
       --  If the absolute value of the base is greater than 1, then the
       --  exponent must not be bigger than one word, otherwise the result
@@ -698,14 +698,14 @@ package body System.Generic_Bignums is
       --  Lengths are different, that's decisive since no leading zeroes
 
       elsif X'Last /= Y'Last then
-         return (if (X'Last > Y'Last) xor X_Neg then GT else LT);
+         return (if X'Last > Y'Last xor X_Neg then GT else LT);
 
       --  Need to compare data
 
       else
          for J in X'Range loop
             if X (J) /= Y (J) then
-               return (if (X (J) > Y (J)) xor X_Neg then GT else LT);
+               return (if X (J) > Y (J) xor X_Neg then GT else LT);
             end if;
          end loop;
 

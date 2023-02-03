@@ -906,7 +906,7 @@ package body GNAT.Debug_Pools is
                Set_Handled;
             else
                Ptr.Valid (Offset / System.Storage_Unit) :=
-                 Ptr.Valid (Offset / System.Storage_Unit) and (not Bit);
+                 Ptr.Valid (Offset / System.Storage_Unit) and not Bit;
             end if;
          end if;
       end Set_Valid;

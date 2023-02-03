@@ -809,7 +809,7 @@ package body Exp_Ch5 is
          --  if there is a change of representation since obviously two arrays
          --  with different representations cannot possibly overlap.
 
-         if (not Crep) and L_Slice and R_Slice then
+         if not Crep and L_Slice and R_Slice then
             Act_L_Array := Get_Referenced_Object (Prefix (Act_Lhs));
             Act_R_Array := Get_Referenced_Object (Prefix (Act_Rhs));
 

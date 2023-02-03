@@ -1810,9 +1810,9 @@ package body Checks is
                Determine_Range (Left, LOK, Llo, Lhi, Assume_Valid => True);
                LLB := Expr_Value (Type_Low_Bound (Base_Type (Typ)));
 
-               if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
+               if (not ROK or else (Rlo <= (-1) and then (-1) <= Rhi))
                      and then
-                  ((not LOK) or else (Llo = LLB))
+                  (not LOK or else Llo = LLB)
                then
                   --  Ensure that expressions are not evaluated twice (once
                   --  for their runtime checks and once for their regular
@@ -1872,7 +1872,7 @@ package body Checks is
       then
          Set_Do_Division_Check (N, False);
 
-         if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
+         if not ROK or else (Rlo <= 0 and then 0 <= Rhi) then
             if Is_Floating_Point_Type (Etype (N)) then
                Opnd := Make_Real_Literal (Loc, Ureal_0);
             else
@@ -2727,7 +2727,7 @@ package body Checks is
       Par : Node_Id;
       S   : Entity_Id;
 
-      Check_Disabled : constant Boolean := (not Predicate_Enabled (Typ))
+      Check_Disabled : constant Boolean := not Predicate_Enabled (Typ)
         or else not Predicate_Check_In_Scope (N);
    begin
       S := Current_Scope;
@@ -3501,7 +3501,7 @@ package body Checks is
          --  for the subscript, and that convert will do the necessary validity
          --  check.
 
-         if (No_Check_Needed = Empty_Dimension_Set)
+         if No_Check_Needed = Empty_Dimension_Set
            or else not No_Check_Needed.Elements (Dimension)
          then
             Ensure_Valid (Sub, Holes_OK => True);

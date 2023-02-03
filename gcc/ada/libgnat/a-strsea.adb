@@ -545,7 +545,7 @@ package body Ada.Strings.Search with SPARK_Mode is
 
             <<Cont2>>
             pragma Loop_Invariant
-              (for all J in Ind .. (Source'Last - PL1) =>
+              (for all J in Ind .. Source'Last - PL1 =>
                 not (Match (Source, Pattern, Mapping, J)));
             null;
          end loop;

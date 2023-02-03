@@ -7338,7 +7338,7 @@ package body Sem_Util is
                 | N_Defining_Program_Unit_Name
       then
          return
-           (Chars (Select_Node (Name1)) = Chars (Select_Node (Name2)))
+           Chars (Select_Node (Name1)) = Chars (Select_Node (Name2))
              and then
                Designate_Same_Unit (Prefix_Node (Name1), Prefix_Node (Name2));
 
@@ -9904,7 +9904,7 @@ package body Sem_Util is
                --      with Static_Predicate => Null_By_Predicate < 0;
                --  so test for that null case separately.
 
-               if (not Has_Static_Predicate (Discrim_Value_Subtype))
+               if not Has_Static_Predicate (Discrim_Value_Subtype)
                  or else Present (First (Static_Discrete_Predicate
                                            (Discrim_Value_Subtype)))
                then
@@ -10113,7 +10113,7 @@ package body Sem_Util is
       --  Checking the type, not the underlying type, for constrainedness
       --  seems to be necessary. Maybe all the tests should be on the type???
 
-      elsif (not Is_Constrained (Typ))
+      elsif not Is_Constrained (Typ)
            and then (Is_Array_Type (Utyp)
                       or else (Is_Record_Type (Utyp)
                                 and then Has_Discriminants (Utyp)))
@@ -15764,8 +15764,8 @@ package body Sem_Util is
                Item_1 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_1);
                Item_2 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_2);
             begin
-               if (Nkind (Item_1) /= N_Attribute_Definition_Clause)
-                 or (Nkind (Item_2) /= N_Attribute_Definition_Clause)
+               if Nkind (Item_1) /= N_Attribute_Definition_Clause
+                 or Nkind (Item_2) /= N_Attribute_Definition_Clause
                then
                   pragma Assert (Serious_Errors_Detected > 0);
                   return True;
@@ -18107,8 +18107,8 @@ package body Sem_Util is
                              Next (First (Expressions (Original_Exp)));
                Else_Expr : constant Node_Id := Next (Then_Expr);
             begin
-               if (Is_NC (Then_Expr) = Bad_Result)
-                 or else (Is_NC (Else_Expr) = Bad_Result)
+               if Is_NC (Then_Expr) = Bad_Result
+                 or else Is_NC (Else_Expr) = Bad_Result
                then
                   return Bad_Result;
                else
@@ -27559,7 +27559,7 @@ package body Sem_Util is
       --  call to Ada.Task_Identification.Abort_Task.
 
       if Restriction_Check_Required (No_Abort_Statements)
-        and then (Is_RTE (Val, RE_Abort_Task))
+        and then Is_RTE (Val, RE_Abort_Task)
 
         --  A special extra check, don't complain about a reference from within
         --  the Ada.Task_Identification package itself!
@@ -28063,8 +28063,8 @@ package body Sem_Util is
                      High_Value   : constant Uint :=
                        Expr_Value (Type_High_Bound (Index_Subtype));
                   begin
-                     if (Index_Value < Low_Value)
-                       or (Index_Value > High_Value)
+                     if Index_Value < Low_Value
+                       or Index_Value > High_Value
                      then
                         return False;
                      end if;
@@ -28072,8 +28072,8 @@ package body Sem_Util is
 
                   Next_Index (Indx);
                   Expr := Next (Expr);
-                  pragma Assert ((Present (Indx) = Present (Expr))
-                    or else (Serious_Errors_Detected > 0));
+                  pragma Assert (Present (Indx) = Present (Expr)
+                    or else Serious_Errors_Detected > 0);
                   exit when not (Present (Indx) and Present (Expr));
                end loop;
             end;

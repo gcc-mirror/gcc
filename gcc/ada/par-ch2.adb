@@ -371,7 +371,7 @@ package body Ch2 is
 
       if SIS_Entry_Active then
          Import_Check_Required :=
-           (Prag_Name = Name_Import) or else (Prag_Name = Name_Interface);
+           Prag_Name = Name_Import or else Prag_Name = Name_Interface;
       else
          Import_Check_Required := False;
       end if;

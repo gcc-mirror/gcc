@@ -12940,8 +12940,8 @@ package body Sem_Prag is
                               Standard_String);
                      begin
                         for Idx in Type_Table'Range loop
-                           if (L_Type = Type_Table (Idx)) or
-                              (R_Type = Type_Table (Idx))
+                           if L_Type = Type_Table (Idx) or
+                              R_Type = Type_Table (Idx)
                            then
                               return Type_Table (Idx);
                            end if;
@@ -15493,7 +15493,7 @@ package body Sem_Prag is
             Default := Fold_Upper (Name_Buffer (1));
 
             if not Support_Nondefault_SSO_On_Target
-              and then (Ttypes.Bytes_Big_Endian /= (Default = 'H'))
+              and then Ttypes.Bytes_Big_Endian /= (Default = 'H')
             then
                if Warn_On_Unrecognized_Pragma then
                   Error_Msg_N

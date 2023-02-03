@@ -1975,7 +1975,7 @@ package body Einfo.Utils is
          end if;
 
          exit when Ekind (D) = E_Discriminant
-           and then (Is_Completely_Hidden (D) = Is_Completely_Hidden (Id));
+           and then Is_Completely_Hidden (D) = Is_Completely_Hidden (Id);
       end loop;
 
       return D;

@@ -344,7 +344,7 @@ package body Live is
                end if;
 
             when N_Entity'Range =>
-               if (Ekind (N) = E_Component) and then not Marked (Marks, N) then
+               if Ekind (N) = E_Component and then not Marked (Marks, N) then
                   if Present (Discriminant_Checking_Func (N)) then
                      Process (Discriminant_Checking_Func (N));
                   end if;

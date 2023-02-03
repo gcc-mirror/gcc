@@ -307,7 +307,7 @@ package body Ada.Directories.Hierarchical_File_Names is
       --  Check that directory is valid
 
       if Separated_Dir /= ""
-        and then (not Is_Valid_Path_Name (Separated_Dir & Relative_Name))
+        and then not Is_Valid_Path_Name (Separated_Dir & Relative_Name)
       then
          raise Name_Error with
            "invalid path composition """ & Separated_Dir & Relative_Name & '"';

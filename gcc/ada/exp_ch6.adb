@@ -2519,8 +2519,8 @@ package body Exp_Ch6 is
                   or else
                     (Ekind (Formal) = E_In_Out_Parameter
                       and then
-                        (Present (Storage_Model_Copy_From
-                           (Storage_Model_Object (Etype (Prefix (Actual))))))))
+                        Present (Storage_Model_Copy_From
+                          (Storage_Model_Object (Etype (Prefix (Actual)))))))
             then
                Add_Simple_Call_By_Copy_Code (Force => True);
 

@@ -562,7 +562,7 @@ package body Sem_Cat is
       --  There are no constraints on the body of Remote_Call_Interface or
       --  Remote_Types packages.
 
-      return (Unit_Entity /= Standard_Standard)
+      return Unit_Entity /= Standard_Standard
         and then (Is_Preelaborated (Unit_Entity)
                     or else Is_Pure (Unit_Entity)
                     or else Is_Shared_Passive (Unit_Entity)

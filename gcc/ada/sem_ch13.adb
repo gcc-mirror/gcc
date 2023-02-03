@@ -9591,7 +9591,7 @@ package body Sem_Ch13 is
 
          --  skip null-range corner cases
 
-         elsif (REntry.Lo > REntry.Hi) or else (TLo > THi) then
+         elsif REntry.Lo > REntry.Hi or else TLo > THi then
             null;
 
          --  warn if no overlap between subtype bounds and the given range
@@ -10772,7 +10772,7 @@ package body Sem_Ch13 is
       --  Expression from call to Check_Aspect_At_Freeze_Point.
 
       T : constant Entity_Id :=
-            (if Present (Freeze_Expr) and (A_Id /= Aspect_Stable_Properties)
+            (if Present (Freeze_Expr) and A_Id /= Aspect_Stable_Properties
              then Etype (Original_Node (Freeze_Expr))
              else Empty);
       --  Type required for preanalyze call. We use the original expression to
@@ -15966,7 +15966,7 @@ package body Sem_Ch13 is
    begin
       Error_Msg_Ada_2022_Feature ("aspect Stable_Properties", Sloc (N));
 
-      if (not Is_Aspect_Of_Type) and then (not Is_Subprogram (E)) then
+      if not Is_Aspect_Of_Type and then not Is_Subprogram (E) then
          Error_Msg_N ("Stable_Properties aspect can only be specified for "
                       & "a type or a subprogram", N);
       elsif Class_Present then
@@ -16443,7 +16443,7 @@ package body Sem_Ch13 is
 
                   function Matches_Param_Type (Typ : Entity_Id)
                     return Boolean is
-                    ((Base_Type (Typ) = Param_Type)
+                    (Base_Type (Typ) = Param_Type
                      or else
                      (Is_Class_Wide_Type (Param_Type)
                       and then Is_Ancestor (Root_Type (Param_Type),

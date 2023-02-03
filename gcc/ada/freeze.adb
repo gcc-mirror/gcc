@@ -1904,8 +1904,8 @@ package body Freeze is
                      if Iface_Prim /= Par_Prim
                        and then Chars (Iface_Prim) = Chars (Prim)
                        and then Comes_From_Source (Iface_Prim)
-                       and then (Is_Interface_Conformant
-                                   (R, Iface_Prim, Prim))
+                       and then Is_Interface_Conformant
+                                  (R, Iface_Prim, Prim)
                      then
                         Check_Same_Strub_Mode (Prim, Iface_Prim);
                      end if;
@@ -8285,7 +8285,7 @@ package body Freeze is
 
       if Desig_Typ /= Empty
         and then (Is_Frozen (Desig_Typ)
-                   or else (not Is_Fully_Defined (Desig_Typ)))
+                   or else not Is_Fully_Defined (Desig_Typ))
       then
          Desig_Typ := Empty;
       end if;
@@ -8428,7 +8428,7 @@ package body Freeze is
 
                   if not In_Spec_Expression
                     and then Nkind (N) = N_Identifier
-                    and then (Present (Entity (N)))
+                    and then Present (Entity (N))
                   then
                      --  We recognize the discriminant case by just looking for
                      --  a reference to a discriminant. It can only be one for

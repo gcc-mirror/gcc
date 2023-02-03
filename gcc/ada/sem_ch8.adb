@@ -7634,8 +7634,8 @@ package body Sem_Ch8 is
             elsif
               Present (First_Formal (It.Nam))
                 and then Present (First_Formal (New_S))
-                and then (Base_Type (Etype (First_Formal (It.Nam))) =
-                          Base_Type (Etype (First_Formal (New_S))))
+                and then Base_Type (Etype (First_Formal (It.Nam))) =
+                         Base_Type (Etype (First_Formal (New_S)))
             then
                Candidate_Renaming := It.Nam;
             end if;
@@ -7667,8 +7667,8 @@ package body Sem_Ch8 is
 
          elsif Present (First_Formal (Entity (Nam)))
            and then Present (First_Formal (New_S))
-           and then (Base_Type (Etype (First_Formal (Entity (Nam)))) =
-                     Base_Type (Etype (First_Formal (New_S))))
+           and then Base_Type (Etype (First_Formal (Entity (Nam)))) =
+                    Base_Type (Etype (First_Formal (New_S)))
          then
             Candidate_Renaming := Entity (Nam);
          end if;
@@ -10319,7 +10319,7 @@ package body Sem_Ch8 is
             if Is_Immediately_Visible (Prev)
               and then (not Is_Overloadable (Prev)
                          or else not Is_Overloadable (Id)
-                         or else (Type_Conformant (Id, Prev)))
+                         or else Type_Conformant (Id, Prev))
             then
                if No (Current_Instance) then
 
@@ -10422,7 +10422,7 @@ package body Sem_Ch8 is
          --  On exit, we know entity is not hidden, unless it is private
 
          if not Is_Hidden (Id)
-           and then ((not Is_Child_Unit (Id)) or else Is_Visible_Lib_Unit (Id))
+           and then (not Is_Child_Unit (Id) or else Is_Visible_Lib_Unit (Id))
          then
             Set_Is_Potentially_Use_Visible (Id);
 

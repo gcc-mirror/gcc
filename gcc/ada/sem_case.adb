@@ -2752,7 +2752,7 @@ package body Sem_Case is
                procedure Test_Point_For_Match is
                   function In_Range (Val : Uint; Rang : Discrete_Range_Info)
                     return Boolean is
-                    ((Rang.Low <= Val) and then (Val <= Rang.High));
+                    (Rang.Low <= Val and then Val <= Rang.High);
                begin
                   pragma Assert (not Done);
                   Matches (Next_Index) :=
@@ -3429,8 +3429,8 @@ package body Sem_Case is
                      Others_Seen := True;
                   else
                      if Flag_Overlapping_Within_One_Alternative
-                        and then (Compare (Matches (Choice.Alternative),
-                                  Choice.Matches) /= Disjoint)
+                        and then Compare (Matches (Choice.Alternative),
+                                          Choice.Matches) /= Disjoint
                      then
                         Error_Msg_N
                           ("bad overlapping within one alternative", N);
@@ -3479,7 +3479,7 @@ package body Sem_Case is
                   Union (Target => Covered, Source => Matches (A1));
                end loop;
 
-               if (not Others_Seen) and then not Complement_Is_Empty (Covered)
+               if not Others_Seen and then not Complement_Is_Empty (Covered)
                then
                   Error_Msg_N ("not all values are covered", N);
                end if;
@@ -3823,7 +3823,7 @@ package body Sem_Case is
               (Choice_Table,
                Bounds_Type,
                Subtyp,
-               Others_Present or else (Choice_Type = Universal_Integer),
+               Others_Present or else Choice_Type = Universal_Integer,
                N);
 
             --  If no others choice we are all done, otherwise we have one more

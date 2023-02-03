@@ -3498,7 +3498,7 @@ package body Exp_Ch4 is
             --  Array case, slice assignment, skipped when argument is fixed
             --  length and known to be null.
 
-            elsif (not Is_Fixed_Length (J)) or else (Fixed_Length (J) > 0) then
+            elsif not Is_Fixed_Length (J) or else Fixed_Length (J) > 0 then
                declare
                   Assign : Node_Id :=
                              Make_Assignment_Statement (Loc,
@@ -8420,8 +8420,8 @@ package body Exp_Ch4 is
 
             return Nkind (Sindic) in N_Expanded_Name | N_Identifier
               and then Is_Unchecked_Union (Base_Type (Etype (Sindic)))
-              and then (Ekind (Entity (Sindic)) in
-                         E_Private_Type | E_Record_Type);
+              and then Ekind (Entity (Sindic)) in
+                         E_Private_Type | E_Record_Type;
          end Unconstrained_UU_In_Component_Declaration;
 
          -----------------------------------------
@@ -9125,7 +9125,7 @@ package body Exp_Ch4 is
                begin
                   Determine_Range (Exp, OK, Lo, Hi, Assume_Valid => True);
 
-                  if (not OK) or else Hi > MaxS then
+                  if not OK or else Hi > MaxS then
                      Insert_Action (N,
                        Make_Raise_Constraint_Error (Loc,
                          Condition =>
@@ -9790,8 +9790,8 @@ package body Exp_Ch4 is
               Expr_Value
                 (Type_Low_Bound (Base_Type (Underlying_Type (Etype (Left)))));
 
-            if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
-              and then ((not LOK) or else (Llo = LLB))
+            if (not ROK or else (Rlo <= (-1) and then (-1) <= Rhi))
+              and then (not LOK or else Llo = LLB)
               and then not CodePeer_Mode
             then
                Rewrite (N,
@@ -10547,10 +10547,10 @@ package body Exp_Ch4 is
       --  completely in this case.
 
       Determine_Range (Right, OK, Lo, Hi, Assume_Valid => True);
-      Lneg := (not OK) or else Lo < 0;
+      Lneg := not OK or else Lo < 0;
 
       Determine_Range (Left,  OK, Lo, Hi, Assume_Valid => True);
-      Rneg := (not OK) or else Lo < 0;
+      Rneg := not OK or else Lo < 0;
 
       --  We won't mess with trying to find out if the left operand can really
       --  be the largest negative number (that's a pain in the case of private
@@ -11194,8 +11194,8 @@ package body Exp_Ch4 is
          --  actually performed.
 
          else
-            if (not Is_Unchecked_Union
-                     (Implementation_Base_Type (Etype (Prefix (N)))))
+            if not Is_Unchecked_Union
+                    (Implementation_Base_Type (Etype (Prefix (N))))
               and then not Is_Predefined_Unit (Get_Source_Unit (N))
             then
                Error_Msg_N
@@ -11440,9 +11440,9 @@ package body Exp_Ch4 is
             --  component or its type have sync disabled.
 
             elsif Is_Atomic (E) and then Is_Atomic (Etype (E)) then
-               Set := (not Atomic_Synchronization_Disabled (E))
+               Set := not Atomic_Synchronization_Disabled (E)
                         and then
-                      (not Atomic_Synchronization_Disabled (Etype (E)));
+                      not Atomic_Synchronization_Disabled (Etype (E));
 
             else
                Set := False;
@@ -12457,7 +12457,7 @@ package body Exp_Ch4 is
       --  Special case of converting from non-standard boolean type
 
       if Is_Boolean_Type (Operand_Type)
-        and then (Nonzero_Is_True (Operand_Type))
+        and then Nonzero_Is_True (Operand_Type)
       then
          Adjust_Condition (Operand);
          Set_Etype (Operand, Standard_Boolean);

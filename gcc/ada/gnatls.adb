@@ -1414,7 +1414,7 @@ procedure Gnatls is
          First := 3;
          loop
             while First <= Name_Len
-              and then (Name_Buffer (First) = Path_Separator)
+              and then Name_Buffer (First) = Path_Separator
             loop
                First := First + 1;
             end loop;
@@ -2170,7 +2170,7 @@ begin
             First := Prj_Path'First;
             loop
                while First <= Prj_Path'Last
-                 and then (Prj_Path (First) = Path_Separator)
+                 and then Prj_Path (First) = Path_Separator
                loop
                   First := First + 1;
                end loop;
