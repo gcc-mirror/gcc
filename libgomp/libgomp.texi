@@ -227,8 +227,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{allocate} directive @tab N @tab
 @item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
-@item @code{ancestor} modifier on @code{device} clause
-      @tab Y @tab Host fallback with GCN devices
+@item @code{ancestor} modifier on @code{device} clause @tab Y @tab
 @item Implicit declare target directive @tab Y @tab
 @item Discontiguous array section with @code{target update} construct
       @tab N @tab
@@ -4455,9 +4454,13 @@ The implementation remark:
 @item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
       using the C library @code{printf} functions and the Fortran
       @code{print}/@code{write} statements.
-@item OpenMP code that has a requires directive with @code{unified_address},
-      @code{unified_shared_memory} or @code{reverse_offload} will remove
-      any GCN device from the list of available devices (``host fallback'').
+@item Reverse offload (i.e. @code{target} regions with
+      @code{device(ancestor:1)}) are processed serially per @code{target} region
+      such that the next reverse offload region is only executed after the previous
+      one returned.
+@item OpenMP code that has a requires directive with @code{unified_address} or
+      @code{unified_shared_memory} will remove any GCN device from the list of
+      available devices (``host fallback'').
 @end itemize
 
 

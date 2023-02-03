@@ -3262,7 +3262,8 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
     return 0;
   /* Return -1 if no omp_requires_mask cannot be fulfilled but
      devices were present.  */
-  if (hsa_context.agent_count > 0 && omp_requires_mask != 0)
+  if (hsa_context.agent_count > 0
+      && (omp_requires_mask & ~GOMP_REQUIRES_REVERSE_OFFLOAD) != 0)
     return -1;
   return hsa_context.agent_count;
 }
