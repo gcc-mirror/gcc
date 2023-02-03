@@ -4822,11 +4822,11 @@ check_methods (tree t)
 	/* Might be trivial.  */;
       else if (TREE_CODE (fn) == TEMPLATE_DECL)
 	/* Templates are never special members.  */;
-      else if (!constraints_satisfied_p (fn))
-	/* Not eligible.  */;
-      else if (copy_fn_p (fn))
+      else if (copy_fn_p (fn)
+	       && constraints_satisfied_p (fn))
 	TYPE_HAS_COMPLEX_COPY_CTOR (t) = true;
-      else if (move_fn_p (fn))
+      else if (move_fn_p (fn)
+	       && constraints_satisfied_p (fn))
 	TYPE_HAS_COMPLEX_MOVE_CTOR (t) = true;
     }
 
@@ -4836,11 +4836,11 @@ check_methods (tree t)
 	/* Might be trivial.  */;
       else if (TREE_CODE (fn) == TEMPLATE_DECL)
 	/* Templates are never special members.  */;
-      else if (!constraints_satisfied_p (fn))
-	/* Not eligible.  */;
-      else if (copy_fn_p (fn))
+      else if (copy_fn_p (fn)
+	       && constraints_satisfied_p (fn))
 	TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = true;
-      else if (move_fn_p (fn))
+      else if (move_fn_p (fn)
+	       && constraints_satisfied_p (fn))
 	TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) = true;
     }
 }
