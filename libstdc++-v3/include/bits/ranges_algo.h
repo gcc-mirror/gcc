@@ -3464,6 +3464,60 @@ namespace ranges
 
   inline constexpr __prev_permutation_fn prev_permutation{};
 
+#if __cplusplus > 202002L
+  struct __contains_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	    typename _Tp, typename _Proj = identity>
+      requires indirect_binary_predicate<ranges::equal_to,
+					 projected<_Iter, _Proj>, const _Tp*>
+      constexpr bool
+      operator()(_Iter __first, _Sent __last, const _Tp& __value, _Proj __proj = {}) const
+      { return ranges::find(std::move(__first), __last, __value, std::move(__proj)) != __last; }
+
+    template<input_range _Range, typename _Tp, typename _Proj = identity>
+      requires indirect_binary_predicate<ranges::equal_to,
+					 projected<iterator_t<_Range>, _Proj>, const _Tp*>
+      constexpr bool
+      operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), __value, std::move(__proj)); }
+  };
+
+  inline constexpr __contains_fn contains{};
+
+  struct __contains_subrange_fn
+  {
+    template<forward_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
+	     forward_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
+	     typename _Pred = ranges::equal_to,
+	     typename Proj1 = identity, typename Proj2 = identity>
+      requires indirectly_comparable<_Iter1, _Iter2, _Pred, Proj1, Proj2>
+      constexpr bool
+      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
+		 _Pred __pred = {}, Proj1 __proj1 = {}, Proj2 __proj2 = {}) const
+      {
+	return __first2 == __last2
+	  || !ranges::search(__first1, __last1, __first2, __last2,
+			     std::move(__pred), std::move(__proj1), std::move(__proj2)).empty();
+      }
+
+    template<forward_range _Range1, forward_range _Range2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
+				     _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	return (*this)(ranges::begin(__r1), ranges::end(__r1),
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__pred), std::move(__proj1), std::move(__proj2));
+      }
+  };
+
+  inline constexpr __contains_subrange_fn contains_subrange{};
+#endif // C++23
 } // namespace ranges
 
 #define __cpp_lib_shift 201806L
