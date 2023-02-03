@@ -2411,10 +2411,27 @@ package body Sem_Ch4 is
                   return; -- ???For now; the RM rule is a bit more complicated
                end if;
 
+            when N_Pragma =>
+               declare
+                  --  See AI22-0045 pragma categorization.
+                  subtype Executable_Pragma_Id is Pragma_Id
+                    with Predicate => Executable_Pragma_Id in
+                        --  language-defined executable pragmas
+                      Pragma_Assert | Pragma_Inspection_Point
+
+                        --  GNAT-defined executable pragmas
+                        | Pragma_Assume | Pragma_Debug;
+               begin
+                  if Get_Pragma_Id (A) in Executable_Pragma_Id then
+                     return;
+                  end if;
+               end;
+
             when others =>
-               null; -- Nothing else allowed, not even pragmas
+               null; -- Nothing else allowed
          end case;
 
+         --  We could mention pragmas in the message text; let's not.
          Error_Msg_N ("object renaming or constant declaration expected", A);
       end Check_Action_OK;
 
