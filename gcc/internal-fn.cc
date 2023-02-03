@@ -131,6 +131,7 @@ init_internal_fns ()
 #define fold_left_direct { 1, 1, false }
 #define mask_fold_left_direct { 1, 1, false }
 #define check_ptrs_direct { 0, 0, false }
+#define crc_direct { 1, -1, true }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -3715,6 +3716,15 @@ expand_convert_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab,
   expand_fn_using_insn (stmt, icode, 1, nargs);
 }
 
+static void
+expand_crc_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+{
+    tree lhs = gimple_call_lhs (stmt);
+    tree rhs1 = gimple_call_arg (stmt, 0);
+    tree rhs2 = gimple_call_arg (stmt, 1);
+    tree rhs3 = gimple_call_arg (stmt, 2);
+}
+
 /* Expanders for optabs that can use expand_direct_optab_fn.  */
 
 #define expand_unary_optab_fn(FN, STMT, OPTAB) \
@@ -3830,6 +3840,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_cond_unary_optab_supported_p direct_optab_supported_p
 #define direct_cond_binary_optab_supported_p direct_optab_supported_p
 #define direct_cond_ternary_optab_supported_p direct_optab_supported_p
+#define direct_crc_optab_supported_p convert_optab_supported_p
 #define direct_mask_load_optab_supported_p convert_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
