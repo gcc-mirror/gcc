@@ -8604,6 +8604,7 @@ package body Sem_Util is
       Context  : constant Node_Id := Parent (N);
       Actual   : Node_Id;
       Call_Nam : Node_Id;
+      Call_Ent : Node_Id := Empty;
 
    begin
       if Nkind (Context) in N_Indexed_Component | N_Selected_Component
@@ -8652,13 +8653,42 @@ package body Sem_Util is
             Call_Nam := Selector_Name (Call_Nam);
          end if;
 
-         if Is_Entity_Name (Call_Nam)
-           and then Present (Entity (Call_Nam))
-           and then (Is_Generic_Subprogram (Entity (Call_Nam))
-                      or else Is_Overloadable (Entity (Call_Nam))
-                      or else Ekind (Entity (Call_Nam)) in E_Entry_Family
-                                                         | E_Subprogram_Body
-                                                         | E_Subprogram_Type)
+         --  If Call_Nam is an entity name, get its entity
+
+         if Is_Entity_Name (Call_Nam) then
+            Call_Ent := Entity (Call_Nam);
+
+         --  If it is a dereference, get the designated subprogram type
+
+         elsif Nkind (Call_Nam) = N_Explicit_Dereference then
+            declare
+               Typ : Entity_Id := Etype (Prefix (Call_Nam));
+            begin
+               if Present (Full_View (Typ)) then
+                  Typ := Full_View (Typ);
+               elsif Is_Private_Type (Typ)
+                 and then Present (Underlying_Full_View (Typ))
+               then
+                  Typ := Underlying_Full_View (Typ);
+               end if;
+
+               if Is_Access_Type (Typ) then
+                  Call_Ent := Directly_Designated_Type (Typ);
+               else
+                  pragma Assert (Has_Implicit_Dereference (Typ));
+                  Formal := Empty;
+                  Call   := Empty;
+                  return;
+               end if;
+            end;
+         end if;
+
+         if Present (Call_Ent)
+           and then (Is_Generic_Subprogram (Call_Ent)
+                      or else Is_Overloadable (Call_Ent)
+                      or else Ekind (Call_Ent) in E_Entry_Family
+                                                | E_Subprogram_Body
+                                                | E_Subprogram_Type)
            and then not Is_Overloaded (Call_Nam)
          then
             --  If node is name in call it is not an actual
@@ -8672,7 +8702,7 @@ package body Sem_Util is
             --  Fall here if we are definitely a parameter
 
             Actual := First_Actual (Call);
-            Formal := First_Formal (Entity (Call_Nam));
+            Formal := First_Formal (Call_Ent);
             while Present (Formal) and then Present (Actual) loop
                if Actual = N then
                   return;
