@@ -1528,7 +1528,7 @@ if (is(Unqual!T == T))
     return SliceOverIndexed!T(a, b, x);
 }
 
-@safe unittest
+@system unittest
 {
     int[] idxArray = [2, 3, 5, 8, 13];
     auto sliced = sliceOverIndexed(0, idxArray.length, &idxArray);
@@ -2472,19 +2472,19 @@ public:
         import std.format : format;
         import std.uni : unicode;
 
-        assert(unicode.Cyrillic.to!string ==
-            "[1024..1157) [1159..1320) [7467..7468) [7544..7545) [11744..11776) [42560..42648) [42655..42656)");
+        // This was originally using Cyrillic script.
+        // Unfortunately this is a pretty active range for changes,
+        // and hence broke in an update.
+        // Therefore the range Basic latin was used instead as it
+        // unlikely to ever change.
+
+        assert(unicode.InBasic_latin.to!string == "[0..128)");
 
         // The specs '%s' and '%d' are equivalent to the to!string call above.
-        assert(format("%d", unicode.Cyrillic) == unicode.Cyrillic.to!string);
+        assert(format("%d", unicode.InBasic_latin) == unicode.InBasic_latin.to!string);
 
-        assert(format("%#x", unicode.Cyrillic) ==
-            "[0x400..0x485) [0x487..0x528) [0x1d2b..0x1d2c) [0x1d78..0x1d79) [0x2de0..0x2e00) "
-            ~"[0xa640..0xa698) [0xa69f..0xa6a0)");
-
-        assert(format("%#X", unicode.Cyrillic) ==
-            "[0X400..0X485) [0X487..0X528) [0X1D2B..0X1D2C) [0X1D78..0X1D79) [0X2DE0..0X2E00) "
-            ~"[0XA640..0XA698) [0XA69F..0XA6A0)");
+        assert(format("%#x", unicode.InBasic_latin) == "[0..0x80)");
+        assert(format("%#X", unicode.InBasic_latin) == "[0..0X80)");
     }
 
     pure @safe unittest
@@ -4872,6 +4872,7 @@ template Utf8Matcher()
             enum mode = Mode.neverSkip;
             assert(!inp.empty);
             auto ch = inp[0];
+
             static if (hasASCII)
             {
                 if (ch < 0x80)
@@ -4970,6 +4971,7 @@ template Utf8Matcher()
             else
             {
                 static assert(mode == Mode.skipOnMatch);
+
                 if (tab!size[needle])
                 {
                     inp.popFrontN(size);
@@ -5312,23 +5314,31 @@ pure @safe unittest
     auto utf8 =  utf8Matcher(unicode.Letter);
     auto asc = utf8.subMatcher!(1);
     auto uni = utf8.subMatcher!(2,3,4);
+
+    // h
     assert(asc.test(codec));
     assert(!uni.match(codec));
     assert(utf8.skip(codec));
     assert(codec.idx == 1);
 
-    assert(!uni.match(codec));
+    // i
     assert(asc.test(codec));
+    assert(!uni.match(codec));
     assert(utf8.skip(codec));
     assert(codec.idx == 2);
-    assert(!asc.match(codec));
 
+    // !
+    assert(!asc.match(codec));
     assert(!utf8.test(codec));
     assert(!utf8.skip(codec));
+    assert(codec.idx == 3);
 
+    // space
     assert(!asc.test(codec));
     assert(!utf8.test(codec));
     assert(!utf8.skip(codec));
+    assert(codec.idx == 4);
+
     assert(utf8.test(codec));
     foreach (i; 0 .. 7)
     {
@@ -5338,6 +5348,7 @@ pure @safe unittest
     }
     assert(!utf8.test(codec));
     assert(!utf8.skip(codec));
+
     //the same with match where applicable
     codec = rs.decoder;
     assert(utf8.match(codec));
@@ -5360,7 +5371,7 @@ pure @safe unittest
     assert(codec.idx == i);
 }
 
-pure @safe unittest
+pure @system unittest
 {
     import std.range : stride;
     static bool testAll(Matcher, Range)(ref Matcher m, ref Range r) @safe
@@ -6020,11 +6031,11 @@ bool loadProperty(Set=CodepointSet, C)
     }
     else if (ucmp(name, "C") == 0 || ucmp(name, "Other") == 0)
     {
-        target = asSet(uniProps.Co);
-        target |= asSet(uniProps.Lo);
-        target |= asSet(uniProps.No);
-        target |= asSet(uniProps.So);
-        target |= asSet(uniProps.Po);
+        target = asSet(uniProps.Cc);
+        target |= asSet(uniProps.Cf);
+        target |= asSet(uniProps.Cs);
+        target |= asSet(uniProps.Co);
+        target |= asSet(uniProps.Cn);
     }
     else if (ucmp(name, "graphical") == 0)
     {
