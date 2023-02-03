@@ -162,7 +162,20 @@
  (and (match_code "const_vector")
       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
-(define_constraint "Wdm"
+(define_memory_constraint "Wdm"
   "Vector duplicate memory operand"
-  (and (match_operand 0 "memory_operand")
+  (and (match_code "mem")
        (match_code "reg" "0")))
+
+;; (vec_duplicate:V (const_int 2863311530 [0xaaaaaaaa])) of pred_broadcast
+;; is CSEed into (const_vector:V (const_int 2863311530 [0xaaaaaaaa])) here
+;; which is not the pattern matching we want since we can't generate
+;; instruction directly for it when SEW = 64 and !TARGET_64BIT. We should
+;; not allow RA (register allocation) allocate a DImode register in
+;; pred_broadcast pattern.
+(define_constraint "Wbr"
+  "@internal
+   Broadcast register operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) <= GP_REG_LAST
+	&& direct_broadcast_operand (op, GET_MODE (op))")))

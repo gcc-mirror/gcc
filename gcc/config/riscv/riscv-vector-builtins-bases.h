@@ -50,6 +50,7 @@ extern const function_base *const vsoxei32;
 extern const function_base *const vsoxei64;
 extern const function_base *const vadd;
 extern const function_base *const vsub;
+extern const function_base *const vrsub;
 extern const function_base *const vand;
 extern const function_base *const vor;
 extern const function_base *const vxor;

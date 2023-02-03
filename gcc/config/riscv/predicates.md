@@ -272,9 +272,16 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "memory_operand")))
 
+(define_predicate "reg_or_int_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const_int_operand")))
+
 (define_predicate "vector_move_operand"
   (ior (match_operand 0 "nonimmediate_operand")
-       (match_code "const_vector")))
+       (and (match_code "const_vector")
+            (match_test "reload_completed
+		|| satisfies_constraint_vi (op)
+		|| satisfies_constraint_Wc0 (op)"))))
 
 (define_predicate "vector_mask_operand"
   (ior (match_operand 0 "register_operand")
@@ -315,8 +322,11 @@
 
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"
-  (ior (match_operand 0 "register_operand")
-       (match_test "satisfies_constraint_Wdm (op)")))
+  (and (match_test "!(reload_completed && !FLOAT_MODE_P (GET_MODE (op))
+		&& register_operand (op, GET_MODE (op))
+		&& maybe_gt (GET_MODE_BITSIZE (GET_MODE (op)), GET_MODE_BITSIZE (Pmode)))")
+    (ior (match_operand 0 "register_operand")
+         (match_test "satisfies_constraint_Wdm (op)"))))
 
 ;; A CONST_INT operand that has exactly two bits cleared.
 (define_predicate "const_nottwobits_operand"

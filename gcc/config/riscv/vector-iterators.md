@@ -55,6 +55,17 @@
   (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
 ])
 
+(define_mode_iterator VI_QHS [
+  VNx1QI VNx2QI VNx4QI VNx8QI VNx16QI VNx32QI (VNx64QI "TARGET_MIN_VLEN > 32")
+  VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI (VNx32HI "TARGET_MIN_VLEN > 32")
+  VNx1SI VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VI_D [
+  (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
+  (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
+])
+
 (define_mode_iterator VNX1_QHSD [
   VNx1QI VNx1HI VNx1SI
   (VNx1DI "TARGET_MIN_VLEN > 32")
@@ -171,6 +182,14 @@
   (VNx1DF "DF") (VNx2DF "DF") (VNx4DF "DF") (VNx8DF "DF")
 ])
 
+(define_mode_attr VSUBEL [
+  (VNx1HI "QI") (VNx2HI "QI") (VNx4HI "QI") (VNx8HI "QI") (VNx16HI "QI") (VNx32HI "QI")
+  (VNx1SI "HI") (VNx2SI "HI") (VNx4SI "HI") (VNx8SI "HI") (VNx16SI "HI")
+  (VNx1DI "SI") (VNx2DI "SI") (VNx4DI "SI") (VNx8DI "SI")
+  (VNx1SF "HF") (VNx2SF "HF") (VNx4SF "HF") (VNx8SF "HF") (VNx16SF "HF")
+  (VNx1DF "SF") (VNx2DF "SF") (VNx4DF "SF") (VNx8DF "SF")
+])
+
 (define_mode_attr sew [
   (VNx1QI "8") (VNx2QI "8") (VNx4QI "8") (VNx8QI "8") (VNx16QI "8") (VNx32QI "8") (VNx64QI "8")
   (VNx1HI "16") (VNx2HI "16") (VNx4HI "16") (VNx8HI "16") (VNx16HI "16") (VNx32HI "16")
@@ -189,6 +208,12 @@
 (define_code_iterator any_int_binop [plus minus and ior xor ashift ashiftrt lshiftrt
   smax umax smin umin mult div udiv mod umod
 ])
+
+(define_code_iterator any_commutative_binop [plus and ior xor
+  smax umax smin umin mult
+])
+
+(define_code_iterator any_non_commutative_binop [minus div udiv mod umod])
 
 (define_code_attr binop_rhs1_predicate [
 			(plus "register_operand")
@@ -294,9 +319,9 @@
 			       (mod "rem.vv")
 			       (udiv "divu.vv")
 			       (umod "remu.vv")
-			       (ior "or.vv")
-			       (xor "xor.vv")
-			       (and "and.vv")
+			       (ior "or.vi")
+			       (xor "xor.vi")
+			       (and "and.vi")
 			       (plus "add.vi")
 			       (minus "add.vi")
 			       (smin "min.vv")
@@ -332,9 +357,9 @@
 			     (mod "%3,%4")
 			     (udiv "%3,%4")
 			     (umod "%3,%4")
-			     (ior "%3,%4")
-			     (xor "%3,%4")
-			     (and "%3,%4")
+			     (ior "%3,%v4")
+			     (xor "%3,%v4")
+			     (and "%3,%v4")
 			     (plus "%3,%v4")
 			     (minus "%3,%V4")
 			     (smin "%3,%4")

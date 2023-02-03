@@ -155,7 +155,7 @@ public:
 };
 
 /* Implements
- * vadd/vsub/vrsub/vand/vor/vxor/vsll/vsra/vsrl/vmin/vmax/vminu/vmaxu/vdiv/vrem/vdivu/vremu/vsadd/vsaddu/vssub/vssubu.
+ * vadd/vsub/vand/vor/vxor/vsll/vsra/vsrl/vmin/vmax/vminu/vmaxu/vdiv/vrem/vdivu/vremu/vsadd/vsaddu/vssub/vssubu.
  */
 template<rtx_code CODE>
 class binop : public function_base
@@ -172,6 +172,17 @@ public:
       default:
 	gcc_unreachable ();
       }
+  }
+};
+
+/* Implements vrsub.  */
+class vrsub : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_sub_reverse_scalar (e.vector_mode ()));
   }
 };
 
@@ -201,7 +212,7 @@ static CONSTEXPR const loadstore<true, LST_INDEXED, true> vsoxei32_obj;
 static CONSTEXPR const loadstore<true, LST_INDEXED, true> vsoxei64_obj;
 static CONSTEXPR const binop<PLUS> vadd_obj;
 static CONSTEXPR const binop<MINUS> vsub_obj;
-static CONSTEXPR const binop<MINUS> vrsub_obj;
+static CONSTEXPR const vrsub vrsub_obj;
 static CONSTEXPR const binop<AND> vand_obj;
 static CONSTEXPR const binop<IOR> vor_obj;
 static CONSTEXPR const binop<XOR> vxor_obj;
@@ -249,6 +260,7 @@ BASE (vsoxei32)
 BASE (vsoxei64)
 BASE (vadd)
 BASE (vsub)
+BASE (vrsub)
 BASE (vand)
 BASE (vor)
 BASE (vxor)

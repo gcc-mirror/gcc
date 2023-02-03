@@ -133,6 +133,12 @@ static const rvv_type_info i_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of all signed integer will be registered for intrinsic functions.  */
+static const rvv_type_info u_ops[] = {
+#define DEF_RVV_U_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 /* A list of all integer will be registered for intrinsic functions.  */
 static const rvv_type_info iu_ops[] = {
 #define DEF_RVV_I_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
@@ -242,6 +248,11 @@ static CONSTEXPR const rvv_arg_type_info scalar_ptr_uint64_index_args[]
 /* A list of args for vector_type func (vector_type, vector_type) function.  */
 static CONSTEXPR const rvv_arg_type_info vv_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, scalar_type) function.  */
+static CONSTEXPR const rvv_arg_type_info vx_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_scalar),
      rvv_arg_type_info_end};
 
 /* A list of args for vector_type func (vector_type, shift_type) function.  */
@@ -401,6 +412,46 @@ static CONSTEXPR const rvv_op_info iu_vvv_ops
      OP_TYPE_vv,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_vvv_ops
+  = {i_ops,				/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_vvv_ops
+  = {u_ops,				/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_vvx_ops
+  = {iu_ops,				/* Types */
+     OP_TYPE_vx,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vx_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_vvx_ops
+  = {i_ops,				/* Types */
+     OP_TYPE_vx,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vx_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_vvx_ops
+  = {u_ops,				/* Types */
+     OP_TYPE_vx,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vx_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type, shift_type)
  * function registration. */
