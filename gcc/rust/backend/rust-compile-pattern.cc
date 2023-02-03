@@ -361,30 +361,14 @@ CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
 void
 CompilePatternLet::visit (HIR::WildcardPattern &pattern)
 {
-  Bvariable *var = nullptr;
-  rust_assert (
-    ctx->lookup_var_decl (pattern.get_pattern_mappings ().get_hirid (), &var));
+  tree init_stmt = NULL;
+  tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
 
-  auto fnctx = ctx->peek_fn ();
-  if (ty->is_unit ())
-    {
-      ctx->add_statement (init_expr);
+  ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
+					   stmt_type, init_expr, false,
+					   pattern.get_locus (), &init_stmt);
 
-      tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
-
-      auto unit_type_init_expr
-	= ctx->get_backend ()->constructor_expression (stmt_type, false, {}, -1,
-						       rval_locus);
-      auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var,
-						    unit_type_init_expr);
-      ctx->add_statement (s);
-    }
-  else
-    {
-      auto s
-	= ctx->get_backend ()->init_statement (fnctx.fndecl, var, init_expr);
-      ctx->add_statement (s);
-    }
+  ctx->add_statement (init_stmt);
 }
 
 void

@@ -53,21 +53,6 @@ public:
     locals.push_back (var);
   }
 
-  void visit (HIR::WildcardPattern &pattern) override
-  {
-    translated_type = ctx->get_backend ()->immutable_type (translated_type);
-
-    Bvariable *var
-      = ctx->get_backend ()->local_variable (fndecl, "_", translated_type,
-					     NULL /*decl_var*/,
-					     pattern.get_locus ());
-
-    HirId stmt_id = pattern.get_pattern_mappings ().get_hirid ();
-    ctx->insert_var_decl (stmt_id, var);
-
-    locals.push_back (var);
-  }
-
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::LiteralPattern &) override {}
   void visit (HIR::PathInExpression &) override {}
@@ -78,6 +63,7 @@ public:
   void visit (HIR::StructPattern &) override {}
   void visit (HIR::TuplePattern &) override {}
   void visit (HIR::TupleStructPattern &) override {}
+  void visit (HIR::WildcardPattern &) override {}
 
 private:
   CompileVarDecl (Context *ctx, tree fndecl, tree translated_type,
