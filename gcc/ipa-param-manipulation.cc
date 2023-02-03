@@ -1857,6 +1857,8 @@ ipa_param_body_adjustments::modify_expression (tree *expr_p, bool convert)
   if (convert && !useless_type_conversion_p (TREE_TYPE (expr),
 					     TREE_TYPE (repl)))
     {
+      gcc_checking_assert (tree_to_shwi (TYPE_SIZE (TREE_TYPE (expr)))
+			   == tree_to_shwi (TYPE_SIZE (TREE_TYPE (repl))));
       tree vce = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (expr), repl);
       *expr_p = vce;
     }
@@ -1900,6 +1902,8 @@ ipa_param_body_adjustments::modify_assignment (gimple *stmt,
 	}
       else
 	{
+	  gcc_checking_assert (tree_to_shwi (TYPE_SIZE (TREE_TYPE (*lhs_p)))
+			      == tree_to_shwi (TYPE_SIZE (TREE_TYPE (*rhs_p))));
 	  tree new_rhs = fold_build1_loc (gimple_location (stmt),
 					  VIEW_CONVERT_EXPR, TREE_TYPE (*lhs_p),
 					  *rhs_p);

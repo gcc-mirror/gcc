@@ -3989,9 +3989,7 @@ push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
 	{
 	  ipa_argagg_value_list avl (ipcp_ts);
 	  tree value = avl.get_value (base_index, pa->unit_offset);
-	  if (value
-	      && (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value))) / BITS_PER_UNIT
-		  == pa->unit_size))
+	  if (value)
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "    - omitting component at byte "
@@ -4130,6 +4128,22 @@ process_isra_node_results (cgraph_node *node,
   callers.release ();
 }
 
+/* If INDICES is not empty, dump a combination of NODE's dump_name and MSG
+   followed by the list of numbers in INDICES.  */
+
+static void
+dump_list_of_param_indices (const cgraph_node *node, const char* msg,
+			    const vec<unsigned> &indices)
+{
+  if (indices.is_empty ())
+    return;
+  fprintf (dump_file, "The following parameters of %s %s:", node->dump_name (),
+	   msg);
+  for (unsigned i : indices)
+    fprintf (dump_file, " %u", i);
+  fprintf (dump_file, "\n");
+}
+
 /* Check which parameters of NODE described by IFS have survived until IPA-SRA
    and disable transformations for those which have not or which should not
    transformed because the associated debug counter reached its limit.  Return
@@ -4153,6 +4167,7 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
       check_surviving = true;
       cinfo->param_adjustments->get_surviving_params (&surviving_params);
     }
+  ipcp_transformation *ipcp_ts = ipcp_get_transformation_summary (node);
   auto_vec <unsigned> dump_dead_indices;
   auto_vec <unsigned> dump_bad_cond_indices;
   for (unsigned i = 0; i < len; i++)
@@ -4202,27 +4217,40 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
 	      if (size_would_violate_limit_p (desc, desc->size_reached))
 		desc->split_candidate = false;
 	    }
+
+	  /* Avoid ICEs on size-mismatched VIEW_CONVERT_EXPRs when callers and
+	     callees don't agree on types in aggregates and we try to do both
+	     IPA-CP and IPA-SRA.  */
+	  if (ipcp_ts && desc->split_candidate)
+	    {
+	      ipa_argagg_value_list avl (ipcp_ts);
+	      for (const param_access *pa : desc->accesses)
+		{
+		  if (!pa->certain)
+		    continue;
+		  tree value = avl.get_value (i, pa->unit_offset);
+		  if (value
+		      && ((tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value)))
+			   / BITS_PER_UNIT)
+			  != pa->unit_size))
+		    {
+		      desc->split_candidate = false;
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			dump_dead_indices.safe_push (i);
+		      break;
+		    }
+		}
+	    }
+
 	  if (desc->locally_unused || desc->split_candidate)
 	    ret = false;
 	}
     }
 
-  if (!dump_dead_indices.is_empty ())
-    {
-      fprintf (dump_file, "The following parameters of %s are dead on arrival:",
-	       node->dump_name ());
-      for (unsigned i : dump_dead_indices)
-	fprintf (dump_file, " %u", i);
-      fprintf (dump_file, "\n");
-    }
-  if (!dump_bad_cond_indices.is_empty ())
-    {
-      fprintf (dump_file, "The following parameters of %s are not safe to "
-	       "derefernce in all callers:", node->dump_name ());
-      for (unsigned i : dump_bad_cond_indices)
-	fprintf (dump_file, " %u", i);
-      fprintf (dump_file, "\n");
-    }
+  dump_list_of_param_indices (node, "are dead on arrival or have a type "
+			      "mismatch with IPA-CP", dump_dead_indices);
+  dump_list_of_param_indices (node, "are not safe to derefernce in all callers",
+			      dump_bad_cond_indices);
 
   return ret;
 }
