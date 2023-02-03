@@ -338,6 +338,38 @@ struct overloaded_base : public function_shape
   }
 };
 
+/* <T0>_t vfoo[_t0](<T0>_t, <T0>_t)
+   <T0>_t vfoo[_n_t0](<T0>_t, <S0>_t)
+
+   i.e. the standard shape for binary operations that operate on
+   uniform types.
+
+   Example: vaddq.
+   int8x16_t [__arm_]vaddq[_s8](int8x16_t a, int8x16_t b)
+   int8x16_t [__arm_]vaddq[_n_s8](int8x16_t a, int8_t b)
+   int8x16_t [__arm_]vaddq_m[_s8](int8x16_t inactive, int8x16_t a, int8x16_t b, mve_pred16_t p)
+   int8x16_t [__arm_]vaddq_m[_n_s8](int8x16_t inactive, int8x16_t a, int8_t b, mve_pred16_t p)
+   int8x16_t [__arm_]vaddq_x[_s8](int8x16_t a, int8x16_t b, mve_pred16_t p)
+   int8x16_t [__arm_]vaddq_x[_n_s8](int8x16_t a, int8_t b, mve_pred16_t p)  */
+struct binary_opt_n_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,v0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,s0", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform_opt_n (2);
+  }
+};
+SHAPE (binary_opt_n)
+
 /* <T0>[xN]_t vfoo_t0().
 
    Example: vuninitializedq.
