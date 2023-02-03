@@ -185,8 +185,8 @@ struct indexed_loadstore_def : public function_shape
   }
 };
 
-/* binop_def class.  */
-struct binop_def : public build_base
+/* alu_def class.  */
+struct alu_def : public build_base
 {
   char *get_name (function_builder &b, const function_instance &instance,
 		  bool overloaded_p) const override
@@ -213,6 +213,6 @@ SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
 SHAPE(indexed_loadstore, indexed_loadstore)
-SHAPE(binop, binop)
+SHAPE(alu, alu)
 
 } // end namespace riscv_vector

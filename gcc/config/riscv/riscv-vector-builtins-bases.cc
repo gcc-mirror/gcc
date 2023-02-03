@@ -186,6 +186,17 @@ public:
   }
 };
 
+/* Implements vneg/vnot.  */
+template<rtx_code CODE>
+class unop : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -228,6 +239,8 @@ static CONSTEXPR const binop<DIV> vdiv_obj;
 static CONSTEXPR const binop<MOD> vrem_obj;
 static CONSTEXPR const binop<UDIV> vdivu_obj;
 static CONSTEXPR const binop<UMOD> vremu_obj;
+static CONSTEXPR const unop<NEG> vneg_obj;
+static CONSTEXPR const unop<NOT> vnot_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -276,5 +289,7 @@ BASE (vdiv)
 BASE (vrem)
 BASE (vdivu)
 BASE (vremu)
+BASE (vneg)
+BASE (vnot)
 
 } // end namespace riscv_vector

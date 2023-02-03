@@ -66,6 +66,8 @@ extern const function_base *const vdiv;
 extern const function_base *const vrem;
 extern const function_base *const vdivu;
 extern const function_base *const vremu;
+extern const function_base *const vneg;
+extern const function_base *const vnot;
 }
 
 } // end namespace riscv_vector

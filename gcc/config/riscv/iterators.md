@@ -201,7 +201,9 @@
 			 (smax "smax")
 			 (umin "umin")
 			 (umax "umax")
-			 (mult "mul")])
+			 (mult "mul")
+			 (not "one_cmpl")
+			 (neg "neg")])
 
 ;; <or_optab> code attributes
 (define_code_attr or_optab [(ior "ior")
@@ -224,7 +226,9 @@
 			(smax "max")
 			(umin "minu")
 			(umax "maxu")
-			(mult "mul")])
+			(mult "mul")
+			(not "not")
+			(neg "neg")])
 
 ; atomics code attribute
 (define_code_attr atomic_optab

@@ -260,6 +260,10 @@ static CONSTEXPR const rvv_arg_type_info shift_vv_args[]
   = {rvv_arg_type_info (RVV_BASE_vector),
      rvv_arg_type_info (RVV_BASE_shift_vector), rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info v_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
+
 /* A list of args for vector_type func (vector_type, size) function.  */
 static CONSTEXPR const rvv_arg_type_info vector_size_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_size),
@@ -468,6 +472,14 @@ static CONSTEXPR const rvv_op_info iu_shift_vvx_ops
      OP_TYPE_vx,			  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vector_size_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_v_ops
+  = {iu_ops,			/* Types */
+     OP_TYPE_v,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     v_args /* Args */};
 
 /* A list of all RVV intrinsic functions.  */
 static function_group_info function_groups[] = {

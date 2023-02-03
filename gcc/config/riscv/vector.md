@@ -1531,3 +1531,33 @@
   "vrsub.vx\t%0,%3,%4%p1"
   [(set_attr "type" "vialu")
    (set_attr "mode" "<MODE>")])
+
+;; -------------------------------------------------------------------------------
+;; ---- Predicated integer unary operations
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - vneg.v/vnot.v
+;; -------------------------------------------------------------------------------
+
+(define_insn "@pred_<optab><mode>"
+  [(set (match_operand:VI 0 "register_operand"           "=vd, vr")
+	(if_then_else:VI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" " vm,Wc1")
+	     (match_operand 4 "vector_length_operand"    " rK, rK")
+	     (match_operand 5 "const_int_operand"        "  i,  i")
+	     (match_operand 6 "const_int_operand"        "  i,  i")
+	     (match_operand 7 "const_int_operand"        "  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (any_int_unop:VI
+	    (match_operand:VI 3 "register_operand"       " vr, vr"))
+	  (match_operand:VI 2 "vector_merge_operand"     "0vu,0vu")))]
+  "TARGET_VECTOR"
+  "v<insn>.v\t%0,%3%p1"
+  [(set_attr "type" "vialu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[5])"))
+   (set (attr "ma") (symbol_ref "riscv_vector::get_ta(operands[6])"))
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
