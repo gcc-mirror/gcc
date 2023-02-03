@@ -4676,7 +4676,7 @@ package body Sem_Aggr is
                         then
                            Error_Msg_Node_2 := Typ;
                            Error_Msg_NE
-                             ("component&? of type& is uninitialized",
+                             ("??component& of type& is uninitialized",
                               Assoc, Selector_Name);
 
                            --  An additional reminder if the component type
