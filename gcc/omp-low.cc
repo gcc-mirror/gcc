@@ -1827,6 +1827,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_TO
 	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_FROM
 	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_TOFROM
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_PRESENT_TO
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_PRESENT_FROM
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_PRESENT_TOFROM
 	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 	      && is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
 	      && varpool_node::get_create (decl)->offloadable
@@ -13675,6 +13678,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_ALWAYS_TO:
 	  case GOMP_MAP_ALWAYS_FROM:
 	  case GOMP_MAP_ALWAYS_TOFROM:
+	  case GOMP_MAP_PRESENT_ALLOC:
+	  case GOMP_MAP_PRESENT_FROM:
+	  case GOMP_MAP_PRESENT_TO:
+	  case GOMP_MAP_PRESENT_TOFROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_FROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_TO:
+	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_STRUCT:
@@ -14403,6 +14414,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    case GOMP_MAP_ALWAYS_TO:
 		    case GOMP_MAP_ALWAYS_FROM:
 		    case GOMP_MAP_ALWAYS_TOFROM:
+		    case GOMP_MAP_PRESENT_ALLOC:
+		    case GOMP_MAP_PRESENT_TO:
+		    case GOMP_MAP_PRESENT_FROM:
+		    case GOMP_MAP_PRESENT_TOFROM:
+		    case GOMP_MAP_ALWAYS_PRESENT_TO:
+		    case GOMP_MAP_ALWAYS_PRESENT_FROM:
+		    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 		    case GOMP_MAP_RELEASE:
 		    case GOMP_MAP_FORCE_TO:
 		    case GOMP_MAP_FORCE_FROM:
@@ -14445,11 +14463,15 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		tkind_zero = tkind;
 		break;
 	      case OMP_CLAUSE_TO:
-		tkind = GOMP_MAP_TO;
+		tkind
+		  = OMP_CLAUSE_MOTION_MODIFIER (c) == OMP_CLAUSE_MOTION_PRESENT
+		    ? GOMP_MAP_PRESENT_TO : GOMP_MAP_TO;
 		tkind_zero = tkind;
 		break;
 	      case OMP_CLAUSE_FROM:
-		tkind = GOMP_MAP_FROM;
+		tkind
+		  = OMP_CLAUSE_MOTION_MODIFIER (c) == OMP_CLAUSE_MOTION_PRESENT
+		    ? GOMP_MAP_PRESENT_FROM : GOMP_MAP_FROM;
 		tkind_zero = tkind;
 		break;
 	      default:

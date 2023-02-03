@@ -1,3 +1,14 @@
+2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/gomp/defaultmap-4.c: New.
+	* c-c++-common/gomp/map-6.c: Update expected error messages.
+	* c-c++-common/gomp/map-9.c: New.
+	* c-c++-common/gomp/target-update-1.c: New.
+	* gfortran.dg/gomp/defaultmap-1.f90: Update expected error messages.
+	* gfortran.dg/gomp/defaultmap-8.f90: New.
+	* gfortran.dg/gomp/map-10.f90: New.
+	* gfortran.dg/gomp/target-update-1.f90: New.
+
 2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.dg/gomp/allocate-4.f90: Cut.

@@ -1453,9 +1453,20 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_MAP_TO: fputs ("to:", dumpfile); break;
 	  case OMP_MAP_FROM: fputs ("from:", dumpfile); break;
 	  case OMP_MAP_TOFROM: fputs ("tofrom:", dumpfile); break;
+	  case OMP_MAP_PRESENT_ALLOC: fputs ("present,alloc:", dumpfile); break;
+	  case OMP_MAP_PRESENT_TO: fputs ("present,to:", dumpfile); break;
+	  case OMP_MAP_PRESENT_FROM: fputs ("present,from:", dumpfile); break;
+	  case OMP_MAP_PRESENT_TOFROM:
+	    fputs ("present,tofrom:", dumpfile); break;
 	  case OMP_MAP_ALWAYS_TO: fputs ("always,to:", dumpfile); break;
 	  case OMP_MAP_ALWAYS_FROM: fputs ("always,from:", dumpfile); break;
 	  case OMP_MAP_ALWAYS_TOFROM: fputs ("always,tofrom:", dumpfile); break;
+	  case OMP_MAP_ALWAYS_PRESENT_TO:
+	    fputs ("always,present,to:", dumpfile); break;
+	  case OMP_MAP_ALWAYS_PRESENT_FROM:
+	    fputs ("always,present,from:", dumpfile); break;
+	  case OMP_MAP_ALWAYS_PRESENT_TOFROM:
+	    fputs ("always,present,tofrom:", dumpfile); break;
 	  case OMP_MAP_DELETE: fputs ("delete:", dumpfile); break;
 	  case OMP_MAP_RELEASE: fputs ("release:", dumpfile); break;
 	  default: break;
@@ -1793,6 +1804,10 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  fputs ("inscan, ", dumpfile);
 	if (list_type == OMP_LIST_REDUCTION_TASK)
 	  fputs ("task, ", dumpfile);
+	if ((list_type == OMP_LIST_TO || list_type == OMP_LIST_FROM)
+	    && omp_clauses->lists[list_type]->u.motion_modifier
+	       == OMP_MOTION_PRESENT)
+	  fputs ("present:", dumpfile);
 	show_omp_namelist (list_type, omp_clauses->lists[list_type]);
 	fputc (')', dumpfile);
       }
