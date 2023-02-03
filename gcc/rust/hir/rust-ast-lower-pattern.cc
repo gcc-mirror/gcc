@@ -249,5 +249,34 @@ ASTLoweringPattern::visit (AST::GroupedPattern &pattern)
   pattern.get_pattern_in_parens ()->accept_vis (*this);
 }
 
+void
+ASTLoweringPattern::visit (AST::ReferencePattern &pattern)
+{
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  HIR::Pattern *inner
+    = ASTLoweringPattern::translate (pattern.get_referenced_pattern ().get ());
+
+  translated
+    = new HIR::ReferencePattern (mapping, std::unique_ptr<HIR::Pattern> (inner),
+				 pattern.get_is_mut () ? Mutability::Mut
+						       : Mutability::Imm,
+				 pattern.get_locus ());
+
+  if (pattern.is_double_reference ())
+    {
+      Analysis::NodeMapping mapping2 (crate_num, pattern.get_node_id (),
+				      mappings->get_next_hir_id (crate_num),
+				      UNKNOWN_LOCAL_DEFID);
+      translated
+	= new HIR::ReferencePattern (mapping2,
+				     std::unique_ptr<HIR::Pattern> (translated),
+				     Mutability::Imm, pattern.get_locus ());
+    }
+}
+
 } // namespace HIR
 } // namespace Rust

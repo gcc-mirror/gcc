@@ -424,7 +424,6 @@ protected:
 // HIR node for pattern based on dereferencing the pointers given
 class ReferencePattern : public Pattern
 {
-  bool has_two_amps;
   Mutability mut;
   std::unique_ptr<Pattern> pattern;
   Location locus;
@@ -435,16 +434,15 @@ public:
 
   ReferencePattern (Analysis::NodeMapping mappings,
 		    std::unique_ptr<Pattern> pattern, Mutability reference_mut,
-		    bool ref_has_two_amps, Location locus)
-    : has_two_amps (ref_has_two_amps), mut (reference_mut),
-      pattern (std::move (pattern)), locus (locus), mappings (mappings)
+		    Location locus)
+    : mut (reference_mut), pattern (std::move (pattern)), locus (locus),
+      mappings (mappings)
   {}
 
   // Copy constructor requires clone
   ReferencePattern (ReferencePattern const &other)
-    : has_two_amps (other.has_two_amps), mut (other.mut),
-      pattern (other.pattern->clone_pattern ()), locus (other.locus),
-      mappings (other.mappings)
+    : mut (other.mut), pattern (other.pattern->clone_pattern ()),
+      locus (other.locus), mappings (other.mappings)
   {}
 
   // Overload assignment operator to clone
@@ -452,7 +450,6 @@ public:
   {
     pattern = other.pattern->clone_pattern ();
     mut = other.mut;
-    has_two_amps = other.has_two_amps;
     locus = other.locus;
     mappings = other.mappings;
 
