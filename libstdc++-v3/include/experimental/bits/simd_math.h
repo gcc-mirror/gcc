@@ -1010,7 +1010,7 @@ template <typename _VV, typename = __detail::__odr_helper>
 	    using _IV = rebind_simd_t<_Ip, _V>;
 	    const auto __as_int = simd_bit_cast<_IV>(__hi_exp);
 	    const _V __scale
-	      = simd_bit_cast<_V>(2 * simd_bit_cast<_Ip>(_Tp(1)) - __as_int);
+	      = simd_bit_cast<_V>(2 * __bit_cast<_Ip>(_Tp(1)) - __as_int);
 #else
 	    const _V __scale = (__hi_exp ^ __inf) * _Tp(.5);
 #endif
@@ -1181,7 +1181,7 @@ _GLIBCXX_SIMD_CVTING2(hypot)
 		using _IV = rebind_simd_t<_Ip, _V>;
 		const auto __as_int = simd_bit_cast<_IV>(__hi_exp);
 		const _V __scale
-		  = simd_bit_cast<_V>(2 * simd_bit_cast<_Ip>(_Tp(1)) - __as_int);
+		  = simd_bit_cast<_V>(2 * __bit_cast<_Ip>(_Tp(1)) - __as_int);
 #else
 		const _V __scale = (__hi_exp ^ __inf) * _Tp(.5);
 #endif
