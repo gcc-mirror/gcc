@@ -3492,8 +3492,15 @@ pass_vsetvl::compute_probabilities (void)
       basic_block cfg_bb = bb->cfg_bb ();
       auto &curr_prob
 	= m_vector_manager->vector_block_infos[cfg_bb->index].probability;
+
+      /* GCC assume entry block (bb 0) are always so
+	 executed so set its probability as "always".  */
       if (ENTRY_BLOCK_PTR_FOR_FN (cfun) == cfg_bb)
 	curr_prob = profile_probability::always ();
+      /* Exit block (bb 1) is the block we don't need to process.  */
+      if (EXIT_BLOCK_PTR_FOR_FN (cfun) == cfg_bb)
+	continue;
+
       gcc_assert (curr_prob.initialized_p ());
       FOR_EACH_EDGE (e, ei, cfg_bb->succs)
 	{
@@ -3507,9 +3514,6 @@ pass_vsetvl::compute_probabilities (void)
 	    new_prob += curr_prob * e->probability;
 	}
     }
-  auto &exit_block
-    = m_vector_manager->vector_block_infos[EXIT_BLOCK_PTR_FOR_FN (cfun)->index];
-  exit_block.probability = profile_probability::always ();
 }
 
 /* Lazy vsetvl insertion for optimize > 0. */
