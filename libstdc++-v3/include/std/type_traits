@@ -2123,6 +2123,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	? sizeof(_Tp) : __strictest_alignment<_Types...>::_S_size;
     };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /**
    *  @brief Provide aligned storage for types.
    *
@@ -2155,6 +2158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template <size_t _Len, typename... _Types>
     const size_t aligned_union<_Len, _Types...>::alignment_value;
+#pragma GCC diagnostic pop
 
   /// @cond undocumented
 
@@ -2586,6 +2590,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { } _GLIBCXX17_DEPRECATED_SUGGEST("std::invoke_result");
 
 #if __cplusplus >= 201402L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   /// Alias template for aligned_storage
   template<size_t _Len, size_t _Align =
 	    __alignof__(typename __aligned_storage_msa<_Len>::__type)>
@@ -2593,6 +2599,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template <size_t _Len, typename... _Types>
     using aligned_union_t _GLIBCXX23_DEPRECATED = typename aligned_union<_Len, _Types...>::type;
+#pragma GCC diagnostic pop
 
   /// Alias template for decay
   template<typename _Tp>

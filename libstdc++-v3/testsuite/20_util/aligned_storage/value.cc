@@ -59,3 +59,5 @@ void test01()
   static_assert(sizeof(aligned_storage<5>::type) >= 5, "");
   static_assert(__alignof__(aligned_storage<5>::type) == align_msa, "");
 }
+
+// { dg-warning "deprecated" "" { target c++23 } 0 }
