@@ -1142,6 +1142,24 @@ public:
     return TuplePatternItemType::RANGED;
   }
 
+  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
+  {
+    return lower_patterns;
+  }
+  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
+  {
+    return lower_patterns;
+  }
+
+  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
+  {
+    return upper_patterns;
+  }
+  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
+  {
+    return upper_patterns;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
