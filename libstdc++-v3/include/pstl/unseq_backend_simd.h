@@ -74,7 +74,7 @@ __simd_or(_Index __first, _DifferenceType __n, _Pred __pred) noexcept
     const _Index __last = __first + __n;
     while (__last != __first)
     {
-        int32_t __flag = 1;
+        __INT32_TYPE__ __flag = 1;
         _PSTL_PRAGMA_SIMD_REDUCTION(& : __flag)
         for (_DifferenceType __i = 0; __i < __block_size; ++__i)
             if (__pred(*(__first + __i)))
