@@ -101,6 +101,7 @@ public:
 
   void visit (HIR::IdentifierPattern &) override;
   void visit (HIR::WildcardPattern &) override;
+  void visit (HIR::TuplePattern &) override;
 
   // check for unimplemented Pattern HIR nodes.
   void visit (HIR::LiteralPattern &pattern) override
@@ -144,12 +145,6 @@ public:
   {
     rust_sorry_at (pattern.get_locus (),
 		   "struct pattern let statements not supported");
-  }
-
-  void visit (HIR::TuplePattern &pattern) override
-  {
-    rust_sorry_at (pattern.get_locus (),
-		   "tuple pattern let statements not supported");
   }
 
   void visit (HIR::TupleStructPattern &pattern) override
