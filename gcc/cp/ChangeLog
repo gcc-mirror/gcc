@@ -1,3 +1,31 @@
+2023-02-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108158
+	* constexpr.cc (cxx_eval_array_reference): Don't replace
+	new_ctx.object.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107461
+	* semantics.cc (finish_call_expr): Strip ADDR_EXPR from
+	the selected callee during overload set pruning.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96745
+	* class.cc (check_methods): Diagnose an unviable OVERLOAD
+	set for CLASSTYPE_DESTRUCTOR differently from an ambiguous one.
+	Then prune the OVERLOAD to a single function.
+	(check_bases_and_members): Handle CLASSTYPE_DESTRUCTOR being
+	an OVERLOAD when calling deduce_noexcept_on_destructor.
+	Document why it has to be called before check_methods.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108579
+	* class.cc (check_methods): Swap order of constraints_satisfied_p
+	and copy/move_fn_p tests.
+
 2023-02-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107755

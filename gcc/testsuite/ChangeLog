@@ -1,3 +1,175 @@
+2023-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108647
+	* g++.dg/torture/pr108647.C: New test.
+
+2023-02-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/108639
+	* gcc.c-torture/compile/pr108638.c: New file.
+	* gcc.c-torture/compile/pr108639.c: New file.
+
+2023-02-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107570
+	* gcc.dg/pr107570.c: New.
+
+2023-02-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108158
+	* g++.dg/cpp1y/constexpr-108158.C: New test.
+
+2023-02-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101071
+	* g++.dg/cpp0x/variadic-alias8.C: New test.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107461
+	* g++.dg/template/call9.C: New test.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96745
+	* g++.dg/cpp2a/concepts-dtor1.C: New test.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108579
+	* g++.dg/cpp2a/concepts-pr108579.C: New test.
+
+2023-02-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108384
+	* gcc.dg/ipa/pr108384.c: New test.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/binop_vv_constraint-1.c:
+	* gcc.target/riscv/rvv/base/shift_vx_constraint-1.c:
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/base/vsll_vx-1.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx-2.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx-3.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_mu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_mu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_mu-3.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tu-3.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tum-1.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tum-2.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tum-3.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tumu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tumu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsll_vx_tumu-3.C: New test.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/base/vsra_vx-1.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx-2.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx-3.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_mu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_mu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_mu-3.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tu-3.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tum-1.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tum-2.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tum-3.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tumu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tumu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsra_vx_tumu-3.C: New test.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/base/vsrl_vx-1.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx-2.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx-3.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_mu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_mu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_mu-3.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tu-3.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tum-1.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tum-2.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tum-3.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tumu-1.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tumu-2.C: New test.
+	* g++.target/riscv/rvv/base/vsrl_vx_tumu-3.C: New test.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/shift_vx_constraint-1.c: New test.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vsll_vx-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_m-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_m-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_m-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_mu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_mu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_mu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tum-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tum-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tum-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tumu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tumu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsll_vx_tumu-3.c: New test.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vsra_vx-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_m-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_m-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_m-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_mu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_mu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_mu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tum-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tum-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tum-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tumu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tumu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsra_vx_tumu-3.c: New test.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vsrl_vx-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_m-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_m-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_m-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_mu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_mu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_mu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tu-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tum-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tum-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tum-3.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tumu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tumu-2.c: New test.
+	* gcc.target/riscv/rvv/base/vsrl_vx_tumu-3.c: New test.
+
 2023-02-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-constexpr-3.c: Do not expect comparison of nullptr_t

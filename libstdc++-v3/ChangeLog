@@ -1,3 +1,32 @@
+2023-02-03  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config/os/gnu-linux/os_defines.h [!__linux__]
+	(_GLIBCXX_NATIVE_THREAD_ID, _GLIBCXX_GTHREAD_USE_WEAK): Do not define.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__find_last_fn, find_last):
+	Define.
+	(__find_last_if_fn, find_last_if): Define.
+	(__find_last_if_not_fn, find_last_if_not): Define.
+	* testsuite/25_algorithms/find_last/1.cc: New test.
+	* testsuite/25_algorithms/find_last_if/1.cc: New test.
+	* testsuite/25_algorithms/find_last_if_not/1.cc: New test.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (out_value_result): Define.
+	(iota_result): Define.
+	(__iota_fn, iota): Define.
+	* testsuite/25_algorithms/iota/1.cc: New test.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__contains_fn, contains): Define.
+	(__contains_subrange_fn, contains_subrange): Define.
+	* testsuite/25_algorithms/contains/1.cc: New test.
+	* testsuite/25_algorithms/contains_subrange/1.cc: New test.
+
 2023-02-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/abi.xml: Tweak link to ABIcheck project.

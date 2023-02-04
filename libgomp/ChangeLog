@@ -1,3 +1,16 @@
+2023-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_target_rev): Handle mapnum == 0 and avoid
+	freeing not allocated memory.
+	* testsuite/libgomp.fortran/reverse-offload-6.f90: New test.
+
+2023-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (5.0 Impl. Status, gcn specifics): Update for
+	reverse offload.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Accept
+	reverse-offload requirement.
+
 2023-02-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/libgomp-gcn.h (DEFAULT_GCN_STACK_SIZE): New define.

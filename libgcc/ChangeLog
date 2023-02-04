@@ -1,3 +1,8 @@
+2023-02-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/pr-support.c (__gnu_unwind_execute): Use
+	TARGET_HAVE_PACBTI to define set_pac and set_pac_sp.
+
 2023-01-30  Flavio Cruz  <flaviocruz@gmail.com>
 
 	* config.host: Recognize x86_64-*-gnu* targets.

@@ -1,3 +1,107 @@
+2023-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108647
+	* range-op.cc (operator_equal::op1_range,
+	operator_not_equal::op1_range): Don't test op2 bound
+	equality if op2.undefined_p (), instead set_varying.
+	(operator_lt::op1_range, operator_le::op1_range,
+	operator_gt::op1_range, operator_ge::op1_range): Return false if
+	op2.undefined_p ().
+	(operator_lt::op2_range, operator_le::op2_range,
+	operator_gt::op2_range, operator_ge::op2_range): Return false if
+	op1.undefined_p ().
+
+2023-02-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/108639
+	* value-range.cc (irange::legacy_equal_p): Compare nonzero bits as
+	widest_int.
+	(irange::operator==): Same.
+
+2023-02-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/108647
+	* range-op-float.cc (foperator_lt::op1_range): Handle undefined ranges.
+	(foperator_lt::op2_range): Same.
+	(foperator_le::op1_range): Same.
+	(foperator_le::op2_range): Same.
+	(foperator_gt::op1_range): Same.
+	(foperator_gt::op2_range): Same.
+	(foperator_ge::op1_range): Same.
+	(foperator_ge::op2_range): Same.
+	(foperator_unordered_lt::op1_range): Same.
+	(foperator_unordered_lt::op2_range): Same.
+	(foperator_unordered_le::op1_range): Same.
+	(foperator_unordered_le::op2_range): Same.
+	(foperator_unordered_gt::op1_range): Same.
+	(foperator_unordered_gt::op2_range): Same.
+	(foperator_unordered_ge::op1_range): Same.
+	(foperator_unordered_ge::op2_range): Same.
+
+2023-02-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107570
+	* tree-vrp.cc (remove_and_update_globals): Reset SCEV.
+
+2023-02-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (Internals): Remove from menu.
+	(Using): Comment out ifnohtml conditional.
+	(Documentation): Use gcc url.
+	(License): Node simplified.
+	(Copying): New node.  Include gpl_v3_without_node.
+	(Contributing): Node simplified.
+	(Internals): Commented out.
+	(Libraries): Node simplified.
+	(Indices): Ditto.
+	(Contents): Ditto.
+	(Functions): Ditto.
+
+2023-02-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/mve.md (mve_vabavq_p_<supf><mode>): Add length
+	attribute.
+	(mve_vqshluq_m_n_s<mode>): Likewise.
+	(mve_vshlq_m_<supf><mode>): Likewise.
+	(mve_vsriq_m_n_<supf><mode>): Likewise.
+	(mve_vsubq_m_<supf><mode>): Likewise.
+
+2023-02-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108384
+	* ipa-sra.cc (push_param_adjustments_for_index): Remove a size check
+	when comparing to an IPA-CP value.
+	(dump_list_of_param_indices): New function.
+	(adjust_parameter_descriptions): Check for mismatching IPA-CP values.
+	Dump removed candidates using dump_list_of_param_indices.
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::modify_expression): Add assert checking
+	sizes of a VIEW_CONVERT_EXPR will match.
+	(ipa_param_body_adjustments::modify_assignment): Likewise.
+
+2023-02-03  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv.h: Remove VL_REGS, VTYPE_REGS class.
+	* config/riscv/riscv.cc: Ditto.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md (sll.vi): Fix constraint bug.
+	(sll.vv): Ditto.
+	(%3,%4): Ditto.
+	(%3,%v4): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-02-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md (pmode_reg_or_uimm5_operand): New predicate.
+	* config/riscv/riscv-vector-builtins-bases.cc: New class.
+	* config/riscv/riscv-vector-builtins-functions.def (vsll): Ditto.
+	(vsra): Ditto.
+	(vsrl): Ditto.
+	* config/riscv/riscv-vector-builtins.cc: Ditto.
+	* config/riscv/vector.md (@pred_<optab><mode>_scalar): New pattern.
+
 2023-02-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* toplev.cc (toplev::main): Only print the version information header

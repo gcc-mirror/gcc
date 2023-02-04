@@ -1,3 +1,62 @@
+2023-02-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (TEXISRC): Remove m2/images/gnu.eps.
+	(RSTSRC): Remove m2/images/gnu.eps.
+	(doc/m2.dvi): Add $(objdir)/m2/images/gnu.eps.
+	(doc/m2.pdf): Add $(objdir)/m2/images/gnu.eps.
+	(M2_PDFFILES): New definition.
+	(m2.install-pdf): New rule.
+	(m2.pod): Add $(objdir)/m2/images/gnu.eps.
+	(m2.info): Add $(objdir)/m2/images/gnu.eps.
+	(m2.html): New rule.
+	(m2/gpl_v3_without_node.texi): New rule.
+	(plugin/m2rte$(soext)): Simplify mkinstalldirs.
+	(cc1gm2$(exeext)): Ditto.
+	(m2/stage1/cc1gm2$(exeext)): Ditto.
+	(m2/gm2-gcc/%.o): Ditto.
+	(m2/gm2-gcc/rtegraph.o): Ditto.
+	(m2/gm2-gcc/$(SRC_PREFIX)%.h): Ditto.
+	(m2/mc-boot/$(SRC_PREFIX)%.o):Ditto.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Ditto.
+	(m2/mc-boot/main.o): Ditto.
+	(m2/gm2-libs-boot/%.o):	Ditto.
+	(m2/gm2-libs-boot/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-libs-boot/RTcodummy.o): Ditto.
+	(m2/gm2-libs-boot/wrapc.o): Ditto.
+	(m2/gm2-libs-boot/M2LINK.o): Ditto.
+	(m2/gm2-libs-boot/UnixArgs.o): Ditto.
+	(m2/gm2-libs-boot/choosetemp.o): Ditto.
+	(m2/gm2-libs-boot/errno.o): Ditto.
+	(m2/gm2-libs-boot/dtoa.o): Ditto.
+	(m2/gm2-libs-boot/ldtoa.o): Ditto.
+	(m2/gm2-libs-boot/termios.o): Ditto.
+	(m2/gm2-libs-boot/SysExceptions.o): Ditto.
+	(m2/gm2-libs-boot/SysStorage.o): Ditto.
+	(m2/gm2-compiler-boot/M2GCCDeclare.o): Ditto.
+	(m2/gm2-compiler-boot/M2Error.o): Ditto.
+	(m2/gm2-compiler-boot/%.o): Ditto.
+	(m2/gm2-compiler-boot/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-compiler-boot/m2flex.o): Ditto.
+	(m2/gm2-compiler/m2flex.c): Ditto.
+	(m2/gm2-libiberty/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-compiler/%.o): Ditto.
+	(m2/gm2-compiler/m2flex.o): Ditto.
+	(m2/gm2-compiler/%.o): Ditto.
+	(m2/gm2-libs-iso/%.o): Ditto.
+	(m2/gm2-libs/gm2-libs-host.h): Ditto.
+	($(objdir)/m2/gm2-libs-min/SYSTEM.def): Ditto.
+	($(objdir)/m2/gm2-libs/SYSTEM.def): Ditto.
+	($(objdir)/m2/gm2-libs-iso/SYSTEM.def):	Ditto.
+	($(objdir)/m2/gm2-libs-coroutines/SYSTEM.def): Ditto.
+	(m2/gm2-compiler/gm2.a): Ditto.
+	(m2/gm2-libs-boot/libgm2.a): Ditto.
+	(m2/gm2-compiler-boot/gm2.a): Ditto.
+	(m2/boot-bin/mklink$(exeext)): Ditto.
+	(m2/gm2-compiler-boot/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-compiler/%.mod): Ditto.
+	(m2/gm2-compiler-boot/%.mod): Ditto.
+	(m2/pge-boot/%.o): Ditto.
+
 2023-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (GM2_FLAGS): Add -fno-return -Wreturn-type.
