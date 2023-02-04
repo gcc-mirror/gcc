@@ -1341,30 +1341,6 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   // SWITCH_ALL_CASES_P is true if the switch includes a default label or the
   // case label ranges cover all possible values of the condition expression
 
-  /* Switch expression.
-
-     TREE_TYPE is the original type of the condition, before any
-     language required type conversions.  It may be NULL, in which case
-     the original type and final types are assumed to be the same.
-
-     Operand 0 is the expression used to perform the branch,
-     Operand 1 is the body of the switch, which probably contains
-       CASE_LABEL_EXPRs.  It may also be NULL, in which case operand 2
-       must not be NULL.  */
-  // DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 2)
-
-  /* Used to represent a case label.
-
-     Operand 0 is CASE_LOW.  It may be NULL_TREE, in which case the label
-       is a 'default' label.
-     Operand 1 is CASE_HIGH.  If it is NULL_TREE, the label is a simple
-       (one-value) case label.  If it is non-NULL_TREE, the case is a range.
-     Operand 2 is CASE_LABEL, which has the corresponding LABEL_DECL.
-     Operand 3 is CASE_CHAIN.  This operand is only used in tree-cfg.cc to
-       speed up the lookup of case labels which use a particular edge in
-       the control flow graph.  */
-  // DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", tcc_statement, 4)
-
   TyTy::TypeKind scrutinee_kind = check_match_scrutinee (expr, ctx);
   if (scrutinee_kind == TyTy::TypeKind::ERROR)
     {
