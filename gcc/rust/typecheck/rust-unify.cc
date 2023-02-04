@@ -124,6 +124,17 @@ UnifyRules::go ()
   rust_debug ("unify::go ltype={%s} rtype={%s}", ltype->debug_str ().c_str (),
 	      rtype->debug_str ().c_str ());
 
+  // check bounds
+  if (ltype->num_specified_bounds () > 0)
+    {
+      if (!ltype->bounds_compatible (*rtype, locus, true))
+	{
+	  // already emitted an error
+	  emit_error = false;
+	  return new TyTy::ErrorType (0);
+	}
+    }
+
   switch (ltype->get_kind ())
     {
     case TyTy::INFER:
