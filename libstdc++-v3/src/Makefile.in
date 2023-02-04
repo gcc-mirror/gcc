@@ -482,11 +482,15 @@ WARN_CXXFLAGS = \
 
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
-@ENABLE_FILESYSTEM_TS_FALSE@filesystem_dir = 
-@ENABLE_FILESYSTEM_TS_TRUE@filesystem_dir = filesystem
-@ENABLE_BACKTRACE_FALSE@backtrace_dir = 
-@ENABLE_BACKTRACE_TRUE@backtrace_dir = libbacktrace
-SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir) experimental
+@ENABLE_FILESYSTEM_TS_FALSE@@GLIBCXX_HOSTED_TRUE@filesystem_dir = 
+@ENABLE_FILESYSTEM_TS_TRUE@@GLIBCXX_HOSTED_TRUE@filesystem_dir = filesystem
+@GLIBCXX_HOSTED_FALSE@filesystem_dir = 
+@ENABLE_BACKTRACE_FALSE@@GLIBCXX_HOSTED_TRUE@backtrace_dir = 
+@ENABLE_BACKTRACE_TRUE@@GLIBCXX_HOSTED_TRUE@backtrace_dir = libbacktrace
+@GLIBCXX_HOSTED_FALSE@backtrace_dir = 
+@GLIBCXX_HOSTED_FALSE@experimental_dir = 
+@GLIBCXX_HOSTED_TRUE@experimental_dir = experimental
+SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir) $(experimental_dir)
 @VTV_CYGMIN_FALSE@toolexeclib_LTLIBRARIES = libstdc++.la
 
 # Cross compiler support.
