@@ -162,6 +162,8 @@ class ExprStmt : public Stmt
   Location locus;
 
 public:
+  std::string as_string () const override;
+
   Location get_locus () const override final { return locus; }
 
   bool is_item () const override final { return false; }
@@ -199,8 +201,6 @@ class ExprStmtWithoutBlock : public ExprStmt
 {
 
 public:
-  std::string as_string () const override;
-
   ExprStmtWithoutBlock (Analysis::NodeMapping mappings,
 			std::unique_ptr<Expr> expr, Location locus)
     : ExprStmt (std::move (mappings), std::move (expr), locus)
@@ -224,8 +224,6 @@ class ExprStmtWithBlock : public ExprStmt
   bool must_be_unit;
 
 public:
-  std::string as_string () const override;
-
   ExprStmtWithBlock (Analysis::NodeMapping mappings,
 		     std::unique_ptr<ExprWithBlock> expr, Location locus,
 		     bool must_be_unit)
