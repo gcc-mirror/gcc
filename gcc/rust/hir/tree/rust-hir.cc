@@ -1075,9 +1075,9 @@ PathInExpression::as_string () const
 }
 
 std::string
-ExprStmtWithBlock::as_string () const
+ExprStmt::as_string () const
 {
-  std::string str = indent_spaces (enter) + "ExprStmtWithBlock: \n";
+  std::string str = indent_spaces (enter) + "ExprStmt:\n";
 
   if (expr == nullptr)
     {
@@ -1937,26 +1937,6 @@ TupleExpr::as_string () const
 	  str += "\n  " + elem->as_string ();
 	}
     }
-
-  return str;
-}
-
-std::string
-ExprStmtWithoutBlock::as_string () const
-{
-  std::string str ("ExprStmtWithoutBlock:\n");
-  indent_spaces (enter);
-  str += indent_spaces (stay);
-
-  if (expr == nullptr)
-    {
-      str += "none (this shouldn't happen and is probably an error)";
-    }
-  else
-    {
-      str += expr->as_string ();
-    }
-  indent_spaces (out);
 
   return str;
 }
