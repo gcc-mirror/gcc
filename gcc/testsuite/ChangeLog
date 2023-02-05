@@ -1,3 +1,60 @@
+2023-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108529
+	* gfortran.dg/pr108529.f90: New test.
+
+2023-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-07-14  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/106209
+	* gfortran.dg/pr106209.f90: New test.
+
+2023-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108501
+	* gfortran.dg/pr108501.f90: New test.
+
+2023-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108502
+	* gfortran.dg/pr108502.f90: New test.
+
+2023-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108421
+	* gfortran.dg/pr108421.f90: New test.
+
+2023-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108420
+	* gfortran.dg/pr108420.f90: New test.
+
+2023-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108453
+	* gfortran.dg/common_27.f90: New test.
+
 2023-01-26  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
