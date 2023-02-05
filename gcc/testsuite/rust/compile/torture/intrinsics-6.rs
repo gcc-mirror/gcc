@@ -1,3 +1,5 @@
+#![feature(intrinsics)]
+
 extern "rust-intrinsic" {
     pub fn unchecked_add<T>(x: T, y: T) -> T;
     pub fn unchecked_sub<T>(x: T, y: T) -> T;

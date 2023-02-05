@@ -1,3 +1,5 @@
+#![feature(intrinsics)]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

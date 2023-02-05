@@ -1,4 +1,5 @@
 // { dg-additional-options "-w" }
+#![feature(intrinsics)]
 
 mod intrinsics {
     extern "rust-intrinsic" {

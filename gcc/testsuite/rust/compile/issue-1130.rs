@@ -1,4 +1,6 @@
 // { dg-additional-options "-w" }
+#![feature(intrinsics)]
+
 mod mem {
     extern "rust-intrinsic" {
         fn size_of<T>() -> usize;
