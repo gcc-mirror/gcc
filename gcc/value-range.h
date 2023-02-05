@@ -170,8 +170,6 @@ protected:
   irange (tree *, unsigned);
 
    // In-place operators.
-  bool irange_union (const irange &);
-  bool irange_intersect (const irange &);
   void irange_set (tree, tree);
   void irange_set_anti_range (tree, tree);
   bool irange_contains_p (const irange &) const;
@@ -901,18 +899,6 @@ irange::upper_bound () const
   unsigned pairs = num_pairs ();
   gcc_checking_assert (pairs > 0);
   return upper_bound (pairs - 1);
-}
-
-inline bool
-irange::union_ (const vrange &r)
-{
-  return irange_union (as_a <irange> (r));
-}
-
-inline bool
-irange::intersect (const vrange &r)
-{
-  return irange_intersect (as_a <irange> (r));
 }
 
 // Set value range VR to a nonzero range of type TYPE.

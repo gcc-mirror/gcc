@@ -1246,11 +1246,13 @@ irange::irange_single_pair_union (const irange &r)
   return true;
 }
 
-// union_ for multi-ranges.
+// Return TRUE if anything changes.
 
 bool
-irange::irange_union (const irange &r)
+irange::union_ (const vrange &v)
 {
+  const irange &r = as_a <irange> (v);
+
   if (r.undefined_p ())
     return false;
 
@@ -1415,11 +1417,12 @@ irange::irange_contains_p (const irange &r) const
 }
 
 
-// Intersect for multi-ranges.  Return TRUE if anything changes.
+// Return TRUE if anything changes.
 
 bool
-irange::irange_intersect (const irange &r)
+irange::intersect (const vrange &v)
 {
+  const irange &r = as_a <irange> (v);
   gcc_checking_assert (undefined_p () || r.undefined_p ()
 		       || range_compatible_p (type (), r.type ()));
 
