@@ -217,6 +217,10 @@
 
 (define_code_iterator any_non_commutative_binop [minus div udiv mod umod])
 
+(define_code_iterator any_sat_int_binop [ss_plus ss_minus us_plus us_minus])
+(define_code_iterator sat_int_plus_binop [ss_plus us_plus])
+(define_code_iterator sat_int_minus_binop [ss_minus us_minus])
+
 (define_code_attr binop_rhs1_predicate [
 			(plus "register_operand")
 			(minus "vector_arith_operand")
@@ -234,7 +238,11 @@
 			(div "register_operand")
 			(mod "register_operand")
 			(udiv "register_operand")
-			(umod "register_operand")])
+			(umod "register_operand")
+			(ss_plus "register_operand")
+			(us_plus "register_operand")
+			(ss_minus "register_operand")
+			(us_minus "register_operand")])
 
 (define_code_attr binop_rhs2_predicate [
 			(plus "vector_arith_operand")
@@ -253,7 +261,11 @@
 			(div "register_operand")
 			(mod "register_operand")
 			(udiv "register_operand")
-			(umod "register_operand")])
+			(umod "register_operand")
+			(ss_plus "vector_arith_operand")
+			(us_plus "vector_arith_operand")
+			(ss_minus "vector_neg_arith_operand")
+			(us_minus "register_operand")])
 
 (define_code_attr binop_rhs1_constraint [
 			(plus "vr,vr,vr,vr,vr,vr")
@@ -291,7 +303,11 @@
 			(div "vr,vr,vr,vr,vr,vr")
 			(mod "vr,vr,vr,vr,vr,vr")
 			(udiv "vr,vr,vr,vr,vr,vr")
-			(umod "vr,vr,vr,vr,vr,vr")])
+			(umod "vr,vr,vr,vr,vr,vr")
+			(ss_plus "vr,vr,vi,vi")
+			(us_plus "vr,vr,vi,vi")
+			(ss_minus "vr,vr,vj,vj")
+			(us_minus "vr,vr,vr,vr")])
 
 (define_code_attr int_binop_insn_type [
 			(plus "vialu")
@@ -310,11 +326,15 @@
 			(div "vidiv")
 			(mod "vidiv")
 			(udiv "vidiv")
-			(umod "vidiv")])
+			(umod "vidiv")
+			(ss_plus "vsalu")
+			(us_plus "vsalu")
+			(ss_minus "vsalu")
+			(us_minus "vsalu")])
 
-;; <binop_imm_rhs1_insn> expands to the insn name of binop matching constraint rhs1 is immediate.
+;; <binop_vi_variant_insn> expands to the insn name of binop matching constraint rhs1 is immediate.
 ;; minus is negated as vadd and ss_minus is negated as vsadd, others remain <insn>.
-(define_code_attr binop_imm_rhs1_insn [(ashift "sll.vi")
+(define_code_attr binop_vi_variant_insn [(ashift "sll.vi")
 			       (ashiftrt "sra.vi")
 			       (lshiftrt "srl.vi")
 			       (div "div.vv")
@@ -330,11 +350,15 @@
 			       (smax "max.vv")
 			       (umin "minu.vv")
 			       (umax "maxu.vv")
-			       (mult "mul.vv")])
+			       (mult "mul.vv")
+			       (ss_plus "sadd.vi")
+			       (us_plus "saddu.vi")
+			       (ss_minus "sadd.vi")
+			       (us_minus "ssubu.vv")])
 
-;; <binop_imm_rhs2_insn> expands to the insn name of binop matching constraint rhs2 is immediate.
+;; <binop_reverse_vi_variant_insn> expands to the insn name of binop matching constraint rhs2 is immediate.
 ;; minus is reversed as vrsub, others remain <insn>.
-(define_code_attr binop_imm_rhs2_insn [(ashift "sll.vv")
+(define_code_attr binop_reverse_vi_variant_insn [(ashift "sll.vv")
 			       (ashiftrt "sra.vv")
 			       (lshiftrt "srl.vv")
 			       (div "div.vv")
@@ -352,7 +376,7 @@
 			       (umax "maxu.vv")
 			       (mult "mul.vv")])
 
-(define_code_attr binop_imm_rhs1_op [(ashift "%3,%v4")
+(define_code_attr binop_vi_variant_op [(ashift "%3,%v4")
 			     (ashiftrt "%3,%v4")
 			     (lshiftrt "%3,%v4")
 			     (div "%3,%4")
@@ -368,9 +392,13 @@
 			     (smax "%3,%4")
 			     (umin "%3,%4")
 			     (umax "%3,%4")
-			     (mult "%3,%4")])
+			     (mult "%3,%4")
+			     (ss_plus "%3,%v4")
+			     (us_plus "%3,%v4")
+			     (ss_minus "%3,%V4")
+			     (us_minus "%3,%4")])
 
-(define_code_attr binop_imm_rhs2_op [(ashift "%3,%4")
+(define_code_attr binop_reverse_vi_variant_op [(ashift "%3,%4")
 			      (ashiftrt "%3,%4")
 			      (lshiftrt "%3,%4")
 			      (div "%3,%4")

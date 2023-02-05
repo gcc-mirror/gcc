@@ -241,6 +241,10 @@ static CONSTEXPR const binop<UDIV> vdivu_obj;
 static CONSTEXPR const binop<UMOD> vremu_obj;
 static CONSTEXPR const unop<NEG> vneg_obj;
 static CONSTEXPR const unop<NOT> vnot_obj;
+static CONSTEXPR const binop<SS_PLUS> vsadd_obj;
+static CONSTEXPR const binop<SS_MINUS> vssub_obj;
+static CONSTEXPR const binop<US_PLUS> vsaddu_obj;
+static CONSTEXPR const binop<US_MINUS> vssubu_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -291,5 +295,9 @@ BASE (vdivu)
 BASE (vremu)
 BASE (vneg)
 BASE (vnot)
+BASE (vsadd)
+BASE (vssub)
+BASE (vsaddu)
+BASE (vssubu)
 
 } // end namespace riscv_vector

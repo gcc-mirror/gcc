@@ -427,8 +427,9 @@ neg_simm5_p (rtx x)
 bool
 has_vi_variant_p (rtx_code code, rtx x)
 {
-  if (code != PLUS && code != MINUS && code != AND && code != IOR
-      && code != XOR)
+  if (code != PLUS && code != MINUS && code != AND && code != IOR && code != XOR
+      && code != SS_PLUS && code != SS_MINUS && code != US_PLUS
+      && code != US_MINUS)
     return false;
   return simm5_p (x);
 }

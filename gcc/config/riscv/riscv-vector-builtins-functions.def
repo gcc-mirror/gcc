@@ -100,5 +100,14 @@ DEF_RVV_FUNCTION (vdivu, alu, full_preds, u_vvx_ops)
 DEF_RVV_FUNCTION (vremu, alu, full_preds, u_vvx_ops)
 DEF_RVV_FUNCTION (vneg, alu, full_preds, iu_v_ops)
 DEF_RVV_FUNCTION (vnot, alu, full_preds, iu_v_ops)
+/* 12. Vector Fixed-Point Arithmetic Instructions. */
+DEF_RVV_FUNCTION (vsadd, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vssub, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vsaddu, alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vssubu, alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vsadd, alu, full_preds, i_vvx_ops)
+DEF_RVV_FUNCTION (vssub, alu, full_preds, i_vvx_ops)
+DEF_RVV_FUNCTION (vsaddu, alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vssubu, alu, full_preds, u_vvx_ops)
 
 #undef DEF_RVV_FUNCTION
