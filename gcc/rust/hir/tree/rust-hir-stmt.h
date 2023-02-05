@@ -158,6 +158,7 @@ class ExprStmt : public Stmt
 {
   // TODO: add any useful virtual functions
 
+  std::unique_ptr<Expr> expr;
   Location locus;
 
 public:
@@ -165,9 +166,30 @@ public:
 
   bool is_item () const override final { return false; }
 
+  Expr *get_expr () { return expr.get (); }
+
+  // Copy constructor with clone
+  ExprStmt (ExprStmt const &other)
+    : Stmt (other), expr (other.expr->clone_expr ()), locus (other.locus)
+  {}
+
+  // Overloaded assignment operator to clone
+  ExprStmt &operator= (ExprStmt const &other)
+  {
+    Stmt::operator= (other);
+    expr = other.expr->clone_expr ();
+    locus = other.locus;
+
+    return *this;
+  }
+
+  // move constructors
+  ExprStmt (ExprStmt &&other) = default;
+  ExprStmt &operator= (ExprStmt &&other) = default;
+
 protected:
-  ExprStmt (Analysis::NodeMapping mappings, Location locus)
-    : Stmt (std::move (mappings)), locus (locus)
+  ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr, Location locus)
+    : Stmt (std::move (mappings)), expr (std::move (expr)), locus (locus)
   {}
 };
 
@@ -175,38 +197,17 @@ protected:
  * difficulties, can only be guaranteed to hold an expression). */
 class ExprStmtWithoutBlock : public ExprStmt
 {
-  std::unique_ptr<Expr> expr;
 
 public:
   std::string as_string () const override;
 
   ExprStmtWithoutBlock (Analysis::NodeMapping mappings,
 			std::unique_ptr<Expr> expr, Location locus)
-    : ExprStmt (std::move (mappings), locus), expr (std::move (expr))
+    : ExprStmt (std::move (mappings), std::move (expr), locus)
   {}
-
-  // Copy constructor with clone
-  ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other)
-    : ExprStmt (other), expr (other.expr->clone_expr ())
-  {}
-
-  // Overloaded assignment operator to clone
-  ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock const &other)
-  {
-    ExprStmt::operator= (other);
-    expr = other.expr->clone_expr ();
-
-    return *this;
-  }
-
-  // move constructors
-  ExprStmtWithoutBlock (ExprStmtWithoutBlock &&other) = default;
-  ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock &&other) = default;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
-
-  Expr *get_expr () { return expr.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -220,7 +221,6 @@ protected:
 // Statement containing an expression with a block
 class ExprStmtWithBlock : public ExprStmt
 {
-  std::unique_ptr<ExprWithBlock> expr;
   bool must_be_unit;
 
 public:
@@ -229,32 +229,12 @@ public:
   ExprStmtWithBlock (Analysis::NodeMapping mappings,
 		     std::unique_ptr<ExprWithBlock> expr, Location locus,
 		     bool must_be_unit)
-    : ExprStmt (std::move (mappings), locus), expr (std::move (expr)),
+    : ExprStmt (std::move (mappings), std::move (expr), locus),
       must_be_unit (must_be_unit)
   {}
 
-  // Copy constructor with clone
-  ExprStmtWithBlock (ExprStmtWithBlock const &other)
-    : ExprStmt (other), expr (other.expr->clone_expr_with_block ())
-  {}
-
-  // Overloaded assignment operator to clone
-  ExprStmtWithBlock &operator= (ExprStmtWithBlock const &other)
-  {
-    ExprStmt::operator= (other);
-    expr = other.expr->clone_expr_with_block ();
-
-    return *this;
-  }
-
-  // move constructors
-  ExprStmtWithBlock (ExprStmtWithBlock &&other) = default;
-  ExprStmtWithBlock &operator= (ExprStmtWithBlock &&other) = default;
-
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
-
-  ExprWithBlock *get_expr () { return expr.get (); }
 
   bool is_unit_check_needed () const override { return must_be_unit; }
 
