@@ -85,7 +85,6 @@ TypeCheckCallExpr::visit (ADTType &type)
 void
 TypeCheckCallExpr::visit (FnType &type)
 {
-  type.monomorphize ();
   if (call.num_params () != type.num_params ())
     {
       if (type.is_varadic ())
@@ -141,8 +140,6 @@ TypeCheckCallExpr::visit (FnType &type)
 	    argument->get_locus ());
 	  if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	    {
-	      rust_error_at (argument->get_locus (),
-			     "Type Resolution failure on parameter");
 	      return;
 	    }
 	}
@@ -194,8 +191,6 @@ TypeCheckCallExpr::visit (FnPtr &type)
 	TyWithLocation (argument_expr_tyty, arg_locus), argument->get_locus ());
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
-	  rust_error_at (argument->get_locus (),
-			 "Type Resolution failure on parameter");
 	  return;
 	}
 
@@ -302,7 +297,6 @@ TypeCheckMethodCallExpr::check (FnType &type)
 	TyWithLocation (argument_expr_tyty, arg_locus), arg_locus);
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
-	  rust_error_at (arg_locus, "Type Resolution failure on parameter");
 	  return new ErrorType (type.get_ref ());
 	}
 

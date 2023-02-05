@@ -17,17 +17,21 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-tyty.h"
-#include "rust-tyty-visitor.h"
-#include "rust-tyty-call.h"
+
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-type.h"
-#include "rust-tyty-rules.h"
-#include "rust-tyty-cmp.h"
+#include "rust-tyty-visitor.h"
+#include "rust-tyty-call.h"
 #include "rust-hir-map.h"
+#include "rust-location.h"
+#include "rust-linemap.h"
+
 #include "rust-substitution-mapper.h"
-#include "rust-hir-trait-ref.h"
+#include "rust-hir-trait-reference.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-tyty-cmp.h"
+
 #include "options.h"
 
 namespace Rust {
@@ -146,6 +150,122 @@ is_primitive_type_kind (TypeKind kind)
     }
 }
 
+// BASE TYPE
+
+BaseType::BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
+		    std::set<HirId> refs)
+  : TypeBoundsMappings ({}), kind (kind), ref (ref), ty_ref (ty_ref),
+    combined (refs), ident (ident), mappings (Analysis::Mappings::get ())
+{}
+
+BaseType::BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
+		    std::vector<TypeBoundPredicate> specified_bounds,
+		    std::set<HirId> refs)
+  : TypeBoundsMappings (specified_bounds), kind (kind), ref (ref),
+    ty_ref (ty_ref), combined (refs), ident (ident),
+    mappings (Analysis::Mappings::get ())
+{}
+
+BaseType::~BaseType () {}
+
+HirId
+BaseType::get_ref () const
+{
+  return ref;
+}
+
+void
+BaseType::set_ref (HirId id)
+{
+  if (id != ref)
+    append_reference (ref);
+  ref = id;
+}
+
+HirId
+BaseType::get_ty_ref () const
+{
+  return ty_ref;
+}
+
+void
+BaseType::set_ty_ref (HirId id)
+{
+  ty_ref = id;
+}
+
+bool
+BaseType::is_equal (const BaseType &other) const
+{
+  return get_kind () == other.get_kind ();
+}
+
+bool
+BaseType::is_unit () const
+{
+  return false;
+}
+
+TypeKind
+BaseType::get_kind () const
+{
+  return kind;
+}
+
+std::set<HirId>
+BaseType::get_combined_refs () const
+{
+  return combined;
+}
+
+void
+BaseType::append_reference (HirId id)
+{
+  combined.insert (id);
+}
+
+bool
+BaseType::supports_substitutions () const
+{
+  return false;
+}
+
+bool
+BaseType::has_subsititions_defined () const
+{
+  return false;
+}
+
+bool
+BaseType::can_substitute () const
+{
+  return supports_substitutions () && has_subsititions_defined ();
+}
+
+bool
+BaseType::needs_generic_substitutions () const
+{
+  return false;
+}
+
+bool
+BaseType::contains_type_parameters () const
+{
+  return !is_concrete ();
+}
+
+const RustIdent &
+BaseType::get_ident () const
+{
+  return ident;
+}
+
+Location
+BaseType::get_locus () const
+{
+  return ident.locus;
+}
+
 bool
 BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 {
@@ -255,6 +375,58 @@ BaseType::get_root () const
   return root;
 }
 
+BaseType *
+BaseType::destructure ()
+{
+  int recurisve_ops = 0;
+  BaseType *x = this;
+  while (true)
+    {
+      if (recurisve_ops++ >= rust_max_recursion_depth)
+	{
+	  rust_error_at (
+	    Location (),
+	    "%<recursion depth%> count exceeds limit of %i (use "
+	    "%<frust-max-recursion-depth=%> to increase the limit)",
+	    rust_max_recursion_depth);
+	  return new ErrorType (get_ref ());
+	}
+
+      switch (x->get_kind ())
+	{
+	  case TyTy::TypeKind::PARAM: {
+	    TyTy::ParamType *p = static_cast<TyTy::ParamType *> (x);
+	    TyTy::BaseType *pr = p->resolve ();
+	    if (pr == x)
+	      return pr;
+
+	    x = pr;
+	  }
+	  break;
+
+	  case TyTy::TypeKind::PLACEHOLDER: {
+	    TyTy::PlaceholderType *p = static_cast<TyTy::PlaceholderType *> (x);
+	    if (!p->can_resolve ())
+	      return p;
+
+	    x = p->resolve ();
+	  }
+	  break;
+
+	  case TyTy::TypeKind::PROJECTION: {
+	    TyTy::ProjectionType *p = static_cast<TyTy::ProjectionType *> (x);
+	    x = p->get ();
+	  }
+	  break;
+
+	default:
+	  return x;
+	}
+    }
+
+  return x;
+}
+
 const BaseType *
 BaseType::destructure () const
 {
@@ -276,14 +448,20 @@ BaseType::destructure () const
 	{
 	  case TyTy::TypeKind::PARAM: {
 	    const TyTy::ParamType *p = static_cast<const TyTy::ParamType *> (x);
-	    x = p->resolve ();
+	    const TyTy::BaseType *pr = p->resolve ();
+	    if (pr == x)
+	      return pr;
+
+	    x = pr;
 	  }
 	  break;
 
 	  case TyTy::TypeKind::PLACEHOLDER: {
 	    const TyTy::PlaceholderType *p
 	      = static_cast<const TyTy::PlaceholderType *> (x);
-	    rust_assert (p->can_resolve ());
+	    if (!p->can_resolve ())
+	      return p;
+
 	    x = p->resolve ();
 	  }
 	  break;
@@ -330,94 +508,38 @@ BaseType::debug () const
 	      debug_str ().c_str ());
 }
 
-TyVar::TyVar (HirId ref) : ref (ref)
-{
-  // ensure this reference is defined within the context
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (ref, &lookup);
-  rust_assert (ok);
-}
+// InferType
 
-BaseType *
-TyVar::get_tyty () const
-{
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (ref, &lookup);
-  rust_assert (ok);
-  return lookup;
-}
-
-TyVar
-TyVar::get_implicit_infer_var (Location locus)
-{
-  auto mappings = Analysis::Mappings::get ();
-  auto context = Resolver::TypeCheckContext::get ();
-
-  InferType *infer = new InferType (mappings->get_next_hir_id (),
-				    InferType::InferTypeKind::GENERAL, locus);
-  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
-					       UNKNOWN_NODEID,
-					       infer->get_ref (),
-					       UNKNOWN_LOCAL_DEFID),
-			infer);
-  mappings->insert_location (infer->get_ref (), locus);
-
-  return TyVar (infer->get_ref ());
-}
-
-TyVar
-TyVar::subst_covariant_var (TyTy::BaseType *orig, TyTy::BaseType *subst)
-{
-  if (orig->get_kind () != TyTy::TypeKind::PARAM)
-    return TyVar (subst->get_ty_ref ());
-  else if (subst->get_kind () == TyTy::TypeKind::PARAM)
-    {
-      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (subst);
-      if (p->resolve ()->get_kind () == TyTy::TypeKind::PARAM)
-	{
-	  return TyVar (subst->get_ty_ref ());
-	}
-    }
-
-  return TyVar (subst->get_ref ());
-}
-
-TyVar
-TyVar::clone () const
-{
-  TyTy::BaseType *c = get_tyty ()->clone ();
-  return TyVar (c->get_ref ());
-}
-
-TyVar
-TyVar::monomorphized_clone () const
-{
-  auto mappings = Analysis::Mappings::get ();
-  auto context = Resolver::TypeCheckContext::get ();
-
-  // this needs a new hirid
-  TyTy::BaseType *c = get_tyty ()->monomorphized_clone ();
-  c->set_ref (mappings->get_next_hir_id ());
-
-  // insert it
-  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
-					       UNKNOWN_NODEID, c->get_ref (),
-					       UNKNOWN_LOCAL_DEFID),
-			c);
-
-  return TyVar (c->get_ref ());
-}
-
-TyWithLocation::TyWithLocation (BaseType *ty, Location locus)
-  : ty (ty), locus (locus)
+InferType::InferType (HirId ref, InferTypeKind infer_kind, Location locus,
+		      std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::INFER,
+	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
+    infer_kind (infer_kind)
 {}
 
-TyWithLocation::TyWithLocation (BaseType *ty) : ty (ty)
+InferType::InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind,
+		      Location locus, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::INFER,
+	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
+    infer_kind (infer_kind)
+{}
+
+InferType::InferTypeKind
+InferType::get_infer_kind () const
 {
-  auto mappings = Analysis::Mappings::get ();
-  locus = mappings->lookup_location (ty->get_ref ());
+  return infer_kind;
+}
+
+std::string
+InferType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+InferType::is_concrete () const
+{
+  return true;
 }
 
 void
@@ -445,13 +567,6 @@ InferType::as_string () const
       return "<float>";
     }
   return "<infer::error>";
-}
-
-BaseType *
-InferType::unify (BaseType *other)
-{
-  InferRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -525,6 +640,35 @@ InferType::default_type (BaseType **type) const
   return false;
 }
 
+// ErrorType
+
+ErrorType::ErrorType (HirId ref, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::ERROR,
+	      {Resolver::CanonicalPath::create_empty (), Location ()}, refs)
+{}
+
+ErrorType::ErrorType (HirId ref, HirId ty_ref, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::ERROR,
+	      {Resolver::CanonicalPath::create_empty (), Location ()}, refs)
+{}
+
+bool
+ErrorType::is_unit () const
+{
+  return true;
+}
+bool
+ErrorType::is_concrete () const
+{
+  return false;
+}
+
+std::string
+ErrorType::get_name () const
+{
+  return as_string ();
+}
+
 void
 ErrorType::accept_vis (TyVisitor &vis)
 {
@@ -543,12 +687,6 @@ ErrorType::as_string () const
   return "<tyty::error>";
 }
 
-BaseType *
-ErrorType::unify (BaseType *other)
-{
-  return this;
-}
-
 bool
 ErrorType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -565,6 +703,55 @@ BaseType *
 ErrorType::monomorphized_clone () const
 {
   return clone ();
+}
+
+// Struct Field type
+
+StructFieldType::StructFieldType (HirId ref, std::string name, BaseType *ty,
+				  Location locus)
+  : ref (ref), name (name), ty (ty), locus (locus)
+{}
+
+HirId
+StructFieldType::get_ref () const
+{
+  return ref;
+}
+
+std::string
+StructFieldType::get_name () const
+{
+  return name;
+}
+
+BaseType *
+StructFieldType::get_field_type () const
+{
+  return ty;
+}
+
+void
+StructFieldType::set_field_type (BaseType *fty)
+{
+  ty = fty;
+}
+
+bool
+StructFieldType::is_concrete () const
+{
+  return ty->is_concrete ();
+}
+
+void
+StructFieldType::debug () const
+{
+  rust_debug ("%s", as_string ().c_str ());
+}
+
+Location
+StructFieldType::get_locus () const
+{
+  return locus;
 }
 
 std::string
@@ -604,471 +791,240 @@ StructFieldType::monomorphized_clone () const
 			      get_field_type ()->monomorphized_clone (), locus);
 }
 
-bool
-SubstitutionParamMapping::need_substitution () const
-{
-  if (!param->can_resolve ())
-    return true;
+// VariantDef
 
-  auto resolved = param->resolve ();
-  return !resolved->is_concrete ();
+std::string
+VariantDef::variant_type_string (VariantType type)
+{
+  switch (type)
+    {
+    case NUM:
+      return "enumeral";
+    case TUPLE:
+      return "tuple";
+    case STRUCT:
+      return "struct";
+    }
+  gcc_unreachable ();
+  return "";
+}
+
+VariantDef::VariantDef (HirId id, DefId defid, std::string identifier,
+			RustIdent ident, HIR::Expr *discriminant)
+  : id (id), defid (defid), identifier (identifier), ident (ident),
+    discriminant (discriminant)
+
+{
+  type = VariantType::NUM;
+  fields = {};
+}
+
+VariantDef::VariantDef (HirId id, DefId defid, std::string identifier,
+			RustIdent ident, VariantType type,
+			HIR::Expr *discriminant,
+			std::vector<StructFieldType *> fields)
+  : id (id), defid (defid), identifier (identifier), ident (ident), type (type),
+    discriminant (discriminant), fields (fields)
+{
+  rust_assert ((type == VariantType::NUM && fields.empty ())
+	       || (type == VariantType::TUPLE || type == VariantType::STRUCT));
+}
+
+VariantDef::VariantDef (const VariantDef &other)
+  : id (other.id), defid (other.defid), identifier (other.identifier),
+    ident (other.ident), type (other.type), discriminant (other.discriminant),
+    fields (other.fields)
+{}
+
+VariantDef &
+VariantDef::operator= (const VariantDef &other)
+{
+  id = other.id;
+  identifier = other.identifier;
+  type = other.type;
+  discriminant = other.discriminant;
+  fields = other.fields;
+  ident = other.ident;
+
+  return *this;
+}
+
+VariantDef &
+VariantDef::get_error_node ()
+{
+  static VariantDef node
+    = VariantDef (UNKNOWN_HIRID, UNKNOWN_DEFID, "",
+		  {Resolver::CanonicalPath::create_empty (),
+		   Linemap::unknown_location ()},
+		  nullptr);
+
+  return node;
 }
 
 bool
-SubstitutionParamMapping::fill_param_ty (
-  SubstitutionArgumentMappings &subst_mappings, Location locus)
+VariantDef::is_error () const
 {
-  SubstitutionArg arg = SubstitutionArg::error ();
-  bool ok = subst_mappings.get_argument_for_symbol (get_param_ty (), &arg);
-  if (!ok)
-    return true;
+  return get_id () == UNKNOWN_HIRID;
+}
 
-  TyTy::BaseType &type = *arg.get_tyty ();
-  if (type.get_kind () == TyTy::TypeKind::INFER)
+HirId
+VariantDef::get_id () const
+{
+  return id;
+}
+
+DefId
+VariantDef::get_defid () const
+{
+  return defid;
+}
+
+VariantDef::VariantType
+VariantDef::get_variant_type () const
+{
+  return type;
+}
+
+bool
+VariantDef::is_data_variant () const
+{
+  return type != VariantType::NUM;
+}
+
+bool
+VariantDef::is_dataless_variant () const
+{
+  return type == VariantType::NUM;
+}
+
+std::string
+VariantDef::get_identifier () const
+{
+  return identifier;
+}
+
+size_t
+VariantDef::num_fields () const
+{
+  return fields.size ();
+}
+
+StructFieldType *
+VariantDef::get_field_at_index (size_t index)
+{
+  rust_assert (index < fields.size ());
+  return fields.at (index);
+}
+
+std::vector<StructFieldType *> &
+VariantDef::get_fields ()
+{
+  rust_assert (type != NUM);
+  return fields;
+}
+
+bool
+VariantDef::lookup_field (const std::string &lookup,
+			  StructFieldType **field_lookup, size_t *index) const
+{
+  size_t i = 0;
+  for (auto &field : fields)
     {
-      type.inherit_bounds (*param);
+      if (field->get_name ().compare (lookup) == 0)
+	{
+	  if (index != nullptr)
+	    *index = i;
+
+	  if (field_lookup != nullptr)
+	    *field_lookup = field;
+
+	  return true;
+	}
+      i++;
     }
+  return false;
+}
+
+HIR::Expr *
+VariantDef::get_discriminant () const
+{
+  rust_assert (discriminant != nullptr);
+  return discriminant;
+}
+
+std::string
+VariantDef::as_string () const
+{
+  if (type == VariantType::NUM)
+    return identifier + " = " + discriminant->as_string ();
+
+  std::string buffer;
+  for (size_t i = 0; i < fields.size (); ++i)
+    {
+      buffer += fields.at (i)->as_string ();
+      if ((i + 1) < fields.size ())
+	buffer += ", ";
+    }
+
+  if (type == VariantType::TUPLE)
+    return identifier + " (" + buffer + ")";
   else
+    return identifier + " {" + buffer + "}";
+}
+
+bool
+VariantDef::is_equal (const VariantDef &other) const
+{
+  if (type != other.type)
+    return false;
+
+  if (identifier.compare (other.identifier) != 0)
+    return false;
+
+  if (discriminant != other.discriminant)
+    return false;
+
+  if (fields.size () != other.fields.size ())
+    return false;
+
+  for (size_t i = 0; i < fields.size (); i++)
     {
-      if (!param->bounds_compatible (type, locus, true))
+      if (!fields.at (i)->is_equal (*other.fields.at (i)))
 	return false;
-    }
-
-  if (type.get_kind () == TypeKind::PARAM)
-    {
-      // delete param;
-      param = static_cast<ParamType *> (type.clone ());
-    }
-  else
-    {
-      // check the substitution is compatible with bounds
-      if (!param->bounds_compatible (type, locus, true))
-	return false;
-
-      // recursively pass this down to all HRTB's
-      for (auto &bound : param->get_specified_bounds ())
-	bound.handle_substitions (subst_mappings);
-
-      param->set_ty_ref (type.get_ref ());
     }
 
   return true;
 }
 
-void
-SubstitutionParamMapping::override_context ()
+VariantDef *
+VariantDef::clone () const
 {
-  if (!param->can_resolve ())
-    return;
+  std::vector<StructFieldType *> cloned_fields;
+  for (auto &f : fields)
+    cloned_fields.push_back ((StructFieldType *) f->clone ());
 
-  auto mappings = Analysis::Mappings::get ();
-  auto context = Resolver::TypeCheckContext::get ();
-
-  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
-					       UNKNOWN_NODEID,
-					       param->get_ref (),
-					       UNKNOWN_LOCAL_DEFID),
-			param->resolve ());
+  return new VariantDef (id, defid, identifier, ident, type, discriminant,
+			 cloned_fields);
 }
 
-SubstitutionArgumentMappings
-SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
+VariantDef *
+VariantDef::monomorphized_clone () const
 {
-  std::map<std::string, BaseType *> binding_arguments;
-  if (args.get_binding_args ().size () > 0)
-    {
-      if (supports_associated_bindings ())
-	{
-	  if (args.get_binding_args ().size () > get_num_associated_bindings ())
-	    {
-	      RichLocation r (args.get_locus ());
+  std::vector<StructFieldType *> cloned_fields;
+  for (auto &f : fields)
+    cloned_fields.push_back ((StructFieldType *) f->monomorphized_clone ());
 
-	      rust_error_at (r,
-			     "generic item takes at most %lu type binding "
-			     "arguments but %lu were supplied",
-			     (unsigned long) get_num_associated_bindings (),
-			     (unsigned long) args.get_binding_args ().size ());
-	      return SubstitutionArgumentMappings::error ();
-	    }
-
-	  for (auto &binding : args.get_binding_args ())
-	    {
-	      BaseType *resolved
-		= Resolver::TypeCheckType::Resolve (binding.get_type ().get ());
-	      if (resolved == nullptr
-		  || resolved->get_kind () == TyTy::TypeKind::ERROR)
-		{
-		  rust_error_at (binding.get_locus (),
-				 "failed to resolve type arguments");
-		  return SubstitutionArgumentMappings::error ();
-		}
-
-	      // resolve to relevant binding
-	      auto binding_item
-		= lookup_associated_type (binding.get_identifier ());
-	      if (binding_item.is_error ())
-		{
-		  rust_error_at (binding.get_locus (),
-				 "unknown associated type binding: %s",
-				 binding.get_identifier ().c_str ());
-		  return SubstitutionArgumentMappings::error ();
-		}
-
-	      binding_arguments[binding.get_identifier ()] = resolved;
-	    }
-	}
-      else
-	{
-	  RichLocation r (args.get_locus ());
-	  for (auto &binding : args.get_binding_args ())
-	    r.add_range (binding.get_locus ());
-
-	  rust_error_at (r, "associated type bindings are not allowed here");
-	  return SubstitutionArgumentMappings::error ();
-	}
-    }
-
-  // for inherited arguments
-  size_t offs = used_arguments.size ();
-  if (args.get_type_args ().size () + offs > substitutions.size ())
-    {
-      RichLocation r (args.get_locus ());
-      r.add_range (substitutions.front ().get_param_locus ());
-
-      rust_error_at (
-	r,
-	"generic item takes at most %lu type arguments but %lu were supplied",
-	(unsigned long) substitutions.size (),
-	(unsigned long) args.get_type_args ().size ());
-      return SubstitutionArgumentMappings::error ();
-    }
-
-  if (args.get_type_args ().size () + offs < min_required_substitutions ())
-    {
-      RichLocation r (args.get_locus ());
-      r.add_range (substitutions.front ().get_param_locus ());
-
-      rust_error_at (
-	r,
-	"generic item takes at least %lu type arguments but %lu were supplied",
-	(unsigned long) (min_required_substitutions () - offs),
-	(unsigned long) args.get_type_args ().size ());
-      return SubstitutionArgumentMappings::error ();
-    }
-
-  std::vector<SubstitutionArg> mappings = used_arguments.get_mappings ();
-  for (auto &arg : args.get_type_args ())
-    {
-      BaseType *resolved = Resolver::TypeCheckType::Resolve (arg.get ());
-      if (resolved == nullptr || resolved->get_kind () == TyTy::TypeKind::ERROR)
-	{
-	  rust_error_at (args.get_locus (), "failed to resolve type arguments");
-	  return SubstitutionArgumentMappings::error ();
-	}
-
-      SubstitutionArg subst_arg (&substitutions.at (offs), resolved);
-      offs++;
-      mappings.push_back (std::move (subst_arg));
-    }
-
-  // we must need to fill out defaults
-  size_t left_over
-    = num_required_substitutions () - min_required_substitutions ();
-  if (left_over > 0)
-    {
-      for (size_t offs = mappings.size (); offs < substitutions.size (); offs++)
-	{
-	  SubstitutionParamMapping &param = substitutions.at (offs);
-	  rust_assert (param.param_has_default_ty ());
-
-	  BaseType *resolved = param.get_default_ty ();
-	  if (resolved->get_kind () == TypeKind::ERROR)
-	    return SubstitutionArgumentMappings::error ();
-
-	  // this resolved default might already contain default parameters
-	  if (resolved->contains_type_parameters ())
-	    {
-	      SubstitutionArgumentMappings intermediate (mappings,
-							 binding_arguments,
-							 args.get_locus ());
-	      resolved = Resolver::SubstMapperInternal::Resolve (resolved,
-								 intermediate);
-
-	      if (resolved->get_kind () == TypeKind::ERROR)
-		return SubstitutionArgumentMappings::error ();
-	    }
-
-	  SubstitutionArg subst_arg (&param, resolved);
-	  mappings.push_back (std::move (subst_arg));
-	}
-    }
-
-  return SubstitutionArgumentMappings (mappings, binding_arguments,
-				       args.get_locus ());
+  return new VariantDef (id, defid, identifier, ident, type, discriminant,
+			 cloned_fields);
 }
 
-BaseType *
-SubstitutionRef::infer_substitions (Location locus)
+const RustIdent &
+VariantDef::get_ident () const
 {
-  std::vector<SubstitutionArg> args;
-  std::map<std::string, BaseType *> argument_mappings;
-  for (auto &p : get_substs ())
-    {
-      if (p.needs_substitution ())
-	{
-	  const std::string &symbol = p.get_param_ty ()->get_symbol ();
-	  auto it = argument_mappings.find (symbol);
-	  bool have_mapping = it != argument_mappings.end ();
-
-	  if (have_mapping)
-	    {
-	      args.push_back (SubstitutionArg (&p, it->second));
-	    }
-	  else
-	    {
-	      TyVar infer_var = TyVar::get_implicit_infer_var (locus);
-	      args.push_back (SubstitutionArg (&p, infer_var.get_tyty ()));
-	      argument_mappings[symbol] = infer_var.get_tyty ();
-	    }
-	}
-      else
-	{
-	  args.push_back (SubstitutionArg (&p, p.get_param_ty ()->resolve ()));
-	}
-    }
-
-  // FIXME do we need to add inference variables to all the possible bindings?
-  // it might just lead to inference variable hell not 100% sure if rustc does
-  // this i think the language might needs this to be explicitly set
-
-  SubstitutionArgumentMappings infer_arguments (std::move (args),
-						{} /* binding_arguments */,
-						locus);
-  return handle_substitions (std::move (infer_arguments));
+  return ident;
 }
 
-SubstitutionArgumentMappings
-SubstitutionRef::adjust_mappings_for_this (
-  SubstitutionArgumentMappings &mappings)
-{
-  std::vector<SubstitutionArg> resolved_mappings;
-  for (size_t i = 0; i < substitutions.size (); i++)
-    {
-      auto &subst = substitutions.at (i);
-
-      SubstitutionArg arg = SubstitutionArg::error ();
-      if (mappings.size () == substitutions.size ())
-	{
-	  mappings.get_argument_at (i, &arg);
-	}
-      else
-	{
-	  if (subst.needs_substitution ())
-	    {
-	      // get from passed in mappings
-	      mappings.get_argument_for_symbol (subst.get_param_ty (), &arg);
-	    }
-	  else
-	    {
-	      // we should already have this somewhere
-	      used_arguments.get_argument_for_symbol (subst.get_param_ty (),
-						      &arg);
-	    }
-	}
-
-      bool ok = !arg.is_error ();
-      if (ok)
-	{
-	  SubstitutionArg adjusted (&subst, arg.get_tyty ());
-	  resolved_mappings.push_back (std::move (adjusted));
-	}
-    }
-
-  if (resolved_mappings.empty ())
-    return SubstitutionArgumentMappings::error ();
-
-  return SubstitutionArgumentMappings (resolved_mappings,
-				       mappings.get_binding_args (),
-				       mappings.get_locus (),
-				       mappings.get_subst_cb (),
-				       mappings.trait_item_mode ());
-}
-
-bool
-SubstitutionRef::are_mappings_bound (SubstitutionArgumentMappings &mappings)
-{
-  std::vector<SubstitutionArg> resolved_mappings;
-  for (size_t i = 0; i < substitutions.size (); i++)
-    {
-      auto &subst = substitutions.at (i);
-
-      SubstitutionArg arg = SubstitutionArg::error ();
-      if (mappings.size () == substitutions.size ())
-	{
-	  mappings.get_argument_at (i, &arg);
-	}
-      else
-	{
-	  if (subst.needs_substitution ())
-	    {
-	      // get from passed in mappings
-	      mappings.get_argument_for_symbol (subst.get_param_ty (), &arg);
-	    }
-	  else
-	    {
-	      // we should already have this somewhere
-	      used_arguments.get_argument_for_symbol (subst.get_param_ty (),
-						      &arg);
-	    }
-	}
-
-      bool ok = !arg.is_error ();
-      if (ok)
-	{
-	  SubstitutionArg adjusted (&subst, arg.get_tyty ());
-	  resolved_mappings.push_back (std::move (adjusted));
-	}
-    }
-
-  return !resolved_mappings.empty ();
-}
-
-// this function assumes that the mappings being passed are for the same type as
-// this new substitution reference so ordering matters here
-SubstitutionArgumentMappings
-SubstitutionRef::solve_mappings_from_receiver_for_self (
-  SubstitutionArgumentMappings &mappings) const
-{
-  std::vector<SubstitutionArg> resolved_mappings;
-
-  rust_assert (mappings.size () == get_num_substitutions ());
-  for (size_t i = 0; i < get_num_substitutions (); i++)
-    {
-      const SubstitutionParamMapping &param_mapping = substitutions.at (i);
-      SubstitutionArg &arg = mappings.get_mappings ().at (i);
-
-      if (param_mapping.needs_substitution ())
-	{
-	  SubstitutionArg adjusted (&param_mapping, arg.get_tyty ());
-	  resolved_mappings.push_back (std::move (adjusted));
-	}
-    }
-
-  return SubstitutionArgumentMappings (resolved_mappings,
-				       mappings.get_binding_args (),
-				       mappings.get_locus ());
-}
-
-SubstitutionArgumentMappings
-SubstitutionRef::solve_missing_mappings_from_this (SubstitutionRef &ref,
-						   SubstitutionRef &to)
-{
-  rust_assert (!ref.needs_substitution ());
-  rust_assert (needs_substitution ());
-  rust_assert (get_num_substitutions () == ref.get_num_substitutions ());
-
-  Location locus = used_arguments.get_locus ();
-  std::vector<SubstitutionArg> resolved_mappings;
-
-  std::map<HirId, std::pair<ParamType *, BaseType *>> substs;
-  for (size_t i = 0; i < get_num_substitutions (); i++)
-    {
-      SubstitutionParamMapping &a = substitutions.at (i);
-      SubstitutionParamMapping &b = ref.substitutions.at (i);
-
-      if (a.need_substitution ())
-	{
-	  const BaseType *root = a.get_param_ty ()->resolve ()->get_root ();
-	  rust_assert (root->get_kind () == TyTy::TypeKind::PARAM);
-	  const ParamType *p = static_cast<const TyTy::ParamType *> (root);
-
-	  substs[p->get_ty_ref ()] = {static_cast<ParamType *> (p->clone ()),
-				      b.get_param_ty ()->resolve ()};
-	}
-    }
-
-  for (auto it = substs.begin (); it != substs.end (); it++)
-    {
-      HirId param_id = it->first;
-      BaseType *arg = it->second.second;
-
-      const SubstitutionParamMapping *associate_param = nullptr;
-      for (SubstitutionParamMapping &p : to.substitutions)
-	{
-	  if (p.get_param_ty ()->get_ty_ref () == param_id)
-	    {
-	      associate_param = &p;
-	      break;
-	    }
-	}
-
-      rust_assert (associate_param != nullptr);
-      SubstitutionArg argument (associate_param, arg);
-      resolved_mappings.push_back (std::move (argument));
-    }
-
-  return SubstitutionArgumentMappings (resolved_mappings, {}, locus);
-}
-
-bool
-SubstitutionRef::monomorphize ()
-{
-  auto context = Resolver::TypeCheckContext::get ();
-  for (const auto &subst : get_substs ())
-    {
-      const TyTy::ParamType *pty = subst.get_param_ty ();
-
-      if (!pty->can_resolve ())
-	continue;
-
-      const TyTy::BaseType *binding = pty->resolve ();
-      if (binding->get_kind () == TyTy::TypeKind::PARAM)
-	continue;
-
-      for (const auto &bound : pty->get_specified_bounds ())
-	{
-	  const Resolver::TraitReference *specified_bound_ref = bound.get ();
-
-	  // setup any associated type mappings for the specified bonds and this
-	  // type
-	  auto candidates = Resolver::TypeBoundsProbe::Probe (binding);
-
-	  Resolver::AssociatedImplTrait *associated_impl_trait = nullptr;
-	  for (auto &probed_bound : candidates)
-	    {
-	      const Resolver::TraitReference *bound_trait_ref
-		= probed_bound.first;
-	      const HIR::ImplBlock *associated_impl = probed_bound.second;
-
-	      HirId impl_block_id
-		= associated_impl->get_mappings ().get_hirid ();
-	      Resolver::AssociatedImplTrait *associated = nullptr;
-	      bool found_impl_trait
-		= context->lookup_associated_trait_impl (impl_block_id,
-							 &associated);
-	      if (found_impl_trait)
-		{
-		  bool found_trait
-		    = specified_bound_ref->is_equal (*bound_trait_ref);
-		  bool found_self
-		    = associated->get_self ()->can_eq (binding, false);
-		  if (found_trait && found_self)
-		    {
-		      associated_impl_trait = associated;
-		      break;
-		    }
-		}
-	    }
-
-	  if (associated_impl_trait != nullptr)
-	    {
-	      associated_impl_trait->setup_associated_types (binding, bound);
-	    }
-	}
-    }
-
-  return true;
-}
+// ADTType
 
 void
 ADTType::accept_vis (TyVisitor &vis)
@@ -1095,13 +1051,6 @@ ADTType::as_string () const
     }
 
   return identifier + subst_as_string () + "{" + variants_buffer + "}";
-}
-
-BaseType *
-ADTType::unify (BaseType *other)
-{
-  ADTRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -1236,7 +1185,7 @@ handle_substitions (SubstitutionArgumentMappings &subst_mappings,
 }
 
 ADTType *
-ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+ADTType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
   ADTType *adt = static_cast<ADTType *> (clone ());
   adt->set_ty_ref (mappings->get_next_hir_id ());
@@ -1265,6 +1214,57 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
     }
 
   return adt;
+}
+
+// TupleType
+
+TupleType::TupleType (HirId ref, Location locus, std::vector<TyVar> fields,
+		      std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::TUPLE,
+	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
+    fields (fields)
+{}
+
+TupleType::TupleType (HirId ref, HirId ty_ref, Location locus,
+		      std::vector<TyVar> fields, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::TUPLE,
+	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
+    fields (fields)
+{}
+
+TupleType *
+TupleType::get_unit_type (HirId ref)
+{
+  return new TupleType (ref, Linemap::predeclared_location ());
+}
+
+bool
+TupleType::is_unit () const
+{
+  return this->fields.empty ();
+}
+
+size_t
+TupleType::num_fields () const
+{
+  return fields.size ();
+}
+
+bool
+TupleType::is_concrete () const
+{
+  for (size_t i = 0; i < num_fields (); i++)
+    {
+      if (!get_field (i)->is_concrete ())
+	return false;
+    }
+  return true;
+}
+
+const std::vector<TyVar> &
+TupleType::get_fields () const
+{
+  return fields;
 }
 
 void
@@ -1315,13 +1315,6 @@ TupleType::get_field (size_t index) const
   return fields.at (index).get_tyty ();
 }
 
-BaseType *
-TupleType::unify (BaseType *other)
-{
-  TupleRules r (this);
-  return r.unify (other);
-}
-
 bool
 TupleType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1370,7 +1363,7 @@ TupleType::monomorphized_clone () const
 }
 
 TupleType *
-TupleType::handle_substitions (SubstitutionArgumentMappings mappings)
+TupleType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -1420,13 +1413,6 @@ FnType::as_string () const
 
   std::string ret_str = type->as_string ();
   return "fn" + subst_as_string () + " (" + params_str + ") -> " + ret_str;
-}
-
-BaseType *
-FnType::unify (BaseType *other)
-{
-  FnRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -1511,7 +1497,7 @@ FnType::monomorphized_clone () const
 }
 
 FnType *
-FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+FnType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
   FnType *fn = static_cast<FnType *> (clone ());
   fn->set_ty_ref (mappings->get_next_hir_id ());
@@ -1653,13 +1639,6 @@ FnPtr::as_string () const
   return "fnptr (" + params_str + ") -> " + get_return_type ()->as_string ();
 }
 
-BaseType *
-FnPtr::unify (BaseType *other)
-{
-  FnptrRules r (this);
-  return r.unify (other);
-}
-
 bool
 FnPtr::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1733,13 +1712,6 @@ ClosureType::as_string () const
   return "|" + params_buf + "| {" + result_type.get_tyty ()->as_string () + "}";
 }
 
-BaseType *
-ClosureType::unify (BaseType *other)
-{
-  ClosureRules r (this);
-  return r.unify (other);
-}
-
 bool
 ClosureType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1779,7 +1751,7 @@ ClosureType::monomorphized_clone () const
 }
 
 ClosureType *
-ClosureType::handle_substitions (SubstitutionArgumentMappings mappings)
+ClosureType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   gcc_unreachable ();
   return nullptr;
@@ -1849,13 +1821,6 @@ ArrayType::as_string () const
   return "[" + get_element_type ()->as_string () + ":" + "CAPACITY" + "]";
 }
 
-BaseType *
-ArrayType::unify (BaseType *other)
-{
-  ArrayRules r (this);
-  return r.unify (other);
-}
-
 bool
 ArrayType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1899,7 +1864,7 @@ ArrayType::monomorphized_clone () const
 }
 
 ArrayType *
-ArrayType::handle_substitions (SubstitutionArgumentMappings mappings)
+ArrayType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -1930,13 +1895,6 @@ std::string
 SliceType::as_string () const
 {
   return "[" + get_element_type ()->as_string () + "]";
-}
-
-BaseType *
-SliceType::unify (BaseType *other)
-{
-  SliceRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -1982,7 +1940,7 @@ SliceType::monomorphized_clone () const
 }
 
 SliceType *
-SliceType::handle_substitions (SubstitutionArgumentMappings mappings)
+SliceType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -1995,6 +1953,34 @@ SliceType::handle_substitions (SubstitutionArgumentMappings mappings)
   ref->element_type = TyVar::subst_covariant_var (base, concrete);
 
   return ref;
+}
+
+// BoolType
+
+BoolType::BoolType (HirId ref, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::BOOL,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+BoolType::BoolType (HirId ref, HirId ty_ref, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::BOOL,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+std::string
+BoolType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+BoolType::is_concrete () const
+{
+  return true;
 }
 
 void
@@ -2015,13 +2001,6 @@ BoolType::as_string () const
   return "bool";
 }
 
-BaseType *
-BoolType::unify (BaseType *other)
-{
-  BoolRules r (this);
-  return r.unify (other);
-}
-
 bool
 BoolType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2039,6 +2018,36 @@ BaseType *
 BoolType::monomorphized_clone () const
 {
   return clone ();
+}
+
+// IntType
+
+IntType::IntType (HirId ref, IntKind kind, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::INT,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    int_kind (kind)
+{}
+
+IntType::IntType (HirId ref, HirId ty_ref, IntKind kind, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::INT,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    int_kind (kind)
+{}
+
+std::string
+IntType::get_name () const
+{
+  return as_string ();
+}
+
+IntType::IntKind
+IntType::get_int_kind () const
+{
+  return int_kind;
 }
 
 void
@@ -2073,13 +2082,6 @@ IntType::as_string () const
   return "__unknown_int_type";
 }
 
-BaseType *
-IntType::unify (BaseType *other)
-{
-  IntRules r (this);
-  return r.unify (other);
-}
-
 bool
 IntType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2108,6 +2110,43 @@ IntType::is_equal (const BaseType &other) const
 
   const IntType &o = static_cast<const IntType &> (other);
   return get_int_kind () == o.get_int_kind ();
+}
+
+bool
+IntType::is_concrete () const
+{
+  return true;
+}
+
+// UintType
+
+UintType::UintType (HirId ref, UintKind kind, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::UINT,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    uint_kind (kind)
+{}
+
+UintType::UintType (HirId ref, HirId ty_ref, UintKind kind,
+		    std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::UINT,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    uint_kind (kind)
+{}
+
+std::string
+UintType::get_name () const
+{
+  return as_string ();
+}
+
+UintType::UintKind
+UintType::get_uint_kind () const
+{
+  return uint_kind;
 }
 
 void
@@ -2142,13 +2181,6 @@ UintType::as_string () const
   return "__unknown_uint_type";
 }
 
-BaseType *
-UintType::unify (BaseType *other)
-{
-  UintRules r (this);
-  return r.unify (other);
-}
-
 bool
 UintType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2179,6 +2211,49 @@ UintType::is_equal (const BaseType &other) const
   return get_uint_kind () == o.get_uint_kind ();
 }
 
+bool
+UintType::is_concrete () const
+{
+  return true;
+}
+
+// FloatType
+
+FloatType::FloatType (HirId ref, FloatKind kind, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::FLOAT,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    float_kind (kind)
+{}
+
+FloatType::FloatType (HirId ref, HirId ty_ref, FloatKind kind,
+		      std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::FLOAT,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    float_kind (kind)
+{}
+
+std::string
+FloatType::get_name () const
+{
+  return as_string ();
+}
+
+FloatType::FloatKind
+FloatType::get_float_kind () const
+{
+  return float_kind;
+}
+
+bool
+FloatType::is_concrete () const
+{
+  return true;
+}
+
 void
 FloatType::accept_vis (TyVisitor &vis)
 {
@@ -2203,13 +2278,6 @@ FloatType::as_string () const
     }
   gcc_unreachable ();
   return "__unknown_float_type";
-}
-
-BaseType *
-FloatType::unify (BaseType *other)
-{
-  FloatRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2242,6 +2310,34 @@ FloatType::is_equal (const BaseType &other) const
   return get_float_kind () == o.get_float_kind ();
 }
 
+// UsizeType
+
+USizeType::USizeType (HirId ref, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::USIZE,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+USizeType::USizeType (HirId ref, HirId ty_ref, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::USIZE,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+std::string
+USizeType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+USizeType::is_concrete () const
+{
+  return true;
+}
+
 void
 USizeType::accept_vis (TyVisitor &vis)
 {
@@ -2258,13 +2354,6 @@ std::string
 USizeType::as_string () const
 {
   return "usize";
-}
-
-BaseType *
-USizeType::unify (BaseType *other)
-{
-  USizeRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2286,6 +2375,34 @@ USizeType::monomorphized_clone () const
   return clone ();
 }
 
+// ISizeType
+
+ISizeType::ISizeType (HirId ref, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::ISIZE,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+ISizeType::ISizeType (HirId ref, HirId ty_ref, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::ISIZE,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+std::string
+ISizeType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+ISizeType::is_concrete () const
+{
+  return true;
+}
+
 void
 ISizeType::accept_vis (TyVisitor &vis)
 {
@@ -2302,13 +2419,6 @@ std::string
 ISizeType::as_string () const
 {
   return "isize";
-}
-
-BaseType *
-ISizeType::unify (BaseType *other)
-{
-  ISizeRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2330,6 +2440,34 @@ ISizeType::monomorphized_clone () const
   return clone ();
 }
 
+// Char Type
+
+CharType::CharType (HirId ref, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::CHAR,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+CharType::CharType (HirId ref, HirId ty_ref, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::CHAR,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+bool
+CharType::is_concrete () const
+{
+  return true;
+}
+
+std::string
+CharType::get_name () const
+{
+  return as_string ();
+}
+
 void
 CharType::accept_vis (TyVisitor &vis)
 {
@@ -2346,13 +2484,6 @@ std::string
 CharType::as_string () const
 {
   return "char";
-}
-
-BaseType *
-CharType::unify (BaseType *other)
-{
-  CharRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2372,6 +2503,76 @@ BaseType *
 CharType::monomorphized_clone () const
 {
   return clone ();
+}
+
+// Reference Type
+
+ReferenceType::ReferenceType (HirId ref, TyVar base, Mutability mut,
+			      std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::REF,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    base (base), mut (mut)
+{}
+
+ReferenceType::ReferenceType (HirId ref, HirId ty_ref, TyVar base,
+			      Mutability mut, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::REF,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    base (base), mut (mut)
+{}
+
+bool
+ReferenceType::is_concrete () const
+{
+  return get_base ()->is_concrete ();
+}
+
+Mutability
+ReferenceType::mutability () const
+{
+  return mut;
+}
+
+bool
+ReferenceType::is_mutable () const
+{
+  return mut == Mutability::Mut;
+}
+
+bool
+ReferenceType::is_dyn_object () const
+{
+  return is_dyn_slice_type () || is_dyn_str_type ();
+}
+
+bool
+ReferenceType::is_dyn_slice_type (const TyTy::SliceType **slice) const
+{
+  const TyTy::BaseType *element = get_base ()->destructure ();
+  if (element->get_kind () != TyTy::TypeKind::SLICE)
+    return false;
+  if (slice == nullptr)
+    return true;
+
+  *slice = static_cast<const TyTy::SliceType *> (element);
+  return true;
+}
+
+bool
+ReferenceType::is_dyn_str_type (const TyTy::StrType **str) const
+{
+  const TyTy::BaseType *element = get_base ()->destructure ();
+  if (element->get_kind () != TyTy::TypeKind::STR)
+    return false;
+  if (str == nullptr)
+    return true;
+
+  *str = static_cast<const TyTy::StrType *> (element);
+  return true;
 }
 
 void
@@ -2398,13 +2599,6 @@ ReferenceType::get_name () const
 {
   return std::string ("&") + (is_mutable () ? "mut" : "") + " "
 	 + get_base ()->get_name ();
-}
-
-BaseType *
-ReferenceType::unify (BaseType *other)
-{
-  ReferenceRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2449,7 +2643,7 @@ ReferenceType::monomorphized_clone () const
 }
 
 ReferenceType *
-ReferenceType::handle_substitions (SubstitutionArgumentMappings mappings)
+ReferenceType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -2462,6 +2656,82 @@ ReferenceType::handle_substitions (SubstitutionArgumentMappings mappings)
   ref->base = TyVar::subst_covariant_var (base, concrete);
 
   return ref;
+}
+
+// PointerType
+
+PointerType::PointerType (HirId ref, TyVar base, Mutability mut,
+			  std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::POINTER,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    base (base), mut (mut)
+{}
+
+PointerType::PointerType (HirId ref, HirId ty_ref, TyVar base, Mutability mut,
+			  std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::POINTER,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    base (base), mut (mut)
+{}
+
+bool
+PointerType::is_concrete () const
+{
+  return get_base ()->is_concrete ();
+}
+
+Mutability
+PointerType::mutability () const
+{
+  return mut;
+}
+
+bool
+PointerType::is_mutable () const
+{
+  return mut == Mutability::Mut;
+}
+
+bool
+PointerType::is_const () const
+{
+  return mut == Mutability::Imm;
+}
+
+bool
+PointerType::is_dyn_object () const
+{
+  return is_dyn_slice_type () || is_dyn_str_type ();
+}
+
+bool
+PointerType::is_dyn_slice_type (const TyTy::SliceType **slice) const
+{
+  const TyTy::BaseType *element = get_base ()->destructure ();
+  if (element->get_kind () != TyTy::TypeKind::SLICE)
+    return false;
+  if (slice == nullptr)
+    return true;
+
+  *slice = static_cast<const TyTy::SliceType *> (element);
+  return true;
+}
+
+bool
+PointerType::is_dyn_str_type (const TyTy::StrType **str) const
+{
+  const TyTy::BaseType *element = get_base ()->destructure ();
+  if (element->get_kind () != TyTy::TypeKind::STR)
+    return false;
+  if (str == nullptr)
+    return true;
+
+  *str = static_cast<const TyTy::StrType *> (element);
+  return true;
 }
 
 void
@@ -2488,13 +2758,6 @@ PointerType::get_name () const
 {
   return std::string ("* ") + (is_mutable () ? "mut" : "const") + " "
 	 + get_base ()->get_name ();
-}
-
-BaseType *
-PointerType::unify (BaseType *other)
-{
-  PointerRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2539,7 +2802,7 @@ PointerType::monomorphized_clone () const
 }
 
 PointerType *
-PointerType::handle_substitions (SubstitutionArgumentMappings mappings)
+PointerType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
   auto mappings_table = Analysis::Mappings::get ();
 
@@ -2552,6 +2815,52 @@ PointerType::handle_substitions (SubstitutionArgumentMappings mappings)
   ref->base = TyVar::subst_covariant_var (base, concrete);
 
   return ref;
+}
+
+// PARAM Type
+
+ParamType::ParamType (std::string symbol, Location locus, HirId ref,
+		      HIR::GenericParam &param,
+		      std::vector<TypeBoundPredicate> specified_bounds,
+		      std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::PARAM,
+	      {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+	       locus},
+	      specified_bounds, refs),
+    symbol (symbol), param (param)
+{}
+
+ParamType::ParamType (std::string symbol, Location locus, HirId ref,
+		      HirId ty_ref, HIR::GenericParam &param,
+		      std::vector<TypeBoundPredicate> specified_bounds,
+		      std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::PARAM,
+	      {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+	       locus},
+	      specified_bounds, refs),
+    symbol (symbol), param (param)
+{}
+
+HIR::GenericParam &
+ParamType::get_generic_param ()
+{
+  return param;
+}
+
+bool
+ParamType::can_resolve () const
+{
+  return get_ref () != get_ty_ref ();
+}
+
+bool
+ParamType::is_concrete () const
+{
+  auto r = resolve ();
+  if (r == this)
+    return false;
+
+  return r->is_concrete ();
 }
 
 void
@@ -2585,13 +2894,6 @@ ParamType::get_name () const
     return get_symbol ();
 
   return resolve ()->get_name ();
-}
-
-BaseType *
-ParamType::unify (BaseType *other)
-{
-  ParamRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2670,7 +2972,7 @@ ParamType::is_equal (const BaseType &other) const
 }
 
 ParamType *
-ParamType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+ParamType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
   SubstitutionArg arg = SubstitutionArg::error ();
   bool ok = subst_mappings.get_argument_for_symbol (this, &arg);
@@ -2693,6 +2995,34 @@ ParamType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
   p->set_ty_ref (arg.get_tyty ()->get_ref ());
 
   return p;
+}
+
+// StrType
+
+StrType::StrType (HirId ref, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::STR,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+StrType::StrType (HirId ref, HirId ty_ref, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::STR,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+std::string
+StrType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+StrType::is_concrete () const
+{
+  return true;
 }
 
 BaseType *
@@ -2725,13 +3055,6 @@ StrType::as_string () const
   return "str";
 }
 
-BaseType *
-StrType::unify (BaseType *other)
-{
-  StrRules r (this);
-  return r.unify (other);
-}
-
 bool
 StrType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2743,6 +3066,40 @@ bool
 StrType::is_equal (const BaseType &other) const
 {
   return get_kind () == other.get_kind ();
+}
+
+// Never Type
+
+NeverType::NeverType (HirId ref, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::NEVER,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+NeverType::NeverType (HirId ref, HirId ty_ref, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::NEVER,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs)
+{}
+
+std::string
+NeverType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+NeverType::is_unit () const
+{
+  return true;
+}
+
+bool
+NeverType::is_concrete () const
+{
+  return true;
 }
 
 void
@@ -2761,13 +3118,6 @@ std::string
 NeverType::as_string () const
 {
   return "!";
-}
-
-BaseType *
-NeverType::unify (BaseType *other)
-{
-  NeverRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2791,6 +3141,52 @@ NeverType::monomorphized_clone () const
 
 // placeholder type
 
+PlaceholderType::PlaceholderType (std::string symbol, HirId ref,
+				  std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::PLACEHOLDER,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    symbol (symbol)
+{}
+
+PlaceholderType::PlaceholderType (std::string symbol, HirId ref, HirId ty_ref,
+				  std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    symbol (symbol)
+{}
+
+std::string
+PlaceholderType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+PlaceholderType::is_unit () const
+{
+  rust_assert (can_resolve ());
+  return resolve ()->is_unit ();
+}
+
+std::string
+PlaceholderType::get_symbol () const
+{
+  return symbol;
+}
+
+bool
+PlaceholderType::is_concrete () const
+{
+  if (!can_resolve ())
+    return true;
+
+  return resolve ()->is_concrete ();
+}
+
 void
 PlaceholderType::accept_vis (TyVisitor &vis)
 {
@@ -2808,13 +3204,6 @@ PlaceholderType::as_string () const
 {
   return "<placeholder:" + (can_resolve () ? resolve ()->as_string () : "")
 	 + ">";
-}
-
-BaseType *
-PlaceholderType::unify (BaseType *other)
-{
-  PlaceholderRules r (this);
-  return r.unify (other);
 }
 
 bool
@@ -2890,6 +3279,78 @@ PlaceholderType::is_equal (const BaseType &other) const
 
 // Projection type
 
+ProjectionType::ProjectionType (
+  HirId ref, BaseType *base, const Resolver::TraitReference *trait, DefId item,
+  std::vector<SubstitutionParamMapping> subst_refs,
+  SubstitutionArgumentMappings generic_arguments, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::PROJECTION,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
+    base (base), trait (trait), item (item)
+{}
+
+ProjectionType::ProjectionType (
+  HirId ref, HirId ty_ref, BaseType *base,
+  const Resolver::TraitReference *trait, DefId item,
+  std::vector<SubstitutionParamMapping> subst_refs,
+  SubstitutionArgumentMappings generic_arguments, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::PROJECTION,
+	      {Resolver::CanonicalPath::create_empty (),
+	       Linemap::predeclared_location ()},
+	      refs),
+    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
+    base (base), trait (trait), item (item)
+{}
+
+bool
+ProjectionType::is_unit () const
+{
+  return false;
+}
+
+std::string
+ProjectionType::get_name () const
+{
+  return as_string ();
+}
+
+bool
+ProjectionType::needs_generic_substitutions () const
+{
+  return needs_substitution ();
+}
+
+bool
+ProjectionType::supports_substitutions () const
+{
+  return true;
+}
+
+bool
+ProjectionType::has_subsititions_defined () const
+{
+  return has_substitutions ();
+}
+
+const BaseType *
+ProjectionType::get () const
+{
+  return base;
+}
+BaseType *
+ProjectionType::get ()
+{
+  return base;
+}
+
+bool
+ProjectionType::is_concrete () const
+{
+  return base->is_concrete ();
+}
+
 void
 ProjectionType::accept_vis (TyVisitor &vis)
 {
@@ -2906,12 +3367,6 @@ std::string
 ProjectionType::as_string () const
 {
   return "<Projection=" + subst_as_string () + "::" + base->as_string () + ">";
-}
-
-BaseType *
-ProjectionType::unify (BaseType *other)
-{
-  return base->unify (other);
 }
 
 bool
@@ -2935,7 +3390,8 @@ ProjectionType::monomorphized_clone () const
 }
 
 ProjectionType *
-ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+ProjectionType::handle_substitions (
+  SubstitutionArgumentMappings &subst_mappings)
 {
   // // do we really need to substitute this?
   // if (base->needs_generic_substitutions () || base->contains_type_parameters
@@ -3006,6 +3462,26 @@ ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
   return projection;
 }
 
+// DynObjectType
+
+DynamicObjectType::DynamicObjectType (
+  HirId ref, RustIdent ident, std::vector<TypeBoundPredicate> specified_bounds,
+  std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::DYNAMIC, ident, specified_bounds, refs)
+{}
+
+DynamicObjectType::DynamicObjectType (
+  HirId ref, HirId ty_ref, RustIdent ident,
+  std::vector<TypeBoundPredicate> specified_bounds, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::DYNAMIC, ident, specified_bounds, refs)
+{}
+
+bool
+DynamicObjectType::is_concrete () const
+{
+  return true;
+}
+
 void
 DynamicObjectType::accept_vis (TyVisitor &vis)
 {
@@ -3022,13 +3498,6 @@ std::string
 DynamicObjectType::as_string () const
 {
   return "dyn [" + raw_bounds_as_string () + "]";
-}
-
-BaseType *
-DynamicObjectType::unify (BaseType *other)
-{
-  DynamicRules r (this);
-  return r.unify (other);
 }
 
 bool
