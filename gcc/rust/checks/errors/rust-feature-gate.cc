@@ -17,14 +17,15 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-feature-gate.h"
-#include "rust-feature.h"
+#include "rust-abi.h"
 
 namespace Rust {
 
 void
 FeatureGate::check (AST::Crate &crate)
 {
-  std::vector<Feature> valid_features;
+  valid_features.clear ();
+
   for (const auto &attr : crate.inner_attrs)
     {
       if (attr.get_path ().as_string () == "feature")
@@ -39,20 +40,22 @@ FeatureGate::check (AST::Crate &crate)
 		option.parse_to_meta_item ());
 	      for (const auto &item : meta_item->get_items ())
 		{
-		  const auto &name = item->as_string ();
-		  auto tname = Feature::as_name (name);
+		  const auto &name_str = item->as_string ();
+		  auto tname = Feature::as_name (name_str);
 		  if (!tname.is_none ())
-		    valid_features.push_back (Feature::create (tname.get ()));
+		    {
+		      auto name = tname.get ();
+		      valid_features.insert (name);
+		    }
+
 		  else
 		    rust_error_at (item->get_locus (), "unknown feature '%s'",
-				   name.c_str ());
+				   name_str.c_str ());
 		}
 	    }
 	}
     }
-  valid_features.shrink_to_fit ();
 
-  // TODO (mxlol233): add the real feature gate stuff.
   auto &items = crate.items;
   for (auto it = items.begin (); it != items.end (); it++)
     {
@@ -60,4 +63,46 @@ FeatureGate::check (AST::Crate &crate)
       item->accept_vis (*this);
     }
 }
+
+void
+FeatureGate::gate (Feature::Name name, Location loc,
+		   const std::string &error_msg)
+{
+  if (!valid_features.count (name))
+    {
+      auto feature = Feature::create (name);
+      auto issue = feature.issue ();
+      if (issue > 0)
+	{
+	  const char *fmt_str
+	    = "%s. see issue %ld "
+	      "<https://github.com/rust-lang/rust/issues/%ld> for more "
+	      "information. add `#![feature(%s)]` to the crate attributes to "
+	      "enable.";
+	  rust_error_at (loc, fmt_str, error_msg.c_str (), issue, issue,
+			 feature.as_string ().c_str ());
+	}
+      else
+	{
+	  const char *fmt_str
+	    = "%s. add `#![feature(%s)]` to the crate attributes to enable.";
+	  rust_error_at (loc, fmt_str, error_msg.c_str (),
+			 feature.as_string ().c_str ());
+	}
+    }
+}
+
+void
+FeatureGate::visit (AST::ExternBlock &block)
+{
+  if (block.has_abi ())
+    {
+      const auto abi = block.get_abi ();
+
+      if (get_abi_from_string (abi) == ABI::INTRINSIC)
+	gate (Feature::Name::INTRINSICS, block.get_locus (),
+	      "intrinsics are subject to change");
+    }
+}
+
 } // namespace Rust

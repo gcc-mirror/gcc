@@ -1,4 +1,6 @@
 // { dg-additional-options "-w" }
+#![feature(intrinsics)]
+
 mod intrinsics {
     extern "rust-intrinsic" {
         pub fn offset<T>(ptr: *const T, count: isize) -> *const T;
