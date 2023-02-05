@@ -1,3 +1,21 @@
+2023-02-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libstdc++/108672
+	* include/pstl/unseq_backend_simd.h (__simd_or): Use __INT32_TYPE__
+	instead of int32_t.
+
+2023-02-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Adjust link to pdftex.
+	* doc/html/manual/documentation_hacking.html: Regenerate.
+
+2023-02-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/basic_string.h (operator=(basic_string&&)): Transfer move-to
+	storage to the move-from instance when allocators are equal.
+	* testsuite/21_strings/basic_string/allocator/char/move_assign.cc (test04):
+	New test case.
+
 2023-02-03  Samuel Thibault  <samuel.thibault@gnu.org>
 
 	* config/os/gnu-linux/os_defines.h [!__linux__]
