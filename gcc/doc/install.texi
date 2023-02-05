@@ -5182,9 +5182,6 @@ support the Interix subsystem.  See above.
 
 Old target names including *-*-winnt and *-*-windowsnt are no longer used.
 
-PW32 (i386-pc-pw32) support was never completed, and the project seems to
-be inactive.  See @uref{http://pw32.sourceforge.net/} for more information.
-
 UWIN support has been removed due to a lack of maintenance.
 
 @html
