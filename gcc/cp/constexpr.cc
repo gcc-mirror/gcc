@@ -8448,6 +8448,17 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	}
     }
 
+  if (TREE_CODE (t) == TARGET_EXPR
+      && TREE_CODE (r) == TARGET_EXPR)
+    {
+      /* Preserve this flag for potential_constant_expression, and the others
+	 for good measure.  */
+      TARGET_EXPR_ELIDING_P (r) = TARGET_EXPR_ELIDING_P (t);
+      TARGET_EXPR_IMPLICIT_P (r) = TARGET_EXPR_IMPLICIT_P (t);
+      TARGET_EXPR_LIST_INIT_P (r) = TARGET_EXPR_LIST_INIT_P (t);
+      TARGET_EXPR_DIRECT_INIT_P (r) = TARGET_EXPR_DIRECT_INIT_P (t);
+    }
+
   /* Remember the original location if that wouldn't need a wrapper.  */
   if (location_t loc = EXPR_LOCATION (t))
     protected_set_expr_location (r, loc);
@@ -9774,6 +9785,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
     case TARGET_EXPR:
       if (!TARGET_EXPR_DIRECT_INIT_P (t)
+	  && !TARGET_EXPR_ELIDING_P (t)
 	  && !literal_type_p (TREE_TYPE (t)))
 	{
 	  if (flags & tf_error)
