@@ -117,6 +117,8 @@ uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;  // Default GPU architecture.
 uint32_t elf_flags =
     (EF_AMDGPU_FEATURE_XNACK_ANY_V4 | EF_AMDGPU_FEATURE_SRAMECC_ANY_V4);
 
+static int gcn_stack_size = 0;  /* Zero means use default.  */
+
 /* Delete tempfiles.  */
 
 void
@@ -662,6 +664,18 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
     }
   fprintf (cfile, "\n};\n\n");
 
+  /* Set the stack size if the user configured a value.  */
+  if (gcn_stack_size)
+    fprintf (cfile,
+	     "static __attribute__((constructor))\n"
+	     "void configure_stack_size (void)\n"
+	     "{\n"
+	     "  const char *val = getenv (\"GCN_STACK_SIZE\");\n"
+	     "  if (!val || val[0] == '\\0')\n"
+	     "    setenv (\"GCN_STACK_SIZE\", \"%d\", true);\n"
+	     "}\n\n",
+	     gcn_stack_size);
+
   obstack_free (&fns_os, NULL);
   for (i = 0; i < dims_count; i++)
     free (dims[i].name);
@@ -920,6 +934,10 @@ main (int argc, char **argv)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX908;
       else if (strcmp (argv[i], "-march=gfx90a") == 0)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX90a;
+#define STR "-mstack-size="
+      else if (startswith (argv[i], STR))
+	gcn_stack_size = atoi (argv[i] + strlen (STR));
+#undef STR
     }
 
   if (!(fopenacc ^ fopenmp))
