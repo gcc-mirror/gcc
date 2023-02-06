@@ -4249,8 +4249,8 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
 
   dump_list_of_param_indices (node, "are dead on arrival or have a type "
 			      "mismatch with IPA-CP", dump_dead_indices);
-  dump_list_of_param_indices (node, "are not safe to derefernce in all callers",
-			      dump_bad_cond_indices);
+  dump_list_of_param_indices (node, "are not safe to dereference in all "
+			      "callers", dump_bad_cond_indices);
 
   return ret;
 }
