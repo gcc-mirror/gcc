@@ -1841,7 +1841,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     case CALL_EXPR:
       {
 	tree fn = CALL_EXPR_FN (arg);
-	if (tree name = dependent_name (fn))
+	if (tree name = call_expr_dependent_name (arg))
 	  {
 	    if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
 	      val = iterative_hash_template_arg (TREE_OPERAND (fn, 1), val);
