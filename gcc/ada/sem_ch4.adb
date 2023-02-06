@@ -65,6 +65,7 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
+with Style;          use Style;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 with Warnsw;         use Warnsw;
@@ -3134,6 +3135,20 @@ package body Sem_Ch4 is
 
       Operator_Check (N);
       Check_Function_Writable_Actuals (N);
+
+      if Style_Check then
+         if Nkind (L) not in N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor
+           and then Is_Boolean_Type (Etype (L))
+         then
+            Check_Xtra_Parens (L);
+         end if;
+
+         if Nkind (R) not in N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor
+           and then Is_Boolean_Type (Etype (R))
+         then
+            Check_Xtra_Parens (R);
+         end if;
+      end if;
    end Analyze_Logical_Op;
 
    ---------------------------
@@ -6005,6 +6020,18 @@ package body Sem_Ch4 is
          Resolve (L, Standard_Boolean);
          Resolve (R, Standard_Boolean);
          Set_Etype (N, Standard_Boolean);
+      end if;
+
+      if Style_Check then
+         if Nkind (L) not in N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor
+         then
+            Check_Xtra_Parens (L);
+         end if;
+
+         if Nkind (R) not in N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor
+         then
+            Check_Xtra_Parens (R);
+         end if;
       end if;
    end Analyze_Short_Circuit;
 

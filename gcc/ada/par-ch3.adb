@@ -3064,10 +3064,20 @@ package body Ch3 is
       elsif Token = Tok_Dot_Dot then
          Range_Node := New_Node (N_Range, Token_Ptr);
          Set_Low_Bound (Range_Node, Expr_Node);
+
+         if Style_Check then
+            Style.Check_Xtra_Parens (Expr_Node);
+         end if;
+
          Scan; -- past ..
          Expr_Node := P_Expression;
          Check_Simple_Expression (Expr_Node);
          Set_High_Bound (Range_Node, Expr_Node);
+
+         if Style_Check then
+            Style.Check_Xtra_Parens (Expr_Node);
+         end if;
+
          return Range_Node;
 
       --  Otherwise we must have a subtype mark, or an Ada 2012 iterator

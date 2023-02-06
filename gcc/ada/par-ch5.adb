@@ -1355,22 +1355,11 @@ package body Ch5 is
 
          return Cond;
 
-      --  Otherwise check for redundant parentheses but do not emit messages
-      --  about expressions that require parentheses (e.g. conditional,
-      --  quantified or declaration expressions).
+      --  Otherwise check for redundant parentheses
 
       else
-         if Style_Check
-           and then
-             Paren_Count (Cond) >
-               (if Nkind (Cond) in N_Case_Expression
-                                 | N_Expression_With_Actions
-                                 | N_If_Expression
-                                 | N_Quantified_Expression
-                then 1
-                else 0)
-         then
-            Style.Check_Xtra_Parens (First_Sloc (Cond));
+         if Style_Check then
+            Style.Check_Xtra_Parens (Cond, Enable => True);
          end if;
 
          --  And return the result
