@@ -143,6 +143,8 @@ get_range_query (const struct function *fun)
   return fun->x_range_query ? fun->x_range_query : &global_ranges;
 }
 
-extern void gimple_range_global (vrange &v, tree name);
+// Query the global range of NAME in function F.  Default to cfun.
+extern void gimple_range_global (vrange &v, tree name,
+				 struct function *f = cfun);
 
 #endif // GCC_QUERY_H
