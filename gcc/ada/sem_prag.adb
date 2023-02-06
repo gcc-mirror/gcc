@@ -208,9 +208,10 @@ package body Sem_Prag is
      (Prag    : Node_Id;
       Spec_Id : Entity_Id);
    --  Subsidiary to the analysis of pragmas Contract_Cases, Postcondition,
-   --  Precondition, Refined_Post, and Test_Case. Emit a warning when pragma
-   --  Prag is associated with subprogram Spec_Id subject to Inline_Always,
-   --  assertions are enabled and inling is done in the frontend.
+   --  Precondition, Refined_Post, Subprogram_Variant, and Test_Case. Emit a
+   --  warning when pragma Prag is associated with subprogram Spec_Id subject
+   --  to Inline_Always, assertions are enabled and inling is done in the
+   --  frontend.
 
    procedure Check_State_And_Constituent_Use
      (States   : Elist_Id;
@@ -29626,6 +29627,11 @@ package body Sem_Prag is
          if Restore_Scope then
             End_Scope;
          end if;
+
+         --  Currently it is not possible to inline Subprogram_Variant on a
+         --  subprogram subject to pragma Inline_Always.
+
+         Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
 
       --  Otherwise the pragma is illegal
 
