@@ -129,8 +129,6 @@ static const char *library_abbrev[maxlib]
    -flibs=m2pim,m2iso respectively.  This provides a match between
    the dialect of Modula-2 and the library set.  */
 
-static const char *add_include (const char *libpath, const char *library);
-
 static bool seen_scaffold_static = false;
 static bool seen_scaffold_dynamic = false;
 static bool seen_scaffold_main = false;
@@ -150,7 +148,6 @@ static void append_arg (const struct cl_decoded_option *);
 /* The new argument list will be built here.  */
 static unsigned int gm2_newargc;
 static struct cl_decoded_option *gm2_new_decoded_options;
-static const char *full_libraries = NULL;
 static const char *libraries = NULL;  /* Abbreviated libraries.  */
 
 
@@ -239,31 +236,6 @@ safe_strdup (const char *s)
   if (s != NULL)
     return xstrdup (s);
   return NULL;
-}
-
-static char *
-concat_option (char *dest, const char *pre, const char *path, const char *post)
-{
-  if (dest == NULL)
-    {
-      dest = (char *) xmalloc (strlen (pre) + strlen (path) + strlen (post) + 1);
-      strcpy (dest, pre);
-      strcat (dest, path);
-      strcat (dest, post);
-      return dest;
-    }
-  else
-    {
-      char *result = (char *) xmalloc (strlen (dest) + strlen (pre)
-				       + strlen (path) + strlen (post) + 1 + 1);
-      strcpy (result, dest);
-      strcat (result, " ");
-      strcat (result, pre);
-      strcat (result, path);
-      strcat (result, post);
-      free (dest);
-      return result;
-    }
 }
 
 /* add_default_libs adds the -l option which is derived from the
