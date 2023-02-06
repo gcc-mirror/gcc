@@ -3568,10 +3568,10 @@ namespace ranges
 
   struct __find_last_fn
   {
-    template<forward_iterator _Iter, sentinel_for<_Iter> _Sent, typename T, typename _Proj = identity>
-      requires indirect_binary_predicate<ranges::equal_to, projected<_Iter, _Proj>, const T*>
+    template<forward_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Tp, typename _Proj = identity>
+      requires indirect_binary_predicate<ranges::equal_to, projected<_Iter, _Proj>, const _Tp*>
       constexpr subrange<_Iter>
-      operator()(_Iter __first, _Sent __last, const T& __value, _Proj __proj = {}) const
+      operator()(_Iter __first, _Sent __last, const _Tp& __value, _Proj __proj = {}) const
       {
 	if constexpr (same_as<_Iter, _Sent> && bidirectional_iterator<_Iter>)
 	  {
@@ -3599,10 +3599,10 @@ namespace ranges
 	  }
       }
 
-    template<forward_range _Range, typename T, typename _Proj = identity>
-      requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Range>, _Proj>, const T*>
+    template<forward_range _Range, typename _Tp, typename _Proj = identity>
+      requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Range>, _Proj>, const _Tp*>
       constexpr borrowed_subrange_t<_Range>
-      operator()(_Range&& __r, const T& __value, _Proj __proj = {}) const
+      operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
       { return (*this)(ranges::begin(__r), ranges::end(__r), __value, std::move(__proj)); }
   };
 
