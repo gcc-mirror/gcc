@@ -7199,7 +7199,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=w")
         (plus: V4SF (match_operand:V4SF 1 "register_operand" "0")
                     (unspec:V4SF [(match_operand:V8BF 2 "register_operand" "w")
-                                  (match_operand:VBF 3 "register_operand" "w")
+                                  (match_operand:VBF 3 "register_operand" "x")
                                   (match_operand:SI 4 "const_int_operand" "n")]
                      BF_MLA)))]
   "TARGET_BF16_SIMD"
