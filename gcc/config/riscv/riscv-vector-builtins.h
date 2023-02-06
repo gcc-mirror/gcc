@@ -106,6 +106,7 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 #define RVV_REQUIRE_ZVE64 (1 << 1)	/* Require TARGET_MIN_VLEN > 32.  */
 #define RVV_REQUIRE_ELEN_FP_32 (1 << 2) /* Require FP ELEN >= 32.  */
 #define RVV_REQUIRE_ELEN_FP_64 (1 << 3) /* Require FP ELEN >= 64.  */
+#define RVV_REQUIRE_FULL_V (1 << 4) /* Require Full 'V' extension.  */
 
 /* Enumerates the RVV operand types.  */
 enum operand_type_index
@@ -139,6 +140,8 @@ enum rvv_base_type
 {
   RVV_BASE_vector,
   RVV_BASE_scalar,
+  RVV_BASE_unsigned_vector,
+  RVV_BASE_unsigned_scalar,
   RVV_BASE_vector_ptr,
   RVV_BASE_scalar_ptr,
   RVV_BASE_scalar_const_ptr,

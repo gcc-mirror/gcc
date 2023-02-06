@@ -1148,6 +1148,7 @@
 ;; - 11.5 Vector Bitwise Logical Instructions
 ;; - 11.6 Vector Single-Width Bit Shift Instructions
 ;; - 11.9 Vector Integer Min/Max Instructions
+;; - 11.10 Vector Single-Width Integer Multiply Instructions
 ;; - 11.11 Vector Integer Divide Instructions
 ;; - 12.1 Vector Single-Width Saturating Add and Subtract
 ;; -------------------------------------------------------------------------------
@@ -1773,6 +1774,133 @@
   "TARGET_VECTOR"
   "v<insn>.vx\t%0,%3,%4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
+   (set_attr "mode" "<MODE>")])
+
+;; Multiply High instructions.
+(define_insn "@pred_mulh<v_su><mode>"
+  [(set (match_operand:VFULLI 0 "register_operand"       "=vd, vr")
+	(if_then_else:VFULLI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" " vm,Wc1")
+	     (match_operand 5 "vector_length_operand"    " rK, rK")
+	     (match_operand 6 "const_int_operand"        "  i,  i")
+	     (match_operand 7 "const_int_operand"        "  i,  i")
+	     (match_operand 8 "const_int_operand"        "  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VFULLI
+	    [(match_operand:VFULLI 3 "register_operand"  " vr, vr")
+	     (match_operand:VFULLI 4 "register_operand"  " vr, vr")] VMULH)
+	  (match_operand:VFULLI 2 "vector_merge_operand" "0vu,0vu")))]
+  "TARGET_VECTOR"
+  "vmulh<v_su>.vv\t%0,%3,%4%p1"
+  [(set_attr "type" "vimul")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_mulh<v_su><mode>_scalar"
+  [(set (match_operand:VI_QHS 0 "register_operand"       "=vd, vr")
+	(if_then_else:VI_QHS
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" " vm,Wc1")
+	     (match_operand 5 "vector_length_operand"    " rK, rK")
+	     (match_operand 6 "const_int_operand"        "  i,  i")
+	     (match_operand 7 "const_int_operand"        "  i,  i")
+	     (match_operand 8 "const_int_operand"        "  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VI_QHS
+	    [(vec_duplicate:VI_QHS
+	       (match_operand:<VEL> 4 "register_operand"  "  r,  r"))
+	     (match_operand:VI_QHS 3 "register_operand"   " vr, vr")] VMULH)
+	  (match_operand:VI_QHS 2 "vector_merge_operand"  "0vu,0vu")))]
+  "TARGET_VECTOR"
+  "vmulh<v_su>.vx\t%0,%3,%4%p1"
+  [(set_attr "type" "vimul")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "@pred_mulh<v_su><mode>_scalar"
+  [(set (match_operand:VFULLI_D 0 "register_operand")
+	(if_then_else:VFULLI_D
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand")
+	     (match_operand 5 "vector_length_operand")
+	     (match_operand 6 "const_int_operand")
+	     (match_operand 7 "const_int_operand")
+	     (match_operand 8 "const_int_operand")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VFULLI_D
+	    [(vec_duplicate:VFULLI_D
+	       (match_operand:<VEL> 4 "reg_or_int_operand"))
+	     (match_operand:VFULLI_D 3 "register_operand")] VMULH)
+	  (match_operand:VFULLI_D 2 "vector_merge_operand")))]
+  "TARGET_VECTOR"
+  {
+    if (!TARGET_64BIT)
+      {
+	rtx v = gen_reg_rtx (<MODE>mode);
+
+	if (riscv_vector::simm32_p (operands[4]))
+	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
+		force_reg (Pmode, operands[4]));
+	else
+	  {
+	    if (CONST_INT_P (operands[4]))
+	      operands[4] = force_reg (<VEL>mode, operands[4]);
+
+	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
+			v, operands[4], operands[5], <VM>mode);
+	    emit_insn (gen_pred_mulh<v_su><mode> (operands[0], operands[1],
+			operands[2], operands[3], v, operands[5],
+			operands[6], operands[7], operands[8]));
+	    DONE;
+	  }
+      }
+    else
+      operands[4] = force_reg (<VEL>mode, operands[4]);
+  })
+
+(define_insn "*pred_mulh<v_su><mode>_scalar"
+  [(set (match_operand:VFULLI_D 0 "register_operand"       "=vd, vr")
+	(if_then_else:VFULLI_D
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"   " vm,Wc1")
+	     (match_operand 5 "vector_length_operand"      " rK, rK")
+	     (match_operand 6 "const_int_operand"          "  i,  i")
+	     (match_operand 7 "const_int_operand"          "  i,  i")
+	     (match_operand 8 "const_int_operand"          "  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VFULLI_D
+	    [(vec_duplicate:VFULLI_D
+	       (match_operand:<VEL> 4 "register_operand"   "  r,  r"))
+	     (match_operand:VFULLI_D 3 "register_operand"  " vr, vr")] VMULH)
+	  (match_operand:VFULLI_D 2 "vector_merge_operand" "0vu,0vu")))]
+  "TARGET_VECTOR"
+  "vmulh<v_su>.vx\t%0,%3,%4%p1"
+  [(set_attr "type" "vimul")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*pred_mulh<v_su><mode>_extended_scalar"
+  [(set (match_operand:VFULLI_D 0 "register_operand"          "=vd, vr")
+	(if_then_else:VFULLI_D
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"      " vm,Wc1")
+	     (match_operand 5 "vector_length_operand"         " rK, rK")
+	     (match_operand 6 "const_int_operand"             "  i,  i")
+	     (match_operand 7 "const_int_operand"             "  i,  i")
+	     (match_operand 8 "const_int_operand"             "  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VFULLI_D
+	    [(vec_duplicate:VFULLI_D
+	       (sign_extend:<VEL>
+	         (match_operand:<VSUBEL> 4 "register_operand" "  r,  r")))
+	     (match_operand:VFULLI_D 3 "register_operand"     " vr, vr")] VMULH)
+	  (match_operand:VFULLI_D 2 "vector_merge_operand"    "0vu,0vu")))]
+  "TARGET_VECTOR"
+  "vmulh<v_su>.vx\t%0,%3,%4%p1"
+  [(set_attr "type" "vimul")
    (set_attr "mode" "<MODE>")])
 
 ;; -------------------------------------------------------------------------------

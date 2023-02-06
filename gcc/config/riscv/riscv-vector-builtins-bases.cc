@@ -218,6 +218,27 @@ public:
   }
 };
 
+/* Implements vmulh/vmulhu/vmulhsu.  */
+template<int UNSPEC>
+class vmulh : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vx:
+	return e.use_exact_insn (
+	  code_for_pred_mulh_scalar (UNSPEC, e.vector_mode ()));
+      case OP_TYPE_vv:
+	return e.use_exact_insn (
+	  code_for_pred_mulh (UNSPEC, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -256,6 +277,9 @@ static CONSTEXPR const binop<SMAX> vmax_obj;
 static CONSTEXPR const binop<UMIN> vminu_obj;
 static CONSTEXPR const binop<UMAX> vmaxu_obj;
 static CONSTEXPR const binop<MULT> vmul_obj;
+static CONSTEXPR const vmulh<UNSPEC_VMULHS> vmulh_obj;
+static CONSTEXPR const vmulh<UNSPEC_VMULHU> vmulhu_obj;
+static CONSTEXPR const vmulh<UNSPEC_VMULHSU> vmulhsu_obj;
 static CONSTEXPR const binop<DIV> vdiv_obj;
 static CONSTEXPR const binop<MOD> vrem_obj;
 static CONSTEXPR const binop<UDIV> vdivu_obj;
@@ -312,6 +336,9 @@ BASE (vmax)
 BASE (vminu)
 BASE (vmaxu)
 BASE (vmul)
+BASE (vmulh)
+BASE (vmulhu)
+BASE (vmulhsu)
 BASE (vdiv)
 BASE (vrem)
 BASE (vdivu)
