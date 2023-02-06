@@ -1,3 +1,10 @@
+2023-02-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108592
+	* arith.cc (gfc_arith_divide): Emit integer division truncation
+	warnings using gfc_warning instead of gfc_warning_now to prevent
+	redundant messages.
+
 2023-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/108451
