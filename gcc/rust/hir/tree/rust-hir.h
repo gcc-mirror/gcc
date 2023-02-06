@@ -839,6 +839,8 @@ public:
 
   virtual ImplItemType get_impl_item_type () const = 0;
 
+  virtual std::string get_impl_item_name () const = 0;
+
 protected:
   // Clone function implementation as pure virtual method
   virtual ImplItem *clone_inherent_impl_item_impl () const = 0;
