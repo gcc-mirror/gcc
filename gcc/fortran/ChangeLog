@@ -1,3 +1,43 @@
+2023-02-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2023-01-29  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/108450
+	* check.cc (gfc_check_minloc_maxloc): Explicitly set argument name.
+	(gfc_check_findloc): Ditto.
+
+2023-02-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-02-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108609
+	* expr.cc (find_array_section): Add check to prevent interpreting an
+	mpz non-integer constant as an integer.
+
+2023-02-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/108527
+	* resolve.cc (compare_bound_int): Expression to compare must be of
+	type INTEGER.
+	(compare_bound_mpz_t): Likewise.
+	(check_dimension): Fix comment on checks applied to array section
+	and clean up associated logic.
+
+2023-02-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108453
+	* match.cc (gfc_match_common): A USE associated name shall not appear
+	in a COMMON block (F2018:C8121).
+
 2023-01-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

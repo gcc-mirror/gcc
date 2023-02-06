@@ -1,3 +1,62 @@
+2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc (random_device::_M_fini): Do not try to
+	close the file handle if the target doesn't support the
+	/dev/random and /dev/urandom files.
+
+2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/os/generic/error_constants.h (errc::value_too_large)
+	[__AVR__]: Define.
+	* src/c++11/system_error.cc
+	(system_category::default_error_condition) [__AVR__]: Only match
+	recognize values equal to EDOM, ERANGE, ENOSYS and EINTR.
+	* src/c++17/fs_ops.cc (fs::current_path) [__AVR__]: Do not check
+	for ENOENT etc. in switch.
+	(fs::remove_all) [__AVR__]: Likewise.
+	* src/filesystem/ops-common.h [__AVR__]: Do not use POSIX open,
+	close etc.
+
+2023-02-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-11-06  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/atomic_wait.h (_detail::__platform_wait_alignment):
+	Declare inline.  Remove redundant static specifier.
+	(__detail::__atomic_spin_count_relax): Declare inline.
+	(__detail::__atomic_spin_count): Likewise.
+	* include/bits/regex_automaton.h (__detail::_S_invalid_state_id):
+	Declare inline for C++17.  Declare constexpr.  Remove
+	redundant const and static specifiers.
+	* include/bits/regex_error.h (regex_constants::error_collate):
+	Declare inline for C++17 as per P0607R0.
+	(regex_constants::error_ctype): Likewise.
+	(regex_constants::error_escape): Likewise.
+	(regex_constants::error_backref): Likewise.
+	(regex_constants::error_brack): Likewise.
+	(regex_constants::error_paren): Likewise.
+	(regex_constants::error_brace): Likewise.
+	(regex_constants::error_badbrace): Likewise.
+	(regex_constants::error_range): Likewise.
+	(regex_constants::error_space): Likewise.
+	(regex_constants::error_badrepeat): Likewise.
+	(regex_constants::error_complexity): Likewise.
+	(regex_constants::error_stack): Likewise.
+	* include/ext/concurrence.h (__gnu_cxx::__default_lock_policy):
+	Likewise.  Remove redundant static specifier.
+	* include/pstl/execution_defs.h (execution::seq): Declare inline
+	for C++17 as per P0607R0.
+	(execution::par): Likewise.
+	(execution::par_unseq): Likewise.
+	(execution::unseq): Likewise.
+
 2023-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

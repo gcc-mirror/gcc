@@ -107,10 +107,10 @@ class unsequenced_policy
 };
 
 // 2.8, Execution policy objects
-constexpr sequenced_policy seq{};
-constexpr parallel_policy par{};
-constexpr parallel_unsequenced_policy par_unseq{};
-constexpr unsequenced_policy unseq{};
+_GLIBCXX17_INLINE constexpr sequenced_policy seq{};
+_GLIBCXX17_INLINE constexpr parallel_policy par{};
+_GLIBCXX17_INLINE constexpr parallel_unsequenced_policy par_unseq{};
+_GLIBCXX17_INLINE constexpr unsequenced_policy unseq{};
 
 // 2.3, Execution policy type trait
 template <class _Tp>
