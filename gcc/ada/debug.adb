@@ -41,7 +41,7 @@ package body Debug is
    --  dh   Generate listing showing loading of name table hash chains
    --  di   Generate messages for visibility linking/delinking
    --  dj   Suppress "junk null check" for access parameter values
-   --  dk   Generate GNATBUG message on abort, even if previous errors
+   --  dk   Generate "GNAT BUG" message on abort, even if previous errors
    --  dl   Generate unit load trace messages
    --  dm   Prevent special frontend inlining in GNATprove mode
    --  dn   Generate messages for node/list allocation
@@ -113,7 +113,7 @@ package body Debug is
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
    --  d.A  Enable statistics printing in Atree
-   --  d.B  Generate a bug box on abort_statement
+   --  d.B  Generate a "GNAT BUG" message on abort_statement
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
    --  d.E  Turn selected errors into warnings
@@ -486,9 +486,12 @@ package body Debug is
    --       GNAT before 3.10, so this switch can ease the transition process.
 
    --  dk   Immediate kill on abort. Normally on an abort (i.e. a call to
-   --       Comperr.Compiler_Abort), the GNATBUG message is not given if
-   --       there is a previous error. This debug switch bypasses this test
-   --       and gives the message unconditionally (useful for debugging).
+   --       Comperr.Compiler_Abort), the "GNAT BUG" message is not given if
+   --       there is a previous error. Instead, the message "compilation
+   --       abandoned due to previous error" is given. This debug switch
+   --       bypasses this test and gives the "GNAT BUG" message unconditionally
+   --       (useful for debugging). Use -gnatdO in addition to see the previous
+   --       errors.
 
    --  dl   Generate unit load trace messages. A line of traceback output is
    --       generated each time a request is made to the library manager to
@@ -835,12 +838,12 @@ package body Debug is
    --       with -gnatd.A. You might want to apply "sort -nr" to parts of the
    --       output.
 
-   --  d.B  Generate a bug box when we see an abort_statement, even though
-   --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
-   --       some code containing an abort_statement, and compile it with
+   --  d.B  Generate a "GNAT BUG" message when we see an abort_statement, even
+   --       though there is no bug. Useful for testing Comperr.Compiler_Abort:
+   --       write some code containing an abort_statement, and compile it with
    --       -gnatd.B. There is nothing special about abort_statements; it just
-   --       provides a way to control where the bug box is generated. See "when
-   --       N_Abort_Statement" in package body Expander.
+   --       provides a way to control where the bug box is generated. See the
+   --       "when N_Abort_Statement" in package body Expander.
 
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.

@@ -3104,6 +3104,18 @@ package Einfo is
 --       procedure which verifies the invariants of the partial view of a
 --       private type or private extension.
 
+--    Is_Past_Self_Hiding_Point
+--       Defined in all entities. Roughly speaking, this is False if the
+--       declaration of the entity is hidden from all visibility because
+--       we are within its declaration, as defined by 8.3(16-18). When
+--       we reach the end of the declaration or other place defined by
+--       8.3(16-18), this is set to True. However, this flag is not used
+--       for most overloaded declarations (but is used for enumeration
+--       literals), and is also used for other cases of premature usage
+--       such as defined in 3.8(10) for record components and the like.
+--       In addition, there are cases involving discriminants where we
+--       set this True, then temporarily False again.
+
 --    Is_Potentially_Use_Visible
 --       Defined in all entities. Set if entity is potentially use visible,
 --       i.e. it is defined in a package that appears in a currently active
@@ -4945,6 +4957,7 @@ package Einfo is
    --    Is_Obsolescent
    --    Is_Package_Body_Entity
    --    Is_Packed_Array_Impl_Type
+   --    Is_Past_Self_Hiding_Point
    --    Is_Potentially_Use_Visible
    --    Is_Preelaborated
    --    Is_Primitive_Wrapper

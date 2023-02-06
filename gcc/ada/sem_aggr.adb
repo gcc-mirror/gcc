@@ -1844,6 +1844,7 @@ package body Sem_Aggr is
 
             Set_Etype (Id, Index_Typ);
             Mutate_Ekind (Id, E_Variable);
+            Set_Is_Past_Self_Hiding_Point (Id);
             Set_Scope (Id, Scop);
          end if;
 
@@ -3132,6 +3133,7 @@ package body Sem_Aggr is
          end if;
 
          Mutate_Ekind (Id, E_Variable);
+         Set_Is_Past_Self_Hiding_Point (Id);
          Set_Scope (Id, Ent);
          Set_Referenced (Id);
 
@@ -3504,6 +3506,7 @@ package body Sem_Aggr is
                if No (Scope (Id)) then
                   Set_Etype (Id, Index_Type);
                   Mutate_Ekind (Id, E_Variable);
+                  Set_Is_Past_Self_Hiding_Point (Id);
                   Set_Scope (Id, Ent);
                end if;
                Enter_Name (Id);

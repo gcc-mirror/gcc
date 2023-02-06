@@ -226,6 +226,10 @@ package body Sem_Ch6 is
    --  Preanalysis of default expressions of subprogram formals. N is the
    --  expression to be analyzed and T is the expected type.
 
+   procedure Set_Formal_Mode (Formal_Id : Entity_Id);
+   --  Set proper Ekind to reflect formal mode (in, out, in out), and set
+   --  miscellaneous other attributes.
+
    procedure Set_Formal_Validity (Formal_Id : Entity_Id);
    --  Formal_Id is an formal parameter entity. This procedure deals with
    --  setting the proper validity status for this entity, which depends on
@@ -5240,6 +5244,8 @@ package body Sem_Ch6 is
          Mutate_Ekind (Designator, E_Procedure);
          Set_Etype (Designator, Standard_Void_Type);
       end if;
+
+      Set_Is_Past_Self_Hiding_Point (Designator);
 
       --  Flag Is_Inlined_Always is True by default, and reversed to False for
       --  those subprograms which could be inlined in GNATprove mode (because
@@ -13420,6 +13426,8 @@ package body Sem_Ch6 is
       else
          Mutate_Ekind (Formal_Id, E_In_Parameter);
       end if;
+
+      Set_Is_Past_Self_Hiding_Point (Formal_Id);
 
       --  Set Is_Known_Non_Null for access parameters since the language
       --  guarantees that access parameters are always non-null. We also set

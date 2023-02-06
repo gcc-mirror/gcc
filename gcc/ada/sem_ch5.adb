@@ -2374,6 +2374,7 @@ package body Sem_Ch5 is
       --  iterator name.
 
       Mutate_Ekind (Def_Id, E_Variable);
+      Set_Is_Past_Self_Hiding_Point (Def_Id);
 
       --  Provide a link between the iterator variable and the container, for
       --  subsequent use in cross-reference and modification information.
@@ -2652,6 +2653,7 @@ package body Sem_Ch5 is
 
       else
          Mutate_Ekind (Def_Id, E_Loop_Parameter);
+         Set_Is_Past_Self_Hiding_Point (Def_Id);
          Error_Msg_Ada_2012_Feature ("container iterator", Sloc (N));
 
          --  OF present
@@ -2705,6 +2707,7 @@ package body Sem_Ch5 is
 
                      if Has_Aspect (Typ, Aspect_Variable_Indexing) then
                         Mutate_Ekind (Def_Id, E_Variable);
+                        Set_Is_Past_Self_Hiding_Point (Def_Id);
                      end if;
 
                      --  If the container is a constant, iterating over it
@@ -3329,6 +3332,7 @@ package body Sem_Ch5 is
       end if;
 
       Mutate_Ekind (Id, E_Loop_Parameter);
+      Set_Is_Past_Self_Hiding_Point (Id);
 
       --  A quantified expression which appears in a pre- or post-condition may
       --  be analyzed multiple times. The analysis of the range creates several

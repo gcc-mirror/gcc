@@ -2057,6 +2057,7 @@ package body Exp_Aggr is
             Set_Etype (L_J, Any_Type);
 
             Mutate_Ekind (L_J, E_Variable);
+            Set_Is_Past_Self_Hiding_Point (L_J);
             Set_Scope (L_J, Ent);
          else
             L_J := Make_Temporary (Loc, 'J', L);

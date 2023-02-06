@@ -177,6 +177,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Package_Body_Entity, Flag),
         Sm (Is_Packed, Flag, Impl_Base_Type_Only),
         Sm (Is_Packed_Array_Impl_Type, Flag),
+        Sm (Is_Past_Self_Hiding_Point, Flag),
         Sm (Is_Potentially_Use_Visible, Flag),
         Sm (Is_Preelaborated, Flag),
         Sm (Is_Private_Descendant, Flag),

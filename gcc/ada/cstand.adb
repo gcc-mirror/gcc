@@ -1784,6 +1784,7 @@ package body CStand is
 
       Set_Is_Immediately_Visible  (Ident_Node, True);
       Set_Is_Intrinsic_Subprogram (Ident_Node, True);
+      Set_Is_Past_Self_Hiding_Point (Ident_Node);
 
       Set_Name_Entity_Id (Op, Ident_Node);
       Append_Entity (Ident_Node, Standard_Standard);
@@ -1806,9 +1807,10 @@ package body CStand is
       Set_Is_Public (E);
 
       --  All standard entity names are analyzed manually, and are thus
-      --  frozen as soon as they are created.
+      --  frozen and not self-hidden as soon as they are created.
 
       Set_Is_Frozen (E);
+      Set_Is_Past_Self_Hiding_Point (E);
 
       --  Set debug information required for all standard types
 
