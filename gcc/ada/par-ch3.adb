@@ -3074,7 +3074,12 @@ package body Ch3 is
          Check_Simple_Expression (Expr_Node);
          Set_High_Bound (Range_Node, Expr_Node);
 
-         if Style_Check then
+         --  If Expr_Node (ignoring parentheses) is not a simple expression
+         --  then emit a style check.
+
+         if Style_Check
+           and then Nkind (Expr_Node) not in N_Op_Boolean | N_Subexpr
+         then
             Style.Check_Xtra_Parens (Expr_Node);
          end if;
 

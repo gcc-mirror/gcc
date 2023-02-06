@@ -874,7 +874,7 @@ package body System.Interrupts is
               To_System (Interrupt_Access_Hold.all'Identity);
          end if;
 
-         if (New_Handler = null) and then Old_Handler /= null then
+         if New_Handler = null and then Old_Handler /= null then
 
             --  Restore default handler
 

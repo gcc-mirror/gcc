@@ -683,6 +683,8 @@ begin
    Write_Line ("        u    check no unnecessary blank lines");
    Write_Line ("        x    check extra parentheses around conditionals");
    Write_Line ("        y    turn on default style checks");
+   Write_Line ("        z    check parentheses not required by operator " &
+               "precedence rules");
    Write_Line ("        -    subtract (turn off) subsequent checks");
    Write_Line ("        +    add (turn on) subsequent checks");
 

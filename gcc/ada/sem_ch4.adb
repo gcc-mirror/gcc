@@ -3157,13 +3157,13 @@ package body Sem_Ch4 is
          if Nkind (L) not in N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor
            and then Is_Boolean_Type (Etype (L))
          then
-            Check_Xtra_Parens (L);
+            Check_Xtra_Parens_Precedence (L);
          end if;
 
          if Nkind (R) not in N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor
            and then Is_Boolean_Type (Etype (R))
          then
-            Check_Xtra_Parens (R);
+            Check_Xtra_Parens_Precedence (R);
          end if;
       end if;
    end Analyze_Logical_Op;
@@ -6042,12 +6042,12 @@ package body Sem_Ch4 is
       if Style_Check then
          if Nkind (L) not in N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor
          then
-            Check_Xtra_Parens (L);
+            Check_Xtra_Parens_Precedence (L);
          end if;
 
          if Nkind (R) not in N_Short_Circuit | N_Op_And | N_Op_Or | N_Op_Xor
          then
-            Check_Xtra_Parens (R);
+            Check_Xtra_Parens_Precedence (R);
          end if;
       end if;
    end Analyze_Short_Circuit;

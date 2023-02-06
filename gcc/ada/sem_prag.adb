@@ -30068,7 +30068,7 @@ package body Sem_Prag is
                                       | Name_Loop_Invariant
                                       | Name_Loop_Variant)
             then
-               case (Chars (Get_Pragma_Arg (Last (PPA)))) is
+               case Chars (Get_Pragma_Arg (Last (PPA))) is
                   when Name_Check
                      | Name_On
                   =>

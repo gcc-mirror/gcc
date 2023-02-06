@@ -28,7 +28,6 @@
 --  gathered in a separate package so that they can more easily be customized.
 --  Calls to these subprograms are only made if Opt.Style_Check is set True.
 
-with Debug; use Debug;
 with Errout;
 with Styleg;
 with Types;    use Types;
@@ -193,10 +192,15 @@ package Style is
      renames Style_Inst.Check_Vertical_Bar;
    --  Called after scanning a vertical bar to check spacing
 
-   procedure Check_Xtra_Parens (N : Node_Id; Enable : Boolean := Debug_Flag_QQ)
+   procedure Check_Xtra_Parens (N : Node_Id)
      renames Style_Inst.Check_Xtra_Parens;
-   --  Called after scanning an expression (N) that does not require an extra
-   --  level of parentheses around the entire expression.
+   --  Called after scanning an entire expression (N) that does not require an
+   --  extra level of parentheses.
+
+   procedure Check_Xtra_Parens_Precedence (N : Node_Id)
+     renames Style_Inst.Check_Xtra_Parens_Precedence;
+   --  Called after scanning a subexpression (N) that does not require an
+   --  extra level of parentheses according to operator precedence rules.
 
    function Mode_In_Check return Boolean
      renames Style_Inst.Mode_In_Check;

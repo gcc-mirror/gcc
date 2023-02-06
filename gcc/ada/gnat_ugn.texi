@@ -13312,7 +13312,7 @@ temporary disabling of validity checks.
 
 @geindex -gnaty (gcc)
 
-The @code{-gnatyx} switch causes the compiler to
+The @code{-gnaty} switch causes the compiler to
 enforce specified style rules. A limited set of style rules has been used
 in writing the GNAT sources themselves. This switch allows user programs
 to activate all or some of these checks. If the source program fails a
@@ -13569,9 +13569,9 @@ in the source text.
 
 The set of style check switches is set to match that used by the GNAT sources.
 This may be useful when developing code that is eventually intended to be
-incorporated into GNAT. Currently this is equivalent to @code{-gnatyydISux})
-but additional style switches may be added to this set in the future without
-advance notice.
+incorporated into GNAT. Currently this is equivalent to
+@code{-gnatyydISuxz}) but additional style switches may be added to this
+set in the future without advance notice.
 @end table
 
 @geindex -gnatyh (gcc)
@@ -13965,9 +13965,9 @@ one blank line occurs in sequence.
 
 `Check extra parentheses.'
 
-Unnecessary extra level of parentheses (C-style) are not allowed
-around conditions in @code{if} statements, @code{while} statements and
-@code{exit} statements.
+Unnecessary extra levels of parentheses (C-style) are not allowed
+around conditions (or selection expressions) in @code{if}, @code{while},
+@code{case}, and @code{exit} statements, as well as part of ranges.
 @end table
 
 @geindex -gnatyy (gcc)
@@ -13983,6 +13983,19 @@ This is equivalent to @code{gnaty3aAbcefhiklmnprst}, that is all checking
 options enabled with the exception of @code{-gnatyB}, @code{-gnatyd},
 @code{-gnatyI}, @code{-gnatyLnnn}, @code{-gnatyo}, @code{-gnatyO},
 @code{-gnatyS}, @code{-gnatyu}, and @code{-gnatyx}.
+@end table
+
+@geindex -gnatyz (gcc)
+
+
+@table @asis
+
+@item @code{-gnatyz}
+
+`Check extra parentheses (operator precedence).'
+
+Extra levels of parentheses that are not required by operator precedence
+rules are flagged. See also @code{-gnatyx}.
 @end table
 
 @geindex -gnaty- (gcc)

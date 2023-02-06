@@ -979,7 +979,7 @@ package body System.Regpat is
          C := Expression (Parse_Pos);
          Parse_Pos := Parse_Pos + 1;
 
-         case (C) is
+         case C is
             when '^' =>
                IP :=
                  Emit_Node

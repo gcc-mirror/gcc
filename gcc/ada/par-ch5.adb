@@ -1359,7 +1359,7 @@ package body Ch5 is
 
       else
          if Style_Check then
-            Style.Check_Xtra_Parens (Cond, Enable => True);
+            Style.Check_Xtra_Parens (Cond);
          end if;
 
          --  And return the result
@@ -1384,6 +1384,7 @@ package body Ch5 is
 
    function P_Case_Statement return Node_Id is
       Case_Node         : Node_Id;
+      Expr              : Node_Id;
       Alternatives_List : List_Id;
       First_When_Loc    : Source_Ptr;
 
@@ -1398,7 +1399,14 @@ package body Ch5 is
       Scopes (Scope.Last).Node := Case_Node;
 
       Scan; -- past CASE
-      Set_Expression (Case_Node, P_Expression_No_Right_Paren);
+
+      Expr := P_Expression_No_Right_Paren;
+
+      if Style_Check then
+         Style.Check_Xtra_Parens (Expr);
+      end if;
+
+      Set_Expression (Case_Node, Expr);
       TF_Is;
 
       --  Prepare to parse case statement alternatives
