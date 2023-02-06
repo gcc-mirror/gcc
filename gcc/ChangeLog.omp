@@ -1,5 +1,11 @@
 2023-02-06  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/mkoffload.cc (gcn_stack_size): New global variable.
+	(process_asm): Create a constructor for GCN_STACK_SIZE.
+	(main): Parse the -mstack-size option.
+
+2023-02-06  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-run.cc: Include libgomp-gcn.h.
 	(struct kernargs): Replace the common content with kernargs_abi.
 	(struct heap): Delete.
