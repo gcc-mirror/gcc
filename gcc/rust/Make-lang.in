@@ -134,6 +134,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-implitem.o \
     rust/rust-hir-dot-operator.o \
     rust/rust-hir-path-probe.o \
+    rust/rust-type-util.o \
     rust/rust-coercion.o \
     rust/rust-casts.o \
     rust/rust-unify.o \
