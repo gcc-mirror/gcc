@@ -42,6 +42,42 @@ along with GCC; see the file COPYING3. If not see
 #define DEF_RVV_B_OPS(TYPE, REQUIRE)
 #endif
 
+/* Use "DEF_RVV_WEXTI_OPS" macro include Double-Widening signed integer which
+   will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_WEXTI_OPS
+#define DEF_RVV_WEXTI_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_QEXTI_OPS" macro include Quad-Widening signed integer which will
+   be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_QEXTI_OPS
+#define DEF_RVV_QEXTI_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_OEXTI_OPS" macro include Oct-Widening signed integer which will
+   be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_OEXTI_OPS
+#define DEF_RVV_OEXTI_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_WEXTU_OPS" macro include Double-Widening unsigned integer which
+   will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_WEXTU_OPS
+#define DEF_RVV_WEXTU_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_QEXTU_OPS" macro include Quad-Widening unsigned integer which
+   will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_QEXTU_OPS
+#define DEF_RVV_QEXTU_OPS(TYPE, REQUIRE)
+#endif
+
+/* Use "DEF_RVV_OEXTU_OPS" macro include Oct-Widening unsigned integer which
+   will be iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_OEXTU_OPS
+#define DEF_RVV_OEXTU_OPS(TYPE, REQUIRE)
+#endif
+
 DEF_RVV_I_OPS (vint8mf8_t, RVV_REQUIRE_ZVE64)
 DEF_RVV_I_OPS (vint8mf4_t, 0)
 DEF_RVV_I_OPS (vint8mf2_t, 0)
@@ -106,7 +142,75 @@ DEF_RVV_B_OPS (vbool4_t, 0)
 DEF_RVV_B_OPS (vbool2_t, 0)
 DEF_RVV_B_OPS (vbool1_t, 0)
 
+DEF_RVV_WEXTI_OPS (vint16mf4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTI_OPS (vint16mf2_t, 0)
+DEF_RVV_WEXTI_OPS (vint16m1_t, 0)
+DEF_RVV_WEXTI_OPS (vint16m2_t, 0)
+DEF_RVV_WEXTI_OPS (vint16m4_t, 0)
+DEF_RVV_WEXTI_OPS (vint16m8_t, 0)
+DEF_RVV_WEXTI_OPS (vint32mf2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTI_OPS (vint32m1_t, 0)
+DEF_RVV_WEXTI_OPS (vint32m2_t, 0)
+DEF_RVV_WEXTI_OPS (vint32m4_t, 0)
+DEF_RVV_WEXTI_OPS (vint32m8_t, 0)
+DEF_RVV_WEXTI_OPS (vint64m1_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTI_OPS (vint64m2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTI_OPS (vint64m4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTI_OPS (vint64m8_t, RVV_REQUIRE_ZVE64)
+
+DEF_RVV_QEXTI_OPS (vint32mf2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_QEXTI_OPS (vint32m1_t, 0)
+DEF_RVV_QEXTI_OPS (vint32m2_t, 0)
+DEF_RVV_QEXTI_OPS (vint32m4_t, 0)
+DEF_RVV_QEXTI_OPS (vint32m8_t, 0)
+DEF_RVV_QEXTI_OPS (vint64m1_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_QEXTI_OPS (vint64m2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_QEXTI_OPS (vint64m4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_QEXTI_OPS (vint64m8_t, RVV_REQUIRE_ZVE64)
+
+DEF_RVV_OEXTI_OPS (vint64m1_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_OEXTI_OPS (vint64m2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_OEXTI_OPS (vint64m4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_OEXTI_OPS (vint64m8_t, RVV_REQUIRE_ZVE64)
+
+DEF_RVV_WEXTU_OPS (vuint16mf4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTU_OPS (vuint16mf2_t, 0)
+DEF_RVV_WEXTU_OPS (vuint16m1_t, 0)
+DEF_RVV_WEXTU_OPS (vuint16m2_t, 0)
+DEF_RVV_WEXTU_OPS (vuint16m4_t, 0)
+DEF_RVV_WEXTU_OPS (vuint16m8_t, 0)
+DEF_RVV_WEXTU_OPS (vuint32mf2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTU_OPS (vuint32m1_t, 0)
+DEF_RVV_WEXTU_OPS (vuint32m2_t, 0)
+DEF_RVV_WEXTU_OPS (vuint32m4_t, 0)
+DEF_RVV_WEXTU_OPS (vuint32m8_t, 0)
+DEF_RVV_WEXTU_OPS (vuint64m1_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTU_OPS (vuint64m2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTU_OPS (vuint64m4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_WEXTU_OPS (vuint64m8_t, RVV_REQUIRE_ZVE64)
+
+DEF_RVV_QEXTU_OPS (vuint32mf2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_QEXTU_OPS (vuint32m1_t, 0)
+DEF_RVV_QEXTU_OPS (vuint32m2_t, 0)
+DEF_RVV_QEXTU_OPS (vuint32m4_t, 0)
+DEF_RVV_QEXTU_OPS (vuint32m8_t, 0)
+DEF_RVV_QEXTU_OPS (vuint64m1_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_QEXTU_OPS (vuint64m2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_QEXTU_OPS (vuint64m4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_QEXTU_OPS (vuint64m8_t, RVV_REQUIRE_ZVE64)
+
+DEF_RVV_OEXTU_OPS (vuint64m1_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_OEXTU_OPS (vuint64m2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_OEXTU_OPS (vuint64m4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_OEXTU_OPS (vuint64m8_t, RVV_REQUIRE_ZVE64)
+
 #undef DEF_RVV_I_OPS
 #undef DEF_RVV_U_OPS
 #undef DEF_RVV_F_OPS
 #undef DEF_RVV_B_OPS
+#undef DEF_RVV_WEXTI_OPS
+#undef DEF_RVV_QEXTI_OPS
+#undef DEF_RVV_OEXTI_OPS
+#undef DEF_RVV_WEXTU_OPS
+#undef DEF_RVV_QEXTU_OPS
+#undef DEF_RVV_OEXTU_OPS

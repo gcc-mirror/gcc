@@ -192,14 +192,23 @@ struct alu_def : public build_base
 		  bool overloaded_p) const override
   {
     b.append_base_name (instance.base_name);
-    /* vop<sew>_v --> vop<sew>_v_<type>.  */
-    if (!overloaded_p)
+
+    /* vop<sew> --> vop<sew>_<op>. According to rvv-intrinsic-doc, _vv/_vx/_v
+       API doesn't have OP suffix in overloaded function name, otherwise, we
+       always append OP suffix in function name. For example, vsext_vf2.  */
+    if (instance.op_info->op == OP_TYPE_vv || instance.op_info->op == OP_TYPE_vx
+	|| instance.op_info->op == OP_TYPE_v)
       {
-	/* vop<sew> --> vop<sew>_v.  */
-	b.append_name (operand_suffixes[instance.op_info->op]);
-	/* vop<sew>_v --> vop<sew>_v_<type>.  */
-	b.append_name (type_suffixes[instance.type.index].vector);
+	if (!overloaded_p)
+	  b.append_name (operand_suffixes[instance.op_info->op]);
       }
+    else
+      b.append_name (operand_suffixes[instance.op_info->op]);
+
+    /* vop<sew>_<op> --> vop<sew>_<op>_<type>.  */
+    if (!overloaded_p)
+      b.append_name (type_suffixes[instance.type.index].vector);
+
     /* According to rvv-intrinsic-doc, it does not add "_m" suffix
        for vop_m C++ overloaded API.  */
     if (overloaded_p && instance.pred == PRED_TYPE_m)

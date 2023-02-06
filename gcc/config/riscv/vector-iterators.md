@@ -164,6 +164,24 @@
   (VNx64BI "TARGET_MIN_VLEN > 32")
 ])
 
+(define_mode_iterator VWEXTI [
+  VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI (VNx32HI "TARGET_MIN_VLEN > 32")
+  VNx1SI VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32")
+  (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
+  (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VQEXTI [
+  VNx1SI VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32")
+  (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
+  (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VOEXTI [
+  (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
+  (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
+])
+
 (define_mode_attr VM [
   (VNx1QI "VNx1BI") (VNx2QI "VNx2BI") (VNx4QI "VNx4BI") (VNx8QI "VNx8BI") (VNx16QI "VNx16BI") (VNx32QI "VNx32BI") (VNx64QI "VNx64BI")
   (VNx1HI "VNx1BI") (VNx2HI "VNx2BI") (VNx4HI "VNx4BI") (VNx8HI "VNx8BI") (VNx16HI "VNx16BI") (VNx32HI "VNx32BI")
@@ -197,6 +215,25 @@
   (VNx1DI "64") (VNx2DI "64") (VNx4DI "64") (VNx8DI "64")
   (VNx1SF "32") (VNx2SF "32") (VNx4SF "32") (VNx8SF "32") (VNx16SF "32")
   (VNx1DF "64") (VNx2DF "64") (VNx4DF "64") (VNx8DF "64")
+])
+
+(define_mode_attr V_DOUBLE_TRUNC [
+  (VNx1HI "VNx1QI") (VNx2HI "VNx2QI")  (VNx4HI "VNx4QI")  (VNx8HI "VNx8QI")  
+  (VNx16HI "VNx16QI") (VNx32HI "VNx32QI")
+  (VNx1SI "VNx1HI") (VNx2SI "VNx2HI") (VNx4SI "VNx4HI") (VNx8SI "VNx8HI") 
+  (VNx16SI "VNx16HI")
+  (VNx1DI "VNx1SI") (VNx2DI "VNx2SI") (VNx4DI "VNx4SI") (VNx8DI "VNx8SI")
+])
+
+(define_mode_attr V_QUAD_TRUNC [
+  (VNx1SI "VNx1QI") (VNx2SI "VNx2QI") (VNx4SI "VNx4QI") (VNx8SI "VNx8QI") 
+  (VNx16SI "VNx16QI")
+  (VNx1DI "VNx1HI") (VNx2DI "VNx2HI")
+  (VNx4DI "VNx4HI") (VNx8DI "VNx8HI")
+])
+
+(define_mode_attr V_OCT_TRUNC [
+  (VNx1DI "VNx1QI") (VNx2DI "VNx2QI") (VNx4DI "VNx4QI") (VNx8DI "VNx8QI")
 ])
 
 (define_int_iterator ORDER [UNSPEC_ORDERED UNSPEC_UNORDERED])
@@ -415,3 +452,5 @@
 			      (umin "%3,%4")
 			      (umax "%3,%4")
 			      (mult "%3,%4")])
+
+(define_code_attr sz [(sign_extend "s") (zero_extend "z")])

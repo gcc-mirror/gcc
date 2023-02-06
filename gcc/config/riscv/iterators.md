@@ -207,7 +207,9 @@
 			 (ss_plus "ssadd")
 			 (us_plus "usadd")
 			 (ss_minus "sssub")
-			 (us_minus "ussub")])
+			 (us_minus "ussub")
+			 (sign_extend "extend")
+			 (zero_extend "zero_extend")])
 
 ;; <or_optab> code attributes
 (define_code_attr or_optab [(ior "ior")

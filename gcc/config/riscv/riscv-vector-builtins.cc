@@ -160,6 +160,48 @@ static const rvv_type_info b_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of Double-Widening signed integer will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info wexti_ops[] = {
+#define DEF_RVV_WEXTI_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of Quad-Widening signed integer will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info qexti_ops[] = {
+#define DEF_RVV_QEXTI_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of Oct-Widening signed integer will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info oexti_ops[] = {
+#define DEF_RVV_OEXTI_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of Double-Widening unsigned integer will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info wextu_ops[] = {
+#define DEF_RVV_WEXTU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of Quad-Widening unsigned integer will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info qextu_ops[] = {
+#define DEF_RVV_QEXTU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of Oct-Widening unsigned integer will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info oextu_ops[] = {
+#define DEF_RVV_OEXTU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -268,6 +310,18 @@ static CONSTEXPR const rvv_arg_type_info v_args[]
 static CONSTEXPR const rvv_arg_type_info vector_size_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_size),
      rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (double demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info vf2_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (quad demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info vf4_args[]
+  = {rvv_arg_type_info (RVV_BASE_quad_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (oct demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info vf8_args[]
+  = {rvv_arg_type_info (RVV_BASE_oct_trunc_vector), rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
@@ -480,6 +534,54 @@ static CONSTEXPR const rvv_op_info iu_v_ops
      OP_TYPE_v,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      v_args /* Args */};
+
+/* A static operand information for vector_type func (double demote type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_vf2_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vf2,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vf2_args /* Args */};
+
+/* A static operand information for vector_type func (quad demote type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_vf4_ops
+  = {qexti_ops,				  /* Types */
+     OP_TYPE_vf4,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vf4_args /* Args */};
+
+/* A static operand information for vector_type func (oct demote type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_vf8_ops
+  = {oexti_ops,				  /* Types */
+     OP_TYPE_vf8,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vf8_args /* Args */};
+
+/* A static operand information for vector_type func (double demote type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_vf2_ops
+  = {wextu_ops,				  /* Types */
+     OP_TYPE_vf2,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vf2_args /* Args */};
+
+/* A static operand information for vector_type func (quad demote type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_vf4_ops
+  = {qextu_ops,				  /* Types */
+     OP_TYPE_vf4,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vf4_args /* Args */};
+
+/* A static operand information for vector_type func (oct demote type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_vf8_ops
+  = {oextu_ops,				  /* Types */
+     OP_TYPE_vf8,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vf8_args /* Args */};
 
 /* A list of all RVV intrinsic functions.  */
 static function_group_info function_groups[] = {
@@ -763,7 +865,7 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
   if (!type)
     return NUM_VECTOR_TYPES;
   poly_int64 nunits = GET_MODE_NUNITS (TYPE_MODE (type));
-  machine_mode inner_mode;
+  machine_mode inner_mode = GET_MODE_INNER (TYPE_MODE (type));
   bool unsigned_p = TYPE_UNSIGNED (type);
   switch (base_type)
     {
@@ -786,6 +888,30 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
     case RVV_BASE_shift_vector:
       inner_mode = GET_MODE_INNER (TYPE_MODE (type));
       unsigned_p = true;
+      break;
+    case RVV_BASE_double_trunc_vector:
+      if (inner_mode == DImode)
+	inner_mode = SImode;
+      else if (inner_mode == SImode)
+	inner_mode = HImode;
+      else if (inner_mode == HImode)
+	inner_mode = QImode;
+      else
+	gcc_unreachable ();
+      break;
+    case RVV_BASE_quad_trunc_vector:
+      if (inner_mode == DImode)
+	inner_mode = HImode;
+      else if (inner_mode == SImode)
+	inner_mode = QImode;
+      else
+	gcc_unreachable ();
+      break;
+    case RVV_BASE_oct_trunc_vector:
+      if (inner_mode == DImode)
+	inner_mode = QImode;
+      else
+	gcc_unreachable ();
       break;
     default:
       return NUM_VECTOR_TYPES;
@@ -851,6 +977,9 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
     case RVV_BASE_uint32_index:
     case RVV_BASE_uint64_index:
     case RVV_BASE_shift_vector:
+    case RVV_BASE_double_trunc_vector:
+    case RVV_BASE_quad_trunc_vector:
+    case RVV_BASE_oct_trunc_vector:
       if (get_base_vector_type (builtin_types[type_idx].vector)
 	  != NUM_VECTOR_TYPES)
 	return builtin_types[get_base_vector_type (

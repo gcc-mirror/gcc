@@ -197,6 +197,27 @@ public:
   }
 };
 
+/* Implements vsext.vf2/vsext.vf4/vsext.vf8/vzext.vf2/vzext.vf4/vzext.vf8.  */
+template<rtx_code CODE>
+class ext : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vf2:
+	return e.use_exact_insn (code_for_pred_vf2 (CODE, e.vector_mode ()));
+      case OP_TYPE_vf4:
+	return e.use_exact_insn (code_for_pred_vf4 (CODE, e.vector_mode ()));
+      case OP_TYPE_vf8:
+	return e.use_exact_insn (code_for_pred_vf8 (CODE, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -241,6 +262,8 @@ static CONSTEXPR const binop<UDIV> vdivu_obj;
 static CONSTEXPR const binop<UMOD> vremu_obj;
 static CONSTEXPR const unop<NEG> vneg_obj;
 static CONSTEXPR const unop<NOT> vnot_obj;
+static CONSTEXPR const ext<SIGN_EXTEND> vsext_obj;
+static CONSTEXPR const ext<ZERO_EXTEND> vzext_obj;
 static CONSTEXPR const binop<SS_PLUS> vsadd_obj;
 static CONSTEXPR const binop<SS_MINUS> vssub_obj;
 static CONSTEXPR const binop<US_PLUS> vsaddu_obj;
@@ -295,6 +318,8 @@ BASE (vdivu)
 BASE (vremu)
 BASE (vneg)
 BASE (vnot)
+BASE (vsext)
+BASE (vzext)
 BASE (vsadd)
 BASE (vssub)
 BASE (vsaddu)

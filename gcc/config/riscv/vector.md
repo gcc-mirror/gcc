@@ -142,7 +142,7 @@
 ;; It is valid for instruction that require sew/lmul ratio.
 (define_attr "ratio" ""
   (cond [(eq_attr "type" "vimov,vfmov,vldux,vldox,vstux,vstox,\
-			  vialu,vshift,vicmp,vimul,vidiv,vsalu")
+			  vialu,vshift,vicmp,vimul,vidiv,vsalu,vext")
 	   (const_int INVALID_ATTRIBUTE)
 	 (eq_attr "mode" "VNx1QI,VNx1BI")
 	   (symbol_ref "riscv_vector::get_ratio(E_VNx1QImode)")
@@ -193,13 +193,14 @@
 ;; The index of operand[] to get the merge op.
 (define_attr "merge_op_idx" ""
 	(cond [(eq_attr "type" "vlde,vimov,vfmov,vldm,vlds,vmalu,vldux,vldox,\
-				vialu,vshift,vicmp,vimul,vidiv,vsalu")
+				vialu,vshift,vicmp,vimul,vidiv,vsalu,vext")
 	 (const_int 2)]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; The index of operand[] to get the avl op.
 (define_attr "vl_op_idx" ""
-  (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vmalu,vsts,vstux,vstox")
+  (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vmalu,vsts,vstux,\
+			  vstox,vext")
 	   (const_int 4)
 
 	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
@@ -215,7 +216,7 @@
 
 ;; The tail policy op value.
 (define_attr "ta" ""
-  (cond [(eq_attr "type" "vlde,vimov,vfmov")
+  (cond [(eq_attr "type" "vlde,vimov,vfmov,vext")
 	   (symbol_ref "riscv_vector::get_ta(operands[5])")
 
 	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
@@ -231,7 +232,7 @@
 
 ;; The mask policy op value.
 (define_attr "ma" ""
-  (cond [(eq_attr "type" "vlde")
+  (cond [(eq_attr "type" "vlde,vext")
 	   (symbol_ref "riscv_vector::get_ma(operands[6])")
 
 	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
@@ -247,7 +248,7 @@
 
 ;; The avl type value.
 (define_attr "avl_type" ""
-  (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov")
+  (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov,vext")
 	   (symbol_ref "INTVAL (operands[7])")
 	 (eq_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
 	   (symbol_ref "INTVAL (operands[5])")
@@ -1803,3 +1804,70 @@
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[5])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
+
+;; -------------------------------------------------------------------------------
+;; ---- Predicated integer widening operations
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - 11.3 Vector Integer Extension
+;; -------------------------------------------------------------------------------
+
+;; Vector Double-Widening Sign-extend and Zero-extend.
+(define_insn "@pred_<optab><mode>_vf2"
+  [(set (match_operand:VWEXTI 0 "register_operand"            "=&vr")
+	(if_then_else:VWEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"         "vmWc1")
+	     (match_operand 4 "vector_length_operand"            "   rK")
+	     (match_operand 5 "const_int_operand"                "    i")
+	     (match_operand 6 "const_int_operand"                "    i")
+	     (match_operand 7 "const_int_operand"                "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (any_extend:VWEXTI
+	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "   vr"))
+	  (match_operand:VWEXTI 2 "vector_merge_operand"         "  0vu")))]
+  "TARGET_VECTOR"
+  "v<sz>ext.vf2\t%0,%3%p1"
+  [(set_attr "type" "vext")
+   (set_attr "mode" "<MODE>")])
+
+;; Vector Quad-Widening Sign-extend and Zero-extend.
+(define_insn "@pred_<optab><mode>_vf4"
+  [(set (match_operand:VQEXTI 0 "register_operand"          "=&vr")
+	(if_then_else:VQEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"       "vmWc1")
+	     (match_operand 4 "vector_length_operand"          "   rK")
+	     (match_operand 5 "const_int_operand"              "    i")
+	     (match_operand 6 "const_int_operand"              "    i")
+	     (match_operand 7 "const_int_operand"              "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (any_extend:VQEXTI
+	    (match_operand:<V_QUAD_TRUNC> 3 "register_operand" "   vr"))
+	  (match_operand:VQEXTI 2 "vector_merge_operand"       "  0vu")))]
+  "TARGET_VECTOR"
+  "v<sz>ext.vf4\t%0,%3%p1"
+  [(set_attr "type" "vext")
+   (set_attr "mode" "<MODE>")])
+
+;; Vector Oct-Widening Sign-extend and Zero-extend.
+(define_insn "@pred_<optab><mode>_vf8"
+  [(set (match_operand:VOEXTI 0 "register_operand"         "=&vr")
+	(if_then_else:VOEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1")
+	     (match_operand 4 "vector_length_operand"         "   rK")
+	     (match_operand 5 "const_int_operand"             "    i")
+	     (match_operand 6 "const_int_operand"             "    i")
+	     (match_operand 7 "const_int_operand"             "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (any_extend:VOEXTI
+	    (match_operand:<V_OCT_TRUNC> 3 "register_operand" "   vr"))
+	  (match_operand:VOEXTI 2 "vector_merge_operand"      "  0vu")))]
+  "TARGET_VECTOR"
+  "v<sz>ext.vf8\t%0,%3%p1"
+  [(set_attr "type" "vext")
+   (set_attr "mode" "<MODE>")])

@@ -68,6 +68,8 @@ extern const function_base *const vdivu;
 extern const function_base *const vremu;
 extern const function_base *const vneg;
 extern const function_base *const vnot;
+extern const function_base *const vsext;
+extern const function_base *const vzext;
 extern const function_base *const vsadd;
 extern const function_base *const vssub;
 extern const function_base *const vsaddu;
