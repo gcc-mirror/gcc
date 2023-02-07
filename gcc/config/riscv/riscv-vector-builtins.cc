@@ -341,6 +341,43 @@ static CONSTEXPR const rvv_arg_type_info vector_size_args[]
 static CONSTEXPR const rvv_arg_type_info vf2_args[]
   = {rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (double demote type, double demote type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info wvv_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (signed double demote type,
+ * unsigneddouble demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info su_wvv_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (double demote type, double demote type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info wvx_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_scalar), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (signed double demote type, unsigned
+ * double demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info su_wvx_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (double demote type, double demote type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info wwv_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (double demote type, double demote type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info wwx_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_scalar), rvv_arg_type_info_end};
+
 /* A list of args for vector_type func (quad demote type) function.  */
 static CONSTEXPR const rvv_arg_type_info vf4_args[]
   = {rvv_arg_type_info (RVV_BASE_quad_trunc_vector), rvv_arg_type_info_end};
@@ -348,6 +385,10 @@ static CONSTEXPR const rvv_arg_type_info vf4_args[]
 /* A list of args for vector_type func (oct demote type) function.  */
 static CONSTEXPR const rvv_arg_type_info vf8_args[]
   = {rvv_arg_type_info (RVV_BASE_oct_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (double demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info x_x_v_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
@@ -658,6 +699,102 @@ static CONSTEXPR const rvv_op_info u_vf8_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vf8_args /* Args */};
 
+/* A static operand information for vector_type func (double demote type, double
+ * demote type) function registration. */
+static CONSTEXPR const rvv_op_info i_wvv_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wvv_args /* Args */};
+
+/* A static operand information for vector_type func (signed double demote type,
+ * unsigned double demote type) function registration. */
+static CONSTEXPR const rvv_op_info i_su_wvv_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     su_wvv_args /* Args */};
+
+/* A static operand information for vector_type func (double demote type, double
+ * demote type) function registration. */
+static CONSTEXPR const rvv_op_info u_wvv_ops
+  = {wextu_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wvv_args /* Args */};
+
+/* A static operand information for vector_type func (double demote type, double
+ * demote scalar_type) function registration. */
+static CONSTEXPR const rvv_op_info i_wvx_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wvx_args /* Args */};
+
+/* A static operand information for vector_type func (signed double demote type,
+ * unsigned double demote scalar_type) function registration. */
+static CONSTEXPR const rvv_op_info i_su_wvx_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     su_wvx_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double
+ * demote type) function registration. */
+static CONSTEXPR const rvv_op_info i_wwv_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_wv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double
+ * demote scalar_type) function registration. */
+static CONSTEXPR const rvv_op_info i_wwx_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_wx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwx_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double
+ * demote type) function registration. */
+static CONSTEXPR const rvv_op_info u_wwv_ops
+  = {wextu_ops,				  /* Types */
+     OP_TYPE_wv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double
+ * demote scalar_type) function registration. */
+static CONSTEXPR const rvv_op_info u_wwx_ops
+  = {wextu_ops,				  /* Types */
+     OP_TYPE_wx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwx_args /* Args */};
+
+/* A static operand information for vector_type func (double demote type, double
+ * demote scalar_type) function registration. */
+static CONSTEXPR const rvv_op_info u_wvx_ops
+  = {wextu_ops,				  /* Types */
+     OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wvx_args /* Args */};
+
+/* A static operand information for vector_type func (double demote type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_x_x_v_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_x_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     x_x_v_args /* Args */};
+
+/* A static operand information for vector_type func (unsigned double demote
+ * type) function registration. */
+static CONSTEXPR const rvv_op_info u_x_x_v_ops
+  = {wextu_ops,				  /* Types */
+     OP_TYPE_x_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     x_x_v_args /* Args */};
+
 /* A list of all RVV intrinsic functions.  */
 static function_group_info function_groups[] = {
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
@@ -944,6 +1081,9 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
   poly_int64 nunits = GET_MODE_NUNITS (TYPE_MODE (type));
   machine_mode inner_mode = GET_MODE_INNER (TYPE_MODE (type));
   bool unsigned_p = TYPE_UNSIGNED (type);
+  if (base_type == RVV_BASE_double_trunc_unsigned_vector
+      || base_type == RVV_BASE_double_trunc_unsigned_scalar)
+    unsigned_p = true;
   switch (base_type)
     {
     case RVV_BASE_uint8_index:
@@ -967,6 +1107,9 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
       unsigned_p = true;
       break;
     case RVV_BASE_double_trunc_vector:
+    case RVV_BASE_double_trunc_scalar:
+    case RVV_BASE_double_trunc_unsigned_vector:
+    case RVV_BASE_double_trunc_unsigned_scalar:
       if (inner_mode == DImode)
 	inner_mode = SImode;
       else if (inner_mode == SImode)
@@ -1073,10 +1216,18 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
     case RVV_BASE_double_trunc_vector:
     case RVV_BASE_quad_trunc_vector:
     case RVV_BASE_oct_trunc_vector:
+    case RVV_BASE_double_trunc_unsigned_vector:
       if (get_base_vector_type (builtin_types[type_idx].vector)
 	  != NUM_VECTOR_TYPES)
 	return builtin_types[get_base_vector_type (
 			       builtin_types[type_idx].vector)].vector;
+      break;
+    case RVV_BASE_double_trunc_scalar:
+    case RVV_BASE_double_trunc_unsigned_scalar:
+      if (get_base_vector_type (builtin_types[type_idx].vector)
+	  != NUM_VECTOR_TYPES)
+	return builtin_types[get_base_vector_type (
+			       builtin_types[type_idx].vector)].scalar;
       break;
     default:
       gcc_unreachable ();

@@ -280,6 +280,9 @@
 (define_code_iterator sat_int_plus_binop [ss_plus us_plus])
 (define_code_iterator sat_int_minus_binop [ss_minus us_minus])
 
+(define_code_iterator any_widen_binop [plus minus mult])
+(define_code_iterator plus_minus [plus minus])
+
 (define_code_attr binop_rhs1_predicate [
 			(plus "register_operand")
 			(minus "vector_arith_operand")
@@ -390,6 +393,11 @@
 			(us_plus "vsalu")
 			(ss_minus "vsalu")
 			(us_minus "vsalu")])
+
+(define_code_attr widen_binop_insn_type [
+			(plus "walu")
+			(minus "walu")
+			(mult "wmul")])
 
 ;; <binop_vi_variant_insn> expands to the insn name of binop matching constraint rhs1 is immediate.
 ;; minus is negated as vadd and ss_minus is negated as vsadd, others remain <insn>.

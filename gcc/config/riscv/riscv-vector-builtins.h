@@ -158,6 +158,9 @@ enum rvv_base_type
   RVV_BASE_double_trunc_vector,
   RVV_BASE_quad_trunc_vector,
   RVV_BASE_oct_trunc_vector,
+  RVV_BASE_double_trunc_scalar,
+  RVV_BASE_double_trunc_unsigned_vector,
+  RVV_BASE_double_trunc_unsigned_scalar,
   NUM_BASE_TYPES
 };
 
