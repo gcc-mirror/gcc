@@ -7832,6 +7832,11 @@ package body Sem_Res is
       --  Determine whether Expr is part of an N_Attribute_Reference
       --  expression.
 
+      function Within_Exceptional_Cases_Consequence
+        (Expr : Node_Id)
+         return Boolean;
+      --  Determine whether Expr is part of an Exceptional_Cases consequence
+
       ----------------------------------------
       -- Is_Assignment_Or_Object_Expression --
       ----------------------------------------
@@ -7895,6 +7900,39 @@ package body Sem_Res is
 
          return False;
       end Is_Attribute_Expression;
+
+      ------------------------------------------
+      -- Within_Exceptional_Cases_Consequence --
+      ------------------------------------------
+
+      function Within_Exceptional_Cases_Consequence
+        (Expr : Node_Id)
+         return Boolean
+      is
+         Context : Node_Id := Parent (Expr);
+      begin
+         while Present (Context) loop
+            if Nkind (Context) = N_Pragma then
+
+               --  In Exceptional_Cases references to formal parameters are
+               --  only allowed within consequences, so it is enough to
+               --  recognize the pragma itself.
+
+               if Get_Pragma_Id (Context) = Pragma_Exceptional_Cases then
+                  return True;
+               end if;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Context) then
+               return False;
+            end if;
+
+            Context := Parent (Context);
+         end loop;
+
+         return False;
+      end Within_Exceptional_Cases_Consequence;
 
       --  Local variables
 
@@ -8038,6 +8076,29 @@ package body Sem_Res is
                SPARK_Msg_N
                  ("volatile object cannot appear in this context "
                   & "(SPARK RM 7.1.3(10))", N);
+            end if;
+
+            --  Parameters of modes OUT or IN OUT of the subprogram shall not
+            --  occur in the consequences of an exceptional contract unless
+            --  they either are of a by-reference type or occur in the prefix
+            --  of a reference to the 'Old attribute.
+
+            if Ekind (E) in E_Out_Parameter | E_In_Out_Parameter
+              and then Within_Exceptional_Cases_Consequence (N)
+              and then not Is_Attribute_Old (Parent (N))
+              and then not Is_By_Reference_Type (Etype (E))
+            then
+               if Ekind (E) = E_Out_Parameter then
+                  Error_Msg_N
+                    ("formal parameter of mode `OUT` cannot appear " &
+                       "in consequence of Exceptional_Cases", N);
+               else
+                  Error_Msg_N
+                    ("formal parameter of mode `IN OUT` cannot appear " &
+                       "in consequence of Exceptional_Cases", N);
+               end if;
+               Error_Msg_N
+                 ("\only parameters of by-reference types are allowed", N);
             end if;
 
             --  Check for possible elaboration issues with respect to reads of
