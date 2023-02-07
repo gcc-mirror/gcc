@@ -953,9 +953,15 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
     {
       gsym = gfc_find_gsymbol (gfc_gsym_root, csym->name);
       if (gsym && (gsym->type == GSYM_MODULE || gsym->type == GSYM_PROGRAM))
-	gfc_error_now ("Global entity %qs at %L cannot appear in a "
-			"COMMON block at %L", gsym->name,
-			&gsym->where, &csym->common_block->where);
+	{
+	  if (csym->common_block)
+	    gfc_error_now ("Global entity %qs at %L cannot appear in a "
+			   "COMMON block at %L", gsym->name,
+			   &gsym->where, &csym->common_block->where);
+	  else
+	    gfc_error_now ("Global entity %qs at %L cannot appear in a "
+			   "COMMON block", gsym->name, &gsym->where);
+	}
 
       /* gfc_add_in_common may have been called before, but the reported errors
 	 have been ignored to continue parsing.
