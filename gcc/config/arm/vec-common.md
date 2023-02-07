@@ -573,7 +573,7 @@
   "ARM_HAVE_<MODE>_ARITH"
 {
   if (TARGET_HAVE_MVE)
-    emit_insn (gen_mve_vhaddq (VHADDQ_S, <MODE>mode,
+    emit_insn (gen_mve_q (VHADDQ_S, VHADDQ_S, <MODE>mode,
 			       operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_neon_vhadd (UNSPEC_VHADD_S, UNSPEC_VHADD_S, <MODE>mode,
@@ -588,7 +588,7 @@
   "ARM_HAVE_<MODE>_ARITH"
 {
   if (TARGET_HAVE_MVE)
-    emit_insn (gen_mve_vhaddq (VHADDQ_U, <MODE>mode,
+    emit_insn (gen_mve_q (VHADDQ_U, VHADDQ_U, <MODE>mode,
 			       operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_neon_vhadd (UNSPEC_VHADD_U, UNSPEC_VHADD_U, <MODE>mode,
@@ -603,7 +603,7 @@
   "ARM_HAVE_<MODE>_ARITH"
 {
   if (TARGET_HAVE_MVE)
-    emit_insn (gen_mve_vrhaddq (VRHADDQ_S, <MODE>mode,
+    emit_insn (gen_mve_q (VRHADDQ_S, VRHADDQ_S, <MODE>mode,
 				operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_neon_vhadd (UNSPEC_VRHADD_S, UNSPEC_VRHADD_S, <MODE>mode,
@@ -618,7 +618,7 @@
   "ARM_HAVE_<MODE>_ARITH"
 {
   if (TARGET_HAVE_MVE)
-    emit_insn (gen_mve_vrhaddq (VRHADDQ_U, <MODE>mode,
+    emit_insn (gen_mve_q (VRHADDQ_U, VRHADDQ_U, <MODE>mode,
 				operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_neon_vhadd (UNSPEC_VRHADD_U, UNSPEC_VRHADD_U, <MODE>mode,
