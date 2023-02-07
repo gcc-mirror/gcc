@@ -1,3 +1,30 @@
+2023-02-06  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/104921
+	* gcc.target/aarch64/pr104921-1.c: New test.
+	* gcc.target/aarch64/pr104921-2.c: New test.
+	* gcc.target/aarch64/pr104921.x: Include file for new tests.
+
+2023-02-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* g++.target/loongarch/bytepick.C: New test.
+
+2023-02-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/options_set_10.c: Removed.
+
+2023-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108655
+	* gcc.dg/pr108655.c: New test.
+
+2023-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107461
+	* g++.dg/cpp0x/overload5.C: New test.
+	* g++.dg/cpp0x/overload5a.C: New test.
+	* g++.dg/cpp0x/overload6.C: New test.
+
 2023-02-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108592

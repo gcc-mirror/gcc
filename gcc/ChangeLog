@@ -1,3 +1,45 @@
+2023-02-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (gcn_stack_size): New global variable.
+	(process_asm): Create a constructor for GCN_STACK_SIZE.
+	(main): Parse the -mstack-size option.
+
+2023-02-06  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/104921
+	* config/aarch64/aarch64-simd.md (aarch64_bfmlal<bt>_lane<q>v4sf):
+	Use correct constraint for operand 3.
+
+2023-02-06  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.cc (adjust_parameter_descriptions): Fix a typo in a dump.
+
+2023-02-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (bytepick_w_ashift_amount):
+	New define_int_iterator.
+	(bytepick_d_ashift_amount): Likewise.
+	(bytepick_imm): New define_int_attr.
+	(bytepick_w_lshiftrt_amount): Likewise.
+	(bytepick_d_lshiftrt_amount): Likewise.
+	(bytepick_w_<bytepick_imm>): New define_insn template.
+	(bytepick_w_<bytepick_imm>_extend): Likewise.
+	(bytepick_d_<bytepick_imm>): Likewise.
+	(bytepick_w): Remove unused define_insn.
+	(bytepick_d): Likewise.
+	(UNSPEC_BYTEPICK_W): Remove unused unspec.
+	(UNSPEC_BYTEPICK_D): Likewise.
+	* config/loongarch/predicates.md (const_0_to_3_operand):
+	Remove unused define_predicate.
+	(const_0_to_7_operand): Likewise.
+
+2023-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108655
+	* ubsan.cc (sanitize_unreachable_fn): For -funreachable-traps
+	or -fsanitize=unreachable -fsanitize-trap=unreachable return
+	BUILT_IN_UNREACHABLE_TRAP decl rather than BUILT_IN_TRAP.
+
 2023-02-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Remove PW32.

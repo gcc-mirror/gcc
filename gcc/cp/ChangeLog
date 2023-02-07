@@ -1,3 +1,15 @@
+2023-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107461
+	* cp-tree.h (call_expr_dependent_name): Declare.
+	* pt.cc (iterative_hash_template_arg) <case CALL_EXPR>: Use
+	call_expr_dependent_name instead of dependent_name.
+	* tree.cc (call_expr_dependent_name): Define.
+	(called_fns_equal): Adjust to take two CALL_EXPRs instead of
+	CALL_EXPR_FNs thereof.  Use call_expr_dependent_name instead
+	of dependent_name.
+	(cp_tree_equal) <case CALL_EXPR>: Adjust call to called_fns_equal.
+
 2023-02-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/108158

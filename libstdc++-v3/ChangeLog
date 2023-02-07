@@ -1,3 +1,75 @@
+2023-02-06  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/xml/manual/using.xml: Document newly-freestanding
+	headers and the effect of the -ffreestanding flag.
+	* doc/xml/manual/status_cxx2023.xml: Document P1642R11 as
+	completed.
+	* doc/xml/manual/configure.xml: Document that hosted installs
+	respect __STDC_HOSTED__.
+	* doc/xml/manual/test.xml: Document how to run tests in
+	freestanding mode.
+	* doc/html/*: Regenerate.
+
+2023-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (__find_last_fn): Rename T to _Tp.
+	(__find_last_if_fn): Likewise.
+
+2023-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits: Add diagnostic pragmas around
+	references to deprecated std::aligned_storage and
+	std::aligned_union traits.
+	* testsuite/20_util/aligned_storage/requirements/alias_decl.cc:
+	Add dg-warning for et c++23.
+	* testsuite/20_util/aligned_storage/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/aligned_storage/value.cc: Likewise.
+	* testsuite/20_util/aligned_union/1.cc: Likewise.
+	* testsuite/20_util/aligned_union/requirements/alias_decl.cc:
+	Likewise.
+
+2023-02-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Add new macros.
+	* include/bits/c++config (_GLIBCXX23_DEPRECATED)
+	(_GLIBCXX23_DEPRECATED_SUGGEST): New macros.
+	* include/std/type_traits (aligned_storage, aligned_union)
+	(aligned_storage_t, aligned_union_t): Deprecate for C++23.
+	* testsuite/20_util/aligned_storage/deprecated-2b.cc: New test.
+	* testsuite/20_util/aligned_union/deprecated-2b.cc: New test.
+
+2023-02-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Update macros.
+	* include/bits/c++config (_GLIBCXX20_DEPRECATED): Make
+	consistent with other 'deprecated' macros.
+	* include/std/type_traits (is_pod, is_pod_v): Use
+	_GLIBCXX20_DEPRECATED_SUGGEST instead.
+
+2023-02-06  Arsen Arsenović  <arsen@aarsen.me>
+
+	* Makefile.am [!_GLIBCXX_HOSTED]: Enable src/ subdirectory.
+	* Makefile.in: Regenerate.
+	* src/Makefile.am [!_GLIBCXX_HOSTED]: Omit compatibility files.
+	There's no history to be compatible with.
+	* src/c++11/Makefile.am [!_GLIBCXX_HOSTED]: Omit hosted-only
+	source files from the build.
+	* src/c++17/Makefile.am [!_GLIBCXX_HOSTED]: Likewise.
+	* src/c++20/Makefile.am [!_GLIBCXX_HOSTED]: Likewise.
+	* src/c++98/Makefile.am [!_GLIBCXX_HOSTED]: Likewise.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+
+2023-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/Makefile.am [GLIBCXX_HOSTED] (SUBDIRS): Do not add
+	filesystem, libbacktrace and experimental.
+	* src/Makefile.in: Regenerate.
+
 2023-02-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libstdc++/108672

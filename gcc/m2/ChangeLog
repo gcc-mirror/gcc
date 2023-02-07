@@ -1,3 +1,23 @@
+2023-02-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108135
+	* gm2-compiler/M2Search.mod (DSdbEnter): Comment out.
+	(DSdbExit): Comment out.
+
+2023-02-06  Co-Authored by: Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR modula2/107234
+	* m2pp.cc (m2pp_integer_cst): Use
+	HOST_WIDE_INT_PRINT_UNSIGNED as the format specifier.
+
+2023-02-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Preprocess.mod (BaseName): Comment out.
+	* gm2-lang.cc (opt): Remove.
+	* gm2spec.cc (add_include): Remove.
+	(full_libraries): Remove.
+	(concat_option): Remove.
+
 2023-02-03  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (TEXISRC): Remove m2/images/gnu.eps.
