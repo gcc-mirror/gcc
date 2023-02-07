@@ -2764,6 +2764,9 @@ set_const_flag_1 (cgraph_node *node, bool set_const, bool looping,
       if (!set_const || alias->get_availability () > AVAIL_INTERPOSABLE)
 	set_const_flag_1 (alias, set_const, looping, changed);
     }
+  for (struct cgraph_node *n = node->simd_clones; n != NULL;
+       n = n->simdclone->next_clone)
+    set_const_flag_1 (n, set_const, looping, changed);
   for (cgraph_edge *e = node->callers; e; e = e->next_caller)
     if (e->caller->thunk
 	&& (!set_const || e->caller->get_availability () > AVAIL_INTERPOSABLE))
@@ -2876,6 +2879,9 @@ cgraph_node::set_pure_flag (bool pure, bool looping)
 {
   struct set_pure_flag_info info = {pure, looping, false};
   call_for_symbol_thunks_and_aliases (set_pure_flag_1, &info, !pure, true);
+  for (struct cgraph_node *n = simd_clones; n != NULL;
+       n = n->simdclone->next_clone)
+    set_pure_flag_1 (n, &info);
   return info.changed;
 }
 
