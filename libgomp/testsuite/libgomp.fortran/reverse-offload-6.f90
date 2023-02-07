@@ -2,6 +2,8 @@
 ! Ensure that a mapping with no argument works
 !
 
+! { dg-additional-options -foffload-options=nvptx-none=-misa=sm_35 { target offload_target_nvptx } }
+
 module m
   implicit none (type, external)
   integer :: x = 32
