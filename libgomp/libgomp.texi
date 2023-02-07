@@ -469,8 +469,7 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item @code{omp_curr_progress_width} identifier @tab N @tab
 @item @code{safesync} clause to the @code{parallel} construct @tab N @tab
 @item @code{omp_get_max_progress_width} runtime routine @tab N @tab
-@item @code{strict} modifier keyword to @code{num_threads}, @code{num_tasks}
-      and @code{grainsize} @tab N @tab
+@item @code{strict} modifier keyword to @code{num_threads} @tab N @tab
 @item @code{memscope} clause to @code{atomic} and @code{flush} @tab N @tab
 @item Routines for obtaining memory spaces/allocators for shared/device memory
       @tab N @tab
