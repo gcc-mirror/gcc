@@ -2659,6 +2659,38 @@ private:
   unsigned m_num_args;
 };
 
+/* Handler for "read".
+     ssize_t read(int fildes, void *buf, size_t nbyte);
+   See e.g. https://man7.org/linux/man-pages/man2/read.2.html   */
+
+class kf_read : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3
+	    && cd.arg_is_pointer_p (1)
+	    && cd.arg_is_size_p (2));
+  }
+
+  /* For now, assume that any call to "read" fully clobbers the buffer
+     passed in.  This isn't quite correct (e.g. errors, partial reads;
+     see PR analyzer/108689), but at least stops us falsely complaining
+     about the buffer being uninitialized.  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model *model = cd.get_model ();
+    const svalue *ptr_sval = cd.get_arg_svalue (1);
+    if (const region *reg = ptr_sval->maybe_get_region ())
+      {
+	const region *base_reg = reg->get_base_region ();
+	const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
+	model->set_value (base_reg, new_sval, cd.get_ctxt ());
+      }
+  }
+};
+
+
 /* Populate KFM with instances of known functions relating to
    file descriptors.  */
 
@@ -2672,6 +2704,7 @@ register_known_fd_functions (known_function_manager &kfm)
   kfm.add ("listen", make_unique<kf_listen> ());
   kfm.add ("pipe", make_unique<kf_pipe> (1));
   kfm.add ("pipe2", make_unique<kf_pipe> (2));
+  kfm.add ("read", make_unique<kf_read> ());
   kfm.add ("socket", make_unique<kf_socket> ());
 }
 
