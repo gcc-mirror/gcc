@@ -1247,11 +1247,11 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (any_commutative_binop:VI_QHS
 	    (vec_duplicate:VI_QHS
-	      (match_operand:<VEL> 4 "register_operand"  "  r,  r"))
+	      (match_operand:<VEL> 4 "reg_or_0_operand"  " rJ, rJ"))
 	    (match_operand:VI_QHS 3 "register_operand"   " vr, vr"))
 	  (match_operand:VI_QHS 2 "vector_merge_operand" "0vu,0vu")))]
   "TARGET_VECTOR"
-  "v<insn>.vx\t%0,%3,%4%p1"
+  "v<insn>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
    (set_attr "mode" "<MODE>")])
 
@@ -1269,10 +1269,10 @@
 	  (any_non_commutative_binop:VI_QHS
 	    (match_operand:VI_QHS 3 "register_operand"   " vr, vr")
 	    (vec_duplicate:VI_QHS
-	      (match_operand:<VEL> 4 "register_operand"  "  r,  r")))
+	      (match_operand:<VEL> 4 "reg_or_0_operand"  " rJ, rJ")))
 	  (match_operand:VI_QHS 2 "vector_merge_operand" "0vu,0vu")))]
   "TARGET_VECTOR"
-  "v<insn>.vx\t%0,%3,%4%p1"
+  "v<insn>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
    (set_attr "mode" "<MODE>")])
 
@@ -1324,8 +1324,11 @@
 	rtx v = gen_reg_rtx (<MODE>mode);
 
 	if (riscv_vector::simm32_p (operands[4]))
-	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[4]));
+	  {
+	    if (!rtx_equal_p (operands[4], const0_rtx))
+	      operands[4] = force_reg (Pmode, operands[4]);
+	    operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[4]);
+	  }
 	else
 	  {
 	    if (CONST_INT_P (operands[4]))
@@ -1356,11 +1359,11 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (any_commutative_binop:VI_D
 	    (vec_duplicate:VI_D
-	      (match_operand:<VEL> 4 "register_operand"  "  r,  r"))
+	      (match_operand:<VEL> 4 "reg_or_0_operand"  " rJ, rJ"))
 	    (match_operand:VI_D 3 "register_operand"     " vr, vr"))
 	  (match_operand:VI_D 2 "vector_merge_operand"   "0vu,0vu")))]
   "TARGET_VECTOR"
-  "v<insn>.vx\t%0,%3,%4%p1"
+  "v<insn>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
    (set_attr "mode" "<MODE>")])
 
@@ -1378,11 +1381,11 @@
 	  (any_commutative_binop:VI_D
 	    (vec_duplicate:VI_D
 	      (sign_extend:<VEL>
-	        (match_operand:<VSUBEL> 4 "register_operand" "  r,  r")))
+	        (match_operand:<VSUBEL> 4 "reg_or_0_operand" " rJ, rJ")))
 	    (match_operand:VI_D 3 "register_operand"         " vr, vr"))
 	  (match_operand:VI_D 2 "vector_merge_operand"       "0vu,0vu")))]
   "TARGET_VECTOR"
-  "v<insn>.vx\t%0,%3,%4%p1"
+  "v<insn>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
    (set_attr "mode" "<MODE>")])
 
@@ -1411,8 +1414,11 @@
 	rtx v = gen_reg_rtx (<MODE>mode);
 
 	if (riscv_vector::simm32_p (operands[4]))
-	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[4]));
+	  {
+	    if (!rtx_equal_p (operands[4], const0_rtx))
+	      operands[4] = force_reg (Pmode, operands[4]);
+	    operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[4]);
+	  }
 	else
 	  {
 	    if (CONST_INT_P (operands[4]))
@@ -1444,10 +1450,10 @@
 	  (any_non_commutative_binop:VI_D
 	    (match_operand:VI_D 3 "register_operand"     " vr, vr")
 	    (vec_duplicate:VI_D
-	      (match_operand:<VEL> 4 "register_operand"  "  r,  r")))
+	      (match_operand:<VEL> 4 "reg_or_0_operand"  " rJ, rJ")))
 	  (match_operand:VI_D 2 "vector_merge_operand"   "0vu,0vu")))]
   "TARGET_VECTOR"
-  "v<insn>.vx\t%0,%3,%4%p1"
+  "v<insn>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
    (set_attr "mode" "<MODE>")])
 
@@ -1466,10 +1472,10 @@
 	    (match_operand:VI_D 3 "register_operand"         " vr, vr")
 	    (vec_duplicate:VI_D
 	      (sign_extend:<VEL>
-	        (match_operand:<VSUBEL> 4 "register_operand" "  r,  r"))))
+	        (match_operand:<VSUBEL> 4 "reg_or_0_operand" " rJ, rJ"))))
 	  (match_operand:VI_D 2 "vector_merge_operand"       "0vu,0vu")))]
   "TARGET_VECTOR"
-  "v<insn>.vx\t%0,%3,%4%p1"
+  "v<insn>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
    (set_attr "mode" "<MODE>")])
 
@@ -1836,11 +1842,11 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:VI_QHS
 	    [(vec_duplicate:VI_QHS
-	       (match_operand:<VEL> 4 "register_operand"  "  r,  r"))
+	       (match_operand:<VEL> 4 "reg_or_0_operand"  " rJ, rJ"))
 	     (match_operand:VI_QHS 3 "register_operand"   " vr, vr")] VMULH)
 	  (match_operand:VI_QHS 2 "vector_merge_operand"  "0vu,0vu")))]
   "TARGET_VECTOR"
-  "vmulh<v_su>.vx\t%0,%3,%4%p1"
+  "vmulh<v_su>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "vimul")
    (set_attr "mode" "<MODE>")])
 
@@ -1867,8 +1873,11 @@
 	rtx v = gen_reg_rtx (<MODE>mode);
 
 	if (riscv_vector::simm32_p (operands[4]))
-	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[4]));
+	  {
+	    if (!rtx_equal_p (operands[4], const0_rtx))
+	      operands[4] = force_reg (Pmode, operands[4]);
+	    operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[4]);
+	  }
 	else
 	  {
 	    if (CONST_INT_P (operands[4]))
@@ -1899,11 +1908,11 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:VFULLI_D
 	    [(vec_duplicate:VFULLI_D
-	       (match_operand:<VEL> 4 "register_operand"   "  r,  r"))
+	       (match_operand:<VEL> 4 "register_operand"   " rJ, rJ"))
 	     (match_operand:VFULLI_D 3 "register_operand"  " vr, vr")] VMULH)
 	  (match_operand:VFULLI_D 2 "vector_merge_operand" "0vu,0vu")))]
   "TARGET_VECTOR"
-  "vmulh<v_su>.vx\t%0,%3,%4%p1"
+  "vmulh<v_su>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "vimul")
    (set_attr "mode" "<MODE>")])
 
@@ -1921,11 +1930,11 @@
 	  (unspec:VFULLI_D
 	    [(vec_duplicate:VFULLI_D
 	       (sign_extend:<VEL>
-	         (match_operand:<VSUBEL> 4 "register_operand" "  r,  r")))
+	         (match_operand:<VSUBEL> 4 "reg_or_0_operand" " rJ, rJ")))
 	     (match_operand:VFULLI_D 3 "register_operand"     " vr, vr")] VMULH)
 	  (match_operand:VFULLI_D 2 "vector_merge_operand"    "0vu,0vu")))]
   "TARGET_VECTOR"
-  "vmulh<v_su>.vx\t%0,%3,%4%p1"
+  "vmulh<v_su>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "vimul")
    (set_attr "mode" "<MODE>")])
 
