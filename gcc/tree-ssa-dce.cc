@@ -2062,9 +2062,9 @@ simple_dce_from_worklist (bitmap worklist)
 
       /* The defining statement needs to be defining only this name.
 	 ASM is the only statement that can define more than one
-	 (non-virtual) name. */
+	 name. */
       if (is_a<gasm *>(t)
-	  && !single_ssa_def_operand (t, SSA_OP_DEF))
+	  && !single_ssa_def_operand (t, SSA_OP_ALL_DEFS))
 	continue;
 
       /* Don't remove statements that are needed for non-call
@@ -2094,6 +2094,7 @@ simple_dce_from_worklist (bitmap worklist)
 	remove_phi_node (&gsi, true);
       else
 	{
+	  unlink_stmt_vdef (t);
 	  gsi_remove (&gsi, true);
 	  release_defs (t);
 	}
