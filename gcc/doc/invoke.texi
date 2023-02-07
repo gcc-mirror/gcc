@@ -3057,8 +3057,6 @@ following code is well-formed under ISO C++11, but is ill-formed when
 @option{-fchar8_t} is specified.
 
 @smallexample
-char ca[] = u8"xx";     // error: char-array initialized from wide
-                        //        string
 const char *cp = u8"xx";// error: invalid conversion from
                         //        `const char8_t*' to `const char*'
 int f(const char*);
