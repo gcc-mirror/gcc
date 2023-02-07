@@ -175,8 +175,11 @@ extern struct target_ira *this_target_ira;
 /* Major structure describing equivalence info for a pseudo.  */
 struct ira_reg_equiv_s
 {
-  /* True if we can use this equivalence.  */
+  /* True if we can use this as a general equivalence.  */
   bool defined_p;
+  /* True if we can use this equivalence only for caller save/restore
+     location.  */
+  bool caller_save_p;
   /* True if the usage of the equivalence is profitable.  */
   bool profitable_p;
   /* Equiv. memory, constant, invariant, and initializing insns of

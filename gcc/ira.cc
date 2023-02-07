@@ -3070,6 +3070,8 @@ validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
     info->equiv_mem_modified = true;
 }
 
+static int equiv_init_varies_p (rtx x);
+
 enum valid_equiv { valid_none, valid_combine, valid_reload };
 
 /* Verify that no store between START and the death of REG invalidates
@@ -3113,7 +3115,8 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
 	     been changed and all hell breaks loose.  */
 	  ret = valid_combine;
 	  if (!MEM_READONLY_P (memref)
-	      && !RTL_CONST_OR_PURE_CALL_P (insn))
+	      && (!RTL_CONST_OR_PURE_CALL_P (insn)
+		  || equiv_init_varies_p (XEXP (memref, 0))))
 	    return valid_none;
 	}
 
@@ -3766,7 +3769,18 @@ update_equiv_regs (void)
 		{
 		  replacement = copy_rtx (SET_SRC (set));
 		  if (validity == valid_reload)
-		    note = set_unique_reg_note (insn, REG_EQUIV, replacement);
+		    {
+		      note = set_unique_reg_note (insn, REG_EQUIV, replacement);
+		    }
+		  else
+		    {
+		      /* We still can use this equivalence for caller save
+			 optimization in LRA.  Mark this.  */
+		      ira_reg_equiv[regno].caller_save_p = true;
+		      ira_reg_equiv[regno].init_insns
+			= gen_rtx_INSN_LIST (VOIDmode, insn,
+					     ira_reg_equiv[regno].init_insns);
+		    }
 		}
 	    }
 
@@ -4156,7 +4170,7 @@ setup_reg_equiv (void)
 		   legitimate, we ignore such REG_EQUIV notes.  */
 		if (memory_operand (x, VOIDmode))
 		  {
-		    ira_reg_equiv[i].defined_p = true;
+		    ira_reg_equiv[i].defined_p = !ira_reg_equiv[i].caller_save_p;
 		    ira_reg_equiv[i].memory = x;
 		    continue;
 		  }
