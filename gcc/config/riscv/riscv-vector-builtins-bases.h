@@ -84,6 +84,8 @@ extern const function_base *const vwcvt_x;
 extern const function_base *const vwcvtu_x;
 extern const function_base *const vadc;
 extern const function_base *const vsbc;
+extern const function_base *const vmadc;
+extern const function_base *const vmsbc;
 extern const function_base *const vsadd;
 extern const function_base *const vssub;
 extern const function_base *const vsaddu;

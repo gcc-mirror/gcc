@@ -570,6 +570,38 @@ static CONSTEXPR const rvv_op_info iu_vvxm_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vxm_args /* Args */};
 
+/* A static operand information for mask_type func (vector_type, vector_type,
+ * mask_type) function registration. */
+static CONSTEXPR const rvv_op_info iu_mvvm_ops
+  = {iu_ops,				  /* Types */
+     OP_TYPE_vvm,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vvm_args /* Args */};
+
+/* A static operand information for mask_type func (vector_type, scalar_type,
+ * mask_type) function registration. */
+static CONSTEXPR const rvv_op_info iu_mvxm_ops
+  = {iu_ops,				  /* Types */
+     OP_TYPE_vxm,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vxm_args /* Args */};
+
+/* A static operand information for mask_type func (vector_type, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_mvv_ops
+  = {iu_ops,				/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vv_args /* Args */};
+
+/* A static operand information for mask_type func (vector_type, scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_mvx_ops
+  = {iu_ops,				/* Types */
+     OP_TYPE_vx,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vx_args /* Args */};
+
 /* A static operand information for vector_type func (vector_type, vector_type)
  * function registration. */
 static CONSTEXPR const rvv_op_info i_vvv_ops
@@ -1670,7 +1702,7 @@ function_expander::use_exact_insn (insn_code icode)
     }
 
   /* Store operation doesn't have merge operand.  */
-  if (!function_returns_void_p ())
+  if (!function_returns_void_p () && base->has_merge_operand_p ())
     {
       if (use_real_merge_p (pred))
 	add_input_operand (arg_offset++);

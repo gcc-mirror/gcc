@@ -266,6 +266,33 @@ struct no_mask_policy_def : public build_base
   }
 };
 
+/* return_mask_def class. Such instructions belong to this class
+   is returning mask value.  */
+struct return_mask_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    if (!overloaded_p)
+      b.append_name (operand_suffixes[instance.op_info->op]);
+
+    /* vop<sew>_<op> --> vop<sew>_<op>_<type1>_<type2>.  */
+    if (!overloaded_p)
+      {
+	b.append_name (type_suffixes[instance.type.index].vector);
+	vector_type_index ret_type_idx
+	  = instance.op_info->ret.get_base_vector_type (
+	    builtin_types[instance.type.index].vector);
+	b.append_name (type_suffixes[ret_type_idx].vector);
+      }
+
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -273,5 +300,6 @@ SHAPE(indexed_loadstore, indexed_loadstore)
 SHAPE(alu, alu)
 SHAPE(widen_alu, widen_alu)
 SHAPE(no_mask_policy, no_mask_policy)
+SHAPE(return_mask, return_mask)
 
 } // end namespace riscv_vector

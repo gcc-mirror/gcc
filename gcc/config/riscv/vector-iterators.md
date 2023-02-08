@@ -36,6 +36,9 @@
 
   UNSPEC_VADC
   UNSPEC_VSBC
+  UNSPEC_VMADC
+  UNSPEC_VMSBC
+  UNSPEC_OVERFLOW
 ])
 
 (define_mode_iterator V [

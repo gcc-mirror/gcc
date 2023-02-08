@@ -1962,6 +1962,7 @@
    vadc.vim\t%0,%2,%v3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
+   (set_attr "merge_op_idx" "1")
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
@@ -1985,6 +1986,7 @@
   "vsbc.vvm\t%0,%2,%3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
+   (set_attr "merge_op_idx" "1")
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
@@ -2009,6 +2011,7 @@
   "vadc.vxm\t%0,%2,%3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
+   (set_attr "merge_op_idx" "1")
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
@@ -2033,6 +2036,7 @@
   "vsbc.vxm\t%0,%2,%z3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
+   (set_attr "merge_op_idx" "1")
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
@@ -2102,6 +2106,7 @@
   "vadc.vxm\t%0,%2,%3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
+   (set_attr "merge_op_idx" "1")
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
@@ -2127,6 +2132,7 @@
   "vadc.vxm\t%0,%2,%3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
+   (set_attr "merge_op_idx" "1")
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
@@ -2200,6 +2206,7 @@
   "vsbc.vxm\t%0,%2,%z3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
+   (set_attr "merge_op_idx" "1")
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
@@ -2225,9 +2232,496 @@
   "vsbc.vxm\t%0,%2,%z3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
+   (set_attr "merge_op_idx" "1")
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
+
+(define_insn "@pred_madc<mode>"
+  [(set (match_operand:<VM> 0 "register_operand"        "=&vr, &vr")
+	(unspec:<VM>
+	   [(plus:VI
+	     (match_operand:VI 1 "register_operand"     "  vr,  vr")
+	     (match_operand:VI 2 "vector_arith_operand" "  vr,  vi"))
+	    (match_operand:<VM> 3 "register_operand"    "  vm,  vm")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand" "  rK,  rK")
+	       (match_operand 5 "const_int_operand"     "   i,   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
+  "TARGET_VECTOR"
+  "@
+   vmadc.vvm\t%0,%1,%2,%3
+   vmadc.vim\t%0,%1,%v2,%3"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
+
+(define_insn "@pred_msbc<mode>"
+  [(set (match_operand:<VM> 0 "register_operand"        "=&vr")
+	(unspec:<VM>
+	   [(minus:VI
+	     (match_operand:VI 1 "register_operand"     "  vr")
+	     (match_operand:VI 2 "register_operand"     "  vr"))
+	    (match_operand:<VM> 3 "register_operand"    "  vm")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand" "  rK")
+	       (match_operand 5 "const_int_operand"     "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
+  "TARGET_VECTOR"
+  "vmsbc.vvm\t%0,%1,%2,%3"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
+
+(define_insn "@pred_madc<mode>_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+	(unspec:<VM>
+	   [(plus:VI_QHS
+	     (vec_duplicate:VI_QHS
+	       (match_operand:<VEL> 2 "register_operand" "   r"))
+	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
+	    (match_operand:<VM> 3 "register_operand"     "  vm")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand"  "  rK")
+	       (match_operand 5 "const_int_operand"      "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
+  "TARGET_VECTOR"
+  "vmadc.vxm\t%0,%1,%2,%3"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
+
+(define_insn "@pred_msbc<mode>_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+	(unspec:<VM>
+	   [(minus:VI_QHS
+	     (vec_duplicate:VI_QHS
+	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
+	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
+	    (match_operand:<VM> 3 "register_operand"     "  vm")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand"  "  rK")
+	       (match_operand 5 "const_int_operand"      "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
+  "TARGET_VECTOR"
+  "vmsbc.vxm\t%0,%1,%z2,%3"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
+
+(define_expand "@pred_madc<mode>_scalar"
+  [(set (match_operand:<VM> 0 "register_operand")
+	(unspec:<VM>
+	   [(plus:VI_D
+	     (vec_duplicate:VI_D
+	       (match_operand:<VEL> 2 "reg_or_int_operand"))
+	     (match_operand:VI_D 1 "register_operand"))
+	    (match_operand:<VM> 3 "register_operand")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand")
+	       (match_operand 5 "const_int_operand")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
+  "TARGET_VECTOR"
+  {
+    if (riscv_vector::simm5_p (operands[2]))
+      operands[2] = force_reg (<VEL>mode, operands[2]);
+    else if (!TARGET_64BIT)
+      {
+	rtx v = gen_reg_rtx (<MODE>mode);
+
+	if (riscv_vector::simm32_p (operands[2]))
+	  operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode,
+		force_reg (Pmode, operands[2]));
+	else
+	  {
+	    if (CONST_INT_P (operands[2]))
+	      operands[2] = force_reg (<VEL>mode, operands[2]);
+
+	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
+					    v, operands[2], operands[5],
+					    <VM>mode);
+	    emit_insn (gen_pred_madc<mode> (operands[0], operands[1], v, operands[3],
+					    operands[4], operands[5]));
+	    DONE;
+	  }
+      }
+    else
+      operands[2] = force_reg (<VEL>mode, operands[2]);
+  })
+
+(define_insn "*pred_madc<mode>_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+	(unspec:<VM>
+	   [(plus:VI_D
+	     (vec_duplicate:VI_D
+	       (match_operand:<VEL> 2 "register_operand" "   r"))
+	     (match_operand:VI_D 1 "register_operand"    "  vr"))
+	    (match_operand:<VM> 3 "register_operand"     "  vm")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand"  "  rK")
+	       (match_operand 5 "const_int_operand"      "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
+  "TARGET_VECTOR"
+  "vmadc.vxm\t%0,%1,%2,%3"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
+
+(define_insn "*pred_madc<mode>_extended_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"             "=&vr")
+	(unspec:<VM>
+	   [(plus:VI_D
+	     (vec_duplicate:VI_D
+	       (sign_extend:<VEL>
+	         (match_operand:<VSUBEL> 2 "register_operand" "   r")))
+	     (match_operand:VI_D 1 "register_operand"         "  vr"))
+	    (match_operand:<VM> 3 "register_operand"          "  vm")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand"       "  rK")
+	       (match_operand 5 "const_int_operand"           "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
+  "TARGET_VECTOR"
+  "vmadc.vxm\t%0,%1,%2,%3"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
+
+(define_expand "@pred_msbc<mode>_scalar"
+  [(set (match_operand:<VM> 0 "register_operand")
+	(unspec:<VM>
+	   [(minus:VI_D
+	     (vec_duplicate:VI_D
+	       (match_operand:<VEL> 2 "reg_or_int_operand"))
+	     (match_operand:VI_D 1 "register_operand"))
+	    (match_operand:<VM> 3 "register_operand")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand")
+	       (match_operand 5 "const_int_operand")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
+  "TARGET_VECTOR"
+  {
+    if (!TARGET_64BIT)
+      {
+        rtx v = gen_reg_rtx (<MODE>mode);
+
+	if (riscv_vector::simm32_p (operands[2]))
+	  {
+	    if (!rtx_equal_p (operands[2], const0_rtx))
+	      operands[2] = force_reg (Pmode, operands[2]);
+	    operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[2]);
+	  }
+	else
+	  {
+	    if (CONST_INT_P (operands[2]))
+	      operands[2] = force_reg (<VEL>mode, operands[2]);
+
+	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
+					    v, operands[2], operands[5],
+					    <VM>mode);
+	    emit_insn (gen_pred_msbc<mode> (operands[0], operands[1], v, operands[3],
+					    operands[4], operands[5]));
+	    DONE;
+	  }
+      }
+    else
+      {
+	if (!rtx_equal_p (operands[2], const0_rtx))
+	  operands[2] = force_reg (<VEL>mode, operands[2]);
+      }
+  })
+
+(define_insn "*pred_msbc<mode>_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+	(unspec:<VM>
+	   [(minus:VI_D
+	     (vec_duplicate:VI_D
+	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
+	     (match_operand:VI_D 1 "register_operand"    "  vr"))
+	    (match_operand:<VM> 3 "register_operand"     "  vm")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand"  "  rK")
+	       (match_operand 5 "const_int_operand"      "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
+  "TARGET_VECTOR"
+  "vmsbc.vxm\t%0,%1,%z2,%3"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
+
+(define_insn "*pred_msbc<mode>_extended_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"             "=&vr")
+	(unspec:<VM>
+	   [(minus:VI_D
+	     (vec_duplicate:VI_D
+	       (sign_extend:<VEL>
+	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" "  rJ")))
+	     (match_operand:VI_D 1 "register_operand"         "  vr"))
+	    (match_operand:<VM> 3 "register_operand"          "  vm")
+	    (unspec:<VM>
+	      [(match_operand 4 "vector_length_operand"       "  rK")
+	       (match_operand 5 "const_int_operand"           "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
+  "TARGET_VECTOR"
+  "vmsbc.vxm\t%0,%1,%z2,%3"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "4")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
+
+(define_insn "@pred_madc<mode>_overflow"
+  [(set (match_operand:<VM> 0 "register_operand"        "=&vr, &vr")
+	(unspec:<VM>
+	   [(plus:VI
+	     (match_operand:VI 1 "register_operand"     "  vr,  vr")
+	     (match_operand:VI 2 "vector_arith_operand" "  vr,  vi"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand" "  rK,  rK")
+	       (match_operand 4 "const_int_operand"     "   i,   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  "@
+   vmadc.vv\t%0,%1,%2
+   vmadc.vi\t%0,%1,%v2"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "3")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
+
+(define_insn "@pred_msbc<mode>_overflow"
+  [(set (match_operand:<VM> 0 "register_operand"        "=&vr")
+	(unspec:<VM>
+	   [(minus:VI
+	     (match_operand:VI 1 "register_operand"     "  vr")
+	     (match_operand:VI 2 "register_operand"     "  vr"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand" "  rK")
+	       (match_operand 4 "const_int_operand"     "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  "vmsbc.vv\t%0,%1,%2"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "3")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
+
+(define_insn "@pred_madc<mode>_overflow_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+	(unspec:<VM>
+	   [(plus:VI_QHS
+	     (vec_duplicate:VI_QHS
+	       (match_operand:<VEL> 2 "register_operand" "   r"))
+	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand"  "  rK")
+	       (match_operand 4 "const_int_operand"      "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  "vmadc.vx\t%0,%1,%2"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "3")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
+
+(define_insn "@pred_msbc<mode>_overflow_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+	(unspec:<VM>
+	   [(minus:VI_QHS
+	     (vec_duplicate:VI_QHS
+	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
+	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand"  "  rK")
+	       (match_operand 4 "const_int_operand"      "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  "vmsbc.vx\t%0,%1,%z2"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "3")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
+
+(define_expand "@pred_madc<mode>_overflow_scalar"
+  [(set (match_operand:<VM> 0 "register_operand")
+	(unspec:<VM>
+	   [(plus:VI_D
+	     (vec_duplicate:VI_D
+	       (match_operand:<VEL> 2 "reg_or_int_operand"))
+	     (match_operand:VI_D 1 "register_operand"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand")
+	       (match_operand 4 "const_int_operand")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  {
+    if (riscv_vector::simm5_p (operands[2]))
+      operands[2] = force_reg (<VEL>mode, operands[2]);
+    else if (!TARGET_64BIT)
+      {
+        rtx v = gen_reg_rtx (<MODE>mode);
+
+	if (riscv_vector::simm32_p (operands[2]))
+	  operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode,
+		force_reg (Pmode, operands[2]));
+	else
+	  {
+	    if (CONST_INT_P (operands[2]))
+	      operands[2] = force_reg (<VEL>mode, operands[2]);
+
+	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
+					    v, operands[2], operands[3],
+					    <VM>mode);
+	    emit_insn (gen_pred_madc<mode>_overflow (operands[0], operands[1],
+						     v, operands[3], operands[4]));
+	    DONE;
+	  }
+      }
+    else
+      operands[2] = force_reg (<VEL>mode, operands[2]);
+  })
+
+(define_insn "*pred_madc<mode>_overflow_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+	(unspec:<VM>
+	   [(plus:VI_D
+	     (vec_duplicate:VI_D
+	       (match_operand:<VEL> 2 "register_operand" "   r"))
+	     (match_operand:VI_D 1 "register_operand"    "  vr"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand"  "  rK")
+	       (match_operand 4 "const_int_operand"      "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  "vmadc.vx\t%0,%1,%2"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "3")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
+
+(define_insn "*pred_madc<mode>_overflow_extended_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"             "=&vr")
+	(unspec:<VM>
+	   [(plus:VI_D
+	     (vec_duplicate:VI_D
+	       (sign_extend:<VEL>
+	         (match_operand:<VSUBEL> 2 "register_operand" "   r")))
+	     (match_operand:VI_D 1 "register_operand"         "  vr"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand"       "  rK")
+	       (match_operand 4 "const_int_operand"           "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  "vmadc.vx\t%0,%1,%2"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "3")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
+
+(define_expand "@pred_msbc<mode>_overflow_scalar"
+  [(set (match_operand:<VM> 0 "register_operand")
+	(unspec:<VM>
+	   [(minus:VI_D
+	     (vec_duplicate:VI_D
+	       (match_operand:<VEL> 2 "reg_or_int_operand"))
+	     (match_operand:VI_D 1 "register_operand"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand")
+	       (match_operand 4 "const_int_operand")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  {
+    if (!TARGET_64BIT)
+      {
+        rtx v = gen_reg_rtx (<MODE>mode);
+
+	if (riscv_vector::simm32_p (operands[2]))
+	  {
+	    if (!rtx_equal_p (operands[2], const0_rtx))
+	      operands[2] = force_reg (Pmode, operands[2]);
+	    operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[2]);
+	  }
+	else
+	  {
+	    if (CONST_INT_P (operands[2]))
+	      operands[2] = force_reg (<VEL>mode, operands[2]);
+
+	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
+					    v, operands[2], operands[3],
+					    <VM>mode);
+	    emit_insn (gen_pred_msbc<mode>_overflow (operands[0], operands[1],
+						     v, operands[3], operands[4]));
+	    DONE;
+	  }
+      }
+    else
+      {
+	if (!rtx_equal_p (operands[2], const0_rtx))
+	  operands[2] = force_reg (<VEL>mode, operands[2]);
+      }
+  })
+
+(define_insn "*pred_msbc<mode>_overflow_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+	(unspec:<VM>
+	   [(minus:VI_D
+	     (vec_duplicate:VI_D
+	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
+	     (match_operand:VI_D 1 "register_operand"    "  vr"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand"  "  rK")
+	       (match_operand 4 "const_int_operand"      "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  "vmsbc.vx\t%0,%1,%z2"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "3")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
+
+(define_insn "*pred_msbc<mode>_overflow_extended_scalar"
+  [(set (match_operand:<VM> 0 "register_operand"             "=&vr")
+	(unspec:<VM>
+	   [(minus:VI_D
+	     (vec_duplicate:VI_D
+	       (sign_extend:<VEL>
+	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" "  rJ")))
+	     (match_operand:VI_D 1 "register_operand"         "  vr"))
+	    (unspec:<VM>
+	      [(match_operand 3 "vector_length_operand"       "  rK")
+	       (match_operand 4 "const_int_operand"           "   i")
+	       (reg:SI VL_REGNUM)
+	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
+  "TARGET_VECTOR"
+  "vmsbc.vx\t%0,%1,%z2"
+  [(set_attr "type" "vicalu")
+   (set_attr "mode" "<MODE>")
+   (set_attr "vl_op_idx" "3")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated integer unary operations

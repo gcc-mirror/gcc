@@ -388,6 +388,9 @@ public:
   /* Return true if intrinsics use mask predication.  */
   virtual bool use_mask_predication_p () const;
 
+  /* Return true if intrinsics has merge operand.  */
+  virtual bool has_merge_operand_p () const;
+
   /* Expand the given call into rtl.  Return the result of the function,
      or an arbitrary value if the function doesn't return a result.  */
   virtual rtx expand (function_expander &) const = 0;
@@ -517,6 +520,14 @@ function_base::apply_mask_policy_p () const
    mask predication.  */
 inline bool
 function_base::use_mask_predication_p () const
+{
+  return true;
+}
+
+/* We choose to return true by default since most of the intrinsics use
+   has merge operand.  */
+inline bool
+function_base::has_merge_operand_p () const
 {
   return true;
 }
