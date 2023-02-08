@@ -3628,6 +3628,8 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
       for (tree newvbl = newa->size, curvbl = cura->size; newvbl;
 	   newvbl = TREE_CHAIN (newvbl), curvbl = TREE_CHAIN (curvbl))
 	{
+	  gcc_assert (curvbl);
+
 	  tree newpos = TREE_PURPOSE (newvbl);
 	  tree curpos = TREE_PURPOSE (curvbl);
 
