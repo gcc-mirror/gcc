@@ -458,6 +458,67 @@ struct binary_orrq_def : public overloaded_base<0>
 };
 SHAPE (binary_orrq)
 
+/* <T0>_t vfoo[t0](<T0>_t, <T0>_t)
+   <T0>_t vfoo[_n_t0](<T0>_t, int32_t)
+
+   Shape for rounding shift left operations.
+
+   Example: vrshlq.
+   int8x16_t [__arm_]vrshlq[_n_s8](int8x16_t a, int32_t b)
+   int8x16_t [__arm_]vrshlq_m_n[_s8](int8x16_t a, int32_t b, mve_pred16_t p)
+   int8x16_t [__arm_]vrshlq[_s8](int8x16_t a, int8x16_t b)
+   int8x16_t [__arm_]vrshlq_m[_s8](int8x16_t inactive, int8x16_t a, int8x16_t b, mve_pred16_t p)
+   int8x16_t [__arm_]vrshlq_x[_s8](int8x16_t a, int8x16_t b, mve_pred16_t p)  */
+struct binary_round_lshift_def : public overloaded_base<0>
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index pred, enum mode_suffix_index mode) const override
+  {
+    return ((mode == MODE_n)
+	    && (pred == PRED_m));
+  }
+
+  bool
+  skip_overload_p (enum predication_index pred, enum mode_suffix_index mode) const override
+  {
+    switch (mode)
+      {
+      case MODE_none:
+	return false;
+
+	/* For MODE_n, share the overloaded instance with MODE_none, except for PRED_m.  */
+      case MODE_n:
+	return pred != PRED_m;
+
+      default:
+	gcc_unreachable ();
+      }
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,vs0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,ss32", group, MODE_n, preserve_user_namespace, false, preds_m_or_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.finish_opt_n_resolution (i, 0, type, TYPE_signed);
+  }
+};
+SHAPE (binary_round_lshift)
+
 /* <T0>xN_t vfoo[_t0](uint64_t, uint64_t)
 
    where there are N arguments in total.
