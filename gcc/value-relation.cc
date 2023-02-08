@@ -1374,6 +1374,12 @@ dom_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   if (v1 == v2)
     return VREL_EQ;
 
+  // If v1 or v2 do not have any relations or equivalences, a partial
+  // equivalence is the only possibility.
+  if ((!bitmap_bit_p (m_relation_set, v1) && !has_equiv_p (v1))
+      || (!bitmap_bit_p (m_relation_set, v2) && !has_equiv_p (v2)))
+    return partial_equiv (ssa1, ssa2);
+
   // Check for equivalence first.  They must be in each equivalency set.
   const_bitmap equiv1 = equiv_set (ssa1, bb);
   const_bitmap equiv2 = equiv_set (ssa2, bb);
