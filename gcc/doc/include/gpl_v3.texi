@@ -20,7 +20,7 @@ license document, but changing it is not allowed.
 @c This file is intended to be included in another file.
 
 @display
-Copyright @copyright{} 2007 Free Software Foundation, Inc. @url{https://fsf.org/}
+Copyright @copyright{} 2007 Free Software Foundation, Inc. @url{https://www.fsf.org}
 
 Everyone is permitted to copy and distribute verbatim copies of this
 license document, but changing it is not allowed.
