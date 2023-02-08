@@ -4359,6 +4359,7 @@ case "${target}" in
 					case ${arm_multilib} in
 					aprofile|rmprofile)
 						tmake_profile_file="arm/t-multilib"
+						tm_mlib_file="arm/arm-mlib.h"
 						;;
 					@*)
 						ml=`echo "X$arm_multilib" | sed '1s,^X@,,'`
@@ -4397,7 +4398,7 @@ case "${target}" in
 				# through to the multilib selector
 				with_float="soft"
 				tmake_file="${tmake_file} ${tmake_profile_file}"
-				tm_file="$tm_file arm/arm-mlib.h"
+				tm_file="$tm_file $tm_mlib_file"
 				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
 		fi
