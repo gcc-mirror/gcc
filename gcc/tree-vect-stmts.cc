@@ -2474,6 +2474,23 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       *memory_access_type = VMAT_GATHER_SCATTER;
       if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info))
 	gcc_unreachable ();
+      /* When using internal functions, we rely on pattern recognition
+	 to convert the type of the offset to the type that the target
+	 requires, with the result being a call to an internal function.
+	 If that failed for some reason (e.g. because another pattern
+	 took priority), just handle cases in which the offset already
+	 has the right type.  */
+      else if (gs_info->ifn != IFN_LAST
+	       && !is_gimple_call (stmt_info->stmt)
+	       && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
+					  TREE_TYPE (gs_info->offset_vectype)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "%s offset requires a conversion\n",
+			     vls_type == VLS_LOAD ? "gather" : "scatter");
+	  return false;
+	}
       else if (!vect_is_simple_use (gs_info->offset, vinfo,
 				    &gs_info->offset_dt,
 				    &gs_info->offset_vectype))
