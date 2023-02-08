@@ -466,6 +466,7 @@
 		     ])
 
 (define_int_iterator MVE_FP_M_BINARY   [
+		     VABDQ_M_F
 		     VADDQ_M_F
 		     VMULQ_M_F
 		     VSUBQ_M_F
@@ -490,6 +491,10 @@
 		     VSUBQ_N_F
 		     ])
 
+(define_int_iterator MVE_FP_VABDQ_ONLY [
+		     VABDQ_F
+		     ])
+
 (define_int_iterator MVE_FP_CREATE_ONLY [
 		     VCREATEQ_F
 		     ])
@@ -501,8 +506,8 @@
 		 ])
 
 (define_int_attr mve_insn [
-		 (VABDQ_M_S "vabd") (VABDQ_M_U "vabd")
-		 (VABDQ_S "vabd") (VABDQ_U "vabd")
+		 (VABDQ_M_S "vabd") (VABDQ_M_U "vabd") (VABDQ_M_F "vabd")
+		 (VABDQ_S "vabd") (VABDQ_U "vabd") (VABDQ_F "vabd")
 		 (VADDQ_M_N_S "vadd") (VADDQ_M_N_U "vadd") (VADDQ_M_N_F "vadd")
 		 (VADDQ_M_S "vadd") (VADDQ_M_U "vadd") (VADDQ_M_F "vadd")
 		 (VADDQ_N_S "vadd") (VADDQ_N_U "vadd") (VADDQ_N_F "vadd")

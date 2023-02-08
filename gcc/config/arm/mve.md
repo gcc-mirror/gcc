@@ -1451,17 +1451,17 @@
 ])
 
 ;;
-;; [vabdq_f])
+;; [vabdq_f]
 ;;
-(define_insn "mve_vabdq_f<mode>"
+(define_insn "@mve_<mve_insn>q_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VABDQ_F))
+	 MVE_FP_VABDQ_ONLY))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vabd.f%#<V_sz_elem>	%q0, %q1, %q2"
+  "<mve_insn>.f%#<V_sz_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -5483,24 +5483,9 @@
   "vpst\;vrmlsldavhaxt.s32\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
-;;
-;; [vabdq_m_f])
-;;
-(define_insn "mve_vabdq_m_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:MVE_0 3 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VABDQ_M_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vabdt.f%#<V_sz_elem>	%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
 
 ;;
+;; [vabdq_m_f]
 ;; [vaddq_m_f]
 ;; [vsubq_m_f]
 ;; [vmulq_m_f]
