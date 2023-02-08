@@ -19847,9 +19847,12 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	  index = 1;
 	  break;
 	/* DImode loads and stores assumed to cost the same as SImode.  */
-	default:
+	case 4:
+	case 8:
 	  index = 2;
 	  break;
+	default:
+	  return 100;
 	}
 
       if (in == 2)
