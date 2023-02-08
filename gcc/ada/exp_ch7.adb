@@ -3534,15 +3534,21 @@ package body Exp_Ch7 is
         and then
           (not Is_Library_Level_Entity (Spec_Id)
 
-            --  Nested packages are library level entities, but do not need to
+            --  Nested packages are library-level entities, but do not need to
             --  be processed separately.
 
             or else Scope_Depth (Spec_Id) /= Uint_1
-            or else (Is_Generic_Instance (Spec_Id)
-                      and then Package_Instantiation (Spec_Id) /= N))
 
-         --  Still need to process package body instantiations which may
-         --  contain objects requiring finalization.
+            --  Do not build two finalizers for an instance without body that
+            --  is a library unit (see Analyze_Package_Instantiation).
+
+            or else (Is_Generic_Instance (Spec_Id)
+                      and then Package_Instantiation (Spec_Id) = N))
+
+         --  Still need to process library-level package body instances, whose
+         --  instantiation was deferred and thus could not be seen during the
+         --  processing of the enclosing scope, and which may contain objects
+         --  requiring finalization.
 
         and then not
           (For_Package_Body
@@ -5376,7 +5382,9 @@ package body Exp_Ch7 is
             Defer_Abort => False,
             Fin_Id      => Fin_Id);
 
-         Set_Finalizer (Id, Fin_Id);
+         if Present (Fin_Id) then
+            Set_Finalizer (Id, Fin_Id);
+         end if;
       end if;
 
       --  If this is a library-level package and unnesting is enabled,

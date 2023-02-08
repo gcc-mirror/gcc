@@ -5007,10 +5007,12 @@ package body Sem_Ch12 is
          Set_First_Private_Entity (Defining_Unit_Name (Unit_Renaming),
            First_Private_Entity (Act_Decl_Id));
 
-         --  If the instantiation will receive a body, the unit will be
-         --  transformed into a package body, and receive its own elaboration
-         --  entity. Otherwise, the nature of the unit is now a package
-         --  declaration.
+         --  If the instantiation needs a body, the unit will be turned into
+         --  a package body and receive its own elaboration entity. Otherwise,
+         --  the nature of the unit is now a package declaration.
+
+         --  Note that the below rewriting means that Act_Decl, which has been
+         --  analyzed and expanded, will be re-expanded as the rewritten N.
 
          if Nkind (Parent (N)) = N_Compilation_Unit
            and then not Needs_Body
