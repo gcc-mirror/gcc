@@ -519,6 +519,63 @@ struct binary_round_lshift_def : public overloaded_base<0>
 };
 SHAPE (binary_round_lshift)
 
+/* <T0>_t vfoo[_t0](<T0>_t, <T0>_t)
+   <T0>_t vfoo_n[_t0](<T0>_t, const int)
+
+   i.e. the standard shape for left shift operations that operate on
+   vector types.
+
+   For the MODE_n versions, check that 'imm' is in the [0..#bits-1] range.
+
+   Example: vshlq.
+   int8x16_t [__arm_]vshlq[_s8](int8x16_t a, int8x16_t b)
+   int8x16_t [__arm_]vshlq_m[_s8](int8x16_t inactive, int8x16_t a, int8x16_t b, mve_pred16_t p)
+   int8x16_t [__arm_]vshlq_x[_s8](int8x16_t a, int8x16_t b, mve_pred16_t p)
+   int8x16_t [__arm_]vshlq_n[_s8](int8x16_t a, const int imm)
+   int8x16_t [__arm_]vshlq_m_n[_s8](int8x16_t inactive, int8x16_t a, const int imm, mve_pred16_t p)
+   int8x16_t [__arm_]vshlq_x_n[_s8](int8x16_t a, const int imm, mve_pred16_t p)  */
+struct binary_lshift_def : public overloaded_base<0>
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,vs0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,ss32", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.finish_opt_n_resolution (i, 0, type, TYPE_signed);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    if (c.mode_suffix_id != MODE_n)
+      return true;
+
+    unsigned int bits = c.type_suffix (0).element_bits;
+    return c.require_immediate_range (1, 0, bits - 1);
+  }
+};
+SHAPE (binary_lshift)
+
 /* <T0>xN_t vfoo[_t0](uint64_t, uint64_t)
 
    where there are N arguments in total.
