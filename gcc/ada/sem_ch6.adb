@@ -5245,7 +5245,7 @@ package body Sem_Ch6 is
          Set_Etype (Designator, Standard_Void_Type);
       end if;
 
-      Set_Is_Past_Self_Hiding_Point (Designator);
+      Set_Is_Not_Self_Hidden (Designator);
 
       --  Flag Is_Inlined_Always is True by default, and reversed to False for
       --  those subprograms which could be inlined in GNATprove mode (because
@@ -13427,7 +13427,7 @@ package body Sem_Ch6 is
          Mutate_Ekind (Formal_Id, E_In_Parameter);
       end if;
 
-      Set_Is_Past_Self_Hiding_Point (Formal_Id);
+      Set_Is_Not_Self_Hidden (Formal_Id);
 
       --  Set Is_Known_Non_Null for access parameters since the language
       --  guarantees that access parameters are always non-null. We also set

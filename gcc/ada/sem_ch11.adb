@@ -234,7 +234,7 @@ package body Sem_Ch11 is
 
                Enter_Name (Choice);
                Mutate_Ekind (Choice, E_Variable);
-               Set_Is_Past_Self_Hiding_Point (Choice);
+               Set_Is_Not_Self_Hidden (Choice);
 
                if RTE_Available (RE_Exception_Occurrence) then
                   Set_Etype (Choice, RTE (RE_Exception_Occurrence));

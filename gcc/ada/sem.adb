@@ -760,7 +760,7 @@ package body Sem is
 
       Debug_A_Exit ("analyzing  ", N, "  (done)");
 
-      --  Set Is_Past_Self_Hiding_Point flag. RM-8.3(16) says a declaration
+      --  Set Is_Not_Self_Hidden flag. RM-8.3(16) says a declaration
       --  is no longer hidden from all visibility after "the end of the
       --  declaration", so we set the flag here (in addition to setting it
       --  elsewhere to handle the "except..." cases of 8.3(16)). However,
@@ -777,8 +777,8 @@ package body Sem is
               and then Ekind (Scope (E)) = E_Record_Type
             then
                null; -- Set it later, in Analyze_Component_Declaration
-            elsif not Is_Past_Self_Hiding_Point (E) then
-               Set_Is_Past_Self_Hiding_Point (E);
+            elsif not Is_Not_Self_Hidden (E) then
+               Set_Is_Not_Self_Hidden (E);
             end if;
          end if;
       end;

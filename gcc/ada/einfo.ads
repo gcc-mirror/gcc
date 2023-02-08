@@ -3104,7 +3104,7 @@ package Einfo is
 --       procedure which verifies the invariants of the partial view of a
 --       private type or private extension.
 
---    Is_Past_Self_Hiding_Point
+--    Is_Not_Self_Hidden
 --       Defined in all entities. Roughly speaking, this is False if the
 --       declaration of the entity is hidden from all visibility because
 --       we are within its declaration, as defined by 8.3(16-18). When
@@ -4957,7 +4957,7 @@ package Einfo is
    --    Is_Obsolescent
    --    Is_Package_Body_Entity
    --    Is_Packed_Array_Impl_Type
-   --    Is_Past_Self_Hiding_Point
+   --    Is_Not_Self_Hidden
    --    Is_Potentially_Use_Visible
    --    Is_Preelaborated
    --    Is_Primitive_Wrapper

@@ -12205,7 +12205,7 @@ package body Sem_Prag is
                   Set_Comes_From_Source (State_Id, not Is_Null);
                   Set_Parent (State_Id, State);
                   Mutate_Ekind (State_Id, E_Abstract_State);
-                  Set_Is_Past_Self_Hiding_Point (State_Id);
+                  Set_Is_Not_Self_Hidden (State_Id);
                   Set_Etype (State_Id, Standard_Void_Type);
                   Set_Encapsulating_State (State_Id, Empty);
 

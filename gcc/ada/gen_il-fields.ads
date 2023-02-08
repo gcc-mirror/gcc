@@ -752,7 +752,7 @@ package Gen_IL.Fields is
       Is_Package_Body_Entity,
       Is_Packed,
       Is_Packed_Array_Impl_Type,
-      Is_Past_Self_Hiding_Point,
+      Is_Not_Self_Hidden,
       Is_Param_Block_Component_Type,
       Is_Partial_Invariant_Procedure,
       Is_Potentially_Use_Visible,
