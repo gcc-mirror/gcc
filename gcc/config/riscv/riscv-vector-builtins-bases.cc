@@ -296,6 +296,48 @@ public:
   }
 };
 
+/* Implements vadc.  */
+class vadc : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vvm:
+	return e.use_exact_insn (code_for_pred_adc (e.vector_mode ()));
+      case OP_TYPE_vxm:
+	return e.use_exact_insn (code_for_pred_adc_scalar (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
+/* Implements vsbc.  */
+class vsbc : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vvm:
+	return e.use_exact_insn (code_for_pred_sbc (e.vector_mode ()));
+      case OP_TYPE_vxm:
+	return e.use_exact_insn (code_for_pred_sbc_scalar (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -354,6 +396,8 @@ static CONSTEXPR const widen_binop<MULT, ZERO_EXTEND>vwmulu_obj;
 static CONSTEXPR const vwmulsu vwmulsu_obj;
 static CONSTEXPR const vwcvt<SIGN_EXTEND> vwcvt_x_obj;
 static CONSTEXPR const vwcvt<ZERO_EXTEND> vwcvtu_x_obj;
+static CONSTEXPR const vadc vadc_obj;
+static CONSTEXPR const vsbc vsbc_obj;
 static CONSTEXPR const binop<SS_PLUS> vsadd_obj;
 static CONSTEXPR const binop<SS_MINUS> vssub_obj;
 static CONSTEXPR const binop<US_PLUS> vsaddu_obj;
@@ -422,6 +466,8 @@ BASE (vwmulu)
 BASE (vwmulsu)
 BASE (vwcvt_x)
 BASE (vwcvtu_x)
+BASE (vadc)
+BASE (vsbc)
 BASE (vsadd)
 BASE (vssub)
 BASE (vsaddu)

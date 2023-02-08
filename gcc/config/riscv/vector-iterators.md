@@ -33,6 +33,9 @@
   UNSPEC_VMULHS
   UNSPEC_VMULHU
   UNSPEC_VMULHSU
+
+  UNSPEC_VADC
+  UNSPEC_VSBC
 ])
 
 (define_mode_iterator V [

@@ -306,6 +306,18 @@ static CONSTEXPR const rvv_arg_type_info vv_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_vector),
      rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (vector_type, vector_type, mask_type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info vvm_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_mask), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, scalar_type, mask_type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info vxm_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_mask), rvv_arg_type_info_end};
+
 /* A list of args for vector_type func (signed vector_type, unsigned
  * vector_type) function.  */
 static CONSTEXPR const rvv_arg_type_info su_vv_args[]
@@ -398,6 +410,10 @@ static CONSTEXPR const predication_type_index none_preds[]
 static CONSTEXPR const predication_type_index full_preds[]
   = {PRED_TYPE_none, PRED_TYPE_m,  PRED_TYPE_tu,  PRED_TYPE_tum,
      PRED_TYPE_tumu, PRED_TYPE_mu, NUM_PRED_TYPES};
+
+/* vop/vop_tu will be registered.  */
+static CONSTEXPR const predication_type_index tu_preds[]
+  = {PRED_TYPE_none, PRED_TYPE_tu, NUM_PRED_TYPES};
 
 /* vop/vop_m will be registered.  */
 static CONSTEXPR const predication_type_index none_m_preds[]
@@ -537,6 +553,22 @@ static CONSTEXPR const rvv_op_info iu_vvv_ops
      OP_TYPE_vv,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, vector_type,
+ * mask_type) function registration. */
+static CONSTEXPR const rvv_op_info iu_vvvm_ops
+  = {iu_ops,				  /* Types */
+     OP_TYPE_vvm,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vvm_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, scalar_type,
+ * mask_type) function registration. */
+static CONSTEXPR const rvv_op_info iu_vvxm_ops
+  = {iu_ops,				  /* Types */
+     OP_TYPE_vxm,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vxm_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type, vector_type)
  * function registration. */
@@ -1086,6 +1118,9 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
     unsigned_p = true;
   switch (base_type)
     {
+    case RVV_BASE_mask:
+      inner_mode = E_BImode;
+      break;
     case RVV_BASE_uint8_index:
       inner_mode = E_QImode;
       unsigned_p = true;
@@ -1148,7 +1183,8 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
       if (!vector_type)
 	continue;
 
-      if (TYPE_UNSIGNED (vector_type) != unsigned_p)
+      if (GET_MODE_CLASS (TYPE_MODE (vector_type)) != MODE_VECTOR_BOOL
+	  && TYPE_UNSIGNED (vector_type) != unsigned_p)
 	continue;
 
       if (TYPE_MODE (vector_type) == mode.require ())
@@ -1217,6 +1253,7 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
     case RVV_BASE_quad_trunc_vector:
     case RVV_BASE_oct_trunc_vector:
     case RVV_BASE_double_trunc_unsigned_vector:
+    case RVV_BASE_mask:
       if (get_base_vector_type (builtin_types[type_idx].vector)
 	  != NUM_VECTOR_TYPES)
 	return builtin_types[get_base_vector_type (
@@ -1624,10 +1661,13 @@ function_expander::use_exact_insn (insn_code icode)
   /* Record the offset to get the argument.  */
   int arg_offset = 0;
 
-  if (use_real_mask_p (pred))
-    add_input_operand (arg_offset++);
-  else
-    add_all_one_mask_operand (mask_mode);
+  if (base->use_mask_predication_p ())
+    {
+      if (use_real_mask_p (pred))
+	add_input_operand (arg_offset++);
+      else
+	add_all_one_mask_operand (mask_mode);
+    }
 
   /* Store operation doesn't have merge operand.  */
   if (!function_returns_void_p ())

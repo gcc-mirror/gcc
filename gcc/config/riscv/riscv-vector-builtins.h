@@ -140,6 +140,7 @@ enum rvv_base_type
 {
   RVV_BASE_vector,
   RVV_BASE_scalar,
+  RVV_BASE_mask,
   RVV_BASE_unsigned_vector,
   RVV_BASE_unsigned_scalar,
   RVV_BASE_vector_ptr,
@@ -384,6 +385,9 @@ public:
   /* Return true if intrinsic can be overloaded.  */
   virtual bool can_be_overloaded_p (enum predication_type_index) const;
 
+  /* Return true if intrinsics use mask predication.  */
+  virtual bool use_mask_predication_p () const;
+
   /* Expand the given call into rtl.  Return the result of the function,
      or an arbitrary value if the function doesn't return a result.  */
   virtual rtx expand (function_expander &) const = 0;
@@ -505,6 +509,14 @@ function_base::apply_tail_policy_p () const
    intrinsics has mask policy operand.  */
 inline bool
 function_base::apply_mask_policy_p () const
+{
+  return true;
+}
+
+/* We choose to return true by default since most of the intrinsics use
+   mask predication.  */
+inline bool
+function_base::use_mask_predication_p () const
 {
   return true;
 }
