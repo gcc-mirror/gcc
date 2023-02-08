@@ -197,17 +197,25 @@ MacroExpander::expand_eager_invocations (AST::MacroInvocation &invoc)
       auto start = kv.first.first;
       auto end = kv.first.second;
 
-      // TODO: Add doc
+      // We're now going to re-add the tokens to the invocation's token tree.
+      // 1. Basically, what we want to do is insert all tokens up until the
+      //    beginning of the macro invocation (start).
+      // 2. Then, we'll insert all of the tokens resulting from the macro
+      //    expansion: These are in `new_tokens`.
+      // 3. Finally, we'll do that again from
+      //    the end of macro and go back to 1.
+
       for (size_t i = current_idx; i < start; i++)
 	new_stream.emplace_back (stream[i]->clone_token ());
 
-      // TODO: Add doc
       for (auto &tok : new_tokens)
 	new_stream.emplace_back (tok->clone_token ());
 
       current_idx = end;
     }
-  // TODO: Add doc
+
+  // Once all of that is done, we copy the last remaining tokens from the
+  // original stream
   for (size_t i = current_idx; i < stream.size (); i++)
     new_stream.emplace_back (stream[i]->clone_token ());
 
