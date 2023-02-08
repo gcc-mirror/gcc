@@ -123,6 +123,7 @@ GRS_OBJS = \
     rust/rust-tyty-bounds.o \
     rust/rust-hir-type-check-util.o \
     rust/rust-hir-trait-resolve.o \
+    rust/rust-hir-trait-reference.o \
     rust/rust-hir-type-check-item.o \
     rust/rust-hir-type-check-type.o \
     rust/rust-hir-type-check-struct.o \
