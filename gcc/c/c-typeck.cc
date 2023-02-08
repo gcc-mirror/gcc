@@ -8186,23 +8186,20 @@ constexpr_init_fits_real_type (tree type, tree init)
 
 /* Check whether INIT (location LOC) is valid as a 'constexpr'
    initializer for type TYPE, and give an error if not.  INIT has
-   already been folded and verified to be constant.
-   NULL_POINTER_CONSTANT, INT_CONST_EXPR and ARITH_CONST_EXPR say
-   whether it is a null pointer constant, integer constant expression
-   or arithmetic constant expression, respectively.  If TYPE is not a
-   scalar type, this function does nothing.  */
+   already been folded and verified to be constant.  INT_CONST_EXPR
+   and ARITH_CONST_EXPR say whether it is an integer constant
+   expression or arithmetic constant expression, respectively.  If
+   TYPE is not a scalar type, this function does nothing.  */
 
 static void
 check_constexpr_init (location_t loc, tree type, tree init,
-		      bool null_pointer_constant, bool int_const_expr,
-		      bool arith_const_expr)
+		      bool int_const_expr, bool arith_const_expr)
 {
   if (POINTER_TYPE_P (type))
     {
-      /* The initializer must be a null pointer constant.  */
-      if (!null_pointer_constant)
-	error_at (loc, "%<constexpr%> pointer initializer is not a "
-		  "null pointer constant");
+      /* The initializer must be null.  */
+      if (TREE_CODE (init) != INTEGER_CST || !integer_zerop (init))
+	error_at (loc, "%<constexpr%> pointer initializer is not null");
       return;
     }
   if (INTEGRAL_TYPE_P (type))
@@ -8582,8 +8579,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		      "initializer element is not a constant expression");
       else if (require_constexpr)
 	check_constexpr_init (init_loc, type, inside_init,
-			      null_pointer_constant, int_const_expr,
-			      arith_const_expr);
+			      int_const_expr, arith_const_expr);
 
       /* Added to enable additional -Wsuggest-attribute=format warnings.  */
       if (TREE_CODE (TREE_TYPE (inside_init)) == POINTER_TYPE)
@@ -8638,8 +8634,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		      "initializer element is not a constant expression");
       else if (require_constexpr)
 	check_constexpr_init (init_loc, type, unconverted_init,
-			      null_pointer_constant, int_const_expr,
-			      arith_const_expr);
+			      int_const_expr, arith_const_expr);
 
       return inside_init;
     }
