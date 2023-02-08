@@ -34,6 +34,7 @@ extern const function_base *const vmulq;
 extern const function_base *const vorrq;
 extern const function_base *const vqaddq;
 extern const function_base *const vqdmulhq;
+extern const function_base *const vqrdmulhq;
 extern const function_base *const vqrshlq;
 extern const function_base *const vqsubq;
 extern const function_base *const vreinterpretq;
