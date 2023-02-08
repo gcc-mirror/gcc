@@ -1,3 +1,31 @@
+2023-02-07  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-01-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108582
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Add check
+	for middlebb to have no phi nodes.
+
+2023-02-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2023-01-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/108522
+	* tree-object-size.cc (compute_object_offset): Make EXPR
+	argument non-const.  Call component_ref_field_offset.
+
+2023-02-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2023-01-25  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108522
+	* tree-object-size.cc (compute_object_offset): Use
+	TREE_OPERAND(ref, 2) for COMPONENT_REF when available.
+
 2023-02-01  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

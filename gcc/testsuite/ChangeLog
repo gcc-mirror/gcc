@@ -1,3 +1,37 @@
+2023-02-07  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-01-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108582
+	* gcc.dg/pr108582-1.c: New test.
+
+2023-02-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2023-01-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/108522
+	* gcc.dg/builtin-dynamic-object-size-0.c (DEFSTRUCT): New
+	macro.
+	(test_dynarray_struct_member_b, test_dynarray_struct_member_c,
+	test_dynarray_struct_member_d,
+	test_dynarray_struct_member_subobj_b,
+	test_dynarray_struct_member_subobj_c,
+	test_dynarray_struct_member_subobj_d): New tests.
+	(main): Call them.
+
+2023-02-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2023-01-25  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108522
+	* gcc.dg/builtin-dynamic-object-size-0.c
+	(test_dynarray_struct_member): New test.
+	(main): Call it.
+
 2023-02-06  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
