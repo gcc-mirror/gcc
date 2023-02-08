@@ -579,7 +579,25 @@ vect_widened_op_tree (vec_info *vinfo, stmt_vec_info stmt_info, tree_code code,
 	  if (shift_p && i == 1)
 	    return 0;
 
-	  if (!vect_look_through_possible_promotion (vinfo, op, this_unprom))
+	  if (rhs_code != code)
+	    {
+	      /* If rhs_code is widened_code, don't look through further
+		 possible promotions, there is a promotion already embedded
+		 in the WIDEN_*_EXPR.  */
+	      if (TREE_CODE (op) != SSA_NAME
+		  || !INTEGRAL_TYPE_P (TREE_TYPE (op)))
+		return 0;
+
+	      stmt_vec_info def_stmt_info;
+	      gimple *def_stmt;
+	      vect_def_type dt;
+	      if (!vect_is_simple_use (op, vinfo, &dt, &def_stmt_info,
+				       &def_stmt))
+		return 0;
+	      this_unprom->set_op (op, dt, NULL);
+	    }
+	  else if (!vect_look_through_possible_promotion (vinfo, op,
+							  this_unprom))
 	    return 0;
 
 	  if (TYPE_PRECISION (this_unprom->type) == TYPE_PRECISION (type))
