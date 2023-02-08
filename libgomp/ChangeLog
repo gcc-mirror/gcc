@@ -1,3 +1,8 @@
+2023-02-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/reverse-offload-6.f90: Fix nvptx
+	offloading compilation.
+
 2023-02-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* target.c (gomp_target_rev): Handle mapnum == 0 and avoid

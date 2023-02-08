@@ -1,3 +1,9 @@
+2023-02-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95107
+	* trans-decl.cc (gfc_finish_var_decl): With -fno-automatic, do not
+	make ASSOCIATE variables TREE_STATIC.
+
 2023-02-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108592

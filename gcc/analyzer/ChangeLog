@@ -1,3 +1,10 @@
+2023-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108661
+	* sm-fd.cc (class kf_read): New.
+	(register_known_fd_functions): Register "read".
+	* sm-file.cc (class kf_fread): Update comment.
+
 2023-02-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108633
