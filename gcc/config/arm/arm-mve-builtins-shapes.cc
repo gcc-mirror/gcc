@@ -576,6 +576,47 @@ struct binary_lshift_def : public overloaded_base<0>
 };
 SHAPE (binary_lshift)
 
+/* Used with the above form, but only for the MODE_r case which does
+   not always support the same set of predicates as MODE_none and
+   MODE_n.  For vqshlq they are the same, but for vshlq they are not.
+
+   <T0>_t vfoo_r[_t0](<T0>_t, int32_t)
+
+   i.e. the standard shape for shift operations that operate on
+   vector types.
+   Example: vshlq.
+   int8x16_t [__arm_]vshlq_r[_s8](int8x16_t a, int32_t b)
+   int8x16_t [__arm_]vshlq_m_r[_s8](int8x16_t a, int32_t b, mve_pred16_t p)  */
+struct binary_lshift_r_def : public overloaded_base<0>
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_r, preserve_user_namespace);
+    build_all (b, "v0,v0,ss32", group, MODE_r, preserve_user_namespace, false, preds_m_or_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.finish_opt_n_resolution (i, 0, type, TYPE_signed);
+  }
+};
+SHAPE (binary_lshift_r)
+
 /* <T0>xN_t vfoo[_t0](uint64_t, uint64_t)
 
    where there are N arguments in total.
