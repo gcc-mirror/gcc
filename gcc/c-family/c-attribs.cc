@@ -4728,22 +4728,27 @@ append_access_attr (tree node[3], tree attrs, const char *attrstr,
   rdwr_map cur_idxs;
   init_attr_rdwr_indices (&cur_idxs, attrs);
 
+  tree args = TYPE_ARG_TYPES (node[0]);
+  int argpos = 0;
   std::string spec;
-  for (auto it = new_idxs.begin (); it != new_idxs.end (); ++it)
+  for (tree arg = args; arg; arg = TREE_CHAIN (arg), argpos++)
     {
-      const auto &newaxsref = *it;
+      const attr_access* const newa = new_idxs.get (argpos);
+
+      if (!newa)
+	continue;
 
       /* The map has two equal entries for each pointer argument that
 	 has an associated size argument.  Process just the entry for
 	 the former.  */
-      if ((unsigned)newaxsref.first != newaxsref.second.ptrarg)
+      if ((unsigned)argpos != newa->ptrarg)
 	continue;
 
-      const attr_access* const cura = cur_idxs.get (newaxsref.first);
+      const attr_access* const cura = cur_idxs.get (argpos);
       if (!cura)
 	{
 	  /* The new attribute needs to be added.  */
-	  tree str = newaxsref.second.to_internal_string ();
+	  tree str = newa->to_internal_string ();
 	  spec += TREE_STRING_POINTER (str);
 	  continue;
 	}
@@ -4751,7 +4756,6 @@ append_access_attr (tree node[3], tree attrs, const char *attrstr,
       /* The new access spec refers to an array/pointer argument for
 	 which an access spec already exists.  Check and diagnose any
 	 conflicts.  If no conflicts are found, merge the two.  */
-      const attr_access* const newa = &newaxsref.second;
 
       if (!attrstr)
 	{
@@ -4886,7 +4890,7 @@ append_access_attr (tree node[3], tree attrs, const char *attrstr,
 	continue;
 
       /* Merge the CURA and NEWA.  */
-      attr_access merged = newaxsref.second;
+      attr_access merged = *newa;
 
       /* VLA seen in a declaration takes precedence.  */
       if (cura->minsize == HOST_WIDE_INT_M1U)
@@ -4912,9 +4916,9 @@ append_access_attr (tree node[3], tree attrs, const char *attrstr,
 
 /* Convenience wrapper for the above.  */
 
-tree
-append_access_attr (tree node[3], tree attrs, const char *attrstr,
-		    char code, HOST_WIDE_INT idxs[2])
+static tree
+append_access_attr_idxs (tree node[3], tree attrs, const char *attrstr,
+			 char code, HOST_WIDE_INT idxs[2])
 {
   char attrspec[80];
   int n = sprintf (attrspec, "%c%u", code, (unsigned) idxs[0] - 1);
@@ -5204,7 +5208,7 @@ handle_access_attribute (tree node[3], tree name, tree args, int flags,
      attributes specified on previous declarations of the same type
      and if not, concatenate the two.  */
   const char code = attr_access::mode_chars[mode];
-  tree new_attrs = append_access_attr (node, attrs, attrstr, code, idxs);
+  tree new_attrs = append_access_attr_idxs (node, attrs, attrstr, code, idxs);
   if (!new_attrs)
     return NULL_TREE;
 
@@ -5217,7 +5221,7 @@ handle_access_attribute (tree node[3], tree name, tree args, int flags,
     {
       /* Repeat for the previously declared type.  */
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (node[1]));
-      new_attrs = append_access_attr (node, attrs, attrstr, code, idxs);
+      new_attrs = append_access_attr_idxs (node, attrs, attrstr, code, idxs);
       if (!new_attrs)
 	return NULL_TREE;
 
