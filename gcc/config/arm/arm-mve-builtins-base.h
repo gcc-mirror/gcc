@@ -34,10 +34,12 @@ extern const function_base *const vmulq;
 extern const function_base *const vorrq;
 extern const function_base *const vqaddq;
 extern const function_base *const vqdmulhq;
+extern const function_base *const vqrshlq;
 extern const function_base *const vqsubq;
 extern const function_base *const vreinterpretq;
 extern const function_base *const vrhaddq;
 extern const function_base *const vrmulhq;
+extern const function_base *const vrshlq;
 extern const function_base *const vsubq;
 extern const function_base *const vuninitializedq;
 
