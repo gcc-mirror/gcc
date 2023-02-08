@@ -146,6 +146,16 @@ namespace arm_mve {
     UNSPEC##_M_S, -1, -1,						\
     UNSPEC##_M_N_S, -1, -1))
 
+  /* Helper for builtins with only unspec codes, _m predicated
+     overrides, but no _n version.  */
+#define FUNCTION_WITHOUT_N(NAME, UNSPEC) FUNCTION			\
+  (NAME, unspec_mve_function_exact_insn,				\
+   (UNSPEC##_S, UNSPEC##_U, UNSPEC##_F,					\
+    -1, -1, -1,								\
+    UNSPEC##_M_S, UNSPEC##_M_U, UNSPEC##_M_F,				\
+    -1, -1, -1))
+
+FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
 FUNCTION_WITH_RTX_M (vandq, AND, VANDQ)
 FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)

@@ -18,6 +18,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define REQUIRES_FLOAT false
+DEF_MVE_FUNCTION (vabdq, binary, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vaddq, binary_opt_n, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vandq, binary, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vcreateq, create, all_integer_with_64, none)
@@ -41,6 +42,7 @@ DEF_MVE_FUNCTION (vuninitializedq, inherent, all_integer_with_64, none)
 #undef REQUIRES_FLOAT
 
 #define REQUIRES_FLOAT true
+DEF_MVE_FUNCTION (vabdq, binary, all_float, mx_or_none)
 DEF_MVE_FUNCTION (vaddq, binary_opt_n, all_float, mx_or_none)
 DEF_MVE_FUNCTION (vandq, binary, all_float, mx_or_none)
 DEF_MVE_FUNCTION (vcreateq, create, all_float, none)
