@@ -2138,6 +2138,9 @@ package body Exp_Ch7 is
          --  This variable is used to determine whether a nested package or
          --  instance contains at least one controlled object.
 
+         procedure Process_Package_Body (Decl : Node_Id);
+         --  Process an N_Package_Body node
+
          procedure Processing_Actions
            (Has_No_Init  : Boolean := False;
             Is_Protected : Boolean := False);
@@ -2148,6 +2151,35 @@ package body Exp_Ch7 is
          --  the current declaration may not have initialization proc(s). Flag
          --  Is_Protected should be set when the current declaration denotes a
          --  simple protected object.
+
+         --------------------------
+         -- Process_Package_Body --
+         --------------------------
+
+         procedure Process_Package_Body (Decl : Node_Id) is
+         begin
+            --  Do not inspect an ignored Ghost package body because all
+            --  code found within will not appear in the final tree.
+
+            if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
+               null;
+
+            elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package then
+               Old_Counter_Val := Counter_Val;
+               Process_Declarations (Declarations (Decl), Preprocess);
+
+               --  The nested package body is the last construct to contain
+               --  a controlled object.
+
+               if Preprocess
+                 and then Top_Level
+                 and then No (Last_Top_Level_Ctrl_Construct)
+                 and then Counter_Val > Old_Counter_Val
+               then
+                  Last_Top_Level_Ctrl_Construct := Decl;
+               end if;
+            end if;
+         end Process_Package_Body;
 
          ------------------------
          -- Processing_Actions --
@@ -2536,29 +2568,12 @@ package body Exp_Ch7 is
             --  Nested package bodies, avoid generics
 
             elsif Nkind (Decl) = N_Package_Body then
+               Process_Package_Body (Decl);
 
-               --  Do not inspect an ignored Ghost package body because all
-               --  code found within will not appear in the final tree.
-
-               if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
-                  null;
-
-               elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package
-               then
-                  Old_Counter_Val := Counter_Val;
-                  Process_Declarations (Declarations (Decl), Preprocess);
-
-                  --  The nested package body is the last construct to contain
-                  --  a controlled object.
-
-                  if Preprocess
-                    and then Top_Level
-                    and then No (Last_Top_Level_Ctrl_Construct)
-                    and then Counter_Val > Old_Counter_Val
-                  then
-                     Last_Top_Level_Ctrl_Construct := Decl;
-                  end if;
-               end if;
+            elsif Nkind (Decl) = N_Package_Body_Stub
+              and then Present (Library_Unit (Decl))
+            then
+               Process_Package_Body (Proper_Body (Unit (Library_Unit (Decl))));
 
             --  Handle a rare case caused by a controlled transient object
             --  created as part of a record init proc. The variable is wrapped
