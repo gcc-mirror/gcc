@@ -2866,28 +2866,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       ctx = &new_ctx;
     }
 
-  /* Shortcut trivial constructor/op=.  */
-  if (trivial_fn_p (fun))
-    {
-      tree init = NULL_TREE;
-      if (call_expr_nargs (t) == 2)
-	init = convert_from_reference (get_nth_callarg (t, 1));
-      else if (TREE_CODE (t) == AGGR_INIT_EXPR
-	       && AGGR_INIT_ZERO_FIRST (t))
-	init = build_zero_init (DECL_CONTEXT (fun), NULL_TREE, false);
-      if (init)
-	{
-	  tree op = get_nth_callarg (t, 0);
-	  if (is_dummy_object (op))
-	    op = ctx->object;
-	  else
-	    op = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (op)), op);
-	  tree set = build2 (MODIFY_EXPR, TREE_TYPE (op), op, init);
-	  new_ctx.call = &new_call;
-	  return cxx_eval_constant_expression (&new_ctx, set, lval,
-					       non_constant_p, overflow_p);
-	}
-    }
+  /* We used to shortcut trivial constructor/op= here, but nowadays
+     we can only get a trivial function here with -fno-elide-constructors.  */
+  gcc_checking_assert (!trivial_fn_p (fun) || !flag_elide_constructors);
 
   bool non_constant_args = false;
   new_call.bindings
