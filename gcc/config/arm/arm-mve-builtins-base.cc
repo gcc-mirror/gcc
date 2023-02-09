@@ -110,6 +110,15 @@ namespace arm_mve {
     UNSPEC##_M_S, UNSPEC##_M_U, UNSPEC##_M_F,				\
     UNSPEC##_M_N_S, UNSPEC##_M_N_U, -1))
 
+  /* Helper for builtins with RTX codes, _m predicated override, but
+     no floating-point versions.  */
+#define FUNCTION_WITH_RTX_M_NO_F(NAME, RTX_S, RTX_U, UNSPEC) FUNCTION	\
+  (NAME, unspec_based_mve_function_exact_insn,				\
+   (RTX_S, RTX_U, UNKNOWN,						\
+    -1, -1, -1,								\
+    UNSPEC##_M_S, UNSPEC##_M_U, -1,					\
+    -1, -1, -1))
+
   /* Helper for builtins without RTX codes, no _m predicated and no _n
      overrides.  */
 #define FUNCTION_WITHOUT_M_N(NAME, UNSPEC) FUNCTION			\
@@ -173,6 +182,8 @@ FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
 FUNCTION_WITH_M_N_NO_F (vhsubq, VHSUBQ)
+FUNCTION_WITH_RTX_M_NO_F (vmaxq, SMAX, UMAX, VMAXQ)
+FUNCTION_WITH_RTX_M_NO_F (vminq, SMIN, UMIN, VMINQ)
 FUNCTION_WITHOUT_N_NO_F (vmulhq, VMULHQ)
 FUNCTION_WITH_RTX_M_N (vmulq, MULT, VMULQ)
 FUNCTION_WITH_RTX_M_N_NO_N_F (vorrq, IOR, VORRQ)

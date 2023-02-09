@@ -30,6 +30,8 @@ extern const function_base *const vcreateq;
 extern const function_base *const veorq;
 extern const function_base *const vhaddq;
 extern const function_base *const vhsubq;
+extern const function_base *const vmaxq;
+extern const function_base *const vminq;
 extern const function_base *const vmulhq;
 extern const function_base *const vmulq;
 extern const function_base *const vorrq;
