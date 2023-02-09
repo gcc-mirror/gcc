@@ -3,6 +3,15 @@
 	Backported from master:
 	2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR fortran/107424
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Update dg-note.
+	* gfortran.dg/goacc/privatization-1-routine_gang-loop.f90: Likewise.
+
+2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/gomp/openmp-simd-8.f90: New test.
 
 2023-02-09  Thomas Schwinge  <thomas@codesourcery.com>
