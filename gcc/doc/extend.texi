@@ -22071,6 +22071,9 @@ else
      count = generic_countbits (n); //generic implementation.
   @}
 @end smallexample
+
+Caveat: This built-in function does not work correctly on old VIA
+processors (Centaur family).
 @end deftypefn
 
 The following built-in functions are made available by @option{-mmmx}.
