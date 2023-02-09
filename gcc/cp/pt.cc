@@ -21587,8 +21587,8 @@ tsubst_copy_and_build (tree t,
 
     case TRAIT_EXPR:
       {
-	tree type1 = tsubst (TRAIT_EXPR_TYPE1 (t), args,
-			     complain, in_decl);
+	tree type1 = tsubst_copy (TRAIT_EXPR_TYPE1 (t), args,
+				  complain, in_decl);
 	tree type2 = tsubst (TRAIT_EXPR_TYPE2 (t), args,
 			     complain, in_decl);
 	RETURN (finish_trait_expr (TRAIT_EXPR_LOCATION (t),
@@ -29989,7 +29989,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
   /* This implementation differs from the above in two significant ways:
 
      1) We include all template parameters of A, not just some.
-     2) The added constraint is same_type instead of deducible.
+     2) [fixed] The added constraint is same_type instead of deducible.
 
      I believe that while it's probably possible to construct a testcase that
      behaves differently with this simplification, it should have the same
@@ -30089,7 +30089,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	      /* FIXME this should mean they don't compare as equivalent.  */
 	      || dependent_alias_template_spec_p (atype, nt_opaque))
 	    {
-	      tree same = finish_trait_expr (loc, CPTK_IS_SAME, atype, ret);
+	      tree same = finish_trait_expr (loc, CPTK_IS_DEDUCIBLE, tmpl, ret);
 	      ci = append_constraint (ci, same);
 	    }
 
@@ -30103,12 +30103,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	{
 	  /* For a non-template deduction guide, if the arguments of A aren't
 	     deducible from the return type, don't add the candidate.  */
-	  tree targs = make_tree_vec (natparms);
-	  int err = unify (atparms, targs, utype, ret, UNIFY_ALLOW_NONE, false);
-	  for (unsigned i = 0; !err && i < natparms; ++i)
-	    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
-	      err = true;
-	  if (err)
+	  if (!type_targs_deducible_from (tmpl, ret))
 	    continue;
 	}
 
@@ -30116,6 +30111,60 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
     }
 
   return aguides;
+}
+
+/* True iff template arguments for TMPL can be deduced from TYPE.
+   Used to implement CPTK_IS_DEDUCIBLE for alias CTAD according to
+   [over.match.class.deduct].
+
+   This check is specified in terms of partial specialization, so the behavior
+   should be parallel to that of get_partial_spec_bindings.  */
+
+bool
+type_targs_deducible_from (tree tmpl, tree type)
+{
+  tree tparms = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
+  int len = TREE_VEC_LENGTH (tparms);
+  tree targs = make_tree_vec (len);
+  bool tried_array_deduction = (cxx_dialect < cxx17);
+
+  /* If tmpl is a class template, this is trivial: it's deducible if TYPE is a
+     specialization of TMPL.  */
+  if (DECL_CLASS_TEMPLATE_P (tmpl))
+    return (CLASS_TYPE_P (type)
+	    && CLASSTYPE_TEMPLATE_INFO (type)
+	    && CLASSTYPE_TI_TEMPLATE (type) == tmpl);
+
+  /* Otherwise it's an alias template.  */
+ again:
+  if (unify (tparms, targs, TREE_TYPE (tmpl), type,
+	     UNIFY_ALLOW_NONE, false))
+    return false;
+
+  /* We don't fail on an undeduced targ the second time through (like
+     get_partial_spec_bindings) because we're going to try defaults.  */
+  if (!tried_array_deduction)
+    for (int i =  0; i < len; ++i)
+      if (! TREE_VEC_ELT (targs, i))
+	{
+	  try_array_deduction (tparms, targs, TREE_TYPE (tmpl));
+	  tried_array_deduction = true;
+	  if (TREE_VEC_ELT (targs, i))
+	    goto again;
+	}
+
+  /* Maybe add in default template args.  This seems like a flaw in the
+     specification in terms of partial specialization, since it says the
+     partial specialization has the the template parameter list of A, but a
+     partial specialization can't have default targs.  */
+  targs = coerce_template_parms (tparms, targs, tmpl, tf_none);
+  if (targs == error_mark_node)
+    return false;
+
+  /* I believe we don't need the template_template_parm_bindings_ok_p call
+     because coerce_template_parms did coerce_template_template_parms.  */
+
+  return constraints_satisfied_p (tmpl, targs);
 }
 
 /* Return artificial deduction guides built from the constructors of class

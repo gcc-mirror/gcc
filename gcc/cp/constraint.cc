@@ -3797,6 +3797,9 @@ diagnose_trait_expr (tree expr, tree args)
       inform (loc, "  %qT is not a reference that binds to a temporary "
 	      "object of type %qT (copy-initialization)", t1, t2);
       break;
+    case CPTK_IS_DEDUCIBLE:
+      inform (loc, "  %qD is not deducible from %qT", t1, t2);
+      break;
 #define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
     case CPTK_##CODE:
 #include "cp-trait.def"

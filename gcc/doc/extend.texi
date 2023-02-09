@@ -25213,6 +25213,10 @@ type.  A diagnostic is produced if this requirement is not met.
 If @code{type} is a cv-qualified class type, and not a union type
 ([basic.compound]) the trait is @code{true}, else it is @code{false}.
 
+@item __is_deducible (template, type)
+If template arguments for @code{template} can be deduced from
+@code{type} or obtained from default template arguments.
+
 @item __is_empty (type)
 If @code{__is_class (type)} is @code{false} then the trait is @code{false}.
 Otherwise @code{type} is considered empty if and only if: @code{type}

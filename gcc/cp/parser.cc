@@ -10960,10 +10960,22 @@ cp_parser_trait (cp_parser* parser, enum rid keyword)
   matching_parens parens;
   parens.require_open (parser);
 
-  {
-    type_id_in_expr_sentinel s (parser);
-    type1 = cp_parser_type_id (parser);
-  }
+  if (kind == CPTK_IS_DEDUCIBLE)
+    {
+      const cp_token* token = cp_lexer_peek_token (parser->lexer);
+      type1 = cp_parser_id_expression (parser,
+				       /*template_keyword_p=*/false,
+				       /*check_dependency_p=*/true,
+				       nullptr,
+				       /*declarator_p=*/false,
+				       /*optional_p=*/false);
+      type1 = cp_parser_lookup_name_simple (parser, type1, token->location);
+    }
+  else
+    {
+      type_id_in_expr_sentinel s (parser);
+      type1 = cp_parser_type_id (parser);
+    }
 
   if (type1 == error_mark_node)
     return error_mark_node;
