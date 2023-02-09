@@ -7475,13 +7475,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   }
   (switch
    (if ((!INTEGRAL_TYPE_P (TREE_TYPE (@1))
-         || type_has_mode_precision_p (TREE_TYPE (@1)))
-        && wi::leu_p (wi::to_wide (@ipos), wi::to_wide (@rpos))
+	 || type_has_mode_precision_p (TREE_TYPE (@1)))
+	&& wi::leu_p (wi::to_wide (@ipos), wi::to_wide (@rpos))
 	&& wi::leu_p (wi::to_wide (@rpos) + wi::to_wide (@rsize),
 		      wi::to_wide (@ipos) + isize))
     (BIT_FIELD_REF @1 @rsize { wide_int_to_tree (bitsizetype,
-                                                 wi::to_wide (@rpos)
+						 wi::to_wide (@rpos)
 						 - wi::to_wide (@ipos)); }))
+   (if (wi::eq_p (wi::to_wide (@ipos), wi::to_wide (@rpos))
+        && compare_tree_int (@rsize, isize) == 0)
+    (convert @1))
    (if (wi::geu_p (wi::to_wide (@ipos),
 		   wi::to_wide (@rpos) + wi::to_wide (@rsize))
 	|| wi::geu_p (wi::to_wide (@rpos),
