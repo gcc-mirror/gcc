@@ -441,7 +441,7 @@ Session::compile_crate (const char *filename)
       "defining the following environment variable (any value will "
       "do)\n\nGCCRS_INCOMPLETE_AND_EXPERIMENTAL_COMPILER_DO_NOT_USE\n\nFor "
       "cargo-gccrs, this means passing\n\n"
-      "GCCRS_EXTRA_FLAGS=\"-frust-incomplete-and-experimental-compiler-do-not-"
+      "GCCRS_EXTRA_ARGS=\"-frust-incomplete-and-experimental-compiler-do-not-"
       "use\"\n\nas an environment variable.");
 
   RAIIFile file_wrap (filename);
