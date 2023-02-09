@@ -617,6 +617,53 @@ struct binary_lshift_r_def : public overloaded_base<0>
 };
 SHAPE (binary_lshift_r)
 
+/* <T0:half>_t vfoo[_n_t0](<T0:half>_t, <T0>_t, const int)
+
+   Narrowing right shifts.
+   Check that 'imm' is in the [1..#bits/2] range.
+
+   Example: vqrshrnbq.
+   int8x16_t [__arm_]vqrshrnbq[_n_s16](int8x16_t a, int16x8_t b, const int imm)
+   int8x16_t [__arm_]vqrshrnbq_m[_n_s16](int8x16_t a, int16x8_t b, const int imm, mve_pred16_t p)  */
+struct binary_rshift_narrow_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "vh0,vh0,v0,ss32", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| !r.require_integer_immediate (i))
+      return error_mark_node;
+
+    type_suffix_index narrow_suffix
+      = find_type_suffix (type_suffixes[type].tclass,
+			  type_suffixes[type].element_bits / 2);
+
+    if (!r.require_matching_vector_type (0, narrow_suffix))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int bits = c.type_suffix (0).element_bits;
+    return c.require_immediate_range (2, 1, bits / 2);
+  }
+};
+SHAPE (binary_rshift_narrow)
+
 /* <T0>xN_t vfoo[_t0](uint64_t, uint64_t)
 
    where there are N arguments in total.
