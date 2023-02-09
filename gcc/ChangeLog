@@ -1,3 +1,61 @@
+2023-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/include/gpl_v3.texi: Change fsf.org to www.fsf.org.
+
+2023-02-08  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/108505
+	* config.gcc (tm_mlib_file): Define new variable.
+
+2023-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108692
+	* tree-vect-patterns.cc (vect_widened_op_tree): If rhs_code is
+	widened_code which is different from code, don't call
+	vect_look_through_possible_promotion but instead just check op is
+	SSA_NAME with integral type for which vect_is_simple_use is true
+	and call set_op on this_unprom.
+
+2023-02-08  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch_ra_sign_key): Remove
+	declaration.
+	* config/aarch64/aarch64.cc (aarch_ra_sign_key): Remove
+	definition.
+	* config/aarch64/aarch64.opt (aarch64_ra_sign_key): Rename
+	to 'aarch_ra_sign_key'.
+	* config/arm/aarch-common.cc (aarch_ra_sign_key): Remove
+	declaration.
+	* config/arm/arm-protos.h (aarch_ra_sign_key): Likewise.
+	* config/arm/arm.cc (enum aarch_key_type): Remove definition.
+	* config/arm/arm.opt: Define.
+
+2023-02-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108316
+	* tree-vect-stmts.cc (get_load_store_type): When using
+	internal functions for gather/scatter, make sure that the type
+	of the offset argument is consistent with the offset vector type.
+
+2023-02-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2023-02-07  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira.h (struct ira_reg_equiv_s): Add new field caller_save_p.
+	* ira.cc (validate_equiv_mem): Check memref address variance.
+	(update_equiv_regs): Define caller save equivalence for
+	valid_combine.
+	(setup_reg_equiv): Clear defined_p flag for caller save equivalence.
+	* lra-constraints.cc (lra_copy_reg_equiv): Add new arg
+	call_save_p.  Use caller save equivalence depending on the arg.
+	(split_reg): Adjust the call.
+
+2023-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (SAD_EXPR): Remove outdated comment about missing
+	WIDEN_MINUS_EXPR.
+
 2023-02-07  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Update -fchar8_t documentation.

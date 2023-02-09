@@ -1,3 +1,10 @@
+2023-02-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.cc (check_constexpr_init): Remove argument
+	null_pointer_constant.  Only check pointer initializers for being
+	null.
+	(digest_init): Update calls to check_constexpr_init.
+
 2023-02-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-typeck.cc (build_binary_op): Allow comparisons between

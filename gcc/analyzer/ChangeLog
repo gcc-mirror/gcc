@@ -1,3 +1,10 @@
+2023-02-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108704
+	* state-purge.cc (state_purge_per_decl::process_point_backwards):
+	Don't stop processing the decl if it's fully overwritten by
+	this stmt if it's also used by this stmt.
+
 2023-02-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108661

@@ -1,3 +1,9 @@
+2023-02-08  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103259
+	* resolve.cc (resolve_common_vars): Avoid NULL pointer dereference
+	when a symbol's location is not set.
+
 2023-02-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95107

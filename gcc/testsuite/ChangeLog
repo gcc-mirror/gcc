@@ -1,3 +1,55 @@
+2023-02-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-constexpr-1.c: Test initialization of constexpr
+	pointers with null values that are not null pointer constants.
+	* gcc.dg/c2x-constexpr-3.c: Test initialization of constexpr
+	pointers with non-null values, not with null values that are not
+	null pointer constants.
+
+2023-02-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/torture/pr100398.c: Limit to lra targets.
+	* gcc.dg/pr100590.c: Ditto.
+
+2023-02-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108704
+	* gcc.dg/analyzer/uninit-7.c: New test.
+	* gcc.dg/analyzer/uninit-pr108704.c: New test.
+
+2023-02-08  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103259
+	* gfortran.dg/pr103259.f90: New test.
+
+2023-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108692
+	* gcc.dg/pr108692.c: New test.
+
+2023-02-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* objc/execute/execute.exp: Load objc-dg.exp.
+
+2023-02-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108316
+	* gcc.dg/vect/pr108316.c: New test.
+
+2023-02-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2023-02-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr103541.c: New.
+
+2023-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108525
+	* g++.dg/cpp23/static-operator-call5.C: Move PR108525 testcase
+	incorrectly applied into PR108526 testcase ...
+	* g++.dg/cpp23/static-operator-call6.C: ... here.  New test.
+
 2023-02-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108661
