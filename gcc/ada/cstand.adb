@@ -1642,8 +1642,7 @@ package body CStand is
 
       for E in Standard_Entity_Type loop
          if Ekind (Standard_Entity (E)) /= E_Operator then
-            Set_Name_Entity_Id
-              (Chars (Standard_Entity (E)), Standard_Entity (E));
+            Set_Current_Entity (Standard_Entity (E));
             Set_Homonym (Standard_Entity (E), Empty);
          end if;
 
