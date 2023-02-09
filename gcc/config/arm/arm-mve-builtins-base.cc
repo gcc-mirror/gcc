@@ -203,6 +203,15 @@ namespace arm_mve {
     UNSPEC##_M_S, -1, -1,						\
     -1, -1, -1))
 
+  /* Helper for builtins with only unspec codes, _m predicated
+     overrides, only floating-point.  */
+#define FUNCTION_ONLY_F(NAME, UNSPEC) FUNCTION				\
+  (NAME, unspec_mve_function_exact_insn,				\
+   (-1, -1, UNSPEC##_F,							\
+    -1, -1, -1,								\
+    -1, -1, UNSPEC##_M_F,						\
+    -1, -1, -1))
+
 FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION (vabsq, unspec_based_mve_function_exact_insn, (ABS, ABS, ABS, -1, -1, -1, VABSQ_M_S, -1, VABSQ_M_F, -1, -1, -1))
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
@@ -238,6 +247,12 @@ FUNCTION_WITH_M_N_NO_F (vqsubq, VQSUBQ)
 FUNCTION (vreinterpretq, vreinterpretq_impl,)
 FUNCTION_WITHOUT_N_NO_F (vrhaddq, VRHADDQ)
 FUNCTION_WITHOUT_N_NO_F (vrmulhq, VRMULHQ)
+FUNCTION_ONLY_F (vrndq, VRNDQ)
+FUNCTION_ONLY_F (vrndaq, VRNDAQ)
+FUNCTION_ONLY_F (vrndmq, VRNDMQ)
+FUNCTION_ONLY_F (vrndnq, VRNDNQ)
+FUNCTION_ONLY_F (vrndpq, VRNDPQ)
+FUNCTION_ONLY_F (vrndxq, VRNDXQ)
 FUNCTION_WITH_M_N_NO_F (vrshlq, VRSHLQ)
 FUNCTION_ONLY_N_NO_F (vrshrnbq, VRSHRNBQ)
 FUNCTION_ONLY_N_NO_F (vrshrntq, VRSHRNTQ)
