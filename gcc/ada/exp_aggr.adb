@@ -9840,6 +9840,7 @@ package body Exp_Aggr is
       Res_Decl    : Node_Id;
       Res_Id      : Entity_Id;
       Res_Typ     : Entity_Id;
+      Copy_Init_Expr : constant Node_Id := New_Copy_Tree (Init_Expr);
 
    --  Start of processing for Process_Transient_Component
 
@@ -9890,7 +9891,15 @@ package body Exp_Aggr is
           Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Res_Typ, Loc),
           Expression          =>
-            Make_Reference (Loc, New_Copy_Tree (Init_Expr)));
+            Make_Reference (Loc, Copy_Init_Expr));
+
+      --  In some cases, like iterated component, the Init_Expr may have been
+      --  analyzed in a context where all the Etype fields are not correct yet
+      --  and a later call to Analyze is expected to set them.
+      --  Resetting the Analyzed flag ensures this later call doesn't skip this
+      --  node.
+
+      Reset_Analyzed_Flags (Copy_Init_Expr);
 
       Add_Item (Res_Decl);
 
