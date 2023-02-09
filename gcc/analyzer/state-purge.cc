@@ -63,6 +63,8 @@ get_candidate_for_purging (tree node)
       default:
 	return NULL_TREE;
 
+      case ADDR_EXPR:
+      case MEM_REF:
       case COMPONENT_REF:
 	iter = TREE_OPERAND (iter, 0);
 	continue;
