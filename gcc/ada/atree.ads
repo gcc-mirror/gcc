@@ -261,8 +261,7 @@ package Atree is
    function New_Entity
      (New_Node_Kind : Node_Kind;
       New_Sloc      : Source_Ptr) return Entity_Id;
-   --  Similar to New_Node, except that it is used only for entity nodes
-   --  and returns an extended node.
+   --  Similar to New_Node, except that it is used only for entity nodes.
 
    procedure Set_Comes_From_Source_Default (Default : Boolean);
    --  Sets value of Comes_From_Source flag to be used in all subsequent
