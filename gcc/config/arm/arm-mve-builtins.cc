@@ -672,7 +672,15 @@ function_instance::has_inactive_argument () const
   if (mode_suffix_id == MODE_r
       || (base == functions::vorrq && mode_suffix_id == MODE_n)
       || (base == functions::vqrshlq && mode_suffix_id == MODE_n)
-      || (base == functions::vrshlq && mode_suffix_id == MODE_n))
+      || base == functions::vqrshrnbq
+      || base == functions::vqrshrntq
+      || base == functions::vqshrnbq
+      || base == functions::vqshrntq
+      || (base == functions::vrshlq && mode_suffix_id == MODE_n)
+      || base == functions::vrshrnbq
+      || base == functions::vrshrntq
+      || base == functions::vshrnbq
+      || base == functions::vshrntq)
     return false;
 
   return true;
