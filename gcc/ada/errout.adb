@@ -1845,11 +1845,12 @@ package body Errout is
    ----------------
 
    function First_Sloc (N : Node_Id) return Source_Ptr is
-      SI : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
-      SF : constant Source_Ptr        := Source_First (SI);
-      SL : constant Source_Ptr        := Source_Last (SI);
-      F  : Node_Id;
-      S  : Source_Ptr;
+      SI  : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
+      SF  : constant Source_Ptr        := Source_First (SI);
+      SL  : constant Source_Ptr        := Source_Last (SI);
+      Src : constant Source_Buffer_Ptr := Source_Text (SI);
+      F   : Node_Id;
+      S   : Source_Ptr;
 
    begin
       F := First_Node (N);
@@ -1876,11 +1877,11 @@ package body Errout is
             Search_Loop : for K in 1 .. 12 loop
                exit Search_Loop when S = SF;
 
-               if Source_Text (SI) (S - 1) = '(' then
+               if Src (S - 1) = '(' then
                   S := S - 1;
                   exit Search_Loop;
 
-               elsif Source_Text (SI) (S - 1) <= ' ' then
+               elsif Src (S - 1) <= ' ' then
                   S := S - 1;
 
                else
@@ -1963,11 +1964,12 @@ package body Errout is
    ---------------
 
    function Last_Sloc (N : Node_Id) return Source_Ptr is
-      SI : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
-      SF : constant Source_Ptr        := Source_First (SI);
-      SL : constant Source_Ptr        := Source_Last (SI);
-      F  : Node_Id;
-      S  : Source_Ptr;
+      SI  : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
+      SF  : constant Source_Ptr        := Source_First (SI);
+      SL  : constant Source_Ptr        := Source_Last (SI);
+      Src : constant Source_Buffer_Ptr := Source_Text (SI);
+      F   : Node_Id;
+      S   : Source_Ptr;
 
    begin
       F := Last_Node (N);
@@ -1980,7 +1982,7 @@ package body Errout is
       --  Skip past an identifier
 
       while S in SF .. SL - 1
-        and then Source_Text (SI) (S + 1)
+        and then Src (S + 1)
           in
         '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' | '.' | '_'
       loop
@@ -2000,11 +2002,11 @@ package body Errout is
             Search_Loop : for K in 1 .. 12 loop
                exit Node_Loop when S = SL;
 
-               if Source_Text (SI) (S + 1) = ')' then
+               if Src (S + 1) = ')' then
                   S := S + 1;
                   exit Search_Loop;
 
-               elsif Source_Text (SI) (S + 1) <= ' ' then
+               elsif Src (S + 1) <= ' ' then
                   S := S + 1;
 
                else
@@ -2021,7 +2023,7 @@ package body Errout is
       --  Remove any trailing space
 
       while S in SF + 1 .. SL
-        and then Source_Text (SI) (S) = ' '
+        and then Src (S) = ' '
       loop
          S := S - 1;
       end loop;
