@@ -10376,7 +10376,7 @@ lookup_and_finish_template_variable (tree templ, tree targs,
    return NULL_TREE.  */
 
 static tree
-corresponding_template_parameter (tree parms, int level, int index)
+corresponding_template_parameter_list (tree parms, int level, int index)
 {
   while (TMPL_PARMS_DEPTH (parms) > level)
     parms = TREE_CHAIN (parms);
@@ -10385,7 +10385,30 @@ corresponding_template_parameter (tree parms, int level, int index)
       || TREE_VEC_LENGTH (TREE_VALUE (parms)) <= index)
     return NULL_TREE;
 
-  tree t = TREE_VALUE (TREE_VEC_ELT (TREE_VALUE (parms), index));
+  return TREE_VEC_ELT (TREE_VALUE (parms), index);
+}
+
+/* Return the TREE_LIST for the template parameter from PARMS that positionally
+   corresponds to the template parameter PARM, or else return NULL_TREE.  */
+
+static tree
+corresponding_template_parameter_list (tree parms, tree parm)
+{
+  int level, index;
+  template_parm_level_and_index (parm, &level, &index);
+  return corresponding_template_parameter_list (parms, level, index);
+}
+
+/* As above, but pull out the actual parameter.  */
+
+static tree
+corresponding_template_parameter (tree parms, tree parm)
+{
+  tree list = corresponding_template_parameter_list (parms, parm);
+  if (!list)
+    return NULL_TREE;
+
+  tree t = TREE_VALUE (list);
   /* As in template_parm_to_arg.  */
   if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (t) == TEMPLATE_DECL)
     t = TREE_TYPE (t);
@@ -10395,18 +10418,6 @@ corresponding_template_parameter (tree parms, int level, int index)
   gcc_assert (TEMPLATE_PARM_P (t));
   return t;
 }
-
-/* Return the template parameter from PARMS that positionally corresponds
-   to the template parameter PARM, or else return NULL_TREE.  */
-
-static tree
-corresponding_template_parameter (tree parms, tree parm)
-{
-  int level, index;
-  template_parm_level_and_index (parm, &level, &index);
-  return corresponding_template_parameter (parms, level, index);
-}
-
 
 struct pair_fn_data
 {
@@ -10679,6 +10690,11 @@ struct find_template_parameter_info
   tree *parm_list_tail = &parm_list;
   tree ctx_parms;
   int max_depth;
+
+  tree find_in (tree);
+  tree find_in_recursive (tree);
+  bool found (tree);
+  unsigned num_found () { return parms.elements (); }
 };
 
 /* Appends the declaration of T to the list in DATA.  */
@@ -10821,6 +10837,52 @@ any_template_parm_r (tree t, void *data)
   return 0;
 }
 
+/* Look through T for template parameters.  */
+
+tree
+find_template_parameter_info::find_in (tree t)
+{
+  return for_each_template_parm (t, keep_template_parm, this, &visited,
+				 /*include_nondeduced*/true,
+				 any_template_parm_r);
+}
+
+/* As above, but also recursively look into the default arguments of template
+   parameters we found.  Used for alias CTAD.  */
+
+tree
+find_template_parameter_info::find_in_recursive (tree t)
+{
+  if (tree r = find_in (t))
+    return r;
+  /* Since newly found parms are added to the end of the list, we
+     can just walk it until we reach the end.  */
+  for (tree pl = parm_list; pl; pl = TREE_CHAIN (pl))
+    {
+      tree parm = TREE_VALUE (pl);
+      tree list = corresponding_template_parameter_list (ctx_parms, parm);
+      if (tree r = find_in (TREE_PURPOSE (list)))
+	return r;
+    }
+  return NULL_TREE;
+}
+
+/* True if PARM was found by a previous call to find_in.  PARM can be a
+   TREE_LIST, a DECL_TEMPLATE_PARM_P, or a TEMPLATE_PARM_P.  */
+
+bool
+find_template_parameter_info::found (tree parm)
+{
+  if (TREE_CODE (parm) == TREE_LIST)
+    parm = TREE_VALUE (parm);
+  if (TREE_CODE (parm) == TYPE_DECL)
+    parm = TREE_TYPE (parm);
+  else
+    parm = DECL_INITIAL (parm);
+  gcc_checking_assert (TEMPLATE_PARM_P (parm));
+  return parms.contains (parm);
+}
+
 /* Returns a list of unique template parameters found within T, where CTX_PARMS
    are the template parameters in scope.  */
 
@@ -10831,8 +10893,7 @@ find_template_parameters (tree t, tree ctx_parms)
     return NULL_TREE;
 
   find_template_parameter_info ftpi (ctx_parms);
-  for_each_template_parm (t, keep_template_parm, &ftpi, &ftpi.visited,
-			  /*include_nondeduced*/true, any_template_parm_r);
+  ftpi.find_in (t);
   return ftpi.parm_list;
 }
 
@@ -29986,22 +30047,11 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
      * The explicit-specifier of f' is the explicit-specifier of g (if
      any).  */
 
-  /* This implementation differs from the above in two significant ways:
-
-     1) We include all template parameters of A, not just some.
-     2) [fixed] The added constraint is same_type instead of deducible.
-
-     I believe that while it's probably possible to construct a testcase that
-     behaves differently with this simplification, it should have the same
-     effect for real uses.  Including all template parameters means that we
-     deduce all parameters of A when resolving the call, so when we're in the
-     constraint we don't need to deduce them again, we can just check whether
-     the deduction produced the desired result.  */
-
   tsubst_flags_t complain = tf_warning_or_error;
   tree atype = TREE_TYPE (tmpl);
   tree aguides = NULL_TREE;
-  tree atparms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
+  tree fullatparms = DECL_TEMPLATE_PARMS (tmpl);
+  tree atparms = INNERMOST_TEMPLATE_PARMS (fullatparms);
   unsigned natparms = TREE_VEC_LENGTH (atparms);
   tree utype = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
   for (ovl_iterator iter (uguides); iter; ++iter)
@@ -30031,16 +30081,27 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  for (unsigned i = 0; i < len; ++i)
 	    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
 	      ++ndlen;
-	  tree gtparms = make_tree_vec (natparms + ndlen);
+	  find_template_parameter_info ftpi (fullatparms);
+	  ftpi.find_in_recursive (targs);
+	  unsigned nusedatparms = ftpi.num_found ();
+	  unsigned nfparms = nusedatparms + ndlen;
+	  tree gtparms = make_tree_vec (nfparms);
 
 	  /* Set current_template_parms as in build_deduction_guide.  */
 	  auto ctp = make_temp_override (current_template_parms);
 	  current_template_parms = copy_node (DECL_TEMPLATE_PARMS (tmpl));
 	  TREE_VALUE (current_template_parms) = gtparms;
 
+	  j = 0;
 	  /* First copy over the parms of A.  */
-	  for (j = 0; j < natparms; ++j)
-	    TREE_VEC_ELT (gtparms, j) = TREE_VEC_ELT (atparms, j);
+	  for (unsigned i = 0; i < natparms; ++i)
+	    {
+	      tree elt = TREE_VEC_ELT (atparms, i);
+	      if (ftpi.found (elt))
+		TREE_VEC_ELT (gtparms, j++) = elt;
+	    }
+	  gcc_checking_assert (j == nusedatparms);
+
 	  /* Now rewrite the non-deduced parms of f.  */
 	  for (unsigned i = 0; ndlen && i < len; ++i)
 	    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
@@ -30067,6 +30128,13 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	    }
 	  if (g == error_mark_node)
 	    continue;
+	  if (nfparms == 0)
+	    {
+	      /* The targs are all non-dependent, so g isn't a template.  */
+	      fprime = g;
+	      ret = TREE_TYPE (TREE_TYPE (fprime));
+	      goto non_template;
+	    }
 	  DECL_USE_TEMPLATE (g) = 0;
 	  fprime = build_template_decl (g, gtparms, false);
 	  DECL_TEMPLATE_RESULT (fprime) = g;
@@ -30103,6 +30171,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	{
 	  /* For a non-template deduction guide, if the arguments of A aren't
 	     deducible from the return type, don't add the candidate.  */
+	non_template:
 	  if (!type_targs_deducible_from (tmpl, ret))
 	    continue;
 	}
