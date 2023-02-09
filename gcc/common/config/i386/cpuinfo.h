@@ -882,6 +882,10 @@ cpu_indicator_init (struct __processor_model *cpu_model,
   extended_model = (eax >> 12) & 0xf0;
   extended_family = (eax >> 20) & 0xff;
 
+  /* Find available features. */
+  get_available_features (cpu_model, cpu_model2, cpu_features2,
+			  ecx, edx);
+
   if (vendor == signature_INTEL_ebx)
     {
       /* Adjust model and family for Intel CPUS. */
@@ -896,9 +900,6 @@ cpu_indicator_init (struct __processor_model *cpu_model,
       cpu_model2->__cpu_family = family;
       cpu_model2->__cpu_model = model;
 
-      /* Find available features. */
-      get_available_features (cpu_model, cpu_model2, cpu_features2,
-			      ecx, edx);
       /* Get CPU type.  */
       get_intel_cpu (cpu_model, cpu_model2, cpu_features2);
       cpu_model->__cpu_vendor = VENDOR_INTEL;
@@ -915,9 +916,6 @@ cpu_indicator_init (struct __processor_model *cpu_model,
       cpu_model2->__cpu_family = family;
       cpu_model2->__cpu_model = model;
 
-      /* Find available features. */
-      get_available_features (cpu_model, cpu_model2, cpu_features2,
-			      ecx, edx);
       /* Get CPU type.  */
       get_amd_cpu (cpu_model, cpu_model2, cpu_features2);
       cpu_model->__cpu_vendor = VENDOR_AMD;
