@@ -5771,14 +5771,17 @@ choose_split_class (enum reg_class allocno_class,
   return best_cl;
 }
 
-/* Copy any equivalence information from ORIGINAL_REGNO to NEW_REGNO.
-   It only makes sense to call this function if NEW_REGNO is always
-   equal to ORIGINAL_REGNO.  */
+/* Copy any equivalence information from ORIGINAL_REGNO to NEW_REGNO.  It only
+   makes sense to call this function if NEW_REGNO is always equal to
+   ORIGINAL_REGNO.  Set up defined_p flag when caller_save_p flag is set up and
+   CALL_SAVE_P is true.  */
 
 static void
-lra_copy_reg_equiv (unsigned int new_regno, unsigned int original_regno)
+lra_copy_reg_equiv (unsigned int new_regno, unsigned int original_regno,
+		    bool call_save_p)
 {
-  if (!ira_reg_equiv[original_regno].defined_p)
+  if (!ira_reg_equiv[original_regno].defined_p
+      && !(call_save_p && ira_reg_equiv[original_regno].caller_save_p))
     return;
 
   ira_expand_reg_equiv ();
@@ -5958,7 +5961,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
      rematerializing the original value instead of spilling to the stack.  */
   if (!HARD_REGISTER_NUM_P (original_regno)
       && mode == PSEUDO_REGNO_MODE (original_regno))
-    lra_copy_reg_equiv (new_regno, original_regno);
+    lra_copy_reg_equiv (new_regno, original_regno, call_save_p);
   lra_reg_info[new_regno].restore_rtx = regno_reg_rtx[original_regno];
   bitmap_set_bit (&lra_split_regs, new_regno);
   if (to != NULL)
