@@ -289,6 +289,9 @@
 (define_code_iterator any_widen_binop [plus minus mult])
 (define_code_iterator plus_minus [plus minus])
 
+(define_code_attr macc_nmsac [(plus "macc") (minus "nmsac")])
+(define_code_attr madd_nmsub [(plus "madd") (minus "nmsub")])
+
 (define_code_attr binop_rhs1_predicate [
 			(plus "register_operand")
 			(minus "vector_arith_operand")

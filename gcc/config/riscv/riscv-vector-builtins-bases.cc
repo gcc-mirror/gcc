@@ -396,6 +396,74 @@ public:
   }
 };
 
+/* Implements vnsrl/vnsra.  */
+template<rtx_code CODE>
+class vnshift : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_wx:
+	return e.use_exact_insn (
+	  code_for_pred_narrow_scalar (CODE, e.vector_mode ()));
+      case OP_TYPE_wv:
+	return e.use_exact_insn (code_for_pred_narrow (CODE, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
+/* Implements vncvt.  */
+class vncvt_x : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_trunc (e.vector_mode ()));
+  }
+};
+
+/* Implements vmerge.  */
+class vmerge : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vvm:
+	return e.use_exact_insn (code_for_pred_merge (e.vector_mode ()));
+      case OP_TYPE_vxm:
+	return e.use_exact_insn (code_for_pred_merge_scalar (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
+/* Implements vmv.v.x/vmv.v.v.  */
+class vmv_v : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_v:
+	return e.use_exact_insn (code_for_pred_mov (e.vector_mode ()));
+      case OP_TYPE_x:
+	return e.use_exact_insn (code_for_pred_broadcast (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -458,6 +526,11 @@ static CONSTEXPR const vadc vadc_obj;
 static CONSTEXPR const vsbc vsbc_obj;
 static CONSTEXPR const vmadc vmadc_obj;
 static CONSTEXPR const vmsbc vmsbc_obj;
+static CONSTEXPR const vnshift<LSHIFTRT> vnsrl_obj;
+static CONSTEXPR const vnshift<ASHIFTRT> vnsra_obj;
+static CONSTEXPR const vncvt_x vncvt_x_obj;
+static CONSTEXPR const vmerge vmerge_obj;
+static CONSTEXPR const vmv_v vmv_v_obj;
 static CONSTEXPR const binop<SS_PLUS> vsadd_obj;
 static CONSTEXPR const binop<SS_MINUS> vssub_obj;
 static CONSTEXPR const binop<US_PLUS> vsaddu_obj;
@@ -530,6 +603,11 @@ BASE (vadc)
 BASE (vsbc)
 BASE (vmadc)
 BASE (vmsbc)
+BASE (vnsrl)
+BASE (vnsra)
+BASE (vncvt_x)
+BASE (vmerge)
+BASE (vmv_v)
 BASE (vsadd)
 BASE (vssub)
 BASE (vsaddu)

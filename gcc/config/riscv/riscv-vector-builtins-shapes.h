@@ -32,6 +32,8 @@ extern const function_shape *const alu;
 extern const function_shape *const widen_alu;
 extern const function_shape *const no_mask_policy;
 extern const function_shape *const return_mask;
+extern const function_shape *const narrow_alu;
+extern const function_shape *const move;
 }
 
 } // end namespace riscv_vector

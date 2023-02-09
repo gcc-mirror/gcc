@@ -4229,17 +4229,45 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 
   switch (letter)
     {
+      case 'o': {
+	/* Print 'OP' variant for RVV instructions.
+	   1. If the operand is VECTOR REG, we print 'v'(vnsrl.wv).
+	   2. If the operand is CONST_INT/CONST_VECTOR, we print 'i'(vnsrl.wi).
+	   3. If the operand is SCALAR REG, we print 'x'(vnsrl.wx).  */
+	if (riscv_v_ext_vector_mode_p (mode))
+	  {
+	    if (REG_P (op))
+	      asm_fprintf (file, "v");
+	    else if (CONST_VECTOR_P (op))
+	      asm_fprintf (file, "i");
+	    else
+	      output_operand_lossage ("invalid vector operand");
+	  }
+	else
+	  {
+	    if (CONST_INT_P (op))
+	      asm_fprintf (file, "i");
+	    else
+	      asm_fprintf (file, "x");
+	  }
+	break;
+      }
       case 'v': {
 	rtx elt;
 
-	if (!const_vec_duplicate_p (op, &elt))
-	  output_operand_lossage ("invalid vector constant");
-	else if (satisfies_constraint_Wc0 (op))
-	  asm_fprintf (file, "0");
-	else if (satisfies_constraint_vi (op))
-	  asm_fprintf (file, "%wd", INTVAL (elt));
+	if (REG_P (op))
+	  asm_fprintf (file, "%s", reg_names[REGNO (op)]);
 	else
-	  output_operand_lossage ("invalid vector constant");
+	  {
+	    if (!const_vec_duplicate_p (op, &elt))
+	      output_operand_lossage ("invalid vector constant");
+	    else if (satisfies_constraint_Wc0 (op))
+	      asm_fprintf (file, "0");
+	    else if (satisfies_constraint_vi (op))
+	      asm_fprintf (file, "%wd", INTVAL (elt));
+	    else
+	      output_operand_lossage ("invalid vector constant");
+	  }
 	break;
       }
       case 'V': {

@@ -288,10 +288,9 @@
        (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
 (define_predicate "vector_merge_operand"
-  (ior (match_operand 0 "memory_operand")
-       (ior (match_operand 0 "register_operand")
-	    (match_test "GET_CODE (op) == UNSPEC
-			 && (XINT (op, 1) == UNSPEC_VUNDEF)"))))
+  (ior (match_operand 0 "register_operand")
+       (match_test "GET_CODE (op) == UNSPEC
+		    && (XINT (op, 1) == UNSPEC_VUNDEF)")))
 
 (define_predicate "vector_arith_operand"
   (ior (match_operand 0 "register_operand")
