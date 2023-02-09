@@ -8437,7 +8437,18 @@ package body Checks is
               Right_Opnd => Make_Null (Loc)),
           Reason => CE_Access_Check_Failed));
 
-      Mark_Non_Null;
+      --  Mark the entity of N "non-null" except when assertions are enabled -
+      --  since expansion becomes much more complicated (especially when it
+      --  comes to contracts) due to the generation of wrappers and wholesale
+      --  moving of declarations and statements which may happen.
+
+      --  Additionally, it is assumed that extra checks will exist with
+      --  assertions enabled so some potentially redundant checks are
+      --  acceptable.
+
+      if not Assertions_Enabled then
+         Mark_Non_Null;
+      end if;
    end Install_Null_Excluding_Check;
 
    -----------------------------------------
