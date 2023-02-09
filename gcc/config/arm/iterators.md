@@ -471,8 +471,12 @@
 (define_int_iterator MVE_SHRN_N [
 		     VQRSHRNBQ_N_S VQRSHRNBQ_N_U
 		     VQRSHRNTQ_N_S VQRSHRNTQ_N_U
+		     VQRSHRUNBQ_N_S
+		     VQRSHRUNTQ_N_S
 		     VQSHRNBQ_N_S VQSHRNBQ_N_U
 		     VQSHRNTQ_N_S VQSHRNTQ_N_U
+		     VQSHRUNBQ_N_S
+		     VQSHRUNTQ_N_S
 		     VRSHRNBQ_N_S VRSHRNBQ_N_U
 		     VRSHRNTQ_N_S VRSHRNTQ_N_U
 		     VSHRNBQ_N_S VSHRNBQ_N_U
@@ -482,8 +486,12 @@
 (define_int_iterator MVE_SHRN_M_N [
 		     VQRSHRNBQ_M_N_S VQRSHRNBQ_M_N_U
 		     VQRSHRNTQ_M_N_S VQRSHRNTQ_M_N_U
+		     VQRSHRUNBQ_M_N_S
+		     VQRSHRUNTQ_M_N_S
 		     VQSHRNBQ_M_N_S VQSHRNBQ_M_N_U
 		     VQSHRNTQ_M_N_S VQSHRNTQ_M_N_U
+		     VQSHRUNBQ_M_N_S
+		     VQSHRUNTQ_M_N_S
 		     VRSHRNBQ_M_N_S VRSHRNBQ_M_N_U
 		     VRSHRNTQ_M_N_S VRSHRNTQ_M_N_U
 		     VSHRNBQ_M_N_S VSHRNBQ_M_N_U
@@ -594,6 +602,10 @@
 		 (VQRSHRNBQ_N_S "vqrshrnb") (VQRSHRNBQ_N_U "vqrshrnb")
 		 (VQRSHRNTQ_M_N_S "vqrshrnt") (VQRSHRNTQ_M_N_U "vqrshrnt")
 		 (VQRSHRNTQ_N_S "vqrshrnt") (VQRSHRNTQ_N_U "vqrshrnt")
+		 (VQRSHRUNBQ_M_N_S "vqrshrunb")
+		 (VQRSHRUNBQ_N_S "vqrshrunb")
+		 (VQRSHRUNTQ_M_N_S "vqrshrunt")
+		 (VQRSHRUNTQ_N_S "vqrshrunt")
 		 (VQSHLQ_M_N_S "vqshl") (VQSHLQ_M_N_U "vqshl")
 		 (VQSHLQ_M_R_S "vqshl") (VQSHLQ_M_R_U "vqshl")
 		 (VQSHLQ_M_S "vqshl") (VQSHLQ_M_U "vqshl")
@@ -604,6 +616,10 @@
 		 (VQSHRNBQ_N_S "vqshrnb") (VQSHRNBQ_N_U "vqshrnb")
 		 (VQSHRNTQ_M_N_S "vqshrnt") (VQSHRNTQ_M_N_U "vqshrnt")
 		 (VQSHRNTQ_N_S "vqshrnt") (VQSHRNTQ_N_U "vqshrnt")
+		 (VQSHRUNBQ_M_N_S "vqshrunb")
+		 (VQSHRUNBQ_N_S "vqshrunb")
+		 (VQSHRUNTQ_M_N_S "vqshrunt")
+		 (VQSHRUNTQ_N_S "vqshrunt")
 		 (VQSUBQ_M_N_S "vqsub") (VQSUBQ_M_N_U "vqsub")
 		 (VQSUBQ_M_S "vqsub") (VQSUBQ_M_U "vqsub")
 		 (VQSUBQ_N_S "vqsub") (VQSUBQ_N_U "vqsub")
@@ -640,10 +656,18 @@
 		 (VQRSHRNBQ_N_S "s") (VQRSHRNBQ_N_U "u")
 		 (VQRSHRNTQ_M_N_S "s") (VQRSHRNTQ_M_N_U "u")
 		 (VQRSHRNTQ_N_S "s") (VQRSHRNTQ_N_U "u")
+		 (VQRSHRUNBQ_M_N_S "s")
+		 (VQRSHRUNBQ_N_S "s")
+		 (VQRSHRUNTQ_M_N_S "s")
+		 (VQRSHRUNTQ_N_S "s")
 		 (VQSHRNBQ_M_N_S "s") (VQSHRNBQ_M_N_U "u")
 		 (VQSHRNBQ_N_S "s") (VQSHRNBQ_N_U "u")
 		 (VQSHRNTQ_M_N_S "s") (VQSHRNTQ_M_N_U "u")
 		 (VQSHRNTQ_N_S "s") (VQSHRNTQ_N_U "u")
+		 (VQSHRUNBQ_M_N_S "s")
+		 (VQSHRUNBQ_N_S "s")
+		 (VQSHRUNTQ_M_N_S "s")
+		 (VQSHRUNTQ_N_S "s")
 		 (VRSHRNBQ_M_N_S "i") (VRSHRNBQ_M_N_U "i")
 		 (VRSHRNBQ_N_S "i") (VRSHRNBQ_N_U "i")
 		 (VRSHRNTQ_M_N_S "i") (VRSHRNTQ_M_N_U "i")
@@ -1816,6 +1840,14 @@
 		       (VQRDMULHQ_M_N_S "s")
 		       (VQDMULHQ_S "s")
 		       (VQRDMULHQ_S "s")
+		       (VQRSHRUNBQ_M_N_S "s")
+		       (VQRSHRUNBQ_N_S "s")
+		       (VQRSHRUNTQ_M_N_S "s")
+		       (VQRSHRUNTQ_N_S "s")
+		       (VQSHRUNBQ_M_N_S "s")
+		       (VQSHRUNBQ_N_S "s")
+		       (VQSHRUNTQ_M_N_S "s")
+		       (VQSHRUNTQ_N_S "s")
 		       ])
 
 ;; Both kinds of return insn.
