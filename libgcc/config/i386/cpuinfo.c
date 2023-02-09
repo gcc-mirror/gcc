@@ -474,6 +474,9 @@ __cpu_indicator_init (void)
   extended_model = (eax >> 12) & 0xf0;
   extended_family = (eax >> 20) & 0xff;
 
+  /* Find available features. */
+  get_available_features (ecx, edx, max_level);
+
   if (vendor == signature_INTEL_ebx)
     {
       /* Adjust model and family for Intel CPUS. */
@@ -487,8 +490,6 @@ __cpu_indicator_init (void)
 
       /* Get CPU type.  */
       get_intel_cpu (family, model, brand_id);
-      /* Find available features. */
-      get_available_features (ecx, edx, max_level);
       __cpu_model.__cpu_vendor = VENDOR_INTEL;
     }
   else if (vendor == signature_AMD_ebx)
@@ -502,8 +503,6 @@ __cpu_indicator_init (void)
 
       /* Get CPU type.  */
       get_amd_cpu (family, model);
-      /* Find available features. */
-      get_available_features (ecx, edx, max_level);
       __cpu_model.__cpu_vendor = VENDOR_AMD;
     }
   else
