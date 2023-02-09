@@ -24,8 +24,11 @@ namespace arm_mve {
 namespace functions {
 
 extern const function_base *const vabdq;
+extern const function_base *const vabsq;
 extern const function_base *const vaddq;
 extern const function_base *const vandq;
+extern const function_base *const vclsq;
+extern const function_base *const vclzq;
 extern const function_base *const vcreateq;
 extern const function_base *const veorq;
 extern const function_base *const vhaddq;
@@ -34,9 +37,12 @@ extern const function_base *const vmaxq;
 extern const function_base *const vminq;
 extern const function_base *const vmulhq;
 extern const function_base *const vmulq;
+extern const function_base *const vnegq;
 extern const function_base *const vorrq;
+extern const function_base *const vqabsq;
 extern const function_base *const vqaddq;
 extern const function_base *const vqdmulhq;
+extern const function_base *const vqnegq;
 extern const function_base *const vqrdmulhq;
 extern const function_base *const vqrshlq;
 extern const function_base *const vqrshrnbq;
