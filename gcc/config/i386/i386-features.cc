@@ -314,14 +314,12 @@ scalar_chain::~scalar_chain ()
 void
 scalar_chain::add_to_queue (unsigned insn_uid)
 {
-  if (bitmap_bit_p (insns, insn_uid)
-      || bitmap_bit_p (queue, insn_uid))
+  if (!bitmap_set_bit (queue, insn_uid))
     return;
 
   if (dump_file)
     fprintf (dump_file, "  Adding insn %d into chain's #%d queue\n",
 	     insn_uid, chain_id);
-  bitmap_set_bit (queue, insn_uid);
 }
 
 /* For DImode conversion, mark register defined by DEF as requiring
@@ -362,10 +360,9 @@ void
 scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref)
 {
   df_link *chain;
+  bool mark_def = false;
 
-  gcc_assert (bitmap_bit_p (insns, DF_REF_INSN_UID (ref))
-	      || bitmap_bit_p (candidates, DF_REF_INSN_UID (ref)));
-  add_to_queue (DF_REF_INSN_UID (ref));
+  gcc_checking_assert (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)));
 
   for (chain = DF_REF_CHAIN (ref); chain; chain = chain->next)
     {
@@ -398,9 +395,12 @@ scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref)
 	  if (dump_file)
 	    fprintf (dump_file, "  r%d use in insn %d isn't convertible\n",
 		     DF_REF_REGNO (chain->ref), uid);
-	  mark_dual_mode_def (ref);
+	  mark_def = true;
 	}
     }
+
+  if (mark_def)
+    mark_dual_mode_def (ref);
 }
 
 /* Add instruction into a chain.  */
@@ -408,13 +408,11 @@ scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref)
 void
 scalar_chain::add_insn (bitmap candidates, unsigned int insn_uid)
 {
-  if (bitmap_bit_p (insns, insn_uid))
+  if (!bitmap_set_bit (insns, insn_uid))
     return;
 
   if (dump_file)
     fprintf (dump_file, "  Adding insn %d to chain #%d\n", insn_uid, chain_id);
-
-  bitmap_set_bit (insns, insn_uid);
 
   rtx_insn *insn = DF_INSN_UID_GET (insn_uid)->insn;
   rtx def_set = single_set (insn);
