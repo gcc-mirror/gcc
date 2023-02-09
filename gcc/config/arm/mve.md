@@ -728,18 +728,19 @@
    (set_attr "length""8")])
 
 ;;
-;; [vshrq_n_s, vshrq_n_u])
+;; [vrshrq_n_s, vrshrq_n_u]
+;; [vshrq_n_s, vshrq_n_u]
 ;;
 ;; Version that takes an immediate as operand 2.
-(define_insn "mve_vshrq_n_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_n_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:SI 2 "<MVE_pred2>" "<MVE_constraint2>")]
-	 VSHRQ_N))
+	 MVE_VSHRQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vshr.<supf><V_sz_elem>\t%q0, %q1, %2"
+  "<mve_insn>.<supf><V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1398,21 +1399,6 @@
   ]
   "TARGET_HAVE_MVE"
   "vqshlu.s%#<V_sz_elem>\t%q0, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vrshrq_n_s, vrshrq_n_u])
-;;
-(define_insn "mve_vrshrq_n_<supf><mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:SI 2 "<MVE_pred2>" "<MVE_constraint2>")]
-	 VRSHRQ_N))
-  ]
-  "TARGET_HAVE_MVE"
-  "vrshr.<supf>%#<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -4661,35 +4647,19 @@
 
 ;;
 ;; [vrshrq_m_n_s, vrshrq_m_n_u])
-;;
-(define_insn "mve_vrshrq_m_n_<supf><mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:SI 3 "<MVE_pred2>" "<MVE_constraint2>")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VRSHRQ_M_N))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vrshrt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
 ;; [vshrq_m_n_s, vshrq_m_n_u])
 ;;
-(define_insn "mve_vshrq_m_n_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_n_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
 		       (match_operand:SI 3 "<MVE_pred2>" "<MVE_constraint2>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VSHRQ_M_N))
+	 MVE_VSHRQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vshrt.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+  "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 

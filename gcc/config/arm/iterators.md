@@ -408,6 +408,16 @@
 		     VSUBQ_N_S VSUBQ_N_U
 		     ])
 
+(define_int_iterator MVE_VSHRQ_M_N [
+		     VRSHRQ_M_N_S VRSHRQ_M_N_U
+		     VSHRQ_M_N_S VSHRQ_M_N_U
+		     ])
+
+(define_int_iterator MVE_VSHRQ_N [
+		     VRSHRQ_N_S VRSHRQ_N_U
+		     VSHRQ_N_S VSHRQ_N_U
+		     ])
+
 (define_int_iterator MVE_INT_SU_N_BINARY   [
 		     VHADDQ_N_S VHADDQ_N_U
 		     VHSUBQ_N_S VHSUBQ_N_U
@@ -636,6 +646,8 @@
 		 (VRSHRNBQ_N_S "vrshrnb") (VRSHRNBQ_N_U "vrshrnb")
 		 (VRSHRNTQ_M_N_S "vrshrnt") (VRSHRNTQ_M_N_U "vrshrnt")
 		 (VRSHRNTQ_N_S "vrshrnt") (VRSHRNTQ_N_U "vrshrnt")
+		 (VRSHRQ_M_N_S "vrshr") (VRSHRQ_M_N_U "vrshr")
+		 (VRSHRQ_N_S "vrshr") (VRSHRQ_N_U "vrshr")
 		 (VSHLQ_M_N_S "vshl") (VSHLQ_M_N_U "vshl")
 		 (VSHLQ_M_R_S "vshl") (VSHLQ_M_R_U "vshl")
 		 (VSHLQ_M_S "vshl") (VSHLQ_M_U "vshl")
@@ -646,6 +658,8 @@
 		 (VSHRNBQ_N_S "vshrnb") (VSHRNBQ_N_U "vshrnb")
 		 (VSHRNTQ_M_N_S "vshrnt") (VSHRNTQ_M_N_U "vshrnt")
 		 (VSHRNTQ_N_S "vshrnt") (VSHRNTQ_N_U "vshrnt")
+		 (VSHRQ_M_N_S "vshr") (VSHRQ_M_N_U "vshr")
+		 (VSHRQ_N_S "vshr") (VSHRQ_N_U "vshr")
 		 (VSUBQ_M_N_S "vsub") (VSUBQ_M_N_U "vsub") (VSUBQ_M_N_F "vsub")
 		 (VSUBQ_M_S "vsub") (VSUBQ_M_U "vsub") (VSUBQ_M_F "vsub")
 		 (VSUBQ_N_S "vsub") (VSUBQ_N_U "vsub") (VSUBQ_N_F "vsub")
