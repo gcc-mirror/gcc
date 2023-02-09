@@ -1466,7 +1466,7 @@ package body Ch3 is
          Save_Scan_State (Scan_State); -- at colon
          T_Colon;
 
-      --  If we have identifier followed by := then we assume that what is
+      --  If we have an identifier followed by := then we assume that what is
       --  really meant is an assignment statement. The assignment statement
       --  is scanned out and added to the list of declarations. An exception
       --  occurs if the := is followed by the keyword constant, in which case
