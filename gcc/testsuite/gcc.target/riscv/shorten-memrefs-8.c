@@ -23,6 +23,6 @@ load (char *p)
   return a;
 }
 
-/* { dg-final { scan-assembler "store:\n\taddi\ta\[0-7\],a\[0-7\],1" } } */
-/* { dg-final { scan-assembler "load:\n\taddi\ta\[0-7\],a\[0-7\],1" } } */
+/* { dg-final { scan-assembler "store:\n(\t?\\.\[^\n\]*\n)*\taddi\ta\[0-7\],a\[0-7\],1" } } */
+/* { dg-final { scan-assembler "load:\n(\t?\\.\[^\n\]*\n)*\taddi\ta\[0-7\],a\[0-7\],1" } } */
 
