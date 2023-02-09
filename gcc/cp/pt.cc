@@ -30072,7 +30072,9 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  tree targs = make_tree_vec (len);
 	  int err = unify (ftparms, targs, ret, utype, UNIFY_ALLOW_NONE, false);
 	  if (err)
-	    continue;
+	    /* CWG2664: Discard any deductions, still build the guide.  */
+	    for (unsigned i = 0; i < len; ++i)
+	      TREE_VEC_ELT (targs, i) = NULL_TREE;
 
 	  /* The number of parms for f' is the number of parms for A plus
 	     non-deduced parms of f.  */
