@@ -7866,6 +7866,11 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 		  else if (ctx->defaultmap[gdmk]
 			   & (GOVD_MAP_0LEN_ARRAY | GOVD_FIRSTPRIVATE))
 		    nflags |= ctx->defaultmap[gdmk];
+		  else if (ctx->defaultmap[gdmk] & GOVD_MAP_FORCE_PRESENT)
+		    {
+		      gcc_assert (ctx->defaultmap[gdmk] & GOVD_MAP);
+		      nflags |= ctx->defaultmap[gdmk] | GOVD_MAP_ALLOC_ONLY;
+		    }
 		  else
 		    {
 		      gcc_assert (ctx->defaultmap[gdmk] & GOVD_MAP);
@@ -9015,6 +9020,7 @@ omp_target_reorder_clauses (tree *list_p)
   while (*cp != NULL_TREE)
     if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_MAP
 	&& (OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_ALLOC
+	    || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_PRESENT_ALLOC
 	    || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_RELEASE
 	    || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_DELETE))
       {
@@ -9065,7 +9071,13 @@ omp_target_reorder_clauses (tree *list_p)
 	    || k == GOMP_MAP_TOFROM
 	    || k == GOMP_MAP_ALWAYS_TO
 	    || k == GOMP_MAP_ALWAYS_FROM
-	    || k == GOMP_MAP_ALWAYS_TOFROM)
+	    || k == GOMP_MAP_ALWAYS_TOFROM
+	    || k == GOMP_MAP_PRESENT_TO
+	    || k == GOMP_MAP_PRESENT_FROM
+	    || k == GOMP_MAP_PRESENT_TOFROM
+	    || k == GOMP_MAP_ALWAYS_PRESENT_TO
+	    || k == GOMP_MAP_ALWAYS_PRESENT_FROM
+	    || k == GOMP_MAP_ALWAYS_PRESENT_TOFROM)
 	  atf.safe_push (cp);
       }
 
@@ -9126,6 +9138,12 @@ omp_target_reorder_clauses (tree *list_p)
 	    || k == GOMP_MAP_ALWAYS_TO
 	    || k == GOMP_MAP_ALWAYS_FROM
 	    || k == GOMP_MAP_ALWAYS_TOFROM
+	    || k == GOMP_MAP_PRESENT_TO
+	    || k == GOMP_MAP_PRESENT_FROM
+	    || k == GOMP_MAP_PRESENT_TOFROM
+	    || k == GOMP_MAP_ALWAYS_PRESENT_TO
+	    || k == GOMP_MAP_ALWAYS_PRESENT_FROM
+	    || k == GOMP_MAP_ALWAYS_PRESENT_TOFROM
 	    || k == GOMP_MAP_ATTACH_DETACH
 	    || k == GOMP_MAP_ALWAYS_POINTER)
 	  atf.safe_push (cp);
@@ -9180,6 +9198,52 @@ omp_target_reorder_clauses (tree *list_p)
 		}
 	    }
       }
+
+  /* OpenMP map clauses with 'present' need to go in front of those without.  */
+  tree present_map_head = NULL;
+  tree *present_map_tail_p = &present_map_head;
+  tree *first_map_clause_p = NULL;
+
+  for (tree *c_p = list_p; *c_p; )
+    {
+      tree c = *c_p;
+      tree *next_c_p = &OMP_CLAUSE_CHAIN (c);
+
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
+	{
+	  if (!first_map_clause_p)
+	    first_map_clause_p = c_p;
+	  switch (OMP_CLAUSE_MAP_KIND (c))
+	    {
+	    case GOMP_MAP_PRESENT_ALLOC:
+	    case GOMP_MAP_PRESENT_FROM:
+	    case GOMP_MAP_PRESENT_TO:
+	    case GOMP_MAP_PRESENT_TOFROM:
+	    case GOMP_MAP_ALWAYS_PRESENT_FROM:
+	    case GOMP_MAP_ALWAYS_PRESENT_TO:
+	    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+	      next_c_p = c_p;
+	      *c_p = OMP_CLAUSE_CHAIN (c);
+
+	      OMP_CLAUSE_CHAIN (c) = NULL;
+	      *present_map_tail_p = c;
+	      present_map_tail_p = &OMP_CLAUSE_CHAIN (c);
+
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+
+      c_p = next_c_p;
+    }
+  if (first_map_clause_p && present_map_head)
+    {
+      tree next = *first_map_clause_p;
+      *first_map_clause_p = present_map_head;
+      *present_map_tail_p = next;
+    }
 }
 
 /* DECL is supposed to have lastprivate semantics in the outer contexts
@@ -11354,6 +11418,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      case OMP_CLAUSE_DEFAULTMAP_NONE:
 		ctx->defaultmap[gdmk] = 0;
 		break;
+	      case OMP_CLAUSE_DEFAULTMAP_PRESENT:
+		ctx->defaultmap[gdmk] = GOVD_MAP | GOVD_MAP_FORCE_PRESENT;
+		break;
 	      case OMP_CLAUSE_DEFAULTMAP_DEFAULT:
 		switch (gdmk)
 		  {
@@ -11967,6 +12034,9 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  break;
 	case GOVD_DEVICEPTR:
 	  kind = GOMP_MAP_FORCE_DEVICEPTR;
+	  break;
+	case GOVD_MAP_FORCE_PRESENT | GOVD_MAP_ALLOC_ONLY:
+	  kind = GOMP_MAP_PRESENT_ALLOC;
 	  break;
 	default:
 	  gcc_unreachable ();
