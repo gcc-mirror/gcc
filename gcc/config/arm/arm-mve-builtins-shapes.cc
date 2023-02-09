@@ -365,6 +365,42 @@ struct binary_def : public overloaded_base<0>
 };
 SHAPE (binary)
 
+/* <T0>_t vfoo[_n_t0](<T0>_t, const int)
+
+   Shape for vector shift right operations that take a vector first
+   argument and an integer, and produce a vector.
+
+   Check that 'imm' is in the [1..#bits] range.
+
+   Example: vrshrq.
+   int8x16_t [__arm_]vrshrq[_n_s8](int8x16_t a, const int imm)
+   int8x16_t [__arm_]vrshrq_m[_n_s8](int8x16_t inactive, int8x16_t a, const int imm, mve_pred16_t p)
+   int8x16_t [__arm_]vrshrq_x[_n_s8](int8x16_t a, const int imm, mve_pred16_t p)  */
+struct binary_rshift_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,ss32", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (1, 1);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int bits = c.type_suffix (0).element_bits;
+    return c.require_immediate_range (1, 1, bits);
+  }
+};
+SHAPE (binary_rshift)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t)
    <T0>_t vfoo[_n_t0](<T0>_t, <S0>_t)
 
