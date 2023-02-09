@@ -5724,7 +5724,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       isize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (@1)));
   }
   (switch
-   (if (wi::leu_p (wi::to_wide (@ipos), wi::to_wide (@rpos))
+   (if ((!INTEGRAL_TYPE_P (TREE_TYPE (@1))
+         || type_has_mode_precision_p (TREE_TYPE (@1)))
+        && wi::leu_p (wi::to_wide (@ipos), wi::to_wide (@rpos))
 	&& wi::leu_p (wi::to_wide (@rpos) + wi::to_wide (@rsize),
 		      wi::to_wide (@ipos) + isize))
     (BIT_FIELD_REF @1 @rsize { wide_int_to_tree (bitsizetype,
