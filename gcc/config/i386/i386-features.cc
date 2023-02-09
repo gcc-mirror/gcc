@@ -2283,30 +2283,33 @@ convert_scalars_to_vector (bool timode_p)
       fprintf (dump_file, "There are no candidates for optimization.\n");
 
   for (unsigned i = 0; i <= 2; ++i)
-    while (!bitmap_empty_p (&candidates[i]))
-      {
-	unsigned uid = bitmap_first_set_bit (&candidates[i]);
-	scalar_chain *chain;
+    {
+      bitmap_tree_view (&candidates[i]);
+      while (!bitmap_empty_p (&candidates[i]))
+	{
+	  unsigned uid = bitmap_first_set_bit (&candidates[i]);
+	  scalar_chain *chain;
 
-	if (cand_mode[i] == TImode)
-	  chain = new timode_scalar_chain;
-	else
-	  chain = new general_scalar_chain (cand_mode[i], cand_vmode[i]);
+	  if (cand_mode[i] == TImode)
+	    chain = new timode_scalar_chain;
+	  else
+	    chain = new general_scalar_chain (cand_mode[i], cand_vmode[i]);
 
-	/* Find instructions chain we want to convert to vector mode.
-	   Check all uses and definitions to estimate all required
-	   conversions.  */
-	chain->build (&candidates[i], uid);
+	  /* Find instructions chain we want to convert to vector mode.
+	     Check all uses and definitions to estimate all required
+	     conversions.  */
+	  chain->build (&candidates[i], uid);
 
-	if (chain->compute_convert_gain () > 0)
-	  converted_insns += chain->convert ();
-	else
-	  if (dump_file)
-	    fprintf (dump_file, "Chain #%d conversion is not profitable\n",
-		     chain->chain_id);
+	  if (chain->compute_convert_gain () > 0)
+	    converted_insns += chain->convert ();
+	  else
+	    if (dump_file)
+	      fprintf (dump_file, "Chain #%d conversion is not profitable\n",
+		       chain->chain_id);
 
-	delete chain;
-      }
+	  delete chain;
+	}
+    }
 
   if (dump_file)
     fprintf (dump_file, "Total insns converted: %d\n", converted_insns);
