@@ -3107,6 +3107,10 @@ write_expression (tree expr)
   else if (TREE_CODE_CLASS (code) == tcc_constant
 	   || code == CONST_DECL)
     write_template_arg_literal (expr);
+  else if (code == EXCESS_PRECISION_EXPR
+	   && TREE_CODE (TREE_OPERAND (expr, 0)) == REAL_CST)
+    write_template_arg_literal (fold_convert (TREE_TYPE (expr),
+					      TREE_OPERAND (expr, 0)));
   else if (code == PARM_DECL && DECL_ARTIFICIAL (expr))
     {
       gcc_assert (id_equal (DECL_NAME (expr), "this"));
@@ -3815,6 +3819,10 @@ write_template_arg (tree node)
 	   || code == CONST_DECL
 	   || null_member_pointer_value_p (node))
     write_template_arg_literal (node);
+  else if (code == EXCESS_PRECISION_EXPR
+	   && TREE_CODE (TREE_OPERAND (node, 0)) == REAL_CST)
+    write_template_arg_literal (fold_convert (TREE_TYPE (node),
+					      TREE_OPERAND (node, 0)));
   else if (DECL_P (node))
     {
       write_char ('L');
