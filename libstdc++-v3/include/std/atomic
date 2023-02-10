@@ -388,7 +388,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
 
-#if __cpp_lib_atomic_wait 
+#if __cpp_lib_atomic_wait
     void
     wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
     {
@@ -405,7 +405,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     notify_all() noexcept
     { std::__atomic_notify_address(&_M_i, true); }
-#endif // __cpp_lib_atomic_wait 
+#endif // __cpp_lib_atomic_wait
 
     };
 #undef _GLIBCXX20_INIT
@@ -1261,6 +1261,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   atomic_flag_clear(volatile atomic_flag* __a) noexcept
   { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
 
+#if __cpp_lib_atomic_wait
+  inline void
+  atomic_flag_wait(atomic_flag* __a, bool __old) noexcept
+  { __a->wait(__old); }
+
+  inline void
+  atomic_flag_wait_explicit(atomic_flag* __a, bool __old,
+                                memory_order __m) noexcept
+  { __a->wait(__old, __m); }
+
+  inline void
+  atomic_flag_notify_one(atomic_flag* __a) noexcept
+  { __a->notify_one(); }
+
+  inline void
+  atomic_flag_notify_all(atomic_flag* __a) noexcept
+  { __a->notify_all(); }
+#endif // __cpp_lib_atomic_wait
+
+  /// @cond undocumented
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 3220. P0558 broke conforming C++14 uses of atomic shared_ptr
   template<typename _Tp>
