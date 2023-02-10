@@ -122,7 +122,7 @@ TypeCheckCallExpr::visit (FnType &type)
 	  return;
 	}
 
-      // it might be a varadic function
+      // it might be a variadic function
       if (i < type.num_params ())
 	{
 	  auto fnparam = type.param_at (i);
@@ -141,6 +141,60 @@ TypeCheckCallExpr::visit (FnType &type)
 	  if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	    {
 	      return;
+	    }
+	}
+      else
+	{
+	  switch (argument_expr_tyty->get_kind ())
+	    {
+	    case TyTy::TypeKind::ERROR:
+	      return;
+	      case TyTy::TypeKind::INT: {
+		auto &int_ty
+		  = static_cast<TyTy::IntType &> (*argument_expr_tyty);
+		if ((int_ty.get_int_kind () == TyTy::IntType::IntKind::I8)
+		    || (int_ty.get_int_kind () == TyTy::IntType::IntKind::I16))
+		  {
+		    rust_error_at (arg_locus,
+				   "expected %<c_int%> variadic argument");
+		    return;
+		  }
+		break;
+	      }
+	      case TyTy::TypeKind::UINT: {
+		auto &uint_ty
+		  = static_cast<TyTy::UintType &> (*argument_expr_tyty);
+		if ((uint_ty.get_uint_kind () == TyTy::UintType::UintKind::U8)
+		    || (uint_ty.get_uint_kind ()
+			== TyTy::UintType::UintKind::U16))
+		  {
+		    rust_error_at (arg_locus,
+				   "expected %<c_uint%> variadic argument");
+		    return;
+		  }
+		break;
+	      }
+	      case TyTy::TypeKind::FLOAT: {
+		if (static_cast<TyTy::FloatType &> (*argument_expr_tyty)
+		      .get_float_kind ()
+		    == TyTy::FloatType::FloatKind::F32)
+		  {
+		    rust_error_at (arg_locus,
+				   "expected %<c_double%> variadic argument");
+		    return;
+		  }
+		break;
+	      }
+	    case TyTy::TypeKind::BOOL:
+	      rust_error_at (arg_locus, "expected %<c_int%> variadic argument");
+	      return;
+	    case TyTy::TypeKind::FNDEF:
+	      rust_error_at (arg_locus,
+			     "unexpected function definition type as variadic "
+			     "argument - cast to function pointer");
+	      return;
+	    default:
+	      break;
 	    }
 	}
 
