@@ -1,3 +1,25 @@
+2023-02-09  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69636
+	PR fortran/103779
+	* intrinsic.cc (gfc_convert_chartype): Recover on invalid character
+	kind in conversion instead of generating an internal error.
+
+2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107424
+	* trans-openmp.cc (struct dovar_init_d): Add 'sym' and
+	'non_unit_incr' members.
+	(gfc_nonrect_loop_expr): New.
+	(gfc_trans_omp_do): Call it; use normal loop bounds
+	for unit stride - and only create local loop var.
+
+2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (decode_omp_directive): Really ignore 'assumes' with
+	-fopenmp-simd.
+
 2023-02-08  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/103259

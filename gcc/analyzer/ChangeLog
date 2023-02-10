@@ -1,3 +1,9 @@
+2023-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108733
+	* state-purge.cc (get_candidate_for_purging): Add ADDR_EXPR
+	and MEM_REF.
+
 2023-02-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108704

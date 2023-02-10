@@ -1,3 +1,57 @@
+2023-02-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira.h (struct ira_reg_equiv_s): Add new field caller_save_p.
+	* ira.cc (validate_equiv_mem): Check memref address variance.
+	(no_equiv): Clear caller_save_p flag.
+	(update_equiv_regs): Define caller save equivalence for
+	valid_combine.
+	(setup_reg_equiv): Clear defined_p flag for caller save equivalence.
+	* lra-constraints.cc (lra_copy_reg_equiv): Add new arg
+	call_save_p.  Use caller save equivalence depending on the arg.
+	(split_reg): Adjust the call.
+
+2023-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100758
+	* common/config/i386/cpuinfo.h (get_zhaoxin_cpu): Formatting fixes.
+	(cpu_indicator_init): Call get_available_features for all CPUs with
+	max_level >= 1, rather than just Intel, AMD or Zhaoxin.  Formatting
+	fixes.
+
+2023-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108688
+	* match.pd (bit_field_ref [bit_insert]): Simplify BIT_FIELD_REF
+	of BIT_INSERT_EXPR extracting exactly all inserted bits even
+	when without mode precision.  Formatting fixes.
+
+2023-02-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108688
+	* match.pd (bit_field_ref [bit_insert]): Avoid generating
+	BIT_FIELD_REFs of non-mode-precision integral operands.
+
+2023-02-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/100758
+	* doc/extend.texi: Document that the function
+	does not work correctly for old VIA processors.
+
+2023-02-09  Andreas Schwab  <schwab@suse.de>
+
+	* lto-wrapper.cc (merge_and_complain): Handle
+	-funwind-tables and -fasynchronous-unwind-tables.
+	(append_compiler_options): Likewise.
+
+2023-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/26854
+	* tree-into-ssa.cc (update_ssa): Turn blocks_to_update to tree
+	view around insert_updated_phi_nodes_for.
+	* tree-ssa-alias.cc (maybe_skip_until): Allocate visited bitmap
+	in tree view.
+	(walk_aliased_vdefs_1): Likewise.
+
 2023-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/include/gpl_v3.texi: Change fsf.org to www.fsf.org.

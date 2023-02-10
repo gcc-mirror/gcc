@@ -1,3 +1,8 @@
+2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_allocate): Parse align
+	clause and check for restrictions.
+
 2023-02-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-typeck.cc (check_constexpr_init): Remove argument

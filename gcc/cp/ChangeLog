@@ -1,3 +1,21 @@
+2023-02-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107079
+	* call.cc (set_up_extended_ref_temp): Pass var to maybe_constant_init.
+
+2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_allocate): Parse align
+	clause and check for restrictions.
+
+2023-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108698
+	* mangle.cc (write_expression, write_template_arg): Handle
+	EXCESS_PRECISION_EXPR with REAL_CST operand as
+	write_template_arg_literal on fold_convert of the REAL_CST
+	to EXCESS_PRECISION_EXPR type.
+
 2023-02-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/107461
