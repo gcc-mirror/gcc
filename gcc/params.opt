@@ -302,6 +302,10 @@ The number of registers in each class kept unused by loop invariant motion.
 Common Joined UInteger Var(param_ira_max_conflict_table_size) Init(1000) Param Optimization
 Max size of conflict table in MB.
 
+-param=ira-simple-lra-insn-threshold=
+Common Joined UInteger Var(param_ira_simple_lra_insn_threshold) Init(1000) Param Optimization
+Approximate function insn number in 1K units triggering simple local RA.
+
 -param=ira-max-loops-num=
 Common Joined UInteger Var(param_ira_max_loops_num) Init(100) Param Optimization
 Max loops number for regional RA.

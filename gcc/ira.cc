@@ -5624,12 +5624,16 @@ ira (FILE *f)
     if (DF_REG_DEF_COUNT (i) || DF_REG_USE_COUNT (i))
       num_used_regs++;
 
-  /* If there are too many pseudos and/or basic blocks (e.g. 10K
-     pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
-     use simplified and faster algorithms in LRA.  */
+  /* If there are too many pseudos and/or basic blocks (e.g. 10K pseudos and
+     10K blocks or 100K pseudos and 1K blocks) or we have too many function
+     insns, we will use simplified and faster algorithms in LRA.  */
   lra_simple_p
-    = ira_use_lra_p
-      && num_used_regs >= (1U << 26) / last_basic_block_for_fn (cfun);
+    = (ira_use_lra_p
+       && (num_used_regs >= (1U << 26) / last_basic_block_for_fn (cfun)
+           /* max uid is a good evaluation of the number of insns as most
+              optimizations are done on tree-SSA level.  */
+           || ((uint64_t) get_max_uid ()
+	       > (uint64_t) param_ira_simple_lra_insn_threshold * 1000)));
 
   if (lra_simple_p)
     {
