@@ -6309,7 +6309,9 @@ Parser<ManagedTokenSource>::parse_generic_arg ()
 	// could either have a valid type or a macro (FIXME: anything else?). So
 	// we need one bit of lookahead to differentiate if this is really
 	auto next_tok = lexer.peek_token (1);
-	if (next_tok->get_id () == EXCLAM)
+	if (next_tok->get_id () == LEFT_ANGLE
+	    || next_tok->get_id () == SCOPE_RESOLUTION
+	    || next_tok->get_id () == EXCLAM)
 	  {
 	    auto type = parse_type ();
 	    if (type)
@@ -7590,6 +7592,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
     case PIPE:
       // actually may have parameters
       lexer.skip_token ();
+      t = lexer.peek_token ();
 
       while (t->get_id () != PIPE)
 	{
@@ -7606,6 +7609,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
 
 	  if (lexer.peek_token ()->get_id () != COMMA)
 	    {
+	      lexer.skip_token ();
 	      // not an error but means param list is done
 	      break;
 	    }
