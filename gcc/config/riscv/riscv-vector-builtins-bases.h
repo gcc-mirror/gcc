@@ -95,7 +95,17 @@ extern const function_base *const vsadd;
 extern const function_base *const vssub;
 extern const function_base *const vsaddu;
 extern const function_base *const vssubu;
-
+extern const function_base *const vaadd;
+extern const function_base *const vasub;
+extern const function_base *const vaaddu;
+extern const function_base *const vasubu;
+extern const function_base *const vsmul;
+extern const function_base *const vssra;
+extern const function_base *const vssrl;
+extern const function_base *const vnclip;
+extern const function_base *const vnclip;
+extern const function_base *const vnclipu;
+extern const function_base *const vnclipu;
 }
 
 } // end namespace riscv_vector

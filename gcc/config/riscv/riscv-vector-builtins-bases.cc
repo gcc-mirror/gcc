@@ -464,6 +464,47 @@ public:
   }
 };
 
+/* Implements vaadd/vasub/vsmul/vssra/vssrl.  */
+template<int UNSPEC>
+class sat_op : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vx:
+	return e.use_exact_insn (
+	  code_for_pred_scalar (UNSPEC, e.vector_mode ()));
+      case OP_TYPE_vv:
+	return e.use_exact_insn (code_for_pred (UNSPEC, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
+/* Implements vnclip/vnclipu.  */
+template<int UNSPEC>
+class vnclip : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_wx:
+	return e.use_exact_insn (
+	  code_for_pred_narrow_clip_scalar (UNSPEC, e.vector_mode ()));
+      case OP_TYPE_wv:
+	return e.use_exact_insn (
+	  code_for_pred_narrow_clip (UNSPEC, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -535,6 +576,15 @@ static CONSTEXPR const binop<SS_PLUS> vsadd_obj;
 static CONSTEXPR const binop<SS_MINUS> vssub_obj;
 static CONSTEXPR const binop<US_PLUS> vsaddu_obj;
 static CONSTEXPR const binop<US_MINUS> vssubu_obj;
+static CONSTEXPR const sat_op<UNSPEC_VAADDU> vaaddu_obj;
+static CONSTEXPR const sat_op<UNSPEC_VAADD> vaadd_obj;
+static CONSTEXPR const sat_op<UNSPEC_VASUBU> vasubu_obj;
+static CONSTEXPR const sat_op<UNSPEC_VASUB> vasub_obj;
+static CONSTEXPR const sat_op<UNSPEC_VSMUL> vsmul_obj;
+static CONSTEXPR const sat_op<UNSPEC_VSSRL> vssrl_obj;
+static CONSTEXPR const sat_op<UNSPEC_VSSRA> vssra_obj;
+static CONSTEXPR const vnclip<UNSPEC_VNCLIP> vnclip_obj;
+static CONSTEXPR const vnclip<UNSPEC_VNCLIPU> vnclipu_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -612,5 +662,14 @@ BASE (vsadd)
 BASE (vssub)
 BASE (vsaddu)
 BASE (vssubu)
+BASE (vaadd)
+BASE (vasub)
+BASE (vaaddu)
+BASE (vasubu)
+BASE (vsmul)
+BASE (vssra)
+BASE (vssrl)
+BASE (vnclip)
+BASE (vnclipu)
 
 } // end namespace riscv_vector

@@ -39,6 +39,16 @@
   UNSPEC_VMADC
   UNSPEC_VMSBC
   UNSPEC_OVERFLOW
+
+  UNSPEC_VNCLIP
+  UNSPEC_VNCLIPU
+  UNSPEC_VSSRL
+  UNSPEC_VSSRA
+  UNSPEC_VAADDU
+  UNSPEC_VAADD
+  UNSPEC_VASUBU
+  UNSPEC_VASUB
+  UNSPEC_VSMUL
 ])
 
 (define_mode_iterator V [
@@ -264,11 +274,31 @@
 
 (define_int_iterator VMULH [UNSPEC_VMULHS UNSPEC_VMULHU UNSPEC_VMULHSU])
 
+(define_int_iterator VNCLIP [UNSPEC_VNCLIP UNSPEC_VNCLIPU])
+
+(define_int_iterator VSAT_OP [UNSPEC_VAADDU UNSPEC_VAADD
+			      UNSPEC_VASUBU UNSPEC_VASUB UNSPEC_VSMUL
+			      UNSPEC_VSSRL UNSPEC_VSSRA])
+
+(define_int_iterator VSAT_ARITH_OP [UNSPEC_VAADDU UNSPEC_VAADD
+			      	    UNSPEC_VASUBU UNSPEC_VASUB UNSPEC_VSMUL])
+(define_int_iterator VSAT_SHIFT_OP [UNSPEC_VSSRL UNSPEC_VSSRA])
+
 (define_int_attr order [
   (UNSPEC_ORDERED "o") (UNSPEC_UNORDERED "u")
 ])
 
-(define_int_attr v_su [(UNSPEC_VMULHS "") (UNSPEC_VMULHU "u") (UNSPEC_VMULHSU "su")])
+(define_int_attr v_su [(UNSPEC_VMULHS "") (UNSPEC_VMULHU "u") (UNSPEC_VMULHSU "su")
+		       (UNSPEC_VNCLIP "") (UNSPEC_VNCLIPU "u")])
+(define_int_attr sat_op [(UNSPEC_VAADDU "aaddu") (UNSPEC_VAADD "aadd")
+			 (UNSPEC_VASUBU "asubu") (UNSPEC_VASUB "asub")
+			 (UNSPEC_VSMUL "smul") (UNSPEC_VSSRL "ssrl")
+			 (UNSPEC_VSSRA "ssra")])
+(define_int_attr sat_insn_type [(UNSPEC_VAADDU "vaalu") (UNSPEC_VAADD "vaalu")
+			 	(UNSPEC_VASUBU "vaalu") (UNSPEC_VASUB "vaalu")
+			 	(UNSPEC_VSMUL "vsmul") (UNSPEC_VSSRL "vsshift")
+			 	(UNSPEC_VSSRA "vsshift") (UNSPEC_VNCLIP "vnclip")
+				(UNSPEC_VNCLIPU "vnclip")])
 
 (define_code_iterator any_int_binop [plus minus and ior xor ashift ashiftrt lshiftrt
   smax umax smin umin mult div udiv mod umod
