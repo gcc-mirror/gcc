@@ -67,8 +67,9 @@ namespace __cxxabiv1
 
       // Initialize exception (this is a GNU extension)
       __cxa_refcounted_exception*
-      __cxa_init_primary_exception(void *object, std::type_info *tinfo,
-                void (_GLIBCXX_CDTOR_CALLABI *dest) (void *)) _GLIBCXX_NOTHROW;
+      __cxa_init_primary_exception(void *__object, std::type_info *__tinfo,
+                void (_GLIBCXX_CDTOR_CALLABI *__dest) (void *))
+	_GLIBCXX_NOTHROW;
 
     }
 } // namespace __cxxabiv1

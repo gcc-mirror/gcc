@@ -110,7 +110,7 @@ namespace __detail
 
 #ifdef _GLIBCXX_DEBUG
     std::ostream&
-    _M_print(std::ostream& ostr) const;
+    _M_print(std::ostream& __ostr) const;
 
     // Prints graphviz dot commands for state.
     std::ostream&
