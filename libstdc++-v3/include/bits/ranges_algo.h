@@ -3490,11 +3490,11 @@ namespace ranges
     template<forward_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
 	     forward_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
 	     typename _Pred = ranges::equal_to,
-	     typename Proj1 = identity, typename Proj2 = identity>
-      requires indirectly_comparable<_Iter1, _Iter2, _Pred, Proj1, Proj2>
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
       constexpr bool
       operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-		 _Pred __pred = {}, Proj1 __proj1 = {}, Proj2 __proj2 = {}) const
+		 _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
 	return __first2 == __last2
 	  || !ranges::search(__first1, __last1, __first2, __last2,

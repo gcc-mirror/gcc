@@ -2328,10 +2328,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 202002L
   template<typename... _TTypes, typename... _UTypes,
-	   template<typename> class TQual, template<typename> class UQual>
-    requires requires { typename tuple<common_reference_t<TQual<_TTypes>, UQual<_UTypes>>...>; }
-  struct basic_common_reference<tuple<_TTypes...>, tuple<_UTypes...>, TQual, UQual>
-  { using type = tuple<common_reference_t<TQual<_TTypes>, UQual<_UTypes>>...>; };
+	   template<typename> class _TQual, template<typename> class _UQual>
+    requires requires { typename tuple<common_reference_t<_TQual<_TTypes>, _UQual<_UTypes>>...>; }
+  struct basic_common_reference<tuple<_TTypes...>, tuple<_UTypes...>, _TQual, _UQual>
+  { using type = tuple<common_reference_t<_TQual<_TTypes>, _UQual<_UTypes>>...>; };
 
   template<typename... _TTypes, typename... _UTypes>
     requires requires { typename tuple<common_type_t<_TTypes, _UTypes>...>; }
