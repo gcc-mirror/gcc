@@ -3773,7 +3773,7 @@ update_equiv_regs (void)
 		    {
 		      note = set_unique_reg_note (insn, REG_EQUIV, replacement);
 		    }
-		  else
+		  else if (ira_use_lra_p)
 		    {
 		      /* We still can use this equivalence for caller save
 			 optimization in LRA.  Mark this.  */
