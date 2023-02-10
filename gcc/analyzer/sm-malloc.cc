@@ -1519,6 +1519,43 @@ public:
 	!= &m_check_enode->get_point ().get_call_string ())
       return false;
 
+    /* Reject the warning if the check occurs within a macro defintion.
+       This avoids false positives for such code as:
+
+	#define throw_error \
+	   do {             \
+	     if (p)         \
+	       cleanup (p); \
+	     return;        \
+	   } while (0)
+
+	if (p->idx >= n)
+	  throw_error ();
+
+       where the usage of "throw_error" implicitly adds a check
+       on 'p'.
+
+       We do warn when the check is in a macro expansion if we can get
+       at the location of the condition and it is't part of the
+       definition, so that we warn for checks such as:
+	   if (words[0][0] == '@')
+	     return;
+	   g_assert(words[0] != NULL); <--- here
+       Unfortunately we don't have locations for individual gimple
+       arguments, so in:
+	   g_assert (ptr);
+       we merely have a gimple_cond
+	   if (p_2(D) == 0B)
+       with no way of getting at the location of the condition separately
+       from that of the gimple_cond (where the "if" is within the macro
+       definition).  We reject the warning for such cases.
+
+       We do warn when the *deref* occurs in a macro, since this can be
+       a source of real bugs; see e.g. PR 77425.  */
+    location_t check_loc = m_check_enode->get_point ().get_location ();
+    if (linemap_location_from_macro_definition_p (line_table, check_loc))
+      return false;
+
     /* Reject the warning if the deref's BB doesn't dominate that
        of the check, so that we don't warn e.g. for shared cleanup
        code that checks a pointer for NULL, when that code is sometimes
