@@ -26,8 +26,8 @@
 
 #include <testsuite_hooks.h>
 
-int
-main()
+void
+test01()
 {
   std::atomic_flag a;
   VERIFY( !a.test() );
@@ -39,5 +39,27 @@ main()
     });
   a.wait(false);
   t.join();
+}
+
+void
+test02()
+{
+  std::atomic_flag a;
+  VERIFY( !std::atomic_flag_test(&a) );
+  std::atomic_flag_wait(&a, true);
+  std::thread t([&]
+    {
+      std::atomic_flag_test_and_set(&a);
+      std::atomic_flag_notify_one(&a);
+    });
+    std::atomic_flag_wait(&a, false);
+    t.join();
+}
+
+int
+main()
+{
+  test01();
+  test02();
   return 0;
 }
