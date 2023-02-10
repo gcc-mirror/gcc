@@ -8393,9 +8393,11 @@ package body Exp_Ch9 is
       Current_Node : Node_Id;
       Disp_Op_Body : Node_Id;
       New_Op_Body  : Node_Id;
+      New_Op_Spec  : Node_Id;
       Op_Body      : Node_Id;
       Op_Decl      : Node_Id;
       Op_Id        : Entity_Id;
+      Op_Spec      : Entity_Id;
 
       function Build_Dispatching_Subprogram_Body
         (N        : Node_Id;
@@ -8512,11 +8514,12 @@ package body Exp_Ch9 is
                null;
 
             when N_Subprogram_Body =>
+               Op_Spec := Corresponding_Spec (Op_Body);
 
                --  Do not create bodies for eliminated operations
 
                if not Is_Eliminated (Defining_Entity (Op_Body))
-                 and then not Is_Eliminated (Corresponding_Spec (Op_Body))
+                 and then not Is_Eliminated (Op_Spec)
                then
                   if Lock_Free_Active then
                      New_Op_Body :=
@@ -8531,7 +8534,9 @@ package body Exp_Ch9 is
                   Current_Node := New_Op_Body;
                   Analyze (New_Op_Body);
 
-                  --  When the original protected body has nested subprograms,
+                  New_Op_Spec := Corresponding_Spec (New_Op_Body);
+
+                  --  When the original subprogram body has nested subprograms,
                   --  the new body also has them, so set the flag accordingly
                   --  and reset the scopes of the top-level nested subprograms
                   --  and other declaration entities so that they now refer to
@@ -8541,58 +8546,54 @@ package body Exp_Ch9 is
                   --  subprogram entity isn't available via Corresponding_Spec
                   --  until after the above Analyze call.)
 
-                  if Has_Nested_Subprogram (Corresponding_Spec (Op_Body)) then
-                     Set_Has_Nested_Subprogram
-                       (Corresponding_Spec (New_Op_Body));
-
-                     Reset_Scopes_To
-                       (New_Op_Body, Corresponding_Spec (New_Op_Body));
+                  if Has_Nested_Subprogram (Op_Spec) then
+                     Set_Has_Nested_Subprogram (New_Op_Spec);
+                     Reset_Scopes_To (New_Op_Body, New_Op_Spec);
                   end if;
+
+                  --  Similarly, when the original subprogram body uses the
+                  --  secondary stack, the new body also does. This is needed
+                  --  when the cleanup actions of the subprogram are delayed
+                  --  because it contains a package instance with a body.
+
+                  Set_Uses_Sec_Stack (New_Op_Spec, Uses_Sec_Stack (Op_Spec));
 
                   --  Build the corresponding protected operation. This is
                   --  needed only if this is a public or private operation of
                   --  the type.
 
-                  --  Why do we need to test for Corresponding_Spec being
-                  --  present here when it's assumed to be set further above
-                  --  in the Is_Eliminated test???
+                  Op_Decl := Unit_Declaration_Node (Op_Spec);
 
-                  if Present (Corresponding_Spec (Op_Body)) then
-                     Op_Decl :=
-                       Unit_Declaration_Node (Corresponding_Spec (Op_Body));
+                  if Nkind (Parent (Op_Decl)) = N_Protected_Definition then
+                     if Lock_Free_Active then
+                        New_Op_Body :=
+                          Build_Lock_Free_Protected_Subprogram_Body
+                            (Op_Body, Pid, Specification (New_Op_Body));
+                     else
+                        New_Op_Body :=
+                          Build_Protected_Subprogram_Body
+                            (Op_Body, Pid, Specification (New_Op_Body));
+                     end if;
 
-                     if Nkind (Parent (Op_Decl)) = N_Protected_Definition then
-                        if Lock_Free_Active then
-                           New_Op_Body :=
-                             Build_Lock_Free_Protected_Subprogram_Body
-                               (Op_Body, Pid, Specification (New_Op_Body));
-                        else
-                           New_Op_Body :=
-                             Build_Protected_Subprogram_Body (
-                               Op_Body, Pid, Specification (New_Op_Body));
-                        end if;
+                     Insert_After (Current_Node, New_Op_Body);
+                     Current_Node := New_Op_Body;
+                     Analyze (New_Op_Body);
 
-                        Insert_After (Current_Node, New_Op_Body);
-                        Analyze (New_Op_Body);
-                        Current_Node := New_Op_Body;
+                     --  Generate an overriding primitive operation body for
+                     --  this subprogram if the protected type implements
+                     --  an interface.
 
-                        --  Generate an overriding primitive operation body for
-                        --  this subprogram if the protected type implements
-                        --  an interface.
+                     if Ada_Version >= Ada_2005
+                       and then
+                         Present (Interfaces (Corresponding_Record_Type (Pid)))
+                     then
+                        Disp_Op_Body :=
+                          Build_Dispatching_Subprogram_Body (
+                            Op_Body, Pid, New_Op_Body);
 
-                        if Ada_Version >= Ada_2005
-                          and then Present (Interfaces (
-                                     Corresponding_Record_Type (Pid)))
-                        then
-                           Disp_Op_Body :=
-                             Build_Dispatching_Subprogram_Body (
-                               Op_Body, Pid, New_Op_Body);
-
-                           Insert_After (Current_Node, Disp_Op_Body);
-                           Analyze (Disp_Op_Body);
-
-                           Current_Node := Disp_Op_Body;
-                        end if;
+                        Insert_After (Current_Node, Disp_Op_Body);
+                        Current_Node := Disp_Op_Body;
+                        Analyze (Disp_Op_Body);
                      end if;
                   end if;
                end if;

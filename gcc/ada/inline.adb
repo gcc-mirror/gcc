@@ -2831,17 +2831,6 @@ package body Inline is
            and then Is_Protected_Type (Underlying_Type (Scope (Scop)))
            and then Present (Protected_Body_Subprogram (Scop))
          then
-            --  If a protected operation contains an instance, its cleanup
-            --  operations have been delayed, and the subprogram has been
-            --  rewritten in the expansion of the enclosing protected body. It
-            --  is the corresponding subprogram that may require the cleanup
-            --  operations, so propagate the information that triggers cleanup
-            --  activity.
-
-            Set_Uses_Sec_Stack
-              (Protected_Body_Subprogram (Scop),
-                Uses_Sec_Stack (Scop));
-
             Scop := Protected_Body_Subprogram (Scop);
          end if;
 
