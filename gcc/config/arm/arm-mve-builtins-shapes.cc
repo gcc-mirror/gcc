@@ -401,6 +401,79 @@ struct binary_rshift_def : public overloaded_base<0>
 };
 SHAPE (binary_rshift)
 
+/* <T0:half>_t vfoo[_t0](<T0:half>_t, <T0>_t)
+
+   Example: vmovnbq.
+   int8x16_t [__arm_]vmovnbq[_s16](int8x16_t a, int16x8_t b)
+   int8x16_t [__arm_]vmovnbq_m[_s16](int8x16_t a, int16x8_t b, mve_pred16_t p)  */
+struct binary_move_narrow_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "vh0,vh0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    type_suffix_index narrow_suffix
+      = find_type_suffix (type_suffixes[type].tclass,
+			  type_suffixes[type].element_bits / 2);
+
+
+    if (!r.require_matching_vector_type (0, narrow_suffix))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (binary_move_narrow)
+
+/* <uT0:half>_t vfoo[_t0](<uT0:half>_t, <T0>_t)
+
+   Example: vqmovunbq.
+   uint8x16_t [__arm_]vqmovunbq[_s16](uint8x16_t a, int16x8_t b)
+   uint8x16_t [__arm_]vqmovunbq_m[_s16](uint8x16_t a, int16x8_t b, mve_pred16_t p)  */
+struct binary_move_narrow_unsigned_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "vhu0,vhu0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    type_suffix_index narrow_suffix
+      = find_type_suffix (TYPE_unsigned,
+			  type_suffixes[type].element_bits / 2);
+
+    if (!r.require_matching_vector_type (0, narrow_suffix))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (binary_move_narrow_unsigned)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t)
    <T0>_t vfoo[_n_t0](<T0>_t, <S0>_t)
 
