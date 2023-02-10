@@ -327,17 +327,23 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 
 /* Mark the last statement of BB as necessary.  */
 
-static void
+static bool
 mark_last_stmt_necessary (basic_block bb)
 {
   gimple *stmt = last_stmt (bb);
 
-  bitmap_set_bit (last_stmt_necessary, bb->index);
+  if (!bitmap_set_bit (last_stmt_necessary, bb->index))
+    return true;
+
   bitmap_set_bit (bb_contains_live_stmts, bb->index);
 
   /* We actually mark the statement only if it is a control statement.  */
   if (stmt && is_ctrl_stmt (stmt))
-    mark_stmt_necessary (stmt, true);
+    {
+      mark_stmt_necessary (stmt, true);
+      return true;
+    }
+  return false;
 }
 
 
@@ -369,8 +375,8 @@ mark_control_dependent_edges_necessary (basic_block bb, bool ignore_self)
 	  continue;
 	}
 
-      if (!bitmap_bit_p (last_stmt_necessary, cd_bb->index))
-	mark_last_stmt_necessary (cd_bb);
+      if (!mark_last_stmt_necessary (cd_bb))
+	mark_control_dependent_edges_necessary (cd_bb, false);
     }
 
   if (!skipped)
@@ -790,8 +796,8 @@ propagate_necessity (bool aggressive)
 		  if (gimple_bb (stmt)
 		      != get_immediate_dominator (CDI_POST_DOMINATORS, arg_bb))
 		    {
-		      if (!bitmap_bit_p (last_stmt_necessary, arg_bb->index))
-			mark_last_stmt_necessary (arg_bb);
+		      if (!mark_last_stmt_necessary (arg_bb))
+			mark_control_dependent_edges_necessary (arg_bb, false);
 		    }
 		  else if (arg_bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 		           && !bitmap_bit_p (visited_control_parents,
