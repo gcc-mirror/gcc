@@ -2667,6 +2667,36 @@ build_zero_cst (tree type)
     }
 }
 
+/* Build a constant of integer type TYPE, made of VALUE's bits replicated
+   every WIDTH bits to fit TYPE's precision.  */
+
+tree
+build_replicated_int_cst (tree type, unsigned int width, HOST_WIDE_INT value)
+{
+  int n = (TYPE_PRECISION (type) + HOST_BITS_PER_WIDE_INT - 1)
+    / HOST_BITS_PER_WIDE_INT;
+  unsigned HOST_WIDE_INT low, mask;
+  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  int i;
+
+  gcc_assert (n && n <= WIDE_INT_MAX_ELTS);
+
+  if (width == HOST_BITS_PER_WIDE_INT)
+    low = value;
+  else
+    {
+      mask = ((HOST_WIDE_INT)1 << width) - 1;
+      low = (unsigned HOST_WIDE_INT) ~0 / mask * (value & mask);
+    }
+
+  for (i = 0; i < n; i++)
+    a[i] = low;
+
+  gcc_assert (TYPE_PRECISION (type) <= MAX_BITSIZE_MODE_ANY_INT);
+  return wide_int_to_tree
+    (type, wide_int::from_array (a, n, TYPE_PRECISION (type)));
+}
+
 /* If floating-point type TYPE has an IEEE-style sign bit, return an
    unsigned constant in which only the sign bit is set.  Return null
    otherwise.  */
