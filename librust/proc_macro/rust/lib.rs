@@ -268,3 +268,9 @@ impl FromStr for Literal {
         todo!("Implement this function")
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Spacing {
+    Alone,
+    Joint,
+}
