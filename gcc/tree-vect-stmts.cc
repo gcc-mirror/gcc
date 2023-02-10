@@ -6315,6 +6315,20 @@ vectorizable_operation (vec_info *vinfo,
       return false;
     }
 
+  /* ???  We should instead expand the operations here, instead of
+     relying on vector lowering which has this hard cap on the number
+     of vector elements below it performs elementwise operations.  */
+  if (using_emulated_vectors_p
+      && (code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+      && ((BITS_PER_WORD / vector_element_bits (vectype)) < 4
+	  || maybe_lt (nunits_out, 4U)))
+    {
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "not using word mode for +- and less than "
+		     "four vector elements\n");
+      return false;
+    }
+
   int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   internal_fn cond_fn = get_conditional_internal_fn (code);
