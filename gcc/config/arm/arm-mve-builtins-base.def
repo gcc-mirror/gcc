@@ -64,6 +64,8 @@ DEF_MVE_FUNCTION (vrshlq, binary_round_lshift, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vrshrnbq, binary_rshift_narrow, integer_16_32, m_or_none)
 DEF_MVE_FUNCTION (vrshrntq, binary_rshift_narrow, integer_16_32, m_or_none)
 DEF_MVE_FUNCTION (vrshrq, binary_rshift, all_integer, mx_or_none)
+DEF_MVE_FUNCTION (vshllbq, binary_widen_n, integer_8_16, mx_or_none)
+DEF_MVE_FUNCTION (vshlltq, binary_widen_n, integer_8_16, mx_or_none)
 DEF_MVE_FUNCTION (vshlq, binary_lshift, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vshlq, binary_lshift_r, all_integer, m_or_none) // "_r" forms do not support the "x" predicate
 DEF_MVE_FUNCTION (vshrnbq, binary_rshift_narrow, integer_16_32, m_or_none)

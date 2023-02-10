@@ -74,6 +74,8 @@ extern const function_base *const vrshlq;
 extern const function_base *const vrshrnbq;
 extern const function_base *const vrshrntq;
 extern const function_base *const vrshrq;
+extern const function_base *const vshllbq;
+extern const function_base *const vshlltq;
 extern const function_base *const vshlq;
 extern const function_base *const vshrnbq;
 extern const function_base *const vshrntq;
