@@ -16,5 +16,5 @@ fn main() {
     // { dg-final { scan-tree-dump ADD_OVERFLOW original } }
     let c = a + b;
 
-    unsafe { printf("%d\n\0" as *const str as *const i8, c) }
+    unsafe { printf("%d\n\0" as *const str as *const i8, c as i32) }
 }
