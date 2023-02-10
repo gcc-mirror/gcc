@@ -50,6 +50,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;          use Stand;
+with Stringt;        use Stringt;
 with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
@@ -138,6 +139,11 @@ package body Errout is
    --  number, as described above for Output_Line_Number. The Errs parameter
    --  indicates if there are errors attached to the line, which forces
    --  listing on, even in the presence of pragma List (Off).
+
+   function Paren_Required (N : Node_Id) return Boolean;
+   --  Subsidiary to First_Sloc and Last_Sloc. Returns True iff parentheses
+   --  around node N are required by the Ada syntax, e.g. when N is an
+   --  expression of a qualified expression.
 
    procedure Set_Msg_Insertion_Column;
    --  Handle column number insertion (@ insertion character)
@@ -1845,7 +1851,7 @@ package body Errout is
    ----------------
 
    function First_Sloc (N : Node_Id) return Source_Ptr is
-      SI  : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
+      SI  : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
       SF  : constant Source_Ptr        := Source_First (SI);
       SL  : constant Source_Ptr        := Source_Last (SI);
       Src : constant Source_Buffer_Ptr := Source_Text (SI);
@@ -1869,6 +1875,12 @@ package body Errout is
       --  values), but this is only for an error message so it is good enough.
 
       Node_Loop : loop
+         --  Include parentheses around the top node, except when they are
+         --  required by the syntax of the parent node.
+
+         exit Node_Loop when F = N
+           and then Paren_Required (N);
+
          Paren_Loop : for J in 1 .. Paren_Count (F) loop
 
             --  We don't look more than 12 characters behind the current
@@ -1964,7 +1976,7 @@ package body Errout is
    ---------------
 
    function Last_Sloc (N : Node_Id) return Source_Ptr is
-      SI  : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
+      SI  : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
       SF  : constant Source_Ptr        := Source_First (SI);
       SL  : constant Source_Ptr        := Source_Last (SI);
       Src : constant Source_Buffer_Ptr := Source_Text (SI);
@@ -1979,21 +1991,69 @@ package body Errout is
          return S;
       end if;
 
-      --  Skip past an identifier
+      --  For string and character literals simply forward the sloc by their
+      --  length including the closing quotes. Perhaps we should do something
+      --  special for multibyte characters, but this code is only used to emit
+      --  error messages, so it is not worth the effort.
 
-      while S in SF .. SL - 1
-        and then Src (S + 1)
-          in
-        '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' | '.' | '_'
-      loop
-         S := S + 1;
-      end loop;
+      case Nkind (F) is
+         when N_String_Literal =>
+            return S + Source_Ptr (String_Length (Strval (F))) + 1;
+
+         when N_Character_Literal =>
+            return S + 2;
+
+         --  Skip past numeric literals, but they allow a wider set of
+         --  characters than keywords and identifiers.
+
+         when N_Integer_Literal =>
+            while S in SF .. SL - 1
+              and then Src (S + 1)
+                in
+              '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' | '#' | '+' | '-'
+            loop
+               S := S + 1;
+            end loop;
+
+         when N_Real_Literal =>
+            declare
+               Dot_Seen : Boolean := False;
+            begin
+               while S in SF .. SL - 1
+                 and then
+                   (Src (S + 1) in '0' .. '9'
+                                 | 'a' .. 'f' | 'A' .. 'F'
+                                 | '_' | '#' | '+' | '-'
+                      or else (Src (S + 1) = '.' and then not Dot_Seen))
+               loop
+                  Dot_Seen := Src (S + 1) = '.';
+                  S := S + 1;
+               end loop;
+            end;
+
+         --  For other nodes simply skip past a keyword/identifier
+
+         when others =>
+            while S in SF .. SL - 1
+              and then Src (S + 1)
+                in
+              '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' | '_'
+            loop
+               S := S + 1;
+            end loop;
+      end case;
 
       --  The following circuit attempts at crawling up the tree from the
       --  Last_Node, adjusting the Sloc value for any parentheses we know
       --  are present, similarly to what is done in First_Sloc.
 
       Node_Loop : loop
+         --  Include parentheses around the top node, except when they are
+         --  required by the syntax of the parent node.
+
+         exit Node_Loop when F = N
+           and then Paren_Required (N);
+
          Paren_Loop : for J in 1 .. Paren_Count (F) loop
 
             --  We don't look more than 12 characters after the current
@@ -3297,6 +3357,23 @@ package body Errout is
          end if;
       end if;
    end Output_Source_Line;
+
+   --------------------
+   -- Paren_Required --
+   --------------------
+
+   function Paren_Required (N : Node_Id) return Boolean is
+   begin
+      --  In a qualifed_expression the expression part needs to be enclosed in
+      --  parentheses.
+
+      if Nkind (Parent (N)) = N_Qualified_Expression then
+         return N = Expression (Parent (N));
+
+      else
+         return False;
+      end if;
+   end Paren_Required;
 
    -----------------------------
    -- Remove_Warning_Messages --

@@ -361,6 +361,13 @@ package body Sem_Ch6 is
 
       Ret := Make_Simple_Return_Statement (LocX, Expr);
 
+      --  Remove parens around the expression, so that if the expression will
+      --  appear without them when pretty-printed in error messages.
+
+      if Paren_Count (Expr) > 0 then
+         Set_Paren_Count (Expr, Paren_Count (Expr) - 1);
+      end if;
+
       New_Body :=
         Make_Subprogram_Body (Loc,
           Specification              => New_Spec,

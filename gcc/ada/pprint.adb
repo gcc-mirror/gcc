@@ -652,11 +652,7 @@ package body Pprint is
 
       --  Local variables
 
-      Append_Paren : Natural := 0;
-      Left         : Node_Id := Original_Node (Expr);
-      Right        : Node_Id := Original_Node (Expr);
-
-      Left_Sloc, Right_Sloc : Source_Ptr;
+      Left, Right : Source_Ptr;
 
    --  Start of processing for Expression_Image
 
@@ -710,345 +706,76 @@ package body Pprint is
 
       --  Compute left (start) and right (end) slocs for the expression
 
-      loop
-         case Nkind (Left) is
-            when N_And_Then
-               | N_Binary_Op
-               | N_Membership_Test
-               | N_Or_Else
-            =>
-               Left := Original_Node (Left_Opnd (Left));
+      Left  := First_Sloc (Expr);
+      Right := Last_Sloc (Expr);
 
-            when N_Attribute_Reference
-               | N_Expanded_Name
-               | N_Explicit_Dereference
-               | N_Indexed_Component
-               | N_Reference
-               | N_Selected_Component
-               | N_Slice
-            =>
-               Left := Original_Node (Prefix (Left));
-
-            when N_Defining_Program_Unit_Name
-               | N_Designator
-            =>
-               Left := Original_Node (Name (Left));
-
-            when N_Range =>
-               Left := Original_Node (Low_Bound (Left));
-
-            when N_Qualified_Expression
-               | N_Type_Conversion
-            =>
-               Left := Original_Node (Subtype_Mark (Left));
-
-            --  Examine parameters of function calls, because they might be
-            --  coming from rewriting of the prefix notation.
-
-            when N_Function_Call =>
-               declare
-                  Param : Node_Id := First (Parameter_Associations (Left));
-               begin
-                  Left := Original_Node (Name (Left));
-
-                  while Present (Param) loop
-                     if Nkind (Param) /= N_Parameter_Association
-                       and then Sloc (Original_Node (Param)) < Sloc (Left)
-                     then
-                        Left := Original_Node (Param);
-                     end if;
-                     Next (Param);
-                  end loop;
-               end;
-
-            --  For any other item, quit loop
-
-            when others =>
-               exit;
-         end case;
-      end loop;
-
-      loop
-         case Nkind (Right) is
-            when N_Membership_Test
-               | N_Op
-               | N_Short_Circuit
-            =>
-               Right := Original_Node (Right_Opnd (Right));
-
-            when N_Attribute_Reference =>
-               declare
-                  Exprs : constant List_Id := Expressions (Right);
-               begin
-                  if Present (Exprs) then
-                     Right := Original_Node (Last (Expressions (Right)));
-                     Append_Paren := Append_Paren + 1;
-                  else
-                     exit;
-                  end if;
-               end;
-
-            when N_Expanded_Name
-               | N_Selected_Component
-            =>
-               Right := Original_Node (Selector_Name (Right));
-
-            when N_Qualified_Expression
-               | N_Type_Conversion
-            =>
-               Right := Original_Node (Expression (Right));
-               Append_Paren := Append_Paren + 1;
-
-            when N_Unchecked_Type_Conversion =>
-               Right := Original_Node (Expression (Right));
-
-            when N_Designator =>
-               Right := Original_Node (Identifier (Right));
-
-            when N_Defining_Program_Unit_Name =>
-               Right := Original_Node (Defining_Identifier (Right));
-
-            when N_Range_Constraint =>
-               Right := Original_Node (Range_Expression (Right));
-
-            when N_Range =>
-               Right := Original_Node (High_Bound (Right));
-
-            when N_Parameter_Association =>
-               Right := Original_Node (Explicit_Actual_Parameter (Right));
-
-            when N_Indexed_Component =>
-               Right := Original_Node (Last (Expressions (Right)));
-               Append_Paren := Append_Paren + 1;
-
-            when N_Function_Call =>
-               declare
-                  Has_Source_Param : Boolean := False;
-                  --  True iff function call has a parameter coming from source
-
-                  Param : Node_Id;
-
-               begin
-                  --  Avoid source position confusion associated with
-                  --  parameters for which Comes_From_Source is False.
-
-                  Param := First (Parameter_Associations (Right));
-                  while Present (Param) loop
-                     if Comes_From_Source (Original_Node (Param)) then
-                        if Nkind (Param) = N_Parameter_Association then
-                           Right :=
-                             Original_Node (Explicit_Actual_Parameter (Param));
-                        else
-                           Right := Original_Node (Param);
-                        end if;
-                        Has_Source_Param := True;
-                     end if;
-
-                     Next (Param);
-                  end loop;
-
-                  if Has_Source_Param then
-                     Append_Paren := Append_Paren + 1;
-                  else
-                     Right := Original_Node (Name (Right));
-                  end if;
-               end;
-
-            when N_Quantified_Expression =>
-               Right        := Original_Node (Condition (Right));
-               Append_Paren := Append_Paren + 1;
-
-            when N_Aggregate | N_Extension_Aggregate =>
-               declare
-                  Aggr : constant Node_Id := Right;
-                  Sub  : Node_Id;
-
-               begin
-                  Sub := First (Expressions (Aggr));
-                  while Present (Sub) loop
-                     if Sloc (Sub) > Sloc (Right) then
-                        Right := Original_Node (Sub);
-                     end if;
-
-                     Next (Sub);
-                  end loop;
-
-                  Sub := First (Component_Associations (Aggr));
-                  while Present (Sub) loop
-                     if Box_Present (Sub)
-                       and then Sloc (Original_Node (Sub)) > Sloc (Right)
-                     then
-                        Right := Original_Node (Sub);
-                     elsif
-                       Sloc (Original_Node (Expression (Sub))) > Sloc (Right)
-                     then
-                        Right := Original_Node (Expression (Sub));
-                     end if;
-
-                     Next (Sub);
-                  end loop;
-
-                  exit when Right = Aggr
-                    or else Nkind (Right) = N_Component_Association;
-
-                  Append_Paren := Append_Paren + 1;
-               end;
-
-            when N_Slice =>
-               Right := Original_Node (Discrete_Range (Right));
-               Append_Paren := Append_Paren + 1;
-
-            --  subtype_indication might appear inside allocator
-
-            when N_Subtype_Indication =>
-               Right := Original_Node (Constraint (Right));
-
-            when N_Index_Or_Discriminant_Constraint =>
-               Right := Original_Node (Last (Constraints (Right)));
-
-            when N_Raise_Expression =>
-               declare
-                  Exp : constant Node_Id := Expression (Right);
-               begin
-                  if Present (Exp) then
-                     Right := Original_Node (Exp);
-                  else
-                     Right := Original_Node (Name (Right));
-                  end if;
-               end;
-
-            when N_If_Expression =>
-               declare
-                  Cond_Expr : constant Node_Id := First (Expressions (Right));
-                  Then_Expr : constant Node_Id := Next (Cond_Expr);
-                  Else_Expr : constant Node_Id := Next (Then_Expr);
-               begin
-                  --  The ELSE branch might be either missing or it might be
-                  --  be a dummy TRUE that comes from the expansion.
-
-                  if Present (Else_Expr)
-                    and then Comes_From_Source (Original_Node (Else_Expr))
-                  then
-                     Right := Original_Node (Else_Expr);
-                  else
-                     Right := Original_Node (Then_Expr);
-                  end if;
-               end;
-
-            when N_Allocator =>
-               Right := Original_Node (Expression (Right));
-
-            when N_Discriminant_Association =>
-               Right := Original_Node (Expression (Right));
-
-            --  For all other items, quit the loop
-
-            when others =>
-               exit;
-         end case;
-      end loop;
-
-      --  We could just use Sinput.Sloc_Range, but we still need Append_Paren.
-      --  Make sure that we indeed got the left and right-most nodes.
-
-      Sinput.Sloc_Range (Expr, Left_Sloc, Right_Sloc);
-
-      pragma Assert (Left_Sloc = Sloc (Left));
-      pragma Assert (Right_Sloc = Sloc (Right));
+      if Left > Right then
+         return Default;
+      end if;
 
       declare
-         Scn      : Source_Ptr := Left_Sloc;
-         End_Sloc : constant Source_Ptr := Right_Sloc;
-         Src      : constant Source_Buffer_Ptr :=
-                      Source_Text (Get_Source_File_Index (Scn));
+         Scn : Source_Ptr := Left;
+         Src : constant not null Source_Buffer_Ptr :=
+           Source_Text (Get_Source_File_Index (Scn));
 
+         Threshold        : constant := 256;
+         Buffer           : String (1 .. Natural (Right - Left + 1));
+         Index            : Natural := 0;
+         Skipping_Comment : Boolean := False;
+         Underscore       : Boolean := False;
       begin
-         if Scn > End_Sloc then
-            return Default;
-         end if;
+         while Scn <= Right loop
+            case Src (Scn) is
 
-         declare
-            Threshold        : constant := 256;
-            Buffer           : String (1 .. Natural (End_Sloc - Scn));
-            Index            : Natural := 0;
-            Skipping_Comment : Boolean := False;
-            Underscore       : Boolean := False;
+               --  Give up on non ASCII characters
 
-         begin
-            if Right /= Expr then
-               while Scn < End_Sloc loop
-                  case Src (Scn) is
+               when Character'Val (128) .. Character'Last =>
+                  Index := 0;
+                  exit;
 
-                     --  Give up on non ASCII characters
-
-                     when Character'Val (128) .. Character'Last =>
-                        Append_Paren := 0;
-                        Index := 0;
-                        Right := Expr;
-                        exit;
-
-                     when ' '
-                        | ASCII.HT
-                     =>
-                        if not Skipping_Comment and then not Underscore then
-                           Underscore := True;
-                           Index := Index + 1;
-                           Buffer (Index) := ' ';
-                        end if;
-
-                     --  CR/LF/FF is the end of any comment
-
-                     when ASCII.CR
-                        | ASCII.FF
-                        | ASCII.LF
-                     =>
-                        Skipping_Comment := False;
-
-                     when others =>
-                        Underscore := False;
-
-                        if not Skipping_Comment then
-
-                           --  Ignore comment
-
-                           if Src (Scn) = '-' and then Src (Scn + 1) = '-' then
-                              Skipping_Comment := True;
-
-                           else
-                              Index := Index + 1;
-                              Buffer (Index) := Src (Scn);
-                           end if;
-                        end if;
-                  end case;
-
-                  --  Give up on too long strings
-
-                  if Index >= Threshold then
-                     return Buffer (1 .. Index) & "...";
+               when ' '
+                  | ASCII.HT
+               =>
+                  if not Skipping_Comment and then not Underscore then
+                     Underscore := True;
+                     Index := Index + 1;
+                     Buffer (Index) := ' ';
                   end if;
 
-                  Scn := Scn + 1;
-               end loop;
-            end if;
+               --  CR/LF/FF is the end of any comment
 
-            if Index < 1 then
-               declare
-                  S : constant String := Expr_Name (Right);
-               begin
-                  if S = "..." then
-                     return Default;
-                  else
-                     return S;
+               when ASCII.CR
+                  | ASCII.FF
+                  | ASCII.LF
+               =>
+                  Skipping_Comment := False;
+
+               when others =>
+                  Underscore := False;
+
+                  if not Skipping_Comment then
+
+                     --  Ignore comment
+
+                     if Src (Scn) = '-' and then Src (Scn + 1) = '-' then
+                        Skipping_Comment := True;
+                     else
+                        Index := Index + 1;
+                        Buffer (Index) := Src (Scn);
+                     end if;
                   end if;
-               end;
+            end case;
 
-            else
-               return
-                 Buffer (1 .. Index)
-                   & Expr_Name (Right, False)
-                   & (1 .. Append_Paren => ')');
+            --  Give up on too long strings
+
+            if Index >= Threshold then
+               return Buffer (1 .. Index) & "...";
             end if;
-         end;
+
+            Scn := Scn + 1;
+         end loop;
+
+         return Buffer (1 .. Index);
       end;
    end Expression_Image;
 
