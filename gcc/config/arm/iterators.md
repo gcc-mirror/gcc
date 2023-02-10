@@ -578,6 +578,24 @@
 		     VCREATEQ_F
 		     ])
 
+(define_int_iterator MVE_MOVN [
+		     VMOVNBQ_S VMOVNBQ_U
+		     VMOVNTQ_S VMOVNTQ_U
+		     VQMOVNBQ_S VQMOVNBQ_U
+		     VQMOVNTQ_S VQMOVNTQ_U
+		     VQMOVUNBQ_S
+		     VQMOVUNTQ_S
+		     ])
+
+(define_int_iterator MVE_MOVN_M [
+		     VMOVNBQ_M_S VMOVNBQ_M_U
+		     VMOVNTQ_M_S VMOVNTQ_M_U
+		     VQMOVNBQ_M_S VQMOVNBQ_M_U
+		     VQMOVNTQ_M_S VQMOVNTQ_M_U
+		     VQMOVUNBQ_M_S
+		     VQMOVUNTQ_M_S
+		     ])
+
 (define_code_attr mve_addsubmul [
 		 (minus "vsub")
 		 (mult "vmul")
@@ -613,6 +631,10 @@
 		 (VMINQ_M_S "vmin") (VMINQ_M_U "vmin")
 		 (VMLAQ_M_N_S "vmla") (VMLAQ_M_N_U "vmla")
 		 (VMLASQ_M_N_S "vmlas") (VMLASQ_M_N_U "vmlas")
+		 (VMOVNBQ_M_S "vmovnb") (VMOVNBQ_M_U "vmovnb")
+		 (VMOVNBQ_S "vmovnb") (VMOVNBQ_U "vmovnb")
+		 (VMOVNTQ_M_S "vmovnt") (VMOVNTQ_M_U "vmovnt")
+		 (VMOVNTQ_S "vmovnt") (VMOVNTQ_U "vmovnt")
 		 (VMULHQ_M_S "vmulh") (VMULHQ_M_U "vmulh")
 		 (VMULHQ_S "vmulh") (VMULHQ_U "vmulh")
 		 (VMULQ_M_N_S "vmul") (VMULQ_M_N_U "vmul") (VMULQ_M_N_F "vmul")
@@ -639,6 +661,14 @@
 		 (VQDMULHQ_M_S "vqdmulh")
 		 (VQDMULHQ_N_S "vqdmulh")
 		 (VQDMULHQ_S "vqdmulh")
+		 (VQMOVNBQ_M_S "vqmovnb") (VQMOVNBQ_M_U "vqmovnb")
+		 (VQMOVNBQ_S "vqmovnb") (VQMOVNBQ_U "vqmovnb")
+		 (VQMOVNTQ_M_S "vqmovnt") (VQMOVNTQ_M_U "vqmovnt")
+		 (VQMOVNTQ_S "vqmovnt") (VQMOVNTQ_U "vqmovnt")
+		 (VQMOVUNBQ_M_S "vqmovunb")
+		 (VQMOVUNBQ_S "vqmovunb")
+		 (VQMOVUNTQ_M_S "vqmovunt")
+		 (VQMOVUNTQ_S "vqmovunt")
 		 (VQNEGQ_M_S "vqneg")
 		 (VQNEGQ_S "vqneg")
 		 (VQRDMLADHQ_M_S "vqrdmladh")
@@ -723,8 +753,20 @@
 		 (VCLSQ_M_S "s")
 		 (VCLZQ_M_S "i")
 		 (VCLZQ_M_U "i")
+		 (VMOVNBQ_M_S "i") (VMOVNBQ_M_U "i")
+		 (VMOVNBQ_S "i") (VMOVNBQ_U "i")
+		 (VMOVNTQ_M_S "i") (VMOVNTQ_M_U "i")
+		 (VMOVNTQ_S "i") (VMOVNTQ_U "i")
 		 (VNEGQ_M_S "s")
 		 (VQABSQ_M_S "s")
+		 (VQMOVNBQ_M_S "s") (VQMOVNBQ_M_U "u")
+		 (VQMOVNBQ_S "s") (VQMOVNBQ_U "u")
+		 (VQMOVNTQ_M_S "s") (VQMOVNTQ_M_U "u")
+		 (VQMOVNTQ_S "s") (VQMOVNTQ_U "u")
+		 (VQMOVUNBQ_M_S "s")
+		 (VQMOVUNBQ_S "s")
+		 (VQMOVUNTQ_M_S "s")
+		 (VQMOVUNTQ_S "s")
 		 (VQNEGQ_M_S "s")
 		 (VQRSHRNBQ_M_N_S "s") (VQRSHRNBQ_M_N_U "u")
 		 (VQRSHRNBQ_N_S "s") (VQRSHRNBQ_N_U "u")
@@ -1942,6 +1984,10 @@
 		       (VCLSQ_S "s")
 		       (VQABSQ_S "s")
 		       (VQNEGQ_S "s")
+		       (VQMOVUNBQ_M_S "s")
+		       (VQMOVUNBQ_S "s")
+		       (VQMOVUNTQ_M_S "s")
+		       (VQMOVUNTQ_S "s")
 		       ])
 
 ;; Both kinds of return insn.
