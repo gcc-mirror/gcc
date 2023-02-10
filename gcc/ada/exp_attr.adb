@@ -1354,14 +1354,14 @@ package body Exp_Attr is
 
       --  Local variables
 
-      Pref      : constant Node_Id   := Prefix (N);
-      Base_Typ  : constant Entity_Id := Base_Type (Etype (Pref));
-      Exprs     : constant List_Id   := Expressions (N);
+      Pref      : constant Node_Id    := Prefix (N);
+      Base_Typ  : constant Entity_Id  := Base_Type (Etype (Pref));
+      Exprs     : constant List_Id    := Expressions (N);
+      Loc       : constant Source_Ptr := Sloc (N);
       Aux_Decl  : Node_Id;
       Blk       : Node_Id := Empty;
       Decls     : List_Id;
       Installed : Boolean;
-      Loc       : Source_Ptr;
       Loop_Id   : Entity_Id;
       Loop_Stmt : Node_Id;
       Result    : Node_Id := Empty;
@@ -1401,8 +1401,6 @@ package body Exp_Attr is
 
          Loop_Id := Entity (Identifier (Loop_Stmt));
       end if;
-
-      Loc := Sloc (Loop_Stmt);
 
       --  Step 2: Transform the loop
 
