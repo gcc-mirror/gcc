@@ -821,6 +821,59 @@ struct binary_rshift_narrow_unsigned_def : public overloaded_base<0>
 };
 SHAPE (binary_rshift_narrow_unsigned)
 
+/* <T0:twice>_t vfoo[_n_t0](<T0>_t, const int)
+
+   Check that 'imm' is in the [1..#bits] range.
+
+   Example: vshllbq.
+   int16x8_t [__arm_]vshllbq[_n_s8](int8x16_t a, const int imm)
+   int16x8_t [__arm_]vshllbq_m[_n_s8](int16x8_t inactive, int8x16_t a, const int imm, mve_pred16_t p)
+   int16x8_t [__arm_]vshllbq_x[_n_s8](int8x16_t a, const int imm, mve_pred16_t p)  */
+struct binary_widen_n_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "vw0,v0,s0", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    tree res;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES
+	|| !r.require_integer_immediate (i))
+      return error_mark_node;
+
+    type_suffix_index wide_suffix
+      = find_type_suffix (type_suffixes[type].tclass,
+			  type_suffixes[type].element_bits * 2);
+
+    /* Check the inactive argument has the wide type.  */
+    if (((r.pred == PRED_m) && (r.infer_vector_type (0) == wide_suffix))
+	|| r.pred == PRED_none
+	|| r.pred == PRED_x)
+      if ((res = r.lookup_form (r.mode_suffix_id, type)))
+	return res;
+
+    return r.report_no_such_form (type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int bits = c.type_suffix (0).element_bits;
+    return c.require_immediate_range (1, 1, bits);
+  }
+
+};
+SHAPE (binary_widen_n)
+
 /* <T0>xN_t vfoo[_t0](uint64_t, uint64_t)
 
    where there are N arguments in total.
