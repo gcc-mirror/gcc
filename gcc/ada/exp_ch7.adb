@@ -5262,16 +5262,7 @@ package body Exp_Ch7 is
             Fin_Id      => Fin_Id);
 
          if Present (Fin_Id) then
-            declare
-               Body_Ent : Node_Id := Defining_Unit_Name (N);
-
-            begin
-               if Nkind (Body_Ent) = N_Defining_Program_Unit_Name then
-                  Body_Ent := Defining_Identifier (Body_Ent);
-               end if;
-
-               Set_Finalizer (Body_Ent, Fin_Id);
-            end;
+            Set_Finalizer (Defining_Entity (N), Fin_Id);
          end if;
       end if;
    end Expand_N_Package_Body;
