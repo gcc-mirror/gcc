@@ -1,3 +1,4 @@
+use std::error;
 use std::fmt;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -92,3 +93,14 @@ impl fmt::Debug for Ident {
         todo!("Implement this function")
     }
 }
+
+#[derive(Debug)]
+pub struct LexError;
+
+impl fmt::Display for LexError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        todo!("Implement this function")
+    }
+}
+
+impl error::Error for LexError {}
