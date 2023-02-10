@@ -89,7 +89,6 @@ static bool require_constant_value;
 static bool require_constant_elements;
 static bool require_constexpr_value;
 
-static bool null_pointer_constant_p (const_tree);
 static tree qualify_type (tree, tree);
 static int tagged_types_tu_compatible_p (const_tree, const_tree, bool *,
 					 bool *);
@@ -130,7 +129,7 @@ static int comptypes_internal (const_tree, const_tree, bool *, bool *);
 
 /* Return true if EXP is a null pointer constant, false otherwise.  */
 
-static bool
+bool
 null_pointer_constant_p (const_tree expr)
 {
   /* This should really operate on c_expr structures, but they aren't
@@ -7837,6 +7836,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       in_late_binary_op = save;
       return ret;
     }
+  else if (codel == NULLPTR_TYPE && null_pointer_constant)
+    return convert (type, rhs);
 
   switch (errtype)
     {
@@ -8596,7 +8597,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == FIXED_POINT_TYPE
       || code == POINTER_TYPE || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE
-      || code == COMPLEX_TYPE || code == VECTOR_TYPE)
+      || code == COMPLEX_TYPE || code == VECTOR_TYPE || code == NULLPTR_TYPE)
     {
       tree unconverted_init = inside_init;
       if (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE

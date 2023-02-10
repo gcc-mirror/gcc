@@ -11,8 +11,9 @@ void f2 (int *) { }
 void f3 (_Bool) { }
 nullptr_t cmp (void) { return nullptr; }
 
-/* The type nullptr_t shall not be converted to any type other than void, bool or
-   a pointer type.  No type other than nullptr_t shall be converted to nullptr_t.  */
+/* The type nullptr_t shall not be converted to any type other than void, bool
+   or a pointer type.  No type other than nullptr_t or a null pointer constant
+   shall be converted to nullptr_t.  */
 void
 test1 (void)
 {
@@ -63,6 +64,17 @@ test1 (void)
   (void) np2;
   (void) cmp ();
   (void)(nullptr_t) nullptr;
+
+  const nullptr_t n = 0;
+  (void) (nullptr_t) 0;
+
+  f1 (0);
+  f1 ((void *) 0);
+  f1 (0L);
+  nullptr_t n2;
+  n2 = (void *) 0;
+  n2 = 123 - 123;
+  (void) n2;
 }
 
 /* Test valid comparison.  */
