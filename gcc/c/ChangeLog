@@ -1,3 +1,13 @@
+2023-02-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-convert.cc (c_convert): Allow conversion of a null pointer
+	constant to nullptr_t.
+	* c-typeck.cc (null_pointer_constant_p): Remove static.
+	(convert_for_assignment): Allow conversion of a null pointer
+	constant to nullptr_t.
+	(digest_init): Handle NULLPTR_TYPE among scalar conversions.
+	* c-tree.h (null_pointer_constant_p): Declare.
+
 2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_allocate): Parse align

@@ -1,3 +1,9 @@
+2023-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108745
+	* sm-malloc.cc (deref_before_check::emit): Reject the warning if
+	the check occurs within a macro defintion.
+
 2023-02-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108733

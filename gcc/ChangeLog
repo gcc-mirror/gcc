@@ -1,3 +1,108 @@
+2023-02-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira.cc (update_equiv_regs): Set up ira_reg_equiv for
+	valid_combine only when ira_use_lra_p is true.
+
+2023-02-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* params.opt (ira-simple-lra-insn-threshold): Add new param.
+	* ira.cc (ira): Use the param to switch on simple LRA.
+
+2023-02-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108687
+	* gimple-range-cache.cc (ranger_cache::range_on_edge): Revert
+	back to RFD_NONE mode for calculations.
+	(ranger_cache::propagate_cache): Call the internal edge range API
+	with RFD_READ_ONLY instead of changing the external routine.
+
+2023-02-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108520
+	* gimple-range-infer.cc (check_assume_func): Invoke
+	gimple_range_global directly instead using global_range_query.
+	* value-query.cc (get_range_global): Add function context and
+	avoid calling nonnull_arg_p if not cfun.
+	(gimple_range_global): Add function context pointer.
+	* value-query.h (imple_range_global): Add function context.
+
+2023-02-10  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (Wdm): Adjust constraint.
+	(Wbr): New constraint.
+	* config/riscv/predicates.md (reg_or_int_operand): New predicate.
+	* config/riscv/riscv-protos.h (emit_pred_op): Remove function.
+	(emit_vlmax_op): New function.
+	(emit_nonvlmax_op): Ditto.
+	(simm32_p): Ditto.
+	(neg_simm5_p): Ditto.
+	(has_vi_variant_p): Ditto.
+	* config/riscv/riscv-v.cc (emit_pred_op): Adjust function.
+	(emit_vlmax_op): New function.
+	(emit_nonvlmax_op): Ditto.
+	(expand_const_vector): Adjust function.
+	(legitimize_move): Ditto.
+	(simm32_p): New function.
+	(simm5_p): Ditto.
+	(neg_simm5_p): Ditto.
+	(has_vi_variant_p): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc (class vrsub): New class.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vmin): Remove
+	unsigned cases.
+	(vmax): Ditto.
+	(vminu): Remove signed cases.
+	(vmaxu): Ditto.
+	(vdiv): Remove unsigned cases.
+	(vrem): Ditto.
+	(vdivu): Remove signed cases.
+	(vremu): Ditto.
+	(vadd): Adjust.
+	(vsub): Ditto.
+	(vrsub): New class.
+	(vand): Adjust.
+	(vor): Ditto.
+	(vxor): Ditto.
+	(vmul): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_U_OPS): New macro.
+	* config/riscv/riscv.h: change VL/VTYPE as fixed reg.
+	* config/riscv/vector-iterators.md: New iterators.
+	* config/riscv/vector.md (@pred_broadcast<mode>): Adjust pattern for vx
+	support.
+	(@pred_<optab><mode>_scalar): New pattern.
+	(@pred_sub<mode>_reverse_scalar): Ditto.
+	(*pred_<optab><mode>_scalar): Ditto.
+	(*pred_<optab><mode>_extended_scalar): Ditto.
+	(*pred_sub<mode>_reverse_scalar): Ditto.
+	(*pred_sub<mode>_extended_reverse_scalar): Ditto.
+
+2023-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108724
+	* tree-vect-stmts.cc (vectorizable_operation): Avoid
+	using word_mode vectors when vector lowering will
+	decompose them to elementwise operations.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2023-02-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/100758
+	* doc/extend.texi: Document that the function
+	does not work correctly for old VIA processors.
+
+2023-02-10  Andrew Pinski  <apinski@marvell.com>
+	    Andrew Macleod   <amacleod@redhat.com>
+
+	PR tree-optimization/108684
+	* tree-ssa-dce.cc (simple_dce_from_worklist):
+	Check all ssa names and not just non-vdef ones
+	before accepting the inline-asm.
+	Call unlink_stmt_vdef on the statement before
+	removing it.
+
 2023-02-09  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	* ira.h (struct ira_reg_equiv_s): Add new field caller_save_p.
