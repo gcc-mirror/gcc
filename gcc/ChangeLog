@@ -1,3 +1,282 @@
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* config/i386/avx512erintrin.h (_mm512_exp2a23_round_pd,
+	_mm512_exp2a23_round_ps, _mm512_rcp28_round_pd, _mm512_rcp28_round_ps,
+	_mm512_rsqrt28_round_pd, _mm512_rsqrt28_round_ps): Use
+	_mm512_undefined_pd () or _mm512_undefined_ps () instead of using
+	uninitialized automatic variable __W.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* config/i386/xmmintrin.h (_mm_undefined_ps): Temporarily
+	disable -Winit-self using pragma GCC diagnostic ignored.
+	* config/i386/emmintrin.h (_mm_undefined_pd, _mm_undefined_si128):
+	Likewise.
+	* config/i386/avxintrin.h (_mm256_undefined_pd, _mm256_undefined_ps,
+	_mm256_undefined_si256): Likewise.
+	* config/i386/avx512fintrin.h (_mm512_undefined_pd,
+	_mm512_undefined_ps, _mm512_undefined_epi32): Likewise.
+	* config/i386/avx512fp16intrin.h (_mm_undefined_ph,
+	_mm256_undefined_ph, _mm512_undefined_ph): Likewise.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108440
+	* tree-ssa-forwprop.cc: Include gimple-range.h.
+	(simplify_rotate): For the forms with T2 wider than T and shift counts of
+	Y and B - Y add & (B - 1) masking for the rotate count if Y could be equal
+	to B.  For the forms with T2 wider than T and shift counts of
+	Y and (-Y) & (B - 1), don't punt if range could be [B, B2], but only if
+	range doesn't guarantee Y < B or Y = N * B.  If range doesn't guarantee
+	Y < B, also add & (B - 1) masking for the rotate count.  Use lazily created
+	pass specific ranger instead of get_global_range_query.
+	(pass_forwprop::execute): Disable that ranger at the end of pass if it has
+	been created.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106523
+	* tree-ssa-forwprop.cc (simplify_rotate): For the
+	patterns with (-Y) & (B - 1) in one operand's shift
+	count and Y in another, if T2 has wider precision than T,
+	punt if Y could have a value in [B, B2 - 1] range.
+
+2023-02-10  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-02-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108688
+	* match.pd (bit_field_ref [bit_insert]): Avoid generating
+	BIT_FIELD_REFs of non-mode-precision integral operands.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108692
+	* tree-vect-patterns.cc (vect_widened_op_tree): If rhs_code is
+	widened_code which is different from code, don't call
+	vect_look_through_possible_promotion but instead just check op is
+	SSA_NAME with integral type for which vect_is_simple_use is true
+	and call set_op on this_unprom.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108435
+	* tree-nested.cc (convert_nonlocal_omp_clauses)
+	<case OMP_CLAUSE_LASTPRIVATE>: If info->new_local_var_chain and *seq
+	is not a GIMPLE_BIND, wrap the sequence into a new GIMPLE_BIND
+	before calling declare_vars.
+	(convert_nonlocal_omp_clauses) <case OMP_CLAUSE_LINEAR>: Merge
+	with the OMP_CLAUSE_LASTPRIVATE handling except for whether
+	seq is initialized to &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause)
+	or &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause).
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108573
+	* ree.cc (combine_reaching_defs): Don't return false for paradoxical
+	subregs in DEBUG_INSNs.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108599
+	* config/i386/i386-expand.cc
+	(ix86_convert_const_wide_int_to_broadcast): Return nullptr if
+	CONST_WIDE_INT_NUNITS (op) times HOST_BITS_PER_WIDE_INT isn't
+	equal to bitsize of mode.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/108596
+	* bb-reorder.cc (fix_up_fall_thru_edges): Handle the case where cur_bb
+	ends with asm goto and has a crossing fallthrough edge to the same bb
+	that contains at least one of its labels by restoring EDGE_CROSSING
+	flag even on possible edge from cur_bb to new_bb successor.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/108560
+	* doc/extend.texi: Fix up return type of __builtin_va_arg_pack_len
+	from size_t to int.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108498
+	* gimple-ssa-store-merging.cc (class store_operand_info):
+	End coment with full stop rather than comma.
+	(split_group): Likewise.
+	(merged_store_group::apply_stores): Clear string_concatenation if
+	start or end aren't on a byte boundary.
+
+2023-02-10  Eric Biggers  <ebiggers@google.com>
+
+	Backported from master:
+	2023-01-24  Eric Biggers  <ebiggers@google.com>
+
+	PR bootstrap/90543
+	* optc-save-gen.awk: Fix copy-and-paste error.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108459
+	* omp-expand.cc (expand_omp_for_init_counts): Use fold_build1 rather
+	than fold_unary for NEGATE_EXPR.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108237
+	* generic-match-head.cc: Include tree-pass.h.
+	(canonicalize_math_p, optimize_vectors_before_lowering_p): Define
+	to false if cfun and cfun->curr_properties has PROP_gimple_opt_math
+	resp. PROP_gimple_lvec property set.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108264
+	* expr.cc (store_expr): For stores into SUBREG_PROMOTED_* targets
+	from source which doesn't have scalar integral mode first convert
+	it to outer_mode.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108068
+	* tree.h (real_maybe_zerop): Declare.
+	* tree.cc (real_maybe_zerop): Define.
+	* tree-ssa-dom.cc (record_edge_info): Use it instead of
+	real_zerop or TREE_CODE (op1) == SSA_NAME || real_zerop.  Always set
+	can_infer_simple_equiv to false for decimal floating point types.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108166
+	* tree-ssa-phiopt.cc (value_replacement): For the maybe_equal_p
+	case turned into equal_p reset SSA_NAME_RANGE_INFO of phi result.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/108193
+	* cse.cc (compute_const_anchors): Change n type to
+	unsigned HOST_WIDE_INT, adjust comparison against it to avoid
+	warnings.  Formatting fix.
+	(insert_const_anchor): Use gen_int_mode instead of GEN_INT.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106751
+	* loop-invariant.cc (move_invariant_reg): If preheader bb ends
+	with a JUMP_INSN, split the preheader edge and emit invariants
+	into the new preheader basic block.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108095
+	* tree-into-ssa.cc (maybe_register_def): Insert debug stmt
+	on all non-EH edges from asm goto if they have a single
+	predecessor rather than asserting there is at most one such edge.
+	Test whether there are no PHI nodes next to the single predecessor
+	test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107997
+	* tree-ssa-loop-ivopts.cc: Include cfganal.h.
+	(create_new_iv) <case IP_END>: If ip_end_pos bb is non-empty and ends
+	with a stmt which ends bb, instead of adding iv update after it split
+	the latch edge and insert iterator into the new latch bb.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106719
+	* cfgbuild.cc (find_bb_boundaries): If there are NOTEs in between
+	debug_insn (seen after flow_transfer_insn) and insn, move NOTEs
+	before all the DEBUG_INSNs and split after NOTEs.  If there are
+	other insns like jump table data, clear debug_insn.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106875
+	* config/i386/i386.opt (x_ix86_abi): Remove TargetSave.
+	(ix86_abi): Replace it with TargetVariable.
+	* config/i386/i386-options.cc (ix86_function_specific_save,
+	ix86_function_specific_restore): Don't save and restore x_ix86_abi.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107317
+	* asan.cc: Include diagnostic-core.h.
+	(asan_emit_stack_protection): Return NULL early if seen_error ().
+
 2023-02-07  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
