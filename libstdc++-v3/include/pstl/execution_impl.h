@@ -139,18 +139,18 @@ __is_parallelization_preferred(_ExecutionPolicy&& __exec)
                                   typename __internal::__is_random_access_iterator<_IteratorTypes...>::type());
 }
 
-template <typename policy, typename... _IteratorTypes>
+template <typename __policy, typename... _IteratorTypes>
 struct __prefer_unsequenced_tag
 {
-    static constexpr bool value = __internal::__allow_unsequenced<policy>::value &&
+    static constexpr bool value = __internal::__allow_unsequenced<__policy>::value &&
                                   __internal::__is_random_access_iterator<_IteratorTypes...>::value;
     typedef std::integral_constant<bool, value> type;
 };
 
-template <typename policy, typename... _IteratorTypes>
+template <typename __policy, typename... _IteratorTypes>
 struct __prefer_parallel_tag
 {
-    static constexpr bool value = __internal::__allow_parallel<policy>::value &&
+    static constexpr bool value = __internal::__allow_parallel<__policy>::value &&
                                   __internal::__is_random_access_iterator<_IteratorTypes...>::value;
     typedef std::integral_constant<bool, value> type;
 };

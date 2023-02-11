@@ -803,9 +803,9 @@ class __merge_func
 
     struct __cleanup_range
     {
-        template <typename Iterator>
+        template <typename _Iterator>
         void
-        operator()(Iterator __first, Iterator __last)
+        operator()(_Iterator __first, _Iterator __last)
         {
             if (__last - __first < __merge_cut_off)
                 _Cleanup()(__first, __last);
