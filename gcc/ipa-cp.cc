@@ -1982,7 +1982,9 @@ ipa_agg_value_from_jfunc (ipa_node_params *info, cgraph_node *node,
   tree value = NULL_TREE;
   int src_idx;
 
-  if (item->offset < 0 || item->jftype == IPA_JF_UNKNOWN)
+  if (item->offset < 0
+      || item->jftype == IPA_JF_UNKNOWN
+      || item->offset >= (HOST_WIDE_INT) UINT_MAX * BITS_PER_UNIT)
     return NULL_TREE;
 
   if (item->jftype == IPA_JF_CONST)
