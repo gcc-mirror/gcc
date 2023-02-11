@@ -1052,8 +1052,8 @@ package Sinfo is
    --    and their first named subtypes.
 
    --  Corresponding_Spec
-   --    This field is set in subprogram, package, task, and protected body
-   --    nodes, where it points to the defining entity in the corresponding
+   --    This field is set in subprogram, package, task, entry and protected
+   --    body nodes where it points to the defining entity in the corresponding
    --    spec. The attribute is also set in N_With_Clause nodes where it points
    --    to the defining entity for the with'ed spec, and in a subprogram
    --    renaming declaration when it is a Renaming_As_Body. The field is Empty
@@ -6206,6 +6206,7 @@ package Sinfo is
       --  Declarations
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
+      --  Corresponding_Spec
       --  At_End_Proc (set to Empty if no clean up procedure)
 
       -----------------------------------

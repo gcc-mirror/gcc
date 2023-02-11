@@ -871,23 +871,6 @@ package Einfo is
 --       entity must be delayed, since the insertion of the generic body
 --       may affect cleanup generation (see Inline for further details).
 
---    Delay_Subprogram_Descriptors
---       Defined in entities for which exception subprogram descriptors
---       are generated (subprograms, package declarations and package
---       bodies). Defined if there are pending generic body instantiations
---       for the corresponding entity. If this flag is set, then generation
---       of the subprogram descriptor for the corresponding entities must
---       be delayed, since the insertion of the generic body may add entries
---       to the list of handlers.
---
---       Note: for subprograms, Delay_Subprogram_Descriptors is set if and
---       only if Delay_Cleanups is set. But Delay_Cleanups can be set for a
---       a block (in which case Delay_Subprogram_Descriptors is set for the
---       containing subprogram). In addition Delay_Subprogram_Descriptors is
---       set for a library level package declaration or body which contains
---       delayed instantiations (in this case the descriptor refers to the
---       enclosing elaboration procedure).
-
 --    Delta_Value
 --       Defined in fixed and decimal types. Points to a universal real
 --       that holds value of delta for the type, as given in the declaration
@@ -5552,7 +5535,6 @@ package Einfo is
    --    Contains_Ignored_Ghost_Code
    --    Default_Expressions_Processed
    --    Delay_Cleanups
-   --    Delay_Subprogram_Descriptors
    --    Discard_Names
    --    Elaboration_Entity_Required
    --    Has_Completion
@@ -5801,7 +5783,6 @@ package Einfo is
    --    Body_Needed_For_Inlining
    --    Body_Needed_For_SAL
    --    Contains_Ignored_Ghost_Code
-   --    Delay_Subprogram_Descriptors
    --    Discard_Names
    --    Elaborate_Body_Desirable             (non-generic case only)
    --    Elaboration_Entity_Required
@@ -5844,7 +5825,6 @@ package Einfo is
    --    SPARK_Pragma
    --    SPARK_Aux_Pragma
    --    Contains_Ignored_Ghost_Code
-   --    Delay_Subprogram_Descriptors
    --    Ignore_SPARK_Mode_Pragmas
    --    SPARK_Aux_Pragma_Inherited
    --    SPARK_Pragma_Inherited
@@ -5918,7 +5898,6 @@ package Einfo is
    --    Elaboration_Entity_Required
    --    Default_Expressions_Processed
    --    Delay_Cleanups
-   --    Delay_Subprogram_Descriptors
    --    Discard_Names
    --    Has_Completion
    --    Has_Expanded_Contract                (non-generic case only)

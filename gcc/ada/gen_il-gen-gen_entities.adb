@@ -57,7 +57,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Debug_Info_Off, Flag),
         Sm (Default_Expressions_Processed, Flag),
         Sm (Delay_Cleanups, Flag),
-        Sm (Delay_Subprogram_Descriptors, Flag),
         Sm (Depends_On_Private, Flag),
         Sm (Disable_Controlled, Flag, Base_Type_Only),
         Sm (Discard_Names, Flag),

@@ -490,7 +490,6 @@ package Gen_IL.Fields is
       Default_Expressions_Processed,
       Default_Value,
       Delay_Cleanups,
-      Delay_Subprogram_Descriptors,
       Delta_Value,
       Dependent_Instances,
       Depends_On_Private,

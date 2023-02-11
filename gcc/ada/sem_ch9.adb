@@ -1305,6 +1305,7 @@ package body Sem_Ch9 is
             Entry_Name := E;
             Set_Convention (Id, Convention (E));
             Set_Corresponding_Body (Parent (E), Id);
+            Set_Corresponding_Spec (N, E);
             Check_Fully_Conformant (Id, E, N);
 
             if Ekind (Id) = E_Entry_Family then

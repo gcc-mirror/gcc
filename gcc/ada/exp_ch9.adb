@@ -3398,6 +3398,7 @@ package body Exp_Ch9 is
 
       Loc : constant Source_Ptr := Sloc (N);
 
+      Block_Id  : Entity_Id;
       Bod_Id    : Entity_Id;
       Bod_Spec  : Node_Id;
       Bod_Stmts : List_Id;
@@ -3456,11 +3457,12 @@ package body Exp_Ch9 is
 
       Analyze_Statements (Bod_Stmts);
 
-      Set_Scope (Entity (Identifier (First (Bod_Stmts))),
-                 Protected_Body_Subprogram (Ent));
+      Block_Id := Entity (Identifier (First (Bod_Stmts)));
 
-      Reset_Scopes_To
-        (First (Bod_Stmts), Entity (Identifier (First (Bod_Stmts))));
+      Set_Scope (Block_Id, Protected_Body_Subprogram (Ent));
+      Set_Uses_Sec_Stack (Block_Id, Uses_Sec_Stack (Corresponding_Spec (N)));
+
+      Reset_Scopes_To (First (Bod_Stmts), Block_Id);
 
       case Corresponding_Runtime_Package (Pid) is
          when System_Tasking_Protected_Objects_Entries =>
@@ -8537,19 +8539,10 @@ package body Exp_Ch9 is
                   New_Op_Spec := Corresponding_Spec (New_Op_Body);
 
                   --  When the original subprogram body has nested subprograms,
-                  --  the new body also has them, so set the flag accordingly
-                  --  and reset the scopes of the top-level nested subprograms
-                  --  and other declaration entities so that they now refer to
-                  --  the new body's entity. (It would preferable to do this
-                  --  within Build_Protected_Sub_Specification, which is called
-                  --  from Build_Unprotected_Subprogram_Body, but the needed
-                  --  subprogram entity isn't available via Corresponding_Spec
-                  --  until after the above Analyze call.)
+                  --  the new body also has them, so set the flag accordingly.
 
-                  if Has_Nested_Subprogram (Op_Spec) then
-                     Set_Has_Nested_Subprogram (New_Op_Spec);
-                     Reset_Scopes_To (New_Op_Body, New_Op_Spec);
-                  end if;
+                  Set_Has_Nested_Subprogram
+                    (New_Op_Spec, Has_Nested_Subprogram (New_Op_Spec));
 
                   --  Similarly, when the original subprogram body uses the
                   --  secondary stack, the new body also does. This is needed
@@ -8557,6 +8550,16 @@ package body Exp_Ch9 is
                   --  because it contains a package instance with a body.
 
                   Set_Uses_Sec_Stack (New_Op_Spec, Uses_Sec_Stack (Op_Spec));
+
+                  --  Now reset the scopes of the top-level nested subprograms
+                  --  and other declaration entities so that they now refer to
+                  --  the new body's entity (it would preferable to do this
+                  --  within Build_Protected_Sub_Specification, which is called
+                  --  from Build_Unprotected_Subprogram_Body, but the needed
+                  --  subprogram entity isn't available via Corresponding_Spec
+                  --  until after the above Analyze call).
+
+                  Reset_Scopes_To (New_Op_Body, New_Op_Spec);
 
                   --  Build the corresponding protected operation. This is
                   --  needed only if this is a public or private operation of

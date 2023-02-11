@@ -6265,10 +6265,13 @@ package body Exp_Ch6 is
       --  body subprogram points to itself.
 
       Proc := Current_Scope;
-      while Present (Proc)
-        and then Scope (Proc) /= Scop
-      loop
+      while Present (Proc) and then Scope (Proc) /= Scop loop
          Proc := Scope (Proc);
+         if Is_Subprogram (Proc)
+           and then Present (Protected_Subprogram (Proc))
+         then
+            Proc := Protected_Subprogram (Proc);
+         end if;
       end loop;
 
       Corr := Protected_Body_Subprogram (Proc);

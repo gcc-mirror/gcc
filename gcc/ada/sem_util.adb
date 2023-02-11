@@ -27268,6 +27268,15 @@ package body Sem_Util is
          then
             return True;
 
+         --  The body of a protected operation is within the protected type
+
+         elsif Is_Subprogram (Curr)
+           and then Present (Protected_Subprogram (Curr))
+           and then Is_Protected_Type (Outer)
+           and then Scope (Protected_Subprogram (Curr)) = Outer
+         then
+            return True;
+
          --  Outside of its scope, a synchronized type may just be private
 
          elsif Is_Private_Type (Curr)
@@ -27306,6 +27315,13 @@ package body Sem_Util is
 
          elsif Is_Subprogram (Curr)
            and then Outer = Protected_Body_Subprogram (Curr)
+         then
+            return True;
+
+         elsif Is_Subprogram (Curr)
+           and then Present (Protected_Subprogram (Curr))
+           and then Is_Protected_Type (Outer)
+           and then Scope (Protected_Subprogram (Curr)) = Outer
          then
             return True;
 

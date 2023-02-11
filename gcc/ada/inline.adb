@@ -2824,16 +2824,6 @@ package body Inline is
       while Present (Elmt) loop
          Scop := Node (Elmt);
 
-         if Ekind (Scop) = E_Entry then
-            Scop := Protected_Body_Subprogram (Scop);
-
-         elsif Is_Subprogram (Scop)
-           and then Is_Protected_Type (Underlying_Type (Scope (Scop)))
-           and then Present (Protected_Body_Subprogram (Scop))
-         then
-            Scop := Protected_Body_Subprogram (Scop);
-         end if;
-
          if Ekind (Scop) = E_Block then
             Decl := Parent (Block_Node (Scop));
 

@@ -1345,7 +1345,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Declarations, List_Id, Default_No_List),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
         Sy (At_End_Proc, Node_Id, Default_Empty),
-        Sm (Activation_Chain_Entity, Node_Id)));
+        Sm (Activation_Chain_Entity, Node_Id),
+        Sm (Corresponding_Spec, Node_Id)));
 
    Cc (N_Entry_Call_Alternative, Node_Kind,
        (Sy (Entry_Call_Statement, Node_Id),

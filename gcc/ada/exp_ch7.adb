@@ -5054,16 +5054,6 @@ package body Exp_Ch7 is
 
       if not Actions_Required then
          return;
-
-      --  If the current node is a rewritten task body and the descriptors have
-      --  not been delayed (due to some nested instantiations), do not generate
-      --  redundant cleanup actions.
-
-      elsif Is_Task_Body
-        and then Nkind (N) = N_Subprogram_Body
-        and then not Delay_Subprogram_Descriptors (Corresponding_Spec (N))
-      then
-         return;
       end if;
 
       --  If an extended return statement contains something like
