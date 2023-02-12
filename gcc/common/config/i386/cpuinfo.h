@@ -540,7 +540,6 @@ get_intel_cpu (struct __processor_model *cpu_model,
       /* Alder Lake.  */
     case 0xb7:
       /* Raptor Lake.  */
-    case 0xb5:
     case 0xaa:
     case 0xac:
       /* Meteor Lake.  */
@@ -552,6 +551,8 @@ get_intel_cpu (struct __processor_model *cpu_model,
       break;
     case 0x8f:
       /* Sapphire Rapids.  */
+    case 0xcf:
+      /* Emerald Rapids.  */
       cpu = "sapphirerapids";
       CHECK___builtin_cpu_is ("corei7");
       CHECK___builtin_cpu_is ("sapphirerapids");

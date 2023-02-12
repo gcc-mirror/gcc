@@ -30,7 +30,6 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
-with Exp_Ch6;        use Exp_Ch6;
 with Exp_Prag;       use Exp_Prag;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
@@ -1616,40 +1615,8 @@ package body Contracts is
       --  preserving the result for the purpose of evaluating postconditions,
       --  contracts, type invariants, etc.
 
-      --  In the case of a regular function, generate:
+      --  In the case of a function, generate:
       --
-      --  function Original_Func (X : in out Integer) return Typ is
-      --     <prologue renamings>
-      --     <preconditions>
-      --
-      --     function _Wrapped_Statements return Typ is
-      --        <original declarations>
-      --     begin
-      --        <original statements>
-      --     end;
-      --
-      --  begin
-      --     declare
-      --        type Axx is access all Typ;
-      --        Rxx : constant Axx := _Wrapped_Statements'reference;
-      --        Result_Obj : Typ renames Rxx.all;
-      --
-      --     begin
-      --        <postconditions statments>
-      --        return Rxx.all;
-      --     end;
-      --  end;
-      --
-      --  This sequence is recognized by Expand_Simple_Function_Return as a
-      --  tail call, in other words equivalent to "return _Wrapped_Statements;"
-      --  and thus the copy to the anonymous return object is elided, including
-      --  a pair of calls to Adjust/Finalize for types requiring finalization.
-
-      --  Note that an extended return statement does not yield the same result
-      --  because the copy of the return object is not elided by GNAT for now.
-
-      --  Or else, in the case of a BIP function, generate:
-
       --  function Original_Func (X : in out Integer) return Typ is
       --     <prologue renamings>
       --     <preconditions>
@@ -1733,9 +1700,9 @@ package body Contracts is
            (Handled_Statement_Sequence (Body_Decl), Stmts);
 
       --  Generate the post-execution statements and the extended return
-      --  when the subprogram being wrapped is a BIP function.
+      --  when the subprogram being wrapped is a function.
 
-      elsif Is_Build_In_Place_Result_Type (Ret_Type) then
+      else
          Set_Statements (Handled_Statement_Sequence (Body_Decl), New_List (
            Make_Extended_Return_Statement (Loc,
              Return_Object_Declarations => New_List (
@@ -1751,65 +1718,6 @@ package body Contracts is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Stmts))));
-
-      --  Declare a renaming of the result of the call to the wrapper and
-      --  append a return of the result of the call when the subprogram is
-      --  a function, after manually removing the side effects. Note that
-      --  we cannot call Remove_Side_Effects here because nothing has been
-      --  analyzed yet and we cannot return the renaming itself because
-      --  Expand_Simple_Function_Return expects an explicit dereference.
-
-      else
-         declare
-            A_Id : constant Node_Id := Make_Temporary (Loc, 'A');
-            R_Id : constant Node_Id := Make_Temporary (Loc, 'R');
-
-         begin
-            Set_Statements (Handled_Statement_Sequence (Body_Decl), New_List (
-              Make_Block_Statement (Loc,
-
-                Declarations => New_List (
-                  Make_Full_Type_Declaration (Loc,
-                    Defining_Identifier => A_Id,
-                    Type_Definition     =>
-                      Make_Access_To_Object_Definition (Loc,
-                        All_Present        => True,
-                        Null_Exclusion_Present => True,
-                        Subtype_Indication =>
-                          New_Occurrence_Of (Ret_Type, Loc))),
-
-                  Make_Object_Declaration (Loc,
-                    Defining_Identifier => R_Id,
-                    Object_Definition   => New_Occurrence_Of (A_Id, Loc),
-                    Constant_Present    => True,
-                    Expression          =>
-                      Make_Reference (Loc,
-                        Make_Function_Call (Loc,
-                          Name => New_Occurrence_Of (Wrapper_Id, Loc)))),
-
-                  Make_Object_Renaming_Declaration (Loc,
-                    Defining_Identifier => Result,
-                    Subtype_Mark        => New_Occurrence_Of (Ret_Type, Loc),
-                    Name                =>
-                      Make_Explicit_Dereference (Loc,
-                        New_Occurrence_Of (R_Id, Loc)))),
-
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => Stmts))));
-
-            Append_To (Stmts,
-              Make_Simple_Return_Statement (Loc,
-                Expression =>
-                  Make_Explicit_Dereference (Loc,
-                    New_Occurrence_Of (R_Id, Loc))));
-
-            --  It is required for Is_Related_To_Func_Return to return True
-            --  that the temporary Rxx be related to the expression of the
-            --  simple return statement built just above.
-
-            Set_Related_Expression (R_Id, Expression (Last (Stmts)));
-         end;
       end if;
    end Build_Subprogram_Contract_Wrapper;
 
@@ -3479,9 +3387,7 @@ package body Contracts is
       --       end _Wrapped_Statements;
 
       --    begin
-      --       declare
-      --          Result : ... renames _Wrapped_Statements;
-      --       begin
+      --       return Result : constant ... := _Wrapped_Statements do
       --          <refined postconditions from body>
       --          <postconditions from body>
       --          <postconditions from spec>
@@ -3489,8 +3395,7 @@ package body Contracts is
       --          <contract case consequences>
       --          <invariant check of function result>
       --          <invariant and predicate checks of parameters
-      --          return Result;
-      --       end;
+      --       end return;
       --    end Original_Code;
 
       --  Step 1: augment contracts list with postconditions associated with

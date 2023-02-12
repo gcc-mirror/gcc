@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -680,10 +680,12 @@ symbol_table::remove_unreferenced_decls (void)
 	    enqueue_node (vnode, &first);
 	  else
 	    {
-	      referenced.add (vnode);
+	      if (vnode)
+		referenced.add (vnode);
 	      while (vnode && vnode->alias && vnode->definition)
 		{
 		  vnode = vnode->get_alias_target ();
+		  gcc_checking_assert (vnode);
 	          referenced.add (vnode);
 		}
 	    }

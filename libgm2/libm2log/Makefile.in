@@ -471,7 +471,9 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_LOGLIB_TRUE@libm2log_la_DEPENDENCIES = ../libm2pim/SYSTEM.def $(addsuffix .lo, $(basename $(libm2log_la_SOURCES)))
 @BUILD_LOGLIB_TRUE@libm2log_la_CFLAGS = -I. -DBUILD_GM2_LIBS -I@srcdir@/../
 @BUILD_LOGLIB_TRUE@libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-pim -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso
-@BUILD_LOGLIB_TRUE@libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION)
+@BUILD_LOGLIB_TRUE@@TARGET_DARWIN_FALSE@libm2log_la_link_flags = 
+@BUILD_LOGLIB_TRUE@@TARGET_DARWIN_TRUE@libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
+@BUILD_LOGLIB_TRUE@libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags)
 @BUILD_LOGLIB_TRUE@BUILT_SOURCES = ../libm2pim/SYSTEM.def
 @BUILD_LOGLIB_TRUE@M2LIBDIR = /m2/m2log/
 all: $(BUILT_SOURCES)

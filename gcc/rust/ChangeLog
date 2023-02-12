@@ -1,3 +1,9 @@
+2022-12-20  Marc Poulhiès  <dkm@kataplop.net>
+
+	PR rust/108113
+	* Make-lang.in (rust.serial): New variable.
+	(rust1$(exeext)): Depend on $(rust.prev). Call LINK_PROGRESS.
+
 2022-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rust/106072

@@ -45,6 +45,6 @@ int main ()
       PRINTF ("main: y is wrong : %d, should be 100\n", y);
       abort ();
     }
-  puts ("main: done");
+  PRINT ("main: done");
   return 0;
 }

@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -148,7 +148,7 @@ insert_decl_map (copy_body_data *id, tree key, tree value)
 
   /* Always insert an identity map as well.  If we see this same new
      node again, we won't want to duplicate it a second time.  */
-  if (key != value)
+  if (key != value && value)
     id->decl_map->put (value, value);
 }
 
@@ -3851,10 +3851,11 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	 it's default_def SSA_NAME.  */
       if (gimple_in_ssa_p (id->src_cfun)
 	  && is_gimple_reg (result))
-	{
-	  temp = make_ssa_name (temp);
-	  insert_decl_map (id, ssa_default_def (id->src_cfun, result), temp);
-	}
+	if (tree default_def = ssa_default_def (id->src_cfun, result))
+	  {
+	    temp = make_ssa_name (temp);
+	    insert_decl_map (id, default_def, temp);
+	  }
       insert_init_stmt (id, entry_bb, gimple_build_assign (temp, var));
     }
   else

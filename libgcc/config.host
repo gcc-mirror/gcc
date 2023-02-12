@@ -820,13 +820,13 @@ i[34567]86-*-mingw*)
 	fi
 	case ${target_thread_file} in
 	  win32)
-	    tmake_file="$tmake_file i386/t-gthr-win32"
+	    tmake_thr_file="i386/t-gthr-win32"
 	    ;;
 	  posix)
-	    tmake_file="i386/t-mingw-pthread $tmake_file"
+	    tmake_thr_file="i386/t-mingw-pthread"
 	    ;;
 	  mcf)
-	    tmake_file="i386/t-mingw-mcfgthread $tmake_file"
+	    tmake_thr_file="i386/t-mingw-mcfgthread"
 	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
@@ -842,18 +842,18 @@ i[34567]86-*-mingw*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-mingw32 t-crtfm i386/t-chkstk t-dfprules"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_thr_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-slibgcc-mingw i386/t-cygming i386/t-mingw32 t-crtfm i386/t-chkstk t-dfprules"
 	;;
 x86_64-*-mingw*)
 	case ${target_thread_file} in
 	  win32)
-	    tmake_file="$tmake_file i386/t-gthr-win32"
+	    tmake_thr_file="i386/t-gthr-win32"
 	    ;;
 	  posix)
-	    tmake_file="i386/t-mingw-pthread $tmake_file"
+	    tmake_thr_file="i386/t-mingw-pthread"
 	    ;;
 	  mcf)
-	    tmake_file="i386/t-mingw-mcfgthread $tmake_file"
+	    tmake_thr_file="i386/t-mingw-mcfgthread"
 	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
@@ -872,7 +872,7 @@ x86_64-*-mingw*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-mingw32 t-dfprules t-crtfm i386/t-chkstk"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_thr_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-slibgcc-mingw i386/t-cygming i386/t-mingw32 t-dfprules t-crtfm i386/t-chkstk"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtfastmath.o"
 	if test x$enable_vtable_verify = xyes; then
 		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"

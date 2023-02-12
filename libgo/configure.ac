@@ -570,6 +570,9 @@ PTHREAD_LIBS=
 AC_CHECK_LIB([pthread], [pthread_create], PTHREAD_LIBS=-lpthread)
 AC_SUBST(PTHREAD_LIBS)
 
+dnl Test if -lucontext is required for makecontext.
+AC_SEARCH_LIBS([makecontext], [ucontext])
+
 dnl Test if -lrt is required for sched_yield or nanosleep or clock_gettime.
 AC_SEARCH_LIBS([sched_yield], [rt])
 AC_SEARCH_LIBS([nanosleep], [rt])

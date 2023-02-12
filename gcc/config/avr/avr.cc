@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for ATMEL AVR micro controllers
-   Copyright (C) 1998-2022 Free Software Foundation, Inc.
+   Copyright (C) 1998-2023 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.

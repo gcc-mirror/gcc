@@ -1,6 +1,6 @@
 /* OMP constructs' SIMD clone supporting code.
 
-Copyright (C) 2005-2022 Free Software Foundation, Inc.
+Copyright (C) 2005-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -701,6 +701,11 @@ simd_clone_create (struct cgraph_node *old_node, bool force_local)
       new_node->calls_declare_variant_alt
 	= old_node->calls_declare_variant_alt;
     }
+
+  /* Mark clones with internal linkage as gc'able, so they will not be
+     emitted unless the vectorizer can actually use them.  */
+  if (!TREE_PUBLIC (new_node->decl))
+    new_node->gc_candidate = true;
 
   return new_node;
 }

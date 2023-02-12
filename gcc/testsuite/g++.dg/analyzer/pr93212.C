@@ -4,8 +4,8 @@
 auto lol()
 {
     int aha = 3;
-    return [&aha] { // { dg-warning "dereferencing pointer '.*' to within stale stack frame" }
-        return aha;
+    return [&aha] {
+        return aha; // { dg-warning "dereferencing pointer '.*' to within stale stack frame" }
     };
     /* TODO: may be worth special-casing the reporting of dangling
        references from lambdas, to highlight the declaration, and maybe fix

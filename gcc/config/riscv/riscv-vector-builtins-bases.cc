@@ -53,9 +53,9 @@ template<bool VLMAX_P>
 class vsetvl : public function_base
 {
 public:
-  unsigned int call_properties (const function_instance &) const
+  bool apply_vl_p () const override
   {
-    return CP_READ_CSR | CP_WRITE_CSR;
+    return false;
   }
 
   rtx expand (function_expander &e) const override
@@ -80,15 +80,51 @@ public:
 
     /* MU.  */
     e.add_input_operand (Pmode, gen_int_mode (0, Pmode));
-    return e.generate_insn (code_for_vsetvl (Pmode));
+    return e.generate_insn (code_for_vsetvl_no_side_effects (Pmode));
+  }
+};
+
+/* Implements vle.v/vse.v codegen.  */
+template <bool STORE_P>
+class loadstore : public function_base
+{
+  unsigned int call_properties (const function_instance &) const override
+  {
+    if (STORE_P)
+      return CP_WRITE_MEMORY;
+    else
+      return CP_READ_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    if (STORE_P)
+      return true;
+    return pred != PRED_TYPE_none && pred != PRED_TYPE_mu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (STORE_P)
+      return e.use_contiguous_store_insn (code_for_pred_mov (e.vector_mode ()));
+    else
+      return e.use_contiguous_load_insn (code_for_pred_mov (e.vector_mode ()));
   }
 };
 
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
-namespace bases {
-const function_base *const vsetvl = &vsetvl_obj;
-const function_base *const vsetvlmax = &vsetvlmax_obj;
-}
+static CONSTEXPR const loadstore<false> vle_obj;
+static CONSTEXPR const loadstore<true> vse_obj;
+
+/* Declare the function base NAME, pointing it to an instance
+   of class <NAME>_obj.  */
+#define BASE(NAME) \
+  namespace bases { const function_base *const NAME = &NAME##_obj; }
+
+BASE (vsetvl)
+BASE (vsetvlmax)
+BASE (vle)
+BASE (vse)
 
 } // end namespace riscv_vector

@@ -260,11 +260,20 @@ else
   endif
 endif
 
+ifneq ($(filter darwin9% darwin8%,$(host_os)),)
+# gnat1 uses exceptions which is incompatible with statically-linked libgcc
+# on Darwin8 and 9, since gnat1 also pulls in libraries linked with the system
+# unwinder.
+GCC_LINKERFLAGS = $(filter-out -Werror -static-libgcc, $(ALL_LINKERFLAGS))
+GCC_LDFLAGS = $(filter-out -static-libgcc, $(LDFLAGS))
+else
 # Strip -Werror during linking for the LTO bootstrap
 GCC_LINKERFLAGS = $(filter-out -Werror, $(ALL_LINKERFLAGS))
+GCC_LDFLAGS = $(LDFLAGS)
+endif
 
-GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
-GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
+GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) $(GCC_LDFLAGS)
+GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(GCC_LDFLAGS)
 
 # Lists of files for various purposes.
 

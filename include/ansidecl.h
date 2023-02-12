@@ -279,7 +279,7 @@ So instead we use the macro below and test it against specific values.  */
 /* Attribute `warn_unused_result' was valid as of gcc 3.3.  */
 #ifndef ATTRIBUTE_WARN_UNUSED_RESULT
 # if GCC_VERSION >= 3003
-#  define ATTRIBUTE_WARN_UNUSED_RESULT __attribute__ ((warn_unused_result))
+#  define ATTRIBUTE_WARN_UNUSED_RESULT __attribute__ ((__warn_unused_result__))
 # else
 #  define ATTRIBUTE_WARN_UNUSED_RESULT
 # endif

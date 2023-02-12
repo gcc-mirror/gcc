@@ -30,7 +30,7 @@ EXPORT QUALIFIED StartFile, EndFile, StartLine, GetLocationColumn, GetLocationRa
                  WarningAtf, NoteAtf, internal_error, location_t ;
 
 TYPE
-   location_t = INTEGER ;
+   location_t = CARDINAL ;
 
 
 PROCEDURE StartFile (filename: ADDRESS; linebegin: CARDINAL) ;

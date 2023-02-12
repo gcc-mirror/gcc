@@ -1,5 +1,5 @@
 /* VSETVL pass header for RISC-V 'V' Extension for GNU compiler.
-   Copyright(C) 2022-2022 Free Software Foundation, Inc.
+   Copyright(C) 2022-2023 Free Software Foundation, Inc.
    Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 This file is part of GCC.
@@ -125,6 +125,7 @@ private:
 
 public:
   avl_info () : m_value (NULL_RTX), m_source (nullptr) {}
+  avl_info (const avl_info &);
   avl_info (rtx, rtl_ssa::set_info *);
   rtx get_value () const { return m_value; }
   rtl_ssa::set_info *get_source () const { return m_source; }
@@ -172,7 +173,7 @@ public:
   bool has_non_zero_avl () const;
 
   rtx get_avl () const { return m_avl.get_value (); }
-  avl_info get_avl_info () const { return m_avl; }
+  const avl_info &get_avl_info () const { return m_avl; }
   void set_avl_info (const avl_info &avl) { m_avl = avl; }
   uint8_t get_sew () const { return m_sew; }
   riscv_vector::vlmul_type get_vlmul () const { return m_vlmul; }

@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991-2023 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -13733,6 +13733,24 @@ neon_vector_mem_operand (rtx op, int type, bool strict)
 	  < (VALID_NEON_QREG_MODE (GET_MODE (op))? 1016 : 1024))
       && (INTVAL (XEXP (ind, 1)) & 3) == 0)
     return TRUE;
+
+  return FALSE;
+}
+
+/* Return TRUE if OP is a mem suitable for loading/storing an MVE struct
+   type.  */
+int
+mve_struct_mem_operand (rtx op)
+{
+  rtx ind = XEXP (op, 0);
+
+  /* Match: (mem (reg)).  */
+  if (REG_P (ind))
+    return arm_address_register_rtx_p (ind, 0);
+
+  /* Allow only post-increment by the mode size.  */
+  if (GET_CODE (ind) == POST_INC)
+    return arm_address_register_rtx_p (XEXP (ind, 0), 0);
 
   return FALSE;
 }

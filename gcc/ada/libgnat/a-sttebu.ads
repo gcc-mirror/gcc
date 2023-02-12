@@ -64,6 +64,16 @@ is
       Post'Class => Current_Indent (Buffer) =
       Current_Indent (Buffer)'Old - Amount;
 
+   procedure Set_Trim_Leading_Spaces
+     (Buffer : in out Root_Buffer_Type;
+      Trim   : Boolean := True) with
+      Post   => Trim_Leading_Spaces (Buffer) = Trim,
+      Inline => True;
+
+   function Trim_Leading_Spaces
+     (Buffer : Root_Buffer_Type) return Boolean
+     with Inline;
+
 private
 
    type Root_Buffer_Type is abstract tagged limited record
@@ -84,6 +94,12 @@ private
       --  True if all characters seen so far fit in 7 bits
       All_8_Bits : Boolean := True;
       --  True if all characters seen so far fit in 8 bits
+
+      Trim_Leading_White_Spaces : Boolean := False;
+      --  Flag set prior to calling any of the Put operations, which will
+      --  cause white space characters to be discarded by any Put operation
+      --  until a non-white-space character is encountered, at which point
+      --  the flag will be reset.
 
    end record;
 

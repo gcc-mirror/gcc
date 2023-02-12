@@ -2983,6 +2983,8 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   if (ix86_tune_features [X86_TUNE_AVOID_256FMA_CHAINS])
+    SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 512);
+  else if (ix86_tune_features [X86_TUNE_AVOID_256FMA_CHAINS])
     SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 256);
   else if (ix86_tune_features [X86_TUNE_AVOID_128FMA_CHAINS])
     SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 128);

@@ -1,0 +1,564 @@
+2022-12-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/108056
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc,
+	gfc_desc_to_cfi_desc): Mostly revert to GCC 11 version for
+	those backward-compatiblity-only functions.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-10-10  LIU Hao  <lh_mouse@126.com>
+
+	* io/async.h (struct async_unit): Use `__gthread_t` instead
+	of `pthread_t`.
+
+2022-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/ieee_arithmetic.F90 (IEEE_SET_ROUNDING_MODE): Handle
+	RADIX argument better.
+
+2022-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.map: Add symbols for IEEE_GET_MODES
+	and IEEE_SET_MODES.
+
+2022-09-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/ieee_exceptions.F90: Add IEEE_MODES_TYPE, IEEE_GET_MODES
+	and IEEE_SET_MODES.
+	* ieee/ieee_arithmetic.F90: Make them public in IEEE_ARITHMETIC
+	as well.
+
+2022-09-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/ieee_arithmetic.F90: Add RADIX argument to
+	IEEE_SET_ROUNDING_MODE and IEEE_GET_ROUNDING_MODE.
+	* config/fpu-387.h: Add IEEE_AWAY mode.
+	* config/fpu-aarch64.h: Add IEEE_AWAY mode.
+	* config/fpu-aix.h: Add IEEE_AWAY mode.
+	* config/fpu-generic.h: Add IEEE_AWAY mode.
+	* config/fpu-glibc.h: Add IEEE_AWAY mode.
+	* config/fpu-sysv.h: Add IEEE_AWAY mode.
+
+2022-09-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/95644
+	* ieee/ieee_arithmetic.F90: Add IEEE_SIGNBIT and IEEE_FMA.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/106579
+	* ieee/ieee_helper.c (IEEE_OTHER_VALUE, IEEE_SIGNALING_NAN,
+	IEEE_QUIET_NAN, IEEE_NEGATIVE_INF, IEEE_NEGATIVE_NORMAL,
+	IEEE_NEGATIVE_DENORMAL, IEEE_NEGATIVE_SUBNORMAL,
+	IEEE_NEGATIVE_ZERO, IEEE_POSITIVE_ZERO, IEEE_POSITIVE_DENORMAL,
+	IEEE_POSITIVE_SUBNORMAL, IEEE_POSITIVE_NORMAL, IEEE_POSITIVE_INF):
+	Move to gcc/fortran/libgfortran.h.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/105105
+	* ieee/ieee_helper.c: Don't include issignaling_fallback.h.
+	(CLASSMACRO): Use __builtin_issignaling instead of issignaling.
+	* ieee/issignaling_fallback.h: Removed.
+
+2022-08-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46539
+	* acinclude.m4 (LIBQUADSPEC): From $FC -static-libgfortran -###
+	output determine -Bstatic/-Bdynamic, -bstatic/-bdynamic,
+	-aarchive_shared/-adefault linker support or Darwin remapping
+	of -lgfortran to libgfortran.a%s and use that around or instead
+	of -lquadmath in LIBQUADSPEC.
+	* configure: Regenerated.
+
+2022-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/106079
+	* io/transfer.c (formatted_transfer_scalar_read,
+	formatted_transfer_scalar_write): For type BT_REAL with kind 17
+	change kind to 16 before calling read_radix or write_{b,o,z}.
+
+2022-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* mk-kinds-h.sh: Change __float128 to _Float128 in a comment.
+	* acinclude.m4 (LIBGFOR_CHECK_MATH_IEEE128): Use _Float128 instead of
+	__float128.
+	* libgfortran.h (isnan): Change __float128 to _Float128 in a comment.
+	(__acoshieee128, __acosieee128, __asinhieee128, __asinieee128,
+	__atan2ieee128, __atanhieee128, __atanieee128, __copysignieee128,
+	__coshieee128, __cosieee128, __erfcieee128, __erfieee128,
+	__expieee128, __fabsieee128, __fmaieee128, __fmodieee128, __jnieee128,
+	__log10ieee128, __logieee128, __powieee128, __sinhieee128,
+	__sinieee128, __sqrtieee128, __tanhieee128, __tanieee128,
+	__ynieee128, __strtoieee128): Use _Float128 instead of __float128.
+	* configure: Regenerated.
+
+2022-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/106137
+	* acinclude.m4 (LIBGFOR_CHECK_FLOAT128): Adjust comment.
+	Also test for __float128.
+	(HAVE_FLOAT128): Adjust description.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Check for strtof128 and strfromf128.
+	Check for math and complex *f128 functions.  Set
+	have_iec_60559_libc_support to yes if *f128 support is around, for
+	--enable-libquadmath-support default to "default" rather than yes if
+	have_iec_60559_libc_support is yes.
+	* acinclude.m4 (LIBGFOR_CHECK_FLOAT128): Test
+	_Float128/_Complex _Float128 rather than __float128 and
+	_Complex float __attribute__((mode(TC))).  If libquadmath support
+	is defaulted and have_iec_60559_libc_support is yes, define and subst
+	USE_IEC_60559.  Remove unused LIBGFOR_BUILD_QUAD conditional.
+	* Makefile.am (kinds.h): Pass @USE_IEC_60559@ as an extra
+	mk-kinds-h.sh argument.
+	* mk-kinds-h.sh: Accept 4th use_iec_60559 argument.  Use
+	_Float128/_Complex _Float128 types instead of __float128 and
+	_Complex float __attribute__((mode(TC))), and if use_iec_60559 is yes,
+	use f128 suffix instead of q and define GFC_REAL_16_USE_IEC_60559.
+	* kinds-override.h: Use _Float128/_Complex _Float128 types instead of
+	__float128 and _Complex float __attribute__((mode(TC))), if
+	USE_IEC_60559 is defined, use f128 suffixes instead of q and
+	define GFC_REAL_17_USE_IEC_60559.
+	* libgfortran.h: Don't include quadmath_weak.h if USE_IEC_60559 is
+	defined.
+	(GFC_REAL_16_INFINITY, GFC_REAL_16_QUIET_NAN): Define
+	for GFC_REAL_16_USE_IEC_60559 differently.
+	* caf/single.c (convert_type): Use _Float128/_Complex _Float128
+	instead of __float128 and _Complex float __attribute__((mode(TC))).
+	For HAVE_GFC_REAL_10 when HAVE_GFC_REAL_16 isn't defined use
+	_Complex long double instead of long double.
+	* ieee/issignaling_fallback.h (ieee854_float128_shape_type): Use
+	_Float128 instead of __float128.
+	(__issignalingf128): Change argument type to _Float128.
+	(issignaling): Use _Float128 instead of __float128 in _Generic.
+	* intrinsics/cshift0.c (cshift0): Use _Float128 instead of __float128
+	in a comment.  Fix a comment typo, logn double -> long double.
+	* intrinsics/erfc_scaled.c (_THRESH, _M_2_SQRTPI, _INF, _ERFC, _EXP):
+	Use different definitions if GFC_REAL_16_USE_IEC_60559.
+	(_THRESH, _M_2_SQRTPI): Use GFC_REAL_17_LITERAL macro.
+	(_ERFC, _EXP): Use different definitions if GFC_REAL_17_USE_IEC_60559.
+	* intrinsics/spread_generic.c (spread, spread_scalar): Use _Float128
+	instead of __float128 in a comment.  Fix a comment typo,
+	logn double -> long double.
+	* intrinsics/trigd.c (ENABLE_SIND, ENABLE_COSD, ENABLE_TAND): Handle
+	GFC_REAL_16_USE_IEC_60559.
+	* intrinsics/pack_generic.c (pack): Use _Float128 instead of
+	__float128 in a comment.  Fix a comment typo, logn double ->
+	long double.
+	* intrinsics/unpack_generic.c (unpack1, unpack0): Likewise.
+	* runtime/in_pack_generic.c (internal_pack): Likewise.
+	* runtime/in_unpack_generic.c (internal_unpack): Likewise.
+	* io/read.c (convert_real, convert_infnan): Handle
+	GFC_REAL_16_USE_IEC_60559 and GFC_REAL_17_USE_IEC_60559.
+	* io/transfer128.c (tmp1, tmp2): Don't define if libquadmath
+	isn't needed.
+	* io/write_float.def (gfor_strfromf128): New function.
+	(DTOA2Q, FDTOA2Q): Define differently if
+	GFC_REAL_16_USE_IEC_60559 or GFC_REAL_17_USE_IEC_60559.
+	* m4/mtype.m4: Use different suffix if GFC_REAL_16_USE_IEC_60559
+	or GFC_REAL_17_USE_IEC_60559.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* generated/bessel_r16.c: Regenerated.
+	* generated/bessel_r17.c: Regenerated.
+	* generated/norm2_r16.c: Regenerated.
+	* generated/norm2_r17.c: Regenerated.
+
+2022-01-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/104233
+	* ieee/issignaling_fallback.h: Check GFC_REAL_16_IS_FLOAT128
+	instead of __FLT128_IS_IEC_60559__.
+
+2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/issignaling_fallback.h: Fix GCC-specific preprocessor
+	macros.
+
+2022-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* ieee/issignaling_fallback.h (__issignalingl): Define for
+	IBM extended long double are returning __issignaling on the
+	first double.
+
+2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/issignaling_fallback.h: fix preprocessor condition.
+
+2022-01-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/issignaling_fallback.h: New file.
+	* ieee/ieee_helper.c: Include issignaling_fallback.h when target
+	does not define issignaling macro.
+
+2022-01-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/issignaling_fallback.h: Remove file.
+
+2022-01-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* runtime/environ.c: Allow for multiple default values so that
+	separate default specifications for IBM long double format and
+	endianness are possible.
+
+2022-01-16  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/issignaling_fallback.h: New file.
+
+2022-01-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/82207
+	* mk-kinds-h.sh: Add values for TINY.
+	* ieee/ieee_arithmetic.F90: Call C helper functions for
+	IEEE_VALUE.
+	* ieee/ieee_helper.c: New functions ieee_value_helper_N for each
+	floating-point type.
+
+2022-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/104006
+	* Makefile.am (BUILT_SOURCES): Don't include $(version_dep).
+	(clean-local): Remove $(version_dep).
+	* Makefile.in: Regenerated.
+
+2022-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/104006
+	* Makefile.am (gfortran.map-sun): Rename target to ...
+	(gfortran.ver-sun): ... this.
+	* Makefile.in: Regenerated.
+
+2022-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (POWER_IEEE128): Use __GLIBC_PREREQ in a separate
+	#if directive inside of #if ... && defined __GLIBC_PREREQ.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/transfer.c (unformatted_read, unformatted_write): When
+	byteswapping IBM extended real(kind=16), handle it as byteswapping
+	two real(kind=8) values.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* runtime/environ.c (R16_IEEE): New macro.
+	(R16_IBM): New macro.
+	(next_token): Handle IBM R16 conversion cases.
+	(push_token): Likewise.
+	(mark_single): Likewise.
+	(do_parse): Likewise, initialize endian.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.in: Regenerate.
+	* io/file_pos.c (unformatted_backspace): Mask off
+	R16 parts for convert.
+	* io/inquire.c (inquire_via_unit): Add cases for
+	R16 parts.
+	* io/open.c (st_open): Add cases for R16 conversion.
+	* io/transfer.c (unformatted_read): Adjust for R16 conversions.
+	(unformatted_write): Likewise.
+	(us_read): Mask of R16 bits.
+	(data_transfer_init): Likewiese.
+	(write_us_marker): Likewise.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (AM_FCFLAGS): Add -fbuilding-libgfortran after
+	-fallow-leading-underscore.
+	* Makefile.in: Regenerated.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (__copysignieee128, __fmaieee128, __fmodieee128):
+	Declare.
+	* intrinsics/trigd.c (COPYSIGN, FMOD, FABS, FMA, SIN, COS, TAN): If
+	POWER_IEEE128 is defined, define these for kind 17 include.
+	* intrinsics/trigd_lib.inc (COPYSIGN, FMOD, FABS, FMA, SIN, COS, TAN):
+	Don't define if COPYSIGN is already defined.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (GFC_REAL_17_INFINITY, GFC_REAL_17_QUIET_NAN): Define.
+	(__erfcieee128): Declare.
+	* intrinsics/trigd.c (_gfortran_sind_r17, _gfortran_cosd_r17,
+	_gfortran_tand_r17): Define for HAVE_GFC_REAL_17.
+	* intrinsics/random.c (random_r17, arandom_r17, rnumber_17): Define.
+	* intrinsics/erfc_scaled.c (ERFC_SCALED): Define.
+	(erfc_scaled_r16): Use ERFC_SCALED macro.
+	(erfc_scaled_r17): Define.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/read.c (convert_real): Add missing break; for the
+	HAVE_GFC_REAL_17 case.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/write_float.def (CALCULATE_EXP): If HAVE_GFC_REAL_17, also use
+	CALCULATE_EXP(17).
+	(determine_en_precision): Use 17 instead of 16 as first EN_PREC
+	argument for kind 17.
+	(get_float_string): Use 17 instead of 16 as first FORMAT_FLOAT
+	argument for kind 17.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (__acoshieee128, __acosieee128, __asinhieee128,
+	__asinieee128, __atan2ieee128, __atanhieee128, __atanieee128,
+	__coshieee128, __cosieee128, __erfieee128, __expieee128,
+	__fabsieee128, __jnieee128, __log10ieee128, __logieee128,
+	__powieee128, __sinhieee128, __sinieee128, __sqrtieee128,
+	__tanhieee128, __tanieee128, __ynieee128): Formatting fixes.
+	(__strtoieee128, __snprintfieee128): Declare.
+	* io/io.h (default_width_for_float, default_precision_for_float):
+	Handle kind == 17.
+	* io/size_from_kind.c (size_from_real_kind, size_from_complex_kind):
+	Likewise.
+	* io/read.c (set_integer, si_max, convert_real, convert_infnan,
+	read_f): Likewise.
+	* io/write.c (extract_uint, size_from_kind, set_fnode_default):
+	Likewise.
+	* io/write_float.def (DTOA2Q, FDTOA2Q): Define for HAVE_GFC_REAL_17.
+	(determine_en_precision, get_float_string): Handle kind == 17.
+	* io/transfer128.c: Use also for HAVE_GFC_REAL_17, but don't drag in
+	libquadmath if POWER_IEEE128.
+	* Makefile.am (comma, PREPROCESS): New variables.
+	(gfortran.ver): New goal.
+	(version_arg, version_dep): Use gfortran.ver instead of
+	$(srcdir)/gfortran.map.
+	(gfortran.map-sun): Depend on and use gfortran.ver instead of
+	$(srcdir)/gfortran.map.
+	(BUILT_SOURCES): Add $(version_dep).
+	* Makefile.in: Regenerated.
+	* gfortran.map (GFORTRAN_8): Don't export
+	_gfortran_transfer_complex128, _gfortran_transfer_complex128_write,
+	_gfortran_transfer_real128 and _gfortran_transfer_real128_write if
+	HAVE_GFC_REAL_17 is defined.
+	(GFORTRAN_12): Export those here instead.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Correct files for compilation flags. Add
+	-D__powerpc64__ for Fortran sources.  Get kinds.inc from
+	grep of kinds.h and kinds-override.h.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add -mno-gnu-attribute to compile flags.
+	* generated/_abs_c17.F90: Regenerate.
+	* generated/_abs_r17.F90: Regenerate.
+	* generated/_acos_r17.F90: Regenerate.
+	* generated/_acosh_r17.F90: Regenerate.
+	* generated/_aimag_c17.F90: Regenerate.
+	* generated/_aint_r17.F90: Regenerate.
+	* generated/_anint_r17.F90: Regenerate.
+	* generated/_asin_r17.F90: Regenerate.
+	* generated/_asinh_r17.F90: Regenerate.
+	* generated/_atan2_r17.F90: Regenerate.
+	* generated/_atan_r17.F90: Regenerate.
+	* generated/_atanh_r17.F90: Regenerate.
+	* generated/_conjg_c17.F90: Regenerate.
+	* generated/_cos_c17.F90: Regenerate.
+	* generated/_cos_r17.F90: Regenerate.
+	* generated/_cosh_r17.F90: Regenerate.
+	* generated/_dim_r17.F90: Regenerate.
+	* generated/_exp_c17.F90: Regenerate.
+	* generated/_exp_r17.F90: Regenerate.
+	* generated/_log10_r17.F90: Regenerate.
+	* generated/_log_c17.F90: Regenerate.
+	* generated/_log_r17.F90: Regenerate.
+	* generated/_mod_r17.F90: Regenerate.
+	* generated/_sign_r17.F90: Regenerate.
+	* generated/_sin_c17.F90: Regenerate.
+	* generated/_sin_r17.F90: Regenerate.
+	* generated/_sinh_r17.F90: Regenerate.
+	* generated/_sqrt_c17.F90: Regenerate.
+	* generated/_sqrt_r17.F90: Regenerate.
+	* generated/_tan_r17.F90: Regenerate.
+	* generated/_tanh_r17.F90: Regenerate.
+	* kinds-override.h: Adjust to trunk.
+	Change condition to single line so it can be grepped.
+	* m4/specific.m4: Make sure that real=kind16 is used
+	for _r17.F90 and _c17.F90 files.
+	* m4/specific2.m4: Likewise.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (internal_pack_r17, internal_pack_c17,
+	internal_unpack_r17, internal_unpack_c17, pack_r17, pack_c17,
+	unpack0_r17, unpack0_c17, unpack1_r17, unpack1_c17, spread_r17,
+	spread_c17, spread_scalar_r17, spread_scalar_c17, cshift0_r17,
+	cshift0_c17, cshift1_4_r17, cshift1_8_r17, cshift1_16_r17,
+	cshift1_4_c17, cshift1_8_c17, cshift1_16_c17): Declare.
+	* gfortran.map (GFORTRAN_12): Export *_r17 and *_c17.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* acinclude.m4 (LIBGFOR_CHECK_MATH_IEEE128): New macro.
+	* configure.ac: Use it.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Fix pattern substitution for _r17 and _c17.
+	* Makefile.in: Regenerate.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Add _r17 and _c17 files.  Build them
+	with -mabi=ieeelongdouble on POWER.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: New flag HAVE_REAL_17.
+	* kinds-override.h: (HAVE_GFC_REAL_17): New macro.
+	(HAVE_GFC_COMPLEX_17): New macro.
+	(GFC_REAL_17_HUGE): New macro.
+	(GFC_REAL_17_LITERAL_SUFFIX): New macro.
+	(GFC_REAL_17_LITERAL): New macro.
+	(GFC_REAL_17_DIGITS): New macro.
+	(GFC_REAL_17_RADIX): New macro.
+	* libgfortran.h	(POWER_IEEE128): New macro.
+	(gfc_array_r17): Typedef.
+	(GFC_DTYPE_REAL_17): New macro.
+	(GFC_DTYPE_COMPLEX_17): New macro.
+	(__acoshieee128): Prototype.
+	(__acosieee128): Prototype.
+	(__asinhieee128): Prototype.
+	(__asinieee128): Prototype.
+	(__atan2ieee128): Prototype.
+	(__atanhieee128): Prototype.
+	(__atanieee128): Prototype.
+	(__coshieee128): Prototype.
+	(__cosieee128): Prototype.
+	(__erfieee128): Prototype.
+	(__expieee128): Prototype.
+	(__fabsieee128): Prototype.
+	(__jnieee128): Prototype.
+	(__log10ieee128): Prototype.
+	(__logieee128): Prototype.
+	(__powieee128): Prototype.
+	(__sinhieee128): Prototype.
+	(__sinieee128): Prototype.
+	(__sqrtieee128): Prototype.
+	(__tanhieee128): Prototype.
+	(__tanieee128): Prototype.
+	(__ynieee128): Prototype.
+	* m4/mtype.m4: Make a bit more readable. Add KIND=17.
+	* generated/_abs_c17.F90: New file.
+	* generated/_abs_r17.F90: New file.
+	* generated/_acos_r17.F90: New file.
+	* generated/_acosh_r17.F90: New file.
+	* generated/_aimag_c17.F90: New file.
+	* generated/_aint_r17.F90: New file.
+	* generated/_anint_r17.F90: New file.
+	* generated/_asin_r17.F90: New file.
+	* generated/_asinh_r17.F90: New file.
+	* generated/_atan2_r17.F90: New file.
+	* generated/_atan_r17.F90: New file.
+	* generated/_atanh_r17.F90: New file.
+	* generated/_conjg_c17.F90: New file.
+	* generated/_cos_c17.F90: New file.
+	* generated/_cos_r17.F90: New file.
+	* generated/_cosh_r17.F90: New file.
+	* generated/_dim_r17.F90: New file.
+	* generated/_exp_c17.F90: New file.
+	* generated/_exp_r17.F90: New file.
+	* generated/_log10_r17.F90: New file.
+	* generated/_log_c17.F90: New file.
+	* generated/_log_r17.F90: New file.
+	* generated/_mod_r17.F90: New file.
+	* generated/_sign_r17.F90: New file.
+	* generated/_sin_c17.F90: New file.
+	* generated/_sin_r17.F90: New file.
+	* generated/_sinh_r17.F90: New file.
+	* generated/_sqrt_c17.F90: New file.
+	* generated/_sqrt_r17.F90: New file.
+	* generated/_tan_r17.F90: New file.
+	* generated/_tanh_r17.F90: New file.
+	* generated/bessel_r17.c: New file.
+	* generated/cshift0_c17.c: New file.
+	* generated/cshift0_r17.c: New file.
+	* generated/cshift1_16_c17.c: New file.
+	* generated/cshift1_16_r17.c: New file.
+	* generated/cshift1_4_c17.c: New file.
+	* generated/cshift1_4_r17.c: New file.
+	* generated/cshift1_8_c17.c: New file.
+	* generated/cshift1_8_r17.c: New file.
+	* generated/findloc0_c17.c: New file.
+	* generated/findloc0_r17.c: New file.
+	* generated/findloc1_c17.c: New file.
+	* generated/findloc1_r17.c: New file.
+	* generated/in_pack_c17.c: New file.
+	* generated/in_pack_r17.c: New file.
+	* generated/in_unpack_c17.c: New file.
+	* generated/in_unpack_r17.c: New file.
+	* generated/matmul_c17.c: New file.
+	* generated/matmul_r17.c: New file.
+	* generated/matmulavx128_c17.c: New file.
+	* generated/matmulavx128_r17.c: New file.
+	* generated/maxloc0_16_r17.c: New file.
+	* generated/maxloc0_4_r17.c: New file.
+	* generated/maxloc0_8_r17.c: New file.
+	* generated/maxloc1_16_r17.c: New file.
+	* generated/maxloc1_4_r17.c: New file.
+	* generated/maxloc1_8_r17.c: New file.
+	* generated/maxval_r17.c: New file.
+	* generated/minloc0_16_r17.c: New file.
+	* generated/minloc0_4_r17.c: New file.
+	* generated/minloc0_8_r17.c: New file.
+	* generated/minloc1_16_r17.c: New file.
+	* generated/minloc1_4_r17.c: New file.
+	* generated/minloc1_8_r17.c: New file.
+	* generated/minval_r17.c: New file.
+	* generated/norm2_r17.c: New file.
+	* generated/pack_c17.c: New file.
+	* generated/pack_r17.c: New file.
+	* generated/pow_c17_i16.c: New file.
+	* generated/pow_c17_i4.c: New file.
+	* generated/pow_c17_i8.c: New file.
+	* generated/pow_r17_i16.c: New file.
+	* generated/pow_r17_i4.c: New file.
+	* generated/pow_r17_i8.c: New file.
+	* generated/product_c17.c: New file.
+	* generated/product_r17.c: New file.
+	* generated/reshape_c17.c: New file.
+	* generated/reshape_r17.c: New file.
+	* generated/spread_c17.c: New file.
+	* generated/spread_r17.c: New file.
+	* generated/sum_c17.c: New file.
+	* generated/sum_r17.c: New file.
+	* generated/unpack_c17.c: New file.
+	* generated/unpack_r17.c: New file.
+	* m4/ifunc.m4: New file.
+
+2022-01-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/82207
+	* Makefile.am: Pass -fsignaling-nans for IEEE files.
+	* Makefile.in: Regenerate.
+	* ieee/ieee_helper.c: Use issignaling macro to recognized
+	signaling NaNs.
+
+
+Copyright (C) 2022 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -2294,6 +2294,11 @@ PROCEDURE IsExternal (sym: CARDINAL) : BOOLEAN ;
 VAR
    mod: CARDINAL ;
 BEGIN
+   Assert (NOT IsDefImp (sym)) ;
+   IF IsProcedure (sym) AND IsExtern (sym)
+   THEN
+     RETURN TRUE
+   END ;
    mod := GetScope(sym) ;
    REPEAT
       IF mod=NulSym

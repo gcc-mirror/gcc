@@ -1388,13 +1388,23 @@ package body Checks is
 
       function Denotes_Explicit_Dereference (Obj : Node_Id) return Boolean is
       begin
-         return
-           Nkind (Obj) = N_Explicit_Dereference
-             or else
-               (Is_Entity_Name (Obj)
-                 and then Present (Renamed_Object (Entity (Obj)))
-                 and then Nkind (Renamed_Object (Entity (Obj))) =
-                                              N_Explicit_Dereference);
+         if Is_Entity_Name (Obj) then
+            return Present (Renamed_Object (Entity (Obj)))
+              and then
+                Denotes_Explicit_Dereference (Renamed_Object (Entity (Obj)));
+
+         --  This routine uses the rules of the language so we need to exclude
+         --  rewritten constructs that introduce artificial dereferences.
+
+         elsif Nkind (Obj) = N_Explicit_Dereference then
+            return not Is_Captured_Function_Call (Obj)
+              and then not
+                (Nkind (Parent (Obj)) = N_Object_Renaming_Declaration
+                  and then Is_Return_Object (Defining_Entity (Parent (Obj))));
+
+         else
+            return False;
+         end if;
       end Denotes_Explicit_Dereference;
 
       ----------------------------------------
@@ -1497,9 +1507,7 @@ package body Checks is
                              and then not Is_Aliased_Unconstrained_Component)
                    or else (Ada_Version >= Ada_2005
                              and then not Is_Constrained (T_Typ)
-                             and then Denotes_Explicit_Dereference (Lhs)
-                             and then Nkind (Original_Node (Lhs)) /=
-                                        N_Function_Call))
+                             and then Denotes_Explicit_Dereference (Lhs)))
       then
          T_Typ := Get_Actual_Subtype (Lhs);
       end if;

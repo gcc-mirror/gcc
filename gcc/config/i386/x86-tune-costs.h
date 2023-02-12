@@ -1867,9 +1867,9 @@ struct processor_costs znver4_cost = {
   {8, 8, 8},				/* cost of storing integer
 					   registers.  */
   2,					/* cost of reg,reg fld/fst.  */
-  {6, 6, 16},				/* cost of loading fp registers
+  {14, 14, 17},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode.  */
-  {8, 8, 16},				/* cost of storing fp registers
+  {12, 12, 16},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode.  */
   2,					/* cost of moving MMX register.  */
   {6, 6},				/* cost of loading MMX registers
@@ -1878,13 +1878,13 @@ struct processor_costs znver4_cost = {
 					   in SImode and DImode.  */
   2, 2, 3,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
-  {6, 6, 6, 6, 12},			/* cost of loading SSE registers
+  {6, 6, 10, 10, 12},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit.  */
-  {8, 8, 8, 8, 16},			/* cost of storing SSE registers
+  {8, 8, 8, 12, 12},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit.  */
-  6, 6,					/* SSE->integer and integer->SSE
+  6, 8,					/* SSE->integer and integer->SSE
 					   moves.  */
-  8, 8,				/* mask->integer and integer->mask moves */
+  8, 8,					/* mask->integer and integer->mask moves */
   {6, 6, 6},				/* cost of loading mask register
 					   in QImode, HImode, SImode.  */
   {8, 8, 8},				/* cost if storing mask register
@@ -1894,6 +1894,7 @@ struct processor_costs znver4_cost = {
   },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction.  */
+  /* TODO: Lea with 3 components has cost 2.  */
   COSTS_N_INSNS (1),			/* cost of a lea instruction.  */
   COSTS_N_INSNS (1),			/* variable shift costs.  */
   COSTS_N_INSNS (1),			/* constant shift costs.  */
@@ -1904,11 +1905,11 @@ struct processor_costs znver4_cost = {
    COSTS_N_INSNS (3)},			/*			other.  */
   0,					/* cost of multiply per each bit
 					   set.  */
-  {COSTS_N_INSNS (9),			/* cost of a divide/mod for QI.  */
-   COSTS_N_INSNS (10),			/* 			    HI.  */
-   COSTS_N_INSNS (12),			/*			    SI.  */
-   COSTS_N_INSNS (17),			/*			    DI.  */
-   COSTS_N_INSNS (17)},			/*			    other.  */
+  {COSTS_N_INSNS (12),			/* cost of a divide/mod for QI.  */
+   COSTS_N_INSNS (13),			/* 			    HI.  */
+   COSTS_N_INSNS (13),			/*			    SI.  */
+   COSTS_N_INSNS (18),			/*			    DI.  */
+   COSTS_N_INSNS (18)},			/*			    other.  */
   COSTS_N_INSNS (1),			/* cost of movsx.  */
   COSTS_N_INSNS (1),			/* cost of movzx.  */
   8,					/* "large" insn.  */
@@ -1919,22 +1920,22 @@ struct processor_costs znver4_cost = {
 					   Relative to reg-reg move (2).  */
   {8, 8, 8},				/* cost of storing integer
 					   registers.  */
-  {6, 6, 6, 6, 12},			/* cost of loading SSE registers
+  {6, 6, 10, 10, 12},			/* cost of loading SSE registers
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {8, 8, 8, 8, 16},			/* cost of storing SSE register
+  {8, 8, 8, 12, 12},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {6, 6, 6, 6, 12},			/* cost of unaligned loads.  */
-  {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
-  2, 2, 3,				/* cost of moving XMM,YMM,ZMM
+  {6, 6, 6, 6, 6},			/* cost of unaligned loads.  */
+  {8, 8, 8, 8, 8},			/* cost of unaligned stores.  */
+  2, 2, 2,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
-  /* VGATHERDPD is 15 uops and throughput is 4, VGATHERDPS is 23 uops,
-     throughput 9.  Approx 7 uops do not depend on vector size and every load
-     is 4 uops.  */
-  14, 8,				/* Gather load static, per_elt.  */
-  14, 10,				/* Gather store static, per_elt.  */
+  /* VGATHERDPD is 17 uops and throughput is 4, VGATHERDPS is 24 uops,
+     throughput 5.  Approx 7 uops do not depend on vector size and every load
+     is 5 uops.  */
+  14, 10,				/* Gather load static, per_elt.  */
+  14, 20,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
-  512,					/* size of l2 cache.  */
+  1024,					/* size of l2 cache.  */
   64,					/* size of prefetch block.  */
   /* New AMD processors never drop prefetches; if they cannot be performed
      immediately, they are queued.  We set number of simultaneous prefetches
@@ -1943,26 +1944,26 @@ struct processor_costs znver4_cost = {
      time).  */
   100,					/* number of parallel prefetches.  */
   3,					/* Branch cost.  */
-  COSTS_N_INSNS (5),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (7),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (7),			/* cost of FMUL instruction.  */
   /* Latency of fdiv is 8-15.  */
   COSTS_N_INSNS (15),			/* cost of FDIV instruction.  */
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   /* Latency of fsqrt is 4-10.  */
-  COSTS_N_INSNS (10),			/* cost of FSQRT instruction.  */
+  COSTS_N_INSNS (25),			/* cost of FSQRT instruction.  */
 
   COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
   COSTS_N_INSNS (3),			/* cost of MULSS instruction.  */
   COSTS_N_INSNS (3),			/* cost of MULSD instruction.  */
-  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
-  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
-  COSTS_N_INSNS (10),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (13),			/* cost of DIVSS instruction.  */
   /* 9-13.  */
   COSTS_N_INSNS (13),			/* cost of DIVSD instruction.  */
-  COSTS_N_INSNS (10),			/* cost of SQRTSS instruction.  */
-  COSTS_N_INSNS (15),			/* cost of SQRTSD instruction.  */
+  COSTS_N_INSNS (15),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (21),			/* cost of SQRTSD instruction.  */
   /* Zen can execute 4 integer operations per cycle.  FP operations
      take 3 cycles and it can execute 2 integer additions and 2
      multiplications thus reassociation may make sense up to with of 6.

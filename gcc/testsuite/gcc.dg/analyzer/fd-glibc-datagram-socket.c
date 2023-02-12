@@ -1,5 +1,6 @@
 /* Example from glibc manual (16.10.3).  */
 /* { dg-require-effective-target sockets } */
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 
 #include <stdio.h>
 #include <errno.h>
@@ -21,7 +22,7 @@ main (void)
   socklen_t size;
   int nbytes;
 
-  /* Remove the filename first, it’s ok if the call fails */
+  /* Remove the filename first, its ok if the call fails */
   unlink (SERVER);
 
   /* Make the socket, then loop endlessly. */

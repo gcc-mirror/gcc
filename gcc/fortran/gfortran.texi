@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2022
+@set copyrights-gfortran 1999-2023
 
 @include gcc-common.texi
 

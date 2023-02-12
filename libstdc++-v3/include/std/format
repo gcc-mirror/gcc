@@ -597,6 +597,7 @@ namespace __format
       return __dest;
     }
 
+  // Write STR to OUT (and do so efficiently if OUT is a _Sink_iter).
   template<typename _Out, typename _CharT>
     requires output_iterator<_Out, const _CharT&>
     inline _Out
@@ -666,6 +667,30 @@ namespace __format
       __pad(__r, __out);
 
       return __out;
+    }
+
+  // Write STR to OUT, with alignment and padding as determined by SPEC.
+  // pre: __spec._M_align != _Align_default || __align != _Align_default
+  template<typename _CharT, typename _Out>
+    _Out
+    __write_padded_as_spec(basic_string_view<type_identity_t<_CharT>> __str,
+			   size_t __estimated_width,
+			   basic_format_context<_Out, _CharT>& __fc,
+			   const _Spec<_CharT>& __spec,
+			   _Align __align = _Align_left)
+    {
+      size_t __width = __spec._M_get_width(__fc);
+
+      if (__width <= __estimated_width)
+	return __format::__write(__fc.out(), __str);
+
+      const size_t __nfill = __width - __estimated_width;
+
+      if (__spec._M_align)
+	__align = __spec._M_align;
+
+      return __format::__write_padded(__fc.out(), __str, __align, __nfill,
+				      __spec._M_fill);
     }
 
   // A lightweight optional<locale>.
@@ -799,7 +824,7 @@ namespace __format
       }
 
       template<typename _Out>
-	typename basic_format_context<_Out, _CharT>::iterator
+	_Out
 	format(basic_string_view<_CharT> __s,
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{
@@ -824,16 +849,8 @@ namespace __format
 		}
 	    }
 
-	  size_t __width = _M_spec._M_get_width(__fc);
-
-	  if (__width <= __estimated_width)
-	    return __format::__write(__fc.out(), __s);
-
-	  const size_t __nfill = __width - __estimated_width;
-	  _Align __align = _M_spec._M_align ? _M_spec._M_align : _Align_left;
-
-	  return __format::__write_padded(__fc.out(), __s,
-					  __align, __nfill, _M_spec._M_fill);
+	  return __format::__write_padded_as_spec(__s, __estimated_width,
+						  __fc, _M_spec);
 	}
 
 #if __cpp_lib_format_ranges
@@ -1089,32 +1106,16 @@ namespace __format
 	      __est_width = __s.size();
 	    }
 
-	  return _M_format_str(__s, __est_width, __fc);
+	  return __format::__write_padded_as_spec(__s, __est_width, __fc,
+						  _M_spec);
 	}
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
 	_M_format_character(_CharT __c,
 		      basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_format_str({&__c, 1u}, 1, __fc); }
-
-      template<typename _Out>
-	typename basic_format_context<_Out, _CharT>::iterator
-	_M_format_str(basic_string_view<_CharT> __str, size_t __est_width,
-		      basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  // TODO: this is identical to last part of __formatter_str::format
-	  // so refactor to reuse the same code.
-
-	  size_t __width = _M_spec._M_get_width(__fc);
-
-	  if (__width <= __est_width)
-	    return __format::__write(__fc.out(), __str);
-
-	  size_t __nfill = __width - __est_width;
-	  _Align __align = _M_spec._M_align ? _M_spec._M_align : _Align_left;
-	  return __format::__write_padded(__fc.out(), __str,
-					  __align, __nfill, _M_spec._M_fill);
+	  return __format::__write_padded_as_spec({&__c, 1u}, 1, __fc, _M_spec);
 	}
 
       template<typename _Int>
@@ -2135,20 +2136,12 @@ namespace __format
 	      __str = wstring_view(__p, __n);
 	    }
 
-	  size_t __width = _M_spec._M_get_width(__fc);
-
-	  if (__width <= (size_t)__n)
-	    return __format::__write(__fc.out(), __str);
-
-	  size_t __nfill = __width - __n;
-	  __format::_Align __align
-	    = _M_spec._M_align ? _M_spec._M_align : __format::_Align_right;
-	  return __format::__write_padded(__fc.out(), __str,
-					  __align, __nfill, _M_spec._M_fill);
+	  return __format::__write_padded_as_spec(__str, __n, __fc, _M_spec,
+						  __format::_Align_right);
 	}
 
     private:
-      __format::_Spec<_CharT> _M_spec{}; // XXX don't need full spec?
+      __format::_Spec<_CharT> _M_spec{};
     };
 
   template<__format::__char _CharT>

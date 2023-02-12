@@ -1,5 +1,5 @@
 /* VSETVL pass for RISC-V 'V' Extension for GNU compiler.
-   Copyright(C) 2022-2022 Free Software Foundation, Inc.
+   Copyright(C) 2022-2023 Free Software Foundation, Inc.
    Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 This file is part of GCC.
@@ -112,8 +112,8 @@ vlmax_avl_p (rtx x)
 static bool
 vlmax_avl_insn_p (rtx_insn *rinsn)
 {
-  return INSN_CODE (rinsn) == CODE_FOR_vlmax_avlsi
-	 || INSN_CODE (rinsn) == CODE_FOR_vlmax_avldi;
+  return (INSN_CODE (rinsn) == CODE_FOR_vlmax_avlsi
+	  || INSN_CODE (rinsn) == CODE_FOR_vlmax_avldi);
 }
 
 static bool
@@ -156,24 +156,24 @@ vector_config_insn_p (rtx_insn *rinsn)
 static bool
 vsetvl_insn_p (rtx_insn *rinsn)
 {
-  return INSN_CODE (rinsn) == CODE_FOR_vsetvldi
-	 || INSN_CODE (rinsn) == CODE_FOR_vsetvlsi;
+  return (INSN_CODE (rinsn) == CODE_FOR_vsetvldi
+	 || INSN_CODE (rinsn) == CODE_FOR_vsetvlsi);
 }
 
 /* Return true if INSN1 comes befeore INSN2 in the same block.  */
 static bool
 same_bb_and_before_p (const insn_info *insn1, const insn_info *insn2)
 {
-  return (insn1->bb ()->index () == insn2->bb ()->index ())
-	 && (*insn1 < *insn2);
+  return ((insn1->bb ()->index () == insn2->bb ()->index ())
+	 && (*insn1 < *insn2));
 }
 
 /* Return true if INSN1 comes after or equal INSN2 in the same block.  */
 static bool
 same_bb_and_after_or_equal_p (const insn_info *insn1, const insn_info *insn2)
 {
-  return (insn1->bb ()->index () == insn2->bb ()->index ())
-	 && (*insn1 >= *insn2);
+  return ((insn1->bb ()->index () == insn2->bb ()->index ())
+	 && (*insn1 >= *insn2));
 }
 
 /* An "anticipatable occurrence" is one that is the first occurrence in the
@@ -186,7 +186,7 @@ anticipatable_occurrence_p (const insn_info *insn, const vector_insn_info dem)
   /* The only possible operand we care of VSETVL is AVL.  */
   if (dem.has_avl_reg ())
     {
-      /* The operands shoule not be modified in the basic block prior
+      /* The operands should not be modified in the basic block prior
 	 to the occurrence.  */
       if (!vlmax_avl_p (dem.get_avl ()))
 	{
@@ -223,7 +223,7 @@ available_occurrence_p (const insn_info *insn, const vector_insn_info dem)
   /* The only possible operand we care of VSETVL is AVL.  */
   if (dem.has_avl_reg ())
     {
-      /* The operands shoule not be modified in the basic block prior
+      /* The operands should not be modified in the basic block prior
 	 to the occurrence.
 	 e.g.
 	    bb:
@@ -284,7 +284,7 @@ backward_propagate_worthwhile_p (const basic_block cfg_bb,
 			     |_________|
 			  reaching_out
 	  Header is incompatible with reaching_out and the block is loop itself,
-	  we don't backward propagete the local_dem since we can't avoid emit
+	  we don't backward propagate the local_dem since we can't avoid emit
 	  vsetvl for the local_dem.  */
       edge e;
       edge_iterator ei;
@@ -302,10 +302,6 @@ get_vl (rtx_insn *rinsn)
 {
   if (has_vl_op (rinsn))
     {
-      /* We only call get_vl for VLMAX use VTYPE instruction.
-	 It's used to get the VL operand to emit VLMAX VSETVL instruction:
-	 vsetvl a5,zero,e32,m1,ta,ma.  */
-      gcc_assert (get_attr_avl_type (rinsn) == VLMAX);
       extract_insn_cached (rinsn);
       return recog_data.operand[get_attr_vl_op_idx (rinsn)];
     }
@@ -334,10 +330,10 @@ can_backward_propagate_p (const function_info *ssa, const basic_block cfg_bb,
   insn_info *insn = prop.get_insn ();
 
   /* TODO: We don't backward propagate the explict VSETVL here
-     since we will change vsetvl and vsetvlmax intrinsiscs into
-     no side effects which can be optimized into optimzal location
-     by GCC internal PASSes. We only need to support these backward
-     propagation if vsetvl instrinsics have side effects.  */
+     since we will change vsetvl and vsetvlmax intrinsics into
+     no side effects which can be optimized into optimal location
+     by GCC internal passes. We only need to support these backward
+     propagation if vsetvl intrinsics have side effects.  */
   if (vsetvl_insn_p (insn->rtl ()))
     return false;
 
@@ -369,7 +365,7 @@ can_backward_propagate_p (const function_info *ssa, const basic_block cfg_bb,
   def_info *def = find_access (insn->uses (), REGNO (reg))->def ();
 
   /* If the definition is in the current block, we can't propagate it
-     acrocss blocks.  */
+     across blocks.  */
   if (def->bb ()->cfg_bb ()->index == insn->bb ()->cfg_bb ()->index)
     {
       set_info *set = safe_dyn_cast<set_info *> (def);
@@ -406,7 +402,7 @@ can_backward_propagate_p (const function_info *ssa, const basic_block cfg_bb,
   if (def->bb ()->cfg_bb ()->index == cfg_bb->index)
     return true;
 
-  /* Make sure we don't backward propagete the VL/VTYPE info over the
+  /* Make sure we don't backward propagate the VL/VTYPE info over the
      definition blocks.  */
   bool visited_p = false;
   for (const bb_info *bb : ssa->reverse_bbs ())
@@ -814,15 +810,6 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
       fprintf (dump_file, "\nChange PATTERN of insn %d from:\n",
 	       INSN_UID (rinsn));
       print_rtl_single (dump_file, PATTERN (rinsn));
-      if (dump_flags & TDF_DETAILS)
-	{
-	  fprintf (dump_file, "RTL_SSA info:\n");
-	  pretty_printer pp;
-	  pp.buffer->stream = dump_file;
-	  insn->print_full (&pp);
-	  pp_printf (&pp, "\n");
-	  pp_flush (&pp);
-	}
     }
 
   insn_change_watermark watermark;
@@ -838,17 +825,14 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
     {
       fprintf (dump_file, "\nto:\n");
       print_rtl_single (dump_file, PATTERN (rinsn));
-      if (dump_flags & TDF_DETAILS)
-	{
-	  fprintf (dump_file, "RTL_SSA info:\n");
-	  pretty_printer pp;
-	  pp.buffer->stream = dump_file;
-	  insn->print_full (&pp);
-	  pp_printf (&pp, "\n");
-	  pp_flush (&pp);
-	}
     }
   return true;
+}
+
+avl_info::avl_info (const avl_info &other)
+{
+  m_value = other.get_value ();
+  m_source = other.get_source ();
 }
 
 avl_info::avl_info (rtx value_in, set_info *source_in)
@@ -1359,12 +1343,8 @@ vector_insn_info::dump (FILE *file) const
     {
       if (get_insn ())
 	{
-	  fprintf (file, "RTL_SSA insn_info=");
-	  pretty_printer pp;
-	  pp.buffer->stream = file;
-	  get_insn ()->print_full (&pp);
-	  pp_printf (&pp, "\n");
-	  pp_flush (&pp);
+	  fprintf (file, "The real INSN=");
+	  print_rtl_single (file, get_insn ()->rtl ());
 	}
       if (get_dirty_pat ())
 	{
@@ -1982,12 +1962,10 @@ pass_vsetvl::compute_global_backward_infos (void)
   if (dump_file)
     {
       fprintf (dump_file, "\n\nDirty blocks list: ");
-      for (size_t i = 0; i < m_vector_manager->vector_block_infos.length ();
-	   i++)
-	{
-	  if (m_vector_manager->vector_block_infos[i].reaching_out.dirty_p ())
-	    fprintf (dump_file, "%ld ", i);
-	}
+      for (const bb_info *bb : crtl->ssa->bbs ())
+	if (m_vector_manager->vector_block_infos[bb->index ()]
+	      .reaching_out.dirty_p ())
+	  fprintf (dump_file, "%d ", bb->index ());
       fprintf (dump_file, "\n\n");
     }
 }
@@ -1996,15 +1974,16 @@ pass_vsetvl::compute_global_backward_infos (void)
 void
 pass_vsetvl::prune_expressions (void)
 {
-  for (size_t i = 0; i < m_vector_manager->vector_block_infos.length (); i++)
+  for (const bb_info *bb : crtl->ssa->bbs ())
     {
-      if (m_vector_manager->vector_block_infos[i].local_dem.valid_or_dirty_p ())
+      if (m_vector_manager->vector_block_infos[bb->index ()]
+	    .local_dem.valid_or_dirty_p ())
 	m_vector_manager->create_expr (
-	  m_vector_manager->vector_block_infos[i].local_dem);
-      if (m_vector_manager->vector_block_infos[i]
+	  m_vector_manager->vector_block_infos[bb->index ()].local_dem);
+      if (m_vector_manager->vector_block_infos[bb->index ()]
 	    .reaching_out.valid_or_dirty_p ())
 	m_vector_manager->create_expr (
-	  m_vector_manager->vector_block_infos[i].reaching_out);
+	  m_vector_manager->vector_block_infos[bb->index ()].reaching_out);
     }
 
   if (dump_file)

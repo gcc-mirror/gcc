@@ -1,3 +1,7 @@
+2022-12-21  Martin Liska  <mliska@suse.cz>
+
+	* jit-playback.h: Use unused attribute.
+
 2022-12-14  Antoni Boucher  <bouanto@zoho.com>
 	    Guillaume Gomez  <guillaume1.gomez@gmail.com>
 
@@ -4097,7 +4101,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2022 Free Software Foundation, Inc.
+Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

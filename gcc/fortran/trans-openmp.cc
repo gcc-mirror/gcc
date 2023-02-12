@@ -2494,7 +2494,7 @@ gfc_trans_omp_array_section (stmtblock_t *block, gfc_omp_namelist *n,
 	= gfc_conv_descriptor_data_get (decl);
       /* This purposely does not include GOMP_MAP_ALWAYS_POINTER.  The extra
 	 cast prevents gimplify.cc from recognising it as being part of the
-	 struct – and adding an 'alloc: for the 'desc.data' pointer, which
+	 struct - and adding an 'alloc: for the 'desc.data' pointer, which
 	 would break as the 'desc' (the descriptor) is also mapped
 	 (see node4 above).  */
       if (ptr_kind == GOMP_MAP_ATTACH_DETACH)

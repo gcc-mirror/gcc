@@ -402,6 +402,20 @@ package body Tchk is
       Check_Token (Tok_Record, AP);
    end T_Record;
 
+   ---------------------------
+   -- T_Right_Curly_Bracket --
+   ---------------------------
+
+   procedure T_Right_Curly_Bracket is
+   begin
+      if Token = Tok_Right_Curly_Bracket then
+         Scan;
+      else
+         Error_Msg_AP
+           ("|missing ""'}'""");
+      end if;
+   end T_Right_Curly_Bracket;
+
    ---------------------
    -- T_Right_Bracket --
    ---------------------

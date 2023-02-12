@@ -78,8 +78,11 @@ package body Exp_Tss is
       else
          Proc := Init_Proc (Base_Type (Full_Type), Ref);
 
+         --  For derived record types, if the base type does not have one,
+         --  we use the Init_Proc of the ancestor type.
+
          if No (Proc)
-           and then Is_Composite_Type (Full_Type)
+           and then Is_Record_Type (Full_Type)
            and then Is_Derived_Type (Full_Type)
          then
             return Init_Proc (Root_Type (Full_Type), Ref);

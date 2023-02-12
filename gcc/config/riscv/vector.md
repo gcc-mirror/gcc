@@ -585,6 +585,32 @@
   [(set_attr "type" "vsetvl")
    (set_attr "mode" "<MODE>")])
 
+;; It's emit by vsetvl/vsetvlmax intrinsics with no side effects.
+;; Since we have many optmization passes from "expand" to "reload_completed",
+;; such pattern can allow us gain benefits of these optimizations.
+(define_insn_and_split "@vsetvl<mode>_no_side_effects"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "csr_operand" "rK")
+		   (match_operand 2 "const_int_operand" "i")
+		   (match_operand 3 "const_int_operand" "i")
+		   (match_operand 4 "const_int_operand" "i")
+		   (match_operand 5 "const_int_operand" "i")] UNSPEC_VSETVL))]
+  "TARGET_VECTOR"
+  "#"
+  "&& epilogue_completed"
+  [(parallel
+    [(set (match_dup 0)
+	  (unspec:P [(match_dup 1) (match_dup 2) (match_dup 3)
+		     (match_dup 4) (match_dup 5)] UNSPEC_VSETVL))
+     (set (reg:SI VL_REGNUM)
+	  (unspec:SI [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPEC_VSETVL))
+     (set (reg:SI VTYPE_REGNUM)
+	  (unspec:SI [(match_dup 2) (match_dup 3) (match_dup 4)
+		      (match_dup 5)] UNSPEC_VSETVL))])]
+  ""
+  [(set_attr "type" "vsetvl")
+   (set_attr "mode" "SI")])
+
 ;; RVV machine description matching format
 ;; (define_insn ""
 ;;   [(set (match_operand:MODE 0)
@@ -630,18 +656,18 @@
 ;;    2. (const_vector:VNx1SF repeat [
 ;;                (const_double:SF 0.0 [0x0.0p+0])]).
 (define_insn_and_split "@pred_mov<mode>"
-  [(set (match_operand:V 0 "nonimmediate_operand"        "=vd,  vr,     m,    vr,    vr")
+  [(set (match_operand:V 0 "nonimmediate_operand"          "=vd,    vr,     m,    vr,    vr")
 	(if_then_else:V
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand" " vm, Wc1, vmWc1,   Wc1,   Wc1")
-	     (match_operand 4 "vector_length_operand"    " rK,  rK,    rK,    rK,    rK")
-	     (match_operand 5 "const_int_operand"        "  i,   i,     i,     i,     i")
-	     (match_operand 6 "const_int_operand"        "  i,   i,     i,     i,     i")
-	     (match_operand 7 "const_int_operand"        "  i,   i,     i,     i,     i")
+	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1, vmWc1, vmWc1,   Wc1,   Wc1")
+	     (match_operand 4 "vector_length_operand"    "   rK,    rK,    rK,    rK,    rK")
+	     (match_operand 5 "const_int_operand"        "    i,     i,     i,     i,     i")
+	     (match_operand 6 "const_int_operand"        "    i,     i,     i,     i,     i")
+	     (match_operand 7 "const_int_operand"        "    i,     i,     i,     i,     i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (match_operand:V 3 "vector_move_operand"       "  m,   m,    vr,    vr, viWc0")
-	  (match_operand:V 2 "vector_merge_operand"      "  0,  vu,   vu0,   vu0,   vu0")))]
+	  (match_operand:V 3 "vector_move_operand"       "    m,     m,    vr,    vr, viWc0")
+	  (match_operand:V 2 "vector_merge_operand"      "    0,    vu,   vu0,   vu0,   vu0")))]
   "TARGET_VECTOR"
   "@
    vle<sew>.v\t%0,%3%p1

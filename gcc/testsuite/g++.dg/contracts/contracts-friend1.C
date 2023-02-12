@@ -33,8 +33,8 @@ int main(int, char**) {
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 6 fn0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 19 fn2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 9 X::fns0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 X::fns1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 21 X::fns2 .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function fn0 at .*.C:6: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function fn2 at .*.C:19: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function X::fns0 at .*.C:9: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function X::fns1 at .*.C:10: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function X::fns2 at .*.C:21: .*(\n|\r\n|\r)" }

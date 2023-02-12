@@ -174,41 +174,67 @@ package body System.Put_Images is
       Thin_Instance (S, X, "access protected subprogram");
    end Put_Image_Access_Prot_Subp;
 
-   procedure Put_Image_String (S : in out Sink'Class; X : String) is
+   procedure Put_Image_String
+     (S               : in out Sink'Class;
+      X               : String;
+      With_Delimiters : Boolean := True) is
    begin
-      Put_UTF_8 (S, """");
+      if With_Delimiters then
+         Put_UTF_8 (S, """");
+      end if;
+
       for C of X loop
-         if C = '"' then
+         if C = '"' and then With_Delimiters then
             Put_UTF_8 (S, """");
          end if;
          Put_Character (S, C);
       end loop;
-      Put_UTF_8 (S, """");
+
+      if With_Delimiters then
+         Put_UTF_8 (S, """");
+      end if;
    end Put_Image_String;
 
-   procedure Put_Image_Wide_String (S : in out Sink'Class; X : Wide_String) is
+   procedure Put_Image_Wide_String
+     (S               : in out Sink'Class;
+      X               : Wide_String;
+      With_Delimiters : Boolean := True) is
    begin
-      Put_UTF_8 (S, """");
+      if With_Delimiters then
+         Put_UTF_8 (S, """");
+      end if;
+
       for C of X loop
-         if C = '"' then
+         if C = '"' and then With_Delimiters then
             Put_UTF_8 (S, """");
          end if;
          Put_Wide_Character (S, C);
       end loop;
-      Put_UTF_8 (S, """");
+
+      if With_Delimiters then
+         Put_UTF_8 (S, """");
+      end if;
    end Put_Image_Wide_String;
 
    procedure Put_Image_Wide_Wide_String
-     (S : in out Sink'Class; X : Wide_Wide_String) is
+     (S               : in out Sink'Class;
+      X               : Wide_Wide_String;
+      With_Delimiters : Boolean := True) is
    begin
-      Put_UTF_8 (S, """");
+      if With_Delimiters then
+         Put_UTF_8 (S, """");
+      end if;
+
       for C of X loop
-         if C = '"' then
+         if C = '"' and then With_Delimiters then
             Put_UTF_8 (S, """");
          end if;
          Put_Wide_Wide_Character (S, C);
       end loop;
-      Put_UTF_8 (S, """");
+
+      if With_Delimiters then
+         Put_UTF_8 (S, """");
+      end if;
    end Put_Image_Wide_Wide_String;
 
    procedure Array_Before (S : in out Sink'Class) is

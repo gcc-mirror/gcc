@@ -196,8 +196,8 @@ package Repinfo is
    --    "Object_Size"          :  numerical expression
    --    "Value_Size"           :  numerical expression
    --    "Component_Size"       :  numerical expression
-   --    "Range"                :  array of numbers
-   --    "Small"                :  number
+   --    "Range"                :  array of numerical expressions
+   --    "Small"                :  numerical expression
    --    "Alignment"            :  number
    --    "Convention"           :  string
    --    "Linker_Section"       :  string

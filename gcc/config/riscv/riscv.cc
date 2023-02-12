@@ -4839,6 +4839,50 @@ riscv_save_restore_reg (machine_mode mode, int regno,
   fn (gen_rtx_REG (mode, regno), mem);
 }
 
+/* Return the next register up from REGNO up to LIMIT for the callee
+   to save or restore.  OFFSET will be adjusted accordingly.
+   If INC is set, then REGNO will be incremented first.
+   Returns INVALID_REGNUM if there is no such next register.  */
+
+static unsigned int
+riscv_next_saved_reg (unsigned int regno, unsigned int limit,
+		      HOST_WIDE_INT *offset, bool inc = true)
+{
+  if (inc)
+    regno++;
+
+  while (regno <= limit)
+    {
+      if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
+	{
+	  *offset = *offset - UNITS_PER_WORD;
+	  return regno;
+	}
+
+      regno++;
+    }
+  return INVALID_REGNUM;
+}
+
+/* Return TRUE if provided REGNO is eh return data register.  */
+
+static bool
+riscv_is_eh_return_data_register (unsigned int regno)
+{
+  unsigned int i, regnum;
+
+  if (!crtl->calls_eh_return)
+    return false;
+
+  for (i = 0; (regnum = EH_RETURN_DATA_REGNO (i)) != INVALID_REGNUM; i++)
+    if (regno == regnum)
+      {
+	return true;
+      }
+
+  return false;
+}
+
 /* Call FN for each register that is saved by the current function.
    SP_OFFSET is the offset of the current stack pointer from the start
    of the frame.  */
@@ -4848,36 +4892,31 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 			  bool epilogue, bool maybe_eh_return)
 {
   HOST_WIDE_INT offset;
+  unsigned int regno;
+  unsigned int start = GP_REG_FIRST;
+  unsigned int limit = GP_REG_LAST;
 
   /* Save the link register and s-registers. */
-  offset = (cfun->machine->frame.gp_sp_offset - sp_offset).to_constant ();
-  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
-    if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
-      {
-	bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
+  offset = (cfun->machine->frame.gp_sp_offset - sp_offset).to_constant ()
+	   + UNITS_PER_WORD;
+  for (regno = riscv_next_saved_reg (start, limit, &offset, false);
+       regno != INVALID_REGNUM;
+       regno = riscv_next_saved_reg (regno, limit, &offset))
+    {
+      if (cfun->machine->reg_is_wrapped_separately[regno])
+	continue;
 
-	/* If this is a normal return in a function that calls the eh_return
-	   builtin, then do not restore the eh return data registers as that
-	   would clobber the return value.  But we do still need to save them
-	   in the prologue, and restore them for an exception return, so we
-	   need special handling here.  */
-	if (epilogue && !maybe_eh_return && crtl->calls_eh_return)
-	  {
-	    unsigned int i, regnum;
+      /* If this is a normal return in a function that calls the eh_return
+	 builtin, then do not restore the eh return data registers as that
+	 would clobber the return value.  But we do still need to save them
+	 in the prologue, and restore them for an exception return, so we
+	 need special handling here.  */
+      if (epilogue && !maybe_eh_return
+	  && riscv_is_eh_return_data_register (regno))
+	continue;
 
-	    for (i = 0; (regnum = EH_RETURN_DATA_REGNO (i)) != INVALID_REGNUM;
-		 i++)
-	      if (regno == regnum)
-		{
-		  handle_reg = FALSE;
-		  break;
-		}
-	  }
-
-	if (handle_reg)
-	  riscv_save_restore_reg (word_mode, regno, offset, fn);
-	offset -= UNITS_PER_WORD;
-      }
+      riscv_save_restore_reg (word_mode, regno, offset, fn);
+    }
 
   /* This loop must iterate over the same space as its companion in
      riscv_compute_frame_info.  */

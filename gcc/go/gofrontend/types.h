@@ -535,7 +535,7 @@ class Type
   make_nil_type();
 
   static Type*
-  make_call_multiple_result_type(Call_expression*);
+  make_call_multiple_result_type();
 
   static Struct_type*
   make_struct_type(Struct_field_list* fields, Location);

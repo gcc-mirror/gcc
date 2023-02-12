@@ -1,5 +1,5 @@
 /* A type-safe hash map.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -169,11 +169,13 @@ public:
     {
       hash_entry *e = m_table.find_slot_with_hash (k, Traits::hash (k),
 						   INSERT);
-      bool ins = hash_entry::is_empty (*e);
+      bool ins = Traits::is_empty (*e);
       if (ins)
 	{
 	  e->m_key = k;
-	  new ((void *) &e->m_value) Value (v);
+	  new ((void *)&e->m_value) Value (v);
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
 	}
       else
 	e->m_value = v;
@@ -203,6 +205,8 @@ public:
 	{
 	  e->m_key = k;
 	  new ((void *)&e->m_value) Value ();
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
 	}
 
       if (existed != NULL)

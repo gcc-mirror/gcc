@@ -75,6 +75,9 @@
 #define _GLIBCXX_LLP64 1
 #endif
 
+// Enable use of GetSystemInfo to implement get_nprocs
+#define _GLIBCXX_USE_GET_NPROCS_WIN32 1
+
 // See libstdc++/59807
 #define _GTHREAD_USE_MUTEX_INIT_FUNC 1
 

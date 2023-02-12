@@ -34,7 +34,7 @@
 #ifndef _GLIBCXX_USE_NANOSLEEP
 # ifdef _GLIBCXX_HAVE_SLEEP
 #  include <unistd.h>
-# elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
+# elif defined(_GLIBCXX_USE_WIN32_SLEEP)
 #  include <windows.h>
 # elif defined _GLIBCXX_NO_SLEEP && defined _GLIBCXX_HAS_GTHREADS
 // We expect to be able to sleep for targets that support multiple threads:
@@ -60,6 +60,16 @@ static inline int get_nprocs()
  if (!sysctl(mib, 2, &count, &size, NULL, 0))
    return count;
  return 0;
+}
+# define _GLIBCXX_NPROCS get_nprocs()
+#elif defined(_GLIBCXX_USE_GET_NPROCS_WIN32)
+#define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+static inline int get_nprocs()
+{
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo (&sysinfo);
+  return (int)sysinfo.dwNumberOfProcessors;
 }
 # define _GLIBCXX_NPROCS get_nprocs()
 #elif defined(_GLIBCXX_USE_SC_NPROCESSORS_ONLN)
@@ -254,7 +264,7 @@ namespace this_thread
 	__s = chrono::duration_cast<chrono::seconds>(target - now);
 	__ns = chrono::duration_cast<chrono::nanoseconds>(target - (now + __s));
     }
-#elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
+#elif defined(_GLIBCXX_USE_WIN32_SLEEP)
     unsigned long ms = __ns.count() / 1000000;
     if (__ns.count() > 0 && ms == 0)
       ms = 1;

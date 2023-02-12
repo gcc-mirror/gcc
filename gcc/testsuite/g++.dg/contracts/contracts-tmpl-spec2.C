@@ -304,92 +304,144 @@ int main(int, char**)
   return 0;
 }
 
-
-// { dg-output "default std::handle_contract_violation called: .*.C 9 body<int> .*(\n|\r\n|\r)*" }
-// { dg-output "-2(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 17 body<double> .*(\n|\r\n|\r)*" }
-// { dg-output "-3(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 25 none<int> .*(\n|\r\n|\r)*" }
-// { dg-output "1(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 32 none<double> .*(\n|\r\n|\r)*" }
-// { dg-output "-101(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 39 arg0<int> .*(\n|\r\n|\r)*" }
-// { dg-output "-9(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 46 arg0<double> .*(\n|\r\n|\r)*" }
-// { dg-output "11(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 53 arg1<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 54 arg1<int> .*(\n|\r\n|\r)*" }
-// { dg-output "-3(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 61 arg1<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 62 arg1<double> .*(\n|\r\n|\r)*" }
-// { dg-output "14(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 69 ret<int> .*(\n|\r\n|\r)*" }
-// { dg-output "1(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 76 ret<double> .*(\n|\r\n|\r)*" }
-// { dg-output "3(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 76 ret<double> .*(\n|\r\n|\r)*" }
-// { dg-output "3.300000(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 83 g1<int> .*(\n|\r\n|\r)*" }
-// { dg-output "-1(\n|\r\n|\r)*" }
-// { dg-output "-1(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 97 g2<int> .*(\n|\r\n|\r)*" }
-// { dg-output "-1(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 107 g2<double> .*(\n|\r\n|\r)*" }
-// { dg-output "1(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 114 g2<char> .*(\n|\r\n|\r)*" }
-// { dg-output "100(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 124 G3<double, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 125 G3<double, .*(\n|\r\n|\r)*" }
-// { dg-output "G3 general T S(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 139 G3<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 140 G3<int, .*(\n|\r\n|\r)*" }
-// { dg-output "G3 partial int S(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 147 G3<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 148 G3<int, .*(\n|\r\n|\r)*" }
-// { dg-output "G3 full int double(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 124 G3<char, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 125 G3<char, .*(\n|\r\n|\r)*" }
-// { dg-output "G3 general T S(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 139 G3<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 140 G3<int, .*(\n|\r\n|\r)*" }
-// { dg-output "G3 partial int S(\n|\r\n|\r)*" }
-// { dg-output "G3 full int C(\n|\r\n|\r)*" }
-// { dg-output "G3 full int C(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 173 G4<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 174 G4<int, .*(\n|\r\n|\r)*" }
-// { dg-output "G4 general T S(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 175 G4<int, .*(\n|\r\n|\r)*" }
-// { dg-output "G4 full double double(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 206 G4<double, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 207 G4<double, .*(\n|\r\n|\r)*" }
-// { dg-output "G4 full double char(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 208 G4<double, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 187 G4<char, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 188 G4<char, .*(\n|\r\n|\r)*" }
-// { dg-output "G4 partial char S(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 189 G4<char, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 220 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 221 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 222 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "G5 gen T S, f gen R(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 220 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 221 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 222 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "G5 gen T S, f gen R(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 233 G5<char, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 234 G5<char, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 235 G5<char, .*(\n|\r\n|\r)*" }
-// { dg-output "G5 partial char S, f gen R(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 233 G5<char, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 234 G5<char, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 235 G5<char, .*(\n|\r\n|\r)*" }
-// { dg-output "G5 partial char S, f gen R(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 244 G5<double, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 245 G5<double, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 246 G5<double, .*(\n|\r\n|\r)*" }
-// { dg-output "G5 full double double, f gen R(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 244 G5<double, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 245 G5<double, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 246 G5<double, .*(\n|\r\n|\r)*" }
-// { dg-output "G5 full double double, f gen R(\n|\r\n|\r)*" }
-
+// { dg-output {contract violation in function body<int> at .*:9: a > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {-2(\n|\r\n|\r)} }
+// { dg-output {contract violation in function body<double> at .*:17: a > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {-3(\n|\r\n|\r)} }
+// { dg-output {contract violation in function none<int> at .*:25: a > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function none<double> at .*:32: a > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {-101(\n|\r\n|\r)} }
+// { dg-output {contract violation in function arg0<int> at .*:39: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {-9(\n|\r\n|\r)} }
+// { dg-output {contract violation in function arg0<double> at .*:46: t > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {11(\n|\r\n|\r)} }
+// { dg-output {contract violation in function arg1<int> at .*:53: a > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function arg1<int> at .*:54: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {-3(\n|\r\n|\r)} }
+// { dg-output {contract violation in function arg1<double> at .*:61: a > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function arg1<double> at .*:62: t > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {14(\n|\r\n|\r)} }
+// { dg-output {contract violation in function ret<int> at .*:69: a > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function ret<double> at .*:76: a > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {3(\n|\r\n|\r)} }
+// { dg-output {contract violation in function ret<double> at .*:76: a > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {3.300000(\n|\r\n|\r)} }
+// { dg-output {contract violation in function g1<int> at .*:83: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {-1(\n|\r\n|\r)} }
+// { dg-output {-1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function g2<int> at .*:97: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {-1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function g2<double> at .*:107: t < 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {1(\n|\r\n|\r)} }
+// { dg-output {contract violation in function g2<char> at .*:114: t < 'c'(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {100(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<double, double>::f at .*:124: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<double, double>::f at .*:125: s > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G3 general T S(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, int>::f at .*:139: t > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, int>::f at .*:140: s > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G3 partial int S(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, double>::f at .*:147: t > 2(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, double>::f at .*:148: s > 2(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G3 full int double(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<char, char>::f at .*:124: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<char, char>::f at .*:125: s > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G3 general T S(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, char>::f at .*:139: t > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G3<int, char>::f at .*:140: s > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G3 partial int S(\n|\r\n|\r)} }
+// { dg-output {G3 full int C(\n|\r\n|\r)} }
+// { dg-output {G3 full int C(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<int, int>::G4 at .*:173: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<int, int>::G4 at .*:174: s > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G4 general T S(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<int, int>::G4 at .*:175: x > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G4 full double double(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<double, char>::G4 at .*:206: a > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<double, char>::G4 at .*:207: b > 'b'(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G4 full double char(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<double, char>::G4 at .*:208: x > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<char, int>::G4 at .*:187: t > 'c'(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<char, int>::G4 at .*:188: s > 3(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G4 partial char S(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G4<char, int>::G4 at .*:189: x2 > 3(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<int, int>::f<int> at .*:220: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<int, int>::f<int> at .*:221: s > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<int, int>::f<int> at .*:222: r > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G5 gen T S, f gen R(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<int, int>::f<double> at .*:220: t > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<int, int>::f<double> at .*:221: s > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<int, int>::f<double> at .*:222: r > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G5 gen T S, f gen R(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<char, int>::f<int> at .*:233: x > 'z'(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<char, int>::f<int> at .*:234: y > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<char, int>::f<int> at .*:235: z > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G5 partial char S, f gen R(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<char, int>::f<double> at .*:233: x > 'z'(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<char, int>::f<double> at .*:234: y > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<char, int>::f<double> at .*:235: z > 1(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G5 partial char S, f gen R(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<double, double>::f<int> at .*:244: a > 2(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<double, double>::f<int> at .*:245: b > 2(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<double, double>::f<int> at .*:246: c > 2(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G5 full double double, f gen R(\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<double, double>::f<double> at .*:244: a > 2(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<double, double>::f<double> at .*:245: b > 2(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function G5<double, double>::f<double> at .*:246: c > 2(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {G5 full double double, f gen R(\n|\r\n|\r)} }

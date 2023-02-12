@@ -7906,7 +7906,20 @@ _ACEOF
 
 
 # Check for GMP, MPFR and MPC
-gmplibs="-lmpc -lmpfr -lgmp"
+require_gmp=no
+require_mpc=no
+if test -d ${srcdir}/gcc ; then
+  require_gmp=yes
+  require_mpc=yes
+fi
+if test -d ${srcdir}/gdb ; then
+  require_gmp=yes
+fi
+
+gmplibs="-lmpfr -lgmp"
+if test x"$require_mpc" = "xyes" ; then
+  gmplibs="-lmpc $gmplibs"
+fi
 gmpinc=
 have_gmp=no
 
@@ -8041,7 +8054,7 @@ if test "x$with_gmp$with_gmp_include$with_gmp_lib" = x && test -d ${srcdir}/gmp;
   have_gmp=yes
 fi
 
-if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
+if test "x$require_gmp" = xyes && test "x$have_gmp" = xno; then
   have_gmp=yes
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $gmpinc"
@@ -8151,7 +8164,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   fi
 
   # Check for the MPC header version.
-  if test x"$have_gmp" = xyes ; then
+  if test "x$require_mpc" = xyes && test x"$have_gmp" = xyes ; then
     # Check for the recommended and required versions of MPC.
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of mpc.h" >&5
 $as_echo_n "checking for the correct version of mpc.h... " >&6; }
@@ -8205,18 +8218,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   if test x"$have_gmp" = xyes; then
     saved_LIBS="$LIBS"
     LIBS="$LIBS $gmplibs"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of the gmp/mpfr/mpc libraries" >&5
-$as_echo_n "checking for the correct version of the gmp/mpfr/mpc libraries... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of the gmp/mpfr libraries" >&5
+$as_echo_n "checking for the correct version of the gmp/mpfr libraries... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <mpc.h>
+#include <mpfr.h>
 int
 main ()
 {
 
     mpfr_t n;
     mpfr_t x;
-    mpc_t c;
     int t;
     mpfr_init (n);
     mpfr_init (x);
@@ -8225,6 +8237,37 @@ main ()
     mpfr_subnormalize (x, t, MPFR_RNDN);
     mpfr_clear(n);
     mpfr_clear(x);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }; have_gmp=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    LIBS="$saved_LIBS"
+  fi
+
+  # Now check the MPC library
+  if test "x$require_mpc" = xyes && test x"$have_gmp" = xyes; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS $gmplibs"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of the mpc libraries" >&5
+$as_echo_n "checking for the correct version of the mpc libraries... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <mpc.h>
+int
+main ()
+{
+
+    mpc_t c;
     mpc_init2 (c, 53);
     mpc_set_ui_ui (c, 1, 1, MPC_RNDNN);
     mpc_cosh (c, c, MPC_RNDNN);
@@ -8253,7 +8296,8 @@ rm -f core conftest.err conftest.$ac_objext \
 # The library versions listed in the error message below should match
 # the HARD-minimums enforced above.
   if test x$have_gmp != xyes; then
-    as_fn_error $? "Building GCC requires GMP 4.2+, MPFR 3.1.0+ and MPC 0.8.0+.
+    if test -d ${srcdir}/gcc ; then
+      as_fn_error $? "Building GCC requires GMP 4.2+, MPFR 3.1.0+ and MPC 0.8.0+.
 Try the --with-gmp, --with-mpfr and/or --with-mpc options to specify
 their locations.  Source code for these libraries can be found at
 their respective hosting sites as well as at
@@ -8262,6 +8306,13 @@ http://gcc.gnu.org/install/prerequisites.html for additional info.  If
 you obtained GMP, MPFR and/or MPC from a vendor distribution package,
 make sure that you have installed both the libraries and the header
 files.  They may be located in separate packages." "$LINENO" 5
+    else
+      as_fn_error $? "Building GDB requires GMP 4.2+, and MPFR 3.1.0+.
+Try the --with-gmp and/or --with-mpfr options to specify
+their locations.  If you obtained GMP and/or MPFR from a vendor
+distribution package, make sure that you have installed both the libraries
+and the header files.  They may be located in separate packages." "$LINENO" 5
+    fi
   fi
 fi
 

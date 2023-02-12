@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2325,6 +2325,8 @@ expand_simple_operations (tree expr, tree stop, hash_map<tree, tree> &cache)
       for (i = 0; i < n; i++)
 	{
 	  e = TREE_OPERAND (expr, i);
+	  if (!e)
+	    continue;
 	  /* SCEV analysis feeds us with a proper expression
 	     graph matching the SSA graph.  Avoid turning it
 	     into a tree here, thus handle tree sharing

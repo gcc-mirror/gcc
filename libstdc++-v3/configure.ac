@@ -535,6 +535,9 @@ GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER
 # For libsupc++/eh_alloc.cc defaults.
 GLIBCXX_EMERGENCY_EH_ALLOC
 
+# For src/c++20/tzdb.cc defaults.
+GLIBCXX_ZONEINFO_DIR
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough

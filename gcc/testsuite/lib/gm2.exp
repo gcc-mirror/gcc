@@ -496,3 +496,42 @@ proc gm2_init_cor { {path ""} args } {
     gm2_link_lib "m2cor m2pim m2iso"
     gm2_init {*}${theIpath} -fpim {*}${theLpath} {*}${args};
 }
+
+
+#
+#  gm2_init_minx - set the default libraries to choose MIN library and
+#                  choose Modula-2, dialect.
+#
+#
+
+proc gm2_init_minx { dialect {path ""} args } {
+    global srcdir;
+    global gccpath;
+
+    set gm2src ${srcdir}/../m2;
+
+    send_log "srcdir is $srcdir\n"
+    send_log "gccpath is $gccpath\n"
+    send_log "gm2src is $gm2src\n"
+
+    set minIpath "${gccpath}/libgm2/libm2min";
+    set minLpath "${gccpath}/libgm2/libm2min/.libs";
+
+    set theIpath "-I${minIpath}";
+    set theLpath "-L${minLpath}";
+
+    if { $path != "" } then {
+	append theIpath " -I"
+	append theIpath ${path}
+    }
+    gm2_init {*}${theIpath} {*}${dialect} {*}${theLpath} {*}${args};
+}
+
+#
+#  gm2_init_min - set the default libraries to choose MIN libraries
+#                 and pim dialect.
+#
+
+proc gm2_init_min { {path ""} args } {
+    gm2_init_minx -fpim {*}${path} {*}${args};
+}

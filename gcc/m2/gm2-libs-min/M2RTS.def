@@ -38,6 +38,10 @@ TYPE
    all these procedures do nothing except satisfy the linker.
 *)
 
+PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+                            argc: INTEGER; argv, envp: ADDRESS) ;
+PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+                              argc: INTEGER; argv, envp: ADDRESS) ;
 PROCEDURE RegisterModule (name: ADDRESS;
                           init, fini:  ArgCVEnvP;
                           dependencies: PROC) ;

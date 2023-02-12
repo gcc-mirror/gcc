@@ -1,3 +1,34 @@
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (__LIBGCC_DWARF_REG_SIZES_CONSTANT__):
+	Define if constant is known.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (__LIBGCC_DWARF_REG_SIZES_CONSTANT__):
+	Define if constant is known.
+
 2022-12-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/98487
@@ -13815,7 +13846,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2022 Free Software Foundation, Inc.
+Copyright (C) 2010-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

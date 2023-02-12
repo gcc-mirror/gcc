@@ -1,3 +1,5 @@
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
+
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>

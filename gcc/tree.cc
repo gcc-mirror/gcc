@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3180,6 +3180,35 @@ real_minus_onep (const_tree expr)
     }
 }
 
+/* Return true if T could be a floating point zero.  */
+
+bool
+real_maybe_zerop (const_tree expr)
+{
+  switch (TREE_CODE (expr))
+    {
+    case REAL_CST:
+      /* Can't use real_zerop here, as it always returns false for decimal
+	 floats.  And can't use TREE_REAL_CST (expr).cl == rvc_zero
+	 either, as decimal zeros are rvc_normal.  */
+      return real_equal (&TREE_REAL_CST (expr), &dconst0);
+    case COMPLEX_CST:
+      return (real_maybe_zerop (TREE_REALPART (expr))
+	      || real_maybe_zerop (TREE_IMAGPART (expr)));
+    case VECTOR_CST:
+      {
+	unsigned count = vector_cst_encoded_nelts (expr);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (real_maybe_zerop (VECTOR_CST_ENCODED_ELT (expr, i)))
+	    return true;
+	return false;
+      }
+    default:
+      /* Perhaps for SSA_NAMEs we could query frange.  */
+      return true;
+    }
+}
+
 /* Nonzero if EXP is a constant or a cast of a constant.  */
 
 bool
@@ -5861,6 +5890,9 @@ void
 decl_value_expr_insert (tree from, tree to)
 {
   struct tree_decl_map *h;
+
+  /* Uses of FROM shouldn't look like they happen at the location of TO.  */
+  to = protected_set_expr_location_unshare (to, UNKNOWN_LOCATION);
 
   h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
@@ -11310,12 +11342,12 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	if (len == 0)
 	  break;
 
-	/* Walk all elements but the first.  */
-	while (--len)
-	  WALK_SUBTREE (TREE_VEC_ELT (*tp, len));
+	/* Walk all elements but the last.  */
+	for (int i = 0; i < len - 1; ++i)
+	  WALK_SUBTREE (TREE_VEC_ELT (*tp, i));
 
-	/* Now walk the first one as a tail call.  */
-	WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, 0));
+	/* Now walk the last one as a tail call.  */
+	WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, len - 1));
       }
 
     case VECTOR_CST:
@@ -11323,11 +11355,11 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	unsigned len = vector_cst_encoded_nelts (*tp);
 	if (len == 0)
 	  break;
-	/* Walk all elements but the first.  */
-	while (--len)
-	  WALK_SUBTREE (VECTOR_CST_ENCODED_ELT (*tp, len));
-	/* Now walk the first one as a tail call.  */
-	WALK_SUBTREE_TAIL (VECTOR_CST_ENCODED_ELT (*tp, 0));
+	/* Walk all elements but the last.  */
+	for (unsigned i = 0; i < len - 1; ++i)
+	  WALK_SUBTREE (VECTOR_CST_ENCODED_ELT (*tp, i));
+	/* Now walk the last one as a tail call.  */
+	WALK_SUBTREE_TAIL (VECTOR_CST_ENCODED_ELT (*tp, len - 1));
       }
 
     case COMPLEX_CST:

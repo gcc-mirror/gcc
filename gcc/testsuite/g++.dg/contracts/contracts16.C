@@ -29,6 +29,6 @@ int main(int, char**) {
   return 0;
 }
 
-// { dg-output "custom std::handle_contract_violation called: 18 .*/contracts16.C(\n|\r\n|\r)*" }
-// { dg-output "synth caught indirect: -18(\n|\r\n|\r)*" }
+// { dg-output "custom std::handle_contract_violation called: 18 .*/contracts16.C(\n|\r\n|\r)" }
+// { dg-output "synth caught indirect: -18(\n|\r\n|\r)" }
 

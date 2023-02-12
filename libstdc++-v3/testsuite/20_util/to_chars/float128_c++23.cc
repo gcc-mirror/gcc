@@ -60,7 +60,9 @@ test(std::chars_format fmt = std::chars_format{})
   char str1[10000], str2[10000];
   for (auto u : tests)
     {
-      auto [ptr1, ec1] = std::to_chars(str1, str1 + sizeof(str1), u, fmt);
+      auto [ptr1, ec1] = (fmt == std::chars_format{}
+			  ? std::to_chars(str1, str1 + sizeof(str1), u)
+			  : std::to_chars(str1, str1 + sizeof(str1), u, fmt));
       VERIFY( ec1 == std::errc() );
 //    std::cout << u << ' ' << std::string_view (str1, ptr1) << '\n';
       if (fmt == std::chars_format::fixed)
@@ -77,13 +79,14 @@ test(std::chars_format fmt = std::chars_format{})
       VERIFY( ec4 == std::errc() && ptr4 == ptr1 );
       VERIFY( u == v );
 
+      if (fmt == std::chars_format{})
+	continue;
+
       auto [ptr5, ec5] = std::to_chars(str1, str1 + sizeof(str1), u, fmt, 90);
       VERIFY( ec5 == std::errc() );
 //    std::cout << u << ' ' << std::string_view (str1, ptr5) << '\n';
       v = 4.0f128;
-      auto [ptr6, ec6] = std::from_chars(str1, ptr5, v,
-					 fmt == std::chars_format{}
-					 ? std::chars_format::general : fmt);
+      auto [ptr6, ec6] = std::from_chars(str1, ptr5, v, fmt);
       VERIFY( ec6 == std::errc() && ptr6 == ptr5 );
       if (fmt == std::chars_format::fixed && u > 0.0f128 && u < 0.000001f128)
 	VERIFY( v == 0.0 );

@@ -28,8 +28,9 @@
 with Types; use Types;
 package Exp_Ch2 is
 
-   procedure Expand_N_Expanded_Name  (N : Node_Id);
-   procedure Expand_N_Identifier     (N : Node_Id);
-   procedure Expand_N_Real_Literal   (N : Node_Id);
+   procedure Expand_N_Expanded_Name               (N : Node_Id);
+   procedure Expand_N_Identifier                  (N : Node_Id);
+   procedure Expand_N_Interpolated_String_Literal (N : Node_Id);
+   procedure Expand_N_Real_Literal                (N : Node_Id);
 
 end Exp_Ch2;

@@ -1,3 +1,9 @@
+2022-12-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84471
+	PR c++/107504
+	* ansidecl.h (ATTRIBUTE_WARN_UNUSED_RESULT): Add __.
+
 2022-12-14  David Faust  <david.faust@oracle.com>
 
 	PR target/106773

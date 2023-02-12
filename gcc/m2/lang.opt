@@ -349,4 +349,8 @@ x
 Modula-2 Joined
 specify the language from the compiler driver
 
+static-libgm2
+Driver
+Link the standard Modula-2 libraries statically in the compilation.
+
 ; This comment is to ensure we retain the blank line above.

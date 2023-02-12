@@ -28,9 +28,11 @@ with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Ghost;          use Ghost;
 with Namet;          use Namet;
+with Nlists;         use Nlists;
 with Opt;            use Opt;
 with Restrict;       use Restrict;
 with Rident;         use Rident;
+with Sem;            use Sem;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Dim;        use Sem_Dim;
 with Sinfo;          use Sinfo;
@@ -118,6 +120,23 @@ package body Sem_Ch2 is
 
       Set_Is_Static_Expression (N);
    end Analyze_Integer_Literal;
+
+   -----------------------------------------
+   -- Analyze_Interpolated_String_Literal --
+   -----------------------------------------
+
+   procedure Analyze_Interpolated_String_Literal (N : Node_Id) is
+      Str_Elem : Node_Id;
+
+   begin
+      Set_Etype (N, Any_String);
+
+      Str_Elem := First (Expressions (N));
+      while Present (Str_Elem) loop
+         Analyze (Str_Elem);
+         Next (Str_Elem);
+      end loop;
+   end Analyze_Interpolated_String_Literal;
 
    --------------------------
    -- Analyze_Real_Literal --

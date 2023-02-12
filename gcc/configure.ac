@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2022 Free Software Foundation, Inc.
+# Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -3346,7 +3346,7 @@ gcc_GAS_CHECK_FEATURE([cfi sections directive],
     gcc_cv_as_cfi_sections_directive=no
     if test "x$gcc_cv_objdump" != x; then
      if $gcc_cv_objdump -j .debug_frame -r conftest.o 2>/dev/null | \
-	grep secrel > /dev/null; then
+	grep -i secrel > /dev/null; then
       gcc_cv_as_cfi_sections_directive=yes
      fi
     fi

@@ -250,9 +250,8 @@ _M2_SysExceptions_dep (void)
 {
 }
 
-struct _M2_SysExceptions_ctor { _M2_SysExceptions_ctor (); } _M2_SysExceptions_ctor;
-
-_M2_SysExceptions_ctor::_M2_SysExceptions_ctor (void)
+extern "C" void __attribute__((__constructor__))
+_M2_SysExceptions_ctor (void)
 {
   M2RTS_RegisterModule ("SysExceptions", _M2_SysExceptions_init, _M2_SysExceptions_fini,
 			_M2_SysExceptions_dep);

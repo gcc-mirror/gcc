@@ -1,6 +1,7 @@
-/* Subroutines used for code generation for RISC-V 'V' Extension for GNU
-   compiler. Copyright (C) 2022-2022 Free Software Foundation, Inc. Contributed
-   by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
+/* Subroutines used for code generation for RISC-V 'V' Extension for
+   GNU compiler.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
    This file is part of GCC.
 
@@ -79,8 +80,7 @@ public:
   }
   void add_avl_type_operand ()
   {
-    rtx vlmax_rtx = gen_int_mode (avl_type::VLMAX, Pmode);
-    add_input_operand (vlmax_rtx, Pmode);
+    add_input_operand (get_avl_type_rtx (avl_type::VLMAX), Pmode);
   }
 
   void expand (enum insn_code icode, bool temporary_volatile_p = false)
@@ -340,6 +340,13 @@ get_prefer_mask_policy ()
      will have a compile option like -mprefer=agnostic to set
      this value???.  */
   return MASK_ANY;
+}
+
+/* Get avl_type rtx.  */
+rtx
+get_avl_type_rtx (enum avl_type type)
+{
+  return gen_int_mode (type, Pmode);
 }
 
 } // namespace riscv_vector

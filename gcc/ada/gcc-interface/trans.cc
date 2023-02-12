@@ -10564,7 +10564,7 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column,
   *locus
     = linemap_position_for_line_and_column (line_table, map, line, column);
 
-  if (file_map && file_map[file - 1].Instance)
+  if (decl && file_map && file_map[file - 1].Instance)
     decl_to_instance_map->put (decl, file_map[file - 1].Instance);
 
   return true;

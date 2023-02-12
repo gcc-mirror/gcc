@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Characters.Handling;
 with Ada.Strings.UTF_Encoding.Conversions;
 with Ada.Strings.UTF_Encoding.Strings;
 with Ada.Strings.UTF_Encoding.Wide_Strings;
@@ -91,9 +92,16 @@ package body Ada.Strings.Text_Buffers.Bounded is
             --  forget to add corresponding assignment statement below.
             Dummy : array (1 .. 0) of Buffer_Type (0) :=
               [others =>
-                 (Max_Characters => 0, Chars => <>, Indentation => <>,
-                  Indent_Pending => <>, UTF_8_Length => <>, UTF_8_Column => <>,
-                  All_7_Bits     => <>, All_8_Bits => <>, Truncated => <>)];
+                 (Max_Characters            => 0,
+                  Chars                     => <>,
+                  Indentation               => <>,
+                  Indent_Pending            => <>,
+                  UTF_8_Length              => <>,
+                  UTF_8_Column              => <>,
+                  Trim_Leading_White_Spaces => <>,
+                  All_7_Bits                => <>,
+                  All_8_Bits                => <>,
+                  Truncated                 => <>)];
          begin
             Buffer.Indentation    := Defaulted.Indentation;
             Buffer.Indent_Pending := Defaulted.Indent_Pending;
@@ -131,7 +139,10 @@ package body Ada.Strings.Text_Buffers.Bounded is
                return;
             end if;
 
-            Buffer.All_7_Bits := @ and then Character'Pos (Char) < 128;
+            Buffer.All_7_Bits :=
+              @ and then Character'Pos (Char) < 128;
+            Buffer.Trim_Leading_White_Spaces :=
+              @ and then Characters.Handling.Is_Space (Char);
 
             Buffer.UTF_8_Length                                    := @ + 1;
             Buffer.UTF_8_Column                                    := @ + 1;

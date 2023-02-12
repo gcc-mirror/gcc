@@ -30,6 +30,18 @@ IMPORT libc, SYSTEM ;
 (* we reference these to ensure they are dragged in to the link *)
 
 
+PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+                            argc: INTEGER; argv, envp: ADDRESS) ;
+BEGIN
+END ConstructModules ;
+
+
+PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+                              argc: INTEGER; argv, envp: ADDRESS) ;
+BEGIN
+END DeconstructModules ;
+
+
 (* all these procedures do nothing except satisfy the linker.  *)
 
 PROCEDURE ExecuteTerminationProcedures ;

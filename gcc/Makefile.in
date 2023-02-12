@@ -1,7 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987-2022 Free Software Foundation, Inc.
+# Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -731,6 +731,7 @@ htmldir = @htmldir@
 USE_NLS = @USE_NLS@
 
 # Internationalization library.
+INCINTL = @INCINTL@
 LIBINTL = @LIBINTL@
 LIBINTL_DEP = @LIBINTL_DEP@
 
@@ -822,7 +823,7 @@ BUILD_LINKERFLAGS = $(BUILD_CXXFLAGS)
 # Native linker and preprocessor flags.  For x-fragment overrides.
 BUILD_LDFLAGS=@BUILD_LDFLAGS@
 BUILD_CPPFLAGS= -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
-		-I$(srcdir)/../include @INCINTL@ $(CPPINC) $(CPPFLAGS)
+		-I$(srcdir)/../include $(INCINTL) $(CPPINC) $(CPPFLAGS)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
@@ -1130,7 +1131,7 @@ BUILD_ERRORS = build/errors.o
 # currently being compiled, in both source trees, to be examined as well.
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
-	   -I$(srcdir)/../include @INCINTL@ \
+	   -I$(srcdir)/../include $(INCINTL) \
 	   $(CPPINC) $(CODYINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
 	   $(ISLINC)
 

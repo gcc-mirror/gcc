@@ -71,7 +71,6 @@ parser.add_argument('log', help='Log file with clang warnings')
 args = parser.parse_args()
 
 lines = [line.strip() for line in open(args.log)]
-total = 0
 messages = set()
 for line in lines:
     token = ': warning: '
@@ -79,10 +78,12 @@ for line in lines:
     if i != -1:
         location = line[:i]
         message = line[i + len(token):]
+        if '/libffi/' in location or location.startswith('Makefile'):
+            continue
         if not skip_warning(location, message):
-            total += 1
             messages.add(line)
 
 for line in sorted(messages):
     print(line)
-print('\nTotal warnings: %d' % total)
+
+print('\nTotal warnings: %d' % len(messages))

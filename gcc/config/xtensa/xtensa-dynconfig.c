@@ -35,7 +35,7 @@
 
 #if !defined (HAVE_DLFCN_H) && defined (_WIN32)
 
-#define RTLD_LAZY 0      /* Dummy value.  */
+#define RTLD_LAZY 0	/* Dummy value.  */
 
 static void *
 dlopen (const char *file, int mode ATTRIBUTE_UNUSED)
@@ -142,8 +142,8 @@ XTENSA_CONFIG_INSTANCE_LIST;
 #define XTENSA_CONFIG_ENTRY(a) "__" #a "=" STRINGIFY(a)
 
 static const char * const xtensa_config_strings[] = {
-    XTENSA_CONFIG_ENTRY_LIST,
-    NULL,
+  XTENSA_CONFIG_ENTRY_LIST,
+  NULL,
 };
 
 const struct xtensa_config_v1 *xtensa_get_config_v1 (void)

@@ -251,6 +251,8 @@
 #  define __cpp_lib_barrier 201907L
 # endif
 #endif
+// #undef __cpp_lib_chrono
+// #define __cpp_lib_chrono 201907L
 // FIXME: #define __cpp_lib_execution 201902L
 #define __cpp_lib_constexpr_algorithms 201806L
 #ifdef __cpp_lib_is_constant_evaluated

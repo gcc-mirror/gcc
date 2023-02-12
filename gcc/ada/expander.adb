@@ -515,6 +515,9 @@ package body Expander is
                when N_Variant_Part =>
                   Expand_N_Variant_Part (N);
 
+               when N_Interpolated_String_Literal =>
+                  Expand_N_Interpolated_String_Literal (N);
+
                --  For all other node kinds, no expansion activity required
 
                when others =>

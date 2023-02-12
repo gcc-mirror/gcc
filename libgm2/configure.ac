@@ -267,7 +267,7 @@ AC_MSG_NOTICE([libgm2 has finished checking target libc and libm contents.])
 # All known M2_HOST_OS values.  This is the union of all host operating systems
 # supported by gm2.
 
-M2_SUPPORTED_HOST_OS="aix freebsd hurd linux netbsd openbsd solaris windows"
+M2_SUPPORTED_HOST_OS="aix freebsd hurd linux netbsd openbsd solaris windows darwin"
 
 M2_HOST_OS=unknown
 
@@ -280,6 +280,19 @@ case ${host} in
   *-*-solaris2*) M2_HOST_OS=solaris ;;
   *-*-aix*)      M2_HOST_OS=aix ;;
   *-*-gnu*)      M2_HOST_OS=hurd ;;
+esac
+
+M2_TARGET_OS=unknown
+
+case ${target} in
+  *-*-darwin*)   M2_TARGET_OS=darwin ;;
+  *-*-freebsd*)  M2_TARGET_OS=freebsd ;;
+  *-*-linux*)    M2_TARGET_OS=linux ;;
+  *-*-netbsd*)	 M2_TARGET_OS=netbsd ;;
+  *-*-openbsd*)  M2_TARGET_OS=openbsd ;;
+  *-*-solaris2*) M2_TARGET_OS=solaris ;;
+  *-*-aix*)      M2_TARGET_OS=aix ;;
+  *-*-gnu*)      M2_TARGET_OS=hurd ;;
 esac
 
 # M2_HOST_OS=unknown
@@ -366,6 +379,7 @@ AM_CONDITIONAL([BUILD_PIMLIB], [test x$BUILD_PIMLIB = xtrue])
 AM_CONDITIONAL([BUILD_ISOLIB], [test x$BUILD_ISOLIB = xtrue])
 AM_CONDITIONAL([BUILD_CORLIB], [test x$BUILD_CORLIB = xtrue])
 AM_CONDITIONAL([BUILD_LOGLIB], [test x$BUILD_LOGLIB = xtrue])
+AM_CONDITIONAL([TARGET_DARWIN], [test x$M2_TARGET_OS = xdarwin])
 
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_FILES([Makefile libm2min/Makefile libm2pim/Makefile libm2iso/Makefile

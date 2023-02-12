@@ -1,3 +1,4 @@
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* { dg-additional-options "-O2" } */
 
 #include <stdio.h>

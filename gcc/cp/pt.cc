@@ -4958,6 +4958,28 @@ generic_targs_for (tree tmpl)
   return template_parms_to_args (DECL_TEMPLATE_PARMS (tmpl));
 }
 
+/* Return the template arguments corresponding to the template parameters of
+   TMPL's enclosing scope.  When TMPL is a member of a partial specialization,
+   this returns the arguments for the partial specialization as opposed to those
+   for the primary template, which is the main difference between this function
+   and simply using e.g. the TYPE_TI_ARGS of TMPL's DECL_CONTEXT.  */
+
+tree
+outer_template_args (tree tmpl)
+{
+  tree ti = get_template_info (DECL_TEMPLATE_RESULT (tmpl));
+  if (!ti)
+    return NULL_TREE;
+  tree args = TI_ARGS (ti);
+  if (!PRIMARY_TEMPLATE_P (tmpl))
+    return args;
+  if (TMPL_ARGS_DEPTH (args) == 1)
+    return NULL_TREE;
+  args = copy_node (args);
+  --TREE_VEC_LENGTH (args);
+  return args;
+}
+
 /* Update the declared TYPE by doing any lookups which were thought to be
    dependent, but are not now that we know the SCOPE of the declarator.  */
 
@@ -10640,14 +10662,14 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
 struct find_template_parameter_info
 {
   explicit find_template_parameter_info (tree ctx_parms)
-    : parm_list (NULL_TREE),
-      ctx_parms (ctx_parms),
+    : ctx_parms (ctx_parms),
       max_depth (TMPL_PARMS_DEPTH (ctx_parms))
   {}
 
   hash_set<tree> visited;
   hash_set<tree> parms;
-  tree parm_list;
+  tree parm_list = NULL_TREE;
+  tree *parm_list_tail = &parm_list;
   tree ctx_parms;
   int max_depth;
 };
@@ -10693,7 +10715,12 @@ keep_template_parm (tree t, void* data)
   if (TYPE_P (t))
     t = TYPE_MAIN_VARIANT (t);
   if (!ftpi->parms.add (t))
-    ftpi->parm_list = tree_cons (NULL_TREE, t, ftpi->parm_list);
+    {
+      /* Append T to PARM_LIST.  */
+      tree node = build_tree_list (NULL_TREE, t);
+      *ftpi->parm_list_tail = node;
+      ftpi->parm_list_tail = &TREE_CHAIN (node);
+    }
 
   /* Verify the parameter we found has a valid index.  */
   if (flag_checking)
@@ -17338,42 +17365,16 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      return maybe_wrap_with_location (op0, EXPR_LOCATION (t));
 	    }
 	  tree op = TREE_OPERAND (t, 0);
-	  if (code == VIEW_CONVERT_EXPR
-	      && TREE_CODE (op) == TEMPLATE_PARM_INDEX)
-	    {
-	      /* Wrapper to make a C++20 template parameter object const.  */
-	      op = tsubst_copy (op, args, complain, in_decl);
-	      if (!CP_TYPE_CONST_P (TREE_TYPE (op)))
-		{
-		  /* The template argument is not const, presumably because
-		     it is still dependent, and so not the const template parm
-		     object.  */
-		  tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-		  gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p
-				       (type, TREE_TYPE (op)));
-		  if (TREE_CODE (op) == CONSTRUCTOR
-		      || TREE_CODE (op) == IMPLICIT_CONV_EXPR)
-		    {
-		      /* Don't add a wrapper to these.  */
-		      op = copy_node (op);
-		      TREE_TYPE (op) = type;
-		    }
-		  else
-		    /* Do add a wrapper otherwise (in particular, if op is
-		       another TEMPLATE_PARM_INDEX).  */
-		    op = build1 (code, type, op);
-		}
-	      return op;
-	    }
 	  /* force_paren_expr can also create a VIEW_CONVERT_EXPR.  */
-	  else if (code == VIEW_CONVERT_EXPR && REF_PARENTHESIZED_P (t))
+	  if (code == VIEW_CONVERT_EXPR && REF_PARENTHESIZED_P (t))
 	    {
 	      op = tsubst_copy (op, args, complain, in_decl);
 	      op = build1 (code, TREE_TYPE (op), op);
 	      REF_PARENTHESIZED_P (op) = true;
 	      return op;
 	    }
-	  /* We shouldn't see any other uses of these in templates.  */
+	  /* We shouldn't see any other uses of these in templates
+	     (tsubst_copy_and_build handles C++20 tparm object wrappers).  */
 	  gcc_unreachable ();
 	}
 
@@ -18893,6 +18894,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		    tree first = NULL_TREE, ndecl = error_mark_node;
 		    tree asmspec_tree = NULL_TREE;
 		    maybe_push_decl (decl);
+
+		    if (VAR_P (decl)
+			&& DECL_LANG_SPECIFIC (decl)
+			&& DECL_OMP_PRIVATIZED_MEMBER (decl))
+		      break;
 
 		    if (VAR_P (decl)
 			&& DECL_DECOMPOSITION_P (decl)
@@ -21636,12 +21642,42 @@ tsubst_copy_and_build (tree t,
 
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
-      if (location_wrapper_p (t))
-	/* We need to do this here as well as in tsubst_copy so we get the
-	   other tsubst_copy_and_build semantics for a PARM_DECL operand.  */
-	RETURN (maybe_wrap_with_location (RECUR (TREE_OPERAND (t, 0)),
-					  EXPR_LOCATION (t)));
-      /* fallthrough.  */
+      {
+	tree op = RECUR (TREE_OPERAND (t, 0));
+
+	if (location_wrapper_p (t))
+	  /* We need to do this here as well as in tsubst_copy so we get the
+	     other tsubst_copy_and_build semantics for a PARM_DECL operand.  */
+	  RETURN (maybe_wrap_with_location (op, EXPR_LOCATION (t)));
+
+	gcc_checking_assert (TREE_CODE (t) == VIEW_CONVERT_EXPR);
+	if (REF_PARENTHESIZED_P (t))
+	  /* force_paren_expr can also create a VIEW_CONVERT_EXPR.  */
+	  RETURN (finish_parenthesized_expr (op));
+
+	/* Otherwise, we're dealing with a wrapper to make a C++20 template
+	   parameter object const.  */
+	if (TREE_TYPE (op) == NULL_TREE
+	    || !CP_TYPE_CONST_P (TREE_TYPE (op)))
+	  {
+	    /* The template argument is not const, presumably because
+	       it is still dependent, and so not the const template parm
+	       object.  */
+	    tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	    if (TREE_CODE (op) == CONSTRUCTOR
+		|| TREE_CODE (op) == IMPLICIT_CONV_EXPR)
+	      {
+		/* Don't add a wrapper to these.  */
+		op = copy_node (op);
+		TREE_TYPE (op) = type;
+	      }
+	    else
+	      /* Do add a wrapper otherwise (in particular, if op is
+		 another TEMPLATE_PARM_INDEX).  */
+	      op = build1 (VIEW_CONVERT_EXPR, type, op);
+	  }
+	RETURN (op);
+      }
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
@@ -30067,16 +30103,8 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 static tree
 ctor_deduction_guides_for (tree tmpl, tsubst_flags_t complain)
 {
-  tree type = TREE_TYPE (tmpl);
-  tree outer_args = NULL_TREE;
-  if (DECL_CLASS_SCOPE_P (tmpl)
-      && CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (tmpl)))
-    {
-      outer_args = copy_node (CLASSTYPE_TI_ARGS (type));
-      gcc_assert (TMPL_ARGS_DEPTH (outer_args) > 1);
-      --TREE_VEC_LENGTH (outer_args);
-      type = TREE_TYPE (most_general_template (tmpl));
-    }
+  tree outer_args = outer_template_args (tmpl);
+  tree type = TREE_TYPE (most_general_template (tmpl));
 
   tree cands = NULL_TREE;
 

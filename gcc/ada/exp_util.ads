@@ -757,6 +757,14 @@ package Exp_Util is
    --  Return a suitable standard integer type containing at least S bits and
    --  of the signedness given by Uns. See also Small_Integer_Type_For.
 
+   function Is_Captured_Function_Call (N : Node_Id) return Boolean;
+   --  Return True if N is a captured function call, i.e. the result of calling
+   --  Remove_Side_Effects on an N_Function_Call node:
+
+   --    type Ann is access all Typ;
+   --    Rnn : constant Ann := Func (...)'reference;
+   --    Rnn.all
+
    function Is_Displacement_Of_Object_Or_Function_Result
      (Obj_Id : Entity_Id) return Boolean;
    --  Determine whether Obj_Id is a source entity that has been initialized by
@@ -816,6 +824,10 @@ package Exp_Util is
    function Is_Related_To_Func_Return (Id : Entity_Id) return Boolean;
    --  Determine whether object Id is related to an expanded return statement.
    --  The case concerned is "return Id.all;".
+
+   --  This is effectively used to determine which temporaries generated for
+   --  return statements must be finalized because they are regular temporaries
+   --  and which ones must not be since they are allocated on the return stack.
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 

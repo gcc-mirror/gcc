@@ -40,7 +40,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -64,7 +64,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2022 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2023 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -227,7 +227,9 @@ described below.
 @heading Tools/packages necessary for building GCC
 @table @asis
 @item ISO C++11 compiler
-Necessary to bootstrap GCC.
+Necessary to bootstrap GCC.  GCC 4.8.3 or newer has sufficient
+support for used C++11 features, with earlier GCC versions you
+might run into implementation bugs.
 
 Versions of GCC prior to 11 also allow bootstrapping with an ISO C++98
 compiler, versions of GCC prior to 4.8 also allow bootstrapping with a
@@ -236,7 +238,7 @@ bootstrapping with a traditional (K&R) C compiler.
 
 To build all languages in a cross-compiler or other configuration where
 3-stage bootstrap is not performed, you need to start with an existing
-GCC binary (version 4.8 or later) because source code for language
+GCC binary (version 4.8.3 or later) because source code for language
 frontends other than C might use GCC extensions.
 
 @item C standard library and headers
@@ -287,7 +289,7 @@ section.
 @item @anchor{GDC-prerequisite}GDC
 
 In order to build GDC, the D compiler, you need a working GDC
-compiler (GCC version 9.1 or later) and D runtime library,
+compiler (GCC version 9.4 or later) and D runtime library,
 @samp{libphobos}, as the D front end is written in D.
 
 Versions of GDC prior to 12 can be built with an ISO C++11 compiler, which can

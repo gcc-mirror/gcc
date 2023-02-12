@@ -35,11 +35,19 @@ int main()
   // return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 12 fun1<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 11 fun1<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 11 fun1<const char.> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 11 fun1<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 fun1<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 32 main .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 21 test<int>::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 21 test<double>::fun .*(\n|\r\n|\r)*" }
+// { dg-output {contract violation in function fun1<int> at .*:12: \(long long\)b > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function fun1<double> at .*:11: a > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function fun1<const char\*> at .*:11: a > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function fun1<int> at .*:11: a > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function fun1<int> at .*:12: \(long long\)b > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:32: fun1\(-1, -5\)(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function test<int>::fun at .*:21: b > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function test<double>::fun at .*:21: b > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }

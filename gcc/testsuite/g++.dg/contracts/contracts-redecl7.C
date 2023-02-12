@@ -77,19 +77,19 @@ int main(int, char**)
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 9 S::now .*(\n|\r\n|\r)*" }
-// { dg-output "S::now: a: -10, t->pri: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 15 now .*(\n|\r\n|\r)*" }
-// { dg-output "now: a: -20, t->pri: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 22 later .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 22 later .*(\n|\r\n|\r)*" }
-// { dg-output "later: a: -21, t->pri: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 27 both .*(\n|\r\n|\r)*" }
-// { dg-output "both: a: -22, t->pri: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 36 hidden .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 36 hidden .*(\n|\r\n|\r)*" }
-// { dg-output "hidden: a: -23, t->pri: -10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 41 hidden2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 41 hidden2 .*(\n|\r\n|\r)*" }
-// { dg-output "hidden2: a: -24, t->pri: -10(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function S::now at .*.C:9: .*(\n|\r\n|\r)" }
+// { dg-output "S::now: a: -10, t->pri: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function now at .*.C:15: .*(\n|\r\n|\r)" }
+// { dg-output "now: a: -20, t->pri: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function later at .*.C:22: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function later at .*.C:22: .*(\n|\r\n|\r)" }
+// { dg-output "later: a: -21, t->pri: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function both at .*.C:27: .*(\n|\r\n|\r)" }
+// { dg-output "both: a: -22, t->pri: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function hidden at .*.C:36: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function hidden at .*.C:36: .*(\n|\r\n|\r)" }
+// { dg-output "hidden: a: -23, t->pri: -10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function hidden2 at .*.C:41: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function hidden2 at .*.C:41: .*(\n|\r\n|\r)" }
+// { dg-output "hidden2: a: -24, t->pri: -10(\n|\r\n|\r)" }
 

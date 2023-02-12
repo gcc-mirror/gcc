@@ -9825,7 +9825,9 @@ finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
 
 	for (tree c = *clauses_ptr; c; c = OMP_CLAUSE_CHAIN (c))
 	  {
-	    /* If map(this->ptr[:N] already exists, avoid creating another
+	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
+	      continue;
+	    /* If map(this->ptr[:N]) already exists, avoid creating another
 	       such map.  */
 	    tree decl = OMP_CLAUSE_DECL (c);
 	    if ((TREE_CODE (decl) == INDIRECT_REF

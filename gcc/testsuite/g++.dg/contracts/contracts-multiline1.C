@@ -16,4 +16,4 @@ int main(int, char **)
   ]];
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 8 main x < 10 && y > 123.*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function main at .*.C:8: x < 10 && y > 123.*(\n|\r\n|\r)" }

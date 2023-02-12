@@ -7913,6 +7913,7 @@ package body Exp_Util is
                | N_Indexed_Component
                | N_Integer_Literal
                | N_Iterator_Specification
+               | N_Interpolated_String_Literal
                | N_Itype_Reference
                | N_Label
                | N_Loop_Parameter_Specification
@@ -8122,6 +8123,10 @@ package body Exp_Util is
 
    function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id is
    begin
+      pragma Assert
+        (Standard_Long_Integer_Size in
+         Standard_Integer_Size | Standard_Long_Long_Integer_Size);
+      --  So we don't need to check for Standard_Long_Integer_Size below
       pragma Assert (S <= System_Max_Integer_Size);
 
       --  This is the canonical 32-bit type
@@ -8155,6 +8160,30 @@ package body Exp_Util is
          raise Program_Error;
       end if;
    end Integer_Type_For;
+
+   -------------------------------
+   -- Is_Captured_Function_Call --
+   -------------------------------
+
+   function Is_Captured_Function_Call (N : Node_Id) return Boolean is
+   begin
+      if Nkind (N) = N_Explicit_Dereference
+        and then Is_Entity_Name (Prefix (N))
+        and then Ekind (Entity (Prefix (N))) = E_Constant
+      then
+         declare
+            Value : constant Node_Id := Constant_Value (Entity (Prefix (N)));
+
+         begin
+            return Present (Value)
+              and then Nkind (Value) = N_Reference
+              and then Nkind (Prefix (Value)) = N_Function_Call;
+         end;
+
+      else
+         return False;
+      end if;
+   end Is_Captured_Function_Call;
 
    --------------------------------------------------
    -- Is_Displacement_Of_Object_Or_Function_Result --
@@ -8310,8 +8339,9 @@ package body Exp_Util is
 
       --  is rewritten into:
 
-      --     Temp : ... := Function_Call (...)'reference;
-      --     Obj  : CW_Type renames (... Ada.Tags.Displace (Temp));
+      --     Tmp : ... := Function_Call (...)'reference;
+      --     Rnn : constant access CW_Type := (... Ada.Tags.Displace (Tmp));
+      --     Obj : CW_Type renames Rnn.all;
 
       --  where the return type of the function and the class-wide type require
       --  dispatch table pointer displacement.
@@ -8322,8 +8352,9 @@ package body Exp_Util is
 
       --  is rewritten into:
 
-      --     Temp : ... := Function_Call (Container, ...)'reference;
-      --     Obj  : CW_Type renames (... Ada.Tags.Displace (Temp));
+      --     Tmp : ... := Function_Call (Container, ...)'reference;
+      --     Rnn : constant access CW_Type := (... Ada.Tags.Displace (Tmp));
+      --     Obj : CW_Type renames Rnn.all;
 
       --  where the container element type and the class-wide type require
       --  dispatch table pointer dispacement.
@@ -8334,14 +8365,21 @@ package body Exp_Util is
 
       --  is rewritten into:
 
-      --     Obj : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
+      --     Rnn : constant access CW_Type := (...Ada.Tags.Displace (Src_Obj));
+      --     Obj : CW_Type renames Rnn.all;
 
       --  where the type of the source object and the class-wide type require
       --  dispatch table pointer displacement.
 
       if Nkind (Obj_Decl) = N_Object_Renaming_Declaration
         and then Is_Class_Wide_Type (Obj_Typ)
-        and then Is_Displace_Call (Renamed_Object (Obj_Id))
+        and then not Is_Special_Return_Object (Obj_Id)
+        and then Nkind (Renamed_Object (Obj_Id)) = N_Explicit_Dereference
+        and then Is_Entity_Name (Prefix (Renamed_Object (Obj_Id)))
+        and then Ekind (Entity (Prefix (Renamed_Object (Obj_Id)))) = E_Constant
+        and then
+          Is_Displace_Call
+            (Constant_Value (Entity (Prefix (Renamed_Object (Obj_Id)))))
         and then Nkind (Orig_Decl) = N_Object_Declaration
         and then Comes_From_Source (Orig_Decl)
       then
@@ -8351,9 +8389,10 @@ package body Exp_Util is
            Is_Controlled_Function_Call (Orig_Expr)
              or else Is_Controlled_Indexing (Orig_Expr)
              or else Is_Source_Object (Orig_Expr);
-      end if;
 
-      return False;
+      else
+         return False;
+      end if;
    end Is_Displacement_Of_Object_Or_Function_Result;
 
    ------------------------------
@@ -9168,7 +9207,8 @@ package body Exp_Util is
           and then Nkind (Unqual_Conv (Expr)) = N_Explicit_Dereference
           and then (Nkind (Parent (Expr)) = N_Simple_Return_Statement
                      or else
-                       (Nkind (Parent (Expr)) = N_Object_Renaming_Declaration
+                       (Nkind (Parent (Expr)) in N_Object_Declaration
+                                               | N_Object_Renaming_Declaration
                          and then
                         Is_Return_Object (Defining_Entity (Parent (Expr)))));
    end Is_Related_To_Func_Return;
@@ -9639,7 +9679,7 @@ package body Exp_Util is
 
    --   type Equiv_T is record
    --     _parent : T (List of discriminant constraints taken from Exp);
-   --     Ext__50 : Storage_Array (1 .. (Exp'size - Typ'object_size)/8);
+   --     Cnn : Storage_Array (1 .. (Exp'size - Typ'object_size)/Storage_Unit);
    --   end Equiv_T;
    --
    --  Note that this type does not guarantee same alignment as all derived
@@ -9663,7 +9703,63 @@ package body Exp_Util is
       Range_Type  : Entity_Id;
       Str_Type    : Entity_Id;
       Constr_Root : Entity_Id;
-      Sizexpr     : Node_Id;
+      Size_Expr   : Node_Id;
+      Size_Pref   : Node_Id;
+
+      function Has_Tag_Of_Type (Exp : Node_Id) return Boolean;
+      --  Return True if expression Exp of a tagged type is known to statically
+      --  have the tag of this tagged type as specified by RM 3.9(19-25).
+
+      ---------------------
+      -- Has_Tag_Of_Type --
+      ---------------------
+
+      function Has_Tag_Of_Type (Exp : Node_Id) return Boolean is
+         Typ : constant Entity_Id := Etype (Exp);
+
+      begin
+         pragma Assert (Is_Tagged_Type (Typ));
+
+         --  The tag of an object of a class-wide type is that of its
+         --  initialization expression.
+
+         if Is_Class_Wide_Type (Typ) then
+            return False;
+         end if;
+
+         --  The tag of a stand-alone object of a specific tagged type T
+         --  identifies T.
+
+         if Is_Entity_Name (Exp)
+           and then Ekind (Entity (Exp)) in E_Constant | E_Variable
+         then
+            return True;
+
+         else
+            case Nkind (E) is
+               --  The tag of a component or an aggregate of a specific tagged
+               --  type T identifies T.
+
+               when N_Indexed_Component
+                 |  N_Selected_Component
+                 |  N_Aggregate
+               =>
+                  return True;
+
+               --  The tag of the result returned by a function whose result
+               --  type is a specific tagged type T identifies T.
+
+               when N_Function_Call =>
+                  return True;
+
+               when N_Explicit_Dereference =>
+                  return Is_Captured_Function_Call (Exp);
+
+               when others =>
+                  return False;
+            end case;
+         end if;
+      end Has_Tag_Of_Type;
 
    begin
       --  If the root type is already constrained, there are no discriminants
@@ -9698,18 +9794,28 @@ package body Exp_Util is
 
       Range_Type := Make_Temporary (Loc, 'G');
 
+      --  If the expression is known to have the tag of its type, then we can
+      --  use it directly for the prefix of the Size attribute; otherwise we
+      --  need to convert it first to the class-wide type to force a call to
+      --  the _Size primitive operation.
+
+      if Has_Tag_Of_Type (E) then
+         Size_Pref := Duplicate_Subexpr_No_Checks (E);
+      else
+         Size_Pref := OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E));
+      end if;
+
       if not Is_Interface (Root_Typ) then
 
          --  subtype rg__xx is
-         --    Storage_Offset range 1 .. (Expr'size - typ'object_size)
+         --    Storage_Offset range 1 .. (Exp'size - Typ'object_size)
          --                                / Storage_Unit
 
-         Sizexpr :=
+         Size_Expr :=
            Make_Op_Subtract (Loc,
              Left_Opnd =>
                Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
+                 Prefix => Size_Pref,
                  Attribute_Name => Name_Size),
              Right_Opnd =>
                Make_Attribute_Reference (Loc,
@@ -9717,15 +9823,14 @@ package body Exp_Util is
                  Attribute_Name => Name_Object_Size));
       else
          --  subtype rg__xx is
-         --    Storage_Offset range 1 .. (Expr'size - Ada.Tags.Tag'object_size)
+         --    Storage_Offset range 1 .. (Exp'size - Ada.Tags.Tag'object_size)
          --                                / Storage_Unit
 
-         Sizexpr :=
+         Size_Expr :=
            Make_Op_Subtract (Loc,
              Left_Opnd =>
                Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
+                 Prefix => Size_Pref,
                  Attribute_Name => Name_Size),
              Right_Opnd =>
                Make_Attribute_Reference (Loc,
@@ -9733,7 +9838,7 @@ package body Exp_Util is
                  Attribute_Name => Name_Object_Size));
       end if;
 
-      Set_Paren_Count (Sizexpr, 1);
+      Set_Paren_Count (Size_Expr, 1);
 
       Append_To (List_Def,
         Make_Subtype_Declaration (Loc,
@@ -9747,7 +9852,7 @@ package body Exp_Util is
                     Low_Bound => Make_Integer_Literal (Loc, 1),
                     High_Bound =>
                       Make_Op_Divide (Loc,
-                        Left_Opnd => Sizexpr,
+                        Left_Opnd => Size_Expr,
                         Right_Opnd => Make_Integer_Literal (Loc,
                             Intval => System_Storage_Unit)))))));
 
@@ -12873,14 +12978,17 @@ package body Exp_Util is
 
             --  Detect a case where a source object has been initialized by
             --  a controlled function call or another object which was later
-            --  rewritten as a class-wide conversion of Ada.Tags.Displace.
+            --  rewritten as a class-wide conversion of Ada.Tags.Displace:
 
-            --     Obj1 : CW_Type := Src_Obj;
-            --     Obj2 : CW_Type := Function_Call (...);
+            --     Obj1 : CW_Type := Function_Call (...);
+            --     Obj2 : CW_Type := Src_Obj;
 
-            --     Obj1 : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
             --     Tmp  : ... := Function_Call (...)'reference;
-            --     Obj2 : CW_Type renames (... Ada.Tags.Displace (Tmp));
+            --     Rnn  : access CW_Type := (... Ada.Tags.Displace (Tmp));
+            --     Obj1 : CW_Type renames Rnn.all;
+
+            --     Rnn  : access CW_Type := (... Ada.Tags.Displace (Src_Obj));
+            --     Obj2 : CW_Type renames Rnn.all;
 
             elsif Is_Displacement_Of_Object_Or_Function_Result (Obj_Id) then
                return True;
@@ -14023,7 +14131,8 @@ package body Exp_Util is
    function Small_Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id
    is
    begin
-      pragma Assert (S <= System_Max_Integer_Size);
+      --  The only difference between this and Integer_Type_For is that this
+      --  can return small (8- or 16-bit) types.
 
       if S <= Standard_Short_Short_Integer_Size then
          if Uns then
@@ -14039,36 +14148,8 @@ package body Exp_Util is
             return Standard_Short_Integer;
          end if;
 
-      elsif S <= Standard_Integer_Size then
-         if Uns then
-            return Standard_Unsigned;
-         else
-            return Standard_Integer;
-         end if;
-
-      elsif S <= Standard_Long_Integer_Size then
-         if Uns then
-            return Standard_Long_Unsigned;
-         else
-            return Standard_Long_Integer;
-         end if;
-
-      elsif S <= Standard_Long_Long_Integer_Size then
-         if Uns then
-            return Standard_Long_Long_Unsigned;
-         else
-            return Standard_Long_Long_Integer;
-         end if;
-
-      elsif S <= Standard_Long_Long_Long_Integer_Size then
-         if Uns then
-            return Standard_Long_Long_Long_Unsigned;
-         else
-            return Standard_Long_Long_Long_Integer;
-         end if;
-
       else
-         raise Program_Error;
+         return Integer_Type_For (S, Uns);
       end if;
    end Small_Integer_Type_For;
 

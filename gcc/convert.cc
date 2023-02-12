@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GCC.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -381,6 +381,14 @@ do_narrow (location_t loc,
      instead of signed, and thus hide overflow bugs.  */
   if ((ex_form == PLUS_EXPR || ex_form == MINUS_EXPR)
       && !TYPE_UNSIGNED (typex)
+      && sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+    return NULL_TREE;
+
+  /* Similarly for multiplication, but in that case it can be
+     problematic even if typex is unsigned type - 0xffff * 0xffff
+     overflows in int.  */
+  if (ex_form == MULT_EXPR
+      && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr))
       && sanitize_flags_p (SANITIZE_SI_OVERFLOW))
     return NULL_TREE;
 

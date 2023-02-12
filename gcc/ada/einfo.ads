@@ -1865,7 +1865,7 @@ package Einfo is
 --    Has_Per_Object_Constraint
 --       Defined in E_Component entities. Set if the subtype of the component
 --       has a per object constraint. Per object constraints result from the
---       following situations :
+--       following situations:
 --
 --       1. N_Attribute_Reference - when the prefix is the enclosing type and
 --          the attribute is Access.
@@ -4136,14 +4136,14 @@ package Einfo is
 --       set instead, or a similar appearance as an out parameter actual, in
 --       which case Referenced_As_Out_Parameter is set.
 
---    Referenced_As_LHS :
+--    Referenced_As_LHS
 --       Defined in all entities. This flag is set instead of Referenced if a
 --       simple variable that is not a renaming appears as the left side of an
 --       assignment. The reason we distinguish this kind of reference is that
 --       we have a separate warning for variables that are only assigned and
 --       never read.
 
---    Referenced_As_Out_Parameter :
+--    Referenced_As_Out_Parameter
 --       Defined in all entities. This flag is set instead of Referenced if a
 --       simple variable that is not a renaming appears as an actual for an out
 --       formal. The reason we distinguish this kind of reference is that

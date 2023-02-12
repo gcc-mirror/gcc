@@ -3,7 +3,7 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-build-level=audit" }
 // { dg-shouldfail "assert violation" }
-// { dg-output "default std::handle_contract_violation called" }
+// { dg-output "contract violation in function main" }
 
 int main()
 {

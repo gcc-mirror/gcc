@@ -40,6 +40,6 @@ int main ()
       PRINT ("main: we should be 'done' ");
       abort ();
     }
-  puts ("main: done");
+  PRINT ("main: done");
   return 0;
 }

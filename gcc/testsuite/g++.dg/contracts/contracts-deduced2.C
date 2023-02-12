@@ -71,14 +71,14 @@ int main(int, char**) {
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 5 g0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 5 g0 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 g1 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 23 g3 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 30 g4 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 37 g5 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 46 g6<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 46 g6<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 55 g7<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 55 g7<double> .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function g0 at .*.C:5: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g0 at .*.C:5: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g1 at .*.C:12: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g3 at .*.C:23: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g4 at .*.C:30: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g5 at .*.C:37: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g6<int> at .*.C:46: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g6<double> at .*.C:46: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g7<int> at .*.C:55: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function g7<double> at .*.C:55: .*(\n|\r\n|\r)" }
 

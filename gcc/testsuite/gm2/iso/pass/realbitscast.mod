@@ -28,11 +28,10 @@ FROM SYSTEM IMPORT CAST, WORD ;
 #elif defined(__ppc__)
 #   undef HAVE_REAL96
 #elif defined(__ia64)
-#   undef HAVE_REAL69
-#elif defined(__APPLE__) && defined(__i386__)
 #   undef HAVE_REAL96
 #elif defined(__APPLE__)
-#   define HAVE_REAL96
+(* No 96 bit floating type on Apple platforms *)
+#   undef HAVE_REAL96
 #endif
 
 

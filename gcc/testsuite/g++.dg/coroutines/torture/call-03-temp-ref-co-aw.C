@@ -67,6 +67,6 @@ int main ()
       abort ();
     }
 
-  puts ("main: done");
+  PRINT ("main: done");
   return 0;
 }

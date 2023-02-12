@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4540,12 +4540,14 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_static_libgfortran:
     case OPT_static_libquadmath:
     case OPT_static_libphobos:
+    case OPT_static_libgm2:
     case OPT_static_libstdc__:
-      /* These are always valid, since gcc.cc itself understands the
-	 first two, gfortranspec.cc understands -static-libgfortran,
-	 d-spec.cc understands -static-libphobos, g++spec.cc
-	 understands -static-libstdc++ and libgfortran.spec handles
-	 -static-libquadmath.  */
+      /* These are always valid; gcc.cc itself understands the first two
+	 gfortranspec.cc understands -static-libgfortran,
+	 libgfortran.spec handles -static-libquadmath,
+	 d-spec.cc understands -static-libphobos,
+	 gm2spec.cc understands -static-libgm2,
+	 and g++spec.cc understands -static-libstdc++.  */
       validated = true;
       break;
 
@@ -8749,7 +8751,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2022 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2023 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),

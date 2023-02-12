@@ -34,21 +34,34 @@ constexpr std::size_t test01()
   auto v2  = a.at(2);
   auto v3  = a.front();
   auto v4  = a.back();
-  return v1 + v2 + v3 + v4;
+  auto v5 = *a.data();
+  return v1 + v2 + v3 + v4 + v5;
 }
 
 static_assert( test01() == (55 + 66 + 0 + 2) );
 
 constexpr std::size_t test02()
 {
-  // array
+  // const array
   typedef std::array<std::size_t, 6> array_type;
   const array_type a = { { 0, 55, 66, 99, 4115, 2 } };
   auto v1  = a[1];
   auto v2  = a.at(2);
   auto v3  = a.front();
   auto v4  = a.back();
-  return v1 + v2 + v3 + v4;
+  auto v5 = *a.data();
+  return v1 + v2 + v3 + v4 + v5;
 }
 
 static_assert( test02() == (55 + 66 + 0 + 2) );
+
+constexpr bool test_zero()
+{
+  // zero-sized array (PR libstdc++/108258)
+  std::array<int, 0> a{};
+  auto v4 = a.data();
+  // The standard says this is unspecified, it's null for our implementation:
+  return a.data() == nullptr;
+}
+
+static_assert( test_zero() );

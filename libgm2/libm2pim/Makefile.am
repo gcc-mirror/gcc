@@ -33,7 +33,6 @@ slibdir = @slibdir@
 
 toolexeclibdir=@toolexeclibdir@
 toolexecdir=@toolexecdir@
-GM2_FOR_TARGET=@GM2_FOR_TARGET@
 
 MULTIDIR := $(shell $(CC) $(CFLAGS) -print-multi-directory)
 MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)
@@ -168,7 +167,12 @@ libm2pimdir = libm2pim
 libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
 libm2pim_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
 libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g
-libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION)
+if TARGET_DARWIN
+libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup
+else
+libm2pim_la_link_flags =
+endif
+libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2pim_la_link_flags)
 BUILT_SOURCES = SYSTEM.def
 CLEANFILES = SYSTEM.def
 

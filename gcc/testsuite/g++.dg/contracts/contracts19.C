@@ -14,6 +14,6 @@ int main()
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 11 main .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 main .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function main at .*.C:11: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function main at .*.C:12: .*(\n|\r\n|\r)" }
 

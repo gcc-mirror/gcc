@@ -294,3 +294,4 @@ void
 _M2_wrapc_ctor ()
 {
 }
+

@@ -338,7 +338,8 @@ package body Exp_Put_Image is
 
          --  For other elementary types, generate:
          --
-         --     Wide_Wide_Put (Sink, U_Type'Wide_Wide_Image (Item));
+         --     Wide_Wide_Put (Root_Buffer_Type'Class (Sink),
+         --       U_Type'Wide_Wide_Image (Item));
          --
          --  It would be more elegant to do it the other way around (define
          --  '[[Wide_]Wide_]Image in terms of 'Put_Image). But this is easier
@@ -362,13 +363,23 @@ package body Exp_Put_Image is
                 Prefix => New_Occurrence_Of (U_Type, Loc),
                 Attribute_Name => Name_Wide_Wide_Image,
                 Expressions => New_List (Relocate_Node (Item)));
+            Sink_Exp : constant Node_Id :=
+              Make_Type_Conversion (Loc,
+                Subtype_Mark =>
+                  New_Occurrence_Of
+                    (Class_Wide_Type (RTE (RE_Root_Buffer_Type)), Loc),
+                Expression   => Relocate_Node (Sink));
             Put_Call : constant Node_Id :=
               Make_Procedure_Call_Statement (Loc,
                 Name =>
                   New_Occurrence_Of (RTE (RE_Wide_Wide_Put), Loc),
                 Parameter_Associations => New_List
-                  (Relocate_Node (Sink), Image));
+                  (Sink_Exp, Image));
          begin
+            --  We have built a dispatching call to handle calls to
+            --  descendants (since they are not available through rtsfind).
+            --  Further details available in the body of Put_String_Exp.
+
             return Put_Call;
          end;
       end if;
@@ -427,12 +438,28 @@ package body Exp_Put_Image is
             (Etype (Next_Formal (First_Formal (Libent))),
              Relocate_Node (Item));
       begin
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (Libent, Loc),
-             Parameter_Associations => New_List (
-               Relocate_Node (Sink),
-               Conv));
+         --  Do not output string delimiters if this is part of an
+         --  interpolated string literal.
+
+         if Nkind (Parent (N)) = N_Expression_With_Actions
+           and then Nkind (Original_Node (Parent (N)))
+                      = N_Interpolated_String_Literal
+         then
+            return
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (Libent, Loc),
+                Parameter_Associations => New_List (
+                  Relocate_Node (Sink),
+                  Conv,
+                  New_Occurrence_Of (Stand.Standard_False, Loc)));
+         else
+            return
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (Libent, Loc),
+                Parameter_Associations => New_List (
+                  Relocate_Node (Sink),
+                  Conv));
+         end if;
       end;
    end Build_String_Put_Image_Call;
 

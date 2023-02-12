@@ -670,6 +670,10 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
       current_class_ptr = build_address (current_class_ref);
     }
 
+  /* Clear processing_template_decl for sake of break_out_target_exprs;
+     INIT is always non-templated.  */
+  processing_template_decl_sentinel ptds;
+
   /* Strip redundant TARGET_EXPR so we don't need to remap it, and
      so the aggregate init code below will see a CONSTRUCTOR.  */
   bool simple_target = (init && SIMPLE_TARGET_EXPR_P (init));

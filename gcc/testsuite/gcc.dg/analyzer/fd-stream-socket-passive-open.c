@@ -3,6 +3,7 @@
    be done.  */
 
 /* { dg-require-effective-target sockets } */
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 
 #include <sys/socket.h>
 #include <sys/un.h>

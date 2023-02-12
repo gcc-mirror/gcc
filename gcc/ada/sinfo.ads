@@ -2618,6 +2618,33 @@ package Sinfo is
       --  Is_Folded_In_Parser
       --  plus fields for expression
 
+      ---------------------------------------
+      --  2.6  Interpolated String Literal --
+      ---------------------------------------
+
+      --  INTERPOLATED_STRING_LITERAL ::=
+      --    '{' "{INTERPOLATED_STRING_ELEMENT}" {
+      --        "{INTERPOLATED_STRING_ELEMENT}" } '}'
+
+      --  INTERPOLATED_STRING_ELEMENT ::=
+      --      ESCAPED_CHARACTER | INTERPOLATED_EXPRESSION
+      --    | non_quotation_mark_non_left_brace_GRAPHIC_CHARACTER
+
+      --  ESCAPED_CHARACTER ::= '\GRAPHIC_CHARACTER'
+
+      --  INTERPOLATED_EXPRESSION ::= '{' EXPRESSION '}'
+
+      --  Most of these syntax rules are omitted as tree nodes to simplify
+      --  semantic processing. The scanner handles escaped characters as part
+      --  of processing an interpolated string literal, and the parser stores
+      --  in the Expressions field of this node a list containing the sequence
+      --  of string literals and the roots of the interpolated expressions.
+
+      --  N_Interpolated_String_Literal
+      --  Sloc points to literal
+      --  Expressions
+      --  plus fields for expression
+
       ------------------
       -- 2.7  Comment --
       ------------------

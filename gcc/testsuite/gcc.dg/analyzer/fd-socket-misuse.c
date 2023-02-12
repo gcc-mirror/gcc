@@ -1,6 +1,7 @@
 /* Various operations done on sockets in the wrong phase.  */
 
 /* { dg-require-effective-target sockets } */
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 
 #include <sys/types.h>
 #include <sys/stat.h>

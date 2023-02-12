@@ -1774,9 +1774,9 @@ ix86_split_convert_uns_si_sse (rtx operands[])
       input = gen_rtx_REG (vecmode, REGNO (input));
       emit_move_insn (value, CONST0_RTX (vecmode));
       if (vecmode == V4SFmode)
-	emit_insn (gen_sse_movss (value, value, input));
+	emit_insn (gen_sse_movss_v4sf (value, value, input));
       else
-	emit_insn (gen_sse2_movsd (value, value, input));
+	emit_insn (gen_sse2_movsd_v2df (value, value, input));
     }
 
   emit_move_insn (large, two31);
@@ -3284,8 +3284,8 @@ ix86_expand_int_movcc (rtx operands[])
 	  || negate_cc_compare_p
 	  || ix86_expand_carry_flag_compare (code, op0, op1, &compare_op))
 	{
-	  /* Detect overlap between destination and compare sources.  */
-	  rtx tmp = out;
+	  /* Place comparison result in its own pseudo.  */
+	  rtx tmp = gen_reg_rtx (mode);
 
 	  if (negate_cc_compare_p)
 	    {
@@ -3295,7 +3295,6 @@ ix86_expand_int_movcc (rtx operands[])
 		emit_insn (gen_x86_negsi_ccc (gen_reg_rtx (SImode),
 					      gen_lowpart (SImode, op0)));
 
-	      tmp = gen_reg_rtx (mode);
 	      if (mode == DImode)
 		emit_insn (gen_x86_movdicc_0_m1_neg (tmp));
 	      else
@@ -3337,9 +3336,6 @@ ix86_expand_int_movcc (rtx operands[])
 		}
 	      diff = ct - cf;
 
-	      if (reg_overlap_mentioned_p (out, compare_op))
-		tmp = gen_reg_rtx (mode);
-
 	      if (mode == DImode)
 		emit_insn (gen_x86_movdicc_0_m1 (tmp, flags, compare_op));
 	      else
@@ -3358,6 +3354,11 @@ ix86_expand_int_movcc (rtx operands[])
 	      tmp = emit_store_flag (tmp, code, op0, op1, VOIDmode, 0, -1);
 	    }
 
+	  /* Add a REG_EQUAL note to allow condition to be shared.  */
+	  rtx note = gen_rtx_fmt_ee (code, mode, op0, op1);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+			       gen_rtx_NEG (mode, note));
+
 	  if (diff == 1)
 	    {
 	      /*
@@ -3368,9 +3369,8 @@ ix86_expand_int_movcc (rtx operands[])
 	       * Size 5 - 8.
 	       */
 	      if (ct)
-		tmp = expand_simple_binop (mode, PLUS,
-					   tmp, GEN_INT (ct),
-					   copy_rtx (tmp), 1, OPTAB_DIRECT);
+		tmp = expand_simple_binop (mode, PLUS, tmp, GEN_INT (ct),
+					   NULL_RTX, 1, OPTAB_DIRECT);
 	    }
 	  else if (cf == -1)
 	    {
@@ -3381,9 +3381,8 @@ ix86_expand_int_movcc (rtx operands[])
 	       *
 	       * Size 8.
 	       */
-	      tmp = expand_simple_binop (mode, IOR,
-					 tmp, GEN_INT (ct),
-					 copy_rtx (tmp), 1, OPTAB_DIRECT);
+	      tmp = expand_simple_binop (mode, IOR, tmp, GEN_INT (ct),
+					 NULL_RTX, 1, OPTAB_DIRECT);
 	    }
 	  else if (diff == -1 && ct)
 	    {
@@ -3395,11 +3394,10 @@ ix86_expand_int_movcc (rtx operands[])
 	       *
 	       * Size 8 - 11.
 	       */
-	      tmp = expand_simple_unop (mode, NOT, tmp, copy_rtx (tmp), 1);
+	      tmp = expand_simple_unop (mode, NOT, tmp, NULL_RTX, 1);
 	      if (cf)
-		tmp = expand_simple_binop (mode, PLUS,
-					   copy_rtx (tmp), GEN_INT (cf),
-					   copy_rtx (tmp), 1, OPTAB_DIRECT);
+		tmp = expand_simple_binop (mode, PLUS, tmp, GEN_INT (cf),
+					   NULL_RTX, 1, OPTAB_DIRECT);
 	    }
 	  else
 	    {
@@ -3417,22 +3415,18 @@ ix86_expand_int_movcc (rtx operands[])
 		{
 		  cf = ct;
 		  ct = 0;
-		  tmp = expand_simple_unop (mode, NOT, tmp, copy_rtx (tmp), 1);
+		  tmp = expand_simple_unop (mode, NOT, tmp, NULL_RTX, 1);
 		}
 
-	      tmp = expand_simple_binop (mode, AND,
-					 copy_rtx (tmp),
+	      tmp = expand_simple_binop (mode, AND, tmp,
 					 gen_int_mode (cf - ct, mode),
-					 copy_rtx (tmp), 1, OPTAB_DIRECT);
+					 NULL_RTX, 1, OPTAB_DIRECT);
 	      if (ct)
-		tmp = expand_simple_binop (mode, PLUS,
-					   copy_rtx (tmp), GEN_INT (ct),
-					   copy_rtx (tmp), 1, OPTAB_DIRECT);
+		tmp = expand_simple_binop (mode, PLUS, tmp, GEN_INT (ct),
+					   NULL_RTX, 1, OPTAB_DIRECT);
 	    }
 
-	  if (!rtx_equal_p (tmp, out))
-	    emit_move_insn (copy_rtx (out), copy_rtx (tmp));
-
+	  emit_move_insn (out, tmp);
 	  return true;
 	}
 
@@ -6211,7 +6205,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, machine_mode mode)
       if (count >= half_width)
 	{
 	  emit_move_insn (high[0], low[1]);
-	  emit_move_insn (low[0], const0_rtx);
+	  ix86_expand_clear (low[0]);
 
 	  if (count > half_width)
 	    ix86_expand_ashl_const (high[0], count - half_width, mode);
@@ -8661,6 +8655,8 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
       if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 128)
 	move_mode = TImode;
+      if (TARGET_AVX512_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 256)
+	move_mode = OImode;
 
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
 	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
@@ -18903,8 +18899,10 @@ expand_vec_perm_movs (struct expand_vec_perm_d *d)
     return false;
 
   if (!(TARGET_SSE && vmode == V4SFmode)
+      && !(TARGET_SSE && vmode == V4SImode)
       && !(TARGET_MMX_WITH_SSE && vmode == V2SFmode)
-      && !(TARGET_SSE2 && vmode == V2DFmode))
+      && !(TARGET_SSE2 && vmode == V2DFmode)
+      && !(TARGET_SSE2 && vmode == V2DImode))
     return false;
 
   /* Only the first element is changed.  */

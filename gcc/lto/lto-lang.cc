@@ -901,7 +901,6 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
       break;
 
     case LTO_LINKER_OUTPUT_NOLTOREL: /* .o: incremental link producing asm  */
-      flag_whole_program = 0;
       flag_incremental_link = INCREMENTAL_LINK_NOLTO;
       break;
 

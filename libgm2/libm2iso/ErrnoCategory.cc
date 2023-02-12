@@ -171,9 +171,8 @@ _M2_ErrnoCategory_dep (void)
 {
 }
 
-struct _M2_ErrnoCategory_ctor { _M2_ErrnoCategory_ctor (); } _M2_ErrnoCategory_ctor;
-
-_M2_ErrnoCategory_ctor::_M2_ErrnoCategory_ctor (void)
+extern "C" void __attribute__((__constructor__))
+_M2_ErrnoCategory_ctor (void)
 {
   M2RTS_RegisterModule ("ErrnoCategory", _M2_ErrnoCategory_init, _M2_ErrnoCategory_fini,
 			_M2_ErrnoCategory_dep);

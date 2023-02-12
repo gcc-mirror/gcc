@@ -6435,16 +6435,21 @@ package body Exp_Ch6 is
       --  The result type of the function
 
       Utyp : constant Entity_Id := Underlying_Type (R_Type);
+      --  The underlying result type of the function
 
       Exp : Node_Id := Expression (N);
       pragma Assert (Present (Exp));
 
       Exp_Is_Function_Call : constant Boolean :=
         Nkind (Exp) = N_Function_Call
-          or else (Nkind (Exp) = N_Explicit_Dereference
-                   and then Is_Entity_Name (Prefix (Exp))
-                   and then Ekind (Entity (Prefix (Exp))) = E_Constant
-                   and then Is_Related_To_Func_Return (Entity (Prefix (Exp))));
+          or else
+            (Is_Captured_Function_Call (Exp)
+              and then Is_Related_To_Func_Return (Entity (Prefix (Exp))));
+      --  If the expression is a captured function call, then we need to make
+      --  sure that the object doing the capture is properly recognized by the
+      --  Is_Related_To_Func_Return predicate; otherwise, if it is of a type
+      --  that needs finalization, Requires_Cleanup_Actions would return true
+      --  because of this and Build_Finalizer would finalize it prematurely.
 
       Exp_Typ : constant Entity_Id := Etype (Exp);
       --  The type of the expression (not necessarily the same as R_Type)
@@ -6628,7 +6633,8 @@ package body Exp_Ch6 is
          --  size. We create an actual subtype for this purpose. However we
          --  need not do it if the expression is a function call since this
          --  will be done in the called function and doing it here too would
-         --  cause a temporary with maximum size to be created.
+         --  cause a temporary with maximum size to be created. Likewise for
+         --  a special return object, since there is no copy in this case.
 
          declare
             Ubt  : constant Entity_Id := Underlying_Type (Base_Type (Exp_Typ));
@@ -6637,6 +6643,8 @@ package body Exp_Ch6 is
 
          begin
             if not Exp_Is_Function_Call
+              and then not (Is_Entity_Name (Exp)
+                             and then Is_Special_Return_Object (Entity (Exp)))
               and then Has_Defaulted_Discriminants (Ubt)
               and then not Is_Constrained (Ubt)
               and then not Has_Unchecked_Union (Ubt)
@@ -7763,10 +7771,10 @@ package body Exp_Ch6 is
          return False;
       end if;
 
-      --  If the function is imported from a foreign language, we don't do
-      --  build-in-place, whereas Import (Ada) functions can do it. Note also
-      --  that it is OK for a build-in-place function to return a type with a
-      --  foreign convention because the machinery ensures there is no copying.
+      --  We never use build-in-place if the convention is other than Ada,
+      --  but note that it is OK for a build-in-place function to return a
+      --  type with a foreign convention because the machinery ensures there
+      --  is no copying.
 
       return (Kind in E_Function | E_Generic_Function
                or else
@@ -9382,6 +9390,10 @@ package body Exp_Ch6 is
       Preserve_Comes_From_Source (Orig_Id, Orig_Decl);
 
       Set_Comes_From_Source (New_Id, False);
+
+      --  Preserve aliased indication
+
+      Set_Is_Aliased (Orig_Id, Is_Aliased (New_Id));
    end Replace_Renaming_Declaration_Id;
 
    ---------------------------------

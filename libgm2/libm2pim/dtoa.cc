@@ -255,9 +255,8 @@ _M2_dtoa_dep (void)
 {
 }
 
-struct _M2_dtoa_ctor { _M2_dtoa_ctor (); } _M2_dtoa_ctor;
-
-_M2_dtoa_ctor::_M2_dtoa_ctor (void)
+extern "C" void __attribute__((__constructor__))
+_M2_dtoa_ctor (void)
 {
   M2RTS_RegisterModule ("dtoa", _M2_dtoa_init, _M2_dtoa_fini,
 			_M2_dtoa_dep);

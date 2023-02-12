@@ -1,5 +1,5 @@
 /* Gimple ranger SSA cache implementation.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -1233,6 +1233,13 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 
 	      // Check if the equiv has any ranges calculated.
 	      if (!m_gori.has_edge_range_p (equiv_name))
+		continue;
+
+	      // PR 108139. It is hazardous to assume an equivalence with
+	      // a PHI is the same value.  The PHI may be an equivalence
+	      // via UNDEFINED arguments which is really a one way equivalence.
+	      // PHIDEF == name, but name may not be == PHIDEF.
+	      if (is_a<gphi *> (SSA_NAME_DEF_STMT (equiv_name)))
 		continue;
 
 	      // Check if the equiv definition dominates this block

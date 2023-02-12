@@ -525,9 +525,6 @@
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
 
-/* Defined if Sleep exists. */
-#undef HAVE_WIN32_SLEEP
-
 /* Define if writev is available in <sys/uio.h>. */
 #undef HAVE_WRITEV
 
@@ -1028,6 +1025,9 @@
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T
 
+/* Defined if Sleep exists. */
+#undef _GLIBCXX_USE_WIN32_SLEEP
+
 /* Define to 1 if a verbose library is built, or 0 otherwise. */
 #undef _GLIBCXX_VERBOSE
 
@@ -1036,6 +1036,9 @@
 
 /* Defined if as can handle rdseed. */
 #undef _GLIBCXX_X86_RDSEED
+
+/* Define if a non-default location should be used for tzdata files. */
+#undef _GLIBCXX_ZONEINFO_DIR
 
 /* Define to 1 if mutex_timedlock is available. */
 #undef _GTHREAD_USE_MUTEX_TIMEDLOCK

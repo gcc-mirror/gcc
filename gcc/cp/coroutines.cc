@@ -2047,8 +2047,8 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	    = lookup_member (lvd->coro_frame_type, local_var.field_id,
 			     /*protect=*/1, /*want_type=*/0,
 			     tf_warning_or_error);
-	  tree fld_idx = build3_loc (lvd->loc, COMPONENT_REF, TREE_TYPE (lvar),
-				     lvd->actor_frame, fld_ref, NULL_TREE);
+	  tree fld_idx = build3 (COMPONENT_REF, TREE_TYPE (lvar),
+				 lvd->actor_frame, fld_ref, NULL_TREE);
 	  local_var.field_idx = fld_idx;
 	  SET_DECL_VALUE_EXPR (lvar, fld_idx);
 	  DECL_HAS_VALUE_EXPR_P (lvar) = true;

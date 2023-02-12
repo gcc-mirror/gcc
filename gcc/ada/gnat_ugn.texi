@@ -19,11 +19,11 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 01, 2022
+GNAT User's Guide for Native Platforms , Jan 03, 2023
 
 AdaCore
 
-Copyright @copyright{} 2008-2022, Free Software Foundation
+Copyright @copyright{} 2008-2023, Free Software Foundation
 @end quotation
 
 @end copying
@@ -11970,6 +11970,8 @@ not compose (i.e. is ignored for a predefined “=” for a composite type
 containing a component whose type has the user-defined “=” as
 primitive). Note that the user-defined “=” must be a primitive operator
 in order to trigger the warning.
+See RM-4.5.2(14/3-15/5, 21, 24/3, 32.1/1)
+for the exact Ada rules on composability of “=”.
 
 The default is that these warnings are not given.
 @end table
@@ -22450,8 +22452,8 @@ Debug Pool info:
 
 
 This appendix contains information relating to the implementation
-of run-time libraries on various platforms and also covers
-topics related to the GNAT implementation on Windows and Mac OS.
+of run-time libraries on various platforms and also covers topics
+related to the GNAT implementation on specific Operating Systems.
 
 @menu
 * Run-Time Libraries:: 

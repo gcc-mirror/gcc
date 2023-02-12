@@ -32,8 +32,19 @@ test01()
   VERIFY( d2 == d1 );
 }
 
+void
+test02()
+{
+  using namespace std::chrono;
+
+  file_time<file_clock::duration> t = file_clock::now();
+  file_time<seconds> s = floor<seconds>(t);
+  VERIFY( t - s < 1s );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }
