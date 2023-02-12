@@ -9053,8 +9053,8 @@ Parser<ManagedTokenSource>::parse_closure_param ()
 	}
     }
 
-  auto locus = pattern->get_locus ();
-  return AST::ClosureParam (std::move (pattern), locus, std::move (type),
+  Location loc = pattern->get_locus ();
+  return AST::ClosureParam (std::move (pattern), loc, std::move (type),
 			    std::move (outer_attrs));
 }
 
