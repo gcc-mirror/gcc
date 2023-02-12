@@ -1,8 +1,7 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3" } */
-/* { dg-skip-if "test intrinsic using rvv" { *-*-* } { "*" } { "-march=rv*v*zfh*" } } */
+/* { dg-options "-O3 -march=rv32gcv -mabi=ilp32d" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 void vwrite_csr_vstart(unsigned long value) {
   vwrite_csr(RVV_VSTART, value);
@@ -20,7 +19,7 @@ void vwrite_csr_vcsr(unsigned long value) {
   vwrite_csr(RVV_VCSR, value);
 }
 
-/* { dg-final { scan-assembler-times {csrw\s+vstart,\s*(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])} 1 } } */
-/* { dg-final { scan-assembler-times {csrw\s+vxsat,\s*(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])} 1 } } */
-/* { dg-final { scan-assembler-times {csrw\s+vxrm,\s*(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])} 1 } } */
-/* { dg-final { scan-assembler-times {csrw\s+vcsr,\s*(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])} 1 } } */
+/* { dg-final { scan-assembler-times {csrw\s+vstart,\s*[a-x0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {csrw\s+vxsat,\s*[a-x0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {csrw\s+vxrm,\s*[a-x0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {csrw\s+vcsr,\s*[a-x0-9]+} 1 } } */

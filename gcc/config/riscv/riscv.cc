@@ -4256,30 +4256,34 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	  }
 	else if (code == CONST_INT)
 	  {
-	    /* The value in the operand is the unsigned int value
-	       converted from (enum machine_mode).
-	       This RTX is generated as follows:
-
-	       machine_mode mode = XXXmode;
-	       operand = gen_int_mode ((unsigned int)mode, Pmode);
-
-	       So we convert it back into machine_mode and then calculate
-	       the LMUL according to GET_MODE_SIZE.  */
-
-	    machine_mode rvv_mode = (machine_mode) UINTVAL (op);
-	    /* For rvv mask modes, we can not calculate LMUL simpily according
-	       to BYTES_PER_RISCV_VECTOR. When rvv_mode = VNx4BImode.
-	       Set SEW = 8, LMUL = 1 by default if TARGET_MIN_VLEN == 32.
-	       Set SEW = 8, LMUL = 1 / 2 by default if TARGET_MIN_VLEN > 32.  */
-	    bool bool_p = GET_MODE_CLASS (rvv_mode) == MODE_VECTOR_BOOL;
-	    poly_int64 m1_size = BYTES_PER_RISCV_VECTOR;
-	    poly_int64 rvv_size
-	      = bool_p ? GET_MODE_NUNITS (rvv_mode) : GET_MODE_SIZE (rvv_mode);
-	    bool fractional_p = known_lt (rvv_size, BYTES_PER_RISCV_VECTOR);
-	    unsigned int factor
-	      = fractional_p ? exact_div (m1_size, rvv_size).to_constant ()
-			     : exact_div (rvv_size, m1_size).to_constant ();
-	    asm_fprintf (file, "%s%d", fractional_p ? "mf" : "m", factor);
+	    /* If it is a const_int value, it denotes the VLMUL field enum.  */
+	    unsigned int vlmul = UINTVAL (op);
+	    switch (vlmul)
+	      {
+	      case riscv_vector::LMUL_1:
+		asm_fprintf (file, "%s", "m1");
+		break;
+	      case riscv_vector::LMUL_2:
+		asm_fprintf (file, "%s", "m2");
+		break;
+	      case riscv_vector::LMUL_4:
+		asm_fprintf (file, "%s", "m4");
+		break;
+	      case riscv_vector::LMUL_8:
+		asm_fprintf (file, "%s", "m8");
+		break;
+	      case riscv_vector::LMUL_F8:
+		asm_fprintf (file, "%s", "mf8");
+		break;
+	      case riscv_vector::LMUL_F4:
+		asm_fprintf (file, "%s", "mf4");
+		break;
+	      case riscv_vector::LMUL_F2:
+		asm_fprintf (file, "%s", "mf2");
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
 	  }
 	else
 	  output_operand_lossage ("invalid vector constant");

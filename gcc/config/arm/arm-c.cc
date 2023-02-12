@@ -238,8 +238,12 @@ arm_cpu_builtins (struct cpp_reader* pfile)
     builtin_define_with_int_value ("__ARM_FEATURE_LDREX",
 				   TARGET_ARM_FEATURE_LDREX);
 
+  /* ACLE says that __ARM_FEATURE_CLZ is defined if the hardware
+     supports it; it's also clear that this doesn't mean the current
+     ISA, so we define this even when compiling for Thumb1 if the
+     target supports CLZ in A32.  */
   def_or_undef_macro (pfile, "__ARM_FEATURE_CLZ",
-		      ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB)
+		      ((TARGET_ARM_ARCH >= 5 && arm_arch_notm)
 		       || TARGET_ARM_ARCH_ISA_THUMB >=2));
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_NUMERIC_MAXMIN",

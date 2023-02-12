@@ -10251,17 +10251,42 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
       if (ud1 != 0)
 	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
+  else if (ud4 == 0xffff && ud3 == 0xffff && (ud1 & 0x8000))
+    {
+      /* li; xoris */
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud1, 16)));
+      emit_move_insn (dest, gen_rtx_XOR (DImode, temp,
+					 GEN_INT ((ud2 ^ 0xffff) << 16)));
+    }
   else if (ud3 == 0 && ud4 == 0)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
       gcc_assert (ud2 & 0x8000);
-      emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
-      if (ud1 != 0)
-	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
-      emit_move_insn (dest,
-		      gen_rtx_ZERO_EXTEND (DImode,
-					   gen_lowpart (SImode,temp)));
+
+      if (ud1 == 0)
+	{
+	  /* lis; rldicl */
+	  emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
+	  emit_move_insn (dest,
+			  gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff)));
+	}
+      else if (!(ud1 & 0x8000))
+	{
+	  /* li; oris */
+	  emit_move_insn (temp, GEN_INT (ud1));
+	  emit_move_insn (dest,
+			  gen_rtx_IOR (DImode, temp, GEN_INT (ud2 << 16)));
+	}
+      else
+	{
+	  /* lis; ori; rldicl */
+	  emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
+	  emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+	  emit_move_insn (dest,
+			  gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff)));
+	}
     }
   else if (ud1 == ud3 && ud2 == ud4)
     {
@@ -14923,6 +14948,71 @@ rs6000_reverse_condition (machine_mode mode, enum rtx_code code)
     return reverse_condition_maybe_unordered (code);
   else
     return reverse_condition (code);
+}
+
+/* Check if C (as 64bit integer) can be rotated to a constant which constains
+   nonzero bits at the LOWBITS low bits only.
+
+   Return true if C can be rotated to such constant.  If so, *ROT is written
+   to the number by which C is rotated.
+   Return false otherwise.  */
+
+bool
+can_be_rotated_to_lowbits (unsigned HOST_WIDE_INT c, int lowbits, int *rot)
+{
+  int clz = HOST_BITS_PER_WIDE_INT - lowbits;
+
+  /* case a. 0..0xxx: already at least clz zeros.  */
+  int lz = clz_hwi (c);
+  if (lz >= clz)
+    {
+      *rot = 0;
+      return true;
+    }
+
+  /* case b. 0..0xxx0..0: at least clz zeros.  */
+  int tz = ctz_hwi (c);
+  if (lz + tz >= clz)
+    {
+      *rot = HOST_BITS_PER_WIDE_INT - tz;
+      return true;
+    }
+
+  /* case c. xx10.....0xx: rotate 'clz - 1' bits first, then check case b.
+	       ^bit -> Vbit, , then zeros are at head or tail.
+	     00...00xxx100, 'clz - 1' >= 'bits of xxxx'.  */
+  const int rot_bits = lowbits + 1;
+  unsigned HOST_WIDE_INT rc = (c >> rot_bits) | (c << (clz - 1));
+  tz = ctz_hwi (rc);
+  if (clz_hwi (rc) + tz >= clz)
+    {
+      *rot = HOST_BITS_PER_WIDE_INT - (tz + rot_bits);
+      return true;
+    }
+
+  return false;
+}
+
+/* Check if C (as 64bit integer) can be rotated to a positive 16bits constant
+   which contains 48bits leading zeros and 16bits of any value.  */
+
+bool
+can_be_rotated_to_positive_16bits (HOST_WIDE_INT c)
+{
+  int rot = 0;
+  bool res = can_be_rotated_to_lowbits (c, 16, &rot);
+  return res && rot > 0;
+}
+
+/* Check if C (as 64bit integer) can be rotated to a negative 15bits constant
+   which contains 49bits leading ones and 15bits of any value.  */
+
+bool
+can_be_rotated_to_negative_15bits (HOST_WIDE_INT c)
+{
+  int rot = 0;
+  bool res = can_be_rotated_to_lowbits (~c, 15, &rot);
+  return res && rot > 0;
 }
 
 /* Generate a compare for CODE.  Return a brand-new rtx that

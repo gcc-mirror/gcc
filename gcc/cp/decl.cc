@@ -4670,9 +4670,13 @@ cxx_init_decl_processing (void)
 			    BUILT_IN_FRONTEND, NULL, NULL_TREE);
   set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
-  tree cptr_ftype = build_function_type_list (const_ptr_type_node, NULL_TREE);
+  /* The concrete return type of __builtin_source_location is
+     const std::source_location::__impl*, but we can't form the type
+     at this point.  So we initially declare it with an auto return
+     type which we then "deduce" from require_deduced_type upon first use.  */
+  tree auto_ftype = build_function_type_list (make_auto (), NULL_TREE);
   decl = add_builtin_function ("__builtin_source_location",
-			       cptr_ftype, CP_BUILT_IN_SOURCE_LOCATION,
+			       auto_ftype, CP_BUILT_IN_SOURCE_LOCATION,
 			       BUILT_IN_FRONTEND, NULL, NULL_TREE);
   set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
@@ -18752,6 +18756,23 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 {
   if (undeduced_auto_decl (decl))
     {
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && fndecl_built_in_p (decl, BUILT_IN_FRONTEND)
+	  && DECL_FE_FUNCTION_CODE (decl) == CP_BUILT_IN_SOURCE_LOCATION)
+	{
+	  /* Set the return type of __builtin_source_location.  */
+	  tree type = get_source_location_impl_type ();
+	  if (type == error_mark_node)
+	    {
+	      inform (input_location, "using %qs", "__builtin_source_location");
+	      return false;
+	    }
+	  type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
+	  type = build_pointer_type (type);
+	  apply_deduced_return_type (decl, type);
+	  return true;
+	}
+
       if (warning_suppressed_p (decl) && seen_error ())
 	/* We probably already complained about deduction failure.  */;
       else if (complain & tf_error)

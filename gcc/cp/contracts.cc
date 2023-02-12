@@ -41,9 +41,9 @@ along with GCC; see the file COPYING3.  If not see
 	 "v > 0", // comment,
 	 "default", // assertion_level,
 	 "default", // assertion_role,
-	 MAYBE_CONTINUE, // continuation_mode
+	 maybe_continue, // continuation_mode
        });
-       terminate (); // if NEVER_CONTINUE
+       terminate (); // if never_continue
      }
 
    We use an internal type with the same layout as contract_violation rather

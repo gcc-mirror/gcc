@@ -29243,18 +29243,24 @@ extract_autos_r (tree t, void *data)
     {
       /* All the autos were built with index 0; fix that up now.  */
       tree *p = hash.find_slot (t, INSERT);
-      unsigned idx;
+      int idx;
       if (*p)
 	/* If this is a repeated constrained-type-specifier, use the index we
 	   chose before.  */
-	idx = TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (*p));
+	idx = TEMPLATE_TYPE_IDX (*p);
       else
 	{
 	  /* Otherwise this is new, so use the current count.  */
 	  *p = t;
 	  idx = hash.elements () - 1;
 	}
-      TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (t)) = idx;
+      if (idx != TEMPLATE_TYPE_IDX (t))
+	{
+	  gcc_checking_assert (TEMPLATE_TYPE_IDX (t) == 0);
+	  gcc_checking_assert (TYPE_CANONICAL (t) != t);
+	  TEMPLATE_TYPE_IDX (t) = idx;
+	  TYPE_CANONICAL (t) = canonical_type_parameter (t);
+	}
     }
 
   /* Always keep walking.  */

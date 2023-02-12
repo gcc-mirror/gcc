@@ -17693,7 +17693,8 @@ needs to build supplementary stub code for constructors to work.  On
 multi-libbed systems, @samp{gcc -shared} must select the correct support
 libraries to link against.  Failing to supply the correct flags may lead
 to subtle defects.  Supplying them in cases where they are not necessary
-is innocuous.}
+is innocuous. For x86, crtfastmath.o will not be added when
+@option{-shared} is specified. }
 
 @item -shared-libgcc
 @itemx -static-libgcc

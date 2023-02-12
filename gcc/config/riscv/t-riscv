@@ -51,6 +51,14 @@ riscv-c.o: $(srcdir)/config/riscv/riscv-c.cc $(CONFIG_H) $(SYSTEM_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-c.cc
 
+riscv-vsetvl.o: $(srcdir)/config/riscv/riscv-vsetvl.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
+  $(TARGET_H) tree-pass.h df.h rtl-ssa.h cfgcleanup.h insn-config.h \
+  insn-attr.h insn-opinit.h tm-constrs.h cfgrtl.h cfganal.h lcm.h \
+  predict.h profile-count.h $(srcdir)/config/riscv/riscv-vsetvl.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/riscv-vsetvl.cc
+
 riscv-d.o: $(srcdir)/config/riscv/riscv-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

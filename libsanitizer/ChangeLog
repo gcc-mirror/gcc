@@ -1,3 +1,11 @@
+2022-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* hwasan/Makefile.am (nodist_toolexeclib_HEADERS): Set to
+	libhwasan_preinit.o.
+	(hwasan_files): Remove hwasan_preinit.cpp.
+	(libhwasan_preinit.o): Copy from hwasan_preinit.o.
+	* hwasan/Makefile.in: Regenerated.
+
 2022-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/108072
