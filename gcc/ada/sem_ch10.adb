@@ -85,6 +85,14 @@ package body Sem_Ch10 is
    procedure Analyze_Context (N : Node_Id);
    --  Analyzes items in the context clause of compilation unit
 
+   procedure Analyze_Required_Limited_With_Units (N : Node_Id);
+   --  Subsidiary of Analyze_Compilation_Unit. Perform full analysis of the
+   --  limited-with units of N when it is a package declaration that does not
+   --  require a package body, and the profile of some subprogram defined in N
+   --  depends on shadow incomplete type entities visible through limited-with
+   --  context clauses. This analysis is required to provide the backend with
+   --  the non-limited view of these shadow entities.
+
    procedure Build_Limited_Views (N : Node_Id);
    --  Build and decorate the list of shadow entities for a package mentioned
    --  in a limited_with clause. If the package was not previously analyzed
@@ -1390,6 +1398,13 @@ package body Sem_Ch10 is
       --  ensure that the pragma/aspect, if present, has been analyzed.
 
       Check_No_Elab_Code_All (N);
+
+      --  If this is a main compilation containing a package declaration that
+      --  requires no package body, and the profile of some subprogram depends
+      --  on shadow incomplete entities then perform full analysis of its
+      --  limited-with units.
+
+      Analyze_Required_Limited_With_Units (N);
    end Analyze_Compilation_Unit;
 
    ---------------------
@@ -2023,6 +2038,149 @@ package body Sem_Ch10 is
          Restore_Config_Switches (Opts);
       end if;
    end Analyze_Protected_Body_Stub;
+
+   -----------------------------------------
+   -- Analyze_Required_Limited_With_Units --
+   -----------------------------------------
+
+   procedure Analyze_Required_Limited_With_Units (N : Node_Id) is
+      Unit_Node : constant Node_Id   := Unit (N);
+      Spec_Id   : constant Entity_Id := Defining_Entity (Unit_Node);
+
+      function Depends_On_Limited_Views (Pkg_Id : Entity_Id) return Boolean;
+      --  Determines whether the given package has some subprogram with a
+      --  profile that depends on shadow incomplete type entities of a
+      --  limited-with unit.
+
+      function Has_Limited_With_Clauses return Boolean;
+      --  Determines whether the compilation unit N has limited-with context
+      --  clauses.
+
+      ------------------------------
+      -- Has_Limited_With_Clauses --
+      ------------------------------
+
+      function Has_Limited_With_Clauses return Boolean is
+         Item : Node_Id := First (Context_Items (N));
+
+      begin
+         while Present (Item) loop
+            if Nkind (Item) = N_With_Clause
+              and then Limited_Present (Item)
+              and then not Implicit_With (Item)
+            then
+               return True;
+            end if;
+
+            Next (Item);
+         end loop;
+
+         return False;
+      end Has_Limited_With_Clauses;
+
+      ------------------------------
+      -- Depends_On_Limited_Views --
+      ------------------------------
+
+      function Depends_On_Limited_Views (Pkg_Id : Entity_Id) return Boolean is
+
+         function Has_Limited_View_Types (Subp : Entity_Id) return Boolean;
+         --  Determines whether the type of some formal of Subp, or its return
+         --  type, is a shadow incomplete entity of a limited-with unit.
+
+         ----------------------------
+         -- Has_Limited_View_Types --
+         ----------------------------
+
+         function Has_Limited_View_Types (Subp : Entity_Id) return Boolean is
+            Formal : Entity_Id := First_Formal (Subp);
+
+         begin
+            while Present (Formal) loop
+               if From_Limited_With (Etype (Formal))
+                 and then Has_Non_Limited_View (Etype (Formal))
+                 and then Ekind (Non_Limited_View (Etype (Formal)))
+                            = E_Incomplete_Type
+               then
+                  return True;
+               end if;
+
+               Formal := Next_Formal (Formal);
+            end loop;
+
+            if Ekind (Subp) = E_Function
+              and then From_Limited_With (Etype (Subp))
+              and then Has_Non_Limited_View (Etype (Subp))
+              and then Ekind (Non_Limited_View (Etype (Subp)))
+                         = E_Incomplete_Type
+            then
+               return True;
+            end if;
+
+            return False;
+         end Has_Limited_View_Types;
+
+         --  Local variables
+
+         E : Entity_Id := First_Entity (Pkg_Id);
+
+      begin
+         while Present (E) loop
+            if Is_Subprogram (E)
+              and then Has_Limited_View_Types (E)
+            then
+               return True;
+
+            --  Recursion on nested packages skipping package renamings
+
+            elsif Ekind (E) = E_Package
+              and then No (Renamed_Entity (E))
+              and then Depends_On_Limited_Views (E)
+            then
+               return True;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         return False;
+      end Depends_On_Limited_Views;
+
+      --  Local variables
+
+      Item : Node_Id;
+
+   --  Start of processing for Analyze_Required_Limited_With_Units
+
+   begin
+      --  Cases where no action is required
+
+      if not Expander_Active
+        or else Nkind (Unit_Node) /= N_Package_Declaration
+        or else Main_Unit_Entity /= Spec_Id
+        or else Is_Generic_Unit (Spec_Id)
+        or else Unit_Requires_Body (Spec_Id)
+        or else not Has_Limited_With_Clauses
+        or else not Depends_On_Limited_Views (Spec_Id)
+      then
+         return;
+      end if;
+
+      --  Perform full analyis of limited-with units to provide the backend
+      --  with the full-view of shadow entities.
+
+      Item := First (Context_Items (N));
+      while Present (Item) loop
+         if Nkind (Item) = N_With_Clause
+           and then Limited_Present (Item)
+           and then not Implicit_With (Item)
+         then
+            Semantics (Library_Unit (Item));
+         end if;
+
+         Next (Item);
+      end loop;
+   end Analyze_Required_Limited_With_Units;
 
    ----------------------------------
    -- Analyze_Subprogram_Body_Stub --
