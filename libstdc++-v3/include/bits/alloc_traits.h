@@ -51,12 +51,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __allocator_traits_base
   {
     template<typename _Tp, typename _Up, typename = void>
-      struct __rebind : __replace_first_arg<_Tp, _Up> { };
+      struct __rebind : __replace_first_arg<_Tp, _Up>
+      {
+	static_assert(is_same<
+	  typename __replace_first_arg<_Tp, typename _Tp::value_type>::type,
+			_Tp>::value,
+	  "allocator_traits<A>::rebind_alloc<A::value_type> must be A");
+      };
 
     template<typename _Tp, typename _Up>
       struct __rebind<_Tp, _Up,
 		      __void_t<typename _Tp::template rebind<_Up>::other>>
-      { using type = typename _Tp::template rebind<_Up>::other; };
+      {
+	using type = typename _Tp::template rebind<_Up>::other;
+
+	static_assert(is_same<
+	  typename _Tp::template rebind<typename _Tp::value_type>::other,
+			_Tp>::value,
+	  "allocator_traits<A>::rebind_alloc<A::value_type> must be A");
+      };
 
   protected:
     template<typename _Tp>

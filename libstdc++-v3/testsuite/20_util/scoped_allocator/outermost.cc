@@ -49,6 +49,14 @@ struct nested_alloc : A
   template<typename U>
     nested_alloc(nested_alloc<U>) { }
 
+  // Need to customize rebind, otherwise nested_alloc<alloc<T>> gets rebound
+  // to nested_alloc<U>.
+  template<typename U>
+    struct rebind
+    {
+      using other = typename std::allocator_traits<A>::template rebind_alloc<U>;
+    };
+
   A& outer_allocator() { return *this; }
 
   template<typename U, typename... Args>

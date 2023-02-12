@@ -976,6 +976,11 @@ Wstringop-truncation
 C ObjC C++ LTO ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
 Warn about truncation in string manipulation functions like strncat and strncpy.
 
+Wstrict-flex-arrays
+C C++ Var(warn_strict_flex_arrays) Warning
+Warn about inproper usages of flexible array members
+according to the level of -fstrict-flex-arrays.
+
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes.

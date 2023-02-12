@@ -1,3 +1,14 @@
+2022-12-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* configure.ac: Stop probing for realpath.
+	* tools-src/calcpath: Break dependency on realpath, cut
+	and echo.
+	* configure: Rebuilt.
+
+2022-12-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2config.h.in: Rebuilt.
+
 2022-12-14  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* COPYING.FDL: New file.

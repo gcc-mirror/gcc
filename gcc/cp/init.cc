@@ -4379,7 +4379,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 		bool explicit_value_init_p,
 		int from_array,
 		tsubst_flags_t complain,
-		vec<tree, va_gc>** flags /* = nullptr */)
+		vec<tree, va_gc>** cleanup_flags /* = nullptr */)
 {
   tree rval;
   tree base2 = NULL_TREE;
@@ -4590,8 +4590,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 anything for arrays.  But if the array is a subobject, we need to
 	 tell split_nonconstant_init how to turn off this cleanup in favor of
 	 the cleanup for the complete object.  */
-      if (flags)
-	vec_safe_push (*flags, build_tree_list (iterator, maxindex));
+      if (cleanup_flags)
+	vec_safe_push (*cleanup_flags, build_tree_list (iterator, maxindex));
     }
 
   /* Should we try to create a constant initializer?  */
@@ -4650,7 +4650,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  if (digested)
 	    one_init = cp_build_init_expr (baseref, elt);
 	  else if (tree vi = get_vec_init_expr (elt))
-	    one_init = expand_vec_init_expr (baseref, vi, complain, flags);
+	    one_init = expand_vec_init_expr (baseref, vi, complain,
+					     cleanup_flags);
 	  else if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	    one_init = build_aggr_init (baseref, elt, 0, complain);
 	  else

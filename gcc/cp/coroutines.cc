@@ -4132,7 +4132,7 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
   /* We will need to be able to set the resume function pointer to nullptr
      to signal that the coroutine is 'done'.  */
   tree zero_resume
-    = build1 (CONVERT_EXPR, resume_fn_ptr_type, integer_zero_node);
+    = build1 (CONVERT_EXPR, resume_fn_ptr_type, nullptr_node);
 
   /* The pointer to the destroy function.  */
   tree var = coro_build_artificial_var (fn_start, coro_destroy_fn_id,
@@ -4519,7 +4519,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree ramp_body = push_stmt_list ();
 
   tree zeroinit = build1_loc (fn_start, CONVERT_EXPR,
-			      coro_frame_ptr, integer_zero_node);
+			      coro_frame_ptr, nullptr_node);
   tree coro_fp = coro_build_artificial_var (fn_start, "_Coro_frameptr",
 					    coro_frame_ptr, orig, zeroinit);
   tree varlist = coro_fp;
@@ -4754,7 +4754,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
       gcc_checking_assert (same_type_p (fn_return_type, TREE_TYPE (grooaf)));
       tree if_stmt = begin_if_stmt ();
-      tree cond = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
+      tree cond = build1 (CONVERT_EXPR, coro_frame_ptr, nullptr_node);
       cond = build2 (EQ_EXPR, boolean_type_node, coro_fp, cond);
       finish_if_stmt_cond (cond, if_stmt);
       if (VOID_TYPE_P (fn_return_type))

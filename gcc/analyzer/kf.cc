@@ -288,7 +288,7 @@ kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
   const svalue *src_contents_sval
     = model->get_store_value (sized_src_reg, cd.get_ctxt ());
   model->check_for_poison (src_contents_sval, cd.get_arg_tree (1),
-			   cd.get_ctxt ());
+			   sized_src_reg, cd.get_ctxt ());
   model->set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
 }
 

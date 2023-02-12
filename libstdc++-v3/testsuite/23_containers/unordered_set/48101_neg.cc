@@ -34,3 +34,4 @@ test01()
 // { dg-prune-output "use of deleted function" }
 // { dg-prune-output "must have the same value_type as its allocator" }
 // { dg-prune-output "no match for call" }
+// { dg-prune-output "rebind_alloc" }

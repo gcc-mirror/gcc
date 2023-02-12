@@ -1087,7 +1087,7 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger->dump (dump_file);
 
-  if (warn_array_bounds && warn_array_bounds_p)
+  if ((warn_array_bounds || warn_strict_flex_arrays) && warn_array_bounds_p)
     {
       // Set all edges as executable, except those ranger says aren't.
       int non_exec_flag = ranger->non_executable_edge_flag;

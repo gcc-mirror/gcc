@@ -14291,8 +14291,14 @@ and GCC does not issue a warning.
 @end deftypefn
 
 @deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
-Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size
-Checking}, for a detailed description of the function.
+Returns a constant size estimate of an object pointed to by @var{ptr}.
+@xref{Object Size Checking}, for a detailed description of the function.
+@end deftypefn
+
+@deftypefn {Built-in Function}{size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})
+Similar to @code{__builtin_object_size} except that the return value
+need not be a constant.  @xref{Object Size Checking}, for a detailed
+description of the function.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_huge_val (void)
@@ -21103,7 +21109,9 @@ Returns the value that is currently set in the @samp{tp} register.
 @end deftypefn
 
 @deftypefn {Built-in Function}  void __builtin_riscv_pause (void)
-Generates the @code{pause} (hint) machine instruction.
+Generates the @code{pause} (hint) machine instruction.  This implies the
+Xgnuzihintpausestate extension, which redefines the @code{pause} instruction to
+change architectural state.
 @end deftypefn
 
 @node RX Built-in Functions

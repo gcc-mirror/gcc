@@ -73,6 +73,10 @@ test()
   return true;
 }
 
+static_assert( std::is_swappable_v<std::unexpected<int>> );
+struct A { A& operator=(A&&) = delete; };
+static_assert( ! std::is_swappable_v<std::unexpected<A>> );
+
 int main()
 {
   static_assert( test() );

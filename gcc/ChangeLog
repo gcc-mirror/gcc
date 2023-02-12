@@ -1,3 +1,123 @@
+2022-12-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_option_override): Disable -fstack-protector.
+
+2022-12-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2022-12-15  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc: Include print-rtl.h.
+	(record_reg_classes, scan_one_insn): Add code to print debug info.
+	* ira.cc (ira_init_register_move_cost): Check that at least one hard
+	reg of the mode are in the class contents to calculate the
+	register move costs.
+
+2022-12-16  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/invoke.texi: Document -Wstrict-flex-arrays option.
+	* gimple-array-bounds.cc (check_out_of_bounds_and_warn): Add two more
+	arguments.
+	(array_bounds_checker::check_array_ref): Issue warnings for
+	-Wstrict-flex-arrays.
+	* opts.cc (finish_options): Issue warning for unsupported combination
+	of -Wstrict_flex_arrays and -fstrict-flex-array.
+	* tree-vrp.cc (execute_ranger_vrp): Enable the pass when
+	warn_strict_flex_array is true.
+
+2022-12-16  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_option_override): Fix comment
+	wording.
+
+2022-12-16  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* doc/extend.texi (__builtin_riscv_pause): Imply
+	Xgnuzihintpausestate.
+
+2022-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108086
+	* tree-inline.cc (remap_ssa_name): Do not unshare the
+	result from the decl_map.
+
+2022-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108086
+	* tree-inline.cc (copy_bb): Remove handling of (foo *)&this->m
+	substitution which is done in remap_gimple_op_r via
+	re-gimplifying.
+
+2022-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106751
+	* loop-invariant.cc (move_invariant_reg): If preheader bb ends
+	with a JUMP_INSN, split the preheader edge and emit invariants
+	into the new preheader basic block.
+
+2022-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108086
+	* tree-inline.cc (remap_gimple_stmt): Add stmts to the
+	sequence without updating them.  Simplify x == x detection.
+
+2022-12-16  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/cmpccxaddintrin.h
+	(__cmpccxadd_epi32): Rename to _cmpccxadd_epi32.
+	(__cmpccxadd_epi64): Rename to _cmpccxadd_epi64.
+
+2022-12-15  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc: Include print-rtl.h.
+	(record_reg_classes, scan_one_insn): Add code to print debug info.
+	* ira.cc (ira_init_register_move_cost): Check that at least one hard
+	reg of the mode are in the class contents to calculate the
+	register move costs.
+
+2022-12-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* doc/extend.texi (__builtin_dynamic_object_size): Document
+	builtin.
+	* doc/passes.texi
+	(Optimize calls to @code{__builtin_object_size}): Also mention
+	__builtin_dynamic_object_size.
+
+2022-12-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* doc/invoke.texi (-fsanitize=object-size): Use
+	__builtin_dynamic_object_size instead of
+	__builtin_object_size.
+
+2022-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108086
+	* tree-inline.cc (copy_edges_for_bb): Walk stmts backwards for
+	splitting the block to avoid quadratic behavior with setting
+	stmts BB on multliple splits.
+
+2022-12-15  Spacetown  <michael.foerderer@gmx.de>
+
+	PR gcov-profile/107537
+	* gcov.cc (output_branch_count): Add annotation '(fallthrough)'
+	or '(throw)' also to uncovered branches.
+
+2022-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108086
+	* tree-inline.cc (copy_edges_for_bb): Do not update all
+	stmts again.
+
+2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108095
+	* tree-into-ssa.cc (maybe_register_def): Insert debug stmt
+	on all non-EH edges from asm goto if they have a single
+	predecessor rather than asserting there is at most one such edge.
+	Test whether there are no PHI nodes next to the single predecessor
+	test.
+
 2022-12-14  David Faust  <david.faust@oracle.com>
 
 	PR target/106773

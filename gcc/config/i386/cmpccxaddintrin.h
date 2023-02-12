@@ -58,23 +58,23 @@ typedef enum {
 #ifdef __OPTIMIZE__
 extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__cmpccxadd_epi32 (int *__A, int __B, int __C, const _CMPCCX_ENUM __D)
+_cmpccxadd_epi32 (int *__A, int __B, int __C, const _CMPCCX_ENUM __D)
 {
   return __builtin_ia32_cmpccxadd (__A, __B, __C, __D);
 }
 
 extern __inline long long
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-__cmpccxadd_epi64 (long long *__A, long long __B, long long __C,
+_cmpccxadd_epi64 (long long *__A, long long __B, long long __C,
 		   const _CMPCCX_ENUM __D)
 {
   return __builtin_ia32_cmpccxadd64 (__A, __B, __C, __D);
 }
 #else
-#define __cmpccxadd_epi32(A,B,C,D) \
+#define _cmpccxadd_epi32(A,B,C,D) \
   __builtin_ia32_cmpccxadd ((int *) (A), (int) (B), (int) (C), \
 			    (_CMPCCX_ENUM) (D))
-#define __cmpccxadd_epi64(A,B,C,D) \
+#define _cmpccxadd_epi64(A,B,C,D) \
   __builtin_ia32_cmpccxadd64 ((long long *) (A), (long long) (B), \
 			      (long long) (C), (_CMPCCX_ENUM) (D))
 #endif

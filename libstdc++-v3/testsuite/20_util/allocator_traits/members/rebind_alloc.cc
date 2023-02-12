@@ -24,17 +24,16 @@ using std::is_same;
 template<typename T, typename U>
   using Rebind = typename std::allocator_traits<T>::template rebind_alloc<U>;
 
-#if __STDC_HOSTED__
-template<typename T>
+template<typename T, typename = T>
   struct HasRebind {
     using value_type = T;
-    template<typename U> struct rebind { using other = std::allocator<U>; };
+    template<typename U> struct rebind { using other = HasRebind<U>; };
   };
 
-static_assert(is_same<Rebind<HasRebind<int>, long>,
-		      std::allocator<long>>::value,
+// Would get HasRebind<long, int> here if the first template argument is
+// replaced instead of using the nested rebind.
+static_assert(is_same<Rebind<HasRebind<int>, long>, HasRebind<long>>::value,
 	      "nested alias template is used");
-#endif
 
 template<typename T>
   struct NoRebind0 {

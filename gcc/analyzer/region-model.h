@@ -485,6 +485,7 @@ class region_model
 
   const svalue *check_for_poison (const svalue *sval,
 				  tree expr,
+				  const region *src_region,
 				  region_model_context *ctxt) const;
 
   void check_region_for_write (const region *dest_reg,

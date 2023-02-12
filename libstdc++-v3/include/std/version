@@ -306,7 +306,7 @@
 #define __cpp_lib_constexpr_charconv 202207L
 #define __cpp_lib_constexpr_typeinfo 202106L
 #if __cpp_concepts >= 202002L
-# define __cpp_lib_expected 202202L
+# define __cpp_lib_expected 202211L
 #endif
 #define __cpp_lib_invoke_r 202106L
 #define __cpp_lib_is_scoped_enum 202011L
