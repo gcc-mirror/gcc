@@ -1,0 +1,67 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE StdChans;
+
+  (* Access to standard and default channels *)
+
+IMPORT IOChan;
+
+TYPE
+  ChanId = IOChan.ChanId;
+    (* Values of this type are used to identify channels *)
+
+  (* The following functions return the standard channel values.
+     These channels cannot be closed.
+  *)
+
+PROCEDURE StdInChan (): ChanId;
+  (* Returns the identity of the implementation-defined standard source for
+program
+     input.
+  *)
+
+PROCEDURE StdOutChan (): ChanId;
+  (* Returns the identity of the implementation-defined standard source for program
+     output.
+  *)
+
+PROCEDURE StdErrChan (): ChanId;
+  (* Returns the identity of the implementation-defined standard destination for program
+     error messages.
+  *)
+
+PROCEDURE NullChan (): ChanId;
+  (* Returns the identity of a channel open to the null device. *)
+
+  (* The following functions return the default channel values *)
+
+PROCEDURE InChan (): ChanId;
+  (* Returns the identity of the current default input channel. *)
+
+PROCEDURE OutChan (): ChanId;
+  (* Returns the identity of the current default output channel. *)
+
+PROCEDURE ErrChan (): ChanId;
+  (* Returns the identity of the current default error message channel. *)
+
+  (* The following procedures allow for redirection of the default channels *)
+
+PROCEDURE SetInChan (cid: ChanId);
+  (* Sets the current default input channel to that identified by cid. *)
+
+PROCEDURE SetOutChan (cid: ChanId);
+  (* Sets the current default output channel to that identified by cid. *)
+
+PROCEDURE SetErrChan (cid: ChanId);
+  (* Sets the current default error channel to that identified by cid. *)
+
+END StdChans.

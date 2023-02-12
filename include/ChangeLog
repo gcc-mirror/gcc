@@ -1,3 +1,16 @@
+2022-12-14  David Faust  <david.faust@oracle.com>
+
+	PR target/106773
+	* btf.h (enum btf_func_linkage): New.
+	(struct btf_var_secinfo): Update comments with notes about extern
+	functions.
+
+2022-12-14  David Faust  <david.faust@oracle.com>
+
+	PR target/106773
+	* btf.h (enum btf_var_linkage): New.
+	(struct btf_var): Update comment to note 'extern' linkage.
+
 2022-12-07  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* xtensa-dynconfig.h: New file.

@@ -1,0 +1,79 @@
+(* RTdata.def provides a mechanism whereby devices can attach data.
+
+Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RTdata ;
+
+(*
+    Title      : RTdata
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Fri Sep 26 17:19:15 2008
+    Revision   : $Version$ 
+    Description: provides a mechanism whereby devices can store
+                 data attached to a device.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM IOLink IMPORT DeviceTablePtr ;
+
+TYPE
+   ModuleId ;
+   FreeProcedure = PROCEDURE (ADDRESS) ;
+
+
+(*
+   MakeModuleId - creates a unique module Id.
+*)
+
+PROCEDURE MakeModuleId (VAR m: ModuleId) ;
+
+
+(*
+   InitData - adds, datum, to the device, d.  The datum
+              is associated with ModuleID, m.
+*)
+
+PROCEDURE InitData (d: DeviceTablePtr; m: ModuleId;
+                    datum: ADDRESS; f: FreeProcedure) ;
+
+
+(*
+   GetData - returns the datum assocated with ModuleId, m.
+*)
+
+PROCEDURE GetData (d: DeviceTablePtr; m: ModuleId) : ADDRESS ;
+
+
+(*
+   KillData - destroys the datum associated with ModuleId, m,
+              in device, d.  It invokes the free procedure
+              given during InitData.
+*)
+
+PROCEDURE KillData (d: DeviceTablePtr; m: ModuleId) ;
+
+
+END RTdata.

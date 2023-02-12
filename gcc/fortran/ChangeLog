@@ -1,3 +1,16 @@
+2022-12-14  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/107214
+	* gfortran.h (gfc_symbol): Add data_mark, dev_mark, gen_mark and
+	reduc_mark bitfields.
+	* openmp.cc (resolve_omp_clauses): Use above bitfields to improve
+	duplicate clause detection.
+
+2022-12-14  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_add_firstprivate_if_unmapped): New function.
+	(gfc_split_omp_clauses): Call above.
+
 2022-12-13  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/107423

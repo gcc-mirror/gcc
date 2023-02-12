@@ -1,0 +1,73 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE ComplexMath;
+
+  (* Mathematical functions for the type COMPLEX *)
+
+CONST
+  i =    CMPLX (0.0, 1.0);
+  one =  CMPLX (1.0, 0.0);
+  zero = CMPLX (0.0, 0.0);
+
+PROCEDURE __BUILTIN__ abs (z: COMPLEX): REAL;
+  (* Returns the length of z *)
+
+PROCEDURE __BUILTIN__ arg (z: COMPLEX): REAL;
+  (* Returns the angle that z subtends to the positive real axis *)
+
+PROCEDURE __BUILTIN__ conj (z: COMPLEX): COMPLEX;
+  (* Returns the complex conjugate of z *)
+
+PROCEDURE __BUILTIN__ power (base: COMPLEX; exponent: REAL): COMPLEX;
+  (* Returns the value of the number base raised to the power exponent *)
+
+PROCEDURE __BUILTIN__ sqrt (z: COMPLEX): COMPLEX;
+  (* Returns the principal square root of z *)
+
+PROCEDURE __BUILTIN__ exp (z: COMPLEX): COMPLEX;
+  (* Returns the complex exponential of z *)
+
+PROCEDURE __BUILTIN__ ln (z: COMPLEX): COMPLEX;
+  (* Returns the principal value of the natural logarithm of z *)
+
+PROCEDURE __BUILTIN__ sin (z: COMPLEX): COMPLEX;
+  (* Returns the sine of z *)
+
+PROCEDURE __BUILTIN__ cos (z: COMPLEX): COMPLEX;
+  (* Returns the cosine of z *)
+
+PROCEDURE __BUILTIN__ tan (z: COMPLEX): COMPLEX;
+  (* Returns the tangent of z *)
+
+PROCEDURE __BUILTIN__ arcsin (z: COMPLEX): COMPLEX;
+  (* Returns the arcsine of z *)
+
+PROCEDURE __BUILTIN__ arccos (z: COMPLEX): COMPLEX;
+  (* Returns the arccosine of z *)
+
+PROCEDURE __BUILTIN__ arctan (z: COMPLEX): COMPLEX;
+  (* Returns the arctangent of z *)
+
+PROCEDURE polarToComplex (abs, arg: REAL): COMPLEX;
+  (* Returns the complex number with the specified polar coordinates *)
+
+PROCEDURE scalarMult (scalar: REAL; z: COMPLEX): COMPLEX;
+  (* Returns the scalar product of scalar with z *)
+
+PROCEDURE IsCMathException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional
+     execution state because of the raising of an exception in a
+     routine from this module; otherwise returns FALSE.
+  *)
+
+END ComplexMath.
+

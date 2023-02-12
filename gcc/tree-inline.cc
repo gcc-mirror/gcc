@@ -2571,12 +2571,8 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 
   for (si = gsi_start_bb (new_bb); !gsi_end_p (si);)
     {
-      gimple *copy_stmt;
       bool can_throw, nonlocal_goto;
-
-      copy_stmt = gsi_stmt (si);
-      if (!is_gimple_debug (copy_stmt))
-	update_stmt (copy_stmt);
+      gimple *copy_stmt = gsi_stmt (si);
 
       /* Do this before the possible split_block.  */
       gsi_next (&si);

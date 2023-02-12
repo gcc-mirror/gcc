@@ -1,0 +1,133 @@
+(* Indexing.def provides a dynamic indexing mechanism for CARDINAL.
+
+Copyright (C) 2003-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Indexing ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT QUALIFIED Index, InitIndex, KillIndex, GetIndice, PutIndice,
+                 HighIndice, LowIndice, InBounds, IsIndiceInIndex,
+                 RemoveIndiceFromIndex, IncludeIndiceIntoIndex,
+                 ForeachIndiceInIndexDo, DeleteIndice, DebugIndex ;
+
+TYPE
+   Index ;
+   IndexProcedure = PROCEDURE (ADDRESS) ;
+
+
+(*
+   InitIndex - creates and returns an Index.
+*)
+
+PROCEDURE InitIndex (low: CARDINAL) : Index ;
+
+
+(*
+   KillIndex - returns Index to free storage.
+*)
+
+PROCEDURE KillIndex (i: Index) : Index ;
+
+
+(*
+   DebugIndex - turns on debugging within an index.
+*)
+
+PROCEDURE DebugIndex (i: Index) : Index ;
+
+
+(*
+   InBounds - returns TRUE if indice, n, is within the bounds
+              of the dynamic array.
+*)
+
+PROCEDURE InBounds (i: Index; n: CARDINAL) : BOOLEAN ;
+
+
+(*
+   HighIndice - returns the last legally accessible indice of this array.
+*)
+
+PROCEDURE HighIndice (i: Index) : CARDINAL ;
+
+
+(*
+   LowIndice - returns the first legally accessible indice of this array.
+*)
+
+PROCEDURE LowIndice (i: Index) : CARDINAL ;
+
+
+(*
+   PutIndice - places, a, into the dynamic array at position i[n]
+*)
+
+PROCEDURE PutIndice (i: Index; n: CARDINAL; a: ADDRESS) ;
+
+
+(*
+   GetIndice - retrieves, element i[n] from the dynamic array.
+*)
+
+PROCEDURE GetIndice (i: Index; n: CARDINAL) : ADDRESS ;
+
+
+(*
+   IsIndiceInIndex - returns TRUE if, a, is in the index, i.
+*)
+
+PROCEDURE IsIndiceInIndex (i: Index; a: ADDRESS) : BOOLEAN ;
+
+
+(*
+   RemoveIndiceFromIndex - removes, a, from Index, i.
+*)
+
+PROCEDURE RemoveIndiceFromIndex (i: Index; a: ADDRESS) ;
+
+
+(*
+   DeleteIndice - delete i[j] from the array.
+*)
+
+PROCEDURE DeleteIndice (i: Index; j: CARDINAL) ;
+
+
+(*
+   IncludeIndiceIntoIndex - if the indice is not in the index, then
+                            add it at the end.
+*)
+
+PROCEDURE IncludeIndiceIntoIndex (i: Index; a: ADDRESS) ;
+
+
+(*
+   ForeachIndiceInIndexDo - for each j indice of i, call procedure p(i[j])
+*)
+
+PROCEDURE ForeachIndiceInIndexDo (i: Index; p: IndexProcedure) ;
+
+
+END Indexing.

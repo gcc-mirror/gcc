@@ -1,3 +1,9 @@
+2022-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108097
+	* include/std/stacktrace (basic_stracktrace::_Impl): Do not
+	multiply N by sizeof(value_type) when allocating.
+
 2022-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/libbacktrace/backtrace-rename.h (backtrace_uncompress_zstd):

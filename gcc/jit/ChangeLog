@@ -1,3 +1,9 @@
+2022-12-14  Antoni Boucher  <bouanto@zoho.com>
+	    Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	PR jit/108078
+	* jit-recording.h: Add vector_type::is_same_type_as method
+
 2022-12-07  Antoni Boucher  <bouanto@zoho.com>
 	    Guillaume Gomez  <guillaume1.gomez@gmail.com>
 

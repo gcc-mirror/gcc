@@ -1,0 +1,9 @@
+DEFINITION MODULE incsubrange ;
+
+TYPE
+   Month = [1..12] ;
+
+PROCEDURE incMonth (VAR m: Month) ;
+PROCEDURE incMonth2 (VAR m: Month) ;
+
+END incsubrange.

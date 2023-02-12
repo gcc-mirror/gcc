@@ -1,3 +1,10 @@
+2022-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rust/106072
+	* parse/rust-parse-impl.h (parse_closure_param): Store
+	pattern->get_locus () in a temporary before std::move (pattern) is
+	invoked.
+
 2022-12-13  Philip Herron  <philip.herron@embecosm.com>
 
 	* CONTRIBUTING.md: New.

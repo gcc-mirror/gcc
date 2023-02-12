@@ -15523,7 +15523,8 @@ pointer parameter.
 @item ipa-sra-ptrwrap-growth-factor
 Additional maximum allowed growth of total size of new parameters
 that ipa-sra replaces a pointer to an aggregate with,
-if it points to a local variable that the caller never writes to.
+if it points to a local variable that the caller only writes to and
+passes it as an argument to other functions.
 
 @item ipa-sra-max-replacements
 Maximum pieces of an aggregate that IPA-SRA tracks.  As a

@@ -911,6 +911,8 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
     return false;
   bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
   store_manager *smgr = mgr->get_store_manager ();
+  if (max_element->empty_p ())
+    return false;
   const binding_key *max_element_key = binding_key::make (smgr, max_element);
   if (max_element_key->symbolic_p ())
     return false;
@@ -950,6 +952,8 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
   else
     {
       const svalue *sval = get_svalue_for_ctor_val (val, mgr);
+      if (child_reg->empty_p ())
+	return false;
       const binding_key *k
 	= binding_key::make (mgr->get_store_manager (), child_reg);
       /* Handle the case where we have an unknown size for child_reg
@@ -1347,6 +1351,8 @@ binding_cluster::bind (store_manager *mgr,
       return;
     }
 
+  if (reg->empty_p ())
+    return;
   const binding_key *binding = binding_key::make (mgr, reg);
   bind_key (binding, sval);
 }
@@ -1419,6 +1425,8 @@ void
 binding_cluster::purge_region (store_manager *mgr, const region *reg)
 {
   gcc_assert (reg->get_kind () == RK_DECL);
+  if (reg->empty_p ())
+    return;
   const binding_key *binding
     = binding_key::make (mgr, const_cast<region *> (reg));
   m_map.remove (binding);
@@ -1664,6 +1672,9 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
     return NULL;
   region_offset reg_offset = reg->get_offset (mgr->get_svalue_manager ());
   if (reg_offset.symbolic_p ())
+    return NULL;
+
+  if (reg->empty_p ())
     return NULL;
 
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
@@ -2160,6 +2171,9 @@ binding_cluster::maybe_get_simple_value (store_manager *mgr) const
     return NULL;
 
   if (m_map.elements () != 1)
+    return NULL;
+
+  if (m_base_region->empty_p ())
     return NULL;
 
   const binding_key *key = binding_key::make (mgr, m_base_region);
