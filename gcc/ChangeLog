@@ -1,3 +1,7 @@
+2023-02-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_option_override): Disable -fstack-protector.
+
 2023-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
