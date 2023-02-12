@@ -1,3 +1,9 @@
+2023-02-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Update
+	link to "Worst-case efficient priority queues".
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
 2023-02-06  Arsen Arsenović  <arsen@aarsen.me>
 
 	* doc/xml/manual/using.xml: Document newly-freestanding

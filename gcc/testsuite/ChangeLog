@@ -1,3 +1,20 @@
+2023-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/108605
+	* c-c++-common/pr108605.c: New test.
+
+2023-02-11  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.dg/pr65658.c: fix LLP64 test.
+
+2023-02-11  Jonathan Yong  <10walls@gmail.com>
+
+	* c-c++-common/Wsizeof-array-div1.c: fix excess warnings.
+	* gcc.dg/Warray-bounds-52.c: ditto
+	* gcc.dg/Wstringop-overflow-62.c: ditto
+	* gcc.dg/attr-vector_size.c: ditto
+	* gcc.dg/overflow-warn-9.c: ditto
+
 2023-02-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108745

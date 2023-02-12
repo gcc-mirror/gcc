@@ -1,3 +1,14 @@
+2023-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/108605
+	* ipa-cp.cc (ipa_agg_value_from_jfunc): Return NULL_TREE also if
+	item->offset bit position is too large to be representable as
+	unsigned int byte position.
+
+2023-02-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Other Builtins): Adjust link to WG14 N965.
+
 2023-02-10  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	* ira.cc (update_equiv_regs): Set up ira_reg_equiv for
