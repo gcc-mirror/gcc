@@ -11732,6 +11732,9 @@ const ext_attr_t ext_attr_list[] = {
   { "fastcall",     EXT_ATTR_FASTCALL,     "fastcall"  },
   { "no_arg_check", EXT_ATTR_NO_ARG_CHECK, NULL        },
   { "deprecated",   EXT_ATTR_DEPRECATED,   NULL	       },
+  { "noinline",     EXT_ATTR_NOINLINE,     NULL	       },
+  { "noreturn",     EXT_ATTR_NORETURN,     NULL	       },
+  { "weak",	    EXT_ATTR_WEAK,	   NULL	       },
   { NULL,           EXT_ATTR_LAST,         NULL        }
 };
 

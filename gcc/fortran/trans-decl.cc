@@ -2338,7 +2338,7 @@ module_sym:
     }
 
   /* Mark non-returning functions.  */
-  if (sym->attr.noreturn)
+  if (sym->attr.noreturn || sym->attr.ext_attr & (1 << EXT_ATTR_NORETURN))
       TREE_THIS_VOLATILE(fndecl) = 1;
 
   sym->backend_decl = fndecl;
@@ -2482,6 +2482,17 @@ build_function_decl (gfc_symbol * sym, bool global)
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 
+  /* Mark noinline functions.  */
+  if (attr.ext_attr & (1 << EXT_ATTR_NOINLINE))
+    DECL_UNINLINABLE (fndecl) = 1;
+
+  /* Mark noreturn functions.  */
+  if (attr.ext_attr & (1 << EXT_ATTR_NORETURN))
+    TREE_THIS_VOLATILE (fndecl) = 1;
+
+  /* Mark weak functions.  */
+  if (attr.ext_attr & (1 << EXT_ATTR_WEAK))
+    declare_weak (fndecl);
 
   /* Layout the function declaration and put it in the binding level
      of the current function.  */
