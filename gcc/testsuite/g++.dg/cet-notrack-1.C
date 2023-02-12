@@ -18,8 +18,8 @@ B b;
 A& a = b;
 int (A::*amem) () __attribute__((nocf_check)) = &A::foo; // take address
 if ((a.*amem)() == 73) // use the address
-  printf("pass\n");
+  puts("pass\n");
 else
-  printf("fail\n");
+  puts("fail\n");
 return 0;
 }

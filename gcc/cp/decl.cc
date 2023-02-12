@@ -14776,7 +14776,9 @@ grokdeclarator (const cp_declarator *declarator,
       {
 	/* If we saw a return type, record its location.  */
 	location_t loc = declspecs->locations[ds_type_spec];
-	if (loc != UNKNOWN_LOCATION)
+	if (loc == UNKNOWN_LOCATION)
+	  /* Build DECL_RESULT in start_preparsed_function.  */;
+	else if (!DECL_RESULT (decl))
 	  {
 	    tree restype = TREE_TYPE (TREE_TYPE (decl));
 	    tree resdecl = build_decl (loc, RESULT_DECL, 0, restype);
@@ -14784,6 +14786,8 @@ grokdeclarator (const cp_declarator *declarator,
 	    DECL_IGNORED_P (resdecl) = 1;
 	    DECL_RESULT (decl) = resdecl;
 	  }
+	else if (funcdef_flag)
+	  DECL_SOURCE_LOCATION (DECL_RESULT (decl)) = loc;
       }
 
     /* Record constancy and volatility on the DECL itself .  There's

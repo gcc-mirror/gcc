@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++17 } }
+// { dg-additional-options "-Wno-deprecated-declarations" { target c++20 } }
 
 #include <filesystem>
 #include <testsuite_hooks.h>

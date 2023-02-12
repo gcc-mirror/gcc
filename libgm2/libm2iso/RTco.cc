@@ -110,6 +110,7 @@ _M2_RTco_fini (int argc, char *argv[], char *envp[])
 {
 }
 
+
 static void
 initSem (threadSem *sem, int value)
 {
@@ -171,8 +172,8 @@ newSem (void)
       = (threadSem *)malloc (sizeof (threadSem));
   nSemaphores += 1;
   if (nSemaphores == SEM_POOL)
-    M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__,
-                "too many semaphores created");
+    M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		 "too many semaphores created");
 #else
   threadSem *sem
       = (threadSem *)malloc (sizeof (threadSem));
@@ -250,8 +251,8 @@ currentThread (void)
   for (tid = 0; tid < nThreads; tid++)
     if (pthread_self () == threadArray[tid].p)
       return tid;
-  M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__,
-              "failed to find currentThread");
+  M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+	       "failed to find currentThread");
 }
 
 extern "C" int
@@ -297,8 +298,8 @@ RTco_turnInterrupts (unsigned int newLevel)
 static void
 never (void)
 {
-  M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__,
-              "the main thread should never call here");
+  M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+	       "the main thread should never call here");
 }
 
 static void *
@@ -316,7 +317,8 @@ execThread (void *t)
 #if 0
   M2RTS_CoroutineException ( __FILE__, __LINE__, __COLUMN__, __FUNCTION__, "coroutine finishing");
 #endif
-  M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__, "execThread should never finish");
+  M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+	       "execThread should never finish");
   return NULL;
 }
 
@@ -326,7 +328,8 @@ newThread (void)
 #if defined(POOL)
   nThreads += 1;
   if (nThreads == THREAD_POOL)
-    M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__, "too many threads created");
+    M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		 "too many threads created");
   return nThreads - 1;
 #else
   if (nThreads == 0)
@@ -360,14 +363,14 @@ initThread (void (*proc) (void), unsigned int stackSize,
   /* set thread creation attributes.  */
   result = pthread_attr_init (&attr);
   if (result != 0)
-    M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__,
+    M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
                 "failed to create thread attribute");
 
   if (stackSize > 0)
     {
       result = pthread_attr_setstacksize (&attr, stackSize);
       if (result != 0)
-        M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__,
+        M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
                     "failed to set stack size attribute");
     }
 
@@ -376,7 +379,7 @@ initThread (void (*proc) (void), unsigned int stackSize,
   result = pthread_create (&threadArray[tid].p, &attr, execThread,
                            (void *)&threadArray[tid]);
   if (result != 0)
-    M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__, "thread_create failed");
+    M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__, "thread_create failed");
   tprintf ("  created thread [%d]  function = 0x%p  0x%p\n", tid, proc,
            (void *)&threadArray[tid]);
   return tid;
@@ -404,14 +407,14 @@ RTco_transfer (int *p1, int p2)
   int tid = currentThread ();
 
   if (!initialized)
-    M2RTS_Halt (
+    M2RTS_HaltC (
         __FILE__, __LINE__, __FUNCTION__,
         "cannot transfer to a process before the process has been created");
   if (tid == p2)
     {
       /* error.  */
-      M2RTS_Halt (__FILE__, __LINE__, __FUNCTION__,
-	      "attempting to transfer to ourself");
+      M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		   "attempting to transfer to ourself");
     }
   else
     {

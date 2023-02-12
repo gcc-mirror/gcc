@@ -78,6 +78,20 @@ libc_strlen (char *s)
 }
 
 EXTERN
+time_t
+libc_time (time_t *buf)
+{
+  return time (buf);
+}
+
+EXTERN
+void *
+libc_localtime (time_t *epochtime)
+{
+  return localtime (epochtime);
+}
+
+EXTERN
 int
 libc_printf (char *_format, unsigned int _format_high, ...)
 {

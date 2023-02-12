@@ -24,10 +24,12 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  *)
 
-DEFINITION MODULE RTco ;
+DEFINITION MODULE FOR "C" RTco ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
+IMPORT RTentity ;  (* Imported so the initialization call graph
+                      understands that RTco.cc depends upon RTentity.  *)
 
 (* init initializes the module and allows the application to lazily invoke threads.  *)
 

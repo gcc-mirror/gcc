@@ -1875,11 +1875,11 @@ modref_access_analysis::analyze ()
      statement cannot be analyzed (for any reason), the entire function cannot
      be analyzed by modref.  */
   basic_block bb;
+  bitmap always_executed_bbs = find_always_executed_bbs (cfun, true);
   FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator si;
-      bool always_executed
-	      = bb == single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->dest;
+      bool always_executed = bitmap_bit_p (always_executed_bbs, bb->index);
 
       for (si = gsi_start_nondebug_after_labels_bb (bb);
 	   !gsi_end_p (si); gsi_next_nondebug (&si))
@@ -1926,6 +1926,7 @@ modref_access_analysis::analyze ()
 	  && !finite_function_p ())
 	m_summary_lto->side_effects = true;
     }
+  BITMAP_FREE (always_executed_bbs);
 }
 
 /* Return true if OP accesses memory pointed to by SSA_NAME.  */

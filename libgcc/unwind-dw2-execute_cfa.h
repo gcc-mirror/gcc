@@ -278,10 +278,15 @@
 	case DW_CFA_GNU_window_save:
 #if defined (__aarch64__) && !defined (__ILP32__)
 	  /* This CFA is multiplexed with Sparc.  On AArch64 it's used to toggle
-	     return address signing status.  */
+	     return address signing status.  REG_UNSAVED/REG_UNSAVED_ARCHEXT
+	     mean RA signing is disabled/enabled.  */
 	  reg = DWARF_REGNUM_AARCH64_RA_STATE;
-	  gcc_assert (fs->regs.how[reg] == REG_UNSAVED);
-	  fs->regs.reg[reg].loc.offset ^= 1;
+	  gcc_assert (fs->regs.how[reg] == REG_UNSAVED
+		      || fs->regs.how[reg] == REG_UNSAVED_ARCHEXT);
+	  if (fs->regs.how[reg] == REG_UNSAVED)
+	    fs->regs.how[reg] = REG_UNSAVED_ARCHEXT;
+	  else
+	    fs->regs.how[reg] = REG_UNSAVED;
 #else
 	  /* ??? Hardcoded for SPARC register window configuration.  */
 	  if (__LIBGCC_DWARF_FRAME_REGISTERS__ >= 32)

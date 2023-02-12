@@ -635,6 +635,10 @@ and unit testing.
 Bob Manson for his behind the scenes work on dejagnu.
 
 @item
+Jose E. Marchesi for contributing the eBPF backend and his ongoing
+work maintaining it.
+
+@item
 John Marino for contributing the DragonFly BSD port.
 
 @item

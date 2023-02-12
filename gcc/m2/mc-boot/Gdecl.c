@@ -56,6 +56,7 @@ typedef struct mcPretty_writeLnProc_p mcPretty_writeLnProc;
 typedef unsigned int FIO_File;
 
 extern FIO_File FIO_StdOut;
+#   define symbolKey_NulKey NULL
 typedef struct symbolKey_performOperation_p symbolKey_performOperation;
 
 #   define ASCII_tab ASCII_ht
@@ -76,7 +77,6 @@ typedef struct decl_isNodeF_p decl_isNodeF;
 #   define SYSTEM_BYTESPERWORD 4
 typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 
-#   define symbolKey_NulKey NULL
 typedef struct symbolKey_isSymbol_p symbolKey_isSymbol;
 
 #   define ASCII_nul (char) 000
@@ -293,15 +293,15 @@ typedef enum {mcComment_unknown, mcComment_procedureHeading, mcComment_inBody, m
 
 typedef struct DynamicStrings_stringRecord_r DynamicStrings_stringRecord;
 
+typedef struct DynamicStrings_Contents_r DynamicStrings_Contents;
+
 typedef struct wlists__T9_r wlists__T9;
 
 typedef struct mcPretty__T12_r mcPretty__T12;
 
-typedef struct DynamicStrings_Contents_r DynamicStrings_Contents;
+typedef struct wlists__T10_a wlists__T10;
 
 typedef struct DynamicStrings__T7_a DynamicStrings__T7;
-
-typedef struct wlists__T10_a wlists__T10;
 
 typedef Indexing__T5 *Indexing_Index;
 
@@ -665,8 +665,8 @@ struct mcComment__T6_r {
                          unsigned int used;
                        };
 
-struct DynamicStrings__T7_a { char array[(MaxBuf-1)+1]; };
 struct wlists__T10_a { unsigned int array[maxNoOfElements-1+1]; };
+struct DynamicStrings__T7_a { char array[(MaxBuf-1)+1]; };
 struct alists__T13_r {
                        unsigned int noOfelements;
                        alists__T14 elements;
@@ -830,6 +830,12 @@ struct decl_impT_r {
                      decl_commentPair com;
                    };
 
+struct DynamicStrings_Contents_r {
+                                   DynamicStrings__T7 buf;
+                                   unsigned int len;
+                                   DynamicStrings_String next;
+                                 };
+
 struct wlists__T9_r {
                       unsigned int noOfElements;
                       wlists__T10 elements;
@@ -847,12 +853,6 @@ struct mcPretty__T12_r {
                          unsigned int indent;
                          mcPretty_pretty stacked;
                        };
-
-struct DynamicStrings_Contents_r {
-                                   DynamicStrings__T7 buf;
-                                   unsigned int len;
-                                   DynamicStrings_String next;
-                                 };
 
 typedef struct DynamicStrings_descriptor_r DynamicStrings_descriptor;
 
@@ -1037,9 +1037,10 @@ extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p);
 extern "C" void M2RTS_ExecuteTerminationProcedures (void);
 extern "C" void M2RTS_Terminate (void) __attribute__ ((noreturn));
 extern "C" void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
-extern "C" void M2RTS_Halt (const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description);
 extern "C" void M2RTS_ExitOnHalt (int e);
-extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
 extern "C" unsigned int M2RTS_Length (const char *a_, unsigned int _a_high);
 extern "C" void M2RTS_AssignmentException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
 extern "C" void M2RTS_ReturnException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
@@ -6678,7 +6679,7 @@ static decl_node newNode (decl_nodeT k)
       d->at.firstUsed = 0;
       return d;
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -7038,7 +7039,7 @@ static decl_node addToScope (decl_node n)
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -7116,7 +7117,7 @@ static void setUnary (decl_node u, decl_nodeT k, decl_node a, decl_node t)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7399,7 +7400,7 @@ static void putFieldVarient (decl_node f, decl_node v)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   switch (f->kind)
@@ -7410,7 +7411,7 @@ static void putFieldVarient (decl_node f, decl_node v)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7437,7 +7438,7 @@ static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, 
         if (tag != nameKey_NulName)
           {
             /* avoid gcc warning by using compound statement even if not strictly necessary.  */
-            if ((symbolKey_getSymKey (r->recordF.localSymbols, tag)) == nameKey_NulName)
+            if ((symbolKey_getSymKey (r->recordF.localSymbols, tag)) == symbolKey_NulKey)
               {
                 symbolKey_putSymKey (r->recordF.localSymbols, tag, reinterpret_cast<void *> (n));
               }
@@ -7461,7 +7462,7 @@ static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, 
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* fill in, n.  */
@@ -7519,7 +7520,7 @@ static void putVarientTag (decl_node v, decl_node tag)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7543,7 +7544,7 @@ static decl_node getParent (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7571,7 +7572,7 @@ static decl_node getRecord (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7751,7 +7752,7 @@ static unsigned int getConstExpComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7856,7 +7857,7 @@ static decl_node makeVal (decl_node params)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -7877,7 +7878,7 @@ static decl_node makeCast (decl_node c, decl_node p)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -8387,7 +8388,7 @@ static decl_node makeUnary (decl_nodeT k, decl_node e, decl_node res)
 
 
           default:
-            CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -8481,7 +8482,7 @@ static DynamicStrings_String getStringContents (decl_node n)
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -8617,7 +8618,7 @@ static decl_node doMakeBinary (decl_nodeT k, decl_node l, decl_node r, decl_node
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return n;
@@ -9217,12 +9218,12 @@ static decl_node doGetExprType (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -9361,12 +9362,12 @@ static decl_node getSymScope (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -9678,7 +9679,7 @@ static unsigned int needsParen (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return TRUE;
@@ -9787,7 +9788,7 @@ static void doPolyBinary (mcPretty_pretty p, decl_nodeT op, decl_node left, decl
 
 
           default:
-            CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -9813,7 +9814,7 @@ static void doPolyBinary (mcPretty_pretty p, decl_nodeT op, decl_node left, decl
 
 
           default:
-            CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -10091,7 +10092,7 @@ static decl_node doGetLastOp (decl_node a, decl_node b)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -10731,7 +10732,7 @@ static void doExprC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -10936,7 +10937,7 @@ static void doExprM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -11108,7 +11109,7 @@ static DynamicStrings_String replaceChar (DynamicStrings_String s, char ch, cons
         return s;
       }
   }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -11168,7 +11169,7 @@ static unsigned int countChar (DynamicStrings_String s, char ch)
         return c;
       }
   }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -12227,7 +12228,7 @@ static decl_node doMin (decl_node n)
       M2RTS_HALT (-1);  /* finish the cacading elsif statement.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -12308,7 +12309,7 @@ static decl_node doMax (decl_node n)
       M2RTS_HALT (-1);  /* finish the cacading elsif statement.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -12597,7 +12598,7 @@ static void doBaseC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   mcPretty_setNeedSpace (p);
@@ -12687,7 +12688,7 @@ static void doSystemC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -16041,7 +16042,7 @@ static void doCreal (mcPretty_pretty p, decl_node t)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -16072,7 +16073,7 @@ static void doCimag (mcPretty_pretty p, decl_node t)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -16203,7 +16204,7 @@ static void doIntrinsicC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   outText (p, (const char *) ";", 1);
@@ -17365,7 +17366,7 @@ static void dbs (decl_dependentState s, decl_node n)
 
 
           default:
-            CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
       if (n != NULL)
@@ -18258,10 +18259,10 @@ static decl_dependentState doDependants (alists_alist l, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -18358,7 +18359,7 @@ static void visitIntrinsicFunction (alists_alist v, decl_node n, decl_nodeProced
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -19357,7 +19358,7 @@ static void visitDependants (alists_alist v, decl_node n, decl_nodeProcedure p)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -19704,12 +19705,12 @@ static DynamicStrings_String genKind (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -20884,7 +20885,7 @@ static void doBaseM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   mcPretty_setNeedSpace (p);
@@ -20910,7 +20911,7 @@ static void doSystemM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -22121,10 +22122,10 @@ static decl_node doDupExpr (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -22454,7 +22455,7 @@ extern "C" unsigned int decl_isVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -22484,7 +22485,7 @@ extern "C" void decl_unsetVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -22512,7 +22513,7 @@ extern "C" void decl_setVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -22540,7 +22541,7 @@ extern "C" void decl_setEnumsComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -22568,7 +22569,7 @@ extern "C" unsigned int decl_getEnumsComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -22789,7 +22790,7 @@ extern "C" decl_node decl_lookupInScope (decl_node scope, nameKey_Name n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -23164,12 +23165,12 @@ extern "C" decl_node decl_getType (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -23563,7 +23564,7 @@ extern "C" decl_node decl_getScope (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -24218,7 +24219,7 @@ extern "C" decl_node decl_makeVarient (decl_node r)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return n;
@@ -24685,7 +24686,7 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         __builtin_unreachable ();
         break;
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -24723,7 +24724,7 @@ extern "C" decl_node decl_import (decl_node m, decl_node n)
 
 
           default:
-            CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
       importEnumFields (m, n);
@@ -24852,7 +24853,7 @@ extern "C" void decl_setSource (decl_node n, nameKey_Name s)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -24880,7 +24881,7 @@ extern "C" nameKey_Name decl_getSource (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -25323,7 +25324,7 @@ extern "C" void decl_addParameter (decl_node proc, decl_node param)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -25416,7 +25417,7 @@ extern "C" decl_node decl_makeBinaryTok (mcReserved_toktype op, decl_node l, dec
       M2RTS_HALT (-1);  /* most likely op needs a clause as above.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -25448,7 +25449,7 @@ extern "C" decl_node decl_makeUnaryTok (mcReserved_toktype op, decl_node e)
       M2RTS_HALT (-1);  /* most likely op needs a clause as above.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -25886,7 +25887,7 @@ extern "C" void decl_setConstExpComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -26251,7 +26252,7 @@ extern "C" void decl_putBegin (decl_node b, decl_node s)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -26278,7 +26279,7 @@ extern "C" void decl_putFinally (decl_node b, decl_node s)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -26906,7 +26907,7 @@ extern "C" void decl_out (void)
 
 
       default:
-        CaseException ("../../gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   closeOutput ();

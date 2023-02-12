@@ -687,7 +687,11 @@ package body Exp_Ch6 is
       Loc : constant Source_Ptr := Sloc (Exp);
 
    begin
+       --  CodePeer does not do anything useful on Ada.Tags.Type_Specific_Data
+       --  components.
+
       if Ada_Version >= Ada_2005
+        and then not CodePeer_Mode
         and then Tagged_Type_Expansion
         and then not Scope_Suppress.Suppress (Accessibility_Check)
         and then
@@ -770,20 +774,18 @@ package body Exp_Ch6 is
                    Attribute_Name => Name_Tag);
             end if;
 
-            --  CodePeer does not do anything useful with
-            --  Ada.Tags.Type_Specific_Data components.
+            --  Suppress junk access chacks on RE_Tag_Ptr
 
-            if not CodePeer_Mode then
-               Insert_Action (Exp,
-                 Make_Raise_Program_Error (Loc,
-                   Condition =>
-                     Make_Op_Gt (Loc,
-                       Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
-                       Right_Opnd =>
-                         Make_Integer_Literal (Loc,
-                           Scope_Depth (Enclosing_Dynamic_Scope (Func)))),
-                   Reason    => PE_Accessibility_Check_Failed));
-            end if;
+            Insert_Action (Exp,
+              Make_Raise_Program_Error (Loc,
+                Condition =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
+                    Right_Opnd =>
+                      Make_Integer_Literal (Loc,
+                        Scope_Depth (Enclosing_Dynamic_Scope (Func)))),
+                Reason    => PE_Accessibility_Check_Failed),
+              Suppress => Access_Check);
          end;
       end if;
    end Apply_CW_Accessibility_Check;
@@ -5131,14 +5133,11 @@ package body Exp_Ch6 is
 
       --  Another optimization: if the returned value is used to initialize an
       --  object, then no need to copy/readjust/finalize, we can initialize it
-      --  in place. However, if the call returns on the secondary stack or this
-      --  is a special return object, then we need the expansion because we'll
-      --  be renaming the temporary as the (permanent) object.
+      --  in place. However, if the call returns on the secondary stack, then
+      --  we need the expansion because we'll be renaming the temporary as the
+      --  (permanent) object.
 
-      if Nkind (Par) = N_Object_Declaration
-        and then not Use_Sec_Stack
-        and then not Is_Special_Return_Object (Defining_Entity (Par))
-      then
+      if Nkind (Par) = N_Object_Declaration and then not Use_Sec_Stack then
          return;
       end if;
 
@@ -6743,7 +6742,7 @@ package body Exp_Ch6 is
             null;
 
          --  Optimize the case where the result is a function call that also
-         --  returns on the secondary stack. In this case the result is already
+         --  returns on the secondary stack; in this case the result is already
          --  on the secondary stack and no further processing is required.
 
          elsif Exp_Is_Function_Call
@@ -6779,13 +6778,14 @@ package body Exp_Ch6 is
          --  gigi is not able to properly allocate class-wide types.
 
          --  But optimize the case where the result is a function call that
-         --  also needs finalization. In this case the result can directly be
+         --  also needs finalization; in this case the result can directly be
          --  allocated on the secondary stack and no further processing is
-         --  required.
+         --  required, unless the returned object is an interface.
 
          elsif CW_Or_Needs_Finalization (Utyp)
-           and then not (Exp_Is_Function_Call
-                          and then Needs_Finalization (Exp_Typ))
+           and then (Is_Interface (R_Type)
+                      or else not (Exp_Is_Function_Call
+                                    and then Needs_Finalization (Exp_Typ)))
          then
             declare
                Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');

@@ -410,7 +410,8 @@ state_change_event::state_change_event (const supernode *node,
 					state_machine::state_t from,
 					state_machine::state_t to,
 					const svalue *origin,
-					const program_state &dst_state)
+					const program_state &dst_state,
+					const exploded_node *enode)
 : checker_event (EK_STATE_CHANGE,
 		 event_loc_info (stmt->location,
 				 node->m_fun->decl,
@@ -418,7 +419,8 @@ state_change_event::state_change_event (const supernode *node,
   m_node (node), m_stmt (stmt), m_sm (sm),
   m_sval (sval), m_from (from), m_to (to),
   m_origin (origin),
-  m_dst_state (dst_state)
+  m_dst_state (dst_state),
+  m_enode (enode)
 {
 }
 
@@ -1159,7 +1161,7 @@ warning_event::get_desc (bool can_colorize) const
       tree var = fixup_tree_for_diagnostic (m_var);
       label_text ev_desc
 	= m_pending_diagnostic->describe_final_event
-	    (evdesc::final_event (can_colorize, var, m_state));
+	    (evdesc::final_event (can_colorize, var, m_state, *this));
       if (ev_desc.get ())
 	{
 	  if (m_sm && flag_analyzer_verbose_state_changes)

@@ -19,4 +19,4 @@ program p
    print x%a(1) ! { dg-warning "Legacy Extension: Non-character in FORMAT" }
 end
 
-! { dg-output "hello W2(\n|\r\n|\r)hello W3(\n|\r\n|\r)hello W1" }
+! { dg-output "hello W2(\r*\n+)hello W3(\r*\n+)hello W1" }

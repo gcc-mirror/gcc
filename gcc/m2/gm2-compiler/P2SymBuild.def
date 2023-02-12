@@ -61,6 +61,7 @@ EXPORT QUALIFIED P2StartBuildDefModule,
                  BuildOptArg,
                  StartBuildProcedure,
                  EndBuildProcedure,
+                 BuildNoReturnAttribute,
                  BuildFunction,
                  BuildOptFunction,
                  BuildPointerType,
@@ -861,6 +862,13 @@ PROCEDURE StartBuildProcedure ;
 *)
 
 PROCEDURE EndBuildProcedure ;
+
+
+(*
+   BuildNoReturnAttribute - provide an interface to the symbol table module.
+*)
+
+PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
 
 
 (*

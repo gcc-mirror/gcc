@@ -1087,8 +1087,6 @@ check_global_declaration (symtab_node *snode)
       else
 	warning (OPT_Wunused_function, "%q+F declared %<static%> but never "
 				       "defined", decl);
-      /* This symbol is effectively an "extern" declaration now.  */
-      TREE_PUBLIC (decl) = 1;
     }
 
   /* Warn about static fns or vars defined but not used.  */

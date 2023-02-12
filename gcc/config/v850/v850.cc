@@ -2865,7 +2865,6 @@ v850_select_section (tree exp,
     {
       int is_const;
       if (!TREE_READONLY (exp)
-	  || TREE_SIDE_EFFECTS (exp)
 	  || !DECL_INITIAL (exp)
 	  || (DECL_INITIAL (exp) != error_mark_node
 	      && !TREE_CONSTANT (DECL_INITIAL (exp))))

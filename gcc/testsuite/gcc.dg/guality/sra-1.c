@@ -39,7 +39,7 @@ f3 (int k)
   struct B a = { 4, k + 6 };
   asm ("" : "+r" (a.i));
   a.j++;
-  bar (a.i);		/* { dg-final { gdb-test .+1 "a.i" "4" { xfail { aarch64*-*-* && { any-opts "-Og" } } } } } */
+  bar (a.i);		/* { dg-final { gdb-test .+1 "a.i" "4" { xfail { aarch64*-*-* && { { any-opts "-Og" "-O2" "-O3" } && { ! { any-opts "-fno-fat-lto-objects" } } } } } } } */
   bar (a.j);		/* { dg-final { gdb-test . "a.j" "14" { xfail { aarch64*-*-* && { any-opts "-Og" "-fno-fat-lto-objects" } } } } } */
   return a.i + a.j;
 }

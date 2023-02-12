@@ -4996,14 +4996,14 @@ get_union_initializer (gfc_symbol *union_type, gfc_component **map_p)
 static bool
 class_allocatable (gfc_component *comp)
 {
-  return comp->ts.type == BT_CLASS && CLASS_DATA (comp)
+  return comp->ts.type == BT_CLASS && comp->attr.class_ok && CLASS_DATA (comp)
     && CLASS_DATA (comp)->attr.allocatable;
 }
 
 static bool
 class_pointer (gfc_component *comp)
 {
-  return comp->ts.type == BT_CLASS && CLASS_DATA (comp)
+  return comp->ts.type == BT_CLASS && comp->attr.class_ok && CLASS_DATA (comp)
     && CLASS_DATA (comp)->attr.pointer;
 }
 

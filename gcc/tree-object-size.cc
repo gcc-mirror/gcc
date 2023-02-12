@@ -56,7 +56,7 @@ struct GTY(()) object_size
   tree wholesize;
 };
 
-static tree compute_object_offset (const_tree, const_tree);
+static tree compute_object_offset (tree, const_tree);
 static bool addr_object_size (struct object_size_info *,
 			      const_tree, int, tree *, tree *t = NULL);
 static tree alloc_object_size (const gcall *, int);
@@ -396,7 +396,7 @@ size_for_offset (tree sz, tree offset, tree wholesize = NULL_TREE)
    if unknown.  */
 
 static tree
-compute_object_offset (const_tree expr, const_tree var)
+compute_object_offset (tree expr, const_tree var)
 {
   enum tree_code code = PLUS_EXPR;
   tree base, off, t;
@@ -412,7 +412,8 @@ compute_object_offset (const_tree expr, const_tree var)
 	return base;
 
       t = TREE_OPERAND (expr, 1);
-      off = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (t),
+      off = size_binop (PLUS_EXPR,
+			component_ref_field_offset (expr),
 			size_int (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (t))
 				  / BITS_PER_UNIT));
       break;

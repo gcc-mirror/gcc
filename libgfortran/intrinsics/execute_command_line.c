@@ -145,6 +145,11 @@ execute_command_line (const char *command, bool wait, int *exitstat,
 	       || (WIFEXITED(res) && WEXITSTATUS(res) == 127)
 	       || (WIFEXITED(res) && WEXITSTATUS(res) == 126)
 #endif
+#ifdef __MINGW32__
+		  /* cmd.exe sets the errorlevel to 9009,
+		     if the command could not be executed.  */
+		|| res == 9009
+#endif
 	       )
 	/* Shell return codes 126 and 127 mean that the command line could
 	   not be executed for various reasons.  */

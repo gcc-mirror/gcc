@@ -1039,6 +1039,9 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   if (!ssa1_dep1 || !ssa1_dep2 || !ssa2_dep1 || !ssa2_dep2)
     return;
 
+  if (HONOR_NANS (TREE_TYPE (ssa1_dep1)))
+    return;
+
   // Make sure they are the same dependencies, and detect the order of the
   // relationship.
   bool reverse_op2 = true;

@@ -1,3 +1,33 @@
+2023-01-20  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (struct function_addrs): Change low and high fields to
+	uintptr_t.
+	(struct unit_addrs): Likewise.
+	(resolve_addr_index): Change address parameter to uintptr_t*.
+	(add_unit_addr): Change lowpc and highpc parameters to uintptr_t.
+	(add_function_range): Likewise.
+	(struct pcrange): Change lowpc and highpc fields to uintptr_t.
+	(add_low_high_range): Change add_range lowpc and highpc parameters
+	to uintptr_t.
+	(add_ranges_from_ranges): Likewise.
+	(add_ranges_from_rnglists): Likewise.
+	(add_low_high_range): Chnage lowpc and highpc variables to
+	uintpr_t.
+	(add_ranges_from_rnglists): Change some local variables to
+	uintptr_t.
+	(add_ranges_from_ranges): Change base parameter to uintptr_t.
+	(add_ranges_from_rnglists): Likewise.
+	(read_function_entry): Likewise.
+	(resolve_addr_index): Add explicit casts to uintptr_t.
+	(update_pcrange): Likewise.
+	(add_ranges_from_ranges): Likewise.
+	(add_ranges_from_rnglists): Likewise.
+	(read_function_entry): Likewise.
+
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Regenerate.
+
 2023-01-06  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/108297

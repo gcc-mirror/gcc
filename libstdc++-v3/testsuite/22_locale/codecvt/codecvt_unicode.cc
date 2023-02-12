@@ -29,11 +29,12 @@ test_utf8_utf32_codecvts ()
   using codecvt_c32 = codecvt<char32_t, char, mbstate_t>;
   auto loc_c = locale::classic ();
   VERIFY (has_facet<codecvt_c32> (loc_c));
+
   auto &cvt = use_facet<codecvt_c32> (loc_c);
   test_utf8_utf32_codecvts (cvt);
 
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char32_t> ());
-  test_utf8_utf32_codecvts (*cvt_ptr);
+  codecvt_utf8<char32_t> cvt2;
+  test_utf8_utf32_codecvts (cvt2);
 }
 
 void
@@ -42,21 +43,22 @@ test_utf8_utf16_codecvts ()
   using codecvt_c16 = codecvt<char16_t, char, mbstate_t>;
   auto loc_c = locale::classic ();
   VERIFY (has_facet<codecvt_c16> (loc_c));
+
   auto &cvt = use_facet<codecvt_c16> (loc_c);
   test_utf8_utf16_cvts (cvt);
 
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8_utf16<char16_t> ());
-  test_utf8_utf16_cvts (*cvt_ptr);
+  codecvt_utf8_utf16<char16_t> cvt2;
+  test_utf8_utf16_cvts (cvt2);
 
-  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8_utf16<char32_t> ());
-  test_utf8_utf16_cvts (*cvt_ptr2);
+  codecvt_utf8_utf16<char32_t> cvt3;
+  test_utf8_utf16_cvts (cvt3);
 }
 
 void
 test_utf8_ucs2_codecvts ()
 {
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char16_t> ());
-  test_utf8_ucs2_cvts (*cvt_ptr);
+  codecvt_utf8<char16_t> cvt;
+  test_utf8_ucs2_cvts (cvt);
 }
 
 int

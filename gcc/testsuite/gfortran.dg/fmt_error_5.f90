@@ -19,4 +19,4 @@ PROGRAM main
   CALL format_runtime ('(Q)')
 END PROGRAM main
 
-! { dg-output "Unexpected element 'Q'.*(\n|\r\n|\r)\\(Q\\)(\n|\r\n|\r) \\^" }
+! { dg-output "Unexpected element 'Q'.*(\r*\n+)\\(Q\\)(\r*\n+) \\^" }

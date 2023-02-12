@@ -384,6 +384,7 @@ proc libffi_target_compile { source dest type options } {
     if { [istarget "*-*-darwin9*"] || [istarget "*-*-darwin1*"]
 	 || [istarget "*-*-darwin2*"] } {
 	lappend options "additional_flags=-Wl,-allow_stack_execute"
+	lappend options "additional_flags=-Wl,-search_paths_first"
     }
 
     # If you're building the compiler with --prefix set to a place

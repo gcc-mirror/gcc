@@ -31,31 +31,6 @@ DEFINITION MODULE M2Search ;
 *)
 
 FROM DynamicStrings IMPORT String ;
-EXPORT QUALIFIED InitSearchPath, PrependSearchPath, FindSourceFile,
-                 FindSourceDefFile, FindSourceModFile,
-                 SetDefExtension, SetModExtension ;
-
-
-(*
-   InitSearchPath - assigns the search path to Path.
-                    The string Path may take the form:
-
-                    Path           ::= IndividualPath { ":" IndividualPath }
-                    IndividualPath ::= "." | DirectoryPath
-                    DirectoryPath  ::= [ "/" ] Name { "/" Name }
-                    Name           ::= Letter { (Letter | Number) }
-                    Letter         ::= A..Z | a..z
-                    Number         ::= 0..9
-*)
-
-PROCEDURE InitSearchPath (Path: String) ;
-
-
-(*
-   PrependSearchPath - prepends a new path to the initial search path.
-*)
-
-PROCEDURE PrependSearchPath (path: String) ;
 
 
 (*

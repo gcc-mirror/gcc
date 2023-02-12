@@ -126,10 +126,19 @@ EXTERN void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
 
 /*
    Halt - provides a more user friendly version of HALT, which takes
-          four parameters to aid debugging.
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
 */
 
-EXTERN void M2RTS_Halt (const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+EXTERN void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+
+/*
+   HaltC - provides a more user friendly version of HALT, which takes
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
+*/
+
+EXTERN void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description);
 
 /*
    ExitOnHalt - if HALT is executed then call exit with the exit code, e.
@@ -141,7 +150,7 @@ EXTERN void M2RTS_ExitOnHalt (int e);
    ErrorMessage - emits an error message to stderr and then calls exit (1).
 */
 
-EXTERN void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
+EXTERN void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
 
 /*
    Length - returns the length of a string, a. This is called whenever

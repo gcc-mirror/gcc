@@ -705,10 +705,12 @@ compute_dom_fast_query_in_region (enum cdi_direction dir,
 }
 
 /* The main entry point into this module.  DIR is set depending on whether
-   we want to compute dominators or postdominators.  */
+   we want to compute dominators or postdominators.  If COMPUTE_FAST_QUERY
+   is false then the DFS numbers allowing for a O(1) dominance query
+   are not computed.  */
 
 void
-calculate_dominance_info (cdi_direction dir)
+calculate_dominance_info (cdi_direction dir, bool compute_fast_query)
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
 
@@ -745,7 +747,8 @@ calculate_dominance_info (cdi_direction dir)
   else
     checking_verify_dominators (dir);
 
-  compute_dom_fast_query (dir);
+  if (compute_fast_query)
+    compute_dom_fast_query (dir);
 
   timevar_pop (TV_DOMINANCE);
 }

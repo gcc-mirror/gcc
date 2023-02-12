@@ -1,6 +1,6 @@
 2022-12-30  Steve Kargl  <kargl@gcc.gnu.org>
 
-	PR fortran/102595
+	PR fortran/102331
 	* decl.cc (attr_decl1): Guard against NULL pointer.
 	* parse.cc (match_deferred_characteristics): Include BT_CLASS in check for
 	derived being undefined.

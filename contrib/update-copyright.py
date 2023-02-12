@@ -693,6 +693,7 @@ class ContribFilter(GenericFilter):
                 'Info.plist',
                 # Contains CR (^M).
                 'repro_fail',
+                'test_patches.txt',
                 ])
 
 class GCCCopyright (Copyright):

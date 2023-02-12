@@ -14306,6 +14306,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   tree ctx = closure ? closure : DECL_CONTEXT (t);
   bool member = ctx && TYPE_P (ctx);
 
+  /* If this is a static lambda, remove the 'this' pointer added in
+     tsubst_lambda_expr now that we know the closure type.  */
+  if (lambda_fntype && DECL_STATIC_FUNCTION_P (t))
+    lambda_fntype = static_fn_type (lambda_fntype);
+
   if (member && !closure)
     ctx = tsubst_aggr_type (ctx, args,
 			    complain, t, /*entering_scope=*/1);

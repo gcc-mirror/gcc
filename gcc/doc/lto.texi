@@ -170,13 +170,11 @@ object files.  This is used at link time to determine the optimization
 level and other settings when they are not explicitly specified at the
 linker command line.
 
-Currently, GCC does not support combining LTO object files compiled
-with different set of the command line options into a single binary.
-At link time, the options given on the command line and the options
-saved on all the files in a link-time set are applied globally.  No
-attempt is made at validating the combination of flags (other than the
-usual validation done by option processing).  This is implemented in
-@file{lto/lto.cc}:@code{lto_read_all_file_options}.
+Most options are recorded at a per function level and their setting
+restored when processing the functions at link time.  Global options
+are composed from options specified at compile time and link time.
+How exactly they are combined or mismatches diagnosed is implemented in
+@file{lto-wrapper.cc}:@code{find_and_merge_options}.
 
 
 @item Symbol table (@code{.gnu.lto_.symtab})

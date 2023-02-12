@@ -129,6 +129,12 @@ namespace __gnu_debug
 	typename _Sequence::_Base::iterator,
 	typename _Sequence::_Base::const_iterator>::__type _OtherIterator;
 
+      struct _Unchecked { };
+
+      _Safe_iterator(const _Safe_iterator& __x, _Unchecked) _GLIBCXX_NOEXCEPT
+      : _Iter_base(__x.base()), _Safe_base()
+      { _M_attach(__x._M_sequence); }
+
     public:
       typedef _Iterator					iterator_type;
       typedef typename _Traits::iterator_category	iterator_category;
@@ -154,11 +160,7 @@ namespace __gnu_debug
       _Safe_iterator(_Iterator __i, const _Safe_sequence_base* __seq)
       _GLIBCXX_NOEXCEPT
       : _Iter_base(__i), _Safe_base(__seq, _S_constant())
-      {
-	_GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
-			      _M_message(__msg_init_singular)
-			      ._M_iterator(*this, "this"));
-      }
+      { }
 
       /**
        * @brief Copy construction.
@@ -339,7 +341,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	_Safe_iterator __ret = *this;
+	_Safe_iterator __ret(*this, _Unchecked());
 	++*this;
 	return __ret;
       }
@@ -514,6 +516,13 @@ namespace __gnu_debug
     protected:
       typedef typename _Safe_base::_OtherIterator _OtherIterator;
 
+      typedef typename _Safe_base::_Unchecked _Unchecked;
+
+      _Safe_iterator(const _Safe_iterator& __x,
+		     _Unchecked __unchecked) _GLIBCXX_NOEXCEPT
+	: _Safe_base(__x, __unchecked)
+      { }
+
     public:
       /// @post the iterator is singular and unattached
       _Safe_iterator() _GLIBCXX_NOEXCEPT { }
@@ -596,7 +605,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	_Safe_iterator __ret = *this;
+	_Safe_iterator __ret(*this, _Unchecked());
 	++*this;
 	return __ret;
       }
@@ -627,7 +636,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
 			      _M_message(__msg_bad_dec)
 			      ._M_iterator(*this, "this"));
-	_Safe_iterator __ret = *this;
+	_Safe_iterator __ret(*this, _Unchecked());
 	--*this;
 	return __ret;
       }
@@ -652,6 +661,12 @@ namespace __gnu_debug
       typedef typename _Safe_base::_Self _Self;
       typedef _Safe_iterator<_OtherIterator, _Sequence,
 			     std::random_access_iterator_tag> _OtherSelf;
+
+      typedef typename _Safe_base::_Unchecked _Unchecked;
+      _Safe_iterator(const _Safe_iterator& __x,
+		     _Unchecked __unchecked) _GLIBCXX_NOEXCEPT
+	: _Safe_base(__x, __unchecked)
+      { }
 
     public:
       typedef typename _Safe_base::difference_type	difference_type;
@@ -744,7 +759,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	_Safe_iterator __ret = *this;
+	_Safe_iterator __ret(*this, _Unchecked());
 	++*this;
 	return __ret;
       }
@@ -771,7 +786,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
 			      _M_message(__msg_bad_dec)
 			      ._M_iterator(*this, "this"));
-	_Safe_iterator __ret = *this;
+	_Safe_iterator __ret(*this, _Unchecked());
 	--*this;
 	return __ret;
       }

@@ -42,6 +42,12 @@ extern int arm_no_early_alu_shift_value_dep (rtx, rtx);
 extern int arm_no_early_mul_dep (rtx, rtx);
 extern int arm_no_early_store_addr_dep (rtx, rtx);
 extern bool arm_rtx_shift_left_p (rtx);
+extern void aarch_bti_arch_check (void);
+extern bool aarch_bti_enabled (void);
+extern bool aarch_bti_j_insn_p (rtx_insn *);
+extern bool aarch_pac_insn_p (rtx);
+extern rtx aarch_gen_bti_c (void);
+extern rtx aarch_gen_bti_j (void);
 
 /* RTX cost table definitions.  These are used when tuning for speed rather
    than for size and should reflect the _additional_ cost over the cost
@@ -152,5 +158,11 @@ rtx_insn *arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 			     vec<const char *> &constraints,
 			     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
 			     location_t loc);
+
+/* Parsing routine for branch-protection common to AArch64 and Arm.  */
+enum aarch_parse_opt_result aarch_parse_branch_protection (const char*, char**);
+
+/* Validation routine for branch-protection common to AArch64 and Arm.  */
+bool aarch_validate_mbranch_protection (const char *);
 
 #endif /* GCC_AARCH_COMMON_PROTOS_H */

@@ -2480,18 +2480,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  int flag_sanitize_save = flag_sanitize;
 		  if (nested && !empty_ok)
 		    flag_sanitize = 0;
-		  if (std_auto_type_p
-		      && c_parser_next_token_is (parser, CPP_OPEN_BRACE))
-		    {
-		      matching_braces braces;
-		      braces.consume_open (parser);
-		      init = c_parser_expr_no_commas (parser, NULL);
-		      if (c_parser_next_token_is (parser, CPP_COMMA))
-			c_parser_consume_token (parser);
-		      braces.skip_until_found_close (parser);
-		    }
-		  else
-		    init = c_parser_expr_no_commas (parser, NULL);
+		  init = c_parser_expr_no_commas (parser, NULL);
 		  if (std_auto_type_p)
 		    finish_underspecified_init (underspec_name,
 						underspec_state);

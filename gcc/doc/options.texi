@@ -161,7 +161,7 @@ the help text to use for @option{--help} (omitted if the second field
 contains the @code{Undocumented} property).
 @end enumerate
 
-By default, all options beginning with ``f'', ``W'' or ``m'' are
+By default, all options beginning with ``f'', ``g'', ``W'' or ``m'' are
 implicitly assumed to take a ``no-'' form.  This form should not be
 listed separately.  If an option beginning with one of these letters
 does not have a ``no-'' form, you can use the @code{RejectNegative}
@@ -239,8 +239,8 @@ and should not be accepted by the driver.
 
 @item RejectNegative
 The option does not have a ``no-'' form.  All options beginning with
-``f'', ``W'' or ``m'' are assumed to have a ``no-'' form unless this
-property is used.
+``f'', ``g'', ``W'' or ``m'' are assumed to have a ``no-'' form unless
+this property is used.
 
 @item Negative(@var{othername})
 The option will turn off another option @var{othername}, which is

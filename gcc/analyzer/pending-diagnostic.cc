@@ -232,6 +232,7 @@ pending_diagnostic::add_final_event (const state_machine *sm,
      (event_loc_info (get_stmt_location (stmt, enode->get_function ()),
 		      enode->get_function ()->decl,
 		      enode->get_stack_depth ()),
+      enode,
       sm, var, state));
 }
 

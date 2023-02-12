@@ -38,4 +38,6 @@ extern "C" void M2RTS_ConstructModules (const char *,
 extern "C" void M2RTS_Terminate (void);
 extern "C" void M2RTS_DeconstructModules (void);
 
-extern "C" void M2RTS_Halt (const char *, int, const char *, const char *) __attribute__ ((noreturn));
+extern "C" void M2RTS_HaltC (const char *filename, int line,
+			     const char *functionname, const char *desc)
+                             __attribute__ ((noreturn));

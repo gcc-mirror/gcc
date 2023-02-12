@@ -84,23 +84,6 @@ m2statement_BuildStartFunctionCode (location_t location, tree fndecl,
   DECL_DECLARED_INLINE_P (fndecl) = 0; /* isinline;  */
 }
 
-static void
-gm2_gimplify_function_node (tree fndecl)
-{
-  /* Convert all nested functions to GIMPLE now.  We do things in this
-     order so that items like VLA sizes are expanded properly in the
-     context of the correct function.  */
-  struct cgraph_node *cgn;
-
-  dump_function (TDI_original, fndecl);
-  gimplify_function_tree (fndecl);
-
-  cgn = cgraph_node::get_create (fndecl);
-  for (cgn = first_nested_function (cgn);
-       cgn != NULL; cgn = next_nested_function (cgn))
-    gm2_gimplify_function_node (cgn->decl);
-}
-
 /* BuildEndFunctionCode - generates the function epilogue.  */
 
 void

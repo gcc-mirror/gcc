@@ -634,6 +634,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 TARGET_DARWIN_FALSE
 TARGET_DARWIN_TRUE
 BUILD_LOGLIB_FALSE
@@ -805,6 +806,7 @@ with_pic
 enable_fast_install
 with_gnu_ld
 enable_libtool_lock
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1464,6 +1466,8 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -6571,6 +6575,10 @@ fi
 
 
 
+enable_dlopen=yes
+
+
+
 case `pwd` in
   *\ * | *\	*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Libtool does not cope well with whitespace in \`pwd\`" >&5
@@ -9188,8 +9196,6 @@ done
 # Set options
 
 
-
-        enable_dlopen=no
 
 
   enable_win32_dll=no
@@ -12700,7 +12706,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12703 "configure"
+#line 12709 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12806,7 +12812,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12809 "configure"
+#line 12815 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16083,13 +16089,14 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # Only expand once:
 
 
-enable_dlopen=yes
 
 
 
-# AM_PROG_LIBTOOL
-
-
+if test "${multilib}" = "yes"; then
+  multilib_arg="--enable-multilib"
+else
+  multilib_arg=
+fi
 
 ac_fn_c_check_type "$LINENO" "struct timezone" "ac_cv_type_struct_timezone" "$ac_includes_default"
 if test "x$ac_cv_type_struct_timezone" = xyes; then :
@@ -19696,8 +19703,26 @@ else
 fi
 
 
+# Determine what GCC version number to use in filesystem paths.
 
-ac_config_files="$ac_config_files Makefile libm2min/Makefile libm2pim/Makefile libm2iso/Makefile libm2cor/Makefile libm2log/Makefile"
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
+      fi
+
+fi
+
+
+
+
+
+ac_config_files="$ac_config_files Makefile"
+
+
+ac_config_files="$ac_config_files libm2min/Makefile libm2pim/Makefile libm2iso/Makefile libm2cor/Makefile libm2log/Makefile"
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: libgm2 has been configured." >&5
@@ -22349,6 +22374,61 @@ compiler_lib_search_path=$lt_compiler_lib_search_path_CXX
 # ### END LIBTOOL TAG CONFIG: CXX
 _LT_EOF
 
+ ;;
+    "libm2min/Makefile":F)  cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "libm2pim/Makefile":F)  cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "libm2iso/Makefile":F)  cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "libm2cor/Makefile":F)  cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "libm2log/Makefile":F)  cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
  ;;
 
   esac

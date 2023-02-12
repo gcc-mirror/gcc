@@ -250,7 +250,10 @@ cp_gimplify_init_expr (tree *expr_p)
   if (TREE_CODE (from) == TARGET_EXPR)
     if (tree init = TARGET_EXPR_INITIAL (from))
       {
-	gcc_checking_assert (TARGET_EXPR_ELIDING_P (from));
+	/* Make sure that we expected to elide this temporary.  But also allow
+	   gimplify_modify_expr_rhs to elide temporaries of trivial type.  */
+	gcc_checking_assert (TARGET_EXPR_ELIDING_P (from)
+			     || !TREE_ADDRESSABLE (TREE_TYPE (from)));
 	if (target_expr_needs_replace (from))
 	  {
 	    /* If this was changed by cp_genericize_target_expr, we need to
@@ -949,6 +952,28 @@ cp_genericize_target_expr (tree *stmt_p)
   gcc_assert (!DECL_INITIAL (slot));
 }
 
+/* Similar to if (target_expr_needs_replace) replace_decl, but TP is the
+   TARGET_EXPR_INITIAL, and this also updates *_SLOT.  We need this extra
+   replacement when cp_folding TARGET_EXPR to preserve the invariant that
+   AGGR_INIT_EXPR_SLOT agrees with the enclosing TARGET_EXPR_SLOT.  */
+
+bool
+maybe_replace_decl (tree *tp, tree decl, tree replacement)
+{
+  if (!*tp || !VOID_TYPE_P (TREE_TYPE (*tp)))
+    return false;
+  tree t = *tp;
+  while (TREE_CODE (t) == COMPOUND_EXPR)
+    t = TREE_OPERAND (t, 1);
+  if (TREE_CODE (t) == AGGR_INIT_EXPR)
+    replace_decl (&AGGR_INIT_EXPR_SLOT (t), decl, replacement);
+  else if (TREE_CODE (t) == VEC_INIT_EXPR)
+    replace_decl (&VEC_INIT_EXPR_SLOT (t), decl, replacement);
+  else
+    replace_decl (tp, decl, replacement);
+  return true;
+}
+
 /* Genericization context.  */
 
 struct cp_genericize_data
@@ -1103,15 +1128,18 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	cp_genericize_target_expr (stmt_p);
 
       /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
-	 that case, use it in place of this one.  */
+	 that case, strip it in favor of this one.  */
       if (tree &init = TARGET_EXPR_INITIAL (stmt))
 	{
 	  cp_walk_tree (&init, cp_fold_r, data, NULL);
+	  cp_walk_tree (&TARGET_EXPR_CLEANUP (stmt), cp_fold_r, data, NULL);
 	  *walk_subtrees = 0;
 	  if (TREE_CODE (init) == TARGET_EXPR)
 	    {
-	      TARGET_EXPR_ELIDING_P (init) = TARGET_EXPR_ELIDING_P (stmt);
-	      *stmt_p = init;
+	      tree sub = TARGET_EXPR_INITIAL (init);
+	      maybe_replace_decl (&sub, TARGET_EXPR_SLOT (init),
+				  TARGET_EXPR_SLOT (stmt));
+	      init = sub;
 	    }
 	}
       break;

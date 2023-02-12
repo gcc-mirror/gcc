@@ -203,7 +203,7 @@ BEGIN
    i := 0 ;
    high := HIGH (str) ;
    WHILE i < high DO
-      IF (str[i] = "\") AND (i < high)
+      IF (i < high) AND (str[i] = "\")
       THEN
          IF str[i+1] = "n"
          THEN

@@ -20,6 +20,7 @@ along with GNU Modula-2; see the file COPYING.  If not, write to the
 Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
+#define INCLUDE_VECTOR
 #include "gm2-gcc/gcc-consolidation.h"
 
 #include "langhooks-def.h" /* FIXME: for lhd_set_decl_assembler_name.  */
@@ -44,6 +45,18 @@ Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 static void write_globals (void);
 
 static int insideCppArgs = FALSE;
+
+/* We default to pim in the absence of fiso.  */
+static bool iso = false;
+
+/* The language include paths are based on the libraries in use.  */
+static bool allow_libraries = true;
+static const char *flibs = nullptr;
+static const char *iprefix = nullptr;
+static const char *imultilib = nullptr;
+static std::vector<const char*>Ipaths;
+static std::vector<const char*>isystem;
+static std::vector<const char*>iquote;
 
 #define EXPR_STMT_EXPR(NODE) TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
 
@@ -94,6 +107,8 @@ struct GTY (()) language_function
 
 /* Language hooks.  */
 
+static void gm2_langhook_parse_file (void);
+
 bool
 gm2_langhook_init (void)
 {
@@ -107,6 +122,13 @@ gm2_langhook_init (void)
 
   /* GNU Modula-2 uses exceptions.  */
   using_eh_for_cleanups ();
+
+  if (M2Options_GetPPOnly ())
+    {
+      /* preprocess the file here.  */
+      gm2_langhook_parse_file ();
+      return false; /* Finish now, no further compilation.  */
+    }
   return true;
 }
 
@@ -142,27 +164,150 @@ gm2_langhook_init_options_struct (struct gcc_options *opts)
 
 static vec<bool> filename_cpp;
 
+/* Build the C preprocessor command line here, since we need to include
+   options that are not passed to the handle_option function.  */
+
 void
 gm2_langhook_init_options (unsigned int decoded_options_count,
                            struct cl_decoded_option *decoded_options)
 {
   unsigned int i;
   bool in_cpp_args = false;
+  bool building_cpp_command = false;
 
   for (i = 1; i < decoded_options_count; i++)
     {
-      switch (decoded_options[i].opt_index)
-        {
-        case OPT_fcpp_begin:
-          in_cpp_args = true;
-          break;
-        case OPT_fcpp_end:
-          in_cpp_args = false;
-          break;
-        case OPT_SPECIAL_input_file:
-        case OPT_SPECIAL_program_name:
-          filename_cpp.safe_push (in_cpp_args);
-        }
+      enum opt_code code = (enum opt_code)decoded_options[i].opt_index;
+      const struct cl_option *option = &cl_options[code];
+      const char *opt = (const char *)option->opt_text;
+      const char *arg = decoded_options[i].arg;
+      HOST_WIDE_INT value = decoded_options[i].value;
+      switch (code)
+	{
+	case OPT_fcpp:
+	  gcc_checking_assert (building_cpp_command);
+	  break;
+	case OPT_fcpp_begin:
+	  in_cpp_args = true;
+	  building_cpp_command = true;
+	  break;
+	case OPT_fcpp_end:
+	  in_cpp_args = false;
+	  break;
+	case OPT_SPECIAL_input_file:
+	  filename_cpp.safe_push (in_cpp_args);
+	  break;
+
+	/* C and driver opts that are not passed to the preprocessor for
+	   modula-2, but that we use internally for building preprocesor
+	   command lines.  */
+	case OPT_B:
+	  M2Options_SetB (arg);
+	  break;
+	case OPT_c:
+	  M2Options_Setc (value);
+	  break;
+	case OPT_dumpdir:
+	  if (building_cpp_command)
+	    M2Options_SetDumpDir (arg);
+	  break;
+	case OPT_save_temps:
+	  if (building_cpp_command)
+	    M2Options_SetSaveTemps (value);
+	  break;
+	case OPT_save_temps_:
+	  if (building_cpp_command)
+	    /* Also sets SaveTemps. */
+	    M2Options_SetSaveTempsDir (arg);
+	  break;
+
+	case OPT_E:
+	  if (!in_cpp_args)
+	    {
+	      M2Options_SetPPOnly (value);
+	      building_cpp_command = true;
+	    }
+	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+			      && !(option->flags & CL_SEPARATE));
+	  break;
+	case OPT_M:
+	case OPT_MM:
+	  gcc_checking_assert (building_cpp_command);
+	  M2Options_SetPPOnly (value);
+	  /* This is a preprocessor command.  */
+	  M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+			      && !(option->flags & CL_SEPARATE));
+	  break;
+
+	/* We can only use MQ when the command line is either PP-only, or
+	   when there is a MD/MMD on it.  */
+	case OPT_MQ:
+	  M2Options_SetMQ (arg);
+	  break;
+
+	case OPT_o:
+	  M2Options_SetObj (arg);
+	  break;
+
+	/* C and driver options that we ignore for the preprocessor lines.  */
+	case OPT_fpch_deps:
+	case OPT_fpch_preprocess:
+	  break;
+
+	case OPT_fplugin_:
+	  /* FIXME: We might need to handle this specially, since the modula-2
+	     plugin is not usable here, but others might be.
+	     For now skip all plugins to avoid fails with the m2 one.  */
+	  break;
+
+	/* Preprocessor arguments with a following filename, we add these
+	   back to the main file preprocess line, but not to dependents
+	   TODO Handle MF.  */
+	case OPT_MD:
+	  M2Options_SetMD (arg);
+	  break;
+	case OPT_MMD:
+	  M2Options_SetMMD (arg);
+	  break;
+
+	/* Modula 2 claimed options we pass to the preprocessor.  */
+	case OPT_ansi:
+	case OPT_traditional_cpp:
+	  if (building_cpp_command)
+	    M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+			      && !(option->flags & CL_SEPARATE));
+	  break;
+
+	/* Options we act on and also pass to the preprocessor.  */
+	case OPT_O:
+	  M2Options_SetOptimizing (value);
+	  if (building_cpp_command)
+	    M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+			      && !(option->flags & CL_SEPARATE));
+	  break;
+	case OPT_quiet:
+	  M2Options_SetQuiet (value);
+	  if (building_cpp_command)
+	    M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+			      && !(option->flags & CL_SEPARATE));
+	  break;
+	case OPT_v:
+	  M2Options_SetVerbose (value);
+	  /* FALLTHROUGH */
+	default:
+	  /* We handled input files above.  */
+	  if (code >= N_OPTS)
+	    break;
+	  /* Do not pass Modula-2 args to the preprocessor, any that we care
+	     about here should already have been handled above.  */
+	  if (option->flags & CL_ModulaX2)
+	    break;
+	  /* Otherwise, add this to the CPP command line.  */
+	  if (building_cpp_command)
+	    M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
+			      && !(option->flags & CL_SEPARATE));
+	  break;
+	}
     }
   filename_cpp.safe_push (false);
 }
@@ -184,48 +329,43 @@ gm2_langhook_handle_option (
 {
   enum opt_code code = (enum opt_code)scode;
 
+  const struct cl_option *option = &cl_options[scode];
+  const char *opt = (const char *)option->opt_text;
   /* ignore file names.  */
   if (code == N_OPTS)
     return 1;
 
   switch (code)
     {
-    case OPT_B:
-      M2Options_SetB (arg);
-      return 1;
-    case OPT_c:
-      M2Options_Setc (value);
-      return 1;
     case OPT_I:
-      if (insideCppArgs)
-        {
-          const struct cl_option *option = &cl_options[scode];
-          const char *opt = (const char *)option->opt_text;
-          M2Options_CppArg (opt, arg, TRUE);
-        }
-      else
-        M2Options_SetSearchPath (arg);
+      Ipaths.push_back (arg);
       return 1;
     case OPT_fiso:
       M2Options_SetISO (value);
+      iso = value;
       return 1;
     case OPT_fpim:
       M2Options_SetPIM (value);
+      iso = value ? false : iso;
       return 1;
     case OPT_fpim2:
       M2Options_SetPIM2 (value);
+      iso = value ? false : iso;
       return 1;
     case OPT_fpim3:
       M2Options_SetPIM3 (value);
+      iso = value ? false : iso;
       return 1;
     case OPT_fpim4:
       M2Options_SetPIM4 (value);
+      iso = value ? false : iso;
       return 1;
     case OPT_fpositive_mod_floor_div:
       M2Options_SetPositiveModFloor (value);
       return 1;
     case OPT_flibs_:
-      /* handled in the gm2 driver.  */
+      allow_libraries = value;
+      flibs = arg;
       return 1;
     case OPT_fgen_module_list_:
       M2Options_SetGenModuleList (value, arg);
@@ -338,6 +478,9 @@ gm2_langhook_handle_option (
     case OPT_fcpp:
       M2Options_SetCpp (value);
       return 1;
+    case OPT_fpreprocessed:
+      /* Provided for compatibility; ignore for now.  */
+      return 1;
     case OPT_fcpp_begin:
       insideCppArgs = TRUE;
       return 1;
@@ -374,12 +517,27 @@ gm2_langhook_handle_option (
     case OPT_fm2_g:
       M2Options_SetM2g (value);
       return 1;
-    case OPT_O:
-      M2Options_SetOptimizing (value);
+      break;
+    case OPT_iprefix:
+      iprefix = arg;
       return 1;
-    case OPT_quiet:
-      M2Options_SetQuiet (value);
+      break;
+    case OPT_imultilib:
+      imultilib = arg;
       return 1;
+      break;
+    case OPT_isystem:
+      isystem.push_back (arg);
+      return 1;
+      break;
+    case OPT_iquote:
+      iquote.push_back (arg);
+      return 1;
+      break;
+    case OPT_isysroot:
+      /* Otherwise, ignored, at least for now. */
+      return 1;
+      break;
     case OPT_fm2_whole_program:
       M2Options_SetWholeProgram (value);
       return 1;
@@ -401,27 +559,80 @@ gm2_langhook_handle_option (
         }
       else
         return 0;
-    case OPT_save_temps:
-      M2Options_SetSaveTemps (value);
-      return 1;
-    case OPT_save_temps_:
-      M2Options_SetSaveTempsDir (arg);
-      return 1;
-    case OPT_v:
-      M2Options_SetVerbose (value);
-      return 1;
     default:
       if (insideCppArgs)
-        {
-          const struct cl_option *option = &cl_options[scode];
-          const char *opt = (const char *)option->opt_text;
-
-          M2Options_CppArg (opt, arg, TRUE);
-          return 1;
-        }
-      return 0;
+	/* Handled in gm2_langhook_init_options ().  */
+	return 1;
+      else if (option->flags & CL_DRIVER)
+	/* Driver options (unless specifically claimed above) should be handled
+	   in gm2_langhook_init_options ().  */
+	return 1;
+      else if (option->flags & CL_C)
+	/* C options (unless specifically claimed above) should be handled
+	   in gm2_langhook_init_options ().  */
+	return 1;
+      break;
     }
   return 0;
+}
+
+/* This prefixes LIBNAME with the current compiler prefix (if it has been
+   relocated) or the LIBSUBDIR, if not.  */
+static void
+add_one_import_path (const char *libname)
+{
+  const char *libpath = iprefix ? iprefix : LIBSUBDIR;
+  const char dir_sep[] = {DIR_SEPARATOR, (char)0};
+  size_t dir_sep_size = strlen (dir_sep);
+  unsigned int mlib_len = 0;
+
+  if (imultilib)
+    {
+      mlib_len = strlen (imultilib);
+      mlib_len += strlen (dir_sep);
+    }
+
+  char *lib = (char *)alloca (strlen (libpath) + dir_sep_size
+			      + strlen ("m2") + dir_sep_size
+			      + strlen (libname) + 1
+			      + mlib_len + 1);
+  strcpy (lib, libpath);
+  /* iprefix has a trailing dir separator, LIBSUBDIR does not.  */
+  if (!iprefix)
+    strcat (lib, dir_sep);
+
+  if (imultilib)
+    {
+      strcat (lib, imultilib);
+      strcat (lib, dir_sep);
+    }
+  strcat (lib, "m2");
+  strcat (lib, dir_sep);
+  strcat (lib, libname);
+  M2Options_SetSearchPath (lib);
+}
+
+/* For each comma-separated standard library name in LIBLIST, add the
+   corresponding include path.  */
+static void
+add_m2_import_paths (const char *liblist)
+{
+  while (*liblist != 0 && *liblist != '-')
+    {
+      const char *comma = strstr (liblist, ",");
+      size_t len;
+      if (comma)
+	len = comma - liblist;
+      else
+	len = strlen (liblist);
+      char *libname = (char *) alloca (len+1);
+      strncpy (libname, liblist, len);
+      libname[len] = 0;
+      add_one_import_path (libname);
+      liblist += len;
+      if (*liblist == ',')
+	liblist++;
+    }
 }
 
 /* Run after parsing options.  */
@@ -435,8 +646,43 @@ gm2_langhook_post_options (const char **pfilename)
   M2Options_FinaliseOptions ();
   main_input_filename = filename;
 
-  /* Returning false means that the backend should be used.  */
-  return false;
+  /* Add the include paths as per the libraries specified.
+     NOTE: This assumes that the driver has validated the input and makes
+     no attempt to be defensive of nonsense input in flibs=.  */
+  if (allow_libraries)
+    {
+      if (!flibs)
+	{
+	  if (iso)
+	    flibs = "m2iso,m2cor,m2pim,m2log";
+	  else
+	    flibs = "m2pim,m2iso,m2cor,m2log";
+	}
+    }
+
+  /* Add search paths.
+     We are not handling all of the cases yet (e.g idirafter).
+     This (barring the missing cases) is intended to follow the directory
+     search rules used for c-family.  It would be less confusing if the
+     presence of absence of these search paths was not dependent on the
+     flibs= option. */
+
+  for (auto *s : iquote)
+    M2Options_SetSearchPath (s);
+  iquote.clear();
+  for (auto *s : Ipaths)
+    M2Options_SetSearchPath (s);
+  Ipaths.clear();
+  for (auto *s : isystem)
+    M2Options_SetSearchPath (s);
+  isystem.clear();
+  /* FIXME: this is not a good way to suppress the addition of the import
+     paths.  */
+  if (allow_libraries)
+    add_m2_import_paths (flibs);
+
+ /* Returning false means that the backend should be used.  */
+  return M2Options_GetPPOnly ();
 }
 
 /* Call the compiler for every source filename on the command line.  */
@@ -459,7 +705,8 @@ static void
 gm2_langhook_parse_file (void)
 {
   gm2_parse_input_files (in_fnames, num_in_fnames);
-  write_globals ();
+  if (!M2Options_GetPPOnly ())
+    write_globals ();
 }
 
 static tree

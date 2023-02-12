@@ -1215,14 +1215,6 @@ BEGIN
          i := 0 ;
          Assert (a^.contents.len = b^.contents.len) ;
          WHILE i<a^.contents.len DO
-            IF a^.contents.buf[i] # a^.contents.buf[i]
-            THEN
-               HALT
-            END ;
-            IF b^.contents.buf[i] # b^.contents.buf[i]
-            THEN
-               HALT
-            END ;
             IF a^.contents.buf[i] # b^.contents.buf[i]
             THEN
                RETURN FALSE

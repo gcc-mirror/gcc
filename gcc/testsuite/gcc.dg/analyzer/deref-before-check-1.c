@@ -167,3 +167,39 @@ int test_checking_ptr_after_calling_deref (int *q)
     return 0;
   return v;
 }
+
+extern void foo ();
+extern void bar ();
+extern void baz ();
+
+int test_cfg_diamond_1 (int *p, int flag)
+{
+  int x;
+  x = *p; /* { dg-message "pointer 'p' is dereferenced here" } */
+  if (flag)
+    foo ();
+  else
+    bar ();
+  if (p) /* { dg-warning "check of 'p' for NULL after already dereferencing it" } */
+    {
+      baz ();
+    }
+  return x;
+}
+
+int test_cfg_diamond_2 (int *p, int flag)
+{
+  int x = 0;
+  if (flag)
+    foo ();
+  else
+    {
+      x = *p;
+      bar ();
+    }
+  if (p) /* { dg-bogus "check of 'p' for NULL after already dereferencing it" } */
+    {
+      baz ();
+    }
+  return x;
+}

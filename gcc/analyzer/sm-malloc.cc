@@ -45,6 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "analyzer/function-set.h"
 #include "analyzer/program-state.h"
+#include "analyzer/checker-event.h"
+#include "analyzer/exploded-graph.h"
 
 #if ENABLE_ANALYZER
 
@@ -1490,7 +1492,9 @@ class deref_before_check : public malloc_diagnostic
 {
 public:
   deref_before_check (const malloc_state_machine &sm, tree arg)
-  : malloc_diagnostic (sm, arg)
+  : malloc_diagnostic (sm, arg),
+    m_deref_enode (NULL),
+    m_check_enode (NULL)
   {}
 
   const char *get_kind () const final override { return "deref_before_check"; }
@@ -1502,6 +1506,31 @@ public:
 
   bool emit (rich_location *rich_loc) final override
   {
+    /* Don't emit the warning if we can't show where the deref
+       and the check occur.  */
+    if (!m_deref_enode)
+      return false;
+    if (!m_check_enode)
+      return false;
+    /* Only emit the warning for intraprocedural cases.  */
+    if (m_deref_enode->get_function () != m_check_enode->get_function ())
+      return false;
+    if (&m_deref_enode->get_point ().get_call_string ()
+	!= &m_check_enode->get_point ().get_call_string ())
+      return false;
+
+    /* Reject the warning if the deref's BB doesn't dominate that
+       of the check, so that we don't warn e.g. for shared cleanup
+       code that checks a pointer for NULL, when that code is sometimes
+       used before a deref and sometimes after.
+       Using the dominance code requires setting cfun.  */
+    auto_cfun sentinel (m_deref_enode->get_function ());
+    calculate_dominance_info (CDI_DOMINATORS);
+    if (!dominated_by_p (CDI_DOMINATORS,
+			 m_check_enode->get_supernode ()->m_bb,
+			 m_deref_enode->get_supernode ()->m_bb))
+      return false;
+
     if (m_arg)
       return warning_at (rich_loc, get_controlling_option (),
 			 "check of %qE for NULL after already"
@@ -1520,6 +1549,7 @@ public:
 	&& assumed_non_null_p (change.m_new_state))
       {
 	m_first_deref_event = change.m_event_id;
+	m_deref_enode = change.m_event.get_exploded_node ();
 	if (m_arg)
 	  return change.formatted_print ("pointer %qE is dereferenced here",
 					 m_arg);
@@ -1531,6 +1561,7 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) final override
   {
+    m_check_enode = ev.m_event.get_exploded_node ();
     if (m_first_deref_event.known_p ())
       {
 	if (m_arg)
@@ -1556,6 +1587,8 @@ public:
 
 private:
   diagnostic_event_id_t m_first_deref_event;
+  const exploded_node *m_deref_enode;
+  const exploded_node *m_check_enode;
 };
 
 /* struct allocation_state : public state_machine::state.  */

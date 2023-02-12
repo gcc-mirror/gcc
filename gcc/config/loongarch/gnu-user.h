@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Similar to standard Linux, but adding -ffast-math support.  */
 #undef GNU_USER_TARGET_MATHFILE_SPEC
 #define GNU_USER_TARGET_MATHFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+  "%{Ofast|ffast-math|funsafe-math-optimizations:%{!shared:crtfastmath.o%s}}"
 
 #undef LIB_SPEC
 #define LIB_SPEC GNU_USER_TARGET_LIB_SPEC

@@ -1390,6 +1390,9 @@ handle_pragma_message (cpp_reader *)
     }
   else if (token == CPP_STRING)
     message = x;
+  else if (token == CPP_STRING_USERDEF)
+    GCC_BAD ("string literal with user-defined suffix is invalid in this "
+	     "context");
   else
     GCC_BAD ("expected a string after %<#pragma message%>");
 

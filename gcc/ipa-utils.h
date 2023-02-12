@@ -46,6 +46,8 @@ tree get_base_var (tree);
 void ipa_merge_profiles (struct cgraph_node *dst,
 			 struct cgraph_node *src, bool preserve_body = false);
 bool recursive_call_p (tree, tree);
+bool stmt_may_terminate_function_p (function *fun, gimple *stmt, bool assume_return_or_eh);
+bitmap find_always_executed_bbs (function *fun, bool assume_return_or_eh);
 
 /* In ipa-pure-const.cc  */
 bool finite_function_p ();

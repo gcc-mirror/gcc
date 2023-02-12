@@ -211,7 +211,7 @@ tree
 m2decl_BuildEndFunctionDeclaration (location_t location_begin,
                                     location_t location_end, const char *name,
                                     tree returntype, int isexternal,
-                                    int isnested, int ispublic)
+                                    int isnested, int ispublic, int isnoreturn)
 {
   tree fntype;
   tree fndecl;
@@ -244,6 +244,7 @@ m2decl_BuildEndFunctionDeclaration (location_t location_begin,
       = build_decl (location_end, RESULT_DECL, NULL_TREE, returntype);
   DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
   TREE_TYPE (fndecl) = fntype;
+  TREE_THIS_VOLATILE (fndecl) = isnoreturn;
 
   DECL_SOURCE_LOCATION (fndecl) = location_begin;
 

@@ -25,7 +25,7 @@ if $tracelevel then {
 # load support procs
 load_lib gm2-torture.exp
 
-gm2_init_log
+gm2_init_log ""
 
 foreach testcase [lsort [glob -nocomplain $srcdir/../gm2/gm2-libs-pim/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.

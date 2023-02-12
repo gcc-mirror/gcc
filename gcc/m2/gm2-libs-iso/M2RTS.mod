@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE M2RTS ;
 
 
-FROM libc IMPORT abort, exit, write, getenv, printf ;
+FROM libc IMPORT abort, exit, write, getenv, printf, strlen ;
 (* FROM Builtins IMPORT strncmp, strcmp ;  not available during bootstrap.  *)
 FROM NumberIO IMPORT CardToStr ;
 FROM StrLib IMPORT StrCopy, StrLen, StrEqual ;
@@ -38,6 +38,9 @@ FROM Storage IMPORT ALLOCATE ;
 IMPORT RTExceptions ;
 IMPORT M2EXCEPTION ;
 IMPORT M2Dependent ;
+
+CONST
+   stderrFd = 2 ;
 
 TYPE
    PtrToChar = POINTER TO CHAR ;
@@ -255,8 +258,20 @@ PROCEDURE ErrorString (a: ARRAY OF CHAR) ;
 VAR
    n: INTEGER ;
 BEGIN
-   n := write (2, ADR (a), StrLen (a))
+   n := write (stderrFd, ADR (a), StrLen (a))
 END ErrorString ;
+
+
+(*
+   ErrorStringC - writes a string to stderr.
+*)
+
+PROCEDURE ErrorStringC (str: ADDRESS) ;
+VAR
+   len: INTEGER ;
+BEGIN
+   len := write (stderrFd, str, strlen (str))
+END ErrorStringC ;
 
 
 (*
@@ -264,15 +279,15 @@ END ErrorString ;
 *)
 
 PROCEDURE ErrorMessage (message: ARRAY OF CHAR;
-                        file: ARRAY OF CHAR;
+                        filename: ARRAY OF CHAR;
                         line: CARDINAL;
                         function: ARRAY OF CHAR) <* noreturn *> ;
 VAR
-   LineNo: ARRAY [0..10] OF CHAR ;
+   buffer: ARRAY [0..10] OF CHAR ;
 BEGIN
-   ErrorString (file) ; ErrorString(':') ;
-   CardToStr (line, 0, LineNo) ;
-   ErrorString (LineNo) ; ErrorString(':') ;
+   ErrorString (filename) ; ErrorString(':') ;
+   CardToStr (line, 0, buffer) ;
+   ErrorString (buffer) ; ErrorString(':') ;
    IF NOT StrEqual (function, '')
    THEN
       ErrorString ('in ') ;
@@ -280,22 +295,61 @@ BEGIN
       ErrorString (' has caused ') ;
    END ;
    ErrorString (message) ;
-   LineNo[0] := nl ; LineNo[1] := nul ;
-   ErrorString (LineNo) ;
+   buffer[0] := nl ; buffer[1] := nul ;
+   ErrorString (buffer) ;
    exit (1)
 END ErrorMessage ;
 
 
 (*
-   Halt - provides a more user friendly version of HALT, which takes
-          four parameters to aid debugging.
+   ErrorMessageC - emits an error message to stderr and then calls exit (1).
 *)
 
-PROCEDURE Halt (file: ARRAY OF CHAR; line: CARDINAL;
+PROCEDURE ErrorMessageC (message, filename: ADDRESS;
+                         line: CARDINAL;
+                         function: ADDRESS) <* noreturn *> ;
+VAR
+   buffer: ARRAY [0..10] OF CHAR ;
+BEGIN
+   ErrorStringC (filename) ; ErrorString (':') ;
+   CardToStr (line, 0, buffer) ;
+   ErrorString (buffer) ; ErrorString(':') ;
+   IF strlen (function) > 0
+   THEN
+      ErrorString ('in ') ;
+      ErrorStringC (function) ;
+      ErrorString (' has caused ') ;
+   END ;
+   ErrorStringC (message) ;
+   buffer[0] := nl ; buffer[1] := nul ;
+   ErrorString (buffer) ;
+   exit (1)
+END ErrorMessageC ;
+
+
+(*
+   HaltC - provides a more user friendly version of HALT, which takes
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
+*)
+
+PROCEDURE HaltC (filename: ADDRESS; line: CARDINAL;
+                 function, description: ADDRESS) ;
+BEGIN
+   ErrorMessageC (description, filename, line, function)
+END HaltC ;
+
+
+(*
+   Halt - provides a more user friendly version of HALT, which takes
+          four parameters to aid debugging.  It writes an error message
+          to stderr and calls exit (1).
+*)
+
+PROCEDURE Halt (filename: ARRAY OF CHAR; line: CARDINAL;
                 function: ARRAY OF CHAR; description: ARRAY OF CHAR) ;
 BEGIN
-   ErrorMessage (description, file, line, function) ;
-   HALT
+   ErrorMessage (description, filename, line, function)
 END Halt ;
 
 

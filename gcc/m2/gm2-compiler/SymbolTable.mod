@@ -360,6 +360,7 @@ TYPE
                IsBuiltin     : BOOLEAN ;    (* Was it declared __BUILTIN__ ? *)
                BuiltinName   : Name ;       (* name of equivalent builtin    *)
                IsInline      : BOOLEAN ;    (* Was it declared __INLINE__ ?  *)
+               IsNoReturn    : BOOLEAN ;    (* Attribute noreturn ?          *)
                ReturnOptional: BOOLEAN ;    (* Is the return value optional? *)
                IsExtern      : BOOLEAN ;    (* Make this procedure extern.   *)
                IsPublic      : BOOLEAN ;    (* Make this procedure visible.  *)
@@ -3775,6 +3776,7 @@ BEGIN
             IsBuiltin := FALSE ;         (* Was it declared __BUILTIN__ ? *)
             BuiltinName := NulName ;     (* name of equivalent builtin    *)
             IsInline := FALSE ;          (* Was is declared __INLINE__ ?  *)
+            IsNoReturn := FALSE ;        (* Declared attribute noreturn ? *)
             ReturnOptional := FALSE ;    (* Is the return value optional? *)
             IsExtern := FALSE ;          (* Make this procedure external. *)
             IsPublic := FALSE ;          (* Make this procedure visible.  *)
@@ -3822,6 +3824,49 @@ BEGIN
    END ;
    RETURN Sym
 END MakeProcedure ;
+
+
+(*
+   PutProcedureNoReturn - places value into the no return attribute
+                          field of procedure sym.
+*)
+
+PROCEDURE PutProcedureNoReturn (Sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (Sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym: Procedure.IsNoReturn := value
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END PutProcedureNoReturn ;
+
+
+(*
+   IsProcedureNoReturn - returns TRUE if this procedure never returns.
+*)
+
+PROCEDURE IsProcedureNoReturn (Sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (Sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym: RETURN Procedure.IsNoReturn
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END IsProcedureNoReturn ;
 
 
 (*

@@ -35,7 +35,7 @@ enum dom_state
   DOM_OK		/* Everything is ok.  */
 };
 
-extern void calculate_dominance_info (enum cdi_direction);
+extern void calculate_dominance_info (enum cdi_direction, bool = true);
 extern void calculate_dominance_info_for_region (enum cdi_direction,
 						 vec<basic_block>);
 extern void free_dominance_info (function *, enum cdi_direction);

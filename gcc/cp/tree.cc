@@ -3693,14 +3693,20 @@ build_min_non_dep_op_overload (enum tree_code op,
 {
   va_list p;
   int nargs, expected_nargs;
-  tree fn, call;
+  tree fn, call, obj = NULL_TREE;
 
   non_dep = extract_call_expr (non_dep);
 
   nargs = call_expr_nargs (non_dep);
 
   expected_nargs = cp_tree_code_length (op);
-  if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE)
+  if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE
+      /* For ARRAY_REF, operator[] is either a non-static member or newly
+	 static member, never out of class and for the static member case
+	 if user uses single index the operator[] needs to have a single
+	 argument as well, but the function is called with 2 - the object
+	 it is invoked on and the index.  */
+      || op == ARRAY_REF)
     expected_nargs -= 1;
   if ((op == POSTINCREMENT_EXPR
        || op == POSTDECREMENT_EXPR)
@@ -3715,6 +3721,8 @@ build_min_non_dep_op_overload (enum tree_code op,
   if (TREE_CODE (TREE_TYPE (overload)) == FUNCTION_TYPE)
     {
       fn = overload;
+      if (op == ARRAY_REF)
+	obj = va_arg (p, tree);
       for (int i = 0; i < nargs; i++)
 	{
 	  tree arg = va_arg (p, tree);
@@ -3746,6 +3754,8 @@ build_min_non_dep_op_overload (enum tree_code op,
   CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (non_dep);
   CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (non_dep);
 
+  if (obj)
+    return keep_unused_object_arg (call, obj, overload);
   return call;
 }
 
@@ -3759,11 +3769,15 @@ build_min_non_dep_op_overload (tree non_dep, tree overload, tree object,
   non_dep = extract_call_expr (non_dep);
 
   unsigned int nargs = call_expr_nargs (non_dep);
-  gcc_assert (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE);
-  tree binfo = TYPE_BINFO (TREE_TYPE (object));
-  tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
-  tree fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
-		       object, method, NULL_TREE);
+  tree fn = overload;
+  if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE)
+    {
+      tree binfo = TYPE_BINFO (TREE_TYPE (object));
+      tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
+      fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
+		      object, method, NULL_TREE);
+      object = NULL_TREE;
+    }
   gcc_assert (vec_safe_length (args) == nargs);
 
   tree call = build_min_non_dep_call_vec (non_dep, fn, args);
@@ -3774,6 +3788,8 @@ build_min_non_dep_op_overload (tree non_dep, tree overload, tree object,
   CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (non_dep);
   CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (non_dep);
 
+  if (object)
+    return keep_unused_object_arg (call, object, overload);
   return call;
 }
 

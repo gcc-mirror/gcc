@@ -111,11 +111,22 @@ PROCEDURE HALT ([exitcode: INTEGER = -1]) ;
 
 (*
    Halt - provides a more user friendly version of HALT, which takes
-          four parameters to aid debugging.
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
 *)
 
-PROCEDURE Halt (file: ARRAY OF CHAR; line: CARDINAL;
+PROCEDURE Halt (filename: ARRAY OF CHAR; line: CARDINAL;
                 function: ARRAY OF CHAR; description: ARRAY OF CHAR) ;
+
+
+(*
+   HaltC - provides a more user friendly version of HALT, which takes
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
+*)
+
+PROCEDURE HaltC (filename: ADDRESS; line: CARDINAL;
+                 function, description: ADDRESS) ;
 
 
 (*
@@ -130,7 +141,7 @@ PROCEDURE ExitOnHalt (e: INTEGER) ;
 *)
 
 PROCEDURE ErrorMessage (message: ARRAY OF CHAR;
-                        file: ARRAY OF CHAR;
+                        filename: ARRAY OF CHAR;
                         line: CARDINAL;
                         function: ARRAY OF CHAR) ;
 

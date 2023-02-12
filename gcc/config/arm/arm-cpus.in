@@ -229,6 +229,10 @@ define feature cdecp5
 define feature cdecp6
 define feature cdecp7
 
+# M-profile control flow integrity extensions (PAC/AUT/BTI).
+# Optional from Armv8.1-M Mainline.
+define feature pacbti
+
 # Feature groups.  Conventionally all (or mostly) upper case.
 # ALL_FPU lists all the feature bits associated with the floating-point
 # unit; these will all be removed if the floating-point unit is disabled
@@ -743,6 +747,7 @@ begin arch armv8.1-m.main
  isa ARMv8_1m_main
 # fp => FPv5-sp-d16; fp.dp => FPv5-d16
  option dsp add armv7em
+ option pacbti add pacbti
  option fp add FPv5 fp16
  option fp.dp add FPv5 FP_DBL fp16
  option nofp remove ALL_FP
@@ -1666,6 +1671,21 @@ begin cpu star-mc1
  isa quirk_no_asmcpu quirk_vlldm
  costs v7m
 end cpu star-mc1
+
+begin cpu cortex-m85
+ cname cortexm85
+ tune flags LDSCHED
+ architecture armv8.1-m.main+pacbti+mve.fp+fp.dp
+ option nopacbti remove pacbti
+ option nomve.fp remove mve_float
+ option nomve remove mve mve_float
+ option nofp remove ALL_FP mve_float
+ option nodsp remove MVE mve_float
+ isa quirk_no_asmcpu quirk_vlldm
+ costs v7m
+ part 0xd23
+ vendor 41
+end cpu cortex-m85
 
 # V8 R-profile implementations.
 begin cpu cortex-r52

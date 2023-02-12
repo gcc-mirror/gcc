@@ -291,7 +291,9 @@ ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
      broadcast only if vector broadcast is available.  */
   if (!TARGET_AVX
       || !CONST_WIDE_INT_P (op)
-      || standard_sse_constant_p (op, mode))
+      || standard_sse_constant_p (op, mode)
+      || (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT
+	  != GET_MODE_BITSIZE (mode)))
     return nullptr;
 
   HOST_WIDE_INT val = CONST_WIDE_INT_ELT (op, 0);
@@ -13175,6 +13177,12 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
 	if (INTVAL (op3) == 1)
 	  {
+	    if (INTVAL (op2) < 2 || INTVAL (op2) > 3)
+	      {
+		error ("invalid third argument");
+		return const0_rtx;
+	      }
+
 	    if (TARGET_64BIT && TARGET_PREFETCHI
 		&& local_func_symbolic_operand (op0, GET_MODE (op0)))
 	      emit_insn (gen_prefetchi (op0, op2));
@@ -13193,6 +13201,12 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	      {
 		op0 = convert_memory_address (Pmode, op0);
 		op0 = copy_addr_to_reg (op0);
+	      }
+
+	    if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
+	      {
+		warning (0, "invalid third argument to %<__builtin_ia32_prefetch%>; using zero");
+		op2 = const0_rtx;
 	      }
 
 	    if (TARGET_3DNOW || TARGET_PREFETCH_SSE

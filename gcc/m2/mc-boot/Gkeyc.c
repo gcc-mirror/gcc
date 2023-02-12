@@ -600,7 +600,7 @@ static void checkAbs (mcPretty_pretty p)
 
 static void checkLimits (mcPretty_pretty p)
 {
-  if ((((((((((((((seenMemcpy || seenIntMin) || seenUIntMin) || seenLongMin) || seenULongMin) || seenCharMin) || seenUCharMin) || seenUIntMin) || seenIntMax) || seenUIntMax) || seenLongMax) || seenULongMax) || seenCharMax) || seenUCharMax) || seenUIntMax)
+  if ((((((((((((seenMemcpy || seenIntMin) || seenUIntMin) || seenLongMin) || seenULongMin) || seenCharMin) || seenUCharMin) || seenIntMax) || seenUIntMax) || seenLongMax) || seenULongMax) || seenCharMax) || seenUCharMax)  /* OR seenUIntMax  */
     {
       checkGccConfigSystem (p);
       if (! (mcOptions_getGccConfigSystem ()))
@@ -908,7 +908,7 @@ static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned 
         return TRUE;
       }
   }
-  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/mc/keyc.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/keyc.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -1067,14 +1067,12 @@ static void init (void)
   seenULongMin = FALSE;
   seenCharMin = FALSE;
   seenUCharMin = FALSE;
-  seenUIntMin = FALSE;
   seenIntMax = FALSE;
   seenUIntMax = FALSE;
   seenLongMax = FALSE;
   seenULongMax = FALSE;
   seenCharMax = FALSE;
   seenUCharMax = FALSE;
-  seenUIntMax = FALSE;
   seenLabs = FALSE;
   seenAbs = FALSE;
   seenFabs = FALSE;

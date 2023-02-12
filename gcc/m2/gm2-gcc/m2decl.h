@@ -58,7 +58,8 @@ EXTERN void m2decl_RememberVariables (tree l);
 
 EXTERN tree m2decl_BuildEndFunctionDeclaration (
     location_t location_begin, location_t location_end, const char *name,
-    tree returntype, int isexternal, int isnested, int ispublic);
+    tree returntype, int isexternal, int isnested, int ispublic,
+    int isnoreturn);
 EXTERN void m2decl_BuildStartFunctionDeclaration (int uses_varargs);
 EXTERN tree m2decl_BuildParameterDeclaration (location_t location, char *name,
                                               tree type, int isreference);

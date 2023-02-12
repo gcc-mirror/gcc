@@ -183,7 +183,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  return name;
 	}
 
-      return *n;
+      return unshare_expr (*n);
     }
 
   if (processing_debug_stmt)

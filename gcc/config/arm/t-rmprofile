@@ -27,8 +27,11 @@
 
 # Arch and FPU variants to build libraries with
 
-MULTI_ARCH_OPTS_RM	= march=armv6s-m/march=armv7-m/march=armv7e-m/march=armv7e-m+fp/march=armv7e-m+fp.dp/march=armv8-m.base/march=armv8-m.main/march=armv8-m.main+fp/march=armv8-m.main+fp.dp/march=armv8.1-m.main+mve
-MULTI_ARCH_DIRS_RM	= v6-m v7-m v7e-m v7e-m+fp v7e-m+dp v8-m.base v8-m.main v8-m.main+fp v8-m.main+dp v8.1-m.main+mve
+MULTI_ARCH_OPTS_RM	= march=armv6s-m/march=armv7-m/march=armv7e-m/march=armv7e-m+fp/march=armv7e-m+fp.dp/march=armv8-m.base/march=armv8-m.main/march=armv8-m.main+fp/march=armv8-m.main+fp.dp/march=armv8.1-m.main+mve/march=armv8.1-m.main+pacbti/march=armv8.1-m.main+pacbti+fp/march=armv8.1-m.main+pacbti+fp.dp/march=armv8.1-m.main+pacbti+mve
+MULTI_ARCH_DIRS_RM	= v6-m v7-m v7e-m v7e-m+fp v7e-m+dp v8-m.base v8-m.main v8-m.main+fp v8-m.main+dp v8.1-m.main+mve v8.1-m.main+pacbti v8.1-m.main+pacbti+fp v8.1-m.main+pacbti+dp v8.1-m.main+pacbti+mve
+
+MULTI_ARCH_OPTS_RM	+= mbranch-protection=standard
+MULTI_ARCH_DIRS_RM	+= bp
 
 # Base M-profile (no fp)
 MULTILIB_REQUIRED	+= mthumb/march=armv6s-m/mfloat-abi=soft
@@ -49,6 +52,13 @@ MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main+fp/mfloat-abi=softfp
 MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main+fp.dp/mfloat-abi=hard
 MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main+fp.dp/mfloat-abi=softfp
 MULTILIB_REQUIRED	+= mthumb/march=armv8.1-m.main+mve/mfloat-abi=hard
+
+MULTILIB_REQUIRED	+= mthumb/march=armv8.1-m.main+pacbti/mbranch-protection=standard/mfloat-abi=soft
+MULTILIB_REQUIRED	+= mthumb/march=armv8.1-m.main+pacbti+fp/mbranch-protection=standard/mfloat-abi=softfp
+MULTILIB_REQUIRED	+= mthumb/march=armv8.1-m.main+pacbti+fp/mbranch-protection=standard/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv8.1-m.main+pacbti+fp.dp/mbranch-protection=standard/mfloat-abi=softfp
+MULTILIB_REQUIRED	+= mthumb/march=armv8.1-m.main+pacbti+fp.dp/mbranch-protection=standard/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv8.1-m.main+pacbti+mve/mbranch-protection=standard/mfloat-abi=hard
 
 # Arch Matches
 MULTILIB_MATCHES	+= march?armv6s-m=march?armv6-m
@@ -87,9 +97,63 @@ MULTILIB_MATCHES += $(foreach FP, $(v8_1m_sp_variants), \
 MULTILIB_MATCHES += $(foreach FP, $(v8_1m_dp_variants), \
 			     march?armv8-m.main+fp.dp=mlibarch?armv8.1-m.main$(FP))
 
+# Map all mbranch-protection values other than 'none' to 'standard'.
+MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?bti
+MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?pac-ret
+MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?pac-ret+leaf
+MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?pac-ret+bti
+MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?pac-ret+leaf+bti
+MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?bti+pac-ret
+MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?bti+pac-ret+leaf
+MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?standard+leaf
+
 # For all the MULTILIB_REQUIRED for v8-m and above, add MULTILIB_MATCHES which
 # maps mlibarch with march for multilib linking.
 MULTILIB_MATCHES	+= march?armv8-m.main=mlibarch?armv8-m.main
 MULTILIB_MATCHES	+= march?armv8-m.main+fp=mlibarch?armv8-m.main+fp
 MULTILIB_MATCHES	+= march?armv8-m.main+fp.dp=mlibarch?armv8-m.main+fp.dp
 MULTILIB_MATCHES	+= march?armv8.1-m.main+mve=mlibarch?armv8.1-m.main+mve
+
+# For -mbranch-protection=none and +pacbti reuses the existing non pacbti
+# multilibs.
+MULTILIB_REUSE		+= $(foreach OPT, fp fp\.dp, \
+			     mthumb/march.armv8-m\.main+$(OPT)/mfloat-abi.softfp=mthumb/march.armv8\.1-m\.main+pacbti+$(OPT)/mfloat-abi.softfp)
+MULTILIB_REUSE		+= $(foreach OPT, fp fp\.dp, \
+			     mthumb/march.armv8-m\.main+$(OPT)/mfloat-abi.hard=mthumb/march.armv8\.1-m\.main+pacbti+$(OPT)/mfloat-abi.hard)
+
+MULTILIB_REUSE		+= $(foreach OPT, pacbti pacbti+mve, \
+			     mthumb/march.armv8-m\.main/mfloat-abi.soft=mthumb/march.armv8\.1-m\.main+$(OPT)/mfloat-abi.soft)
+MULTILIB_REUSE		+= $(foreach OPT, pacbti pacbti+mve, \
+			     mthumb/march.armv8-m\.main/mfloat-abi.soft=mthumb/march.armv8\.1-m\.main+$(OPT)/mfloat-abi.softfp)
+
+MULTILIB_REUSE		+= mthumb/march.armv8\.1-m\.main+mve/mfloat-abi.hard=mthumb/march.armv8\.1-m\.main+pacbti+mve/mfloat-abi.hard
+
+pacbti_fp_variants =  fp fp+mve mve.fp fp+mve.fp
+pacbti_dp_variants = fp.dp fp.dp+mve fp.dp+mve.fp
+
+# For -mbranch-protection=standard and +pacbti linking to existing pacbti
+# multlibs.
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti=mlibarch?armv8.1-m.main+pacbti
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti=mlibarch?armv8.1-m.main+pacbti+dsp
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti=mlibarch?armv8.1-m.main+dsp+pacbti
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+mve=mlibarch?armv8.1-m.main+pacbti+mve
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+mve=mlibarch?armv8.1-m.main+pacbti+dsp+mve
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+mve=mlibarch?armv8.1-m.main+dsp+pacbti+mve
+
+MULTILIB_MATCHES	+= $(foreach OPT, $(pacbti_fp_variants), \
+			     march?armv8.1-m.main+pacbti+fp=mlibarch?armv8.1-m.main+pacbti+$(OPT))
+
+MULTILIB_MATCHES	+= $(foreach OPT, $(pacbti_fp_variants), \
+			     march?armv8.1-m.main+pacbti+fp=mlibarch?armv8.1-m.main+pacbti+dsp+$(OPT))
+
+MULTILIB_MATCHES	+= $(foreach OPT, $(pacbti_dp_variants), \
+			     march?armv8.1-m.main+pacbti+fp.dp=mlibarch?armv8.1-m.main+pacbti+$(OPT))
+
+MULTILIB_MATCHES	+= $(foreach OPT, $(pacbti_dp_variants), \
+			     march?armv8.1-m.main+pacbti+fp.dp=mlibarch?armv8.1-m.main+pacbti+dsp+$(OPT))
+
+MULTILIB_MATCHES	+= $(foreach OPT, $(pacbti_fp_variants), \
+			     march?armv8.1-m.main+pacbti+fp=mlibarch?armv8.1-m.main+dsp+pacbti+$(OPT))
+
+MULTILIB_MATCHES	+= $(foreach OPT, $(pacbti_dp_variants), \
+			     march?armv8.1-m.main+pacbti+fp.dp=mlibarch?armv8.1-m.main+dsp+pacbti+$(OPT))

@@ -149,7 +149,8 @@ PROCEDURE BuildStartFunctionDeclaration (uses_varargs: BOOLEAN) ;
 
 PROCEDURE BuildEndFunctionDeclaration (location_begin, location_end: location_t;
                                        name: ADDRESS; returntype: Tree;
-                                       isexternal, isnested, ispublic: BOOLEAN) : Tree ;
+                                       isexternal, isnested, ispublic,
+                                       isnoreturn: BOOLEAN) : Tree ;
 
 
 (*

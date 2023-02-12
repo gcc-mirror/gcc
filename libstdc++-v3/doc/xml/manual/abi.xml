@@ -1191,7 +1191,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html">
+	      xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html">
       Dynamic Shared Objects: Survey and Issues
 	</link>
       </title>
@@ -1205,7 +1205,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html">
+	      xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html">
 	Versioning With Namespaces
 	</link>
       </title>

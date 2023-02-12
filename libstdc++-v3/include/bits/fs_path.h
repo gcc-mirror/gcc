@@ -808,6 +808,7 @@ namespace __detail
 	   typename _Require = __detail::_Path2<_InputIterator>,
 	   typename _CharT
 	     = __detail::__value_type_is_char_or_char8_t<_InputIterator>>
+    _GLIBCXX20_DEPRECATED_SUGGEST("path(u8string(first, last))")
     inline path
     u8path(_InputIterator __first, _InputIterator __last)
     {
@@ -830,6 +831,7 @@ namespace __detail
   template<typename _Source,
 	   typename _Require = __detail::_Path<_Source>,
 	   typename _CharT = __detail::__value_type_is_char_or_char8_t<_Source>>
+    _GLIBCXX20_DEPRECATED_SUGGEST("path((const char8_t*)&*source)")
     inline path
     u8path(const _Source& __source)
     {

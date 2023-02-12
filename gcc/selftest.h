@@ -244,6 +244,7 @@ extern void predict_cc_tests ();
 extern void pretty_print_cc_tests ();
 extern void range_tests ();
 extern void range_op_tests ();
+extern void relation_tests ();
 extern void gimple_range_tests ();
 extern void read_rtl_function_cc_tests ();
 extern void rtl_tests_cc_tests ();

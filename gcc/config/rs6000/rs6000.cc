@@ -28928,9 +28928,9 @@ constant_generates_xxspltidp (vec_const_128bit_type *vsx_const)
    __vector_pair built-in types.  They are target specific and
    only available when MMA is supported.  With MMA supported, it
    simply returns true, otherwise it checks if the given gimple
-   STMT is an assignment or asm stmt and uses either of these two
-   opaque types unexpectedly, if yes, it would raise an error
-   message and returns true, otherwise it returns false.  */
+   STMT is an assignment, asm or call stmt and uses either of
+   these two opaque types unexpectedly, if yes, it would raise
+   an error message and returns true, otherwise it returns false.  */
 
 bool
 rs6000_opaque_type_invalid_use_p (gimple *stmt)
@@ -28959,7 +28959,7 @@ rs6000_opaque_type_invalid_use_p (gimple *stmt)
   if (stmt)
     {
       /* The usage of MMA opaque types is very limited for now,
-	 to check with gassign and gasm is enough so far.  */
+	 to check with gassign, gasm and gcall is enough so far.  */
       if (gassign *ga = dyn_cast<gassign *> (stmt))
 	{
 	  tree lhs = gimple_assign_lhs (ga);
@@ -28984,6 +28984,17 @@ rs6000_opaque_type_invalid_use_p (gimple *stmt)
 	      tree op = gimple_asm_output_op (gs, i);
 	      tree val = TREE_VALUE (op);
 	      tree type = TREE_TYPE (val);
+	      if (check_and_error_invalid_use (type))
+		return true;
+	    }
+	}
+      else if (gcall *gc = dyn_cast<gcall *> (stmt))
+	{
+	  unsigned nargs = gimple_call_num_args (gc);
+	  for (unsigned i = 0; i < nargs; i++)
+	    {
+	      tree arg = gimple_call_arg (gc, i);
+	      tree type = TREE_TYPE (arg);
 	      if (check_and_error_invalid_use (type))
 		return true;
 	    }

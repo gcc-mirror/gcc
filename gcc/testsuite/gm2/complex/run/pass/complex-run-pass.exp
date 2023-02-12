@@ -27,7 +27,6 @@ load_lib gm2-torture.exp
 
 set gm2src ${srcdir}/../gm2
 
-gm2_link_lib "m2iso m2pim"
 gm2_init_iso "${srcdir}/gm2/complex/run/pass"
 
 

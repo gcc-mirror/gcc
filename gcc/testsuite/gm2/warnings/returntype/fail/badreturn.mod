@@ -1,0 +1,11 @@
+MODULE badreturn ;
+
+PROCEDURE X (VAR Y : BOOLEAN) : BOOLEAN;
+BEGIN
+  IF Y
+  THEN
+    RETURN FALSE
+  END
+END X ;
+
+END badreturn.

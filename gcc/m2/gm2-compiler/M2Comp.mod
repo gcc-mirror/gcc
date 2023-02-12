@@ -22,7 +22,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE M2Comp ;
 
 
-FROM M2Options IMPORT Statistics, Quiet, WholeProgram, ExtendedOpaque, GenModuleList ;
+FROM M2Options IMPORT PPonly, Statistics, Quiet, WholeProgram,
+                      ExtendedOpaque, GenModuleList ;
 
 FROM M2Pass IMPORT SetPassToPass0, SetPassToPass1, SetPassToPass2, SetPassToPassC, SetPassToPass3,
                    SetPassToNoPass, SetPassToPassHidden ;
@@ -38,7 +39,7 @@ FROM libc IMPORT exit ;
 FROM M2Error IMPORT ErrorStringAt, ErrorStringAt2, ErrorStringsAt2,
                     WriteFormat0, FlushErrors, FlushWarnings, ResetErrorScope ;
 
-FROM M2MetaError IMPORT MetaErrorString1, MetaError0, MetaError1 ;
+FROM M2MetaError IMPORT MetaErrorString0, MetaErrorString1, MetaError0, MetaError1, MetaString0 ;
 FROM FormatStrings IMPORT Sprintf1 ;
 FROM P0SymBuild IMPORT P0Init, P1Init ;
 
@@ -60,11 +61,12 @@ FROM SymbolTable IMPORT GetSymName, IsDefImp, NulSym,
                         ResolveConstructorTypes, SanityCheckConstants, IsDefinitionForC,
                         IsBuiltinInModule, PutModLink, IsDefLink, IsModLink ;
 
-FROM FIO IMPORT StdErr ;
+FROM FIO IMPORT StdErr, StdOut ;
 FROM NameKey IMPORT Name, GetKey, KeyToCharStar, makekey ;
 FROM M2Printf IMPORT fprintf1 ;
 FROM M2Quiet IMPORT qprintf0, qprintf1, qprintf2 ;
 FROM DynamicStrings IMPORT String, InitString, KillString, InitStringCharStar, Dup, Mark, string ;
+FROM M2Options IMPORT Verbose ;
 
 CONST
    Debugging = FALSE ;
@@ -126,6 +128,10 @@ PROCEDURE Compile (s: String) ;
 BEGIN
    DoPass0(s) ;
    FlushWarnings ; FlushErrors ;
+   IF PPonly
+   THEN
+      RETURN
+   END;
    ResetForNewPass ; ResetErrorScope ;
    qprintf0('Pass 1: scopes, enumerated types, imports and exports\n') ;
    DoPass1 ;
@@ -167,6 +173,8 @@ END compile ;
 *)
 
 PROCEDURE ExamineCompilationUnit (VAR name: ADDRESS; VAR isdefimp: BOOLEAN) ;
+VAR
+   Message: String ;
 BEGIN
    isdefimp := FALSE ;   (* default to program module *)
    (* stop if we see eof, ';' or '[' *)
@@ -183,8 +191,9 @@ BEGIN
       END ;
       GetToken
    END ;
-   m2flex.M2Error(string(InitString('failed to find module name'))) ;
-   exit(1)
+   Message := MetaString0 (InitString ('no {%kMODULE} name found')) ;
+   m2flex.M2Error (string (Message)) ;
+   exit (1)
 END ExamineCompilationUnit ;
 
 
@@ -198,20 +207,20 @@ VAR
    name    : ADDRESS ;
    isdefimp: BOOLEAN ;
 BEGIN
-   IF OpenSource(PreprocessModule(s))
+   IF OpenSource (s)
    THEN
-      ExamineCompilationUnit(name, isdefimp) ;
+      ExamineCompilationUnit (name, isdefimp) ;
       IF isdefimp
       THEN
-         SetMainModule(MakeImplementationSource(GetTokenNo(), makekey(name)))
+         SetMainModule (MakeImplementationSource (GetTokenNo (), makekey (name)))
       ELSE
-         SetMainModule(MakeProgramSource(GetTokenNo(), makekey(name)))
+         SetMainModule (MakeProgramSource (GetTokenNo (), makekey (name)))
       END ;
       CloseSource ;
       ReInitialize
    ELSE
-      fprintf1(StdErr, 'failed to open %s\n', s) ;
-      exit(1)
+      fprintf1 (StdErr, 'failed to open %s\n', s) ;
+      exit (1)
    END
 END PeepInto ;
 
@@ -226,15 +235,26 @@ VAR
    Sym     : CARDINAL ;
    i       : CARDINAL ;
    SymName,
-   FileName: String ;
+   FileName,
+   PPSource: String ;
 BEGIN
    P0Init ;
    SetPassToPass0 ;
-   PeepInto(s) ;
+   (* Maybe preprocess the main file.  *)
+   PPSource := PreprocessModule(s, TRUE);
+   IF PPonly
+   THEN
+      RETURN
+   END;
+   PeepInto (PPSource) ;
    Main := GetMainModule() ;
    i := 1 ;
    Sym := GetModuleNo(i) ;
-   qprintf1('Compiling: %s\n', s) ;
+   qprintf1('Compiling: %s\n', PPSource) ;
+   IF Verbose
+   THEN
+      fprintf1(StdOut, 'Compiling: %s\n', PPSource) ;
+   END ;
    qprintf0('Pass 0: lexical analysis, parsing, modules and associated filenames\n') ;
    WHILE Sym#NulSym DO
       SymName := InitStringCharStar(KeyToCharStar(GetSymName(Sym))) ;
@@ -243,7 +263,7 @@ BEGIN
          IF FindSourceDefFile(SymName, FileName)
          THEN
             ModuleType := Definition ;
-            IF OpenSource(AssociateDefinition(PreprocessModule(FileName), Sym))
+            IF OpenSource(AssociateDefinition(PreprocessModule(FileName, FALSE), Sym))
             THEN
                IF NOT P0SyntaxCheck.CompilationUnit()
                THEN
@@ -280,15 +300,16 @@ BEGIN
          (* only need to read implementation module if hidden types are declared or it is the main module *)
          IF Main=Sym
          THEN
-            FileName := Dup(s)
+            FileName := Dup (PPSource)
          ELSE
             IF FindSourceModFile (SymName, FileName)
             THEN
+               FileName := PreprocessModule (FileName, FALSE)
             END
          END ;
          IF FileName#NIL
          THEN
-            IF OpenSource (AssociateModule (PreprocessModule (FileName), Sym))
+            IF OpenSource (AssociateModule (Dup (FileName), Sym))
             THEN
                IF NOT P0SyntaxCheck.CompilationUnit()
                THEN
@@ -325,7 +346,7 @@ BEGIN
             IF FindSourceModFile (SymName, FileName)
             THEN
                qprintf2 ('   Module %-20s : %s (linking)\n', SymName, FileName) ;
-               IF OpenSource (AssociateModule (PreprocessModule (FileName), Sym))
+               IF OpenSource (AssociateModule (PreprocessModule (FileName, FALSE), Sym))
                THEN
                   PutModLink (Sym, TRUE) ;   (* This source is only used to determine link time info.  *)
                   IF NOT P0SyntaxCheck.CompilationUnit ()

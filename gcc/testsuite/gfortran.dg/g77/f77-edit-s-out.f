@@ -10,11 +10,11 @@ C { dg-output "^" }
  30   format(SP,I3,1X,SS,I3,S,I3)
  40   format(SP,I3)
  50   format(SP,I2)
-      write(*,10) 10, 20      ! { dg-output "\\+10  20(\n|\r\n|\r)" }
-      write(*,20) 10, 20, 30  ! { dg-output "\\+10  20\\+30(\n|\r\n|\r)" }
-      write(*,30) 10, 20, 30  ! { dg-output "\\+10  20 30(\n|\r\n|\r)" } 
-      write(*,40) 0           ! { dg-output " \\+0(\n|\r\n|\r)" }
+      write(*,10) 10, 20      ! { dg-output "\\+10  20(\r*\n+)" }
+      write(*,20) 10, 20, 30  ! { dg-output "\\+10  20\\+30(\r*\n+)" }
+      write(*,30) 10, 20, 30  ! { dg-output "\\+10  20 30(\r*\n+)" } 
+      write(*,40) 0           ! { dg-output " \\+0(\r*\n+)" }
 C 15.5.9 - Note 5: When SP editing is in effect, the plus sign is not optional
-      write(*,50) 11          ! { dg-output "\\*\\*(\n|\r\n|\r)" }
+      write(*,50) 11          ! { dg-output "\\*\\*(\r*\n+)" }
 C { dg-output "\$" }
       end

@@ -24,6 +24,8 @@
 
 #include "sbitmap.h"
 
+rtl_opt_pass *make_pass_insert_bti (gcc::context *ctxt);
+
 extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
 extern bool use_simple_return_p (void);
@@ -379,6 +381,7 @@ extern int vfp3_const_double_for_bits (rtx);
 extern void arm_emit_coreregs_64bit_shift (enum rtx_code, rtx, rtx, rtx, rtx,
 					   rtx);
 extern bool arm_fusion_enabled_p (tune_params::fuse_ops);
+extern bool arm_current_function_pac_enabled_p (void);
 extern bool arm_valid_symbolic_address_p (rtx);
 extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
 extern bool arm_expand_vector_compare (rtx, rtx_code, rtx, rtx, bool);
@@ -581,6 +584,8 @@ struct cpu_option
 
 extern const arch_option all_architectures[];
 extern const cpu_option all_cores[];
+
+extern enum aarch_key_type aarch_ra_sign_key;
 
 const cpu_option *arm_parse_cpu_option_name (const cpu_option *, const char *,
 					     const char *, bool = true);

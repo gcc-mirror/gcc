@@ -24,10 +24,10 @@ VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs-coroutines
 # Multilib support.
 MAKEOVERRIDES=
 
-version := $(shell $(CC) -dumpversion)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(target_alias)/$(version)
+libsubdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)
 # Used to install the shared libgcc.
 slibdir = @slibdir@
 
@@ -129,7 +129,7 @@ SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
              $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.def \
              $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.mod \
-             -I$(GM2_SRC)/gm2-libs-coroutines:$(GM2_SRC)/gm2-libs:$(GM2_SRC)/gm2-libs-iso \
+             -I$(GM2_SRC)/gm2-libs-coroutines -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
              "$(GM2_FOR_TARGET)" $@
 
 .mod.lo:
@@ -139,21 +139,21 @@ SYSTEM.def: Makefile
 	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2cor_la_CFLAGS) $< -o $@
 
 install-data-local: force
-	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	$(INSTALL_DATA) .libs/libm2cor.la $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2cor.la
-	$(INSTALL_DATA) .libs/libm2cor.a $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2cor.a
-	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)libm2cor.a
+	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
+	$(INSTALL_DATA) .libs/libm2cor.la $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
+	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2cor.la
+	$(INSTALL_DATA) .libs/libm2cor.a $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
+	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2cor.a
+	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2cor.a
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
-              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
            elif [ -f @srcdir@/../../gcc/m2/gm2-libs-coroutines/$$i ] ; then \
-              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-coroutines/$$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-coroutines/$$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
            else \
               echo "cannot find $$i" ; exit 1 ; \
            fi ; \
-           chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)$$i ; \
+           chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)$$i ; \
 	done
 
 force:

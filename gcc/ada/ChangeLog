@@ -1,3 +1,101 @@
+2023-01-16  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update copyright years.
+	* gcc-interface/Makefile.in: Likewise.
+	* gcc-interface/ada-builtin-types.def: Likewise.
+	* gcc-interface/ada-builtins.def: Likewise.
+	* gcc-interface/ada-tree.def: Likewise.
+	* gcc-interface/ada-tree.h: Likewise.
+	* gcc-interface/ada.h: Likewise.
+	* gcc-interface/config-lang.in: Likewise.
+	* gcc-interface/cuintp.cc: Likewise.
+	* gcc-interface/decl.cc: Likewise.
+	* gcc-interface/gadaint.h: Likewise.
+	* gcc-interface/gigi.h: Likewise.
+	* gcc-interface/lang-specs.h: Likewise.
+	* gcc-interface/lang.opt: Likewise.
+	* gcc-interface/misc.cc: Likewise.
+	* gcc-interface/system.ads: Likewise.
+	* gcc-interface/targtyps.cc: Likewise.
+	* gcc-interface/trans.cc: Likewise.
+	* gcc-interface/utils.cc: Likewise.
+	* gcc-interface/utils2.cc: Likewise.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Allocator_For_Return): Fix typo in comment.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Allocator_For_Return): Convert the expression
+	to the return object's type in the constrained array case as well.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): For a class-wide non-
+	interface stand-alone object initialized by a function call, call
+	Remove_Side_Effects on the expression to capture the result.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Has_Tag_Of_Type): Declare.
+	* exp_util.adb (Has_Tag_Of_Type): Move to package level.  Recurse on
+	qualified expressions.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Use a static reference
+	to the interface tag in more cases for class-wide interface objects.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Make_CW_Equivalent_Type.Has_Tag_Of_Type): Fix pasto.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Is_Temporary_For_Interface_Object): Delete.
+	(Is_Finalizable_Transient.Is_Aliased): Deal with the specific case
+	of temporaries generated for interface objects.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Do not generate a back-
+	and-forth displacement of the object's address when using a renaming
+	for an interface object with an expression of the same type.
+	* exp_ch4.adb (Expand_Allocator_Expression): Do not remove the side
+	effects of the expression up front for the simple allocators. Do not
+	call the Adjust primitive if the expression is a function call.
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Do not expand the call
+	unnecessarily for a special return object.
+	(Expand_Simple_Function_Return): Restore the displacement of the
+	return object's address in the case where the expression is the call
+	to a function whose result type is a type that needs finalization.
+	* exp_util.adb (Expand_Subtype_From_Expr): Do not remove the side
+	effects of the expression before calling Make_Subtype_From_Expr.
+	(Make_CW_Equivalent_Type): If the expression has the tag of its type
+	and this type has a uniform size, use 'Object_Size of this type in
+	lieu of 'Size of the expression to compute the expression's size.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Allocator_For_Return): Put back an interface
+	conversion for expressions with non-interface class-wide type.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Also optimize aliased
+	objects if their nominal subtype is not an unconstrained array.
+
+2023-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Factor out conditions
+	needed for an initializating expression that is a function call to
+	be renamable into the Is_Renamable_Function_Call predicate.
+	Use it to implement the renaming in the case of class-wide interface
+	objects.  Remove an interface conversion on all paths, separate and
+	optimize the renaming path in the special expansion for interfaces.
+	(Is_Renamable_Function_Call): New predicate.
+	(Make_Allocator_For_Return): Put back an interface conversion.
+	* exp_ch6.adb (Apply_CW_Accessibility_Check): Remove useless access
+	checks on RE_Tag_Ptr.
+
 2023-01-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* accessibility.adb, accessibility.ads, ada_get_targ.adb: Update copyright year.

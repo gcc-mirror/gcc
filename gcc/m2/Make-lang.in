@@ -176,7 +176,7 @@ m2/gm2-libs.texi: gm2-libs.texi-check; @true
 ifeq ($(HAVE_PYTHON),yes)
 gm2-libs.texi-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
                      $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def
-	test -d m2/gm2-libs-pim || $(mkinstalldirs) m2/gm2-libs-pim
+	test -d m2/gm2-libs-log || $(mkinstalldirs) m2/gm2-libs-log
 	test -d m2/gm2-libs-iso || $(mkinstalldirs) m2/gm2-libs-iso
 	test -d m2/gm2-libs || $(mkinstalldirs) m2/gm2-libs
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.texi
@@ -543,6 +543,7 @@ m2/gm2-gcc/m2configure.o: $(srcdir)/m2/gm2-gcc/m2configure.cc \
 
 m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.cc gt-m2-gm2-lang.h $(GCC_HEADER_DEPENDENCIES_FOR_M2)
 	$(COMPILER) -c -g $(GM2GCC) $(ALL_COMPILERFLAGS) \
+	    -DLIBSUBDIR=\"$(libsubdir)\" \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 m2/stor-layout.o: $(srcdir)/stor-layout.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
@@ -689,6 +690,7 @@ GM2-COMP-BOOT-DEFS = \
    M2DebugStack.def \
    M2Defaults.def \
    M2DriverOptions.def \
+   DynamicStringPath.def \
    M2Emit.def \
    M2Error.def \
    M2EvalSym.def \
@@ -760,6 +762,7 @@ GM2-COMP-BOOT-MODS = \
    M2DebugStack.mod \
    M2Defaults.mod \
    M2DriverOptions.mod \
+   DynamicStringPath.mod \
    M2Emit.mod \
    M2Error.mod \
    M2FileName.mod \
@@ -964,6 +967,7 @@ GM2-COMP-DEFS = \
    M2DebugStack.def \
    M2Defaults.def \
    M2DriverOptions.def \
+   DynamicStringPath.def \
    M2Emit.def \
    M2Error.def \
    M2FileName.def \
@@ -1031,6 +1035,7 @@ GM2-COMP-MODS = \
    M2DebugStack.mod \
    M2Defaults.mod \
    M2DriverOptions.mod \
+   DynamicStringPath.mod \
    M2Emit.mod \
    M2Error.mod \
    M2FileName.mod \
@@ -1498,7 +1503,10 @@ m2/gm2-libs/gm2-libs-host.h:
 # Autoconf inserts -DCROSS_DIRECTORY_STRUCTURE if we are building a
 # cross compiler and the ../Makefile.in above appends this to INTERNAL_CFLAGS.
 
-m2/gm2config.h:
+m2/gm2config.h: m2/gm2config.aci
+	grep -v define\ PACKAGE_ $< > $@
+
+m2/gm2config.aci:
 	NEW_SRCDIR=`${srcdir}/m2/tools-src/calcpath ../ ${srcdir} m2` ; \
         export NEW_SRCDIR ; \
 	cd m2 ; \
@@ -1521,7 +1529,7 @@ $(objdir)/m2/gm2-libs-min/SYSTEM.def: $(GM2_PROG_DEP)
 	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fpim \
              $(srcdir)/m2/gm2-libs-min/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-min/SYSTEM.mod \
-             -I$(srcdir)/m2/gm2-libs-min:$(srcdir)/m2/gm2-libs \
+             -I$(srcdir)/m2/gm2-libs-min -I$(srcdir)/m2/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
 
 $(objdir)/m2/gm2-libs/SYSTEM.def: $(GM2_PROG_DEP)
@@ -1539,7 +1547,7 @@ $(objdir)/m2/gm2-libs-iso/SYSTEM.def: $(GM2_PROG_DEP)
 	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fiso \
              $(srcdir)/m2/gm2-libs-iso/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-iso/SYSTEM.mod \
-             -I$(srcdir)/m2/gm2-libs-iso:$(srcdir)/m2/gm2-libs \
+             -I$(srcdir)/m2/gm2-libs-iso -I$(srcdir)/m2/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
 
 $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def: $(GM2_PROG_DEP)
@@ -1547,7 +1555,7 @@ $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def: $(GM2_PROG_DEP)
 	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fpim \
              $(srcdir)/m2/gm2-libs-coroutines/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-coroutines/SYSTEM.mod \
-             -I$(srcdir)/m2/gm2-libs-coroutines:$(srcdir)/m2/gm2-libs-iso:$(srcdir)/m2/gm2-libs \
+             -I$(srcdir)/m2/gm2-libs-coroutines -I$(srcdir)/m2/gm2-libs-iso -I$(srcdir)/m2/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
 
 build-compiler: $(GM2-COMP-MODS:%.mod=m2/gm2-compiler/%.o) \

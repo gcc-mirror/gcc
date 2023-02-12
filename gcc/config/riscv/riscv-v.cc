@@ -349,4 +349,26 @@ get_avl_type_rtx (enum avl_type type)
   return gen_int_mode (type, Pmode);
 }
 
+/* Return the RVV vector mode that has NUNITS elements of mode INNER_MODE.
+   This function is not only used by builtins, but also will be used by
+   auto-vectorization in the future.  */
+opt_machine_mode
+get_vector_mode (scalar_mode inner_mode, poly_uint64 nunits)
+{
+  enum mode_class mclass;
+  if (inner_mode == E_BImode)
+    mclass = MODE_VECTOR_BOOL;
+  else if (FLOAT_MODE_P (inner_mode))
+    mclass = MODE_VECTOR_FLOAT;
+  else
+    mclass = MODE_VECTOR_INT;
+  machine_mode mode;
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
+    if (inner_mode == GET_MODE_INNER (mode)
+	&& known_eq (nunits, GET_MODE_NUNITS (mode))
+	&& riscv_v_ext_vector_mode_p (mode))
+      return mode;
+  return opt_machine_mode ();
+}
+
 } // namespace riscv_vector

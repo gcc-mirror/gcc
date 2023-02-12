@@ -37,10 +37,11 @@
 
 #include <bits/stl_pair.h>		// for std::pair
 #include <bits/uses_allocator.h>	// for std::allocator_arg_t
-#include <bits/utility.h>		// for std::get, std::tuple_size etc.
+#include <bits/utility.h>		// for std::tuple_size etc.
 #include <bits/invoke.h>		// for std::__invoke
 #if __cplusplus > 201703L
 # include <compare>
+# include <bits/ranges_util.h>		// for std::ranges::subrange
 # define __cpp_lib_constexpr_tuple 201811L
 #endif
 
@@ -2312,9 +2313,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_from_tuple(_Tuple&& __t)
     noexcept(__unpack_std_tuple<is_nothrow_constructible, _Tp, _Tuple>)
     {
-      return __make_from_tuple_impl<_Tp>(
-        std::forward<_Tuple>(__t),
-	make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
+      constexpr size_t __n = tuple_size_v<remove_reference_t<_Tuple>>;
+#if __has_builtin(__reference_constructs_from_temporary)
+      if constexpr (__n == 1)
+	{
+	  using _Elt = decltype(std::get<0>(std::declval<_Tuple>()));
+	  static_assert(!__reference_constructs_from_temporary(_Tp, _Elt));
+	}
+#endif
+      return __make_from_tuple_impl<_Tp>(std::forward<_Tuple>(__t),
+					 make_index_sequence<__n>{});
     }
 #endif // C++17
 

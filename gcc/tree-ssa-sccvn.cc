@@ -5826,7 +5826,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
   poly_int64 soff, doff;
   unsigned n_executable = 0;
   edge_iterator ei;
-  edge e;
+  edge e, sameval_e = NULL;
 
   /* TODO: We could check for this in initialization, and replace this
      with a gcc_assert.  */
@@ -5867,7 +5867,10 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		 && ssa_undefined_value_p (def, false))
 	  seen_undef = def;
 	else if (sameval == VN_TOP)
-	  sameval = def;
+	  {
+	    sameval = def;
+	    sameval_e = e;
+	  }
 	else if (!expressions_equal_p (def, sameval))
 	  {
 	    /* We know we're arriving only with invariant addresses here,
@@ -5905,7 +5908,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		if (! val && vnresult && vnresult->predicated_values)
 		  {
 		    val = vn_nary_op_get_predicated_value (vnresult, e->src);
-		    if (val && integer_truep (val))
+		    if (val && integer_truep (val)
+			&& !(sameval_e && (sameval_e->flags & EDGE_DFS_BACK)))
 		      {
 			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
@@ -5923,7 +5927,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		    if (EDGE_COUNT (bb->preds) == 2
 			&& (val = vn_nary_op_get_predicated_value
 				    (vnresult, EDGE_PRED (bb, 0)->src))
-			&& integer_truep (val))
+			&& integer_truep (val)
+			&& !(e->flags & EDGE_DFS_BACK))
 		      {
 			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
@@ -5943,6 +5948,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	    sameval = NULL_TREE;
 	    break;
 	  }
+	else
+	  sameval_e = NULL;
       }
 
   /* If the value we want to use is flowing over the backedge and we

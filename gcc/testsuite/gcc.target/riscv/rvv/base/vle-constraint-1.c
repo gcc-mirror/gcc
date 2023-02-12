@@ -6,7 +6,7 @@
 
 /*
 ** f1:
-**	vsetvli\tzero,4,e32,m1,tu,ma
+**	vsetivli\tzero,4,e32,m1,tu,ma
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vse32\.v\tv[0-9]+,0\([a-x0-9]+\)
@@ -23,7 +23,7 @@ void f1 (float * in, float *out)
 ** f2:
 **	vsetvli\t[a-x0-9]+,zero,e8,mf4,ta,ma
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**	vsetvli\tzero,4,e32,m1,ta,ma
+**	vsetivli\tzero,4,e32,m1,ta,ma
 **	vle32.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vse32.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
@@ -41,7 +41,7 @@ void f2 (float * in, float *out)
 ** f3:
 **	vsetvli\t[a-x0-9]+,zero,e8,mf4,ta,ma
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**	vsetvli\tzero,4,e32,m1,tu,mu
+**	vsetivli\tzero,4,e32,m1,tu,mu
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vse32.v\tv[0-9]+,0\([a-x0-9]+\)
@@ -58,7 +58,7 @@ void f3 (float * in, float *out)
 
 /*
 ** f4:
-**	vsetvli\tzero,4,e8,mf8,tu,ma
+**	vsetivli\tzero,4,e8,mf8,tu,ma
 **	vle8\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle8\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vse8\.v\tv[0-9]+,0\([a-x0-9]+\)
@@ -75,7 +75,7 @@ void f4 (int8_t * in, int8_t *out)
 ** f5:
 **	vsetvli\t[a-x0-9]+,zero,e8,mf8,ta,ma
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**	vsetvli\tzero,4,e8,mf8,ta,ma
+**	vsetivli\tzero,4,e8,mf8,ta,ma
 **	vle8.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vse8.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
@@ -93,7 +93,7 @@ void f5 (int8_t * in, int8_t *out)
 ** f6:
 **	vsetvli\t[a-x0-9]+,zero,e8,mf8,ta,ma
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**	vsetvli\tzero,4,e8,mf8,tu,mu
+**	vsetivli\tzero,4,e8,mf8,tu,mu
 **	vle8\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle8.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	vse8.v\tv[0-9]+,0\([a-x0-9]+\)

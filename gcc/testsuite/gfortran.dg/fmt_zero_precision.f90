@@ -46,40 +46,40 @@
  250   format(1pe7.0,"<")
  300   format(1pe6.0,"<")
   end
-! { dg-output " 1\\.<(\n|\r\n|\r)" }
-! { dg-output "-1\\.<(\n|\r\n|\r)" }
-! { dg-output "-9\\.<(\n|\r\n|\r)" }
-! { dg-output "-1\\.<(\n|\r\n|\r)" }
-! { dg-output "-1\\.<(\n|\r\n|\r)" }
-! { dg-output "-1\\.<(\n|\r\n|\r)" }
-! { dg-output "-1\\.<(\n|\r\n|\r)" }
-! { dg-output "-0\\.<(\n|\r\n|\r)" }
-! { dg-output "     38\\.<(\n|\r\n|\r)" }
-! { dg-output "  10345\\.<(\n|\r\n|\r)" }
-! { dg-output "    334\\.<(\n|\r\n|\r)" }
-! { dg-output "    333\\.<(\n|\r\n|\r)" }
-! { dg-output "1\\.E-01(\n|\r\n|\r)" }
-! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output " 1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-9\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-6\\.E-01<(\n|\r\n|\r)" }
-! { dg-output "-5\\.E-01<(\n|\r\n|\r)" }
-! { dg-output "  4\\.E\\+01<(\n|\r\n|\r)" }
-! { dg-output "  1\\.E\\+04<(\n|\r\n|\r)" }
-! { dg-output "  3\\.E\\+02<(\n|\r\n|\r)" }
-! { dg-output "  3\\.E\\+02<(\n|\r\n|\r)" }
-! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output " 1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-9\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
-! { dg-output "-6\\.E-01<(\n|\r\n|\r)" }
-! { dg-output "-5\\.E-01<(\n|\r\n|\r)" }
-! { dg-output "4\\.E\\+01<(\n|\r\n|\r)" }
-! { dg-output "1\\.E\\+04<(\n|\r\n|\r)" }
-! { dg-output "3\\.E\\+02<(\n|\r\n|\r)" }
-! { dg-output "3\\.E\\+02<(\n|\r\n|\r)" }
+! { dg-output " 1\\.<(\r*\n+)" }
+! { dg-output "-1\\.<(\r*\n+)" }
+! { dg-output "-9\\.<(\r*\n+)" }
+! { dg-output "-1\\.<(\r*\n+)" }
+! { dg-output "-1\\.<(\r*\n+)" }
+! { dg-output "-1\\.<(\r*\n+)" }
+! { dg-output "-1\\.<(\r*\n+)" }
+! { dg-output "-0\\.<(\r*\n+)" }
+! { dg-output "     38\\.<(\r*\n+)" }
+! { dg-output "  10345\\.<(\r*\n+)" }
+! { dg-output "    334\\.<(\r*\n+)" }
+! { dg-output "    333\\.<(\r*\n+)" }
+! { dg-output "1\\.E-01(\r*\n+)" }
+! { dg-output "-1\\.E\\+00<(\r*\n+)" }
+! { dg-output " 1\\.E\\+00<(\r*\n+)" }
+! { dg-output "-9\\.E\\+00<(\r*\n+)" }
+! { dg-output "-1\\.E\\+00<(\r*\n+)" }
+! { dg-output "-1\\.E\\+00<(\r*\n+)" }
+! { dg-output "-1\\.E\\+00<(\r*\n+)" }
+! { dg-output "-6\\.E-01<(\r*\n+)" }
+! { dg-output "-5\\.E-01<(\r*\n+)" }
+! { dg-output "  4\\.E\\+01<(\r*\n+)" }
+! { dg-output "  1\\.E\\+04<(\r*\n+)" }
+! { dg-output "  3\\.E\\+02<(\r*\n+)" }
+! { dg-output "  3\\.E\\+02<(\r*\n+)" }
+! { dg-output "-1\\.E\\+00<(\r*\n+)" }
+! { dg-output " 1\\.E\\+00<(\r*\n+)" }
+! { dg-output "-9\\.E\\+00<(\r*\n+)" }
+! { dg-output "-1\\.E\\+00<(\r*\n+)" }
+! { dg-output "-1\\.E\\+00<(\r*\n+)" }
+! { dg-output "-1\\.E\\+00<(\r*\n+)" }
+! { dg-output "-6\\.E-01<(\r*\n+)" }
+! { dg-output "-5\\.E-01<(\r*\n+)" }
+! { dg-output "4\\.E\\+01<(\r*\n+)" }
+! { dg-output "1\\.E\\+04<(\r*\n+)" }
+! { dg-output "3\\.E\\+02<(\r*\n+)" }
+! { dg-output "3\\.E\\+02<(\r*\n+)" }

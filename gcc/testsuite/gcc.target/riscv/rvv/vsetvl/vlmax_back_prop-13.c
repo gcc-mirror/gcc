@@ -22,8 +22,8 @@ void f (int32_t * restrict in, int32_t * restrict out, int n, int cond, int cond
     *(vfloat32mf2_t*)(out + i + 500) = v;
   }
   for (int i = 0; i < n; i++) {
-    vfloat64m1_t v = *(vfloat64m1_t*)(in + 500 + i);
-    *(vfloat64m1_t*)(out + i + 600) = v;
+    vuint32mf2_t v = *(vuint32mf2_t*)(in + 500 + i);
+    *(vuint32mf2_t*)(out + i + 600) = v;
   }
 
   if (cond == 0)
@@ -58,7 +58,7 @@ void f (int32_t * restrict in, int32_t * restrict out, int n, int cond, int cond
   }
 }
 
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf2,\s*t[au],\s*m[au]} 1 { target { no-opts "-O0"  no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" no-opts "-flto" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf2,\s*t[au],\s*m[au]} 1 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" no-opts "-flto" } } } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16,\s*m1,\s*t[au],\s*m[au]} 1 { target { no-opts "-O0" no-opts "-O1"  no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" no-opts "-flto" } } } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf8,\s*t[au],\s*m[au]} 1 { target { no-opts "-O0" no-opts "-O1"  no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" no-opts "-flto" } } } } */
 /* { dg-final { scan-assembler-times {vsetvli} 3 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" no-opts "-flto" } } } } */

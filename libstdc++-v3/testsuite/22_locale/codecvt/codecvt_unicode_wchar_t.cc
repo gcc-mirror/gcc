@@ -27,8 +27,8 @@ void
 test_utf8_utf32_codecvts ()
 {
 #if __SIZEOF_WCHAR_T__ == 4
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<wchar_t> ());
-  test_utf8_utf32_codecvts (*cvt_ptr);
+  codecvt_utf8<wchar_t> cvt;
+  test_utf8_utf32_codecvts (cvt);
 #endif
 }
 
@@ -36,8 +36,8 @@ void
 test_utf8_utf16_codecvts ()
 {
 #if __SIZEOF_WCHAR_T__ >= 2
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8_utf16<wchar_t> ());
-  test_utf8_utf16_cvts (*cvt_ptr);
+  codecvt_utf8_utf16<wchar_t> cvt;
+  test_utf8_utf16_cvts (cvt);
 #endif
 }
 
@@ -45,8 +45,8 @@ void
 test_utf8_ucs2_codecvts ()
 {
 #if __SIZEOF_WCHAR_T__ == 2
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<wchar_t> ());
-  test_utf8_ucs2_cvts (*cvt_ptr);
+  codecvt_utf8<wchar_t> cvt;
+  test_utf8_ucs2_cvts (cvt);
 #endif
 }
 

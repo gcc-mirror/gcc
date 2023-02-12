@@ -69,8 +69,8 @@ contains
 #endif
   subroutine test2 ()
     !$omp target
-      call f04 ()	! { dg-final { scan-tree-dump-times "f03 \\\(\\\);" 1 "gimple" { target { { i?86-*-* x86_64-*-* } && lp64 } } } }
-			! { dg-final { scan-tree-dump-times "f04 \\\(\\\);" 1 "gimple" { target { { ! lp64 } || { ! { i?86-*-* x86_64-*-* } } } } } }
+      call f04 () ! { dg-final { scan-tree-dump-times "f03 \\\(\\\);" 1 "gimple" { target { { i?86-*-* x86_64-*-* } && { ! ilp32 } } } } }
+                  ! { dg-final { scan-tree-dump-times "f04 \\\(\\\);" 1 "gimple" { target { { ilp32 } || { ! { i?86-*-* x86_64-*-* } } } } } }
     !$omp end target
     !$omp target
       call f16 ()	! { dg-final { scan-tree-dump-times "f15 \\\(\\\);" 1 "gimple" { target ia32 } } }

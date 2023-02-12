@@ -1,3 +1,156 @@
+2023-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/shared_ptr.xml: Move links from both
+	http://open-std.org and http://www.open-std.org to
+	https://www.open-std.org.
+	* doc/html/manual/memory.html: Regenerate.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Adjust link to
+	ISO C++ standard at ANSI.
+	Move link to www.open-std.org to https.
+	* doc/html/manual/appendix_contributing.html: Regenerate.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Move sourceforge.net
+	links to https.
+	* doc/html/manual/documentation_hacking.html: Regenerate.
+
+2023-01-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Update www.open-std.org link to https.
+	* doc/html/manual/abi.html: Regenerate.
+
+2023-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/108568
+	* testsuite/17_intro/names.cc (__unused): For linux or GNU hurd
+	include features.h if present and then check __GLIBC__ and
+	__GLIBC_MINOR__ macros for glibc prior to 2.19, instead of testing
+	__GLIBC_PREREQ which isn't defined yet.
+
+2023-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdata_stream): Use constant instead of
+	string literal.
+
+2023-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108554
+	* testsuite/23_containers/map/modifiers/108554.cc: Use dg-bogus.
+
+2023-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (operator>>(istream&, ZoneInfo&)): Allow
+	rules named "+" for compatibility with older tzdata.zi files.
+
+2023-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108554
+	* include/bits/stl_tree.h (_Rb_tree_insert_and_rebalance): Add
+	nonnull attribute.
+	(_Rb_tree_rebalance_for_erase): Add nonnull and returns_nonnull
+	attributes.
+	* testsuite/23_containers/map/modifiers/108554.cc: New test.
+
+2023-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108530
+	* src/c++20/tzdb.cc (current_zone): Look for TIMEZONE or ZONE in
+	/etc/sysconfig/clock, not DEFAULT_TIMEZONE.
+
+2023-01-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/intro.xml: Update links to www.open-std.org to
+	use https.
+	* doc/html/manual/bugs.html: Regenerate.
+
+2023-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108530
+	* src/c++20/tzdb.cc (current_zone): Look for DEFAULT_TIMEZONE in
+	/etc/sysconfig/clock.
+
+2023-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102301
+	* include/bits/ranges_base.h: Include <bits/stl_iterator.h> for
+	std::make_reverse_iterator.
+	* include/std/tuple: Include <bits/ranges_util.h> for subrange.
+	(make_from_tuple): Add static assertion from P2255 to diagnose
+	dangling references.
+	* testsuite/20_util/tuple/make_from_tuple/dangling_ref.cc: New test.
+	* testsuite/20_util/tuple/make_from_tuple/tuple_like.cc: New test.
+
+2023-01-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_Unchecked): New.
+	(_Safe_iterator(const _Safe_iterator&, _Unchecked)): New.
+	(_Safe_iterator::operator++(int)): Use latter.
+	(_Safe_iterator::operator--(int)): Likewise.
+	(_Safe_iterator(_Iterator, const _Safe_sequence_base*)): Remove !_M_insular()
+	check.
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>::_Unchecked):
+	New.
+	(_Safe_local_iterator(const _Safe_local_iterator&, _Unchecked)): New.
+	(_Safe_local_iterator::operator++(int)): Use latter.
+	* src/c++11/debug.cc (_S_debug_messages): Add as comment the _Debug_msg_id
+	entry associated to the array entry.
+
+2023-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (u8path): Add deprecated attribute.
+	* testsuite/27_io/filesystem/path/construct/90281.cc: Add
+	-Wno-deprecated-declarations for C++20 and later.
+	* testsuite/27_io/filesystem/path/factory/u8path-char8_t.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/factory/u8path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/native/string.cc: Likewise.
+	* testsuite/27_io/filesystem/path/factory/u8path-depr.cc: New test.
+
+2023-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (random_device) [!_GLIBCXX_USE_DEV_RANDOM]:
+	Always call _M_fini and _M_getentropy.
+
+2023-01-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Adjust links
+	to www.open-std.org to use https.
+	(COM: Component Model Object Technologies): Rename from...
+	(The Component Object Model): ...to.
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
+2023-01-18  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	* testsuite/22_locale/codecvt/codecvt_unicode.cc: Simplify.
+	* testsuite/22_locale/codecvt/codecvt_unicode.h: Simplify.
+	* testsuite/22_locale/codecvt/codecvt_unicode_wchar_t.cc: Simplify.
+
+2023-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR): Check $target_os instead
+	of $host. Fix check for file being present during native build.
+	* configure: Regenerate.
+
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2023-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (_GLIBCXX_USE_CXX11_ABI): Define to 1.
+
+2023-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108413
+	* include/c_compatibility/stdatomic.h: Change copyright line to
+	be consistent with other headers contributed under DCO terms.
+	* include/std/expected: Add full stop to copyright line.
+	* src/c++20/tzdb.cc: Likewise.
+
 2023-01-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/status_cxx2014.xml: Switch www.open-std.org to

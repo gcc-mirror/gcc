@@ -214,6 +214,24 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   def_or_undef_macro (pfile, "__ARM_FEATURE_COMPLEX", TARGET_COMPLEX);
   def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT);
 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_PAUTH", TARGET_HAVE_PACBTI);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_BTI", TARGET_HAVE_PACBTI);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_BTI_DEFAULT",
+		      aarch_enable_bti == 1);
+
+  cpp_undef (pfile, "__ARM_FEATURE_PAC_DEFAULT");
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
+  {
+    unsigned int pac = 1;
+
+    gcc_assert (aarch_ra_sign_key == AARCH_KEY_A);
+
+    if (aarch_ra_sign_scope == AARCH_FUNCTION_ALL)
+      pac |= 0x4;
+
+    builtin_define_with_int_value ("__ARM_FEATURE_PAC_DEFAULT", pac);
+  }
+
   cpp_undef (pfile, "__ARM_FEATURE_MVE");
   if (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT)
     {

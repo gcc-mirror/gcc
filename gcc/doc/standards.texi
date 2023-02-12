@@ -280,7 +280,7 @@ works with the Apple/NeXT Objective-C runtime library.
 There is no formal written standard for Objective-C or Objective-C++@.
 The authoritative manual on traditional Objective-C (1.0) is
 ``Object-Oriented Programming and the Objective-C Language'':
-@uref{http://www.gnustep.org/@/resources/@/documentation/@/ObjectivCBook.pdf}
+@uref{https://gnustep.github.io/@/resources/@/documentation/@/ObjectivCBook.pdf}
 is the original NeXTstep document.
 
 The Objective-C exception and synchronization syntax (that is, the
@@ -318,7 +318,7 @@ available online, see @uref{https://gcc.gnu.org/readings.html}
 @section Go Language
 
 As of the GCC 4.7.1 release, GCC supports the Go 1 language standard,
-described at @uref{https://golang.org/doc/go1}.
+described at @uref{https://go.dev/doc/go1}.
 
 @section D language
 
