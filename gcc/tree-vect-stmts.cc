@@ -10677,7 +10677,8 @@ vectorizable_condition (vec_info *vinfo,
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	      if (bitop2 == NOP_EXPR)
 		vec_compare = new_temp;
-	      else if (bitop2 == BIT_NOT_EXPR)
+	      else if (bitop2 == BIT_NOT_EXPR
+		       && reduction_type != EXTRACT_LAST_REDUCTION)
 		{
 		  /* Instead of doing ~x ? y : z do x ? z : y.  */
 		  vec_compare = new_temp;
@@ -10686,9 +10687,13 @@ vectorizable_condition (vec_info *vinfo,
 	      else
 		{
 		  vec_compare = make_ssa_name (vec_cmp_type);
-		  new_stmt
-		    = gimple_build_assign (vec_compare, bitop2,
-					   vec_cond_lhs, new_temp);
+		  if (bitop2 == BIT_NOT_EXPR)
+		    new_stmt
+		      = gimple_build_assign (vec_compare, bitop2, new_temp);
+		  else
+		    new_stmt
+		      = gimple_build_assign (vec_compare, bitop2,
+					     vec_cond_lhs, new_temp);
 		  vect_finish_stmt_generation (vinfo, stmt_info,
 					       new_stmt, gsi);
 		}

@@ -19,7 +19,7 @@ import gdb
 import itertools
 import re
 import sys, os, errno
-from datetime import datetime, timezone
+import datetime
 
 ### Python 2 + Python 3 compatibility code
 
@@ -45,6 +45,7 @@ if sys.version_info[0] > 2:
     izip = zip
     # Also, int subsumes long
     long = int
+    _utc_timezone = datetime.timezone.utc
 else:
     ### Python 2 stuff
     class Iterator:
@@ -63,6 +64,20 @@ else:
 
     # In Python 2, we still need these from itertools
     from itertools import imap, izip
+
+    # Python 2 does not provide the datetime.UTC singleton.
+    class UTC(datetime.tzinfo):
+        """Concrete tzinfo class representing the UTC time zone"""
+
+        def utcoffset(self, dt):
+            return datetime.timedelta(0)
+
+        def tzname(self, dt):
+            return "UTC"
+
+        def dst(self, dt):
+            return datetime.timedelta(0)
+    _utc_timezone = UTC()
 
 # Try to use the new-style pretty-printing if available.
 _use_gdb_pp = True
@@ -1955,7 +1970,7 @@ class StdChronoTimePointPrinter:
             num, den = printer._ratio()
             secs = (r * num / den) + offset
             try:
-                dt = datetime.fromtimestamp(secs, timezone.utc)
+                dt = datetime.fromtimestamp(secs, _utc_timezone)
                 time = ' [{:%Y-%m-%d %H:%M:%S}]'.format(dt)
             except:
                 pass

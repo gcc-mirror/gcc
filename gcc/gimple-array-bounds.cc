@@ -350,18 +350,14 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 
   /* Set to the type of the special array member for a COMPONENT_REF.  */
   special_array_member sam{ };
-
+  tree afield_decl = NULL_TREE;
   tree arg = TREE_OPERAND (ref, 0);
-  const bool compref = TREE_CODE (arg) == COMPONENT_REF;
-  unsigned int strict_flex_array_level = flag_strict_flex_arrays;
 
-  if (compref)
+  if (TREE_CODE (arg) == COMPONENT_REF)
     {
       /* Try to determine special array member type for this COMPONENT_REF.  */
       sam = component_ref_sam_type (arg);
-      /* Get the level of strict_flex_array for this array field.  */
-      tree afield_decl = TREE_OPERAND (arg, 1);
-      strict_flex_array_level = strict_flex_array_level_of (afield_decl);
+      afield_decl = TREE_OPERAND (arg, 1);
     }
 
   get_up_bounds_for_array_ref (ref, &decl, &up_bound, &up_bound_p1);
@@ -412,39 +408,15 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 
       /* issue warnings for -Wstrict-flex-arrays according to the level of
 	 flag_strict_flex_arrays.  */
-      if (out_of_bound && warn_strict_flex_arrays)
-      switch (strict_flex_array_level)
-	{
-	  case 3:
-	    /* Issue additional warnings for trailing arrays [0].  */
-	    if (sam == special_array_member::trail_0)
+      if ((out_of_bound && warn_strict_flex_arrays)
+	  && (((sam == special_array_member::trail_0)
+		|| (sam == special_array_member::trail_1)
+		|| (sam == special_array_member::trail_n))
+	      && DECL_NOT_FLEXARRAY (afield_decl)))
 	      warned = warning_at (location, OPT_Wstrict_flex_arrays,
 				   "trailing array %qT should not be used as "
-				   "a flexible array member for level 3",
+				   "a flexible array member",
 				   artype);
-	    /* FALLTHROUGH.  */
-	  case 2:
-	    /* Issue additional warnings for trailing arrays [1].  */
-	    if (sam == special_array_member::trail_1)
-	      warned = warning_at (location, OPT_Wstrict_flex_arrays,
-				   "trailing array %qT should not be used as "
-				   "a flexible array member for level 2 and "
-				   "above", artype);
-	    /* FALLTHROUGH.  */
-	  case 1:
-	    /* Issue warnings for trailing arrays [n].  */
-	    if (sam == special_array_member::trail_n)
-	      warned = warning_at (location, OPT_Wstrict_flex_arrays,
-				   "trailing array %qT should not be used as "
-				   "a flexible array member for level 1 and "
-				   "above", artype);
-	    break;
-	  case 0:
-	    /* Do nothing.  */
-	    break;
-	  default:
-	    gcc_unreachable ();
-	}
 
       /* Avoid more warnings when checking more significant subscripts
 	 of the same expression.  */

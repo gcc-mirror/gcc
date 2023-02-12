@@ -318,6 +318,10 @@ public:
   void register_replacement (tree base, unsigned unit_offset, tree replacement);
   /* Register a replacement decl for the transformation done in APM.  */
   void register_replacement (ipa_adjusted_param *apm, tree replacement);
+  /* Sort m_replacements and set m_sorted_replacements_p to true.  Users that
+     call register_replacement themselves must call the method before any
+     lookup and thus also any statement or expression modification.  */
+  void sort_replacements ();
   /* Lookup a replacement for a given offset within a given parameter.  */
   tree lookup_replacement (tree base, unsigned unit_offset);
   /* Lookup a replacement for an expression, if there is one.  */
@@ -367,6 +371,7 @@ private:
   unsigned get_base_index (ipa_adjusted_param *apm);
   ipa_param_body_replacement *lookup_replacement_1 (tree base,
 						    unsigned unit_offset);
+  ipa_param_body_replacement *lookup_first_base_replacement (tree base);
   tree replace_removed_params_ssa_names (tree old_name, gimple *stmt);
   bool modify_expression (tree *expr_p, bool convert);
   bool modify_assignment (gimple *stmt, gimple_seq *extra_stmts);
@@ -425,6 +430,10 @@ private:
      its this pointer and must be converted to a normal function.  */
 
   bool m_method2func;
+
+  /* True if m_replacements have ben sorted since the last insertion.  */
+
+  bool m_sorted_replacements_p;
 };
 
 void push_function_arg_decls (vec<tree> *args, tree fndecl);

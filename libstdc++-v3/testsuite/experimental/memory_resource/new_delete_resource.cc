@@ -27,6 +27,10 @@
 // See PR libstdc++/77691
 # define BAD_MAX_ALIGN_T 1
 #endif
+#if defined __hpux__ && defined __hppa__ && defined __LP64__
+// Ignore inconsistent long double and malloc alignment (libstdc++/77691)
+# define BAD_MAX_ALIGN_T 1
+#endif
 
 bool new_called = false;
 bool delete_called = false;

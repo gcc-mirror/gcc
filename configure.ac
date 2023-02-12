@@ -1489,7 +1489,9 @@ if test -d ${srcdir}/gcc ; then
   require_mpc=yes
 fi
 if test -d ${srcdir}/gdb ; then
-  require_gmp=yes
+  if test "x$enable_gdb" != xno; then
+   require_gmp=yes
+  fi
 fi
 
 gmplibs="-lmpfr -lgmp"

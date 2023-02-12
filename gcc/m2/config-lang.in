@@ -52,32 +52,3 @@ gtfiles="\$(srcdir)/m2/gm2-lang.cc \
 outputs="m2/config-make \
          m2/Make-maintainer \
         "
-
-mkdir -p m2/gm2-compiler-boot
-mkdir -p m2/gm2-libs-boot
-mkdir -p m2/gm2-ici-boot
-mkdir -p m2/gm2-libiberty
-mkdir -p m2/gm2-gcc
-mkdir -p m2/gm2-compiler
-mkdir -p m2/gm2-libs
-mkdir -p m2/gm2-libs-iso
-mkdir -p m2/gm2-compiler-paranoid
-mkdir -p m2/gm2-libs-paranoid
-mkdir -p m2/gm2-compiler-verify
-mkdir -p m2/boot-bin
-mkdir -p m2/gm2-libs-pim
-mkdir -p m2/gm2-libs-coroutines
-mkdir -p m2/gm2-libs-min
-mkdir -p m2/pge-boot
-mkdir -p plugin
-mkdir -p stage1/m2 stage2/m2 stage3/m2 stage4/m2
-
-# directories used by Make-maintainer
-
-mkdir -p m2/gm2-auto
-mkdir -p m2/gm2-pg-boot
-mkdir -p m2/gm2-pge-boot
-mkdir -p m2/gm2-ppg-boot
-mkdir -p m2/mc-boot
-mkdir -p m2/mc-boot-ch
-mkdir -p m2/mc-boot-gen

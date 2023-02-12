@@ -1647,7 +1647,8 @@ c_register_pragma_1 (const char *space, const char *name,
 
   if (flag_preprocess_only)
     {
-      if (!(allow_expansion || ihandler.early_handler.handler_1arg))
+      if (cpp_get_options (parse_in)->directives_only
+	  || !(allow_expansion || ihandler.early_handler.handler_1arg))
 	return;
 
       pragma_pp_data pp_data;
@@ -1811,34 +1812,39 @@ c_pp_invoke_early_pragma_handler (unsigned int id)
 void
 init_pragma (void)
 {
-  if (flag_openacc)
+
+  if (!cpp_get_options (parse_in)->directives_only)
     {
-      const int n_oacc_pragmas = ARRAY_SIZE (oacc_pragmas);
-      int i;
+      if (flag_openacc)
+	{
+	  const int n_oacc_pragmas = ARRAY_SIZE (oacc_pragmas);
+	  int i;
 
-      for (i = 0; i < n_oacc_pragmas; ++i)
-	cpp_register_deferred_pragma (parse_in, "acc", oacc_pragmas[i].name,
-				      oacc_pragmas[i].id, true, true);
-    }
+	  for (i = 0; i < n_oacc_pragmas; ++i)
+	    cpp_register_deferred_pragma (parse_in, "acc", oacc_pragmas[i].name,
+					  oacc_pragmas[i].id, true, true);
+	}
 
-  if (flag_openmp)
-    {
-      const int n_omp_pragmas = ARRAY_SIZE (omp_pragmas);
-      int i;
+      if (flag_openmp)
+	{
+	  const int n_omp_pragmas = ARRAY_SIZE (omp_pragmas);
+	  int i;
 
-      for (i = 0; i < n_omp_pragmas; ++i)
-	cpp_register_deferred_pragma (parse_in, "omp", omp_pragmas[i].name,
-				      omp_pragmas[i].id, true, true);
-    }
-  if (flag_openmp || flag_openmp_simd)
-    {
-      const int n_omp_pragmas_simd = sizeof (omp_pragmas_simd)
-				     / sizeof (*omp_pragmas);
-      int i;
+	  for (i = 0; i < n_omp_pragmas; ++i)
+	    cpp_register_deferred_pragma (parse_in, "omp", omp_pragmas[i].name,
+					  omp_pragmas[i].id, true, true);
+	}
+      if (flag_openmp || flag_openmp_simd)
+	{
+	  const int n_omp_pragmas_simd
+	    = sizeof (omp_pragmas_simd) / sizeof (*omp_pragmas);
+	  int i;
 
-      for (i = 0; i < n_omp_pragmas_simd; ++i)
-	cpp_register_deferred_pragma (parse_in, "omp", omp_pragmas_simd[i].name,
-				      omp_pragmas_simd[i].id, true, true);
+	  for (i = 0; i < n_omp_pragmas_simd; ++i)
+	    cpp_register_deferred_pragma (parse_in, "omp",
+					  omp_pragmas_simd[i].name,
+					  omp_pragmas_simd[i].id, true, true);
+	}
     }
 
   if (!flag_preprocess_only)

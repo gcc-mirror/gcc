@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE LowLong ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-FROM Builtins IMPORT ilogbl, significandl, modfl, signbitl, scalbnl, huge_vall, nextafterl ;
+FROM Builtins IMPORT ilogbl, modfl, signbitl, scalbnl, huge_vall, nextafterl ;
 FROM dtoa IMPORT Mode, strtod, dtoa ;
 FROM libc IMPORT free ;
 FROM RealMath IMPORT power ;
@@ -64,9 +64,8 @@ END exponent ;
 
 PROCEDURE fraction (x: LONGREAL) : LONGREAL ;
 BEGIN
-   RETURN significandl(x)
+   RETURN scalbnl(x, -ilogbl (x))
 END fraction ;
-
 
 (*
    sign - returns the signum of x.  sign(x) = 1.0  for all x>0.0

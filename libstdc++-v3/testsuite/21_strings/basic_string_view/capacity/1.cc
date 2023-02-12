@@ -45,9 +45,11 @@ namespace std
       typedef A<B> 		char_type;
       // Unsigned as wint_t in unsigned.
       typedef unsigned long  	int_type;
+#if __STDC_HOSTED__
       typedef streampos 	pos_type;
       typedef streamoff 	off_type;
       typedef mbstate_t 	state_type;
+#endif // HOSTED
       
       static void 
       assign(char_type& __c1, const char_type& __c2)

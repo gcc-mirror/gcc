@@ -79,6 +79,7 @@
 // #include <execution>
 #include <optional>
 #include <variant>
+#include <string_view>
 #endif
 
 #if __cplusplus >= 202002L
@@ -99,7 +100,6 @@
 # include <coroutine>
 #endif
 #endif
-
 
 #if _GLIBCXX_HOSTED
 // C
@@ -201,7 +201,6 @@
 #include <filesystem>
 #include <optional>
 #include <memory_resource>
-#include <string_view>
 #include <variant>
 #endif
 

@@ -570,6 +570,8 @@ class switch_cfg_superedge : public cfg_superedge {
 
   const vec<tree> &get_case_labels () const { return m_case_labels; }
 
+  bool implicitly_created_default_p () const;
+
 private:
   auto_vec<tree> m_case_labels;
 };

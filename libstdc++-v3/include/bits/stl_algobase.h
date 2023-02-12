@@ -72,7 +72,10 @@
 #if __cplusplus >= 201103L
 # include <type_traits>
 #endif
-#if __cplusplus > 201703L
+#if __cplusplus >= 201402L
+# include <bit> // std::__bit_width
+#endif
+#if __cplusplus >= 202002L
 # include <compare>
 #endif
 
@@ -1505,29 +1508,25 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   /// This is a helper function for the sort routines and for random.tcc.
   //  Precondition: __n > 0.
-  inline _GLIBCXX_CONSTEXPR int
-  __lg(int __n)
-  { return (int)sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
-
-  inline _GLIBCXX_CONSTEXPR unsigned
-  __lg(unsigned __n)
-  { return (int)sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
-
-  inline _GLIBCXX_CONSTEXPR long
-  __lg(long __n)
-  { return (int)sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
-
-  inline _GLIBCXX_CONSTEXPR unsigned long
-  __lg(unsigned long __n)
-  { return (int)sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
-
-  inline _GLIBCXX_CONSTEXPR long long
-  __lg(long long __n)
-  { return (int)sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
-
-  inline _GLIBCXX_CONSTEXPR unsigned long long
-  __lg(unsigned long long __n)
-  { return (int)sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
+  template<typename _Tp>
+    inline _GLIBCXX_CONSTEXPR _Tp
+    __lg(_Tp __n)
+    {
+#if __cplusplus >= 201402L
+      return std::__bit_width(make_unsigned_t<_Tp>(__n)) - 1;
+#else
+      // Use +__n so it promotes to at least int.
+      const int __sz = sizeof(+__n);
+      int __w = __sz * __CHAR_BIT__ - 1;
+      if (__sz == sizeof(long long))
+	__w -= __builtin_clzll(+__n);
+      else if (__sz == sizeof(long))
+	__w -= __builtin_clzl(+__n);
+      else if (__sz == sizeof(int))
+	__w -= __builtin_clz(+__n);
+      return __w;
+#endif
+    }
 
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 

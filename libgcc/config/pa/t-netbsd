@@ -7,3 +7,4 @@ LIB1ASMFUNCS = _divI _divU _remI _remU _div_const _mulI _dyncall
 HOST_LIBGCC2_CFLAGS += -DELF=1 -DLINUX=1
 
 LIB2ADD = $(srcdir)/config/pa/fptr.c
+LIB2ADD_ST = $(srcdir)/config/pa/sync-libfuncs.c

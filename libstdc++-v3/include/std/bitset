@@ -1598,20 +1598,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       struct _Buffer
       {
-	_Buffer()
-	: _M_base(_Nb > 256 ? new _CharT[_Nb] : (_CharT*)__builtin_alloca(_Nb))
-	{ }
+	static _GLIBCXX_CONSTEXPR bool _S_use_alloca() { return _Nb <= 256; }
+
+	explicit _Buffer(_CharT* __p) : _M_ptr(__p) { }
 
 	~_Buffer()
 	{
-	  if _GLIBCXX17_CONSTEXPR (_Nb > 256)
-	    delete[] _M_base;
+	  if _GLIBCXX17_CONSTEXPR (!_S_use_alloca())
+	    delete[] _M_ptr;
 	}
 
-	_CharT* const _M_base;
+	_CharT* const _M_ptr;
       };
-      _Buffer __buf;
-      _CharT* __ptr = __buf._M_base;
+      _CharT* __ptr;
+      if _GLIBCXX17_CONSTEXPR (_Buffer::_S_use_alloca())
+	__ptr = (_CharT*)__builtin_alloca(_Nb);
+      else
+	__ptr = new _CharT[_Nb];
+      const _Buffer __buf(__ptr);
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 303. Bitset input operator underspecified
@@ -1662,8 +1666,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       if _GLIBCXX17_CONSTEXPR (_Nb)
       {
-	if (size_t __len = __ptr - __buf._M_base)
-	  __x.template _M_copy_from_ptr<_CharT, _Traits>(__buf._M_base, __len,
+	if (size_t __len = __ptr - __buf._M_ptr)
+	  __x.template _M_copy_from_ptr<_CharT, _Traits>(__buf._M_ptr, __len,
 							 0, __len,
 							 __zero, __one);
 	else

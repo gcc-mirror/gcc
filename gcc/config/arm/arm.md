@@ -12783,8 +12783,16 @@
   rtx hi_op0 = gen_highpart_mode (SImode, DImode, operands[0]);
   rtx hi_op1 = gen_highpart_mode (SImode, DImode, operands[1]);
 
-  emit_insn (gen_movmisalignsi (lo_op0, lo_op1));
-  emit_insn (gen_movmisalignsi (hi_op0, hi_op1));
+  if (aligned_operand (lo_op0, SImode) && aligned_operand (lo_op1, SImode))
+    {
+      emit_move_insn (lo_op0, lo_op1);
+      emit_move_insn (hi_op0, hi_op1);
+    }
+  else
+    {
+      emit_insn (gen_movmisalignsi (lo_op0, lo_op1));
+      emit_insn (gen_movmisalignsi (hi_op0, hi_op1));
+    }
   DONE;
 })
 

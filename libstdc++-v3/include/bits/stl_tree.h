@@ -1123,7 +1123,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__enable_if_t<!__same_value_type<_InputIterator>::value>
 	_M_insert_range_equal(_InputIterator __first, _InputIterator __last)
 	{
-	  _Alloc_node __an(*this);
 	  for (; __first != __last; ++__first)
 	    _M_emplace_equal(*__first);
 	}

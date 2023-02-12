@@ -33,7 +33,7 @@
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC	\
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} "	\
+  "%{Ofast|ffast-math|funsafe-math-optimizations:%{!shared:crtfastmath.o%s}} "	\
   UNKNOWN_ELF_STARTFILE_SPEC
 
 #define UNKNOWN_ELF_ENDFILE_SPEC	"crtend%O%s crtn%O%s"

@@ -30,6 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #ifdef __MINGW32__
+# define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # undef sleep
 # define sleep(x) Sleep(1000*(x))

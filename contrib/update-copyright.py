@@ -596,6 +596,8 @@ class TestsuiteFilter (GenericFilter):
                 '.go',
                 '.inc',
                 '.java',
+                '.mod',
+                '.rs'
                 ])
 
     def skip_file (self, dir, filename):
@@ -636,8 +638,9 @@ class LibPhobosFilter (GenericFilter):
         GenericFilter.__init__ (self)
 
         self.skip_files |= set ([
-                # Source module imported from upstream.
+                # Source modules imported from upstream.
                 'object.d',
+                '__builtins.di'
                 ])
 
         self.skip_dirs |= set ([
@@ -733,6 +736,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Stephen L. Moshier')
         self.add_external_author ('Sun Microsystems, Inc. All rights reserved.')
         self.add_external_author ('The D Language Foundation, All Rights Reserved')
+        self.add_external_author ('The fast_float authors')
         self.add_external_author ('The Go Authors.  All rights reserved.')
         self.add_external_author ('The Go Authors. All rights reserved.')
         self.add_external_author ('The Go Authors.')
@@ -785,6 +789,7 @@ class GCCCmdLine (CmdLine):
 
         self.default_dirs = [
             'c++tools',
+            'contrib',
             'gcc',
             'include',
             'libada',

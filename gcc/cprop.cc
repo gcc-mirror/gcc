@@ -1622,9 +1622,12 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	    {
 	      dest = BLOCK_FOR_INSN (XEXP (new_rtx, 0));
 	      /* Don't bypass edges containing instructions.  */
-	      edest = find_edge (bb, dest);
-	      if (edest && edest->insns.r)
-		dest = NULL;
+	      if (dest)
+		{
+		  edest = find_edge (bb, dest);
+		  if (edest && edest->insns.r)
+		    dest = NULL;
+		}
 	    }
 	  else
 	    dest = NULL;

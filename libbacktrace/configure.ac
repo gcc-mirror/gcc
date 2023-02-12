@@ -484,7 +484,18 @@ AC_CHECK_LIB([z], [compress],
     [AC_DEFINE(HAVE_ZLIB, 1, [Define if -lz is available.])])
 AM_CONDITIONAL(HAVE_ZLIB, test "$ac_cv_lib_z_compress" = yes)
 
-dnl Test whether the linker supports the --compress_debug_sections option.
+dnl Test whether the linker supports the --build-id option.
+AC_CACHE_CHECK([whether --build-id is supported],
+[libbacktrace_cv_ld_buildid],
+[LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--build-id"
+AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
+[libbacktrace_cv_ld_buildid=yes],
+[libbacktrace_cv_ld_buildid=no])
+LDFLAGS=$LDFLAGS_hold])
+AM_CONDITIONAL(HAVE_BUILDID, test "$libbacktrace_cv_ld_buildid" = yes)
+
+dnl Test whether the linker supports the --compress-debug-sections option.
 AC_CACHE_CHECK([whether --compress-debug-sections is supported],
 [libgo_cv_ld_compress],
 [LDFLAGS_hold=$LDFLAGS

@@ -6291,6 +6291,15 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
 
   if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
+  else if (REFERENCE_CLASS_P (t) && TREE_THIS_VOLATILE (t))
+    {
+      t = get_base_address (t);
+      if (t && DECL_P (t)
+	  && DECL_MODE (t) != BLKmode
+	  && !TREE_ADDRESSABLE (t))
+	bitmap_set_bit (forced_stack_vars, DECL_UID (t));
+      *walk_subtrees = 0;
+    }
   else if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
     {
       while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)

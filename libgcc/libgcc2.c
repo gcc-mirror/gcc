@@ -2273,6 +2273,7 @@ __clear_cache (void *beg __attribute__((__unused__)),
 /* Jump to a trampoline, loading the static chain address.  */
 
 #if defined(WINNT) && ! defined(__CYGWIN__)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 int getpagesize (void);
 int mprotect (char *,int, int);

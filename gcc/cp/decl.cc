@@ -8407,7 +8407,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (!DECL_EXTERNAL (decl)
 	  && !TREE_STATIC (decl)
 	  && decl == tree_strip_any_location_wrapper (init)
-	  && !warn_init_self)
+	  && !warning_enabled_at (DECL_SOURCE_LOCATION (decl), OPT_Winit_self))
 	suppress_warning (decl, OPT_Winit_self);
     }
 

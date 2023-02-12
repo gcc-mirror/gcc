@@ -160,7 +160,7 @@ case "${target}" in
   *-*-mingw*)
 	# OS support for atomic primitives.
         case ${target_thread_file} in
-          win32 | mcf)
+          win32 | mcf | single)
             config_path="${config_path} mingw"
             ;;
           posix)

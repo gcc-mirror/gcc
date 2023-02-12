@@ -573,7 +573,7 @@
 	(ior:SI (match_operand:SI 1 "register_operand"	"0")
 		(ashift:SI (const_int 1)
 			   (match_operand:SI 2 "csky_literal_K_operand" "K"))))]
-  "TARGET_MINI_REGISTERS"
+  "CSKY_ISA_FEATURE (E1)"
   "bseti\t%0, %2"
   [(set_attr "length" "2")])
 
@@ -582,7 +582,7 @@
 	(ior:SI (match_operand:SI 1 "register_operand"	"0,r")
 		(ashift:SI (const_int 1)
 			   (match_operand:SI 2 "csky_literal_K_operand" "K,K"))))]
-  "!TARGET_MINI_REGISTERS"
+  "CSKY_ISA_FEATURE (E2)"
   "bseti\t%0, %1, %2"
   [(set_attr "length" "2,4")])
 
@@ -599,7 +599,7 @@
 	(and:SI (match_operand:SI 1 "register_operand"	"0")
 		(not:SI (ashift:SI (const_int 1)
 				   (match_operand:SI 2 "csky_literal_K_operand" "K")))))]
-  "TARGET_MINI_REGISTERS"
+  "CSKY_ISA_FEATURE (E1)"
   "bclri\t%0, %2"
   [(set_attr "length" "2")])
 
@@ -608,7 +608,7 @@
 	(and:SI (match_operand:SI 1 "register_operand"	"0,r")
 		(not:SI (ashift:SI (const_int 1)
 				   (match_operand:SI 2 "csky_literal_K_operand" "K,K")))))]
-  "!TARGET_MINI_REGISTERS"
+  "CSKY_ISA_FEATURE (E2)"
   "bclri\t%0, %1, %2"
   [(set_attr "length" "2,4")])
 
@@ -3014,7 +3014,7 @@
   [(set (reg:CC CSKY_CC_REGNUM)
 	(ne:CC (match_operand:SI 0 "register_operand"	    "r")
 	       (match_operand:SI 1 "csky_literal_I_operand" "I")))]
-  "!TARGET_MINI_REGISTERS && CSKY_ISA_FEATURE (E2)"
+  "CSKY_ISA_FEATURE (E2)"
   "cmpnei\t%0, %1"
   [(set_attr "type" "cmp")]
 )
@@ -3056,7 +3056,7 @@
   [(set (reg:CC CSKY_CC_REGNUM)
 	(lt:CC (match_operand:SI 0 "register_operand"	     "a,r")
 	       (match_operand:SI 1 "csky_literal_Uk_operand" "J,Uk")))]
-  "!TARGET_MINI_REGISTERS && CSKY_ISA_FEATURE (E2)"
+  "CSKY_ISA_FEATURE (E2)"
   "cmplti\t%0, %1"
   [(set_attr "length" "2,4")
    (set_attr "type" "cmp")]
@@ -3149,7 +3149,7 @@
   [(set (reg:CC CSKY_CC_REGNUM)
 	(geu:CC (match_operand:SI 0 "register_operand"	      "a,r")
 		(match_operand:SI 1 "csky_literal_Uk_operand" "J,Uk")))]
-  "!TARGET_MINI_REGISTERS && CSKY_ISA_FEATURE (E2)"
+  "CSKY_ISA_FEATURE (E2)"
   "cmphsi\t%0, %1"
   [(set_attr "length" "2,4")
    (set_attr "type" "cmp")]

@@ -21,7 +21,6 @@
 
 #include <new>
 #include <string_view>
-#include <stdexcept>
 #include <testsuite_hooks.h>
 
 void

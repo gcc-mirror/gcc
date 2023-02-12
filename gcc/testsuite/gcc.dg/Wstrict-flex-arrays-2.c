@@ -31,9 +31,9 @@ void __attribute__((__noinline__)) stuff(
     struct trailing_array_3 *trailing_0,
     struct trailing_array_4 *trailing_flex)
 {
-    normal->c[5] = 5; 	/*{ dg-warning "should not be used as a flexible array member for level 1 and above" } */
-    trailing_1->c[2] = 2; /* { dg-warning "should not be used as a flexible array member for level 2 and above" } */
-    trailing_0->c[1] = 1; /* { dg-bogus "should not be used as a flexible array member for level 2 and above" } */
-    trailing_flex->c[10] = 10; /* { dg-bogus "should not be used as a flexible array member for level 2 and above" } */
+    normal->c[5] = 5; 	/*{ dg-warning "should not be used as a flexible array member" } */
+    trailing_1->c[2] = 2; /* { dg-warning "should not be used as a flexible array member" } */
+    trailing_0->c[1] = 1; /* { dg-bogus "should not be used as a flexible array member" } */
+    trailing_flex->c[10] = 10; /* { dg-bogus "should not be used as a flexible array member" } */
 
 }

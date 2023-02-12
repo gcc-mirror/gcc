@@ -5940,8 +5940,8 @@ pa_init_libfuncs (void)
 			"_U_Qfcnvxf_udbl_to_quad");
     }
 
-  if (TARGET_SYNC_LIBCALL)
-    init_sync_libfuncs (8);
+  if (TARGET_SYNC_LIBCALLS)
+    init_sync_libfuncs (MAX_SYNC_LIBFUNC_SIZE);
 }
 
 /* HP's millicode routines mean something special to the assembler.

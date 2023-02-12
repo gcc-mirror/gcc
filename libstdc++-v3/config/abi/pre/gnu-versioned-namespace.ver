@@ -142,6 +142,12 @@ GLIBCXX_8.0 {
     _ZN14__gnu_parallel9_Settings3getEv;
     _ZN14__gnu_parallel9_Settings3setERS0_;
 
+    # to_chars/from_chars _Float128
+    _ZNSt3__88to_charsEPcS0_DF128_;
+    _ZNSt3__88to_charsEPcS0_DF128_NS_12chars_formatE;
+    _ZNSt3__88to_charsEPcS0_DF128_NS_12chars_formatEi;
+    _ZNSt3__810from_charsEPKcS1_RDF128_NS_12chars_formatE;
+
   local:
     *;
 };

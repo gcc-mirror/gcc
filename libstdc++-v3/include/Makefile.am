@@ -46,6 +46,7 @@ std_freestanding = \
 	${std_srcdir}/scoped_allocator \
 	${std_srcdir}/source_location \
 	${std_srcdir}/span \
+	${std_srcdir}/string_view \
 	${std_srcdir}/tuple \
 	${std_srcdir}/type_traits \
 	${std_srcdir}/typeindex \
@@ -100,7 +101,6 @@ std_headers = \
 	${std_srcdir}/stop_token \
 	${std_srcdir}/streambuf \
 	${std_srcdir}/string \
-	${std_srcdir}/string_view \
 	${std_srcdir}/system_error \
 	${std_srcdir}/thread \
 	${std_srcdir}/unordered_map \
@@ -120,6 +120,7 @@ bits_freestanding = \
 	${bits_srcdir}/c++0x_warning.h \
 	${bits_srcdir}/boost_concept_check.h \
 	${bits_srcdir}/concept_check.h \
+	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/enable_special_members.h \
 	${bits_srcdir}/functexcept.h \
@@ -153,6 +154,7 @@ bits_freestanding = \
 	${bits_srcdir}/stl_raw_storage_iter.h \
 	${bits_srcdir}/stl_relops.h \
 	${bits_srcdir}/stl_uninitialized.h \
+	${bits_srcdir}/string_view.tcc \
 	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/uses_allocator.h \
@@ -172,7 +174,6 @@ bits_headers = \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
 	${bits_srcdir}/basic_string.tcc \
-	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/charconv.h \
 	${bits_srcdir}/chrono.h \
 	${bits_srcdir}/chrono_io.h \
@@ -256,7 +257,6 @@ bits_headers = \
 	${bits_srcdir}/streambuf_iterator.h \
 	${bits_srcdir}/streambuf.tcc \
 	${bits_srcdir}/stringfwd.h \
-	${bits_srcdir}/string_view.tcc \
 	${bits_srcdir}/this_thread_sleep.h \
 	${bits_srcdir}/unique_lock.h \
 	${bits_srcdir}/unordered_map.h \

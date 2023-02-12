@@ -1,8 +1,8 @@
 /* { dg-do compile } */
-/* { dg-csky-options "-mcpu=ck810f -O1 -mconstpool" } */
+/* { dg-csky-options "-mcpu=ck810f -O1 -mno-constpool" } */
 
-/* Make sure that constant pools are emitted by the compiler when
-   -mconstpool is provided.  */
+/* Make sure that constant pools are not emitted by the compiler when
+   -mno-constpool is provided.  */
 
 void f (unsigned int *u, long long int *l, float *f, double *d)
 {
@@ -12,4 +12,4 @@ void f (unsigned int *u, long long int *l, float *f, double *d)
   *d = 2.718281828459;
 }
 
-/* { dg-final { scan-assembler-times "\\.long" 6 } } */
+/* { dg-final { scan-assembler-not "\\.long" } } */

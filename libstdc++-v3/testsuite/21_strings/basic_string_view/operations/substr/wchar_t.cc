@@ -20,8 +20,11 @@
 // basic_string_view::substr
 
 #include <string_view>
-#include <stdexcept>
 #include <testsuite_hooks.h>
+
+#if __STDC_HOSTED__
+# include <stdexcept>
+#endif
 
 void
 test01()
@@ -43,6 +46,7 @@ test01()
   str02 = str01.substr(10);
   VERIFY( str02 == L"pacifica" );
 
+#if __STDC_HOSTED__
   try
   {
     str02 = str01.substr(csz01 + 1);
@@ -68,6 +72,7 @@ test01()
   {
     VERIFY( false );
   }
+#endif // HOSTED
 }
 
 int

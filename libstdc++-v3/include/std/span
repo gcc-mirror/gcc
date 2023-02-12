@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr
       span() noexcept
-      requires ((_Extent + 1u) <= 1u)
+      requires (_Extent == dynamic_extent || _Extent == 0)
       : _M_ptr(nullptr), _M_extent(0)
       { }
 

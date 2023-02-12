@@ -4397,9 +4397,15 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_MMA;
     }
 
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
+  /* Enable power10 fusion if we are tuning for power10, even if we aren't
+     generating power10 instructions.  */
+  if (!(rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION))
+    {
+      if (rs6000_tune == PROCESSOR_POWER10)
+	rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
+      else
+	rs6000_isa_flags &= ~OPTION_MASK_P10_FUSION;
+    }
 
   /* MMA requires SIMD support as ISA 3.1 claims and our implementation
      such as "*movoo" uses vector pair access which use VSX registers.
@@ -28922,9 +28928,9 @@ constant_generates_xxspltidp (vec_const_128bit_type *vsx_const)
    __vector_pair built-in types.  They are target specific and
    only available when MMA is supported.  With MMA supported, it
    simply returns true, otherwise it checks if the given gimple
-   STMT is an assignment stmt and uses either of these two opaque
-   types unexpectedly, if yes, it would raise an error message
-   and returns true, otherwise it returns false.  */
+   STMT is an assignment or asm stmt and uses either of these two
+   opaque types unexpectedly, if yes, it would raise an error
+   message and returns true, otherwise it returns false.  */
 
 bool
 rs6000_opaque_type_invalid_use_p (gimple *stmt)
@@ -28932,23 +28938,54 @@ rs6000_opaque_type_invalid_use_p (gimple *stmt)
   if (TARGET_MMA)
     return false;
 
+  /* If the given TYPE is one MMA opaque type, emit the corresponding
+     error messages and return true, otherwise return false.  */
+  auto check_and_error_invalid_use = [](tree type)
+  {
+    tree mv = TYPE_MAIN_VARIANT (type);
+    if (mv == vector_quad_type_node)
+      {
+	error ("type %<__vector_quad%> requires the %qs option", "-mmma");
+	return true;
+      }
+    else if (mv == vector_pair_type_node)
+      {
+	error ("type %<__vector_pair%> requires the %qs option", "-mmma");
+	return true;
+      }
+    return false;
+  };
+
   if (stmt)
     {
       /* The usage of MMA opaque types is very limited for now,
-	 to check with gassign is enough so far.  */
+	 to check with gassign and gasm is enough so far.  */
       if (gassign *ga = dyn_cast<gassign *> (stmt))
 	{
 	  tree lhs = gimple_assign_lhs (ga);
 	  tree type = TREE_TYPE (lhs);
-	  if (type == vector_quad_type_node)
+	  if (check_and_error_invalid_use (type))
+	    return true;
+	}
+      else if (gasm *gs = dyn_cast<gasm *> (stmt))
+	{
+	  unsigned ninputs = gimple_asm_ninputs (gs);
+	  for (unsigned i = 0; i < ninputs; i++)
 	    {
-	      error ("type %<__vector_quad%> requires the %qs option", "-mmma");
-	      return true;
+	      tree op = gimple_asm_input_op (gs, i);
+	      tree val = TREE_VALUE (op);
+	      tree type = TREE_TYPE (val);
+	      if (check_and_error_invalid_use (type))
+		return true;
 	    }
-	  else if (type == vector_pair_type_node)
+	  unsigned noutputs = gimple_asm_noutputs (gs);
+	  for (unsigned i = 0; i < noutputs; i++)
 	    {
-	      error ("type %<__vector_pair%> requires the %qs option", "-mmma");
-	      return true;
+	      tree op = gimple_asm_output_op (gs, i);
+	      tree val = TREE_VALUE (op);
+	      tree type = TREE_TYPE (val);
+	      if (check_and_error_invalid_use (type))
+		return true;
 	    }
 	}
     }

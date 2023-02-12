@@ -65,6 +65,14 @@
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-cskyv2%{mfloat-abi=hard:-hf}%{mbig-endian:-be}.so.1"
 
+#define SYSROOT_SUFFIX_SPEC					\
+  "%{mbig-endian:/big}"						\
+  "%{mcpu=ck807*:/ck807}"					\
+  "%{mcpu=ck860*:/ck860}"					\
+  "%{mcpu=ck800*:/ck800}"					\
+  "%{mfloat-abi=softfp:/soft-fp}"				\
+  "%{mfloat-abi=hard:/hard-fp}"
+
 #define LINUX_TARGET_LINK_SPEC	"%{h*} %{version:-v}		\
    %{b}								\
    %{static:-Bstatic}						\

@@ -484,7 +484,6 @@
 ; neon_fp_minmax_s_q
 ; neon_fp_minmax_d
 ; neon_fp_minmax_d_q
-; neon_fp_reduc_add_h
 ; neon_fp_reduc_add_s
 ; neon_fp_reduc_add_s_q
 ; neon_fp_reduc_add_d
@@ -1035,7 +1034,6 @@
   neon_fp_minmax_d,\
   neon_fp_minmax_d_q,\
 \
-  neon_fp_reduc_add_h,\
   neon_fp_reduc_add_s,\
   neon_fp_reduc_add_s_q,\
   neon_fp_reduc_add_d,\
@@ -1260,8 +1258,8 @@
           neon_fp_compare_d, neon_fp_compare_d_q, neon_fp_minmax_s,\
           neon_fp_minmax_s_q, neon_fp_minmax_d, neon_fp_minmax_d_q,\
           neon_fp_neg_s, neon_fp_neg_s_q, neon_fp_neg_d, neon_fp_neg_d_q,\
-          neon_fp_reduc_add_h, neon_fp_reduc_add_s, neon_fp_reduc_add_s_q,\
-          neon_fp_reduc_add_d, neon_fp_reduc_add_d_q, neon_fp_reduc_minmax_s,\
+          neon_fp_reduc_add_s, neon_fp_reduc_add_s_q, neon_fp_reduc_add_d,\
+          neon_fp_reduc_add_d_q, neon_fp_reduc_minmax_s,
           neon_fp_reduc_minmax_s_q, neon_fp_reduc_minmax_d,\
           neon_fp_reduc_minmax_d_q,\
           neon_fp_cvt_narrow_s_q, neon_fp_cvt_narrow_d_q,\

@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 

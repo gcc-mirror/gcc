@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2001-2022, AdaCore                     *
+ *                     Copyright (C) 2001-2023, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -71,6 +71,7 @@
 
 #ifdef _WIN32
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <process.h>
 #include <signal.h>

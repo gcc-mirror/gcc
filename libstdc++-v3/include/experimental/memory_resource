@@ -412,11 +412,20 @@ namespace pmr {
       allocator_type get_allocator() const noexcept { return _M_alloc; }
 
     protected:
+#if (defined __sun__ || defined __VXWORKS__) && defined __i386__
+// Cannot use max_align_t on 32-bit Solaris x86, see PR libstdc++/77691
+# define _GLIBCXX_MAX_ALIGN_MATCHES_MALLOC 0
+#elif defined __hpux__ && defined __hppa__ && defined __LP64__
+// Ignore inconsistent long double and malloc alignment (libstdc++/77691)
+# define _GLIBCXX_MAX_ALIGN_MATCHES_MALLOC 0
+#else
+# define _GLIBCXX_MAX_ALIGN_MATCHES_MALLOC 1
+#endif
+
       virtual void*
       do_allocate(size_t __bytes, size_t __alignment) override
       {
-	// Cannot use max_align_t on 32-bit Solaris x86, see PR libstdc++/77691
-#if ! ((defined __sun__ || defined __VXWORKS__) && defined __i386__)
+#if _GLIBCXX_MAX_ALIGN_MATCHES_MALLOC
 	if (__alignment == alignof(max_align_t))
 	  return _M_allocate<alignof(max_align_t)>(__bytes);
 #endif
@@ -442,7 +451,7 @@ namespace pmr {
       do_deallocate(void* __ptr, size_t __bytes, size_t __alignment) noexcept
       override
       {
-#if ! ((defined __sun__ || defined __VXWORKS__) && defined __i386__)
+#if _GLIBCXX_MAX_ALIGN_MATCHES_MALLOC
 	if (__alignment == alignof(max_align_t))
 	  return (void) _M_deallocate<alignof(max_align_t)>(__ptr, __bytes);
 #endif

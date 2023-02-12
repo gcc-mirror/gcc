@@ -277,13 +277,15 @@ namespace
     }
     else if (c1 < 0xF0) // 3-byte sequence
     {
-      if (avail < 3)
+      if (avail < 2)
 	return incomplete_mb_character;
       char32_t c2 = (unsigned char) from[1];
       if ((c2 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       if (c1 == 0xE0 && c2 < 0xA0) // overlong
 	return invalid_mb_sequence;
+      if (avail < 3)
+	return incomplete_mb_character;
       char32_t c3 = (unsigned char) from[2];
       if ((c3 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
@@ -292,9 +294,9 @@ namespace
 	from += 3;
       return c;
     }
-    else if (c1 < 0xF5) // 4-byte sequence
+    else if (c1 < 0xF5 && maxcode > 0xFFFF) // 4-byte sequence
     {
-      if (avail < 4)
+      if (avail < 2)
 	return incomplete_mb_character;
       char32_t c2 = (unsigned char) from[1];
       if ((c2 & 0xC0) != 0x80)
@@ -302,10 +304,14 @@ namespace
       if (c1 == 0xF0 && c2 < 0x90) // overlong
 	return invalid_mb_sequence;
       if (c1 == 0xF4 && c2 >= 0x90) // > U+10FFFF
-      return invalid_mb_sequence;
+	return invalid_mb_sequence;
+      if (avail < 3)
+	return incomplete_mb_character;
       char32_t c3 = (unsigned char) from[2];
       if ((c3 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
+      if (avail < 4)
+	return incomplete_mb_character;
       char32_t c4 = (unsigned char) from[3];
       if ((c4 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
@@ -527,12 +533,11 @@ namespace
   // Flag indicating whether to process UTF-16 or UCS2
   enum class surrogates { allowed, disallowed };
 
-  // utf8 -> utf16 (or utf8 -> ucs2 if s == surrogates::disallowed)
-  template<typename C8, typename C16>
+  // utf8 -> utf16 (or utf8 -> ucs2 if maxcode <= 0xFFFF)
+  template <typename C8, typename C16>
   codecvt_base::result
-  utf16_in(range<const C8>& from, range<C16>& to,
-	   unsigned long maxcode = max_code_point, codecvt_mode mode = {},
-	   surrogates s = surrogates::allowed)
+  utf16_in(range<const C8> &from, range<C16> &to,
+	   unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
     read_utf8_bom(from, mode);
     while (from.size() && to.size())
@@ -540,12 +545,7 @@ namespace
 	auto orig = from;
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
 	if (codepoint == incomplete_mb_character)
-	  {
-	    if (s == surrogates::allowed)
-	      return codecvt_base::partial;
-	    else
-	      return codecvt_base::error; // No surrogates in UCS2
-	  }
+	  return codecvt_base::partial;
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
 	if (!write_utf16_code_point(to, codepoint, mode))
@@ -554,7 +554,7 @@ namespace
 	    return codecvt_base::partial;
 	  }
       }
-    return codecvt_base::ok;
+    return from.size() ? codecvt_base::partial : codecvt_base::ok;
   }
 
   // utf16 -> utf8 (or ucs2 -> utf8 if s == surrogates::disallowed)
@@ -576,7 +576,7 @@ namespace
 	      return codecvt_base::error; // No surrogates in UCS-2
 
 	    if (from.size() < 2)
-	      return codecvt_base::ok; // stop converting at this point
+	      return codecvt_base::partial; // stop converting at this point
 
 	    const char32_t c2 = from[1];
 	    if (is_low_surrogate(c2))
@@ -629,7 +629,7 @@ namespace
   {
     // UCS-2 only supports characters in the BMP, i.e. one UTF-16 code unit:
     maxcode = std::min(max_single_utf16_unit, maxcode);
-    return utf16_in(from, to, maxcode, mode, surrogates::disallowed);
+    return utf16_in(from, to, maxcode, mode);
   }
 
   // ucs2 -> utf8

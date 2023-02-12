@@ -7,6 +7,7 @@
 /* { dg-add-options ieee } */
 /* { dg-additional-options "-mfp-trap-mode=sui" { target alpha*-*-* } } */
 /* { dg-additional-options "-D_XOPEN_SOURCE=600" { target *-*-solaris2* } } */
+/* { dg-additional-options "-D_HPUX_SOURCE" { target *-*-hpux* } } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-require-effective-target pthread } */
 /* { dg-timeout-factor 2 } */

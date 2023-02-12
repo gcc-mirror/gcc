@@ -984,108 +984,123 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
       else
 	defvar = gimple_vdef (temp);
 
-      /* If we're instructed to stop walking at region boundary, do so.  */
-      if (defvar == stop_at_vuse)
-	return DSE_STORE_LIVE;
-
       auto_vec<gimple *, 10> defs;
       gphi *first_phi_def = NULL;
       gphi *last_phi_def = NULL;
-      FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
+
+      auto_vec<tree, 10> worklist;
+      worklist.quick_push (defvar);
+
+      do
 	{
-	  /* Limit stmt walking.  */
-	  if (++cnt > param_dse_max_alias_queries_per_store)
-	    {
-	      fail = true;
-	      break;
-	    }
+	  defvar = worklist.pop ();
+	  /* If we're instructed to stop walking at region boundary, do so.  */
+	  if (defvar == stop_at_vuse)
+	    return DSE_STORE_LIVE;
 
-	  /* In simple cases we can look through PHI nodes, but we
-	     have to be careful with loops and with memory references
-	     containing operands that are also operands of PHI nodes.
-	     See gcc.c-torture/execute/20051110-*.c.  */
-	  if (gimple_code (use_stmt) == GIMPLE_PHI)
+	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	    {
-	      /* If we already visited this PHI ignore it for further
-		 processing.  */
-	      if (!bitmap_bit_p (visited,
-				 SSA_NAME_VERSION (PHI_RESULT (use_stmt))))
+	      /* Limit stmt walking.  */
+	      if (++cnt > param_dse_max_alias_queries_per_store)
 		{
-		  /* If we visit this PHI by following a backedge then we have
-		     to make sure ref->ref only refers to SSA names that are
-		     invariant with respect to the loop represented by this
-		     PHI node.  */
-		  if (dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt),
-				      gimple_bb (use_stmt))
-		      && !for_each_index (ref->ref ? &ref->ref : &ref->base,
-					  check_name, gimple_bb (use_stmt)))
-		    return DSE_STORE_LIVE;
-		  defs.safe_push (use_stmt);
-		  if (!first_phi_def)
-		    first_phi_def = as_a <gphi *> (use_stmt);
-		  last_phi_def = as_a <gphi *> (use_stmt);
+		  fail = true;
+		  break;
 		}
-	    }
-	  /* If the statement is a use the store is not dead.  */
-	  else if (ref_maybe_used_by_stmt_p (use_stmt, ref))
-	    {
-	      if (dse_stmt_to_dr_map
-		  && ref->ref
-		  && is_gimple_assign (use_stmt))
+
+	      /* In simple cases we can look through PHI nodes, but we
+		 have to be careful with loops and with memory references
+		 containing operands that are also operands of PHI nodes.
+		 See gcc.c-torture/execute/20051110-*.c.  */
+	      if (gimple_code (use_stmt) == GIMPLE_PHI)
 		{
-		  if (!dra)
-		    dra.reset (create_data_ref (NULL, NULL, ref->ref, stmt,
-						false, false));
-		  bool existed_p;
-		  data_reference_p &drb
-		    = dse_stmt_to_dr_map->get_or_insert (use_stmt, &existed_p);
-		  if (!existed_p)
-		    drb = create_data_ref (NULL, NULL,
-					   gimple_assign_rhs1 (use_stmt),
-					   use_stmt, false, false);
-		  if (!dr_may_alias_p (dra.get (), drb, NULL))
+		  /* Look through single-argument PHIs.  */
+		  if (gimple_phi_num_args (use_stmt) == 1)
+		    worklist.safe_push (gimple_phi_result (use_stmt));
+
+		  /* If we already visited this PHI ignore it for further
+		     processing.  */
+		  else if (!bitmap_bit_p (visited,
+					  SSA_NAME_VERSION
+					    (PHI_RESULT (use_stmt))))
 		    {
-		      if (gimple_vdef (use_stmt))
-			defs.safe_push (use_stmt);
-		      continue;
+		      /* If we visit this PHI by following a backedge then we
+			 have to make sure ref->ref only refers to SSA names
+			 that are invariant with respect to the loop
+			 represented by this PHI node.  */
+		      if (dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt),
+					  gimple_bb (use_stmt))
+			  && !for_each_index (ref->ref ? &ref->ref : &ref->base,
+					      check_name, gimple_bb (use_stmt)))
+			return DSE_STORE_LIVE;
+		      defs.safe_push (use_stmt);
+		      if (!first_phi_def)
+			first_phi_def = as_a <gphi *> (use_stmt);
+		      last_phi_def = as_a <gphi *> (use_stmt);
 		    }
 		}
-
-	      /* Handle common cases where we can easily build an ao_ref
-		 structure for USE_STMT and in doing so we find that the
-		 references hit non-live bytes and thus can be ignored.
-
-		 TODO: We can also use modref summary to handle calls.  */
-	      if (byte_tracking_enabled
-		  && is_gimple_assign (use_stmt))
+	      /* If the statement is a use the store is not dead.  */
+	      else if (ref_maybe_used_by_stmt_p (use_stmt, ref))
 		{
-		  ao_ref use_ref;
-		  ao_ref_init (&use_ref, gimple_assign_rhs1 (use_stmt));
-		  if (valid_ao_ref_for_dse (&use_ref)
-		      && operand_equal_p (use_ref.base, ref->base,
-					  OEP_ADDRESS_OF)
-		      && !live_bytes_read (&use_ref, ref, live_bytes))
+		  if (dse_stmt_to_dr_map
+		      && ref->ref
+		      && is_gimple_assign (use_stmt))
 		    {
-		      /* If this is a store, remember it as we possibly
-			 need to walk the defs uses.  */
-		      if (gimple_vdef (use_stmt))
-			defs.safe_push (use_stmt);
-		      continue;
+		      if (!dra)
+			dra.reset (create_data_ref (NULL, NULL, ref->ref, stmt,
+						    false, false));
+		      bool existed_p;
+		      data_reference_p &drb
+			= dse_stmt_to_dr_map->get_or_insert (use_stmt,
+							     &existed_p);
+		      if (!existed_p)
+			drb = create_data_ref (NULL, NULL,
+					       gimple_assign_rhs1 (use_stmt),
+					       use_stmt, false, false);
+		      if (!dr_may_alias_p (dra.get (), drb, NULL))
+			{
+			  if (gimple_vdef (use_stmt))
+			    defs.safe_push (use_stmt);
+			  continue;
+			}
 		    }
-		}
 
-	      fail = true;
-	      break;
+		  /* Handle common cases where we can easily build an ao_ref
+		     structure for USE_STMT and in doing so we find that the
+		     references hit non-live bytes and thus can be ignored.
+
+		     TODO: We can also use modref summary to handle calls.  */
+		  if (byte_tracking_enabled
+		      && is_gimple_assign (use_stmt))
+		    {
+		      ao_ref use_ref;
+		      ao_ref_init (&use_ref, gimple_assign_rhs1 (use_stmt));
+		      if (valid_ao_ref_for_dse (&use_ref)
+			  && operand_equal_p (use_ref.base, ref->base,
+					      OEP_ADDRESS_OF)
+			  && !live_bytes_read (&use_ref, ref, live_bytes))
+			{
+			  /* If this is a store, remember it as we possibly
+			     need to walk the defs uses.  */
+			  if (gimple_vdef (use_stmt))
+			    defs.safe_push (use_stmt);
+			  continue;
+			}
+		    }
+
+		  fail = true;
+		  break;
+		}
+	      /* We have visited ourselves already so ignore STMT for the
+		 purpose of chaining.  */
+	      else if (use_stmt == stmt)
+		;
+	      /* If this is a store, remember it as we possibly need to walk the
+		 defs uses.  */
+	      else if (gimple_vdef (use_stmt))
+		defs.safe_push (use_stmt);
 	    }
-	  /* We have visited ourselves already so ignore STMT for the
-	     purpose of chaining.  */
-	  else if (use_stmt == stmt)
-	    ;
-	  /* If this is a store, remember it as we possibly need to walk the
-	     defs uses.  */
-	  else if (gimple_vdef (use_stmt))
-	    defs.safe_push (use_stmt);
 	}
+      while (!fail && !worklist.is_empty ());
 
       if (fail)
 	{

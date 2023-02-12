@@ -469,6 +469,33 @@
     </para>
  </listitem></varlistentry>
 
+ <varlistentry><term><code>--with-libstdcxx-zoneinfo=OPTION</code></term>
+ <listitem>
+    <para>Choose how <classname>std::chrono::tzdb</classname> will obtain
+      the time zone info. The library requires a copy of the
+      <filename>tzdata.zi</filename> and <filename>leapseconds</filename>
+      files from the <link xmlns:xlink="http://www.w3.org/1999/xlink"
+	xlink:href="https://www.iana.org/time-zones">IANA Time Zone
+      Database</link>. The choice OPTION=static will embed a copy of the files
+      into the library, and use that static data when time zone information
+      is required. The choice OPTION=dir will use the files
+      <filename>dir/tzdata.zi</filename> and
+      <filename>dir/leapseconds</filename> (which must exist when a program
+      tries to access time zone information). The choice OPTION=dir,static
+      will try to use files in <filename>dir</filename> but if they are
+      not available the embedded static data will be used instead.
+      The default choice is OPTION=yes. This is equivalent to OPTION=dir,static
+      with a system-specific default directory (if a suitable default for
+      the target is known).
+      The choice OPTION=no will disable all code for loading time zone info
+      from file or from the embedded static data, which means that only the
+      "UTC" and "GMT" time zones are defined. Using OPTION=no results in a
+      smaller library, so is suitable for systems that will never need to
+      query the time zone database.
+      This does not change the library ABI.
+    </para>
+ </listitem></varlistentry>
+
 </variablelist>
 
 </section>

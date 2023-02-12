@@ -4,6 +4,7 @@
 /* { dg-do run } */
 /* { dg-options "-std=c11 -pedantic-errors -pthread -U_POSIX_C_SOURCE -D_POSIX_C_SOURCE=200809L" } */
 /* { dg-additional-options "-D_XOPEN_SOURCE=600" { target *-*-solaris2* } } */
+/* { dg-additional-options "-D_HPUX_SOURCE" { target *-*-hpux* } } */
 /* { dg-require-effective-target pthread } */
 
 #include <stdint.h>

@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++23" }
 // { dg-do run { target c++20 } }
+// { dg-require-effective-target hosted }
 
 #include <memory>
 #include <testsuite_hooks.h>

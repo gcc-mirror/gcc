@@ -37,12 +37,10 @@
 
 #if __cplusplus >= 201703L
 
-#include <iosfwd>
 #include <bits/char_traits.h>
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
 #include <bits/range_access.h>
-#include <bits/ostream_insert.h>
 #include <bits/stl_algobase.h>
 #include <ext/numeric_traits.h>
 
@@ -50,11 +48,19 @@
 # include <bits/ranges_base.h>
 #endif
 
+#if _GLIBCXX_HOSTED
+# include <iosfwd>
+# include <bits/ostream_insert.h>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if _GLIBCXX_HOSTED
 # define __cpp_lib_string_view 201803L
+#endif
+
 #if __cplusplus > 201703L
 # define __cpp_lib_constexpr_string_view 201811L
 #endif
@@ -413,7 +419,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++20
 
 #if __cplusplus > 202002L
-#define __cpp_lib_string_contains 202011L
+#if _GLIBCXX_HOSTED
+      // This FTM is not freestanding as it also implies matching <string>
+      // support, and <string> is omitted from the freestanding subset.
+# define __cpp_lib_string_contains 202011L
+#endif // HOSTED
       [[nodiscard]]
       constexpr bool
       contains(basic_string_view __x) const noexcept
@@ -743,13 +753,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __x.compare(__y) >= 0; }
 #endif // three-way comparison
 
+#if _GLIBCXX_HOSTED
   // [string.view.io], Inserters and extractors
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os,
 	       basic_string_view<_CharT,_Traits> __str)
     { return __ostream_insert(__os, __str.data(), __str.size()); }
-
+#endif // HOSTED
 
   // basic_string_view typedef names
 

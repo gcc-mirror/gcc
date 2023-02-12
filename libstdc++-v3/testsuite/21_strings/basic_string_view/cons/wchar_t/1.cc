@@ -20,7 +20,9 @@
 // basic_string_view constructors.
 
 #include <string_view>
-#include <string>
+#if __STDC_HOSTED__
+# include <string>
+#endif // HOSTED
 #include <cwchar>
 #include <testsuite_hooks.h>
 
@@ -53,10 +55,12 @@ test01()
   VERIFY( str05.length() == len_lit01 );
   VERIFY( str05.data() == str_lit01 );
 
+#if __STDC_HOSTED__
   // basic_string_view(basic_string& s)
   std::wstring istr07(10, L'z');
   std::wstring_view str07{istr07};
   VERIFY( str07.length() == 10 );
+#endif // HOSTED
 }
 
 int

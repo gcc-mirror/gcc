@@ -1,3 +1,9 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* config/mingw/lock.c: Define `WIN32_LEAN_AND_MEAN` before
+	<windows.h>.
+
 2022-11-16  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Re-generate.

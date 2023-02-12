@@ -1522,7 +1522,7 @@ LSYM(Lover12):
 	add	r7, r7, #2
 #endif
 	mov	r2, #0
-	swi	0
+	svc	0
 	do_pop	{r7}
 	RET
 	FUNC_END clear_cache

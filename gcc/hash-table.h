@@ -534,6 +534,11 @@ private:
   void expand ();
   static bool is_deleted (value_type &v)
   {
+    /* Traits are supposed to avoid recognizing elements as both empty
+       and deleted, but to fail safe in case custom traits fail to do
+       that, make sure we never test for is_deleted without having
+       first ruled out is_empty.  */
+    gcc_checking_assert (!Descriptor::is_empty (v));
     return Descriptor::is_deleted (v);
   }
 
@@ -545,6 +550,11 @@ private:
   static void mark_deleted (value_type &v)
   {
     Descriptor::mark_deleted (v);
+    /* Traits are supposed to refuse to set elements as deleted if
+       those would be indistinguishable from empty, but to fail safe
+       in case custom traits fail to do that, check that the
+       just-deleted element does not look empty.  */
+    gcc_checking_assert (!Descriptor::is_empty (v));
   }
 
   static void mark_empty (value_type &v)
@@ -700,9 +710,11 @@ hash_table<Descriptor, Lazy, Allocator>::hash_table (const hash_table &h,
       for (size_t i = 0; i < size; ++i)
 	{
 	  value_type &entry = h.m_entries[i];
-	  if (is_deleted (entry))
+	  if (is_empty (entry))
+	    continue;
+	  else if (is_deleted (entry))
 	    mark_deleted (nentries[i]);
-	  else if (!is_empty (entry))
+	  else
 	    new ((void*) (nentries + i)) value_type (entry);
 	}
       m_entries = nentries;
@@ -849,19 +861,28 @@ hash_table<Descriptor, Lazy, Allocator>::expand ()
     hash_table_usage ().release_instance_overhead (this, sizeof (value_type)
 						    * osize);
 
+  size_t n_deleted = m_n_deleted;
+
   m_entries = nentries;
   m_size = nsize;
   m_size_prime_index = nindex;
   m_n_elements -= m_n_deleted;
   m_n_deleted = 0;
 
+  size_t n_elements = m_n_elements;
+
   value_type *p = oentries;
   do
     {
       value_type &x = *p;
 
-      if (!is_empty (x) && !is_deleted (x))
+      if (is_empty (x))
+	;
+      else if (is_deleted (x))
+	n_deleted--;
+      else
         {
+	  n_elements--;
           value_type *q = find_empty_slot_for_expand (Descriptor::hash (x));
 	  new ((void*) q) value_type (std::move (x));
 	  /* After the resources of 'x' have been moved to a new object at 'q',
@@ -872,6 +893,8 @@ hash_table<Descriptor, Lazy, Allocator>::expand ()
       p++;
     }
   while (p < olimit);
+
+  gcc_checking_assert (!n_elements && !n_deleted);
 
   if (!m_ggc)
     Allocator <value_type> ::data_free (oentries);
@@ -1070,8 +1093,9 @@ hash_table<Descriptor, Lazy, Allocator>
   return check_insert_slot (&m_entries[index]);
 }
 
-/* Verify that all existing elements in th hash table which are
-   equal to COMPARABLE have an equal HASH value provided as argument.  */
+/* Verify that all existing elements in the hash table which are
+   equal to COMPARABLE have an equal HASH value provided as argument.
+   Also check that the hash table element counts are correct.  */
 
 template<typename Descriptor, bool Lazy,
 	 template<typename Type> class Allocator>
@@ -1079,14 +1103,23 @@ void
 hash_table<Descriptor, Lazy, Allocator>
 ::verify (const compare_type &comparable, hashval_t hash)
 {
+  size_t n_elements = m_n_elements;
+  size_t n_deleted = m_n_deleted;
   for (size_t i = 0; i < MIN (hash_table_sanitize_eq_limit, m_size); i++)
     {
       value_type *entry = &m_entries[i];
-      if (!is_empty (*entry) && !is_deleted (*entry)
-	  && hash != Descriptor::hash (*entry)
-	  && Descriptor::equal (*entry, comparable))
-	hashtab_chk_error ();
+      if (!is_empty (*entry))
+	{
+	  n_elements--;
+	  if (is_deleted (*entry))
+	    n_deleted--;
+	  else if (hash != Descriptor::hash (*entry)
+		   && Descriptor::equal (*entry, comparable))
+	    hashtab_chk_error ();
+	}
     }
+  if (hash_table_sanitize_eq_limit >= m_size)
+    gcc_checking_assert (!n_elements && !n_deleted);
 }
 
 /* This function deletes an element with the given COMPARABLE value

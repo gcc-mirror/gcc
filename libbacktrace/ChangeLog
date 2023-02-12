@@ -1,3 +1,10 @@
+2023-01-06  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/108297
+	* configure.ac: Test whether linker supports --build-id.
+	* Makefile.am: Only run --build-id tests if supported.
+	* configure, Makefile.in: Regenerate.
+
 2022-12-17  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_fetch_backward_init): New static function.

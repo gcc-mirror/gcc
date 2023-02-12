@@ -11,4 +11,4 @@ int PopCount (long b) {
     return c;
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin_popcount" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_popcount|\\.POPCOUNT" 0 "optimized" } } */

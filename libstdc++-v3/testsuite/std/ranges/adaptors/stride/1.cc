@@ -6,6 +6,10 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+#if __cpp_lib_ranges_stride != 202207L
+# error "Feature-test macro __cpp_lib_ranges_stride has wrong value in <ranges>"
+#endif
+
 namespace ranges = std::ranges;
 namespace views = std::views;
 

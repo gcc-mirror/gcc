@@ -204,7 +204,10 @@ extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_undefined_ph (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m128h __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 
@@ -212,7 +215,10 @@ extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_undefined_ph (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m256h __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 
@@ -220,7 +226,10 @@ extern __inline __m512h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_undefined_ph (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m512h __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 

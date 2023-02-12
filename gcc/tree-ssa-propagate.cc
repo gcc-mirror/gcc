@@ -113,7 +113,6 @@
    order by visiting in bit-order.  We use two worklists to
    first make forward progress before iterating.  */
 static bitmap cfg_blocks;
-static bitmap cfg_blocks_back;
 static int *bb_to_cfg_order;
 static int *cfg_order_to_bb;
 
@@ -123,7 +122,6 @@ static int *cfg_order_to_bb;
    UID in a bitmap.  UIDs order stmts in execution order.  We use
    two worklists to first make forward progress before iterating.  */
 static bitmap ssa_edge_worklist;
-static bitmap ssa_edge_worklist_back;
 static vec<gimple *> uid_to_stmt;
 
 /* Current RPO index in the iteration.  */
@@ -159,12 +157,7 @@ add_ssa_edge (tree var)
 	       & EDGE_EXECUTABLE))
 	continue;
 
-      bitmap worklist;
-      if (bb_to_cfg_order[gimple_bb (use_stmt)->index] < curr_order)
-	worklist = ssa_edge_worklist_back;
-      else
-	worklist = ssa_edge_worklist;
-      if (bitmap_set_bit (worklist, gimple_uid (use_stmt)))
+      if (bitmap_set_bit (ssa_edge_worklist, gimple_uid (use_stmt)))
 	{
 	  uid_to_stmt[gimple_uid (use_stmt)] = use_stmt;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -193,10 +186,7 @@ add_control_edge (edge e)
   e->flags |= EDGE_EXECUTABLE;
 
   int bb_order = bb_to_cfg_order[bb->index];
-  if (bb_order < curr_order)
-    bitmap_set_bit (cfg_blocks_back, bb_order);
-  else
-    bitmap_set_bit (cfg_blocks, bb_order);
+  bitmap_set_bit (cfg_blocks, bb_order);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Adding destination of edge (%d -> %d) to worklist\n",
@@ -380,9 +370,7 @@ ssa_prop_init (void)
 
   /* Worklists of SSA edges.  */
   ssa_edge_worklist = BITMAP_ALLOC (NULL);
-  ssa_edge_worklist_back = BITMAP_ALLOC (NULL);
   bitmap_tree_view (ssa_edge_worklist);
-  bitmap_tree_view (ssa_edge_worklist_back);
 
   /* Worklist of basic-blocks.  */
   bb_to_cfg_order = XNEWVEC (int, last_basic_block_for_fn (cfun) + 1);
@@ -392,7 +380,6 @@ ssa_prop_init (void)
   for (int i = 0; i < n; ++i)
     bb_to_cfg_order[cfg_order_to_bb[i]] = i;
   cfg_blocks = BITMAP_ALLOC (NULL);
-  cfg_blocks_back = BITMAP_ALLOC (NULL);
 
   /* Initially assume that every edge in the CFG is not executable.
      (including the edges coming out of the entry block).  Mark blocks
@@ -430,11 +417,9 @@ static void
 ssa_prop_fini (void)
 {
   BITMAP_FREE (cfg_blocks);
-  BITMAP_FREE (cfg_blocks_back);
   free (bb_to_cfg_order);
   free (cfg_order_to_bb);
   BITMAP_FREE (ssa_edge_worklist);
-  BITMAP_FREE (ssa_edge_worklist_back);
   uid_to_stmt.release ();
 }
 
@@ -453,8 +438,7 @@ ssa_propagation_engine::ssa_propagate (void)
   curr_order = 0;
 
   /* Iterate until the worklists are empty.  We iterate both blocks
-     and stmts in RPO order, using sets of two worklists to first
-     complete the current iteration before iterating over backedges.
+     and stmts in RPO order, prioritizing backedge processing.
      Seed the algorithm by adding the successors of the entry block to the
      edge worklist.  */
   edge e;
@@ -471,18 +455,7 @@ ssa_propagation_engine::ssa_propagate (void)
       int next_stmt_uid = (bitmap_empty_p (ssa_edge_worklist)
 			   ? -1 : bitmap_first_set_bit (ssa_edge_worklist));
       if (next_block_order == -1 && next_stmt_uid == -1)
-	{
-	  if (bitmap_empty_p (cfg_blocks_back)
-	      && bitmap_empty_p (ssa_edge_worklist_back))
-	    break;
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Regular worklists empty, now processing "
-		     "backedge destinations\n");
-	  std::swap (cfg_blocks, cfg_blocks_back);
-	  std::swap (ssa_edge_worklist, ssa_edge_worklist_back);
-	  continue;
-	}
+	break;
 
       int next_stmt_bb_order = -1;
       gimple *next_stmt = NULL;

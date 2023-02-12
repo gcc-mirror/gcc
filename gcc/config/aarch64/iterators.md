@@ -160,10 +160,6 @@
 (define_mode_iterator VHSDF [(V4HF "TARGET_SIMD_F16INST")
 			     (V8HF "TARGET_SIMD_F16INST")
 			     V2SF V4SF V2DF])
-;; Advanced SIMD Float modes suitable for reduction or pairwise operations
-(define_mode_iterator VHSDF_P [(V4HF "TARGET_SIMD_F16INST")
-			       (V8HF "TARGET_SIMD_F16INST")
-			       V2SF V4SF V2DF (V2HF "TARGET_SIMD_F16INST")])
 
 ;; Advanced SIMD Float modes, and DF.
 (define_mode_iterator VDQF_DF [V2SF V4SF V2DF DF])
@@ -192,21 +188,14 @@
 (define_mode_iterator VALLF [V2SF V4SF V2DF SF DF])
 
 ;; Advanced SIMD Float modes with 2 elements.
-(define_mode_iterator V2F [V2SF V2DF V2HF])
+(define_mode_iterator V2F [V2SF V2DF])
 
 ;; All Advanced SIMD modes on which we support any arithmetic operations.
 (define_mode_iterator VALL [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF])
 
-;; The set of all modes for which vld1 intrinsics are provided.
+;; All Advanced SIMD modes suitable for moving, loading, and storing.
 (define_mode_iterator VALL_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
 				V4HF V8HF V4BF V8BF V2SF V4SF V2DF])
-
-;; All Advanced SIMD modes suitable for moving, loading, and storing
-;; including V2HF
-(define_mode_iterator VMOVE [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
-			     V4HF V8HF V4BF V8BF V2SF V4SF V2DF
-			     (V2HF "TARGET_SIMD_F16INST")])
-
 
 ;; The VALL_F16 modes except the 128-bit 2-element ones.
 (define_mode_iterator VALL_F16_NO_V2Q [V8QI V16QI V4HI V8HI V2SI V4SI
@@ -1090,7 +1079,7 @@
 			  (V2SF "2") (V4SF "4")
 			  (V1DF "1") (V2DF "2")
 			  (DI "1") (DF "1")
-			  (V8DI "8") (V2HF "2")])
+			  (V8DI "8")])
 
 ;; Map a mode to the number of bits in it, if the size of the mode
 ;; is constant.
@@ -1209,7 +1198,7 @@
 (define_mode_attr Vetype [(V8QI "b") (V16QI "b")
 			  (V4HI "h") (V8HI  "h")
 			  (V2SI "s") (V4SI  "s")
-			  (V2DI "d") (V2HF  "h")
+			  (V2DI "d")
 			  (V4HF "h") (V8HF  "h")
 			  (V2SF "s") (V4SF  "s")
 			  (V2DF "d")
@@ -1301,7 +1290,7 @@
 ;; more accurately.
 (define_mode_attr stype [(V8QI "b") (V16QI "b") (V4HI "s") (V8HI "s")
 			 (V2SI "s") (V4SI "s") (V2DI "d") (V4HF "s")
-			 (V8HF "s") (V2SF "s") (V4SF "s") (V2DF "d") (V2HF "s")
+			 (V8HF "s") (V2SF "s") (V4SF "s") (V2DF "d")
 			 (HF "s") (SF "s") (DF "d") (QI "b") (HI "s")
 			 (SI "s") (DI "d")])
 
@@ -1376,8 +1365,8 @@
 		       (V4HF "HF") (V8HF  "HF")
 		       (V2SF "SF") (V4SF  "SF")
 		       (DF   "DF") (V2DF  "DF")
-		       (SI   "SI") (V2HF  "HF")
-		       (QI   "QI") (HI    "HI")
+		       (SI   "SI") (HI    "HI")
+		       (QI   "QI")
 		       (V4BF "BF") (V8BF "BF")
 		       (VNx16QI "QI") (VNx8QI "QI") (VNx4QI "QI") (VNx2QI "QI")
 		       (VNx8HI "HI") (VNx4HI "HI") (VNx2HI "HI")
@@ -1397,7 +1386,7 @@
 		       (V2SF "sf") (V4SF "sf")
 		       (V2DF "df") (DF   "df")
 		       (SI   "si") (HI   "hi")
-		       (QI   "qi") (V2HF "hf")
+		       (QI   "qi")
 		       (V4BF "bf") (V8BF "bf")
 		       (VNx16QI "qi") (VNx8QI "qi") (VNx4QI "qi") (VNx2QI "qi")
 		       (VNx8HI "hi") (VNx4HI "hi") (VNx2HI "hi")
@@ -1882,7 +1871,7 @@
 		     (V4HF "") (V8HF "_q")
 		     (V4BF "") (V8BF "_q")
 		     (V2SF "") (V4SF  "_q")
-		     (V2HF "") (V2DF  "_q")
+			       (V2DF  "_q")
 		     (QI "") (HI "") (SI "") (DI "") (HF "") (SF "") (DF "")
 		     (V2x8QI "") (V2x16QI "_q")
 		     (V2x4HI "") (V2x8HI "_q")
@@ -1921,7 +1910,6 @@
 		      (V2SI "p") (V4SI  "v")
 		      (V2DI "p") (V2DF  "p")
 		      (V2SF "p") (V4SF  "v")
-		      (V2HF "p")
 		      (V4HF "v") (V8HF  "v")])
 
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")

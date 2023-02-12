@@ -53,7 +53,8 @@ FROM M2Printf IMPORT printf0 ;
 FROM M2Debug IMPORT Assert ;
 FROM P2SymBuild IMPORT BuildString, BuildNumber ;
 
-FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, PushTFtok, PopTFtok, PopTtok,
+FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
+                    PushTtok, PushTFtok, PopTtok, PopTFtok, OperandTok,
                     StartBuildDefFile, StartBuildModFile,
                     BuildModuleStart,
                     EndBuildFile,
@@ -630,56 +631,58 @@ ConstExpression :=                                                         % VAR
                                    ]                                       % PopAuto %
                 =:
 
-Relation := "="                                                            % PushT(EqualTok) %
-            | "#"                                                          % PushT(HashTok) %
-            | "<>"                                                         % PushT(LessGreaterTok) %
-            | "<"                                                          % PushT(LessTok) %
-            | "<="                                                         % PushT(LessEqualTok) %
-            | ">"                                                          % PushT(GreaterTok) %
-            | ">="                                                         % PushT(GreaterEqualTok) %
-            | "IN"                                                         % PushT(InTok) %
+Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) %
+            | "#"                                                          % PushTtok(HashTok, GetTokenNo() -1) %
+            | "<>"                                                         % PushTtok(LessGreaterTok, GetTokenNo() -1) %
+            | "<"                                                          % PushTtok(LessTok, GetTokenNo() -1) %
+            | "<="                                                         % PushTtok(LessEqualTok, GetTokenNo() -1) %
+            | ">"                                                          % PushTtok(GreaterTok, GetTokenNo() -1) %
+            | ">="                                                         % PushTtok(GreaterEqualTok, GetTokenNo() -1) %
+            | "IN"                                                         % PushTtok(InTok, GetTokenNo() -1) %
          =:
 
 SimpleConstExpr := UnaryOrConstTerm { AddOperator ConstTerm                % BuildBinaryOp %
                                     } =:
 
-UnaryOrConstTerm := "+"                                                    % PushT(PlusTok) %
+UnaryOrConstTerm := "+"                                                    % PushTtok(PlusTok, GetTokenNo() -1) %
                     ConstTerm                                              % BuildUnaryOp %
                     |
-                    "-"                                                    % PushT(MinusTok) %
+                    "-"                                                    % PushTtok(MinusTok, GetTokenNo() -1) %
                     ConstTerm                                              % BuildUnaryOp %
                     |
                     ConstTerm =:
 
-AddOperator :=   "+"                                                       % PushT(PlusTok) ;
+AddOperator :=   "+"                                                       % PushTtok(PlusTok, GetTokenNo() -1) ;
                                                                              RecordOp %
-               | "-"                                                       % PushT(MinusTok) ;
+               | "-"                                                       % PushTtok(MinusTok, GetTokenNo() -1) ;
                                                                              RecordOp %
-               | "OR"                                                      % PushT(OrTok) ;
+               | "OR"                                                      % PushTtok(OrTok, GetTokenNo() -1) ;
                                                                              RecordOp %
             =:
 
 ConstTerm := ConstFactor { MulOperator ConstFactor                         % BuildBinaryOp %
                          } =:
 
-MulOperator := "*"                                                         % PushT(TimesTok) ;
+MulOperator := "*"                                                         % PushTtok(TimesTok, GetTokenNo() -1) ;
                                                                              RecordOp %
-               | "/"                                                       % PushT(DivideTok) ;
+               | "/"                                                       % PushTtok(DivideTok, GetTokenNo() -1) ;
                                                                              RecordOp %
-               | "DIV"                                                     % PushT(DivTok) ;
+               | "DIV"                                                     % PushTtok(DivTok, GetTokenNo() -1) ;
                                                                              RecordOp %
-               | "MOD"                                                     % PushT(ModTok) ;
+               | "MOD"                                                     % PushTtok(ModTok, GetTokenNo() -1) ;
                                                                              RecordOp %
-               | "REM"                                                     % PushT(RemTok) ;
+               | "REM"                                                     % PushTtok(RemTok, GetTokenNo() -1) ;
                                                                              RecordOp %
-               | "AND"                                                     % PushT(AndTok) ;
+               | "AND"                                                     % PushTtok(AndTok, GetTokenNo() -1) ;
                                                                              RecordOp %
-               | "&"                                                       % PushT(AmbersandTok) ;
+               | "&"                                                       % PushTtok(AmbersandTok, GetTokenNo() -1) ;
                                                                              RecordOp %
             =:
 
-ConstFactor := Number | ConstString | ConstSetOrQualidentOrFunction |
-               "(" ConstExpression ")" | "NOT" ConstFactor                 % BuildNot %
+ConstFactor :=                                                             % VAR tokpos: CARDINAL ; %
+               Number | ConstString | ConstSetOrQualidentOrFunction |
+               "(" ConstExpression ")" | "NOT"                             % tokpos := GetTokenNo() -1 %
+                                               ConstFactor                 % BuildNot (tokpos) %
                | ConstAttribute =:
 
 -- to help satisfy LL1

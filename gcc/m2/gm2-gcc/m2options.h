@@ -106,6 +106,7 @@ EXTERN int M2Options_GetCpp (void);
 EXTERN int M2Options_GetM2g (void);
 EXTERN void M2Options_SetM2g (int value);
 EXTERN void M2Options_SetLowerCaseKeywords (int value);
+EXTERN void M2Options_SetVerbose (int value);
 EXTERN void M2Options_SetUnusedVariableChecking (int value);
 EXTERN void M2Options_SetUnusedParameterChecking (int value);
 EXTERN void M2Options_SetStrictTypeChecking (int value);

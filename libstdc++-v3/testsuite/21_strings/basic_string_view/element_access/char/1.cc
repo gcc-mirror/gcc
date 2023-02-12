@@ -20,8 +20,11 @@
 // basic_string element access
 
 #include <string_view>
-#include <stdexcept>
 #include <testsuite_hooks.h>
+
+#if __STDC_HOSTED__
+# include <stdexcept>
+#endif // HOSTED
 
 void
 test01()
@@ -43,6 +46,7 @@ test01()
   //cref cref2 = str01[csz01];
   //VERIFY( cref2 == char() );
 
+#if __STDC_HOSTED__
   // const_reference at(size_type pos) const;
   csz01 = str01.size();
   cref cref3 = str01.at(csz01 - 1);
@@ -60,6 +64,7 @@ test01()
   {
     VERIFY( false );
   }
+#endif // HOSTED
 }
 
 int

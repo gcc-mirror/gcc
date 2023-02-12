@@ -23,6 +23,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define UWORD __shadow_UWORD
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef UWORD
 #include "libatomic_i.h"

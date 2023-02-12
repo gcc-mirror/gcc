@@ -913,8 +913,7 @@ static int yy_get_next_buffer (void)
 		if ( number_to_move == YY_MORE_ADJ )
 			{
 			ret_val = EOB_ACT_END_OF_FILE;
-			yyrestart( yyin  );/* { dg-bogus "leak" "" { xfail *-*-* } } */
-			/* TODO: leak false positive: PR analyzer/103546.  */
+			yyrestart( yyin  );/* { dg-bogus "leak" } */
 			}
 
 		else
@@ -1101,8 +1100,7 @@ static int yy_get_next_buffer (void)
 #ifdef __cplusplus
 					return yyinput();
 #else
-					return input();  /* { dg-bogus "infinite recursion" "" { xfail *-*-* } } */
-					/* TODO: infinite recursion positive: PR analyzer/103546.  */
+					return input();  /* { dg-bogus "infinite recursion" } */
 #endif
 					}
 

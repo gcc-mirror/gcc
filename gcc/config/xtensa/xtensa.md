@@ -477,8 +477,8 @@
   emit_insn (gen_negsi2 (temp, operands[1]));
   emit_insn (gen_andsi3 (temp, temp, operands[1]));
   emit_insn (gen_clzsi2 (temp, temp));
-  emit_insn (gen_negsi2 (temp, temp));
-  emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (31)));
+  emit_move_insn (operands[0], GEN_INT (31));
+  emit_insn (gen_subsi3 (operands[0], operands[0], temp));
   DONE;
 })
 
@@ -491,8 +491,8 @@
   emit_insn (gen_negsi2 (temp, operands[1]));
   emit_insn (gen_andsi3 (temp, temp, operands[1]));
   emit_insn (gen_clzsi2 (temp, temp));
-  emit_insn (gen_negsi2 (temp, temp));
-  emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (32)));
+  emit_move_insn (operands[0], GEN_INT (32));
+  emit_insn (gen_subsi3 (operands[0], operands[0], temp));
   DONE;
 })
 
@@ -745,6 +745,53 @@
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
+
+(define_insn_and_split "*splice_bits"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(ior:SI (and:SI (match_operand:SI 1 "register_operand" "r")
+			(match_operand:SI 3 "const_int_operand" "i"))
+		(and:SI (match_operand:SI 2 "register_operand" "r")
+			(match_operand:SI 4 "const_int_operand" "i"))))]
+
+  "!optimize_debug && optimize
+   && INTVAL (operands[3]) + INTVAL (operands[4]) == -1
+   && (exact_log2 (INTVAL (operands[3]) + 1) > 16
+       || exact_log2 (INTVAL (operands[4]) + 1) > 16)"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5)
+	(ashift:SI (match_dup 1)
+		   (match_dup 4)))
+   (set (match_dup 6)
+	(lshiftrt:SI (match_dup 2)
+		     (match_dup 3)))
+   (set (match_dup 0)
+	(ior:SI (lshiftrt:SI (match_dup 5)
+			     (match_dup 4))
+		(ashift:SI (match_dup 6)
+			   (match_dup 3))))]
+{
+  int shift;
+  if (INTVAL (operands[3]) < 0)
+    {
+      rtx x;
+      x = operands[1], operands[1] = operands[2], operands[2] = x;
+      x = operands[3], operands[3] = operands[4], operands[4] = x;
+    }
+  shift = floor_log2 (INTVAL (operands[3]) + 1);
+  operands[3] = GEN_INT (shift);
+  operands[4] = GEN_INT (32 - shift);
+  operands[5] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY
+				   && (INTVAL (operands[3]) == 0x7FFFFFFF
+				       || INTVAL (operands[4]) == 0x7FFFFFFF)")
+		      (const_int 11)
+		      (const_int 12)))])
 
 
 ;; Zero-extend instructions.
@@ -1632,7 +1679,7 @@
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
 			[(match_operand:SI 0 "register_operand" "r,r")
-			 (match_operand:SI 1 "branch_operand" "K,r")])
+			 (match_operand:SI 1 "branch_operand" "K,?r")])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
@@ -1641,7 +1688,14 @@
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
-   (set_attr "length"	"3,3")])
+   (set (attr "length")
+        (if_then_else (match_test "TARGET_DENSITY
+				   && CONST_INT_P (operands[1])
+				   && INTVAL (operands[1]) == 0
+				   && (GET_CODE (operands[3]) == EQ
+				       || GET_CODE (operands[3]) == NE)")
+                      (const_int 2)
+                      (const_int 3)))])
 
 (define_insn "*ubtrue"
   [(set (pc)

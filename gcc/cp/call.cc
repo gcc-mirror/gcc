@@ -4285,7 +4285,8 @@ maybe_init_list_as_array (tree elttype, tree init)
 static tree
 maybe_init_list_as_range (tree fn, tree expr)
 {
-  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+  if (!processing_template_decl
+      && BRACE_ENCLOSED_INITIALIZER_P (expr)
       && is_list_ctor (fn)
       && decl_in_std_namespace_p (fn))
     {
@@ -8862,12 +8863,14 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
     return error_mark_node;
 
   warning_sentinel w (warn_zero_as_null_pointer_constant);
-  if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
-    expr = TREE_OPERAND (expr, 0);
   if (issue_conversion_warnings)
     expr = cp_convert_and_check (totype, expr, complain);
   else
-    expr = cp_convert (totype, expr, complain);
+    {
+      if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+	expr = TREE_OPERAND (expr, 0);
+      expr = cp_convert (totype, expr, complain);
+    }
 
   return expr;
 }

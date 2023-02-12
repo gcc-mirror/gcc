@@ -880,13 +880,35 @@ bpf_print_operand (FILE *file, rtx op, int code ATTRIBUTE_UNUSED)
       output_address (GET_MODE (op), XEXP (op, 0));
       break;
     case CONST_DOUBLE:
-      if (CONST_DOUBLE_HIGH (op))
-	fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		 CONST_DOUBLE_HIGH (op), CONST_DOUBLE_LOW (op));
-      else if (CONST_DOUBLE_LOW (op) < 0)
-	fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (op));
+      if (GET_MODE (op) == VOIDmode)
+	{
+	  if (CONST_DOUBLE_HIGH (op))
+	    fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+		     CONST_DOUBLE_HIGH (op), CONST_DOUBLE_LOW (op));
+	  else if (CONST_DOUBLE_LOW (op) < 0)
+	    fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (op));
+	  else
+	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (op));
+	}
       else
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (op));
+	{
+	  long vals[2];
+	  real_to_target (vals, CONST_DOUBLE_REAL_VALUE (op), GET_MODE (op));
+	  vals[0] &= 0xffffffff;
+	  vals[1] &= 0xffffffff;
+	  if (GET_MODE (op) == SFmode)
+	    fprintf (file, "0x%08lx", vals[0]);
+	  else if (GET_MODE (op) == DFmode)
+	    {
+	      /* Note: real_to_target puts vals in target word order.  */
+	      if (WORDS_BIG_ENDIAN)
+		fprintf (file, "0x%08lx%08lx", vals[0], vals[1]);
+	      else
+		fprintf (file, "0x%08lx%08lx", vals[1], vals[0]);
+	    }
+	  else
+	    gcc_unreachable ();
+	}
       break;
     default:
       output_addr_const (file, op);

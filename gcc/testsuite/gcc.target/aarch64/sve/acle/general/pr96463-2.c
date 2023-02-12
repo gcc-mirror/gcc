@@ -26,4 +26,5 @@ TEST(svfloat64_t, float64_t, f64)
 
 TEST(svbfloat16_t, bfloat16_t, bf16)
 
-/* { dg-final { scan-assembler-times {\tdup\tz[0-9]+\.q, z[0-9]+\.q\[0\]} 12 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-not {\tdup\t} } } */
+/* { dg-final { scan-assembler-times {\tld1rq} 12 } } */

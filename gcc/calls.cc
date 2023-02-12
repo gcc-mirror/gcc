@@ -2908,8 +2908,8 @@ expand_call (tree exp, rtx target, int ignore)
     }
 
   /* Count the arguments and set NUM_ACTUALS.  */
-  num_actuals =
-    call_expr_nargs (exp) + num_complex_actuals + structure_value_addr_parm;
+  num_actuals
+    = call_expr_nargs (exp) + num_complex_actuals + structure_value_addr_parm;
 
   /* Compute number of named args.
      First, do a raw count of the args for INIT_CUMULATIVE_ARGS.  */
@@ -2919,6 +2919,8 @@ expand_call (tree exp, rtx target, int ignore)
       = (list_length (type_arg_types)
 	 /* Count the struct value address, if it is passed as a parm.  */
 	 + structure_value_addr_parm);
+  else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
+    n_named_args = 0;
   else
     /* If we know nothing, treat all args as named.  */
     n_named_args = num_actuals;
@@ -2957,6 +2959,8 @@ expand_call (tree exp, rtx target, int ignore)
 	   && ! targetm.calls.pretend_outgoing_varargs_named (args_so_far))
     /* Don't include the last named arg.  */
     --n_named_args;
+  else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
+    n_named_args = 0;
   else
     /* Treat all args as named.  */
     n_named_args = num_actuals;

@@ -1,3 +1,31 @@
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* c-typeck.cc (build_binary_op): Use may_shorten_divmod for integral
+	division or modulo.
+
+2023-01-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (strict_flex_array_level_of): ... here.
+
+2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105972
+	* c-parser.cc (c_parser_declaration_or_fndef): Disable debug non-bind
+	markers for K&R function parameter declarations of nested functions.
+
+2023-01-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (build_compound_literal): Call record_inline_static.
+
+2023-01-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_postfix_expression): Handle integer
+	generic arguments to functions passed to __builtin_tgmath as
+	_Float32x if any argument has _FloatNx or _Complex _FloatNx type.
+	Do not handle integer arguments to some narrowing functions as
+	_Float64.
+
 2022-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/108043

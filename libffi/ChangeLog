@@ -1,3 +1,9 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* src/aarch64/ffi.c: Define `WIN32_LEAN_AND_MEAN` before
+	<windows.h>.
+
 2022-12-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* LOCAL_PATCHES: Add patch to fix i686 darwin build.

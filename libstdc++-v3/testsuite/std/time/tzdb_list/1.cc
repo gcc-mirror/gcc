@@ -1,13 +1,14 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
+// { dg-require-effective-target tzdb }
 // { dg-require-effective-target cxx11_abi }
-// { dg-xfail-run-if "no weak override on AIX" { powerpc-ibm-aix* } }
 
 #include <chrono>
 #include <fstream>
+#include <cstdio>
 #include <testsuite_hooks.h>
 
-static bool override_used = true;
+static bool override_used = false;
 
 namespace __gnu_cxx
 {
@@ -118,6 +119,12 @@ int main()
   std::ofstream("tzdata.zi") << tzdata_zi;
 
   test_access();
-  test_reload();
-  test_erase();
+
+  if (override_used)
+  {
+    test_reload();
+    test_erase();
+  }
+  else
+    std::puts("__gnu_cxx::zoneinfo_dir_override() doesn't work on this target");
 }

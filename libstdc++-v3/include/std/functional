@@ -991,8 +991,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      std::forward<_CallArgs>(__call_args)...);
 	}
 
-      _Fd _M_fd;
-      std::tuple<_BoundArgs...> _M_bound_args;
+      [[no_unique_address]] _Fd _M_fd;
+      [[no_unique_address]] std::tuple<_BoundArgs...> _M_bound_args;
     };
 
   // Avoid the overhead of an empty tuple<> if there are no bound args.
@@ -1051,7 +1051,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
     private:
-      _Fd _M_fd;
+      [[no_unique_address]] _Fd _M_fd;
     };
 
   template<typename _Fn, typename... _Args>

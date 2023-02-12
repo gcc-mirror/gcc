@@ -39,7 +39,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#ifdef __GTHREAD_LEGACY_MUTEX_T
+  // The layout of __gthread_mutex_t changed in GCC 13, but libstdc++ doesn't
+  // actually use the basic_filebuf::_M_lock member, so define it consistently
+  // with the old __gthread_mutex_t to avoid an unnecessary layout change:
+  typedef __GTHREAD_LEGACY_MUTEX_T __c_lock;
+#else
   typedef __gthread_mutex_t __c_lock;
+#endif
 
   // for basic_file.h
   typedef FILE __c_file;

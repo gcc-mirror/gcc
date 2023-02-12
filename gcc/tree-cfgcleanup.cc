@@ -450,7 +450,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
    those alternatives are equal in each of the PHI nodes, then return
    true, else return false.  */
 
-static bool
+bool
 phi_alternatives_equal (basic_block dest, edge e1, edge e2)
 {
   int n1 = e1->dest_idx;

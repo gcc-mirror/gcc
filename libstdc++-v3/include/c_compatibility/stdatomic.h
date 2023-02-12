@@ -1,6 +1,6 @@
 // C compatibility header <stdatomic.h> -*- C++ -*-
 
-// Copyright (C) 2022 The GCC developers
+// Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

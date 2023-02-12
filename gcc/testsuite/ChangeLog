@@ -1,3 +1,377 @@
+2023-01-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/sve/acle/general/pr96463-2.c: Adjust.
+
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* c-c++-common/pr108365.c: New test.
+	* g++.dg/opt/pr108365.C: New test.
+	* g++.dg/warn/pr108365.C: New test.
+
+2023-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/42093
+	* gcc.target/arm/pr42093.c: Disable tree-dce.
+
+2023-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105273
+	* gcc.dg/analyzer/switch-enum-1.c: New test.
+	* gcc.dg/analyzer/switch-enum-2.c: New test.
+	* gcc.dg/analyzer/switch-enum-pr105273-git-vreportf-2.c: New test.
+	* gcc.dg/analyzer/switch-enum-taint-1.c: New test.
+	* gcc.dg/analyzer/switch-wrong-enum.c: New test.
+	* gcc.dg/analyzer/torture/switch-enum-pr105273-doom-p_floor.c: New
+	test.
+	* gcc.dg/analyzer/torture/switch-enum-pr105273-doom-p_maputl.c:
+	New test.
+	* gcc.dg/analyzer/torture/switch-enum-pr105273-git-vreportf-1.c:
+	New test.
+
+2023-01-13  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/108117
+	PR rtl-optimization/108132
+	* gcc.dg/pr108117.c: New test.
+
+2023-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108285
+	* g++.dg/warn/pr108285.C: New test.
+
+2023-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/examples/map/pass/examples-map-pass.exp:
+	Call gm2_push_timeout 30 before foreach testcase.
+	Call gm2_pop_timeout after the foreach statement.
+	* gm2/pimlib/base/run/pass/pimlib-base-run-pass.exp:
+	Call gm2_push_timeout 20 before foreach testcase.
+	Call gm2_pop_timeout after the foreach statement.
+
+2023-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107131
+	* gcc.c-torture/execute/pr107131.c: New test.
+
+2023-01-13  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add multilib tests for Cortex-M55 CPU.
+
+2023-01-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/Warray-bounds-flex-arrays-1.c: Delete the level information
+	from the message issued by -Wstrict-flex-arrays.
+	* gcc.dg/Warray-bounds-flex-arrays-2.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-3.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-4.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-5.c: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-6.c: Likewise.
+	* gcc.dg/Wstrict-flex-arrays-2.c: Likewise.
+	* gcc.dg/Wstrict-flex-arrays-3.c: Likewise.
+	* gcc.dg/Wstrict-flex-arrays.c: Likewise.
+
+2023-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107131
+	* gcc.dg/pr107131.c: New test.
+
+2023-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/dwarf_reg_size_1.c: New test.
+	* gcc.target/aarch64/dwarf_reg_size_2.c: Likewise.
+
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/aarch64/pr107209.c: New test.
+
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108387
+	* gcc.dg/pr108387.c: New testcase.
+
+2023-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/coroutines/pim/run/pass/coroutines-pim-run-pass.exp
+	(timeout-dg.exp): Load.
+	Call gm2_push_timeout 15.
+	Call gm2_pop_timeout at the end.
+	* gm2/link/min/pass/link-min-pass.exp: Set path
+	argument to "".
+	* gm2/switches/whole-program/pass/run/switches-whole-program-pass-run.exp:
+	Call gm2_push_timeout 60.
+	Call gm2_pop_timeout at the end.
+	* lib/gm2-torture.exp (gm2_previous_timeout): Set to 10 or
+	individual_timeout.
+	Configure dejagnu to timeout for 10 seconds.
+	(gm2_push_timeout): New proc.
+	(gm2_pop_timeout): New proc.
+	* lib/gm2.exp (gm2_previous_timeout): Set to 10 or
+	individual_timeout.
+	Configure dejagnu to timeout for 10 seconds.
+	(gm2_push_timeout): New proc.
+	(gm2_pop_timeout): New proc.
+
+2023-01-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp: Use timeout.exp.
+
+2023-01-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp (gm2_init_min): Append -fno-exceptions
+	to args.
+
+2023-01-12  Andrew Pinski  <apinski@marvell.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/92342
+	* gcc.dg/tree-ssa/andnegcmp-1.c: New test.
+	* gcc.dg/tree-ssa/andnegcmp-2.c: New test.
+	* gcc.dg/tree-ssa/multcmp-1.c: New test.
+	* gcc.dg/tree-ssa/multcmp-2.c: New test.
+
+2023-01-12  Christophe Lyon  <christophe.lyon@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/105549
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2.c: Update.
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2-extra.c: Update.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2.c: Update.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2-extra.c: Update.
+	* gcc.target/aarch64/aapcs64/va_arg-17.c: New test.
+	* gcc.target/aarch64/pr105549.c: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2.C: Update.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2-extra.C: Update.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2.C: Update.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2-extra.C: Update.
+
+2023-01-12  Christophe Lyon  <christophe.lyon@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning-align16-O2-extra.c: New
+	test.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning-align32-O2-extra.c: New
+	test.
+	* gcc.target/aarch64/bitfield-abi-warning-align8-O2.c: New test.
+	* gcc.target/aarch64/bitfield-abi-warning.h: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align16-O2-extra.C: New
+	test.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning-align32-O2-extra.C: New
+	test.
+	* g++.target/aarch64/bitfield-abi-warning-align8-O2.C: New test.
+	* g++.target/aarch64/bitfield-abi-warning.h: New test.
+
+2023-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99412
+	* gcc.dg/vect/pr99412.c: New testcase.
+	* gcc.dg/tree-ssa/reassoc-47.c: Adjust comment.
+	* gcc.dg/tree-ssa/reassoc-48.c: Remove.
+
+2023-01-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107706
+	* gfortran.dg/gomp/assume-2.f90: Update dg-error.
+	* gfortran.dg/gomp/assumes-2.f90: Likewise.
+	* gfortran.dg/gomp/assume-5.f90: New test.
+
+2023-01-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-c++-common/cpp/pr108244-1.c: New test.
+	* c-c++-common/cpp/pr108244-2.c: New test.
+	* c-c++-common/gomp/pr108244-3.c: New test.
+
+2023-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108252
+	* gcc.dg/analyzer/attr-malloc-pr108252.c: New test.
+	* gcc.dg/analyzer/fd-leak-pr108252.c: New test.
+	* gcc.dg/analyzer/flex-with-call-summaries.c: Remove xfail from
+	warning false +ve directives.
+	* gcc.dg/analyzer/pr103217-2.c: Add -Wno-analyzer-too-complex.
+	* gcc.dg/analyzer/pr103217-3.c: Likewise.
+	* gcc.dg/analyzer/strdup-pr108252.c: New test.
+	* gcc.dg/analyzer/strndup-pr108252.c: New test.
+
+2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105972
+	* gcc.dg/pr105972.c: New test.
+
+2023-01-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/71343
+	* gcc.dg/pr71343-2.c: New test case.
+
+2023-01-11  David Faust  <david.faust@oracle.com>
+
+	PR target/108293
+	* gcc.target/bpf/double-1.c: New test.
+	* gcc.target/bpf/double-2.c: New test.
+	* gcc.target/bpf/float-1.c: New test.
+
+2023-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-17.c: New test.
+
+2023-01-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp: Exit immediately if
+	the testing target isn't a PowerPC target.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107767
+	* gcc.dg/tree-ssa/pr107767.c: New testcase.
+
+2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108308
+	* gcc.dg/pr108308.c: Use int32 target rather than { ilp32 || lp64 }.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108352
+	* gcc.dg/tree-ssa/ssa-thread-21.c: New testcase.
+	* gcc.dg/tree-ssa/vrp46.c: Remove --param fsm-scale-path-blocks=1.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108353
+	* gcc.dg/tree-ssa/ssa-copyprop-3.c: New testcase.
+
+2023-01-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/not.c: New test.
+
+2023-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106293
+	* gcc.dg/tree-ssa/ssa-dse-46.c: Remove long initializer.
+
+2023-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106293
+	* gcc.dg/tree-ssa/ssa-dse-46.c: New testcase.
+
+2023-01-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/106421
+	* gcc.dg/pr106421.c: New test case.
+
+2023-01-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108110
+	* g++.dg/ipa/pr108110.C: New test.
+
+2023-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108314
+	* gcc.dg/vect/pr108314.c: New testcase.
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/csky/ldbs.c : Fix exclude-opts, should not
+	be "*".
+
+2023-01-10  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/csky/and3a.c: Rename to ...
+	* gcc.target/csky/ck801-and.c: ... this.
+	* gcc.target/csky/constpool-3.c: Rename to ...
+	* gcc.target/csky/constpool-2.c: ... this, Rename to ...
+	* gcc.target/csky/constpool-1.c: ... this, Rename to ...
+	* gcc.target/csky/ck801-constpool.c: ... this, and skip
+	if the CPU is not ck801.
+	* gcc.target/csky/ck801-branch.c: Skip if the CPU is not ck801.
+
+2023-01-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/fcall-saved.c: New test.
+
+2023-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105838
+	PR c++/108047
+	PR c++/108266
+	* g++.dg/tree-ssa/initlist-opt2.C: New test.
+	* g++.dg/tree-ssa/initlist-opt3.C: New test.
+
+2023-01-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-complit-8.c: New test.
+
+2023-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69482
+	* gcc.target/i386/pr69482-1.c: New testcase.
+	* gcc.target/i386/pr69482-2.c: Likewise.
+
+2023-01-09  Martin Liska  <mliska@suse.cz>
+
+	PR lto/108330
+	* g++.dg/ipa/pr108830.C: New test.
+
+2023-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101912
+	* gcc.dg/uninit-pr101912.c: New testcase.
+
+2023-01-09  Martin Liska  <mliska@suse.cz>
+
+	PR c/107993
+	* gcc.target/i386/pr107993.c: New test.
+
+2023-01-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/atomic/c11-atomic-exec-4.c: Add "-D_HPUX_SOURCE" option
+	on *-*-hpux*.
+	* gcc.dg/atomic/c11-atomic-exec-5.c: Likewise.
+
+2023-01-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/builtin-tgmath-3.c: Update expectations and add more
+	tests.
+
+2023-01-06  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2023-01-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/slp_1.c: Update testcase.
+
+2023-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108292
+	PR target/108308
+	* gcc.c-torture/execute/pr108292.c: New test.
+	* gcc.target/i386/pr108292.c: New test.
+	* gcc.dg/pr108308.c: New test.
+
+2023-01-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Revert:
+	2023-01-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/cmov10.c: New test case.
+
+2023-01-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108275
+	* g++.dg/parse/access14.C: New test.
+
+2023-01-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp (gm2_init_minx): New procedure.
+	(gm2_init_min): New procedure calls gm2_init_min with
+	dialect flags.
+	* gm2/link/min/pass/tiny.mod: New test case.
+	* gm2/link/min/pass/link-min-pass.exp: New file.
+
 2023-01-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108282

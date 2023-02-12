@@ -2064,7 +2064,7 @@ PROCEDURE PopConstructor ;
                   |------------|          |------------|
 *)
 
-PROCEDURE BuildNot ;
+PROCEDURE BuildNot (notTokPos: CARDINAL) ;
 
 
 (*

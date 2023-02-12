@@ -238,44 +238,21 @@ along with GCC; see the file COPYING3.  If not see
   1,									\
 }
 
-/* For non-leaf procedures on Xtensa processors, the allocation order
-   is as specified below by REG_ALLOC_ORDER.  For leaf procedures, we
-   want to use the lowest numbered registers first to minimize
-   register window overflows.  However, local-alloc is not smart
-   enough to consider conflicts with incoming arguments.  If an
-   incoming argument in a2 is live throughout the function and
-   local-alloc decides to use a2, then the incoming argument must
-   either be spilled or copied to another register.  To get around
-   this, we define ADJUST_REG_ALLOC_ORDER to redefine
-   reg_alloc_order for leaf functions such that lowest numbered
-   registers are used first with the exception that the incoming
-   argument registers are not used until after other register choices
-   have been exhausted.  */
+/* For the windowed register ABI on Xtensa processors, the allocation
+   order is as specified below by REG_ALLOC_ORDER.
+   For the call0 ABI, on the other hand, ADJUST_REG_ALLOC_ORDER hook
+   will be called once at the start of IRA, replacing it with the
+   appropriate one.  */
 
-#define REG_ALLOC_ORDER \
-{  8,  9, 10, 11, 12, 13, 14, 15,  7,  6,  5,  4,  3,  2, \
-  18, \
-  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, \
-   0,  1, 16, 17, \
-  35, \
+#define REG_ALLOC_ORDER							\
+{									\
+   8,  9, 10, 11, 12, 13, 14, 15,  7,  6,  5,  4,  3,  2,		\
+  18,									\
+  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,	\
+   0,  1, 16, 17,							\
+  35,									\
 }
-
-#define ADJUST_REG_ALLOC_ORDER order_regs_for_local_alloc ()
-
-/* For Xtensa, the only point of this is to prevent GCC from otherwise
-   giving preference to call-used registers.  To minimize window
-   overflows for the AR registers, we want to give preference to the
-   lower-numbered AR registers.  For other register files, which are
-   not windowed, we still prefer call-used registers, if there are any.  */
-extern const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER];
-#define LEAF_REGISTERS xtensa_leaf_regs
-
-/* For Xtensa, no remapping is necessary, but this macro must be
-   defined if LEAF_REGISTERS is defined.  */
-#define LEAF_REG_REMAP(REGNO) ((int) (REGNO))
-
-/* This must be declared if LEAF_REGISTERS is set.  */
-extern int leaf_function;
+#define ADJUST_REG_ALLOC_ORDER xtensa_adjust_reg_alloc_order ()
 
 /* Internal macros to classify a register number.  */
 

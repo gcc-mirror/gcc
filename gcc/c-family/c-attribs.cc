@@ -5574,12 +5574,18 @@ handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* Ensure we have a function type.  */
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
-      if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+      for (tree t = args; t != NULL_TREE; t = TREE_CHAIN (t))
 	{
-	  error ("%qE attribute argument not a string constant", name);
-	  *no_add_attrs = true;
+	  tree value = TREE_VALUE (t);
+	  if (TREE_CODE (value) != STRING_CST)
+	    {
+	      error ("%qE attribute argument not a string constant", name);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
 	}
-      else if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
+
+      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
 	{
 	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
 		   "with %qs attribute", name, "always_inline");

@@ -407,6 +407,9 @@ gm2_langhook_handle_option (
     case OPT_save_temps_:
       M2Options_SetSaveTempsDir (arg);
       return 1;
+    case OPT_v:
+      M2Options_SetVerbose (value);
+      return 1;
     default:
       if (insideCppArgs)
         {

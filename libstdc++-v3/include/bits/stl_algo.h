@@ -2458,13 +2458,14 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
 	  _BidirectionalIterator __new_middle
 	    = std::__rotate_adaptive(__first_cut, __middle, __second_cut,
-				     __len1 - __len11, __len22,
+				     _Distance(__len1 - __len11), __len22,
 				     __buffer, __buffer_size);
 	  std::__merge_adaptive_resize(__first, __first_cut, __new_middle,
 				       __len11, __len22,
 				       __buffer, __buffer_size, __comp);
 	  std::__merge_adaptive_resize(__new_middle, __second_cut, __last,
-				       __len1 - __len11, __len2 - __len22,
+				       _Distance(__len1 - __len11),
+				       _Distance(__len2 - __len22),
 				       __buffer, __buffer_size, __comp);
 	}
     }

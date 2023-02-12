@@ -496,7 +496,7 @@ commutative_op (id_base *id)
     {
       int res = commutative_op (uid->substitutes[0]);
       if (res < 0)
-	return 0;
+	return -1;
       for (unsigned i = 1; i < uid->substitutes.length (); ++i)
 	if (res != commutative_op (uid->substitutes[i]))
 	  return -1;

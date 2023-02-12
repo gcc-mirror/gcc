@@ -1,3 +1,39 @@
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* typeck.cc (cp_build_binary_op): Use may_shorten_divmod for integral
+	division or modulo.
+
+2023-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108285
+	* cvt.cc (cp_convert_and_check): For EXCESS_PRECISION_EXPR
+	use its operand except that for warning purposes use the original
+	EXCESS_PRECISION_EXPR.
+	* call.cc (convert_like_internal): Only look through
+	EXCESS_PRECISION_EXPR when calling cp_convert, not when calling
+	cp_convert_and_check.
+
+2023-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105838
+	PR c++/108047
+	PR c++/108266
+	* call.cc (maybe_init_list_as_range): Always return NULL_TREE if
+	processing_template_decl.
+
+2023-01-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108275
+	* parser.cc (cp_parser_class_head): Use dk_deferred instead of
+	dk_no_check when parsing the class name.
+
+2023-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108286
+	* semantics.cc (finish_omp_target_clauses): Ignore clauses other than
+	OMP_CLAUSE_MAP.
+
 2023-01-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108282

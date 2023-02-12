@@ -22,6 +22,6 @@ subroutine foo (i, a)
   end if
 !  !$omp end assume  - silence: 'Unexpected !$OMP END ASSUME statement'
 
-  !$omp assume holds (1.0)  ! { dg-error "HOLDS expression at .1. must be a logical expression" }
+  !$omp assume holds (1.0)  ! { dg-error "HOLDS expression at .1. must be a scalar logical expression" }
   !$omp end assume
 end
