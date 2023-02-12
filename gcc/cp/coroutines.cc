@@ -1,6 +1,6 @@
 /* coroutine-specific state, expansions and tests.
 
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
 
  Contributed by Iain Sandoe <iain@sandoe.co.uk> under contract to Facebook.
 

@@ -1,6 +1,6 @@
 (* SysClock.mod implement the ISO SysClock specification.
 
-Copyright (C) 2009-2021 Free Software Foundation, Inc.
+Copyright (C) 2009-2023 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

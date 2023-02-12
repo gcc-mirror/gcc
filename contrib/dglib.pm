@@ -10,7 +10,7 @@
 #		true if and only if it is a passing result (PASS, XFAIL, or
 #		KFAIL.)
 #
-# Copyright (c) 2006 Free Software Foundation.
+# Copyright (C) 2006-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
