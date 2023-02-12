@@ -1,3 +1,394 @@
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* CONTRIBUTING.md: New.
+	* README.md: New.
+	* logo.png: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* config-lang.in: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* lang.opt (-frust-incomplete-and-experimental-compiler-do-not-use):
+	New.
+	* rust-session-manager.cc (Session::compile_crate): Check it.
+	* Make-lang.in (RUST_SELFTEST_FLAGS): Add it.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* Make-lang.in: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* lang.opt: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* lang-specs.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust-lang.cc: New.
+	* rust-session-manager.cc: New.
+	* rust-session-manager.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* rustspec.cc: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust-diagnostics.cc: New.
+	* rust-diagnostics.h: New.
+	* rust-gcc-diagnostics.cc: New.
+	* rust-linemap.cc: New.
+	* rust-linemap.h: New.
+	* rust-location.h: New.
+	* rust-system.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+	    David Faust  <david.faust@oracle.com>
+	    Faisal Abbas  <90.abbasfaisal@gmail.com>
+
+	* backend/rust-compile-context.cc: New.
+	* backend/rust-compile-context.h: New.
+	* backend/rust-compile.cc: New.
+	* backend/rust-compile.h: New.
+	* backend/rust-constexpr.cc: New.
+	* backend/rust-constexpr.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+	    David Faust  <david.faust@oracle.com>
+
+	* backend/rust-compile-block.cc: New.
+	* backend/rust-compile-block.h: New.
+	* backend/rust-compile-expr.cc: New.
+	* backend/rust-compile-expr.h: New.
+	* backend/rust-compile-extern.h: New.
+	* backend/rust-compile-fnparam.cc: New.
+	* backend/rust-compile-fnparam.h: New.
+	* backend/rust-compile-implitem.cc: New.
+	* backend/rust-compile-implitem.h: New.
+	* backend/rust-compile-intrinsic.cc: New.
+	* backend/rust-compile-intrinsic.h: New.
+	* backend/rust-compile-item.cc: New.
+	* backend/rust-compile-item.h: New.
+	* backend/rust-compile-pattern.cc: New.
+	* backend/rust-compile-pattern.h: New.
+	* backend/rust-compile-resolve-path.cc: New.
+	* backend/rust-compile-resolve-path.h: New.
+	* backend/rust-compile-stmt.cc: New.
+	* backend/rust-compile-stmt.h: New.
+	* backend/rust-compile-struct-field-expr.cc: New.
+	* backend/rust-compile-struct-field-expr.h: New.
+	* backend/rust-compile-type.cc: New.
+	* backend/rust-compile-type.h: New.
+	* backend/rust-compile-var-decl.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+	    David Faust  <david.faust@oracle.com>
+
+	* backend/rust-builtins.h: New.
+	* backend/rust-compile-base.cc: New.
+	* backend/rust-compile-base.h: New.
+	* backend/rust-mangle.cc: New.
+	* backend/rust-mangle.h: New.
+	* backend/rust-tree.cc: New.
+	* backend/rust-tree.h: New.
+	* rust-backend.h: New.
+	* rust-gcc.cc: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* metadata/rust-export-metadata.cc: New.
+	* metadata/rust-export-metadata.h: New.
+	* metadata/rust-extern-crate.cc: New.
+	* metadata/rust-extern-crate.h: New.
+	* metadata/rust-import-archive.cc: New.
+	* metadata/rust-imports.cc: New.
+	* metadata/rust-imports.h: New.
+	* rust-object-export.cc: New.
+	* rust-object-export.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* checks/lints/rust-lint-unused-var.cc: New.
+	* checks/lints/rust-lint-unused-var.h: New.
+
+2022-12-13  Thomas Young  <wenzhang5800@gmail.com>
+
+	* checks/lints/rust-lint-marklive-base.h: New.
+	* checks/lints/rust-lint-marklive.cc: New.
+	* checks/lints/rust-lint-marklive.h: New.
+	* checks/lints/rust-lint-scan-deadcode.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/privacy/rust-privacy-check.cc: New.
+	* checks/errors/privacy/rust-privacy-check.h: New.
+	* checks/errors/privacy/rust-privacy-common.h: New.
+	* checks/errors/privacy/rust-privacy-ctx.cc: New.
+	* checks/errors/privacy/rust-privacy-ctx.h: New.
+	* checks/errors/privacy/rust-privacy-reporter.cc: New.
+	* checks/errors/privacy/rust-privacy-reporter.h: New.
+	* checks/errors/privacy/rust-pub-restricted-visitor.cc: New.
+	* checks/errors/privacy/rust-pub-restricted-visitor.h: New.
+	* checks/errors/privacy/rust-reachability.cc: New.
+	* checks/errors/privacy/rust-reachability.h: New.
+	* checks/errors/privacy/rust-visibility-resolver.cc: New.
+	* checks/errors/privacy/rust-visibility-resolver.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/rust-const-checker.cc: New.
+	* checks/errors/rust-const-checker.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/rust-unsafe-checker.cc: New.
+	* checks/errors/rust-unsafe-checker.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-autoderef.cc: New.
+	* typecheck/rust-autoderef.h: New.
+	* typecheck/rust-casts.cc: New.
+	* typecheck/rust-casts.h: New.
+	* typecheck/rust-coercion.cc: New.
+	* typecheck/rust-coercion.h: New.
+	* typecheck/rust-hir-dot-operator.cc: New.
+	* typecheck/rust-hir-dot-operator.h: New.
+	* typecheck/rust-hir-inherent-impl-overlap.h: New.
+	* typecheck/rust-hir-path-probe.h: New.
+	* typecheck/rust-hir-trait-ref.h: New.
+	* typecheck/rust-hir-type-bounds.h: New.
+	* typecheck/rust-substitution-mapper.cc: New.
+	* typecheck/rust-substitution-mapper.h: New.
+	* typecheck/rust-tycheck-dump.h: New.
+	* typecheck/rust-tyctx.cc: New.
+	* typecheck/rust-tyty-bounds.cc: New.
+	* typecheck/rust-tyty-call.cc: New.
+	* typecheck/rust-tyty-call.h: New.
+	* typecheck/rust-tyty-cmp.h: New.
+	* typecheck/rust-tyty-rules.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-tyty.cc: New.
+	* typecheck/rust-tyty.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-trait-resolve.cc: New.
+	* typecheck/rust-hir-trait-resolve.h: New.
+	* typecheck/rust-hir-type-check-base.cc: New.
+	* typecheck/rust-hir-type-check-base.h: New.
+	* typecheck/rust-hir-type-check-enumitem.cc: New.
+	* typecheck/rust-hir-type-check-enumitem.h: New.
+	* typecheck/rust-hir-type-check-expr.cc: New.
+	* typecheck/rust-hir-type-check-expr.h: New.
+	* typecheck/rust-hir-type-check-implitem.cc: New.
+	* typecheck/rust-hir-type-check-implitem.h: New.
+	* typecheck/rust-hir-type-check-item.cc: New.
+	* typecheck/rust-hir-type-check-item.h: New.
+	* typecheck/rust-hir-type-check-path.cc: New.
+	* typecheck/rust-hir-type-check-pattern.cc: New.
+	* typecheck/rust-hir-type-check-pattern.h: New.
+	* typecheck/rust-hir-type-check-stmt.cc: New.
+	* typecheck/rust-hir-type-check-stmt.h: New.
+	* typecheck/rust-hir-type-check-struct-field.h: New.
+	* typecheck/rust-hir-type-check-struct.cc: New.
+	* typecheck/rust-hir-type-check-toplevel.cc: New.
+	* typecheck/rust-hir-type-check-toplevel.h: New.
+	* typecheck/rust-hir-type-check-type.cc: New.
+	* typecheck/rust-hir-type-check-type.h: New.
+	* typecheck/rust-hir-type-check-util.cc: New.
+	* typecheck/rust-hir-type-check-util.h: New.
+	* typecheck/rust-hir-type-check.cc: New.
+	* typecheck/rust-hir-type-check.h: New.
+	* typecheck/rust-tyty-visitor.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-canonical-path.h: New.
+	* util/rust-common.h: New.
+	* util/rust-hir-map.cc: New.
+	* util/rust-hir-map.h: New.
+	* util/rust-identifier.h: New.
+	* util/rust-lang-item.h: New.
+	* util/rust-mapping-common.h: New.
+	* util/rust-stacked-contexts.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-attributes.cc: New.
+	* util/rust-attributes.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-optional-test.cc: New.
+	* util/rust-optional.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-base62.cc: New.
+	* util/rust-base62.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-abi.cc: New.
+	* util/rust-abi.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/fnv-hash.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-make-unique.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/rust-ast-lower-base.cc: New.
+	* hir/rust-ast-lower-base.h: New.
+	* hir/rust-ast-lower-block.h: New.
+	* hir/rust-ast-lower-enumitem.h: New.
+	* hir/rust-ast-lower-expr.h: New.
+	* hir/rust-ast-lower-extern.h: New.
+	* hir/rust-ast-lower-implitem.h: New.
+	* hir/rust-ast-lower-item.cc: New.
+	* hir/rust-ast-lower-item.h: New.
+	* hir/rust-ast-lower-pattern.cc: New.
+	* hir/rust-ast-lower-pattern.h: New.
+	* hir/rust-ast-lower-stmt.h: New.
+	* hir/rust-ast-lower-struct-field-expr.h: New.
+	* hir/rust-ast-lower-type.h: New.
+	* hir/rust-ast-lower.cc: New.
+	* hir/rust-ast-lower.h: New.
+	* hir/rust-hir-dump.cc: New.
+	* hir/rust-hir-dump.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/tree/rust-hir-full-decls.h: New.
+	* hir/tree/rust-hir-full-test.cc: New.
+	* hir/tree/rust-hir-full.h: New.
+	* hir/tree/rust-hir-visitor.h: New.
+	* hir/tree/rust-hir.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/tree/rust-hir-expr.h: New.
+	* hir/tree/rust-hir-item.h: New.
+	* hir/tree/rust-hir-path.h: New.
+	* hir/tree/rust-hir-pattern.h: New.
+	* hir/tree/rust-hir-stmt.h: New.
+	* hir/tree/rust-hir-type.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-base.cc: New.
+	* resolve/rust-ast-resolve-base.h: New.
+	* resolve/rust-ast-resolve-expr.cc: New.
+	* resolve/rust-ast-resolve-expr.h: New.
+	* resolve/rust-ast-resolve-implitem.h: New.
+	* resolve/rust-ast-resolve-item.cc: New.
+	* resolve/rust-ast-resolve-item.h: New.
+	* resolve/rust-ast-resolve-path.cc: New.
+	* resolve/rust-ast-resolve-path.h: New.
+	* resolve/rust-ast-resolve-pattern.cc: New.
+	* resolve/rust-ast-resolve-pattern.h: New.
+	* resolve/rust-ast-resolve-stmt.cc: New.
+	* resolve/rust-ast-resolve-stmt.h: New.
+	* resolve/rust-ast-resolve-struct-expr-field.cc: New.
+	* resolve/rust-ast-resolve-struct-expr-field.h: New.
+	* resolve/rust-ast-resolve-toplevel.h: New.
+	* resolve/rust-ast-resolve-type.cc: New.
+	* resolve/rust-ast-resolve-type.h: New.
+	* resolve/rust-ast-resolve.cc: New.
+	* resolve/rust-ast-resolve.h: New.
+	* resolve/rust-ast-verify-assignee.h: New.
+	* resolve/rust-name-resolver.cc: New.
+	* resolve/rust-name-resolver.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Joel Phillips  <simplytheother@gmail.com>
+
+	* expand/rust-attribute-visitor.cc: New.
+	* expand/rust-attribute-visitor.h: New.
+	* expand/rust-macro-builtins.cc: New.
+	* expand/rust-macro-builtins.h: New.
+	* expand/rust-macro-expand.cc: New.
+	* expand/rust-macro-expand.h: New.
+	* expand/rust-macro-invoc-lexer.cc: New.
+	* expand/rust-macro-invoc-lexer.h: New.
+	* expand/rust-macro-substitute-ctx.cc: New.
+	* expand/rust-macro-substitute-ctx.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* parse/rust-parse-impl.h: New, second half.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* parse/rust-cfg-parser.cc: New.
+	* parse/rust-cfg-parser.h: New.
+	* parse/rust-parse-impl.h: New.
+	* parse/rust-parse.cc: New.
+	* parse/rust-parse.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* lex/rust-codepoint.h: New.
+	* lex/rust-lex.cc: New.
+	* lex/rust-lex.h: New.
+	* lex/rust-token.cc: New.
+	* lex/rust-token.h: New.
+	* rust-buffered-queue.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc: New.
+	* ast/rust-ast-dump.h: New.
+	* ast/rust-ast-visitor.h: New.
+	* ast/rust-cond-compilation.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+
+	* ast/rust-expr.h: New.
+	* ast/rust-macro.h: New.
+	* ast/rust-path.h: New.
+	* ast/rust-pattern.h: New.
+	* ast/rust-stmt.h: New.
+	* ast/rust-type.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+
+	* ast/rust-item.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-full-decls.h: New.
+	* ast/rust-ast-full-test.cc: New.
+	* ast/rust-ast-full.h: New.
+	* ast/rust-ast.h: New.
+	* operator.h: New.
+
 
 Copyright (C) 2022 Free Software Foundation, Inc.
 

@@ -4015,7 +4015,7 @@ parse_spec (gfc_statement st)
       gfc_symbol* proc = gfc_current_ns->proc_name;
       gcc_assert (proc);
 
-      if (proc->result->ts.type == BT_UNKNOWN)
+      if (proc->result && proc->result->ts.type == BT_UNKNOWN)
 	function_result_typed = true;
     }
 

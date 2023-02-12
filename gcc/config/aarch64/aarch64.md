@@ -957,7 +957,7 @@
 {
   rtx bitvalue = gen_reg_rtx (<ZEROM>mode);
   rtx reg = gen_lowpart (<ZEROM>mode, operands[0]);
-  rtx val = GEN_INT (1UL << UINTVAL (operands[1]));
+  rtx val = gen_int_mode (HOST_WIDE_INT_1U << UINTVAL (operands[1]), <MODE>mode);
   emit_insn (gen_and<zerom>3 (bitvalue, reg, val));
   operands[1] = const0_rtx;
   operands[0] = aarch64_gen_compare_reg (<CODE>, bitvalue,

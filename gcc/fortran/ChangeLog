@@ -1,3 +1,9 @@
+2022-12-13  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107423
+	* parse.cc (parse_spec): Avoid NULL pointer dereference when parsing
+	a function and an error occured.
+
 2022-12-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102180

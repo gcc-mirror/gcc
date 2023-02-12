@@ -1,3 +1,8 @@
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* Makefile.def: Add Rust language.
+	* Makefile.in: Regenerate via autogen.
+
 2022-12-09  Martin Liska  <mliska@suse.cz>
 
 	* MAINTAINERS: Fix spacing.

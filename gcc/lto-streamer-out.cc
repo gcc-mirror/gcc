@@ -2752,7 +2752,8 @@ lto_output (void)
 	continue;
       if (cgraph_node *node = dyn_cast <cgraph_node *> (snode))
 	{
-	  if (lto_symtab_encoder_encode_body_p (encoder, node))
+	  if (lto_symtab_encoder_encode_body_p (encoder, node)
+	      && !node->clone_of)
 	    symbols_to_copy.safe_push (node);
 	}
       else if (varpool_node *node = dyn_cast <varpool_node *> (snode))

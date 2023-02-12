@@ -3113,7 +3113,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
     {
       def = vect_recog_temp_ssa_var (utype, NULL);
       def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd0);
-      append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+      append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, uvectype);
       oprnd0 = def;
     }
 
@@ -3137,7 +3137,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
     {
       def = vect_recog_temp_ssa_var (utype, NULL);
       def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd1);
-      append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+      append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, uvectype);
     }
   stype = TREE_TYPE (def);
 
@@ -3185,13 +3185,13 @@ vect_recog_rotate_pattern (vec_info *vinfo,
   def_stmt = gimple_build_assign (var1, rhs_code == LROTATE_EXPR
 					? LSHIFT_EXPR : RSHIFT_EXPR,
 				  oprnd0, def);
-  append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+  append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, uvectype);
 
   var2 = vect_recog_temp_ssa_var (utype, NULL);
   def_stmt = gimple_build_assign (var2, rhs_code == LROTATE_EXPR
 					? RSHIFT_EXPR : LSHIFT_EXPR,
 				  oprnd0, def2);
-  append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+  append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, uvectype);
 
   /* Pattern detected.  */
   vect_pattern_detected ("vect_recog_rotate_pattern", last_stmt);
@@ -3202,7 +3202,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
 
   if (!useless_type_conversion_p (type, utype))
     {
-      append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt);
+      append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt, uvectype);
       tree result = vect_recog_temp_ssa_var (type, NULL);
       pattern_stmt = gimple_build_assign (result, NOP_EXPR, var);
     }

@@ -722,6 +722,10 @@ likely_value (gimple *stmt)
   if (gimple_has_volatile_ops (stmt))
     return VARYING;
 
+  /* .DEFERRED_INIT produces undefined.  */
+  if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
+    return UNDEFINED;
+
   /* Arrive here for more complex cases.  */
   has_constant_operand = false;
   has_undefined_operand = false;

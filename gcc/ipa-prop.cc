@@ -5279,80 +5279,72 @@ ipa_prop_read_jump_functions (void)
     }
 }
 
-void
-write_ipcp_transformation_info (output_block *ob, cgraph_node *node)
+/* Return true if the IPA-CP transformation summary TS is non-NULL and contains
+   useful info.  */
+static bool
+useful_ipcp_transformation_info_p (ipcp_transformation *ts)
 {
-  int node_ref;
-  unsigned int count = 0;
-  lto_symtab_encoder_t encoder;
+  if (!ts)
+    return false;
+  if (!vec_safe_is_empty (ts->m_agg_values)
+      || !vec_safe_is_empty (ts->bits)
+      || !vec_safe_is_empty (ts->m_vr))
+    return true;
+  return false;
+}
 
-  encoder = ob->decl_state->symtab_node_encoder;
-  node_ref = lto_symtab_encoder_encode (encoder, node);
+/* Write into OB IPA-CP transfromation summary TS describing NODE.  */
+
+void
+write_ipcp_transformation_info (output_block *ob, cgraph_node *node,
+				ipcp_transformation *ts)
+{
+  lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
+  int node_ref = lto_symtab_encoder_encode (encoder, node);
   streamer_write_uhwi (ob, node_ref);
 
-  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
-  if (ts && !vec_safe_is_empty (ts->m_agg_values))
+  streamer_write_uhwi (ob, vec_safe_length (ts->m_agg_values));
+  for (const ipa_argagg_value &av : ts->m_agg_values)
     {
-      streamer_write_uhwi (ob, ts->m_agg_values->length ());
-      for (const ipa_argagg_value &av : ts->m_agg_values)
+      struct bitpack_d bp;
+
+      stream_write_tree (ob, av.value, true);
+      streamer_write_uhwi (ob, av.unit_offset);
+      streamer_write_uhwi (ob, av.index);
+
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, av.by_ref, 1);
+      streamer_write_bitpack (&bp);
+    }
+
+  streamer_write_uhwi (ob, vec_safe_length (ts->m_vr));
+  for (const ipa_vr &parm_vr : ts->m_vr)
+    {
+      struct bitpack_d bp;
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, parm_vr.known, 1);
+      streamer_write_bitpack (&bp);
+      if (parm_vr.known)
 	{
-	  struct bitpack_d bp;
-
-	  stream_write_tree (ob, av.value, true);
-	  streamer_write_uhwi (ob, av.unit_offset);
-	  streamer_write_uhwi (ob, av.index);
-
-	  bp = bitpack_create (ob->main_stream);
-	  bp_pack_value (&bp, av.by_ref, 1);
-	  streamer_write_bitpack (&bp);
+	  streamer_write_enum (ob->main_stream, value_rang_type,
+			       VR_LAST, parm_vr.type);
+	  streamer_write_wide_int (ob, parm_vr.min);
+	  streamer_write_wide_int (ob, parm_vr.max);
 	}
     }
-  else
-    streamer_write_uhwi (ob, 0);
 
-  if (ts && vec_safe_length (ts->m_vr) > 0)
+  streamer_write_uhwi (ob, vec_safe_length (ts->bits));
+  for (const ipa_bits *bits_jfunc : ts->bits)
     {
-      count = ts->m_vr->length ();
-      streamer_write_uhwi (ob, count);
-      for (unsigned i = 0; i < count; ++i)
+      struct bitpack_d bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, !!bits_jfunc, 1);
+      streamer_write_bitpack (&bp);
+      if (bits_jfunc)
 	{
-	  struct bitpack_d bp;
-	  ipa_vr *parm_vr = &(*ts->m_vr)[i];
-	  bp = bitpack_create (ob->main_stream);
-	  bp_pack_value (&bp, parm_vr->known, 1);
-	  streamer_write_bitpack (&bp);
-	  if (parm_vr->known)
-	    {
-	      streamer_write_enum (ob->main_stream, value_rang_type,
-				   VR_LAST, parm_vr->type);
-	      streamer_write_wide_int (ob, parm_vr->min);
-	      streamer_write_wide_int (ob, parm_vr->max);
-	    }
+	  streamer_write_widest_int (ob, bits_jfunc->value);
+	  streamer_write_widest_int (ob, bits_jfunc->mask);
 	}
     }
-  else
-    streamer_write_uhwi (ob, 0);
-
-  if (ts && vec_safe_length (ts->bits) > 0)
-    {
-      count = ts->bits->length ();
-      streamer_write_uhwi (ob, count);
-
-      for (unsigned i = 0; i < count; ++i)
-	{
-	  const ipa_bits *bits_jfunc = (*ts->bits)[i];
-	  struct bitpack_d bp = bitpack_create (ob->main_stream);
-	  bp_pack_value (&bp, !!bits_jfunc, 1);
-	  streamer_write_bitpack (&bp);
-	  if (bits_jfunc)
-	    {
-	      streamer_write_widest_int (ob, bits_jfunc->value);
-	      streamer_write_widest_int (ob, bits_jfunc->mask);
-	    }
-	}
-    }
-  else
-    streamer_write_uhwi (ob, 0);
 }
 
 /* Stream in the aggregate value replacement chain for NODE from IB.  */
@@ -5362,12 +5354,12 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
 			       data_in *data_in)
 {
   unsigned int count, i;
+  ipcp_transformation_initialize ();
+  ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
 
   count = streamer_read_uhwi (ib);
   if (count > 0)
     {
-      ipcp_transformation_initialize ();
-      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_grow_cleared (ts->m_agg_values, count, true);
       for (i = 0; i <count; i++)
 	{
@@ -5385,8 +5377,6 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
   count = streamer_read_uhwi (ib);
   if (count > 0)
     {
-      ipcp_transformation_initialize ();
-      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_grow_cleared (ts->m_vr, count, true);
       for (i = 0; i < count; i++)
 	{
@@ -5407,10 +5397,7 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
   count = streamer_read_uhwi (ib);
   if (count > 0)
     {
-      ipcp_transformation_initialize ();
-      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_grow_cleared (ts->bits, count, true);
-
       for (i = 0; i < count; i++)
 	{
 	  struct bitpack_d bp = streamer_read_bitpack (ib);
@@ -5432,31 +5419,38 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
 void
 ipcp_write_transformation_summaries (void)
 {
-  struct cgraph_node *node;
   struct output_block *ob;
   unsigned int count = 0;
-  lto_symtab_encoder_iterator lsei;
   lto_symtab_encoder_t encoder;
 
   ob = create_output_block (LTO_section_ipcp_transform);
   encoder = ob->decl_state->symtab_node_encoder;
   ob->symbol = NULL;
-  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
-       lsei_next_function_in_partition (&lsei))
+
+  for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      node = lsei_cgraph_node (lsei);
-      if (node->has_gimple_body_p ())
+      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      if (!cnode)
+	continue;
+      ipcp_transformation *ts = ipcp_get_transformation_summary (cnode);
+      if (useful_ipcp_transformation_info_p (ts)
+	  && lto_symtab_encoder_encode_body_p (encoder, cnode))
 	count++;
     }
 
   streamer_write_uhwi (ob, count);
 
-  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
-       lsei_next_function_in_partition (&lsei))
+  for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      node = lsei_cgraph_node (lsei);
-      if (node->has_gimple_body_p ())
-	write_ipcp_transformation_info (ob, node);
+      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      if (!cnode)
+	continue;
+      ipcp_transformation *ts = ipcp_get_transformation_summary (cnode);
+      if (useful_ipcp_transformation_info_p (ts)
+	  && lto_symtab_encoder_encode_body_p (encoder, cnode))
+	write_ipcp_transformation_info (ob, cnode, ts);
     }
   streamer_write_char_stream (ob->main_stream, 0);
   produce_asm (ob, NULL);
@@ -5497,7 +5491,6 @@ read_replacements_section (struct lto_file_decl_data *file_data,
       encoder = file_data->symtab_node_encoder;
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
-      gcc_assert (node->definition);
       read_ipcp_transformation_info (&ib_main, node, data_in);
     }
   lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,
@@ -5525,29 +5518,21 @@ ipcp_read_transformation_summaries (void)
     }
 }
 
-/* Adjust the aggregate replacements in TS to reflect parameters skipped in
-   NODE but also if any parameter was IPA-SRAed into a scalar go ahead with
-   substitution of the default_definitions of that new param with the
-   appropriate constant.
+/* Adjust the aggregate replacements in TS to reflect any parameter removals
+   which might have already taken place.  If after adjustments there are no
+   aggregate replacements left, the m_agg_values will be set to NULL.  In other
+   cases, it may be shrunk.  */
 
-   If after adjustments there are no aggregate replacements left, the
-   m_agg_values will be set to NULL.  In other cases, it may be shrunk.
-
-   Return true if any values were already substituted for scalarized parameters
-   and update_cfg shuld be run after replace_uses_by.  */
-
-static bool
-adjust_agg_replacement_values (cgraph_node *node,
-			       ipcp_transformation *ts,
-			       const vec<ipa_param_descriptor, va_gc>
-			         &descriptors)
+static void
+adjust_agg_replacement_values (cgraph_node *node, ipcp_transformation *ts)
 {
   clone_info *cinfo = clone_info::get (node);
   if (!cinfo || !cinfo->param_adjustments)
-    return false;
+    return;
 
+  auto_vec<int, 16> new_indices;
+  cinfo->param_adjustments->get_updated_indices (&new_indices);
   bool removed_item = false;
-  bool done_replacement = false;
   unsigned dst_index = 0;
   unsigned count = ts->m_agg_values->length ();
   for (unsigned i = 0; i < count; i++)
@@ -5555,13 +5540,10 @@ adjust_agg_replacement_values (cgraph_node *node,
       ipa_argagg_value *v = &(*ts->m_agg_values)[i];
       gcc_checking_assert (v->index >= 0);
 
-      tree cst_type = TREE_TYPE (v->value);
-      int split_idx;
-      int new_idx
-	= cinfo->param_adjustments->get_updated_index_or_split (v->index,
-								v->unit_offset,
-								cst_type,
-								&split_idx);
+      int new_idx = -1;
+      if ((unsigned) v->index < new_indices.length ())
+	new_idx = new_indices[v->index];
+
       if (new_idx >= 0)
 	{
 	  v->index = new_idx;
@@ -5570,19 +5552,7 @@ adjust_agg_replacement_values (cgraph_node *node,
 	  dst_index++;
 	}
       else
-	{
-	  removed_item = true;
-	  if (split_idx >= 0)
-	    {
-	      tree parm = ipa_get_param (descriptors, split_idx);
-	      tree ddef = ssa_default_def (cfun, parm);
-	      if (ddef)
-		{
-		  replace_uses_by (ddef, v->value);
-		  done_replacement = true;
-		}
-	    }
-	}
+	removed_item = true;
     }
 
   if (dst_index == 0)
@@ -5593,7 +5563,7 @@ adjust_agg_replacement_values (cgraph_node *node,
   else if (removed_item)
     ts->m_agg_values->truncate (dst_index);
 
-  return done_replacement;
+  return;
 }
 
 /* Dominator walker driving the ipcp modification phase.  */
@@ -5962,7 +5932,6 @@ ipcp_update_vr (struct cgraph_node *node)
 unsigned int
 ipcp_transform_function (struct cgraph_node *node)
 {
-  vec<ipa_param_descriptor, va_gc> *descriptors = NULL;
   struct ipa_func_body_info fbi;
   int param_count;
 
@@ -5981,18 +5950,13 @@ ipcp_transform_function (struct cgraph_node *node)
   param_count = count_formal_params (node->decl);
   if (param_count == 0)
     return 0;
-  vec_safe_grow_cleared (descriptors, param_count, true);
-  ipa_populate_param_decls (node, *descriptors);
 
-  bool cfg_changed = adjust_agg_replacement_values (node, ts, *descriptors);
+  adjust_agg_replacement_values (node, ts);
   if (vec_safe_is_empty (ts->m_agg_values))
     {
-      vec_free (descriptors);
       if (dump_file)
 	fprintf (dump_file, "  All affected aggregate parameters were either "
 		 "removed or converted into scalars, phase done.\n");
-      if (cfg_changed)
-	delete_unreachable_blocks_update_callgraph (node, false);
       return 0;
     }
   if (dump_file)
@@ -6009,12 +5973,15 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.param_count = param_count;
   fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
+  vec<ipa_param_descriptor, va_gc> *descriptors = NULL;
+  vec_safe_grow_cleared (descriptors, param_count, true);
+  ipa_populate_param_decls (node, *descriptors);
   bool modified_mem_access = false;
   calculate_dominance_info (CDI_DOMINATORS);
   ipcp_modif_dom_walker walker (&fbi, descriptors, ts, &modified_mem_access);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   free_dominance_info (CDI_DOMINATORS);
-  cfg_changed |= walker.cleanup_eh ();
+  bool cfg_changed = walker.cleanup_eh ();
 
   int i;
   struct ipa_bb_info *bi;

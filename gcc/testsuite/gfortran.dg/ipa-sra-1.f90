@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fdump-ipa-cp-details -fno-inline -fno-ipa-sra" }
+! { dg-options "-O2 -fno-inline -fno-ipa-cp -fwhole-program -fdump-ipa-sra-details" }
 
 module foo
   implicit none
@@ -33,5 +33,5 @@ program main
   print *,x
 end program main
 
-! { dg-final { scan-ipa-dump "Creating a specialized node of \[^\n\r\]*bar/\[0-9\]*\\." "cp" } }
-! { dg-final { scan-ipa-dump-times "Aggregate replacements\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=" 2 "cp" } }
+! { dg-final { scan-ipa-dump "Created new node.*bar\\.isra" "sra" } }
+! { dg-final { scan-ipa-dump-times "IPA_PARAM_OP_SPLIT" 7 "sra" } }
