@@ -1,11 +1,13 @@
 pub use ident::Ident;
 pub use literal::Literal;
+pub use punct::Punct;
 pub use span::Span;
 use std::error;
 use std::fmt;
 
 mod ident;
 mod literal;
+mod punct;
 mod span;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
