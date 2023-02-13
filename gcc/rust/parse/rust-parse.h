@@ -150,6 +150,8 @@ public:
   std::unique_ptr<AST::TokenTree> parse_token_tree ();
   AST::Attribute parse_attribute_body ();
   AST::AttrVec parse_inner_attributes ();
+  std::unique_ptr<AST::MacroInvocation>
+  parse_macro_invocation (AST::AttrVec outer_attrs);
 
 private:
   void skip_after_semicolon ();
@@ -201,8 +203,6 @@ private:
   parse_decl_macro_def (AST::Visibility vis, AST::AttrVec outer_attrs);
   std::unique_ptr<AST::MacroInvocation>
   parse_macro_invocation_semi (AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::MacroInvocation>
-  parse_macro_invocation (AST::AttrVec outer_attrs);
   AST::MacroRule parse_macro_rule ();
   AST::MacroMatcher parse_macro_matcher ();
   std::unique_ptr<AST::MacroMatch> parse_macro_match ();

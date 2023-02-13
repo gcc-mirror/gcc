@@ -22,11 +22,11 @@
 #include "rust-ast.h"
 #include "rust-path.h"
 #include "rust-common.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace AST {
 // forward decls
-class BlockExpr;
 class TypePath;
 
 // TODO: inline?
