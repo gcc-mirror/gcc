@@ -3197,10 +3197,6 @@ package body Sem_Ch7 is
             --  is simply that the initializing expression is missing.
 
             if not Has_Private_Declaration (Etype (Id)) then
-
-               --  We assume that the user did not intend a deferred constant
-               --  declaration, and the expression is just missing.
-
                Error_Msg_N
                  ("constant declaration requires initialization expression",
                    Parent (Id));
