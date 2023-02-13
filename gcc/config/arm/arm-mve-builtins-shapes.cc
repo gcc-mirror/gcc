@@ -401,6 +401,36 @@ struct binary_rshift_def : public overloaded_base<0>
 };
 SHAPE (binary_rshift)
 
+/* <uS0>_t vfoo[_<t0>](<uS0>_t, <T0>_t)
+
+   Example: vmaxavq.
+   uint8_t [__arm_]vmaxavq[_s8](uint8_t a, int8x16_t b)
+   uint8_t [__arm_]vmaxavq_p[_s8](uint8_t a, int8x16_t b, mve_pred16_t p)  */
+struct binary_maxavminav_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "su0,su0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| !r.require_derived_scalar_type (0, TYPE_unsigned)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (binary_maxavminav)
+
 /* <S0>_t vfoo[_<t0>](<S0>_t, <T0>_t)
 
    Example: vmaxvq.
