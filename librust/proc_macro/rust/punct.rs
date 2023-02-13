@@ -1,14 +1,27 @@
 use std::fmt;
-use Spacing;
 use Span;
 
+/// Describes the context of a [`Punct`] relatively to the next token.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Spacing {
+    /// A [`Punct`] is not immediately followed by another `Punct`.
+    Alone,
+    /// A [`Punct`] is immediately followed by another `Punct` and can be
+    /// combined into a multi-character operator.
+    Joint,
+}
+
+/// Single punctuation character such as `+`, `-` or `#`.
+///
+/// Multi-character operators like `+=` are represented as two instances of
+/// `Punct` with different forms of `Spacing` returned.
 #[derive(Clone)]
 pub struct Punct {
     // Internal implementation details.
 }
 
 impl Punct {
-    /// Creates a new [Punct] from a given character and spacing.
+    /// Creates a new `Punct` from a given character and spacing.
     ///
     /// # Arguments
     ///

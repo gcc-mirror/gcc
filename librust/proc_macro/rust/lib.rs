@@ -1,6 +1,6 @@
 pub use ident::Ident;
 pub use literal::Literal;
-pub use punct::Punct;
+pub use punct::{Punct, Spacing};
 pub use span::Span;
 use std::error;
 use std::fmt;
@@ -29,9 +29,3 @@ impl fmt::Display for LexError {
 }
 
 impl error::Error for LexError {}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Spacing {
-    Alone,
-    Joint,
-}
