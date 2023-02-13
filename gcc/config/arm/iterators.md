@@ -621,6 +621,16 @@
 		     VMINNMAQ_M_F
 		     ])
 
+(define_int_iterator MVE_VMAXAVMINAQ [
+		     VMAXAQ_S
+		     VMINAQ_S
+		     ])
+
+(define_int_iterator MVE_VMAXAVMINAQ_M [
+		     VMAXAQ_M_S
+		     VMINAQ_M_S
+		     ])
+
 (define_int_iterator MVE_MOVN [
 		     VMOVNBQ_S VMOVNBQ_U
 		     VMOVNTQ_S VMOVNTQ_U
@@ -670,6 +680,8 @@
 		 (VHSUBQ_M_S "vhsub") (VHSUBQ_M_U "vhsub")
 		 (VHSUBQ_N_S "vhsub") (VHSUBQ_N_U "vhsub")
 		 (VHSUBQ_S "vhsub") (VHSUBQ_U "vhsub")
+		 (VMAXAQ_M_S "vmaxa")
+		 (VMAXAQ_S "vmaxa")
 		 (VMAXAVQ_P_S "vmaxav")
 		 (VMAXAVQ_S "vmaxav")
 		 (VMAXNMAQ_F "vmaxnma")
@@ -682,6 +694,8 @@
 		 (VMAXQ_M_S "vmax") (VMAXQ_M_U "vmax")
 		 (VMAXVQ_P_S "vmaxv") (VMAXVQ_P_U "vmaxv")
 		 (VMAXVQ_S "vmaxv") (VMAXVQ_U "vmaxv")
+		 (VMINAQ_M_S "vmina")
+		 (VMINAQ_S "vmina")
 		 (VMINAVQ_P_S "vminav")
 		 (VMINAVQ_S "vminav")
 		 (VMINNMAQ_F "vminnma")
@@ -2064,6 +2078,10 @@
 		       (VMAXAVQ_P_S "s")
 		       (VMINAVQ_S "s")
 		       (VMINAVQ_P_S "s")
+		       (VMAXAQ_S "s")
+		       (VMAXAQ_M_S "s")
+		       (VMINAQ_S "s")
+		       (VMINAQ_M_S "s")
 		       ])
 
 ;; Both kinds of return insn.

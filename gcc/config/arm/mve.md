@@ -948,17 +948,18 @@
 ])
 
 ;;
-;; [vmaxaq_s])
+;; [vmaxaq_s]
+;; [vminaq_s]
 ;;
-(define_insn "mve_vmaxaq_s<mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VMAXAQ_S))
+	 MVE_VMAXAVMINAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vmaxa.s%#<V_sz_elem>	%q0, %q2"
+  "<mve_insn>.s%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -993,21 +994,6 @@
   ]
   "TARGET_HAVE_MVE"
   "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vminaq_s])
-;;
-(define_insn "mve_vminaq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VMINAQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmina.s%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2239,18 +2225,19 @@
    (set_attr "length""8")])
 
 ;;
-;; [vmaxaq_m_s])
+;; [vmaxaq_m_s]
+;; [vminaq_m_s]
 ;;
-(define_insn "mve_vmaxaq_m_s<mode>"
+(define_insn "@mve_<mve_insn>q_m_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMAXAQ_M_S))
+	 MVE_VMAXAVMINAQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vmaxat.s%#<V_sz_elem>	%q0, %q2"
+  "vpst\;<mve_insn>t.s%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2270,22 +2257,6 @@
   ]
   "TARGET_HAVE_MVE"
   "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%0, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vminaq_m_s])
-;;
-(define_insn "mve_vminaq_m_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMINAQ_M_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vminat.s%#<V_sz_elem>	%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
