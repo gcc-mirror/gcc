@@ -333,6 +333,9 @@
 ;; Max/Min iterator, to factorize MVE patterns
 (define_code_iterator MAX_MIN_SU [smax umax smin umin])
 
+;; Floating-point Max/Min iterator, to factorize MVE patterns
+(define_code_iterator MAX_MIN_F [smax smin])
+
 ;; MVE integer unary operations.
 (define_int_iterator MVE_INT_M_UNARY [
 		     VABSQ_M_S
@@ -547,6 +550,8 @@
 (define_int_iterator MVE_FP_M_BINARY   [
 		     VABDQ_M_F
 		     VADDQ_M_F
+		     VMAXNMQ_M_F
+		     VMINNMQ_M_F
 		     VMULQ_M_F
 		     VSUBQ_M_F
 		     ])
@@ -643,11 +648,13 @@
 		 (VHSUBQ_S "vhsub") (VHSUBQ_U "vhsub")
 		 (VMAXAVQ_P_S "vmaxav")
 		 (VMAXAVQ_S "vmaxav")
+		 (VMAXNMQ_M_F "vmaxnm")
 		 (VMAXQ_M_S "vmax") (VMAXQ_M_U "vmax")
 		 (VMAXVQ_P_S "vmaxv") (VMAXVQ_P_U "vmaxv")
 		 (VMAXVQ_S "vmaxv") (VMAXVQ_U "vmaxv")
 		 (VMINAVQ_P_S "vminav")
 		 (VMINAVQ_S "vminav")
+		 (VMINNMQ_M_F "vminnm")
 		 (VMINQ_M_S "vmin") (VMINQ_M_U "vmin")
 		 (VMINVQ_P_S "vminv") (VMINVQ_P_U "vminv")
 		 (VMINVQ_S "vminv") (VMINVQ_U "vminv")
@@ -1515,6 +1522,9 @@
 		 (smax "s") (umax "u")
 		 (smin "s") (umin "u")
 		 ])
+
+;; Floating-point max/min for MVE
+(define_code_attr max_min_f_str [(smax "vmaxnm") (smin "vminnm")])
 
 ;;----------------------------------------------------------------------------
 ;; Int attributes
