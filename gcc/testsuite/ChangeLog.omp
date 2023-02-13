@@ -1,3 +1,7 @@
+2023-02-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/openmp-simd-8.f90: Remove dump test.
+
 2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/gomp/defaultmap-4.c: New.
