@@ -92,6 +92,14 @@
   (and (match_code "reg")
        (match_test "MASK_REGNO_P (REGNO (op))")))
 
+;; Match a DI, SI or HImode register operand for extract op.
+(define_special_predicate "extr_register_operand"
+  (and (match_operand 0 "register_operand")
+       (ior (and (match_test "TARGET_64BIT")
+		 (match_test "GET_MODE (op) == DImode"))
+	    (match_test "GET_MODE (op) == SImode")
+	    (match_test "GET_MODE (op) == HImode"))))
+
 ;; Match a DI, SI, HI or QImode nonimmediate_operand.
 (define_special_predicate "int_nonimmediate_operand"
   (and (match_operand 0 "nonimmediate_operand")
