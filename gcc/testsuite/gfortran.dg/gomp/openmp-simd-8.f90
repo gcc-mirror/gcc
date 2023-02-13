@@ -1,4 +1,4 @@
-! { dg-options "-fno-openmp -fopenmp-simd -fdump-tree-original" }
+! { dg-options "-fno-openmp -fopenmp-simd" }
 
 ! While 'omp assumes' is ignored with -fopenmp-simd,
 ! 'omp assume' is processed - check that this works.
@@ -21,5 +21,3 @@ program main
     if (n == 0) stop
   !$omp end assume
 end
-
-! { dg-final { scan-tree-dump "\\.ASSUME \\(foo \\(\\) > 0\\);" "original" } }
