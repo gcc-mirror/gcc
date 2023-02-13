@@ -428,7 +428,7 @@ public:
 	  else
 	    code = code_for_mve_q_p (m_unspec_for_p_sint, m_unspec_for_p_sint, e.vector_mode (0));
 	else
-	  gcc_unreachable ();  /* Will be fixed later in the series.  */
+	  code = code_for_mve_q_p_f (m_unspec_for_p_fp, e.vector_mode (0));
 
 	return e.use_exact_insn (code);
 
