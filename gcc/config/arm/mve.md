@@ -1425,17 +1425,18 @@
 ])
 
 ;;
-;; [vmaxnmaq_f])
+;; [vmaxnmaq_f]
+;; [vminnmaq_f]
 ;;
-(define_insn "mve_vmaxnmaq_f<mode>"
+(define_insn "@mve_<mve_insn>q_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMAXNMAQ_F))
+	 MVE_VMAXNMA_VMINNMAQ))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vmaxnma.f%#<V_sz_elem>	%q0, %q2"
+  "<mve_insn>.f%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1469,21 +1470,6 @@
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "<max_min_f_str>.f%#<V_sz_elem>	%q0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vminnmaq_f])
-;;
-(define_insn "mve_vminnmaq_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMINNMAQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vminnma.f%#<V_sz_elem>	%q0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -3146,18 +3132,19 @@
 ])
 
 ;;
-;; [vmaxnmaq_m_f])
+;; [vmaxnmaq_m_f]
+;; [vminnmaq_m_f]
 ;;
-(define_insn "mve_vmaxnmaq_m_f<mode>"
+(define_insn "@mve_<mve_insn>q_m_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMAXNMAQ_M_F))
+	 MVE_VMAXNMA_VMINNMAQ_M))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vmaxnmat.f%#<V_sz_elem>	%q0, %q2"
+  "vpst\;<mve_insn>t.f%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -3177,22 +3164,6 @@
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vpst\;<mve_insn>t.f%#<V_sz_elem>\t%0, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vminnmaq_m_f])
-;;
-(define_insn "mve_vminnmaq_m_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMINNMAQ_M_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vminnmat.f%#<V_sz_elem>	%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 

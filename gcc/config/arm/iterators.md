@@ -611,6 +611,16 @@
 		     VMINNMVQ_P_F
 		     ])
 
+(define_int_iterator MVE_VMAXNMA_VMINNMAQ [
+		     VMAXNMAQ_F
+		     VMINNMAQ_F
+		     ])
+
+(define_int_iterator MVE_VMAXNMA_VMINNMAQ_M [
+		     VMAXNMAQ_M_F
+		     VMINNMAQ_M_F
+		     ])
+
 (define_int_iterator MVE_MOVN [
 		     VMOVNBQ_S VMOVNBQ_U
 		     VMOVNTQ_S VMOVNTQ_U
@@ -662,6 +672,8 @@
 		 (VHSUBQ_S "vhsub") (VHSUBQ_U "vhsub")
 		 (VMAXAVQ_P_S "vmaxav")
 		 (VMAXAVQ_S "vmaxav")
+		 (VMAXNMAQ_F "vmaxnma")
+		 (VMAXNMAQ_M_F "vmaxnma")
 		 (VMAXNMAVQ_F "vmaxnmav")
 		 (VMAXNMAVQ_P_F "vmaxnmav")
 		 (VMAXNMQ_M_F "vmaxnm")
@@ -672,6 +684,8 @@
 		 (VMAXVQ_S "vmaxv") (VMAXVQ_U "vmaxv")
 		 (VMINAVQ_P_S "vminav")
 		 (VMINAVQ_S "vminav")
+		 (VMINNMAQ_F "vminnma")
+		 (VMINNMAQ_M_F "vminnma")
 		 (VMINNMAVQ_F "vminnmav")
 		 (VMINNMAVQ_P_F "vminnmav")
 		 (VMINNMQ_M_F "vminnm")
