@@ -3,6 +3,22 @@ use std::str::FromStr;
 use LexError;
 use Span;
 
+/// A type representing a literal value except `true` and `false`.
+///
+/// This could be one of the following:
+/// * literal string (`"hello"`)
+/// * byte string (`b"hello"`)
+/// * character (`'a'`)
+/// * byte character (`b'a'`)
+/// * unsuffixed integer (`42`)
+/// * suffixed integer (`42u8`)
+/// * unsuffixed floating point number (`1.618`)
+/// * suffixed floating point number (`1.618f32`)
+///
+/// # Note
+///
+/// Boolean literals like `true` and `false` are `Ident`s and do not belong
+/// here.
 #[derive(Clone)]
 pub struct Literal {
     // Internal implementation details
@@ -137,10 +153,16 @@ impl Literal {
         todo!("Implement this function")
     }
 
+    /// Get the [`Span`] for this literal.
     pub fn span(&self) -> Span {
         todo!("Get the span of a literal")
     }
 
+    /// Set the span for this literal.
+    ///
+    /// # Arguments
+    ///
+    /// * `span` - The new span value.
     pub fn set_span(&mut self, _span: Span) {
         todo!("Set the span of a literal")
     }

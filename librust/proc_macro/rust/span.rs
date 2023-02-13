@@ -1,5 +1,6 @@
 use std::fmt;
 
+/// A region of source code along with macro expansion information.
 #[derive(Copy, Clone)]
 pub struct Span {
     // Internal implementation details
@@ -8,25 +9,33 @@ pub struct Span {
 impl Span {
     // TODO: Add experimental API functions for this type
 
-    /// Creates a new span that resolves at the macro call location
+    /// Creates a new span that resolves at the macro call location.
     pub fn call_site() -> Self {
         todo!("Implement this function")
     }
 
     /// Creates a new span that resolved sometimes at macro call site, and
-    /// sometimes at macro definition site
+    /// sometimes at macro definition site.
     pub fn mixed_site() -> Self {
         todo!("Implement this function")
     }
 
     /// Creates a new span with the same line/column informations but that
-    /// resolve symbols as though it were at `other`
+    /// resolve symbols as though it were at `other`.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - Other span to resolve at.
     pub fn resolved_at(&self, _other: Span) -> Self {
         todo!("Implement this function")
     }
 
     /// Creates a new span with the same name resolution behavior as self, but
     /// with the line/column information of `other`.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - Other span containing the line/column informations to use.
     pub fn located_at(&self, _other: Span) -> Self {
         todo!("Implement this function")
     }
