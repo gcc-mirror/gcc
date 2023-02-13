@@ -267,7 +267,8 @@
 ;; vicalu      vector arithmetic with carry or borrow instructions
 ;; vshift      vector single-width bit shift instructions
 ;; vnshift     vector narrowing integer shift instructions
-;; vicmp       vector integer comparison/min/max instructions
+;; viminmax    vector integer min/max instructions
+;; vicmp       vector integer comparison instructions
 ;; vimul       vector single-width integer multiply instructions
 ;; vidiv       vector single-width integer divide instructions
 ;; viwmul      vector widening integer multiply instructions
@@ -291,7 +292,8 @@
 ;; vfwmuladd   vector widening floating-point multiply-add instructions
 ;; vfsqrt      vector floating-point square-root instructions
 ;; vfrecp      vector floating-point reciprocal square-root instructions
-;; vfcmp       vector floating-point comparison/min/max instructions
+;; vfminmax    vector floating-point min/max instructions
+;; vfcmp       vector floating-point comparison instructions
 ;; vfsgnj      vector floating-point sign-injection instructions
 ;; vfclass     vector floating-point classify instruction
 ;; vfmerge     vector floating-point merge instruction
@@ -335,11 +337,11 @@
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
    atomic,rdvlenb,rdvl,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
-   vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,
+   vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
    vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,
    vsalu,vaalu,vsmul,vsshift,vnclip,
    vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,
-   vfcmp,vfsgnj,vfclass,vfmerge,vfmov,
+   vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,
    vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
    vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,
    vired,viwred,vfred,vfredo,vfwred,vfwredo,

@@ -288,6 +288,8 @@ struct return_mask_def : public build_base
 	b.append_name (type_suffixes[ret_type_idx].vector);
       }
 
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
     b.append_name (predication_suffixes[instance.pred]);
     return b.finish_name ();
   }

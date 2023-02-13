@@ -427,11 +427,33 @@ neg_simm5_p (rtx x)
 bool
 has_vi_variant_p (rtx_code code, rtx x)
 {
-  if (code != PLUS && code != MINUS && code != AND && code != IOR && code != XOR
-      && code != SS_PLUS && code != SS_MINUS && code != US_PLUS
-      && code != US_MINUS)
-    return false;
-  return simm5_p (x);
+  switch (code)
+    {
+    case PLUS:
+    case MINUS:
+    case AND:
+    case IOR:
+    case XOR:
+    case SS_PLUS:
+    case SS_MINUS:
+    case US_PLUS:
+    case US_MINUS:
+    case EQ:
+    case NE:
+    case LE:
+    case LEU:
+    case GT:
+    case GTU:
+      return simm5_p (x);
+
+    case LT:
+    case LTU:
+    case GE:
+    case GEU:
+      return neg_simm5_p (x);
+    default:
+      return false;
+    }
 }
 
 } // namespace riscv_vector

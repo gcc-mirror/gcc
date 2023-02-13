@@ -338,6 +338,7 @@ public:
   void add_all_one_mask_operand (machine_mode);
   void add_vundef_operand (machine_mode);
   void add_fixed_operand (rtx);
+  void add_integer_operand (rtx);
   void add_mem_operand (machine_mode, unsigned);
 
   machine_mode vector_mode (void) const;
@@ -346,6 +347,7 @@ public:
   rtx use_exact_insn (insn_code);
   rtx use_contiguous_load_insn (insn_code);
   rtx use_contiguous_store_insn (insn_code);
+  rtx use_compare_insn (rtx_code, insn_code);
   rtx generate_insn (insn_code);
 
   /* The function call expression.  */
@@ -465,6 +467,13 @@ inline void
 function_expander::add_fixed_operand (rtx x)
 {
   create_fixed_operand (&m_ops[opno++], x);
+}
+
+/* Add an integer operand X.  */
+inline void
+function_expander::add_integer_operand (rtx x)
+{
+  create_integer_operand (&m_ops[opno++], INTVAL (x));
 }
 
 /* Return the machine_mode of the corresponding vector type.  */

@@ -438,6 +438,10 @@ static CONSTEXPR const predication_type_index tu_preds[]
 static CONSTEXPR const predication_type_index none_m_preds[]
   = {PRED_TYPE_none, PRED_TYPE_m, NUM_PRED_TYPES};
 
+/* vop/vop_m/vop_mu will be registered.  */
+static CONSTEXPR const predication_type_index none_m_mu_preds[]
+  = {PRED_TYPE_none, PRED_TYPE_m, PRED_TYPE_mu, NUM_PRED_TYPES};
+
 /* A static operand information for size_t func (void) function registration. */
 static CONSTEXPR const rvv_op_info i_none_size_void_ops
   = {i_ops,				/* Types */
@@ -621,10 +625,42 @@ static CONSTEXPR const rvv_op_info iu_mvv_ops
      rvv_arg_type_info (RVV_BASE_mask), /* Return type */
      vv_args /* Args */};
 
+/* A static operand information for mask_type func (vector_type, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_mvv_ops
+  = {i_ops,				/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vv_args /* Args */};
+
+/* A static operand information for mask_type func (vector_type, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_mvv_ops
+  = {u_ops,				/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vv_args /* Args */};
+
 /* A static operand information for mask_type func (vector_type, scalar_type)
  * function registration. */
 static CONSTEXPR const rvv_op_info iu_mvx_ops
   = {iu_ops,				/* Types */
+     OP_TYPE_vx,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vx_args /* Args */};
+
+/* A static operand information for mask_type func (vector_type, scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_mvx_ops
+  = {i_ops,				/* Types */
+     OP_TYPE_vx,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vx_args /* Args */};
+
+/* A static operand information for mask_type func (vector_type, scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_mvx_ops
+  = {u_ops,				/* Types */
      OP_TYPE_vx,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_mask), /* Return type */
      vx_args /* Args */};
@@ -1899,6 +1935,47 @@ function_expander::use_contiguous_store_insn (insn_code icode)
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
     add_input_operand (argno);
 
+  return generate_insn (icode);
+}
+
+/* Implement the call using instruction ICODE, with a 1:1 mapping between
+   arguments and input operands.  */
+rtx
+function_expander::use_compare_insn (rtx_code rcode, insn_code icode)
+{
+  machine_mode mode = TYPE_MODE (builtin_types[type.index].vector);
+  machine_mode mask_mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Record the offset to get the argument.  */
+  int arg_offset = 0;
+
+  if (use_real_mask_p (pred))
+    add_input_operand (arg_offset++);
+  else
+    add_all_one_mask_operand (mask_mode);
+
+  if (use_real_merge_p (pred))
+    add_input_operand (arg_offset++);
+  else
+    add_vundef_operand (mask_mode);
+
+  rtx op1 = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
+  rtx op2 = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
+  rtx comparison = gen_rtx_fmt_ee (rcode, mask_mode, op1, op2);
+  if (!VECTOR_MODE_P (GET_MODE (op2)))
+    comparison = gen_rtx_fmt_ee (rcode, mask_mode, op1,
+				 gen_rtx_VEC_DUPLICATE (mode, op2));
+  add_fixed_operand (comparison);
+  add_fixed_operand (op1);
+  if (CONST_INT_P (op2))
+    add_integer_operand (op2);
+  else
+    add_fixed_operand (op2);
+  for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
+    add_input_operand (argno);
+
+  add_input_operand (Pmode, get_mask_policy_for_pred (pred));
+  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
   return generate_insn (icode);
 }
 

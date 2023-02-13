@@ -283,14 +283,21 @@
 		|| satisfies_constraint_vi (op)
 		|| satisfies_constraint_Wc0 (op)"))))
 
-(define_predicate "vector_mask_operand"
+(define_predicate "vector_all_trues_mask_operand"
   (ior (match_operand 0 "register_operand")
        (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
+(define_predicate "vector_mask_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "vector_all_trues_mask_operand")))
+
+(define_predicate "vector_undef_operand"
+  (match_test "GET_CODE (op) == UNSPEC
+		    && (XINT (op, 1) == UNSPEC_VUNDEF)"))
+
 (define_predicate "vector_merge_operand"
   (ior (match_operand 0 "register_operand")
-       (match_test "GET_CODE (op) == UNSPEC
-		    && (XINT (op, 1) == UNSPEC_VUNDEF)")))
+       (match_operand 0 "vector_undef_operand")))
 
 (define_predicate "vector_arith_operand"
   (ior (match_operand 0 "register_operand")
@@ -306,6 +313,18 @@
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_vector")
             (match_test "riscv_vector::const_vec_all_same_in_range_p (op, 0, 31)"))))
+
+(define_predicate "ltge_operator"
+  (match_code "lt,ltu,ge,geu"))
+
+(define_predicate "comparison_except_ltge_operator"
+  (match_code "eq,ne,le,leu,gt,gtu"))
+
+(define_predicate "comparison_except_eqge_operator"
+  (match_code "le,leu,gt,gtu,lt,ltu"))
+
+(define_predicate "ge_operator"
+  (match_code "ge,geu"))
 
 ;; pmode_reg_or_uimm5_operand can be used by vsll.vx/vsrl.vx/vsra.vx instructions.
 ;; Since it has the same predicate with vector_length_operand which allows register

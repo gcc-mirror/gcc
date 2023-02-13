@@ -505,6 +505,40 @@ public:
   }
 };
 
+/* Implements vmseq/vmsne/vmslt/vmsgt/vmsle/vmsge.  */
+template<rtx_code CODE>
+class icmp : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+	case OP_TYPE_vx: {
+	  if (CODE == GE || CODE == GEU)
+	    return e.use_compare_insn (CODE, code_for_pred_ge_scalar (
+					       e.vector_mode ()));
+	  else if (CODE == EQ || CODE == NE)
+	    return e.use_compare_insn (CODE, code_for_pred_eqne_scalar (
+					       e.vector_mode ()));
+	  else
+	    return e.use_compare_insn (CODE, code_for_pred_cmp_scalar (
+					       e.vector_mode ()));
+	}
+	case OP_TYPE_vv: {
+	  if (CODE == LT || CODE == LTU || CODE == GE || CODE == GEU)
+	    return e.use_compare_insn (CODE,
+				       code_for_pred_ltge (e.vector_mode ()));
+	  else
+	    return e.use_compare_insn (CODE,
+				       code_for_pred_cmp (e.vector_mode ()));
+	}
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -572,6 +606,16 @@ static CONSTEXPR const vnshift<ASHIFTRT> vnsra_obj;
 static CONSTEXPR const vncvt_x vncvt_x_obj;
 static CONSTEXPR const vmerge vmerge_obj;
 static CONSTEXPR const vmv_v vmv_v_obj;
+static CONSTEXPR const icmp<EQ> vmseq_obj;
+static CONSTEXPR const icmp<NE> vmsne_obj;
+static CONSTEXPR const icmp<LT> vmslt_obj;
+static CONSTEXPR const icmp<GT> vmsgt_obj;
+static CONSTEXPR const icmp<LE> vmsle_obj;
+static CONSTEXPR const icmp<GE> vmsge_obj;
+static CONSTEXPR const icmp<LTU> vmsltu_obj;
+static CONSTEXPR const icmp<GTU> vmsgtu_obj;
+static CONSTEXPR const icmp<LEU> vmsleu_obj;
+static CONSTEXPR const icmp<GEU> vmsgeu_obj;
 static CONSTEXPR const binop<SS_PLUS> vsadd_obj;
 static CONSTEXPR const binop<SS_MINUS> vssub_obj;
 static CONSTEXPR const binop<US_PLUS> vsaddu_obj;
@@ -658,6 +702,16 @@ BASE (vnsra)
 BASE (vncvt_x)
 BASE (vmerge)
 BASE (vmv_v)
+BASE (vmseq)
+BASE (vmsne)
+BASE (vmslt)
+BASE (vmsgt)
+BASE (vmsle)
+BASE (vmsge)
+BASE (vmsltu)
+BASE (vmsgtu)
+BASE (vmsleu)
+BASE (vmsgeu)
 BASE (vsadd)
 BASE (vssub)
 BASE (vsaddu)

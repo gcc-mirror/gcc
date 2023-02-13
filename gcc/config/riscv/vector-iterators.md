@@ -225,6 +225,15 @@
   (VNx1DF "VNx1BI") (VNx2DF "VNx2BI") (VNx4DF "VNx4BI") (VNx8DF "VNx8BI")
 ])
 
+(define_mode_attr vm [
+  (VNx1QI "vnx1bi") (VNx2QI "vnx2bi") (VNx4QI "vnx4bi") (VNx8QI "vnx8bi") (VNx16QI "vnx16bi") (VNx32QI "vnx32bi") (VNx64QI "vnx64bi")
+  (VNx1HI "vnx1bi") (VNx2HI "vnx2bi") (VNx4HI "vnx4bi") (VNx8HI "vnx8bi") (VNx16HI "vnx16bi") (VNx32HI "vnx32bi")
+  (VNx1SI "vnx1bi") (VNx2SI "vnx2bi") (VNx4SI "vnx4bi") (VNx8SI "vnx8bi") (VNx16SI "vnx16bi")
+  (VNx1DI "vnx1bi") (VNx2DI "vnx2bi") (VNx4DI "vnx4bi") (VNx8DI "vnx8bi")
+  (VNx1SF "vnx1bi") (VNx2SF "vnx2bi") (VNx4SF "vnx4bi") (VNx8SF "vnx8bi") (VNx16SF "vnx16bi")
+  (VNx1DF "vnx1bi") (VNx2DF "vnx2bi") (VNx4DF "vnx4bi") (VNx8DF "vnx8bi")
+])
+
 (define_mode_attr VEL [
   (VNx1QI "QI") (VNx2QI "QI") (VNx4QI "QI") (VNx8QI "QI") (VNx16QI "QI") (VNx32QI "QI") (VNx64QI "QI")
   (VNx1HI "HI") (VNx2HI "HI") (VNx4HI "HI") (VNx8HI "HI") (VNx16HI "HI") (VNx32HI "HI")
@@ -321,6 +330,9 @@
 
 (define_code_attr macc_nmsac [(plus "macc") (minus "nmsac")])
 (define_code_attr madd_nmsub [(plus "madd") (minus "nmsub")])
+
+(define_code_iterator and_ior [and ior])
+(define_code_attr ninsn [(and "nand") (ior "nor") (xor "xnor")])
 
 (define_code_attr binop_rhs1_predicate [
 			(plus "register_operand")
@@ -419,10 +431,10 @@
 			(ashift "vshift")
 			(ashiftrt "vshift")
 			(lshiftrt "vshift")
-			(smin "vicmp")
-			(smax "vicmp")
-			(umin "vicmp")
-			(umax "vicmp")
+			(smin "viminmax")
+			(smax "viminmax")
+			(umin "viminmax")
+			(umax "viminmax")
 			(mult "vimul")
 			(div "vidiv")
 			(mod "vidiv")
