@@ -12,6 +12,67 @@ mod literal;
 mod punct;
 mod span;
 
+/// A single token or a delimited sequence of token trees.
+#[derive(Clone)]
+pub enum TokenTree {
+    Group(Group),
+    Ident(Ident),
+    Punct(Punct),
+    Literal(Literal),
+}
+
+impl TokenTree {
+    /// Get the [`Span`] for this TokenTree.
+    pub fn span(&self) -> Span {
+        todo!("Implement this function")
+    }
+
+    /// Set the span for this TokenTree.
+    ///
+    /// # Arguments
+    ///
+    /// * `span` - The new span value.
+    pub fn set_span(&mut self, _span: Span) {
+        todo!("Implement this function")
+    }
+}
+
+impl fmt::Debug for TokenTree {
+    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        todo!("Implement this function")
+    }
+}
+
+impl fmt::Display for TokenTree {
+    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        todo!("Implement this function")
+    }
+}
+
+impl From<Group> for TokenTree {
+    fn from(_g: Group) -> Self {
+        todo!("Implement this function")
+    }
+}
+
+impl From<Ident> for TokenTree {
+    fn from(_i: Ident) -> Self {
+        todo!("Implement this function")
+    }
+}
+
+impl From<Punct> for TokenTree {
+    fn from(_p: Punct) -> Self {
+        todo!("Implement this function")
+    }
+}
+
+impl From<Literal> for TokenTree {
+    fn from(_l: Literal) -> Self {
+        todo!("Implement this function")
+    }
+}
+
 /// Error returned from `from_str` functions.
 #[derive(Debug)]
 pub struct LexError;
