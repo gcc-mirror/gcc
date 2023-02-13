@@ -1,4 +1,4 @@
-pub use group::Group;
+pub use group::{Delimiter, Group};
 pub use ident::Ident;
 pub use literal::Literal;
 pub use punct::{Punct, Spacing};
@@ -11,19 +11,6 @@ mod ident;
 mod literal;
 mod punct;
 mod span;
-
-/// Describes how a sequence of token trees is delimited.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Delimiter {
-    /// The sequence is delimited by a parenthesis `(...)`.
-    Parenthesis,
-    /// The sequence is delimited by a brace `{...}`.
-    Brace,
-    /// The sequence is delimited by a bracket `[...]`.
-    Bracket,
-    /// Invisible delimiter to preserve operator priority.
-    None,
-}
 
 /// Error returned from `from_str` functions.
 #[derive(Debug)]

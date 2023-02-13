@@ -1,7 +1,19 @@
 use std::fmt;
-use Delimiter;
 use Span;
 use TokenStream;
+
+/// Describes how a sequence of token trees is delimited.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Delimiter {
+    /// The sequence is delimited by a parenthesis `(...)`.
+    Parenthesis,
+    /// The sequence is delimited by a brace `{...}`.
+    Brace,
+    /// The sequence is delimited by a bracket `[...]`.
+    Bracket,
+    /// Invisible delimiter to preserve operator priority.
+    None,
+}
 
 /// A delimited token stream.
 #[derive(Clone)]
