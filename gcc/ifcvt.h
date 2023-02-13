@@ -86,6 +86,14 @@ struct noce_if_info
      form as well.  */
   bool then_else_reversed;
 
+  /* True if THEN_BB is conditional on !COND rather than COND.
+     This is used if:
+
+     - JUMP branches to THEN_BB on COND
+     - JUMP falls through to JOIN_BB on !COND
+     - COND cannot be reversed.  */
+  bool cond_inverted;
+
   /* True if the contents of then_bb and else_bb are a
      simple single set instruction.  */
   bool then_simple;
