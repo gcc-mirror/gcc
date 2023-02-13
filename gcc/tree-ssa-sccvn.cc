@@ -4527,7 +4527,7 @@ vn_nary_op_insert_pieces (unsigned int length, enum tree_code code,
 static bool
 can_track_predicate_on_edge (edge pred_e)
 {
-  /* ???  As we are currently recording a basic-block index in
+  /* ???  As we are currently recording the destination basic-block index in
      vn_pval.valid_dominated_by_p and using dominance for the
      validity check we cannot track predicates on all edges.  */
   if (single_pred_p (pred_e->dest))
@@ -4537,14 +4537,14 @@ can_track_predicate_on_edge (edge pred_e)
     return false;
   /* When there's more than one predecessor we cannot track
      predicate validity based on the destination block.  The
-     exception is when all other incoming edges are backedges.  */
+     exception is when all other incoming edges sources are
+     dominated by the destination block.  */
   edge_iterator ei;
   edge e;
-  int cnt = 0;
   FOR_EACH_EDGE (e, ei, pred_e->dest->preds)
-    if (! dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
-      cnt++;
-  return cnt == 1;
+    if (e != pred_e && ! dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+      return false;
+  return true;
 }
 
 static vn_nary_op_t
@@ -4553,8 +4553,8 @@ vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
 				     tree result, unsigned int value_id,
 				     edge pred_e)
 {
-  if (!can_track_predicate_on_edge (pred_e))
-    return NULL;
+  gcc_assert (can_track_predicate_on_edge (pred_e));
+
   if (dump_file && (dump_flags & TDF_DETAILS)
       /* ???  Fix dumping, but currently we only get comparisons.  */
       && TREE_CODE_CLASS (code) == tcc_comparison)
@@ -7933,11 +7933,11 @@ process_bb (rpo_elim &avail, basic_block bb,
 		tree ops[2];
 		ops[0] = lhs;
 		ops[1] = rhs;
-		if (do_region
-		    && bitmap_bit_p (exit_bbs, true_e->dest->index))
+		if ((do_region && bitmap_bit_p (exit_bbs, true_e->dest->index))
+		    || !can_track_predicate_on_edge (true_e))
 		  true_e = NULL;
-		if (do_region
-		    && bitmap_bit_p (exit_bbs, false_e->dest->index))
+		if ((do_region && bitmap_bit_p (exit_bbs, false_e->dest->index))
+		    || !can_track_predicate_on_edge (false_e))
 		  false_e = NULL;
 		if (true_e)
 		  vn_nary_op_insert_pieces_predicated
