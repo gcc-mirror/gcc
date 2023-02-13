@@ -1,3 +1,14 @@
+2023-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/containers.xml: Tweak a link to N1780
+	(C++ standard).
+	* doc/html/manual/associative.html: Regenerate.
+
+2023-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/ctype.xml: Change www.unix.org to unix.org.
+	* doc/html/manual/facets.html: Regenerate.
+
 2023-02-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/policy_data_structures_biblio.xml: Update

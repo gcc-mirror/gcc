@@ -1,3 +1,383 @@
+2023-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/sourcebuild.texi: Remove (broken) direct reference to
+	"The GNU configure and build system".
+
+2023-02-12  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_adjust_libcall_cfi_prologue): Change
+	gen_add3_insn to gen_rtx_SET.
+	(riscv_adjust_libcall_cfi_epilogue): Likewise.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class sat_op): New class.
+	(class vnclip): Ditto.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vaadd): Ditto.
+	(vasub): Ditto.
+	(vaaddu): Ditto.
+	(vasubu): Ditto.
+	(vsmul): Ditto.
+	(vssra): Ditto.
+	(vssrl): Ditto.
+	(vnclipu): Ditto.
+	(vnclip): Ditto.
+	* config/riscv/vector-iterators.md (su): Add instruction.
+	(aadd): Ditto.
+	(vaalu): Ditto.
+	* config/riscv/vector.md (@pred_<sat_op><mode>): New pattern.
+	(@pred_<sat_op><mode>_scalar): Ditto.
+	(*pred_<sat_op><mode>_scalar): Ditto.
+	(*pred_<sat_op><mode>_extended_scalar): Ditto.
+	(@pred_narrow_clip<v_su><mode>): Ditto.
+	(@pred_narrow_clip<v_su><mode>_scalar): Ditto.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (Wbr): Remove unused constraint.
+	* config/riscv/predicates.md: Fix move operand predicate.
+	* config/riscv/riscv-vector-builtins-bases.cc (class vnshift): New class.
+	(class vncvt_x): Ditto.
+	(class vmerge): Ditto.
+	(class vmv_v): Ditto.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vsra): Ditto.
+	(vsrl): Ditto.
+	(vnsrl): Ditto.
+	(vnsra): Ditto.
+	(vncvt_x): Ditto.
+	(vmerge): Ditto.
+	(vmv_v): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct narrow_alu_def): Ditto.
+	(struct move_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_WEXTI_OPS): New variable.
+	(DEF_RVV_WEXTU_OPS): Ditto
+	* config/riscv/riscv-vector-builtins.def (x_x_w): Fix type for suffix.
+	(v_v): Ditto.
+	(v_x): Ditto.
+	(x_w): Ditto.
+	(x): Ditto.
+	* config/riscv/riscv.cc (riscv_print_operand): Refine ASM printting rule.
+	* config/riscv/vector-iterators.md (nmsac):New iterator.
+	(nmsub): New iterator.
+	* config/riscv/vector.md (@pred_merge<mode>): New pattern.
+	(@pred_merge<mode>_scalar): New pattern.
+	(*pred_merge<mode>_scalar): New pattern.
+	(*pred_merge<mode>_extended_scalar): New pattern.
+	(@pred_narrow_<optab><mode>): New pattern.
+	(@pred_narrow_<optab><mode>_scalar): New pattern.
+	(@pred_trunc<mode>): New pattern.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class vmadc): New class.
+	(class vmsbc): Ditto.
+	(BASE): Define new class.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vmadc): New define.
+	(vmsbc): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct return_mask_def):
+	New class.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_exact_insn): Adjust for new support
+	* config/riscv/riscv-vector-builtins.h
+	(function_base::has_merge_operand_p): New function.
+	* config/riscv/vector-iterators.md: New iterator.
+	* config/riscv/vector.md (@pred_madc<mode>): New pattern.
+	(@pred_msbc<mode>): Ditto.
+	(@pred_madc<mode>_scalar): Ditto.
+	(@pred_msbc<mode>_scalar): Ditto.
+	(*pred_madc<mode>_scalar): Ditto.
+	(*pred_madc<mode>_extended_scalar): Ditto.
+	(*pred_msbc<mode>_scalar): Ditto.
+	(*pred_msbc<mode>_extended_scalar): Ditto.
+	(@pred_madc<mode>_overflow): Ditto.
+	(@pred_msbc<mode>_overflow): Ditto.
+	(@pred_madc<mode>_overflow_scalar): Ditto.
+	(@pred_msbc<mode>_overflow_scalar): Ditto.
+	(*pred_madc<mode>_overflow_scalar): Ditto.
+	(*pred_madc<mode>_overflow_extended_scalar): Ditto.
+	(*pred_msbc<mode>_overflow_scalar): Ditto.
+	(*pred_msbc<mode>_overflow_extended_scalar): Ditto.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (simm5_p): Add vadc/vsbc support.
+	* config/riscv/riscv-v.cc (simm32_p): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc (class vadc): New class.
+	(class vsbc): Ditto.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vadc): Ditto.
+	(vsbc): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(struct no_mask_policy_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(rvv_arg_type_info::get_base_vector_type): Add vadc/vsbc support.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	(function_expander::use_exact_insn): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum rvv_base_type): Ditto.
+	(function_base::use_mask_predication_p): New function.
+	* config/riscv/vector-iterators.md: New iterator.
+	* config/riscv/vector.md (@pred_adc<mode>): New pattern.
+	(@pred_sbc<mode>): Ditto.
+	(@pred_adc<mode>_scalar): Ditto.
+	(@pred_sbc<mode>_scalar): Ditto.
+	(*pred_adc<mode>_scalar): Ditto.
+	(*pred_adc<mode>_extended_scalar): Ditto.
+	(*pred_sbc<mode>_scalar): Ditto.
+	(*pred_sbc<mode>_extended_scalar): Ditto.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: use "zero" reg.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class widen_binop): New
+	class.
+	(class vwmulsu): Ditto.
+	(class vwcvt): Ditto.
+	(BASE): Add integer widening support.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto
+	* config/riscv/riscv-vector-builtins-functions.def (vwadd): New class.
+	(vwsub): New class.
+	(vwmul): New class.
+	(vwmulu): New class.
+	(vwmulsu): New class.
+	(vwaddu): New class.
+	(vwsubu): New class.
+	(vwcvt_x): New class.
+	(vwcvtu_x): New class.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct alu_def): New
+	class.
+	(struct widen_alu_def): New class.
+	(SHAPE): New class.
+	* config/riscv/riscv-vector-builtins-shapes.h: New class.
+	* config/riscv/riscv-vector-builtins.cc
+	(rvv_arg_type_info::get_base_vector_type): Add integer widening support.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	* config/riscv/riscv-vector-builtins.def (x_x_v): Change into "x_v"
+	(x_v): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum rvv_base_type): Add integer
+	widening support.
+	* config/riscv/riscv-vsetvl.cc (change_insn): Fix reg_equal use bug.
+	* config/riscv/riscv.h (X0_REGNUM): New constant.
+	* config/riscv/vector-iterators.md: New iterators.
+	* config/riscv/vector.md
+	(@pred_dual_widen_<any_widen_binop:optab><any_extend:su><mode>): New
+	pattern.
+	(@pred_dual_widen_<any_widen_binop:optab><any_extend:su><mode>_scalar):
+	Ditto.
+	(@pred_single_widen_<plus_minus:optab><any_extend:su><mode>): Ditto.
+	(@pred_single_widen_<plus_minus:optab><any_extend:su><mode>_scalar):
+	Ditto.
+	(@pred_widen_mulsu<mode>): Ditto.
+	(@pred_widen_mulsu<mode>_scalar): Ditto.
+	(@pred_<optab><mode>): Ditto.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc: Add flag for 'V' extension.
+	* config/riscv/riscv-vector-builtins-bases.cc (class vmulh): New class.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vmulh): Add vmulh
+	API support.
+	(vmulhu): Ditto.
+	(vmulhsu): Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_FULL_V_I_OPS):
+	New macro.
+	(DEF_RVV_FULL_V_U_OPS): Ditto.
+	(vint8mf8_t): Ditto.
+	(vint8mf4_t): Ditto.
+	(vint8mf2_t): Ditto.
+	(vint8m1_t): Ditto.
+	(vint8m2_t): Ditto.
+	(vint8m4_t): Ditto.
+	(vint8m8_t): Ditto.
+	(vint16mf4_t): Ditto.
+	(vint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vuint8mf8_t): Ditto.
+	(vuint8mf4_t): Ditto.
+	(vuint8mf2_t): Ditto.
+	(vuint8m1_t): Ditto.
+	(vuint8m2_t): Ditto.
+	(vuint8m4_t): Ditto.
+	(vuint8m8_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_FULL_V_I_OPS): Ditto.
+	(DEF_RVV_FULL_V_U_OPS): Ditto.
+	(check_required_extensions): Add vmulh support.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	* config/riscv/riscv-vector-builtins.h (RVV_REQUIRE_FULL_V): Ditto.
+	(enum rvv_base_type): Ditto.
+	* config/riscv/riscv.opt: Add 'V' extension flag.
+	* config/riscv/vector-iterators.md (su): New iterator.
+	* config/riscv/vector.md (@pred_mulh<v_su><mode>): New pattern.
+	(@pred_mulh<v_su><mode>_scalar): Ditto.
+	(*pred_mulh<v_su><mode>_scalar): Ditto.
+	(*pred_mulh<v_su><mode>_extended_scalar): Ditto.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/iterators.md: Add sign_extend/zero_extend.
+	* config/riscv/riscv-vector-builtins-bases.cc (class ext): New class.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Add vsext/vzext support.
+	* config/riscv/riscv-vector-builtins-functions.def (vsext): New macro
+	define.
+	(vzext): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct alu_def): Adjust
+	for vsext/vzext support.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_WEXTI_OPS): New
+	macro define.
+	(DEF_RVV_QEXTI_OPS): Ditto.
+	(DEF_RVV_OEXTI_OPS): Ditto.
+	(DEF_RVV_WEXTU_OPS): Ditto.
+	(DEF_RVV_QEXTU_OPS): Ditto.
+	(DEF_RVV_OEXTU_OPS): Ditto.
+	(vint16mf4_t): Ditto.
+	(vint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_WEXTI_OPS): Ditto.
+	(DEF_RVV_QEXTI_OPS): Ditto.
+	(DEF_RVV_OEXTI_OPS): Ditto.
+	(DEF_RVV_WEXTU_OPS): Ditto.
+	(DEF_RVV_QEXTU_OPS): Ditto.
+	(DEF_RVV_OEXTU_OPS): Ditto.
+	(rvv_arg_type_info::get_base_vector_type): Add sign_exted/zero_extend
+	support.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum rvv_base_type): Ditto.
+	* config/riscv/vector-iterators.md (z): New attribute.
+	* config/riscv/vector.md (@pred_<optab><mode>_vf2): New pattern.
+	(@pred_<optab><mode>_vf4): Ditto.
+	(@pred_<optab><mode>_vf8): Ditto.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/iterators.md: Add saturating Addition && Subtraction.
+	* config/riscv/riscv-v.cc (has_vi_variant_p): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc (BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vsadd): New def.
+	(vssub): Ditto.
+	(vsaddu): Ditto.
+	(vssubu): Ditto.
+	* config/riscv/vector-iterators.md (sll.vi): Adjust for Saturating
+	support.
+	(sll.vv): Ditto.
+	(%3,%v4): Ditto.
+	(%3,%4): Ditto.
+	* config/riscv/vector.md (@pred_<optab><mode>): New pattern.
+	(@pred_<optab><mode>_scalar): New pattern.
+	(*pred_<optab><mode>_scalar): New pattern.
+	(*pred_<optab><mode>_extended_scalar): New pattern.
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/iterators.md: Add neg and not.
+	* config/riscv/riscv-vector-builtins-bases.cc (class unop): New class.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vadd): Rename binop
+	into alu.
+	(vsub): Ditto.
+	(vand): Ditto.
+	(vor): Ditto.
+	(vxor): Ditto.
+	(vsll): Ditto.
+	(vsra): Ditto.
+	(vsrl): Ditto.
+	(vmin): Ditto.
+	(vmax): Ditto.
+	(vminu): Ditto.
+	(vmaxu): Ditto.
+	(vmul): Ditto.
+	(vdiv): Ditto.
+	(vrem): Ditto.
+	(vdivu): Ditto.
+	(vremu): Ditto.
+	(vrsub): Ditto.
+	(vneg): Ditto.
+	(vnot): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct binop_def): Ditto.
+	(struct alu_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc: Support unary C/C/++.
+	* config/riscv/vector-iterators.md: New iterator.
+	* config/riscv/vector.md (@pred_<optab><mode>): New pattern
+
+2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::compute_probabilities): Skip exit block.
+
 2023-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/108605
