@@ -11,6 +11,7 @@ mod ident;
 mod literal;
 mod punct;
 mod span;
+pub mod token_stream;
 
 /// Determines whether proc_macro has been made accessible to the currently
 /// running program.
