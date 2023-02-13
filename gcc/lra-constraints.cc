@@ -5100,7 +5100,8 @@ lra_constraints (bool first_p)
 			 && (targetm.preferred_reload_class
 			     (x, lra_get_allocno_class (i)) == NO_REGS))
 			|| contains_symbol_ref_p (x))))
-	      ira_reg_equiv[i].defined_p = false;
+	      ira_reg_equiv[i].defined_p
+		= ira_reg_equiv[i].caller_save_p = false;
 	    if (contains_reg_p (x, false, true))
 	      ira_reg_equiv[i].profitable_p = false;
 	    if (get_equiv (reg) != reg)

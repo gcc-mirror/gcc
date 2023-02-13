@@ -2725,6 +2725,7 @@ ira_update_equiv_info_by_shuffle_insn (int to_regno, int from_regno, rtx_insn *i
 	  return;
 	}
       ira_reg_equiv[to_regno].defined_p = false;
+      ira_reg_equiv[to_regno].caller_save_p = false;
       ira_reg_equiv[to_regno].memory
 	= ira_reg_equiv[to_regno].constant
 	= ira_reg_equiv[to_regno].invariant
@@ -4193,6 +4194,7 @@ setup_reg_equiv (void)
 			if (ira_reg_equiv[i].memory == NULL_RTX)
 			  {
 			    ira_reg_equiv[i].defined_p = false;
+			    ira_reg_equiv[i].caller_save_p = false;
 			    ira_reg_equiv[i].init_insns = NULL;
 			    break;
 			  }
@@ -4203,6 +4205,7 @@ setup_reg_equiv (void)
 	      }
 	  }
 	ira_reg_equiv[i].defined_p = false;
+	ira_reg_equiv[i].caller_save_p = false;
 	ira_reg_equiv[i].init_insns = NULL;
 	break;
       }
