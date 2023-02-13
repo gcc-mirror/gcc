@@ -1,3 +1,114 @@
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* decl.cc (cp_finish_decl): Check warning_enabled_at
+	at the DECL_SOURCE_LOCATION (decl) for OPT_Winit_self instead
+	of warn_init_self.
+
+2023-02-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* decl.cc (cp_finish_decl): Call suppress_warning.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108474
+	* cp-gimplify.cc (cp_fold_r): Handle structured bindings
+	vars like anon union artificial vars.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* typeck.cc (cp_build_binary_op): For integral division or modulo,
+	shorten if type0 is unsigned, or op0 is cast from narrower unsigned
+	integral type or stripped_op1 is INTEGER_CST other than -1.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108607
+	* constexpr.cc (cxx_eval_constant_expression): Handle OMP_*
+	and OACC_* constructs as non-constant.
+	(potential_constant_expression_1): Handle OMP_SCAN and OMP_SCOPE.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53932
+	* cp-gimplify.cc (cp_fold_r): During cp_fully_fold_init replace
+	DECL_ANON_UNION_VAR_P VAR_DECLs with their corresponding
+	DECL_VALUE_EXPR.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108286
+	* semantics.cc (finish_omp_target_clauses): Ignore clauses other than
+	OMP_CLAUSE_MAP.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108206
+	* decl.cc (merge_default_template_args): Return false if either
+	new_parm or old_parm are erroneous.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108180
+	* pt.cc (tsubst_expr): Don't call cp_finish_decl on
+	DECL_OMP_PRIVATIZED_MEMBER vars.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107065
+	* typeck.cc (cp_build_unary_op) <case TRUTH_NOT_EXPR>: If
+	invert_truthvalue_loc returns obvalue_p, wrap it into NON_LVALUE_EXPR.
+	* parser.cc (cp_parser_binary_expression): Don't call
+	warn_logical_not_parentheses if current.lhs is a NON_LVALUE_EXPR
+	of a decl with boolean type.
+
+2023-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107461
+	* cp-tree.h (call_expr_dependent_name): Declare.
+	* pt.cc (iterative_hash_template_arg) <case CALL_EXPR>: Use
+	call_expr_dependent_name instead of dependent_name.
+	* tree.cc (call_expr_dependent_name): Define.
+	(called_fns_equal): Adjust to take two CALL_EXPRs instead of
+	CALL_EXPR_FNs thereof.  Use call_expr_dependent_name instead
+	of dependent_name.
+	(cp_tree_equal) <case CALL_EXPR>: Adjust call to called_fns_equal.
+
 2023-02-03  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

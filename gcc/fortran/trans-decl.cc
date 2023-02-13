@@ -745,6 +745,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   /* Keep variables larger than max-stack-var-size off stack.  */
   if (!(sym->ns->proc_name && sym->ns->proc_name->attr.recursive)
       && !sym->attr.automatic
+      && !sym->attr.associate_var
       && sym->attr.save != SAVE_EXPLICIT
       && sym->attr.save != SAVE_IMPLICIT
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))
@@ -5358,7 +5359,11 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	      /* Sometimes, generic interfaces wind up being over-ruled by a
 		 local symbol (see PR41062).  */
 	      if (!st->n.sym->attr.use_assoc)
-		continue;
+		{
+		  *slot = error_mark_node;
+		  entry->decls->clear_slot (slot);
+		  continue;
+		}
 
 	      if (st->n.sym->backend_decl
 		  && DECL_P (st->n.sym->backend_decl)

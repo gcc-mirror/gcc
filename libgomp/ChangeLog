@@ -1,3 +1,27 @@
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108459
+	* testsuite/libgomp.c/pr108459.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108286
+	* testsuite/libgomp.c++/pr108286.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108180
+	* testsuite/libgomp.c++/pr108180.C: New test.
+
 2023-01-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

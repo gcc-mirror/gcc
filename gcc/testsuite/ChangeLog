@@ -1,3 +1,366 @@
+2023-02-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_effective_target_static): Return 0
+	on hppa*-*-*.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* gcc.target/i386/sse-23.c: Add -Wuninitialized to dg-options.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* g++.target/i386/pr105593.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* c-c++-common/Winit-self3.c: New test.
+	* c-c++-common/Winit-self4.c: New test.
+	* c-c++-common/Winit-self5.c: New test.
+
+2023-02-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* c-c++-common/Winit-self1.c: New test.
+	* c-c++-common/Winit-self2.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108474
+	* g++.dg/cpp1z/decomp57.C: New test.
+	* g++.dg/cpp1z/decomp58.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108440
+	* c-c++-common/rotate-10.c: New test.
+	* c-c++-common/rotate-11.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106523
+	* c-c++-common/rotate-2.c (f5, f6, f7, f8, f13, f14, f15, f16,
+	f37, f38, f39, f40, f45, f46, f47, f48): Add assertions using
+	__builtin_unreachable about shift count.
+	* c-c++-common/rotate-2b.c: New test.
+	* c-c++-common/rotate-4.c (f5, f6, f7, f8, f13, f14, f15, f16,
+	f37, f38, f39, f40, f45, f46, f47, f48): Add assertions using
+	__builtin_unreachable about shift count.
+	* c-c++-common/rotate-4b.c: New test.
+	* gcc.c-torture/execute/pr106523.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* g++.dg/opt/pr108365.C: New test.
+	* g++.dg/warn/pr108365.C: New test.
+
+2023-02-10  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-02-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108688
+	* gcc.c-torture/compile/pr108688-1.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108692
+	* gcc.dg/pr108692.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108435
+	* gcc.dg/gomp/pr108435.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108573
+	* gcc.dg/pr108573.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108607
+	* g++.dg/gomp/pr108607.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108599
+	* gcc.target/i386/avx2-pr108599.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/108596
+	* gcc.c-torture/compile/pr108596.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108498
+	* gcc.c-torture/execute/pr108498-1.c: New test.
+	* gcc.c-torture/execute/pr108498-2.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53932
+	* g++.dg/init/pr53932.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105972
+	* gcc.dg/pr105972.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108206
+	* g++.dg/template/pr108206.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108237
+	* gcc.c-torture/compile/pr108237.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108264
+	* gcc.dg/pr108264.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108068
+	* gcc.dg/dfp/pr108068.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108166
+	* g++.dg/torture/pr108166.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/108193
+	* gfortran.dg/pr108193.f90: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/108151
+	* gcc.dg/pr64536.c (bar): Cast long to __INTPTR_TYPE__
+	before casting to long *.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/108151
+	* gcc.dg/pr64536.c (bar): Use casts to __INTPTR_TYPE__ rather than
+	long when casting pointer to integral type.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106751
+	* gcc.c-torture/compile/pr106751.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107065
+	* g++.dg/cpp0x/pr107065.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108095
+	* gcc.dg/pr108095.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107997
+	* gcc.c-torture/compile/pr107997.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106719
+	* gcc.dg/pr106719.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/106875
+	* g++.target/i386/pr106875.C: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107317
+	* gcc.dg/asan/pr107317.c: New test.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107127
+	* gcc.dg/pr107127.c (foo): Add missing closing }.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-23  Andrew Pinski  <apinski@marvell.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107127
+	* gcc.dg/pr107127.c: New test.
+
+2023-02-09  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2023-02-08  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103259
+	* gfortran.dg/pr103259.f90: New test.
+
+2023-02-08  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-02-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95107
+	* gfortran.dg/save_7.f90: New test.
+
+2023-02-07  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-01-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108582
+	* gcc.dg/pr108582-1.c: New test.
+
+2023-02-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2023-01-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/108522
+	* gcc.dg/builtin-dynamic-object-size-0.c (DEFSTRUCT): New
+	macro.
+	(test_dynarray_struct_member_b, test_dynarray_struct_member_c,
+	test_dynarray_struct_member_d,
+	test_dynarray_struct_member_subobj_b,
+	test_dynarray_struct_member_subobj_c,
+	test_dynarray_struct_member_subobj_d): New tests.
+	(main): Call them.
+
+2023-02-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2023-01-25  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108522
+	* gcc.dg/builtin-dynamic-object-size-0.c
+	(test_dynarray_struct_member): New test.
+	(main): Call it.
+
+2023-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107461
+	* g++.dg/cpp0x/overload5.C: New test.
+	* g++.dg/cpp0x/overload5a.C: New test.
+	* g++.dg/cpp0x/overload6.C: New test.
+
 2023-02-05  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backported from master:

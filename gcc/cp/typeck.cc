@@ -5212,7 +5212,12 @@ cp_build_binary_op (const op_location_t &location,
 		 it was unsigned.  */
 	      tree stripped_op1 = tree_strip_any_location_wrapper (op1);
 	      shorten = ((TREE_CODE (op0) == NOP_EXPR
-			  && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
+			  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (op0,
+								       0)))
+			  && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0)))
+			  && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0,
+								       0)))
+			      < TYPE_PRECISION (type0)))
 			 || (TREE_CODE (stripped_op1) == INTEGER_CST
 			     && ! integer_all_onesp (stripped_op1)));
 	    }
@@ -5248,7 +5253,10 @@ cp_build_binary_op (const op_location_t &location,
 	     only if unsigned or if dividing by something we know != -1.  */
 	  tree stripped_op1 = tree_strip_any_location_wrapper (op1);
 	  shorten = ((TREE_CODE (op0) == NOP_EXPR
-		      && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
+		      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0)))
+		      && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0)))
+		      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0, 0)))
+			  < TYPE_PRECISION (type0)))
 		     || (TREE_CODE (stripped_op1) == INTEGER_CST
 			 && ! integer_all_onesp (stripped_op1)));
 	  common = 1;
@@ -7087,9 +7095,13 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 				   build_zero_cst (TREE_TYPE (arg)), complain);
       arg = perform_implicit_conversion (boolean_type_node, arg,
 					 complain);
-      val = invert_truthvalue_loc (location, arg);
       if (arg != error_mark_node)
-	return val;
+	{
+	  val = invert_truthvalue_loc (location, arg);
+	  if (obvalue_p (val))
+	    val = non_lvalue_loc (location, val);
+	  return val;
+	}
       errstring = _("in argument to unary !");
       break;
 

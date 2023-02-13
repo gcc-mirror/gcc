@@ -445,6 +445,7 @@ find_bb_boundaries (basic_block bb)
   rtx_insn *debug_insn = NULL;
   edge fallthru = NULL;
   bool skip_purge;
+  bool seen_note_after_debug = false;
 
   if (insn == end)
     return;
@@ -492,7 +493,10 @@ find_bb_boundaries (basic_block bb)
       if (code == DEBUG_INSN)
 	{
 	  if (flow_transfer_insn && !debug_insn)
-	    debug_insn = insn;
+	    {
+	      debug_insn = insn;
+	      seen_note_after_debug = false;
+	    }
 	}
       /* In case we've previously seen an insn that effects a control
 	 flow transfer, split the block.  */
@@ -506,7 +510,40 @@ find_bb_boundaries (basic_block bb)
 	     insn instead of before the non-debug insn, so that the debug
 	     insns are not lost.  */
 	  if (debug_insn && code != CODE_LABEL && code != BARRIER)
-	    prev = PREV_INSN (debug_insn);
+	    {
+	      prev = PREV_INSN (debug_insn);
+	      if (seen_note_after_debug)
+		{
+		  /* Though, if there are NOTEs intermixed with DEBUG_INSNs,
+		     move the NOTEs before the DEBUG_INSNs and split after
+		     the last NOTE.  */
+		  rtx_insn *first = NULL, *last = NULL;
+		  for (x = debug_insn; x != insn; x = NEXT_INSN (x))
+		    {
+		      if (NOTE_P (x))
+			{
+			  if (first == NULL)
+			    first = x;
+			  last = x;
+			}
+		      else
+			{
+			  gcc_assert (DEBUG_INSN_P (x));
+			  if (first)
+			    {
+			      reorder_insns_nobb (first, last, prev);
+			      prev = last;
+			      first = last = NULL;
+			    }
+			}
+		    }
+		  if (first)
+		    {
+		      reorder_insns_nobb (first, last, prev);
+		      prev = last;
+		    }
+		}
+	    }
 	  fallthru = split_block (bb, prev);
 	  if (flow_transfer_insn)
 	    {
@@ -546,6 +583,14 @@ find_bb_boundaries (basic_block bb)
 	  if (!flow_transfer_insn)
 	    flow_transfer_insn = prev_nonnote_nondebug_insn_bb (insn);
 	  debug_insn = NULL;
+	}
+      else if (debug_insn)
+	{
+	  if (code == NOTE)
+	    seen_note_after_debug = true;
+	  else
+	    /* Jump tables.  */
+	    debug_insn = NULL;
 	}
 
       if (control_flow_insn_p (insn))

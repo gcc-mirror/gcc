@@ -1490,6 +1490,8 @@ merge_default_template_args (tree new_parms, tree old_parms, bool class_p)
       tree old_parm = TREE_VALUE (TREE_VEC_ELT (old_parms, i));
       tree& new_default = TREE_PURPOSE (TREE_VEC_ELT (new_parms, i));
       tree& old_default = TREE_PURPOSE (TREE_VEC_ELT (old_parms, i));
+      if (error_operand_p (new_parm) || error_operand_p (old_parm))
+	return false;
       if (new_default != NULL_TREE && old_default != NULL_TREE)
 	{
 	  auto_diagnostic_group d;
@@ -8238,6 +8240,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      && !TYPE_REF_P (type))
 	    TREE_CONSTANT (decl) = 1;
 	}
+      /* This is handled mostly by gimplify.cc, but we have to deal with
+	 not warning about int x = x; as it is a GCC extension to turn off
+	 this warning but only if warn_init_self is zero.  */
+      if (!DECL_EXTERNAL (decl)
+	  && !TREE_STATIC (decl)
+	  && decl == tree_strip_any_location_wrapper (init)
+	  && !warning_enabled_at (DECL_SOURCE_LOCATION (decl), OPT_Winit_self))
+	suppress_warning (decl, OPT_Winit_self);
     }
 
   if (flag_openmp

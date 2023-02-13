@@ -1536,7 +1536,7 @@ static struct c_arg_info *c_parser_parms_list_declarator (c_parser *, tree,
 static struct c_parm *c_parser_parameter_declaration (c_parser *, tree, bool);
 static tree c_parser_simple_asm_expr (c_parser *);
 static tree c_parser_gnu_attributes (c_parser *);
-static struct c_expr c_parser_initializer (c_parser *);
+static struct c_expr c_parser_initializer (c_parser *, tree);
 static struct c_expr c_parser_braced_init (c_parser *, tree, bool,
 					   struct obstack *);
 static void c_parser_initelt (c_parser *, struct obstack *);
@@ -2316,7 +2316,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  int flag_sanitize_save = flag_sanitize;
 		  if (TREE_CODE (d) == PARM_DECL)
 		    flag_sanitize = 0;
-		  init = c_parser_initializer (parser);
+		  init = c_parser_initializer (parser, d);
 		  flag_sanitize = flag_sanitize_save;
 		  finish_init ();
 		}
@@ -2536,10 +2536,13 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	 declarator with a nonempty identifier list in a definition;
 	 and postfix attributes have never been accepted here in
 	 function definitions either.  */
+      int save_debug_nonbind_markers_p = debug_nonbind_markers_p;
+      debug_nonbind_markers_p = 0;
       while (c_parser_next_token_is_not (parser, CPP_EOF)
 	     && c_parser_next_token_is_not (parser, CPP_OPEN_BRACE))
 	c_parser_declaration_or_fndef (parser, false, false, false,
 				       true, false);
+      debug_nonbind_markers_p = save_debug_nonbind_markers_p;
       store_parm_decls ();
       if (omp_declare_simd_clauses)
 	c_finish_omp_declare_simd (parser, current_function_decl, NULL_TREE,
@@ -5241,11 +5244,13 @@ c_parser_type_name (c_parser *parser, bool alignas_ok)
    Any expression without commas is accepted in the syntax for the
    constant-expressions, with non-constant expressions rejected later.
 
+   DECL is the declaration we're parsing this initializer for.
+
    This function is only used for top-level initializers; for nested
    ones, see c_parser_initval.  */
 
 static struct c_expr
-c_parser_initializer (c_parser *parser)
+c_parser_initializer (c_parser *parser, tree decl)
 {
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
     return c_parser_braced_init (parser, NULL_TREE, false, NULL);
@@ -5254,6 +5259,15 @@ c_parser_initializer (c_parser *parser)
       struct c_expr ret;
       location_t loc = c_parser_peek_token (parser)->location;
       ret = c_parser_expr_no_commas (parser, NULL);
+      /* This is handled mostly by gimplify.cc, but we have to deal with
+	 not warning about int x = x; as it is a GCC extension to turn off
+	 this warning but only if warn_init_self is zero.  */
+      if (VAR_P (decl)
+	  && !DECL_EXTERNAL (decl)
+	  && !TREE_STATIC (decl)
+	  && ret.value == decl
+	  && !warning_enabled_at (DECL_SOURCE_LOCATION (decl), OPT_Winit_self))
+	suppress_warning (decl, OPT_Winit_self);
       if (TREE_CODE (ret.value) != STRING_CST
 	  && TREE_CODE (ret.value) != COMPOUND_LITERAL_EXPR)
 	ret = convert_lvalue_to_rvalue (loc, ret, true, true);
@@ -23137,7 +23151,7 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
 		  location_t loc = c_parser_peek_token (parser)->location;
 		  rich_location richloc (line_table, loc);
 		  start_init (omp_priv, NULL_TREE, 0, &richloc);
-		  struct c_expr init = c_parser_initializer (parser);
+		  struct c_expr init = c_parser_initializer (parser, omp_priv);
 		  finish_init ();
 		  finish_decl (omp_priv, loc, init.value,
 		      	       init.original_type, NULL_TREE);

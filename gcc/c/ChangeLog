@@ -1,3 +1,34 @@
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* c-parser.cc (c_parser_initializer): Check warning_enabled_at
+	at the DECL_SOURCE_LOCATION (decl) for OPT_Winit_self instead
+	of warn_init_self.
+
+2023-02-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* c-parser.cc (c_parser_initializer): Add new tree parameter.  Use it.
+	Call suppress_warning.
+	(c_parser_declaration_or_fndef): Pass d down to c_parser_initializer.
+	(c_parser_omp_declare_reduction): Pass omp_priv down to
+	c_parser_initializer.
+
+2023-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105972
+	* c-parser.cc (c_parser_declaration_or_fndef): Disable debug non-bind
+	markers for K&R function parameter declarations of nested functions.
+
 2023-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107593

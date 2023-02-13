@@ -10,9 +10,9 @@ bar (int x)
 
 constexpr int
 foo (int x)			// { dg-message "declared here" "" { target c++20_down } }
-{				// { dg-message "is not usable as a 'constexpr' function because" "" { target c++23 } .-1 }
-  #pragma omp scope		// { dg-warning "is not a constant expression" "" { target c++20_down } }
-  x = bar (x);			// { dg-error "is not a constant expression" "" { target c++23 } .-1 }
+{
+  #pragma omp scope		// { dg-error "is not a constant expression" }
+  x = bar (x);
   return x;
 }
 
