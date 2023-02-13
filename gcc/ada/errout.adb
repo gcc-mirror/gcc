@@ -1769,6 +1769,24 @@ package body Errout is
          Loc   : constant Source_Ptr := Sloc (Norig);
 
       begin
+         --  ??? For assignments that require accessiblity checks, e.g.:
+         --
+         --    Y := Func (123);
+         --
+         --  the function call gets an extra actual parameter association with
+         --  Sloc of the assigned name "Y":
+         --
+         --    Y := Func (123, A8b => 2);
+         --
+         --  We can simply ignore those extra actual parameters when
+         --  determining the Sloc range of the "Func (123)" expression.
+
+         if Nkind (N) = N_Parameter_Association
+           and then Is_Accessibility_Actual (N)
+         then
+            return Skip;
+         end if;
+
          --  Check for earlier
 
          if Loc < Eloc
