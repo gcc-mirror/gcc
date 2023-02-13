@@ -401,6 +401,46 @@ struct binary_rshift_def : public overloaded_base<0>
 };
 SHAPE (binary_rshift)
 
+
+/* <uT0>_t vfoo[_t0](<uT0>_t, <T0>_t)
+
+   i.e. binary operations that take a vector of unsigned elements as first argument and a
+   vector of signed elements as second argument, and produce a vector of unsigned elements.
+
+   Example: vminaq.
+   uint8x16_t [__arm_]vminaq[_s8](uint8x16_t a, int8x16_t b)
+   uint8x16_t [__arm_]vminaq_m[_s8](uint8x16_t a, int8x16_t b, mve_pred16_t p)  */
+struct binary_maxamina_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "vu0,vu0,vs0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* Check that the first argument has the expeected unsigned
+       type.  */
+    type_suffix_index return_type
+      = find_type_suffix (TYPE_unsigned, type_suffixes[type].element_bits);
+    if (!r.require_matching_vector_type (0, return_type))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (binary_maxamina)
+
 /* <uS0>_t vfoo[_<t0>](<uS0>_t, <T0>_t)
 
    Example: vmaxavq.
