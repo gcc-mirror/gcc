@@ -31,6 +31,7 @@
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-tyty-cmp.h"
+#include "rust-type-util.h"
 
 #include "options.h"
 
@@ -266,6 +267,7 @@ BaseType::get_locus () const
   return ident.locus;
 }
 
+// FIXME this is missing locus
 bool
 BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 {
@@ -277,12 +279,67 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 	return true;
     }
 
+  bool satisfied = false;
   auto probed = Resolver::TypeBoundsProbe::Probe (this);
   for (const auto &b : probed)
     {
       const Resolver::TraitReference *bound = b.first;
       if (bound->satisfies_bound (*query))
+	{
+	  satisfied = true;
+	  break;
+	}
+    }
+
+  if (!satisfied)
+    return false;
+
+  for (const auto &b : probed)
+    {
+      const Resolver::TraitReference *bound = b.first;
+      if (!bound->is_equal (*query))
+	continue;
+
+      // builtin ones have no impl-block this needs fixed and use a builtin node
+      // of somekind
+      if (b.second == nullptr)
 	return true;
+
+      // need to check that associated types can match as well
+      const HIR::ImplBlock &impl = *(b.second);
+      for (const auto &item : impl.get_impl_items ())
+	{
+	  TyTy::BaseType *impl_item_ty = nullptr;
+	  Analysis::NodeMapping i = item->get_impl_mappings ();
+	  bool query_ok = Resolver::query_type (i.get_hirid (), &impl_item_ty);
+	  if (!query_ok)
+	    return false;
+
+	  std::string item_name = item->get_impl_item_name ();
+	  TypeBoundPredicateItem lookup
+	    = predicate.lookup_associated_item (item_name);
+	  if (lookup.is_error ())
+	    return false;
+
+	  const auto *item_ref = lookup.get_raw_item ();
+	  TyTy::BaseType *bound_ty = item_ref->get_tyty ();
+
+	  // compare the types
+	  if (!bound_ty->can_eq (impl_item_ty, false))
+	    {
+	      RichLocation r (mappings->lookup_location (get_ref ()));
+	      r.add_range (predicate.get_locus ());
+	      r.add_range (mappings->lookup_location (i.get_hirid ()));
+
+	      rust_error_at (
+		r, "expected %<%s%> got %<%s%>",
+		bound_ty->destructure ()->get_name ().c_str (),
+		impl_item_ty->destructure ()->get_name ().c_str ());
+	      return false;
+	    }
+	}
+
+      return true;
     }
 
   return false;
@@ -2827,18 +2884,18 @@ ParamType::ParamType (std::string symbol, Location locus, HirId ref,
 	      {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
 	       locus},
 	      specified_bounds, refs),
-    symbol (symbol), param (param)
+    is_trait_self (false), symbol (symbol), param (param)
 {}
 
-ParamType::ParamType (std::string symbol, Location locus, HirId ref,
-		      HirId ty_ref, HIR::GenericParam &param,
+ParamType::ParamType (bool is_trait_self, std::string symbol, Location locus,
+		      HirId ref, HirId ty_ref, HIR::GenericParam &param,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::PARAM,
 	      {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
 	       locus},
 	      specified_bounds, refs),
-    symbol (symbol), param (param)
+    is_trait_self (is_trait_self), symbol (symbol), param (param)
 {}
 
 HIR::GenericParam &
@@ -2906,8 +2963,9 @@ ParamType::can_eq (const BaseType *other, bool emit_errors) const
 BaseType *
 ParamType::clone () const
 {
-  return new ParamType (get_symbol (), ident.locus, get_ref (), get_ty_ref (),
-			param, get_specified_bounds (), get_combined_refs ());
+  return new ParamType (is_trait_self, get_symbol (), ident.locus, get_ref (),
+			get_ty_ref (), param, get_specified_bounds (),
+			get_combined_refs ());
 }
 
 BaseType *
@@ -2995,6 +3053,18 @@ ParamType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
   p->set_ty_ref (arg.get_tyty ()->get_ref ());
 
   return p;
+}
+
+void
+ParamType::set_implicit_self_trait ()
+{
+  is_trait_self = true;
+}
+
+bool
+ParamType::is_implicit_self_trait () const
+{
+  return is_trait_self;
 }
 
 // StrType

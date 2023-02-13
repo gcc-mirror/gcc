@@ -343,14 +343,26 @@ TraitReference::on_resolved ()
 }
 
 void
-TraitReference::clear_associated_types ()
+TraitReference::clear_associated_types () const
 {
-  for (auto &item : item_refs)
+  for (const auto &item : item_refs)
     {
       bool is_assoc_type = item.get_trait_item_type ()
 			   == TraitItemReference::TraitItemType::TYPE;
       if (is_assoc_type)
-	item.associated_type_reset ();
+	item.associated_type_reset (false);
+    }
+}
+
+void
+TraitReference::clear_associated_type_projections () const
+{
+  for (const auto &item : item_refs)
+    {
+      bool is_assoc_type = item.get_trait_item_type ()
+			   == TraitItemReference::TraitItemType::TYPE;
+      if (is_assoc_type)
+	item.associated_type_reset (true);
     }
 }
 

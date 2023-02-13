@@ -106,7 +106,7 @@ public:
 
   void associated_type_set (TyTy::BaseType *ty) const;
 
-  void associated_type_reset () const;
+  void associated_type_reset (bool only_projections) const;
 
   bool is_object_safe () const;
 
@@ -212,7 +212,9 @@ public:
 
   void on_resolved ();
 
-  void clear_associated_types ();
+  void clear_associated_types () const;
+
+  void clear_associated_type_projections () const;
 
   bool is_equal (const TraitReference &other) const;
 
