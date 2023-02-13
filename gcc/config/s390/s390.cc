@@ -14977,29 +14977,6 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
   ready[0] = tmp;
 }
 
-/* Returns TRUE if BB is entered via a fallthru edge and all other
-   incoming edges are less than likely.  */
-static bool
-s390_bb_fallthru_entry_likely (basic_block bb)
-{
-  edge e, fallthru_edge;
-  edge_iterator ei;
-
-  if (!bb)
-    return false;
-
-  fallthru_edge = find_fallthru_edge (bb->preds);
-  if (!fallthru_edge)
-    return false;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e != fallthru_edge
-	&& e->probability >= profile_probability::likely ())
-      return false;
-
-  return true;
-}
-
 struct s390_sched_state
 {
   /* Number of insns in the group.  */
@@ -15010,7 +14987,7 @@ struct s390_sched_state
   bool group_of_two;
 } s390_sched_state;
 
-static struct s390_sched_state sched_state = {0, 1, false};
+static struct s390_sched_state sched_state;
 
 #define S390_SCHED_ATTR_MASK_CRACKED    0x1
 #define S390_SCHED_ATTR_MASK_EXPANDED   0x2
@@ -15510,7 +15487,7 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 
 	      s390_get_unit_mask (insn, &units);
 
-	      fprintf (file, ";;\t\tBACKEND: units on this side unused for: ");
+	      fprintf (file, ";;\t\tBACKEND: units on this side (%d) unused for: ", sched_state.side);
 	      for (j = 0; j < units; j++)
 		fprintf (file, "%d:%d ", j,
 		    last_scheduled_unit_distance[j][sched_state.side]);
@@ -15548,17 +15525,12 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
      current_sched_info->prev_head is the insn before the first insn of the
      block of insns to be scheduled.
      */
-  rtx_insn *insn = current_sched_info->prev_head
-    ? NEXT_INSN (current_sched_info->prev_head) : NULL;
-  basic_block bb = insn ? BLOCK_FOR_INSN (insn) : NULL;
-  if (s390_tune < PROCESSOR_2964_Z13 || !s390_bb_fallthru_entry_likely (bb))
-    {
-      last_scheduled_insn = NULL;
-      memset (last_scheduled_unit_distance, 0,
+  last_scheduled_insn = NULL;
+  memset (last_scheduled_unit_distance, 0,
 	  MAX_SCHED_UNITS * NUM_SIDES * sizeof (int));
-      sched_state.group_state = 0;
-      sched_state.group_of_two = false;
-    }
+  memset (fpd_longrunning, 0, NUM_SIDES * sizeof (int));
+  memset (fxd_longrunning, 0, NUM_SIDES * sizeof (int));
+  sched_state = {};
 }
 
 /* This target hook implementation for TARGET_LOOP_UNROLL_ADJUST calculates
