@@ -161,6 +161,9 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
   TraitQueryGuard guard (trait_id);
   TyTy::BaseType *self = nullptr;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
+
+  // FIXME
+  // this should use the resolve_generic_params like everywhere else
   for (auto &generic_param : trait_reference->get_generic_params ())
     {
       switch (generic_param.get ()->get_kind ())
@@ -182,7 +185,11 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 
 	    if (typaram.get_type_representation ().compare ("Self") == 0)
 	      {
-		self = param_type;
+		rust_assert (param_type->get_kind () == TyTy::TypeKind::PARAM);
+		TyTy::ParamType *p
+		  = static_cast<TyTy::ParamType *> (param_type);
+		p->set_implicit_self_trait ();
+		self = p;
 	      }
 	  }
 	  break;
@@ -365,7 +372,7 @@ TraitItemReference::associated_type_set (TyTy::BaseType *ty) const
 }
 
 void
-TraitItemReference::associated_type_reset () const
+TraitItemReference::associated_type_reset (bool only_projections) const
 {
   rust_assert (get_trait_item_type () == TraitItemType::TYPE);
 
@@ -374,7 +381,21 @@ TraitItemReference::associated_type_reset () const
   TyTy::PlaceholderType *placeholder
     = static_cast<TyTy::PlaceholderType *> (item_ty);
 
-  placeholder->clear_associated_type ();
+  if (!only_projections)
+    {
+      placeholder->clear_associated_type ();
+    }
+  else
+    {
+      if (!placeholder->can_resolve ())
+	return;
+
+      const TyTy::BaseType *r = placeholder->resolve ();
+      if (r->get_kind () == TyTy::TypeKind::PROJECTION)
+	{
+	  placeholder->clear_associated_type ();
+	}
+    }
 }
 
 TyTy::BaseType *

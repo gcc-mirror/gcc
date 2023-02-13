@@ -23,6 +23,41 @@
 namespace Rust {
 namespace Resolver {
 
+TypeBoundsProbe::TypeBoundsProbe (const TyTy::BaseType *receiver)
+  : TypeCheckBase (), receiver (receiver)
+{}
+
+std::vector<std::pair<TraitReference *, HIR::ImplBlock *>>
+TypeBoundsProbe::Probe (const TyTy::BaseType *receiver)
+{
+  TypeBoundsProbe probe (receiver);
+  probe.scan ();
+  return probe.trait_references;
+}
+
+bool
+TypeBoundsProbe::is_bound_satisfied_for_type (TyTy::BaseType *receiver,
+					      TraitReference *ref)
+{
+  for (auto &bound : receiver->get_specified_bounds ())
+    {
+      const TraitReference *b = bound.get ();
+      if (b->is_equal (*ref))
+	return true;
+    }
+
+  std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> bounds
+    = Probe (receiver);
+  for (auto &bound : bounds)
+    {
+      const TraitReference *b = bound.first;
+      if (b->is_equal (*ref))
+	return true;
+    }
+
+  return false;
+}
+
 void
 TypeBoundsProbe::scan ()
 {
@@ -57,6 +92,75 @@ TypeBoundsProbe::scan ()
       if (!trait_ref->is_error ())
 	trait_references.push_back ({trait_ref, path.second});
     }
+
+  // marker traits...
+  assemble_sized_builtin ();
+}
+
+void
+TypeBoundsProbe::assemble_sized_builtin ()
+{
+  const TyTy::BaseType *raw = receiver->destructure ();
+
+  // does this thing actually implement sized?
+  switch (raw->get_kind ())
+    {
+    case TyTy::ADT:
+    case TyTy::STR:
+    case TyTy::REF:
+    case TyTy::POINTER:
+    case TyTy::PARAM:
+    case TyTy::ARRAY:
+    case TyTy::SLICE:
+    case TyTy::FNDEF:
+    case TyTy::FNPTR:
+    case TyTy::TUPLE:
+    case TyTy::BOOL:
+    case TyTy::CHAR:
+    case TyTy::INT:
+    case TyTy::UINT:
+    case TyTy::FLOAT:
+    case TyTy::USIZE:
+    case TyTy::ISIZE:
+      assemble_builtin_candidate (Analysis::RustLangItem::SIZED);
+      break;
+
+      // not-sure about this.... FIXME
+    case TyTy::INFER:
+    case TyTy::NEVER:
+    case TyTy::PLACEHOLDER:
+    case TyTy::PROJECTION:
+    case TyTy::DYNAMIC:
+    case TyTy::CLOSURE:
+    case TyTy::ERROR:
+      break;
+    }
+}
+
+void
+TypeBoundsProbe::assemble_builtin_candidate (
+  Analysis::RustLangItem::ItemType lang_item)
+{
+  DefId id;
+  bool found_lang_item = mappings->lookup_lang_item (lang_item, &id);
+  if (!found_lang_item)
+    return;
+
+  HIR::Item *item = mappings->lookup_defid (id);
+  if (item == nullptr)
+    return;
+
+  rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
+  HIR::Trait *trait = static_cast<HIR::Trait *> (item);
+  const TyTy::BaseType *raw = receiver->destructure ();
+
+  // assemble the reference
+  TraitReference *trait_ref = TraitResolver::Resolve (*trait);
+  trait_references.push_back ({trait_ref, mappings->lookup_builtin_marker ()});
+
+  rust_debug ("Added builtin lang_item: %s for %s",
+	      Analysis::RustLangItem::ToString (lang_item).c_str (),
+	      raw->get_name ().c_str ());
 }
 
 TraitReference *
@@ -101,7 +205,8 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path)
 	  = static_cast<HIR::TypePathSegmentFunction *> (final_seg.get ());
 	auto &fn = final_function_seg->get_function_path ();
 
-	// we need to make implicit generic args which must be an implicit Tuple
+	// we need to make implicit generic args which must be an implicit
+	// Tuple
 	auto crate_num = mappings->get_current_crate ();
 	HirId implicit_args_id = mappings->get_next_hir_id ();
 	Analysis::NodeMapping mapping (crate_num,
@@ -514,8 +619,8 @@ TypeBoundPredicate::lookup_associated_type (const std::string &search)
 {
   TypeBoundPredicateItem item = lookup_associated_item (search);
 
-  // only need to check that it is infact an associated type because other wise
-  // if it was not found it will just be an error node anyway
+  // only need to check that it is infact an associated type because other
+  // wise if it was not found it will just be an error node anyway
   if (!item.is_error ())
     {
       const auto raw = item.get_raw_item ();

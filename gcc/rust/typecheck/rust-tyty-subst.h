@@ -298,7 +298,13 @@ public:
   // TODO comment
   BaseType *infer_substitions (Location locus);
 
-  // TODO comment
+  // this clears any possible projections from higher ranked trait bounds which
+  // could be hanging around from a previous resolution
+  void prepare_higher_ranked_bounds ();
+
+  // FIXME
+  // this is bad name for this, i think it should be something like
+  // compute-higher-ranked-bounds
   bool monomorphize ();
 
   // TODO comment
@@ -308,6 +314,10 @@ public:
   SubstitutionArgumentMappings get_used_arguments () const;
 
 protected:
+  Resolver::AssociatedImplTrait *lookup_associated_impl (
+    const SubstitutionParamMapping &subst, const TypeBoundPredicate &bound,
+    const TyTy::BaseType *binding, bool *error_flag) const;
+
   std::vector<SubstitutionParamMapping> substitutions;
   SubstitutionArgumentMappings used_arguments;
 };

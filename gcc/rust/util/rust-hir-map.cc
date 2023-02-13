@@ -96,9 +96,16 @@ static const HirId kDefaultCrateNumBegin = 0;
 Mappings::Mappings ()
   : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CREATENUM),
     hirIdIter (kDefaultHirIdBegin), nodeIdIter (kDefaultNodeIdBegin)
-{}
+{
+  Analysis::NodeMapping node (0, 0, 0, 0);
+  builtinMarker
+    = new HIR::ImplBlock (node, {}, {}, nullptr, nullptr, HIR::WhereClause ({}),
+			  Positive,
+			  HIR::Visibility (HIR::Visibility::VisType::PUBLIC),
+			  {}, {}, Location ());
+}
 
-Mappings::~Mappings () {}
+Mappings::~Mappings () { delete builtinMarker; }
 
 Mappings *
 Mappings::get ()
@@ -1033,6 +1040,12 @@ Mappings::lookup_ast_item (NodeId id, AST::Item **result)
 
   *result = it->second;
   return true;
+}
+
+HIR::ImplBlock *
+Mappings::lookup_builtin_marker ()
+{
+  return builtinMarker;
 }
 
 } // namespace Analysis

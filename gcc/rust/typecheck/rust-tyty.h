@@ -267,8 +267,8 @@ public:
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ());
 
-  ParamType (std::string symbol, Location locus, HirId ref, HirId ty_ref,
-	     HIR::GenericParam &param,
+  ParamType (bool is_trait_self, std::string symbol, Location locus, HirId ref,
+	     HirId ty_ref, HIR::GenericParam &param,
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ());
 
@@ -298,7 +298,11 @@ public:
 
   ParamType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
+  void set_implicit_self_trait ();
+  bool is_implicit_self_trait () const;
+
 private:
+  bool is_trait_self;
   std::string symbol;
   HIR::GenericParam &param;
 };
