@@ -1440,17 +1440,20 @@
 ])
 
 ;;
-;; [vmaxnmavq_f])
+;; [vmaxnmavq_f]
+;; [vmaxnmvq_f]
+;; [vminnmavq_f]
+;; [vminnmvq_f]
 ;;
-(define_insn "mve_vmaxnmavq_f<mode>"
+(define_insn "@mve_<mve_insn>q_f<mode>"
   [
    (set (match_operand:<V_elem> 0 "s_register_operand" "=r")
 	(unspec:<V_elem> [(match_operand:<V_elem> 1 "s_register_operand" "0")
 			  (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMAXNMAVQ_F))
+	 MVE_VMAXNMxV_MINNMxVQ))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vmaxnmav.f%#<V_sz_elem>	%0, %q2"
+  "<mve_insn>.f%#<V_sz_elem>\t%0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1470,21 +1473,6 @@
 ])
 
 ;;
-;; [vmaxnmvq_f])
-;;
-(define_insn "mve_vmaxnmvq_f<mode>"
-  [
-   (set (match_operand:<V_elem> 0 "s_register_operand" "=r")
-	(unspec:<V_elem> [(match_operand:<V_elem> 1 "s_register_operand" "0")
-			  (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMAXNMVQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vmaxnmv.f%#<V_sz_elem>	%0, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
 ;; [vminnmaq_f])
 ;;
 (define_insn "mve_vminnmaq_f<mode>"
@@ -1496,36 +1484,6 @@
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vminnma.f%#<V_sz_elem>	%q0, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vminnmavq_f])
-;;
-(define_insn "mve_vminnmavq_f<mode>"
-  [
-   (set (match_operand:<V_elem> 0 "s_register_operand" "=r")
-	(unspec:<V_elem> [(match_operand:<V_elem> 1 "s_register_operand" "0")
-			  (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMINNMAVQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vminnmav.f%#<V_sz_elem>	%0, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vminnmvq_f])
-;;
-(define_insn "mve_vminnmvq_f<mode>"
-  [
-   (set (match_operand:<V_elem> 0 "s_register_operand" "=r")
-	(unspec:<V_elem> [(match_operand:<V_elem> 1 "s_register_operand" "0")
-			  (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMINNMVQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vminnmv.f%#<V_sz_elem>	%0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -3202,37 +3160,26 @@
   "vpst\;vmaxnmat.f%#<V_sz_elem>	%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
+
 ;;
-;; [vmaxnmavq_p_f])
+;; [vmaxnmavq_p_f]
+;; [vmaxnmvq_p_f]
+;; [vminnmavq_p_f]
+;; [vminnmvq_p_f]
 ;;
-(define_insn "mve_vmaxnmavq_p_f<mode>"
+(define_insn "@mve_<mve_insn>q_p_f<mode>"
   [
    (set (match_operand:<V_elem> 0 "s_register_operand" "=r")
 	(unspec:<V_elem> [(match_operand:<V_elem> 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMAXNMAVQ_P_F))
+	 MVE_VMAXNMxV_MINNMxVQ_P))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vmaxnmavt.f%#<V_sz_elem>	%0, %q2"
+  "vpst\;<mve_insn>t.f%#<V_sz_elem>\t%0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
-;;
-;; [vmaxnmvq_p_f])
-;;
-(define_insn "mve_vmaxnmvq_p_f<mode>"
-  [
-   (set (match_operand:<V_elem> 0 "s_register_operand" "=r")
-	(unspec:<V_elem> [(match_operand:<V_elem> 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMAXNMVQ_P_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vmaxnmvt.f%#<V_sz_elem>	%0, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
 ;;
 ;; [vminnmaq_m_f])
 ;;
@@ -3246,37 +3193,6 @@
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vpst\;vminnmat.f%#<V_sz_elem>	%q0, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vminnmavq_p_f])
-;;
-(define_insn "mve_vminnmavq_p_f<mode>"
-  [
-   (set (match_operand:<V_elem> 0 "s_register_operand" "=r")
-	(unspec:<V_elem> [(match_operand:<V_elem> 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMINNMAVQ_P_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vminnmavt.f%#<V_sz_elem>	%0, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-;;
-;; [vminnmvq_p_f])
-;;
-(define_insn "mve_vminnmvq_p_f<mode>"
-  [
-   (set (match_operand:<V_elem> 0 "s_register_operand" "=r")
-	(unspec:<V_elem> [(match_operand:<V_elem> 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMINNMVQ_P_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vminnmvt.f%#<V_sz_elem>	%0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
