@@ -37,6 +37,7 @@ namespace arm_mve
     extern const function_shape *const binary;
     extern const function_shape *const binary_lshift;
     extern const function_shape *const binary_lshift_r;
+    extern const function_shape *const binary_maxvminv;
     extern const function_shape *const binary_move_narrow;
     extern const function_shape *const binary_move_narrow_unsigned;
     extern const function_shape *const binary_opt_n;

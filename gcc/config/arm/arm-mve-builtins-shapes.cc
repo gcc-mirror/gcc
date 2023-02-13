@@ -401,6 +401,36 @@ struct binary_rshift_def : public overloaded_base<0>
 };
 SHAPE (binary_rshift)
 
+/* <S0>_t vfoo[_<t0>](<S0>_t, <T0>_t)
+
+   Example: vmaxvq.
+   int8_t [__arm_]vmaxvq[_s8](int8_t a, int8x16_t b)
+   int8_t [__arm_]vmaxvq_p[_s8](int8_t a, int8x16_t b, mve_pred16_t p)  */
+struct binary_maxvminv_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "s0,s0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| !r.require_derived_scalar_type (0, r.SAME_TYPE_CLASS)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (binary_maxvminv)
+
 /* <T0:half>_t vfoo[_t0](<T0:half>_t, <T0>_t)
 
    Example: vmovnbq.
