@@ -578,6 +578,20 @@
 		     VCREATEQ_F
 		     ])
 
+(define_int_iterator MVE_VMAXVQ_VMINVQ [
+		     VMAXAVQ_S
+		     VMAXVQ_S VMAXVQ_U
+		     VMINAVQ_S
+		     VMINVQ_S VMINVQ_U
+		     ])
+
+(define_int_iterator MVE_VMAXVQ_VMINVQ_P [
+		     VMAXAVQ_P_S
+		     VMAXVQ_P_S VMAXVQ_P_U
+		     VMINAVQ_P_S
+		     VMINVQ_P_S VMINVQ_P_U
+		     ])
+
 (define_int_iterator MVE_MOVN [
 		     VMOVNBQ_S VMOVNBQ_U
 		     VMOVNTQ_S VMOVNTQ_U
@@ -627,8 +641,16 @@
 		 (VHSUBQ_M_S "vhsub") (VHSUBQ_M_U "vhsub")
 		 (VHSUBQ_N_S "vhsub") (VHSUBQ_N_U "vhsub")
 		 (VHSUBQ_S "vhsub") (VHSUBQ_U "vhsub")
+		 (VMAXAVQ_P_S "vmaxav")
+		 (VMAXAVQ_S "vmaxav")
 		 (VMAXQ_M_S "vmax") (VMAXQ_M_U "vmax")
+		 (VMAXVQ_P_S "vmaxv") (VMAXVQ_P_U "vmaxv")
+		 (VMAXVQ_S "vmaxv") (VMAXVQ_U "vmaxv")
+		 (VMINAVQ_P_S "vminav")
+		 (VMINAVQ_S "vminav")
 		 (VMINQ_M_S "vmin") (VMINQ_M_U "vmin")
+		 (VMINVQ_P_S "vminv") (VMINVQ_P_U "vminv")
+		 (VMINVQ_S "vminv") (VMINVQ_U "vminv")
 		 (VMLAQ_M_N_S "vmla") (VMLAQ_M_N_U "vmla")
 		 (VMLASQ_M_N_S "vmlas") (VMLASQ_M_N_U "vmlas")
 		 (VMOVNBQ_M_S "vmovnb") (VMOVNBQ_M_U "vmovnb")
@@ -1992,6 +2014,10 @@
 		       (VQMOVUNBQ_S "s")
 		       (VQMOVUNTQ_M_S "s")
 		       (VQMOVUNTQ_S "s")
+		       (VMAXAVQ_S "s")
+		       (VMAXAVQ_P_S "s")
+		       (VMINAVQ_S "s")
+		       (VMINAVQ_P_S "s")
 		       ])
 
 ;; Both kinds of return insn.
