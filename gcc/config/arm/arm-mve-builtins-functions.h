@@ -376,6 +376,70 @@ public:
   }
 };
 
+/* Map the function directly to CODE (UNSPEC), when there is a
+   non-predicated version and one with the "_p" predicate.  */
+class unspec_mve_function_exact_insn_pred_p : public function_base
+{
+public:
+  CONSTEXPR unspec_mve_function_exact_insn_pred_p (int unspec_for_sint,
+						   int unspec_for_uint,
+						   int unspec_for_fp,
+						   int unspec_for_p_sint,
+						   int unspec_for_p_uint,
+						   int unspec_for_p_fp)
+    : m_unspec_for_sint (unspec_for_sint),
+      m_unspec_for_uint (unspec_for_uint),
+      m_unspec_for_fp (unspec_for_fp),
+      m_unspec_for_p_sint (unspec_for_p_sint),
+      m_unspec_for_p_uint (unspec_for_p_uint),
+      m_unspec_for_p_fp (unspec_for_p_fp)
+  {}
+
+  /* The unspec code associated with signed-integer and unsigned-integer
+     operations, with no predicate, or with "_p" predicate.  */
+  int m_unspec_for_sint;
+  int m_unspec_for_uint;
+  int m_unspec_for_fp;
+  int m_unspec_for_p_sint;
+  int m_unspec_for_p_uint;
+  int m_unspec_for_p_fp;
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code code;
+    switch (e.pred)
+      {
+      case PRED_none:
+	if (e.type_suffix (0).integer_p)
+	  if (e.type_suffix (0).unsigned_p)
+	    code = code_for_mve_q (m_unspec_for_uint, m_unspec_for_uint, e.vector_mode (0));
+	  else
+	    code = code_for_mve_q (m_unspec_for_sint, m_unspec_for_sint, e.vector_mode (0));
+	else
+	  code = code_for_mve_q_f (m_unspec_for_fp, e.vector_mode (0));
+
+	return e.use_exact_insn (code);
+
+      case PRED_p:
+	if (e.type_suffix (0).integer_p)
+	  if (e.type_suffix (0).unsigned_p)
+	    code = code_for_mve_q_p (m_unspec_for_p_uint, m_unspec_for_p_uint, e.vector_mode (0));
+	  else
+	    code = code_for_mve_q_p (m_unspec_for_p_sint, m_unspec_for_p_sint, e.vector_mode (0));
+	else
+	  gcc_unreachable ();  /* Will be fixed later in the series.  */
+
+	return e.use_exact_insn (code);
+
+      default:
+	gcc_unreachable ();
+      }
+
+    gcc_unreachable ();
+  }
+};
+
 /* Map the function directly to CODE (UNSPEC, M) for vshl-like
    builtins. The difference with unspec_mve_function_exact_insn is
    that this function handles MODE_r and the related unspecs..  */
