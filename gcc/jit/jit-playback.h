@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -782,7 +782,7 @@ public:
   vec<location *> m_locations;
 
 private:
-  source_file *m_source_file;
+  source_file *m_source_file ATTRIBUTE_UNUSED;
   int m_line_num;
 };
 
@@ -801,7 +801,7 @@ public:
 
 private:
   recording::location *m_recording_loc;
-  source_line *m_line;
+  source_line *m_line ATTRIBUTE_UNUSED;
   int m_column_num;
 };
 

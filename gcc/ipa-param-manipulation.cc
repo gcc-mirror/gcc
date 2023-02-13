@@ -1,6 +1,6 @@
 /* Manipulation of formal and actual parameters of functions and function
    calls.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -46,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "cfgexpand.h"
 #include "attribs.h"
-
+#include "ipa-prop.h"
 
 /* Actual prefixes of different newly synthetized parameters.  Keep in sync
    with IPA_PARAM_PREFIX_* defines.  */
@@ -447,39 +448,6 @@ ipa_param_adjustments::get_updated_indices (vec<int> *new_indices)
       if (apm->op == IPA_PARAM_OP_COPY)
 	(*new_indices)[apm->base_index] = i;
     }
-}
-
-/* If a parameter with original INDEX has survived intact, return its new
-   index.  Otherwise return -1.  In that case, if it has been split and there
-   is a new parameter representing a portion at unit OFFSET for which a value
-   of a TYPE can be substituted, store its new index into SPLIT_INDEX,
-   otherwise store -1 there.  */
-int
-ipa_param_adjustments::get_updated_index_or_split (int index,
-						   unsigned unit_offset,
-						   tree type, int *split_index)
-{
-  unsigned adj_len = vec_safe_length (m_adj_params);
-  for (unsigned i = 0; i < adj_len ; i++)
-    {
-      ipa_adjusted_param *apm = &(*m_adj_params)[i];
-      if (apm->base_index != index)
-	continue;
-      if (apm->op == IPA_PARAM_OP_COPY)
-	return i;
-      if (apm->op == IPA_PARAM_OP_SPLIT
-	  && apm->unit_offset == unit_offset)
-	{
-	  if (useless_type_conversion_p (apm->type, type))
-	    *split_index = i;
-	  else
-	    *split_index = -1;
-	  return -1;
-	}
-    }
-
-  *split_index = -1;
-  return -1;
 }
 
 /* Return the original index for the given new parameter index.  Return a
@@ -1020,6 +988,22 @@ ipa_param_adjustments::debug ()
   dump (stderr);
 }
 
+/* Register a REPLACEMENT for accesses to BASE at UNIT_OFFSET.  */
+
+void
+ipa_param_body_adjustments::register_replacement (tree base,
+						  unsigned unit_offset,
+						  tree replacement)
+{
+  ipa_param_body_replacement psr;
+  psr.base = base;
+  psr.repl = replacement;
+  psr.dummy = NULL_TREE;
+  psr.unit_offset = unit_offset;
+  m_replacements.safe_push (psr);
+  m_sorted_replacements_p = false;
+}
+
 /* Register that REPLACEMENT should replace parameter described in APM.  */
 
 void
@@ -1029,12 +1013,39 @@ ipa_param_body_adjustments::register_replacement (ipa_adjusted_param *apm,
   gcc_checking_assert (apm->op == IPA_PARAM_OP_SPLIT
 		       || apm->op == IPA_PARAM_OP_NEW);
   gcc_checking_assert (!apm->prev_clone_adjustment);
-  ipa_param_body_replacement psr;
-  psr.base = m_oparms[apm->prev_clone_index];
-  psr.repl = replacement;
-  psr.dummy = NULL_TREE;
-  psr.unit_offset = apm->unit_offset;
-  m_replacements.safe_push (psr);
+  register_replacement (m_oparms[apm->prev_clone_index], apm->unit_offset,
+			replacement);
+}
+
+/* Comparator for sorting and searching
+   ipa_param_body_adjustments::m_replacements.  */
+
+static int
+compare_param_body_replacement (const void *va, const void *vb)
+{
+  const ipa_param_body_replacement *a = (const ipa_param_body_replacement *) va;
+  const ipa_param_body_replacement *b = (const ipa_param_body_replacement *) vb;
+
+  if (DECL_UID (a->base) < DECL_UID (b->base))
+    return -1;
+  if (DECL_UID (a->base) > DECL_UID (b->base))
+    return 1;
+  if (a->unit_offset < b->unit_offset)
+    return -1;
+  if (a->unit_offset > b->unit_offset)
+    return 1;
+  return 0;
+}
+
+/* Sort m_replacements and set m_sorted_replacements_p to true.  */
+
+void
+ipa_param_body_adjustments::sort_replacements ()
+{
+  if (m_sorted_replacements_p)
+    return;
+  m_replacements.qsort (compare_param_body_replacement);
+  m_sorted_replacements_p = true;
 }
 
 /* Copy or not, as appropriate given m_id and decl context, a pre-existing
@@ -1386,23 +1397,74 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	gcc_unreachable ();
     }
 
+  auto_vec <int, 16> index_mapping;
+  bool need_remap = false;
+  if (m_id)
+    {
+      clone_info *cinfo = clone_info::get (m_id->src_node);
+      if (cinfo && cinfo->param_adjustments)
+	{
+	  cinfo->param_adjustments->get_updated_indices (&index_mapping);
+	  need_remap = true;
+	}
+
+      if (ipcp_transformation *ipcp_ts
+	  = ipcp_get_transformation_summary (m_id->src_node))
+	{
+	  for (const ipa_argagg_value &av : ipcp_ts->m_agg_values)
+	    {
+	      int parm_num = av.index;
+
+	      if (need_remap)
+		{
+		  /* FIXME: We cannot handle the situation when IPA-CP
+		     identified that a parameter is a pointer to a global
+		     variable and at the same time the variable has some known
+		     constant contents (PR 107640).  The best place to make
+		     sure we don't drop such constants on the floor probably is
+		     not here, but we have to make sure that it does not
+		     confuse the remapping.  */
+		  if (parm_num >= (int) index_mapping.length ())
+		    continue;
+		  parm_num = index_mapping[parm_num];
+		  if (parm_num < 0)
+		    continue;
+		}
+
+	      if (!kept[parm_num])
+		{
+		  /* IPA-CP has detected an aggregate constant in a parameter
+		     that will not be kept, which means that IPA-SRA would have
+		     split it if there wasn't a constant.  Because we are about
+		     to remove the original, this is the last chance where we
+		     can substitute the uses with a constant (for values passed
+		     by reference) or do the split but initialize the
+		     replacement with a constant (for split aggregates passed
+		     by value).  */
+
+		  tree repl;
+		  if (av.by_ref)
+		    repl = av.value;
+		  else
+		    {
+		      repl = create_tmp_var (TREE_TYPE (av.value),
+					     "removed_ipa_cp");
+		      gimple *init_stmt = gimple_build_assign (repl, av.value);
+		      m_split_agg_csts_inits.safe_push (init_stmt);
+		    }
+		  register_replacement (m_oparms[parm_num], av.unit_offset,
+					repl);
+		  split[parm_num] = true;
+		}
+	    }
+	}
+    }
+  sort_replacements ();
+
   if (tree_map)
     {
       /* Do not treat parameters which were replaced with a constant as
 	 completely vanished.  */
-      auto_vec <int, 16> index_mapping;
-      bool need_remap = false;
-
-      if (m_id)
-	{
-	  clone_info *cinfo = clone_info::get (m_id->src_node);
-	  if (cinfo && cinfo->param_adjustments)
-	    {
-	      cinfo->param_adjustments->get_updated_indices (&index_mapping);
-	      need_remap = true;
-	    }
-	}
-
       for (unsigned i = 0; i < tree_map->length (); i++)
 	{
 	  int parm_num = (*tree_map)[i]->parm_num;
@@ -1473,8 +1535,9 @@ ipa_param_body_adjustments
   : m_adj_params (adj_params), m_adjustments (NULL), m_reset_debug_decls (),
     m_dead_stmts (), m_dead_ssas (), m_dead_ssa_debug_equiv (),
     m_dead_stmt_debug_equiv (), m_fndecl (fndecl), m_id (NULL), m_oparms (),
-    m_new_decls (), m_new_types (), m_replacements (), m_removed_decls (),
-    m_removed_map (), m_method2func (false)
+    m_new_decls (), m_new_types (), m_replacements (),
+    m_split_agg_csts_inits (), m_removed_decls (), m_removed_map (),
+    m_method2func (false), m_sorted_replacements_p (true)
 {
   common_initialization (fndecl, NULL, NULL);
 }
@@ -1491,7 +1554,8 @@ ipa_param_body_adjustments
     m_reset_debug_decls (), m_dead_stmts (), m_dead_ssas (),
     m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (), m_fndecl (fndecl),
     m_id (NULL), m_oparms (), m_new_decls (), m_new_types (), m_replacements (),
-    m_removed_decls (), m_removed_map (), m_method2func (false)
+    m_split_agg_csts_inits (), m_removed_decls (), m_removed_map (),
+    m_method2func (false), m_sorted_replacements_p (true)
 {
   common_initialization (fndecl, NULL, NULL);
 }
@@ -1514,7 +1578,8 @@ ipa_param_body_adjustments
     m_reset_debug_decls (), m_dead_stmts (), m_dead_ssas (),
     m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (), m_fndecl (fndecl),
     m_id (id), m_oparms (), m_new_decls (), m_new_types (), m_replacements (),
-    m_removed_decls (), m_removed_map (), m_method2func (false)
+    m_split_agg_csts_inits (), m_removed_decls (), m_removed_map (),
+    m_method2func (false), m_sorted_replacements_p (true)
 {
   common_initialization (old_fndecl, vars, tree_map);
 }
@@ -1585,16 +1650,49 @@ ipa_param_body_replacement *
 ipa_param_body_adjustments::lookup_replacement_1 (tree base,
 						  unsigned unit_offset)
 {
-  unsigned int len = m_replacements.length ();
-  for (unsigned i = 0; i < len; i++)
-    {
-      ipa_param_body_replacement *pbr = &m_replacements[i];
+  gcc_assert (m_sorted_replacements_p);
+  ipa_param_body_replacement key;
+  key.base = base;
+  key.unit_offset = unit_offset;
+  ipa_param_body_replacement *res
+    = std::lower_bound (m_replacements.begin (), m_replacements.end (), key,
+			[] (const ipa_param_body_replacement &elt,
+			    const ipa_param_body_replacement &val)
+			{
+			  return (compare_param_body_replacement (&elt, &val)
+				  < 0);
+			});
 
-      if (pbr->base == base
-	  && (pbr->unit_offset == unit_offset))
-	return pbr;
-    }
-  return NULL;
+  if (res == m_replacements.end ()
+      || res->base != base
+      || res->unit_offset != unit_offset)
+    return NULL;
+  return res;
+}
+
+/* Find the first replacement for BASE among m_replacements and return pointer
+   to it, or NULL if there is none.  */
+
+ipa_param_body_replacement *
+ipa_param_body_adjustments::lookup_first_base_replacement (tree base)
+{
+  gcc_assert (m_sorted_replacements_p);
+  ipa_param_body_replacement key;
+  key.base = base;
+  ipa_param_body_replacement *res
+    = std::lower_bound (m_replacements.begin (), m_replacements.end (), key,
+			[] (const ipa_param_body_replacement &elt,
+			    const ipa_param_body_replacement &val)
+			{
+			  if (DECL_UID (elt.base) < DECL_UID (val.base))
+			    return true;
+			  return false;
+			});
+
+  if (res == m_replacements.end ()
+      || res->base != base)
+    return NULL;
+  return res;
 }
 
 /* Given BASE and UNIT_OFFSET, find the corresponding replacement expression
@@ -1731,6 +1829,8 @@ ipa_param_body_adjustments::modify_expression (tree *expr_p, bool convert)
 {
   tree expr = *expr_p;
 
+  if (m_replacements.is_empty ())
+    return false;
   if (TREE_CODE (expr) == BIT_FIELD_REF
       || TREE_CODE (expr) == IMAGPART_EXPR
       || TREE_CODE (expr) == REALPART_EXPR)
@@ -1778,7 +1878,7 @@ ipa_param_body_adjustments::modify_assignment (gimple *stmt,
   tree *lhs_p, *rhs_p;
   bool any;
 
-  if (!gimple_assign_single_p (stmt))
+  if (m_replacements.is_empty () || !gimple_assign_single_p (stmt))
     return false;
 
   rhs_p = gimple_assign_rhs1_ptr (stmt);
@@ -1964,6 +2064,7 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p,
   gcall *stmt = *stmt_p;
   unsigned nargs = gimple_call_num_args (stmt);
   bool recreate = false;
+  gcc_assert (m_sorted_replacements_p);
 
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
@@ -1996,19 +2097,11 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p,
       if (TREE_CODE (base) != PARM_DECL)
 	continue;
 
-      bool base_among_replacements = false;
-      unsigned j, repl_list_len = m_replacements.length ();
-      for (j = 0; j < repl_list_len; j++)
-	{
-	  ipa_param_body_replacement *pbr = &m_replacements[j];
-	  if (pbr->base == base)
-	    {
-	      base_among_replacements = true;
-	      break;
-	    }
-	}
-      if (!base_among_replacements)
+      ipa_param_body_replacement *first_rep
+	= lookup_first_base_replacement (base);
+      if (!first_rep)
 	continue;
+      unsigned first_rep_index = first_rep - m_replacements.begin ();
 
       /* We still have to distinguish between an end-use that we have to
 	 transform now and a pass-through, which happens in the following
@@ -2027,7 +2120,7 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p,
 	  recreate = true;
 	  gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
 	  pass_through_args.safe_push (i);
-	  pass_through_pbr_indices.safe_push (j);
+	  pass_through_pbr_indices.safe_push (first_rep_index);
 	  pass_through_offsets.safe_push (agg_arg_offset);
 	}
       else if (!by_ref && AGGREGATE_TYPE_P (TREE_TYPE (t)))
@@ -2045,7 +2138,7 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p,
 	    {
 	      recreate = true;
 	      pass_through_args.safe_push (i);
-	      pass_through_pbr_indices.safe_push (j);
+	      pass_through_pbr_indices.safe_push (first_rep_index);
 	      pass_through_offsets.safe_push (agg_arg_offset);
 	    }
 	}
@@ -2382,6 +2475,16 @@ ipa_param_body_adjustments::perform_cfun_body_modifications ()
   return cfg_changed;
 }
 
+
+/* If there are any initialization statements that need to be emitted into
+   the basic block BB right at ther start of the new function, do so.  */
+void
+ipa_param_body_adjustments::append_init_stmts (basic_block bb)
+{
+  gimple_stmt_iterator si = gsi_last_bb (bb);
+  while (!m_split_agg_csts_inits.is_empty ())
+    gsi_insert_after (&si, m_split_agg_csts_inits.pop (), GSI_NEW_STMT);
+}
 
 /* Deallocate summaries which otherwise stay alive until the end of
    compilation.  */

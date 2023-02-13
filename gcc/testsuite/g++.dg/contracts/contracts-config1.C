@@ -24,13 +24,23 @@ int main(int, char **)
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*main false default default 1.*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*main false default default 1.*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*main false audit default 1.*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*main false default new_role 1.*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*main false default new_role 1.*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*main false audit new_role 1.*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*main false   1.*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*main false default default 1.*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*main false audit default 1.*(\n|\r\n|\r)*" }
-
+// { dg-output {contract violation in function main at .*:14: false(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:15: false(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:16: false(\n|\r\n|\r)} }
+// { dg-output {\[level:audit, continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:17: false(\n|\r\n|\r)} }
+// { dg-output {\[role:new_role, continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:18: false(\n|\r\n|\r)} }
+// { dg-output {\[role:new_role, continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:19: false(\n|\r\n|\r)} }
+// { dg-output {\[level:audit, role:new_role, continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:20: false(\n|\r\n|\r)} }
+// { dg-output {\[level:, role:, continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:21: false(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function main at .*:22: false(\n|\r\n|\r)} }
+// { dg-output {\[level:audit, continue:on\](\n|\r\n|\r)} }
+// { dg-output {contract violation in function fun at .*:7: r > 0(\n|\r\n|\r)} }
+// { dg-output {\[continue:on\](\n|\r\n|\r)} }

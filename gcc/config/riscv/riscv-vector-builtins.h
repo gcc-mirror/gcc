@@ -1,5 +1,5 @@
 /* Builtins definitions for RISC-V 'V' Extension for GNU compiler.
-   Copyright (C) 2022-2022 Free Software Foundation, Inc.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
    Contributed by Ju-Zhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
    This file is part of GCC.
@@ -147,6 +147,10 @@ enum rvv_base_type
   RVV_BASE_ptrdiff,
   RVV_BASE_unsigned_long,
   RVV_BASE_long,
+  RVV_BASE_uint8_index,
+  RVV_BASE_uint16_index,
+  RVV_BASE_uint32_index,
+  RVV_BASE_uint64_index,
   NUM_BASE_TYPES
 };
 
@@ -176,6 +180,7 @@ struct rvv_arg_type_info
   {}
   enum rvv_base_type base_type;
 
+  vector_type_index get_base_vector_type (tree type) const;
   tree get_tree_type (vector_type_index) const;
 };
 
@@ -264,10 +269,13 @@ public:
   ~function_builder ();
 
   void allocate_argument_types (const function_instance &, vec<tree> &) const;
+  void apply_predication (const function_instance &, tree, vec<tree> &) const;
   void add_unique_function (const function_instance &, const function_shape *,
 			    tree, vec<tree> &);
   void register_function_group (const function_group_info &);
   void append_name (const char *);
+  void append_base_name (const char *);
+  void append_sew (int);
   char *finish_name ();
 
 private:
@@ -314,7 +322,19 @@ public:
   rtx expand ();
 
   void add_input_operand (machine_mode, rtx);
-  void add_input_operand (unsigned argno);
+  void add_input_operand (unsigned);
+  void add_output_operand (machine_mode, rtx);
+  void add_all_one_mask_operand (machine_mode);
+  void add_vundef_operand (machine_mode);
+  void add_fixed_operand (rtx);
+  void add_mem_operand (machine_mode, unsigned);
+
+  machine_mode vector_mode (void) const;
+  machine_mode index_mode (void) const;
+
+  rtx use_exact_insn (insn_code);
+  rtx use_contiguous_load_insn (insn_code);
+  rtx use_contiguous_store_insn (insn_code);
   rtx generate_insn (insn_code);
 
   /* The function call expression.  */
@@ -341,6 +361,18 @@ public:
   /* Return a set of CP_* flags that describe what the function might do,
      in addition to reading its arguments and returning a result.  */
   virtual unsigned int call_properties (const function_instance &) const;
+
+  /* Return true if intrinsics should apply vl operand.  */
+  virtual bool apply_vl_p () const;
+
+  /* Return true if intrinsics should apply tail policy operand.  */
+  virtual bool apply_tail_policy_p () const;
+
+  /* Return true if intrinsics should apply mask policy operand.  */
+  virtual bool apply_mask_policy_p () const;
+
+  /* Return true if intrinsic can be overloaded.  */
+  virtual bool can_be_overloaded_p (enum predication_type_index) const;
 
   /* Expand the given call into rtl.  Return the result of the function,
      or an arbitrary value if the function doesn't return a result.  */
@@ -394,6 +426,44 @@ function_expander::add_input_operand (machine_mode mode, rtx op)
   create_input_operand (&m_ops[opno++], op, mode);
 }
 
+/* Create output and add it into M_OPS and increase OPNO.  */
+inline void
+function_expander::add_output_operand (machine_mode mode, rtx target)
+{
+  create_output_operand (&m_ops[opno++], target, mode);
+}
+
+/* Since we may normalize vop/vop_tu/vop_m/vop_tumu.. into a single patter.
+   We add a fake all true mask for the intrinsics that don't need a real mask.
+ */
+inline void
+function_expander::add_all_one_mask_operand (machine_mode mode)
+{
+  add_input_operand (mode, CONSTM1_RTX (mode));
+}
+
+/* Add an operand that must be X.  The only way of legitimizing an
+   invalid X is to reload the address of a MEM.  */
+inline void
+function_expander::add_fixed_operand (rtx x)
+{
+  create_fixed_operand (&m_ops[opno++], x);
+}
+
+/* Return the machine_mode of the corresponding vector type.  */
+inline machine_mode
+function_expander::vector_mode (void) const
+{
+  return TYPE_MODE (builtin_types[type.index].vector);
+}
+
+/* Return the machine_mode of the corresponding index type.  */
+inline machine_mode
+function_expander::index_mode (void) const
+{
+  return TYPE_MODE (op_info->args[1].get_tree_type (type.index));
+}
+
 /* Default implementation of function_base::call_properties, with conservatively
    correct behavior for floating-point instructions.  */
 inline unsigned int
@@ -403,6 +473,37 @@ function_base::call_properties (const function_instance &instance) const
   if (instance.any_type_float_p ())
     return flags | CP_READ_FPCR | CP_RAISE_FP_EXCEPTIONS;
   return flags;
+}
+
+/* We choose to apply vl operand by default since most of the intrinsics
+   has vl operand.  */
+inline bool
+function_base::apply_vl_p () const
+{
+  return true;
+}
+
+/* We choose to apply tail policy operand by default since most of the
+   intrinsics has tail policy operand.  */
+inline bool
+function_base::apply_tail_policy_p () const
+{
+  return true;
+}
+
+/* We choose to apply mask policy operand by default since most of the
+   intrinsics has mask policy operand.  */
+inline bool
+function_base::apply_mask_policy_p () const
+{
+  return true;
+}
+
+/* Since most of intrinsics can be overloaded, we set it true by default.  */
+inline bool
+function_base::can_be_overloaded_p (enum predication_type_index) const
+{
+  return true;
 }
 
 } // end namespace riscv_vector

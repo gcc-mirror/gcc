@@ -1,3 +1,49 @@
+2023-01-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_declaration_or_fndef): Do not allow braces
+	around auto initializer.
+
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105593
+	* c-parser.cc (c_parser_initializer): Check warning_enabled_at
+	at the DECL_SOURCE_LOCATION (decl) for OPT_Winit_self instead
+	of warn_init_self.
+
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* c-typeck.cc (build_binary_op): Use may_shorten_divmod for integral
+	division or modulo.
+
+2023-01-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (strict_flex_array_level_of): ... here.
+
+2023-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105972
+	* c-parser.cc (c_parser_declaration_or_fndef): Disable debug non-bind
+	markers for K&R function parameter declarations of nested functions.
+
+2023-01-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (build_compound_literal): Call record_inline_static.
+
+2023-01-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_postfix_expression): Handle integer
+	generic arguments to functions passed to __builtin_tgmath as
+	_Float32x if any argument has _FloatNx or _Complex _FloatNx type.
+	Do not handle integer arguments to some narrowing functions as
+	_Float64.
+
+2022-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108043
+	* c-parser.cc (c_parser_postfix_expression_after_paren_type): Diagnose
+	compound literals with function type.
+
 2022-12-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (declspecs_add_type, declspecs_add_scspec): Check for
@@ -8976,7 +9022,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2022 Free Software Foundation, Inc.
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

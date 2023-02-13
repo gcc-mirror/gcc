@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2022 Free Software Foundation, Inc.
+// Copyright (C) 2012-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,7 +60,7 @@ void test02()
 template<typename T>
 struct A2 : std::allocator<T>
 {
-  template<typename U> struct rebind { typedef A1<U> other; };
+  template<typename U> struct rebind { typedef A2<U> other; };
 
   A2() = default;
   template<typename U> A2(const A2<U>&) { }

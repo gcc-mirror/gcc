@@ -1,7 +1,7 @@
 /* An experimental state machine, for tracking "taint": unsanitized uses
    of data potentially under an attacker's control.
 
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -1547,6 +1547,31 @@ region_model::mark_as_tainted (const svalue *sval,
     return;
 
   smap->set_state (this, sval, taint_sm.m_tainted, NULL, *ext_state);
+}
+
+/* Return true if SVAL could possibly be attacker-controlled.  */
+
+bool
+region_model_context::possibly_tainted_p (const svalue *sval)
+{
+  sm_state_map *smap;
+  const state_machine *sm;
+  unsigned sm_idx;
+  if (!get_taint_map (&smap, &sm, &sm_idx))
+      return false;
+
+  const taint_state_machine &taint_sm = (const taint_state_machine &)*sm;
+
+  const extrinsic_state *ext_state = get_ext_state ();
+  if (!ext_state)
+    return false;
+
+  const state_machine::state_t state = smap->get_state (sval, *ext_state);
+  gcc_assert (state);
+
+  return (state == taint_sm.m_tainted
+	  || state == taint_sm.m_has_lb
+	  || state == taint_sm.m_has_ub);
 }
 
 } // namespace ana

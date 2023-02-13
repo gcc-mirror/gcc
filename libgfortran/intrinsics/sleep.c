@@ -1,5 +1,5 @@
 /* Implementation of the SLEEP intrinsic.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -30,6 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #ifdef __MINGW32__
+# define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # undef sleep
 # define sleep(x) Sleep(1000*(x))

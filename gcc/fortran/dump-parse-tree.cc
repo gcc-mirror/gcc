@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -894,7 +894,7 @@ show_attr (symbol_attribute *attr, const char * module)
   if (attr->pdt_string)
     fputs (" PDT-STRING", dumpfile);
   if (attr->omp_udr_artificial_var)
-    fputs (" OMP-UDT-ARTIFICIAL-VAR", dumpfile);
+    fputs (" OMP-UDR-ARTIFICIAL-VAR", dumpfile);
   if (attr->omp_declare_target)
     fputs (" OMP-DECLARE-TARGET", dumpfile);
   if (attr->omp_declare_target_link)

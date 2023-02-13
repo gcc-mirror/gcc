@@ -1,5 +1,5 @@
 /* Implementation of the EXECUTE_COMMAND_LINE intrinsic.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -144,6 +144,11 @@ execute_command_line (const char *command, bool wait, int *exitstat,
 #if defined(WEXITSTATUS) && defined(WIFEXITED)
 	       || (WIFEXITED(res) && WEXITSTATUS(res) == 127)
 	       || (WIFEXITED(res) && WEXITSTATUS(res) == 126)
+#endif
+#ifdef __MINGW32__
+		  /* cmd.exe sets the errorlevel to 9009,
+		     if the command could not be executed.  */
+		|| res == 9009
 #endif
 	       )
 	/* Shell return codes 126 and 127 mean that the command line could

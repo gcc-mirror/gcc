@@ -1,5 +1,5 @@
 ;; Arm M-profile Vector Extension Machine Description
-;; Copyright (C) 2019-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2019-2023 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -99,7 +99,7 @@
 ;; [vst4q])
 ;;
 (define_insn "mve_vst4q<mode>"
-  [(set (match_operand:XI 0 "neon_struct_operand" "=Um")
+  [(set (match_operand:XI 0 "mve_struct_operand" "=Ug")
 	(unspec:XI [(match_operand:XI 1 "s_register_operand" "w")
 		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VST4Q))
@@ -252,7 +252,7 @@
 	(neg:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vneg.f%#<V_sz_elem>  %q0, %q1"
+  "vneg.f%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -374,7 +374,7 @@
 	 VQNEGQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vqneg.s%#<V_sz_elem> %q0, %q1"
+  "vqneg.s%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -388,7 +388,7 @@
 	 VQABSQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vqabs.s%#<V_sz_elem> %q0, %q1"
+  "vqabs.s%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -401,7 +401,7 @@
 	(neg:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vneg.s%#<V_sz_elem>  %q0, %q1"
+  "vneg.s%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -448,7 +448,7 @@
 	(clz:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vclz.i%#<V_sz_elem>  %q0, %q1"
+  "vclz.i%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 (define_expand "mve_vclzq_u<mode>"
@@ -469,7 +469,7 @@
 	 VCLSQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vcls.s%#<V_sz_elem>  %q0, %q1"
+  "vcls.s%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -7272,15 +7272,13 @@
 }
   [(set_attr "length" "8")])
 
-;;
-;; [vstrbq_p_s vstrbq_p_u]
-;;
 (define_insn "mve_vstrbq_p_<supf><mode>"
   [(set (match_operand:<MVE_B_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_B_ELEM> [(match_operand:MVE_2 1 "s_register_operand" "w")
-			      (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
-	 VSTRBQ))
-  ]
+	(unspec:<MVE_B_ELEM>
+	 [(match_operand:MVE_2 1 "s_register_operand" "w")
+	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
+	 VSTRBQ))]
   "TARGET_HAVE_MVE"
 {
    rtx ops[2];
@@ -8079,10 +8077,11 @@
 ;;
 (define_insn "mve_vstrhq_p_fv8hf"
   [(set (match_operand:V8HI 0 "mve_memory_operand" "=Ux")
-	(unspec:V8HI [(match_operand:V8HF 1 "s_register_operand" "w")
-		      (match_operand:V8BI 2 "vpr_register_operand" "Up")]
-	 VSTRHQ_F))
-  ]
+	(unspec:V8HI
+	 [(match_operand:V8HF 1 "s_register_operand" "w")
+	  (match_operand:V8BI 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
+	 VSTRHQ_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
    rtx ops[2];
@@ -8099,8 +8098,10 @@
 ;;
 (define_insn "mve_vstrhq_p_<supf><mode>"
   [(set (match_operand:<MVE_H_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_H_ELEM> [(match_operand:MVE_6 1 "s_register_operand" "w")
-			      (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
+	(unspec:<MVE_H_ELEM>
+	 [(match_operand:MVE_6 1 "s_register_operand" "w")
+	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
 	 VSTRHQ))
   ]
   "TARGET_HAVE_MVE"
@@ -8278,10 +8279,11 @@
 ;;
 (define_insn "mve_vstrwq_p_fv4sf"
   [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
-	(unspec:V4SI [(match_operand:V4SF 1 "s_register_operand" "w")
-		      (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
-	 VSTRWQ_F))
-  ]
+	(unspec:V4SI
+	 [(match_operand:V4SF 1 "s_register_operand" "w")
+	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
+	 VSTRWQ_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
    rtx ops[2];
@@ -8298,10 +8300,11 @@
 ;;
 (define_insn "mve_vstrwq_p_<supf>v4si"
   [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
-	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
-		      (match_operand:V4BI 2 "vpr_register_operand" "Up")]
-	 VSTRWQ))
-  ]
+	(unspec:V4SI
+	 [(match_operand:V4SI 1 "s_register_operand" "w")
+	  (match_operand:V4BI 2 "vpr_register_operand" "Up")
+	  (match_dup 0)]
+	 VSTRWQ))]
   "TARGET_HAVE_MVE"
 {
    rtx ops[2];
@@ -9961,7 +9964,7 @@
 ;; [vst2q])
 ;;
 (define_insn "mve_vst2q<mode>"
-  [(set (match_operand:OI 0 "neon_struct_operand" "=Um")
+  [(set (match_operand:OI 0 "mve_struct_operand" "=Ug")
 	(unspec:OI [(match_operand:OI 1 "s_register_operand" "w")
 		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VST2Q))
@@ -9990,7 +9993,7 @@
 ;;
 (define_insn "mve_vld2q<mode>"
   [(set (match_operand:OI 0 "s_register_operand" "=w")
-	(unspec:OI [(match_operand:OI 1 "neon_struct_operand" "Um")
+	(unspec:OI [(match_operand:OI 1 "mve_struct_operand" "Ug")
 		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VLD2Q))
   ]
@@ -10018,7 +10021,7 @@
 ;;
 (define_insn "mve_vld4q<mode>"
   [(set (match_operand:XI 0 "s_register_operand" "=w")
-	(unspec:XI [(match_operand:XI 1 "neon_struct_operand" "Um")
+	(unspec:XI [(match_operand:XI 1 "mve_struct_operand" "Ug")
 		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VLD4Q))
   ]

@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2022 Free Software Foundation, Inc.
+# Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -580,7 +580,7 @@ ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wstrict-prototypes -Wmissing-prototypes ],
 		       [])), [c_loose_warn])
 ACX_PROG_CXX_WARNING_OPTS(
-	m4_quote(m4_do([-Wmissing-format-attribute ],
+	m4_quote(m4_do([-Wmissing-format-attribute ], [-Wconditionally-supported ],
 		       [-Woverloaded-virtual])), [strict_warn])
 ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wold-style-definition -Wc++-compat])), [c_strict_warn])
@@ -1262,6 +1262,20 @@ AC_CHECK_PROGS([FLEX], flex, [$MISSING flex])
 
 # Bison?
 AC_CHECK_PROGS([BISON], bison, [$MISSING bison])
+
+# Python3?
+ACX_CHECK_PROG_VER(PYTHON, python3, --version,
+  [Python.* \([0-9][0-9.]*\)],
+  [3.[4-9]*|3.[1-9][0-9]*|[4-9].*|[1-9][0-9]*])
+if test $gcc_cv_prog_python3_modern = no; then
+  AC_MSG_WARN([
+*** Python3 is missing.
+*** Documentation for modula-2 will not include the target SYSTEM module.])
+  HAVE_PYTHON=no
+else
+  HAVE_PYTHON=yes
+fi
+AC_SUBST(HAVE_PYTHON)
 
 # Binutils are not build modules, unlike bison/flex/makeinfo.  So we
 # check for build == host before using them.
@@ -3332,7 +3346,7 @@ gcc_GAS_CHECK_FEATURE([cfi sections directive],
     gcc_cv_as_cfi_sections_directive=no
     if test "x$gcc_cv_objdump" != x; then
      if $gcc_cv_objdump -j .debug_frame -r conftest.o 2>/dev/null | \
-	grep secrel > /dev/null; then
+	grep -i secrel > /dev/null; then
       gcc_cv_as_cfi_sections_directive=yes
      fi
     fi
@@ -7665,4 +7679,3 @@ done
 ], 
 [subdirs='$subdirs'])
 AC_OUTPUT
-

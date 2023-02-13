@@ -1,5 +1,5 @@
 /* Subclasses of diagnostic_event for analyzer diagnostics.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -357,7 +357,8 @@ public:
 		      state_machine::state_t from,
 		      state_machine::state_t to,
 		      const svalue *origin,
-		      const program_state &dst_state);
+		      const program_state &dst_state,
+		      const exploded_node *enode);
 
   label_text get_desc (bool can_colorize) const final override;
   meaning get_meaning () const override;
@@ -367,6 +368,8 @@ public:
     return m_dst_state.get_current_function ();
   }
 
+  const exploded_node *get_exploded_node () const { return m_enode; }
+
   const supernode *m_node;
   const gimple *m_stmt;
   const state_machine &m_sm;
@@ -375,6 +378,7 @@ public:
   state_machine::state_t m_to;
   const svalue *m_origin;
   program_state m_dst_state;
+  const exploded_node *m_enode;
 };
 
 /* Subclass of checker_event; parent class for subclasses that relate to
@@ -668,9 +672,11 @@ class warning_event : public checker_event
 {
 public:
   warning_event (const event_loc_info &loc_info,
+		 const exploded_node *enode,
 		 const state_machine *sm,
 		 tree var, state_machine::state_t state)
   : checker_event (EK_WARNING, loc_info),
+    m_enode (enode),
     m_sm (sm), m_var (var), m_state (state)
   {
   }
@@ -678,7 +684,10 @@ public:
   label_text get_desc (bool can_colorize) const final override;
   meaning get_meaning () const override;
 
+  const exploded_node *get_exploded_node () const { return m_enode; }
+
 private:
+  const exploded_node *m_enode;
   const state_machine *m_sm;
   tree m_var;
   state_machine::state_t m_state;

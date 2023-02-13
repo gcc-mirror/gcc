@@ -1,5 +1,5 @@
 ;; Machine Description for TI PRU.
-;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2023 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;; Based on the NIOS2 GCC port.
 ;;
@@ -1723,8 +1723,16 @@
   [(set_attr "type" "control")])
 
 ;; Count Leading Zeros implemented using LMBD.
-;; LMBD returns 32 if bit value is not present, and we subtract 31 to get CLZ.
-;; Hence we get a defined value -1 for CLZ_DEFINED_VALUE_AT_ZERO.
+;;
+;; LMBD returns 32 if bit value is not present, for any kind of input MODE.
+;; The LMBD's search result for a "1" bit is subtracted from the
+;; mode bit size minus one, in order to get CLZ.
+;;
+;; Hence for SImode we get a defined value -1 for CLZ_DEFINED_VALUE_AT_ZERO.
+;;
+;; The QImode and HImode defined values for zero inputs end up to be
+;; non-standard (-25 and -17).  But this is considered acceptable in
+;; order to keep the CLZ expansion to only two instructions.
 (define_expand "clz<mode>2"
   [(set (match_operand:QISI 0 "register_operand")
 	(clz:QISI (match_operand:QISI 1 "register_operand")))]
@@ -1735,7 +1743,8 @@
   rtx tmpval = gen_reg_rtx (<MODE>mode);
 
   emit_insn (gen_pru_lmbd (<MODE>mode, tmpval, src, const1_rtx));
-  emit_insn (gen_sub3_insn (dst, GEN_INT (31), tmpval));
+  int msb_bitn = GET_MODE_BITSIZE (<MODE>mode) - 1;
+  emit_insn (gen_sub3_insn (dst, GEN_INT (msb_bitn), tmpval));
   DONE;
 })
 

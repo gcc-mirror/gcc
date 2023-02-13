@@ -1,5 +1,5 @@
 /* DWARF2 frame unwind data structure.
-   Copyright (C) 1997-2022 Free Software Foundation, Inc.
+   Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -29,6 +29,7 @@ enum {
   REG_SAVED_EXP,
   REG_SAVED_VAL_OFFSET,
   REG_SAVED_VAL_EXP,
+  REG_UNSAVED_ARCHEXT,		/* Target specific extension.  */
   REG_UNDEFINED
 };
 

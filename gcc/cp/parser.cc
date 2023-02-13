@@ -1,5 +1,5 @@
 /* -*- C++ -*- Parser.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -705,7 +705,7 @@ cp_lexer_new_main (void)
   /* It's possible that parsing the first pragma will load a PCH file,
      which is a GC collection point.  So we have to do that before
      allocating any memory.  */
-  cp_lexer_get_preprocessor_token (0, &token);
+  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, &token);
   cp_parser_initial_pragma (&token);
   c_common_no_more_pch ();
 
@@ -2227,16 +2227,8 @@ pop_unparsed_function_queues (cp_parser *parser)
 
 /* Lexical conventions [gram.lex]  */
 
-static cp_expr cp_parser_identifier
-  (cp_parser *);
-static cp_expr cp_parser_string_literal
-  (cp_parser *, bool, bool, bool);
-static cp_expr cp_parser_userdef_char_literal
-  (cp_parser *);
-static tree cp_parser_userdef_string_literal
+static tree finish_userdef_string_literal
   (tree);
-static cp_expr cp_parser_userdef_numeric_literal
-  (cp_parser *);
 
 /* Basic concepts [gram.basic]  */
 
@@ -4408,11 +4400,15 @@ cp_parser_identifier (cp_parser* parser)
     return error_mark_node;
 }
 
-/* Parse a sequence of adjacent string constants.  Returns a
+/* Worker for cp_parser_string_literal and cp_parser_userdef_string_literal.
+   Do not call this directly; use either of the above.
+
+   Parse a sequence of adjacent string constants.  Return a
    TREE_STRING representing the combined, nul-terminated string
    constant.  If TRANSLATE is true, translate the string to the
    execution character set.  If WIDE_OK is true, a wide string is
-   invalid here.
+   valid here.  If UDL_OK is true, a string literal with user-defined
+   suffix can be used in this context.
 
    C++98 [lex.string] says that if a narrow string literal token is
    adjacent to a wide string literal token, the behavior is undefined.
@@ -4422,9 +4418,11 @@ cp_parser_identifier (cp_parser* parser)
    This code is largely lifted from lex_string() in c-lex.cc.
 
    FUTURE: ObjC++ will need to handle @-strings here.  */
+
 static cp_expr
-cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
-			  bool lookup_udlit = true)
+cp_parser_string_literal_common (cp_parser *parser, bool translate,
+				 bool wide_ok, bool udl_ok,
+				 bool lookup_udlit)
 {
   tree value;
   size_t count;
@@ -4449,6 +4447,12 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 
   if (cpp_userdef_string_p (tok->type))
     {
+      if (!udl_ok)
+	{
+	  error_at (loc, "string literal with user-defined suffix "
+		    "is invalid in this context");
+	  return error_mark_node;
+	}
       string_tree = USERDEF_LITERAL_VALUE (tok->u.value);
       curr_type = cpp_userdef_string_remove_type (tok->type);
       curr_tok_is_userdef_p = true;
@@ -4539,6 +4543,12 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 	  tok = cp_lexer_peek_token (parser->lexer);
 	  if (cpp_userdef_string_p (tok->type))
 	    {
+	      if (!udl_ok)
+		{
+		  error_at (loc, "string literal with user-defined suffix "
+			    "is invalid in this context");
+		  return error_mark_node;
+		}
 	      string_tree = USERDEF_LITERAL_VALUE (tok->u.value);
 	      curr_type = cpp_userdef_string_remove_type (tok->type);
 	      curr_tok_is_userdef_p = true;
@@ -4608,7 +4618,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 	  tree literal = build_userdef_literal (suffix_id, value,
 						OT_NONE, NULL_TREE);
 	  if (lookup_udlit)
-	    value = cp_parser_userdef_string_literal (literal);
+	    value = finish_userdef_string_literal (literal);
 	  else
 	    value = literal;
 	}
@@ -4624,6 +4634,37 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
     }
 
   return cp_expr (value, loc);
+}
+
+/* Parse a sequence of adjacent string constants.  Return a TREE_STRING
+   representing the combined, nul-terminated string constant.  If
+   TRANSLATE is true, translate the string to the execution character set.
+   If WIDE_OK is true, a wide string is valid here.
+
+   This function issues an error if a user defined string literal is
+   encountered; use cp_parser_userdef_string_literal if UDLs are allowed.  */
+
+static inline cp_expr
+cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
+{
+  return cp_parser_string_literal_common (parser, translate, wide_ok,
+					  /*udl_ok=*/false,
+					  /*lookup_udlit=*/false);
+}
+
+/* Parse a string literal or user defined string literal.
+
+   user-defined-string-literal :
+     string-literal ud-suffix
+
+   If LOOKUP_UDLIT, perform a lookup for a suitable template function.  */
+
+static inline cp_expr
+cp_parser_userdef_string_literal (cp_parser *parser, bool lookup_udlit)
+{
+  return cp_parser_string_literal_common (parser, /*translate=*/true,
+					  /*wide_ok=*/true, /*udl_ok=*/true,
+					  lookup_udlit);
 }
 
 /* Look up a literal operator with the name and the exact arguments.  */
@@ -4923,7 +4964,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
    as arguments.  */
 
 static tree
-cp_parser_userdef_string_literal (tree literal)
+finish_userdef_string_literal (tree literal)
 {
   tree suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
@@ -5663,10 +5704,15 @@ cp_parser_primary_expression (cp_parser *parser,
       /* ??? Should wide strings be allowed when parser->translate_strings_p
 	 is false (i.e. in attributes)?  If not, we can kill the third
 	 argument to cp_parser_string_literal.  */
-      return (cp_parser_string_literal (parser,
-					parser->translate_strings_p,
-					true)
-	      .maybe_add_location_wrapper ());
+      if (parser->translate_strings_p)
+	return (cp_parser_userdef_string_literal (parser,
+						  /*lookup_udlit=*/true)
+		.maybe_add_location_wrapper ());
+      else
+	return (cp_parser_string_literal (parser,
+					  /*translate=*/false,
+					  /*wide_ok=*/true)
+		.maybe_add_location_wrapper ());
 
     case CPP_OPEN_PAREN:
       /* If we see `( { ' then we are looking at the beginning of
@@ -10224,7 +10270,10 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 		      || (TREE_CODE (TREE_TYPE (TREE_OPERAND (current.lhs, 0)))
 			  != BOOLEAN_TYPE))))
 	  /* Avoid warning for !!b == y where b is boolean.  */
-	  && (!DECL_P (tree_strip_any_location_wrapper (current.lhs))
+	  && (!(DECL_P (tree_strip_any_location_wrapper (current.lhs))
+		|| (TREE_CODE (current.lhs) == NON_LVALUE_EXPR
+		    && DECL_P (tree_strip_any_location_wrapper
+					    (TREE_OPERAND (current.lhs, 0)))))
 	      || TREE_TYPE (current.lhs) == NULL_TREE
 	      || TREE_CODE (TREE_TYPE (current.lhs)) != BOOLEAN_TYPE))
 	warn_logical_not_parentheses (current.loc, current.tree_type,
@@ -16219,15 +16268,14 @@ cp_parser_function_specifier_opt (cp_parser* parser,
 static void
 cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
 {
-  tree linkage;
-
   /* Look for the `extern' keyword.  */
   cp_token *extern_token
     = cp_parser_require_keyword (parser, RID_EXTERN, RT_EXTERN);
 
   /* Look for the string-literal.  */
   cp_token *string_token = cp_lexer_peek_token (parser->lexer);
-  linkage = cp_parser_string_literal (parser, false, false);
+  tree linkage = cp_parser_string_literal (parser, /*translate=*/false,
+					   /*wide_ok=*/false);
 
   /* Transform the literal into an identifier.  If the literal is a
      wide-character string, or contains embedded NULs, then we can't
@@ -16357,9 +16405,8 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
       cp_parser_require (parser, CPP_COMMA, RT_COMMA);
 
       /* Parse the string-literal message.  */
-      message = cp_parser_string_literal (parser,
-                                	  /*translate=*/false,
-                                	  /*wide_ok=*/true);
+      message = cp_parser_string_literal (parser, /*translate=*/false,
+					  /*wide_ok=*/true);
 
       /* A `)' completes the static assertion.  */
       if (!parens.require_close (parser))
@@ -17407,7 +17454,6 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
     case CPP_STRING16_USERDEF:
     case CPP_STRING32_USERDEF:
       {
-	cp_expr str;
 	tree string_tree;
 	int sz, len;
 
@@ -17415,8 +17461,8 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 	  maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
 
 	/* Consume the string.  */
-	str = cp_parser_string_literal (parser, /*translate=*/true,
-				      /*wide_ok=*/true, /*lookup_udlit=*/false);
+	cp_expr str = cp_parser_userdef_string_literal (parser,
+							/*lookup_udlit=*/false);
 	if (str == error_mark_node)
 	  return error_mark_node;
 	else if (TREE_CODE (str) == USERDEF_LITERAL)
@@ -21670,6 +21716,13 @@ cp_parser_using_declaration (cp_parser* parser,
 
   cp_warn_deprecated_use_scopes (qscope);
 
+  if (access_declaration_p
+      && !MAYBE_CLASS_TYPE_P (qscope)
+      && TREE_CODE (qscope) != ENUMERAL_TYPE)
+    /* If the qualifying scope of an access-declaration isn't a class
+       or enumeration type then it can't be valid.  */
+    cp_parser_simulate_error (parser);
+
   if (access_declaration_p && cp_parser_error_occurred (parser))
     /* Something has already gone wrong; there's no need to parse
        further.  Since an error has occurred, the return value of
@@ -21698,7 +21751,36 @@ cp_parser_using_declaration (cp_parser* parser,
 	pedwarn (ell->location, OPT_Wc__17_extensions,
 		 "pack expansion in using-declaration only available "
 		 "with %<-std=c++17%> or %<-std=gnu++17%>");
-      qscope = make_pack_expansion (qscope);
+
+      /* A parameter pack can appear in the qualifying scope, and/or in the
+	 terminal name (if naming a conversion function).  Logically they're
+	 part of a single pack expansion of the overall USING_DECL, but we
+	 express them as separate pack expansions within the USING_DECL since
+	 we can't create a pack expansion over a USING_DECL.  */
+      bool saw_parm_pack = false;
+      if (uses_parameter_packs (qscope))
+	{
+	  qscope = make_pack_expansion (qscope);
+	  saw_parm_pack = true;
+	}
+      if (identifier_p (identifier)
+	  && IDENTIFIER_CONV_OP_P (identifier)
+	  && uses_parameter_packs (TREE_TYPE (identifier)))
+	{
+	  identifier = make_conv_op_name (make_pack_expansion
+					  (TREE_TYPE (identifier)));
+	  saw_parm_pack = true;
+	}
+      if (!saw_parm_pack)
+	{
+	  /* Issue an error in terms using a SCOPE_REF that includes both
+	     components.  */
+	  tree name
+	    = build_qualified_name (NULL_TREE, qscope, identifier, false);
+	  make_pack_expansion (name);
+	  gcc_assert (seen_error ());
+	  qscope = identifier = error_mark_node;
+	}
     }
 
   /* The function we call to handle a using-declaration is different
@@ -22033,7 +22115,6 @@ cp_parser_using_directive (cp_parser* parser)
 static void
 cp_parser_asm_definition (cp_parser* parser)
 {
-  tree string;
   tree outputs = NULL_TREE;
   tree inputs = NULL_TREE;
   tree clobbers = NULL_TREE;
@@ -22141,7 +22222,8 @@ cp_parser_asm_definition (cp_parser* parser)
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return;
   /* Look for the string.  */
-  string = cp_parser_string_literal (parser, false, false);
+  tree string = cp_parser_string_literal (parser, /*translate=*/false,
+					  /*wide_ok=*/false);
   if (string == error_mark_node)
     {
       cp_parser_skip_to_closing_parenthesis (parser, true, false,
@@ -26520,7 +26602,23 @@ cp_parser_class_head (cp_parser* parser,
   if (cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false))
     qualified_p = true;
 
-  push_deferring_access_checks (dk_no_check);
+  /* It is OK to define an inaccessible class; for example:
+
+       class A { class B; };
+       class A::B {};
+
+     So we want to ignore access when parsing the class name.
+     However, we might be tentatively parsing what is really an
+     elaborated-type-specifier naming a template-id, e.g.
+
+       struct C<&D::m> c;
+
+     In this case the tentative parse as a class-head will fail, but not
+     before cp_parser_template_id splices in a CPP_TEMPLATE_ID token.
+     Since dk_no_check is sticky, we must instead use dk_deferred so that
+     any such CPP_TEMPLATE_ID token created during this tentative parse
+     will correctly capture the access checks imposed by the template-id . */
+  push_deferring_access_checks (dk_deferred);
 
   /* Determine the name of the class.  Begin by looking for an
      optional nested-name-specifier.  */
@@ -26546,11 +26644,6 @@ cp_parser_class_head (cp_parser* parser,
 
 	 The proposed resolution for Core Issue 180 says that wherever
 	 you see `class T::X' you should treat `X' as a type-name.
-
-	 It is OK to define an inaccessible class; for example:
-
-	   class A { class B; };
-	   class A::B {};
 
 	 We do not know if we will see a class-name, or a
 	 template-name.  We look for a class-name first, in case the
@@ -28605,11 +28698,8 @@ cp_parser_yield_expression (cp_parser* parser)
 static tree
 cp_parser_asm_specification_opt (cp_parser* parser)
 {
-  cp_token *token;
-  tree asm_specification;
-
   /* Peek at the next token.  */
-  token = cp_lexer_peek_token (parser->lexer);
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
   /* If the next token isn't the `asm' keyword, then there's no
      asm-specification.  */
   if (!cp_parser_is_keyword (token, RID_ASM))
@@ -28622,7 +28712,9 @@ cp_parser_asm_specification_opt (cp_parser* parser)
   parens.require_open (parser);
 
   /* Look for the string-literal.  */
-  asm_specification = cp_parser_string_literal (parser, false, false);
+  tree asm_specification = cp_parser_string_literal (parser,
+						     /*translate=*/false,
+						     /*wide_ok=*/false);
 
   /* Look for the `)'.  */
   parens.require_close (parser);
@@ -28655,8 +28747,6 @@ cp_parser_asm_operand_list (cp_parser* parser)
 
   while (true)
     {
-      tree string_literal;
-      tree expression;
       tree name;
 
       if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
@@ -28674,13 +28764,15 @@ cp_parser_asm_operand_list (cp_parser* parser)
       else
 	name = NULL_TREE;
       /* Look for the string-literal.  */
-      string_literal = cp_parser_string_literal (parser, false, false);
+      tree string_literal = cp_parser_string_literal (parser,
+						      /*translate=*/false,
+						      /*wide_ok=*/false);
 
       /* Look for the `('.  */
       matching_parens parens;
       parens.require_open (parser);
       /* Parse the expression.  */
-      expression = cp_parser_expression (parser);
+      tree expression = cp_parser_expression (parser);
       /* Look for the `)'.  */
       parens.require_close (parser);
 
@@ -28720,10 +28812,10 @@ cp_parser_asm_clobber_list (cp_parser* parser)
 
   while (true)
     {
-      tree string_literal;
-
       /* Look for the string literal.  */
-      string_literal = cp_parser_string_literal (parser, false, false);
+      tree string_literal = cp_parser_string_literal (parser,
+						      /*translate=*/false,
+						      /*wide_ok=*/false);
       /* Add it to the list.  */
       clobbers = tree_cons (NULL_TREE, string_literal, clobbers);
       /* If the next token is not a `,', then the list is
@@ -42989,6 +43081,7 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
 {
   tree begin, end, range_temp_decl = NULL_TREE;
   tree iter_type, begin_expr, end_expr;
+  bool clear_has_value_expr = false;
 
   if (processing_template_decl)
     {
@@ -43135,6 +43228,8 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
 	      ++processing_template_decl;
 	      cp_finish_decomp (orig_decl, decomp_first_name, decomp_cnt);
 	      --processing_template_decl;
+	      if (!processing_template_decl)
+		clear_has_value_expr = true;
 	    }
 	}
     }
@@ -43143,8 +43238,20 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
   TREE_VEC_ELT (v, 0) = range_temp_decl;
   TREE_VEC_ELT (v, 1) = end;
   TREE_VEC_ELT (v, 2) = orig_decl;
+  if (clear_has_value_expr)
+    TREE_PUBLIC (v) = 1;
   for (unsigned i = 0; i < decomp_cnt; i++)
     {
+      if (clear_has_value_expr)
+	{
+	  /* If cp_finish_decomp was called with processing_template_decl
+	     temporarily set to 1, then decomp names will have deduced
+	     name but the DECL_VALUE_EXPR will be dependent.  Hide those
+	     from folding of other loop initializers e.g. for warning
+	     purposes until cp_finish_omp_range_for.  */
+	  gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (decomp_first_name));
+	  DECL_HAS_VALUE_EXPR_P (decomp_first_name) = 0;
+	}
       TREE_VEC_ELT (v, i + 3) = decomp_first_name;
       decomp_first_name = DECL_CHAIN (decomp_first_name);
     }
@@ -43167,6 +43274,18 @@ cp_finish_omp_range_for (tree orig, tree begin)
     {
       decomp_first_name = TREE_VEC_ELT (TREE_CHAIN (orig), 3);
       decomp_cnt = TREE_VEC_LENGTH (TREE_CHAIN (orig)) - 3;
+      if (TREE_PUBLIC (TREE_CHAIN (orig)))
+	{
+	  /* Undo temporary clearing of DECL_HAS_VALUE_EXPR_P done
+	     by cp_convert_omp_range_for above.  */
+	  TREE_PUBLIC (TREE_CHAIN (orig)) = 0;
+	  tree d = decomp_first_name;
+	  for (unsigned i = 0; i < decomp_cnt; i++)
+	    {
+	      DECL_HAS_VALUE_EXPR_P (d) = 1;
+	      d = DECL_CHAIN (d);
+	    }
+	}
       cp_maybe_mangle_decomp (decl, decomp_first_name, decomp_cnt);
     }
 
@@ -46295,7 +46414,9 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
 		      cp_lexer_consume_token (parser->lexer);
 		    }
 		  else if (cp_lexer_next_token_is (parser->lexer, CPP_STRING))
-		    value = cp_parser_string_literal (parser, false, false);
+		    value = cp_parser_string_literal (parser,
+						      /*translate=*/false,
+						      /*wide_ok=*/false);
 		  else
 		    {
 		      cp_parser_error (parser, "expected identifier or "
@@ -49317,7 +49438,8 @@ pragma_lex (tree *value, location_t *loc)
   if (ret == CPP_PRAGMA_EOL)
     ret = CPP_EOF;
   else if (ret == CPP_STRING)
-    *value = cp_parser_string_literal (the_parser, false, false);
+    *value = cp_parser_string_literal (the_parser, /*translate=*/false,
+				       /*wide_ok=*/false);
   else
     {
       if (ret == CPP_KEYWORD)

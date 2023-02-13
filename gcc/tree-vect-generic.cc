@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2398,6 +2398,14 @@ expand_vector_operations (void)
 	  if (maybe_clean_eh_stmt (gsi_stmt (gsi))
 	      && gimple_purge_dead_eh_edges (bb))
 	    cfg_changed = true;
+	  /* If a .LOOP_DIST_ALIAS call prevailed loops got elided
+	     before vectorization got a chance to get at them.  Simply
+	     fold as if loop distribution wasn't performed.  */
+	  if (gimple_call_internal_p (gsi_stmt (gsi), IFN_LOOP_DIST_ALIAS))
+	    {
+	      fold_loop_internal_call (gsi_stmt (gsi), boolean_false_node);
+	      cfg_changed = true;
+	    }
 	}
     }
 

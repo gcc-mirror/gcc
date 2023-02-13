@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 SVE.
-;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -2533,14 +2533,34 @@
 )
 
 ;; Duplicate an Advanced SIMD vector to fill an SVE vector (LE version).
-(define_insn "@aarch64_vec_duplicate_vq<mode>_le"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
+
+(define_insn_and_split "@aarch64_vec_duplicate_vq<mode>_le"
+  [(set (match_operand:SVE_FULL 0 "register_operand" "=w, w")
 	(vec_duplicate:SVE_FULL
-	  (match_operand:<V128> 1 "register_operand" "w")))]
+	  (match_operand:<V128> 1 "aarch64_sve_dup_ld1rq_operand" "w, UtQ")))
+   (clobber (match_scratch:VNx16BI 2 "=X, Upl"))]
   "TARGET_SVE && !BYTES_BIG_ENDIAN"
   {
-    operands[1] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
-    return "dup\t%0.q, %1.q[0]";
+    switch (which_alternative)
+      {
+	case 0:
+	  operands[1] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
+	  return "dup\t%0.q, %1.q[0]";
+	case 1:
+	  return "#";
+	default:
+	  gcc_unreachable ();
+      }
+  }
+  "&& MEM_P (operands[1])"
+  [(const_int 0)]
+  {
+    if (GET_CODE (operands[2]) == SCRATCH)
+      operands[2] = gen_reg_rtx (VNx16BImode);
+    emit_move_insn (operands[2], CONSTM1_RTX (VNx16BImode));
+    rtx gp = gen_lowpart (<VPRED>mode, operands[2]);
+    emit_insn (gen_aarch64_sve_ld1rq<mode> (operands[0], operands[1], gp));
+    DONE;
   }
 )
 

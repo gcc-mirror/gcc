@@ -1,0 +1,55 @@
+(* M2AsmUtil.def provides asm symbol name conversion.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2AsmUtil ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2AsmUtil
+   Date       : Thu Feb  1 15:34:08 GMT 1990
+   Description: Provides utilities relating symbols in the SymbolTable
+                to their equivalent representation in ASM format.
+*)
+
+FROM DynamicStrings IMPORT String ;
+FROM NameKey IMPORT Name ;
+EXPORT QUALIFIED GetFullSymName, GetFullScopeAsmName ;
+
+
+(*
+   GetFullSymName - returns the NameKey for the symbol name (which also
+                    may contain the module name). This is the same as
+                    GetAsmName except that it does not have the leading _
+*)
+
+PROCEDURE GetFullSymName (sym: CARDINAL) : Name ;
+
+
+(*
+   GetFullScopeAsmName - returns the fully qualified name for the symbol.
+                         This will take the format
+                         [DefImpModule|Module]_{InnerModule}_{Procedure}_SymbolName
+*)
+
+PROCEDURE GetFullScopeAsmName (sym: CARDINAL) : Name ;
+
+
+END M2AsmUtil.

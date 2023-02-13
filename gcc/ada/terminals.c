@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2022, AdaCore                     *
+ *                     Copyright (C) 2008-2023, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -151,6 +151,7 @@ __gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
 #include <stdio.h>
 #include <stdlib.h>
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winternl.h>
 #include <io.h>

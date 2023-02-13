@@ -1,0 +1,34 @@
+(* choosetemp.def provides a definition module for choose-temp.c in libiberty.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE choosetemp ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT QUALIFIED make_temp_file ;
+
+
+(* Return a temporary file name (as a string) or NIL if unable to create
+   one.  *)
+
+PROCEDURE make_temp_file (suffix: ADDRESS) : ADDRESS ;
+
+
+END choosetemp.

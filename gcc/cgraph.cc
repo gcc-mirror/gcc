@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1893,8 +1893,18 @@ cgraph_node::remove (void)
   else if (clone_of)
     {
       clone_of->clones = next_sibling_clone;
-      if (!clone_of->analyzed && !clone_of->clones && !clones)
-	clone_of->release_body ();
+      if (!clones)
+	{
+	  bool need_body = false;
+	  for (cgraph_node *n = clone_of; n; n = n->clone_of)
+	    if (n->analyzed || n->clones)
+	      {
+		need_body = true;
+		break;
+	      }
+	  if (!need_body)
+	    clone_of->release_body ();
+	}
     }
   if (next_sibling_clone)
     next_sibling_clone->prev_sibling_clone = prev_sibling_clone;
@@ -3238,9 +3248,11 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
   node = node->ultimate_alias_target ();
 
   /* Optimizers can redirect unreachable calls or calls triggering undefined
-     behavior to builtin_unreachable.  */
+     behavior to __builtin_unreachable or __builtin_trap.  */
 
-  if (fndecl_built_in_p (callee->decl, BUILT_IN_UNREACHABLE))
+  if (fndecl_built_in_p (callee->decl, BUILT_IN_NORMAL)
+      && (DECL_FUNCTION_CODE (callee->decl) == BUILT_IN_UNREACHABLE
+	  || DECL_FUNCTION_CODE (callee->decl) == BUILT_IN_TRAP))
     return false;
 
   if (callee->former_clone_of != node->decl
@@ -4171,7 +4183,7 @@ cgraph_edge::possibly_call_in_translation_unit_p (void)
     node = node->previous_sharing_asm_name;
   if (node->previous_sharing_asm_name)
     node = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (callee->decl));
-  gcc_assert (TREE_PUBLIC (node->decl));
+  gcc_assert (TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
   return node->get_availability () >= AVAIL_INTERPOSABLE;
 }
 

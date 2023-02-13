@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,6 +212,9 @@ package body Sem_Res is
    procedure Resolve_Generalized_Indexing      (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Indexed_Component         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Integer_Literal           (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Interpolated_String_Literal
+     (N   : Node_Id;
+      Typ : Entity_Id);
    procedure Resolve_Logical_Op                (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Membership_Op             (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Null                      (N : Node_Id; Typ : Entity_Id);
@@ -449,9 +452,10 @@ package body Sem_Res is
       Loc  : constant Source_Ptr := Sloc (N);
       Literal_Aspect_Map :
         constant array (N_Numeric_Or_String_Literal) of Aspect_Id :=
-          (N_Integer_Literal => Aspect_Integer_Literal,
-           N_Real_Literal    => Aspect_Real_Literal,
-           N_String_Literal  => Aspect_String_Literal);
+          (N_Integer_Literal             => Aspect_Integer_Literal,
+           N_Interpolated_String_Literal => No_Aspect,
+           N_Real_Literal                => Aspect_Real_Literal,
+           N_String_Literal              => Aspect_String_Literal);
 
       Named_Number_Aspect_Map : constant array (Named_Kind) of Aspect_Id :=
         (E_Named_Integer => Aspect_Integer_Literal,
@@ -3436,6 +3440,9 @@ package body Sem_Res is
 
             when N_String_Literal =>
                Resolve_String_Literal            (N, Ctx_Type);
+
+            when N_Interpolated_String_Literal =>
+               Resolve_Interpolated_String_Literal (N, Ctx_Type);
 
             when N_Target_Name =>
                Resolve_Target_Name               (N, Ctx_Type);
@@ -9672,6 +9679,35 @@ package body Sem_Res is
       Eval_Integer_Literal (N);
    end Resolve_Integer_Literal;
 
+   -----------------------------------------
+   -- Resolve_Interpolated_String_Literal --
+   -----------------------------------------
+
+   procedure Resolve_Interpolated_String_Literal (N : Node_Id; Typ : Entity_Id)
+   is
+      Str_Elem : Node_Id;
+
+   begin
+      Str_Elem := First (Expressions (N));
+      pragma Assert (Nkind (Str_Elem) = N_String_Literal);
+
+      while Present (Str_Elem) loop
+
+         --  Resolve string elements using the context type; for interpolated
+         --  expressions there is no need to check if their type has a suitable
+         --  image function because under Ada 2022 all the types have such
+         --  function available.
+
+         if Etype (Str_Elem) = Any_String then
+            Resolve (Str_Elem, Typ);
+         end if;
+
+         Next (Str_Elem);
+      end loop;
+
+      Set_Etype (N, Typ);
+   end Resolve_Interpolated_String_Literal;
+
    --------------------------------
    -- Resolve_Intrinsic_Operator --
    --------------------------------
@@ -10105,11 +10141,11 @@ package body Sem_Res is
       then
          T := Etype (R);
 
-      --  If the type of the left operand is universal_integer and that of the
-      --  right operand is smaller, then we do not resolve the operands to the
-      --  tested type but to universal_integer instead. If not conforming to
-      --  the letter, it's conforming to the spirit of the specification of
-      --  membership tests, which are typically used to guard an operation and
+      --  If the left operand is of a universal numeric type and the right
+      --  operand is not, we do not resolve the operands to the tested type
+      --  but to the universal type instead. If not conforming to the letter,
+      --  it's conforming to the spirit of the specification of membership
+      --  tests, which are typically used to guard a specific operation and
       --  ought not to fail a check in doing so. Without this, in the case of
 
       --    type Small_Length is range 1 .. 16;
@@ -10127,9 +10163,14 @@ package body Sem_Res is
       --  for example the large values of Long_Long_Long_Unsigned.
 
       elsif not Is_Overloaded (L)
-        and then Etype (L) = Universal_Integer
+        and then Is_Universal_Numeric_Type (Etype (L))
         and then (Is_Overloaded (R)
-                   or else RM_Size (Etype (R)) < RM_Size (Universal_Integer))
+                   or else
+                     (not Is_Universal_Numeric_Type (Etype (R))
+                       and then
+                         (not Is_Integer_Type (Etype (R))
+                           or else
+                          RM_Size (Etype (R)) < RM_Size (Universal_Integer))))
       then
          T := Etype (L);
 

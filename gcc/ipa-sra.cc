@@ -1,5 +1,5 @@
 /* Interprocedural scalar replacement of aggregates
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "symtab-clones.h"
 #include "attribs.h"
+#include "ipa-prop.h"
 
 static void ipa_sra_summarize_function (cgraph_node *);
 
@@ -150,6 +151,8 @@ struct gensum_param_access
      arguments.  */
   tree alias_ptr_type;
 
+  /* Cumulative count of all loads. */
+  profile_count load_count;
   /* Have there been writes to or reads from this exact location except for as
      arguments to a function call that can be tracked.  */
   bool nonarg;
@@ -170,6 +173,10 @@ struct GTY(()) isra_param_desc
   unsigned param_size_limit : ISRA_ARG_SIZE_LIMIT_BITS;
   /* Sum of unit sizes of all certain replacements.  */
   unsigned size_reached : ISRA_ARG_SIZE_LIMIT_BITS;
+  /* Minimum offset that is known to be safe to dereference because of callers
+     pass pointers to DECLs of at least this size or because of dereferences in
+     callers.  */
+  unsigned safe_size : ISRA_ARG_SIZE_LIMIT_BITS;
 
   /* A parameter that is used only in call arguments and can be removed if all
      concerned actual arguments are removed.  */
@@ -178,6 +185,16 @@ struct GTY(()) isra_param_desc
   unsigned split_candidate : 1;
   /* Is this a parameter passing stuff by reference?  */
   unsigned by_ref : 1;
+  /* Parameter hint set during IPA analysis when there is a caller which does
+     not construct the argument just to pass it to calls.  Only meaningful for
+     by_ref parameters.  */
+  unsigned not_specially_constructed : 1;
+  /* Only meaningful for by_ref parameters.  If set, this parameter can only be
+     a split candidate if all callers pass pointers that are known to point to
+     a chunk of memory large enough to contain all accesses.  */
+  unsigned conditionally_dereferenceable : 1;
+  /* Set when safe_size has been updated from at least one caller.  */
+  unsigned safe_size_set : 1;
 };
 
 /* Structure used when generating summaries that describes a parameter.  */
@@ -206,8 +223,17 @@ struct gensum_param_desc
      by reference that is a candidate for being converted to a set of
      parameters passing those data by value.  */
   bool split_candidate;
-  /* Is this a parameter passing stuff by reference?  */
+  /* Is this a parameter passing stuff by reference (either a pointer or a
+     source language reference type)?  */
   bool by_ref;
+  /* If this parameter passes stuff by reference, can it be safely dereferenced
+     without performing further checks (for example because it is a
+     REFERENCE_TYPE)?  */
+  bool safe_ref;
+  /* Only meaningful for by_ref parameters.  If set, this parameter can only be
+     a split candidate if all callers pass pointers that are known to point to
+     a chunk of memory large enough to contain all accesses.  */
+  bool conditionally_dereferenceable;
 
   /* The number of this parameter as they are ordered in function decl.  */
   int param_number;
@@ -320,10 +346,12 @@ struct isra_param_flow
 
   /* Offset within the formal parameter.  */
   unsigned unit_offset;
-  /* Size of the portion of the formal parameter that is being passed.  */
+  /* When aggregate_pass_through is set, this is the size of the portion of an
+     aggregate formal parameter that is being passed.  Otherwise, this is size
+     of pointed to memory that is known to be valid be dereferenced.  */
   unsigned unit_size : ISRA_ARG_SIZE_LIMIT_BITS;
 
-  /* True when the value of this actual copy is a portion of a formal
+  /* True when the value of this actual argument is a portion of a formal
      parameter.  */
   unsigned aggregate_pass_through : 1;
   /* True when the value of this actual copy is a verbatim pass through of an
@@ -332,6 +360,10 @@ struct isra_param_flow
   /* True when it is safe to copy access candidates here from the callee, which
      would mean introducing dereferences into callers of the caller.  */
   unsigned safe_to_import_accesses : 1;
+  /* True when the passed value is an address of a structure that has been
+     constructed in the caller just to be passed by reference to functions
+     (i.e. is never read).  */
+  unsigned constructed_for_calls : 1;
 };
 
 /* Structure used to convey information about calls from the intra-procedural
@@ -409,9 +441,13 @@ ipa_sra_function_summaries::duplicate (cgraph_node *, cgraph_node *,
 
       d->param_size_limit = s->param_size_limit;
       d->size_reached = s->size_reached;
+      d->safe_size = s->safe_size;
       d->locally_unused = s->locally_unused;
       d->split_candidate = s->split_candidate;
       d->by_ref = s->by_ref;
+      d->not_specially_constructed = s->not_specially_constructed;
+      d->conditionally_dereferenceable = s->conditionally_dereferenceable;
+      d->safe_size_set = s->safe_size_set;
 
       unsigned acc_count = vec_safe_length (s->accesses);
       vec_safe_reserve_exact (d->accesses, acc_count);
@@ -520,9 +556,14 @@ isra_call_summary::dump (FILE *f)
 	fprintf (f, "      Aggregate pass through from the param given above, "
 		 "unit offset: %u , unit size: %u\n",
 		 ipf->unit_offset, ipf->unit_size);
+      else if (ipf->unit_size > 0)
+	fprintf (f, "      Known dereferenceable size: %u\n", ipf->unit_size);
       if (ipf->pointer_pass_through)
 	fprintf (f, "      Pointer pass through from the param given above, "
 		 "safe_to_import_accesses: %u\n", ipf->safe_to_import_accesses);
+      if (ipf->constructed_for_calls)
+	fprintf (f, "      Variable constructed just to be passed to "
+		 "calls.\n");
     }
 }
 
@@ -551,6 +592,11 @@ namespace {
 
 hash_map<tree, gensum_param_desc *> *decl2desc;
 
+/* All local DECLs ever loaded from of and of those that have their address
+   assigned to a variable.  */
+
+hash_set <tree> *loaded_decls;
+
 /* Countdown of allowed Alias Analysis steps during summary building.  */
 
 int aa_walking_limit;
@@ -560,7 +606,7 @@ int aa_walking_limit;
    accessed in that BB.  */
 HOST_WIDE_INT *bb_dereferences = NULL;
 /* How many by-reference parameters there are in the current function.  */
-int by_ref_count;
+int unsafe_by_ref_count;
 
 /* Bitmap of BBs that can cause the function to "stop" progressing by
    returning, throwing externally, looping infinitely or calling a function
@@ -642,6 +688,8 @@ dump_gensum_access (FILE *f, gensum_param_access *access, unsigned indent)
   print_generic_expr (f, access->type);
   fprintf (f, ", alias_ptr_type: ");
   print_generic_expr (f, access->alias_ptr_type);
+  fprintf (f, ", load_count: ");
+  access->load_count.dump (f);
   fprintf (f, ", nonarg: %u, reverse: %u\n", access->nonarg, access->reverse);
   for (gensum_param_access *ch = access->first_child;
        ch;
@@ -691,7 +739,11 @@ dump_gensum_param_descriptor (FILE *f, gensum_param_desc *desc)
       return;
     }
   if (desc->by_ref)
-    fprintf (f, "    by_ref with %u pass throughs\n", desc->ptr_pt_count);
+    fprintf (f, "    %s%s by_ref with %u pass throughs\n",
+	     desc->safe_ref ? "safe" : "unsafe",
+	     desc->conditionally_dereferenceable
+	     ? " conditionally_dereferenceable" : " ok",
+	     desc->ptr_pt_count);
 
   for (gensum_param_access *acc = desc->accesses; acc; acc = acc->next_sibling)
     dump_gensum_access (f, acc, 2);
@@ -717,10 +769,11 @@ dump_gensum_param_descriptors (FILE *f, tree fndecl,
 }
 
 
-/* Dump DESC to F.   */
+/* Dump DESC to F.  If HINTS is true, also dump IPA-analysis computed
+   hints.  */
 
 static void
-dump_isra_param_descriptor (FILE *f, isra_param_desc *desc)
+dump_isra_param_descriptor (FILE *f, isra_param_desc *desc, bool hints)
 {
   if (desc->locally_unused)
     {
@@ -728,12 +781,25 @@ dump_isra_param_descriptor (FILE *f, isra_param_desc *desc)
     }
   if (!desc->split_candidate)
     {
-      fprintf (f, "    not a candidate for splitting\n");
+      fprintf (f, "    not a candidate for splitting");
+      if (hints && desc->by_ref && desc->safe_size_set)
+	fprintf (f, ", safe_size: %u", (unsigned) desc->safe_size);
+      fprintf (f, "\n");
       return;
     }
-  fprintf (f, "    param_size_limit: %u, size_reached: %u%s\n",
+  fprintf (f, "    param_size_limit: %u, size_reached: %u%s",
 	   desc->param_size_limit, desc->size_reached,
 	   desc->by_ref ? ", by_ref" : "");
+  if (desc->by_ref && desc->conditionally_dereferenceable)
+    fprintf (f, ", conditionally_dereferenceable");
+  if (hints)
+    {
+      if (desc->by_ref && !desc->not_specially_constructed)
+	fprintf (f, ", args_specially_constructed");
+      if (desc->by_ref && desc->safe_size_set)
+	fprintf (f, ", safe_size: %u", (unsigned) desc->safe_size);
+    }
+  fprintf (f, "\n");
 
   for (unsigned i = 0; i < vec_safe_length (desc->accesses); ++i)
     {
@@ -742,12 +808,12 @@ dump_isra_param_descriptor (FILE *f, isra_param_desc *desc)
     }
 }
 
-/* Dump all parameter descriptors in IFS, assuming it describes FNDECL, to
-   F.  */
+/* Dump all parameter descriptors in IFS, assuming it describes FNDECL, to F.
+   If HINTS is true, also dump IPA-analysis computed hints.  */
 
 static void
-dump_isra_param_descriptors (FILE *f, tree fndecl,
-			     isra_func_summary *ifs)
+dump_isra_param_descriptors (FILE *f, tree fndecl, isra_func_summary *ifs,
+			     bool hints)
 {
   tree parm = DECL_ARGUMENTS (fndecl);
   if (!ifs->m_parameters)
@@ -763,7 +829,7 @@ dump_isra_param_descriptors (FILE *f, tree fndecl,
       fprintf (f, "  Descriptor for parameter %i ", i);
       print_generic_expr (f, parm, TDF_UID);
       fprintf (f, "\n");
-      dump_isra_param_descriptor (f, &(*ifs->m_parameters)[i]);
+      dump_isra_param_descriptor (f, &(*ifs->m_parameters)[i], hints);
     }
 }
 
@@ -1075,7 +1141,7 @@ ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
 /* Initialize vector of parameter descriptors of NODE.  Return true if there
    are any candidates for splitting or unused aggregate parameter removal (the
    function may return false if there are candidates for removal of register
-   parameters) and function body must be scanned.  */
+   parameters).  */
 
 static bool
 create_parameter_descriptors (cgraph_node *node,
@@ -1139,6 +1205,13 @@ create_parameter_descriptors (cgraph_node *node,
 
       if (POINTER_TYPE_P (type))
 	{
+	  desc->by_ref = true;
+	  if (TREE_CODE (type) == REFERENCE_TYPE
+	      || (num == 0
+		  && TREE_CODE (TREE_TYPE (node->decl)) == METHOD_TYPE))
+	    desc->safe_ref = true;
+	  else
+	    desc->safe_ref = false;
 	  type = TREE_TYPE (type);
 
 	  if (TREE_CODE (type) == FUNCTION_TYPE
@@ -1186,7 +1259,6 @@ create_parameter_descriptors (cgraph_node *node,
 			 "nonarg uses\n");
 	      continue;
 	    }
-	  desc->by_ref = true;
 	}
       else if (!AGGREGATE_TYPE_P (type))
 	{
@@ -1230,8 +1302,8 @@ create_parameter_descriptors (cgraph_node *node,
 
       ret = true;
       desc->split_candidate = true;
-      if (desc->by_ref)
-	desc->deref_index = by_ref_count++;
+      if (desc->by_ref && !desc->safe_ref)
+	desc->deref_index = unsafe_by_ref_count++;
     }
   return ret;
 }
@@ -1242,6 +1314,8 @@ create_parameter_descriptors (cgraph_node *node,
 static gensum_param_desc *
 get_gensum_param_desc (tree decl)
 {
+  if (!decl2desc)
+    return NULL;
   gcc_checking_assert (TREE_CODE (decl) == PARM_DECL);
   gensum_param_desc **slot = decl2desc->get (decl);
   if (!slot)
@@ -1300,6 +1374,7 @@ allocate_access (gensum_param_desc *desc,
   memset (access, 0, sizeof (*access));
   access->offset = offset;
   access->size = size;
+  access->load_count = profile_count::zero ();
   return access;
 }
 
@@ -1554,15 +1629,16 @@ asm_visit_addr (gimple *, tree op, tree, void *)
 
 static void
 mark_param_dereference (gensum_param_desc *desc, HOST_WIDE_INT dist,
-		       basic_block bb)
+			basic_block bb)
 {
   gcc_assert (desc->by_ref);
   gcc_checking_assert (desc->split_candidate);
 
-  if (bitmap_bit_p (final_bbs, bb->index))
+  if (desc->safe_ref
+      || bitmap_bit_p (final_bbs, bb->index))
     return;
 
-  int idx = bb->index * by_ref_count + desc->deref_index;
+  int idx = bb->index * unsafe_by_ref_count + desc->deref_index;
   if (bb_dereferences[idx] < dist)
     bb_dereferences[idx] = dist;
 }
@@ -1673,6 +1749,19 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
   bool deref = false;
   bool reverse;
 
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    {
+      if (ctx == ISRA_CTX_ARG)
+	return;
+      tree t = get_base_address (TREE_OPERAND (expr, 0));
+      if (TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
+	loaded_decls->add (t);
+      return;
+    }
+  if (TREE_CODE (expr) == SSA_NAME
+      || CONSTANT_CLASS_P (expr))
+    return;
+
   if (TREE_CODE (expr) == BIT_FIELD_REF
       || TREE_CODE (expr) == IMAGPART_EXPR
       || TREE_CODE (expr) == REALPART_EXPR)
@@ -1691,6 +1780,12 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
 	return;
       deref = true;
     }
+  else if (TREE_CODE (base) == VAR_DECL
+	   && !TREE_STATIC (base)
+	   && (ctx == ISRA_CTX_ARG
+	       || ctx == ISRA_CTX_LOAD))
+    loaded_decls->add (base);
+
   if (TREE_CODE (base) != PARM_DECL)
     return;
 
@@ -1810,6 +1905,8 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
 	   other.  */
 	access->nonarg = true;
     }
+  else if (ctx == ISRA_CTX_LOAD && bb->count.initialized_p ())
+    access->load_count += bb->count;
 
   if (!access->type)
     {
@@ -1868,7 +1965,7 @@ scan_function (cgraph_node *node, struct function *fun)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 
-	  if (stmt_can_throw_external (fun, stmt))
+	  if (final_bbs && stmt_can_throw_external (fun, stmt))
 	    bitmap_set_bit (final_bbs, bb->index);
 	  switch (gimple_code (stmt))
 	    {
@@ -1877,7 +1974,8 @@ scan_function (cgraph_node *node, struct function *fun)
 		tree t = gimple_return_retval (as_a <greturn *> (stmt));
 		if (t != NULL_TREE)
 		  scan_expr_access (t, stmt, ISRA_CTX_LOAD, bb);
-		bitmap_set_bit (final_bbs, bb->index);
+		if (final_bbs)
+		  bitmap_set_bit (final_bbs, bb->index);
 	      }
 	      break;
 
@@ -1922,8 +2020,9 @@ scan_function (cgraph_node *node, struct function *fun)
 		if (lhs)
 		  scan_expr_access (lhs, stmt, ISRA_CTX_STORE, bb);
 		int flags = gimple_call_flags (stmt);
-		if (((flags & (ECF_CONST | ECF_PURE)) == 0)
-		    || (flags & ECF_LOOPING_CONST_OR_PURE))
+		if (final_bbs
+		    && (((flags & (ECF_CONST | ECF_PURE)) == 0)
+			|| (flags & ECF_LOOPING_CONST_OR_PURE)))
 		  bitmap_set_bit (final_bbs, bb->index);
 	      }
 	      break;
@@ -1933,7 +2032,8 @@ scan_function (cgraph_node *node, struct function *fun)
 		gasm *asm_stmt = as_a <gasm *> (stmt);
 		walk_stmt_load_store_addr_ops (asm_stmt, NULL, NULL, NULL,
 					       asm_visit_addr);
-		bitmap_set_bit (final_bbs, bb->index);
+		if (final_bbs)
+		  bitmap_set_bit (final_bbs, bb->index);
 
 		for (unsigned i = 0; i < gimple_asm_ninputs (asm_stmt); i++)
 		  {
@@ -2029,6 +2129,34 @@ isra_analyze_call (cgraph_edge *cs)
   for (unsigned i = 0; i < count; i++)
     {
       tree arg = gimple_call_arg (call_stmt, i);
+      if (TREE_CODE (arg) == ADDR_EXPR)
+	{
+	  poly_int64 poffset, psize, pmax_size;
+	  bool reverse;
+	  tree base = get_ref_base_and_extent (TREE_OPERAND (arg, 0), &poffset,
+					       &psize, &pmax_size, &reverse);
+	  HOST_WIDE_INT offset;
+	  unsigned HOST_WIDE_INT ds;
+	  if (DECL_P (base)
+	      && (poffset.is_constant (&offset))
+	      && tree_fits_uhwi_p (DECL_SIZE (base))
+	      && ((ds = tree_to_uhwi (DECL_SIZE (base)) - offset)
+		  < ISRA_ARG_SIZE_LIMIT * BITS_PER_UNIT))
+	    {
+	      csum->init_inputs (count);
+	      gcc_assert (!csum->m_arg_flow[i].aggregate_pass_through);
+	      csum->m_arg_flow[i].unit_size = ds / BITS_PER_UNIT;
+	    }
+
+	  if (TREE_CODE (base) == VAR_DECL
+	      && !TREE_STATIC (base)
+	      && !loaded_decls->contains (base))
+	    {
+	      csum->init_inputs (count);
+	      csum->m_arg_flow[i].constructed_for_calls = true;
+	    }
+	}
+
       if (is_gimple_reg (arg))
 	continue;
 
@@ -2091,9 +2219,9 @@ dump_dereferences_table (FILE *f, struct function *fun, const char *str)
       if (bb != EXIT_BLOCK_PTR_FOR_FN (fun))
 	{
 	  int i;
-	  for (i = 0; i < by_ref_count; i++)
+	  for (i = 0; i < unsafe_by_ref_count; i++)
 	    {
-	      int idx = bb->index * by_ref_count + i;
+	      int idx = bb->index * unsafe_by_ref_count + i;
 	      fprintf (f, " %4" HOST_WIDE_INT_PRINT "d", bb_dereferences[idx]);
 	    }
 	}
@@ -2138,15 +2266,15 @@ propagate_dereference_distances (struct function *fun)
       if (bitmap_bit_p (final_bbs, bb->index))
 	continue;
 
-      for (i = 0; i < by_ref_count; i++)
+      for (i = 0; i < unsafe_by_ref_count; i++)
 	{
-	  int idx = bb->index * by_ref_count + i;
+	  int idx = bb->index * unsafe_by_ref_count + i;
 	  bool first = true;
 	  HOST_WIDE_INT inh = 0;
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	  {
-	    int succ_idx = e->dest->index * by_ref_count + i;
+	    int succ_idx = e->dest->index * unsafe_by_ref_count + i;
 
 	    if (e->dest == EXIT_BLOCK_PTR_FOR_FN (fun))
 	      continue;
@@ -2183,13 +2311,24 @@ propagate_dereference_distances (struct function *fun)
 			     "Dereference table after propagation:\n");
 }
 
-/* Perform basic checks on ACCESS to PARM described by DESC and all its
-   children, return true if the parameter cannot be split, otherwise return
-   true and update *TOTAL_SIZE and *ONLY_CALLS.  ENTRY_BB_INDEX must be the
-   index of the entry BB in the function of PARM.  */
+/* Return true if the ACCESS loads happen frequently enough in FUN to risk
+   moving them to the caller and only pass the result.  */
 
 static bool
-check_gensum_access (tree parm, gensum_param_desc *desc,
+dereference_probable_p (struct function *fun, gensum_param_access *access)
+{
+  int threshold = opt_for_fn (fun->decl, param_ipa_sra_deref_prob_threshold);
+  return access->load_count
+    >= ENTRY_BLOCK_PTR_FOR_FN (fun)->count.apply_scale (threshold, 100);
+}
+
+/* Perform basic checks on ACCESS to PARM (of FUN) described by DESC and all
+   its children, return true if the parameter cannot be split, otherwise return
+   false and update *NONARG_ACC_SIZE and *ONLY_CALLS.  ENTRY_BB_INDEX must be
+   the index of the entry BB in the function of PARM.  */
+
+static bool
+check_gensum_access (struct function *fun, tree parm, gensum_param_desc *desc,
 		     gensum_param_access *access,
 		     HOST_WIDE_INT *nonarg_acc_size, bool *only_calls,
 		     int entry_bb_index)
@@ -2217,19 +2356,36 @@ check_gensum_access (tree parm, gensum_param_desc *desc,
 
   if (desc->by_ref)
     {
-      int idx = (entry_bb_index * by_ref_count + desc->deref_index);
-      if ((access->offset + access->size) > bb_dereferences[idx])
+      if (desc->safe_ref)
 	{
-	  disqualify_split_candidate (desc, "Would create a possibly "
-				      "illegal dereference in a caller.");
-	  return true;
+	  if (!dereference_probable_p (fun, access))
+	    {
+	      disqualify_split_candidate (desc, "Dereferences in callers "
+					  "would happen much more frequently.");
+	      return true;
+	    }
+	}
+      else
+	{
+	  int idx = (entry_bb_index * unsafe_by_ref_count + desc->deref_index);
+	  if ((access->offset + access->size) > bb_dereferences[idx])
+	    {
+	      if (!dereference_probable_p (fun, access))
+		{
+		  disqualify_split_candidate (desc, "Would create a possibly "
+					      "illegal dereference in a "
+					      "caller.");
+		  return true;
+		}
+	      desc->conditionally_dereferenceable = true;
+	    }
 	}
     }
 
   for (gensum_param_access *ch = access->first_child;
        ch;
        ch = ch->next_sibling)
-    if (check_gensum_access (parm, desc, ch, nonarg_acc_size, only_calls,
+    if (check_gensum_access (fun, parm, desc, ch, nonarg_acc_size, only_calls,
 			     entry_bb_index))
       return true;
 
@@ -2287,6 +2443,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
 
       if (!dereferences_propagated
 	  && desc->by_ref
+	  && !desc->safe_ref
 	  && desc->accesses)
 	{
 	  propagate_dereference_distances (fun);
@@ -2301,8 +2458,8 @@ process_scan_results (cgraph_node *node, struct function *fun,
       for (gensum_param_access *acc = desc->accesses;
 	   acc;
 	   acc = acc->next_sibling)
-	if (check_gensum_access (parm, desc, acc, &nonarg_acc_size, &only_calls,
-				 entry_bb_index))
+	if (check_gensum_access (fun, parm, desc, acc, &nonarg_acc_size,
+				 &only_calls, entry_bb_index))
 	  {
 	    check_failed = true;
 	    break;
@@ -2315,18 +2472,28 @@ process_scan_results (cgraph_node *node, struct function *fun,
 
       HOST_WIDE_INT cur_param_size
 	= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (parm)));
-      HOST_WIDE_INT param_size_limit;
+      HOST_WIDE_INT param_size_limit, optimistic_limit;
       if (!desc->by_ref || optimize_function_for_size_p (fun))
-	param_size_limit = cur_param_size;
+	{
+	  param_size_limit = cur_param_size;
+	  optimistic_limit = cur_param_size;
+	}
       else
+	{
 	  param_size_limit
 	    = opt_for_fn (node->decl,
 			  param_ipa_sra_ptr_growth_factor) * cur_param_size;
-      if (nonarg_acc_size > param_size_limit
+	  optimistic_limit
+	    = (opt_for_fn (node->decl, param_ipa_sra_ptrwrap_growth_factor)
+	       * param_size_limit);
+	}
+
+      if (nonarg_acc_size > optimistic_limit
 	  || (!desc->by_ref && nonarg_acc_size == param_size_limit))
 	{
 	  disqualify_split_candidate (desc, "Would result into a too big set "
-				      "of replacements.");
+				      "of replacements even in best "
+				      "scenarios.");
 	}
       else
 	{
@@ -2362,7 +2529,8 @@ process_scan_results (cgraph_node *node, struct function *fun,
      TODO: Measure the overhead and the effect of just being pessimistic.
      Maybe this is only -O3 material?  */
 
-  bool pdoms_calculated = false;
+  hash_map<gimple *, bool> analyzed_stmts;
+  bitmap always_executed_bbs = NULL;
   if (check_pass_throughs)
     for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
       {
@@ -2393,27 +2561,52 @@ process_scan_results (cgraph_node *node, struct function *fun,
 	    if (!uses_memory_as_obtained)
 	      continue;
 
-	    /* Post-dominator check placed last, hoping that it usually won't
-	       be needed.  */
-	    if (!pdoms_calculated)
+	    if (desc->safe_ref)
 	      {
-		gcc_checking_assert (cfun);
-		connect_infinite_loops_to_exit ();
-		calculate_dominance_info (CDI_POST_DOMINATORS);
-		pdoms_calculated = true;
+		csum->m_arg_flow[argidx].safe_to_import_accesses = true;
+		continue;
 	      }
-	    if (dominated_by_p (CDI_POST_DOMINATORS,
-				gimple_bb (call_stmt),
-				single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun))))
+
+	    /* Walk basic block and see if its execution can terminate earlier.
+	       Keep the info for later re-use to avoid quadratic behavoiur here.  */
+	    gimple_stmt_iterator gsi = gsi_for_stmt (call_stmt);
+	    bool safe = true;
+	    int n = 0;
+	    for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
+	      {
+		bool *b = analyzed_stmts.get (gsi_stmt (gsi));
+		if (b)
+		  {
+		    safe = *b;
+		    gsi_next (&gsi);
+		    break;
+		  }
+		n++;
+		if (stmt_may_terminate_function_p (fun, gsi_stmt (gsi), false))
+		  {
+		    safe = false;
+		    break;
+		  }
+	      }
+	    if (n)
+	      {
+		if (gsi_end_p (gsi))
+		  gsi = gsi_start_bb (gimple_bb (call_stmt));
+		for (; gsi_stmt (gsi) != call_stmt; gsi_next (&gsi))
+		  analyzed_stmts.get_or_insert (gsi_stmt (gsi)) = safe;
+	      }
+
+	    if (safe && !always_executed_bbs)
+	      {
+		mark_dfs_back_edges ();
+		always_executed_bbs = find_always_executed_bbs (fun, false);
+	      }
+	    if (safe && bitmap_bit_p (always_executed_bbs, gimple_bb (call_stmt)->index))
 	      csum->m_arg_flow[argidx].safe_to_import_accesses = true;
 	  }
 
       }
-  if (pdoms_calculated)
-    {
-      free_dominance_info (CDI_POST_DOMINATORS);
-      remove_fake_exit_edges ();
-    }
+  BITMAP_FREE (always_executed_bbs);
 
   /* TODO: Add early exit if we disqualified everything.  This also requires
      that we either relax the restriction that
@@ -2433,6 +2626,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
       d->locally_unused = s->locally_unused;
       d->split_candidate = s->split_candidate;
       d->by_ref = s->by_ref;
+      d->conditionally_dereferenceable = s->conditionally_dereferenceable;
 
       for (gensum_param_access *acc = s->accesses;
 	   acc;
@@ -2441,7 +2635,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
     }
 
   if (dump_file)
-    dump_isra_param_descriptors (dump_file, node->decl, ifs);
+    dump_isra_param_descriptors (dump_file, node->decl, ifs, false);
 }
 
 /* Return true if there are any overlaps among certain accesses of DESC.  If
@@ -2542,6 +2736,7 @@ isra_write_edge_summary (output_block *ob, cgraph_edge *e)
       bp_pack_value (&bp, ipf->aggregate_pass_through, 1);
       bp_pack_value (&bp, ipf->pointer_pass_through, 1);
       bp_pack_value (&bp, ipf->safe_to_import_accesses, 1);
+      bp_pack_value (&bp, ipf->constructed_for_calls, 1);
       streamer_write_bitpack (&bp);
       streamer_write_uhwi (ob, ipf->unit_offset);
       streamer_write_uhwi (ob, ipf->unit_size);
@@ -2586,10 +2781,14 @@ isra_write_node_summary (output_block *ob, cgraph_node *node)
 	}
       streamer_write_uhwi (ob, desc->param_size_limit);
       streamer_write_uhwi (ob, desc->size_reached);
+      gcc_assert (desc->safe_size == 0);
       bitpack_d bp = bitpack_create (ob->main_stream);
       bp_pack_value (&bp, desc->locally_unused, 1);
       bp_pack_value (&bp, desc->split_candidate, 1);
       bp_pack_value (&bp, desc->by_ref, 1);
+      gcc_assert (!desc->not_specially_constructed);
+      bp_pack_value (&bp, desc->conditionally_dereferenceable, 1);
+      gcc_assert (!desc->safe_size_set);
       streamer_write_bitpack (&bp);
     }
   bitpack_d bp = bitpack_create (ob->main_stream);
@@ -2663,6 +2862,7 @@ isra_read_edge_summary (struct lto_input_block *ib, cgraph_edge *cs)
       ipf->aggregate_pass_through = bp_unpack_value (&bp, 1);
       ipf->pointer_pass_through = bp_unpack_value (&bp, 1);
       ipf->safe_to_import_accesses = bp_unpack_value (&bp, 1);
+      ipf->constructed_for_calls = bp_unpack_value (&bp, 1);
       ipf->unit_offset = streamer_read_uhwi (ib);
       ipf->unit_size = streamer_read_uhwi (ib);
     }
@@ -2705,10 +2905,14 @@ isra_read_node_info (struct lto_input_block *ib, cgraph_node *node,
 	}
       desc->param_size_limit = streamer_read_uhwi (ib);
       desc->size_reached = streamer_read_uhwi (ib);
+      desc->safe_size = 0;
       bitpack_d bp = streamer_read_bitpack (ib);
       desc->locally_unused = bp_unpack_value (&bp, 1);
       desc->split_candidate = bp_unpack_value (&bp, 1);
       desc->by_ref = bp_unpack_value (&bp, 1);
+      desc->not_specially_constructed = 0;
+      desc->conditionally_dereferenceable = bp_unpack_value (&bp, 1);
+      desc->safe_size_set = 0;
     }
   bitpack_d bp = streamer_read_bitpack (ib);
   ifs->m_candidate = bp_unpack_value (&bp, 1);
@@ -2791,10 +2995,11 @@ ipa_sra_read_summary (void)
     }
 }
 
-/* Dump all IPA-SRA summary data for all cgraph nodes and edges to file F.  */
+/* Dump all IPA-SRA summary data for all cgraph nodes and edges to file F.  If
+   HINTS is true, also dump IPA-analysis computed hints.  */
 
 static void
-ipa_sra_dump_all_summaries (FILE *f)
+ipa_sra_dump_all_summaries (FILE *f, bool hints)
 {
   cgraph_node *node;
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
@@ -2817,7 +3022,7 @@ ipa_sra_dump_all_summaries (FILE *f)
 	    for (unsigned i = 0; i < ifs->m_parameters->length (); ++i)
 	      {
 		fprintf (f, "  Descriptor for parameter %i:\n", i);
-		dump_isra_param_descriptor (f, &(*ifs->m_parameters)[i]);
+		dump_isra_param_descriptor (f, &(*ifs->m_parameters)[i], hints);
 	      }
 	  fprintf (f, "\n");
 	}
@@ -3154,6 +3359,130 @@ isra_mark_caller_param_used (isra_func_summary *from_ifs, int input_idx,
     }
 }
 
+/* Combine safe_size of DESC with SIZE and return true if it has changed.  */
+
+static bool
+update_safe_size (isra_param_desc *desc, unsigned size)
+{
+  if (!desc->safe_size_set)
+    {
+      desc->safe_size_set = 1;
+      desc->safe_size = size;
+      return true;
+    }
+  if (desc->safe_size <= size)
+    return false;
+  desc->safe_size = size;
+  return true;
+}
+
+/* Set all param hints in DESC to the pessimistic values.  Return true if any
+   hints that need to potentially trigger further propagation have changed.  */
+
+static bool
+flip_all_hints_pessimistic (isra_param_desc *desc)
+{
+  desc->not_specially_constructed = true;
+  return update_safe_size (desc, 0);
+}
+
+/* Because we have not analyzed or otherwise problematic caller, go over all
+   parameter int flags of IFS describing a call graph node of a calllee and
+   turn them pessimistic.  Return true if any hints that need to potentially
+   trigger further propagation have changed.  */
+
+static bool
+flip_all_param_hints_pessimistic (isra_func_summary *ifs)
+{
+  if (!ifs || !ifs->m_candidate)
+    return false;
+
+  bool ret = false;
+  unsigned param_count = vec_safe_length (ifs->m_parameters);
+
+  for (unsigned i = 0; i < param_count; i++)
+    ret |= flip_all_hints_pessimistic (&(*ifs->m_parameters)[i]);
+
+  return ret;
+}
+
+/* Propagate hints accross edge CS which ultimately leads to a node described
+   by TO_IFS.  Return true if any hints of the callee which should potentially
+   trigger further propagation have changed.  */
+
+static bool
+propagate_param_hints_accross_call (cgraph_edge *cs, isra_func_summary *to_ifs)
+{
+  if (!to_ifs || !to_ifs->m_candidate)
+    return false;
+
+  isra_call_summary *csum = call_sums->get (cs);
+  bool ret = false;
+  unsigned args_count = csum->m_arg_flow.length ();
+  unsigned param_count = vec_safe_length (to_ifs->m_parameters);
+
+  for (unsigned i = 0; i < param_count; i++)
+    {
+      isra_param_desc *desc = &(*to_ifs->m_parameters)[i];
+      if (i >= args_count)
+	{
+	  ret |= flip_all_hints_pessimistic (desc);
+	  continue;
+	}
+
+      if (desc->by_ref)
+	{
+	  isra_param_flow *ipf = &csum->m_arg_flow[i];
+
+	  if (!ipf->constructed_for_calls)
+	    desc->not_specially_constructed = true;
+
+	  if (ipf->pointer_pass_through)
+	    {
+	      isra_func_summary *from_ifs = func_sums->get (cs->caller);
+	      int srcidx = get_single_param_flow_source (ipf);
+	      if (vec_safe_length (from_ifs->m_parameters) > (unsigned) srcidx)
+		{
+		  isra_param_desc *src_d = &(*from_ifs->m_parameters)[srcidx];
+		  if (src_d->safe_size_set)
+		    ret |= update_safe_size (desc, src_d->safe_size);
+		}
+	      else
+		ret |= update_safe_size (desc, 0);
+	    }
+	  else if (!ipf->aggregate_pass_through)
+	    ret |= update_safe_size (desc, ipf->unit_size);
+	  else
+	    /* LTOing type-mismatched programs can end up here.  */
+	    ret |= update_safe_size (desc, 0);
+	}
+    }
+  return ret;
+}
+
+/* Propagate hints from NODE described by FROM_IFS to all its (dorect) callees,
+   push those that may need re-visiting onto STACK.  */
+
+static void
+propagate_hints_to_all_callees (cgraph_node *node, isra_func_summary *from_ifs,
+				vec<cgraph_node *> *stack)
+{
+  for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
+    {
+      enum availability availability;
+      cgraph_node *callee = cs->callee->function_symbol (&availability);
+      isra_func_summary *to_ifs = func_sums->get (callee);
+      if (!from_ifs)
+	{
+	  if (flip_all_param_hints_pessimistic (to_ifs)
+	      && ipa_edge_within_scc (cs))
+	    isra_push_node_to_stack (callee, to_ifs, stack);
+	}
+      else if (propagate_param_hints_accross_call (cs, to_ifs)
+	       && ipa_edge_within_scc (cs))
+	isra_push_node_to_stack (callee, to_ifs, stack);
+    }
+}
 
 /* Propagate information that any parameter is not used only locally within a
    SCC across CS to the caller, which must be in the same SCC as the
@@ -3605,13 +3934,16 @@ retval_used_p (cgraph_node *node, void *)
 /* Push into NEW_PARAMS all required parameter adjustment entries to copy or
    modify parameter which originally had index BASE_INDEX, in the adjustment
    vector of parent clone (if any) had PREV_CLONE_INDEX and was described by
-   PREV_ADJUSTMENT.  If the parent clone is the original function,
-   PREV_ADJUSTMENT is NULL and PREV_CLONE_INDEX is equal to BASE_INDEX.  */
+   PREV_ADJUSTMENT.  If IPA-CP has created a transformation summary for the
+   original node, it needs to be passed in IPCP_TS, otherwise it should be
+   NULL.  If the parent clone is the original function, PREV_ADJUSTMENT is NULL
+   and PREV_CLONE_INDEX is equal to BASE_INDEX.  */
 
 static void
 push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
 				  unsigned prev_clone_index,
 				  ipa_adjusted_param *prev_adjustment,
+				  ipcp_transformation *ipcp_ts,
 				  vec<ipa_adjusted_param, va_gc> **new_params)
 {
   isra_param_desc *desc = &(*ifs->m_parameters)[base_index];
@@ -3652,6 +3984,23 @@ push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
       param_access *pa = (*desc->accesses)[j];
       if (!pa->certain)
 	continue;
+
+      if (ipcp_ts)
+	{
+	  ipa_argagg_value_list avl (ipcp_ts);
+	  tree value = avl.get_value (base_index, pa->unit_offset);
+	  if (value
+	      && (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value))) / BITS_PER_UNIT
+		  == pa->unit_size))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "    - omitting component at byte "
+			 "offset %u which is known to have a constant value\n ",
+			 pa->unit_offset);
+	      continue;
+	    }
+	}
+
       if (dump_file)
 	fprintf (dump_file, "    - component at byte offset %u, "
 		 "size %u\n", pa->unit_offset, pa->unit_size);
@@ -3732,6 +4081,7 @@ process_isra_node_results (cgraph_node *node,
 	fprintf (dump_file, "  Will remove return value.\n");
     }
 
+  ipcp_transformation *ipcp_ts = ipcp_get_transformation_summary (node);
   vec<ipa_adjusted_param, va_gc> *new_params = NULL;
   if (ipa_param_adjustments *old_adjustments
 	 = cinfo ? cinfo->param_adjustments : NULL)
@@ -3741,12 +4091,12 @@ process_isra_node_results (cgraph_node *node,
 	{
 	  ipa_adjusted_param *old_adj = &(*old_adjustments->m_adj_params)[i];
 	  push_param_adjustments_for_index (ifs, old_adj->base_index, i,
-					    old_adj, &new_params);
+					    old_adj, ipcp_ts, &new_params);
 	}
     }
   else
     for (unsigned i = 0; i < param_count; i++)
-      push_param_adjustments_for_index (ifs, i, i, NULL, &new_params);
+      push_param_adjustments_for_index (ifs, i, i, NULL, ipcp_ts, &new_params);
 
   ipa_param_adjustments *new_adjustments
     = (new (ggc_alloc <ipa_param_adjustments> ())
@@ -3783,10 +4133,12 @@ process_isra_node_results (cgraph_node *node,
 /* Check which parameters of NODE described by IFS have survived until IPA-SRA
    and disable transformations for those which have not or which should not
    transformed because the associated debug counter reached its limit.  Return
-   true if none survived or if there were no candidates to begin with.  */
+   true if none survived or if there were no candidates to begin with.
+   Additionally, also adjust parameter descriptions based on debug counters and
+   hints propagated earlier.  */
 
 static bool
-disable_unavailable_parameters (cgraph_node *node, isra_func_summary *ifs)
+adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
 {
   bool ret = true;
   unsigned len = vec_safe_length (ifs->m_parameters);
@@ -3801,7 +4153,8 @@ disable_unavailable_parameters (cgraph_node *node, isra_func_summary *ifs)
       check_surviving = true;
       cinfo->param_adjustments->get_surviving_params (&surviving_params);
     }
-  bool dumped_first = false;
+  auto_vec <unsigned> dump_dead_indices;
+  auto_vec <unsigned> dump_bad_cond_indices;
   for (unsigned i = 0; i < len; i++)
     {
       isra_param_desc *desc = &(*ifs->m_parameters)[i];
@@ -3820,23 +4173,56 @@ disable_unavailable_parameters (cgraph_node *node, isra_func_summary *ifs)
 	  desc->split_candidate = false;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      if (!dumped_first)
-		{
-		  fprintf (dump_file,
-			   "The following parameters of %s are dead on "
-			   "arrival:", node->dump_name ());
-		  dumped_first = true;
-		}
-	      fprintf (dump_file, " %u", i);
-	    }
+	    dump_dead_indices.safe_push (i);
 	}
-      else if (desc->locally_unused || desc->split_candidate)
-	ret = false;
+      else
+	{
+	  if (desc->split_candidate && desc->conditionally_dereferenceable)
+	    {
+	      gcc_assert (desc->safe_size_set);
+	      for (param_access *pa : *desc->accesses)
+		if ((pa->unit_offset + pa->unit_size) > desc->safe_size)
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      dump_bad_cond_indices.safe_push (i);
+		    desc->split_candidate = false;
+		    break;
+		  }
+	    }
+
+	  if (desc->split_candidate)
+	    {
+	      if (desc->by_ref && !desc->not_specially_constructed)
+		{
+		  int extra_factor
+		    = opt_for_fn (node->decl,
+				  param_ipa_sra_ptrwrap_growth_factor);
+		  desc->param_size_limit = extra_factor * desc->param_size_limit;
+		}
+	      if (size_would_violate_limit_p (desc, desc->size_reached))
+		desc->split_candidate = false;
+	    }
+	  if (desc->locally_unused || desc->split_candidate)
+	    ret = false;
+	}
     }
 
-  if (dumped_first)
-    fprintf (dump_file, "\n");
+  if (!dump_dead_indices.is_empty ())
+    {
+      fprintf (dump_file, "The following parameters of %s are dead on arrival:",
+	       node->dump_name ());
+      for (unsigned i : dump_dead_indices)
+	fprintf (dump_file, " %u", i);
+      fprintf (dump_file, "\n");
+    }
+  if (!dump_bad_cond_indices.is_empty ())
+    {
+      fprintf (dump_file, "The following parameters of %s are not safe to "
+	       "derefernce in all callers:", node->dump_name ());
+      for (unsigned i : dump_bad_cond_indices)
+	fprintf (dump_file, " %u", i);
+      fprintf (dump_file, "\n");
+    }
 
   return ret;
 }
@@ -3850,7 +4236,7 @@ ipa_sra_analysis (void)
   if (dump_file)
     {
       fprintf (dump_file, "\n========== IPA-SRA IPA stage ==========\n");
-      ipa_sra_dump_all_summaries (dump_file);
+      ipa_sra_dump_all_summaries (dump_file, false);
     }
 
   gcc_checking_assert (func_sums);
@@ -3859,95 +4245,28 @@ ipa_sra_analysis (void)
   auto_vec <cgraph_node *, 16> stack;
   int node_scc_count = ipa_reduced_postorder (order, true, NULL);
 
-  /* One sweep from callees to callers for parameter removal and splitting.  */
-  for (int i = 0; i < node_scc_count; i++)
+  /* One sweep from callers to callees for return value removal.  */
+  for (int i = node_scc_count - 1; i >= 0 ; i--)
     {
       cgraph_node *scc_rep = order[i];
       vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (scc_rep);
-      unsigned j;
 
-      /* Preliminary IPA function level checks and first step of parameter
-	 removal.  */
-      cgraph_node *v;
-      FOR_EACH_VEC_ELT (cycle_nodes, j, v)
+      /* Preliminary IPA function level checks.  */
+      for (cgraph_node *v : cycle_nodes)
 	{
 	  isra_func_summary *ifs = func_sums->get (v);
 	  if (!ifs || !ifs->m_candidate)
 	    continue;
 	  if (!ipa_sra_ipa_function_checks (v)
 	      || check_all_callers_for_issues (v))
-	    {
-	      ifs->zap ();
-	      continue;
-	    }
-	  if (disable_unavailable_parameters (v, ifs))
-	    continue;
-	  for (cgraph_edge *cs = v->indirect_calls; cs; cs = cs->next_callee)
-	    process_edge_to_unknown_caller (cs);
-	  for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
-	    if (!ipa_edge_within_scc (cs))
-	      param_removal_cross_scc_edge (cs);
+	    ifs->zap ();
 	}
 
-      /* Look at edges within the current SCC and propagate used-ness across
-	 them, pushing onto the stack all notes which might need to be
-	 revisited.  */
-      FOR_EACH_VEC_ELT (cycle_nodes, j, v)
-	v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
-					       &stack, true);
-
-      /* Keep revisiting and pushing until nothing changes.  */
-      while (!stack.is_empty ())
-	{
-	  cgraph_node *v = stack.pop ();
-	  isra_func_summary *ifs = func_sums->get (v);
-	  gcc_checking_assert (ifs && ifs->m_queued);
-	  ifs->m_queued = false;
-
-	  v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
-						 &stack, true);
-	}
-
-      /* Parameter splitting.  */
-      bool repeat_scc_access_propagation;
-      do
-	{
-	  repeat_scc_access_propagation = false;
-	  FOR_EACH_VEC_ELT (cycle_nodes, j, v)
-	    {
-	      isra_func_summary *ifs = func_sums->get (v);
-	      if (!ifs
-		  || !ifs->m_candidate
-		  || vec_safe_is_empty (ifs->m_parameters))
-		continue;
-	      for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
-		if (param_splitting_across_edge (cs))
-		  repeat_scc_access_propagation = true;
-	    }
-	}
-      while (repeat_scc_access_propagation);
-
-      if (flag_checking)
-	FOR_EACH_VEC_ELT (cycle_nodes, j, v)
-	  verify_splitting_accesses (v, true);
-
-      cycle_nodes.release ();
-    }
-
-  /* One sweep from caller to callees for result removal.  */
-  for (int i = node_scc_count - 1; i >= 0 ; i--)
-    {
-      cgraph_node *scc_rep = order[i];
-      vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (scc_rep);
-      unsigned j;
-
-      cgraph_node *v;
-      FOR_EACH_VEC_ELT (cycle_nodes, j, v)
+      for (cgraph_node *v : cycle_nodes)
 	{
 	  isra_func_summary *ifs = func_sums->get (v);
 	  if (!ifs || !ifs->m_candidate)
 	    continue;
-
 	  bool return_needed
 	    = (ifs->m_returns_value
 	       && (!dbg_cnt (ipa_sra_retvalues)
@@ -3979,6 +4298,89 @@ ipa_sra_analysis (void)
 		  }
 	      }
 	}
+
+      /* Parameter hint propagation.  */
+      for (cgraph_node *v : cycle_nodes)
+	{
+	  isra_func_summary *ifs = func_sums->get (v);
+	  propagate_hints_to_all_callees (v, ifs, &stack);
+	}
+
+      while (!stack.is_empty ())
+	{
+	  cgraph_node *node = stack.pop ();
+	  isra_func_summary *ifs = func_sums->get (node);
+	  gcc_checking_assert (ifs && ifs->m_queued);
+	  ifs->m_queued = false;
+	  propagate_hints_to_all_callees (node, ifs, &stack);
+	}
+
+      cycle_nodes.release ();
+    }
+
+  /* One sweep from callees to callers for parameter removal and splitting.  */
+  for (int i = 0; i < node_scc_count; i++)
+    {
+      cgraph_node *scc_rep = order[i];
+      vec<cgraph_node *> cycle_nodes = ipa_get_nodes_in_cycle (scc_rep);
+
+      /* First step of parameter removal.  */
+      for (cgraph_node *v : cycle_nodes)
+	{
+	  isra_func_summary *ifs = func_sums->get (v);
+	  if (!ifs || !ifs->m_candidate)
+	    continue;
+	  if (adjust_parameter_descriptions (v, ifs))
+	    continue;
+	  for (cgraph_edge *cs = v->indirect_calls; cs; cs = cs->next_callee)
+	    process_edge_to_unknown_caller (cs);
+	  for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
+	    if (!ipa_edge_within_scc (cs))
+	      param_removal_cross_scc_edge (cs);
+	}
+
+      /* Look at edges within the current SCC and propagate used-ness across
+	 them, pushing onto the stack all notes which might need to be
+	 revisited.  */
+      for (cgraph_node *v : cycle_nodes)
+	v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
+					       &stack, true);
+
+      /* Keep revisiting and pushing until nothing changes.  */
+      while (!stack.is_empty ())
+	{
+	  cgraph_node *v = stack.pop ();
+	  isra_func_summary *ifs = func_sums->get (v);
+	  gcc_checking_assert (ifs && ifs->m_queued);
+	  ifs->m_queued = false;
+
+	  v->call_for_symbol_thunks_and_aliases (propagate_used_to_scc_callers,
+						 &stack, true);
+	}
+
+      /* Parameter splitting.  */
+      bool repeat_scc_access_propagation;
+      do
+	{
+	  repeat_scc_access_propagation = false;
+	  for (cgraph_node *v : cycle_nodes)
+	    {
+	      isra_func_summary *ifs = func_sums->get (v);
+	      if (!ifs
+		  || !ifs->m_candidate
+		  || vec_safe_is_empty (ifs->m_parameters))
+		continue;
+	      for (cgraph_edge *cs = v->callees; cs; cs = cs->next_callee)
+		if (param_splitting_across_edge (cs))
+		  repeat_scc_access_propagation = true;
+	    }
+	}
+      while (repeat_scc_access_propagation);
+
+      if (flag_checking)
+	for (cgraph_node *v : cycle_nodes)
+	  verify_splitting_accesses (v, true);
+
       cycle_nodes.release ();
     }
 
@@ -3991,7 +4393,7 @@ ipa_sra_analysis (void)
 	{
 	  fprintf (dump_file, "\n========== IPA-SRA propagation final state "
 		   " ==========\n");
-	  ipa_sra_dump_all_summaries (dump_file);
+	  ipa_sra_dump_all_summaries (dump_file, true);
 	}
       fprintf (dump_file, "\n========== IPA-SRA decisions ==========\n");
     }
@@ -4072,48 +4474,57 @@ ipa_sra_summarize_function (cgraph_node *node)
   if (dump_file)
     fprintf (dump_file, "Creating summary for %s/%i:\n", node->name (),
 	     node->order);
-  if (!ipa_sra_preliminary_function_checks (node))
-    {
-      isra_analyze_all_outgoing_calls (node);
-      return;
-    }
   gcc_obstack_init (&gensum_obstack);
-  isra_func_summary *ifs = func_sums->get_create (node);
-  ifs->m_candidate = true;
-  tree ret = TREE_TYPE (TREE_TYPE (node->decl));
-  ifs->m_returns_value = (TREE_CODE (ret) != VOID_TYPE);
+  loaded_decls = new hash_set<tree>;
 
-  decl2desc = new hash_map<tree, gensum_param_desc *>;
+  isra_func_summary *ifs = NULL;
   unsigned count = 0;
-  for (tree parm = DECL_ARGUMENTS (node->decl); parm; parm = DECL_CHAIN (parm))
-    count++;
+  if (ipa_sra_preliminary_function_checks (node))
+    {
+      ifs = func_sums->get_create (node);
+      ifs->m_candidate = true;
+      tree ret = TREE_TYPE (TREE_TYPE (node->decl));
+      ifs->m_returns_value = (TREE_CODE (ret) != VOID_TYPE);
+      for (tree parm = DECL_ARGUMENTS (node->decl);
+	   parm;
+	   parm = DECL_CHAIN (parm))
+	count++;
+    }
+  auto_vec<gensum_param_desc, 16> param_descriptions (count);
 
+  struct function *fun = DECL_STRUCT_FUNCTION (node->decl);
+  bool cfun_pushed = false;
   if (count > 0)
     {
-      auto_vec<gensum_param_desc, 16> param_descriptions (count);
+      decl2desc = new hash_map<tree, gensum_param_desc *>;
       param_descriptions.reserve_exact (count);
       param_descriptions.quick_grow_cleared (count);
 
-      bool cfun_pushed = false;
-      struct function *fun = DECL_STRUCT_FUNCTION (node->decl);
       if (create_parameter_descriptors (node, &param_descriptions))
 	{
 	  push_cfun (fun);
 	  cfun_pushed = true;
 	  final_bbs = BITMAP_ALLOC (NULL);
 	  bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
-				      by_ref_count
+				      unsafe_by_ref_count
 				      * last_basic_block_for_fn (fun));
 	  aa_walking_limit = opt_for_fn (node->decl, param_ipa_max_aa_steps);
-	  scan_function (node, fun);
-
-	  if (dump_file)
-	    {
-	      dump_gensum_param_descriptors (dump_file, node->decl,
-					     &param_descriptions);
-	      fprintf (dump_file, "----------------------------------------\n");
-	    }
 	}
+    }
+  /* Scan function is run even when there are no removal or splitting
+     candidates so that we can calculate hints on call edges which can be
+     useful in callees. */
+  scan_function (node, fun);
+
+  if (count > 0)
+    {
+      if (dump_file)
+	{
+	  dump_gensum_param_descriptors (dump_file, node->decl,
+					 &param_descriptions);
+	  fprintf (dump_file, "----------------------------------------\n");
+	}
+
       process_scan_results (node, fun, ifs, &param_descriptions);
 
       if (cfun_pushed)
@@ -4128,8 +4539,13 @@ ipa_sra_summarize_function (cgraph_node *node)
     }
   isra_analyze_all_outgoing_calls (node);
 
-  delete decl2desc;
-  decl2desc = NULL;
+  delete loaded_decls;
+  loaded_decls = NULL;
+  if (decl2desc)
+    {
+      delete decl2desc;
+      decl2desc = NULL;
+    }
   obstack_free (&gensum_obstack, NULL);
   if (dump_file)
     fprintf (dump_file, "\n\n");

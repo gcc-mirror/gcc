@@ -2,12 +2,12 @@
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O3 -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include <riscv_vector.h> 
+#include "riscv_vector.h" 
 
 /*
 ** mov14:
-**	vsetvli\s+(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7]),\s*zero,\s*e32,\s*mf2,\s*t[au],\s*m[au]
-**	vle32\.v\tv1,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vsetvli\s+[a-x0-9]+,\s*zero,\s*e32,\s*mf2,\s*t[au],\s*m[au]
+**	vle32\.v\tv1,0\s*\([a-x0-9]+\)
 **	...
 **  vmv1r\.v\tv2,v1
 **	...
@@ -24,7 +24,7 @@ void mov14 (float *in, float *out)
 
 /*
 ** mov15:
-**	vl1re32\.v\tv1,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl1re32\.v\tv1,0\s*\([a-x0-9]+\)
 **	...
 **  vmv1r\.v\tv2,v1
 **	...
@@ -41,7 +41,7 @@ void mov15 (float *in, float *out)
 
 /*
 ** mov16:
-**	vl2re32\.v\tv2,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl2re32\.v\tv2,0\s*\([a-x0-9]+\)
 **	...
 **  vmv2r\.v\tv4,v2
 **	...
@@ -58,7 +58,7 @@ void mov16 (float *in, float *out)
 
 /*
 ** mov17:
-**	vl4re32\.v\tv4,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl4re32\.v\tv4,0\s*\([a-x0-9]+\)
 **	...
 **  vmv4r\.v\tv8,v4
 **	...
@@ -75,7 +75,7 @@ void mov17 (float *in, float *out)
 
 /*
 ** mov18:
-**	vl8re32\.v\tv8,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl8re32\.v\tv8,0\s*\([a-x0-9]+\)
 **	...
 **  vmv8r\.v\tv16,v8
 **	...
@@ -92,7 +92,7 @@ void mov18 (float *in, float *out)
 
 /*
 ** mov19:
-**	vl1re64\.v\tv1,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl1re64\.v\tv1,0\s*\([a-x0-9]+\)
 **	...
 **  vmv1r\.v\tv2,v1
 **	...
@@ -109,7 +109,7 @@ void mov19 (uint64_t *in, uint64_t *out)
 
 /*
 ** mov20:
-**	vl2re64\.v\tv2,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl2re64\.v\tv2,0\s*\([a-x0-9]+\)
 **	...
 **  vmv2r\.v\tv4,v2
 **	...
@@ -126,7 +126,7 @@ void mov20 (uint64_t *in, uint64_t *out)
 
 /*
 ** mov21:
-**	vl4re64\.v\tv4,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl4re64\.v\tv4,0\s*\([a-x0-9]+\)
 **	...
 **  vmv4r\.v\tv8,v4
 **	...
@@ -143,7 +143,7 @@ void mov21 (uint64_t *in, uint64_t *out)
 
 /*
 ** mov22:
-**	vl8re64\.v\tv8,0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl8re64\.v\tv8,0\s*\([a-x0-9]+\)
 **	...
 **  vmv8r\.v\tv16,v8
 **	...

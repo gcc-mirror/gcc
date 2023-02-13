@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2022 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2023 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -1013,7 +1013,7 @@ for (i = 0; i < n_target_string; i++) {
 	print "             indent, \"\",";
 	print "             \"" name "\",";
 	print "             ptr1->x_" name " ? ptr1->x_" name " : \"(null)\",";
-	print "             ptr2->x_" name " ? ptr1->x_" name " : \"(null)\");";
+	print "             ptr2->x_" name " ? ptr2->x_" name " : \"(null)\");";
 	print "";
 }
 

@@ -174,39 +174,39 @@ namespace nonnullary
   }
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 12 nullary::fun .*(\n|\r\n|\r)*" }
-// { dg-output "fun::x: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 18 nullary::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 19 nullary::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "fun2::x: 10 fun2::y: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 146 nullary::funend .*(\n|\r\n|\r)*" }
-// { dg-output "funend::x: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 39 nonvoid::vfun .*(\n|\r\n|\r)*" }
-// { dg-output "vfun::x: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 45 nonvoid::fun .*(\n|\r\n|\r)*" }
-// { dg-output "fun::x: 10(\n|\r\n|\r)*" }
-// { dg-output "main::f: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 52 nonvoid::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 53 nonvoid::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "fun2::x: 10 fun2::y: 10.500000(\n|\r\n|\r)*" }
-// { dg-output "main::d: 10.500000(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 155 nonvoid::funend .*(\n|\r\n|\r)*" }
-// { dg-output "funend::x: 10(\n|\r\n|\r)*" }
-// { dg-output "main::s.z: 1(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 74 nonnullary::vfun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 75 nonnullary::vfun .*(\n|\r\n|\r)*" }
-// { dg-output "vfun::x: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 81 nonnullary::fun .*(\n|\r\n|\r)*" }
-// { dg-output "fun::x: 10(\n|\r\n|\r)*" }
-// { dg-output "main::f: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 88 nonnullary::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 89 nonnullary::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 90 nonnullary::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 91 nonnullary::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "fun2::x: 10 fun2::y: 10.500000(\n|\r\n|\r)*" }
-// { dg-output "main::d: 10.500000(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 167 nonnullary::funend .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 168 nonnullary::funend .*(\n|\r\n|\r)*" }
-// { dg-output "funend::x: 10(\n|\r\n|\r)*" }
-// { dg-output "main::s.z: 1(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function nullary::fun at .*.C:12: .*(\n|\r\n|\r)" }
+// { dg-output "fun::x: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nullary::fun2 at .*.C:18: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nullary::fun2 at .*.C:19: .*(\n|\r\n|\r)" }
+// { dg-output "fun2::x: 10 fun2::y: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nullary::funend at .*.C:146: .*(\n|\r\n|\r)" }
+// { dg-output "funend::x: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonvoid::vfun at .*.C:39: .*(\n|\r\n|\r)" }
+// { dg-output "vfun::x: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonvoid::fun at .*.C:45: .*(\n|\r\n|\r)" }
+// { dg-output "fun::x: 10(\n|\r\n|\r)" }
+// { dg-output "main::f: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonvoid::fun2 at .*.C:52: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonvoid::fun2 at .*.C:53: .*(\n|\r\n|\r)" }
+// { dg-output "fun2::x: 10 fun2::y: 10.500000(\n|\r\n|\r)" }
+// { dg-output "main::d: 10.500000(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonvoid::funend at .*.C:155: .*(\n|\r\n|\r)" }
+// { dg-output "funend::x: 10(\n|\r\n|\r)" }
+// { dg-output "main::s.z: 1(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::vfun at .*.C:74: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::vfun at .*.C:75: .*(\n|\r\n|\r)" }
+// { dg-output "vfun::x: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::fun at .*.C:81: .*(\n|\r\n|\r)" }
+// { dg-output "fun::x: 10(\n|\r\n|\r)" }
+// { dg-output "main::f: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::fun2 at .*.C:88: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::fun2 at .*.C:89: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::fun2 at .*.C:90: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::fun2 at .*.C:91: .*(\n|\r\n|\r)" }
+// { dg-output "fun2::x: 10 fun2::y: 10.500000(\n|\r\n|\r)" }
+// { dg-output "main::d: 10.500000(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::funend at .*.C:167: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function nonnullary::funend at .*.C:168: .*(\n|\r\n|\r)" }
+// { dg-output "funend::x: 10(\n|\r\n|\r)" }
+// { dg-output "main::s.z: 1(\n|\r\n|\r)" }
 

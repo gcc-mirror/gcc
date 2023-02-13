@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -141,7 +142,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libhwasan_la_DEPENDENCIES =  \
@@ -152,10 +154,9 @@ am__objects_1 = hwasan_allocation_functions.lo hwasan_allocator.lo \
 	hwasan_fuchsia.lo hwasan_globals.lo hwasan_interceptors.lo \
 	hwasan_interceptors_vfork.lo hwasan_linux.lo \
 	hwasan_memintrinsics.lo hwasan_new_delete.lo \
-	hwasan_poisoning.lo hwasan_preinit.lo hwasan_report.lo \
-	hwasan_setjmp_aarch64.lo hwasan_setjmp_x86_64.lo \
-	hwasan_tag_mismatch_aarch64.lo hwasan_thread.lo \
-	hwasan_thread_list.lo hwasan_type_test.lo
+	hwasan_poisoning.lo hwasan_report.lo hwasan_setjmp_aarch64.lo \
+	hwasan_setjmp_x86_64.lo hwasan_tag_mismatch_aarch64.lo \
+	hwasan_thread.lo hwasan_thread_list.lo hwasan_type_test.lo
 am_libhwasan_la_OBJECTS = $(am__objects_1)
 libhwasan_la_OBJECTS = $(am_libhwasan_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -233,6 +234,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+HEADERS = $(nodist_toolexeclib_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -415,6 +417,7 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 AM_CCASFLAGS = $(EXTRA_ASFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 toolexeclib_LTLIBRARIES = libhwasan.la
+nodist_toolexeclib_HEADERS = libhwasan_preinit.o
 hwasan_files = \
 	hwasan_allocation_functions.cpp \
 	hwasan_allocator.cpp \
@@ -430,7 +433,6 @@ hwasan_files = \
 	hwasan_memintrinsics.cpp \
 	hwasan_new_delete.cpp \
 	hwasan_poisoning.cpp \
-	hwasan_preinit.cpp \
 	hwasan_report.cpp \
 	hwasan_setjmp_aarch64.S \
 	hwasan_setjmp_x86_64.S \
@@ -575,7 +577,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_memintrinsics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_new_delete.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_poisoning.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_preinit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_setjmp_aarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_setjmp_x86_64.Plo@am__quote@
@@ -631,6 +632,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-nodist_toolexeclibHEADERS: $(nodist_toolexeclib_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-nodist_toolexeclibHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -685,9 +707,9 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -749,7 +771,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-toolexeclibLTLIBRARIES
+install-exec-am: install-nodist_toolexeclibHEADERS \
+	install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -789,7 +812,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-nodist_toolexeclibHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -800,16 +824,20 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	info-am install install-am install-data install-data-am \
 	install-dvi install-dvi-am install-exec install-exec-am \
 	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip install-toolexeclibLTLIBRARIES \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am \
+	install-man install-nodist_toolexeclibHEADERS install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-nodist_toolexeclibHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
+
+libhwasan_preinit.o: hwasan_preinit.o
+	cp $< $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,5 +1,5 @@
 /* A state machine for detecting misuses of POSIX file descriptor APIs.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by Immad Mir <mir@sourceware.org>.
 
 This file is part of GCC.
@@ -1992,6 +1992,7 @@ fd_state_machine::on_accept (const call_details &cd,
 				  build_int_cst (TREE_TYPE (len_ptr), 0));
       old_len_sval = model->check_for_poison (old_len_sval,
 					      star_len_ptr,
+					      len_reg,
 					      cd.get_ctxt ());
       if (successful)
 	{

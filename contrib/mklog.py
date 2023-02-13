@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright (C) 2020-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -186,8 +186,9 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
             # contains commented code which a note that it
             # has not been tested due to a certain PR or DR.
             this_file_prs = []
-            if not file.is_binary_file:
-                for line in list(file)[0][0:10]:
+            hunks = list(file)
+            if hunks:
+                for line in hunks[0][0:10]:
                     m = pr_regex.search(line.value)
                     if m:
                         pr = m.group('pr')

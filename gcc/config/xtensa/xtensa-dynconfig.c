@@ -1,5 +1,5 @@
 /* Xtensa configuration settings loader.
-   Copyright (C) 2022 Free Software Foundation, Inc.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -29,13 +29,14 @@
 #if defined (HAVE_DLFCN_H)
 #include <dlfcn.h>
 #elif defined (_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #define ENABLE_PLUGIN
 #endif
 
 #if !defined (HAVE_DLFCN_H) && defined (_WIN32)
 
-#define RTLD_LAZY 0      /* Dummy value.  */
+#define RTLD_LAZY 0	/* Dummy value.  */
 
 static void *
 dlopen (const char *file, int mode ATTRIBUTE_UNUSED)
@@ -142,8 +143,8 @@ XTENSA_CONFIG_INSTANCE_LIST;
 #define XTENSA_CONFIG_ENTRY(a) "__" #a "=" STRINGIFY(a)
 
 static const char * const xtensa_config_strings[] = {
-    XTENSA_CONFIG_ENTRY_LIST,
-    NULL,
+  XTENSA_CONFIG_ENTRY_LIST,
+  NULL,
 };
 
 const struct xtensa_config_v1 *xtensa_get_config_v1 (void)

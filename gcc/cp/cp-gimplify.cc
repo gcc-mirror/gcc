@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.cc and gimple.cc.
 
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -250,7 +250,10 @@ cp_gimplify_init_expr (tree *expr_p)
   if (TREE_CODE (from) == TARGET_EXPR)
     if (tree init = TARGET_EXPR_INITIAL (from))
       {
-	gcc_checking_assert (TARGET_EXPR_ELIDING_P (from));
+	/* Make sure that we expected to elide this temporary.  But also allow
+	   gimplify_modify_expr_rhs to elide temporaries of trivial type.  */
+	gcc_checking_assert (TARGET_EXPR_ELIDING_P (from)
+			     || !TREE_ADDRESSABLE (TREE_TYPE (from)));
 	if (target_expr_needs_replace (from))
 	  {
 	    /* If this was changed by cp_genericize_target_expr, we need to
@@ -722,7 +725,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		break;
 	      case CP_BUILT_IN_SOURCE_LOCATION:
 		*expr_p
-		  = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
+		  = fold_builtin_source_location (*expr_p);
 		break;
 	      case CP_BUILT_IN_IS_CORRESPONDING_MEMBER:
 		*expr_p
@@ -949,6 +952,28 @@ cp_genericize_target_expr (tree *stmt_p)
   gcc_assert (!DECL_INITIAL (slot));
 }
 
+/* Similar to if (target_expr_needs_replace) replace_decl, but TP is the
+   TARGET_EXPR_INITIAL, and this also updates *_SLOT.  We need this extra
+   replacement when cp_folding TARGET_EXPR to preserve the invariant that
+   AGGR_INIT_EXPR_SLOT agrees with the enclosing TARGET_EXPR_SLOT.  */
+
+bool
+maybe_replace_decl (tree *tp, tree decl, tree replacement)
+{
+  if (!*tp || !VOID_TYPE_P (TREE_TYPE (*tp)))
+    return false;
+  tree t = *tp;
+  while (TREE_CODE (t) == COMPOUND_EXPR)
+    t = TREE_OPERAND (t, 1);
+  if (TREE_CODE (t) == AGGR_INIT_EXPR)
+    replace_decl (&AGGR_INIT_EXPR_SLOT (t), decl, replacement);
+  else if (TREE_CODE (t) == VEC_INIT_EXPR)
+    replace_decl (&VEC_INIT_EXPR_SLOT (t), decl, replacement);
+  else
+    replace_decl (tp, decl, replacement);
+  return true;
+}
+
 /* Genericization context.  */
 
 struct cp_genericize_data
@@ -1103,15 +1128,18 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	cp_genericize_target_expr (stmt_p);
 
       /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
-	 that case, use it in place of this one.  */
+	 that case, strip it in favor of this one.  */
       if (tree &init = TARGET_EXPR_INITIAL (stmt))
 	{
 	  cp_walk_tree (&init, cp_fold_r, data, NULL);
+	  cp_walk_tree (&TARGET_EXPR_CLEANUP (stmt), cp_fold_r, data, NULL);
 	  *walk_subtrees = 0;
 	  if (TREE_CODE (init) == TARGET_EXPR)
 	    {
-	      TARGET_EXPR_ELIDING_P (init) = TARGET_EXPR_ELIDING_P (stmt);
-	      *stmt_p = init;
+	      tree sub = TARGET_EXPR_INITIAL (init);
+	      maybe_replace_decl (&sub, TARGET_EXPR_SLOT (init),
+				  TARGET_EXPR_SLOT (stmt));
+	      init = sub;
 	    }
 	}
       break;
@@ -2850,7 +2878,7 @@ cp_fold (tree x)
 	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
 		break;
 	      case CP_BUILT_IN_SOURCE_LOCATION:
-		x = fold_builtin_source_location (EXPR_LOCATION (x));
+		x = fold_builtin_source_location (x);
 		break;
 	      case CP_BUILT_IN_IS_CORRESPONDING_MEMBER:
 	        x = fold_builtin_is_corresponding_member
@@ -2872,7 +2900,7 @@ cp_fold (tree x)
 	    && fndecl_built_in_p (callee, CP_BUILT_IN_SOURCE_LOCATION,
 				  BUILT_IN_FRONTEND))
 	  {
-	    x = fold_builtin_source_location (EXPR_LOCATION (x));
+	    x = fold_builtin_source_location (x);
 	    break;
 	  }
 
@@ -3171,12 +3199,11 @@ process_stmt_assume_attribute (tree std_attrs, tree statement,
   return remove_attribute ("gnu", "assume", std_attrs);
 }
 
-/* Helper of fold_builtin_source_location, return the
-   std::source_location::__impl type after performing verification
-   on it.  LOC is used for reporting any errors.  */
+/* Return the type std::source_location::__impl after performing
+   verification on it.  */
 
-static tree
-get_source_location_impl_type (location_t loc)
+tree
+get_source_location_impl_type ()
 {
   tree name = get_identifier ("source_location");
   tree decl = lookup_qualified_name (std_node, name);
@@ -3184,9 +3211,9 @@ get_source_location_impl_type (location_t loc)
     {
       auto_diagnostic_group d;
       if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
-	qualified_name_lookup_error (std_node, name, decl, loc);
+	qualified_name_lookup_error (std_node, name, decl, input_location);
       else
-	error_at (loc, "%qD is not a type", decl);
+	error ("%qD is not a type", decl);
       return error_mark_node;
     }
   name = get_identifier ("__impl");
@@ -3196,15 +3223,15 @@ get_source_location_impl_type (location_t loc)
     {
       auto_diagnostic_group d;
       if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
-	qualified_name_lookup_error (type, name, decl, loc);
+	qualified_name_lookup_error (type, name, decl, input_location);
       else
-	error_at (loc, "%qD is not a type", decl);
+	error ("%qD is not a type", decl);
       return error_mark_node;
     }
   type = TREE_TYPE (decl);
   if (TREE_CODE (type) != RECORD_TYPE)
     {
-      error_at (loc, "%qD is not a class type", decl);
+      error ("%qD is not a class type", decl);
       return error_mark_node;
     }
 
@@ -3221,8 +3248,7 @@ get_source_location_impl_type (location_t loc)
 	    {
 	      if (TREE_TYPE (field) != const_string_type_node)
 		{
-		  error_at (loc, "%qD does not have %<const char *%> type",
-			    field);
+		  error ("%qD does not have %<const char *%> type", field);
 		  return error_mark_node;
 		}
 	      cnt++;
@@ -3232,7 +3258,7 @@ get_source_location_impl_type (location_t loc)
 	    {
 	      if (TREE_CODE (TREE_TYPE (field)) != INTEGER_TYPE)
 		{
-		  error_at (loc, "%qD does not have integral type", field);
+		  error ("%qD does not have integral type", field);
 		  return error_mark_node;
 		}
 	      cnt++;
@@ -3244,9 +3270,9 @@ get_source_location_impl_type (location_t loc)
     }
   if (cnt != 4)
     {
-      error_at (loc, "%<std::source_location::__impl%> does not contain only "
-		     "non-static data members %<_M_file_name%>, "
-		     "%<_M_function_name%>, %<_M_line%> and %<_M_column%>");
+      error ("%<std::source_location::__impl%> does not contain only "
+	     "non-static data members %<_M_file_name%>, "
+	     "%<_M_function_name%>, %<_M_line%> and %<_M_column%>");
       return error_mark_node;
     }
   return build_qualified_type (type, TYPE_QUAL_CONST);
@@ -3337,21 +3363,20 @@ static GTY(()) hash_table <source_location_table_entry_hash>
   *source_location_table;
 static GTY(()) unsigned int source_location_id;
 
-/* Fold __builtin_source_location () call.  LOC is the location
-   of the call.  */
+/* Fold the __builtin_source_location () call T.  */
 
 tree
-fold_builtin_source_location (location_t loc)
+fold_builtin_source_location (const_tree t)
 {
-  if (source_location_impl == NULL_TREE)
-    {
-      auto_diagnostic_group d;
-      source_location_impl = get_source_location_impl_type (loc);
-      if (source_location_impl == error_mark_node)
-	inform (loc, "evaluating %qs", "__builtin_source_location");
-    }
+  gcc_assert (TREE_CODE (t) == CALL_EXPR);
+  /* TREE_TYPE (t) is const std::source_location::__impl*  */
+  tree source_location_impl = TREE_TYPE (TREE_TYPE (t));
   if (source_location_impl == error_mark_node)
     return build_zero_cst (const_ptr_type_node);
+  gcc_assert (CLASS_TYPE_P (source_location_impl)
+	      && id_equal (TYPE_IDENTIFIER (source_location_impl), "__impl"));
+
+  location_t loc = EXPR_LOCATION (t);
   if (source_location_table == NULL)
     source_location_table
       = hash_table <source_location_table_entry_hash>::create_ggc (64);
@@ -3427,7 +3452,7 @@ fold_builtin_source_location (location_t loc)
       entryp->var = var;
     }
 
-  return build_fold_addr_expr_with_type_loc (loc, var, const_ptr_type_node);
+  return build_fold_addr_expr_with_type_loc (loc, var, TREE_TYPE (t));
 }
 
 #include "gt-cp-cp-gimplify.h"

@@ -1,5 +1,5 @@
 /* SCC value numbering for trees
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -2090,11 +2090,29 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 	    len = ROUND_UP (pd.size, BITS_PER_UNIT) / BITS_PER_UNIT;
 	  memset (this_buffer, 0, len);
 	}
-      else
+      else if (pd.rhs_off >= 0)
 	{
 	  len = native_encode_expr (pd.rhs, this_buffer, bufsize,
 				    (MAX (0, -pd.offset)
 				     + pd.rhs_off) / BITS_PER_UNIT);
+	  if (len <= 0
+	      || len < (ROUND_UP (pd.size, BITS_PER_UNIT) / BITS_PER_UNIT
+			- MAX (0, -pd.offset) / BITS_PER_UNIT))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Failed to encode %u "
+			 "partial definitions\n", ndefs);
+	      return (void *)-1;
+	    }
+	}
+      else /* negative pd.rhs_off indicates we want to chop off first bits */
+	{
+	  if (-pd.rhs_off >= bufsize)
+	    return (void *)-1;
+	  len = native_encode_expr (pd.rhs,
+				    this_buffer + -pd.rhs_off / BITS_PER_UNIT,
+				    bufsize - -pd.rhs_off / BITS_PER_UNIT,
+				    MAX (0, -pd.offset) / BITS_PER_UNIT);
 	  if (len <= 0
 	      || len < (ROUND_UP (pd.size, BITS_PER_UNIT) / BITS_PER_UNIT
 			- MAX (0, -pd.offset) / BITS_PER_UNIT))
@@ -3349,10 +3367,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		}
 	      else if (fn == IFN_LEN_STORE)
 		{
-		  pd.rhs_off = 0;
 		  pd.offset = offset2i;
 		  pd.size = (tree_to_uhwi (len)
 			     + -tree_to_shwi (bias)) * BITS_PER_UNIT;
+		  if (BYTES_BIG_ENDIAN)
+		    pd.rhs_off = pd.size - tree_to_uhwi (TYPE_SIZE (vectype));
+		  else
+		    pd.rhs_off = 0;
 		  if (ranges_known_overlap_p (offset, maxsize,
 					      pd.offset, pd.size))
 		    return data->push_partial_def (pd, set, set,
@@ -5364,6 +5385,33 @@ visit_nary_op (tree lhs, gassign *stmt)
 	    }
 	}
       break;
+    case LSHIFT_EXPR:
+      /* For X << C, use the value number of X * (1 << C).  */
+      if (INTEGRAL_TYPE_P (type)
+	  && TYPE_OVERFLOW_WRAPS (type)
+	  && !TYPE_SATURATING (type))
+	{
+	  tree rhs2 = gimple_assign_rhs2 (stmt);
+	  if (TREE_CODE (rhs2) == INTEGER_CST
+	      && tree_fits_uhwi_p (rhs2)
+	      && tree_to_uhwi (rhs2) < TYPE_PRECISION (type))
+	    {
+	      wide_int w = wi::set_bit_in_zero (tree_to_uhwi (rhs2),
+						TYPE_PRECISION (type));
+	      gimple_match_op match_op (gimple_match_cond::UNCOND,
+					MULT_EXPR, type, rhs1,
+					wide_int_to_tree (type, w));
+	      result = vn_nary_build_or_lookup (&match_op);
+	      if (result)
+		{
+		  bool changed = set_ssa_val_to (lhs, result);
+		  if (TREE_CODE (result) == SSA_NAME)
+		    vn_nary_op_insert_stmt (stmt, result);
+		  return changed;
+		}
+	    }
+	}
+      break;
     default:
       break;
     }
@@ -5778,7 +5826,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
   poly_int64 soff, doff;
   unsigned n_executable = 0;
   edge_iterator ei;
-  edge e;
+  edge e, sameval_e = NULL;
 
   /* TODO: We could check for this in initialization, and replace this
      with a gcc_assert.  */
@@ -5819,7 +5867,10 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		 && ssa_undefined_value_p (def, false))
 	  seen_undef = def;
 	else if (sameval == VN_TOP)
-	  sameval = def;
+	  {
+	    sameval = def;
+	    sameval_e = e;
+	  }
 	else if (!expressions_equal_p (def, sameval))
 	  {
 	    /* We know we're arriving only with invariant addresses here,
@@ -5857,7 +5908,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		if (! val && vnresult && vnresult->predicated_values)
 		  {
 		    val = vn_nary_op_get_predicated_value (vnresult, e->src);
-		    if (val && integer_truep (val))
+		    if (val && integer_truep (val)
+			&& !(sameval_e && (sameval_e->flags & EDGE_DFS_BACK)))
 		      {
 			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
@@ -5875,7 +5927,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		    if (EDGE_COUNT (bb->preds) == 2
 			&& (val = vn_nary_op_get_predicated_value
 				    (vnresult, EDGE_PRED (bb, 0)->src))
-			&& integer_truep (val))
+			&& integer_truep (val)
+			&& !(e->flags & EDGE_DFS_BACK))
 		      {
 			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
@@ -5895,6 +5948,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	    sameval = NULL_TREE;
 	    break;
 	  }
+	else
+	  sameval_e = NULL;
       }
 
   /* If the value we want to use is flowing over the backedge and we

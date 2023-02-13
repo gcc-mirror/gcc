@@ -6,7 +6,7 @@
 /* Unless we do something about re-laying out the SIMD builtin types
    this testcase ICEs during expansion of the crypto builtin.  */
 
-__attribute__ ((target ("cpu=cortex-a57+crypto")))
+__attribute__ ((target ("cpu=cortex-a57+sha2")))
 uint32x4_t
 test_vsha1cq_u32 (uint32x4_t hash_abcd, uint32_t hash_e, uint32x4_t wk)
 {

@@ -1,5 +1,5 @@
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2022 Free Software Foundation, Inc.
+# Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -248,6 +248,7 @@ check_DATA += allocfail.dSYM
 endif USE_DSYMUTIL
 
 if HAVE_ELF
+if HAVE_BUILDID
 if HAVE_OBJCOPY_DEBUGLINK
 
 b2test_SOURCES = $(btest_SOURCES)
@@ -271,6 +272,7 @@ MAKETESTS += b3test_dwz_buildid
 endif HAVE_DWZ
 
 endif HAVE_OBJCOPY_DEBUGLINK
+endif HAVE_BUILDID
 endif HAVE_ELF
 
 btest_SOURCES = btest.c testlib.c

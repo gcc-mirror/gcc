@@ -1,5 +1,5 @@
 /* Utility to update paths from internal to external forms.
-   Copyright (C) 1997-2022 Free Software Foundation, Inc.
+   Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,6 +67,7 @@ License along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #if defined(_WIN32) && defined(ENABLE_WIN32_REGISTRY)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 #include "prefix.h"

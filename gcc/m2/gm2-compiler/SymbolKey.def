@@ -1,0 +1,139 @@
+(* SymbolKey.def binary tree operations for storing symbols.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE SymbolKey ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : SymbolKey
+   Date       : 4/3/87
+   Description: Provides binary tree operations for storing symbols.
+                Used by the MODULE SymbolTable to provide scoping of symbols.
+   Last update: Date: Wed 31-01-1990 Time: 18:20:32.63
+                Mon Aug 30 12:07:12 BST 1999
+*)
+
+FROM SYSTEM IMPORT WORD ;
+FROM NameKey IMPORT Name ;
+EXPORT QUALIFIED NulKey, SymbolTree,
+                 IsSymbol, PerformOperation,
+                 InitTree, KillTree, GetSymKey, PutSymKey, DelSymKey,
+                 IsEmptyTree,
+                 DoesTreeContainAny, ForeachNodeDo, ContainsSymKey,
+                 NoOfNodes, ForeachNodeConditionDo ;
+
+CONST
+   NulKey = 0 ;
+
+TYPE
+   SymbolTree ;
+
+   IsSymbol         = PROCEDURE (WORD) : BOOLEAN ;
+   PerformOperation = PROCEDURE (WORD) ;
+
+
+(*
+   InitTree - Initializes a SymbolTree pointed to by t.
+*)
+
+PROCEDURE InitTree (VAR t: SymbolTree) ;
+
+
+(*
+   KillTree - Destroys the SymbolTree pointed to by t.
+*)
+
+PROCEDURE KillTree (VAR t: SymbolTree) ;
+
+
+(*
+   GetSymKey - Searches the SymbolTree t for an entry NameKey. If
+               found then the SymKey is returned. NulKey = not found.
+*)
+
+PROCEDURE GetSymKey (t: SymbolTree; NameKey: Name) : WORD ;
+
+
+(*
+   PutSymKey - Puts an symbol entry NameKey in the SymbolTree t.
+               SymKey is the value stored with NameKey.
+*)
+
+PROCEDURE PutSymKey (t: SymbolTree; NameKey: Name; SymKey: WORD) ;
+
+
+(*
+   DelSymKey - Deletes a symbol entry NameKey in the SymbolTree t.
+*)
+
+PROCEDURE DelSymKey (t: SymbolTree; NameKey: Name) ;
+
+
+(*
+   IsEmptyTree - returns true if SymbolTree, t, is empty.
+*)
+
+PROCEDURE IsEmptyTree (t: SymbolTree) : BOOLEAN ;
+
+
+(*
+   DoesTreeContainAny - returns true if SymbolTree, t, contains any
+                        symbols which in turn return true when procedure,
+                        P, is called with a symbol as its parameter.
+*)
+
+PROCEDURE DoesTreeContainAny (t: SymbolTree; P: IsSymbol) : BOOLEAN ;
+
+
+(*
+   ForeachNodeDo - for each node in SymbolTree, t, a procedure, P,
+                   is called with the node symbol as its parameter.
+                   It traverse the tree in order.
+*)
+
+PROCEDURE ForeachNodeDo (t: SymbolTree; P: PerformOperation) ;
+
+
+(*
+   ContainsSymKey - return TRUE if tree, t, contains an entry for, NameKey.
+*)
+
+PROCEDURE ContainsSymKey (t: SymbolTree; NameKey: Name) : BOOLEAN ;
+
+
+(*
+   NoOfNodes - returns the number of nodes in the tree t.
+*)
+
+PROCEDURE NoOfNodes (t: SymbolTree; condition: IsSymbol) : CARDINAL ;
+
+
+(*
+   ForeachNodeConditionDo - traverse the tree t and for any node which satisfied
+                            condition call P.
+*)
+
+PROCEDURE ForeachNodeConditionDo (t: SymbolTree;
+                                  condition: IsSymbol;
+                                  P: PerformOperation) ;
+
+
+END SymbolKey.

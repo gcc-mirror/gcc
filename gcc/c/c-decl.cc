@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988-2022 Free Software Foundation, Inc.
+   Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6260,6 +6260,13 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
       DECL_USER_ALIGN (decl) = 1;
     }
   store_init_value (loc, decl, init, NULL_TREE);
+  if (current_scope != file_scope
+      && TREE_STATIC (decl)
+      && !TREE_READONLY (decl)
+      && DECL_DECLARED_INLINE_P (current_function_decl)
+      && DECL_EXTERNAL (current_function_decl))
+    record_inline_static (input_location, current_function_decl,
+			  decl, csi_modifiable);
 
   if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
     {
@@ -9040,6 +9047,34 @@ finish_incomplete_vars (tree incomplete_vars, bool toplevel)
     }
 }
 
+/* Get the LEVEL of the strict_flex_array for the ARRAY_FIELD based on the
+   values of attribute strict_flex_array and the flag_strict_flex_arrays.  */
+static unsigned int
+strict_flex_array_level_of (tree array_field)
+{
+  gcc_assert (TREE_CODE (array_field) == FIELD_DECL);
+  unsigned int strict_flex_array_level = flag_strict_flex_arrays;
+
+  tree attr_strict_flex_array
+    = lookup_attribute ("strict_flex_array", DECL_ATTRIBUTES (array_field));
+  /* If there is a strict_flex_array attribute attached to the field,
+     override the flag_strict_flex_arrays.  */
+  if (attr_strict_flex_array)
+    {
+      /* Get the value of the level first from the attribute.  */
+      unsigned HOST_WIDE_INT attr_strict_flex_array_level = 0;
+      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
+      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
+      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
+      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
+      gcc_assert (tree_fits_uhwi_p (attr_strict_flex_array));
+      attr_strict_flex_array_level = tree_to_uhwi (attr_strict_flex_array);
+
+      /* The attribute has higher priority than flag_struct_flex_array.  */
+      strict_flex_array_level = attr_strict_flex_array_level;
+    }
+  return strict_flex_array_level;
+}
 
 /* Determine whether the FIELD_DECL X is a flexible array member according to
    the following info:

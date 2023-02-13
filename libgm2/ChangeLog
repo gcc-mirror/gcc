@@ -1,5 +1,160 @@
-Copyright (C) 2022 Free Software Foundation, Inc.
+2023-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
-Copying and distribution of this file, with or without modification,
-are permitted in any medium without royalty provided the copyright
-notice and this notice are preserved.
+	* configure.ac (AM_INIT_AUTOMAKE): Specify 1.15.1.
+
+2023-01-24  Co-Authored by: Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libm2cor/Makefile.am (SYSTEM.def): Split path into
+	multiple -I components.
+	* libm2cor/Makefile.in: Rebuild.
+	* libm2min/Makefile.am (SYSTEM.def): Split path into
+	multiple -I components.
+	* libm2min/Makefile.in: Rebuild.
+	* libm2iso/Makefile.am (SYSTEM.def): Split path into
+	multiple -I components.
+	* libm2iso/Makefile.in: Rebuild.
+
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR modula2/108144
+	* libm2cor/Makefile.am: Revert previous change, instead
+	drop the redundant $(MULTIDIR).
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2min/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
+2023-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR modula2/108144
+	* configure.ac: Apply config-ml.pl to the generated Makefiles.
+	Set multilib_arg, use AM_PROG_LIBTOOL.
+	* configure: Regenerate.
+	* Makefile.am (AM_MAKEFLAGS): Do not override MULTI* flags.
+	* Makefile.in: Regenerate.
+	* libm2cor/Makefile.am: Install to $(toolexeclibdir)$(M2LIBDIR)
+	rather than $(inst_libdir)/$(MULTIDIR)$(M2LIBDIR).
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2min/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
+2023-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR modula2/108144
+	* configure.ac: Add GCC_BASE_VER.
+	* configure: Re-generate.
+	* Makefile.am: Use @get_gcc_base_ver@ for gcc_version.
+	* libm2cor/Makefile.am: Likewise.  Use gcc_version instead
+	of version.
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2min/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise.
+	* Makefile.in: Re-generate.
+	* libm2cor/Makefile.in: Likewise.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
+2023-01-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2iso/RTco.cc (_M2_RTco_fini): Call M2RTS_HaltC.
+	(newSem): Call M2RTS_HaltC.
+	(currentThread): Call M2RTS_HaltC.
+	(never): Call M2RTS_HaltC.
+	(defined): Call M2RTS_HaltC.
+	(initThread): Call M2RTS_HaltC.
+	(RTco_transfer): Call M2RTS_HaltC.
+	* libm2iso/m2rts.h (M2RTS_Halt): Provide parameter names.
+	(M2RTS_HaltC): New procedure declaration.
+
+2023-01-06  v  <gaiusmod2@gmail.com>
+
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Bump to 18:0:0.
+
+2023-01-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR modula2/108183
+	* libm2cor/KeyBoardLEDs.cc (_M2_KeyBoardLEDs_ctor): Rework to use
+	an extern "C" function with 'constructor' attribute.
+	* libm2iso/ErrnoCategory.cc (_M2_ErrnoCategory_ctor): Likewise.
+	* libm2iso/RTco.cc (_M2_RTco_ctor): Likewise.
+	* libm2pim/Selective.cc (_M2_Selective_ctor): Likewise.
+	* libm2pim/SysExceptions.cc (_M2_SysExceptions_ctor): Likewise.
+	* libm2pim/UnixArgs.cc (_M2_UnixArgs_ctor): Likewise.
+	* libm2pim/cgetopt.cc (_M2_cgetopt_ctor): Likewise.
+	* libm2pim/dtoa.cc (_M2_dtoa_ctor): Likewise.
+	* libm2pim/errno.cc (_M2_errno_ctor): Likewise.
+	* libm2pim/ldtoa.cc (_M2_ldtoa_ctor): Likewise.
+	* libm2pim/sckt.cc (_M2_sckt_ctor): Likewise.
+	* libm2pim/termios.cc (_M2_termios_ctor): Likewise.
+	* libm2pim/wrapc.c: Add a new line to the file end.
+
+2022-12-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Make a conditional for configurations targeting
+	Darwin.
+	* libm2cor/Makefile.am: Use -undefined,dynamic_lookup on Darwin.
+	* libm2iso/Makefile.am: Likewise.
+	* libm2log/Makefile.am: Likewise.
+	* libm2pim/Makefile.am: Likewise
+	* libm2min/Makefile.am: Likewise
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
+2022-12-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Makefile.am: New file.
+	* autogen.sh: New file.
+	* config.h.in: New file.
+	* configure.ac: New file.
+	* libm2cor/KeyBoardLEDs.cc: New file.
+	* libm2cor/Makefile.am: New file.
+	* libm2iso/ChanConsts.h: New file.
+	* libm2iso/ErrnoCategory.cc: New file.
+	* libm2iso/Makefile.am: New file.
+	* libm2iso/RTco.cc: New file.
+	* libm2iso/m2rts.h: New file.
+	* libm2iso/wrapsock.c: New file.
+	* libm2iso/wraptime.c: New file.
+	* libm2log/Break.c: New file.
+	* libm2log/Makefile.am: New file.
+	* libm2min/Makefile.am: New file.
+	* libm2min/libc.c: New file.
+	* libm2pim/Makefile.am: New file.
+	* libm2pim/Selective.cc: New file.
+	* libm2pim/SysExceptions.cc: New file.
+	* libm2pim/UnixArgs.cc: New file.
+	* libm2pim/cgetopt.cc: New file.
+	* libm2pim/dtoa.cc: New file.
+	* libm2pim/errno.cc: New file.
+	* libm2pim/ldtoa.cc: New file.
+	* libm2pim/sckt.cc: New file.
+	* libm2pim/target.c: New file.
+	* libm2pim/termios.cc: New file.
+	* libm2pim/wrapc.c: New file.
+	* configure: Generated.
+	* libm2log/Makefile.in: Generated.
+	* libm2min/Makefile.in: Generated.
+	* libm2cor/Makefile.in: Generated.
+	* libm2pim/Makefile.in: Generated.
+	* libm2iso/Makefile.in: Generated.
+	* Makefile.in: New file.
+	* aclocal.m4: New file.

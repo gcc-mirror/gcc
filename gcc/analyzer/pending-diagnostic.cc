@@ -1,5 +1,5 @@
 /* Classes for analyzer diagnostics.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -232,6 +232,7 @@ pending_diagnostic::add_final_event (const state_machine *sm,
      (event_loc_info (get_stmt_location (stmt, enode->get_function ()),
 		      enode->get_function ()->decl,
 		      enode->get_stack_depth ()),
+      enode,
       sm, var, state));
 }
 

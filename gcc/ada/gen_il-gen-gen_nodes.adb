@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2020-2022, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2023, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -440,6 +440,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Is_Folded_In_Parser, Flag),
         Sm (Has_Wide_Character, Flag),
         Sm (Has_Wide_Wide_Character, Flag)));
+
+   Cc (N_Interpolated_String_Literal, N_Numeric_Or_String_Literal,
+       (Sy (Expressions, List_Id, Default_No_List)));
 
    Cc (N_Explicit_Dereference, N_Subexpr,
        (Sy (Prefix, Node_Id),

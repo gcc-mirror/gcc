@@ -1,0 +1,106 @@
+(* M2StackWord.def provides a generic stack for WORD sized objects.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2StackWord ;
+
+(*
+    Title      : M2StackWord
+    Author     : Gaius Mulley
+    System     : UNIX (GNU Modula-2)
+    Date       : Fri Oct 12 17:26:50 2001
+    Revision   : $Version$
+    Description: provides a generic stack for WORD sized objects.
+*)
+
+FROM SYSTEM IMPORT WORD ;
+EXPORT QUALIFIED StackOfWord, InitStackWord, KillStackWord, PushWord,
+                 ReduceWord, RemoveTop, PopWord, PeepWord, IsEmptyWord,
+                 NoOfItemsInStackWord ;
+
+TYPE
+   StackOfWord ;
+
+
+(*
+   InitStackWord - creates and returns a new stack.
+*)
+
+PROCEDURE InitStackWord () : StackOfWord ;
+
+
+(*
+   KillStackWord - destroys a stack, returning NIL.
+*)
+
+PROCEDURE KillStackWord (s: StackOfWord) : StackOfWord ;
+
+
+(*
+   PushWord - pushes a word, w, onto, s.
+*)
+
+PROCEDURE PushWord (s: StackOfWord; w: WORD) ;
+
+
+(*
+   PopWord - pops an element from stack, s.
+*)
+
+PROCEDURE PopWord (s: StackOfWord) : WORD ;
+
+
+(*
+   IsEmptyWord - returns TRUE if stack, s, is empty.
+*)
+
+PROCEDURE IsEmptyWord (s: StackOfWord) : BOOLEAN ;
+
+
+(*
+   PeepWord - returns the element at, n, items below in the stack.
+              Top of stack can be seen via Peep(s, 1)
+*)
+
+PROCEDURE PeepWord (s: StackOfWord; n: CARDINAL) : WORD ;
+
+
+(*
+   ReduceWord - reduce the stack by n elements.
+*)
+
+PROCEDURE ReduceWord (s: StackOfWord; n: CARDINAL) ;
+
+
+(*
+   RemoveTop - throw away the top element of the stack.
+*)
+
+PROCEDURE RemoveTop (s: StackOfWord) ;
+
+
+(*
+   NoOfItemsInStackWord - returns the number of items held in the stack, s.
+*)
+
+PROCEDURE NoOfItemsInStackWord (s: StackOfWord) : CARDINAL ;
+
+
+END M2StackWord.

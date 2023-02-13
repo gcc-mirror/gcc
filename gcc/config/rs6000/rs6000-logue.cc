@@ -1,6 +1,6 @@
 /* Subroutines used to generate function prologues and epilogues
    on IBM RS/6000.
-   Copyright (C) 1991-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -5350,8 +5350,8 @@ rs6000_output_function_epilogue (FILE *file)
 	  || ! strcmp (language_string, "GNU GIMPLE")
 	  || ! strcmp (language_string, "GNU Go")
 	  || ! strcmp (language_string, "GNU D")
-	  || ! strcmp (language_string, "libgccjit")
-	  || ! strcmp (language_string, "GNU Rust"))
+	  || ! strcmp (language_string, "GNU Rust")
+	  || ! strcmp (language_string, "libgccjit"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77")
 	       || lang_GNU_Fortran ())

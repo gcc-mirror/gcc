@@ -1,5 +1,5 @@
 /* Definitions for MIPS systems using GNU userspace.
-   Copyright (C) 1998-2022 Free Software Foundation, Inc.
+   Copyright (C) 1998-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -139,7 +139,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Similar to standard Linux, but adding -ffast-math support.  */
 #undef	GNU_USER_TARGET_MATHFILE_SPEC
 #define GNU_USER_TARGET_MATHFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+  "%{Ofast|ffast-math|funsafe-math-optimizations:%{!shared:crtfastmath.o%s}}"
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
   GNU_USER_TARGET_MATHFILE_SPEC " " \

@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2022 Free Software Foundation, Inc.
+// Copyright (C) 2017-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,3 +34,4 @@ test01()
 // { dg-prune-output "use of deleted function" }
 // { dg-prune-output "must have the same value_type as its allocator" }
 // { dg-prune-output "no match for call" }
+// { dg-prune-output "rebind_alloc" }

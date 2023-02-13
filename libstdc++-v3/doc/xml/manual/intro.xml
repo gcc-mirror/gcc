@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <!DOCTYPE part [
   <!ENTITY DR
-"http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html">
+"https://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html">
 ] >
 
 <part xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="manual.intro" xreflabel="Introduction">
@@ -225,7 +225,7 @@ requirements of the license of GCC.
 	Here are the issues which have resulted in code changes to the library.
 	The links are to the full version of the Issues List.
         You can read the full version online
-	at the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">ISO C++
+	at the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/">ISO C++
 	Committee homepage</link>.
       </para>
       <para>
@@ -236,7 +236,7 @@ requirements of the license of GCC.
 	directories for appearances of
 	<constant>_GLIBCXX_RESOLVE_LIB_DEFECTS</constant> for examples
 	of style.  Note that we usually do not make changes to the
-	code until an issue has reached <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</link> status.
+	code until an issue has reached <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</link> status.
       </para>
 
       <variablelist>

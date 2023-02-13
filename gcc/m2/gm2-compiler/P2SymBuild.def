@@ -1,0 +1,1322 @@
+(* P2SymBuild.def pass 2 symbol creation.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE P2SymBuild ;
+
+(*
+   Title      : P2SymBuild
+   Author     : Gaius Mulley
+   Date       : 24/6/87
+   LastEdit   : Sat Dec  9 11:10:57 EST 1989
+   System     : UNIX (GNU Modula-2)
+   Description: pass 2 symbol creation.
+*)
+
+EXPORT QUALIFIED P2StartBuildDefModule,
+                 P2EndBuildDefModule,
+                 P2StartBuildImplementationModule,
+                 P2EndBuildImplementationModule,
+                 P2StartBuildProgramModule,
+                 P2EndBuildProgramModule,
+                 StartBuildInnerModule,
+                 EndBuildInnerModule,
+                 BuildImportOuterModule,
+                 BuildExportOuterModule,
+                 BuildImportInnerModule,
+                 BuildExportInnerModule,
+                 BlockStart, BlockEnd, BlockBegin, BlockFinally,
+                 BuildNumber,
+                 BuildString,
+                 BuildConst,
+                 BuildSubrange, BuildAligned,
+                 BuildTypeAlignment, BuildVarAlignment,
+                 P2BuildDefaultFieldAlignment, BuildPragmaConst,
+                 BuildVariable,
+                 StartBuildEnumeration,
+                 BuildType,
+                 StartBuildFormalParameters,
+                 EndBuildFormalParameters,
+                 BuildProcedureHeading,
+                 BuildFPSection,
+                 BuildVarArgs,
+                 BuildFormalVarArgs,
+                 BuildOptArg,
+                 StartBuildProcedure,
+                 EndBuildProcedure,
+                 BuildNoReturnAttribute,
+                 BuildFunction,
+                 BuildOptFunction,
+                 BuildPointerType,
+                 BuildSetType,
+                 BuildRecord,
+                 BuildFieldRecord,
+                 StartBuildVarient,
+                 EndBuildVarient,
+                 BuildVarientSelector,
+                 StartBuildVarientFieldRecord,
+                 EndBuildVarientFieldRecord,
+                 BuildNulName,
+                 BuildTypeEnd,
+                 StartBuildArray, BuildArrayComma,
+                 EndBuildArray,
+                 BuildFieldArray,
+                 BuildProcedureType,
+                 BuildFormalType,
+                 SeenCast,
+                 SeenSet,
+                 SeenArray,
+                 SeenConstructor,
+                 SeenUnknown,
+                 SeenString,
+                 SeenBoolean,
+                 SeenCType, SeenRType, SeenZType,
+                 DetermineType, PushType, PopType,
+                 PushRememberConstant,
+                 PopRememberConstant,
+                 RememberConstant ;
+
+
+(*
+   BlockStart - tokno is the module/procedure/implementation/definition token
+*)
+
+PROCEDURE BlockStart (tokno: CARDINAL) ;
+
+(*
+   BlockEnd - declare module ctor/init/fini/dep procedures.
+*)
+
+PROCEDURE BlockEnd (tokno: CARDINAL) ;
+
+
+(*
+   BlockBegin - assign curBeginTok to tokno.
+*)
+
+PROCEDURE BlockBegin (tokno: CARDINAL) ;
+
+
+(*
+   BlockFinally - assign curFinallyTok to tokno.
+*)
+
+PROCEDURE BlockFinally (tokno: CARDINAL) ;
+
+
+(*
+   StartBuildDefinitionModule - Creates a definition module and starts
+                                a new scope.
+
+                                The Stack is expected:
+
+                                Entry                 Exit
+
+                         Ptr ->                                     <- Ptr
+                                +------------+        +-----------+
+                                | NameStart  |        | NameStart |
+                                |------------|        |-----------|
+
+*)
+
+PROCEDURE P2StartBuildDefModule ;
+
+
+(*
+   EndBuildDefinitionModule - Destroys the definition module scope and
+                              checks for correct name.
+
+                              The Stack is expected:
+
+                              Entry                 Exit
+
+                       Ptr ->
+                              +------------+        +-----------+
+                              | NameEnd    |        |           |
+                              |------------|        |-----------|
+                              | NameStart  |        |           | <- Ptr
+                              |------------|        |-----------|
+*)
+
+PROCEDURE P2EndBuildDefModule ;
+
+
+(*
+   StartBuildImplementationModule - Creates an implementation module and starts
+                                    a new scope.
+
+                                    The Stack is expected:
+
+                                    Entry                 Exit
+
+                             Ptr ->                                     <- Ptr
+                                    +------------+        +-----------+
+                                    | NameStart  |        | NameStart |
+                                    |------------|        |-----------|
+
+*)
+
+PROCEDURE P2StartBuildImplementationModule ;
+
+
+(*
+   EndBuildImplementationModule - Destroys the implementation module scope and
+                                  checks for correct name.
+
+                                  The Stack is expected:
+
+                                  Entry                 Exit
+
+                           Ptr ->
+                                  +------------+        +-----------+
+                                  | NameEnd    |        |           |
+                                  |------------|        |-----------|
+                                  | NameStart  |        |           | <- Ptr
+                                  |------------|        |-----------|
+*)
+
+PROCEDURE P2EndBuildImplementationModule ;
+
+
+(*
+   StartBuildProgramModule - Creates a program module and starts
+                             a new scope.
+
+                             The Stack is expected:
+
+                             Entry                 Exit
+
+                      Ptr ->                                     <- Ptr
+                             +------------+        +-----------+
+                             | NameStart  |        | NameStart |
+                             |------------|        |-----------|
+
+*)
+
+PROCEDURE P2StartBuildProgramModule ;
+
+
+(*
+   EndBuildProgramModule - Destroys the program module scope and
+                           checks for correct name.
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->
+                           +------------+        +-----------+
+                           | NameEnd    |        |           |
+                           |------------|        |-----------|
+                           | NameStart  |        |           | <- Ptr
+                           |------------|        |-----------|
+*)
+
+PROCEDURE P2EndBuildProgramModule ;
+
+
+(*
+   StartBuildInnerModule - Creates an Inner module and starts
+                           a new scope.
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->                                     <- Ptr
+                           +------------+        +-----------+
+                           | NameStart  |        | NameStart |
+                           |------------|        |-----------|
+
+*)
+
+PROCEDURE StartBuildInnerModule ;
+
+
+(*
+   EndBuildInnerModule - Destroys the Inner module scope and
+                         checks for correct name.
+
+                         The Stack is expected:
+
+                         Entry                 Exit
+
+                  Ptr ->
+                         +------------+        +-----------+
+                         | NameEnd    |        |           |
+                         |------------|        |-----------|
+                         | NameStart  |        |           | <- Ptr
+                         |------------|        |-----------|
+*)
+
+PROCEDURE EndBuildInnerModule ;
+
+
+(*
+   BuildImportOuterModule - Builds imported identifiers into an outer module
+                            from a definition module.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +-----------+
+                            | #          |        | #         |
+                            |------------|        |-----------|
+                            | Id1        |        | Id1       |
+                            |------------|        |-----------|
+                            .            .        .           .
+                            .            .        .           .
+                            .            .        .           .
+                            |------------|        |-----------|
+                            | Id#        |        | Id#       |
+                            |------------|        |-----------|
+                            | ImportTok  |        | Ident     |
+                            |------------|        |-----------|
+
+                            IMPORT Id1, .. Id# ;  FROM Ident IMPORT Id1 .. Id# ;
+
+
+                                                  Error Condition
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE BuildImportOuterModule ;
+
+
+(*
+   BuildExportOuterModule - Builds exported identifiers from an outer module
+                            to the outside world of library modules.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +--------------+
+                            | #          |        | #            |
+                            |------------|        |--------------|
+                            | Id1        |        | Id1          |
+                            |------------|        |--------------|
+                            .            .        .              .
+                            .            .        .              .
+                            .            .        .              .
+                            |------------|        |--------------|
+                            | Id#        |        | Id#          |
+                            |------------|        |--------------|
+                            | ExportTok  |        | QualifiedTok |
+                            |------------|        |--------------|
+
+                            EXPORT Id1, .. Id# ;  EXPORT QUALIFIED Id1 .. Id# ;
+
+                            Error Condition
+
+
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE BuildExportOuterModule ;
+
+
+(*
+   BuildImportInnerModule - Builds imported identifiers into an inner module
+                            from the last level of module.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +-----------+
+                            | #          |        | #         |
+                            |------------|        |-----------|
+                            | Id1        |        | Id1       |
+                            |------------|        |-----------|
+                            .            .        .           .
+                            .            .        .           .
+                            .            .        .           .
+                            |------------|        |-----------|
+                            | Id#        |        | Id#       |
+                            |------------|        |-----------|
+                            | ImportTok  |        | Ident     |
+                            |------------|        |-----------|
+
+                            IMPORT Id1, .. Id# ;  FROM Ident IMPORT Id1 .. Id# ;
+
+
+                                                  Error Condition
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE BuildImportInnerModule ;
+
+
+(*
+   BuildExportInnerModule - Builds exported identifiers from an inner module
+                            to the next layer module.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +--------------+
+                            | #          |        | #            |
+                            |------------|        |--------------|
+                            | Id1        |        | Id1          |
+                            |------------|        |--------------|
+                            .            .        .              .
+                            .            .        .              .
+                            .            .        .              .
+                            |------------|        |--------------|
+                            | Id#        |        | Id#          |
+                            |------------|        |--------------|
+                            | ExportTok  |        | QualifiedTok |
+                            |------------|        |--------------|
+
+                            EXPORT Id1, .. Id# ;  EXPORT QUALIFIED Id1 .. Id# ;
+
+
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE BuildExportInnerModule ;
+
+
+(*
+   BuildNumber - Converts a number into a symbol.
+
+
+                 Stack
+
+                 Entry                 Exit
+
+          Ptr ->                                      <- Ptr
+                 +------------+        +------------+
+                 | Name       |        | Sym        |
+                 |------------+        |------------|
+*)
+
+PROCEDURE BuildNumber ;
+
+
+(*
+   BuildString - Converts a string into a symbol.
+
+
+                 Stack
+
+                 Entry                 Exit
+
+          Ptr ->                                      <- Ptr
+                 +------------+        +------------+
+                 | Name       |        | Sym        |
+                 |------------+        |------------|
+*)
+
+PROCEDURE BuildString ;
+
+
+(*
+   BuildConst - builds a constant.
+                Stack
+
+                Entry                 Exit
+
+         Ptr ->
+                +------------+
+                | Name       |
+                |------------+                       <- Ptr
+*)
+
+PROCEDURE BuildConst ;
+
+
+(*
+   StartBuildEnumeration - Builds an Enumeration type Type.
+
+
+                           Stack
+
+                           Entry                 Exit
+
+                    Ptr ->
+                           +------------+
+                           | #          |
+                           |------------|
+                           | en 1       |
+                           |------------|
+                           | en 2       |
+                           |------------|
+                           .            .
+                           .            .
+                           .            .                       <- Ptr
+                           |------------|        +------------+
+                           | en #       |        | Type       |
+                           |------------|        |------------|
+                           | Name       |        | Name       |
+                           |------------|        |------------|
+*)
+
+PROCEDURE StartBuildEnumeration ;
+
+
+(*
+   BuildSubrange - Builds a Subrange type Symbol, the base type can also be
+                   supplied if known.
+
+                      Stack
+
+                      Entry                 Exit
+
+
+                                                           <- Ptr
+                                            +------------+
+               Ptr ->                       | Type       |
+                      +------------+        |------------|
+                      | Name       |        | Name       |
+                      |------------|        |------------|
+*)
+
+PROCEDURE BuildSubrange (Base: CARDINAL) ;
+
+
+(*
+   BuildAligned - builds an alignment constant symbol which is placed onto
+                  the stack.  It expects the ident ALIGNED to be on the
+                  stack.
+
+                         Stack
+
+                           Entry                 Exit
+
+
+                  Ptr ->                                            <- Ptr
+                         +---------------+      +-----------------+
+                         | bytealignment |      | AlignmentConst  |
+                         +---------------+      |-----------------|
+*)
+
+PROCEDURE BuildAligned ;
+
+
+(*
+   BuildVarAlignment - the AlignmentConst is either a temporary or NulSym.
+                       A type may only have one alignment value and
+                       error checking is performed.
+
+                       Stack
+
+                           Entry                 Exit
+
+
+                   Ptr ->
+                          +-----------------+
+                          | AlignmentConst  |                             <- Ptr
+                          |-----------------|        +------------------+
+                          | Type            |        | Type  | TypeName |
+                          |-----------------|        |------------------|
+*)
+
+PROCEDURE BuildVarAlignment ;
+
+
+(*
+   BuildTypeAlignment - the AlignmentConst is either a temporary or NulSym.
+                        A type may only have one alignment value and
+                        error checking is performed.
+
+                        Stack
+
+                            Entry                 Exit
+
+
+                    Ptr ->
+                           +-----------------+
+                           | AlignmentConst  |
+                           |-----------------|
+                           | Type            |    Empty
+                           |-----------------|
+*)
+
+PROCEDURE BuildTypeAlignment ;
+
+
+(*
+   BuildDefaultFieldAlignment -
+
+                 The Stack:
+
+                 Entry                         Exit
+                 =====                         ====
+
+
+          Ptr ->
+                 +-----------+
+                 | Alignment |
+                 |-----------|                 +-----------+
+                 | RecordSym |                 | RecordSym |
+                 |-----------|                 |-----------|
+                 | Name      |                 | Name      |
+                 |-----------|                 |-----------|
+
+*)
+
+PROCEDURE P2BuildDefaultFieldAlignment ;
+
+
+(*
+   BuildPragmaConst - pushes a constant to the stack and stores it away into the
+                      const fifo queue ready for pass 3.
+*)
+
+PROCEDURE BuildPragmaConst ;
+
+
+(*
+   BuildVariable - Builds variables listed in an IdentList with a Type.
+
+                   Stack
+
+                   Entry                 Exit
+
+            Ptr ->
+                   +------------+        +------------+
+                   | Type | Name|        |            |
+                   |------------|        |------------|
+                   | #          |        |            |
+                   |------------|        |------------|
+                   | Ident 1    |        |            |
+                   |------------|        |------------|
+                   | Ident 2    |        |            |
+                   |------------|        |------------|
+                   .            .        .            .
+                   .            .        .            .
+                   .            .        .            .
+                   |------------|        |------------|
+                   | Ident #    |        |            | <- Ptr
+                   |------------|        |------------|
+
+                                           Empty
+*)
+
+PROCEDURE BuildVariable ;
+
+
+(*
+   BuildType - Builds a Type.
+
+
+               Stack
+
+               Entry                 Exit
+
+        Ptr ->
+               +------------+
+               | Type       |                          <- Ptr
+               |------------|        +---------------+
+               | Name       |        | Type  | Name  |
+               |------------|        |---------------|
+
+                                     Empty
+*)
+
+PROCEDURE BuildType ;
+
+
+(*
+   StartBuildFormalParameters - Initialises the quadruple stack for
+                                Formal Parameters.
+
+                                The Stack:
+
+                                Entry                Exit
+
+                                                                    <- Ptr
+                                                     +------------+
+                                Empty                | 0          |
+                                                     |------------|
+*)
+
+PROCEDURE StartBuildFormalParameters ;
+
+
+(*
+   EndBuildFormalParameters - Resets the quadruple stack after building
+                              Formal Parameters.
+
+                              The Stack:
+
+                              Entry                    Exit
+
+                       Ptr ->
+                              +------------+
+                              | NoOfParam  |                          <- Ptr
+                              |------------|           +------------+
+                              | ProcSym    |           | ProcSym    |
+                              |------------|           |------------|
+*)
+
+PROCEDURE EndBuildFormalParameters ;
+
+
+(*
+   BuildProcedureHeading - Builds a procedure heading for the definition
+                           module procedures.
+
+                           Operation only performed if compiling a
+                           definition module.
+
+                           The Stack:
+
+                           Entry                       Exit
+
+                    Ptr ->
+                           +------------+
+                           | ProcSym    |              Empty
+                           |------------|
+
+*)
+
+PROCEDURE BuildProcedureHeading ;
+
+
+(*
+   BuildFunction - Builds a procedures return type.
+                   Procedure becomes a function.
+
+                    The Stack:
+
+                    Entry                 Exit
+
+             Ptr ->
+                    +------------+
+                    | TypeSym    |                       <- Ptr
+                    |------------|        +------------+
+                    | ProcSym    |        | ProcSym    |
+                    |------------|        |------------|
+*)
+
+PROCEDURE BuildFunction ;
+
+
+(*
+   BuildOptFunction - Builds a procedures optional return type.
+                      Procedure becomes a function and the user
+                      can either call it as a function or a procedure.
+
+                      The Stack:
+
+                      Entry                 Exit
+
+               Ptr ->
+                      +------------+
+                      | TypeSym    |                       <- Ptr
+                      |------------|        +------------+
+                      | ProcSym    |        | ProcSym    |
+                      |------------|        |------------|
+*)
+
+PROCEDURE BuildOptFunction ;
+
+
+(*
+   BuildFPSection - Builds a Formal Parameter in a procedure.
+
+                    The Stack:
+
+                    Entry                 Exit
+
+             Ptr ->
+                    +------------+
+                    | ParamTotal |
+                    |------------|
+                    | TypeName   |
+                    |------------|
+                    | Array/Nul  |
+                    |------------|
+                    | NoOfIds    |
+                    |------------|
+                    | Id 1       |
+                    |------------|
+                    .            .
+                    .            .
+                    .            .
+                    |------------|
+                    | Id n       |                       <- Ptr
+                    |------------|        +------------+
+                    | Var / Nul  |        | ParamTotal |
+                    |------------|        |------------|
+                    | ProcSym    |        | ProcSym    |
+                    |------------|        |------------|
+*)
+
+PROCEDURE BuildFPSection ;
+
+
+(*
+   BuildVarArgs - indicates that the ProcSym takes varargs
+                  after ParamTotal.
+                                                         <- Ptr
+                    +------------+        +------------+
+                    | ParamTotal |        | ParamTotal |
+                    |------------|        |------------|
+                    | ProcSym    |        | ProcSym    |
+                    |------------|        |------------|
+
+*)
+
+PROCEDURE BuildVarArgs ;
+
+
+(*
+   BuildFormalVarArgs - indicates that the procedure type takes varargs.
+                                                             <- Ptr
+                        +------------+        +------------+
+                        | ProcSym    |        | ProcSym    |
+                        |------------|        |------------|
+
+*)
+
+PROCEDURE BuildFormalVarArgs ;
+
+
+(*
+   BuildOptArg - indicates that the ProcSym takes a single optarg
+                 after ParamTotal.
+
+                                                         <- Ptr
+                 +------------+        +------------+
+                 | ParamTotal |        | ParamTotal |
+                 |------------|        |------------|
+                 | ProcSym    |        | ProcSym    |
+                 |------------|        |------------|
+*)
+
+PROCEDURE BuildOptArg ;
+
+
+(*
+   StartBuildProcedure - Builds a Procedure.
+
+                         The Stack:
+
+                         Entry                 Exit
+
+                                                              <- Ptr
+                                               +------------+
+                  Ptr ->                       | ProcSym    |
+                         +------------+        |------------|
+                         | Name       |        | Name       |
+                         |------------|        |------------|
+*)
+
+PROCEDURE StartBuildProcedure ;
+
+
+(*
+   EndBuildProcedure - Ends building a Procedure.
+                       It checks the start procedure name matches the end
+                       procedure name.
+
+                       The Stack:
+
+
+                       Entry                 Exit
+
+                Ptr ->
+                       +------------+
+                       | NameEnd    |
+                       |------------|
+                       | ProcSym    |
+                       |------------|
+                       | NameStart  |
+                       |------------|
+                                             Empty
+*)
+
+PROCEDURE EndBuildProcedure ;
+
+
+(*
+   BuildNoReturnAttribute - provide an interface to the symbol table module.
+*)
+
+PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
+
+
+(*
+   BuildPointerType - builds a pointer type.
+                      The Stack:
+
+                      Entry                       Exit
+                      =====                       ====
+
+
+               Ptr ->                                             <- Ptr
+                      +------------+              +-------------+
+                      | Type       |              | PointerType |
+                      |------------|              |-------------|
+                      | Name       |              | Name        |
+                      |------------|              |-------------|
+*)
+
+PROCEDURE BuildPointerType ;
+
+
+(*
+   BuildSetType - builds a set type.
+                  The Stack:
+
+                  Entry                       Exit
+                  =====                       ====
+
+
+           Ptr ->                                             <- Ptr
+                  +------------+              +-------------+
+                  | Type       |              | SetType     |
+                  |------------|              |-------------|
+                  | Name       |              | Name        |
+                  |------------|              |-------------|
+*)
+
+PROCEDURE BuildSetType (ispacked: BOOLEAN) ;
+
+
+(*
+   BuildRecord - Builds a record type.
+                 The Stack:
+
+                 Entry                        Exit
+                 =====                        ====
+
+                                                            <- Ptr
+                                              +-----------+
+          Ptr ->                              | RecordSym |
+                 +------------+               |-----------|
+                 | Name       |               | Name      |
+                 |------------|               |-----------|
+*)
+
+PROCEDURE BuildRecord ;
+
+
+(*
+   BuildFieldRecord - Builds a field into a record sym.
+                      The Stack:
+
+
+                      Entry                     Exit
+                      =====                     ====
+
+               Ptr ->
+                      +-------------+
+                      | Alignment   |
+                      |-------------|
+                      | Type | Name |
+                      |-------------|
+                      | n           |
+                      |-------------|
+                      | Id 1        |
+                      |-------------|
+                      .             .
+                      .             .
+                      .             .
+                      |-------------|
+                      | Id n        |                           <- Ptr
+                      |-------------|           +-------------+
+                      | RecordSym   |           | RecordSym   |
+                      |-------------|           |-------------|
+                      | RecordName  |           | RecordName  |
+                      |-------------|           |-------------|
+*)
+
+PROCEDURE BuildFieldRecord ;
+
+
+(*
+   StartBuildVarient - Builds a varient symbol on top of a record sym.
+                       The Stack:
+
+
+                       Entry                     Exit
+                       =====                     ====
+
+                                                                 <- Ptr
+                                                 +-------------+
+                Ptr ->                           | VarientSym  |
+                       +-------------+           |-------------|
+                       | RecordSym   |           | RecordSym   |
+                       |-------------|           |-------------|
+                       | RecordName  |           | RecordName  |
+                       |-------------|           |-------------|
+*)
+
+PROCEDURE StartBuildVarient ;
+
+
+(*
+   EndBuildVarient - Removes the varient symbol from the stack.
+                     The Stack:
+
+                     Entry                     Exit
+                     =====                     ====
+
+              Ptr ->
+                     +-------------+
+                     | VarientSym  |                           <- Ptr
+                     |-------------|           +-------------+
+                     | RecordSym   |           | RecordSym   |
+                     |-------------|           |-------------|
+                     | RecordName  |           | RecordName  |
+                     |-------------|           |-------------|
+*)
+
+PROCEDURE EndBuildVarient ;
+
+
+(*
+   BuildVarientSelector - Builds a field into a record sym.
+                          The Stack:
+
+
+                          Entry                     Exit
+                          =====                     ====
+
+                   Ptr ->
+                          +-------------+
+                          | Qualident   |
+                          |-------------|
+                          | Ident       |                           <- Ptr
+                          |-------------|           +-------------+
+                          | RecordSym   |           | RecordSym   |
+                          |-------------|           |-------------|
+*)
+
+PROCEDURE BuildVarientSelector ;
+
+
+(*
+   StartBuildVarientFieldRecord - Builds a varient field into a varient sym.
+                                  The Stack:
+
+
+                                  Entry                     Exit
+                                  =====                     ====
+
+                                                                       <- Ptr
+                                                       +-------------+
+                      Ptr ->                           | VarientField|
+                             +-------------+           |-------------|
+                             | VarientSym  |           | RecordSym   |
+                             |-------------|           |-------------|
+*)
+
+PROCEDURE StartBuildVarientFieldRecord ;
+
+
+(*
+   EndBuildVarientFieldRecord - Removes a varient field from the stack.
+                                The Stack:
+
+
+                                Entry                     Exit
+                                =====                     ====
+
+                         Ptr ->
+                                +-------------+
+                                | VarientField|                           <- Ptr
+                                |-------------|           +-------------+
+                                | VarientSym  |           | VarientSym  |
+                                |-------------|           |-------------|
+*)
+
+PROCEDURE EndBuildVarientFieldRecord ;
+
+
+(*
+   BuildNulName - Pushes a NulKey onto the top of the stack.
+                  The Stack:
+
+
+                  Entry                    Exit
+
+                                                          <- Ptr
+                  Empty                    +------------+
+                                           | NulKey     |
+                                           |------------|
+*)
+
+PROCEDURE BuildNulName ;
+
+
+(*
+   BuildTypeEnd - Pops the type Type and Name.
+                  The Stack:
+
+
+                  Entry                    Exit
+
+
+           Ptr ->
+                  +-------------+
+                  | Type | Name |          Empty
+                  |-------------|
+*)
+
+PROCEDURE BuildTypeEnd ;
+
+
+(*
+   StartBuildArray - Builds an array type.
+                     The Stack:
+
+                     Entry                        Exit
+                     =====                        ====
+
+                                                                <- Ptr
+                                                  +-----------+
+              Ptr ->                              | ArraySym  |
+                     +------------+               |-----------|
+                     | Name       |               | Name      |
+                     |------------|               |-----------|
+*)
+
+PROCEDURE StartBuildArray ;
+
+
+(*
+   EndBuildArray - Builds an array type.
+                   The Stack:
+
+                   Entry                        Exit
+                   =====                        ====
+
+            Ptr ->
+                   +------------+
+                   | TypeSym    |                              <- Ptr
+                   |------------|               +------------+
+                   | ArraySym   |               | ArraySym   |
+                   |------------|               |------------|
+                   | Name       |               | Name       |
+                   |------------|               |------------|
+*)
+
+PROCEDURE EndBuildArray ;
+
+
+(*
+   BuildFieldArray - Builds a field into an array sym.
+                     The Stack:
+
+
+                     Entry                     Exit
+                     =====                     ====
+
+              Ptr ->
+                     +-------------+
+                     | Type | Name |                           <- Ptr
+                     |-------------|           +-------------+
+                     | ArraySym    |           | ArraySym    |
+                     |-------------|           |-------------|
+                     | ArrayName   |           | ArrayName   |
+                     |-------------|           |-------------|
+*)
+
+PROCEDURE BuildFieldArray ;
+
+
+(*
+   BuildArrayComma - converts ARRAY [..], [..] OF into ARRAY [..] OF ARRAY [..]
+
+
+              Ptr ->                                           <- Ptr
+                     +-------------+           +-------------+
+                     | ArraySym1   |           | ArraySym2   |
+                     |-------------|           |-------------|
+                     | ArrayName   |           | ArrayName   |
+                     |-------------|           |-------------|
+*)
+
+PROCEDURE BuildArrayComma ;
+
+
+(*
+   BuildProcedureType - builds a procedure type symbol.
+                        The Stack:
+
+
+                                                               <- Ptr
+                                               +-------------+
+                 Ptr ->                        | ProcTypeSym |
+                        +-------------+        |-------------|
+                        | Name        |        | Name        |
+                        |-------------|        |-------------|
+*)
+
+PROCEDURE BuildProcedureType ;
+
+
+(*
+   BuildFormalType - Builds a Formal Parameter in a procedure type.
+
+                     The Stack:
+
+                     Entry                 Exit
+
+              Ptr ->
+                     +------------+
+                     | TypeSym    |
+                     |------------|
+                     | Array/Nul  |
+                     |------------|
+                     | Var / Nul  |                         <- Ptr
+                     |------------|        +--------------+
+                     | ProcTypeSym|        | ProcTypeSym  |
+                     |------------|        |--------------|
+*)
+
+PROCEDURE BuildFormalType ;
+
+
+
+(*
+   SeenUnknown - sets the operand type to unknown.
+*)
+
+PROCEDURE SeenUnknown ;
+
+
+(*
+   SeenCast - sets the operand type to cast.
+*)
+
+PROCEDURE SeenCast (sym: CARDINAL) ;
+
+
+(*
+   SeenSet - sets the operand type to set.
+*)
+
+PROCEDURE SeenSet ;
+
+
+(*
+   SeenConstructor - sets the operand type to constructor.
+*)
+
+PROCEDURE SeenConstructor ;
+
+
+(*
+   SeenArray - sets the operand type to array.
+*)
+
+PROCEDURE SeenArray ;
+
+
+(*
+   SeenString - sets the operand type to string.
+*)
+
+PROCEDURE SeenString ;
+
+
+(*
+   SeenBoolean - sets the operand type to a BOOLEAN.
+*)
+
+PROCEDURE SeenBoolean ;
+
+
+(*
+   SeenZType - sets the operand type to a Z type.
+*)
+
+PROCEDURE SeenZType ;
+
+
+(*
+   SeenRType - sets the operand type to a R type.
+*)
+
+PROCEDURE SeenRType ;
+
+
+(*
+   SeenCType - sets the operand type to a C type.
+*)
+
+PROCEDURE SeenCType ;
+
+
+(*
+   DetermineType - assigns the top of stack symbol with the type of
+                   constant expression, if known.
+*)
+
+PROCEDURE DetermineType ;
+
+
+(*
+   PushType - pushes the current constant type.
+*)
+
+PROCEDURE PushType ;
+
+
+(*
+   PopType - pops the stacked type.
+*)
+
+PROCEDURE PopType ;
+
+
+(*
+   PushRememberConstant -
+*)
+
+PROCEDURE PushRememberConstant ;
+
+
+(*
+   PopRememberConstant -
+*)
+
+PROCEDURE PopRememberConstant ;
+
+
+(*
+   RememberConstant -
+*)
+
+PROCEDURE RememberConstant (sym: CARDINAL) ;
+
+
+END P2SymBuild.

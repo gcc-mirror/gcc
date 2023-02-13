@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -185,7 +185,10 @@ extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_undefined_ps (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m512 __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 
@@ -195,7 +198,10 @@ extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_undefined_pd (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m512d __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 
@@ -203,7 +209,10 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_undefined_epi32 (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m512i __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 

@@ -1,3 +1,30 @@
+2023-01-13  Richard Biener  <rguenther@suse.de>
+
+	* lto-lang.cc (lto_type_for_mode): Sync with
+	c_common_type_for_mode.
+
+2023-01-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.cc (may_need_named_section_p): Clones with no body
+	need no remaning.
+
+2022-12-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* lto-partition.cc (lto_1_to_1_map): Drop NULL partition
+	mapping.
+
+2022-12-22  Richard Biener  <rguenther@suse.de>
+
+	* lto-common.cc (compare_tree_sccs_1): Compare DECL_NOT_FLEXARRAY.
+
+2022-12-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.cc (lto_resolution_read): With incremental linking
+	and whole program ignore turn LDPR_PREVAILING_DEF_IRONLY to
+	LDPR_PREVAILING_DEF_IRONLY_EXP
+	* lto-lang.cc (lto_post_options): Do not clear flag_whole_program
+	for incremental link
+
 2022-11-25  Martin Liska  <mliska@suse.cz>
 
 	PR lto/107829
@@ -6658,7 +6685,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2022 Free Software Foundation, Inc.
+Copyright (C) 2006-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

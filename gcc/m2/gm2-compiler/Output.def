@@ -1,0 +1,116 @@
+(* Output.def redirect output.
+
+Copyright (C) 2021-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Output ;
+
+(*
+    Title      : Output
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Fri Jul  9 12:17:35 2021
+    Revision   : $Version$
+    Description: provides an interface to output redirection for common
+                 output procedures.
+*)
+
+FROM NameKey IMPORT Name ;
+FROM DynamicStrings IMPORT String ;
+
+
+(*
+   Open - attempt to open filename as the output file.
+          TRUE is returned if success, FALSE otherwise.
+*)
+
+PROCEDURE Open (filename: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   Close - close the output file.
+*)
+
+PROCEDURE Close ;
+
+
+(*
+   Write - write a single character to the output file.
+*)
+
+PROCEDURE Write (ch: CHAR) ;
+
+
+(*
+   WriteString - write an unformatted string to the output.
+*)
+
+PROCEDURE WriteString (s: ARRAY OF CHAR) ;
+
+
+(*
+   KillWriteS - write a string to the output and free the string afterwards.
+*)
+
+PROCEDURE KillWriteS (s: String) ;
+
+
+(*
+   WriteS - write a string to the output.  The string is not freed.
+*)
+
+PROCEDURE WriteS (s: String) ;
+
+
+(*
+   WriteKey - write a key to the output.
+*)
+
+PROCEDURE WriteKey (key: Name) ;
+
+
+(*
+   WriteLn - write a newline to the output.
+*)
+
+PROCEDURE WriteLn ;
+
+
+(*
+   WriteCard - write a cardinal using fieldlength characters.
+*)
+
+PROCEDURE WriteCard (card, fieldlength: CARDINAL) ;
+
+
+(*
+   StartBuffer - create a buffer into which any output is redirected.
+*)
+
+PROCEDURE StartBuffer ;
+
+
+(*
+   EndBuffer - end the redirection and return the contents of the buffer.
+*)
+
+PROCEDURE EndBuffer () : String ;
+
+
+END Output.

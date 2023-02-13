@@ -1,5 +1,5 @@
 // go-gcc.cc -- Go frontend to gcc IR.
-// Copyright (C) 2011-2022 Free Software Foundation, Inc.
+// Copyright (C) 2011-2023 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 
 // This file is part of GCC.
@@ -627,6 +627,11 @@ Gcc_backend::Gcc_backend()
 						unsigned_type_node,
 						NULL_TREE),
 		       builtin_const);
+  this->define_builtin(BUILT_IN_CTZL, "__builtin_ctzl", "ctzl",
+		      build_function_type_list(integer_type_node,
+					       long_unsigned_type_node,
+					       NULL_TREE),
+		      builtin_const);
   this->define_builtin(BUILT_IN_CTZLL, "__builtin_ctzll", "ctzll",
 		       build_function_type_list(integer_type_node,
 						long_long_unsigned_type_node,
@@ -637,6 +642,11 @@ Gcc_backend::Gcc_backend()
 						unsigned_type_node,
 						NULL_TREE),
 		       builtin_const);
+  this->define_builtin(BUILT_IN_CLZL, "__builtin_clzl", "clzl",
+		      build_function_type_list(integer_type_node,
+					       long_unsigned_type_node,
+					       NULL_TREE),
+		      builtin_const);
   this->define_builtin(BUILT_IN_CLZLL, "__builtin_clzll", "clzll",
 		       build_function_type_list(integer_type_node,
 						long_long_unsigned_type_node,

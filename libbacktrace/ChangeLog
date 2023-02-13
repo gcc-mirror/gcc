@@ -1,3 +1,54 @@
+2023-01-20  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (struct function_addrs): Change low and high fields to
+	uintptr_t.
+	(struct unit_addrs): Likewise.
+	(resolve_addr_index): Change address parameter to uintptr_t*.
+	(add_unit_addr): Change lowpc and highpc parameters to uintptr_t.
+	(add_function_range): Likewise.
+	(struct pcrange): Change lowpc and highpc fields to uintptr_t.
+	(add_low_high_range): Change add_range lowpc and highpc parameters
+	to uintptr_t.
+	(add_ranges_from_ranges): Likewise.
+	(add_ranges_from_rnglists): Likewise.
+	(add_low_high_range): Chnage lowpc and highpc variables to
+	uintpr_t.
+	(add_ranges_from_rnglists): Change some local variables to
+	uintptr_t.
+	(add_ranges_from_ranges): Change base parameter to uintptr_t.
+	(add_ranges_from_rnglists): Likewise.
+	(read_function_entry): Likewise.
+	(resolve_addr_index): Add explicit casts to uintptr_t.
+	(update_pcrange): Likewise.
+	(add_ranges_from_ranges): Likewise.
+	(add_ranges_from_rnglists): Likewise.
+	(read_function_entry): Likewise.
+
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Regenerate.
+
+2023-01-06  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/108297
+	* configure.ac: Test whether linker supports --build-id.
+	* Makefile.am: Only run --build-id tests if supported.
+	* configure, Makefile.in: Regenerate.
+
+2022-12-17  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_fetch_backward_init): New static function.
+	(ZSTD_TABLE_SIZE): Use huffman scratch space size rather than
+	literal size.
+	(ZSTD_TABLE_WORK_LIT_SIZE): Don't define.
+	(elf_zstd_read_huff): Use elf_fetch_backward_init.
+	(elf_zstd_read_literals): New static function.
+	(ZSTD_LIT_RAW, ZSTD_LIT_RLE, ZSTD_LIT_HUFF): Don't define.
+	(struct elf_zstd_literals): Don't define.
+	(elf_zstd_literal_output): Remove static function.
+	(elf_zstd_decompress): Use elf_fetch_backward_init and
+	elf_zstd_read_literals.  Rewrite literal copying.<
+
 2022-12-10  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (ZSTD_TABLE_*): Use elf_zstd_fse_baseline_entry.
@@ -1914,7 +1965,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2022 Free Software Foundation, Inc.
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

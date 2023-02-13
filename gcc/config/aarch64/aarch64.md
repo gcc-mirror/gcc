@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -891,7 +891,7 @@
     if (aarch64_return_address_signing_enabled ()
 	&& (TARGET_PAUTH))
       {
-	if (aarch64_ra_sign_key == AARCH64_KEY_B)
+	if (aarch_ra_sign_key == AARCH_KEY_B)
 	  ret = "retab";
 	else
 	  ret = "retaa";
@@ -957,7 +957,7 @@
 {
   rtx bitvalue = gen_reg_rtx (<ZEROM>mode);
   rtx reg = gen_lowpart (<ZEROM>mode, operands[0]);
-  rtx val = GEN_INT (1UL << UINTVAL (operands[1]));
+  rtx val = gen_int_mode (HOST_WIDE_INT_1U << UINTVAL (operands[1]), <MODE>mode);
   emit_insn (gen_and<zerom>3 (bitvalue, reg, val));
   operands[1] = const0_rtx;
   operands[0] = aarch64_gen_compare_reg (<CODE>, bitvalue,
@@ -4457,8 +4457,9 @@
   {
     if (aarch64_sve_cnt_immediate (operands[1], <MODE>mode))
       std::swap (operands[1], operands[2]);
-    else if (!aarch64_sve_cnt_immediate (operands[2], <MODE>mode)
-	     && TARGET_CSSC)
+    else if (aarch64_sve_cnt_immediate (operands[2], <MODE>mode))
+      ;
+    else if (TARGET_CSSC)
       {
 	if (aarch64_uminmax_immediate (operands[1], <MODE>mode))
 	  std::swap (operands[1], operands[2]);

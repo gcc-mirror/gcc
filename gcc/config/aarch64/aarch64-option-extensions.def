@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -149,6 +149,6 @@ AARCH64_OPT_EXTENSION("ls64", LS64, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "")
 
-AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "")
+AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")
 
 #undef AARCH64_OPT_EXTENSION

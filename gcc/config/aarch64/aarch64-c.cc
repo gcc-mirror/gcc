@@ -1,5 +1,5 @@
 /* Target-specific code for C family languages.
-   Copyright (C) 2015-2022 Free Software Foundation, Inc.
+   Copyright (C) 2015-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -179,18 +179,18 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_RNG, "__ARM_FEATURE_RNG", pfile);
   aarch64_def_or_undef (TARGET_MEMTAG, "__ARM_FEATURE_MEMORY_TAGGING", pfile);
 
-  aarch64_def_or_undef (aarch64_bti_enabled (),
+  aarch64_def_or_undef (aarch_bti_enabled (),
 			"__ARM_FEATURE_BTI_DEFAULT", pfile);
 
   cpp_undef (pfile, "__ARM_FEATURE_PAC_DEFAULT");
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
     {
       int v = 0;
-      if (aarch64_ra_sign_key == AARCH64_KEY_A)
+      if (aarch_ra_sign_key == AARCH_KEY_A)
 	v |= 1;
-      if (aarch64_ra_sign_key == AARCH64_KEY_B)
+      if (aarch_ra_sign_key == AARCH_KEY_B)
 	v |= 2;
-      if (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL)
+      if (aarch_ra_sign_scope == AARCH_FUNCTION_ALL)
 	v |= 4;
       builtin_define_with_int_value ("__ARM_FEATURE_PAC_DEFAULT", v);
     }

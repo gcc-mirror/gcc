@@ -1,5 +1,5 @@
 /* Functions related to invoking -*- C++ -*- methods and overloaded functions.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -621,6 +621,15 @@ conversion_obstack_alloc (size_t n)
   memset (p, 0, n);
   return p;
 }
+
+/* RAII class to discard anything added to conversion_obstack.  */
+
+struct conversion_obstack_sentinel
+{
+  void *p;
+  conversion_obstack_sentinel (): p (conversion_obstack_alloc (0)) {}
+  ~conversion_obstack_sentinel () { obstack_free (&conversion_obstack, p); }
+};
 
 /* Allocate rejection reasons.  */
 
@@ -4219,18 +4228,32 @@ static tree
 maybe_init_list_as_array (tree elttype, tree init)
 {
   /* Only do this if the array can go in rodata but not once converted.  */
-  if (!CLASS_TYPE_P (elttype))
+  if (!TYPE_NON_AGGREGATE_CLASS (elttype))
     return NULL_TREE;
   tree init_elttype = braced_init_element_type (init);
   if (!init_elttype || !SCALAR_TYPE_P (init_elttype) || !TREE_CONSTANT (init))
     return NULL_TREE;
 
+  /* Check with a stub expression to weed out special cases, and check whether
+     we call the same function for direct-init as copy-list-init.  */
+  conversion_obstack_sentinel cos;
+  tree arg = build_stub_object (init_elttype);
+  conversion *c = implicit_conversion (elttype, init_elttype, arg, false,
+				       LOOKUP_NORMAL, tf_none);
+  if (c && c->kind == ck_rvalue)
+    c = next_conversion (c);
+  if (!c || c->kind != ck_user)
+    return NULL_TREE;
+
   tree first = CONSTRUCTOR_ELT (init, 0)->value;
-  if (TREE_CODE (init_elttype) == INTEGER_TYPE && null_ptr_cst_p (first))
-    /* Avoid confusion from treating 0 as a null pointer constant.  */
-    first = build1 (UNARY_PLUS_EXPR, init_elttype, first);
-  first = (perform_implicit_conversion_flags
-	   (elttype, first, tf_none, LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING));
+  conversion *fc = implicit_conversion (elttype, init_elttype, first, false,
+					LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING,
+					tf_none);
+  if (fc && fc->kind == ck_rvalue)
+    fc = next_conversion (fc);
+  if (!fc || fc->kind != ck_user || fc->cand->fn != c->cand->fn)
+    return NULL_TREE;
+  first = convert_like (fc, first, tf_none);
   if (first == error_mark_node)
     /* Let the normal code give the error.  */
     return NULL_TREE;
@@ -4262,7 +4285,8 @@ maybe_init_list_as_array (tree elttype, tree init)
 static tree
 maybe_init_list_as_range (tree fn, tree expr)
 {
-  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+  if (!processing_template_decl
+      && BRACE_ENCLOSED_INITIALIZER_P (expr)
       && is_list_ctor (fn)
       && decl_in_std_namespace_p (fn))
     {
@@ -4557,7 +4581,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   if (tree iters = maybe_init_list_as_range (cand->fn, expr))
     if (z_candidate *cand2
 	= build_user_type_conversion_1 (totype, iters, flags, tf_none))
-      if (cand2->viable == 1)
+      if (cand2->viable == 1 && !is_list_ctor (cand2->fn))
 	{
 	  cand = cand2;
 	  expr = iters;
@@ -5163,7 +5187,7 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
    or static operator(), in which cases the source expression
    would be `obj[...]' or `obj(...)'.  */
 
-static tree
+tree
 keep_unused_object_arg (tree result, tree obj, tree fn)
 {
   if (result == NULL_TREE
@@ -8839,12 +8863,14 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
     return error_mark_node;
 
   warning_sentinel w (warn_zero_as_null_pointer_constant);
-  if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
-    expr = TREE_OPERAND (expr, 0);
   if (issue_conversion_warnings)
     expr = cp_convert_and_check (totype, expr, complain);
   else
-    expr = cp_convert (totype, expr, complain);
+    {
+      if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+	expr = TREE_OPERAND (expr, 0);
+      expr = cp_convert (totype, expr, complain);
+    }
 
   return expr;
 }
@@ -13926,6 +13952,34 @@ static tree
 extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups,
 			 tree *cond_guard)
 {
+  /* CWG1299 (C++20): The temporary object to which the reference is bound or
+     the temporary object that is the complete object of a subobject to which
+     the reference is bound persists for the lifetime of the reference if the
+     glvalue to which the reference is bound was obtained through one of the
+     following:
+     - a temporary materialization conversion ([conv.rval]),
+     - ( expression ), where expression is one of these expressions,
+     - subscripting ([expr.sub]) of an array operand, where that operand is one
+       of these expressions,
+     - a class member access ([expr.ref]) using the . operator where the left
+       operand is one of these expressions and the right operand designates a
+       non-static data member of non-reference type,
+     - a pointer-to-member operation ([expr.mptr.oper]) using the .* operator
+       where the left operand is one of these expressions and the right operand
+       is a pointer to data member of non-reference type,
+     - a const_cast ([expr.const.cast]), static_cast ([expr.static.cast]),
+       dynamic_cast ([expr.dynamic.cast]), or reinterpret_cast
+       ([expr.reinterpret.cast]) converting, without a user-defined conversion,
+       a glvalue operand that is one of these expressions to a glvalue that
+       refers to the object designated by the operand, or to its complete
+       object or a subobject thereof,
+     - a conditional expression ([expr.cond]) that is a glvalue where the
+       second or third operand is one of these expressions, or
+     - a comma expression ([expr.comma]) that is a glvalue where the right
+       operand is one of these expressions.  */
+
+  /* FIXME several cases are still handled wrong (101572, 81420).  */
+
   tree sub = init;
   tree *p;
   STRIP_NOPS (sub);
@@ -13933,6 +13987,16 @@ extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups,
     {
       TREE_OPERAND (sub, 1)
 	= extend_ref_init_temps_1 (decl, TREE_OPERAND (sub, 1), cleanups,
+				   cond_guard);
+      return init;
+    }
+  if (TREE_CODE (sub) == POINTER_PLUS_EXPR
+      && TYPE_PTRDATAMEM_P (TREE_TYPE (tree_strip_nop_conversions
+				       (TREE_OPERAND (sub, 1)))))
+    {
+      /* A pointer-to-member operation.  */
+      TREE_OPERAND (sub, 0)
+	= extend_ref_init_temps_1 (decl, TREE_OPERAND (sub, 0), cleanups,
 				   cond_guard);
       return init;
     }

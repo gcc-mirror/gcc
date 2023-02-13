@@ -496,18 +496,18 @@ building specialized scripts.
 
    where
 
-   * ``switches`` is an optional sequence of switches defining such properties as
-     the formatting rules, the source search path, and the destination for the
-     output source file
+   * ``switches`` is an optional sequence of switches defining such properties
+     as the formatting rules, the source search path, and the destination for
+     the output source file
 
    * ``filename`` is the name of the source file to reformat; wildcards
      or several file names on the same gnatpp command are allowed. The
      file name may contain path information; it does not have to follow
      the GNAT file naming rules
 
-     Note that it is no longer necessary to specify the Ada language version;
-     ``gnatpp`` can process Ada source code written in any version from
-     Ada 83 onward without specifying any language version switch.
+   Note that it is no longer necessary to specify the Ada language version;
+   ``gnatpp`` can process Ada source code written in any version from Ada 83
+   onward without specifying any language version switch.
 
 
    .. _Switches_for_gnatpp:
@@ -519,8 +519,8 @@ building specialized scripts.
    ``gnatpp``, organized by category.
 
    You specify a switch by supplying a name and generally also a value.
-   In many cases the values for a switch with a given name are incompatible with
-   each other
+   In many cases the values for a switch with a given name are incompatible
+   with each other
    (for example the switch that controls the casing of a reserved word may have
    exactly one value: upper case, lower case, or
    mixed case) and thus exactly one such switch can be in effect for an
@@ -532,191 +532,267 @@ building specialized scripts.
    Abbreviated forms (the name appearing once, followed by each value) are
    not permitted.
 
-   .. _Alignment_Control:
 
-   Alignment Control
-   ^^^^^^^^^^^^^^^^^
+   .. _Layout_Control:
 
-   .. index:: Alignment control in gnatpp
+   Layout Control
+   ^^^^^^^^^^^^^^
 
-   Programs can be easier to read if certain constructs are vertically aligned.
-   By default, alignment of the following constructs is set ON:
+   .. index:: Layout control in gnatpp
+
+   ``gnatpp`` provides a layout switch which controls the general
+   formatting style:
+
+   .. index:: layout(gnatpp)
+
+   :switch:`--layout=default|minimal|compact|tall`
+
+   :switch:`default`
+     The default layout will follow a compact style but add aligment and put
+     some keywords on a separate line.
+     
+     Alignment is added in the the following constructs:
 
      * ``:`` in declarations,
      * ``:=`` in initializations in declarations,
      * ``:=`` in assignment statements,
      * ``=>`` in associations, and
-     * ``at`` keywords in the component clauses in record representation clauses.
+     * ``at`` keywords in the component clauses in record representation
+       clauses.
 
-   In addition, ``in`` and ``out`` in parameter specifications are lined up.
+     In addition, ``in`` and ``out`` keywords in parameter specifications are
+     also lined up.
 
-   .. index:: --no-alignment (gnatpp)
-   .. index:: --alignment (gnatpp)
-   .. index:: --no-align-modes (gnatpp)
+     The keyword ``is`` is placed on a separate line in a subprogram body in
+     case the spec occupies more than one line.
 
+     The keyword ``return`` is placed on a separate line if a subprogram spec
+     does not fit on one line.
 
-   :switch:`--no-alignment`
-     Set alignment to OFF
+   :switch:`minimal`
+     The minimal layout will avoid changing the source layout by keeping all
+     line breaks from the original source (it will not insert or delete any).
+     It will add indentation where appropriate as long as it does not exceed
+     the line length limit.
 
+   :switch:`compact`
+     The compact layout will avoid adding line breaks and alignment by packing
+     as many subexpressions on the same line as possible.
 
-   :switch:`--alignment`
-     Set alignment to ON
+     Whole-line comments that form a paragraph will be filled in typical word
+     processor style (that is, moving words between lines to make them similar
+     in length, except the last one which may be shorter).
 
+     For each whole-line comment that does not end with two hyphens, inserts
+     spaces if necessary after the starting two hyphens to ensure that there
+     are at least two spaces preceding the first non-blank character of the
+     comment.
 
-   :switch:`--no-align-modes`
-     Do not line up ``in`` and ``out`` in parameter specifications.
+   :switch:`tall`
+     The tall layout will favor adding lines breaks and alignment. It adds
+     all the alignment and line breaks defined in the ``default`` option,
+     and in addition:
+
+     * Places the keyword ``loop`` in FOR and WHILE loop statements on a
+       separate line
+     * Places the keyword ``then`` in IF statements on a separate line
+     * Places each keyword ``use`` in USE clauses on a separate line
+     * Splits the line just before the keyword ``record`` in a RECORD type
+       declaration
+     * Indents named blocks and loop statments with respect to the name
+     * When necessary, splits binary operators always before the operator
+     * Inserts an extra blank before various occurrences of ``(`` and ``:``
+     * When it is necessary to split a line between two subexpressions (because
+       otherwise the construct would exceed --max-line-length), then all such
+       subexpressions are placed on separate lines
+     * Formats enumeration type declarations “vertically”, e.g. each
+       enumeration literal goes on a separate line
+     * Formats array type declarations “vertically”, e.g. for multidimensional
+       arrays, each index_subtype_definition or discrete_subtype_definition
+       goes on a separate line
+     * Format aggregates “vertically” if named notation is used for all
+       component_associations, e.g. each component_association goes on a
+       separate line
+     * Formats case statements, case expressions, and variant parts with
+       additional line breaks
+     * Inserts blank lines where appropriate (between bodies and other large
+       constructs)
+     * Similarly to the :switch:`compact` layout, two spaces are added in the
+       beginning of a whole-line comment when needed
+
 
    .. _Casing_Control:
-
 
    Casing Control
    ^^^^^^^^^^^^^^
 
    .. index:: Casing control in gnatpp
 
-   ``gnatpp`` allows you to specify the casing for reserved words,
-   pragma names, attribute designators and identifiers.
-   For identifiers you may define a
-   general rule for name casing but also override this rule
-   via a set of dictionary files.
+   ``gnatpp`` allows you to specify the casing for reserved words, pragma
+   names, attribute designators and identifiers. For identifiers you may define
+   a general rule for name casing but also override this rule via a set of
+   dictionary files.
 
-   Three types of casing are supported: lower case, upper case, and mixed case.
-   'Mixed case' means that the first letter, and also each letter immediately
-   following an underscore, are converted to their uppercase forms;
-   all the other letters are converted to their lowercase forms.
-
-   (Note: the casing switches are not yet fully supported in the
-   libadalang-based version of gnatpp.)
+   Three types of casing are supported: 'Lower Case', 'Upper Case', and
+   'Mixed Case'. 'Mixed case' means that the first letter, and also each
+   letter immediately following an underscore, are converted to their
+   uppercase forms and all the other letters are converted to their lowercase
+   forms.
 
    .. index:: --name-case-as-declared (gnatpp)
 
-   :switch:`--name-case-as-declared`
+   :switch:`--name-case-as-declared, -nD`
      Name casing for defining occurrences are as they appear in the source file
-     (this is the default)
+     (this is the default).
 
    .. index:: --name-upper-case (gnatpp)
 
-   :switch:`--name-upper-case`
-     Names are in upper case
+   :switch:`--name-upper-case, -nU`
+     Names are in upper case.
 
    .. index:: --name-lower-case (gnatpp)
 
-   :switch:`--name-lower-case`
-     Names are in lower case
+   :switch:`--name-lower-case, -nL`
+     Names are in lower case.
 
    .. index:: --name-mixed-case (gnatpp)
 
-   :switch:`--name-mixed-case`
-     Names are in mixed case
+   :switch:`--name-mixed-case, -nM`
+     Names are in mixed case.
 
    .. index:: --attribute-lower-case (gnatpp)
 
-   :switch:`--attribute-lower-case`
-     Attribute designators are lower case
+   :switch:`--attribute-lower-case, -aL`
+     Attribute designators are lower case.
 
    .. index:: --attribute-upper-case (gnatpp)
 
-   :switch:`--attribute-upper-case`
-     Attribute designators are upper case
+   :switch:`--attribute-upper-case, -aU`
+     Attribute designators are upper case.
 
    .. index:: --attribute-mixed-case (gnatpp)
 
-   :switch:`--attribute-mixed-case`
-     Attribute designators are mixed case (this is the default)
+   :switch:`--attribute-mixed-case, -aM`
+     Attribute designators are mixed case (this is the default).
 
    .. index:: --keyword-lower-case (gnatpp)
 
-   :switch:`--keyword-lower-case`
+   :switch:`--keyword-lower-case, -kL`
      Keywords (technically, these are known in Ada as *reserved words*) are
-     lower case (this is the default)
+     lower case (this is the default).
 
    .. index:: --keyword-upper-case (gnatpp)
 
-   :switch:`--keyword-upper-case`
-     Keywords are upper case
+   :switch:`--keyword-upper-case, -kU`
+     Keywords are upper case.
 
    .. index:: --enum-case-as-declared (gnatpp)
 
-   :switch:`--enum-case-as-declared`
-     Enumeration literal casing for defining occurrences are as they appear in the
-     source file. Overrides -n casing setting.
+   :switch:`--enum-case-as-declared, -neD`
+     Enumeration literal casing for defining occurrences are as they appear in
+     the source file. Overrides -n casing setting.
 
    .. index:: --enum-upper-case (gnatpp)
 
-   :switch:`--enum-upper-case`
+   :switch:`--enum-upper-case, -neU`
      Enumeration literals are in upper case. Overrides -n casing
      setting.
 
    .. index:: --enum-lower-case (gnatpp)
 
-   :switch:`--enum-lower-case`
+   :switch:`--enum-lower-case, -neL`
      Enumeration literals are in lower case. Overrides -n casing
      setting.
 
    .. index:: --enum-mixed-case (gnatpp)
 
-   :switch:`--enum-mixed-case`
+   :switch:`--enum-mixed-case, -neM`
      Enumeration literals are in mixed case. Overrides -n casing
      setting.
 
    .. index:: --type-case-as-declared (gnatpp)
 
-   :switch:`--type-case-as-declared`
+   :switch:`--type-case-as-declared, -ntD`
      Names introduced by type and subtype declarations are always
      cased as they appear in the declaration in the source file.
      Overrides -n casing setting.
 
    .. index:: --type-upper-case (gnatpp)
 
-   :switch:`--type-upper-case`
+   :switch:`--type-upper-case, -ntU`
      Names introduced by type and subtype declarations are always in
      upper case. Overrides -n casing setting.
 
    .. index:: --type-lower-case (gnatpp)
 
-   :switch:`--type-lower-case`
+   :switch:`--type-lower-case, -ntL`
      Names introduced by type and subtype declarations are always in
      lower case. Overrides -n casing setting.
 
    .. index:: --type-mixed-case (gnatpp)
 
-   :switch:`--type-mixed-case`
+   :switch:`--type-mixed-case, -ntM`
      Names introduced by type and subtype declarations are always in
      mixed case. Overrides -n casing setting.
 
    .. index:: --number-upper-case (gnatpp)
 
-   :switch:`--number-upper-case`
+   :switch:`--number-upper-case, -nnU`
      Names introduced by number declarations are always in
      upper case. Overrides -n casing setting.
 
    .. index:: --number-lower-case (gnatpp)
 
-   :switch:`--number-lower-case`
+   :switch:`--number-lower-case, -nnL`
      Names introduced by number declarations are always in
      lower case. Overrides -n casing setting.
 
    .. index:: --number-mixed-case (gnatpp)
 
-   :switch:`--number-mixed-case`
+   :switch:`--number-mixed-case, -nnM`
      Names introduced by number declarations are always in
      mixed case. Overrides -n casing setting.
 
    .. index:: --pragma-lower-case (gnatpp)
 
-   :switch:`--pragma-lower-case`
-     Pragma names are lower case
+   :switch:`--pragma-lower-case, -pL`
+     Pragma names are lower case.
 
    .. index:: --pragma-upper-case (gnatpp)
 
-   :switch:`--pragma-upper-case`
-     Pragma names are upper case
+   :switch:`--pragma-upper-case, -pU`
+     Pragma names are upper case.
 
    .. index:: --pragma-mixed-case (gnatpp)
 
-   :switch:`--pragma-mixed-case`
-     Pragma names are mixed case (this is the default)
+   :switch:`--pragma-mixed-case, -pM`
+     Pragma names are mixed case (this is the default).
 
+   .. index:: --constant-case-as-non-constant (gnatpp)
+
+   :switch:`--constant-case-as-non-constant, -cN`
+     Constant object declaration names have the same case as the name casing
+     (this is the default).
+
+   .. index:: --constant-case-as-declared (gnatpp)
+
+   :switch:`--constant-case-as-declared, -cD`
+     Constant object declaration names are as they appear in the source file.
+
+   .. index:: --constant-lower-case (gnatpp)
+
+   :switch:`--constant-lower-case, -cL`
+     Constant object declaration names are lower case.
+
+   .. index:: --constant-upper-case (gnatpp)
+
+   :switch:`--constan-upper-case, -cU`
+     Constant object declaration names are upper case.
+
+   .. index:: --constant-mixed-case (gnatpp)
+
+   :switch:`--constant-mixed-case, -cM`
+     Constant object declaration names are mixed case.
 
    .. index:: --syntax-only (gnatpp)
 
@@ -725,10 +801,9 @@ building specialized scripts.
      This means gnatpp will not be able to support any of the
      "as-declared" switches.
 
-
    .. index:: --dictionary (gnatpp)
 
-   :switch:`--dictionary={file}`
+   :switch:`--dictionary={file}, -D={file}`
      Use ``file`` as a *dictionary file* that defines
      the casing for a set of specified names,
      thereby overriding the effect on these names by
@@ -741,10 +816,9 @@ building specialized scripts.
      to define the casing for the Ada predefined names and
      the names declared in the GNAT libraries.
 
-
    .. index:: --dictionary=- (gnatpp)
 
-   :switch:`--dictionary=-`
+   :switch:`--dictionary=-, -D=-`
      Do not use the default dictionary file;
      instead, use the casing
      defined by a ``-n`` switch and any explicit
@@ -762,146 +836,6 @@ building specialized scripts.
    on their effect.
 
 
-   .. index:: -c (gnatpp)
-
-
-   :switch:`--comments-unchanged`
-     All comments remain unchanged.
-
-
-   :switch:`--comments-gnat-indentation`
-     GNAT-style comment line indentation.
-     This is the default.
-
-
-   :switch:`--comments-gnat-beginning`
-     GNAT-style comment beginning.
-
-
-   :switch:`--comments-fill`
-     Fill comment blocks.
-     The default is :switch:`--no-comments-fill`.
-
-
-   :switch:`--comments-special`
-     Keep unchanged special form comments.
-     The default is :switch:`--no-comments-special`.
-
-
-   .. index:: --comments-only (gnatpp)
-
-   :switch:`--comments-only`
-     Format just the comments.
-
-   .. index:: --no-end-id (gnatpp)
-
-
-   :switch:`--no-end-id`
-     Do not insert the name of a unit after ``end``; leave whatever comes
-     after ``end``, if anything, alone.
-
-   .. index:: --no-separate-is (gnatpp)
-
-
-   :switch:`--no-separate-is`
-     Do not place the keyword ``is`` on a separate line in a subprogram body in
-     case if the spec occupies more than one line.
-
-   .. index:: --no-separate-return (gnatpp)
-
-
-   :switch:`--no-separate-return`
-     In :switch:`--no-compact` mode, if a subprogram spec does not fit on
-     one line, try to place the ``return`` on the same line as the last
-     formal parameter.
-
-   .. index:: --separate-loop (gnatpp)
-
-
-   :switch:`--separate-loop`
-     Place the keyword ``loop`` in FOR and WHILE loop statements
-     on a separate line.
-
-   .. index:: --no-separate-then (gnatpp)
-
-
-   :switch:`--separate-then`
-     Place the keyword ``then`` in IF statements
-     on a separate line.
-
-   .. index:: --no-separate-loop (gnatpp)
-
-
-   :switch:`--no-separate-loop`
-     Do not place the keyword ``loop`` in FOR and WHILE loop statements
-     on a separate line. This option is
-     incompatible with the :switch:`--separate-loop` option.
-
-   .. index:: --no-separate-then (gnatpp)
-
-
-   :switch:`--no-separate-then`
-     Do not place the keyword ``then`` in IF statements
-     on a separate line. This option is
-     incompatible with the :switch:`--separate-then` option.
-
-   .. index:: --separate-loop-then (gnatpp)
-
-
-   :switch:`--separate-loop-then`
-     Equivalent to :switch:`--separate-loop` :switch:`--separate-then`.
-
-   .. index:: --no-separate-loop-then (gnatpp)
-
-
-   :switch:`--no-separate-loop-then`
-     Equivalent to :switch:`--no-separate-loop` :switch:`--no-separate-then`.
-
-   .. index:: --use-on-new-line (gnatpp)
-
-
-   :switch:`--use-on-new-line`
-     Start each USE clause in a context clause from a separate line.
-
-
-   .. index:: --insert-blank-lines (gnatpp)
-
-
-   :switch:`--insert-blank-lines`
-     Insert blank lines where appropriate (between bodies and other large
-     constructs).
-
-   .. index:: --preserve-blank-lines (gnatpp)
-
-
-   :switch:`--preserve-blank-lines`
-     Preserve blank lines in the input. By default, gnatpp will squeeze
-     multiple blank lines down to one.
-
-   .. index:: --preserve-line-breaks (gnatpp)
-
-   :switch:`--preserve-line-breaks`
-     Preserve line breaks in the input, to the extent possible.
-     By default, line breaks are also inserted at appropriate
-     places.
-
-   .. index:: --source-line-breaks (gnatpp)
-
-   :switch:`--source-line-breaks`
-     Keep the line breaks from the source; do not insert or delete any
-     line breaks.
-
-   .. index:: --spaces-only (gnatpp)
-
-   :switch:`--spaces-only`
-     Disable all formatting except for inserting and removing spaces.
-     This implies --source-line-breaks.
-
-   The ``--comments`` switches are compatible with one another, except
-   that the ``--comments-unchanged`` switch disables all other comment
-   formatting switches.
-
-
    .. _General_Text_Layout_Control:
 
    General Text Layout Control
@@ -911,19 +845,19 @@ building specialized scripts.
 
    .. index:: --max-line-length (gnatpp)
 
-   :switch:`--max-line-length={nnn}`
+   :switch:`--max-line-length={nnn}, -M={nnn}`
      Maximum line length, ``nnn`` from 32...256, the default value is 79
 
 
    .. index:: --indentation (gnatpp)
 
-   :switch:`--indentation={nnn}`
+   :switch:`--indentation={nnn}, -i={nnn}`
      Indentation level, ``nnn`` from 1...9, the default value is 3
 
 
    .. index:: --indent-continuation (gnatpp)
 
-   :switch:`--indent-continuation={nnn}`
+   :switch:`--indent-continuation={nnn}, -cl={nnn}`
      Indentation level for continuation lines (relative to the line being
      continued), ``nnn`` from 1...9.
      The default
@@ -956,63 +890,6 @@ building specialized scripts.
      example, with ``--based-grouping=4``, ``16#0001FFFE#`` will be
      changed to ``16#0001_FFFE#``.
 
-
-   .. index:: --split-line-before-record (gnatpp)
-
-   :switch:`--split-line-before-record`
-     Split the line just before ``record`` in a record type declaration.
-
-
-   .. index:: --indent-named-statements (gnatpp)
-
-   :switch:`--indent-named-statements`
-     Named block and loop statements are indented with respect to
-     the name.
-
-
-   .. index:: --split-line-before-op (gnatpp)
-
-   :switch:`--split-line-before-op`
-     If it is necessary to split a line at a binary operator, by default
-     the line is split after the operator. With this option, it is split
-     before the operator.
-
-
-   .. index:: --RM-style-spacing (gnatpp)
-
-   :switch:`--RM-style-spacing`
-     Do not insert an extra blank before various occurrences of
-     '(' and ':'. Alignment is off by default in this mode;
-     use :switch:`--alignment` to turn it on.
-
-
-   .. index:: --compact (gnatpp)
-   .. index:: --no-compact (gnatpp)
-
-   :switch:`--compact`
-     This is the default. In calls and similar, this packs as many
-     subexpressions on the same line as possible. Example:
-
-     .. code-block:: ada
-
-        Some_Procedure
-          (Short_One, Another_Short_One,
-           A_Very_Very_Very_Very_Very_Very_Very_Very_Long_One);
-
-   :switch:`--no-compact`
-     Turns off --compact mode. In calls and similar, if it is necessary
-     to split a line between two subexpressions (because otherwise the
-     construct would exceed --max-line-length), then all such subexpressions
-     are placed on separate lines. Example:
-
-     .. code-block:: ada
-
-        Some_Procedure
-          (Short_One,
-           Another_Short_One,
-           A_Very_Very_Very_Very_Very_Very_Very_Very_Long_One);
-
-
    .. index:: --call-threshold (gnatpp)
 
    :switch:`--call-threshold={nnn}`
@@ -1021,40 +898,14 @@ building specialized scripts.
      a new line. If ``nnn`` is 0, no check for the number of associations
      is made; this is the default.
 
-
    .. index:: --par-threshold (gnatpp)
 
    :switch:`--par-threshold={nnn}`
      If the number of parameter specifications is greater than ``nnn``
      (or equal to ``nnn`` in case of a function), start each specification from
-     a new line. If ``nnn`` is 0, and :switch:`--no-separate-is` was not specified, then
-     the ``is`` is placed on a separate line. This feature is disabled by default.
-
-   .. index:: --vertical-enum-types (gnatpp)
-
-   :switch:`--vertical-enum-types`
-     Format enumeration type declarations "vertically", e.g. each
-     enumeration literal goes on a separate line.
-
-   .. index:: --vertical-array-types (gnatpp)
-
-   :switch:`--vertical-array-types`
-     Format array type declarations "vertically", e.g. for
-     multidimensional arrays, each index_subtype_definition or
-     discrete_subtype_definition goes on a separate line.
-
-   .. index:: --vertical-named-aggregates (gnatpp)
-
-   :switch:`--vertical-named-aggregates`
-     Format aggregates "vertically" if named notation is used for all
-     component_associations, e.g. each component_association
-     goes on a separate line.
-
-   .. index:: --vertical-case-alternatives (gnatpp)
-
-   :switch:`--vertical-case-alternatives`
-     Format case statements, case expressions, and variant parts with
-     additional line breaks.
+     a new line. If ``nnn`` is 0, and :switch:`--no-separate-is` was not
+     specified, then the ``is`` is placed on a separate line. This feature is
+     disabled by default.
 
 
    .. _Setting_the_Source_Search_Path:
@@ -1090,7 +941,7 @@ building specialized scripts.
 
    .. index:: --replace (gnatpp)
 
-   :switch:`--replace`
+   :switch:`--replace, -rnb`
      This is the default.
      Replace the input source file with the reformatted output without
      creating any backup copy of the input source.
@@ -1108,13 +959,13 @@ building specialized scripts.
 
    .. index:: --pipe (gnatpp)
 
-   :switch:`--pipe`
+   :switch:`--pipe, -pipe`
      Send the output to ``Standard_Output``
 
 
    .. index:: --output (gnatpp)
 
-   :switch:`--output={output_file}`
+   :switch:`--output={output_file}, -o={output_file}`
      Write the output into ``output_file``.
      If ``output_file`` already exists, ``gnatpp`` terminates without
      reading or processing the input file.
@@ -1122,24 +973,24 @@ building specialized scripts.
 
    .. index:: --output-force (gnatpp)
 
-   :switch:`--output-force={output_file}`
+   :switch:`--output-force={output_file}, -of={output_file}`
      Write the output into ``output_file``, overwriting the existing file
      (if one is present).
 
 
    .. index:: --replace-backup (gnatpp)
 
-   :switch:`--replace-backup`
+   :switch:`--replace-backup, -r`
      Replace the input source file with the reformatted output, and copy the
-     original input source into the file whose name is obtained by appending the
-     :file:`.npp` suffix to the name of the input file.
+     original input source into the file whose name is obtained by appending
+     the :file:`.npp` suffix to the name of the input file.
      If a file with this name already exists, ``gnatpp`` terminates without
      reading or processing the input file.
 
 
    .. index:: --replace-force-backup (gnatpp)
 
-   :switch:`--replace-force-backup`
+   :switch:`--replace-force-backup, -rf`
      Like ``--replace-backup`` except that if the file with the specified name
      already exists, it is overwritten.
 
@@ -1159,7 +1010,7 @@ building specialized scripts.
 
    .. index:: --wide-character-encoding (gnatpp)
 
-   :switch:`--wide-character-encoding={e}`
+   :switch:`--wide-character-encoding={e}, -W={e}`
      Specify the wide character encoding method for the input and output
      files. ``e`` is one of the following:
 
@@ -1198,8 +1049,8 @@ building specialized scripts.
 
    :switch:`-P {file}`
      Indicates the name of the project file that describes the set of sources
-     to be processed. The exact set of argument sources depends on other options
-     specified; see below.
+     to be processed. The exact set of argument sources depends on other
+     options specified; see below.
 
 
    .. index:: -U  (gnatpp)
@@ -1207,9 +1058,8 @@ building specialized scripts.
    :switch:`-U`
      If a project file is specified and no argument source is explicitly
      specified (either directly or by means of ``--files`` option), process
-     all the units of the closure of the argument project. Otherwise this option
-     has no effect.
-
+     all the units of the closure of the argument project. Otherwise this
+     option has no effect.
 
    :switch:`-U {main_unit}`
      If a project file is specified and no argument source is explicitly
@@ -1255,13 +1105,13 @@ building specialized scripts.
    .. index:: --pp-on  (gnatpp)
 
    :switch:`--pp-on={xxx}`
-     Use :switch:`--xxx` as the command to turn pretty printing back on, instead
-     of the default ``--!pp on``.
+     Use :switch:`--xxx` as the command to turn pretty printing back on,
+     instead of the default ``--!pp on``.
 
 
    .. index:: --files (gnatpp)
 
-   :switch:`--files={filename}`
+   :switch:`--files={filename}, -files={filename}`
      Take as arguments the files listed in text file ``file``.
      Text file ``file`` may contain empty lines that are ignored.
      Each nonempty line should contain the name of an existing file.
@@ -1274,9 +1124,10 @@ building specialized scripts.
      Do not process the sources listed in a specified file. This option cannot
      be used in incremental mode.
 
+
    .. index:: --jobs (gnatpp)
 
-   :switch:`--jobs={n}`
+   :switch:`--jobs={n}, -j={n}`
      With ``--incremental``, use *n* ``gnatpp`` processes to perform
      pretty printing in parallel. If *n* is 0, then the maximum number
      processes is the number of core processors on the platform.
@@ -1284,13 +1135,13 @@ building specialized scripts.
 
    .. index:: --verbose (gnatpp)
 
-   :switch:`--verbose`
+   :switch:`--verbose, -v`
      Verbose mode
 
 
    .. index:: --quiet (gnatpp)
 
-   :switch:`--quiet`
+   :switch:`--quiet, -q`
      Quiet mode
 
    If a project file is specified and no argument source is explicitly
@@ -1304,9 +1155,9 @@ building specialized scripts.
    Formatting Rules
    ----------------
 
-   The following subsections show how ``gnatpp`` treats white space,
-   comments, program layout, and name casing.
-   They provide detailed descriptions of the switches shown above.
+   The following subsections show how ``gnatpp`` treats, comments, program
+   layout, name casing and how to disable ``gnatpp`` in source code regions.
+   They provide more details of the switches shown above.
 
 
    .. _Disabling_Pretty_Printing:
@@ -1353,31 +1204,12 @@ building specialized scripts.
    included in the argument to these switches.
 
 
-   .. _White_Space_and_Empty_Lines:
-
-   White Space and Empty Lines
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-   ``gnatpp`` does not have an option to control space characters.
-   It will add or remove spaces according to the style illustrated by the
-   examples in the :title:`Ada Reference Manual`.
-   The output file will contain no lines with trailing white space.
-
-   By default, a sequence of one or more blank lines in the input is
-   converted to a single blank line in the output; multiple blank lines
-   are squeezed down to one.
-   The ``--preserve-blank-lines`` option
-   turns off the squeezing; each blank line in the input is copied
-   to the output.
-   The ``--insert-blank-lines`` option
-   causes additional blank lines to be inserted if not already
-   present in the input (e.g. between bodies).
-
-
    .. _Formatting_Comments:
 
    Formatting Comments
    ^^^^^^^^^^^^^^^^^^^
+
+   Only ``--layout=compact`` and ``--layout=tall`` format comments.
 
    Comments in Ada code are of two kinds:
 
@@ -1390,38 +1222,21 @@ building specialized scripts.
    A whole-line comment is indented according to the surrounding code,
    with some exceptions. Comments that start in column 1 are kept
    there. If possible, comments are not moved so far to the right that
-   the maximum line length is exceeded. The ``--comments-unchanged``
-   option turns off comment formatting. Special-form comments such as
+   the maximum line length is exceeded. Special-form comments such as
    SPARK-style ``--#...`` are left alone.
 
    For an end-of-line comment, ``gnatpp`` tries to leave the same
    number of spaces between the end of the preceding Ada code and the
    beginning of the comment as appear in the original source.
 
-   The ``--comments-gnat-beginning`` switch (GNAT style comment
-   beginning) has the following effect:
+   For each whole-line comment that does not end with two hyphens or that are
+   not special-form comments, ``gnatpp`` inserts spaces if necessary after the
+   starting two hyphens to ensure that there are at least two spaces between
+   these hyphens and the first non-blank character of the comment.
 
-     * For each whole-line comment that does not end with two hyphens,
-       ``gnatpp`` inserts spaces if necessary after the starting two
-       hyphens to ensure that there are at least two spaces between
-       these hyphens and the first non-blank character of the comment.
-
-   The ``--comments-fill`` switch specifies that whole-line comments
-   that form a paragraph will be filled in typical word processor style
-   (that is, moving words between lines to make the lines other than the
-   last similar in length ).
-
-   The ``--comments-only`` switch specifies that only the comments are
-   formatted; the rest of the program text is left alone. The comments
-   are formatted according to the ``--comments-gnat-beginning`` and
-   ``--comments-fill`` switches; other formatting switches are ignored. For
-   example, ``--comments-only --comments-fill`` means to fill comment
-   paragraphs, and do nothing else. Likewise, ``--comments-only
-   --comments-gnat-beginning`` ensures comments start with at least two
-   spaces after ``--``, and ``--comments-only --comments-gnat-beginning
-   --comments-fill`` does both. If ``--comments-only`` is given without
-   ``--comments-gnat-beginning`` or ``--comments-fill``, then gnatpp
-   doesn't format anything.
+   With ``--layout=compact``, whole-line comments that form a paragraph will be
+   filled in typical word processor style (that is, moving words between lines
+   to make the lines other than the last similar in length).
 
 
    .. _Name_Casing:
@@ -1643,188 +1458,192 @@ building specialized scripts.
    Legacy Switches
    ^^^^^^^^^^^^^^^
 
-   Some switches have a short form, mostly for legacy reasons,
-   as shown below.
+   .. index:: --alignment (gnatpp)
 
-   .. index:: -n (gnatpp)
+   :switch:`--alignment, --no-alignment`
+      Programs can be easier to read if certain constructs are vertically
+      aligned.
 
-   :switch:`-nD`
-     :switch:`--name-case-as-declared`
+        * ``:`` in declarations,
+        * ``:=`` in initializations in declarations,
+        * ``:=`` in assignment statements,
+        * ``=>`` in associations, and
+        * ``at`` keywords in the component clauses in record representation
+          clauses.
 
-   :switch:`-nU`
-     :switch:`--name-upper-case`
+   .. index:: --align-modes (gnatpp)
 
-   :switch:`-nL`
-     :switch:`--name-lower-case`
+   :switch:`--align-modes, --no-align-modes`
 
-   :switch:`-nM`
-     :switch:`--name-mixed-case`
+      Line up ``in`` and ``out`` in parameter specifications.
 
-   .. index:: -a (gnatpp)
+   .. index:: --compact (gnatpp)
 
-   :switch:`-aL`
-     :switch:`--attribute-lower-case`
+   :switch:`--compact, --no-compact`
+     In calls and similar, ``--compact`` packs as many
+     subexpressions on the same line as possible. Example:
 
-   :switch:`-aU`
-     :switch:`--attribute-upper-case`
+     .. code-block:: ada
 
-   :switch:`-aM`
-     :switch:`--attribute-mixed-case`
+        Some_Procedure
+          (Short_One, Another_Short_One,
+           A_Very_Very_Very_Very_Very_Very_Very_Very_Long_One);
 
-   .. index:: -k (gnatpp)
+     On the contrary, with ``--no-compact``, in calls and similar, if it is
+     necessary to split a line between two subexpressions (because otherwise
+     the construct would exceed --max-line-length), then all such
+     subexpressions are placed on separate lines. Example:
 
-   :switch:`-kL`
-     :switch:`--keyword-lower-case`
+     .. code-block:: ada
 
-   :switch:`-kU`
-     :switch:`--keyword-upper-case`
+        Some_Procedure
+          (Short_One,
+           Another_Short_One,
+           A_Very_Very_Very_Very_Very_Very_Very_Very_Long_One);
 
-   .. index:: -ne (gnatpp)
+   .. index:: --end-id (gnatpp)
 
-   :switch:`-neD`
-     :switch:`--enum-case-as-declared`
+   :switch:`--end-id, --no-end-id`
+     Insert the name of a unit after ``end``. Otherwise, leave whatever comes
+     after ``end``, if anything, alone.
 
-   :switch:`-neU`
-     :switch:`--enum-upper-case`
+   .. index:: --separate-is (gnatpp)
 
-   :switch:`-neL`
-     :switch:`--enum-lower-case`
+   :switch:`--separate-is, --no-separate-is`
+     Place the keyword ``is`` on a separate line in a subprogram body in
+     case if the spec occupies more than one line.
 
-   :switch:`-neM`
-     :switch:`--enum-mixed-case`
+   .. index:: --separate-return (gnatpp)
 
-   .. index:: -nt (gnatpp)
+   :switch:`--separate-return, --no-separate-return`
+     If a subprogram spec does not fit on one line, place the ``return`` on
+     a separate line. Otherwise try to place it in the same line as the last
+     parameter specification.
 
-   :switch:`-ntD`
-     :switch:`--type-case-as-declared`
+   .. index:: --separate-loop (gnatpp)
 
-   :switch:`-ntU`
-     :switch:`--type-upper-case`
+   :switch:`--separate-loop, --no-separate-loop`
+     Place the keyword ``loop`` in FOR and WHILE loop statements
+     on a separate line.
 
-   :switch:`-ntL`
-     :switch:`--type-lower-case`
 
-   :switch:`-ntM`
-     :switch:`--type-mixed-case`
+   .. index:: --separate-then (gnatpp)
 
-   :switch:`-nnU`
-     :switch:`--number-upper-case`
+   :switch:`--separate-then, --no-separate-then`
+     Place the keyword ``then`` in IF statements
+     on a separate line.
 
-   :switch:`-nnL`
-     :switch:`--number-lower-case`
+   .. index:: --separate-loop-then (gnatpp)
 
-   :switch:`-nnM`
-     :switch:`--number-mixed-case`
+   :switch:`--separate-loop-then, --no-separate-loop-then`
+     Equivalent to :switch:`--separate-loop` :switch:`--separate-then`.
 
-   .. index:: -p (gnatpp)
+   .. index:: --split-line-before-record (gnatpp)
 
-   :switch:`-pL`
-     :switch:`--pragma-lower-case`
+   :switch:`--split-line-before-record, --no-split-line-before-record`
+     Split the line just before ``record`` in a record type declaration.
 
-   :switch:`-pU`
-     :switch:`--pragma-upper-case`
+   .. index:: --indent-named-statements (gnatpp)
 
-   :switch:`-pM`
-     :switch:`--pragma-mixed-case`
+   :switch:`--indent-named-statements, --no-indent-named-statements`
+     Named block and loop statements are indented with respect to
+     the name.
 
-   .. index:: -D (gnatpp)
+   .. index:: --split-line-before-op (gnatpp)
 
-   :switch:`-D{file}`
-     :switch:`--dictionary={file}`
+   :switch:`--split-line-before-op, --no-split-line-before-op`
+     If it is necessary to split a line at a binary operator, by default
+     the line is split after the operator. With this option, it is split
+     before the operator.
 
-   .. index:: -D- (gnatpp)
+   .. index:: --use-on-new-line (gnatpp)
 
-   :switch:`-D-`
-     :switch:`--dictionary=-`
+   :switch:`--use-on-new-line, --no-use-one-new-line`
+     Start each USE clause in a context clause from a separate line.
+
+   .. index:: --vertical-enum-types (gnatpp)
+
+   :switch:`--vertical-enum-types, --no-vertical-enum-types`
+     Format enumeration type declarations "vertically", e.g. each
+     enumeration literal goes on a separate line.
+
+   .. index:: --vertical-array-types (gnatpp)
+
+   :switch:`--vertical-array-types, --no-vertical-array-types`
+     Format array type declarations "vertically", e.g. for
+     multidimensional arrays, each index_subtype_definition or
+     discrete_subtype_definition goes on a separate line.
+
+   .. index:: --vertical-named-aggregates (gnatpp)
+
+   :switch:`--vertical-named-aggregates, --no-vertical-named-aggregates`
+     Format aggregates "vertically" if named notation is used for all
+     component_associations, e.g. each component_association
+     goes on a separate line.
+
+   .. index:: --vertical-case-alternatives (gnatpp)
+
+   :switch:`--vertical-case-alternatives, --no-vertical-case-alternatives`
+     Format case statements, case expressions, and variant parts with
+     additional line breaks.
+
+   .. index:: --RM-style-spacing (gnatpp)
+
+   :switch:`--RM-style-spacing`
+     Do not insert an extra blank before various occurrences of
+     '(' and ':'. Alignment is off by default in this mode;
+     use :switch:`--alignment` to turn it on.
+
+   .. index:: --insert-blank-lines (gnatpp)
+
+   :switch:`--insert-blank-lines, --no-insert-blank-lines`
+     Insert blank lines where appropriate (between bodies and other large
+     constructs).
+
+   .. index:: --preserve-blank-lines (gnatpp)
+
+   :switch:`--preserve-blank-lines, --no-preserve-blank-lines`
+     Preserve blank lines in the input. By default, gnatpp will squeeze
+     multiple blank lines down to one.
+
+   .. index:: --preserve-line-breaks (gnatpp)
+
+   :switch:`--preserve-line-breaks, --no-preserve-line-breaks`
+     Preserve line breaks in the input, to the extent possible.
+     By default, line breaks are also inserted at appropriate
+     places.
+
+   .. index:: --source-line-breaks (gnatpp)
+
+   :switch:`--source-line-breaks, --no-source-line-breaks`
+     Keep the line breaks from the source; do not insert or delete any
+     line breaks.
+
+   .. index:: --spaces-only (gnatpp)
+
+   :switch:`--spaces-only, --no-spaces-only`
+     Disable all formatting except for inserting and removing spaces.
+     This implies --source-line-breaks.
 
    .. index:: -c (gnatpp)
 
-   :switch:`-c0`
-     :switch:`--comments-unchanged`
+   :switch:`--comments-unchanged, -c0`
+     All comments remain unchanged.
 
-   :switch:`-c1`
-     :switch:`--comments-gnat-indentation`
+   :switch:`--comments-gnat-indentation, -c1`
+     GNAT-style comment line indentation.
 
-   :switch:`-c3`
-     :switch:`--comments-gnat-beginning`
+   :switch:`--comments-gnat-beginning, -c3`
+     GNAT-style comment beginning.
 
-   :switch:`-c4`
-     :switch:`--comments-fill`
+   :switch:`--comments-fill, -c4`
+     Fill comment blocks.
 
-   :switch:`-c5`
-     :switch:`--comments-special`
+   :switch:`--comments-special, -c5`
+     Keep unchanged special form comments.
 
-   .. index:: -M (gnatpp)
-
-   :switch:`-M{nnn}`
-     :switch:`--max-line-length={nnn}`
-
-   .. index:: -i (gnatpp)
-
-   :switch:`-i{nnn}`
-     :switch:`--indentation={nnn}`
-
-   .. index:: -cl (gnatpp)
-
-   :switch:`-cl{nnn}`
-     :switch:`--indent-continuation={nnn}`
-
-   .. index:: -pipe (gnatpp)
-
-   :switch:`-pipe`
-     :switch:`--pipe`
-
-   .. index:: -o (gnatpp)
-
-   :switch:`-o {output-file}`
-     :switch:`--output={output-file}`
-
-   .. index:: -of (gnatpp)
-
-   :switch:`-of {output-file}`
-     :switch:`--output-force={output-file}`
-
-   .. index:: -r (gnatpp)
-
-   :switch:`-rnb`
-     :switch:`--replace`
-
-   :switch:`-r`
-     :switch:`--replace-backup`
-
-   .. index:: -rf (gnatpp)
-
-   :switch:`-rf`
-     :switch:`--replace-force-backup`
-
-   .. index:: -rnb (gnatpp)
-
-   .. index:: --eol (gnatpp)
-
-   .. index:: -W (gnatpp)
-
-   :switch:`-W{e}`
-     :switch:`--wide-character-encoding={e}`
-
-   .. index:: -files (gnatpp)
-
-   :switch:`-files {filename}`
-     :switch:`--files={filename}`
-
-   .. index:: -j (gnatpp)
-
-   :switch:`-j{n}`
-     :switch:`--jobs={n}`
-
-   .. index:: -v (gnatpp)
-
-   :switch:`-v`
-     :switch:`--verbose`
-
-   .. index:: -q (gnatpp)
-
-   :switch:`-q`
-     :switch:`--quiet`
+   :switch:`--comments-only`
+     Format just the comments.
 
 
 .. only:: PRO or GPL

@@ -4,14 +4,14 @@
 
 auto i = 1;
 extern int i;
-static auto l = { 0L };
+static auto l = 0L;
 extern long l;
 extern auto const d = 0.0; /* { dg-warning "initialized and declared 'extern'" } */
 extern const double d;
 double dx;
 auto ((i2)) = 3;
 extern int i2;
-const auto i3 [[]] = { 4, };
+const auto i3 [[]] = 4;
 extern int i4;
 thread_local auto f = 1.0f;
 float ff;

@@ -1,6 +1,6 @@
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,9 +45,11 @@ namespace std
       typedef A<B> 		char_type;
       // Unsigned as wint_t in unsigned.
       typedef unsigned long  	int_type;
+#if __STDC_HOSTED__
       typedef streampos 	pos_type;
       typedef streamoff 	off_type;
       typedef mbstate_t 	state_type;
+#endif // HOSTED
       
       static void 
       assign(char_type& __c1, const char_type& __c2)

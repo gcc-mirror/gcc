@@ -1,5 +1,5 @@
 ;; C-SKY FPUV3 instruction descriptions.
-;; Copyright (C) 2018-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2023 Free Software Foundation, Inc.
 ;; Contributed by C-SKY Microsystems and Mentor Graphics.
 ;;
 ;; This file is part of GCC.
@@ -476,14 +476,16 @@
   [(set (match_operand:SI 0 "register_operand" "=v")
 	(FIX_SU:SI (unspec:F3ANY [(match_operand:F3ANY 1 "register_operand" "0")]
 				   FRM)))]
-  "CSKY_ISA_FEATURE(fpv3_<mode>)"
+  "CSKY_ISA_FEATURE(fpv3_<mode>)
+   && (flag_fp_int_builtin_inexact || !flag_trapping_math)"
   "fftoi.f<f3t>.<fixsu>32<rm>\t%0, %1"
 )
 
 (define_insn "<frm_pattern><mode>2"
   [(set (match_operand:F3ANY 0 "register_operand" "=v")
 	(unspec:F3ANY [(match_operand:F3ANY 1 "register_operand" "0")] FRMF))]
-  "CSKY_ISA_FEATURE(fpv3_<mode>)"
+  "CSKY_ISA_FEATURE(fpv3_<mode>)
+   && (flag_fp_int_builtin_inexact || !flag_trapping_math)"
   "fftofi.f<f3t><rm>\t%0, %1"
 )
 

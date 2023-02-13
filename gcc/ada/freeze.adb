@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -398,7 +398,7 @@ package body Freeze is
       Nam        : constant Node_Id := Name (N);
       Old_S      : Entity_Id;
       Spec       : constant Node_Id := New_Copy_Tree (Specification (Decl));
-      Actuals    : List_Id := No_List;
+      Actuals    : List_Id;
       Call_Node  : Node_Id;
       Call_Name  : Node_Id;
       Body_Node  : Node_Id;
@@ -473,18 +473,20 @@ package body Freeze is
          Set_Is_Overloaded (Call_Name, False);
       end if;
 
+      if Nkind (Decl) /= N_Subprogram_Declaration then
+         Rewrite (N,
+           Make_Subprogram_Declaration (Loc,
+             Specification => Specification (N)));
+      end if;
+
       --  For simple renamings, subsequent calls can be expanded directly as
       --  calls to the renamed entity. The body must be generated in any case
       --  for calls that may appear elsewhere. This is not done in the case
       --  where the subprogram is an instantiation because the actual proper
-      --  body has not been built yet. This is also not done in GNATprove mode
-      --  as we need to check other conditions for creating a body to inline
-      --  in that case, which are controlled in Analyze_Subprogram_Body_Helper.
+      --  body has not been built yet.
 
       if Ekind (Old_S) in E_Function | E_Procedure
-        and then Nkind (Decl) = N_Subprogram_Declaration
         and then not Is_Generic_Instance (Old_S)
-        and then not GNATprove_Mode
       then
          Set_Body_To_Inline (Decl, Old_S);
       end if;
@@ -656,12 +658,6 @@ package body Freeze is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (Call_Node)));
-      end if;
-
-      if Nkind (Decl) /= N_Subprogram_Declaration then
-         Rewrite (N,
-           Make_Subprogram_Declaration (Loc,
-             Specification => Specification (N)));
       end if;
 
       --  Link the body to the entity whose declaration it completes. If
@@ -6281,7 +6277,10 @@ package body Freeze is
          end if;
 
          --  Otherwise, loop through scopes checking if an enclosing scope
-         --  comes from source or is a generic.
+         --  comes from source or is a generic. Note that, for the purpose
+         --  of this test, we need to consider that the internally generated
+         --  subprogram described above comes from source too if the original
+         --  subprogram itself does.
 
          declare
             S : Entity_Id;
@@ -6291,6 +6290,8 @@ package body Freeze is
             while Present (S) loop
                if Is_Overloadable (S) then
                   if Comes_From_Source (S)
+                    or else (Chars (S) = Name_uWrapped_Statements
+                              and then Comes_From_Source (Scope (S)))
                     or else Is_Generic_Instance (S)
                     or else Is_Child_Unit (S)
                   then

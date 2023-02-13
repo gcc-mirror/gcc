@@ -1,7 +1,7 @@
 @ libgcc routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
-/* Copyright (C) 1995-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2023 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -1522,7 +1522,7 @@ LSYM(Lover12):
 	add	r7, r7, #2
 #endif
 	mov	r2, #0
-	swi	0
+	svc	0
 	do_pop	{r7}
 	RET
 	FUNC_END clear_cache

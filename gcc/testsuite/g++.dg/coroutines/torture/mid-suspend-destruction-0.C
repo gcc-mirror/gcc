@@ -8,6 +8,7 @@
 // go out of scope.
 
 #include "../coro.h"
+#include <stdio.h>
 
 struct coro1 {
   struct promise_type;

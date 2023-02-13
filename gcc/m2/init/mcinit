@@ -1,0 +1,137 @@
+# mcinit list of Modula-2 modules used by mc.
+#
+# Copyright (C) 2000-2023 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+Storage
+SYSTEM
+# M2Dependent
+M2RTS
+RTExceptions
+# SYSTEM    9 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/SYSTEM.mod
+# StrLib    8 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/StrLib.mod
+# ASCII    8 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/ASCII.mod
+# M2EXCEPTION    8 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/M2EXCEPTION.mod
+# Debug    8 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/Debug.mod
+# FIO    8 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/FIO.mod
+# SysExceptions    8 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/SysExceptions.def
+# errno    8 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/errno.def
+# termios    8 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/termios.def
+# UnixArgs    7 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/UnixArgs.def
+# SysStorage    7 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/SysStorage.mod
+# IO    7 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/IO.mod
+# RTExceptions    7 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/RTExceptions.mod
+# Assertion    7 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/Assertion.mod
+# mcflex    6 ../../gcc-5.2.0/gcc/gm2/mc/mcflex.def
+# Storage    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/Storage.mod
+# M2RTS    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/M2RTS.mod
+# DynamicStrings    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/DynamicStrings.mod
+# SArgs    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/SArgs.mod
+# StdIO    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/StdIO.mod
+# wlists    6 ../../gcc-5.2.0/gcc/gm2/mc/wlists.mod
+# libc    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/libc.def FOR 'C'
+# NumberIO    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/NumberIO.mod
+# libm    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/libm.def FOR 'C'
+# ldtoa    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/ldtoa.def
+# dtoa    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/dtoa.def
+# symbolKey    6 ../../gcc-5.2.0/gcc/gm2/mc/symbolKey.mod
+# FormatStrings    6 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/FormatStrings.mod
+# StrIO    5 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/StrIO.mod
+# StringConvert    5 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/StringConvert.mod
+# mcLexBuf    5 ../../gcc-5.2.0/gcc/gm2/mc/mcLexBuf.mod
+# mcOptions    5 ../../gcc-5.2.0/gcc/gm2/mc/mcOptions.mod
+# varargs    5 ../../gcc-5.2.0/gcc/gm2/mc/varargs.mod
+# decl    5 ../../gcc-5.2.0/gcc/gm2/mc/decl.mod
+# mcError    5 ../../gcc-5.2.0/gcc/gm2/mc/mcError.mod
+# SFIO    5 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/SFIO.mod
+# nameKey    5 ../../gcc-5.2.0/gcc/gm2/mc/nameKey.mod
+# Indexing    5 ../../gcc-5.2.0/gcc/gm2/mc/Indexing.mod
+# mcMetaError    4 ../../gcc-5.2.0/gcc/gm2/mc/mcMetaError.mod
+# mcFileName    4 ../../gcc-5.2.0/gcc/gm2/mc/mcFileName.mod
+# alists    4 ../../gcc-5.2.0/gcc/gm2/mc/alists.mod
+# mcReserved    4 ../../gcc-5.2.0/gcc/gm2/mc/mcReserved.mod
+# mcPrintf    4 ../../gcc-5.2.0/gcc/gm2/mc/mcPrintf.mod
+# mcStack    4 ../../gcc-5.2.0/gcc/gm2/mc/mcStack.mod
+# mcDebug    4 ../../gcc-5.2.0/gcc/gm2/mc/mcDebug.mod
+# mcPreprocess    3 ../../gcc-5.2.0/gcc/gm2/mc/mcPreprocess.mod
+# mcQuiet    3 ../../gcc-5.2.0/gcc/gm2/mc/mcQuiet.mod
+# mcp1    3 gm2/gm2-auto/mcp1.mod
+# mcp2    3 gm2/gm2-auto/mcp2.mod
+# mcp3    3 gm2/gm2-auto/mcp3.mod
+# mcp4    3 gm2/gm2-auto/mcp4.mod
+# mcSearch    3 ../../gcc-5.2.0/gcc/gm2/mc/mcSearch.mod
+# mcComp    2 ../../gcc-5.2.0/gcc/gm2/mc/mcComp.mod
+# top    1 ../../gcc-5.2.0/gcc/gm2/mc/top.mod
+#
+# Initialization order
+#
+# RTco
+RTint
+StrLib
+ASCII
+M2EXCEPTION
+Debug
+FIO
+SysExceptions
+errno
+termios
+UnixArgs
+SysStorage
+IO
+Assertion
+mcflex
+DynamicStrings
+SArgs
+StdIO
+NumberIO
+StrIO
+StringConvert
+wlists
+alists
+Indexing
+ldtoa
+dtoa
+nameKey
+symbolKey
+FormatStrings
+mcLexBuf
+mcOptions
+varargs
+mcPretty
+decl
+mcError
+SFIO
+mcMetaError
+mcFileName
+mcReserved
+mcPrintf
+mcStack
+mcDebug
+mcPreprocess
+mcQuiet
+mcp1
+mcp2
+mcp3
+mcp4
+mcp5
+mcSearch
+mcComp
+keyc
+mcStream
+mcComment
+top

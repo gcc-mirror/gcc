@@ -1,4 +1,4 @@
-#   Copyright (C) 1999-2022 Free Software Foundation, Inc.
+#   Copyright (C) 1999-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,7 +36,9 @@
 # "! Fortran" for Fortran code,
 # "/* ObjC", for ObjC
 # "// ObjC++" for ObjC++
-# and "// Go" for Go
+# "// Go" for Go
+# "// Rust" for Rust
+# and "(* Modula-2" for Modula-2
 # If the tool is ObjC/ObjC++ then we overide the extension to .m/.mm to 
 # allow for ObjC/ObjC++ specific flags.
 
@@ -58,13 +60,15 @@ proc check_compile {basename type contents args} {
 	set options ""
     }
     switch -glob -- $contents {
-	"*/* Assembly*" { set src ${basename}[pid].S }
+	"*/\\* Assembly*" { set src ${basename}[pid].S }
 	"*! Fortran*" { set src ${basename}[pid].f90 }
 	"*// C++*" { set src ${basename}[pid].cc }
 	"*// D*" { set src ${basename}[pid].d }
 	"*// ObjC++*" { set src ${basename}[pid].mm }
-	"*/* ObjC*" { set src ${basename}[pid].m }
+	"*/\\* ObjC*" { set src ${basename}[pid].m }
 	"*// Go*" { set src ${basename}[pid].go }
+	"*// Rust*" { set src ${basename}[pid].rs }
+	"*(\\* Modula-2*" { set src ${basename}[pid].mod }
 	default {
 	    switch -- $tool {
 		"objc" { set src ${basename}[pid].m }
@@ -865,8 +869,8 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 # Add to FLAGS all the target-specific flags needed to use thread-local storage.
 
 proc add_options_for_tls { flags } {
-    # On Solaris 9, __tls_get_addr/___tls_get_addr only lives in
-    # libthread, so always pass -pthread for native TLS. Same for AIX.
+    # On AIX, __tls_get_addr/___tls_get_addr only lives in
+    # libthread, so always pass -pthread for native TLS.
     # Need to duplicate native TLS check from
     # check_effective_target_tls_native to avoid recursion.
     if { ([istarget powerpc-ibm-aix*]) &&
@@ -1214,6 +1218,9 @@ proc check_effective_target_static {} {
 
 # Return 1 if the target supports -fstack-protector
 proc check_effective_target_fstack_protector {} {
+    if { [istarget hppa*-*-*] } {
+	return 0;
+    }
     return [check_runtime fstack_protector {
 	#include <string.h>
 	int main (int argc, char *argv[]) {
@@ -5211,6 +5218,32 @@ proc check_effective_target_arm_cmse_clear_ok {} {
     } "-mcmse"];
 }
 
+# Return 1 if this is an ARM target supporting
+# -mbranch-protection=standard, 0 otherwise.
+
+proc check_effective_target_mbranch_protection_ok {} {
+
+    return [check_no_compiler_messages mbranch_protection_ok object {
+	int main (void) { return 0; }
+    } "-mbranch-protection=standard"]
+}
+
+# Return 1 if the target supports executing PACBTI instructions, 0
+# otherwise.
+
+proc check_effective_target_arm_pacbti_hw {} {
+    return [check_runtime arm_pacbti_hw_available {
+	__attribute__ ((naked)) int
+	main (void)
+	{
+	  asm ("pac r12, lr, sp");
+	  asm ("mov r0, #0");
+	  asm ("autg r12, lr, sp");
+	  asm ("bx lr");
+	}
+    } "-march=armv8.1-m.main+pacbti+fp -mbranch-protection=standard -mthumb -mfloat-abi=hard"]
+}
+
 # Return 1 if this compilation turns on string_ops_prefer_neon on.
 
 proc check_effective_target_arm_tune_string_ops_prefer_neon { } {
@@ -7092,7 +7125,8 @@ proc check_effective_target_vect_long_long { } {
 		 && [check_effective_target_s390_vx])
 	     || ([istarget powerpc*-*-*]
 		 && ![istarget powerpc-*-linux*paired*]
-		 && [check_effective_target_has_arch_pwr8]) }}]
+		 && [check_effective_target_has_arch_pwr8])
+	     || [istarget aarch64*-*-*] }}]
 }
 
 
@@ -8697,6 +8731,72 @@ proc check_effective_target_popcount { } {
         int foo (int b)
           {
             return __builtin_popcount (b);
+          }
+    } "" ]
+}
+
+# Return 1 if the target supports clz on int.
+
+proc check_effective_target_clz { } {
+    return [check_no_messages_and_pattern clz "!\\(call" rtl-expand {
+        int foo (int b)
+          {
+            return __builtin_clz (b);
+          }
+    } "" ]
+}
+
+# Return 1 if the target supports clz on long.
+
+proc check_effective_target_clzl { } {
+    return [check_no_messages_and_pattern clzl "!\\(call" rtl-expand {
+	int foo (long b)
+	  {
+	    return __builtin_clzl (b);
+	  }
+    } "" ]
+}
+
+# Return 1 if the target supports clz on long long.
+
+proc check_effective_target_clzll { } {
+    return [check_no_messages_and_pattern clzll "!\\(call" rtl-expand {
+        int foo (long long b)
+          {
+            return __builtin_clzll (b);
+          }
+    } "" ]
+}
+
+# Return 1 if the target supports ctz on int.
+
+proc check_effective_target_ctz { } {
+    return [check_no_messages_and_pattern ctz "!\\(call" rtl-expand {
+        int foo (int b)
+          {
+            return __builtin_ctz (b);
+          }
+    } "" ]
+}
+
+# Return 1 if the target supports ctz on long.
+
+proc check_effective_target_ctzl { } {
+    return [check_no_messages_and_pattern ctzl "!\\(call" rtl-expand {
+	int foo (long b)
+	  {
+	    return __builtin_ctzl (b);
+	  }
+    } "" ]
+}
+
+# Return 1 if the target supports ctz on long long.
+
+proc check_effective_target_ctzll { } {
+    return [check_no_messages_and_pattern ctzll "!\\(call" rtl-expand {
+        int foo (long long b)
+          {
+            return __builtin_ctzll (b);
           }
     } "" ]
 }

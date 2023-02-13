@@ -1,9 +1,8 @@
 /* { dg-do compile } */
-/* { dg-csky-options "-mcpu=ck801 -O1" } */
+/* { dg-csky-options "-mcpu=ck810f -O1 -mconstpool" } */
 
-/* Make sure that constant pools are emitted by the compiler for ck801.
-   If this is deferred to the assembler, the compiler will compute
-   incorrect branch offsets.  */
+/* Make sure that constant pools are emitted by the compiler when
+   -mconstpool is provided.  */
 
 void f (unsigned int *u, long long int *l, float *f, double *d)
 {

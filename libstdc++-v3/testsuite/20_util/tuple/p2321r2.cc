@@ -8,6 +8,10 @@
 #include <memory>
 #include <testsuite_hooks.h>
 
+#if __cpp_lib_ranges_zip != 202110L
+# error "Feature-test macro __cpp_lib_ranges_zip has wrong value in <tuple>"
+#endif
+
 using std::tuple;
 using std::pair;
 using std::allocator;

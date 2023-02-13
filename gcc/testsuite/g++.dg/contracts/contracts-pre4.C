@@ -77,16 +77,16 @@ int main(int, char**)
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 7 Base::f .*(\n|\r\n|\r)*" }
-// { dg-output "Base: 0(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 7 Base::f .*(\n|\r\n|\r)*" }
-// { dg-output "Child0: 0(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 7 Child1::f .*(\n|\r\n|\r)*" }
-// { dg-output "Child1: 10(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 7 Child2::f .*(\n|\r\n|\r)*" }
-// { dg-output "Child2: 20(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 7 Child3::f .*(\n|\r\n|\r)*" }
-// { dg-output "Child3: 30(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 7 Child4::f .*(\n|\r\n|\r)*" }
-// { dg-output "Child4: 40(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function Base::f at .*.C:7: .*(\n|\r\n|\r)" }
+// { dg-output "Base: 0(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base::f at .*.C:7: .*(\n|\r\n|\r)" }
+// { dg-output "Child0: 0(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child1::f at .*.C:7: .*(\n|\r\n|\r)" }
+// { dg-output "Child1: 10(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child2::f at .*.C:7: .*(\n|\r\n|\r)" }
+// { dg-output "Child2: 20(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child3::f at .*.C:7: .*(\n|\r\n|\r)" }
+// { dg-output "Child3: 30(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child4::f at .*.C:7: .*(\n|\r\n|\r)" }
+// { dg-output "Child4: 40(\n|\r\n|\r)" }
 

@@ -1,0 +1,129 @@
+(* RTgen.def provide a generic device interface used by ISO.
+
+Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RTgen ;
+
+(*
+    Title      : RTgen
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Mon Sep 22 18:15:35 2008
+    Revision   : $Version$ 
+    Description: provides a generic device interface between
+                 ISO channels and the underlying PIM style
+                 FIO procedure calls.
+*)
+
+FROM RTgenif IMPORT GenDevIF ;
+FROM IOLink IMPORT DeviceId, DeviceTablePtr;
+FROM IOConsts IMPORT ReadResults ;
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+TYPE
+   ChanDev ;
+   DeviceType = (seqfile, streamfile, programargs, stdchans, term, socket, rndfile) ;
+
+
+(*
+   InitChanDev - initialize and return a ChanDev.
+*)
+
+PROCEDURE InitChanDev (t: DeviceType; d: DeviceId; g: GenDevIF) : ChanDev ;
+
+
+(*
+   KillChanDev - deallocates, g.
+*)
+
+PROCEDURE KillChanDev (g: GenDevIF) : GenDevIF ;
+
+
+(*
+   RaiseEOFinLook - returns TRUE if the Look procedure
+                    should raise an exception if it
+                    sees end of file.
+*)
+
+PROCEDURE RaiseEOFinLook (g: ChanDev) : BOOLEAN ;
+
+
+(*
+   RaiseEOFinSkip - returns TRUE if the Skip procedure
+                    should raise an exception if it
+                    sees end of file.
+*)
+
+PROCEDURE RaiseEOFinSkip (g: ChanDev) : BOOLEAN ;
+
+
+PROCEDURE doLook (g: ChanDev;
+                  d: DeviceTablePtr;
+                  VAR ch: CHAR;
+                  VAR r: ReadResults) ;
+
+PROCEDURE doSkip (g: ChanDev;
+                  d: DeviceTablePtr) ;
+
+PROCEDURE doSkipLook (g: ChanDev;
+                      d: DeviceTablePtr;
+                      VAR ch: CHAR;
+                      VAR r: ReadResults) ;
+
+PROCEDURE doWriteLn (g: ChanDev;
+                     d: DeviceTablePtr) ;
+
+PROCEDURE doReadText (g: ChanDev;
+                      d: DeviceTablePtr;
+                      to: ADDRESS;
+                      maxChars: CARDINAL;
+                      VAR charsRead: CARDINAL) ;
+
+PROCEDURE doWriteText (g: ChanDev;
+                       d: DeviceTablePtr;
+                       from: ADDRESS;
+                       charsToWrite: CARDINAL) ;
+
+PROCEDURE doReadLocs (g: ChanDev;
+                      d: DeviceTablePtr;
+                      to: ADDRESS;
+                      maxLocs: CARDINAL;
+                      VAR locsRead: CARDINAL) ;
+
+PROCEDURE doWriteLocs (g: ChanDev;
+                       d: DeviceTablePtr;
+                       from: ADDRESS;
+                       locsToWrite: CARDINAL) ;
+
+(*
+   checkErrno - checks a number of errno conditions and raises
+                appropriate ISO exceptions if they occur.
+*)
+
+PROCEDURE checkErrno (g: ChanDev; d: DeviceTablePtr) ;
+
+
+END RTgen.

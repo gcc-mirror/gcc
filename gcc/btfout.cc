@@ -1,5 +1,5 @@
 /* Output BTF format from GCC.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -290,7 +290,35 @@ btf_datasec_push_entry (ctf_container_ref ctfc, const char *secname,
   ds.entries.safe_push (info);
 
   datasecs.safe_push (ds);
-  num_types_created++;
+}
+
+
+/* Return the section name, as of interest to btf_collect_datasec, for the
+   given symtab node.  Note that this deliberately returns NULL for objects
+   which do not go in a section btf_collect_datasec cares about.  */
+static const char *
+get_section_name (symtab_node *node)
+{
+  const char *section_name = node->get_section ();
+
+  if (section_name == NULL)
+    {
+      switch (categorize_decl_for_section (node->decl, 0))
+	{
+	case SECCAT_BSS:
+	  section_name = ".bss";
+	  break;
+	case SECCAT_DATA:
+	  section_name = ".data";
+	  break;
+	case SECCAT_RODATA:
+	  section_name = ".rodata";
+	  break;
+	default:;
+	}
+    }
+
+  return section_name;
 }
 
 /* Construct all BTF_KIND_DATASEC records for CTFC. One such record is created
@@ -301,7 +329,60 @@ btf_datasec_push_entry (ctf_container_ref ctfc, const char *secname,
 static void
 btf_collect_datasec (ctf_container_ref ctfc)
 {
-  /* See cgraph.h struct symtab_node, which varpool_node extends.  */
+  cgraph_node *func;
+  FOR_EACH_FUNCTION (func)
+    {
+      dw_die_ref die = lookup_decl_die (func->decl);
+      if (die == NULL)
+	continue;
+
+      ctf_dtdef_ref dtd = ctf_dtd_lookup (ctfc, die);
+      if (dtd == NULL)
+	continue;
+
+      /* Functions actually get two types: a BTF_KIND_FUNC_PROTO, and
+	 also a BTF_KIND_FUNC.  But the CTF container only allocates one
+	 type per function, which matches closely with BTF_KIND_FUNC_PROTO.
+	 For each such function, also allocate a BTF_KIND_FUNC entry.
+	 These will be output later.  */
+      ctf_dtdef_ref func_dtd = ggc_cleared_alloc<ctf_dtdef_t> ();
+      func_dtd->dtd_data = dtd->dtd_data;
+      func_dtd->dtd_data.ctti_type = dtd->dtd_type;
+      func_dtd->linkage = dtd->linkage;
+      func_dtd->dtd_type = num_types_added + num_types_created;
+
+      /* Only the BTF_KIND_FUNC type actually references the name. The
+	 BTF_KIND_FUNC_PROTO is always anonymous.  */
+      dtd->dtd_data.ctti_name = 0;
+
+      vec_safe_push (funcs, func_dtd);
+      num_types_created++;
+
+      /* Mark any 'extern' funcs and add DATASEC entries for them.  */
+      if (DECL_EXTERNAL (func->decl))
+	{
+	  func_dtd->linkage = BTF_FUNC_EXTERN;
+
+	  const char *section_name = get_section_name (func);
+	  /* Note: get_section_name () returns NULL for functions in text
+	     section.  This is intentional, since we do not want to generate
+	     DATASEC entries for them.  */
+	  if (section_name == NULL)
+	    continue;
+
+	  struct btf_var_secinfo info;
+
+	  /* +1 for the sentinel type not in the types map.  */
+	  info.type = func_dtd->dtd_type + 1;
+
+	  /* Both zero at compile time.  */
+	  info.size = 0;
+	  info.offset = 0;
+
+	  btf_datasec_push_entry (ctfc, section_name, info);
+	}
+    }
+
   varpool_node *node;
   FOR_EACH_VARIABLE (node)
     {
@@ -313,25 +394,13 @@ btf_collect_datasec (ctf_container_ref ctfc)
       if (dvd == NULL)
 	continue;
 
-      const char *section_name = node->get_section ();
+      /* Mark extern variables.  */
+      if (DECL_EXTERNAL (node->decl))
+	dvd->dvd_visibility = BTF_VAR_GLOBAL_EXTERN;
 
+      const char *section_name = get_section_name (node);
       if (section_name == NULL)
-	{
-	  switch (categorize_decl_for_section (node->decl, 0))
-	    {
-	    case SECCAT_BSS:
-	      section_name = ".bss";
-	      break;
-	    case SECCAT_DATA:
-	      section_name = ".data";
-	      break;
-	    case SECCAT_RODATA:
-	      section_name = ".rodata";
-	      break;
-	    default:
-	      continue;
-	    }
-	}
+	continue;
 
       struct btf_var_secinfo info;
 
@@ -347,6 +416,8 @@ btf_collect_datasec (ctf_container_ref ctfc)
       tree size = DECL_SIZE_UNIT (node->decl);
       if (tree_fits_uhwi_p (size))
 	info.size = tree_to_uhwi (size);
+      else if (VOID_TYPE_P (TREE_TYPE (node->decl)))
+	info.size = 1;
 
       /* Offset is left as 0 at compile time, to be filled in by loaders such
 	 as libbpf.  */
@@ -354,6 +425,8 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
       btf_datasec_push_entry (ctfc, section_name, info);
     }
+
+  num_types_created += datasecs.length ();
 }
 
 /* Return true if the type ID is that of a type which will not be emitted (for
@@ -431,8 +504,14 @@ btf_dvd_emit_preprocess_cb (ctf_dvdef_ref *slot, ctf_container_ref arg_ctfc)
 {
   ctf_dvdef_ref var = (ctf_dvdef_ref) * slot;
 
+  /* If this is an extern variable declaration with a defining declaration
+     later, skip it so that only the defining declaration is emitted.
+     This is the same case, fix and reasoning as in CTF; see PR105089.  */
+  if (ctf_dvd_ignore_lookup (arg_ctfc, var->dvd_key))
+    return 1;
+
   /* Do not add variables which refer to unsupported types.  */
-  if (btf_removed_type_p (var->dvd_type))
+  if (!voids.contains (var->dvd_type) && btf_removed_type_p (var->dvd_type))
     return 1;
 
   arg_ctfc->ctfc_vars_list[num_vars_added] = var;
@@ -451,29 +530,6 @@ btf_dtd_emit_preprocess_cb (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 {
   if (!btf_emit_id_p (dtd->dtd_type))
     return;
-
-  uint32_t btf_kind
-    = get_btf_kind (CTF_V2_INFO_KIND (dtd->dtd_data.ctti_info));
-
-  if (btf_kind == BTF_KIND_FUNC_PROTO)
-    {
-      /* Functions actually get two types: a BTF_KIND_FUNC_PROTO, and
-	 also a BTF_KIND_FUNC. But the CTF container only allocates one
-	 type per function, which matches closely with BTF_KIND_FUNC_PROTO.
-	 For each such function, also allocate a BTF_KIND_FUNC entry.
-	 These will be output later.  */
-      ctf_dtdef_ref func_dtd = ggc_cleared_alloc<ctf_dtdef_t> ();
-      func_dtd->dtd_data = dtd->dtd_data;
-      func_dtd->dtd_data.ctti_type = dtd->dtd_type;
-      func_dtd->linkage = dtd->linkage;
-
-      vec_safe_push (funcs, func_dtd);
-      num_types_created++;
-
-      /* Only the BTF_KIND_FUNC type actually references the name. The
-	 BTF_KIND_FUNC_PROTO is always anonymous.  */
-      dtd->dtd_data.ctti_name = 0;
-    }
 
   ctfc->ctfc_num_vlen_bytes += btf_calc_num_vbytes (dtd);
 }
@@ -676,7 +732,7 @@ btf_asm_varent (ctf_dvdef_ref var)
   dw2_asm_output_data (4, var->dvd_name_offset, "btv_name");
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_VAR, 0, 0), "btv_info");
   dw2_asm_output_data (4, get_btf_id (var->dvd_type), "btv_type");
-  dw2_asm_output_data (4, (var->dvd_visibility ? 1 : 0), "btv_linkage");
+  dw2_asm_output_data (4, var->dvd_visibility, "btv_linkage");
 }
 
 /* Asm'out a member description following a BTF_KIND_STRUCT or
@@ -1066,14 +1122,48 @@ btf_init_postprocess (void)
 {
   ctf_container_ref tu_ctfc = ctf_get_tu_ctfc ();
 
-  size_t i;
-  size_t num_ctf_types = tu_ctfc->ctfc_types->elements ();
-
   holes.create (0);
   voids.create (0);
 
   num_types_added = 0;
   num_types_created = 0;
+
+  /* Workaround for 'const void' variables.  These variables are sometimes used
+     in eBPF programs to address kernel symbols.  DWARF does not generate const
+     qualifier on void type, so we would incorrectly emit these variables
+     without the const qualifier.
+     Unfortunately we need the TREE node to know it was const, and we need
+     to create the const modifier type (if needed) now, before making the types
+     list.  So we can't avoid iterating with FOR_EACH_VARIABLE here, and then
+     again when creating the DATASEC entries.  */
+  ctf_id_t constvoid_id = CTF_NULL_TYPEID;
+  varpool_node *var;
+  FOR_EACH_VARIABLE (var)
+    {
+      if (!var->decl)
+	continue;
+
+      tree type = TREE_TYPE (var->decl);
+      if (type && VOID_TYPE_P (type) && TYPE_READONLY (type))
+	{
+	  dw_die_ref die = lookup_decl_die (var->decl);
+	  if (die == NULL)
+	    continue;
+
+	  ctf_dvdef_ref dvd = ctf_dvd_lookup (tu_ctfc, die);
+	  if (dvd == NULL)
+	    continue;
+
+	  /* Create the 'const' modifier type for void.  */
+	  if (constvoid_id == CTF_NULL_TYPEID)
+	    constvoid_id = ctf_add_reftype (tu_ctfc, CTF_ADD_ROOT,
+					    dvd->dvd_type, CTF_K_CONST, NULL);
+	  dvd->dvd_type = constvoid_id;
+	}
+    }
+
+  size_t i;
+  size_t num_ctf_types = tu_ctfc->ctfc_types->elements ();
 
   if (num_ctf_types)
     {

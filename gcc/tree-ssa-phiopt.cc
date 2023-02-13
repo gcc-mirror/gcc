@@ -1,5 +1,5 @@
 /* Optimization of PHI nodes by converting them into straightline code.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1002,6 +1002,11 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       if (!single_pred_p (middle_bb))
 	return false;
 
+      /* The middle bb cannot have phi nodes as we don't
+	 move those assignments yet. */
+      if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
+	return false;
+
       stmt_to_move = last_and_only_stmt (middle_bb);
       if (!stmt_to_move)
 	return false;
@@ -1491,6 +1496,26 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 		  default:
 		    break;
 		  }
+	      if (equal_p)
+		{
+		  tree phires = gimple_phi_result (phi);
+		  if (SSA_NAME_RANGE_INFO (phires))
+		    {
+		      /* After the optimization PHI result can have value
+			 which it couldn't have previously.  */
+		      int_range_max r;
+		      if (get_global_range_query ()->range_of_expr (r, phires,
+								    phi))
+			{
+			  int_range<2> tmp (carg, carg);
+			  r.union_ (tmp);
+			  reset_flow_sensitive_info (phires);
+			  set_range_info (phires, r);
+			}
+		      else
+			reset_flow_sensitive_info (phires);
+		    }
+		}
 	      if (equal_p && MAY_HAVE_DEBUG_BIND_STMTS)
 		{
 		  imm_use_iterator imm_iter;

@@ -1,6 +1,6 @@
 /* ARM NEON intrinsics include file.
 
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -7496,7 +7496,7 @@ vqrdmlshs_laneq_s32 (int32_t __a, int32_t __b, int32x4_t __c, const int __d)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target ("+nothing+crypto")
+#pragma GCC target ("+nothing+aes")
 /* vaes  */
 
 __extension__ extern __inline uint8x16_t
@@ -7526,6 +7526,22 @@ vaesimcq_u8 (uint8x16_t data)
 {
   return __builtin_aarch64_crypto_aesimcv16qi_uu (data);
 }
+
+__extension__ extern __inline poly128_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmull_p64 (poly64_t __a, poly64_t __b)
+{
+  return
+    __builtin_aarch64_crypto_pmulldi_ppp (__a, __b);
+}
+
+__extension__ extern __inline poly128_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmull_high_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+  return __builtin_aarch64_crypto_pmullv2di_ppp (__a, __b);
+}
+
 #pragma GCC pop_options
 
 /* vcage  */
@@ -20772,7 +20788,7 @@ vrsrad_n_u64 (uint64_t __a, uint64_t __b, const int __c)
 }
 
 #pragma GCC push_options
-#pragma GCC target ("+nothing+crypto")
+#pragma GCC target ("+nothing+sha2")
 
 /* vsha1  */
 
@@ -20847,21 +20863,6 @@ vsha256su1q_u32 (uint32x4_t __tw0_3, uint32x4_t __w8_11, uint32x4_t __w12_15)
 {
   return __builtin_aarch64_crypto_sha256su1v4si_uuuu (__tw0_3, __w8_11,
 						       __w12_15);
-}
-
-__extension__ extern __inline poly128_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_p64 (poly64_t __a, poly64_t __b)
-{
-  return
-    __builtin_aarch64_crypto_pmulldi_ppp (__a, __b);
-}
-
-__extension__ extern __inline poly128_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_high_p64 (poly64x2_t __a, poly64x2_t __b)
-{
-  return __builtin_aarch64_crypto_pmullv2di_ppp (__a, __b);
 }
 
 #pragma GCC pop_options

@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for GNU Hurd: x86.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
    Contributed by Samuel Thibault <samuel.thibault@gnu.org>
 
 This file is part of GCC.
@@ -29,6 +29,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef inhibit_libc
 
 #include <signal.h>
+
+#ifdef __x86_64__
+
+/*
+ * TODO: support for 64 bits needs to be implemented.
+ */
+
+#else /* ifdef __x86_64__  */
 
 #define MD_FALLBACK_FRAME_STATE_FOR x86_gnu_fallback_frame_state
 
@@ -137,5 +145,7 @@ x86_gnu_fallback_frame_state
 
   return _URC_NO_REASON;
 }
+
+#endif /* ifdef __x86_64__  */
 
 #endif /* ifndef inhibit_libc */

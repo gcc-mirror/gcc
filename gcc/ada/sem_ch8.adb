@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4891,14 +4891,16 @@ package body Sem_Ch8 is
          then
             null;
 
-         --  Don't replace the discriminant in strict preanalysis mode since
-         --  it can lead to errors during full analysis when the discriminant
-         --  gets referenced later.
+         --  Don't replace a non-qualified discriminant in strict preanalysis
+         --  mode since it can lead to errors during full analysis when the
+         --  discriminant gets referenced later.
 
          --  This can occur in situations where a protected type contains
-         --  an expression function which references a discriminant.
+         --  an expression function which references a non-prefixed
+         --  discriminant.
 
-         elsif Preanalysis_Active
+         elsif No (P)
+           and then Preanalysis_Active
            and then Inside_Preanalysis_Without_Freezing = 0
          then
             null;

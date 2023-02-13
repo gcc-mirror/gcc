@@ -1,5 +1,5 @@
 /* Utility to pick a temporary filename prefix.
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2023 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -37,6 +37,7 @@ Boston, MA 02110-1301, USA.  */
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
 #if defined(_WIN32) && !defined(__CYGWIN__)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 #if HAVE_SYS_STAT_H

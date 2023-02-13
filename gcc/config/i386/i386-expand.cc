@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -291,7 +291,9 @@ ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
      broadcast only if vector broadcast is available.  */
   if (!TARGET_AVX
       || !CONST_WIDE_INT_P (op)
-      || standard_sse_constant_p (op, mode))
+      || standard_sse_constant_p (op, mode)
+      || (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT
+	  != GET_MODE_BITSIZE (mode)))
     return nullptr;
 
   HOST_WIDE_INT val = CONST_WIDE_INT_ELT (op, 0);
@@ -1774,9 +1776,9 @@ ix86_split_convert_uns_si_sse (rtx operands[])
       input = gen_rtx_REG (vecmode, REGNO (input));
       emit_move_insn (value, CONST0_RTX (vecmode));
       if (vecmode == V4SFmode)
-	emit_insn (gen_sse_movss (value, value, input));
+	emit_insn (gen_sse_movss_v4sf (value, value, input));
       else
-	emit_insn (gen_sse2_movsd (value, value, input));
+	emit_insn (gen_sse2_movsd_v2df (value, value, input));
     }
 
   emit_move_insn (large, two31);
@@ -6211,7 +6213,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, machine_mode mode)
       if (count >= half_width)
 	{
 	  emit_move_insn (high[0], low[1]);
-	  emit_move_insn (low[0], const0_rtx);
+	  ix86_expand_clear (low[0]);
 
 	  if (count > half_width)
 	    ix86_expand_ashl_const (high[0], count - half_width, mode);
@@ -8661,6 +8663,8 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
       if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 128)
 	move_mode = TImode;
+      if (TARGET_AVX512_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 256)
+	move_mode = OImode;
 
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
 	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
@@ -13173,6 +13177,12 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
 	if (INTVAL (op3) == 1)
 	  {
+	    if (INTVAL (op2) < 2 || INTVAL (op2) > 3)
+	      {
+		error ("invalid third argument");
+		return const0_rtx;
+	      }
+
 	    if (TARGET_64BIT && TARGET_PREFETCHI
 		&& local_func_symbolic_operand (op0, GET_MODE (op0)))
 	      emit_insn (gen_prefetchi (op0, op2));
@@ -13191,6 +13201,12 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	      {
 		op0 = convert_memory_address (Pmode, op0);
 		op0 = copy_addr_to_reg (op0);
+	      }
+
+	    if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
+	      {
+		warning (0, "invalid third argument to %<__builtin_ia32_prefetch%>; using zero");
+		op2 = const0_rtx;
 	      }
 
 	    if (TARGET_3DNOW || TARGET_PREFETCH_SSE
@@ -18903,8 +18919,10 @@ expand_vec_perm_movs (struct expand_vec_perm_d *d)
     return false;
 
   if (!(TARGET_SSE && vmode == V4SFmode)
+      && !(TARGET_SSE && vmode == V4SImode)
       && !(TARGET_MMX_WITH_SSE && vmode == V2SFmode)
-      && !(TARGET_SSE2 && vmode == V2DFmode))
+      && !(TARGET_SSE2 && vmode == V2DFmode)
+      && !(TARGET_SSE2 && vmode == V2DImode))
     return false;
 
   /* Only the first element is changed.  */

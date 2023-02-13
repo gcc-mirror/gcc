@@ -3704,6 +3704,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   containing a component whose type has the user-defined "=" as
   primitive). Note that the user-defined "=" must be a primitive operator
   in order to trigger the warning.
+  See RM-4.5.2(14/3-15/5, 21, 24/3, 32.1/1)
+  for the exact Ada rules on composability of "=".
 
   The default is that these warnings are not given.
 

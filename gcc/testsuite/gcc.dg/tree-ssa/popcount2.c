@@ -26,4 +26,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin_popcount" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_popcount|\\.POPCOUNT" 1 "optimized" } } */

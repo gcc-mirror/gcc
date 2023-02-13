@@ -1,5 +1,5 @@
 /* Processing rules for constraints.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
    Contributed by Andrew Sutton (andrew.n.sutton@gmail.com)
 
 This file is part of GCC.
@@ -777,14 +777,16 @@ normalize_concept_check (tree check, tree args, norm_info info)
   norm_entry entry = {tmpl, targs, NULL_TREE};
   norm_entry **slot = nullptr;
   hashval_t hash = 0;
+  bool insert = false;
   if (!info.generate_diagnostics ())
     {
       /* Cache the normal form of the substituted concept-id (when not
 	 diagnosing).  */
       hash = norm_hasher::hash (&entry);
-      slot = norm_cache->find_slot_with_hash (&entry, hash, INSERT);
-      if (*slot)
+      slot = norm_cache->find_slot_with_hash (&entry, hash, NO_INSERT);
+      if (slot)
 	return (*slot)->norm;
+      insert = true;
     }
 
   /* The concept may have been ill-formed.  */
@@ -794,7 +796,7 @@ normalize_concept_check (tree check, tree args, norm_info info)
 
   info.update_context (check, args);
   tree norm = normalize_expression (def, targs, info);
-  if (slot)
+  if (insert)
     {
       /* Recompute SLOT since norm_cache may have been expanded during
 	 the recursive call.  */
@@ -1350,11 +1352,12 @@ maybe_substitute_reqs_for (tree reqs, const_tree decl)
   if (DECL_UNIQUE_FRIEND_P (decl) && DECL_TEMPLATE_INFO (decl))
     {
       tree tmpl = DECL_TI_TEMPLATE (decl);
-      tree gargs = generic_targs_for (tmpl);
+      tree outer_args = outer_template_args (tmpl);
       processing_template_decl_sentinel s;
-      if (uses_template_parms (gargs))
+      if (PRIMARY_TEMPLATE_P (tmpl)
+	  || uses_template_parms (outer_args))
 	++processing_template_decl;
-      reqs = tsubst_constraint (reqs, gargs,
+      reqs = tsubst_constraint (reqs, outer_args,
 				tf_warning_or_error, NULL_TREE);
     }
   return reqs;

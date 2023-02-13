@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2264,16 +2264,13 @@ package body Exp_Ch7 is
                --  The object is of the form:
                --    Obj : [constant] Typ [:= Expr];
 
-               --  Do not process tag-to-class-wide conversions because they do
-               --  not yield an object. Do not process the incomplete view of a
-               --  deferred constant. Note that an object initialized by means
-               --  of a build-in-place function call may appear as a deferred
-               --  constant after expansion activities. These kinds of objects
-               --  must be finalized.
+               --  Do not process the incomplete view of a deferred constant.
+               --  Note that an object initialized by means of a BIP function
+               --  call may appear as a deferred constant after expansion
+               --  activities. These kinds of objects must be finalized.
 
                elsif not Is_Imported (Obj_Id)
                  and then Needs_Finalization (Obj_Typ)
-                 and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
                  and then not (Ekind (Obj_Id) = E_Constant
                                 and then not Has_Completion (Obj_Id)
                                 and then No (BIP_Initialization_Call (Obj_Id)))
@@ -2387,20 +2384,6 @@ package body Exp_Ch7 is
                  and then Is_Return_Object (Obj_Id)
                  and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
                then
-                  Processing_Actions (Has_No_Init => True);
-
-               --  Detect a case where a source object has been initialized by
-               --  a controlled function call or another object which was later
-               --  rewritten as a class-wide conversion of Ada.Tags.Displace.
-
-               --     Obj1 : CW_Type := Src_Obj;
-               --     Obj2 : CW_Type := Function_Call (...);
-
-               --     Obj1 : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
-               --     Tmp  : ... := Function_Call (...)'reference;
-               --     Obj2 : CW_Type renames (... Ada.Tags.Displace (Tmp));
-
-               elsif Is_Displacement_Of_Object_Or_Function_Result (Obj_Id) then
                   Processing_Actions (Has_No_Init => True);
                end if;
 
@@ -6060,11 +6043,7 @@ package body Exp_Ch7 is
       --  Derivations from [Limited_]Controlled
 
       elsif Is_Controlled (Utyp) then
-         if Has_Controlled_Component (Utyp) then
-            Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
-         else
-            Adj_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Adjust_Case));
-         end if;
+         Adj_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Adjust_Case));
 
       --  Tagged types
 
@@ -8413,11 +8392,7 @@ package body Exp_Ch7 is
       --  Derivations from [Limited_]Controlled
 
       elsif Is_Controlled (Utyp) then
-         if Has_Controlled_Component (Utyp) then
-            Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
-         else
-            Fin_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Finalize_Case));
-         end if;
+         Fin_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Finalize_Case));
 
       --  Tagged types
 

@@ -1,0 +1,79 @@
+@c README.texi describes the ISO libraries.
+@c Copyright @copyright{} 2000-2023 Free Software Foundation, Inc.
+@c
+@c This is part of the GM2 manual.
+@c For copying conditions, see the file gcc/doc/include/fdl.texi.
+
+This directory contains the ISO definition modules and some
+corresponding implementation modules.  The definition files:
+@file{ChanConsts.def}, @file{CharClass.def}, @file{ComplexMath.def},
+@file{ConvStringLong.def}, @file{ConvStringReal.def},
+@file{ConvTypes.def}, @file{COROUTINES.def}, @file{EXCEPTIONS.def},
+@file{GeneralUserExceptions.def}, @file{IOChan.def},
+@file{IOConsts.def}, @file{IOLink.def}, @file{IOLink.def},
+@file{IOResult.def}, @file{LongComplexMath.def}, @file{LongConv.def},
+@file{LongIO.def}, @file{LongMath.def}, @file{LongStr.def},
+@file{LowLong.def}, @file{LowReal.def}, @file{M2EXCEPTION.def},
+@file{Processes.def}, @file{ProgramArgs.def}, @file{RawIO.def},
+@file{RealConv.def}, @file{RealIO.def}, @file{RealMath.def},
+@file{RealStr.def}, @file{RndFile.def}, @file{Semaphores.def},
+@file{SeqFile.def}, @file{SIOResult.def}, @file{SLongIO.def},
+@file{SRawIO.def}, @file{SRealIO.def}, @file{StdChans.def},
+@file{STextIO.def}, @file{Storage.def}, @file{StreamFile.def},
+@file{Strings.def}, @file{SWholeIO.def}, @file{SysClock.def},
+@file{SYSTEM.def}, @file{TERMINATION.def}, @file{TextIO.def},
+@file{WholeConv.def}, @file{WholeIO.def} and @file{WholeStr.def}
+were defined by the International Standard
+Information technology - programming languages BS ISO/IEC
+10514-1:1996E Part 1: Modula-2, Base Language.
+
+The Copyright to the definition files @file{ChanConsts.def},
+@file{CharClass.def}, @file{ComplexMath.def},
+@file{ConvStringLong.def}, @file{ConvStringReal.def},
+@file{ConvTypes.def}, @file{COROUTINES.def}, @file{EXCEPTIONS.def},
+@file{GeneralUserExceptions.def}, @file{IOChan.def},
+@file{IOConsts.def}, @file{IOLink.def}, @file{IOLink.def},
+@file{IOResult.def}, @file{LongComplexMath.def}, @file{LongConv.def},
+@file{LongIO.def}, @file{LongMath.def}, @file{LongStr.def},
+@file{LowLong.def}, @file{LowReal.def}, @file{M2EXCEPTION.def},
+@file{Processes.def}, @file{ProgramArgs.def}, @file{RawIO.def},
+@file{RealConv.def}, @file{RealIO.def}, @file{RealMath.def},
+@file{RealStr.def}, @file{RndFile.def}, @file{Semaphores.def},
+@file{SeqFile.def}, @file{SIOResult.def}, @file{SLongIO.def},
+@file{SRawIO.def}, @file{SRealIO.def}, @file{StdChans.def},
+@file{STextIO.def}, @file{Storage.def}, @file{StreamFile.def},
+@file{Strings.def}, @file{SWholeIO.def}, @file{SysClock.def},
+@file{SYSTEM.def}, @file{TERMINATION.def}, @file{TextIO.def},
+@file{WholeConv.def}, @file{WholeIO.def} and @file{WholeStr.def}
+belong to ISO/IEC (International Organization for Standardization and
+International Electrotechnical Commission).  The licence allows them
+to be distributed with the compiler (as described on page
+707 of the Information technology - Programming languages Part 1:
+Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).
+
+All implementation modules and @file{ClientSocket.def},
+@file{LongWholeIO.def}, @file{M2RTS.def}, @file{MemStream.def},
+@file{pth.def}, @file{RandomNumber.def}, @file{RTdata.def},
+@file{RTentity.def}, @file{RTfio.def}, @file{RTio.def},
+@file{ShortComplexMath.def}, @file{ShortIO.def},
+@file{ShortWholeIO.def}, @file{SimpleCipher.def},
+@file{SLongWholeIO.def}, @file{SShortIO.def},
+@file{SShortWholeIO.def}, @file{StringChan.def} and
+@file{wraptime.def} are Copyright of the FSF and are held under the
+GPLv3 with runtime exceptions.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+@url{http://www.gnu.org/licenses/}.
+
+Notice that GNU Modula-2 contains additional libraries for
+input/output of @code{SHORTREAL}, @code{SHORTCARD}, @code{SHORTINT},
+@code{LONGCARD}, @code{LONGINT} data types.  It also provides a
+@code{RandomNumber}, @code{SimpleCipher} and @code{ClientSocket}
+modules as well as low level modules which allow the IO libraries to
+coexist with their PIM counterparts.

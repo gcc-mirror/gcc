@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6163,9 +6163,12 @@ package body Sem_Util is
       elsif Is_Build_In_Place_Function (Func) then
          Set_Returns_By_Ref (Func);
 
-      --  In Ada 95, limited types are returned by reference
+      --  In Ada 95, limited types are returned by reference, but not if the
+      --  convention is other than Ada.
 
-      elsif Is_Limited_View (Typ) then
+      elsif Is_Limited_View (Typ)
+        and then not Has_Foreign_Convention (Func)
+      then
          Set_Returns_By_Ref (Func);
       end if;
    end Compute_Returns_By_Ref;
@@ -15255,8 +15258,15 @@ package body Sem_Util is
       then
          return Is_Aliased_View (Expression (Obj));
 
+      --  The dereference of an access-to-object value denotes an aliased view,
+      --  but this routine uses the rules of the language so we need to exclude
+      --  rewritten constructs that introduce artificial dereferences.
+
       elsif Nkind (Obj) = N_Explicit_Dereference then
-         return Nkind (Original_Node (Obj)) /= N_Function_Call;
+         return not Is_Captured_Function_Call (Obj)
+           and then not
+             (Nkind (Parent (Obj)) = N_Object_Renaming_Declaration
+               and then Is_Return_Object (Defining_Entity (Parent (Obj))));
 
       else
          return False;
@@ -20775,9 +20785,10 @@ package body Sem_Util is
    is
       Literal_Aspect_Map :
         constant array (N_Numeric_Or_String_Literal) of Aspect_Id :=
-          (N_Integer_Literal => Aspect_Integer_Literal,
-           N_Real_Literal    => Aspect_Real_Literal,
-           N_String_Literal  => Aspect_String_Literal);
+          (N_Integer_Literal             => Aspect_Integer_Literal,
+           N_Interpolated_String_Literal => No_Aspect,
+           N_Real_Literal                => Aspect_Real_Literal,
+           N_String_Literal              => Aspect_String_Literal);
 
    begin
       --  Return True when N is either a literal or a named number and the
@@ -27394,7 +27405,9 @@ package body Sem_Util is
 
    procedure Set_Debug_Info_Defining_Id (N : Node_Id) is
    begin
-      if Comes_From_Source (Defining_Identifier (N)) then
+      if Comes_From_Source (Defining_Identifier (N))
+        or else Debug_Generated_Code
+      then
          Set_Debug_Info_Needed (Defining_Identifier (N));
       end if;
    end Set_Debug_Info_Defining_Id;

@@ -1,5 +1,5 @@
 /* Array translation routines
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -6614,7 +6614,6 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
   type = TREE_TYPE (type);
 
   gcc_assert (!sym->attr.use_assoc);
-  gcc_assert (!TREE_STATIC (decl));
   gcc_assert (!sym->module);
 
   if (sym->ts.type == BT_CHARACTER

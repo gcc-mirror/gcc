@@ -5,8 +5,8 @@ C Origin: David Billinghurst <David.Billinghurst@riotinto.com>
 C
 C { dg-do run } 
 C { dg-output "^" }
-      write(*,'(I1,1X,I1,2X,I1)') 1,2,3    ! { dg-output "1 2  3(\n|\r\n|\r)" }
+      write(*,'(I1,1X,I1,2X,I1)') 1,2,3    ! { dg-output "1 2  3(\r*\n+)" }
 C Section 13.5.3 explains why there are no trailing blanks
-      write(*,'(I1,1X,I1,2X,I1,3X)') 1,2,3 ! { dg-output "1 2  3(\n|\r\n|\r)" }
+      write(*,'(I1,1X,I1,2X,I1,3X)') 1,2,3 ! { dg-output "1 2  3(\r*\n+)" }
 C { dg-output "\$" }
       end

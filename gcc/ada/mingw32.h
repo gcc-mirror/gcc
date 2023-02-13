@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2002-2022, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2002-2023, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -53,6 +53,7 @@
 #define _X86INTRIN_H_INCLUDED
 #define _EMMINTRIN_H_INCLUDED
 #endif
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* After including this file it is possible to use the character t as prefix

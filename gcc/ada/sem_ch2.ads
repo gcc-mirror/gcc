@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,11 +27,12 @@ with Types; use Types;
 
 package Sem_Ch2 is
 
-   procedure Analyze_Character_Literal (N : Node_Id);
-   procedure Analyze_Identifier        (N : Node_Id);
-   procedure Analyze_Integer_Literal   (N : Node_Id);
-   procedure Analyze_Real_Literal      (N : Node_Id);
-   procedure Analyze_String_Literal    (N : Node_Id);
+   procedure Analyze_Character_Literal           (N : Node_Id);
+   procedure Analyze_Identifier                  (N : Node_Id);
+   procedure Analyze_Integer_Literal             (N : Node_Id);
+   procedure Analyze_Interpolated_String_Literal (N : Node_Id);
+   procedure Analyze_Real_Literal                (N : Node_Id);
+   procedure Analyze_String_Literal              (N : Node_Id);
 
 private
    pragma Inline (Analyze_Character_Literal);

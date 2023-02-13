@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2008-2023 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -3858,7 +3858,23 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 	    }
 	}
       else
-	*expr = repl;
+	{
+	  /* If we are going to replace a scalar field in a structure with
+	     reverse storage order by a stand-alone scalar, we are going to
+	     effectively byte-swap the scalar and we also need to byte-swap
+	     the portion of it represented by the bit-field.  */
+	  if (bfr && REF_REVERSE_STORAGE_ORDER (bfr))
+	    {
+	      REF_REVERSE_STORAGE_ORDER (bfr) = 0;
+	      TREE_OPERAND (bfr, 2)
+		= size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (repl)),
+			      size_binop (PLUS_EXPR, TREE_OPERAND (bfr, 1),
+						     TREE_OPERAND (bfr, 2)));
+	    }
+
+	  *expr = repl;
+	}
+
       sra_stats.exprs++;
     }
   else if (write && access->grp_to_be_debug_replaced)

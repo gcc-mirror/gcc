@@ -1,0 +1,82 @@
+(* pexecute.def provides an interface to libiberty pexecute.c
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FOR "C" pexecute ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+EXPORT UNQUALIFIED pexecute ;
+
+(*
+   PROGRAM and ARGV are the arguments to execv/execvp.
+
+   THIS_PNAME is name of the calling program (i.e. argv[0]).
+
+   TEMP_BASE is the path name, sans suffix, of a temporary file to use
+   if needed.  This is currently only needed for MSDOS ports that don't use
+   GO32 (do any still exist?).  Ports that don't need it can pass NULL.
+
+   (FLAGS & PEXECUTE_SEARCH) is non-zero if $PATH should be searched
+   (??? It's not clear that GCC passes this flag correctly).
+   (FLAGS & PEXECUTE_FIRST) is nonzero for the first process in chain.
+   (FLAGS & PEXECUTE_FIRST) is nonzero for the last process in chain.
+   FIRST_LAST could be simplified to only mark the last of a chain of processes
+   but that requires the caller to always mark the last one (and not give up
+   early if some error occurs).  It's more robust to require the caller to
+   mark both ends of the chain.
+
+   The result is the pid on systems like Unix where we fork/exec and on systems
+   like WIN32 and OS2 where we use spawn.  It is up to the caller to wait for
+   the child.
+
+   The result is the WEXITSTATUS on systems like MSDOS where we spawn and wait
+   for the child here.
+
+   Upon failure, ERRMSG_FMT and ERRMSG_ARG are set to the text of the error
+   message with an optional argument (if not needed, ERRMSG_ARG is set to
+   NULL), and -1 is returned.  `errno' is available to the caller to use.
+
+   pwait: cover function for wait.
+
+   PID is the process id of the task to wait for.
+   STATUS is the `status' argument to wait.
+   FLAGS is currently unused (allows future enhancement without breaking
+   upward compatibility).  Pass 0 for now.
+
+   The result is the pid of the child reaped,
+   or -1 for failure (errno says why).
+
+   On systems that don't support waiting for a particular child, PID is
+   ignored.  On systems like MSDOS that don't really multitask pwait
+   is just a mechanism to provide a consistent interface for the caller.
+
+   pfinish: finish generation of script
+
+   pfinish is necessary for systems like MPW where a script is generated that
+   runs the requested programs.
+*)
+
+PROCEDURE pexecute (program: ADDRESS; argv: ADDRESS; this_pname: ADDRESS;
+                    temp_base: ADDRESS;
+                    VAR errmsg_fmt, errmsg_arg: ADDRESS; flags: CARDINAL) : INTEGER ;
+
+
+END pexecute.

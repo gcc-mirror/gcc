@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2022 Free Software Foundation, Inc.
+# Copyright (C) 2022-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,6 +41,8 @@ dg-init
 # Main loop.
 set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
+	"" $CFLAGS
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"" $CFLAGS
 
 # All done.

@@ -1,5 +1,5 @@
 ;; Predicate description for RISC-V target.
-;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -285,6 +285,10 @@
        (ior (match_operand 0 "register_operand")
 	    (match_test "GET_CODE (op) == UNSPEC
 			 && (XINT (op, 1) == UNSPEC_VUNDEF)"))))
+
+(define_special_predicate "pmode_reg_or_0_operand"
+  (ior (match_operand 0 "const_0_operand")
+       (match_operand 0 "pmode_register_operand")))
 
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"

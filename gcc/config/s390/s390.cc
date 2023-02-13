@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2022 Free Software Foundation, Inc.
+   Copyright (C) 1999-2023 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -10075,8 +10075,8 @@ s390_register_info ()
 
   memset (cfun_frame_layout.gpr_save_slots, SAVE_SLOT_NONE, 16);
 
-  for (i = 6; i < 16; i++)
-    if (clobbered_regs[i])
+  for (i = 0; i < 16; i++)
+    if (clobbered_regs[i] && !call_used_regs[i])
       cfun_gpr_save_slot (i) = SAVE_SLOT_STACK;
 
   s390_register_info_stdarg_fpr ();
@@ -10136,10 +10136,8 @@ s390_optimize_register_info ()
 	|| cfun_frame_layout.save_return_addr_p
 	|| crtl->calls_eh_return);
 
-  memset (cfun_frame_layout.gpr_save_slots, SAVE_SLOT_NONE, 6);
-
-  for (i = 6; i < 16; i++)
-    if (!clobbered_regs[i])
+  for (i = 0; i < 16; i++)
+    if (!clobbered_regs[i] || call_used_regs[i])
       cfun_gpr_save_slot (i) = SAVE_SLOT_NONE;
 
   s390_register_info_set_ranges ();

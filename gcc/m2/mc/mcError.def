@@ -1,0 +1,178 @@
+(* mcError.def provides an interface between the string handling modules.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcError ;
+
+
+FROM SYSTEM IMPORT BYTE ;
+FROM DynamicStrings IMPORT String ;
+
+TYPE
+   error ;
+
+
+(*
+   internalError - displays an internal error message together with the compiler source
+                   file and line number.
+                   This function is not buffered and is used when the compiler is about
+                   to give up.
+*)
+
+PROCEDURE internalError (a: ARRAY OF CHAR; file: ARRAY OF CHAR; line: CARDINAL) ;
+
+
+
+(* ***************************************************************************
+   The following routines are used for normal syntax and semantic error reporting
+   *************************************************************************** *)
+
+
+(*
+   writeFormat0 - displays the source module and line together
+                  with the encapsulated format string.
+                  Used for simple error messages tied to the current token.
+*)
+
+PROCEDURE writeFormat0 (a: ARRAY OF CHAR) ;
+
+
+(*
+   writeFormat1 - displays the source module and line together
+                  with the encapsulated format string.
+                  Used for simple error messages tied to the current token.
+*)
+
+PROCEDURE writeFormat1 (a: ARRAY OF CHAR; w: ARRAY OF BYTE) ;
+
+
+(*
+   writeFormat2 - displays the module and line together with the encapsulated
+                  format strings.
+                  Used for simple error messages tied to the current token.
+*)
+
+PROCEDURE writeFormat2 (a: ARRAY OF CHAR; w1, w2: ARRAY OF BYTE) ;
+
+
+(*
+   writeFormat3 - displays the module and line together with the encapsulated
+                  format strings.
+                  Used for simple error messages tied to the current token.
+*)
+
+PROCEDURE writeFormat3 (a: ARRAY OF CHAR; w1, w2, w3: ARRAY OF BYTE) ;
+
+
+(*
+   newError - creates and returns a new error handle.
+*)
+
+PROCEDURE newError (atTokenNo: CARDINAL) : error ;
+
+
+(*
+   newWarning - creates and returns a new error handle suitable for a warning.
+                A warning will not stop compilation.
+*)
+
+PROCEDURE newWarning (atTokenNo: CARDINAL) : error ;
+
+
+(*
+   chainError - creates and returns a new error handle, this new error
+                is associated with, e, and is chained onto the end of, e.
+*)
+
+PROCEDURE chainError (atTokenNo: CARDINAL; e: error) : error ;
+
+
+(*
+   errorFormat routines provide a printf capability for the error handle.
+*)
+
+PROCEDURE errorFormat0 (e: error; a: ARRAY OF CHAR) ;
+PROCEDURE errorFormat1 (e: error; a: ARRAY OF CHAR; w: ARRAY OF BYTE) ;
+PROCEDURE errorFormat2 (e: error; a: ARRAY OF CHAR; w1, w2: ARRAY OF BYTE) ;
+PROCEDURE errorFormat3 (e: error; a: ARRAY OF CHAR; w1, w2, w3: ARRAY OF BYTE) ;
+PROCEDURE errorString  (e: error; str: String) ;
+
+
+(* ***************************************************************************
+   The following routines are useful for positioning and warnings and errors
+   at tokens. The strings are emitted later, so the caller must not destroy
+   the strings.
+   *************************************************************************** *)
+
+PROCEDURE errorStringAt (s: String; tok: CARDINAL) ;
+PROCEDURE errorStringAt2 (s: String; tok1, tok2: CARDINAL) ;
+PROCEDURE errorStringsAt2 (s1, s2: String; tok1, tok2: CARDINAL) ;
+PROCEDURE warnStringAt (s: String; tok: CARDINAL) ;
+PROCEDURE warnStringAt2 (s: String; tok1, tok2: CARDINAL) ;
+PROCEDURE warnStringsAt2 (s1, s2: String; tok1, tok2: CARDINAL) ;
+
+
+(*
+   warnFormat0 - displays the source module and line together
+                 with the encapsulated format string.
+                 Used for simple warning messages tied to the current token.
+*)
+
+PROCEDURE warnFormat0 (a: ARRAY OF CHAR) ;
+
+
+(*
+   warnFormat1 - displays the source module and line together
+                 with the encapsulated format string.
+                 Used for simple warning messages tied to the current token.
+*)
+
+PROCEDURE warnFormat1 (a: ARRAY OF CHAR; w: ARRAY OF BYTE) ;
+
+
+(*
+   flushErrors - switches the output channel to the error channel
+                 and then writes out all errors.
+                 If an error is present the compilation is terminated.
+                 All warnings are ignored.
+*)
+
+PROCEDURE flushErrors ;
+
+
+(*
+   flushWarnings - switches the output channel to the error channel
+                   and then writes out all warnings.
+                   If an error is present the compilation is terminated,
+                   if warnings only were emitted then compilation will
+                   continue.
+*)
+
+PROCEDURE flushWarnings ;
+
+
+(*
+   errorAbort0 - aborts compiling, it flushes all warnings and errors before aborting.
+*)
+
+PROCEDURE errorAbort0 (a: ARRAY OF CHAR) ;
+
+
+END mcError.

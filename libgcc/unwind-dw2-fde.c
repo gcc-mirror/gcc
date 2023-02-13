@@ -1,5 +1,5 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
-/* Copyright (C) 1997-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2023 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
 This file is part of GCC.
@@ -63,8 +63,6 @@ release_registered_frames (void)
 
 static void
 get_pc_range (const struct object *ob, uintptr_type *range);
-static void
-init_object (struct object *ob);
 
 #else
 /* Without fast path frame deregistration must always succeed.  */
@@ -76,6 +74,7 @@ static const int in_shutdown = 0;
    by decreasing value of pc_begin.  */
 static struct object *unseen_objects;
 static struct object *seen_objects;
+#endif
 
 #ifdef __GTHREAD_MUTEX_INIT
 static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
@@ -103,7 +102,6 @@ init_object_mutex_once (void)
 static __gthread_mutex_t object_mutex;
 #endif
 #endif
-#endif
 
 /* Called from crtbegin.o to register the unwind info for an object.  */
 
@@ -126,10 +124,7 @@ __register_frame_info_bases (const void *begin, struct object *ob,
 #endif
 
 #ifdef ATOMIC_FDE_FAST_PATH
-  // Initialize eagerly to avoid locking later
-  init_object (ob);
-
-  // And register the frame
+  // Register the frame in the b-tree
   uintptr_type range[2];
   get_pc_range (ob, range);
   btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
@@ -180,10 +175,7 @@ __register_frame_info_table_bases (void *begin, struct object *ob,
   ob->s.b.encoding = DW_EH_PE_omit;
 
 #ifdef ATOMIC_FDE_FAST_PATH
-  // Initialize eagerly to avoid locking later
-  init_object (ob);
-
-  // And register the frame
+  // Register the frame in the b-tree
   uintptr_type range[2];
   get_pc_range (ob, range);
   btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
@@ -456,22 +448,52 @@ fde_mixed_encoding_compare (struct object *ob, const fde *x, const fde *y)
 
 typedef int (*fde_compare_t) (struct object *, const fde *, const fde *);
 
+// The extractor functions compute the pointer values for a block of
+// fdes. The block processing hides the call overhead.
 
-/* This is a special mix of insertion sort and heap sort, optimized for
-   the data sets that actually occur. They look like
-   101 102 103 127 128 105 108 110 190 111 115 119 125 160 126 129 130.
-   I.e. a linearly increasing sequence (coming from functions in the text
-   section), with additionally a few unordered elements (coming from functions
-   in gnu_linkonce sections) whose values are higher than the values in the
-   surrounding linear sequence (but not necessarily higher than the values
-   at the end of the linear sequence!).
-   The worst-case total run time is O(N) + O(n log (n)), where N is the
-   total number of FDEs and n is the number of erratic ones.  */
+static void
+fde_unencoded_extract (struct object *ob __attribute__ ((unused)),
+		       _Unwind_Ptr *target, const fde **x, int count)
+{
+  for (int index = 0; index < count; ++index)
+    memcpy (target + index, x[index]->pc_begin, sizeof (_Unwind_Ptr));
+}
+
+static void
+fde_single_encoding_extract (struct object *ob, _Unwind_Ptr *target,
+			     const fde **x, int count)
+{
+  _Unwind_Ptr base;
+
+  base = base_from_object (ob->s.b.encoding, ob);
+  for (int index = 0; index < count; ++index)
+    read_encoded_value_with_base (ob->s.b.encoding, base, x[index]->pc_begin,
+				  target + index);
+}
+
+static void
+fde_mixed_encoding_extract (struct object *ob, _Unwind_Ptr *target,
+			    const fde **x, int count)
+{
+  for (int index = 0; index < count; ++index)
+    {
+      int encoding = get_fde_encoding (x[index]);
+      read_encoded_value_with_base (encoding, base_from_object (encoding, ob),
+				    x[index]->pc_begin, target + index);
+    }
+}
+
+typedef void (*fde_extractor_t) (struct object *, _Unwind_Ptr *, const fde **,
+				 int);
+
+// Data is is sorted using radix sort if possible, using an temporary
+// auxiliary data structure of the same size as the input. When running
+// out of memory do in-place heap sort.
 
 struct fde_accumulator
 {
   struct fde_vector *linear;
-  struct fde_vector *erratic;
+  struct fde_vector *aux;
 };
 
 static inline int
@@ -485,8 +507,8 @@ start_fde_sort (struct fde_accumulator *accu, size_t count)
   if ((accu->linear = malloc (size)))
     {
       accu->linear->count = 0;
-      if ((accu->erratic = malloc (size)))
-	accu->erratic->count = 0;
+      if ((accu->aux = malloc (size)))
+	accu->aux->count = 0;
       return 1;
     }
   else
@@ -498,59 +520,6 @@ fde_insert (struct fde_accumulator *accu, const fde *this_fde)
 {
   if (accu->linear)
     accu->linear->array[accu->linear->count++] = this_fde;
-}
-
-/* Split LINEAR into a linear sequence with low values and an erratic
-   sequence with high values, put the linear one (of longest possible
-   length) into LINEAR and the erratic one into ERRATIC. This is O(N).
-
-   Because the longest linear sequence we are trying to locate within the
-   incoming LINEAR array can be interspersed with (high valued) erratic
-   entries.  We construct a chain indicating the sequenced entries.
-   To avoid having to allocate this chain, we overlay it onto the space of
-   the ERRATIC array during construction.  A final pass iterates over the
-   chain to determine what should be placed in the ERRATIC array, and
-   what is the linear sequence.  This overlay is safe from aliasing.  */
-
-static inline void
-fde_split (struct object *ob, fde_compare_t fde_compare,
-	   struct fde_vector *linear, struct fde_vector *erratic)
-{
-  static const fde *marker;
-  size_t count = linear->count;
-  const fde *const *chain_end = &marker;
-  size_t i, j, k;
-
-  /* This should optimize out, but it is wise to make sure this assumption
-     is correct. Should these have different sizes, we cannot cast between
-     them and the overlaying onto ERRATIC will not work.  */
-  gcc_assert (sizeof (const fde *) == sizeof (const fde **));
-
-  for (i = 0; i < count; i++)
-    {
-      const fde *const *probe;
-
-      for (probe = chain_end;
-	   probe != &marker && fde_compare (ob, linear->array[i], *probe) < 0;
-	   probe = chain_end)
-	{
-	  chain_end = (const fde *const*) erratic->array[probe - linear->array];
-	  erratic->array[probe - linear->array] = NULL;
-	}
-      erratic->array[i] = (const fde *) chain_end;
-      chain_end = &linear->array[i];
-    }
-
-  /* Each entry in LINEAR which is part of the linear sequence we have
-     discovered will correspond to a non-NULL entry in the chain we built in
-     the ERRATIC array.  */
-  for (i = j = k = 0; i < count; i++)
-    if (erratic->array[i])
-      linear->array[j++] = linear->array[i];
-    else
-      erratic->array[k++] = linear->array[i];
-  linear->count = j;
-  erratic->count = k;
 }
 
 #define SWAP(x,y) do { const fde * tmp = x; x = y; y = tmp; } while (0)
@@ -615,59 +584,116 @@ frame_heapsort (struct object *ob, fde_compare_t fde_compare,
 #undef SWAP
 }
 
-/* Merge V1 and V2, both sorted, and put the result into V1.  */
+// Radix sort data in V1 using V2 as aux memory. Runtime O(n).
 static inline void
-fde_merge (struct object *ob, fde_compare_t fde_compare,
-	   struct fde_vector *v1, struct fde_vector *v2)
+fde_radixsort (struct object *ob, fde_extractor_t fde_extractor,
+	       struct fde_vector *v1, struct fde_vector *v2)
 {
-  size_t i1, i2;
-  const fde * fde2;
-
-  i2 = v2->count;
-  if (i2 > 0)
+#define FANOUTBITS 8
+#define FANOUT (1 << FANOUTBITS)
+#define BLOCKSIZE 128
+  const unsigned rounds
+    = (__CHAR_BIT__ * sizeof (_Unwind_Ptr) + FANOUTBITS - 1) / FANOUTBITS;
+  const fde **a1 = v1->array, **a2 = v2->array;
+  _Unwind_Ptr ptrs[BLOCKSIZE + 1];
+  unsigned n = v1->count;
+  for (unsigned round = 0; round != rounds; ++round)
     {
-      i1 = v1->count;
-      do
+      unsigned counts[FANOUT] = {0};
+      unsigned violations = 0;
+
+      // Count the number of elements per bucket and check if we are already
+      // sorted.
+      _Unwind_Ptr last = 0;
+      for (unsigned i = 0; i < n;)
 	{
-	  i2--;
-	  fde2 = v2->array[i2];
-	  while (i1 > 0 && fde_compare (ob, v1->array[i1-1], fde2) > 0)
+	  unsigned chunk = ((n - i) <= BLOCKSIZE) ? (n - i) : BLOCKSIZE;
+	  fde_extractor (ob, ptrs + 1, a1 + i, chunk);
+	  ptrs[0] = last;
+	  for (unsigned j = 0; j < chunk; ++j)
 	    {
-	      v1->array[i1+i2] = v1->array[i1-1];
-	      i1--;
+	      unsigned b = (ptrs[j + 1] >> (round * FANOUTBITS)) & (FANOUT - 1);
+	      counts[b]++;
+	      // Use summation instead of an if to eliminate branches.
+	      violations += ptrs[j + 1] < ptrs[j];
 	    }
-	  v1->array[i1+i2] = fde2;
+	  i += chunk;
+	  last = ptrs[chunk];
 	}
-      while (i2 > 0);
-      v1->count += v2->count;
+
+      // Stop if we are already sorted.
+      if (!violations)
+	{
+	  // The sorted data is in a1 now.
+	  a2 = a1;
+	  break;
+	}
+
+      // Compute the prefix sum.
+      unsigned sum = 0;
+      for (unsigned i = 0; i != FANOUT; ++i)
+	{
+	  unsigned s = sum;
+	  sum += counts[i];
+	  counts[i] = s;
+	}
+
+      // Place all elements.
+      for (unsigned i = 0; i < n;)
+	{
+	  unsigned chunk = ((n - i) <= BLOCKSIZE) ? (n - i) : BLOCKSIZE;
+	  fde_extractor (ob, ptrs, a1 + i, chunk);
+	  for (unsigned j = 0; j < chunk; ++j)
+	    {
+	      unsigned b = (ptrs[j] >> (round * FANOUTBITS)) & (FANOUT - 1);
+	      a2[counts[b]++] = a1[i + j];
+	    }
+	  i += chunk;
+	}
+
+      // Swap a1 and a2.
+      const fde **tmp = a1;
+      a1 = a2;
+      a2 = tmp;
     }
+#undef BLOCKSIZE
+#undef FANOUT
+#undef FANOUTBITS
+
+  // The data is in a2 now, move in place if needed.
+  if (a2 != v1->array)
+    memcpy (v1->array, a2, sizeof (const fde *) * n);
 }
 
 static inline void
 end_fde_sort (struct object *ob, struct fde_accumulator *accu, size_t count)
 {
-  fde_compare_t fde_compare;
-
   gcc_assert (!accu->linear || accu->linear->count == count);
 
-  if (ob->s.b.mixed_encoding)
-    fde_compare = fde_mixed_encoding_compare;
-  else if (ob->s.b.encoding == DW_EH_PE_absptr)
-    fde_compare = fde_unencoded_compare;
-  else
-    fde_compare = fde_single_encoding_compare;
-
-  if (accu->erratic)
+  if (accu->aux)
     {
-      fde_split (ob, fde_compare, accu->linear, accu->erratic);
-      gcc_assert (accu->linear->count + accu->erratic->count == count);
-      frame_heapsort (ob, fde_compare, accu->erratic);
-      fde_merge (ob, fde_compare, accu->linear, accu->erratic);
-      free (accu->erratic);
+      fde_extractor_t fde_extractor;
+      if (ob->s.b.mixed_encoding)
+	fde_extractor = fde_mixed_encoding_extract;
+      else if (ob->s.b.encoding == DW_EH_PE_absptr)
+	fde_extractor = fde_unencoded_extract;
+      else
+	fde_extractor = fde_single_encoding_extract;
+
+      fde_radixsort (ob, fde_extractor, accu->linear, accu->aux);
+      free (accu->aux);
     }
   else
     {
-      /* We've not managed to malloc an erratic array,
+      fde_compare_t fde_compare;
+      if (ob->s.b.mixed_encoding)
+	fde_compare = fde_mixed_encoding_compare;
+      else if (ob->s.b.encoding == DW_EH_PE_absptr)
+	fde_compare = fde_unencoded_compare;
+      else
+	fde_compare = fde_single_encoding_compare;
+
+      /* We've not managed to malloc an aux array,
 	 so heap sort in the linear one.  */
       frame_heapsort (ob, fde_compare, accu->linear);
     }
@@ -892,7 +918,15 @@ init_object (struct object* ob)
   accu.linear->orig_data = ob->u.single;
   ob->u.sort = accu.linear;
 
+#ifdef ATOMIC_FDE_FAST_PATH
+  // We must update the sorted bit with an atomic operation
+  struct object tmp;
+  tmp.s.b = ob->s.b;
+  tmp.s.b.sorted = 1;
+  __atomic_store (&(ob->s.b), &(tmp.s.b), __ATOMIC_RELEASE);
+#else
   ob->s.b.sorted = 1;
+#endif
 }
 
 #ifdef ATOMIC_FDE_FAST_PATH
@@ -1130,6 +1164,21 @@ search_object (struct object* ob, void *pc)
     }
 }
 
+#ifdef ATOMIC_FDE_FAST_PATH
+
+// Check if the object was already initialized
+static inline bool
+is_object_initialized (struct object *ob)
+{
+  // We have to use acquire atomics for the read, which
+  // is a bit involved as we read from a bitfield
+  struct object tmp;
+  __atomic_load (&(ob->s.b), &(tmp.s.b), __ATOMIC_ACQUIRE);
+  return tmp.s.b.sorted;
+}
+
+#endif
+
 const fde *
 _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 {
@@ -1140,6 +1189,21 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
   ob = btree_lookup (&registered_frames, (uintptr_type) pc);
   if (!ob)
     return NULL;
+
+  // Initialize the object lazily
+  if (!is_object_initialized (ob))
+    {
+      // Check again under mutex
+      init_object_mutex_once ();
+      __gthread_mutex_lock (&object_mutex);
+
+      if (!ob->s.b.sorted)
+	{
+	  init_object (ob);
+	}
+
+      __gthread_mutex_unlock (&object_mutex);
+    }
 
   f = search_object (ob, pc);
 #else

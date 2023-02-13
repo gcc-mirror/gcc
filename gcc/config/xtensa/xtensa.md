@@ -1,5 +1,5 @@
 ;; GCC machine description for Tensilica's Xtensa architecture.
-;; Copyright (C) 2001-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2001-2023 Free Software Foundation, Inc.
 ;; Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 ;; This file is part of GCC.
@@ -25,28 +25,32 @@
   (A7_REG		7)
   (A8_REG		8)
   (A9_REG		9)
+])
 
-  (UNSPEC_NOP		2)
-  (UNSPEC_PLT		3)
-  (UNSPEC_RET_ADDR	4)
-  (UNSPEC_TPOFF		5)
-  (UNSPEC_DTPOFF	6)
-  (UNSPEC_TLS_FUNC	7)
-  (UNSPEC_TLS_ARG	8)
-  (UNSPEC_TLS_CALL	9)
-  (UNSPEC_TP		10)
-  (UNSPEC_MEMW		11)
-  (UNSPEC_LSETUP_START  12)
-  (UNSPEC_LSETUP_END    13)
-  (UNSPEC_FRAME_BLOCKAGE 14)
+(define_c_enum "unspec" [
+  UNSPEC_NOP
+  UNSPEC_PLT
+  UNSPEC_RET_ADDR
+  UNSPEC_TPOFF
+  UNSPEC_DTPOFF
+  UNSPEC_TLS_FUNC
+  UNSPEC_TLS_ARG
+  UNSPEC_TLS_CALL
+  UNSPEC_TP
+  UNSPEC_MEMW
+  UNSPEC_LSETUP_START
+  UNSPEC_LSETUP_END
+  UNSPEC_FRAME_BLOCKAGE
+])
 
-  (UNSPECV_SET_FP	1)
-  (UNSPECV_ENTRY	2)
-  (UNSPECV_S32RI	4)
-  (UNSPECV_S32C1I	5)
-  (UNSPECV_EH_RETURN	6)
-  (UNSPECV_SET_TP	7)
-  (UNSPECV_BLOCKAGE	8)
+(define_c_enum "unspecv" [
+  UNSPECV_SET_FP
+  UNSPECV_ENTRY
+  UNSPECV_S32RI
+  UNSPECV_S32C1I
+  UNSPECV_EH_RETURN
+  UNSPECV_SET_TP
+  UNSPECV_BLOCKAGE
 ])
 
 ;; This code iterator allows signed and unsigned widening multiplications
@@ -70,13 +74,13 @@
 
 ;; This code iterator is for floating-point comparisons.
 (define_code_iterator any_scc_sf [eq lt le uneq unlt unle unordered])
-(define_code_attr scc_sf [(eq "oeq") (lt "olt") (le "ole") 
+(define_code_attr scc_sf [(eq "oeq") (lt "olt") (le "ole")
 			  (uneq "ueq") (unlt "ult") (unle "ule")
 			  (unordered "un")])
 
 ;; This iterator and attribute allow to combine most atomic operations.
 (define_code_iterator ATOMIC [and ior xor plus minus mult])
-(define_code_attr atomic [(and "and") (ior "ior") (xor "xor") 
+(define_code_attr atomic [(and "and") (ior "ior") (xor "xor")
 			  (plus "add") (minus "sub") (mult "nand")])
 
 ;; This mode iterator allows the HI and QI patterns to be defined from
@@ -195,7 +199,7 @@
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=a")
-        (minus:SI (match_operand:SI 1 "register_operand" "r")
+	(minus:SI (match_operand:SI 1 "register_operand" "r")
 		  (match_operand:SI 2 "register_operand" "r")))]
   ""
   "sub\t%0, %1, %2"
@@ -434,7 +438,7 @@
 
 (define_insn "<code>si3"
   [(set (match_operand:SI 0 "register_operand" "=a")
-        (any_minmax:SI (match_operand:SI 1 "register_operand" "%r")
+	(any_minmax:SI (match_operand:SI 1 "register_operand" "%r")
 		       (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_MINMAX"
   "<minmax>\t%0, %1, %2"
@@ -473,8 +477,8 @@
   emit_insn (gen_negsi2 (temp, operands[1]));
   emit_insn (gen_andsi3 (temp, temp, operands[1]));
   emit_insn (gen_clzsi2 (temp, temp));
-  emit_insn (gen_negsi2 (temp, temp));
-  emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (31)));
+  emit_move_insn (operands[0], GEN_INT (31));
+  emit_insn (gen_subsi3 (operands[0], operands[0], temp));
   DONE;
 })
 
@@ -487,8 +491,8 @@
   emit_insn (gen_negsi2 (temp, operands[1]));
   emit_insn (gen_andsi3 (temp, temp, operands[1]));
   emit_insn (gen_clzsi2 (temp, temp));
-  emit_insn (gen_negsi2 (temp, temp));
-  emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (32)));
+  emit_move_insn (operands[0], GEN_INT (32));
+  emit_insn (gen_subsi3 (operands[0], operands[0], temp));
   DONE;
 })
 
@@ -507,7 +511,7 @@
 
 (define_expand "bswapsi2"
   [(set (match_operand:SI 0 "register_operand" "")
-        (bswap:SI (match_operand:SI 1 "register_operand" "")))]
+	(bswap:SI (match_operand:SI 1 "register_operand" "")))]
   "!optimize_debug && optimize > 1"
 {
   /* GIMPLE manual byte-swapping recognition is now activated.
@@ -732,7 +736,31 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "xorsi3"
+(define_expand "xorsi3"
+  [(set (match_operand:SI 0 "register_operand")
+	(xor:SI (match_operand:SI 1 "register_operand")
+		(match_operand:SI 2 "nonmemory_operand")))]
+  ""
+{
+  if (register_operand (operands[2], SImode))
+    emit_insn (gen_xorsi3_internal (operands[0], operands[1],
+				    operands[2]));
+  else
+    {
+      rtx (*gen_op)(rtx, rtx, rtx);
+      if (TARGET_DENSITY
+	  && CONST_INT_P (operands[2])
+	  && INTVAL (operands[2]) == -2147483648L)
+	gen_op = gen_addsi3;
+      else
+	gen_op = gen_xorsi3_internal;
+      emit_insn (gen_op (operands[0], operands[1],
+			 force_reg (SImode, operands[2])));
+    }
+  DONE;
+})
+
+(define_insn "xorsi3_internal"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(xor:SI (match_operand:SI 1 "register_operand" "%r")
 		(match_operand:SI 2 "register_operand" "r")))]
@@ -741,6 +769,53 @@
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
+
+(define_insn_and_split "*splice_bits"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(ior:SI (and:SI (match_operand:SI 1 "register_operand" "r")
+			(match_operand:SI 3 "const_int_operand" "i"))
+		(and:SI (match_operand:SI 2 "register_operand" "r")
+			(match_operand:SI 4 "const_int_operand" "i"))))]
+
+  "!optimize_debug && optimize
+   && INTVAL (operands[3]) + INTVAL (operands[4]) == -1
+   && (exact_log2 (INTVAL (operands[3]) + 1) > 16
+       || exact_log2 (INTVAL (operands[4]) + 1) > 16)"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5)
+	(ashift:SI (match_dup 1)
+		   (match_dup 4)))
+   (set (match_dup 6)
+	(lshiftrt:SI (match_dup 2)
+		     (match_dup 3)))
+   (set (match_dup 0)
+	(ior:SI (lshiftrt:SI (match_dup 5)
+			     (match_dup 4))
+		(ashift:SI (match_dup 6)
+			   (match_dup 3))))]
+{
+  int shift;
+  if (INTVAL (operands[3]) < 0)
+    {
+      rtx x;
+      x = operands[1], operands[1] = operands[2], operands[2] = x;
+      x = operands[3], operands[3] = operands[4], operands[4] = x;
+    }
+  shift = floor_log2 (INTVAL (operands[3]) + 1);
+  operands[3] = GEN_INT (shift);
+  operands[4] = GEN_INT (32 - shift);
+  operands[5] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY
+				   && (INTVAL (operands[3]) == 0x7FFFFFFF
+				       || INTVAL (operands[4]) == 0x7FFFFFFF)")
+		      (const_int 11)
+		      (const_int 12)))])
 
 
 ;; Zero-extend instructions.
@@ -1022,7 +1097,7 @@
    %v0s32i\t%1, %0
    rsr\t%0, ACCLO
    wsr\t%1, ACCLO"
-  [(set_attr "type" "move,move,move,load,store,store,move,move,move,move,move,load,load,store,rsr,wsr")
+  [(set_attr "type"	"move,move,move,load,store,store,move,move,move,move,move,load,load,store,rsr,wsr")
    (set_attr "mode"	"SI")
    (set_attr "length"	"2,2,2,2,2,2,3,3,3,3,6,3,3,3,3,3")])
 
@@ -1170,7 +1245,7 @@
   "((register_operand (operands[0], SFmode)
      || register_operand (operands[1], SFmode))
     && !(FP_REG_P (xt_true_regnum (operands[0]))
-         && (constantpool_mem_p (operands[1]) || CONSTANT_P (operands[1]))))"
+	 && (constantpool_mem_p (operands[1]) || CONSTANT_P (operands[1]))))"
   "@
    mov.s\t%0, %1
    %v1lsi\t%0, %1
@@ -1355,7 +1430,7 @@
   [(set (match_operand:SI 0 "register_operand" "=a,a")
 	(ashift:SI (match_operand:SI 1 "register_operand" "r,r")
 		   (match_operand:SI 2 "arith_operand" "J,r")))]
-  ""      
+  ""
   "@
    slli\t%0, %1, %R2
    ssl\t%2\;sll\t%0, %1"
@@ -1628,7 +1703,7 @@
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
 			[(match_operand:SI 0 "register_operand" "r,r")
-			 (match_operand:SI 1 "branch_operand" "K,r")])
+			 (match_operand:SI 1 "branch_operand" "K,?r")])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
@@ -1637,7 +1712,14 @@
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
-   (set_attr "length"	"3,3")])
+   (set (attr "length")
+        (if_then_else (match_test "TARGET_DENSITY
+				   && CONST_INT_P (operands[1])
+				   && INTVAL (operands[1]) == 0
+				   && (GET_CODE (operands[3]) == EQ
+				       || GET_CODE (operands[3]) == NE)")
+                      (const_int 2)
+                      (const_int 3)))])
 
 (define_insn "*ubtrue"
   [(set (pc)
@@ -1941,13 +2023,13 @@
 
 (define_insn "zero_cost_loop_start"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 2 "register_operand" "0")
-                          (const_int 1))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
+	(if_then_else (ne (match_operand:SI 2 "register_operand" "0")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
    (set (match_operand:SI 0 "register_operand" "=a")
-        (plus (match_dup 0)
-              (const_int -1)))
+	(plus (match_dup 0)
+	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_START)]
   "TARGET_LOOPS && optimize"
   "loop\t%0, %l1_LEND"
@@ -1957,13 +2039,13 @@
 
 (define_insn "zero_cost_loop_end"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0")
-                          (const_int 1))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
+	(if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
    (set (match_operand:SI 0 "nonimmediate_operand" "=a,m")
-        (plus (match_dup 0)
-              (const_int -1)))
+	(plus (match_dup 0)
+	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
    (clobber (match_scratch:SI 3 "=X,&r"))]
   "TARGET_LOOPS && optimize"
@@ -1974,13 +2056,13 @@
 
 (define_insn "loop_end"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 2 "register_operand" "0")
-                          (const_int 1))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
+	(if_then_else (ne (match_operand:SI 2 "register_operand" "0")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
    (set (match_operand:SI 0 "register_operand" "=a")
-        (plus (match_dup 0)
-              (const_int -1)))
+	(plus (match_dup 0)
+	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)]
   "TARGET_LOOPS && optimize"
 {
@@ -1993,13 +2075,13 @@
 
 (define_split
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "")
-                          (const_int 1))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
+	(if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
    (set (match_operand:SI 2 "nonimmediate_operand" "")
-        (plus:SI (match_dup 0)
-                 (const_int -1)))
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
    (clobber (match_scratch 3))]
   "TARGET_LOOPS && optimize && reload_completed"
@@ -2015,7 +2097,7 @@
       emit_move_insn (operands[0], operands[3]);
       test = gen_rtx_NE (VOIDmode, operands[3], const0_rtx);
       emit_jump_insn (gen_cbranchsi4 (test, operands[3],
-                                      const0_rtx, operands[1]));
+				      const0_rtx, operands[1]));
     }
   else
     {
@@ -2029,15 +2111,15 @@
 ; operand 1 is the label to jump to at the top of the loop
 (define_expand "doloop_end"
   [(parallel [(set (pc) (if_then_else
-                          (ne (match_operand:SI 0 "" "")
-                              (const_int 1))
-                          (label_ref (match_operand 1 "" ""))
-                          (pc)))
-              (set (match_dup 0)
-                   (plus:SI (match_dup 0)
-                            (const_int -1)))
-              (unspec [(const_int 0)] UNSPEC_LSETUP_END)
-              (clobber (match_dup 2))])] ; match_scratch
+			  (ne (match_operand:SI 0 "" "")
+			      (const_int 1))
+			  (label_ref (match_operand 1 "" ""))
+			  (pc)))
+	      (set (match_dup 0)
+		   (plus:SI (match_dup 0)
+			    (const_int -1)))
+	      (unspec [(const_int 0)] UNSPEC_LSETUP_END)
+	      (clobber (match_dup 2))])] ; match_scratch
   "TARGET_LOOPS && optimize"
 {
   /* The loop optimizer doesn't check the predicates... */
@@ -2276,8 +2358,8 @@
 
 (define_insn "call_value_internal"
   [(set (match_operand 0 "register_operand" "=a")
-        (call (mem (match_operand:SI 1 "call_insn_operand" "nir"))
-              (match_operand 2 "" "i")))]
+	(call (mem (match_operand:SI 1 "call_insn_operand" "nir"))
+	      (match_operand 2 "" "i")))]
   "!SIBLING_CALL_P (insn)"
 {
   return xtensa_emit_call (1, operands);
@@ -2382,9 +2464,9 @@
 
 (define_expand "allocate_stack"
   [(set (match_operand 0 "nonimmed_operand")
-        (minus (reg A1_REG) (match_operand 1 "add_operand")))
+	(minus (reg A1_REG) (match_operand 1 "add_operand")))
    (set (reg A1_REG)
-        (minus (reg A1_REG) (match_dup 1)))]
+	(minus (reg A1_REG) (match_dup 1)))]
   "TARGET_WINDOWED_ABI"
 {
   if (CONST_INT_P (operands[1]))
@@ -2509,7 +2591,7 @@
 
 (define_expand "frame_blockage"
   [(set (match_dup 0)
-        (unspec:BLK [(match_dup 1)] UNSPEC_FRAME_BLOCKAGE))]
+	(unspec:BLK [(match_dup 1)] UNSPEC_FRAME_BLOCKAGE))]
   ""
 {
   operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
@@ -2519,7 +2601,7 @@
 
 (define_insn "*frame_blockage"
   [(set (match_operand:BLK 0 "" "")
-        (unspec:BLK [(match_operand:SI 1 "" "")] UNSPEC_FRAME_BLOCKAGE))]
+	(unspec:BLK [(match_operand:SI 1 "" "")] UNSPEC_FRAME_BLOCKAGE))]
   ""
   ""
   [(set_attr "type"	"nop")
@@ -2562,12 +2644,15 @@
   ""
 {
   if (frame_pointer_needed)
-    return "mov\ta7, sp";
+    return (TARGET_DENSITY ? "mov.n\ta7, sp" : "mov\ta7, sp");
   return "";
 }
   [(set_attr "type"	"move")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 2)
+		      (const_int 3)))])
 
 ;; Post-reload splitter to remove fp assignment when it's not needed.
 (define_split
@@ -2796,7 +2881,7 @@
 (define_expand "sync_new_<atomic><mode>"
   [(set (match_operand:HQI 0 "register_operand")
 	(ATOMIC:HQI (match_operand:HQI 1 "memory_operand")
-		    (match_operand:HQI 2 "register_operand"))) 
+		    (match_operand:HQI 2 "register_operand")))
    (set (match_dup 1) (ATOMIC:HQI (match_dup 1) (match_dup 2)))]
   "TARGET_S32C1I"
 {
@@ -2888,45 +2973,47 @@
 {
   auto_sbitmap bmp (FIRST_PSEUDO_REGISTER);
   rtx_insn *insn;
-  rtx reg = gen_rtx_REG (SImode, 0);
+  rtx reg = gen_rtx_REG (SImode, 0), dest;
+  unsigned int regno;
+  sbitmap_iterator iter;
   bitmap_set_range (bmp, REGNO (operands[0]), REG_NREGS (operands[0]));
   for (insn = next_nonnote_nondebug_insn_bb (curr_insn);
        insn; insn = next_nonnote_nondebug_insn_bb (insn))
-    {
-      sbitmap_iterator iter;
-      unsigned int regno;
-      if (NONJUMP_INSN_P (insn))
-	{
-	  EXECUTE_IF_SET_IN_BITMAP (bmp, 2, regno, iter)
-	    {
-	      set_regno_raw (reg, regno, REG_NREGS (reg));
-	      if (reg_overlap_mentioned_p (reg, PATTERN (insn)))
-		break;
-	    }
-	  if (GET_CODE (PATTERN (insn)) == SET)
-	    {
-	      rtx x = SET_DEST (PATTERN (insn));
-	      if (REG_P (x) && HARD_REGISTER_P (x))
-		bitmap_clear_range (bmp, REGNO (x), REG_NREGS (x));
-	      else if (SUBREG_P (x) && HARD_REGISTER_P (SUBREG_REG (x)))
-		{
-		  struct subreg_info info;
-		  subreg_get_info (regno = REGNO (SUBREG_REG (x)),
-				   GET_MODE (SUBREG_REG (x)),
-				   SUBREG_BYTE (x), GET_MODE (x), &info);
-		  if (!info.representable_p)
-		    break;
-		  bitmap_clear_range (bmp, regno + info.offset, info.nregs);
-		}
-	    }
-	  if (bitmap_empty_p (bmp))
-	    goto FALLTHRU;
-	}
-      else if (CALL_P (insn))
+    if (NONJUMP_INSN_P (insn))
+      {
 	EXECUTE_IF_SET_IN_BITMAP (bmp, 2, regno, iter)
-	 if (call_used_or_fixed_reg_p (regno))
-	   break;
-    }
+	  {
+	    set_regno_raw (reg, regno, REG_NREGS (reg));
+	    if (reg_referenced_p (reg, PATTERN (insn)))
+	      goto ABORT;
+	  }
+	if (GET_CODE (PATTERN (insn)) == SET
+	    || GET_CODE (PATTERN (insn)) == CLOBBER)
+	  {
+	    dest = SET_DEST (PATTERN (insn));
+	    if (REG_P (dest) && HARD_REGISTER_P (dest))
+	      bitmap_clear_range (bmp, REGNO (dest), REG_NREGS (dest));
+	    else if (SUBREG_P (dest)
+		     && HARD_REGISTER_P (SUBREG_REG (dest)))
+	      {
+		struct subreg_info info;
+		subreg_get_info (regno = REGNO (SUBREG_REG (dest)),
+				 GET_MODE (SUBREG_REG (dest)),
+				 SUBREG_BYTE (dest), GET_MODE (dest),
+				 &info);
+		if (!info.representable_p)
+		  break;
+		bitmap_clear_range (bmp, regno + info.offset, info.nregs);
+	      }
+	  }
+	if (bitmap_empty_p (bmp))
+	  goto FALLTHRU;
+      }
+    else if (CALL_P (insn))
+      EXECUTE_IF_SET_IN_BITMAP (bmp, 2, regno, iter)
+	if (call_used_or_fixed_reg_p (regno))
+	  goto ABORT;
+ABORT:
   FAIL;
 FALLTHRU:;
 })

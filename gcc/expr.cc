@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2022 Free Software Foundation, Inc.
+   Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6226,6 +6226,9 @@ store_expr (tree exp, rtx target, int call_param_p,
 	  temp = convert_modes (inner_mode, outer_mode, temp,
 				SUBREG_PROMOTED_SIGN (target));
 	}
+      else if (!SCALAR_INT_MODE_P (GET_MODE (temp)))
+	temp = convert_modes (outer_mode, TYPE_MODE (TREE_TYPE (exp)),
+			      temp, SUBREG_PROMOTED_SIGN (target));
 
       convert_move (SUBREG_REG (target), temp,
 		    SUBREG_PROMOTED_SIGN (target));

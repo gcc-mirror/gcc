@@ -1,0 +1,92 @@
+(* Strings.def provides a Logitech-3.0 compatible library.
+
+Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Strings ;
+
+EXPORT QUALIFIED Assign, Insert, Delete, Pos, Copy, ConCat, Length,
+                 CompareStr ;
+
+(*
+   Assign - dest := source.
+*)
+
+PROCEDURE Assign (VAR dest: ARRAY OF CHAR; source: ARRAY OF CHAR) ;
+
+
+(*
+   Insert - insert the string, substr, into str at position, index.
+            substr, is added to the end of, str, if, index >= length(str)
+*)
+
+PROCEDURE Insert (substr: ARRAY OF CHAR; VAR str: ARRAY OF CHAR;
+                  index: CARDINAL) ;
+
+
+(*
+   Delete - delete len characters from, str, starting at, index.
+*)
+
+PROCEDURE Delete (VAR str: ARRAY OF CHAR; index: CARDINAL; length: CARDINAL) ;
+
+
+(*
+   Pos - return the first position of, substr, in, str.
+*)
+
+PROCEDURE Pos (substr, str: ARRAY OF CHAR) : CARDINAL ;
+
+
+(*
+   Copy - copy at most, length, characters in, substr, to, str,
+          starting at position, index.
+*)
+
+PROCEDURE Copy (str: ARRAY OF CHAR;
+                index, length: CARDINAL; VAR result: ARRAY OF CHAR) ;
+
+(*
+   ConCat - concatenates two strings, s1, and, s2
+            and places the result into, dest.
+*)
+
+PROCEDURE ConCat (s1, s2: ARRAY OF CHAR; VAR dest: ARRAY OF CHAR) ;
+
+
+(*
+   Length - return the length of string, s.
+*)
+
+PROCEDURE Length (s: ARRAY OF CHAR) : CARDINAL ;
+
+
+(*
+   CompareStr - compare two strings, left, and, right.
+*)
+
+PROCEDURE CompareStr (left, right: ARRAY OF CHAR) : INTEGER ;
+
+
+END Strings.

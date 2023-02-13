@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the C++ front end.
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -234,7 +234,12 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
 	case OPT_static_libstdc__:
 	  library = library >= 0 ? 2 : library;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+	  /* Remove -static-libstdc++ from the command only if target supports
+	     LD_STATIC_DYNAMIC.  When not supported, it is left in so that a
+	     back-end target can use outfile substitution.  */
 	  args[i] |= SKIPOPT;
+#endif
 	  break;
 
 	case OPT_stdlib_:

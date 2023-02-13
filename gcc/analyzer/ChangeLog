@@ -1,3 +1,131 @@
+2023-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108524
+	* analyzer.h (class feasible_node): New forward decl.
+	* diagnostic-manager.cc (epath_finder::get_best_epath): Add "pd"
+	param.
+	(epath_finder::explore_feasible_paths): Likewise.
+	(epath_finder::process_worklist_item): Likewise.  Use it to call
+	pending_diagnostic::check_valid_fpath_p on the final fpath to
+	give pending_diagnostic a way to add additional restrictions on
+	feasibility.
+	(saved_diagnostic::calc_best_epath): Pass pending_diagnostic to
+	epath_finder::get_best_epath.
+	* infinite-recursion.cc: Include "analyzer/feasible-graph.h".
+	(infinite_recursion_diagnostic::check_valid_fpath_p): New.
+	(infinite_recursion_diagnostic::fedge_uses_conjured_svalue_p): New.
+	(infinite_recursion_diagnostic::expr_uses_conjured_svalue_p): New.
+	* pending-diagnostic.h (pending_diagnostic::check_valid_fpath_p):
+	New vfunc.
+
+2023-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108455
+	* analyzer.h (class checker_event): New forward decl.
+	(class state_change_event): Indent.
+	(class warning_event): New forward decl.
+	* checker-event.cc (state_change_event::state_change_event): Add
+	"enode" param.
+	(warning_event::get_desc): Update for new param of
+	evdesc::final_event ctor.
+	* checker-event.h (state_change_event::state_change_event): Add
+	"enode" param.
+	(state_change_event::get_exploded_node): New accessor.
+	(state_change_event::m_enode): New field.
+	(warning_event::warning_event): New "enode" param.
+	(warning_event::get_exploded_node): New accessor.
+	(warning_event::m_enode): New field.
+	* diagnostic-manager.cc
+	(state_change_event_creator::on_global_state_change): Pass
+	src_node to state_change_event ctor.
+	(state_change_event_creator::on_state_change): Likewise.
+	(null_assignment_sm_context::set_next_state): Pass NULL for
+	new param of state_change_event ctor.
+	* infinite-recursion.cc
+	(infinite_recursion_diagnostic::add_final_event): Update for new
+	param of warning_event ctor.
+	* pending-diagnostic.cc (pending_diagnostic::add_final_event):
+	Pass enode to warning_event ctor.
+	* pending-diagnostic.h (evdesc::final_event): Add reference to
+	warning_event.
+	* sm-malloc.cc: Include "analyzer/checker-event.h" and
+	"analyzer/exploded-graph.h".
+	(deref_before_check::deref_before_check): Initialize new fields.
+	(deref_before_check::emit): Reject warnings in which we were
+	unable to determine the enodes of the dereference and the check.
+	Reject warnings interprocedural warnings. Reject warnings in which
+	the dereference doesn't dominate the check.
+	(deref_before_check::describe_state_change): Set m_deref_enode.
+	(deref_before_check::describe_final_event): Set m_check_enode.
+	(deref_before_check::m_deref_enode): New field.
+	(deref_before_check::m_check_enode): New field.
+
+2023-01-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105273
+	* region-model.cc (has_nondefault_case_for_value_p): New.
+	(has_nondefault_cases_for_all_enum_values_p): New.
+	(region_model::apply_constraints_for_gswitch): Skip
+	implicitly-created "default" when switching on an enum
+	and all enum values have non-default cases.
+	(rejected_default_case::dump_to_pp): New.
+	* region-model.h (region_model_context::possibly_tainted_p): New
+	decl.
+	(class rejected_default_case): New.
+	* sm-taint.cc (region_model_context::possibly_tainted_p): New.
+	* supergraph.cc (switch_cfg_superedge::dump_label_to_pp): Dump
+	when implicitly_created_default_p.
+	(switch_cfg_superedge::implicitly_created_default_p): New.
+	* supergraph.h
+	(switch_cfg_superedge::implicitly_created_default_p): New decl.
+
+2023-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108252
+	* kf.cc (class kf_strdup): New.
+	(class kf_strndup): New.
+	(register_known_functions): Register them.
+	* region-model.cc (region_model::on_call_pre): Use
+	&HEAP_ALLOCATED_REGION for the default result of an external
+	function with the "malloc" attribute, rather than CONJURED_SVALUE.
+	(region_model::get_or_create_region_for_heap_alloc): Allow
+	"size_in_bytes" to be NULL.
+	* store.cc (store::set_value): When handling *UNKNOWN = VAL,
+	mark VAL as "maybe bound".
+
+2022-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106479
+	* kf.cc (kf_memcpy_memmove::impl_call_pre): Pass in source region
+	to region_model::check_for_poison.
+	* region-model-asm.cc (region_model::on_asm_stmt): Pass NULL
+	region to region_model::check_for_poison.
+	* region-model.cc (region_model::check_for_poison): Add
+	"src_region" param, and pass it to poisoned_value_diagnostic.
+	(region_model::on_assignment): Pass NULL region to
+	region_model::check_for_poison.
+	(region_model::get_rvalue): Likewise.
+	* region-model.h (region_model::check_for_poison): Add
+	"src_region" param.
+	* sm-fd.cc (fd_state_machine::on_accept): Pass in source region
+	to region_model::check_for_poison.
+	* varargs.cc (kf_va_copy::impl_call_pre): Pass NULL region to
+	region_model::check_for_poison.
+	(kf_va_arg::impl_call_pre): Pass in source region to
+	region_model::check_for_poison.
+
+2022-12-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108065
+	* region.cc (decl_region::get_svalue_for_initializer): Bail out to
+	avoid calling binding_key::make with an empty region.
+	* store.cc (binding_map::apply_ctor_val_to_range): Likewise.
+	(binding_map::apply_ctor_pair_to_child_region): Likewise.
+	(binding_cluster::bind): Likewise.
+	(binding_cluster::purge_region): Likewise.
+	(binding_cluster::maybe_get_compound_binding): Likewise.
+	(binding_cluster::maybe_get_simple_value): Likewise.
+
 2022-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (class known_function): Expand comment.
@@ -9673,7 +9801,7 @@
 	* Initial creation
 
 
-Copyright (C) 2019-2022 Free Software Foundation, Inc.
+Copyright (C) 2019-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

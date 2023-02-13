@@ -1,5 +1,5 @@
 /* OpenMP directive translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -2494,7 +2494,7 @@ gfc_trans_omp_array_section (stmtblock_t *block, gfc_omp_namelist *n,
 	= gfc_conv_descriptor_data_get (decl);
       /* This purposely does not include GOMP_MAP_ALWAYS_POINTER.  The extra
 	 cast prevents gimplify.cc from recognising it as being part of the
-	 struct – and adding an 'alloc: for the 'desc.data' pointer, which
+	 struct - and adding an 'alloc: for the 'desc.data' pointer, which
 	 would break as the 'desc' (the descriptor) is also mapped
 	 (see node4 above).  */
       if (ptr_kind == GOMP_MAP_ATTACH_DETACH)
@@ -5968,6 +5968,39 @@ gfc_add_clause_implicitly (gfc_omp_clauses *clauses_out,
     }
 }
 
+/* Kind of opposite to above, add firstprivate to CLAUSES_OUT if it is mapped
+   in CLAUSES_IN's FIRSTPRIVATE list but not its MAP list.  */
+
+static void
+gfc_add_firstprivate_if_unmapped (gfc_omp_clauses *clauses_out,
+				  gfc_omp_clauses *clauses_in)
+{
+  gfc_omp_namelist *n = clauses_in->lists[OMP_LIST_FIRSTPRIVATE];
+  gfc_omp_namelist **tail = NULL;
+
+  for (; n != NULL; n = n->next)
+    {
+      gfc_omp_namelist *n2 = clauses_out->lists[OMP_LIST_MAP];
+      for (; n2 != NULL; n2 = n2->next)
+	if (n->sym == n2->sym)
+	  break;
+      if (n2 == NULL)
+	{
+	  gfc_omp_namelist *dup = gfc_get_omp_namelist ();
+	  *dup = *n;
+	  dup->next = NULL;
+	  if (!tail)
+	    {
+	      tail = &clauses_out->lists[OMP_LIST_FIRSTPRIVATE];
+	      while (*tail && (*tail)->next)
+		tail = &(*tail)->next;
+	    }
+	  *tail = dup;
+	  tail = &(*tail)->next;
+	}
+    }
+}
+
 static void
 gfc_free_split_omp_clauses (gfc_code *code, gfc_omp_clauses *clausesa)
 {
@@ -6172,6 +6205,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->lists[OMP_LIST_MAP];
 	  clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_IS_DEVICE_PTR]
 	    = code->ext.omp_clauses->lists[OMP_LIST_IS_DEVICE_PTR];
+	  clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_HAS_DEVICE_ADDR]
+	    = code->ext.omp_clauses->lists[OMP_LIST_HAS_DEVICE_ADDR];
 	  clausesa[GFC_OMP_SPLIT_TARGET].device
 	    = code->ext.omp_clauses->device;
 	  clausesa[GFC_OMP_SPLIT_TARGET].thread_limit
@@ -6351,8 +6386,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	 simd and masked/master.  Put it on the outermost of those and duplicate
 	 on parallel and teams.  */
       if (mask & GFC_OMP_MASK_TARGET)
-	clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_FIRSTPRIVATE]
-	  = code->ext.omp_clauses->lists[OMP_LIST_FIRSTPRIVATE];
+	gfc_add_firstprivate_if_unmapped (&clausesa[GFC_OMP_SPLIT_TARGET],
+					  code->ext.omp_clauses);
       if (mask & GFC_OMP_MASK_TEAMS)
 	clausesa[GFC_OMP_SPLIT_TEAMS].lists[OMP_LIST_FIRSTPRIVATE]
 	  = code->ext.omp_clauses->lists[OMP_LIST_FIRSTPRIVATE];

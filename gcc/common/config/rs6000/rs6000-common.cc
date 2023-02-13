@@ -1,5 +1,5 @@
 /* Common hooks for IBM RS/6000.
-   Copyright (C) 1991-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -119,19 +119,8 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 #else
     case OPT_m64:
 #endif
-      opts->x_rs6000_isa_flags |= OPTION_MASK_POWERPC64;
       opts->x_rs6000_isa_flags |= (~opts_set->x_rs6000_isa_flags
 				   & OPTION_MASK_PPC_GFXOPT);
-      opts_set->x_rs6000_isa_flags |= OPTION_MASK_POWERPC64;
-      break;
-
-#ifdef TARGET_USES_AIX64_OPT
-    case OPT_maix32:
-#else
-    case OPT_m32:
-#endif
-      opts->x_rs6000_isa_flags &= ~OPTION_MASK_POWERPC64;
-      opts_set->x_rs6000_isa_flags |= OPTION_MASK_POWERPC64;
       break;
 
     case OPT_mminimal_toc:

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1154,13 +1154,16 @@ package body Sem_Ch5 is
 
       Record_Elaboration_Scenario (N);
 
-      --  Set Referenced_As_LHS if appropriate. We only set this flag if the
-      --  assignment is a source assignment in the extended main source unit.
-      --  We are not interested in any reference information outside this
-      --  context, or in compiler generated assignment statements.
+      --  Set Referenced_As_LHS if appropriate. We are not interested in
+      --  compiler-generated assignment statements, nor in references outside
+      --  the extended main source unit. We check whether the Original_Node is
+      --  in the extended main source unit because in the case of a renaming of
+      --  a component of a packed array, the Lhs itself has a Sloc from the
+      --  place of the renaming.
 
       if Comes_From_Source (N)
-        and then In_Extended_Main_Source_Unit (Lhs)
+        and then (In_Extended_Main_Source_Unit (Lhs)
+          or else In_Extended_Main_Source_Unit (Original_Node (Lhs)))
       then
          Set_Referenced_Modified (Lhs, Out_Param => False);
       end if;

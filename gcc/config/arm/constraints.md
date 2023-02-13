@@ -1,5 +1,5 @@
 ;; Constraint definitions for ARM and Thumb
-;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -473,6 +473,11 @@
   In ARM/Thumb-2 state a valid VFP load/store address."
  (and (match_code "mem")
       (match_test "TARGET_32BIT && arm_coproc_mem_operand (op, FALSE)")))
+
+(define_memory_constraint "Ug"
+ "@internal
+  In Thumb-2 state a valid MVE struct load/store address."
+ (match_operand 0 "mve_struct_operand"))
 
 (define_memory_constraint "Uj"
  "@internal

@@ -1,0 +1,106 @@
+(* OptLib.def allows users to manipulate Argv/Argc.
+
+Copyright (C) 2019-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE OptLib ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM DynamicStrings IMPORT String ;
+
+TYPE
+   Option ;
+
+
+(*
+   InitOption - constructor for Option.
+*)
+
+PROCEDURE InitOption (argc: INTEGER; argv: ADDRESS) : Option ;
+
+
+(*
+   KillOption - deconstructor for Option.
+*)
+
+PROCEDURE KillOption (o: Option) : Option ;
+
+
+(*
+   Dup - duplicate the option array inside, o.
+         Notice that this does not duplicate all the contents
+         (strings) of argv.
+         Shallow copy of the top level indices.
+*)
+
+PROCEDURE Dup (o: Option) : Option ;
+
+
+(*
+   Slice - return a new option which has elements [low:high] from the
+           options, o.
+*)
+
+PROCEDURE Slice (o: Option; low, high: INTEGER) : Option ;
+
+
+(*
+   IndexStrCmp - returns the index in the argv array which matches
+                 string, s.  -1 is returned if the string is not found.
+*)
+
+PROCEDURE IndexStrCmp (o: Option; s: String) : INTEGER ;
+
+
+(*
+   IndexStrNCmp - returns the index in the argv array where the first
+                  characters are matched by string, s.
+                  -1 is returned if the string is not found.
+*)
+
+PROCEDURE IndexStrNCmp (o: Option; s: String) : INTEGER ;
+
+
+(*
+   ConCat - returns the concatenation of a and b.
+*)
+
+PROCEDURE ConCat (a, b: Option) : Option ;
+
+
+(*
+   GetArgv - return the argv component of option.
+*)
+
+PROCEDURE GetArgv (o: Option) : ADDRESS ;
+
+
+(*
+   GetArgc - return the argc component of option.
+*)
+
+PROCEDURE GetArgc (o: Option) : INTEGER ;
+
+
+END OptLib.

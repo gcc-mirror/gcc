@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -82,6 +82,8 @@
 #include "tree-dfa.h"
 #include "asan.h"
 #include "aarch64-feature-deps.h"
+#include "config/arm/aarch-common.h"
+#include "config/arm/aarch-common-protos.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -318,11 +320,7 @@ bool aarch64_pcrelative_literal_loads;
 /* Global flag for whether frame pointer is enabled.  */
 bool aarch64_use_frame_pointer;
 
-#define BRANCH_PROTECT_STR_MAX 255
 char *accepted_branch_protection_string = NULL;
-
-static enum aarch64_parse_opt_result
-aarch64_parse_branch_protection (const char*, char**);
 
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
@@ -2761,6 +2759,8 @@ static const struct processor all_cores[] =
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 
+enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A;
+
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
 
@@ -2826,100 +2826,6 @@ aarch64_cc;
 
 #define AARCH64_INVERSE_CONDITION_CODE(X) ((aarch64_cc) (((int) X) ^ 1))
 
-struct aarch64_branch_protect_type
-{
-  /* The type's name that the user passes to the branch-protection option
-    string.  */
-  const char* name;
-  /* Function to handle the protection type and set global variables.
-    First argument is the string token corresponding with this type and the
-    second argument is the next token in the option string.
-    Return values:
-    * AARCH64_PARSE_OK: Handling was sucessful.
-    * AARCH64_INVALID_ARG: The type is invalid in this context and the caller
-      should print an error.
-    * AARCH64_INVALID_FEATURE: The type is invalid and the handler prints its
-      own error.  */
-  enum aarch64_parse_opt_result (*handler)(char*, char*);
-  /* A list of types that can follow this type in the option string.  */
-  const aarch64_branch_protect_type* subtypes;
-  unsigned int num_subtypes;
-};
-
-static enum aarch64_parse_opt_result
-aarch64_handle_no_branch_protection (char* str, char* rest)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
-  aarch64_enable_bti = 0;
-  if (rest)
-    {
-      error ("unexpected %<%s%> after %<%s%>", rest, str);
-      return AARCH64_PARSE_INVALID_FEATURE;
-    }
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_standard_branch_protection (char* str, char* rest)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
-  aarch64_ra_sign_key = AARCH64_KEY_A;
-  aarch64_enable_bti = 1;
-  if (rest)
-    {
-      error ("unexpected %<%s%> after %<%s%>", rest, str);
-      return AARCH64_PARSE_INVALID_FEATURE;
-    }
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_protection (char* str ATTRIBUTE_UNUSED,
-				    char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
-  aarch64_ra_sign_key = AARCH64_KEY_A;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_leaf (char* str ATTRIBUTE_UNUSED,
-			      char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_ALL;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_b_key (char* str ATTRIBUTE_UNUSED,
-			      char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_key = AARCH64_KEY_B;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_bti_protection (char* str ATTRIBUTE_UNUSED,
-				    char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_enable_bti = 1;
-  return AARCH64_PARSE_OK;
-}
-
-static const struct aarch64_branch_protect_type aarch64_pac_ret_subtypes[] = {
-  { "leaf", aarch64_handle_pac_ret_leaf, NULL, 0 },
-  { "b-key", aarch64_handle_pac_ret_b_key, NULL, 0 },
-  { NULL, NULL, NULL, 0 }
-};
-
-static const struct aarch64_branch_protect_type aarch64_branch_protect_types[] = {
-  { "none", aarch64_handle_no_branch_protection, NULL, 0 },
-  { "standard", aarch64_handle_standard_branch_protection, NULL, 0 },
-  { "pac-ret", aarch64_handle_pac_ret_protection, aarch64_pac_ret_subtypes,
-    ARRAY_SIZE (aarch64_pac_ret_subtypes) },
-  { "bti", aarch64_handle_bti_protection, NULL, 0 },
-  { NULL, NULL, NULL, 0 }
-};
 
 /* The condition codes of the processor, and the inverse function.  */
 static const char * const aarch64_condition_codes[] =
@@ -3443,6 +3349,20 @@ aarch64_debugger_regno (unsigned regno)
    return DWARF_FRAME_REGISTERS;
 }
 
+/* Implement TARGET_DWARF_FRAME_REG_MODE.  */
+static machine_mode
+aarch64_dwarf_frame_reg_mode (int regno)
+{
+  /* Predicate registers are call-clobbered in the EH ABI (which is
+     ARM_PCS_AAPCS64), so they should not be described by CFI.
+     Their size changes as VL changes, so any values computed by
+     __builtin_init_dwarf_reg_size_table might not be valid for
+     all frames.  */
+  if (PR_REGNUM_P (regno))
+    return VOIDmode;
+  return default_dwarf_frame_reg_mode (regno);
+}
+
 /* If X is a CONST_DOUBLE, return its bit representation as a constant
    integer, otherwise return X unmodified.  */
 static rtx
@@ -3634,7 +3554,6 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
-    case E_V2HFmode:
       return TARGET_FLOAT ? VEC_ADVSIMD : 0;
 
     default:
@@ -7537,15 +7456,19 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
 /* Given MODE and TYPE of a function argument, return the alignment in
    bits.  The idea is to suppress any stronger alignment requested by
    the user and opt for the natural alignment (specified in AAPCS64 \S
-   4.1).  ABI_BREAK is set to true if the alignment was incorrectly
-   calculated in versions of GCC prior to GCC-9.  This is a helper
+   4.1).  ABI_BREAK is set to the old alignment if the alignment was
+   incorrectly calculated in versions of GCC prior to GCC-9.
+   ABI_BREAK_PACKED is set to the old alignment if it was incorrectly
+   calculated in versions between GCC-9 and GCC-13.  This is a helper
    function for local use only.  */
 
 static unsigned int
 aarch64_function_arg_alignment (machine_mode mode, const_tree type,
-				unsigned int *abi_break)
+				unsigned int *abi_break,
+				unsigned int *abi_break_packed)
 {
   *abi_break = 0;
+  *abi_break_packed = 0;
   if (!type)
     return GET_MODE_ALIGNMENT (mode);
 
@@ -7561,6 +7484,7 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
     return TYPE_ALIGN (TREE_TYPE (type));
 
   unsigned int alignment = 0;
+  unsigned int bitfield_alignment_with_packed = 0;
   unsigned int bitfield_alignment = 0;
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)
@@ -7580,10 +7504,29 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 	   but gains 8-byte alignment and size thanks to "e".  */
 	alignment = std::max (alignment, DECL_ALIGN (field));
 	if (DECL_BIT_FIELD_TYPE (field))
-	  bitfield_alignment
-	    = std::max (bitfield_alignment,
-			TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+	  {
+	    /* Take the bit-field type's alignment into account only
+	       if the user didn't reduce this field's alignment with
+	       the packed attribute.  */
+	    if (!DECL_PACKED (field))
+	      bitfield_alignment
+		= std::max (bitfield_alignment,
+			    TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+
+	    /* Compute the alignment even if the bit-field is
+	       packed, so that we can emit a warning in case the
+	       alignment changed between GCC versions.  */
+	    bitfield_alignment_with_packed
+	      = std::max (bitfield_alignment_with_packed,
+			  TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+	  }
       }
+
+  /* Emit a warning if the alignment is different when taking the
+     'packed' attribute into account.  */
+  if (bitfield_alignment != bitfield_alignment_with_packed
+      && bitfield_alignment_with_packed > alignment)
+    *abi_break_packed = bitfield_alignment_with_packed;
 
   if (bitfield_alignment > alignment)
     {
@@ -7610,16 +7553,83 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   bool allocate_ncrn, allocate_nvrn;
   HOST_WIDE_INT size;
   unsigned int abi_break;
+  unsigned int abi_break_packed;
 
   /* We need to do this once per argument.  */
   if (pcum->aapcs_arg_processed)
     return;
+
+  bool warn_pcs_change
+    = (warn_psabi
+       && !pcum->silent_p
+       && (currently_expanding_function_start
+	   || currently_expanding_gimple_stmt));
+
+  /* HFAs and HVAs can have an alignment greater than 16 bytes.  For example:
+
+       typedef struct foo {
+         __Int8x16_t foo[2] __attribute__((aligned(32)));
+       } foo;
+
+     is still a HVA despite its larger-than-normal alignment.
+     However, such over-aligned HFAs and HVAs are guaranteed to have
+     no padding.
+
+     If we exclude HFAs and HVAs from the discussion below, then there
+     are several things to note:
+
+     - Both the C and AAPCS64 interpretations of a type's alignment should
+       give a value that is no greater than the type's size.
+
+     - Types bigger than 16 bytes are passed indirectly.
+
+     - If an argument of type T is passed indirectly, TYPE and MODE describe
+       a pointer to T rather than T iself.
+
+     It follows that the AAPCS64 alignment of TYPE must be no greater
+     than 16 bytes.
+
+     Versions prior to GCC 9.1 ignored a bitfield's underlying type
+     and so could calculate an alignment that was too small.  If this
+     happened for TYPE then ABI_BREAK is this older, too-small alignment.
+
+     Although GCC 9.1 fixed that bug, it introduced a different one:
+     it would consider the alignment of a bitfield's underlying type even
+     if the field was packed (which should have the effect of overriding
+     the alignment of the underlying type).  This was fixed in GCC 13.1.
+
+     As a result of this bug, GCC 9 to GCC 12 could calculate an alignment
+     that was too big.  If this happened for TYPE, ABI_BREAK_PACKED is
+     this older, too-big alignment.
+
+     Also, the fact that GCC 9 to GCC 12 considered irrelevant
+     alignments meant they could calculate type alignments that were
+     bigger than the type's size, contrary to the assumption above.
+     The handling of register arguments was nevertheless (and justifiably)
+     written to follow the assumption that the alignment can never be
+     greater than the size.  The same was not true for stack arguments;
+     their alignment was instead handled by MIN bounds in
+     aarch64_function_arg_boundary.
+
+     The net effect is that, if GCC 9 to GCC 12 incorrectly calculated
+     an alignment of more than 16 bytes for TYPE then:
+
+     - If the argument was passed in registers, these GCC versions
+       would treat the alignment as though it was *less than* 16 bytes.
+
+     - If the argument was passed on the stack, these GCC versions
+       would treat the alignment as though it was *equal to* 16 bytes.
+
+     Both behaviors were wrong, but in different cases.  */
 
   pcum->aapcs_arg_processed = true;
 
   pure_scalable_type_info pst_info;
   if (type && pst_info.analyze_registers (type))
     {
+      /* aarch64_function_arg_alignment has never had an effect on
+	 this case.  */
+
       /* The PCS says that it is invalid to pass an SVE value to an
 	 unprototyped function.  There is no ABI-defined location we
 	 can return in this case, so we have no real choice but to raise
@@ -7681,6 +7691,14 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 						 &nregs);
   gcc_assert (!sve_p || !allocate_nvrn);
 
+  unsigned int alignment
+    = aarch64_function_arg_alignment (mode, type, &abi_break,
+				      &abi_break_packed);
+
+  gcc_assert ((allocate_nvrn || alignment <= 16 * BITS_PER_UNIT)
+	      && (!alignment || abi_break < alignment)
+	      && (!abi_break_packed || alignment < abi_break_packed));
+
   /* allocate_ncrn may be false-positive, but allocate_nvrn is quite reliable.
      The following code thus handles passing by SIMD/FP registers first.  */
 
@@ -7690,6 +7708,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
      and homogenous short-vector aggregates (HVA).  */
   if (allocate_nvrn)
     {
+      /* aarch64_function_arg_alignment has never had an effect on
+	 this case.  */
       if (!pcum->silent_p && !TARGET_FLOAT)
 	aarch64_err_no_fpadvsimd (mode);
 
@@ -7746,19 +7766,29 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
       /* C.8 if the argument has an alignment of 16 then the NGRN is
 	 rounded up to the next even number.  */
       if (nregs == 2
-	  && ncrn % 2
+	  && ncrn % 2)
+	{
+	  /* Emit a warning if the alignment changed when taking the
+	     'packed' attribute into account.  */
+	  if (warn_pcs_change
+	      && abi_break_packed
+	      && ((abi_break_packed == 16 * BITS_PER_UNIT)
+		  != (alignment == 16 * BITS_PER_UNIT)))
+	    inform (input_location, "parameter passing for argument of type "
+		    "%qT changed in GCC 13.1", type);
+
 	  /* The == 16 * BITS_PER_UNIT instead of >= 16 * BITS_PER_UNIT
 	     comparison is there because for > 16 * BITS_PER_UNIT
 	     alignment nregs should be > 2 and therefore it should be
 	     passed by reference rather than value.  */
-	  && (aarch64_function_arg_alignment (mode, type, &abi_break)
-	      == 16 * BITS_PER_UNIT))
-	{
-	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
-	    inform (input_location, "parameter passing for argument of type "
-		    "%qT changed in GCC 9.1", type);
-	  ++ncrn;
-	  gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	  if (alignment == 16 * BITS_PER_UNIT)
+	    {
+	      if (warn_pcs_change && abi_break)
+		inform (input_location, "parameter passing for argument of type "
+			"%qT changed in GCC 9.1", type);
+	      ++ncrn;
+	      gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	    }
 	}
 
       /* If an argument with an SVE mode needs to be shifted up to the
@@ -7811,13 +7841,19 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
 
-  if (aarch64_function_arg_alignment (mode, type, &abi_break)
-      == 16 * BITS_PER_UNIT)
+  if (warn_pcs_change
+      && abi_break_packed
+      && ((abi_break_packed >= 16 * BITS_PER_UNIT)
+	  != (alignment >= 16 * BITS_PER_UNIT)))
+    inform (input_location, "parameter passing for argument of type "
+	    "%qT changed in GCC 13.1", type);
+
+  if (alignment == 16 * BITS_PER_UNIT)
     {
       int new_size = ROUND_UP (pcum->aapcs_stack_size, 16 / UNITS_PER_WORD);
       if (pcum->aapcs_stack_size != new_size)
 	{
-	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
+	  if (warn_pcs_change && abi_break)
 	    inform (input_location, "parameter passing for argument of type "
 		    "%qT changed in GCC 9.1", type);
 	  pcum->aapcs_stack_size = new_size;
@@ -7934,17 +7970,13 @@ static unsigned int
 aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int abi_break;
+  unsigned int abi_break_packed;
   unsigned int alignment = aarch64_function_arg_alignment (mode, type,
-							   &abi_break);
+							   &abi_break,
+							   &abi_break_packed);
+  /* We rely on aarch64_layout_arg and aarch64_gimplify_va_arg_expr
+     to emit warnings about ABI incompatibility.  */
   alignment = MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
-  if (abi_break & warn_psabi)
-    {
-      abi_break = MIN (MAX (abi_break, PARM_BOUNDARY), STACK_BOUNDARY);
-      if (alignment != abi_break)
-	inform (input_location, "parameter passing for argument of type "
-		"%qT changed in GCC 9.1", type);
-    }
-
   return alignment;
 }
 
@@ -8894,18 +8926,72 @@ aarch64_return_address_signing_enabled (void)
   if (crtl->calls_eh_return)
     return false;
 
-  /* If signing scope is AARCH64_FUNCTION_NON_LEAF, we only sign a leaf function
+  /* If signing scope is AARCH_FUNCTION_NON_LEAF, we only sign a leaf function
      if its LR is pushed onto stack.  */
-  return (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL
-	  || (aarch64_ra_sign_scope == AARCH64_FUNCTION_NON_LEAF
+  return (aarch_ra_sign_scope == AARCH_FUNCTION_ALL
+	  || (aarch_ra_sign_scope == AARCH_FUNCTION_NON_LEAF
 	      && known_ge (cfun->machine->frame.reg_offset[LR_REGNUM], 0)));
 }
 
+/* Only used by the arm backend.  */
+void aarch_bti_arch_check (void)
+{}
+
 /* Return TRUE if Branch Target Identification Mechanism is enabled.  */
 bool
-aarch64_bti_enabled (void)
+aarch_bti_enabled (void)
 {
-  return (aarch64_enable_bti == 1);
+  return (aarch_enable_bti == 1);
+}
+
+/* Check if INSN is a BTI J insn.  */
+bool
+aarch_bti_j_insn_p (rtx_insn *insn)
+{
+  if (!insn || !INSN_P (insn))
+    return false;
+
+  rtx pat = PATTERN (insn);
+  return GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == UNSPECV_BTI_J;
+}
+
+/* Check if X (or any sub-rtx of X) is a PACIASP/PACIBSP instruction.  */
+bool
+aarch_pac_insn_p (rtx x)
+{
+  if (!INSN_P (x))
+    return false;
+
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, PATTERN (x), ALL)
+    {
+      rtx sub = *iter;
+      if (sub && GET_CODE (sub) == UNSPEC)
+	{
+	  int unspec_val = XINT (sub, 1);
+	  switch (unspec_val)
+	    {
+	    case UNSPEC_PACIASP:
+            case UNSPEC_PACIBSP:
+	      return true;
+
+	    default:
+	      return false;
+	    }
+	  iter.skip_subrtxes ();
+	}
+    }
+  return false;
+}
+
+rtx aarch_gen_bti_c (void)
+{
+  return gen_bti_c ();
+}
+
+rtx aarch_gen_bti_j (void)
+{
+  return gen_bti_j ();
 }
 
 /* The caller is going to use ST1D or LD1D to save or restore an SVE
@@ -9897,12 +9983,12 @@ aarch64_expand_prologue (void)
   /* Sign return address for functions.  */
   if (aarch64_return_address_signing_enabled ())
     {
-      switch (aarch64_ra_sign_key)
+      switch (aarch_ra_sign_key)
 	{
-	  case AARCH64_KEY_A:
+	  case AARCH_KEY_A:
 	    insn = emit_insn (gen_paciasp ());
 	    break;
-	  case AARCH64_KEY_B:
+	  case AARCH_KEY_B:
 	    insn = emit_insn (gen_pacibsp ());
 	    break;
 	  default:
@@ -10203,12 +10289,12 @@ aarch64_expand_epilogue (bool for_sibcall)
   if (aarch64_return_address_signing_enabled ()
       && (for_sibcall || !TARGET_ARMV8_3))
     {
-      switch (aarch64_ra_sign_key)
+      switch (aarch_ra_sign_key)
 	{
-	  case AARCH64_KEY_A:
+	  case AARCH_KEY_A:
 	    insn = emit_insn (gen_autiasp ());
 	    break;
-	  case AARCH64_KEY_B:
+	  case AARCH_KEY_B:
 	    insn = emit_insn (gen_autibsp ());
 	    break;
 	  default:
@@ -10287,7 +10373,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   rtx_insn *insn;
   const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
 
-  if (aarch64_bti_enabled ())
+  if (aarch_bti_enabled ())
     emit_insn (gen_bti_c());
 
   reload_completed = 1;
@@ -12936,7 +13022,7 @@ aarch64_output_casesi (rtx *operands)
 int
 aarch64_uxt_size (int shift, HOST_WIDE_INT mask)
 {
-  if (shift >= 0 && shift <= 3)
+  if (shift >= 0 && shift <= 4)
     {
       int size;
       for (size = 8; size <= 32; size *= 2)
@@ -15249,7 +15335,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   if (!new_stmt)
     return false;
 
-  gsi_replace (gsi, new_stmt, true);
+  gsi_replace (gsi, new_stmt, false);
   return true;
 }
 
@@ -17233,12 +17319,12 @@ static void initialize_aarch64_code_model (struct gcc_options *);
 
 /* Parse the TO_PARSE string and put the architecture struct that it
    selects into RES and the architectural features into ISA_FLAGS.
-   Return an aarch64_parse_opt_result describing the parse result.
+   Return an aarch_parse_opt_result describing the parse result.
    If there is an error parsing, RES and ISA_FLAGS are left unchanged.
    When the TO_PARSE string contains an invalid extension,
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_arch (const char *to_parse, const struct processor **res,
 		    aarch64_feature_flags *isa_flags,
 		    std::string *invalid_extension)
@@ -17255,7 +17341,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
     len = strlen (to_parse);
 
   if (len == 0)
-    return AARCH64_PARSE_MISSING_ARG;
+    return AARCH_PARSE_MISSING_ARG;
 
 
   /* Loop through the list of supported ARCHes to find a match.  */
@@ -17269,32 +17355,32 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
 	  if (ext != NULL)
 	    {
 	      /* TO_PARSE string contains at least one extension.  */
-	      enum aarch64_parse_opt_result ext_res
+	      enum aarch_parse_opt_result ext_res
 		= aarch64_parse_extension (ext, &isa_temp, invalid_extension);
 
-	      if (ext_res != AARCH64_PARSE_OK)
+	      if (ext_res != AARCH_PARSE_OK)
 		return ext_res;
 	    }
 	  /* Extension parsing was successful.  Confirm the result
 	     arch and ISA flags.  */
 	  *res = arch;
 	  *isa_flags = isa_temp;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* ARCH name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse the TO_PARSE string and put the result tuning in RES and the
-   architecture flags in ISA_FLAGS.  Return an aarch64_parse_opt_result
+   architecture flags in ISA_FLAGS.  Return an aarch_parse_opt_result
    describing the parse result.  If there is an error parsing, RES and
    ISA_FLAGS are left unchanged.
    When the TO_PARSE string contains an invalid extension,
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_cpu (const char *to_parse, const struct processor **res,
 		   aarch64_feature_flags *isa_flags,
 		   std::string *invalid_extension)
@@ -17311,7 +17397,7 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
     len = strlen (to_parse);
 
   if (len == 0)
-    return AARCH64_PARSE_MISSING_ARG;
+    return AARCH_PARSE_MISSING_ARG;
 
 
   /* Loop through the list of supported CPUs to find a match.  */
@@ -17324,29 +17410,29 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
 	  if (ext != NULL)
 	    {
 	      /* TO_PARSE string contains at least one extension.  */
-	      enum aarch64_parse_opt_result ext_res
+	      enum aarch_parse_opt_result ext_res
 		= aarch64_parse_extension (ext, &isa_temp, invalid_extension);
 
-	      if (ext_res != AARCH64_PARSE_OK)
+	      if (ext_res != AARCH_PARSE_OK)
 		return ext_res;
 	    }
 	  /* Extension parsing was successfull.  Confirm the result
 	     cpu and ISA flags.  */
 	  *res = cpu;
 	  *isa_flags = isa_temp;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* CPU name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse the TO_PARSE string and put the cpu it selects into RES.
-   Return an aarch64_parse_opt_result describing the parse result.
+   Return an aarch_parse_opt_result describing the parse result.
    If the parsing fails the RES does not change.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_tune (const char *to_parse, const struct processor **res)
 {
   const struct processor *cpu;
@@ -17357,12 +17443,12 @@ aarch64_parse_tune (const char *to_parse, const struct processor **res)
       if (strcmp (cpu->name, to_parse) == 0)
 	{
 	  *res = cpu;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* CPU name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse TOKEN, which has length LENGTH to see if it is an option
@@ -17953,22 +18039,22 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
 		       aarch64_feature_flags *isa_flags)
 {
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_cpu (str, res, isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing cpu name in %<-mcpu=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-mcpu%>", str);
 	aarch64_print_hint_for_core (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs in %<-mcpu=%s%>",
 	       invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18053,110 +18139,6 @@ aarch64_validate_sls_mitigation (const char *const_str)
   free (str_root);
 }
 
-/* Parses CONST_STR for branch protection features specified in
-   aarch64_branch_protect_types, and set any global variables required.  Returns
-   the parsing result and assigns LAST_STR to the last processed token from
-   CONST_STR so that it can be used for error reporting.  */
-
-static enum
-aarch64_parse_opt_result aarch64_parse_branch_protection (const char *const_str,
-							  char** last_str)
-{
-  char *str_root = xstrdup (const_str);
-  char* token_save = NULL;
-  char *str = strtok_r (str_root, "+", &token_save);
-  enum aarch64_parse_opt_result res = AARCH64_PARSE_OK;
-  if (!str)
-    res = AARCH64_PARSE_MISSING_ARG;
-  else
-    {
-      char *next_str = strtok_r (NULL, "+", &token_save);
-      /* Reset the branch protection features to their defaults.  */
-      aarch64_handle_no_branch_protection (NULL, NULL);
-
-      while (str && res == AARCH64_PARSE_OK)
-	{
-	  const aarch64_branch_protect_type* type = aarch64_branch_protect_types;
-	  bool found = false;
-	  /* Search for this type.  */
-	  while (type && type->name && !found && res == AARCH64_PARSE_OK)
-	    {
-	      if (strcmp (str, type->name) == 0)
-		{
-		  found = true;
-		  res = type->handler (str, next_str);
-		  str = next_str;
-		  next_str = strtok_r (NULL, "+", &token_save);
-		}
-	      else
-		type++;
-	    }
-	  if (found && res == AARCH64_PARSE_OK)
-	    {
-	      bool found_subtype = true;
-	      /* Loop through each token until we find one that isn't a
-		 subtype.  */
-	      while (found_subtype)
-		{
-		  found_subtype = false;
-		  const aarch64_branch_protect_type *subtype = type->subtypes;
-		  /* Search for the subtype.  */
-		  while (str && subtype && subtype->name && !found_subtype
-			  && res == AARCH64_PARSE_OK)
-		    {
-		      if (strcmp (str, subtype->name) == 0)
-			{
-			  found_subtype = true;
-			  res = subtype->handler (str, next_str);
-			  str = next_str;
-			  next_str = strtok_r (NULL, "+", &token_save);
-			}
-		      else
-			subtype++;
-		    }
-		}
-	    }
-	  else if (!found)
-	    res = AARCH64_PARSE_INVALID_ARG;
-	}
-    }
-  /* Copy the last processed token into the argument to pass it back.
-    Used by option and attribute validation to print the offending token.  */
-  if (last_str)
-    {
-      if (str) strcpy (*last_str, str);
-      else *last_str = NULL;
-    }
-  if (res == AARCH64_PARSE_OK)
-    {
-      /* If needed, alloc the accepted string then copy in const_str.
-	Used by override_option_after_change_1.  */
-      if (!accepted_branch_protection_string)
-	accepted_branch_protection_string = (char *) xmalloc (
-						      BRANCH_PROTECT_STR_MAX
-							+ 1);
-      strncpy (accepted_branch_protection_string, const_str,
-		BRANCH_PROTECT_STR_MAX + 1);
-      /* Forcibly null-terminate.  */
-      accepted_branch_protection_string[BRANCH_PROTECT_STR_MAX] = '\0';
-    }
-  return res;
-}
-
-static bool
-aarch64_validate_mbranch_protection (const char *const_str)
-{
-  char *str = (char *) xmalloc (strlen (const_str));
-  enum aarch64_parse_opt_result res =
-    aarch64_parse_branch_protection (const_str, &str);
-  if (res == AARCH64_PARSE_INVALID_ARG)
-    error ("invalid argument %<%s%> for %<-mbranch-protection=%>", str);
-  else if (res == AARCH64_PARSE_MISSING_ARG)
-    error ("missing argument for %<-mbranch-protection=%>");
-  free (str);
-  return res == AARCH64_PARSE_OK;
-}
-
 /* Validate a command-line -march option.  Parse the arch and extensions
    (if any) specified in STR and throw errors if appropriate.  Put the
    results, if they are valid, in RES and ISA_FLAGS.  Return whether the
@@ -18167,27 +18149,27 @@ aarch64_validate_march (const char *str, const struct processor **res,
 			aarch64_feature_flags *isa_flags)
 {
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_arch (str, res, isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing arch name in %<-march=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-march%>", str);
 	aarch64_print_hint_for_arch (str);
 	/* A common user error is confusing -march and -mcpu.
 	   If the -march string matches a known CPU suggest -mcpu.  */
 	parse_res = aarch64_parse_cpu (str, res, isa_flags, &invalid_extension);
-	if (parse_res == AARCH64_PARSE_OK)
+	if (parse_res == AARCH_PARSE_OK)
 	  inform (input_location, "did you mean %<-mcpu=%s%>?", str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs in %<-march=%s%>",
 	       invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18207,18 +18189,18 @@ aarch64_validate_march (const char *str, const struct processor **res,
 static bool
 aarch64_validate_mtune (const char *str, const struct processor **res)
 {
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_tune (str, res);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing cpu name in %<-mtune=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-mtune%>", str);
 	aarch64_print_hint_for_core (str);
 	break;
@@ -18280,7 +18262,7 @@ aarch64_override_options (void)
     aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
 
   if (aarch64_branch_protection_string)
-    aarch64_validate_mbranch_protection (aarch64_branch_protection_string);
+    aarch_validate_mbranch_protection (aarch64_branch_protection_string);
 
   /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
      If either of -march or -mtune is given, they override their
@@ -18333,12 +18315,12 @@ aarch64_override_options (void)
 
   selected_tune = tune ? tune->ident : cpu->ident;
 
-  if (aarch64_enable_bti == 2)
+  if (aarch_enable_bti == 2)
     {
 #ifdef TARGET_ENABLE_BTI
-      aarch64_enable_bti = 1;
+      aarch_enable_bti = 1;
 #else
-      aarch64_enable_bti = 0;
+      aarch_enable_bti = 0;
 #endif
     }
 
@@ -18348,9 +18330,9 @@ aarch64_override_options (void)
   if (!TARGET_ILP32 && accepted_branch_protection_string == NULL)
     {
 #ifdef TARGET_ENABLE_PAC_RET
-      aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+      aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
 #else
-      aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
+      aarch_ra_sign_scope = AARCH_FUNCTION_NONE;
 #endif
     }
 
@@ -18364,7 +18346,7 @@ aarch64_override_options (void)
   /* Convert -msve-vector-bits to a VG count.  */
   aarch64_sve_vg = aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits);
 
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE && TARGET_ILP32)
     sorry ("return address signing is only supported for %<-mabi=lp64%>");
 
   /* The pass to insert speculation tracking runs before
@@ -18579,10 +18561,10 @@ aarch64_handle_attr_arch (const char *str)
   const struct processor *tmp_arch = NULL;
   std::string invalid_extension;
   aarch64_feature_flags tmp_flags;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_arch (str, &tmp_arch, &tmp_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_arch);
       selected_arch = tmp_arch->arch;
@@ -18592,14 +18574,14 @@ aarch64_handle_attr_arch (const char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing name in %<target(\"arch=\")%> pragma or attribute");
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"arch=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_arch (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %s of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18619,10 +18601,10 @@ aarch64_handle_attr_cpu (const char *str)
   const struct processor *tmp_cpu = NULL;
   std::string invalid_extension;
   aarch64_feature_flags tmp_flags;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_cpu (str, &tmp_cpu, &tmp_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_cpu);
       selected_tune = tmp_cpu->ident;
@@ -18633,14 +18615,14 @@ aarch64_handle_attr_cpu (const char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing name in %<target(\"cpu=\")%> pragma or attribute");
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"cpu=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18658,23 +18640,23 @@ aarch64_handle_attr_cpu (const char *str)
  aarch64_handle_attr_branch_protection (const char* str)
  {
   char *err_str = (char *) xmalloc (strlen (str) + 1);
-  enum aarch64_parse_opt_result res = aarch64_parse_branch_protection (str,
-								      &err_str);
+  enum aarch_parse_opt_result res = aarch_parse_branch_protection (str,
+								   &err_str);
   bool success = false;
   switch (res)
     {
-     case AARCH64_PARSE_MISSING_ARG:
+     case AARCH_PARSE_MISSING_ARG:
        error ("missing argument to %<target(\"branch-protection=\")%> pragma or"
 	      " attribute");
        break;
-     case AARCH64_PARSE_INVALID_ARG:
+     case AARCH_PARSE_INVALID_ARG:
        error ("invalid protection type %qs in %<target(\"branch-protection"
 	      "=\")%> pragma or attribute", err_str);
        break;
-     case AARCH64_PARSE_OK:
+     case AARCH_PARSE_OK:
        success = true;
       /* Fall through.  */
-     case AARCH64_PARSE_INVALID_FEATURE:
+     case AARCH_PARSE_INVALID_FEATURE:
        break;
      default:
        gcc_unreachable ();
@@ -18689,10 +18671,10 @@ static bool
 aarch64_handle_attr_tune (const char *str)
 {
   const struct processor *tmp_tune = NULL;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_tune (str, &tmp_tune);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_tune);
       selected_tune = tmp_tune->ident;
@@ -18701,7 +18683,7 @@ aarch64_handle_attr_tune (const char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"tune=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
@@ -18720,7 +18702,7 @@ aarch64_handle_attr_tune (const char *str)
 static bool
 aarch64_handle_attr_isa_flags (char *str)
 {
-  enum aarch64_parse_opt_result parse_res;
+  enum aarch_parse_opt_result parse_res;
   auto isa_flags = aarch64_asm_isa_flags;
 
   /* We allow "+nothing" in the beginning to clear out all architectural
@@ -18734,7 +18716,7 @@ aarch64_handle_attr_isa_flags (char *str)
   std::string invalid_extension;
   parse_res = aarch64_parse_extension (str, &isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       aarch64_set_asm_isa_flags (isa_flags);
       return true;
@@ -18742,11 +18724,11 @@ aarch64_handle_attr_isa_flags (char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing value in %<target()%> pragma or attribute");
 	break;
 
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	break;
@@ -18995,10 +18977,10 @@ aarch64_process_target_attr (tree args)
 	     leading '+'.  */
 	  aarch64_feature_flags isa_temp = 0;
 	  auto with_plus = std::string ("+") + token;
-	  enum aarch64_parse_opt_result ext_res
+	  enum aarch_parse_opt_result ext_res
 	    = aarch64_parse_extension (with_plus.c_str (), &isa_temp, nullptr);
 
-	  if (ext_res == AARCH64_PARSE_OK)
+	  if (ext_res == AARCH_PARSE_OK)
 	    error ("arch extension %<%s%> should be prefixed by %<+%>",
 		   token);
 	  else
@@ -19693,8 +19675,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   size = int_size_in_bytes (type);
 
   unsigned int abi_break;
+  unsigned int abi_break_packed;
   align
-    = aarch64_function_arg_alignment (mode, type, &abi_break) / BITS_PER_UNIT;
+    = aarch64_function_arg_alignment (mode, type, &abi_break, &abi_break_packed)
+    / BITS_PER_UNIT;
 
   dw_align = false;
   adjust = 0;
@@ -19736,6 +19720,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		      unshare_expr (valist), f_groff, NULL_TREE);
       rsize = ROUND_UP (size, UNITS_PER_WORD);
       nregs = rsize / UNITS_PER_WORD;
+
+      if (align <= 8 && abi_break_packed && warn_psabi)
+	inform (input_location, "parameter passing for argument of type "
+		"%qT changed in GCC 13.1", type);
 
       if (align > 8)
 	{
@@ -22702,7 +22690,7 @@ aarch64_print_patchable_function_entry (FILE *file,
 			       GEN_INT (record_p));
   basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
 
-  if (!aarch64_bti_enabled ()
+  if (!aarch_bti_enabled ()
       || cgraph_node::get (cfun->decl)->only_called_directly_p ())
     {
       /* Emit the patchable_area at the beginning of the function.  */
@@ -22764,7 +22752,7 @@ void
 aarch64_post_cfi_startproc (FILE *f, tree ignored ATTRIBUTE_UNUSED)
 {
   if (cfun->machine->frame.laid_out && aarch64_return_address_signing_enabled ()
-      && aarch64_ra_sign_key == AARCH64_KEY_B)
+      && aarch_ra_sign_key == AARCH_KEY_B)
 	asm_fprintf (f, "\t.cfi_b_key_frame\n");
 }
 
@@ -24395,7 +24383,8 @@ aarch64_vectorize_can_special_div_by_constant (enum tree_code code,
       || !TYPE_UNSIGNED (vectype))
     return false;
 
-  unsigned int flags = aarch64_classify_vector_mode (TYPE_MODE (vectype));
+  machine_mode mode = TYPE_MODE (vectype);
+  unsigned int flags = aarch64_classify_vector_mode (mode);
   if ((flags & VEC_ANY_SVE) && !TARGET_SVE2)
     return false;
 
@@ -24411,15 +24400,14 @@ aarch64_vectorize_can_special_div_by_constant (enum tree_code code,
   if (in0 == NULL_RTX && in1 == NULL_RTX)
     return true;
 
-  if (!VECTOR_TYPE_P (vectype))
-   return false;
-
   gcc_assert (output);
 
-  if (!*output)
-    *output = gen_reg_rtx (TYPE_MODE (vectype));
-
-  emit_insn (gen_aarch64_bitmask_udiv3 (TYPE_MODE (vectype), *output, in0, in1));
+  expand_operand ops[3];
+  create_output_operand (&ops[0], *output, mode);
+  create_input_operand (&ops[1], in0, mode);
+  create_fixed_operand (&ops[2], in1);
+  expand_insn (insn_code, 3, ops);
+  *output = ops[0].value;
   return true;
 }
 
@@ -27173,10 +27161,10 @@ aarch64_file_end_indicate_exec_stack ()
   file_end_indicate_exec_stack ();
 
   unsigned feature_1_and = 0;
-  if (aarch64_bti_enabled ())
+  if (aarch_bti_enabled ())
     feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_BTI;
 
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
     feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_PAC;
 
   if (feature_1_and)
@@ -27794,6 +27782,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH aarch64_reassociation_width
+
+#undef TARGET_DWARF_FRAME_REG_MODE
+#define TARGET_DWARF_FRAME_REG_MODE aarch64_dwarf_frame_reg_mode
 
 #undef TARGET_PROMOTED_TYPE
 #define TARGET_PROMOTED_TYPE aarch64_promoted_type

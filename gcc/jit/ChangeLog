@@ -1,3 +1,18 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* jit-w32.h: Define `WIN32_LEAN_AND_MEAN` before <windows.h>.
+
+2022-12-21  Martin Liska  <mliska@suse.cz>
+
+	* jit-playback.h: Use unused attribute.
+
+2022-12-14  Antoni Boucher  <bouanto@zoho.com>
+	    Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	PR jit/108078
+	* jit-recording.h: Add vector_type::is_same_type_as method
+
 2022-12-07  Antoni Boucher  <bouanto@zoho.com>
 	    Guillaume Gomez  <guillaume1.gomez@gmail.com>
 
@@ -4091,7 +4106,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2022 Free Software Foundation, Inc.
+Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

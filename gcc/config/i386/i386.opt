@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2022 Free Software Foundation, Inc.
+; Copyright (C) 2005-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -419,6 +419,10 @@ Set 80387 floating-point precision to 64-bit.
 mpc80
 Target RejectNegative
 Set 80387 floating-point precision to 80-bit.
+
+mdaz-ftz
+Target
+Set the FTZ and DAZ Flags.
 
 mpreferred-stack-boundary=
 Target RejectNegative Joined UInteger Var(ix86_preferred_stack_boundary_arg)
@@ -1205,7 +1209,7 @@ Support MWAIT and MONITOR built-in functions and code generation.
 
 mavx512fp16
 Target Mask(ISA2_AVX512FP16) Var(ix86_isa_flags2) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512FP16 built-in functions and code generation.
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512-FP16 built-in functions and code generation.
 
 mdirect-extern-access
 Target Var(ix86_direct_extern_access) Init(1)

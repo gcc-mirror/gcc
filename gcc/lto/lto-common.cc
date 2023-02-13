@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -1189,6 +1189,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	  compare_values (DECL_FIELD_ABI_IGNORED);
 	  compare_values (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD);
 	  compare_values (DECL_OFFSET_ALIGN);
+	  compare_values (DECL_NOT_FLEXARRAY);
 	}
       else if (code == VAR_DECL)
 	{
@@ -2118,6 +2119,17 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 	  if (strcmp (lto_resolution_str[j], r_str) == 0)
 	    {
 	      r = (enum ld_plugin_symbol_resolution) j;
+	      /* Incremental linking together with -fwhole-program may seem
+		 somewhat contradictionary (as the point of incremental linking
+		 is to allow re-linking with more symbols later) but it is
+		 used to build LTO kernel.  We want to hide all symbols that
+		 are not explicitely marked as exported and thus turn
+		 LDPR_PREVAILING_DEF_IRONLY_EXP
+		 to LDPR_PREVAILING_DEF_IRONLY.  */
+	      if (flag_whole_program
+		  && flag_incremental_link == INCREMENTAL_LINK_NOLTO
+		  && r == LDPR_PREVAILING_DEF_IRONLY_EXP)
+		r = LDPR_PREVAILING_DEF_IRONLY;
 	      break;
 	    }
 	}

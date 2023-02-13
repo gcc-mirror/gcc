@@ -1,0 +1,128 @@
+(* M2Reserved.def determines is a token is a reserved word.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Reserved ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2Reserved
+   Date       : 15/5/87
+   Description: implements a procedure to determine if a symbol is a
+                Modula-2 reserved word and provides conversion between
+                toktype and the equivalent stringed, Name.
+*)
+
+FROM NameKey IMPORT Name ;
+
+EXPORT QUALIFIED IsReserved, tokToTok,
+
+   NulTok, PlusTok, MinusTok, TimesTok, DivideTok, BecomesTok,
+   AmbersandTok, PeriodTok, CommaTok, SemiColonTok, LParaTok,
+   LSBraTok, LCBraTok, UpArrowTok, SingleQuoteTok, EqualTok,
+   HashTok, LessTok, GreaterTok, LessGreaterTok, LessEqualTok,
+   GreaterEqualTok, PeriodPeriodTok, ColonTok, RParaTok,
+   RSBraTok, RCBraTok, BarTok, DoubleQuotesTok,
+
+   AndTok, ArrayTok, BeginTok, ByTok, CaseTok, ConstTok,
+   DefinitionTok, DivTok, DoTok, ElseTok, ElsifTok, EndTok,
+   ExceptTok,
+   ExitTok, ExportTok, FinallyTok, ForTok, FromTok, IfTok,
+   ImplementationTok, ImportTok, InTok, LoopTok, ModTok,
+   ModuleTok, NotTok, OfTok, OrTok,
+   PackedSetTok, PointerTok, ProcedureTok,
+   QualifiedTok, UnQualifiedTok, RecordTok, RetryTok,
+   RemTok, RepeatTok,
+   ReturnTok, SetTok, ThenTok, ToTok, TypeTok, UntilTok, VarTok,
+   WhileTok, WithTok,
+
+   (* additional tokens which extend PIM Modula-2 slightly *)
+   EofTok, AsmTok, VolatileTok, DateTok, LineTok, FileTok,
+   AttributeTok, BuiltinTok, InlineTok,
+   toktype ;
+
+TYPE
+   toktype = (eoftok, plustok, minustok, timestok, dividetok,
+              becomestok, ambersandtok, periodtok, commatok,
+              semicolontok, lparatok, rparatok, lsbratok, rsbratok,
+              lcbratok, rcbratok, uparrowtok, singlequotetok,
+              equaltok, hashtok, lesstok, greatertok, lessgreatertok,
+              lessequaltok, greaterequaltok,
+              ldirectivetok, rdirectivetok,
+              periodperiodtok,
+              colontok, doublequotestok, bartok, andtok,
+              arraytok, begintok, bytok, casetok, consttok,
+              definitiontok, divtok, dotok, elsetok, elsiftok,
+              endtok, excepttok, exittok, exporttok, finallytok,
+              fortok, fromtok, iftok, implementationtok,
+              importtok, intok, looptok, modtok,
+              moduletok, nottok, oftok, ortok,
+              packedsettok, pointertok, proceduretok,
+              qualifiedtok, unqualifiedtok,
+              recordtok, remtok, repeattok, retrytok, returntok,
+              settok, thentok,
+              totok, typetok, untiltok, vartok, whiletok, withtok,
+              asmtok, volatiletok, periodperiodperiodtok,
+              datetok, linetok, filetok,
+              attributetok, builtintok, inlinetok,
+              integertok, identtok, realtok, stringtok,
+              virtualrangetok) ;
+
+VAR
+   NulTok, PlusTok, MinusTok, TimesTok, DivideTok, BecomesTok,
+   AmbersandTok, PeriodTok, CommaTok, SemiColonTok, LParaTok,
+   LSBraTok, LCBraTok, UpArrowTok, SingleQuoteTok, EqualTok,
+   HashTok, LessTok, GreaterTok, LessGreaterTok, LessEqualTok,
+   GreaterEqualTok, LDirectiveTok, RDirectiveTok,
+   PeriodPeriodTok, ColonTok, RParaTok,
+   RSBraTok, RCBraTok, BarTok, DoubleQuotesTok,
+
+   AndTok, ArrayTok, BeginTok, ByTok, CaseTok, ConstTok,
+   DefinitionTok, DivTok, DoTok, ElseTok, ElsifTok, EndTok,
+   ExceptTok, ExitTok, ExportTok, FinallyTok, ForTok, FromTok,
+   IfTok, ImplementationTok, ImportTok, InTok, LoopTok, ModTok,
+   ModuleTok, NotTok, OfTok, OrTok,
+   PackedSetTok, PointerTok, ProcedureTok,
+   QualifiedTok, UnQualifiedTok, RecordTok, RemTok, RepeatTok,
+   RetryTok, ReturnTok, SetTok, ThenTok, ToTok, TypeTok,
+   UntilTok, VarTok, WhileTok, WithTok,
+
+   EofTok, AsmTok, VolatileTok,
+   DateTok, LineTok, FileTok,
+   AttributeTok, BuiltinTok, InlineTok: Name ;
+
+
+(*
+   IsReserved - returns TRUE if the symbol, Name, is a reserved word.
+                If TRUE it also sets tok to the appropriate enumerated
+                value.
+*)
+
+PROCEDURE IsReserved (n: Name; VAR tok: toktype) : BOOLEAN ;
+
+
+(*
+   tokToTok - returns a Tok given the enumerated variable, t.
+*)
+
+PROCEDURE tokToTok (t: toktype) : Name ;
+
+
+END M2Reserved.

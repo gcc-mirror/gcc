@@ -1,5 +1,5 @@
 /* Utility functions for the analyzer.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -93,7 +93,9 @@ class bounded_ranges_manager;
 class pending_diagnostic;
 class pending_note;
 struct event_loc_info;
-class state_change_event;
+class checker_event;
+  class state_change_event;
+  class warning_event;
 class checker_path;
 class extrinsic_state;
 class sm_state_map;
@@ -123,6 +125,8 @@ class call_summary;
 class call_summary_replay;
 struct per_function_data;
 struct interesting_t;
+
+class feasible_node;
 
 /* Forward decls of functions.  */
 

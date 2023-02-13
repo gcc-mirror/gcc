@@ -1,5 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GCC compiler
-;;   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+;;   Copyright (C) 1992-2023 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -10360,7 +10360,23 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; doubleword loads and stores are not guaranteed to be atomic
 ;; when referencing the I/O address space.
 
-;; These patterns are at the bottom so the non atomic versions are preferred.
+;; Atomic and sync libcalls use different lock sets.  Great care is
+;; needed if both are used in a single application.
+
+;; Atomic load and store libcalls are enabled by the -matomic-libcalls
+;; option.  This option is not enabled by default as the generated
+;; libcalls depend on libatomic which is not built until the end of
+;; the gcc build.  For loads, we only need an atomic libcall for DImode.
+;; Sync libcalls are not generated when atomic libcalls are enabled.
+
+;; Sync libcalls are enabled by default when supported.  They can be
+;; disabled by the -fno-sync-libcalls option.  Sync libcalls always
+;; use a single memory store in their implementation, even for DImode.
+;; DImode stores are done using either std or fstd.  Thus, we only
+;; need a sync load libcall for DImode when we don't have an atomic
+;; processor load available for the mode (TARGET_SOFT_FLOAT).
+
+;; Implement atomic QImode store using exchange.
 
 (define_expand "atomic_storeqi"
   [(match_operand:QI 0 "memory_operand")                ;; memory
@@ -10368,19 +10384,30 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (match_operand:SI 2 "const_int_operand")]            ;; model
   ""
 {
-  if (TARGET_SYNC_LIBCALL)
-    {
-      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, QImode);
-      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+  rtx addr, libfunc;
 
+  if (TARGET_SYNC_LIBCALLS)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      libfunc = optab_libfunc (sync_lock_test_and_set_optab, QImode);
       emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
 			 operands[1], QImode);
       DONE;
     }
+
+  if (TARGET_ATOMIC_LIBCALLS)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      libfunc = init_one_libfunc ("__atomic_exchange_1");
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
+			 operands[1], QImode);
+      DONE;
+    }
+
   FAIL;
 })
 
-;; Implement atomic HImode stores using exchange.
+;; Implement atomic HImode store using exchange.
 
 (define_expand "atomic_storehi"
   [(match_operand:HI 0 "memory_operand")                ;; memory
@@ -10388,15 +10415,26 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (match_operand:SI 2 "const_int_operand")]            ;; model
   ""
 {
-  if (TARGET_SYNC_LIBCALL)
-    {
-      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, HImode);
-      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+  rtx addr, libfunc;
 
+  if (TARGET_SYNC_LIBCALLS)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      libfunc = optab_libfunc (sync_lock_test_and_set_optab, HImode);
       emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
 			 operands[1], HImode);
       DONE;
     }
+
+  if (TARGET_ATOMIC_LIBCALLS)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      libfunc = init_one_libfunc ("__atomic_exchange_2");
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
+			 operands[1], HImode);
+      DONE;
+    }
+
   FAIL;
 })
 
@@ -10408,19 +10446,38 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (match_operand:SI 2 "const_int_operand")]            ;; model
   ""
 {
-  if (TARGET_SYNC_LIBCALL)
-    {
-      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, SImode);
-      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+  rtx addr, libfunc;
 
+  if (TARGET_SYNC_LIBCALLS)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      libfunc = optab_libfunc (sync_lock_test_and_set_optab, SImode);
       emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
 			 operands[1], SImode);
       DONE;
     }
+
+  if (TARGET_ATOMIC_LIBCALLS)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      libfunc = init_one_libfunc ("__atomic_exchange_4");
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
+			 operands[1], SImode);
+      DONE;
+    }
+
   FAIL;
 })
 
 ;; Implement atomic DImode load.
+
+;; We need an atomic or sync libcall whenever the processor load or
+;; store used for DImode is not atomic.  The 32-bit libatomic
+;; implementation uses a pair of stw instructions.  They are not
+;; atomic, so we need to call __atomic_load_8.  The linux libgcc
+;; sync implementation uses a std or fstd instruction.  They are
+;; atomic, so we only need to call __sync_load_8 when the load
+;; operation would not be atomic (e.g., 32-bit TARGET_SOFT_FLOAT).
 
 (define_expand "atomic_loaddi"
   [(match_operand:DI 0 "register_operand")              ;; val out
@@ -10429,12 +10486,35 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
 {
   enum memmodel model;
+  rtx addr, libfunc;
 
-  if (TARGET_64BIT || TARGET_SOFT_FLOAT)
+  if (TARGET_64BIT)
     FAIL;
 
+  if (TARGET_SYNC_LIBCALLS && MAX_SYNC_LIBFUNC_SIZE >= 8 && TARGET_SOFT_FLOAT)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[1], 0));
+      libfunc = init_one_libfunc ("__sync_load_8");
+      emit_library_call_value (libfunc, operands[0], LCT_NORMAL, DImode,
+			       addr, Pmode);
+      DONE;
+    }
+
+  if (TARGET_ATOMIC_LIBCALLS && TARGET_SOFT_FLOAT)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[1], 0));
+      libfunc = init_one_libfunc ("__atomic_load_8");
+      emit_library_call_value (libfunc, operands[0], LCT_NORMAL, DImode,
+			       addr, Pmode);
+      DONE;
+    }
+
+  if (TARGET_SOFT_FLOAT)
+    FAIL;
+
+  /* Fallback to processor load with barriers.  */
   model = memmodel_from_int (INTVAL (operands[2]));
-  operands[1] = force_reg (SImode, XEXP (operands[1], 0));
+  operands[1] = force_reg (Pmode, XEXP (operands[1], 0));
   if (is_mm_seq_cst (model))
     expand_mem_thread_fence (model);
   emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1]));
@@ -10460,12 +10540,21 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
 {
   enum memmodel model;
+  rtx addr, libfunc;
 
-  if (TARGET_SYNC_LIBCALL)
+  if (TARGET_SYNC_LIBCALLS && MAX_SYNC_LIBFUNC_SIZE >= 8)
     {
-      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, DImode);
-      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      libfunc = optab_libfunc (sync_lock_test_and_set_optab, DImode);
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
+			 operands[1], DImode);
+      DONE;
+    }
 
+  if (TARGET_ATOMIC_LIBCALLS)
+    {
+      addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+      libfunc = init_one_libfunc ("__atomic_exchange_8");
       emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
 			 operands[1], DImode);
       DONE;
@@ -10474,8 +10563,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   if (TARGET_64BIT || TARGET_SOFT_FLOAT)
     FAIL;
 
+  /* Fallback to processor store with barriers.  */
   model = memmodel_from_int (INTVAL (operands[2]));
-  operands[0] = force_reg (SImode, XEXP (operands[0], 0));
+  operands[0] = force_reg (Pmode, XEXP (operands[0], 0));
   if (operands[1] != CONST0_RTX (DImode))
     operands[1] = force_reg (DImode, operands[1]);
   expand_mem_thread_fence (model);

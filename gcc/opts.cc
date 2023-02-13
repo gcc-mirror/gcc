@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -1411,6 +1411,14 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_profile_flag = 0;
     }
 
+  if (opts->x_warn_strict_flex_arrays)
+    if (opts->x_flag_strict_flex_arrays == 0)
+      {
+	opts->x_warn_strict_flex_arrays = 0;
+	warning_at (UNKNOWN_LOCATION, 0,
+		    "%<-Wstrict-flex-arrays%> is ignored when"
+		    " %<-fstrict-flex-arrays%> is not present");
+      }
 
   diagnose_options (opts, opts_set, loc);
 }
@@ -2238,7 +2246,14 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		  flags |= sanitizer_opts[i].flag;
 	      }
 	    else
-	      flags &= ~sanitizer_opts[i].flag;
+	      {
+		flags &= ~sanitizer_opts[i].flag;
+		/* Don't always clear SANITIZE_ADDRESS if it was previously
+		   set: -fsanitize=address -fno-sanitize=kernel-address should
+		   leave SANITIZE_ADDRESS set.  */
+		if (flags & (SANITIZE_KERNEL_ADDRESS | SANITIZE_USER_ADDRESS))
+		  flags |= SANITIZE_ADDRESS;
+	      }
 	    found = true;
 	    break;
 	  }

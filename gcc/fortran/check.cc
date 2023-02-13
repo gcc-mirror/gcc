@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -3888,6 +3888,7 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
     {
       b = gfc_get_logical_expr (gfc_logical_4_kind, NULL, 0);
       ap->next->next->next->next->expr = b;
+      ap->next->next->next->next->name = gfc_get_string ("back");
     }
 
   if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
@@ -3969,6 +3970,7 @@ gfc_check_findloc (gfc_actual_arglist *ap)
     {
       b = gfc_get_logical_expr (gfc_logical_4_kind, NULL, 0);
       ap->next->next->next->next->next->expr = b;
+      ap->next->next->next->next->next->name = gfc_get_string ("back");
     }
 
   if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL

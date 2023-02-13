@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -556,6 +556,9 @@ package body Sem is
 
          when N_String_Literal =>
             Analyze_String_Literal (N);
+
+         when N_Interpolated_String_Literal =>
+            Analyze_Interpolated_String_Literal (N);
 
          when N_Subprogram_Body =>
             Analyze_Subprogram_Body (N);

@@ -1,5 +1,5 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> 
    Zdenek Dvorak <dvorakz@suse.cz> and Razya Ladelsky <razya@il.ibm.com>.
 
@@ -1221,8 +1221,11 @@ take_address_of (tree obj, tree type, edge entry,
   uid = DECL_UID (TREE_OPERAND (TREE_OPERAND (*var_p, 0), 0));
   int_tree_map elt;
   elt.uid = uid;
-  int_tree_map *slot = decl_address->find_slot (elt, INSERT);
-  if (!slot->to)
+  int_tree_map *slot = decl_address->find_slot (elt,
+						gsi == NULL
+						? NO_INSERT
+						: INSERT);
+  if (!slot || !slot->to)
     {
       if (gsi == NULL)
 	return NULL;
@@ -3225,6 +3228,9 @@ build_new_reduction (reduction_info_table_type *reduction_list,
   /* Check for OpenMP supported reduction.  */
   switch (reduction_code)
     {
+    case MINUS_EXPR:
+      reduction_code = PLUS_EXPR;
+      /* Fallthru.  */
     case PLUS_EXPR:
     case MULT_EXPR:
     case MAX_EXPR:

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2022 Free Software Foundation, Inc.
+# Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -257,14 +257,25 @@ target_type_format_char='@'
 xm_file=
 md_file=
 
+# Determine Solaris minor version
+case ${target}:`uname -v` in
+  # Only do this on Solaris.  Illumos uses illumos-* instead.
+  *-*-solaris2.11*:11.*)
+    # Restrict to native configurations.
+    if test x$host = x$target; then
+      uname_version="`uname -v`"
+      # Prepend dot as needed below.
+      target_min=".`expr "$uname_version" : '11\.\([0-9]*\)'`"
+    fi
+    ;;
+esac
+
 # Obsolete configurations.
-case ${target} in
-  *)
-  ;;
-  obsoleted-target \
+case ${target}${target_min} in
+    *-*-solaris2.11.[0-3]*		\
  )
     if test "x$enable_obsolete" != xyes; then
-      echo "*** Configuration ${target} is obsolete." >&2
+      echo "*** Configuration ${target}${target_min} is obsolete." >&2
       echo "*** Specify --enable-obsolete to build it anyway." >&2
       echo "*** Support will be REMOVED in the next major release of GCC," >&2
       echo "*** unless a maintainer comes forward." >&2
@@ -338,7 +349,7 @@ aarch64*-*-*)
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
 	d_target_objs="aarch64-d.o"
-	extra_objs="aarch64-builtins.o aarch-common.o aarch64-sve-builtins.o aarch64-sve-builtins-shapes.o aarch64-sve-builtins-base.o aarch64-sve-builtins-sve2.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch64-bti-insert.o aarch64-cc-fusion.o"
+	extra_objs="aarch64-builtins.o aarch-common.o aarch64-sve-builtins.o aarch64-sve-builtins-shapes.o aarch64-sve-builtins-base.o aarch64-sve-builtins-sve2.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch-bti-insert.o aarch64-cc-fusion.o"
 	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.cc \$(srcdir)/config/aarch64/aarch64-sve-builtins.h \$(srcdir)/config/aarch64/aarch64-sve-builtins.cc"
 	target_has_targetm_common=yes
 	;;
@@ -362,7 +373,7 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_objs="arm-builtins.o arm-mve-builtins.o aarch-common.o"
+	extra_objs="arm-builtins.o arm-mve-builtins.o aarch-common.o aarch-bti-insert.o"
 	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h arm_cmse.h arm_bf16.h arm_mve_types.h arm_mve.h arm_cde.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
@@ -529,7 +540,7 @@ pru-*-*)
 	;;
 riscv*)
 	cpu_type=riscv
-	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-v.o"
+	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-v.o riscv-vsetvl.o"
 	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o"
 	d_target_objs="riscv-d.o"
 	extra_headers="riscv_vector.h"
@@ -1646,7 +1657,7 @@ csky-*-*)
 	fi
 	if test x${with_float} != x; then
 	    case ${with_float} in
-		soft | hard) ;;
+		soft | hard | softfp) ;;
 		*) echo
 		    "Unknown floating point type used in --with-float=$with_float"
 		    exit 1
@@ -1672,7 +1683,12 @@ csky-*-*)
 		;;
 	    csky-*-linux*)
 		tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} csky/csky-linux-elf.h"
-		tmake_file="${tmake_file} csky/t-csky csky/t-csky-linux"
+		tmake_file="${tmake_file} csky/t-csky"
+
+		if test "x${enable_multilib}" = xyes ; then
+		    tm_defines="$tm_defines CSKY_ENABLE_MULTILIB"
+		    tmake_file="${tmake_file} csky/t-csky-linux"
+		fi
 
 		case ${target} in
 		    csky-*-linux-gnu*)
@@ -1996,7 +2012,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
 		;;
 	esac
 	;;
-x86_64-*-linux* | x86_64-*-kfreebsd*-gnu)
+x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-gnu*)
 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h gnu-user.h glibc-stdint.h \
 		 i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h"
 	case ${target} in
@@ -2006,6 +2022,9 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu)
 	  	;;
 	x86_64-*-kfreebsd*-gnu)
 		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
+		;;
+	x86_64-*-gnu*)
+		tm_file="${tm_file} gnu.h i386/gnu64.h"
 		;;
 	esac
 	tmake_file="${tmake_file} i386/t-linux64"
@@ -2444,6 +2463,7 @@ riscv*-*-linux*)
 	*) echo "Unknown value for enable_multilib"; exit 1
 	esac
 	tmake_file="${tmake_file} riscv/t-riscv riscv/t-linux"
+	tm_defines="${tm_defines} TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
 	gnu_ld=yes
 	gas=yes
 	case $target in
@@ -4424,6 +4444,7 @@ case "${target}" in
 				# through to the multilib selector
 				with_float="soft"
 				tmake_file="${tmake_file} ${tmake_profile_file}"
+				tm_file="$tm_file arm/arm-mlib.h"
 				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
 		fi

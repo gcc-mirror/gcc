@@ -1,0 +1,177 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE IOChan;
+
+  (* Types and procedures forming the interface to channels for
+     device-independent data transfer modules
+  *)
+
+IMPORT IOConsts, ChanConsts, SYSTEM;
+
+TYPE
+  ChanId; (* Values of this type are used to identify channels *)
+
+  (* There is one pre-defined value identifying an invalid channel
+     on which no data transfer operations are available.  It may
+     be used to initialize variables of type ChanId.
+  *)
+
+PROCEDURE InvalidChan (): ChanId;
+  (* Returns the value identifying the invalid channel. *)
+
+  (* For each of the following operations, if the device supports
+     the operation on the channel, the behaviour of the procedure
+     conforms with the description below.  The full behaviour is
+     defined for each device module.  If the device does not
+     support the operation on the channel, the behaviour of the
+     procedure is to raise the exception notAvailable.
+  *)
+
+  (* Text operations - these perform any required translation between the
+     internal and external representation of text.
+  *)
+
+PROCEDURE Look (cid: ChanId; VAR ch: CHAR; VAR res: IOConsts.ReadResults);
+  (* If there is a character as the next item in the input stream
+     cid, assigns its value to ch without removing it from the stream;
+     otherwise the value of ch is not defined.  res (and the stored
+     read result) are set to the value allRight, endOfLine, or endOfInput.
+  *)
+
+PROCEDURE Skip (cid: ChanId);
+  (* If the input stream cid has ended, the exception skipAtEnd
+     is raised; otherwise the next character or line mark in cid is
+     removed, and the stored read result is set to the value
+     allRight.
+  *)
+
+PROCEDURE SkipLook (cid: ChanId; VAR ch: CHAR; VAR res: IOConsts.ReadResults);
+  (* If the input stream cid has ended, the exception skipAtEnd is
+     raised; otherwise the next character or line mark in cid is
+     removed.  If there is a character as the next item in cid
+     stream, assigns its value to ch without removing it from the
+     stream.  Otherwise, the value of ch is not defined.  res
+     (and the stored read result) are set to the value allRight,
+     endOfLine, or endOfInput.
+  *)
+
+PROCEDURE WriteLn (cid: ChanId);
+  (* Writes a line mark over the channel cid. *)
+
+PROCEDURE TextRead (cid: ChanId; to: SYSTEM.ADDRESS; maxChars: CARDINAL;
+                    VAR charsRead: CARDINAL);
+  (* Reads at most maxChars characters from the current line in cid,
+     and assigns corresponding values to successive components of
+     an ARRAY OF CHAR variable for which the address of the first
+     component is to. The number of characters read is assigned to charsRead.
+     The stored read result is set to allRight, endOfLine, or endOfInput.
+  *)
+
+PROCEDURE TextWrite (cid: ChanId; from: SYSTEM.ADDRESS;
+                     charsToWrite: CARDINAL);
+  (* Writes a number of characters given by the value of charsToWrite,
+     from successive components of an ARRAY OF CHAR variable for which
+     the address of the first component is from, to the channel cid.
+  *)
+
+  (* Direct raw operations  - these do not effect translation between
+     the internal and external representation of data
+  *)
+
+PROCEDURE RawRead (cid: ChanId; to: SYSTEM.ADDRESS; maxLocs: CARDINAL;
+                   VAR locsRead: CARDINAL);
+  (* Reads at most maxLocs items from cid, and assigns corresponding
+     values to successive components of an ARRAY OF LOC variable for
+     which the address of the first component is to. The number of
+     characters read is assigned to charsRead. The stored read result
+     is set to the value allRight, or endOfInput.
+  *)
+
+PROCEDURE RawWrite (cid: ChanId; from: SYSTEM.ADDRESS; locsToWrite: CARDINAL);
+  (* Writes a number of items given by the value of charsToWrite,
+     from successive components of an ARRAY OF LOC variable for
+     which the address of the first component is from, to the channel cid.
+  *)
+
+  (* Common operations *)
+
+PROCEDURE GetName (cid: ChanId; VAR s: ARRAY OF CHAR);
+  (* Copies to s a name associated with the channel cid, possibly truncated
+     (depending on the capacity of s).
+  *)
+
+PROCEDURE Reset (cid: ChanId);
+  (* Resets the channel cid to a state defined by the device module. *)
+
+PROCEDURE Flush (cid: ChanId);
+  (* Flushes any data buffered by the device module out to the channel cid. *)
+
+  (* Access to read results *)
+
+PROCEDURE SetReadResult (cid: ChanId; res: IOConsts.ReadResults);
+  (* Sets the read result value for the channel cid to the value res. *)
+
+PROCEDURE ReadResult (cid: ChanId): IOConsts.ReadResults;
+  (* Returns the stored read result value for the channel cid.
+     (This is initially the value notKnown).
+  *)
+
+  (* Users can discover which flags actually apply to a channel *)
+
+PROCEDURE CurrentFlags (cid: ChanId): ChanConsts.FlagSet;
+  (* Returns the set of flags that currently apply to the channel cid. *)
+
+  (* The following exceptions are defined for this module and its clients *)
+
+TYPE
+  ChanExceptions =
+    (wrongDevice,      (* device specific operation on wrong device *)
+     notAvailable,     (* operation attempted that is not available on that
+                          channel *)
+     skipAtEnd,        (* attempt to skip data from a stream that has ended *)
+     softDeviceError,  (* device specific recoverable error *)
+     hardDeviceError,  (* device specific non-recoverable error *)
+     textParseError,   (* input data does not correspond to a character or
+                          line mark - optional detection *)
+     notAChannel       (* given value does not identify a channel -
+                          optional detection *)
+    );
+
+PROCEDURE IsChanException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional
+     execution state because of the raising of an exception from
+     ChanExceptions; otherwise returns FALSE.
+  *)
+
+PROCEDURE ChanException (): ChanExceptions;
+  (* If the current coroutine is in the exceptional execution state
+     because of the raising of an exception from ChanExceptions,
+     returns the corresponding enumeration value, and otherwise
+     raises an exception.
+  *)
+
+  (* When a device procedure detects a device error, it raises the
+     exception softDeviceError or hardDeviceError.  If these
+     exceptions are handled, the following facilities may be
+     used to discover an implementation-defined error number for
+     the channel.
+  *)
+
+TYPE
+  DeviceErrNum = INTEGER;
+
+PROCEDURE DeviceError (cid: ChanId): DeviceErrNum;
+  (* If a device error exception has been raised for the channel cid,
+     returns the error number stored by the device module.
+  *)
+
+END IOChan.

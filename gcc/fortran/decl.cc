@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2219,6 +2219,14 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  sym->attr.is_c_interop |= init->ts.is_c_interop;
 	  if (init->ts.is_iso_c)
 	    sym->ts.f90_type = init->ts.f90_type;
+	}
+
+      /* Catch the case:  type(t), parameter :: x = z'1'.  */
+      if (sym->ts.type == BT_DERIVED && init->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Entity %qs at %L is incompatible with a BOZ "
+		     "literal constant", name, &sym->declared_at);
+	  return false;
 	}
 
       /* Add initializer.  Make sure we keep the ranks sane.  */
@@ -5990,10 +5998,14 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 	    }
 	  else
 	    {
-              if (tmp_sym->ts.type == BT_DERIVED || ts->type == BT_DERIVED)
-                gfc_error ("Type declaration %qs at %L is not C "
-                           "interoperable but it is BIND(C)",
-                           tmp_sym->name, &(tmp_sym->declared_at));
+	      if (tmp_sym->ts.type == BT_DERIVED || ts->type == BT_DERIVED
+		  || tmp_sym->ts.type == BT_CLASS || ts->type == BT_CLASS)
+		{
+		  gfc_error ("Type declaration %qs at %L is not C "
+			     "interoperable but it is BIND(C)",
+			     tmp_sym->name, &(tmp_sym->declared_at));
+		  retval = false;
+		}
               else if (warn_c_binding_type)
                 gfc_warning (OPT_Wc_binding_type, "Variable %qs at %L "
                              "may not be a C interoperable "
@@ -8731,7 +8743,9 @@ attr_decl1 (void)
   /* Update symbol table.  DIMENSION attribute is set in
      gfc_set_array_spec().  For CLASS variables, this must be applied
      to the first component, or '_data' field.  */
-  if (sym->ts.type == BT_CLASS && sym->ts.u.derived->attr.is_class)
+  if (sym->ts.type == BT_CLASS
+      && sym->ts.u.derived
+      && sym->ts.u.derived->attr.is_class)
     {
       /* gfc_set_array_spec sets sym->attr not CLASS_DATA(sym)->attr.  Check
 	 for duplicate attribute here.  */

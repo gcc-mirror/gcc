@@ -12,4 +12,4 @@ contains
   end subroutine foo
 end program test
 
-! { dg-output "At line 7 of file .*array_temporaries_2.f90(\n|\r\n|\r)Fortran runtime warning: An array temporary was created for argument 'x' of procedure 'foo'" }
+! { dg-output "At line 7 of file .*array_temporaries_2.f90(\r*\n+)Fortran runtime warning: An array temporary was created for argument 'x' of procedure 'foo'" }

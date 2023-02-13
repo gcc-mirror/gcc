@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,8 +196,8 @@ package Repinfo is
    --    "Object_Size"          :  numerical expression
    --    "Value_Size"           :  numerical expression
    --    "Component_Size"       :  numerical expression
-   --    "Range"                :  array of numbers
-   --    "Small"                :  number
+   --    "Range"                :  array of numerical expressions
+   --    "Small"                :  numerical expression
    --    "Alignment"            :  number
    --    "Convention"           :  string
    --    "Linker_Section"       :  string

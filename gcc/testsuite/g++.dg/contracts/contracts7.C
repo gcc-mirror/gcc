@@ -4,7 +4,7 @@
 // contract failure is switched on
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on" }
-// { dg-output "default std::handle_contract_violation called" }
+// { dg-output "contract violation in function main" }
 
 int main()
 {

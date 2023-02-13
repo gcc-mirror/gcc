@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -698,11 +698,14 @@ package body Exp_Ch4 is
          --  recursion and inappropriate call to Initialize.
 
          --  We don't want to remove side effects when the expression must be
-         --  built in place. In the case of a build-in-place function call,
-         --  that could lead to a duplication of the call, which was already
-         --  substituted for the allocator.
+         --  built in place and we don't need it when there is no storage pool
+         --  or this is a return/secondary stack allocation.
 
-         if not Aggr_In_Place then
+         if not Aggr_In_Place
+           and then Present (Storage_Pool (N))
+           and then not Is_RTE (Storage_Pool (N), RE_RS_Pool)
+           and then not Is_RTE (Storage_Pool (N), RE_SS_Pool)
+         then
             Remove_Side_Effects (Exp);
          end if;
 
@@ -747,7 +750,7 @@ package body Exp_Ch4 is
 
          --  Processing for allocators returning non-interface types
 
-         if not Is_Interface (Directly_Designated_Type (PtrT)) then
+         if not Is_Interface (DesigT) then
             if Aggr_In_Place then
                Temp_Decl :=
                  Make_Object_Declaration (Loc,
@@ -960,8 +963,9 @@ package body Exp_Ch4 is
 
          if Needs_Finalization (DesigT)
            and then Needs_Finalization (T)
-           and then not Aggr_In_Place
            and then not Is_Limited_View (T)
+           and then not Aggr_In_Place
+           and then Nkind (Exp) /= N_Function_Call
            and then not For_Special_Return_Object (N)
          then
             --  An unchecked conversion is needed in the classwide case because
@@ -993,7 +997,7 @@ package body Exp_Ch4 is
          --  component containing the secondary dispatch table of the interface
          --  type.
 
-         if Is_Interface (Directly_Designated_Type (PtrT)) then
+         if Is_Interface (DesigT) then
             Displace_Allocator_Pointer (N);
          end if;
 
@@ -2728,7 +2732,6 @@ package body Exp_Ch4 is
       Len        : Unat;
       J          : Nat;
       Clen       : Node_Id;
-      Decl       : Node_Id;
       Set        : Boolean;
 
    --  Start of processing for Expand_Concatenate
@@ -3255,31 +3258,9 @@ package body Exp_Ch4 is
       Set_Is_Internal       (Ent);
       Set_Debug_Info_Needed (Ent);
 
-      --  If the bound is statically known to be out of range, we do not want
-      --  to abort, we want a warning and a constraint error at run time. Note
-      --  that we have arranged that the result will not be treated as a static
-      --  constant, so we won't get an illegality during the insertion. We also
-      --  enable all checks (in particular range checks) in case the bounds of
-      --  Subtyp_Ind are out of range.
-
-      Decl :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Ent,
-          Object_Definition   => Subtyp_Ind);
-      Insert_Action (Cnode, Decl);
-
-      --  If the result of the concatenation appears as the initializing
-      --  expression of an object declaration, we can just rename the
-      --  result, rather than copying it.
-
-      Set_OK_To_Rename (Ent);
-
       --  If we are concatenating strings and the current scope already uses
       --  the secondary stack, allocate the result also on the secondary stack
       --  to avoid putting too much pressure on the primary stack.
-
-      --  We use an unconstrained allocation, i.e. we also allocate the bounds,
-      --  so that the result can be renamed in all contexts.
 
       --  Don't do this if -gnatd.h is set, as this will break the wrapping of
       --  Cnode in an Expression_With_Actions, see Expand_N_Op_Concat.
@@ -3291,33 +3272,32 @@ package body Exp_Ch4 is
       then
          --  Generate:
          --     subtype Axx is String (<low-bound> .. <high-bound>)
-         --     type Ayy is access String;
+         --     type Ayy is access Axx;
          --     Rxx : Ayy := new <Axx> [storage_pool = ss_pool];
-         --     Sxx : String renames Rxx.all;
+         --     Sxx : Axx renames Rxx.all;
 
          declare
             ConstrT : constant Entity_Id := Make_Temporary (Loc, 'A');
             Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
 
-            Alloc   : Node_Id;
-            Deref   : Node_Id;
-            Temp    : Entity_Id;
+            Alloc : Node_Id;
+            Temp  : Entity_Id;
 
          begin
-            Insert_Action (Decl,
+            Insert_Action (Cnode,
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => ConstrT,
                 Subtype_Indication  => Subtyp_Ind),
               Suppress => All_Checks);
 
-            Freeze_Itype (ConstrT, Decl);
+            Freeze_Itype (ConstrT, Cnode);
 
-            Insert_Action (Decl,
+            Insert_Action (Cnode,
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => Acc_Typ,
                 Type_Definition     =>
                   Make_Access_To_Object_Definition (Loc,
-                    Subtype_Indication => New_Occurrence_Of (Atyp, Loc))),
+                    Subtype_Indication => New_Occurrence_Of (ConstrT, Loc))),
               Suppress => All_Checks);
 
             Mutate_Ekind (Acc_Typ, E_Access_Type);
@@ -3335,32 +3315,42 @@ package body Exp_Ch4 is
             Set_No_Initialization (Alloc);
 
             Temp := Make_Temporary (Loc, 'R', Alloc);
-            Insert_Action (Decl,
+            Insert_Action (Cnode,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
                 Object_Definition   => New_Occurrence_Of (Acc_Typ, Loc),
                 Expression          => Alloc),
               Suppress => All_Checks);
 
-            Deref :=
-              Make_Explicit_Dereference (Loc,
-                Prefix => New_Occurrence_Of (Temp, Loc));
-            Set_Etype (Deref, Atyp);
-
-            Rewrite (Decl,
+            Insert_Action (Cnode,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Ent,
-                Subtype_Mark        => New_Occurrence_Of (Atyp, Loc),
-                Name                => Deref));
-
-            --  We do not analyze this renaming declaration because this would
-            --  change the subtype of Ent back to a constrained string.
-
-            Set_Etype (Ent, Atyp);
-            Set_Renamed_Object (Ent, Deref);
-            Set_Analyzed (Decl);
+                Subtype_Mark        => New_Occurrence_Of (ConstrT, Loc),
+                Name                =>
+                  Make_Explicit_Dereference (Loc,
+                    Prefix => New_Occurrence_Of (Temp, Loc))),
+              Suppress => All_Checks);
          end;
+
+      else
+         --  If the bound is statically known to be out of range, we do not
+         --  want to abort, we want a warning and a runtime constraint error.
+         --  Note that we have arranged that the result will not be treated
+         --  as a static constant, so we won't get an illegality during this
+         --  insertion. We also enable checks (in particular range checks) in
+         --  case the bounds of Subtyp_Ind are out of range.
+
+         Insert_Action (Cnode,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Ent,
+             Object_Definition   => Subtyp_Ind));
       end if;
+
+      --  If the result of the concatenation appears as the initializing
+      --  expression of an object declaration, we can just rename the
+      --  result, rather than copying it.
+
+      Set_OK_To_Rename (Ent);
 
       --  Catch the static out of range case now
 
@@ -11836,7 +11826,7 @@ package body Exp_Ch4 is
 
          if Is_Fixed_Point_Type (Etype (Expr)) then
             Ityp := Small_Integer_Type_For
-                      (Esize (Base_Type (Etype (Expr))), False);
+                      (Esize (Base_Type (Etype (Expr))), Uns => False);
 
             --  Generate a temporary with the integer type to facilitate in the
             --  C backend the code generation for the unchecked conversion.
@@ -12206,7 +12196,7 @@ package body Exp_Ch4 is
             declare
                Expr_Id : constant Entity_Id := Make_Temporary (Loc, 'T', Conv);
                Int_Typ : constant Entity_Id :=
-                           Small_Integer_Type_For (RM_Size (Btyp), False);
+                 Small_Integer_Type_For (RM_Size (Btyp), Uns => False);
 
             begin
                --  Generate a temporary with the integer value. Required in the

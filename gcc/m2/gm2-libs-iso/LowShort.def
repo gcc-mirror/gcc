@@ -1,0 +1,99 @@
+(* LowShort.def provides access to limits of the gm2 SHORTREAL.
+
+Copyright (C) 2010-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE LowShort;
+
+  (* Access to underlying properties of the type SHORTREAL *)
+
+CONST
+  radix      = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, radix> )) ;      (* ZType *)
+  places     = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, places> )) ;     (* ZType *)
+  expoMin    = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, expoMin> )) ;    (* ZType *)
+  expoMax    = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, expoMax> )) ;    (* ZType *)
+  large      = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, large> )) ;      (* RType *)
+  small      = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, small> )) ;      (* RType *)
+  IEC559     = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, IEC559> )) ;     (* BOOLEAN *)
+  LIA1       = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, LIA1> )) ;       (* BOOLEAN *)
+  ISO        = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, ISO> )) ;        (* BOOLEAN *)
+  IEEE       = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, IEEE> )) ;       (* BOOLEAN *)
+  rounds     = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, rounds> )) ;     (* BOOLEAN *)
+  gUnderflow = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, gUnderflow> )) ; (* BOOLEAN *)
+  exception  = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, exception> )) ;  (* BOOLEAN *)
+  extend     = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, extend> )) ;     (* BOOLEAN *)
+  nModes     = __ATTRIBUTE__ __BUILTIN__ (( <SHORTREAL, nModes> )) ;     (* ZType *)
+
+TYPE
+  Modes = PACKEDSET OF [0 .. nModes-1];
+
+PROCEDURE exponent (x: SHORTREAL): INTEGER;
+  (* Returns the exponent value of x *)
+
+PROCEDURE fraction (x: SHORTREAL): SHORTREAL;
+  (* Returns the significand (or significant part) of x *)
+
+PROCEDURE sign (x: SHORTREAL): SHORTREAL;
+  (* Returns the signum of x *)
+
+PROCEDURE succ (x: SHORTREAL): SHORTREAL;
+  (* Returns the next value of the type SHORTREAL greater than x *)
+
+PROCEDURE ulp (x: SHORTREAL): SHORTREAL;
+  (* Returns the value of a unit in the last place of x *)
+
+PROCEDURE pred (x: SHORTREAL): SHORTREAL;
+  (* Returns the previous value of the type SHORTREAL less than x *)
+
+PROCEDURE intpart (x: SHORTREAL): SHORTREAL;
+  (* Returns the integer part of x *)
+
+PROCEDURE fractpart (x: SHORTREAL): SHORTREAL;
+  (* Returns the fractional part of x *)
+
+PROCEDURE scale (x: SHORTREAL; n: INTEGER): SHORTREAL;
+  (* Returns the value of x * radix ** n *)
+
+PROCEDURE trunc (x: SHORTREAL; n: INTEGER): SHORTREAL;
+  (* Returns the value of the first n places of x *)
+
+PROCEDURE round (x: SHORTREAL; n: INTEGER): SHORTREAL;
+  (* Returns the value of x rounded to the first n places *)
+
+PROCEDURE synthesize (expart: INTEGER; frapart: SHORTREAL): SHORTREAL;
+  (* Returns a value of the type SHORTREAL constructed from the given expart and frapart *)
+
+PROCEDURE setMode (m: Modes);
+  (* Sets status flags appropriate to the underlying implementation of the type SHORTREAL *)
+
+PROCEDURE currentMode (): Modes;
+  (* Returns the current status flags in the form set by setMode *)
+
+PROCEDURE IsLowException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional execution state
+     because of the raising of an exception in a routine from this module; otherwise
+     returns FALSE.
+  *)
+
+END LowShort.

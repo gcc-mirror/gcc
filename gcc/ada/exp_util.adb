@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -168,10 +168,6 @@ package body Exp_Util is
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
 
-   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
-   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
-   --  an assertion expression that should be verified at run time.
-
    function Is_Uninitialized_Aggregate
      (Exp : Node_Id;
       T   : Entity_Id) return Boolean;
@@ -181,6 +177,10 @@ package body Exp_Util is
    --  optimized away to prevent the copying of uninitialized data, and
    --  the bounds of the aggregate can be propagated directly to the
    --  object declaration.
+
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
+   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
+   --  an assertion expression that should be verified at run time.
 
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
@@ -5815,7 +5815,6 @@ package body Exp_Util is
          --  discriminants.
 
          else
-            Remove_Side_Effects (Exp);
             Rewrite (Subtype_Indic,
               Make_Subtype_From_Expr (Exp, Underlying_Record_View (Unc_Type)));
          end if;
@@ -5880,7 +5879,6 @@ package body Exp_Util is
          end if;
 
       else
-         Remove_Side_Effects (Exp);
          Rewrite (Subtype_Indic,
            Make_Subtype_From_Expr (Exp, Unc_Type, Related_Id));
       end if;
@@ -7188,6 +7186,63 @@ package body Exp_Util is
       end if;
    end Has_Access_Constraint;
 
+   ---------------------
+   -- Has_Tag_Of_Type --
+   ---------------------
+
+   function Has_Tag_Of_Type (Exp : Node_Id) return Boolean is
+      Typ : constant Entity_Id := Etype (Exp);
+
+   begin
+      pragma Assert (Is_Tagged_Type (Typ));
+
+      --  The tag of an object of a class-wide type is that of its
+      --  initialization expression.
+
+      if Is_Class_Wide_Type (Typ) then
+         return False;
+      end if;
+
+      --  The tag of a stand-alone object of a specific tagged type T
+      --  identifies T.
+
+      if Is_Entity_Name (Exp)
+        and then Ekind (Entity (Exp)) in E_Constant | E_Variable
+      then
+         return True;
+
+      else
+         case Nkind (Exp) is
+            --  The tag of a component or an aggregate of a specific tagged
+            --  type T identifies T.
+
+            when N_Indexed_Component
+              |  N_Selected_Component
+              |  N_Aggregate
+            =>
+               return True;
+
+            --  The tag of the result returned by a function whose result
+            --  type is a specific tagged type T identifies T.
+
+            when N_Function_Call =>
+               return True;
+
+            when N_Explicit_Dereference =>
+               return Is_Captured_Function_Call (Exp);
+
+            --  For a tagged type, the operand of a qualified expression
+            --  shall resolve to be of the type of the expression.
+
+            when N_Qualified_Expression =>
+               return Has_Tag_Of_Type (Expression (Exp));
+
+            when others =>
+               return False;
+         end case;
+      end if;
+   end Has_Tag_Of_Type;
+
    --------------------
    -- Homonym_Number --
    --------------------
@@ -7913,6 +7968,7 @@ package body Exp_Util is
                | N_Indexed_Component
                | N_Integer_Literal
                | N_Iterator_Specification
+               | N_Interpolated_String_Literal
                | N_Itype_Reference
                | N_Label
                | N_Loop_Parameter_Specification
@@ -8122,6 +8178,10 @@ package body Exp_Util is
 
    function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id is
    begin
+      pragma Assert
+        (Standard_Long_Integer_Size in
+         Standard_Integer_Size | Standard_Long_Long_Integer_Size);
+      --  So we don't need to check for Standard_Long_Integer_Size below
       pragma Assert (S <= System_Max_Integer_Size);
 
       --  This is the canonical 32-bit type
@@ -8156,205 +8216,29 @@ package body Exp_Util is
       end if;
    end Integer_Type_For;
 
-   --------------------------------------------------
-   -- Is_Displacement_Of_Object_Or_Function_Result --
-   --------------------------------------------------
+   -------------------------------
+   -- Is_Captured_Function_Call --
+   -------------------------------
 
-   function Is_Displacement_Of_Object_Or_Function_Result
-     (Obj_Id : Entity_Id) return Boolean
-   is
-      function Is_Controlled_Function_Call (N : Node_Id) return Boolean;
-      --  Determine whether node N denotes a controlled function call
-
-      function Is_Controlled_Indexing (N : Node_Id) return Boolean;
-      --  Determine whether node N denotes a generalized indexing form which
-      --  involves a controlled result.
-
-      function Is_Displace_Call (N : Node_Id) return Boolean;
-      --  Determine whether node N denotes a call to Ada.Tags.Displace
-
-      function Is_Source_Object (N : Node_Id) return Boolean;
-      --  Determine whether a particular node denotes a source object
-
-      function Strip (N : Node_Id) return Node_Id;
-      --  Examine arbitrary node N by stripping various indirections and return
-      --  the "real" node.
-
-      ---------------------------------
-      -- Is_Controlled_Function_Call --
-      ---------------------------------
-
-      function Is_Controlled_Function_Call (N : Node_Id) return Boolean is
-         Expr : Node_Id;
-
-      begin
-         --  When a function call appears in Object.Operation format, the
-         --  original representation has several possible forms depending on
-         --  the availability and form of actual parameters:
-
-         --    Obj.Func                    N_Selected_Component
-         --    Obj.Func (Actual)           N_Indexed_Component
-         --    Obj.Func (Formal => Actual) N_Function_Call, whose Name is an
-         --                                N_Selected_Component
-
-         Expr := Original_Node (N);
-         loop
-            if Nkind (Expr) = N_Function_Call then
-               Expr := Name (Expr);
-
-            --  "Obj.Func (Actual)" case
-
-            elsif Nkind (Expr) = N_Indexed_Component then
-               Expr := Prefix (Expr);
-
-            --  "Obj.Func" or "Obj.Func (Formal => Actual) case
-
-            elsif Nkind (Expr) = N_Selected_Component then
-               Expr := Selector_Name (Expr);
-
-            else
-               exit;
-            end if;
-         end loop;
-
-         return
-           Nkind (Expr) in N_Has_Entity
-             and then Present (Entity (Expr))
-             and then Ekind (Entity (Expr)) = E_Function
-             and then Needs_Finalization (Etype (Entity (Expr)));
-      end Is_Controlled_Function_Call;
-
-      ----------------------------
-      -- Is_Controlled_Indexing --
-      ----------------------------
-
-      function Is_Controlled_Indexing (N : Node_Id) return Boolean is
-         Expr : constant Node_Id := Original_Node (N);
-
-      begin
-         return
-           Nkind (Expr) = N_Indexed_Component
-             and then Present (Generalized_Indexing (Expr))
-             and then Needs_Finalization (Etype (Expr));
-      end Is_Controlled_Indexing;
-
-      ----------------------
-      -- Is_Displace_Call --
-      ----------------------
-
-      function Is_Displace_Call (N : Node_Id) return Boolean is
-         Call : constant Node_Id := Strip (N);
-
-      begin
-         return
-           Present (Call)
-             and then Nkind (Call) = N_Function_Call
-             and then Nkind (Name (Call)) in N_Has_Entity
-             and then Is_RTE (Entity (Name (Call)), RE_Displace);
-      end Is_Displace_Call;
-
-      ----------------------
-      -- Is_Source_Object --
-      ----------------------
-
-      function Is_Source_Object (N : Node_Id) return Boolean is
-         Obj : constant Node_Id := Strip (N);
-
-      begin
-         return
-           Present (Obj)
-             and then Comes_From_Source (Obj)
-             and then Nkind (Obj) in N_Has_Entity
-             and then Is_Object (Entity (Obj));
-      end Is_Source_Object;
-
-      -----------
-      -- Strip --
-      -----------
-
-      function Strip (N : Node_Id) return Node_Id is
-         Result : Node_Id;
-
-      begin
-         Result := N;
-         loop
-            if Nkind (Result) = N_Explicit_Dereference then
-               Result := Prefix (Result);
-
-            elsif Nkind (Result) in
-                    N_Type_Conversion | N_Unchecked_Type_Conversion
-            then
-               Result := Expression (Result);
-
-            else
-               exit;
-            end if;
-         end loop;
-
-         return Result;
-      end Strip;
-
-      --  Local variables
-
-      Obj_Decl  : constant Node_Id   := Declaration_Node (Obj_Id);
-      Obj_Typ   : constant Entity_Id := Base_Type (Etype (Obj_Id));
-      Orig_Decl : constant Node_Id   := Original_Node (Obj_Decl);
-      Orig_Expr : Node_Id;
-
-   --  Start of processing for Is_Displacement_Of_Object_Or_Function_Result
-
+   function Is_Captured_Function_Call (N : Node_Id) return Boolean is
    begin
-      --  Case 1:
-
-      --     Obj : CW_Type := Function_Call (...);
-
-      --  is rewritten into:
-
-      --     Temp : ... := Function_Call (...)'reference;
-      --     Obj  : CW_Type renames (... Ada.Tags.Displace (Temp));
-
-      --  where the return type of the function and the class-wide type require
-      --  dispatch table pointer displacement.
-
-      --  Case 2:
-
-      --     Obj : CW_Type := Container (...);
-
-      --  is rewritten into:
-
-      --     Temp : ... := Function_Call (Container, ...)'reference;
-      --     Obj  : CW_Type renames (... Ada.Tags.Displace (Temp));
-
-      --  where the container element type and the class-wide type require
-      --  dispatch table pointer dispacement.
-
-      --  Case 3:
-
-      --     Obj : CW_Type := Src_Obj;
-
-      --  is rewritten into:
-
-      --     Obj : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
-
-      --  where the type of the source object and the class-wide type require
-      --  dispatch table pointer displacement.
-
-      if Nkind (Obj_Decl) = N_Object_Renaming_Declaration
-        and then Is_Class_Wide_Type (Obj_Typ)
-        and then Is_Displace_Call (Renamed_Object (Obj_Id))
-        and then Nkind (Orig_Decl) = N_Object_Declaration
-        and then Comes_From_Source (Orig_Decl)
+      if Nkind (N) = N_Explicit_Dereference
+        and then Is_Entity_Name (Prefix (N))
+        and then Ekind (Entity (Prefix (N))) = E_Constant
       then
-         Orig_Expr := Expression (Orig_Decl);
+         declare
+            Value : constant Node_Id := Constant_Value (Entity (Prefix (N)));
 
-         return
-           Is_Controlled_Function_Call (Orig_Expr)
-             or else Is_Controlled_Indexing (Orig_Expr)
-             or else Is_Source_Object (Orig_Expr);
+         begin
+            return Present (Value)
+              and then Nkind (Value) = N_Reference
+              and then Nkind (Prefix (Value)) = N_Function_Call;
+         end;
+
+      else
+         return False;
       end if;
-
-      return False;
-   end Is_Displacement_Of_Object_Or_Function_Result;
+   end Is_Captured_Function_Call;
 
    ------------------------------
    -- Is_Finalizable_Transient --
@@ -8563,6 +8447,23 @@ package body Exp_Util is
 
             if not Is_RTE (Typ, RE_Tag_Ptr) then
                Search (Name (Ren_Decl));
+            end if;
+
+            --  For renamings generated by Expand_N_Object_Declaration to deal
+            --  with (class-wide) interface objects, there is an intermediate
+            --  temporary of an anonymous access type used to hold the result
+            --  of the displacement of the address of the renamed object.
+
+            if Present (Ren_Obj)
+              and then Ekind (Ren_Obj) = E_Constant
+              and then Is_Itype (Etype (Ren_Obj))
+              and then Ekind (Etype (Ren_Obj)) = E_Anonymous_Access_Type
+              and then
+                Is_Class_Wide_Type (Directly_Designated_Type (Etype (Ren_Obj)))
+              and then
+                Is_Interface (Directly_Designated_Type (Etype (Ren_Obj)))
+            then
+               Search (Constant_Value (Ren_Obj));
             end if;
 
             return Ren_Obj;
@@ -8805,10 +8706,6 @@ package body Exp_Util is
           --  of build-in-place function results.
 
           and then not Initialized_By_Aliased_BIP_Func_Call (Obj_Id)
-
-          --  Do not consider conversions of tags to class-wide types
-
-          and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
 
           --  Do not consider iterators because those are treated as normal
           --  controlled objects and are processed by the usual finalization
@@ -9168,7 +9065,8 @@ package body Exp_Util is
           and then Nkind (Unqual_Conv (Expr)) = N_Explicit_Dereference
           and then (Nkind (Parent (Expr)) = N_Simple_Return_Statement
                      or else
-                       (Nkind (Parent (Expr)) = N_Object_Renaming_Declaration
+                       (Nkind (Parent (Expr)) in N_Object_Declaration
+                                               | N_Object_Renaming_Declaration
                          and then
                         Is_Return_Object (Defining_Entity (Parent (Expr)))));
    end Is_Related_To_Func_Return;
@@ -9315,23 +9213,6 @@ package body Exp_Util is
         and then Is_Thunk (Id)
         and then Has_Controlling_Result (Id);
    end Is_Secondary_Stack_Thunk;
-
-   -------------------------------------
-   -- Is_Tag_To_Class_Wide_Conversion --
-   -------------------------------------
-
-   function Is_Tag_To_Class_Wide_Conversion
-     (Obj_Id : Entity_Id) return Boolean
-   is
-      Expr : constant Node_Id := Expression (Parent (Obj_Id));
-
-   begin
-      return
-        Is_Class_Wide_Type (Etype (Obj_Id))
-          and then Present (Expr)
-          and then Nkind (Expr) = N_Unchecked_Type_Conversion
-          and then Is_RTE (Etype (Expression (Expr)), RE_Tag);
-   end Is_Tag_To_Class_Wide_Conversion;
 
    --------------------------------
    -- Is_Uninitialized_Aggregate --
@@ -9639,7 +9520,7 @@ package body Exp_Util is
 
    --   type Equiv_T is record
    --     _parent : T (List of discriminant constraints taken from Exp);
-   --     Ext__50 : Storage_Array (1 .. (Exp'size - Typ'object_size)/8);
+   --     Cnn : Storage_Array (1 .. (Exp'size - Typ'object_size)/Storage_Unit);
    --   end Equiv_T;
    --
    --  Note that this type does not guarantee same alignment as all derived
@@ -9659,11 +9540,13 @@ package body Exp_Util is
       Root_Utyp   : constant Entity_Id  := Underlying_Type (Root_Typ);
       List_Def    : constant List_Id    := Empty_List;
       Comp_List   : constant List_Id    := New_List;
+
       Equiv_Type  : Entity_Id;
       Range_Type  : Entity_Id;
       Str_Type    : Entity_Id;
       Constr_Root : Entity_Id;
-      Sizexpr     : Node_Id;
+      Size_Attr   : Node_Id;
+      Size_Expr   : Node_Id;
 
    begin
       --  If the root type is already constrained, there are no discriminants
@@ -9698,42 +9581,62 @@ package body Exp_Util is
 
       Range_Type := Make_Temporary (Loc, 'G');
 
+      --  If the expression is known to have the tag of its type, then we can
+      --  use it directly for the prefix of the Size attribute; otherwise we
+      --  need to convert it first to the class-wide type to force a call to
+      --  the _Size primitive operation.
+
+      if Has_Tag_Of_Type (E) then
+         if not Has_Discriminants (Etype (E))
+           or else Is_Constrained (Etype (E))
+         then
+            Size_Attr :=
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Occurrence_Of (Etype (E), Loc),
+                Attribute_Name => Name_Object_Size);
+
+         else
+            Size_Attr :=
+              Make_Attribute_Reference (Loc,
+                Prefix => Duplicate_Subexpr_No_Checks (E),
+                Attribute_Name => Name_Size);
+         end if;
+
+      else
+         Size_Attr :=
+           Make_Attribute_Reference (Loc,
+             Prefix => OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
+             Attribute_Name => Name_Size);
+      end if;
+
       if not Is_Interface (Root_Typ) then
 
          --  subtype rg__xx is
-         --    Storage_Offset range 1 .. (Expr'size - typ'object_size)
+         --    Storage_Offset range 1 .. (Exp'size - Typ'object_size)
          --                                / Storage_Unit
 
-         Sizexpr :=
+         Size_Expr :=
            Make_Op_Subtract (Loc,
-             Left_Opnd =>
-               Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
-                 Attribute_Name => Name_Size),
+             Left_Opnd => Size_Attr,
              Right_Opnd =>
                Make_Attribute_Reference (Loc,
                  Prefix => New_Occurrence_Of (Constr_Root, Loc),
                  Attribute_Name => Name_Object_Size));
       else
          --  subtype rg__xx is
-         --    Storage_Offset range 1 .. (Expr'size - Ada.Tags.Tag'object_size)
+         --    Storage_Offset range 1 .. (Exp'size - Ada.Tags.Tag'object_size)
          --                                / Storage_Unit
 
-         Sizexpr :=
+         Size_Expr :=
            Make_Op_Subtract (Loc,
-             Left_Opnd =>
-               Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
-                 Attribute_Name => Name_Size),
+             Left_Opnd => Size_Attr,
              Right_Opnd =>
                Make_Attribute_Reference (Loc,
                  Prefix => New_Occurrence_Of (RTE (RE_Tag), Loc),
                  Attribute_Name => Name_Object_Size));
       end if;
 
-      Set_Paren_Count (Sizexpr, 1);
+      Set_Paren_Count (Size_Expr, 1);
 
       Append_To (List_Def,
         Make_Subtype_Declaration (Loc,
@@ -9747,7 +9650,7 @@ package body Exp_Util is
                     Low_Bound => Make_Integer_Literal (Loc, 1),
                     High_Bound =>
                       Make_Op_Divide (Loc,
-                        Left_Opnd => Sizexpr,
+                        Left_Opnd => Size_Expr,
                         Right_Opnd => Make_Integer_Literal (Loc,
                             Intval => System_Storage_Unit)))))));
 
@@ -12775,16 +12678,13 @@ package body Exp_Util is
             --  The object is of the form:
             --    Obj : [constant] Typ [:= Expr];
             --
-            --  Do not process tag-to-class-wide conversions because they do
-            --  not yield an object. Do not process the incomplete view of a
-            --  deferred constant. Note that an object initialized by means
-            --  of a build-in-place function call may appear as a deferred
-            --  constant after expansion activities. These kinds of objects
-            --  must be finalized.
+            --  Do not process the incomplete view of a deferred constant.
+            --  Note that an object initialized by means of a BIP function
+            --  call may appear as a deferred constant after expansion
+            --  activities. These kinds of objects must be finalized.
 
             elsif not Is_Imported (Obj_Id)
               and then Needs_Finalization (Obj_Typ)
-              and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
               and then not (Ekind (Obj_Id) = E_Constant
                              and then not Has_Completion (Obj_Id)
                              and then No (BIP_Initialization_Call (Obj_Id)))
@@ -12869,20 +12769,6 @@ package body Exp_Util is
               and then Is_Return_Object (Obj_Id)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
             then
-               return True;
-
-            --  Detect a case where a source object has been initialized by
-            --  a controlled function call or another object which was later
-            --  rewritten as a class-wide conversion of Ada.Tags.Displace.
-
-            --     Obj1 : CW_Type := Src_Obj;
-            --     Obj2 : CW_Type := Function_Call (...);
-
-            --     Obj1 : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
-            --     Tmp  : ... := Function_Call (...)'reference;
-            --     Obj2 : CW_Type renames (... Ada.Tags.Displace (Tmp));
-
-            elsif Is_Displacement_Of_Object_Or_Function_Result (Obj_Id) then
                return True;
             end if;
 
@@ -14023,7 +13909,8 @@ package body Exp_Util is
    function Small_Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id
    is
    begin
-      pragma Assert (S <= System_Max_Integer_Size);
+      --  The only difference between this and Integer_Type_For is that this
+      --  can return small (8- or 16-bit) types.
 
       if S <= Standard_Short_Short_Integer_Size then
          if Uns then
@@ -14039,36 +13926,8 @@ package body Exp_Util is
             return Standard_Short_Integer;
          end if;
 
-      elsif S <= Standard_Integer_Size then
-         if Uns then
-            return Standard_Unsigned;
-         else
-            return Standard_Integer;
-         end if;
-
-      elsif S <= Standard_Long_Integer_Size then
-         if Uns then
-            return Standard_Long_Unsigned;
-         else
-            return Standard_Long_Integer;
-         end if;
-
-      elsif S <= Standard_Long_Long_Integer_Size then
-         if Uns then
-            return Standard_Long_Long_Unsigned;
-         else
-            return Standard_Long_Long_Integer;
-         end if;
-
-      elsif S <= Standard_Long_Long_Long_Integer_Size then
-         if Uns then
-            return Standard_Long_Long_Long_Unsigned;
-         else
-            return Standard_Long_Long_Long_Integer;
-         end if;
-
       else
-         raise Program_Error;
+         return Integer_Type_For (S, Uns);
       end if;
    end Small_Integer_Type_For;
 

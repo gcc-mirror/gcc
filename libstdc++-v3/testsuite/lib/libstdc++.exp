@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001-2022 Free Software Foundation, Inc.
+# Copyright (C) 2001-2023 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -507,6 +507,15 @@ proc v3_target_compile { source dest type options } {
 	if { $type == "sharedlib" } {
 	    # Don't link in anything.
 	    set type "executable"
+	}
+    }
+
+    # Small adjustment for MinGW hosts.
+    if { $dest == "/dev/null" && [ishost "*-*-mingw*"] } {
+	if { $type == "executable" } {
+	    set dest "x.exe"
+	} else {
+	    set dest "nul"
 	}
     }
 
@@ -1147,7 +1156,9 @@ proc check_effective_target_gthreads_timed { } {
 # Return 1 if either nanosleep or sleep is available, 0 otherwise.
 proc check_v3_target_sleep { } {
     return [check_v3_target_prop_cached et_sleep {
-	set cond "defined _GLIBCXX_USE_NANOSLEEP || defined _GLIBCXX_HAVE_SLEEP"
+	set cond "defined _GLIBCXX_USE_NANOSLEEP"
+	set cond "$cond || defined _GLIBCXX_USE_WIN32_SLEEP"
+	set cond "$cond || defined _GLIBCXX_HAVE_SLEEP"
 	return [v3_check_preprocessor_condition sleep $cond]
     }]
 }
@@ -1191,6 +1202,7 @@ proc check_v3_target_binary_io { } {
 proc check_v3_target_nprocs { } {
     return [check_v3_target_prop_cached et_nprocs {
 	set cond "defined _GLIBCXX_USE_GET_NPROCS"
+	set cond "$cond || defined _GLIBCXX_USE_GET_NPROCS_WIN32"
 	set cond "$cond || defined _GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP"
 	set cond "$cond || defined _GLIBCXX_USE_SYSCTL_HW_NCPU"
 	set cond "$cond || defined _GLIBCXX_USE_SC_NPROCESSORS_ONLN"
@@ -1394,6 +1406,17 @@ proc check_effective_target_hosted { } {
     return [check_v3_target_prop_cached et_hosted {
 	set cond "_GLIBCXX_HOSTED"
 	return [v3_check_preprocessor_condition hosted $cond]
+    }]
+}
+
+# Return 1 if std::chrono::tzdb is supported.
+proc check_effective_target_tzdb { } {
+    if {![check_effective_target_cxx11_abi]} {
+	return 0
+    }
+    return [check_v3_target_prop_cached et_tzdb {
+	set cond "defined _GLIBCXX_ZONEINFO_DIR || _GLIBCXX_STATIC_TZDATA"
+	return [v3_check_preprocessor_condition tzdb $cond]
     }]
 }
 

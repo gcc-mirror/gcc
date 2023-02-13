@@ -4,7 +4,7 @@ int *bar (void);
 void
 foo (void)
 {
-  long x;
+  __INTPTR_TYPE__ x;
   int *y = bar ();
 
   /* The loop below may be optimized to a call to memset with a size

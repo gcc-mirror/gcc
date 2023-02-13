@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -687,7 +687,11 @@ package body Exp_Ch6 is
       Loc : constant Source_Ptr := Sloc (Exp);
 
    begin
+       --  CodePeer does not do anything useful on Ada.Tags.Type_Specific_Data
+       --  components.
+
       if Ada_Version >= Ada_2005
+        and then not CodePeer_Mode
         and then Tagged_Type_Expansion
         and then not Scope_Suppress.Suppress (Accessibility_Check)
         and then
@@ -770,20 +774,18 @@ package body Exp_Ch6 is
                    Attribute_Name => Name_Tag);
             end if;
 
-            --  CodePeer does not do anything useful with
-            --  Ada.Tags.Type_Specific_Data components.
+            --  Suppress junk access chacks on RE_Tag_Ptr
 
-            if not CodePeer_Mode then
-               Insert_Action (Exp,
-                 Make_Raise_Program_Error (Loc,
-                   Condition =>
-                     Make_Op_Gt (Loc,
-                       Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
-                       Right_Opnd =>
-                         Make_Integer_Literal (Loc,
-                           Scope_Depth (Enclosing_Dynamic_Scope (Func)))),
-                   Reason    => PE_Accessibility_Check_Failed));
-            end if;
+            Insert_Action (Exp,
+              Make_Raise_Program_Error (Loc,
+                Condition =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
+                    Right_Opnd =>
+                      Make_Integer_Literal (Loc,
+                        Scope_Depth (Enclosing_Dynamic_Scope (Func)))),
+                Reason    => PE_Accessibility_Check_Failed),
+              Suppress => Access_Check);
          end;
       end if;
    end Apply_CW_Accessibility_Check;
@@ -5131,14 +5133,11 @@ package body Exp_Ch6 is
 
       --  Another optimization: if the returned value is used to initialize an
       --  object, then no need to copy/readjust/finalize, we can initialize it
-      --  in place. However, if the call returns on the secondary stack or this
-      --  is a special return object, then we need the expansion because we'll
-      --  be renaming the temporary as the (permanent) object.
+      --  in place. However, if the call returns on the secondary stack, then
+      --  we need the expansion because we'll be renaming the temporary as the
+      --  (permanent) object.
 
-      if Nkind (Par) = N_Object_Declaration
-        and then not Use_Sec_Stack
-        and then not Is_Special_Return_Object (Defining_Entity (Par))
-      then
+      if Nkind (Par) = N_Object_Declaration and then not Use_Sec_Stack then
          return;
       end if;
 
@@ -6435,16 +6434,21 @@ package body Exp_Ch6 is
       --  The result type of the function
 
       Utyp : constant Entity_Id := Underlying_Type (R_Type);
+      --  The underlying result type of the function
 
       Exp : Node_Id := Expression (N);
       pragma Assert (Present (Exp));
 
       Exp_Is_Function_Call : constant Boolean :=
         Nkind (Exp) = N_Function_Call
-          or else (Nkind (Exp) = N_Explicit_Dereference
-                   and then Is_Entity_Name (Prefix (Exp))
-                   and then Ekind (Entity (Prefix (Exp))) = E_Constant
-                   and then Is_Related_To_Func_Return (Entity (Prefix (Exp))));
+          or else
+            (Is_Captured_Function_Call (Exp)
+              and then Is_Related_To_Func_Return (Entity (Prefix (Exp))));
+      --  If the expression is a captured function call, then we need to make
+      --  sure that the object doing the capture is properly recognized by the
+      --  Is_Related_To_Func_Return predicate; otherwise, if it is of a type
+      --  that needs finalization, Requires_Cleanup_Actions would return true
+      --  because of this and Build_Finalizer would finalize it prematurely.
 
       Exp_Typ : constant Entity_Id := Etype (Exp);
       --  The type of the expression (not necessarily the same as R_Type)
@@ -6628,7 +6632,8 @@ package body Exp_Ch6 is
          --  size. We create an actual subtype for this purpose. However we
          --  need not do it if the expression is a function call since this
          --  will be done in the called function and doing it here too would
-         --  cause a temporary with maximum size to be created.
+         --  cause a temporary with maximum size to be created. Likewise for
+         --  a special return object, since there is no copy in this case.
 
          declare
             Ubt  : constant Entity_Id := Underlying_Type (Base_Type (Exp_Typ));
@@ -6637,6 +6642,8 @@ package body Exp_Ch6 is
 
          begin
             if not Exp_Is_Function_Call
+              and then not (Is_Entity_Name (Exp)
+                             and then Is_Special_Return_Object (Entity (Exp)))
               and then Has_Defaulted_Discriminants (Ubt)
               and then not Is_Constrained (Ubt)
               and then not Has_Unchecked_Union (Ubt)
@@ -6735,7 +6742,7 @@ package body Exp_Ch6 is
             null;
 
          --  Optimize the case where the result is a function call that also
-         --  returns on the secondary stack. In this case the result is already
+         --  returns on the secondary stack; in this case the result is already
          --  on the secondary stack and no further processing is required.
 
          elsif Exp_Is_Function_Call
@@ -6771,13 +6778,14 @@ package body Exp_Ch6 is
          --  gigi is not able to properly allocate class-wide types.
 
          --  But optimize the case where the result is a function call that
-         --  also needs finalization. In this case the result can directly be
+         --  also needs finalization; in this case the result can directly be
          --  allocated on the secondary stack and no further processing is
-         --  required.
+         --  required, unless the returned object is an interface.
 
          elsif CW_Or_Needs_Finalization (Utyp)
-           and then not (Exp_Is_Function_Call
-                          and then Needs_Finalization (Exp_Typ))
+           and then (Is_Interface (R_Type)
+                      or else not (Exp_Is_Function_Call
+                                    and then Needs_Finalization (Exp_Typ)))
          then
             declare
                Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
@@ -7763,10 +7771,10 @@ package body Exp_Ch6 is
          return False;
       end if;
 
-      --  If the function is imported from a foreign language, we don't do
-      --  build-in-place, whereas Import (Ada) functions can do it. Note also
-      --  that it is OK for a build-in-place function to return a type with a
-      --  foreign convention because the machinery ensures there is no copying.
+      --  We never use build-in-place if the convention is other than Ada,
+      --  but note that it is OK for a build-in-place function to return a
+      --  type with a foreign convention because the machinery ensures there
+      --  is no copying.
 
       return (Kind in E_Function | E_Generic_Function
                or else
@@ -9382,6 +9390,10 @@ package body Exp_Ch6 is
       Preserve_Comes_From_Source (Orig_Id, Orig_Decl);
 
       Set_Comes_From_Source (New_Id, False);
+
+      --  Preserve aliased indication
+
+      Set_Is_Aliased (Orig_Id, Is_Aliased (New_Id));
    end Replace_Renaming_Declaration_Id;
 
    ---------------------------------

@@ -1,0 +1,90 @@
+(* Copyright (C) 2005-2023 Free Software Foundation, Inc. *)
+(* This file is part of Chisel.
+
+Chisel is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+Chisel is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+
+DEFINITION MODULE RoomMap ;
+
+(*
+   Title      : RoomMap
+   Author     : Gaius Mulley
+   Date       : 20/8/88
+   LastEdit   : 20/8/88
+   System     : LOGITECH MODULA-2/86
+   Description: Generates rooms from a list of boxes.
+*)
+
+EXPORT QUALIFIED MaxNoOfRooms,
+                 MaxNoOfTreasures,
+                 GenNoOfRooms,
+                 Rooms,
+                 DoorStatus,
+                 Treasure, TreasureInfo, Door, Line,
+                 CreateRoomMap ;
+
+CONST
+   MaxNoOfRooms           = 350 ;
+   MaxWallsPerRoom        =   8 ;
+   MaxDoorsPerRoom        =   6 ;
+   MaxNoOfTreasures       =  15 ;
+
+TYPE
+   Line         = RECORD
+                     X1 : CARDINAL ;
+                     Y1 : CARDINAL ;
+                     X2 : CARDINAL ;
+                     Y2 : CARDINAL
+                  END ;
+
+   DoorStatus   = (Open, Closed, Secret) ;
+
+   Door         = RECORD
+                     Position    : Line ;
+                     StateOfDoor : DoorStatus ;
+                     LeadsTo     : CARDINAL
+                  END ;
+
+   Room         = RECORD
+                     RoomNo      : CARDINAL ;
+                     NoOfWalls   : CARDINAL ;
+                     NoOfDoors   : CARDINAL ;
+                     Walls       : ARRAY [1..MaxWallsPerRoom] OF Line ;
+                     Doors       : ARRAY [1..MaxDoorsPerRoom] OF Door ;
+                     (* Treasures   : BITSET ; *)
+                  END ;
+
+   TreasureInfo = RECORD
+                     Xpos         : CARDINAL ;
+                     Ypos         : CARDINAL ;
+                     Rm           : CARDINAL ;
+                     Tweight      : CARDINAL ;
+                     TreasureName : ARRAY [0..12] OF CHAR
+                  END ;
+
+
+VAR
+   GenNoOfRooms    : CARDINAL ;
+   Rooms           : ARRAY [1..MaxNoOfRooms] OF Room ;
+   Treasure        : ARRAY [1..MaxNoOfTreasures] OF TreasureInfo ;
+
+
+(*
+   CreateRoomMap - creates rooms from a list of boxes in BoxMap.
+*)
+
+PROCEDURE CreateRoomMap ;
+
+
+END RoomMap.

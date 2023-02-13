@@ -1,4 +1,4 @@
-c Copyright (C) 1988-2022 Free Software Foundation, Inc.
+c Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -688,7 +688,7 @@ myprintf (FILE *f, const char *format, ...)
 @end smallexample
 @end deftypefn
 
-@deftypefn {Built-in Function} {size_t} __builtin_va_arg_pack_len ()
+@deftypefn {Built-in Function} {int} __builtin_va_arg_pack_len ()
 This built-in function returns the number of anonymous arguments of
 an inline function.  It can be used only in inline functions that
 are always inlined, never compiled as a separate function, such
@@ -1578,7 +1578,7 @@ locates data in flash but
 accesses to these data read from generic address space, i.e.@:
 from RAM,
 so that you need special accessors like @code{pgm_read_byte}
-from @w{@uref{http://nongnu.org/avr-libc/user-manual/,AVR-LibC}}
+from @w{@uref{https://www.nongnu.org/avr-libc/user-manual/,AVR-LibC}}
 together with attribute @code{progmem}.
 
 @noindent
@@ -3383,7 +3383,7 @@ Attribute @code{malloc} indicates that a function is @code{malloc}-like,
 i.e., that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
 pointers to valid objects occur in any storage addressed by @var{P}. In
-addition, the GCC predicts that a function with the attribute returns
+addition, GCC predicts that a function with the attribute returns
 non-null in most cases.
 
 Independently, the form of the attribute with one or two arguments
@@ -10402,8 +10402,10 @@ ensures that modifying @var{a} does not affect the address referenced by
 is undefined if @var{a} is modified before using @var{b}.
 
 @code{asm} supports operand modifiers on operands (for example @samp{%k2} 
-instead of simply @samp{%2}). Typically these qualifiers are hardware 
-dependent. The list of supported modifiers for x86 is found at 
+instead of simply @samp{%2}). @ref{GenericOperandmodifiers,
+Generic Operand modifiers} lists the modifiers that are available
+on all targets.  Other modifiers are hardware dependent.
+For example, the list of supported modifiers for x86 is found at
 @ref{x86Operandmodifiers,x86 Operand modifiers}.
 
 If the C code that follows the @code{asm} makes no use of any of the output 
@@ -10671,8 +10673,10 @@ optimizers may discard the @code{asm} statement as unneeded
 (see @ref{Volatile}).
 
 @code{asm} supports operand modifiers on operands (for example @samp{%k2} 
-instead of simply @samp{%2}). Typically these qualifiers are hardware 
-dependent. The list of supported modifiers for x86 is found at 
+instead of simply @samp{%2}). @ref{GenericOperandmodifiers,
+Generic Operand modifiers} lists the modifiers that are available
+on all targets.  Other modifiers are hardware dependent.
+For example, the list of supported modifiers for x86 is found at
 @ref{x86Operandmodifiers,x86 Operand modifiers}.
 
 In this example using the fictitious @code{combine} instruction, the 
@@ -11024,6 +11028,30 @@ lab:
 @}
 @end example
 
+@anchor{GenericOperandmodifiers}
+@subsubsection Generic Operand Modifiers
+@noindent
+The following table shows the modifiers supported by all targets and their effects:
+
+@multitable {Modifier} {Description} {Example}
+@headitem Modifier @tab Description @tab Example
+@item @code{c}
+@tab Require a constant operand and print the constant expression with no punctuation.
+@tab @code{%c0}
+@item @code{n}
+@tab Like @samp{%c} except that the value of the constant is negated before printing.
+@tab @code{%n0}
+@item @code{a}
+@tab Substitute a memory reference, with the actual operand treated as the address.
+This may be useful when outputting a ``load address'' instruction, because
+often the assembler syntax for such an instruction requires you to write the
+operand as if it were a memory reference.
+@tab @code{%a0}
+@item @code{l}
+@tab Print the label name with no punctuation.
+@tab @code{%l0}
+@end multitable
+
 @anchor{x86Operandmodifiers}
 @subsubsection x86 Operand Modifiers
 
@@ -11373,6 +11401,21 @@ constant.  Used to select the specified bit position.
 @item @code{r} @tab Inverse of condition code, for signed comparisons.
 @item @code{x} @tab Equivialent to @code{X}, but only for pointers.
 @end multitable
+
+@anchor{loongarchOperandmodifiers}
+@subsubsection LoongArch Operand Modifiers
+
+The list below describes the supported modifiers and their effects for LoongArch.
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{d} @tab Same as @code{c}.
+@item @code{i} @tab Print the character ''@code{i}'' if the operand is not a register.
+@item @code{m} @tab Same as @code{c}, but the printed value is @code{operand - 1}.
+@item @code{X} @tab Print a constant integer operand in hexadecimal.
+@item @code{z} @tab Print the operand in its unmodified form, followed by a comma.
+@end multitable
+
 
 @lowersections
 @include md.texi
@@ -12796,7 +12839,9 @@ __atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @end smallexample
 
 @node Object Size Checking
-@section Object Size Checking Built-in Functions
+@section Object Size Checking
+
+@subsection Object Size Checking Built-in Functions
 @findex __builtin_object_size
 @findex __builtin_dynamic_object_size
 @findex __builtin___memcpy_chk
@@ -12878,11 +12923,17 @@ which objects @var{ptr} points to at compile time are the same as in the case
 of @code{__builtin_object_size}.
 @end deftypefn
 
-There are built-in functions added for many common string operation
-functions, e.g., for @code{memcpy} @code{__builtin___memcpy_chk}
-built-in is provided.  This built-in has an additional last argument,
-which is the number of bytes remaining in the object the @var{dest}
-argument points to or @code{(size_t) -1} if the size is not known.
+@subsection Object Size Checking and Source Fortification
+
+Hardening of function calls using the @code{_FORTIFY_SOURCE} macro is
+one of the key uses of the object size checking built-in functions.  To
+make implementation of these features more convenient and improve
+optimization and diagnostics, there are built-in functions added for
+many common string operation functions, e.g., for @code{memcpy}
+@code{__builtin___memcpy_chk} built-in is provided.  This built-in has
+an additional last argument, which is the number of bytes remaining in
+the object the @var{dest} argument points to or @code{(size_t) -1} if
+the size is not known.
 
 The built-in functions are optimized into the normal string functions
 like @code{memcpy} if the last argument is @code{(size_t) -1} or if
@@ -13915,9 +13966,8 @@ corresponding to @var{t} for each function.
 The standard rules for @code{<tgmath.h>} macros are used to find a
 common type @var{u} from the types of the arguments for parameters
 whose types vary between the functions; complex integer types (a GNU
-extension) are treated like @code{_Complex double} for this purpose
-(or @code{_Complex _Float64} if all the function return types are the
-same @code{_Float@var{n}} or @code{_Float@var{n}x} type).
+extension) are treated like the complex type corresponding to the real
+floating type that would be chosen for the corresponding real integer type.
 If the function return types vary, or are all the same integer type,
 the function called is the one for which @var{t} is @var{u}, and it is
 an error if there is no such function.  If the function return types
@@ -14291,8 +14341,14 @@ and GCC does not issue a warning.
 @end deftypefn
 
 @deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
-Returns the size of an object pointed to by @var{ptr}.  @xref{Object Size
-Checking}, for a detailed description of the function.
+Returns a constant size estimate of an object pointed to by @var{ptr}.
+@xref{Object Size Checking}, for a detailed description of the function.
+@end deftypefn
+
+@deftypefn {Built-in Function}{size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})
+Similar to @code{__builtin_object_size} except that the return value
+need not be a constant.  @xref{Object Size Checking}, for a detailed
+description of the function.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_huge_val (void)
@@ -21103,7 +21159,9 @@ Returns the value that is currently set in the @samp{tp} register.
 @end deftypefn
 
 @deftypefn {Built-in Function}  void __builtin_riscv_pause (void)
-Generates the @code{pause} (hint) machine instruction.
+Generates the @code{pause} (hint) machine instruction.  This implies the
+Xgnuzihintpausestate extension, which redefines the @code{pause} instruction to
+change architectural state.
 @end deftypefn
 
 @node RX Built-in Functions

@@ -1,0 +1,124 @@
+(* wrapc.def provides access to more of the C library.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE wrapc ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+EXPORT QUALIFIED strtime, filesize, fileinode,
+                 getrand, getusername, filemtime,
+                 getnameuidgid, signbit, signbitf, signbitl,
+		 isfinite, isfinitel, isfinitef ;
+
+
+(*
+   strtime - returns the C string for the equivalent C asctime
+             function.
+*)
+
+PROCEDURE strtime () : ADDRESS ;
+
+
+(*
+   filesize - assigns the size of a file, f, into low, high and
+              returns zero if successful.
+*)
+
+PROCEDURE filesize (f: INTEGER; VAR low, high: CARDINAL) : INTEGER ;
+
+
+(*
+   fileinode - return the inode associated with file, f.
+*)
+
+PROCEDURE fileinode (f: INTEGER; VAR low, high: CARDINAL) : INTEGER ;
+
+
+(*
+   filemtime - returns the mtime of a file, f.
+*)
+
+PROCEDURE filemtime (f: INTEGER) : INTEGER ;
+
+
+(*
+   getrand - returns a random number between 0..n-1
+*)
+
+PROCEDURE getrand (n: INTEGER) : INTEGER ;
+
+
+(*
+   getusername - returns a C string describing the current user.
+*)
+
+PROCEDURE getusername () : ADDRESS ;
+
+
+(*
+   getnameuidgid - fills in the, uid, and, gid, which represents
+                   user, name.
+*)
+
+PROCEDURE getnameuidgid (name: ADDRESS; VAR uid, gid: INTEGER) ;
+
+
+(*
+   in C these procedure functions are really macros, so we provide
+   real C functions and let gm2 call these if the builtins
+   are unavailable.
+*)
+
+PROCEDURE signbit (r: REAL) : INTEGER ;
+PROCEDURE signbitf (s: SHORTREAL) : INTEGER ;
+PROCEDURE signbitl (l: LONGREAL) : INTEGER ;
+
+
+(*
+   isfinite - provide non builtin alternative to the gcc builtin isfinite.
+              Returns 1 if x is finite and 0 if it is not.
+*)
+
+PROCEDURE isfinite (x: REAL) : INTEGER ;
+
+
+(*
+   isfinitef - provide non builtin alternative to the gcc builtin isfinite.
+               Returns 1 if x is finite and 0 if it is not.
+*)
+
+PROCEDURE isfinitef (x: SHORTREAL) : INTEGER ;
+
+
+(*
+   isfinitel - provide non builtin alternative to the gcc builtin isfinite.
+               Returns 1 if x is finite and 0 if it is not.
+*)
+
+PROCEDURE isfinitel (x: LONGREAL) : INTEGER ;
+
+
+END wrapc.

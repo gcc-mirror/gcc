@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2014-2022, Free Software Foundation, Inc.        --
+--           Copyright (C) 2014-2023, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,8 +70,10 @@
 --    F         Decimal floating point, uppercase
 --    e         Scientific notation (mantissa/exponent), lowercase
 --    E         Scientific notation (mantissa/exponent), uppercase
---    g         Use the shortest representation: %e or %f
---    G         Use the shortest representation: %E or %F
+--    g         Interpret the precision as the number of significant figures,
+--              choose the most adequate of decimal or scientific notation, and
+--              trim trailing zeroes and point. Letters are in lowercase.
+--    G         Same as g, except that letters are in uppercase
 --    c         Character
 --    s         String of characters
 --    p         Pointer address

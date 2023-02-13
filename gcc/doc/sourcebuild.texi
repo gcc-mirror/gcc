@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2022 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2023 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -73,10 +73,10 @@ The runtime support library for atomic operations (e.g.@: for @code{__sync}
 and @code{__atomic}).
 
 @item libbacktrace
-A library that allows gcc to produce backtraces when it crashes.
+A library that allows GCC to produce backtraces when it crashes.
 
 @item libcc1
-A library that allows gdb to make use of the compiler.
+A library that allows GDB to make use of the compiler.
 
 @item libcody
 A compiler dynamism library to allow communication between compilers and
@@ -96,6 +96,9 @@ The GCC runtime library.
 
 @item libgfortran
 The Fortran runtime library.
+
+@item libgm2
+The Modula-2 runtime library.
 
 @item libgo
 The Go runtime library.  The bulk of this library is mirrored from the
@@ -184,7 +187,8 @@ The @file{gcc} directory contains the following subdirectories:
 @item @var{language}
 Subdirectories for various languages.  Directories containing a file
 @file{config-lang.in} are language subdirectories.  The contents of
-the subdirectories @file{c} (for C), @file{cp} (for C++),
+the subdirectories @file{c} (for C), @file{cp} (for C++), @file{m2}
+(for Modula-2),
 @file{objc} (for Objective-C), @file{objcp} (for Objective-C++),
 and @file{lto} (for LTO) are documented in this
 manual (@pxref{Passes, , Passes and Files of the Compiler});
@@ -2191,6 +2195,10 @@ ARM target supports options to generate instructions from ARMv8.1-M with
 the Custom Datapath Extension (CDE) and M-Profile Vector Extension (MVE).
 Some multilibs may be incompatible with these options.
 
+@item arm_pacbti_hw
+Test system supports executing Pointer Authentication and Branch Target
+Identification instructions.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
@@ -2279,6 +2287,12 @@ executing the Armv8.1-M Mainline Low Overhead Loop instructions
 ARM target generates Thumb-2 code for @code{-mthumb} but does not
 support executing the Armv8.1-M Mainline Low Overhead Loop
 instructions @code{DLS} and @code{LE}.
+
+@item mbranch_protection_ok
+ARM target supporting @code{-mbranch-protection=standard}.
+
+@item arm_pacbti_hw
+Test system supports for executing non nop pacbti instructions.
 
 @end table
 
@@ -2511,6 +2525,24 @@ Target supports the execution of @code{amx-fp16} instructions.
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 
+@item clz
+Target supports a clz optab on int.
+
+@item clzl
+Target supports a clz optab on long.
+
+@item clzll
+Target supports a clz optab on long long.
+
+@item ctz
+Target supports a ctz optab on int.
+
+@item ctzl
+Target supports a ctz optab on long.
+
+@item ctzll
+Target supports a ctz optab on long long.
+
 @item cmpccxadd
 Target supports the execution of @code{cmpccxadd} instructions.
 
@@ -2531,6 +2563,15 @@ Target does not require strict alignment.
 
 @item pie_copyreloc
 The x86-64 target linker supports PIE with copy reloc.
+
+@item popcount
+Target supports a popcount optab on int.
+
+@item popcountl
+Target supports a popcount optab on long.
+
+@item popcountll
+Target supports a popcount optab on long long.
 
 @item prefetchi
 Target supports the execution of @code{prefetchi} instructions.

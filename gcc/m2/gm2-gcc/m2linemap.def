@@ -1,0 +1,56 @@
+(* m2linemap.def provides access to GCC location_t.
+
+Copyright (C) 2011-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FOR "C" m2linemap ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+EXPORT QUALIFIED StartFile, EndFile, StartLine, GetLocationColumn, GetLocationRange,
+                 GetLocationBinary, UnknownLocation, BuiltinsLocation,
+                 GetLineNoFromLocation, GetColumnNoFromLocation,
+                 GetFilenameFromLocation, ErrorAt, ErrorAtf,
+                 WarningAtf, NoteAtf, internal_error, location_t ;
+
+TYPE
+   location_t = CARDINAL ;
+
+
+PROCEDURE StartFile (filename: ADDRESS; linebegin: CARDINAL) ;
+PROCEDURE EndFile ;
+PROCEDURE StartLine (linenumber: CARDINAL; linesize: CARDINAL) ;
+PROCEDURE GetLocationColumn (column: CARDINAL) : location_t ;
+PROCEDURE GetLocationRange (start, end: CARDINAL) : location_t ;
+PROCEDURE GetLocationBinary (caret, left, right: location_t) : location_t ;
+
+PROCEDURE UnknownLocation () : location_t ;
+PROCEDURE BuiltinsLocation () : location_t ;
+
+PROCEDURE GetLineNoFromLocation (location: location_t) : INTEGER ;
+PROCEDURE GetColumnNoFromLocation (location: location_t) : INTEGER ;
+PROCEDURE GetFilenameFromLocation (location: location_t) : ADDRESS ;
+PROCEDURE ErrorAt (location: location_t; message: ADDRESS) ;
+PROCEDURE ErrorAtf (location: location_t; message: ADDRESS) ;
+PROCEDURE WarningAtf (location: location_t; message: ADDRESS) ;
+PROCEDURE NoteAtf (location: location_t; message: ADDRESS) ;
+PROCEDURE internal_error (message: ADDRESS) ;
+
+
+END m2linemap.

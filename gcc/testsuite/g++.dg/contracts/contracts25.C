@@ -50,8 +50,8 @@ int main(int, char **) {
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 12 ffun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 30 ftfun<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 36 explicitfn .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 30 ftfun<double> .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function ffun at .*.C:12: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ftfun<int> at .*.C:30: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function explicitfn at .*.C:36: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ftfun<double> at .*.C:30: .*(\n|\r\n|\r)" }
 

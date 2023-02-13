@@ -5,6 +5,10 @@
 #include <algorithm>
 #include <testsuite_hooks.h>
 
+#if __cpp_lib_ranges_repeat != 202207L
+# error "Feature-test macro __cpp_lib_ranges_repeat has wrong value in <ranges>"
+#endif
+
 namespace ranges = std::ranges;
 namespace views = std::views;
 

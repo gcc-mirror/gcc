@@ -65,3 +65,4 @@ test_expected_error()
 }
 
 // { dg-prune-output "static assertion failed" }
+// { dg-prune-output "function returning an array" }

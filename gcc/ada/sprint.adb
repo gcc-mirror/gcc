@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3312,6 +3312,38 @@ package body Sprint is
 
             Set_Debug_Sloc;
             Write_String_Table_Entry (Strval (Node));
+
+         when N_Interpolated_String_Literal =>
+            Write_Char ('{');
+
+            declare
+               Str_Elem : Node_Id := First (Expressions (Node));
+               Is_First : Boolean := True;
+
+            begin
+               while Present (Str_Elem) loop
+                  if not Is_First then
+                     Write_Str (" & ");
+                  end if;
+
+                  if Nkind (Str_Elem) = N_String_Literal then
+                     Sprint_Node (Str_Elem);
+
+                  else
+                     Write_Char ('"');
+                     Write_Char ('{');
+                     Sprint_Node (Str_Elem);
+                     Write_Char ('}');
+                     Write_Char ('"');
+                  end if;
+
+                  Is_First := False;
+
+                  Next (Str_Elem);
+               end loop;
+            end;
+
+            Write_Char ('}');
 
          when N_Subprogram_Body =>
 

@@ -1,0 +1,87 @@
+(* M2BasicBlock.def converts a scope block into a list of basic blocks.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2BasicBlock ;
+
+(*
+   Title      : M2BasicBlock
+   Author     : Gaius Mulley
+   Date       : 20/8/2003
+   System     : GNU Modula-2
+   Description: Converts a scope block into a list of basic blocks.
+                The basic blocks are either converted back into quadruples
+                or alternatively translated into GCC trees.
+*)
+
+FROM M2Scope IMPORT ScopeBlock ;
+EXPORT QUALIFIED BasicBlock, BasicBlockProc,
+                 InitBasicBlocks, InitBasicBlocksFromRange,
+		 KillBasicBlocks, FreeBasicBlocks,
+                 ForeachBasicBlockDo ;
+
+
+TYPE
+   BasicBlock ;
+   BasicBlockProc = PROCEDURE (CARDINAL, CARDINAL) ;
+
+
+(*
+   InitBasicBlocks - converts a list of quadruples as defined by
+                     scope blocks into a set of basic blocks.
+                     All quadruples within this list which are not
+                     reachable are removed.
+*)
+
+PROCEDURE InitBasicBlocks (sb: ScopeBlock) : BasicBlock ;
+
+
+(*
+   InitBasicBlocksFromRange - converts a list of quadruples as defined by
+                              start..end.
+                              All quadruples within this list which are not
+                              reachable are removed.
+*)
+
+PROCEDURE InitBasicBlocksFromRange (start, end: CARDINAL) : BasicBlock ;
+
+
+(*
+   KillBasicBlocks - destroys the list of Basic Blocks and assigns bb to NIL.
+*)
+
+PROCEDURE KillBasicBlocks (VAR bb: BasicBlock) ;
+
+
+(*
+   FreeBasicBlocks - destroys the list of Basic Blocks.
+*)
+
+PROCEDURE FreeBasicBlocks (bb: BasicBlock) ;
+
+
+(*
+   ForeachBasicBlockDo - for each basic block call procedure, p.
+*)
+
+PROCEDURE ForeachBasicBlockDo (bb: BasicBlock; p: BasicBlockProc) ;
+
+
+END M2BasicBlock.

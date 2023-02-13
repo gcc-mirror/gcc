@@ -1,5 +1,5 @@
 /* Code for GIMPLE range related routines.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -1037,6 +1037,9 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   tree ssa2_dep2 = gimple_range_ssa_p (handler2.operand2 ());
 
   if (!ssa1_dep1 || !ssa1_dep2 || !ssa2_dep1 || !ssa2_dep2)
+    return;
+
+  if (HONOR_NANS (TREE_TYPE (ssa1_dep1)))
     return;
 
   // Make sure they are the same dependencies, and detect the order of the

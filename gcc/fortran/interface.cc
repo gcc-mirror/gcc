@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2858,7 +2858,8 @@ get_expr_storage_size (gfc_expr *e)
   if (e->ts.type == BT_CHARACTER)
     {
       if (e->ts.u.cl && e->ts.u.cl->length
-          && e->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	  && e->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && e->ts.u.cl->length->ts.type == BT_INTEGER)
 	strlen = mpz_get_si (e->ts.u.cl->length->value.integer);
       else if (e->expr_type == EXPR_CONSTANT
 	       && (e->ts.u.cl == NULL || e->ts.u.cl->length == NULL))
@@ -2909,7 +2910,8 @@ get_expr_storage_size (gfc_expr *e)
 
 	    if (ref->u.ar.stride[i])
 	      {
-		if (ref->u.ar.stride[i]->expr_type == EXPR_CONSTANT)
+		if (ref->u.ar.stride[i]->expr_type == EXPR_CONSTANT
+		    && ref->u.ar.stride[i]->ts.type == BT_INTEGER)
 		  stride = mpz_get_si (ref->u.ar.stride[i]->value.integer);
 		else
 		  return 0;
@@ -2917,26 +2919,30 @@ get_expr_storage_size (gfc_expr *e)
 
 	    if (ref->u.ar.start[i])
 	      {
-		if (ref->u.ar.start[i]->expr_type == EXPR_CONSTANT)
+		if (ref->u.ar.start[i]->expr_type == EXPR_CONSTANT
+		    && ref->u.ar.start[i]->ts.type == BT_INTEGER)
 		  start = mpz_get_si (ref->u.ar.start[i]->value.integer);
 		else
 		  return 0;
 	      }
 	    else if (ref->u.ar.as->lower[i]
-		     && ref->u.ar.as->lower[i]->expr_type == EXPR_CONSTANT)
+		     && ref->u.ar.as->lower[i]->expr_type == EXPR_CONSTANT
+		     && ref->u.ar.as->lower[i]->ts.type == BT_INTEGER)
 	      start = mpz_get_si (ref->u.ar.as->lower[i]->value.integer);
 	    else
 	      return 0;
 
 	    if (ref->u.ar.end[i])
 	      {
-		if (ref->u.ar.end[i]->expr_type == EXPR_CONSTANT)
+		if (ref->u.ar.end[i]->expr_type == EXPR_CONSTANT
+		    && ref->u.ar.end[i]->ts.type == BT_INTEGER)
 		  end = mpz_get_si (ref->u.ar.end[i]->value.integer);
 		else
 		  return 0;
 	      }
 	    else if (ref->u.ar.as->upper[i]
-		     && ref->u.ar.as->upper[i]->expr_type == EXPR_CONSTANT)
+		     && ref->u.ar.as->upper[i]->expr_type == EXPR_CONSTANT
+		     && ref->u.ar.as->upper[i]->ts.type == BT_INTEGER)
 	      end = mpz_get_si (ref->u.ar.as->upper[i]->value.integer);
 	    else
 	      return 0;
@@ -2977,7 +2983,9 @@ get_expr_storage_size (gfc_expr *e)
 		  || ref->u.ar.as->upper[i] == NULL
 		  || ref->u.ar.as->lower[i] == NULL
 		  || ref->u.ar.as->upper[i]->expr_type != EXPR_CONSTANT
-		  || ref->u.ar.as->lower[i]->expr_type != EXPR_CONSTANT)
+		  || ref->u.ar.as->lower[i]->expr_type != EXPR_CONSTANT
+		  || ref->u.ar.as->upper[i]->ts.type != BT_INTEGER
+		  || ref->u.ar.as->lower[i]->ts.type != BT_INTEGER)
 		return 0;
 
 	      elements
@@ -2999,7 +3007,9 @@ get_expr_storage_size (gfc_expr *e)
 	    {
 	      if (!as->upper[i] || !as->lower[i]
 		  || as->upper[i]->expr_type != EXPR_CONSTANT
-		  || as->lower[i]->expr_type != EXPR_CONSTANT)
+		  || as->lower[i]->expr_type != EXPR_CONSTANT
+		  || as->upper[i]->ts.type != BT_INTEGER
+		  || as->lower[i]->ts.type != BT_INTEGER)
 		return 0;
 
 	      elements = elements

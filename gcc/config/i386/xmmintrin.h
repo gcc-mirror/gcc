@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -112,7 +112,10 @@ typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_undefined_ps (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m128 __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 

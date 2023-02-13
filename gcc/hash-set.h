@@ -1,5 +1,5 @@
 /* A type-safe hash set.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,7 +58,12 @@ public:
       Key *e = m_table.find_slot_with_hash (k, Traits::hash (k), INSERT);
       bool existed = !Traits::is_empty (*e);
       if (!existed)
-	new (e) Key (k);
+	{
+	  new (e) Key (k);
+	  // Catch attempts to insert e.g. a NULL pointer.
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
+	}
 
       return existed;
     }

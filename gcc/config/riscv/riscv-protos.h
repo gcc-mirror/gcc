@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -96,6 +96,7 @@ extern void riscv_parse_arch_string (const char *, struct gcc_options *, locatio
 extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 
 rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
+rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
 
 /* Information about one CPU we know about.  */
 struct riscv_cpu_info {
@@ -131,6 +132,12 @@ enum vlmul_type
   LMUL_F4 = 6,
   LMUL_F2 = 7,
 };
+
+enum avl_type
+{
+  NONVLMAX,
+  VLMAX,
+};
 /* Routines implemented in riscv-vector-builtins.cc.  */
 extern void init_builtins (void);
 extern const char *mangle_builtin_type (const_tree);
@@ -145,17 +152,27 @@ extern bool legitimize_move (rtx, rtx, machine_mode);
 extern void emit_pred_op (unsigned, rtx, rtx, machine_mode);
 extern enum vlmul_type get_vlmul (machine_mode);
 extern unsigned int get_ratio (machine_mode);
+extern int get_ta (rtx);
+extern int get_ma (rtx);
+extern int get_avl_type (rtx);
+extern unsigned int calculate_ratio (unsigned int, enum vlmul_type);
 enum tail_policy
 {
   TAIL_UNDISTURBED = 0,
   TAIL_AGNOSTIC = 1,
+  TAIL_ANY = 2,
 };
 
 enum mask_policy
 {
   MASK_UNDISTURBED = 0,
   MASK_AGNOSTIC = 1,
+  MASK_ANY = 2,
 };
+enum tail_policy get_prefer_tail_policy ();
+enum mask_policy get_prefer_mask_policy ();
+rtx get_avl_type_rtx (enum avl_type);
+opt_machine_mode get_vector_mode (scalar_mode, poly_uint64);
 }
 
 /* We classify builtin types into two classes:

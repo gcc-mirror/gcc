@@ -2,12 +2,12 @@
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O3" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 /*
 ** mov4:
-**	vl1re64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs1r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl1re64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs1r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov4 (double *in, double *out)
@@ -18,8 +18,8 @@ void mov4 (double *in, double *out)
 
 /*
 ** mov5:
-**	vl2re64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs2r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl2re64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs2r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov5 (double *in, double *out)
@@ -30,8 +30,8 @@ void mov5 (double *in, double *out)
 
 /*
 ** mov6:
-**	vl4re64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs4r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl4re64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs4r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov6 (double *in, double *out)
@@ -42,8 +42,8 @@ void mov6 (double *in, double *out)
 
 /*
 ** mov7:
-**	vl8re64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs8r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl8re64\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs8r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov7 (double *in, double *out)

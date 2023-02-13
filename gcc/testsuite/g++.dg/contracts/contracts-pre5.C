@@ -56,26 +56,26 @@ int main(int, char**)
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 8 body<int> .*(\n|\r\n|\r)*" }
-// { dg-output "-2(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 8 body<double> .*(\n|\r\n|\r)*" }
-// { dg-output "-5(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 16 none<int> .*(\n|\r\n|\r)*" }
-// { dg-output "1(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 16 none<double> .*(\n|\r\n|\r)*" }
-// { dg-output "2(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 23 arg0<int> .*(\n|\r\n|\r)*" }
-// { dg-output "-9(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 23 arg0<double> .*(\n|\r\n|\r)*" }
-// { dg-output "-7(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 30 arg1<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 31 arg1<int> .*(\n|\r\n|\r)*" }
-// { dg-output "-3(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 30 arg1<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 31 arg1<double> .*(\n|\r\n|\r)*" }
-// { dg-output "-11(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 38 ret<int> .*(\n|\r\n|\r)*" }
-// { dg-output "3(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 38 ret<double> .*(\n|\r\n|\r)*" }
-// { dg-output "4(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function body<int> at .*.C:8: .*(\n|\r\n|\r)" }
+// { dg-output "-2(\n|\r\n|\r)" }
+// { dg-output "contract violation in function body<double> at .*.C:8: .*(\n|\r\n|\r)" }
+// { dg-output "-5(\n|\r\n|\r)" }
+// { dg-output "contract violation in function none<int> at .*.C:16: .*(\n|\r\n|\r)" }
+// { dg-output "1(\n|\r\n|\r)" }
+// { dg-output "contract violation in function none<double> at .*.C:16: .*(\n|\r\n|\r)" }
+// { dg-output "2(\n|\r\n|\r)" }
+// { dg-output "contract violation in function arg0<int> at .*.C:23: .*(\n|\r\n|\r)" }
+// { dg-output "-9(\n|\r\n|\r)" }
+// { dg-output "contract violation in function arg0<double> at .*.C:23: .*(\n|\r\n|\r)" }
+// { dg-output "-7(\n|\r\n|\r)" }
+// { dg-output "contract violation in function arg1<int> at .*.C:30: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function arg1<int> at .*.C:31: .*(\n|\r\n|\r)" }
+// { dg-output "-3(\n|\r\n|\r)" }
+// { dg-output "contract violation in function arg1<double> at .*.C:30: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function arg1<double> at .*.C:31: .*(\n|\r\n|\r)" }
+// { dg-output "-11(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ret<int> at .*.C:38: .*(\n|\r\n|\r)" }
+// { dg-output "3(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ret<double> at .*.C:38: .*(\n|\r\n|\r)" }
+// { dg-output "4(\n|\r\n|\r)" }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -1210,9 +1210,6 @@ rust_flatten_list (void)
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_list (list, paths);
-
-  for (auto &path : paths)
-    fprintf (stderr, "%s\n", path.as_string ().c_str ());
 
   ASSERT_TRUE (!paths.empty ());
   ASSERT_EQ (paths.size (), 2);

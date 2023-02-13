@@ -1,5 +1,5 @@
 /* Process declarations and variables for -*- C++ -*- compiler.
-   Copyright (C) 1988-2022 Free Software Foundation, Inc.
+   Copyright (C) 1988-2023 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1556,6 +1556,8 @@ merge_default_template_args (tree new_parms, tree old_parms, bool class_p)
       tree old_parm = TREE_VALUE (TREE_VEC_ELT (old_parms, i));
       tree& new_default = TREE_PURPOSE (TREE_VEC_ELT (new_parms, i));
       tree& old_default = TREE_PURPOSE (TREE_VEC_ELT (old_parms, i));
+      if (error_operand_p (new_parm) || error_operand_p (old_parm))
+	return false;
       if (new_default != NULL_TREE && old_default != NULL_TREE)
 	{
 	  auto_diagnostic_group d;
@@ -4670,9 +4672,13 @@ cxx_init_decl_processing (void)
 			    BUILT_IN_FRONTEND, NULL, NULL_TREE);
   set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
-  tree cptr_ftype = build_function_type_list (const_ptr_type_node, NULL_TREE);
+  /* The concrete return type of __builtin_source_location is
+     const std::source_location::__impl*, but we can't form the type
+     at this point.  So we initially declare it with an auto return
+     type which we then "deduce" from require_deduced_type upon first use.  */
+  tree auto_ftype = build_function_type_list (make_auto (), NULL_TREE);
   decl = add_builtin_function ("__builtin_source_location",
-			       cptr_ftype, CP_BUILT_IN_SOURCE_LOCATION,
+			       auto_ftype, CP_BUILT_IN_SOURCE_LOCATION,
 			       BUILT_IN_FRONTEND, NULL, NULL_TREE);
   set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
@@ -8401,7 +8407,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (!DECL_EXTERNAL (decl)
 	  && !TREE_STATIC (decl)
 	  && decl == tree_strip_any_location_wrapper (init)
-	  && !warn_init_self)
+	  && !warning_enabled_at (DECL_SOURCE_LOCATION (decl), OPT_Winit_self))
 	suppress_warning (decl, OPT_Winit_self);
     }
 
@@ -9133,9 +9139,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	  if (processing_template_decl)
 	    continue;
 	  tree t = unshare_expr (dexp);
-	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
-			  eltype, t, size_int (i), NULL_TREE,
-			  NULL_TREE);
+	  t = build4 (ARRAY_REF, eltype, t, size_int (i), NULL_TREE, NULL_TREE);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}
@@ -9154,9 +9158,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	  if (processing_template_decl)
 	    continue;
 	  tree t = unshare_expr (dexp);
-	  t = build1_loc (DECL_SOURCE_LOCATION (v[i]),
-			  i ? IMAGPART_EXPR : REALPART_EXPR, eltype,
-			  t);
+	  t = build1 (i ? IMAGPART_EXPR : REALPART_EXPR, eltype, t);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}
@@ -9180,9 +9182,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	  tree t = unshare_expr (dexp);
 	  convert_vector_to_array_for_subscript (DECL_SOURCE_LOCATION (v[i]),
 						 &t, size_int (i));
-	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
-			  eltype, t, size_int (i), NULL_TREE,
-			  NULL_TREE);
+	  t = build4 (ARRAY_REF, eltype, t, size_int (i), NULL_TREE, NULL_TREE);
 	  SET_DECL_VALUE_EXPR (v[i], t);
 	  DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	}
@@ -14776,7 +14776,9 @@ grokdeclarator (const cp_declarator *declarator,
       {
 	/* If we saw a return type, record its location.  */
 	location_t loc = declspecs->locations[ds_type_spec];
-	if (loc != UNKNOWN_LOCATION)
+	if (loc == UNKNOWN_LOCATION)
+	  /* Build DECL_RESULT in start_preparsed_function.  */;
+	else if (!DECL_RESULT (decl))
 	  {
 	    tree restype = TREE_TYPE (TREE_TYPE (decl));
 	    tree resdecl = build_decl (loc, RESULT_DECL, 0, restype);
@@ -14784,6 +14786,8 @@ grokdeclarator (const cp_declarator *declarator,
 	    DECL_IGNORED_P (resdecl) = 1;
 	    DECL_RESULT (decl) = resdecl;
 	  }
+	else if (funcdef_flag)
+	  DECL_SOURCE_LOCATION (DECL_RESULT (decl)) = loc;
       }
 
     /* Record constancy and volatility on the DECL itself .  There's
@@ -18752,6 +18756,23 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 {
   if (undeduced_auto_decl (decl))
     {
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && fndecl_built_in_p (decl, BUILT_IN_FRONTEND)
+	  && DECL_FE_FUNCTION_CODE (decl) == CP_BUILT_IN_SOURCE_LOCATION)
+	{
+	  /* Set the return type of __builtin_source_location.  */
+	  tree type = get_source_location_impl_type ();
+	  if (type == error_mark_node)
+	    {
+	      inform (input_location, "using %qs", "__builtin_source_location");
+	      return false;
+	    }
+	  type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
+	  type = build_pointer_type (type);
+	  apply_deduced_return_type (decl, type);
+	  return true;
+	}
+
       if (warning_suppressed_p (decl) && seen_error ())
 	/* We probably already complained about deduction failure.  */;
       else if (complain & tf_error)

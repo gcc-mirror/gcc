@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -652,8 +652,10 @@ cp_convert (tree type, tree expr, tsubst_flags_t complain)
 tree
 cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
 {
-  tree result;
+  tree result, expr_for_warning = expr;
 
+  if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+    expr = TREE_OPERAND (expr, 0);
   if (TREE_TYPE (expr) == type)
     return expr;
   if (expr == error_mark_node)
@@ -663,7 +665,7 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
   if ((complain & tf_warning)
       && c_inhibit_evaluation_warnings == 0)
     {
-      tree folded = cp_fully_fold (expr);
+      tree folded = cp_fully_fold (expr_for_warning);
       tree folded_result;
       if (folded == expr)
 	folded_result = result;
@@ -709,8 +711,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	return error_mark_node;
       if (e == TREE_OPERAND (expr, 1))
 	return expr;
-      return build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR, TREE_TYPE (e),
-			 TREE_OPERAND (expr, 0), e);
+      e = build2_loc (EXPR_LOCATION (expr), COMPOUND_EXPR, TREE_TYPE (e),
+		      TREE_OPERAND (expr, 0), e);
+      copy_warning (e, expr);
+      return e;
     }
 
   complete_type (type);

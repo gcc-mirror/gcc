@@ -1,0 +1,35 @@
+
+Building GNU Modula-2
+=====================
+
+Please see the GCC documentation (gcc.texi) and section
+(Installing GCC).
+
+Regression testing GM2
+======================
+
+   cd host-build ; make check-m2
+
+runs all regression tests.
+
+Stress testing GM2
+==================
+
+   cd host-build/gcc ; make gm2.paranoid
+
+builds gm2 using itself and then compiles each module with both
+versions of gm2 comparing the emitted assembler code.
+
+Contributing to GNU Modula-2
+============================
+
+Please do. But also please read the GNU Emacs info under
+
+* Standards: (standards).       GNU coding standards.
+* Intellectual Property::       Keeping Free Software Free
+* Reading Non-Free Code::       Referring to Proprietary Programs
+* Contributions::               Accepting Contributions
+
+you might consider joining the GM2 Mailing list: see URL:
+http://lists.nongnu.org/mailman/listinfo/gm2 before you start coding.
+Many thanks and enjoy your programming!

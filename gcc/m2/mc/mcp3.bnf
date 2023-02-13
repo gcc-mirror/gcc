@@ -1,0 +1,1328 @@
+--
+-- mc-3.bnf grammar and associated actions for mcp3.
+--
+-- Copyright (C) 2015-2023 Free Software Foundation, Inc.
+-- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+--
+-- This file is part of GNU Modula-2.
+--
+-- GNU Modula-2 is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3, or (at your option)
+-- any later version.
+--
+-- GNU Modula-2 is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with GNU Modula-2; see the file COPYING3.  If not see
+-- <http://www.gnu.org/licenses/>.
+% module mcp3 begin
+(* output from mc-3.bnf, automatically generated do not edit.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING.  If not,
+see <https://www.gnu.org/licenses/>.  *)
+
+IMPLEMENTATION MODULE mcp3 ;
+
+FROM DynamicStrings IMPORT String, InitString, KillString, Mark,
+                           ConCat, ConCatChar ;
+
+FROM mcError IMPORT errorStringAt ;
+FROM nameKey IMPORT NulName, Name, makekey, makeKey ;
+FROM mcPrintf IMPORT printf0, printf1 ;
+FROM mcDebug IMPORT assert ;
+FROM mcReserved IMPORT toktype ;
+FROM mcMetaError IMPORT metaError1, metaError2 ;
+FROM mcStack IMPORT stack ;
+
+IMPORT mcStack ;
+
+FROM mcLexBuf IMPORT currentstring, currenttoken, getToken, insertToken,
+                     insertTokenAndRewind, getTokenNo ;
+
+FROM decl IMPORT node, lookupDef, lookupImp, lookupModule, getSymName,
+                 putTypeHidden,
+		 enterScope, leaveScope,
+		 putType, lookupSym, isDef, makeSubrange,
+                 makeSet, makePointer, makeProcType,
+		 putReturnType, putOptReturn,
+		 addParameter, paramEnter, paramLeave,
+		 makeVarargs, makeVarParameter, makeNonVarParameter,
+		 putSubrangeType, putConst,
+		 makeArray, putUnbounded, getCardinal,
+		 makeRecord, isRecord, isRecordField, isVarientField, makeVarient,
+		 addFieldsToRecord, isVarient, buildVarientSelector,
+ 		 buildVarientFieldRecord, makeVarDecl, addOptParameter,
+		 makeIdentList, putIdent, addVarParameters, addNonVarParameters,
+		 lookupInScope, import, lookupExported, isImp, isModule, isConst,
+		 makeLiteralInt, makeLiteralReal, makeString, getBuiltinConst,
+		 getNextEnum, resetEnumPos, makeConstExp, setConstExpComplete,
+		 makeEnum, makeEnumField, setNoReturn ;
+
+
+CONST
+   Pass1     = FALSE ;
+   Debugging = FALSE ;
+
+VAR
+   WasNoError : BOOLEAN ;
+   curisused  : BOOLEAN ;
+   curstring,
+   curident   : Name ;
+   curproc,
+   frommodule,
+   typeDes,
+   typeExp,
+   curmodule  : node ;
+   stk        : stack ;
+
+
+(*
+   push -
+*)
+
+PROCEDURE push (n: node) : node ;
+BEGIN
+   RETURN mcStack.push (stk, n)
+END push ;
+
+
+(*
+   pop -
+*)
+
+PROCEDURE pop () : node ;
+BEGIN
+   RETURN mcStack.pop (stk)
+END pop ;
+
+
+(*
+   replace -
+*)
+
+PROCEDURE replace (n: node) : node ;
+BEGIN
+   RETURN mcStack.replace (stk, n)
+END replace ;
+
+
+(*
+   peep - returns the top node on the stack without removing it.
+*)
+
+PROCEDURE peep () : node ;
+BEGIN
+   RETURN push (pop ())
+END peep ;
+
+
+(*
+   depth - returns the depth of the stack.
+*)
+
+PROCEDURE depth () : CARDINAL ;
+BEGIN
+   RETURN mcStack.depth (stk)
+END depth ;
+
+
+(*
+   checkDuplicate -
+*)
+
+PROCEDURE checkDuplicate (b: BOOLEAN) ;
+BEGIN
+
+END checkDuplicate ;
+
+
+PROCEDURE ErrorString (s: String) ;
+BEGIN
+   errorStringAt (s, getTokenNo ()) ;
+   WasNoError := FALSE
+END ErrorString ;
+
+
+PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
+BEGIN
+   ErrorString (InitString (a))
+END ErrorArray ;
+
+
+(*
+   checkParameterAttribute -
+*)
+
+PROCEDURE checkParameterAttribute ;
+BEGIN
+   IF makeKey ("unused") # curident
+   THEN
+      metaError1 ('attribute {%1k} is not allowed in the formal parameter section, currently only unused is allowed', curident)
+   END
+END checkParameterAttribute ;
+
+
+(*
+   checkReturnAttribute -
+*)
+
+PROCEDURE checkReturnAttribute ;
+BEGIN
+   IF makeKey ("noreturn") # curident
+   THEN
+      metaError1 ('attribute {%1k} is not allowed in the procedure return type, only noreturn is allowed', curident)
+   END
+END checkReturnAttribute ;
+
+
+(*
+   pushNunbounded -
+*)
+
+PROCEDURE pushNunbounded (c: CARDINAL) ;
+VAR
+   type,
+   array,
+   subrange: node ;
+BEGIN
+   WHILE c#0 DO
+      type := pop () ;
+      subrange := makeSubrange (NIL, NIL) ;
+      putSubrangeType (subrange, getCardinal ()) ;
+
+      array := makeArray (subrange, type) ;
+      putUnbounded (array) ;
+      type := push (array) ;
+      DEC (c)
+   END
+END pushNunbounded ;
+
+
+(*
+   makeIndexedArray - builds and returns an array of type, t, with, c, indices.
+*)
+
+PROCEDURE makeIndexedArray (c: CARDINAL; t: node) : node ;
+VAR
+   i: node ;
+BEGIN
+   WHILE c>0 DO
+      t := makeArray (pop (), t) ;
+      DEC (c)
+   END ;
+   RETURN t
+END makeIndexedArray ;
+
+
+(*
+   importInto - from, m, import, name, into module, current.
+                It checks to see if curident is an enumeration type
+                and if so automatically includes all enumeration fields
+                as well.
+*)
+
+PROCEDURE importInto (m: node; name: Name; current: node) ;
+VAR
+   s, o: node ;
+BEGIN
+   assert (isDef (m)) ;
+   assert (isDef (current) OR isModule (current) OR isImp (current)) ;
+   s := lookupExported (m, name) ;
+   IF s=NIL
+   THEN
+      metaError2 ('{%1k} was not exported from definition module {%2a}', name, m)
+   ELSE
+      o := import (current, s) ;
+      IF s#o
+      THEN
+         metaError2 ('{%1ad} cannot be imported into the current module as it causes a name clash with {%2ad}',
+                     s, o)
+      END
+   END
+END importInto ;
+
+
+(*
+   checkEndName - if module does not have, name, then issue an error containing, desc.
+*)
+
+PROCEDURE checkEndName (module: node; name: Name; desc: ARRAY OF CHAR) ;
+VAR
+   s: String ;
+BEGIN
+   IF getSymName (module)#name
+   THEN
+      s := InitString ('inconsistent module name found with this ') ;
+      s := ConCat (s, Mark (InitString (desc))) ;
+      ErrorString (s)
+   END
+END checkEndName ;
+
+% declaration mcp3 begin
+
+
+(*
+   SyntaxError - after a syntax error we skip all tokens up until we reach
+                 a stop symbol.
+*)
+
+PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   DescribeError ;
+   IF Debugging
+   THEN
+      printf0('\nskipping token *** ')
+   END ;
+   (*
+      yes the ORD(currenttoken) looks ugly, but it is *much* safer than
+      using currenttoken<sometok as a change to the ordering of the
+      token declarations below would cause this to break. Using ORD() we are
+      immune from such changes
+   *)
+   WHILE NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+              ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+              ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   DO
+      getToken
+   END ;
+   IF Debugging
+   THEN
+      printf0(' ***\n')
+   END
+END SyntaxError ;
+
+
+(*
+   SyntaxCheck -
+*)
+
+PROCEDURE SyntaxCheck (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	   ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+           ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   THEN
+      SyntaxError (stopset0, stopset1, stopset2)
+   END
+END SyntaxCheck ;
+
+
+(*
+   WarnMissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE WarnMissingToken (t: toktype) ;
+VAR
+   s0 : SetOfStop0 ;
+   s1 : SetOfStop1 ;
+   s2 : SetOfStop2 ;
+   str: String ;
+BEGIN
+   s0 := SetOfStop0{} ;
+   s1 := SetOfStop1{} ;
+   s2 := SetOfStop2{} ;
+   IF ORD(t)<32
+   THEN
+      s0 := SetOfStop0{t}
+   ELSIF ORD(t)<64
+   THEN
+      s1 := SetOfStop1{t}
+   ELSE
+      s2 := SetOfStop2{t}
+   END ;
+   str := DescribeStop (s0, s1, s2) ;
+
+   str := ConCat (InitString ('syntax error,'), Mark (str)) ;
+   errorStringAt (str, getTokenNo ())
+END WarnMissingToken ;
+
+
+(*
+   MissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE MissingToken (t: toktype) ;
+BEGIN
+   WarnMissingToken (t) ;
+   IF (t#identtok) AND (t#integertok) AND (t#realtok) AND (t#stringtok)
+   THEN
+      IF Debugging
+      THEN
+         printf0 ('inserting token\n')
+      END ;
+      insertToken (t)
+   END
+END MissingToken ;
+
+
+(*
+   CheckAndInsert -
+*)
+
+PROCEDURE CheckAndInsert (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      WarnMissingToken (t) ;
+      insertTokenAndRewind (t) ;
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END CheckAndInsert ;
+
+
+(*
+   InStopSet
+*)
+
+PROCEDURE InStopSet (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END InStopSet ;
+
+
+(*
+   PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
+               If it is not then it will insert a token providing the token
+               is one of ; ] ) } . OF END ,
+
+               if the stopset contains <identtok> then we do not insert a token
+*)
+
+PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF (NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	    ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+            ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))) AND
+      (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
+   THEN
+      (* SyntaxCheck would fail since currentoken is not part of the stopset
+         we check to see whether any of currenttoken might be a commonly omitted token *)
+      IF CheckAndInsert(semicolontok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rsbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rparatok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rcbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(periodtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(oftok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(endtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(commatok, stopset0, stopset1, stopset2)
+      THEN
+      END
+   END
+END PeepToken ;
+
+
+(*
+   Expect -
+*)
+
+PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF currenttoken=t
+   THEN
+      getToken ;
+      IF Pass1
+      THEN
+         PeepToken(stopset0, stopset1, stopset2)
+      END
+   ELSE
+      MissingToken(t)
+   END ;
+   SyntaxCheck(stopset0, stopset1, stopset2)
+END Expect ;
+
+
+(*
+   CompilationUnit - returns TRUE if the input was correct enough to parse
+                     in future passes.
+*)
+
+PROCEDURE CompilationUnit () : BOOLEAN ;
+BEGIN
+   stk := mcStack.init () ;
+   WasNoError := TRUE ;
+   FileUnit(SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
+   mcStack.kill (stk) ;
+   RETURN WasNoError
+END CompilationUnit ;
+
+
+(*
+   Ident - error checking varient of Ident
+*)
+
+PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   curident := makekey (currentstring) ;
+   Expect(identtok, stopset0, stopset1, stopset2)
+END Ident ;
+
+
+(*
+   string -
+*)
+
+PROCEDURE string (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   curstring := makekey (currentstring) ;
+   Expect(stringtok, stopset0, stopset1, stopset2)
+END string ;
+
+
+(*
+   Integer -
+*)
+
+PROCEDURE Integer (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   Expect(integertok, stopset0, stopset1, stopset2)
+END Integer ;
+
+
+(*
+   Real -
+*)
+
+PROCEDURE Real (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   Expect(realtok, stopset0, stopset1, stopset2)
+END Real ;
+
+% module mcp3 end
+END mcp3.
+% rules
+error       'ErrorArray' 'ErrorString'
+tokenfunc   'currenttoken'
+
+token   ''                eoftok      -- internal token
+token   '+'               plustok
+token   '-'               minustok
+token   '*'               timestok
+token   '/'               dividetok
+token   ':='              becomestok
+token   '&'               ambersandtok
+token   "."               periodtok
+token   ","               commatok
+token   ";"               semicolontok
+token   '('               lparatok
+token   ')'               rparatok
+token   '['               lsbratok   -- left  square brackets
+token   ']'               rsbratok   -- right square brackets
+token   '{'               lcbratok   -- left  curly brackets
+token   '}'               rcbratok   -- right curly brackets
+token   '^'               uparrowtok
+token   "'"               singlequotetok
+token   '='               equaltok
+token   '#'               hashtok
+token   '<'               lesstok
+token   '>'               greatertok
+token   '<>'              lessgreatertok
+token   '<='              lessequaltok
+token   '>='              greaterequaltok
+token   '<*'              ldirectivetok
+token   '*>'              rdirectivetok
+token   '..'              periodperiodtok
+token   ':'               colontok
+token   '"'               doublequotestok
+token   '|'               bartok
+token   'AND'             andtok
+token   'ARRAY'           arraytok
+token   'BEGIN'           begintok
+token   'BY'              bytok
+token   'CASE'            casetok
+token   'CONST'           consttok
+token   'DEFINITION'      definitiontok
+token   'DIV'             divtok
+token   'DO'              dotok
+token   'ELSE'            elsetok
+token   'ELSIF'           elsiftok
+token   'END'             endtok
+token   'EXCEPT'          excepttok
+token   'EXIT'            exittok
+token   'EXPORT'          exporttok
+token   'FINALLY'         finallytok
+token   'FOR'             fortok
+token   'FROM'            fromtok
+token   'IF'              iftok
+token   'IMPLEMENTATION'  implementationtok
+token   'IMPORT'          importtok
+token   'IN'              intok
+token   'LOOP'            looptok
+token   'MOD'             modtok
+token   'MODULE'          moduletok
+token   'NOT'             nottok
+token   'OF'              oftok
+token   'OR'              ortok
+token   'PACKEDSET'       packedsettok
+token   'POINTER'         pointertok
+token   'PROCEDURE'       proceduretok
+token   'QUALIFIED'       qualifiedtok
+token   'UNQUALIFIED'     unqualifiedtok
+token   'RECORD'          recordtok
+token   'REM'             remtok
+token   'REPEAT'          repeattok
+token   'RETRY'           retrytok
+token   'RETURN'          returntok
+token   'SET'             settok
+token   'THEN'            thentok
+token   'TO'              totok
+token   'TYPE'            typetok
+token   'UNTIL'           untiltok
+token   'VAR'             vartok
+token   'WHILE'           whiletok
+token   'WITH'            withtok
+token   'ASM'             asmtok
+token   'VOLATILE'        volatiletok
+token   '...'             periodperiodperiodtok
+token   '__DATE__'        datetok
+token   '__LINE__'        linetok
+token   '__FILE__'        filetok
+token   '__ATTRIBUTE__'   attributetok
+token   '__BUILTIN__'     builtintok
+token   '__INLINE__'      inlinetok
+token   'integer number'  integertok
+token   'identifier'      identtok
+token   'real number'     realtok
+token   'string'          stringtok
+
+special Ident             first { < identtok > } follow { }
+special Integer           first { < integertok > } follow { }
+special Real              first { < realtok > } follow { }
+special string            first { < stringtok > } follow { }
+
+BNF
+
+-- the following are provided by the module m2flex and also handbuild procedures below
+-- Ident := Letter { ( Letter | Digit ) } =:
+-- Integer := Digit { Digit } | OctalDigit { OctalDigit } ( " B " | " C " ) |
+--           Digit { HexDigit } " H " =:
+-- Real := Digit { Digit } " . " { Digit } [ ScaleFactor ] =:
+-- ScaleFactor := " E " [ ( " + " | " - " ) ] Digit { Digit } =:
+-- HexDigit := Digit | " A " | " B " | " C " | " D " | " E " | " F " =:
+-- Digit := OctalDigit | " 8 " | " 9 " =:
+-- OctalDigit := "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" =:
+-- String
+
+FileUnit := DefinitionModule | ImplementationOrProgramModule
+          =:
+
+ProgramModule := "MODULE"
+                  Ident                                                % curmodule := lookupModule (curident) %
+		                                                       % enterScope (curmodule) %
+								       % resetEnumPos (curmodule) %
+                  [ Priority
+                  ]
+                  ";"
+                  { Import }
+                  Block
+                  Ident                                                % checkEndName (curmodule, curident, 'program module') %
+   		                                                       % setConstExpComplete (curmodule) %
+		                                                       % leaveScope %
+
+                  "."
+                  =:
+
+ImplementationModule := "IMPLEMENTATION" "MODULE"
+                         Ident                                         % curmodule := lookupImp (curident) %
+                                                                       % enterScope (lookupDef (curident)) %
+		                                                       % enterScope (curmodule) %
+       								       % resetEnumPos (curmodule) %
+                         [ Priority
+                         ] ";"
+                         { Import }
+                         Block
+                         Ident                                         % checkEndName (curmodule, curident, 'implementation module') %
+ 		                                                       % setConstExpComplete (curmodule) %
+                                                                       % leaveScope ; leaveScope %
+                         "."
+                      =:
+
+ImplementationOrProgramModule := ImplementationModule | ProgramModule
+                               =:
+
+Number := Integer | Real =:
+
+Qualident :=
+             Ident { "." Ident }
+           =:
+
+ConstantDeclaration :=                                                  % VAR d, e: node ; %
+                       Ident                                            % d := lookupSym (curident) %
+		             "=" ConstExpression                        % e := pop () %
+			                                                % assert (isConst (d)) %
+                                                                        % putConst (d, e) %
+                     =:
+
+ConstExpressionNop := SimpleConstExpr                                   % VAR n: node ; %
+                                      [ Relation SimpleConstExpr ]
+				                                        % n := makeConstExp () %
+                    =:
+
+ConstExpression :=                                                      % VAR n: node ; %
+				                                        % n := push (makeConstExp ()) %
+                   SimpleConstExpr
+                                   [ Relation SimpleConstExpr ]
+                 =:
+
+Relation := "="
+            | "#"
+            | "<>"
+            | "<"
+            | "<="
+            | ">"
+            | ">="
+            | "IN"
+         =:
+
+SimpleConstExpr := UnaryOrConstTerm { AddOperator ConstTerm } =:
+
+UnaryOrConstTerm := "+" ConstTerm | "-" ConstTerm | ConstTerm =:
+
+AddOperator := "+" | "-" | "OR" =:
+
+ConstTerm := ConstFactor { MulOperator ConstFactor } =:
+
+MulOperator := "*"
+               | "/"
+               | "DIV"
+               | "MOD"
+               | "REM"
+               | "AND"
+               | "&"
+            =:
+
+ConstFactor := Number | ConstString | ConstSetOrQualidentOrFunction |
+               "(" ConstExpressionNop ")" | "NOT" ConstFactor
+               | ConstAttribute =:
+
+-- to help satisfy LL1
+
+ConstString := string =:
+
+ComponentElement := ConstExpressionNop [ ".." ConstExpressionNop ] =:
+
+ComponentValue := ComponentElement [ 'BY' ConstExpressionNop ] =:
+
+ArraySetRecordValue := ComponentValue { ',' ComponentValue } =:
+
+Constructor := '{'[ ArraySetRecordValue ] '}' =:
+
+ConstSetOrQualidentOrFunction := Qualident
+                                    [ Constructor |
+				      ConstActualParameters
+				    ] | Constructor =:
+
+ConstActualParameters := "(" [ ConstExpList ] ")" =:
+
+ConstExpList := ConstExpressionNop { "," ConstExpressionNop } =:
+
+ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "("
+                  ConstAttributeExpression
+                  ")" ")" =:
+
+ConstAttributeExpression := Ident | "<" Qualident ',' Ident ">" =:
+
+ByteAlignment := '<*' AttributeExpression '*>' =:
+
+OptAlignmentExpression := [ AlignmentExpression ] =:
+
+AlignmentExpression := "(" ConstExpressionNop ")" =:
+
+Alignment := [ ByteAlignment ] =:
+
+IdentList := Ident { "," Ident }
+           =:
+
+PushIdentList :=                                                        % VAR n: node ; %
+                                                                        % n := makeIdentList () %
+                 Ident                                                  % checkDuplicate (putIdent (n, curident)) %
+		       { "," Ident                                      % checkDuplicate (putIdent (n, curident)) %
+		                   }                                    % n := push (n) %
+               =:
+
+SubrangeType :=                                                         % VAR low, high: node ; d: CARDINAL ; %
+                "["                                                     % d := depth () %
+		    ConstExpression					% low := pop () %
+                                                                        % assert (d = depth ()) %
+		                    ".." ConstExpression                % high := pop () %
+                                                                        % assert (d = depth ()) %
+									% typeExp := push (makeSubrange (low, high)) %
+                                                                        % assert (d = depth () - 1) %
+                                                          "]"
+              =:
+
+ArrayType := "ARRAY"                                                    % VAR c: CARDINAL ; t, n: node ; %
+                                                                        % c := 0 %
+                     SimpleType                                         % INC (c) %
+                                { ","
+                                      SimpleType                        % INC (c) %
+                                                 } "OF"
+                                                        Type            % n := push (makeIndexedArray (c, pop ())) %
+           =:
+
+RecordType := "RECORD"                                                  % VAR n: node ; %
+                                                                        % n := push (makeRecord ()) %
+                                                                        % n := push (NIL)    (* no varient *) %
+                       [ DefaultRecordAttributes ]
+		       FieldListSequence                                % assert (pop ()=NIL) %
+	      "END" =:
+
+DefaultRecordAttributes := '<*'
+                                AttributeExpression
+
+                                                    '*>' =:
+
+RecordFieldPragma := [ '<*' FieldPragmaExpression
+                            { ',' FieldPragmaExpression } '*>' ] =:
+
+FieldPragmaExpression := Ident PragmaConstExpression =:
+
+PragmaConstExpression := [ '(' ConstExpressionNop ')' ] =:
+
+AttributeExpression := Ident '(' ConstExpressionNop ')' =:
+
+FieldListSequence := FieldListStatement { ";" FieldListStatement } =:
+
+FieldListStatement := [ FieldList ] =:
+
+FieldList :=                                                            % VAR r, i, f, t, n, v, w: node ; d: CARDINAL ; %
+                                                                        % d := depth () %
+                                                                        % v := pop () ; assert ((v=NIL) OR isVarient (v)) %
+                                                                        % r := peep () ; assert (isRecord (r) OR isVarientField (r)) %
+									% v := push (v) %
+                                                                        % assert (d=depth ()) %
+									% assert (((v=NIL) AND isRecord (r)) OR ((v#NIL) AND isVarientField (r))) %
+             PushIdentList ":"                                          % assert (d=depth () - 1) %
+                                                                        % i := pop () %
+                               Type                                     % assert (d=depth () - 1) %
+                                                                        % t := pop () %
+			            RecordFieldPragma                   % assert (d=depth ()) %
+				                                        % r := addFieldsToRecord (r, v, i, t) %
+                                                                        % assert (d=depth ()) %
+             |
+               "CASE"                                                   % (* addRecordToList *) %
+                                                                        % d := depth () %
+                                                                        % v := pop () ; assert ((v=NIL) OR isVarient (v)) %
+                                                                        % r := peep () ; assert (isRecord (r) OR isVarientField (r)) %
+									% v := push (v) %
+									% assert (((v=NIL) AND isRecord (r)) OR ((v#NIL) AND isRecordField (r))) %
+                                                                        % w := push (makeVarient (r)) %
+									% assert (d = depth () - 1) %
+                                                                        % (* addVarientToList *) %
+                      CaseTag "OF"
+      									% assert (d = depth () - 1) %
+                                   Varient				% assert (d = depth () - 1) %
+				           { "|" Varient		% assert (d = depth () - 1) %
+					                 }
+                                                                        % w := peep () ; assert (isVarient (w)) %
+                                                                        % assert (d = depth () - 1) %
+              [ "ELSE"
+                      FieldListSequence
+              ] "END"                                                   % w := pop () ; assert (isVarient (w)) %
+                                                                        % assert (d=depth ()) %
+           =:
+
+TagIdent :=  Ident |                                                    % curident := NulName %
+          =:
+
+CaseTag :=                                                              % VAR tagident: Name ; q, v, w, r: node ; %
+                                                                        % w := pop () ; v := pop () ; r := peep () ; v := push (v) ; w := push (w) %
+									% assert (isVarient (w)) %
+									% assert ((v=NIL) OR isVarient (v)) %
+									% assert (isRecord (r) OR isVarientField (r)) %
+									% assert (isVarient (push (pop ()))) %
+           TagIdent                                                     % tagident := curident %
+                     ( ":" PushQualident                                % q := pop () %
+     									% assert (isVarient (push (pop ()))) %
+		                         |                              % q := NIL %
+                                           )                            % buildVarientSelector (r, w, tagident, q) %
+         =:
+
+Varient :=                                                              % VAR p, r, v, f: node ; d: CARDINAL ; %
+                                                                        % d := depth () %
+                                                                        % assert (isVarient (peep ())) %
+            [                                                           % v := pop () ; assert (isVarient (v)) %
+									% r := pop () %
+                                                                        % p := peep () %
+									% r := push (r) %
+                                                                        % f := push (buildVarientFieldRecord (v, p)) %
+	                                                                % v := push (v) %
+              VarientCaseLabelList ":" FieldListSequence                % v := pop () %
+	                                                                % f := pop () %
+	                                                                % assert (isVarientField (f)) %
+									% assert (isVarient (v)) %
+									% v := push (v) %
+                                                         ]              % assert (isVarient (peep ())) %
+                                                                        % assert (d=depth ()) %
+                                                           =:
+
+VarientCaseLabelList := VarientCaseLabels { "," VarientCaseLabels } =:
+
+VarientCaseLabels :=                                                    % VAR l, h: node ; %
+                                                                        % h := NIL %
+                     ConstExpression                                    % l := pop () %
+                                     [ ".." ConstExpression             % h := pop () %
+				                            ]           % (* l, h  could be saved if necessary.  *) %
+                   =:
+
+SetType := ( "SET" | "PACKEDSET" ) "OF" SimpleType                     % VAR n: node ; %
+                                                                       % n := push (makeSet (pop ())) %
+         =:
+
+PointerType := "POINTER" "TO" Type                                     % VAR n: node ; %
+                                                                       % n := push (makePointer (pop ())) %
+             =:
+
+ProcedureType := "PROCEDURE"                                           % curproc := push (makeProcType ()) %
+                             [ FormalTypeList ] =:
+
+FormalTypeList := "(" ( ")" FormalReturn |
+                        ProcedureParameters ")" FormalReturn ) =:
+
+FormalReturn := [ ":" OptReturnType ] =:
+
+OptReturnType := "[" PushQualident                                     % putReturnType (curproc, pop ()) %
+                                                                       % putOptReturn (curproc) %
+                               "]" | PushQualident                     % putReturnType (curproc, pop ()) %
+	       =:
+
+ProcedureParameters := ProcedureParameter                              % addParameter (curproc, pop ()) %
+                       { "," ProcedureParameter                        % addParameter (curproc, pop ()) %
+		                                } =:
+
+ProcedureParameter := "..."                                            % VAR n: node ; %
+                                                                       % n := push (makeVarargs ()) %
+                            | "VAR" FormalType                         % n := push (makeVarParameter (NIL, pop (), curproc, TRUE)) %
+			                       | FormalType            % n := push (makeNonVarParameter (NIL, pop (), curproc, TRUE)) %
+					                    =:
+
+
+VarIdent :=                                                             % VAR n, a: node ; %
+                                                                        % n := pop () %
+            Ident                                                       % checkDuplicate (putIdent (n, curident)) %
+	                                                                % n := push (n) %
+                  [ "[" ConstExpression                                 % a := pop ()  (* could store, a, into, n.  *) %
+		                        "]" ]
+             =:
+
+VarIdentList :=                                                         % VAR n: node ; %
+                                                                        % n := makeIdentList () %
+                                                                        % n := push (n) %
+                 VarIdent { "," VarIdent }
+              =:
+
+VariableDeclaration :=                                                  % VAR v, d: node ; %
+                       VarIdentList                                     % v := pop () %
+			            ":" Type                            % d := makeVarDecl (v, pop ()) %
+			                     Alignment
+                     =:
+
+Designator := Qualident
+              { SubDesignator } =:
+
+SubDesignator := "."
+                 Ident
+                 | "[" ArrayExpList
+                   "]"
+                 | "^"
+               =:
+
+ArrayExpList :=
+                Expression
+                { ","
+                   Expression
+                }
+              =:
+
+ExpList := Expression { "," Expression }
+         =:
+
+Expression := SimpleExpression [ Relation SimpleExpression ]
+           =:
+
+SimpleExpression := UnaryOrTerm { AddOperator Term } =:
+
+UnaryOrTerm := "+" Term
+               | "-" Term
+               | Term
+	     =:
+
+Term := Factor { MulOperator Factor
+               } =:
+
+Factor := Number | string | SetOrDesignatorOrFunction |
+          "(" Expression ")" | "NOT" ( Factor
+          | ConstAttribute
+                                ) =:
+
+SetOrDesignatorOrFunction := Qualident
+                              [ Constructor |
+                                SimpleDes [ ActualParameters ]
+                              ]                                |
+                              Constructor =:
+
+-- SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
+SimpleDes := { SubDesignator } =:
+
+ActualParameters := "(" [ ExpList ] ")" =:
+
+ExitStatement := "EXIT"
+               =:
+
+ReturnStatement := "RETURN" [ Expression ]
+                 =:
+
+Statement := [ AssignmentOrProcedureCall | IfStatement | CaseStatement |
+               WhileStatement | RepeatStatement | LoopStatement |
+               ForStatement | WithStatement | AsmStatement |
+               ExitStatement | ReturnStatement | RetryStatement
+             ]
+          =:
+
+RetryStatement := "RETRY"
+                =:
+
+AssignmentOrProcedureCall := Designator
+                             ( ":=" Expression
+                                |
+                                  ActualParameters |                     % (* epsilon *) %
+                             )
+                           =:
+
+StatementSequence := Statement { ";" Statement }
+                  =:
+
+IfStatement := "IF"
+                    Expression "THEN"
+                StatementSequence
+              { "ELSIF"
+
+                        Expression "THEN"
+                                          StatementSequence
+              }
+              [ "ELSE"
+                      StatementSequence ] "END"
+            =:
+
+CaseStatement := "CASE"
+                        Expression
+                                   "OF" Case { "|" Case }
+                 CaseEndStatement
+               =:
+
+CaseEndStatement := "END"
+                    | "ELSE"
+                           StatementSequence "END"
+                 =:
+
+Case := [ CaseLabelList ":" StatementSequence ]
+      =:
+
+CaseLabelList := CaseLabels { "," CaseLabels } =:
+
+CaseLabels := ConstExpressionNop [ ".." ConstExpressionNop ]
+            =:
+
+WhileStatement := "WHILE" Expression "DO"
+                      StatementSequence
+		  "END"
+                =:
+
+RepeatStatement := "REPEAT"
+                       StatementSequence
+	           "UNTIL" Expression
+                 =:
+
+ForStatement := "FOR" Ident ":=" Expression "TO" Expression
+		    [ "BY" ConstExpressionNop ] "DO"
+                       StatementSequence
+                "END"
+              =:
+
+LoopStatement := "LOOP"
+                      StatementSequence
+                 "END"
+               =:
+
+WithStatement := "WITH" Designator "DO"
+                     StatementSequence
+                 "END"
+               =:
+
+ProcedureDeclaration := ProcedureHeading ";" ProcedureBlock
+                        Ident                                          % leaveScope %
+                      =:
+
+ProcedureIdent := Ident                                                % curproc := lookupSym (curident) %
+                                                                       % enterScope (curproc) %
+                =:
+
+DefProcedureIdent := Ident                                             % curproc := lookupSym (curident) %
+                   =:
+
+DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")" | "__INLINE__" ]
+                      =:
+
+ProcedureHeading := "PROCEDURE" DefineBuiltinProcedure ( ProcedureIdent [ FormalParameters ] AttributeNoReturn )
+                  =:
+
+Builtin := [ "__BUILTIN__" | "__INLINE__" ] =:
+
+DefProcedureHeading := "PROCEDURE" Builtin ( DefProcedureIdent [ DefFormalParameters ] AttributeNoReturn )
+                     =:
+
+-- introduced procedure block so we can produce more informative
+-- error messages
+
+ProcedureBlock := { Declaration } [ "BEGIN" ProcedureBlockBody ] "END"
+                =:
+
+Block := { Declaration } InitialBlock FinalBlock "END"
+       =:
+
+InitialBlock := [ "BEGIN" InitialBlockBody ] =:
+
+FinalBlock := [ "FINALLY" FinalBlockBody ] =:
+
+InitialBlockBody := NormalPart [ "EXCEPT" ExceptionalPart ] =:
+
+FinalBlockBody := NormalPart [ "EXCEPT" ExceptionalPart ] =:
+
+ProcedureBlockBody := NormalPart [ "EXCEPT" ExceptionalPart ] =:
+
+NormalPart := StatementSequence =:
+
+ExceptionalPart := StatementSequence
+                 =:
+
+Declaration := "CONST" { ConstantDeclaration ";" } |
+               "TYPE" { TypeDeclaration } |
+               "VAR" { VariableDeclaration ";" } |
+               ProcedureDeclaration ";" |
+               ModuleDeclaration ";" =:
+
+DefFormalParameters := "("                                            % paramEnter (curproc) %
+                           [ DefMultiFPSection ] ")"                  % paramLeave (curproc) %
+			                             FormalReturn =:
+
+DefMultiFPSection := DefExtendedFP | FPSection [ ";" DefMultiFPSection ] =:
+
+FormalParameters := "("                                               % paramEnter (curproc) %
+                        [ MultiFPSection ] ")"                        % paramLeave (curproc) %
+			                       FormalReturn =:
+
+AttributeNoReturn := [ NoReturn |                                     % setNoReturn (curproc, FALSE) %
+                                  ] =:
+
+NoReturn := "<*" Ident                                                % setNoReturn (curproc, TRUE) %
+                                                                      % checkReturnAttribute %
+                       "*>" =:
+
+AttributeUnused := [ Unused ] =:
+
+Unused := "<*" Ident                                                  % curisused := FALSE %
+                                                                      % checkParameterAttribute %
+                     "*>" =:
+
+MultiFPSection := ExtendedFP | FPSection [ ";" MultiFPSection ] =:
+
+FPSection := NonVarFPSection | VarFPSection =:
+
+DefExtendedFP := DefOptArg | "..."                                    % addParameter (curproc, makeVarargs ()) %
+                                   =:
+
+ExtendedFP := OptArg | "..."
+                             =:
+
+VarFPSection := "VAR" PushIdentList                                   % VAR l, t: node ; %
+                                    ":" FormalType                    % t := pop () %
+				                                      % l := pop () %
+                                                                      % curisused := TRUE %
+                                                  [ AttributeUnused ]
+                                                                      % addVarParameters (curproc, l, t, curisused) %
+              =:
+
+NonVarFPSection := PushIdentList                                      % VAR l, t: node ; %
+                                 ":" FormalType                       % t := pop () %
+				                                      % l := pop () %
+                                                                      % curisused := TRUE %
+                                                [ AttributeUnused ]
+								      % addNonVarParameters (curproc, l, t, curisused) %
+                 =:
+
+OptArg :=                                                             % VAR p, init, type: node ; id: Name ; %
+          "[" Ident                                                   % id := curident %
+	            ":" FormalType                                    % type := pop () %
+		                                                      % init := NIL %
+		                   [ "=" ConstExpression              % init := pop () %
+                                                         ] "]"        % p := addOptParameter (curproc, id, type, init) %
+       =:
+
+
+DefOptArg :=                                                          % VAR p, init, type: node ; id: Name ; %
+             "[" Ident                                                % id := curident %
+	               ":" FormalType                                 % type := pop () %
+		                      "=" ConstExpression             % init := pop () %
+	                                                  "]"         % p := addOptParameter (curproc, id, type, init) %
+						              =:
+
+
+FormalType :=                                                         % VAR c: CARDINAL ; %
+                                                                      % VAR n, a, s: node ; %
+                                                                      % c := 0 %
+              { "ARRAY" "OF"                                          % INC (c) %
+	                     } PushQualident                          % pushNunbounded (c) %
+	    =:
+
+ModuleDeclaration := "MODULE" Ident [ Priority ] ";"
+                        { Import } [ Export ]
+                        Block Ident
+                   =:
+
+Priority := "[" ConstExpressionNop "]" =:
+
+Export := "EXPORT" ( "QUALIFIED"
+                                 IdentList |
+                     "UNQUALIFIED"
+                                 IdentList |
+                     IdentList ) ";" =:
+
+FromIdentList := Ident                                                 % importInto (frommodule, curident, curmodule) %
+                       { "," Ident                                     % importInto (frommodule, curident, curmodule) %
+		                   }
+           =:
+
+FromImport := "FROM" Ident                                             % frommodule := lookupDef (curident) %
+                           "IMPORT" FromIdentList ";"
+               =:
+
+ImportModuleList := Ident { "," Ident } =:
+
+WithoutFromImport := "IMPORT" ImportModuleList ";"
+                   =:
+
+Import := FromImport | WithoutFromImport =:
+
+DefinitionModule := "DEFINITION" "MODULE" [ "FOR" string ] Ident ";"   % curmodule := lookupDef (curident) %
+    		                                                       % enterScope (curmodule) %
+                                                                       % resetEnumPos (curmodule) %
+                      { Import } [ Export ]
+                      { Definition }
+                    "END" Ident "."                                    % checkEndName (curmodule, curident, 'definition module') %
+		                                                       % setConstExpComplete (curmodule) %
+                                                                       % leaveScope %
+                  =:
+
+PushQualident :=
+                Ident                                                  % typeExp := push (lookupSym (curident)) %
+		                                                       % IF typeExp = NIL
+                                                                         THEN
+                                                                            metaError1 ('the symbol {%1k} is not visible in this scope (or any other nested scope)', curident)
+                                                                         END %
+		      [ "."
+		                                                       % IF NOT isDef (typeExp)
+                                                                         THEN
+									    ErrorArray ('the first component of this qualident must be a definition module')
+                                                                         END %
+		            Ident                                      % typeExp := replace (lookupInScope (typeExp, curident)) ;
+			                                                 IF typeExp=NIL
+                                                                         THEN
+                                                                            ErrorArray ('identifier not found in definition module')
+                                                                         END %
+			          ]
+              =:
+
+OptSubrange := [ SubrangeType
+                                                                       % VAR q, s: node ; %
+                                                                       % s := pop () %
+                                                                       % q := pop () %
+								       % putSubrangeType (s, q) %
+								       % typeExp := push (s) %
+                                 ]
+                =:
+
+TypeEquiv := PushQualident OptSubrange =:
+
+EnumIdentList :=                                                        % VAR f: node ; %
+                                                                        % typeExp := push (makeEnum ()) %
+                    Ident                                               % f := makeEnumField (typeExp, curident) %
+		          { "," Ident                                   % f := makeEnumField (typeExp, curident) %
+			              }
+                  =:
+
+Enumeration := "(" EnumIdentList ")" =:
+
+SimpleType :=                                                          % VAR d: CARDINAL ; %
+                                                                       % d := depth () %
+              ( TypeEquiv | Enumeration | SubrangeType )               % assert (d = depth () - 1) %
+	    =:
+
+Type := SimpleType | ArrayType | RecordType | SetType |
+        PointerType | ProcedureType
+      =:
+
+TypeDeclaration := { Ident                                                % typeDes := lookupSym (curident) %
+                           ( ";" | "=" Type                               % putType (typeDes, pop ()) %
+			                       Alignment ";" ) }
+		    =:
+
+Definition := "CONST" { ConstantDeclaration ";" } |
+              "TYPE" { TypeDeclaration } |
+              "VAR" { VariableDeclaration ";" } |
+              DefProcedureHeading ";" =:
+
+AsmStatement := 'ASM' [ 'VOLATILE' ] '(' AsmOperands ')' =:
+
+AsmOperands := string [ AsmOperandSpec ]
+             =:
+
+AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
+                =:
+
+AsmList := [ AsmElement ] { ',' AsmElement } =:
+
+NamedOperand := '[' Ident ']' =:
+
+AsmOperandName := [ NamedOperand ]
+                =:
+
+AsmElement := AsmOperandName string '(' Expression ')'
+            =:
+
+TrashList := [ string ] { ',' string } =:
+
+FNB

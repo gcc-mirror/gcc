@@ -1,5 +1,5 @@
 /* Handling inline asm in the analyzer.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -226,7 +226,7 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
 
       tree src_expr = input_tvec[i];
       const svalue *src_sval = get_rvalue (src_expr, ctxt);
-      check_for_poison (src_sval, src_expr, ctxt);
+      check_for_poison (src_sval, src_expr, NULL, ctxt);
       input_svals.quick_push (src_sval);
       reachable_regs.handle_sval (src_sval);
 

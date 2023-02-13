@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -1153,7 +1153,29 @@ switch_cfg_superedge::dump_label_to_pp (pretty_printer *pp,
 	    pp_printf (pp, "default");
 	}
       pp_character (pp, '}');
+      if (implicitly_created_default_p ())
+	{
+	  pp_string (pp, " IMPLICITLY CREATED");
+	}
     }
+}
+
+/* Return true iff this edge is purely for an implicitly-created "default".  */
+
+bool
+switch_cfg_superedge::implicitly_created_default_p () const
+{
+  if (m_case_labels.length () != 1)
+    return false;
+
+  tree case_label = m_case_labels[0];
+  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
+  if (CASE_LOW (case_label))
+    return false;
+
+  /* We have a single "default" case.
+     Assume that it was implicitly created if it has UNKNOWN_LOCATION.  */
+  return EXPR_LOCATION (case_label) == UNKNOWN_LOCATION;
 }
 
 /* Implementation of superedge::dump_label_to_pp for interprocedural

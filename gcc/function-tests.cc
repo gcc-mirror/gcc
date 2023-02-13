@@ -1,5 +1,5 @@
 /* Unit tests for function-handling.
-   Copyright (C) 2015-2022 Free Software Foundation, Inc.
+   Copyright (C) 2015-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -583,6 +583,7 @@ test_ranges ()
   push_cfun (fun);
   range_tests ();
   range_op_tests ();
+  relation_tests ();
 
   build_cfg (fndecl);
   convert_to_ssa (fndecl);

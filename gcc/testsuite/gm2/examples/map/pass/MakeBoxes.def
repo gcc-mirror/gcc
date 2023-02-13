@@ -1,0 +1,66 @@
+(* Copyright (C) 2005-2023 Free Software Foundation, Inc. *)
+(* This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+DEFINITION MODULE MakeBoxes ;
+
+(*
+   Title      : MakeBoxes
+   Author     : Gaius Mulley
+   Date       : 15/7/88
+   LastEdit   : 15/7/88
+   System     : LOGITECH MODULA-2/86
+   Description: Provides a list of all possible box sizes.
+                Any number of unique boxes may be requested and deleted.
+*)
+
+EXPORT QUALIFIED InitBoxes, KillBoxes,
+                 AddBoxes, GetAndDeleteRandomBox ;
+
+
+(*
+   InitBoxes - Initializes a list of boxes.
+               An index to this box list is returned.
+*)
+
+PROCEDURE InitBoxes () : CARDINAL ;
+
+
+(*
+   KillBoxes - Kills a complete box list.
+*)
+
+PROCEDURE KillBoxes (BoxListIndex: CARDINAL) ;
+
+
+(*
+   AddBoxes - Adds a list of boxes MinX..MaxX, MinY..MaxY
+              to a box list BoxListIndex.
+*)
+
+PROCEDURE AddBoxes (BoxListIndex: CARDINAL;
+                    MinX, MinY, MaxX, MaxY: CARDINAL) ;
+
+
+(*
+   GetAndDeleteRandomBox - Returns a random box from the box list and
+                           this box is then deleted from the list.
+*)
+
+PROCEDURE GetAndDeleteRandomBox (BoxListIndex: CARDINAL;
+                                 VAR SizeX, SizeY: CARDINAL) ;
+
+
+END MakeBoxes.

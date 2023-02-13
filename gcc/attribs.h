@@ -1,5 +1,5 @@
 /* Declarations and definitions dealing with attribute handling.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -397,7 +397,5 @@ typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
 extern void init_attr_rdwr_indices (rdwr_map *, tree);
 extern attr_access *get_parm_access (rdwr_map &, tree,
 				     tree = current_function_decl);
-
-extern unsigned int strict_flex_array_level_of (tree);
 
 #endif // GCC_ATTRIBS_H

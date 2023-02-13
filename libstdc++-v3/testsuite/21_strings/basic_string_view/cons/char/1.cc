@@ -1,6 +1,6 @@
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,9 +20,12 @@
 // basic_string_view constructors.
 
 #include <string_view>
-#include <string>
 #include <cstring>
 #include <testsuite_hooks.h>
+
+#if __STDC_HOSTED__
+# include <string>
+#endif // HOSTED
 
 void
 test01()
@@ -53,10 +56,12 @@ test01()
   VERIFY( str05.length() == len_lit01 );
   VERIFY( str05.data() == str_lit01 );
 
+#if __STDC_HOSTED__
   // basic_string_view(basic_string& s)
   std::string istr07(10, 'z');
   std::string_view str07{istr07};
   VERIFY( str07.length() == 10 );
+#endif // HOSTED
 }
 
 int

@@ -1,5 +1,5 @@
 /* Passes for transactional memory support.
-   Copyright (C) 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2008-2023 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -3215,7 +3215,7 @@ split_bb_make_tm_edge (gimple *stmt, basic_block dest_bb,
   struct tm_restart_node *n = *slot;
   if (n == NULL)
     {
-      n = ggc_alloc<tm_restart_node> ();
+      *slot = n = ggc_alloc<tm_restart_node> ();
       *n = dummy;
     }
   else

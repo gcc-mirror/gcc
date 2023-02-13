@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991-2023 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -3645,17 +3645,12 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_pointer_size = 32;
     }
 
-  /* Some OSs don't support saving the high part of 64-bit registers on context
-     switch.  Other OSs don't support saving Altivec registers.  On those OSs,
-     we don't touch the OPTION_MASK_POWERPC64 or OPTION_MASK_ALTIVEC settings;
-     if the user wants either, the user must explicitly specify them and we
-     won't interfere with the user's specification.  */
+  /* Some OSs don't support saving Altivec registers.  On those OSs, we don't
+     touch the OPTION_MASK_ALTIVEC settings; if the user wants it, the user
+     must explicitly specify it and we won't interfere with the user's
+     specification.  */
 
   set_masks = POWERPC_MASKS;
-#ifdef OS_MISSING_POWERPC64
-  if (OS_MISSING_POWERPC64)
-    set_masks &= ~OPTION_MASK_POWERPC64;
-#endif
 #ifdef OS_MISSING_ALTIVEC
   if (OS_MISSING_ALTIVEC)
     set_masks &= ~(OPTION_MASK_ALTIVEC | OPTION_MASK_VSX
@@ -3664,6 +3659,18 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Don't override by the processor default if given explicitly.  */
   set_masks &= ~rs6000_isa_flags_explicit;
+
+  /* Without option powerpc64 specified explicitly, we need to ensure
+     powerpc64 always enabled for 64 bit here, otherwise some following
+     checks can use unexpected TARGET_POWERPC64 value.  Meanwhile, we
+     need to ensure set_masks doesn't have OPTION_MASK_POWERPC64 on,
+     otherwise later processing can clear it.  */
+  if (!(rs6000_isa_flags_explicit & OPTION_MASK_POWERPC64)
+      && TARGET_64BIT)
+    {
+      rs6000_isa_flags |= OPTION_MASK_POWERPC64;
+      set_masks &= ~OPTION_MASK_POWERPC64;
+    }
 
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
      the cpu in a target attribute or pragma, but did not specify a tuning
@@ -3714,6 +3721,18 @@ rs6000_option_override_internal (bool global_init_p)
 	}
       rs6000_isa_flags |= (flags & ~rs6000_isa_flags_explicit);
     }
+
+  /* Don't expect powerpc64 enabled on those OSes with OS_MISSING_POWERPC64,
+     since they do not save and restore the high half of the GPRs correctly
+     in all cases.  If the user explicitly specifies it, we won't interfere
+     with the user's specification.  */
+#ifdef OS_MISSING_POWERPC64
+  if (OS_MISSING_POWERPC64
+      && TARGET_32BIT
+      && TARGET_POWERPC64
+      && !(rs6000_isa_flags_explicit & OPTION_MASK_POWERPC64))
+    rs6000_isa_flags &= ~OPTION_MASK_POWERPC64;
+#endif
 
   if (rs6000_tune_index >= 0)
     tune_index = rs6000_tune_index;
@@ -4369,10 +4388,6 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_MMA) == 0)
     rs6000_isa_flags |= OPTION_MASK_MMA;
 
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
-
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)
     {
@@ -4380,6 +4395,16 @@ rs6000_option_override_internal (bool global_init_p)
 	error ("%qs requires %qs", "-mmma", "-mcpu=power10");
 
       rs6000_isa_flags &= ~OPTION_MASK_MMA;
+    }
+
+  /* Enable power10 fusion if we are tuning for power10, even if we aren't
+     generating power10 instructions.  */
+  if (!(rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION))
+    {
+      if (rs6000_tune == PROCESSOR_POWER10)
+	rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
+      else
+	rs6000_isa_flags &= ~OPTION_MASK_P10_FUSION;
     }
 
   /* MMA requires SIMD support as ISA 3.1 claims and our implementation
@@ -10251,17 +10276,42 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
       if (ud1 != 0)
 	emit_move_insn (dest, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
     }
+  else if (ud4 == 0xffff && ud3 == 0xffff && (ud1 & 0x8000))
+    {
+      /* li; xoris */
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      emit_move_insn (temp, GEN_INT (sext_hwi (ud1, 16)));
+      emit_move_insn (dest, gen_rtx_XOR (DImode, temp,
+					 GEN_INT ((ud2 ^ 0xffff) << 16)));
+    }
   else if (ud3 == 0 && ud4 == 0)
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
       gcc_assert (ud2 & 0x8000);
-      emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
-      if (ud1 != 0)
-	emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
-      emit_move_insn (dest,
-		      gen_rtx_ZERO_EXTEND (DImode,
-					   gen_lowpart (SImode,temp)));
+
+      if (ud1 == 0)
+	{
+	  /* lis; rldicl */
+	  emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
+	  emit_move_insn (dest,
+			  gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff)));
+	}
+      else if (!(ud1 & 0x8000))
+	{
+	  /* li; oris */
+	  emit_move_insn (temp, GEN_INT (ud1));
+	  emit_move_insn (dest,
+			  gen_rtx_IOR (DImode, temp, GEN_INT (ud2 << 16)));
+	}
+      else
+	{
+	  /* lis; ori; rldicl */
+	  emit_move_insn (temp, GEN_INT (sext_hwi (ud2 << 16, 32)));
+	  emit_move_insn (temp, gen_rtx_IOR (DImode, temp, GEN_INT (ud1)));
+	  emit_move_insn (dest,
+			  gen_rtx_AND (DImode, temp, GEN_INT (0xffffffff)));
+	}
     }
   else if (ud1 == ud3 && ud2 == ud4)
     {
@@ -14923,6 +14973,71 @@ rs6000_reverse_condition (machine_mode mode, enum rtx_code code)
     return reverse_condition_maybe_unordered (code);
   else
     return reverse_condition (code);
+}
+
+/* Check if C (as 64bit integer) can be rotated to a constant which constains
+   nonzero bits at the LOWBITS low bits only.
+
+   Return true if C can be rotated to such constant.  If so, *ROT is written
+   to the number by which C is rotated.
+   Return false otherwise.  */
+
+bool
+can_be_rotated_to_lowbits (unsigned HOST_WIDE_INT c, int lowbits, int *rot)
+{
+  int clz = HOST_BITS_PER_WIDE_INT - lowbits;
+
+  /* case a. 0..0xxx: already at least clz zeros.  */
+  int lz = clz_hwi (c);
+  if (lz >= clz)
+    {
+      *rot = 0;
+      return true;
+    }
+
+  /* case b. 0..0xxx0..0: at least clz zeros.  */
+  int tz = ctz_hwi (c);
+  if (lz + tz >= clz)
+    {
+      *rot = HOST_BITS_PER_WIDE_INT - tz;
+      return true;
+    }
+
+  /* case c. xx10.....0xx: rotate 'clz - 1' bits first, then check case b.
+	       ^bit -> Vbit, , then zeros are at head or tail.
+	     00...00xxx100, 'clz - 1' >= 'bits of xxxx'.  */
+  const int rot_bits = lowbits + 1;
+  unsigned HOST_WIDE_INT rc = (c >> rot_bits) | (c << (clz - 1));
+  tz = ctz_hwi (rc);
+  if (clz_hwi (rc) + tz >= clz)
+    {
+      *rot = HOST_BITS_PER_WIDE_INT - (tz + rot_bits);
+      return true;
+    }
+
+  return false;
+}
+
+/* Check if C (as 64bit integer) can be rotated to a positive 16bits constant
+   which contains 48bits leading zeros and 16bits of any value.  */
+
+bool
+can_be_rotated_to_positive_16bits (HOST_WIDE_INT c)
+{
+  int rot = 0;
+  bool res = can_be_rotated_to_lowbits (c, 16, &rot);
+  return res && rot > 0;
+}
+
+/* Check if C (as 64bit integer) can be rotated to a negative 15bits constant
+   which contains 49bits leading ones and 15bits of any value.  */
+
+bool
+can_be_rotated_to_negative_15bits (HOST_WIDE_INT c)
+{
+  int rot = 0;
+  bool res = can_be_rotated_to_lowbits (~c, 15, &rot);
+  return res && rot > 0;
 }
 
 /* Generate a compare for CODE.  Return a brand-new rtx that
@@ -28809,7 +28924,86 @@ constant_generates_xxspltidp (vec_const_128bit_type *vsx_const)
   return sf_value;
 }
 
-
+/* Now we have only two opaque types, they are __vector_quad and
+   __vector_pair built-in types.  They are target specific and
+   only available when MMA is supported.  With MMA supported, it
+   simply returns true, otherwise it checks if the given gimple
+   STMT is an assignment, asm or call stmt and uses either of
+   these two opaque types unexpectedly, if yes, it would raise
+   an error message and returns true, otherwise it returns false.  */
+
+bool
+rs6000_opaque_type_invalid_use_p (gimple *stmt)
+{
+  if (TARGET_MMA)
+    return false;
+
+  /* If the given TYPE is one MMA opaque type, emit the corresponding
+     error messages and return true, otherwise return false.  */
+  auto check_and_error_invalid_use = [](tree type)
+  {
+    tree mv = TYPE_MAIN_VARIANT (type);
+    if (mv == vector_quad_type_node)
+      {
+	error ("type %<__vector_quad%> requires the %qs option", "-mmma");
+	return true;
+      }
+    else if (mv == vector_pair_type_node)
+      {
+	error ("type %<__vector_pair%> requires the %qs option", "-mmma");
+	return true;
+      }
+    return false;
+  };
+
+  if (stmt)
+    {
+      /* The usage of MMA opaque types is very limited for now,
+	 to check with gassign, gasm and gcall is enough so far.  */
+      if (gassign *ga = dyn_cast<gassign *> (stmt))
+	{
+	  tree lhs = gimple_assign_lhs (ga);
+	  tree type = TREE_TYPE (lhs);
+	  if (check_and_error_invalid_use (type))
+	    return true;
+	}
+      else if (gasm *gs = dyn_cast<gasm *> (stmt))
+	{
+	  unsigned ninputs = gimple_asm_ninputs (gs);
+	  for (unsigned i = 0; i < ninputs; i++)
+	    {
+	      tree op = gimple_asm_input_op (gs, i);
+	      tree val = TREE_VALUE (op);
+	      tree type = TREE_TYPE (val);
+	      if (check_and_error_invalid_use (type))
+		return true;
+	    }
+	  unsigned noutputs = gimple_asm_noutputs (gs);
+	  for (unsigned i = 0; i < noutputs; i++)
+	    {
+	      tree op = gimple_asm_output_op (gs, i);
+	      tree val = TREE_VALUE (op);
+	      tree type = TREE_TYPE (val);
+	      if (check_and_error_invalid_use (type))
+		return true;
+	    }
+	}
+      else if (gcall *gc = dyn_cast<gcall *> (stmt))
+	{
+	  unsigned nargs = gimple_call_num_args (gc);
+	  for (unsigned i = 0; i < nargs; i++)
+	    {
+	      tree arg = gimple_call_arg (gc, i);
+	      tree type = TREE_TYPE (arg);
+	      if (check_and_error_invalid_use (type))
+		return true;
+	    }
+	}
+    }
+
+  return false;
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rs6000.h"

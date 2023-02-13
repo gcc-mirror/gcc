@@ -1,5 +1,5 @@
 /* OpenMP directive matching and resolving.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek
 
 This file is part of GCC.
@@ -6911,9 +6911,11 @@ void
 gfc_resolve_omp_assumptions (gfc_omp_assumptions *assume)
 {
   for (gfc_expr_list *el = assume->holds; el; el = el->next)
-    if (!gfc_resolve_expr (el->expr) || el->expr->ts.type != BT_LOGICAL)
-	gfc_error ("HOLDS expression at %L must be a logical expression",
-		   &el->expr->where);
+    if (!gfc_resolve_expr (el->expr)
+	|| el->expr->ts.type != BT_LOGICAL
+	|| el->expr->rank != 0)
+      gfc_error ("HOLDS expression at %L must be a scalar logical expression",
+		 &el->expr->where);
 }
 
 
@@ -7150,6 +7152,10 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  continue;
 	n->sym->mark = 0;
 	n->sym->comp_mark = 0;
+	n->sym->data_mark = 0;
+	n->sym->dev_mark = 0;
+	n->sym->gen_mark = 0;
+	n->sym->reduc_mark = 0;
 	if (n->sym->attr.flavor == FL_VARIABLE
 	    || n->sym->attr.proc_pointer
 	    || (!code && (!n->sym->attr.dummy || n->sym->ns != ns)))
@@ -7218,14 +7224,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	&& list != OMP_LIST_LASTPRIVATE
 	&& list != OMP_LIST_ALIGNED
 	&& list != OMP_LIST_DEPEND
-	&& (list != OMP_LIST_MAP || openacc)
 	&& list != OMP_LIST_FROM
 	&& list != OMP_LIST_TO
 	&& (list != OMP_LIST_REDUCTION || !openacc)
-	&& list != OMP_LIST_REDUCTION_INSCAN
-	&& list != OMP_LIST_REDUCTION_TASK
-	&& list != OMP_LIST_IN_REDUCTION
-	&& list != OMP_LIST_TASK_REDUCTION
 	&& list != OMP_LIST_ALLOCATE)
       for (n = omp_clauses->lists[list]; n; n = n->next)
 	{
@@ -7237,10 +7238,58 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    for (gfc_ref *ref = n->expr->ref; ref; ref = ref->next)
 	      if (ref->type == REF_COMPONENT)
 		component_ref_p = true;
-	  if ((!component_ref_p && n->sym->comp_mark)
-	      || (component_ref_p && n->sym->mark))
-	    gfc_error ("Symbol %qs has mixed component and non-component "
-		       "accesses at %L", n->sym->name, &n->where);
+	  if ((list == OMP_LIST_IS_DEVICE_PTR
+	       || list == OMP_LIST_HAS_DEVICE_ADDR)
+	      && !component_ref_p)
+	    {
+	      if (n->sym->gen_mark
+		  || n->sym->dev_mark
+		  || n->sym->reduc_mark
+		  || n->sym->mark)
+		gfc_error ("Symbol %qs present on multiple clauses at %L",
+			   n->sym->name, &n->where);
+	      else
+		n->sym->dev_mark = 1;
+	    }
+	  else if ((list == OMP_LIST_USE_DEVICE_PTR
+		    || list == OMP_LIST_USE_DEVICE_ADDR
+		    || list == OMP_LIST_PRIVATE
+		    || list == OMP_LIST_SHARED)
+		   && !component_ref_p)
+	    {
+	      if (n->sym->gen_mark || n->sym->dev_mark || n->sym->reduc_mark)
+		gfc_error ("Symbol %qs present on multiple clauses at %L",
+			   n->sym->name, &n->where);
+	      else
+		{
+		  n->sym->gen_mark = 1;
+		  /* Set both generic and device bits if we have
+		     use_device_*(x) or shared(x).  This allows us to diagnose
+		     "map(x) private(x)" below.  */
+		  if (list != OMP_LIST_PRIVATE)
+		    n->sym->dev_mark = 1;
+		}
+	    }
+	  else if ((list == OMP_LIST_REDUCTION
+		    || list == OMP_LIST_REDUCTION_TASK
+		    || list == OMP_LIST_REDUCTION_INSCAN
+		    || list == OMP_LIST_IN_REDUCTION
+		    || list == OMP_LIST_TASK_REDUCTION)
+		   && !component_ref_p)
+	    {
+	      /* Attempts to mix reduction types are diagnosed below.  */
+	      if (n->sym->gen_mark || n->sym->dev_mark)
+		gfc_error ("Symbol %qs present on multiple clauses at %L",
+			   n->sym->name, &n->where);
+	      n->sym->reduc_mark = 1;
+	    }
+	  else if ((!component_ref_p && n->sym->comp_mark)
+		   || (component_ref_p && n->sym->mark))
+	    {
+	      if (openacc)
+		gfc_error ("Symbol %qs has mixed component and non-component "
+			   "accesses at %L", n->sym->name, &n->where);
+	    }
 	  else if (n->sym->mark)
 	    gfc_error ("Symbol %qs present on multiple clauses at %L",
 		       n->sym->name, &n->where);
@@ -7253,34 +7302,62 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    }
 	}
 
+  /* Detect specifically the case where we have "map(x) private(x)" and raise
+     an error.  If we have "...simd" combined directives though, the "private"
+     applies to the simd part, so this is permitted though.  */
+  for (n = omp_clauses->lists[OMP_LIST_PRIVATE]; n; n = n->next)
+    if (n->sym->mark
+	&& n->sym->gen_mark
+	&& !n->sym->dev_mark
+	&& !n->sym->reduc_mark
+	&& code->op != EXEC_OMP_TARGET_SIMD
+	&& code->op != EXEC_OMP_TARGET_PARALLEL_DO_SIMD
+	&& code->op != EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD
+	&& code->op != EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD)
+      gfc_error ("Symbol %qs present on multiple clauses at %L",
+		 n->sym->name, &n->where);
+
   gcc_assert (OMP_LIST_LASTPRIVATE == OMP_LIST_FIRSTPRIVATE + 1);
   for (list = OMP_LIST_FIRSTPRIVATE; list <= OMP_LIST_LASTPRIVATE; list++)
     for (n = omp_clauses->lists[list]; n; n = n->next)
-      if (n->sym->mark)
+      if (n->sym->data_mark || n->sym->gen_mark || n->sym->dev_mark)
 	{
 	  gfc_error ("Symbol %qs present on multiple clauses at %L",
 		     n->sym->name, &n->where);
-	  n->sym->mark = 0;
+	  n->sym->data_mark = n->sym->gen_mark = n->sym->dev_mark = 0;
 	}
+      else if (n->sym->mark
+	       && code->op != EXEC_OMP_TARGET_TEAMS
+	       && code->op != EXEC_OMP_TARGET_TEAMS_DISTRIBUTE
+	       && code->op != EXEC_OMP_TARGET_TEAMS_LOOP
+	       && code->op != EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD
+	       && code->op != EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO
+	       && code->op != EXEC_OMP_TARGET_PARALLEL
+	       && code->op != EXEC_OMP_TARGET_PARALLEL_DO
+	       && code->op != EXEC_OMP_TARGET_PARALLEL_LOOP
+	       && code->op != EXEC_OMP_TARGET_PARALLEL_DO_SIMD
+	       && code->op != EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD)
+	gfc_error ("Symbol %qs present on both data and map clauses "
+		   "at %L", n->sym->name, &n->where);
 
   for (n = omp_clauses->lists[OMP_LIST_FIRSTPRIVATE]; n; n = n->next)
     {
-      if (n->sym->mark)
+      if (n->sym->data_mark || n->sym->gen_mark || n->sym->dev_mark)
 	gfc_error ("Symbol %qs present on multiple clauses at %L",
 		   n->sym->name, &n->where);
       else
-	n->sym->mark = 1;
+	n->sym->data_mark = 1;
     }
   for (n = omp_clauses->lists[OMP_LIST_LASTPRIVATE]; n; n = n->next)
-    n->sym->mark = 0;
+    n->sym->data_mark = 0;
 
   for (n = omp_clauses->lists[OMP_LIST_LASTPRIVATE]; n; n = n->next)
     {
-      if (n->sym->mark)
+      if (n->sym->data_mark || n->sym->gen_mark || n->sym->dev_mark)
 	gfc_error ("Symbol %qs present on multiple clauses at %L",
 		   n->sym->name, &n->where);
       else
-	n->sym->mark = 1;
+	n->sym->data_mark = 1;
     }
 
   for (n = omp_clauses->lists[OMP_LIST_ALIGNED]; n; n = n->next)

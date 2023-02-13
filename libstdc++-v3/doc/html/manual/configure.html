@@ -279,4 +279,25 @@
     </p></dd><dt><span class="term"><code class="code">--with-libstdcxx-eh-pool-obj-count=NUM</code></span></dt><dd><p>Set the size of the emergency exception handling pool. NUM is the
       number of simultaneous allocated exceptions to support.
       This does not change the library ABI.
+    </p></dd><dt><span class="term"><code class="code">--with-libstdcxx-zoneinfo=OPTION</code></span></dt><dd><p>Choose how <code class="classname">std::chrono::tzdb</code> will obtain
+      the time zone info. The library requires a copy of the
+      <code class="filename">tzdata.zi</code> and <code class="filename">leapseconds</code>
+      files from the <a class="link" href="https://www.iana.org/time-zones" target="_top">IANA Time Zone
+      Database</a>. The choice OPTION=static will embed a copy of the files
+      into the library, and use that static data when time zone information
+      is required. The choice OPTION=dir will use the files
+      <code class="filename">dir/tzdata.zi</code> and
+      <code class="filename">dir/leapseconds</code> (which must exist when a program
+      tries to access time zone information). The choice OPTION=dir,static
+      will try to use files in <code class="filename">dir</code> but if they are
+      not available the embedded static data will be used instead.
+      The default choice is OPTION=yes. This is equivalent to OPTION=dir,static
+      with a system-specific default directory (if a suitable default for
+      the target is known).
+      The choice OPTION=no will disable all code for loading time zone info
+      from file or from the embedded static data, which means that only the
+      "UTC" and "GMT" time zones are defined. Using OPTION=no results in a
+      smaller library, so is suitable for systems that will never need to
+      query the time zone database.
+      This does not change the library ABI.
     </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="setup.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="setup.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="make.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Setup </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Make</td></tr></table></div></body></html>

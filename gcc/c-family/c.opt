@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2022 Free Software Foundation, Inc.
+; Copyright (C) 2003-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -975,6 +975,11 @@ Warn about reading past the end of a source array in string manipulation functio
 Wstringop-truncation
 C ObjC C++ LTO ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
 Warn about truncation in string manipulation functions like strncat and strncpy.
+
+Wstrict-flex-arrays
+C C++ Var(warn_strict_flex_arrays) Warning
+Warn about inproper usages of flexible array members
+according to the level of -fstrict-flex-arrays.
 
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning

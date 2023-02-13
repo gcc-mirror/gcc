@@ -5,4 +5,4 @@ namespace std {
 }
 
 auto x = __builtin_source_location ();	// { dg-error "'void std::source_location\\(\\)' is not a type" }
-// { dg-message "evaluating '__builtin_source_location'" "" { target *-*-* } .-1 }
+// { dg-message "using '__builtin_source_location'" "" { target *-*-* } .-1 }

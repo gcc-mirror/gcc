@@ -2,13 +2,13 @@
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O3" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 /*
 ** mov1:
-**	vsetvli\s+(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7]),\s*zero,\s*e8,\s*mf8,\s*t[au],\s*m[au]
-**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf8,\s*t[au],\s*m[au]
+**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov1 (int8_t *in, int8_t *out)
@@ -19,9 +19,9 @@ void mov1 (int8_t *in, int8_t *out)
 
 /*
 ** mov2:
-**	vsetvli\s+(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7]),\s*zero,\s*e8,\s*mf4,\s*t[au],\s*m[au]
-**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf4,\s*t[au],\s*m[au]
+**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov2 (int8_t *in, int8_t *out)
@@ -32,9 +32,9 @@ void mov2 (int8_t *in, int8_t *out)
 
 /*
 ** mov3:
-**	vsetvli\s+(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7]),\s*zero,\s*e8,\s*mf2,\s*t[au],\s*m[au]
-**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf2,\s*t[au],\s*m[au]
+**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov3 (int8_t *in, int8_t *out)
@@ -45,8 +45,8 @@ void mov3 (int8_t *in, int8_t *out)
 
 /*
 ** mov4:
-**	vl1re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs1r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl1re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs1r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov4 (int8_t *in, int8_t *out)
@@ -57,8 +57,8 @@ void mov4 (int8_t *in, int8_t *out)
 
 /*
 ** mov5:
-**	vl2re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs2r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl2re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs2r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov5 (int8_t *in, int8_t *out)
@@ -69,8 +69,8 @@ void mov5 (int8_t *in, int8_t *out)
 
 /*
 ** mov6:
-**	vl4re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs4r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl4re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs4r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov6 (int8_t *in, int8_t *out)
@@ -81,8 +81,8 @@ void mov6 (int8_t *in, int8_t *out)
 
 /*
 ** mov7:
-**	vl8re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs8r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl8re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs8r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov7 (int8_t *in, int8_t *out)
@@ -93,9 +93,9 @@ void mov7 (int8_t *in, int8_t *out)
 
 /*
 ** mov8:
-**	vsetvli\s+(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7]),\s*zero,\s*e8,\s*mf8,\s*t[au],\s*m[au]
-**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf8,\s*t[au],\s*m[au]
+**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov8 (uint8_t *in, uint8_t *out)
@@ -106,9 +106,9 @@ void mov8 (uint8_t *in, uint8_t *out)
 
 /*
 ** mov9:
-**	vsetvli\s+(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7]),\s*zero,\s*e8,\s*mf4,\s*t[au],\s*m[au]
-**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf4,\s*t[au],\s*m[au]
+**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov9 (uint8_t *in, uint8_t *out)
@@ -119,9 +119,9 @@ void mov9 (uint8_t *in, uint8_t *out)
 
 /*
 ** mov10:
-**	vsetvli\s+(?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7]),\s*zero,\s*e8,\s*mf2,\s*t[au],\s*m[au]
-**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vsetvli\s+[a-x0-9]+,\s*zero,\s*e8,\s*mf2,\s*t[au],\s*m[au]
+**	vle8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vse8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov10 (uint8_t *in, uint8_t *out)
@@ -132,8 +132,8 @@ void mov10 (uint8_t *in, uint8_t *out)
 
 /*
 ** mov11:
-**	vl1re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs1r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl1re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs1r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov11 (uint8_t *in, uint8_t *out)
@@ -144,8 +144,8 @@ void mov11 (uint8_t *in, uint8_t *out)
 
 /*
 ** mov12:
-**	vl2re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs2r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl2re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs2r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov12 (uint8_t *in, uint8_t *out)
@@ -156,8 +156,8 @@ void mov12 (uint8_t *in, uint8_t *out)
 
 /*
 ** mov13:
-**	vl4re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs4r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl4re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs4r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov13 (uint8_t *in, uint8_t *out)
@@ -168,8 +168,8 @@ void mov13 (uint8_t *in, uint8_t *out)
 
 /*
 ** mov14:
-**	vl8re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
-**	vs8r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\((?:ra|[sgtf]p|t[0-6]|s[0-9]|s10|s11|a[0-7])\)
+**	vl8re8\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
+**	vs8r\.v\s+(?:v[0-9]|v[1-2][0-9]|v3[0-1]),0\s*\([a-x0-9]+\)
 **  ret
 */
 void mov14 (uint8_t *in, uint8_t *out)

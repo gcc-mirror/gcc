@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Copyright (C) 2016-2023 Free Software Foundation, Inc.
+#
 # This file is part of GCC.
 #
 # GCC is free software; you can redistribute it and/or modify it under

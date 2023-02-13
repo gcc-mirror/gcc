@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for NEC V850 series
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2023 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -2865,7 +2865,6 @@ v850_select_section (tree exp,
     {
       int is_const;
       if (!TREE_READONLY (exp)
-	  || TREE_SIDE_EFFECTS (exp)
 	  || !DECL_INITIAL (exp)
 	  || (DECL_INITIAL (exp) != error_mark_node
 	      && !TREE_CONSTANT (DECL_INITIAL (exp))))

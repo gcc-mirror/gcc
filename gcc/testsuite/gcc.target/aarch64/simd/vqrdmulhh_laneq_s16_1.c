@@ -1,25 +1,27 @@
 /* Test the vqrdmulhh_laneq_s16 AArch64 SIMD intrinsic.  */
 
 /* { dg-do run } */
-/* { dg-options "-save-temps -O3 -fno-inline" } */
+/* { dg-options "-save-temps -O3" } */
 
 #include "arm_neon.h"
 
 extern void abort (void);
 
+int16_t __attribute__((noipa))
+test_vqrdmulhh (int16_t arg1, int16x8_t arg2)
+{
+  return vqrdmulhh_laneq_s16 (arg1, arg2, 7);
+}
+
 int
 main (void)
 {
-  int16_t arg1;
-  int16x8_t arg2;
   int16_t actual;
   int16_t expected;
 
-  arg1 = 0;
-  arg2 = vcombine_s16 (vcreate_s16 (0x7fffffffa7908000ULL),
-                       vcreate_s16 (0x8000d2607fff0000ULL));
-
-  actual = vqrdmulhh_laneq_s16 (arg1, arg2, 7);
+  actual = test_vqrdmulhh (0,
+			   vcombine_s16 (vcreate_s16 (0x7fffffffa7908000ULL),
+					 vcreate_s16 (0x8000d2607fff0000ULL)));
   expected = 0;
 
   if (expected != actual)

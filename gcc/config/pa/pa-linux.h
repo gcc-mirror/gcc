@@ -1,5 +1,5 @@
 /* Definitions for PA_RISC with ELF format
-   Copyright (C) 1999-2022 Free Software Foundation, Inc.
+   Copyright (C) 1999-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -132,9 +132,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_GAS
 #define TARGET_GAS 1
-
-#undef TARGET_SYNC_LIBCALL
-#define TARGET_SYNC_LIBCALL 1
 
 /* The SYNC operations are implemented as library functions, not
    INSN patterns.  As a result, the HAVE defines for the patterns are

@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -805,6 +805,15 @@ public:
   type *get_element_type () { return m_other_type; }
 
   void replay_into (replayer *) final override;
+
+  bool is_same_type_as (type *other) final override
+  {
+    vector_type *other_vec_type = other->dyn_cast_vector_type ();
+    if (other_vec_type == NULL)
+      return false;
+    return get_num_units () == other_vec_type->get_num_units ()
+      && get_element_type () == other_vec_type->get_element_type ();
+  }
 
   vector_type *is_vector () final override { return this; }
 

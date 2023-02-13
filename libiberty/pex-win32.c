@@ -1,6 +1,6 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.  Generic Win32 specialization.
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2023 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "pex-common.h"
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #ifdef HAVE_STDLIB_H

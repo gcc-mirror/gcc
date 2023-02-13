@@ -1,5 +1,5 @@
 /* Code for range operators.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -2166,7 +2166,7 @@ operator_lshift::fold_range (irange &r, tree type,
       if (op2.undefined_p ())
 	r.set_undefined ();
       else
-	r.set_varying (type);
+	r.set_zero (type);
       return true;
     }
 
@@ -2440,7 +2440,7 @@ operator_rshift::fold_range (irange &r, tree type,
       if (op2.undefined_p ())
 	r.set_undefined ();
       else
-	r.set_varying (type);
+	r.set_zero (type);
       return true;
     }
 

@@ -1,5 +1,5 @@
 /* Subroutines used for LoongArch code generation.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
    Based on MIPS and RISC-V target for GNU compiler.
 
@@ -2075,6 +2075,11 @@ loongarch_classify_address (struct loongarch_address_info *info, rtx x,
       return (loongarch_valid_base_register_p (info->reg, mode, strict_p)
 	      && loongarch_valid_lo_sum_p (info->symbol_type, mode,
 					   info->offset));
+    case CONST_INT:
+      /* Small-integer addresses don't occur very often, but they
+	 are legitimate if $r0 is a valid base register.  */
+      info->type = ADDRESS_CONST_INT;
+      return IMM12_OPERAND (INTVAL (x));
 
     default:
       return false;
@@ -4933,6 +4938,7 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
 
    'A'	Print a _DB suffix if the memory model requires a release.
    'b'	Print the address of a memory operand, without offset.
+   'c'  Print an integer.
    'C'	Print the integer branch condition for comparison OP.
    'd'	Print CONST_INT OP in decimal.
    'F'	Print the FPU branch condition for comparison OP.
@@ -4977,6 +4983,14 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
     case 'A':
       if (loongarch_memmodel_needs_rel_acq_fence ((enum memmodel) INTVAL (op)))
        fputs ("_db", file);
+      break;
+
+    case 'c':
+      if (CONST_INT_P (op))
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op));
+      else
+	output_operand_lossage ("unsupported operand for code '%c'", letter);
+
       break;
 
     case 'C':

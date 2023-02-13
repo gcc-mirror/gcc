@@ -1,3 +1,5 @@
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
+
 #include <stdio.h>
 #include "analyzer-decls.h"
 

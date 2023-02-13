@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #if defined (__CYGWIN__) || defined (__MINGW32__)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
 #include <sys/mman.h>

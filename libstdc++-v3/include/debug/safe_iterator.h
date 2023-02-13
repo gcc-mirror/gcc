@@ -1,6 +1,6 @@
 // Safe iterator implementation  -*- C++ -*-
 
-// Copyright (C) 2003-2022 Free Software Foundation, Inc.
+// Copyright (C) 2003-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -129,13 +129,11 @@ namespace __gnu_debug
 	typename _Sequence::_Base::iterator,
 	typename _Sequence::_Base::const_iterator>::__type _OtherIterator;
 
-      struct _Attach_single
-      { };
+      struct _Unchecked { };
 
-      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
-      _GLIBCXX_NOEXCEPT
-      : _Iter_base(__i)
-      { _M_attach_single(__seq); }
+      _Safe_iterator(const _Safe_iterator& __x, _Unchecked) _GLIBCXX_NOEXCEPT
+      : _Iter_base(__x.base()), _Safe_base()
+      { _M_attach(__x._M_sequence); }
 
     public:
       typedef _Iterator					iterator_type;
@@ -162,11 +160,7 @@ namespace __gnu_debug
       _Safe_iterator(_Iterator __i, const _Safe_sequence_base* __seq)
       _GLIBCXX_NOEXCEPT
       : _Iter_base(__i), _Safe_base(__seq, _S_constant())
-      {
-	_GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
-			      _M_message(__msg_init_singular)
-			      ._M_iterator(*this, "this"));
-      }
+      { }
 
       /**
        * @brief Copy construction.
@@ -347,8 +341,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(base()++, this->_M_sequence, _Attach_single());
+	_Safe_iterator __ret(*this, _Unchecked());
+	++*this;
+	return __ret;
       }
 
       // ------ Utilities ------
@@ -520,11 +515,12 @@ namespace __gnu_debug
 
     protected:
       typedef typename _Safe_base::_OtherIterator _OtherIterator;
-      typedef typename _Safe_base::_Attach_single _Attach_single;
 
-      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
-      _GLIBCXX_NOEXCEPT
-      : _Safe_base(__i, __seq, _Attach_single())
+      typedef typename _Safe_base::_Unchecked _Unchecked;
+
+      _Safe_iterator(const _Safe_iterator& __x,
+		     _Unchecked __unchecked) _GLIBCXX_NOEXCEPT
+	: _Safe_base(__x, __unchecked)
       { }
 
     public:
@@ -609,9 +605,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(this->base()++, this->_M_sequence,
-			      _Attach_single());
+	_Safe_iterator __ret(*this, _Unchecked());
+	++*this;
+	return __ret;
       }
 
       // ------ Bidirectional iterator requirements ------
@@ -640,9 +636,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
 			      _M_message(__msg_bad_dec)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(this->base()--, this->_M_sequence,
-			      _Attach_single());
+	_Safe_iterator __ret(*this, _Unchecked());
+	--*this;
+	return __ret;
       }
 
       // ------ Utilities ------
@@ -666,11 +662,10 @@ namespace __gnu_debug
       typedef _Safe_iterator<_OtherIterator, _Sequence,
 			     std::random_access_iterator_tag> _OtherSelf;
 
-      typedef typename _Safe_base::_Attach_single _Attach_single;
-
-      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
-      _GLIBCXX_NOEXCEPT
-      : _Safe_base(__i, __seq, _Attach_single())
+      typedef typename _Safe_base::_Unchecked _Unchecked;
+      _Safe_iterator(const _Safe_iterator& __x,
+		     _Unchecked __unchecked) _GLIBCXX_NOEXCEPT
+	: _Safe_base(__x, __unchecked)
       { }
 
     public:
@@ -764,9 +759,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
 			      _M_message(__msg_bad_inc)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(this->base()++, this->_M_sequence,
-			      _Attach_single());
+	_Safe_iterator __ret(*this, _Unchecked());
+	++*this;
+	return __ret;
       }
 
       // ------ Bidirectional iterator requirements ------
@@ -791,9 +786,9 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
 			      _M_message(__msg_bad_dec)
 			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(this->base()--, this->_M_sequence,
-			      _Attach_single());
+	_Safe_iterator __ret(*this, _Unchecked());
+	--*this;
+	return __ret;
       }
 
       // ------ Random access iterator requirements ------

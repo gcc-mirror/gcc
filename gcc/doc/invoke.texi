@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2022 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2023 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -398,7 +398,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
 -Wstring-compare @gol
 -Wno-stringop-overflow -Wno-stringop-overread @gol
--Wno-stringop-truncation @gol
+-Wno-stringop-truncation -Wstrict-flex-arrays @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
@@ -850,7 +850,9 @@ Objective-C and Objective-C++ Dialects}.
 -mcmse @gol
 -mfix-cmse-cve-2021-35465 @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-offset=@var{offset} @gol
--mfdpic}
+-mfdpic @gol
+-mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]
+[+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args @gol
@@ -975,17 +977,18 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{HPPA Options}
 @gccoptlist{-march=@var{architecture-type} @gol
+-matomic-libcalls  -mbig-switch @gol
 -mcaller-copies  -mdisable-fpregs  -mdisable-indexing @gol
--mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld @gol
+-mordered  -mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld @gol
 -mfixed-range=@var{register-range} @gol
--mjump-in-delay  -mlinker-opt  -mlong-calls @gol
--mlong-load-store  -mno-disable-fpregs @gol
+-mcoherent-ldcw -mjump-in-delay  -mlinker-opt  -mlong-calls @gol
+-mlong-load-store  -mno-atomic-libcalls  -mno-disable-fpregs @gol
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas @gol
 -mno-jump-in-delay  -mno-long-load-store @gol
 -mno-portable-runtime  -mno-soft-float @gol
 -mno-space-regs  -msoft-float  -mpa-risc-1-0 @gol
 -mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime @gol
--mschedule=@var{cpu-type}  -mspace-regs  -msio  -mwsio @gol
+-mschedule=@var{cpu-type}  -mspace-regs  -msoft-mult  -msio  -mwsio @gol
 -munix=@var{unix-std}  -nolibdld  -static  -threads}
 
 @emph{IA-64 Options}
@@ -1433,7 +1436,7 @@ See RS/6000 and PowerPC Options.
 -m96bit-long-double  -mlong-double-64  -mlong-double-80  -mlong-double-128 @gol
 -mregparm=@var{num}  -msseregparm @gol
 -mveclibabi=@var{type}  -mvect8-ret-in-mem @gol
--mpc32  -mpc64  -mpc80  -mstackrealign @gol
+-mpc32  -mpc64  -mpc80  -mdaz-ftz -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone  -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model}  -mabi=@var{name}  -maddress-mode=@var{mode} @gol
 -m32  -m64  -mx32  -m16  -miamcu  -mlarge-data-threshold=@var{num} @gol
@@ -7835,6 +7838,31 @@ however, are not suitable arguments to functions that expect
 such arrays GCC issues warnings unless it can prove that the use is
 safe.  @xref{Common Variable Attributes}.
 
+@item -Wstrict-flex-arrays
+@opindex Wstrict-flex-arrays
+@opindex Wno-strict-flex-arrays
+Warn about inproper usages of flexible array members
+according to the @var{level} of the @code{strict_flex_array (@var{level})}
+attribute attached to the trailing array field of a structure if it's
+available, otherwise according to the @var{level} of the option
+@option{-fstrict-flex-arrays=@var{level}}.
+
+This option is effective only when @var{level} is bigger than 0.  Otherwise,
+it will be ignored with a warning.
+
+when @var{level}=1, warnings will be issued for a trailing array reference
+of a structure that have 2 or more elements if the trailing array is referenced
+as a flexible array member.
+
+when @var{level}=2, in addition to @var{level}=1, additional warnings will be
+issued for a trailing one-element array reference of a structure
+if the array is referenced as a flexible array member.
+
+when @var{level}=3, in addition to @var{level}=2, additional warnings will be
+issued for a trailing zero-length array reference of a structure
+if the array is referenced as a flexible array member.
+
+
 @item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
@@ -13208,7 +13236,8 @@ disclosure and use.
 GCC still considers an automatic variable that doesn't have an explicit
 initializer as uninitialized, @option{-Wuninitialized} and
 @option{-Wanalyzer-use-of-uninitialized-value} will still report
-warning messages on such automatic variables.
+warning messages on such automatic variables and the compiler will
+perform optimization as if the variable were uninitialized.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
 However, the current implementation cannot initialize automatic variables that
@@ -13693,9 +13722,12 @@ compiled.  All public functions and variables with the exception of @code{main}
 and those merged by attribute @code{externally_visible} become static functions
 and in effect are optimized more aggressively by interprocedural optimizers.
 
-This option should not be used in combination with @option{-flto}.
-Instead relying on a linker plugin should provide safer and more precise
-information.
+With @option{-flto} this option has a limited use.  In most cases the
+precise list of symbols used or exported from the binary is known the
+resolution info passed to the link-time optimizer by the linker plugin.  It is
+still useful if no linker plugin is used or during incremental link step when
+final code is produced (with @option{-flto}
+@option{-flinker-output=nolto-rel}).
 
 @item -flto[=@var{n}]
 @opindex flto
@@ -15508,11 +15540,22 @@ the parameter is reserved exclusively for debug insns created by
 @option{-fvar-tracking-assignments}, but debug insns may get
 (non-overlapping) uids above it if the reserved range is exhausted.
 
+@item ipa-sra-deref-prob-threshold
+IPA-SRA replaces a pointer which is known not be NULL with one or more
+new parameters only when the probability (in percent, relative to
+function entry) of it being dereferenced is higher than this parameter.
+
 @item ipa-sra-ptr-growth-factor
 IPA-SRA replaces a pointer to an aggregate with one or more new
 parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
+
+@item ipa-sra-ptrwrap-growth-factor
+Additional maximum allowed growth of total size of new parameters
+that ipa-sra replaces a pointer to an aggregate with,
+if it points to a local variable that the caller only writes to and
+passes it as an argument to other functions.
 
 @item ipa-sra-max-replacements
 Maximum pieces of an aggregate that IPA-SRA tracks.  As a
@@ -15941,15 +15984,12 @@ Max. size of loc list for which reverse ops should be added.
 
 @item fsm-scale-path-stmts
 Scale factor to apply to the number of statements in a threading path
-when comparing to the number of (scaled) blocks.
+crossing a loop backedge when comparing to
+@option{--param=max-jump-thread-duplication-stmts}.
 
 @item uninit-control-dep-attempts
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
-
-@item fsm-scale-path-blocks
-Scale factor to apply to the number of blocks in a threading path
-when comparing to the number of (scaled) statements.
 
 @item sched-autopref-queue-depth
 Hardware autoprefetcher scheduler model control flag.
@@ -16523,7 +16563,7 @@ this can be achieved with @samp{setarch `uname -m` -R ./prog}.
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
-See @uref{https://github.com/google/kasan} for more details.
+See @uref{https://github.com/google/kernel-sanitizers} for more details.
 
 @item -fsanitize=hwaddress
 @opindex fsanitize=hwaddress
@@ -16732,8 +16772,8 @@ or when a method or constructor is invoked on insufficiently aligned object.
 @item -fsanitize=object-size
 @opindex fsanitize=object-size
 This option enables instrumentation of memory references using the
-@code{__builtin_object_size} function.  Various out of bounds pointer
-accesses are detected.
+@code{__builtin_dynamic_object_size} function.  Various out of bounds
+pointer accesses are detected.
 
 @item -fsanitize=float-divide-by-zero
 @opindex fsanitize=float-divide-by-zero
@@ -17656,7 +17696,9 @@ needs to build supplementary stub code for constructors to work.  On
 multi-libbed systems, @samp{gcc -shared} must select the correct support
 libraries to link against.  Failing to supply the correct flags may lead
 to subtle defects.  Supplying them in cases where they are not necessary
-is innocuous.}
+is innocuous.  @option{-shared} suppresses the addition of startup code
+to alter the floating-point environment as done with @option{-ffast-math},
+@option{-Ofast} or @option{-funsafe-math-optimizations} on some targets.}
 
 @item -shared-libgcc
 @itemx -static-libgcc
@@ -21981,6 +22023,9 @@ Disable the floating-point extension.
 @item +cdecp0, +cdecp1, ... , +cdecp7
 Enable the Custom Datapath Extension (CDE) on selected coprocessors according
 to the numbers given in the options in the range 0 to 7.
+
+@item +pacbti
+Enable the Pointer Authentication and Branch Target Identification Extension.
 @end table
 
 @item  armv8-m.main
@@ -22053,8 +22098,8 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52}, @samp{cortex-r52plus},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-x1}, @samp{cortex-x1c},
-@samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
+@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-m85}, @samp{cortex-x1},
+@samp{cortex-x1c}, @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{xscale},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}, @samp{fa526}, @samp{fa626},
@@ -22118,17 +22163,26 @@ The following extension options are common to the listed CPUs:
 
 @table @samp
 @item +nodsp
-Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p}
-and @samp{cortex-m55}. Also disable the M-Profile Vector Extension (MVE)
-integer and single precision floating-point instructions on @samp{cortex-m55}.
+Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p},
+@samp{cortex-m55} and @samp{cortex-m85}. Also disable the M-Profile Vector
+Extension (MVE) integer and single precision floating-point instructions on
+@samp{cortex-m55} and @samp{cortex-m85}.
+
+@item +nopacbti
+Disable the Pointer Authentication and Branch Target Identification Extension
+on @samp{cortex-m85}.
 
 @item +nomve
 Disable the M-Profile Vector Extension (MVE) integer and single precision
-floating-point instructions on @samp{cortex-m55}.
+floating-point instructions on @samp{cortex-m55} and @samp{cortex-m85}.
 
 @item +nomve.fp
 Disable the M-Profile Vector Extension (MVE) single precision floating-point
-instructions on @samp{cortex-m55}.
+instructions on @samp{cortex-m55} and @samp{cortex-m85}.
+
+@item +cdecp0, +cdecp1, ... , +cdecp7
+Enable the Custom Datapath Extension (CDE) on selected coprocessors according
+to the numbers given in the options in the range 0 to 7 on @samp{cortex-m55}.
 
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
@@ -22136,7 +22190,8 @@ Disables the floating-point instructions on @samp{arm9e},
 @samp{arm1020e}, @samp{arm1022e}, @samp{arm926ej-s},
 @samp{arm1026ej-s}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33}, @samp{cortex-m35p}
-and @samp{cortex-m55}.
+@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33}, @samp{cortex-m35p},
+@samp{cortex-m55} and @samp{cortex-m85}.
 Disables the floating-point and SIMD instructions on
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7},
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
@@ -22476,9 +22531,9 @@ Development Tools Engineering Specification", which can be found on
 Mitigate against a potential security issue with the @code{VLLDM} instruction
 in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
 enabled by default when the option @option{-mcpu=} is used with
-@code{cortex-m33}, @code{cortex-m35p}, @code{cortex-m55} or @code{star-mc1}.
-The option @option{-mno-fix-cmse-cve-2021-35465} can be used to disable
-the mitigation.
+@code{cortex-m33}, @code{cortex-m35p}, @code{cortex-m55}, @code{cortex-m85}
+or @code{star-mc1}. The option @option{-mno-fix-cmse-cve-2021-35465} can be used
+to disable the mitigation.
 
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-offset=@var{offset}
@@ -22509,6 +22564,39 @@ behavior is acceptable, use -static and -Wl,-dynamic-linker options.
 The opposite @option{-mno-fdpic} option is useful (and required) to
 build the Linux kernel using the same (@code{arm-*-uclinuxfdpiceabi})
 toolchain as the one used to build the userland programs.
+
+@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}][+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]
+@opindex mbranch-protection
+Enable branch protection features (armv8.1-m.main only).
+@samp{none} generate code without branch protection or return address
+signing.
+@samp{standard[+@var{leaf}]} generate code with all branch protection
+features enabled at their standard level.
+@samp{pac-ret[+@var{leaf}]} generate code with return address signing
+set to its standard level, which is to sign all functions that save
+the return address to memory.
+@samp{leaf} When return address signing is enabled, also sign leaf
+functions even if they do not write the return address to memory.
++@samp{bti} Add landing-pad instructions at the permitted targets of
+indirect branch instructions.
+
+If the @samp{+pacbti} architecture extension is not enabled, then all
+branch protection and return address signing operations are
+constrained to use only the instructions defined in the
+architectural-NOP space. The generated code will remain
+backwards-compatible with earlier versions of the architecture, but
+the additional security can be enabled at run time on processors that
+support the @samp{PACBTI} extension.
+
+Branch target enforcement using BTI can only be enabled at runtime if
+all code in the application has been compiled with at least
+@samp{-mbranch-protection=bti}.
+
+Any setting other than @samp{none} is supported only on armv8-m.main
+or later.
+
+The default is to generate code without branch protection or return
+address signing.
 
 @end table
 
@@ -24853,6 +24941,33 @@ other way around.
 @opindex mpa-risc-2-0
 Synonyms for @option{-march=1.0}, @option{-march=1.1}, and @option{-march=2.0} respectively.
 
+@item -matomic-libcalls
+@opindex matomic-libcalls
+@opindex mno-atomic-libcalls
+Generate libcalls for atomic loads and stores when sync libcalls are disabled.
+This option is enabled by default.  It only affects the generation of
+atomic libcalls by the HPPA backend.
+
+Both the sync and @file{libatomic} libcall implementations use locking.
+As a result, processor stores are not atomic with respect to other
+atomic operations.  Processor loads up to DImode are atomic with
+respect to other atomic operations provided they are implemented as
+a single access.
+
+The PA-RISC architecture does not support any atomic operations in
+hardware except for the @code{ldcw} instruction.  Thus, all atomic
+support is implemented using sync and atomic libcalls.  Sync libcall
+support is in @file{libgcc.a}.  Atomic libcall support is in
+@file{libatomic}.
+
+This option generates @code{__atomic_exchange} calls for atomic stores.
+It also provides special handling for atomic DImode accesses on 32-bit
+targets.
+
+@item -mbig-switch
+@opindex mbig-switch
+Does nothing.  Preserved for backward compatibility.
+
 @item -mcaller-copies
 @opindex mcaller-copies
 The caller copies function arguments passed by hidden reference.  This
@@ -24861,29 +24976,18 @@ option should be used with care as it is not compatible with the default
 passed by hidden reference and the option provides better compatibility
 with OpenMP.
 
-@item -mjump-in-delay
-@opindex mjump-in-delay
-This option is ignored and provided for compatibility purposes only.
+@item -mcoherent-ldcw
+@opindex mcoherent-ldcw
+Use ldcw/ldcd coherent cache-control hint.
 
 @item -mdisable-fpregs
 @opindex mdisable-fpregs
-Prevent floating-point registers from being used in any manner.  This is
-necessary for compiling kernels that perform lazy context switching of
-floating-point registers.  If you use this option and attempt to perform
-floating-point operations, the compiler aborts.
+Disable floating-point registers.  Equivalent to @code{-msoft-float}.
 
 @item -mdisable-indexing
 @opindex mdisable-indexing
 Prevent the compiler from using indexing address modes.  This avoids some
 rather obscure problems when compiling MIG generated code under MACH@.
-
-@item -mno-space-regs
-@opindex mno-space-regs
-@opindex mspace-regs
-Generate code that assumes the target has no space registers.  This allows
-GCC to generate faster indirect calls and use unscaled index address modes.
-
-Such code is suitable for level 0 PA systems and kernels.
 
 @item -mfast-indirect-calls
 @opindex mfast-indirect-calls
@@ -24901,56 +25005,9 @@ useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
 
-@item -mlong-load-store
-@opindex mlong-load-store
-Generate 3-instruction load and store sequences as sometimes required by
-the HP-UX 10 linker.  This is equivalent to the @samp{+k} option to
-the HP compilers.
-
-@item -mportable-runtime
-@opindex mportable-runtime
-Use the portable calling conventions proposed by HP for ELF systems.
-
 @item -mgas
 @opindex mgas
 Enable the use of assembler directives only GAS understands.
-
-@item -mschedule=@var{cpu-type}
-@opindex mschedule
-Schedule code according to the constraints for the machine type
-@var{cpu-type}.  The choices for @var{cpu-type} are @samp{700}
-@samp{7100}, @samp{7100LC}, @samp{7200}, @samp{7300} and @samp{8000}.  Refer
-to @file{/usr/lib/sched.models} on an HP-UX system to determine the
-proper scheduling option for your machine.  The default scheduling is
-@samp{8000}.
-
-@item -mlinker-opt
-@opindex mlinker-opt
-Enable the optimization pass in the HP-UX linker.  Note this makes symbolic
-debugging impossible.  It also triggers a bug in the HP-UX 8 and HP-UX 9
-linkers in which they give bogus error messages when linking some programs.
-
-@item -msoft-float
-@opindex msoft-float
-Generate output containing library calls for floating point.
-@strong{Warning:} the requisite libraries are not available for all HPPA
-targets.  Normally the facilities of the machine's usual C compiler are
-used, but this cannot be done directly in cross-compilation.  You must make
-your own arrangements to provide suitable library functions for
-cross-compilation.
-
-@option{-msoft-float} changes the calling convention in the output file;
-therefore, it is only useful if you compile @emph{all} of a program with
-this option.  In particular, you need to compile @file{libgcc.a}, the
-library that comes with GCC, with @option{-msoft-float} in order for
-this to work.
-
-@item -msio
-@opindex msio
-Generate the predefine, @code{_SIO}, for server IO@.  The default is
-@option{-mwsio}.  This generates the predefines, @code{__hp9000s700},
-@code{__hp9000s700__} and @code{_WSIO}, for workstation IO@.  These
-options are available under HP-UX and HI-UX@.
 
 @item -mgnu-ld
 @opindex mgnu-ld
@@ -24981,6 +25038,12 @@ configure option, GCC's program search path, and finally by the user's
 `gcc -print-prog-name=ld`}.  This option is only available on the 64-bit
 HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 
+@item -mlinker-opt
+@opindex mlinker-opt
+Enable the optimization pass in the HP-UX linker.  Note this makes symbolic
+debugging impossible.  It also triggers a bug in the HP-UX 8 and HP-UX 9
+linkers in which they give bogus error messages when linking some programs.
+
 @item -mlong-calls
 @opindex mno-long-calls
 @opindex mlong-calls
@@ -25008,6 +25071,69 @@ impact on systems that support long absolute calls, and long pic
 symbol-difference or pc-relative calls should be relatively small.
 However, an indirect call is used on 32-bit ELF systems in pic code
 and it is quite long.
+
+@item -mlong-load-store
+@opindex mlong-load-store
+Generate 3-instruction load and store sequences as sometimes required by
+the HP-UX 10 linker.  This is equivalent to the @samp{+k} option to
+the HP compilers.
+
+@item -mjump-in-delay
+@opindex mjump-in-delay
+This option is ignored and provided for compatibility purposes only.
+
+@item -mno-space-regs
+@opindex mno-space-regs
+@opindex mspace-regs
+Generate code that assumes the target has no space registers.  This allows
+GCC to generate faster indirect calls and use unscaled index address modes.
+
+Such code is suitable for level 0 PA systems and kernels.
+
+@item -mordered
+@opindex mordered
+Assume memory references are ordered and barriers are not needed.
+
+@item -mportable-runtime
+@opindex mportable-runtime
+Use the portable calling conventions proposed by HP for ELF systems.
+
+@item -mschedule=@var{cpu-type}
+@opindex mschedule
+Schedule code according to the constraints for the machine type
+@var{cpu-type}.  The choices for @var{cpu-type} are @samp{700}
+@samp{7100}, @samp{7100LC}, @samp{7200}, @samp{7300} and @samp{8000}.  Refer
+to @file{/usr/lib/sched.models} on an HP-UX system to determine the
+proper scheduling option for your machine.  The default scheduling is
+@samp{8000}.
+
+@item -msio
+@opindex msio
+Generate the predefine, @code{_SIO}, for server IO@.  The default is
+@option{-mwsio}.  This generates the predefines, @code{__hp9000s700},
+@code{__hp9000s700__} and @code{_WSIO}, for workstation IO@.  These
+options are available under HP-UX and HI-UX@.
+
+@item -msoft-float
+@opindex msoft-float
+Generate output containing library calls for floating point.
+@strong{Warning:} the requisite libraries are not available for all HPPA
+targets.  Normally the facilities of the machine's usual C compiler are
+used, but this cannot be done directly in cross-compilation.  You must make
+your own arrangements to provide suitable library functions for
+cross-compilation.
+
+@option{-msoft-float} changes the calling convention in the output file;
+therefore, it is only useful if you compile @emph{all} of a program with
+this option.  In particular, you need to compile @file{libgcc.a}, the
+library that comes with GCC, with @option{-msoft-float} in order for
+this to work.
+
+@item -msoft-mult
+@opindex msoft-mult
+Use software integer multiplication.
+
+This disables the use of the @code{xmpyu} instruction.
 
 @item -munix=@var{unix-std}
 @opindex march
@@ -32210,7 +32336,7 @@ AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
 AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
 VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
 MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
-UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16 and AVX512BF16
+UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512-FP16 and AVX512BF16
 instruction set support.
 
 @item alderlake
@@ -32237,7 +32363,7 @@ AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
 AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
 VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
 MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG,
-SERIALIZE, TSXLDTRK, UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16,
+SERIALIZE, TSXLDTRK, UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512-FP16,
 AVX512BF16, AMX-FP16 and PREFETCHI instruction set support.
 
 @item k6
@@ -32752,6 +32878,16 @@ are enabled by default; routines in such libraries could suffer significant
 loss of accuracy, typically through so-called ``catastrophic cancellation'',
 when this option is used to set the precision to less than extended precision.
 
+@item -mdaz-ftz
+@opindex mdaz-ftz
+
+The flush-to-zero (FTZ) and denormals-are-zero (DAZ) flags in the MXCSR register
+are used to control floating-point calculations.SSE and AVX instructions
+including scalar and vector instructions could benefit from enabling the FTZ
+and DAZ flags when @option{-mdaz-ftz} is specified. Don't set FTZ/DAZ flags
+when @option{-mno-daz-ftz} or @option{-shared} is specified, @option{-mdaz-ftz}
+will set FTZ/DAZ flags even with @option{-shared}.
+
 @item -mstackrealign
 @opindex mstackrealign
 Realign the stack at entry.  On the x86, the @option{-mstackrealign}
@@ -33093,7 +33229,7 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
 ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
-UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI, AVX512FP16,
+UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI, AVX512-FP16,
 AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AMX-FP16, PREFETCHI, RAOINT or
 CLDEMOTE extended instruction sets. Each has a corresponding @option{-mno-}
 option to disable use of these instructions.

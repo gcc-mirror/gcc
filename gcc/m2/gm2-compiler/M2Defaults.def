@@ -1,0 +1,54 @@
+(* M2Defaults.def provides path and argument defaults.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Defaults;
+
+(*
+    Title      : M2Defaults
+    Author     : Gaius Mulley
+    System     : UNIX (gm2)
+    Date       : Fri Dec 13 13:04:51 1991
+    Last edit  : Fri Dec 13 13:04:51 1991
+    Description: Provides mechanisms to collect the default
+                 search path and command line options.
+*)
+
+FROM DynamicStrings IMPORT String ;
+EXPORT QUALIFIED GetSearchPath, GetOptions ;
+
+
+(*
+   GetSearchPath - returns a string, which is a copy of the environment variable
+      	           M2PATH.
+*)
+
+PROCEDURE GetSearchPath () : String ;
+
+
+(*
+   GetOptions - returns a string, which is a copy of the environment variable
+      	        M2OPTIONS
+*)
+
+PROCEDURE GetOptions () : String ;
+
+
+END M2Defaults.

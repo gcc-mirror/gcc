@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -789,8 +789,22 @@ maybe_set_nonzero_bits (edge e, tree var)
 	return;
     }
   cst = gimple_assign_rhs2 (stmt);
-  set_nonzero_bits (var, wi::bit_and_not (get_nonzero_bits (var),
-					  wi::to_wide (cst)));
+  if (POINTER_TYPE_P (TREE_TYPE (var)))
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (var);
+      if (pi && pi->misalign)
+	return;
+      wide_int w = wi::bit_not (wi::to_wide (cst));
+      unsigned int bits = wi::ctz (w);
+      if (bits == 0 || bits >= HOST_BITS_PER_INT)
+	return;
+      unsigned int align = 1U << bits;
+      if (pi == NULL || pi->align < align)
+	set_ptr_info_alignment (get_ptr_info (var), align, 0);
+    }
+  else
+    set_nonzero_bits (var, wi::bit_and_not (get_nonzero_bits (var),
+					    wi::to_wide (cst)));
 }
 
 /* Searches the case label vector VEC for the index *IDX of the CASE_LABEL
@@ -1087,7 +1101,7 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger->dump (dump_file);
 
-  if (warn_array_bounds && warn_array_bounds_p)
+  if ((warn_array_bounds || warn_strict_flex_arrays) && warn_array_bounds_p)
     {
       // Set all edges as executable, except those ranger says aren't.
       int non_exec_flag = ranger->non_executable_edge_flag;

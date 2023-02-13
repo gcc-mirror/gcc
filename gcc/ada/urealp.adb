@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1518,14 +1518,11 @@ package body Urealp is
    -- UR_Write_To_JSON --
    ----------------------
 
-   --  We defer to the implementation of UR_Write in all cases, either directly
-   --  for values that are naturally written in a JSON compatible format, or by
-   --  first computing a decimal approximation for other values.
+   --  We defer to the implementation of UR_Write for values that are naturally
+   --  written in a JSON compatible format and write a fraction for the others.
 
    procedure UR_Write_To_JSON (Real : Ureal) is
-      Val  : constant Ureal_Entry      := Ureals.Table (Real);
-      Imrk : constant Uintp.Save_Mark  := Mark;
-      Rmrk : constant Urealp.Save_Mark := Mark;
+      Val : constant Ureal_Entry := Ureals.Table (Real);
 
       T : Ureal;
 
@@ -1561,31 +1558,21 @@ package body Urealp is
       elsif Val.Rbase = 0 and then Val.Num mod Val.Den = 0 then
          T := Real;
 
-      --  For other constants, compute an approximation in base 10
+      --  Other non-based (rational) constants are written in num/den style
 
       else
-         declare
-            A : constant Ureal := UR_Abs (Real);
-            --  The absolute value
-
-            E : constant Uint  :=
-                  (if A < Ureal_1
-                   then UI_From_Int (3 - Decimal_Exponent_Lo (Real))
-                   else Uint_3);
-            --  The exponent for at least 3 digits after the decimal point
-
-            Num : constant Uint :=
-                    UR_To_Uint (UR_Mul (A, UR_Exponentiate (Ureal_10, E)));
-            --  The numerator appropriately rounded
-
-         begin
-            T := UR_From_Components (Num, E, 10, Val.Negative);
-         end;
+         Write_Str ("{ ""code"": ""/"", ""operands"": [ ");
+         if Val.Negative then
+            Write_Char ('-');
+         end if;
+         UI_Write (Val.Num, Decimal);
+         Write_Str (".0, ");
+         UI_Write (Val.Den, Decimal);
+         Write_Str (".0 ] }");
+         return;
       end if;
 
       UR_Write (T);
-      Release (Imrk);
-      Release (Rmrk);
    end UR_Write_To_JSON;
 
    -------------

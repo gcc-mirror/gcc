@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -74,7 +74,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "ubsan.h"
 
+#if __cpp_inline_variables < 201606L
+/* Tree code classes.  */
 
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+#define END_OF_BASE_TREE_CODES tcc_exceptional,
+
+const enum tree_code_class tree_code_type[] = {
+#include "all-tree.def"
+};
+
+#undef DEFTREECODE
+#undef END_OF_BASE_TREE_CODES
+
+/* Table indexed by tree code giving number of expression
+   operands beyond the fixed part of the node structure.
+   Not used for types or decls.  */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
+#define END_OF_BASE_TREE_CODES 0,
+
+const unsigned char tree_code_length[] = {
+#include "all-tree.def"
+};
+
+#undef DEFTREECODE
+#undef END_OF_BASE_TREE_CODES
+#endif
 
 /* Names of tree components.
    Used for printing out the tree and error messages.  */
@@ -2669,6 +2695,35 @@ build_zero_cst (tree type)
     }
 }
 
+/* If floating-point type TYPE has an IEEE-style sign bit, return an
+   unsigned constant in which only the sign bit is set.  Return null
+   otherwise.  */
+
+tree
+sign_mask_for (tree type)
+{
+  /* Avoid having to choose between a real-only sign and a pair of signs.
+     This could be relaxed if the choice becomes obvious later.  */
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    return NULL_TREE;
+
+  auto eltmode = as_a<scalar_float_mode> (element_mode (type));
+  auto bits = REAL_MODE_FORMAT (eltmode)->ieee_bits;
+  if (!bits || !pow2p_hwi (bits))
+    return NULL_TREE;
+
+  tree inttype = unsigned_type_for (type);
+  if (!inttype)
+    return NULL_TREE;
+
+  auto mask = wi::set_bit_in_zero (bits - 1, bits);
+  if (TREE_CODE (inttype) == VECTOR_TYPE)
+    {
+      tree elt = wide_int_to_tree (TREE_TYPE (inttype), mask);
+      return build_vector_from_val (inttype, elt);
+    }
+  return wide_int_to_tree (inttype, mask);
+}
 
 /* Build a BINFO with LEN language slots.  */
 
@@ -3177,6 +3232,35 @@ real_minus_onep (const_tree expr)
 	      && real_minus_onep (VECTOR_CST_ENCODED_ELT (expr, 0)));
     default:
       return false;
+    }
+}
+
+/* Return true if T could be a floating point zero.  */
+
+bool
+real_maybe_zerop (const_tree expr)
+{
+  switch (TREE_CODE (expr))
+    {
+    case REAL_CST:
+      /* Can't use real_zerop here, as it always returns false for decimal
+	 floats.  And can't use TREE_REAL_CST (expr).cl == rvc_zero
+	 either, as decimal zeros are rvc_normal.  */
+      return real_equal (&TREE_REAL_CST (expr), &dconst0);
+    case COMPLEX_CST:
+      return (real_maybe_zerop (TREE_REALPART (expr))
+	      || real_maybe_zerop (TREE_IMAGPART (expr)));
+    case VECTOR_CST:
+      {
+	unsigned count = vector_cst_encoded_nelts (expr);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (real_maybe_zerop (VECTOR_CST_ENCODED_ELT (expr, i)))
+	    return true;
+	return false;
+      }
+    default:
+      /* Perhaps for SSA_NAMEs we could query frange.  */
+      return true;
     }
 }
 
@@ -5861,6 +5945,9 @@ void
 decl_value_expr_insert (tree from, tree to)
 {
   struct tree_decl_map *h;
+
+  /* Uses of FROM shouldn't look like they happen at the location of TO.  */
+  to = protected_set_expr_location_unshare (to, UNKNOWN_LOCATION);
 
   h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
@@ -10929,6 +11016,10 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
 	return NULL_TREE;
       if (inner == inner2)
 	return type;
+      machine_mode new_mode;
+      if (VECTOR_MODE_P (TYPE_MODE (type))
+	  && related_int_vector_mode (TYPE_MODE (type)).exists (&new_mode))
+	return build_vector_type_for_mode (inner2, new_mode);
       return build_vector_type (inner2, TYPE_VECTOR_SUBPARTS (type));
     }
 
@@ -11310,12 +11401,12 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	if (len == 0)
 	  break;
 
-	/* Walk all elements but the first.  */
-	while (--len)
-	  WALK_SUBTREE (TREE_VEC_ELT (*tp, len));
+	/* Walk all elements but the last.  */
+	for (int i = 0; i < len - 1; ++i)
+	  WALK_SUBTREE (TREE_VEC_ELT (*tp, i));
 
-	/* Now walk the first one as a tail call.  */
-	WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, 0));
+	/* Now walk the last one as a tail call.  */
+	WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, len - 1));
       }
 
     case VECTOR_CST:
@@ -11323,11 +11414,11 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	unsigned len = vector_cst_encoded_nelts (*tp);
 	if (len == 0)
 	  break;
-	/* Walk all elements but the first.  */
-	while (--len)
-	  WALK_SUBTREE (VECTOR_CST_ENCODED_ELT (*tp, len));
-	/* Now walk the first one as a tail call.  */
-	WALK_SUBTREE_TAIL (VECTOR_CST_ENCODED_ELT (*tp, 0));
+	/* Walk all elements but the last.  */
+	for (unsigned i = 0; i < len - 1; ++i)
+	  WALK_SUBTREE (VECTOR_CST_ENCODED_ELT (*tp, i));
+	/* Now walk the last one as a tail call.  */
+	WALK_SUBTREE_TAIL (VECTOR_CST_ENCODED_ELT (*tp, len - 1));
       }
 
     case COMPLEX_CST:
@@ -13042,38 +13133,15 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 	  || *sam == special_array_member::trail_n)
 	return memsize;
 
-      /* flag_strict_flex_arrays will control how to treat
-	 the trailing arrays as flexiable array members.  */
-
       tree afield_decl = TREE_OPERAND (ref, 1);
-      unsigned int strict_flex_array_level
-	= strict_flex_array_level_of (afield_decl);
+      gcc_assert (TREE_CODE (afield_decl) == FIELD_DECL);
+      /* if the trailing array is a not a flexible array member, treat it as
+	 a normal array.  */
+      if (DECL_NOT_FLEXARRAY (afield_decl)
+	  && *sam != special_array_member::int_0)
+	return memsize;
 
-      switch (strict_flex_array_level)
-	{
-	  case 3:
-	    /* Treaing 0-length trailing arrays as normal array.  */
-	    if (*sam == special_array_member::trail_0)
-	      return size_zero_node;
-	    /* FALLTHROUGH.  */
-	  case 2:
-	    /* Treating 1-element trailing arrays as normal array.  */
-	    if (*sam == special_array_member::trail_1)
-	      return memsize;
-	    /* FALLTHROUGH.  */
-	  case 1:
-	    /* Treating 2-or-more elements trailing arrays as normal
-	       array.  */
-	    if (*sam == special_array_member::trail_n)
-	      return memsize;
-	    /* FALLTHROUGH.  */
-	  case 0:
-	    break;
-	  default:
-	    gcc_unreachable ();
-	}
-
-	if (*sam == special_array_member::int_0)
+      if (*sam == special_array_member::int_0)
 	  memsize = NULL_TREE;
 
       /* For a reference to a flexible array member of a union

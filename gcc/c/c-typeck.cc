@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -12431,9 +12431,7 @@ build_binary_op (location_t location, enum tree_code code,
 	       undefined if the quotient can't be represented in the
 	       computation mode.  We shorten only if unsigned or if
 	       dividing by something we know != -1.  */
-	    shorten = (TYPE_UNSIGNED (TREE_TYPE (orig_op0))
-		       || (TREE_CODE (op1) == INTEGER_CST
-			   && !integer_all_onesp (op1)));
+	    shorten = may_shorten_divmod (op0, op1);
 	  common = 1;
 	}
       break;
@@ -12467,9 +12465,7 @@ build_binary_op (location_t location, enum tree_code code,
 	     on some targets, since the modulo instruction is undefined if the
 	     quotient can't be represented in the computation mode.  We shorten
 	     only if unsigned or if dividing by something we know != -1.  */
-	  shorten = (TYPE_UNSIGNED (TREE_TYPE (orig_op0))
-		     || (TREE_CODE (op1) == INTEGER_CST
-			 && !integer_all_onesp (op1)));
+	  shorten = may_shorten_divmod (op0, op1);
 	  common = 1;
 	}
       break;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -227,6 +227,7 @@ UINT __gnat_current_ccs_encoding;
 
 #elif defined (_WIN32)
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <accctrl.h>
 #include <aclapi.h>

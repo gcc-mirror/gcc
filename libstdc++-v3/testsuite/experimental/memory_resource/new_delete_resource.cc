@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2022 Free Software Foundation, Inc.
+// Copyright (C) 2018-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,10 @@
 
 #if (defined __sun__ || defined __VXWORKS__) && defined __i386__
 // See PR libstdc++/77691
+# define BAD_MAX_ALIGN_T 1
+#endif
+#if defined __hpux__ && defined __hppa__ && defined __LP64__
+// Ignore inconsistent long double and malloc alignment (libstdc++/77691)
 # define BAD_MAX_ALIGN_T 1
 #endif
 

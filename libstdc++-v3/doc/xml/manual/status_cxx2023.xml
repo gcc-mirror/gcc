@@ -66,7 +66,7 @@ or any notes about the implementation.
     <row>
       <entry> Range constructor for std::string_view </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1989r2.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1989r2.pdf">
         P1989R2
         </link>
       </entry>
@@ -77,7 +77,7 @@ or any notes about the implementation.
     <row>
       <entry> <code>join_view</code> should join all views of ranges </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2328r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2328r1.html">
         P2328R1
         </link>
       </entry>
@@ -89,7 +89,7 @@ or any notes about the implementation.
     <row>
       <entry> Clarifying range adaptor objects </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2281r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2281r1.html">
         P2281R1
         </link>
       </entry>
@@ -100,7 +100,7 @@ or any notes about the implementation.
     <row>
       <entry> Views should not be required to be default constructible </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2325r3.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2325r3.html">
         P2325R3
         </link>
       </entry>
@@ -111,7 +111,7 @@ or any notes about the implementation.
     <row>
       <entry> Conditionally borrowed ranges </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2017r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2017r1.html">
         P2017R1
         </link>
       </entry>
@@ -122,7 +122,7 @@ or any notes about the implementation.
     <row>
       <entry> Require <code>span</code> &amp; <code>basic_string_view</code> to be Trivially Copyable </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2251r1.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2251r1.pdf">
         P2251R1
         </link>
       </entry>
@@ -133,7 +133,7 @@ or any notes about the implementation.
     <row>
       <entry> Repairing input range adaptors and counted_iterator </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2259r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2259r1.html">
         P2259R1
         </link>
       </entry>
@@ -144,7 +144,7 @@ or any notes about the implementation.
     <row>
       <entry> Superior String Splitting </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2210r2.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2210r2.html">
         P2210R2
         </link>
       </entry>
@@ -155,7 +155,7 @@ or any notes about the implementation.
     <row>
       <entry> What is a <code>view</code>? </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2415r2.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2415r2.html">
         P2415R2
         </link>
       </entry>
@@ -166,7 +166,7 @@ or any notes about the implementation.
     <row>
       <entry> Fix istream_view </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2432r1.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2432r1.pdf">
         P2432R1
         </link>
       </entry>
@@ -178,7 +178,7 @@ or any notes about the implementation.
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> <code>starts_with</code> and <code>ends_with</code> </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1659r3.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1659r3.html">
         P1659R3
         </link>
       </entry>
@@ -190,7 +190,7 @@ or any notes about the implementation.
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> <code>zip</code> </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2321r2.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2321r2.html">
         P2321R2
         </link>
       </entry>
@@ -207,7 +207,7 @@ or any notes about the implementation.
     <row>
       <entry> A proposal for a type trait to detect scoped enumerations </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1048r1.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1048r1.pdf">
         P1048R1
         </link>
       </entry>
@@ -218,7 +218,7 @@ or any notes about the implementation.
     <row>
       <entry> std::to_underlying for enumerations </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1682r3.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1682r3.html">
         P1682R3
         </link>
       </entry>
@@ -229,7 +229,7 @@ or any notes about the implementation.
     <row>
       <entry> Missing constexpr in std::optional and std::variant </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2231r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2231r1.html">
         P2231R1
         </link>
       </entry>
@@ -250,7 +250,7 @@ or any notes about the implementation.
     <row>
       <entry> Making <code>std::unique_ptr</code> constexpr </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2273r3.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2273r3.pdf">
         P2273R3
         </link>
       </entry>
@@ -261,7 +261,7 @@ or any notes about the implementation.
     <row>
       <entry> Making <code>std::type_info::operator==</code> constexpr </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1328r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1328r1.html">
         P1328R1
         </link>
       </entry>
@@ -273,7 +273,7 @@ or any notes about the implementation.
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> constexpr for <code>&lt;cmath&gt;</code> and <code>&lt;cstdlib&gt;</code> </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0533r9.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0533r9.pdf">
         P0533R9
         </link>
       </entry>
@@ -285,7 +285,7 @@ or any notes about the implementation.
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Deprecate std::aligned_storage and std::aligned_union </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf">
         P1413R3
         </link>
       </entry>
@@ -297,7 +297,7 @@ or any notes about the implementation.
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> A type trait to detect reference binding to temporary </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2255r2.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2255r2.html">
         P2255R2
         </link>
       </entry>
@@ -314,7 +314,7 @@ or any notes about the implementation.
     <row>
       <entry> string contains function </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html">
         P1679R3
         </link>
       </entry>
@@ -325,7 +325,7 @@ or any notes about the implementation.
     <row>
       <entry> Prohibit std::basic_string and std::basic_string_view construction from nullptr </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2166r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2166r1.html">
         P2166R1
         </link>
       </entry>
@@ -336,7 +336,7 @@ or any notes about the implementation.
     <row>
       <entry> basic_string::resize_and_overwrite </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1072r10.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1072r10.html">
         P1072R10
         </link>
       </entry>
@@ -347,7 +347,7 @@ or any notes about the implementation.
     <row>
       <entry> A strstream replacement using span&lt;charT&gt; as buffer </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0448r4.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0448r4.pdf">
         P0448R4
         </link>
       </entry>
@@ -364,7 +364,7 @@ or any notes about the implementation.
     <row>
       <entry> Iterator pair constructors for stack and queue </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1425r4.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1425r4.pdf">
         P1425R4
         </link>
       </entry>
@@ -375,7 +375,7 @@ or any notes about the implementation.
     <row>
       <entry> Stop overconstraining allocators in container deduction guides </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1518r2.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1518r2.html">
         P1518R2
         </link>
       </entry>
@@ -387,7 +387,7 @@ or any notes about the implementation.
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Heterogeneous erasure overloads for associative containers </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2077r3.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2077r3.html">
         P2077R3
         </link>
       </entry>
@@ -404,7 +404,7 @@ or any notes about the implementation.
     <row>
       <entry> Inheriting from <code>std::variant</code> </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2162r2.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2162r2.html">
         P2162R2
         </link>
       </entry>
@@ -415,7 +415,7 @@ or any notes about the implementation.
     <row>
       <entry> Printing <code>volatile</code> Pointers </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1147r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1147r1.html">
         P1147R1
         </link>
       </entry>
@@ -426,7 +426,7 @@ or any notes about the implementation.
     <row>
       <entry> A Proposal to add stacktrace library </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0881r7.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0881r7.html">
         P0881R7
         </link>
       </entry>
@@ -437,7 +437,7 @@ or any notes about the implementation.
     <row>
       <entry> Add a pmr alias for std::stacktrace </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2301r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2301r1.html">
         P2301R1
         </link>
       </entry>
@@ -448,7 +448,7 @@ or any notes about the implementation.
     <row>
       <entry> <code>std::expected</code> </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0323r12.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0323r12.html">
         P0323R12
         </link>
       </entry>
@@ -459,7 +459,7 @@ or any notes about the implementation.
     <row>
       <entry> Monadic operations for std::optional </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0798r8.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0798r8.html">
         P0798R8
         </link>
       </entry>
@@ -470,7 +470,7 @@ or any notes about the implementation.
     <row>
       <entry> <code>move_only_function</code> </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0288r9.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0288r9.html">
         P0288R9
         </link>
       </entry>
@@ -481,7 +481,7 @@ or any notes about the implementation.
     <row>
       <entry> <code>invoke_r</code> </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2136r3.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2136r3.html">
         P2136R3
         </link>
       </entry>
@@ -492,7 +492,7 @@ or any notes about the implementation.
     <row>
       <entry> Byteswapping for fun&amp;&amp;nuf </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1272r4.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1272r4.html">
         P1272R4
         </link>
       </entry>
@@ -503,7 +503,7 @@ or any notes about the implementation.
     <row>
       <entry> Function to mark unreachable code </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0627r6.pdf">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0627r6.pdf">
         P0627R6
         </link>
       </entry>
@@ -514,7 +514,7 @@ or any notes about the implementation.
     <row>
       <entry> Add a conditional noexcept specification to std::exchange </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2401r0.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2401r0.html">
         P2401R0
         </link>
       </entry>
@@ -525,7 +525,7 @@ or any notes about the implementation.
     <row>
       <entry> Support C atomics in C++ </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0943r6.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0943r6.html">
         P0943R6
         </link>
       </entry>
@@ -536,7 +536,7 @@ or any notes about the implementation.
     <row>
       <entry> Clarifying the status of the "C headers" </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2340r1.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2340r1.html">
         P2340R1
         </link>
       </entry>
@@ -547,7 +547,7 @@ or any notes about the implementation.
     <row>
       <entry> Relax Requirements for time_point::clock </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2212r2.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2212r2.html">
         P2212R2
         </link>
       </entry>
@@ -558,7 +558,7 @@ or any notes about the implementation.
     <row>
       <entry> Removing Garbage Collection Support </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2186r2.html">
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2186r2.html">
         P2186R2
         </link>
       </entry>

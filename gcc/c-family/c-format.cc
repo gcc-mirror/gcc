@@ -1,5 +1,5 @@
 /* Check calls to formatted I/O functions (-Wformat).
-   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+   Copyright (C) 1992-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1215,7 +1215,7 @@ check_function_format (const_tree fn, tree attrs, int nargs,
 	      for (c = TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl));
 		   c;
 		   c = TREE_CHAIN (c))
-		if (is_attribute_p ("format", TREE_PURPOSE (c))
+		if (is_attribute_p ("format", get_attribute_name (c))
 		    && (decode_format_type (IDENTIFIER_POINTER
 					    (TREE_VALUE (TREE_VALUE (c))))
 			== info.format_type))

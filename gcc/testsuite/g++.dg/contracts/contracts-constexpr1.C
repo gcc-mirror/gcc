@@ -63,12 +63,12 @@ int main(int, char **) {
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 14 ffun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 15 ffun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 38 ftfun<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 39 ftfun<int> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 46 explicitfn .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 48 explicitfn .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 38 ftfun<double> .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 39 ftfun<double> .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function ffun at .*.C:14: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ffun at .*.C:15: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ftfun<int> at .*.C:38: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ftfun<int> at .*.C:39: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function explicitfn at .*.C:46: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function explicitfn at .*.C:48: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ftfun<double> at .*.C:38: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function ftfun<double> at .*.C:39: .*(\n|\r\n|\r)" }
 

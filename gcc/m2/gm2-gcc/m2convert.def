@@ -1,0 +1,98 @@
+(* m2convert.def definition module for m2convert.cc.
+
+Copyright (C) 2011-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FOR "C" m2convert ;
+
+FROM m2tree IMPORT Tree ;
+FROM m2linemap IMPORT location_t ;
+
+
+(*
+   ToWord - converts an expression (Integer or Ordinal type) into
+            a WORD.
+*)
+
+PROCEDURE ToWord (location: location_t; expr: Tree) : Tree ;
+
+
+(*
+   ToCardinal - convert an expression, expr, to a CARDINAL.
+*)
+
+PROCEDURE ToCardinal (location: location_t; expr: Tree) : Tree ;
+
+
+(*
+   ToInteger - convert an expression, expr, to an INTEGER.
+*)
+
+PROCEDURE ToInteger (location: location_t; expr: Tree) : Tree ;
+
+
+(*
+   ToBitset - convert an expression, expr, to a BITSET.
+*)
+
+PROCEDURE ToBitset (location: location_t; expr: Tree) : Tree ;
+
+
+(*
+   ConvertToPtr - convert an expression to a void *.
+*)
+
+PROCEDURE ConvertToPtr (p: Tree) : Tree ;
+
+
+(*
+    BuildConvert - build and return tree VAL(type, value)
+                   checkOverflow determines whether we
+                   should suppress overflow checking.
+*)
+
+PROCEDURE BuildConvert (location: location_t; type: Tree; value: Tree; checkOverflow: BOOLEAN) : Tree ;
+
+
+(*
+   ConvertConstantAndCheck - in Modula-2 sementics: return( VAL(type, expr) )
+                             Only to be used for a constant expr,
+                             overflow checking is performed.
+*)
+
+PROCEDURE ConvertConstantAndCheck (location: location_t; type: Tree; expr: Tree) : Tree ;
+
+
+(*
+   ConvertString - converts string, expr, into a string of type, type.
+*)
+
+PROCEDURE ConvertString (type, expr: Tree) : Tree ;
+
+
+(*
+   GenericToType - converts, expr, into, type, providing that expr is
+                   a generic system type (byte, word etc).  Otherwise
+                   expr is returned unaltered.
+*)
+
+PROCEDURE GenericToType (location: location_t; type, expr: Tree) : Tree ;
+
+
+END m2convert.

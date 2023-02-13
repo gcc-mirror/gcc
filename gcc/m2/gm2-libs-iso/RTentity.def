@@ -1,0 +1,58 @@
+(* RTentity.def maintains a grouping of different opaque types.
+
+Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RTentity ;
+
+(*
+    Title      : RTentity
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Mon Sep 15 15:40:56 2008
+    Revision   : $Version$ 
+    Description: provides a set of routines for maintaining an
+                 efficient mechanism to group opaque (or pointer)
+                 data structures together.  Internally the
+                 entities are grouped together using a binary
+                 tree.  It does not use Storage - and instead
+                 uses malloc, free from libc as Storage uses the
+                 module to detect erroneous deallocations.
+*)
+
+IMPORT SYSTEM ;
+
+TYPE
+   Group ;
+
+
+PROCEDURE InitGroup () : Group ;
+PROCEDURE KillGroup (g: Group) : Group ;
+PROCEDURE GetKey (g: Group; a: SYSTEM.ADDRESS) : CARDINAL ;
+PROCEDURE PutKey (g: Group; a: SYSTEM.ADDRESS; key: CARDINAL) ;
+PROCEDURE DelKey (g: Group; a: SYSTEM.ADDRESS) ;
+PROCEDURE IsIn (g: Group; a: SYSTEM.ADDRESS) : BOOLEAN ;
+
+
+END RTentity.

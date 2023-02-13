@@ -62,12 +62,12 @@ int main()
   return 0;
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 47 main .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 48 main .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 49 main .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 100 main .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 13 tns::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 33 tns::fun2 .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 40 tns::TestType::fun .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 24 tns::TestType::fun2 .*(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function main at .*.C:47: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function main at .*.C:48: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function main at .*.C:49: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function main at .*.C:100: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function tns::fun at .*.C:13: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function tns::fun2 at .*.C:33: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function tns::TestType::fun at .*.C:40: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function tns::TestType::fun2 at .*.C:24: .*(\n|\r\n|\r)" }
  

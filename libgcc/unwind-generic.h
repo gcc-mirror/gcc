@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -30,6 +30,7 @@
 
 #if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 /* Only for _GCC_specific_handler.  */
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 

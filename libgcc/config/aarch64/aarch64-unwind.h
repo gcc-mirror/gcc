@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
 This file is part of GCC.
@@ -29,8 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define MD_DEMANGLE_RETURN_ADDR(context, fs, addr) \
   aarch64_demangle_return_addr (context, fs, addr)
-#define MD_FROB_UPDATE_CONTEXT(context, fs) \
-  aarch64_frob_update_context (context, fs)
 
 static inline int
 aarch64_cie_signed_with_b_key (struct _Unwind_Context *context)
@@ -55,42 +53,28 @@ aarch64_cie_signed_with_b_key (struct _Unwind_Context *context)
 
 static inline void *
 aarch64_demangle_return_addr (struct _Unwind_Context *context,
-			      _Unwind_FrameState *fs ATTRIBUTE_UNUSED,
+			      _Unwind_FrameState *fs,
 			      _Unwind_Word addr_word)
 {
   void *addr = (void *)addr_word;
-  if (context->flags & RA_SIGNED_BIT)
+  const int reg = DWARF_REGNUM_AARCH64_RA_STATE;
+
+  if (fs->regs.how[reg] == REG_UNSAVED)
+    return addr;
+
+  /* Return-address signing state is toggled by DW_CFA_GNU_window_save (where
+     REG_UNSAVED/REG_UNSAVED_ARCHEXT means RA signing is disabled/enabled),
+     or set by a DW_CFA_expression.  */
+  if (fs->regs.how[reg] == REG_UNSAVED_ARCHEXT
+      || (_Unwind_GetGR (context, reg) & 0x1) != 0)
     {
       _Unwind_Word salt = (_Unwind_Word) context->cfa;
       if (aarch64_cie_signed_with_b_key (context) != 0)
 	return __builtin_aarch64_autib1716 (addr, salt);
       return __builtin_aarch64_autia1716 (addr, salt);
     }
-  else
-    return addr;
-}
 
-/* Do AArch64 private initialization on CONTEXT based on frame info FS.  Mark
-   CONTEXT as return address signed if bit 0 of DWARF_REGNUM_AARCH64_RA_STATE is
-   set.  */
-
-static inline void
-aarch64_frob_update_context (struct _Unwind_Context *context,
-			     _Unwind_FrameState *fs)
-{
-  const int reg = DWARF_REGNUM_AARCH64_RA_STATE;
-  int ra_signed;
-  if (fs->regs.how[reg] == REG_UNSAVED)
-    ra_signed = fs->regs.reg[reg].loc.offset & 0x1;
-  else
-    ra_signed = _Unwind_GetGR (context, reg) & 0x1;
-  if (ra_signed)
-    /* The flag is used for re-authenticating EH handler's address.  */
-    context->flags |= RA_SIGNED_BIT;
-  else
-    context->flags &= ~RA_SIGNED_BIT;
-
-  return;
+  return addr;
 }
 
 #endif /* defined AARCH64_UNWIND_H && defined __ILP32__ */

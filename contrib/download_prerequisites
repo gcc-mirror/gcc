@@ -77,7 +77,7 @@ The following options are available:
 "
 
 versiontext="${program} ${version}
-Copyright (C) 2016-2021 Free Software Foundation, Inc.
+Copyright (C) 2016-2023 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
 

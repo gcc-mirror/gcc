@@ -1,0 +1,107 @@
+(* mcSearch.def mcSearch provides a mechanism to search selected directories.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcSearch ;
+
+
+(* mcSearch provides a mechanism to search selected directories
+   in an attempt to locate and open a given source file.  *)
+
+FROM DynamicStrings IMPORT String ;
+
+
+(*
+   initSearchPath - initialise the compiler search, path.
+                    The string path may take the form:
+
+                    Path           ::= IndividualPath { ":" IndividualPath }
+                    IndividualPath ::= "." | DirectoryPath
+                    DirectoryPath  ::= [ "/" ] Name { "/" Name }
+                    Name           ::= Letter { (Letter | Number) }
+                    Letter         ::= A..Z | a..z
+                    Number         ::= 0..9
+*)
+
+PROCEDURE initSearchPath (path: String) ;
+
+
+(*
+   prependSearchPath - prepends a new path to the initial search path.
+*)
+
+PROCEDURE prependSearchPath (path: String) ;
+
+
+(*
+   findSourceFile - attempts to locate the source file FileName.
+                    If a file is found then TRUE is returned otherwise
+                    FALSE is returned.
+                    The parameter FullPath is set indicating the
+                    absolute location of source FileName.
+                    FullPath will be totally overwritten and should
+                    not be initialized by InitString before this function
+                    is called.
+                    FindSourceFile sets FullPath to a new string if successful.
+*)
+
+PROCEDURE findSourceFile (FileName: String;
+                          VAR fullPath: String) : BOOLEAN ;
+
+
+(*
+   findSourceDefFile - attempts to find the definition module for
+                       a module, Stem. If successful it returns
+                       the full path and returns TRUE. If unsuccessful
+                       then FALSE is returned and FullPath is set to NIL.
+*)
+
+PROCEDURE findSourceDefFile (stem: String; VAR fullPath: String) : BOOLEAN ;
+
+
+(*
+   findSourceModFile - attempts to find the implementation module for
+                       a module, Stem. If successful it returns
+                       the full path and returns TRUE. If unsuccessful
+                       then FALSE is returned and FullPath is set to NIL.
+*)
+
+PROCEDURE findSourceModFile (stem: String; VAR fullPath: String) : BOOLEAN ;
+
+
+(*
+   setDefExtension - sets the default extension for definition modules to, ext.
+                     The string, ext, should be deallocated by the caller at
+                     an appropriate time.
+*)
+
+PROCEDURE setDefExtension (ext: String) ;
+
+
+(*
+   setModExtension - sets the default extension for implementation and program
+                     modules to, ext. The string, ext, should be deallocated
+                     by the caller at an appropriate time.
+*)
+
+PROCEDURE setModExtension (ext: String) ;
+
+
+END mcSearch.

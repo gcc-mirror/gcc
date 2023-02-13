@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+# Copyright (C) 2020-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -459,3 +461,21 @@ class TestGccChangelog(unittest.TestCase):
     def test_CR_in_patch(self):
         email = self.from_patch_glob('0001-Add-M-character.patch')
         assert (email.errors[0].message == 'cannot find a ChangeLog location in message')
+
+    def test_auto_add_file_1(self):
+        email = self.from_patch_glob('0001-Auto-Add-File.patch')
+        assert not email.errors
+        assert (len(email.warnings) == 1)
+        assert (email.warnings[0]
+                == "Auto-added new file 'libgomp/testsuite/libgomp.fortran/allocate-4.f90'")
+
+    def test_auto_add_file_2(self):
+        email = self.from_patch_glob('0002-Auto-Add-File.patch')
+        assert not email.errors
+        assert (len(email.warnings) == 2)
+        assert (email.warnings[0] == "Auto-added new file 'gcc/doc/gm2.texi'")
+        assert (email.warnings[1] == "Auto-added 2 new files in 'gcc/m2'")
+
+    def test_digit_in_PR_component(self):
+        email = self.from_patch_glob('modula-PR-component.patch')
+        assert not email.errors

@@ -4,7 +4,7 @@
 # repository, with an emphasis on treating generated files correctly, so
 # that autoconf, gperf et al are not required for the ``end'' user.
 #
-# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 
+# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009,
 # 2010, 2011, 2012, 2013, 2014, 2015, 2017 Free Software Foundation
 # Originally by Gerald Pfeifer <gerald@pfeifer.com>, August 1998.
 #
@@ -96,6 +96,9 @@ gcc/config/rs6000/fusion.md: gcc/config/rs6000/genfusion.pl
 gcc/cp/cfns.h: gcc/cp/cfns.gperf
 gcc/cp/std-name-hint.h: gcc/cp/std-name-hint.gperf
 gcc/cp/std-name-hint.gperf: gcc/cp/cxxapi-data.csv
+gcc/m2/configure: gcc/m2/configure.ac
+gcc/m2/gm2config.h.in: gcc/m2/configure.ac
+gcc/m2/gm2-libs/config-host: gcc/m2/gm2-libs/config-host.in
 # testsuite
 # Without this, _Pragma3.c can have a false negative.
 gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
@@ -128,6 +131,13 @@ libffi/configure: libffi/configure.ac libffi/aclocal.m4
 libffi/fficonfig.h.in: libffi/configure.ac libffi/aclocal.m4
 libgfortran/aclocal.m4: libgfortran/configure.ac libgfortran/acinclude.m4
 libgfortran/Makefile.in: libgfortran/Makefile.am libgfortran/configure.ac libgfortran/aclocal.m4
+libgm2/Makefile.in: libgm2/Makefile.am libgm2/configure.ac libgm2/aclocal.m4
+libgm2/aclocal.m4: libgm2/configure.ac
+libgm2/libm2cor/Makefile.in: libgm2/libm2cor/Makefile.am
+libgm2/libm2pim/Makefile.in: libgm2/libm2pim/Makefile.am
+libgm2/libm2iso/Makefile.in: libgm2/libm2iso/Makefile.am
+libgm2/libm2log/Makefile.in: libgm2/libm2log/Makefile.am
+libgm2/libm2min/Makefile.in: libgm2/libm2min/Makefile.am
 libquadmath/configure: libquadmath/configure.ac libquadmath/aclocal.m4
 libquadmath/aclocal.m4: libquadmath/configure.ac libquadmath/acinclude.m4
 libquadmath/Makefile.in: libquadmath/Makefile.am libquadmath/configure.ac libgfortran/aclocal.m4
@@ -345,7 +355,7 @@ case $vcs_type in
 		fi
 	fi
 	branch=`$GCC_GIT name-rev --name-only HEAD || :`
-	;;    
+	;;
 
     hg)
 	chat "Updating HG tree"

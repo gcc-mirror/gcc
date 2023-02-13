@@ -33,24 +33,24 @@ int main(int, char **)
   printf("=====\n");
 }
 
-// { dg-output "default std::handle_contract_violation called: .*.C 10 f .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 11 f .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 f .*(\n|\r\n|\r)*" }
-// { dg-output "f: a: 1, b: 1, c: 1(\n|\r\n|\r)*" }
-// { dg-output "=====(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 f .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 11 f .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 f .*(\n|\r\n|\r)*" }
-// { dg-output "f: a: 1, b: 1, c: 10(\n|\r\n|\r)*" }
-// { dg-output "=====(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 f .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 11 f .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 f .*(\n|\r\n|\r)*" }
-// { dg-output "f: a: 1, b: 11, c: 10(\n|\r\n|\r)*" }
-// { dg-output "=====(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 f .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 11 f .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 12 f .*(\n|\r\n|\r)*" }
-// { dg-output "f: a: 12, b: 11, c: 10(\n|\r\n|\r)*" }
-// { dg-output "=====(\n|\r\n|\r)*" }
+// { dg-output "contract violation in function f at .*.C:10: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:11: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:12: .*(\n|\r\n|\r)" }
+// { dg-output "f: a: 1, b: 1, c: 1(\n|\r\n|\r)" }
+// { dg-output "=====(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:10: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:11: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:12: .*(\n|\r\n|\r)" }
+// { dg-output "f: a: 1, b: 1, c: 10(\n|\r\n|\r)" }
+// { dg-output "=====(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:10: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:11: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:12: .*(\n|\r\n|\r)" }
+// { dg-output "f: a: 1, b: 11, c: 10(\n|\r\n|\r)" }
+// { dg-output "=====(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:10: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:11: .*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*.C:12: .*(\n|\r\n|\r)" }
+// { dg-output "f: a: 12, b: 11, c: 10(\n|\r\n|\r)" }
+// { dg-output "=====(\n|\r\n|\r)" }
 

@@ -1,5 +1,5 @@
 /* Common hooks for ARM.
-   Copyright (C) 1991-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -685,8 +685,10 @@ arm_canon_arch_option_1 (int argc, const char **argv, bool arch_for_multilib)
   auto_sbitmap target_isa (isa_num_bits);
   auto_sbitmap base_isa (isa_num_bits);
   auto_sbitmap fpu_isa (isa_num_bits);
+  auto_sbitmap ignore_multilib_isa (isa_num_bits);
 
   bitmap_clear (fpu_isa);
+  bitmap_clear (ignore_multilib_isa);
 
   const arch_option *selected_arch = NULL;
 
@@ -719,15 +721,6 @@ arm_canon_arch_option_1 (int argc, const char **argv, bool arch_for_multilib)
       arm_initialize_isa (target_isa, selected_arch->common.isa_bits);
       arm_parse_option_features (target_isa, &selected_arch->common,
 				 strchr (arch, '+'));
-      if (arch_for_multilib)
-	{
-	  const enum isa_feature removable_bits[] = {ISA_IGNORE_FOR_MULTILIB,
-						     isa_nobit};
-	  sbitmap isa_bits = sbitmap_alloc (isa_num_bits);
-	  arm_initialize_isa (isa_bits, removable_bits);
-	  bitmap_and_compl (target_isa, target_isa, isa_bits);
-	}
-
       if (fpu && strcmp (fpu, "auto") != 0)
 	{
 	  /* We assume that architectures do not have any FPU bits
@@ -804,6 +797,16 @@ arm_canon_arch_option_1 (int argc, const char **argv, bool arch_for_multilib)
       /* Clearing the VFPv2 bit is sufficient to stop any extention that
 	 builds on the FPU from matching.  */
       bitmap_clear_bit (target_isa, isa_bit_vfpv2);
+    }
+
+  /* Here we remove feature isa bits from -mlibarch string which are not
+     necessary for multilib string comparsion.  */
+  if ((arch || cpu) && arch_for_multilib)
+    {
+      const enum isa_feature removable_bits[] = {ISA_IGNORE_FOR_MULTILIB,
+						 isa_nobit};
+      arm_initialize_isa (ignore_multilib_isa, removable_bits);
+      bitmap_and_compl (target_isa, target_isa, ignore_multilib_isa);
     }
 
   /* If we don't have a selected architecture by now, something's

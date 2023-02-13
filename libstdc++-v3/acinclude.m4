@@ -678,10 +678,13 @@ dnl Set up *_FLAGS and *FLAGS variables for all sundry Makefile.am's.
 dnl (SECTION_FLAGS is done under CHECK_COMPILER_FEATURES.)
 dnl
 dnl Substs:
+dnl  CPPFLAGS
 dnl  OPTIMIZE_CXXFLAGS
 dnl  WARN_FLAGS
 dnl
 AC_DEFUN([GLIBCXX_EXPORT_FLAGS], [
+  AC_SUBST(CPPFLAGS)
+
   # Optimization flags that are probably a good idea for thrill-seekers. Just
   # uncomment the lines below and make, everything else is ready to go...
   # Alternatively OPTIMIZE_CXXFLAGS can be set in configure.host.
@@ -1352,6 +1355,10 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
       cygwin*)
         ac_has_nanosleep=yes
         ;;
+      mingw*)
+        ac_has_win32_sleep=yes
+        ac_has_sched_yield=yes
+        ;;
       darwin*)
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
@@ -1537,6 +1544,9 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   if test x"$ac_has_nanosleep" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_NANOSLEEP, 1,
       [ Defined if nanosleep is available. ])
+  elif test x"$ac_has_win32_sleep" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_WIN32_SLEEP, 1,
+      [Defined if Sleep exists.])
   else
       AC_MSG_CHECKING([for sleep])
       AC_TRY_COMPILE([#include <unistd.h>],
@@ -1557,20 +1567,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
       AC_MSG_RESULT($ac_has_usleep)
   fi
 
-  if test x"$ac_has_nanosleep$ac_has_sleep" = x"nono"; then
-      ac_no_sleep=yes
-      AC_MSG_CHECKING([for Sleep])
-      AC_TRY_COMPILE([#include <windows.h>],
-                     [Sleep(1)],
-                     [ac_has_win32_sleep=yes],[ac_has_win32_sleep=no])
-      if test x"$ac_has_win32_sleep" = x"yes"; then
-        AC_DEFINE(HAVE_WIN32_SLEEP,1, [Defined if Sleep exists.])
-	ac_no_sleep=no
-      fi
-      AC_MSG_RESULT($ac_has_win32_sleep)
-  fi
-
-  if test x"$ac_no_sleep" = x"yes"; then
+  if test x"$ac_has_nanosleep$ac_has_win32_sleep$ac_has_sleep" = x"nonono"; then
     AC_DEFINE(_GLIBCXX_NO_SLEEP,1, [Defined if no way to sleep is available.])
   fi
 
@@ -3987,6 +3984,15 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
   case $target_thread_file in
     posix)
       CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+      ;;
+    win32)
+      CXXFLAGS="$CXXFLAGS -D_WIN32_THREADS"
+      # The support of condition variables is disabled by default in
+      # the Win32 gthreads library, so enable it on explicit request.
+      if test x$enable_libstdcxx_threads = xyes; then
+        CXXFLAGS="$CXXFLAGS -D_WIN32_WINNT=0x0600"
+      fi
+      ;;
   esac
 
   AC_MSG_CHECKING([whether it can be safely assumed that mutex_timedlock is available])
@@ -3996,6 +4002,9 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
       // In case of POSIX threads check _POSIX_TIMEOUTS.
       #if (defined(_PTHREADS) \
 	  && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
+      #error
+      // In case of Win32 threads there is no support.
+      #elif defined(_WIN32_THREADS)
       #error
       #endif
     ], [ac_gthread_use_mutex_timedlock=1], [ac_gthread_use_mutex_timedlock=0])
@@ -4042,6 +4051,11 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
              [Define if POSIX read/write locks are available in <gthr.h>.])],
              [],
              [#include "gthr.h"])
+    fi
+
+    # See above for the rationale.
+    if test $target_thread_file = win32; then
+      CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
     fi
   fi
 
@@ -4981,6 +4995,7 @@ AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
   if test "$have_dl_iterate_phdr" = "yes"; then
     BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_DL_ITERATE_PHDR=1"
   fi
+  AC_CHECK_HEADERS(windows.h)
 
   # Check for the fcntl function.
   if test -n "${with_target_subdir}"; then
@@ -5026,6 +5041,7 @@ glibcxx_cv_sys_filetype=$filetype])
 FORMAT_FILE=
 case "$glibcxx_cv_sys_filetype" in
 elf*) FORMAT_FILE="elf.lo" ;;
+pecoff*) FORMAT_FILE="pecoff.lo" ;;
 *) AC_MSG_WARN([could not determine output file type])
    FORMAT_FILE="unknown.lo"
    enable_libstdcxx_backtrace=no
@@ -5138,6 +5154,92 @@ AC_DEFUN([GLIBCXX_EMERGENCY_EH_ALLOC], [
 
   EH_POOL_FLAGS="$eh_pool_static $eh_pool_obj_count"
   AC_SUBST(EH_POOL_FLAGS)
+])
+
+dnl
+dnl Allow the location of tzdata files to be configured.
+dnl
+dnl --with-libstdcxx-zoneinfo=ARG where ARG can be:
+dnl   DIR - use DIR/tzdata.zi and DIR/leapseconds files.
+dnl   static - use static copy of tzdata.zi embedded in the library.
+dnl   DIR,static - use DIR, but use embedded static copy as fallback.
+dnl   yes - equivalent to DIR,static with a system-specific value for DIR.
+dnl   no - disable most tzdb functionality.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_ZONEINFO_DIR if std::chrono::tzdb should use the specified
+dnl    directory for the tzdata.zi and leapseconds files.
+dnl  _GLIBCXX_STATIC_TZDATA if std::chrono::tzdb should use an embedded
+dnl    static copy of the tzdata.zi file.
+dnl
+AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
+  AC_ARG_WITH([libstdcxx-zoneinfo],
+    AC_HELP_STRING([--with-libstdcxx-zoneinfo],
+		   [the location to use for tzdata]),
+    [],[with_libstdcxx_zoneinfo=yes])
+
+  if test "x${with_libstdcxx_zoneinfo}" = xyes; then
+    # Pick a default when no specific path is set.
+    case "$target_os" in
+      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+	# Not all distros ship tzdata.zi in this dir.
+	zoneinfo_dir="/usr/share/zoneinfo"
+	;;
+      aix*)
+	# Binary tzfile files are in /usr/share/lib/zoneinfo
+	# but tzdata.zi is not present there.
+	zoneinfo_dir=none
+	;;
+      darwin2*)
+	# Binary tzfile files are in /usr/share/lib/zoneinfo.default
+	# but tzdata.zi is not present there.
+	zoneinfo_dir=none
+	;;
+      *)
+	# Binary tzfile files are commonly found in /usr/share/zoneinfo
+	# but tzdata.zi is not present there.
+	zoneinfo_dir=none
+	;;
+    esac
+    # Also embed a copy of the tzdata.zi file as a static string.
+    embed_zoneinfo=yes
+  elif test "x${with_libstdcxx_zoneinfo}" = xno; then
+    # Disable tzdb support completely.
+    zoneinfo_dir=none
+    embed_zoneinfo=no
+  else
+    case "${with_libstdcxx_zoneinfo}" in
+      static)
+	# Do not attempt to read from disk, always use embedded data.
+	zoneinfo_dir=none
+	embed_zoneinfo=yes
+	;;
+      static,* | *,static)
+	# Try to read from disk, use embedded data as fallback.
+	zoneinfo_dir="${with_libstdcxx_zoneinfo#static,}"
+	zoneinfo_dir="${with_libstdcxx_zoneinfo%,static}"
+	embed_zoneinfo=yes
+	;;
+      *)
+	zoneinfo_dir="${with_libstdcxx_zoneinfo}"
+	embed_zoneinfo=no
+	;;
+    esac
+  fi
+  AC_MSG_NOTICE([zoneinfo data directory: ${zoneinfo_dir}])
+  if test "x${zoneinfo_dir}" != xnone; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_ZONEINFO_DIR, "${zoneinfo_dir}",
+      [Define if a directory should be searched for tzdata files.])
+    if $GLIBCXX_IS_NATIVE && ! test -f "$zoneinfo_dir/tzdata.zi"; then
+      AC_MSG_WARN("$zoneinfo_dir does not contain tzdata.zi file")
+    fi
+  fi
+  GLIBCXX_CONDITIONAL(USE_STATIC_TZDATA, test "${embed_zoneinfo}" = yes)
+  if test "x${embed_zoneinfo}" = xyes; then
+    AC_MSG_NOTICE([static tzdata.zi file will be compiled into the library])
+    AC_DEFINE_UNQUOTED(_GLIBCXX_STATIC_TZDATA, 1,
+      [Define if static tzdata should be compiled into the library.])
+  fi
 ])
 
 # Macros from the top-level gcc directory.

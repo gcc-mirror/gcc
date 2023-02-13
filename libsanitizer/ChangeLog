@@ -1,3 +1,21 @@
+2023-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sanitizer_common/sanitizer_platform_interceptors.h: Cherry-pick
+	llvm-project revision 951cf656b2faaf6fc0baa867293c0cb0ab131951.
+
+2022-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* hwasan/Makefile.am (nodist_toolexeclib_HEADERS): Set to
+	libhwasan_preinit.o.
+	(hwasan_files): Remove hwasan_preinit.cpp.
+	(libhwasan_preinit.o): Copy from hwasan_preinit.o.
+	* hwasan/Makefile.in: Regenerated.
+
+2022-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108072
+	* libbacktrace/backtrace-rename.h (backtrace_uncompress_zstd): Define.
+
 2022-12-09  liuhongt  <hongtao.liu@intel.com>
 
 	* configure.tgt: Enable hwasan for x86-64.

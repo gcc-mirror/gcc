@@ -1,6 +1,6 @@
 /* coroutine-specific state, expansions and tests.
 
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
 
  Contributed by Iain Sandoe <iain@sandoe.co.uk> under contract to Facebook.
 
@@ -2047,8 +2047,8 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	    = lookup_member (lvd->coro_frame_type, local_var.field_id,
 			     /*protect=*/1, /*want_type=*/0,
 			     tf_warning_or_error);
-	  tree fld_idx = build3_loc (lvd->loc, COMPONENT_REF, TREE_TYPE (lvar),
-				     lvd->actor_frame, fld_ref, NULL_TREE);
+	  tree fld_idx = build3 (COMPONENT_REF, TREE_TYPE (lvar),
+				 lvd->actor_frame, fld_ref, NULL_TREE);
 	  local_var.field_idx = fld_idx;
 	  SET_DECL_VALUE_EXPR (lvar, fld_idx);
 	  DECL_HAS_VALUE_EXPR_P (lvar) = true;
@@ -4132,7 +4132,7 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
   /* We will need to be able to set the resume function pointer to nullptr
      to signal that the coroutine is 'done'.  */
   tree zero_resume
-    = build1 (CONVERT_EXPR, resume_fn_ptr_type, integer_zero_node);
+    = build1 (CONVERT_EXPR, resume_fn_ptr_type, nullptr_node);
 
   /* The pointer to the destroy function.  */
   tree var = coro_build_artificial_var (fn_start, coro_destroy_fn_id,
@@ -4519,7 +4519,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree ramp_body = push_stmt_list ();
 
   tree zeroinit = build1_loc (fn_start, CONVERT_EXPR,
-			      coro_frame_ptr, integer_zero_node);
+			      coro_frame_ptr, nullptr_node);
   tree coro_fp = coro_build_artificial_var (fn_start, "_Coro_frameptr",
 					    coro_frame_ptr, orig, zeroinit);
   tree varlist = coro_fp;
@@ -4754,7 +4754,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
       gcc_checking_assert (same_type_p (fn_return_type, TREE_TYPE (grooaf)));
       tree if_stmt = begin_if_stmt ();
-      tree cond = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
+      tree cond = build1 (CONVERT_EXPR, coro_frame_ptr, nullptr_node);
       cond = build2 (EQ_EXPR, boolean_type_node, coro_fp, cond);
       finish_if_stmt_cond (cond, if_stmt);
       if (VOID_TYPE_P (fn_return_type))

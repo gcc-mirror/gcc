@@ -32,24 +32,32 @@ f4 (unsigned int x, int y __attribute__((unused)))
 unsigned short int
 f5 (unsigned short int x, unsigned int y)
 {
+  if (y >= __CHAR_BIT__ * __SIZEOF_SHORT__)
+    __builtin_unreachable ();
   return (x << y) | (x >> ((-y) & (__CHAR_BIT__ * __SIZEOF_SHORT__ - 1)));
 }
 
 unsigned short int
 f6 (unsigned short int x, unsigned long int y)
 {
+  if (y >= __CHAR_BIT__ * __SIZEOF_SHORT__)
+    __builtin_unreachable ();
   return (x << y) | (x >> ((-y) & (__CHAR_BIT__ * __SIZEOF_SHORT__ - 1)));
 }
 
 unsigned char
 f7 (unsigned char x, unsigned int y)
 {
+  if (y >= __CHAR_BIT__)
+    __builtin_unreachable ();
   return (x << y) | (x >> ((-y) & (__CHAR_BIT__ - 1)));
 }
 
 unsigned char
 f8 (unsigned char x, unsigned long int y)
 {
+  if (y >= __CHAR_BIT__)
+    __builtin_unreachable ();
   return (x << y) | (x >> ((-y) & (__CHAR_BIT__ - 1)));
 }
 
@@ -80,24 +88,32 @@ f12 (unsigned int x, int y __attribute__((unused)))
 unsigned short int
 f13 (unsigned short int x, unsigned int y)
 {
+  if (y >= __CHAR_BIT__ * __SIZEOF_SHORT__)
+    __builtin_unreachable ();
   return (x << y) | (x >> ((-y) & (__CHAR_BIT__ * sizeof (unsigned short) - 1)));
 }
 
 unsigned short int
 f14 (unsigned short int x, unsigned long int y)
 {
+  if (y >= __CHAR_BIT__ * __SIZEOF_SHORT__)
+    __builtin_unreachable ();
   return (x << y) | (x >> ((-y) & (__CHAR_BIT__ * sizeof (unsigned short) - 1)));
 }
 
 unsigned char
 f15 (unsigned char x, unsigned int y)
 {
+  if (y >= __CHAR_BIT__)
+    __builtin_unreachable ();
   return (x << y) | (x >> ((-y) & (__CHAR_BIT__ * sizeof (unsigned char) - 1)));
 }
 
 unsigned char
 f16 (unsigned char x, unsigned long int y)
 {
+  if (y >= __CHAR_BIT__)
+    __builtin_unreachable ();
   return (x << y) | (x >> ((-y) & (__CHAR_BIT__ * sizeof (unsigned char) - 1)));
 }
 
@@ -224,24 +240,32 @@ f36 (unsigned int x, int y __attribute__((unused)))
 unsigned short int
 f37 (unsigned short int x, unsigned int y)
 {
+  if (y >= __CHAR_BIT__ * __SIZEOF_SHORT__)
+    __builtin_unreachable ();
   return (x >> y) | (x << ((-y) & (__CHAR_BIT__ * __SIZEOF_SHORT__ - 1)));
 }
 
 unsigned short int
 f38 (unsigned short int x, unsigned long int y)
 {
+  if (y >= __CHAR_BIT__ * __SIZEOF_SHORT__)
+    __builtin_unreachable ();
   return (x >> y) | (x << ((-y) & (__CHAR_BIT__ * __SIZEOF_SHORT__ - 1)));
 }
 
 unsigned char
 f39 (unsigned char x, unsigned int y)
 {
+  if (y >= __CHAR_BIT__)
+    __builtin_unreachable ();
   return (x >> y) | (x << ((-y) & (__CHAR_BIT__ - 1)));
 }
 
 unsigned char
 f40 (unsigned char x, unsigned long int y)
 {
+  if (y >= __CHAR_BIT__)
+    __builtin_unreachable ();
   return (x >> y) | (x << ((-y) & (__CHAR_BIT__ - 1)));
 }
 
@@ -272,24 +296,32 @@ f44 (unsigned int x, int y __attribute__((unused)))
 unsigned short int
 f45 (unsigned short int x, unsigned int y)
 {
+  if (y >= __CHAR_BIT__ * __SIZEOF_SHORT__)
+    __builtin_unreachable ();
   return (x >> y) | (x << ((-y) & (__CHAR_BIT__ * sizeof (unsigned short) - 1)));
 }
 
 unsigned short int
 f46 (unsigned short int x, unsigned long int y)
 {
+  if (y >= __CHAR_BIT__ * __SIZEOF_SHORT__)
+    __builtin_unreachable ();
   return (x >> y) | (x << ((-y) & (__CHAR_BIT__ * sizeof (unsigned short) - 1)));
 }
 
 unsigned char
 f47 (unsigned char x, unsigned int y)
 {
+  if (y >= __CHAR_BIT__)
+    __builtin_unreachable ();
   return (x >> y) | (x << ((-y) & (__CHAR_BIT__ * sizeof (unsigned char) - 1)));
 }
 
 unsigned char
 f48 (unsigned char x, unsigned long int y)
 {
+  if (y >= __CHAR_BIT__)
+    __builtin_unreachable ();
   return (x >> y) | (x << ((-y) & (__CHAR_BIT__ * sizeof (unsigned char) - 1)));
 }
 

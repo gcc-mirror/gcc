@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002-2022 Free Software Foundation, Inc.
+## Copyright (C) 2002-2023 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -28,7 +28,8 @@ GLIBCXX_3.4 {
       std::a[a-c]*;
       std::ad[a-n]*;
       std::ad[p-z]*;
-      std::a[e-z]*;
+      std::a[e-s]*;
+      std::a[u-z]*;
 #     std::ba[a-r]*;
       std::basic_[a-e]*;
       std::basic_f[a-h]*;
@@ -2485,6 +2486,24 @@ GLIBCXX_3.4.31 {
 
     _ZSt15__try_use_facet*;
 
+    _ZNSt6chrono11reload_tzdbEv;
+    _ZNSt6chrono8get_tzdbEv;
+    _ZNSt6chrono13get_tzdb_listEv;
+    _ZNSt6chrono14remote_version*;
+    _ZNSt6chrono12current_zoneEv;
+    _ZNSt6chrono11locate_zoneESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNKSt6chrono9time_zone15_M_get_sys_info*;
+    _ZNKSt6chrono9time_zone17_M_get_local_info*;
+    _ZNKSt6chrono4tzdb12current_zoneEv;
+    _ZNKSt6chrono4tzdb11locate_zoneESt17basic_string_viewIcSt11char_traitsIcEE;
+    _ZNKSt6chrono9tzdb_list5beginEv;
+    _ZNKSt6chrono9tzdb_list5frontEv;
+    _ZNSt6chrono9tzdb_list11erase_afterENS0_14const_iteratorE;
+    _ZNKSt6chrono9tzdb_list14const_iteratordeEv;
+    _ZNSt6chrono9tzdb_list14const_iteratorppEv;
+    _ZNSt6chrono9tzdb_list14const_iteratorppEi;
+    _ZN9__gnu_cxx21zoneinfo_dir_overrideEv;
+
 } GLIBCXX_3.4.30;
 
 # Symbols in the support library (libsupc++) have their own tag.
@@ -2793,6 +2812,16 @@ CXXABI_1.3.13 {
     _ZNSt15__exception_ptr13exception_ptr10_M_releaseEv;
 
 } CXXABI_1.3.12;
+
+CXXABI_1.3.14 {
+
+    # typeinfo for _Float{16,32,64,128,32x,64x,128x} and
+    # __bf16
+    _ZTIDF[0-9]*[_bx];
+    _ZTIPDF[0-9]*[_bx];
+    _ZTIPKDF[0-9]*[_bx];
+
+} CXXABI_1.3.13;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {

@@ -1,0 +1,105 @@
+(* varargs.def provides a basic vararg facility for GNU Modula-2.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE varargs ;
+
+
+FROM SYSTEM IMPORT BYTE ;
+
+
+TYPE
+   vararg ;
+
+
+(*
+   nargs - returns the number of arguments wrapped in, v.
+*)
+
+PROCEDURE nargs (v: vararg) : CARDINAL ;
+
+
+(*
+   arg - fills in, a, with the next argument.  The size of, a, must
+         be an exact match with the original vararg parameter.
+*)
+
+PROCEDURE arg (v: vararg; VAR a: ARRAY OF BYTE) ;
+
+
+(*
+   next - assigns the next arg to be collected as, i.
+*)
+
+PROCEDURE next (v: vararg; i: CARDINAL) ;
+
+
+(*
+   copy - returns a copy of, v.
+*)
+
+PROCEDURE copy (v: vararg) : vararg ;
+
+
+(*
+   replace - fills the next argument with, a.  The size of, a,
+             must be an exact match with the original vararg
+             parameter.
+*)
+
+PROCEDURE replace (v: vararg; VAR a: ARRAY OF BYTE) ;
+
+
+(*
+   end - destructor for vararg, v.
+*)
+
+PROCEDURE end (VAR v: vararg) ;
+
+
+(*
+   start1 - wraps up argument, a, into a vararg.
+*)
+
+PROCEDURE start1 (a: ARRAY OF BYTE) : vararg ;
+
+
+(*
+   start2 - wraps up arguments, a, b, into a vararg.
+*)
+
+PROCEDURE start2 (a, b: ARRAY OF BYTE) : vararg ;
+
+
+(*
+   start3 - wraps up arguments, a, b, c, into a vararg.
+*)
+
+PROCEDURE start3 (a, b, c: ARRAY OF BYTE) : vararg ;
+
+
+(*
+   start4 - wraps up arguments, a, b, c, d, into a vararg.
+*)
+
+PROCEDURE start4 (a, b, c, d: ARRAY OF BYTE) : vararg ;
+
+
+END varargs.

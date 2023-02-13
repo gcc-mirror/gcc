@@ -11,11 +11,11 @@ C { dg-output "^" }
  40   format('a trailing apostrophe''')
  50   format('''and all of the above -''-''')
 
-      write(*,10)        ! { dg-output "abcde(\n|\r\n|\r)" } 
-      write(*,20)        ! { dg-output "and an apostrophe -'-(\n|\r\n|\r)" }
-      write(*,30)        ! { dg-output "'a leading apostrophe(\n|\r\n|\r)" }
-      write(*,40)        ! { dg-output "a trailing apostrophe'(\n|\r\n|\r)" }
-      write(*,50)        ! { dg-output "'and all of the above -'-'(\n|\r\n|\r)" }
+      write(*,10)        ! { dg-output "abcde(\r*\n+)" } 
+      write(*,20)        ! { dg-output "and an apostrophe -'-(\r*\n+)" }
+      write(*,30)        ! { dg-output "'a leading apostrophe(\r*\n+)" }
+      write(*,40)        ! { dg-output "a trailing apostrophe'(\r*\n+)" }
+      write(*,50)        ! { dg-output "'and all of the above -'-'(\r*\n+)" }
 
 C { dg-output "\$" }
       end

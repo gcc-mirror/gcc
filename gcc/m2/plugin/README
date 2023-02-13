@@ -1,0 +1,2 @@
+This directory contains the Modula-2 plugin which will elevate runtime
+warnings into compiler errors if they are known to be reachable.

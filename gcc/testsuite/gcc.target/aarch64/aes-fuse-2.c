@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mcpu=cortex-a72+crypto -dp" } */
-/* { dg-additional-options "-march=armv8-a+crypto" { target { aarch64*-*-* } } }*/
+/* { dg-options "-O3 -mcpu=cortex-a72+aes -dp" } */
+/* { dg-additional-options "-march=armv8-a+aes" { target { aarch64*-*-* } } }*/
 
 #include <arm_neon.h>
 

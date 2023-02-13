@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -675,6 +675,10 @@
 (define_predicate "aarch64_sve_dup_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_ld1r_operand")))
+
+(define_predicate "aarch64_sve_dup_ld1rq_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_sve_ld1rq_operand")))
 
 (define_predicate "aarch64_sve_ptrue_svpattern_immediate"
   (and (match_code "const")

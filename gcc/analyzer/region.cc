@@ -1,5 +1,5 @@
 /* Regions of memory.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -1206,6 +1206,9 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
       /* If we have an "extern" decl then there may be an initializer in
 	 another TU.  */
       if (DECL_EXTERNAL (m_decl))
+	return NULL;
+
+      if (empty_p ())
 	return NULL;
 
       /* Implicit initialization to zero; use a compound_svalue for it.

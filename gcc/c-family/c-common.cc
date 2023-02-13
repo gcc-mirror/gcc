@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+   Copyright (C) 1992-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2238,7 +2238,8 @@ check_case_value (location_t loc, tree value)
   if (value == NULL_TREE)
     return value;
 
-  if (TREE_CODE (value) == INTEGER_CST)
+  if (INTEGRAL_TYPE_P (TREE_TYPE (value))
+      && TREE_CODE (value) == INTEGER_CST)
     /* Promote char or short to int.  */
     value = perform_integral_promotions (value);
   else if (value != error_mark_node)

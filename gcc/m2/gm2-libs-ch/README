@@ -1,0 +1,3 @@
+This directory contains a small number of C files which provide an
+interface between the host operating system and the Modula-2 library
+source found in gm2-libs and gm2-libs-iso.

@@ -1,5 +1,5 @@
 /* Implement __enable_execute_stack for Windows32.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 extern void __enable_execute_stack (void *);

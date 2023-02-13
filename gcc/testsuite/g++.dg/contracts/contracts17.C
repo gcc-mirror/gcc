@@ -30,6 +30,6 @@ int main(int, char**) {
   return 0;
 }
 
-// { dg-output "custom std::handle_contract_violation called: 19 .*/contracts17.C(\n|\r\n|\r)*" }
+// { dg-output "custom std::handle_contract_violation called: 19 .*/contracts17.C(\n|\r\n|\r)" }
 // { dg-shouldfail "throwing in noexcept" }
 

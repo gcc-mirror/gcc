@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -250,6 +250,7 @@ package Gen_IL.Types is
       N_Expression_With_Actions,
       N_If_Expression,
       N_Indexed_Component,
+      N_Interpolated_String_Literal,
       N_Null,
       N_Qualified_Expression,
       N_Quantified_Expression,

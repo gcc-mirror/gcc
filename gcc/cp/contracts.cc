@@ -1,5 +1,5 @@
 /* Definitions for C++ contract levels
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 
 This file is part of GCC.
@@ -41,9 +41,9 @@ along with GCC; see the file COPYING3.  If not see
 	 "v > 0", // comment,
 	 "default", // assertion_level,
 	 "default", // assertion_role,
-	 MAYBE_CONTINUE, // continuation_mode
+	 maybe_continue, // continuation_mode
        });
-       terminate (); // if NEVER_CONTINUE
+       terminate (); // if never_continue
      }
 
    We use an internal type with the same layout as contract_violation rather

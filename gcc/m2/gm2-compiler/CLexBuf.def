@@ -1,0 +1,264 @@
+(* CLexBuf.def provides a lexical buffer for clex.
+
+Copyright (C) 2003-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE CLexBuf ;
+
+(*
+    Title      : CLexBuf
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Thu Jan 23 12:32:36 2003
+    Revision   : $Version$
+    Description: provides a lexical buffer for clex.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM DynamicStrings IMPORT String ;
+FROM NameKey IMPORT Name ;
+EXPORT QUALIFIED toktype,
+                 IsMacroDefined, NoArgs, DefineMacro, UnDefineMacro,
+                 OpenSource, CloseSource, ReInitialize, GetToken, InsertToken,
+                 InsertTokenAndRewind, GetLineNo,
+                 GetTokenNo, TokenToLineNo, FindFileNameFromToken, GetFileName,
+                 ResetForNewPass,
+                 currenttoken, currentstring, currentinteger,
+                 EnableMacroSubstitutions,
+                 AddTok, AddTokCharStar, AddTokInteger,
+                 SetFile, PushFile, PopFile, FlushTokens ;
+
+TYPE
+   toktype = (eoftok, startok, arrowtok, structtok, lsbratok, rsbratok,
+              lcbratok, rcbratok, lparatok, rparatok, semicolontok,
+              longtok, inttok, chartok, enumtok, typedeftok,
+              floattok, doubletok, unsignedtok, consttok,
+              periodperiodperiodtok,
+              integertok, hexintegertok, octintegertok,
+              identtok, realtok, conststringtok, constchartok, codetok,
+              starthashtok, endhashtok, definetok, undeftok, iftok, elsetok,
+              endiftok, ifdeftok, ifndeftok, includetok,
+              nottok, commatok,
+              periodtok,
+              gretok, lesstok, ortok, andtok, bartok, ambersandtok,
+              shiftlefttok, shiftrighttok, divtok, modtok,
+              sizeoftok, definedtok, hattok, equaltok, notequaltok,
+              greequaltok, lessequaltok, plustok, minustok, tildetok,
+              externtok, statictok, autotok, registertok,
+              voidtok, shorttok, signedtok, uniontok, colontok, becomestok,
+              volatiletok, typetok) ;
+
+VAR
+   currenttoken  : toktype ;
+   currentstring : ADDRESS ;
+   currentinteger: INTEGER ;
+
+
+(*
+   EnableMacroSubstitutions -
+*)
+
+PROCEDURE EnableMacroSubstitutions (b: BOOLEAN) ;
+
+
+(*
+   IsMacroDefined - returns TRUE if macro, n, was defined.
+*)
+
+PROCEDURE IsMacroDefined (n: Name) : BOOLEAN ;
+
+
+(*
+   NoArgs - returns the number of arguments for macro, n.
+            -1 if the macro does not exist
+*)
+
+PROCEDURE NoArgs (n: Name) : INTEGER ;
+
+
+(*
+   DefineMacro - defines macro, n, as defined to start at token, t.
+*)
+
+PROCEDURE DefineMacro (n: Name; t: CARDINAL) ;
+
+
+(*
+   UnDefineMacro -
+*)
+
+PROCEDURE UnDefineMacro (n: Name) ;
+
+
+(*
+   OpenSource - Attempts to open the source file, s.
+                The success of the operation is returned.
+*)
+
+PROCEDURE OpenSource (s: String) : BOOLEAN ;
+
+
+(*
+   CloseSource - closes the current open file.
+*)
+
+PROCEDURE CloseSource ;
+
+
+(*
+   ReInitialize - re-initialize the all the data structures.
+*)
+
+PROCEDURE ReInitialize ;
+
+
+(*
+   ResetForNewPass - reset the buffer pointers to the beginning ready for
+                     a new pass
+*)
+
+PROCEDURE ResetForNewPass ;
+
+
+(*
+   GetToken - gets the next token into currenttoken.
+*)
+
+PROCEDURE GetToken ;
+
+
+(*
+   InsertToken - inserts a symbol, token, infront of the current token
+                 ready for the next pass.
+*)
+
+PROCEDURE InsertToken (token: toktype) ;
+
+
+(*
+   InsertTokenAndRewind - inserts a symbol, token, infront of the current token
+                          and then moves the token stream back onto the inserted token.
+*)
+
+PROCEDURE InsertTokenAndRewind (token: toktype) ;
+
+
+(*
+   GetLineNo - returns the current line number where the symbol occurs in
+               the source file.
+*)
+
+PROCEDURE GetLineNo () : CARDINAL ;
+
+
+(*
+   GetTokenNo - returns the number of tokens read from
+                the source file by the lexical analaysis.
+*)
+
+PROCEDURE GetTokenNo () : CARDINAL ;
+
+
+(*
+   TokenToLineNo - returns the line number of the current file for the
+                   TokenNo. The depth refers to the include depth.
+                   A depth of 0 is the current file, depth of 1 is the file
+                   which included the current file. Zero is returned if the
+                   depth exceeds the file nesting level.
+*)
+
+PROCEDURE TokenToLineNo (TokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+
+
+(*
+   FindFileNameFromToken - returns the complete FileName for the appropriate
+                           source file yields the token number, TokenNo.
+                           The, Depth, indicates the include level: 0..n
+                           Level 0 is the current. NIL is returned if n+1
+                           is requested.
+*)
+
+PROCEDURE FindFileNameFromToken (TokenNo: CARDINAL; depth: CARDINAL) : String ;
+
+
+(*
+   GetFileName - assigns, a, to the current file name.
+*)
+
+PROCEDURE GetFileName () : String ;
+
+
+(* ***********************************************************************
+ *
+ * These functions allow c.lex to deliver tokens into the buffer
+ *
+ ************************************************************************* *)
+
+(*
+   AddTok - adds a token to the buffer.
+*)
+
+PROCEDURE AddTok (t: toktype) ;
+
+
+(*
+   AddTokCharStar - adds a token to the buffer and an additional string, s.
+                    A copy of string, s, is made.
+*)
+
+PROCEDURE AddTokCharStar (t: toktype; s: ADDRESS) ;
+
+
+(*
+   AddTokInteger - adds a token and an integer to the buffer.
+*)
+
+PROCEDURE AddTokInteger (t: toktype; i: INTEGER) ;
+
+
+(*
+   SetFile - sets the current filename to, filename.
+*)
+
+PROCEDURE SetFile (filename: ADDRESS) ;
+
+
+(*
+   PushFile - indicates that, filename, has just been included.
+*)
+
+PROCEDURE PushFile (filename: ADDRESS) ;
+
+
+(*
+   PopFile - indicates that we are returning to, filename, having finished
+             an include.
+*)
+
+PROCEDURE PopFile (filename: ADDRESS) ;
+
+
+(*
+   FlushTokens - removes the last token.
+*)
+
+PROCEDURE FlushTokens ;
+
+
+END CLexBuf.

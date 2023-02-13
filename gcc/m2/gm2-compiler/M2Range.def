@@ -1,0 +1,418 @@
+(* M2Range.def exports procedures which maintain the range checking.
+
+Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Range ;
+
+(*
+    Title      : M2Range
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Thu Feb 28 10:18:55 2008
+    Revision   : $Version$
+    Description: exports procedures which maintain the range checking
+                 state which is explored once all the subrange values
+                 have been resolved by the front end (once
+                 M2GCCDeclare has completed its task).  We cannot
+                 perform this activity during M2Quads, as we dont
+                 know the subrange values and also we can do so much
+                 more once optimization has occurred.  It should be
+                 possible to detect simple overflow errors at compile
+                 time, post optimization.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM m2tree IMPORT Tree ;
+FROM m2linemap IMPORT location_t ;
+FROM DynamicStrings IMPORT String ;
+
+EXPORT QUALIFIED InitAssignmentRangeCheck,
+                 InitReturnRangeCheck,
+                 InitSubrangeRangeCheck,
+                 InitStaticArraySubscriptRangeCheck,
+                 InitDynamicArraySubscriptRangeCheck,
+                 InitIncRangeCheck,
+                 InitDecRangeCheck,
+                 InitInclCheck,
+                 InitExclCheck,
+                 InitRotateCheck,
+                 InitShiftCheck,
+                 InitTypesExpressionCheck,
+                 InitTypesAssignmentCheck,
+                 InitTypesParameterCheck,
+                 InitParameterRangeCheck,
+                 InitForLoopBeginRangeCheck,
+                 InitForLoopToRangeCheck,
+                 InitForLoopEndRangeCheck,
+                 InitPointerRangeCheck,
+                 InitNoReturnRangeCheck,
+                 InitNoElseRangeCheck,
+                 InitCaseBounds,
+                 InitWholeNonPosDivCheck,
+                 InitWholeNonPosModCheck,
+                 InitWholeZeroDivisionCheck,
+                 InitWholeZeroRemainderCheck,
+                 CodeRangeCheck, FoldRangeCheck, CodeErrorCheck,
+                 (* CheckRangeAddVariableRead,  *)
+                 (* CheckRangeRemoveVariableRead,  *)
+                 WriteRangeCheck,
+                 OverlapsRange,
+                 IsEqual, IsGreaterOrEqual, IsGreater,
+		 BuildIfCallRealHandlerLoc,
+                 BuildIfCallWholeHandlerLoc,
+		 GetMinMax ;
+
+
+(*
+   InitAssignmentRangeCheck - returns a range check node which
+                              remembers the information necessary
+                              so that a range check for d := e
+                              can be generated later on.
+*)
+
+PROCEDURE InitAssignmentRangeCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitReturnRangeCheck - returns a range check node which
+                           remembers the information necessary
+                           so that a range check for RETURN e
+                           from procedure, d, can be generated later on.
+*)
+
+PROCEDURE InitReturnRangeCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitSubrangeRangeCheck - returns a range check node which
+                            remembers the information necessary
+                            so that a range check for d := e
+                            can be generated later on.
+*)
+
+PROCEDURE InitSubrangeRangeCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitStaticArraySubscriptRangeCheck - returns a range check node which
+                                        remembers the information necessary
+                                        so that a range check for d[e]
+                                        can be generated later on.
+*)
+
+PROCEDURE InitStaticArraySubscriptRangeCheck (d, e, dim: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitDynamicArraySubscriptRangeCheck - returns a range check node which
+                                         remembers the information necessary
+                                         so that a range check for d[e]
+                                         can be generated later on.
+*)
+
+PROCEDURE InitDynamicArraySubscriptRangeCheck (d, e, dim: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitIncRangeCheck - returns a range check node which
+                       remembers the information necessary
+                       so that a range check for INC(d, e)
+                       can be generated later on.
+*)
+
+PROCEDURE InitIncRangeCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitDecRangeCheck - returns a range check node which
+                       remembers the information necessary
+                       so that a range check for DEC(d, e)
+                       can be generated later on.
+*)
+
+PROCEDURE InitDecRangeCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitForLoopBeginRangeCheck - returns a range check node which
+                                remembers the information necessary
+                                so that a range check for FOR d := e TO .. DO
+                                can be generated later on.
+*)
+
+PROCEDURE InitForLoopBeginRangeCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitForLoopToRangeCheck - returns a range check node which
+                             remembers the information necessary
+                             so that a range check for the final value
+                             implied by ... e1 TO e2 BY e3 DO
+                             can be generated later on.
+*)
+
+PROCEDURE InitForLoopToRangeCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitForLoopEndRangeCheck - returns a range check node which
+                              remembers the information necessary
+                              so that a range check for
+                              INC or DEC(d, e)
+                              can be generated later on.
+*)
+
+PROCEDURE InitForLoopEndRangeCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitPointerRangeCheck - creates a pointer # NIL check.
+*)
+
+PROCEDURE InitPointerRangeCheck (tokno: CARDINAL;
+                                 d: CARDINAL; isLeft: BOOLEAN) : CARDINAL ;
+
+
+(*
+   InitNoReturnRangeCheck - creates a check held in the function
+                            to detect the absence of a RETURN
+                            statement at runtime.
+*)
+
+PROCEDURE InitNoReturnRangeCheck () : CARDINAL ;
+
+
+(*
+   InitNoElseRangeCheck - creates a check held at the end of
+                          a CASE statement without an ELSE
+                          clause to detect its absence
+                          at runtime.
+*)
+
+PROCEDURE InitNoElseRangeCheck () : CARDINAL ;
+
+
+(*
+   InitWholeNonPosDivCheck - creates a check expression for non positive
+                             or zero 2nd operand to division.
+*)
+
+PROCEDURE InitWholeNonPosDivCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitWholeNonPosModCheck - creates a check expression for non positive
+                             or zero 2nd operand to modulus.
+*)
+
+PROCEDURE InitWholeNonPosModCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitWholeZeroDivisionCheck - creates a check expression for zero 2nd
+                                operand for division.
+*)
+
+PROCEDURE InitWholeZeroDivisionCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitWholeZeroRemainderCheck - creates a check expression for zero 2nd
+                                 operand for remainder.
+*)
+
+PROCEDURE InitWholeZeroRemainderCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitInclCheck - checks to see that bit, e, is type compatible with
+                   d and also in range.
+*)
+
+PROCEDURE InitInclCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitExclCheck - checks to see that bit, e, is type compatible with
+                   d and also in range.
+*)
+
+PROCEDURE InitExclCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitShiftCheck - checks to see that bit, e, is type compatible with
+                    d and also in range.
+*)
+
+PROCEDURE InitShiftCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitRotateCheck - checks to see that bit, e, is type compatible with
+                     d and also in range.
+*)
+
+PROCEDURE InitRotateCheck (d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitTypesAssignmentCheck - checks to see that the types of, d, and, e,
+                              are assignment compatible.
+*)
+
+PROCEDURE InitTypesAssignmentCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitTypesParameterCheck - checks to see that the types of, d, and, e,
+                             are parameter compatible.
+*)
+
+PROCEDURE InitTypesParameterCheck (proc: CARDINAL; i: CARDINAL;
+                                   formal, actual: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitParameterRangeCheck - checks to see that the types of, d, and, e,
+                             are parameter compatible.
+*)
+
+PROCEDURE InitParameterRangeCheck (proc: CARDINAL; i: CARDINAL;
+                                   formal, actual: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitTypesExpressionCheck - checks to see that the types of, d, and, e,
+                              are expression compatible.
+*)
+
+PROCEDURE InitTypesExpressionCheck (tokno: CARDINAL; d, e: CARDINAL;
+                                    strict, isin: BOOLEAN) : CARDINAL ;
+
+
+(*
+   InitCaseBounds - creates a case bound range check.
+*)
+
+PROCEDURE InitCaseBounds (b: CARDINAL) : CARDINAL ;
+
+
+(*
+   CodeRangeCheck - creates a sequence of Trees representing the code for a
+                    range test defined by, r.
+*)
+
+PROCEDURE CodeRangeCheck (r: CARDINAL; function: String) ;
+
+
+(*
+   FoldRangeCheck - returns a Tree representing the code for a
+                    range test defined by, r.
+*)
+
+PROCEDURE FoldRangeCheck (tokenno: CARDINAL; q: CARDINAL; r: CARDINAL) ;
+
+
+(*
+   CodeErrorCheck - returns a Tree calling the approprate exception handler.
+*)
+
+PROCEDURE CodeErrorCheck (r: CARDINAL; function, message: String) : Tree ;
+
+
+(*
+   CheckRangeAddVariableRead - ensures that any references to reading
+                               variables used by this range check, r,
+                               at this, quadNo, are recorded in the
+                               symbol table.
+*)
+
+(* PROCEDURE CheckRangeAddVariableRead (r: CARDINAL; quadNo: CARDINAL) ; *)
+
+
+(*
+   CheckRangeRemoveVariableRead - ensures that any references to reading
+                                  variable at this quadNo are removed from
+                                  the symbol table.
+*)
+
+(* PROCEDURE CheckRangeRemoveVariableRead (r: CARDINAL; quadNo: CARDINAL) ; *)
+
+
+(*
+   WriteRangeCheck - displays debugging information about range, r.
+*)
+
+PROCEDURE WriteRangeCheck (r: CARDINAL) ;
+
+
+(*
+   OverlapsRange - returns TRUE if a1..a2 overlaps with b1..b2.
+*)
+
+PROCEDURE OverlapsRange (a1, a2, b1, b2: Tree) : BOOLEAN ;
+
+
+(*
+   IsEqual - returns TRUE if a=b.
+*)
+
+PROCEDURE IsEqual (a, b: Tree) : BOOLEAN ;
+
+
+(*
+   IsGreaterOrEqual - returns TRUE if a>=b.
+*)
+
+PROCEDURE IsGreaterOrEqual (a, b: Tree) : BOOLEAN ;
+
+
+(*
+   IsGreater - returns TRUE if a>b.
+*)
+
+PROCEDURE IsGreater (a, b: Tree) : BOOLEAN ;
+
+
+(*
+   BuildIfCallWholeHandlerLoc - return a Tree containing a runtime test whether, condition, is true.
+*)
+
+PROCEDURE BuildIfCallWholeHandlerLoc (location: location_t; condition: Tree;
+                                      scope, message: ADDRESS) : Tree ;
+
+
+(*
+   BuildIfCallRealHandlerLoc - return a Tree containing a runtime test whether, condition, is true.
+*)
+
+PROCEDURE BuildIfCallRealHandlerLoc (location: location_t; condition: Tree;
+                                     scope, message: ADDRESS) : Tree ;
+
+
+(*
+   GetMinMax - returns TRUE if we know the max and min of a type, t.
+*)
+
+PROCEDURE GetMinMax (tokenno: CARDINAL; type: CARDINAL; VAR min, max: Tree) : BOOLEAN ;
+
+
+END M2Range.

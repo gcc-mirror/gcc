@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ with Stand;          use Stand;
 with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
-with Warnsw; pragma Unreferenced (Warnsw); -- disable spurious warning
+with Warnsw;
 
 package body Errout is
 
@@ -2193,8 +2193,9 @@ package body Errout is
          end if;
 
          if Include_Subprogram_In_Messages then
-            Write_Str
-              (",""subprogram"":""" & Subprogram_Name_Ptr (Error.Node) & """");
+            Write_Str (",""subprogram"":""");
+            Write_JSON_Escaped_String (Subprogram_Name_Ptr (Error.Node));
+            Write_Str ("""");
          end if;
 
          Write_Str ("}");

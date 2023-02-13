@@ -1,5 +1,5 @@
 /* Header file for CFG cleanup for trees.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,5 +27,6 @@ extern bool fixup_noreturn_call (gimple *stmt);
 extern bool delete_unreachable_blocks_update_callgraph (cgraph_node *dst_node,
 							bool update_clones);
 extern unsigned clean_up_loop_closed_phi (function *);
+extern bool phi_alternatives_equal (basic_block, edge, edge);
 
 #endif /* GCC_TREE_CFGCLEANUP_H */

@@ -7,7 +7,7 @@ gpl(7), fsf-funding(7).
 @c man end
 @c man begin COPYRIGHT
 Copyright @copyright{} 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
-@uref{https://fsf.org/}
+@uref{https://www.fsf.org}
 
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
@@ -46,7 +46,7 @@ of this license document, but changing it is not allowed.
 
 @display
 Copyright @copyright{} 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
-@uref{https://fsf.org/}
+@uref{https://www.fsf.org}
 
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.

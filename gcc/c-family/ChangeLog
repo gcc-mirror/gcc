@@ -1,3 +1,78 @@
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105300
+	* c-pragma.cc (handle_pragma_message): Warn for CPP_STRING_USERDEF.
+
+2023-01-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108424
+	* c-common.cc (check_case_value): Check INTEGRAL_TYPE_P.
+
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* c-common.h (may_shorten_divmod): New static inline function.
+
+2023-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (is_float32): New function.
+	(is_float64): Likewise.
+	(is_float128): Tweak.
+	(dump_ada_node) <REAL_TYPE>: Call them to recognize more types.
+
+2023-01-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/108244
+	* c-pragma.cc (c_register_pragma_1): Don't attempt to register any
+	deferred pragmas if -fdirectives-only.
+	(init_pragma): Likewise.
+
+2023-01-09  Martin Liska  <mliska@suse.cz>
+
+	PR c/107993
+	* c-attribs.cc (handle_target_clones_attribute): Check for
+	string constant for all target_clone attribute values.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (__LIBGCC_DWARF_REG_SIZES_CONSTANT__):
+	Define if constant is known.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (__LIBGCC_DWARF_REG_SIZES_CONSTANT__):
+	Define if constant is known.
+
+2022-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/98487
+	* c-format.cc (check_function_format): Use get_attribute_name.
+
+2022-12-16  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c.opt (Wstrict-flex-arrays): New option.
+
 2022-12-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-attribs.cc (handle_deprecated_attribute): Use type when
@@ -13806,7 +13881,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2022 Free Software Foundation, Inc.
+Copyright (C) 2010-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

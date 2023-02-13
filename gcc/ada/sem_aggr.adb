@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1922,7 +1922,7 @@ package body Sem_Aggr is
 
       --  Disable the warning for GNAT Mode to allow for easier transition.
 
-      if Ada_Version >= Ada_2022
+      if Ada_Version_Explicit >= Ada_2022
         and then Warn_On_Obsolescent_Feature
         and then not GNAT_Mode
         and then not Is_Homogeneous_Aggregate (N)

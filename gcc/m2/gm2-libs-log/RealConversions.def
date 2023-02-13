@@ -1,0 +1,135 @@
+(* RealConversions.def provides a Logitech-3.0 compatible module.
+
+Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RealConversions ;
+
+EXPORT QUALIFIED SetNoOfExponentDigits,
+                 RealToString, StringToReal,
+                 LongRealToString, StringToLongReal ;
+
+
+(*
+   SetNoOfExponentDigits - sets the number of exponent digits to be
+                           used during future calls of LongRealToString
+                           and RealToString providing that the width
+                           is sufficient.
+                           If this value is set to 0 (the default) then
+                           the number digits used is the minimum necessary.
+*)
+
+PROCEDURE SetNoOfExponentDigits (places: CARDINAL) ;
+
+
+(*
+   RealToString - converts a real, r, into a right justified string, str.
+                  The number of digits to the right of the decimal point
+                  is given in, digits.  The value, width, represents the
+                  maximum number of characters to be used in the string,
+                  str.
+
+                  If digits is negative then exponent notation is used
+                  whereas if digits is positive then fixed point notation
+                  is used.
+
+                  If, r, is less than 0.0 then a '-' preceeds the value,
+                  str.  However, if, r, is >= 0.0 a '+' is not added.
+
+                  If the conversion of, r, to a string requires more
+                  than, width, characters then the string, str, is set
+                  to a nul string and, ok is assigned FALSE.
+
+                  For fixed point notation the minimum width required is
+                  ABS(width)+8
+
+                  For exponent notation the minimum width required is
+                  ABS(digits)+2+log10(magnitude).
+
+                  if r is a NaN then the string 'nan' is returned formatted and
+                  ok will be FALSE.
+*)
+
+PROCEDURE RealToString (r: REAL; digits, width: INTEGER;
+                        VAR str: ARRAY OF CHAR; VAR ok: BOOLEAN) ;
+
+
+(*
+   LongRealToString - converts a real, r, into a right justified string, str.
+                      The number of digits to the right of the decimal point
+                      is given in, digits. The value, width, represents the
+                      maximum number of characters to be used in the string,
+                      str.
+
+                      If digits is negative then exponent notation is used
+                      whereas if digits is positive then fixed point notation
+                      is used.
+
+                      If, r, is less than 0.0 then a '-' preceeds the value,
+                      str. However, if, r, is >= 0.0 a '+' is not added.
+
+                      If the conversion of, r, to a string requires more
+                      than, width, characters then the string, str, is set
+                      to a nul string and, ok is assigned FALSE.
+
+                      For fixed point notation the minimum width required is
+                      ABS(width)+8
+
+                      For exponent notation the minimum width required is
+                      ABS(digits)+2+log10(magnitude).
+
+                      Examples:
+                      RealToString(100.0, 10, 10, a, ok)       ->  '100.000000'
+                      RealToString(100.0, -5, 12, a, ok)       ->  '  1.00000E+2'
+
+                      RealToString(123.456789, 10, 10, a, ok)  ->  '123.456789'
+                      RealToString(123.456789, -5, 13, a, ok)  ->  '    1.23456E+2'
+
+                      RealToString(123.456789, -2, 15, a, ok)  ->  '          1.23E+2'
+
+                      if r is a NaN then the string 'nan' is returned formatted and
+                      ok will be FALSE.
+*)
+
+PROCEDURE LongRealToString (r: LONGREAL; digits, width: INTEGER;
+                            VAR str: ARRAY OF CHAR; VAR ok: BOOLEAN) ;
+
+
+(*
+   StringToReal - converts, str, into a REAL, r. The parameter, ok, is
+                  set to TRUE if the conversion was successful.
+*)
+
+PROCEDURE StringToReal (str: ARRAY OF CHAR; VAR r: REAL; VAR ok: BOOLEAN) ;
+
+
+(*
+   StringToLongReal - converts, str, into a LONGREAL, r. The parameter, ok, is
+                      set to TRUE if the conversion was successful.
+*)
+
+PROCEDURE StringToLongReal (str: ARRAY OF CHAR; VAR r: LONGREAL; VAR ok: BOOLEAN) ;
+
+
+END RealConversions.

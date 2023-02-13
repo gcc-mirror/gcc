@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3 -march=armv8.2-a+sve" } */
+/* { dg-additional-options "-O3 -march=armv8.2-a+sve -w" } */
 typedef float a __attribute__((__mode__(HF)));
 typedef struct {
   a b;
