@@ -212,6 +212,19 @@ namespace arm_mve {
     -1, -1, UNSPEC##_M_F,						\
     -1, -1, -1))
 
+  /* Helper for builtins without RTX codes, _S mode, _p predicated.  */
+#define FUNCTION_PRED_P_S(NAME, UNSPEC) FUNCTION			\
+  (NAME, unspec_mve_function_exact_insn_pred_p,				\
+   (UNSPEC##_S, -1, -1,							\
+    UNSPEC##_P_S, -1, -1))
+
+  /* Helper for builtins without RTX codes, _S and _U modes, _p
+     predicated.  */
+#define FUNCTION_PRED_P_S_U(NAME, UNSPEC) FUNCTION			\
+  (NAME, unspec_mve_function_exact_insn_pred_p,				\
+   (UNSPEC##_S, UNSPEC##_U, -1,						\
+    UNSPEC##_P_S, UNSPEC##_P_U, -1))
+
 FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION (vabsq, unspec_based_mve_function_exact_insn, (ABS, ABS, ABS, -1, -1, -1, VABSQ_M_S, -1, VABSQ_M_F, -1, -1, -1))
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
@@ -222,8 +235,12 @@ FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
 FUNCTION_WITH_M_N_NO_F (vhsubq, VHSUBQ)
+FUNCTION_PRED_P_S (vmaxavq, VMAXAVQ)
 FUNCTION_WITH_RTX_M_NO_F (vmaxq, SMAX, UMAX, VMAXQ)
+FUNCTION_PRED_P_S_U (vmaxvq, VMAXVQ)
+FUNCTION_PRED_P_S (vminavq, VMINAVQ)
 FUNCTION_WITH_RTX_M_NO_F (vminq, SMIN, UMIN, VMINQ)
+FUNCTION_PRED_P_S_U (vminvq, VMINVQ)
 FUNCTION_WITHOUT_N_NO_F (vmovnbq, VMOVNBQ)
 FUNCTION_WITHOUT_N_NO_F (vmovntq, VMOVNTQ)
 FUNCTION_WITHOUT_N_NO_F (vmulhq, VMULHQ)
