@@ -10619,10 +10619,41 @@ Parser<ManagedTokenSource>::parse_range_pattern_bound ()
     }
 }
 
-// Parses a pattern (will further disambiguate any pattern).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Pattern>
 Parser<ManagedTokenSource>::parse_pattern ()
+{
+  Location start_locus = lexer.peek_token ()->get_locus ();
+
+  /* skip optional starting pipe */
+  maybe_skip_token (PIPE);
+
+  auto first = parse_pattern_no_alt ();
+
+  if (lexer.peek_token ()->get_id () != PIPE)
+    /* no alternates */
+    return first;
+
+  std::vector<std::unique_ptr<AST::Pattern>> alts;
+  alts.push_back (std::move (first));
+
+  do
+    {
+      lexer.skip_token ();
+      alts.push_back (parse_pattern_no_alt ());
+    }
+  while (lexer.peek_token ()->get_id () == PIPE);
+
+  /* alternates */
+  return std::unique_ptr<AST::Pattern> (
+    new AST::AltPattern (std::move (alts), start_locus));
+}
+
+// Parses a pattern without alternates ('|')
+// (will further disambiguate any pattern).
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::Pattern>
+Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 {
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())

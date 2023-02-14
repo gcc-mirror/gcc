@@ -126,6 +126,7 @@ public:
 
   std::unique_ptr<AST::Item> parse_item (bool called_from_statement);
   std::unique_ptr<AST::Pattern> parse_pattern ();
+  std::unique_ptr<AST::Pattern> parse_pattern_no_alt ();
 
   /**
    * Parse a statement
