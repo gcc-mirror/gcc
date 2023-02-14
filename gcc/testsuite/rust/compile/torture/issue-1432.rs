@@ -1,4 +1,5 @@
 // { dg-additional-options "-w" }
+#![feature(intrinsics)]
 mod intrinsics {
     extern "rust-intrinsic" {
         #[rustc_const_stable(feature = "const_int_wrapping", since = "1.40.0")]

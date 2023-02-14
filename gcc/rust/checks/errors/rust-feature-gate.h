@@ -21,6 +21,7 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-ast-full.h"
+#include "rust-feature.h"
 
 namespace Rust {
 
@@ -136,7 +137,7 @@ public:
   void visit (AST::TraitImpl &impl) override {}
   void visit (AST::ExternalStaticItem &item) override {}
   void visit (AST::ExternalFunctionItem &item) override {}
-  void visit (AST::ExternBlock &block) override {}
+  void visit (AST::ExternBlock &block) override;
   void visit (AST::MacroMatchFragment &match) override {}
   void visit (AST::MacroMatchRepetition &match) override {}
   void visit (AST::MacroMatcher &matcher) override {}
@@ -186,6 +187,10 @@ public:
   void visit (AST::SliceType &type) override {}
   void visit (AST::InferredType &type) override {}
   void visit (AST::BareFunctionType &type) override {}
+
+private:
+  void gate (Feature::Name name, Location loc, const std::string &error_msg);
+  std::set<Feature::Name> valid_features;
 };
 } // namespace Rust
 #endif
