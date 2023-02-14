@@ -538,6 +538,10 @@ static bool
 vect_phi_first_order_recurrence_p (loop_vec_info loop_vinfo, class loop *loop,
 				   gphi *phi)
 {
+  /* A nested cycle isn't vectorizable as first order recurrence.  */
+  if (LOOP_VINFO_LOOP (loop_vinfo) != loop)
+    return false;
+
   /* Ensure the loop latch definition is from within the loop.  */
   edge latch = loop_latch_edge (loop);
   tree ldef = PHI_ARG_DEF_FROM_EDGE (phi, latch);
