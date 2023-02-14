@@ -34,6 +34,7 @@ namespace arm_mve
   namespace shapes
   {
 
+    extern const function_shape *const binary;
     extern const function_shape *const binary_opt_n;
     extern const function_shape *const inherent;
     extern const function_shape *const unary_convert;

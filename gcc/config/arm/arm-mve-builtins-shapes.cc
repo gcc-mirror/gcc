@@ -339,6 +339,33 @@ struct overloaded_base : public function_shape
 };
 
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t)
+
+   i.e. the standard shape for binary operations that operate on
+   uniform types.
+
+   Example: vandq.
+   int8x16_t [__arm_]vandq[_s8](int8x16_t a, int8x16_t b)
+   int8x16_t [__arm_]vandq_m[_s8](int8x16_t inactive, int8x16_t a, int8x16_t b, mve_pred16_t p)
+   int8x16_t [__arm_]vandq_x[_s8](int8x16_t a, int8x16_t b, mve_pred16_t p)  */
+struct binary_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (2);
+  }
+};
+SHAPE (binary)
+
+/* <T0>_t vfoo[_t0](<T0>_t, <T0>_t)
    <T0>_t vfoo[_n_t0](<T0>_t, <S0>_t)
 
    i.e. the standard shape for binary operations that operate on
