@@ -9049,7 +9049,9 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 
       /* Propagate TREE_NO_WARNING from expression to temporary by using the
 	 SAVE_EXPR itself as an intermediate step.  See gimplify_save_expr.  */
-      if (SAVE_EXPR_RESOLVED_P (expr))
+      if (type == void_type_node)
+	;
+      else if (SAVE_EXPR_RESOLVED_P (expr))
 	TREE_NO_WARNING (op) = TREE_NO_WARNING (expr);
       else
 	TREE_NO_WARNING (expr) = TREE_NO_WARNING (op);
