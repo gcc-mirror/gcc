@@ -50,6 +50,10 @@ Enable asan store operations protection.
 Common Joined UInteger Var(param_asan_instrumentation_with_call_threshold) Init(7000) Param Optimization
 Use callbacks instead of inline code if number of accesses in function becomes greater or equal to this number.
 
+-param=asan-kernel-mem-intrinsic-prefix=
+Common Joined UInteger Var(param_asan_kernel_mem_intrinsic_prefix) Init(0) IntegerRange(0, 1) Param Optimization
+Prefix calls to memcpy, memset and memmove with __asan_ or __hwasan_ for -fsanitize=kernel-address or -fsanitize=kernel-hwaddress.
+
 -param=asan-memintrin=
 Common Joined UInteger Var(param_asan_memintrin) Init(1) IntegerRange(0, 1) Param Optimization
 Enable asan builtin functions protection.

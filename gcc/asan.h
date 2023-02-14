@@ -33,6 +33,7 @@ extern bool asan_expand_check_ifn (gimple_stmt_iterator *, bool);
 extern bool asan_expand_mark_ifn (gimple_stmt_iterator *);
 extern bool asan_expand_poison_ifn (gimple_stmt_iterator *, bool *,
 				    hash_map<tree, tree> &);
+extern rtx asan_memfn_rtl (tree);
 
 extern void hwasan_record_frame_init ();
 extern void hwasan_record_stack_var (rtx, rtx, poly_int64, poly_int64);

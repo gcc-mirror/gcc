@@ -391,6 +391,46 @@ asan_memintrin (void)
 }
 
 
+/* Support for --param asan-kernel-mem-intrinsic-prefix=1.  */
+static GTY(()) rtx asan_memfn_rtls[3];
+
+rtx
+asan_memfn_rtl (tree fndecl)
+{
+  int i;
+  const char *f, *p;
+  char buf[sizeof ("__hwasan_memmove")];
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_MEMCPY: i = 0; f = "memcpy"; break;
+    case BUILT_IN_MEMSET: i = 1; f = "memset"; break;
+    case BUILT_IN_MEMMOVE: i = 2; f = "memmove"; break;
+    default: gcc_unreachable ();
+    }
+  if (asan_memfn_rtls[i] == NULL_RTX)
+    {
+      tree save_name = DECL_NAME (fndecl);
+      tree save_assembler_name = DECL_ASSEMBLER_NAME (fndecl);
+      rtx save_rtl = DECL_RTL (fndecl);
+      if (flag_sanitize & SANITIZE_KERNEL_HWADDRESS)
+	p = "__hwasan_";
+      else
+	p = "__asan_";
+      strcpy (buf, p);
+      strcat (buf, f);
+      DECL_NAME (fndecl) = get_identifier (buf);
+      DECL_ASSEMBLER_NAME_RAW (fndecl) = NULL_TREE;
+      SET_DECL_RTL (fndecl, NULL_RTX);
+      asan_memfn_rtls[i] = DECL_RTL (fndecl);
+      DECL_NAME (fndecl) = save_name;
+      DECL_ASSEMBLER_NAME_RAW (fndecl) = save_assembler_name;
+      SET_DECL_RTL (fndecl, save_rtl);
+    }
+  return asan_memfn_rtls[i];
+}
+
+
 /* Checks whether section SEC should be sanitized.  */
 
 static bool
