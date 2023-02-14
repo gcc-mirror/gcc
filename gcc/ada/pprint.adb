@@ -731,9 +731,11 @@ package body Pprint is
       --  itself, but for now simply return the default (if present) or print
       --  name of the defining identifier.
 
-      if Nkind (Expr) not in N_Subexpr then
+      if Nkind (Expr) = N_Defining_Identifier then
          pragma Assert (CodePeer_Mode);
-         if Nkind (Expr) = N_Defining_Identifier then
+         if Comes_From_Source (Expr)
+           or else Opt.Debug_Generated_Code
+         then
             if Default = "" then
                declare
                   Nam : constant Name_Id := Chars (Expr);
@@ -748,9 +750,23 @@ package body Pprint is
                return Default;
             end if;
          else
-            raise Program_Error;
+            declare
+               S : constant String :=
+                 Ident_Image
+                   (Expr => Expr, Orig_Expr => Expr, Expand_Type => True);
+            begin
+               if S = "..." then
+                  return Default;
+               else
+                  return S;
+               end if;
+            end;
          end if;
+      else
+         pragma Assert (Nkind (Expr) in N_Subexpr);
       end if;
+
+      --  ??? The following should be primarily needed for CodePeer
 
       if not Comes_From_Source (Expr)
         or else Opt.Debug_Generated_Code
