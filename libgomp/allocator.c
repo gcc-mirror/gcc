@@ -1192,7 +1192,17 @@ retry:
       return ret;
     }
 #endif
-  free (data->ptr);
+  {
+    omp_memspace_handle_t was_memspace __attribute__((unused))
+      = (free_allocator_data
+	 ? free_allocator_data->memspace
+	 : predefined_alloc_mapping[free_allocator]);
+    int was_pinned __attribute__((unused))
+      = (free_allocator_data
+	 ? free_allocator_data->pinned
+	 : free_allocator == ompx_pinned_mem_alloc);
+    MEMSPACE_FREE (was_memspace, data->ptr, data->size, was_pinned);
+  }
   return ret;
 
 fail:
