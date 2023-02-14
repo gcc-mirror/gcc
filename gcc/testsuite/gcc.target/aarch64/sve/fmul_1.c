@@ -27,20 +27,20 @@ DO_ARITH_OPS (_Float16, *, mul)
 DO_ARITH_OPS (float, *, mul)
 DO_ARITH_OPS (double, *, mul)
 
-/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.h, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
 /* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, #0.5\n} 1 } } */
-/* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, #2} } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, #2.0\n} 1 } } */
 /* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, #5} } } */
 /* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, #-} } } */
 
-/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.s, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
 /* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, #0.5\n} 1 } } */
-/* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, #2} } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, #2.0\n} 1 } } */
 /* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, #5} } } */
 /* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, #-} } } */
 
-/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.d, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 /* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, #0.5\n} 1 } } */
-/* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, #2} } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, #2.0\n} 1 } } */
 /* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, #5} } } */
 /* { dg-final { scan-assembler-not   {\tfmul\tz[0-9]+\.d, p[0-7]/m, z[0-9]+\.d, #-} } } */
