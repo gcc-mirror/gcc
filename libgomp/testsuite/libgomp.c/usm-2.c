@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target omp_usm } */
-/* { dg-options "-foffload=amdgcn-amdhsa=-mxnack=on" { target offload_target_amdgcn } } */
+/* { dg-additional-options -foffload-options=amdgcn-amdhsa=-mxnack=on { target offload_target_amdgcn } } */
 
 #include <omp.h>
 #include <stdint.h>

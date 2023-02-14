@@ -1,3 +1,11 @@
+2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/usm-1.c: Re-enable non-GCN offloading
+	compilation.
+	* testsuite/libgomp.c/usm-2.c: Likewise.
+	* testsuite/libgomp.c/usm-3.c: Likewise.
+	* testsuite/libgomp.c/usm-4.c: Likewise.
+
 2023-02-16  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/libgomp-gcn.h (TEAM_ARENA_START): Move to here.
