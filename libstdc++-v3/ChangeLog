@@ -1,3 +1,9 @@
+2023-02-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Adjust
+	"The Component Object Model" reference.
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
 2023-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/containers.xml: Tweak a link to N1780

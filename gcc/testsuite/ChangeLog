@@ -1,3 +1,52 @@
+2023-02-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108681
+	* gcc.target/aarch64/pr108681.c: New test.
+
+2023-02-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr108774.c: New.
+
+2023-02-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103475
+	* gfortran.dg/pr103475.f90: New test.
+
+2023-02-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/108516
+	* gcc.target/i386/pr108516-1.c: New test.
+	* gcc.target/i386/pr108516-2.c: Ditto.
+
+2023-02-13  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	* gfortran.dg/noinline.f90: New test.
+	* gfortran.dg/noreturn-1.f90: New test.
+	* gfortran.dg/noreturn-2.f90: New test.
+	* gfortran.dg/noreturn-3.f90: New test.
+	* gfortran.dg/noreturn-4.f90: New test.
+	* gfortran.dg/noreturn-5.f90: New test.
+	* gfortran.dg/weak-1.f90: New test.
+
+2023-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108691
+	* gcc.dg/pr108691.c: New testcase.
+
+2023-02-13  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.dg/Wbuiltin-declaration-mismatch-7.c: Use (long )*
+	regex pattern to allow long long instead of just long.
+
+2023-02-13  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/milli-1.c: Update test.
+
+2023-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106722
+	* gcc.dg/torture/pr108737.c: New testcase.
+
 2023-02-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
 
 	* g++.target/riscv/rvv/base/vaadd_vv-1.C: New test.

@@ -1,3 +1,16 @@
+2023-02-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103475
+	* primary.cc (gfc_expr_attr): Avoid NULL pointer dereference for
+	invalid use of CLASS variable.
+
+2023-02-13  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	* decl.cc: Add EXT_ATTR_NOINLINE, EXT_ATTR_NORETURN, EXT_ATTR_WEAK.
+	* gfortran.h (ext_attr_id_t): Ditto.
+	* gfortran.texi (GCC$ ATTRIBUTES): Document them.
+	* trans-decl.cc (build_function_decl): Apply them.
+
 2023-02-09  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
