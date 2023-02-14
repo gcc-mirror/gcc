@@ -10926,6 +10926,15 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_pattern ()
       return std::unique_ptr<AST::TuplePattern> (
 	new AST::TuplePattern (std::move (items), paren_locus));
     }
+  else if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
+    {
+      skip_token (RIGHT_PAREN);
+      auto items = std::unique_ptr<AST::TuplePatternItemsMultiple> (
+	new AST::TuplePatternItemsMultiple (
+	  std::vector<std::unique_ptr<AST::Pattern>> ()));
+      return std::unique_ptr<AST::TuplePattern> (
+	new AST::TuplePattern (std::move (items), paren_locus));
+    }
 
   // parse initial pattern (required)
   std::unique_ptr<AST::Pattern> initial_pattern = parse_pattern ();
