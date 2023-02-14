@@ -176,7 +176,6 @@ enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
 opt_machine_mode get_vector_mode (scalar_mode, poly_uint64);
-extern bool simm32_p (rtx);
 extern bool simm5_p (rtx);
 extern bool neg_simm5_p (rtx);
 #ifdef RTX_CODE

@@ -889,7 +889,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[3]))
+	if (immediate_operand (operands[3], Pmode))
 	  operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode,
 		force_reg (Pmode, operands[3]));
 	else
@@ -1479,7 +1479,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[4]))
+	if (immediate_operand (operands[4], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[4], const0_rtx))
 	      operands[4] = force_reg (Pmode, operands[4]);
@@ -1572,7 +1572,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[4]))
+	if (immediate_operand (operands[4], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[4], const0_rtx))
 	      operands[4] = force_reg (Pmode, operands[4]);
@@ -1665,7 +1665,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[4]))
+	if (immediate_operand (operands[4], Pmode))
 	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
 		force_reg (Pmode, operands[4]));
 	else
@@ -1820,7 +1820,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[4]))
+	if (immediate_operand (operands[4], Pmode))
 	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
 		force_reg (Pmode, operands[4]));
 	else
@@ -1907,7 +1907,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[4]))
+	if (immediate_operand (operands[4], Pmode))
 	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
 		force_reg (Pmode, operands[4]));
 	else
@@ -2034,7 +2034,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[4]))
+	if (immediate_operand (operands[4], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[4], const0_rtx))
 	      operands[4] = force_reg (Pmode, operands[4]);
@@ -2226,7 +2226,7 @@
       {
         rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[3]))
+	if (immediate_operand (operands[3], Pmode))
 	  operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode,
 		force_reg (Pmode, operands[3]));
         else
@@ -2320,7 +2320,7 @@
       {
         rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[3]))
+	if (immediate_operand (operands[3], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[3], const0_rtx))
 	      operands[3] = force_reg (Pmode, operands[3]);
@@ -2497,7 +2497,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[2]))
+	if (immediate_operand (operands[2], Pmode))
 	  operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode,
 		force_reg (Pmode, operands[2]));
 	else
@@ -2577,7 +2577,7 @@
       {
         rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[2]))
+	if (immediate_operand (operands[2], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[2], const0_rtx))
 	      operands[2] = force_reg (Pmode, operands[2]);
@@ -2738,7 +2738,7 @@
       {
         rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[2]))
+	if (immediate_operand (operands[2], Pmode))
 	  operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode,
 		force_reg (Pmode, operands[2]));
 	else
@@ -2815,7 +2815,7 @@
       {
         rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[2]))
+	if (immediate_operand (operands[2], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[2], const0_rtx))
 	      operands[2] = force_reg (Pmode, operands[2]);
@@ -3310,7 +3310,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[4]))
+	if (immediate_operand (operands[4], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[4], const0_rtx))
 	      operands[4] = force_reg (Pmode, operands[4]);
@@ -3686,7 +3686,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[5]))
+	if (immediate_operand (operands[5], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[5], const0_rtx))
 	      operands[5] = force_reg (Pmode, operands[5]);
@@ -3739,7 +3739,7 @@
       {
 	rtx v = gen_reg_rtx (<MODE>mode);
 
-	if (riscv_vector::simm32_p (operands[5]))
+	if (immediate_operand (operands[5], Pmode))
 	  {
 	    if (!rtx_equal_p (operands[5], const0_rtx))
 	      operands[5] = force_reg (Pmode, operands[5]);
@@ -4404,7 +4404,7 @@
     {
       rtx v = gen_reg_rtx (<MODE>mode);
 
-      if (riscv_vector::simm32_p (operands[2]))
+      if (immediate_operand (operands[2], Pmode))
         operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode,
       		force_reg (Pmode, operands[2]));
       else
