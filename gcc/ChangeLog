@@ -1,3 +1,22 @@
+2023-02-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-01-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108348
+	* config/rs6000/rs6000.c (rs6000_opaque_type_invalid_use_p): Add the
+	support for invalid uses of MMA opaque type in function arguments.
+
+2023-02-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-01-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108272
+	* config/rs6000/rs6000.c (rs6000_opaque_type_invalid_use_p): Add the
+	support for invalid uses in inline asm, factor out the checking and
+	erroring to lambda function check_and_error_invalid_use.
+
 2023-02-07  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
