@@ -1,5 +1,16 @@
 2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/linux/allocator.c (linux_memspace_calloc): Elide
+	(innocuous) duplicate 'if' condition.
+	* config/nvptx/allocator.c (nvptx_memspace_free): Explicitly
+	handle 'memspace == ompx_host_mem_space'.
+	* libgomp.h (gomp_is_usm_ptr): Remove.
+
+	* basic-allocator.c (BASIC_ALLOC_YIELD): instead of '#deine',
+	'#define' it.
+
+2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* testsuite/libgomp.c/usm-1.c: Re-enable non-GCN offloading
 	compilation.
 	* testsuite/libgomp.c/usm-2.c: Likewise.

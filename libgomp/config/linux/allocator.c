@@ -106,8 +106,7 @@ linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
       memset (ret, 0, size);
       return ret;
     }
-  else if (memspace == ompx_unified_shared_mem_space
-      || pin)
+  else if (pin)
     return linux_memspace_alloc (memspace, size, pin);
   else
     return calloc (1, size);
