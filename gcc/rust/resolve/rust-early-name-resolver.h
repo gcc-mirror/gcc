@@ -249,6 +249,7 @@ private:
   virtual void visit (AST::TuplePattern &pattern);
   virtual void visit (AST::GroupedPattern &pattern);
   virtual void visit (AST::SlicePattern &pattern);
+  virtual void visit (AST::AltPattern &pattern);
   virtual void visit (AST::EmptyStmt &stmt);
   virtual void visit (AST::LetStmt &stmt);
   virtual void visit (AST::ExprStmtWithoutBlock &stmt);

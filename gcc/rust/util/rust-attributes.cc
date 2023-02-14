@@ -767,6 +767,10 @@ void
 AttributeChecker::visit (AST::SlicePattern &)
 {}
 
+void
+AttributeChecker::visit (AST::AltPattern &)
+{}
+
 // rust-stmt.h
 void
 AttributeChecker::visit (AST::EmptyStmt &)

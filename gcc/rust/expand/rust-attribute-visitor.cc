@@ -3152,6 +3152,20 @@ AttrVisitor::visit (AST::SlicePattern &pattern)
       // TODO: quit stripping now? or keep going?
     }
 }
+void
+AttrVisitor::visit (AST::AltPattern &pattern)
+{
+  // can't strip individual patterns, only sub-patterns
+  for (auto &alt : pattern.get_alts ())
+    {
+      alt->accept_vis (*this);
+
+      if (alt->is_marked_for_strip ())
+	rust_error_at (alt->get_locus (),
+		       "cannot strip pattern in this position");
+      // TODO: quit stripping now? or keep going?
+    }
+}
 
 void
 AttrVisitor::visit (AST::EmptyStmt &)

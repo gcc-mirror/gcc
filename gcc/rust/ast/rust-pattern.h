@@ -1563,6 +1563,72 @@ protected:
   }
 };
 
+// AST node for alternate patterns
+// joins together what are technically 'PatternNoTopAlt's
+class AltPattern : public Pattern
+{
+  std::vector<std::unique_ptr<Pattern>> alts;
+  Location locus;
+  NodeId node_id;
+
+public:
+  std::string as_string () const override;
+
+  AltPattern (std::vector<std::unique_ptr<Pattern>> alts, Location locus)
+    : alts (std::move (alts)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
+
+  // Copy constructor with vector clone
+  AltPattern (AltPattern const &other) : locus (other.locus)
+  {
+    node_id = other.node_id;
+    alts.reserve (other.alts.size ());
+    for (const auto &e : other.alts)
+      alts.push_back (e->clone_pattern ());
+  }
+
+  // Overloaded assignment operator to vector clone
+  AltPattern &operator= (AltPattern const &other)
+  {
+    locus = other.locus;
+    node_id = other.node_id;
+
+    alts.reserve (other.alts.size ());
+    for (const auto &e : other.alts)
+      alts.push_back (e->clone_pattern ());
+
+    return *this;
+  }
+
+  // move constructors
+  AltPattern (AltPattern &&other) = default;
+  AltPattern &operator= (AltPattern &&other) = default;
+
+  Location get_locus () const override final { return locus; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: seems kinda dodgy. Think of better way.
+  std::vector<std::unique_ptr<Pattern>> &get_alts () { return alts; }
+  const std::vector<std::unique_ptr<Pattern>> &get_alts () const
+  {
+    return alts;
+  }
+
+  NodeId get_node_id () const { return node_id; }
+
+  NodeId get_pattern_node_id () const override final { return node_id; }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  AltPattern *clone_pattern_impl () const override
+  {
+    return new AltPattern (*this);
+  }
+};
+
 // Moved definition to rust-path.h
 class PathPattern;
 
