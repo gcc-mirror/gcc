@@ -1053,6 +1053,13 @@ EarlyNameResolver::visit (AST::SlicePattern &pattern)
 }
 
 void
+EarlyNameResolver::visit (AST::AltPattern &pattern)
+{
+  for (auto &alt : pattern.get_alts ())
+    alt->accept_vis (*this);
+}
+
+void
 EarlyNameResolver::visit (AST::EmptyStmt &)
 {}
 

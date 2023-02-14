@@ -461,6 +461,9 @@ ASTLoweringBase::visit (AST::GroupedPattern &)
 void
 ASTLoweringBase::visit (AST::SlicePattern &)
 {}
+void
+ASTLoweringBase::visit (AST::AltPattern &)
+{}
 
 // rust-stmt.h
 void

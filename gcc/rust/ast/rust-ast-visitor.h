@@ -203,6 +203,7 @@ public:
   virtual void visit (TuplePattern &pattern) = 0;
   virtual void visit (GroupedPattern &pattern) = 0;
   virtual void visit (SlicePattern &pattern) = 0;
+  virtual void visit (AltPattern &pattern) = 0;
 
   // rust-stmt.h
   virtual void visit (EmptyStmt &stmt) = 0;

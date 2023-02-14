@@ -2705,6 +2705,17 @@ SlicePattern::as_string () const
 }
 
 std::string
+AltPattern::as_string () const
+{
+  std::string str ("AltPattern: ");
+
+  for (const auto &pattern : alts)
+    str += "\n " + pattern->as_string ();
+
+  return str;
+}
+
+std::string
 TuplePatternItemsMultiple::as_string () const
 {
   std::string str;
@@ -5645,6 +5656,12 @@ GroupedPattern::accept_vis (ASTVisitor &vis)
 
 void
 SlicePattern::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+AltPattern::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

@@ -169,6 +169,7 @@ public:
   void visit (AST::TuplePattern &pattern) override {}
   void visit (AST::GroupedPattern &pattern) override {}
   void visit (AST::SlicePattern &pattern) override {}
+  void visit (AST::AltPattern &pattern) override {}
   void visit (AST::EmptyStmt &stmt) override {}
   void visit (AST::LetStmt &stmt) override {}
   void visit (AST::ExprStmtWithoutBlock &stmt) override {}

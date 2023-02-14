@@ -1678,6 +1678,10 @@ void
 Dump::visit (SlicePattern &)
 {}
 
+void
+Dump::visit (AltPattern &)
+{}
+
 // rust-stmt.h
 void
 Dump::visit (EmptyStmt &)

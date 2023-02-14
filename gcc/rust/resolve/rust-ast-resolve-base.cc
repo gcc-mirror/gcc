@@ -583,6 +583,10 @@ ResolverBase::visit (AST::SlicePattern &)
 {}
 
 void
+ResolverBase::visit (AST::AltPattern &)
+{}
+
+void
 ResolverBase::visit (AST::EmptyStmt &)
 {}
 
