@@ -3696,12 +3696,12 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 #ifdef HAVE_INTTYPES_H
 		    gomp_fatal ("present clause: no corresponding data on "
 				"parent device at %p with size %"PRIu64,
-				(void *) devaddrs[i],
+				(void *) (uintptr_t) devaddrs[i],
 				(uint64_t) sizes[i]);
 #else
 		    gomp_fatal ("present clause: no corresponding data on "
 				"parent device at %p with size %lu",
-				(void *) devaddrs[i],
+				(void *) (uintptr_t) devaddrs[i],
 				(unsigned long) sizes[i]);
 #endif
 		    break;

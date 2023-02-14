@@ -1,3 +1,8 @@
+2023-02-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_target_rev): Address cast to pointer from integer
+	of different size.
+
 2023-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* target.c (gomp_to_device_kind_p): Add map kinds with 'present'
