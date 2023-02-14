@@ -3526,6 +3526,7 @@ __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
 #if defined (__APPLE__)
 #include <mach-o/dyld.h>
 #elif defined (__linux__)
+#include <features.h>
 #include <link.h>
 #endif
 
@@ -3535,7 +3536,7 @@ __gnat_get_executable_load_address (void)
 #if defined (__APPLE__)
   return _dyld_get_image_header (0);
 
-#elif defined (__linux__)
+#elif defined (__linux__) && (defined (__GLIBC__) || defined (__UCLIBC__))
   struct link_map *map = _r_debug.r_map;
   return (const void *)map->l_addr;
 
