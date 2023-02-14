@@ -4,7 +4,7 @@ pub use literal::Literal;
 pub use punct::{Punct, Spacing};
 pub use span::Span;
 use std::error;
-use std::{fmt, str::FromStr};
+use std::{fmt, iter, str::FromStr};
 
 mod group;
 mod ident;
@@ -137,6 +137,30 @@ impl FromStr for TokenStream {
     type Err = LexError;
 
     fn from_str(_src: &str) -> Result<Self, LexError> {
+        todo!("Implement this function")
+    }
+}
+
+impl iter::FromIterator<TokenTree> for TokenStream {
+    fn from_iter<I: IntoIterator<Item = TokenTree>>(_trees: I) -> Self {
+        todo!("Implement this function")
+    }
+}
+
+impl iter::FromIterator<TokenStream> for TokenStream {
+    fn from_iter<I: IntoIterator<Item = TokenStream>>(_streams: I) -> Self {
+        todo!("Implement this function")
+    }
+}
+
+impl Extend<TokenTree> for TokenStream {
+    fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, _trees: I) {
+        todo!("Implement this function")
+    }
+}
+
+impl Extend<TokenStream> for TokenStream {
+    fn extend<I: IntoIterator<Item = TokenStream>>(&mut self, _streams: I) {
         todo!("Implement this function")
     }
 }
