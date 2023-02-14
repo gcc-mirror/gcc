@@ -37,15 +37,23 @@ along with GCC; see the file COPYING3. If not see
 #endif
 
 /* 6. Configuration-Setting Instructions.  */
+
 DEF_RVV_FUNCTION (vsetvl, vsetvl, none_preds, i_none_size_size_ops)
 DEF_RVV_FUNCTION (vsetvlmax, vsetvlmax, none_preds, i_none_size_void_ops)
+
 /* 7. Vector Loads and Stores. */
+
+// 7.4. Vector Unit-Stride Instructions
 DEF_RVV_FUNCTION (vle, loadstore, full_preds, all_v_scalar_const_ptr_ops)
 DEF_RVV_FUNCTION (vse, loadstore, none_m_preds, all_v_scalar_ptr_ops)
 DEF_RVV_FUNCTION (vlm, loadstore, none_preds, b_v_scalar_const_ptr_ops)
 DEF_RVV_FUNCTION (vsm, loadstore, none_preds, b_v_scalar_ptr_ops)
+
+// 7.5. Vector Strided Instructions
 DEF_RVV_FUNCTION (vlse, loadstore, full_preds, all_v_scalar_const_ptr_ptrdiff_ops)
 DEF_RVV_FUNCTION (vsse, loadstore, none_m_preds, all_v_scalar_ptr_ptrdiff_ops)
+
+// 7.6. Vector Indexed Instructions
 DEF_RVV_FUNCTION (vluxei8, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint8_index_ops)
 DEF_RVV_FUNCTION (vluxei16, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint16_index_ops)
 DEF_RVV_FUNCTION (vluxei32, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint32_index_ops)
@@ -62,162 +70,214 @@ DEF_RVV_FUNCTION (vsoxei8, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uin
 DEF_RVV_FUNCTION (vsoxei16, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint16_index_ops)
 DEF_RVV_FUNCTION (vsoxei32, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint32_index_ops)
 DEF_RVV_FUNCTION (vsoxei64, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint64_index_ops)
+
+// TODO: 7.7. Unit-stride Fault-Only-First Loads
+// TODO: 7.8. Vector Load/Store Segment Instructions
+
 /* 11. Vector Integer Arithmetic Instructions.  */
+
+// 11.1. Vector Single-Width Integer Add and Subtract
 DEF_RVV_FUNCTION (vadd, alu, full_preds, iu_vvv_ops)
-DEF_RVV_FUNCTION (vsub, alu, full_preds, iu_vvv_ops)
-DEF_RVV_FUNCTION (vand, alu, full_preds, iu_vvv_ops)
-DEF_RVV_FUNCTION (vor, alu, full_preds, iu_vvv_ops)
-DEF_RVV_FUNCTION (vxor, alu, full_preds, iu_vvv_ops)
-DEF_RVV_FUNCTION (vsll, alu, full_preds, iu_shift_vvv_ops)
-DEF_RVV_FUNCTION (vsra, alu, full_preds, i_shift_vvv_ops)
-DEF_RVV_FUNCTION (vsrl, alu, full_preds, u_shift_vvv_ops)
-DEF_RVV_FUNCTION (vmin, alu, full_preds, i_vvv_ops)
-DEF_RVV_FUNCTION (vmax, alu, full_preds, i_vvv_ops)
-DEF_RVV_FUNCTION (vminu, alu, full_preds, u_vvv_ops)
-DEF_RVV_FUNCTION (vmaxu, alu, full_preds, u_vvv_ops)
-DEF_RVV_FUNCTION (vmul, alu, full_preds, iu_vvv_ops)
-DEF_RVV_FUNCTION (vmulh, alu, full_preds, full_v_i_vvv_ops)
-DEF_RVV_FUNCTION (vmulhu, alu, full_preds, full_v_u_vvv_ops)
-DEF_RVV_FUNCTION (vmulhsu, alu, full_preds, full_v_i_su_vvv_ops)
-DEF_RVV_FUNCTION (vdiv, alu, full_preds, i_vvv_ops)
-DEF_RVV_FUNCTION (vrem, alu, full_preds, i_vvv_ops)
-DEF_RVV_FUNCTION (vdivu, alu, full_preds, u_vvv_ops)
-DEF_RVV_FUNCTION (vremu, alu, full_preds, u_vvv_ops)
 DEF_RVV_FUNCTION (vadd, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vsub, alu, full_preds, iu_vvv_ops)
 DEF_RVV_FUNCTION (vsub, alu, full_preds, iu_vvx_ops)
 DEF_RVV_FUNCTION (vrsub, alu, full_preds, iu_vvx_ops)
-DEF_RVV_FUNCTION (vand, alu, full_preds, iu_vvx_ops)
-DEF_RVV_FUNCTION (vor, alu, full_preds, iu_vvx_ops)
-DEF_RVV_FUNCTION (vxor, alu, full_preds, iu_vvx_ops)
-DEF_RVV_FUNCTION (vsll, alu, full_preds, iu_shift_vvx_ops)
-DEF_RVV_FUNCTION (vsra, alu, full_preds, i_shift_vvx_ops)
-DEF_RVV_FUNCTION (vsrl, alu, full_preds, u_shift_vvx_ops)
-DEF_RVV_FUNCTION (vmin, alu, full_preds, i_vvx_ops)
-DEF_RVV_FUNCTION (vmax, alu, full_preds, i_vvx_ops)
-DEF_RVV_FUNCTION (vminu, alu, full_preds, u_vvx_ops)
-DEF_RVV_FUNCTION (vmaxu, alu, full_preds, u_vvx_ops)
-DEF_RVV_FUNCTION (vmul, alu, full_preds, iu_vvx_ops)
-DEF_RVV_FUNCTION (vmulh, alu, full_preds, full_v_i_vvx_ops)
-DEF_RVV_FUNCTION (vmulhu, alu, full_preds, full_v_u_vvx_ops)
-DEF_RVV_FUNCTION (vmulhsu, alu, full_preds, full_v_i_su_vvx_ops)
-DEF_RVV_FUNCTION (vdiv, alu, full_preds, i_vvx_ops)
-DEF_RVV_FUNCTION (vrem, alu, full_preds, i_vvx_ops)
-DEF_RVV_FUNCTION (vdivu, alu, full_preds, u_vvx_ops)
-DEF_RVV_FUNCTION (vremu, alu, full_preds, u_vvx_ops)
 DEF_RVV_FUNCTION (vneg, alu, full_preds, iu_v_ops)
-DEF_RVV_FUNCTION (vnot, alu, full_preds, iu_v_ops)
-DEF_RVV_FUNCTION (vsext, alu, full_preds, i_vf2_ops)
-DEF_RVV_FUNCTION (vsext, alu, full_preds, i_vf4_ops)
-DEF_RVV_FUNCTION (vsext, alu, full_preds, i_vf8_ops)
+
+// 11.2. Vector Widening Integer Add/Subtract
+DEF_RVV_FUNCTION (vwaddu, widen_alu, full_preds, u_wvv_ops)
+DEF_RVV_FUNCTION (vwaddu, widen_alu, full_preds, u_wvx_ops)
+DEF_RVV_FUNCTION (vwsubu, widen_alu, full_preds, u_wvv_ops)
+DEF_RVV_FUNCTION (vwsubu, widen_alu, full_preds, u_wvx_ops)
+DEF_RVV_FUNCTION (vwadd, widen_alu, full_preds, i_wvv_ops)
+DEF_RVV_FUNCTION (vwadd, widen_alu, full_preds, i_wvx_ops)
+DEF_RVV_FUNCTION (vwsub, widen_alu, full_preds, i_wvv_ops)
+DEF_RVV_FUNCTION (vwsub, widen_alu, full_preds, i_wvx_ops)
+DEF_RVV_FUNCTION (vwaddu, widen_alu, full_preds, u_wwv_ops)
+DEF_RVV_FUNCTION (vwaddu, widen_alu, full_preds, u_wwx_ops)
+DEF_RVV_FUNCTION (vwsubu, widen_alu, full_preds, u_wwv_ops)
+DEF_RVV_FUNCTION (vwsubu, widen_alu, full_preds, u_wwx_ops)
+DEF_RVV_FUNCTION (vwadd, widen_alu, full_preds, i_wwv_ops)
+DEF_RVV_FUNCTION (vwadd, widen_alu, full_preds, i_wwx_ops)
+DEF_RVV_FUNCTION (vwsub, widen_alu, full_preds, i_wwv_ops)
+DEF_RVV_FUNCTION (vwsub, widen_alu, full_preds, i_wwx_ops)
+DEF_RVV_FUNCTION (vwcvt_x, alu, full_preds, i_x_x_v_ops)
+DEF_RVV_FUNCTION (vwcvtu_x, alu, full_preds, u_x_x_v_ops)
+
+// 11.3. Vector Integer Extension
 DEF_RVV_FUNCTION (vzext, alu, full_preds, u_vf2_ops)
 DEF_RVV_FUNCTION (vzext, alu, full_preds, u_vf4_ops)
 DEF_RVV_FUNCTION (vzext, alu, full_preds, u_vf8_ops)
-DEF_RVV_FUNCTION (vwadd, widen_alu, full_preds, i_wvv_ops)
-DEF_RVV_FUNCTION (vwsub, widen_alu, full_preds, i_wvv_ops)
-DEF_RVV_FUNCTION (vwmul, alu, full_preds, i_wvv_ops)
-DEF_RVV_FUNCTION (vwmulu, alu, full_preds, u_wvv_ops)
-DEF_RVV_FUNCTION (vwmulsu, alu, full_preds, i_su_wvv_ops)
-DEF_RVV_FUNCTION (vwaddu, widen_alu, full_preds, u_wvv_ops)
-DEF_RVV_FUNCTION (vwsubu, widen_alu, full_preds, u_wvv_ops)
-DEF_RVV_FUNCTION (vwadd, widen_alu, full_preds, i_wvx_ops)
-DEF_RVV_FUNCTION (vwsub, widen_alu, full_preds, i_wvx_ops)
-DEF_RVV_FUNCTION (vwmul, alu, full_preds, i_wvx_ops)
-DEF_RVV_FUNCTION (vwmulu, alu, full_preds, u_wvx_ops)
-DEF_RVV_FUNCTION (vwmulsu, alu, full_preds, i_su_wvx_ops)
-DEF_RVV_FUNCTION (vwaddu, widen_alu, full_preds, u_wvx_ops)
-DEF_RVV_FUNCTION (vwsubu, widen_alu, full_preds, u_wvx_ops)
-DEF_RVV_FUNCTION (vwadd, widen_alu, full_preds, i_wwv_ops)
-DEF_RVV_FUNCTION (vwsub, widen_alu, full_preds, i_wwv_ops)
-DEF_RVV_FUNCTION (vwaddu, widen_alu, full_preds, u_wwv_ops)
-DEF_RVV_FUNCTION (vwsubu, widen_alu, full_preds, u_wwv_ops)
-DEF_RVV_FUNCTION (vwadd, widen_alu, full_preds, i_wwx_ops)
-DEF_RVV_FUNCTION (vwsub, widen_alu, full_preds, i_wwx_ops)
-DEF_RVV_FUNCTION (vwaddu, widen_alu, full_preds, u_wwx_ops)
-DEF_RVV_FUNCTION (vwsubu, widen_alu, full_preds, u_wwx_ops)
-DEF_RVV_FUNCTION (vwcvt_x, alu, full_preds, i_x_x_v_ops)
-DEF_RVV_FUNCTION (vwcvtu_x, alu, full_preds, u_x_x_v_ops)
+DEF_RVV_FUNCTION (vsext, alu, full_preds, i_vf2_ops)
+DEF_RVV_FUNCTION (vsext, alu, full_preds, i_vf4_ops)
+DEF_RVV_FUNCTION (vsext, alu, full_preds, i_vf8_ops)
+
+// 11.4. Vector Integer Add-with-Carry/Subtract-with-Borrow Instructions
 DEF_RVV_FUNCTION (vadc, no_mask_policy, tu_preds, iu_vvvm_ops)
-DEF_RVV_FUNCTION (vsbc, no_mask_policy, tu_preds, iu_vvvm_ops)
 DEF_RVV_FUNCTION (vadc, no_mask_policy, tu_preds, iu_vvxm_ops)
-DEF_RVV_FUNCTION (vsbc, no_mask_policy, tu_preds, iu_vvxm_ops)
 DEF_RVV_FUNCTION (vmadc, return_mask, none_preds, iu_mvvm_ops)
-DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvvm_ops)
 DEF_RVV_FUNCTION (vmadc, return_mask, none_preds, iu_mvxm_ops)
-DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvxm_ops)
 DEF_RVV_FUNCTION (vmadc, return_mask, none_preds, iu_mvv_ops)
-DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvv_ops)
 DEF_RVV_FUNCTION (vmadc, return_mask, none_preds, iu_mvx_ops)
+DEF_RVV_FUNCTION (vsbc, no_mask_policy, tu_preds, iu_vvvm_ops)
+DEF_RVV_FUNCTION (vsbc, no_mask_policy, tu_preds, iu_vvxm_ops)
+DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvvm_ops)
+DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvxm_ops)
+DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvv_ops)
 DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvx_ops)
+
+// 11.5. Vector Bitwise Logical Instructions
+DEF_RVV_FUNCTION (vand, alu, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vand, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vor, alu, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vor, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vxor, alu, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vxor, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vnot, alu, full_preds, iu_v_ops)
+
+// 11.6. Vector Single-Width Shift Instructions
+DEF_RVV_FUNCTION (vsll, alu, full_preds, iu_shift_vvv_ops)
+DEF_RVV_FUNCTION (vsll, alu, full_preds, iu_shift_vvx_ops)
+DEF_RVV_FUNCTION (vsra, alu, full_preds, i_shift_vvv_ops)
+DEF_RVV_FUNCTION (vsra, alu, full_preds, i_shift_vvx_ops)
+DEF_RVV_FUNCTION (vsrl, alu, full_preds, u_shift_vvv_ops)
+DEF_RVV_FUNCTION (vsrl, alu, full_preds, u_shift_vvx_ops)
+
+// 11.7. Vector Narrowing Integer Right Shift Instructions
 DEF_RVV_FUNCTION (vnsrl, narrow_alu, full_preds, u_narrow_shift_vwv_ops)
-DEF_RVV_FUNCTION (vnsra, narrow_alu, full_preds, i_narrow_shift_vwv_ops)
 DEF_RVV_FUNCTION (vnsrl, narrow_alu, full_preds, u_narrow_shift_vwx_ops)
+DEF_RVV_FUNCTION (vnsra, narrow_alu, full_preds, i_narrow_shift_vwv_ops)
 DEF_RVV_FUNCTION (vnsra, narrow_alu, full_preds, i_narrow_shift_vwx_ops)
 DEF_RVV_FUNCTION (vncvt_x, narrow_alu, full_preds, iu_trunc_ops)
-DEF_RVV_FUNCTION (vmerge, no_mask_policy, tu_preds, all_vvvm_ops)
-DEF_RVV_FUNCTION (vmerge, no_mask_policy, tu_preds, iu_vvxm_ops)
-DEF_RVV_FUNCTION (vmv_v, move, tu_preds, all_v_ops)
-DEF_RVV_FUNCTION (vmv_v, move, tu_preds, iu_x_ops)
+
+// 11.8. Vector Integer Compare Instructions
 DEF_RVV_FUNCTION (vmseq, return_mask, none_m_mu_preds, iu_mvv_ops)
-DEF_RVV_FUNCTION (vmsne, return_mask, none_m_mu_preds, iu_mvv_ops)
-DEF_RVV_FUNCTION (vmslt, return_mask, none_m_mu_preds, i_mvv_ops)
-DEF_RVV_FUNCTION (vmsgt, return_mask, none_m_mu_preds, i_mvv_ops)
-DEF_RVV_FUNCTION (vmsle, return_mask, none_m_mu_preds, i_mvv_ops)
-DEF_RVV_FUNCTION (vmsge, return_mask, none_m_mu_preds, i_mvv_ops)
-DEF_RVV_FUNCTION (vmsltu, return_mask, none_m_mu_preds, u_mvv_ops)
-DEF_RVV_FUNCTION (vmsgtu, return_mask, none_m_mu_preds, u_mvv_ops)
-DEF_RVV_FUNCTION (vmsleu, return_mask, none_m_mu_preds, u_mvv_ops)
-DEF_RVV_FUNCTION (vmsgeu, return_mask, none_m_mu_preds, u_mvv_ops)
 DEF_RVV_FUNCTION (vmseq, return_mask, none_m_mu_preds, iu_mvx_ops)
+DEF_RVV_FUNCTION (vmsne, return_mask, none_m_mu_preds, iu_mvv_ops)
 DEF_RVV_FUNCTION (vmsne, return_mask, none_m_mu_preds, iu_mvx_ops)
-DEF_RVV_FUNCTION (vmslt, return_mask, none_m_mu_preds, i_mvx_ops)
-DEF_RVV_FUNCTION (vmsgt, return_mask, none_m_mu_preds, i_mvx_ops)
-DEF_RVV_FUNCTION (vmsle, return_mask, none_m_mu_preds, i_mvx_ops)
-DEF_RVV_FUNCTION (vmsge, return_mask, none_m_mu_preds, i_mvx_ops)
+DEF_RVV_FUNCTION (vmsltu, return_mask, none_m_mu_preds, u_mvv_ops)
 DEF_RVV_FUNCTION (vmsltu, return_mask, none_m_mu_preds, u_mvx_ops)
-DEF_RVV_FUNCTION (vmsgtu, return_mask, none_m_mu_preds, u_mvx_ops)
+DEF_RVV_FUNCTION (vmslt, return_mask, none_m_mu_preds, i_mvv_ops)
+DEF_RVV_FUNCTION (vmslt, return_mask, none_m_mu_preds, i_mvx_ops)
+DEF_RVV_FUNCTION (vmsleu, return_mask, none_m_mu_preds, u_mvv_ops)
 DEF_RVV_FUNCTION (vmsleu, return_mask, none_m_mu_preds, u_mvx_ops)
+DEF_RVV_FUNCTION (vmsle, return_mask, none_m_mu_preds, i_mvv_ops)
+DEF_RVV_FUNCTION (vmsle, return_mask, none_m_mu_preds, i_mvx_ops)
+DEF_RVV_FUNCTION (vmsgtu, return_mask, none_m_mu_preds, u_mvv_ops)
+DEF_RVV_FUNCTION (vmsgtu, return_mask, none_m_mu_preds, u_mvx_ops)
+DEF_RVV_FUNCTION (vmsgt, return_mask, none_m_mu_preds, i_mvv_ops)
+DEF_RVV_FUNCTION (vmsgt, return_mask, none_m_mu_preds, i_mvx_ops)
+DEF_RVV_FUNCTION (vmsgeu, return_mask, none_m_mu_preds, u_mvv_ops)
 DEF_RVV_FUNCTION (vmsgeu, return_mask, none_m_mu_preds, u_mvx_ops)
+DEF_RVV_FUNCTION (vmsge, return_mask, none_m_mu_preds, i_mvv_ops)
+DEF_RVV_FUNCTION (vmsge, return_mask, none_m_mu_preds, i_mvx_ops)
+
+// 11.9. Vector Integer Min/Max Instructions
+DEF_RVV_FUNCTION (vminu, alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vminu, alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vmin, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vmin, alu, full_preds, i_vvx_ops)
+DEF_RVV_FUNCTION (vmaxu, alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vmaxu, alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vmax, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vmax, alu, full_preds, i_vvx_ops)
+
+// 11.10. Vector Single-Width Integer Multiply Instructions
+DEF_RVV_FUNCTION (vmul, alu, full_preds, iu_vvv_ops)
+DEF_RVV_FUNCTION (vmul, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vmulh, alu, full_preds, full_v_i_vvv_ops)
+DEF_RVV_FUNCTION (vmulh, alu, full_preds, full_v_i_vvx_ops)
+DEF_RVV_FUNCTION (vmulhu, alu, full_preds, full_v_u_vvv_ops)
+DEF_RVV_FUNCTION (vmulhu, alu, full_preds, full_v_u_vvx_ops)
+DEF_RVV_FUNCTION (vmulhsu, alu, full_preds, full_v_i_su_vvv_ops)
+DEF_RVV_FUNCTION (vmulhsu, alu, full_preds, full_v_i_su_vvx_ops)
+
+// 11.11. Vector Integer Divide Instructions
+DEF_RVV_FUNCTION (vdivu, alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vdivu, alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vdiv, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vdiv, alu, full_preds, i_vvx_ops)
+DEF_RVV_FUNCTION (vremu, alu, full_preds, u_vvv_ops)
+DEF_RVV_FUNCTION (vremu, alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vrem, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vrem, alu, full_preds, i_vvx_ops)
+
+// 11.12. Vector Widening Integer Multiply Instructions
+DEF_RVV_FUNCTION (vwmul, alu, full_preds, i_wvv_ops)
+DEF_RVV_FUNCTION (vwmul, alu, full_preds, i_wvx_ops)
+DEF_RVV_FUNCTION (vwmulu, alu, full_preds, u_wvv_ops)
+DEF_RVV_FUNCTION (vwmulu, alu, full_preds, u_wvx_ops)
+DEF_RVV_FUNCTION (vwmulsu, alu, full_preds, i_su_wvv_ops)
+DEF_RVV_FUNCTION (vwmulsu, alu, full_preds, i_su_wvx_ops)
+
+// 11.13. Vector Single-Width Integer Multiply-Add Instructions
 DEF_RVV_FUNCTION (vmacc, alu, full_preds, iu_vvvv_ops)
-DEF_RVV_FUNCTION (vnmsac, alu, full_preds, iu_vvvv_ops)
-DEF_RVV_FUNCTION (vmadd, alu, full_preds, iu_vvvv_ops)
-DEF_RVV_FUNCTION (vnmsub, alu, full_preds, iu_vvvv_ops)
 DEF_RVV_FUNCTION (vmacc, alu, full_preds, iu_vvxv_ops)
+DEF_RVV_FUNCTION (vnmsac, alu, full_preds, iu_vvvv_ops)
 DEF_RVV_FUNCTION (vnmsac, alu, full_preds, iu_vvxv_ops)
+DEF_RVV_FUNCTION (vmadd, alu, full_preds, iu_vvvv_ops)
 DEF_RVV_FUNCTION (vmadd, alu, full_preds, iu_vvxv_ops)
+DEF_RVV_FUNCTION (vnmsub, alu, full_preds, iu_vvvv_ops)
 DEF_RVV_FUNCTION (vnmsub, alu, full_preds, iu_vvxv_ops)
-DEF_RVV_FUNCTION (vwmacc, alu, full_preds, i_wwvv_ops)
-DEF_RVV_FUNCTION (vwmacc, alu, full_preds, i_wwxv_ops)
+
+// 11.14. Vector Widening Integer Multiply-Add Instructions
 DEF_RVV_FUNCTION (vwmaccu, alu, full_preds, u_wwvv_ops)
 DEF_RVV_FUNCTION (vwmaccu, alu, full_preds, u_wwxv_ops)
+DEF_RVV_FUNCTION (vwmacc, alu, full_preds, i_wwvv_ops)
+DEF_RVV_FUNCTION (vwmacc, alu, full_preds, i_wwxv_ops)
 DEF_RVV_FUNCTION (vwmaccsu, alu, full_preds, i_su_wwvv_ops)
 DEF_RVV_FUNCTION (vwmaccsu, alu, full_preds, i_su_wwxv_ops)
 DEF_RVV_FUNCTION (vwmaccus, alu, full_preds, i_us_wwxv_ops)
+
+// 11.15. Vector Integer Merge Instructions
+DEF_RVV_FUNCTION (vmerge, no_mask_policy, tu_preds, all_vvvm_ops)
+DEF_RVV_FUNCTION (vmerge, no_mask_policy, tu_preds, iu_vvxm_ops)
+
+// 11.16 Vector Integer Move Instructions
+DEF_RVV_FUNCTION (vmv_v, move, tu_preds, all_v_ops)
+DEF_RVV_FUNCTION (vmv_v, move, tu_preds, iu_x_ops)
+
 /* 12. Vector Fixed-Point Arithmetic Instructions. */
-DEF_RVV_FUNCTION (vsadd, alu, full_preds, i_vvv_ops)
-DEF_RVV_FUNCTION (vssub, alu, full_preds, i_vvv_ops)
+
+// 12.1. Vector Single-Width Saturating Add and Subtract
 DEF_RVV_FUNCTION (vsaddu, alu, full_preds, u_vvv_ops)
-DEF_RVV_FUNCTION (vssubu, alu, full_preds, u_vvv_ops)
-DEF_RVV_FUNCTION (vsadd, alu, full_preds, i_vvx_ops)
-DEF_RVV_FUNCTION (vssub, alu, full_preds, i_vvx_ops)
 DEF_RVV_FUNCTION (vsaddu, alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vsadd, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vsadd, alu, full_preds, i_vvx_ops)
+DEF_RVV_FUNCTION (vssubu, alu, full_preds, u_vvv_ops)
 DEF_RVV_FUNCTION (vssubu, alu, full_preds, u_vvx_ops)
-DEF_RVV_FUNCTION (vaadd, alu, full_preds, i_vvv_ops)
-DEF_RVV_FUNCTION (vasub, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vssub, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vssub, alu, full_preds, i_vvx_ops)
+
+// 12.2. Vector Single-Width Averaging Add and Subtract
 DEF_RVV_FUNCTION (vaaddu, alu, full_preds, u_vvv_ops)
-DEF_RVV_FUNCTION (vasubu, alu, full_preds, u_vvv_ops)
-DEF_RVV_FUNCTION (vsmul, alu, full_preds, full_v_i_vvv_ops)
-DEF_RVV_FUNCTION (vssra, alu, full_preds, i_shift_vvv_ops)
-DEF_RVV_FUNCTION (vssrl, alu, full_preds, u_shift_vvv_ops)
-DEF_RVV_FUNCTION (vaadd, alu, full_preds, i_vvx_ops)
-DEF_RVV_FUNCTION (vasub, alu, full_preds, i_vvx_ops)
 DEF_RVV_FUNCTION (vaaddu, alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vaadd, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vaadd, alu, full_preds, i_vvx_ops)
+DEF_RVV_FUNCTION (vasubu, alu, full_preds, u_vvv_ops)
 DEF_RVV_FUNCTION (vasubu, alu, full_preds, u_vvx_ops)
+DEF_RVV_FUNCTION (vasub, alu, full_preds, i_vvv_ops)
+DEF_RVV_FUNCTION (vasub, alu, full_preds, i_vvx_ops)
+
+// 12.3. Vector Single-Width Fractional Multiply with Rounding and Saturation
+DEF_RVV_FUNCTION (vsmul, alu, full_preds, full_v_i_vvv_ops)
 DEF_RVV_FUNCTION (vsmul, alu, full_preds, full_v_i_vvx_ops)
-DEF_RVV_FUNCTION (vssra, alu, full_preds, i_shift_vvx_ops)
+
+// 12.4. Vector Single-Width Scaling Shift Instructions
+DEF_RVV_FUNCTION (vssrl, alu, full_preds, u_shift_vvv_ops)
 DEF_RVV_FUNCTION (vssrl, alu, full_preds, u_shift_vvx_ops)
+DEF_RVV_FUNCTION (vssra, alu, full_preds, i_shift_vvv_ops)
+DEF_RVV_FUNCTION (vssra, alu, full_preds, i_shift_vvx_ops)
+
+// 12.5. Vector Narrowing Fixed-Point Clip Instructions
 DEF_RVV_FUNCTION (vnclipu, narrow_alu, full_preds, u_narrow_shift_vwv_ops)
-DEF_RVV_FUNCTION (vnclip, narrow_alu, full_preds, i_narrow_shift_vwv_ops)
 DEF_RVV_FUNCTION (vnclipu, narrow_alu, full_preds, u_narrow_shift_vwx_ops)
+DEF_RVV_FUNCTION (vnclip, narrow_alu, full_preds, i_narrow_shift_vwv_ops)
 DEF_RVV_FUNCTION (vnclip, narrow_alu, full_preds, i_narrow_shift_vwx_ops)
+
+/* TODO: 13. Vector Floating-Point Instructions.  */
+/* TODO: 14. Vector Reduction Operations.  */
+/* TODO: 15. Vector Mask Instructions.  */
+/* TODO: 16. Vector Permutation Instructions.  */
 
 #undef DEF_RVV_FUNCTION
