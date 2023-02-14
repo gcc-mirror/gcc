@@ -4326,15 +4326,6 @@ pass_waccess::check_call (gcall *stmt)
   check_nonstring_args (stmt);
 }
 
-
-/* Return true of X is a DECL with automatic storage duration.  */
-
-static inline bool
-is_auto_decl (tree x)
-{
-  return DECL_P (x) && !DECL_EXTERNAL (x) && !TREE_STATIC (x);
-}
-
 /* Check non-call STMT for invalid accesses.  */
 
 void
@@ -4363,7 +4354,7 @@ pass_waccess::check_stmt (gimple *stmt)
       while (handled_component_p (lhs))
 	lhs = TREE_OPERAND (lhs, 0);
 
-      if (is_auto_decl (lhs))
+      if (auto_var_p (lhs))
 	m_clobbers.remove (lhs);
       return;
     }
@@ -4383,7 +4374,7 @@ pass_waccess::check_stmt (gimple *stmt)
       while (handled_component_p (arg))
 	arg = TREE_OPERAND (arg, 0);
 
-      if (!is_auto_decl (arg))
+      if (!auto_var_p (arg))
 	return;
 
       gimple **pclobber = m_clobbers.get (arg);
@@ -4467,7 +4458,7 @@ void
 pass_waccess::check_dangling_uses (tree var, tree decl, bool maybe /* = false */,
 				   bool objref /* = false */)
 {
-  if (!decl || !is_auto_decl (decl))
+  if (!decl || !auto_var_p (decl))
     return;
 
   gimple **pclob = m_clobbers.get (decl);
@@ -4528,7 +4519,7 @@ pass_waccess::check_dangling_stores (basic_block bb,
       if (!m_ptr_qry.get_ref (lhs, stmt, &lhs_ref, 0))
 	continue;
 
-      if (is_auto_decl (lhs_ref.ref))
+      if (auto_var_p (lhs_ref.ref))
 	continue;
 
       if (DECL_P (lhs_ref.ref))
@@ -4573,7 +4564,7 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	  || rhs_ref.deref != -1)
 	continue;
 
-      if (!is_auto_decl (rhs_ref.ref))
+      if (!auto_var_p (rhs_ref.ref))
 	continue;
 
       auto_diagnostic_group d;
