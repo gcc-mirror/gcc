@@ -3,6 +3,7 @@ name: GCC Bootstrap Build
 on:
   push:
     branches: [ master ]
+  merge_group:
 
 jobs:
   build:

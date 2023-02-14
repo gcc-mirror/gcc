@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - gcc-patch-dev
+  merge_group:
 
 jobs:
   check-commit-changelogs:
@@ -26,8 +27,10 @@ jobs:
       
       - name: GCC check PR Commits
         run: |
-          python3 contrib/gcc-changelog/git_check_commit.py origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.sha }}
-
+          if ${{ github.event_name == 'pull_request' }}; then
+            python3 contrib/gcc-changelog/git_check_commit.py origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.sha }}
+          fi
+            
   check-commit-prefixes:
     runs-on: ubuntu-latest
     name: check-gccrs-prefix
