@@ -1133,7 +1133,6 @@ extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
 			     void *);
 extern void * gomp_usm_alloc (size_t size, int device_num);
 extern void gomp_usm_free (void *device_ptr, int device_num);
-extern bool gomp_is_usm_ptr (void *ptr);
 
 /* Splay tree definitions.  */
 typedef struct splay_tree_node_s *splay_tree_node;
