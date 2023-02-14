@@ -8491,8 +8491,7 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
       bitmap_set_bit (worklist, 0);
       while (!bitmap_empty_p (worklist))
 	{
-	  int idx = bitmap_first_set_bit (worklist);
-	  bitmap_clear_bit (worklist, idx);
+	  int idx = bitmap_clear_first_set_bit (worklist);
 	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[idx]);
 	  gcc_assert ((bb->flags & BB_EXECUTABLE)
 		      && !rpo_state[idx].visited);

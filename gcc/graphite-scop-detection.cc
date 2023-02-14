@@ -469,8 +469,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
      its border it acts more like a visited bitmap.  */
   do
     {
-      int index = bitmap_first_set_bit (worklist);
-      bitmap_clear_bit (worklist, index);
+      int index = bitmap_clear_first_set_bit (worklist);
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, index);
       edge_iterator ei;
       edge e;

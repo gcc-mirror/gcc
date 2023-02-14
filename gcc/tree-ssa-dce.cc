@@ -2102,8 +2102,7 @@ simple_dce_from_worklist (bitmap worklist)
   while (! bitmap_empty_p (worklist))
     {
       /* Pop item.  */
-      unsigned i = bitmap_first_set_bit (worklist);
-      bitmap_clear_bit (worklist, i);
+      unsigned i = bitmap_clear_first_set_bit (worklist);
 
       tree def = ssa_name (i);
       /* Removed by somebody else or still in use.  */

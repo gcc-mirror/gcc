@@ -1040,8 +1040,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
 
       do
 	{
-	  unsigned index = bitmap_first_set_bit (worklist);
-	  bitmap_clear_bit (worklist, index);
+	  unsigned index = bitmap_clear_first_set_bit (worklist);
 
 	  unsigned bb_index;
 	  dcount++;

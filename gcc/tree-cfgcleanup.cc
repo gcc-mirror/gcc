@@ -1133,8 +1133,7 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
   /* Now process the altered blocks, as long as any are available.  */
   while (!bitmap_empty_p (cfgcleanup_altered_bbs))
     {
-      unsigned i = bitmap_first_set_bit (cfgcleanup_altered_bbs);
-      bitmap_clear_bit (cfgcleanup_altered_bbs, i);
+      unsigned i = bitmap_clear_first_set_bit (cfgcleanup_altered_bbs);
       if (i < NUM_FIXED_BLOCKS)
 	continue;
 
