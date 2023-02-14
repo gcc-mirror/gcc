@@ -292,8 +292,7 @@
        (match_operand 0 "vector_all_trues_mask_operand")))
 
 (define_predicate "vector_undef_operand"
-  (match_test "GET_CODE (op) == UNSPEC
-		    && (XINT (op, 1) == UNSPEC_VUNDEF)"))
+  (match_test "rtx_equal_p (op, RVV_VUNDEF (GET_MODE (op)))"))
 
 (define_predicate "vector_merge_operand"
   (ior (match_operand 0 "register_operand")

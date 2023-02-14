@@ -67,9 +67,7 @@ public:
   }
   void add_vundef_operand (machine_mode mode)
   {
-    add_input_operand (gen_rtx_UNSPEC (mode, gen_rtvec (1, const0_rtx),
-				       UNSPEC_VUNDEF),
-		       mode);
+    add_input_operand (RVV_VUNDEF (mode), mode);
   }
   void add_policy_operand (enum tail_policy vta, enum mask_policy vma)
   {

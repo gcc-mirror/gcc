@@ -539,6 +539,132 @@ public:
   }
 };
 
+/* Enumerates types of ternary operations.
+   We have 2 types ternop:
+     - 1. accumulator is vd:
+        vmacc.vv vd,vs1,vs2 # vd = vs1 * vs2 + vd.
+     - 2. accumulator is vs2:
+        vmadd.vv vd,vs1,vs2 # vd = vs1 * vd + vs2.  */
+enum ternop_type
+{
+  TERNOP_VMACC,
+  TERNOP_VNMSAC,
+  TERNOP_VMADD,
+  TERNOP_VNMSUB,
+};
+
+/* Implements vmacc/vnmsac/vmadd/vnmsub.  */
+template<ternop_type TERNOP_TYPE>
+class imac : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    switch (TERNOP_TYPE)
+      {
+      case TERNOP_VMACC:
+	if (e.op_info->op == OP_TYPE_vx)
+	  return e.use_ternop_insn (
+	    true, code_for_pred_mul_scalar (PLUS, e.vector_mode ()));
+	if (e.op_info->op == OP_TYPE_vv)
+	  return e.use_ternop_insn (true,
+				    code_for_pred_mul (PLUS, e.vector_mode ()));
+	break;
+      case TERNOP_VNMSAC:
+	if (e.op_info->op == OP_TYPE_vx)
+	  return e.use_ternop_insn (
+	    true, code_for_pred_mul_scalar (MINUS, e.vector_mode ()));
+	if (e.op_info->op == OP_TYPE_vv)
+	  return e.use_ternop_insn (true, code_for_pred_mul (MINUS,
+							     e.vector_mode ()));
+	break;
+      case TERNOP_VMADD:
+	if (e.op_info->op == OP_TYPE_vx)
+	  return e.use_ternop_insn (
+	    false, code_for_pred_mul_scalar (PLUS, e.vector_mode ()));
+	if (e.op_info->op == OP_TYPE_vv)
+	  return e.use_ternop_insn (false,
+				    code_for_pred_mul (PLUS, e.vector_mode ()));
+	break;
+      case TERNOP_VNMSUB:
+	if (e.op_info->op == OP_TYPE_vx)
+	  return e.use_ternop_insn (
+	    false, code_for_pred_mul_scalar (MINUS, e.vector_mode ()));
+	if (e.op_info->op == OP_TYPE_vv)
+	  return e.use_ternop_insn (false,
+				    code_for_pred_mul (MINUS,
+						       e.vector_mode ()));
+	break;
+      default:
+	break;
+      }
+    gcc_unreachable ();
+  }
+};
+
+/* Enumerates types of widen ternary operations.
+   We have 4 types ternop:
+     - 1. vwmacc.
+     - 2. vwmaccu.
+     - 3. vwmaccsu.
+     - 4. vwmaccus.  */
+enum widen_ternop_type
+{
+  WIDEN_TERNOP_VWMACC,
+  WIDEN_TERNOP_VWMACCU,
+  WIDEN_TERNOP_VWMACCSU,
+  WIDEN_TERNOP_VWMACCUS,
+};
+
+/* Implements vwmacc<su><su>.  */
+template<widen_ternop_type WIDEN_TERNOP_TYPE>
+class iwmac : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    switch (WIDEN_TERNOP_TYPE)
+      {
+      case WIDEN_TERNOP_VWMACC:
+	if (e.op_info->op == OP_TYPE_vx)
+	  return e.use_widen_ternop_insn (
+	    code_for_pred_widen_mul_plus_scalar (SIGN_EXTEND,
+						 e.vector_mode ()));
+	if (e.op_info->op == OP_TYPE_vv)
+	  return e.use_widen_ternop_insn (
+	    code_for_pred_widen_mul_plus (SIGN_EXTEND, e.vector_mode ()));
+	break;
+      case WIDEN_TERNOP_VWMACCU:
+	if (e.op_info->op == OP_TYPE_vx)
+	  return e.use_widen_ternop_insn (
+	    code_for_pred_widen_mul_plus_scalar (ZERO_EXTEND,
+						 e.vector_mode ()));
+	if (e.op_info->op == OP_TYPE_vv)
+	  return e.use_widen_ternop_insn (
+	    code_for_pred_widen_mul_plus (ZERO_EXTEND, e.vector_mode ()));
+	break;
+      case WIDEN_TERNOP_VWMACCSU:
+	if (e.op_info->op == OP_TYPE_vx)
+	  return e.use_widen_ternop_insn (
+	    code_for_pred_widen_mul_plussu_scalar (e.vector_mode ()));
+	if (e.op_info->op == OP_TYPE_vv)
+	  return e.use_widen_ternop_insn (
+	    code_for_pred_widen_mul_plussu (e.vector_mode ()));
+	break;
+      case WIDEN_TERNOP_VWMACCUS:
+	return e.use_widen_ternop_insn (
+	  code_for_pred_widen_mul_plusus_scalar (e.vector_mode ()));
+      default:
+	break;
+      }
+    gcc_unreachable ();
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -616,6 +742,14 @@ static CONSTEXPR const icmp<LTU> vmsltu_obj;
 static CONSTEXPR const icmp<GTU> vmsgtu_obj;
 static CONSTEXPR const icmp<LEU> vmsleu_obj;
 static CONSTEXPR const icmp<GEU> vmsgeu_obj;
+static CONSTEXPR const imac<TERNOP_VMACC> vmacc_obj;
+static CONSTEXPR const imac<TERNOP_VNMSAC> vnmsac_obj;
+static CONSTEXPR const imac<TERNOP_VMADD> vmadd_obj;
+static CONSTEXPR const imac<TERNOP_VNMSUB> vnmsub_obj;
+static CONSTEXPR const iwmac<WIDEN_TERNOP_VWMACC> vwmacc_obj;
+static CONSTEXPR const iwmac<WIDEN_TERNOP_VWMACCU> vwmaccu_obj;
+static CONSTEXPR const iwmac<WIDEN_TERNOP_VWMACCSU> vwmaccsu_obj;
+static CONSTEXPR const iwmac<WIDEN_TERNOP_VWMACCUS> vwmaccus_obj;
 static CONSTEXPR const binop<SS_PLUS> vsadd_obj;
 static CONSTEXPR const binop<SS_MINUS> vssub_obj;
 static CONSTEXPR const binop<US_PLUS> vsaddu_obj;
@@ -712,6 +846,14 @@ BASE (vmsltu)
 BASE (vmsgtu)
 BASE (vmsleu)
 BASE (vmsgeu)
+BASE (vmacc)
+BASE (vnmsac)
+BASE (vmadd)
+BASE (vnmsub)
+BASE (vwmacc)
+BASE (vwmaccu)
+BASE (vwmaccsu)
+BASE (vwmaccus)
 BASE (vsadd)
 BASE (vssub)
 BASE (vsaddu)

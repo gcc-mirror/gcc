@@ -314,6 +314,18 @@ static CONSTEXPR const rvv_arg_type_info vv_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_vector),
      rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (vector_type, vector_type, vector_type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info vvv_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, vector_type, vector_type)
+ * function.  */
+static CONSTEXPR const rvv_arg_type_info vxv_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
+
 /* A list of args for vector_type func (vector_type, vector_type, mask_type)
  * function.  */
 static CONSTEXPR const rvv_arg_type_info vvm_args[]
@@ -377,6 +389,44 @@ static CONSTEXPR const rvv_arg_type_info vf2_args[]
 static CONSTEXPR const rvv_arg_type_info wvv_args[]
   = {rvv_arg_type_info (RVV_BASE_double_trunc_vector),
      rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, double demote type, double
+ * demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info wwvv_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, double demote type, double
+ * demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info wwxv_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_scalar),
+     rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, double demote type, double
+ * demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info su_wwvv_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, double demote type, double
+ * demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info su_wwxv_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_scalar),
+     rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, double demote type, double
+ * demote type) function.  */
+static CONSTEXPR const rvv_arg_type_info us_wwxv_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_scalar),
+     rvv_arg_type_info (RVV_BASE_double_trunc_vector),
+     rvv_arg_type_info_end};
 
 /* A list of args for vector_type func (signed double demote type,
  * unsigneddouble demote type) function.  */
@@ -576,6 +626,22 @@ static CONSTEXPR const rvv_op_info iu_vvv_ops
      OP_TYPE_vv,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, vector_type,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info iu_vvvv_ops
+  = {iu_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vvv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, scalar_type,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info iu_vvxv_ops
+  = {iu_ops,				  /* Types */
+     OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vxv_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type, vector_type,
  * mask_type) function registration. */
@@ -881,6 +947,62 @@ static CONSTEXPR const rvv_op_info i_wvv_ops
      OP_TYPE_vv,			  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      wvv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info i_wwvv_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwvv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * scalar_type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info i_wwxv_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwxv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info u_wwvv_ops
+  = {wextu_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwvv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * scalar_type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info u_wwxv_ops
+  = {wextu_ops,				  /* Types */
+     OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwxv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info i_su_wwvv_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     su_wwvv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * scalar_type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info i_su_wwxv_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     su_wwxv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * scalar_type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info i_us_wwxv_ops
+  = {wexti_ops,				  /* Types */
+     OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     us_wwxv_args /* Args */};
 
 /* A static operand information for vector_type func (signed double demote type,
  * unsigned double demote type) function registration. */
@@ -1617,9 +1739,10 @@ function_builder::apply_predication (const function_instance &instance,
 				     vec<tree> &argument_types) const
 {
   /* These predication types need to apply merge type.  */
-  if (instance.pred == PRED_TYPE_tu || instance.pred == PRED_TYPE_tum
-      || instance.pred == PRED_TYPE_tumu || instance.pred == PRED_TYPE_mu)
-    argument_types.quick_insert (0, return_type);
+  if (instance.base->has_merge_operand_p ())
+    if (instance.pred == PRED_TYPE_tu || instance.pred == PRED_TYPE_tum
+	|| instance.pred == PRED_TYPE_tumu || instance.pred == PRED_TYPE_mu)
+      argument_types.quick_insert (0, return_type);
 
   /* These predication types need to apply mask type.  */
   tree mask_type = builtin_types[mask_types[instance.type.index]].vector;
@@ -1816,8 +1939,7 @@ function_expander::add_input_operand (unsigned argno)
 void
 function_expander::add_vundef_operand (machine_mode mode)
 {
-  rtx vundef = gen_rtx_UNSPEC (mode, gen_rtvec (1, const0_rtx), UNSPEC_VUNDEF);
-  add_input_operand (mode, vundef);
+  add_input_operand (mode, RVV_VUNDEF (mode));
 }
 
 /* Add a memory operand with mode MODE and address ADDR.  */
@@ -1977,6 +2099,117 @@ function_expander::use_compare_insn (rtx_code rcode, insn_code icode)
   add_input_operand (Pmode, get_mask_policy_for_pred (pred));
   add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
   return generate_insn (icode);
+}
+
+/* Implement the call using instruction ICODE, with a 1:1 mapping between
+   arguments and input operands.  */
+rtx
+function_expander::use_ternop_insn (bool vd_accum_p, insn_code icode)
+{
+  machine_mode mode = TYPE_MODE (builtin_types[type.index].vector);
+  tree mask_type = builtin_types[mask_types[type.index]].vector;
+  machine_mode mask_mode = TYPE_MODE (mask_type);
+
+  /* Record the offset to get the argument.  */
+  int arg_offset = 0;
+
+  if (use_real_mask_p (pred))
+    add_input_operand (arg_offset++);
+  else
+    add_all_one_mask_operand (mask_mode);
+
+  rtx vd = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
+  rtx vs1 = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
+  rtx vs2 = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
+  rtx merge = use_real_merge_p (pred) ? vd : RVV_VUNDEF (mode);
+
+  if (VECTOR_MODE_P (GET_MODE (vs1)))
+    {
+      if (!vd_accum_p)
+	add_input_operand (mode, vd);
+      add_input_operand (mode, vs1);
+      add_input_operand (mode, vs2);
+      if (vd_accum_p)
+	add_input_operand (mode, vd);
+      add_input_operand (mode, merge);
+    }
+  else
+    {
+      add_input_operand (GET_MODE_INNER (mode), vs1);
+      if (vd_accum_p)
+	{
+	  add_input_operand (mode, vs2);
+	  add_input_operand (mode, vd);
+	}
+      else
+	{
+	  add_input_operand (mode, vd);
+	  add_input_operand (mode, vs2);
+	}
+      add_input_operand (mode, merge);
+    }
+
+  for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
+    add_input_operand (argno);
+
+  add_input_operand (Pmode, get_tail_policy_for_pred (pred));
+  add_input_operand (Pmode, get_mask_policy_for_pred (pred));
+  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+
+  /* See optabs.cc, the maximum nops is 9 for using 'maybe_gen_insn'.
+     We temporarily use GCN directly. We will change it back it we
+     can support nops >= 10.  */
+  gcc_assert (maybe_legitimize_operands (icode, 0, opno, m_ops));
+  rtx_insn *pat = GEN_FCN (
+    icode) (m_ops[0].value, m_ops[1].value, m_ops[2].value, m_ops[3].value,
+	    m_ops[4].value, m_ops[5].value, m_ops[6].value, m_ops[7].value,
+	    m_ops[8].value, m_ops[9].value);
+  emit_insn (pat);
+  return m_ops[0].value;
+}
+
+/* Implement the call using instruction ICODE, with a 1:1 mapping between
+   arguments and input operands.  */
+rtx
+function_expander::use_widen_ternop_insn (insn_code icode)
+{
+  machine_mode mode = TYPE_MODE (builtin_types[type.index].vector);
+  tree mask_type = builtin_types[mask_types[type.index]].vector;
+  machine_mode mask_mode = TYPE_MODE (mask_type);
+
+  /* Record the offset to get the argument.  */
+  int arg_offset = 0;
+
+  if (use_real_mask_p (pred))
+    add_input_operand (arg_offset++);
+  else
+    add_all_one_mask_operand (mask_mode);
+
+  rtx merge = RVV_VUNDEF (mode);
+  if (use_real_merge_p (pred))
+    merge = expand_normal (CALL_EXPR_ARG (exp, arg_offset));
+
+  for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
+    {
+      if (argno == call_expr_nargs (exp) - 1)
+	add_input_operand (mode, merge);
+      add_input_operand (argno);
+    }
+
+  add_input_operand (Pmode, get_tail_policy_for_pred (pred));
+  add_input_operand (Pmode, get_mask_policy_for_pred (pred));
+  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+
+  /* See optabs.cc, the maximum nops is 9 for using 'maybe_gen_insn'.
+     We temporarily use GCN directly. We will change it back it we
+     can support nops >= 10.  */
+  gcc_assert (maybe_legitimize_operands (icode, 0, opno, m_ops));
+  rtx_insn *pat = GEN_FCN (
+    icode) (m_ops[0].value, m_ops[1].value, m_ops[2].value, m_ops[3].value,
+	    m_ops[4].value, m_ops[5].value, m_ops[6].value, m_ops[7].value,
+	    m_ops[8].value, m_ops[9].value);
+  emit_insn (pat);
+  return m_ops[0].value;
 }
 
 /* Generate instruction ICODE, given that its operands have already

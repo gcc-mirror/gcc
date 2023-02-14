@@ -121,6 +121,8 @@ extern void riscv_run_selftests (void);
 
 namespace riscv_vector {
 #define RVV_VLMAX gen_rtx_REG (Pmode, X0_REGNUM)
+#define RVV_VUNDEF(MODE)                                                       \
+  gen_rtx_UNSPEC (MODE, gen_rtvec (1, const0_rtx), UNSPEC_VUNDEF)
 enum vlmul_type
 {
   LMUL_1 = 0,
