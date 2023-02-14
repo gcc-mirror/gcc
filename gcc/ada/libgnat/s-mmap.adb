@@ -75,7 +75,7 @@ package body System.Mmap is
       --  Whether this region is actually memory mapped
 
       Mutable       : Boolean;
-      --  If the file is opened for reading, wheter this region is writable
+      --  If the file is opened for reading, whether this region is writable
 
       Buffer        : System.Strings.String_Access;
       --  When this region is not actually memory mapped, contains the
