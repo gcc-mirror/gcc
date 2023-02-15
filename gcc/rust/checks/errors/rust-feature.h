@@ -41,6 +41,7 @@ public:
     INTRINSICS,
     RUSTC_ATTRS,
     DECL_MACRO,
+    AUTO_TRAITS,
   };
 
   const std::string &as_string () { return m_name_str; }

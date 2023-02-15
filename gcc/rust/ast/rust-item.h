@@ -3399,6 +3399,7 @@ protected:
 class Trait : public VisItem
 {
   bool has_unsafe;
+  bool has_auto;
   Identifier name;
   std::vector<std::unique_ptr<GenericParam>> generic_params;
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
@@ -3428,9 +3429,10 @@ public:
   Identifier get_identifier () const { return name; }
 
   bool is_unsafe () const { return has_unsafe; }
+  bool is_auto () const { return has_auto; }
 
   // Mega-constructor
-  Trait (Identifier name, bool is_unsafe,
+  Trait (Identifier name, bool is_unsafe, bool is_auto,
 	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 	 WhereClause where_clause,
@@ -3438,7 +3440,7 @@ public:
 	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs,
 	 Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
-      has_unsafe (is_unsafe), name (std::move (name)),
+      has_unsafe (is_unsafe), has_auto (is_auto), name (std::move (name)),
       generic_params (std::move (generic_params)),
       type_param_bounds (std::move (type_param_bounds)),
       where_clause (std::move (where_clause)),
@@ -3448,9 +3450,9 @@ public:
 
   // Copy constructor with vector clone
   Trait (Trait const &other)
-    : VisItem (other), has_unsafe (other.has_unsafe), name (other.name),
-      where_clause (other.where_clause), inner_attrs (other.inner_attrs),
-      locus (other.locus)
+    : VisItem (other), has_unsafe (other.has_unsafe), has_auto (other.has_auto),
+      name (other.name), where_clause (other.where_clause),
+      inner_attrs (other.inner_attrs), locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -3471,6 +3473,7 @@ public:
     VisItem::operator= (other);
     name = other.name;
     has_unsafe = other.has_unsafe;
+    has_auto = other.has_auto;
     where_clause = other.where_clause;
     inner_attrs = other.inner_attrs;
     locus = other.locus;

@@ -240,23 +240,13 @@ Lexer::replace_current_token (TokenPtr replacement)
  * created with x-macros. */
 namespace {
 // TODO: make constexpr when update to c++20
-const std::string keyword_index[] = {
+const std::map<std::string, TokenId> keywords = {
 #define RS_TOKEN(x, y)
-#define RS_TOKEN_KEYWORD(name, keyword) keyword,
+#define RS_TOKEN_KEYWORD(tok, key) {key, tok},
   RS_TOKEN_LIST
 #undef RS_TOKEN_KEYWORD
 #undef RS_TOKEN
 };
-
-constexpr TokenId keyword_keys[] = {
-#define RS_TOKEN(x, y)
-#define RS_TOKEN_KEYWORD(name, keyword) name,
-  RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
-#undef RS_TOKEN
-};
-
-constexpr int num_keywords = sizeof (keyword_index) / sizeof (*keyword_index);
 } // namespace
 
 /* Determines whether the string passed in is a keyword or not. If it is, it
@@ -264,13 +254,11 @@ constexpr int num_keywords = sizeof (keyword_index) / sizeof (*keyword_index);
 TokenId
 Lexer::classify_keyword (const std::string &str)
 {
-  const std::string *last = keyword_index + num_keywords;
-  const std::string *idx = std::lower_bound (keyword_index, last, str);
+  auto keyword = keywords.find (str);
+  auto id = keyword->second;
 
-  if (idx == last || str != *idx)
+  if (keyword == keywords.end ())
     return IDENTIFIER;
-
-  // TODO: possibly replace this x-macro system with something like hash map?
 
   // We now have the expected token ID of the reserved keyword. However, some
   // keywords are reserved starting in certain editions. For example, `try` is
@@ -278,7 +266,6 @@ Lexer::classify_keyword (const std::string &str)
   // reserved keywords in the future.
   //
   // https://doc.rust-lang.org/reference/keywords.html#reserved-keywords
-  auto id = keyword_keys[idx - keyword_index];
 
   // `try` is not a reserved keyword before 2018
   if (Session::get_instance ().options.get_edition ()

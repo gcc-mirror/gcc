@@ -53,7 +53,10 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"intrinsics", Feature::Name::INTRINSICS},
   {"rustc_attrs", Feature::Name::RUSTC_ATTRS},
   {"decl_macro", Feature::Name::DECL_MACRO},
-};
+  // TODO: Rename to "auto_traits" when supporting
+  // later Rust versions
+  {"optin_builtin_traits", Feature::Name::AUTO_TRAITS},
+}; // namespace Rust
 
 Optional<Feature::Name>
 Feature::as_name (const std::string &name)

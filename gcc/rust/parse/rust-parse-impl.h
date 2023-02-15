@@ -1057,6 +1057,7 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
     case ENUM_TOK:
     case CONST:
     case STATIC_TOK:
+    case AUTO:
     case TRAIT:
     case IMPL:
     case MACRO:
@@ -1304,6 +1305,7 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	}
     case STATIC_TOK:
       return parse_static_item (std::move (vis), std::move (outer_attrs));
+    case AUTO:
     case TRAIT:
       return parse_trait (std::move (vis), std::move (outer_attrs));
     case IMPL:
@@ -1314,6 +1316,7 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 
       switch (t->get_id ())
 	{
+	case AUTO:
 	case TRAIT:
 	  return parse_trait (std::move (vis), std::move (outer_attrs));
 	case EXTERN_TOK:
@@ -2034,6 +2037,7 @@ Parser<ManagedTokenSource>::parse_macro_match ()
 	  case STATIC_TOK:
 	  case STRUCT_TOK:
 	  case SUPER:
+	  case AUTO:
 	  case TRAIT:
 	  case TRUE_LITERAL:
 	  case TRY:
@@ -4753,9 +4757,17 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
 {
   Location locus = lexer.peek_token ()->get_locus ();
   bool is_unsafe = false;
+  bool is_auto_trait = false;
+
   if (lexer.peek_token ()->get_id () == UNSAFE)
     {
       is_unsafe = true;
+      lexer.skip_token ();
+    }
+
+  if (lexer.peek_token ()->get_id () == AUTO)
+    {
+      is_auto_trait = true;
       lexer.skip_token ();
     }
 
@@ -4824,12 +4836,25 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
       return nullptr;
     }
 
+  if (is_auto_trait && !trait_items.empty ())
+    {
+      add_error (
+	Error (locus, "associated items are forbidden within auto traits"));
+
+      // FIXME: unsure if this should be done at parsing time or not
+      for (const auto &item : trait_items)
+	add_error (Error::Hint (item->get_locus (), "remove this item"));
+
+      return nullptr;
+    }
+
   trait_items.shrink_to_fit ();
   return std::unique_ptr<AST::Trait> (
-    new AST::Trait (std::move (ident), is_unsafe, std::move (generic_params),
-		    std::move (type_param_bounds), std::move (where_clause),
-		    std::move (trait_items), std::move (vis),
-		    std::move (outer_attrs), std::move (inner_attrs), locus));
+    new AST::Trait (std::move (ident), is_unsafe, is_auto_trait,
+		    std::move (generic_params), std::move (type_param_bounds),
+		    std::move (where_clause), std::move (trait_items),
+		    std::move (vis), std::move (outer_attrs),
+		    std::move (inner_attrs), locus));
 }
 
 // Parses a trait item used inside traits (not trait, the Item).
@@ -6120,6 +6145,7 @@ Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
     case ENUM_TOK:
     case CONST:
     case STATIC_TOK:
+    case AUTO:
     case TRAIT:
     case IMPL:
     case MACRO:
@@ -11769,6 +11795,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
     case ENUM_TOK:
     case CONST:
     case STATIC_TOK:
+    case AUTO:
     case TRAIT:
       case IMPL: {
 	std::unique_ptr<AST::VisItem> item (
@@ -11790,6 +11817,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	      // unsafe block
 	      return parse_stmt_or_expr_with_block (std::move (outer_attrs));
 	    }
+	  case AUTO:
 	    case TRAIT: {
 	      // unsafe trait
 	      std::unique_ptr<AST::VisItem> item (
