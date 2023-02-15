@@ -193,7 +193,7 @@ Session::handle_option (
 	  else
 	    {
 	      rust_assert (!error.message.empty ());
-	      error.emit_error ();
+	      error.emit ();
 	    }
 	}
       else
@@ -391,7 +391,7 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
       if (!validate_crate_name (msg_str, error))
 	{
 	  error.locus = attr.get_locus ();
-	  error.emit_error ();
+	  error.emit ();
 	  continue;
 	}
 
@@ -412,7 +412,7 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
   if (!options.crate_name_set_manually
       && !validate_crate_name (options.crate_name, error))
     {
-      error.emit_error ();
+      error.emit ();
       rust_inform (linemap->get_location (0),
 		   "crate name inferred from this file");
     }

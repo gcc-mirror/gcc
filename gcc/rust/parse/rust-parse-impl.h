@@ -444,7 +444,7 @@ Parser<ManagedTokenSource>::parse_crate ()
 
   // emit all errors
   for (const auto &error : error_table)
-    error.emit_error ();
+    error.emit ();
 
   return std::unique_ptr<AST::Crate> (
     new AST::Crate (std::move (items), std::move (inner_attrs)));

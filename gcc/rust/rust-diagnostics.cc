@@ -231,14 +231,49 @@ rust_debug_loc (const Location location, const char *fmt, ...)
 }
 
 namespace Rust {
-Error::Error (const Location location, const char *fmt, ...) : locus (location)
+
+/**
+ * This function takes ownership of `args` and calls `va_end` on it
+ */
+static Error
+va_constructor (Error::Kind kind, Location locus, const char *fmt, va_list args)
+  RUST_ATTRIBUTE_GCC_DIAG (3, 0);
+
+static Error
+va_constructor (Error::Kind kind, Location locus, const char *fmt, va_list args)
+{
+  std::string message = expand_message (fmt, args);
+  message.shrink_to_fit ();
+  va_end (args);
+
+  return Error (kind, locus, message);
+}
+
+Error::Error (const Location location, const char *fmt, ...)
+  : kind (Kind::Err), locus (location)
 {
   va_list ap;
-
   va_start (ap, fmt);
-  message = expand_message (fmt, ap);
-  va_end (ap);
 
-  message.shrink_to_fit ();
+  *this = va_constructor (Kind::Err, location, fmt, ap);
 }
+
+Error
+Error::Hint (const Location location, const char *fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  return va_constructor (Kind::Hint, location, fmt, ap);
+}
+
+Error
+Error::Fatal (const Location location, const char *fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  return va_constructor (Kind::FatalErr, location, fmt, ap);
+}
+
 } // namespace Rust

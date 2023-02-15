@@ -4084,7 +4084,7 @@ Module::load_items ()
   inner_attrs = parser.parse_inner_attributes ();
   auto parsed_items = parser.parse_items ();
   for (const auto &error : parser.get_errors ())
-    error.emit_error ();
+    error.emit ();
 
   items = std::move (parsed_items);
   kind = ModuleKind::LOADED;
