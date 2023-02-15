@@ -110,8 +110,18 @@ namespace arm_mve {
     UNSPEC##_M_S, UNSPEC##_M_U, UNSPEC##_M_F,				\
     UNSPEC##_M_N_S, UNSPEC##_M_N_U, -1))
 
+  /* Helper for builtins without RTX codes, no _m predicated and no _n
+     overrides.  */
+#define FUNCTION_WITHOUT_M_N(NAME, UNSPEC) FUNCTION			\
+  (NAME, unspec_mve_function_exact_insn,				\
+   (UNSPEC##_S, UNSPEC##_U, UNSPEC##_F,					\
+    -1, -1, -1,								\
+    -1, -1, -1,								\
+    -1, -1, -1))
+
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
 FUNCTION_WITH_RTX_M (vandq, AND, VANDQ)
+FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION_WITH_RTX_M_N (vmulq, MULT, VMULQ)
 FUNCTION_WITH_RTX_M_N_NO_N_F (vorrq, IOR, VORRQ)
