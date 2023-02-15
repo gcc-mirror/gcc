@@ -31,6 +31,7 @@ GCC gdbinit file introduces several debugging shorthands:
     pdd [dw_die_ref],
     pbm [bitmap],
     pel [location_t],
+    phrs [HARD_REG_SET]
     pp, pbs, pcfun
 
 They are generally implemented by calling a function that prints to stderr,
@@ -142,6 +143,17 @@ end
 document pge
 GCC hook: debug_generic_expr (tree)
 Print given GENERIC expression in C syntax.
+See also 'help-gcc-hooks'.
+end
+
+define phrs
+eval "set $debug_arg = $%s", $argc ? "arg0" : ""
+call debug_hard_reg_set ($debug_arg)
+end
+
+document phrs
+GCC hook: debug_hard_reg_set (HARD_REG_SET)
+Print given HARD_REG_SET.
 See also 'help-gcc-hooks'.
 end
 
