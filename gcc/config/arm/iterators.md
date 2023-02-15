@@ -339,6 +339,33 @@
 		     VSUBQ_M_S VSUBQ_M_U
 		     ])
 
+(define_int_iterator MVE_INT_SU_M_BINARY   [
+		     VABDQ_M_S VABDQ_M_U
+		     VHADDQ_M_S VHADDQ_M_U
+		     VHSUBQ_M_S VHSUBQ_M_U
+		     VMAXQ_M_S VMAXQ_M_U
+		     VMINQ_M_S VMINQ_M_U
+		     VMULHQ_M_S VMULHQ_M_U
+		     VQADDQ_M_S VQADDQ_M_U
+		     VQDMLADHQ_M_S
+		     VQDMLADHXQ_M_S
+		     VQDMLSDHQ_M_S
+		     VQDMLSDHXQ_M_S
+		     VQDMULHQ_M_S
+		     VQRDMLADHQ_M_S
+		     VQRDMLADHXQ_M_S
+		     VQRDMLSDHQ_M_S
+		     VQRDMLSDHXQ_M_S
+		     VQRDMULHQ_M_S
+		     VQRSHLQ_M_S VQRSHLQ_M_U
+		     VQSHLQ_M_S VQSHLQ_M_U
+		     VQSUBQ_M_S VQSUBQ_M_U
+		     VRHADDQ_M_S VRHADDQ_M_U
+		     VRMULHQ_M_S VRMULHQ_M_U
+		     VRSHLQ_M_S VRSHLQ_M_U
+		     VSHLQ_M_S VSHLQ_M_U
+		     ])
+
 (define_int_iterator MVE_INT_M_BINARY_LOGIC   [
 		     VANDQ_M_S VANDQ_M_U
 		     VBICQ_M_S VBICQ_M_U
@@ -404,6 +431,7 @@
 		 ])
 
 (define_int_attr mve_insn [
+		 (VABDQ_M_S "vabd") (VABDQ_M_U "vabd")
 		 (VADDQ_M_N_S "vadd") (VADDQ_M_N_U "vadd") (VADDQ_M_N_F "vadd")
 		 (VADDQ_M_S "vadd") (VADDQ_M_U "vadd") (VADDQ_M_F "vadd")
 		 (VADDQ_N_S "vadd") (VADDQ_N_U "vadd") (VADDQ_N_F "vadd")
@@ -413,12 +441,35 @@
 		 (VBICQ_N_S "vbic") (VBICQ_N_U "vbic")
 		 (VCREATEQ_S "vcreate") (VCREATEQ_U "vcreate") (VCREATEQ_F "vcreate")
 		 (VEORQ_M_S "veor") (VEORQ_M_U "veor") (VEORQ_M_F "veor")
+		 (VHADDQ_M_S "vhadd") (VHADDQ_M_U "vhadd")
+		 (VHSUBQ_M_S "vhsub") (VHSUBQ_M_U "vhsub")
+		 (VMAXQ_M_S "vmax") (VMAXQ_M_U "vmax")
+		 (VMINQ_M_S "vmin") (VMINQ_M_U "vmin")
+		 (VMULHQ_M_S "vmulh") (VMULHQ_M_U "vmulh")
 		 (VMULQ_M_N_S "vmul") (VMULQ_M_N_U "vmul") (VMULQ_M_N_F "vmul")
 		 (VMULQ_M_S "vmul") (VMULQ_M_U "vmul") (VMULQ_M_F "vmul")
 		 (VMULQ_N_S "vmul") (VMULQ_N_U "vmul") (VMULQ_N_F "vmul")
 		 (VORRQ_M_N_S "vorr") (VORRQ_M_N_U "vorr")
 		 (VORRQ_M_S "vorr") (VORRQ_M_U "vorr") (VORRQ_M_F "vorr")
 		 (VORRQ_N_S "vorr") (VORRQ_N_U "vorr")
+		 (VQADDQ_M_S "vqadd") (VQADDQ_M_U "vqadd")
+		 (VQDMLADHQ_M_S "vqdmladh")
+		 (VQDMLADHXQ_M_S "vqdmladhx")
+		 (VQDMLSDHQ_M_S "vqdmlsdh")
+		 (VQDMLSDHXQ_M_S "vqdmlsdhx")
+		 (VQDMULHQ_M_S "vqdmulh")
+		 (VQRDMLADHQ_M_S "vqrdmladh")
+		 (VQRDMLADHXQ_M_S "vqrdmladhx")
+		 (VQRDMLSDHQ_M_S "vqrdmlsdh")
+		 (VQRDMLSDHXQ_M_S "vqrdmlsdhx")
+		 (VQRDMULHQ_M_S "vqrdmulh")
+		 (VQRSHLQ_M_S "vqrshl") (VQRSHLQ_M_U "vqrshl")
+		 (VQSHLQ_M_S "vqshl") (VQSHLQ_M_U "vqshl")
+		 (VQSUBQ_M_S "vqsub") (VQSUBQ_M_U "vqsub")
+		 (VRHADDQ_M_S "vrhadd") (VRHADDQ_M_U "vrhadd")
+		 (VRMULHQ_M_S "vrmulh") (VRMULHQ_M_U "vrmulh")
+		 (VRSHLQ_M_S "vrshl") (VRSHLQ_M_U "vrshl")
+		 (VSHLQ_M_S "vshl") (VSHLQ_M_U "vshl")
 		 (VSUBQ_M_N_S "vsub") (VSUBQ_M_N_U "vsub") (VSUBQ_M_N_F "vsub")
 		 (VSUBQ_M_S "vsub") (VSUBQ_M_U "vsub") (VSUBQ_M_F "vsub")
 		 (VSUBQ_N_S "vsub") (VSUBQ_N_U "vsub") (VSUBQ_N_F "vsub")
@@ -1557,7 +1608,19 @@
 		       (VADCIQ_U "u") (VADCIQ_M_U "u") (VADCIQ_S "s")
 		       (VADCIQ_M_S "s") (SQRSHRL_64 "64") (SQRSHRL_48 "48")
 		       (UQRSHLL_64 "64") (UQRSHLL_48 "48") (VSHLCQ_M_S "s")
-		       (VSHLCQ_M_U "u")])
+		       (VSHLCQ_M_U "u")
+		       (VQDMLADHQ_M_S "s")
+		       (VQDMLADHXQ_M_S "s")
+		       (VQDMLSDHQ_M_S "s")
+		       (VQDMLSDHXQ_M_S "s")
+		       (VQDMULHQ_M_S "s")
+		       (VQRDMLADHQ_M_S "s")
+		       (VQRDMLADHXQ_M_S "s")
+		       (VQRDMLSDHQ_M_S "s")
+		       (VQRDMLSDHXQ_M_S "s")
+		       (VQRDMULHQ_M_S "s")
+		       ])
+
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])
 (define_code_attr return_str [(return "") (simple_return "simple_")])
