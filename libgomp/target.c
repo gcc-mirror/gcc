@@ -1480,8 +1480,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    gomp_mutex_unlock (&devicep->lock);
 		    gomp_fatal ("always pointer not mapped");
 		  }
-		if ((get_kind (short_mapkind, kinds, i - 1) & typemask)
-		    != GOMP_MAP_ALWAYS_POINTER)
+		if (i > 0
+		    && ((get_kind (short_mapkind, kinds, i - 1) & typemask)
+			!= GOMP_MAP_ALWAYS_POINTER))
 		  cur_node.tgt_offset = gomp_map_val (tgt, hostaddrs, i - 1);
 		if (cur_node.tgt_offset)
 		  cur_node.tgt_offset -= sizes[i];
@@ -4085,7 +4086,10 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 			 GOMP_MAP_VARS_ENTER_DATA);
 	  i += j - i - 1;
 	}
-      else if (i + 1 < mapnum && (kinds[i + 1] & 0xff) == GOMP_MAP_ATTACH)
+      else if (i + 1 < mapnum
+	       && ((kinds[i + 1] & 0xff) == GOMP_MAP_ATTACH
+		   || ((kinds[i + 1] & 0xff) == GOMP_MAP_ALWAYS_POINTER
+		       && (kinds[i] & 0xff) != GOMP_MAP_ALWAYS_POINTER)))
 	{
 	  /* An attach operation must be processed together with the mapped
 	     base-pointer list item.  */
