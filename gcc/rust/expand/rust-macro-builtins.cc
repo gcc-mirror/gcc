@@ -752,8 +752,19 @@ MacroBuiltin::include_handler (Location invoc_locus, AST::MacroInvocData &invoc)
       nodes.push_back (node);
     }
 
-  // FIXME: Do not return an empty token vector here
-  return AST::Fragment (nodes, nullptr);
+  // FIXME: This returns an empty vector of tokens and works fine, but is that
+  // the expected behavior? `include` macros are a bit harder to reason about
+  // since they include tokens. Furthermore, our lexer has no easy way to return
+  // a slice of tokens like the MacroInvocLexer. So it gets even harder to
+  // extrac tokens from here. For now, let's keep it that way and see if it
+  // eventually breaks, but I don't expect it to cause many issues since the
+  // list of tokens is only used when a macro invocation mixes eager
+  // macro invocations and already expanded tokens. Think
+  // `concat!(a!(), 15, b!())`. We need to be able to expand a!(), expand b!(),
+  // and then insert the `15` token in between. In the case of `include!()`, we
+  // only have one argument. So it's either going to be a macro invocation or a
+  // string literal.
+  return AST::Fragment (nodes, std::vector<std::unique_ptr<AST::Token>> ());
 }
 
 AST::Fragment
