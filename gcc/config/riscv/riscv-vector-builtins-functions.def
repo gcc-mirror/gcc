@@ -113,14 +113,14 @@ DEF_RVV_FUNCTION (vsext, alu, full_preds, i_vf4_ops)
 DEF_RVV_FUNCTION (vsext, alu, full_preds, i_vf8_ops)
 
 // 11.4. Vector Integer Add-with-Carry/Subtract-with-Borrow Instructions
-DEF_RVV_FUNCTION (vadc, no_mask_policy, tu_preds, iu_vvvm_ops)
-DEF_RVV_FUNCTION (vadc, no_mask_policy, tu_preds, iu_vvxm_ops)
+DEF_RVV_FUNCTION (vadc, no_mask_policy, none_tu_preds, iu_vvvm_ops)
+DEF_RVV_FUNCTION (vadc, no_mask_policy, none_tu_preds, iu_vvxm_ops)
 DEF_RVV_FUNCTION (vmadc, return_mask, none_preds, iu_mvvm_ops)
 DEF_RVV_FUNCTION (vmadc, return_mask, none_preds, iu_mvxm_ops)
 DEF_RVV_FUNCTION (vmadc, return_mask, none_preds, iu_mvv_ops)
 DEF_RVV_FUNCTION (vmadc, return_mask, none_preds, iu_mvx_ops)
-DEF_RVV_FUNCTION (vsbc, no_mask_policy, tu_preds, iu_vvvm_ops)
-DEF_RVV_FUNCTION (vsbc, no_mask_policy, tu_preds, iu_vvxm_ops)
+DEF_RVV_FUNCTION (vsbc, no_mask_policy, none_tu_preds, iu_vvvm_ops)
+DEF_RVV_FUNCTION (vsbc, no_mask_policy, none_tu_preds, iu_vvxm_ops)
 DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvvm_ops)
 DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvxm_ops)
 DEF_RVV_FUNCTION (vmsbc, return_mask, none_preds, iu_mvv_ops)
@@ -230,12 +230,12 @@ DEF_RVV_FUNCTION (vwmaccsu, alu, full_preds, i_su_wwxv_ops)
 DEF_RVV_FUNCTION (vwmaccus, alu, full_preds, i_us_wwxv_ops)
 
 // 11.15. Vector Integer Merge Instructions
-DEF_RVV_FUNCTION (vmerge, no_mask_policy, tu_preds, all_vvvm_ops)
-DEF_RVV_FUNCTION (vmerge, no_mask_policy, tu_preds, iu_vvxm_ops)
+DEF_RVV_FUNCTION (vmerge, no_mask_policy, none_tu_preds, all_vvvm_ops)
+DEF_RVV_FUNCTION (vmerge, no_mask_policy, none_tu_preds, iu_vvxm_ops)
 
 // 11.16 Vector Integer Move Instructions
-DEF_RVV_FUNCTION (vmv_v, move, tu_preds, all_v_ops)
-DEF_RVV_FUNCTION (vmv_v, move, tu_preds, iu_x_ops)
+DEF_RVV_FUNCTION (vmv_v, move, none_tu_preds, all_v_ops)
+DEF_RVV_FUNCTION (vmv_v, move, none_tu_preds, iu_x_ops)
 
 /* 12. Vector Fixed-Point Arithmetic Instructions. */
 

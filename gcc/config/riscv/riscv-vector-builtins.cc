@@ -481,7 +481,7 @@ static CONSTEXPR const predication_type_index full_preds[]
      PRED_TYPE_tumu, PRED_TYPE_mu, NUM_PRED_TYPES};
 
 /* vop/vop_tu will be registered.  */
-static CONSTEXPR const predication_type_index tu_preds[]
+static CONSTEXPR const predication_type_index none_tu_preds[]
   = {PRED_TYPE_none, PRED_TYPE_tu, NUM_PRED_TYPES};
 
 /* vop/vop_m will be registered.  */
