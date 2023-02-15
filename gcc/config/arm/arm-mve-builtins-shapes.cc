@@ -458,6 +458,28 @@ struct binary_orrq_def : public overloaded_base<0>
 };
 SHAPE (binary_orrq)
 
+/* <T0>xN_t vfoo[_t0](uint64_t, uint64_t)
+
+   where there are N arguments in total.
+   Example: vcreateq.
+   int16x8_t [__arm_]vcreateq_s16(uint64_t a, uint64_t b)  */
+struct create_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "v0,su64,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (0, 2);
+  }
+};
+SHAPE (create)
+
 /* <T0>[xN]_t vfoo_t0().
 
    Example: vuninitializedq.
