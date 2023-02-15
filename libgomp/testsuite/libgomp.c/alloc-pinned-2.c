@@ -54,6 +54,14 @@ get_pinned_mem ()
 }
 #endif
 
+static void
+verify0 (char *p, size_t s)
+{
+  for (size_t i = 0; i < s; ++i)
+    if (p[i] != 0)
+      abort ();
+}
+
 #include <omp.h>
 
 int
@@ -96,6 +104,8 @@ main ()
 
   if (get_pinned_mem () <= amount2)
     abort ();
+
+  verify0 (p, SIZE);
 
   return 0;
 }

@@ -61,6 +61,14 @@ set_pin_limit ()
 }
 #endif
 
+static void
+verify0 (char *p, size_t s)
+{
+  for (size_t i = 0; i < s; ++i)
+    if (p[i] != 0)
+      abort ();
+}
+
 #include <omp.h>
 
 int
@@ -111,6 +119,7 @@ main ()
   p = omp_calloc (1, SIZE, allocator2);
   if (!p)
     abort ();
+  verify0 (p, SIZE);
 
   // Should fail to realloc
   void *notpinned = omp_alloc (SIZE, omp_default_mem_alloc);
