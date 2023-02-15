@@ -1,5 +1,5 @@
 /* PR target/108774 */
-/* { dg-do compile  { target x86_64-*-* } } */
+/* { dg-do compile  { target lp64 } } */
 /* { dg-options "-Os -ftrapv -mcmodel=large" } */
 
 int i, j;

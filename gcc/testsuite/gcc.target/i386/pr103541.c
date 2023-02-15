@@ -1,5 +1,5 @@
 /* PR rtl-optimization/103541 */
-/* { dg-do compile  { target x86_64-*-* } } */
+/* { dg-do compile  { target { ! ia32 } } } */
 /* { dg-options "-O2" } */
 
 float a;

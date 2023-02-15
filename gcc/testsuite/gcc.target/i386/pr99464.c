@@ -1,7 +1,6 @@
 /* PR target/99464 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
-/* { dg-additional-options "-msse2" { target i?86-*-* } } */
+/* { dg-options "-O2 -msse2" } */
 
 #pragma GCC target("arch=cannonlake")
 

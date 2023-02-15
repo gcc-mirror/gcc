@@ -1,5 +1,5 @@
 /* { dg-options "-O2" } */
-/* { dg-do run { target { { *-*-linux* } && { ! ia32 } } } } */
+/* { dg-do run { target { *-*-linux* && { ! ia32 } } } } */
 
 struct S { unsigned a:1, b:1, c:1, d:1, e:14, f:14; };
 

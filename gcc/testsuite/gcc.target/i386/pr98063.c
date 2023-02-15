@@ -1,5 +1,5 @@
 /* PR target/98063 */
-/* { dg-do run { target { i?86-*-linux* x86_64-*-linux* } } } */
+/* { dg-do run { target *-*-linux* } } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fpic -mcmodel=large -fno-plt -save-temps" } */
