@@ -3255,7 +3255,8 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
     {
       if (TREE_CODE (TREE_OPERAND (load_rhs, 0)) == ADDR_EXPR)
 	mark_addressable (TREE_OPERAND (TREE_OPERAND (load_rhs, 0), 0));
-      tree tem = make_ssa_name (TREE_TYPE (TREE_OPERAND (load_rhs, 0)));
+      tree ptrtype = build_pointer_type (TREE_TYPE (load_rhs));
+      tree tem = make_ssa_name (ptrtype);
       gimple *new_stmt
 	= gimple_build_assign (tem, build1 (ADDR_EXPR, TREE_TYPE (tem),
 					    unshare_expr (load_rhs)));
