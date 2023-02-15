@@ -2494,8 +2494,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  init = convert_lvalue_to_rvalue (init_loc, init, true, true,
 						   true);
 		  tree init_type = TREE_TYPE (init.value);
-		  bool vm_type = variably_modified_type_p (init_type,
-							   NULL_TREE);
+		  bool vm_type = c_type_variably_modified_p (init_type);
 		  if (vm_type)
 		    init.value = save_expr (init.value);
 		  finish_init ();
@@ -4143,7 +4142,7 @@ c_parser_typeof_specifier (c_parser *parser)
       if (type != NULL)
 	{
 	  ret.spec = groktypename (type, &ret.expr, &ret.expr_const_operands);
-	  pop_maybe_used (variably_modified_type_p (ret.spec, NULL_TREE));
+	  pop_maybe_used (c_type_variably_modified_p (ret.spec));
 	}
     }
   else
@@ -4158,7 +4157,7 @@ c_parser_typeof_specifier (c_parser *parser)
 	error_at (here, "%<typeof%> applied to a bit-field");
       mark_exp_read (expr.value);
       ret.spec = TREE_TYPE (expr.value);
-      was_vm = variably_modified_type_p (ret.spec, NULL_TREE);
+      was_vm = c_type_variably_modified_p (ret.spec);
       /* This is returned with the type so that when the type is
 	 evaluated, this can be evaluated.  */
       if (was_vm)
@@ -9058,7 +9057,7 @@ c_parser_has_attribute_expression (c_parser *parser)
       if (tname)
 	{
 	  oper = groktypename (tname, NULL, NULL);
-	  pop_maybe_used (variably_modified_type_p (oper, NULL_TREE));
+	  pop_maybe_used (c_type_variably_modified_p (oper));
 	}
     }
   else
@@ -9071,7 +9070,7 @@ c_parser_has_attribute_expression (c_parser *parser)
 	  mark_exp_read (cexpr.value);
 	  oper = cexpr.value;
 	  tree etype = TREE_TYPE (oper);
-	  bool was_vm = variably_modified_type_p (etype, NULL_TREE);
+	  bool was_vm = c_type_variably_modified_p (etype);
 	  /* This is returned with the type so that when the type is
 	     evaluated, this can be evaluated.  */
 	  if (was_vm)
@@ -9320,7 +9319,7 @@ c_parser_generic_selection (c_parser *parser)
 	    error_at (assoc.type_location,
 		      "%<_Generic%> association has incomplete type");
 
-	  if (variably_modified_type_p (assoc.type, NULL_TREE))
+	  if (c_type_variably_modified_p (assoc.type))
 	    error_at (assoc.type_location,
 		      "%<_Generic%> association has "
 		      "variable length type");

@@ -371,12 +371,12 @@ c_types_compatible_p (tree x, tree y)
   return comptypes (TYPE_MAIN_VARIANT (x), TYPE_MAIN_VARIANT (y));
 }
 
-/* Determine if the type is a vla type for the backend.  */
+/* Determine if the type is a variably modified type for the backend.  */
 
 bool
-c_vla_unspec_p (tree x, tree fn ATTRIBUTE_UNUSED)
+c_var_mod_p (tree x, tree fn ATTRIBUTE_UNUSED)
 {
-  return c_vla_type_p (x);
+  return C_TYPE_VARIABLY_MODIFIED (x);
 }
 
 /* Special routine to get the alias set of T for C.  */

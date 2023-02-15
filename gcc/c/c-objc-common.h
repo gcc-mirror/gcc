@@ -123,5 +123,5 @@ along with GCC; see the file COPYING3.  If not see
 #define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP c_omp_clause_copy_ctor
 
 #undef LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P
-#define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P c_vla_unspec_p
+#define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P c_var_mod_p
 #endif /* GCC_C_OBJC_COMMON */

@@ -683,7 +683,7 @@ decl_jump_unsafe (tree decl)
 
   /* Always warn about crossing variably modified types.  */
   if ((VAR_P (decl) || TREE_CODE (decl) == TYPE_DECL)
-      && variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+      && c_type_variably_modified_p (TREE_TYPE (decl)))
     return true;
 
   /* Otherwise, only warn if -Wgoto-misses-init and this is an
@@ -2247,7 +2247,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  || warning_suppressed_p (olddecl, OPT_Wpedantic))
 	return true;  /* Allow OLDDECL to continue in use.  */
 
-      if (variably_modified_type_p (newtype, NULL))
+      if (c_type_variably_modified_p (newtype))
 	{
 	  error ("redefinition of typedef %q+D with variably modified type",
 		 newdecl);
@@ -3975,7 +3975,7 @@ static void
 warn_about_goto (location_t goto_loc, tree label, tree decl)
 {
   auto_diagnostic_group d;
-  if (variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+  if (c_type_variably_modified_p (TREE_TYPE (decl)))
     error_at (goto_loc,
 	      "jump into scope of identifier with variably modified type");
   else
@@ -4249,7 +4249,7 @@ c_check_switch_jump_warnings (struct c_spot_bindings *switch_bindings,
 	    {
 	      auto_diagnostic_group d;
 	      bool emitted;
-	      if (variably_modified_type_p (TREE_TYPE (b->decl), NULL_TREE))
+	      if (c_type_variably_modified_p (TREE_TYPE (b->decl)))
 		{
 		  saw_error = true;
 		  error_at (case_loc,
@@ -5862,7 +5862,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
   if (TREE_CODE (decl) == TYPE_DECL)
     {
       if (!DECL_FILE_SCOPE_P (decl)
-	  && variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+	  && c_type_variably_modified_p (TREE_TYPE (decl)))
 	add_stmt (build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl));
 
       rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl), 0);
@@ -6682,7 +6682,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   if ((decl_context == NORMAL || decl_context == FIELD)
       && current_scope == file_scope
-      && variably_modified_type_p (type, NULL_TREE))
+      && c_type_variably_modified_p (type))
     {
       if (name)
 	error_at (loc, "variably modified %qE at file scope", name);
@@ -6927,6 +6927,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	  array_ptr_attrs = NULL_TREE;
 	  array_parm_static = false;
 	}
+
+      bool varmod = C_TYPE_VARIABLY_MODIFIED (type);
 
       switch (declarator->kind)
 	{
@@ -7282,8 +7284,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		       variable size, so the enclosing shared array type
 		       must too.  */
 		    if (size && TREE_CODE (size) == INTEGER_CST)
-		      type
-			= build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
+		      type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
 		    C_TYPE_VARIABLE_SIZE (type) = 1;
 		  }
 
@@ -7493,7 +7494,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	       the size evaluation prior to the side effects.  We therefore
 	       use BIND_EXPRs in TYPENAME contexts too.  */
 	    if (!TYPE_NAME (type)
-		&& variably_modified_type_p (type, NULL_TREE))
+		&& c_type_variably_modified_p (type))
 	      {
 		tree bind = NULL_TREE;
 		if (decl_context == TYPENAME || decl_context == PARM)
@@ -7534,6 +7535,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	default:
 	  gcc_unreachable ();
 	}
+      if (type != error_mark_node)
+	C_TYPE_VARIABLY_MODIFIED (type) = varmod || size_varies;
     }
   *decl_attrs = chainon (returned_attrs, *decl_attrs);
   *decl_attrs = chainon (decl_id_attrs, *decl_attrs);
@@ -7728,7 +7731,7 @@ grokdeclarator (const struct c_declarator *declarator,
     }
 
   if (pedantic && decl_context == FIELD
-      && variably_modified_type_p (type, NULL_TREE))
+      && c_type_variably_modified_p (type))
     {
       /* C99 6.7.2.1p8 */
       pedwarn (loc, OPT_Wpedantic, "a member of a structure or union cannot "
@@ -7996,7 +7999,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	       have a member with such a qualifier.  const
 	       qualification is implicitly added, and, at file scope,
 	       has internal linkage.  */
-	    if (variably_modified_type_p (type, NULL_TREE))
+	    if (c_type_variably_modified_p (type))
 	      error_at (loc, "%<constexpr%> object has variably modified "
 			"type");
 	    if (type_quals
@@ -8078,7 +8081,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	 || (storage_class == csc_none
 	     && TREE_CODE (type) == FUNCTION_TYPE
 	     && !funcdef_flag))
-	&& variably_modified_type_p (type, NULL_TREE))
+	&& c_type_variably_modified_p (type))
       {
 	/* C99 6.7.5.2p2 */
 	if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -9233,6 +9236,10 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       if (C_DECL_VARIABLE_SIZE (x))
 	C_TYPE_VARIABLE_SIZE (t) = 1;
 
+      /* If any field is variably modified, record this fact. */
+      if (C_TYPE_VARIABLY_MODIFIED (TREE_TYPE (x)))
+	C_TYPE_VARIABLY_MODIFIED (t) = 1;
+
       if (DECL_C_BIT_FIELD (x))
 	{
 	  unsigned HOST_WIDE_INT width = tree_to_uhwi (DECL_INITIAL (x));
@@ -9431,6 +9438,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
       C_TYPE_FIELDS_NON_CONSTEXPR (x) = C_TYPE_FIELDS_NON_CONSTEXPR (t);
       C_TYPE_VARIABLE_SIZE (x) = C_TYPE_VARIABLE_SIZE (t);
+      C_TYPE_VARIABLY_MODIFIED (x) = C_TYPE_VARIABLY_MODIFIED (t);
       C_TYPE_INCOMPLETE_VARS (x) = NULL_TREE;
     }
 
@@ -9447,7 +9455,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   /* If we're inside a function proper, i.e. not file-scope and not still
      parsing parameters, then arrange for the size of a variable sized type
      to be bound now.  */
-  if (building_stmt_list_p () && variably_modified_type_p (t, NULL_TREE))
+  if (building_stmt_list_p () && c_type_variably_modified_p(t))
     add_stmt (build_stmt (loc,
 			  DECL_EXPR, build_decl (loc, TYPE_DECL, NULL, t)));
 

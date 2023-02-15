@@ -356,16 +356,6 @@ qualify_type (tree type, tree like)
 				 | ENCODE_QUAL_ADDR_SPACE (as_common));
 }
 
-/* Return true iff the given tree T is a variable length array.  */
-
-bool
-c_vla_type_p (const_tree t)
-{
-  if (TREE_CODE (t) == ARRAY_TYPE
-      && C_TYPE_VARIABLE_SIZE (t))
-    return true;
-  return false;
-}
 
 /* If NTYPE is a type of a non-variadic function with a prototype
    and OTYPE is a type of a function without a prototype and ATTRS
@@ -471,8 +461,8 @@ composite_type (tree t1, tree t2)
 	d2_variable = (!d2_zero
 		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
-	d1_variable = d1_variable || (d1_zero && c_vla_type_p (t1));
-	d2_variable = d2_variable || (d2_zero && c_vla_type_p (t2));
+	d1_variable = d1_variable || (d1_zero && C_TYPE_VARIABLE_SIZE (t1));
+	d2_variable = d2_variable || (d2_zero && C_TYPE_VARIABLE_SIZE (t2));
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (elt == TREE_TYPE (t1) && TYPE_DOMAIN (t1)
@@ -1248,8 +1238,8 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
 	d2_variable = (!d2_zero
 		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
-	d1_variable = d1_variable || (d1_zero && c_vla_type_p (t1));
-	d2_variable = d2_variable || (d2_zero && c_vla_type_p (t2));
+	d1_variable = d1_variable || (d1_zero && C_TYPE_VARIABLE_SIZE (t1));
+	d2_variable = d2_variable || (d2_zero && C_TYPE_VARIABLE_SIZE (t2));
 
 	if (different_types_p != NULL
 	    && d1_variable != d2_variable)
@@ -3346,7 +3336,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   /* In this improbable scenario, a nested function returns a VM type.
      Create a TARGET_EXPR so that the call always has a LHS, much as
      what the C++ FE does for functions returning non-PODs.  */
-  if (variably_modified_type_p (TREE_TYPE (fntype), NULL_TREE))
+  if (C_TYPE_VARIABLY_MODIFIED (TREE_TYPE (fntype)))
     {
       tree tmp = create_tmp_var_raw (TREE_TYPE (fntype));
       result = build4 (TARGET_EXPR, TREE_TYPE (fntype), tmp, result,
