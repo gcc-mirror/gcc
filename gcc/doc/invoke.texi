@@ -4282,6 +4282,10 @@ b->f();
 @noindent
 fails to compile.
 
+In cases where the different signatures are not an accident, the
+simplest solution is to add a using-declaration to the derived class
+to un-hide the base function, e.g. add @code{using A::f;} to @code{B}.
+
 The optional level suffix controls the behavior when all the
 declarations in the derived class override virtual functions in the
 base class, even if not all of the base functions are overridden:
