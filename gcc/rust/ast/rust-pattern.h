@@ -763,7 +763,7 @@ struct StructPatternElements
 {
 private:
   // bool has_struct_pattern_fields;
-  std::vector<std::unique_ptr<StructPatternField> > fields;
+  std::vector<std::unique_ptr<StructPatternField>> fields;
 
   bool has_struct_pattern_etc;
   std::vector<Attribute> struct_pattern_etc_attrs;
@@ -788,7 +788,7 @@ public:
 
   // Constructor for StructPatternElements with both (potentially)
   StructPatternElements (
-    std::vector<std::unique_ptr<StructPatternField> > fields,
+    std::vector<std::unique_ptr<StructPatternField>> fields,
     std::vector<Attribute> etc_attrs)
     : fields (std::move (fields)), has_struct_pattern_etc (true),
       struct_pattern_etc_attrs (std::move (etc_attrs))
@@ -796,7 +796,7 @@ public:
 
   // Constructor for StructPatternElements with no StructPatternEtc
   StructPatternElements (
-    std::vector<std::unique_ptr<StructPatternField> > fields)
+    std::vector<std::unique_ptr<StructPatternField>> fields)
     : fields (std::move (fields)), has_struct_pattern_etc (false),
       struct_pattern_etc_attrs ()
   {}
@@ -832,18 +832,17 @@ public:
   static StructPatternElements create_empty ()
   {
     return StructPatternElements (
-      std::vector<std::unique_ptr<StructPatternField> > ());
+      std::vector<std::unique_ptr<StructPatternField>> ());
   }
 
   std::string as_string () const;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<StructPatternField> > &
-  get_struct_pattern_fields ()
+  std::vector<std::unique_ptr<StructPatternField>> &get_struct_pattern_fields ()
   {
     return fields;
   }
-  const std::vector<std::unique_ptr<StructPatternField> > &
+  const std::vector<std::unique_ptr<StructPatternField>> &
   get_struct_pattern_fields () const
   {
     return fields;
@@ -956,10 +955,10 @@ protected:
 // Class for non-ranged tuple struct pattern patterns
 class TupleStructItemsNoRange : public TupleStructItems
 {
-  std::vector<std::unique_ptr<Pattern> > patterns;
+  std::vector<std::unique_ptr<Pattern>> patterns;
 
 public:
-  TupleStructItemsNoRange (std::vector<std::unique_ptr<Pattern> > patterns)
+  TupleStructItemsNoRange (std::vector<std::unique_ptr<Pattern>> patterns)
     : patterns (std::move (patterns))
   {}
 
@@ -991,8 +990,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  std::vector<std::unique_ptr<Pattern>> &get_patterns () { return patterns; }
+  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
   {
     return patterns;
   }
@@ -1011,12 +1010,12 @@ protected:
 // Class for ranged tuple struct pattern patterns
 class TupleStructItemsRange : public TupleStructItems
 {
-  std::vector<std::unique_ptr<Pattern> > lower_patterns;
-  std::vector<std::unique_ptr<Pattern> > upper_patterns;
+  std::vector<std::unique_ptr<Pattern>> lower_patterns;
+  std::vector<std::unique_ptr<Pattern>> upper_patterns;
 
 public:
-  TupleStructItemsRange (std::vector<std::unique_ptr<Pattern> > lower_patterns,
-			 std::vector<std::unique_ptr<Pattern> > upper_patterns)
+  TupleStructItemsRange (std::vector<std::unique_ptr<Pattern>> lower_patterns,
+			 std::vector<std::unique_ptr<Pattern>> upper_patterns)
     : lower_patterns (std::move (lower_patterns)),
       upper_patterns (std::move (upper_patterns))
   {}
@@ -1056,21 +1055,21 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_lower_patterns ()
   {
     return lower_patterns;
   }
-  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_lower_patterns () const
   {
     return lower_patterns;
   }
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_upper_patterns ()
   {
     return upper_patterns;
   }
-  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_upper_patterns () const
   {
     return upper_patterns;
   }
@@ -1233,10 +1232,10 @@ TuplePatternItemsSingle(*this);
 // Class representing TuplePattern patterns where there are multiple patterns
 class TuplePatternItemsMultiple : public TuplePatternItems
 {
-  std::vector<std::unique_ptr<Pattern> > patterns;
+  std::vector<std::unique_ptr<Pattern>> patterns;
 
 public:
-  TuplePatternItemsMultiple (std::vector<std::unique_ptr<Pattern> > patterns)
+  TuplePatternItemsMultiple (std::vector<std::unique_ptr<Pattern>> patterns)
     : patterns (std::move (patterns))
   {}
 
@@ -1268,8 +1267,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  std::vector<std::unique_ptr<Pattern>> &get_patterns () { return patterns; }
+  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
   {
     return patterns;
   }
@@ -1291,13 +1290,12 @@ protected:
 // Class representing TuplePattern patterns where there are a range of patterns
 class TuplePatternItemsRanged : public TuplePatternItems
 {
-  std::vector<std::unique_ptr<Pattern> > lower_patterns;
-  std::vector<std::unique_ptr<Pattern> > upper_patterns;
+  std::vector<std::unique_ptr<Pattern>> lower_patterns;
+  std::vector<std::unique_ptr<Pattern>> upper_patterns;
 
 public:
-  TuplePatternItemsRanged (
-    std::vector<std::unique_ptr<Pattern> > lower_patterns,
-    std::vector<std::unique_ptr<Pattern> > upper_patterns)
+  TuplePatternItemsRanged (std::vector<std::unique_ptr<Pattern>> lower_patterns,
+			   std::vector<std::unique_ptr<Pattern>> upper_patterns)
     : lower_patterns (std::move (lower_patterns)),
       upper_patterns (std::move (upper_patterns))
   {}
@@ -1338,21 +1336,21 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_lower_patterns ()
   {
     return lower_patterns;
   }
-  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_lower_patterns () const
   {
     return lower_patterns;
   }
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_upper_patterns ()
   {
     return upper_patterns;
   }
-  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_upper_patterns () const
   {
     return upper_patterns;
   }
@@ -1503,14 +1501,14 @@ protected:
 // AST node representing patterns that can match slices and arrays
 class SlicePattern : public Pattern
 {
-  std::vector<std::unique_ptr<Pattern> > items;
+  std::vector<std::unique_ptr<Pattern>> items;
   Location locus;
   NodeId node_id;
 
 public:
   std::string as_string () const override;
 
-  SlicePattern (std::vector<std::unique_ptr<Pattern> > items, Location locus)
+  SlicePattern (std::vector<std::unique_ptr<Pattern>> items, Location locus)
     : items (std::move (items)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
@@ -1546,8 +1544,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_items () { return items; }
-  const std::vector<std::unique_ptr<Pattern> > &get_items () const
+  std::vector<std::unique_ptr<Pattern>> &get_items () { return items; }
+  const std::vector<std::unique_ptr<Pattern>> &get_items () const
   {
     return items;
   }
