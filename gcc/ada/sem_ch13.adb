@@ -133,9 +133,7 @@ package body Sem_Ch13 is
    function Build_Predicate_Function_Declaration
       (Typ : Entity_Id) return Node_Id;
    --  Build the declaration for a predicate function. The declaration is built
-   --  at the end of the declarative part containing the type definition, which
-   --  may be before the freeze point of the type. The predicate expression is
-   --  preanalyzed at this point, to catch visibility errors.
+   --  at the same time as the body but inserted before, as explained below.
 
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ),

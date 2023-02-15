@@ -312,11 +312,12 @@ package body Sem_Util is
    --------------------------
 
    procedure Add_Block_Identifier
-       (N : Node_Id;
-        Id : out Entity_Id;
-        Scope : Entity_Id := Current_Scope)
+     (N     : Node_Id;
+      Id    : out Entity_Id;
+      Scope : Entity_Id := Current_Scope)
    is
       Loc : constant Source_Ptr := Sloc (N);
+
    begin
       pragma Assert (Nkind (N) = N_Block_Statement);
 
@@ -331,7 +332,6 @@ package body Sem_Util is
          Id := New_Internal_Entity (E_Block, Scope, Loc, 'B');
          Set_Etype  (Id, Standard_Void_Type);
          Set_Parent (Id, N);
-
          Set_Identifier (N, New_Occurrence_Of (Id, Loc));
          Set_Block_Node (Id, Identifier (N));
       end if;
@@ -6720,6 +6720,31 @@ package body Sem_Util is
 
       return S;
    end Current_Scope_No_Loops;
+
+   --------------------------------------
+   -- Current_Scope_No_Loops_No_Blocks --
+   --------------------------------------
+
+   function Current_Scope_No_Loops_No_Blocks return Entity_Id is
+      S : Entity_Id;
+
+   begin
+      --  Examine the scope stack starting from the current scope and skip any
+      --  internally generated loops and blocks.
+
+      S := Current_Scope;
+      while Present (S) and then S /= Standard_Standard loop
+         if Ekind (S) in E_Loop | E_Block
+           and then not Comes_From_Source (S)
+         then
+            S := Scope (S);
+         else
+            exit;
+         end if;
+      end loop;
+
+      return S;
+   end Current_Scope_No_Loops_No_Blocks;
 
    ------------------------
    -- Current_Subprogram --
@@ -27724,7 +27749,7 @@ package body Sem_Util is
    -----------------------
 
    procedure Set_Public_Status (Id : Entity_Id) is
-      S : constant Entity_Id := Current_Scope;
+      S : constant Entity_Id := Current_Scope_No_Loops_No_Blocks;
 
       function Within_HSS_Or_If (E : Entity_Id) return Boolean;
       --  Determines if E is defined within handled statement sequence or
