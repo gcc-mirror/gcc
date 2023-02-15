@@ -15809,6 +15809,10 @@ is greater or equal to this number, use callbacks instead of inline checks.
 E.g. to disable inline code use
 @option{--param asan-instrumentation-with-call-threshold=0}.
 
+@item asan-kernel-mem-intrinsic-prefix
+Prefix calls to memcpy, memset and memmove with __asan_ or __hwasan_
+for -fsanitize=kernel-address or -fsanitize=kernel-hwaddress.
+
 @item hwasan-instrument-stack
 Enable hwasan instrumentation of statically sized stack-allocated variables.
 This kind of instrumentation is enabled by default when using
