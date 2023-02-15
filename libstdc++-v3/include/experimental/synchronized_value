@@ -1,0 +1,100 @@
+// <experimental/synchronized_value> -*- C++ -*-
+
+// Copyright The GNU Toolchain Authors.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file include/experimental/synchronized_value
+ *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
+ */
+
+#ifndef _GLIBCXX_EXPERIMENTAL_SYNCVAL
+#define _GLIBCXX_EXPERIMENTAL_SYNCVAL 1
+
+#pragma GCC system_header
+
+#include <bits/requires_hosted.h> // for std::mutex
+
+#if __cplusplus >= 201703L
+#include <mutex>
+#include <bits/invoke.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+namespace experimental::inline concurrency_v2
+{
+#define __cpp_lib_concurrency_v2_synchronized_value 202302
+
+  template<typename _Tp>
+    class synchronized_value
+    {
+      // TODO: Use partial specialization after PR c++/71954 is fixed.
+      template<typename... _Args>
+	static inline constexpr bool __is_self
+	  = sizeof...(_Args) == 1
+	      && (is_same_v<__remove_cvref_t<_Args>, synchronized_value> && ...);
+
+#if ! __cpp_concepts
+      template<typename... _Args>
+	using __not_self = bool_constant<!__is_self<_Args...>>;
+#endif
+
+    public:
+      synchronized_value(const synchronized_value&) = delete;
+      synchronized_value& operator=(const synchronized_value&) = delete;
+
+#if __cpp_concepts
+      template<typename... _Args>
+	requires (!__is_self<_Args...>) && is_constructible_v<_Tp, _Args...>
+#else
+      template<typename... _Args, typename = _Require<__not_self<_Args...>>,
+	       typename = _Require<is_constructible<_Tp, _Args...>>>
+#endif
+	synchronized_value(_Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
+	: _M_val(std::forward<_Args>(__args)...)
+	{ }
+
+      template<typename _Fn, typename _Up, typename ... _Types>
+	friend invoke_result_t<_Fn, _Up&, _Types&...>
+	apply(_Fn&&, synchronized_value<_Up>&, synchronized_value<_Types>&...);
+
+    private:
+      mutex _M_mut;
+      _Tp _M_val;
+    };
+
+  template<typename _Fn, typename _Tp, typename... _Types>
+    inline invoke_result_t<_Fn, _Tp&, _Types&...>
+    apply(_Fn&& __f, synchronized_value<_Tp>& __val,
+	  synchronized_value<_Types>&... __vals)
+    {
+      scoped_lock __l(__val._M_mut, __vals._M_mut...);
+      return std::__invoke(std::forward<_Fn>(__f), __val._M_val,
+			   __vals._M_val...);
+    }
+} // namespace experimental::concurrency_v2
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++20
+#endif // _GLIBCXX_EXPERIMENTAL_SYNCVAL
