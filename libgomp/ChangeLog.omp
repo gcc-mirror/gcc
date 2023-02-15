@@ -1,3 +1,12 @@
+2023-02-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/target-present-1.c: Fix.
+	* testsuite/libgomp.c-c++-common/target-present-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-present-3.c: Likewise.
+	* testsuite/libgomp.fortran/target-present-1.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-2.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-3.f90: Likewise.
+
 2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* target.c (gomp_to_device_kind_p): Add map kinds with 'present'
