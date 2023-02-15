@@ -149,8 +149,6 @@ package body Ada.Containers.Indefinite_Holders is
          raise Constraint_Error with "container is empty";
       end if;
 
-      Detach (Container);
-
       declare
          Ref : constant Constant_Reference_Type :=
                  (Element => Container.Reference.Element.all'Access,
@@ -304,8 +302,6 @@ package body Ada.Containers.Indefinite_Holders is
       if Container.Reference = null then
          raise Constraint_Error with "container is empty";
       end if;
-
-      Detach (Container);
 
       B := B + 1;
 
