@@ -1,5 +1,7 @@
 2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.c/alloc-ompx_host_mem_alloc-1.c: New.
+
 	* config/gcn/allocator.c (gcn_memspace_free): Explicitly handle
 	'memspace == ompx_host_mem_space'.
 
