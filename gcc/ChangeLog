@@ -1,3 +1,7 @@
+2023-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.cc (gimplify_save_expr): Add missing guard.
+
 2023-02-13  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
