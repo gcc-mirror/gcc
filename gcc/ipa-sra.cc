@@ -3989,7 +3989,7 @@ push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,
 	{
 	  ipa_argagg_value_list avl (ipcp_ts);
 	  tree value = avl.get_value (base_index, pa->unit_offset);
-	  if (value)
+	  if (value && !AGGREGATE_TYPE_P (pa->type))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "    - omitting component at byte "
