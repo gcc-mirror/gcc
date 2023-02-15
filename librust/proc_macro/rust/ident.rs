@@ -1,11 +1,10 @@
+use bridge;
 use std::fmt;
 use Span;
 
 /// An identifier.
 #[derive(Clone)]
-pub struct Ident {
-    // Internal implementation details
-}
+pub struct Ident(pub(crate) bridge::ident::Ident);
 
 impl Ident {
     /// Creates a new identifier.
@@ -19,8 +18,8 @@ impl Ident {
     ///
     /// The `string` argument must be a valid identifier permitted by the
     /// language, otherwise the function will panic.
-    pub fn new(_string: &str, _span: Span) -> Self {
-        todo!("Implement this function")
+    pub fn new(string: &str, span: Span) -> Self {
+        Ident(bridge::ident::Ident::new(string, span.0))
     }
 
     /// Creates a new raw identifier.
@@ -35,13 +34,13 @@ impl Ident {
     /// The `string` argument must be a valid identifier permitted by the
     /// language. Furthermore, it should not be a keyword used in path
     /// segments, otherwise this function will panic.
-    pub fn new_raw(_string: &str, _span: Span) -> Self {
-        todo!("Implement this function")
+    pub fn new_raw(string: &str, span: Span) -> Self {
+        Ident(bridge::ident::Ident::new_raw(string, span.0))
     }
 
     /// Return the span of the identifier
     pub fn span(&self) -> Span {
-        todo!("Implement this function")
+        Span(self.0.span())
     }
 
     /// Change the span of the identifier.
@@ -49,20 +48,30 @@ impl Ident {
     /// # Arguments
     ///
     /// * `span` - The new span value.
-    pub fn set_span(&mut self, _span: Span) {
-        todo!("Implement this function")
+    pub fn set_span(&mut self, span: Span) {
+        self.0.set_span(span.0);
     }
 }
 
 impl fmt::Display for Ident {
     /// Display as lossless converted string.
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!("Implement this function")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.0.is_raw {
+            f.write_str("r#")?;
+        }
+        fmt::Display::fmt(
+            &self
+                .0
+                .val
+                .to_str()
+                .expect("Cannot convert back to rust string"),
+            f,
+        )
     }
 }
 
 impl fmt::Debug for Ident {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!("Implement this function")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
     }
 }

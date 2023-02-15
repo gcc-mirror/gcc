@@ -3,7 +3,7 @@ use std::fmt;
 
 /// A region of source code along with macro expansion information.
 #[derive(Copy, Clone)]
-pub struct Span(bridge::span::Span);
+pub struct Span(pub(crate) bridge::span::Span);
 
 impl Span {
     // TODO: Add experimental API functions for this type
