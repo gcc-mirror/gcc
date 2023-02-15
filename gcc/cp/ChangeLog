@@ -1,3 +1,11 @@
+2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106675
+	* call.c (joust_maybe_elide_copy): Return false for ck_ambig.
+
 2022-12-16  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
