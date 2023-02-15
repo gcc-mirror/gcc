@@ -6,6 +6,7 @@ pub use span::Span;
 use std::error;
 use std::{fmt, iter, str::FromStr};
 
+mod bridge;
 mod group;
 mod ident;
 mod literal;
