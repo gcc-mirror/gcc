@@ -723,7 +723,7 @@ private:
     MacroInvocData invoc_data, std::vector<Attribute> outer_attrs,
     Location locus, bool is_semi_coloned,
     std::vector<std::unique_ptr<MacroInvocation>> &&pending_eager_invocs)
-    : outer_attrs (std::move (outer_attrs)), locus (locus),
+    : TraitItem (locus), outer_attrs (std::move (outer_attrs)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ()),
       invoc_data (std::move (invoc_data)), is_semi_coloned (is_semi_coloned),
       kind (kind), builtin_kind (builtin_kind),
@@ -731,10 +731,10 @@ private:
   {}
 
   MacroInvocation (const MacroInvocation &other)
-    : outer_attrs (other.outer_attrs), locus (other.locus),
-      node_id (other.node_id), invoc_data (other.invoc_data),
-      is_semi_coloned (other.is_semi_coloned), kind (other.kind),
-      builtin_kind (other.builtin_kind)
+    : TraitItem (other.locus), outer_attrs (other.outer_attrs),
+      locus (other.locus), node_id (other.node_id),
+      invoc_data (other.invoc_data), is_semi_coloned (other.is_semi_coloned),
+      kind (other.kind), builtin_kind (other.builtin_kind)
   {
     if (other.kind == InvocKind::Builtin)
       for (auto &pending : other.pending_eager_invocs)

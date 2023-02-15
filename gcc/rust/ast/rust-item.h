@@ -2908,7 +2908,6 @@ class TraitItemFunc : public TraitItem
   std::vector<Attribute> outer_attrs;
   TraitFunctionDecl decl;
   std::unique_ptr<BlockExpr> block_expr;
-  Location locus;
 
 public:
   // Returns whether function has a definition or is just a declaration.
@@ -2916,14 +2915,14 @@ public:
 
   TraitItemFunc (TraitFunctionDecl decl, std::unique_ptr<BlockExpr> block_expr,
 		 std::vector<Attribute> outer_attrs, Location locus)
-    : TraitItem (), outer_attrs (std::move (outer_attrs)),
-      decl (std::move (decl)), block_expr (std::move (block_expr)),
-      locus (locus)
+    : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
+      decl (std::move (decl)), block_expr (std::move (block_expr))
   {}
 
   // Copy constructor with clone
   TraitItemFunc (TraitItemFunc const &other)
-    : outer_attrs (other.outer_attrs), decl (other.decl), locus (other.locus)
+    : TraitItem (other.locus), outer_attrs (other.outer_attrs),
+      decl (other.decl)
   {
     node_id = other.node_id;
 
@@ -2955,8 +2954,6 @@ public:
   TraitItemFunc &operator= (TraitItemFunc &&other) = default;
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3128,7 +3125,6 @@ class TraitItemMethod : public TraitItem
   std::vector<Attribute> outer_attrs;
   TraitMethodDecl decl;
   std::unique_ptr<BlockExpr> block_expr;
-  Location locus;
 
 public:
   // Returns whether method has a definition or is just a declaration.
@@ -3136,14 +3132,14 @@ public:
 
   TraitItemMethod (TraitMethodDecl decl, std::unique_ptr<BlockExpr> block_expr,
 		   std::vector<Attribute> outer_attrs, Location locus)
-    : TraitItem (), outer_attrs (std::move (outer_attrs)),
-      decl (std::move (decl)), block_expr (std::move (block_expr)),
-      locus (locus)
+    : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
+      decl (std::move (decl)), block_expr (std::move (block_expr))
   {}
 
   // Copy constructor with clone
   TraitItemMethod (TraitItemMethod const &other)
-    : outer_attrs (other.outer_attrs), decl (other.decl), locus (other.locus)
+    : TraitItem (other.locus), outer_attrs (other.outer_attrs),
+      decl (other.decl)
   {
     node_id = other.node_id;
 
@@ -3175,8 +3171,6 @@ public:
   TraitItemMethod &operator= (TraitItemMethod &&other) = default;
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3219,8 +3213,6 @@ class TraitItemConst : public TraitItem
   // bool has_expression;
   std::unique_ptr<Expr> expr;
 
-  Location locus;
-
 public:
   // Whether the constant item has an associated expression.
   bool has_expression () const { return expr != nullptr; }
@@ -3228,14 +3220,14 @@ public:
   TraitItemConst (Identifier name, std::unique_ptr<Type> type,
 		  std::unique_ptr<Expr> expr,
 		  std::vector<Attribute> outer_attrs, Location locus)
-    : TraitItem (), outer_attrs (std::move (outer_attrs)),
-      name (std::move (name)), type (std::move (type)), expr (std::move (expr)),
-      locus (locus)
+    : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
+      name (std::move (name)), type (std::move (type)), expr (std::move (expr))
   {}
 
   // Copy constructor with clones
   TraitItemConst (TraitItemConst const &other)
-    : outer_attrs (other.outer_attrs), name (other.name), locus (other.locus)
+    : TraitItem (other.locus), outer_attrs (other.outer_attrs),
+      name (other.name)
   {
     node_id = other.node_id;
 
@@ -3328,8 +3320,6 @@ class TraitItemType : public TraitItem
   std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
 
-  Location locus;
-
 public:
   // Returns whether trait item type has type param bounds.
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
@@ -3337,14 +3327,14 @@ public:
   TraitItemType (Identifier name,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 		 std::vector<Attribute> outer_attrs, Location locus)
-    : TraitItem (), outer_attrs (std::move (outer_attrs)),
-      name (std::move (name)),
-      type_param_bounds (std::move (type_param_bounds)), locus (locus)
+    : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
+      name (std::move (name)), type_param_bounds (std::move (type_param_bounds))
   {}
 
   // Copy constructor with vector clone
   TraitItemType (TraitItemType const &other)
-    : outer_attrs (other.outer_attrs), name (other.name), locus (other.locus)
+    : TraitItem (other.locus), outer_attrs (other.outer_attrs),
+      name (other.name)
   {
     node_id = other.node_id;
     type_param_bounds.reserve (other.type_param_bounds.size ());
@@ -3373,8 +3363,6 @@ public:
   TraitItemType &operator= (TraitItemType &&other) = default;
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
