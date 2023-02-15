@@ -76,6 +76,7 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
     }
   else if (pin)
     {
+      /* 'mmap' zero-initializes, which 'linux_memspace_calloc' relies on.  */
       void *addr = mmap (NULL, size, PROT_READ | PROT_WRITE,
 			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
       if (addr == MAP_FAILED)
@@ -107,6 +108,7 @@ linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
       return ret;
     }
   else if (pin)
+    /* If PINned, 'linux_memspace_alloc' 'mmap's, which zero-initializes.  */
     return linux_memspace_alloc (memspace, size, pin);
   else
     return calloc (1, size);

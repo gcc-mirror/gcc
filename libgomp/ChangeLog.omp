@@ -1,5 +1,15 @@
 2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/linux/allocator.c (linux_memspace_alloc)
+	(linux_memspace_calloc): Clarify zero-initialization for pinned
+	memory.
+	* testsuite/libgomp.c/alloc-pinned-1.c: Verify zero-initialization
+	for pinned memory.
+	* testsuite/libgomp.c/alloc-pinned-2.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-3.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-4.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-5.c: Likewise.
+
 	* config/linux/allocator.c (linux_memspace_calloc): Elide
 	(innocuous) duplicate 'if' condition.
 	* config/nvptx/allocator.c (nvptx_memspace_free): Explicitly
