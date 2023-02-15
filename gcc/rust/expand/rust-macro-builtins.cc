@@ -736,7 +736,7 @@ MacroBuiltin::include_handler (Location invoc_locus, AST::MacroInvocData &invoc)
   bool has_error = !parser.get_errors ().empty ();
 
   for (const auto &error : parser.get_errors ())
-    error.emit_error ();
+    error.emit ();
 
   if (has_error)
     {

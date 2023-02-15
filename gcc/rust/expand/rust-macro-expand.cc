@@ -848,7 +848,7 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
       if (node.is_error ())
 	{
 	  for (auto err : parser.get_errors ())
-	    err.emit_error ();
+	    err.emit ();
 
 	  return AST::Fragment::create_error ();
 	}
@@ -991,7 +991,7 @@ transcribe_type (Parser<MacroInvocLexer> &parser)
 
   auto type = parser.parse_type (true);
   for (auto err : parser.get_errors ())
-    err.emit_error ();
+    err.emit ();
 
   auto end = lexer.get_offs ();
 
