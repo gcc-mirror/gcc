@@ -149,7 +149,8 @@ enum PrimitiveCoreType
   /* have "weak" union and 'static keywords? */                                \
   RS_TOKEN_KEYWORD (ABSTRACT, "abstract") /* unused */                         \
   RS_TOKEN_KEYWORD (AS, "as")                                                  \
-  RS_TOKEN_KEYWORD (ASYNC, "async")   /* unused */                             \
+  RS_TOKEN_KEYWORD (ASYNC, "async") /* unused */                               \
+  RS_TOKEN_KEYWORD (AUTO, "auto")                                              \
   RS_TOKEN_KEYWORD (BECOME, "become") /* unused */                             \
   RS_TOKEN_KEYWORD (BOX, "box")	      /* unused */                             \
   RS_TOKEN_KEYWORD (BREAK, "break")                                            \
