@@ -1,3 +1,8 @@
+2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106675
+	* call.cc (joust_maybe_elide_copy): Return false for ck_ambig.
+
 2023-02-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107079

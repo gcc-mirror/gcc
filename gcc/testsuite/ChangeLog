@@ -1,3 +1,85 @@
+2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106675
+	* g++.dg/cpp0x/overload-conv-5.C: New test.
+
+2023-02-14  David Faust  <david.faust@oracle.com>
+
+	PR target/108790
+	* gcc.target/bpf/ldxdw.c: New test.
+
+2023-02-14  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108355
+	PR tree-optimization/96921
+	* gcc.dg/tree-ssa/bool-minus-1.c: New test.
+	* gcc.dg/tree-ssa/bool-minus-2.c: New test.
+	* gcc.dg/tree-ssa/pr108354-1.c: New test.
+
+2023-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/shift2.adb: New test.
+
+2023-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108782
+	* gcc.dg/torture/pr108782.c: New testcase.
+
+2023-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108777
+	* gcc.dg/asan/pr108777-1.c: New test.
+	* gcc.dg/asan/pr108777-2.c: New test.
+	* gcc.dg/asan/pr108777-3.c: New test.
+	* gcc.dg/asan/pr108777-4.c: New test.
+	* gcc.dg/asan/pr108777-5.c: New test.
+	* gcc.dg/asan/pr108777-6.c: New test.
+	* gcc.dg/completion-3.c: Adjust expected multiline output.
+
+2023-02-14  Andreas Schwab  <schwab@suse.de>
+
+	PR target/108723
+	* gcc.target/riscv/shorten-memrefs-1.c: Adjust patterns to skip
+	over cfi directives.
+	* gcc.target/riscv/shorten-memrefs-2.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-3.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-4.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-5.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-6.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-8.c: Likewise.
+
+2023-02-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/weak-1.f90: Adjust 'scan-assembler' for nvptx.
+
+2023-02-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96373
+	PR tree-optimization/108571
+	* gcc.target/aarch64/sve/fabd_1.c: Add -fno-trapping-math.
+	* gcc.target/aarch64/sve/fsubr_1.c: Likewise.
+	* gcc.target/aarch64/sve/fmul_1.c: Expect predicate ops.
+	* gcc.target/aarch64/sve/fp_arith_1.c: Likewise.
+
+2023-02-14  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96373
+	* gcc.target/powerpc/p9-vec-length-epil-1.c: Add -fno-trapping-math.
+	* gcc.target/powerpc/p9-vec-length-epil-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-8.c: Likewise.
+	* gcc.target/powerpc/pr96373.c: New test.
+
 2023-02-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/108681

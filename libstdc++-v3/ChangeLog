@@ -1,3 +1,29 @@
+2023-02-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update an open-std.org link
+	to www.open-std.org and https.
+	* doc/html/manual/status.html: Regenerate.
+
+2023-02-14  Thomas W Rodgers  <rodgert@twrodgers.com>
+
+	PR libstdc++/103934
+	* include/std/atomic (atomic_flag_wait): Add.
+	(atomic_flag_wait_explicit): Add.
+	(atomic_flag_notify): Add.
+	(atomic_flag_notify_explicit): Add.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc:
+	Add test case to cover missing atomic_flag free functions.
+
+2023-02-14  Thomas W Rodgers  <rodgert@twrodgers.com>
+
+	PR libstdc++/103934
+	* include/std/atomic (atomic_flag_test): Add.
+	(atomic_flag_test_explicit): Add.
+	* testsuite/29_atomics/atomic_flag/test/explicit.cc: Add
+	test case to cover missing atomic_flag free functions.
+	* testsuite/29_atomics/atomic_flag/test/implicit.cc:
+	Likewise.
+
 2023-02-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/policy_data_structures_biblio.xml: Adjust

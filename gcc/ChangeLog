@@ -1,3 +1,71 @@
+2023-02-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* reload1.cc (gen_reload): Correct rtx parameter for fatal_insn
+	"failure trying to reload" call.
+
+2023-02-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gdbinit.in (phrs): New command.
+	* sel-sched-dump.cc (debug_hard_reg_set): Remove debug-function.
+	* ira-color.cc (debug_hard_reg_set): New, calling print_hard_reg_set.
+
+2023-02-14  David Faust  <david.faust@oracle.com>
+
+	PR target/108790
+	* config/bpf/constraints.md (q): New memory constraint.
+	* config/bpf/bpf.md (zero_extendhidi2): Use it here.
+	(zero_extendqidi2): Likewise.
+	(zero_extendsidi2): Likewise.
+	(*mov<MM:mode>): Likewise.
+
+2023-02-14  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108355
+	PR tree-optimization/96921
+	* match.pd: Add pattern for "1 - bool_val".
+
+2023-02-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (vn_phi_compute_hash): Key skipping
+	basic block index hashing on the availability of ->cclhs.
+	(vn_phi_eq): Avoid re-doing sanity checks for CSE but
+	rely on ->cclhs availability.
+	(vn_phi_lookup): Set ->cclhs only when we are eventually
+	going to CSE the PHI.
+	(vn_phi_insert): Likewise.
+
+2023-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.cc (gimplify_save_expr): Add missing guard.
+
+2023-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108782
+	* tree-vect-loop.cc (vect_phi_first_order_recurrence_p):
+	Make sure we're not vectorizing an inner loop.
+
+2023-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108777
+	* params.opt (-param=asan-kernel-mem-intrinsic-prefix=): New param.
+	* asan.h (asan_memfn_rtl): Declare.
+	* asan.cc (asan_memfn_rtls): New variable.
+	(asan_memfn_rtl): New function.
+	* builtins.cc (expand_builtin): If
+	param_asan_kernel_mem_intrinsic_prefix and function is
+	kernel-{,hw}address sanitized, emit calls to
+	__{,hw}asan_{memcpy,memmove,memset} rather than
+	{memcpy,memmove,memset}.  Use sanitize_flags_p (SANITIZE_ADDRESS)
+	instead of flag_sanitize & SANITIZE_ADDRESS to check if
+	asan_intercepted_p functions shouldn't be expanded inline.
+
+2023-02-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96373
+	* tree-vect-stmts.cc (vectorizable_operation): Predicate trapping
+	operations on the loop mask.  Reject partial vectors if this isn't
+	possible.
+
 2023-02-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/108681
