@@ -1,3 +1,17 @@
+2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/108512
+	* openmp.cc (gfc_resolve_omp_parallel_blocks): Handle combined 'loop'
+	directives.
+	(gfc_resolve_do_iterator): Set a source location for added
+	'private'-clause arguments.
+	* resolve.cc (gfc_resolve_code): Call gfc_resolve_omp_do_blocks
+	also for EXEC_OMP_LOOP and gfc_resolve_omp_parallel_blocks for
+	combined directives with loop + '{masked,master} taskloop (simd)'.
+
 2023-02-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_namelist): Display 'present' map

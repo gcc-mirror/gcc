@@ -11903,9 +11903,14 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      break;
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_MASKED_TASKLOOP:
+	    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+	    case EXEC_OMP_MASTER_TASKLOOP:
+	    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_PARALLEL_LOOP:
 	    case EXEC_OMP_PARALLEL_MASKED:
 	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
 	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
@@ -11916,11 +11921,13 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_LOOP:
 	    case EXEC_OMP_TASK:
 	    case EXEC_OMP_TASKLOOP:
 	    case EXEC_OMP_TASKLOOP_SIMD:
@@ -11929,6 +11936,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TEAMS_LOOP:
 	      omp_workshare_save = omp_workshare_flag;
 	      omp_workshare_flag = 0;
 	      gfc_resolve_omp_parallel_blocks (code, ns);
@@ -11937,6 +11945,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_DO:
 	    case EXEC_OMP_DO_SIMD:
+	    case EXEC_OMP_LOOP:
 	    case EXEC_OMP_SIMD:
 	    case EXEC_OMP_TARGET_SIMD:
 	      gfc_resolve_omp_do_blocks (code, ns);
