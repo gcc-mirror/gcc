@@ -639,17 +639,20 @@ package Sem_Util is
    function Current_Scope return Entity_Id;
    --  Get entity representing current scope
 
+   function Current_Scope_No_Loops return Entity_Id;
+   --  Return the current scope ignoring internally generated loops
+
+   function Current_Scope_No_Loops_No_Blocks return Entity_Id;
+   --  Return the current scope ignoring internally generated loops and blocks
+
    procedure Add_Block_Identifier
-       (N : Node_Id;
-        Id : out Entity_Id;
-        Scope : Entity_Id := Current_Scope);
+     (N     : Node_Id;
+      Id    : out Entity_Id;
+      Scope : Entity_Id := Current_Scope);
    --  Given a block statement N, generate an internal E_Block label and make
    --  it the identifier of the block. Scope denotes the scope in which the
    --  generated entity Id is created and defaults to the current scope. If the
    --  block already has an identifier, Id returns the entity of its label.
-
-   function Current_Scope_No_Loops return Entity_Id;
-   --  Return the current scope ignoring internally generated loops
 
    function Current_Subprogram return Entity_Id;
    --  Returns current enclosing subprogram. If Current_Scope is a subprogram,
