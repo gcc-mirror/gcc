@@ -1,5 +1,4 @@
-! { dg-do run { target offload_target_any } }
-! { dg-shouldfail "present error triggered" }
+! { dg-do run }
 
 program main
   implicit none
@@ -11,16 +10,20 @@ program main
     b(i) = i * 3 + 1
   end do
 
-  !$omp target enter data map (alloc: a)
-    ! a has already been allocated, so this should be okay.
+  !$omp target enter data map (alloc: a, c, i)
+    ! a, c, i have already been allocated, so this should be okay.
     !$omp target defaultmap (present)
       do i = 1, N
 	c(i) = a(i)
       end do
     !$omp end target
 
+    print *, "CheCKpOInT"
+    ! { dg-output "CheCKpOInT(\n|\r\n|\r).*" }
+
     ! b has not been allocated, so this should result in an error.
-    ! { dg-output "libgomp: present clause: !omp_target_is_present \\\(0x\[0-9a-f\]+, \[0-9\]+\\\)" }
+    ! { dg-output "libgomp: present clause: !omp_target_is_present \\\(0x\[0-9a-f\]+, \[0-9\]+\\\)" { target offload_device_nonshared_as } }
+    ! { dg-shouldfail "present error triggered" { offload_device_nonshared_as } }
     !$omp target defaultmap (present)
       do i = 1, N
 	c(i) = c(i) + b(i)

@@ -1,5 +1,4 @@
-! { dg-do run { target offload_target_any } }
-! { dg-shouldfail "present error triggered" }
+! { dg-do run }
 
 program main
   implicit none
@@ -15,8 +14,12 @@ program main
     ! This should work as a has already been allocated.
     !$omp target update to (present: a)
 
+    print *, "CheCKpOInT"
+    ! { dg-output "CheCKpOInT(\n|\r\n|\r).*" }
+
     ! This should fail as b has not been allocated.
-    ! { dg-output "libgomp: present clause: !omp_target_is_present \\\(0x\[0-9a-f\]+, \[0-9\]+\\\)" }
+    ! { dg-output "libgomp: present clause: !omp_target_is_present \\\(0x\[0-9a-f\]+, \[0-9\]+\\\)" { target offload_device_nonshared_as } }
+    ! { dg-shouldfail "present error triggered" { offload_device_nonshared_as } }
     !$omp target update to (present: b)
   !$omp target exit data map (from: c)
 end program
