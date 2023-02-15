@@ -181,6 +181,8 @@ bool neg_simm5_p (rtx);
 #ifdef RTX_CODE
 bool has_vi_variant_p (rtx_code, rtx);
 #endif
+bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode, machine_mode,
+			  bool, void (*)(rtx *, rtx));
 }
 
 /* We classify builtin types into two classes:

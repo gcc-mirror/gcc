@@ -418,14 +418,11 @@ has_vi_variant_p (rtx_code code, rtx x)
   switch (code)
     {
     case PLUS:
-    case MINUS:
     case AND:
     case IOR:
     case XOR:
     case SS_PLUS:
-    case SS_MINUS:
     case US_PLUS:
-    case US_MINUS:
     case EQ:
     case NE:
     case LE:
@@ -438,10 +435,53 @@ has_vi_variant_p (rtx_code code, rtx x)
     case LTU:
     case GE:
     case GEU:
+    case MINUS:
+    case SS_MINUS:
       return neg_simm5_p (x);
+
     default:
       return false;
     }
+}
+
+bool
+sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
+		     machine_mode vector_mode, machine_mode mask_mode,
+		     bool has_vi_variant_p,
+		     void (*emit_vector_func) (rtx *, rtx))
+{
+  machine_mode scalar_mode = GET_MODE_INNER (vector_mode);
+  if (has_vi_variant_p)
+    {
+      *scalar_op = force_reg (scalar_mode, *scalar_op);
+      return false;
+    }
+
+  if (TARGET_64BIT)
+    {
+      if (!rtx_equal_p (*scalar_op, const0_rtx))
+	*scalar_op = force_reg (scalar_mode, *scalar_op);
+      return false;
+    }
+
+  if (immediate_operand (*scalar_op, Pmode))
+    {
+      if (!rtx_equal_p (*scalar_op, const0_rtx))
+	*scalar_op = force_reg (Pmode, *scalar_op);
+
+      *scalar_op = gen_rtx_SIGN_EXTEND (scalar_mode, *scalar_op);
+      return false;
+    }
+
+  if (CONST_INT_P (*scalar_op))
+    *scalar_op = force_reg (scalar_mode, *scalar_op);
+
+  rtx tmp = gen_reg_rtx (vector_mode);
+  riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (vector_mode), tmp,
+				  *scalar_op, vl, mask_mode);
+  emit_vector_func (operands, tmp);
+
+  return true;
 }
 
 } // namespace riscv_vector

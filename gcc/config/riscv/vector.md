@@ -882,32 +882,21 @@
         (match_operand:VI_D 2 "register_operand"))
       (match_operand:VI_D 1 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::simm5_p (operands[3]))
-      operands[3] = force_reg (<VEL>mode, operands[3]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[3], Pmode))
-	  operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[3]));
-	else
-	  {
-	    if (CONST_INT_P (operands[3]))
-	      operands[3] = force_reg (<VEL>mode, operands[3]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[3], operands[5], <VM>mode);
-	    emit_insn (gen_pred_merge<mode> (operands[0], operands[1],
-			operands[2], v, operands[4],operands[5],
-			operands[6], operands[7]));
-	    DONE;
-	  }
-      }
-    else
-      operands[3] = force_reg (<VEL>mode, operands[3]);
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[3],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::simm5_p (operands[3]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_merge<mode> (operands[0], operands[1],
+	       operands[2], boardcast_scalar, operands[4], operands[5],
+	       operands[6], operands[7]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_merge<mode>_scalar"
   [(set (match_operand:VI_D 0 "register_operand"     "=vd")
@@ -1471,38 +1460,21 @@
 	    (match_operand:VI_D 3 "register_operand"))
 	  (match_operand:VI_D 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::has_vi_variant_p (<CODE>, operands[4]))
-      operands[4] = force_reg (<VEL>mode, operands[4]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[4], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[4], const0_rtx))
-	      operands[4] = force_reg (Pmode, operands[4]);
-	    operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[4]);
-	  }
-	else
-	  {
-	    if (CONST_INT_P (operands[4]))
-	      operands[4] = force_reg (<VEL>mode, operands[4]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[4], operands[5], <VM>mode);
-	    emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
-			operands[2], operands[3], v, operands[5],
-			operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      {
-	if (!rtx_equal_p (operands[4], const0_rtx))
-	  operands[4] = force_reg (<VEL>mode, operands[4]);
-      }
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[4],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::has_vi_variant_p (<CODE>, operands[4]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
+	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[6], operands[7], operands[8]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_<optab><mode>_scalar"
   [(set (match_operand:VI_D 0 "register_operand"         "=vd, vr")
@@ -1564,38 +1536,21 @@
 	      (match_operand:<VEL> 4 "reg_or_int_operand")))
 	  (match_operand:VI_D 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::has_vi_variant_p (<CODE>, operands[4]))
-      operands[4] = force_reg (<VEL>mode, operands[4]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[4], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[4], const0_rtx))
-	      operands[4] = force_reg (Pmode, operands[4]);
-	    operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[4]);
-	  }
-	else
-	  {
-	    if (CONST_INT_P (operands[4]))
-	      operands[4] = force_reg (<VEL>mode, operands[4]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[4], operands[5], <VM>mode);
-	    emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
-			operands[2], operands[3], v, operands[5],
-			operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      {
-	if (!rtx_equal_p (operands[4], const0_rtx))
-	  operands[4] = force_reg (<VEL>mode, operands[4]);
-      }
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[4],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::has_vi_variant_p (<CODE>, operands[4]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
+	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[6], operands[7], operands[8]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_<optab><mode>_scalar"
   [(set (match_operand:VI_D 0 "register_operand"         "=vd, vr")
@@ -1657,32 +1612,21 @@
 	    (match_operand:VI_D 3 "register_operand"))
 	  (match_operand:VI_D 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::neg_simm5_p (operands[4]))
-      operands[4] = force_reg (<VEL>mode, operands[4]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[4], Pmode))
-	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[4]));
-	else
-	  {
-	    if (CONST_INT_P (operands[4]))
-	      operands[4] = force_reg (<VEL>mode, operands[4]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[4], operands[5], <VM>mode);
-	    emit_insn (gen_pred_sub<mode> (operands[0], operands[1],
-			operands[2], operands[3], v, operands[5],
-			operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      operands[4] = force_reg (<VEL>mode, operands[4]);
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[4],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::neg_simm5_p (operands[4]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_sub<mode> (operands[0], operands[1],
+	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[6], operands[7], operands[8]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_sub<mode>_reverse_scalar"
   [(set (match_operand:VI_D 0 "register_operand"         "=vd, vr")
@@ -1786,36 +1730,21 @@
 	     (match_operand:VFULLI_D 3 "register_operand")] VMULH)
 	  (match_operand:VFULLI_D 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[4], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[4], const0_rtx))
-	      operands[4] = force_reg (Pmode, operands[4]);
-	    operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[4]);
-	  }
-	else
-	  {
-	    if (CONST_INT_P (operands[4]))
-	      operands[4] = force_reg (<VEL>mode, operands[4]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[4], operands[5], <VM>mode);
-	    emit_insn (gen_pred_mulh<v_su><mode> (operands[0], operands[1],
-			operands[2], operands[3], v, operands[5],
-			operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      {
-	if (!rtx_equal_p (operands[4], const0_rtx))
-	  operands[4] = force_reg (<VEL>mode, operands[4]);
-      }
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[4],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	false,
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_mulh<v_su><mode> (operands[0], operands[1],
+	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[6], operands[7], operands[8]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_mulh<v_su><mode>_scalar"
   [(set (match_operand:VFULLI_D 0 "register_operand"       "=vd, vr")
@@ -1976,33 +1905,21 @@
 	      (match_operand:<VM> 4 "register_operand")] UNSPEC_VADC)
 	  (match_operand:VI_D 1 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::simm5_p (operands[3]))
-      operands[3] = force_reg (<VEL>mode, operands[3]);
-    else if (!TARGET_64BIT)
-      {
-        rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[3], Pmode))
-	  operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[3]));
-        else
-  	  {
-  	    if (CONST_INT_P (operands[3]))
-  	      operands[3] = force_reg (<VEL>mode, operands[3]);
-
-  	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-  	  				    v, operands[3], operands[5],
-  	  				    <VM>mode);
-  	    emit_insn (gen_pred_adc<mode> (operands[0], operands[1], operands[2],
-  	  				   v, operands[4], operands[5],
-  	  				   operands[6], operands[7]));
-  	    DONE;
-  	  }
-      }
-    else
-      operands[3] = force_reg (<VEL>mode, operands[3]);
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[3],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::simm5_p (operands[3]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_adc<mode> (operands[0], operands[1],
+	       operands[2], boardcast_scalar, operands[4], operands[5],
+	       operands[6], operands[7]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_adc<mode>_scalar"
   [(set (match_operand:VI_D 0 "register_operand"           "=&vr")
@@ -2016,12 +1933,12 @@
 	  (unspec:VI_D
 	     [(plus:VI_D
 	        (vec_duplicate:VI_D
-	          (match_operand:<VEL> 3 "register_operand" "  r"))
+	          (match_operand:<VEL> 3 "reg_or_0_operand" " rJ"))
 	        (match_operand:VI_D 2 "register_operand"    " vr"))
 	      (match_operand:<VM> 4 "register_operand"      " vm")] UNSPEC_VADC)
 	  (match_operand:VI_D 1 "vector_merge_operand"      "0vu")))]
   "TARGET_VECTOR"
-  "vadc.vxm\t%0,%2,%3,%4"
+  "vadc.vxm\t%0,%2,%z3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "1")
@@ -2042,12 +1959,12 @@
 	     [(plus:VI_D
 	        (vec_duplicate:VI_D
 	          (sign_extend:<VEL>
-	            (match_operand:<VSUBEL> 3 "register_operand" "  r")))
+	            (match_operand:<VSUBEL> 3 "reg_or_0_operand" " rJ")))
 	        (match_operand:VI_D 2 "register_operand"         " vr"))
 	      (match_operand:<VM> 4 "register_operand"           " vm")] UNSPEC_VADC)
 	  (match_operand:VI_D 1 "vector_merge_operand"           "0vu")))]
   "TARGET_VECTOR"
-  "vadc.vxm\t%0,%2,%3,%4"
+  "vadc.vxm\t%0,%2,%z3,%4"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "merge_op_idx" "1")
@@ -2072,37 +1989,21 @@
 	      (match_operand:<VM> 4 "register_operand")] UNSPEC_VSBC)
 	  (match_operand:VI_D 1 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (!TARGET_64BIT)
-      {
-        rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[3], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[3], const0_rtx))
-	      operands[3] = force_reg (Pmode, operands[3]);
-	    operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[3]);
-	  }
-        else
-  	  {
-  	    if (CONST_INT_P (operands[3]))
-  	      operands[3] = force_reg (<VEL>mode, operands[3]);
-
-  	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-  	  				    v, operands[3], operands[5],
-  	  				    <VM>mode);
-  	    emit_insn (gen_pred_sbc<mode> (operands[0], operands[1], operands[2],
-  	  				   v, operands[4], operands[5],
-  	  				   operands[6], operands[7]));
-  	    DONE;
-  	  }
-      }
-    else
-      {
-	if (!rtx_equal_p (operands[3], const0_rtx))
-	  operands[3] = force_reg (<VEL>mode, operands[3]);
-      }
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[3],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	false,
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_sbc<mode> (operands[0], operands[1],
+	       operands[2], boardcast_scalar, operands[4], operands[5],
+	       operands[6], operands[7]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_sbc<mode>_scalar"
   [(set (match_operand:VI_D 0 "register_operand"           "=&vr")
@@ -2247,39 +2148,27 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::simm5_p (operands[2]))
-      operands[2] = force_reg (<VEL>mode, operands[2]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[2], Pmode))
-	  operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[2]));
-	else
-	  {
-	    if (CONST_INT_P (operands[2]))
-	      operands[2] = force_reg (<VEL>mode, operands[2]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-					    v, operands[2], operands[5],
-					    <VM>mode);
-	    emit_insn (gen_pred_madc<mode> (operands[0], operands[1], v, operands[3],
-					    operands[4], operands[5]));
-	    DONE;
-	  }
-      }
-    else
-      operands[2] = force_reg (<VEL>mode, operands[2]);
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[2],
+	/* vl */operands[4],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::simm5_p (operands[2]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_madc<mode> (operands[0], operands[1],
+	       boardcast_scalar, operands[3], operands[4], operands[5]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_madc<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
 	(unspec:<VM>
 	   [(plus:VI_D
 	     (vec_duplicate:VI_D
-	       (match_operand:<VEL> 2 "register_operand" "   r"))
+	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
 	     (match_operand:VI_D 1 "register_operand"    "  vr"))
 	    (match_operand:<VM> 3 "register_operand"     "  vm")
 	    (unspec:<VM>
@@ -2288,7 +2177,7 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
   "TARGET_VECTOR"
-  "vmadc.vxm\t%0,%1,%2,%3"
+  "vmadc.vxm\t%0,%1,%z2,%3"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
@@ -2300,7 +2189,7 @@
 	   [(plus:VI_D
 	     (vec_duplicate:VI_D
 	       (sign_extend:<VEL>
-	         (match_operand:<VSUBEL> 2 "register_operand" "   r")))
+	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" "  rJ")))
 	     (match_operand:VI_D 1 "register_operand"         "  vr"))
 	    (match_operand:<VM> 3 "register_operand"          "  vm")
 	    (unspec:<VM>
@@ -2309,7 +2198,7 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
   "TARGET_VECTOR"
-  "vmadc.vxm\t%0,%1,%2,%3"
+  "vmadc.vxm\t%0,%1,%z2,%3"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
@@ -2329,36 +2218,20 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
   "TARGET_VECTOR"
-  {
-    if (!TARGET_64BIT)
-      {
-        rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[2], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[2], const0_rtx))
-	      operands[2] = force_reg (Pmode, operands[2]);
-	    operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[2]);
-	  }
-	else
-	  {
-	    if (CONST_INT_P (operands[2]))
-	      operands[2] = force_reg (<VEL>mode, operands[2]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-					    v, operands[2], operands[5],
-					    <VM>mode);
-	    emit_insn (gen_pred_msbc<mode> (operands[0], operands[1], v, operands[3],
-					    operands[4], operands[5]));
-	    DONE;
-	  }
-      }
-    else
-      {
-	if (!rtx_equal_p (operands[2], const0_rtx))
-	  operands[2] = force_reg (<VEL>mode, operands[2]);
-      }
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[2],
+	/* vl */operands[4],
+	<MODE>mode,
+	<VM>mode,
+	false,
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_msbc<mode> (operands[0], operands[1],
+	       boardcast_scalar, operands[3], operands[4], operands[5]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_msbc<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
@@ -2442,7 +2315,7 @@
 	(unspec:<VM>
 	   [(plus:VI_QHS
 	     (vec_duplicate:VI_QHS
-	       (match_operand:<VEL> 2 "register_operand" "   r"))
+	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
 	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
 	    (unspec:<VM>
 	      [(match_operand 3 "vector_length_operand"  "  rK")
@@ -2450,7 +2323,7 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
-  "vmadc.vx\t%0,%1,%2"
+  "vmadc.vx\t%0,%1,%z2"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
@@ -2488,39 +2361,27 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::simm5_p (operands[2]))
-      operands[2] = force_reg (<VEL>mode, operands[2]);
-    else if (!TARGET_64BIT)
-      {
-        rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[2], Pmode))
-	  operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[2]));
-	else
-	  {
-	    if (CONST_INT_P (operands[2]))
-	      operands[2] = force_reg (<VEL>mode, operands[2]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-					    v, operands[2], operands[3],
-					    <VM>mode);
-	    emit_insn (gen_pred_madc<mode>_overflow (operands[0], operands[1],
-						     v, operands[3], operands[4]));
-	    DONE;
-	  }
-      }
-    else
-      operands[2] = force_reg (<VEL>mode, operands[2]);
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[2],
+	/* vl */operands[3],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::simm5_p (operands[2]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_madc<mode>_overflow (operands[0], operands[1],
+	       boardcast_scalar, operands[3], operands[4]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_madc<mode>_overflow_scalar"
   [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
 	(unspec:<VM>
 	   [(plus:VI_D
 	     (vec_duplicate:VI_D
-	       (match_operand:<VEL> 2 "register_operand" "   r"))
+	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
 	     (match_operand:VI_D 1 "register_operand"    "  vr"))
 	    (unspec:<VM>
 	      [(match_operand 3 "vector_length_operand"  "  rK")
@@ -2528,7 +2389,7 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
-  "vmadc.vx\t%0,%1,%2"
+  "vmadc.vx\t%0,%1,%z2"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
@@ -2540,7 +2401,7 @@
 	   [(plus:VI_D
 	     (vec_duplicate:VI_D
 	       (sign_extend:<VEL>
-	         (match_operand:<VSUBEL> 2 "register_operand" "   r")))
+	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" "  rJ")))
 	     (match_operand:VI_D 1 "register_operand"         "  vr"))
 	    (unspec:<VM>
 	      [(match_operand 3 "vector_length_operand"       "  rK")
@@ -2548,7 +2409,7 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
-  "vmadc.vx\t%0,%1,%2"
+  "vmadc.vx\t%0,%1,%z2"
   [(set_attr "type" "vicalu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "3")
@@ -2567,36 +2428,20 @@
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
-  {
-    if (!TARGET_64BIT)
-      {
-        rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[2], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[2], const0_rtx))
-	      operands[2] = force_reg (Pmode, operands[2]);
-	    operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[2]);
-	  }
-	else
-	  {
-	    if (CONST_INT_P (operands[2]))
-	      operands[2] = force_reg (<VEL>mode, operands[2]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-					    v, operands[2], operands[3],
-					    <VM>mode);
-	    emit_insn (gen_pred_msbc<mode>_overflow (operands[0], operands[1],
-						     v, operands[3], operands[4]));
-	    DONE;
-	  }
-      }
-    else
-      {
-	if (!rtx_equal_p (operands[2], const0_rtx))
-	  operands[2] = force_reg (<VEL>mode, operands[2]);
-      }
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[2],
+	/* vl */operands[3],
+	<MODE>mode,
+	<VM>mode,
+	false,
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_msbc<mode>_overflow (operands[0], operands[1],
+	       boardcast_scalar, operands[3], operands[4]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_msbc<mode>_overflow_scalar"
   [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
@@ -3069,32 +2914,21 @@
 	    (match_operand:VI_D 3 "register_operand"))
 	  (match_operand:VI_D 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::has_vi_variant_p (<CODE>, operands[4]))
-      operands[4] = force_reg (<VEL>mode, operands[4]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[4], Pmode))
-	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[4]));
-	else
-	  {
-	    if (CONST_INT_P (operands[4]))
-	      operands[4] = force_reg (<VEL>mode, operands[4]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[4], operands[5], <VM>mode);
-	    emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
-			operands[2], operands[3], v, operands[5],
-			operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      operands[4] = force_reg (<VEL>mode, operands[4]);
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[4],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::has_vi_variant_p (<CODE>, operands[4]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
+	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[6], operands[7], operands[8]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_<optab><mode>_scalar"
   [(set (match_operand:VI_D 0 "register_operand"         "=vd, vr")
@@ -3156,32 +2990,21 @@
 	      (match_operand:<VEL> 4 "reg_or_int_operand")))
 	  (match_operand:VI_D 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (riscv_vector::has_vi_variant_p (<CODE>, operands[4]))
-      operands[4] = force_reg (<VEL>mode, operands[4]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[4], Pmode))
-	  operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-		force_reg (Pmode, operands[4]));
-	else
-	  {
-	    if (CONST_INT_P (operands[4]))
-	      operands[4] = force_reg (<VEL>mode, operands[4]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[4], operands[5], <VM>mode);
-	    emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
-			operands[2], operands[3], v, operands[5],
-			operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      operands[4] = force_reg (<VEL>mode, operands[4]);
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[4],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::has_vi_variant_p (<CODE>, operands[4]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
+	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[6], operands[7], operands[8]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_<optab><mode>_scalar"
   [(set (match_operand:VI_D 0 "register_operand"         "=vd, vr")
@@ -3305,36 +3128,21 @@
 	     (match_operand:<VEL> 4 "reg_or_int_operand")] VSAT_ARITH_OP)
 	  (match_operand:VI_D 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[4], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[4], const0_rtx))
-	      operands[4] = force_reg (Pmode, operands[4]);
-	    operands[4] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[4]);
-	  }
-	else
-	  {
-	    if (CONST_INT_P (operands[4]))
-	      operands[4] = force_reg (<VEL>mode, operands[4]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[4], operands[5], <VM>mode);
-	    emit_insn (gen_pred_<sat_op><mode> (operands[0], operands[1],
-			operands[2], operands[3], v, operands[5],
-			operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      {
-	if (!rtx_equal_p (operands[4], const0_rtx))
-	  operands[4] = force_reg (<VEL>mode, operands[4]);
-      }
-  })
+{
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[4],
+	/* vl */operands[5],
+	<MODE>mode,
+	<VM>mode,
+	false,
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_<sat_op><mode> (operands[0], operands[1],
+	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[6], operands[7], operands[8]));
+        }))
+    DONE;
+})
 
 (define_insn "*pred_<sat_op><mode>_scalar"
   [(set (match_operand:VI_D 0 "register_operand"         "=vd, vr")
@@ -3677,42 +3485,29 @@
 	        (match_operand:<VEL> 5 "reg_or_int_operand"))])
 	  (match_operand:<VM> 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    enum rtx_code code = GET_CODE (operands[3]);
-
-    if (riscv_vector::has_vi_variant_p (code, operands[5]))
-      operands[5] = force_reg (<VEL>mode, operands[5]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[5], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[5], const0_rtx))
-	      operands[5] = force_reg (Pmode, operands[5]);
-	    operands[5] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[5]);
-	  }
-	else
-	  {
-	    if (CONST_INT_P (operands[5]))
-	      operands[5] = force_reg (<VEL>mode, operands[5]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[5], operands[6], <VM>mode);
-	    if (code == LT || code == LTU)
-		emit_insn (gen_pred_ltge<mode> (operands[0], operands[1],
-			   operands[2], operands[3], operands[4], v,
-			   operands[6], operands[7], operands[8]));
-	    else
-		emit_insn (gen_pred_cmp<mode> (operands[0], operands[1],
-			   operands[2], operands[3], operands[4], v,
-			   operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      operands[5] = force_reg (<VEL>mode, operands[5]);
-  })
+{
+  enum rtx_code code = GET_CODE (operands[3]);
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[5],
+	/* vl */operands[6],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::has_vi_variant_p (code, operands[5]),
+	code == LT || code == LTU ?
+	  [] (rtx *operands, rtx boardcast_scalar) {
+	    emit_insn (gen_pred_ltge<mode> (operands[0], operands[1],
+	    	operands[2], operands[3], operands[4], boardcast_scalar,
+	  	operands[6], operands[7], operands[8]));
+          }
+	:
+	  [] (rtx *operands, rtx boardcast_scalar) {
+	    emit_insn (gen_pred_cmp<mode> (operands[0], operands[1],
+	    	operands[2], operands[3], operands[4], boardcast_scalar,
+	  	operands[6], operands[7], operands[8]));
+          }))
+    DONE;
+})
 
 (define_expand "@pred_eqne<mode>_scalar"
   [(set (match_operand:<VM> 0 "register_operand")
@@ -3730,37 +3525,22 @@
 	      (match_operand:VI_D 4 "register_operand")])
 	  (match_operand:<VM> 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
-  {
-    enum rtx_code code = GET_CODE (operands[3]);
-
-    if (riscv_vector::has_vi_variant_p (code, operands[5]))
-      operands[5] = force_reg (<VEL>mode, operands[5]);
-    else if (!TARGET_64BIT)
-      {
-	rtx v = gen_reg_rtx (<MODE>mode);
-
-	if (immediate_operand (operands[5], Pmode))
-	  {
-	    if (!rtx_equal_p (operands[5], const0_rtx))
-	      operands[5] = force_reg (Pmode, operands[5]);
-	    operands[5] = gen_rtx_SIGN_EXTEND (<VEL>mode, operands[5]);
-	  }
-	else
-	  {
-	    if (CONST_INT_P (operands[5]))
-	      operands[5] = force_reg (<VEL>mode, operands[5]);
-
-	    riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[5], operands[6], <VM>mode);
-	    emit_insn (gen_pred_cmp<mode> (operands[0], operands[1],
-		       operands[2], operands[3], operands[4], v,
-		       operands[6], operands[7], operands[8]));
-	    DONE;
-	  }
-      }
-    else
-      operands[5] = force_reg (<VEL>mode, operands[5]);
-  })
+{
+  enum rtx_code code = GET_CODE (operands[3]);
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[5],
+	/* vl */operands[6],
+	<MODE>mode,
+	<VM>mode,
+	riscv_vector::has_vi_variant_p (code, operands[5]),
+	[] (rtx *operands, rtx boardcast_scalar) {
+	  emit_insn (gen_pred_cmp<mode> (operands[0], operands[1],
+	  	operands[2], operands[3], operands[4], boardcast_scalar,
+		operands[6], operands[7], operands[8]));
+        }))
+    DONE;
+})
 
 ;; We don't use early-clobber for LMUL <= 1 to get better codegen.
 (define_insn "*pred_cmp<mode>_scalar"
@@ -4400,28 +4180,19 @@
 	  (match_operand:VI_D 5 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
-  if (!TARGET_64BIT)
-    {
-      rtx v = gen_reg_rtx (<MODE>mode);
-
-      if (immediate_operand (operands[2], Pmode))
-        operands[2] = gen_rtx_SIGN_EXTEND (<VEL>mode,
-      		force_reg (Pmode, operands[2]));
-      else
-        {
-          if (CONST_INT_P (operands[2]))
-            operands[2] = force_reg (<VEL>mode, operands[2]);
-
-	  riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (<MODE>mode),
-			v, operands[2], operands[6], <VM>mode);
+  if (riscv_vector::sew64_scalar_helper (
+	operands,
+	/* scalar op */&operands[2],
+	/* vl */operands[6],
+	<MODE>mode,
+	<VM>mode,
+	false,
+	[] (rtx *operands, rtx boardcast_scalar) {
 	  emit_insn (gen_pred_mul_<optab><mode> (operands[0], operands[1],
-			v, operands[3], operands[4], operands[5], operands[6],
-			operands[7], operands[8], operands[9]));
-	  DONE;
-	}
-    }
-   else
-    operands[2] = force_reg (<VEL>mode, operands[2]);
+	       boardcast_scalar, operands[3], operands[4], operands[5],
+	       operands[6], operands[7], operands[8], operands[9]));
+        }))
+    DONE;
 })
 
 (define_insn "*pred_mul_<optab><mode>_undef_merge_extended_scalar"
