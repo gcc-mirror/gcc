@@ -203,18 +203,19 @@ public:
   /* Reject paths in which conjured svalues have affected control flow
      since m_prev_entry_enode.  */
 
-  bool check_valid_fpath_p (const feasible_node *final_fnode)
+  bool check_valid_fpath_p (const feasible_node &final_fnode,
+			    const gimple *)
     const final override
   {
     /* Reject paths in which calls with unknown side effects have occurred
        since m_prev_entry_enode.
        Find num calls with side effects.  Walk backward until we reach the
        pref */
-    gcc_assert (final_fnode->get_inner_node () == m_new_entry_enode);
+    gcc_assert (final_fnode.get_inner_node () == m_new_entry_enode);
 
     /* FG is actually a tree.  Walk backwards from FINAL_FNODE until we
        reach the prev_entry_enode (or the origin).  */
-    const feasible_node *iter_fnode = final_fnode;
+    const feasible_node *iter_fnode = &final_fnode;
     while (iter_fnode->get_inner_node ()->m_index != 0)
       {
 	gcc_assert (iter_fnode->m_preds.length () == 1);

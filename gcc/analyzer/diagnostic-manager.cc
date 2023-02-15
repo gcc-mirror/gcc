@@ -88,6 +88,7 @@ public:
 
   std::unique_ptr<exploded_path>
   get_best_epath (const exploded_node *target_enode,
+		  const gimple *target_stmt,
 		  const pending_diagnostic &pd,
 		  const char *desc, unsigned diag_idx,
 		  std::unique_ptr<feasibility_problem> *out_problem);
@@ -97,6 +98,7 @@ private:
 
   std::unique_ptr<exploded_path>
   explore_feasible_paths (const exploded_node *target_enode,
+			  const gimple *target_stmt,
 			  const pending_diagnostic &pd,
 			  const char *desc, unsigned diag_idx);
   bool
@@ -104,6 +106,7 @@ private:
 			 const trimmed_graph &tg,
 			 feasible_graph *fg,
 			 const exploded_node *target_enode,
+			 const gimple *target_stmt,
 			 const pending_diagnostic &pd,
 			 unsigned diag_idx,
 			 std::unique_ptr<exploded_path> *out_best_path) const;
@@ -128,6 +131,9 @@ private:
 /* Get the "best" exploded_path for reaching ENODE from the origin,
    returning ownership of it to the caller.
 
+   If TARGET_STMT is non-NULL, then check for reaching that stmt
+   within ENODE.
+
    Ideally we want to report the shortest feasible path.
    Return NULL if we could not find a feasible path
    (when flag_analyzer_feasibility is true).
@@ -141,6 +147,7 @@ private:
 
 std::unique_ptr<exploded_path>
 epath_finder::get_best_epath (const exploded_node *enode,
+			      const gimple *target_stmt,
 			      const pending_diagnostic &pd,
 			      const char *desc, unsigned diag_idx,
 			      std::unique_ptr<feasibility_problem> *out_problem)
@@ -165,7 +172,7 @@ epath_finder::get_best_epath (const exploded_node *enode,
       if (logger)
 	logger->log ("trying to find shortest feasible path");
       if (std::unique_ptr<exploded_path> epath
-	    = explore_feasible_paths (enode, pd, desc, diag_idx))
+	    = explore_feasible_paths (enode, target_stmt, pd, desc, diag_idx))
 	{
 	  if (logger)
 	    logger->log ("accepting %qs at EN: %i, SN: %i (sd: %i)"
@@ -335,6 +342,9 @@ private:
    TARGET_ENODE by iteratively building a feasible_graph, in which
    every path to a feasible_node is feasible by construction.
 
+   If TARGET_STMT is non-NULL, then check for reaching that stmt
+   within TARGET_ENODE.
+
    We effectively explore the tree of feasible paths in order of shortest
    path until we either find a feasible path to TARGET_ENODE, or hit
    a limit and give up.
@@ -378,6 +388,7 @@ private:
 
 std::unique_ptr<exploded_path>
 epath_finder::explore_feasible_paths (const exploded_node *target_enode,
+				      const gimple *target_stmt,
 				      const pending_diagnostic &pd,
 				      const char *desc, unsigned diag_idx)
 {
@@ -420,8 +431,8 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
   {
     auto_checking_feasibility sentinel (mgr);
 
-    while (process_worklist_item (&worklist, tg, &fg, target_enode, pd,
-				  diag_idx, &best_path))
+    while (process_worklist_item (&worklist, tg, &fg, target_enode, target_stmt,
+				  pd, diag_idx, &best_path))
       {
 	/* Empty; the work is done within process_worklist_item.  */
       }
@@ -465,6 +476,7 @@ process_worklist_item (feasible_worklist *worklist,
 		       const trimmed_graph &tg,
 		       feasible_graph *fg,
 		       const exploded_node *target_enode,
+		       const gimple *target_stmt,
 		       const pending_diagnostic &pd,
 		       unsigned diag_idx,
 		       std::unique_ptr<exploded_path> *out_best_path) const
@@ -523,7 +535,7 @@ process_worklist_item (feasible_worklist *worklist,
 			     " (length: %i)",
 			     target_enode->m_index, diag_idx,
 			     succ_fnode->get_path_length ());
-	      if (!pd.check_valid_fpath_p (succ_fnode))
+	      if (!pd.check_valid_fpath_p (*succ_fnode, target_stmt))
 		{
 		  if (logger)
 		    logger->log ("rejecting feasible path due to"
@@ -824,7 +836,8 @@ saved_diagnostic::calc_best_epath (epath_finder *pf)
   LOG_SCOPE (logger);
   m_problem = NULL;
 
-  m_best_epath = pf->get_best_epath (m_enode, *m_d, m_d->get_kind (), m_idx,
+  m_best_epath = pf->get_best_epath (m_enode, m_stmt,
+				     *m_d, m_d->get_kind (), m_idx,
 				     &m_problem);
 
   /* Handle failure to find a feasible path.  */
