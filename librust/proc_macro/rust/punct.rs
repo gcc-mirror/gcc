@@ -1,7 +1,9 @@
+use bridge;
 use std::fmt;
 use Span;
 
 /// Describes the context of a [`Punct`] relatively to the next token.
+#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Spacing {
     /// A [`Punct`] is not immediately followed by another `Punct`.
@@ -16,9 +18,7 @@ pub enum Spacing {
 /// Multi-character operators like `+=` are represented as two instances of
 /// `Punct` with different forms of `Spacing` returned.
 #[derive(Clone)]
-pub struct Punct {
-    // Internal implementation details.
-}
+pub struct Punct(pub(crate) bridge::punct::Punct);
 
 impl Punct {
     /// Creates a new `Punct` from a given character and spacing.
@@ -32,25 +32,25 @@ impl Punct {
     ///
     /// This function will panic if the `ch` argument is not a valid
     /// punctuation character allowed by the language.
-    pub fn new(_ch: char, _spacing: Spacing) -> Self {
-        todo!("Implement this function")
+    pub fn new(ch: char, spacing: Spacing) -> Self {
+        Punct(bridge::punct::Punct::new(ch, spacing))
     }
 
     /// Get the value for this punctuation character as `char`.
     pub fn as_char(&self) -> char {
-        todo!("Implement this function")
+        self.0.ch
     }
 
     /// Get the [`Spacing`] of this punctuation character, indicating whether
     /// the following character can be combined into a multi-character operator
     /// or not.
     pub fn spacing(&self) -> Spacing {
-        todo!("Implement this function")
+        self.0.spacing
     }
 
     /// Get the [`Span`] for this punctuation character.
     pub fn span(&self) -> Span {
-        todo!("Implement this function")
+        Span(self.0.span())
     }
 
     /// Set the span for this punctuation character.
@@ -58,8 +58,8 @@ impl Punct {
     /// # Arguments
     ///
     /// * `span` - The new span value.
-    pub fn set_span(&mut self, _span: Span) {
-        todo!("Implement this function")
+    pub fn set_span(&mut self, span: Span) {
+        self.0.set_span(span.0);
     }
 }
 
@@ -70,19 +70,19 @@ impl fmt::Display for Punct {
 }
 
 impl fmt::Debug for Punct {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!("Implement this function")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
     }
 }
 
 impl PartialEq<char> for Punct {
-    fn eq(&self, _rhs: &char) -> bool {
-        todo!("Implement this function")
+    fn eq(&self, rhs: &char) -> bool {
+        self.0.ch == *rhs
     }
 }
 
 impl PartialEq<Punct> for char {
-    fn eq(&self, _rhs: &Punct) -> bool {
-        todo!("Implement this function")
+    fn eq(&self, rhs: &Punct) -> bool {
+        *self == rhs.0.ch
     }
 }
