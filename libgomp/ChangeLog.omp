@@ -1,3 +1,14 @@
+2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_map_vars_internal): Add 'i > 0' before doing a
+	kind check.
+	(GOMP_target_enter_exit_data): If the next map item is
+	GOMP_MAP_ALWAYS_POINTER map it together with the current item.
+	* testsuite/libgomp.fortran/target-enter-data-4.f90: New test.
+
 2023-02-14  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* target.c (gomp_target_rev): Address cast to pointer from integer
