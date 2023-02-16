@@ -3,6 +3,15 @@
 	Backported from master:
 	2023-02-15  Marek Polacek  <polacek@redhat.com>
 
+	PR middle-end/106080
+	* c-c++-common/Wdangling-pointer-10.c: New test.
+	* c-c++-common/Wdangling-pointer-9.c: New test.
+
+2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-15  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/106675
 	* g++.dg/cpp0x/overload-conv-5.C: New test.
 

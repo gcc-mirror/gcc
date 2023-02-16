@@ -1,3 +1,19 @@
+2023-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/90458
+	* config/i386/i386.cc (ix86_compute_frame_layout): Disable the
+	effects of -fstack-clash-protection for TARGET_STACK_PROBE.
+	(ix86_expand_prologue): Likewise.
+
+2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/106080
+	* gimple-ssa-warn-access.cc (is_auto_decl): Remove.  Use auto_var_p
+	instead.
+
 2023-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.cc (gimplify_save_expr): Add missing guard.
