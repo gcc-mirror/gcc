@@ -1,21 +1,17 @@
 use bridge::span::Span;
-use std::convert::TryInto;
-use std::ffi::c_uchar;
 use Spacing;
 
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct Punct {
-    pub(crate) ch: c_uchar,
+    pub(crate) ch: u32,
     pub(crate) spacing: Spacing,
 }
 
 impl Punct {
     pub fn new(ch: char, spacing: Spacing) -> Self {
         Punct {
-            ch: ch
-                .try_into()
-                .expect("Failed to convert rust char to c char"),
+            ch: ch.into(),
             spacing,
         }
     }

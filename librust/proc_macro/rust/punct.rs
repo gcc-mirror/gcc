@@ -1,4 +1,5 @@
 use bridge;
+use std::convert::TryInto;
 use std::fmt;
 use Span;
 
@@ -38,7 +39,10 @@ impl Punct {
 
     /// Get the value for this punctuation character as `char`.
     pub fn as_char(&self) -> char {
-        self.0.ch.into()
+        self.0
+            .ch
+            .try_into()
+            .expect("Cannot convert from u32 to char")
     }
 
     /// Get the [`Spacing`] of this punctuation character, indicating whether
