@@ -22,7 +22,7 @@ pub mod token_stream;
 /// This function provide a non panicking way to detect whether the API is
 /// invoked from inside of a procedural macro.
 pub fn is_available() -> bool {
-    todo!("Implement this function")
+    bridge::is_available()
 }
 
 /// A single token or a delimited sequence of token trees.
