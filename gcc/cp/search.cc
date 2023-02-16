@@ -1109,7 +1109,7 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
 
 tree
 lookup_member (tree xbasetype, tree name, int protect, bool want_type,
-	       tsubst_flags_t complain, access_failure_info *afi)
+	       tsubst_flags_t complain, access_failure_info *afi /* = NULL */)
 {
   tree rval, rval_binfo = NULL_TREE;
   tree type = NULL_TREE, basetype_path = NULL_TREE;

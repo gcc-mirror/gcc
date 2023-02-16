@@ -4305,9 +4305,10 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
      member of the current instantiation or a non-dependent base;
      lookup will stop when we hit a dependent base.  */
   if (!dependent_scope_p (context))
-    /* We should only set WANT_TYPE when we're a nested typename type.
-       Then we can give better diagnostics if we find a non-type.  */
-    t = lookup_field (context, name, 2, /*want_type=*/true);
+    {
+      bool want_type = (complain & tf_qualifying_scope);
+      t = lookup_member (context, name, /*protect=*/2, want_type, complain);
+    }
   else
     t = NULL_TREE;
 
@@ -4359,7 +4360,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
       else
 	{
 	  if (complain & tf_error)
-	    error ("%<typename %T::%D%> names %q#T, which is not a type",
+	    error ("%<typename %T::%D%> names %q#D, which is not a type",
 		   context, name, t);
 	  return error_mark_node;
 	}

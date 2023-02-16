@@ -13919,8 +13919,7 @@ tsubst_aggr_type_1 (tree t,
 {
   if (TYPE_TEMPLATE_INFO (t) && uses_template_parms (t))
     {
-      tree argvec;
-      tree r;
+      complain &= ~tf_qualifying_scope;
 
       /* Figure out what arguments are appropriate for the
 	 type we are trying to find.  For example, given:
@@ -13931,18 +13930,14 @@ tsubst_aggr_type_1 (tree t,
 	 and supposing that we are instantiating f<int, double>,
 	 then our ARGS will be {int, double}, but, when looking up
 	 S we only want {double}.  */
-      argvec = tsubst_template_args (TYPE_TI_ARGS (t), args,
-				     complain, in_decl);
+      tree argvec = tsubst_template_args (TYPE_TI_ARGS (t), args,
+					  complain, in_decl);
       if (argvec == error_mark_node)
-	r = error_mark_node;
-      else
-	{
-	  r = lookup_template_class (t, argvec, in_decl, NULL_TREE,
-				     entering_scope, complain);
-	  r = cp_build_qualified_type (r, cp_type_quals (t), complain);
-	}
+	return error_mark_node;
 
-      return r;
+      tree r = lookup_template_class (t, argvec, in_decl, NULL_TREE,
+				      entering_scope, complain);
+      return cp_build_qualified_type (r, cp_type_quals (t), complain);
     }
   else
     /* This is not a template type, so there's nothing to do.  */
@@ -15003,11 +14998,15 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  tree scope = USING_DECL_SCOPE (t);
 	  if (PACK_EXPANSION_P (scope))
 	    {
-	      scope = tsubst_pack_expansion (scope, args, complain, in_decl);
+	      scope = tsubst_pack_expansion (scope, args,
+					     complain | tf_qualifying_scope,
+					     in_decl);
 	      variadic_p = true;
 	    }
 	  else
-	    scope = tsubst_copy (scope, args, complain, in_decl);
+	    scope = tsubst_copy (scope, args,
+				 complain | tf_qualifying_scope,
+				 in_decl);
 
 	  tree name = DECL_NAME (t);
 	  if (IDENTIFIER_CONV_OP_P (name)
@@ -15821,6 +15820,12 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       || TREE_CODE (t) == TRANSLATION_UNIT_DECL)
     return t;
 
+  tsubst_flags_t tst_ok_flag = (complain & tf_tst_ok);
+  complain &= ~tf_tst_ok;
+
+  tsubst_flags_t qualifying_scope_flag = (complain & tf_qualifying_scope);
+  complain &= ~tf_qualifying_scope;
+
   if (DECL_P (t))
     return tsubst_decl (t, args, complain);
 
@@ -15888,9 +15893,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   bool fndecl_type = (complain & tf_fndecl_type);
   complain &= ~tf_fndecl_type;
-
-  bool tst_ok = (complain & tf_tst_ok);
-  complain &= ~tf_tst_ok;
 
   if (type
       && code != TYPENAME_TYPE
@@ -16428,7 +16430,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree ctx = TYPE_CONTEXT (t);
 	if (TREE_CODE (ctx) == TYPE_PACK_EXPANSION)
 	  {
-	    ctx = tsubst_pack_expansion (ctx, args, complain, in_decl);
+	    ctx = tsubst_pack_expansion (ctx, args,
+					 complain | tf_qualifying_scope,
+					 in_decl);
 	    if (ctx == error_mark_node
 		|| TREE_VEC_LENGTH (ctx) > 1)
 	      return error_mark_node;
@@ -16442,8 +16446,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    ctx = TREE_VEC_ELT (ctx, 0);
 	  }
 	else
-	  ctx = tsubst_aggr_type (ctx, args, complain, in_decl,
-				  /*entering_scope=*/1);
+	  ctx = tsubst_aggr_type (ctx, args,
+				  complain | tf_qualifying_scope,
+				  in_decl, /*entering_scope=*/1);
 	if (ctx == error_mark_node)
 	  return error_mark_node;
 
@@ -16473,8 +16478,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  }
 
 	tsubst_flags_t tcomplain = complain | tf_keep_type_decl;
-	if (tst_ok)
-	  tcomplain |= tf_tst_ok;
+	tcomplain |= tst_ok_flag | qualifying_scope_flag;
 	f = make_typename_type (ctx, f, typename_type, tcomplain);
 	if (f == error_mark_node)
 	  return f;
@@ -16879,7 +16883,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
   scope = TREE_OPERAND (qualified_id, 0);
   if (args)
     {
-      scope = tsubst (scope, args, complain, in_decl);
+      scope = tsubst (scope, args, complain | tf_qualifying_scope, in_decl);
       expr = tsubst_copy (name, args, complain, in_decl);
     }
   else
@@ -17124,6 +17128,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   if (t == NULL_TREE || t == error_mark_node || args == NULL_TREE)
     return t;
+
+  tsubst_flags_t qualifying_scope_flag = (complain & tf_qualifying_scope);
+  complain &= ~tf_qualifying_scope;
 
   if (tree d = maybe_dependent_member_ref (t, args, complain, in_decl))
     return d;
@@ -17598,7 +17605,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case SCOPE_REF:
       {
-	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
+	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args,
+				complain | tf_qualifying_scope, in_decl);
 	tree op1 = tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl);
 	return build_qualified_name (/*type=*/NULL_TREE, op0, op1,
 				     QUALIFIED_NAME_IS_TEMPLATE (t));
@@ -17713,7 +17721,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TYPEOF_TYPE:
     case DECLTYPE_TYPE:
     case TYPE_DECL:
-      return tsubst (t, args, complain, in_decl);
+      return tsubst (t, args, complain | qualifying_scope_flag, in_decl);
 
     case USING_DECL:
       t = DECL_NAME (t);
