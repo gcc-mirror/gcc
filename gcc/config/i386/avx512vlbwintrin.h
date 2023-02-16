@@ -4730,6 +4730,262 @@ _mm256_mask_cmple_epi16_mask (__mmask16 __M, __m256i __X, __m256i __Y)
 						  (__mmask16) __M);
 }
 
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_add_epi16 (__mmask8 __M, __m128i __W)
+{
+  __W = _mm_maskz_mov_epi16 (__M, __W);
+  _MM_REDUCE_OPERATOR_BASIC_EPI16 (+);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_mul_epi16 (__mmask8 __M, __m128i __W)
+{
+  __W = _mm_mask_mov_epi16 (_mm_set1_epi16 (1), __M, __W);
+  _MM_REDUCE_OPERATOR_BASIC_EPI16 (*);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_and_epi16 (__mmask8 __M, __m128i __W)
+{
+  __W = _mm_mask_mov_epi16 (_mm_set1_epi16 (-1), __M, __W);
+  _MM_REDUCE_OPERATOR_BASIC_EPI16 (&);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_or_epi16 (__mmask8 __M, __m128i __W)
+{
+  __W = _mm_maskz_mov_epi16 (__M, __W);
+  _MM_REDUCE_OPERATOR_BASIC_EPI16 (|);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_max_epi16 (__mmask16 __M, __m128i __V)
+{
+  __V = _mm_mask_mov_epi16 (_mm_set1_epi16 (-32767-1), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epi16);
+}
+
+extern __inline unsigned short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_max_epu16 (__mmask16 __M, __m128i __V)
+{
+  __V = _mm_maskz_mov_epi16 (__M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epu16);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_min_epi16 (__mmask16 __M, __m128i __V)
+{
+  __V = _mm_mask_mov_epi16 (_mm_set1_epi16 (32767), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epi16);
+}
+
+extern __inline unsigned short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_min_epu16 (__mmask16 __M, __m128i __V)
+{
+  __V = _mm_mask_mov_epi16 (_mm_set1_epi16 (-1), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epu16);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_add_epi16 (__mmask16 __M, __m256i __W)
+{
+  __W = _mm256_maskz_mov_epi16 (__M, __W);
+  _MM256_REDUCE_OPERATOR_BASIC_EPI16 (+);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_mul_epi16 (__mmask16 __M, __m256i __W)
+{
+  __W = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (1), __M, __W);
+  _MM256_REDUCE_OPERATOR_BASIC_EPI16 (*);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_and_epi16 (__mmask16 __M, __m256i __W)
+{
+  __W = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (-1), __M, __W);
+  _MM256_REDUCE_OPERATOR_BASIC_EPI16 (&);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_or_epi16 (__mmask16 __M, __m256i __W)
+{
+  __W = _mm256_maskz_mov_epi16 (__M, __W);
+  _MM256_REDUCE_OPERATOR_BASIC_EPI16 (|);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_max_epi16 (__mmask16 __M, __m256i __V)
+{
+  __V = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (-32767-1), __M, __V);
+  _MM256_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epi16);
+}
+
+extern __inline unsigned short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_max_epu16 (__mmask16 __M, __m256i __V)
+{
+  __V = _mm256_maskz_mov_epi16 (__M, __V);
+  _MM256_REDUCE_OPERATOR_MAX_MIN_EP16 (max_epu16);
+}
+
+extern __inline short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_min_epi16 (__mmask16 __M, __m256i __V)
+{
+  __V = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (32767), __M, __V);
+  _MM256_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epi16);
+}
+
+extern __inline unsigned short
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_min_epu16 (__mmask16 __M, __m256i __V)
+{
+  __V = _mm256_mask_mov_epi16 (_mm256_set1_epi16 (-1), __M, __V);
+  _MM256_REDUCE_OPERATOR_MAX_MIN_EP16 (min_epu16);
+}
+
+extern __inline char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_add_epi8 (__mmask16 __M, __m128i __W)
+{
+  __W = _mm_maskz_mov_epi8 (__M, __W);
+  _MM_REDUCE_OPERATOR_BASIC_EPI8 (+);
+}
+
+extern __inline char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_mul_epi8 (__mmask16 __M, __m128i __W)
+{
+  __W = _mm_mask_mov_epi8 (_mm_set1_epi8 (1), __M, __W);
+  _MM_REDUCE_OPERATOR_BASIC_EPI8 (*);
+}
+
+extern __inline char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_and_epi8 (__mmask16 __M, __m128i __W)
+{
+  __W = _mm_mask_mov_epi8 (_mm_set1_epi8 (-1), __M, __W);
+  _MM_REDUCE_OPERATOR_BASIC_EPI8 (&);
+}
+
+extern __inline char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_or_epi8 (__mmask16 __M, __m128i __W)
+{
+  __W = _mm_maskz_mov_epi8 (__M, __W);
+  _MM_REDUCE_OPERATOR_BASIC_EPI8 (|);
+}
+
+extern __inline signed char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_max_epi8 (__mmask16 __M, __m128i __V)
+{
+  __V = _mm_mask_mov_epi8 (_mm_set1_epi8 (-127-1), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epi8);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_max_epu8 (__mmask16 __M, __m128i __V)
+{
+  __V = _mm_maskz_mov_epi8 (__M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epu8);
+}
+
+extern __inline signed char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_min_epi8 (__mmask16 __M, __m128i __V)
+{
+  __V = _mm_mask_mov_epi8 (_mm_set1_epi8 (127), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epi8);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_min_epu8 (__mmask16 __M, __m128i __V)
+{
+  __V = _mm_mask_mov_epi8 (_mm_set1_epi8 (-1), __M, __V);
+  _MM_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epu8);
+}
+
+extern __inline char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_add_epi8 (__mmask32 __M, __m256i __W)
+{
+  __W = _mm256_maskz_mov_epi8 (__M, __W);
+  _MM256_REDUCE_OPERATOR_BASIC_EPI8 (+);
+}
+
+extern __inline char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_mul_epi8 (__mmask32 __M, __m256i __W)
+{
+  __W = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (1), __M, __W);
+  _MM256_REDUCE_OPERATOR_BASIC_EPI8 (*);
+}
+
+extern __inline char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_and_epi8 (__mmask32 __M, __m256i __W)
+{
+  __W = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (-1), __M, __W);
+  _MM256_REDUCE_OPERATOR_BASIC_EPI8 (&);
+}
+
+extern __inline char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_or_epi8 (__mmask32 __M, __m256i __W)
+{
+  __W = _mm256_maskz_mov_epi8 (__M, __W);
+  _MM256_REDUCE_OPERATOR_BASIC_EPI8 (|);
+}
+
+extern __inline signed char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_max_epi8 (__mmask32 __M, __m256i __V)
+{
+  __V = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (-127-1), __M, __V);
+  _MM256_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epi8);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_max_epu8 (__mmask32 __M, __m256i __V)
+{
+  __V = _mm256_maskz_mov_epi8 (__M, __V);
+  _MM256_REDUCE_OPERATOR_MAX_MIN_EP8 (max_epu8);
+}
+
+extern __inline signed char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_min_epi8 (__mmask32 __M, __m256i __V)
+{
+  __V = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (127), __M, __V);
+  _MM256_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epi8);
+}
+
+extern __inline unsigned char
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_reduce_min_epu8 (__mmask32 __M, __m256i __V)
+{
+  __V = _mm256_mask_mov_epi8 (_mm256_set1_epi8 (-1), __M, __V);
+  _MM256_REDUCE_OPERATOR_MAX_MIN_EP8 (min_epu8);
+}
+
 #ifdef __DISABLE_AVX512VLBW__
 #undef __DISABLE_AVX512VLBW__
 #pragma GCC pop_options
