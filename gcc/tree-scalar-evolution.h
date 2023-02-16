@@ -46,7 +46,7 @@ extern tree compute_overall_effect_of_inner_loop (class loop *, tree);
 /* Returns the basic block preceding LOOP, or the CFG entry block when
    the loop is function's body.  */
 
-static inline basic_block
+inline basic_block
 block_before_loop (loop_p loop)
 {
   edge preheader = loop_preheader_edge (loop);
@@ -57,7 +57,7 @@ block_before_loop (loop_p loop)
    symbolic form.  LOOP is the loop in which symbolic names have to
    be analyzed and instantiated.  */
 
-static inline tree
+inline tree
 instantiate_parameters (class loop *loop, tree chrec)
 {
   return instantiate_scev (loop_preheader_edge (loop), loop, chrec);
@@ -65,7 +65,7 @@ instantiate_parameters (class loop *loop, tree chrec)
 
 /* Returns the loop of the polynomial chrec CHREC.  */
 
-static inline class loop *
+inline class loop *
 get_chrec_loop (const_tree chrec)
 {
   return get_loop (cfun, CHREC_VARIABLE (chrec));

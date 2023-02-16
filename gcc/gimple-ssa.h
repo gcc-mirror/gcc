@@ -119,14 +119,14 @@ struct GTY(()) gimple_df {
    gimple_in_ssa_p is queried by gimplifier in various early stages before SSA
    infrastructure is initialized.  Check for presence of the datastructures
    at first place.  */
-static inline bool
+inline bool
 gimple_in_ssa_p (const struct function *fun)
 {
   return fun && fun->gimple_df && fun->gimple_df->in_ssa_p;
 }
 
 /* Artificial variable used for the virtual operand FUD chain.  */
-static inline tree
+inline tree
 gimple_vop (const struct function *fun)
 {
   gcc_checking_assert (fun && fun->gimple_df);
@@ -135,7 +135,7 @@ gimple_vop (const struct function *fun)
 
 /* Return the set of VUSE operand for statement G.  */
 
-static inline use_operand_p
+inline use_operand_p
 gimple_vuse_op (const gimple *g)
 {
   struct use_optype_d *ops;
@@ -152,7 +152,7 @@ gimple_vuse_op (const gimple *g)
 
 /* Return the set of VDEF operand for statement G.  */
 
-static inline def_operand_p
+inline def_operand_p
 gimple_vdef_op (gimple *g)
 {
   gimple_statement_with_memory_ops *mem_ops_stmt =
@@ -166,7 +166,7 @@ gimple_vdef_op (gimple *g)
 
 /* Mark statement S as modified, and update it.  */
 
-static inline void
+inline void
 update_stmt (gimple *s)
 {
   if (gimple_has_ops (s))
@@ -178,7 +178,7 @@ update_stmt (gimple *s)
 
 /* Update statement S if it has been optimized.  */
 
-static inline void
+inline void
 update_stmt_if_modified (gimple *s)
 {
   if (gimple_modified_p (s))
@@ -187,7 +187,7 @@ update_stmt_if_modified (gimple *s)
 
 /* Mark statement S as modified, and update it.  */
 
-static inline void
+inline void
 update_stmt_fn (struct function *fn, gimple *s)
 {
   if (gimple_has_ops (s))

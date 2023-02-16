@@ -184,7 +184,7 @@ extern bool flag_plugin_added;
    EVENT    - the event identifier
    GCC_DATA - event-specific data provided by the compiler  */
 
-static inline int
+inline int
 invoke_plugin_callbacks (int event ATTRIBUTE_UNUSED,
 			 void *gcc_data ATTRIBUTE_UNUSED)
 {

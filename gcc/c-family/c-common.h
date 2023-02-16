@@ -923,7 +923,7 @@ extern tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwis
    minimum or op1 is not -1, because e.g. (long long) INT_MIN / -1 is
    well defined INT_MAX + 1LL if long long is wider than int, but INT_MIN / -1
    is UB.  */
-static inline bool
+inline bool
 may_shorten_divmod (tree op0, tree op1)
 {
   tree type0 = TREE_TYPE (op0);
@@ -1327,7 +1327,7 @@ extern const struct c_omp_directive *c_omp_categorize_directive (const char *,
 								 const char *);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
-static inline tree
+inline tree
 c_tree_chain_next (tree t)
 {
   /* TREE_CHAIN of a type is TYPE_STUB_DECL, which is different

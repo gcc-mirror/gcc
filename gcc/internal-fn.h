@@ -105,7 +105,7 @@ extern void init_internal_fns ();
 
 extern const char *const internal_fn_name_array[];
 
-static inline const char *
+inline const char *
 internal_fn_name (enum internal_fn fn)
 {
   return internal_fn_name_array[(int) fn];
@@ -117,7 +117,7 @@ extern internal_fn lookup_internal_fn (const char *);
 
 extern const int internal_fn_flags_array[];
 
-static inline int
+inline int
 internal_fn_flags (enum internal_fn fn)
 {
   return internal_fn_flags_array[(int) fn];
@@ -127,7 +127,7 @@ internal_fn_flags (enum internal_fn fn)
 
 extern GTY(()) const_tree internal_fn_fnspec_array[IFN_LAST + 1];
 
-static inline const_tree
+inline const_tree
 internal_fn_fnspec (enum internal_fn fn)
 {
   return internal_fn_fnspec_array[(int) fn];

@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ADDRESSES_H
 #define GCC_ADDRESSES_H
 
-static inline enum reg_class
+inline enum reg_class
 base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
 		addr_space_t as ATTRIBUTE_UNUSED,
 		enum rtx_code outer_code ATTRIBUTE_UNUSED,
@@ -51,7 +51,7 @@ base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
    REGNO_OK_FOR_BASE_P.
    Arguments as for the REGNO_MODE_CODE_OK_FOR_BASE_P macro.  */
 
-static inline bool
+inline bool
 ok_for_base_p_1 (unsigned regno ATTRIBUTE_UNUSED,
 		 machine_mode mode ATTRIBUTE_UNUSED,
 		 addr_space_t as ATTRIBUTE_UNUSED,
@@ -77,7 +77,7 @@ ok_for_base_p_1 (unsigned regno ATTRIBUTE_UNUSED,
 /* Wrapper around ok_for_base_p_1, for use after register allocation is
    complete.  Arguments as for the called function.  */
 
-static inline bool
+inline bool
 regno_ok_for_base_p (unsigned regno, machine_mode mode, addr_space_t as,
 		     enum rtx_code outer_code, enum rtx_code index_code)
 {

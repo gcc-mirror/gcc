@@ -69,7 +69,7 @@ extern function_summary <tree *> *ipa_saved_clone_sources;
 
 /* Return estimated size of the inline sequence of EDGE.  */
 
-static inline int
+inline int
 estimate_edge_size (struct cgraph_edge *edge)
 {
   edge_growth_cache_entry *entry;
@@ -82,7 +82,7 @@ estimate_edge_size (struct cgraph_edge *edge)
 
 /* Return lower bound on estimated callee growth after inlining EDGE.  */
 
-static inline int
+inline int
 estimate_min_edge_growth (struct cgraph_edge *edge)
 {
   ipa_call_summary *s = ipa_call_summaries->get (edge);
@@ -92,7 +92,7 @@ estimate_min_edge_growth (struct cgraph_edge *edge)
 
 /* Return estimated callee growth after inlining EDGE.  */
 
-static inline int
+inline int
 estimate_edge_growth (struct cgraph_edge *edge)
 {
   ipa_call_summary *s = ipa_call_summaries->get (edge);
@@ -103,7 +103,7 @@ estimate_edge_growth (struct cgraph_edge *edge)
 /* Return estimated callee runtime increase after inlining
    EDGE.  */
 
-static inline sreal
+inline sreal
 estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL)
 {
   edge_growth_cache_entry *entry;
@@ -120,7 +120,7 @@ estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL)
 /* Return estimated callee runtime increase after inlining
    EDGE.  */
 
-static inline ipa_hints
+inline ipa_hints
 estimate_edge_hints (struct cgraph_edge *edge)
 {
   edge_growth_cache_entry *entry;

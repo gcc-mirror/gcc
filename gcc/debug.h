@@ -270,7 +270,7 @@ extern decl_to_instance_map_t *decl_to_instance_map;
 /* Allocate decl_to_instance_map with COUNT slots to begin wtih, if it
  * hasn't been allocated yet.  */
 
-static inline decl_to_instance_map_t *
+inline decl_to_instance_map_t *
 maybe_create_decl_to_instance_map (int count = 13)
 {
   if (!decl_to_instance_map)

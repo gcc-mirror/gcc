@@ -1097,7 +1097,7 @@ extern void df_scan_verify (void);
    Public functions access functions for the dataflow problems.
 ----------------------------------------------------------------------------*/
 
-static inline struct df_scan_bb_info *
+inline struct df_scan_bb_info *
 df_scan_get_bb_info (unsigned int index)
 {
   if (index < df_scan->block_info_size)
@@ -1106,7 +1106,7 @@ df_scan_get_bb_info (unsigned int index)
     return NULL;
 }
 
-static inline class df_rd_bb_info *
+inline class df_rd_bb_info *
 df_rd_get_bb_info (unsigned int index)
 {
   if (index < df_rd->block_info_size)
@@ -1115,7 +1115,7 @@ df_rd_get_bb_info (unsigned int index)
     return NULL;
 }
 
-static inline class df_lr_bb_info *
+inline class df_lr_bb_info *
 df_lr_get_bb_info (unsigned int index)
 {
   if (index < df_lr->block_info_size)
@@ -1124,7 +1124,7 @@ df_lr_get_bb_info (unsigned int index)
     return NULL;
 }
 
-static inline class df_md_bb_info *
+inline class df_md_bb_info *
 df_md_get_bb_info (unsigned int index)
 {
   if (index < df_md->block_info_size)
@@ -1133,7 +1133,7 @@ df_md_get_bb_info (unsigned int index)
     return NULL;
 }
 
-static inline class df_live_bb_info *
+inline class df_live_bb_info *
 df_live_get_bb_info (unsigned int index)
 {
   if (index < df_live->block_info_size)
@@ -1142,7 +1142,7 @@ df_live_get_bb_info (unsigned int index)
     return NULL;
 }
 
-static inline class df_word_lr_bb_info *
+inline class df_word_lr_bb_info *
 df_word_lr_get_bb_info (unsigned int index)
 {
   if (index < df_word_lr->block_info_size)
@@ -1151,7 +1151,7 @@ df_word_lr_get_bb_info (unsigned int index)
     return NULL;
 }
 
-static inline class df_mir_bb_info *
+inline class df_mir_bb_info *
 df_mir_get_bb_info (unsigned int index)
 {
   if (index < df_mir->block_info_size)
@@ -1165,7 +1165,7 @@ df_mir_get_bb_info (unsigned int index)
    choose different dataflow problems depending on the optimization
    level.  */
 
-static inline bitmap
+inline bitmap
 df_get_live_out (basic_block bb)
 {
   gcc_checking_assert (df_lr);
@@ -1181,7 +1181,7 @@ df_get_live_out (basic_block bb)
    choose different dataflow problems depending on the optimization
    level.  */
 
-static inline bitmap
+inline bitmap
 df_get_live_in (basic_block bb)
 {
   gcc_checking_assert (df_lr);
@@ -1195,7 +1195,7 @@ df_get_live_in (basic_block bb)
 /* Get basic block info.  */
 /* Get the artificial defs for a basic block.  */
 
-static inline df_ref
+inline df_ref
 df_get_artificial_defs (unsigned int bb_index)
 {
   return df_scan_get_bb_info (bb_index)->artificial_defs;
@@ -1204,7 +1204,7 @@ df_get_artificial_defs (unsigned int bb_index)
 
 /* Get the artificial uses for a basic block.  */
 
-static inline df_ref
+inline df_ref
 df_get_artificial_uses (unsigned int bb_index)
 {
   return df_scan_get_bb_info (bb_index)->artificial_uses;
@@ -1213,7 +1213,7 @@ df_get_artificial_uses (unsigned int bb_index)
 /* If INSN defines exactly one register, return the associated reference,
    otherwise return null.  */
 
-static inline df_ref
+inline df_ref
 df_single_def (const df_insn_info *info)
 {
   df_ref defs = DF_INSN_INFO_DEFS (info);
@@ -1223,7 +1223,7 @@ df_single_def (const df_insn_info *info)
 /* If INSN uses exactly one register, return the associated reference,
    otherwise return null.  */
 
-static inline df_ref
+inline df_ref
 df_single_use (const df_insn_info *info)
 {
   df_ref uses = DF_INSN_INFO_USES (info);

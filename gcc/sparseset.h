@@ -109,7 +109,7 @@ extern bool sparseset_equal_p (sparseset, sparseset);
 /* Operation: S = {}
    Clear the set of all elements.  */
 
-static inline void
+inline void
 sparseset_clear (sparseset s)
 {
   s->members = 0;
@@ -118,7 +118,7 @@ sparseset_clear (sparseset s)
 
 /* Return the number of elements currently in the set.  */
 
-static inline SPARSESET_ELT_TYPE
+inline SPARSESET_ELT_TYPE
 sparseset_cardinality (sparseset s)
 {
   return s->members;
@@ -126,7 +126,7 @@ sparseset_cardinality (sparseset s)
 
 /* Return the maximum number of elements this set can hold.  */
 
-static inline SPARSESET_ELT_TYPE
+inline SPARSESET_ELT_TYPE
 sparseset_size (sparseset s)
 {
   return s->size;
@@ -134,7 +134,7 @@ sparseset_size (sparseset s)
 
 /* Return true if e is a member of the set S, otherwise return false.  */
 
-static inline bool
+inline bool
 sparseset_bit_p (sparseset s, SPARSESET_ELT_TYPE e)
 {
   SPARSESET_ELT_TYPE idx;
@@ -149,7 +149,7 @@ sparseset_bit_p (sparseset s, SPARSESET_ELT_TYPE e)
 /* Low level insertion routine not meant for use outside of sparseset.[ch].
    Assumes E is valid and not already a member of the set S.  */
 
-static inline void
+inline void
 sparseset_insert_bit (sparseset s, SPARSESET_ELT_TYPE e, SPARSESET_ELT_TYPE idx)
 {
   s->sparse[e] = idx;
@@ -159,7 +159,7 @@ sparseset_insert_bit (sparseset s, SPARSESET_ELT_TYPE e, SPARSESET_ELT_TYPE idx)
 /* Operation: S = S + {e}
    Insert E into the set S, if it isn't already a member.  */
 
-static inline void
+inline void
 sparseset_set_bit (sparseset s, SPARSESET_ELT_TYPE e)
 {
   if (!sparseset_bit_p (s, e))
@@ -168,7 +168,7 @@ sparseset_set_bit (sparseset s, SPARSESET_ELT_TYPE e)
 
 /* Return and remove the last member added to the set S.  */
 
-static inline SPARSESET_ELT_TYPE
+inline SPARSESET_ELT_TYPE
 sparseset_pop (sparseset s)
 {
   SPARSESET_ELT_TYPE mem = s->members;
@@ -179,7 +179,7 @@ sparseset_pop (sparseset s)
   return s->dense[s->members];
 }
 
-static inline void
+inline void
 sparseset_iter_init (sparseset s)
 {
   s->iter = 0;
@@ -187,7 +187,7 @@ sparseset_iter_init (sparseset s)
   s->iterating = true;
 }
 
-static inline bool
+inline bool
 sparseset_iter_p (sparseset s)
 {
   if (s->iterating && s->iter < s->members)
@@ -196,13 +196,13 @@ sparseset_iter_p (sparseset s)
     return s->iterating = false;
 }
 
-static inline SPARSESET_ELT_TYPE
+inline SPARSESET_ELT_TYPE
 sparseset_iter_elm (sparseset s)
 {
   return s->dense[s->iter];
 }
 
-static inline void
+inline void
 sparseset_iter_next (sparseset s)
 {
   s->iter += s->iter_inc;

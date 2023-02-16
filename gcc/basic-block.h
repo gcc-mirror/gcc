@@ -309,7 +309,7 @@ enum cfg_bb_flags
 
 /* Returns true if BB has precisely one successor.  */
 
-static inline bool
+inline bool
 single_succ_p (const_basic_block bb)
 {
   return EDGE_COUNT (bb->succs) == 1;
@@ -317,7 +317,7 @@ single_succ_p (const_basic_block bb)
 
 /* Returns true if BB has precisely one predecessor.  */
 
-static inline bool
+inline bool
 single_pred_p (const_basic_block bb)
 {
   return EDGE_COUNT (bb->preds) == 1;
@@ -326,7 +326,7 @@ single_pred_p (const_basic_block bb)
 /* Returns the single successor edge of basic block BB.  Aborts if
    BB does not have exactly one successor.  */
 
-static inline edge
+inline edge
 single_succ_edge (const_basic_block bb)
 {
   gcc_checking_assert (single_succ_p (bb));
@@ -336,7 +336,7 @@ single_succ_edge (const_basic_block bb)
 /* Returns the single predecessor edge of basic block BB.  Aborts
    if BB does not have exactly one predecessor.  */
 
-static inline edge
+inline edge
 single_pred_edge (const_basic_block bb)
 {
   gcc_checking_assert (single_pred_p (bb));
@@ -346,7 +346,7 @@ single_pred_edge (const_basic_block bb)
 /* Returns the single successor block of basic block BB.  Aborts
    if BB does not have exactly one successor.  */
 
-static inline basic_block
+inline basic_block
 single_succ (const_basic_block bb)
 {
   return single_succ_edge (bb)->dest;
@@ -355,7 +355,7 @@ single_succ (const_basic_block bb)
 /* Returns the single predecessor block of basic block BB.  Aborts
    if BB does not have exactly one predecessor.*/
 
-static inline basic_block
+inline basic_block
 single_pred (const_basic_block bb)
 {
   return single_pred_edge (bb)->src;
@@ -368,7 +368,7 @@ struct edge_iterator {
   vec<edge, va_gc> **container;
 };
 
-static inline vec<edge, va_gc> *
+inline vec<edge, va_gc> *
 ei_container (edge_iterator i)
 {
   gcc_checking_assert (i.container);
@@ -379,7 +379,7 @@ ei_container (edge_iterator i)
 #define ei_last(iter) ei_last_1 (&(iter))
 
 /* Return an iterator pointing to the start of an edge vector.  */
-static inline edge_iterator
+inline edge_iterator
 ei_start_1 (vec<edge, va_gc> **ev)
 {
   edge_iterator i;
@@ -392,7 +392,7 @@ ei_start_1 (vec<edge, va_gc> **ev)
 
 /* Return an iterator pointing to the last element of an edge
    vector.  */
-static inline edge_iterator
+inline edge_iterator
 ei_last_1 (vec<edge, va_gc> **ev)
 {
   edge_iterator i;
@@ -404,7 +404,7 @@ ei_last_1 (vec<edge, va_gc> **ev)
 }
 
 /* Is the iterator `i' at the end of the sequence?  */
-static inline bool
+inline bool
 ei_end_p (edge_iterator i)
 {
   return (i.index == EDGE_COUNT (ei_container (i)));
@@ -412,14 +412,14 @@ ei_end_p (edge_iterator i)
 
 /* Is the iterator `i' at one position before the end of the
    sequence?  */
-static inline bool
+inline bool
 ei_one_before_end_p (edge_iterator i)
 {
   return (i.index + 1 == EDGE_COUNT (ei_container (i)));
 }
 
 /* Advance the iterator to the next element.  */
-static inline void
+inline void
 ei_next (edge_iterator *i)
 {
   gcc_checking_assert (i->index < EDGE_COUNT (ei_container (*i)));
@@ -427,7 +427,7 @@ ei_next (edge_iterator *i)
 }
 
 /* Move the iterator to the previous element.  */
-static inline void
+inline void
 ei_prev (edge_iterator *i)
 {
   gcc_checking_assert (i->index > 0);
@@ -435,7 +435,7 @@ ei_prev (edge_iterator *i)
 }
 
 /* Return the edge pointed to by the iterator `i'.  */
-static inline edge
+inline edge
 ei_edge (edge_iterator i)
 {
   return EDGE_I (ei_container (i), i.index);
@@ -444,7 +444,7 @@ ei_edge (edge_iterator i)
 /* Return an edge pointed to by the iterator.  Do it safely so that
    NULL is returned when the iterator is pointing at the end of the
    sequence.  */
-static inline edge
+inline edge
 ei_safe_edge (edge_iterator i)
 {
   return !ei_end_p (i) ? ei_edge (i) : NULL;
@@ -454,7 +454,7 @@ ei_safe_edge (edge_iterator i)
    *Edge P is set to the next edge if we are to continue to iterate
    and NULL otherwise.  */
 
-static inline bool
+inline bool
 ei_cond (edge_iterator ei, edge *p)
 {
   if (!ei_end_p (ei))
@@ -505,14 +505,14 @@ ei_cond (edge_iterator ei, edge *p)
 
 /* Return true if BB is in a transaction.  */
 
-static inline bool
+inline bool
 bb_in_transaction (basic_block bb)
 {
   return bb->flags & BB_IN_TRANSACTION;
 }
 
 /* Return true when one of the predecessor edges of BB is marked with EDGE_EH.  */
-static inline bool
+inline bool
 bb_has_eh_pred (basic_block bb)
 {
   edge e;
@@ -527,7 +527,7 @@ bb_has_eh_pred (basic_block bb)
 }
 
 /* Return true when one of the predecessor edges of BB is marked with EDGE_ABNORMAL.  */
-static inline bool
+inline bool
 bb_has_abnormal_pred (basic_block bb)
 {
   edge e;
@@ -542,7 +542,7 @@ bb_has_abnormal_pred (basic_block bb)
 }
 
 /* Return the fallthru edge in EDGES if it exists, NULL otherwise.  */
-static inline edge
+inline edge
 find_fallthru_edge (vec<edge, va_gc> *edges)
 {
   edge e;
@@ -557,7 +557,7 @@ find_fallthru_edge (vec<edge, va_gc> *edges)
 
 /* Check tha probability is sane.  */
 
-static inline void
+inline void
 check_probability (int prob)
 {
   gcc_checking_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
@@ -566,7 +566,7 @@ check_probability (int prob)
 /* Given PROB1 and PROB2, return PROB1*PROB2/REG_BR_PROB_BASE. 
    Used to combine BB probabilities.  */
 
-static inline int
+inline int
 combine_probabilities (int prob1, int prob2)
 {
   check_probability (prob1);
@@ -578,7 +578,7 @@ combine_probabilities (int prob1, int prob2)
    interface when potentially scaling up, so that SCALE is not
    constrained to be < REG_BR_PROB_BASE.  */
 
-static inline gcov_type
+inline gcov_type
 apply_scale (gcov_type freq, gcov_type scale)
 {
   return RDIV (freq * scale, REG_BR_PROB_BASE);
@@ -586,7 +586,7 @@ apply_scale (gcov_type freq, gcov_type scale)
 
 /* Apply probability PROB on frequency or count FREQ.  */
 
-static inline gcov_type
+inline gcov_type
 apply_probability (gcov_type freq, int prob)
 {
   check_probability (prob);
@@ -595,7 +595,7 @@ apply_probability (gcov_type freq, int prob)
 
 /* Return inverse probability for PROB.  */
 
-static inline int
+inline int
 inverse_probability (int prob1)
 {
   check_probability (prob1);
@@ -604,7 +604,7 @@ inverse_probability (int prob1)
 
 /* Return true if BB has at least one abnormal outgoing edge.  */
 
-static inline bool
+inline bool
 has_abnormal_or_eh_outgoing_edge_p (basic_block bb)
 {
   edge e;
@@ -620,7 +620,7 @@ has_abnormal_or_eh_outgoing_edge_p (basic_block bb)
 /* Return true when one of the predecessor edges of BB is marked with
    EDGE_ABNORMAL_CALL or EDGE_EH.  */
 
-static inline bool
+inline bool
 has_abnormal_call_or_eh_pred_edge_p (basic_block bb)
 {
   edge e;

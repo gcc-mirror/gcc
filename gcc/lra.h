@@ -27,7 +27,7 @@ extern bool lra_simple_p;
 /* Return the allocno reg class of REGNO.  If it is a reload pseudo,
    the pseudo should finally get hard register of the allocno
    class.  */
-static inline enum reg_class
+inline enum reg_class
 lra_get_allocno_class (int regno)
 {
   resize_reg_info ();

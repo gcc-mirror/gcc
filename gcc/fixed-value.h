@@ -51,7 +51,7 @@ extern FIXED_VALUE_TYPE fixed_from_double_int (double_int, scalar_mode);
 
 /* Return a CONST_FIXED from a bit payload and machine mode MODE.
    The bits in PAYLOAD are sign-extended/zero-extended according to MODE.  */
-static inline rtx
+inline rtx
 const_fixed_from_double_int (double_int payload,
 			     scalar_mode mode)
 {

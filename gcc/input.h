@@ -195,7 +195,7 @@ extern int get_discriminator_from_loc (location_t);
    that is part of a macro replacement-list defined in a system
    header, but expanded in a non-system file.  */
 
-static inline int
+inline int
 in_system_header_at (location_t loc)
 {
   return linemap_location_in_system_header_p (line_table, loc);
@@ -204,7 +204,7 @@ in_system_header_at (location_t loc)
 /* Return true if LOCATION is the locus of a token that
    comes from a macro expansion, false otherwise.  */
 
-static inline bool
+inline bool
 from_macro_expansion_at (location_t loc)
 {
   return linemap_location_from_macro_expansion_p (line_table, loc);
@@ -214,13 +214,13 @@ from_macro_expansion_at (location_t loc)
    a macro definition, false otherwise.  This differs from from_macro_expansion_at
    in its treatment of macro arguments, for which this returns false.  */
 
-static inline bool
+inline bool
 from_macro_definition_at (location_t loc)
 {
   return linemap_location_from_macro_definition_p (line_table, loc);
 }
 
-static inline location_t
+inline location_t
 get_pure_location (location_t loc)
 {
   return get_pure_location (line_table, loc);
@@ -228,7 +228,7 @@ get_pure_location (location_t loc)
 
 /* Get the start of any range encoded within location LOC.  */
 
-static inline location_t
+inline location_t
 get_start (location_t loc)
 {
   return get_range_from_loc (line_table, loc).m_start;
@@ -236,7 +236,7 @@ get_start (location_t loc)
 
 /* Get the endpoint of any range encoded within location LOC.  */
 
-static inline location_t
+inline location_t
 get_finish (location_t loc)
 {
   return get_range_from_loc (line_table, loc).m_finish;

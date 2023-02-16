@@ -71,7 +71,7 @@ extern unsigned tree_num_loop_insns (class loop *, struct eni_weights *);
 
 /* Returns the loop of the statement STMT.  */
 
-static inline class loop *
+inline class loop *
 loop_containing_stmt (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);

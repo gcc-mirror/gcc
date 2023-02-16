@@ -4238,7 +4238,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* We have an expression tree T that represents a call, either CALL_EXPR
    or AGGR_INIT_EXPR.  Return a reference to the Nth argument.  */
 
-static inline tree&
+inline tree&
 get_nth_callarg (tree t, int n)
 {
   switch (TREE_CODE (t))

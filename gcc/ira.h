@@ -235,7 +235,7 @@ extern rtx non_conflicting_reg_copy_p (rtx_insn *);
    non-local goto code using frame-pointer to address saved stack
    pointer value after restoring old frame pointer value.  The
    function returns TRUE if REGNO is such a static chain pseudo.  */
-static inline bool
+inline bool
 non_spilled_static_chain_regno_p (int regno)
 {
   return (cfun->static_chain_decl && crtl->has_nonlocal_goto

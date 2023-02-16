@@ -1236,7 +1236,7 @@ hash_table<Descriptor, Lazy, Allocator>::iterator::operator ++ ()
 /* ggc walking routines.  */
 
 template<typename E>
-static inline void
+inline void
 gt_ggc_mx (hash_table<E> *h)
 {
   typedef hash_table<E> table;
@@ -1257,7 +1257,7 @@ gt_ggc_mx (hash_table<E> *h)
 }
 
 template<typename D>
-static inline void
+inline void
 hashtab_entry_note_pointers (void *obj, void *h, gt_pointer_operator op,
 			     void *cookie)
 {
@@ -1293,7 +1293,7 @@ gt_pch_nx (hash_table<D> *h)
 }
 
 template<typename D>
-static inline void
+inline void
 gt_pch_nx (hash_table<D> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_entries, NULL, cookie);

@@ -113,7 +113,7 @@ extern void dump_cselib_table (FILE *);
 /* Return the canonical value for VAL, following the equivalence chain
    towards the earliest (== lowest uid) equivalent value.  */
 
-static inline cselib_val *
+inline cselib_val *
 canonical_cselib_val (cselib_val *val)
 {
   cselib_val *canon;
@@ -131,7 +131,7 @@ canonical_cselib_val (cselib_val *val)
 /* Return nonzero if we can prove that X and Y contain the same value, taking
    our gathered information into account.  */
 
-static inline int
+inline int
 rtx_equal_for_cselib_p (rtx x, rtx y)
 {
   if (x == y)
