@@ -124,6 +124,25 @@ extern const function_base *const vnclip;
 extern const function_base *const vnclip;
 extern const function_base *const vnclipu;
 extern const function_base *const vnclipu;
+extern const function_base *const vmand;
+extern const function_base *const vmnand;
+extern const function_base *const vmandn;
+extern const function_base *const vmxor;
+extern const function_base *const vmor;
+extern const function_base *const vmnor;
+extern const function_base *const vmorn;
+extern const function_base *const vmxnor;
+extern const function_base *const vmmv;
+extern const function_base *const vmclr;
+extern const function_base *const vmset;
+extern const function_base *const vmnot;
+extern const function_base *const vcpop;
+extern const function_base *const vfirst;
+extern const function_base *const vmsbf;
+extern const function_base *const vmsif;
+extern const function_base *const vmsof;
+extern const function_base *const viota;
+extern const function_base *const vid;
 }
 
 } // end namespace riscv_vector

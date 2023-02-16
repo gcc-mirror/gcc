@@ -665,6 +665,185 @@ public:
   }
 };
 
+/* Implements vmand/vmnand/vmandn/vmxor/vmor/vmnor/vmorn/vmxnor  */
+template<rtx_code CODE>
+class mask_logic : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
+  }
+};
+template<rtx_code CODE>
+class mask_nlogic : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_n (CODE, e.vector_mode ()));
+  }
+};
+template<rtx_code CODE>
+class mask_notlogic : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_not (CODE, e.vector_mode ()));
+  }
+};
+
+/* Implements vmmv.  */
+class vmmv : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_mov (e.vector_mode ()));
+  }
+};
+
+/* Implements vmclr.  */
+class vmclr : public function_base
+{
+public:
+  bool can_be_overloaded_p (enum predication_type_index) const override
+  {
+    return false;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    machine_mode mode = TYPE_MODE (TREE_TYPE (e.exp));
+    e.add_all_one_mask_operand (mode);
+    e.add_vundef_operand (mode);
+    e.add_input_operand (mode, CONST0_RTX (mode));
+    e.add_input_operand (call_expr_nargs (e.exp) - 1);
+    e.add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+    return e.generate_insn (code_for_pred_mov (e.vector_mode ()));
+  }
+};
+
+/* Implements vmset.  */
+class vmset : public function_base
+{
+public:
+  bool can_be_overloaded_p (enum predication_type_index) const override
+  {
+    return false;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    machine_mode mode = TYPE_MODE (TREE_TYPE (e.exp));
+    e.add_all_one_mask_operand (mode);
+    e.add_vundef_operand (mode);
+    e.add_input_operand (mode, CONSTM1_RTX (mode));
+    e.add_input_operand (call_expr_nargs (e.exp) - 1);
+    e.add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+    return e.generate_insn (code_for_pred_mov (e.vector_mode ()));
+  }
+};
+
+/* Implements vmnot.  */
+class vmnot : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_not (e.vector_mode ()));
+  }
+};
+
+/* Implements vcpop.  */
+class vcpop : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_popcount (e.vector_mode (), Pmode));
+  }
+};
+
+/* Implements vfirst.  */
+class vfirst : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_ffs (e.vector_mode (), Pmode));
+  }
+};
+
+/* Implements vmsbf/vmsif/vmsof.  */
+template<int UNSPEC>
+class mask_misc : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred (UNSPEC, e.vector_mode ()));
+  }
+};
+
+/* Implements viota.  */
+class viota : public function_base
+{
+public:
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred == PRED_TYPE_tu || pred == PRED_TYPE_tum
+	   || pred == PRED_TYPE_tumu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_iota (e.vector_mode ()));
+  }
+};
+
+/* Implements vid.  */
+class vid : public function_base
+{
+public:
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred == PRED_TYPE_tu || pred == PRED_TYPE_tum
+	   || pred == PRED_TYPE_tumu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_series (e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -763,6 +942,25 @@ static CONSTEXPR const sat_op<UNSPEC_VSSRL> vssrl_obj;
 static CONSTEXPR const sat_op<UNSPEC_VSSRA> vssra_obj;
 static CONSTEXPR const vnclip<UNSPEC_VNCLIP> vnclip_obj;
 static CONSTEXPR const vnclip<UNSPEC_VNCLIPU> vnclipu_obj;
+static CONSTEXPR const mask_logic<AND> vmand_obj;
+static CONSTEXPR const mask_nlogic<AND> vmnand_obj;
+static CONSTEXPR const mask_notlogic<AND> vmandn_obj;
+static CONSTEXPR const mask_logic<XOR> vmxor_obj;
+static CONSTEXPR const mask_logic<IOR> vmor_obj;
+static CONSTEXPR const mask_nlogic<IOR> vmnor_obj;
+static CONSTEXPR const mask_notlogic<IOR> vmorn_obj;
+static CONSTEXPR const mask_nlogic<XOR> vmxnor_obj;
+static CONSTEXPR const vmmv vmmv_obj;
+static CONSTEXPR const vmclr vmclr_obj;
+static CONSTEXPR const vmset vmset_obj;
+static CONSTEXPR const vmnot vmnot_obj;
+static CONSTEXPR const vcpop vcpop_obj;
+static CONSTEXPR const vfirst vfirst_obj;
+static CONSTEXPR const mask_misc<UNSPEC_VMSBF> vmsbf_obj;
+static CONSTEXPR const mask_misc<UNSPEC_VMSIF> vmsif_obj;
+static CONSTEXPR const mask_misc<UNSPEC_VMSOF> vmsof_obj;
+static CONSTEXPR const viota viota_obj;
+static CONSTEXPR const vid vid_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -867,5 +1065,24 @@ BASE (vssra)
 BASE (vssrl)
 BASE (vnclip)
 BASE (vnclipu)
+BASE (vmand)
+BASE (vmnand)
+BASE (vmandn)
+BASE (vmxor)
+BASE (vmor)
+BASE (vmnor)
+BASE (vmorn)
+BASE (vmxnor)
+BASE (vmmv)
+BASE (vmclr)
+BASE (vmset)
+BASE (vmnot)
+BASE (vcpop)
+BASE (vfirst)
+BASE (vmsbf)
+BASE (vmsif)
+BASE (vmsof)
+BASE (viota)
+BASE (vid)
 
 } // end namespace riscv_vector

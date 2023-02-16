@@ -3349,7 +3349,7 @@ pass_vsetvl::cleanup_insns (void) const
 	  if (!has_vl_op (rinsn) || !REG_P (get_vl (rinsn)))
 	    continue;
 	  rtx avl = get_vl (rinsn);
-	  if (count_occurrences (PATTERN (rinsn), avl, true) == 1)
+	  if (count_occurrences (PATTERN (rinsn), avl, 0) == 1)
 	    {
 	      /* Get the list of uses for the new instruction.  */
 	      auto attempt = crtl->ssa->new_change_attempt ();
@@ -3363,7 +3363,9 @@ pass_vsetvl::cleanup_insns (void) const
 	      use_array new_uses = use_array (uses_builder.finish ());
 	      change.new_uses = new_uses;
 	      change.move_range = insn->ebb ()->insn_range ();
-	      rtx pat = simplify_replace_rtx (PATTERN (rinsn), avl, const0_rtx);
+	      rtx set = single_set (rinsn);
+	      rtx src = simplify_replace_rtx (SET_SRC (set), avl, const0_rtx);
+	      rtx pat = gen_rtx_SET (SET_DEST (set), src);
 	      gcc_assert (change_insn (crtl->ssa, change, insn, pat));
 	    }
 	}

@@ -277,7 +277,37 @@ DEF_RVV_FUNCTION (vnclip, narrow_alu, full_preds, i_narrow_shift_vwx_ops)
 
 /* TODO: 13. Vector Floating-Point Instructions.  */
 /* TODO: 14. Vector Reduction Operations.  */
-/* TODO: 15. Vector Mask Instructions.  */
+
+/* 15. Vector Mask Instructions.  */
+
+// 15.1. Vector Mask-Register Logical Instructions
+DEF_RVV_FUNCTION (vmand, mask_alu, none_preds, b_mmm_ops)
+DEF_RVV_FUNCTION (vmnand, mask_alu, none_preds, b_mmm_ops)
+DEF_RVV_FUNCTION (vmandn, mask_alu, none_preds, b_mmm_ops)
+DEF_RVV_FUNCTION (vmxor, mask_alu, none_preds, b_mmm_ops)
+DEF_RVV_FUNCTION (vmor, mask_alu, none_preds, b_mmm_ops)
+DEF_RVV_FUNCTION (vmnor, mask_alu, none_preds, b_mmm_ops)
+DEF_RVV_FUNCTION (vmorn, mask_alu, none_preds, b_mmm_ops)
+DEF_RVV_FUNCTION (vmxnor, mask_alu, none_preds, b_mmm_ops)
+DEF_RVV_FUNCTION (vmmv, mask_alu, none_preds, b_mm_ops)
+DEF_RVV_FUNCTION (vmclr, mask_alu, none_preds, b_m_ops)
+DEF_RVV_FUNCTION (vmset, mask_alu, none_preds, b_m_ops)
+DEF_RVV_FUNCTION (vmnot, mask_alu, none_preds, b_mm_ops)
+// 15.2. Vector count population in mask vcpop.m
+DEF_RVV_FUNCTION (vcpop, mask_alu, none_m_preds, b_ulong_m_ops)
+// 15.3. vfirst find-first-set mask bit
+DEF_RVV_FUNCTION (vfirst, mask_alu, none_m_preds, b_long_m_ops)
+// 15.4. vmsbf.m set-before-first mask bit
+DEF_RVV_FUNCTION (vmsbf, mask_alu, none_m_mu_preds, b_mm_ops)
+// 15.5. vmsif.m set-including-first mask bit
+DEF_RVV_FUNCTION (vmsif, mask_alu, none_m_mu_preds, b_mm_ops)
+// 15.6. vmsof.m set-only-first mask bit
+DEF_RVV_FUNCTION (vmsof, mask_alu, none_m_mu_preds, b_mm_ops)
+// 15.8. Vector Iota Instruction
+DEF_RVV_FUNCTION (viota, mask_alu, full_preds, u_vm_ops)
+// 15.9. Vector Element Index Instruction
+DEF_RVV_FUNCTION (vid, alu, full_preds, u_v_ops)
+
 /* TODO: 16. Vector Permutation Instructions.  */
 
 #undef DEF_RVV_FUNCTION

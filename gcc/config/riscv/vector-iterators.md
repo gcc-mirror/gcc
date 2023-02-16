@@ -49,6 +49,11 @@
   UNSPEC_VASUBU
   UNSPEC_VASUB
   UNSPEC_VSMUL
+
+  UNSPEC_VMSBF
+  UNSPEC_VMSIF
+  UNSPEC_VMSOF
+  UNSPEC_VIOTA
 ])
 
 (define_mode_iterator V [
@@ -293,6 +298,8 @@
 			      	    UNSPEC_VASUBU UNSPEC_VASUB UNSPEC_VSMUL])
 (define_int_iterator VSAT_SHIFT_OP [UNSPEC_VSSRL UNSPEC_VSSRA])
 
+(define_int_iterator VMISC [UNSPEC_VMSBF UNSPEC_VMSIF UNSPEC_VMSOF])
+
 (define_int_attr order [
   (UNSPEC_ORDERED "o") (UNSPEC_UNORDERED "u")
 ])
@@ -308,6 +315,8 @@
 			 	(UNSPEC_VSMUL "vsmul") (UNSPEC_VSSRL "vsshift")
 			 	(UNSPEC_VSSRA "vsshift") (UNSPEC_VNCLIP "vnclip")
 				(UNSPEC_VNCLIPU "vnclip")])
+
+(define_int_attr misc_op [(UNSPEC_VMSBF "sbf") (UNSPEC_VMSIF "sif") (UNSPEC_VMSOF "sof")])
 
 (define_code_iterator any_int_binop [plus minus and ior xor ashift ashiftrt lshiftrt
   smax umax smin umin mult div udiv mod umod
