@@ -3,6 +3,13 @@
 	Backported from master:
 	2023-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* libgomp.texi: Fix typos - theads -> threads.
+
+2023-02-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
 	* testsuite/libgomp.fortran/target-nowait-array-section.f90: Fix
 	comment typo and improve its wording.
 
