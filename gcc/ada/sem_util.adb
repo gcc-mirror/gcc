@@ -21196,11 +21196,8 @@ package body Sem_Util is
                return Is_Variable_Prefix (Prefix (Orig_Node));
 
             when N_Selected_Component =>
-               return (Is_Variable (Selector_Name (Orig_Node))
-                        and then Is_Variable_Prefix (Prefix (Orig_Node)))
-                 or else
-                   (Nkind (N) = N_Expanded_Name
-                     and then Scope (Entity (N)) = Entity (Prefix (N)));
+               return Is_Variable (Selector_Name (Orig_Node))
+                       and then Is_Variable_Prefix (Prefix (Orig_Node));
 
             --  For an explicit dereference, the type of the prefix cannot
             --  be an access to constant or an access to subprogram.
