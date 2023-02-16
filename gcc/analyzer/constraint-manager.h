@@ -100,6 +100,11 @@ struct bounded_range
 
   static int cmp (const bounded_range &a, const bounded_range &b);
 
+  bool singleton_p () const
+  {
+    return tree_int_cst_equal (m_lower, m_upper);
+  }
+
   tree m_lower;
   tree m_upper;
 
@@ -498,6 +503,8 @@ public:
   void add_constraint_internal (equiv_class_id lhs_id,
 				enum constraint_op c_op,
 				equiv_class_id rhs_id);
+  bool impossible_derived_conditions_p (const svalue *lhs,
+					const svalue *rhs) const;
 
   region_model_manager *m_mgr;
 };

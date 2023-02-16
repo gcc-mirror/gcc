@@ -2253,6 +2253,9 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
     /* Binary ops.  */
     case PLUS_EXPR:
     case MULT_EXPR:
+    case BIT_AND_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
 	{
 	  tree expr = pv.m_tree;
 	  tree arg0 = TREE_OPERAND (expr, 0);
