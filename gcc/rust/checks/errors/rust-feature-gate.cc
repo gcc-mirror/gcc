@@ -105,4 +105,54 @@ FeatureGate::visit (AST::ExternBlock &block)
     }
 }
 
+void
+FeatureGate::check_rustc_attri (const std::vector<AST::Attribute> &attributes)
+{
+  for (const AST::Attribute &attr : attributes)
+    {
+      auto name = attr.get_path ().as_string ();
+      if (name.rfind ("rustc_", 0) == 0)
+	{
+	  gate (Feature::Name::RUSTC_ATTRS, attr.get_locus (),
+		"internal implementation detail");
+	}
+    }
+}
+
+void
+FeatureGate::visit (AST::MacroRulesDefinition &rules_def)
+{
+  check_rustc_attri (rules_def.get_outer_attrs ());
+}
+
+void
+FeatureGate::visit (AST::InherentImpl &impl)
+{
+  for (const auto &item : impl.get_impl_items ())
+    {
+      item->accept_vis (*this);
+    }
+}
+
+void
+FeatureGate::visit (AST::TraitImpl &impl)
+{
+  for (const auto &item : impl.get_impl_items ())
+    {
+      item->accept_vis (*this);
+    }
+}
+
+void
+FeatureGate::visit (AST::Method &method)
+{
+  check_rustc_attri (method.get_outer_attrs ());
+}
+
+void
+FeatureGate::visit (AST::Function &function)
+{
+  check_rustc_attri (function.get_outer_attrs ());
+}
+
 } // namespace Rust

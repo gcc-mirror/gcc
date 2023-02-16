@@ -25,8 +25,6 @@
 
 namespace Rust {
 
-struct Feature;
-
 class FeatureGate : public AST::ASTVisitor
 {
 public:
@@ -109,14 +107,14 @@ public:
   void visit (AST::TypeParam &param) override {}
   void visit (AST::LifetimeWhereClauseItem &item) override {}
   void visit (AST::TypeBoundWhereClauseItem &item) override {}
-  void visit (AST::Method &method) override {}
+  void visit (AST::Method &method) override;
   void visit (AST::Module &module) override {}
   void visit (AST::ExternCrate &crate) override {}
   void visit (AST::UseTreeGlob &use_tree) override {}
   void visit (AST::UseTreeList &use_tree) override {}
   void visit (AST::UseTreeRebind &use_tree) override {}
   void visit (AST::UseDeclaration &use_decl) override {}
-  void visit (AST::Function &function) override {}
+  void visit (AST::Function &function) override;
   void visit (AST::TypeAlias &type_alias) override {}
   void visit (AST::StructStruct &struct_item) override {}
   void visit (AST::TupleStruct &tuple_struct) override {}
@@ -133,15 +131,15 @@ public:
   void visit (AST::TraitItemConst &item) override {}
   void visit (AST::TraitItemType &item) override {}
   void visit (AST::Trait &trait) override {}
-  void visit (AST::InherentImpl &impl) override {}
-  void visit (AST::TraitImpl &impl) override {}
+  void visit (AST::InherentImpl &impl) override;
+  void visit (AST::TraitImpl &impl) override;
   void visit (AST::ExternalStaticItem &item) override {}
   void visit (AST::ExternalFunctionItem &item) override {}
   void visit (AST::ExternBlock &block) override;
   void visit (AST::MacroMatchFragment &match) override {}
   void visit (AST::MacroMatchRepetition &match) override {}
   void visit (AST::MacroMatcher &matcher) override {}
-  void visit (AST::MacroRulesDefinition &rules_def) override {}
+  void visit (AST::MacroRulesDefinition &rules_def) override;
   void visit (AST::MacroInvocation &macro_invoc) override {}
   void visit (AST::MetaItemPath &meta_item) override {}
   void visit (AST::MetaItemSeq &meta_item) override {}
@@ -191,6 +189,7 @@ public:
 
 private:
   void gate (Feature::Name name, Location loc, const std::string &error_msg);
+  void check_rustc_attri (const std::vector<AST::Attribute> &attributes);
   std::set<Feature::Name> valid_features;
 };
 } // namespace Rust
