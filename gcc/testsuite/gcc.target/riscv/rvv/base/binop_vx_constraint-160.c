@@ -41,7 +41,7 @@ void f1 (void * in, void *out, int64_t x, int n)
 ** f2:
 **  ...
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+
-**  vmnot\.mm\s+v[0-9]+,\s*v[0-9]+
+**  vmnot\.m\s+v[0-9]+,\s*v[0-9]+
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,v0.t
 **	vmxor\.mm\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 **  ...
@@ -60,7 +60,7 @@ void f2 (void * in, void *out, int64_t x, int n)
 ** f3:
 **  ...
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+
-**  vmnot\.mm\s+v[0-9]+,\s*v[0-9]+
+**  vmnot\.m\s+v[0-9]+,\s*v[0-9]+
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,v0.t
 **	vmxor\.mm\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 **  ...
@@ -79,7 +79,7 @@ void f3 (void * in, void *out, int64_t x, int n)
 ** f4:
 **  ...
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+
-**  vmnot\.mm\s+v[0-9]+,\s*v[0-9]+
+**  vmnot\.m\s+v[0-9]+,\s*v[0-9]+
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,v0.t
 **	vmxor\.mm\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 **  ...
@@ -98,7 +98,7 @@ void f4 (void * in, void *out, int64_t x, int n)
 ** f5:
 **  ...
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+
-**  vmnot\.mm\s+v[0-9]+,\s*v[0-9]+
+**  vmnot\.m\s+v[0-9]+,\s*v[0-9]+
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,v0.t
 **	vmxor\.mm\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 **  ...
@@ -117,7 +117,7 @@ void f5 (void * in, void *out, int64_t x, int n)
 ** f6:
 **  ...
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+
-**  vmnot\.mm\s+v[0-9]+,\s*v[0-9]+
+**  vmnot\.m\s+v[0-9]+,\s*v[0-9]+
 **	vmslt\.vx\tv[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,v0.t
 **	vmxor\.mm\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 **  ...

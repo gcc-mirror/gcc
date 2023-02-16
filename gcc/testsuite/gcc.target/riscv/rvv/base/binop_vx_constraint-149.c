@@ -15,5 +15,5 @@ void f1 (void * in, void *out, int32_t x)
 
 /* { dg-final { scan-assembler-times {vmslt\.vx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+\s+} 2 } } */
 /* { dg-final { scan-assembler-times {vmandn\.mm\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 1 } } */
-/* { dg-final { scan-assembler-times {vmnot\.mm\s+v[0-9]+,\s*v[0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {vmnot\.m\s+v[0-9]+,\s*v[0-9]+} 1 } } */
 /* { dg-final { scan-assembler-not {vmv} } } */
