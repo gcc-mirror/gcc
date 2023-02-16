@@ -1,4 +1,6 @@
 // { dg-additional-options "-w -frust-cfg=A" }
+#![feature(rustc_attrs)]
+
 #[rustc_builtin_macro]
 macro_rules! cfg {
     () => {{}};

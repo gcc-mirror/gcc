@@ -1,4 +1,5 @@
 // { dg-additional-options "-fdump-tree-gimple" }
+#![feature(rustc_attrs)]
 
 #[rustc_builtin_macro]
 macro_rules! concat {

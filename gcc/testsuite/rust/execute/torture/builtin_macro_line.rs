@@ -1,4 +1,6 @@
-// { dg-output "18\r*\n21\r*\n" }
+// { dg-output "20\r*\n23\r*\n" }
+#![feature(rustc_attrs)]
+
 extern "C" {
     fn printf(fmt: *const i8, ...);
 }
