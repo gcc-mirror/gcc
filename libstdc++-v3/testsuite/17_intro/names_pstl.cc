@@ -1,5 +1,5 @@
 // { dg-do compile { target c++17 } }
-// { dg-additional-options "-DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" { target tbb_backend} }
+// { dg-additional-options "-DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" { target tbb_backend } }
 
 // The TBB headers use non-reserved names (because they're not part of the
 // implementation) so we need to include them before the macro definitions
