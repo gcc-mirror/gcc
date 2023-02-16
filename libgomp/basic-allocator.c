@@ -49,7 +49,7 @@
 #endif
 
 #ifndef BASIC_ALLOC_YIELD
-#deine BASIC_ALLOC_YIELD
+#define BASIC_ALLOC_YIELD
 #endif
 
 #define ALIGN(VAR) (((VAR) + 7) & ~7)    /* 8-byte granularity.  */

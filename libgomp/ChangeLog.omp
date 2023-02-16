@@ -1,5 +1,8 @@
 2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* basic-allocator.c (BASIC_ALLOC_YIELD): instead of '#deine',
+	'#define' it.
+
 	* testsuite/libgomp.c/usm-1.c: Re-enable non-GCN offloading
 	compilation.
 	* testsuite/libgomp.c/usm-2.c: Likewise.
