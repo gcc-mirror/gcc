@@ -1,3 +1,219 @@
+2023-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/90458
+	* config/i386/i386.cc (ix86_compute_frame_layout): Disable the
+	effects of -fstack-clash-protection for TARGET_STACK_PROBE.
+	(ix86_expand_prologue): Likewise.
+
+2023-02-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/bpf/bpf.cc (bpf_option_override): Fix doubled space.
+
+2023-02-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpqi_ext<mode>_1): Use
+	int248_register_operand predicate in zero_extract sub-RTX.
+	(*cmpqi_ext<mode>_2): Ditto.
+	(*cmpqi_ext<mode>_3): Ditto.
+	(*cmpqi_ext<mode>_4): Ditto.
+	(*extzvqi_mem_rex64): Ditto.
+	(*extzvqi): Ditto.
+	(*insvqi_1_mem_rex64): Ditto.
+	(@insv<mode>_1): Ditto.
+	(*insvqi_1): Ditto.
+	(*insvqi_2): Ditto.
+	(*insvqi_3): Ditto.
+	(*extendqi<SWI24:mode>_ext_1): Ditto.
+	(*addqi_ext<mode>_1): Ditto.
+	(*addqi_ext<mode>_2): Ditto.
+	(*subqi_ext<mode>_2): Ditto.
+	(*testqi_ext<mode>_1): Ditto.
+	(*testqi_ext<mode>_2): Ditto.
+	(*andqi_ext<mode>_1): Ditto.
+	(*andqi_ext<mode>_1_cc): Ditto.
+	(*andqi_ext<mode>_2): Ditto.
+	(*<any_or:code>qi_ext<mode>_1): Ditto.
+	(*<any_or:code>qi_ext<mode>_2): Ditto.
+	(*xorqi_ext<mode>_1_cc): Ditto.
+	(*negqi_ext<mode>_2): Ditto.
+	(*ashlqi_ext<mode>_2): Ditto.
+	(*<any_shiftrt:insn>qi_ext<mode>_2): Ditto.
+
+2023-02-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (int248_register_operand):
+	Rename from extr_register_operand.
+	* config/i386/i386.md (*extv<mode>): Update for renamed predicate.
+	(*extzx<mode>): Ditto.
+	(*ashl<dwi>3_doubleword_mask): Use int248_register_operand predicate.
+	(*ashl<mode>3_mask): Ditto.
+	(*<any_shiftrt:insn><mode>3_mask): Ditto.
+	(*<any_shiftrt:insn><dwi>3_doubleword_mask): Ditto.
+	(*<any_rotate:insn><mode>3_mask): Ditto.
+	(*<btsc><mode>_mask): Ditto.
+	(*btr<mode>_mask): Ditto.
+	(*jcc_bt<mode>_mask_1): Ditto.
+
+2023-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/26854
+	* df-core.cc (df_worklist_propagate_forward): Put later
+	blocks on worklist and only earlier blocks on pending.
+	(df_worklist_propagate_backward): Likewise.
+	(df_worklist_dataflow_doublequeue): Change the iteration
+	to process new blocks in the same iteration if that
+	maintains the iteration order.
+
+2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/106080
+	* gimple-ssa-warn-access.cc (is_auto_decl): Remove.  Use auto_var_p
+	instead.
+
+2023-02-15  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md: Refine codes.
+	* config/riscv/riscv-protos.h (RVV_VUNDEF): New macro.
+	* config/riscv/riscv-v.cc: Refine codes.
+	* config/riscv/riscv-vector-builtins-bases.cc (enum ternop_type): New
+	enum.
+	(class imac): New class.
+	(enum widen_ternop_type): New enum.
+	(class iwmac): New class.
+	(BASE): New class.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vmacc): Ditto.
+	(vnmsac): Ditto.
+	(vmadd): Ditto.
+	(vnmsub): Ditto.
+	(vwmacc): Ditto.
+	(vwmaccu): Ditto.
+	(vwmaccsu): Ditto.
+	(vwmaccus): Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_builder::apply_predication): Adjust for multiply-add support.
+	(function_expander::add_vundef_operand): Refine codes.
+	(function_expander::use_ternop_insn): New function.
+	(function_expander::use_widen_ternop_insn): Ditto.
+	* config/riscv/riscv-vector-builtins.h: New function.
+	* config/riscv/vector.md (@pred_mul_<optab><mode>): New pattern.
+	(pred_mul_<optab><mode>_undef_merge): Ditto.
+	(*pred_<madd_nmsub><mode>): Ditto.
+	(*pred_<macc_nmsac><mode>): Ditto.
+	(*pred_mul_<optab><mode>): Ditto.
+	(@pred_mul_<optab><mode>_scalar): Ditto.
+	(*pred_mul_<optab><mode>_undef_merge_scalar): Ditto.
+	(*pred_<madd_nmsub><mode>_scalar): Ditto.
+	(*pred_<macc_nmsac><mode>_scalar): Ditto.
+	(*pred_mul_<optab><mode>_scalar): Ditto.
+	(*pred_mul_<optab><mode>_undef_merge_extended_scalar): Ditto.
+	(*pred_<madd_nmsub><mode>_extended_scalar): Ditto.
+	(*pred_<macc_nmsac><mode>_extended_scalar): Ditto.
+	(*pred_mul_<optab><mode>_extended_scalar): Ditto.
+	(@pred_widen_mul_plus<su><mode>): Ditto.
+	(@pred_widen_mul_plus<su><mode>_scalar): Ditto.
+	(@pred_widen_mul_plussu<mode>): Ditto.
+	(@pred_widen_mul_plussu<mode>_scalar): Ditto.
+	(@pred_widen_mul_plusus<mode>_scalar): Ditto.
+
+2023-02-15  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md (vector_mask_operand): Refine the codes.
+	(vector_all_trues_mask_operand): New predicate.
+	(vector_undef_operand): New predicate.
+	(ltge_operator): New predicate.
+	(comparison_except_ltge_operator): New predicate.
+	(comparison_except_eqge_operator): New predicate.
+	(ge_operator): New predicate.
+	* config/riscv/riscv-v.cc (has_vi_variant_p): Add compare support.
+	* config/riscv/riscv-vector-builtins-bases.cc (class icmp): New class.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vmseq): Ditto.
+	(vmsne): Ditto.
+	(vmslt): Ditto.
+	(vmsgt): Ditto.
+	(vmsle): Ditto.
+	(vmsge): Ditto.
+	(vmsltu): Ditto.
+	(vmsgtu): Ditto.
+	(vmsleu): Ditto.
+	(vmsgeu): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(struct return_mask_def): Adjust for compare support.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_compare_insn): New function.
+	* config/riscv/riscv-vector-builtins.h
+	(function_expander::add_integer_operand): Ditto.
+	* config/riscv/riscv.cc (riscv_print_operand): Add compare support.
+	* config/riscv/riscv.md: Add vector min/max attributes.
+	* config/riscv/vector-iterators.md (xnor): New iterator.
+	* config/riscv/vector.md (@pred_cmp<mode>): New pattern.
+	(*pred_cmp<mode>): Ditto.
+	(*pred_cmp<mode>_narrow): Ditto.
+	(@pred_ltge<mode>): Ditto.
+	(*pred_ltge<mode>): Ditto.
+	(*pred_ltge<mode>_narrow): Ditto.
+	(@pred_cmp<mode>_scalar): Ditto.
+	(*pred_cmp<mode>_scalar): Ditto.
+	(*pred_cmp<mode>_scalar_narrow): Ditto.
+	(@pred_eqne<mode>_scalar): Ditto.
+	(*pred_eqne<mode>_scalar): Ditto.
+	(*pred_eqne<mode>_scalar_narrow): Ditto.
+	(*pred_cmp<mode>_extended_scalar): Ditto.
+	(*pred_cmp<mode>_extended_scalar_narrow): Ditto.
+	(*pred_eqne<mode>_extended_scalar): Ditto.
+	(*pred_eqne<mode>_extended_scalar_narrow): Ditto.
+	(@pred_ge<mode>_scalar): Ditto.
+	(@pred_<optab><mode>): Ditto.
+	(@pred_n<optab><mode>): Ditto.
+	(@pred_<optab>n<mode>): Ditto.
+	(@pred_not<mode>): Ditto.
+
+2023-02-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108679
+	* ipa-sra.cc (push_param_adjustments_for_index): Do not omit
+	creation of non-scalar replacements even if IPA-CP knows their
+	contents.
+
+2023-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108787
+	PR target/103109
+	* config/rs6000/rs6000.md (<u>maddditi4): Change into umaddditi4 only
+	expander, change operand 3 to be TImode, emit maddlddi4 and
+	umadddi4_highpart{,_le} with its low half and finally add the high
+	half to the result.
+
+2023-02-15  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document --param=asan-kernel-mem-intrinsic-prefix.
+
+2023-02-15  Richard Biener  <rguenther@suse.de>
+
+	* sanopt.cc (sanitize_asan_mark_unpoison): Use bitmap
+	for with_poison and alias worklist to it.
+	(sanitize_asan_mark_poison): Likewise.
+
+2023-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR target/108738
+	* config/i386/i386-features.cc (scalar_chain::add_to_queue):
+	Combine bitmap test and set.
+	(scalar_chain::add_insn): Likewise.
+	(scalar_chain::analyze_register_chain): Remove redundant
+	attempt to add to queue and instead strengthen assert.
+	Sink common attempts to mark the def dual-mode.
+	(scalar_chain::add_to_queue): Remove redundant insn bitmap
+	check.
+
+2023-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR target/108738
+	* config/i386/i386-features.cc (convert_scalars_to_vector):
+	Switch candidates bitmaps to tree view before building the chains.
+
 2023-02-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* reload1.cc (gen_reload): Correct rtx parameter for fatal_insn
