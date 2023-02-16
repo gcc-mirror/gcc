@@ -20,6 +20,6 @@ test_ctad()
   using std::make_format_args;
   using SomeContext = std::wformat_context;
 
-  // foo(make_format_args<SomeContext>(…)); // won't work
+  // foo(make_format_args<SomeContext>(...)); // won't work
   foo(basic_format_args(make_format_args<SomeContext>(1, 2, 3))); // should work
 }
