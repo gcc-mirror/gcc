@@ -14678,8 +14678,8 @@ The names of specific parameters, and the meaning of the values, are
 tied to the internals of the compiler, and are subject to change
 without notice in future releases.
 
-In order to get minimal, maximal and default value of a parameter,
-one can use @option{--help=param -Q} options.
+In order to get the minimal, maximal and default values of a parameter,
+use the @option{--help=param -Q} options.
 
 In each case, the @var{value} is an integer.  The following choices
 of @var{name} are recognized for all targets:
