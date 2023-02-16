@@ -103,34 +103,16 @@ check_for_binary_op_overflow (range_query *query,
 			      tree op0, tree op1, bool *ovf, gimple *s = NULL)
 {
   value_range vr0, vr1;
-  if (!query->range_of_expr (vr0, op0, s))
+  if (!query->range_of_expr (vr0, op0, s) || vr0.undefined_p ())
     vr0.set_varying (TREE_TYPE (op0));
-  if (!query->range_of_expr (vr1, op1, s))
+  if (!query->range_of_expr (vr1, op1, s) || vr1.undefined_p ())
     vr1.set_varying (TREE_TYPE (op1));
 
-  tree vr0min, vr0max, vr1min, vr1max;
-  if (vr0.undefined_p () || vr0.varying_p ())
-    {
-      vr0min = vrp_val_min (TREE_TYPE (op0));
-      vr0max = vrp_val_max (TREE_TYPE (op0));
-    }
-  else
-    {
-      tree type = vr0.type ();
-      vr0min = wide_int_to_tree (type, vr0.lower_bound ());
-      vr0max = wide_int_to_tree (type, vr0.upper_bound ());
-    }
-  if (vr1.undefined_p () || vr1.varying_p ())
-    {
-      vr1min = vrp_val_min (TREE_TYPE (op1));
-      vr1max = vrp_val_max (TREE_TYPE (op1));
-    }
-  else
-    {
-      tree type = vr1.type ();
-      vr1min = wide_int_to_tree (type, vr1.lower_bound ());
-      vr1max = wide_int_to_tree (type, vr1.upper_bound ());
-    }
+  tree vr0min = wide_int_to_tree (TREE_TYPE (op0), vr0.lower_bound ());
+  tree vr0max = wide_int_to_tree (TREE_TYPE (op0), vr0.upper_bound ());
+  tree vr1min = wide_int_to_tree (TREE_TYPE (op1), vr1.lower_bound ());
+  tree vr1max = wide_int_to_tree (TREE_TYPE (op1), vr1.upper_bound ());
+
   *ovf = arith_overflowed_p (subcode, type, vr0min,
 			     subcode == MINUS_EXPR ? vr1max : vr1min);
   if (arith_overflowed_p (subcode, type, vr0max,
@@ -152,10 +134,12 @@ check_for_binary_op_overflow (range_query *query,
       widest_int wmin, wmax;
       widest_int w[4];
       int i;
-      w[0] = wi::to_widest (vr0min);
-      w[1] = wi::to_widest (vr0max);
-      w[2] = wi::to_widest (vr1min);
-      w[3] = wi::to_widest (vr1max);
+      signop sign0 = TYPE_SIGN (TREE_TYPE (op0));
+      signop sign1 = TYPE_SIGN (TREE_TYPE (op1));
+      w[0] = widest_int::from (vr0.lower_bound (), sign0);
+      w[1] = widest_int::from (vr0.upper_bound (), sign0);
+      w[2] = widest_int::from (vr1.lower_bound (), sign1);
+      w[3] = widest_int::from (vr1.upper_bound (), sign1);
       for (i = 0; i < 4; i++)
 	{
 	  widest_int wt;
@@ -186,8 +170,10 @@ check_for_binary_op_overflow (range_query *query,
 	}
       /* The result of op0 CODE op1 is known to be in range
 	 [wmin, wmax].  */
-      widest_int wtmin = wi::to_widest (vrp_val_min (type));
-      widest_int wtmax = wi::to_widest (vrp_val_max (type));
+      widest_int wtmin
+	= widest_int::from (irange_val_min (type), TYPE_SIGN (type));
+      widest_int wtmax
+	= widest_int::from (irange_val_max (type), TYPE_SIGN (type));
       /* If all values in [wmin, wmax] are smaller than
 	 [wtmin, wtmax] or all are larger than [wtmin, wtmax],
 	 the arithmetic operation will always overflow.  */

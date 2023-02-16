@@ -635,8 +635,6 @@ Value_Range::supports_type_p (const_tree type)
 
 extern value_range_kind get_legacy_range (const irange &, tree &min, tree &max);
 extern void dump_value_range (FILE *, const vrange *);
-extern bool vrp_val_is_min (const_tree);
-extern bool vrp_val_is_max (const_tree);
 extern bool vrp_operand_equal_p (const_tree, const_tree);
 inline REAL_VALUE_TYPE frange_val_min (const_tree type);
 inline REAL_VALUE_TYPE frange_val_max (const_tree type);
@@ -952,41 +950,18 @@ contains_zero_p (const irange &r)
   return r.contains_p (zero);
 }
 
-// Return the maximum value for TYPE.
-
-inline tree
-vrp_val_max (const_tree type)
+inline wide_int
+irange_val_min (const_tree type)
 {
-  if (INTEGRAL_TYPE_P (type))
-    return TYPE_MAX_VALUE (type);
-  if (POINTER_TYPE_P (type))
-    {
-      wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-      return wide_int_to_tree (const_cast<tree> (type), max);
-    }
-  if (frange::supports_p (type))
-    {
-      REAL_VALUE_TYPE r = frange_val_max (type);
-      return build_real (const_cast <tree> (type), r);
-    }
-  return NULL_TREE;
+  gcc_checking_assert (irange::supports_p (type));
+  return wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
 }
 
-// Return the minimum value for TYPE.
-
-inline tree
-vrp_val_min (const_tree type)
+inline wide_int
+irange_val_max (const_tree type)
 {
-  if (INTEGRAL_TYPE_P (type))
-    return TYPE_MIN_VALUE (type);
-  if (POINTER_TYPE_P (type))
-    return build_zero_cst (const_cast<tree> (type));
-  if (frange::supports_p (type))
-    {
-      REAL_VALUE_TYPE r = frange_val_min (type);
-      return build_real (const_cast <tree> (type), r);
-    }
-  return NULL_TREE;
+  gcc_checking_assert (irange::supports_p (type));
+  return wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
 }
 
 inline

@@ -360,10 +360,10 @@ adjust_pointer_diff_expr (irange &res, const gimple *diff_stmt)
       && vrp_operand_equal_p (op1, gimple_call_arg (call, 0))
       && integer_zerop (gimple_call_arg (call, 1)))
     {
-      tree max = vrp_val_max (ptrdiff_type_node);
-      unsigned prec = TYPE_PRECISION (TREE_TYPE (max));
-      wide_int wmaxm1 = wi::to_wide (max, prec) - 1;
-      res.intersect (int_range<2> (TREE_TYPE (max), wi::zero (prec), wmaxm1));
+      wide_int maxm1 = irange_val_max (ptrdiff_type_node) - 1;
+      res.intersect (int_range<2> (ptrdiff_type_node,
+				   wi::zero (TYPE_PRECISION (ptrdiff_type_node)),
+				   maxm1));
     }
 }
 
@@ -964,6 +964,38 @@ tree_upper_bound (const vrange &r, tree type)
     return wide_int_to_tree (type, as_a <irange> (r).upper_bound ());
   // ?? Handle floats when they contain endpoints.
   return NULL;
+}
+
+// Return the maximum value for TYPE.
+
+static inline tree
+vrp_val_max (const_tree type)
+{
+  if (INTEGRAL_TYPE_P (type)
+      || POINTER_TYPE_P (type))
+    return wide_int_to_tree (const_cast <tree> (type), irange_val_max (type));
+  if (frange::supports_p (type))
+    {
+      REAL_VALUE_TYPE r = frange_val_max (type);
+      return build_real (const_cast <tree> (type), r);
+    }
+  return NULL_TREE;
+}
+
+// Return the minimum value for TYPE.
+
+static inline tree
+vrp_val_min (const_tree type)
+{
+  if (INTEGRAL_TYPE_P (type)
+      || POINTER_TYPE_P (type))
+    return wide_int_to_tree (const_cast <tree> (type), irange_val_min (type));
+  if (frange::supports_p (type))
+    {
+      REAL_VALUE_TYPE r = frange_val_min (type);
+      return build_real (const_cast <tree> (type), r);
+    }
+  return NULL_TREE;
 }
 
 // If SCEV has any information about phi node NAME, return it as a range in R.

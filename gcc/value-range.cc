@@ -1990,31 +1990,6 @@ debug (const value_range &vr)
   fprintf (stderr, "\n");
 }
 
-/* Return whether VAL is equal to the maximum value of its type.
-   We can't do a simple equality comparison with TYPE_MAX_VALUE because
-   C typedefs and Ada subtypes can produce types whose TYPE_MAX_VALUE
-   is not == to the integer constant with the same value in the type.  */
-
-bool
-vrp_val_is_max (const_tree val)
-{
-  tree type_max = vrp_val_max (TREE_TYPE (val));
-  return (val == type_max
-	  || (type_max != NULL_TREE
-	      && operand_equal_p (val, type_max, 0)));
-}
-
-/* Return whether VAL is equal to the minimum value of its type.  */
-
-bool
-vrp_val_is_min (const_tree val)
-{
-  tree type_min = vrp_val_min (TREE_TYPE (val));
-  return (val == type_min
-	  || (type_min != NULL_TREE
-	      && operand_equal_p (val, type_min, 0)));
-}
-
 /* Return true, if VAL1 and VAL2 are equal values for VRP purposes.  */
 
 bool
@@ -2369,11 +2344,11 @@ range_tests_misc ()
   // Test 1-bit signed integer union.
   // [-1,-1] U [0,0] = VARYING.
   tree one_bit_type = build_nonstandard_integer_type (1, 0);
-  tree one_bit_min = vrp_val_min (one_bit_type);
-  tree one_bit_max = vrp_val_max (one_bit_type);
+  wide_int one_bit_min = irange_val_min (one_bit_type);
+  wide_int one_bit_max = irange_val_max (one_bit_type);
   {
-    int_range<2> min = tree_range (one_bit_min, one_bit_min);
-    int_range<2> max = tree_range (one_bit_max, one_bit_max);
+    int_range<2> min = int_range<2> (one_bit_type, one_bit_min, one_bit_min);
+    int_range<2> max = int_range<2> (one_bit_type, one_bit_max, one_bit_max);
     max.union_ (min);
     ASSERT_TRUE (max.varying_p ());
   }
@@ -2382,8 +2357,8 @@ range_tests_misc ()
 
   // Test inversion of 1-bit signed integers.
   {
-    int_range<2> min = tree_range (one_bit_min, one_bit_min);
-    int_range<2> max = tree_range (one_bit_max, one_bit_max);
+    int_range<2> min = int_range<2> (one_bit_type, one_bit_min, one_bit_min);
+    int_range<2> max = int_range<2> (one_bit_type, one_bit_max, one_bit_max);
     int_range<2> t;
     t = min;
     t.invert ();

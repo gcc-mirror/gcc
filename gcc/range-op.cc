@@ -97,7 +97,7 @@ update_known_bitmask (irange &r, tree_code code,
 static inline wide_int
 max_limit (const_tree type)
 {
-  return wi::max_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
+  return irange_val_max (type);
 }
 
 // Return the lower limit for a type.
@@ -105,7 +105,7 @@ max_limit (const_tree type)
 static inline wide_int
 min_limit (const_tree type)
 {
-  return wi::min_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
+  return irange_val_min (type);
 }
 
 // Return false if shifting by OP is undefined behavior.  Otherwise, return
@@ -1463,14 +1463,14 @@ plus_minus_ranges (irange &r_ov, irange &r_normal, const irange &offset,
     {
       //  [ 0 , INF - OFF]
       lb = wi::zero (prec);
-      ub = wi::sub (wi::to_wide (vrp_val_max (type)), off, UNSIGNED, &ov);
+      ub = wi::sub (irange_val_max (type), off, UNSIGNED, &ov);
       kind = VREL_GT;
     }
   else
     {
       //  [ OFF, INF ]
       lb = off;
-      ub = wi::to_wide (vrp_val_max (type));
+      ub = irange_val_max (type);
       kind = VREL_LT;
     }
   int_range<2> normal_range (type, lb, ub);
@@ -2594,13 +2594,10 @@ operator_rshift::op1_range (irange &r,
       // OP1 is anything from 0011 1000 to 0011 1111.  That is, a
       // range from LHS<<3 plus a mask of the 3 bits we shifted on the
       // right hand side (0x07).
-      tree mask = fold_build1 (BIT_NOT_EXPR, type,
-			       fold_build2 (LSHIFT_EXPR, type,
-					    build_minus_one_cst (type),
-					    wide_int_to_tree (op2.type (), shift)));
+      wide_int mask = wi::bit_not (wi::lshift (wi::minus_one (prec), shift));
       int_range_max mask_range (type,
 				wi::zero (TYPE_PRECISION (type)),
-				wi::to_wide (mask));
+				mask);
       op_plus.fold_range (ub, type, lb, mask_range);
       r = lb;
       r.union_ (ub);
@@ -2731,8 +2728,8 @@ operator_cast::inside_domain_p (const wide_int &min,
 				const wide_int &max,
 				const irange &range) const
 {
-  wide_int domain_min = wi::to_wide (vrp_val_min (range.type ()));
-  wide_int domain_max = wi::to_wide (vrp_val_max (range.type ()));
+  wide_int domain_min = irange_val_min (range.type ());
+  wide_int domain_max = irange_val_max (range.type ());
   signop domain_sign = TYPE_SIGN (range.type ());
   return (wi::le_p (min, domain_max, domain_sign)
 	  && wi::le_p (max, domain_max, domain_sign)

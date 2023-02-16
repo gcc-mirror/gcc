@@ -900,15 +900,13 @@ public:
   virtual bool fold_range (irange &r, tree type, const irange &,
 			   const irange &, relation_trio) const
   {
-    tree max = vrp_val_max (ptrdiff_type_node);
-    wide_int wmax
-      = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
+    wide_int max = irange_val_max (ptrdiff_type_node);
     // To account for the terminating NULL, the maximum length
     // is one less than the maximum array size, which in turn
     // is one less than PTRDIFF_MAX (or SIZE_MAX where it's
     // smaller than the former type).
     // FIXME: Use max_object_size() - 1 here.
-    r.set (type, wi::zero (TYPE_PRECISION (type)), wmax - 2);
+    r.set (type, wi::zero (TYPE_PRECISION (type)), max - 2);
     return true;
   }
 } op_cfn_strlen;
@@ -936,7 +934,7 @@ public:
 	   wi::shwi (m_is_pos ? 0 : 1, TYPE_PRECISION (type)),
 	   size
 	   ? wi::shwi (size - m_is_pos, TYPE_PRECISION (type))
-	   : wi::to_wide (vrp_val_max (type)));
+	   : irange_val_max (type));
     return true;
   }
 private:
