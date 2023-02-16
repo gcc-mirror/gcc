@@ -1,3 +1,4 @@
+use bridge;
 use std::fmt;
 use std::str::FromStr;
 use LexError;
@@ -20,142 +21,141 @@ use Span;
 /// Boolean literals like `true` and `false` are `Ident`s and do not belong
 /// here.
 #[derive(Clone)]
-pub struct Literal {
-    // Internal implementation details
-}
+pub struct Literal(bridge::literal::Literal);
 
 impl Literal {
     // TODO: Add experimental API functions for this type
+    // TODO: Generate those constructor with 1/2 macros instead
 
-    pub fn u8_suffixed(_n: u8) -> Self {
-        todo!("Implement this function")
+    pub fn u8_suffixed(n: u8) -> Self {
+        Literal(bridge::literal::Literal::u8_suffixed(n))
     }
 
-    pub fn u16_suffixed(_n: u16) -> Self {
-        todo!("Implement this function")
+    pub fn u16_suffixed(n: u16) -> Self {
+        Literal(bridge::literal::Literal::u16_suffixed(n))
     }
 
-    pub fn u32_suffixed(_n: u32) -> Self {
-        todo!("Implement this function")
+    pub fn u32_suffixed(n: u32) -> Self {
+        Literal(bridge::literal::Literal::u32_suffixed(n))
     }
 
-    pub fn u64_suffixed(_n: u64) -> Self {
-        todo!("Implement this function")
+    pub fn u64_suffixed(n: u64) -> Self {
+        Literal(bridge::literal::Literal::u64_suffixed(n))
     }
 
-    pub fn u128_suffixed(_n: u128) -> Self {
-        todo!("Implement this function")
+    pub fn u128_suffixed(n: u128) -> Self {
+        Literal(bridge::literal::Literal::u128_suffixed(n))
     }
 
-    pub fn usize_suffixed(_n: usize) -> Self {
-        todo!("Implement this function")
+    pub fn usize_suffixed(n: usize) -> Self {
+        Literal(bridge::literal::Literal::usize_suffixed(n))
     }
 
-    pub fn i8_suffixed(_n: i8) -> Self {
-        todo!("Implement this function")
+    pub fn i8_suffixed(n: i8) -> Self {
+        Literal(bridge::literal::Literal::i8_suffixed(n))
     }
 
-    pub fn i16_suffixed(_n: i16) -> Self {
-        todo!("Implement this function")
+    pub fn i16_suffixed(n: i16) -> Self {
+        Literal(bridge::literal::Literal::i16_suffixed(n))
     }
 
-    pub fn i32_suffixed(_n: i32) -> Self {
-        todo!("Implement this function")
+    pub fn i32_suffixed(n: i32) -> Self {
+        Literal(bridge::literal::Literal::i32_suffixed(n))
     }
 
-    pub fn i64_suffixed(_n: i64) -> Self {
-        todo!("Implement this function")
+    pub fn i64_suffixed(n: i64) -> Self {
+        Literal(bridge::literal::Literal::i64_suffixed(n))
     }
 
-    pub fn i128_suffixed(_n: i128) -> Self {
-        todo!("Implement this function")
+    pub fn i128_suffixed(n: i128) -> Self {
+        Literal(bridge::literal::Literal::i128_suffixed(n))
     }
 
-    pub fn isize_suffixed(_n: isize) -> Self {
-        todo!("Implement this function")
+    pub fn isize_suffixed(n: isize) -> Self {
+        Literal(bridge::literal::Literal::isize_suffixed(n))
     }
 
     // Unsuffixed
 
-    pub fn u8_unsuffixed(_n: u8) -> Self {
-        todo!("Implement this function")
+    pub fn u8_unsuffixed(n: u8) -> Self {
+        Literal(bridge::literal::Literal::u8_unsuffixed(n))
     }
 
-    pub fn u16_unsuffixed(_n: u16) -> Self {
-        todo!("Implement this function")
+    pub fn u16_unsuffixed(n: u16) -> Self {
+        Literal(bridge::literal::Literal::u16_unsuffixed(n))
     }
 
-    pub fn u32_unsuffixed(_n: u32) -> Self {
-        todo!("Implement this function")
+    pub fn u32_unsuffixed(n: u32) -> Self {
+        Literal(bridge::literal::Literal::u32_unsuffixed(n))
     }
 
-    pub fn u64_unsuffixed(_n: u64) -> Self {
-        todo!("Implement this function")
+    pub fn u64_unsuffixed(n: u64) -> Self {
+        Literal(bridge::literal::Literal::u64_unsuffixed(n))
     }
 
-    pub fn u128_unsuffixed(_n: u128) -> Self {
-        todo!("Implement this function")
+    pub fn u128_unsuffixed(n: u128) -> Self {
+        Literal(bridge::literal::Literal::u128_unsuffixed(n))
     }
 
-    pub fn usize_unsuffixed(_n: usize) -> Self {
-        todo!("Implement this function")
+    pub fn usize_unsuffixed(n: usize) -> Self {
+        Literal(bridge::literal::Literal::usize_unsuffixed(n))
     }
 
-    pub fn i8_unsuffixed(_n: i8) -> Self {
-        todo!("Implement this function")
+    pub fn i8_unsuffixed(n: i8) -> Self {
+        Literal(bridge::literal::Literal::i8_unsuffixed(n))
     }
 
-    pub fn i16_unsuffixed(_n: i16) -> Self {
-        todo!("Implement this function")
+    pub fn i16_unsuffixed(n: i16) -> Self {
+        Literal(bridge::literal::Literal::i16_unsuffixed(n))
     }
 
-    pub fn i32_unsuffixed(_n: i32) -> Self {
-        todo!("Implement this function")
+    pub fn i32_unsuffixed(n: i32) -> Self {
+        Literal(bridge::literal::Literal::i32_unsuffixed(n))
     }
 
-    pub fn i64_unsuffixed(_n: i64) -> Self {
-        todo!("Implement this function")
+    pub fn i64_unsuffixed(n: i64) -> Self {
+        Literal(bridge::literal::Literal::i64_unsuffixed(n))
     }
 
-    pub fn i128_unsuffixed(_n: i128) -> Self {
-        todo!("Implement this function")
+    pub fn i128_unsuffixed(n: i128) -> Self {
+        Literal(bridge::literal::Literal::i128_unsuffixed(n))
     }
 
-    pub fn isize_unsuffixed(_n: isize) -> Self {
-        todo!("Implement this function")
+    pub fn isize_unsuffixed(n: isize) -> Self {
+        Literal(bridge::literal::Literal::isize_unsuffixed(n))
     }
 
-    pub fn f32_unsuffixed(_n: f32) -> Self {
-        todo!("Implement this function")
+    pub fn f32_unsuffixed(n: f32) -> Self {
+        Literal(bridge::literal::Literal::f32_unsuffixed(n))
     }
 
-    pub fn f32_suffixed(_n: f32) -> Self {
-        todo!("Implement this function")
+    pub fn f32_suffixed(n: f32) -> Self {
+        Literal(bridge::literal::Literal::f32_suffixed(n))
     }
 
-    pub fn f64_unsuffixed(_n: f64) -> Self {
-        todo!("Implement this function")
+    pub fn f64_unsuffixed(n: f64) -> Self {
+        Literal(bridge::literal::Literal::f64_unsuffixed(n))
     }
 
-    pub fn f64_suffixed(_n: f64) -> Self {
-        todo!("Implement this function")
+    pub fn f64_suffixed(n: f64) -> Self {
+        Literal(bridge::literal::Literal::f64_suffixed(n))
     }
 
-    pub fn string(_string: &str) -> Self {
-        todo!("Implement this function")
+    pub fn string(string: &str) -> Self {
+        Literal(bridge::literal::Literal::string(string))
     }
 
-    pub fn character(_c: char) -> Self {
-        todo!("Implement this function")
+    pub fn character(c: char) -> Self {
+        Literal(bridge::literal::Literal::character(c))
     }
 
-    pub fn byte_string(_bytes: &[u8]) -> Self {
-        todo!("Implement this function")
+    pub fn byte_string(bytes: &[u8]) -> Self {
+        Literal(bridge::literal::Literal::byte_string(bytes))
     }
 
     /// Get the [`Span`] for this literal.
     pub fn span(&self) -> Span {
-        todo!("Get the span of a literal")
+        Span(self.0.span())
     }
 
     /// Set the span for this literal.
@@ -163,8 +163,8 @@ impl Literal {
     /// # Arguments
     ///
     /// * `span` - The new span value.
-    pub fn set_span(&mut self, _span: Span) {
-        todo!("Set the span of a literal")
+    pub fn set_span(&mut self, span: Span) {
+        self.0.set_span(span.0);
     }
 }
 
