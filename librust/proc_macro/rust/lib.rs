@@ -37,7 +37,12 @@ pub enum TokenTree {
 impl TokenTree {
     /// Get the [`Span`] for this TokenTree.
     pub fn span(&self) -> Span {
-        todo!("Implement this function")
+        match self {
+            TokenTree::Group(group) => group.span(),
+            TokenTree::Ident(ident) => ident.span(),
+            TokenTree::Punct(punct) => punct.span(),
+            TokenTree::Literal(literal) => literal.span(),
+        }
     }
 
     /// Set the span for this TokenTree.
@@ -45,44 +50,59 @@ impl TokenTree {
     /// # Arguments
     ///
     /// * `span` - The new span value.
-    pub fn set_span(&mut self, _span: Span) {
-        todo!("Implement this function")
+    pub fn set_span(&mut self, span: Span) {
+        match self {
+            TokenTree::Group(group) => group.set_span(span),
+            TokenTree::Ident(ident) => ident.set_span(span),
+            TokenTree::Punct(punct) => punct.set_span(span),
+            TokenTree::Literal(literal) => literal.set_span(span),
+        }
     }
 }
 
 impl fmt::Debug for TokenTree {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!("Implement this function")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TokenTree::Group(group) => group.fmt(f),
+            TokenTree::Ident(ident) => ident.fmt(f),
+            TokenTree::Punct(punct) => punct.fmt(f),
+            TokenTree::Literal(literal) => literal.fmt(f),
+        }
     }
 }
 
 impl fmt::Display for TokenTree {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!("Implement this function")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TokenTree::Group(group) => group.fmt(f),
+            TokenTree::Ident(ident) => ident.fmt(f),
+            TokenTree::Punct(punct) => punct.fmt(f),
+            TokenTree::Literal(literal) => literal.fmt(f),
+        }
     }
 }
 
 impl From<Group> for TokenTree {
-    fn from(_g: Group) -> Self {
-        todo!("Implement this function")
+    fn from(g: Group) -> Self {
+        TokenTree::Group(g)
     }
 }
 
 impl From<Ident> for TokenTree {
-    fn from(_i: Ident) -> Self {
-        todo!("Implement this function")
+    fn from(i: Ident) -> Self {
+        TokenTree::Ident(i)
     }
 }
 
 impl From<Punct> for TokenTree {
-    fn from(_p: Punct) -> Self {
-        todo!("Implement this function")
+    fn from(p: Punct) -> Self {
+        TokenTree::Punct(p)
     }
 }
 
 impl From<Literal> for TokenTree {
-    fn from(_l: Literal) -> Self {
-        todo!("Implement this function")
+    fn from(l: Literal) -> Self {
+        TokenTree::Literal(l)
     }
 }
 
