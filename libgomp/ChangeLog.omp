@@ -1,5 +1,29 @@
 2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/linux/allocator.c (linux_memspace_alloc)
+	(linux_memspace_free, linux_memspace_realloc): Attempt to register
+	OpenMP pinned memory using a device instead of 'mlock'.
+	* libgomp-plugin.h (GOMP_OFFLOAD_register_page_locked)
+	(GOMP_OFFLOAD_unregister_page_locked): New.
+	* libgomp.h (gomp_register_page_locked)
+	(gomp_unregister_page_locked): New
+	(struct gomp_device_descr): Add 'register_page_locked_func',
+	'unregister_page_locked_func'.
+	* plugin/cuda-lib.def (cuMemHostRegister_v2, cuMemHostRegister)
+	(cuMemHostUnregister): New.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_register_page_locked)
+	(GOMP_OFFLOAD_unregister_page_locked): New.
+	* target.c (gomp_register_page_locked)
+	(gomp_unregister_page_locked): New.
+	(gomp_load_plugin_for_device): Handle 'register_page_locked',
+	'unregister_page_locked'.
+	* testsuite/libgomp.c/alloc-pinned-1.c: Adjust.
+	* testsuite/libgomp.c/alloc-pinned-2.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-3.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-4.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-5.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-6.c: Likewise.
+
 	* allocator.c (omp_realloc): Route 'free' through 'MEMSPACE_FREE'.
 
 2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>

@@ -77,11 +77,14 @@ extern CUresult cuGetErrorString (CUresult, const char **);
 CUresult cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t,
 			const char *, unsigned, CUjit_option *, void **);
 CUresult cuLinkCreate (unsigned, CUjit_option *, void **, CUlinkState *);
+#undef cuMemHostRegister
+CUresult cuMemHostRegister (void *, size_t, unsigned int);
 #else
 typedef size_t (*CUoccupancyB2DSize)(int);
 CUresult cuLinkAddData_v2 (CUlinkState, CUjitInputType, void *, size_t,
 			   const char *, unsigned, CUjit_option *, void **);
 CUresult cuLinkCreate_v2 (unsigned, CUjit_option *, void **, CUlinkState *);
+CUresult cuMemHostRegister_v2 (void *, size_t, unsigned int);
 CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 					  CUoccupancyB2DSize, size_t, int);
 #endif
@@ -1713,6 +1716,36 @@ GOMP_OFFLOAD_is_usm_ptr (void *ptr)
 		     CU_POINTER_ATTRIBUTE_IS_MANAGED, (CUdeviceptr)ptr);
   return managed;
 }
+
+
+bool
+GOMP_OFFLOAD_register_page_locked (void *ptr, size_t size)
+{
+  GOMP_PLUGIN_debug (0, "nvptx %s: ptr=%p, size=%llu\n",
+		     __FUNCTION__, ptr, (unsigned long long) size);
+
+  unsigned int flags = 0;
+  /* Given 'CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING', we don't need
+     'flags |= CU_MEMHOSTREGISTER_PORTABLE;' here.  */
+  if (CUDA_CALL_EXISTS (cuMemHostRegister_v2))
+    CUDA_CALL (cuMemHostRegister_v2, ptr, size, flags);
+  else
+    CUDA_CALL (cuMemHostRegister, ptr, size, flags);
+
+  return true;
+}
+
+bool
+GOMP_OFFLOAD_unregister_page_locked (void *ptr, size_t size)
+{
+  GOMP_PLUGIN_debug (0, "nvptx %s: ptr=%p, size=%llu\n",
+		     __FUNCTION__, ptr, (unsigned long long) size);
+
+  CUDA_CALL (cuMemHostUnregister, ptr);
+
+  return true;
+}
+
 
 void
 GOMP_OFFLOAD_openacc_exec (void (*fn) (void *),

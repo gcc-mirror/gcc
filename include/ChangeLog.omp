@@ -1,3 +1,7 @@
+2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h (cuMemHostRegister, cuMemHostUnregister): New.
+
 2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gomp-constants.h (GOMP_MAP_FLAG_SPECIAL_5): New.

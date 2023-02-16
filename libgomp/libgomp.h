@@ -1133,6 +1133,8 @@ extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
 			     void (*) (void *, const void *, size_t, void *),
 			     void (*) (void *, const void *, size_t, void *),
 			     void *);
+extern bool gomp_register_page_locked (void *, size_t);
+extern void gomp_unregister_page_locked (void *, size_t);
 
 /* Splay tree definitions.  */
 typedef struct splay_tree_node_s *splay_tree_node;
@@ -1392,6 +1394,8 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_usm_alloc) *usm_alloc_func;
   __typeof (GOMP_OFFLOAD_usm_free) *usm_free_func;
   __typeof (GOMP_OFFLOAD_is_usm_ptr) *is_usm_ptr_func;
+  __typeof (GOMP_OFFLOAD_register_page_locked) *register_page_locked_func;
+  __typeof (GOMP_OFFLOAD_unregister_page_locked) *unregister_page_locked_func;
   __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;
   __typeof (GOMP_OFFLOAD_host2dev) *host2dev_func;
   __typeof (GOMP_OFFLOAD_dev2dev) *dev2dev_func;
