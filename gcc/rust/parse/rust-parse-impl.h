@@ -6383,6 +6383,9 @@ template <typename ManagedTokenSource>
 AST::GenericArgs
 Parser<ManagedTokenSource>::parse_path_generic_args ()
 {
+  if (lexer.peek_token ()->get_id () == LEFT_SHIFT)
+    lexer.split_current_token (LEFT_ANGLE, LEFT_ANGLE);
+
   if (!skip_token (LEFT_ANGLE))
     {
       // skip after somewhere?
@@ -6557,6 +6560,7 @@ Parser<ManagedTokenSource>::parse_type_path_segment ()
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
+    case LEFT_SHIFT:
       case LEFT_ANGLE: {
 	// parse generic args
 	AST::GenericArgs generic_args = parse_path_generic_args ();
