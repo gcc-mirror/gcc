@@ -38,7 +38,7 @@ impl Punct {
 
     /// Get the value for this punctuation character as `char`.
     pub fn as_char(&self) -> char {
-        self.0.ch
+        self.0.ch.into()
     }
 
     /// Get the [`Spacing`] of this punctuation character, indicating whether
@@ -77,12 +77,12 @@ impl fmt::Debug for Punct {
 
 impl PartialEq<char> for Punct {
     fn eq(&self, rhs: &char) -> bool {
-        self.0.ch == *rhs
+        self.as_char() == *rhs
     }
 }
 
 impl PartialEq<Punct> for char {
     fn eq(&self, rhs: &Punct) -> bool {
-        *self == rhs.0.ch
+        *self == rhs.as_char()
     }
 }
