@@ -175,7 +175,7 @@ linkage, and do not throw exceptions.
 * omp_get_num_procs::           Number of processors online
 * omp_get_num_teams::           Number of teams
 * omp_get_num_threads::         Size of the active team
-* omp_get_proc_bind::           Whether theads may be moved between CPUs
+* omp_get_proc_bind::           Whether threads may be moved between CPUs
 * omp_get_schedule::            Obtain the runtime scheduling method
 * omp_get_team_num::            Get team number
 * omp_get_team_size::           Number of threads in a team
@@ -582,7 +582,7 @@ one thread per CPU online is used.
 
 
 @node omp_get_proc_bind
-@section @code{omp_get_proc_bind} -- Whether theads may be moved between CPUs
+@section @code{omp_get_proc_bind} -- Whether threads may be moved between CPUs
 @table @asis
 @item @emph{Description}:
 This functions returns the currently active thread affinity policy, which is
@@ -1349,8 +1349,8 @@ beginning with @env{GOMP_} are GNU extensions.
 * OMP_MAX_TASK_PRIORITY::   Set the maximum task priority value
 * OMP_NESTED::              Nested parallel regions
 * OMP_NUM_THREADS::         Specifies the number of threads to use
-* OMP_PROC_BIND::           Whether theads may be moved between CPUs
-* OMP_PLACES::              Specifies on which CPUs the theads should be placed
+* OMP_PROC_BIND::           Whether threads may be moved between CPUs
+* OMP_PLACES::              Specifies on which CPUs the threads should be placed
 * OMP_STACKSIZE::           Set default thread stack size
 * OMP_SCHEDULE::            How threads are scheduled
 * OMP_THREAD_LIMIT::        Set the maximum number of threads
@@ -1517,12 +1517,12 @@ level.  If undefined one thread per CPU is used.
 
 
 @node OMP_PROC_BIND
-@section @env{OMP_PROC_BIND} -- Whether theads may be moved between CPUs
+@section @env{OMP_PROC_BIND} -- Whether threads may be moved between CPUs
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
 Specifies whether threads may be moved between processors.  If set to
-@code{TRUE}, OpenMP theads should not be moved; if set to @code{FALSE}
+@code{TRUE}, OpenMP threads should not be moved; if set to @code{FALSE}
 they may be moved.  Alternatively, a comma separated list with the
 values @code{MASTER}, @code{CLOSE} and @code{SPREAD} can be used to specify
 the thread affinity policy for the corresponding nesting level.  With
@@ -1544,7 +1544,7 @@ When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
 
 
 @node OMP_PLACES
-@section @env{OMP_PLACES} -- Specifies on which CPUs the theads should be placed
+@section @env{OMP_PLACES} -- Specifies on which CPUs the threads should be placed
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
