@@ -56,17 +56,7 @@ impl Ident {
 impl fmt::Display for Ident {
     /// Display as lossless converted string.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.0.is_raw {
-            f.write_str("r#")?;
-        }
-        fmt::Display::fmt(
-            &self
-                .0
-                .val
-                .to_str()
-                .expect("Cannot convert back to rust string"),
-            f,
-        )
+        self.0.fmt(f)
     }
 }
 
