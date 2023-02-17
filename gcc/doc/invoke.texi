@@ -6087,7 +6087,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
--Wuse-after-free=3  @gol
+-Wuse-after-free=2  @gol
 -Wvla-parameter @r{(C and Objective-C only)} @gol
 -Wvolatile-register-var  @gol
 -Wzero-length-bounds}
