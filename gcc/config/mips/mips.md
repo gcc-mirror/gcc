@@ -159,6 +159,7 @@
 
   ;; The `.insn' pseudo-op.
   UNSPEC_INSN_PSEUDO
+  UNSPEC_JRHB
 ])
 
 (define_constants
@@ -6669,6 +6670,20 @@
   }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
+
+;; Insn to clear execution and instruction hazards while returning.
+;; However, it doesn't clear hazards created by the insn in its delay slot.
+;; Thus, explicitly place a nop in its delay slot.
+
+(define_insn "mips_hb_return_internal"
+  [(return)
+   (unspec_volatile [(match_operand 0 "pmode_register_operand" "")]
+		    UNSPEC_JRHB)]
+  ""
+  {
+    return "%(jr.hb\t$31%/%)";
+  }
+  [(set_attr "insn_count" "2")])
 
 ;; Normal return.
 

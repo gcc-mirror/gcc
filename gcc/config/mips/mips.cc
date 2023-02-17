@@ -630,6 +630,7 @@ static const struct attribute_spec mips_attribute_table[] = {
     mips_handle_use_shadow_register_set_attr, NULL },
   { "keep_interrupts_masked",	0, 0, false, true,  true, false, NULL, NULL },
   { "use_debug_exception_return", 0, 0, false, true, true, false, NULL, NULL },
+  { "use_hazard_barrier_return", 0, 0, true, false, false, false, NULL, NULL },
   { NULL,	   0, 0, false, false, false, false, NULL, NULL }
 };
 
