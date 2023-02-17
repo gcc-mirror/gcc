@@ -5376,7 +5376,6 @@ package body Sem_Ch3 is
       Set_Convention       (T, Convention     (Parent_Type));
       Set_First_Rep_Item   (T, First_Rep_Item (Parent_Type));
       Set_Is_First_Subtype (T);
-      Make_Class_Wide_Type (T);
 
       --  Set the SPARK mode from the current context
 

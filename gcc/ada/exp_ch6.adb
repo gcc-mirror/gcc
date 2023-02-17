@@ -9326,7 +9326,7 @@ package body Exp_Ch6 is
         and then not No_Run_Time_Mode
         and then (Has_Task (Typ)
                     or else (Is_Class_Wide_Type (Typ)
-                               and then Is_Limited_Record (Etype (Typ))
+                               and then Is_Limited_Record (Typ)
                                and then not Has_Aspect
                                  (Etype (Typ), Aspect_No_Task_Parts)));
    end Might_Have_Tasks;
