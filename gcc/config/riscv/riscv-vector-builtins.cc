@@ -147,9 +147,39 @@ static const rvv_type_info full_v_u_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
-/* A list of all signed integer will be registered for intrinsic functions.  */
+/* A list of all unsigned integer will be registered for intrinsic functions.  */
 static const rvv_type_info u_ops[] = {
 #define DEF_RVV_U_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all signed integer will be registered for intrinsic functions.  */
+static const rvv_type_info convert_i_ops[] = {
+#define DEF_RVV_CONVERT_I_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all unsigned integer will be registered for intrinsic functions.  */
+static const rvv_type_info convert_u_ops[] = {
+#define DEF_RVV_CONVERT_U_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all signed integer will be registered for intrinsic functions.  */
+static const rvv_type_info wconvert_i_ops[] = {
+#define DEF_RVV_WCONVERT_I_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all unsigned integer will be registered for intrinsic functions. */
+static const rvv_type_info wconvert_u_ops[] = {
+#define DEF_RVV_WCONVERT_U_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all floating-point will be registered for intrinsic functions. */
+static const rvv_type_info wconvert_f_ops[] = {
+#define DEF_RVV_WCONVERT_F_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
@@ -174,10 +204,23 @@ static const rvv_type_info b_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of all float will be registered for intrinsic functions.  */
+static const rvv_type_info f_ops[] = {
+#define DEF_RVV_F_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 /* A list of Double-Widening signed integer will be registered for intrinsic
  * functions.  */
 static const rvv_type_info wexti_ops[] = {
 #define DEF_RVV_WEXTI_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of Double-Widening float will be registered for intrinsic functions.
+ */
+static const rvv_type_info wextf_ops[] = {
+#define DEF_RVV_WEXTF_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
@@ -376,6 +419,19 @@ static CONSTEXPR const rvv_arg_type_info v_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
 
 /* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info f_v_args[]
+  = {rvv_arg_type_info (RVV_BASE_float_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info trunc_f_v_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_float_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info w_v_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type) function.  */
 static CONSTEXPR const rvv_arg_type_info m_args[]
   = {rvv_arg_type_info (RVV_BASE_mask), rvv_arg_type_info_end};
 
@@ -478,6 +534,24 @@ static CONSTEXPR const rvv_arg_type_info vf8_args[]
 /* A list of args for vector_type func (double demote type) function.  */
 static CONSTEXPR const rvv_arg_type_info x_x_v_args[]
   = {rvv_arg_type_info (RVV_BASE_double_trunc_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info x_v_args[]
+  = {rvv_arg_type_info (RVV_BASE_signed_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info xu_v_args[]
+  = {rvv_arg_type_info (RVV_BASE_unsigned_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info w_x_v_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_signed_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info w_xu_v_args[]
+  = {rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_vector),
+     rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
@@ -708,6 +782,22 @@ static CONSTEXPR const rvv_op_info iu_vvxv_ops
      vxv_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type, vector_type,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info f_vvvv_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vvv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, scalar_type,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info f_vvfv_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_vf,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vxv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, vector_type,
  * mask_type) function registration. */
 static CONSTEXPR const rvv_op_info iu_vvvm_ops
   = {iu_ops,				  /* Types */
@@ -728,6 +818,14 @@ static CONSTEXPR const rvv_op_info all_vvvm_ops
 static CONSTEXPR const rvv_op_info iu_vvxm_ops
   = {iu_ops,				  /* Types */
      OP_TYPE_vxm,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vxm_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, scalar_type,
+ * mask_type) function registration. */
+static CONSTEXPR const rvv_op_info f_vvfm_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_vfm,			  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vxm_args /* Args */};
 
@@ -771,6 +869,14 @@ static CONSTEXPR const rvv_op_info u_mvv_ops
      rvv_arg_type_info (RVV_BASE_mask), /* Return type */
      vv_args /* Args */};
 
+/* A static operand information for mask_type func (vector_type, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_mvv_ops
+  = {f_ops,				/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vv_args /* Args */};
+
 /* A static operand information for mask_type func (vector_type, scalar_type)
  * function registration. */
 static CONSTEXPR const rvv_op_info iu_mvx_ops
@@ -795,6 +901,14 @@ static CONSTEXPR const rvv_op_info u_mvx_ops
      rvv_arg_type_info (RVV_BASE_mask), /* Return type */
      vx_args /* Args */};
 
+/* A static operand information for mask_type func (vector_type, scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_mvf_ops
+  = {f_ops,				/* Types */
+     OP_TYPE_vf,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_mask), /* Return type */
+     vx_args /* Args */};
+
 /* A static operand information for vector_type func (vector_type, vector_type)
  * function registration. */
 static CONSTEXPR const rvv_op_info i_vvv_ops
@@ -810,6 +924,22 @@ static CONSTEXPR const rvv_op_info u_vvv_ops
      OP_TYPE_vv,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_vvv_ops
+  = {f_ops,				/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_vvf_ops
+  = {f_ops,				/* Types */
+     OP_TYPE_vf,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vx_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type, vector_type)
  * function registration. */
@@ -942,6 +1072,135 @@ static CONSTEXPR const rvv_op_info iu_v_ops
 
 /* A static operand information for vector_type func (vector_type)
  * function registration. */
+static CONSTEXPR const rvv_op_info f_v_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_u_v_ops
+  = {convert_u_ops,			  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     f_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_i_f_v_ops
+  = {convert_i_ops,			  /* Types */
+     OP_TYPE_f_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     f_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_wi_f_v_ops
+  = {wconvert_i_ops,			  /* Types */
+     OP_TYPE_f_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     trunc_f_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_ni_f_w_ops
+  = {f_ops,						      /* Types */
+     OP_TYPE_f_w,					      /* Suffix */
+     rvv_arg_type_info (RVV_BASE_double_trunc_signed_vector), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_nu_f_w_ops
+  = {f_ops,	  /* Types */
+     OP_TYPE_f_w, /* Suffix */
+     rvv_arg_type_info (
+       RVV_BASE_double_trunc_unsigned_vector), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_to_f_x_v_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_x_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     x_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_to_f_xu_v_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_xu_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     xu_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_to_wf_x_v_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_x_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     w_x_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_to_wf_xu_v_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_xu_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     w_xu_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info i_to_nf_x_w_ops
+  = {wconvert_i_ops,					     /* Types */
+     OP_TYPE_x_w,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_double_trunc_float_vector), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info u_to_nf_xu_w_ops
+  = {wconvert_u_ops,					     /* Types */
+     OP_TYPE_xu_w,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_double_trunc_float_vector), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_u_f_v_ops
+  = {convert_u_ops,			  /* Types */
+     OP_TYPE_f_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     f_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_wu_f_v_ops
+  = {wconvert_u_ops,			  /* Types */
+     OP_TYPE_f_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     trunc_f_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_wf_f_v_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_f_v,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     w_v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_to_nf_f_w_ops
+  = {wconvert_f_ops,					     /* Types */
+     OP_TYPE_f_w,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_double_trunc_float_vector), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
 static CONSTEXPR const rvv_op_info all_v_ops
   = {all_ops,			/* Types */
      OP_TYPE_v,			/* Suffix */
@@ -953,6 +1212,14 @@ static CONSTEXPR const rvv_op_info all_v_ops
 static CONSTEXPR const rvv_op_info iu_x_ops
   = {iu_ops,			/* Types */
      OP_TYPE_x,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     x_args /* Args */};
+
+/* A static operand information for vector_type func (scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_f_ops
+  = {f_ops,			/* Types */
+     OP_TYPE_f,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      x_args /* Args */};
 
@@ -1012,6 +1279,14 @@ static CONSTEXPR const rvv_op_info i_wvv_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      wvv_args /* Args */};
 
+/* A static operand information for vector_type func (double demote type, double
+ * demote type) function registration. */
+static CONSTEXPR const rvv_op_info f_wvv_ops
+  = {wextf_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wvv_args /* Args */};
+
 /* A static operand information for vector_type func (vector_type, double demote
  * type, double demote type) function registration. */
 static CONSTEXPR const rvv_op_info i_wwvv_ops
@@ -1025,6 +1300,22 @@ static CONSTEXPR const rvv_op_info i_wwvv_ops
 static CONSTEXPR const rvv_op_info i_wwxv_ops
   = {wexti_ops,				  /* Types */
      OP_TYPE_vx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwxv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info f_wwvv_ops
+  = {wextf_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwvv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * scalar_type, double demote type) function registration. */
+static CONSTEXPR const rvv_op_info f_wwfv_ops
+  = {wextf_ops,				  /* Types */
+     OP_TYPE_vf,			  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      wwxv_args /* Args */};
 
@@ -1092,6 +1383,14 @@ static CONSTEXPR const rvv_op_info i_wvx_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      wvx_args /* Args */};
 
+/* A static operand information for vector_type func (double demote type, double
+ * demote scalar_type) function registration. */
+static CONSTEXPR const rvv_op_info f_wvf_ops
+  = {wextf_ops,				  /* Types */
+     OP_TYPE_vf,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wvx_args /* Args */};
+
 /* A static operand information for vector_type func (signed double demote type,
  * unsigned double demote scalar_type) function registration. */
 static CONSTEXPR const rvv_op_info i_su_wvx_ops
@@ -1109,10 +1408,26 @@ static CONSTEXPR const rvv_op_info i_wwv_ops
      wwv_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type, double
+ * demote type) function registration. */
+static CONSTEXPR const rvv_op_info f_wwv_ops
+  = {wextf_ops,				  /* Types */
+     OP_TYPE_wv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double
  * demote scalar_type) function registration. */
 static CONSTEXPR const rvv_op_info i_wwx_ops
   = {wexti_ops,				  /* Types */
      OP_TYPE_wx,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwx_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double
+ * demote scalar_type) function registration. */
+static CONSTEXPR const rvv_op_info f_wwf_ops
+  = {wextf_ops,				  /* Types */
+     OP_TYPE_wf,			  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      wwx_args /* Args */};
 
@@ -1388,9 +1703,11 @@ register_vector_type (vector_type_index type)
 static bool
 required_extensions_p (enum rvv_base_type type)
 {
-  return type == RVV_BASE_vector || type == RVV_BASE_uint8_index
-	 || type == RVV_BASE_uint16_index || type == RVV_BASE_uint32_index
-	 || type == RVV_BASE_uint64_index;
+  return type == RVV_BASE_uint8_index || type == RVV_BASE_uint16_index
+	 || type == RVV_BASE_uint32_index || type == RVV_BASE_uint64_index
+	 || type == RVV_BASE_float_vector
+	 || type == RVV_BASE_double_trunc_float_vector
+	 || type == RVV_BASE_double_trunc_vector;
 }
 
 /* Check whether all the RVV_REQUIRE_* values in REQUIRED_EXTENSIONS are
@@ -1410,7 +1727,7 @@ check_required_extensions (const function_instance &instance)
       enum vector_type_index vector_type
 	= op_info->args[i].get_base_vector_type (type);
       if (vector_type == NUM_VECTOR_TYPES)
-	continue;
+	return false;
       required_extensions |= op_info->types[vector_type].required_extensions;
 
       /* According to RVV ISA, EEW=64 index of indexed loads/stores require
@@ -1474,17 +1791,42 @@ get_mask_policy_for_pred (enum predication_type_index pred)
   return gen_int_mode (get_prefer_mask_policy (), Pmode);
 }
 
+static bool
+unsigned_base_type_p (rvv_base_type base_type)
+{
+  return base_type == RVV_BASE_double_trunc_unsigned_vector
+	 || base_type == RVV_BASE_double_trunc_unsigned_scalar
+	 || base_type == RVV_BASE_unsigned_vector
+	 || base_type == RVV_BASE_uint8_index
+	 || base_type == RVV_BASE_uint16_index
+	 || base_type == RVV_BASE_uint32_index
+	 || base_type == RVV_BASE_uint64_index
+	 || base_type == RVV_BASE_shift_vector;
+}
+
+static machine_mode
+get_mode_for_bitsize (poly_int64 bitsize, bool float_mode_p)
+{
+  if (float_mode_p)
+    return float_mode_for_size (bitsize).require ();
+  else
+    return int_mode_for_size (bitsize, 0).require ();
+}
+
 vector_type_index
 rvv_arg_type_info::get_base_vector_type (tree type) const
 {
   if (!type)
     return NUM_VECTOR_TYPES;
+
   poly_int64 nunits = GET_MODE_NUNITS (TYPE_MODE (type));
   machine_mode inner_mode = GET_MODE_INNER (TYPE_MODE (type));
+  poly_int64 bitsize = GET_MODE_BITSIZE (inner_mode);
+
   bool unsigned_p = TYPE_UNSIGNED (type);
-  if (base_type == RVV_BASE_double_trunc_unsigned_vector
-      || base_type == RVV_BASE_double_trunc_unsigned_scalar)
+  if (unsigned_base_type_p (base_type))
     unsigned_p = true;
+
   switch (base_type)
     {
     case RVV_BASE_mask:
@@ -1492,50 +1834,46 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
       break;
     case RVV_BASE_uint8_index:
       inner_mode = E_QImode;
-      unsigned_p = true;
       break;
     case RVV_BASE_uint16_index:
       inner_mode = E_HImode;
-      unsigned_p = true;
       break;
     case RVV_BASE_uint32_index:
       inner_mode = E_SImode;
-      unsigned_p = true;
       break;
     case RVV_BASE_uint64_index:
       inner_mode = E_DImode;
-      unsigned_p = true;
       break;
     case RVV_BASE_shift_vector:
       inner_mode = GET_MODE_INNER (TYPE_MODE (type));
-      unsigned_p = true;
       break;
     case RVV_BASE_double_trunc_vector:
     case RVV_BASE_double_trunc_scalar:
+      inner_mode = get_mode_for_bitsize (exact_div (bitsize, 2),
+					 FLOAT_MODE_P (inner_mode));
+      break;
     case RVV_BASE_double_trunc_unsigned_vector:
     case RVV_BASE_double_trunc_unsigned_scalar:
-      if (inner_mode == DImode)
-	inner_mode = SImode;
-      else if (inner_mode == SImode)
-	inner_mode = HImode;
-      else if (inner_mode == HImode)
-	inner_mode = QImode;
-      else
-	gcc_unreachable ();
+    case RVV_BASE_double_trunc_signed_vector:
+      inner_mode = int_mode_for_size (exact_div (bitsize, 2), 0).require ();
       break;
     case RVV_BASE_quad_trunc_vector:
-      if (inner_mode == DImode)
-	inner_mode = HImode;
-      else if (inner_mode == SImode)
-	inner_mode = QImode;
-      else
-	gcc_unreachable ();
+      inner_mode = get_mode_for_bitsize (exact_div (bitsize, 4),
+					 FLOAT_MODE_P (inner_mode));
       break;
     case RVV_BASE_oct_trunc_vector:
-      if (inner_mode == DImode)
-	inner_mode = QImode;
-      else
-	gcc_unreachable ();
+      inner_mode = get_mode_for_bitsize (exact_div (bitsize, 8),
+					 FLOAT_MODE_P (inner_mode));
+      break;
+    case RVV_BASE_float_vector:
+      inner_mode = float_mode_for_size (bitsize).require ();
+      break;
+    case RVV_BASE_double_trunc_float_vector:
+      inner_mode = float_mode_for_size (exact_div (bitsize, 2)).require ();
+      break;
+    case RVV_BASE_signed_vector:
+    case RVV_BASE_unsigned_vector:
+      inner_mode = int_mode_for_mode (inner_mode).require ();
       break;
     default:
       return NUM_VECTOR_TYPES;
@@ -1552,7 +1890,7 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
       if (!vector_type)
 	continue;
 
-      if (GET_MODE_CLASS (TYPE_MODE (vector_type)) != MODE_VECTOR_BOOL
+      if (GET_MODE_CLASS (TYPE_MODE (vector_type)) == MODE_VECTOR_INT
 	  && TYPE_UNSIGNED (vector_type) != unsigned_p)
 	continue;
 
@@ -1581,9 +1919,6 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
        type is always the signed type + 1 (They have same SEW and LMUL).
        For example 'vuint8mf8_t' enum = 'vint8mf8_t' enum + 1.
        Note: We dont't allow type_idx to be unsigned type.  */
-    case RVV_BASE_unsigned_vector:
-      gcc_assert (!TYPE_UNSIGNED (builtin_types[type_idx].vector));
-      return builtin_types[type_idx + 1].vector;
     case RVV_BASE_unsigned_scalar:
       gcc_assert (!TYPE_UNSIGNED (builtin_types[type_idx].scalar));
       return builtin_types[type_idx + 1].scalar;
@@ -1621,8 +1956,13 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
     case RVV_BASE_double_trunc_vector:
     case RVV_BASE_quad_trunc_vector:
     case RVV_BASE_oct_trunc_vector:
+    case RVV_BASE_double_trunc_signed_vector:
     case RVV_BASE_double_trunc_unsigned_vector:
     case RVV_BASE_mask:
+    case RVV_BASE_float_vector:
+    case RVV_BASE_double_trunc_float_vector:
+    case RVV_BASE_signed_vector:
+    case RVV_BASE_unsigned_vector:
       if (get_base_vector_type (builtin_types[type_idx].vector)
 	  != NUM_VECTOR_TYPES)
 	return builtin_types[get_base_vector_type (

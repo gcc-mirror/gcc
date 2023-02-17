@@ -54,6 +54,18 @@
   UNSPEC_VMSIF
   UNSPEC_VMSOF
   UNSPEC_VIOTA
+
+  UNSPEC_VFRSQRT7
+  UNSPEC_VFREC7
+  UNSPEC_VFCLASS
+
+  UNSPEC_VCOPYSIGN
+  UNSPEC_VNCOPYSIGN
+  UNSPEC_VXORSIGN
+
+  UNSPEC_VFCVT
+  UNSPEC_UNSIGNED_VFCVT
+  UNSPEC_ROD
 ])
 
 (define_mode_iterator V [
@@ -79,6 +91,18 @@
   VNx1SI VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32")
   (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
   (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VF [
+  (VNx1SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx16SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
 ])
 
 (define_mode_iterator VFULLI [
@@ -210,6 +234,20 @@
   (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
 ])
 
+(define_mode_iterator VWEXTF [
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VWCONVERTI [
+  (VNx1DI "TARGET_MIN_VLEN > 32 && TARGET_VECTOR_ELEN_FP_32")
+  (VNx2DI "TARGET_MIN_VLEN > 32 && TARGET_VECTOR_ELEN_FP_32")
+  (VNx4DI "TARGET_MIN_VLEN > 32 && TARGET_VECTOR_ELEN_FP_32")
+  (VNx8DI "TARGET_MIN_VLEN > 32 && TARGET_VECTOR_ELEN_FP_32")
+])
+
 (define_mode_iterator VQEXTI [
   VNx1SI VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32")
   (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
@@ -266,15 +304,16 @@
 ])
 
 (define_mode_attr V_DOUBLE_TRUNC [
-  (VNx1HI "VNx1QI") (VNx2HI "VNx2QI")  (VNx4HI "VNx4QI")  (VNx8HI "VNx8QI")  
+  (VNx1HI "VNx1QI") (VNx2HI "VNx2QI")  (VNx4HI "VNx4QI")  (VNx8HI "VNx8QI")
   (VNx16HI "VNx16QI") (VNx32HI "VNx32QI")
-  (VNx1SI "VNx1HI") (VNx2SI "VNx2HI") (VNx4SI "VNx4HI") (VNx8SI "VNx8HI") 
+  (VNx1SI "VNx1HI") (VNx2SI "VNx2HI") (VNx4SI "VNx4HI") (VNx8SI "VNx8HI")
   (VNx16SI "VNx16HI")
   (VNx1DI "VNx1SI") (VNx2DI "VNx2SI") (VNx4DI "VNx4SI") (VNx8DI "VNx8SI")
+  (VNx1DF "VNx1SF") (VNx2DF "VNx2SF") (VNx4DF "VNx4SF") (VNx8DF "VNx8SF")
 ])
 
 (define_mode_attr V_QUAD_TRUNC [
-  (VNx1SI "VNx1QI") (VNx2SI "VNx2QI") (VNx4SI "VNx4QI") (VNx8SI "VNx8QI") 
+  (VNx1SI "VNx1QI") (VNx2SI "VNx2QI") (VNx4SI "VNx4QI") (VNx8SI "VNx8QI")
   (VNx16SI "VNx16QI")
   (VNx1DI "VNx1HI") (VNx2DI "VNx2HI")
   (VNx4DI "VNx4HI") (VNx8DI "VNx8HI")
@@ -282,6 +321,17 @@
 
 (define_mode_attr V_OCT_TRUNC [
   (VNx1DI "VNx1QI") (VNx2DI "VNx2QI") (VNx4DI "VNx4QI") (VNx8DI "VNx8QI")
+])
+
+(define_mode_attr VCONVERT [
+  (VNx1SF "VNx1SI") (VNx2SF "VNx2SI") (VNx4SF "VNx4SI") (VNx8SF "VNx8SI") (VNx16SF "VNx16SI")
+  (VNx1DF "VNx1DI") (VNx2DF "VNx2DI") (VNx4DF "VNx4DI") (VNx8DF "VNx8DI")
+])
+
+(define_mode_attr VNCONVERT [
+  (VNx1SF "VNx1HI") (VNx2SF "VNx2HI") (VNx4SF "VNx4HI") (VNx8SF "VNx8HI") (VNx16SF "VNx16HI")
+  (VNx1DI "VNx1SF") (VNx2DI "VNx2SF") (VNx4DI "VNx4SF") (VNx8DI "VNx8SF")
+  (VNx1DF "VNx1SI") (VNx2DF "VNx2SI") (VNx4DF "VNx4SI") (VNx8DF "VNx8SI")
 ])
 
 (define_int_iterator ORDER [UNSPEC_ORDERED UNSPEC_UNORDERED])
@@ -300,12 +350,17 @@
 
 (define_int_iterator VMISC [UNSPEC_VMSBF UNSPEC_VMSIF UNSPEC_VMSOF])
 
+(define_int_iterator VFMISC [UNSPEC_VFRSQRT7 UNSPEC_VFREC7])
+
+(define_int_iterator VFCVTS [UNSPEC_VFCVT UNSPEC_UNSIGNED_VFCVT])
+
 (define_int_attr order [
   (UNSPEC_ORDERED "o") (UNSPEC_UNORDERED "u")
 ])
 
 (define_int_attr v_su [(UNSPEC_VMULHS "") (UNSPEC_VMULHU "u") (UNSPEC_VMULHSU "su")
-		       (UNSPEC_VNCLIP "") (UNSPEC_VNCLIPU "u")])
+		       (UNSPEC_VNCLIP "") (UNSPEC_VNCLIPU "u")
+		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")])
 (define_int_attr sat_op [(UNSPEC_VAADDU "aaddu") (UNSPEC_VAADD "aadd")
 			 (UNSPEC_VASUBU "asubu") (UNSPEC_VASUB "asub")
 			 (UNSPEC_VSMUL "smul") (UNSPEC_VSSRL "ssrl")
@@ -316,7 +371,19 @@
 			 	(UNSPEC_VSSRA "vsshift") (UNSPEC_VNCLIP "vnclip")
 				(UNSPEC_VNCLIPU "vnclip")])
 
-(define_int_attr misc_op [(UNSPEC_VMSBF "sbf") (UNSPEC_VMSIF "sif") (UNSPEC_VMSOF "sof")])
+(define_int_attr misc_op [(UNSPEC_VMSBF "sbf") (UNSPEC_VMSIF "sif") (UNSPEC_VMSOF "sof")
+			  (UNSPEC_VFRSQRT7 "rsqrt7") (UNSPEC_VFREC7 "rec7")])
+
+(define_int_attr float_insn_type [(UNSPEC_VFRSQRT7 "vfsqrt") (UNSPEC_VFREC7 "vfrecp")])
+
+(define_int_iterator VCOPYSIGNS [UNSPEC_VCOPYSIGN UNSPEC_VNCOPYSIGN UNSPEC_VXORSIGN])
+
+(define_int_attr copysign [(UNSPEC_VCOPYSIGN "copysign")
+			   (UNSPEC_VNCOPYSIGN "ncopysign")
+			   (UNSPEC_VXORSIGN "xorsign")])
+
+(define_int_attr nx [(UNSPEC_VCOPYSIGN "") (UNSPEC_VNCOPYSIGN "n")
+		     (UNSPEC_VXORSIGN "x")])
 
 (define_code_iterator any_int_binop [plus minus and ior xor ashift ashiftrt lshiftrt
   smax umax smin umin mult div udiv mod umod
@@ -339,8 +406,21 @@
 
 (define_code_attr macc_nmsac [(plus "macc") (minus "nmsac")])
 (define_code_attr madd_nmsub [(plus "madd") (minus "nmsub")])
+(define_code_attr nmacc_msac [(plus "nmacc") (minus "msac")])
+(define_code_attr nmadd_msub [(plus "nmadd") (minus "msub")])
 
 (define_code_iterator and_ior [and ior])
+
+(define_code_iterator any_float_binop [plus mult smax smin minus div])
+(define_code_iterator commutative_float_binop [plus mult smax smin])
+(define_code_iterator non_commutative_float_binop [minus div])
+(define_code_iterator any_float_unop [neg abs sqrt])
+
+(define_code_iterator any_fix [fix unsigned_fix])
+(define_code_iterator any_float [float unsigned_float])
+(define_code_attr fix_cvt [(fix "fix_trunc") (unsigned_fix "fixuns_trunc")])
+(define_code_attr float_cvt [(float "float") (unsigned_float "floatuns")])
+
 (define_code_attr ninsn [(and "nand") (ior "nor") (xor "xnor")])
 
 (define_code_attr binop_rhs1_predicate [
@@ -458,6 +538,17 @@
 			(plus "walu")
 			(minus "walu")
 			(mult "wmul")])
+
+(define_code_attr float_insn_type [
+			(plus "vfalu")
+			(mult "vfmul")
+			(smax "vfminmax")
+			(smin "vfminmax")
+			(minus "vfalu")
+			(div "vfdiv")
+			(neg "vfsgnj")
+			(abs "vfsgnj")
+			(sqrt "vfsqrt")])
 
 ;; <binop_vi_variant_insn> expands to the insn name of binop matching constraint rhs1 is immediate.
 ;; minus is negated as vadd and ss_minus is negated as vsadd, others remain <insn>.
