@@ -2463,6 +2463,14 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
       gcc_assert (data);
       if (data->ref == UNANALYZABLE_MEM_ID)
 	return -1;
+      /* Stop at memory references which we can't move.  */
+      else if (TREE_THIS_VOLATILE
+		 (memory_accesses.refs_list[data->ref]->mem.ref))
+	{
+	  /* Mark refs_not_in_seq as unsupported.  */
+	  bitmap_ior_into (refs_not_supported, refs_not_in_seq);
+	  return 1;
+	}
       /* One of the stores we want to apply SM to and we've not yet seen.  */
       else if (bitmap_clear_bit (refs_not_in_seq, data->ref))
 	{
