@@ -655,3 +655,31 @@
    operands[8] = GEN_INT (setbit);
    operands[9] = GEN_INT (clearbit);
 })
+
+(define_expand "crcqihi4"
+[(set (match_operand:HI 0 "register_operand" "=r")
+(unspec:HI
+[(match_operand:HI 1)
+(match_operand:QI 2)
+(match_operand:HI 3)]
+UNSPEC_CRC16))] ;;
+""
+{
+// FIXME: Note correct instruction sequence.
+rtx data = force_reg (SImode, gen_rtx_ASHIFT (SImode, operands[1],
+					      GEN_INT (32)));
+
+rtx op3 = simplify_gen_subreg (SImode, operands[3], HImode, 0);
+rtx t2 = force_reg (SImode, gen_rtx_PLUS (SImode, data, op3)); // Must be CLMULH
+
+t2 = force_reg (SImode, gen_rtx_ASHIFT (SImode, t2, GEN_INT (16+1)));
+
+t2 = force_reg (SImode, gen_rtx_LSHIFTRT (SImode, t2, GEN_INT (48-1)));
+
+t2 = force_reg (SImode, gen_rtx_PLUS (SImode, data, t2)); // Must be CLMULH
+
+rtx tgt = simplify_gen_subreg (SImode, operands[0], HImode, 0);
+rtx crc = simplify_gen_subreg (SImode, operands[2], QImode, 0);
+emit_move_insn (tgt, gen_rtx_XOR (SImode, crc, t2));
+DONE;
+})

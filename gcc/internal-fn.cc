@@ -3720,9 +3720,27 @@ static void
 expand_crc_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
     tree lhs = gimple_call_lhs (stmt);
-    tree rhs1 = gimple_call_arg (stmt, 0);
-    tree rhs2 = gimple_call_arg (stmt, 1);
-    tree rhs3 = gimple_call_arg (stmt, 2);
+    tree rhs1 = gimple_call_arg (stmt, 0); // crc
+    tree rhs2 = gimple_call_arg (stmt, 1); // data
+    tree rhs3 = gimple_call_arg (stmt, 2); // polynomial
+    tree result_type = TREE_TYPE (lhs);
+    tree data_type = TREE_TYPE (rhs2);
+
+    rtx dest = expand_expr (lhs, NULL_RTX, SImode, EXPAND_WRITE);
+    rtx op1 = expand_normal (rhs1);
+    rtx op2 = expand_normal (rhs2);
+    rtx op3 = expand_normal (rhs3);
+
+    class expand_operand ops[4];
+    create_output_operand (&ops[0], dest, TYPE_MODE (result_type));
+    create_input_operand (&ops[1], op1, TYPE_MODE (result_type)); // crc
+    create_input_operand (&ops[2], op2, TYPE_MODE (data_type)); // data
+    create_input_operand (&ops[3], op3, TYPE_MODE (result_type)); //polynom
+    insn_code icode = convert_optab_handler (optab, TYPE_MODE (data_type),
+					     TYPE_MODE (result_type));
+    expand_insn (icode, 4, ops);
+    if (!rtx_equal_p (dest, ops[0].value))
+      emit_move_insn (dest, ops[0].value);
 }
 
 /* Expanders for optabs that can use expand_direct_optab_fn.  */

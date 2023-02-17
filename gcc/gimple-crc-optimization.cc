@@ -205,7 +205,7 @@ class crc_optimization {
 
   /* Replaces function body with CRC_IFN call.
    Returns true if replacement is succeeded, otherwise false.  */
-  bool faster_crc_code_generation (function *);
+  bool faster_crc_code_generation (function *fun);
 
  public:
   unsigned int execute (function *fun);
@@ -1011,188 +1011,40 @@ crc_optimization::function_may_calculate_crc (function *fun)
 /* Remove all statements and basic blocks of the function
    except for the return statement.  */
 gimple *
-remove_stmts_besides_return (function *fun)
+remove_stmts_besides_return (function *fun, class loop *crc_loop)
 {
   gimple_stmt_iterator gsi;
   basic_block bb, next_bb;
   gimple *return_stmt = NULL;
+  cancel_loop_tree (crc_loop);
   for (bb = fun->cfg->x_entry_block_ptr->next_bb;
        bb != fun->cfg->x_exit_block_ptr; bb = next_bb)
     {
-
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);)
-	gsi_remove (&gsi, true);
-
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *gs = gsi_stmt (gsi);
+	  // TODO: Check whether it's better to get return
+	  //  statement during symbolic execution step and change.
 	  if (gimple_code (gs) == GIMPLE_RETURN)
-	    {
-	      return_stmt = gs;
-	      gsi_next (&gsi);
-	    }
-	  else
-	    {
-	      gimple *stmt = gsi_stmt (gsi);
-	      gsi_remove (&gsi, true);
-	      release_defs (stmt);
-	    }
-	}
-/*
-      edge e;
-      edge_iterator ei;
-      for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei));)
-	{
-	  e->dest = bb->next_bb;
-	  remove_edge (e);
+	    return_stmt = gs;
 	}
 
-      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei));)
-	{
-	  e->src = bb->prev_bb;
-	  remove_edge (e);
-	}*/
-
+      next_bb = bb->next_bb;
+      // TODO: what if return statement's block isn't the last one?!
       if (!return_stmt)
-	{
-	  next_bb = bb->next_bb;
-	  delete_basic_block (bb);
-	}
+	delete_basic_block (bb);
       else
-	next_bb = bb->next_bb;
+	{
+	  // TODO: Check whether there can be other statements
+	  // besides return in the block.  Delete them if any.
+	  /* Delete phi statements of the return block.  */
+	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);)
+	    gsi_remove (&gsi, true);
+	}
     }
-  set_immediate_dominator (CDI_DOMINATORS, fun->cfg->x_entry_block_ptr,
-			   return_stmt->bb);
   make_edge (fun->cfg->x_entry_block_ptr, return_stmt->bb,
 	     EDGE_FALLTHRU);
   return return_stmt;
-}
-
-void
-remove_statements_and_update_ssa (function *fn)
-{
-  basic_block bb, next_bb;
-  gimple_stmt_iterator gsi;
-
-  for (bb = fn->cfg->x_entry_block_ptr->next_bb;
-       bb != fn->cfg->x_exit_block_ptr; bb = next_bb)
-    {
-      gsi = gsi_last_bb (bb);
-
-      // Remove all statements from the basic block.
-      while (!gsi_end_p (gsi))
-	{
-	  gimple *stmt = gsi_stmt (gsi);
-	  gsi_remove (&gsi, true);
-
-	  // Update the SSA form to remove the dead statement.
-	  release_defs (stmt);
-	}
-
-      // Remove the basic block from the CFG.
-      next_bb = bb->next_bb;
-      delete_basic_block (bb);
-    }
-  remove_unused_locals ();
-  /*set_immediate_dominator (CDI_DOMINATORS, fn->cfg->x_entry_block_ptr,
-			 fn->cfg->x_exit_block_ptr);
-make_edge (fn->cfg->x_entry_block_ptr, EXIT_BLOCK_PTR_FOR_FN (fn),
-	  EDGE_FALLTHRU);*/
-  update_ssa (TODO_update_ssa);
-  free_dominance_info (fn, CDI_DOMINATORS);
-  calculate_dominance_info (CDI_DOMINATORS);
-}
-
-void
-add_return_statement (function *fn)
-{
-  basic_block bb = create_basic_block (NULL, 0, ENTRY_BLOCK_PTR_FOR_FN (fn));
-  gimple_stmt_iterator gsi = gsi_last_bb (bb);
-
-  tree return_value = build_int_cst (integer_type_node, 10);
-  gimple *stmt = gimple_build_return (return_value);
-
-  gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
-  calculate_dominance_info (CDI_DOMINATORS);
-  // Update the SSA form to reflect the new return statement.
-  update_ssa (TODO_update_ssa);
-
-}
-
-/* Will be removed from here, after writing a correct code.  */
-void
-destroy_loop (class loop *loop)
-{
-  unsigned nbbs = loop->num_nodes;
-  edge exit = single_exit (loop);
-  basic_block src = loop_preheader_edge (loop)->src, dest = exit->dest;
-  basic_block *bbs;
-  unsigned i;
-
-  bbs = get_loop_body_in_dom_order (loop);
-
-  gimple_stmt_iterator dst_gsi = gsi_after_labels (exit->dest);
-  bool safe_p = single_pred_p (exit->dest);
-  for (unsigned i = 0; i < nbbs; ++i)
-    {
-      /* We have made sure to not leave any dangling uses of SSA
-	 names defined in the loop.  With the exception of virtuals.
-	 Make sure we replace all uses of virtual defs that will remain
-	 outside of the loop with the bare symbol as delete_basic_block
-	 will release them.  */
-      for (gphi_iterator gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
-	{
-	  gphi *phi = gsi.phi ();
-	  if (virtual_operand_p (gimple_phi_result (phi)))
-	    mark_virtual_phi_result_for_renaming (phi);
-	}
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);)
-	{
-	  gimple *stmt = gsi_stmt (gsi);
-	  tree vdef = gimple_vdef (stmt);
-	  if (vdef && TREE_CODE (vdef) == SSA_NAME)
-	    mark_virtual_operand_for_renaming (vdef);
-	  /* Also move and eventually reset debug stmts.  We can leave
-	     constant values in place in case the stmt dominates the exit.
-	     ???  Non-constant values from the last iteration can be
-	     replaced with final values if we can compute them.  */
-	  if (gimple_debug_bind_p (stmt))
-	    {
-	      tree val = gimple_debug_bind_get_value (stmt);
-	      gsi_move_before (&gsi, &dst_gsi);
-	      if (val
-		  && (!safe_p
-		      || !is_gimple_min_invariant (val)
-		      || !dominated_by_p (CDI_DOMINATORS, exit->src, bbs[i])))
-		{
-		  gimple_debug_bind_reset_value (stmt);
-		  update_stmt (stmt);
-		}
-	    }
-	  else
-	    gsi_next (&gsi);
-	}
-    }
-
-  redirect_edge_pred (exit, src);
-  exit->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-  exit->flags |= EDGE_FALLTHRU;
-  cancel_loop_tree (loop);
-  rescan_loop_exit (exit, false, true);
-
-  i = nbbs;
-  do
-    {
-      --i;
-      delete_basic_block (bbs[i]);
-    }
-  while (i != 0);
-
-  free (bbs);
-
-  set_immediate_dominator (CDI_DOMINATORS, dest,
-			   recompute_dominator (CDI_DOMINATORS, dest));
 }
 
 /* Replaces function body with CRC_IFN call.
@@ -1201,19 +1053,28 @@ bool
 crc_optimization::faster_crc_code_generation (function *fun)
 {
   if (!(data && first_phi_for_crc))
-    return false;
+   return false;
+  // TODO: Use another way of figuring out which argument is data, as this won't
+  // work correctly in case when data is xor-ed with crc before the loop.
   tree crc_arg = PHI_ARG_DEF (first_phi_for_crc, 1);
   tree data_arg = PHI_ARG_DEF (data, 1);
-  destroy_loop (crc_loop);
-  //repair_loop_structures ();
-  gimple *return_stmt = remove_stmts_besides_return (fun);
+  if (!direct_internal_fn_supported_p
+      (IFN_CRC, tree_pair (TREE_TYPE (data_arg), TREE_TYPE (crc_arg)),
+       OPTIMIZE_FOR_BOTH))
+  {
+    if (dump_file)
+      fprintf (dump_file, "No matching optab entry\n");
+    return false;
+  }
+
+  gimple *return_stmt = remove_stmts_besides_return (fun, crc_loop);
 
   /* Add IFN call and return the value.  */
   gcall *call
       = gimple_build_call_internal (IFN_CRC, 3,
 				    crc_arg,
 				    data_arg,
-				    data_arg);
+				    crc_arg); // must be changed to polynomial
 
   tree result = make_ssa_name (TREE_TYPE (DECL_RESULT (fun->decl)));
   gimple_call_set_lhs (call, result);
