@@ -2082,8 +2082,8 @@ package body Exp_Ch3 is
          Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
          Adj_Call : Node_Id;
-         Exp      : Node_Id   := Default;
-         Kind     : Node_Kind := Nkind (Default);
+         Exp      : Node_Id;
+         Exp_Q    : Node_Id;
          Lhs      : Node_Id;
          Res      : List_Id;
 
@@ -2094,13 +2094,14 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
 
-         --  Take a copy of Exp to ensure that later copies of this component
+         --  Take copy of Default to ensure that later copies of this component
          --  declaration in derived types see the original tree, not a node
          --  rewritten during expansion of the init_proc. If the copy contains
          --  itypes, the scope of the new itypes is the init_proc being built.
 
          declare
             Map : Elist_Id := No_Elist;
+
          begin
             if Has_Late_Init_Comp then
                --  Map the type to the _Init parameter in order to
@@ -2131,7 +2132,7 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id, Map => Map);
+            Exp := New_Copy_Tree (Default, New_Scope => Proc_Id, Map => Map);
          end;
 
          Res := New_List (
@@ -2141,6 +2142,8 @@ package body Exp_Ch3 is
 
          Set_No_Ctrl_Actions (First (Res));
 
+         Exp_Q := Unqualify (Exp);
+
          --  Adjust the tag if tagged (because of possible view conversions).
          --  Suppress the tag adjustment when not Tagged_Type_Expansion because
          --  tags are represented implicitly in objects, and when the record is
@@ -2148,9 +2151,7 @@ package body Exp_Ch3 is
 
          if Is_Tagged_Type (Typ)
            and then Tagged_Type_Expansion
-           and then Nkind (Exp) /= N_Raise_Expression
-           and then (Nkind (Exp) /= N_Qualified_Expression
-                       or else Nkind (Expression (Exp)) /= N_Raise_Expression)
+           and then Nkind (Exp_Q) /= N_Raise_Expression
          then
             Append_To (Res,
               Make_Assignment_Statement (Default_Loc,
@@ -2173,12 +2174,8 @@ package body Exp_Ch3 is
          --  Adjust the component if controlled except if it is an aggregate
          --  that will be expanded inline.
 
-         if Kind = N_Qualified_Expression then
-            Kind := Nkind (Expression (Default));
-         end if;
-
          if Needs_Finalization (Typ)
-           and then Kind not in N_Aggregate | N_Extension_Aggregate
+           and then Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
            and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
@@ -2192,16 +2189,6 @@ package body Exp_Ch3 is
             if Present (Adj_Call) then
                Append_To (Res, Adj_Call);
             end if;
-         end if;
-
-         --  If a component type has a predicate, add check to the component
-         --  assignment. Discriminants are handled at the point of the call,
-         --  which provides for a better error message.
-
-         if Comes_From_Source (Exp)
-           and then Predicate_Enabled (Typ)
-         then
-            Append (Make_Predicate_Check (Typ, Exp), Res);
          end if;
 
          return Res;
