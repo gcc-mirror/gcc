@@ -43,12 +43,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "opts.h"
 
+/* Flags for cp_fold and cp_fold_r.  */
+
+enum fold_flags {
+  ff_none = 0,
+  /* Whether we're being called from cp_fold_function.  */
+  ff_genericize = 1 << 0,
+  /* Whether we're folding a point where we know we're
+     definitely not in a manifestly constant-evaluated
+     context.  */
+  ff_mce_false = 1 << 1,
+};
+
+using fold_flags_t = int;
+
 /* Forward declarations.  */
 
 static tree cp_genericize_r (tree *, int *, void *);
 static tree cp_fold_r (tree *, int *, void *);
 static void cp_genericize_tree (tree*, bool);
-static tree cp_fold (tree);
+static tree cp_fold (tree, fold_flags_t);
 
 /* Genericize a TRY_BLOCK.  */
 
@@ -1012,9 +1026,8 @@ struct cp_genericize_data
 struct cp_fold_data
 {
   hash_set<tree> pset;
-  bool genericize; // called from cp_fold_function?
-
-  cp_fold_data (bool g): genericize (g) {}
+  fold_flags_t flags;
+  cp_fold_data (fold_flags_t flags): flags (flags) {}
 };
 
 static tree
@@ -1055,7 +1068,7 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
       break;
     }
 
-  *stmt_p = stmt = cp_fold (*stmt_p);
+  *stmt_p = stmt = cp_fold (*stmt_p, data->flags);
 
   if (data->pset.add (stmt))
     {
@@ -1135,12 +1148,12 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	 here rather than in cp_genericize to avoid problems with the invisible
 	 reference transition.  */
     case INIT_EXPR:
-      if (data->genericize)
+      if (data->flags & ff_genericize)
 	cp_genericize_init_expr (stmt_p);
       break;
 
     case TARGET_EXPR:
-      if (data->genericize)
+      if (data->flags & ff_genericize)
 	cp_genericize_target_expr (stmt_p);
 
       /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
@@ -1173,7 +1186,10 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 void
 cp_fold_function (tree fndecl)
 {
-  cp_fold_data data (/*genericize*/true);
+  /* By now all manifestly-constant-evaluated expressions will have
+     been constant-evaluated already if possible, so we can safely
+     pass ff_mce_false.  */
+  cp_fold_data data (ff_genericize | ff_mce_false);
   cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &data, NULL);
 }
 
@@ -2386,12 +2402,12 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 
 /* Fold expression X which is used as an rvalue if RVAL is true.  */
 
-tree
-cp_fold_maybe_rvalue (tree x, bool rval)
+static tree
+cp_fold_maybe_rvalue (tree x, bool rval, fold_flags_t flags)
 {
   while (true)
     {
-      x = cp_fold (x);
+      x = cp_fold (x, flags);
       if (rval)
 	x = mark_rvalue_use (x);
       if (rval && DECL_P (x)
@@ -2409,12 +2425,24 @@ cp_fold_maybe_rvalue (tree x, bool rval)
   return x;
 }
 
+tree
+cp_fold_maybe_rvalue (tree x, bool rval)
+{
+  return cp_fold_maybe_rvalue (x, rval, ff_none);
+}
+
 /* Fold expression X which is used as an rvalue.  */
+
+static tree
+cp_fold_rvalue (tree x, fold_flags_t flags)
+{
+  return cp_fold_maybe_rvalue (x, true, flags);
+}
 
 tree
 cp_fold_rvalue (tree x)
 {
-  return cp_fold_maybe_rvalue (x, true);
+  return cp_fold_rvalue (x, ff_none);
 }
 
 /* Perform folding on expression X.  */
@@ -2450,7 +2478,7 @@ cp_fully_fold_init (tree x)
   if (processing_template_decl)
     return x;
   x = cp_fully_fold (x);
-  cp_fold_data data (/*genericize*/false);
+  cp_fold_data data (ff_mce_false);
   cp_walk_tree (&x, cp_fold_r, &data, NULL);
   return x;
 }
@@ -2466,15 +2494,29 @@ c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/, bool lval)
   return cp_fold_maybe_rvalue (x, !lval);
 }
 
-static GTY((deletable)) hash_map<tree, tree> *fold_cache;
+static GTY((deletable)) hash_map<tree, tree> *fold_caches[2];
+
+/* Subroutine of cp_fold.  Returns which fold cache to use according
+   to the given flags.  We need multiple caches since the result of
+   folding may depend on which flags are used.  */
+
+static hash_map<tree, tree> *&
+get_fold_cache (fold_flags_t flags)
+{
+  if (flags & ff_mce_false)
+    return fold_caches[1];
+  else
+    return fold_caches[0];
+}
 
 /* Dispose of the whole FOLD_CACHE.  */
 
 void
 clear_fold_cache (void)
 {
-  if (fold_cache != NULL)
-    fold_cache->empty ();
+  for (auto& fold_cache : fold_caches)
+    if (fold_cache != NULL)
+      fold_cache->empty ();
 }
 
 /*  This function tries to fold an expression X.
@@ -2485,7 +2527,7 @@ clear_fold_cache (void)
     Function returns X or its folded variant.  */
 
 static tree
-cp_fold (tree x)
+cp_fold (tree x, fold_flags_t flags)
 {
   tree op0, op1, op2, op3;
   tree org_x = x, r = NULL_TREE;
@@ -2503,6 +2545,7 @@ cp_fold (tree x)
   if (DECL_P (x) || CONSTANT_CLASS_P (x))
     return x;
 
+  auto& fold_cache = get_fold_cache (flags);
   if (fold_cache == NULL)
     fold_cache = hash_map<tree, tree>::create_ggc (101);
 
@@ -2517,7 +2560,7 @@ cp_fold (tree x)
     case CLEANUP_POINT_EXPR:
       /* Strip CLEANUP_POINT_EXPR if the expression doesn't have side
 	 effects.  */
-      r = cp_fold_rvalue (TREE_OPERAND (x, 0));
+      r = cp_fold_rvalue (TREE_OPERAND (x, 0), flags);
       if (!TREE_SIDE_EFFECTS (r))
 	x = r;
       break;
@@ -2542,14 +2585,14 @@ cp_fold (tree x)
 	     Don't create a new tree if op0 != TREE_OPERAND (x, 0), the
 	     folding of the operand should be in the caches and if in cp_fold_r
 	     it will modify it in place.  */
-	  op0 = cp_fold (TREE_OPERAND (x, 0));
+	  op0 = cp_fold (TREE_OPERAND (x, 0), flags);
 	  if (op0 == error_mark_node)
 	    x = error_mark_node;
 	  break;
 	}
 
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops, flags);
 
       if (code == CONVERT_EXPR
 	  && SCALAR_TYPE_P (TREE_TYPE (x))
@@ -2577,7 +2620,7 @@ cp_fold (tree x)
       break;
 
     case EXCESS_PRECISION_EXPR:
-      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops, flags);
       x = fold_convert_loc (EXPR_LOCATION (x), TREE_TYPE (x), op0);
       break;
 
@@ -2587,13 +2630,13 @@ cp_fold (tree x)
 	{
 	  tree p = maybe_undo_parenthesized_ref (x);
 	  if (p != x)
-	    return cp_fold (p);
+	    return cp_fold (p, flags);
 	}
       goto unary;
 
     case ADDR_EXPR:
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), false);
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), false, flags);
 
       /* Cope with user tricks that amount to offsetof.  */
       if (op0 != error_mark_node
@@ -2630,7 +2673,7 @@ cp_fold (tree x)
     unary:
 
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops, flags);
 
     finish_unary:
       if (op0 != TREE_OPERAND (x, 0))
@@ -2657,7 +2700,7 @@ cp_fold (tree x)
       break;
 
     case UNARY_PLUS_EXPR:
-      op0 = cp_fold_rvalue (TREE_OPERAND (x, 0));
+      op0 = cp_fold_rvalue (TREE_OPERAND (x, 0), flags);
       if (op0 == error_mark_node)
 	x = error_mark_node;
       else
@@ -2711,8 +2754,8 @@ cp_fold (tree x)
     case RANGE_EXPR: case COMPLEX_EXPR:
 
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
-      op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops, flags);
+      op1 = cp_fold_rvalue (TREE_OPERAND (x, 1), flags);
 
       /* decltype(nullptr) has only one value, so optimize away all comparisons
 	 with that type right away, keeping them in the IL causes troubles for
@@ -2778,9 +2821,9 @@ cp_fold (tree x)
     case VEC_COND_EXPR:
     case COND_EXPR:
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold_rvalue (TREE_OPERAND (x, 0));
-      op1 = cp_fold (TREE_OPERAND (x, 1));
-      op2 = cp_fold (TREE_OPERAND (x, 2));
+      op0 = cp_fold_rvalue (TREE_OPERAND (x, 0), flags);
+      op1 = cp_fold (TREE_OPERAND (x, 1), flags);
+      op2 = cp_fold (TREE_OPERAND (x, 2), flags);
 
       if (TREE_CODE (TREE_TYPE (x)) == BOOLEAN_TYPE)
 	{
@@ -2870,7 +2913,7 @@ cp_fold (tree x)
 	      {
 		if (!same_type_p (TREE_TYPE (x), TREE_TYPE (r)))
 		  r = build_nop (TREE_TYPE (x), r);
-		x = cp_fold (r);
+		x = cp_fold (r, flags);
 		break;
 	      }
 	  }
@@ -2888,10 +2931,15 @@ cp_fold (tree x)
 
 	if (callee && fndecl_built_in_p (callee, BUILT_IN_FRONTEND))
 	  {
+	    iloc_sentinel ils (EXPR_LOCATION (x));
 	    switch (DECL_FE_FUNCTION_CODE (callee))
 	      {
-		/* Defer folding __builtin_is_constant_evaluated.  */
 	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
+		/* Defer folding __builtin_is_constant_evaluated unless
+		   we know this isn't a manifestly constant-evaluated
+		   context.  */
+		if (flags & ff_mce_false)
+		  x = boolean_false_node;
 		break;
 	      case CP_BUILT_IN_SOURCE_LOCATION:
 		x = fold_builtin_source_location (x);
@@ -2924,7 +2972,7 @@ cp_fold (tree x)
 	int m = call_expr_nargs (x);
 	for (int i = 0; i < m; i++)
 	  {
-	    r = cp_fold (CALL_EXPR_ARG (x, i));
+	    r = cp_fold (CALL_EXPR_ARG (x, i), flags);
 	    if (r != CALL_EXPR_ARG (x, i))
 	      {
 		if (r == error_mark_node)
@@ -2947,7 +2995,7 @@ cp_fold (tree x)
 
 	if (TREE_CODE (r) != CALL_EXPR)
 	  {
-	    x = cp_fold (r);
+	    x = cp_fold (r, flags);
 	    break;
 	  }
 
@@ -2960,7 +3008,15 @@ cp_fold (tree x)
 	   constant, but the call followed by an INDIRECT_REF is.  */
 	if (callee && DECL_DECLARED_CONSTEXPR_P (callee)
 	    && !flag_no_inline)
-	  r = maybe_constant_value (x);
+	  {
+	    mce_value manifestly_const_eval = mce_unknown;
+	    if (flags & ff_mce_false)
+	      /* Allow folding __builtin_is_constant_evaluated to false during
+		 constexpr evaluation of this call.  */
+	      manifestly_const_eval = mce_false;
+	    r = maybe_constant_value (x, /*decl=*/NULL_TREE,
+				      manifestly_const_eval);
+	  }
 	optimize = sv;
 
         if (TREE_CODE (r) != CALL_EXPR)
@@ -2987,7 +3043,7 @@ cp_fold (tree x)
 	vec<constructor_elt, va_gc> *nelts = NULL;
 	FOR_EACH_VEC_SAFE_ELT (elts, i, p)
 	  {
-	    tree op = cp_fold (p->value);
+	    tree op = cp_fold (p->value, flags);
 	    if (op != p->value)
 	      {
 		if (op == error_mark_node)
@@ -3018,7 +3074,7 @@ cp_fold (tree x)
 
 	for (int i = 0; i < n; i++)
 	  {
-	    tree op = cp_fold (TREE_VEC_ELT (x, i));
+	    tree op = cp_fold (TREE_VEC_ELT (x, i), flags);
 	    if (op != TREE_VEC_ELT (x, i))
 	      {
 		if (!changed)
@@ -3035,10 +3091,10 @@ cp_fold (tree x)
     case ARRAY_RANGE_REF:
 
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold (TREE_OPERAND (x, 0));
-      op1 = cp_fold (TREE_OPERAND (x, 1));
-      op2 = cp_fold (TREE_OPERAND (x, 2));
-      op3 = cp_fold (TREE_OPERAND (x, 3));
+      op0 = cp_fold (TREE_OPERAND (x, 0), flags);
+      op1 = cp_fold (TREE_OPERAND (x, 1), flags);
+      op2 = cp_fold (TREE_OPERAND (x, 2), flags);
+      op3 = cp_fold (TREE_OPERAND (x, 3), flags);
 
       if (op0 != TREE_OPERAND (x, 0)
 	  || op1 != TREE_OPERAND (x, 1)
@@ -3066,7 +3122,7 @@ cp_fold (tree x)
       /* A SAVE_EXPR might contain e.g. (0 * i) + (0 * j), which, after
 	 folding, evaluates to an invariant.  In that case no need to wrap
 	 this folded tree with a SAVE_EXPR.  */
-      r = cp_fold (TREE_OPERAND (x, 0));
+      r = cp_fold (TREE_OPERAND (x, 0), flags);
       if (tree_invariant_p (r))
 	x = r;
       break;
