@@ -1,5 +1,8 @@
 2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/gcn/allocator.c (gcn_memspace_free): Explicitly handle
+	'memspace == ompx_host_mem_space'.
+
 	Backported from master:
 	2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
 
