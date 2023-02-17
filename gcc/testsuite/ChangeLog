@@ -1,3 +1,44 @@
+2023-02-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108806
+	* gcc.dg/analyzer/null-deref-pr108806-qemu.c: New test.
+	* gcc.dg/analyzer/pr103217.c: Add -Wno-analyzer-too-complex.
+	* gcc.dg/analyzer/switch.c (test_bitmask_1): New.
+	(test_bitmask_2): New.
+	* gcc.dg/analyzer/uninit-pr108806-qemu.c: New test.
+
+2023-02-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/proto-lossage-4.m: Amendn diagnostic matches for Windows.
+
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107773
+	* g++.dg/template/typename24.C: New test.
+	* g++.dg/template/typename25.C: New test.
+	* g++.dg/template/typename25a.C: New test.
+	* g++.dg/template/typename26.C: New test.
+
+2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108657
+	* gcc.dg/pr108657.c: New test.
+
+2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108783
+	* gcc.c-torture/compile/pr108783.c: New test.
+
+2023-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108791
+	* gcc.dg/torture/pr108791.c: New testcase.
+
+2023-02-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/target-supports.exp (check_effective_target_lra): Add CRIS
+	as a non-LRA target.
+
 2023-02-15  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/103608

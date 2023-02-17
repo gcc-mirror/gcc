@@ -1,3 +1,20 @@
+2023-02-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108806
+	* constraint-manager.cc (bounded_range::dump_to_pp): Use
+	bounded_range::singleton_p.
+	(constraint_manager::add_bounded_ranges): Handle singleton ranges
+	by adding an EQ_EXPR constraint.
+	(constraint_manager::impossible_derived_conditions_p): New.
+	(constraint_manager::eval_condition): Reject EQ_EXPR when it would
+	imply impossible derived conditions.
+	(selftest::test_bits): New.
+	(selftest::run_constraint_manager_tests): Run it.
+	* constraint-manager.h (bounded_range::singleton_p): New.
+	(constraint_manager::impossible_derived_conditions_p): New decl.
+	* region-model.cc (region_model::get_rvalue_1): Handle
+	BIT_AND_EXPR, BIT_IOR_EXPR, and BIT_XOR_EXPR.
+
 2023-02-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108664

@@ -1,3 +1,8 @@
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* c-parser.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+
 2023-02-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-convert.cc (c_convert): Allow conversion of a null pointer

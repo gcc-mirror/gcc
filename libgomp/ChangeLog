@@ -1,3 +1,12 @@
+2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Fix typos - theads -> threads.
+
+2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/target-nowait-array-section.f90: Fix
+	comment typo and improve its wording.
+
 2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* target.c (gomp_target_rev): Dereference ptr

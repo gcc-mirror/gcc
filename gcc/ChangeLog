@@ -1,3 +1,128 @@
+2023-02-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Optimize Options): Reword the explanation
+	getting minimal, maximal and default values of a parameter.
+
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* addresses.h: Mechanically drop 'static' from 'static inline'
+	functions via s/^static inline/inline/g.
+	* asan.h: Likewise.
+	* attribs.h: Likewise.
+	* basic-block.h: Likewise.
+	* bitmap.h: Likewise.
+	* cfghooks.h: Likewise.
+	* cfgloop.h: Likewise.
+	* cgraph.h: Likewise.
+	* cselib.h: Likewise.
+	* data-streamer.h: Likewise.
+	* debug.h: Likewise.
+	* df.h: Likewise.
+	* diagnostic.h: Likewise.
+	* dominance.h: Likewise.
+	* dumpfile.h: Likewise.
+	* emit-rtl.h: Likewise.
+	* except.h: Likewise.
+	* expmed.h: Likewise.
+	* expr.h: Likewise.
+	* fixed-value.h: Likewise.
+	* gengtype.h: Likewise.
+	* gimple-expr.h: Likewise.
+	* gimple-iterator.h: Likewise.
+	* gimple-predict.h: Likewise.
+	* gimple-range-fold.h: Likewise.
+	* gimple-ssa.h: Likewise.
+	* gimple.h: Likewise.
+	* graphite.h: Likewise.
+	* hard-reg-set.h: Likewise.
+	* hash-map.h: Likewise.
+	* hash-set.h: Likewise.
+	* hash-table.h: Likewise.
+	* hwint.h: Likewise.
+	* input.h: Likewise.
+	* insn-addr.h: Likewise.
+	* internal-fn.h: Likewise.
+	* ipa-fnsummary.h: Likewise.
+	* ipa-icf-gimple.h: Likewise.
+	* ipa-inline.h: Likewise.
+	* ipa-modref.h: Likewise.
+	* ipa-prop.h: Likewise.
+	* ira-int.h: Likewise.
+	* ira.h: Likewise.
+	* lra-int.h: Likewise.
+	* lra.h: Likewise.
+	* lto-streamer.h: Likewise.
+	* memmodel.h: Likewise.
+	* omp-general.h: Likewise.
+	* optabs-query.h: Likewise.
+	* optabs.h: Likewise.
+	* plugin.h: Likewise.
+	* pretty-print.h: Likewise.
+	* range.h: Likewise.
+	* read-md.h: Likewise.
+	* recog.h: Likewise.
+	* regs.h: Likewise.
+	* rtl-iter.h: Likewise.
+	* rtl.h: Likewise.
+	* sbitmap.h: Likewise.
+	* sched-int.h: Likewise.
+	* sel-sched-ir.h: Likewise.
+	* sese.h: Likewise.
+	* sparseset.h: Likewise.
+	* ssa-iterators.h: Likewise.
+	* system.h: Likewise.
+	* target-globals.h: Likewise.
+	* target.h: Likewise.
+	* timevar.h: Likewise.
+	* tree-chrec.h: Likewise.
+	* tree-data-ref.h: Likewise.
+	* tree-iterator.h: Likewise.
+	* tree-outof-ssa.h: Likewise.
+	* tree-phinodes.h: Likewise.
+	* tree-scalar-evolution.h: Likewise.
+	* tree-sra.h: Likewise.
+	* tree-ssa-alias.h: Likewise.
+	* tree-ssa-live.h: Likewise.
+	* tree-ssa-loop-manip.h: Likewise.
+	* tree-ssa-loop.h: Likewise.
+	* tree-ssa-operands.h: Likewise.
+	* tree-ssa-propagate.h: Likewise.
+	* tree-ssa-sccvn.h: Likewise.
+	* tree-ssa.h: Likewise.
+	* tree-ssanames.h: Likewise.
+	* tree-streamer.h: Likewise.
+	* tree-switch-conversion.h: Likewise.
+	* tree-vectorizer.h: Likewise.
+	* tree.h: Likewise.
+	* wide-int.h: Likewise.
+
+2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108657
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): If lhs of stmt
+	exists and is not a SSA_NAME, call ao_ref_init even if the stmt
+	is a call to internal or builtin function.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Suggest adding a
+	using-declaration to unhide functions.
+
+2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108783
+	* tree-ssa-reassoc.cc (eliminate_redundant_comparison): If lcode
+	is equal to TREE_CODE (t), op1 to newop1 and op2 to newop2, set
+	t to curr->op.  Otherwise, punt if either newop1 or newop2 are
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI SSA_NAMEs.
+
+2023-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108791
+	* tree-ssa-forwprop.cc (optimize_vector_load): Build
+	the ADDR_EXPR of a TARGET_MEM_REF using a more meaningful
+	type.
+
 2023-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/90458

@@ -1,3 +1,189 @@
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_math.h (__hypot): Bitcasting
+	between scalars requires the __bit_cast helper function instead
+	of simd_bit_cast.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h
+	(_SimdImplX86::_S_not_equal_to, _SimdImplX86::_S_less)
+	(_SimdImplX86::_S_less_equal): Do not call
+	__builtin_is_constant_evaluated in constexpr-if.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/tests/bits/verify.h
+	(verify::verify): Use %zx for size_t in format string.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/generate_makefile.sh: Generate and
+	pre-compile pch.h, which includes all headers that do not depend
+	on command-line macros.
+	* testsuite/experimental/simd/tests/bits/main.h: New file.
+	(iterate_abis, main): Moved from verify.h.
+	* testsuite/experimental/simd/tests/bits/verify.h
+	(iterate_abis, main): Moved to main.h.
+	* testsuite/experimental/simd/tests/bits/conversions.h: Add
+	include guard.
+	(genHalfBits): Simplify.
+	* testsuite/experimental/simd/tests/bits/make_vec.h: Add include
+	guard.
+	(make_alternating_mask): Moved from mask_loadstore.
+	* testsuite/experimental/simd/tests/bits/mathreference.h: Add
+	include guard.
+	* testsuite/experimental/simd/tests/bits/test_values.h: Ditto.
+	* testsuite/experimental/simd/tests/mask_loadstore.cc
+	(make_mask, make_alternating_mask): Removed.
+	* testsuite/experimental/simd/tests/mask_reductions.cc: Ditto.
+	* testsuite/experimental/simd/tests/operators.cc (genHalfBits):
+	Removed.
+	* testsuite/experimental/simd/tests/abs.cc: Only include
+	bits/main.h.
+	Ditto.
+	* testsuite/experimental/simd/tests/algorithms.cc: Ditto.
+	* testsuite/experimental/simd/tests/broadcast.cc: Ditto.
+	* testsuite/experimental/simd/tests/casts.cc: Ditto.
+	* testsuite/experimental/simd/tests/fpclassify.cc: Ditto.
+	* testsuite/experimental/simd/tests/frexp.cc: Ditto.
+	* testsuite/experimental/simd/tests/generator.cc: Ditto.
+	* testsuite/experimental/simd/tests/hypot3_fma.cc: Ditto.
+	* testsuite/experimental/simd/tests/integer_operators.cc: Ditto.
+	* testsuite/experimental/simd/tests/ldexp_scalbn_scalbln_modf.cc:
+	* testsuite/experimental/simd/tests/loadstore.cc: Ditto.
+	* testsuite/experimental/simd/tests/logarithm.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_broadcast.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_conversions.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_implicit_cvt.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_operator_cvt.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_operators.cc: Ditto.
+	* testsuite/experimental/simd/tests/math_1arg.cc: Ditto.
+	* testsuite/experimental/simd/tests/math_2arg.cc: Ditto.
+	* testsuite/experimental/simd/tests/operator_cvt.cc: Ditto.
+	* testsuite/experimental/simd/tests/reductions.cc: Ditto.
+	* testsuite/experimental/simd/tests/remqo.cc: Ditto.
+	* testsuite/experimental/simd/tests/simd.cc: Ditto.
+	* testsuite/experimental/simd/tests/sincos.cc: Ditto.
+	* testsuite/experimental/simd/tests/split_concat.cc: Ditto.
+	* testsuite/experimental/simd/tests/splits.cc: Ditto.
+	* testsuite/experimental/simd/tests/trigonometric.cc: Ditto.
+	* testsuite/experimental/simd/tests/trunc_ceil_floor.cc: Ditto.
+	* testsuite/experimental/simd/tests/where.cc: Ditto.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/README.md: Document the timeout
+	and timeout-factor directives. Minor typo fixed.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/108030
+	* include/experimental/bits/simd_detail.h: Define
+	_GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA.
+	* include/experimental/bits/simd.h: Annotate lambdas with
+	_GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA.
+	* include/experimental/bits/simd_builtin.h: Ditto.
+	* include/experimental/bits/simd_converter.h: Ditto.
+	* include/experimental/bits/simd_fixed_size.h: Ditto.
+	* include/experimental/bits/simd_math.h: Ditto.
+	* include/experimental/bits/simd_neon.h: Ditto.
+	* include/experimental/bits/simd_x86.h: Ditto.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h
+	(_SimdWrapper::_M_is_constprop_none_of)
+	(_SimdWrapper::_M_is_constprop_all_of): Return false unless the
+	computed result still satisfies __builtin_constant_p.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/format/arguments/lwg3810.cc: Replace UTF-8
+	ellipsis character.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/synchronized_value: New file.
+	* testsuite/experimental/synchronized_value.cc: New test.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/optional: Fix header name in comment.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Arg_store): New class template.
+	(basic_format_args): Remove nested type _Store and add deduction
+	guide from _Arg_store.
+	(basic_format_arg, make_format_args): Adjust.
+	* testsuite/std/format/arguments/lwg3810.cc: New test.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (pair) [C++20]: Add non-dangling
+	constraints to constructors and add deleted overloads for the
+	dangling cases, as per P2255R2.
+	(pair) [!C++20 && _GLIBCXX_DEBUG]: Add static assertions to
+	make dangling cases ill-formed.
+	* testsuite/20_util/pair/dangling_ref.cc: New test.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names_pstl.cc: Require et tbb_backend.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/throw_allocator.h: Use reserved names for
+	parameters.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names_pstl.cc: Add space after effective
+	target name.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/pstl/algorithm_fwd.h (__pattern_search_n)
+	(__brick_unique_copy, __brick_adjacent_find)
+	(__brick_generate_n, __pattern_generate_n): Use reserved names
+	for parameters.
+	* include/pstl/algorithm_impl.h (__brick_unique_copy)
+	(__pattern_reverse, __brick_generate_n): Likewise.
+	* include/pstl/execution_impl.h (__prefer_unsequenced_tag)
+	(__prefer_parallel_tag): Likewise.
+	* include/pstl/glue_algorithm_impl.h (transform): Likewise.
+	* include/pstl/glue_numeric_defs.h (adjacent_difference):
+	Likewise.
+	* include/pstl/numeric_impl.h (__brick_adjacent_difference):
+	Likewise.
+	* include/pstl/parallel_backend_tbb.h (__merge_func): Likewise.
+	* include/pstl/unseq_backend_simd.h (_Combiner)
+	(__simd_min_element, __simd_minmax_element): Likewise.
+	* testsuite/17_intro/names_pstl.cc: New test.
+
+2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_ops.h (create_directory): Use reserved name
+	for parameter.
+	* include/bits/ranges_algo.h (__contains_subrange_fn):
+	Likewise.
+	* include/bits/regex_automaton.h (_State_base::_M_print):
+	Likewise.
+	* include/bits/regex_automaton.tcc(_State_base::_M_print):
+	Likewise.
+	* include/bits/regex_scanner.tcc(_Scanner::_M_print): Likewise.
+	* include/experimental/bits/fs_ops.h (create_directory):
+	Likewise.
+	* include/std/mutex (timed_mutex::_M_clocklock): Likewise.
+	(recursive_timed_mutex:_M_clocklock): Likewise.
+	* include/std/tuple (basic_common_reference): Likewise.
+	* libsupc++/cxxabi_init_exception.h
+	(__cxa_init_primary_exception): Likewise.
+	* testsuite/17_intro/names.cc: Add checks.
+
 2023-02-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Update an open-std.org link

@@ -1,3 +1,34 @@
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107773
+	* cp-tree.h (enum tsubst_flags): New flag tf_qualifying_scope.
+	* decl.cc (make_typename_type): Use lookup_member instead of
+	lookup_field.  If tf_qualifying_scope is set, pass want_type=true
+	instead of =false to lookup_member.  Generalize format specifier
+	in diagnostic to handle both type and non-type bindings.
+	* pt.cc (tsubst_aggr_type_1): Clear tf_qualifying_scope.  Tidy
+	the function.
+	(tsubst_decl) <case USING_DECL>: Set tf_qualifying_scope when
+	substituting USING_DECL_SCOPE.
+	(tsubst): Clear tf_qualifying_scope right away and remember if
+	it was set.  Do the same for tf_tst_ok sooner.
+	<case TYPENAME_TYPE>: Set tf_qualifying_scope when substituting
+	TYPE_CONTEXT.  Pass tf_qualifying_scope to make_typename_type
+	if it was set.
+	(tsubst_qualified_id): Set tf_qualifying_scope when substituting
+	the scope.
+	(tsubst_copy): Clear tf_qualifying_scope and remember if it was
+	set.
+	<case SCOPE_REF>: Set tf_qualifying_scope when substituting the
+	scope.
+	<case *_TYPE>: Pass tf_qualifying_scope to tsubst if it was set.
+	* search.cc (lookup_member): Document default argument.
+
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+
 2023-02-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106675

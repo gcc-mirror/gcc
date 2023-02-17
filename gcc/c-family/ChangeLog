@@ -1,3 +1,8 @@
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+
 2023-02-01  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -Wno-changes-meaning.

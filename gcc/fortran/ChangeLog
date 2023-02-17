@@ -1,3 +1,8 @@
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* gfortran.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+
 2023-02-15  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/103608
