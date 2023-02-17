@@ -4634,6 +4634,144 @@ protected:
     return new AsyncBlockExpr (*this);
   }
 };
+
+// Inline Assembly Node
+class InlineAsm : public ExprWithoutBlock
+{
+  // Inline-assembly specific options
+  enum InlineAsmOptions
+  {
+    PURE = 1 << 0,
+    NOMEM = 1 << 1,
+    READONLY = 1 << 2,
+    PRESERVES_FLAGS = 1 << 3,
+    NORETURN = 1 << 4,
+    NOSTACK = 1 << 5,
+    ATT_SYNTAX = 1 << 6,
+    RAW = 1 << 7,
+    MAY_UNWIND = 1 << 8,
+  };
+
+  struct AnonConst
+  {
+    NodeId id;
+    std::unique_ptr<Expr> value;
+  };
+
+  struct InlineAsmRegOrRegClass
+  {
+    enum Type
+    {
+      Reg,
+      RegClass,
+    };
+
+    struct Reg
+    {
+      std::string Symbol;
+    };
+
+    struct RegClass
+    {
+      std::string Symbol;
+    };
+
+    Identifier name;
+    Location locus;
+  };
+
+  struct InlineAsmOperand
+  {
+    enum RegisterType
+    {
+      In,
+      Out,
+      InOut,
+      SplitInOut,
+      Const,
+      Sym,
+    };
+
+    struct In
+    {
+      InlineAsmRegOrRegClass reg;
+      std::unique_ptr<Expr> expr;
+    };
+
+    struct Out
+    {
+      InlineAsmRegOrRegClass reg;
+      bool late;
+      std::unique_ptr<Expr> expr; // can be null
+    };
+
+    struct InOut
+    {
+      InlineAsmRegOrRegClass reg;
+      bool late;
+      std::unique_ptr<Expr> expr; // this can't be null
+    };
+
+    struct SplitInOut
+    {
+      InlineAsmRegOrRegClass reg;
+      bool late;
+      std::unique_ptr<Expr> in_expr;
+      std::unique_ptr<Expr> out_expr; // could be null
+    };
+
+    struct Const
+    {
+      AnonConst anon_const;
+    };
+
+    struct Sym
+    {
+      std::unique_ptr<Expr> sym;
+    };
+    Location locus;
+  };
+
+  struct InlineAsmPlaceHolder
+  {
+    size_t operand_idx;
+    char modifier; // can be null
+    Location locus;
+  };
+
+  struct InlineAsmTemplatePiece
+  {
+    bool is_placeholder;
+    union
+    {
+      std::string string;
+      InlineAsmPlaceHolder placeholder;
+    };
+  };
+
+  struct TupleClobber
+  {
+    // as gccrs still doesen't contain a symbol class I have put them as strings
+    std::string symbol;
+    Location loc;
+  };
+
+  struct TupleTemplateStr
+  {
+    // as gccrs still doesen't contain a symbol class I have put them as strings
+    std::string symbol;
+    std::string optional_symbol;
+    Location loc;
+  };
+
+public:
+  std::vector<InlineAsmTemplatePiece> template_;
+  std::vector<TupleTemplateStr> template_strs;
+  std::vector<InlineAsmOperand> operands;
+  TupleClobber clobber_abi;
+  InlineAsmOptions options;
+  std::vector<Location> line_spans;
+};
 } // namespace AST
 } // namespace Rust
 

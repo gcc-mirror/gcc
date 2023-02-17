@@ -149,6 +149,7 @@ struct MatchCase;
 class MatchExpr;
 class AwaitExpr;
 class AsyncBlockExpr;
+class InlineAsm;
 
 // rust-stmt.h
 class EmptyStmt;
