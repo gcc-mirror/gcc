@@ -4971,6 +4971,7 @@ package body Sem_Ch3 is
          end if;
 
          Rewrite (Object_Definition (N), New_Occurrence_Of (Act_T, Loc));
+         Freeze_Before (N, Act_T);
 
       elsif Nkind (E) = N_Function_Call
         and then Constant_Present (N)
