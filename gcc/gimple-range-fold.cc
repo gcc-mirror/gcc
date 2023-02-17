@@ -944,60 +944,6 @@ fold_using_range::range_of_cond_expr  (vrange &r, gassign *s, fur_source &src)
   return true;
 }
 
-// Return the lower bound of R as a tree.
-
-static inline tree
-tree_lower_bound (const vrange &r, tree type)
-{
-  if (is_a <irange> (r))
-    return wide_int_to_tree (type, as_a <irange> (r).lower_bound ());
-  // ?? Handle floats when they contain endpoints.
-  return NULL;
-}
-
-// Return the upper bound of R as a tree.
-
-static inline tree
-tree_upper_bound (const vrange &r, tree type)
-{
-  if (is_a <irange> (r))
-    return wide_int_to_tree (type, as_a <irange> (r).upper_bound ());
-  // ?? Handle floats when they contain endpoints.
-  return NULL;
-}
-
-// Return the maximum value for TYPE.
-
-static inline tree
-vrp_val_max (const_tree type)
-{
-  if (INTEGRAL_TYPE_P (type)
-      || POINTER_TYPE_P (type))
-    return wide_int_to_tree (const_cast <tree> (type), irange_val_max (type));
-  if (frange::supports_p (type))
-    {
-      REAL_VALUE_TYPE r = frange_val_max (type);
-      return build_real (const_cast <tree> (type), r);
-    }
-  return NULL_TREE;
-}
-
-// Return the minimum value for TYPE.
-
-static inline tree
-vrp_val_min (const_tree type)
-{
-  if (INTEGRAL_TYPE_P (type)
-      || POINTER_TYPE_P (type))
-    return wide_int_to_tree (const_cast <tree> (type), irange_val_min (type));
-  if (frange::supports_p (type))
-    {
-      REAL_VALUE_TYPE r = frange_val_min (type);
-      return build_real (const_cast <tree> (type), r);
-    }
-  return NULL_TREE;
-}
-
 // If SCEV has any information about phi node NAME, return it as a range in R.
 
 void
@@ -1006,30 +952,8 @@ fold_using_range::range_of_ssa_name_with_loop_info (vrange &r, tree name,
 						    fur_source &src)
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-  tree min, max, type = TREE_TYPE (name);
-  if (bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
-    {
-      if (!is_gimple_constant (min))
-	{
-	  if (src.query ()->range_of_expr (r, min, phi) && !r.undefined_p ())
-	    min = tree_lower_bound (r, type);
-	  else
-	    min = vrp_val_min (type);
-	}
-      if (!is_gimple_constant (max))
-	{
-	  if (src.query ()->range_of_expr (r, max, phi) && !r.undefined_p ())
-	    max = tree_upper_bound (r, type);
-	  else
-	    max = vrp_val_max (type);
-	}
-      if (min && max)
-	{
-	  r.set (min, max);
-	  return;
-	}
-    }
-  r.set_varying (type);
+  if (!range_of_var_in_loop (r, name, l, phi, src.query ()))
+    r.set_varying (TREE_TYPE (name));
 }
 
 // -----------------------------------------------------------------------

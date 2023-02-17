@@ -52,23 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "range-op.h"
 #include "gimple-range.h"
 
-/* Returns true if EXPR is a valid value (as expected by compare_values) --
-   a gimple invariant, or SSA_NAME +- CST.  */
-
-static bool
-valid_value_p (tree expr)
-{
-  if (TREE_CODE (expr) == SSA_NAME)
-    return true;
-
-  if (TREE_CODE (expr) == PLUS_EXPR
-      || TREE_CODE (expr) == MINUS_EXPR)
-    return (TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME
-	    && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST);
-
-  return is_gimple_min_invariant (expr);
-}
-
 /* Return true if op is in a boolean [0, 1] value-range.  */
 
 bool
@@ -184,178 +167,139 @@ check_for_binary_op_overflow (range_query *query,
   return true;
 }
 
-static inline void
-fix_overflow (tree *min, tree *max)
+/* Set INIT, STEP, and DIRECTION the the corresponding values of NAME
+   within LOOP, and return TRUE.  Otherwise return FALSE, and set R to
+   the conservative range of NAME within the loop.  */
+
+static bool
+get_scev_info (vrange &r, tree name, gimple *stmt, class loop *l,
+	       tree &init, tree &step, enum ev_direction &dir)
 {
-  /* Even for valid range info, sometimes overflow flag will leak in.
-     As GIMPLE IL should have no constants with TREE_OVERFLOW set, we
-     drop them.  */
-  if (TREE_OVERFLOW_P (*min))
-    *min = drop_tree_overflow (*min);
-  if (TREE_OVERFLOW_P (*max))
-    *max = drop_tree_overflow (*max);
-
-  gcc_checking_assert (compare_values (*min, *max) != 1);
-}
-
-/* Given a VAR in STMT within LOOP, determine the bounds of the
-   variable and store it in MIN/MAX and return TRUE.  If no bounds
-   could be determined, return FALSE.  */
-
-bool
-bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
-		       class loop *loop, gimple *stmt, tree var)
-{
-  tree init, step, chrec, tmin, tmax, type = TREE_TYPE (var);
-  enum ev_direction dir;
-  int_range<2> r;
-
-  chrec = instantiate_parameters (loop, analyze_scalar_evolution (loop, var));
-
-  /* Like in PR19590, scev can return a constant function.  */
+  tree ev = analyze_scalar_evolution (l, name);
+  tree chrec = instantiate_parameters (l, ev);
+  tree type = TREE_TYPE (name);
+  if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
+    {
+      r.set_varying (type);
+      return false;
+    }
   if (is_gimple_min_invariant (chrec))
     {
-      *min = *max = chrec;
-      fix_overflow (min, max);
-      return true;
+      if (is_gimple_constant (chrec))
+	r.set (chrec, chrec);
+      else
+	r.set_varying (type);
+      return false;
     }
 
-  if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
-    return false;
-
-  init = initial_condition_in_loop_num (chrec, loop->num);
-  step = evolution_part_in_loop_num (chrec, loop->num);
-
+  init = initial_condition_in_loop_num (chrec, l->num);
+  step = evolution_part_in_loop_num (chrec, l->num);
   if (!init || !step)
-    return false;
-
-  Value_Range rinit (TREE_TYPE (init));
-  Value_Range rstep (TREE_TYPE (step));
-  /* If INIT is an SSA with a singleton range, set INIT to said
-     singleton, otherwise leave INIT alone.  */
-  if (TREE_CODE (init) == SSA_NAME
-      && query->range_of_expr (rinit, init, stmt))
-    rinit.singleton_p (&init);
-  /* Likewise for step.  */
-  if (TREE_CODE (step) == SSA_NAME
-      && query->range_of_expr (rstep, step, stmt))
-    rstep.singleton_p (&step);
-
-  /* If STEP is symbolic, we can't know whether INIT will be the
-     minimum or maximum value in the range.  Also, unless INIT is
-     a simple expression, compare_values and possibly other functions
-     in tree-vrp won't be able to handle it.  */
-  if (step == NULL_TREE
-      || !is_gimple_min_invariant (step)
-      || !valid_value_p (init))
-    return false;
-
+    {
+      r.set_varying (type);
+      return false;
+    }
   dir = scev_direction (chrec);
-  if (/* Do not adjust ranges if we do not know whether the iv increases
-	 or decreases,  ... */
-      dir == EV_DIR_UNKNOWN
-      /* ... or if it may wrap.  */
-      || scev_probably_wraps_p (NULL_TREE, init, step, stmt,
+  if (dir == EV_DIR_UNKNOWN
+      || scev_probably_wraps_p (NULL, init, step, stmt,
 				get_chrec_loop (chrec), true))
+    {
+      r.set_varying (type);
+      return false;
+    }
+  return true;
+}
+
+/* Return TRUE if STEP * NIT may overflow when calculated in TYPE.  */
+
+static bool
+induction_variable_may_overflow_p (tree type,
+				   const wide_int &step, const widest_int &nit)
+{
+  wi::overflow_type ovf;
+  signop sign = TYPE_SIGN (type);
+  widest_int max_step = wi::mul (widest_int::from (step, sign),
+				 nit, sign, &ovf);
+
+  if (ovf || !wi::fits_to_tree_p (max_step, type))
+    return true;
+
+  /* For a signed type we have to check whether the result has the
+     expected signedness which is that of the step as number of
+     iterations is unsigned.  */
+  return (sign == SIGNED
+	  && wi::gts_p (max_step, 0) != wi::gts_p (step, 0));
+}
+
+/* Set R to the range from BEGIN to END, assuming the direction of the
+   loop is DIR.  */
+
+static void
+range_from_loop_direction (irange &r, tree type,
+			   const irange &begin, const irange &end,
+			   ev_direction dir)
+{
+  signop sign = TYPE_SIGN (type);
+
+  if (begin.undefined_p () || end.undefined_p ())
+    r.set_varying (type);
+  else if (dir == EV_DIR_GROWS)
+    {
+      if (wi::gt_p (begin.lower_bound (), end.upper_bound (), sign))
+	r.set_varying (type);
+      else
+	r = int_range<1> (type, begin.lower_bound (), end.upper_bound ());
+    }
+  else
+    {
+      if (wi::gt_p (end.lower_bound (), begin.upper_bound (), sign))
+	r.set_varying (type);
+      else
+	r = int_range<1> (type, end.lower_bound (), begin.upper_bound ());
+    }
+}
+
+/* Set V to the range of NAME in STMT within LOOP.  Return TRUE if a
+   range was found.  */
+
+bool
+range_of_var_in_loop (vrange &v, tree name, class loop *l, gimple *stmt,
+		      range_query *query)
+{
+  tree init, step;
+  enum ev_direction dir;
+  if (!get_scev_info (v, name, stmt, l, init, step, dir))
+    return true;
+
+  // Calculate ranges for the values from SCEV.
+  irange &r = as_a <irange> (v);
+  tree type = TREE_TYPE (init);
+  int_range<2> rinit (type), rstep (type), max_init (type);
+  if (!query->range_of_expr (rinit, init, stmt)
+      || !query->range_of_expr (rstep, step, stmt))
     return false;
 
-  if (POINTER_TYPE_P (type) || !TYPE_MIN_VALUE (type))
-    tmin = lower_bound_in_type (type, type);
-  else
-    tmin = TYPE_MIN_VALUE (type);
-  if (POINTER_TYPE_P (type) || !TYPE_MAX_VALUE (type))
-    tmax = upper_bound_in_type (type, type);
-  else
-    tmax = TYPE_MAX_VALUE (type);
-
-  /* Try to use estimated number of iterations for the loop to constrain the
-     final value in the evolution.  */
-  if (TREE_CODE (step) == INTEGER_CST
-      && is_gimple_val (init)
-      && (TREE_CODE (init) != SSA_NAME
-	  || (query->range_of_expr (r, init, stmt)
-	      && !r.varying_p ()
-	      && !r.undefined_p ())))
+  // Calculate the final range of NAME if possible.
+  if (rinit.singleton_p () && rstep.singleton_p ())
     {
       widest_int nit;
+      if (!max_loop_iterations (l, &nit))
+	return false;
 
-      /* We are only entering here for loop header PHI nodes, so using
-	 the number of latch executions is the correct thing to use.  */
-      if (max_loop_iterations (loop, &nit))
+      if (!induction_variable_may_overflow_p (type, rstep.lower_bound (), nit))
 	{
-	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
-	  wi::overflow_type overflow;
-
-	  widest_int wtmp = wi::mul (wi::to_widest (step), nit, sgn,
-				     &overflow);
-	  /* If the multiplication overflowed we can't do a meaningful
-	     adjustment.  Likewise if the result doesn't fit in the type
-	     of the induction variable.  For a signed type we have to
-	     check whether the result has the expected signedness which
-	     is that of the step as number of iterations is unsigned.  */
-	  if (!overflow
-	      && wi::fits_to_tree_p (wtmp, TREE_TYPE (init))
-	      && (sgn == UNSIGNED
-		  || wi::gts_p (wtmp, 0) == wi::gts_p (wi::to_wide (step), 0)))
-	    {
-	      value_range maxvr, vr0, vr1;
-	      if (!query->range_of_expr (vr0, init, stmt))
-		vr0.set_varying (TREE_TYPE (init));
-	      tree tinit = TREE_TYPE (init);
-	      wide_int winit = wide_int::from (wtmp,
-					       TYPE_PRECISION (tinit),
-					       TYPE_SIGN (tinit));
-	      vr1.set (TREE_TYPE (init), winit, winit);
-
-	      range_op_handler handler (PLUS_EXPR, TREE_TYPE (init));
-	      if (!handler.fold_range (maxvr, TREE_TYPE (init), vr0, vr1))
-		maxvr.set_varying (TREE_TYPE (init));
-
-	      /* Likewise if the addition did.  */
-	      if (!maxvr.varying_p () && !maxvr.undefined_p ())
-		{
-		  int_range<2> initvr;
-
-		  if (!query->range_of_expr (initvr, init, stmt)
-		      || initvr.undefined_p ())
-		    return false;
-
-		  tree initvr_type = initvr.type ();
-		  tree initvr_min = wide_int_to_tree (initvr_type,
-						      initvr.lower_bound ());
-		  tree initvr_max = wide_int_to_tree (initvr_type,
-						      initvr.upper_bound ());
-		  tree maxvr_type = maxvr.type ();
-		  tree maxvr_min = wide_int_to_tree (maxvr_type,
-						     maxvr.lower_bound ());
-		  tree maxvr_max = wide_int_to_tree (maxvr_type,
-						     maxvr.upper_bound ());
-
-		  /* Check if init + nit * step overflows.  Though we checked
-		     scev {init, step}_loop doesn't wrap, it is not enough
-		     because the loop may exit immediately.  Overflow could
-		     happen in the plus expression in this case.  */
-		  if ((dir == EV_DIR_DECREASES
-		       && compare_values (maxvr_min, initvr_min) != -1)
-		      || (dir == EV_DIR_GROWS
-			  && compare_values (maxvr_max, initvr_max) != 1))
-		    return false;
-
-		  tmin = maxvr_min;
-		  tmax = maxvr_max;
-		}
-	    }
+	  // Calculate the max bounds for init (init + niter * step).
+	  wide_int w = wide_int::from (nit, TYPE_PRECISION (type), TYPE_SIGN (type));
+	  int_range<1> niter (type, w, w);
+	  int_range_max max_step;
+	  range_op_handler mult_handler (MULT_EXPR, type);
+	  range_op_handler plus_handler (PLUS_EXPR, type);
+	  if (!mult_handler.fold_range (max_step, type, niter, rstep)
+	      || !plus_handler.fold_range (max_init, type, rinit, max_step))
+	    return false;
 	}
     }
-
-  *min = tmin;
-  *max = tmax;
-  if (dir == EV_DIR_DECREASES)
-    *max = init;
-  else
-    *min = init;
-
-  fix_overflow (min, max);
+  range_from_loop_direction (r, type, rinit, max_init, dir);
   return true;
 }
 

@@ -74,7 +74,7 @@ private:
 
 extern bool range_fits_type_p (const irange *vr,
 			       unsigned dest_precision, signop dest_sgn);
-extern bool bounds_of_var_in_loop (tree *min, tree *max, range_query *,
-				   class loop *loop, gimple *stmt, tree var);
+extern bool range_of_var_in_loop (vrange &, tree var, class loop *, gimple *,
+				  range_query *);
 
 #endif /* GCC_VR_VALUES_H */
