@@ -6842,11 +6842,13 @@ Parser<ManagedTokenSource>::parse_qualified_path_type (
   if (locus == Linemap::unknown_location ())
     {
       locus = lexer.peek_token ()->get_locus ();
+
+      if (lexer.peek_token ()->get_id () == LEFT_SHIFT)
+	lexer.split_current_token (LEFT_ANGLE, LEFT_ANGLE);
+
+      // skip after somewhere?
       if (!skip_token (LEFT_ANGLE))
-	{
-	  // skip after somewhere?
-	  return AST::QualifiedPathType::create_error ();
-	}
+	return AST::QualifiedPathType::create_error ();
     }
 
   // parse type (required)
@@ -9218,6 +9220,7 @@ Parser<ManagedTokenSource>::parse_type (bool save_errors)
     case LEFT_SQUARE:
       // slice type or array type - requires further disambiguation
       return parse_slice_or_array_type ();
+    case LEFT_SHIFT:
       case LEFT_ANGLE: {
 	// qualified path in type
 	AST::QualifiedPathInType path = parse_qualified_path_in_type ();
@@ -10084,6 +10087,7 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
     case LEFT_SQUARE:
       // slice type or array type - requires further disambiguation
       return parse_slice_or_array_type ();
+    case LEFT_SHIFT:
       case LEFT_ANGLE: {
 	// qualified path in type
 	AST::QualifiedPathInType path = parse_qualified_path_in_type ();
@@ -10597,6 +10601,7 @@ Parser<ManagedTokenSource>::parse_range_pattern_bound ()
 	return std::unique_ptr<AST::RangePatternBoundPath> (
 	  new AST::RangePatternBoundPath (std::move (path)));
       }
+    case LEFT_SHIFT:
       case LEFT_ANGLE: {
 	// qualified path in expression
 	AST::QualifiedPathInExpression path
@@ -10727,6 +10732,7 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
     case LEFT_SQUARE:
       // slice pattern
       return parse_slice_pattern ();
+    case LEFT_SHIFT:
       case LEFT_ANGLE: {
 	// qualified path in expression or qualified range pattern bound
 	AST::QualifiedPathInExpression path
@@ -12760,6 +12766,7 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
        * tokens and whatever. */
       /* FIXME: could also be path expression (and hence macro expression,
        * struct/enum expr) */
+    case LEFT_SHIFT:
       case LEFT_ANGLE: {
 	// qualified path
 	// HACK: add outer attrs to path
