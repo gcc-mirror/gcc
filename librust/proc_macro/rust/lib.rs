@@ -34,6 +34,19 @@ pub enum TokenTree {
     Literal(Literal),
 }
 
+type InternalTokenTree = bridge::token_stream::TokenTree;
+
+impl From<InternalTokenTree> for TokenTree {
+    fn from(value: InternalTokenTree) -> Self {
+        match value {
+            InternalTokenTree::Group(g) => TokenTree::Group(Group(g)),
+            InternalTokenTree::Ident(i) => TokenTree::Ident(Ident(i)),
+            InternalTokenTree::Punct(p) => TokenTree::Punct(Punct(p)),
+            InternalTokenTree::Literal(l) => TokenTree::Literal(Literal(l)),
+        }
+    }
+}
+
 impl TokenTree {
     /// Get the [`Span`] for this TokenTree.
     pub fn span(&self) -> Span {
@@ -124,21 +137,19 @@ impl error::Error for LexError {}
 /// is both the input and the output of `#[proc_macro]`,
 /// `#[proc_macro_attribute]` and `#[proc_macro_derive]` definitions.
 #[derive(Clone)]
-pub struct TokenStream {
-    // Internal implementation details
-}
+pub struct TokenStream(bridge::token_stream::TokenStream);
 
 impl TokenStream {
     // TODO: Add experimental API functions for this type
 
     /// Creates an empty `TokenStream` containing no token trees.
     pub fn new() -> Self {
-        todo!("Implement this function")
+        TokenStream(bridge::token_stream::TokenStream::new())
     }
 
     /// Checks if this `TokenStream` is empty.
     pub fn is_empty(&self) -> bool {
-        todo!("Implement this function")
+        self.0.is_empty()
     }
 }
 

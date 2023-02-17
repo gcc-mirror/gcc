@@ -1,8 +1,10 @@
+use bridge;
 use std::fmt;
 use Span;
 use TokenStream;
 
 /// Describes how a sequence of token trees is delimited.
+#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Delimiter {
     /// The sequence is delimited by a parenthesis `(...)`.
@@ -17,9 +19,7 @@ pub enum Delimiter {
 
 /// A delimited token stream.
 #[derive(Clone)]
-pub struct Group {
-    // Internal implementation details
-}
+pub struct Group(pub(crate) bridge::group::Group);
 
 impl Group {
     /// Creates a new `Group`.

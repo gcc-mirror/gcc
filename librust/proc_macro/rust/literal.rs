@@ -21,7 +21,7 @@ use Span;
 /// Boolean literals like `true` and `false` are `Ident`s and do not belong
 /// here.
 #[derive(Clone)]
-pub struct Literal(bridge::literal::Literal);
+pub struct Literal(pub(crate) bridge::literal::Literal);
 
 impl Literal {
     // TODO: Add experimental API functions for this type
