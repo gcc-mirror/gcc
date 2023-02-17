@@ -109,6 +109,13 @@
 	    (match_test "GET_MODE (op) == HImode")
 	    (match_test "GET_MODE (op) == QImode"))))
 
+;; Match nonimmediate operand, but exclude non-constant addresses for x86_64.
+(define_predicate "nonimm_x64constmem_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_operand 0 "memory_operand")
+	    (ior (not (match_test "TARGET_64BIT"))
+		 (match_test "constant_address_p (XEXP (op, 0))")))))
+
 ;; Match register operands, but include memory operands for TARGET_SSE_MATH.
 (define_predicate "register_ssemem_operand"
   (if_then_else
