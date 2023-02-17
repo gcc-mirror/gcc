@@ -7390,16 +7390,14 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	      IMPLICIT_CONV_EXPR_NONTYPE_ARG (expr) = true;
 	      return expr;
 	    }
-	  expr = maybe_constant_value (expr, NULL_TREE,
-				       /*manifestly_const_eval=*/true);
+	  expr = maybe_constant_value (expr, NULL_TREE, mce_true);
 	  expr = convert_from_reference (expr);
 	  /* EXPR may have become value-dependent.  */
 	  val_dep_p = value_dependent_expression_p (expr);
 	}
       else if (TYPE_PTR_OR_PTRMEM_P (type))
 	{
-	  tree folded = maybe_constant_value (expr, NULL_TREE,
-					      /*manifestly_const_eval=*/true);
+	  tree folded = maybe_constant_value (expr, NULL_TREE, mce_true);
 	  if (TYPE_PTR_P (type) ? integer_zerop (folded)
 	      : null_member_pointer_value_p (folded))
 	    expr = folded;

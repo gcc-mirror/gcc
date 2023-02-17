@@ -11373,7 +11373,7 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 				    cp_convert (ssizetype, integer_one_node,
 						complain),
 				    complain);
-	itype = maybe_constant_value (itype, NULL_TREE, true);
+	itype = maybe_constant_value (itype, NULL_TREE, mce_true);
       }
 
       if (!TREE_CONSTANT (itype))

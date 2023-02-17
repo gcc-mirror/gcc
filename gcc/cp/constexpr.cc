@@ -1119,8 +1119,8 @@ struct GTY((for_user)) constexpr_call {
   /* The hash of this call; we remember it here to avoid having to
      recalculate it when expanding the hash table.  */
   hashval_t hash;
-  /* Whether __builtin_is_constant_evaluated() should evaluate to true.  */
-  bool manifestly_const_eval;
+  /* The value of constexpr_ctx::manifestly_const_eval.  */
+  enum mce_value manifestly_const_eval;
 };
 
 struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
@@ -1248,7 +1248,7 @@ struct constexpr_ctx {
      trying harder to get a constant value.  */
   bool strict;
   /* Whether __builtin_is_constant_evaluated () should be true.  */
-  bool manifestly_const_eval;
+  mce_value manifestly_const_eval;
 };
 
 /* This internal flag controls whether we should avoid doing anything during
@@ -1463,7 +1463,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   /* If we aren't requiring a constant expression, defer __builtin_constant_p
      in a constexpr function until we have values for the parameters.  */
   if (bi_const_p
-      && !ctx->manifestly_const_eval
+      && ctx->manifestly_const_eval != mce_true
       && current_function_decl
       && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
     {
@@ -1479,12 +1479,13 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   if (fndecl_built_in_p (fun, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
 			 BUILT_IN_FRONTEND))
     {
-      if (!ctx->manifestly_const_eval)
+      if (ctx->manifestly_const_eval == mce_unknown)
 	{
 	  *non_constant_p = true;
 	  return t;
 	}
-      return boolean_true_node;
+      return constant_boolean_node (ctx->manifestly_const_eval == mce_true,
+				    boolean_type_node);
     }
 
   if (fndecl_built_in_p (fun, CP_BUILT_IN_SOURCE_LOCATION, BUILT_IN_FRONTEND))
@@ -1591,7 +1592,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     }
 
   bool save_ffbcp = force_folding_builtin_constant_p;
-  force_folding_builtin_constant_p |= ctx->manifestly_const_eval;
+  force_folding_builtin_constant_p |= ctx->manifestly_const_eval == mce_true;
   tree save_cur_fn = current_function_decl;
   /* Return name of ctx->call->fundef->decl for __builtin_FUNCTION ().  */
   if (fndecl_built_in_p (fun, BUILT_IN_FUNCTION)
@@ -2916,7 +2917,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       location_t save_loc = input_location;
       input_location = loc;
       ++function_depth;
-      if (ctx->manifestly_const_eval)
+      if (ctx->manifestly_const_eval == mce_true)
 	FNDECL_MANIFESTLY_CONST_EVALUATED (fun) = true;
       instantiate_decl (fun, /*defer_ok*/false, /*expl_inst*/false);
       --function_depth;
@@ -3676,7 +3677,7 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 
   if (r == NULL_TREE)
     {
-      if (ctx->manifestly_const_eval
+      if (ctx->manifestly_const_eval == mce_true
 	  && (flag_constexpr_fp_except
 	      || TREE_CODE (type) != REAL_TYPE))
 	{
@@ -3741,13 +3742,13 @@ cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
 	 without manifestly_const_eval even expressions or parts thereof which
 	 will later be manifestly const_eval evaluated), otherwise fold it to
 	 true.  */
-      if (ctx->manifestly_const_eval)
-	val = boolean_true_node;
-      else
+      if (ctx->manifestly_const_eval == mce_unknown)
 	{
 	  *non_constant_p = true;
 	  return t;
 	}
+      val = constant_boolean_node (ctx->manifestly_const_eval == mce_true,
+				   boolean_type_node);
     }
   /* Don't VERIFY_CONSTANT the other operands.  */
   if (integer_zerop (val))
@@ -7051,7 +7052,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	      r = v;
 	      break;
 	    }
-      if (ctx->manifestly_const_eval)
+      if (ctx->manifestly_const_eval == mce_true)
 	maybe_warn_about_constant_value (loc, t);
       if (COMPLETE_TYPE_P (TREE_TYPE (t))
 	  && is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
@@ -7640,7 +7641,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (TREE_CODE (t) == CONVERT_EXPR
 	    && ARITHMETIC_TYPE_P (type)
 	    && INDIRECT_TYPE_P (TREE_TYPE (op))
-	    && ctx->manifestly_const_eval)
+	    && ctx->manifestly_const_eval == mce_true)
 	  {
 	    if (!ctx->quiet)
 	      error_at (loc,
@@ -8178,7 +8179,7 @@ mark_non_constant (tree t)
 static tree
 cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 				  bool strict = true,
-				  bool manifestly_const_eval = false,
+				  mce_value manifestly_const_eval = mce_unknown,
 				  bool constexpr_dtor = false,
 				  tree object = NULL_TREE)
 {
@@ -8196,10 +8197,11 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   constexpr_global_ctx global_ctx;
   constexpr_ctx ctx = { &global_ctx, NULL, NULL, NULL, NULL, NULL, NULL,
 			allow_non_constant, strict,
-			manifestly_const_eval || !allow_non_constant };
+			!allow_non_constant ? mce_true : manifestly_const_eval };
 
   /* Turn off -frounding-math for manifestly constant evaluation.  */
-  warning_sentinel rm (flag_rounding_math, ctx.manifestly_const_eval);
+  warning_sentinel rm (flag_rounding_math,
+		       ctx.manifestly_const_eval == mce_true);
   tree type = initialized_type (t);
   tree r = t;
   bool is_consteval = false;
@@ -8288,7 +8290,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   auto_vec<tree, 16> cleanups;
   global_ctx.cleanups = &cleanups;
 
-  if (manifestly_const_eval)
+  if (manifestly_const_eval == mce_true)
     instantiate_constexpr_fns (r);
   r = cxx_eval_constant_expression (&ctx, r, vc_prvalue,
 				    &non_constant_p, &overflow_p);
@@ -8427,7 +8429,7 @@ cxx_constant_value (tree t, tree decl /* = NULL_TREE */,
 		    tsubst_flags_t complain /* = tf_error */)
 {
   bool sfinae = !(complain & tf_error);
-  tree r = cxx_eval_outermost_constant_expr (t, sfinae, true, true, false, decl);
+  tree r = cxx_eval_outermost_constant_expr (t, sfinae, true, mce_true, false, decl);
   if (sfinae && !TREE_CONSTANT (r))
     r = error_mark_node;
   return r;
@@ -8439,7 +8441,7 @@ cxx_constant_value (tree t, tree decl /* = NULL_TREE */,
 void
 cxx_constant_dtor (tree t, tree decl)
 {
-  cxx_eval_outermost_constant_expr (t, false, true, true, true, decl);
+  cxx_eval_outermost_constant_expr (t, false, true, mce_true, true, decl);
 }
 
 /* Helper routine for fold_simple function.  Either return simplified
@@ -8525,7 +8527,7 @@ static GTY((deletable)) hash_map<tree, tree> *cv_cache;
 
 tree
 maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
-		      bool manifestly_const_eval /* = false */)
+		      mce_value manifestly_const_eval /* = mce_unknown */)
 {
   tree r;
 
@@ -8540,8 +8542,9 @@ maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
     /* No caching or evaluation needed.  */
     return t;
 
-  if (manifestly_const_eval)
-    return cxx_eval_outermost_constant_expr (t, true, true, true, false, decl);
+  if (manifestly_const_eval != mce_unknown)
+    return cxx_eval_outermost_constant_expr (t, true, true,
+					     manifestly_const_eval, false, decl);
 
   if (cv_cache == NULL)
     cv_cache = hash_map<tree, tree>::create_ggc (101);
@@ -8565,7 +8568,8 @@ maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
     return t;
 
   uid_sensitive_constexpr_evaluation_checker c;
-  r = cxx_eval_outermost_constant_expr (t, true, true, false, false, decl);
+  r = cxx_eval_outermost_constant_expr (t, true, true,
+					manifestly_const_eval, false, decl);
   gcc_checking_assert (r == t
 		       || CONVERT_EXPR_P (t)
 		       || TREE_CODE (t) == VIEW_CONVERT_EXPR
@@ -8631,7 +8635,7 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 	return t;
 
       tree r = cxx_eval_outermost_constant_expr (t, true, true,
-						 manifestly_const_eval,
+						 mce_value (manifestly_const_eval),
 						 false, object);
       /* cp_tree_equal looks through NOPs, so allow them.  */
       gcc_checking_assert (r == t
@@ -8678,7 +8682,7 @@ fold_non_dependent_expr (tree t,
     return fold_non_dependent_expr_template (t, complain,
 					     manifestly_const_eval, object);
 
-  return maybe_constant_value (t, object, manifestly_const_eval);
+  return maybe_constant_value (t, object, mce_value (manifestly_const_eval));
 }
 
 /* Like fold_non_dependent_expr, but if EXPR couldn't be folded to a constant,
@@ -8756,7 +8760,8 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
       bool is_static = (decl && DECL_P (decl)
 			&& (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
       t = cxx_eval_outermost_constant_expr (t, allow_non_constant, !is_static,
-					    manifestly_const_eval, false, decl);
+					    mce_value (manifestly_const_eval),
+					    false, decl);
     }
   if (TREE_CODE (t) == TARGET_EXPR)
     {

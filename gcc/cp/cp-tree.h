@@ -8459,6 +8459,24 @@ struct GTY((for_user)) constexpr_fundef {
   tree result;
 };
 
+/* Whether the current context is manifestly constant-evaluated.
+   Used by the constexpr machinery to control folding of
+   __builtin_is_constant_evaluated.  */
+
+enum class mce_value
+{
+  /* Unknown, so treat __builtin_is_constant_evaluated as non-constant.  */
+  mce_unknown = 0,
+  /* Fold it to true.  */
+  mce_true = 1,
+  /* Fold it to false.  Primarily used during cp_fold_function and
+     cp_fully_fold_init.  */
+  mce_false = -1,
+};
+constexpr mce_value mce_unknown = mce_value::mce_unknown;
+constexpr mce_value mce_true = mce_value::mce_true;
+constexpr mce_value mce_false = mce_value::mce_false;
+
 extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);
 extern void maybe_save_constexpr_fundef		(tree);
@@ -8487,7 +8505,7 @@ inline tree cxx_constant_value (tree t, tsubst_flags_t complain)
 { return cxx_constant_value (t, NULL_TREE, complain); }
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
-extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
+extern tree maybe_constant_value		(tree, tree = NULL_TREE, mce_value = mce_unknown);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
