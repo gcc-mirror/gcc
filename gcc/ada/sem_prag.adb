@@ -26269,20 +26269,6 @@ package body Sem_Prag is
       Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
       Set_Is_Analyzed_Pragma (N);
 
-      --  If the subprogram is frozen then its class-wide pre- and post-
-      --  conditions have been preanalyzed (see Merge_Class_Conditions);
-      --  otherwise they must be preanalyzed now to ensure the correct
-      --  visibility of their referenced entities. This scenario occurs
-      --  when the subprogram is defined in a nested package (since the
-      --  end of the package does not cause freezing).
-
-      if Class_Present (N)
-        and then Is_Dispatching_Operation (Spec_Id)
-        and then not Is_Frozen (Spec_Id)
-      then
-         Preanalyze_Class_Conditions (Spec_Id);
-      end if;
-
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Pre_Post_Condition_In_Decl_Part;
 
