@@ -4786,7 +4786,8 @@ package Einfo is
 --       Defined in subprogram entities. Set on wrappers created to handle
 --       inherited class-wide pre/post conditions that call overridden
 --       primitives. It references the parent primitive that has the
---       class-wide pre/post conditions.
+--       class-wide pre/post conditions. LSP stands for Liskov Substitution
+--       Principle.
 
 ---------------------------
 -- Renaming and Aliasing --
