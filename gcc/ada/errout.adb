@@ -2021,33 +2021,129 @@ package body Errout is
          when N_Character_Literal =>
             return S + 2;
 
-         --  Skip past numeric literals, but they allow a wider set of
-         --  characters than keywords and identifiers.
+         --  Skip past integer literals, both decimal and based, integer and
+         --  real. We can't greedily accept all allowed character, because
+         --  we would consme too many of them in expressions like "123+ABC"
+         --  or "123..456", so we follow quite precisely the Ada grammar and
+         --  consume different characters depending on the context.
 
          when N_Integer_Literal =>
-            while S in SF .. SL - 1
-              and then Src (S + 1)
-                in
-              '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' | '#' | '+' | '-'
+
+            --  Skip past the initial numeral, which either leads the decimal
+            --  literal or is the base of a based literal.
+
+            while S < SL
+              and then Src (S + 1) in '0' .. '9' | '_'
             loop
                S := S + 1;
             end loop;
 
-         when N_Real_Literal =>
-            declare
-               Dot_Seen : Boolean := False;
-            begin
-               while S in SF .. SL - 1
+            --  Skip past #based_numeral#, if present
+
+            if S < SL
+              and then Src (S + 1) = '#'
+            then
+               S := S + 1;
+
+               while S < SL
                  and then
-                   (Src (S + 1) in '0' .. '9'
-                                 | 'a' .. 'f' | 'A' .. 'F'
-                                 | '_' | '#' | '+' | '-'
-                      or else (Src (S + 1) = '.' and then not Dot_Seen))
+                   Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
                loop
-                  Dot_Seen := Src (S + 1) = '.';
                   S := S + 1;
                end loop;
-            end;
+
+               pragma Assert (S < SL and then Src (S + 1) = '#');
+
+               S := S + 1;
+            end if;
+
+            --  Skip past exponent, if present
+
+            if S < SL + 1
+              and then Src (S + 1) in 'e' | 'E'
+            then
+               --  For positive exponents the plus sign is optional, but we
+               --  can simply skip past both plus and minus.
+
+               if Src (S + 2) in '+' | '-' then
+                  S := S + 1;
+               end if;
+
+               --  Skip past the numeral part
+
+               while S < SL
+                 and then Src (S + 1) in '0' .. '9' | '_'
+               loop
+                  S := S + 1;
+               end loop;
+            end if;
+
+         when N_Real_Literal =>
+            --  Skip past the initial numeral, which either leads the decimal
+            --  literal or is the base of a based literal.
+
+            while S < SL
+              and then Src (S + 1) in '0' .. '9' | '_'
+            loop
+               S := S + 1;
+            end loop;
+
+            if S < SL then
+               if Src (S + 1) = '.' then
+                  while S < SL
+                    and then Src (S + 1) in '0' .. '9' | '_'
+                  loop
+                     S := S + 1;
+                  end loop;
+               else
+                  pragma Assert (Src (S + 1) = '#');
+
+                  S := S + 1;
+
+                  while S < SL
+                    and then
+                      Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
+                  loop
+                     S := S + 1;
+                  end loop;
+
+                  pragma Assert (S < SL and then Src (S + 1) = '.');
+
+                  S := S + 1;
+
+                  while S < SL
+                    and then
+                      Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
+                  loop
+                     S := S + 1;
+                  end loop;
+
+                  pragma Assert (S < SL and then Src (S + 1) = '#');
+
+                  S := S + 1;
+               end if;
+            end if;
+
+            --  Skip past exponent, if present
+
+            if S < SL + 1
+              and then Src (S + 1) in 'e' | 'E'
+            then
+               --  For positive exponents the plus sign is optional, but we
+               --  can simply skip past both plus and minus.
+
+               if Src (S + 2) in '+' | '-' then
+                  S := S + 1;
+               end if;
+
+               --  Skip past the numeral part
+
+               while S < SL
+                 and then Src (S + 1) in '0' .. '9' | '_'
+               loop
+                  S := S + 1;
+               end loop;
+            end if;
 
          --  For other nodes simply skip past a keyword/identifier
 
