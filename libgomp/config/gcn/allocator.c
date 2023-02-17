@@ -36,6 +36,7 @@
    when the memspace access trait is set accordingly.  */
 
 #include "libgomp.h"
+#include <assert.h>
 #include <stdlib.h>
 
 #define BASIC_ALLOC_PREFIX __gcn_lowlat
@@ -86,6 +87,9 @@ gcn_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size)
 
       __gcn_lowlat_free (shared_pool, addr, size);
     }
+  else if (memspace == ompx_host_mem_space)
+    /* Just verify what all allocator functions return.  */
+    assert (addr == NULL);
   else
     free (addr);
 }

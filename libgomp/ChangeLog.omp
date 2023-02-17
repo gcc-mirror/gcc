@@ -1,5 +1,10 @@
 2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/gcn/allocator.c (gcn_memspace_free): Explicitly handle
+	'memspace == ompx_host_mem_space'.
+
+2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* target.c (gomp_target_rev): Instead of 'dev_to_host_cpy',
 	'host_to_dev_cpy', 'token', take a single 'goacc_asyncqueue'.
 	* libgomp.h (gomp_target_rev): Adjust.
