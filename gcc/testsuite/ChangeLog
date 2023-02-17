@@ -1,3 +1,11 @@
+2023-02-16  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2023-02-15  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104554
+	* gfortran.dg/pr104554.f90: New test.
+
 2023-02-15  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
