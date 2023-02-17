@@ -4824,7 +4824,8 @@ vn_phi_lookup (gimple *phi, bool backedges_varying_p)
       if (TREE_CODE (def) == SSA_NAME
 	  && (!backedges_varying_p || !(e->flags & EDGE_DFS_BACK)))
 	{
-	  if (ssa_undefined_value_p (def, false))
+	  if (!virtual_operand_p (def)
+	      && ssa_undefined_value_p (def, false))
 	    def = VN_TOP;
 	  else
 	    def = SSA_VAL (def);
@@ -4877,7 +4878,8 @@ vn_phi_insert (gimple *phi, tree result, bool backedges_varying_p)
       if (TREE_CODE (def) == SSA_NAME
 	  && (!backedges_varying_p || !(e->flags & EDGE_DFS_BACK)))
 	{
-	  if (ssa_undefined_value_p (def, false))
+	  if (!virtual_operand_p (def)
+	      && ssa_undefined_value_p (def, false))
 	    def = VN_TOP;
 	  else
 	    def = SSA_VAL (def);
@@ -5059,6 +5061,7 @@ set_ssa_val_to (tree from, tree to)
 	}
       curr_invariant = is_gimple_min_invariant (currval);
       curr_undefined = (TREE_CODE (currval) == SSA_NAME
+			&& !virtual_operand_p (currval)
 			&& ssa_undefined_value_p (currval, false));
       if (currval != VN_TOP
 	  && !curr_invariant
@@ -5081,6 +5084,7 @@ set_ssa_val_to (tree from, tree to)
       else if (currval != VN_TOP
 	       && !curr_undefined
 	       && TREE_CODE (to) == SSA_NAME
+	       && !virtual_operand_p (to)
 	       && ssa_undefined_value_p (to, false))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5116,6 +5120,7 @@ set_and_exit:
          PR82320 for a testcase were we'd otherwise not terminate iteration.  */
       && !(curr_undefined
 	   && TREE_CODE (to) == SSA_NAME
+	   && !virtual_operand_p (to)
 	   && ssa_undefined_value_p (to, false))
       /* ???  For addresses involving volatile objects or types operand_equal_p
          does not reliably detect ADDR_EXPRs as equal.  We know we are only
@@ -5880,7 +5885,14 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	    sameval = def;
 	    sameval_e = e;
 	  }
-	else if (!expressions_equal_p (def, sameval))
+	else if (expressions_equal_p (def, sameval))
+	  sameval_e = NULL;
+	else if (virtual_operand_p (def))
+	  {
+	    sameval = NULL_TREE;
+	    break;
+	  }
+	else
 	  {
 	    /* We know we're arriving only with invariant addresses here,
 	       try harder comparing them.  We can do some caching here
@@ -5957,8 +5969,6 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	    sameval = NULL_TREE;
 	    break;
 	  }
-	else
-	  sameval_e = NULL;
       }
 
   /* If the value we want to use is flowing over the backedge and we

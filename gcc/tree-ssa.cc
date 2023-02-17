@@ -1320,6 +1320,8 @@ ssa_undefined_value_p (tree t, bool partial)
 {
   gimple *def_stmt;
 
+  gcc_checking_assert (!virtual_operand_p (t));
+
   if (ssa_defined_default_def_p (t))
     return false;
 
