@@ -134,6 +134,7 @@ static void cris_init_libfuncs (void);
 static unsigned int cris_postdbr_cmpelim (void);
 
 static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
+static reg_class_t cris_spill_class (reg_class_t, machine_mode);
 
 static int cris_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (machine_mode, reg_class_t, bool);
@@ -220,6 +221,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS cris_preferred_reload_class
+
+#undef TARGET_SPILL_CLASS
+#define TARGET_SPILL_CLASS cris_spill_class
 
 /* We don't define TARGET_FIXED_CONDITION_CODE_REGS, as at the time of
    this writing, it has an effect only on pre-reload CSE and when
@@ -1679,6 +1683,14 @@ cris_preferred_reload_class (rtx x, reg_class_t rclass)
     return NO_REGS;
 
   return rclass;
+}
+
+/* Worker function for TARGET_SPILL_CLASS.  */
+
+static reg_class_t
+cris_spill_class (reg_class_t /* orig_class */, machine_mode)
+{
+  return ALL_REGS;
 }
 
 /* Worker function for TARGET_REGISTER_MOVE_COST.  */
