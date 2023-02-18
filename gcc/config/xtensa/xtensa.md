@@ -3050,3 +3050,49 @@ FALLTHRU:;
   operands[1] = GEN_INT (imm0);
   operands[2] = GEN_INT (imm1);
 })
+
+(define_peephole2
+  [(set (match_operand 0 "register_operand")
+	(match_operand 1 "register_operand"))]
+  "REG_NREGS (operands[0]) == 1 && GP_REG_P (REGNO (operands[0]))
+   && REG_NREGS (operands[1]) == 1 && GP_REG_P (REGNO (operands[1]))
+   && peep2_reg_dead_p (1, operands[1])"
+  [(const_int 0)]
+{
+  basic_block bb = BLOCK_FOR_INSN (curr_insn);
+  rtx_insn *head = BB_HEAD (bb), *insn;
+  rtx dest = operands[0], src = operands[1], pattern, t_dest, dest_orig;
+  for (insn = PREV_INSN (curr_insn);
+       insn && insn != head;
+       insn = PREV_INSN (insn))
+    if (CALL_P (insn))
+      break;
+    else if (INSN_P (insn))
+      {
+	if (GET_CODE (pattern = PATTERN (insn)) == SET
+	    && REG_P (t_dest = SET_DEST (pattern))
+	    && REG_NREGS (t_dest) == 1
+	    && REGNO (t_dest) == REGNO (src))
+	{
+	  dest_orig = SET_DEST (pattern);
+	  SET_DEST (pattern) = gen_rtx_REG (GET_MODE (t_dest),
+					    REGNO (dest));
+	  extract_insn (insn);
+	  if (!constrain_operands (true, get_enabled_alternatives (insn)))
+	    {
+	      SET_DEST (pattern) = dest_orig;
+	      goto ABORT;
+	    }
+	  df_insn_rescan (insn);
+	  goto FALLTHRU;
+	}
+	if (reg_overlap_mentioned_p (dest, pattern)
+	    || reg_overlap_mentioned_p (src, pattern)
+	    || set_of (dest, insn)
+	    || set_of (src, insn))
+	  break;
+      }
+ABORT:
+  FAIL;
+FALLTHRU:;
+})
