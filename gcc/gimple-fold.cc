@@ -5767,15 +5767,17 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 }
 
 
-/* Return true whether NAME has a use on STMT.  */
+/* Return true whether NAME has a use on STMT.  Note this can return
+   false even though there's a use on STMT if SSA operands are not
+   up-to-date.  */
 
 static bool
 has_use_on_stmt (tree name, gimple *stmt)
 {
-  imm_use_iterator iter;
-  use_operand_p use_p;
-  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
-    if (USE_STMT (use_p) == stmt)
+  ssa_op_iter iter;
+  tree op;
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+    if (op == name)
       return true;
   return false;
 }

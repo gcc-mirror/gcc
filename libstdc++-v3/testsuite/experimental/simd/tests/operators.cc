@@ -16,19 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/make_vec.h"
-#include "bits/test_values.h"
-
-template <class T>
-  constexpr T
-  genHalfBits()
-  {
-    if constexpr (std::is_floating_point_v<T>)
-      return 0;
-    else
-      return std::__finite_max_v<T> >> (std::__digits_v<T> / 2);
-  }
+#include "bits/main.h"
 
 template <typename V>
   void

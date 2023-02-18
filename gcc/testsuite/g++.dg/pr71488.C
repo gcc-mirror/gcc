@@ -3,6 +3,7 @@
 // { dg-options "-O3 -std=c++11" }
 // { dg-additional-options "-msse4" { target sse4_runtime } }
 // { dg-require-effective-target c++11 }
+// { dg-bogus "size 0 overflows" "pr107561" { xfail *-*-* } 0 }
 
 #include <valarray>
 

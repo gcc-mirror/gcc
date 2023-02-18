@@ -56,7 +56,7 @@ TYPE
 PROCEDURE Raise (number: CARDINAL;
                  file: ADDRESS; line: CARDINAL;
                  column: CARDINAL; function: ADDRESS;
-                 message: ADDRESS) ;
+                 message: ADDRESS) <* noreturn *> ;
 
 
 (*

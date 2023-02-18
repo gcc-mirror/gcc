@@ -28,6 +28,8 @@ const C c = 'a';
 using traits = std::char_traits<C>;
 
 using __gnu_test::propagating_allocator;
+using __gnu_test::tracker_allocator_counter;
+using __gnu_test::tracker_allocator;
 
 void test01()
 {
@@ -146,10 +148,60 @@ void test03()
   VERIFY(7 == v8.get_allocator().get_personality());
 }
 
+void test04()
+{
+  typedef propagating_allocator<C, true, tracker_allocator<C>> alloc_type;
+  typedef std::basic_string<C, traits, alloc_type> test_type;
+
+  {
+    tracker_allocator_counter::reset();
+    test_type v1(alloc_type(1));
+    v1 = "abcdefghijklmnopqr10";
+    auto ref_alloc_count = tracker_allocator_counter::get_allocation_count();
+
+    test_type v2(alloc_type(2));
+    v2 = "abcdefghijklmnopqr20";
+    v2 = std::move(v1);
+    VERIFY(1 == v1.get_allocator().get_personality());
+    VERIFY(1 == v2.get_allocator().get_personality());
+
+    VERIFY( tracker_allocator_counter::get_allocation_count() == 2 * ref_alloc_count );
+    VERIFY( tracker_allocator_counter::get_deallocation_count() == ref_alloc_count );
+
+    v1 = "abcdefghijklmnopqr11";
+
+    VERIFY( tracker_allocator_counter::get_allocation_count() == 3 * ref_alloc_count );
+  }
+
+  {
+    tracker_allocator_counter::reset();
+    test_type v1(alloc_type(1));
+    v1 = "abcdefghijklmnopqr10";
+    auto ref_alloc_count = tracker_allocator_counter::get_allocation_count();
+
+    test_type v2(alloc_type(1));
+    v2 = "abcdefghijklmnopqr20";
+    v2 = std::move(v1);
+    VERIFY(1 == v1.get_allocator().get_personality());
+    VERIFY(1 == v2.get_allocator().get_personality());
+
+    VERIFY( tracker_allocator_counter::get_allocation_count() == 2 * ref_alloc_count );
+    VERIFY( tracker_allocator_counter::get_deallocation_count() == 0 );
+
+    v1 = "abcdefghijklmnopqr11";
+
+    VERIFY( tracker_allocator_counter::get_allocation_count() == 2 * ref_alloc_count );
+  }
+
+  VERIFY( tracker_allocator_counter::get_allocation_count() ==
+	  tracker_allocator_counter::get_deallocation_count() );
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
   return 0;
 }

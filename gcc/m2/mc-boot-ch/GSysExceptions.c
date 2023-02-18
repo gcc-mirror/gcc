@@ -226,12 +226,12 @@ SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
 
 EXTERN
 void
-_M2_SysExceptions_init (void)
+_M2_SysExceptions_init (int argc, char *argv[], char *envp[])
 {
 }
 
 EXTERN
 void
-_M2_SysExceptions_finish (void)
+_M2_SysExceptions_fini (int argc, char *argv[], char *envp[])
 {
 }

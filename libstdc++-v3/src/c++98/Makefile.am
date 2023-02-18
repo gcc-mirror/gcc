@@ -148,7 +148,11 @@ sources = \
 
 vpath % $(top_srcdir)/src/c++98
 
+if GLIBCXX_HOSTED
 libc__98convenience_la_SOURCES = $(sources)
+else
+libc__98convenience_la_SOURCES =
+endif
 
 # Use special rules to compile with -fimplicit-templates.
 c++locale.lo: c++locale.cc

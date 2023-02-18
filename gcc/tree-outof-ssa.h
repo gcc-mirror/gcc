@@ -53,7 +53,7 @@ extern struct ssaexpand SA;
 
 /* Returns the RTX expression representing the storage of the outof-SSA
    partition that the SSA name EXP is a member of.  */
-static inline rtx
+inline rtx
 get_rtx_for_ssa_name (tree exp)
 {
   int p = partition_find (SA.map->var_partition, SSA_NAME_VERSION (exp));
@@ -65,7 +65,7 @@ get_rtx_for_ssa_name (tree exp)
 
 /* If TER decided to forward the definition of SSA name EXP this function
    returns the defining statement, otherwise NULL.  */
-static inline gimple *
+inline gimple *
 get_gimple_for_ssa_name (tree exp)
 {
   int v = SSA_NAME_VERSION (exp);

@@ -733,6 +733,11 @@ _M2_mcflex_init (void)
 }
 
 void
+_M2_mcflex_fini (void)
+{
+}
+
+void
 _M2_mcflex_finish (void)
 {
 }

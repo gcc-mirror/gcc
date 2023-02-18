@@ -961,6 +961,46 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
   /* These routines report failures themselves.  */
   if (!recog (attempt, change) || !change_is_worthwhile (change, false))
     return false;
+
+  /* Fix bug:
+      (insn 12 34 13 2 (set (reg:VNx8DI 120 v24 [orig:134 _1 ] [134])
+	(if_then_else:VNx8DI (unspec:VNx8BI [
+		    (const_vector:VNx8BI repeat [
+			    (const_int 1 [0x1])
+			])
+		    (const_int 0 [0])
+		    (const_int 2 [0x2]) repeated x2
+		    (const_int 0 [0])
+		    (reg:SI 66 vl)
+		    (reg:SI 67 vtype)
+		] UNSPEC_VPREDICATE)
+	    (plus:VNx8DI (reg/v:VNx8DI 104 v8 [orig:137 op1 ] [137])
+		(sign_extend:VNx8DI (vec_duplicate:VNx8SI (reg:SI 15 a5
+    [140])))) (unspec:VNx8DI [ (const_int 0 [0]) ] UNSPEC_VUNDEF))) "rvv.c":8:12
+    2784 {pred_single_widen_addsvnx8di_scalar} (expr_list:REG_EQUIV
+    (mem/c:VNx8DI (reg:DI 10 a0 [142]) [1 <retval>+0 S[64, 64] A128])
+	(expr_list:REG_EQUAL (if_then_else:VNx8DI (unspec:VNx8BI [
+			(const_vector:VNx8BI repeat [
+				(const_int 1 [0x1])
+			    ])
+			(reg/v:DI 13 a3 [orig:139 vl ] [139])
+			(const_int 2 [0x2]) repeated x2
+			(const_int 0 [0])
+			(reg:SI 66 vl)
+			(reg:SI 67 vtype)
+		    ] UNSPEC_VPREDICATE)
+		(plus:VNx8DI (reg/v:VNx8DI 104 v8 [orig:137 op1 ] [137])
+		    (const_vector:VNx8DI repeat [
+			    (const_int 2730 [0xaaa])
+			]))
+		(unspec:VNx8DI [
+			(const_int 0 [0])
+		    ] UNSPEC_VUNDEF))
+	    (nil))))
+    Here we want to remove use "a3". However, the REG_EQUAL/REG_EQUIV note use
+    "a3" which made us fail in change_insn.  We reference to the
+    'aarch64-cc-fusion.cc' and add this method.  */
+  remove_reg_equal_equiv_notes (rinsn);
   confirm_change_group ();
   ssa->change_insn (change);
 
@@ -3309,7 +3349,7 @@ pass_vsetvl::cleanup_insns (void) const
 	  if (!has_vl_op (rinsn) || !REG_P (get_vl (rinsn)))
 	    continue;
 	  rtx avl = get_vl (rinsn);
-	  if (count_occurrences (PATTERN (rinsn), avl, true) == 1)
+	  if (count_occurrences (PATTERN (rinsn), avl, 0) == 1)
 	    {
 	      /* Get the list of uses for the new instruction.  */
 	      auto attempt = crtl->ssa->new_change_attempt ();
@@ -3323,7 +3363,9 @@ pass_vsetvl::cleanup_insns (void) const
 	      use_array new_uses = use_array (uses_builder.finish ());
 	      change.new_uses = new_uses;
 	      change.move_range = insn->ebb ()->insn_range ();
-	      rtx pat = simplify_replace_rtx (PATTERN (rinsn), avl, const0_rtx);
+	      rtx set = single_set (rinsn);
+	      rtx src = simplify_replace_rtx (SET_SRC (set), avl, const0_rtx);
+	      rtx pat = gen_rtx_SET (SET_DEST (set), src);
 	      gcc_assert (change_insn (crtl->ssa, change, insn, pat));
 	    }
 	}
@@ -3492,8 +3534,15 @@ pass_vsetvl::compute_probabilities (void)
       basic_block cfg_bb = bb->cfg_bb ();
       auto &curr_prob
 	= m_vector_manager->vector_block_infos[cfg_bb->index].probability;
+
+      /* GCC assume entry block (bb 0) are always so
+	 executed so set its probability as "always".  */
       if (ENTRY_BLOCK_PTR_FOR_FN (cfun) == cfg_bb)
 	curr_prob = profile_probability::always ();
+      /* Exit block (bb 1) is the block we don't need to process.  */
+      if (EXIT_BLOCK_PTR_FOR_FN (cfun) == cfg_bb)
+	continue;
+
       gcc_assert (curr_prob.initialized_p ());
       FOR_EACH_EDGE (e, ei, cfg_bb->succs)
 	{
@@ -3507,9 +3556,6 @@ pass_vsetvl::compute_probabilities (void)
 	    new_prob += curr_prob * e->probability;
 	}
     }
-  auto &exit_block
-    = m_vector_manager->vector_block_infos[EXIT_BLOCK_PTR_FOR_FN (cfun)->index];
-  exit_block.probability = profile_probability::always ();
 }
 
 /* Lazy vsetvl insertion for optimize > 0. */

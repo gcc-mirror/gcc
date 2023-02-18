@@ -1,5 +1,5 @@
 /* PR target/92841 */
-/* { dg-do compile { target { { { *-*-linux* } && lp64 } && fstack_protector } } } */
+/* { dg-do compile { target { { *-*-linux* && lp64 } && fstack_protector } } } */
 /* { dg-options "-O2 -fpic -fstack-protector-strong -masm=att" } */
 /* { dg-final { scan-assembler "leaq\tbuf2\\\(%rip\\\)," } } */
 

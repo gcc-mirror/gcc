@@ -124,6 +124,6 @@ extern "C" void _M2_mcQuiet_init (__attribute__((unused)) int argc,__attribute__
 {
 }
 
-extern "C" void _M2_mcQuiet_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcQuiet_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

@@ -2,18 +2,7 @@
 /* { dg-options "-O2 -Wno-stringop-overread" } */
 /* { dg-require-effective-target alloca } */
 
-typedef __SIZE_TYPE__ size_t;
-extern void abort (void);
-extern void exit (int);
-extern void *malloc (size_t);
-extern void *calloc (size_t, size_t);
-extern void free (void *);
-extern void *alloca (size_t);
-extern void *memcpy (void *, const void *, size_t);
-extern void *memset (void *, int, size_t);
-extern char *strcpy (char *, const char *);
-extern char *strdup (const char *);
-extern char *strndup (const char *, size_t);
+#include "builtin-object-size-common.h"
 
 struct A
 {
@@ -40,36 +29,36 @@ test1 (void *q, int x)
   else
     r = &a.c[1];
   if (__builtin_object_size (p, 3) != sizeof (a.a) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a.c[9], 3)
       != sizeof (a.c) - 9)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q, 3) != 0)
-    abort ();
+    FAIL ();
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 3)
       != (x < 0 ? sizeof (a.a) - 9 : sizeof (a.c) - 1))
 #else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 9)
 #endif
-    abort ();
+    FAIL ();
   if (x < 6)
     r = &w[2].a[1];
   else
     r = &a.a[6];
   if (__builtin_object_size (&y, 3) != sizeof (y))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (w, 3) != sizeof (w))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&y.b, 3) != sizeof (a.b))
-    abort ();
+    FAIL ();
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 3)
       != (x < 6 ? sizeof (w[2].a) - 1 : sizeof (a.a) - 6))
 #else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 6)
 #endif
-    abort ();
+    FAIL ();
   if (x < 20)
     r = malloc (30);
   else
@@ -79,7 +68,7 @@ test1 (void *q, int x)
 #else
   if (__builtin_object_size (r, 3) != 30)
 #endif
-    abort ();
+    FAIL ();
   if (x < 20)
     r = malloc (30);
   else
@@ -89,7 +78,7 @@ test1 (void *q, int x)
 #else
   if (__builtin_object_size (r, 3) != 2 * 14)
 #endif
-    abort ();
+    FAIL ();
   if (x < 30)
     r = malloc (sizeof (a));
   else
@@ -100,125 +89,125 @@ test1 (void *q, int x)
 #else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 3)
 #endif
-    abort ();
+    FAIL ();
   r = memcpy (r, "a", 2);
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 3) != objsz)
 #else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 3)
 #endif
-    abort ();
+    FAIL ();
   r = memcpy (r + 2, "b", 2) + 2;
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 3) != objsz - 4)
 #else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 3 - 4)
 #endif
-    abort ();
+    FAIL ();
   r = &a.a[4];
   r = memset (r, 'a', 2);
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 4)
-    abort ();
+    FAIL ();
   r = memset (r + 2, 'b', 2) + 2;
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 8)
-    abort ();
+    FAIL ();
   r = &a.a[1];
   r = strcpy (r, "ab");
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 1)
-    abort ();
+    FAIL ();
   r = strcpy (r + 2, "cd") + 2;
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 5)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (exta, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (exta + 10, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&exta[5], 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (extb, 3) != sizeof (extb))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (extb + 10, 3) != sizeof (extb) - 10)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&extb[5], 3) != sizeof (extb) - 5)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (extc, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (extc + 10, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&extc[5], 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&extc->a, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&(extc + 10)->b, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&extc[5].c[3], 3) != 0)
-    abort ();
+    FAIL ();
 #ifdef __builtin_object_size
   if (__builtin_object_size (var, 3) != x + 10)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (var + 10, 3) != x)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&var[5], 3) != x + 5)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (vara, 3) != (x + 10) * sizeof (struct A))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (vara + 10, 3) != x * sizeof (struct A))
-    abort ();    
+    FAIL ();    
   if (__builtin_object_size (&vara[5], 3) != (x + 5) * sizeof (struct A))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (var, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (var + 10, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&var[5], 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (vara, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (vara + 10, 3) != 0)
-    abort ();    
+    FAIL ();    
   if (__builtin_object_size (&vara[5], 3) != 0)
-    abort ();
+    FAIL ();
 #endif
   if (__builtin_object_size (&vara[0].a, 3) != sizeof (vara[0].a))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&vara[10].a[0], 3) != sizeof (vara[0].a))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&vara[5].a[4], 3) != sizeof (vara[0].a) - 4)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&vara[5].b, 3) != sizeof (vara[0].b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&vara[7].c[7], 3) != sizeof (vara[0].c) - 7)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (zerol, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&zerol, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&zerol[0], 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (zerol[0].a, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&zerol[0].a[0], 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&zerol[0].b, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size ("abcdefg", 3) != sizeof ("abcdefg"))
-    abort ();
+    FAIL ();
   if (__builtin_object_size ("abcd\0efg", 3) != sizeof ("abcd\0efg"))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&"abcd\0efg", 3) != sizeof ("abcd\0efg"))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&"abcd\0efg"[0], 3) != sizeof ("abcd\0efg"))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&"abcd\0efg"[4], 3) != sizeof ("abcd\0efg") - 4)
-    abort ();
+    FAIL ();
   if (__builtin_object_size ("abcd\0efg" + 5, 3) != sizeof ("abcd\0efg") - 5)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (L"abcdefg", 3) != sizeof (L"abcdefg"))
-    abort ();
+    FAIL ();
   r = (char *) L"abcd\0efg";
   if (__builtin_object_size (r + 2, 3) != sizeof (L"abcd\0efg") - 2)
-    abort ();
+    FAIL ();
   /* Prevent DSE from removing calls that prevent bad combining of
      addresses and offsets.  */
   asm volatile ("" : : "g" (&a));
@@ -253,7 +242,7 @@ test2 (void)
 	r = &a.buf1[9];
     }
   if (__builtin_object_size (r, 3) != sizeof (a.buf1) - 9)
-    abort ();
+    FAIL ();
   r = &buf3[20];
   for (i = 0; i < 4; ++i)
     {
@@ -267,7 +256,7 @@ test2 (void)
 	r = &a.buf1[9];
     }
   if (__builtin_object_size (r, 3) != 0)
-    abort ();
+    FAIL ();
   r = &buf3[1];
   for (i = 0; i < 4; ++i)
     {
@@ -286,31 +275,31 @@ test2 (void)
   for (i = 0; i < 4; ++i)
     {
       if (i == l1 - 1)
-        dyn_res = sizeof (a.buf1) - 6;
+	dyn_res = sizeof (a.buf1) - 6;
       else if (i == l1)
-        dyn_res = sizeof (a.buf2) - 4;
+	dyn_res = sizeof (a.buf2) - 4;
       else if (i == l1 + 1)
-        dyn_res = sizeof (buf3) - 5;
+	dyn_res = sizeof (buf3) - 5;
       else if (i == l1 + 2)
-        dyn_res = sizeof (a.buf1) - 2;
+	dyn_res = sizeof (a.buf1) - 2;
     }
   if (__builtin_object_size (r, 3) != dyn_res)
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 3) != sizeof (a.buf1) - 6)
-    abort ();
+    FAIL ();
 #endif
   r += 2;
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 3) != dyn_res - 2)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (r + 1, 3) != dyn_res - 3)
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 3) != sizeof (a.buf1) - 6 - 2)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (r + 1, 3) != sizeof (a.buf1) - 6 - 3)
-    abort ();
+    FAIL ();
 #endif
 }
 
@@ -326,78 +315,78 @@ test3 (void)
   double *dp;
 
   if (__builtin_object_size (buf4, 3) != sizeof (buf4))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&buf4, 3) != sizeof (buf4))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&buf4[0], 3) != sizeof (buf4))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&buf4[1], 3) != sizeof (buf4) - 1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x, 3) != sizeof (x))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a, 3) != sizeof (x.a))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0], 3) != sizeof (x.a))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0].a, 3) != sizeof (x.a[0].a))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0].a[0], 3) != sizeof (x.a[0].a))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0].a[3], 3) != sizeof (x.a[0].a) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0].b, 3) != sizeof (x.a[0].b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[1].c, 3) != sizeof (x.a[1].c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[1].c[0], 3) != sizeof (x.a[1].c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[1].c[3], 3) != sizeof (x.a[1].c) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b, 3) != sizeof (x.b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.a, 3) != sizeof (x.b.a))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.a[0], 3) != sizeof (x.b.a))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.a[3], 3) != sizeof (x.b.a) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.b, 3) != sizeof (x.b.b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.c, 3) != sizeof (x.b.c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.c[0], 3) != sizeof (x.b.c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.c[3], 3) != sizeof (x.b.c) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.c, 3) != sizeof (x.c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.c[0], 3) != sizeof (x.c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.c[1], 3) != sizeof (x.c) - 1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.d, 3) != sizeof (x.d))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.e, 3) != sizeof (x.e))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.f, 3) != sizeof (x.f))
-    abort ();
+    FAIL ();
   dp = &__real__ x.f;
   if (__builtin_object_size (dp, 3) != sizeof (x.f) / 2)
-    abort ();
+    FAIL ();
   dp = &__imag__ x.f;
   if (__builtin_object_size (dp, 3) != sizeof (x.f) / 2)
-    abort ();
+    FAIL ();
   dp = &y;
   if (__builtin_object_size (dp, 3) != sizeof (y))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&z, 3) != sizeof (z))
-      abort ();
+      FAIL ();
   dp = &__real__ z;
   if (__builtin_object_size (dp, 3) != sizeof (z) / 2)
-    abort ();
+    FAIL ();
   dp = &__imag__ z;
   if (__builtin_object_size (dp, 3) != sizeof (z) / 2)
-    abort ();
+    FAIL ();
 }
 
 struct S { unsigned int a; };
@@ -414,7 +403,7 @@ test4 (char *x, int y)
       p = (struct A *) x;
       x = (char *) &p[1];
       if (__builtin_object_size (p, 3) != 0)
-	abort ();
+	FAIL ();
     }
   return x;
 }
@@ -434,7 +423,7 @@ test5 (size_t x)
 #else
   if (__builtin_object_size (p, 3) != 0)
 #endif
-    abort ();
+    FAIL ();
   memset (p, ' ', sizeof (t.buf) - 8 - 4 * 4);
 }
 
@@ -447,11 +436,11 @@ test6 (void)
   char *p = &buf[64], *q = &t.buf[64];
 
   if (__builtin_object_size (p + 64, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q + 0, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q + 64, 3) != 0)
-    abort ();
+    FAIL ();
 }
 
 void
@@ -462,18 +451,18 @@ test7 (void)
   char *p = &t.buf2[-4];
   char *q = &t.buf2[0];
   if (__builtin_object_size (p, 3) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q, 3) != sizeof (t.buf2))
-    abort ();
+    FAIL ();
   q = &t.buf[10];
   if (__builtin_object_size (q, 3) != 0)
-    abort ();
+    FAIL ();
   q = &t.buf[11];
   if (__builtin_object_size (q, 3) != 0)
-    abort ();
+    FAIL ();
   p = &t.buf[-4];
   if (__builtin_object_size (p, 3) != 0)
-    abort ();
+    FAIL ();
 }
 
 void
@@ -490,10 +479,10 @@ test8 (unsigned cond)
 
 #ifdef __builtin_object_size
   if (__builtin_object_size (&p[-4], 3) != (cond ? 6 : 10))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (&p[-4], 3) != 0)
-    abort ();
+    FAIL ();
 #endif
 
   for (unsigned i = cond; i > 0; i--)
@@ -501,10 +490,10 @@ test8 (unsigned cond)
 
 #ifdef __builtin_object_size
   if (__builtin_object_size (p, 3) != ((cond ? 2 : 6) + cond))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (p, 3) != 0)
-    abort ();
+    FAIL ();
 #endif
 
   p = &y.c[8];
@@ -513,10 +502,10 @@ test8 (unsigned cond)
 
 #ifdef __builtin_object_size
   if (__builtin_object_size (p, 3) != sizeof (y.c) - 8 + cond)
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (p, 3) != 0)
-    abort ();
+    FAIL ();
 #endif
 }
 
@@ -528,19 +517,19 @@ test9 (void)
   const char *ptr = "abcdefghijklmnopqrstuvwxyz";
   char *res = strndup (ptr, 21);
   if (__builtin_object_size (res, 3) != 22)
-    abort ();
+    FAIL ();
 
   free (res);
 
   res = strndup (ptr, 32);
   if (__builtin_object_size (res, 3) != 27)
-    abort ();
+    FAIL ();
 
   free (res);
 
   res = strdup (ptr);
   if (__builtin_object_size (res, 3) != 27)
-    abort ();
+    FAIL ();
 
   free (res);
 
@@ -549,19 +538,19 @@ test9 (void)
 
   res = strndup (ptr2, 21);
   if (__builtin_object_size (res, 3) != 1)
-    abort ();
+    FAIL ();
 
   free (res);
 
   res = strndup (ptr2, 32);
   if (__builtin_object_size (res, 3) != 1)
-    abort ();
+    FAIL ();
 
   free (res);
 
   res = strndup (ptr2, 128);
   if (__builtin_object_size (res, 3) != 1)
-    abort ();
+    FAIL ();
 
   free (res);
 
@@ -571,7 +560,7 @@ test9 (void)
 #else
   if (__builtin_object_size (res, 3) != 1)
 #endif
-    abort ();
+    FAIL ();
 
   free (res);
   free (ptr2);
@@ -579,32 +568,32 @@ test9 (void)
   ptr = "abcd\0efghijklmnopqrstuvwxyz";
   res = strdup (ptr);
   if (__builtin_object_size (res, 3) != 5)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strndup (ptr, 24);
   if (__builtin_object_size (res, 3) != 5)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strndup (ptr, 2);
   if (__builtin_object_size (res, 3) != 3)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strdup (&ptr[4]);
   if (__builtin_object_size (res, 3) != 1)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strndup (&ptr[4], 4);
   if (__builtin_object_size (res, 3) != 1)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strndup (&ptr[4], 1);
   if (__builtin_object_size (res, 3) != 1)
-    abort ();
+    FAIL ();
   free (res);
 }
 
@@ -622,5 +611,5 @@ main (void)
   test7 ();
   test8 (1);
   test9 ();
-  exit (0);
+  DONE ();
 }

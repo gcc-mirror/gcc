@@ -1259,7 +1259,10 @@ irange::legacy_equal_p (const irange &other) const
 			       other.tree_lower_bound (0))
 	  && vrp_operand_equal_p (tree_upper_bound (0),
 				  other.tree_upper_bound (0))
-	  && get_nonzero_bits () == other.get_nonzero_bits ());
+	  && (widest_int::from (get_nonzero_bits (),
+				TYPE_SIGN (type ()))
+	      == widest_int::from (other.get_nonzero_bits (),
+				   TYPE_SIGN (other.type ()))));
 }
 
 bool
@@ -1294,7 +1297,11 @@ irange::operator== (const irange &other) const
 	  || !operand_equal_p (ub, ub_other, 0))
 	return false;
     }
-  return get_nonzero_bits () == other.get_nonzero_bits ();
+  widest_int nz1 = widest_int::from (get_nonzero_bits (),
+				     TYPE_SIGN (type ()));
+  widest_int nz2 = widest_int::from (other.get_nonzero_bits (),
+				     TYPE_SIGN (other.type ()));
+  return nz1 == nz2;
 }
 
 /* Return TRUE if this is a symbolic range.  */

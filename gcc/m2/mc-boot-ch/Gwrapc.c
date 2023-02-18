@@ -167,14 +167,14 @@ wrapc_signbitf (float r)
 /* init constructor for the module.  */
 
 void
-_M2_wrapc_init ()
+_M2_wrapc_init (int argc, char *argv[], char *envp[])
 {
 }
 
 /* finish deconstructor for the module.  */
 
 void
-_M2_wrapc_finish ()
+_M2_wrapc_fini (int argc, char *argv[], char *envp[])
 {
 }
 

@@ -15,6 +15,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef SIMD_TESTS_BITS_TEST_VALUES_H_
+#define SIMD_TESTS_BITS_TEST_VALUES_H_
+
+#include "verify.h"
+
 #include <experimental/simd>
 #include <initializer_list>
 #include <random>
@@ -381,3 +386,4 @@ template <class V>
 #endif
 
 #define MAKE_TESTER(name_) MAKE_TESTER_2(name_, std::name_)
+#endif  // SIMD_TESTS_BITS_TEST_VALUES_H_

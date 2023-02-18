@@ -133,7 +133,7 @@ PROCEDURE TSIZE (<type>; ... ): CARDINAL;
      are used to distinguish variants in a variant record.
   *)
 
-PROCEDURE THROW (i: INTEGER) ;
+PROCEDURE THROW (i: INTEGER) <* noreturn *> ;
   (*
      THROW is a GNU extension and was not part of the PIM or ISO
      standards.  It throws an exception which will be caught by the

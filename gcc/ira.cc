@@ -2725,6 +2725,7 @@ ira_update_equiv_info_by_shuffle_insn (int to_regno, int from_regno, rtx_insn *i
 	  return;
 	}
       ira_reg_equiv[to_regno].defined_p = false;
+      ira_reg_equiv[to_regno].caller_save_p = false;
       ira_reg_equiv[to_regno].memory
 	= ira_reg_equiv[to_regno].constant
 	= ira_reg_equiv[to_regno].invariant
@@ -3070,6 +3071,8 @@ validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
     info->equiv_mem_modified = true;
 }
 
+static int equiv_init_varies_p (rtx x);
+
 enum valid_equiv { valid_none, valid_combine, valid_reload };
 
 /* Verify that no store between START and the death of REG invalidates
@@ -3113,7 +3116,8 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
 	     been changed and all hell breaks loose.  */
 	  ret = valid_combine;
 	  if (!MEM_READONLY_P (memref)
-	      && !RTL_CONST_OR_PURE_CALL_P (insn))
+	      && (!RTL_CONST_OR_PURE_CALL_P (insn)
+		  || equiv_init_varies_p (XEXP (memref, 0))))
 	    return valid_none;
 	}
 
@@ -3414,6 +3418,7 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED,
   if (reg_equiv[regno].is_arg_equivalence)
     return;
   ira_reg_equiv[regno].defined_p = false;
+  ira_reg_equiv[regno].caller_save_p = false;
   ira_reg_equiv[regno].init_insns = NULL;
   for (; list; list = list->next ())
     {
@@ -3766,7 +3771,18 @@ update_equiv_regs (void)
 		{
 		  replacement = copy_rtx (SET_SRC (set));
 		  if (validity == valid_reload)
-		    note = set_unique_reg_note (insn, REG_EQUIV, replacement);
+		    {
+		      note = set_unique_reg_note (insn, REG_EQUIV, replacement);
+		    }
+		  else if (ira_use_lra_p)
+		    {
+		      /* We still can use this equivalence for caller save
+			 optimization in LRA.  Mark this.  */
+		      ira_reg_equiv[regno].caller_save_p = true;
+		      ira_reg_equiv[regno].init_insns
+			= gen_rtx_INSN_LIST (VOIDmode, insn,
+					     ira_reg_equiv[regno].init_insns);
+		    }
 		}
 	    }
 
@@ -4156,7 +4172,7 @@ setup_reg_equiv (void)
 		   legitimate, we ignore such REG_EQUIV notes.  */
 		if (memory_operand (x, VOIDmode))
 		  {
-		    ira_reg_equiv[i].defined_p = true;
+		    ira_reg_equiv[i].defined_p = !ira_reg_equiv[i].caller_save_p;
 		    ira_reg_equiv[i].memory = x;
 		    continue;
 		  }
@@ -4178,6 +4194,7 @@ setup_reg_equiv (void)
 			if (ira_reg_equiv[i].memory == NULL_RTX)
 			  {
 			    ira_reg_equiv[i].defined_p = false;
+			    ira_reg_equiv[i].caller_save_p = false;
 			    ira_reg_equiv[i].init_insns = NULL;
 			    break;
 			  }
@@ -4188,6 +4205,7 @@ setup_reg_equiv (void)
 	      }
 	  }
 	ira_reg_equiv[i].defined_p = false;
+	ira_reg_equiv[i].caller_save_p = false;
 	ira_reg_equiv[i].init_insns = NULL;
 	break;
       }
@@ -5609,12 +5627,16 @@ ira (FILE *f)
     if (DF_REG_DEF_COUNT (i) || DF_REG_USE_COUNT (i))
       num_used_regs++;
 
-  /* If there are too many pseudos and/or basic blocks (e.g. 10K
-     pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
-     use simplified and faster algorithms in LRA.  */
+  /* If there are too many pseudos and/or basic blocks (e.g. 10K pseudos and
+     10K blocks or 100K pseudos and 1K blocks) or we have too many function
+     insns, we will use simplified and faster algorithms in LRA.  */
   lra_simple_p
-    = ira_use_lra_p
-      && num_used_regs >= (1U << 26) / last_basic_block_for_fn (cfun);
+    = (ira_use_lra_p
+       && (num_used_regs >= (1U << 26) / last_basic_block_for_fn (cfun)
+           /* max uid is a good evaluation of the number of insns as most
+              optimizations are done on tree-SSA level.  */
+           || ((uint64_t) get_max_uid ()
+	       > (uint64_t) param_ira_simple_lra_insn_threshold * 1000)));
 
   if (lra_simple_p)
     {

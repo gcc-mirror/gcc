@@ -426,6 +426,7 @@ public:
   inline tree op1 () const { return name1; }
   inline tree op2 () const { return name2; }
 
+  relation_trio create_trio (tree lhs, tree op1, tree op2);
   bool union_ (value_relation &p);
   bool intersect (value_relation &p);
   void negate ();

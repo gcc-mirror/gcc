@@ -1,3 +1,391 @@
+2023-02-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108135
+	* gm2-compiler/M2Search.mod (DSdbEnter): Comment out.
+	(DSdbExit): Comment out.
+
+2023-02-06  Co-Authored by: Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR modula2/107234
+	* m2pp.cc (m2pp_integer_cst): Use
+	HOST_WIDE_INT_PRINT_UNSIGNED as the format specifier.
+
+2023-02-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Preprocess.mod (BaseName): Comment out.
+	* gm2-lang.cc (opt): Remove.
+	* gm2spec.cc (add_include): Remove.
+	(full_libraries): Remove.
+	(concat_option): Remove.
+
+2023-02-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (TEXISRC): Remove m2/images/gnu.eps.
+	(RSTSRC): Remove m2/images/gnu.eps.
+	(doc/m2.dvi): Add $(objdir)/m2/images/gnu.eps.
+	(doc/m2.pdf): Add $(objdir)/m2/images/gnu.eps.
+	(M2_PDFFILES): New definition.
+	(m2.install-pdf): New rule.
+	(m2.pod): Add $(objdir)/m2/images/gnu.eps.
+	(m2.info): Add $(objdir)/m2/images/gnu.eps.
+	(m2.html): New rule.
+	(m2/gpl_v3_without_node.texi): New rule.
+	(plugin/m2rte$(soext)): Simplify mkinstalldirs.
+	(cc1gm2$(exeext)): Ditto.
+	(m2/stage1/cc1gm2$(exeext)): Ditto.
+	(m2/gm2-gcc/%.o): Ditto.
+	(m2/gm2-gcc/rtegraph.o): Ditto.
+	(m2/gm2-gcc/$(SRC_PREFIX)%.h): Ditto.
+	(m2/mc-boot/$(SRC_PREFIX)%.o):Ditto.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Ditto.
+	(m2/mc-boot/main.o): Ditto.
+	(m2/gm2-libs-boot/%.o):	Ditto.
+	(m2/gm2-libs-boot/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-libs-boot/RTcodummy.o): Ditto.
+	(m2/gm2-libs-boot/wrapc.o): Ditto.
+	(m2/gm2-libs-boot/M2LINK.o): Ditto.
+	(m2/gm2-libs-boot/UnixArgs.o): Ditto.
+	(m2/gm2-libs-boot/choosetemp.o): Ditto.
+	(m2/gm2-libs-boot/errno.o): Ditto.
+	(m2/gm2-libs-boot/dtoa.o): Ditto.
+	(m2/gm2-libs-boot/ldtoa.o): Ditto.
+	(m2/gm2-libs-boot/termios.o): Ditto.
+	(m2/gm2-libs-boot/SysExceptions.o): Ditto.
+	(m2/gm2-libs-boot/SysStorage.o): Ditto.
+	(m2/gm2-compiler-boot/M2GCCDeclare.o): Ditto.
+	(m2/gm2-compiler-boot/M2Error.o): Ditto.
+	(m2/gm2-compiler-boot/%.o): Ditto.
+	(m2/gm2-compiler-boot/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-compiler-boot/m2flex.o): Ditto.
+	(m2/gm2-compiler/m2flex.c): Ditto.
+	(m2/gm2-libiberty/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-compiler/%.o): Ditto.
+	(m2/gm2-compiler/m2flex.o): Ditto.
+	(m2/gm2-compiler/%.o): Ditto.
+	(m2/gm2-libs-iso/%.o): Ditto.
+	(m2/gm2-libs/gm2-libs-host.h): Ditto.
+	($(objdir)/m2/gm2-libs-min/SYSTEM.def): Ditto.
+	($(objdir)/m2/gm2-libs/SYSTEM.def): Ditto.
+	($(objdir)/m2/gm2-libs-iso/SYSTEM.def):	Ditto.
+	($(objdir)/m2/gm2-libs-coroutines/SYSTEM.def): Ditto.
+	(m2/gm2-compiler/gm2.a): Ditto.
+	(m2/gm2-libs-boot/libgm2.a): Ditto.
+	(m2/gm2-compiler-boot/gm2.a): Ditto.
+	(m2/boot-bin/mklink$(exeext)): Ditto.
+	(m2/gm2-compiler-boot/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-compiler/%.mod): Ditto.
+	(m2/gm2-compiler-boot/%.mod): Ditto.
+	(m2/pge-boot/%.o): Ditto.
+
+2023-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (GM2_FLAGS): Add -fno-return -Wreturn-type.
+	(GM2_ISO_FLAGS): Add -fno-return -Wreturn-type.
+	* Make-maintainer.in (GM2PATH): Split into separate -I components.
+	(MC-LIB-DEFS): Add RTentity.def.
+	(m2/boot-bin/mc-devel$(exeext)): Changed -I$(GM2PATH) to
+	$(GM2PATH).
+	(m2/boot-bin/mc-opt$(exeext)): Separate -I paths.
+	(m2/mc/decl.o): Separate -I paths.
+	(gm2-bootstrap): Separate -I paths.
+	(m2/mc-boot-gen/$(SRC_PREFIX)%.h): Separate -I paths.
+	(m2/mc-boot-gen/$(SRC_PREFIX)decl.c): Separate -I paths.
+	(m2/mc-boot-gen/$(SRC_PREFIX)%.c): Separate -I paths.
+	(gm2.verifyparanoid): Separate -I paths.
+	(gm2.verifystage12): Separate -I paths.
+	* gm2-compiler/M2ALU.mod (GetConstructorElement): Add default
+	Return NulSym.  Remove return from the error case.
+	* gm2-compiler/M2Base.mod (ComplexToScalar): Return RType
+	from the error case.
+	(MixMetaTypes):  Return MakeError as a default.
+	* gm2-compiler/M2GCCDeclare.mod (GetTypeMin): Return NulSym
+	from the error case.
+	(GetTypeMax): Return NulSym from the error case.
+	* gm2-compiler/M2GenGCC.mod (IsExportedGcc): Replace Assert
+	by InternalError.
+	* gm2-compiler/M2Quads.mod (GetItemPointedTo): Add InternalError.
+	(GetTypeMin): Add InternalError.
+	(GetTypeMax): Add InternalError.
+	* gm2-compiler/M2System.mod (InitSystem): Call
+	PutProcedureNoReturn on Throw.
+	* gm2-gcc/m2except.cc (m2except_InitExceptions): fn_throw_tree
+	declare as noreturn.  fn_rethrow_tree declare as noreturn.
+	* gm2-libs-coroutines/Debug.def (Halt): Add noreturn attribute.
+	* gm2-libs-coroutines/SYSTEM.def (THROW): Add noreturn attribute.
+	* gm2-libs-iso/ClientSocket.mod (dorbytes): Add return FALSE.
+	* gm2-libs-iso/EXCEPTIONS.def (RAISE): Add noreturn attribute.
+	* gm2-libs-iso/IOLink.def (RAISEdevException): Add noreturn attribute.
+	* gm2-libs-iso/M2RTS.def (HALT): Add noreturn attribute.
+	(Halt): Ditto.
+	(HaltC): Ditto.
+	(ErrorMessage): Ditto.
+	(AssignmentException): Ditto.
+	(ReturnException): Ditto.
+	(IncException): Ditto.
+	(DecException): Ditto.
+	(InclException): Ditto.
+	(ExclException): Ditto.
+	(ShiftException): Ditto.
+	(RotateException): Ditto.
+	(StaticArraySubscriptException): Ditto.
+	(DynamicArraySubscriptException): Ditto.
+	(ForLoopBeginException): Ditto.
+	(ForLoopToException): Ditto.
+	(ForLoopEndException): Ditto.
+	(PointerNilException): Ditto.
+	(NoReturnException): Ditto.
+	(CaseException): Ditto.
+	(WholeNonPosDivException): Ditto.
+	(WholeNonPosModException): Ditto.
+	(WholeZeroDivException): Ditto.
+	(WholeZeroRemException): Ditto.
+	(WholeValueException): Ditto.
+	(RealValueException): Ditto.
+	(ParameterException): Ditto.
+	(NoException): Ditto.
+	* gm2-libs-iso/SYSTEM.def (THROW): Ditto.
+	* gm2-libs-iso/TermFile.mod (dorbytes): Add default return FALSE.
+	* gm2-libs-min/M2RTS.def: Add noreturn attribute.
+	* gm2-libs/FIO.mod (BufferedRead): Return -1.
+	(getFileName): Return NIL.
+	(getFileNameLength): Return 0.
+	* gm2-libs/M2RTS.def (HaltC): Add noreturn attribute.
+	(AssignmentException): Ditto.
+	(ReturnException): Ditto.
+	(IncException): Ditto.
+	(DecException): Ditto.
+	(InclException): Ditto.
+	(ExclException): Ditto.
+	(ShiftException): Ditto.
+	(RotateException): Ditto.
+	(StaticArraySubscriptException): Ditto.
+	(DynamicArraySubscriptException): Ditto.
+	(ForLoopBeginException): Ditto.
+	(ForLoopToException): Ditto.
+	(ForLoopEndException): Ditto.
+	(PointerNilException): Ditto.
+	(NoReturnException): Ditto.
+	(CaseException): Ditto.
+	(WholeNonPosDivException): Ditto.
+	(WholeNonPosModException): Ditto.
+	(WholeZeroDivException): Ditto.
+	(WholeZeroRemException): Ditto.
+	(WholeValueException): Ditto.
+	(RealValueException): Ditto.
+	(ParameterException): Ditto.
+	(NoException): Ditto.
+	* gm2-libs/RTExceptions.def (Raise): Ditto.
+	* gm2-libs/RTExceptions.mod (InvokeHandler): Ditto.
+	* gm2-libs/SYSTEM.def (THROW): Ditto.
+	* m2.flex (_M2_m2flex_fini): Remamed to...
+	(_M2_m2flex_finish): ...here.
+	* mc-boot-ch/GBuiltins.c (_M2_Builtins_finish): Remamed to...
+	(_M2_Builtins_fini): ...this.
+	* mc-boot-ch/GRTco.c (_M2_RTco_finish): Remamed to...
+	(_M2_RTco_fini): ...this.
+	* mc-boot-ch/GSYSTEM.c (_M2_SYSTEM_finish): Remamed to...
+	(_M2_SYSTEM_fini): ...this.
+	* mc-boot-ch/GSelective.c (_M2_Selective_finish): Remamed to...
+	(_M2_Selective_fini): ...this.
+	* mc-boot-ch/GSysExceptions.c (_M2_SysExceptions_init): Add
+	parameters.
+	(_M2_SysExceptions_finish): Remamed to...
+	(_M2_SysExceptions_fini): ...this.
+	* mc-boot-ch/GUnixArgs.cc (_M2_UnixArgs_finish): Remamed to...
+	(_M2_UnixArgs_fini): ...this.
+	(_M2_UnixArgs_ctor::_M2_UnixArgs_ctor): Change parameter
+	to _M2_UnixArgs_fini.
+	* mc-boot-ch/Gdtoa.c (_M2_dtoa_finish): Remamed to...
+	(_M2_dtoa_fini): ...this.
+	* mc-boot-ch/Gerrno.c (_M2_errno_finish): Remamed to...
+	(_M2_errno_fini): ...this.
+	* mc-boot-ch/Gldtoa.c (_M2_ldtoa_finish): Remamed to...
+	(_M2_ldtoa_fini): ...this.
+	* mc-boot-ch/Gtermios.cc (_M2_termios_init): Add parameters.
+	(_M2_termios_finish): Remamed to...
+	(_M2_termios_fini): ...this.
+	* mc-boot-ch/Gwrapc.c (_M2_wrapc_init): Add parameters.
+	(_M2_wrapc_finish): Remamed to...
+	(_M2_wrapc_fini): ...this.
+	* mc-boot/GASCII.c: Rebuild.
+	* mc-boot/GArgs.c: Rebuild.
+	* mc-boot/GAssertion.c: Rebuild.
+	* mc-boot/GBreak.c: Rebuild.
+	* mc-boot/GCmdArgs.c: Rebuild.
+	* mc-boot/GDebug.c: Rebuild.
+	* mc-boot/GDynamicStrings.c: Rebuild.
+	* mc-boot/GEnvironment.c: Rebuild.
+	* mc-boot/GFIO.c: Rebuild.
+	* mc-boot/GFormatStrings.c: Rebuild.
+	* mc-boot/GFpuIO.c: Rebuild.
+	* mc-boot/GIO.c: Rebuild.
+	* mc-boot/GIndexing.c: Rebuild.
+	* mc-boot/GM2Dependent.c: Rebuild.
+	* mc-boot/GM2EXCEPTION.c: Rebuild.
+	* mc-boot/GM2RTS.c: Rebuild.
+	* mc-boot/GM2RTS.h: Rebuild.
+	* mc-boot/GMemUtils.c: Rebuild.
+	* mc-boot/GNumberIO.c: Rebuild.
+	* mc-boot/GPushBackInput.c: Rebuild.
+	* mc-boot/GRTExceptions.c: Rebuild.
+	* mc-boot/GRTExceptions.h: Rebuild.
+	* mc-boot/GRTco.h: Rebuild.
+	* mc-boot/GRTint.c: Rebuild.
+	* mc-boot/GSArgs.c: Rebuild.
+	* mc-boot/GSFIO.c: Rebuild.
+	* mc-boot/GStdIO.c: Rebuild.
+	* mc-boot/GStorage.c: Rebuild.
+	* mc-boot/GStrCase.c: Rebuild.
+	* mc-boot/GStrIO.c: Rebuild.
+	* mc-boot/GStrLib.c: Rebuild.
+	* mc-boot/GStringConvert.c: Rebuild.
+	* mc-boot/GSysStorage.c: Rebuild.
+	* mc-boot/GTimeString.c: Rebuild.
+	* mc-boot/Galists.c: Rebuild.
+	* mc-boot/Gdecl.c: Rebuild.
+	* mc-boot/Gkeyc.c: Rebuild.
+	* mc-boot/Glists.c: Rebuild.
+	* mc-boot/GmcComment.c: Rebuild.
+	* mc-boot/GmcComp.c: Rebuild.
+	* mc-boot/GmcDebug.c: Rebuild.
+	* mc-boot/GmcError.c: Rebuild.
+	* mc-boot/GmcFileName.c: Rebuild.
+	* mc-boot/GmcLexBuf.c: Rebuild.
+	* mc-boot/GmcMetaError.c: Rebuild.
+	* mc-boot/GmcOptions.c: Rebuild.
+	* mc-boot/GmcPreprocess.c: Rebuild.
+	* mc-boot/GmcPretty.c: Rebuild.
+	* mc-boot/GmcPrintf.c: Rebuild.
+	* mc-boot/GmcQuiet.c: Rebuild.
+	* mc-boot/GmcReserved.c: Rebuild.
+	* mc-boot/GmcSearch.c: Rebuild.
+	* mc-boot/GmcStack.c: Rebuild.
+	* mc-boot/GmcStream.c: Rebuild.
+	* mc-boot/Gmcp1.c: Rebuild.
+	* mc-boot/Gmcp2.c: Rebuild.
+	* mc-boot/Gmcp3.c: Rebuild.
+	* mc-boot/Gmcp4.c: Rebuild.
+	* mc-boot/Gmcp5.c: Rebuild.
+	* mc-boot/GnameKey.c: Rebuild.
+	* mc-boot/GsymbolKey.c: Rebuild.
+	* mc-boot/Gtop.c: Rebuild.
+	* mc-boot/Gvarargs.c: Rebuild.
+	* mc-boot/Gwlists.c: Rebuild.
+	* mc-boot/GRTentity.h: New file.
+	* mc/decl.mod (scaffoldStatic): Change _finish to _fini.
+	* mc/mc.flex (_M2_mcflex_fini): New function.
+	(_M2_mcflex_finish): Remove function.
+	* tools-src/mklink.c (GenerateFinishCalls): Change
+	_finish to _fini.
+	(GeneratePrototypes): Change _finish to _fini.
+
+2023-01-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (gm2-libs.texi-check): Rename
+	m2/gm2-libs-pim	to m2/gm2-libs-log.
+	* gm2-libs-pim/BitBlockOps.def: Moved to...
+	* gm2-libs-log/BitBlockOps.def: ...here.
+	* gm2-libs-pim/BitBlockOps.mod: Moved to...
+	* gm2-libs-log/BitBlockOps.mod: ...here.
+	* gm2-libs-pim/BitByteOps.def: Moved to...
+	* gm2-libs-log/BitByteOps.def: ...here.
+	* gm2-libs-pim/BitByteOps.mod: Moved to...
+	* gm2-libs-log/BitByteOps.mod: ...here.
+	* gm2-libs-pim/BitWordOps.def: Moved to...
+	* gm2-libs-log/BitWordOps.def: ...here.
+	* gm2-libs-pim/BitWordOps.mod: Moved to...
+	* gm2-libs-log/BitWordOps.mod: ...here.
+	* gm2-libs-pim/BlockOps.def: Moved to...
+	* gm2-libs-log/BlockOps.def: ...here.
+	* gm2-libs-pim/BlockOps.mod: Moved to...
+	* gm2-libs-log/BlockOps.mod: ...here.
+	* gm2-libs-pim/Break.c: Moved to...
+	* gm2-libs-log/Break.c: ...here.
+	* gm2-libs-pim/Break.def: Moved to...
+	* gm2-libs-log/Break.def: ...here.
+	* gm2-libs-pim/CardinalIO.def: Moved to...
+	* gm2-libs-log/CardinalIO.def: ...here.
+	* gm2-libs-pim/CardinalIO.mod: Moved to...
+	* gm2-libs-log/CardinalIO.mod: ...here.
+	* gm2-libs-pim/Conversions.def: Moved to...
+	* gm2-libs-log/Conversions.def: ...here.
+	* gm2-libs-pim/Conversions.mod: Moved to...
+	* gm2-libs-log/Conversions.mod: ...here.
+	* gm2-libs-pim/DebugPMD.def: Moved to...
+	* gm2-libs-log/DebugPMD.def: ...here.
+	* gm2-libs-pim/DebugPMD.mod: Moved to...
+	* gm2-libs-log/DebugPMD.mod: ...here.
+	* gm2-libs-pim/DebugTrace.def: Moved to...
+	* gm2-libs-log/DebugTrace.def: ...here.
+	* gm2-libs-pim/DebugTrace.mod: Moved to...
+	* gm2-libs-log/DebugTrace.mod: ...here.
+	* gm2-libs-pim/Delay.def: Moved to...
+	* gm2-libs-log/Delay.def: ...here.
+	* gm2-libs-pim/Delay.mod: Moved to...
+	* gm2-libs-log/Delay.mod: ...here.
+	* gm2-libs-pim/Display.def: Moved to...
+	* gm2-libs-log/Display.def: ...here.
+	* gm2-libs-pim/Display.mod: Moved to...
+	* gm2-libs-log/Display.mod: ...here.
+	* gm2-libs-pim/ErrorCode.def: Moved to...
+	* gm2-libs-log/ErrorCode.def: ...here.
+	* gm2-libs-pim/ErrorCode.mod: Moved to...
+	* gm2-libs-log/ErrorCode.mod: ...here.
+	* gm2-libs-pim/FileSystem.def: Moved to...
+	* gm2-libs-log/FileSystem.def: ...here.
+	* gm2-libs-pim/FileSystem.mod: Moved to...
+	* gm2-libs-log/FileSystem.mod: ...here.
+	* gm2-libs-pim/FloatingUtilities.def: Moved to...
+	* gm2-libs-log/FloatingUtilities.def: ...here.
+	* gm2-libs-pim/FloatingUtilities.mod: Moved to...
+	* gm2-libs-log/FloatingUtilities.mod: ...here.
+	* gm2-libs-pim/InOut.def: Moved to...
+	* gm2-libs-log/InOut.def: ...here.
+	* gm2-libs-pim/InOut.mod: Moved to...
+	* gm2-libs-log/InOut.mod: ...here.
+	* gm2-libs-pim/Keyboard.def: Moved to...
+	* gm2-libs-log/Keyboard.def: ...here.
+	* gm2-libs-pim/Keyboard.mod: Moved to...
+	* gm2-libs-log/Keyboard.mod: ...here.
+	* gm2-libs-pim/LongIO.def: Moved to...
+	* gm2-libs-log/LongIO.def: ...here.
+	* gm2-libs-pim/LongIO.mod: Moved to...
+	* gm2-libs-log/LongIO.mod: ...here.
+	* gm2-libs-pim/NumberConversion.def: Moved to...
+	* gm2-libs-log/NumberConversion.def: ...here.
+	* gm2-libs-pim/NumberConversion.mod: Moved to...
+	* gm2-libs-log/NumberConversion.mod: ...here.
+	* gm2-libs-pim/README.texi: Moved to...
+	* gm2-libs-log/README.texi: ...here.
+	* gm2-libs-pim/Random.def: Moved to...
+	* gm2-libs-log/Random.def: ...here.
+	* gm2-libs-pim/Random.mod: Moved to...
+	* gm2-libs-log/Random.mod: ...here.
+	* gm2-libs-pim/RealConversions.def: Moved to...
+	* gm2-libs-log/RealConversions.def: ...here.
+	* gm2-libs-pim/RealConversions.mod: Moved to...
+	* gm2-libs-log/RealConversions.mod: ...here.
+	* gm2-libs-pim/RealInOut.def: Moved to...
+	* gm2-libs-log/RealInOut.def: ...here.
+	* gm2-libs-pim/RealInOut.mod: Moved to...
+	* gm2-libs-log/RealInOut.mod: ...here.
+	* gm2-libs-pim/Strings.def: Moved to...
+	* gm2-libs-log/Strings.def: ...here.
+	* gm2-libs-pim/Strings.mod: Moved to...
+	* gm2-libs-log/Strings.mod: ...here.
+	* gm2-libs-pim/Termbase.def: Moved to...
+	* gm2-libs-log/Termbase.def: ...here.
+	* gm2-libs-pim/Termbase.mod: Moved to...
+	* gm2-libs-log/Termbase.mod: ...here.
+	* gm2-libs-pim/Terminal.def: Moved to...
+	* gm2-libs-log/Terminal.def: ...here.
+	* gm2-libs-pim/Terminal.mod: Moved to...
+	* gm2-libs-log/Terminal.mod: ...here.
+	* gm2-libs-pim/TimeDate.def: Moved to...
+	* gm2-libs-log/TimeDate.def: ...here.
+	* gm2-libs-pim/TimeDate.mod: Moved to...
+	* gm2-libs-log/TimeDate.mod: ...here.
+
 2023-01-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lang.opt: Claim Wreturn-type.

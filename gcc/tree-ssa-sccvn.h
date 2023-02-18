@@ -68,7 +68,7 @@ typedef const struct vn_nary_op_s *const_vn_nary_op_t;
 
 /* Return the size of a vn_nary_op_t with LENGTH operands.  */
 
-static inline size_t
+inline size_t
 sizeof_vn_nary_op (unsigned int length)
 {
   return sizeof (struct vn_nary_op_s) + sizeof (tree) * length - sizeof (tree);
@@ -166,7 +166,7 @@ enum vn_kind vn_get_stmt_kind (gimple *);
 /* Hash the type TYPE using bits that distinguishes it in the
    types_compatible_p sense.  */
 
-static inline hashval_t
+inline hashval_t
 vn_hash_type (tree type)
 {
   return (INTEGRAL_TYPE_P (type)
@@ -177,7 +177,7 @@ vn_hash_type (tree type)
 /* Hash the constant CONSTANT with distinguishing type incompatible
    constants in the types_compatible_p sense.  */
 
-static inline hashval_t
+inline hashval_t
 vn_hash_constant_with_type (tree constant)
 {
   inchash::hash hstate;
@@ -189,7 +189,7 @@ vn_hash_constant_with_type (tree constant)
 /* Compare the constants C1 and C2 with distinguishing type incompatible
    constants in the types_compatible_p sense.  */
 
-static inline bool
+inline bool
 vn_constant_eq_with_type (tree c1, tree c2)
 {
   return (expressions_equal_p (c1, c2)
@@ -286,7 +286,7 @@ unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 
 /* Return true if V is a value id for a constant.  */
-static inline bool
+inline bool
 value_id_constant_p (unsigned int v)
 {
   return (int)v < 0;

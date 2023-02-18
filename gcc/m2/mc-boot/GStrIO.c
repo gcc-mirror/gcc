@@ -272,6 +272,6 @@ extern "C" void _M2_StrIO_init (__attribute__((unused)) int argc,__attribute__((
   IsATTY = FALSE;
 }
 
-extern "C" void _M2_StrIO_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StrIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

@@ -1177,6 +1177,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"f", &gcc_options::x_target_flags, MASK_HARD_FLOAT},
   {"d", &gcc_options::x_target_flags, MASK_DOUBLE_FLOAT},
   {"c", &gcc_options::x_target_flags, MASK_RVC},
+  {"v", &gcc_options::x_target_flags, MASK_FULL_V},
   {"v", &gcc_options::x_target_flags, MASK_VECTOR},
 
   {"zicsr",    &gcc_options::x_riscv_zi_subext, MASK_ZICSR},
@@ -1700,7 +1701,10 @@ riscv_compute_multilib (
 
       /* Record highest match score multi-lib setting.  */
       if (match_score > max_match_score)
-	best_match_multi_lib = i;
+	{
+	  best_match_multi_lib = i;
+	  max_match_score = match_score;
+	}
     }
 
   if (best_match_multi_lib == -1)

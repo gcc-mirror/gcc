@@ -1075,6 +1075,6 @@ extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute
   projectContents = DynamicStrings_InitString ((const char *) "GNU Modula-2", 12);
 }
 
-extern "C" void _M2_mcOptions_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcOptions_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

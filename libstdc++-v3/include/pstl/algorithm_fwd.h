@@ -364,17 +364,17 @@ __brick_search_n(_ForwardIterator, _ForwardIterator, _Size, const _Tp&, _BinaryP
                  /*vector=*/std::true_type) noexcept;
 
 template <class _ExecutionPolicy, class _ForwardIterator, class _Size, class _Tp, class _BinaryPredicate,
-          class IsVector>
+          class _IsVector>
 _ForwardIterator
 __pattern_search_n(_ExecutionPolicy&&, _ForwardIterator, _ForwardIterator, _Size, const _Tp&, _BinaryPredicate,
-                   IsVector,
+		   _IsVector,
                    /*is_parallel=*/std::false_type) noexcept;
 
 template <class _ExecutionPolicy, class _RandomAccessIterator, class _Size, class _Tp, class _BinaryPredicate,
-          class IsVector>
+          class _IsVector>
 _RandomAccessIterator
 __pattern_search_n(_ExecutionPolicy&&, _RandomAccessIterator, _RandomAccessIterator, _Size, const _Tp&,
-                   _BinaryPredicate, IsVector,
+                   _BinaryPredicate, _IsVector,
                    /*is_parallel=*/std::true_type) noexcept;
 
 //------------------------------------------------------------------------
@@ -528,8 +528,8 @@ __pattern_unique(_ExecutionPolicy&&, _ForwardIterator, _ForwardIterator, _Binary
 // unique_copy
 //------------------------------------------------------------------------
 
-template <class _ForwardIterator, class OutputIterator, class _BinaryPredicate>
-OutputIterator __brick_unique_copy(_ForwardIterator, _ForwardIterator, OutputIterator, _BinaryPredicate,
+template <class _ForwardIterator, class _OutputIterator, class _BinaryPredicate>
+  _OutputIterator __brick_unique_copy(_ForwardIterator, _ForwardIterator, _OutputIterator, _BinaryPredicate,
                                    /*vector=*/std::false_type) noexcept;
 
 template <class _RandomAccessIterator, class _OutputIterator, class _BinaryPredicate>
@@ -823,12 +823,12 @@ __pattern_partial_sort_copy(_ExecutionPolicy&&, _ForwardIterator, _ForwardIterat
 template <class _ForwardIterator, class _BinaryPredicate>
 _ForwardIterator
 __brick_adjacent_find(_ForwardIterator, _ForwardIterator, _BinaryPredicate,
-                      /* IsVector = */ std::true_type, bool) noexcept;
+                      /* _IsVector = */ std::true_type, bool) noexcept;
 
 template <class _ForwardIterator, class _BinaryPredicate>
 _ForwardIterator
 __brick_adjacent_find(_ForwardIterator, _ForwardIterator, _BinaryPredicate,
-                      /* IsVector = */ std::false_type, bool) noexcept;
+                      /* _IsVector = */ std::false_type, bool) noexcept;
 
 template <class _ExecutionPolicy, class _ForwardIterator, class _BinaryPredicate, class _IsVector>
 _ForwardIterator
@@ -920,22 +920,22 @@ _ForwardIterator
 __pattern_generate(_ExecutionPolicy&&, _ForwardIterator, _ForwardIterator, _Generator,
                    /*is_parallel=*/std::true_type, _IsVector);
 
-template <class OutputIterator, class Size, class _Generator>
-OutputIterator __brick_generate_n(OutputIterator, Size, _Generator,
+template <class _OutputIterator, class _Size, class _Generator>
+  _OutputIterator __brick_generate_n(_OutputIterator, _Size, _Generator,
                                   /* is_vector = */ std::true_type) noexcept;
 
-template <class OutputIterator, class Size, class _Generator>
-OutputIterator __brick_generate_n(OutputIterator, Size, _Generator,
+template <class _OutputIterator, class _Size, class _Generator>
+  _OutputIterator __brick_generate_n(_OutputIterator, _Size, _Generator,
                                   /* is_vector = */ std::false_type) noexcept;
 
-template <class _ExecutionPolicy, class OutputIterator, class Size, class _Generator, class _IsVector>
-OutputIterator
-__pattern_generate_n(_ExecutionPolicy&&, OutputIterator, Size, _Generator,
+template <class _ExecutionPolicy, class _OutputIterator, class _Size, class _Generator, class _IsVector>
+  _OutputIterator
+__pattern_generate_n(_ExecutionPolicy&&, _OutputIterator, _Size, _Generator,
                      /*is_parallel=*/std::false_type, _IsVector) noexcept;
 
-template <class _ExecutionPolicy, class OutputIterator, class Size, class _Generator, class _IsVector>
-OutputIterator
-__pattern_generate_n(_ExecutionPolicy&&, OutputIterator, Size, _Generator,
+template <class _ExecutionPolicy, class _OutputIterator, class _Size, class _Generator, class _IsVector>
+  _OutputIterator
+__pattern_generate_n(_ExecutionPolicy&&, _OutputIterator, _Size, _Generator,
                      /*is_parallel=*/std::true_type, _IsVector);
 
 //------------------------------------------------------------------------

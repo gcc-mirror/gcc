@@ -953,9 +953,15 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
     {
       gsym = gfc_find_gsymbol (gfc_gsym_root, csym->name);
       if (gsym && (gsym->type == GSYM_MODULE || gsym->type == GSYM_PROGRAM))
-	gfc_error_now ("Global entity %qs at %L cannot appear in a "
-			"COMMON block at %L", gsym->name,
-			&gsym->where, &csym->common_block->where);
+	{
+	  if (csym->common_block)
+	    gfc_error_now ("Global entity %qs at %L cannot appear in a "
+			   "COMMON block at %L", gsym->name,
+			   &gsym->where, &csym->common_block->where);
+	  else
+	    gfc_error_now ("Global entity %qs at %L cannot appear in a "
+			   "COMMON block", gsym->name, &gsym->where);
+	}
 
       /* gfc_add_in_common may have been called before, but the reported errors
 	 have been ignored to continue parsing.
@@ -1664,9 +1670,11 @@ check_assumed_size_reference (gfc_symbol *sym, gfc_expr *e)
 
   /* FIXME: The comparison "e->ref->u.ar.type == AR_FULL" is wrong.
      What should it be?  */
-  if (e->ref && (e->ref->u.ar.end[e->ref->u.ar.as->rank - 1] == NULL)
-	  && (e->ref->u.ar.as->type == AS_ASSUMED_SIZE)
-	       && (e->ref->u.ar.type == AR_FULL))
+  if (e->ref
+      && e->ref->u.ar.as
+      && (e->ref->u.ar.end[e->ref->u.ar.as->rank - 1] == NULL)
+      && (e->ref->u.ar.as->type == AS_ASSUMED_SIZE)
+      && (e->ref->u.ar.type == AR_FULL))
     {
       gfc_error ("The upper bound in the last dimension must "
 		 "appear in the reference to the assumed size "
@@ -11917,9 +11925,14 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      break;
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_MASKED_TASKLOOP:
+	    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+	    case EXEC_OMP_MASTER_TASKLOOP:
+	    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_PARALLEL_LOOP:
 	    case EXEC_OMP_PARALLEL_MASKED:
 	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
 	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
@@ -11930,11 +11943,13 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_LOOP:
 	    case EXEC_OMP_TASK:
 	    case EXEC_OMP_TASKLOOP:
 	    case EXEC_OMP_TASKLOOP_SIMD:
@@ -11943,6 +11958,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TEAMS_LOOP:
 	      omp_workshare_save = omp_workshare_flag;
 	      omp_workshare_flag = 0;
 	      gfc_resolve_omp_parallel_blocks (code, ns);
@@ -11951,6 +11967,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_DO:
 	    case EXEC_OMP_DO_SIMD:
+	    case EXEC_OMP_LOOP:
 	    case EXEC_OMP_SIMD:
 	    case EXEC_OMP_TARGET_SIMD:
 	      gfc_resolve_omp_do_blocks (code, ns);

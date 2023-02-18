@@ -40,4 +40,10 @@
       </td></tr><tr><td align="left"><code class="literal">-fopenmp</code></td><td align="left">For <a class="link" href="parallel_mode.html" title="Chapter 18. Parallel Mode">parallel</a> mode.</td></tr><tr><td align="left"><code class="literal">-ltbb</code></td><td align="left">Linking to tbb (Thread Building Blocks) is required for use of the
         Parallel Standard Algorithms and execution policies in
         <code class="filename">&lt;execution&gt;</code>.
+      </td></tr><tr><td align="left"><code class="literal">-ffreestanding</code></td><td align="left">
+	Limits the library to its freestanding subset.  Headers that are
+	not supported in freestanding will emit a "This header is not available
+	in freestanding mode" error.
+	Headers that are in the freestanding subset partially will not expose
+	functionality that is not part of the freestanding subset.
       </td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="make.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="intro.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_headers.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Make </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Headers</td></tr></table></div></body></html>

@@ -84,19 +84,19 @@ extern rtx convert_wider_int_to_float (machine_mode mode, machine_mode imode,
 extern rtx emit_block_op_via_libcall (enum built_in_function, rtx, rtx, rtx,
 				      bool);
 
-static inline rtx
+inline rtx
 emit_block_copy_via_libcall (rtx dst, rtx src, rtx size, bool tailcall = false)
 {
   return emit_block_op_via_libcall (BUILT_IN_MEMCPY, dst, src, size, tailcall);
 }
 
-static inline rtx
+inline rtx
 emit_block_move_via_libcall (rtx dst, rtx src, rtx size, bool tailcall = false)
 {
   return emit_block_op_via_libcall (BUILT_IN_MEMMOVE, dst, src, size, tailcall);
 }
 
-static inline rtx
+inline rtx
 emit_block_comp_via_libcall (rtx dst, rtx src, rtx size, bool tailcall = false)
 {
   return emit_block_op_via_libcall (BUILT_IN_MEMCMP, dst, src, size, tailcall);
@@ -178,14 +178,14 @@ extern void clobber_reg_mode (rtx *, rtx, machine_mode);
 extern rtx copy_blkmode_to_reg (machine_mode, tree);
 
 /* Mark REG as holding a parameter for the next CALL_INSN.  */
-static inline void
+inline void
 use_reg (rtx *fusage, rtx reg)
 {
   use_reg_mode (fusage, reg, VOIDmode);
 }
 
 /* Mark REG as clobbered by the call with FUSAGE as CALL_INSN_FUNCTION_USAGE.  */
-static inline void
+inline void
 clobber_reg (rtx *fusage, rtx reg)
 {
   clobber_reg_mode (fusage, reg, VOIDmode);
@@ -303,14 +303,14 @@ extern rtx expand_expr_real_2 (sepops, rtx, machine_mode,
 /* Generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
    In the case of a void EXP, const0_rtx is returned.  */
-static inline rtx
+inline rtx
 expand_expr (tree exp, rtx target, machine_mode mode,
 	     enum expand_modifier modifier)
 {
   return expand_expr_real (exp, target, mode, modifier, NULL, false);
 }
 
-static inline rtx
+inline rtx
 expand_normal (tree exp)
 {
   return expand_expr_real (exp, NULL_RTX, VOIDmode, EXPAND_NORMAL, NULL, false);

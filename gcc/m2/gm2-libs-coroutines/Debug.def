@@ -51,7 +51,7 @@ TYPE
 PROCEDURE Halt (File    : ARRAY OF CHAR;
                 LineNo  : CARDINAL;
                 Function,
-                Message : ARRAY OF CHAR) ;
+                Message : ARRAY OF CHAR) <* noreturn *> ;
 
 
 (*

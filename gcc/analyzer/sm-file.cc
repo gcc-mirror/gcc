@@ -560,7 +560,11 @@ public:
   }
 };
 
-/* Handler for "fread"".  */
+/* Handler for "fread".
+     size_t fread(void *restrict buffer, size_t size, size_t count,
+		  FILE *restrict stream);
+   See e.g. https://en.cppreference.com/w/c/io/fread
+   and https://www.man7.org/linux/man-pages/man3/fread.3.html */
 
 class kf_fread : public known_function
 {
@@ -574,6 +578,10 @@ public:
 	    && cd.arg_is_pointer_p (3));
   }
 
+  /* For now, assume that any call to "fread" fully clobbers the buffer
+     passed in.  This isn't quite correct (e.g. errors, partial reads;
+     see PR analyzer/108689), but at least stops us falsely complaining
+     about the buffer being uninitialized.  */
   void impl_call_pre (const call_details &cd) const final override
   {
     region_model *model = cd.get_model ();

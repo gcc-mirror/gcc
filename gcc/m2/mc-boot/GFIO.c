@@ -2322,7 +2322,7 @@ extern "C" void _M2_FIO_init (__attribute__((unused)) int argc,__attribute__((un
   Init ();
 }
 
-extern "C" void _M2_FIO_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_FIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   FIO_FlushOutErr ();
 }

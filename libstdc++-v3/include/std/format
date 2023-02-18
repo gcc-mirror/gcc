@@ -2757,6 +2757,10 @@ namespace __format
 	}
       };
 
+  // [format.arg.store], class template format-arg-store
+  template<typename _Context, typename... _Args>
+    class _Arg_store;
+
 } // namespace __format
 /// @endcond
 
@@ -2832,6 +2836,9 @@ namespace __format
     private:
       template<typename _Ctx>
 	friend class basic_format_args;
+
+      template<typename _Ctx, typename... _Args>
+	friend class __format::_Arg_store;
 
       static_assert(is_trivially_copyable_v<__format::_Arg_value<_Context>>);
 
@@ -3150,11 +3157,11 @@ namespace __format
 
       static_assert( __format::_Arg_max_ <= (1 << _S_packed_type_bits) );
 
-      // [format.arg.store], class template format-arg-store
-      // XXX: Should this be defined outside the class, so basic_format_args
-      // can use CTAD with a _Store argument?
       template<typename... _Args>
-	class _Store;
+	using _Store = __format::_Arg_store<_Context, _Args...>;
+
+      template<typename _Ctx, typename... _Args>
+	friend class __format::_Arg_store;
 
       using uint64_t = __UINT64_TYPE__;
       using _Format_arg = basic_format_arg<_Context>;
@@ -3215,52 +3222,60 @@ namespace __format
       }
     };
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3810. CTAD for std::basic_format_args
+  template<typename _Context, typename... _Args>
+    basic_format_args(__format::_Arg_store<_Context, _Args...>)
+      -> basic_format_args<_Context>;
+
+  template<typename _Context, typename... _Args>
+    auto
+    make_format_args(_Args&&... __fmt_args) noexcept;
+
   // An array of type-erased formatting arguments.
+  template<typename _Context, typename... _Args>
+    class __format::_Arg_store
+    {
+      friend std::basic_format_args<_Context>;
+
+      template<typename _Ctx, typename... _Argz>
+	friend auto
+	std::make_format_args(_Argz&&...) noexcept;
+
+      // For a sufficiently small number of arguments we only store values.
+      // basic_format_args can get the types from the _Args pack.
+      static constexpr bool _S_values_only
+	= sizeof...(_Args) <= basic_format_args<_Context>::_S_max_packed_args;
+
+      using _Element_t
+	= __conditional_t<_S_values_only,
+			  __format::_Arg_value<_Context>,
+			  basic_format_arg<_Context>>;
+
+      _Element_t _M_args[sizeof...(_Args)];
+
+      template<typename _Tp>
+	static _Element_t
+	_S_make_elt(_Tp& __v)
+	{
+	  basic_format_arg<_Context> __arg(__v);
+	  if constexpr (_S_values_only)
+	    return __arg._M_val;
+	  else
+	    return __arg;
+	}
+
+      template<typename... _Tp>
+	requires (sizeof...(_Tp) == sizeof...(_Args))
+	[[__gnu__::__always_inline__]]
+	_Arg_store(_Tp&... __a) noexcept
+	: _M_args{_S_make_elt(__a)...}
+	{ }
+    };
+
   template<typename _Context>
-    template<typename... _Args>
-      class basic_format_args<_Context>::_Store
-      {
-	friend class basic_format_args;
-
-	template<typename _Ctx, typename... _Argz>
-	  friend auto
-	  make_format_args(_Argz&&...) noexcept;
-
-	// For a sufficiently small number of arguments we only store values.
-	// basic_format_args can get the types from the _Args pack.
-	static constexpr bool _S_values_only
-	  = sizeof...(_Args) <= _S_max_packed_args;
-
-	using _Element_t
-	  = __conditional_t<_S_values_only,
-			    __format::_Arg_value<_Context>,
-			    basic_format_arg<_Context>>;
-
-	_Element_t _M_args[sizeof...(_Args)];
-
-	template<typename _Tp>
-	  static _Element_t
-	  _S_make_elt(_Tp& __v)
-	  {
-	    basic_format_arg<_Context> __arg(__v);
-	    if constexpr (_S_values_only)
-	      return __arg._M_val;
-	    else
-	      return __arg;
-	  }
-
-	template<typename... _Tp>
-	  requires (sizeof...(_Tp) == sizeof...(_Args))
-	  [[__gnu__::__always_inline__]]
-	  _Store(_Tp&... __a) noexcept
-	  : _M_args{_S_make_elt(__a)...}
-	  { }
-      };
-
-  template<typename _Context>
-    template<typename... _Args> requires (sizeof...(_Args) == 0)
-      class basic_format_args<_Context>::_Store<_Args...>
-      { };
+    class __format::_Arg_store<_Context>
+    { };
 
   template<typename _Context>
     template<typename... _Args>
@@ -3300,10 +3315,8 @@ namespace __format
     inline auto
     make_format_args(_Args&&... __fmt_args) noexcept
     {
-      using _Fmt_args = basic_format_args<_Context>;
       using _Fmt_arg = basic_format_arg<_Context>;
-      using _Store = typename _Fmt_args::template
-		     _Store<typename _Fmt_arg::template
+      using _Store = __format::_Arg_store<_Context, typename _Fmt_arg::template
 		     _Normalize<remove_reference_t<_Args>>...>;
       return _Store(__fmt_args...);
     }

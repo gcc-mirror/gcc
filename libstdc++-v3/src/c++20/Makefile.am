@@ -53,7 +53,11 @@ tzdb.o: tzdb.cc tzdata.zi.h
 	$(CXXCOMPILE) -I. -c $<
 endif
 
+if GLIBCXX_HOSTED
 libc__20convenience_la_SOURCES = $(sources)  $(inst_sources)
+else
+libc__20convenience_la_SOURCES =
+endif
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

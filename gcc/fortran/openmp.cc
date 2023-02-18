@@ -7392,11 +7392,12 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      || n->u.align->ts.type != BT_INTEGER
 	      || n->u.align->rank != 0
 	      || gfc_extract_int (n->u.align, &alignment)
-	      || alignment <= 0)
+	      || alignment <= 0
+	      || !pow2p_hwi (alignment))
 	    {
-	      gfc_error ("ALIGN modifier requires a scalar positive "
-			 "constant integer alignment expression at %L",
-			 &n->u.align->where);
+	      gfc_error ("ALIGN modifier requires at %L a scalar positive "
+			 "constant integer alignment expression that is a "
+			 "power of two", &n->u.align->where);
 	      break;
 	    }
 	}
@@ -9124,28 +9125,32 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
     {
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
-    case EXEC_OMP_PARALLEL_DO:
-    case EXEC_OMP_PARALLEL_DO_SIMD:
-    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
-    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
-    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
-    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_MASKED_TASKLOOP:
     case EXEC_OMP_MASKED_TASKLOOP_SIMD:
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+    case EXEC_OMP_PARALLEL_DO:
+    case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_LOOP:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_TARGET_PARALLEL_DO:
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_PARALLEL_LOOP:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TARGET_TEAMS_LOOP:
     case EXEC_OMP_TASKLOOP:
     case EXEC_OMP_TASKLOOP_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TEAMS_LOOP:
       gfc_resolve_omp_do_blocks (code, ns);
       break;
     default:
@@ -9224,6 +9229,7 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym, bool add_clause)
 
       p = gfc_get_omp_namelist ();
       p->sym = sym;
+      p->where = omp_current_ctx->code->loc;
       p->next = omp_clauses->lists[OMP_LIST_PRIVATE];
       omp_clauses->lists[OMP_LIST_PRIVATE] = p;
     }

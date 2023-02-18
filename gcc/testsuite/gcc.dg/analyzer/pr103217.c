@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+
 extern char *strdup (const char *__s)
   __attribute__ ((__nothrow__ , __leaf__, __malloc__, __nonnull__ (1)));
 

@@ -141,7 +141,7 @@ using insn_call_clobbers_tree = default_splay_tree<insn_call_clobbers_note *>;
 // of "notes", a bit like REG_NOTES for the underlying RTL insns.
 class insn_info
 {
-  // Size: 8 LP64 words.
+  // Size: 9 LP64 words.
   friend class ebb_info;
   friend class function_info;
 
@@ -401,10 +401,11 @@ private:
   // The number of definitions and the number uses.  FIRST_PSEUDO_REGISTER + 1
   // is the maximum number of accesses to hard registers and memory, and
   // MAX_RECOG_OPERANDS is the maximum number of pseudos that can be
-  // defined by an instruction, so the number of definitions should fit
-  // easily in 16 bits.
+  // defined by an instruction, so the number of definitions in a real
+  // instruction should fit easily in 16 bits.  However, there are no
+  // limits on the number of definitions in artifical instructions.
   unsigned int m_num_uses;
-  unsigned int m_num_defs : 16;
+  unsigned int m_num_defs;
 
   // Flags returned by the accessors above.
   unsigned int m_is_debug_insn : 1;
@@ -414,7 +415,7 @@ private:
   unsigned int m_has_volatile_refs : 1;
 
   // For future expansion.
-  unsigned int m_spare : 11;
+  unsigned int m_spare : 27;
 
   // The program point at which the instruction occurs.
   //
@@ -430,6 +431,9 @@ private:
   // For artificial instructions: the (negative) unique identifier of the
   // instruction.
   mutable int m_cost_or_uid;
+
+  // On LP64 systems, there's a gap here that could be used for future
+  // expansion.
 
   // The list of notes that have been attached to the instruction.
   insn_note *m_first_note;

@@ -192,8 +192,8 @@ The OpenMP 4.5 specification is fully supported.
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab complete but no non-host devices provides @code{unified_address},
-      @code{unified_shared_memory} or @code{reverse_offload}
+      @tab complete but no non-host devices provides @code{unified_address} or
+      @code{unified_shared_memory}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
 @item Non-rectangular loop nests @tab P @tab Full support for C/C++, partial for Fortran
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
@@ -227,8 +227,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{allocate} directive @tab N @tab
 @item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
-@item @code{ancestor} modifier on @code{device} clause
-      @tab Y @tab See comment for @code{requires}
+@item @code{ancestor} modifier on @code{device} clause @tab Y @tab
 @item Implicit declare target directive @tab Y @tab
 @item Discontiguous array section with @code{target update} construct
       @tab N @tab
@@ -288,7 +287,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{append_args} @tab N @tab
 @item @code{dispatch} construct @tab N @tab
 @item device-specific ICV settings with environment variables @tab Y @tab
-@item @code{assume} directive @tab Y @tab
+@item @code{assume} and @code{assumes} directives @tab Y @tab
 @item @code{nothing} directive @tab Y @tab
 @item @code{error} directive @tab Y @tab
 @item @code{masked} construct @tab Y @tab
@@ -351,7 +350,7 @@ The OpenMP 4.5 specification is fully supported.
 to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item For Fortran, diagnose placing declarative before/between @code{USE},
       @code{IMPORT}, and @code{IMPLICIT} as invalid @tab N @tab
-@item Optional comma beween directive and clause in the @code{#pragma} form @tab Y @tab
+@item Optional comma between directive and clause in the @code{#pragma} form @tab Y @tab
 @item @code{indirect} clause in @code{declare target} @tab N @tab
 @item @code{device_type(nohost)}/@code{device_type(host)} for variables @tab N @tab
 @end multitable
@@ -469,8 +468,7 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item @code{omp_curr_progress_width} identifier @tab N @tab
 @item @code{safesync} clause to the @code{parallel} construct @tab N @tab
 @item @code{omp_get_max_progress_width} runtime routine @tab N @tab
-@item @code{strict} modifier keyword to @code{num_threads}, @code{num_tasks}
-      and @code{grainsize} @tab N @tab
+@item @code{strict} modifier keyword to @code{num_threads} @tab N @tab
 @item @code{memscope} clause to @code{atomic} and @code{flush} @tab N @tab
 @item Routines for obtaining memory spaces/allocators for shared/device memory
       @tab N @tab
@@ -526,7 +524,7 @@ linkage, and do not throw exceptions.
 * omp_get_num_procs::           Number of processors online
 * omp_get_num_teams::           Number of teams
 * omp_get_num_threads::         Size of the active team
-* omp_get_proc_bind::           Whether theads may be moved between CPUs
+* omp_get_proc_bind::           Whether threads may be moved between CPUs
 * omp_get_schedule::            Obtain the runtime scheduling method
 * omp_get_supported_active_levels:: Maximum number of active regions supported
 * omp_get_team_num::            Get team number
@@ -1033,7 +1031,7 @@ one thread per CPU online is used.
 
 
 @node omp_get_proc_bind
-@section @code{omp_get_proc_bind} -- Whether theads may be moved between CPUs
+@section @code{omp_get_proc_bind} -- Whether threads may be moved between CPUs
 @table @asis
 @item @emph{Description}:
 This functions returns the currently active thread affinity policy, which is
@@ -1947,8 +1945,8 @@ beginning with @env{GOMP_} are GNU extensions.
 * OMP_NESTED::              Nested parallel regions
 * OMP_NUM_TEAMS::           Specifies the number of teams to use by teams region
 * OMP_NUM_THREADS::         Specifies the number of threads to use
-* OMP_PROC_BIND::           Whether theads may be moved between CPUs
-* OMP_PLACES::              Specifies on which CPUs the theads should be placed
+* OMP_PROC_BIND::           Whether threads may be moved between CPUs
+* OMP_PLACES::              Specifies on which CPUs the threads should be placed
 * OMP_STACKSIZE::           Set default thread stack size
 * OMP_SCHEDULE::            How threads are scheduled
 * OMP_TARGET_OFFLOAD::      Controls offloading behaviour
@@ -2146,12 +2144,12 @@ nesting by default.  If undefined one thread per CPU is used.
 
 
 @node OMP_PROC_BIND
-@section @env{OMP_PROC_BIND} -- Whether theads may be moved between CPUs
+@section @env{OMP_PROC_BIND} -- Whether threads may be moved between CPUs
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
 Specifies whether threads may be moved between processors.  If set to
-@code{TRUE}, OpenMP theads should not be moved; if set to @code{FALSE}
+@code{TRUE}, OpenMP threads should not be moved; if set to @code{FALSE}
 they may be moved.  Alternatively, a comma separated list with the
 values @code{PRIMARY}, @code{MASTER}, @code{CLOSE} and @code{SPREAD} can
 be used to specify the thread affinity policy for the corresponding nesting
@@ -2176,7 +2174,7 @@ When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
 
 
 @node OMP_PLACES
-@section @env{OMP_PLACES} -- Specifies on which CPUs the theads should be placed
+@section @env{OMP_PLACES} -- Specifies on which CPUs the threads should be placed
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
@@ -3956,7 +3954,7 @@ same context.
 @section First invocation: OpenACC library API
 
 In this second use case (see below), a function in the OpenACC library is
-called prior to any of the functions in the CUBLAS library. More specificially,
+called prior to any of the functions in the CUBLAS library. More specifically,
 the function @code{acc_set_device_num()}.
 
 In the use case presented here, the function @code{acc_set_device_num()}
@@ -4456,6 +4454,13 @@ The implementation remark:
 @item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
       using the C library @code{printf} functions and the Fortran
       @code{print}/@code{write} statements.
+@item Reverse offload (i.e. @code{target} regions with
+      @code{device(ancestor:1)}) are processed serially per @code{target} region
+      such that the next reverse offload region is only executed after the previous
+      one returned.
+@item OpenMP code that has a requires directive with @code{unified_address} or
+      @code{unified_shared_memory} will remove any GCN device from the list of
+      available devices (``host fallback'').
 @end itemize
 
 
@@ -4496,7 +4501,7 @@ which caches the JIT in the user's directory (see CUDA documentation; can be
 tuned by the environment variables @code{CUDA_CACHE_@{DISABLE,MAXSIZE,PATH@}}.
 
 Note: While PTX ISA is generic, the @code{-mptx=} and @code{-march=} commandline
-options still affect the used PTX ISA code and, thus, the requirments on
+options still affect the used PTX ISA code and, thus, the requirements on
 CUDA version and hardware.
 
 The implementation remark:
@@ -4507,6 +4512,15 @@ The implementation remark:
 @item Compilation OpenMP code that contains @code{requires reverse_offload}
       requires at least @code{-march=sm_35}, compiling for @code{-march=sm_30}
       is not supported.
+@item For code containing reverse offload (i.e. @code{target} regions with
+      @code{device(ancestor:1)}), there is a slight performance penalty
+      for @emph{all} target regions, consisting mostly of shutdown delay
+      Per device, reverse offload regions are processed serially such that
+      the next reverse offload region is only executed after the previous
+      one returned.
+@item OpenMP code that has a requires directive with @code{unified_address}
+      or @code{unified_shared_memory} will remove any nvptx device from the
+      list of available devices (``host fallback'').
 @end itemize
 
 

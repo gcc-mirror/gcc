@@ -3246,6 +3246,13 @@ requires an explicit interface.
 @item @code{DEPRECATED} -- print a warning when using a such-tagged
 deprecated procedure, variable or parameter; the warning can be suppressed
 with @option{-Wno-deprecated-declarations}.
+@item @code{NOINLINE} -- prevent inlining given function.
+@item @code{NORETURN} -- add a hint that a given function cannot return.
+@item @code{WEAK} -- emit the declaration of an external symbol as a weak
+symbol rather than a global.  This is primarily useful in defining library
+functions that can be overridden in user code, though it can also be used with
+non-function declarations.  The overriding symbol must have the same type as
+the weak symbol.
 @end itemize
 
 

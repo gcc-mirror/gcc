@@ -63,6 +63,8 @@ get_candidate_for_purging (tree node)
       default:
 	return NULL_TREE;
 
+      case ADDR_EXPR:
+      case MEM_REF:
       case COMPONENT_REF:
 	iter = TREE_OPERAND (iter, 0);
 	continue;
@@ -922,7 +924,20 @@ process_point_backwards (const function_point &point,
       {
 	/* This is somewhat equivalent to how the SSA case handles
 	   def-stmts.  */
-	if (fully_overwrites_p (point.get_stmt (), m_decl, model))
+	if (fully_overwrites_p (point.get_stmt (), m_decl, model)
+	    /* ...but we mustn't be at a point that also consumes the
+	       current value of the decl when it's generating the new
+	       value, for cases such as
+		  struct st s;
+		  s = foo ();
+		  s = bar (s);
+	       where we want to make sure that we don't stop at the:
+		  s = bar (s);
+	       since otherwise we would erroneously purge the state of "s"
+	       after:
+		  s = foo ();
+	    */
+	    && !m_points_needing_decl.contains (point))
 	  {
 	    if (logger)
 	      logger->log ("stmt fully overwrites %qE; terminating", m_decl);

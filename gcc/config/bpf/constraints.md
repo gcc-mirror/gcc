@@ -29,3 +29,14 @@
 (define_constraint "S"
   "A constant call address."
   (match_code "const,symbol_ref,label_ref,const_int"))
+
+;;
+;; Memory constraints.
+;;
+
+; Just like 'm' but disallows const_int.
+; Used for ldx[b,h,w,dw] and stx[b,h,w,dw] instructions.
+(define_memory_constraint "q"
+  "Memory reference which is not a constant integer."
+  (and (match_code "mem")
+       (match_test "GET_CODE(XEXP(op, 0)) != CONST_INT")))

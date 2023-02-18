@@ -742,6 +742,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   /* Keep variables larger than max-stack-var-size off stack.  */
   if (!(sym->ns->proc_name && sym->ns->proc_name->attr.recursive)
       && !sym->attr.automatic
+      && !sym->attr.associate_var
       && sym->attr.save != SAVE_EXPLICIT
       && sym->attr.save != SAVE_IMPLICIT
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))
@@ -2337,7 +2338,7 @@ module_sym:
     }
 
   /* Mark non-returning functions.  */
-  if (sym->attr.noreturn)
+  if (sym->attr.noreturn || sym->attr.ext_attr & (1 << EXT_ATTR_NORETURN))
       TREE_THIS_VOLATILE(fndecl) = 1;
 
   sym->backend_decl = fndecl;
@@ -2481,6 +2482,17 @@ build_function_decl (gfc_symbol * sym, bool global)
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 
+  /* Mark noinline functions.  */
+  if (attr.ext_attr & (1 << EXT_ATTR_NOINLINE))
+    DECL_UNINLINABLE (fndecl) = 1;
+
+  /* Mark noreturn functions.  */
+  if (attr.ext_attr & (1 << EXT_ATTR_NORETURN))
+    TREE_THIS_VOLATILE (fndecl) = 1;
+
+  /* Mark weak functions.  */
+  if (attr.ext_attr & (1 << EXT_ATTR_WEAK))
+    declare_weak (fndecl);
 
   /* Layout the function declaration and put it in the binding level
      of the current function.  */
@@ -5350,7 +5362,11 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	      /* Sometimes, generic interfaces wind up being over-ruled by a
 		 local symbol (see PR41062).  */
 	      if (!st->n.sym->attr.use_assoc)
-		continue;
+		{
+		  *slot = error_mark_node;
+		  entry->decls->clear_slot (slot);
+		  continue;
+		}
 
 	      if (st->n.sym->backend_decl
 		  && DECL_P (st->n.sym->backend_decl)

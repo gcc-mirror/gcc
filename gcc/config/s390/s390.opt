@@ -325,3 +325,7 @@ purposes.
 munroll-only-small-loops
 Target Undocumented Var(unroll_only_small_loops) Init(0) Save
 ; Use conservative small loop unrolling.
+
+mpreserve-args
+Target Var(s390_preserve_args_p) Init(0)
+Store all argument registers on the stack.

@@ -403,6 +403,6 @@ extern "C" void _M2_mcSearch_init (__attribute__((unused)) int argc,__attribute_
   Init ();
 }
 
-extern "C" void _M2_mcSearch_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcSearch_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

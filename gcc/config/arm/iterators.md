@@ -272,8 +272,8 @@
 (define_mode_iterator MVE_2 [V16QI V8HI V4SI])
 (define_mode_iterator MVE_5 [V8HI V4SI])
 (define_mode_iterator MVE_6 [V8HI V4SI])
-(define_mode_iterator MVE_7 [V16BI V8BI V4BI])
-(define_mode_iterator MVE_7_HI [HI V16BI V8BI V4BI])
+(define_mode_iterator MVE_7 [V16BI V8BI V4BI V2QI])
+(define_mode_iterator MVE_7_HI [HI V16BI V8BI V4BI V2QI])
 
 ;;----------------------------------------------------------------------------
 ;; Code iterators
@@ -949,9 +949,12 @@
 (define_mode_attr earlyclobber_32 [(V16QI "=w") (V8HI "=w") (V4SI "=&w")
 						(V8HF "=w") (V4SF "=&w")])
 (define_mode_attr MVE_VPRED [(V16QI "V16BI") (V8HI "V8BI") (V4SI "V4BI")
-                             (V2DI "HI") (V8HF "V8BI")   (V4SF "V4BI")])
+			     (V8HF "V8BI")   (V4SF "V4BI") (V2DI "V2QI")])
 (define_mode_attr MVE_vpred [(V16QI "v16bi") (V8HI "v8bi") (V4SI "v4bi")
-                             (V2DI "hi") (V8HF "v8bi")   (V4SF "v4bi")])
+			     (V8HF "v8bi")   (V4SF "v4bi")
+			     (V16BI "v16bi") (V8BI "v8bi") (V4BI "v4bi")
+			     (V2QI "v2qi")])
+(define_mode_attr MVE_vctp [(V16BI "8") (V8BI "16") (V4BI "32") (V2QI "64")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes
@@ -1461,11 +1464,6 @@
 		       (VADCIQ_M_S "s") (SQRSHRL_64 "64") (SQRSHRL_48 "48")
 		       (UQRSHLL_64 "64") (UQRSHLL_48 "48") (VSHLCQ_M_S "s")
 		       (VSHLCQ_M_U "u")])
-
-(define_int_attr mode1 [(VCTP8Q "8") (VCTP16Q "16") (VCTP32Q "32")
-			(VCTP64Q "64") (VCTP8Q_M "8") (VCTP16Q_M "16")
-			(VCTP32Q_M "32") (VCTP64Q_M "64")])
-
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])
 (define_code_attr return_str [(return "") (simple_return "simple_")])
@@ -1557,8 +1555,6 @@
 (define_int_iterator VCVTNQ [VCVTNQ_S VCVTNQ_U])
 (define_int_iterator VCVTMQ [VCVTMQ_S VCVTMQ_U])
 (define_int_iterator VADDLVQ [VADDLVQ_U VADDLVQ_S])
-(define_int_iterator VCTPQ [VCTP8Q VCTP16Q VCTP32Q VCTP64Q])
-(define_int_iterator VCTPQ_M [VCTP8Q_M VCTP16Q_M VCTP32Q_M VCTP64Q_M])
 (define_int_iterator VCVTQ_N_TO_F [VCVTQ_N_TO_F_S VCVTQ_N_TO_F_U])
 (define_int_iterator VCREATEQ [VCREATEQ_U VCREATEQ_S])
 (define_int_iterator VSHRQ_N [VSHRQ_N_S VSHRQ_N_U])

@@ -838,6 +838,9 @@ typedef enum
   EXT_ATTR_FASTCALL,
   EXT_ATTR_NO_ARG_CHECK,
   EXT_ATTR_DEPRECATED,
+  EXT_ATTR_NOINLINE,
+  EXT_ATTR_NORETURN,
+  EXT_ATTR_WEAK,
   EXT_ATTR_LAST, EXT_ATTR_NUM = EXT_ATTR_LAST
 }
 ext_attr_id_t;
@@ -3273,7 +3276,7 @@ void gfc_done_2 (void);
 int get_c_kind (const char *, CInteropKind_t *);
 
 const char *gfc_closest_fuzzy_match (const char *, char **);
-static inline void
+inline void
 vec_push (char **&optr, size_t &osz, const char *elt)
 {
   /* {auto,}vec.safe_push () replacement.  Don't ask..  */
@@ -3549,7 +3552,7 @@ void gfc_intrinsic_done_1 (void);
 
 char gfc_type_letter (bt, bool logical_equals_int = false);
 int gfc_type_abi_kind (bt, int);
-static inline int
+inline int
 gfc_type_abi_kind (gfc_typespec *ts)
 {
   return gfc_type_abi_kind (ts->type, ts->kind);

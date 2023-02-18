@@ -874,7 +874,8 @@ make_pass_df_finish (gcc::context *ctxt)
 /* Helper function for df_worklist_dataflow.
    Propagate the dataflow forward.
    Given a BB_INDEX, do the dataflow propagation
-   and set bits on for successors in PENDING
+   and set bits on for successors in PENDING for earlier
+   and WORKLIST for later in bbindex_to_postorder
    if the out set of the dataflow has changed.
 
    AGE specify time when BB was visited last time.
@@ -890,10 +891,11 @@ make_pass_df_finish (gcc::context *ctxt)
 
 static bool
 df_worklist_propagate_forward (struct dataflow *dataflow,
-                               unsigned bb_index,
-                               unsigned *bbindex_to_postorder,
-                               bitmap pending,
-                               sbitmap considered,
+			       unsigned bb_index,
+			       unsigned *bbindex_to_postorder,
+			       bitmap worklist,
+			       bitmap pending,
+			       sbitmap considered,
 			       vec<int> &last_change_age,
 			       int age)
 {
@@ -924,7 +926,13 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
           unsigned ob_index = e->dest->index;
 
           if (bitmap_bit_p (considered, ob_index))
-            bitmap_set_bit (pending, bbindex_to_postorder[ob_index]);
+	    {
+	      if (bbindex_to_postorder[bb_index]
+		  < bbindex_to_postorder[ob_index])
+		bitmap_set_bit (worklist, bbindex_to_postorder[ob_index]);
+	      else
+		bitmap_set_bit (pending, bbindex_to_postorder[ob_index]);
+	    }
         }
       return true;
     }
@@ -937,10 +945,11 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
 
 static bool
 df_worklist_propagate_backward (struct dataflow *dataflow,
-                                unsigned bb_index,
-                                unsigned *bbindex_to_postorder,
-                                bitmap pending,
-                                sbitmap considered,
+				unsigned bb_index,
+				unsigned *bbindex_to_postorder,
+				bitmap worklist,
+				bitmap pending,
+				sbitmap considered,
 				vec<int> &last_change_age,
 				int age)
 {
@@ -971,7 +980,13 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
           unsigned ob_index = e->src->index;
 
           if (bitmap_bit_p (considered, ob_index))
-            bitmap_set_bit (pending, bbindex_to_postorder[ob_index]);
+	    {
+	      if (bbindex_to_postorder[bb_index]
+		  < bbindex_to_postorder[ob_index])
+		bitmap_set_bit (worklist, bbindex_to_postorder[ob_index]);
+	      else
+		bitmap_set_bit (pending, bbindex_to_postorder[ob_index]);
+	    }
         }
       return true;
     }
@@ -1021,36 +1036,37 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
      and pending is for the next. */
   while (!bitmap_empty_p (pending))
     {
-      bitmap_iterator bi;
-      unsigned int index;
-
       std::swap (pending, worklist);
 
-      EXECUTE_IF_SET_IN_BITMAP (worklist, 0, index, bi)
+      do
 	{
+	  unsigned index = bitmap_first_set_bit (worklist);
+	  bitmap_clear_bit (worklist, index);
+
 	  unsigned bb_index;
 	  dcount++;
 
-	  bitmap_clear_bit (pending, index);
 	  bb_index = blocks_in_postorder[index];
 	  prev_age = last_visit_age[index];
 	  if (dir == DF_FORWARD)
 	    changed = df_worklist_propagate_forward (dataflow, bb_index,
 						     bbindex_to_postorder,
-						     pending, considered,
+						     worklist, pending,
+						     considered,
 						     last_change_age,
 						     prev_age);
 	  else
 	    changed = df_worklist_propagate_backward (dataflow, bb_index,
 						      bbindex_to_postorder,
-						      pending, considered,
+						      worklist, pending,
+						      considered,
 						      last_change_age,
 						      prev_age);
 	  last_visit_age[index] = ++age;
 	  if (changed)
 	    last_change_age[index] = age;
 	}
-      bitmap_clear (worklist);
+      while (!bitmap_empty_p (worklist));
     }
 
   BITMAP_FREE (worklist);

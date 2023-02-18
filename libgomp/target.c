@@ -1480,8 +1480,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    gomp_mutex_unlock (&devicep->lock);
 		    gomp_fatal ("always pointer not mapped");
 		  }
-		if ((get_kind (short_mapkind, kinds, i - 1) & typemask)
-		    != GOMP_MAP_ALWAYS_POINTER)
+		if (i > 0
+		    && ((get_kind (short_mapkind, kinds, i - 1) & typemask)
+			!= GOMP_MAP_ALWAYS_POINTER))
 		  cur_node.tgt_offset = gomp_map_val (tgt, hostaddrs, i - 1);
 		if (cur_node.tgt_offset)
 		  cur_node.tgt_offset -= sizes[i];
@@ -3324,7 +3325,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
     gomp_fatal ("Cannot find reverse-offload function");
   void (*host_fn)() = (void (*)()) n->k->host_start;
 
-  if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+  if ((devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM) || mapnum == 0)
     {
       devaddrs = (uint64_t *) (uintptr_t) devaddrs_ptr;
       sizes = (uint64_t *) (uintptr_t) sizes_ptr;
@@ -3402,7 +3403,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	  }
     }
 
-  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM))
+  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM) && mapnum > 0)
     {
       size_t j, struct_cpy = 0;
       splay_tree_key n2;
@@ -3579,8 +3580,14 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		      }
 		    int k;
 		    n2 = NULL;
-		    cdata[i].present = true;
+		    /* Dereference devaddrs[j] to get the device addr.  */
+		    assert (devaddrs[j] - sizes[j] == cdata[i].devaddr);
+		    devaddrs[j] = *(uint64_t *) (uintptr_t) (devaddrs[i]
+							     + sizes[j]);
+		    cdata[j].present = true;
 		    cdata[j].devaddr = devaddrs[j];
+		    if (devaddrs[j] == 0)
+		      continue;
 		    k = gomp_map_cdata_lookup (cdata, devaddrs, kinds, sizes, j,
 					       devaddrs[j],
 					       devaddrs[j] + sizeof (void*),
@@ -3638,7 +3645,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 
   host_fn (devaddrs);
 
-  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM))
+  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM) && mapnum > 0)
     {
       uint64_t struct_cpy = 0;
       bool clean_struct = false;
@@ -3680,7 +3687,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	      clean_struct = true;
 	      struct_cpy = sizes[i];
 	    }
-	  else if (cdata[i].aligned)
+	  else if (!cdata[i].present && cdata[i].aligned)
 	    gomp_aligned_free ((void *) (uintptr_t) devaddrs[i]);
 	  else if (!cdata[i].present)
 	    free ((void *) (uintptr_t) devaddrs[i]);
@@ -4085,7 +4092,10 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 			 GOMP_MAP_VARS_ENTER_DATA);
 	  i += j - i - 1;
 	}
-      else if (i + 1 < mapnum && (kinds[i + 1] & 0xff) == GOMP_MAP_ATTACH)
+      else if (i + 1 < mapnum
+	       && ((kinds[i + 1] & 0xff) == GOMP_MAP_ATTACH
+		   || ((kinds[i + 1] & 0xff) == GOMP_MAP_ALWAYS_POINTER
+		       && (kinds[i] & 0xff) != GOMP_MAP_ALWAYS_POINTER)))
 	{
 	  /* An attach operation must be processed together with the mapped
 	     base-pointer list item.  */

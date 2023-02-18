@@ -29,3 +29,6 @@ namespace std
   template struct aligned_storage<1, alignment_of<test_type>::value>;
   template struct aligned_storage<2>;
 }
+
+// { dg-warning "deprecated" "" { target c++23 } 29 }
+// { dg-warning "deprecated" "" { target c++23 } 30 }

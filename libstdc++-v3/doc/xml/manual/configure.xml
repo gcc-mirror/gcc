@@ -362,7 +362,10 @@
      built.  The C++ Standard also describes a
      <emphasis>freestanding</emphasis> environment, in which only a
      minimal set of headers are provided.  This option builds such an
-     environment.
+     environment.  Note that a hosted library installs headers that still can
+     be used in non hosted environments, as the library checks for
+     <code>__STDC_HOSTED__</code>, however, a library configured with
+     <code>--disable-hosted-libstdcxx</code> will not install unusable headers.
      </para>
  </listitem></varlistentry>
 

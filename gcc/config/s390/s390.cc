@@ -411,6 +411,45 @@ struct s390_address
 #define FP_ARG_NUM_REG (TARGET_64BIT? 4 : 2)
 #define VEC_ARG_NUM_REG 8
 
+/* Return TRUE if GPR REGNO is supposed to be restored in the function
+   epilogue.  */
+static inline bool
+s390_restore_gpr_p (int regno)
+{
+  return (cfun_frame_layout.first_restore_gpr != -1
+	  && regno >= cfun_frame_layout.first_restore_gpr
+	  && regno <= cfun_frame_layout.last_restore_gpr);
+}
+
+/* Return TRUE if any of the registers in range [FIRST, LAST] is saved
+   because of -mpreserve-args.  */
+static inline bool
+s390_preserve_gpr_arg_in_range_p (int first, int last)
+{
+  int num_arg_regs = MIN (crtl->args.info.gprs + cfun->va_list_gpr_size,
+			  GP_ARG_NUM_REG);
+  return (num_arg_regs
+	  && s390_preserve_args_p
+	  && first <= GPR2_REGNUM + num_arg_regs - 1
+	  && last >= GPR2_REGNUM);
+}
+
+static inline bool
+s390_preserve_gpr_arg_p (int regno)
+{
+  return s390_preserve_gpr_arg_in_range_p (regno, regno);
+}
+
+static inline bool
+s390_preserve_fpr_arg_p (int regno)
+{
+  int num_arg_regs = MIN (crtl->args.info.fprs + cfun->va_list_fpr_size,
+			  FP_ARG_NUM_REG);
+  return (s390_preserve_args_p
+	  && regno <= FPR0_REGNUM + num_arg_regs - 1
+	  && regno >= FPR0_REGNUM);
+}
+
 /* A couple of shortcuts.  */
 #define CONST_OK_FOR_J(x) \
 	CONST_OK_FOR_CONSTRAINT_P((x), 'J', "J")
@@ -9893,61 +9932,89 @@ s390_register_info_gprtofpr ()
 }
 
 /* Set the bits in fpr_bitmap for FPRs which need to be saved due to
-   stdarg.
+   stdarg or -mpreserve-args.
    This is a helper routine for s390_register_info.  */
-
 static void
-s390_register_info_stdarg_fpr ()
+s390_register_info_arg_fpr ()
 {
   int i;
-  int min_fpr;
-  int max_fpr;
+  int min_stdarg_fpr = INT_MAX, max_stdarg_fpr = -1;
+  int min_preserve_fpr = INT_MAX, max_preserve_fpr = -1;
+  int min_fpr, max_fpr;
 
   /* Save the FP argument regs for stdarg. f0, f2 for 31 bit and
      f0-f4 for 64 bit.  */
-  if (!cfun->stdarg
-      || !TARGET_HARD_FLOAT
-      || !cfun->va_list_fpr_size
-      || crtl->args.info.fprs >= FP_ARG_NUM_REG)
+  if (cfun->stdarg
+      && TARGET_HARD_FLOAT
+      && cfun->va_list_fpr_size
+      && crtl->args.info.fprs < FP_ARG_NUM_REG)
+    {
+      min_stdarg_fpr = crtl->args.info.fprs;
+      max_stdarg_fpr = min_stdarg_fpr + cfun->va_list_fpr_size - 1;
+      if (max_stdarg_fpr >= FP_ARG_NUM_REG)
+	max_stdarg_fpr = FP_ARG_NUM_REG - 1;
+
+      /* FPR argument regs start at f0.  */
+      min_stdarg_fpr += FPR0_REGNUM;
+      max_stdarg_fpr += FPR0_REGNUM;
+    }
+
+  if (s390_preserve_args_p && crtl->args.info.fprs)
+    {
+      min_preserve_fpr = FPR0_REGNUM;
+      max_preserve_fpr = MIN (FPR0_REGNUM + FP_ARG_NUM_REG - 1,
+			      FPR0_REGNUM + crtl->args.info.fprs - 1);
+    }
+
+  min_fpr = MIN (min_stdarg_fpr, min_preserve_fpr);
+  max_fpr = MAX (max_stdarg_fpr, max_preserve_fpr);
+
+  if (max_fpr == -1)
     return;
-
-  min_fpr = crtl->args.info.fprs;
-  max_fpr = min_fpr + cfun->va_list_fpr_size - 1;
-  if (max_fpr >= FP_ARG_NUM_REG)
-    max_fpr = FP_ARG_NUM_REG - 1;
-
-  /* FPR argument regs start at f0.  */
-  min_fpr += FPR0_REGNUM;
-  max_fpr += FPR0_REGNUM;
 
   for (i = min_fpr; i <= max_fpr; i++)
     cfun_set_fpr_save (i);
 }
 
+
 /* Reserve the GPR save slots for GPRs which need to be saved due to
-   stdarg.
+   stdarg or -mpreserve-args.
    This is a helper routine for s390_register_info.  */
 
 static void
-s390_register_info_stdarg_gpr ()
+s390_register_info_arg_gpr ()
 {
   int i;
-  int min_gpr;
-  int max_gpr;
+  int min_stdarg_gpr = INT_MAX, max_stdarg_gpr = -1;
+  int min_preserve_gpr = INT_MAX, max_preserve_gpr = -1;
+  int min_gpr, max_gpr;
 
-  if (!cfun->stdarg
-      || !cfun->va_list_gpr_size
-      || crtl->args.info.gprs >= GP_ARG_NUM_REG)
+  if (cfun->stdarg
+      && cfun->va_list_gpr_size
+      && crtl->args.info.gprs < GP_ARG_NUM_REG)
+    {
+      min_stdarg_gpr = crtl->args.info.gprs;
+      max_stdarg_gpr = min_stdarg_gpr + cfun->va_list_gpr_size - 1;
+      if (max_stdarg_gpr >= GP_ARG_NUM_REG)
+	max_stdarg_gpr = GP_ARG_NUM_REG - 1;
+
+      /* GPR argument regs start at r2.  */
+      min_stdarg_gpr += GPR2_REGNUM;
+      max_stdarg_gpr += GPR2_REGNUM;
+    }
+
+  if (s390_preserve_args_p && crtl->args.info.gprs)
+    {
+      min_preserve_gpr = GPR2_REGNUM;
+      max_preserve_gpr = MIN (GPR6_REGNUM,
+			      GPR2_REGNUM + crtl->args.info.gprs - 1);
+    }
+
+  min_gpr = MIN (min_stdarg_gpr, min_preserve_gpr);
+  max_gpr = MAX (max_stdarg_gpr, max_preserve_gpr);
+
+  if (max_gpr == -1)
     return;
-
-  min_gpr = crtl->args.info.gprs;
-  max_gpr = min_gpr + cfun->va_list_gpr_size - 1;
-  if (max_gpr >= GP_ARG_NUM_REG)
-    max_gpr = GP_ARG_NUM_REG - 1;
-
-  /* GPR argument regs start at r2.  */
-  min_gpr += GPR2_REGNUM;
-  max_gpr += GPR2_REGNUM;
 
   /* If r6 was supposed to be saved into an FPR and now needs to go to
      the stack for vararg we have to adjust the restore range to make
@@ -10079,14 +10146,14 @@ s390_register_info ()
     if (clobbered_regs[i] && !call_used_regs[i])
       cfun_gpr_save_slot (i) = SAVE_SLOT_STACK;
 
-  s390_register_info_stdarg_fpr ();
+  s390_register_info_arg_fpr ();
   s390_register_info_gprtofpr ();
   s390_register_info_set_ranges ();
-  /* stdarg functions might need to save GPRs 2 to 6.  This might
-     override the GPR->FPR save decision made by
-     s390_register_info_gprtofpr for r6 since vararg regs must go to
-     the stack.  */
-  s390_register_info_stdarg_gpr ();
+
+  /* Forcing argument registers to be saved on the stack might
+     override the GPR->FPR save decision for r6 so this must come
+     last.  */
+  s390_register_info_arg_gpr ();
 }
 
 /* Return true if REGNO is a global register, but not one
@@ -10141,7 +10208,7 @@ s390_optimize_register_info ()
       cfun_gpr_save_slot (i) = SAVE_SLOT_NONE;
 
   s390_register_info_set_ranges ();
-  s390_register_info_stdarg_gpr ();
+  s390_register_info_arg_gpr ();
 }
 
 /* Fill cfun->machine with info about frame of current function.  */
@@ -10864,14 +10931,28 @@ static rtx
 save_fpr (rtx base, int offset, int regnum)
 {
   rtx addr;
+  rtx insn;
+
   addr = gen_rtx_MEM (DFmode, plus_constant (Pmode, base, offset));
 
-  if (regnum >= 16 && regnum <= (16 + FP_ARG_NUM_REG))
+  if (regnum >= FPR0_REGNUM && regnum <= (FPR0_REGNUM + FP_ARG_NUM_REG))
     set_mem_alias_set (addr, get_varargs_alias_set ());
   else
     set_mem_alias_set (addr, get_frame_alias_set ());
 
-  return emit_move_insn (addr, gen_rtx_REG (DFmode, regnum));
+  insn = emit_move_insn (addr, gen_rtx_REG (DFmode, regnum));
+
+  if (!call_used_regs[regnum] || s390_preserve_fpr_arg_p (regnum))
+    RTX_FRAME_RELATED_P (insn) = 1;
+
+  if (s390_preserve_fpr_arg_p (regnum) && !cfun_fpr_save_p (regnum))
+    {
+      rtx reg = gen_rtx_REG (DFmode, regnum);
+      add_reg_note (insn, REG_CFA_NO_RESTORE, reg);
+      add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (addr, reg));
+    }
+
+  return insn;
 }
 
 /* Emit insn to restore fpr REGNUM from offset OFFSET relative
@@ -10891,16 +10972,15 @@ restore_fpr (rtx base, int offset, int regnum)
    the register save area located at offset OFFSET
    relative to register BASE.  */
 
-static rtx
-save_gprs (rtx base, int offset, int first, int last)
+static void
+save_gprs (rtx base, int offset, int first, int last, rtx_insn *before = NULL)
 {
   rtx addr, insn, note;
+  rtx_insn *out_insn;
   int i;
 
   addr = plus_constant (Pmode, base, offset);
-  addr = gen_rtx_MEM (Pmode, addr);
-
-  set_mem_alias_set (addr, get_frame_alias_set ());
+  addr = gen_frame_mem (Pmode, addr);
 
   /* Special-case single register.  */
   if (first == last)
@@ -10912,7 +10992,15 @@ save_gprs (rtx base, int offset, int first, int last)
 
       if (!global_not_special_regno_p (first))
 	RTX_FRAME_RELATED_P (insn) = 1;
-      return insn;
+
+      if (s390_preserve_gpr_arg_p (first) && !s390_restore_gpr_p (first))
+	{
+	  rtx reg = gen_rtx_REG (Pmode, first);
+	  add_reg_note (insn, REG_CFA_NO_RESTORE, reg);
+	  add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (addr, reg));
+	}
+
+      goto emit;
     }
 
 
@@ -10941,7 +11029,12 @@ save_gprs (rtx base, int offset, int first, int last)
      set, even if it does not.  Therefore we emit a new pattern
      without those registers as REG_FRAME_RELATED_EXPR note.  */
 
-  if (first >= 6 && !global_not_special_regno_p (first))
+  /* In these cases all of the sets are marked as frame related:
+     1. call-save GPR saved and restored
+     2. argument GPR saved because of -mpreserve-args */
+  if ((first >= GPR6_REGNUM && !global_not_special_regno_p (first))
+      || s390_preserve_gpr_arg_in_range_p (first, last))
+
     {
       rtx pat = PATTERN (insn);
 
@@ -10952,6 +11045,24 @@ save_gprs (rtx base, int offset, int first, int last)
 	  RTX_FRAME_RELATED_P (XVECEXP (pat, 0, i)) = 1;
 
       RTX_FRAME_RELATED_P (insn) = 1;
+
+      /* For the -mpreserve-args register saves no restore operations
+	 will be emitted. CFI checking would complain about this. We
+	 manually generate the REG_CFA notes here to be able to mark
+	 those operations with REG_CFA_NO_RESTORE.  */
+      if (s390_preserve_gpr_arg_in_range_p (first, last))
+	{
+	  for (int regno = first; regno <= last; regno++)
+	    {
+	      rtx reg = gen_rtx_REG (Pmode, regno);
+	      rtx reg_addr = plus_constant (Pmode, base,
+					    offset + (regno - first) * UNITS_PER_LONG);
+	      if (!s390_restore_gpr_p (regno))
+		add_reg_note (insn, REG_CFA_NO_RESTORE, reg);
+	      add_reg_note (insn, REG_CFA_OFFSET,
+			    gen_rtx_SET (gen_frame_mem (Pmode, reg_addr), reg));
+	    }
+	}
     }
   else if (last >= 6)
     {
@@ -10962,7 +11073,7 @@ save_gprs (rtx base, int offset, int first, int last)
 	  break;
 
       if (start > last)
-	return insn;
+	goto emit;
 
       addr = plus_constant (Pmode, base,
 			    offset + (start - first) * UNITS_PER_LONG);
@@ -10980,7 +11091,7 @@ save_gprs (rtx base, int offset, int first, int last)
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
-	  return insn;
+	  goto emit;
 	}
 
       note = gen_store_multiple (gen_rtx_MEM (Pmode, addr),
@@ -10999,8 +11110,14 @@ save_gprs (rtx base, int offset, int first, int last)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  return insn;
+ emit:
+  if (before != NULL_RTX)
+    out_insn = emit_insn_before (insn, before);
+  else
+    out_insn = emit_insn (insn);
+  INSN_ADDRESSES_NEW (out_insn, -1);
 }
+
 
 /* Generate insn to restore registers FIRST to LAST from
    the register save area located at offset OFFSET
@@ -11012,8 +11129,7 @@ restore_gprs (rtx base, int offset, int first, int last)
   rtx addr, insn;
 
   addr = plus_constant (Pmode, base, offset);
-  addr = gen_rtx_MEM (Pmode, addr);
-  set_mem_alias_set (addr, get_frame_alias_set ());
+  addr = gen_frame_mem (Pmode, addr);
 
   /* Special-case single register.  */
   if (first == last)
@@ -11062,10 +11178,11 @@ s390_load_got (void)
 static void
 s390_emit_stack_tie (void)
 {
-  rtx mem = gen_frame_mem (BLKmode,
-			   gen_rtx_REG (Pmode, STACK_POINTER_REGNUM));
-
-  emit_insn (gen_stack_tie (mem));
+  rtx mem = gen_frame_mem (BLKmode, stack_pointer_rtx);
+  if (frame_pointer_needed)
+    emit_insn (gen_stack_tie (Pmode, mem, hard_frame_pointer_rtx));
+  else
+    emit_insn (gen_stack_tie (Pmode, mem, stack_pointer_rtx));
 }
 
 /* Copy GPRS into FPR save slots.  */
@@ -11425,12 +11542,12 @@ s390_emit_prologue (void)
   /* Save call saved gprs.  */
   if (cfun_frame_layout.first_save_gpr != -1)
     {
-      insn = save_gprs (stack_pointer_rtx,
-			cfun_frame_layout.gprs_offset +
-			UNITS_PER_LONG * (cfun_frame_layout.first_save_gpr
-					  - cfun_frame_layout.first_save_gpr_slot),
-			cfun_frame_layout.first_save_gpr,
-			cfun_frame_layout.last_save_gpr);
+      save_gprs (stack_pointer_rtx,
+		 cfun_frame_layout.gprs_offset +
+		 UNITS_PER_LONG * (cfun_frame_layout.first_save_gpr
+				   - cfun_frame_layout.first_save_gpr_slot),
+		 cfun_frame_layout.first_save_gpr,
+		 cfun_frame_layout.last_save_gpr);
 
       /* This is not 100% correct.  If we have more than one register saved,
 	 then LAST_PROBE_OFFSET can move even closer to sp.  */
@@ -11438,8 +11555,6 @@ s390_emit_prologue (void)
 	= (cfun_frame_layout.gprs_offset +
 	   UNITS_PER_LONG * (cfun_frame_layout.first_save_gpr
 			     - cfun_frame_layout.first_save_gpr_slot));
-
-      emit_insn (insn);
     }
 
   /* Dummy insn to mark literal pool slot.  */
@@ -11469,15 +11584,10 @@ s390_emit_prologue (void)
     {
       if (cfun_fpr_save_p (i))
 	{
-	  insn = save_fpr (stack_pointer_rtx, offset, i);
+	  save_fpr (stack_pointer_rtx, offset, i);
 	  if (offset < last_probe_offset)
 	    last_probe_offset = offset;
 	  offset += 8;
-
-	  /* If f4 and f6 are call clobbered they are saved due to
-	     stdargs and therefore are not frame related.  */
-	  if (!call_used_regs[i])
-	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else if (!TARGET_PACKED_STACK || call_used_regs[i])
 	offset += 8;
@@ -11493,11 +11603,10 @@ s390_emit_prologue (void)
       for (i = FPR15_REGNUM; i >= FPR8_REGNUM && offset >= 0; i--)
 	if (cfun_fpr_save_p (i))
 	  {
-	    insn = save_fpr (stack_pointer_rtx, offset, i);
+	    save_fpr (stack_pointer_rtx, offset, i);
 	    if (offset < last_probe_offset)
 	      last_probe_offset = offset;
 
-	    RTX_FRAME_RELATED_P (insn) = 1;
 	    offset -= 8;
 	  }
       if (offset >= cfun_frame_layout.f8_offset)
@@ -11665,7 +11774,6 @@ s390_emit_prologue (void)
 
 	    insn = save_fpr (temp_reg, offset, i);
 	    offset += 8;
-	    RTX_FRAME_RELATED_P (insn) = 1;
 	    add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			  gen_rtx_SET (gen_rtx_MEM (DFmode, addr),
 				       gen_rtx_REG (DFmode, i)));
@@ -11676,6 +11784,7 @@ s390_emit_prologue (void)
 
   if (frame_pointer_needed)
     {
+      s390_emit_stack_tie ();
       insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
@@ -14159,15 +14268,11 @@ s390_optimize_prologue (void)
 	    continue;
 
 	  if (cfun_frame_layout.first_save_gpr != -1)
-	    {
-	      rtx s_pat = save_gprs (base,
-				     off + (cfun_frame_layout.first_save_gpr
-					    - first) * UNITS_PER_LONG,
-				     cfun_frame_layout.first_save_gpr,
-				     cfun_frame_layout.last_save_gpr);
-	      new_insn = emit_insn_before (s_pat, insn);
-	      INSN_ADDRESSES_NEW (new_insn, -1);
-	    }
+	    save_gprs (base,
+		       off + (cfun_frame_layout.first_save_gpr
+			      - first) * UNITS_PER_LONG,
+		       cfun_frame_layout.first_save_gpr,
+		       cfun_frame_layout.last_save_gpr, insn);
 
 	  remove_insn (insn);
 	  continue;
@@ -14872,29 +14977,6 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
   ready[0] = tmp;
 }
 
-/* Returns TRUE if BB is entered via a fallthru edge and all other
-   incoming edges are less than likely.  */
-static bool
-s390_bb_fallthru_entry_likely (basic_block bb)
-{
-  edge e, fallthru_edge;
-  edge_iterator ei;
-
-  if (!bb)
-    return false;
-
-  fallthru_edge = find_fallthru_edge (bb->preds);
-  if (!fallthru_edge)
-    return false;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e != fallthru_edge
-	&& e->probability >= profile_probability::likely ())
-      return false;
-
-  return true;
-}
-
 struct s390_sched_state
 {
   /* Number of insns in the group.  */
@@ -14905,7 +14987,7 @@ struct s390_sched_state
   bool group_of_two;
 } s390_sched_state;
 
-static struct s390_sched_state sched_state = {0, 1, false};
+static struct s390_sched_state sched_state;
 
 #define S390_SCHED_ATTR_MASK_CRACKED    0x1
 #define S390_SCHED_ATTR_MASK_EXPANDED   0x2
@@ -15405,7 +15487,7 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 
 	      s390_get_unit_mask (insn, &units);
 
-	      fprintf (file, ";;\t\tBACKEND: units on this side unused for: ");
+	      fprintf (file, ";;\t\tBACKEND: units on this side (%d) unused for: ", sched_state.side);
 	      for (j = 0; j < units; j++)
 		fprintf (file, "%d:%d ", j,
 		    last_scheduled_unit_distance[j][sched_state.side]);
@@ -15443,17 +15525,12 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
      current_sched_info->prev_head is the insn before the first insn of the
      block of insns to be scheduled.
      */
-  rtx_insn *insn = current_sched_info->prev_head
-    ? NEXT_INSN (current_sched_info->prev_head) : NULL;
-  basic_block bb = insn ? BLOCK_FOR_INSN (insn) : NULL;
-  if (s390_tune < PROCESSOR_2964_Z13 || !s390_bb_fallthru_entry_likely (bb))
-    {
-      last_scheduled_insn = NULL;
-      memset (last_scheduled_unit_distance, 0,
+  last_scheduled_insn = NULL;
+  memset (last_scheduled_unit_distance, 0,
 	  MAX_SCHED_UNITS * NUM_SIDES * sizeof (int));
-      sched_state.group_state = 0;
-      sched_state.group_of_two = false;
-    }
+  memset (fpd_longrunning, 0, NUM_SIDES * sizeof (int));
+  memset (fxd_longrunning, 0, NUM_SIDES * sizeof (int));
+  sched_state = {};
 }
 
 /* This target hook implementation for TARGET_LOOP_UNROLL_ADJUST calculates

@@ -826,4 +826,4 @@ int yywrap (void)
 }
 
 EXTERN void _M2_m2flex_init (void) {}
-EXTERN void _M2_m2flex_finish (void) {}
+EXTERN void _M2_m2flex_fini (void) {}

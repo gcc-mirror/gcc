@@ -120,7 +120,7 @@ TYPE
 *)
 
 PROCEDURE RAISEdevException (cid: IOChan.ChanId; did: DeviceId;
-                             x: DevExceptionRange; s: ARRAY OF CHAR);
+                             x: DevExceptionRange; s: ARRAY OF CHAR) <* noreturn *> ;
 
   (* If the device module identified by did is not the module that made the channel
      identified by cid, the exception wrongDevice is raised; otherwise the given exception
@@ -134,7 +134,7 @@ PROCEDURE IsIOException () : BOOLEAN;
   *)
 
 PROCEDURE IOException () : IOChan.ChanExceptions;
-  (* If the current coroutine is in the exceptional execution state because of the 
+  (* If the current coroutine is in the exceptional execution state because of the
      raising af an exception from ChanExceptions, returns the corresponding
      enumeration value, and otherwise raises an exception.
   *)

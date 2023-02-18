@@ -16,10 +16,10 @@ struct undeffoo
 };
 struct problem
 {
-  unsigned long l1;
-  unsigned long l2;
-  unsigned long l3;
-  unsigned long l4;
+  __UINTPTR_TYPE__ l1;
+  __UINTPTR_TYPE__ l2;
+  __UINTPTR_TYPE__ l3;
+  __UINTPTR_TYPE__ l4;
 };
 static unsigned int undef1, undef2, undef3, undef4, undef5, undef6;
 static void *undefvp1;
@@ -37,7 +37,7 @@ undefinit1 (void)
 }
 
 static int
-undefinit2 (void *problemp, unsigned long problem)
+undefinit2 (void *problemp, __UINTPTR_TYPE__ problem)
 {
   int ret, u;
   if (undefinit1 ())
@@ -60,7 +60,7 @@ fn6 (struct undefinfo *uip, struct problem *problem)
   unsigned long amt;
   if (external_function3 (((void *) 0), ((void *) 0), &amt, 0, 0))
     return 1;
-  problem->l1 = (unsigned long) undefvp1;
+  problem->l1 = (__UINTPTR_TYPE__) undefvp1;
   problem->l4 = uip->l1;
   problem->l3 = uip->l2;
   return 0;

@@ -851,13 +851,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::__addressof(__x); }
 
       _GLIBCXX_NODISCARD pointer
-      allocate(size_type __n, const void* hint = 0)
+      allocate(size_type __n, const void* __hint = 0)
       {
 	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
 	throw_conditionally();
-	pointer const a = traits::allocate(_M_allocator, __n, hint);
+	pointer const a = traits::allocate(_M_allocator, __n, __hint);
 	insert(a, sizeof(value_type) * __n);
 	return a;
       }
@@ -880,8 +880,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #else
       void
-      construct(pointer __p, const value_type& val)
-      { return _M_allocator.construct(__p, val); }
+      construct(pointer __p, const value_type& __val)
+      { return _M_allocator.construct(__p, __val); }
 
       void
       destroy(pointer __p)

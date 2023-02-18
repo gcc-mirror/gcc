@@ -9758,6 +9758,7 @@ build_common_builtin_nodes (void)
 
   if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE)
       || !builtin_decl_explicit_p (BUILT_IN_TRAP)
+      || !builtin_decl_explicit_p (BUILT_IN_UNREACHABLE_TRAP)
       || !builtin_decl_explicit_p (BUILT_IN_ABORT))
     {
       ftype = build_function_type (void_type_node, void_list_node);
@@ -9765,6 +9766,12 @@ build_common_builtin_nodes (void)
 	local_define_builtin ("__builtin_unreachable", ftype,
 			      BUILT_IN_UNREACHABLE,
 			      "__builtin_unreachable",
+			      ECF_NOTHROW | ECF_LEAF | ECF_NORETURN
+			      | ECF_CONST | ECF_COLD);
+      if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE_TRAP))
+	local_define_builtin ("__builtin_unreachable trap", ftype,
+			      BUILT_IN_UNREACHABLE_TRAP,
+			      "__builtin_unreachable trap",
 			      ECF_NOTHROW | ECF_LEAF | ECF_NORETURN
 			      | ECF_CONST | ECF_COLD);
       if (!builtin_decl_explicit_p (BUILT_IN_ABORT))
@@ -10908,7 +10915,7 @@ builtin_decl_unreachable ()
   if (sanitize_flags_p (SANITIZE_UNREACHABLE)
       ? (flag_sanitize_trap & SANITIZE_UNREACHABLE)
       : flag_unreachable_traps)
-    fncode = BUILT_IN_TRAP;
+    fncode = BUILT_IN_UNREACHABLE_TRAP;
   /* For non-trapping sanitize, we will rewrite __builtin_unreachable () later,
      in the sanopt pass.  */
 

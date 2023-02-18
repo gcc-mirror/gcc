@@ -24,7 +24,7 @@ s2 = 55
 
 !$omp target map(to: A, A2, s1, s2)
 block
-  integer, allocatable :: ai(:), ai2(:), si1, si2
+  integer, allocatable :: ai(:), ai2(:), ai3(:), si1, si2, si3
 
   a = a * 2
   a2 = a2 * 3
@@ -38,7 +38,7 @@ block
 
   !$omp target device (ancestor:1)  &
   !$omp&       map(to: A, s1, ai, si1) map(always, to: a2, s2)  &
-  !$omp&       map(tofrom: ai2, si2)
+  !$omp&       map(tofrom: ai2, si2, ai3, si3)
     if (shared_mem) then
       if (any (a  /= 2 * [1,2,3,4])) stop 1
       if (s1 /= 4 * 532) stop 2
@@ -52,6 +52,7 @@ block
     if (any (ai2 /= [8,4,7,1])) stop 8
     if (si1 /= 64) stop 9
     if (si2 /= 765) stop 10
+    if (allocated (ai3) .or. allocated(si3)) stop 26
 
     a = a*3
     a2 = a2*7
@@ -80,6 +81,7 @@ block
   endif
   if (any (ai2 /= 21 * [8,4,7,1])) stop 24
   if (si2 /= 31 * 765) stop 25
+  if (allocated (ai3) .or. allocated(si3)) stop 27
 
   deallocate (ai, ai2, si1, si2)
 end block

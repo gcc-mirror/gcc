@@ -166,7 +166,7 @@ libm2pim_la_SOURCES = $(M2MODS) \
 libm2pimdir = libm2pim
 libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
 libm2pim_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
-libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g
+libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g -Wreturn-type -fcase
 if TARGET_DARWIN
 libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
@@ -193,10 +193,6 @@ SYSTEM.def: Makefile
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	$(INSTALL_DATA) .libs/libm2pim.la $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2pim.la
-	$(INSTALL_DATA) .libs/libm2pim.a $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2pim.a
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
               $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \

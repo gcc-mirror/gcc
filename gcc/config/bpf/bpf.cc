@@ -258,7 +258,7 @@ bpf_option_override (void)
     {
       inform (input_location,
               "%<-fstack-protector%> does not work "
-              " on this architecture");
+	      "on this architecture");
       flag_stack_protect = 0;
     }
 }

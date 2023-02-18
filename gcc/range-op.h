@@ -109,6 +109,12 @@ protected:
 			 const wide_int &rh_lb,
 			 const wide_int &rh_ub) const;
 
+  // Called by fold range to split small subranges into parts when op1 == op2
+  void wi_fold_in_parts_equiv (irange &r, tree type,
+			       const wide_int &lb,
+			       const wide_int &ub,
+			       unsigned limit) const;
+
   // Tree code of the range operator or ERROR_MARK if unknown.
   tree_code m_code;
 };

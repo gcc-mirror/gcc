@@ -4,10 +4,11 @@
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target inff } */
 
-/* A conversion from signaling NaN to quiet NaN in a different format is not
-   valid for constexpr.  */
+/* A conversion from signaling NaN to quiet NaN in a different format or type
+   is not valid for constexpr.  */
 constexpr float fns = __builtin_nans (""); /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr double dns = __builtin_nansf (""); /* { dg-error "'constexpr' initializer not representable in type of object" } */
+constexpr long double ldns = __builtin_nans (""); /* { dg-error "'constexpr' initializer not representable in type of object" } */
 
 /* Test out-of-range values.  */
 constexpr float fu = __DBL_MIN__; /* { dg-error "'constexpr' initializer not representable in type of object" } */
@@ -21,6 +22,9 @@ constexpr _Complex float cfpr = __builtin_complex (0x1.ffffffp0, 0.0); /* { dg-e
 constexpr _Complex float cfui = __builtin_complex (0.0, __DBL_MIN__); /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr _Complex float cfoi = __builtin_complex (0.0, __DBL_MAX__); /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr _Complex float cfpi = __builtin_complex (0.0, 0x1.ffffffp0); /* { dg-error "'constexpr' initializer not representable in type of object" } */
+
+constexpr _Complex float cfd = __DBL_MAX__; /* { dg-error "'constexpr' initializer not representable in type of object" } */
+constexpr _Complex float cfi = __LONG_LONG_MAX__; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 
 void
 f0 ()
@@ -36,4 +40,6 @@ f0 ()
   (constexpr _Complex float) { __builtin_complex (0.0, __DBL_MIN__) }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   (constexpr _Complex float) { __builtin_complex (0.0, __DBL_MAX__) }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   (constexpr _Complex float) { __builtin_complex (0.0, 0x1.ffffffp0) }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
+  (constexpr _Complex float) { __DBL_MAX__ }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
+  (constexpr _Complex float) { __LONG_LONG_MAX__ }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 }

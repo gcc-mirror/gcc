@@ -106,7 +106,7 @@ PROCEDURE InstallInitialProcedure (p: PROC) : BOOLEAN ;
           then calling HALT with no parameter.
 *)
 
-PROCEDURE HALT ([exitcode: INTEGER = -1]) ;
+PROCEDURE HALT ([exitcode: INTEGER = -1]) <* noreturn *> ;
 
 
 (*
@@ -116,7 +116,8 @@ PROCEDURE HALT ([exitcode: INTEGER = -1]) ;
 *)
 
 PROCEDURE Halt (filename: ARRAY OF CHAR; line: CARDINAL;
-                function: ARRAY OF CHAR; description: ARRAY OF CHAR) ;
+                function: ARRAY OF CHAR; description: ARRAY OF CHAR)
+                <* noreturn *> ;
 
 
 (*
@@ -126,7 +127,7 @@ PROCEDURE Halt (filename: ARRAY OF CHAR; line: CARDINAL;
 *)
 
 PROCEDURE HaltC (filename: ADDRESS; line: CARDINAL;
-                 function, description: ADDRESS) ;
+                 function, description: ADDRESS) <* noreturn *> ;
 
 
 (*
@@ -143,7 +144,7 @@ PROCEDURE ExitOnHalt (e: INTEGER) ;
 PROCEDURE ErrorMessage (message: ARRAY OF CHAR;
                         filename: ARRAY OF CHAR;
                         line: CARDINAL;
-                        function: ARRAY OF CHAR) ;
+                        function: ARRAY OF CHAR) <* noreturn *> ;
 
 
 (*
@@ -175,30 +176,30 @@ PROCEDURE Length (a: ARRAY OF CHAR) : CARDINAL ;
    The following are the runtime exception handler routines.
 *)
 
-PROCEDURE AssignmentException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE ReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE IncException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE DecException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE InclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE ExclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE ShiftException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE RotateException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE StaticArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE DynamicArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE ForLoopBeginException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE ForLoopToException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE ForLoopEndException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE PointerNilException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE NoReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE CaseException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE WholeNonPosDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE WholeNonPosModException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE WholeZeroDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE WholeZeroRemException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE WholeValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE RealValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE ParameterException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
-PROCEDURE NoException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE AssignmentException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE ReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE IncException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE DecException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE InclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE ExclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE ShiftException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE RotateException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE StaticArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE DynamicArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE ForLoopBeginException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE ForLoopToException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE ForLoopEndException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE PointerNilException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE NoReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE CaseException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE WholeNonPosDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE WholeNonPosModException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE WholeZeroDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE WholeZeroRemException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE WholeValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE RealValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE ParameterException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
+PROCEDURE NoException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 
 
 END M2RTS.

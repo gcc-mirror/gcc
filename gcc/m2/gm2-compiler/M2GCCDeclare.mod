@@ -5020,7 +5020,8 @@ BEGIN
       RETURN( min )
    ELSIF GetSType(type)=NulSym
    THEN
-      MetaError1('unable to obtain the MIN value for type {%1as}', type)
+      MetaError1('unable to obtain the MIN value for type {%1as}', type) ;
+      RETURN NulSym
    ELSE
       RETURN( GetTypeMin(GetSType(type)) )
    END
@@ -5058,7 +5059,8 @@ BEGIN
       RETURN( max )
    ELSIF GetSType(type)=NulSym
    THEN
-      MetaError1('unable to obtain the MAX value for type {%1as}', type)
+      MetaError1('unable to obtain the MAX value for type {%1as}', type) ;
+      RETURN NulSym
    ELSE
       RETURN( GetTypeMax(GetSType(type)) )
    END

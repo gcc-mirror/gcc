@@ -161,7 +161,7 @@ extern bool old_style_parameter_scope (void);
 /* Return true if the next token from PARSER has the indicated
    TYPE.  */
 
-static inline bool
+inline bool
 c_parser_next_token_is (c_parser *parser, enum cpp_ttype type)
 {
   return c_parser_peek_token (parser)->type == type;
@@ -170,7 +170,7 @@ c_parser_next_token_is (c_parser *parser, enum cpp_ttype type)
 /* Return true if the next token from PARSER does not have the
    indicated TYPE.  */
 
-static inline bool
+inline bool
 c_parser_next_token_is_not (c_parser *parser, enum cpp_ttype type)
 {
   return !c_parser_next_token_is (parser, type);
@@ -179,7 +179,7 @@ c_parser_next_token_is_not (c_parser *parser, enum cpp_ttype type)
 /* Return true if the next token from PARSER is the indicated
    KEYWORD.  */
 
-static inline bool
+inline bool
 c_parser_next_token_is_keyword (c_parser *parser, enum rid keyword)
 {
   return c_parser_peek_token (parser)->keyword == keyword;

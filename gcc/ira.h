@@ -175,8 +175,11 @@ extern struct target_ira *this_target_ira;
 /* Major structure describing equivalence info for a pseudo.  */
 struct ira_reg_equiv_s
 {
-  /* True if we can use this equivalence.  */
+  /* True if we can use this as a general equivalence.  */
   bool defined_p;
+  /* True if we can use this equivalence only for caller save/restore
+     location.  */
+  bool caller_save_p;
   /* True if the usage of the equivalence is profitable.  */
   bool profitable_p;
   /* Equiv. memory, constant, invariant, and initializing insns of
@@ -232,7 +235,7 @@ extern rtx non_conflicting_reg_copy_p (rtx_insn *);
    non-local goto code using frame-pointer to address saved stack
    pointer value after restoring old frame pointer value.  The
    function returns TRUE if REGNO is such a static chain pseudo.  */
-static inline bool
+inline bool
 non_spilled_static_chain_regno_p (int regno)
 {
   return (cfun->static_chain_decl && crtl->has_nonlocal_goto

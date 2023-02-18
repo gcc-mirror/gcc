@@ -138,7 +138,7 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 
 /* Return X with all but the lowest bit masked off.  */
 
-static inline unsigned HOST_WIDE_INT
+inline unsigned HOST_WIDE_INT
 least_bit_hwi (unsigned HOST_WIDE_INT x)
 {
   return (x & -x);
@@ -146,7 +146,7 @@ least_bit_hwi (unsigned HOST_WIDE_INT x)
 
 /* True if X is zero or a power of two.  */
 
-static inline bool
+inline bool
 pow2_or_zerop (unsigned HOST_WIDE_INT x)
 {
   return least_bit_hwi (x) == x;
@@ -154,7 +154,7 @@ pow2_or_zerop (unsigned HOST_WIDE_INT x)
 
 /* True if X is a power of two.  */
 
-static inline bool
+inline bool
 pow2p_hwi (unsigned HOST_WIDE_INT x)
 {
   return x && pow2_or_zerop (x);
@@ -181,7 +181,7 @@ extern int ceil_log2			(unsigned HOST_WIDE_INT);
 #else /* GCC_VERSION >= 3004 */
 
 /* For convenience, define 0 -> word_size.  */
-static inline int
+inline int
 clz_hwi (unsigned HOST_WIDE_INT x)
 {
   if (x == 0)
@@ -195,7 +195,7 @@ clz_hwi (unsigned HOST_WIDE_INT x)
 # endif
 }
 
-static inline int
+inline int
 ctz_hwi (unsigned HOST_WIDE_INT x)
 {
   if (x == 0)
@@ -209,7 +209,7 @@ ctz_hwi (unsigned HOST_WIDE_INT x)
 # endif
 }
 
-static inline int
+inline int
 ffs_hwi (unsigned HOST_WIDE_INT x)
 {
 # if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
@@ -221,7 +221,7 @@ ffs_hwi (unsigned HOST_WIDE_INT x)
 # endif
 }
 
-static inline int
+inline int
 popcount_hwi (unsigned HOST_WIDE_INT x)
 {
 # if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
@@ -233,19 +233,19 @@ popcount_hwi (unsigned HOST_WIDE_INT x)
 # endif
 }
 
-static inline int
+inline int
 floor_log2 (unsigned HOST_WIDE_INT x)
 {
   return HOST_BITS_PER_WIDE_INT - 1 - clz_hwi (x);
 }
 
-static inline int
+inline int
 ceil_log2 (unsigned HOST_WIDE_INT x)
 {
   return x == 0 ? 0 : floor_log2 (x - 1) + 1;
 }
 
-static inline int
+inline int
 exact_log2 (unsigned HOST_WIDE_INT x)
 {
   return pow2p_hwi (x) ? ctz_hwi (x) : -1;
@@ -266,7 +266,7 @@ extern HOST_WIDE_INT least_common_multiple (HOST_WIDE_INT, HOST_WIDE_INT);
 
 /* Like ctz_hwi, except 0 when x == 0.  */
 
-static inline int
+inline int
 ctz_or_zero (unsigned HOST_WIDE_INT x)
 {
   return ffs_hwi (x) - 1;
@@ -274,7 +274,7 @@ ctz_or_zero (unsigned HOST_WIDE_INT x)
 
 /* Sign extend SRC starting from PREC.  */
 
-static inline HOST_WIDE_INT
+inline HOST_WIDE_INT
 sext_hwi (HOST_WIDE_INT src, unsigned int prec)
 {
   if (prec == HOST_BITS_PER_WIDE_INT)
@@ -304,7 +304,7 @@ sext_hwi (HOST_WIDE_INT src, unsigned int prec)
 }
 
 /* Zero extend SRC starting from PREC.  */
-static inline unsigned HOST_WIDE_INT
+inline unsigned HOST_WIDE_INT
 zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
 {
   if (prec == HOST_BITS_PER_WIDE_INT)

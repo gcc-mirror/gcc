@@ -987,15 +987,11 @@ static void
 sanitize_asan_mark_unpoison (void)
 {
   /* 1) Find all BBs that contain an ASAN_MARK poison call.  */
-  auto_sbitmap with_poison (last_basic_block_for_fn (cfun) + 1);
-  bitmap_clear (with_poison);
+  auto_bitmap with_poison;
   basic_block bb;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      if (bitmap_bit_p (with_poison, bb->index))
-	continue;
-
       gimple_stmt_iterator gsi;
       for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
 	{
@@ -1010,8 +1006,8 @@ sanitize_asan_mark_unpoison (void)
 
   auto_sbitmap poisoned (last_basic_block_for_fn (cfun) + 1);
   bitmap_clear (poisoned);
-  auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
-  bitmap_copy (worklist, with_poison);
+  /* We now treat with_poison as worklist.  */
+  bitmap worklist = with_poison;
 
   /* 2) Propagate the information to all reachable blocks.  */
   while (!bitmap_empty_p (worklist))
@@ -1088,8 +1084,7 @@ static void
 sanitize_asan_mark_poison (void)
 {
   /* 1) Find all BBs that possibly contain an ASAN_CHECK.  */
-  auto_sbitmap with_check (last_basic_block_for_fn (cfun) + 1);
-  bitmap_clear (with_check);
+  auto_bitmap with_check;
   basic_block bb;
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -1108,8 +1103,8 @@ sanitize_asan_mark_poison (void)
 
   auto_sbitmap can_reach_check (last_basic_block_for_fn (cfun) + 1);
   bitmap_clear (can_reach_check);
-  auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
-  bitmap_copy (worklist, with_check);
+  /* We now treat with_check as worklist.  */
+  bitmap worklist = with_check;
 
   /* 2) Propagate the information to all definitions blocks.  */
   while (!bitmap_empty_p (worklist))

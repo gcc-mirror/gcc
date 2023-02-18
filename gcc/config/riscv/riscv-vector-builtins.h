@@ -106,6 +106,7 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 #define RVV_REQUIRE_ZVE64 (1 << 1)	/* Require TARGET_MIN_VLEN > 32.  */
 #define RVV_REQUIRE_ELEN_FP_32 (1 << 2) /* Require FP ELEN >= 32.  */
 #define RVV_REQUIRE_ELEN_FP_64 (1 << 3) /* Require FP ELEN >= 64.  */
+#define RVV_REQUIRE_FULL_V (1 << 4) /* Require Full 'V' extension.  */
 
 /* Enumerates the RVV operand types.  */
 enum operand_type_index
@@ -139,6 +140,9 @@ enum rvv_base_type
 {
   RVV_BASE_vector,
   RVV_BASE_scalar,
+  RVV_BASE_mask,
+  RVV_BASE_unsigned_vector,
+  RVV_BASE_unsigned_scalar,
   RVV_BASE_vector_ptr,
   RVV_BASE_scalar_ptr,
   RVV_BASE_scalar_const_ptr,
@@ -151,6 +155,13 @@ enum rvv_base_type
   RVV_BASE_uint16_index,
   RVV_BASE_uint32_index,
   RVV_BASE_uint64_index,
+  RVV_BASE_shift_vector,
+  RVV_BASE_double_trunc_vector,
+  RVV_BASE_quad_trunc_vector,
+  RVV_BASE_oct_trunc_vector,
+  RVV_BASE_double_trunc_scalar,
+  RVV_BASE_double_trunc_unsigned_vector,
+  RVV_BASE_double_trunc_unsigned_scalar,
   NUM_BASE_TYPES
 };
 
@@ -327,6 +338,7 @@ public:
   void add_all_one_mask_operand (machine_mode);
   void add_vundef_operand (machine_mode);
   void add_fixed_operand (rtx);
+  void add_integer_operand (rtx);
   void add_mem_operand (machine_mode, unsigned);
 
   machine_mode vector_mode (void) const;
@@ -335,6 +347,9 @@ public:
   rtx use_exact_insn (insn_code);
   rtx use_contiguous_load_insn (insn_code);
   rtx use_contiguous_store_insn (insn_code);
+  rtx use_compare_insn (rtx_code, insn_code);
+  rtx use_ternop_insn (bool, insn_code);
+  rtx use_widen_ternop_insn (insn_code);
   rtx generate_insn (insn_code);
 
   /* The function call expression.  */
@@ -373,6 +388,12 @@ public:
 
   /* Return true if intrinsic can be overloaded.  */
   virtual bool can_be_overloaded_p (enum predication_type_index) const;
+
+  /* Return true if intrinsics use mask predication.  */
+  virtual bool use_mask_predication_p () const;
+
+  /* Return true if intrinsics has merge operand.  */
+  virtual bool has_merge_operand_p () const;
 
   /* Expand the given call into rtl.  Return the result of the function,
      or an arbitrary value if the function doesn't return a result.  */
@@ -450,6 +471,13 @@ function_expander::add_fixed_operand (rtx x)
   create_fixed_operand (&m_ops[opno++], x);
 }
 
+/* Add an integer operand X.  */
+inline void
+function_expander::add_integer_operand (rtx x)
+{
+  create_integer_operand (&m_ops[opno++], INTVAL (x));
+}
+
 /* Return the machine_mode of the corresponding vector type.  */
 inline machine_mode
 function_expander::vector_mode (void) const
@@ -495,6 +523,22 @@ function_base::apply_tail_policy_p () const
    intrinsics has mask policy operand.  */
 inline bool
 function_base::apply_mask_policy_p () const
+{
+  return true;
+}
+
+/* We choose to return true by default since most of the intrinsics use
+   mask predication.  */
+inline bool
+function_base::use_mask_predication_p () const
+{
+  return true;
+}
+
+/* We choose to return true by default since most of the intrinsics use
+   has merge operand.  */
+inline bool
+function_base::has_merge_operand_p () const
 {
   return true;
 }

@@ -375,7 +375,7 @@ extern void (*include_callback) (const char *);
 
 /* Read the next character from the MD file.  */
 
-static inline int
+inline int
 read_char (void)
 {
   return md_reader_ptr->read_char ();
@@ -383,7 +383,7 @@ read_char (void)
 
 /* Put back CH, which was the last character read from the MD file.  */
 
-static inline void
+inline void
 unread_char (int ch)
 {
   md_reader_ptr->unread_char (ch);

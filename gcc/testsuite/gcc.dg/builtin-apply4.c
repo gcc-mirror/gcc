@@ -3,6 +3,7 @@
 /* { dg-additional-options "-mno-mmx" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-do run } */
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-xfail-run-if "can cause stack underflow" { amdgcn-*-* } } */
 
 extern void abort (void);
 

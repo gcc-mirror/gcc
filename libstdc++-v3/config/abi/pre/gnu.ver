@@ -2504,6 +2504,13 @@ GLIBCXX_3.4.31 {
     _ZNSt6chrono9tzdb_list14const_iteratorppEi;
     _ZN9__gnu_cxx21zoneinfo_dir_overrideEv;
 
+    # __shared_ptr<directory_iterator::_Dir>::operator bool()
+    _ZNKSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE[012]EEcvbEv;
+    _ZNKSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE[012]EEcvbEv;
+    # __shared_ptr<recursive_directory_iterator::_Dir_stack>::operator bool()
+    _ZNKSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEcvbEv;
+    _ZNKSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEcvbEv;
+
 } GLIBCXX_3.4.30;
 
 # Symbols in the support library (libsupc++) have their own tag.

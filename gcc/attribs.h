@@ -148,7 +148,7 @@ canonicalize_attr_name (const char *&s, T &l)
 /* For a given IDENTIFIER_NODE, strip leading and trailing '_' characters
    so that we have a canonical form of attribute names.  */
 
-static inline tree
+inline tree
 canonicalize_attr_name (tree attr_name)
 {
   size_t l = IDENTIFIER_LENGTH (attr_name);
@@ -163,7 +163,7 @@ canonicalize_attr_name (tree attr_name)
 /* Compare attribute identifiers ATTR1 and ATTR2 with length ATTR1_LEN and
    ATTR2_LEN.  */
 
-static inline bool
+inline bool
 cmp_attribs (const char *attr1, size_t attr1_len,
 	     const char *attr2, size_t attr2_len)
 {
@@ -172,7 +172,7 @@ cmp_attribs (const char *attr1, size_t attr1_len,
 
 /* Compare attribute identifiers ATTR1 and ATTR2.  */
 
-static inline bool
+inline bool
 cmp_attribs (const char *attr1, const char *attr2)
 {
   return cmp_attribs (attr1, strlen (attr1), attr2, strlen (attr2));
@@ -181,7 +181,7 @@ cmp_attribs (const char *attr1, const char *attr2)
 /* Given an identifier node IDENT and a string ATTR_NAME, return true
    if the identifier node is a valid attribute name for the string.  */
 
-static inline bool
+inline bool
 is_attribute_p (const char *attr_name, const_tree ident)
 {
   return cmp_attribs (attr_name, strlen (attr_name),
@@ -193,7 +193,7 @@ is_attribute_p (const char *attr_name, const_tree ident)
    for standard attribute (NULL get_attribute_namespace) or "gnu"
    namespace.  */
 
-static inline bool
+inline bool
 is_attribute_namespace_p (const char *attr_ns, const_tree attr)
 {
   tree ident = get_attribute_namespace (attr);
@@ -212,7 +212,7 @@ is_attribute_namespace_p (const char *attr_ns, const_tree attr)
    occurrences are wanted.  ATTR_NAME must be in the form 'text' (not
    '__text__').  */
 
-static inline tree
+inline tree
 lookup_attribute (const char *attr_name, tree list)
 {
   if (CHECKING_P && attr_name[0] != '_')
@@ -236,7 +236,7 @@ lookup_attribute (const char *attr_name, tree list)
 /* Similar to lookup_attribute, but also match the attribute namespace.
    ATTR_NS "" stands for either standard attribute or "gnu" namespace.  */
 
-static inline tree
+inline tree
 lookup_attribute (const char *attr_ns, const char *attr_name, tree list)
 {
   if (CHECKING_P && attr_name[0] != '_')
@@ -269,7 +269,7 @@ lookup_attribute (const char *attr_ns, const char *attr_name, tree list)
    starts with ATTR_NAME.  ATTR_NAME must be in the form 'text' (not
    '__text__').  */
 
-static inline tree
+inline tree
 lookup_attribute_by_prefix (const char *attr_name, tree list)
 {
   gcc_checking_assert (attr_name[0] != '_');

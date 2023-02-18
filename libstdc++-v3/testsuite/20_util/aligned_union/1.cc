@@ -64,6 +64,8 @@ void test01()
   static_assert(sizeof(au_type2::type) >= max_s+100,
                 "Storage size (at least len)");
 }
+// { dg-warning "deprecated" "" { target c++23 } 57 }
+// { dg-warning "deprecated" "" { target c++23 } 62 }
 
 int main()
 {

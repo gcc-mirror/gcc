@@ -230,7 +230,6 @@ docstring relicensing	Gerald Pfeifer		<gerald@pfeifer.com>
 docstring relicensing	Joseph Myers		<joseph@codesourcery.com>
 predict.def		Jan Hubicka		<hubicka@ucw.cz>
 gcov			Jan Hubicka		<hubicka@ucw.cz>
-gcov			Martin Liska		<mliska@suse.cz>
 gcov			Nathan Sidwell		<nathan@acm.org>
 option handling		Joseph Myers		<joseph@codesourcery.com>
 middle-end		Jeff Law		<jeffreyalaw@gmail.com>
@@ -268,7 +267,6 @@ check in changes outside of the parts of the compiler they maintain.
 			Reviewers
 
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
-callgraph		Martin Liska		<mliska@suse.cz>
 callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
 CTF, BTF		David Faust		<david.faust@oracle.com>
@@ -519,6 +517,7 @@ Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>
 Renlin Li					<renlin.li@arm.com>
 Xinliang David Li				<davidxl@google.com>
 Chen Liqin					<liqin.gcc@gmail.com>
+Martin Liska					<mliska@suse.cz>
 Jiangning Liu					<jiangning.liu@arm.com>
 Sa Liu						<saliu@de.ibm.com>
 Ralph Loader					<rcl@ihug.co.nz>

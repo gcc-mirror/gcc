@@ -206,7 +206,7 @@ extern void verify_flow_info (void);
 /* Check control flow invariants, if internal consistency checks are
    enabled.  */
 
-static inline void
+inline void
 checking_verify_flow_info (void)
 {
   /* TODO: Add a separate option for -fchecking=cfg.  */

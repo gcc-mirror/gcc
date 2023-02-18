@@ -91,7 +91,7 @@ extern void flush_ssaname_freelist (void);
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
    in function cfun.  */
 
-static inline tree
+inline tree
 make_ssa_name (tree var, gimple *stmt = NULL)
 {
   return make_ssa_name_fn (cfun, var, stmt);
@@ -100,7 +100,7 @@ make_ssa_name (tree var, gimple *stmt = NULL)
 /* Return an SSA_NAME node using the template SSA name NAME defined in
    statement STMT in function cfun.  */
 
-static inline tree
+inline tree
 copy_ssa_name (tree var, gimple *stmt = NULL)
 {
   return copy_ssa_name_fn (cfun, var, stmt);
@@ -109,7 +109,7 @@ copy_ssa_name (tree var, gimple *stmt = NULL)
 /*  Creates a duplicate of a SSA name NAME tobe defined by statement STMT
     in function cfun.  */
 
-static inline tree
+inline tree
 duplicate_ssa_name (tree var, gimple *stmt)
 {
   return duplicate_ssa_name_fn (cfun, var, stmt);
@@ -117,7 +117,7 @@ duplicate_ssa_name (tree var, gimple *stmt)
 
 /* Release the SSA name NAME used in function cfun.  */
 
-static inline void
+inline void
 release_ssa_name (tree name)
 {
   release_ssa_name_fn (cfun, name);
@@ -126,7 +126,7 @@ release_ssa_name (tree name)
 /* Return an anonymous SSA_NAME node for type TYPE defined in statement STMT
    in function cfun.  Arrange so that it uses NAME in dumps.  */
 
-static inline tree
+inline tree
 make_temp_ssa_name (tree type, gimple *stmt, const char *name)
 {
   tree ssa_name;

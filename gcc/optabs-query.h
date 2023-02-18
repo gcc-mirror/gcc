@@ -92,7 +92,7 @@ trapv_binoptab_p (optab binoptab)
 /* Return insn code for a comparison operator with VMODE
    resultin MASK_MODE, unsigned if UNS is true.  */
 
-static inline enum insn_code
+inline enum insn_code
 get_vec_cmp_icode (machine_mode vmode, machine_mode mask_mode, bool uns)
 {
   optab tab = uns ? vec_cmpu_optab : vec_cmp_optab;
@@ -102,7 +102,7 @@ get_vec_cmp_icode (machine_mode vmode, machine_mode mask_mode, bool uns)
 /* Return insn code for a comparison operator with VMODE
    resultin MASK_MODE (only for EQ/NE).  */
 
-static inline enum insn_code
+inline enum insn_code
 get_vec_cmp_eq_icode (machine_mode vmode, machine_mode mask_mode)
 {
   return convert_optab_handler (vec_cmpeq_optab, vmode, mask_mode);
@@ -125,7 +125,7 @@ get_vcond_icode (machine_mode vmode, machine_mode cmode, bool uns)
 /* Return insn code for a conditional operator with a mask mode
    MMODE resulting in a value of mode VMODE.  */
 
-static inline enum insn_code
+inline enum insn_code
 get_vcond_mask_icode (machine_mode vmode, machine_mode mmode)
 {
   return convert_optab_handler (vcond_mask_optab, vmode, mmode);
@@ -134,7 +134,7 @@ get_vcond_mask_icode (machine_mode vmode, machine_mode mmode)
 /* Return insn code for a conditional operator with a comparison in
    mode CMODE (only EQ/NE), resulting in a value of mode VMODE.  */
 
-static inline enum insn_code
+inline enum insn_code
 get_vcond_eq_icode (machine_mode vmode, machine_mode cmode)
 {
   return convert_optab_handler (vcondeq_optab, vmode, cmode);

@@ -649,7 +649,7 @@ sanitize_unreachable_fn (tree *data, location_t loc)
       ? (flag_sanitize_trap & SANITIZE_UNREACHABLE)
       : flag_unreachable_traps)
     {
-      fn = builtin_decl_explicit (BUILT_IN_TRAP);
+      fn = builtin_decl_explicit (BUILT_IN_UNREACHABLE_TRAP);
       *data = NULL_TREE;
     }
   else if (san)

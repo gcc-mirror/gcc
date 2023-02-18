@@ -860,6 +860,9 @@ lra_final_code_change (void)
 		lra_update_dup (id, i);
 		insn_change_p = true;
 	      }
+	  if ((GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+	      && alter_subregs (&XEXP (pat, 0), false))
+	    insn_change_p = true;
 	  if (insn_change_p)
 	    lra_update_operator_dups (id);
 

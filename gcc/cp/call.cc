@@ -7335,7 +7335,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      if (complain & tf_warning)
+      if ((complain & tf_warning) && !processing_template_decl)
 	warn_logical_operator (loc, code, boolean_type_node,
 			       code_orig_arg1, arg1,
 			       code_orig_arg2, arg2);
@@ -12542,6 +12542,8 @@ joust_maybe_elide_copy (z_candidate *&cand)
   if (!DECL_COPY_CONSTRUCTOR_P (fn) && !DECL_MOVE_CONSTRUCTOR_P (fn))
     return false;
   conversion *conv = cand->convs[0];
+  if (conv->kind == ck_ambig)
+    return false;
   gcc_checking_assert (conv->kind == ck_ref_bind);
   conv = next_conversion (conv);
   if (conv->kind == ck_user && !TYPE_REF_P (conv->type))
@@ -13583,7 +13585,7 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 
   /* If the initializer is constant, put it in DECL_INITIAL so we get
      static initialization and use in constant expressions.  */
-  init = maybe_constant_init (expr);
+  init = maybe_constant_init (expr, var, /*manifestly_const_eval=*/true);
   /* As in store_init_value.  */
   init = cp_fully_fold (init);
   if (TREE_CONSTANT (init))

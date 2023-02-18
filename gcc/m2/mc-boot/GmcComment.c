@@ -463,6 +463,6 @@ extern "C" void _M2_mcComment_init (__attribute__((unused)) int argc,__attribute
 {
 }
 
-extern "C" void _M2_mcComment_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcComment_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

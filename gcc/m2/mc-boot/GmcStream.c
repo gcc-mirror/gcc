@@ -261,6 +261,6 @@ extern "C" void _M2_mcStream_init (__attribute__((unused)) int argc,__attribute_
   frag = Indexing_InitIndex (1);
 }
 
-extern "C" void _M2_mcStream_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcStream_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

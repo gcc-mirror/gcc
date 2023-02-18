@@ -219,7 +219,10 @@
      built.  The C++ Standard also describes a
      <span class="emphasis"><em>freestanding</em></span> environment, in which only a
      minimal set of headers are provided.  This option builds such an
-     environment.
+     environment.  Note that a hosted library installs headers that still can
+     be used in non hosted environments, as the library checks for
+     <code class="code">__STDC_HOSTED__</code>, however, a library configured with
+     <code class="code">--disable-hosted-libstdcxx</code> will not install unusable headers.
      </p></dd><dt><span class="term"><code class="code">--disable-libstdcxx-hosted</code></span></dt><dd><p>This is an alias for <code class="code">--disable-hosted-libstdcxx</code>.</p></dd><dt><span class="term"><code class="code">--disable-libstdcxx-verbose</code></span></dt><dd><p>
      By default, the library is configured to write descriptive messages
      to standard error for certain events such as calling a pure virtual

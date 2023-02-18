@@ -315,21 +315,21 @@ private:
 /* ggc marking routines.  */
 
 template<typename K, typename V, typename H>
-static inline void
+inline void
 gt_ggc_mx (hash_map<K, V, H> *h)
 {
   gt_ggc_mx (&h->m_table);
 }
 
 template<typename K, typename V, typename H>
-static inline void
+inline void
 gt_pch_nx (hash_map<K, V, H> *h)
 {
   gt_pch_nx (&h->m_table);
 }
 
 template<typename K, typename V, typename H>
-static inline void
+inline void
 gt_cleare_cache (hash_map<K, V, H> *h)
 {
   if (h)
@@ -337,7 +337,7 @@ gt_cleare_cache (hash_map<K, V, H> *h)
 }
 
 template<typename K, typename V, typename H>
-static inline void
+inline void
 gt_pch_nx (hash_map<K, V, H> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_table.m_entries, NULL, cookie);

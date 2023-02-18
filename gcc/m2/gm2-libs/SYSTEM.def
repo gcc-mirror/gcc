@@ -89,7 +89,7 @@ PROCEDURE SHIFT (val: <a set type>;
      num is negative, otherwise the direction is up/left.
   *)
 
-PROCEDURE THROW (i: INTEGER) ;
+PROCEDURE THROW (i: INTEGER) <* noreturn *> ;
   (*
      THROW is a GNU extension and was not part of the PIM or ISO
      standards.  It throws an exception which will be caught by the

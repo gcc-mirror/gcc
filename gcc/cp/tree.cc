@@ -2608,6 +2608,18 @@ dependent_name (tree x)
   return NULL_TREE;
 }
 
+/* Like dependent_name, but instead takes a CALL_EXPR and also checks
+   its dependence.  */
+
+tree
+call_expr_dependent_name (tree x)
+{
+  if (TREE_TYPE (x) != NULL_TREE)
+    /* X isn't dependent, so its callee isn't a dependent name.  */
+    return NULL_TREE;
+  return dependent_name (CALL_EXPR_FN (x));
+}
+
 /* Returns true iff X is an expression for an overloaded function
    whose type cannot be known without performing overload
    resolution.  */
@@ -3870,16 +3882,18 @@ decl_internal_context_p (const_tree decl)
   return !TREE_PUBLIC (decl);
 }
 
-/* Subroutine of cp_tree_equal: t1 and t2 are the CALL_EXPR_FNs of two
-   CALL_EXPRS.  Return whether they are equivalent.  */
+/* Subroutine of cp_tree_equal: t1 and t2 are two CALL_EXPRs.
+   Return whether their CALL_EXPR_FNs are equivalent.  */
 
 static bool
 called_fns_equal (tree t1, tree t2)
 {
   /* Core 1321: dependent names are equivalent even if the overload sets
      are different.  But do compare explicit template arguments.  */
-  tree name1 = dependent_name (t1);
-  tree name2 = dependent_name (t2);
+  tree name1 = call_expr_dependent_name (t1);
+  tree name2 = call_expr_dependent_name (t2);
+  t1 = CALL_EXPR_FN (t1);
+  t2 = CALL_EXPR_FN (t2);
   if (name1 || name2)
     {
       tree targs1 = NULL_TREE, targs2 = NULL_TREE;
@@ -4037,7 +4051,7 @@ cp_tree_equal (tree t1, tree t2)
 	if (KOENIG_LOOKUP_P (t1) != KOENIG_LOOKUP_P (t2))
 	  return false;
 
-	if (!called_fns_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	if (!called_fns_equal (t1, t2))
 	  return false;
 
 	call_expr_arg_iterator iter1, iter2;

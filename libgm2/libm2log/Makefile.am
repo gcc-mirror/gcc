@@ -131,7 +131,7 @@ libm2log_la_SOURCES = $(M2MODS) Break.c
 
 libm2log_la_DEPENDENCIES = ../libm2pim/SYSTEM.def $(addsuffix .lo, $(basename $(libm2log_la_SOURCES)))
 libm2log_la_CFLAGS = -I. -DBUILD_GM2_LIBS -I@srcdir@/../
-libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-log -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso
+libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-log -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -Wreturn-type -fcase
 if TARGET_DARWIN
 libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
@@ -150,11 +150,6 @@ M2LIBDIR = /m2/m2log/
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	$(INSTALL_DATA) .libs/libm2log.la $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.la
-	$(INSTALL_DATA) .libs/libm2log.a $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-	chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.a
-	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)libm2log.a
 	for i in $(M2DEFS) $(M2MODS) ; do \
            if [ -f $$i ] ; then \
               $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \

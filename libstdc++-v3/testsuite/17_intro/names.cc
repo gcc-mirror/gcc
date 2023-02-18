@@ -30,7 +30,7 @@
 #define F (
 #define G (
 #define H (
-#define I (
+// <complex.h> defines I
 #define J (
 #define K (
 #define L (
@@ -108,9 +108,18 @@
 #endif
 #define z (
 
+#define attributes (
+#define bin_op (
+#define clockid (
 #define func (
-#define tmp (
+#define max_val (
+#define min_val (
+#define object (
+#define ostr (
+#define policy (
 #define sz (
+#define tinfo (
+#define tmp (
 #define token (
 #define value_t (
 
@@ -156,6 +165,7 @@
 #define Alloc			Alloc is not a reserved name
 #define BinaryFunction1		BinaryFunction1 is not a reserved name
 #define BinaryFunction2		BinaryFunction2 is not a reserved name
+#define BinaryOperation		BinaryOperation is not a reserved name
 #define Char			Char is not a reserved name
 #define CharT			CharT is not a reserved name
 #define Cmp			Cmp is not a reserved name
@@ -179,6 +189,7 @@
 #define H1			H1 is not a reserved name
 #define H2			H2 is not a reserved name
 #define Head			Head is not a reserved name
+#define IsVector		IsVector is not a reserved name
 #define It			It is not a reserved name
 #define Iter			Iter is not a reserved name
 #define Iterator		Iterator is not a reserved name
@@ -191,16 +202,22 @@
 #define Pointer			Pointer is not a reserved name
 #define Policy			Policy is not a reserved name
 #define Pred			Pred is not a reserved name
+#define Proj			Proj is not a reserved name
+#define Proj1			Proj1 is not a reserved name
+#define Proj2			Proj2 is not a reserved name
 #define Ptr			Ptr is not a reserved name
 #define Reference		Reference is not a reserved name
 #define Seq			Seq is not a reserved name
 #define Seq_RAIter		Seq_RAIter is not a reserved name
 #define Series			Series is not a reserved name
 #define Set			Set is not a reserved name
+#define Size			Size is not a reserved name
 #define String			String is not a reserved name
 #define Tp			Tp is not a reserved name
+#define TQual			TQual is not a reserved name
 #define Traits			Traits is not a reserved name
 #define Type			Type is not a reserved name
+#define UQual			UQual is not a reserved name
 #define Value			Value is not a reserved name
 #define ValueT			ValueT is not a reserved name
 #define ValueType		ValueType is not a reserved name

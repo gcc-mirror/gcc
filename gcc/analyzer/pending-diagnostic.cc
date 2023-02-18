@@ -139,6 +139,12 @@ static bool
 fixup_location_in_macro_p (cpp_hashnode *macro)
 {
   ht_identifier ident = macro->ident;
+
+  /* Don't unwind inside "alloca" macro, so that we don't suppress warnings
+     from it (due to being in system headers).  */
+  if (ht_ident_eq (ident, "alloca"))
+    return true;
+
   /* Don't unwind inside <stdarg.h> macros, so that we don't suppress warnings
      from them (due to being in system headers).  */
   if (ht_ident_eq (ident, "va_start")

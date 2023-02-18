@@ -47,6 +47,7 @@ FROM SymbolTable IMPORT NulSym,
       	       	     	PutSet, PutVar,
       	       	     	PutSubrange,
                         PutExportQualified,
+                        PutProcedureNoReturn,
                         GetSym, GetSymName,
                         GetCurrentModule, SetCurrentModule,
                         IsLegal,
@@ -418,6 +419,7 @@ BEGIN
 
    Throw := MakeProcedure(BuiltinTokenNo,
                           MakeKey('THROW')) ;       (* Procedure       *)
+   PutProcedureNoReturn (Throw, TRUE) ;
 
    CreateMinMaxFor(Word, 'MinWord', 'MaxWord', GetWordType()) ;
    CreateMinMaxFor(Address, 'MinAddress', 'MaxAddress', GetPointerType()) ;

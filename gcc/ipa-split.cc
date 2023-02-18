@@ -1715,10 +1715,11 @@ execute_split_functions (void)
   struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
   if (flags_from_decl_or_type (current_function_decl)
-      & (ECF_NORETURN|ECF_MALLOC))
+      & (ECF_NORETURN|ECF_MALLOC|ECF_RETURNS_TWICE))
     {
       if (dump_file)
-	fprintf (dump_file, "Not splitting: noreturn/malloc function.\n");
+	fprintf (dump_file, "Not splitting: noreturn/malloc/returns_twice "
+			    "function.\n");
       return 0;
     }
   if (MAIN_NAME_P (DECL_NAME (current_function_decl)))

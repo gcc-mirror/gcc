@@ -28,7 +28,7 @@ value_range range_negatives (tree type);
 
 // Return an irange instance that is a boolean TRUE.
 
-static inline int_range<1>
+inline int_range<1>
 range_true (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
@@ -37,7 +37,7 @@ range_true (tree type)
 
 // Return an irange instance that is a boolean FALSE.
 
-static inline int_range<1>
+inline int_range<1>
 range_false (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
@@ -46,7 +46,7 @@ range_false (tree type)
 
 // Return an irange that covers both true and false.
 
-static inline int_range<1>
+inline int_range<1>
 range_true_and_false (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);

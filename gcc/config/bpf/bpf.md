@@ -242,7 +242,7 @@
 
 (define_insn "zero_extendhidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
-	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "0,r,m")))]
+	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "0,r,q")))]
   ""
   "@
    and\t%0,0xffff
@@ -252,7 +252,7 @@
 
 (define_insn "zero_extendqidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "0,r,m")))]
+	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "0,r,q")))]
   ""
   "@
    and\t%0,0xff
@@ -263,7 +263,7 @@
 (define_insn "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI
-	  (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
+	  (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
   ""
   "@
    * return bpf_has_alu32 ? \"mov32\t%0,%1\" : \"mov\t%0,%1\;and\t%0,0xffffffff\";
@@ -302,8 +302,8 @@
 }")
 
 (define_insn "*mov<MM:mode>"
-  [(set (match_operand:MM 0 "nonimmediate_operand" "=r, r,r,m,m")
-        (match_operand:MM 1 "mov_src_operand"      " m,rI,B,r,I"))]
+  [(set (match_operand:MM 0 "nonimmediate_operand" "=r, r,r,q,q")
+        (match_operand:MM 1 "mov_src_operand"      " q,rI,B,r,I"))]
   ""
   "@
    ldx<mop>\t%0,%1

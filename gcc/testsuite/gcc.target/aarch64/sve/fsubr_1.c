@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O3 --save-temps" } */
+/* { dg-options "-O3 --save-temps -fno-trapping-math" } */
 
 #define DO_IMMEDIATE_OPS(VALUE, TYPE, NAME)			\
 void vsubrarithimm_##NAME##_##TYPE (TYPE *dst, int count)	\

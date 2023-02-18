@@ -1166,7 +1166,7 @@ extern void fancy_abort (const char *, int, const char *)
    so does GCC 3.4.x (PR17436).  */
 #define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
 #elif defined(__GNUC__)
-static inline char *
+inline char *
 helper_const_non_const_cast (const char *p)
 {
   union {
@@ -1308,7 +1308,7 @@ void gcc_stablesort_r (void *, size_t, size_t, sort_r_cmp_fn *, void *data);
 
 /* Return true if STR string starts with PREFIX.  */
 
-static inline bool
+inline bool
 startswith (const char *str, const char *prefix)
 {
   return strncmp (str, prefix, strlen (prefix)) == 0;
@@ -1316,7 +1316,7 @@ startswith (const char *str, const char *prefix)
 
 /* Return true if STR string ends with SUFFIX.  */
 
-static inline bool
+inline bool
 endswith (const char *str, const char *suffix)
 {
   size_t str_len = strlen (str);

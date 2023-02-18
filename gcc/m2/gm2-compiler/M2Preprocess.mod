@@ -101,6 +101,7 @@ END GetFileName ;
    Return basename.
 *)
 
+(*
 PROCEDURE BaseName (Path: String) : String ;
 VAR
    ext,
@@ -120,6 +121,7 @@ BEGIN
    END ;
    RETURN Dup (Slice(Path, basename, ext))
 END BaseName ;
+*)
 
 (*
    MakeSaveTempsFileName - return a temporary file like 

@@ -67,9 +67,7 @@ public:
   }
   void add_vundef_operand (machine_mode mode)
   {
-    add_input_operand (gen_rtx_UNSPEC (mode, gen_rtvec (1, const0_rtx),
-				       UNSPEC_VUNDEF),
-		       mode);
+    add_input_operand (RVV_VUNDEF (mode), mode);
   }
   void add_policy_operand (enum tail_policy vta, enum mask_policy vma)
   {
@@ -78,9 +76,9 @@ public:
     add_input_operand (tail_policy_rtx, Pmode);
     add_input_operand (mask_policy_rtx, Pmode);
   }
-  void add_avl_type_operand ()
+  void add_avl_type_operand (avl_type type)
   {
-    add_input_operand (get_avl_type_rtx (avl_type::VLMAX), Pmode);
+    add_input_operand (gen_int_mode (type, Pmode), Pmode);
   }
 
   void expand (enum insn_code icode, bool temporary_volatile_p = false)
@@ -165,27 +163,54 @@ calculate_ratio (unsigned int sew, enum vlmul_type vlmul)
 }
 
 /* Emit an RVV unmask && vl mov from SRC to DEST.  */
-void
-emit_pred_op (unsigned icode, rtx dest, rtx src, machine_mode mask_mode)
+static void
+emit_pred_op (unsigned icode, rtx mask, rtx dest, rtx src, rtx len,
+	      machine_mode mask_mode)
 {
   insn_expander<8> e;
   machine_mode mode = GET_MODE (dest);
 
   e.add_output_operand (dest, mode);
-  e.add_all_one_mask_operand (mask_mode);
+
+  if (mask)
+    e.add_input_operand (mask, GET_MODE (mask));
+  else
+    e.add_all_one_mask_operand (mask_mode);
+
   e.add_vundef_operand (mode);
 
   e.add_input_operand (src, GET_MODE (src));
 
-  rtx vlmax = emit_vlmax_vsetvl (mode);
-  e.add_input_operand (vlmax, Pmode);
+  if (len)
+    e.add_input_operand (len, Pmode);
+  else
+    {
+      rtx vlmax = emit_vlmax_vsetvl (mode);
+      e.add_input_operand (vlmax, Pmode);
+    }
 
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
     e.add_policy_operand (get_prefer_tail_policy (), get_prefer_mask_policy ());
 
-  e.add_avl_type_operand ();
+  if (len)
+    e.add_avl_type_operand (avl_type::NONVLMAX);
+  else
+    e.add_avl_type_operand (avl_type::VLMAX);
 
   e.expand ((enum insn_code) icode, MEM_P (dest) || MEM_P (src));
+}
+
+void
+emit_vlmax_op (unsigned icode, rtx dest, rtx src, machine_mode mask_mode)
+{
+  emit_pred_op (icode, NULL_RTX, dest, src, NULL_RTX, mask_mode);
+}
+
+void
+emit_nonvlmax_op (unsigned icode, rtx dest, rtx src, rtx len,
+		  machine_mode mask_mode)
+{
+  emit_pred_op (icode, NULL_RTX, dest, src, len, mask_mode);
 }
 
 static void
@@ -199,7 +224,7 @@ expand_const_vector (rtx target, rtx src, machine_mode mask_mode)
       gcc_assert (
 	const_vec_duplicate_p (src, &elt)
 	&& (rtx_equal_p (elt, const0_rtx) || rtx_equal_p (elt, const1_rtx)));
-      emit_pred_op (code_for_pred_mov (mode), target, src, mode);
+      emit_vlmax_op (code_for_pred_mov (mode), target, src, mask_mode);
       return;
     }
 
@@ -210,10 +235,10 @@ expand_const_vector (rtx target, rtx src, machine_mode mask_mode)
       /* Element in range -16 ~ 15 integer or 0.0 floating-point,
 	 we use vmv.v.i instruction.  */
       if (satisfies_constraint_vi (src) || satisfies_constraint_Wc0 (src))
-	emit_pred_op (code_for_pred_mov (mode), tmp, src, mask_mode);
+	emit_vlmax_op (code_for_pred_mov (mode), tmp, src, mask_mode);
       else
-	emit_pred_op (code_for_pred_broadcast (mode), tmp,
-		      force_reg (elt_mode, elt), mask_mode);
+	emit_vlmax_op (code_for_pred_broadcast (mode), tmp,
+		       force_reg (elt_mode, elt), mask_mode);
 
       if (tmp != target)
 	emit_move_insn (target, tmp);
@@ -252,12 +277,12 @@ legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
     {
       rtx tmp = gen_reg_rtx (mode);
       if (MEM_P (src))
-	emit_pred_op (code_for_pred_mov (mode), tmp, src, mask_mode);
+	emit_vlmax_op (code_for_pred_mov (mode), tmp, src, mask_mode);
       else
 	emit_move_insn (tmp, src);
       src = tmp;
     }
-  emit_pred_op (code_for_pred_mov (mode), dest, src, mask_mode);
+  emit_vlmax_op (code_for_pred_mov (mode), dest, src, mask_mode);
   return true;
 }
 
@@ -369,6 +394,94 @@ get_vector_mode (scalar_mode inner_mode, poly_uint64 nunits)
 	&& riscv_v_ext_vector_mode_p (mode))
       return mode;
   return opt_machine_mode ();
+}
+
+bool
+simm5_p (rtx x)
+{
+  if (!CONST_INT_P (x))
+    return false;
+  return IN_RANGE (INTVAL (x), -16, 15);
+}
+
+bool
+neg_simm5_p (rtx x)
+{
+  if (!CONST_INT_P (x))
+    return false;
+  return IN_RANGE (INTVAL (x), -15, 16);
+}
+
+bool
+has_vi_variant_p (rtx_code code, rtx x)
+{
+  switch (code)
+    {
+    case PLUS:
+    case AND:
+    case IOR:
+    case XOR:
+    case SS_PLUS:
+    case US_PLUS:
+    case EQ:
+    case NE:
+    case LE:
+    case LEU:
+    case GT:
+    case GTU:
+      return simm5_p (x);
+
+    case LT:
+    case LTU:
+    case GE:
+    case GEU:
+    case MINUS:
+    case SS_MINUS:
+      return neg_simm5_p (x);
+
+    default:
+      return false;
+    }
+}
+
+bool
+sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
+		     machine_mode vector_mode, machine_mode mask_mode,
+		     bool has_vi_variant_p,
+		     void (*emit_vector_func) (rtx *, rtx))
+{
+  machine_mode scalar_mode = GET_MODE_INNER (vector_mode);
+  if (has_vi_variant_p)
+    {
+      *scalar_op = force_reg (scalar_mode, *scalar_op);
+      return false;
+    }
+
+  if (TARGET_64BIT)
+    {
+      if (!rtx_equal_p (*scalar_op, const0_rtx))
+	*scalar_op = force_reg (scalar_mode, *scalar_op);
+      return false;
+    }
+
+  if (immediate_operand (*scalar_op, Pmode))
+    {
+      if (!rtx_equal_p (*scalar_op, const0_rtx))
+	*scalar_op = force_reg (Pmode, *scalar_op);
+
+      *scalar_op = gen_rtx_SIGN_EXTEND (scalar_mode, *scalar_op);
+      return false;
+    }
+
+  if (CONST_INT_P (*scalar_op))
+    *scalar_op = force_reg (scalar_mode, *scalar_op);
+
+  rtx tmp = gen_reg_rtx (vector_mode);
+  riscv_vector::emit_nonvlmax_op (code_for_pred_broadcast (vector_mode), tmp,
+				  *scalar_op, vl, mask_mode);
+  emit_vector_func (operands, tmp);
+
+  return true;
 }
 
 } // namespace riscv_vector

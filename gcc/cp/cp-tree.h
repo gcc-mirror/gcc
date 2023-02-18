@@ -4238,7 +4238,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* We have an expression tree T that represents a call, either CALL_EXPR
    or AGGR_INIT_EXPR.  Return a reference to the Nth argument.  */
 
-static inline tree&
+inline tree&
 get_nth_callarg (tree t, int n)
 {
   switch (TREE_CODE (t))
@@ -5597,6 +5597,9 @@ enum tsubst_flags {
   tf_tst_ok = 1 << 12,		 /* Allow a typename-specifier to name
 				    a template (C++17 or later).  */
   tf_dguide = 1 << 13,		/* Building a deduction guide from a ctor.  */
+  tf_qualifying_scope = 1 << 14, /* Substituting the LHS of the :: operator.
+				    Affects TYPENAME_TYPE resolution from
+				    make_typename_type.  */
   /* Convenient substitution flags combinations.  */
   tf_warning_or_error = tf_warning | tf_error
 };
@@ -7428,7 +7431,6 @@ extern bool any_type_dependent_arguments_p      (const vec<tree, va_gc> *);
 extern bool any_type_dependent_elements_p       (const_tree);
 extern bool type_dependent_expression_p_push	(tree);
 extern bool value_dependent_expression_p	(tree);
-extern bool instantiation_dependent_expression_p (tree);
 extern bool instantiation_dependent_uneval_expression_p (tree);
 extern bool any_value_dependent_elements_p      (const_tree);
 extern bool dependent_omp_for_p			(tree, tree, tree, tree);
@@ -7903,6 +7905,7 @@ extern tree lookup_maybe_add			(tree fns, tree lookup,
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
 extern tree dependent_name			(tree);
+extern tree call_expr_dependent_name		(tree);
 extern tree maybe_get_fns			(tree) ATTRIBUTE_PURE;
 extern tree get_fns				(tree) ATTRIBUTE_PURE;
 extern tree get_first_fn			(tree) ATTRIBUTE_PURE;
@@ -8456,6 +8459,24 @@ struct GTY((for_user)) constexpr_fundef {
   tree result;
 };
 
+/* Whether the current context is manifestly constant-evaluated.
+   Used by the constexpr machinery to control folding of
+   __builtin_is_constant_evaluated.  */
+
+enum class mce_value
+{
+  /* Unknown, so treat __builtin_is_constant_evaluated as non-constant.  */
+  mce_unknown = 0,
+  /* Fold it to true.  */
+  mce_true = 1,
+  /* Fold it to false.  Primarily used during cp_fold_function and
+     cp_fully_fold_init.  */
+  mce_false = -1,
+};
+constexpr mce_value mce_unknown = mce_value::mce_unknown;
+constexpr mce_value mce_true = mce_value::mce_true;
+constexpr mce_value mce_false = mce_value::mce_false;
+
 extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);
 extern void maybe_save_constexpr_fundef		(tree);
@@ -8484,7 +8505,7 @@ inline tree cxx_constant_value (tree t, tsubst_flags_t complain)
 { return cxx_constant_value (t, NULL_TREE, complain); }
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
-extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
+extern tree maybe_constant_value		(tree, tree = NULL_TREE, mce_value = mce_unknown);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree,
 						 tsubst_flags_t = tf_warning_or_error,

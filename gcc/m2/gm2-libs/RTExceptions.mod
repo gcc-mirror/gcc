@@ -125,16 +125,17 @@ END findHandler ;
                    exception in the active EHB.
 *)
 
-PROCEDURE InvokeHandler ;
+PROCEDURE InvokeHandler  <* noreturn *> ;
 VAR
    h: Handler ;
 BEGIN
-   h := findHandler(currentEHB, currentEHB^.number) ;
+   h := findHandler (currentEHB, currentEHB^.number) ;
    IF h=NIL
    THEN
-      THROW(GetNumber(GetExceptionBlock()))
+      THROW (GetNumber (GetExceptionBlock ()))
    ELSE
-      h^.p
+      h^.p ;
+      HALT
    END
 END InvokeHandler ;
 
@@ -151,7 +152,7 @@ VAR
    n: INTEGER ;
 BEGIN
    e := GetExceptionBlock() ;
-   n := write(2, GetTextBuffer(e), strlen(GetTextBuffer(e))) ;
+   n := write (2, GetTextBuffer (e), strlen (GetTextBuffer (e))) ;
    HALT
 END DefaultErrorCatch ;
 
@@ -162,7 +163,7 @@ END DefaultErrorCatch ;
 
 PROCEDURE DoThrow ;
 BEGIN
-   THROW(GetNumber(GetExceptionBlock()))
+   THROW (GetNumber (GetExceptionBlock ()))
 END DoThrow ;
 
 
@@ -179,7 +180,7 @@ VAR
    i: M2EXCEPTION.M2Exceptions ;
 BEGIN
    FOR i := MIN(M2EXCEPTION.M2Exceptions) TO MAX(M2EXCEPTION.M2Exceptions) DO
-      PushHandler(GetExceptionBlock(), VAL(CARDINAL, i), DoThrow)
+      PushHandler (GetExceptionBlock (), VAL (CARDINAL, i), DoThrow)
    END
 END BaseExceptionsThrow ;
 

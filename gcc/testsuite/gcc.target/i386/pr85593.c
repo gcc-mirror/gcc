@@ -1,5 +1,5 @@
 /* PR target/85593 */
-/* { dg-do run { target { { i?86-*-linux* x86_64-*-linux* } && lp64 } } } */
+/* { dg-do run { target { *-*-linux* && lp64 } } } */
 /* { dg-options "-O2" } */
 
 __attribute__((naked)) void

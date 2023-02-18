@@ -1,3 +1,8 @@
+2023-02-13  Lorenzo Salvadore  <developer@lorenzosalvadore.it>
+
+	PR d/107469
+	* libdruntime/core/sys/freebsd/config.d: Update __FreeBSD_version.
+
 2023-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Regenerate.

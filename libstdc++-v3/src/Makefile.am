@@ -22,6 +22,7 @@
 
 include $(top_srcdir)/fragment.am
 
+if GLIBCXX_HOSTED
 if ENABLE_FILESYSTEM_TS
 filesystem_dir = filesystem
 else
@@ -34,8 +35,15 @@ else
 backtrace_dir =
 endif
 
+experimental_dir = experimental
+else
+filesystem_dir =
+backtrace_dir =
+experimental_dir =
+endif
+
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
-SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir) experimental
+SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir) $(experimental_dir)
 
 # Cross compiler support.
 if VTV_CYGMIN
@@ -120,7 +128,13 @@ cxx11_sources = \
 	${cxx0x_compat_sources} \
 	${ldbl_alt128_compat_sources}
 
+if GLIBCXX_HOSTED
 libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
+else
+# When freestanding, there's currently no compatibility to preserve.  Should
+# that change, any compatibility sources can be added here.
+libstdc___la_SOURCES =
+endif
 
 libstdc___la_LIBADD = \
 	$(GLIBCXX_LIBS) \

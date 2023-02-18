@@ -973,6 +973,7 @@ public:
   bool maybe_update_for_edge (logger *logger,
 			      const exploded_edge *eedge,
 			      rejected_constraint **out_rc);
+  void update_for_stmt (const gimple *stmt);
 
   const region_model &get_model () const { return m_model; }
   const auto_sbitmap &get_snodes_visited () const { return m_snodes_visited; }

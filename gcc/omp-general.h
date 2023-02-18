@@ -137,7 +137,7 @@ enum omp_requires {
 
 extern GTY(()) enum omp_requires omp_requires_mask;
 
-static inline dump_flags_t
+inline dump_flags_t
 get_openacc_privatization_dump_flags ()
 {
   dump_flags_t l_dump_flags = MSG_NOTE;

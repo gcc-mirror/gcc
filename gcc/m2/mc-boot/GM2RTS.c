@@ -188,7 +188,7 @@ extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, 
            to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description);
+extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description) __attribute__ ((noreturn));
 
 /*
    ExitOnHalt - if HALT is executed then call exit with the exit code, e.
@@ -209,30 +209,30 @@ extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_
 */
 
 extern "C" unsigned int M2RTS_Length (const char *a_, unsigned int _a_high);
-extern "C" void M2RTS_AssignmentException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_ReturnException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_IncException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_DecException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_InclException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_ExclException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_ShiftException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_RotateException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_StaticArraySubscriptException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_DynamicArraySubscriptException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_ForLoopBeginException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_ForLoopToException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_ForLoopEndException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_PointerNilException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_NoReturnException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_CaseException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_WholeNonPosDivException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_WholeNonPosModException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_WholeZeroDivException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_WholeZeroRemException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_WholeValueException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_RealValueException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_ParameterException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
-extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
+extern "C" void M2RTS_AssignmentException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_ReturnException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_IncException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_DecException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_InclException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_ExclException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_ShiftException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_RotateException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_StaticArraySubscriptException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_DynamicArraySubscriptException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_ForLoopBeginException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_ForLoopToException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_ForLoopEndException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_PointerNilException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_NoReturnException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_CaseException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_WholeNonPosDivException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_WholeNonPosModException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_WholeZeroDivException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_WholeZeroRemException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_WholeValueException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_RealValueException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_ParameterException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
+extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned int column, void * scope, void * message) __attribute__ ((noreturn));
 
 /*
    ExecuteReverse - execute the procedure associated with procptr
@@ -814,6 +814,6 @@ extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc,__attribute__((
   CheckInitialized ();
 }
 
-extern "C" void _M2_M2RTS_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2RTS_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

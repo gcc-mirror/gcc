@@ -39,7 +39,7 @@ extern rtx_subrtx_bound_info rtx_nonconst_subrtx_bounds[];
 
 /* Return true if CODE has no subrtxes.  */
 
-static inline bool
+inline bool
 leaf_code_p (enum rtx_code code)
 {
   return rtx_all_subrtx_bounds[code].count == 0;

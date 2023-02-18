@@ -132,13 +132,13 @@ m2except_InitExceptions (location_t location)
   m2decl_BuildParameterDeclaration (location, NULL, ptr_type_node, FALSE);
   fn_throw_tree = m2decl_BuildEndFunctionDeclaration (
       location, location, "__cxa_throw", void_type_node, TRUE, FALSE, TRUE,
-      FALSE);
+      TRUE);
 
   /* Declare void __cxa_rethrow (void).  */
   m2decl_BuildStartFunctionDeclaration (FALSE);
   fn_rethrow_tree = m2decl_BuildEndFunctionDeclaration (
      location, location, "__cxa_rethrow", void_type_node, TRUE, FALSE, TRUE,
-     FALSE);
+     TRUE);
 
   /* Declare void *__cxa_allocate_exception (size_t).  */
   m2decl_BuildStartFunctionDeclaration (FALSE);
@@ -417,7 +417,7 @@ gm2_build_throw (location_t location, tree exp)
       exp = build2 (COMPOUND_EXPR, TREE_TYPE (exp), allocate_expr, exp);
 
       /* Force all the cleanups to be evaluated here so that we don't have
-      to do them during unwinding.  */
+	 to do them during unwinding.  */
       exp = build1 (CLEANUP_POINT_EXPR, void_type_node, exp);
 
       tmp = do_throw (location, ptr);

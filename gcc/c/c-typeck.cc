@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "realmpfr.h"
 
 /* Possible cases of implicit conversions.  Used to select diagnostic messages
    and control folding initializers in convert_for_assignment.  */
@@ -88,7 +89,6 @@ static bool require_constant_value;
 static bool require_constant_elements;
 static bool require_constexpr_value;
 
-static bool null_pointer_constant_p (const_tree);
 static tree qualify_type (tree, tree);
 static int tagged_types_tu_compatible_p (const_tree, const_tree, bool *,
 					 bool *);
@@ -129,7 +129,7 @@ static int comptypes_internal (const_tree, const_tree, bool *, bool *);
 
 /* Return true if EXP is a null pointer constant, false otherwise.  */
 
-static bool
+bool
 null_pointer_constant_p (const_tree expr)
 {
   /* This should really operate on c_expr structures, but they aren't
@@ -7836,6 +7836,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       in_late_binary_op = save;
       return ret;
     }
+  else if (codel == NULLPTR_TYPE && null_pointer_constant)
+    return convert (type, rhs);
 
   switch (errtype)
     {
@@ -8121,8 +8123,9 @@ print_spelling (char *buffer)
 }
 
 /* Check whether INIT, a floating or integer constant, is
-   representable in TYPE, a real floating type with the same radix.
-   Return true if OK, false if not.  */
+   representable in TYPE, a real floating type with the same radix or
+   a decimal floating type initialized with a binary floating
+   constant.  Return true if OK, false if not.  */
 static bool
 constexpr_init_fits_real_type (tree type, tree init)
 {
@@ -8130,8 +8133,16 @@ constexpr_init_fits_real_type (tree type, tree init)
   gcc_assert (TREE_CODE (init) == INTEGER_CST || TREE_CODE (init) == REAL_CST);
   if (TREE_CODE (init) == REAL_CST
       && TYPE_MODE (TREE_TYPE (init)) == TYPE_MODE (type))
-    /* Same mode, no conversion required.  */
-    return true;
+    {
+      /* Same mode, no conversion required except for the case of
+	 signaling NaNs if the types are incompatible (e.g. double and
+	 long double with the same mode).  */
+      if (REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (init))
+	  && !comptypes (TYPE_MAIN_VARIANT (type),
+			 TYPE_MAIN_VARIANT (TREE_TYPE (init))))
+	return false;
+      return true;
+    }
   if (TREE_CODE (init) == INTEGER_CST)
     {
       tree converted = build_real_from_int_cst (type, init);
@@ -8139,6 +8150,33 @@ constexpr_init_fits_real_type (tree type, tree init)
       wide_int w = real_to_integer (&TREE_REAL_CST (converted), &fail,
 				    TYPE_PRECISION (TREE_TYPE (init)));
       return !fail && wi::eq_p (w, wi::to_wide (init));
+    }
+  if (REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (init)))
+    return false;
+  if ((REAL_VALUE_ISINF (TREE_REAL_CST (init))
+       && MODE_HAS_INFINITIES (TYPE_MODE (type)))
+      || (REAL_VALUE_ISNAN (TREE_REAL_CST (init))
+	  && MODE_HAS_NANS (TYPE_MODE (type))))
+    return true;
+  if (DECIMAL_FLOAT_TYPE_P (type)
+      && !DECIMAL_FLOAT_TYPE_P (TREE_TYPE (init)))
+    {
+      /* This is valid if the real number represented by the
+	 initializer can be exactly represented in the decimal
+	 type.  Compare the values using MPFR.  */
+      REAL_VALUE_TYPE t;
+      real_convert (&t, TYPE_MODE (type), &TREE_REAL_CST (init));
+      mpfr_t bin_val, dec_val;
+      mpfr_init2 (bin_val, REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (init)))->p);
+      mpfr_init2 (dec_val, REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (init)))->p);
+      mpfr_from_real (bin_val, &TREE_REAL_CST (init), MPFR_RNDN);
+      char string[256];
+      real_to_decimal (string, &t, sizeof string, 0, 1);
+      bool res = (mpfr_strtofr (dec_val, string, NULL, 10, MPFR_RNDN) == 0
+		  && mpfr_equal_p (bin_val, dec_val));
+      mpfr_clear (bin_val);
+      mpfr_clear (dec_val);
+      return res;
     }
   /* exact_real_truncate is not quite right here, since it doesn't
      allow even an exact conversion to subnormal values.  */
@@ -8149,23 +8187,20 @@ constexpr_init_fits_real_type (tree type, tree init)
 
 /* Check whether INIT (location LOC) is valid as a 'constexpr'
    initializer for type TYPE, and give an error if not.  INIT has
-   already been folded and verified to be constant.
-   NULL_POINTER_CONSTANT, INT_CONST_EXPR and ARITH_CONST_EXPR say
-   whether it is a null pointer constant, integer constant expression
-   or arithmetic constant expression, respectively.  If TYPE is not a
-   scalar type, this function does nothing.  */
+   already been folded and verified to be constant.  INT_CONST_EXPR
+   and ARITH_CONST_EXPR say whether it is an integer constant
+   expression or arithmetic constant expression, respectively.  If
+   TYPE is not a scalar type, this function does nothing.  */
 
 static void
 check_constexpr_init (location_t loc, tree type, tree init,
-		      bool null_pointer_constant, bool int_const_expr,
-		      bool arith_const_expr)
+		      bool int_const_expr, bool arith_const_expr)
 {
   if (POINTER_TYPE_P (type))
     {
-      /* The initializer must be a null pointer constant.  */
-      if (!null_pointer_constant)
-	error_at (loc, "%<constexpr%> pointer initializer is not a "
-		  "null pointer constant");
+      /* The initializer must be null.  */
+      if (TREE_CODE (init) != INTEGER_CST || !integer_zerop (init))
+	error_at (loc, "%<constexpr%> pointer initializer is not null");
       return;
     }
   if (INTEGRAL_TYPE_P (type))
@@ -8194,18 +8229,12 @@ check_constexpr_init (location_t loc, tree type, tree init,
   if (TREE_CODE (type) == COMPLEX_TYPE
       && TREE_CODE (TREE_TYPE (type)) != REAL_TYPE)
     return;
-  /* Both the normative text and the relevant footnote are unclear, as
-     of the C2x CD, about what exactly counts as a change of value in
-     floating-point cases.  Here, we consider all conversions between
-     binary and decimal types (even of infinities and NaNs, where
-     quantum exponents are not involved) as involving a change of
-     value, and likewise for conversions between real and complex
-     types (even when the complex constant has imaginary part positive
-     zero), and conversions of signaling NaN to a different machine
-     mode.  But we allow exact conversions of integers to binary or
-     decimal floating types, and exact conversions between different
-     binary types or different decimal types, where "exact" in the
-     decimal case requires the quantum exponent to be preserved.  */
+  /* Following N3082, a real type cannot be initialized from a complex
+     type and a binary type cannot be initialized from a decimal type
+     (but initializing a decimal type from a binary type is OK).
+     Signaling NaN initializers are OK only if the types are
+     compatible (not just the same mode); all quiet NaN and infinity
+     initializations are considered to preserve the value.  */
   if (TREE_CODE (TREE_TYPE (init)) == COMPLEX_TYPE
       && TREE_CODE (type) == REAL_TYPE)
     {
@@ -8213,39 +8242,33 @@ check_constexpr_init (location_t loc, tree type, tree init,
 		"complex type");
       return;
     }
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      && TREE_CODE (TREE_TYPE (init)) != COMPLEX_TYPE)
-    {
-      error_at (loc, "%<constexpr%> initializer for a complex type is of "
-		"real type");
-      return;
-    }
   if (TREE_CODE (type) == REAL_TYPE
-      && TREE_CODE (TREE_TYPE (init)) == REAL_TYPE)
+      && TREE_CODE (TREE_TYPE (init)) == REAL_TYPE
+      && DECIMAL_FLOAT_TYPE_P (TREE_TYPE (init))
+      && !DECIMAL_FLOAT_TYPE_P (type))
     {
-      if (DECIMAL_FLOAT_TYPE_P (type)
-	  && !DECIMAL_FLOAT_TYPE_P (TREE_TYPE (init)))
-	{
-	  error_at (loc, "%<constexpr%> initializer for a decimal "
-		    "floating-point type is of binary type");
-	  return;
-	}
-      else if (DECIMAL_FLOAT_TYPE_P (TREE_TYPE (init))
-	       && !DECIMAL_FLOAT_TYPE_P (type))
-	{
-	  error_at (loc, "%<constexpr%> initializer for a binary "
-		    "floating-point type is of decimal type");
-	  return;
-	}
+      error_at (loc, "%<constexpr%> initializer for a binary "
+		"floating-point type is of decimal type");
+      return;
     }
   bool fits;
   if (TREE_CODE (type) == COMPLEX_TYPE)
     {
-      gcc_assert (TREE_CODE (init) == COMPLEX_CST);
-      fits = (constexpr_init_fits_real_type (TREE_TYPE (type),
-					     TREE_REALPART (init))
-	      && constexpr_init_fits_real_type (TREE_TYPE (type),
-						TREE_IMAGPART (init)));
+      switch (TREE_CODE (init))
+	{
+	case INTEGER_CST:
+	case REAL_CST:
+	  fits = constexpr_init_fits_real_type (TREE_TYPE (type), init);
+	  break;
+	case COMPLEX_CST:
+	  fits = (constexpr_init_fits_real_type (TREE_TYPE (type),
+						 TREE_REALPART (init))
+		  && constexpr_init_fits_real_type (TREE_TYPE (type),
+						    TREE_IMAGPART (init)));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
     }
   else
     fits = constexpr_init_fits_real_type (type, init);
@@ -8557,8 +8580,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		      "initializer element is not a constant expression");
       else if (require_constexpr)
 	check_constexpr_init (init_loc, type, inside_init,
-			      null_pointer_constant, int_const_expr,
-			      arith_const_expr);
+			      int_const_expr, arith_const_expr);
 
       /* Added to enable additional -Wsuggest-attribute=format warnings.  */
       if (TREE_CODE (TREE_TYPE (inside_init)) == POINTER_TYPE)
@@ -8575,7 +8597,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == FIXED_POINT_TYPE
       || code == POINTER_TYPE || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE
-      || code == COMPLEX_TYPE || code == VECTOR_TYPE)
+      || code == COMPLEX_TYPE || code == VECTOR_TYPE || code == NULLPTR_TYPE)
     {
       tree unconverted_init = inside_init;
       if (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE
@@ -8613,8 +8635,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		      "initializer element is not a constant expression");
       else if (require_constexpr)
 	check_constexpr_init (init_loc, type, unconverted_init,
-			      null_pointer_constant, int_const_expr,
-			      arith_const_expr);
+			      int_const_expr, arith_const_expr);
 
       return inside_init;
     }
@@ -12724,12 +12745,16 @@ build_binary_op (location_t location, enum tree_code code,
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
 	      || code1 == FIXED_POINT_TYPE || code1 == COMPLEX_TYPE))
 	short_compare = 1;
-      else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
+      else if (code0 == POINTER_TYPE
+	       && (code1 == NULLPTR_TYPE
+		   || null_pointer_constant_p (orig_op1)))
 	{
 	  maybe_warn_for_null_address (location, op0, code);
 	  result_type = type0;
 	}
-      else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
+      else if (code1 == POINTER_TYPE
+	       && (code0 == NULLPTR_TYPE
+		   || null_pointer_constant_p (orig_op0)))
 	{
 	  maybe_warn_for_null_address (location, op1, code);
 	  result_type = type1;

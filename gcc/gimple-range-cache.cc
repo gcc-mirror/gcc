@@ -1081,7 +1081,7 @@ ranger_cache::propagate_cache (tree name)
       new_range.set_undefined ();
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
-	  range_on_edge (e_range, e, name);
+	  edge_range (e_range, e, name, RFD_READ_ONLY);
 	  if (DEBUG_RANGE_CACHE)
 	    {
 	      fprintf (dump_file, "   edge %d->%d :", e->src->index, bb->index);

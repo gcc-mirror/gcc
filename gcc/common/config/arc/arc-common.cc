@@ -54,7 +54,6 @@ static const struct default_options arc_option_optimization_table[] =
     { OPT_LEVELS_SIZE, OPT_fsection_anchors, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_mcase_vector_pcrel, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_msize_level_, NULL, 3 },
-    { OPT_LEVELS_SIZE, OPT_mmillicode, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_fif_conversion, NULL, 0 },
     { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_3_PLUS_SPEED_ONLY, OPT_msize_level_, NULL, 0 },

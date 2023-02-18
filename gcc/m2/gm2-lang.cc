@@ -330,7 +330,6 @@ gm2_langhook_handle_option (
   enum opt_code code = (enum opt_code)scode;
 
   const struct cl_option *option = &cl_options[scode];
-  const char *opt = (const char *)option->opt_text;
   /* ignore file names.  */
   if (code == N_OPTS)
     return 1;

@@ -463,6 +463,6 @@ extern "C" void _M2_mcPretty_init (__attribute__((unused)) int argc,__attribute_
 {
 }
 
-extern "C" void _M2_mcPretty_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcPretty_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

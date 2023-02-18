@@ -2272,6 +2272,15 @@ eliminate_redundant_comparison (enum tree_code opcode,
 	  STRIP_USELESS_TYPE_CONVERSION (newop2);
 	  if (!is_gimple_val (newop1) || !is_gimple_val (newop2))
 	    continue;
+	  if (lcode == TREE_CODE (t)
+	      && operand_equal_p (op1, newop1, 0)
+	      && operand_equal_p (op2, newop2, 0))
+	    t = curr->op;
+	  else if ((TREE_CODE (newop1) == SSA_NAME
+		    && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (newop1))
+		   || (TREE_CODE (newop2) == SSA_NAME
+		       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (newop2)))
+	    continue;
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))

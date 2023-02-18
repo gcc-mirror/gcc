@@ -2068,7 +2068,7 @@ m2pp_integer_cst (pretty *s, tree t)
 {
   char val[100];
 
-  snprintf (val, 100, "%lud", TREE_INT_CST_LOW (t));
+  snprintf (val, 100, HOST_WIDE_INT_PRINT_UNSIGNED, TREE_INT_CST_LOW (t));
   m2pp_print (s, val);
 }
 

@@ -400,3 +400,11 @@ maybe_adjust_arg_pos_for_attribute (const_tree)
 {
   return 0;
 }
+
+/* In C, no expression is dependent.  */
+
+bool
+instantiation_dependent_expression_p (tree)
+{
+  return false;
+}

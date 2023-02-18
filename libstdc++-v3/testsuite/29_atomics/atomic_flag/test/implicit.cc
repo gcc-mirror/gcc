@@ -22,7 +22,8 @@
 #include <atomic>
 #include <testsuite_hooks.h>
 
-int main()
+void
+test01()
 {
   using namespace std;
 
@@ -37,4 +38,27 @@ int main()
   af.clear();
   VERIFY( ! af.test() );
   VERIFY( ! caf.test() );
+}
+
+void
+test02()
+{
+  using namespace std;
+
+  atomic_flag af{true};
+  const atomic_flag& caf = af;
+
+  VERIFY( atomic_flag_test(&af) );
+  VERIFY( atomic_flag_test(&caf) );
+  af.clear(memory_order_release);
+  VERIFY( ! atomic_flag_test(&af) );
+  VERIFY( ! atomic_flag_test(&caf) );
+}
+
+int
+main()
+{
+  test01();
+  test02();
+  return 0;
 }

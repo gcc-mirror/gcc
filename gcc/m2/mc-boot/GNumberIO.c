@@ -771,6 +771,6 @@ extern "C" void _M2_NumberIO_init (__attribute__((unused)) int argc,__attribute_
 {
 }
 
-extern "C" void _M2_NumberIO_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_NumberIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

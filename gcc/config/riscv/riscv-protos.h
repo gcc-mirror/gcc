@@ -115,12 +115,14 @@ extern const riscv_cpu_info *riscv_find_cpu (const char *);
 /* Routines implemented in riscv-selftests.cc.  */
 #if CHECKING_P
 namespace selftest {
-extern void riscv_run_selftests (void);
+void riscv_run_selftests (void);
 } // namespace selftest
 #endif
 
 namespace riscv_vector {
 #define RVV_VLMAX gen_rtx_REG (Pmode, X0_REGNUM)
+#define RVV_VUNDEF(MODE)                                                       \
+  gen_rtx_UNSPEC (MODE, gen_rtvec (1, const0_rtx), UNSPEC_VUNDEF)
 enum vlmul_type
 {
   LMUL_1 = 0,
@@ -139,23 +141,24 @@ enum avl_type
   VLMAX,
 };
 /* Routines implemented in riscv-vector-builtins.cc.  */
-extern void init_builtins (void);
-extern const char *mangle_builtin_type (const_tree);
+void init_builtins (void);
+const char *mangle_builtin_type (const_tree);
 #ifdef GCC_TARGET_H
-extern bool verify_type_context (location_t, type_context_kind, const_tree, bool);
+bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 #endif
-extern void handle_pragma_vector (void);
-extern tree builtin_decl (unsigned, bool);
-extern rtx expand_builtin (unsigned int, tree, rtx);
-extern bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
-extern bool legitimize_move (rtx, rtx, machine_mode);
-extern void emit_pred_op (unsigned, rtx, rtx, machine_mode);
-extern enum vlmul_type get_vlmul (machine_mode);
-extern unsigned int get_ratio (machine_mode);
-extern int get_ta (rtx);
-extern int get_ma (rtx);
-extern int get_avl_type (rtx);
-extern unsigned int calculate_ratio (unsigned int, enum vlmul_type);
+void handle_pragma_vector (void);
+tree builtin_decl (unsigned, bool);
+rtx expand_builtin (unsigned int, tree, rtx);
+bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+bool legitimize_move (rtx, rtx, machine_mode);
+void emit_vlmax_op (unsigned, rtx, rtx, machine_mode);
+void emit_nonvlmax_op (unsigned, rtx, rtx, rtx, machine_mode);
+enum vlmul_type get_vlmul (machine_mode);
+unsigned int get_ratio (machine_mode);
+int get_ta (rtx);
+int get_ma (rtx);
+int get_avl_type (rtx);
+unsigned int calculate_ratio (unsigned int, enum vlmul_type);
 enum tail_policy
 {
   TAIL_UNDISTURBED = 0,
@@ -173,6 +176,13 @@ enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
 opt_machine_mode get_vector_mode (scalar_mode, poly_uint64);
+bool simm5_p (rtx);
+bool neg_simm5_p (rtx);
+#ifdef RTX_CODE
+bool has_vi_variant_p (rtx_code, rtx);
+#endif
+bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode, machine_mode,
+			  bool, void (*)(rtx *, rtx));
 }
 
 /* We classify builtin types into two classes:

@@ -69,7 +69,7 @@ extern void verify_dominators (enum cdi_direction);
 /* Verify invariants of computed dominance information, if internal consistency
    checks are enabled.  */
 
-static inline void
+inline void
 checking_verify_dominators (cdi_direction dir)
 {
   if (flag_checking)

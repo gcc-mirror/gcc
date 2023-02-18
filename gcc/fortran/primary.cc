@@ -2770,7 +2770,7 @@ gfc_expr_attr (gfc_expr *e)
 	{
 	  gfc_symbol *sym = e->value.function.esym->result;
 	  attr = sym->attr;
-	  if (sym->ts.type == BT_CLASS)
+	  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
 	    {
 	      attr.dimension = CLASS_DATA (sym)->attr.dimension;
 	      attr.pointer = CLASS_DATA (sym)->attr.class_pointer;

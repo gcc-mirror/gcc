@@ -3464,6 +3464,234 @@ namespace ranges
 
   inline constexpr __prev_permutation_fn prev_permutation{};
 
+#if __cplusplus > 202002L
+  struct __contains_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	    typename _Tp, typename _Proj = identity>
+      requires indirect_binary_predicate<ranges::equal_to,
+					 projected<_Iter, _Proj>, const _Tp*>
+      constexpr bool
+      operator()(_Iter __first, _Sent __last, const _Tp& __value, _Proj __proj = {}) const
+      { return ranges::find(std::move(__first), __last, __value, std::move(__proj)) != __last; }
+
+    template<input_range _Range, typename _Tp, typename _Proj = identity>
+      requires indirect_binary_predicate<ranges::equal_to,
+					 projected<iterator_t<_Range>, _Proj>, const _Tp*>
+      constexpr bool
+      operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), __value, std::move(__proj)); }
+  };
+
+  inline constexpr __contains_fn contains{};
+
+  struct __contains_subrange_fn
+  {
+    template<forward_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
+	     forward_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
+		 _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	return __first2 == __last2
+	  || !ranges::search(__first1, __last1, __first2, __last2,
+			     std::move(__pred), std::move(__proj1), std::move(__proj2)).empty();
+      }
+
+    template<forward_range _Range1, forward_range _Range2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
+				     _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	return (*this)(ranges::begin(__r1), ranges::end(__r1),
+		       ranges::begin(__r2), ranges::end(__r2),
+		       std::move(__pred), std::move(__proj1), std::move(__proj2));
+      }
+  };
+
+  inline constexpr __contains_subrange_fn contains_subrange{};
+
+  template<typename _Out, typename _Tp>
+    struct out_value_result
+    {
+      [[no_unique_address]] _Out out;
+      [[no_unique_address]] _Tp value;
+
+      template<typename _Out2, typename _Tp2>
+	requires convertible_to<const _Out&, _Out2>
+	  && convertible_to<const _Tp&, _Tp2>
+	constexpr
+	operator out_value_result<_Out2, _Tp2>() const &
+	{ return {out, value}; }
+
+      template<typename _Out2, typename _Tp2>
+	requires convertible_to<_Out, _Out2>
+	  && convertible_to<_Tp, _Tp2>
+	constexpr
+	operator out_value_result<_Out2, _Tp2>() &&
+	{ return {std::move(out), std::move(value)}; }
+    };
+
+  template<typename _Out, typename _Tp>
+    using iota_result = out_value_result<_Out, _Tp>;
+
+  struct __iota_fn
+  {
+    template<input_or_output_iterator _Out, sentinel_for<_Out> _Sent, weakly_incrementable _Tp>
+      requires indirectly_writable<_Out, const _Tp&>
+      constexpr iota_result<_Out, _Tp>
+      operator()(_Out __first, _Sent __last, _Tp __value) const
+      {
+	while (__first != __last)
+	  {
+	    *__first = static_cast<const _Tp&>(__value);
+	    ++__first;
+	    ++__value;
+	  }
+	return {std::move(__first), std::move(__value)};
+      }
+
+    template<weakly_incrementable _Tp, output_range<const _Tp&> _Range>
+      constexpr iota_result<borrowed_iterator_t<_Range>, _Tp>
+      operator()(_Range&& __r, _Tp __value) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__value)); }
+  };
+
+  inline constexpr __iota_fn iota{};
+
+  struct __find_last_fn
+  {
+    template<forward_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Tp, typename _Proj = identity>
+      requires indirect_binary_predicate<ranges::equal_to, projected<_Iter, _Proj>, const _Tp*>
+      constexpr subrange<_Iter>
+      operator()(_Iter __first, _Sent __last, const _Tp& __value, _Proj __proj = {}) const
+      {
+	if constexpr (same_as<_Iter, _Sent> && bidirectional_iterator<_Iter>)
+	  {
+	    _Iter __found = ranges::find(reverse_iterator<_Iter>{__last},
+					 reverse_iterator<_Iter>{__first},
+					 __value, std::move(__proj)).base();
+	    if (__found == __first)
+	      return {__last, __last};
+	    else
+	      return {ranges::prev(__found), __last};
+	  }
+	else
+	  {
+	    _Iter __found = ranges::find(__first, __last, __value, __proj);
+	    if (__found == __last)
+	      return {__found, __found};
+	    __first = __found;
+	    for (;;)
+	      {
+		__first = ranges::find(ranges::next(__first), __last, __value, __proj);
+		if (__first == __last)
+		  return {__found, __first};
+		__found = __first;
+	      }
+	  }
+      }
+
+    template<forward_range _Range, typename _Tp, typename _Proj = identity>
+      requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Range>, _Proj>, const _Tp*>
+      constexpr borrowed_subrange_t<_Range>
+      operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), __value, std::move(__proj)); }
+  };
+
+  inline constexpr __find_last_fn find_last{};
+
+  struct __find_last_if_fn
+  {
+    template<forward_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Proj = identity,
+	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
+      constexpr subrange<_Iter>
+      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      {
+	if constexpr (same_as<_Iter, _Sent> && bidirectional_iterator<_Iter>)
+	  {
+	    _Iter __found = ranges::find_if(reverse_iterator<_Iter>{__last},
+					    reverse_iterator<_Iter>{__first},
+					    std::move(__pred), std::move(__proj)).base();
+	    if (__found == __first)
+	      return {__last, __last};
+	    else
+	      return {ranges::prev(__found), __last};
+	  }
+	else
+	  {
+	    _Iter __found = ranges::find_if(__first, __last, __pred, __proj);
+	    if (__found == __last)
+	      return {__found, __found};
+	    __first = __found;
+	    for (;;)
+	      {
+		__first = ranges::find_if(ranges::next(__first), __last, __pred, __proj);
+		if (__first == __last)
+		  return {__found, __first};
+		__found = __first;
+	      }
+	  }
+      }
+
+    template<forward_range _Range, typename _Proj = identity,
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+      constexpr borrowed_subrange_t<_Range>
+      operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__pred), std::move(__proj)); }
+  };
+
+  inline constexpr __find_last_if_fn find_last_if{};
+
+  struct __find_last_if_not_fn
+  {
+    template<forward_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Proj = identity,
+	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
+      constexpr subrange<_Iter>
+      operator()(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {}) const
+      {
+	if constexpr (same_as<_Iter, _Sent> && bidirectional_iterator<_Iter>)
+	  {
+	    _Iter __found = ranges::find_if_not(reverse_iterator<_Iter>{__last},
+						reverse_iterator<_Iter>{__first},
+						std::move(__pred), std::move(__proj)).base();
+	    if (__found == __first)
+	      return {__last, __last};
+	    else
+	      return {ranges::prev(__found), __last};
+	  }
+	else
+	  {
+	    _Iter __found = ranges::find_if_not(__first, __last, __pred, __proj);
+	    if (__found == __last)
+	      return {__found, __found};
+	    __first = __found;
+	    for (;;)
+	      {
+		__first = ranges::find_if_not(ranges::next(__first), __last, __pred, __proj);
+		if (__first == __last)
+		  return {__found, __first};
+		__found = __first;
+	      }
+	  }
+      }
+
+    template<forward_range _Range, typename _Proj = identity,
+	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>> _Pred>
+      constexpr borrowed_subrange_t<_Range>
+      operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__pred), std::move(__proj)); }
+  };
+
+  inline constexpr __find_last_if_not_fn find_last_if_not{};
+#endif // C++23
 } // namespace ranges
 
 #define __cpp_lib_shift 201806L

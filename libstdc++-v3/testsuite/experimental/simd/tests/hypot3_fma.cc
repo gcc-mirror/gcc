@@ -18,9 +18,7 @@
 // only: float|double|ldouble * * *
 // skip: ldouble * powerpc64* *
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/metahelpers.h"
-#include "bits/test_values.h"
+#include "bits/main.h"
 
 // 3-arg std::hypot needs to be fixed, this is a better reference:
 template <typename T>

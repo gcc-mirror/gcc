@@ -102,23 +102,19 @@ struct s85 { int a; } constexpr v85 = { 0 }; /* { dg-error "'struct s85' defined
 union u86 { int a; } constexpr v86 = { 0 }; /* { dg-error "'union u86' defined in underspecified object declaration" } */
 enum e87 { E87 } constexpr v87 = E87; /* { dg-error "'enum e87' defined in underspecified object declaration" } */
 enum { E88 } constexpr v88 = E88; /* { dg-error "defined in underspecified object declaration" } */
-constexpr int *v89 = (int *) 0; /* { dg-error "'constexpr' pointer initializer is not a null pointer constant" } */
-constexpr void *v90 = (void *) (void *) 0; /* { dg-error "'constexpr' pointer initializer is not a null pointer constant" } */
+constexpr void *v89 = (void *) 64; /* { dg-error "'constexpr' pointer initializer is not null" } */
+constexpr int *v90 = (int *) 64; /* { dg-error "'constexpr' pointer initializer is not null" } */
 constexpr int v91 = (int) (double) 1.0; /* { dg-error "constexpr' integer initializer is not an integer constant expression" } */
 constexpr struct s71 v92 = { (int) (double) 1.0, 0 }; /* { dg-error "constexpr' integer initializer is not an integer constant expression" } */
 struct s93 { void *p; };
-constexpr struct s93 v94 = { (int *) 0 }; /* { dg-error "'constexpr' pointer initializer is not a null pointer constant" } */
+constexpr struct s93 v94 = { (int *) 16 }; /* { dg-error "'constexpr' pointer initializer is not null" } */
 constexpr int v95 = (unsigned int) -1; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr unsigned char v96 = -1; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr signed char v97 = 1234567LL; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 /* { dg-warning "overflow in conversion" "overflow warning" { target *-*-* } .-1 } */
-/* Disallow all real/complex conversions (the C2x CD is unclear about
-   real-to-complex and about complex-to-real with imaginary part positive 0, if
-   the real parts can be exactly represented in the relevant types).  */
 constexpr double v98 = __builtin_complex (1.0, 0.0); /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
 constexpr double v99 = __builtin_complex (1.0, 1.0); /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
 constexpr double v100 = __builtin_complex (1.0, -0.0); /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
-constexpr _Complex double v101 = 1.0; /* { dg-error "'constexpr' initializer for a complex type is of real type" } */
 constexpr float v102 = (unsigned long long) -1; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr double v103 = (unsigned long long) -1; /* { dg-error "'constexpr' initializer not representable in type of object" } */
 constexpr float v104 = __LONG_LONG_MAX__; /* { dg-error "'constexpr' initializer not representable in type of object" } */
@@ -204,11 +200,11 @@ f0 ()
   (constexpr union fs13 { int a; }) { 0 }; /* { dg-error "defined in 'constexpr' compound literal" } */
   (constexpr enum fs14 { FS14 }) { FS14 }; /* { dg-error "defined in 'constexpr' compound literal" } */
   (constexpr enum { FS15 }) { FS15 }; /* { dg-error "defined in 'constexpr' compound literal" } */
-  (constexpr int *) { (int *) 0 }; /* { dg-error "'constexpr' pointer initializer is not a null pointer constant" } */
-  (constexpr void *) { (void *) (void *) 0 }; /* { dg-error "'constexpr' pointer initializer is not a null pointer constant" } */
+  (constexpr void *) { (void *) 64 }; /* { dg-error "'constexpr' pointer initializer is not null" } */
+  (constexpr int *) { (int *) 64 }; /* { dg-error "'constexpr' pointer initializer is not null" } */
   (constexpr int) { (int) (double) 1.0 }; /* { dg-error "constexpr' integer initializer is not an integer constant expression" } */
   (constexpr struct s71) { (int) (double) 1.0, 0 }; /* { dg-error "constexpr' integer initializer is not an integer constant expression" } */
-  (constexpr struct s93) { (int *) 0 }; /* { dg-error "'constexpr' pointer initializer is not a null pointer constant" } */
+  (constexpr struct s93) { (int *) 16 }; /* { dg-error "'constexpr' pointer initializer is not null" } */
   (constexpr int) { (unsigned int) -1 }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   (constexpr unsigned char) { -1 }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   (constexpr signed char) { 1234567LL }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
@@ -216,7 +212,6 @@ f0 ()
   (constexpr double) { __builtin_complex (1.0, 0.0) }; /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
   (constexpr double) { __builtin_complex (1.0, 1.0) }; /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
   (constexpr double) { __builtin_complex (1.0, -0.0) }; /* { dg-error "'constexpr' initializer for a real type is of complex type" } */
-  (constexpr _Complex double) { 1.0 }; /* { dg-error "'constexpr' initializer for a complex type is of real type" } */
   (constexpr float) { (unsigned long long) -1 }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   (constexpr double) { (unsigned long long) -1 }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   (constexpr float) { __LONG_LONG_MAX__ }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
@@ -224,7 +219,6 @@ f0 ()
   (constexpr signed char []) { u8"\xff" }; /* { dg-error "'constexpr' initializer not representable in type of object" } */
   constexpr typeof (nullptr) not_npc = nullptr;
   int *ptr = 0;
-  (void) (ptr == not_npc); /* { dg-error "invalid operands" } */
   /* auto may only be used with another storage class specifier, such as
      constexpr, if the type is inferred.  */
   auto constexpr int a_c_t = 1; /* { dg-error "'auto' used with 'constexpr'" } */

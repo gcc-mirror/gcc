@@ -144,7 +144,8 @@ am__objects_7 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	stdexcept.lo strstream.lo tree.lo istream.lo istream-string.lo \
 	streambuf.lo valarray.lo $(am__objects_1) $(am__objects_3) \
 	$(am__objects_6)
-am_libc__98convenience_la_OBJECTS = $(am__objects_7)
+@GLIBCXX_HOSTED_TRUE@am_libc__98convenience_la_OBJECTS =  \
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_7)
 libc__98convenience_la_OBJECTS = $(am_libc__98convenience_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -521,7 +522,8 @@ sources = \
 	${host_sources} \
 	${host_sources_extra}
 
-libc__98convenience_la_SOURCES = $(sources)
+@GLIBCXX_HOSTED_FALSE@libc__98convenience_la_SOURCES = 
+@GLIBCXX_HOSTED_TRUE@libc__98convenience_la_SOURCES = $(sources)
 @ENABLE_DUAL_ABI_TRUE@GLIBCXX_ABI_FLAGS = -D_GLIBCXX_USE_CXX11_ABI=@glibcxx_cxx98_abi@
 
 # Use special rules for the deprecated source files so that they find

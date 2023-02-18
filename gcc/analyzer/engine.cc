@@ -4823,17 +4823,7 @@ feasibility_state::maybe_update_for_edge (logger *logger,
       auto_cfun sentinel (src_point.get_function ());
       input_location = stmt->location;
 
-      if (const gassign *assign = dyn_cast <const gassign *> (stmt))
-	m_model.on_assignment (assign, NULL);
-      else if (const gasm *asm_stmt = dyn_cast <const gasm *> (stmt))
-	m_model.on_asm_stmt (asm_stmt, NULL);
-      else if (const gcall *call = dyn_cast <const gcall *> (stmt))
-	{
-	  bool unknown_side_effects = m_model.on_call_pre (call, NULL);
-	  m_model.on_call_post (call, unknown_side_effects, NULL);
-	}
-      else if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
-	m_model.on_return (return_, NULL);
+      update_for_stmt (stmt);
     }
 
   const superedge *sedge = eedge->m_sedge;
@@ -4908,6 +4898,24 @@ feasibility_state::maybe_update_for_edge (logger *logger,
       bitmap_set_bit (m_snodes_visited, dst_snode_idx);
     }
   return true;
+}
+
+/* Update this object for the effects of STMT.  */
+
+void
+feasibility_state::update_for_stmt (const gimple *stmt)
+{
+  if (const gassign *assign = dyn_cast <const gassign *> (stmt))
+    m_model.on_assignment (assign, NULL);
+  else if (const gasm *asm_stmt = dyn_cast <const gasm *> (stmt))
+    m_model.on_asm_stmt (asm_stmt, NULL);
+  else if (const gcall *call = dyn_cast <const gcall *> (stmt))
+    {
+      bool unknown_side_effects = m_model.on_call_pre (call, NULL);
+      m_model.on_call_post (call, unknown_side_effects, NULL);
+    }
+  else if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
+    m_model.on_return (return_, NULL);
 }
 
 /* Dump this object to PP.  */
