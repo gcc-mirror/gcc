@@ -1,3 +1,8 @@
+2023-02-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris_math_12): Add bypass.
+	* fixincl.x: Regenerate.
+
 2023-01-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* fixincl.x: Regenerate.

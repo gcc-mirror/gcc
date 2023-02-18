@@ -1,3 +1,212 @@
+2023-02-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* doc/invoke.texi (@item -Wall): Fix typo in
+	-Wuse-after-free.
+
+2023-02-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/108831
+	* config/i386/predicates.md
+	(nonimm_x64constmem_operand): New predicate.
+	* config/i386/i386.md (*addqi_ext<mode>_0): New insn pattern.
+	(*subqi_ext<mode>_0): Ditto.
+	(*andqi_ext<mode>_0): Ditto.
+	(*<any_or:code>qi_ext<mode>_0): Ditto.
+
+2023-02-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/108805
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Use
+	int_outermode instead of GET_MODE (tem) to prevent
+	VOIDmode from entering simplify_gen_subreg.
+
+2023-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108821
+	* tree-ssa-loop-im.cc (sm_seq_valid_bb): We can also not
+	move volatile accesses.
+
+2023-02-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa.cc (ssa_undefined_value_p): Assert we are not
+	called on virtual operands.
+	* tree-ssa-sccvn.cc (vn_phi_lookup): Guard
+	ssa_undefined_value_p calls.
+	(vn_phi_insert): Likewise.
+	(set_ssa_val_to): Likewise.
+	(visit_phi): Avoid extra work with equivalences for
+	virtual operand PHIs.
+
+2023-02-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class mask_logic): New
+	class.
+	(class mask_nlogic): Ditto.
+	(class mask_notlogic): Ditto.
+	(class vmmv): Ditto.
+	(class vmclr): Ditto.
+	(class vmset): Ditto.
+	(class vmnot): Ditto.
+	(class vcpop): Ditto.
+	(class vfirst): Ditto.
+	(class mask_misc): Ditto.
+	(class viota): Ditto.
+	(class vid): Ditto.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vmand): Ditto.
+	(vmnand): Ditto.
+	(vmandn): Ditto.
+	(vmxor): Ditto.
+	(vmor): Ditto.
+	(vmnor): Ditto.
+	(vmorn): Ditto.
+	(vmxnor): Ditto.
+	(vmmv): Ditto.
+	(vmclr): Ditto.
+	(vmset): Ditto.
+	(vmnot): Ditto.
+	(vcpop): Ditto.
+	(vfirst): Ditto.
+	(vmsbf): Ditto.
+	(vmsif): Ditto.
+	(vmsof): Ditto.
+	(viota): Ditto.
+	(vid): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct alu_def): Ditto.
+	(struct mask_alu_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc: Ditto.
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::cleanup_insns): Fix bug
+	for dest it scalar RVV intrinsics.
+	* config/riscv/vector-iterators.md (sof): New iterator.
+	* config/riscv/vector.md (@pred_<optab>n<mode>): New pattern.
+	(@pred_<optab>not<mode>): New pattern.
+	(@pred_popcount<VB:mode><P:mode>): New pattern.
+	(@pred_ffs<VB:mode><P:mode>): New pattern.
+	(@pred_<misc_op><mode>): New pattern.
+	(@pred_iota<mode>): New pattern.
+	(@pred_series<mode>): New pattern.
+
+2023-02-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-functions.def (vadc): Rename.
+	(vsbc): Ditto.
+	(vmerge): Ditto.
+	(vmv_v): Ditto.
+	* config/riscv/riscv-vector-builtins.cc: Ditto.
+
+2023-02-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-protos.h (sew64_scalar_helper): New function.
+	* config/riscv/riscv-v.cc (has_vi_variant_p): Adjust.
+	(sew64_scalar_helper): New function.
+	* config/riscv/vector.md: Normalization.
+
+2023-02-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-functions.def (vsetvlmax): Rearrange.
+	(vsm): Ditto.
+	(vsse): Ditto.
+	(vsoxei64): Ditto.
+	(vsub): Ditto.
+	(vand): Ditto.
+	(vor): Ditto.
+	(vxor): Ditto.
+	(vsll): Ditto.
+	(vsra): Ditto.
+	(vsrl): Ditto.
+	(vmin): Ditto.
+	(vmax): Ditto.
+	(vminu): Ditto.
+	(vmaxu): Ditto.
+	(vmul): Ditto.
+	(vmulh): Ditto.
+	(vmulhu): Ditto.
+	(vmulhsu): Ditto.
+	(vdiv): Ditto.
+	(vrem): Ditto.
+	(vdivu): Ditto.
+	(vremu): Ditto.
+	(vnot): Ditto.
+	(vsext): Ditto.
+	(vzext): Ditto.
+	(vwadd): Ditto.
+	(vwsub): Ditto.
+	(vwmul): Ditto.
+	(vwmulu): Ditto.
+	(vwmulsu): Ditto.
+	(vwaddu): Ditto.
+	(vwsubu): Ditto.
+	(vsbc): Ditto.
+	(vmsbc): Ditto.
+	(vnsra): Ditto.
+	(vmerge): Ditto.
+	(vmv_v): Ditto.
+	(vmsne): Ditto.
+	(vmslt): Ditto.
+	(vmsgt): Ditto.
+	(vmsle): Ditto.
+	(vmsge): Ditto.
+	(vmsltu): Ditto.
+	(vmsgtu): Ditto.
+	(vmsleu): Ditto.
+	(vmsgeu): Ditto.
+	(vnmsac): Ditto.
+	(vmadd): Ditto.
+	(vnmsub): Ditto.
+	(vwmacc): Ditto.
+	(vsadd): Ditto.
+	(vssub): Ditto.
+	(vssubu): Ditto.
+	(vaadd): Ditto.
+	(vasub): Ditto.
+	(vasubu): Ditto.
+	(vsmul): Ditto.
+	(vssra): Ditto.
+	(vssrl): Ditto.
+	(vnclip): Ditto.
+
+2023-02-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md (@pred_<optab><mode>): Rearrange.
+	(@pred_<optab><mode>_scalar): Ditto.
+	(*pred_<optab><mode>_scalar): Ditto.
+	(*pred_<optab><mode>_extended_scalar): Ditto.
+
+2023-02-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (riscv_run_selftests): Remove 'extern'.
+	(init_builtins): Ditto.
+	(mangle_builtin_type): Ditto.
+	(verify_type_context): Ditto.
+	(handle_pragma_vector):  Ditto.
+	(builtin_decl): Ditto.
+	(expand_builtin): Ditto.
+	(const_vec_all_same_in_range_p): Ditto.
+	(legitimize_move): Ditto.
+	(emit_vlmax_op): Ditto.
+	(emit_nonvlmax_op): Ditto.
+	(get_vlmul): Ditto.
+	(get_ratio): Ditto.
+	(get_ta): Ditto.
+	(get_ma): Ditto.
+	(get_avl_type): Ditto.
+	(calculate_ratio): Ditto.
+	(enum vlmul_type): Ditto.
+	(simm5_p): Ditto.
+	(neg_simm5_p): Ditto.
+	(has_vi_variant_p): Ditto.
+
+2023-02-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (simm32_p): Remove.
+	* config/riscv/riscv-v.cc (simm32_p): Ditto.
+	* config/riscv/vector.md: Use immediate_operand
+	instead of riscv_vector::simm32_p.
+
 2023-02-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Optimize Options): Reword the explanation

@@ -1,3 +1,50 @@
+2023-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108243
+	PR c++/97553
+	* g++.dg/opt/is_constant_evaluated1.C: New test.
+	* g++.dg/opt/is_constant_evaluated2.C: New test.
+
+2023-02-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/108831
+	* gcc.target/i386/pr108831-1.c: New test.
+	* gcc.target/i386/pr108831-2.c: Ditto.
+
+2023-02-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/108805
+	* gcc.dg/pr108805.c: New test.
+
+2023-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108821
+	* gcc.dg/tree-ssa/ssa-lim-24.c: New testcase.
+
+2023-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/ISO_Fortran_binding_14.f90: Change example function to
+	CLOCK which is available on mingw as well as other platforms.
+	* gfortran.dg/pr96486.f90: Change variable to PATH likewise.
+
+2023-02-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-148.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-149.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-150.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-151.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-152.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-153.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-156.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-157.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-159.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-160.c: Change vmnot.mm to vmnot.m.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-161.c: Change vmnot.mm to vmnot.m.
+
+2023-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/bind_c_array_params_2.f90: Add *-*-ming* to dg-final.
+
 2023-02-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108806

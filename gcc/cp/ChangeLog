@@ -1,3 +1,59 @@
+2023-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108243
+	PR c++/97553
+	* cp-gimplify.cc (enum fold_flags): Define.
+	(fold_flags_t): Declare.
+	(cp_fold_data::genericize): Replace this data member with ...
+	(cp_fold_data::fold_flags): ... this.
+	(cp_fold_r): Adjust use of cp_fold_data and calls to cp_fold.
+	(cp_fold_function): Likewise.
+	(cp_fold_maybe_rvalue): Add an internal overload that
+	additionally takes and propagates a fold_flags_t parameter, and
+	define the existing public overload in terms of it.
+	(cp_fold_rvalue): Likewise.
+	(cp_fully_fold_init): Adjust use of cp_fold_data.
+	(fold_cache): Replace with ...
+	(fold_caches): ... this 2-element array of caches.
+	(get_fold_cache): Define.
+	(clear_fold_cache): Adjust.
+	(cp_fold): Add fold_flags_t parameter.  Use get_fold_cache.
+	Pass flags to calls to cp_fold, cp_fold_rvalue and
+	cp_fold_maybe_rvalue.
+	<case CALL_EXPR>: If ff_mce_false is set, fold
+	__builtin_is_constant_evaluated to false and pass mce_false to
+	maybe_constant_value.
+
+2023-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	* constexpr.cc (constexpr_call::manifestly_const_eval): Give
+	it type int instead of bool.
+	(constexpr_ctx::manifestly_const_eval): Give it type mce_value
+	instead of bool.
+	(cxx_eval_builtin_function_call): Adjust after making
+	manifestly_const_eval tri-state.
+	(cxx_eval_call_expression): Likewise.
+	(cxx_eval_binary_expression): Likewise.
+	(cxx_eval_conditional_expression): Likewise.
+	(cxx_eval_constant_expression): Likewise.
+	(cxx_eval_outermost_constant_expr): Likewise.
+	(cxx_constant_value): Likewise.
+	(cxx_constant_dtor): Likewise.
+	(maybe_constant_value): Give manifestly_const_eval parameter
+	type mce_value instead of bool and adjust accordingly.
+	(fold_non_dependent_expr_template): Adjust call
+	to cxx_eval_outermost_constant_expr.
+	(fold_non_dependent_expr): Likewise.
+	(maybe_constant_init_1): Likewise.
+	* constraint.cc (satisfy_atom): Adjust call to
+	maybe_constant_value.
+	* cp-tree.h (enum class mce_value): Define.
+	(maybe_constant_value): Adjust manifestly_const_eval parameter
+	type and default argument.
+	* decl.cc (compute_array_index_type_loc): Adjust call to
+	maybe_constant_value.
+	* pt.cc (convert_nontype_argument): Likewise.
+
 2023-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/107773
