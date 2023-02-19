@@ -164,12 +164,12 @@ public:
 
   // Nonzero masks.
   wide_int get_nonzero_bits () const;
-  void set_nonzero_bits (const wide_int_ref &bits);
+  void set_nonzero_bits (const wide_int &bits);
 
 protected:
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
   virtual bool contains_p (tree cst) const override;
-  irange (tree *, unsigned);
+  irange (wide_int *, unsigned);
 
    // In-place operators.
   void irange_set (tree type, const wide_int &, const wide_int &);
@@ -197,8 +197,9 @@ private:
   bool intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
   const unsigned char m_max_ranges;
-  tree m_nonzero_mask;
-  tree *m_base;
+  tree m_type;
+  wide_int m_nonzero_mask;
+  wide_int *m_base;
 };
 
 // Here we describe an irange with N pairs of ranges.  The storage for
@@ -224,7 +225,7 @@ private:
   template <unsigned X> friend void gt_pch_nx (int_range<X> *,
 					       gt_pointer_operator, void *);
 
-  tree m_ranges[N*2];
+  wide_int m_ranges[N*2];
 };
 
 // Unsupported temporaries may be created by ranger before it's known
@@ -651,7 +652,7 @@ inline tree
 irange::type () const
 {
   gcc_checking_assert (m_num_ranges > 0);
-  return TREE_TYPE (m_base[0]);
+  return m_type;
 }
 
 inline bool
@@ -660,23 +661,19 @@ irange::varying_compatible_p () const
   if (m_num_ranges != 1)
     return false;
 
-  tree l = m_base[0];
-  tree u = m_base[1];
-  tree t = TREE_TYPE (l);
+  const wide_int &l = m_base[0];
+  const wide_int &u = m_base[1];
+  tree t = m_type;
 
   if (m_kind == VR_VARYING && t == error_mark_node)
     return true;
 
   unsigned prec = TYPE_PRECISION (t);
   signop sign = TYPE_SIGN (t);
-  if (INTEGRAL_TYPE_P (t))
-    return (wi::to_wide (l) == wi::min_value (prec, sign)
-	    && wi::to_wide (u) == wi::max_value (prec, sign)
-	    && (!m_nonzero_mask || wi::to_wide (m_nonzero_mask) == -1));
-  if (POINTER_TYPE_P (t))
-    return (wi::to_wide (l) == 0
-	    && wi::to_wide (u) == wi::max_value (prec, sign)
-	    && (!m_nonzero_mask || wi::to_wide (m_nonzero_mask) == -1));
+  if (INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t))
+    return (l == wi::min_value (prec, sign)
+	    && u == wi::max_value (prec, sign)
+	    && m_nonzero_mask == -1);
   return true;
 }
 
@@ -769,7 +766,7 @@ gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
 // Constructors for irange
 
 inline
-irange::irange (tree *base, unsigned nranges)
+irange::irange (wide_int *base, unsigned nranges)
   : vrange (VR_IRANGE),
     m_max_ranges (nranges)
 {
@@ -812,9 +809,7 @@ int_range<N>::int_range (tree type, const wide_int &wmin, const wide_int &wmax,
 			 value_range_kind kind)
   : irange (m_ranges, N)
 {
-  tree min = wide_int_to_tree (type, wmin);
-  tree max = wide_int_to_tree (type, wmax);
-  set (min, max, kind);
+  set (type, wmin, wmax, kind);
 }
 
 template<unsigned N>
@@ -836,8 +831,8 @@ inline void
 irange::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
+  m_type = NULL;
   m_num_ranges = 0;
-  m_nonzero_mask = NULL;
 }
 
 inline void
@@ -845,33 +840,18 @@ irange::set_varying (tree type)
 {
   m_kind = VR_VARYING;
   m_num_ranges = 1;
-  m_nonzero_mask = NULL;
+  m_nonzero_mask = wi::minus_one (TYPE_PRECISION (type));
 
-  if (INTEGRAL_TYPE_P (type))
+  if (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
     {
+      m_type = type;
       // Strict enum's require varying to be not TYPE_MIN/MAX, but rather
       // min_value and max_value.
-      wide_int min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-      wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-      if (wi::eq_p (max, wi::to_wide (TYPE_MAX_VALUE (type)))
-	  && wi::eq_p (min, wi::to_wide (TYPE_MIN_VALUE (type))))
-	{
-	  m_base[0] = TYPE_MIN_VALUE (type);
-	  m_base[1] = TYPE_MAX_VALUE (type);
-	}
-      else
-	{
-	  m_base[0] = wide_int_to_tree (type, min);
-	  m_base[1] = wide_int_to_tree (type, max);
-	}
-    }
-  else if (POINTER_TYPE_P (type))
-    {
-      m_base[0] = build_int_cst (type, 0);
-      m_base[1] = build_int_cst (type, -1);
+      m_base[0] = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+      m_base[1] = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
     }
   else
-    m_base[0] = m_base[1] = error_mark_node;
+    m_type = error_mark_node;
 }
 
 // Return the lower bound of a sub-range.  PAIR is the sub-range in
@@ -882,7 +862,7 @@ irange::lower_bound (unsigned pair) const
 {
   gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
-  return wi::to_wide (m_base[pair * 2]);
+  return m_base[pair * 2];
 }
 
 // Return the upper bound of a sub-range.  PAIR is the sub-range in
@@ -893,7 +873,7 @@ irange::upper_bound (unsigned pair) const
 {
   gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
-  return wi::to_wide (m_base[pair * 2 + 1]);
+  return m_base[pair * 2 + 1];
 }
 
 // Return the highest bound of a range.

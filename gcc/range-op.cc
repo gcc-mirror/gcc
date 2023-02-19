@@ -89,7 +89,8 @@ update_known_bitmask (irange &r, tree_code code,
   bit_value_binop (code, sign, prec, &value, &mask,
 		   lh_sign, lh_prec, lh_value, lh_mask,
 		   rh_sign, rh_prec, rh_value, rh_mask);
-  r.set_nonzero_bits (value | mask);
+  wide_int tmp = wide_int::from (value | mask, prec, sign);
+  r.set_nonzero_bits (tmp);
 }
 
 // Return the upper limit for a type.

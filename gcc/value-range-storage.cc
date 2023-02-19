@@ -300,10 +300,7 @@ irange_storage::set_irange (const irange &r)
       write_wide_int (val, len, r.lower_bound (i));
       write_wide_int (val, len, r.upper_bound (i));
     }
-  if (r.m_nonzero_mask)
-    write_wide_int (val, len, wi::to_wide (r.m_nonzero_mask));
-  else
-    write_wide_int (val, len, wi::minus_one (m_precision));
+  write_wide_int (val, len, r.m_nonzero_mask);
 
   if (flag_checking)
     {
@@ -341,17 +338,16 @@ irange_storage::get_irange (irange &r, tree type) const
   gcc_checking_assert (TYPE_PRECISION (type) == m_precision);
   const HOST_WIDE_INT *val = &m_val[0];
   const unsigned char *len = lengths_address ();
-  wide_int w;
 
   // Handle the common case where R can fit the new range.
   if (r.m_max_ranges >= m_num_ranges)
     {
       r.m_kind = VR_RANGE;
       r.m_num_ranges = m_num_ranges;
+      r.m_type = type;
       for (unsigned i = 0; i < m_num_ranges * 2; ++i)
 	{
-	  read_wide_int (w, val, *len, m_precision);
-	  r.m_base[i] = wide_int_to_tree (type, w);
+	  read_wide_int (r.m_base[i], val, *len, m_precision);
 	  val += *len++;
 	}
     }
@@ -370,15 +366,9 @@ irange_storage::get_irange (irange &r, tree type) const
 	  r.union_ (tmp);
 	}
     }
-  read_wide_int (w, val, *len, m_precision);
-  if (w == -1)
-    r.m_nonzero_mask = NULL;
-  else
-    {
-      r.m_nonzero_mask = wide_int_to_tree (type, w);
-      if (r.m_kind == VR_VARYING)
-	r.m_kind = VR_RANGE;
-    }
+  read_wide_int (r.m_nonzero_mask, val, *len, m_precision);
+  if (r.m_kind == VR_VARYING)
+    r.m_kind = VR_RANGE;
 
   if (flag_checking)
     r.verify_range ();

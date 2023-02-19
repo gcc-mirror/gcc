@@ -456,7 +456,7 @@ set_ptr_nonnull (tree name)
 /* Update the non-zero bits bitmask of NAME.  */
 
 void
-set_nonzero_bits (tree name, const wide_int_ref &mask)
+set_nonzero_bits (tree name, const wide_int &mask)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
 

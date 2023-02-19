@@ -914,6 +914,7 @@ irange::operator= (const irange &src)
     m_base[x - 1] = src.m_base[src.m_num_ranges * 2 - 1];
 
   m_num_ranges = lim;
+  m_type = src.m_type;
   m_kind = src.m_kind;
   m_nonzero_mask = src.m_nonzero_mask;
   if (m_max_ranges == 1)
@@ -963,11 +964,12 @@ get_legacy_range (const irange &r, tree &min, tree &max)
 void
 irange::irange_set (tree type, const wide_int &min, const wide_int &max)
 {
-  m_base[0] = wide_int_to_tree (type, min);
-  m_base[1] = wide_int_to_tree (type, max);
+  m_type = type;
+  m_base[0] = min;
+  m_base[1] = max;
   m_num_ranges = 1;
   m_kind = VR_RANGE;
-  m_nonzero_mask = NULL;
+  m_nonzero_mask = wi::minus_one (TYPE_PRECISION (type));
   normalize_kind ();
 
   if (flag_checking)
@@ -978,28 +980,26 @@ void
 irange::irange_set_1bit_anti_range (tree type,
 				    const wide_int &min, const wide_int &max)
 {
-  gcc_checking_assert (TYPE_PRECISION (type) == 1);
+  unsigned prec = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
+  gcc_checking_assert (prec == 1);
 
   if (min == max)
     {
+      wide_int tmp;
       // Since these are 1-bit quantities, they can only be [MIN,MIN]
       // or [MAX,MAX].
-      if (min == wi::to_wide (TYPE_MIN_VALUE (type)))
-	{
-	  wide_int tmp = wi::to_wide (TYPE_MAX_VALUE (type));
-	  set (type, tmp, tmp);
-	}
+      if (min == wi::min_value (prec, sign))
+	tmp = wi::max_value (prec, sign);
       else
-	{
-	  wide_int tmp = wi::to_wide (TYPE_MIN_VALUE (type));
-	  set (type, tmp, tmp);
-	}
+	tmp = wi::min_value (prec, sign);
+      set (type, tmp, tmp);
     }
   else
     {
       // The only alternative is [MIN,MAX], which is the empty range.
-      gcc_checking_assert (min == wi::to_wide (TYPE_MIN_VALUE (type)));
-      gcc_checking_assert (max == wi::to_wide (TYPE_MAX_VALUE (type)));
+      gcc_checking_assert (min == wi::min_value (prec, sign));
+      gcc_checking_assert (max == wi::max_value (prec, sign));
       set_undefined ();
     }
   if (flag_checking)
@@ -1027,8 +1027,8 @@ irange::irange_set_anti_range (tree type,
     {
       wide_int lim1 = wi::sub (min, 1, sign, &ovf);
       gcc_checking_assert (ovf != wi::OVF_OVERFLOW);
-      m_base[0] = wide_int_to_tree (type, type_range.lower_bound (0));
-      m_base[1] = wide_int_to_tree (type, lim1);
+      m_base[0] = type_range.lower_bound (0);
+      m_base[1] = lim1;
       m_num_ranges = 1;
     }
   if (wi::ne_p (max, type_range.upper_bound ()))
@@ -1040,14 +1040,13 @@ irange::irange_set_anti_range (tree type,
 	}
       wide_int lim2 = wi::add (max, 1, sign, &ovf);
       gcc_checking_assert (ovf != wi::OVF_OVERFLOW);
-      m_base[m_num_ranges * 2] = wide_int_to_tree (type, lim2);
-      m_base[m_num_ranges * 2 + 1]
-	= wide_int_to_tree (type, type_range.upper_bound (0));
+      m_base[m_num_ranges * 2] = lim2;
+      m_base[m_num_ranges * 2 + 1] = type_range.upper_bound (0);
       ++m_num_ranges;
     }
 
   m_kind = VR_RANGE;
-  m_nonzero_mask = NULL;
+  m_nonzero_mask = wi::minus_one (TYPE_PRECISION (type));
   normalize_kind ();
 
   if (flag_checking)
@@ -1079,6 +1078,7 @@ irange::set (tree type, const wide_int &rmin, const wide_int &rmax,
       return;
     }
 
+  m_type = type;
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
   wide_int min = wide_int::from (rmin, prec, sign);
@@ -1134,12 +1134,14 @@ irange::verify_range ()
       return;
     }
   gcc_checking_assert (m_num_ranges <= m_max_ranges);
+  unsigned prec = TYPE_PRECISION (m_type);
   if (m_kind == VR_VARYING)
     {
-      gcc_checking_assert (!m_nonzero_mask
-			   || wi::to_wide (m_nonzero_mask) == -1);
+      gcc_checking_assert (m_nonzero_mask == -1);
       gcc_checking_assert (m_num_ranges == 1);
       gcc_checking_assert (varying_compatible_p ());
+      gcc_checking_assert (lower_bound ().get_precision () == prec);
+      gcc_checking_assert (upper_bound ().get_precision () == prec);
       return;
     }
   gcc_checking_assert (m_num_ranges != 0);
@@ -1148,9 +1150,12 @@ irange::verify_range ()
     {
       wide_int lb = lower_bound (i);
       wide_int ub = upper_bound (i);
-      int c = wi::cmp (lb, ub, TYPE_SIGN (type ()));
+      gcc_checking_assert (lb.get_precision () == prec);
+      gcc_checking_assert (ub.get_precision () == prec);
+      int c = wi::cmp (lb, ub, TYPE_SIGN (m_type));
       gcc_checking_assert (c == 0 || c == -1);
     }
+  gcc_checking_assert (m_nonzero_mask.get_precision () == prec);
 }
 
 bool
@@ -1217,9 +1222,9 @@ irange::contains_p (const wide_int &cst) const
     return false;
 
   // See if we can exclude CST based on the nonzero bits.
-  if (m_nonzero_mask
+  if (m_nonzero_mask != -1
       && cst != 0
-      && wi::bit_and (wi::to_wide (m_nonzero_mask), cst) == 0)
+      && wi::bit_and (m_nonzero_mask, cst) == 0)
     return false;
 
   signop sign = TYPE_SIGN (type ());
@@ -1243,17 +1248,18 @@ irange::irange_single_pair_union (const irange &r)
   gcc_checking_assert (!undefined_p () && !varying_p ());
   gcc_checking_assert (!r.undefined_p () && !varying_p ());
 
-  signop sign = TYPE_SIGN (TREE_TYPE (m_base[0]));
+  signop sign = TYPE_SIGN (m_type);
   // Check if current lower bound is also the new lower bound.
-  if (wi::le_p (wi::to_wide (m_base[0]), wi::to_wide (r.m_base[0]), sign))
+  if (wi::le_p (m_base[0], r.m_base[0], sign))
     {
       // If current upper bound is new upper bound, we're done.
-      if (wi::le_p (wi::to_wide (r.m_base[1]), wi::to_wide (m_base[1]), sign))
+      if (wi::le_p (r.m_base[1], m_base[1], sign))
 	return union_nonzero_bits (r);
       // Otherwise R has the new upper bound.
       // Check for overlap/touching ranges, or single target range.
       if (m_max_ranges == 1
-	  || wi::to_widest (m_base[1]) + 1 >= wi::to_widest (r.m_base[0]))
+	  || (widest_int::from (m_base[1], sign) + 1
+	      >= widest_int::from (r.m_base[0], TYPE_SIGN (r.m_type))))
 	m_base[1] = r.m_base[1];
       else
 	{
@@ -1267,15 +1273,16 @@ irange::irange_single_pair_union (const irange &r)
     }
 
   // Set the new lower bound to R's lower bound.
-  tree lb = m_base[0];
+  wide_int lb = m_base[0];
   m_base[0] = r.m_base[0];
 
   // If R fully contains THIS range, just set the upper bound.
-  if (wi::ge_p (wi::to_wide (r.m_base[1]), wi::to_wide (m_base[1]), sign))
+  if (wi::ge_p (r.m_base[1], m_base[1], sign))
     m_base[1] = r.m_base[1];
   // Check for overlapping ranges, or target limited to a single range.
   else if (m_max_ranges == 1
-	   || wi::to_widest (r.m_base[1]) + 1 >= wi::to_widest (lb))
+	   || (widest_int::from (r.m_base[1], TYPE_SIGN (r.m_type)) + 1
+	       >= widest_int::from (lb, sign)))
     ;
   else
     {
@@ -1336,13 +1343,15 @@ irange::union_ (const vrange &v)
   // the merge is performed.
   //
   // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
-  auto_vec<tree, 20> res (m_num_ranges * 2 + r.m_num_ranges * 2);
+  auto_vec<wide_int, 20> res (m_num_ranges * 2 + r.m_num_ranges * 2);
   unsigned i = 0, j = 0, k = 0;
+  signop sign = TYPE_SIGN (m_type);
 
   while (i < m_num_ranges * 2 && j < r.m_num_ranges * 2)
     {
       // lower of Xi and Xj is the lowest point.
-      if (wi::to_widest (m_base[i]) <= wi::to_widest (r.m_base[j]))
+      if (widest_int::from (m_base[i], sign)
+	  <= widest_int::from (r.m_base[j], sign))
 	{
 	  res.quick_push (m_base[i]);
 	  res.quick_push (m_base[i + 1]);
@@ -1375,10 +1384,12 @@ irange::union_ (const vrange &v)
   for (j = 2; j < k ; j += 2)
     {
       // Current upper+1 is >= lower bound next pair, then we merge ranges.
-      if (wi::to_widest (res[i - 1]) + 1 >= wi::to_widest (res[j]))
+      if (widest_int::from (res[i - 1], sign) + 1
+	  >= widest_int::from (res[j], sign))
 	{
 	  // New upper bounds is greater of current or the next one.
-	  if (wi::to_widest (res[j + 1]) > wi::to_widest (res[i - 1]))
+	  if (widest_int::from (res[j + 1], sign)
+	      > widest_int::from (res[i - 1], sign))
 	    res[i - 1] = res[j + 1];
 	}
       else
@@ -1424,18 +1435,18 @@ irange::irange_contains_p (const irange &r) const
 
   // In order for THIS to fully contain R, all of the pairs within R must
   // be fully contained by the pairs in this object.
-  signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
+  signop sign = TYPE_SIGN (m_type);
   unsigned ri = 0;
   unsigned i = 0;
-  tree rl = r.m_base[0];
-  tree ru = r.m_base[1];
-  tree l = m_base[0];
-  tree u = m_base[1];
+  wide_int rl = r.m_base[0];
+  wide_int ru = r.m_base[1];
+  wide_int l = m_base[0];
+  wide_int u = m_base[1];
   while (1)
     {
       // If r is contained within this range, move to the next R
-      if (wi::ge_p (wi::to_wide (rl), wi::to_wide (l), sign)
-	  && wi::le_p (wi::to_wide (ru), wi::to_wide (u), sign))
+      if (wi::ge_p (rl, l, sign)
+	  && wi::le_p (ru, u, sign))
 	{
 	  // This pair is OK, Either done, or bump to the next.
 	  if (++ri >= r.num_pairs ())
@@ -1445,7 +1456,7 @@ irange::irange_contains_p (const irange &r) const
 	  continue;
 	}
       // Otherwise, check if this's pair occurs before R's.
-      if (wi::lt_p (wi::to_wide (u), wi::to_wide (rl), sign))
+      if (wi::lt_p (u, rl, sign))
 	{
 	  // There's still at least one pair of R left.
 	  if (++i >= num_pairs ())
@@ -1498,7 +1509,7 @@ irange::intersect (const vrange &v)
   if (r.irange_contains_p (*this))
     return intersect_nonzero_bits (r);
 
-  signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
+  signop sign = TYPE_SIGN (m_type);
   unsigned bld_pair = 0;
   unsigned bld_lim = m_max_ranges;
   int_range_max r2 (*this);
@@ -1507,17 +1518,17 @@ irange::intersect (const vrange &v)
   for (unsigned i = 0; i < r.num_pairs (); )
     {
       // If r1's upper is < r2's lower, we can skip r1's pair.
-      tree ru = r.m_base[i * 2 + 1];
-      tree r2l = r2.m_base[i2 * 2];
-      if (wi::lt_p (wi::to_wide (ru), wi::to_wide (r2l), sign))
+      wide_int ru = r.m_base[i * 2 + 1];
+      wide_int r2l = r2.m_base[i2 * 2];
+      if (wi::lt_p (ru, r2l, sign))
 	{
 	  i++;
 	  continue;
 	}
       // Likewise, skip r2's pair if its excluded.
-      tree r2u = r2.m_base[i2 * 2 + 1];
-      tree rl = r.m_base[i * 2];
-      if (wi::lt_p (wi::to_wide (r2u), wi::to_wide (rl), sign))
+      wide_int r2u = r2.m_base[i2 * 2 + 1];
+      wide_int rl = r.m_base[i * 2];
+      if (wi::lt_p (r2u, rl, sign))
 	{
 	  i2++;
 	  if (i2 < r2_lim)
@@ -1531,7 +1542,7 @@ irange::intersect (const vrange &v)
       // set.
       if (bld_pair < bld_lim)
 	{
-	  if (wi::ge_p (wi::to_wide (rl), wi::to_wide (r2l), sign))
+	  if (wi::ge_p (rl, r2l, sign))
 	    m_base[bld_pair * 2] = rl;
 	  else
 	    m_base[bld_pair * 2] = r2l;
@@ -1541,7 +1552,7 @@ irange::intersect (const vrange &v)
 	bld_pair--;
 
       // ...and choose the lower of the upper bounds.
-      if (wi::le_p (wi::to_wide (ru), wi::to_wide (r2u), sign))
+      if (wi::le_p (ru, r2u, sign))
 	{
 	  m_base[bld_pair * 2 + 1] = ru;
 	  bld_pair++;
@@ -1604,27 +1615,27 @@ irange::intersect (const wide_int& lb, const wide_int& ub)
   unsigned pair_lim = num_pairs ();
   for (unsigned i = 0; i < pair_lim; i++)
     {
-      tree pairl = m_base[i * 2];
-      tree pairu = m_base[i * 2 + 1];
+      wide_int pairl = m_base[i * 2];
+      wide_int pairu = m_base[i * 2 + 1];
       // Once UB is less than a pairs lower bound, we're done.
-      if (wi::lt_p (ub, wi::to_wide (pairl), sign))
+      if (wi::lt_p (ub, pairl, sign))
 	break;
       // if LB is greater than this pairs upper, this pair is excluded.
-      if (wi::lt_p (wi::to_wide (pairu), lb, sign))
+      if (wi::lt_p (pairu, lb, sign))
 	continue;
 
       // Must be some overlap.  Find the highest of the lower bounds,
       // and set it
-      if (wi::gt_p (lb, wi::to_wide (pairl), sign))
-	m_base[bld_index * 2] = wide_int_to_tree (range_type, lb);
+      if (wi::gt_p (lb, pairl, sign))
+	m_base[bld_index * 2] = lb;
       else
 	m_base[bld_index * 2] = pairl;
 
       // ...and choose the lower of the upper bounds and if the base pair
       // has the lower upper bound, need to check next pair too.
-      if (wi::lt_p (ub, wi::to_wide (pairu), sign))
+      if (wi::lt_p (ub, pairu, sign))
 	{
-	  m_base[bld_index++ * 2 + 1] = wide_int_to_tree (range_type, ub);
+	  m_base[bld_index++ * 2 + 1] = ub;
 	  break;
 	}
       else
@@ -1696,12 +1707,12 @@ irange::invert ()
   signop sign = TYPE_SIGN (ttype);
   wide_int type_min = wi::min_value (prec, sign);
   wide_int type_max = wi::max_value (prec, sign);
-  m_nonzero_mask = NULL;
+  m_nonzero_mask = wi::minus_one (prec);
   if (m_num_ranges == m_max_ranges
       && lower_bound () != type_min
       && upper_bound () != type_max)
     {
-      m_base[1] = wide_int_to_tree (ttype, type_max);
+      m_base[1] = type_max;
       m_num_ranges = 1;
       return;
     }
@@ -1723,9 +1734,9 @@ irange::invert ()
   // which doesn't set the underflow bit.
   if (type_min != orig_range.lower_bound ())
     {
-      m_base[nitems++] = wide_int_to_tree (ttype, type_min);
+      m_base[nitems++] = type_min;
       tmp = subtract_one (orig_range.lower_bound (), ttype, ovf);
-      m_base[nitems++] = wide_int_to_tree (ttype, tmp);
+      m_base[nitems++] = tmp;
       if (ovf)
 	nitems = 0;
     }
@@ -1738,11 +1749,10 @@ irange::invert ()
 	{
 	  // The middle ranges cannot have MAX/MIN, so there's no need
 	  // to check for unsigned overflow on the +1 and -1 here.
-	  tmp = wi::add (wi::to_wide (orig_range.m_base[j]), 1, sign, &ovf);
-	  m_base[nitems++] = wide_int_to_tree (ttype, tmp);
-	  tmp = subtract_one (wi::to_wide (orig_range.m_base[j + 1]),
-			      ttype, ovf);
-	  m_base[nitems++] = wide_int_to_tree (ttype, tmp);
+	  tmp = wi::add (orig_range.m_base[j], 1, sign, &ovf);
+	  m_base[nitems++] = tmp;
+	  tmp = subtract_one (orig_range.m_base[j + 1], ttype, ovf);
+	  m_base[nitems++] = tmp;
 	  if (ovf)
 	    nitems -= 2;
 	}
@@ -1753,11 +1763,11 @@ irange::invert ()
   // However, if this will overflow on the PLUS 1, don't even bother.
   // This also handles adding one to an unsigned MAX, which doesn't
   // set the overflow bit.
-  if (type_max != wi::to_wide (orig_range.m_base[i]))
+  if (type_max != orig_range.m_base[i])
     {
-      tmp = add_one (wi::to_wide (orig_range.m_base[i]), ttype, ovf);
-      m_base[nitems++] = wide_int_to_tree (ttype, tmp);
-      m_base[nitems++] = wide_int_to_tree (ttype, type_max);
+      tmp = add_one (orig_range.m_base[i], ttype, ovf);
+      m_base[nitems++] = tmp;
+      m_base[nitems++] = type_max;
       if (ovf)
 	nitems -= 2;
     }
@@ -1794,21 +1804,21 @@ bool
 irange::set_range_from_nonzero_bits ()
 {
   gcc_checking_assert (!undefined_p ());
-  if (!m_nonzero_mask)
+  if (m_nonzero_mask == -1)
     return false;
-  unsigned popcount = wi::popcount (wi::to_wide (m_nonzero_mask));
+  unsigned popcount = wi::popcount (m_nonzero_mask);
 
   // If we have only one bit set in the mask, we can figure out the
   // range immediately.
   if (popcount == 1)
     {
       // Make sure we don't pessimize the range.
-      if (!contains_p (wi::to_wide (m_nonzero_mask)))
+      if (!contains_p (m_nonzero_mask))
 	return false;
 
       bool has_zero = contains_zero_p (*this);
-      tree nz = m_nonzero_mask;
-      set (nz, nz);
+      wide_int nz = m_nonzero_mask;
+      set (m_type, nz, nz);
       m_nonzero_mask = nz;
       if (has_zero)
 	{
@@ -1827,26 +1837,15 @@ irange::set_range_from_nonzero_bits ()
 }
 
 void
-irange::set_nonzero_bits (const wide_int_ref &bits)
+irange::set_nonzero_bits (const wide_int &bits)
 {
   gcc_checking_assert (!undefined_p ());
-  unsigned prec = TYPE_PRECISION (type ());
-
-  if (bits == -1)
-    {
-      m_nonzero_mask = NULL;
-      normalize_kind ();
-      if (flag_checking)
-	verify_range ();
-      return;
-    }
 
   // Drop VARYINGs with a nonzero mask to a plain range.
   if (m_kind == VR_VARYING && bits != -1)
     m_kind = VR_RANGE;
 
-  wide_int nz = wide_int::from (bits, prec, TYPE_SIGN (type ()));
-  m_nonzero_mask = wide_int_to_tree (type (), nz);
+  m_nonzero_mask = bits;
   if (set_range_from_nonzero_bits ())
     return;
 
@@ -1870,21 +1869,10 @@ irange::get_nonzero_bits () const
   // the mask precisely up to date at all times.  Instead, we default
   // to -1 and set it when explicitly requested.  However, this
   // function will always return the correct mask.
-  if (m_nonzero_mask)
-    return wi::to_wide (m_nonzero_mask) & get_nonzero_bits_from_range ();
-  else
+  if (m_nonzero_mask == -1)
     return get_nonzero_bits_from_range ();
-}
-
-// Convert tree mask to wide_int.  Returns -1 for NULL masks.
-
-inline wide_int
-mask_to_wi (tree mask, tree type)
-{
-  if (mask)
-    return wi::to_wide (mask);
   else
-    return wi::shwi (-1, TYPE_PRECISION (type));
+    return m_nonzero_mask & get_nonzero_bits_from_range ();
 }
 
 // Intersect the nonzero bits in R into THIS and normalize the range.
@@ -1895,7 +1883,7 @@ irange::intersect_nonzero_bits (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  if (!m_nonzero_mask && !r.m_nonzero_mask)
+  if (m_nonzero_mask == -1 && r.m_nonzero_mask == -1)
     {
       normalize_kind ();
       if (flag_checking)
@@ -1904,15 +1892,14 @@ irange::intersect_nonzero_bits (const irange &r)
     }
 
   bool changed = false;
-  tree t = type ();
-  if (mask_to_wi (m_nonzero_mask, t) != mask_to_wi (r.m_nonzero_mask, t))
+  if (m_nonzero_mask != r.m_nonzero_mask)
     {
       wide_int nz = get_nonzero_bits () & r.get_nonzero_bits ();
       // If the nonzero bits did not change, return false.
       if (nz == get_nonzero_bits ())
 	return false;
 
-      m_nonzero_mask = wide_int_to_tree (t, nz);
+      m_nonzero_mask = nz;
       if (set_range_from_nonzero_bits ())
 	return true;
       changed = true;
@@ -1931,7 +1918,7 @@ irange::union_nonzero_bits (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  if (!m_nonzero_mask && !r.m_nonzero_mask)
+  if (m_nonzero_mask == -1 && r.m_nonzero_mask == -1)
     {
       normalize_kind ();
       if (flag_checking)
@@ -1940,11 +1927,9 @@ irange::union_nonzero_bits (const irange &r)
     }
 
   bool changed = false;
-  tree t = type ();
-  if (mask_to_wi (m_nonzero_mask, t) != mask_to_wi (r.m_nonzero_mask, t))
+  if (m_nonzero_mask != r.m_nonzero_mask)
     {
-      wide_int nz = get_nonzero_bits () | r.get_nonzero_bits ();
-      m_nonzero_mask = wide_int_to_tree (t, nz);
+      m_nonzero_mask = get_nonzero_bits () | r.get_nonzero_bits ();
       // No need to call set_range_from_nonzero_bits, because we'll
       // never narrow the range.  Besides, it would cause endless
       // recursion because of the union_ in
@@ -2005,25 +1990,15 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
 void
 gt_ggc_mx (irange *x)
 {
-  for (unsigned i = 0; i < x->m_num_ranges; ++i)
-    {
-      gt_ggc_mx (x->m_base[i * 2]);
-      gt_ggc_mx (x->m_base[i * 2 + 1]);
-    }
-  if (x->m_nonzero_mask)
-    gt_ggc_mx (x->m_nonzero_mask);
+  if (!x->undefined_p ())
+    gt_ggc_mx (x->m_type);
 }
 
 void
 gt_pch_nx (irange *x)
 {
-  for (unsigned i = 0; i < x->m_num_ranges; ++i)
-    {
-      gt_pch_nx (x->m_base[i * 2]);
-      gt_pch_nx (x->m_base[i * 2 + 1]);
-    }
-  if (x->m_nonzero_mask)
-    gt_pch_nx (x->m_nonzero_mask);
+  if (!x->undefined_p ())
+    gt_pch_nx (x->m_type);
 }
 
 void
@@ -2034,8 +2009,6 @@ gt_pch_nx (irange *x, gt_pointer_operator op, void *cookie)
       op (&x->m_base[i * 2], NULL, cookie);
       op (&x->m_base[i * 2 + 1], NULL, cookie);
     }
-  if (x->m_nonzero_mask)
-    op (&x->m_nonzero_mask, NULL, cookie);
 }
 
 void
@@ -2142,12 +2115,6 @@ range (tree type, int a, int b, value_range_kind kind = VR_RANGE)
       w2 = wi::shwi (b, TYPE_PRECISION (type));
     }
   return int_range<2> (type, w1, w2, kind);
-}
-
-static int_range<2>
-tree_range (tree a, tree b, value_range_kind kind = VR_RANGE)
-{
-  return int_range<2> (TREE_TYPE (a), wi::to_wide (a), wi::to_wide (b), kind);
 }
 
 static int_range<2>
@@ -2328,7 +2295,9 @@ range_tests_strict_enum ()
   ASSERT_FALSE (ir1.varying_p ());
 
   // The same test as above, but using TYPE_{MIN,MAX}_VALUE instead of [0,3].
-  vr1 = tree_range (TYPE_MIN_VALUE (rtype), TYPE_MAX_VALUE (rtype));
+  vr1 = int_range<2> (rtype,
+		      wi::to_wide (TYPE_MIN_VALUE (rtype)),
+		      wi::to_wide (TYPE_MAX_VALUE (rtype)));
   ir1 = vr1;
   ASSERT_TRUE (ir1 == vr1);
   ASSERT_FALSE (ir1.varying_p ());
@@ -2522,11 +2491,11 @@ range_tests_misc ()
   ASSERT_TRUE (vv.contains_p (UINT (2)));
   ASSERT_TRUE (vv.num_pairs () == 3);
 
-  r0 = range_uint (1, 1);
+  r0 = range_int (1, 1);
   // And union it with  [0,0][2,2][4,MAX] multi range
   r0.union_ (vv);
   // The result should be [0,2][4,MAX], or ~[3,3]  but it must contain 2
-  ASSERT_TRUE (r0.contains_p (UINT (2)));
+  ASSERT_TRUE (r0.contains_p (INT (2)));
 }
 
 static void
@@ -2536,33 +2505,33 @@ range_tests_nonzero_bits ()
 
   // Adding nonzero bits to a varying drops the varying.
   r0.set_varying (integer_type_node);
-  r0.set_nonzero_bits (255);
+  r0.set_nonzero_bits (INT (255));
   ASSERT_TRUE (!r0.varying_p ());
   // Dropping the nonzero bits brings us back to varying.
-  r0.set_nonzero_bits (-1);
+  r0.set_nonzero_bits (INT (-1));
   ASSERT_TRUE (r0.varying_p ());
 
   // Test contains_p with nonzero bits.
   r0.set_zero (integer_type_node);
   ASSERT_TRUE (r0.contains_p (INT (0)));
   ASSERT_FALSE (r0.contains_p (INT (1)));
-  r0.set_nonzero_bits (0xfe);
+  r0.set_nonzero_bits (INT (0xfe));
   ASSERT_FALSE (r0.contains_p (INT (0x100)));
   ASSERT_FALSE (r0.contains_p (INT (0x3)));
 
   // Union of nonzero bits.
   r0.set_varying (integer_type_node);
-  r0.set_nonzero_bits (0xf0);
+  r0.set_nonzero_bits (INT (0xf0));
   r1.set_varying (integer_type_node);
-  r1.set_nonzero_bits (0xf);
+  r1.set_nonzero_bits (INT (0xf));
   r0.union_ (r1);
   ASSERT_TRUE (r0.get_nonzero_bits () == 0xff);
 
   // Intersect of nonzero bits.
   r0 = range_int (0, 255);
-  r0.set_nonzero_bits (0xfe);
+  r0.set_nonzero_bits (INT (0xfe));
   r1.set_varying (integer_type_node);
-  r1.set_nonzero_bits (0xf0);
+  r1.set_nonzero_bits (INT (0xf0));
   r0.intersect (r1);
   ASSERT_TRUE (r0.get_nonzero_bits () == 0xf0);
 
@@ -2579,13 +2548,13 @@ range_tests_nonzero_bits ()
   x = wi::bit_not (x);
   r0.set_nonzero_bits (x); 	// 0xff..ff00
   r1.set_varying (integer_type_node);
-  r1.set_nonzero_bits (0xff);
+  r1.set_nonzero_bits (INT (0xff));
   r0.union_ (r1);
   ASSERT_TRUE (r0.varying_p ());
 
   // Test that setting a nonzero bit of 1 does not pessimize the range.
   r0.set_zero (integer_type_node);
-  r0.set_nonzero_bits (1);
+  r0.set_nonzero_bits (INT (1));
   ASSERT_TRUE (r0.zero_p ());
 }
 
