@@ -1,3 +1,16 @@
+2023-02-18  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-02-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config.gcc (triplet_abi): Set its value based on $with_abi,
+	instead of $target.
+	(la_canonical_triplet): Set it after $triplet_abi is set
+	correctly.
+	* config/loongarch/t-linux (MULTILIB_OSDIRNAMES): Make the
+	multiarch tuple for lp64d "loongarch64-linux-gnu" (without
+	"f64" suffix).
+
 2023-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/90458
