@@ -1,3 +1,24 @@
+2023-02-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/108375
+	* c-decl.cc (decl_jump_unsafe): Use c_type_variably_modified_p.
+	(diagnose_mismatched_decl): Dito.
+	(warn_about_goto): Dito:
+	(c_check_switch_jump_warnings): Dito.
+	(finish_decl): Dito.
+	(finish_struct): Dito.
+	(grokdeclarator): Set C_TYPE_VARIABLY_MODIFIED.
+	(finish_struct): Set C_TYPE_VARIABLY_MODIFIED.
+	* c-objc-common.cc (c_var_mod_p): New function.
+	(c_var_unspec_p): Remove.
+	* c-objc-common.h: Set lang hook.
+	* c-parser.cc (c_parser_declararion_or_fndef): Use c_type_variably_modified_p.
+	(c_parser_typeof_specifier): Dito.
+	(c_parser_has_attribute_expression): Dito.
+	(c_parser_generic_selection): Dito.
+	* c-tree.h: Define C_TYPE_VARIABLY_MODIFIED and define c_var_mode_p.
+	* c-typeck.cc: Remove c_vla_mod_p and use C_TYPE_VARIABLY_MODIFIED.
+
 2023-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	* c-parser.h: Mechanically drop static from static inline

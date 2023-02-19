@@ -1,3 +1,38 @@
+2023-02-18  Jason Merrill  <jason@redhat.com>
+
+	DR 2518
+	PR c++/52809
+	PR c++/53638
+	PR c++/87389
+	PR c++/89741
+	PR c++/92099
+	PR c++/104041
+	PR c++/104691
+	* g++.dg/DRs/dr2518.C: New test.
+
+2023-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108819
+	* gcc.dg/pr108819.c: New test.
+
+2023-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108832
+	* gcc.target/i386/pr108832.c: New test.
+
+2023-02-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/108375
+	* gcc.dg/pr108375-1.c: New test.
+	* gcc.dg/pr108375-2.c: New test.
+
+2023-02-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/105660
+	PR c/105660
+	* gcc.dg/pr105660-1.c: New test.
+	* gcc.dg/pr105660-2.c: New test.
+
 2023-02-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108243

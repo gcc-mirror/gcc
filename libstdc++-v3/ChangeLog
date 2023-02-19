@@ -1,3 +1,8 @@
+2023-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Switch two links to www.open-std.org to https.
+	* doc/html/faq.html: Regenerate.
+
 2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
 
 	* include/experimental/bits/simd_math.h (__hypot): Bitcasting

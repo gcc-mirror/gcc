@@ -1,3 +1,16 @@
+2023-02-18  Jason Merrill  <jason@redhat.com>
+
+	DR 2518
+	PR c++/52809
+	PR c++/53638
+	PR c++/87389
+	PR c++/89741
+	PR c++/92099
+	PR c++/104041
+	PR c++/104691
+	* semantics.cc (finish_static_assert): Don't diagnose in
+	template context.
+
 2023-02-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108243

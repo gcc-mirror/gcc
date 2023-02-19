@@ -1,3 +1,41 @@
+2023-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108819
+	* tree-ssa-reassoc.cc (update_ops): Fold new stmt in place.
+
+2023-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108832
+	* config/i386/i386-protos.h (ix86_replace_reg_with_reg): Declare.
+	* config/i386/i386-expand.cc (ix86_replace_reg_with_reg): New
+	function.
+	* config/i386/i386.md: Replace replace_rtx calls in all peephole2s
+	with ix86_replace_reg_with_reg.
+
+2023-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (AVR Options): Update link to AVR-LibC.
+
+2023-02-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config.gcc (triplet_abi): Set its value based on $with_abi,
+	instead of $target.
+	(la_canonical_triplet): Set it after $triplet_abi is set
+	correctly.
+	* config/loongarch/t-linux (MULTILIB_OSDIRNAMES): Make the
+	multiarch tuple for lp64d "loongarch64-linux-gnu" (without
+	"f64" suffix).
+
+2023-02-18  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd: Remove #if GIMPLE around the
+	"1 - a" pattern
+
+2023-02-18  Andrew Pinski  <apinski@marvell.com>
+
+	* value-query.h (get_range_query): Return the global ranges
+	for a nullptr func.
+
 2023-02-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	* doc/invoke.texi (@item -Wall): Fix typo in
