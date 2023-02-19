@@ -16206,6 +16206,7 @@ package body Sem_Ch3 is
 
       if No (Actual_Subp) then
          if Is_Intrinsic_Subprogram (Parent_Subp) then
+            Set_Convention (New_Subp, Convention_Intrinsic);
             Set_Is_Intrinsic_Subprogram (New_Subp);
 
             if Present (Alias (Parent_Subp))

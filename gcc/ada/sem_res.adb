@@ -6037,11 +6037,11 @@ package body Sem_Res is
    --  Start of processing for Resolve_Arithmetic_Op
 
    begin
-      if Comes_From_Source (N)
-        and then Ekind (Entity (N)) = E_Function
+      if Ekind (Entity (N)) = E_Function
         and then Is_Imported (Entity (N))
         and then Is_Intrinsic_Subprogram (Entity (N))
       then
+         Generate_Reference (Entity (N), N);
          Resolve_Intrinsic_Operator (N, Typ);
          return;
 
@@ -9710,7 +9710,7 @@ package body Sem_Res is
    --------------------------------
 
    procedure Resolve_Intrinsic_Operator  (N : Node_Id; Typ : Entity_Id) is
-      Btyp : constant Entity_Id := Base_Type (Underlying_Type (Typ));
+      Btyp : constant Entity_Id := Implementation_Base_Type (Typ);
       Op   : Entity_Id;
       Arg1 : Node_Id;
       Arg2 : Node_Id;
@@ -10641,11 +10641,11 @@ package body Sem_Res is
          end if;
       end if;
 
-      if Comes_From_Source (N)
-        and then Ekind (Entity (N)) = E_Function
+      if Ekind (Entity (N)) = E_Function
         and then Is_Imported (Entity (N))
         and then Is_Intrinsic_Subprogram (Entity (N))
       then
+         Generate_Reference (Entity (N), N);
          Resolve_Intrinsic_Operator (N, Typ);
          return;
       end if;

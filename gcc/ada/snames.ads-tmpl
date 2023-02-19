@@ -1337,9 +1337,10 @@ package Snames is
    Name_Shift_Right                      : constant Name_Id := N + $;
    Name_Shift_Right_Arithmetic           : constant Name_Id := N + $;
    Name_Source_Location                  : constant Name_Id := N + $;
+   Name_To_Integer                       : constant Name_Id := N + $;
+   Name_To_Pointer                       : constant Name_Id := N + $;
    Name_Unchecked_Conversion             : constant Name_Id := N + $;
    Name_Unchecked_Deallocation           : constant Name_Id := N + $;
-   Name_To_Pointer                       : constant Name_Id := N + $;
    Last_Intrinsic_Name                   : constant Name_Id := N + $;
 
    --  Names used in processing intrinsic calls
