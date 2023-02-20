@@ -745,7 +745,7 @@ size_t objc_common_tree_size (enum tree_code code);
 #define objc_is_class_id(TYPE) (OBJC_TYPE_NAME (TYPE) == objc_class_id)
 
 /* Retrieve category interface CAT_NAME (if any) associated with CLASS.  */
-static inline tree
+inline tree
 lookup_category (tree klass, tree cat_name)
 {
   tree category = CLASS_CATEGORY_LIST (klass);
@@ -756,7 +756,7 @@ lookup_category (tree klass, tree cat_name)
 }
 
 /* Count only the fields occurring in T.  */
-static inline int
+inline int
 ivar_list_length (tree t)
 {
   int count = 0;
@@ -768,7 +768,7 @@ ivar_list_length (tree t)
   return count;
 }
 
-static inline tree
+inline tree
 is_ivar (tree decl_chain, tree ident)
 {
   for ( ; decl_chain; decl_chain = DECL_CHAIN (decl_chain))

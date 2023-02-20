@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_FEASIBLE_GRAPH_H
 #define GCC_ANALYZER_FEASIBLE_GRAPH_H
 
+#include "analyzer/exploded-graph.h"
+
 namespace ana {
 
 /* Forward decls.  */
@@ -101,6 +103,9 @@ public:
   }
 
   unsigned get_path_length () const { return m_path_length; }
+
+  bool get_state_at_stmt (const gimple *target_stmt,
+			  region_model *out) const;
 
 private:
   feasibility_state m_state;

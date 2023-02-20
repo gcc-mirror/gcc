@@ -264,6 +264,6 @@ extern "C" void _M2_StdIO_init (__attribute__((unused)) int argc,__attribute__((
   StdIO_PushInput ((StdIO_ProcRead) {(StdIO_ProcRead_t) IO_Read});
 }
 
-extern "C" void _M2_StdIO_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StdIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

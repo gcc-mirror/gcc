@@ -351,6 +351,20 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     </para>
 
     <para>
+      If you wish to run the testsuite in a freestanding configuration, you can
+      pass the <code>-ffreestanding</code> flag.  Doing so will run the tests
+      that do not require hosted features, and emit a
+      <literal>UNSUPPORTED</literal> for those that do.  To run tests in the
+      freestanding configuration, you still need to build for a target you can
+      run programs on, e.g. <code>x86_64-pc-linux-gnu</code>, as a few tests
+      still execute the code they build.  Here's an example of how to run the
+      testsuite with libstdc++ in freestanding mode:
+      <programlisting>
+    make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board=unix/-ffreestanding'
+      </programlisting>
+    </para>
+
+    <para>
       You can run the tests with a compiler and library that have
       already been installed.  Make sure that the compiler (e.g.,
       <command>g++</command>) is in your <envar>PATH</envar>.  If you are

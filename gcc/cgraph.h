@@ -2650,7 +2650,7 @@ symtab_node::real_symbol_p (void)
 /* Return true if DECL should have entry in symbol table if used.
    Those are functions and static & external variables.  */
 
-static inline bool
+inline bool
 decl_in_symtab_p (const_tree decl)
 {
   return (TREE_CODE (decl) == FUNCTION_DECL
@@ -3323,7 +3323,7 @@ cgraph_edge::frequency ()
 
 
 /* Return true if the TM_CLONE bit is set for a given FNDECL.  */
-static inline bool
+inline bool
 decl_is_tm_clone (const_tree fndecl)
 {
   cgraph_node *n = cgraph_node::get (fndecl);
@@ -3539,7 +3539,7 @@ ipa_polymorphic_call_context::useless_p () const
    the name documents the intent.  We require that no GC can occur
    within the fprintf call.  */
 
-static inline const char *
+inline const char *
 xstrdup_for_dump (const char *transient_str)
 {
   return ggc_strdup (transient_str);

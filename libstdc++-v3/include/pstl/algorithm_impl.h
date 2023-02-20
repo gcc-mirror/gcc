@@ -1293,17 +1293,17 @@ __pattern_unique(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIt
 // unique_copy
 //------------------------------------------------------------------------
 
-template <class _ForwardIterator, class OutputIterator, class _BinaryPredicate>
-OutputIterator
-__brick_unique_copy(_ForwardIterator __first, _ForwardIterator __last, OutputIterator __result, _BinaryPredicate __pred,
+template <class _ForwardIterator, class _OutputIterator, class _BinaryPredicate>
+  _OutputIterator
+__brick_unique_copy(_ForwardIterator __first, _ForwardIterator __last, _OutputIterator __result, _BinaryPredicate __pred,
                     /*vector=*/std::false_type) noexcept
 {
     return std::unique_copy(__first, __last, __result, __pred);
 }
 
-template <class _RandomAccessIterator, class OutputIterator, class _BinaryPredicate>
-OutputIterator
-__brick_unique_copy(_RandomAccessIterator __first, _RandomAccessIterator __last, OutputIterator __result,
+template <class _RandomAccessIterator, class _OutputIterator, class _BinaryPredicate>
+  _OutputIterator
+__brick_unique_copy(_RandomAccessIterator __first, _RandomAccessIterator __last, _OutputIterator __result,
                     _BinaryPredicate __pred, /*vector=*/std::true_type) noexcept
 {
 #if (_PSTL_MONOTONIC_PRESENT)
@@ -1449,10 +1449,10 @@ __brick_reverse(_BidirectionalIterator __first, _BidirectionalIterator __last, _
 template <class _ExecutionPolicy, class _BidirectionalIterator, class _IsVector>
 void
 __pattern_reverse(_ExecutionPolicy&&, _BidirectionalIterator __first, _BidirectionalIterator __last,
-                  _IsVector _is_vector,
+                  _IsVector __is_vector,
                   /*is_parallel=*/std::false_type) noexcept
 {
-    __internal::__brick_reverse(__first, __last, _is_vector);
+    __internal::__brick_reverse(__first, __last, __is_vector);
 }
 
 template <class _ExecutionPolicy, class _BidirectionalIterator, class _IsVector>
@@ -2514,16 +2514,16 @@ __pattern_generate(_ExecutionPolicy&& __exec, _ForwardIterator __first, _Forward
     });
 }
 
-template <class OutputIterator, class Size, class _Generator>
-OutputIterator
-__brick_generate_n(OutputIterator __first, Size __count, _Generator __g, /* is_vector = */ std::true_type) noexcept
+template <class _OutputIterator, class _Size, class _Generator>
+  _OutputIterator
+__brick_generate_n(_OutputIterator __first, _Size __count, _Generator __g, /* is_vector = */ std::true_type) noexcept
 {
     return __unseq_backend::__simd_generate_n(__first, __count, __g);
 }
 
-template <class OutputIterator, class Size, class _Generator>
-OutputIterator
-__brick_generate_n(OutputIterator __first, Size __count, _Generator __g, /* is_vector = */ std::false_type) noexcept
+template <class _OutputIterator, class _Size, class _Generator>
+  _OutputIterator
+__brick_generate_n(_OutputIterator __first, _Size __count, _Generator __g, /* is_vector = */ std::false_type) noexcept
 {
     return std::generate_n(__first, __count, __g);
 }

@@ -32,7 +32,7 @@ typedef struct scop *scop_p;
 
 typedef unsigned graphite_dim_t;
 
-static inline graphite_dim_t scop_nb_params (scop_p);
+inline graphite_dim_t scop_nb_params (scop_p);
 
 /* A data reference can write or read some memory or we
    just know it may write some memory.  */
@@ -189,7 +189,7 @@ void new_poly_dr (poly_bb_p, gimple *, enum poly_dr_type,
 void debug_pdr (poly_dr_p);
 void print_pdr (FILE *, poly_dr_p);
 
-static inline bool
+inline bool
 pdr_read_p (poly_dr_p pdr)
 {
   return PDR_TYPE (pdr) == PDR_READ;
@@ -197,7 +197,7 @@ pdr_read_p (poly_dr_p pdr)
 
 /* Returns true when PDR is a "write".  */
 
-static inline bool
+inline bool
 pdr_write_p (poly_dr_p pdr)
 {
   return PDR_TYPE (pdr) == PDR_WRITE;
@@ -205,7 +205,7 @@ pdr_write_p (poly_dr_p pdr)
 
 /* Returns true when PDR is a "may write".  */
 
-static inline bool
+inline bool
 pdr_may_write_p (poly_dr_p pdr)
 {
   return PDR_TYPE (pdr) == PDR_MAY_WRITE;
@@ -295,13 +295,13 @@ extern void debug_schedule_ast (__isl_keep isl_schedule *, scop_p);
 
 /* The basic block of the PBB.  */
 
-static inline basic_block
+inline basic_block
 pbb_bb (poly_bb_p pbb)
 {
   return GBB_BB (PBB_BLACK_BOX (pbb));
 }
 
-static inline int
+inline int
 pbb_index (poly_bb_p pbb)
 {
   return pbb_bb (pbb)->index;
@@ -309,7 +309,7 @@ pbb_index (poly_bb_p pbb)
 
 /* The loop of the PBB.  */
 
-static inline loop_p
+inline loop_p
 pbb_loop (poly_bb_p pbb)
 {
   return gbb_loop (PBB_BLACK_BOX (pbb));
@@ -317,7 +317,7 @@ pbb_loop (poly_bb_p pbb)
 
 /* The scop that contains the PDR.  */
 
-static inline scop_p
+inline scop_p
 pdr_scop (poly_dr_p pdr)
 {
   return PBB_SCOP (PDR_PBB (pdr));
@@ -325,7 +325,7 @@ pdr_scop (poly_dr_p pdr)
 
 /* Set black box of PBB to BLACKBOX.  */
 
-static inline void
+inline void
 pbb_set_black_box (poly_bb_p pbb, gimple_poly_bb_p black_box)
 {
   pbb->black_box = black_box;
@@ -412,7 +412,7 @@ extern bool apply_poly_transforms (scop_p);
 
 /* Set the region of SCOP to REGION.  */
 
-static inline void
+inline void
 scop_set_region (scop_p scop, sese_info_p region)
 {
   scop->scop_info = region;
@@ -420,7 +420,7 @@ scop_set_region (scop_p scop, sese_info_p region)
 
 /* Returns the number of parameters for SCOP.  */
 
-static inline graphite_dim_t
+inline graphite_dim_t
 scop_nb_params (scop_p scop)
 {
   return scop->nb_params;
@@ -428,7 +428,7 @@ scop_nb_params (scop_p scop)
 
 /* Set the number of params of SCOP to NB_PARAMS.  */
 
-static inline void
+inline void
 scop_set_nb_params (scop_p scop, graphite_dim_t nb_params)
 {
   scop->nb_params = nb_params;

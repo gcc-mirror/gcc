@@ -272,7 +272,7 @@
     <biblioentry xml:id="biblio.brodal96priority">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="https://dl.acm.org/citation.cfm?id=313883">
+	      xlink:href="https://dl.acm.org/doi/10.5555/313852.313883">
 	  Worst-case efficient priority queues
 	</link>
       </title>
@@ -1061,7 +1061,7 @@
     <biblioentry xml:id="biblio.mscom">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="https://docs.microsoft.com/en-us/windows/win32/com/the-component-object-model">
+	      xlink:href="https://learn.microsoft.com/en-us/windows/win32/com/the-component-object-model">
 	  The Component Object Model
 	</link>
       </title>

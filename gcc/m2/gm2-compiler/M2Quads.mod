@@ -6677,6 +6677,8 @@ BEGIN
    ELSIF IsVar (Sym) OR IsType (Sym)
    THEN
       RETURN GetItemPointedTo (GetSType (Sym))
+   ELSE
+      InternalError ('expecting a pointer or variable symbol')
    END
 END GetItemPointedTo ;
 
@@ -9297,8 +9299,9 @@ BEGIN
    ELSIF GetSType (type) = NulSym
    THEN
       MetaErrorT1 (tok,
-                   'unable to obtain the {%AkMIN} value for type {%1Aad}', type)
+                   'unable to obtain the {%AkMIN} value for type {%1Aad}', type) ;
       (* non recoverable error.  *)
+      InternalError ('MetaErrorT1 {%AkMIN} should call abort')
    ELSE
       RETURN GetTypeMin (tok, func, GetSType (type))
    END
@@ -9334,8 +9337,9 @@ BEGIN
    ELSIF GetSType (type) = NulSym
    THEN
       MetaErrorT1 (tok,
-                   'unable to obtain the {%AkMAX} value for type {%1Aad}', type)
+                   'unable to obtain the {%AkMAX} value for type {%1Aad}', type) ;
       (* non recoverable error.  *)
+      InternalError ('MetaErrorT1 {%AkMAX} should call abort')
    ELSE
       RETURN GetTypeMax (tok, func, GetSType (type))
    END
@@ -9452,7 +9456,7 @@ BEGIN
          MetaErrorT1 (vartok,
                       'parameter to {%AkMAX} must be a type or a variable, seen {%1Aad}',
                       Var)
-         (* non recoverable error.  *)
+         (* non recoverable error.  *) ;
       END
    ELSE
       (* we dont know the type therefore cannot fake a return.  *)

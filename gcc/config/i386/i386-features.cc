@@ -314,14 +314,12 @@ scalar_chain::~scalar_chain ()
 void
 scalar_chain::add_to_queue (unsigned insn_uid)
 {
-  if (bitmap_bit_p (insns, insn_uid)
-      || bitmap_bit_p (queue, insn_uid))
+  if (!bitmap_set_bit (queue, insn_uid))
     return;
 
   if (dump_file)
     fprintf (dump_file, "  Adding insn %d into chain's #%d queue\n",
 	     insn_uid, chain_id);
-  bitmap_set_bit (queue, insn_uid);
 }
 
 /* For DImode conversion, mark register defined by DEF as requiring
@@ -362,10 +360,9 @@ void
 scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref)
 {
   df_link *chain;
+  bool mark_def = false;
 
-  gcc_assert (bitmap_bit_p (insns, DF_REF_INSN_UID (ref))
-	      || bitmap_bit_p (candidates, DF_REF_INSN_UID (ref)));
-  add_to_queue (DF_REF_INSN_UID (ref));
+  gcc_checking_assert (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)));
 
   for (chain = DF_REF_CHAIN (ref); chain; chain = chain->next)
     {
@@ -398,9 +395,12 @@ scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref)
 	  if (dump_file)
 	    fprintf (dump_file, "  r%d use in insn %d isn't convertible\n",
 		     DF_REF_REGNO (chain->ref), uid);
-	  mark_dual_mode_def (ref);
+	  mark_def = true;
 	}
     }
+
+  if (mark_def)
+    mark_dual_mode_def (ref);
 }
 
 /* Add instruction into a chain.  */
@@ -408,13 +408,11 @@ scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref)
 void
 scalar_chain::add_insn (bitmap candidates, unsigned int insn_uid)
 {
-  if (bitmap_bit_p (insns, insn_uid))
+  if (!bitmap_set_bit (insns, insn_uid))
     return;
 
   if (dump_file)
     fprintf (dump_file, "  Adding insn %d to chain #%d\n", insn_uid, chain_id);
-
-  bitmap_set_bit (insns, insn_uid);
 
   rtx_insn *insn = DF_INSN_UID_GET (insn_uid)->insn;
   rtx def_set = single_set (insn);
@@ -2283,30 +2281,33 @@ convert_scalars_to_vector (bool timode_p)
       fprintf (dump_file, "There are no candidates for optimization.\n");
 
   for (unsigned i = 0; i <= 2; ++i)
-    while (!bitmap_empty_p (&candidates[i]))
-      {
-	unsigned uid = bitmap_first_set_bit (&candidates[i]);
-	scalar_chain *chain;
+    {
+      bitmap_tree_view (&candidates[i]);
+      while (!bitmap_empty_p (&candidates[i]))
+	{
+	  unsigned uid = bitmap_first_set_bit (&candidates[i]);
+	  scalar_chain *chain;
 
-	if (cand_mode[i] == TImode)
-	  chain = new timode_scalar_chain;
-	else
-	  chain = new general_scalar_chain (cand_mode[i], cand_vmode[i]);
+	  if (cand_mode[i] == TImode)
+	    chain = new timode_scalar_chain;
+	  else
+	    chain = new general_scalar_chain (cand_mode[i], cand_vmode[i]);
 
-	/* Find instructions chain we want to convert to vector mode.
-	   Check all uses and definitions to estimate all required
-	   conversions.  */
-	chain->build (&candidates[i], uid);
+	  /* Find instructions chain we want to convert to vector mode.
+	     Check all uses and definitions to estimate all required
+	     conversions.  */
+	  chain->build (&candidates[i], uid);
 
-	if (chain->compute_convert_gain () > 0)
-	  converted_insns += chain->convert ();
-	else
-	  if (dump_file)
-	    fprintf (dump_file, "Chain #%d conversion is not profitable\n",
-		     chain->chain_id);
+	  if (chain->compute_convert_gain () > 0)
+	    converted_insns += chain->convert ();
+	  else
+	    if (dump_file)
+	      fprintf (dump_file, "Chain #%d conversion is not profitable\n",
+		       chain->chain_id);
 
-	delete chain;
-      }
+	  delete chain;
+	}
+    }
 
   if (dump_file)
     fprintf (dump_file, "Total insns converted: %d\n", converted_insns);

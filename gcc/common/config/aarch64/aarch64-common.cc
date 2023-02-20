@@ -140,20 +140,28 @@ aarch64_handle_option (struct gcc_options *opts,
 /* An ISA extension in the co-processor and main instruction set space.  */
 struct aarch64_option_extension
 {
+  /* The extension name to pass on to the assembler.  */
   const char *name;
+  /* The smallest set of feature bits to toggle to enable this option.  */
   aarch64_feature_flags flag_canonical;
+  /* If this feature is turned on, these bits also need to be turned on.  */
   aarch64_feature_flags flags_on;
+  /* If this feature is turned off, these bits also need to be turned off.  */
   aarch64_feature_flags flags_off;
+  /* Indicates whether this feature is taken into account during native cpu
+     detection.  */
+  bool native_detect_p;
 };
 
 /* ISA extensions in AArch64.  */
 static constexpr aarch64_option_extension all_extensions[] =
 {
-#define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, F) \
+#define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, FEATURE_STRING) \
   {NAME, AARCH64_FL_##IDENT, feature_deps::IDENT ().explicit_on, \
-   feature_deps::get_flags_off (feature_deps::root_off_##IDENT)},
+   feature_deps::get_flags_off (feature_deps::root_off_##IDENT), \
+   FEATURE_STRING[0]},
 #include "config/aarch64/aarch64-option-extensions.def"
-  {NULL, 0, 0, 0}
+  {NULL, 0, 0, 0, false}
 };
 
 struct processor_name_to_arch
@@ -326,9 +334,13 @@ aarch64_get_extension_string_for_isa_flags
 	outstr += opt.name;
       }
 
-  /* Remove the features in current_flags & ~isa_flags.  */
+  /* Remove the features in current_flags & ~isa_flags.  If the feature does
+     not have an HWCAPs then it shouldn't be taken into account for feature
+     detection because one way or another we can't tell if it's available
+     or not.  */
   for (auto &opt : all_extensions)
-    if (opt.flag_canonical & current_flags & ~isa_flags)
+    if (opt.native_detect_p
+	&& (opt.flag_canonical & current_flags & ~isa_flags))
       {
 	current_flags &= ~opt.flags_off;
 	outstr += "+no";

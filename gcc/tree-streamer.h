@@ -90,7 +90,7 @@ void streamer_tree_cache_delete (struct streamer_tree_cache_d *);
 
 /* Return the tree node at slot IX in CACHE.  */
 
-static inline tree
+inline tree
 streamer_tree_cache_get_tree (struct streamer_tree_cache_d *cache, unsigned ix)
 {
   return cache->nodes[ix];
@@ -98,20 +98,20 @@ streamer_tree_cache_get_tree (struct streamer_tree_cache_d *cache, unsigned ix)
 
 /* Return the tree hash value at slot IX in CACHE.  */
 
-static inline hashval_t
+inline hashval_t
 streamer_tree_cache_get_hash (struct streamer_tree_cache_d *cache, unsigned ix)
 {
   return cache->hashes[ix];
 }
 
-static inline void
+inline void
 bp_pack_machine_mode (struct bitpack_d *bp, machine_mode mode)
 {
   streamer_mode_table[mode] = 1;
   bp_pack_enum (bp, machine_mode, 1 << 8, mode);
 }
 
-static inline machine_mode
+inline machine_mode
 bp_unpack_machine_mode (struct bitpack_d *bp)
 {
   return (machine_mode)

@@ -24,11 +24,11 @@ include $(top_srcdir)/fragment.am
 
 if GLIBCXX_HOSTED
 ## Note that python must come after src.
-  hosted_source = src doc po testsuite python
+  hosted_source = doc po testsuite python
 endif
 
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
-SUBDIRS = include libsupc++ $(hosted_source)
+SUBDIRS = include libsupc++ src $(hosted_source)
 
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 

@@ -177,7 +177,7 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 	default:;
 	}
     }
-  else if (tree lhs = gimple_get_lhs (stmt))
+  if (tree lhs = gimple_get_lhs (stmt))
     {
       if (TREE_CODE (lhs) != SSA_NAME)
 	{

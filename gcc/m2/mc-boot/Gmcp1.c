@@ -7260,6 +7260,6 @@ extern "C" void _M2_mcp1_init (__attribute__((unused)) int argc,__attribute__((u
 {
 }
 
-extern "C" void _M2_mcp1_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp1_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

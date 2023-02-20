@@ -2605,7 +2605,9 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
       if (data->ref == UNANALYZABLE_MEM_ID)
 	return -1;
       /* Stop at memory references which we can't move.  */
-      else if (memory_accesses.refs_list[data->ref]->mem.ref == error_mark_node)
+      else if (memory_accesses.refs_list[data->ref]->mem.ref == error_mark_node
+	       || TREE_THIS_VOLATILE
+		    (memory_accesses.refs_list[data->ref]->mem.ref))
 	{
 	  /* Mark refs_not_in_seq as unsupported.  */
 	  bitmap_ior_into (refs_not_supported, refs_not_in_seq);

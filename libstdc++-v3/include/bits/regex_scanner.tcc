@@ -484,98 +484,98 @@ namespace __detail
   template<typename _CharT>
     std::ostream&
     _Scanner<_CharT>::
-    _M_print(std::ostream& ostr)
+    _M_print(std::ostream& __ostr)
     {
       switch (_M_token)
       {
       case _S_token_anychar:
-	ostr << "any-character\n";
+	__ostr << "any-character\n";
 	break;
       case _S_token_backref:
-	ostr << "backref\n";
+	__ostr << "backref\n";
 	break;
       case _S_token_bracket_begin:
-	ostr << "bracket-begin\n";
+	__ostr << "bracket-begin\n";
 	break;
       case _S_token_bracket_neg_begin:
-	ostr << "bracket-neg-begin\n";
+	__ostr << "bracket-neg-begin\n";
 	break;
       case _S_token_bracket_end:
-	ostr << "bracket-end\n";
+	__ostr << "bracket-end\n";
 	break;
       case _S_token_char_class_name:
-	ostr << "char-class-name \"" << _M_value << "\"\n";
+	__ostr << "char-class-name \"" << _M_value << "\"\n";
 	break;
       case _S_token_closure0:
-	ostr << "closure0\n";
+	__ostr << "closure0\n";
 	break;
       case _S_token_closure1:
-	ostr << "closure1\n";
+	__ostr << "closure1\n";
 	break;
       case _S_token_collsymbol:
-	ostr << "collsymbol \"" << _M_value << "\"\n";
+	__ostr << "collsymbol \"" << _M_value << "\"\n";
 	break;
       case _S_token_comma:
-	ostr << "comma\n";
+	__ostr << "comma\n";
 	break;
       case _S_token_dup_count:
-	ostr << "dup count: " << _M_value << "\n";
+	__ostr << "dup count: " << _M_value << "\n";
 	break;
       case _S_token_eof:
-	ostr << "EOF\n";
+	__ostr << "EOF\n";
 	break;
       case _S_token_equiv_class_name:
-	ostr << "equiv-class-name \"" << _M_value << "\"\n";
+	__ostr << "equiv-class-name \"" << _M_value << "\"\n";
 	break;
       case _S_token_interval_begin:
-	ostr << "interval begin\n";
+	__ostr << "interval begin\n";
 	break;
       case _S_token_interval_end:
-	ostr << "interval end\n";
+	__ostr << "interval end\n";
 	break;
       case _S_token_line_begin:
-	ostr << "line begin\n";
+	__ostr << "line begin\n";
 	break;
       case _S_token_line_end:
-	ostr << "line end\n";
+	__ostr << "line end\n";
 	break;
       case _S_token_opt:
-	ostr << "opt\n";
+	__ostr << "opt\n";
 	break;
       case _S_token_or:
-	ostr << "or\n";
+	__ostr << "or\n";
 	break;
       case _S_token_ord_char:
-	ostr << "ordinary character: \"" << _M_value << "\"\n";
+	__ostr << "ordinary character: \"" << _M_value << "\"\n";
 	break;
       case _S_token_subexpr_begin:
-	ostr << "subexpr begin\n";
+	__ostr << "subexpr begin\n";
 	break;
       case _S_token_subexpr_no_group_begin:
-	ostr << "no grouping subexpr begin\n";
+	__ostr << "no grouping subexpr begin\n";
 	break;
       case _S_token_subexpr_lookahead_begin:
-	ostr << "lookahead subexpr begin\n";
+	__ostr << "lookahead subexpr begin\n";
 	break;
       case _S_token_subexpr_end:
-	ostr << "subexpr end\n";
+	__ostr << "subexpr end\n";
 	break;
       case _S_token_unknown:
-	ostr << "-- unknown token --\n";
+	__ostr << "-- unknown token --\n";
 	break;
       case _S_token_oct_num:
-	ostr << "oct number " << _M_value << "\n";
+	__ostr << "oct number " << _M_value << "\n";
 	break;
       case _S_token_hex_num:
-	ostr << "hex number " << _M_value << "\n";
+	__ostr << "hex number " << _M_value << "\n";
 	break;
       case _S_token_quoted_class:
-	ostr << "quoted class " << "\\" << _M_value << "\n";
+	__ostr << "quoted class " << "\\" << _M_value << "\n";
 	break;
       default:
 	_GLIBCXX_DEBUG_ASSERT(false);
       }
-      return ostr;
+      return __ostr;
     }
 #endif
 

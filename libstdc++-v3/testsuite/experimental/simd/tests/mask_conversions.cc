@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
+#include "bits/main.h"
 
 namespace stdx = std::experimental;
 

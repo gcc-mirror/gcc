@@ -274,7 +274,7 @@
   </para>
 
 <para>
-  Many options are available for GDB itself: please see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sourceware.org/gdb/current/onlinedocs/gdb/">
+  Many options are available for GDB itself: please see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sourceware.org/gdb/current/onlinedocs/gdb">
   "GDB features for C++" </link> in the GDB documentation. Also
   recommended: the other parts of this manual.
 </para>

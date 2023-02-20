@@ -512,6 +512,13 @@ print_hard_reg_set (FILE *f, HARD_REG_SET set, bool new_line_p)
     fprintf (f, "\n");
 }
 
+/* Dump a hard reg set SET to stderr.  */
+DEBUG_FUNCTION void
+debug_hard_reg_set (HARD_REG_SET set)
+{
+  print_hard_reg_set (stderr, set, true);
+}
+
 /* Print allocno hard register subforest given by ROOTS and its LEVEL
    to F.  */
 static void

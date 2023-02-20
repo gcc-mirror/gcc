@@ -1,3 +1,8 @@
+2023-02-11  niXman  <i.nixman@autistici.org>
+
+	* lrealpath.c (lrealpath): try to resolve symlink and
+	use UNC paths where applicable.
+
 2023-01-07  LIU Hao  <lh_mouse@126.com>
 
 	PR middle-end/108300

@@ -26,3 +26,6 @@ using namespace std;
 static_assert (is_same<typename aligned_storage<4>::type,
 	               aligned_storage_t<4>>(),
                "aligned_storage_t" );
+
+// { dg-warning "deprecated" "" { target c++23 } 26 }
+// { dg-warning "deprecated" "" { target c++23 } 27 }

@@ -66,7 +66,7 @@ dg_wait (void)
 }
 #endif
 
-static inline void
+inline void
 pass (const char* fmt, ...)
 {
   va_list ap;
@@ -81,7 +81,7 @@ pass (const char* fmt, ...)
 #endif
 }
 
-static inline void
+inline void
 xpass (const char* fmt, ...)
 {
   va_list ap;
@@ -96,7 +96,7 @@ xpass (const char* fmt, ...)
 #endif
 }
 
-static inline void
+inline void
 fail (const char* fmt, ...)
 {
   va_list ap;
@@ -111,7 +111,7 @@ fail (const char* fmt, ...)
 #endif
 }
 
-static inline void
+inline void
 xfail (const char* fmt, ...)
 {
   va_list ap;
@@ -126,7 +126,7 @@ xfail (const char* fmt, ...)
 #endif
 }
 
-static inline void
+inline void
 untested (const char* fmt, ...)
 {
   va_list ap;
@@ -141,7 +141,7 @@ untested (const char* fmt, ...)
 #endif
 }
 
-static inline void
+inline void
 unresolved (const char* fmt, ...)
 {
   va_list ap;
@@ -156,7 +156,7 @@ unresolved (const char* fmt, ...)
 #endif
 }
 
-static inline void
+inline void
 note (const char* fmt, ...)
 {
   va_list ap;
@@ -170,7 +170,7 @@ note (const char* fmt, ...)
 #endif
 }
 
-static inline void
+inline void
 totals (void)
 {
   printf ("\nTotals:\n");

@@ -84,7 +84,7 @@ gimple_infer_range::check_assume_func (gcall *call)
 	    continue;
 	  // Query the global range of the default def in the assume function.
 	  Value_Range assume_range (type);
-	  global_ranges.range_of_expr (assume_range, default_def);
+	  gimple_range_global (assume_range, default_def, fun);
 	  // If there is a non-varying result, add it as an inferred range.
 	  if (!assume_range.varying_p ())
 	    {

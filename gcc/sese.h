@@ -44,7 +44,7 @@ void dump_sese (const sese_l &);
 
 /* Get the entry of an sese S.  */
 
-static inline basic_block
+inline basic_block
 get_entry_bb (const sese_l &s)
 {
   return s.entry->dest;
@@ -52,7 +52,7 @@ get_entry_bb (const sese_l &s)
 
 /* Get the exit of an sese S.  */
 
-static inline basic_block
+inline basic_block
 get_exit_bb (const sese_l &s)
 {
   return s.exit->src;
@@ -110,7 +110,7 @@ extern bool sese_trivially_empty_bb_p (basic_block);
 
 /* The number of parameters in REGION. */
 
-static inline unsigned
+inline unsigned
 sese_nb_params (sese_info_p region)
 {
   return region->params.length ();
@@ -119,7 +119,7 @@ sese_nb_params (sese_info_p region)
 /* Checks whether BB is contained in the region delimited by ENTRY and
    EXIT blocks.  */
 
-static inline bool
+inline bool
 bb_in_region (const_basic_block bb, const_basic_block entry, const_basic_block exit)
 {
   return dominated_by_p (CDI_DOMINATORS, bb, entry)
@@ -130,7 +130,7 @@ bb_in_region (const_basic_block bb, const_basic_block entry, const_basic_block e
 /* Checks whether BB is contained in the region delimited by ENTRY and
    EXIT blocks.  */
 
-static inline bool
+inline bool
 bb_in_sese_p (basic_block bb, const sese_l &r)
 {
   return bb_in_region (bb, r.entry->dest, r.exit->dest);
@@ -138,7 +138,7 @@ bb_in_sese_p (basic_block bb, const sese_l &r)
 
 /* Returns true when STMT is defined in REGION.  */
 
-static inline bool
+inline bool
 stmt_in_sese_p (gimple *stmt, const sese_l &r)
 {
   basic_block bb = gimple_bb (stmt);
@@ -147,7 +147,7 @@ stmt_in_sese_p (gimple *stmt, const sese_l &r)
 
 /* Returns true when NAME is defined in REGION.  */
 
-static inline bool
+inline bool
 defined_in_sese_p (tree name, const sese_l &r)
 {
   return stmt_in_sese_p (SSA_NAME_DEF_STMT (name), r);
@@ -155,7 +155,7 @@ defined_in_sese_p (tree name, const sese_l &r)
 
 /* Returns true when LOOP is in REGION.  */
 
-static inline bool
+inline bool
 loop_in_sese_p (class loop *loop, const sese_l &region)
 {
   return (bb_in_sese_p (loop->header, region)
@@ -185,7 +185,7 @@ loop_in_sese_p (class loop *loop, const sese_l &region)
     loop_1 exists, but is not completely contained in the region -> depth 0
     loop_2 is completely contained -> depth 1  */
 
-static inline unsigned int
+inline unsigned int
 sese_loop_depth (const sese_l &region, loop_p loop)
 {
   unsigned int depth = 0;
@@ -212,19 +212,19 @@ extern void set_ifsese_condition (ifsese, tree);
 extern edge get_true_edge_from_guard_bb (basic_block);
 extern edge get_false_edge_from_guard_bb (basic_block);
 
-static inline edge
+inline edge
 if_region_entry (ifsese if_region)
 {
   return if_region->region->region.entry;
 }
 
-static inline edge
+inline edge
 if_region_exit (ifsese if_region)
 {
   return if_region->region->region.exit;
 }
 
-static inline basic_block
+inline basic_block
 if_region_get_condition_block (ifsese if_region)
 {
   return if_region_entry (if_region)->dest;
@@ -272,7 +272,7 @@ typedef struct gimple_poly_bb
 
 /* Return the innermost loop that contains the basic block GBB.  */
 
-static inline class loop *
+inline class loop *
 gbb_loop (gimple_poly_bb_p gbb)
 {
   return GBB_BB (gbb)->loop_father;
@@ -281,7 +281,7 @@ gbb_loop (gimple_poly_bb_p gbb)
 /* Returns the gimple loop, that corresponds to the loop_iterator_INDEX.
    If there is no corresponding gimple loop, we return NULL.  */
 
-static inline loop_p
+inline loop_p
 gbb_loop_at_index (gimple_poly_bb_p gbb, sese_l &region, int index)
 {
   loop_p loop = gbb_loop (gbb);
@@ -297,7 +297,7 @@ gbb_loop_at_index (gimple_poly_bb_p gbb, sese_l &region, int index)
 
 /* The number of common loops in REGION for GBB1 and GBB2.  */
 
-static inline int
+inline int
 nb_common_loops (sese_l &region, gimple_poly_bb_p gbb1, gimple_poly_bb_p gbb2)
 {
   loop_p l1 = gbb_loop (gbb1);

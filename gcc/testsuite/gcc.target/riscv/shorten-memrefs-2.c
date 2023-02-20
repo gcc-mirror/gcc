@@ -44,9 +44,9 @@ load2r (long long *array)
   return a;
 }
 
-/* { dg-final { scan-assembler "store1a:\n\taddi" } } */
+/* { dg-final { scan-assembler "store1a:\n(\t?\\.\[^\n\]*\n)*\taddi" } } */
 /* The sd insns in store2a are not rewritten because shorten_memrefs currently
    only optimizes lw and sw.
-/* { dg-final { scan-assembler "store2a:\n\taddi" { xfail riscv*-*-*  } } } */
-/* { dg-final { scan-assembler "load1r:\n\taddi" } } */
-/* { dg-final { scan-assembler "load2r:\n\taddi" } } */
+/* { dg-final { scan-assembler "store2a:\n(\t?\\.\[^\n\]*\n)*\taddi" { xfail riscv*-*-*  } } } */
+/* { dg-final { scan-assembler "load1r:\n(\t?\\.\[^\n\]*\n)*\taddi" } } */
+/* { dg-final { scan-assembler "load2r:\n(\t?\\.\[^\n\]*\n)*\taddi" } } */

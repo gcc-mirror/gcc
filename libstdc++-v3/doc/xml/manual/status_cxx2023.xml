@@ -566,6 +566,17 @@ or any notes about the implementation.
       <entry />
     </row>
 
+    <row>
+      <entry> Easy [utilities], [ranges], and [iterators] </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1642r11.html">
+        P1642R11
+        </link>
+      </entry>
+      <entry align="center"> 13.1 </entry>
+      <entry />
+    </row>
+
   </tbody>
 </tgroup>
 </table>

@@ -788,7 +788,7 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
 
 	// __exponent(__x) returns the exponent value (bias removed) as
 	// simd<_Up> with integral _Up
-	auto&& __exponent = [](const _V& __v) {
+	auto&& __exponent = [](const _V& __v) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	  using namespace std::experimental::__proposed;
 	  using _IV = rebind_simd_t<
 	    conditional_t<sizeof(_Tp) == sizeof(_LLong), _LLong, int>, _V>;
@@ -931,7 +931,7 @@ template <typename _R, typename _ToApply, typename _Tp, typename... _Tps>
   {
     return {__private_init,
 	    __data(__arg0)._M_apply_per_chunk(
-	      [&](auto __impl, const auto&... __inner) {
+	      [&](auto __impl, const auto&... __inner) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		using _V = typename decltype(__impl)::simd_type;
 		return __data(__apply(_V(__private_init, __inner)...));
 	      },
@@ -1010,7 +1010,7 @@ template <typename _VV, typename = __detail::__odr_helper>
 	    using _IV = rebind_simd_t<_Ip, _V>;
 	    const auto __as_int = simd_bit_cast<_IV>(__hi_exp);
 	    const _V __scale
-	      = simd_bit_cast<_V>(2 * simd_bit_cast<_Ip>(_Tp(1)) - __as_int);
+	      = simd_bit_cast<_V>(2 * __bit_cast<_Ip>(_Tp(1)) - __as_int);
 #else
 	    const _V __scale = (__hi_exp ^ __inf) * _Tp(.5);
 #endif
@@ -1092,8 +1092,9 @@ _GLIBCXX_SIMD_CVTING2(hypot)
     if constexpr (__is_fixed_size_abi_v<_Abi> && _V::size() > 1)
       {
 	return __fixed_size_apply<simd<_Tp, _Abi>>(
-	  [](auto __a, auto __b, auto __c) { return hypot(__a, __b, __c); },
-	  __x, __y, __z);
+		 [](auto __a, auto __b, auto __c) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		   return hypot(__a, __b, __c);
+		 }, __x, __y, __z);
       }
     else
       {
@@ -1180,7 +1181,7 @@ _GLIBCXX_SIMD_CVTING2(hypot)
 		using _IV = rebind_simd_t<_Ip, _V>;
 		const auto __as_int = simd_bit_cast<_IV>(__hi_exp);
 		const _V __scale
-		  = simd_bit_cast<_V>(2 * simd_bit_cast<_Ip>(_Tp(1)) - __as_int);
+		  = simd_bit_cast<_V>(2 * __bit_cast<_Ip>(_Tp(1)) - __as_int);
 #else
 		const _V __scale = (__hi_exp ^ __inf) * _Tp(.5);
 #endif
@@ -1380,9 +1381,9 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
 		 const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __m,
 		 const simd<_Tp, _Abi>& __x)
   {
-    return simd<_Tp, _Abi>([&](auto __i) {
-      return std::assoc_laguerre(__n[__i], __m[__i], __x[__i]);
-    });
+    return simd<_Tp, _Abi>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	     return std::assoc_laguerre(__n[__i], __m[__i], __x[__i]);
+	   });
   }
 
 template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
@@ -1391,9 +1392,9 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
 		 const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __m,
 		 const simd<_Tp, _Abi>& __x)
   {
-    return simd<_Tp, _Abi>([&](auto __i) {
-      return std::assoc_legendre(__n[__i], __m[__i], __x[__i]);
-    });
+    return simd<_Tp, _Abi>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	     return std::assoc_legendre(__n[__i], __m[__i], __x[__i]);
+	   });
   }
 
 _GLIBCXX_SIMD_MATH_CALL2_(beta, _Tp)
@@ -1414,8 +1415,9 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   hermite(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	  const simd<_Tp, _Abi>& __x)
   {
-    return simd<_Tp, _Abi>(
-      [&](auto __i) { return std::hermite(__n[__i], __x[__i]); });
+    return simd<_Tp, _Abi>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	     return std::hermite(__n[__i], __x[__i]);
+	   });
   }
 
 template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
@@ -1423,8 +1425,9 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   laguerre(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	   const simd<_Tp, _Abi>& __x)
   {
-    return simd<_Tp, _Abi>(
-      [&](auto __i) { return std::laguerre(__n[__i], __x[__i]); });
+    return simd<_Tp, _Abi>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	     return std::laguerre(__n[__i], __x[__i]);
+	   });
   }
 
 template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
@@ -1432,8 +1435,9 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   legendre(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	   const simd<_Tp, _Abi>& __x)
   {
-    return simd<_Tp, _Abi>(
-      [&](auto __i) { return std::legendre(__n[__i], __x[__i]); });
+    return simd<_Tp, _Abi>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	     return std::legendre(__n[__i], __x[__i]);
+	   });
   }
 
 _GLIBCXX_SIMD_MATH_CALL_(riemann_zeta)
@@ -1443,8 +1447,9 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   sph_bessel(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	     const simd<_Tp, _Abi>& __x)
   {
-    return simd<_Tp, _Abi>(
-      [&](auto __i) { return std::sph_bessel(__n[__i], __x[__i]); });
+    return simd<_Tp, _Abi>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	     return std::sph_bessel(__n[__i], __x[__i]);
+	   });
   }
 
 template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
@@ -1453,9 +1458,9 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
 	       const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __m,
 	       const simd<_Tp, _Abi>& theta)
   {
-    return simd<_Tp, _Abi>([&](auto __i) {
-      return std::assoc_legendre(__l[__i], __m[__i], theta[__i]);
-    });
+    return simd<_Tp, _Abi>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	     return std::assoc_legendre(__l[__i], __m[__i], theta[__i]);
+	   });
   }
 
 template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
@@ -1463,8 +1468,9 @@ template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   sph_neumann(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	      const simd<_Tp, _Abi>& __x)
   {
-    return simd<_Tp, _Abi>(
-      [&](auto __i) { return std::sph_neumann(__n[__i], __x[__i]); });
+    return simd<_Tp, _Abi>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	     return std::sph_neumann(__n[__i], __x[__i]);
+	   });
   }
 // }}}
 

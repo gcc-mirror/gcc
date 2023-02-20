@@ -122,6 +122,6 @@ _M2_RTco_init (void)
 
 EXTERN
 void
-_M2_RTco_finish (void)
+_M2_RTco_fini (void)
 {
 }

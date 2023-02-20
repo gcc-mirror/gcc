@@ -37,6 +37,11 @@ constexpr _Decimal128 v32 = __builtin_nansd128 ("");
 constexpr _Decimal32 v33 = {};
 constexpr _Decimal64 v34 = {};
 constexpr _Decimal128 v35 = {};
+constexpr _Decimal32 v36 = 0.0;
+constexpr _Decimal32 v37 = 0.0009765625;
+constexpr _Decimal64 v38 = 6.103515625e-05;
+constexpr _Decimal32 v39 = __builtin_inf ();
+constexpr _Decimal32 v40 = __builtin_nan ("");
 
 void
 f0 ()
@@ -76,4 +81,9 @@ f0 ()
   (constexpr _Decimal32) {};
   (constexpr _Decimal64) {};
   (constexpr _Decimal128) {};
+  (constexpr _Decimal32) { 0.0 };
+  (constexpr _Decimal32) { 0.0009765625 };
+  (constexpr _Decimal64) { 6.103515625e-05 };
+  (constexpr _Decimal32) { __builtin_inf () };
+  (constexpr _Decimal32) { __builtin_nan ("") };
 }

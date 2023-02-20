@@ -2474,6 +2474,23 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       *memory_access_type = VMAT_GATHER_SCATTER;
       if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info))
 	gcc_unreachable ();
+      /* When using internal functions, we rely on pattern recognition
+	 to convert the type of the offset to the type that the target
+	 requires, with the result being a call to an internal function.
+	 If that failed for some reason (e.g. because another pattern
+	 took priority), just handle cases in which the offset already
+	 has the right type.  */
+      else if (gs_info->ifn != IFN_LAST
+	       && !is_gimple_call (stmt_info->stmt)
+	       && !tree_nop_conversion_p (TREE_TYPE (gs_info->offset),
+					  TREE_TYPE (gs_info->offset_vectype)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "%s offset requires a conversion\n",
+			     vls_type == VLS_LOAD ? "gather" : "scatter");
+	  return false;
+	}
       else if (!vect_is_simple_use (gs_info->offset, vinfo,
 				    &gs_info->offset_dt,
 				    &gs_info->offset_vectype))
@@ -6298,9 +6315,24 @@ vectorizable_operation (vec_info *vinfo,
       return false;
     }
 
+  /* ???  We should instead expand the operations here, instead of
+     relying on vector lowering which has this hard cap on the number
+     of vector elements below it performs elementwise operations.  */
+  if (using_emulated_vectors_p
+      && (code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+      && ((BITS_PER_WORD / vector_element_bits (vectype)) < 4
+	  || maybe_lt (nunits_out, 4U)))
+    {
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "not using word mode for +- and less than "
+		     "four vector elements\n");
+      return false;
+    }
+
   int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   internal_fn cond_fn = get_conditional_internal_fn (code);
+  bool could_trap = gimple_could_trap_p (stmt);
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -6309,7 +6341,7 @@ vectorizable_operation (vec_info *vinfo,
 	 keeping the inactive lanes as-is.  */
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-	  && reduc_idx >= 0)
+	  && (could_trap || reduc_idx >= 0))
 	{
 	  if (cond_fn == IFN_LAST
 	      || !direct_internal_fn_supported_p (cond_fn, vectype,
@@ -6452,16 +6484,31 @@ vectorizable_operation (vec_info *vinfo,
       vop1 = ((op_type == binary_op || op_type == ternary_op)
 	      ? vec_oprnds1[i] : NULL_TREE);
       vop2 = ((op_type == ternary_op) ? vec_oprnds2[i] : NULL_TREE);
-      if (masked_loop_p && reduc_idx >= 0)
+      if (masked_loop_p && (reduc_idx >= 0 || could_trap))
 	{
-	  /* Perform the operation on active elements only and take
-	     inactive elements from the reduction chain input.  */
-	  gcc_assert (!vop2);
-	  vop2 = reduc_idx == 1 ? vop1 : vop0;
 	  tree mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
 					  vectype, i);
-	  gcall *call = gimple_build_call_internal (cond_fn, 4, mask,
-						    vop0, vop1, vop2);
+	  auto_vec<tree> vops (5);
+	  vops.quick_push (mask);
+	  vops.quick_push (vop0);
+	  if (vop1)
+	    vops.quick_push (vop1);
+	  if (vop2)
+	    vops.quick_push (vop2);
+	  if (reduc_idx >= 0)
+	    {
+	      /* Perform the operation on active elements only and take
+		 inactive elements from the reduction chain input.  */
+	      gcc_assert (!vop2);
+	      vops.quick_push (reduc_idx == 1 ? vop1 : vop0);
+	    }
+	  else
+	    {
+	      auto else_value = targetm.preferred_else_value
+		(cond_fn, vectype, vops.length () - 1, &vops[1]);
+	      vops.quick_push (else_value);
+	    }
+	  gcall *call = gimple_build_call_internal_vec (cond_fn, vops);
 	  new_temp = make_ssa_name (vec_dest, call);
 	  gimple_call_set_lhs (call, new_temp);
 	  gimple_call_set_nothrow (call, true);

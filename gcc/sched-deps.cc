@@ -2605,7 +2605,14 @@ sched_analyze_2 (class deps_desc *deps, rtx x, rtx_insn *insn)
 
     case MEM:
       {
-	if (!DEBUG_INSN_P (insn))
+	if (DEBUG_INSN_P (insn) && sched_deps_info->use_cselib)
+	  {
+	    machine_mode address_mode = get_address_mode (x);
+
+	    cselib_lookup_from_insn (XEXP (x, 0), address_mode, 1,
+				     GET_MODE (x), insn);
+	  }
+	else if (!DEBUG_INSN_P (insn))
 	  {
 	    /* Reading memory.  */
 	    rtx_insn_list *u;

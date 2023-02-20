@@ -60,8 +60,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined(TRACEON)
 #define tprintf printf
 #else
-/* sizeof is not evaluated.  */
-#define tprintf (void)sizeof
+#define tprintf(...)
 #endif
 
 typedef struct threadCB_s

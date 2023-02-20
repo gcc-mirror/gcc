@@ -91,14 +91,6 @@
   (ior (match_operand 0 "const_1_operand")
        (match_operand 0 "register_operand")))
 
-(define_predicate "const_0_to_3_operand"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
-
-(define_predicate "const_0_to_7_operand"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 7)")))
-
 (define_predicate "lu52i_mask_operand"
   (and (match_code "const_int")
        (match_test "UINTVAL (op) == 0xfffffffffffff")))

@@ -302,7 +302,7 @@ function_needs_eh_personality (struct function *);
 
 /* Pre-order iteration within the eh_region tree.  */
 
-static inline eh_region
+inline eh_region
 ehr_next (eh_region r, eh_region start)
 {
   if (r->inner)

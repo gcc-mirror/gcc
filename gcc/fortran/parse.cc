@@ -885,6 +885,9 @@ decode_omp_directive (void)
   switch (c)
     {
     case 'a':
+      /* For -fopenmp-simd, ignore 'assumes'; note no clause starts with 's'. */
+      if (!flag_openmp && gfc_match ("assumes") == MATCH_YES)
+	break;
       matcho ("assumes", gfc_match_omp_assumes, ST_OMP_ASSUMES);
       matchs ("assume", gfc_match_omp_assume, ST_OMP_ASSUME);
       matcho ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);

@@ -1,0 +1,111 @@
+/* { dg-do compile } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fno-schedule-insns -fno-schedule-insns2" } */
+
+#include "riscv_vector.h"
+
+vint8mf8_t test___riscv_vnclip_wx_i8mf8_m(vbool64_t mask,vint16mf4_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i8mf8_m(mask,op1,shift,vl);
+}
+
+
+vint8mf4_t test___riscv_vnclip_wx_i8mf4_m(vbool32_t mask,vint16mf2_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i8mf4_m(mask,op1,shift,vl);
+}
+
+
+vint8mf2_t test___riscv_vnclip_wx_i8mf2_m(vbool16_t mask,vint16m1_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i8mf2_m(mask,op1,shift,vl);
+}
+
+
+vint8m1_t test___riscv_vnclip_wx_i8m1_m(vbool8_t mask,vint16m2_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i8m1_m(mask,op1,shift,vl);
+}
+
+
+vint8m2_t test___riscv_vnclip_wx_i8m2_m(vbool4_t mask,vint16m4_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i8m2_m(mask,op1,shift,vl);
+}
+
+
+vint8m4_t test___riscv_vnclip_wx_i8m4_m(vbool2_t mask,vint16m8_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i8m4_m(mask,op1,shift,vl);
+}
+
+
+vint16mf4_t test___riscv_vnclip_wx_i16mf4_m(vbool64_t mask,vint32mf2_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i16mf4_m(mask,op1,shift,vl);
+}
+
+
+vint16mf2_t test___riscv_vnclip_wx_i16mf2_m(vbool32_t mask,vint32m1_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i16mf2_m(mask,op1,shift,vl);
+}
+
+
+vint16m1_t test___riscv_vnclip_wx_i16m1_m(vbool16_t mask,vint32m2_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i16m1_m(mask,op1,shift,vl);
+}
+
+
+vint16m2_t test___riscv_vnclip_wx_i16m2_m(vbool8_t mask,vint32m4_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i16m2_m(mask,op1,shift,vl);
+}
+
+
+vint16m4_t test___riscv_vnclip_wx_i16m4_m(vbool4_t mask,vint32m8_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i16m4_m(mask,op1,shift,vl);
+}
+
+
+vint32mf2_t test___riscv_vnclip_wx_i32mf2_m(vbool64_t mask,vint64m1_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i32mf2_m(mask,op1,shift,vl);
+}
+
+
+vint32m1_t test___riscv_vnclip_wx_i32m1_m(vbool32_t mask,vint64m2_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i32m1_m(mask,op1,shift,vl);
+}
+
+
+vint32m2_t test___riscv_vnclip_wx_i32m2_m(vbool16_t mask,vint64m4_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i32m2_m(mask,op1,shift,vl);
+}
+
+
+vint32m4_t test___riscv_vnclip_wx_i32m4_m(vbool8_t mask,vint64m8_t op1,size_t shift,size_t vl)
+{
+    return __riscv_vnclip_wx_i32m4_m(mask,op1,shift,vl);
+}
+
+
+
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf8,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf4,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf2,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*m1,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*m2,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*m4,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*mf4,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*mf2,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m1,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m2,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m4,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e32,\s*mf2,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e32,\s*m1,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e32,\s*m2,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e32,\s*m4,\s*t[au],\s*m[au]\s+vnclip\.wx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+,\s*v0.t} 1 } } */

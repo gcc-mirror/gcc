@@ -94,7 +94,7 @@
      item to insert.  The standard says that <quote><code>t</code> is
      inserted as close as possible to the position just prior to
      <code>p</code>.</quote> (Library DR #233 addresses this topic,
-     referring to <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1780.html">N1780</link>.
+     referring to <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1780.html">N1780</link>.
      Since version 4.2 GCC implements the resolution to DR 233, so
      that insertions happen as close as possible to the hint. For
      earlier releases the hint was only used as described below.

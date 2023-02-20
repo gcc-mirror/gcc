@@ -607,10 +607,6 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
 {
   value_relation vrel;
   value_relation *vrel_ptr = rel;
-  // If the lhs doesn't tell us anything, neither will unwinding further.
-  if (lhs.varying_p ())
-    return false;
-
   // Empty ranges are viral as they are on an unexecutable path.
   if (lhs.undefined_p ())
     {
@@ -632,6 +628,9 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   if (op1 && op2)
     {
       relation_kind k = handler.op1_op2_relation (lhs);
+      // If there is no relation, and op1 == op2, create a relation.
+      if (!vrel_ptr && k == VREL_VARYING && op1 == op2)
+	k = VREL_EQ;
       if (k != VREL_VARYING)
        {
 	 vrel.set_relation (k, op1, op2);
@@ -654,10 +653,19 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
+  // If the lhs doesn't tell us anything and there are no relations, there
+  // is nothing to be learned.
+  if (lhs.varying_p () && !vrel_ptr)
+    return false;
+
   bool res;
   // Process logicals as they have special handling.
   if (is_gimple_logical_p (stmt))
     {
+      // If the lhs doesn't tell us anything, neither will combining operands.
+      if (lhs.varying_p ())
+	return false;
+
       unsigned idx;
       if ((idx = tracer.header ("compute_operand ")))
 	{
@@ -952,7 +960,9 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
 {
   gcc_checking_assert (TREE_CODE (op1) == SSA_NAME);
   gcc_checking_assert (TREE_CODE (op2) == SSA_NAME);
-  gcc_checking_assert (k != VREL_VARYING && k != VREL_UNDEFINED);
+
+  if (k == VREL_VARYING || k == VREL_EQ || k == VREL_UNDEFINED)
+    return false;
 
   bool change = false;
   bool op1_def_p = in_chain_p (op2, op1);
@@ -991,7 +1001,7 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
       Value_Range new_result (type);
       if (!op_handler.op1_range (new_result, type,
 				 op1_def_p ? op1_range : op2_range,
-				 other_op, relation_trio::lhs_op2 (k)))
+				 other_op, relation_trio::lhs_op1 (k)))
 	return false;
       if (op1_def_p)
 	{
@@ -1023,7 +1033,7 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
       Value_Range new_result (type);
       if (!op_handler.op2_range (new_result, type,
 				 op1_def_p ? op1_range : op2_range,
-				 other_op, relation_trio::lhs_op1 (k)))
+				 other_op, relation_trio::lhs_op2 (k)))
 	return false;
       if (op1_def_p)
 	{
@@ -1062,6 +1072,10 @@ gori_compute::compute_operand1_range (vrange &r,
   tree op2 = handler.operand2 ();
   tree lhs_name = gimple_get_lhs (stmt);
 
+  relation_trio trio;
+  if (rel)
+    trio = rel->create_trio (lhs_name, op1, op2);
+
   Value_Range op1_range (TREE_TYPE (op1));
   Value_Range tmp (TREE_TYPE (op1));
   Value_Range op2_range (op2 ? TREE_TYPE (op2) : TREE_TYPE (op1));
@@ -1073,27 +1087,11 @@ gori_compute::compute_operand1_range (vrange &r,
   if (op2)
     {
       src.get_operand (op2_range, op2);
-      relation_kind k = VREL_VARYING;
-      relation_kind op_op = (op1 == op2) ? VREL_EQ : VREL_VARYING;
-      if (rel)
-	{
-	 if (lhs_name == rel->op1 () && op1 == rel->op2 ())
-	   k = rel->kind ();
-	 else if (lhs_name == rel->op2 () && op1 == rel->op1 ())
-	   k = relation_swap (rel->kind ());
-	 else if (op1 == rel->op1 () && op2 == rel->op2 ())
-	   {
-	     op_op = rel->kind ();
-	     refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
-	   }
-	 else if (op1 == rel->op2 () && op2 == rel->op1 ())
-	   {
-	     op_op = relation_swap (rel->kind ());
-	     refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
-	   }
-       }
-      if (!handler.calc_op1 (tmp, lhs, op2_range, relation_trio (VREL_VARYING,
-								 k, op_op)))
+      relation_kind op_op = trio.op1_op2 ();
+      if (op_op != VREL_VARYING)
+	refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
+
+      if (!handler.calc_op1 (tmp, lhs, op2_range, trio))
 	return false;
     }
   else
@@ -1101,7 +1099,7 @@ gori_compute::compute_operand1_range (vrange &r,
       // We pass op1_range to the unary operation.  Nomally it's a
       // hidden range_for_type parameter, but sometimes having the
       // actual range can result in better information.
-      if (!handler.calc_op1 (tmp, lhs, op1_range, TRIO_VARYING))
+      if (!handler.calc_op1 (tmp, lhs, op1_range, trio))
 	return false;
     }
 
@@ -1172,29 +1170,16 @@ gori_compute::compute_operand2_range (vrange &r,
 
   src.get_operand (op1_range, op1);
   src.get_operand (op2_range, op2);
-  relation_kind k = VREL_VARYING;
-  relation_kind op_op = (op1 == op2) ? VREL_EQ : VREL_VARYING;
+
+  relation_trio trio;
   if (rel)
-    {
-      if (lhs_name == rel->op1 () && op2 == rel->op2 ())
-	k = rel->kind ();
-      else if (lhs_name == rel->op2 () && op2 == rel->op1 ())
-	k = relation_swap (rel->kind ());
-      else if (op1 == rel->op1 () && op2 == rel->op2 ())
-	{
-	  op_op = rel->kind ();
-	  refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
-	}
-      else if (op1 == rel->op2 () && op2 == rel->op1 ())
-	{
-	  op_op = relation_swap (rel->kind ());
-	  refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
-	}
-    }
+    trio = rel->create_trio (lhs_name, op1, op2);
+  relation_kind op_op = trio.op1_op2 ();
+  if (op_op != VREL_VARYING)
+    refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
 
   // Intersect with range for op2 based on lhs and op1.
-  if (!handler.calc_op2 (tmp, lhs, op1_range, relation_trio (k, VREL_VARYING,
-							     op_op)))
+  if (!handler.calc_op2 (tmp, lhs, op1_range, trio))
     return false;
 
   unsigned idx;

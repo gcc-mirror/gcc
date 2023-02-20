@@ -1559,6 +1559,9 @@ aarch64*-*-*)
 	# ILP32 needs an extra header for unwinding
 	tm_file="${tm_file} aarch64/value-unwind.h"
 	;;
+riscv*-*-*)
+	tm_file="${tm_file} riscv/value-unwind.h"
+	;;
 esac
 
 # Setup to build a shared libgcc for VxWorks when that was requested,

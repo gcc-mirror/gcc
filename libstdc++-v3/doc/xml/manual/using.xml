@@ -132,6 +132,17 @@
       </entry>
     </row>
 
+    <row>
+      <entry><literal>-ffreestanding</literal></entry>
+      <entry>
+	Limits the library to its freestanding subset.  Headers that are
+	not supported in freestanding will emit a "This header is not available
+	in freestanding mode" error.
+	Headers that are in the freestanding subset partially will not expose
+	functionality that is not part of the freestanding subset.
+      </entry>
+    </row>
+
   </tbody>
 
 </tgroup>
@@ -1523,19 +1534,60 @@ namespace gtk
 	</listitem>
       </itemizedlist>
 
-      <para> There exists a library that offers runtime support for
-	just these headers, and it is called
-	<filename class="libraryfile">libsupc++.a</filename>. To use it, compile with <command>gcc</command> instead of <command>g++</command>, like so:
+      <para>
+	As of GCC 13, libstdc++ implements P1642, which brings in many more
+	headers, as well a quite a few ones not covered by the paper.
+
+	In general, if a feature does not require traditionally libc-provided
+	facilities, or dynamic memory allocation, it's enabled in the
+	freestanding subset.  In addition, if only a subset of a header
+	requires such features, it is partially included.  Some examples
+	include:
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>
+	  <filename class="headerfile">string_view</filename>
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	  <filename class="headerfile">tuple</filename>
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	  <filename class="headerfile">bitset</filename>
+	  </para>
+	</listitem>
+      </itemizedlist>
+
+      <para>
+	Currently, this subset includes all of the iterator APIs (including the
+	ranges APIs) that do not involve streams, the entire C++ algorithms
+	library, excluding parallel algorithms, and a large part of the
+	utilities library.  This is on top of the headers included in the lists
+	above.
       </para>
 
       <para>
-	<command>gcc foo.cc -lsupc++</command>
+	If you're using a libstdc++ configured for hosted environments, and
+	would like to not involve the libraries libstdc++ would depend on in
+	your programs, you will need to use <command>gcc</command> to link your
+	application with only <filename class="libraryfile">libsupc++.a</filename>,
+	like so:
       </para>
 
       <para>
-	No attempt is made to verify that only the minimal subset
-	identified above is actually used at compile time. Violations
-	are diagnosed as undefined symbols at link time.
+	<command>gcc -ffreestanding foo.cc -lsupc++</command>
+      </para>
+
+      <para>
+	If you configured libstdc++ with
+	<code>--disable-hosted-libstdcxx</code>, however, you can use the
+	normal <command>g++</command> command to link, as this configuration
+	provides a (nearly) empty <filename class="libraryfile">libstdc++.a</filename>.
       </para>
     </section>
 

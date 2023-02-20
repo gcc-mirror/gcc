@@ -504,7 +504,7 @@ struct ira_emit_data
 extern ira_emit_data_t ira_allocno_emit_data;
 
 /* Abbreviation for frequent emit data access.  */
-static inline rtx
+inline rtx
 allocno_emit_reg (ira_allocno_t a)
 {
   return ALLOCNO_EMIT_DATA (a)->reg;
@@ -734,7 +734,7 @@ struct minmax_set_iterator {
 
 /* Initialize the iterator I for bit vector VEC containing minimal and
    maximal values MIN and MAX.  */
-static inline void
+inline void
 minmax_set_iter_init (minmax_set_iterator *i, IRA_INT_TYPE *vec, int min,
 		      int max)
 {
@@ -749,7 +749,7 @@ minmax_set_iter_init (minmax_set_iterator *i, IRA_INT_TYPE *vec, int min,
 /* Return TRUE if we have more allocnos to visit, in which case *N is
    set to the number of the element to be visited.  Otherwise, return
    FALSE.  */
-static inline bool
+inline bool
 minmax_set_iter_cond (minmax_set_iterator *i, int *n)
 {
   /* Skip words that are zeros.  */
@@ -774,7 +774,7 @@ minmax_set_iter_cond (minmax_set_iterator *i, int *n)
 }
 
 /* Advance to the next element in the set.  */
-static inline void
+inline void
 minmax_set_iter_next (minmax_set_iterator *i)
 {
   i->word >>= 1;
@@ -1084,7 +1084,7 @@ extern void ira_emit (bool);
 
 
 /* Return true if equivalence of pseudo REGNO is not a lvalue.  */
-static inline bool
+inline bool
 ira_equiv_no_lvalue_p (int regno)
 {
   if (regno >= ira_reg_equiv_len)
@@ -1098,7 +1098,7 @@ ira_equiv_no_lvalue_p (int regno)
 
 
 /* Initialize register costs for MODE if necessary.  */
-static inline void
+inline void
 ira_init_register_move_cost_if_necessary (machine_mode mode)
 {
   if (ira_register_move_cost[mode] == NULL)
@@ -1114,7 +1114,7 @@ struct ira_allocno_iterator {
 };
 
 /* Initialize the iterator I.  */
-static inline void
+inline void
 ira_allocno_iter_init (ira_allocno_iterator *i)
 {
   i->n = 0;
@@ -1122,7 +1122,7 @@ ira_allocno_iter_init (ira_allocno_iterator *i)
 
 /* Return TRUE if we have more allocnos to visit, in which case *A is
    set to the allocno to be visited.  Otherwise, return FALSE.  */
-static inline bool
+inline bool
 ira_allocno_iter_cond (ira_allocno_iterator *i, ira_allocno_t *a)
 {
   int n;
@@ -1151,7 +1151,7 @@ struct ira_object_iterator {
 };
 
 /* Initialize the iterator I.  */
-static inline void
+inline void
 ira_object_iter_init (ira_object_iterator *i)
 {
   i->n = 0;
@@ -1159,7 +1159,7 @@ ira_object_iter_init (ira_object_iterator *i)
 
 /* Return TRUE if we have more objects to visit, in which case *OBJ is
    set to the object to be visited.  Otherwise, return FALSE.  */
-static inline bool
+inline bool
 ira_object_iter_cond (ira_object_iterator *i, ira_object_t *obj)
 {
   int n;
@@ -1188,7 +1188,7 @@ struct ira_allocno_object_iterator {
 };
 
 /* Initialize the iterator I.  */
-static inline void
+inline void
 ira_allocno_object_iter_init (ira_allocno_object_iterator *i)
 {
   i->n = 0;
@@ -1197,7 +1197,7 @@ ira_allocno_object_iter_init (ira_allocno_object_iterator *i)
 /* Return TRUE if we have more objects to visit in allocno A, in which
    case *O is set to the object to be visited.  Otherwise, return
    FALSE.  */
-static inline bool
+inline bool
 ira_allocno_object_iter_cond (ira_allocno_object_iterator *i, ira_allocno_t a,
 			      ira_object_t *o)
 {
@@ -1225,7 +1225,7 @@ struct ira_pref_iterator {
 };
 
 /* Initialize the iterator I.  */
-static inline void
+inline void
 ira_pref_iter_init (ira_pref_iterator *i)
 {
   i->n = 0;
@@ -1233,7 +1233,7 @@ ira_pref_iter_init (ira_pref_iterator *i)
 
 /* Return TRUE if we have more prefs to visit, in which case *PREF is
    set to the pref to be visited.  Otherwise, return FALSE.  */
-static inline bool
+inline bool
 ira_pref_iter_cond (ira_pref_iterator *i, ira_pref_t *pref)
 {
   int n;
@@ -1263,7 +1263,7 @@ struct ira_copy_iterator {
 };
 
 /* Initialize the iterator I.  */
-static inline void
+inline void
 ira_copy_iter_init (ira_copy_iterator *i)
 {
   i->n = 0;
@@ -1271,7 +1271,7 @@ ira_copy_iter_init (ira_copy_iterator *i)
 
 /* Return TRUE if we have more copies to visit, in which case *CP is
    set to the copy to be visited.  Otherwise, return FALSE.  */
-static inline bool
+inline bool
 ira_copy_iter_cond (ira_copy_iterator *i, ira_copy_t *cp)
 {
   int n;
@@ -1324,7 +1324,7 @@ struct ira_object_conflict_iterator {
 };
 
 /* Initialize the iterator I with ALLOCNO conflicts.  */
-static inline void
+inline void
 ira_object_conflict_iter_init (ira_object_conflict_iterator *i,
 			       ira_object_t obj)
 {
@@ -1350,7 +1350,7 @@ ira_object_conflict_iter_init (ira_object_conflict_iterator *i,
 /* Return TRUE if we have more conflicting allocnos to visit, in which
    case *A is set to the allocno to be visited.  Otherwise, return
    FALSE.  */
-static inline bool
+inline bool
 ira_object_conflict_iter_cond (ira_object_conflict_iterator *i,
 			       ira_object_t *pobj)
 {
@@ -1405,7 +1405,7 @@ ira_object_conflict_iter_cond (ira_object_conflict_iterator *i,
 /* The function returns TRUE if at least one hard register from ones
    starting with HARD_REGNO and containing value of MODE are in set
    HARD_REGSET.  */
-static inline bool
+inline bool
 ira_hard_reg_set_intersection_p (int hard_regno, machine_mode mode,
 				 HARD_REG_SET hard_regset)
 {
@@ -1419,7 +1419,7 @@ ira_hard_reg_set_intersection_p (int hard_regno, machine_mode mode,
 }
 
 /* Return number of hard registers in hard register SET.  */
-static inline int
+inline int
 hard_reg_set_size (HARD_REG_SET set)
 {
   int i, size;
@@ -1433,7 +1433,7 @@ hard_reg_set_size (HARD_REG_SET set)
 /* The function returns TRUE if hard registers starting with
    HARD_REGNO and containing value of MODE are fully in set
    HARD_REGSET.  */
-static inline bool
+inline bool
 ira_hard_reg_in_set_p (int hard_regno, machine_mode mode,
 		       HARD_REG_SET hard_regset)
 {
@@ -1454,7 +1454,7 @@ ira_hard_reg_in_set_p (int hard_regno, machine_mode mode,
 
 /* Allocate cost vector *VEC for hard registers of ACLASS and
    initialize the elements by VAL if it is necessary */
-static inline void
+inline void
 ira_allocate_and_set_costs (int **vec, reg_class_t aclass, int val)
 {
   int i, *reg_costs;
@@ -1470,7 +1470,7 @@ ira_allocate_and_set_costs (int **vec, reg_class_t aclass, int val)
 
 /* Allocate cost vector *VEC for hard registers of ACLASS and copy
    values of vector SRC into the vector if it is necessary */
-static inline void
+inline void
 ira_allocate_and_copy_costs (int **vec, enum reg_class aclass, int *src)
 {
   int len;
@@ -1484,7 +1484,7 @@ ira_allocate_and_copy_costs (int **vec, enum reg_class aclass, int *src)
 
 /* Allocate cost vector *VEC for hard registers of ACLASS and add
    values of vector SRC into the vector if it is necessary */
-static inline void
+inline void
 ira_allocate_and_accumulate_costs (int **vec, enum reg_class aclass, int *src)
 {
   int i, len;
@@ -1504,7 +1504,7 @@ ira_allocate_and_accumulate_costs (int **vec, enum reg_class aclass, int *src)
 /* Allocate cost vector *VEC for hard registers of ACLASS and copy
    values of vector SRC into the vector or initialize it by VAL (if
    SRC is null).  */
-static inline void
+inline void
 ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class aclass,
 				    int val, int *src)
 {

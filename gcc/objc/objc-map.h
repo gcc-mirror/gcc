@@ -133,7 +133,7 @@ int objc_map_maximum_load_factor (objc_map_t map);
    value NULL, and objc_map_get() will return NULL in that case.
    So a result of NULL means that they key *was* found, and the value
    associated with it was NULL.  */
-static inline tree
+inline tree
 objc_map_get (objc_map_t map, /* struct tree_identifier * */tree key)
 {
   /* The inline implementation is private and may change without notice.  */
@@ -169,7 +169,7 @@ objc_map_get (objc_map_t map, /* struct tree_identifier * */tree key)
    You can use any identifier as key, with the exception of NULL.
 
    You can use any tree as value, including NULL.  */
-static inline
+inline
 void objc_map_put (objc_map_t map, /*struct tree_identifier * */tree key, tree value)
 {
   /* The inline implementation is private and may change without notice.  */
@@ -243,7 +243,7 @@ typedef size_t objc_map_iterator_t;
 /* Initialize an iterator to iterate over the specified objc_map.  You
    must use this before starting the iteration, to get a working
    iterator.  */
-static inline
+inline
 void
 objc_map_iterator_initialize (objc_map_t map ATTRIBUTE_UNUSED, objc_map_iterator_t *i)
 {
@@ -262,7 +262,7 @@ objc_map_iterator_initialize (objc_map_t map ATTRIBUTE_UNUSED, objc_map_iterator
    been initialized using objc_map_iterator_initialize().  Note that
    because this function is modifying the iterator, you need to pass a
    pointer to it.  */
-static inline
+inline
 int
 objc_map_iterator_move_to_next (objc_map_t map, objc_map_iterator_t *i)
 {
@@ -285,7 +285,7 @@ objc_map_iterator_move_to_next (objc_map_t map, objc_map_iterator_t *i)
    first element), and only if the last call returned
    OBJC_MAP_SUCCESS.  The behavior is otherwise undefined, probably a
    segmentation fault.  */
-static inline
+inline
 tree
 objc_map_iterator_current_key (objc_map_t map, objc_map_iterator_t i)
 {
@@ -298,7 +298,7 @@ objc_map_iterator_current_key (objc_map_t map, objc_map_iterator_t i)
    the first element), and only if the last call returned
    OBJC_MAP_SUCCESS.  The behavior is otherwise undefined, probably a
    segmentation fault.  */
-static inline
+inline
 tree
 objc_map_iterator_current_value (objc_map_t map, objc_map_iterator_t i)
 {

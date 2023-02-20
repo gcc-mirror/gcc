@@ -385,6 +385,19 @@ arm_unop_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_unop_unone_imm_qualifiers)
 
 static enum arm_type_qualifiers
+arm_unop_pred_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_predicate, qualifier_unsigned };
+#define UNOP_PRED_UNONE_QUALIFIERS \
+  (arm_unop_pred_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_unop_pred_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_predicate, qualifier_predicate };
+#define UNOP_PRED_PRED_QUALIFIERS \
+  (arm_unop_pred_pred_qualifiers)
+
+
+static enum arm_type_qualifiers
 arm_binop_none_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none };
 #define BINOP_NONE_NONE_NONE_QUALIFIERS \
@@ -425,6 +438,12 @@ arm_binop_pred_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_predicate, qualifier_unsigned, qualifier_unsigned };
 #define BINOP_PRED_UNONE_UNONE_QUALIFIERS \
   (arm_binop_pred_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_pred_unone_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_predicate, qualifier_unsigned, qualifier_predicate };
+#define BINOP_PRED_UNONE_PRED_QUALIFIERS \
+  (arm_binop_pred_unone_pred_qualifiers)
 
 static enum arm_type_qualifiers
 arm_binop_unone_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -851,6 +870,10 @@ arm_set_sat_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_none };
 #define SET_SAT_QUALIFIERS (arm_set_sat_qualifiers)
 
+#define v2qi_UP  E_V2QImode
+#define v4bi_UP  E_V4BImode
+#define v8bi_UP  E_V8BImode
+#define v16bi_UP E_V16BImode
 #define v8qi_UP  E_V8QImode
 #define v4hi_UP  E_V4HImode
 #define v4hf_UP  E_V4HFmode
@@ -1489,12 +1512,14 @@ arm_lookup_simd_builtin_type (machine_mode mode,
 }
 
 static tree
-arm_simd_builtin_type (machine_mode mode, bool unsigned_p, bool poly_p)
+arm_simd_builtin_type (machine_mode mode, arm_type_qualifiers qualifiers)
 {
-  if (poly_p)
+  if ((qualifiers & qualifier_poly) != 0)
     return arm_lookup_simd_builtin_type (mode, qualifier_poly);
-  else if (unsigned_p)
+  else if ((qualifiers & qualifier_unsigned) != 0)
     return arm_lookup_simd_builtin_type (mode, qualifier_unsigned);
+  else if ((qualifiers & qualifier_predicate) != 0)
+    return unsigned_intHI_type_node;
   else
     return arm_lookup_simd_builtin_type (mode, qualifier_none);
 }
@@ -1755,9 +1780,7 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
       else
 	{
 	  eltype
-	    = arm_simd_builtin_type (op_mode,
-				     (qualifiers & qualifier_unsigned) != 0,
-				     (qualifiers & qualifier_poly) != 0);
+	    = arm_simd_builtin_type (op_mode, qualifiers);
 	  gcc_assert (eltype != NULL);
 
 	  /* Add qualifiers.  */
@@ -1929,10 +1952,10 @@ static void
 arm_init_crypto_builtins (void)
 {
   tree V16UQI_type_node
-    = arm_simd_builtin_type (V16QImode, true, false);
+    = arm_simd_builtin_type (V16QImode, qualifier_unsigned);
 
   tree V4USI_type_node
-    = arm_simd_builtin_type (V4SImode, true, false);
+    = arm_simd_builtin_type (V4SImode, qualifier_unsigned);
 
   tree v16uqi_ftype_v16uqi
     = build_function_type_list (V16UQI_type_node, V16UQI_type_node,
@@ -2989,11 +3012,14 @@ arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
 		op[argc] = convert_memory_address (Pmode, op[argc]);
 
 	      /* MVE uses mve_pred16_t (aka HImode) for vectors of
-		 predicates.  */
-	      if (GET_MODE_CLASS (mode[argc]) == MODE_VECTOR_BOOL)
+		 predicates, but internally we use V16BI/V8BI/V4BI/V2QI for
+		 MVE predicate modes.  */
+	      if (TARGET_HAVE_MVE && VALID_MVE_PRED_MODE (mode[argc]))
 		op[argc] = gen_lowpart (mode[argc], op[argc]);
 
-	      /*gcc_assert (GET_MODE (op[argc]) == mode[argc]); */
+	      gcc_assert (GET_MODE (op[argc]) == mode[argc]
+			  || (GET_MODE(op[argc]) == E_VOIDmode
+			      && CONSTANT_P (op[argc])));
 	      if (!(*insn_data[icode].operand[opno].predicate)
 		  (op[argc], mode[argc]))
 		op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
@@ -3198,7 +3224,7 @@ constant_arg:
   else
     emit_insn (insn);
 
-  if (GET_MODE_CLASS (tmode) == MODE_VECTOR_BOOL)
+  if (TARGET_HAVE_MVE && VALID_MVE_PRED_MODE (tmode))
     {
       rtx HItarget = gen_reg_rtx (HImode);
       emit_move_insn (HItarget, gen_lowpart (HImode, target));

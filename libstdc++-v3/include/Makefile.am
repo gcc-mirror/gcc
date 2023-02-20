@@ -798,6 +798,7 @@ experimental_headers = \
 	${experimental_srcdir}/source_location \
 	${experimental_srcdir}/string \
 	${experimental_srcdir}/string_view \
+	${experimental_srcdir}/synchronized_value \
 	${experimental_srcdir}/system_error \
 	${experimental_srcdir}/timer \
 	${experimental_srcdir}/tuple \

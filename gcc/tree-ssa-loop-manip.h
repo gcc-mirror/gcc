@@ -27,7 +27,7 @@ extern void create_iv (tree, tree, tree, class loop *, gimple_stmt_iterator *,
 extern void rewrite_into_loop_closed_ssa (bitmap, unsigned);
 extern void verify_loop_closed_ssa (bool, class loop * = NULL);
 
-static inline void
+inline void
 checking_verify_loop_closed_ssa (bool verify_ssa_p, class loop *loop = NULL)
 {
   if (flag_checking)

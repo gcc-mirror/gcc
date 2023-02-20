@@ -31,7 +31,7 @@ extern void remove_phi_nodes (basic_block);
 extern tree degenerate_phi_result (gphi *);
 extern void set_phi_nodes (basic_block, gimple_seq);
 
-static inline use_operand_p
+inline use_operand_p
 gimple_phi_arg_imm_use_ptr (gimple *gs, int i)
 {
   return &gimple_phi_arg (gs, i)->imm_use;
@@ -39,7 +39,7 @@ gimple_phi_arg_imm_use_ptr (gimple *gs, int i)
 
 /* Return the phi argument which contains the specified use.  */
 
-static inline int
+inline int
 phi_arg_index_from_use (use_operand_p use)
 {
   struct phi_arg_d *element, *root;

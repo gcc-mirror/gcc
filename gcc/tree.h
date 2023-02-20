@@ -1280,7 +1280,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    location.  */
 #define CAN_HAVE_LOCATION_P(NODE) ((NODE) && EXPR_P (NODE))
 
-static inline source_range
+inline source_range
 get_expr_source_range (tree expr)
 {
   location_t loc = EXPR_LOCATION (expr);
@@ -3263,7 +3263,7 @@ extern void decl_fini_priority_insert (tree, priority_type);
 /* Set decl_type of a DECL.  Set it to T when SET is true, or reset
    it to NONE.  */
 
-static inline void
+inline void
 set_function_decl_type (tree decl, function_decl_type t, bool set)
 {
   if (set)
@@ -4009,7 +4009,7 @@ any_integral_type_check (const_tree __t, const char *__f, int __l,
 /* Compute the number of operands in an expression node NODE.  For
    tcc_vl_exp nodes like CALL_EXPRs, this is stored in the node itself,
    otherwise it is looked up from the node's code.  */
-static inline int
+inline int
 tree_operand_length (const_tree node)
 {
   if (VL_EXP_CLASS_P (node))
@@ -4139,7 +4139,7 @@ SET_TYPE_VECTOR_SUBPARTS (tree node, poly_uint64 subparts)
 /* Return true if we can construct vector types with the given number
    of subparts.  */
 
-static inline bool
+inline bool
 valid_vector_subparts_p (poly_uint64 subparts)
 {
   unsigned HOST_WIDE_INT coeff0 = subparts.coeffs[0];
@@ -4587,7 +4587,7 @@ extern tree build5 (enum tree_code, tree, tree, tree, tree, tree,
 
 /* _loc versions of build[1-5].  */
 
-static inline tree
+inline tree
 build1_loc (location_t loc, enum tree_code code, tree type,
 	    tree arg1 CXX_MEM_STAT_INFO)
 {
@@ -4597,7 +4597,7 @@ build1_loc (location_t loc, enum tree_code code, tree type,
   return t;
 }
 
-static inline tree
+inline tree
 build2_loc (location_t loc, enum tree_code code, tree type, tree arg0,
 	    tree arg1 CXX_MEM_STAT_INFO)
 {
@@ -4607,7 +4607,7 @@ build2_loc (location_t loc, enum tree_code code, tree type, tree arg0,
   return t;
 }
 
-static inline tree
+inline tree
 build3_loc (location_t loc, enum tree_code code, tree type, tree arg0,
 	    tree arg1, tree arg2 CXX_MEM_STAT_INFO)
 {
@@ -4617,7 +4617,7 @@ build3_loc (location_t loc, enum tree_code code, tree type, tree arg0,
   return t;
 }
 
-static inline tree
+inline tree
 build4_loc (location_t loc, enum tree_code code, tree type, tree arg0,
 	    tree arg1, tree arg2, tree arg3 CXX_MEM_STAT_INFO)
 {
@@ -4627,7 +4627,7 @@ build4_loc (location_t loc, enum tree_code code, tree type, tree arg0,
   return t;
 }
 
-static inline tree
+inline tree
 build5_loc (location_t loc, enum tree_code code, tree type, tree arg0,
 	    tree arg1, tree arg2, tree arg3, tree arg4 CXX_MEM_STAT_INFO)
 {
@@ -5174,7 +5174,7 @@ extern tree get_narrower (tree, int *);
 
 /* Return true if T is an expression that get_inner_reference handles.  */
 
-static inline bool
+inline bool
 handled_component_p (const_tree t)
 {
   switch (TREE_CODE (t))
@@ -5195,7 +5195,7 @@ handled_component_p (const_tree t)
 
 /* Return true T is a component with reverse storage order.  */
 
-static inline bool
+inline bool
 reverse_storage_order_for_component_p (tree t)
 {
   /* The storage order only applies to scalar components.  */
@@ -5233,7 +5233,7 @@ reverse_storage_order_for_component_p (tree t)
    outer type, a VIEW_CONVERT_EXPR can modify the storage order because
    it can change the partition of the aggregate object into scalars.  */
 
-static inline bool
+inline bool
 storage_order_barrier_p (const_tree t)
 {
   if (TREE_CODE (t) != VIEW_CONVERT_EXPR)
@@ -5274,7 +5274,7 @@ extern bool real_zerop (const_tree);
 
 /* Initialize the iterator I with arguments from function FNDECL  */
 
-static inline void
+inline void
 function_args_iter_init (function_args_iterator *i, const_tree fntype)
 {
   i->next = TYPE_ARG_TYPES (fntype);
@@ -5283,7 +5283,7 @@ function_args_iter_init (function_args_iterator *i, const_tree fntype)
 /* Return a pointer that holds the next argument if there are more arguments to
    handle, otherwise return NULL.  */
 
-static inline tree *
+inline tree *
 function_args_iter_cond_ptr (function_args_iterator *i)
 {
   return (i->next) ? &TREE_VALUE (i->next) : NULL;
@@ -5292,14 +5292,14 @@ function_args_iter_cond_ptr (function_args_iterator *i)
 /* Return the next argument if there are more arguments to handle, otherwise
    return NULL.  */
 
-static inline tree
+inline tree
 function_args_iter_cond (function_args_iterator *i)
 {
   return (i->next) ? TREE_VALUE (i->next) : NULL_TREE;
 }
 
 /* Advance to the next argument.  */
-static inline void
+inline void
 function_args_iter_next (function_args_iterator *i)
 {
   gcc_assert (i->next != NULL_TREE);
@@ -5311,7 +5311,7 @@ function_args_iter_next (function_args_iterator *i)
    so the function returns true for all but the innermost and outermost
    blocks into which an expression has been inlined.  */
 
-static inline bool
+inline bool
 inlined_function_outer_scope_p (const_tree block)
 {
  return LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (block)) != UNKNOWN_LOCATION;
@@ -5385,7 +5385,7 @@ extern const char *combined_fn_name (combined_fn);
    pointer.  Assumes all pointers are interchangeable, which is sort
    of already assumed by gcc elsewhere IIRC.  */
 
-static inline int
+inline int
 struct_ptr_eq (const void *a, const void *b)
 {
   const void * const * x = (const void * const *) a;
@@ -5393,7 +5393,7 @@ struct_ptr_eq (const void *a, const void *b)
   return *x == *y;
 }
 
-static inline hashval_t
+inline hashval_t
 struct_ptr_hash (const void *a)
 {
   const void * const * x = (const void * const *) a;
@@ -5401,7 +5401,7 @@ struct_ptr_hash (const void *a)
 }
 
 /* Return nonzero if CODE is a tree code that represents a truth value.  */
-static inline bool
+inline bool
 truth_value_p (enum tree_code code)
 {
   return (TREE_CODE_CLASS (code) == tcc_comparison
@@ -5412,7 +5412,7 @@ truth_value_p (enum tree_code code)
 
 /* Return whether TYPE is a type suitable for an offset for
    a POINTER_PLUS_EXPR.  */
-static inline bool
+inline bool
 ptrofftype_p (tree type)
 {
   return (INTEGRAL_TYPE_P (type)
@@ -5423,7 +5423,7 @@ ptrofftype_p (tree type)
 /* Return true if the argument is a complete type or an array
    of unknown bound (whose type is incomplete but) whose elements
    have complete type.  */
-static inline bool
+inline bool
 complete_or_array_type_p (const_tree type)
 {
   return COMPLETE_TYPE_P (type)
@@ -5482,7 +5482,7 @@ extern void add_expr (const_tree, hash &, unsigned int = 0);
 
 /* Compat version until all callers are converted. Return hash for
    TREE with SEED.  */
-static inline hashval_t iterative_hash_expr(const_tree tree, hashval_t seed)
+inline hashval_t iterative_hash_expr(const_tree tree, hashval_t seed)
 {
   inchash::hash hstate (seed);
   inchash::add_expr (tree, hstate);
@@ -5776,7 +5776,7 @@ typedef hash_map<tree,tree,decl_tree_traits> decl_tree_map;
 
 /* Initialize the abstract argument list iterator object ITER with the
    arguments from CALL_EXPR node EXP.  */
-static inline void
+inline void
 init_call_expr_arg_iterator (tree exp, call_expr_arg_iterator *iter)
 {
   iter->t = exp;
@@ -5784,7 +5784,7 @@ init_call_expr_arg_iterator (tree exp, call_expr_arg_iterator *iter)
   iter->i = 0;
 }
 
-static inline void
+inline void
 init_const_call_expr_arg_iterator (const_tree exp, const_call_expr_arg_iterator *iter)
 {
   iter->t = exp;
@@ -5794,7 +5794,7 @@ init_const_call_expr_arg_iterator (const_tree exp, const_call_expr_arg_iterator 
 
 /* Return the next argument from abstract argument list iterator object ITER,
    and advance its state.  Return NULL_TREE if there are no more arguments.  */
-static inline tree
+inline tree
 next_call_expr_arg (call_expr_arg_iterator *iter)
 {
   tree result;
@@ -5805,7 +5805,7 @@ next_call_expr_arg (call_expr_arg_iterator *iter)
   return result;
 }
 
-static inline const_tree
+inline const_tree
 next_const_call_expr_arg (const_call_expr_arg_iterator *iter)
 {
   const_tree result;
@@ -5820,14 +5820,14 @@ next_const_call_expr_arg (const_call_expr_arg_iterator *iter)
    past and return the first argument.  Useful in for expressions, e.g.
      for (arg = first_call_expr_arg (exp, &iter); arg;
           arg = next_call_expr_arg (&iter))   */
-static inline tree
+inline tree
 first_call_expr_arg (tree exp, call_expr_arg_iterator *iter)
 {
   init_call_expr_arg_iterator (exp, iter);
   return next_call_expr_arg (iter);
 }
 
-static inline const_tree
+inline const_tree
 first_const_call_expr_arg (const_tree exp, const_call_expr_arg_iterator *iter)
 {
   init_const_call_expr_arg_iterator (exp, iter);
@@ -5836,7 +5836,7 @@ first_const_call_expr_arg (const_tree exp, const_call_expr_arg_iterator *iter)
 
 /* Test whether there are more arguments in abstract argument list iterator
    ITER, without changing its state.  */
-static inline bool
+inline bool
 more_call_expr_args_p (const call_expr_arg_iterator *iter)
 {
   return (iter->i < iter->n);
@@ -5853,7 +5853,7 @@ more_call_expr_args_p (const call_expr_arg_iterator *iter)
        (arg) = next_const_call_expr_arg (&(iter)))
 
 /* Return true if tree node T is a language-specific node.  */
-static inline bool
+inline bool
 is_lang_specific (const_tree t)
 {
   return TREE_CODE (t) == LANG_TYPE || TREE_CODE (t) >= NUM_TREE_CODES;
@@ -5871,7 +5871,7 @@ is_lang_specific (const_tree t)
   (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (builtin_decl_explicit (BUILTIN))))
 
 /* Return the tree node for an explicit standard builtin function or NULL.  */
-static inline tree
+inline tree
 builtin_decl_explicit (enum built_in_function fncode)
 {
   gcc_checking_assert (BUILTIN_VALID_P (fncode));
@@ -5880,7 +5880,7 @@ builtin_decl_explicit (enum built_in_function fncode)
 }
 
 /* Return the tree node for an implicit builtin function or NULL.  */
-static inline tree
+inline tree
 builtin_decl_implicit (enum built_in_function fncode)
 {
   size_t uns_fncode = (size_t)fncode;
@@ -5900,7 +5900,7 @@ extern tree build_builtin_unreachable (location_t);
 /* Set explicit builtin function nodes and whether it is an implicit
    function.  */
 
-static inline void
+inline void
 set_builtin_decl (enum built_in_function fncode, tree decl, bool implicit_p)
 {
   size_t ufncode = (size_t)fncode;
@@ -5915,7 +5915,7 @@ set_builtin_decl (enum built_in_function fncode, tree decl, bool implicit_p)
 
 /* Set the implicit flag for a builtin function.  */
 
-static inline void
+inline void
 set_builtin_decl_implicit_p (enum built_in_function fncode, bool implicit_p)
 {
   size_t uns_fncode = (size_t)fncode;
@@ -5928,7 +5928,7 @@ set_builtin_decl_implicit_p (enum built_in_function fncode, bool implicit_p)
 
 /* Set the declared flag for a builtin function.  */
 
-static inline void
+inline void
 set_builtin_decl_declared_p (enum built_in_function fncode, bool declared_p)
 {
   size_t uns_fncode = (size_t)fncode;
@@ -5942,7 +5942,7 @@ set_builtin_decl_declared_p (enum built_in_function fncode, bool declared_p)
 /* Return whether the standard builtin function can be used as an explicit
    function.  */
 
-static inline bool
+inline bool
 builtin_decl_explicit_p (enum built_in_function fncode)
 {
   gcc_checking_assert (BUILTIN_VALID_P (fncode));
@@ -5951,7 +5951,7 @@ builtin_decl_explicit_p (enum built_in_function fncode)
 
 /* Return whether the standard builtin function can be used implicitly.  */
 
-static inline bool
+inline bool
 builtin_decl_implicit_p (enum built_in_function fncode)
 {
   size_t uns_fncode = (size_t)fncode;
@@ -5963,7 +5963,7 @@ builtin_decl_implicit_p (enum built_in_function fncode)
 
 /* Return whether the standard builtin function was declared.  */
 
-static inline bool
+inline bool
 builtin_decl_declared_p (enum built_in_function fncode)
 {
   size_t uns_fncode = (size_t)fncode;
@@ -5983,7 +5983,7 @@ builtin_decl_declared_p (enum built_in_function fncode)
    Avoid using this, as it's generally better to use attributes rather
    than to check for functions by name.  */
 
-static inline bool
+inline bool
 maybe_special_function_p (const_tree fndecl)
 {
   tree name_decl = DECL_NAME (fndecl);
@@ -6001,7 +6001,7 @@ maybe_special_function_p (const_tree fndecl)
 /* Return true if T (assumed to be a DECL) is a global variable.
    A variable is considered global if its storage is not automatic.  */
 
-static inline bool
+inline bool
 is_global_var (const_tree t)
 {
   return (TREE_STATIC (t) || DECL_EXTERNAL (t));
@@ -6011,7 +6011,7 @@ is_global_var (const_tree t)
    maybe aliased if it has its address taken by the local TU
    or possibly by another TU and might be modified through a pointer.  */
 
-static inline bool
+inline bool
 may_be_aliased (const_tree var)
 {
   return (TREE_CODE (var) != CONST_DECL
@@ -6025,7 +6025,7 @@ may_be_aliased (const_tree var)
 }
 
 /* Return pointer to optimization flags of FNDECL.  */
-static inline struct cl_optimization *
+inline struct cl_optimization *
 opts_for_fn (const_tree fndecl)
 {
   tree fn_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
@@ -6035,7 +6035,7 @@ opts_for_fn (const_tree fndecl)
 }
 
 /* Return pointer to target flags of FNDECL.  */
-static inline cl_target_option *
+inline cl_target_option *
 target_opts_for_fn (const_tree fndecl)
 {
   tree fn_opts = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);

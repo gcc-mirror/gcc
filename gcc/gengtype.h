@@ -77,7 +77,7 @@ input_file* input_file_by_name (const char* name);
 const char *get_file_srcdir_relative_path (const input_file *inpf);
 
 /* Get the name of an input file.  */
-static inline const char*
+inline const char*
 get_input_file_name (const input_file *inpf)
 {
   if (inpf)
@@ -94,7 +94,7 @@ get_input_file_name (const input_file *inpf)
    some GC roots may be missed, which is a much harder-to-debug problem.
   */
 
-static inline lang_bitmap
+inline lang_bitmap
 get_lang_bitmap (const input_file* inpf)
 {
   if (inpf == NULL)
@@ -104,7 +104,7 @@ get_lang_bitmap (const input_file* inpf)
 
 /* Set the bitmap returned by get_lang_bitmap.  The only legitimate
    callers of this function are read_input_list & read_state_*.  */
-static inline void
+inline void
 set_lang_bitmap (input_file* inpf, lang_bitmap n)
 {
   gcc_assert (inpf);
@@ -346,7 +346,7 @@ extern struct type callback_type;
 
 /* Test if a type is a union or a structure, perhaps a language
    specific one.  */
-static inline bool
+inline bool
 union_or_struct_p (enum typekind kind)
 {
   return (kind == TYPE_UNION
@@ -355,14 +355,14 @@ union_or_struct_p (enum typekind kind)
 	  || kind == TYPE_USER_STRUCT);
 }
 
-static inline bool
+inline bool
 union_or_struct_p (const_type_p x)
 {
   return union_or_struct_p (x->kind);
 }
 
 /* Give the file location of a type, if any. */
-static inline struct fileloc* 
+inline struct fileloc* 
 type_fileloc (type_p t)
 {
   if (!t) 

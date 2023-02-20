@@ -65,7 +65,7 @@ struct RTExceptions_ProcedureHandler_p { RTExceptions_ProcedureHandler_t proc; }
            and message in the EHBlock for later use.
 */
 
-EXTERN void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, unsigned int column, void * function, void * message);
+EXTERN void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, unsigned int column, void * function, void * message) __attribute__ ((noreturn));
 
 /*
    SetExceptionBlock - sets, source, as the active EHB.

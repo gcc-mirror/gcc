@@ -3528,35 +3528,35 @@ __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp16q (uint32_t __a)
 {
-  return __builtin_mve_vctp16qhi (__a);
+  return __builtin_mve_vctp16qv8bi (__a);
 }
 
 __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp32q (uint32_t __a)
 {
-  return __builtin_mve_vctp32qhi (__a);
+  return __builtin_mve_vctp32qv4bi (__a);
 }
 
 __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp64q (uint32_t __a)
 {
-  return __builtin_mve_vctp64qhi (__a);
+  return __builtin_mve_vctp64qv2qi (__a);
 }
 
 __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp8q (uint32_t __a)
 {
-  return __builtin_mve_vctp8qhi (__a);
+  return __builtin_mve_vctp8qv16bi (__a);
 }
 
 __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vpnot (mve_pred16_t __a)
 {
-  return __builtin_mve_vpnothi (__a);
+  return __builtin_mve_vpnotv16bi (__a);
 }
 
 __extension__ extern __inline uint8x16_t
@@ -6696,28 +6696,28 @@ __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp8q_m (uint32_t __a, mve_pred16_t __p)
 {
-  return __builtin_mve_vctp8q_mhi (__a, __p);
+  return __builtin_mve_vctp8q_mv16bi (__a, __p);
 }
 
 __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp64q_m (uint32_t __a, mve_pred16_t __p)
 {
-  return __builtin_mve_vctp64q_mhi (__a, __p);
+  return __builtin_mve_vctp64q_mv2qi (__a, __p);
 }
 
 __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp32q_m (uint32_t __a, mve_pred16_t __p)
 {
-  return __builtin_mve_vctp32q_mhi (__a, __p);
+  return __builtin_mve_vctp32q_mv4bi (__a, __p);
 }
 
 __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp16q_m (uint32_t __a, mve_pred16_t __p)
 {
-  return __builtin_mve_vctp16q_mhi (__a, __p);
+  return __builtin_mve_vctp16q_mv8bi (__a, __p);
 }
 
 __extension__ extern __inline uint64_t

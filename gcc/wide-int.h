@@ -3495,7 +3495,7 @@ wi::set_bit_in_zero (unsigned int bit)
 
 /* Accumulate a set of overflows into OVERFLOW.  */
 
-static inline void
+inline void
 wi::accumulate_overflow (wi::overflow_type &overflow,
 			 wi::overflow_type suboverflow)
 {

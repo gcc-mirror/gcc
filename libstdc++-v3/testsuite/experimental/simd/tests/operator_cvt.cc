@@ -16,8 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/metahelpers.h"
+#include "bits/main.h"
 
 // type with sizeof(char) but different signedness
 using xchar = std::conditional_t<std::is_unsigned_v<char>, schar, uchar>;

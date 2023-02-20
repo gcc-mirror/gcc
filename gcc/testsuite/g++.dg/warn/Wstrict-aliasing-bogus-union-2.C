@@ -5,7 +5,7 @@
 
 struct foo
 {
-  std::aligned_storage<sizeof(long), alignof(long)>::type raw;
+  std::aligned_storage<sizeof(long), alignof(long)>::type raw;	/* { dg-warning "deprecated" "" { target c++23 } } */
 
   long& cooked()
     {

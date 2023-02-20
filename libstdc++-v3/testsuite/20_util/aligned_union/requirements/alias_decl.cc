@@ -26,3 +26,6 @@ using namespace std;
 static_assert (is_same<typename aligned_union<0, char, int>::type,
 	               aligned_union_t<0, char, int>>(),
                "aligned_union_t" );
+
+// { dg-warning "deprecated" "" { target c++23 } 26 }
+// { dg-warning "deprecated" "" { target c++23 } 27 }

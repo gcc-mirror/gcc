@@ -2808,6 +2808,11 @@ expand_call_stmt (gcall *stmt)
   /* Must come after copying location.  */
   copy_warning (exp, stmt);
 
+  /* For calls that do not alter control flow avoid REG_SETJMP notes.  */
+  bool saved_calls_setjmp = cfun->calls_setjmp;
+  if (!gimple_call_ctrl_altering_p (stmt))
+    cfun->calls_setjmp = false;
+
   /* Ensure RTL is created for debug args.  */
   if (decl && DECL_HAS_DEBUG_ARGS_P (decl))
     {
@@ -2846,6 +2851,8 @@ expand_call_stmt (gcall *stmt)
     }
 
   mark_transaction_restart_calls (stmt);
+
+  cfun->calls_setjmp = saved_calls_setjmp;
 }
 
 

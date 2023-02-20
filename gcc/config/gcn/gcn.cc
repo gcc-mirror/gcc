@@ -138,21 +138,6 @@ gcn_option_override (void)
       : ISA_UNKNOWN);
   gcc_assert (gcn_isa != ISA_UNKNOWN);
 
-  /* The default stack size needs to be small for offload kernels because
-     there may be many, many threads.  Also, a smaller stack gives a
-     measureable performance boost.  But, a small stack is insufficient
-     for running the testsuite, so we use a larger default for the stand
-     alone case.  */
-  if (stack_size_opt == -1)
-    {
-      if (flag_openacc || flag_openmp)
-	/* 512 bytes per work item = 32kB total.  */
-	stack_size_opt = 512 * 64;
-      else
-	/* 1MB total.  */
-	stack_size_opt = 1048576;
-    }
-
   /* Reserve 1Kb (somewhat arbitrarily) of LDS space for reduction results and
      worker broadcasts.  */
   if (gang_private_size_opt == -1)
@@ -228,11 +213,9 @@ static const struct gcn_kernel_arg_type
 };
 
 static const long default_requested_args
-	= (1 << PRIVATE_SEGMENT_BUFFER_ARG)
-	  | (1 << DISPATCH_PTR_ARG)
+	= (1 << DISPATCH_PTR_ARG)
 	  | (1 << QUEUE_PTR_ARG)
 	  | (1 << KERNARG_SEGMENT_PTR_ARG)
-	  | (1 << PRIVATE_SEGMENT_WAVE_OFFSET_ARG)
 	  | (1 << WORKGROUP_ID_X_ARG)
 	  | (1 << WORK_ITEM_ID_X_ARG)
 	  | (1 << WORK_ITEM_ID_Y_ARG)
@@ -1865,10 +1848,14 @@ gcn_addr_space_convert (rtx op, tree from_type, tree to_type)
 
   if (AS_LDS_P (as_from) && AS_FLAT_P (as_to))
     {
-      rtx queue = gen_rtx_REG (DImode,
-			       cfun->machine->args.reg[QUEUE_PTR_ARG]);
+      /* The high bits of the QUEUE_PTR_ARG register are used by
+	 GCN_BUILTIN_FIRST_CALL_THIS_THREAD_P, so mask them out.  */
+      rtx queue_reg = gen_rtx_REG (DImode,
+				   cfun->machine->args.reg[QUEUE_PTR_ARG]);
+      rtx queue_ptr = gen_reg_rtx (DImode);
+      emit_insn (gen_anddi3 (queue_ptr, queue_reg, GEN_INT (0xffffffffffff)));
       rtx group_seg_aperture_hi = gen_rtx_MEM (SImode,
-				     gen_rtx_PLUS (DImode, queue,
+				     gen_rtx_PLUS (DImode, queue_ptr,
 						   gen_int_mode (64, SImode)));
       rtx tmp = gen_reg_rtx (DImode);
 
@@ -2520,6 +2507,11 @@ gcn_conditional_register_usage (void)
     {
       fixed_regs[cfun->machine->args.reg[DISPATCH_PTR_ARG]] = 1;
       fixed_regs[cfun->machine->args.reg[DISPATCH_PTR_ARG] + 1] = 1;
+    }
+  if (cfun->machine->args.reg[QUEUE_PTR_ARG] >= 0)
+    {
+      fixed_regs[cfun->machine->args.reg[QUEUE_PTR_ARG]] = 1;
+      fixed_regs[cfun->machine->args.reg[QUEUE_PTR_ARG] + 1] = 1;
     }
   if (cfun->machine->args.reg[WORKGROUP_ID_X_ARG] >= 0)
     fixed_regs[cfun->machine->args.reg[WORKGROUP_ID_X_ARG]] = 1;
@@ -3346,10 +3338,56 @@ gcn_expand_prologue ()
     }
   else
     {
-      rtx wave_offset = gen_rtx_REG (SImode,
-				     cfun->machine->args.
-				     reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG]);
+      if (TARGET_PACKED_WORK_ITEMS)
+	{
+	  /* v0 conatins the X, Y and Z dimensions all in one.
+	     Expand them out for ABI compatibility.  */
+	  /* TODO: implement and use zero_extract.  */
+	  rtx v1 = gen_rtx_REG (V64SImode, VGPR_REGNO (1));
+	  emit_insn (gen_andv64si3 (v1, gen_rtx_REG (V64SImode, VGPR_REGNO (0)),
+				    gen_rtx_CONST_INT (VOIDmode, 0x3FF << 10)));
+	  emit_insn (gen_lshrv64si3 (v1, v1, gen_rtx_CONST_INT (VOIDmode, 10)));
+	  emit_insn (gen_prologue_use (v1));
 
+	  rtx v2 = gen_rtx_REG (V64SImode, VGPR_REGNO (2));
+	  emit_insn (gen_andv64si3 (v2, gen_rtx_REG (V64SImode, VGPR_REGNO (0)),
+				    gen_rtx_CONST_INT (VOIDmode, 0x3FF << 20)));
+	  emit_insn (gen_lshrv64si3 (v2, v2, gen_rtx_CONST_INT (VOIDmode, 20)));
+	  emit_insn (gen_prologue_use (v2));
+	}
+
+      /* We no longer use the private segment for the stack (it's not
+	 accessible to reverse offload), so we must calculate a wave offset
+	 from the grid dimensions and stack size, which is calculated on the
+	 host, and passed in the kernargs region.
+	 See libgomp-gcn.h for details.  */
+      rtx wave_offset = gen_rtx_REG (SImode, FIRST_PARM_REG);
+
+      rtx num_waves_mem = gcn_oacc_dim_size (1);
+      rtx num_waves = gen_rtx_REG (SImode, FIRST_PARM_REG+1);
+      set_mem_addr_space (num_waves_mem, ADDR_SPACE_SCALAR_FLAT);
+      emit_move_insn (num_waves, num_waves_mem);
+
+      rtx workgroup_num = gcn_oacc_dim_pos (0);
+      rtx wave_num = gen_rtx_REG (SImode, FIRST_PARM_REG+2);
+      emit_move_insn(wave_num, gcn_oacc_dim_pos (1));
+
+      rtx thread_id = gen_rtx_REG (SImode, FIRST_PARM_REG+3);
+      emit_insn (gen_mulsi3 (thread_id, num_waves, workgroup_num));
+      emit_insn (gen_addsi3_scc (thread_id, thread_id, wave_num));
+
+      rtx kernarg_reg = gen_rtx_REG (DImode, cfun->machine->args.reg
+				     [KERNARG_SEGMENT_PTR_ARG]);
+      rtx stack_size_mem = gen_rtx_MEM (SImode,
+					gen_rtx_PLUS (DImode, kernarg_reg,
+						      GEN_INT (52)));
+      set_mem_addr_space (stack_size_mem, ADDR_SPACE_SCALAR_FLAT);
+      emit_move_insn (wave_offset, stack_size_mem);
+
+      emit_insn (gen_mulsi3 (wave_offset, wave_offset, thread_id));
+
+      /* The FLAT_SCRATCH_INIT is not usually needed, but can be enabled
+	 via the function attributes.  */
       if (cfun->machine->args.requested & (1 << FLAT_SCRATCH_INIT_ARG))
 	{
 	  rtx fs_init_lo =
@@ -3386,10 +3424,12 @@ gcn_expand_prologue ()
       HOST_WIDE_INT sp_adjust = (offsets->local_vars
 				 + offsets->outgoing_args_size);
 
-      /* Initialise FP and SP from the buffer descriptor in s[0:3].  */
-      emit_move_insn (fp_lo, gen_rtx_REG (SImode, 0));
-      emit_insn (gen_andsi3_scc (fp_hi, gen_rtx_REG (SImode, 1),
-				 gen_int_mode (0xffff, SImode)));
+      /* Initialize FP and SP from space allocated on the host.  */
+      rtx stack_addr_mem = gen_rtx_MEM (DImode,
+					gen_rtx_PLUS (DImode, kernarg_reg,
+						      GEN_INT (40)));
+      set_mem_addr_space (stack_addr_mem, ADDR_SPACE_SCALAR_FLAT);
+      emit_move_insn (fp, stack_addr_mem);
       rtx scc = gen_rtx_REG (BImode, SCC_REG);
       emit_insn (gen_addsi3_scalar_carry (fp_lo, fp_lo, wave_offset, scc));
       emit_insn (gen_addcsi3_scalar_zero (fp_hi, fp_hi, scc));
@@ -3443,25 +3483,6 @@ gcn_expand_prologue ()
 	gen_int_mode (LDS_SIZE, SImode));
 
     emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
-  }
-
-  if (TARGET_PACKED_WORK_ITEMS
-      && cfun && cfun->machine && !cfun->machine->normal_function)
-  {
-    /* v0 conatins the X, Y and Z dimensions all in one.
-       Expand them out for ABI compatibility.  */
-    /* TODO: implement and use zero_extract.  */
-    rtx v1 = gen_rtx_REG (V64SImode, VGPR_REGNO (1));
-    emit_insn (gen_andv64si3 (v1, gen_rtx_REG (V64SImode, VGPR_REGNO (0)),
-	       gen_rtx_CONST_INT (VOIDmode, 0x3FF << 10)));
-    emit_insn (gen_lshrv64si3 (v1, v1, gen_rtx_CONST_INT (VOIDmode, 10)));
-    emit_insn (gen_prologue_use (v1));
-
-    rtx v2 = gen_rtx_REG (V64SImode, VGPR_REGNO (2));
-    emit_insn (gen_andv64si3 (v2, gen_rtx_REG (V64SImode, VGPR_REGNO (0)),
-	       gen_rtx_CONST_INT (VOIDmode, 0x3FF << 20)));
-    emit_insn (gen_lshrv64si3 (v2, v2, gen_rtx_CONST_INT (VOIDmode, 20)));
-    emit_insn (gen_prologue_use (v2));
   }
 
   if (cfun && cfun->machine && !cfun->machine->normal_function && flag_openmp)
@@ -4504,26 +4525,53 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	   cf. struct hsa_kernel_dispatch_packet_s in the HSA doc.  */
 	rtx ptr;
 	if (cfun->machine->args.reg[DISPATCH_PTR_ARG] >= 0
-	    && cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] >= 0)
+	    && cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG] >= 0)
 	  {
-	    rtx size_rtx = gen_rtx_REG (DImode,
-			     cfun->machine->args.reg[DISPATCH_PTR_ARG]);
-	    size_rtx = gen_rtx_MEM (SImode,
-				    gen_rtx_PLUS (DImode, size_rtx,
-						  GEN_INT (6*2 + 3*4)));
-	    size_rtx = gen_rtx_MULT (SImode, size_rtx, GEN_INT (64));
+	    rtx num_waves_mem = gcn_oacc_dim_size (1);
+	    rtx num_waves = gen_reg_rtx (SImode);
+	    set_mem_addr_space (num_waves_mem, ADDR_SPACE_SCALAR_FLAT);
+	    emit_move_insn (num_waves, num_waves_mem);
 
-	    ptr = gen_rtx_REG (DImode,
-		    cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]);
-	    ptr = gen_rtx_AND (DImode, ptr, GEN_INT (0x0000ffffffffffff));
-	    ptr = gen_rtx_PLUS (DImode, ptr, size_rtx);
-	    if (cfun->machine->args.reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG] >= 0)
-	      {
-		rtx off;
-		off = gen_rtx_REG (SImode,
-		      cfun->machine->args.reg[PRIVATE_SEGMENT_WAVE_OFFSET_ARG]);
-		ptr = gen_rtx_PLUS (DImode, ptr, off);
-	      }
+	    rtx workgroup_num = gcn_oacc_dim_pos (0);
+	    rtx wave_num = gen_reg_rtx (SImode);
+	    emit_move_insn(wave_num, gcn_oacc_dim_pos (1));
+
+	    rtx thread_id = gen_reg_rtx (SImode);
+	    emit_insn (gen_mulsi3 (thread_id, num_waves, workgroup_num));
+	    emit_insn (gen_addsi3_scc (thread_id, thread_id, wave_num));
+
+	    rtx kernarg_reg = gen_rtx_REG (DImode, cfun->machine->args.reg
+					   [KERNARG_SEGMENT_PTR_ARG]);
+	    rtx stack_size_mem = gen_rtx_MEM (SImode,
+					      gen_rtx_PLUS (DImode,
+							    kernarg_reg,
+							    GEN_INT (52)));
+	    set_mem_addr_space (stack_size_mem, ADDR_SPACE_SCALAR_FLAT);
+	    rtx stack_size = gen_reg_rtx (SImode);
+	    emit_move_insn (stack_size, stack_size_mem);
+
+	    rtx wave_offset = gen_reg_rtx (SImode);
+	    emit_insn (gen_mulsi3 (wave_offset, stack_size, thread_id));
+
+	    rtx stack_limit_offset = gen_reg_rtx (SImode);
+	    emit_insn (gen_addsi3 (stack_limit_offset, wave_offset,
+				   stack_size));
+
+	    rtx stack_limit_offset_di = gen_reg_rtx (DImode);
+	    emit_move_insn (gen_rtx_SUBREG (SImode, stack_limit_offset_di, 4),
+			    const0_rtx);
+	    emit_move_insn (gen_rtx_SUBREG (SImode, stack_limit_offset_di, 0),
+			    stack_limit_offset);
+
+	    rtx stack_addr_mem = gen_rtx_MEM (DImode,
+					      gen_rtx_PLUS (DImode,
+							    kernarg_reg,
+							    GEN_INT (40)));
+	    set_mem_addr_space (stack_addr_mem, ADDR_SPACE_SCALAR_FLAT);
+	    rtx stack_addr = gen_reg_rtx (DImode);
+	    emit_move_insn (stack_addr, stack_addr_mem);
+
+	    ptr = gen_rtx_PLUS (DImode, stack_addr, stack_limit_offset_di);
 	  }
 	else
 	  {
@@ -4551,11 +4599,11 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	   whether it was the first call.  */
 	rtx result = gen_reg_rtx (BImode);
 	emit_move_insn (result, const0_rtx);
-	if (cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG] >= 0)
+	if (cfun->machine->args.reg[QUEUE_PTR_ARG] >= 0)
 	  {
 	    rtx not_first = gen_label_rtx ();
 	    rtx reg = gen_rtx_REG (DImode,
-			cfun->machine->args.reg[PRIVATE_SEGMENT_BUFFER_ARG]);
+			cfun->machine->args.reg[QUEUE_PTR_ARG]);
 	    reg = gcn_operand_part (DImode, reg, 1);
 	    rtx cmp = force_reg (SImode,
 				 gen_rtx_LSHIFTRT (SImode, reg, GEN_INT (16)));
@@ -6041,16 +6089,13 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   "\t  .amdhsa_reserve_vcc\t1\n"
 	   "\t  .amdhsa_reserve_flat_scratch\t0\n"
 	   "\t  .amdhsa_reserve_xnack_mask\t%i\n"
-	   "\t  .amdhsa_private_segment_fixed_size\t%i\n"
+	   "\t  .amdhsa_private_segment_fixed_size\t0\n"
 	   "\t  .amdhsa_group_segment_fixed_size\t%u\n"
 	   "\t  .amdhsa_float_denorm_mode_32\t3\n"
 	   "\t  .amdhsa_float_denorm_mode_16_64\t3\n",
 	   vgpr,
 	   sgpr,
 	   xnack_enabled,
-	   /* workitem_private_segment_bytes_size needs to be
-	      one 64th the wave-front stack size.  */
-	   stack_size_opt / 64,
 	   LDS_SIZE);
   if (gcn_arch == PROCESSOR_GFX90a)
     fprintf (file,
@@ -6075,7 +6120,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   "            .kernarg_segment_size: %i\n"
 	   "            .kernarg_segment_align: %i\n"
 	   "            .group_segment_fixed_size: %u\n"
-	   "            .private_segment_fixed_size: %i\n"
+	   "            .private_segment_fixed_size: 0\n"
 	   "            .wavefront_size: 64\n"
 	   "            .sgpr_count: %i\n"
 	   "            .vgpr_count: %i\n"
@@ -6083,7 +6128,6 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   cfun->machine->kernarg_segment_byte_size,
 	   cfun->machine->kernarg_segment_alignment,
 	   LDS_SIZE,
-	   stack_size_opt / 64,
 	   sgpr, vgpr);
   if (gcn_arch == PROCESSOR_GFX90a)
     fprintf (file, "            .agpr_count: 0\n"); // AGPRs are not used, yet

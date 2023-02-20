@@ -1,3 +1,11 @@
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* objc-act.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+	* objc-map.h: Likewise.
+	* objc-act.cc: Remove the redundant redeclarations of is_ivar
+	and lookup_category.
+
 2022-10-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* objc-next-runtime-abi-01.cc (build_next_objc_exception_stuff):

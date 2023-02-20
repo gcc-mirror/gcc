@@ -506,11 +506,11 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   if (ecf_flags & ECF_NORETURN)
     add_reg_note (call_insn, REG_NORETURN, const0_rtx);
 
-  if (ecf_flags & ECF_RETURNS_TWICE)
-    {
-      add_reg_note (call_insn, REG_SETJMP, const0_rtx);
-      cfun->calls_setjmp = 1;
-    }
+  if (ecf_flags & ECF_RETURNS_TWICE
+      /* We rely on GIMPLE setting this flag and here use it to
+	 catch formerly indirect and not control-altering calls.  */
+      && cfun->calls_setjmp)
+    add_reg_note (call_insn, REG_SETJMP, const0_rtx);
 
   SIBLING_CALL_P (call_insn) = ((ecf_flags & ECF_SIBCALL) != 0);
 

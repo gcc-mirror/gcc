@@ -1156,6 +1156,6 @@ extern "C" void _M2_M2Dependent_init (__attribute__((unused)) int argc,__attribu
   CheckInitialized ();
 }
 
-extern "C" void _M2_M2Dependent_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2Dependent_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

@@ -113,7 +113,7 @@ public:
 
 /* Finishes constructing a NULL-terminated character string representing
    the buffered text.  */
-static inline const char *
+inline const char *
 output_buffer_formatted_text (output_buffer *buff)
 {
   obstack_1grow (buff->obstack, '\0');
@@ -122,7 +122,7 @@ output_buffer_formatted_text (output_buffer *buff)
 
 /* Append to the output buffer a string specified by its
    STARTing character and LENGTH.  */
-static inline void
+inline void
 output_buffer_append_r (output_buffer *buff, const char *start, int length)
 {
   gcc_checking_assert (start);
@@ -136,7 +136,7 @@ output_buffer_append_r (output_buffer *buff, const char *start, int length)
 
 /*  Return a pointer to the last character emitted in the
     output_buffer.  A NULL pointer means no character available.  */
-static inline const char *
+inline const char *
 output_buffer_last_position_in_text (const output_buffer *buff)
 {
   const char *p = NULL;
@@ -283,7 +283,7 @@ public:
   diagnostic_url_format url_format;
 };
 
-static inline const char *
+inline const char *
 pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 
 #define pp_space(PP)            pp_character (PP, ' ')
@@ -415,7 +415,7 @@ extern void pp_begin_url (pretty_printer *pp, const char *url);
 extern void pp_end_url (pretty_printer *pp);
 
 /* Switch into verbatim mode and return the old mode.  */
-static inline pp_wrapping_mode_t
+inline pp_wrapping_mode_t
 pp_set_verbatim_wrapping_ (pretty_printer *pp)
 {
   pp_wrapping_mode_t oldmode = pp_wrapping_mode (pp);

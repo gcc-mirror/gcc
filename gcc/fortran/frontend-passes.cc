@@ -3049,7 +3049,8 @@ do_intent (gfc_expr **e)
 	  do_sym = dl->ext.iterator->var->symtree->n.sym;
 
 	  if (a->expr && a->expr->symtree
-	      && a->expr->symtree->n.sym == do_sym)
+	      && a->expr->symtree->n.sym == do_sym
+	      && f->sym)
 	    {
 	      if (f->sym->attr.intent == INTENT_OUT)
 		gfc_error_now ("Variable %qs at %L set to undefined value "

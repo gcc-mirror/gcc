@@ -154,8 +154,7 @@ uncompressing GCC's intermediate language in LTO object files.
 The build system in the top level directory, including how recursion
 into subdirectories works and how building runtime libraries for
 multilibs is handled, is documented in a separate manual, included
-with GNU Binutils.  @xref{Top, , GNU configure and build system,
-configure, The GNU configure and build system}, for details.
+with GNU Binutils.
 
 @node gcc Directory
 @section The @file{gcc} Subdirectory

@@ -140,6 +140,16 @@
   (and (match_code "const_vector")
        (match_test "riscv_vector::const_vec_all_same_in_range_p (op, -16, 15)")))
 
+(define_constraint "vj"
+  "A vector negated 5-bit signed immediate."
+  (and (match_code "const_vector")
+       (match_test "riscv_vector::const_vec_all_same_in_range_p (op, -15, 16)")))
+
+(define_constraint "vk"
+  "A vector 5-bit unsigned immediate."
+  (and (match_code "const_vector")
+       (match_test "riscv_vector::const_vec_all_same_in_range_p (op, 0, 31)")))
+
 (define_constraint "Wc0"
   "@internal
  A constraint that matches a vector of immediate all zeros."
@@ -152,7 +162,7 @@
  (and (match_code "const_vector")
       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
-(define_constraint "Wdm"
+(define_memory_constraint "Wdm"
   "Vector duplicate memory operand"
-  (and (match_operand 0 "memory_operand")
+  (and (match_code "mem")
        (match_code "reg" "0")))

@@ -95,7 +95,7 @@ extern void update_modified_stmts (gimple_seq);
 
 /* Return a new iterator pointing to GIMPLE_SEQ's first statement.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_start (gimple_seq &seq)
 {
   gimple_stmt_iterator i;
@@ -107,7 +107,7 @@ gsi_start (gimple_seq &seq)
   return i;
 }
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_none (void)
 {
   gimple_stmt_iterator i;
@@ -119,7 +119,7 @@ gsi_none (void)
 
 /* Return a new iterator pointing to the first statement in basic block BB.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_start_bb (basic_block bb)
 {
   gimple_stmt_iterator i;
@@ -137,7 +137,7 @@ gimple_stmt_iterator gsi_start_edge (edge e);
 
 /* Return a new iterator initially pointing to GIMPLE_SEQ's last statement.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_last (gimple_seq &seq)
 {
   gimple_stmt_iterator i;
@@ -151,7 +151,7 @@ gsi_last (gimple_seq &seq)
 
 /* Return a new iterator pointing to the last statement in basic block BB.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_last_bb (basic_block bb)
 {
   gimple_stmt_iterator i;
@@ -167,7 +167,7 @@ gsi_last_bb (basic_block bb)
 
 /* Return true if I is at the end of its sequence.  */
 
-static inline bool
+inline bool
 gsi_end_p (gimple_stmt_iterator i)
 {
   return i.ptr == NULL;
@@ -175,7 +175,7 @@ gsi_end_p (gimple_stmt_iterator i)
 
 /* Return true if I is one statement before the end of its sequence.  */
 
-static inline bool
+inline bool
 gsi_one_before_end_p (gimple_stmt_iterator i)
 {
   return i.ptr != NULL && i.ptr->next == NULL;
@@ -183,7 +183,7 @@ gsi_one_before_end_p (gimple_stmt_iterator i)
 
 /* Advance the iterator to the next gimple statement.  */
 
-static inline void
+inline void
 gsi_next (gimple_stmt_iterator *i)
 {
   i->ptr = i->ptr->next;
@@ -191,7 +191,7 @@ gsi_next (gimple_stmt_iterator *i)
 
 /* Advance the iterator to the previous gimple statement.  */
 
-static inline void
+inline void
 gsi_prev (gimple_stmt_iterator *i)
 {
   gimple *prev = i->ptr->prev;
@@ -203,7 +203,7 @@ gsi_prev (gimple_stmt_iterator *i)
 
 /* Return the current stmt.  */
 
-static inline gimple *
+inline gimple *
 gsi_stmt (gimple_stmt_iterator i)
 {
   return i.ptr;
@@ -212,7 +212,7 @@ gsi_stmt (gimple_stmt_iterator i)
 /* Return a block statement iterator that points to the first
    non-label statement in block BB.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_after_labels (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_start_bb (bb);
@@ -231,7 +231,7 @@ gsi_after_labels (basic_block bb)
 /* Return a statement iterator that points to the first
    non-label statement in sequence SEQ.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_after_labels (gimple_seq &seq)
 {
   gimple_stmt_iterator gsi = gsi_start (seq);
@@ -249,7 +249,7 @@ gsi_after_labels (gimple_seq &seq)
 
 /* Advance the iterator to the next non-debug gimple statement.  */
 
-static inline void
+inline void
 gsi_next_nondebug (gimple_stmt_iterator *i)
 {
   do
@@ -261,7 +261,7 @@ gsi_next_nondebug (gimple_stmt_iterator *i)
 
 /* Advance the iterator to the previous non-debug gimple statement.  */
 
-static inline void
+inline void
 gsi_prev_nondebug (gimple_stmt_iterator *i)
 {
   do
@@ -274,7 +274,7 @@ gsi_prev_nondebug (gimple_stmt_iterator *i)
 /* Return a new iterator pointing to the first non-debug statement in
    SEQ.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_start_nondebug (gimple_seq seq)
 {
   gimple_stmt_iterator gsi = gsi_start (seq);
@@ -287,7 +287,7 @@ gsi_start_nondebug (gimple_seq seq)
 /* Return a new iterator pointing to the first non-debug statement in
    basic block BB.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_start_nondebug_bb (basic_block bb)
 {
   gimple_stmt_iterator i = gsi_start_bb (bb);
@@ -301,7 +301,7 @@ gsi_start_nondebug_bb (basic_block bb)
 /* Return a new iterator pointing to the first non-debug non-label statement in
    basic block BB.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_start_nondebug_after_labels_bb (basic_block bb)
 {
   gimple_stmt_iterator i = gsi_after_labels (bb);
@@ -315,7 +315,7 @@ gsi_start_nondebug_after_labels_bb (basic_block bb)
 /* Return a new iterator pointing to the last non-debug statement in
    basic block BB.  */
 
-static inline gimple_stmt_iterator
+inline gimple_stmt_iterator
 gsi_last_nondebug_bb (basic_block bb)
 {
   gimple_stmt_iterator i = gsi_last_bb (bb);
@@ -329,7 +329,7 @@ gsi_last_nondebug_bb (basic_block bb)
 /* Return true if I is followed only by debug statements in its
    sequence.  */
 
-static inline bool
+inline bool
 gsi_one_nondebug_before_end_p (gimple_stmt_iterator i)
 {
   if (gsi_one_before_end_p (i))
@@ -343,7 +343,7 @@ gsi_one_nondebug_before_end_p (gimple_stmt_iterator i)
 /* Advance I statement iterator to the next non-virtual GIMPLE_PHI
    statement.  */
 
-static inline void
+inline void
 gsi_next_nonvirtual_phi (gphi_iterator *i)
 {
   do
@@ -356,7 +356,7 @@ gsi_next_nonvirtual_phi (gphi_iterator *i)
 /* Return a new iterator pointing to the first non-virtual phi statement in
    basic block BB.  */
 
-static inline gphi_iterator
+inline gphi_iterator
 gsi_start_nonvirtual_phis (basic_block bb)
 {
   gphi_iterator i = gsi_start_phis (bb);
@@ -369,7 +369,7 @@ gsi_start_nonvirtual_phis (basic_block bb)
 
 /* Return the basic block associated with this iterator.  */
 
-static inline basic_block
+inline basic_block
 gsi_bb (gimple_stmt_iterator i)
 {
   return i.bb;
@@ -377,7 +377,7 @@ gsi_bb (gimple_stmt_iterator i)
 
 /* Return the sequence associated with this iterator.  */
 
-static inline gimple_seq
+inline gimple_seq
 gsi_seq (gimple_stmt_iterator i)
 {
   return *i.seq;
@@ -385,7 +385,7 @@ gsi_seq (gimple_stmt_iterator i)
 
 /* Determine whether SEQ is a nondebug singleton.  */
 
-static inline bool
+inline bool
 gimple_seq_nondebug_singleton_p (gimple_seq seq)
 {
   gimple_stmt_iterator gsi;

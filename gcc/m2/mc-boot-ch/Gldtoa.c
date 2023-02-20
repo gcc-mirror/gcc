@@ -99,7 +99,7 @@ _M2_ldtoa_init (void)
 }
 
 void
-_M2_ldtoa_finish (void)
+_M2_ldtoa_fini (void)
 {
 }
 #   ifdef __cplusplus

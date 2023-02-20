@@ -224,13 +224,20 @@ BEGIN
             actual := 0 ;
             RETURN( FALSE )
          END
+      ELSE
+         RETURN( FALSE )
       END
    END
 END dorbytes ;
 
 
 (*
-   dowbytes -
+   dowbytes - attempts to write out nBytes.  The actual
+              number of bytes written are returned.
+              If the actual number of bytes written is >= 0 then
+              the return result will be true.  Failure to
+              write any bytes results in returning FALSE
+              errno set and the actual will be set to zero.
 *)
 
 PROCEDURE dowbytes (g: GenDevIF; d: DeviceTablePtr;

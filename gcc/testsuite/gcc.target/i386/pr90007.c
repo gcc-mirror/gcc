@@ -1,5 +1,5 @@
 /* PR rtl-optimization/90007 */
-/* { dg-do compile { target x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-march=bdver1 -mfpmath=387 -O1 -fschedule-insns -fselective-scheduling" } */
 
 void

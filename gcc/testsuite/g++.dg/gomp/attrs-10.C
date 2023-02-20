@@ -55,7 +55,7 @@ f4 (int l)
 
 int
 f5 (int l)
-{	// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-1 }
+{	// { dg-warning "GCC does not currently support simdlen 8 for type 'int'" "" { target aarch64*-*-* } .-1 }
   return l + 4;
 }
 
@@ -78,7 +78,7 @@ f5 (int l)
 int
 f6 [[omp::sequence (directive (declare simd uniform (l) simdlen (8), notinbranch),
 		    omp::directive (declare simd linear (l) simdlen (8) inbranch))]] (int l)
-{	// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-2 }
+{	// { dg-warning "GCC does not currently support simdlen 8 for type 'int'" "" { target aarch64*-*-* } .-2 }
   return l + 5;
 }
 
@@ -124,7 +124,7 @@ f8 (int l)
 int
 f9 [[omp::directive (declare simd uniform (l) simdlen (8)),
      omp::directive (declare variant (f8) match (construct={parallel,for}))]] (int l)
-{	// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-2 }
+{	// { dg-warning "GCC does not currently support simdlen 8 for type 'int'" "" { target aarch64*-*-* } .-2 }
   return l + 8;
 }
 

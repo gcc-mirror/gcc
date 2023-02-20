@@ -1,3 +1,95 @@
+2023-02-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108806
+	* constraint-manager.cc (bounded_range::dump_to_pp): Use
+	bounded_range::singleton_p.
+	(constraint_manager::add_bounded_ranges): Handle singleton ranges
+	by adding an EQ_EXPR constraint.
+	(constraint_manager::impossible_derived_conditions_p): New.
+	(constraint_manager::eval_condition): Reject EQ_EXPR when it would
+	imply impossible derived conditions.
+	(selftest::test_bits): New.
+	(selftest::run_constraint_manager_tests): Run it.
+	* constraint-manager.h (bounded_range::singleton_p): New.
+	(constraint_manager::impossible_derived_conditions_p): New decl.
+	* region-model.cc (region_model::get_rvalue_1): Handle
+	BIT_AND_EXPR, BIT_IOR_EXPR, and BIT_XOR_EXPR.
+
+2023-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108664
+	PR analyzer/108666
+	PR analyzer/108725
+	* diagnostic-manager.cc (epath_finder::get_best_epath): Add
+	"target_stmt" param.
+	(epath_finder::explore_feasible_paths): Likewise.
+	(epath_finder::process_worklist_item): Likewise.
+	(saved_diagnostic::calc_best_epath): Pass m_stmt to
+	epath_finder::get_best_epath.
+	* engine.cc (feasibility_state::maybe_update_for_edge): Move
+	per-stmt logic to...
+	(feasibility_state::update_for_stmt): ...this new function.
+	* exploded-graph.h (feasibility_state::update_for_stmt): New decl.
+	* feasible-graph.cc (feasible_node::get_state_at_stmt): New.
+	* feasible-graph.h: Include "analyzer/exploded-graph.h".
+	(feasible_node::get_state_at_stmt): New decl.
+	* infinite-recursion.cc
+	(infinite_recursion_diagnostic::check_valid_fpath_p): Update for
+	vfunc signature change.
+	* pending-diagnostic.h (pending_diagnostic::check_valid_fpath_p):
+	Convert first param to a reference.  Add stmt param.
+	* region-model.cc: Include "analyzer/feasible-graph.h".
+	(poisoned_value_diagnostic::poisoned_value_diagnostic): Add
+	"check_expr" param.
+	(poisoned_value_diagnostic::check_valid_fpath_p): New.
+	(poisoned_value_diagnostic::m_check_expr): New field.
+	(region_model::check_for_poison): Attempt to supply a check_expr
+	to the diagnostic
+	(region_model::deref_rvalue): Add NULL for new check_expr param
+	of poisoned_value_diagnostic.
+	(region_model::get_or_create_region_for_heap_alloc): Don't reuse
+	regions that are marked as TOUCHED.
+
+2023-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108745
+	* sm-malloc.cc (deref_before_check::emit): Reject the warning if
+	the check occurs within a macro defintion.
+
+2023-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108733
+	* state-purge.cc (get_candidate_for_purging): Add ADDR_EXPR
+	and MEM_REF.
+
+2023-02-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108704
+	* state-purge.cc (state_purge_per_decl::process_point_backwards):
+	Don't stop processing the decl if it's fully overwritten by
+	this stmt if it's also used by this stmt.
+
+2023-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108661
+	* sm-fd.cc (class kf_read): New.
+	(register_known_fd_functions): Register "read".
+	* sm-file.cc (class kf_fread): Update comment.
+
+2023-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108633
+	* sm-fd.cc (fd_state_machine::check_for_fd_attrs): Add missing
+	"continue".
+	(fd_state_machine::on_listen): Don't issue phase-mismatch or
+	type-mismatch warnings for the "invalid" state.
+
+2023-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108616
+	* pending-diagnostic.cc (fixup_location_in_macro_p): Add "alloca"
+	to macros that we shouldn't unwind inside.
+
 2023-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108524

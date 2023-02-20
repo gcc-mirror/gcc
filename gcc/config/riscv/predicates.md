@@ -272,19 +272,66 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "memory_operand")))
 
+(define_predicate "reg_or_int_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const_int_operand")))
+
 (define_predicate "vector_move_operand"
   (ior (match_operand 0 "nonimmediate_operand")
-       (match_code "const_vector")))
+       (and (match_code "const_vector")
+            (match_test "reload_completed
+		|| satisfies_constraint_vi (op)
+		|| satisfies_constraint_Wc0 (op)"))))
 
-(define_predicate "vector_mask_operand"
+(define_predicate "vector_all_trues_mask_operand"
   (ior (match_operand 0 "register_operand")
        (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
+(define_predicate "vector_mask_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "vector_all_trues_mask_operand")))
+
+(define_predicate "vector_undef_operand"
+  (match_test "rtx_equal_p (op, RVV_VUNDEF (GET_MODE (op)))"))
+
 (define_predicate "vector_merge_operand"
-  (ior (match_operand 0 "memory_operand")
-       (ior (match_operand 0 "register_operand")
-	    (match_test "GET_CODE (op) == UNSPEC
-			 && (XINT (op, 1) == UNSPEC_VUNDEF)"))))
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "vector_undef_operand")))
+
+(define_predicate "vector_arith_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_vector")
+            (match_test "riscv_vector::const_vec_all_same_in_range_p (op, -16, 15)"))))
+
+(define_predicate "vector_neg_arith_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_vector")
+            (match_test "riscv_vector::const_vec_all_same_in_range_p (op, -15, 16)"))))
+
+(define_predicate "vector_shift_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_vector")
+            (match_test "riscv_vector::const_vec_all_same_in_range_p (op, 0, 31)"))))
+
+(define_predicate "ltge_operator"
+  (match_code "lt,ltu,ge,geu"))
+
+(define_predicate "comparison_except_ltge_operator"
+  (match_code "eq,ne,le,leu,gt,gtu"))
+
+(define_predicate "comparison_except_eqge_operator"
+  (match_code "le,leu,gt,gtu,lt,ltu"))
+
+(define_predicate "ge_operator"
+  (match_code "ge,geu"))
+
+;; pmode_reg_or_uimm5_operand can be used by vsll.vx/vsrl.vx/vsra.vx instructions.
+;; Since it has the same predicate with vector_length_operand which allows register
+;; or immediate (0 ~ 31), we define this predicate same as vector_length_operand here.
+;; We don't use vector_length_operand directly to predicate vsll.vx/vsrl.vx/vsra.vx
+;; since it may be confusing.
+(define_special_predicate "pmode_reg_or_uimm5_operand"
+  (match_operand 0 "vector_length_operand"))
 
 (define_special_predicate "pmode_reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
@@ -292,8 +339,11 @@
 
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"
-  (ior (match_operand 0 "register_operand")
-       (match_test "satisfies_constraint_Wdm (op)")))
+  (and (match_test "!(reload_completed && !FLOAT_MODE_P (GET_MODE (op))
+		&& register_operand (op, GET_MODE (op))
+		&& maybe_gt (GET_MODE_BITSIZE (GET_MODE (op)), GET_MODE_BITSIZE (Pmode)))")
+    (ior (match_operand 0 "register_operand")
+         (match_test "satisfies_constraint_Wdm (op)"))))
 
 ;; A CONST_INT operand that has exactly two bits cleared.
 (define_predicate "const_nottwobits_operand"

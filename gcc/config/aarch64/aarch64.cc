@@ -2759,8 +2759,6 @@ static const struct processor all_cores[] =
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 
-enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A;
-
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
 
@@ -2806,14 +2804,6 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
   { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
-};
-
-/* An ISA extension in the co-processor and main instruction set space.  */
-struct aarch64_option_extension
-{
-  const char *const name;
-  const unsigned long flags_on;
-  const unsigned long flags_off;
 };
 
 typedef enum aarch64_cond_code
@@ -25704,6 +25694,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && CONST_INT_P (XEXP (curr_src, 1))
 	  && INTVAL (XEXP (curr_src, 1)) == polarity
 	  && REG_P (XEXP (curr_src, 0))
+	  && REG_P (SET_DEST (prev_set))
 	  && REGNO (SET_DEST (prev_set)) == REGNO (XEXP (curr_src, 0)))
 	return true;
     }

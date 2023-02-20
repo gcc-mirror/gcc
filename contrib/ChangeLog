@@ -1,3 +1,7 @@
+2023-02-10  Flavio Cruz  <flaviocruz@gmail.com>
+
+	* config-list.mk: Add x86_64-gnu to list of archs.
+
 2023-01-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gcc_update (files_and_dependencies): Add dependencies for

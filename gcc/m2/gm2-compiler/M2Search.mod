@@ -81,16 +81,18 @@ END doDSdbExit ;
                doDSsbEnter when debugging garbage collection at runtime.
 *)
 
+(*
 PROCEDURE DSdbEnter ;
 BEGIN
 END DSdbEnter ;
-
+*)
 
 (*
    DSdbExit - dummy nop exit code which the preprocessor replaces by
               doDSsbExit when debugging garbage collection at runtime.
 *)
 
+(*
 PROCEDURE DSdbExit (s: String) ;
 BEGIN
    IF GarbageDebugging
@@ -98,6 +100,7 @@ BEGIN
       Assert (s # NIL)
    END
 END DSdbExit ;
+*)
 
 
 (*

@@ -351,7 +351,8 @@ class pending_diagnostic
   /* Vfunc to give diagnostic subclasses the opportunity to reject diagnostics
      by imposing their own additional feasibility checks on the path to a
      given feasible_node.  */
-  virtual bool check_valid_fpath_p (const feasible_node *) const
+  virtual bool check_valid_fpath_p (const feasible_node &,
+				    const gimple *) const
   {
     /* Default implementation: accept this path.  */
     return true;

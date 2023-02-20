@@ -1,3 +1,9 @@
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* jit-dejagnu.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+	* jit-recording.h: Likewise.
+
 2023-01-07  LIU Hao  <lh_mouse@126.com>
 
 	PR middle-end/108300

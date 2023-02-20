@@ -2,6 +2,7 @@
    notes) works.  */
 
 /* { dg-additional-options "-fanalyzer-show-duplicate-count" } */
+/* { dg-require-effective-target alloca } */
 
 #include "analyzer-decls.h"
 

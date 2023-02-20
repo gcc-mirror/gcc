@@ -5201,8 +5201,12 @@ AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
 	zoneinfo_dir=none
 	;;
     esac
-    # Also embed a copy of the tzdata.zi file as a static string.
-    embed_zoneinfo=yes
+    case "$host" in
+      avr-*-* | msp430-*-* ) embed_zoneinfo=no ;;
+      *)
+	# Also embed a copy of the tzdata.zi file as a static string.
+	embed_zoneinfo=yes ;;
+    esac
   elif test "x${with_libstdcxx_zoneinfo}" = xno; then
     # Disable tzdb support completely.
     zoneinfo_dir=none

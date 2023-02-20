@@ -51,7 +51,3 @@
   ENTRY (Bfloat16x2_t, V2BF, none, 32, bfloat16, 20)
   ENTRY (Bfloat16x4_t, V4BF, none, 64, bfloat16, 20)
   ENTRY (Bfloat16x8_t, V8BF, none, 128, bfloat16, 20)
-
-  ENTRY (Pred1x16_t, V16BI, predicate, 16, pred1, 16)
-  ENTRY (Pred2x8_t, V8BI, predicate, 8, pred1, 15)
-  ENTRY (Pred4x4_t, V4BI, predicate, 4, pred1, 15)

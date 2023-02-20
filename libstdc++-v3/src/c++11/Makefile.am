@@ -51,6 +51,10 @@ else
 cxx11_abi_sources =
 endif
 
+sources_freestanding = \
+	limits.cc \
+	placeholders.cc
+
 sources = \
 	chrono.cc \
 	codecvt.cc \
@@ -66,9 +70,7 @@ sources = \
 	hashtable_c++0x.cc \
 	ios.cc \
 	ios_errcat.cc \
-	limits.cc \
 	mutex.cc \
-	placeholders.cc \
 	random.cc \
 	regex.cc  \
 	shared_ptr.cc \
@@ -118,7 +120,15 @@ endif
 
 vpath % $(top_srcdir)/src/c++11
 
-libc__11convenience_la_SOURCES = $(sources)  $(inst_sources)
+if !GLIBCXX_HOSTED
+libc__11convenience_la_SOURCES = $(sources_freestanding)
+else
+libc__11convenience_la_SOURCES = \
+	$(sources_freestanding) \
+	$(sources) \
+	$(inst_sources)
+endif
+
 
 # Use special rules for the hashtable.cc file so that all
 # the generated template functions are also instantiated.

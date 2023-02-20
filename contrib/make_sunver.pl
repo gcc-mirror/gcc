@@ -213,7 +213,7 @@ while (<F>) {
     if (/^[ \t]*$/) { print; next; }
 
     # Lines of the form '{'
-    if (/^([ \t]*){$/) {
+    if (/^([ \t]*)\{$/) {
 	if ($in_extern) {
 	    print "$1##{\n";
 	} else {

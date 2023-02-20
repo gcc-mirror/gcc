@@ -30,15 +30,40 @@
 	  <code class="filename">initializer_list</code>
 	  </p></li><li class="listitem"><p>
 	  <code class="filename">type_traits</code>
-	  </p></li></ul></div><p> There exists a library that offers runtime support for
-	just these headers, and it is called
-	<code class="filename">libsupc++.a</code>. To use it, compile with <span class="command"><strong>gcc</strong></span> instead of <span class="command"><strong>g++</strong></span>, like so:
+	  </p></li></ul></div><p>
+	As of GCC 13, libstdc++ implements P1642, which brings in many more
+	headers, as well a quite a few ones not covered by the paper.
+
+	In general, if a feature does not require traditionally libc-provided
+	facilities, or dynamic memory allocation, it's enabled in the
+	freestanding subset.  In addition, if only a subset of a header
+	requires such features, it is partially included.  Some examples
+	include:
+      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+	  <code class="filename">string_view</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">tuple</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">bitset</code>
+	  </p></li></ul></div><p>
+	Currently, this subset includes all of the iterator APIs (including the
+	ranges APIs) that do not involve streams, the entire C++ algorithms
+	library, excluding parallel algorithms, and a large part of the
+	utilities library.  This is on top of the headers included in the lists
+	above.
       </p><p>
-	<span class="command"><strong>gcc foo.cc -lsupc++</strong></span>
+	If you're using a libstdc++ configured for hosted environments, and
+	would like to not involve the libraries libstdc++ would depend on in
+	your programs, you will need to use <span class="command"><strong>gcc</strong></span> to link your
+	application with only <code class="filename">libsupc++.a</code>,
+	like so:
       </p><p>
-	No attempt is made to verify that only the minimal subset
-	identified above is actually used at compile time. Violations
-	are diagnosed as undefined symbols at link time.
+	<span class="command"><strong>gcc -ffreestanding foo.cc -lsupc++</strong></span>
+      </p><p>
+	If you configured libstdc++ with
+	<code class="code">--disable-hosted-libstdcxx</code>, however, you can use the
+	normal <span class="command"><strong>g++</strong></span> command to link, as this configuration
+	provides a (nearly) empty <code class="filename">libstdc++.a</code>.
       </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.dynamic"></a>Finding Dynamic or Shared Libraries</h3></div></div></div><p>
       If the only library built is the static library
       (<code class="filename">libstdc++.a</code>), or if

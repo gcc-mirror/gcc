@@ -121,6 +121,10 @@ remove_unreachable::remove_and_update_globals (bool final_p)
   if (m_list.length () == 0)
     return false;
 
+  // Ensure the cache in SCEV has been cleared before processing
+  // globals to be removed.
+  scev_reset ();
+
   bool change = false;
   tree name;
   unsigned i;

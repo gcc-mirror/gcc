@@ -986,16 +986,6 @@ debug_blist (blist_t bnds)
   restore_dump ();
 }
 
-/* Dump a hard reg set SET to stderr.  */
-DEBUG_FUNCTION void
-debug_hard_reg_set (HARD_REG_SET set)
-{
-  switch_dump (stderr);
-  dump_hard_reg_set ("", set);
-  sel_print ("\n");
-  restore_dump ();
-}
-
 /* Debug a cfg region with default flags.  */
 void
 sel_debug_cfg (void)

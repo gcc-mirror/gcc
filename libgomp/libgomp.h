@@ -112,8 +112,8 @@ extern void gomp_aligned_free (void *);
 /* Optimized allocators for team-specific data that will die with the team.  */
 
 #ifdef __AMDGCN__
+#include "libgomp-gcn.h"
 /* The arena is initialized in config/gcn/team.c.  */
-#define TEAM_ARENA_SIZE  64*1024  /* Must match the value in plugin-gcn.c.  */
 #define TEAM_ARENA_START 16  /* LDS offset of free pointer.  */
 #define TEAM_ARENA_FREE  24  /* LDS offset of free pointer.  */
 #define TEAM_ARENA_END   32  /* LDS offset of end pointer.  */
@@ -135,7 +135,8 @@ team_malloc (size_t size)
     {
       /* While this is experimental, let's make sure we know when OOM
 	 happens.  */
-      const char msg[] = "GCN team arena exhausted\n";
+      const char msg[] = "GCN team arena exhausted;"
+			 " configure with GCN_TEAM_ARENA_SIZE=bytes\n";
       write (2, msg, sizeof(msg)-1);
 
       /* Fall back to using the heap (slowly).  */

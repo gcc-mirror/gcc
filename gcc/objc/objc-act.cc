@@ -117,7 +117,6 @@ static tree build_method_decl (enum tree_code, tree, tree, tree, bool);
 static tree objc_add_method (tree, tree, int, bool);
 static tree add_instance_variable (tree, objc_ivar_visibility_kind, tree);
 static tree build_ivar_reference (tree);
-static tree is_ivar (tree, tree);
 
 /* We only need the following for ObjC; ObjC++ will use C++'s definition
    of DERIVED_FROM_P.  */
@@ -169,7 +168,6 @@ static tree lookup_method_static (tree, tree, int);
 static void interface_hash_init (void);
 static tree add_interface (tree, tree);
 static void add_category (tree, tree);
-static inline tree lookup_category (tree, tree);
 
 /* Protocols.  */
 

@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* If SIM_P is true, statement S will be simulated again.  */
 
-static inline void
+inline void
 prop_set_simulate_again (gimple *s, bool visit_p)
 {
   gimple_set_visited (s, visit_p);
@@ -34,7 +34,7 @@ prop_set_simulate_again (gimple *s, bool visit_p)
 
 /* Return true if statement T should be simulated again.  */
 
-static inline bool
+inline bool
 prop_simulate_again_p (gimple *s)
 {
   return gimple_visited_p (s);

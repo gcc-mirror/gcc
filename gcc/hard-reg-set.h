@@ -173,19 +173,19 @@ struct hard_reg_set_container
 #define CLEAR_HARD_REG_SET(TO) ((TO) = HARD_CONST (0))
 #define SET_HARD_REG_SET(TO) ((TO) = ~ HARD_CONST (0))
 
-static inline bool
+inline bool
 hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
 {
   return (x & ~y) == HARD_CONST (0);
 }
 
-static inline bool
+inline bool
 hard_reg_set_intersect_p (const_hard_reg_set x, const_hard_reg_set y)
 {
   return (x & y) != HARD_CONST (0);
 }
 
-static inline bool
+inline bool
 hard_reg_set_empty_p (const_hard_reg_set x)
 {
   return x == HARD_CONST (0);
@@ -228,7 +228,7 @@ SET_HARD_REG_SET (HARD_REG_SET &set)
     set.elts[i] = -1;
 }
 
-static inline bool
+inline bool
 hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
 {
   HARD_REG_ELT_TYPE bad = 0;
@@ -237,7 +237,7 @@ hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
   return bad == 0;
 }
 
-static inline bool
+inline bool
 hard_reg_set_intersect_p (const_hard_reg_set x, const_hard_reg_set y)
 {
   HARD_REG_ELT_TYPE good = 0;
@@ -246,7 +246,7 @@ hard_reg_set_intersect_p (const_hard_reg_set x, const_hard_reg_set y)
   return good != 0;
 }
 
-static inline bool
+inline bool
 hard_reg_set_empty_p (const_hard_reg_set x)
 {
   HARD_REG_ELT_TYPE bad = 0;
@@ -279,7 +279,7 @@ struct hard_reg_set_iterator
 
 /* The implementation of the iterator functions is fully analogous to
    the bitmap iterators.  */
-static inline void
+inline void
 hard_reg_set_iter_init (hard_reg_set_iterator *iter, const_hard_reg_set set,
                         unsigned min, unsigned *regno)
 {
@@ -302,7 +302,7 @@ hard_reg_set_iter_init (hard_reg_set_iterator *iter, const_hard_reg_set set,
   *regno = min;
 }
 
-static inline bool
+inline bool
 hard_reg_set_iter_set (hard_reg_set_iterator *iter, unsigned *regno)
 {
   while (1)
@@ -337,7 +337,7 @@ hard_reg_set_iter_set (hard_reg_set_iterator *iter, unsigned *regno)
     }
 }
 
-static inline void
+inline void
 hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *regno)
 {
   iter->bits >>= 1;

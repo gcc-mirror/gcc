@@ -84,6 +84,6 @@ extern "C" void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc,__attribu
   RTExceptions_SetExceptionBlock (RTExceptions_InitExceptionBlock ());
 }
 
-extern "C" void _M2_M2EXCEPTION_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2EXCEPTION_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

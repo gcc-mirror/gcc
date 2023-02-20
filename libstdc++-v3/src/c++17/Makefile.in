@@ -128,7 +128,8 @@ am__objects_2 = floating_from_chars.lo floating_to_chars.lo fs_dir.lo \
 @ENABLE_DUAL_ABI_TRUE@am__objects_3 = cow-string-inst.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = ostream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.lo $(am__objects_3)
-am_libc__17convenience_la_OBJECTS = $(am__objects_2) $(am__objects_4)
+@GLIBCXX_HOSTED_TRUE@am_libc__17convenience_la_OBJECTS =  \
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_2) $(am__objects_4)
 libc__17convenience_la_OBJECTS = $(am_libc__17convenience_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -455,7 +456,8 @@ sources = \
 	memory_resource.cc \
 	$(extra_fs_sources)
 
-libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
+@GLIBCXX_HOSTED_FALSE@libc__17convenience_la_SOURCES = 
+@GLIBCXX_HOSTED_TRUE@libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

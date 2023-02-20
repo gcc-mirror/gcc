@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target lra } } */
 
 int
 test5_limit (void)

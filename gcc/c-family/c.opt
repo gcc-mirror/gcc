@@ -494,6 +494,10 @@ Wcatch-value=
 C++ ObjC++ Var(warn_catch_value) Warning Joined RejectNegative UInteger LangEnabledBy(C++ ObjC++,Wall, 1, 0) IntegerRange(0, 3)
 Warn about catch handlers of non-reference type.
 
+Wchanges-meaning
+C++ ObjC++ Var(warn_changes_meaning) Warning Init(1)
+Complain about a name being declared as a class member after a previous use of the same name.
+
 Wchar-subscripts
 C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about subscripts whose type is \"char\".

@@ -1,3 +1,13 @@
+2023-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_gimplify_expr): Add missing guard.
+
+2023-02-14  Dongsheng Song  <dongsheng.song@gmail.com>
+
+	* adaint.c [Linux]: Include <features.h>.
+	(__gnat_get_executable_load_address) [Linux]: Enable only for
+	glibc and uClibc.
+
 2023-01-16  Marc Poulhiès  <poulhies@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update copyright years.

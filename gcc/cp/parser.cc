@@ -41483,43 +41483,106 @@ cp_parser_omp_structured_block (cp_parser *parser, bool *if_p)
   return finish_omp_structured_block (stmt);
 }
 
-/* OpenMP 5.0:
-   # pragma omp allocate (list)  [allocator(allocator)]  */
+/* OpenMP 5.x:
+   # pragma omp allocate (list)  clauses
+
+   OpenMP 5.0 clause:
+   allocator (omp_allocator_handle_t expression)
+
+   OpenMP 5.1 additional clause:
+   align (constant-expression)]  */
 
 static void
 cp_parser_omp_allocate (cp_parser *parser, cp_token *pragma_tok)
 {
   tree allocator = NULL_TREE;
+  tree alignment = NULL_TREE;
   location_t loc = pragma_tok->location;
   tree nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
 
-  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
-      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
-    cp_lexer_consume_token (parser->lexer);
-
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  do
     {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
+	cp_lexer_consume_token (parser->lexer);
+
+      if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	break;
       matching_parens parens;
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
       location_t cloc = cp_lexer_peek_token (parser->lexer)->location;
       cp_lexer_consume_token (parser->lexer);
-      if (strcmp (p, "allocator") != 0)
-	error_at (cloc, "expected %<allocator%>");
-      else if (parens.require_open (parser))
+      if (strcmp (p, "allocator") != 0 && strcmp (p, "align") != 0)
 	{
-	  allocator = cp_parser_assignment_expression (parser);
-	  if (allocator == error_mark_node)
-	    allocator = NULL_TREE;
-	  parens.require_close (parser);
+	  error_at (cloc, "expected %<allocator%> or %<align%>");
+	  break;
 	}
-    }
+      if (!parens.require_open (parser))
+	break;
+      tree expr = cp_parser_assignment_expression (parser);
+      if (p[2] == 'i' && alignment)
+	{
+	  error_at (cloc, "too many %qs clauses", "align");
+	  break;
+	}
+      else if (p[2] == 'i')
+	{
+	  if (expr != error_mark_node)
+	    alignment = expr;
+	  /* FIXME: Remove when adding check to semantics.cc; cf FIXME below. */
+	  if (alignment
+	      && !type_dependent_expression_p (alignment)
+	      && !INTEGRAL_TYPE_P (TREE_TYPE (alignment)))
+	    {
+	      error_at (cloc, "%<align%> clause argument needs to be "
+			      "positive constant power of two integer "
+			      "expression");
+	      alignment = NULL_TREE;
+	    }
+	  else if (alignment)
+	    {
+	      alignment = mark_rvalue_use (alignment);
+	      if (!processing_template_decl)
+		{
+		  alignment = maybe_constant_value (alignment);
+		  if (TREE_CODE (alignment) != INTEGER_CST
+		      || !tree_fits_uhwi_p (alignment)
+		      || !integer_pow2p (alignment))
+		    {
+		      error_at (cloc, "%<align%> clause argument needs to be "
+				      "positive constant power of two integer "
+				      "expression");
+		      alignment = NULL_TREE;
+		    }
+		}
+	    }
+	}
+      else if (allocator)
+	{
+	  error_at (cloc, "too many %qs clauses", "allocator");
+	  break;
+	}
+      else
+	{
+	  if (expr != error_mark_node)
+	    allocator = expr;
+	}
+      parens.require_close (parser);
+    } while (true);
   cp_parser_require_pragma_eol (parser, pragma_tok);
 
-  if (allocator)
+  if (allocator || alignment)
     for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
-      OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+      {
+	OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+	OMP_CLAUSE_ALLOCATE_ALIGN (c) = alignment;
+      }
 
+  /* FIXME: When implementing properly, delete the align/allocate expr error
+     check above and add one in semantics.cc (to properly handle templates).
+     Base this on the allocator/align modifiers check for the 'allocate' clause
+     in semantics.cc's finish_omp_clauses.  */
   sorry_at (loc, "%<#pragma omp allocate%> not yet supported");
 }
 

@@ -38,6 +38,6 @@ _M2_Builtins_init (void)
 
 EXTERN
 void
-_M2_Builtins_finish (void)
+_M2_Builtins_fini (void)
 {
 }

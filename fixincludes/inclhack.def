@@ -4306,6 +4306,7 @@ fix = {
     files     = math.h;
     mach      = '*-*-solaris2*';
     select    = '#undef.*_GLIBCXX_USE_C99_MATH';
+    bypass    = '__MATH_PREEMPTS_GLIBCXX_C99_MATH';
     sed       = "/#undef[ \t]*_GLIBCXX_USE_C99_MATH/d";
     test_text = << _EOText_
 #if __cplusplus >= 201103L

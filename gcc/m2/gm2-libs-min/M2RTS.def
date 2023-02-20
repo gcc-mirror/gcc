@@ -48,7 +48,7 @@ PROCEDURE RegisterModule (name: ADDRESS;
 PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
 PROCEDURE ExecuteTerminationProcedures ;
 PROCEDURE ExecuteInitialProcedures ;
-PROCEDURE HALT ;
+PROCEDURE HALT <* noreturn *> ;
 PROCEDURE NoException (filename: ADDRESS;
                        line, column: CARDINAL; scope, message: ADDRESS) ;
 

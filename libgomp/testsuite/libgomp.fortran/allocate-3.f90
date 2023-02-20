@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-additional-options "-fdump-tree-original" }
 
 use omp_lib
 implicit none
@@ -23,6 +22,7 @@ integer :: q, x,y,z
 ! { dg-error "Object 'omp_high_bw_mem_alloc' is not a variable" "" { target *-*-* } .-1 }
 !$omp end parallel
 
-!$omp parallel allocate( align(q) : x) firstprivate(x) ! { dg-error "31:ALIGN modifier requires a scalar positive constant integer alignment expression at" }
+!$omp parallel allocate( align(128) : x) firstprivate(x) ! OK
 !$omp end parallel
+
 end

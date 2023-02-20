@@ -60,7 +60,7 @@ extern tree canonicalize_cond_expr_cond (tree);
 /* Return true if a conversion from either type of TYPE1 and TYPE2
    to the other is not required.  Otherwise return false.  */
 
-static inline bool
+inline bool
 types_compatible_p (tree type1, tree type2)
 {
   return (type1 == type2
@@ -70,7 +70,7 @@ types_compatible_p (tree type1, tree type2)
 
 /* Return true if TYPE is a suitable type for a scalar register variable.  */
 
-static inline bool
+inline bool
 is_gimple_reg_type (tree type)
 {
   return !AGGREGATE_TYPE_P (type);
@@ -78,7 +78,7 @@ is_gimple_reg_type (tree type)
 
 /* Return true if T is a variable.  */
 
-static inline bool
+inline bool
 is_gimple_variable (tree t)
 {
   return (TREE_CODE (t) == VAR_DECL
@@ -89,7 +89,7 @@ is_gimple_variable (tree t)
 
 /*  Return true if T is a GIMPLE identifier (something with an address).  */
 
-static inline bool
+inline bool
 is_gimple_id (tree t)
 {
   return (is_gimple_variable (t)
@@ -102,7 +102,7 @@ is_gimple_id (tree t)
 
 /* Return true if OP, an SSA name or a DECL is a virtual operand.  */
 
-static inline bool
+inline bool
 virtual_operand_p (tree op)
 {
   if (TREE_CODE (op) == SSA_NAME)
@@ -116,7 +116,7 @@ virtual_operand_p (tree op)
 
 /*  Return true if T is something whose address can be taken.  */
 
-static inline bool
+inline bool
 is_gimple_addressable (tree t)
 {
   return (is_gimple_id (t) || handled_component_p (t)
@@ -126,7 +126,7 @@ is_gimple_addressable (tree t)
 
 /* Return true if T is a valid gimple constant.  */
 
-static inline bool
+inline bool
 is_gimple_constant (const_tree t)
 {
   switch (TREE_CODE (t))
@@ -148,7 +148,7 @@ is_gimple_constant (const_tree t)
 /* A wrapper around extract_ops_from_tree with 3 ops, for callers which
    expect to see only a maximum of two operands.  */
 
-static inline void
+inline void
 extract_ops_from_tree (tree expr, enum tree_code *code, tree *op0,
 		       tree *op1)
 {
@@ -160,7 +160,7 @@ extract_ops_from_tree (tree expr, enum tree_code *code, tree *op0,
 /* Given a valid GIMPLE_CALL function address return the FUNCTION_DECL
    associated with the callee if known.  Otherwise return NULL_TREE.  */
 
-static inline tree
+inline tree
 gimple_call_addr_fndecl (const_tree fn)
 {
   if (fn && TREE_CODE (fn) == ADDR_EXPR)

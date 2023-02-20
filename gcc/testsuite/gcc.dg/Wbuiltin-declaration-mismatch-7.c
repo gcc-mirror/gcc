@@ -23,4 +23,4 @@ int fscanf (struct StdioFile*, const char*, size_t, ...);   /* { dg-warning "con
 
 int vfscanf (struct StdioFile*, const char*, ...);   /* { dg-warning "conflicting types for built-in function .vfscanf.; expected .int\\\(\[a-z_\]+ \\\*, const char \\\*, \[^\n\r,\\\)\]+\\\)." } */
 
-size_t fwrite (const void*, size_t, size_t, struct StdioFile);    /* { dg-warning "conflicting types for built-in function .fwrite.; expected .\(long \)?unsigned int\\\(const void \\\*, \(long \)?unsigned int, *\(long \)?unsigned int, *\[a-z_\]+ \\\*\\\)." } */
+size_t fwrite (const void*, size_t, size_t, struct StdioFile);    /* { dg-warning "conflicting types for built-in function .fwrite.; expected .\(long \)*unsigned int\\\(const void \\\*, \(long \)*unsigned int, *\(long \)*unsigned int, *\[a-z_\]+ \\\*\\\)." } */

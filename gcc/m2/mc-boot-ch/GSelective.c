@@ -270,6 +270,6 @@ _M2_Selective_init ()
 
 EXTERN
 void
-_M2_Selective_finish ()
+_M2_Selective_fini ()
 {
 }

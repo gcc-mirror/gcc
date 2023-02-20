@@ -3057,8 +3057,6 @@ following code is well-formed under ISO C++11, but is ill-formed when
 @option{-fchar8_t} is specified.
 
 @smallexample
-char ca[] = u8"xx";     // error: char-array initialized from wide
-                        //        string
 const char *cp = u8"xx";// error: invalid conversion from
                         //        `const char8_t*' to `const char*'
 int f(const char*);
@@ -4283,6 +4281,10 @@ b->f();
 
 @noindent
 fails to compile.
+
+In cases where the different signatures are not an accident, the
+simplest solution is to add a using-declaration to the derived class
+to un-hide the base function, e.g. add @code{using A::f;} to @code{B}.
 
 The optional level suffix controls the behavior when all the
 declarations in the derived class override virtual functions in the
@@ -6085,7 +6087,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
--Wuse-after-free=3  @gol
+-Wuse-after-free=2  @gol
 -Wvla-parameter @r{(C and Objective-C only)} @gol
 -Wvolatile-register-var  @gol
 -Wzero-length-bounds}
@@ -6286,6 +6288,23 @@ union U @{
 @code{union U} is now always passed in memory.
 
 @end itemize
+
+@item -Wno-changes-meaning @r{(C++ and Objective-C++ only)}
+C++ requires that unqualified uses of a name within a class have the
+same meaning in the complete scope of the class, so declaring the name
+after using it is ill-formed:
+@smallexample
+struct A;
+struct B1 @{ A a; typedef A A; @}; // warning, 'A' changes meaning
+struct B2 @{ A a; struct A @{ @}; @}; // error, 'A' changes meaning
+@end smallexample
+By default, the B1 case is only a warning because the two declarations
+have the same type, while the B2 case is an error.  Both diagnostics
+can be disabled with @option{-Wno-changes-meaning}.  Alternately, the
+error case can be reduced to a warning with
+@option{-Wno-error=changes-meaning} or @option{-fpermissive}.
+
+Both diagnostics are also suppressed by @option{-fms-extensions}.
 
 @item -Wchar-subscripts
 @opindex Wchar-subscripts
@@ -10063,6 +10082,13 @@ for ``interesting'' interprocedural paths through the
 code, and issues warnings for problems found on them.
 
 This analysis is much more expensive than other GCC warnings.
+
+In technical terms, it performs coverage-guided symbolic execution of
+the code being compiled.  It is neither sound nor complete: it can
+have false positives and false negatives.  It is a bug-finding tool,
+rather than a tool for proving program correctness.
+
+The analyzer is only suitable for use on C code in this release.
 
 Enabling this option effectively enables the following warnings:
 
@@ -14652,8 +14678,8 @@ The names of specific parameters, and the meaning of the values, are
 tied to the internals of the compiler, and are subject to change
 without notice in future releases.
 
-In order to get minimal, maximal and default value of a parameter,
-one can use @option{--help=param -Q} options.
+In order to get the minimal, maximal and default values of a parameter,
+use the @option{--help=param -Q} options.
 
 In each case, the @var{value} is an integer.  The following choices
 of @var{name} are recognized for all targets:
@@ -15489,6 +15515,9 @@ available alternatives for preferred register class even if it has
 found some choice with an appropriate register class and respect the
 found qualified matching constraint.
 
+@item ira-simple-lra-insn-threshold
+Approximate function insn number in 1K units triggering simple local RA.
+
 @item lra-inheritance-ebb-probability-cutoff
 LRA tries to reuse values reloaded in registers in subsequent insns.
 This optimization is called inheritance.  EBB is used as a region to
@@ -15783,6 +15812,10 @@ If number of memory accesses in function being instrumented
 is greater or equal to this number, use callbacks instead of inline checks.
 E.g. to disable inline code use
 @option{--param asan-instrumentation-with-call-threshold=0}.
+
+@item asan-kernel-mem-intrinsic-prefix
+Prefix calls to memcpy, memset and memmove with __asan_ or __hwasan_
+for -fsanitize=kernel-address or -fsanitize=kernel-hwaddress.
 
 @item hwasan-instrument-stack
 Enable hwasan instrumentation of statically sized stack-allocated variables.

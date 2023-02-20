@@ -1,3 +1,128 @@
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107773
+	* cp-tree.h (enum tsubst_flags): New flag tf_qualifying_scope.
+	* decl.cc (make_typename_type): Use lookup_member instead of
+	lookup_field.  If tf_qualifying_scope is set, pass want_type=true
+	instead of =false to lookup_member.  Generalize format specifier
+	in diagnostic to handle both type and non-type bindings.
+	* pt.cc (tsubst_aggr_type_1): Clear tf_qualifying_scope.  Tidy
+	the function.
+	(tsubst_decl) <case USING_DECL>: Set tf_qualifying_scope when
+	substituting USING_DECL_SCOPE.
+	(tsubst): Clear tf_qualifying_scope right away and remember if
+	it was set.  Do the same for tf_tst_ok sooner.
+	<case TYPENAME_TYPE>: Set tf_qualifying_scope when substituting
+	TYPE_CONTEXT.  Pass tf_qualifying_scope to make_typename_type
+	if it was set.
+	(tsubst_qualified_id): Set tf_qualifying_scope when substituting
+	the scope.
+	(tsubst_copy): Clear tf_qualifying_scope and remember if it was
+	set.
+	<case SCOPE_REF>: Set tf_qualifying_scope when substituting the
+	scope.
+	<case *_TYPE>: Pass tf_qualifying_scope to tsubst if it was set.
+	* search.cc (lookup_member): Document default argument.
+
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+
+2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106675
+	* call.cc (joust_maybe_elide_copy): Return false for ck_ambig.
+
+2023-02-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107079
+	* call.cc (set_up_extended_ref_temp): Pass var to maybe_constant_init.
+
+2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_allocate): Parse align
+	clause and check for restrictions.
+
+2023-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108698
+	* mangle.cc (write_expression, write_template_arg): Handle
+	EXCESS_PRECISION_EXPR with REAL_CST operand as
+	write_template_arg_literal on fold_convert of the REAL_CST
+	to EXCESS_PRECISION_EXPR type.
+
+2023-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107461
+	* cp-tree.h (call_expr_dependent_name): Declare.
+	* pt.cc (iterative_hash_template_arg) <case CALL_EXPR>: Use
+	call_expr_dependent_name instead of dependent_name.
+	* tree.cc (call_expr_dependent_name): Define.
+	(called_fns_equal): Adjust to take two CALL_EXPRs instead of
+	CALL_EXPR_FNs thereof.  Use call_expr_dependent_name instead
+	of dependent_name.
+	(cp_tree_equal) <case CALL_EXPR>: Adjust call to called_fns_equal.
+
+2023-02-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108158
+	* constexpr.cc (cxx_eval_array_reference): Don't replace
+	new_ctx.object.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107461
+	* semantics.cc (finish_call_expr): Strip ADDR_EXPR from
+	the selected callee during overload set pruning.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96745
+	* class.cc (check_methods): Diagnose an unviable OVERLOAD
+	set for CLASSTYPE_DESTRUCTOR differently from an ambiguous one.
+	Then prune the OVERLOAD to a single function.
+	(check_bases_and_members): Handle CLASSTYPE_DESTRUCTOR being
+	an OVERLOAD when calling deduce_noexcept_on_destructor.
+	Document why it has to be called before check_methods.
+
+2023-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108579
+	* class.cc (check_methods): Swap order of constraints_satisfied_p
+	and copy/move_fn_p tests.
+
+2023-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107755
+	* call.cc (build_new_op): Don't call warn_logical_operator when
+	processing a template.
+
+2023-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108607
+	* constexpr.cc (cxx_eval_constant_expression): Handle OMP_*
+	and OACC_* constructs as non-constant.
+	(potential_constant_expression_1): Handle OMP_SCAN and OMP_SCOPE.
+
+2023-02-01  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (note_name_declared_in_class): Change from permerror to
+	-Wchanges-meaning pedwarn, forcing -pedantic-errors for most cases.
+
+2023-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108559
+	* cp-gimplify.cc (any_non_eliding_target_exprs): New.
+	(cp_genericize_init): Check it.
+
+2023-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107593
+	PR c++/108597
+	* cp-tree.h (instantiation_dependent_expression_p): Don't
+	declare here.
+
 2023-01-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105300

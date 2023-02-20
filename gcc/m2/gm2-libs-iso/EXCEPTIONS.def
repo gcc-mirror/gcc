@@ -25,7 +25,8 @@ PROCEDURE AllocateSource(VAR newSource: ExceptionSource);
   (* Allocates a unique value of type ExceptionSource *)
 
 PROCEDURE RAISE (source: ExceptionSource;
-                 number: ExceptionNumber; message: ARRAY OF CHAR);
+                 number: ExceptionNumber; message: ARRAY OF CHAR)
+                 <* noreturn *> ;
   (* Associates the given values of source, number and message with
      the current context and raises an exception.
   *)

@@ -325,12 +325,18 @@ BEGIN
             RETURN( FALSE )
          END
       END
-   END
+   END ;
+   RETURN( FALSE )
 END dorbytes ;
 
 
 (*
-   dowbytes - 
+   dowbytes - attempts to write out nBytes.  The actual
+              number of bytes written are returned.
+              If the actual number of bytes written is >= 0 then
+              the return result will be true.  Failure to
+              write any bytes results in returning FALSE
+              errno set and the actual will be set to zero.
 *)
 
 PROCEDURE dowbytes (g: GenDevIF; d: DeviceTablePtr;
@@ -453,7 +459,7 @@ END freeData ;
 
 
 (*
-   handlefree - 
+   handlefree -
 *)
 
 PROCEDURE handlefree (d: DeviceTablePtr) ;
@@ -519,7 +525,7 @@ END termOpen ;
 
 
 (*
-   RestoreTerminalSettings - 
+   RestoreTerminalSettings -
 *)
 
 PROCEDURE RestoreTerminalSettings (cid: ChanId) ;
@@ -616,7 +622,7 @@ END Close ;
 
 
 (*
-   Init - 
+   Init -
 *)
 
 PROCEDURE Init ;

@@ -16,34 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-
-// simd_mask generator functions
-template <class M>
-  M
-  make_mask(const std::initializer_list<bool>& init)
-  {
-    std::size_t i = 0;
-    M r = {};
-    for (;;)
-      {
-	for (bool x : init)
-	  {
-	    r[i] = x;
-	    if (++i == M::size())
-	      {
-		return r;
-	      }
-	  }
-      }
-  }
-
-template <class M>
-  M
-  make_alternating_mask()
-  {
-    return make_mask<M>({false, true});
-  }
+#include "bits/main.h"
 
 template <typename V>
   void

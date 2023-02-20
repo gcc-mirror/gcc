@@ -844,9 +844,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       operator=(basic_string&& __str)
       noexcept(_Alloc_traits::_S_nothrow_move())
       {
+	const bool __equal_allocs = _Alloc_traits::_S_always_equal()
+	  || _M_get_allocator() == __str._M_get_allocator();
 	if (!_M_is_local() && _Alloc_traits::_S_propagate_on_move_assign()
-	    && !_Alloc_traits::_S_always_equal()
-	    && _M_get_allocator() != __str._M_get_allocator())
+	    && !__equal_allocs)
 	  {
 	    // Destroy existing storage before replacing allocator.
 	    _M_destroy(_M_allocated_capacity);
@@ -868,16 +869,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		_M_set_length(__str.size());
 	      }
 	  }
-	else if (_Alloc_traits::_S_propagate_on_move_assign()
-	    || _Alloc_traits::_S_always_equal()
-	    || _M_get_allocator() == __str._M_get_allocator())
+	else if (_Alloc_traits::_S_propagate_on_move_assign() || __equal_allocs)
 	  {
 	    // Just move the allocated pointer, our allocator can free it.
 	    pointer __data = nullptr;
 	    size_type __capacity;
 	    if (!_M_is_local())
 	      {
-		if (_Alloc_traits::_S_always_equal())
+		if (__equal_allocs)
 		  {
 		    // __str can reuse our existing storage.
 		    __data = _M_data();

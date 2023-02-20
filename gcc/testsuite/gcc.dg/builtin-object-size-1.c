@@ -2,18 +2,7 @@
 /* { dg-options "-O2 -Wno-stringop-overread" } */
 /* { dg-require-effective-target alloca } */
 
-typedef __SIZE_TYPE__ size_t;
-extern void abort (void);
-extern void exit (int);
-extern void *malloc (size_t);
-extern void *calloc (size_t, size_t);
-extern void free (void *);
-extern void *alloca (size_t);
-extern void *memcpy (void *, const void *, size_t);
-extern void *memset (void *, int, size_t);
-extern char *strcpy (char *, const char *);
-extern char *strdup (const char *);
-extern char *strndup (const char *, size_t);
+#include "builtin-object-size-common.h"
 
 struct A
 {
@@ -39,22 +28,22 @@ test1 (void *q, int x)
     r = &a.c[1];
   if (__builtin_object_size (p, 0)
       != sizeof (a) - __builtin_offsetof (struct A, a) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a.c[9], 0)
       != sizeof (a) - __builtin_offsetof (struct A, c) - 9)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q, 0) != (size_t) -1)
-    abort ();
+    FAIL ();
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 0)
       != (x < 0
 	  ? sizeof (a) - __builtin_offsetof (struct A, a) - 9
 	  : sizeof (a) - __builtin_offsetof (struct A, c) - 1))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 0)
       != sizeof (a) - __builtin_offsetof (struct A, a) - 9)
-    abort ();
+    FAIL ();
 #endif
   if (x < 6)
     r = &w[2].a[1];
@@ -62,23 +51,23 @@ test1 (void *q, int x)
     r = &a.a[6];
   if (__builtin_object_size (&y, 0)
       != sizeof (y))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (w, 0)
       != sizeof (w))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&y.b, 0)
       != sizeof (a) - __builtin_offsetof (struct A, b))
-    abort ();
+    FAIL ();
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 0)
       != (x < 6
 	  ? 2 * sizeof (w[0]) - __builtin_offsetof (struct A, a) - 1
 	  : sizeof (a) - __builtin_offsetof (struct A, a) - 6))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 0)
       != 2 * sizeof (w[0]) - __builtin_offsetof (struct A, a) - 1)
-    abort ();
+    FAIL ();
 #endif
   if (x < 20)
     r = malloc (30);
@@ -86,14 +75,14 @@ test1 (void *q, int x)
     r = calloc (2, 16);
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 0) != (x < 20 ? 30 : 2 * 16))
-    abort ();
+    FAIL ();
 #else
   /* We may duplicate this test onto the two exit paths.  On one path
      the size will be 32, the other it will be 30.  If we don't duplicate
      this test, then the size will be 32.  */
   if (__builtin_object_size (r, 0) != 2 * 16
       && __builtin_object_size (r, 0) != 30)
-    abort ();
+    FAIL ();
 #endif
   if (x < 20)
     r = malloc (30);
@@ -101,10 +90,10 @@ test1 (void *q, int x)
     r = calloc (2, 14);
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 0) != (x < 20 ? 30 : 2 * 14))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 0) != 30)
-    abort ();
+    FAIL ();
 #endif
   if (x < 30)
     r = malloc (sizeof (a));
@@ -112,102 +101,102 @@ test1 (void *q, int x)
     r = &a.a[3];
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 0) != (x < 30 ? sizeof (a) : sizeof (a) - 3))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 0) != sizeof (a))
-    abort ();
+    FAIL ();
 #endif
   r = memcpy (r, "a", 2);
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 0) != (x < 30 ? sizeof (a) : sizeof (a) - 3))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 0) != sizeof (a))
-    abort ();
+    FAIL ();
 #endif
   r = memcpy (r + 2, "b", 2) + 2;
 #ifdef __builtin_object_size
   if (__builtin_object_size (r, 0)
       != (x < 30 ? sizeof (a) - 4 : sizeof (a) - 7))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 0) != sizeof (a) - 4)
-    abort ();
+    FAIL ();
 #endif
   r = &a.a[4];
   r = memset (r, 'a', 2);
   if (__builtin_object_size (r, 0)
       != sizeof (a) - __builtin_offsetof (struct A, a) - 4)
-    abort ();
+    FAIL ();
   r = memset (r + 2, 'b', 2) + 2;
   if (__builtin_object_size (r, 0)
       != sizeof (a) - __builtin_offsetof (struct A, a) - 8)
-    abort ();
+    FAIL ();
   r = &a.a[1];
   r = strcpy (r, "ab");
   if (__builtin_object_size (r, 0)
       != sizeof (a) - __builtin_offsetof (struct A, a) - 1)
-    abort ();
+    FAIL ();
   r = strcpy (r + 2, "cd") + 2;
   if (__builtin_object_size (r, 0)
       != sizeof (a) - __builtin_offsetof (struct A, a) - 5)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (exta, 0) != (size_t) -1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (exta + 10, 0) != (size_t) -1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&exta[5], 0) != (size_t) -1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (extb, 0) != sizeof (extb))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (extb + 10, 0) != sizeof (extb) - 10)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&extb[5], 0) != sizeof (extb) - 5)
-    abort ();
+    FAIL ();
 #ifdef __builtin_object_size
   if (__builtin_object_size (var, 0) != x + 10)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (var + 10, 0) != x)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&var[5], 0) != x + 5)
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (var, 0) != (size_t) -1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (var + 10, 0) != (size_t) -1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&var[5], 0) != (size_t) -1)
-    abort ();
+    FAIL ();
 #endif
   if (__builtin_object_size (zerol, 0) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&zerol, 0) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&zerol[0], 0) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (zerol[0].a, 0) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&zerol[0].a[0], 0) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&zerol[0].b, 0) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size ("abcdefg", 0) != sizeof ("abcdefg"))
-    abort ();
+    FAIL ();
   if (__builtin_object_size ("abcd\0efg", 0) != sizeof ("abcd\0efg"))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&"abcd\0efg", 0) != sizeof ("abcd\0efg"))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&"abcd\0efg"[0], 0) != sizeof ("abcd\0efg"))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&"abcd\0efg"[4], 0) != sizeof ("abcd\0efg") - 4)
-    abort ();
+    FAIL ();
   if (__builtin_object_size ("abcd\0efg" + 5, 0) != sizeof ("abcd\0efg") - 5)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (L"abcdefg", 0) != sizeof (L"abcdefg"))
-    abort ();
+    FAIL ();
   r = (char *) L"abcd\0efg";
   if (__builtin_object_size (r + 2, 0) != sizeof (L"abcd\0efg") - 2)
-    abort ();
+    FAIL ();
 }
 
 size_t l1 = 1;
@@ -242,19 +231,19 @@ test2 (void)
   for (i = 0; i < 4; ++i)
     {
       if (i == l1 - 1)
-        res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 1;
+	res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 1;
       else if (i == l1)
-        res = sizeof (a) - __builtin_offsetof (struct B, buf2) - 7;
+	res = sizeof (a) - __builtin_offsetof (struct B, buf2) - 7;
       else if (i == l1 + 1)
-        res = sizeof (buf3) - 5;
+	res = sizeof (buf3) - 5;
       else if (i == l1 + 2)
-        res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 9;
+	res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 9;
     }
 #else
   res = 20;
 #endif
   if (__builtin_object_size (r, 0) != res)
-    abort ();
+    FAIL ();
   r = &buf3[20];
   for (i = 0; i < 4; ++i)
     {
@@ -273,38 +262,38 @@ test2 (void)
   for (i = 0; i < 4; ++i)
     {
       if (i == l1 - 1)
-        res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 7;
+	res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 7;
       else if (i == l1)
-        res = sizeof (a) - __builtin_offsetof (struct B, buf2) - 7;
+	res = sizeof (a) - __builtin_offsetof (struct B, buf2) - 7;
       else if (i == l1 + 1)
-        res = sizeof (buf3) - 5;
+	res = sizeof (buf3) - 5;
       else if (i == l1 + 2)
-        res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 9;
+	res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 9;
     }
   if (__builtin_object_size (r, 0) != res)
-    abort ();
+    FAIL ();
 #else
   res = 15;
 #endif
   if (__builtin_object_size (r, 0) != res)
-    abort ();
+    FAIL ();
   r += 8;
 #ifdef __builtin_object_size
   res -= 8;
   if (__builtin_object_size (r, 0) != res)
-    abort ();
+    FAIL ();
   if (res >= 6)
     {
       if (__builtin_object_size (r + 6, 0) != res - 6)
-        abort ();
+	FAIL ();
     }
   else if (__builtin_object_size (r + 6, 0) != 0)
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r, 0) != 7)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (r + 6, 0) != 1)
-    abort ();
+    FAIL ();
 #endif
   r = &buf3[18];
   for (i = 0; i < 4; ++i)
@@ -324,24 +313,24 @@ test2 (void)
   for (i = 0; i < 4; ++i)
     {
       if (i == l1 - 1)
-          res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 9;
+	  res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 9;
       else if (i == l1)
-        res = sizeof (a) - __builtin_offsetof (struct B, buf2) - 9;
+	res = sizeof (a) - __builtin_offsetof (struct B, buf2) - 9;
       else if (i == l1 + 1)
-        res = sizeof (buf3) - 5;
+	res = sizeof (buf3) - 5;
       else if (i == l1 + 2)
-        res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 4;
+	res = sizeof (a) - __builtin_offsetof (struct B, buf1) - 4;
     }
   if (res >= 12)
     {
       if (__builtin_object_size (r + 12, 0) != res - 12)
-        abort ();
+	FAIL ();
     }
   else if (__builtin_object_size (r + 12, 0) != 0)
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (r + 12, 0) != 4)
-    abort ();
+    FAIL ();
 #endif
 }
 
@@ -357,103 +346,103 @@ test3 (void)
   double *dp;
 
   if (__builtin_object_size (buf4, 0) != sizeof (buf4))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&buf4, 0) != sizeof (buf4))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&buf4[0], 0) != sizeof (buf4))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&buf4[1], 0) != sizeof (buf4) - 1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x, 0) != sizeof (x))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a, 0) != sizeof (x))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0], 0) != sizeof (x))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0].a, 0) != sizeof (x))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0].a[0], 0) != sizeof (x))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0].a[3], 0) != sizeof (x) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[0].b, 0)
       != sizeof (x) - __builtin_offsetof (struct A, b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[1].c, 0)
       != sizeof (x) - sizeof (struct A) - __builtin_offsetof (struct A, c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[1].c[0], 0)
       != sizeof (x) - sizeof (struct A) - __builtin_offsetof (struct A, c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.a[1].c[3], 0)
       != sizeof (x) - sizeof (struct A) - __builtin_offsetof (struct A, c) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b, 0)
       != sizeof (x) - __builtin_offsetof (struct B, b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.a, 0)
       != sizeof (x) - __builtin_offsetof (struct B, b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.a[0], 0)
       != sizeof (x) - __builtin_offsetof (struct B, b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.a[3], 0)
       != sizeof (x) - __builtin_offsetof (struct B, b) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.b, 0)
       != sizeof (x) - __builtin_offsetof (struct B, b)
 	 - __builtin_offsetof (struct A, b))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.c, 0)
       != sizeof (x) - __builtin_offsetof (struct B, b)
 	 - __builtin_offsetof (struct A, c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.c[0], 0)
       != sizeof (x) - __builtin_offsetof (struct B, b)
 	 - __builtin_offsetof (struct A, c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.b.c[3], 0)
       != sizeof (x) - __builtin_offsetof (struct B, b)
 	 - __builtin_offsetof (struct A, c) - 3)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.c, 0)
       != sizeof (x) - __builtin_offsetof (struct B, c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.c[0], 0)
       != sizeof (x) - __builtin_offsetof (struct B, c))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.c[1], 0)
       != sizeof (x) - __builtin_offsetof (struct B, c) - 1)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.d, 0)
       != sizeof (x) - __builtin_offsetof (struct B, d))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.e, 0)
       != sizeof (x) - __builtin_offsetof (struct B, e))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&x.f, 0)
       != sizeof (x) - __builtin_offsetof (struct B, f))
-    abort ();
+    FAIL ();
   dp = &__real__ x.f;
   if (__builtin_object_size (dp, 0)
       != sizeof (x) - __builtin_offsetof (struct B, f))
-    abort ();
+    FAIL ();
   dp = &__imag__ x.f;
   if (__builtin_object_size (dp, 0)
       != sizeof (x) - __builtin_offsetof (struct B, f)
 	 - sizeof (x.f) / 2)
-    abort ();
+    FAIL ();
   dp = &y;
   if (__builtin_object_size (dp, 0) != sizeof (y))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&z, 0) != sizeof (z))
-    abort ();
+    FAIL ();
   dp = &__real__ z;
   if (__builtin_object_size (dp, 0) != sizeof (z))
-    abort ();
+    FAIL ();
   dp = &__imag__ z;
   if (__builtin_object_size (dp, 0) != sizeof (z) / 2)
-    abort ();
+    FAIL ();
 }
 
 struct S { unsigned int a; };
@@ -470,7 +459,7 @@ test4 (char *x, int y)
       p = (struct A *) x;
       x = (char *) &p[1];
       if (__builtin_object_size (p, 0) != (size_t) -1)
-	abort ();
+	FAIL ();
     }
   return x;
 }
@@ -487,7 +476,7 @@ test5 (size_t x)
     p = p + 4;
 #ifdef __builtin_object_size
   if (__builtin_object_size (p, 0) != sizeof (buf) - 8 - 4 * x)
-    abort ();
+    FAIL ();
 #else
   /* My understanding of ISO C99 6.5.6 is that a conforming
      program will not end up with p equal to &buf[0]
@@ -497,7 +486,7 @@ test5 (size_t x)
      bytes from p until end of the object is 56, otherwise
      it would be 64 (or conservative (size_t) -1 == unknown).  */
   if (__builtin_object_size (p, 0) != sizeof (buf) - 8)
-    abort ();
+    FAIL ();
 #endif
   memset (p, ' ', sizeof (buf) - 8 - 4 * 4);
 }
@@ -514,10 +503,10 @@ test6 (size_t x)
     p = p + 4;
 #ifdef __builtin_object_size
   if (__builtin_object_size (p, 0) != sizeof (t) - 8 - 4 * x)
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (p, 0) != sizeof (t) - 8)
-    abort ();
+    FAIL ();
 #endif
   memset (p, ' ', sizeof (t) - 8 - 4 * 4);
 }
@@ -531,13 +520,13 @@ test7 (void)
   char *p = &buf[64], *q = &t.buf[64];
 
   if (__builtin_object_size (p + 64, 0) != 0)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q + 63, 0) != sizeof (t) - 64 - 63)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q + 64, 0) != sizeof (t) - 64 - 64)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q + 256, 0) != 0)
-    abort ();
+    FAIL ();
 }
 
 void
@@ -548,17 +537,17 @@ test8 (void)
   char *p = &t.buf2[-4];
   char *q = &t.buf2[0];
   if (__builtin_object_size (p, 0) != sizeof (t) - 10 + 4)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (q, 0) != sizeof (t) - 10)
-    abort ();
+    FAIL ();
   /* GCC only handles additions, not subtractions.  */
   q = q - 8;
   if (__builtin_object_size (q, 0) != (size_t) -1
       && __builtin_object_size (q, 0) != sizeof (t) - 10 + 8)
-    abort ();
+    FAIL ();
   p = &t.buf[-4];
   if (__builtin_object_size (p, 0) != 0)
-    abort ();
+    FAIL ();
 }
 
 void
@@ -575,10 +564,10 @@ test9 (unsigned cond)
 
 #ifdef __builtin_object_size
   if (__builtin_object_size (&p[-4], 0) != (cond ? 6 : 10))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (&p[-4], 0) != 10)
-    abort ();
+    FAIL ();
 #endif
 
   for (unsigned i = cond; i > 0; i--)
@@ -586,10 +575,10 @@ test9 (unsigned cond)
 
 #ifdef __builtin_object_size
   if (__builtin_object_size (p, 0) != ((cond ? 2 : 6) + cond))
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (p, 0) != 10)
-    abort ();
+    FAIL ();
 #endif
 
   p = &y.c[8];
@@ -599,10 +588,10 @@ test9 (unsigned cond)
 #ifdef __builtin_object_size
   if (__builtin_object_size (p, 0)
       != sizeof (y) - __builtin_offsetof (struct A, c) - 8 + cond)
-    abort ();
+    FAIL ();
 #else
   if (__builtin_object_size (p, 0) != sizeof (y))
-    abort ();
+    FAIL ();
 #endif
 }
 
@@ -620,10 +609,10 @@ test10 (void)
 	{
 #ifdef __builtin_object_size
 	  if (__builtin_object_size (p - 3, 0) != sizeof (buf) - i + 3)
-	    abort ();
+	    FAIL ();
 #else
 	  if (__builtin_object_size (p - 3, 0) != sizeof (buf))
-	    abort ();
+	    FAIL ();
 #endif
 	  break;
 	}
@@ -641,19 +630,19 @@ test11 (void)
   const char *ptr = "abcdefghijklmnopqrstuvwxyz";
   char *res = strndup (ptr, 21);
   if (__builtin_object_size (res, 0) != 22)
-    abort ();
+    FAIL ();
 
   free (res);
 
   res = strndup (ptr, 32);
   if (__builtin_object_size (res, 0) != 27)
-    abort ();
+    FAIL ();
 
   free (res);
 
   res = strdup (ptr);
   if (__builtin_object_size (res, 0) != 27)
-    abort ();
+    FAIL ();
 
   free (res);
 
@@ -662,19 +651,19 @@ test11 (void)
 
   res = strndup (ptr2, 21);
   if (__builtin_object_size (res, 0) != 22)
-    abort ();
+    FAIL ();
 
   free (res);
 
   res = strndup (ptr2, 32);
   if (__builtin_object_size (res, 0) != 33)
-    abort ();
+    FAIL ();
 
   free (res);
 
   res = strndup (ptr2, 128);
   if (__builtin_object_size (res, 0) != 64)
-    abort ();
+    FAIL ();
 
   free (res);
 
@@ -684,39 +673,39 @@ test11 (void)
 #else
   if (__builtin_object_size (res, 0) != (size_t) -1)
 #endif
-    abort ();
+    FAIL ();
   free (res);
   free (ptr2);
 
   ptr = "abcd\0efghijklmnopqrstuvwxyz";
   res = strdup (ptr);
   if (__builtin_object_size (res, 0) != 5)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strndup (ptr, 24);
   if (__builtin_object_size (res, 0) != 5)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strndup (ptr, 2);
   if (__builtin_object_size (res, 0) != 3)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strdup (&ptr[4]);
   if (__builtin_object_size (res, 0) != 1)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strndup (&ptr[4], 4);
   if (__builtin_object_size (res, 0) != 1)
-    abort ();
+    FAIL ();
   free (res);
 
   res = strndup (&ptr[4], 1);
   if (__builtin_object_size (res, 0) != 1)
-    abort ();
+    FAIL ();
   free (res);
 }
 
@@ -736,5 +725,5 @@ main (void)
   test9 (1);
   test10 ();
   test11 ();
-  exit (0);
+  DONE ();
 }

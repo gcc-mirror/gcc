@@ -7326,7 +7326,24 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
      by ASan.  */
 
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-  if ((flag_sanitize & SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
+  if (param_asan_kernel_mem_intrinsic_prefix
+      && sanitize_flags_p (SANITIZE_KERNEL_ADDRESS
+			   | SANITIZE_KERNEL_HWADDRESS))
+    switch (fcode)
+      {
+	rtx save_decl_rtl, ret;
+      case BUILT_IN_MEMCPY:
+      case BUILT_IN_MEMMOVE:
+      case BUILT_IN_MEMSET:
+	save_decl_rtl = DECL_RTL (fndecl);
+	DECL_RTL (fndecl) = asan_memfn_rtl (fndecl);
+	ret = expand_call (exp, target, ignore);
+	DECL_RTL (fndecl) = save_decl_rtl;
+	return ret;
+      default:
+	break;
+      }
+  if (sanitize_flags_p (SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
     return expand_call (exp, target, ignore);
 
   /* When not optimizing, generate calls to library functions for a certain
@@ -7844,6 +7861,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       break;
 
     case BUILT_IN_TRAP:
+    case BUILT_IN_UNREACHABLE_TRAP:
       expand_builtin_trap ();
       return const0_rtx;
 
@@ -11310,6 +11328,7 @@ is_inexpensive_builtin (tree decl)
       case BUILT_IN_VA_ARG_PACK_LEN:
       case BUILT_IN_VA_COPY:
       case BUILT_IN_TRAP:
+      case BUILT_IN_UNREACHABLE_TRAP:
       case BUILT_IN_SAVEREGS:
       case BUILT_IN_POPCOUNTL:
       case BUILT_IN_POPCOUNTLL:

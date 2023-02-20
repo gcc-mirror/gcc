@@ -206,14 +206,14 @@ class timer
 };
 
 /* Provided for backward compatibility.  */
-static inline void
+inline void
 timevar_push (timevar_id_t tv)
 {
   if (g_timer)
     g_timer->push (tv);
 }
 
-static inline void
+inline void
 timevar_pop (timevar_id_t tv)
 {
   if (g_timer)

@@ -1,3 +1,106 @@
+2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Fix typos - theads -> threads.
+
+2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/target-nowait-array-section.f90: Fix
+	comment typo and improve its wording.
+
+2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_target_rev): Dereference ptr
+	to get device address.
+	* testsuite/libgomp.fortran/reverse-offload-5.f90: Add test
+	for unallocated allocatable.
+
+2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_map_vars_internal): Add 'i > 0' before doing a
+	kind check.
+	(GOMP_target_enter_exit_data): If the next map item is
+	GOMP_MAP_ALWAYS_POINTER map it together with the current item.
+	* testsuite/libgomp.fortran/target-enter-data-3.f90: New test.
+
+2023-02-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107424
+	* testsuite/libgomp.fortran/non-rectangular-loop-1.f90: New test.
+	* testsuite/libgomp.fortran/non-rectangular-loop-1a.f90: New test.
+	* testsuite/libgomp.fortran/non-rectangular-loop-2.f90: New test.
+	* testsuite/libgomp.fortran/non-rectangular-loop-3.f90: New test.
+	* testsuite/libgomp.fortran/non-rectangular-loop-4.f90: New test.
+	* testsuite/libgomp.fortran/non-rectangular-loop-5.f90: New test.
+
+2023-02-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/reverse-offload-6.f90: Fix nvptx
+	offloading compilation.
+
+2023-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_target_rev): Handle mapnum == 0 and avoid
+	freeing not allocated memory.
+	* testsuite/libgomp.fortran/reverse-offload-6.f90: New test.
+
+2023-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (5.0 Impl. Status, gcn specifics): Update for
+	reverse offload.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Accept
+	reverse-offload requirement.
+
+2023-02-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/libgomp-gcn.h (DEFAULT_GCN_STACK_SIZE): New define.
+	(DEFAULT_TEAM_ARENA_SIZE): New define.
+	(struct heap): Move to this file.
+	(struct kernargs_abi): Likewise.
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Use team arena size from
+	the kernargs.
+	* libgomp.h: Include libgomp-gcn.h.
+	(TEAM_ARENA_SIZE): Remove.
+	(team_malloc): Update the error message.
+	* plugin/plugin-gcn.c (struct kernargs): Move common content to
+	struct kernargs_abi.
+	(struct agent_info): Rename team arenas to ephemeral memories.
+	(struct team_arena_list): Rename ....
+	(struct ephemeral_memories_list): to this.
+	(struct heap): Delete.
+	(team_arena_size): New variable.
+	(stack_size): New variable.
+	(print_kernel_dispatch): Update debug messages.
+	(init_environment_variables): Read GCN_TEAM_ARENA_SIZE.
+	Read GCN_STACK_SIZE.
+	(get_team_arena): Rename ...
+	(configure_ephemeral_memories): ... to this, and set up stacks.
+	(release_team_arena): Rename ...
+	(release_ephemeral_memories): ... to this.
+	(destroy_team_arenas): Rename ...
+	(destroy_ephemeral_memories): ... to this.
+	(create_kernel_dispatch): Add num_threads parameter.
+	Adjust for kernargs_abi refactor and ephemeral memories.
+	(release_kernel_dispatch): Adjust for ephemeral memories.
+	(run_kernel): Pass thread-count to create_kernel_dispatch.
+	(GOMP_OFFLOAD_init_device): Adjust for ephemeral memories.
+	(GOMP_OFFLOAD_fini_device): Adjust for ephemeral memories.
+
+2023-02-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP TR11): Fix item for 'strict' modifier.
+
+2023-02-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-3.f90: Fix ALIGN
+	usage, remove unused -fdump-tree-original.
+	* testsuite/libgomp.fortran/allocate-4.f90: New.
+
+2023-02-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (5.0 Impl. Status): Update 'requires' and 'ancestor'.
+	(GCN): Add item about 'omp requires'.
+	(nvptx): Likewise; add item about reverse offload.
+
 2023-01-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/108558

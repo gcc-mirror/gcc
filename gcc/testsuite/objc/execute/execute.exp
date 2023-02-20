@@ -23,6 +23,7 @@ if $tracelevel then {
 }
 
 # load support procs
+load_lib objc-dg.exp
 load_lib objc-torture.exp
 load_lib torture-options.exp
 

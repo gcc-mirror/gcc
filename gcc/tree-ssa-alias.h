@@ -186,7 +186,7 @@ extern GTY(()) struct pt_solution ipa_escaped_pt;
    overlap.  SIZE1 and/or SIZE2 can be (unsigned)-1 in which case the
    range is open-ended.  Otherwise return false.  */
 
-static inline bool
+inline bool
 ranges_overlap_p (HOST_WIDE_INT pos1,
 		  unsigned HOST_WIDE_INT size1,
 		  HOST_WIDE_INT pos2,
