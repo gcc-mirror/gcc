@@ -1,6 +1,7 @@
 use bridge::span::Span;
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::ffi::c_uchar;
+use std::fmt;
 
 extern "C" {
     fn Literal__drop(literal: *const Literal);
@@ -208,5 +209,119 @@ impl Drop for Literal {
             },
             _ => (),
         }
+    }
+}
+
+impl fmt::Display for Literal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Literal::String { data, size } => {
+                let slice =
+                    unsafe { std::slice::from_raw_parts(*data, (*size).try_into().unwrap()) };
+                f.write_str("\"")?;
+                f.write_str(std::str::from_utf8(slice).unwrap())?;
+                f.write_str("\"")?;
+            }
+            Literal::ByteString { data, size } => {
+                f.write_str("b\"")?;
+                let slice =
+                    unsafe { std::slice::from_raw_parts(*data, (*size).try_into().unwrap()) };
+                for &byte in slice {
+                    if byte != b'"' && byte >= b' ' && byte <= b'z' {
+                        char::try_from(byte).unwrap().fmt(f)?;
+                    } else {
+                        write!(f, "\\x{byte:02x}")?;
+                    }
+                }
+                f.write_str("b\"")?;
+            }
+            Literal::Char(val) => {
+                let ch: char = (*val).try_into().unwrap();
+                match ch {
+                    '\'' => f.write_str("'\\''")?,
+                    '\0' => f.write_str("'\\0'")?,
+                    '\n' => f.write_str("'\\n'")?,
+                    ' '..='z' => write!(f, "'{ch}'")?,
+                    _ => write!(f, "'\\u{val:x}'")?,
+                }
+            }
+            Literal::Unsigned(val, suffixed) => match val {
+                Unsigned::Unsigned8(val) => {
+                    val.fmt(f)?;
+                    if *suffixed {
+                        f.write_str("u8")?;
+                    }
+                }
+                Unsigned::Unsigned16(val) => {
+                    val.fmt(f)?;
+                    if *suffixed {
+                        f.write_str("u16")?;
+                    }
+                }
+                Unsigned::Unsigned32(val) => {
+                    val.fmt(f)?;
+                    if *suffixed {
+                        f.write_str("u32")?;
+                    }
+                }
+                Unsigned::Unsigned64(val) => {
+                    val.fmt(f)?;
+                    if *suffixed {
+                        f.write_str("u64")?;
+                    }
+                }
+            },
+            Literal::Signed(val, suffixed) => match val {
+                Signed::Signed8(val) => {
+                    val.fmt(f)?;
+                    if *suffixed {
+                        f.write_str("i8")?;
+                    }
+                }
+                Signed::Signed16(val) => {
+                    val.fmt(f)?;
+                    if *suffixed {
+                        f.write_str("i16")?;
+                    }
+                }
+                Signed::Signed32(val) => {
+                    val.fmt(f)?;
+                    if *suffixed {
+                        f.write_str("i32")?;
+                    }
+                }
+                Signed::Signed64(val) => {
+                    val.fmt(f)?;
+                    if *suffixed {
+                        f.write_str("i64")?;
+                    }
+                }
+            },
+            Literal::Usize(val, suffixed) => {
+                val.fmt(f)?;
+                if *suffixed {
+                    f.write_str("usize")?;
+                }
+            }
+            Literal::ISize(val, suffixed) => {
+                val.fmt(f)?;
+                if *suffixed {
+                    f.write_str("isize")?;
+                }
+            }
+            Literal::Float32(val, suffixed) => {
+                val.fmt(f)?;
+                if *suffixed {
+                    f.write_str("f32")?;
+                }
+            }
+            Literal::Float64(val, suffixed) => {
+                val.fmt(f)?;
+                if *suffixed {
+                    f.write_str("f64")?;
+                }
+            }
+        }
+        Ok(())
     }
 }
