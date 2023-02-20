@@ -48,7 +48,7 @@ extern "C" {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct TokenStream {
     pub(crate) data: *const TokenTree,
     pub(crate) size: u64,
