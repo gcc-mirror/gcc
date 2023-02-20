@@ -1306,7 +1306,8 @@ template <int _Np>
 
     // broadcast {{{2
     template <typename _Tp>
-      static constexpr inline _SimdMember<_Tp> _S_broadcast(_Tp __x) noexcept
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdMember<_Tp>
+      _S_broadcast(_Tp __x) noexcept
       {
 	return _SimdMember<_Tp>::_S_generate(
 		 [&](auto __meta) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
@@ -1316,8 +1317,8 @@ template <int _Np>
 
     // _S_generator {{{2
     template <typename _Fp, typename _Tp>
-      static constexpr inline _SimdMember<_Tp> _S_generator(_Fp&& __gen,
-							    _TypeTag<_Tp>)
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdMember<_Tp>
+      _S_generator(_Fp&& __gen, _TypeTag<_Tp>)
       {
 	return _SimdMember<_Tp>::_S_generate(
 		 [&__gen](auto __meta) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
@@ -1332,8 +1333,8 @@ template <int _Np>
 
     // _S_load {{{2
     template <typename _Tp, typename _Up>
-      static inline _SimdMember<_Tp> _S_load(const _Up* __mem,
-					     _TypeTag<_Tp>) noexcept
+      _GLIBCXX_SIMD_INTRINSIC static _SimdMember<_Tp>
+      _S_load(const _Up* __mem, _TypeTag<_Tp>) noexcept
       {
 	return _SimdMember<_Tp>::_S_generate(
 		 [&](auto __meta) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
@@ -1343,7 +1344,7 @@ template <int _Np>
 
     // _S_masked_load {{{2
     template <typename _Tp, typename... _As, typename _Up>
-      static inline _SimdTuple<_Tp, _As...>
+      _GLIBCXX_SIMD_INTRINSIC static _SimdTuple<_Tp, _As...>
       _S_masked_load(const _SimdTuple<_Tp, _As...>& __old,
 		     const _MaskMember __bits, const _Up* __mem) noexcept
       {
@@ -1366,8 +1367,8 @@ template <int _Np>
 
     // _S_store {{{2
     template <typename _Tp, typename _Up>
-      static inline void _S_store(const _SimdMember<_Tp>& __v, _Up* __mem,
-				  _TypeTag<_Tp>) noexcept
+      _GLIBCXX_SIMD_INTRINSIC static void
+      _S_store(const _SimdMember<_Tp>& __v, _Up* __mem, _TypeTag<_Tp>) noexcept
       {
 	__for_each(__v, [&](auto __meta, auto __native) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	  __meta._S_store(__native, &__mem[__meta._S_offset], _TypeTag<_Tp>());
@@ -1376,9 +1377,9 @@ template <int _Np>
 
     // _S_masked_store {{{2
     template <typename _Tp, typename... _As, typename _Up>
-      static inline void _S_masked_store(const _SimdTuple<_Tp, _As...>& __v,
-					 _Up* __mem,
-					 const _MaskMember __bits) noexcept
+      _GLIBCXX_SIMD_INTRINSIC static void
+      _S_masked_store(const _SimdTuple<_Tp, _As...>& __v, _Up* __mem,
+		      const _MaskMember __bits) noexcept
       {
 	__for_each(__v, [&](auto __meta, auto __native) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	  if (__meta._S_submask(__bits).any())
@@ -1486,7 +1487,7 @@ template <int _Np>
 
     // _S_min, _S_max {{{2
     template <typename _Tp, typename... _As>
-      static inline constexpr _SimdTuple<_Tp, _As...>
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdTuple<_Tp, _As...>
       _S_min(const _SimdTuple<_Tp, _As...>& __a,
 	     const _SimdTuple<_Tp, _As...>& __b)
       {
@@ -1498,7 +1499,7 @@ template <int _Np>
       }
 
     template <typename _Tp, typename... _As>
-      static inline constexpr _SimdTuple<_Tp, _As...>
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdTuple<_Tp, _As...>
       _S_max(const _SimdTuple<_Tp, _As...>& __a,
 	     const _SimdTuple<_Tp, _As...>& __b)
       {
@@ -1511,7 +1512,7 @@ template <int _Np>
 
     // _S_complement {{{2
     template <typename _Tp, typename... _As>
-      static inline constexpr _SimdTuple<_Tp, _As...>
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdTuple<_Tp, _As...>
       _S_complement(const _SimdTuple<_Tp, _As...>& __x) noexcept
       {
 	return __x._M_apply_per_chunk(
@@ -1522,7 +1523,7 @@ template <int _Np>
 
     // _S_unary_minus {{{2
     template <typename _Tp, typename... _As>
-      static inline constexpr _SimdTuple<_Tp, _As...>
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdTuple<_Tp, _As...>
       _S_unary_minus(const _SimdTuple<_Tp, _As...>& __x) noexcept
       {
 	return __x._M_apply_per_chunk(
@@ -1535,7 +1536,7 @@ template <int _Np>
 
 #define _GLIBCXX_SIMD_FIXED_OP(name_, op_)                                                     \
     template <typename _Tp, typename... _As>                                                   \
-      static inline constexpr _SimdTuple<_Tp, _As...> name_(                                   \
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdTuple<_Tp, _As...> name_(                  \
 	const _SimdTuple<_Tp, _As...>& __x, const _SimdTuple<_Tp, _As...>& __y)                \
       {                                                                                        \
 	return __x._M_apply_per_chunk(                                                         \
@@ -1558,7 +1559,7 @@ template <int _Np>
 #undef _GLIBCXX_SIMD_FIXED_OP
 
     template <typename _Tp, typename... _As>
-      static inline constexpr _SimdTuple<_Tp, _As...>
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdTuple<_Tp, _As...>
       _S_bit_shift_left(const _SimdTuple<_Tp, _As...>& __x, int __y)
       {
 	return __x._M_apply_per_chunk(
@@ -1568,7 +1569,7 @@ template <int _Np>
       }
 
     template <typename _Tp, typename... _As>
-      static inline constexpr _SimdTuple<_Tp, _As...>
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _SimdTuple<_Tp, _As...>
       _S_bit_shift_right(const _SimdTuple<_Tp, _As...>& __x, int __y)
       {
 	return __x._M_apply_per_chunk(
@@ -1687,10 +1688,9 @@ template <int _Np>
 #undef _GLIBCXX_SIMD_APPLY_ON_TUPLE
 
     template <typename _Tp, typename... _Abis>
-      static _SimdTuple<_Tp, _Abis...> _S_remquo(
-	const _SimdTuple<_Tp, _Abis...>& __x,
-	const _SimdTuple<_Tp, _Abis...>& __y,
-	__fixed_size_storage_t<int, _SimdTuple<_Tp, _Abis...>::_S_size()>* __z)
+      static inline _SimdTuple<_Tp, _Abis...>
+      _S_remquo(const _SimdTuple<_Tp, _Abis...>& __x, const _SimdTuple<_Tp, _Abis...>& __y,
+		__fixed_size_storage_t<int, _SimdTuple<_Tp, _Abis...>::_S_size()>* __z)
       {
 	return __x._M_apply_per_chunk(
 		 [](auto __impl, const auto __xx, const auto __yy, auto& __zz)
@@ -1711,14 +1711,14 @@ template <int _Np>
 		 }, __exp);
       }
 
-#define _GLIBCXX_SIMD_TEST_ON_TUPLE_(name_)                                    \
-    template <typename _Tp, typename... _As>                                   \
-      static inline _MaskMember                                                \
-	_S_##name_(const _SimdTuple<_Tp, _As...>& __x) noexcept                \
-      {                                                                        \
-	return _M_test([](auto __impl,                                         \
-			  auto __xx) { return __impl._S_##name_(__xx); },      \
-		       __x);                                                   \
+#define _GLIBCXX_SIMD_TEST_ON_TUPLE_(name_)                                              \
+    template <typename _Tp, typename... _As>                                             \
+      static inline _MaskMember                                                          \
+	_S_##name_(const _SimdTuple<_Tp, _As...>& __x) noexcept                          \
+      {                                                                                  \
+	return _M_test([] (auto __impl, auto __xx) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA  { \
+		 return __impl._S_##name_(__xx);                                         \
+	       }, __x);                                                                  \
       }
 
     _GLIBCXX_SIMD_TEST_ON_TUPLE_(isinf)
