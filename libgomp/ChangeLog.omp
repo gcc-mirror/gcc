@@ -1,3 +1,33 @@
+2023-02-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/linux/allocator.c (linux_memspace_alloc): Add 'init0'
+	formal parameter.  Adjust all users.
+	(linux_memspace_alloc, linux_memspace_free): Attempt to allocate
+	OpenMP pinned memory using a device instead of 'mmap' plus
+	attempting to register using a device.
+	* libgomp-plugin.h (GOMP_OFFLOAD_register_page_locked)
+	(GOMP_OFFLOAD_unregister_page_locked): Remove.
+	(GOMP_OFFLOAD_page_locked_host_alloc)
+	(GOMP_OFFLOAD_page_locked_host_free): New.
+	* libgomp.h (gomp_register_page_locked)
+	(gomp_unregister_page_locked): Remove.
+	(gomp_page_locked_host_alloc, gomp_page_locked_host_free): New.
+	(struct gomp_device_descr): Remove 'register_page_locked_func',
+	'unregister_page_locked_func'.  Add 'page_locked_host_alloc_func',
+	'page_locked_host_free_func'.
+	* plugin/cuda-lib.def (cuMemHostRegister_v2, cuMemHostRegister)
+	(cuMemHostUnregister): Remove.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_register_page_locked)
+	(GOMP_OFFLOAD_unregister_page_locked): Remove.
+	(GOMP_OFFLOAD_page_locked_host_alloc)
+	(GOMP_OFFLOAD_page_locked_host_free): New.
+	* target.c (gomp_register_page_locked)
+	(gomp_unregister_page_locked): Remove.
+	(gomp_page_locked_host_alloc, gomp_page_locked_host_free): Add.
+	(gomp_load_plugin_for_device): Don't handle
+	'register_page_locked', 'unregister_page_locked'.  Handle
+	'page_locked_host_alloc', 'page_locked_host_free'.
+
 2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/linux/allocator.c (linux_memspace_alloc)

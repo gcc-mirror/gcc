@@ -36,8 +36,9 @@
 /* Implement malloc routines that can handle pinned memory on Linux.
    
    Given that pinned memory is typically used to help host <-> device memory
-   transfers, we attempt to register such using a device (really: libgomp
-   plugin), but fall back to mlock if no suitable device is available.
+   transfers, we attempt to allocate such memory using a device (really:
+   libgomp plugin), but fall back to mmap plus mlock if no suitable device is
+   available.
 
    It's possible to use mlock on any heap memory, but using munlock is
    problematic if there are multiple pinned allocations on the same page.
@@ -69,40 +70,36 @@ GOMP_enable_pinned_mode ()
     always_pinned_mode = true;
 }
 
-static int using_device_for_register_page_locked
+static int using_device_for_page_locked
   = /* uninitialized */ -1;
 
 static void *
-linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
+linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin,
+		      bool init0)
 {
-  gomp_debug (0, "%s: memspace=%llu, size=%llu, pin=%d\n",
-	      __FUNCTION__, (unsigned long long) memspace, (unsigned long long) size, pin);
+  gomp_debug (0, "%s: memspace=%llu, size=%llu, pin=%d, init0=%d\n",
+	      __FUNCTION__, (unsigned long long) memspace,
+	      (unsigned long long) size, pin, init0);
 
   /* Explicit pinning may not be required.  */
   pin = pin && !always_pinned_mode;
 
+  void *addr;
+
   if (memspace == ompx_unified_shared_mem_space)
-    {
-      return gomp_usm_alloc (size);
-    }
+    addr = gomp_usm_alloc (size);
   else if (pin)
     {
-      /* 'mmap' zero-initializes, which 'linux_memspace_calloc' relies on.  */
-      void *addr = mmap (NULL, size, PROT_READ | PROT_WRITE,
-			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-      if (addr == MAP_FAILED)
-	return NULL;
-
       int using_device
-	= __atomic_load_n (&using_device_for_register_page_locked,
+	= __atomic_load_n (&using_device_for_page_locked,
 			   MEMMODEL_RELAXED);
       gomp_debug (0, "  using_device=%d\n",
 		  using_device);
       if (using_device != 0)
 	{
-	  using_device = gomp_register_page_locked (addr, size);
+	  using_device = gomp_page_locked_host_alloc (&addr, size);
 	  int using_device_old
-	    = __atomic_exchange_n (&using_device_for_register_page_locked,
+	    = __atomic_exchange_n (&using_device_for_page_locked,
 				   using_device, MEMMODEL_RELAXED);
 	  gomp_debug (0, "  using_device=%d, using_device_old=%d\n",
 		      using_device, using_device_old);
@@ -112,19 +109,37 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
 	}
       if (using_device == 0)
 	{
-	  gomp_debug (0, "  mlock\n");
-	  if (mlock (addr, size))
+	  gomp_debug (0, "  mmap\n");
+	  addr = mmap (NULL, size, PROT_READ | PROT_WRITE,
+		       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	  if (addr == MAP_FAILED)
+	    addr = NULL;
+	  else
 	    {
-	      gomp_debug (0, "libgomp: failed to pin memory (ulimit too low?)\n");
-	      munmap (addr, size);
-	      return NULL;
+	      /* 'mmap' zero-initializes.  */
+	      init0 = false;
+
+	      gomp_debug (0, "  mlock\n");
+	      if (mlock (addr, size))
+		{
+		  gomp_debug (0, "libgomp: failed to pin memory"
+			      " (ulimit too low?)\n");
+		  munmap (addr, size);
+		  addr = NULL;
+		}
 	    }
 	}
-
-      return addr;
     }
   else
-    return malloc (size);
+    addr = malloc (size);
+
+  if (addr && init0)
+    {
+      gomp_debug (0, "  init0\n");
+      memset (addr, 0, size);
+    }
+
+  return addr;
 }
 
 static void *
@@ -143,8 +158,7 @@ linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
       return ret;
     }
   else if (pin)
-    /* If PINned, 'linux_memspace_alloc' 'mmap's, which zero-initializes.  */
-    return linux_memspace_alloc (memspace, size, pin);
+    return linux_memspace_alloc (memspace, size, pin, true);
   else
     return calloc (1, size);
 }
@@ -164,16 +178,15 @@ linux_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size,
   else if (pin)
     {
       int using_device
-	= __atomic_load_n (&using_device_for_register_page_locked,
+	= __atomic_load_n (&using_device_for_page_locked,
 			   MEMMODEL_RELAXED);
       gomp_debug (0, "  using_device=%d\n",
 		  using_device);
       if (using_device == 1)
-	gomp_unregister_page_locked (addr, size);
+	gomp_page_locked_host_free (addr);
       else
 	/* 'munlock'ing is implicit with following 'munmap'.  */
-	;
-      munmap (addr, size);
+	munmap (addr, size);
     }
   else
     free (addr);
@@ -194,9 +207,9 @@ linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
   else if (oldpin && pin)
     {
       /* We can only expect to be able to just 'mremap' if not using a device
-	 for registering page-locked memory.  */
+	 for page-locked memory.  */
       int using_device
-	= __atomic_load_n (&using_device_for_register_page_locked,
+	= __atomic_load_n (&using_device_for_page_locked,
 		       MEMMODEL_RELAXED);
       gomp_debug (0, "  using_device=%d\n",
 		  using_device);
@@ -216,7 +229,7 @@ linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
     return realloc (addr, size);
 
 manual_realloc:
-  void *newaddr = linux_memspace_alloc (memspace, size, pin);
+  void *newaddr = linux_memspace_alloc (memspace, size, pin, false);
   if (newaddr)
     {
       memcpy (newaddr, addr, oldsize < size ? oldsize : size);
@@ -227,7 +240,7 @@ manual_realloc:
 }
 
 #define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
-  linux_memspace_alloc (MEMSPACE, SIZE, PIN)
+  linux_memspace_alloc (MEMSPACE, SIZE, PIN, false)
 #define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
   linux_memspace_calloc (MEMSPACE, SIZE, PIN)
 #define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN) \

@@ -1,3 +1,7 @@
+2023-02-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h (cuMemHostRegister, cuMemHostUnregister): Remove.
+
 2023-02-16  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cuda/cuda.h (cuMemHostRegister, cuMemHostUnregister): New.
