@@ -669,6 +669,9 @@ function_instance::has_inactive_argument () const
   if (pred != PRED_m)
     return false;
 
+  if (base == functions::vorrq && mode_suffix_id == MODE_n)
+    return false;
+
   return true;
 }
 
