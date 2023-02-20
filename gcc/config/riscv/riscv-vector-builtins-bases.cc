@@ -1283,6 +1283,64 @@ public:
   }
 };
 
+/* Implements reduction instructions.  */
+template<rtx_code CODE>
+class reducop : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_reduc (CODE, e.vector_mode (), e.vector_mode ()));
+  }
+};
+
+/* Implements widen reduction instructions.  */
+template<int UNSPEC>
+class widen_reducop : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_widen_reduc_plus (UNSPEC,
+							     e.vector_mode (),
+							     e.vector_mode ()));
+  }
+};
+
+/* Implements floating-point reduction instructions.  */
+template<int UNSPEC>
+class freducop : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_reduc_plus (UNSPEC, e.vector_mode (), e.vector_mode ()));
+  }
+};
+
+/* Implements widening floating-point reduction instructions.  */
+template<int UNSPEC>
+class widen_freducop : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_widen_reduc_plus (UNSPEC,
+							     e.vector_mode (),
+							     e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -1456,6 +1514,22 @@ static CONSTEXPR const vfncvt_rtz_x<FIX> vfncvt_rtz_x_obj;
 static CONSTEXPR const vfncvt_rtz_x<UNSIGNED_FIX> vfncvt_rtz_xu_obj;
 static CONSTEXPR const vfncvt_f vfncvt_f_obj;
 static CONSTEXPR const vfncvt_rod_f vfncvt_rod_f_obj;
+static CONSTEXPR const reducop<PLUS> vredsum_obj;
+static CONSTEXPR const reducop<UMAX> vredmaxu_obj;
+static CONSTEXPR const reducop<SMAX> vredmax_obj;
+static CONSTEXPR const reducop<UMIN> vredminu_obj;
+static CONSTEXPR const reducop<SMIN> vredmin_obj;
+static CONSTEXPR const reducop<AND> vredand_obj;
+static CONSTEXPR const reducop<IOR> vredor_obj;
+static CONSTEXPR const reducop<XOR> vredxor_obj;
+static CONSTEXPR const widen_reducop<UNSPEC_WREDUC_SUM> vwredsum_obj;
+static CONSTEXPR const widen_reducop<UNSPEC_WREDUC_USUM> vwredsumu_obj;
+static CONSTEXPR const freducop<UNSPEC_UNORDERED> vfredusum_obj;
+static CONSTEXPR const freducop<UNSPEC_ORDERED> vfredosum_obj;
+static CONSTEXPR const reducop<SMAX> vfredmax_obj;
+static CONSTEXPR const reducop<SMIN> vfredmin_obj;
+static CONSTEXPR const widen_freducop<UNSPEC_UNORDERED> vfwredusum_obj;
+static CONSTEXPR const widen_freducop<UNSPEC_ORDERED> vfwredosum_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -1635,5 +1709,21 @@ BASE (vfncvt_rtz_x)
 BASE (vfncvt_rtz_xu)
 BASE (vfncvt_f)
 BASE (vfncvt_rod_f)
+BASE (vredsum)
+BASE (vredmaxu)
+BASE (vredmax)
+BASE (vredminu)
+BASE (vredmin)
+BASE (vredand)
+BASE (vredor)
+BASE (vredxor)
+BASE (vwredsum)
+BASE (vwredsumu)
+BASE (vfredusum)
+BASE (vfredosum)
+BASE (vfredmax)
+BASE (vfredmin)
+BASE (vfwredosum)
+BASE (vfwredusum)
 
 } // end namespace riscv_vector

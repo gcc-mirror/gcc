@@ -203,6 +203,22 @@ extern const function_base *const vfncvt_rtz_x;
 extern const function_base *const vfncvt_rtz_xu;
 extern const function_base *const vfncvt_f;
 extern const function_base *const vfncvt_rod_f;
+extern const function_base *const vredsum;
+extern const function_base *const vredmaxu;
+extern const function_base *const vredmax;
+extern const function_base *const vredminu;
+extern const function_base *const vredmin;
+extern const function_base *const vredand;
+extern const function_base *const vredor;
+extern const function_base *const vredxor;
+extern const function_base *const vwredsum;
+extern const function_base *const vwredsumu;
+extern const function_base *const vfredusum;
+extern const function_base *const vfredosum;
+extern const function_base *const vfredmax;
+extern const function_base *const vfredmin;
+extern const function_base *const vfwredosum;
+extern const function_base *const vfwredusum;
 }
 
 } // end namespace riscv_vector

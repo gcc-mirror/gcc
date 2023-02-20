@@ -66,6 +66,10 @@
   UNSPEC_VFCVT
   UNSPEC_UNSIGNED_VFCVT
   UNSPEC_ROD
+
+  UNSPEC_REDUC
+  UNSPEC_WREDUC_SUM
+  UNSPEC_WREDUC_USUM
 ])
 
 (define_mode_iterator V [
@@ -93,6 +97,23 @@
   (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
 ])
 
+(define_mode_iterator VI_ZVE32 [
+  VNx1QI VNx2QI VNx4QI VNx8QI VNx16QI VNx32QI
+  VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI
+  VNx1SI VNx2SI VNx4SI VNx8SI
+])
+
+(define_mode_iterator VWI [
+  VNx1QI VNx2QI VNx4QI VNx8QI VNx16QI VNx32QI (VNx64QI "TARGET_MIN_VLEN > 32")
+  VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI (VNx32HI "TARGET_MIN_VLEN > 32")
+  VNx1SI VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32")
+])
+
+(define_mode_iterator VWI_ZVE32 [
+  VNx1QI VNx2QI VNx4QI VNx8QI VNx16QI VNx32QI
+  VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI
+])
+
 (define_mode_iterator VF [
   (VNx1SF "TARGET_VECTOR_ELEN_FP_32")
   (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
@@ -103,6 +124,17 @@
   (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
   (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
   (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VF_ZVE32 [
+  (VNx1SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
+])
+
+(define_mode_iterator VWF [
+  VNx1SF VNx2SF VNx4SF VNx8SF (VNx16SF "TARGET_MIN_VLEN > 32")
 ])
 
 (define_mode_iterator VFULLI [
@@ -334,6 +366,96 @@
   (VNx1DF "VNx1SI") (VNx2DF "VNx2SI") (VNx4DF "VNx4SI") (VNx8DF "VNx8SI")
 ])
 
+(define_mode_attr VLMUL1 [
+  (VNx1QI "VNx8QI") (VNx2QI "VNx8QI") (VNx4QI "VNx8QI") 
+  (VNx8QI "VNx8QI") (VNx16QI "VNx8QI") (VNx32QI "VNx8QI") (VNx64QI "VNx8QI")
+  (VNx1HI "VNx4HI") (VNx2HI "VNx4HI") (VNx4HI "VNx4HI") 
+  (VNx8HI "VNx4HI") (VNx16HI "VNx4HI") (VNx32HI "VNx4HI")
+  (VNx1SI "VNx2SI") (VNx2SI "VNx2SI") (VNx4SI "VNx2SI") 
+  (VNx8SI "VNx2SI") (VNx16SI "VNx2SI")
+  (VNx1DI "VNx1DI") (VNx2DI "VNx1DI")
+  (VNx4DI "VNx1DI") (VNx8DI "VNx1DI")
+  (VNx1SF "VNx2SF") (VNx2SF "VNx2SF")
+  (VNx4SF "VNx2SF") (VNx8SF "VNx2SF") (VNx16SF "VNx2SF")
+  (VNx1DF "VNx1DF") (VNx2DF "VNx1DF")
+  (VNx4DF "VNx1DF") (VNx8DF "VNx1DF")
+])
+
+(define_mode_attr VLMUL1_ZVE32 [
+  (VNx1QI "VNx4QI") (VNx2QI "VNx4QI") (VNx4QI "VNx4QI") 
+  (VNx8QI "VNx4QI") (VNx16QI "VNx4QI") (VNx32QI "VNx4QI")
+  (VNx1HI "VNx2HI") (VNx2HI "VNx2HI") (VNx4HI "VNx2HI") 
+  (VNx8HI "VNx2HI") (VNx16HI "VNx2HI")
+  (VNx1SI "VNx1SI") (VNx2SI "VNx1SI") (VNx4SI "VNx1SI") 
+  (VNx8SI "VNx1SI")
+  (VNx1SF "VNx2SF") (VNx2SF "VNx2SF")
+  (VNx4SF "VNx2SF") (VNx8SF "VNx2SF")
+])
+
+(define_mode_attr VWLMUL1 [
+  (VNx1QI "VNx4HI") (VNx2QI "VNx4HI") (VNx4QI "VNx4HI") 
+  (VNx8QI "VNx4HI") (VNx16QI "VNx4HI") (VNx32QI "VNx4HI") (VNx64QI "VNx4HI")
+  (VNx1HI "VNx2SI") (VNx2HI "VNx2SI") (VNx4HI "VNx2SI") 
+  (VNx8HI "VNx2SI") (VNx16HI "VNx2SI") (VNx32HI "VNx2SI")
+  (VNx1SI "VNx1DI") (VNx2SI "VNx1DI") (VNx4SI "VNx1DI") 
+  (VNx8SI "VNx1DI") (VNx16SI "VNx1DI")
+  (VNx1SF "VNx1DF") (VNx2SF "VNx1DF")
+  (VNx4SF "VNx1DF") (VNx8SF "VNx1DF") (VNx16SF "VNx1DF")
+])
+
+(define_mode_attr VWLMUL1_ZVE32 [
+  (VNx1QI "VNx2HI") (VNx2QI "VNx2HI") (VNx4QI "VNx2HI") 
+  (VNx8QI "VNx2HI") (VNx16QI "VNx2HI") (VNx32QI "VNx2HI")
+  (VNx1HI "VNx1SI") (VNx2HI "VNx1SI") (VNx4HI "VNx1SI") 
+  (VNx8HI "VNx1SI") (VNx16HI "VNx1SI")
+])
+
+(define_mode_attr vlmul1 [
+  (VNx1QI "vnx8qi") (VNx2QI "vnx8qi") (VNx4QI "vnx8qi") 
+  (VNx8QI "vnx8qi") (VNx16QI "vnx8qi") (VNx32QI "vnx8qi") (VNx64QI "vnx8qi")
+  (VNx1HI "vnx4hi") (VNx2HI "vnx4hi") (VNx4HI "vnx4hi") 
+  (VNx8HI "vnx4hi") (VNx16HI "vnx4hi") (VNx32HI "vnx4hi")
+  (VNx1SI "vnx2si") (VNx2SI "vnx2si") (VNx4SI "vnx2si") 
+  (VNx8SI "vnx2si") (VNx16SI "vnx2si")
+  (VNx1DI "vnx1DI") (VNx2DI "vnx1DI")
+  (VNx4DI "vnx1DI") (VNx8DI "vnx1DI")
+  (VNx1SF "vnx2sf") (VNx2SF "vnx2sf")
+  (VNx4SF "vnx2sf") (VNx8SF "vnx2sf") (VNx16SF "vnx2sf")
+  (VNx1DF "vnx1df") (VNx2DF "vnx1df")
+  (VNx4DF "vnx1df") (VNx8DF "vnx1df")
+])
+
+(define_mode_attr vlmul1_zve32 [
+  (VNx1QI "vnx4qi") (VNx2QI "vnx4qi") (VNx4QI "vnx4qi") 
+  (VNx8QI "vnx4qi") (VNx16QI "vnx4qi") (VNx32QI "vnx4qi")
+  (VNx1HI "vnx2hi") (VNx2HI "vnx2hi") (VNx4HI "vnx2hi") 
+  (VNx8HI "vnx2hi") (VNx16HI "vnx2hi")
+  (VNx1SI "vnx1si") (VNx2SI "vnx1si") (VNx4SI "vnx1si") 
+  (VNx8SI "vnx1si")
+  (VNx1SF "vnx1sf") (VNx2SF "vnx1sf")
+  (VNx4SF "vnx1sf") (VNx8SF "vnx1sf")
+])
+
+(define_mode_attr vwlmul1 [
+  (VNx1QI "vnx4hi") (VNx2QI "vnx4hi") (VNx4QI "vnx4hi") 
+  (VNx8QI "vnx4hi") (VNx16QI "vnx4hi") (VNx32QI "vnx4hi") (VNx64QI "vnx4hi")
+  (VNx1HI "vnx2si") (VNx2HI "vnx2si") (VNx4HI "vnx2si") 
+  (VNx8HI "vnx2si") (VNx16HI "vnx2si") (VNx32HI "vnx2SI")
+  (VNx1SI "vnx2di") (VNx2SI "vnx2di") (VNx4SI "vnx2di") 
+  (VNx8SI "vnx2di") (VNx16SI "vnx2di")
+  (VNx1SF "vnx1df") (VNx2SF "vnx1df")
+  (VNx4SF "vnx1df") (VNx8SF "vnx1df") (VNx16SF "vnx1df")
+])
+
+(define_mode_attr vwlmul1_zve32 [
+  (VNx1QI "vnx2hi") (VNx2QI "vnx2hi") (VNx4QI "vnx2hi") 
+  (VNx8QI "vnx2hi") (VNx16QI "vnx2hi") (VNx32QI "vnx2hi")
+  (VNx1HI "vnx1si") (VNx2HI "vnx1si") (VNx4HI "vnx1si") 
+  (VNx8HI "vnx1si") (VNx16HI "vnx1SI")
+])
+
+(define_int_iterator WREDUC [UNSPEC_WREDUC_SUM UNSPEC_WREDUC_USUM])
+
 (define_int_iterator ORDER [UNSPEC_ORDERED UNSPEC_UNORDERED])
 
 (define_int_iterator VMULH [UNSPEC_VMULHS UNSPEC_VMULHU UNSPEC_VMULHSU])
@@ -360,7 +482,8 @@
 
 (define_int_attr v_su [(UNSPEC_VMULHS "") (UNSPEC_VMULHU "u") (UNSPEC_VMULHSU "su")
 		       (UNSPEC_VNCLIP "") (UNSPEC_VNCLIPU "u")
-		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")])
+		       (UNSPEC_VFCVT "") (UNSPEC_UNSIGNED_VFCVT "u")
+		       (UNSPEC_WREDUC_SUM "") (UNSPEC_WREDUC_USUM "u")])
 (define_int_attr sat_op [(UNSPEC_VAADDU "aaddu") (UNSPEC_VAADD "aadd")
 			 (UNSPEC_VASUBU "asubu") (UNSPEC_VASUB "asub")
 			 (UNSPEC_VSMUL "smul") (UNSPEC_VSSRL "ssrl")
@@ -418,6 +541,11 @@
 
 (define_code_iterator any_fix [fix unsigned_fix])
 (define_code_iterator any_float [float unsigned_float])
+(define_code_iterator any_reduc [plus umax smax umin smin and ior xor])
+(define_code_iterator any_freduc [smax smin])
+(define_code_attr reduc [(plus "sum") (umax "maxu") (smax "max") (umin "minu")
+			 (smin "min") (and "and") (ior "or") (xor "xor")])
+
 (define_code_attr fix_cvt [(fix "fix_trunc") (unsigned_fix "fixuns_trunc")])
 (define_code_attr float_cvt [(float "float") (unsigned_float "floatuns")])
 

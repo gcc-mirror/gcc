@@ -164,8 +164,10 @@ enum rvv_base_type
   RVV_BASE_double_trunc_signed_vector,
   RVV_BASE_double_trunc_unsigned_vector,
   RVV_BASE_double_trunc_unsigned_scalar,
-  RVV_BASE_float_vector,
   RVV_BASE_double_trunc_float_vector,
+  RVV_BASE_float_vector,
+  RVV_BASE_lmul1_vector,
+  RVV_BASE_widen_lmul1_vector,
   NUM_BASE_TYPES
 };
 

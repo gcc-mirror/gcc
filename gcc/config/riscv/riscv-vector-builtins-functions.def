@@ -408,7 +408,31 @@ DEF_RVV_FUNCTION (vfncvt_f, narrow_alu, full_preds, u_to_nf_xu_w_ops)
 DEF_RVV_FUNCTION (vfncvt_f, narrow_alu, full_preds, f_to_nf_f_w_ops)
 DEF_RVV_FUNCTION (vfncvt_rod_f, narrow_alu, full_preds, f_to_nf_f_w_ops)
 
-/* TODO: 14. Vector Reduction Operations.  */
+/* 14. Vector Reduction Operations.  */
+
+// 14.1. Vector Single-Width Integer Reduction Instructions
+DEF_RVV_FUNCTION (vredsum, reduc_alu, no_mu_preds, iu_vs_ops)
+DEF_RVV_FUNCTION (vredmaxu, reduc_alu, no_mu_preds, iu_vs_ops)
+DEF_RVV_FUNCTION (vredmax, reduc_alu, no_mu_preds, iu_vs_ops)
+DEF_RVV_FUNCTION (vredminu, reduc_alu, no_mu_preds, iu_vs_ops)
+DEF_RVV_FUNCTION (vredmin, reduc_alu, no_mu_preds, iu_vs_ops)
+DEF_RVV_FUNCTION (vredand, reduc_alu, no_mu_preds, iu_vs_ops)
+DEF_RVV_FUNCTION (vredor, reduc_alu, no_mu_preds, iu_vs_ops)
+DEF_RVV_FUNCTION (vredxor, reduc_alu, no_mu_preds, iu_vs_ops)
+
+// 14.2. Vector Widening Integer Reduction Instructions
+DEF_RVV_FUNCTION (vwredsum, reduc_alu, no_mu_preds, wi_vs_ops)
+DEF_RVV_FUNCTION (vwredsumu, reduc_alu, no_mu_preds, wu_vs_ops)
+
+// 14.3. Vector Single-Width Floating-Point Reduction Instructions
+DEF_RVV_FUNCTION (vfredusum, reduc_alu, no_mu_preds, f_vs_ops)
+DEF_RVV_FUNCTION (vfredosum, reduc_alu, no_mu_preds, f_vs_ops)
+DEF_RVV_FUNCTION (vfredmax, reduc_alu, no_mu_preds, f_vs_ops)
+DEF_RVV_FUNCTION (vfredmin, reduc_alu, no_mu_preds, f_vs_ops)
+
+// 14.4. Vector Widening Floating-Point Reduction Instructions
+DEF_RVV_FUNCTION (vfwredosum, reduc_alu, no_mu_preds, wf_vs_ops)
+DEF_RVV_FUNCTION (vfwredusum, reduc_alu, no_mu_preds, wf_vs_ops)
 
 /* 15. Vector Mask Instructions.  */
 

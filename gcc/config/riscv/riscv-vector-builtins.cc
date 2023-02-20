@@ -133,6 +133,27 @@ static const rvv_type_info i_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of all signed integer can be widened will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info wi_ops[] = {
+#define DEF_RVV_WI_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all unsigned integer can be widened will be registered for
+ * intrinsic functions.  */
+static const rvv_type_info wu_ops[] = {
+#define DEF_RVV_WU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all floating-point can be widened will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info wf_ops[] = {
+#define DEF_RVV_WF_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 /* A list of all signed integer that SEW = 64 require full 'V' extension will be
    registered for intrinsic functions.  */
 static const rvv_type_info full_v_i_ops[] = {
@@ -418,6 +439,17 @@ static CONSTEXPR const rvv_arg_type_info shift_wv_args[]
 static CONSTEXPR const rvv_arg_type_info v_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
 
+/* A list of args for vector_type func (vector_type, lmul1_type) function.  */
+static CONSTEXPR const rvv_arg_type_info vs_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_lmul1_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, widen_lmul1_type) function.
+ */
+static CONSTEXPR const rvv_arg_type_info wvs_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_widen_lmul1_vector), rvv_arg_type_info_end};
+
 /* A list of args for vector_type func (vector_type) function.  */
 static CONSTEXPR const rvv_arg_type_info f_v_args[]
   = {rvv_arg_type_info (RVV_BASE_float_vector), rvv_arg_type_info_end};
@@ -561,6 +593,10 @@ static CONSTEXPR const predication_type_index none_preds[]
 static CONSTEXPR const predication_type_index full_preds[]
   = {PRED_TYPE_none, PRED_TYPE_m,  PRED_TYPE_tu,  PRED_TYPE_tum,
      PRED_TYPE_tumu, PRED_TYPE_mu, NUM_PRED_TYPES};
+
+/* vop/vop_m/vop_tu/vop_tum/ will be registered.  */
+static CONSTEXPR const predication_type_index no_mu_preds[]
+  = {PRED_TYPE_none, PRED_TYPE_m, PRED_TYPE_tu, PRED_TYPE_tum, NUM_PRED_TYPES};
 
 /* vop/vop_tu will be registered.  */
 static CONSTEXPR const predication_type_index none_tu_preds[]
@@ -1069,6 +1105,46 @@ static CONSTEXPR const rvv_op_info iu_v_ops
      OP_TYPE_v,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      v_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_vs_ops
+  = {iu_ops,					/* Types */
+     OP_TYPE_vs,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_lmul1_vector), /* Return type */
+     vs_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_vs_ops
+  = {f_ops,					/* Types */
+     OP_TYPE_vs,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_lmul1_vector), /* Return type */
+     vs_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info wi_vs_ops
+  = {wi_ops,					      /* Types */
+     OP_TYPE_vs,				      /* Suffix */
+     rvv_arg_type_info (RVV_BASE_widen_lmul1_vector), /* Return type */
+     wvs_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info wu_vs_ops
+  = {wu_ops,					      /* Types */
+     OP_TYPE_vs,				      /* Suffix */
+     rvv_arg_type_info (RVV_BASE_widen_lmul1_vector), /* Return type */
+     wvs_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info wf_vs_ops
+  = {wf_ops,					      /* Types */
+     OP_TYPE_vs,				      /* Suffix */
+     rvv_arg_type_info (RVV_BASE_widen_lmul1_vector), /* Return type */
+     wvs_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type)
  * function registration. */
@@ -1707,7 +1783,8 @@ required_extensions_p (enum rvv_base_type type)
 	 || type == RVV_BASE_uint32_index || type == RVV_BASE_uint64_index
 	 || type == RVV_BASE_float_vector
 	 || type == RVV_BASE_double_trunc_float_vector
-	 || type == RVV_BASE_double_trunc_vector;
+	 || type == RVV_BASE_double_trunc_vector
+	 || type == RVV_BASE_widen_lmul1_vector;
 }
 
 /* Check whether all the RVV_REQUIRE_* values in REQUIRED_EXTENSIONS are
@@ -1822,6 +1899,7 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
   poly_int64 nunits = GET_MODE_NUNITS (TYPE_MODE (type));
   machine_mode inner_mode = GET_MODE_INNER (TYPE_MODE (type));
   poly_int64 bitsize = GET_MODE_BITSIZE (inner_mode);
+  poly_int64 bytesize = GET_MODE_SIZE (inner_mode);
 
   bool unsigned_p = TYPE_UNSIGNED (type);
   if (unsigned_base_type_p (base_type))
@@ -1874,6 +1952,16 @@ rvv_arg_type_info::get_base_vector_type (tree type) const
     case RVV_BASE_signed_vector:
     case RVV_BASE_unsigned_vector:
       inner_mode = int_mode_for_mode (inner_mode).require ();
+      break;
+    case RVV_BASE_lmul1_vector:
+      nunits = exact_div (BYTES_PER_RISCV_VECTOR, bytesize);
+      break;
+    case RVV_BASE_widen_lmul1_vector:
+      inner_mode
+	= get_mode_for_bitsize (bitsize * 2, FLOAT_MODE_P (inner_mode));
+      if (BYTES_PER_RISCV_VECTOR.coeffs[0] < (bytesize * 2).coeffs[0])
+	return NUM_VECTOR_TYPES;
+      nunits = exact_div (BYTES_PER_RISCV_VECTOR, bytesize * 2);
       break;
     default:
       return NUM_VECTOR_TYPES;
@@ -1963,6 +2051,8 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
     case RVV_BASE_double_trunc_float_vector:
     case RVV_BASE_signed_vector:
     case RVV_BASE_unsigned_vector:
+    case RVV_BASE_lmul1_vector:
+    case RVV_BASE_widen_lmul1_vector:
       if (get_base_vector_type (builtin_types[type_idx].vector)
 	  != NUM_VECTOR_TYPES)
 	return builtin_types[get_base_vector_type (

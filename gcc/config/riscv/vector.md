@@ -48,7 +48,7 @@
 			  vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,\
 			  vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,\
 			  vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
-			  vired,viwred,vfred,vfredo,vfwred,vfwredo,\
+			  vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
 			  vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,\
 			  vislide,vislide1,vfslide1,vgather,vcompress")
 	 (const_string "true")]
@@ -68,7 +68,7 @@
 			  vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,\
 			  vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,\
 			  vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
-			  vired,viwred,vfred,vfredo,vfwred,vfwredo,\
+			  vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
 			  vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovxv,vfmovfv,\
 			  vislide,vislide1,vfslide1,vgather,vcompress")
 	 (const_string "true")]
@@ -151,7 +151,8 @@
 			  vfwalu,vfwmul,vfsqrt,vfrecp,vfsgnj,vfcmp,\
 			  vfmerge,vfcvtitof,vfcvtftoi,vfwcvtitof,\
 			  vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,\
-			  vfncvtftof,vfmuladd,vfwmuladd,vfclass")
+			  vfncvtftof,vfmuladd,vfwmuladd,vfclass,vired,
+			  viwred,vfredu,vfredo,vfwredu,vfwredo")
 	   (const_int INVALID_ATTRIBUTE)
 	 (eq_attr "mode" "VNx1QI,VNx1BI")
 	   (symbol_ref "riscv_vector::get_ratio(E_VNx1QImode)")
@@ -206,7 +207,8 @@
 				viwmul,vnshift,vaalu,vsmul,vsshift,vnclip,vmsfs,\
 				vmiota,vmidx,vfalu,vfmul,vfminmax,vfdiv,vfwalu,vfwmul,\
 				vfsqrt,vfrecp,vfsgnj,vfcmp,vfcvtitof,vfcvtftoi,vfwcvtitof,\
-				vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,vfclass")
+				vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,vfclass,\
+				vired,viwred,vfredu,vfredo,vfwredu,vfwredo")
 	       (const_int 2)
 
 	       (eq_attr "type" "vimerge,vfmerge")
@@ -234,7 +236,7 @@
 	 (eq_attr "type" "vldux,vldox,vialu,vshift,viminmax,vimul,vidiv,vsalu,\
 			  viwalu,viwmul,vnshift,vimerge,vaalu,vsmul,\
 			  vsshift,vnclip,vfalu,vfmul,vfminmax,vfdiv,vfwalu,vfwmul,\
-			  vfsgnj,vfmerge")
+			  vfsgnj,vfmerge,vired,viwred,vfredu,vfredo,vfwredu,vfwredo")
 	   (const_int 5)
 
 	 (eq_attr "type" "vicmp,vimuladd,viwmuladd,vfcmp,vfmuladd,vfwmuladd")
@@ -261,7 +263,8 @@
 	 (eq_attr "type" "vldux,vldox,vialu,vshift,viminmax,vimul,vidiv,vsalu,\
 			  viwalu,viwmul,vnshift,vimerge,vaalu,vsmul,\
 			  vsshift,vnclip,vfalu,vfmul,vfminmax,vfdiv,\
-			  vfwalu,vfwmul,vfsgnj,vfmerge")
+			  vfwalu,vfwmul,vfsgnj,vfmerge,vired,viwred,vfredu,\
+			  vfredo,vfwredu,vfwredo")
 	   (symbol_ref "riscv_vector::get_ta(operands[6])")
 
 	 (eq_attr "type" "vimuladd,viwmuladd,vfmuladd,vfwmuladd")
@@ -302,7 +305,8 @@
 (define_attr "avl_type" ""
   (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov,vext,vimerge,\
 			  vfsqrt,vfrecp,vfmerge,vfcvtitof,vfcvtftoi,vfwcvtitof,\
-			  vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,vfclass")
+			  vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
+			  vfclass,vired,viwred,vfredu,vfredo,vfwredu,vfwredo")
 	   (symbol_ref "INTVAL (operands[7])")
 	 (eq_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
 	   (symbol_ref "INTVAL (operands[5])")
@@ -6181,3 +6185,208 @@
   "vfncvt.rod.f.f.w\t%0,%3%p1"
   [(set_attr "type" "vfncvtftof")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+
+;; -------------------------------------------------------------------------------
+;; ---- Predicated reduction operations
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - 14.1 Vector Single-Width Integer Reduction Instructions
+;; - 14.2 Vector Widening Integer Reduction Instructions
+;; - 14.3 Vector Single-Width Floating-Point Reduction Instructions
+;; - 14.4 Vector Widening Floating-Point Reduction Instructions
+;; -------------------------------------------------------------------------------
+
+;; For reduction operations, we should have seperate patterns for
+;; TARGET_MIN_VLEN == 32 and TARGET_MIN_VLEN > 32.
+;; Since reduction need LMUL = 1 scalar operand as the input operand
+;; and they are different.
+;; For example, The LMUL = 1 corresponding mode of VNx16QImode is VNx4QImode
+;; for -march=rv*zve32* wheras VNx8QImode for -march=rv*zve64*
+(define_insn "@pred_reduc_<reduc><mode><vlmul1>"
+  [(set (match_operand:<VLMUL1> 0 "register_operand"          "=vd, vr")
+	(unspec:<VLMUL1>
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand"     " vm,Wc1")
+	      (match_operand 5 "vector_length_operand"        " rK, rK")
+	      (match_operand 6 "const_int_operand"            "  i,  i")
+	      (match_operand 7 "const_int_operand"            "  i,  i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (any_reduc:VI
+	     (vec_duplicate:VI
+	       (vec_select:<VEL>
+	         (match_operand:<VLMUL1> 4 "register_operand" " vr, vr")
+	         (parallel [(const_int 0)])))
+	     (match_operand:VI 3 "register_operand"           " vr, vr"))
+	   (match_operand:<VLMUL1> 2 "vector_merge_operand"   "0vu,0vu")] UNSPEC_REDUC))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN > 32"
+  "vred<reduc>.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "vired")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_reduc_<reduc><mode><vlmul1_zve32>"
+  [(set (match_operand:<VLMUL1_ZVE32> 0 "register_operand"          "=vd, vr")
+	(unspec:<VLMUL1_ZVE32>
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand"           " vm,Wc1")
+	      (match_operand 5 "vector_length_operand"              " rK, rK")
+	      (match_operand 6 "const_int_operand"                  "  i,  i")
+	      (match_operand 7 "const_int_operand"                  "  i,  i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (any_reduc:VI_ZVE32
+	     (vec_duplicate:VI_ZVE32
+	       (vec_select:<VEL>
+	         (match_operand:<VLMUL1_ZVE32> 4 "register_operand" " vr, vr")
+	         (parallel [(const_int 0)])))
+	     (match_operand:VI_ZVE32 3 "register_operand"           " vr, vr"))
+	   (match_operand:<VLMUL1_ZVE32> 2 "vector_merge_operand"   "0vu,0vu")] UNSPEC_REDUC))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN == 32"
+  "vred<reduc>.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "vired")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_widen_reduc_plus<v_su><mode><vwlmul1>"
+  [(set (match_operand:<VWLMUL1> 0 "register_operand"           "=&vr")
+	(unspec:<VWLMUL1>
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1")
+	      (match_operand 5 "vector_length_operand"         "   rK")
+	      (match_operand 6 "const_int_operand"             "    i")
+	      (match_operand 7 "const_int_operand"             "    i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:VWI 3 "register_operand"             "   vr")
+	   (match_operand:<VWLMUL1> 4 "register_operand"       "   vr")
+	   (match_operand:<VWLMUL1> 2 "vector_merge_operand"   "  0vu")] WREDUC))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN > 32"
+  "vwredsum<v_su>.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "viwred")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_widen_reduc_plus<v_su><mode><vwlmul1_zve32>"
+  [(set (match_operand:<VWLMUL1_ZVE32> 0 "register_operand"           "=&vr")
+	(unspec:<VWLMUL1_ZVE32>
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand"            "vmWc1")
+	      (match_operand 5 "vector_length_operand"               "   rK")
+	      (match_operand 6 "const_int_operand"                   "    i")
+	      (match_operand 7 "const_int_operand"                   "    i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:VWI_ZVE32 3 "register_operand"             "   vr")
+	   (match_operand:<VWLMUL1_ZVE32> 4 "register_operand"       "   vr")
+	   (match_operand:<VWLMUL1_ZVE32> 2 "vector_merge_operand"   "  0vu")] WREDUC))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN == 32"
+  "vwredsum<v_su>.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "viwred")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_reduc_<reduc><mode><vlmul1>"
+  [(set (match_operand:<VLMUL1> 0 "register_operand"          "=vd, vr")
+	(unspec:<VLMUL1>
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand"      " vm,Wc1")
+	      (match_operand 5 "vector_length_operand"         " rK, rK")
+	      (match_operand 6 "const_int_operand"             "  i,  i")
+	      (match_operand 7 "const_int_operand"             "  i,  i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (any_freduc:VF
+	     (vec_duplicate:VF
+	       (vec_select:<VEL>
+	         (match_operand:<VLMUL1> 4 "register_operand" " vr, vr")
+	         (parallel [(const_int 0)])))
+	     (match_operand:VF 3 "register_operand"           " vr, vr"))
+	   (match_operand:<VLMUL1> 2 "vector_merge_operand"   "0vu,0vu")] UNSPEC_REDUC))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN > 32"
+  "vfred<reduc>.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "vfredu")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_reduc_<reduc><mode><vlmul1_zve32>"
+  [(set (match_operand:<VLMUL1_ZVE32> 0 "register_operand"          "=vd, vr")
+	(unspec:<VLMUL1_ZVE32>
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand"           " vm,Wc1")
+	      (match_operand 5 "vector_length_operand"              " rK, rK")
+	      (match_operand 6 "const_int_operand"                  "  i,  i")
+	      (match_operand 7 "const_int_operand"                  "  i,  i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (any_freduc:VF_ZVE32
+	     (vec_duplicate:VF_ZVE32
+	       (vec_select:<VEL>
+	         (match_operand:<VLMUL1_ZVE32> 4 "register_operand" " vr, vr")
+	         (parallel [(const_int 0)])))
+	     (match_operand:VF_ZVE32 3 "register_operand"           " vr, vr"))
+	   (match_operand:<VLMUL1_ZVE32> 2 "vector_merge_operand"   "0vu,0vu")] UNSPEC_REDUC))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN == 32"
+  "vfred<reduc>.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "vfredu")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_reduc_plus<order><mode><vlmul1>"
+  [(set (match_operand:<VLMUL1> 0 "register_operand"          "=vd, vr")
+	(unspec:<VLMUL1>
+	  [(unspec:<VLMUL1>
+	    [(unspec:<VM>
+	       [(match_operand:<VM> 1 "vector_mask_operand"      " vm,Wc1")
+	        (match_operand 5 "vector_length_operand"         " rK, rK")
+	        (match_operand 6 "const_int_operand"             "  i,  i")
+	        (match_operand 7 "const_int_operand"             "  i,  i")
+	        (reg:SI VL_REGNUM)
+	        (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	     (plus:VF
+	       (vec_duplicate:VF
+	         (vec_select:<VEL>
+	           (match_operand:<VLMUL1> 4 "register_operand" " vr, vr")
+	           (parallel [(const_int 0)])))
+	       (match_operand:VF 3 "register_operand"           " vr, vr"))
+	     (match_operand:<VLMUL1> 2 "vector_merge_operand"   "0vu,0vu")] UNSPEC_REDUC)] ORDER))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN > 32"
+  "vfred<order>sum.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "vfred<order>")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_reduc_plus<order><mode><vlmul1_zve32>"
+  [(set (match_operand:<VLMUL1_ZVE32> 0 "register_operand"          "=vd, vr")
+	(unspec:<VLMUL1_ZVE32>
+	  [(unspec:<VLMUL1_ZVE32>
+	    [(unspec:<VM>
+	       [(match_operand:<VM> 1 "vector_mask_operand"           " vm,Wc1")
+	        (match_operand 5 "vector_length_operand"              " rK, rK")
+	        (match_operand 6 "const_int_operand"                  "  i,  i")
+	        (match_operand 7 "const_int_operand"                  "  i,  i")
+	        (reg:SI VL_REGNUM)
+	        (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	     (plus:VF_ZVE32
+	       (vec_duplicate:VF_ZVE32
+	         (vec_select:<VEL>
+	           (match_operand:<VLMUL1_ZVE32> 4 "register_operand" " vr, vr")
+	           (parallel [(const_int 0)])))
+	       (match_operand:VF_ZVE32 3 "register_operand"           " vr, vr"))
+	     (match_operand:<VLMUL1_ZVE32> 2 "vector_merge_operand"   "0vu,0vu")] UNSPEC_REDUC)] ORDER))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN == 32"
+  "vfred<order>sum.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "vfred<order>")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_widen_reduc_plus<order><mode><vwlmul1>"
+  [(set (match_operand:<VWLMUL1> 0 "register_operand"             "=&vr")
+	(unspec:<VWLMUL1>
+	  [(unspec:<VWLMUL1>
+	    [(unspec:<VM>
+	       [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1")
+	        (match_operand 5 "vector_length_operand"         "   rK")
+	        (match_operand 6 "const_int_operand"             "    i")
+	        (match_operand 7 "const_int_operand"             "    i")
+	        (reg:SI VL_REGNUM)
+	        (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	     (match_operand:VWF 3 "register_operand"             "   vr")
+	     (match_operand:<VWLMUL1> 4 "register_operand"       "   vr")
+	     (match_operand:<VWLMUL1> 2 "vector_merge_operand"   "  0vu")] UNSPEC_WREDUC_SUM)] ORDER))]
+  "TARGET_VECTOR && TARGET_MIN_VLEN > 32"
+  "vfwred<order>sum.vs\t%0,%3,%4%p1"
+  [(set_attr "type" "vfwred<order>")
+   (set_attr "mode" "<MODE>")])
