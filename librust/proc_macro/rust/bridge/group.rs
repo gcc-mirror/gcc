@@ -3,7 +3,7 @@ use std::fmt;
 use Delimiter;
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Group {
     delimiter: Delimiter,
     stream: bridge::token_stream::TokenStream,
