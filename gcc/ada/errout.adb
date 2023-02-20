@@ -1994,12 +1994,28 @@ package body Errout is
    ---------------
 
    function Last_Sloc (N : Node_Id) return Source_Ptr is
+      procedure Skip_Char (S : in out Source_Ptr);
+      --  Skip one character of the source buffer at location S
+
+      ---------------
+      -- Skip_Char --
+      ---------------
+
+      procedure Skip_Char (S : in out Source_Ptr) is
+      begin
+         S := S + 1;
+      end Skip_Char;
+
+      --  Local variables
+
       SI  : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
       SF  : constant Source_Ptr        := Source_First (SI);
       SL  : constant Source_Ptr        := Source_Last (SI);
       Src : constant Source_Buffer_Ptr := Source_Text (SI);
       F   : Node_Id;
       S   : Source_Ptr;
+
+   --  Start of processing for Last_Sloc
 
    begin
       F := Last_Node (N);
@@ -2035,7 +2051,7 @@ package body Errout is
             while S < SL
               and then Src (S + 1) in '0' .. '9' | '_'
             loop
-               S := S + 1;
+               Skip_Char (S);
             end loop;
 
             --  Skip past #based_numeral#, if present
@@ -2043,30 +2059,36 @@ package body Errout is
             if S < SL
               and then Src (S + 1) = '#'
             then
-               S := S + 1;
+               Skip_Char (S);
 
                while S < SL
                  and then
                    Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
                loop
-                  S := S + 1;
+                  Skip_Char (S);
                end loop;
 
-               pragma Assert (S < SL and then Src (S + 1) = '#');
-
-               S := S + 1;
+               if S < SL
+                 and then Src (S + 1) = '#'
+               then
+                  Skip_Char (S);
+               end if;
             end if;
 
             --  Skip past exponent, if present
 
-            if S < SL + 1
+            if S < SL
               and then Src (S + 1) in 'e' | 'E'
             then
+               Skip_Char (S);
+
                --  For positive exponents the plus sign is optional, but we
                --  can simply skip past both plus and minus.
 
-               if Src (S + 2) in '+' | '-' then
-                  S := S + 1;
+               if S < SL
+                 and then Src (S + 1) in '+' | '-'
+               then
+                  Skip_Char (S);
                end if;
 
                --  Skip past the numeral part
@@ -2074,7 +2096,7 @@ package body Errout is
                while S < SL
                  and then Src (S + 1) in '0' .. '9' | '_'
                loop
-                  S := S + 1;
+                  Skip_Char (S);
                end loop;
             end if;
 
@@ -2085,55 +2107,66 @@ package body Errout is
             while S < SL
               and then Src (S + 1) in '0' .. '9' | '_'
             loop
-               S := S + 1;
+               Skip_Char (S);
             end loop;
 
             if S < SL then
+
+               --  Skip the dot and continue with a decimal literal
+
                if Src (S + 1) = '.' then
+                  Skip_Char (S);
+
                   while S < SL
                     and then Src (S + 1) in '0' .. '9' | '_'
                   loop
-                     S := S + 1;
+                     Skip_Char (S);
                   end loop;
-               else
-                  pragma Assert (Src (S + 1) = '#');
 
-                  S := S + 1;
+               --  Skip the hash and continue with a based literal
+
+               elsif Src (S + 1) = '#' then
+                  Skip_Char (S);
 
                   while S < SL
                     and then
                       Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
                   loop
-                     S := S + 1;
+                     Skip_Char (S);
                   end loop;
 
-                  pragma Assert (S < SL and then Src (S + 1) = '.');
-
-                  S := S + 1;
+                  if S < SL
+                    and then Src (S + 1) = '.'
+                  then
+                     Skip_Char (S);
+                  end if;
 
                   while S < SL
                     and then
                       Src (S + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'
                   loop
-                     S := S + 1;
+                     Skip_Char (S);
                   end loop;
 
-                  pragma Assert (S < SL and then Src (S + 1) = '#');
-
-                  S := S + 1;
+                  if S < SL
+                    and then Src (S + 1) = '#'
+                  then
+                     Skip_Char (S);
+                  end if;
                end if;
             end if;
 
             --  Skip past exponent, if present
 
-            if S < SL + 1
+            if S < SL
               and then Src (S + 1) in 'e' | 'E'
             then
+               Skip_Char (S);
                --  For positive exponents the plus sign is optional, but we
                --  can simply skip past both plus and minus.
 
-               if Src (S + 2) in '+' | '-' then
-                  S := S + 1;
+               if Src (S + 1) in '+' | '-' then
+                  Skip_Char (S);
                end if;
 
                --  Skip past the numeral part
@@ -2141,7 +2174,7 @@ package body Errout is
                while S < SL
                  and then Src (S + 1) in '0' .. '9' | '_'
                loop
-                  S := S + 1;
+                  Skip_Char (S);
                end loop;
             end if;
 
@@ -2153,7 +2186,7 @@ package body Errout is
                 in
               '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' | '_'
             loop
-               S := S + 1;
+               Skip_Char (S);
             end loop;
       end case;
 
