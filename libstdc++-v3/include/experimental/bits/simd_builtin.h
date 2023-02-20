@@ -2546,8 +2546,31 @@ template <typename _Abi, typename>
 	_Op<decltype(__vv)> __op;
 	if (__k._M_is_constprop_all_of())
 	  return __data(__op(__vv));
-	else
-	  return _CommonImpl::_S_blend(__k, __v, __data(__op(__vv)));
+	else if constexpr (is_same_v<_Op<void>, __increment<void>>)
+	  {
+	    static_assert(not std::is_same_v<_K, bool>);
+	    if constexpr (is_integral_v<_Tp>)
+	      // Take a shortcut knowing that __k is an integer vector with values -1 or 0.
+	      return __v._M_data - __vector_bitcast<_Tp>(__k._M_data);
+	    else if constexpr (not __have_avx2)
+	      return __v._M_data
+		       + __vector_bitcast<_Tp>(__k._M_data & __builtin_bit_cast(
+							       _K, _Tp(1)));
+	    // starting with AVX2 it is more efficient to blend after add
+	  }
+	else if constexpr (is_same_v<_Op<void>, __decrement<void>>)
+	  {
+	    static_assert(not std::is_same_v<_K, bool>);
+	    if constexpr (is_integral_v<_Tp>)
+	      // Take a shortcut knowing that __k is an integer vector with values -1 or 0.
+	      return __v._M_data + __vector_bitcast<_Tp>(__k._M_data);
+	    else if constexpr (not __have_avx2)
+	      return __v._M_data
+		       - __vector_bitcast<_Tp>(__k._M_data & __builtin_bit_cast(
+							       _K, _Tp(1)));
+	    // starting with AVX2 it is more efficient to blend after sub
+	  }
+	return _CommonImpl::_S_blend(__k, __v, __data(__op(__vv)));
       }
 
     //}}}2
