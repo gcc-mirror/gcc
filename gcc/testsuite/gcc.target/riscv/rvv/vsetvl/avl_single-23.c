@@ -29,6 +29,6 @@ void f (int8_t * restrict in, int8_t * restrict out, int n, int m, int cond)
 
 /* { dg-final { scan-assembler {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf8,\s*t[au],\s*m[au]} { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } } } } */
 /* { dg-final { scan-assembler {vsetvli\s+zero,\s*[a-x0-9]+,\s*e32,\s*mf2,\s*tu,\s*mu} { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } } } } */
-/* { dg-final { scan-assembler-times {vsetvli} 4 { target { no-opts "-O0" no-opts "-Os" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 4 { target { no-opts "-O0" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } } } } */
 /* { dg-final { scan-assembler-times {li\s+[a-x0-9]+,101} 1 { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } } } } */
 /* { dg-final { scan-assembler-times {li\s+[a-x0-9]+,102} 1 { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } } } } */
