@@ -1,3 +1,10 @@
+2023-02-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR testsuite/108835
+	* libm2iso/RTco.cc: Re-implementation using a single lock
+	mutex and inlined wait/signal implementation within
+	transfer.
+
 2023-02-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2iso/RTco.cc (tprintf): Replace definition.
