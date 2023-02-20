@@ -124,8 +124,8 @@ impl From<Literal> for TokenTree {
 pub struct LexError;
 
 impl fmt::Display for LexError {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!("Implement this function")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("cannot parse string into token stream")
     }
 }
 
