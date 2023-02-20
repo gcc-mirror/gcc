@@ -48,6 +48,22 @@
     UNSPEC_AES_ESM
     UNSPEC_AES_ESI
     UNSPEC_AES_ESMI
+
+    ;; Zknh unspecs
+    UNSPEC_SHA_256_SIG0
+    UNSPEC_SHA_256_SIG1
+    UNSPEC_SHA_256_SUM0
+    UNSPEC_SHA_256_SUM1
+    UNSPEC_SHA_512_SIG0
+    UNSPEC_SHA_512_SIG0H
+    UNSPEC_SHA_512_SIG0L
+    UNSPEC_SHA_512_SIG1
+    UNSPEC_SHA_512_SIG1H
+    UNSPEC_SHA_512_SIG1L
+    UNSPEC_SHA_512_SUM0
+    UNSPEC_SHA_512_SUM0R
+    UNSPEC_SHA_512_SUM1
+    UNSPEC_SHA_512_SUM1R
 ])
 
 ;; ZBKB extension
@@ -246,4 +262,126 @@
                    UNSPEC_AES_ESM))]
   "TARGET_ZKNE && TARGET_64BIT"
   "aes64esm\t%0,%1,%2"
+  [(set_attr "type" "crypto")])
+
+;; ZKNH - SHA256
+
+(define_insn "riscv_sha256sig0_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")]
+                  UNSPEC_SHA_256_SIG0))]
+  "TARGET_ZKNH"
+  "sha256sig0\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha256sig1_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")]
+                  UNSPEC_SHA_256_SIG1))]
+  "TARGET_ZKNH"
+  "sha256sig1\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha256sum0_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")]
+                  UNSPEC_SHA_256_SUM0))]
+  "TARGET_ZKNH"
+  "sha256sum0\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha256sum1_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")]
+                  UNSPEC_SHA_256_SUM1))]
+  "TARGET_ZKNH"
+  "sha256sum1\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+;; ZKNH - SHA512
+
+(define_insn "riscv_sha512sig0h"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "register_operand" "r")]
+                   UNSPEC_SHA_512_SIG0H))]
+  "TARGET_ZKNH && !TARGET_64BIT"
+  "sha512sig0h\t%0,%1,%2"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sig0l"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "register_operand" "r")]
+                   UNSPEC_SHA_512_SIG0L))]
+  "TARGET_ZKNH && !TARGET_64BIT"
+  "sha512sig0l\t%0,%1,%2"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sig1h"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "register_operand" "r")]
+                   UNSPEC_SHA_512_SIG1H))]
+  "TARGET_ZKNH && !TARGET_64BIT"
+  "sha512sig1h\t%0,%1,%2"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sig1l"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "register_operand" "r")]
+                   UNSPEC_SHA_512_SIG1L))]
+  "TARGET_ZKNH && !TARGET_64BIT"
+  "sha512sig1l\t%0,%1,%2"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sum0r"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "register_operand" "r")]
+                   UNSPEC_SHA_512_SUM0R))]
+  "TARGET_ZKNH && !TARGET_64BIT"
+  "sha512sum0r\t%0,%1,%2"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sum1r"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                   (match_operand:SI 2 "register_operand" "r")]
+                   UNSPEC_SHA_512_SUM1R))]
+  "TARGET_ZKNH && !TARGET_64BIT"
+  "sha512sum1r\t%0,%1,%2"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sig0"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(match_operand:DI 1 "register_operand" "r")]
+                   UNSPEC_SHA_512_SIG0))]
+  "TARGET_ZKNH && TARGET_64BIT"
+  "sha512sig0\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sig1"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(match_operand:DI 1 "register_operand" "r")]
+                   UNSPEC_SHA_512_SIG1))]
+  "TARGET_ZKNH && TARGET_64BIT"
+  "sha512sig1\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sum0"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(match_operand:DI 1 "register_operand" "r")]
+                   UNSPEC_SHA_512_SUM0))]
+  "TARGET_ZKNH && TARGET_64BIT"
+  "sha512sum0\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sha512sum1"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(match_operand:DI 1 "register_operand" "r")]
+                   UNSPEC_SHA_512_SUM1))]
+  "TARGET_ZKNH && TARGET_64BIT"
+  "sha512sum1\t%0,%1"
   [(set_attr "type" "crypto")])
