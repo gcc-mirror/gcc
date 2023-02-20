@@ -285,7 +285,7 @@ static const predication_index preds_none[] = { PRED_none, NUM_PREDS };
 
 /* Used by functions that have the m (merging) predicated form, and in
    addition have an unpredicated form.  */
-static const predication_index preds_m_or_none[] = {
+const predication_index preds_m_or_none[] = {
   PRED_m, PRED_none, NUM_PREDS
 };
 

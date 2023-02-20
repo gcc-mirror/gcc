@@ -135,6 +135,9 @@ enum predication_index
   NUM_PREDS
 };
 
+/* Some shapes need access to some predicate sets.  */
+extern const predication_index preds_m_or_none[];
+
 /* Classifies element types, based on type suffixes with the bit count
    removed.  */
 enum type_class_index
