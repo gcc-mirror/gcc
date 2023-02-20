@@ -3702,21 +3702,30 @@ match_deferred_characteristics (gfc_typespec * ts)
    For return types specified in a FUNCTION prefix, the IMPLICIT rules of the
    scope are not yet parsed so this has to be delayed up to parse_spec.  */
 
-static void
+static bool
 check_function_result_typed (void)
 {
   gfc_typespec ts;
 
   gcc_assert (gfc_current_state () == COMP_FUNCTION);
 
-  if (!gfc_current_ns->proc_name->result) return;
+  if (!gfc_current_ns->proc_name->result)
+    return true;
 
   ts = gfc_current_ns->proc_name->result->ts;
 
   /* Check type-parameters, at the moment only CHARACTER lengths possible.  */
   /* TODO:  Extend when KIND type parameters are implemented.  */
   if (ts.type == BT_CHARACTER && ts.u.cl && ts.u.cl->length)
-    gfc_expr_check_typed (ts.u.cl->length, gfc_current_ns, true);
+    {
+      /* Reject invalid type of specification expression for length.  */
+      if (ts.u.cl->length->ts.type != BT_INTEGER)
+	  return false;
+
+      gfc_expr_check_typed (ts.u.cl->length, gfc_current_ns, true);
+    }
+
+  return true;
 }
 
 
@@ -3824,10 +3833,7 @@ loop:
 	}
 
       if (verify_now)
-	{
-	  check_function_result_typed ();
-	  function_result_typed = true;
-	}
+	function_result_typed = check_function_result_typed ();
     }
 
   switch (st)
@@ -3838,10 +3844,7 @@ loop:
     case ST_IMPLICIT_NONE:
     case ST_IMPLICIT:
       if (!function_result_typed)
-	{
-	  check_function_result_typed ();
-	  function_result_typed = true;
-	}
+	function_result_typed = check_function_result_typed ();
       goto declSt;
 
     case ST_FORMAT:
