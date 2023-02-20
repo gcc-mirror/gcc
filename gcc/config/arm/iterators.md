@@ -583,6 +583,47 @@
 		     VCREATEQ_F
 		     ])
 
+;; MVE comparison iterators
+(define_int_iterator MVE_CMP_M [
+		     VCMPCSQ_M_U
+		     VCMPEQQ_M_S VCMPEQQ_M_U
+		     VCMPGEQ_M_S
+		     VCMPGTQ_M_S
+		     VCMPHIQ_M_U
+		     VCMPLEQ_M_S
+		     VCMPLTQ_M_S
+		     VCMPNEQ_M_S VCMPNEQ_M_U
+		     ])
+
+(define_int_iterator MVE_CMP_M_F [
+		     VCMPEQQ_M_F
+		     VCMPGEQ_M_F
+		     VCMPGTQ_M_F
+		     VCMPLEQ_M_F
+		     VCMPLTQ_M_F
+		     VCMPNEQ_M_F
+		     ])
+
+(define_int_iterator MVE_CMP_M_N [
+		     VCMPCSQ_M_N_U
+		     VCMPEQQ_M_N_S VCMPEQQ_M_N_U
+		     VCMPGEQ_M_N_S
+		     VCMPGTQ_M_N_S
+		     VCMPHIQ_M_N_U
+		     VCMPLEQ_M_N_S
+		     VCMPLTQ_M_N_S
+		     VCMPNEQ_M_N_S VCMPNEQ_M_N_U
+		     ])
+
+(define_int_iterator MVE_CMP_M_N_F [
+		     VCMPEQQ_M_N_F
+		     VCMPGEQ_M_N_F
+		     VCMPGTQ_M_N_F
+		     VCMPLEQ_M_N_F
+		     VCMPLTQ_M_N_F
+		     VCMPNEQ_M_N_F
+		     ])
+
 (define_int_iterator MVE_VMAXVQ_VMINVQ [
 		     VMAXAVQ_S
 		     VMAXVQ_S VMAXVQ_U
@@ -653,6 +694,37 @@
 		 (minus "vsub")
 		 (mult "vmul")
 		 (plus "vadd")
+		 ])
+
+(define_int_attr mve_cmp_op1 [
+		 (VCMPCSQ_M_U "cs")
+		 (VCMPEQQ_M_S "eq") (VCMPEQQ_M_U "eq")
+		 (VCMPGEQ_M_S "ge")
+		 (VCMPGTQ_M_S "gt")
+		 (VCMPHIQ_M_U "hi")
+		 (VCMPLEQ_M_S "le")
+		 (VCMPLTQ_M_S "lt")
+		 (VCMPNEQ_M_S "ne") (VCMPNEQ_M_U "ne")
+		 (VCMPEQQ_M_F "eq")
+		 (VCMPGEQ_M_F "ge")
+		 (VCMPGTQ_M_F "gt")
+		 (VCMPLEQ_M_F "le")
+		 (VCMPLTQ_M_F "lt")
+		 (VCMPNEQ_M_F "ne")
+		 (VCMPCSQ_M_N_U "cs")
+		 (VCMPEQQ_M_N_S "eq") (VCMPEQQ_M_N_U "eq")
+		 (VCMPGEQ_M_N_S "ge")
+		 (VCMPGTQ_M_N_S "gt")
+		 (VCMPHIQ_M_N_U "hi")
+		 (VCMPLEQ_M_N_S "le")
+		 (VCMPLTQ_M_N_S "lt")
+		 (VCMPNEQ_M_N_S "ne") (VCMPNEQ_M_N_U "ne")
+		 (VCMPEQQ_M_N_F "eq")
+		 (VCMPGEQ_M_N_F "ge")
+		 (VCMPGTQ_M_N_F "gt")
+		 (VCMPLEQ_M_N_F "le")
+		 (VCMPLTQ_M_N_F "lt")
+		 (VCMPNEQ_M_N_F "ne")
 		 ])
 
 (define_int_attr mve_insn [
@@ -836,6 +908,26 @@
 		 (VCLSQ_M_S "s")
 		 (VCLZQ_M_S "i")
 		 (VCLZQ_M_U "i")
+		 (VCMPCSQ_M_N_U "u")
+		 (VCMPCSQ_M_U "u")
+		 (VCMPEQQ_M_N_S "i")
+		 (VCMPEQQ_M_N_U "i")
+		 (VCMPEQQ_M_S "i")
+		 (VCMPEQQ_M_U "i")
+		 (VCMPGEQ_M_N_S "s")
+		 (VCMPGEQ_M_S "s")
+		 (VCMPGTQ_M_N_S "s")
+		 (VCMPGTQ_M_S "s")
+		 (VCMPHIQ_M_N_U "u")
+		 (VCMPHIQ_M_U "u")
+		 (VCMPLEQ_M_N_S "s")
+		 (VCMPLEQ_M_S "s")
+		 (VCMPLTQ_M_N_S "s")
+		 (VCMPLTQ_M_S "s")
+		 (VCMPNEQ_M_N_S "i")
+		 (VCMPNEQ_M_N_U "i")
+		 (VCMPNEQ_M_S "i")
+		 (VCMPNEQ_M_U "i")
 		 (VMOVNBQ_M_S "i") (VMOVNBQ_M_U "i")
 		 (VMOVNBQ_S "i") (VMOVNBQ_U "i")
 		 (VMOVNTQ_M_S "i") (VMOVNTQ_M_U "i")
@@ -2082,6 +2174,22 @@
 		       (VMAXAQ_M_S "s")
 		       (VMINAQ_S "s")
 		       (VMINAQ_M_S "s")
+		       (VCMPCSQ_M_N_U "u")
+		       (VCMPCSQ_M_U "u")
+		       (VCMPEQQ_M_N_S "s") (VCMPEQQ_M_N_U "u")
+		       (VCMPEQQ_M_S "s") (VCMPEQQ_M_U "u")
+		       (VCMPGEQ_M_N_S "s")
+		       (VCMPGEQ_M_S "s")
+		       (VCMPGTQ_M_N_S "s")
+		       (VCMPGTQ_M_S "s")
+		       (VCMPHIQ_M_N_U "u")
+		       (VCMPHIQ_M_U "u")
+		       (VCMPLEQ_M_N_S "s")
+		       (VCMPLEQ_M_S "s")
+		       (VCMPLTQ_M_N_S "s")
+		       (VCMPLTQ_M_S "s")
+		       (VCMPNEQ_M_N_S "s") (VCMPNEQ_M_N_U "u")
+		       (VCMPNEQ_M_S "s") (VCMPNEQ_M_U "u")
 		       ])
 
 ;; Both kinds of return insn.
