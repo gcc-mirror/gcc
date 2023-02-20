@@ -837,6 +837,11 @@ gomp_attach_pointer (struct gomp_device_descr *devicep,
 	  gomp_fatal ("attempt to attach null pointer");
 	}
 
+      if (devicep->is_usm_ptr_func
+	  && devicep->is_usm_ptr_func ((void*)(target + bias)))
+	/* Nothing to do here.  */
+	return;
+
       s.host_start = target + bias;
       s.host_end = s.host_start + 1;
       tn = splay_tree_lookup (mem_map, &s);
