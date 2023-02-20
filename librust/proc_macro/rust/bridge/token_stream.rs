@@ -1,4 +1,8 @@
 use bridge::{group::Group, ident::Ident, literal::Literal, punct::Punct};
+use std::convert::TryInto;
+
+type ExternalTokenTree = crate::TokenTree;
+type ExternalTokenStream = crate::TokenStream;
 
 // TODO: There surely is a better way to achieve this. I don't like this
 // "duplication" of the TokenTree enumeration. But I cannot use the public
@@ -13,8 +17,21 @@ pub enum TokenTree {
     Literal(Literal),
 }
 
+impl From<ExternalTokenTree> for TokenTree {
+    fn from(value: ExternalTokenTree) -> Self {
+        match value {
+            ExternalTokenTree::Group(g) => TokenTree::Group(g.0),
+            ExternalTokenTree::Ident(i) => TokenTree::Ident(i.0),
+            ExternalTokenTree::Punct(p) => TokenTree::Punct(p.0),
+            ExternalTokenTree::Literal(l) => TokenTree::Literal(l.0),
+        }
+    }
+}
+
 extern "C" {
     fn TokenStream__new() -> TokenStream;
+    fn TokenStream__with_capacity(capacity: u64) -> TokenStream;
+    fn TokenStream__push(stream: *mut TokenStream, tree: TokenTree);
 }
 
 #[repr(C)]
@@ -22,6 +39,7 @@ extern "C" {
 pub struct TokenStream {
     pub(crate) data: *const TokenTree,
     pub(crate) size: u64,
+    capacity: u64,
 }
 
 impl TokenStream {
@@ -29,7 +47,41 @@ impl TokenStream {
         unsafe { TokenStream__new() }
     }
 
+    fn with_capacity(capacity: u64) -> Self {
+        unsafe { TokenStream__with_capacity(capacity) }
+    }
+
+    fn push(&mut self, tree: TokenTree) {
+        unsafe { TokenStream__push(self as *mut TokenStream, tree) }
+    }
+
     pub fn is_empty(&self) -> bool {
         0 == self.size
+    }
+
+    pub fn from_iterator<I>(it: I) -> Self
+    where
+        I: IntoIterator<Item = ExternalTokenStream>,
+    {
+        let it = it.into_iter();
+        let mut result = TokenStream::with_capacity(it.size_hint().0.try_into().unwrap());
+        for stream in it {
+            for item in stream.into_iter() {
+                result.push(item.into());
+            }
+        }
+        result
+    }
+
+    pub fn from_tree_iterator<I>(it: I) -> Self
+    where
+        I: IntoIterator<Item = ExternalTokenTree>,
+    {
+        let it = it.into_iter();
+        let mut result = TokenStream::with_capacity(it.size_hint().0.try_into().unwrap());
+        for item in it {
+            result.push(item.into());
+        }
+        result
     }
 }

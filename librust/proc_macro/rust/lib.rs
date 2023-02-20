@@ -174,14 +174,14 @@ impl FromStr for TokenStream {
 }
 
 impl iter::FromIterator<TokenTree> for TokenStream {
-    fn from_iter<I: IntoIterator<Item = TokenTree>>(_trees: I) -> Self {
-        todo!("Implement this function")
+    fn from_iter<I: IntoIterator<Item = TokenTree>>(trees: I) -> Self {
+        TokenStream(bridge::token_stream::TokenStream::from_tree_iterator(trees))
     }
 }
 
 impl iter::FromIterator<TokenStream> for TokenStream {
-    fn from_iter<I: IntoIterator<Item = TokenStream>>(_streams: I) -> Self {
-        todo!("Implement this function")
+    fn from_iter<I: IntoIterator<Item = TokenStream>>(streams: I) -> Self {
+        TokenStream(bridge::token_stream::TokenStream::from_iterator(streams))
     }
 }
 
