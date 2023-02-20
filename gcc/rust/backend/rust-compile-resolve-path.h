@@ -50,6 +50,7 @@ public:
   void visit (HIR::RangePattern &) override {}
   void visit (HIR::ReferencePattern &) override {}
   void visit (HIR::SlicePattern &) override {}
+  void visit (HIR::AltPattern &) override {}
   void visit (HIR::StructPattern &) override {}
   void visit (HIR::TuplePattern &) override {}
   void visit (HIR::TupleStructPattern &) override {}

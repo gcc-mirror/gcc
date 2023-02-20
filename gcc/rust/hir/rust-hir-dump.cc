@@ -580,6 +580,9 @@ Dump::visit (TuplePattern &)
 void
 Dump::visit (SlicePattern &)
 {}
+void
+Dump::visit (AltPattern &)
+{}
 
 void
 Dump::visit (EmptyStmt &)

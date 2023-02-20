@@ -906,6 +906,10 @@ UnsafeChecker::visit (SlicePattern &)
 {}
 
 void
+UnsafeChecker::visit (AltPattern &)
+{}
+
+void
 UnsafeChecker::visit (EmptyStmt &)
 {}
 

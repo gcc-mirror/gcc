@@ -42,6 +42,7 @@ public:
   void visit (HIR::QualifiedPathInExpression &pattern) override;
   void visit (HIR::ReferencePattern &pattern) override;
   void visit (HIR::SlicePattern &pattern) override;
+  void visit (HIR::AltPattern &pattern) override;
 
 private:
   TypeCheckPattern (TyTy::BaseType *parent);

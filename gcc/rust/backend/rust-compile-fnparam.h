@@ -39,6 +39,7 @@ public:
   void visit (HIR::TupleStructPattern &) override;
 
   // Empty visit for unused Pattern HIR nodes.
+  void visit (HIR::AltPattern &) override {}
   void visit (HIR::LiteralPattern &) override {}
   void visit (HIR::PathInExpression &) override {}
   void visit (HIR::QualifiedPathInExpression &) override {}
