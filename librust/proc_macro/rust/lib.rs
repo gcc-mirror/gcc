@@ -186,13 +186,13 @@ impl iter::FromIterator<TokenStream> for TokenStream {
 }
 
 impl Extend<TokenTree> for TokenStream {
-    fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, _trees: I) {
-        todo!("Implement this function")
+    fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, trees: I) {
+        self.0.extend(trees);
     }
 }
 
 impl Extend<TokenStream> for TokenStream {
-    fn extend<I: IntoIterator<Item = TokenStream>>(&mut self, _streams: I) {
-        todo!("Implement this function")
+    fn extend<I: IntoIterator<Item = TokenStream>>(&mut self, streams: I) {
+        self.0.extend(streams)
     }
 }

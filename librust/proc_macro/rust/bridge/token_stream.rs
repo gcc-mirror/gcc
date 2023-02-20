@@ -85,3 +85,21 @@ impl TokenStream {
         result
     }
 }
+
+impl Extend<ExternalTokenTree> for TokenStream {
+    fn extend<I: IntoIterator<Item = ExternalTokenTree>>(&mut self, trees: I) {
+        for tt in trees {
+            self.push(tt.into())
+        }
+    }
+}
+
+impl Extend<ExternalTokenStream> for TokenStream {
+    fn extend<I: IntoIterator<Item = ExternalTokenStream>>(&mut self, streams: I) {
+        for stream in streams {
+            for tt in stream {
+                self.push(tt.into());
+            }
+        }
+    }
+}
