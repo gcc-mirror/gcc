@@ -17419,7 +17419,9 @@ resolve_fntype (gfc_namespace *ns)
 	  }
       }
 
-  if (sym->ts.type == BT_CHARACTER)
+  if (sym->ts.type == BT_CHARACTER
+      && sym->ts.u.cl->length
+      && sym->ts.u.cl->length->ts.type == BT_INTEGER)
     gfc_traverse_expr (sym->ts.u.cl->length, sym, flag_fn_result_spec, 0);
 }
 
