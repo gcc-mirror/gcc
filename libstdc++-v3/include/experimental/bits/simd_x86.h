@@ -3461,6 +3461,74 @@ template <typename _Abi>
       }
 
     //}}} }}}
+    template <template <typename> class _Op, typename _Tp, typename _K,
+	      size_t _Np>
+      _GLIBCXX_SIMD_INTRINSIC static _SimdWrapper<_Tp, _Np>
+      _S_masked_unary(const _SimdWrapper<_K, _Np> __k,
+		      const _SimdWrapper<_Tp, _Np> __v)
+      {
+	if (__k._M_is_constprop_none_of())
+	  return __v;
+	else if (__k._M_is_constprop_all_of())
+	  {
+	    auto __vv = _Base::_M_make_simd(__v);
+	    _Op<decltype(__vv)> __op;
+	    return __data(__op(__vv));
+	  }
+	else if constexpr (__is_bitmask_v<decltype(__k)>
+			     && (is_same_v<_Op<void>, __increment<void>>
+				   || is_same_v<_Op<void>, __decrement<void>>))
+	  {
+	    // optimize masked unary increment and decrement as masked sub +/-1
+	    constexpr int __pm_one
+	      = is_same_v<_Op<void>, __increment<void>> ? -1 : 1;
+	    if constexpr (is_integral_v<_Tp>)
+	      {
+		constexpr bool __lp64 = sizeof(long) == sizeof(long long);
+		using _Ip = std::make_signed_t<_Tp>;
+		using _Up = std::conditional_t<
+			      std::is_same_v<_Ip, long>,
+			      std::conditional_t<__lp64, long long, int>,
+			      std::conditional_t<
+				std::is_same_v<_Ip, signed char>, char, _Ip>>;
+		const auto __value = __vector_bitcast<_Up>(__v._M_data);
+#define _GLIBCXX_SIMD_MASK_SUB(_Sizeof, _Width, _Instr)                        \
+  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__v) == _Width)               \
+    return __vector_bitcast<_Tp>(__builtin_ia32_##_Instr##_mask(__value,       \
+	     __vector_broadcast<_Np>(_Up(__pm_one)), __value, __k._M_data))
+		_GLIBCXX_SIMD_MASK_SUB(1, 64, psubb512);
+		_GLIBCXX_SIMD_MASK_SUB(1, 32, psubb256);
+		_GLIBCXX_SIMD_MASK_SUB(1, 16, psubb128);
+		_GLIBCXX_SIMD_MASK_SUB(2, 64, psubw512);
+		_GLIBCXX_SIMD_MASK_SUB(2, 32, psubw256);
+		_GLIBCXX_SIMD_MASK_SUB(2, 16, psubw128);
+		_GLIBCXX_SIMD_MASK_SUB(4, 64, psubd512);
+		_GLIBCXX_SIMD_MASK_SUB(4, 32, psubd256);
+		_GLIBCXX_SIMD_MASK_SUB(4, 16, psubd128);
+		_GLIBCXX_SIMD_MASK_SUB(8, 64, psubq512);
+		_GLIBCXX_SIMD_MASK_SUB(8, 32, psubq256);
+		_GLIBCXX_SIMD_MASK_SUB(8, 16, psubq128);
+#undef _GLIBCXX_SIMD_MASK_SUB
+	      }
+	    else
+	      {
+#define _GLIBCXX_SIMD_MASK_SUB(_Sizeof, _Width, _Instr)                        \
+  if constexpr (sizeof(_Tp) == _Sizeof && sizeof(__v) == _Width)               \
+    return __builtin_ia32_##_Instr##_mask(                                     \
+	     __v._M_data, __vector_broadcast<_Np>(_Tp(__pm_one)), __v._M_data, \
+	     __k._M_data, _MM_FROUND_CUR_DIRECTION)
+		_GLIBCXX_SIMD_MASK_SUB(4, 64, subps512);
+		_GLIBCXX_SIMD_MASK_SUB(4, 32, subps256);
+		_GLIBCXX_SIMD_MASK_SUB(4, 16, subps128);
+		_GLIBCXX_SIMD_MASK_SUB(8, 64, subpd512);
+		_GLIBCXX_SIMD_MASK_SUB(8, 32, subpd256);
+		_GLIBCXX_SIMD_MASK_SUB(8, 16, subpd128);
+#undef _GLIBCXX_SIMD_MASK_SUB
+	      }
+	  }
+	else
+	  return _Base::template _S_masked_unary<_Op>(__k, __v);
+      }
   };
 
 // }}}
