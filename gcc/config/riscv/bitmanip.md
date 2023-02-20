@@ -189,7 +189,7 @@
   [(set (match_operand:X 0 "register_operand" "=r")
         (bitmanip_bitwise:X (not:X (match_operand:X 1 "register_operand" "r"))
                             (match_operand:X 2 "register_operand" "r")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB || TARGET_ZBKB"
   "<insn>n\t%0,%2,%1"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
@@ -203,7 +203,7 @@
 			       (const_int 0)))
 		(match_operand:DI 2 "register_operand")))
    (clobber (match_operand:DI 3 "register_operand"))]
-  "TARGET_ZBB"
+  "TARGET_ZBB || TARGET_ZBKB"
   [(set (match_dup 3) (ashiftrt:DI (match_dup 1) (const_int 63)))
    (set (match_dup 0) (and:DI (not:DI (match_dup 3)) (match_dup 2)))])
 
@@ -211,7 +211,7 @@
   [(set (match_operand:X 0 "register_operand" "=r")
         (not:X (xor:X (match_operand:X 1 "register_operand" "r")
                       (match_operand:X 2 "register_operand" "r"))))]
-  "TARGET_ZBB"
+  "TARGET_ZBB || TARGET_ZBKB"
   "xnor\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
@@ -277,7 +277,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(rotatert:SI (match_operand:SI 1 "register_operand" "r")
 		     (match_operand:QI 2 "arith_operand" "rI")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB || TARGET_ZBKB"
   "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -285,7 +285,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(rotatert:DI (match_operand:DI 1 "register_operand" "r")
 		     (match_operand:QI 2 "arith_operand" "rI")))]
-  "TARGET_64BIT && TARGET_ZBB"
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "ror%i2\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -293,7 +293,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
 				     (match_operand:QI 2 "register_operand" "r"))))]
-  "TARGET_64BIT && TARGET_ZBB"
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "rorw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -301,7 +301,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(rotate:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:QI 2 "register_operand" "r")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB || TARGET_ZBKB"
   "rol%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -309,7 +309,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(rotate:DI (match_operand:DI 1 "register_operand" "r")
 		   (match_operand:QI 2 "register_operand" "r")))]
-  "TARGET_64BIT && TARGET_ZBB"
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "rol\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -317,7 +317,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (rotate:SI (match_operand:SI 1 "register_operand" "r")
 				   (match_operand:QI 2 "register_operand" "r"))))]
-  "TARGET_64BIT && TARGET_ZBB"
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "rolw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -332,7 +332,7 @@
 (define_insn "bswap<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
         (bswap:X (match_operand:X 1 "register_operand" "r")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB || TARGET_ZBKB"
   "rev8\t%0,%1"
   [(set_attr "type" "bitmanip")])
 

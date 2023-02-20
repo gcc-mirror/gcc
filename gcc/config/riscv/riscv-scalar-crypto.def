@@ -1,0 +1,45 @@
+/* Builtin functions for RISC-V Scalar Cryptography extensions.
+   Copyright (C) 2023 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+// ZBKB
+RISCV_BUILTIN (pack_sihi, "pack", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_HI_HI, crypto_zbkb32),
+RISCV_BUILTIN (pack_disi, "pack", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_SI_SI, crypto_zbkb64),
+
+RISCV_BUILTIN (packh_si, "packh", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_QI_QI, crypto_zbkb32),
+RISCV_BUILTIN (packh_di, "packh", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_QI_QI, crypto_zbkb64),
+
+RISCV_BUILTIN (packw, "packw", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_HI_HI, crypto_zbkb64),
+
+RISCV_BUILTIN (zip, "zip", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zbkb32),
+RISCV_BUILTIN (unzip, "unzip", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zbkb32),
+
+RISCV_BUILTIN (brev8_si, "brev8", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zbkb32),
+RISCV_BUILTIN (brev8_di, "brev8", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, crypto_zbkb64),
+
+// ZBKC
+RISCV_BUILTIN (clmul_si, "clmul", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI, crypto_zbkc32),
+RISCV_BUILTIN (clmul_di, "clmul", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI, crypto_zbkc64),
+RISCV_BUILTIN (clmulh_si, "clmulh", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI, crypto_zbkc32),
+RISCV_BUILTIN (clmulh_di, "clmulh", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI, crypto_zbkc64),
+
+// ZBKX
+RISCV_BUILTIN (xperm4_si, "xperm4", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI, crypto_zbkx32),
+RISCV_BUILTIN (xperm4_di, "xperm4", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI, crypto_zbkx64),
+RISCV_BUILTIN (xperm8_si, "xperm8", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI, crypto_zbkx32),
+RISCV_BUILTIN (xperm8_di, "xperm8", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI, crypto_zbkx64),
