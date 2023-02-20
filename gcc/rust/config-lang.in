@@ -29,6 +29,4 @@ compilers="rust1\$(exeext)"
 
 build_by_default="no"
 
-target_libs="target-libffi target-libbacktrace"
-
 gtfiles="\$(srcdir)/rust/rust-lang.cc"
