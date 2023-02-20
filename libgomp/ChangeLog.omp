@@ -1,5 +1,7 @@
 2023-02-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* libgomp_g.h (GOMP_enable_pinned_mode): New.
+
 	* config/linux/allocator.c (linux_memspace_alloc): Add 'init0'
 	formal parameter.  Adjust all users.
 	(linux_memspace_alloc, linux_memspace_free): Attempt to allocate
