@@ -16,10 +16,9 @@ pub enum Unsigned {
     Unsigned16(u16),
     Unsigned32(u32),
     Unsigned64(u64),
-    // FIXME: 128 bits ffi is not safe for now
+    // u128 is not ffi safe, hence this representation
     // https://github.com/rust-lang/rust/issues/54341
-    //
-    // Unsigned128(u128),
+    Unsigned128(u64, u64),
 }
 
 #[repr(C)]
@@ -29,10 +28,9 @@ pub enum Signed {
     Signed16(i16),
     Signed32(i32),
     Signed64(i64),
-    // FIXME: 128 bits ffi is not safe for now
+    // i128 is not ffi safe, hence this representation
     // https://github.com/rust-lang/rust/issues/54341
-    //
-    // Signed128(i128),
+    Signed128(u64, u64),
 }
 
 #[repr(C)]
@@ -82,8 +80,14 @@ impl Literal {
         Literal::Unsigned(Unsigned::Unsigned64(n), true)
     }
 
-    pub fn u128_suffixed(_n: u128) -> Self {
-        todo!("Implement this function")
+    pub fn u128_suffixed(n: u128) -> Self {
+        Literal::Unsigned(
+            Unsigned::Unsigned128(
+                (n >> 64).try_into().unwrap(),
+                (n & 0xFFFFFFFFFFFFFFFF).try_into().unwrap(),
+            ),
+            true,
+        )
     }
 
     pub fn usize_suffixed(n: usize) -> Self {
@@ -106,8 +110,14 @@ impl Literal {
         Literal::Signed(Signed::Signed64(n), true)
     }
 
-    pub fn i128_suffixed(_n: i128) -> Self {
-        todo!("Implement this function")
+    pub fn i128_suffixed(n: i128) -> Self {
+        Literal::Signed(
+            Signed::Signed128(
+                (n >> 64).try_into().unwrap(),
+                (n & 0xFFFFFFFFFFFFFFFF).try_into().unwrap(),
+            ),
+            true,
+        )
     }
 
     pub fn isize_suffixed(n: isize) -> Self {
@@ -132,8 +142,14 @@ impl Literal {
         Literal::Unsigned(Unsigned::Unsigned64(n), false)
     }
 
-    pub fn u128_unsuffixed(_n: u128) -> Self {
-        todo!("Implement this function")
+    pub fn u128_unsuffixed(n: u128) -> Self {
+        Literal::Unsigned(
+            Unsigned::Unsigned128(
+                (n >> 64).try_into().unwrap(),
+                (n & 0xFFFFFFFFFFFFFFFF).try_into().unwrap(),
+            ),
+            false,
+        )
     }
 
     pub fn usize_unsuffixed(n: usize) -> Self {
@@ -156,8 +172,14 @@ impl Literal {
         Literal::Signed(Signed::Signed64(n), false)
     }
 
-    pub fn i128_unsuffixed(_n: i128) -> Self {
-        todo!("Implement this function")
+    pub fn i128_unsuffixed(n: i128) -> Self {
+        Literal::Signed(
+            Signed::Signed128(
+                (n >> 64).try_into().unwrap(),
+                (n & 0xFFFFFFFFFFFFFFFF).try_into().unwrap(),
+            ),
+            false,
+        )
     }
 
     pub fn isize_unsuffixed(n: isize) -> Self {
@@ -270,6 +292,12 @@ impl fmt::Display for Literal {
                         f.write_str("u64")?;
                     }
                 }
+                Unsigned::Unsigned128(h, l) => {
+                    ((u128::from(*h) << 64) & u128::from(*l)).fmt(f)?;
+                    if *suffixed {
+                        f.write_str("u128")?;
+                    }
+                }
             },
             Literal::Signed(val, suffixed) => match val {
                 Signed::Signed8(val) => {
@@ -294,6 +322,12 @@ impl fmt::Display for Literal {
                     val.fmt(f)?;
                     if *suffixed {
                         f.write_str("i64")?;
+                    }
+                }
+                Signed::Signed128(h, l) => {
+                    ((i128::from(*h) << 64) & i128::from(*l)).fmt(f)?;
+                    if *suffixed {
+                        f.write_str("i128")?;
                     }
                 }
             },
