@@ -64,6 +64,14 @@
     UNSPEC_SHA_512_SUM0R
     UNSPEC_SHA_512_SUM1
     UNSPEC_SHA_512_SUM1R
+
+    ;; Zksh unspecs
+    UNSPEC_SM3_P0
+    UNSPEC_SM3_P1
+
+    ;; Zksed unspecs
+    UNSPEC_SM4_ED
+    UNSPEC_SM4_KS
 ])
 
 ;; ZBKB extension
@@ -384,4 +392,44 @@
                    UNSPEC_SHA_512_SUM1))]
   "TARGET_ZKNH && TARGET_64BIT"
   "sha512sum1\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+ ;; ZKSH
+
+(define_insn "riscv_sm3p0_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")]
+                  UNSPEC_SM3_P0))]
+  "TARGET_ZKSH"
+  "sm3p0\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sm3p1_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")]
+                  UNSPEC_SM3_P1))]
+  "TARGET_ZKSH"
+  "sm3p1\t%0,%1"
+  [(set_attr "type" "crypto")])
+
+;; ZKSED
+
+(define_insn "riscv_sm4ed_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")
+                  (match_operand:X 2 "register_operand" "r")
+                  (match_operand:SI 3 "register_operand" "D03")]
+                  UNSPEC_SM4_ED))]
+  "TARGET_ZKSED"
+  "sm4ed\t%0,%1,%2,%3"
+  [(set_attr "type" "crypto")])
+
+(define_insn "riscv_sm4ks_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")
+                  (match_operand:X 2 "register_operand" "r")
+                  (match_operand:SI 3 "register_operand" "D03")]
+                  UNSPEC_SM4_KS))]
+  "TARGET_ZKSED"
+  "sm4ks\t%0,%1,%2,%3"
   [(set_attr "type" "crypto")])
