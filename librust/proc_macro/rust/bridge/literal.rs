@@ -10,7 +10,7 @@ extern "C" {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Unsigned {
     Unsigned8(u8),
     Unsigned16(u16),
@@ -23,7 +23,7 @@ pub enum Unsigned {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Signed {
     Signed8(i8),
     Signed16(i16),
@@ -36,7 +36,7 @@ pub enum Signed {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Literal {
     /// String literal internal representation
     ///
