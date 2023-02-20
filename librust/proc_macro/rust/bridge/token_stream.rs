@@ -1,5 +1,7 @@
 use bridge::{group::Group, ident::Ident, literal::Literal, punct::Punct};
 use std::convert::TryInto;
+use std::fmt;
+use std::slice;
 
 type ExternalTokenTree = crate::TokenTree;
 type ExternalTokenStream = crate::TokenStream;
@@ -15,6 +17,17 @@ pub enum TokenTree {
     Ident(Ident),
     Punct(Punct),
     Literal(Literal),
+}
+
+impl fmt::Display for TokenTree {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TokenTree::Group(group) => group.fmt(f),
+            TokenTree::Ident(ident) => ident.fmt(f),
+            TokenTree::Punct(punct) => punct.fmt(f),
+            TokenTree::Literal(literal) => literal.fmt(f),
+        }
+    }
 }
 
 impl From<ExternalTokenTree> for TokenTree {
@@ -101,5 +114,18 @@ impl Extend<ExternalTokenStream> for TokenStream {
                 self.push(tt.into());
             }
         }
+    }
+}
+
+impl fmt::Display for TokenStream {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for i in unsafe { slice::from_raw_parts(self.data, self.size.try_into().unwrap()) } {
+            i.fmt(f)?;
+            match i {
+                TokenTree::Punct(_) => (),
+                _ => f.write_str(" ")?,
+            }
+        }
+        Ok(())
     }
 }
