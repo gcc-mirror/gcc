@@ -974,6 +974,33 @@ struct binary_widen_n_def : public overloaded_base<0>
 };
 SHAPE (binary_widen_n)
 
+/* Shape for comparison operations that operate on
+   uniform types.
+
+   Examples: vcmpq.
+   mve_pred16_t [__arm_]vcmpeqq[_s16](int16x8_t a, int16x8_t b)
+   mve_pred16_t [__arm_]vcmpeqq[_n_s16](int16x8_t a, int16_t b)
+   mve_pred16_t [__arm_]vcmpeqq_m[_s16](int16x8_t a, int16x8_t b, mve_pred16_t p)
+   mve_pred16_t [__arm_]vcmpeqq_m[_n_s16](int16x8_t a, int16_t b, mve_pred16_t p)  */
+struct cmp_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "p,v0,v0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "p,v0,s0", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform_opt_n (2);
+  }
+};
+SHAPE (cmp)
+
 /* <T0>xN_t vfoo[_t0](uint64_t, uint64_t)
 
    where there are N arguments in total.
