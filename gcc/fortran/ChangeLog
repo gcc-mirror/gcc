@@ -1,3 +1,12 @@
+2023-02-16  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2023-02-15  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104554
+	* resolve.cc (check_assumed_size_reference): Avoid NULL pointer
+	dereference.
+
 2023-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

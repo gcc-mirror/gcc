@@ -1,3 +1,61 @@
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_math.h (__hypot): Bitcasting
+	between scalars requires the __bit_cast helper function instead
+	of simd_bit_cast.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h
+	(_SimdImplX86::_S_not_equal_to, _SimdImplX86::_S_less)
+	(_SimdImplX86::_S_less_equal): Do not call
+	__builtin_is_constant_evaluated in constexpr-if.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/tests/bits/verify.h
+	(verify::verify): Use %zx for size_t in format string.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/README.md: Document the timeout
+	and timeout-factor directives. Minor typo fixed.
+
+2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h
+	(_SimdWrapper::_M_is_constprop_none_of)
+	(_SimdWrapper::_M_is_constprop_all_of): Return false unless the
+	computed result still satisfies __builtin_constant_p.
+
+2023-02-14  Thomas W Rodgers  <rodgert@twrodgers.com>
+
+	Backported from master:
+	2023-02-14  Thomas W Rodgers  <rodgert@twrodgers.com>
+
+	PR libstdc++/103934
+	* include/std/atomic (atomic_flag_test): Add.
+	(atomic_flag_test_explicit): Add.
+	* testsuite/29_atomics/atomic_flag/test/explicit.cc: Add
+	test case to cover missing atomic_flag free functions.
+	* testsuite/29_atomics/atomic_flag/test/implicit.cc:
+	Likewise.
+
 2023-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,65 @@
+2023-02-18  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-02-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config.gcc (triplet_abi): Set its value based on $with_abi,
+	instead of $target.
+	(la_canonical_triplet): Set it after $triplet_abi is set
+	correctly.
+	* config/loongarch/t-linux (MULTILIB_OSDIRNAMES): Make the
+	multiarch tuple for lp64d "loongarch64-linux-gnu" (without
+	"f64" suffix).
+
+2023-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/90458
+	* config/i386/i386.cc (ix86_compute_frame_layout): Disable the
+	effects of -fstack-clash-protection for TARGET_STACK_PROBE.
+	(ix86_expand_prologue): Likewise.
+
+2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-15  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/106080
+	* gimple-ssa-warn-access.cc (is_auto_decl): Remove.  Use auto_var_p
+	instead.
+
+2023-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.cc (gimplify_save_expr): Add missing guard.
+
+2023-02-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-01-18  Kewen Lin  <linkw@linux.ibm.com>
+		    Andrew Pinski  <apinski@marvell.com>
+
+	PR target/108396
+	* config/rs6000/rs6000-overload.def (VEC_VSUBCUQ): Fix typo
+	vec_vsubcuqP with vec_vsubcuq.
+
+2023-02-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-01-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108348
+	* config/rs6000/rs6000.cc (rs6000_opaque_type_invalid_use_p): Add the
+	support for invalid uses of MMA opaque type in function arguments.
+
+2023-02-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-01-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108272
+	* config/rs6000/rs6000.cc (rs6000_opaque_type_invalid_use_p): Add the
+	support for invalid uses in inline asm, factor out the checking and
+	erroring to lambda function check_and_error_invalid_use.
+
 2023-02-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_option_override): Disable -fstack-protector.
