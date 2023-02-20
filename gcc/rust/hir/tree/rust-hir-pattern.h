@@ -1300,6 +1300,73 @@ protected:
   }
 };
 
+// HIR node for alternative patterns
+class AltPattern : public Pattern
+{
+  std::vector<std::unique_ptr<Pattern>> alts;
+  Location locus;
+  Analysis::NodeMapping mappings;
+
+public:
+public:
+  std::string as_string () const override;
+
+  AltPattern (Analysis::NodeMapping mappings,
+	      std::vector<std::unique_ptr<Pattern>> alts, Location locus)
+    : alts (std::move (alts)), locus (locus), mappings (mappings)
+  {}
+
+  // Copy constructor with vector clone
+  AltPattern (AltPattern const &other)
+    : locus (other.locus), mappings (other.mappings)
+  {
+    alts.reserve (other.alts.size ());
+    for (const auto &e : other.alts)
+      alts.push_back (e->clone_pattern ());
+  }
+
+  // Overloaded assignment operator to vector clone
+  AltPattern &operator= (AltPattern const &other)
+  {
+    locus = other.locus;
+    mappings = other.mappings;
+
+    alts.clear ();
+    alts.reserve (other.alts.size ());
+    for (const auto &e : other.alts)
+      alts.push_back (e->clone_pattern ());
+
+    return *this;
+  }
+
+  // move constructors
+  AltPattern (AltPattern &&other) = default;
+  AltPattern &operator= (AltPattern &&other) = default;
+
+  Location get_locus () const override { return locus; }
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::ALT;
+  }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  AltPattern *clone_pattern_impl () const override
+  {
+    return new AltPattern (*this);
+  }
+};
+
 // Moved definition to rust-path.h
 class PathPattern;
 

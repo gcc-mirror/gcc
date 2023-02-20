@@ -839,6 +839,10 @@ ConstChecker::visit (SlicePattern &)
 {}
 
 void
+ConstChecker::visit (AltPattern &)
+{}
+
+void
 ConstChecker::visit (EmptyStmt &)
 {}
 

@@ -164,6 +164,7 @@ private:
   virtual void visit (TuplePatternItemsRanged &) override;
   virtual void visit (TuplePattern &) override;
   virtual void visit (SlicePattern &) override;
+  virtual void visit (AltPattern &) override;
 
   virtual void visit (EmptyStmt &) override;
   virtual void visit (LetStmt &) override;

@@ -437,5 +437,12 @@ TypeCheckPattern::emit_pattern_size_error (const HIR::Pattern &pattern,
 		 got_field_count == 1 ? "element" : "elements");
 }
 
+void
+TypeCheckPattern::visit (HIR::AltPattern &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "type checking alternate patterns not supported");
+}
+
 } // namespace Resolver
 } // namespace Rust

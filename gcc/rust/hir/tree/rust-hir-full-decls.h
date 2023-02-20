@@ -207,6 +207,7 @@ class TuplePatternItemsMultiple;
 class TuplePatternItemsRanged;
 class TuplePattern;
 class SlicePattern;
+class AltPattern;
 
 // rust-type.h
 class TraitBound;

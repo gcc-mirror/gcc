@@ -384,6 +384,7 @@ public:
     TUPLE,
     GROUPED,
     SLICE,
+    ALT
   };
 
   BaseKind get_hir_kind () override final { return PATTERN; }
