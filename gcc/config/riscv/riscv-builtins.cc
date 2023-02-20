@@ -106,6 +106,11 @@ AVAIL (crypto_zbkc32, TARGET_ZBKC && !TARGET_64BIT)
 AVAIL (crypto_zbkc64, TARGET_ZBKC && TARGET_64BIT)
 AVAIL (crypto_zbkx32, TARGET_ZBKX && !TARGET_64BIT)
 AVAIL (crypto_zbkx64, TARGET_ZBKX && TARGET_64BIT)
+AVAIL (crypto_zknd32, TARGET_ZKND && !TARGET_64BIT)
+AVAIL (crypto_zknd64, TARGET_ZKND && TARGET_64BIT)
+AVAIL (crypto_zkne32, TARGET_ZKNE && !TARGET_64BIT)
+AVAIL (crypto_zkne64, TARGET_ZKNE && TARGET_64BIT)
+AVAIL (crypto_zkne_or_zknd, (TARGET_ZKNE || TARGET_ZKND) && TARGET_64BIT)
 AVAIL (always,     (!0))
 
 /* Construct a riscv_builtin_description from the given arguments.
