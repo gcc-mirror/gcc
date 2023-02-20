@@ -183,9 +183,6 @@ CUresult cuMemAlloc (CUdeviceptr *, size_t);
 CUresult cuMemAllocHost (void **, size_t);
 CUresult cuMemAllocManaged(CUdeviceptr *, size_t, unsigned int);
 CUresult cuMemHostAlloc (void **, size_t, unsigned int);
-#define cuMemHostRegister cuMemHostRegister_v2
-CUresult cuMemHostRegister(void *, size_t, unsigned int);
-CUresult cuMemHostUnregister(void *);
 CUresult cuMemcpy (CUdeviceptr, CUdeviceptr, size_t);
 #define cuMemcpyDtoDAsync cuMemcpyDtoDAsync_v2
 CUresult cuMemcpyDtoDAsync (CUdeviceptr, CUdeviceptr, size_t, CUstream);
