@@ -1526,7 +1526,7 @@ template <typename _Abi, typename>
     // values.
   #ifndef _GLIBCXX_SIMD_NO_SHIFT_OPT
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      inline _GLIBCXX_CONST static typename _TVT::type
+      constexpr inline _GLIBCXX_CONST static typename _TVT::type
       _S_bit_shift_left(_Tp __xx, int __y)
       {
 	using _V = typename _TVT::type;
@@ -1631,7 +1631,7 @@ template <typename _Abi, typename>
       }
 
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      inline _GLIBCXX_CONST static typename _TVT::type
+      constexpr inline _GLIBCXX_CONST static typename _TVT::type
       _S_bit_shift_left(_Tp __xx, typename _TVT::type __y)
       {
 	using _V = typename _TVT::type;
@@ -1800,7 +1800,7 @@ template <typename _Abi, typename>
     // _S_bit_shift_right {{{
 #ifndef _GLIBCXX_SIMD_NO_SHIFT_OPT
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      inline _GLIBCXX_CONST static typename _TVT::type
+      constexpr inline _GLIBCXX_CONST static typename _TVT::type
       _S_bit_shift_right(_Tp __xx, int __y)
       {
 	using _V = typename _TVT::type;
@@ -1850,7 +1850,7 @@ template <typename _Abi, typename>
       }
 
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      inline _GLIBCXX_CONST static typename _TVT::type
+      constexpr inline _GLIBCXX_CONST static typename _TVT::type
       _S_bit_shift_right(_Tp __xx, typename _TVT::type __y)
       {
 	using _V = typename _TVT::type;
