@@ -670,6 +670,14 @@ function_instance::has_inactive_argument () const
     return false;
 
   if (mode_suffix_id == MODE_r
+      || base == functions::vcmpeqq
+      || base == functions::vcmpneq
+      || base == functions::vcmpgeq
+      || base == functions::vcmpgtq
+      || base == functions::vcmpleq
+      || base == functions::vcmpltq
+      || base == functions::vcmpcsq
+      || base == functions::vcmphiq
       || base == functions::vmaxaq
       || base == functions::vmaxnmaq
       || base == functions::vminaq

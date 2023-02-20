@@ -26,6 +26,7 @@
 #include "memmodel.h"
 #include "insn-codes.h"
 #include "optabs.h"
+#include "expr.h"
 #include "basic-block.h"
 #include "function.h"
 #include "gimple.h"
@@ -237,6 +238,14 @@ FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
 FUNCTION_WITH_RTX_M (vandq, AND, VANDQ)
 FUNCTION_WITHOUT_N_NO_U_F (vclsq, VCLSQ)
 FUNCTION (vclzq, unspec_based_mve_function_exact_insn, (CLZ, CLZ, CLZ, -1, -1, -1, VCLZQ_M_S, VCLZQ_M_U, -1, -1, -1 ,-1))
+FUNCTION (vcmpeqq, unspec_based_mve_function_exact_insn_vcmp, (EQ, EQ, EQ, VCMPEQQ_M_S, VCMPEQQ_M_U, VCMPEQQ_M_F, VCMPEQQ_M_N_S, VCMPEQQ_M_N_U, VCMPEQQ_M_N_F))
+FUNCTION (vcmpneq, unspec_based_mve_function_exact_insn_vcmp, (NE, NE, NE, VCMPNEQ_M_S, VCMPNEQ_M_U, VCMPNEQ_M_F, VCMPNEQ_M_N_S, VCMPNEQ_M_N_U, VCMPNEQ_M_N_F))
+FUNCTION (vcmpgeq, unspec_based_mve_function_exact_insn_vcmp, (GE, UNKNOWN, GE, VCMPGEQ_M_S, UNKNOWN, VCMPGEQ_M_F, VCMPGEQ_M_N_S, UNKNOWN, VCMPGEQ_M_N_F))
+FUNCTION (vcmpgtq, unspec_based_mve_function_exact_insn_vcmp, (GT, UNKNOWN, GT, VCMPGTQ_M_S, UNKNOWN, VCMPGTQ_M_F, VCMPGTQ_M_N_S, UNKNOWN, VCMPGTQ_M_N_F))
+FUNCTION (vcmpleq, unspec_based_mve_function_exact_insn_vcmp, (LE, UNKNOWN, LE, VCMPLEQ_M_S, UNKNOWN, VCMPLEQ_M_F, VCMPLEQ_M_N_S, UNKNOWN, VCMPLEQ_M_N_F))
+FUNCTION (vcmpltq, unspec_based_mve_function_exact_insn_vcmp, (LT, UNKNOWN, LT, VCMPLTQ_M_S, UNKNOWN, VCMPLTQ_M_F, VCMPLTQ_M_N_S, UNKNOWN, VCMPLTQ_M_N_F))
+FUNCTION (vcmpcsq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GEU, UNKNOWN, UNKNOWN, VCMPCSQ_M_U, UNKNOWN, UNKNOWN, VCMPCSQ_M_N_U, UNKNOWN))
+FUNCTION (vcmphiq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GTU, UNKNOWN, UNKNOWN, VCMPHIQ_M_U, UNKNOWN, UNKNOWN, VCMPHIQ_M_N_U, UNKNOWN))
 FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
