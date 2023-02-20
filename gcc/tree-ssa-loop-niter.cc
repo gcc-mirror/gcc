@@ -1498,8 +1498,9 @@ number_of_iterations_until_wrap (class loop *loop, tree type, affine_iv *iv0,
       if (integer_zerop (assumptions))
 	return false;
 
-      num = fold_build2 (MINUS_EXPR, niter_type, wide_int_to_tree (type, max),
-			 iv1->base);
+      num = fold_build2 (MINUS_EXPR, niter_type,
+			 wide_int_to_tree (niter_type, max),
+			 fold_convert (niter_type, iv1->base));
 
       /* When base has the form iv + 1, if we know iv >= n, then iv + 1 < n
 	 only when iv + 1 overflows, i.e. when iv == TYPE_VALUE_MAX.  */
@@ -1535,8 +1536,9 @@ number_of_iterations_until_wrap (class loop *loop, tree type, affine_iv *iv0,
       if (integer_zerop (assumptions))
 	return false;
 
-      num = fold_build2 (MINUS_EXPR, niter_type, iv0->base,
-			 wide_int_to_tree (type, min));
+      num = fold_build2 (MINUS_EXPR, niter_type,
+			 fold_convert (niter_type, iv0->base),
+			 wide_int_to_tree (niter_type, min));
       low = min;
       if (TREE_CODE (iv0->base) == INTEGER_CST)
 	high = wi::to_wide (iv0->base) + 1;
@@ -1550,7 +1552,6 @@ number_of_iterations_until_wrap (class loop *loop, tree type, affine_iv *iv0,
 
   /* (delta + step - 1) / step */
   step = fold_convert (niter_type, step);
-  num = fold_convert (niter_type, num);
   num = fold_build2 (PLUS_EXPR, niter_type, num, step);
   niter->niter = fold_build2 (FLOOR_DIV_EXPR, niter_type, num, step);
 
