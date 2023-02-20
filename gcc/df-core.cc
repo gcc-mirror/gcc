@@ -701,11 +701,6 @@ rest_of_handle_df_initialize (void)
   if (optimize > 1)
     df_live_add_problem ();
 
-  df->postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  df->n_blocks = post_order_compute (df->postorder, true, true);
-  inverted_post_order_compute (&df->postorder_inverted);
-  gcc_assert ((unsigned) df->n_blocks == df->postorder_inverted.length ());
-
   df->hard_regs_live_count = XCNEWVEC (unsigned int, FIRST_PSEUDO_REGISTER);
 
   df_hard_reg_init ();
