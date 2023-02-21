@@ -1,3 +1,49 @@
+2023-02-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md
+	(general_x64constmem_operand): New predicate.
+	* config/i386/i386.md (*cmpqi_ext<mode>_1):
+	Use nonimm_x64constmem_operand.
+	(*cmpqi_ext<mode>_3): Use general_x64constmem_operand.
+	(*addqi_ext<mode>_1): Ditto.
+	(*testqi_ext<mode>_1): Ditto.
+	(*andqi_ext<mode>_1): Ditto.
+	(*andqi_ext<mode>_1_cc): Ditto.
+	(*<any_or:code>qi_ext<mode>_1): Ditto.
+	(*xorqi_ext<mode>_1_cc): Ditto.
+
+2023-02-20  Jakub Jelinek  <jakub2redhat.com>
+
+	PR target/108862
+	* config/rs6000/rs6000.md (umaddditi4): Swap gen_maddlddi4 with
+	gen_umadddi4_highpart{,_le}.
+
+2023-02-20  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.md (prefetch): Use r instead of p for the
+	address operand.
+	(riscv_prefetchi_<mode>): Ditto.
+
+2023-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108816
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Adjust
+	versioning condition split prerequesite, assert required
+	invariant.
+
+2023-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108825
+	* tree-ssa-loop-manip.cc (verify_loop_closed_ssa): For
+	loop-local verfication only verify there's no pending SSA
+	update.
+
+2023-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108819
+	* tree-ssa-loop-niter.cc (number_of_iterations_cltz): Check
+	we have an SSA name as iv_2 as expected.
+
 2023-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/108819

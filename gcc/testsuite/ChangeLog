@@ -1,3 +1,31 @@
+2023-02-20  Jakub Jelinek  <jakub2redhat.com>
+
+	PR target/108862
+	* gcc.dg/pr108862.c: New test.
+	* gcc.target/powerpc/pr108862.c: New test.
+
+2023-02-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101073
+	* g++.dg/cpp0x/constexpr-nsdmi3.C: New test.
+	* g++.dg/cpp1y/constexpr-nsdmi10.C: New test.
+
+2023-02-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108829
+	* g++.dg/cpp0x/lambda/lambda-108829-2.C: New test.
+	* g++.dg/cpp0x/lambda/lambda-108829.C: New test.
+
+2023-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108816
+	* gcc.dg/torture/pr108816.c: New testcase.
+
+2023-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108825
+	* gcc.dg/torture/pr108825.c: New testcase.
+
 2023-02-18  Jason Merrill  <jason@redhat.com>
 
 	DR 2518

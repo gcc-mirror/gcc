@@ -1,3 +1,7 @@
+2023-02-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* backend/rust-tree.cc: Include memmodel.h.
+
 2023-02-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* backend/rust-tree.cc: '#include "tm_p.h"'.
