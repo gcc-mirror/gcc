@@ -3783,7 +3783,7 @@ template <int _Index, int _Total, int _Combine = 1, typename _Tp, size_t _Np>
   _SimdWrapper<_Tp, _Np / _Total * _Combine>
   __extract_part(const _SimdWrapper<_Tp, _Np> __x);
 
-template <int Index, int Parts, int _Combine = 1, typename _Tp, typename _A0,
+template <int _Index, int _Parts, int _Combine = 1, typename _Tp, typename _A0,
 	  typename... _As>
   _GLIBCXX_SIMD_INTRINSIC auto
   __extract_part(const _SimdTuple<_Tp, _A0, _As...>& __x);
@@ -3896,19 +3896,19 @@ template <size_t... _Sizes, typename _Tp, typename... _As>
 
 // split<simd>(simd) {{{
 template <typename _V, typename _Ap,
-	  size_t Parts = simd_size_v<typename _V::value_type, _Ap> / _V::size()>
-  enable_if_t<simd_size_v<typename _V::value_type, _Ap> == Parts * _V::size()
-	      && is_simd_v<_V>, array<_V, Parts>>
+	  size_t _Parts = simd_size_v<typename _V::value_type, _Ap> / _V::size()>
+  enable_if_t<simd_size_v<typename _V::value_type, _Ap> == _Parts * _V::size()
+		&& is_simd_v<_V>, array<_V, _Parts>>
   split(const simd<typename _V::value_type, _Ap>& __x)
   {
     using _Tp = typename _V::value_type;
-    if constexpr (Parts == 1)
+    if constexpr (_Parts == 1)
       {
 	return {simd_cast<_V>(__x)};
       }
     else if (__x._M_is_constprop())
       {
-	return __generate_from_n_evaluations<Parts, array<_V, Parts>>(
+	return __generate_from_n_evaluations<_Parts, array<_V, _Parts>>(
 		 [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		   return _V([&](auto __j) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
 			     { return __x[__i * _V::size() + __j]; });
@@ -3925,12 +3925,12 @@ template <typename _V, typename _Ap,
 #ifdef _GLIBCXX_SIMD_USE_ALIASING_LOADS
       const __may_alias<_Tp>* const __element_ptr
 	= reinterpret_cast<const __may_alias<_Tp>*>(&__data(__x));
-      return __generate_from_n_evaluations<Parts, array<_V, Parts>>(
+      return __generate_from_n_evaluations<_Parts, array<_V, _Parts>>(
 	       [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
 	       { return _V(__element_ptr + __i * _V::size(), vector_aligned); });
 #else
       const auto& __xx = __data(__x);
-      return __generate_from_n_evaluations<Parts, array<_V, Parts>>(
+      return __generate_from_n_evaluations<_Parts, array<_V, _Parts>>(
 	       [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		 [[maybe_unused]] constexpr size_t __offset
 		   = decltype(__i)::value * _V::size();
@@ -3944,12 +3944,12 @@ template <typename _V, typename _Ap,
   else if constexpr (is_same_v<typename _V::abi_type, simd_abi::scalar>)
     {
       // normally memcpy should work here as well
-      return __generate_from_n_evaluations<Parts, array<_V, Parts>>(
+      return __generate_from_n_evaluations<_Parts, array<_V, _Parts>>(
 	       [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA { return __x[__i]; });
     }
   else
     {
-      return __generate_from_n_evaluations<Parts, array<_V, Parts>>(
+      return __generate_from_n_evaluations<_Parts, array<_V, _Parts>>(
 	       [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		 if constexpr (__is_fixed_size_abi_v<typename _V::abi_type>)
 		   return _V([&](auto __j) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
@@ -3957,7 +3957,7 @@ template <typename _V, typename _Ap,
 			  });
 		 else
 		   return _V(__private_init,
-			     __extract_part<decltype(__i)::value, Parts>(__data(__x)));
+			     __extract_part<decltype(__i)::value, _Parts>(__data(__x)));
 	       });
     }
   }

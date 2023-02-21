@@ -1,3 +1,16 @@
+2023-02-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101073
+	* constexpr.cc (cxx_eval_call_expression): Replace shortcutting trivial
+	constructor/op= with a checking assert.
+
+2023-02-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108829
+	* pt.cc (prepend_one_capture): Set LAMBDA_CAPTURE_EXPLICIT_P.
+	(tsubst_lambda_expr): Pass LAMBDA_CAPTURE_EXPLICIT_P to
+	prepend_one_capture.
+
 2023-02-18  Jason Merrill  <jason@redhat.com>
 
 	DR 2518

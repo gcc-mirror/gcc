@@ -3477,7 +3477,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   tree cost_name = NULL_TREE;
   profile_probability prob2 = profile_probability::uninitialized ();
   if (cond_expr
-      && !integer_truep (cond_expr)
+      && EXPR_P (cond_expr)
       && (version_niter
 	  || version_align
 	  || version_alias
@@ -3711,6 +3711,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   if (cost_name && TREE_CODE (cost_name) == SSA_NAME)
     {
       gimple *def = SSA_NAME_DEF_STMT (cost_name);
+      gcc_assert (gimple_bb (def) == condition_bb);
       /* All uses of the cost check are 'true' after the check we
 	 are going to insert.  */
       replace_uses_by (cost_name, boolean_true_node);

@@ -19870,10 +19870,11 @@ tsubst_non_call_postfix_expression (tree t, tree args,
 
 /* Subroutine of tsubst_lambda_expr: add the FIELD/INIT capture pair to the
    LAMBDA_EXPR_CAPTURE_LIST passed in LIST.  Do deduction for a previously
-   dependent init-capture.  */
+   dependent init-capture.  EXPLICIT_P is true if the original list had
+   explicit captures.  */
 
 static void
-prepend_one_capture (tree field, tree init, tree &list,
+prepend_one_capture (tree field, tree init, tree &list, bool explicit_p,
 		     tsubst_flags_t complain)
 {
   if (tree auto_node = type_uses_auto (TREE_TYPE (field)))
@@ -19893,6 +19894,7 @@ prepend_one_capture (tree field, tree init, tree &list,
       cp_apply_type_quals_to_decl (cp_type_quals (type), field);
     }
   list = tree_cons (field, init, list);
+  LAMBDA_CAPTURE_EXPLICIT_P (list) = explicit_p;
 }
 
 /* T is a LAMBDA_EXPR.  Generate a new LAMBDA_EXPR for the current
@@ -19982,12 +19984,13 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    prepend_one_capture (TREE_VEC_ELT (field, i),
 				 TREE_VEC_ELT (init, i),
 				 LAMBDA_EXPR_CAPTURE_LIST (r),
+				 LAMBDA_CAPTURE_EXPLICIT_P (cap),
 				 complain);
 	}
       else
 	{
 	  prepend_one_capture (field, init, LAMBDA_EXPR_CAPTURE_LIST (r),
-			       complain);
+			       LAMBDA_CAPTURE_EXPLICIT_P (cap), complain);
 
 	  if (id_equal (DECL_NAME (field), "__this"))
 	    LAMBDA_EXPR_THIS_CAPTURE (r) = field;
