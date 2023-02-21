@@ -14,6 +14,7 @@ extern "C" {
     fn TokenStream__with_capacity(capacity: u64) -> TokenStream;
     fn TokenStream__push(stream: *mut TokenStream, tree: TokenTree);
     fn TokenStream__from_string(str: *const c_uchar, len: u64, ts: *mut TokenStream) -> bool;
+    fn TokenStream__clone(ts: *const TokenStream) -> TokenStream;
 }
 
 // TODO: There surely is a better way to achieve this. I don't like this
@@ -52,7 +53,7 @@ impl From<ExternalTokenTree> for TokenTree {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct TokenStream {
     pub(crate) data: *const TokenTree,
     pub(crate) size: u64,
@@ -149,5 +150,11 @@ impl FromStr for TokenStream {
         } else {
             Ok(ts)
         }
+    }
+}
+
+impl Clone for TokenStream {
+    fn clone(&self) -> Self {
+        unsafe { TokenStream__clone(self as *const TokenStream) }
     }
 }
