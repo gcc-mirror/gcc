@@ -13,7 +13,7 @@ extern "C" {
     fn TokenStream__new() -> TokenStream;
     fn TokenStream__with_capacity(capacity: u64) -> TokenStream;
     fn TokenStream__push(stream: *mut TokenStream, tree: TokenTree);
-    fn TokenStream__from_string(str: *const c_uchar, ts: *mut TokenStream) -> bool;
+    fn TokenStream__from_string(str: *const c_uchar, len: u64, ts: *mut TokenStream) -> bool;
 }
 
 // TODO: There surely is a better way to achieve this. I don't like this
@@ -138,7 +138,13 @@ impl FromStr for TokenStream {
     type Err = LexError;
     fn from_str(string: &str) -> Result<Self, LexError> {
         let mut ts = TokenStream::new();
-        if unsafe { TokenStream__from_string(string.as_ptr(), &mut ts as *mut TokenStream) } {
+        if unsafe {
+            TokenStream__from_string(
+                string.as_ptr(),
+                string.len().try_into().unwrap(),
+                &mut ts as *mut TokenStream,
+            )
+        } {
             Err(LexError)
         } else {
             Ok(ts)

@@ -7,9 +7,9 @@ use LexError;
 
 extern "C" {
     fn Literal__drop(literal: *const Literal);
-    fn Literal__string(str: *const c_uchar) -> Literal;
-    fn Literal__byte_string(bytes: *const u8) -> Literal;
-    fn Literal__from_string(str: *const c_uchar, lit: *mut Literal) -> bool;
+    fn Literal__string(str: *const c_uchar, len: u64) -> Literal;
+    fn Literal__byte_string(bytes: *const u8, len: u64) -> Literal;
+    fn Literal__from_string(str: *const c_uchar, len: u64, lit: *mut Literal) -> bool;
 }
 
 #[repr(C)]
@@ -46,7 +46,7 @@ pub enum Literal {
     #[allow(dead_code)]
     String {
         data: *const c_uchar,
-        size: u64,
+        len: u64,
     },
     /// Bytestring literal internal representation
     ///
@@ -206,7 +206,7 @@ impl Literal {
     }
 
     pub fn string(string: &str) -> Self {
-        unsafe { Literal__string(string.as_ptr()) }
+        unsafe { Literal__string(string.as_ptr(), string.len().try_into().unwrap()) }
     }
 
     pub fn character(c: char) -> Self {
@@ -214,7 +214,7 @@ impl Literal {
     }
 
     pub fn byte_string(bytes: &[u8]) -> Self {
-        unsafe { Literal__byte_string(bytes.as_ptr()) }
+        unsafe { Literal__byte_string(bytes.as_ptr(), bytes.len().try_into().unwrap()) }
     }
 
     pub fn span(&self) -> Span {
@@ -240,9 +240,9 @@ impl Drop for Literal {
 impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Literal::String { data, size } => {
+            Literal::String { data, len } => {
                 let slice =
-                    unsafe { std::slice::from_raw_parts(*data, (*size).try_into().unwrap()) };
+                    unsafe { std::slice::from_raw_parts(*data, (*len).try_into().unwrap()) };
                 f.write_str("\"")?;
                 f.write_str(std::str::from_utf8(slice).unwrap())?;
                 f.write_str("\"")?;
@@ -370,7 +370,13 @@ impl FromStr for Literal {
         let mut lit = Literal::Char(0);
         // TODO: We might want to pass a LexError by reference to retrieve
         // error information
-        if unsafe { Literal__from_string(string.as_ptr(), &mut lit as *mut Literal) } {
+        if unsafe {
+            Literal__from_string(
+                string.as_ptr(),
+                string.len().try_into().unwrap(),
+                &mut lit as *mut Literal,
+            )
+        } {
             Err(LexError)
         } else {
             Ok(lit)

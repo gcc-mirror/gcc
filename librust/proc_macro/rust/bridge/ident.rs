@@ -1,10 +1,11 @@
 use bridge::span::Span;
-use std::ffi::{c_char, CStr, CString};
+use std::convert::TryInto;
+use std::ffi::c_uchar;
 use std::fmt;
 
 extern "C" {
-    fn Ident__new(string: *const c_char) -> Ident;
-    fn Ident__new_raw(string: *const c_char) -> Ident;
+    fn Ident__new(string: *const c_uchar, len: u64) -> Ident;
+    fn Ident__new_raw(string: *const c_uchar, len: u64) -> Ident;
     fn Ident__drop(ident: *const Ident);
 }
 
@@ -12,18 +13,17 @@ extern "C" {
 #[derive(Clone, Debug)]
 pub struct Ident {
     pub(crate) is_raw: bool,
-    pub(crate) val: *const c_char,
+    pub(crate) val: *const c_uchar,
+    len: u64,
 }
 
 impl Ident {
     pub fn new(string: &str, _span: Span) -> Self {
-        let string = CString::new(string).expect("Cannot convert to CString");
-        unsafe { Ident__new(string.as_ptr()) }
+        unsafe { Ident__new(string.as_ptr(), string.len().try_into().unwrap()) }
     }
 
     pub fn new_raw(string: &str, _span: Span) -> Self {
-        let string = CString::new(string).expect("Cannot convert to CString");
-        unsafe { Ident__new_raw(string.as_ptr()) }
+        unsafe { Ident__new_raw(string.as_ptr(), string.len().try_into().unwrap()) }
     }
 
     pub fn span(&self) -> Span {
@@ -49,9 +49,11 @@ impl fmt::Display for Ident {
         }
         fmt::Display::fmt(
             unsafe {
-                CStr::from_ptr(self.val)
-                    .to_str()
-                    .expect("Cannot convert back to rust string")
+                std::str::from_utf8(std::slice::from_raw_parts(
+                    self.val,
+                    self.len.try_into().unwrap(),
+                ))
+                .unwrap()
             },
             f,
         )
