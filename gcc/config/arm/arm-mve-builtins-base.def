@@ -20,6 +20,7 @@
 #define REQUIRES_FLOAT false
 DEF_MVE_FUNCTION (vabdq, binary, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vabsq, unary, all_signed, mx_or_none)
+DEF_MVE_FUNCTION (vaddlvq, unary_acc, integer_32, p_or_none)
 DEF_MVE_FUNCTION (vaddq, binary_opt_n, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vaddvaq, unary_int32_acc, all_integer, p_or_none)
 DEF_MVE_FUNCTION (vaddvq, unary_int32, all_integer, p_or_none)

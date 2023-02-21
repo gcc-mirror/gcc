@@ -25,6 +25,7 @@ namespace functions {
 
 extern const function_base *const vabdq;
 extern const function_base *const vabsq;
+extern const function_base *const vaddlvq;
 extern const function_base *const vaddq;
 extern const function_base *const vaddvaq;
 extern const function_base *const vaddvq;

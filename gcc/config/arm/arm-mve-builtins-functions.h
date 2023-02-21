@@ -408,32 +408,59 @@ public:
   expand (function_expander &e) const override
   {
     insn_code code;
-    switch (e.pred)
+
+    if ((m_unspec_for_sint == VADDLVQ_S)
+	|| m_unspec_for_sint == VADDLVAQ_S)
       {
-      case PRED_none:
-	if (e.type_suffix (0).integer_p)
-	  if (e.type_suffix (0).unsigned_p)
-	    code = code_for_mve_q (m_unspec_for_uint, m_unspec_for_uint, e.vector_mode (0));
-	  else
-	    code = code_for_mve_q (m_unspec_for_sint, m_unspec_for_sint, e.vector_mode (0));
-	else
-	  code = code_for_mve_q_f (m_unspec_for_fp, e.vector_mode (0));
+	switch (e.pred)
+	  {
+	  case PRED_none:
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_v4si (m_unspec_for_uint, m_unspec_for_uint);
+	    else
+	      code = code_for_mve_q_v4si (m_unspec_for_sint, m_unspec_for_sint);
+	    return e.use_exact_insn (code);
 
-	return e.use_exact_insn (code);
+	  case PRED_p:
+	    if (e.type_suffix (0).unsigned_p)
+	      code = code_for_mve_q_p_v4si (m_unspec_for_p_uint, m_unspec_for_p_uint);
+	    else
+	      code = code_for_mve_q_p_v4si (m_unspec_for_p_sint, m_unspec_for_p_sint);
+	    return e.use_exact_insn (code);
 
-      case PRED_p:
-	if (e.type_suffix (0).integer_p)
-	  if (e.type_suffix (0).unsigned_p)
-	    code = code_for_mve_q_p (m_unspec_for_p_uint, m_unspec_for_p_uint, e.vector_mode (0));
-	  else
-	    code = code_for_mve_q_p (m_unspec_for_p_sint, m_unspec_for_p_sint, e.vector_mode (0));
-	else
-	  code = code_for_mve_q_p_f (m_unspec_for_p_fp, e.vector_mode (0));
+	  default:
+	    gcc_unreachable ();
+	  }
+      }
+    else
+      {
+	switch (e.pred)
+	  {
+	  case PRED_none:
+	    if (e.type_suffix (0).integer_p)
+	      if (e.type_suffix (0).unsigned_p)
+		code = code_for_mve_q (m_unspec_for_uint, m_unspec_for_uint, e.vector_mode (0));
+	      else
+		code = code_for_mve_q (m_unspec_for_sint, m_unspec_for_sint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_f (m_unspec_for_fp, e.vector_mode (0));
 
-	return e.use_exact_insn (code);
+	    return e.use_exact_insn (code);
 
-      default:
-	gcc_unreachable ();
+	  case PRED_p:
+	    if (e.type_suffix (0).integer_p)
+	      if (e.type_suffix (0).unsigned_p)
+		code = code_for_mve_q_p (m_unspec_for_p_uint, m_unspec_for_p_uint, e.vector_mode (0));
+	      else
+		code = code_for_mve_q_p (m_unspec_for_p_sint, m_unspec_for_p_sint, e.vector_mode (0));
+	    else
+	      code = code_for_mve_q_p_f (m_unspec_for_p_fp, e.vector_mode (0));
+
+	    return e.use_exact_insn (code);
+
+	  default:
+	    gcc_unreachable ();
+	  }
       }
 
     gcc_unreachable ();
