@@ -7,10 +7,11 @@ extern "C" {
     fn Ident__new(string: *const c_uchar, len: u64) -> Ident;
     fn Ident__new_raw(string: *const c_uchar, len: u64) -> Ident;
     fn Ident__drop(ident: *const Ident);
+    fn Ident__clone(ident: *const Ident) -> Ident;
 }
 
 #[repr(C)]
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Ident {
     pub(crate) is_raw: bool,
     pub(crate) val: *const c_uchar,
@@ -57,5 +58,11 @@ impl fmt::Display for Ident {
             },
             f,
         )
+    }
+}
+
+impl Clone for Ident {
+    fn clone(&self) -> Self {
+        unsafe { Ident__clone(self as *const Ident) }
     }
 }
