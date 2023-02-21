@@ -2280,9 +2280,7 @@ notice_special_calls (gcall *call)
 
   if (flags & ECF_MAY_BE_ALLOCA)
     cfun->calls_alloca = true;
-  if (flags & ECF_RETURNS_TWICE
-      && (!(cfun->curr_properties & PROP_cfg)
-	  || gimple_call_ctrl_altering_p (call)))
+  if (flags & ECF_RETURNS_TWICE)
     cfun->calls_setjmp = true;
 }
 
