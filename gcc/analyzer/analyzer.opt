@@ -262,6 +262,10 @@ fanalyzer-state-merge
 Common Var(flag_analyzer_state_merge) Init(1)
 Merge similar-enough states during analysis.
 
+fanalyzer-suppress-followups
+Common Var(flag_analyzer_suppress_followups) Init(1)
+Stop exploring an execution path after certain diagnostics.
+
 fanalyzer-transitivity
 Common Var(flag_analyzer_transitivity) Init(0)
 Enable transitivity of constraints during analysis.

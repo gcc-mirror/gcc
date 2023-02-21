@@ -1,5 +1,3 @@
-/* { dg-additional-options "-fno-analyzer-suppress-followups" } */
-
 #include <stdio.h>
 
 struct test {
@@ -51,7 +49,7 @@ void func5(const int *a, int max)
 int func6(const int *num)
 {
         if (*num)  /* { dg-warning "uninitialized" } */
-                return *num;  /* { dg-warning "uninitialized" } */
+                return *num;
         else
                 return 0;
 }
@@ -73,24 +71,54 @@ void func8(const int *a, int max)
 
 enum {RED, AMBER, GREEN, BLACK};
 
-int main(void)
+int test_1 (void)
 {
         struct test t;  /* { dg-message "region created on stack here" } */
-        int num;  /* { dg-message "region created on stack here" } */
-        int arry[10];
-        int arry_2[10];  /* { dg-message "region created on stack here" } */
-        int go;  /* { dg-message "region created on stack here" } */
-        int color = BLACK;
 
         func1(&t);
+        return 0;
+}
+
+int test_2 (void)
+{
+        int num;  /* { dg-message "region created on stack here" } */
+
         func3(num);  /* { dg-warning "use of uninitialized value 'num'" } */
+        return 0;
+}
+
+int test_3 (void)
+{
+        int arry[10];
+
         func4(arry, 10);
         func5(arry, 10);
-        func6(&num);
 
-        printf("num: %d\n", num);  /* { dg-warning "use of uninitialized value 'num'" } */
+        return 0;
+}
+
+int test_4 (void)
+{
+        int num;  /* { dg-message "region created on stack here" } */
+
+        func6(&num);
+        return 0;
+}
+
+int test_5 (void)
+{
+        int arry_2[10];  /* { dg-message "region created on stack here" } */
+
         printf("func7: %d\n", func7());
         func8(arry_2, 10);
+
+        return 0;
+}
+
+int test_6 (void)
+{
+        int go;  /* { dg-message "region created on stack here" } */
+        int color = BLACK;
 
         switch (color) {
         case RED:

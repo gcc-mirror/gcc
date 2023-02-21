@@ -607,17 +607,22 @@ void partially_inits (int *p, int v)
   p[1] = v;
 }
 
-void test_partially_inits (int x)
+void test_partially_inits_0 (int x)
 {
   int arr[2];
   partially_inits (arr, x);
   partially_inits (arr, x);
 
-  __analyzer_eval (arr[0]); /* { dg-warning "UNKNOWN" "eval" } */
-  /* { dg-warning "use of uninitialized value 'arr\\\[0\\\]'" "uninit" { target *-*-* } .-1 } */
+  __analyzer_eval (arr[0]); /* { dg-warning "use of uninitialized value 'arr\\\[0\\\]'" } */
+}
 
-  __analyzer_eval (arr[1] == x); /* { dg-warning "UNKNOWN" "eval" } */ 
-  /* { dg-bogus "use of uninitialized value 'arr\\\[1\\\]'" "uninit" { xfail *-*-* } .-1 } */
+void test_partially_inits_1 (int x)
+{
+  int arr[2];
+  partially_inits (arr, x);
+  partially_inits (arr, x);
+
+  __analyzer_eval (arr[1] == x); /* { dg-bogus "use of uninitialized value 'arr\\\[1\\\]'" "uninit" { xfail *-*-* } } */
   // TODO(xfail), and eval should be "TRUE"
 }
 
