@@ -1094,6 +1094,59 @@ struct unary_convert_def : public overloaded_base<1>
 };
 SHAPE (unary_convert)
 
+/* <T0>_t vfoo[_n]_t0(<S0>_t)
+
+   Example: vdupq.
+   int16x8_t [__arm_]vdupq_n_s16(int16_t a)
+   int16x8_t [__arm_]vdupq_m[_n_s16](int16x8_t inactive, int16_t a, mve_pred16_t p)
+   int16x8_t [__arm_]vdupq_x_n_s16(int16_t a, mve_pred16_t p)  */
+struct unary_n_def : public overloaded_base<0>
+{
+  bool
+  explicit_type_suffix_p (unsigned int, enum predication_index pred,
+			  enum mode_suffix_index) const override
+  {
+    return pred != PRED_m;
+  }
+
+  bool
+  explicit_mode_suffix_p (enum predication_index pred,
+			  enum mode_suffix_index mode) const override
+  {
+    return ((mode == MODE_n)
+	    && (pred != PRED_m));
+  }
+
+  bool
+  skip_overload_p (enum predication_index pred, enum mode_suffix_index mode)
+    const override
+  {
+    switch (mode)
+      {
+      case MODE_n:
+	return pred != PRED_m;
+
+      default:
+	gcc_unreachable ();
+      }
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,s0", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_unary_n ();
+  }
+};
+SHAPE (unary_n)
+
 } /* end namespace arm_mve */
 
 #undef SHAPE
