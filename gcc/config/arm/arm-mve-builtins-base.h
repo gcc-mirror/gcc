@@ -61,6 +61,8 @@ extern const function_base *const vminnmq;
 extern const function_base *const vminnmvq;
 extern const function_base *const vminq;
 extern const function_base *const vminvq;
+extern const function_base *const vmovlbq;
+extern const function_base *const vmovltq;
 extern const function_base *const vmovnbq;
 extern const function_base *const vmovntq;
 extern const function_base *const vmulhq;
