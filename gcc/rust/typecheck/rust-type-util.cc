@@ -18,12 +18,13 @@
 
 #include "rust-type-util.h"
 #include "rust-diagnostics.h"
-#include "rust-hir-type-check.h"
-#include "rust-name-resolver.h"
-#include "rust-hir-visitor.h"
 #include "rust-hir-map.h"
-#include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-implitem.h"
+#include "rust-hir-type-check-item.h"
+#include "rust-hir-type-check.h"
+#include "rust-hir-visitor.h"
+#include "rust-name-resolver.h"
+#include "rust-unify.h"
 
 namespace Rust {
 namespace Resolver {
@@ -102,6 +103,20 @@ query_type (HirId reference, TyTy::BaseType **result)
   context->query_completed (reference);
 
   return false;
+}
+
+TyTy::BaseType *
+unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+	    Location unify_locus)
+{
+  TyTy::BaseType *expected = lhs.get_ty ();
+  TyTy::BaseType *expr = rhs.get_ty ();
+
+  rust_debug ("unify_site id={%u} expected={%s} expr={%s}", id,
+	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
+
+  return UnifyRules::Resolve (lhs, rhs, unify_locus, true /*commit*/,
+			      true /*emit_error*/);
 }
 
 } // namespace Resolver

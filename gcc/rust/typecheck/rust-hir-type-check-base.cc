@@ -17,13 +17,12 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-type-check-item.h"
-#include "rust-hir-type-check-type.h"
+#include "rust-casts.h"
+#include "rust-coercion.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-implitem.h"
-#include "rust-coercion.h"
-#include "rust-unify.h"
-#include "rust-casts.h"
+#include "rust-hir-type-check-item.h"
+#include "rust-hir-type-check-type.h"
 
 namespace Rust {
 namespace Resolver {
@@ -351,20 +350,6 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, Location locus)
 }
 
 TyTy::BaseType *
-TypeCheckBase::unify_site (HirId id, TyTy::TyWithLocation lhs,
-			   TyTy::TyWithLocation rhs, Location unify_locus)
-{
-  TyTy::BaseType *expected = lhs.get_ty ();
-  TyTy::BaseType *expr = rhs.get_ty ();
-
-  rust_debug ("unify_site id={%u} expected={%s} expr={%s}", id,
-	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
-
-  return UnifyRules::Resolve (lhs, rhs, unify_locus, true /*commit*/,
-			      true /*emit_error*/);
-}
-
-TyTy::BaseType *
 TypeCheckBase::coercion_site (HirId id, TyTy::TyWithLocation lhs,
 			      TyTy::TyWithLocation rhs, Location locus)
 {
@@ -434,7 +419,7 @@ TypeCheckBase::cast_site (HirId id, TyTy::TyWithLocation from,
 
 void
 TypeCheckBase::resolve_generic_params (
-  const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+  const std::vector<std::unique_ptr<HIR::GenericParam> > &generic_params,
   std::vector<TyTy::SubstitutionParamMapping> &substitutions)
 {
   for (auto &generic_param : generic_params)

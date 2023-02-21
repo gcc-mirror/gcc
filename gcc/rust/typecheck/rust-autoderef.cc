@@ -265,9 +265,9 @@ resolve_operator_overload_fn (
 	  fn = static_cast<TyTy::FnType *> (lookup);
 
 	  Location unify_locus = mappings->lookup_location (ty->get_ref ());
-	  TypeCheckBase::unify_site (
-	    ty->get_ref (), TyTy::TyWithLocation (fn->get_self_type ()),
-	    TyTy::TyWithLocation (adjusted_self), unify_locus);
+	  unify_site (ty->get_ref (),
+		      TyTy::TyWithLocation (fn->get_self_type ()),
+		      TyTy::TyWithLocation (adjusted_self), unify_locus);
 
 	  lookup = fn;
 	}

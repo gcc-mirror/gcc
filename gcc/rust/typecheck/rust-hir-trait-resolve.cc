@@ -499,10 +499,10 @@ AssociatedImplTrait::setup_associated_types (
   // the type correctly as our receiver may be generic and we are inferring its
   // generic arguments and this Self might be the concrete version or vice
   // versa.
-  auto result = TypeCheckBase::unify_site (
-    get_impl_block ()->get_mappings ().get_hirid (),
-    TyTy::TyWithLocation (receiver), TyTy::TyWithLocation (impl_self_infer),
-    impl_predicate.get_locus ());
+  auto result = unify_site (get_impl_block ()->get_mappings ().get_hirid (),
+			    TyTy::TyWithLocation (receiver),
+			    TyTy::TyWithLocation (impl_self_infer),
+			    impl_predicate.get_locus ());
   rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
   TyTy::BaseType *self_result = result;
 
@@ -527,9 +527,8 @@ AssociatedImplTrait::setup_associated_types (
       TyTy::BaseType *b = hrtb_bound_arguments.at (i);
 
       result
-	= TypeCheckBase::unify_site (a->get_ref (), TyTy::TyWithLocation (a),
-				     TyTy::TyWithLocation (b),
-				     impl_predicate.get_locus ());
+	= unify_site (a->get_ref (), TyTy::TyWithLocation (a),
+		      TyTy::TyWithLocation (b), impl_predicate.get_locus ());
       rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
     }
 

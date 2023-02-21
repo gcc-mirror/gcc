@@ -18,11 +18,11 @@
 
 #include "rust-hir-type-check.h"
 #include "rust-hir-full.h"
-#include "rust-hir-type-check-item.h"
+#include "rust-hir-inherent-impl-overlap.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-pattern.h"
 #include "rust-hir-type-check-struct-field.h"
-#include "rust-hir-inherent-impl-overlap.h"
 
 extern bool
 saw_errors (void);
@@ -64,9 +64,8 @@ TypeResolution::Resolve (HIR::Crate &crate)
     else
       {
 	auto result
-	  = TypeCheckBase::unify_site (id, TyTy::TyWithLocation (ty),
-				       TyTy::TyWithLocation (default_type),
-				       Location ());
+	  = unify_site (id, TyTy::TyWithLocation (ty),
+			TyTy::TyWithLocation (default_type), Location ());
 	rust_assert (result);
 	rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
 	result->set_ref (id);
@@ -142,10 +141,9 @@ TraitItemReference::get_type_from_constant (
       TyTy::BaseType *expr
 	= TypeCheckExpr::Resolve (constant.get_expr ().get ());
 
-      return TypeCheckBase::unify_site (constant.get_mappings ().get_hirid (),
-					TyTy::TyWithLocation (type),
-					TyTy::TyWithLocation (expr),
-					constant.get_locus ());
+      return unify_site (constant.get_mappings ().get_hirid (),
+			 TyTy::TyWithLocation (type),
+			 TyTy::TyWithLocation (expr), constant.get_locus ());
     }
   return type;
 }
