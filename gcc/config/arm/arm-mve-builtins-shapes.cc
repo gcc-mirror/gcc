@@ -1282,6 +1282,40 @@ struct unary_widen_def : public overloaded_base<0>
 };
 SHAPE (unary_widen)
 
+/* <S0:twice>_t vfoo[_<t0>](<S0:twice>_t, <T0>_t)
+
+   i.e. a version of "unary" in which the source elements are half the
+   size of the destination scalar and accumulator, but have the same
+   type class.
+
+   Example: vaddlvaq.
+   int64_t [__arm_]vaddlvaq[_s32](int64_t a, int32x4_t b)
+   int64_t [__arm_]vaddlvaq_p[_s32](int64_t a, int32x4_t b, mve_pred16_t p)  */
+struct unary_widen_acc_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "sw0,sw0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| !r.require_derived_scalar_type (0, r.SAME_TYPE_CLASS)
+	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (unary_widen_acc)
+
 } /* end namespace arm_mve */
 
 #undef SHAPE
