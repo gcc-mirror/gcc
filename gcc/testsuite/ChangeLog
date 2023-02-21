@@ -1,3 +1,13 @@
+2023-02-20  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-02-06  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/104921
+	* gcc.target/aarch64/pr104921-1.c: New test.
+	* gcc.target/aarch64/pr104921-2.c: New test.
+	* gcc.target/aarch64/pr104921.x: Include file for new tests.
+
 2023-02-15  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
