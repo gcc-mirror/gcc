@@ -183,7 +183,7 @@ impl fmt::Display for Literal {
 impl FromStr for Literal {
     type Err = LexError;
 
-    fn from_str(_src: &str) -> Result<Self, LexError> {
-        todo!("Implement this function")
+    fn from_str(src: &str) -> Result<Self, LexError> {
+        bridge::literal::Literal::from_str(src).map(Literal)
     }
 }
