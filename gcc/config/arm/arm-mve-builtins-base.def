@@ -18,6 +18,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define REQUIRES_FLOAT false
+DEF_MVE_FUNCTION (vabavq, binary_acca_int32, all_integer, p_or_none)
 DEF_MVE_FUNCTION (vabdq, binary, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vabsq, unary, all_signed, mx_or_none)
 DEF_MVE_FUNCTION (vaddlvaq, unary_widen_acc, integer_32, p_or_none)

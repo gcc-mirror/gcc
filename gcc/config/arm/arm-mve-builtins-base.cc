@@ -241,6 +241,7 @@ namespace arm_mve {
    (-1, -1, UNSPEC##_F,							\
     -1, -1, UNSPEC##_P_F))
 
+FUNCTION_PRED_P_S_U (vabavq, VABAVQ)
 FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION (vabsq, unspec_based_mve_function_exact_insn, (ABS, ABS, ABS, -1, -1, -1, VABSQ_M_S, -1, VABSQ_M_F, -1, -1, -1))
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
