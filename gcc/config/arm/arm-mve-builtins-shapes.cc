@@ -1066,6 +1066,34 @@ struct unary_def : public overloaded_base<0>
 };
 SHAPE (unary)
 
+/* <S0:twice>_t vfoo[_<t0>](<T0>_t)
+
+   i.e. a version of "unary" in which the source elements are half the
+   size of the destination scalar, but have the same type class.
+
+   Example: vaddlvq.
+   int64_t [__arm_]vaddlvq[_s32](int32x4_t a)
+   int64_t [__arm_]vaddlvq_p[_s32](int32x4_t a, mve_pred16_t p) */
+struct unary_acc_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "sw0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    /* FIXME: check that the return value is actually
+       twice as wide as arg 0.  */
+    return r.resolve_unary ();
+  }
+};
+SHAPE (unary_acc)
+
 /* <T0>_t foo_t0[_t1](<T1>_t)
 
    where the target type <t0> must be specified explicitly but the source
