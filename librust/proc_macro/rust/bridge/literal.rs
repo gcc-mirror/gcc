@@ -13,7 +13,7 @@ extern "C" {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Unsigned {
     Unsigned8(u8),
     Unsigned16(u16),
@@ -25,7 +25,7 @@ pub enum Unsigned {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Signed {
     Signed8(i8),
     Signed16(i16),
@@ -37,7 +37,7 @@ pub enum Signed {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Literal {
     /// String literal internal representation
     ///
@@ -380,6 +380,22 @@ impl FromStr for Literal {
             Err(LexError)
         } else {
             Ok(lit)
+        }
+    }
+}
+
+impl Clone for Literal {
+    fn clone(&self) -> Self {
+        match self {
+            Literal::String { data, len } => unsafe { Literal__string(*data, *len) },
+            Literal::ByteString { data, size } => unsafe { Literal__byte_string(*data, *size) },
+            Literal::Char(val) => Literal::Char(*val),
+            Literal::Unsigned(val, suffixed) => Literal::Unsigned(*val, *suffixed),
+            Literal::Signed(val, suffixed) => Literal::Signed(*val, *suffixed),
+            Literal::Usize(val, suffixed) => Literal::Usize(*val, *suffixed),
+            Literal::ISize(val, suffixed) => Literal::ISize(*val, *suffixed),
+            Literal::Float32(val, suffixed) => Literal::Float32(*val, *suffixed),
+            Literal::Float64(val, suffixed) => Literal::Float64(*val, *suffixed),
         }
     }
 }
