@@ -1,3 +1,4 @@
+
 ;; Code and mode itertator and attribute definitions for the ARM backend
 ;; Copyright (C) 2010-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
@@ -274,6 +275,8 @@
 (define_mode_iterator MVE_6 [V8HI V4SI])
 (define_mode_iterator MVE_7 [V16BI V8BI V4BI V2QI])
 (define_mode_iterator MVE_7_HI [HI V16BI V8BI V4BI V2QI])
+(define_mode_iterator MVE_V8HF [V8HF])
+(define_mode_iterator MVE_V16QI [V16QI])
 
 ;;----------------------------------------------------------------------------
 ;; Code iterators
@@ -370,6 +373,22 @@
 		     VRNDPQ_M_F
 		     VRNDQ_M_F
 		     VRNDXQ_M_F
+		     ])
+
+(define_int_iterator MVE_FP_VREV64Q_ONLY [
+		     VREV64Q_F
+		     ])
+
+(define_int_iterator MVE_FP_M_VREV64Q_ONLY [
+		     VREV64Q_M_F
+		     ])
+
+(define_int_iterator MVE_FP_VREV32Q_ONLY [
+		     VREV32Q_F
+		     ])
+
+(define_int_iterator MVE_FP_M_VREV32Q_ONLY [
+		     VREV32Q_M_F
 		     ])
 
 ;; MVE integer binary operations.
@@ -862,6 +881,12 @@
 		 (VQSUBQ_M_S "vqsub") (VQSUBQ_M_U "vqsub")
 		 (VQSUBQ_N_S "vqsub") (VQSUBQ_N_U "vqsub")
 		 (VQSUBQ_S "vqsub") (VQSUBQ_U "vqsub")
+		 (VREV16Q_M_S "vrev16") (VREV16Q_M_U "vrev16")
+		 (VREV16Q_S "vrev16") (VREV16Q_U "vrev16")
+		 (VREV32Q_M_S "vrev32") (VREV32Q_M_U "vrev32") (VREV32Q_M_F "vrev32")
+		 (VREV32Q_S "vrev32") (VREV32Q_U "vrev32") (VREV32Q_F "vrev32")
+		 (VREV64Q_M_S "vrev64") (VREV64Q_M_U "vrev64") (VREV64Q_M_F "vrev64")
+		 (VREV64Q_S "vrev64") (VREV64Q_U "vrev64") (VREV64Q_F "vrev64")
 		 (VRHADDQ_M_S "vrhadd") (VRHADDQ_M_U "vrhadd")
 		 (VRHADDQ_S "vrhadd") (VRHADDQ_U "vrhadd")
 		 (VRMULHQ_M_S "vrmulh") (VRMULHQ_M_U "vrmulh")
