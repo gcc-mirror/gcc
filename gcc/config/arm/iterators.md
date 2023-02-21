@@ -783,6 +783,8 @@
 		 ])
 
 (define_int_attr mve_insn [
+		 (VABAVQ_P_S "vabav") (VABAVQ_P_U "vabav")
+		 (VABAVQ_S "vabav") (VABAVQ_U "vabav")
 		 (VABDQ_M_S "vabd") (VABDQ_M_U "vabd") (VABDQ_M_F "vabd")
 		 (VABDQ_S "vabd") (VABDQ_U "vabd") (VABDQ_F "vabd")
 		 (VABSQ_M_F "vabs")

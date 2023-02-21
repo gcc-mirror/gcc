@@ -1807,7 +1807,7 @@
 ;;
 ;; [vabavq_s, vabavq_u])
 ;;
-(define_insn "mve_vabavq_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec:SI [(match_operand:SI 1 "s_register_operand" "0")
@@ -1816,7 +1816,7 @@
 	 VABAVQ))
   ]
   "TARGET_HAVE_MVE"
-  "vabav.<supf>%#<V_sz_elem>\t%0, %q2, %q3"
+  "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -3107,7 +3107,7 @@
 ;;
 ;; [vabavq_p_s, vabavq_p_u])
 ;;
-(define_insn "mve_vabavq_p_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_p_<supf><mode>"
   [
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec:SI [(match_operand:SI 1 "s_register_operand" "0")
@@ -3117,7 +3117,7 @@
 	 VABAVQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vabavt.<supf>%#<V_sz_elem>\t%0, %q2, %q3"
+  "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length" "8")])
 
