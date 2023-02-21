@@ -360,14 +360,14 @@
 ;;
 ;; [vaddvq_s, vaddvq_u])
 ;;
-(define_insn "@mve_vaddvq_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:SI 0 "s_register_operand" "=Te")
 	(unspec:SI [(match_operand:MVE_2 1 "s_register_operand" "w")]
 	 VADDVQ))
   ]
   "TARGET_HAVE_MVE"
-  "vaddv.<supf>%#<V_sz_elem>\t%0, %q1"
+  "<mve_insn>.<supf>%#<V_sz_elem>\t%0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -773,7 +773,7 @@
 ;;
 ;; [vaddvq_p_u, vaddvq_p_s])
 ;;
-(define_insn "mve_vaddvq_p_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_p_<supf><mode>"
   [
    (set (match_operand:SI 0 "s_register_operand" "=Te")
 	(unspec:SI [(match_operand:MVE_2 1 "s_register_operand" "w")
@@ -781,7 +781,7 @@
 	 VADDVQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vaddvt.<supf>%#<V_sz_elem>	%0, %q1"
+  "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%0, %q1"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 

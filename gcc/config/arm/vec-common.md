@@ -559,7 +559,7 @@
       /* vaddv generates a 32 bits accumulator.  */
       rtx op0 = gen_reg_rtx (SImode);
 
-      emit_insn (gen_mve_vaddvq (VADDVQ_S, <MODE>mode, op0, operands[1]));
+      emit_insn (gen_mve_q (VADDVQ_S, VADDVQ_S, <MODE>mode, op0, operands[1]));
       emit_move_insn (operands[0], gen_lowpart (<V_elem>mode, op0));
     }
 
