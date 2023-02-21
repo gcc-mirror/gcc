@@ -2,11 +2,14 @@ use bridge::span::Span;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::c_uchar;
 use std::fmt;
+use std::str::FromStr;
+use LexError;
 
 extern "C" {
     fn Literal__drop(literal: *const Literal);
     fn Literal__string(str: *const c_uchar) -> Literal;
     fn Literal__byte_string(bytes: *const u8) -> Literal;
+    fn Literal__from_string(str: *const c_uchar, lit: *mut Literal) -> bool;
 }
 
 #[repr(C)]
@@ -357,5 +360,20 @@ impl fmt::Display for Literal {
             }
         }
         Ok(())
+    }
+}
+
+impl FromStr for Literal {
+    type Err = LexError;
+
+    fn from_str(string: &str) -> Result<Self, LexError> {
+        let mut lit = Literal::Char(0);
+        // TODO: We might want to pass a LexError by reference to retrieve
+        // error information
+        if unsafe { Literal__from_string(string.as_ptr(), &mut lit as *mut Literal) } {
+            Err(LexError)
+        } else {
+            Ok(lit)
+        }
     }
 }
