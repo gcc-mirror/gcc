@@ -699,6 +699,34 @@
 		     VMINAQ_M_S
 		     ])
 
+(define_int_iterator MVE_VMLxDAVQ [
+		     VMLADAVQ_S VMLADAVQ_U
+		     VMLADAVXQ_S
+		     VMLSDAVQ_S
+		     VMLSDAVXQ_S
+		     ])
+
+(define_int_iterator MVE_VMLxDAVQ_P [
+		     VMLADAVQ_P_S VMLADAVQ_P_U
+		     VMLADAVXQ_P_S
+		     VMLSDAVQ_P_S
+		     VMLSDAVXQ_P_S
+		     ])
+
+(define_int_iterator MVE_VMLxDAVAQ [
+		     VMLADAVAQ_S VMLADAVAQ_U
+		     VMLSDAVAXQ_S
+		     VMLSDAVAQ_S
+		     VMLADAVAXQ_S
+		     ])
+
+(define_int_iterator MVE_VMLxDAVAQ_P [
+		     VMLADAVAQ_P_S VMLADAVAQ_P_U
+		     VMLSDAVAXQ_P_S
+		     VMLSDAVAQ_P_S
+		     VMLADAVAXQ_P_S
+		     ])
+
 (define_int_iterator MVE_MOVN [
 		     VMOVNBQ_S VMOVNBQ_U
 		     VMOVNTQ_S VMOVNTQ_U
@@ -817,8 +845,24 @@
 		 (VMINQ_M_S "vmin") (VMINQ_M_U "vmin")
 		 (VMINVQ_P_S "vminv") (VMINVQ_P_U "vminv")
 		 (VMINVQ_S "vminv") (VMINVQ_U "vminv")
+		 (VMLADAVAQ_P_S "vmladava") (VMLADAVAQ_P_U "vmladava")
+		 (VMLADAVAQ_S "vmladava") (VMLADAVAQ_U "vmladava")
+		 (VMLADAVAXQ_P_S "vmladavax")
+		 (VMLADAVAXQ_S "vmladavax")
+		 (VMLADAVQ_P_S "vmladav") (VMLADAVQ_P_U "vmladav")
+		 (VMLADAVQ_S "vmladav") (VMLADAVQ_U "vmladav")
+		 (VMLADAVXQ_P_S "vmladavx")
+		 (VMLADAVXQ_S "vmladavx")
 		 (VMLAQ_M_N_S "vmla") (VMLAQ_M_N_U "vmla")
 		 (VMLASQ_M_N_S "vmlas") (VMLASQ_M_N_U "vmlas")
+		 (VMLSDAVAQ_P_S "vmlsdava")
+		 (VMLSDAVAQ_S "vmlsdava")
+		 (VMLSDAVAXQ_P_S "vmlsdavax")
+		 (VMLSDAVAXQ_S "vmlsdavax")
+		 (VMLSDAVQ_P_S "vmlsdav")
+		 (VMLSDAVQ_S "vmlsdav")
+		 (VMLSDAVXQ_P_S "vmlsdavx")
+		 (VMLSDAVXQ_S "vmlsdavx")
 		 (VMOVLBQ_M_S "vmovlb") (VMOVLBQ_M_U "vmovlb")
 		 (VMOVLBQ_S "vmovlb") (VMOVLBQ_U "vmovlb")
 		 (VMOVLTQ_M_S "vmovlt") (VMOVLTQ_M_U "vmovlt")
@@ -2237,6 +2281,18 @@
 		       (VCMPLTQ_M_S "s")
 		       (VCMPNEQ_M_N_S "s") (VCMPNEQ_M_N_U "u")
 		       (VCMPNEQ_M_S "s") (VCMPNEQ_M_U "u")
+		       (VMLADAVAXQ_P_S "s")
+		       (VMLADAVAXQ_S "s")
+		       (VMLADAVXQ_P_S "s")
+		       (VMLADAVXQ_S "s")
+		       (VMLSDAVAQ_P_S "s")
+		       (VMLSDAVAQ_S "s")
+		       (VMLSDAVAXQ_P_S "s")
+		       (VMLSDAVAXQ_S "s")
+		       (VMLSDAVQ_P_S "s")
+		       (VMLSDAVQ_S "s")
+		       (VMLSDAVXQ_P_S "s")
+		       (VMLSDAVXQ_S "s")
 		       ])
 
 ;; Both kinds of return insn.
