@@ -1,4 +1,5 @@
 #include "rust-macro-invoc-lexer.h"
+#include "rust-token.h"
 
 namespace Rust {
 
@@ -19,12 +20,22 @@ MacroInvocLexer::skip_token (int n)
 }
 
 void
-MacroInvocLexer::split_current_token (TokenId new_left __attribute__ ((unused)),
-				      TokenId new_right
-				      __attribute__ ((unused)))
+MacroInvocLexer::split_current_token (TokenId new_left, TokenId new_right)
 {
-  // FIXME
-  gcc_unreachable ();
+  auto &current_token = token_stream.at (offs);
+  auto current_pos = token_stream.begin () + offs;
+
+  auto l_tok = Token::make (new_left, current_token->get_locus ());
+  auto r_tok = Token::make (new_right, current_token->get_locus ());
+
+  token_stream.erase (current_pos);
+
+  // `insert` inserts before the specified position, so we insert the right one
+  // then the left
+  token_stream.insert (current_pos,
+		       std::unique_ptr<AST::Token> (new AST::Token (r_tok)));
+  token_stream.insert (current_pos,
+		       std::unique_ptr<AST::Token> (new AST::Token (l_tok)));
 }
 
 std::vector<std::unique_ptr<AST::Token>>
