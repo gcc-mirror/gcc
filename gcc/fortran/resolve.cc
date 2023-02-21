@@ -14892,6 +14892,19 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
                     c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
          return false;
        }
+
+     if (c->ts.u.cl->length && c->ts.u.cl->length->ts.type != BT_INTEGER)
+       {
+	 if (!c->ts.u.cl->length->error)
+	   {
+	     gfc_error ("Character length expression of component %qs at %L "
+			"must be of INTEGER type, found %s",
+			c->name, &c->ts.u.cl->length->where,
+			gfc_basic_typename (c->ts.u.cl->length->ts.type));
+	     c->ts.u.cl->length->error = 1;
+	   }
+	 return false;
+       }
     }
 
   if (c->ts.type == BT_CHARACTER && c->ts.deferred
