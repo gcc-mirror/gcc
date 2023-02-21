@@ -35,6 +35,7 @@
 #include "file-prefix-map.h"
 #include "cgraph.h"
 #include "output.h"
+#include "memmodel.h"
 #include "tm_p.h"
 
 // forked from gcc/c-family/c-common.cc c_global_trees
