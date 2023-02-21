@@ -134,7 +134,8 @@ template <typename _Abi, typename>
     // math {{{
     // _S_sqrt {{{
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      _GLIBCXX_SIMD_INTRINSIC static _Tp _S_sqrt(_Tp __x)
+      _GLIBCXX_SIMD_INTRINSIC static _Tp
+      _S_sqrt(_Tp __x)
       {
 	if constexpr (__have_neon_a64)
 	  {
@@ -157,7 +158,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_trunc {{{
     template <typename _TW, typename _TVT = _VectorTraits<_TW>>
-      _GLIBCXX_SIMD_INTRINSIC static _TW _S_trunc(_TW __x)
+      _GLIBCXX_SIMD_INTRINSIC static _TW
+      _S_trunc(_TW __x)
       {
 	using _Tp = typename _TVT::value_type;
 	if constexpr (__have_neon_a32)
@@ -216,7 +218,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_floor {{{
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      _GLIBCXX_SIMD_INTRINSIC static _Tp _S_floor(_Tp __x)
+      _GLIBCXX_SIMD_INTRINSIC static _Tp
+      _S_floor(_Tp __x)
       {
 	if constexpr (__have_neon_a32)
 	  {
@@ -239,7 +242,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_ceil {{{
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      _GLIBCXX_SIMD_INTRINSIC static _Tp _S_ceil(_Tp __x)
+      _GLIBCXX_SIMD_INTRINSIC static _Tp
+      _S_ceil(_Tp __x)
       {
 	if constexpr (__have_neon_a32)
 	  {
@@ -400,7 +404,8 @@ template <typename _Abi, typename>
 
     // _S_all_of {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static bool _S_all_of(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static bool
+      _S_all_of(simd_mask<_Tp, _Abi> __k)
       {
 	const auto __kk
 	  = __vector_bitcast<char>(__k._M_data)
@@ -419,7 +424,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_any_of {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static bool _S_any_of(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static bool
+      _S_any_of(simd_mask<_Tp, _Abi> __k)
       {
 	const auto __kk
 	  = __vector_bitcast<char>(__k._M_data)
@@ -438,7 +444,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_none_of {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static bool _S_none_of(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static bool
+      _S_none_of(simd_mask<_Tp, _Abi> __k)
       {
 	const auto __kk = _Abi::_S_masked(__k._M_data);
 	if constexpr (sizeof(__k) == 16)
@@ -472,7 +479,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_popcount {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static int _S_popcount(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static int
+      _S_popcount(simd_mask<_Tp, _Abi> __k)
       {
 	if constexpr (sizeof(_Tp) == 1)
 	  {
