@@ -316,9 +316,10 @@ TypeCheckMethodCallExpr::go (FnType *ref, Analysis::NodeMapping call_mappings,
 BaseType *
 TypeCheckMethodCallExpr::check (FnType &type)
 {
-  Resolver::TypeCheckBase::unify_site (
-    call_mappings.get_hirid (), TyWithLocation (type.get_self_type ()),
-    TyWithLocation (adjusted_self, receiver_locus), call_locus);
+  Resolver::unify_site (call_mappings.get_hirid (),
+			TyWithLocation (type.get_self_type ()),
+			TyWithLocation (adjusted_self, receiver_locus),
+			call_locus);
 
   // +1 for the receiver self
   size_t num_args_to_call = arguments.size () + 1;

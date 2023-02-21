@@ -20,10 +20,10 @@
 #define RUST_HIR_TYPE_CHECK_BASE
 
 #include "rust-diagnostics.h"
-#include "rust-hir-type-check.h"
-#include "rust-name-resolver.h"
-#include "rust-hir-visitor.h"
 #include "rust-hir-map.h"
+#include "rust-hir-type-check.h"
+#include "rust-hir-visitor.h"
+#include "rust-name-resolver.h"
 
 namespace Rust {
 namespace Resolver {
@@ -33,10 +33,6 @@ class TypeCheckBase
 {
 public:
   virtual ~TypeCheckBase () {}
-
-  static TyTy::BaseType *unify_site (HirId id, TyTy::TyWithLocation lhs,
-				     TyTy::TyWithLocation rhs,
-				     Location unify_locus);
 
   static TyTy::BaseType *coercion_site (HirId id, TyTy::TyWithLocation lhs,
 					TyTy::TyWithLocation rhs,
@@ -66,7 +62,7 @@ protected:
 						 Location locus);
 
   void resolve_generic_params (
-    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+    const std::vector<std::unique_ptr<HIR::GenericParam> > &generic_params,
     std::vector<TyTy::SubstitutionParamMapping> &substitutions);
 
   Analysis::Mappings *mappings;
