@@ -681,14 +681,14 @@ verify_loop_closed_ssa (bool verify_ssa_p, class loop *loop)
   if (number_of_loops (cfun) <= 1)
     return;
 
-  if (verify_ssa_p)
-    verify_ssa (false, true);
-
   timevar_push (TV_VERIFY_LOOP_CLOSED);
 
   if (loop == NULL)
     {
       basic_block bb;
+
+      if (verify_ssa_p)
+	verify_ssa (false, true);
 
       FOR_EACH_BB_FN (bb, cfun)
 	if (bb->loop_father && bb->loop_father->num > 0)
@@ -697,6 +697,11 @@ verify_loop_closed_ssa (bool verify_ssa_p, class loop *loop)
   else
     {
       basic_block *bbs = get_loop_body (loop);
+
+      /* We do not have loop-local SSA verification so just
+	 check there's no update queued.  */
+      if (verify_ssa_p)
+	gcc_assert (!need_ssa_update_p (cfun));
 
       for (unsigned i = 0; i < loop->num_nodes; ++i)
 	check_loop_closed_ssa_bb (bbs[i]);

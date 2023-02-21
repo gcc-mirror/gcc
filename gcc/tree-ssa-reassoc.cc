@@ -4687,6 +4687,9 @@ update_ops (tree var, enum tree_code code, const vec<operand_entry *> &ops,
       gimple_set_uid (g, gimple_uid (stmt));
       gimple_set_visited (g, true);
       gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      gimple_stmt_iterator gsi2 = gsi_for_stmt (g);
+      if (fold_stmt_inplace (&gsi2))
+	update_stmt (g);
     }
   return var;
 }

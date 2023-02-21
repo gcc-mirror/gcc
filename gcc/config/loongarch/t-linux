@@ -40,7 +40,7 @@ ifeq ($(filter LA_DISABLE_MULTILIB,$(tm_defines)),)
 
     MULTILIB_OSDIRNAMES = \
       mabi.lp64d=../lib64$\
-      $(call if_multiarch,:loongarch64-linux-gnuf64)
+      $(call if_multiarch,:loongarch64-linux-gnu)
 
     MULTILIB_OSDIRNAMES += \
       mabi.lp64f=../lib64/f32$\

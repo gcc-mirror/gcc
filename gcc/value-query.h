@@ -140,7 +140,7 @@ get_global_range_query ()
 ATTRIBUTE_RETURNS_NONNULL inline range_query *
 get_range_query (const struct function *fun)
 {
-  return fun->x_range_query ? fun->x_range_query : &global_ranges;
+  return (fun && fun->x_range_query) ? fun->x_range_query : &global_ranges;
 }
 
 // Query the global range of NAME in function F.  Default to cfun.

@@ -59,6 +59,10 @@ along with GCC; see the file COPYING3.  If not see
 #define C_TYPE_VARIABLE_SIZE(TYPE) TYPE_LANG_FLAG_1 (TYPE)
 #define C_DECL_VARIABLE_SIZE(TYPE) DECL_LANG_FLAG_0 (TYPE)
 
+/* Record whether a type is variably modified. */
+#define C_TYPE_VARIABLY_MODIFIED(TYPE) TYPE_LANG_FLAG_6 (TYPE)
+
+
 /* Record whether a type is defined inside a struct or union type.
    This is used for -Wc++-compat. */
 #define C_TYPE_DEFINED_IN_STRUCT(TYPE) TYPE_LANG_FLAG_2 (TYPE)
@@ -714,7 +718,7 @@ extern bool c_objc_common_init (void);
 extern bool c_missing_noreturn_ok_p (tree);
 extern bool c_warn_unused_global_decl (const_tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
-extern bool c_vla_unspec_p (tree x, tree fn);
+extern bool c_var_mod_p (tree x, tree fn);
 extern alias_set_type c_get_alias_set (tree);
 
 /* in c-typeck.cc */
@@ -729,6 +733,15 @@ extern location_t c_last_sizeof_loc;
 extern struct c_switch *c_switch_stack;
 
 extern bool null_pointer_constant_p (const_tree);
+
+
+inline
+bool c_type_variably_modified_p (tree t)
+{
+  return error_mark_node != t && C_TYPE_VARIABLY_MODIFIED (t);
+}
+
+
 extern bool char_type_p (tree);
 extern tree c_objc_common_truthvalue_conversion (location_t, tree);
 extern tree require_complete_type (location_t, tree);
@@ -736,7 +749,6 @@ extern bool same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
 extern int comptypes_check_enum_int (tree, tree, bool *);
-extern bool c_vla_type_p (const_tree);
 extern bool c_mark_addressable (tree, bool = false);
 extern void c_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree c_type_promotes_to (tree);

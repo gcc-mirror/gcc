@@ -1,3 +1,7 @@
+2023-02-17  Petr Sumbera  <petr.sumbera@oracle.com>
+
+	* make_sunver.pl: Escape brace.
+
 2023-02-10  Flavio Cruz  <flaviocruz@gmail.com>
 
 	* config-list.mk: Add x86_64-gnu to list of archs.

@@ -1,3 +1,11 @@
+2023-02-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/105660
+	* c-attribs.cc (append_access_attr): Use order of arguments when
+	construction string.
+	(append_access_attr_idxs): Rename and make static.
+	* c-warn.cc (warn_parm_array_mismatch): Add assertion.
+
 2023-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	* c-common.h: Mechanically drop static from static inline
