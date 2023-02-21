@@ -168,8 +168,8 @@ impl fmt::Debug for TokenStream {
 impl FromStr for TokenStream {
     type Err = LexError;
 
-    fn from_str(_src: &str) -> Result<Self, LexError> {
-        todo!("Implement this function")
+    fn from_str(src: &str) -> Result<Self, LexError> {
+        bridge::token_stream::TokenStream::from_str(src).map(TokenStream)
     }
 }
 

@@ -1,10 +1,20 @@
 use bridge::{group::Group, ident::Ident, literal::Literal, punct::Punct};
 use std::convert::TryInto;
+use std::ffi::c_uchar;
 use std::fmt;
 use std::slice;
+use std::str::FromStr;
+use LexError;
 
 type ExternalTokenTree = crate::TokenTree;
 type ExternalTokenStream = crate::TokenStream;
+
+extern "C" {
+    fn TokenStream__new() -> TokenStream;
+    fn TokenStream__with_capacity(capacity: u64) -> TokenStream;
+    fn TokenStream__push(stream: *mut TokenStream, tree: TokenTree);
+    fn TokenStream__from_string(str: *const c_uchar, ts: *mut TokenStream) -> bool;
+}
 
 // TODO: There surely is a better way to achieve this. I don't like this
 // "duplication" of the TokenTree enumeration. But I cannot use the public
@@ -39,12 +49,6 @@ impl From<ExternalTokenTree> for TokenTree {
             ExternalTokenTree::Literal(l) => TokenTree::Literal(l.0),
         }
     }
-}
-
-extern "C" {
-    fn TokenStream__new() -> TokenStream;
-    fn TokenStream__with_capacity(capacity: u64) -> TokenStream;
-    fn TokenStream__push(stream: *mut TokenStream, tree: TokenTree);
 }
 
 #[repr(C)]
@@ -127,5 +131,17 @@ impl fmt::Display for TokenStream {
             }
         }
         Ok(())
+    }
+}
+
+impl FromStr for TokenStream {
+    type Err = LexError;
+    fn from_str(string: &str) -> Result<Self, LexError> {
+        let mut ts = TokenStream::new();
+        if unsafe { TokenStream__from_string(string.as_ptr(), &mut ts as *mut TokenStream) } {
+            Err(LexError)
+        } else {
+            Ok(ts)
+        }
     }
 }
