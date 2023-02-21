@@ -1121,6 +1121,40 @@ struct unary_int32_def : public overloaded_base<0>
 };
 SHAPE (unary_int32)
 
+/* [u]int32_t vfoo[_<t0>]([u]int32_t, <T0>_t)
+
+   i.e. a version of "unary" which accumulates into scalar of type
+   int32_t or uint32_t depending on the signedness of the elements of
+   of input vector.
+
+   Example: vaddvaq.
+   int32_t [__arm_]vaddvaq[_s16](int32_t a, int16x8_t b)
+   int32_t [__arm_]vaddvaq_p[_s16](int32_t a, int16x8_t b, mve_pred16_t p)  */
+struct unary_int32_acc_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "sx32,sx32,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| !r.require_integer_immediate (0)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (unary_int32_acc)
+
 /* <T0>_t vfoo[_n]_t0(<S0>_t)
 
    Example: vdupq.

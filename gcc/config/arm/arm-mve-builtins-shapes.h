@@ -55,6 +55,7 @@ namespace arm_mve
     extern const function_shape *const unary;
     extern const function_shape *const unary_convert;
     extern const function_shape *const unary_int32;
+    extern const function_shape *const unary_int32_acc;
     extern const function_shape *const unary_n;
 
   } /* end namespace arm_mve::shapes */
