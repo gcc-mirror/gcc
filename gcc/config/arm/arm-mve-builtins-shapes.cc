@@ -1236,6 +1236,52 @@ struct unary_n_def : public overloaded_base<0>
 };
 SHAPE (unary_n)
 
+/* <T0:twice>_t vfoo[_t0](<T0>_t)
+
+   i.e. a version of "unary" in which the source elements are half the
+   size of the destination, but have the same type class.
+
+   Example: vmovlbq.
+   int32x4_t [__arm_]vmovlbq[_s16](int16x8_t a)
+   int32x4_t [__arm_]vmovlbq_m[_s16](int32x4_t inactive, int16x8_t a, mve_pred16_t p)
+   int32x4_t [__arm_]vmovlbq_x[_s16](int16x8_t a, mve_pred16_t p)  */
+struct unary_widen_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "vw0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    tree res;
+    if (!r.check_gp_argument (1, i, nargs)
+	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    type_suffix_index wide_suffix
+      = find_type_suffix (type_suffixes[type].tclass,
+			  type_suffixes[type].element_bits * 2);
+
+    /* Check the inactive argument has the wide type.  */
+    if ((r.pred == PRED_m)
+	&& (r.infer_vector_type (0) != wide_suffix))
+    return r.report_no_such_form (type);
+
+    if ((res = r.lookup_form (r.mode_suffix_id, type)))
+	return res;
+
+    return r.report_no_such_form (type);
+  }
+};
+SHAPE (unary_widen)
+
 } /* end namespace arm_mve */
 
 #undef SHAPE
