@@ -112,6 +112,7 @@ template <typename V>
       T acc = x[0];
       for (size_t i = 1; i < V::size(); ++i)
 	acc += x[i];
-      ULP_COMPARE(reduce(x), acc, V::size() / 2).on_failure("x = ", x);
+      const T max_distance = std::is_integral_v<T> ? 0 : V::size() / 2;
+      ULP_COMPARE(reduce(x), acc, max_distance).on_failure("x = ", x);
     });
   }
