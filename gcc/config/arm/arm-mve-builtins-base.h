@@ -38,6 +38,7 @@ extern const function_base *const vcmpleq;
 extern const function_base *const vcmpltq;
 extern const function_base *const vcmpneq;
 extern const function_base *const vcreateq;
+extern const function_base *const vdupq;
 extern const function_base *const veorq;
 extern const function_base *const vhaddq;
 extern const function_base *const vhsubq;
