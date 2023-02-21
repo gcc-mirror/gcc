@@ -386,30 +386,17 @@
 ])
 
 ;;
-;; [vmovltq_u, vmovltq_s])
+;; [vmovlbq_s, vmovlbq_u]
+;; [vmovltq_u, vmovltq_s]
 ;;
-(define_insn "mve_vmovltq_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
 	(unspec:<V_double_width> [(match_operand:MVE_3 1 "s_register_operand" "w")]
-	 VMOVLTQ))
+	 VMOVLxQ))
   ]
   "TARGET_HAVE_MVE"
-  "vmovlt.<supf>%#<V_sz_elem>   %q0, %q1"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vmovlbq_s, vmovlbq_u])
-;;
-(define_insn "mve_vmovlbq_<supf><mode>"
-  [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
-	(unspec:<V_double_width> [(match_operand:MVE_3 1 "s_register_operand" "w")]
-	 VMOVLBQ))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmovlb.<supf>%#<V_sz_elem>   %q0, %q1"
+  "<mve_insn>.<supf>%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2904,34 +2891,21 @@
   "vpst\;vmlsldavxt.s%#<V_sz_elem> %Q0, %R0, %q1, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
+
 ;;
 ;; [vmovlbq_m_u, vmovlbq_m_s])
-;;
-(define_insn "mve_vmovlbq_m_<supf><mode>"
-  [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
-	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
-		       (match_operand:MVE_3 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMOVLBQ_M))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vmovlbt.<supf>%#<V_sz_elem>	%q0, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-;;
 ;; [vmovltq_m_u, vmovltq_m_s])
 ;;
-(define_insn "mve_vmovltq_m_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_<supf><mode>"
   [
    (set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 		       (match_operand:MVE_3 2 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMOVLTQ_M))
+	 VMOVLxQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vmovltt.<supf>%#<V_sz_elem>	%q0, %q2"
+  "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
