@@ -500,14 +500,14 @@
 ;;
 ;; [vaddlvq_s vaddlvq_u])
 ;;
-(define_insn "mve_vaddlvq_<supf>v4si"
+(define_insn "@mve_<mve_insn>q_<supf>v4si"
   [
    (set (match_operand:DI 0 "s_register_operand" "=r")
 	(unspec:DI [(match_operand:V4SI 1 "s_register_operand" "w")]
 	 VADDLVQ))
   ]
   "TARGET_HAVE_MVE"
-  "vaddlv.<supf>32\t%Q0, %R0, %q1"
+  "<mve_insn>.<supf>32\t%Q0, %R0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -666,7 +666,7 @@
 ;;
 ;; [vaddlvq_p_s])
 ;;
-(define_insn "mve_vaddlvq_p_<supf>v4si"
+(define_insn "@mve_<mve_insn>q_p_<supf>v4si"
   [
    (set (match_operand:DI 0 "s_register_operand" "=r")
 	(unspec:DI [(match_operand:V4SI 1 "s_register_operand" "w")
@@ -674,7 +674,7 @@
 	 VADDLVQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vaddlvt.<supf>32\t%Q0, %R0, %q1"
+  "vpst\;<mve_insn>t.<supf>32\t%Q0, %R0, %q1"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 

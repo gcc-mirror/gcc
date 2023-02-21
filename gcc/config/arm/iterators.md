@@ -759,6 +759,8 @@
 		 (VABDQ_S "vabd") (VABDQ_U "vabd") (VABDQ_F "vabd")
 		 (VABSQ_M_F "vabs")
 		 (VABSQ_M_S "vabs")
+		 (VADDLVQ_P_S "vaddlv") (VADDLVQ_P_U "vaddlv")
+		 (VADDLVQ_S "vaddlv") (VADDLVQ_U "vaddlv")
 		 (VADDQ_M_N_S "vadd") (VADDQ_M_N_U "vadd") (VADDQ_M_N_F "vadd")
 		 (VADDQ_M_S "vadd") (VADDQ_M_U "vadd") (VADDQ_M_F "vadd")
 		 (VADDQ_N_S "vadd") (VADDQ_N_U "vadd") (VADDQ_N_F "vadd")
