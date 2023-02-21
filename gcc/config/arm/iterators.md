@@ -391,6 +391,14 @@
 		     VREV32Q_M_F
 		     ])
 
+(define_int_iterator MVE_FP_M_N_VDUPQ_ONLY [
+		     VDUPQ_M_N_F
+		     ])
+
+(define_int_iterator MVE_FP_N_VDUPQ_ONLY [
+		     VDUPQ_N_F
+		     ])
+
 ;; MVE integer binary operations.
 (define_code_iterator MVE_INT_BINARY_RTX [plus minus mult])
 
@@ -762,6 +770,8 @@
 		 (VCLSQ_S "vcls")
 		 (VCLZQ_M_S "vclz") (VCLZQ_M_U "vclz")
 		 (VCREATEQ_S "vcreate") (VCREATEQ_U "vcreate") (VCREATEQ_F "vcreate")
+		 (VDUPQ_M_N_S "vdup") (VDUPQ_M_N_U "vdup") (VDUPQ_M_N_F "vdup")
+		 (VDUPQ_N_S "vdup") (VDUPQ_N_U "vdup") (VDUPQ_N_F "vdup")
 		 (VEORQ_M_S "veor") (VEORQ_M_U "veor") (VEORQ_M_F "veor")
 		 (VHADDQ_M_N_S "vhadd") (VHADDQ_M_N_U "vhadd")
 		 (VHADDQ_M_S "vhadd") (VHADDQ_M_U "vhadd")
