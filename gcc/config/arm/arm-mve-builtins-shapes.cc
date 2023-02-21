@@ -365,6 +365,33 @@ struct binary_def : public overloaded_base<0>
 };
 SHAPE (binary)
 
+/* <[u]int32>_t vfoo[_<t0>](<T0>_t, <T0>_t)
+
+   i.e. the shape for binary operations that operate on a pair of
+   vectors and produce an int32_t or an uint32_t depending on the
+   signedness of the input elements.
+
+   Example: vmladavq.
+   int32_t [__arm_]vmladavq[_s16](int16x8_t m1, int16x8_t m2)
+   int32_t [__arm_]vmladavq_p[_s16](int16x8_t m1, int16x8_t m2, mve_pred16_t p)  */
+struct binary_acc_int32_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "sx32,v0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (2);
+  }
+};
+SHAPE (binary_acc_int32)
+
 /* <T0>_t vfoo[_n_t0](<T0>_t, const int)
 
    Shape for vector shift right operations that take a vector first
