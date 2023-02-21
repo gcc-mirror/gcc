@@ -17,7 +17,7 @@ impl Iterator for IntoIter {
 
     fn next(&mut self) -> Option<TokenTree> {
         if self.current == self.end {
-            return None;
+            None
         } else {
             let result = self.current;
             self.current = unsafe { self.current.add(1) };

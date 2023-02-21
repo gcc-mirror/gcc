@@ -17,10 +17,6 @@ extern "C" {
     fn TokenStream__clone(ts: *const TokenStream) -> TokenStream;
 }
 
-// TODO: There surely is a better way to achieve this. I don't like this
-// "duplication" of the TokenTree enumeration. But I cannot use the public
-// one since it's underlying types (public Group, Ident...) are not ffi safe.
-// Flattening all those struct might be a solution.
 #[repr(C)]
 #[derive(Clone)]
 pub enum TokenTree {

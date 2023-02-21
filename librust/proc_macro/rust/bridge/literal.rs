@@ -252,7 +252,7 @@ impl fmt::Display for Literal {
                 let slice =
                     unsafe { std::slice::from_raw_parts(*data, (*size).try_into().unwrap()) };
                 for &byte in slice {
-                    if byte != b'"' && byte >= b' ' && byte <= b'z' {
+                    if byte != b'"' && (b' '..=b'z').contains(&byte) {
                         char::try_from(byte).unwrap().fmt(f)?;
                     } else {
                         write!(f, "\\x{byte:02x}")?;
