@@ -349,11 +349,9 @@ TraitItemReference::resolve_item (HIR::TraitItemFunc &func)
 	? func.get_decl ().get_return_type ()->get_locus ()
 	: func.get_locus ();
 
-  TypeCheckBase::coercion_site (func.get_mappings ().get_hirid (),
-				TyTy::TyWithLocation (expected_ret_tyty,
-						      fn_return_locus),
-				TyTy::TyWithLocation (block_expr_ty),
-				func.get_locus ());
+  coercion_site (func.get_mappings ().get_hirid (),
+		 TyTy::TyWithLocation (expected_ret_tyty, fn_return_locus),
+		 TyTy::TyWithLocation (block_expr_ty), func.get_locus ());
 
   context->pop_return_type ();
 }

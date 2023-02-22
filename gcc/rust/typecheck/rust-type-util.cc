@@ -25,6 +25,7 @@
 #include "rust-hir-visitor.h"
 #include "rust-name-resolver.h"
 #include "rust-unify.h"
+#include "rust-coercion.h"
 
 namespace Rust {
 namespace Resolver {
@@ -117,6 +118,40 @@ unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 
   return UnifyRules::Resolve (lhs, rhs, unify_locus, true /*commit*/,
 			      true /*emit_error*/);
+}
+
+TyTy::BaseType *
+coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+	       Location locus)
+{
+  TyTy::BaseType *expected = lhs.get_ty ();
+  TyTy::BaseType *expr = rhs.get_ty ();
+
+  rust_debug ("coercion_site id={%u} expected={%s} expr={%s}", id,
+	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
+
+  auto context = TypeCheckContext::get ();
+  if (expected->get_kind () == TyTy::TypeKind::ERROR
+      || expr->get_kind () == TyTy::TypeKind::ERROR)
+    return expr;
+
+  // can we autoderef it?
+  auto result = TypeCoercionRules::Coerce (expr, expected, locus);
+
+  // the result needs to be unified
+  TyTy::BaseType *receiver = expr;
+  if (!result.is_error ())
+    {
+      receiver = result.tyty;
+    }
+
+  rust_debug ("coerce_default_unify(a={%s}, b={%s})",
+	      receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
+  TyTy::BaseType *coerced
+    = unify_site (id, lhs, TyTy::TyWithLocation (receiver, rhs.get_locus ()),
+		  locus);
+  context->insert_autoderef_mappings (id, std::move (result.adjustments));
+  return coerced;
 }
 
 } // namespace Resolver
