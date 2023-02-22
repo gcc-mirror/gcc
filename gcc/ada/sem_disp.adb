@@ -1392,7 +1392,7 @@ package body Sem_Disp is
          --  4. Wrappers built for inherited operations with inherited class-
          --     wide conditions, where the conditions include calls to other
          --     overridden primitives. The wrappers include checks on these
-         --     modified conditions. (AI12-113).
+         --     modified conditions. (AI12-195).
 
          --  5. Declarations built for subprograms without separate specs that
          --     are eligible for inlining in GNATprove (inside
