@@ -29,11 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Storage_Elements; use System.Storage_Elements;
+
 package body System.Bitfield_Utils is
 
    package body G is
 
-      Val_Bytes : constant Address := Address (Val'Size / Storage_Unit);
+      Val_Bytes : constant Storage_Count := Val'Size / Storage_Unit;
 
       --  A Val_2 can cross a memory page boundary (e.g. an 8-byte Val_2 that
       --  starts 4 bytes before the end of a page). If the bit field also
@@ -119,7 +121,7 @@ package body System.Bitfield_Utils is
          Size : Small_Size)
         return Val_2 is
       begin
-         pragma Assert (Src_Address mod Val'Alignment = 0);
+         pragma Assert (Src_Address mod Storage_Count'(Val'Alignment) = 0);
 
          --  Bit field fits in first half; fetch just one Val. On little
          --  endian, we want that in the low half, but on big endian, we
@@ -154,7 +156,7 @@ package body System.Bitfield_Utils is
          V : Val_2;
          Size : Small_Size) is
       begin
-         pragma Assert (Dest_Address mod Val'Alignment = 0);
+         pragma Assert (Dest_Address mod Storage_Count'(Val'Alignment) = 0);
 
          --  Comments in Get_Val_2 apply, except we're storing instead of
          --  fetching.
@@ -381,18 +383,19 @@ package body System.Bitfield_Utils is
          --  Align the Address values as for Val and Val_2, and adjust the
          --  Bit_Offsets accordingly.
 
-         Src_Adjust     : constant Address := Src_Address mod Val_Bytes;
+         Src_Adjust     : constant Storage_Offset := Src_Address mod Val_Bytes;
          Al_Src_Address : constant Address := Src_Address - Src_Adjust;
          Al_Src_Offset  : constant Bit_Offset :=
            Src_Offset + Bit_Offset (Src_Adjust * Storage_Unit);
 
-         Dest_Adjust     : constant Address := Dest_Address mod Val_Bytes;
+         Dest_Adjust     : constant Storage_Offset :=
+           Dest_Address mod Val_Bytes;
          Al_Dest_Address : constant Address := Dest_Address - Dest_Adjust;
          Al_Dest_Offset  : constant Bit_Offset :=
            Dest_Offset + Bit_Offset (Dest_Adjust * Storage_Unit);
 
-         pragma Assert (Al_Src_Address mod Val'Alignment = 0);
-         pragma Assert (Al_Dest_Address mod Val'Alignment = 0);
+         pragma Assert (Al_Src_Address mod Storage_Count'(Val'Alignment) = 0);
+         pragma Assert (Al_Dest_Address mod Storage_Count'(Val'Alignment) = 0);
       begin
          --  Optimized small case
 
