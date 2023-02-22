@@ -1,3 +1,8 @@
+2023-02-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Move align modifier
+	handling from OMP_LIST_ALLOCATOR to OMP_LIST_ALLOCATE.
+
 2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
