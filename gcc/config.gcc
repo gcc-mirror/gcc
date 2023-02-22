@@ -2105,7 +2105,7 @@ x86_64-*-cygwin*)
 	need_64bit_isa=yes
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/cygming.h i386/cygwin.h i386/cygwin-w64.h i386/cygwin-stdint.h"
 	xm_file=i386/xm-cygwin.h
-	tmake_file="${tmake_file} i386/t-cygming t-slibgcc i386/t-cygwin-w64"
+	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/i386/winnt.cc"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
 	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
