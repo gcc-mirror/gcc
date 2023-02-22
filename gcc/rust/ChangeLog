@@ -1,3 +1,842 @@
+2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::setup_math_fns): New functions.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-constexpr.cc (get_nth_callarg): Remove function.
+	(rs_bind_parameters_in_call): Use CALL_EXPR_ARG instead.
+	(potential_constant_expression_1): Likewise.
+
+2023-02-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt: Fix ordering of file.
+
+2023-02-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Remove unused parameters.
+	* backend/rust-constexpr.cc (constant_value_1): Likewise.
+	(fold_non_dependent_init): Likewise.
+	* backend/rust-tree.cc (publicly_uniquely_derived_p): Likewise.
+	(instantiation_dependent_expression_p): Likewise.
+	(type_has_nontrivial_copy_init): Likewise.
+	(is_normal_capture_proxy): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(undeduced_auto_decl): Likewise.
+	(require_deduced_type): Likewise.
+	* checks/errors/privacy/rust-privacy-reporter.cc (PrivacyReporter::visit): Likewise.
+	* checks/errors/privacy/rust-reachability.cc (ReachabilityVisitor::visit): Likewise.
+	* checks/errors/privacy/rust-visibility-resolver.cc (VisibilityResolver::visit): Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): Likewise.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::go): Likewise.
+	* checks/lints/rust-lint-unused-var.cc (unused_var_walk_fn): Likewise.
+	* expand/rust-macro-builtins.cc (try_expand_single_string_literal): Likewise.
+	(try_expand_many_expr): Likewise.
+	(parse_single_string_literal): Likewise.
+	(MacroBuiltin::assert_handler): Likewise.
+	(MacroBuiltin::file_handler): Likewise.
+	(MacroBuiltin::column_handler): Likewise.
+	(MacroBuiltin::concat_handler): Likewise.
+	(MacroBuiltin::env_handler): Likewise.
+	(MacroBuiltin::line_handler): Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::visit): Likewise.
+	(ASTLoweringBase::handle_doc_item_attribute): Likewise.
+	* hir/rust-hir-dump.cc (Dump::visit): Likewise.
+	* hir/tree/rust-hir-full-test.cc (ConstGenericParam::accept_vis): Likewise.
+	* lex/rust-lex.cc (Lexer::parse_utf8_escape): Likewise.
+	(Lexer::parse_string): Likewise.
+	(Lexer::parse_char_or_lifetime): Likewise.
+	* lex/rust-lex.h: Likewise.
+	* metadata/rust-export-metadata.cc: Likewise.
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Likewise.
+	* resolve/rust-ast-resolve-type.cc (ResolveType::visit): Likewise.
+	(ResolveTypeToCanonicalPath::visit): Likewise.
+	* resolve/rust-ast-verify-assignee.h: Likewise.
+	* resolve/rust-early-name-resolver.cc (EarlyNameResolver::visit): Likewise.
+	* typecheck/rust-hir-type-check-expr.h: Likewise.
+	* typecheck/rust-hir-type-check-item.h: Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): Likewise.
+	* typecheck/rust-tyty-rules.h: Likewise.
+	* util/rust-attributes.cc (AttributeChecker::visit): Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/tree/rust-hir-expr.h: Add const `get_method_name`.
+	* hir/tree/rust-hir-full-decls.h (struct GenericArgs): Move from `struct`...
+	(class GenericArgs): ...to `class`.
+	* hir/tree/rust-hir-path.h (struct GenericArgs): Likewise.
+	(class GenericArgs): Clear `type_args` in copy constructor.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Reorder
+	debug print.
+	* typecheck/rust-tyty.h: Add default constructors for `SubstitutionArgumentMappings`.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-context.cc (Context::push_closure_context): New function.
+	(Context::pop_closure_context): Likewise.
+	(Context::insert_closure_binding): Likewise.
+	(Context::lookup_closure_binding): Likewise.
+	* backend/rust-compile-context.h: Declare new functions and closure mappings.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Visit captures properly.
+	(CompileExpr::generate_closure_function): Compile captures properly.
+	* backend/rust-compile-resolve-path.cc (ResolvePathRef::resolve): Check for
+	closure bindings.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Compile capture list's
+	types as well.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Pass captures
+	properly to `TyTy::ClosureType` constructor.
+	* typecheck/rust-tyty.cc (ClosureType::as_string): Fix string representation.
+	(ClosureType::clone): Pass `captures` argument.
+	* typecheck/rust-tyty.h: Add `captures` field.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Use proper closure
+	contexts.
+	* resolve/rust-name-resolver.cc (Scope::lookup_decl_type): New function.
+	(Scope::lookup_rib_for_decl): Likewise.
+	(Resolver::insert_resolved_name): Insert captured items.
+	(Resolver::push_closure_context): New function.
+	(Resolver::pop_closure_context): Likewise.
+	(Resolver::insert_captured_item): Likewise.
+	(Resolver::decl_needs_capture): Likewise.
+	(Resolver::get_captures): Likewise.
+	* resolve/rust-name-resolver.h: Declare new functions.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Add Rib argument.
+	(ResolveExpr::resolve_closure_param): Likewise.
+	* resolve/rust-ast-resolve-implitem.h: Likewise.
+	* resolve/rust-ast-resolve-item.cc (ResolveTraitItems::visit): Likewise.
+	(ResolveItem::visit): Likewise.
+	* resolve/rust-ast-resolve-pattern.cc (PatternDeclaration::visit): Likewise.
+	* resolve/rust-ast-resolve-pattern.h: Likewise.
+	* resolve/rust-ast-resolve-stmt.h: Likewise.
+	* resolve/rust-ast-resolve-toplevel.h: Likewise.
+	* resolve/rust-ast-resolve-type.h: Likewise.
+	* resolve/rust-name-resolver.cc (Rib::lookup_decl_type): Likewise.
+	(Scope::insert): Likewise.
+	(Resolver::insert_builtin_types): Likewise.
+	* resolve/rust-name-resolver.h: Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-name-resolver.cc (MKBUILTIN_TYPE): Remove macro.
+	(Rib::Rib): Remove `mappings` field.
+	(Resolver::generate_builtins): Use `setup_builtin` instead of macro.
+	(Resolver::setup_builtin): New function.
+	* resolve/rust-name-resolver.h: Declare `setup_builtin`, add FIXME
+	comment.
+
+2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* lex/rust-lex.cc (Lexer::Lexer): Add `dump_lex` boolean flag.
+	(Lexer::skip_token): Dump tokens if flag is enabled.
+	(Lexer::dump_and_skip): New function.
+	* lex/rust-lex.h: Include optional.h and declare functions.
+	* parse/rust-parse-impl.h (Parser::debug_dump_lex_output): Remove old
+	unused function.
+	* parse/rust-parse.h: Likewise.
+	* rust-session-manager.cc (Session::compile_crate): Pass lexer dump
+	option to lexer.
+	(Session::dump_lex): New function.
+	* util/rust-optional.h: Add missing constructor.
+
+2023-02-21  Dave  <dme2223@gmail.com>
+
+	* ast/rust-item.h: Remoe default location for Visibility class.
+	* parse/rust-parse-impl.h (Parser::parse_visibility): Pass proper location
+	when instantiating visibilities.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fix dumping of fn params.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Remove extraneous string when
+	dumping statements.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc: Remove unused include.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+	* ast/rust-ast-dump.h: Likewise.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+	* ast/rust-ast-dump.h: Add missing getter declaration.
+	* ast/rust-ast-full-test.cc (BareFunctionType::as_string): Fix bare function
+	string representation.
+	* ast/rust-type.h (class BareFunctionType): Declare said getter.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing tuple type visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing never type visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing RawPointer visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing array visitor
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing slice visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitors.
+	* ast/rust-ast-dump.h: Likewise.
+	* ast/rust-ast.h: Add `get_lifetime_bounds` method.
+	* ast/rust-item.h: Add missing getter for lifetimes.
+	* ast/rust-type.h: Likewise.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add new reference visitor wrapper.
+	* ast/rust-ast-dump.h: Declare it.
+	* ast/rust-item.h: Add mutable visibility getters.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* typecheck/rust-tyty-call.cc (TypeCheckCallExpr::visit): Fix extra call
+	to `delete`.
+
+2023-02-21  Dave  <dme2223@gmail.com>
+
+	* ast/rust-item.h: Add location member.
+	* hir/rust-ast-lower.cc (translate_visibility): Pass location argument.
+	* hir/tree/rust-hir-item.h: Fix constructor to accept Location argument.
+
+2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* util/rust-lang-item.h: Add handling for `phantom_data` lang item.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add handling for unit structures.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.h: Fix documentation.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::go): Use new API.
+	(Dump::format_function_param): Refactor.
+	(Dump::visit_items_joined_by_separator): New function.
+	(Dump::emit_attrib): Refactor.
+	(Dump::visit_as_line): New function.
+	(Dump::visit_items_as_lines): Likewise.
+	(Dump::visit_items_as_block): Likewise.
+	(Dump::visit): Use new API.
+	(Dump::emit_visibility): Likewise.
+	(Dump::emit_indented_string): Likewise.
+	(Dump::emit_generic_params): Likewise.
+	(Dump::format_tuple_field): Likewise.
+	(Dump::format_struct_field): Likewise.
+	(Dump::format_function_common): Likewise.
+	(Dump::visit_function_common): Likewise.
+	* ast/rust-ast-dump.h: Declare new functions and add documentation.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add new visit function for overloading.
+	* ast/rust-ast-dump.h: Add documentation for layer.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::setup_atomic_fns): Declare atomic
+	load intrinsics.
+	* backend/rust-compile-intrinsic.cc (atomic_load_handler_inner): New handler.
+	(atomic_load_handler): Likewise.
+	(unchecked_op_handler): Remove `static` function qualifier.
+	(build_atomic_builtin_name): Handle load intrinsics.
+	(atomic_store_handler_inner): New handler.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-intrinsic.cc (check_for_basic_integer_type): New function.
+	(build_atomic_builtin_name): Use HIR Type instead of `tree`.
+	(atomic_store_handler_inner): Cleanup error handling.
+	(unchecked_op_inner): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-intrinsic.cc (wrapping_op_handler): Refactor to return
+	an `std::function`.
+	(wrapping_op_handler_inner): Rename.
+	(wrapping_add_handler): Remove function.
+	(wrapping_sub_handler): Likewise.
+	(wrapping_mul_handler): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-intrinsic.cc (is_basic_integer_type): New function.
+	(unchecked_op_inner): New handler.
+	(unchecked_op_handler): New handler.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::setup_atomic_fns): New function.
+	(BuiltinsContext::setup): Call `setup_atomic_fns`.
+	* backend/rust-builtins.h: Declare `setup_atomic_fns`.
+	* backend/rust-compile-intrinsic.cc (atomic_store_handler_inner): New function.
+	(atomic_store_handler): New handler.
+	(make_unsigned_long_tree): Add helper around making unsigned long trees.
+	(prefetch_data_handler): Use `make_unsigned_long_tree`.
+	(build_atomic_builtin_name): New function.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-constexpr.cc (build_anon_member_initialization): Workaround uninitialized
+	values.
+	(build_data_member_initialization): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-intrinsic.cc (sorry_handler): New intrinsic handler.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-builtins.cc (MacroBuiltin::assert): Rename to...
+	(MacroBuiltin::assert_handler): ..this.
+	(MacroBuiltin::file): Rename to...
+	(MacroBuiltin::file_handler): ..this.
+	(MacroBuiltin::column): Rename to...
+	(MacroBuiltin::column_handler): ..this.
+	(MacroBuiltin::include_bytes): Rename to...
+	(MacroBuiltin::include_bytes_handler): ..this.
+	(MacroBuiltin::include_str): Rename to...
+	(MacroBuiltin::include_str_handler): ..this.
+	(MacroBuiltin::compile_error): Rename to...
+	(MacroBuiltin::compile_error_handler): ..this.
+	(MacroBuiltin::concat): Rename to...
+	(MacroBuiltin::concat_handler): ..this.
+	(MacroBuiltin::env): Rename to...
+	(MacroBuiltin::env_handler): ..this.
+	(MacroBuiltin::cfg): Rename to...
+	(MacroBuiltin::cfg_handler): ..this.
+	(MacroBuiltin::include): Rename to...
+	(MacroBuiltin::include_handler): ..this.
+	(MacroBuiltin::line): Rename to...
+	(MacroBuiltin::line_handler): ..this.
+	* expand/rust-macro-builtins.h: Rename all handlers.
+	* util/rust-hir-map.cc (Mappings::insert_macro_def): Use new handler
+	names.
+
+2023-02-21  Simon Cook  <simon.cook@embecosm.com>
+
+	* util/rust-inline-visitor.h: Remove some offending system includes.
+
+2023-02-21  YizhePKU  <yizhe@pku.edu.cn>
+
+	* util/rust-inline-visitor.h: New file.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Refactor checking of closures.
+	(CompileExpr::generate_possible_fn_trait_call): New function.
+	* backend/rust-compile-expr.h: Declare `generate_possible_fn_trait_call`.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-tyty-bounds.cc (TypeCheckBase::get_predicate_from_bound): Add missing
+	implementation.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* Make-lang.in: Compile rust-ast-lower-type.cc.
+	* ast/rust-path.h: Add `get_locus` method to `TypePathFunction`.
+	* hir/rust-ast-lower-base.cc (ASTLowerTypePath::visit): Move implementation to
+	rust-ast-lower-type.cc.
+	(ASTLowerQualifiedPathInType::visit): Likewise.
+	(ASTLoweringType::visit): Likewise.
+	* hir/rust-ast-lower-type.h: Move implementations to source file.
+	* hir/tree/rust-hir-path.h: Likewise.
+	* hir/rust-ast-lower-type.cc: New file.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-type.cc (ResolveRelativeTypePath::go): Add missing handling of
+	function case.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-context.h: Add new functions: `insert_closure_decl` and
+	`lookup_closure_decl`.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Start compiling Closures properly.
+	(CompileExpr::generate_closure_function): New function.
+	(CompileExpr::generate_closure_fntype): Likewise.
+	* backend/rust-compile-expr.h: Declare `generate_closure_function` and
+	`generate_closure_fntype`.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Visit closure types properly.
+	* backend/rust-mangle.cc (legacy_mangle_name): Add support for closures.
+	* backend/rust-tree.h (RS_CLOSURE_FLAG): Add new tree macro.
+	(RS_CLOSURE_TYPE_P): And checking for it on tree nodes.
+	* typecheck/rust-tyty.cc (ClosureType::is_equal): Add implementation.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/tree/rust-hir-expr.h: Add `get_params` method.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Typecheck closure nodes.
+	(TypeCheckExpr::resolve_fn_trait_call): New function.
+	* typecheck/rust-hir-type-check-expr.h: Declare `resolve_fn_trait_call` and
+	`resolve_possible_fn_trait_call_method_name`.
+	* typecheck/rust-hir-type-check.h: Declare `get_context_type`.
+	* typecheck/rust-tyctx.cc (TypeCheckContextItem::get_context_type): New function.
+	* typecheck/rust-tyty-cmp.h: Visit closures properly.
+	* typecheck/rust-tyty-rules.h: Likewise.
+	* typecheck/rust-tyty.cc (BaseType::bounds_compatible): Add commented out assertin.
+	(ClosureType::as_string): Implement it.
+	(ClosureType::clone): Fix closure cloning.
+	(ClosureType::setup_fn_once_output): New function.
+	* typecheck/rust-tyty.h: Improve `ClosureType` class and declare `setup_fn_once_output`.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Visit closures properly.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): Likewise.
+	* checks/lints/rust-lint-marklive.h: Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Simplify method
+	call type checking 	by removing visitor and instead using one static cast. Use the
+	new interface.
+	* typecheck/rust-tyty-call.cc (TypeCheckMethodCallExpr::visit): Likewise.
+	(TypeCheckMethodCallExpr::go): Likewise.
+	(TypeCheckMethodCallExpr::check): Likewise.
+	* typecheck/rust-tyty-call.h (class TypeCheckMethodCallExpr): Likewise.
+	(class Argument): Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Visit closure properly when
+	name resolving.
+	(ResolveExpr::resolve_closure_param): Implement closure name resolving.
+	* resolve/rust-ast-resolve-expr.h: Declare visitors for closure types.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::ASTLoweringPattern):
+	Improve formatting.
+	(ASTLoweringPattern::translate): Likewise.
+	* hir/rust-ast-lower-pattern.h: Likewise.
+	* resolve/rust-ast-resolve-expr.h: Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* Make-lang.in: Add new object file for expression lowering.
+	* ast/rust-expr.h: Move implementation of expr lowering to source file.
+	* backend/rust-compile-block.h: Likewise.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Likewise.
+	* backend/rust-compile-expr.h: Likewise.
+	* checks/errors/privacy/rust-privacy-reporter.cc (PrivacyReporter::visit): Likewise.
+	* checks/errors/privacy/rust-privacy-reporter.h: Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Likewise.
+	* checks/errors/rust-const-checker.h: Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): Likewise.
+	* checks/errors/rust-unsafe-checker.h: Likewise.
+	* hir/rust-ast-lower-base.h: Likewise.
+	* hir/rust-ast-lower-expr.h (RUST_AST_LOWER_EXPR): Likewise.
+	* hir/rust-ast-lower.cc (ASTLoweringBase::lower_closure_param): Likewise.
+	* hir/rust-hir-dump.cc (Dump::visit): Likewise.
+	* hir/rust-hir-dump.h: Likewise.
+	* hir/tree/rust-hir-expr.h (class ClosureExpr): Likewise.
+	(class ClosureExprInner): Likewise.
+	(class ClosureExprInnerTyped): Likewise.
+	* hir/tree/rust-hir-full-decls.h (class ClosureExprInner): Likewise.
+	(class ClosureExprInnerTyped): Likewise.
+	* hir/tree/rust-hir-full-test.cc (ClosureExprInnerTyped::as_string): Likewise.
+	(ClosureExprInner::as_string): Likewise.
+	(ClosureExprInner::accept_vis): Likewise.
+	(ClosureExpr::accept_vis): Likewise.
+	(ClosureExprInnerTyped::accept_vis): Likewise.
+	* hir/tree/rust-hir-visitor.h: Likewise.
+	* hir/tree/rust-hir.h (class Expr): Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Likewise.
+	* typecheck/rust-hir-type-check-expr.h: Likewise.
+	* hir/rust-ast-lower-expr.cc: New file.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-lang-item.h: Add handling for `fn_once_output`.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-fragment.cc (Fragment::Fragment): Add better APIs.
+	(Fragment::complete): New function.
+	(Fragment::unexpanded): New function.
+	* ast/rust-ast-fragment.h: Declare new APIs and add documentation.
+	* expand/rust-attribute-visitor.h: Use new Fragment API.
+	* expand/rust-macro-builtins.cc (MacroBuiltin::file): Likewise.
+	(MacroBuiltin::column): Likewise.
+	(MacroBuiltin::include_bytes): Likewise.
+	(MacroBuiltin::include_str): Likewise.
+	(MacroBuiltin::concat): Likewise.
+	(MacroBuiltin::env): Likewise.
+	(MacroBuiltin::cfg): Likewise.
+	(MacroBuiltin::include): Likewise.
+	(MacroBuiltin::line): Likewise.
+	* expand/rust-macro-expand.cc (parse_many): Likewise.
+	(transcribe_expression): Likewise.
+	(transcribe_type): Likewise.
+	* expand/rust-macro-expand.h (struct MacroExpander): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast.h (class ASTFragment): Remove old ASTFragment class.
+	* ast/rust-macro.h (class MacroRulesDefinition): Use new Fragment API.
+	* expand/rust-attribute-visitor.h: Likewise.
+	* expand/rust-macro-builtins.cc (macro_end_token): Likewise.
+	(MacroBuiltin::assert): Likewise.
+	(MacroBuiltin::file): Likewise.
+	(MacroBuiltin::column): Likewise.
+	(MacroBuiltin::include_bytes): Likewise.
+	(MacroBuiltin::include_str): Likewise.
+	(MacroBuiltin::compile_error): Likewise.
+	(MacroBuiltin::concat): Likewise.
+	(MacroBuiltin::env): Likewise.
+	(MacroBuiltin::cfg): Likewise.
+	(MacroBuiltin::include): Likewise.
+	(MacroBuiltin::line): Likewise.
+	* expand/rust-macro-builtins.h: Likewise.
+	* expand/rust-macro-expand.cc (MacroExpander::expand_decl_macro): Likewise.
+	(MacroExpander::expand_invoc): Likewise.
+	(MacroExpander::match_repetition): Likewise.
+	(parse_many): Likewise.
+	(transcribe_many_items): Likewise.
+	(transcribe_many_ext): Likewise.
+	(transcribe_many_trait_items): Likewise.
+	(transcribe_many_impl_items): Likewise.
+	(transcribe_many_trait_impl_items): Likewise.
+	(transcribe_expression): Likewise.
+	(transcribe_type): Likewise.
+	(transcribe_on_delimiter): Likewise.
+	(tokens_to_str): Likewise.
+	* expand/rust-macro-expand.h (struct MacroExpander): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_macro_def): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Add `rust-ast-fragment.o` object file.
+	* ast/rust-ast-fragment.cc: New file.
+	* ast/rust-ast-fragment.h: New file.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_trait): Check if a
+	trait query is currently in progress.
+	* typecheck/rust-hir-type-check.h (class TraitQueryGuard): Add helpers around
+	checking for trait queries and inserting them.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitors for macro definition dumping.
+	(get_delimiters): New function.
+	* ast/rust-ast-dump.h: Declare `get_delimiters` and add documentation.
+	* ast/rust-macro.h: Add `get_token_tree` method.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Properly handle unloaded modules.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fix formatting when dumping modules.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Dump items in modules properly.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc: Emit visibility when dumping items.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/rust-ast-lower-base.h (class ItemWrapper): New class.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::handle_outer_attributes): Use
+	`ItemWrapper` class.
+	(ASTLoweringBase::handle_doc_item_attribute): Likewise.
+	(ASTLoweringBase::handle_lang_item_attribute): Likewise.
+	* hir/rust-ast-lower-implitem.h: Check outer attributes on items.
+	* hir/tree/rust-hir-item.h: Add `get_trait_locus` methods.
+	* hir/tree/rust-hir.h: Likewise.
+	* util/rust-hir-map.h: Add defId mappings and associated functions.
+	* util/rust-hir-map.cc (Mappings::insert_defid_mapping): Implement insertion to said
+	mappings.
+	(Mappings::lookup_trait_item_defid): And looking up said mappings.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add code for dumping type aliases.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::TraitResolver): Do not nullptr init
+	`resolved_trait_reference` anymore.
+	(TraitResolver::resolve_path): Simplify function and rename to...
+	(TraitResolver::resolve_path_to_trait): ...this.
+	(TraitResolver::lookup_path): Use new interface.
+	* typecheck/rust-hir-trait-resolve.h (class TraitResolver): Do not inherit `HIRFullVisitor`
+	class anymore.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add dump for RangeExprs.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add dump for, BorrowExpr, DereferenceExpr,
+	ErrorPropagationExpr, NegationExpr, TypeCastExpr and GroupedExpr.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add dump code for ArrayExpr.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add dumps for ComparisonExpr and
+	LazyBooleanExpr.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fix IfExpr formatting.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fix block formatting.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-autoderef.cc: Add support for multiple resolution candidates.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::MethodResolver): Edit
+	`try_result` field and change constructor.
+	(MethodResolver::Probe): Return set of candidates instead of singular candidate.
+	(MethodResolver::select): Add better implementation to account for multiple
+	candidates.
+	* typecheck/rust-hir-dot-operator.h (struct MethodCandidate): Overload comparison
+	operator in order to store them in `std::set`.
+	* typecheck/rust-hir-inherent-impl-overlap.h: Do not fail assertion on missing type.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Adapt code to use
+	multiple candidates.
+	* typecheck/rust-tyty.cc (set_cmp_autoderef_mode): Add code to handle automatic
+	derefs properly.
+	(reset_cmp_autoderef_mode): Add helper function to reset said mode.
+	* typecheck/rust-tyty.h (set_cmp_autoderef_mode): Declare function.
+	(reset_cmp_autoderef_mode): Likewise.
+	* typecheck/rust-tyty-cmp.h: Add handling of `autoderef_cmp_flag`
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-abi.cc (get_abi_from_string): Add missing "rust-call"
+	possibility for ABI variant.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-lang-item.h: Add `fn_once` lang item.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile.cc: Add note about missing support for super
+	traits.
+	* typecheck/rust-tyty.cc (BaseType::satisfies_bound): New function.
+	(BaseType::bounds_compatible): New function.
+	(DynamicObjectType::get_object_items): New function.
+	* typecheck/rust-hir-trait-ref.h: Use new API to perform type resolution
+	on dyn objects.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Compile early name resolver.
+	* expand/rust-attribute-visitor.cc (AttrVisitor::visit): Move macro
+	name resolution.
+	* expand/rust-macro-builtins.cc (try_expand_macro_expression): Run ENR
+	when recursively expanding macros.
+	* expand/rust-macro-expand.cc (MacroExpander::expand_invoc): No longer
+	perform name resolution in `expand_invoc`.
+	* expand/rust-macro-expand.h (struct MacroExpander): Keep ENR within
+	MacroExpander.
+	* rust-session-manager.cc (Session::expansion): Run ENR.
+	* resolve/rust-early-name-resolver.cc: New file.
+	* resolve/rust-early-name-resolver.h: New file.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-path.h: Add `accept_vis` method to `GenericArg` class.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-ast-resolve-item.cc (ResolveItem::visit): Add note for
+	glob import resolving.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-hir-map.h: Add new mappings.
+	* util/rust-hir-map.cc (Mappings::insert_macro_invocation): Add insertion
+	function into mappings.
+	(Mappings::lookup_macro_invocation): Add lookup function for mappings.
+
+2023-02-21  Marc Poulhiès  <dkm@kataplop.net>
+
+	* parse/rust-parse-impl.h (Parser::parse_stmt_or_expr_without_block):
+	Check if `expr` is valid after parsing it.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::setup): Declare prefetch
+	intrinsics.
+	* backend/rust-compile-intrinsic.cc (enum class Prefetch): Add kinds of
+	prefetch intrinsics.
+	(prefetch_data_handler): New function.
+	(prefetch_read_data): Likewise.
+	(prefetch_write_data): Likewise.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fill empty functions for
+	structs, enums and unions.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::format_tuple_field): New.
+	(Dump::format_struct_field): New.
+	* ast/rust-ast-dump.h (format_tuple_field): New.
+	(format_struct_field): New.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): move generic params dump ...
+	(Dump::emit_generic_params): ... here.
+	* ast/rust-ast-dump.h (emit_generic_params): New.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-trait-ref.h (lookup_trait_item): Add lookup
+	in super_trait.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-expr.cc
+	(CompileExpr::resolve_method_address): Use auto and minor change
+	in candidate init.
+	* typecheck/rust-hir-type-check-path.cc
+	(TypeCheckExpr::resolve_segments): Likewise.
+	* typecheck/rust-hir-type-check-type.cc: Likewise.
+	* backend/rust-compile-resolve-path.cc
+	(HIRCompileBase::query_compile): Likewise. Removecall to
+	set_ty_ref.
+	* typecheck/rust-hir-path-probe.h (struct PathProbeCandidate): Add
+	locus initializer in ctor, implement get_defid.
+	(class PathProbeType::Probe): return a set instead of vector.
+	Adjust class impl.
+	(class ReportMultipleCandidateError): Do not inherit from
+	HIRImplVisitor anymore and remove corresponding impl. Adjust for
+	change in Probe. Simplify Report handling.
+	(class PathProbeImplTrait::Probe): Adjust return type.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-enumitem.cc
+	(TypeCheckEnumItem::visit): Adjust VariantDef ctor calls with
+	DefID.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):
+	Likewise.
+	* typecheck/rust-tyty.h (VariantDef): Add defid parameter to ctor.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Add `rust-builtins.o` as target
+	* backend/rust-builtins.h: Refactor to new file.
+	* backend/rust-builtins.cc: New file.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Implement visitor for If
+	expressions.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Dump assignment and compound
+	assignment expressions.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::query_type):
+	Check for recursive queries.
+	* typecheck/rust-hir-type-check.h: New functions: `query_completed`,
+	`query_in_progress`, `insert_query`.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::scan): Use `query_type` API.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc (Dump::emit_visibility): New function.
+	(Dump::visit): Call into `emit_visibility`.
+	(Dump::format_function_common): Likewise.
+	* ast/rust-ast-dump.h: Declare `emit_visibility`.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-item.h: Rename get_public_vis_type.
+	* hir/rust-ast-lower.cc (translate_visibility): Use new name.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-name-resolver.h: Add miscellenaous item mappings.
+	* resolve/rust-name-resolver.cc (Resolver::insert_resolved_misc): Use
+	new mappings.
+	(Resolver::lookup_resolved_misc): Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments):
+	Adapt function to insert into miscelleanous mappings.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::find_ref_node_id):
+	Allow lookup in miscelleanous mappings in mark-live phase.
+
 2023-02-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* backend/rust-tree.cc: Include memmodel.h.

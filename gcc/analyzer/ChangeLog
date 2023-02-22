@@ -1,3 +1,20 @@
+2023-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108830
+	* analyzer.opt (fanalyzer-suppress-followups): New option.
+	* engine.cc (impl_region_model_context::warn): Terminate the path
+	if the diagnostic's terminate_path_p vfunc returns true and
+	-fanalyzer-suppress-followups is true (the default).
+	(impl_sm_context::warn): Likewise, for both overloads.
+	* pending-diagnostic.h (pending_diagnostic::terminate_path_p): New
+	vfunc.
+	* program-state.cc (program_state::on_edge): Terminate the path if
+	the ctxt requests it during updating the edge.
+	* region-model.cc (poisoned_value_diagnostic::terminate_path_p):
+	New vfunc.
+	* sm-malloc.cc (null_deref::terminate_path_p): New vfunc.
+	(null_arg::terminate_path_p): New vfunc.
+
 2023-02-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108806

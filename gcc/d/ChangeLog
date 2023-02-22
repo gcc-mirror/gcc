@@ -1,3 +1,23 @@
+2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/location.o.
+	* d-lang.cc (d_init_options): Update for new front-end interface.
+	(d_post_options): Call Loc::set after handling options.
+	* dmd/MERGE: Merge upstream dmd 09faa4eacd.
+	* dmd/VERSION: Bump version to v2.102.0-beta.1.
+
+2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_build_call): Remove front-end expansion of
+	side-effects in a call expression.
+	* d-gimplify.cc (d_gimplify_call_expr): Gimplify the callee before its
+	arguments.
+
+2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit (FuncDeclaration *)): Set
+	doing_semantic_analysis_p before calling functionSemantic3.
+
 2023-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gdc.texi: Bump @copyrights-d year.
