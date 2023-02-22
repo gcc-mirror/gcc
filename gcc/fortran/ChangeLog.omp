@@ -1,3 +1,13 @@
+2023-02-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-decl.cc (gfc_get_symbol_decl): Add attributes
+	such as 'declare target' also to hidden artificial
+	variable for deferred-length character variables.
+	* trans-openmp.cc (gfc_trans_omp_array_section,
+	gfc_trans_omp_clauses, gfc_trans_omp_target_exit_data):
+	Improve mapping of array descriptors and deferred-length
+	string variables.
+
 2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_namelist): Display 'present' map

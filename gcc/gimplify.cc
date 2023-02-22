@@ -11298,31 +11298,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    default:
 	      break;
 	    }
-	  /* For Fortran, not only the pointer to the data is mapped but also
-	     the address of the pointer, the array descriptor etc.; for
-	     'exit data' - and in particular for 'delete:' - having an 'alloc:'
-	     does not make sense.  Likewise, for 'update' only transferring the
-	     data itself is needed as the rest has been handled in previous
-	     directives.  However, for 'exit data', the array descriptor needs
-	     to be delete; hence, we turn the MAP_TO_PSET into a MAP_DELETE.
-
-	     NOTE: Generally, it is not safe to perform "enter data" operations
-	     on arrays where the data *or the descriptor* may go out of scope
-	     before a corresponding "exit data" operation -- and such a
-	     descriptor may be synthesized temporarily, e.g. to pass an
-	     explicit-shape array to a function expecting an assumed-shape
-	     argument.  Performing "enter data" inside the called function
-	     would thus be problematic.  */
-	  if (code == OMP_TARGET_EXIT_DATA
-	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET)
-	    OMP_CLAUSE_SET_MAP_KIND (c, OMP_CLAUSE_MAP_KIND (*prev_list_p)
-					== GOMP_MAP_DELETE
-					? GOMP_MAP_DELETE : GOMP_MAP_RELEASE);
-	  else if ((code == OMP_TARGET_EXIT_DATA || code == OMP_TARGET_UPDATE)
-		   && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
-		       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_PSET))
-	    remove = true;
-
 	  if (remove)
 	    break;
 	  if (DECL_P (decl) && outer_ctx && (region_type & ORT_ACC))

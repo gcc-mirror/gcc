@@ -1,3 +1,8 @@
+2023-02-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Remove Fortran
+	special case.
+
 2023-02-16  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-builtins.def (DISPATCH_PTR): New built-in.
