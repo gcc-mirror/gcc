@@ -10355,6 +10355,12 @@ lookup_and_finish_template_variable (tree templ, tree targs,
   if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (templ)) == 1
       && !any_dependent_template_arguments_p (targs))
     {
+      /* We may be called while doing a partial substitution, but the
+	 type of the variable template may be auto, in which case we
+	 will call do_auto_deduction in mark_used (which clears tf_partial)
+	 and the auto must be properly reduced at that time for the
+	 deduction to work.  */
+      complain &= ~tf_partial;
       var = finish_template_variable (var, complain);
       mark_used (var);
     }
