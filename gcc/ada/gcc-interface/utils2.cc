@@ -692,13 +692,14 @@ build_atomic_load (tree src, bool sync)
     = build_int_cst (integer_type_node,
 		     sync ? MEMMODEL_SEQ_CST : MEMMODEL_RELAXED);
   tree orig_src = src;
-  tree t, addr, val;
+  tree type, t, addr, val;
   unsigned int size;
   int fncode;
 
   /* Remove conversions to get the address of the underlying object.  */
   src = remove_conversions (src, false);
-  size = resolve_atomic_size (TREE_TYPE (src));
+  type = TREE_TYPE (src);
+  size = resolve_atomic_size (type);
   if (size == 0)
     return orig_src;
 
@@ -710,7 +711,7 @@ build_atomic_load (tree src, bool sync)
 
   /* First reinterpret the loaded bits in the original type of the load,
      then convert to the expected result type.  */
-  t = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (src), val);
+  t = fold_build1 (VIEW_CONVERT_EXPR, type, val);
   return convert (TREE_TYPE (orig_src), t);
 }
 
@@ -728,13 +729,14 @@ build_atomic_store (tree dest, tree src, bool sync)
     = build_int_cst (integer_type_node,
 		     sync ? MEMMODEL_SEQ_CST : MEMMODEL_RELAXED);
   tree orig_dest = dest;
-  tree t, int_type, addr;
+  tree type, t, int_type, addr;
   unsigned int size;
   int fncode;
 
   /* Remove conversions to get the address of the underlying object.  */
   dest = remove_conversions (dest, false);
-  size = resolve_atomic_size (TREE_TYPE (dest));
+  type = TREE_TYPE (dest);
+  size = resolve_atomic_size (type);
   if (size == 0)
     return build_binary_op (MODIFY_EXPR, NULL_TREE, orig_dest, src);
 
@@ -746,12 +748,11 @@ build_atomic_store (tree dest, tree src, bool sync)
      then reinterpret them in the effective type.  But if the original type
      is a padded type with the same size, convert to the inner type instead,
      as we don't want to artificially introduce a CONSTRUCTOR here.  */
-  if (TYPE_IS_PADDING_P (TREE_TYPE (dest))
-      && TYPE_SIZE (TREE_TYPE (dest))
-	 == TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (dest)))))
-    src = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (dest))), src);
+  if (TYPE_IS_PADDING_P (type)
+      && TYPE_SIZE (type) == TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (type))))
+    src = convert (TREE_TYPE (TYPE_FIELDS (type)), src);
   else
-    src = convert (TREE_TYPE (dest), src);
+    src = convert (type, src);
   src = fold_build1 (VIEW_CONVERT_EXPR, int_type, src);
   addr = build_unary_op (ADDR_EXPR, ptr_type, dest);
 

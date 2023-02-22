@@ -1562,6 +1562,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      at the RTL level when the stand-alone object is accessed as a whole.  */
   if (align > 0
       && RECORD_OR_UNION_TYPE_P (type)
+      && !TYPE_IS_FAT_POINTER_P (type)
       && TYPE_MODE (type) == BLKmode
       && !TYPE_BY_REFERENCE_P (type)
       && TREE_CODE (orig_size) == INTEGER_CST

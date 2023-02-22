@@ -1212,7 +1212,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    && (POINTER_TYPE_P (gnu_type) || TYPE_IS_FAT_POINTER_P (gnu_type))
 	    && !gnu_expr
 	    && !Is_Imported (gnat_entity))
-	  gnu_expr = integer_zero_node;
+	  gnu_expr = null_pointer_node;
 
 	/* If we are defining the object and it has an Address clause, we must
 	   either get the address expression from the saved GCC tree for the

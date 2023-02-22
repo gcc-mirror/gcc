@@ -8987,7 +8987,7 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	  || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
 	*expr_p = build_unary_op (INDIRECT_REF, NULL_TREE,
 				  convert (build_pointer_type (type),
-					   integer_zero_node));
+					   null_pointer_node));
 
       /* Otherwise, just make a VAR_DECL.  */
       else
