@@ -53,7 +53,7 @@ extern void xtensa_expand_atomic (enum rtx_code, rtx, rtx, rtx, bool);
 extern void xtensa_emit_loop_end (rtx_insn *, rtx *);
 extern char *xtensa_emit_branch (bool, rtx *);
 extern char *xtensa_emit_movcc (bool, bool, bool, rtx *);
-extern void xtensa_prepare_expand_call (int, rtx *);
+extern void xtensa_expand_call (int, rtx *);
 extern char *xtensa_emit_call (int, rtx *);
 extern char *xtensa_emit_sibcall (int, rtx *);
 extern bool xtensa_tls_referenced_p (rtx);

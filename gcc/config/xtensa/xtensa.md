@@ -2333,7 +2333,8 @@
 	 (match_operand 1 "" ""))]
   ""
 {
-  xtensa_prepare_expand_call (0, operands);
+  xtensa_expand_call (0, operands);
+  DONE;
 })
 
 (define_insn "call_internal"
@@ -2353,7 +2354,8 @@
 	      (match_operand 2 "" "")))]
   ""
 {
-  xtensa_prepare_expand_call (1, operands);
+  xtensa_expand_call (1, operands);
+  DONE;
 })
 
 (define_insn "call_value_internal"
@@ -2373,7 +2375,8 @@
 	 (match_operand 1 "" ""))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_prepare_expand_call (0, operands);
+  xtensa_expand_call (0, operands);
+  DONE;
 })
 
 (define_insn "sibcall_internal"
@@ -2393,7 +2396,8 @@
 	      (match_operand 2 "" "")))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_prepare_expand_call (1, operands);
+  xtensa_expand_call (1, operands);
+  DONE;
 })
 
 (define_insn "sibcall_value_internal"

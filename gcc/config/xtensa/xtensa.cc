@@ -2183,8 +2183,10 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
 
 
 void
-xtensa_prepare_expand_call (int callop, rtx *operands)
+xtensa_expand_call (int callop, rtx *operands)
 {
+  rtx call;
+  rtx_insn *call_insn;
   rtx addr = XEXP (operands[callop], 0);
 
   if (flag_pic && SYMBOL_REF_P (addr)
@@ -2201,6 +2203,27 @@ xtensa_prepare_expand_call (int callop, rtx *operands)
 				 gen_rtx_REG (Pmode, A8_REG),
 				 Pmode);
       XEXP (operands[callop], 0) = reg;
+    }
+
+  call = gen_rtx_CALL (VOIDmode, operands[callop], operands[callop + 1]);
+
+  if (callop)
+    call = gen_rtx_SET (operands[0], call);
+
+  call_insn = emit_call_insn (call);
+
+  if (TARGET_WINDOWED_ABI)
+    {
+      /*
+       * Windowed xtensa ABI specifies that static chain pointer is passed
+       * in memory below the caller's stack pointer, which means that the
+       * callee may clobber it if it's a non-leaf function.
+       * Add the clobber expression for the static chain to the function call
+       * expression list so that it is not assumed to be live across the call.
+       */
+      rtx clob = gen_rtx_CLOBBER (Pmode, xtensa_static_chain (NULL, false));
+      CALL_INSN_FUNCTION_USAGE (call_insn) =
+	gen_rtx_EXPR_LIST (Pmode, clob, CALL_INSN_FUNCTION_USAGE (call_insn));
     }
 }
 
