@@ -60,9 +60,10 @@ TypeCheckCallExpr::visit (ADTType &type)
 	}
 
       HirId coercion_side_id = argument->get_mappings ().get_hirid ();
-      auto res = Resolver::TypeCheckBase::coercion_site (
-	coercion_side_id, TyWithLocation (field_tyty),
-	TyWithLocation (arg, arg_locus), argument->get_locus ());
+      auto res = Resolver::coercion_site (coercion_side_id,
+					  TyWithLocation (field_tyty),
+					  TyWithLocation (arg, arg_locus),
+					  argument->get_locus ());
       if (res->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  return;
@@ -134,10 +135,12 @@ TypeCheckCallExpr::visit (FnType &type)
 		: fn_param_pattern->get_locus ();
 
 	  HirId coercion_side_id = argument->get_mappings ().get_hirid ();
-	  auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
-	    coercion_side_id, TyWithLocation (param_ty, param_locus),
-	    TyWithLocation (argument_expr_tyty, arg_locus),
-	    argument->get_locus ());
+	  auto resolved_argument_type
+	    = Resolver::coercion_site (coercion_side_id,
+				       TyWithLocation (param_ty, param_locus),
+				       TyWithLocation (argument_expr_tyty,
+						       arg_locus),
+				       argument->get_locus ());
 	  if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	    {
 	      return;
@@ -240,7 +243,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
 	  return;
 	}
 
-      auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
+      auto resolved_argument_type = Resolver::coercion_site (
 	argument->get_mappings ().get_hirid (), TyWithLocation (fnparam),
 	TyWithLocation (argument_expr_tyty, arg_locus), argument->get_locus ());
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
@@ -347,7 +350,7 @@ TypeCheckMethodCallExpr::check (FnType &type)
 
       auto argument_expr_tyty = argument.get_argument_type ();
       HirId coercion_side_id = argument.get_mappings ().get_hirid ();
-      auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
+      auto resolved_argument_type = Resolver::coercion_site (
 	coercion_side_id, TyWithLocation (param_ty, param_locus),
 	TyWithLocation (argument_expr_tyty, arg_locus), arg_locus);
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
