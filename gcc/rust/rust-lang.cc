@@ -123,10 +123,6 @@ grs_langhook_init (void)
    whether char is signed.  */
   build_common_tree_nodes (false);
 
-  // Creates a new TREE_LIST node with purpose NULL_TREE and value
-  // void_type_node
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
-
   // Builds built-ins for middle-end after all front-end built-ins are already
   // instantiated
   build_common_builtin_nodes ();
