@@ -14,8 +14,8 @@
 
 #include <complex.h>
 
-double complex z1 = I * I;
+double complex z1 = -1;
 
-const long double complex z2 = I * I;
+const long double complex z2 = -1;
 
-float complex z4 = 1+2.11*I;
+float complex z4 = 1;
