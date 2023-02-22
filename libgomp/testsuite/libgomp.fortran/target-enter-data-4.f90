@@ -17,6 +17,6 @@ var%p2 = [46,679,54]
   if (any (var%p1 /= [22,53,28,6,4])) stop 3
   if (any (var%p2 /= [46,679,54])) stop 4
 !$omp end target
-!!$omp target exit data map(from:var%p1, var%p2)
+!$omp target exit data map(from:var%p1, var%p2)
 end
 
