@@ -278,7 +278,6 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xtheadmemidx", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xtheadmempair", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xtheadsync", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xcv",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"xcvmac", ISA_SPEC_CLASS_NONE, 1, 0},
 
   /* Terminate the list.  */
@@ -1423,7 +1422,6 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"xtheadmemidx",  &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMIDX},
   {"xtheadmempair", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMPAIR},
   {"xtheadsync",    &gcc_options::x_riscv_xthead_subext, MASK_XTHEADSYNC},
-  {"xcv",           &gcc_options::x_riscv_xcv_flags, MASK_XCV},
   {"xcvmac",        &gcc_options::x_riscv_xcv_flags, MASK_XCVMAC},
 
   {NULL, NULL, 0}
