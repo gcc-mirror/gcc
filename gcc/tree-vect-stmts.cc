@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
+#include "gimple-range.h"
 #include "tree-ssa-loop-niter.h"
 #include "gimple-fold.h"
 #include "regs.h"
@@ -4794,7 +4795,9 @@ vect_gen_widened_results_half (vec_info *vinfo, enum tree_code code,
 
 /* Create vectorized demotion statements for vector operands from VEC_OPRNDS.
    For multi-step conversions store the resulting vectors and call the function
-   recursively.  */
+   recursively. When NARROW_SRC_P is true, there's still a conversion after
+   narrowing, don't store the vectors in the SLP_NODE or in vector info of
+   the scalar statement(or in STMT_VINFO_RELATED_STMT chain).  */
 
 static void
 vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
@@ -4802,7 +4805,8 @@ vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
 				       stmt_vec_info stmt_info,
 				       vec<tree> &vec_dsts,
 				       gimple_stmt_iterator *gsi,
-				       slp_tree slp_node, enum tree_code code)
+				       slp_tree slp_node, enum tree_code code,
+				       bool narrow_src_p)
 {
   unsigned int i;
   tree vop0, vop1, new_tmp, vec_dest;
@@ -4818,9 +4822,9 @@ vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
       new_tmp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_tmp);
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-
-      if (multi_step_cvt)
-	/* Store the resulting vector for next recursive call.  */
+      if (multi_step_cvt || narrow_src_p)
+	/* Store the resulting vector for next recursive call,
+	   or return the resulting vector_tmp for NARROW FLOAT_EXPR.  */
 	(*vec_oprnds)[i/2] = new_tmp;
       else
 	{
@@ -4846,7 +4850,8 @@ vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
       vect_create_vectorized_demotion_stmts (vinfo, vec_oprnds,
 					     multi_step_cvt - 1,
 					     stmt_info, vec_dsts, gsi,
-					     slp_node, VEC_PACK_TRUNC_EXPR);
+					     slp_node, VEC_PACK_TRUNC_EXPR,
+					     narrow_src_p);
     }
 
   vec_dsts.quick_push (vec_dest);
@@ -4991,7 +4996,15 @@ vectorizable_conversion (vec_info *vinfo,
   tree vectype_out, vectype_in;
   int ncopies, i;
   tree lhs_type, rhs_type;
-  enum { NARROW, NONE, WIDEN } modifier;
+  /* For conversions between floating point and integer, there're 2 NARROW
+     cases. NARROW_SRC is for FLOAT_EXPR, means
+     integer --DEMOTION--> integer --FLOAT_EXPR--> floating point.
+     This is safe when the range of the source integer can fit into the lower
+     precision. NARROW_DST is for FIX_TRUNC_EXPR, means
+     floating point --FIX_TRUNC_EXPR--> integer --DEMOTION--> INTEGER.
+     For other conversions, when there's narrowing, NARROW_DST is used as
+     default.  */
+  enum { NARROW_SRC, NARROW_DST, NONE, WIDEN } modifier;
   vec<tree> vec_oprnds0 = vNULL;
   vec<tree> vec_oprnds1 = vNULL;
   tree vop0;
@@ -5126,7 +5139,7 @@ vectorizable_conversion (vec_info *vinfo,
     else
       modifier = NONE;
   else if (multiple_p (nunits_out, nunits_in))
-    modifier = NARROW;
+    modifier = NARROW_DST;
   else
     {
       gcc_checking_assert (multiple_p (nunits_in, nunits_out));
@@ -5138,7 +5151,7 @@ vectorizable_conversion (vec_info *vinfo,
      case of SLP.  */
   if (slp_node)
     ncopies = 1;
-  else if (modifier == NARROW)
+  else if (modifier == NARROW_DST)
     ncopies = vect_get_num_copies (loop_vinfo, vectype_out);
   else
     ncopies = vect_get_num_copies (loop_vinfo, vectype_in);
@@ -5244,29 +5257,63 @@ vectorizable_conversion (vec_info *vinfo,
 	}
       break;
 
-    case NARROW:
+    case NARROW_DST:
       gcc_assert (op_type == unary_op);
       if (supportable_narrowing_operation (code, vectype_out, vectype_in,
 					   &code1, &multi_step_cvt,
 					   &interm_types))
 	break;
 
-      if (code != FIX_TRUNC_EXPR
-	  || GET_MODE_SIZE (lhs_mode) >= GET_MODE_SIZE (rhs_mode))
+      if (GET_MODE_SIZE (lhs_mode) >= GET_MODE_SIZE (rhs_mode))
 	goto unsupported;
 
-      cvt_type
-	= build_nonstandard_integer_type (GET_MODE_BITSIZE (rhs_mode), 0);
-      cvt_type = get_same_sized_vectype (cvt_type, vectype_in);
-      if (cvt_type == NULL_TREE)
-	goto unsupported;
-      if (!supportable_convert_operation (code, cvt_type, vectype_in,
-					  &codecvt1))
-	goto unsupported;
-      if (supportable_narrowing_operation (NOP_EXPR, vectype_out, cvt_type,
-					   &code1, &multi_step_cvt,
-					   &interm_types))
-	break;
+      if (code == FIX_TRUNC_EXPR)
+	{
+	  cvt_type
+	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (rhs_mode), 0);
+	  cvt_type = get_same_sized_vectype (cvt_type, vectype_in);
+	  if (cvt_type == NULL_TREE)
+	    goto unsupported;
+	  if (!supportable_convert_operation (code, cvt_type, vectype_in,
+					      &codecvt1))
+	    goto unsupported;
+	  if (supportable_narrowing_operation (NOP_EXPR, vectype_out, cvt_type,
+					       &code1, &multi_step_cvt,
+					       &interm_types))
+	    break;
+	}
+      /* If op0 can be represented with low precision integer,
+	 truncate it to cvt_type and the do FLOAT_EXPR.  */
+      else if (code == FLOAT_EXPR)
+	{
+	  wide_int op_min_value, op_max_value;
+	  if (!vect_get_range_info (op0, &op_min_value, &op_max_value))
+	    goto unsupported;
+
+	  cvt_type
+	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (lhs_mode), 0);
+	  if (cvt_type == NULL_TREE
+	      || (wi::min_precision (op_max_value, SIGNED)
+		  > TYPE_PRECISION (cvt_type))
+	      || (wi::min_precision (op_min_value, SIGNED)
+		  > TYPE_PRECISION (cvt_type)))
+	    goto unsupported;
+
+	  cvt_type = get_same_sized_vectype (cvt_type, vectype_out);
+	  if (cvt_type == NULL_TREE)
+	    goto unsupported;
+	  if (!supportable_narrowing_operation (NOP_EXPR, cvt_type, vectype_in,
+						&code1, &multi_step_cvt,
+						&interm_types))
+	    goto unsupported;
+	  if (supportable_convert_operation (code, vectype_out,
+					     cvt_type, &codecvt1))
+	    {
+	      modifier = NARROW_SRC;
+	      break;
+	    }
+	}
+
       goto unsupported;
 
     default:
@@ -5291,7 +5338,7 @@ vectorizable_conversion (vec_info *vinfo,
 	  vect_model_simple_cost (vinfo, stmt_info, ncopies, dt, ndts, slp_node,
 				  cost_vec);
 	}
-      else if (modifier == NARROW)
+      else if (modifier == NARROW_SRC || modifier == NARROW_DST)
 	{
 	  STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
 	  /* The final packing step produces one vector result per copy.  */
@@ -5338,8 +5385,10 @@ vectorizable_conversion (vec_info *vinfo,
      from supportable_*_operation, and store them in the correct order
      for future use in vect_create_vectorized_*_stmts ().  */
   auto_vec<tree> vec_dsts (multi_step_cvt + 1);
+  bool widen_or_narrow_float_p
+    = cvt_type && (modifier == WIDEN || modifier == NARROW_SRC);
   vec_dest = vect_create_destination_var (scalar_dest,
-					  (cvt_type && modifier == WIDEN)
+					  widen_or_narrow_float_p
 					  ? cvt_type : vectype_out);
   vec_dsts.quick_push (vec_dest);
 
@@ -5356,7 +5405,7 @@ vectorizable_conversion (vec_info *vinfo,
 
   if (cvt_type)
     vec_dest = vect_create_destination_var (scalar_dest,
-					    modifier == WIDEN
+					    widen_or_narrow_float_p
 					    ? vectype_out : cvt_type);
 
   int ninputs = 1;
@@ -5364,7 +5413,7 @@ vectorizable_conversion (vec_info *vinfo,
     {
       if (modifier == WIDEN)
 	;
-      else if (modifier == NARROW)
+      else if (modifier == NARROW_SRC || modifier == NARROW_DST)
 	{
 	  if (multi_step_cvt)
 	    ninputs = vect_pow2 (multi_step_cvt);
@@ -5451,7 +5500,8 @@ vectorizable_conversion (vec_info *vinfo,
 	}
       break;
 
-    case NARROW:
+    case NARROW_SRC:
+    case NARROW_DST:
       /* In case the vectorization factor (VF) is bigger than the number
 	 of elements that we can fit in a vectype (nunits), we have to
 	 generate more than one vector stmt - i.e - we need to "unroll"
@@ -5459,7 +5509,7 @@ vectorizable_conversion (vec_info *vinfo,
       vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies * ninputs,
 			 op0, &vec_oprnds0);
       /* Arguments are ready.  Create the new vector stmts.  */
-      if (cvt_type)
+      if (cvt_type && modifier == NARROW_DST)
 	FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	  {
 	    gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
@@ -5473,7 +5523,30 @@ vectorizable_conversion (vec_info *vinfo,
       vect_create_vectorized_demotion_stmts (vinfo, &vec_oprnds0,
 					     multi_step_cvt,
 					     stmt_info, vec_dsts, gsi,
-					     slp_node, code1);
+					     slp_node, code1,
+					     modifier == NARROW_SRC);
+      /* After demoting op0 to cvt_type, convert it to dest.  */
+      if (cvt_type && code == FLOAT_EXPR)
+	{
+	  for (unsigned int i = 0; i != vec_oprnds0.length() / 2;  i++)
+	    {
+	      /* Arguments are ready, create the new vector stmt.  */
+	      gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
+	      gassign *new_stmt
+		= gimple_build_assign (vec_dest, codecvt1, vec_oprnds0[i]);
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      gimple_assign_set_lhs (new_stmt, new_temp);
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+
+	      /* This is the last step of the conversion sequence. Store the
+		 vectors in SLP_NODE or in vector info of the scalar statement
+		 (or in STMT_VINFO_RELATED_STMT chain).  */
+	      if (slp_node)
+		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	      else
+		STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	    }
+	}
       break;
     }
   if (!slp_node)
