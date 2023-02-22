@@ -2618,7 +2618,8 @@ package body Sem_Util is
 
          function Check_Node (N : Node_Id) return Traverse_Result is
             Is_Writable_Actual : Boolean := False;
-            Id                 : Entity_Id;
+            Id                 : Entity_Id := Empty;
+            --  Default init of Id for CodePeer
 
          begin
             if Nkind (N) = N_Identifier then
