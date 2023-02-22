@@ -1548,7 +1548,8 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
   else
     {
       if (flag_checking
-	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE)
+	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE_TRAP))
 	ipa_verify_edge_has_no_modifications (e);
       new_stmt = e->call_stmt;
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
@@ -1634,7 +1635,9 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 	{
 	  /* Keep calls marked as dead dead.  */
 	  if (new_stmt && is_gimple_call (new_stmt) && e->callee
-	      && fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	      && (fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE)
+		  || fndecl_built_in_p (e->callee->decl,
+					BUILT_IN_UNREACHABLE_TRAP)))
 	    {
 	      cgraph_edge::set_call_stmt (node->get_edge (old_stmt),
 					  as_a <gcall *> (new_stmt));
@@ -3598,7 +3601,9 @@ cgraph_node::verify_node (void)
 	  /* Optimized out calls are redirected to __builtin_unreachable.  */
 	  && (e->count.nonzero_p ()
 	      || ! e->callee->decl
-	      || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	      || !(fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE)
+		   || fndecl_built_in_p (e->callee->decl,
+					 BUILT_IN_UNREACHABLE_TRAP)))
 	  && count
 	      == ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (decl))->count
 	  && (!e->count.ipa_p ()
