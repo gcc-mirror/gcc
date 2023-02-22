@@ -605,6 +605,7 @@ is
             pragma Loop_Invariant
               (for all J in Item'First .. From when J /= From =>
                  Item (J) /= char32_nul);
+            pragma Loop_Invariant (From <= Item'First + C_Length_Ghost (Item));
             pragma Loop_Variant (Increases => From);
 
             if From > Item'Last then
