@@ -1,8 +1,8 @@
 MULTILIB_OPTIONS	=
 MULTILIB_DIRNAMES	=
 
-MULTILIB_OPTIONS	+= march=rv32i/march=rv32im/march=rv32imafd/march=rv32iac/march=rv32imac/march=rv32imafc/march=rv64imafd/march=rv64imac/march=rv64imafdc
-MULTILIB_DIRNAMES	+= rv32i       rv32im       rv32imafd       rv32iac       rv32imac       rv32imafc       rv64imafd       rv64imac       rv64imafdc
+MULTILIB_OPTIONS	+= march=rv32i/march=rv32iac/march=rv32im/march=rv32ima/march=rv32imac/march=rv32imaf/march=rv32imafc/march=rv32imafd/march=rv32imafdc/march=rv64ima/march=rv64imac/march=rv64imafd/march=rv64imafdc
+MULTILIB_DIRNAMES	+= rv32i       rv32iac       rv32im       rv32ima       rv32imac       rv32imaf       rv32imafc       rv32imafd       rv32imafdc       rv64ima       rv64imac       rv64imafd       rv64imafdc
 
 MULTILIB_OPTIONS	+= mabi=ilp32/mabi=ilp32f/mabi=ilp32d/mabi=lp64/mabi=lp64d
 MULTILIB_DIRNAMES	+= ilp32      ilp32f      ilp32d      lp64      lp64d
@@ -12,14 +12,15 @@ MULTILIB_DIRNAMES	+= medany
 
 MULTILIB_REQUIRED	=
 MULTILIB_REQUIRED	+= march=rv32i/mabi=ilp32
-MULTILIB_REQUIRED	+= march=rv32im/mabi=ilp32
-MULTILIB_REQUIRED	+= march=rv32imafd/mabi=ilp32d
 MULTILIB_REQUIRED	+= march=rv32iac/mabi=ilp32
+MULTILIB_REQUIRED	+= march=rv32im/mabi=ilp32
+MULTILIB_REQUIRED	+= march=rv32ima/mabi=ilp32
 MULTILIB_REQUIRED	+= march=rv32imac/mabi=ilp32
+MULTILIB_REQUIRED	+= march=rv32imaf/mabi=ilp32f
 MULTILIB_REQUIRED	+= march=rv32imafc/mabi=ilp32f
-MULTILIB_REQUIRED	+= march=rv64imafd/mabi=lp64d
-MULTILIB_REQUIRED	+= march=rv64imafd/mabi=lp64d/mcmodel=medany
-MULTILIB_REQUIRED	+= march=rv64imac/mabi=lp64
+MULTILIB_REQUIRED	+= march=rv32imafd/mabi=ilp32d
+MULTILIB_REQUIRED	+= march=rv32imafdc/mabi=ilp32d
+MULTILIB_REQUIRED	+= march=rv64ima/mabi=lp64/mcmodel=medany
 MULTILIB_REQUIRED	+= march=rv64imac/mabi=lp64/mcmodel=medany
-MULTILIB_REQUIRED	+= march=rv64imafdc/mabi=lp64d
+MULTILIB_REQUIRED	+= march=rv64imafd/mabi=lp64d/mcmodel=medany
 MULTILIB_REQUIRED	+= march=rv64imafdc/mabi=lp64d/mcmodel=medany
