@@ -1,3 +1,24 @@
+2023-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/refwrap.h (reference_wrapper::operator()): Add
+	noexcept-specifier and use __invoke_result instead of result_of.
+	* testsuite/20_util/reference_wrapper/invoke-noexcept.cc: New test.
+
+2023-02-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108636
+	* include/bits/fs_path.h (path::path(string_view, _Type))
+	(path::_Cmpt::_Cmpt(string_view, _Type, size_t)): Move inline
+	definitions to ...
+	* src/c++17/fs_path.cc: ... here.
+	* testsuite/27_io/filesystem/path/108636.cc: New test.
+
 2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
 
 	Backported from master:
