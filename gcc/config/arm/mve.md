@@ -1405,62 +1405,20 @@
 ])
 
 ;;
-;; [vmlaldavq_u, vmlaldavq_s])
+;; [vmlaldavq_u, vmlaldavq_s]
+;; [vmlaldavxq_s]
+;; [vmlsldavq_s]
+;; [vmlsldavxq_s]
 ;;
-(define_insn "mve_vmlaldavq_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:DI 0 "s_register_operand" "=r")
 	(unspec:DI [(match_operand:MVE_5 1 "s_register_operand" "w")
 		    (match_operand:MVE_5 2 "s_register_operand" "w")]
-	 VMLALDAVQ))
+	 MVE_VMLxLDAVxQ))
   ]
   "TARGET_HAVE_MVE"
-  "vmlaldav.<supf>%#<V_sz_elem>	%Q0, %R0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vmlaldavxq_s])
-;;
-(define_insn "mve_vmlaldavxq_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:MVE_5 1 "s_register_operand" "w")
-		    (match_operand:MVE_5 2 "s_register_operand" "w")]
-	 VMLALDAVXQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmlaldavx.s%#<V_sz_elem> %Q0, %R0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vmlsldavq_s])
-;;
-(define_insn "mve_vmlsldavq_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:MVE_5 1 "s_register_operand" "w")
-		    (match_operand:MVE_5 2 "s_register_operand" "w")]
-	 VMLSLDAVQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmlsldav.s%#<V_sz_elem> %Q0, %R0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vmlsldavxq_s])
-;;
-(define_insn "mve_vmlsldavxq_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:MVE_5 1 "s_register_operand" "w")
-		    (match_operand:MVE_5 2 "s_register_operand" "w")]
-	 VMLSLDAVXQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmlsldavx.s%#<V_sz_elem> %Q0, %R0, %q1, %q2"
+  "<mve_insn>.<supf>%#<V_sz_elem>\t%Q0, %R0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2666,36 +2624,24 @@
 ])
 
 ;;
-;; [vmlaldavq_p_u, vmlaldavq_p_s])
+;; [vmlaldavq_p_u, vmlaldavq_p_s]
+;; [vmlaldavxq_p_s]
+;; [vmlsldavq_p_s]
+;; [vmlsldavxq_p_s]
 ;;
-(define_insn "mve_vmlaldavq_p_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_p_<supf><mode>"
   [
    (set (match_operand:DI 0 "s_register_operand" "=r")
 	(unspec:DI [(match_operand:MVE_5 1 "s_register_operand" "w")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMLALDAVQ_P))
+	 MVE_VMLxLDAVxQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vmlaldavt.<supf>%#<V_sz_elem> %Q0, %R0, %q1, %q2"
+  "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%Q0, %R0, %q1, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
-;;
-;; [vmlaldavxq_p_s])
-;;
-(define_insn "mve_vmlaldavxq_p_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:MVE_5 1 "s_register_operand" "w")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMLALDAVXQ_P_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vmlaldavxt.s%#<V_sz_elem>\t%Q0, %R0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
 ;;
 ;; [vmlsldavaq_s])
 ;;
@@ -2727,38 +2673,6 @@
   "vmlsldavax.s%#<V_sz_elem> %Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
-
-;;
-;; [vmlsldavq_p_s])
-;;
-(define_insn "mve_vmlsldavq_p_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:MVE_5 1 "s_register_operand" "w")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMLSLDAVQ_P_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vmlsldavt.s%#<V_sz_elem> %Q0, %R0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vmlsldavxq_p_s])
-;;
-(define_insn "mve_vmlsldavxq_p_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:MVE_5 1 "s_register_operand" "w")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VMLSLDAVXQ_P_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vmlsldavxt.s%#<V_sz_elem> %Q0, %R0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
 
 ;;
 ;; [vmovlbq_m_u, vmovlbq_m_s])
