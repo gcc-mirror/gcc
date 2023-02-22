@@ -392,6 +392,29 @@ struct binary_acc_int32_def : public overloaded_base<0>
 };
 SHAPE (binary_acc_int32)
 
+/* <[u]int64>_t vfoo[_<t0>](<T0>_t, <T0>_t)
+
+   Example: vmlaldavq.
+   int64_t [__arm_]vmlaldavq[_s16](int16x8_t m1, int16x8_t m2)
+   int64_t [__arm_]vmlaldavq_p[_s16](int16x8_t m1, int16x8_t m2, mve_pred16_t p)  */
+struct binary_acc_int64_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "sx64,v0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (2);
+  }
+};
+SHAPE (binary_acc_int64)
+
 /* <[u]int32>_t vfoo[_<t0>]([u]int32_t, <T0>_t, <T0>_t)
 
    Example: vmladavaq.
