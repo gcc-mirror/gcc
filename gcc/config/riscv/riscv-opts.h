@@ -298,12 +298,10 @@ enum riscv_entity
    is the highest priority choice and should not conflict with VLS modes.  */
 #define TARGET_VECTOR_VLS (riscv_autovec_preference == RVV_SCALABLE)
 
-#define MASK_XCOREV       (1 <<  0)
-#define MASK_XCOREVELW    (1 <<  1)
-#define MASK_XCOREVMAC    (1 <<  2)
+#define MASK_XCV       (1 <<  0)
+#define MASK_XCVMAC    (1 <<  2)
 
-#define TARGET_XCOREV       ((riscv_xcorev_flags & MASK_XCOREV)    != 0)
-#define TARGET_XCOREVELW    ((riscv_xcorev_flags & MASK_XCOREVELW) != 0)
-#define TARGET_XCOREVMAC    ((riscv_xcorev_flags & MASK_XCOREVMAC) != 0)
+#define TARGET_XCV       ((riscv_xcv_flags & MASK_XCV)    != 0)
+#define TARGET_XCVMAC    ((riscv_xcv_flags & MASK_XCVMAC) != 0)
 
 #endif /* ! GCC_RISCV_OPTS_H */

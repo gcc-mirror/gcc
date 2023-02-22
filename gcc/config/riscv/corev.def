@@ -1,4 +1,4 @@
-// xcorevmac
+// XCVMAC
 RISCV_BUILTIN (cv_mac_mac,       "cv_mac_mac",    RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI_SI,      cvmac),
 RISCV_BUILTIN (cv_mac_msu,       "cv_mac_msu",    RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI_SI,      cvmac),
 RISCV_BUILTIN (cv_mac_muluN,     "cv_mac_muluN",      RISCV_BUILTIN_DIRECT, RISCV_USI_FTYPE_USI_USI_UQI,  cvmac),

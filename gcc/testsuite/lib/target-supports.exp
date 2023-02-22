@@ -12562,14 +12562,14 @@ proc check_effective_target_const_volatile_readonly_section { } {
 
 # Return 1 if CORE-V architecture is available.
 
-proc check_effective_target_corev_mac { } {
+proc check_effective_target_cv_mac { } {
     if { !([istarget riscv*-*-*]) } {
          return 0
      }
-    return [check_no_compiler_messages corev_mac object {
+    return [check_no_compiler_messages cv_mac object {
         void foo (void)
         {
           asm ("cv.mac t0, t1, t2");
         }
-    } "-march=rv32ixcorevmac1p0" ]
+    } "-march=rv32ixcvmac1p0" ]
 }

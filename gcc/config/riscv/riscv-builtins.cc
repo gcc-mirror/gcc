@@ -127,7 +127,7 @@ AVAIL (clmulr_zbc64, TARGET_ZBC && TARGET_64BIT)
 AVAIL (always,     (!0))
 
 //COREV AVAIL
-AVAIL (cvmac, TARGET_XCOREVMAC && !TARGET_64BIT)
+AVAIL (cvmac, TARGET_XCVMAC && !TARGET_64BIT)
 
 /* Construct a riscv_builtin_description from the given arguments.
 

@@ -23,7 +23,7 @@
                 (match_operand:SI 2 "register_operand" "r")
                 (match_operand:SI 3 "register_operand" "0")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.mac\t%0,%1,%2"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -34,7 +34,7 @@
                   (mult:SI (match_operand:SI 1 "register_operand" "r")
                            (match_operand:SI 2 "register_operand" "r"))))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.msu\t%0,%1,%2"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -45,7 +45,7 @@
                               (zero_extend:SI (truncate:HI (match_operand:SI 2 "register_operand" "r"))))
                      (match_operand:QI 3 "const_csr_operand" "K")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.muluN\t%0,%1,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -56,7 +56,7 @@
                               (zero_extend:SI (truncate:HI (lshiftrt:SI (match_operand:SI 2 "register_operand" "r") (const_int 16)))))
                      (match_operand:QI 3 "const_csr_operand" "K")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.mulhhuN\t%0,%1,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -67,7 +67,7 @@
                               (sign_extend:SI (truncate:HI (match_operand:SI 2 "register_operand" "r"))))
                      (match_operand:QI 3 "const_csr_operand" "K")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.mulsN\t%0,%1,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -78,7 +78,7 @@
                               (sign_extend:SI (truncate:HI (lshiftrt:SI (match_operand:SI 2 "register_operand" "r") (const_int 16)))))
                      (match_operand:QI 3 "const_csr_operand" "K")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.mulhhsN\t%0,%1,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -94,7 +94,7 @@
                                            (const_int 0)))
                      (match_dup 3)))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.muluRN\t%0,%1,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -110,7 +110,7 @@
                                            (const_int 0)))
                      (match_dup 3)))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.mulhhuRN\t%0,%1,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -126,7 +126,7 @@
                                            (const_int 0)))
                      (match_dup 3)))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.mulsRN\t%0,%1,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -142,7 +142,7 @@
                                            (const_int 0)))
                      (match_dup 3)))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.mulhhsRN\t%0,%1,%2,%3"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -154,7 +154,7 @@
                              (match_operand:SI 3 "register_operand" "0"))
                      (match_operand:QI 4 "const_csr_operand" "K")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.macuN\t%0,%1,%2,%4"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -166,7 +166,7 @@
                              (match_operand:SI 3 "register_operand" "0"))
                      (match_operand:QI 4 "const_csr_operand" "K")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.machhuN\t%0,%1,%2,%4"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -178,7 +178,7 @@
                              (match_operand:SI 3 "register_operand" "0"))
                      (match_operand:QI 4 "const_csr_operand" "K")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.macsN\t%0,%1,%2,%4"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -190,7 +190,7 @@
                              (match_operand:SI 3 "register_operand" "0"))
                      (match_operand:QI 4 "const_csr_operand" "K")))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.machhsN\t%0,%1,%2,%4"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -207,7 +207,7 @@
                                             (const_int 0)))
                      (match_dup 4)))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.macuRN\t%0,%1,%2,%4"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -224,7 +224,7 @@
                                             (const_int 0)))
                      (match_dup 4)))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.machhuRN\t%0,%1,%2,%4"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -241,7 +241,7 @@
                                             (const_int 0)))
                      (match_dup 4)))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.macsRN\t%0,%1,%2,%4"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])
@@ -258,7 +258,7 @@
                                             (const_int 0)))
                      (match_dup 4)))]
 
-  "TARGET_XCOREVMAC && !TARGET_64BIT"
+  "TARGET_XCVMAC && !TARGET_64BIT"
   "cv.machhsRN\t%0,%1,%2,%4"
   [(set_attr "type" "arith")
   (set_attr "mode" "SI")])

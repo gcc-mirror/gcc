@@ -249,7 +249,7 @@ TargetVariable
 int riscv_xthead_subext
 
 TargetVariable
-int riscv_xcorev_flags
+int riscv_xcv_flags
 
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)
