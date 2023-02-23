@@ -1,0 +1,2 @@
+// allowed
+pub fn default() {}
