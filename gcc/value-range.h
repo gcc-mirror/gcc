@@ -72,7 +72,7 @@ enum value_range_discriminator
 //	if (f.supports_type_p (type)) ...
 //    }
 
-class vrange
+class GTY((user)) vrange
 {
   template <typename T> friend bool is_a (vrange &);
   friend class Value_Range;
@@ -329,10 +329,13 @@ nan_state::neg_p () const
 // The representation is a type with a couple of endpoints, unioned
 // with the set of { -NAN, +Nan }.
 
-class frange : public vrange
+class GTY((user)) frange : public vrange
 {
   friend class frange_storage_slot;
   friend class vrange_printer;
+  friend void gt_ggc_mx (frange *);
+  friend void gt_pch_nx (frange *);
+  friend void gt_pch_nx (frange *, gt_pointer_operator, void *);
 public:
   frange ();
   frange (const frange &);
@@ -827,41 +830,15 @@ range_includes_zero_p (const irange *vr)
   return vr->may_contain_p (build_zero_cst (vr->type ()));
 }
 
-inline void
-gt_ggc_mx (irange *x)
-{
-  for (unsigned i = 0; i < x->m_num_ranges; ++i)
-    {
-      gt_ggc_mx (x->m_base[i * 2]);
-      gt_ggc_mx (x->m_base[i * 2 + 1]);
-    }
-  if (x->m_nonzero_mask)
-    gt_ggc_mx (x->m_nonzero_mask);
-}
-
-inline void
-gt_pch_nx (irange *x)
-{
-  for (unsigned i = 0; i < x->m_num_ranges; ++i)
-    {
-      gt_pch_nx (x->m_base[i * 2]);
-      gt_pch_nx (x->m_base[i * 2 + 1]);
-    }
-  if (x->m_nonzero_mask)
-    gt_pch_nx (x->m_nonzero_mask);
-}
-
-inline void
-gt_pch_nx (irange *x, gt_pointer_operator op, void *cookie)
-{
-  for (unsigned i = 0; i < x->m_num_ranges; ++i)
-    {
-      op (&x->m_base[i * 2], NULL, cookie);
-      op (&x->m_base[i * 2 + 1], NULL, cookie);
-    }
-  if (x->m_nonzero_mask)
-    op (&x->m_nonzero_mask, NULL, cookie);
-}
+extern void gt_ggc_mx (vrange *);
+extern void gt_pch_nx (vrange *);
+extern void gt_pch_nx (vrange *, gt_pointer_operator, void *);
+extern void gt_ggc_mx (irange *);
+extern void gt_pch_nx (irange *);
+extern void gt_pch_nx (irange *, gt_pointer_operator, void *);
+extern void gt_ggc_mx (frange *);
+extern void gt_pch_nx (frange *);
+extern void gt_pch_nx (frange *, gt_pointer_operator, void *);
 
 template<unsigned N>
 inline void

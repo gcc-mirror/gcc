@@ -3252,6 +3252,91 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
   return true;
 }
 
+void
+gt_ggc_mx (irange *x)
+{
+  for (unsigned i = 0; i < x->m_num_ranges; ++i)
+    {
+      gt_ggc_mx (x->m_base[i * 2]);
+      gt_ggc_mx (x->m_base[i * 2 + 1]);
+    }
+  if (x->m_nonzero_mask)
+    gt_ggc_mx (x->m_nonzero_mask);
+}
+
+void
+gt_pch_nx (irange *x)
+{
+  for (unsigned i = 0; i < x->m_num_ranges; ++i)
+    {
+      gt_pch_nx (x->m_base[i * 2]);
+      gt_pch_nx (x->m_base[i * 2 + 1]);
+    }
+  if (x->m_nonzero_mask)
+    gt_pch_nx (x->m_nonzero_mask);
+}
+
+void
+gt_pch_nx (irange *x, gt_pointer_operator op, void *cookie)
+{
+  for (unsigned i = 0; i < x->m_num_ranges; ++i)
+    {
+      op (&x->m_base[i * 2], NULL, cookie);
+      op (&x->m_base[i * 2 + 1], NULL, cookie);
+    }
+  if (x->m_nonzero_mask)
+    op (&x->m_nonzero_mask, NULL, cookie);
+}
+
+void
+gt_ggc_mx (frange *x)
+{
+  gt_ggc_mx (x->m_type);
+}
+
+void
+gt_pch_nx (frange *x)
+{
+  gt_pch_nx (x->m_type);
+}
+
+void
+gt_pch_nx (frange *x, gt_pointer_operator op, void *cookie)
+{
+  op (&x->m_type, NULL, cookie);
+}
+
+void
+gt_ggc_mx (vrange *x)
+{
+  if (is_a <irange> (*x))
+    return gt_ggc_mx ((irange *) x);
+  if (is_a <frange> (*x))
+    return gt_ggc_mx ((frange *) x);
+  gcc_unreachable ();
+}
+
+void
+gt_pch_nx (vrange *x)
+{
+  if (is_a <irange> (*x))
+    return gt_pch_nx ((irange *) x);
+  if (is_a <frange> (*x))
+    return gt_pch_nx ((frange *) x);
+  gcc_unreachable ();
+}
+
+void
+gt_pch_nx (vrange *x, gt_pointer_operator op, void *cookie)
+{
+  if (is_a <irange> (*x))
+    gt_pch_nx ((irange *) x, op, cookie);
+  else if (is_a <frange> (*x))
+    gt_pch_nx ((frange *) x, op, cookie);
+  else
+    gcc_unreachable ();
+}
+
 // ?? These stubs are for ipa-prop.cc which use a value_range in a
 // hash_traits.  hash-traits.h defines an extern of gt_ggc_mx (T &)
 // instead of picking up the gt_ggc_mx (T *) version.
