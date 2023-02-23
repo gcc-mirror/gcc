@@ -586,8 +586,9 @@ public:
   unsigned allocated (void) const { return m_vecpfx.m_alloc; }
   unsigned length (void) const { return m_vecpfx.m_num; }
   bool is_empty (void) const { return m_vecpfx.m_num == 0; }
-  T *address (void) { return m_vecdata; }
-  const T *address (void) const { return m_vecdata; }
+  T *address (void) { return reinterpret_cast <T *> (this + 1); }
+  const T *address (void) const
+    { return reinterpret_cast <const T *> (this + 1); }
   T *begin () { return address (); }
   const T *begin () const { return address (); }
   T *end () { return address () + length (); }
@@ -629,10 +630,10 @@ public:
   friend struct va_gc_atomic;
   friend struct va_heap;
 
-  /* FIXME - These fields should be private, but we need to cater to
+  /* FIXME - This field should be private, but we need to cater to
 	     compilers that have stricter notions of PODness for types.  */
-  vec_prefix m_vecpfx;
-  T m_vecdata[1];
+  /* Align m_vecpfx to simplify address ().  */
+  alignas (T) alignas (vec_prefix) vec_prefix m_vecpfx;
 };
 
 
@@ -1315,7 +1316,7 @@ vec<T, A, vl_embed>::embedded_size (unsigned alloc)
 				    vec, vec_embedded>::type vec_stdlayout;
   static_assert (sizeof (vec_stdlayout) == sizeof (vec), "");
   static_assert (alignof (vec_stdlayout) == alignof (vec), "");
-  return offsetof (vec_stdlayout, m_vecdata) + alloc * sizeof (T);
+  return sizeof (vec_stdlayout) + alloc * sizeof (T);
 }
 
 
@@ -1559,8 +1560,14 @@ class auto_vec : public vec<T, va_heap>
 public:
   auto_vec ()
   {
-    m_auto.embedded_init (MAX (N, 2), 0, 1);
-    this->m_vec = &m_auto;
+    m_auto.embedded_init (N, 0, 1);
+    /* ???  Instead of initializing m_vec from &m_auto directly use an
+       expression that avoids refering to a specific member of 'this'
+       to derail the -Wstringop-overflow diagnostic code, avoiding
+       the impression that data accesses are supposed to be to the
+       m_auto member storage.  */
+    size_t off = (char *) &m_auto - (char *) this;
+    this->m_vec = (vec<T, va_heap, vl_embed> *) ((char *) this + off);
   }
 
   auto_vec (size_t s CXX_MEM_STAT_INFO)
@@ -1571,8 +1578,10 @@ public:
 	return;
       }
 
-    m_auto.embedded_init (MAX (N, 2), 0, 1);
-    this->m_vec = &m_auto;
+    m_auto.embedded_init (N, 0, 1);
+    /* ???  See above.  */
+    size_t off = (char *) &m_auto - (char *) this;
+    this->m_vec = (vec<T, va_heap, vl_embed> *) ((char *) this + off);
   }
 
   ~auto_vec ()
@@ -1590,7 +1599,7 @@ public:
 
 private:
   vec<T, va_heap, vl_embed> m_auto;
-  T m_data[MAX (N - 1, 1)];
+  unsigned char m_data[sizeof (T) * N];
 };
 
 /* auto_vec is a sub class of vec whose storage is released when it is
