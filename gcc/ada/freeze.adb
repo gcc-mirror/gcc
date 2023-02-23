@@ -5500,7 +5500,7 @@ package body Freeze is
 
             if Warn_On_Redundant_Constructs then
                Error_Msg_N -- CODEFIX
-                 ("??pragma Pack has no effect, no unplaced components",
+                 ("?r?pragma Pack has no effect, no unplaced components",
                   Get_Rep_Pragma (Rec, Name_Pack));
             end if;
          end if;

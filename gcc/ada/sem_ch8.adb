@@ -10755,7 +10755,7 @@ package body Sem_Ch8 is
                      Error_Msg_Sloc := Sloc (Clause1);
                      Error_Msg_NE -- CODEFIX
                        ("& is already use-visible through previous "
-                        & "use_type_clause #??", Clause2, T);
+                        & "use_type_clause #?r?", Clause2, T);
                      return;
                   end if;
 
@@ -10827,7 +10827,7 @@ package body Sem_Ch8 is
 
                      Error_Msg_NE -- CODEFIX
                        ("& is already use-visible through previous "
-                        & "use_type_clause #??", Err_No, Id);
+                        & "use_type_clause #?r?", Err_No, Id);
                   end if;
                end Use_Clause_Known;
 
@@ -10837,7 +10837,7 @@ package body Sem_Ch8 is
             else
                Error_Msg_NE -- CODEFIX
                  ("& is already use-visible through previous "
-                  & "use_type_clause??", Id, T);
+                  & "use_type_clause?r?", Id, T);
             end if;
 
          --  The package where T is declared is already used
@@ -10852,7 +10852,7 @@ package body Sem_Ch8 is
                Error_Msg_Sloc :=
                  Sloc (Find_First_Use (Current_Use_Clause (Scope (T))));
                Error_Msg_NE -- CODEFIX
-                 ("& is already use-visible through package use clause #??",
+                 ("& is already use-visible through package use clause #?r?",
                   Id, T);
             end if;
 
@@ -10861,7 +10861,7 @@ package body Sem_Ch8 is
          else
             Error_Msg_Node_2 := Scope (T);
             Error_Msg_NE -- CODEFIX
-              ("& is already use-visible inside package &??", Id, T);
+              ("& is already use-visible inside package &?r?", Id, T);
          end if;
       end if;
    end Use_One_Type;

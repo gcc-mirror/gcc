@@ -5834,9 +5834,9 @@ package body Sem_Aggr is
                     ("OTHERS must represent at least one component", Selectr);
 
                elsif Others_Box = 1 and then Warn_On_Redundant_Constructs then
-                  Error_Msg_N ("OTHERS choice is redundant?", Box_Node);
+                  Error_Msg_N ("OTHERS choice is redundant?r?", Box_Node);
                   Error_Msg_N
-                    ("\previous choices cover all components?", Box_Node);
+                    ("\previous choices cover all components?r?", Box_Node);
                end if;
 
                exit Verification;
