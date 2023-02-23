@@ -1689,7 +1689,7 @@ C++ ObjC++ Joined RejectNegative Host_Wide_Int Var(constexpr_ops_limit) Init(335
 
 fcontracts
 C++ ObjC++ Var(flag_contracts) Init(0)
-Enable certain features present drafts of C++ Contracts.
+Enable certain features present in drafts of C++ Contracts.
 
 Enum
 Name(on_off) Type(int) UnknownError(argument %qs must be either %<on%> or %<off%>)
