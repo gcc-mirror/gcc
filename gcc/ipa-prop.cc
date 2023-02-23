@@ -3850,6 +3850,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 	    {
 	      if (!t
 		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE)
+		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE_TRAP)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (t)))
 		{
