@@ -2028,8 +2028,8 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
    (set (match_operand:SI 0 "register_operand" "=a")
-	(plus (match_dup 0)
-	      (const_int -1)))
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_START)]
   "TARGET_LOOPS && optimize"
   "loop\t%0, %l1_LEND"
@@ -2044,8 +2044,8 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
    (set (match_operand:SI 0 "nonimmediate_operand" "=a,m")
-	(plus (match_dup 0)
-	      (const_int -1)))
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
    (clobber (match_scratch:SI 3 "=X,&r"))]
   "TARGET_LOOPS && optimize"
@@ -2061,8 +2061,8 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
    (set (match_operand:SI 0 "register_operand" "=a")
-	(plus (match_dup 0)
-	      (const_int -1)))
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)]
   "TARGET_LOOPS && optimize"
 {
