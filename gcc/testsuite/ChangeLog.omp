@@ -1,5 +1,10 @@
 2023-02-23  Andrew Stubbs  <ams@codesourcery.com>
 
+	Backport from mainline:
+	* g++.dg/torture/pr108888.C: New testcase.
+
+2023-02-23  Andrew Stubbs  <ams@codesourcery.com>
+
 	* gcc.dg/vect/vect-simd-clone-16.c: New test.
 	* gcc.dg/vect/vect-simd-clone-16b.c: New test.
 	* gcc.dg/vect/vect-simd-clone-16c.c: New test.

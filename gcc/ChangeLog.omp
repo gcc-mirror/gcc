@@ -1,5 +1,13 @@
 2023-02-23  Andrew Stubbs  <ams@codesourcery.com>
 
+	Backport from mainline:
+	PR tree-optimization/108888
+	* tree-if-conv.cc (if_convertible_stmt_p): Set PLF_2 on
+	calls to predicate.
+	(predicate_statements): Only predicate calls with PLF_2.
+
+2023-02-23  Andrew Stubbs  <ams@codesourcery.com>
+
 	* internal-fn.cc (expand_MASK_CALL): New.
 	* internal-fn.def (MASK_CALL): New.
 	* internal-fn.h (expand_MASK_CALL): New prototype.
