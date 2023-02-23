@@ -363,6 +363,53 @@ template <typename _Tp>
 
 // }}}
 
+#ifdef __clang__
+template <size_t _Np, typename _Tp, typename _Kp>
+  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  __movm(_Kp __k) noexcept
+  {
+    static_assert(is_unsigned_v<_Kp>);
+    if constexpr (sizeof(_Tp) == 1 && __have_avx512bw)
+      {
+	if constexpr (_Np <= 16 && __have_avx512vl)
+	  return __builtin_ia32_cvtmask2b128(__k);
+	else if constexpr (_Np <= 32 && __have_avx512vl)
+	  return __builtin_ia32_cvtmask2b256(__k);
+	else
+	  return __builtin_ia32_cvtmask2b512(__k);
+      }
+    else if constexpr (sizeof(_Tp) == 2 && __have_avx512bw)
+      {
+	if constexpr (_Np <= 8 && __have_avx512vl)
+	  return __builtin_ia32_cvtmask2w128(__k);
+	else if constexpr (_Np <= 16 && __have_avx512vl)
+	  return __builtin_ia32_cvtmask2w256(__k);
+	else
+	  return __builtin_ia32_cvtmask2w512(__k);
+      }
+    else if constexpr (sizeof(_Tp) == 4 && __have_avx512dq)
+      {
+	if constexpr (_Np <= 4 && __have_avx512vl)
+	  return __builtin_ia32_cvtmask2d128(__k);
+	else if constexpr (_Np <= 8 && __have_avx512vl)
+	  return __builtin_ia32_cvtmask2d256(__k);
+	else
+	  return __builtin_ia32_cvtmask2d512(__k);
+      }
+    else if constexpr (sizeof(_Tp) == 8 && __have_avx512dq)
+      {
+	if constexpr (_Np <= 2 && __have_avx512vl)
+	  return __builtin_ia32_cvtmask2q128(__k);
+	else if constexpr (_Np <= 4 && __have_avx512vl)
+	  return __builtin_ia32_cvtmask2q256(__k);
+	else
+	  return __builtin_ia32_cvtmask2q512(__k);
+      }
+    else
+      __assert_unreachable<_Tp>();
+  }
+#endif // __clang__
+
 #ifdef _GLIBCXX_SIMD_WORKAROUND_PR85048
 #include "simd_x86_conversions.h"
 #endif
@@ -619,14 +666,13 @@ struct _CommonImplX86 : _CommonImplBuiltin
     _GLIBCXX_SIMD_INTRINSIC static _TV
     _S_blend_avx512(const _Kp __k, const _TV __a, const _TV __b) noexcept
     {
-#ifdef __clang__
-      // FIXME: this does a boolean choice, not a blend
-      return __k ? __a : __b;
-#else
       static_assert(__is_vector_type_v<_TV>);
       using _Tp = typename _VectorTraits<_TV>::value_type;
       static_assert(sizeof(_TV) >= 16);
       static_assert(sizeof(_Tp) <= 8);
+#ifdef __clang__
+      return __movm<_VectorTraits<_TV>::_S_full_size, _Tp>(__k) ? __b : __a;
+#else
       using _IntT
 	= conditional_t<(sizeof(_Tp) > 2),
 			conditional_t<sizeof(_Tp) == 4, int, long long>,
@@ -3482,6 +3528,9 @@ template <typename _Abi>
 	    // optimize masked unary increment and decrement as masked sub +/-1
 	    constexpr int __pm_one
 	      = is_same_v<_Op<void>, __increment<void>> ? -1 : 1;
+#ifdef __clang__
+	    return __movm<_Np, _Tp>(__k._M_data) ? __v._M_data - __pm_one : __v._M_data;
+#else // __clang__
 	    if constexpr (is_integral_v<_Tp>)
 	      {
 		constexpr bool __lp64 = sizeof(long) == sizeof(long long);
@@ -3525,6 +3574,7 @@ template <typename _Abi>
 		_GLIBCXX_SIMD_MASK_SUB(8, 16, subpd128);
 #undef _GLIBCXX_SIMD_MASK_SUB
 	      }
+#endif // __clang__
 	  }
 	else
 	  return _Base::template _S_masked_unary<_Op>(__k, __v);
