@@ -200,6 +200,7 @@ private:
   void visit (AST::Trait &trait);
   void visit (AST::InherentImpl &impl);
   void visit (AST::TraitImpl &impl);
+  void visit (AST::ExternalTypeItem &item);
   void visit (AST::ExternalStaticItem &item);
   void visit (AST::ExternalFunctionItem &item);
   void visit (AST::ExternBlock &block);

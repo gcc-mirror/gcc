@@ -3907,6 +3907,81 @@ protected:
 };
 #endif
 
+// A foreign type defined outside the current crate.
+// https://rust-lang.github.io/rfcs/1861-extern-types.html
+class ExternalTypeItem : public ExternalItem
+{
+  std::vector<Attribute> outer_attrs;
+
+  Visibility visibility;
+  Identifier item_name;
+  Location locus;
+
+  bool marked_for_strip;
+
+public:
+  ExternalTypeItem (Identifier item_name, Visibility vis,
+		    std::vector<Attribute> outer_attrs, Location locus)
+    : ExternalItem (), outer_attrs (std::move (outer_attrs)), visibility (vis),
+      item_name (std::move (item_name)), locus (locus), marked_for_strip (false)
+  {}
+
+  ExternalTypeItem (ExternalTypeItem const &other)
+    : outer_attrs (other.outer_attrs), visibility (other.visibility),
+      item_name (other.item_name), locus (other.locus),
+      marked_for_strip (other.marked_for_strip)
+  {
+    node_id = other.node_id;
+  }
+
+  ExternalTypeItem &operator= (ExternalTypeItem const &other)
+  {
+    node_id = other.node_id;
+    outer_attrs = other.outer_attrs;
+    visibility = other.visibility;
+    item_name = other.item_name;
+    locus = other.locus;
+    marked_for_strip = other.marked_for_strip;
+
+    return *this;
+  }
+
+  // move constructors
+  ExternalTypeItem (ExternalTypeItem &&other) = default;
+  ExternalTypeItem &operator= (ExternalTypeItem &&other) = default;
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  // Returns whether item has outer attributes.
+  bool has_outer_attrs () const { return !outer_attrs.empty (); }
+
+  // Returns whether item has non-default visibility.
+  bool has_visibility () const { return !visibility.is_error (); }
+
+  Location get_locus () const { return locus; }
+
+  void mark_for_strip () override { marked_for_strip = true; };
+  bool is_marked_for_strip () const override { return marked_for_strip; };
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  Identifier get_identifier () const { return item_name; }
+
+  const Visibility &get_visibility () const { return visibility; }
+
+protected:
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
+  ExternalTypeItem *clone_external_item_impl () const override
+  {
+    return new ExternalTypeItem (*this);
+  }
+};
+
 // A static item used in an extern block
 class ExternalStaticItem : public ExternalItem
 {

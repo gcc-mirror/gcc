@@ -2734,6 +2734,13 @@ AttrVisitor::visit (AST::TraitImpl &impl)
   expand_macro_children (MacroExpander::TRAIT_IMPL, impl.get_impl_items (),
 			 extractor);
 }
+
+void
+AttrVisitor::visit (AST::ExternalTypeItem &item)
+{
+  // TODO: ARTHUR
+}
+
 void
 AttrVisitor::visit (AST::ExternalStaticItem &item)
 {
@@ -2757,6 +2764,7 @@ AttrVisitor::visit (AST::ExternalStaticItem &item)
 
   expander.pop_context ();
 }
+
 void
 AttrVisitor::visit (AST::ExternalFunctionItem &item)
 {

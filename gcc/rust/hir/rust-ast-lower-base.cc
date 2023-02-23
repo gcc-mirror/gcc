@@ -352,6 +352,9 @@ ASTLoweringBase::visit (AST::TraitImpl &)
 {}
 //  void ASTLoweringBase::visit(ExternalItemitem) {}
 void
+ASTLoweringBase::visit (AST::ExternalTypeItem &)
+{}
+void
 ASTLoweringBase::visit (AST::ExternalStaticItem &)
 {}
 void
