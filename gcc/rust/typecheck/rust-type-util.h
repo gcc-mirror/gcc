@@ -41,6 +41,10 @@ TyTy::BaseType *
 coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 	       Location coercion_locus);
 
+TyTy::BaseType *
+cast_site (HirId id, TyTy::TyWithLocation from, TyTy::TyWithLocation to,
+	   Location cast_locus);
+
 } // namespace Resolver
 } // namespace Rust
 
