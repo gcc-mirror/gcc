@@ -2529,9 +2529,9 @@ ISO C2X.
 
 @opindex fno-builtin
 @opindex fbuiltin
+@cindex built-in functions
 @item -fno-builtin
 @itemx -fno-builtin-@var{function}
-@cindex built-in functions
 Don't recognize built-in functions that do not begin with
 @samp{__builtin_} as prefix.  @xref{Other Builtins,,Other built-in
 functions provided by GCC}, for details of the functions affected,
@@ -2575,8 +2575,8 @@ third arguments.  The value of such an expression is void.  This option
 is not supported for C++.
 
 @opindex ffreestanding
-@item -ffreestanding
 @cindex hosted environment
+@item -ffreestanding
 
 Assert that compilation targets a freestanding environment.  This
 implies @option{-fno-builtin}.  A freestanding environment
@@ -2631,8 +2631,8 @@ in effect for @code{inline} functions.  @xref{Common Predefined
 Macros,,,cpp,The C Preprocessor}.
 
 @opindex fhosted
-@item -fhosted
 @cindex hosted environment
+@item -fhosted
 
 Assert that compilation targets a hosted environment.  This implies
 @option{-fbuiltin}.  A hosted environment is one in which the
@@ -2668,12 +2668,12 @@ Note that this option is off for all targets except for x86
 targets using ms-abi.
 
 @opindex foffload
-@item -foffload=disable
-@itemx -foffload=default
-@itemx -foffload=@var{target-list}
 @cindex Offloading targets
 @cindex OpenACC offloading targets
 @cindex OpenMP offloading targets
+@item -foffload=disable
+@itemx -foffload=default
+@itemx -foffload=@var{target-list}
 Specify for which OpenMP and OpenACC offload targets code should be generated.
 The default behavior, equivalent to @option{-foffload=default}, is to generate
 code for all supported offload targets.  The @option{-foffload=disable} form
@@ -2686,11 +2686,11 @@ run the compiler with @option{-v} to show the list of configured offload targets
 under @code{OFFLOAD_TARGET_NAMES}.
 
 @opindex foffload-options
-@item -foffload-options=@var{options}
-@itemx -foffload-options=@var{target-triplet-list}=@var{options}
 @cindex Offloading options
 @cindex OpenACC offloading options
 @cindex OpenMP offloading options
+@item -foffload-options=@var{options}
+@itemx -foffload-options=@var{target-triplet-list}=@var{options}
 
 With @option{-foffload-options=@var{options}}, GCC passes the specified
 @var{options} to the compilers for all enabled offloading targets.  You can
@@ -2708,8 +2708,8 @@ Typical command lines are
 @end smallexample
 
 @opindex fopenacc
-@item -fopenacc
 @cindex OpenACC accelerator programming
+@item -fopenacc
 Enable handling of OpenACC directives @code{#pragma acc} in C/C++ and
 @code{!$acc} in Fortran.  When @option{-fopenacc} is specified, the
 compiler generates accelerated code according to the OpenACC Application
@@ -2718,16 +2718,16 @@ implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
 @opindex fopenacc-dim
-@item -fopenacc-dim=@var{geom}
 @cindex OpenACC accelerator programming
+@item -fopenacc-dim=@var{geom}
 Specify default compute dimensions for parallel offload regions that do
 not explicitly specify.  The @var{geom} value is a triple of
 ':'-separated sizes, in order 'gang', 'worker' and, 'vector'.  A size
 can be omitted, to use a target-specific default value.
 
 @opindex fopenmp
-@item -fopenmp
 @cindex OpenMP parallel
+@item -fopenmp
 Enable handling of OpenMP directives @code{#pragma omp} in C/C++,
 @code{[[omp::directive(...)]]} and @code{[[omp::sequence(...)]]} in C++ and
 @code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
@@ -2738,9 +2738,9 @@ have support for @option{-pthread}. @option{-fopenmp} implies
 @option{-fopenmp-simd}.
 
 @opindex fopenmp-simd
-@item -fopenmp-simd
 @cindex OpenMP SIMD
 @cindex SIMD
+@item -fopenmp-simd
 Enable handling of OpenMP's @code{simd}, @code{declare simd},
 @code{declare reduction}, @code{assume}, @code{ordered}, @code{scan},
 @code{loop} directives and combined or composite directives with
@@ -2749,9 +2749,9 @@ Enable handling of OpenMP's @code{simd}, @code{declare simd},
 and @code{!$omp} in Fortran.  Other OpenMP directives are ignored.
 
 @opindex fopenmp-target-simd-clone
+@cindex OpenMP target SIMD clone
 @item -fopenmp-target-simd-clone
 @item -fopenmp-target-simd-clone=@var{device-type}
-@cindex OpenMP target SIMD clone
 In addition to generating SIMD clones for functions marked with the
 @code{declare simd} directive, GCC also generates clones
 for functions marked with the OpenMP @code{declare target} directive
@@ -3353,14 +3353,14 @@ of a named module remain implicitly inline, regardless.)
 @item -fno-module-lazy
 Disable lazy module importing and module mapper creation.
 
+@vindex CXX_MODULE_MAPPER @r{environment variable}
+@opindex fmodule-mapper
 @item -fmodule-mapper=@r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=|@var{program}@r{[}?@var{ident}@r{]} @var{args...}
 @itemx -fmodule-mapper==@var{socket}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=<>@r{[}@var{inout}@r{]}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=<@var{in}>@var{out}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=@var{file}@r{[}?@var{ident}@r{]}
-@vindex CXX_MODULE_MAPPER @r{environment variable}
-@opindex fmodule-mapper
 An oracle to query for module name to filename mappings.  If
 unspecified the @env{CXX_MODULE_MAPPER} environment variable is used,
 and if that is unset, an in-process default is provided.
@@ -4025,9 +4025,9 @@ Enabled by default with @option{-std=c++17}.
 
 @opindex Wreorder
 @opindex Wno-reorder
-@item -Wreorder @r{(C++ and Objective-C++ only)}
 @cindex reordering, warning
 @cindex warning for reordering of member initializers
+@item -Wreorder @r{(C++ and Objective-C++ only)}
 Warn when the order of member initializers given in the code does not
 match the order in which they must be executed.  For instance:
 
@@ -4256,10 +4256,10 @@ less vulnerable to unintended effects and much easier to search for.
 
 @opindex Woverloaded-virtual
 @opindex Wno-overloaded-virtual
-@item -Woverloaded-virtual @r{(C++ and Objective-C++ only)}
-@itemx -Woverloaded-virtual=@var{n}
 @cindex overloaded virtual function, warning
 @cindex warning for overloaded virtual function
+@item -Woverloaded-virtual @r{(C++ and Objective-C++ only)}
+@itemx -Woverloaded-virtual=@var{n}
 Warn when a function declaration hides virtual functions from a
 base class.  For example, in:
 
@@ -5067,10 +5067,10 @@ prefix) for physical lines that result from the process of breaking
 a message which is too long to fit on a single line.
 
 @opindex fdiagnostics-color
-@item -fdiagnostics-color[=@var{WHEN}]
-@itemx -fno-diagnostics-color
 @cindex highlight, color
 @vindex GCC_COLORS @r{environment variable}
+@item -fdiagnostics-color[=@var{WHEN}]
+@itemx -fno-diagnostics-color
 Use color in diagnostics.  @var{WHEN} is @samp{never}, @samp{always},
 or @samp{auto}.  The default depends on how the compiler has been configured,
 it can be any of the above @var{WHEN} options or also @samp{never}
@@ -5120,86 +5120,86 @@ Setting @env{GCC_COLORS} to the empty string disables colors.
 Supported capabilities are as follows.
 
 @table @code
-@item error=
 @vindex error GCC_COLORS @r{capability}
+@item error=
 SGR substring for error: markers.
 
-@item warning=
 @vindex warning GCC_COLORS @r{capability}
+@item warning=
 SGR substring for warning: markers.
 
-@item note=
 @vindex note GCC_COLORS @r{capability}
+@item note=
 SGR substring for note: markers.
 
-@item path=
 @vindex path GCC_COLORS @r{capability}
+@item path=
 SGR substring for colorizing paths of control-flow events as printed
 via @option{-fdiagnostics-path-format=}, such as the identifiers of
 individual events and lines indicating interprocedural calls and returns.
 
-@item range1=
 @vindex range1 GCC_COLORS @r{capability}
+@item range1=
 SGR substring for first additional range.
 
-@item range2=
 @vindex range2 GCC_COLORS @r{capability}
+@item range2=
 SGR substring for second additional range.
 
-@item locus=
 @vindex locus GCC_COLORS @r{capability}
+@item locus=
 SGR substring for location information, @samp{file:line} or
 @samp{file:line:column} etc.
 
-@item quote=
 @vindex quote GCC_COLORS @r{capability}
+@item quote=
 SGR substring for information printed within quotes.
 
-@item fnname=
 @vindex fnname GCC_COLORS @r{capability}
+@item fnname=
 SGR substring for names of C++ functions.
 
-@item targs=
 @vindex targs GCC_COLORS @r{capability}
+@item targs=
 SGR substring for C++ function template parameter bindings.
 
-@item fixit-insert=
 @vindex fixit-insert GCC_COLORS @r{capability}
+@item fixit-insert=
 SGR substring for fix-it hints suggesting text to
 be inserted or replaced.
 
-@item fixit-delete=
 @vindex fixit-delete GCC_COLORS @r{capability}
+@item fixit-delete=
 SGR substring for fix-it hints suggesting text to
 be deleted.
 
-@item diff-filename=
 @vindex diff-filename GCC_COLORS @r{capability}
+@item diff-filename=
 SGR substring for filename headers within generated patches.
 
-@item diff-hunk=
 @vindex diff-hunk GCC_COLORS @r{capability}
+@item diff-hunk=
 SGR substring for the starts of hunks within generated patches.
 
-@item diff-delete=
 @vindex diff-delete GCC_COLORS @r{capability}
+@item diff-delete=
 SGR substring for deleted lines within generated patches.
 
-@item diff-insert=
 @vindex diff-insert GCC_COLORS @r{capability}
+@item diff-insert=
 SGR substring for inserted lines within generated patches.
 
-@item type-diff=
 @vindex type-diff GCC_COLORS @r{capability}
+@item type-diff=
 SGR substring for highlighting mismatching types within template
 arguments in the C++ frontend.
 @end table
 
 @opindex fdiagnostics-urls
-@item -fdiagnostics-urls[=@var{WHEN}]
 @cindex urls
 @vindex GCC_URLS @r{environment variable}
 @vindex TERM_URLS @r{environment variable}
+@item -fdiagnostics-urls[=@var{WHEN}]
 Use escape sequences to embed URLs in diagnostics.  For example, when
 @option{-fdiagnostics-show-option} emits text showing the command-line
 option controlling a diagnostic, embed a URL for documentation of that
@@ -7564,10 +7564,10 @@ This warning is enabled by @option{-Wall} or @option{-Wextra}.
 
 @opindex Wunknown-pragmas
 @opindex Wno-unknown-pragmas
-@item -Wunknown-pragmas
 @cindex warning for unknown pragmas
 @cindex unknown pragmas, warning
 @cindex pragmas, warning of unknown
+@item -Wunknown-pragmas
 Warn when a @code{#pragma} directive is encountered that is not understood by 
 GCC@.  If this command-line option is used, warnings are even issued
 for unknown pragmas in system header files.  This is not the case if
@@ -8365,9 +8365,9 @@ obtaining infinities and NaNs.
 
 @opindex Wsystem-headers
 @opindex Wno-system-headers
-@item -Wsystem-headers
 @cindex warnings from system headers
 @cindex system headers, warnings from
+@item -Wsystem-headers
 Print warning messages for constructs found in system header files.
 Warnings from system headers are normally suppressed, on the assumption
 that they usually do not indicate real problems and would only make the
@@ -8939,15 +8939,15 @@ When compiling C++, warn about the deprecated conversion from string
 literals to @code{char *}.  This warning is enabled by default for C++
 programs.
 
-@item -Wclobbered
 @opindex Wclobbered
 @opindex Wno-clobbered
+@item -Wclobbered
 Warn for variables that might be changed by @code{longjmp} or
 @code{vfork}.  This warning is also enabled by @option{-Wextra}.
 
-@item -Wno-complain-wrong-lang
 @opindex Wcomplain-wrong-lang
 @opindex Wno-complain-wrong-lang
+@item -Wno-complain-wrong-lang
 By default, language front ends complain when a command-line option is
 valid, but not applicable to that front end.
 This may be disabled with @option{-Wno-complain-wrong-lang},
@@ -8964,9 +8964,9 @@ The latter front end diagnoses
 @samp{f951: Warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for Fortran},
 which may be disabled with @option{-Wno-complain-wrong-lang}.
 
-@item -Wconversion
 @opindex Wconversion
 @opindex Wno-conversion
+@item -Wconversion
 Warn for implicit conversions that may alter a value. This includes
 conversions between real and integer, like @code{abs (x)} when
 @code{x} is @code{double}; conversions between signed and unsigned,
@@ -9155,10 +9155,10 @@ can be disabled with the @option{-Wno-jump-misses-init} option.
 
 @opindex Wsign-compare
 @opindex Wno-sign-compare
-@item -Wsign-compare
 @cindex warning for comparison of signed and unsigned values
 @cindex comparison of signed and unsigned values, warning
 @cindex signed and unsigned values, comparison warning
+@item -Wsign-compare
 Warn when a comparison between signed and unsigned values could produce
 an incorrect result when the signed value is converted to unsigned.
 In C++, this warning is also enabled by @option{-Wall}.  In C, it is
@@ -9586,10 +9586,10 @@ implementation-defined values, and should not be used in portable code.
 @opindex Wnormalized=
 @opindex Wnormalized
 @opindex Wno-normalized
-@item -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 @cindex NFC
 @cindex NFKC
 @cindex character set, input normalization
+@item -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 In ISO C and ISO C++, two identifiers are different if they are
 different sequences of characters.  However, sometimes when characters
 outside the basic ASCII character set are used, you can have two
@@ -9667,8 +9667,8 @@ Enabled by default.
 
 @opindex Wopenacc-parallelism
 @opindex Wno-openacc-parallelism
-@item -Wopenacc-parallelism
 @cindex OpenACC accelerator programming
+@item -Wopenacc-parallelism
 Warn about potentially suboptimal choices related to OpenACC parallelism.
 
 @opindex Wopenmp-simd
@@ -11033,9 +11033,9 @@ and which aren't relevant to leak analysis.
 With @option{-fno-analyzer-state-purge} this purging of state can
 be suppressed, for debugging state-handling issues.
 
-@item -fno-analyzer-suppress-followups
 @opindex fanalyzer-suppress-followups
 @opindex fno-analyzer-suppress-followups
+@item -fno-analyzer-suppress-followups
 This option is intended for analyzer developers.
 
 By default the analyzer will stop exploring an execution path after
@@ -16638,13 +16638,13 @@ program may yield backtraces with different addresses due to ASLR (Address
 Space Layout Randomization), it may be desirable to turn ASLR off.  On Linux,
 this can be achieved with @samp{setarch `uname -m` -R ./prog}.
 
-@item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
+@item -fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
 See @uref{https://github.com/google/kernel-sanitizers} for more details.
 
-@item -fsanitize=hwaddress
 @opindex fsanitize=hwaddress
+@item -fsanitize=hwaddress
 Enable Hardware-assisted AddressSanitizer, which uses a hardware ability to
 ignore the top byte of a pointer to allow the detection of memory errors with
 a low memory overhead.
@@ -17874,8 +17874,8 @@ option @option{-Xlinker -z -Xlinker defs}).  Only a few systems support
 this option.
 
 @opindex T
-@item -T @var{script}
 @cindex linker script
+@item -T @var{script}
 Use @var{script} as the linker script.  This option is supported by most
 systems using the GNU linker.  On some targets, such as bare-board
 targets without an operating system, the @option{-T} option may be required
@@ -18272,8 +18272,8 @@ Use it to conform to a non-default application binary interface.
 
 @opindex fcommon
 @opindex fno-common
-@item -fcommon
 @cindex tentative definitions
+@item -fcommon
 In C code, this option controls the placement of global variables
 defined without an initializer, known as @dfn{tentative definitions}
 in the C standard.  Tentative definitions are distinct from declarations
@@ -18413,9 +18413,9 @@ See also @option{-grecord-gcc-switches} for another
 way of storing compiler options into the object file.
 
 @opindex fpic
-@item -fpic
 @cindex global offset table
 @cindex PIC
+@item -fpic
 Generate position-independent code (PIC) suitable for use in a shared
 library, if supported for the target machine.  Such code accesses all
 constant addresses through a global offset table (GOT)@.  The dynamic
@@ -25864,8 +25864,8 @@ Put small global and static data in the small data area, and generate
 special instructions to reference them.
 
 @opindex G
-@item -G @var{num}
 @cindex smaller data references
+@item -G @var{num}
 Put global and static objects less than or equal to @var{num} bytes
 into the small data or BSS sections instead of the normal data or BSS
 sections.  The default value of @var{num} is 8.
@@ -28125,8 +28125,8 @@ These are the options defined for the Altera Nios II processor.
 @table @gcctabopt
 
 @opindex G
-@item -G @var{num}
 @cindex smaller data references
+@item -G @var{num}
 Put global and static objects less than or equal to @var{num} bytes
 into the small data or BSS sections instead of the normal data or BSS
 sections.  The default value of @var{num} is 8.
@@ -30030,9 +30030,9 @@ end of the inline compare a call to @code{strcmp} or @code{strncmp} will
 take care of the rest of the comparison. The default is 64 bytes.
 
 @opindex G
-@item -G @var{num}
 @cindex smaller data references (PowerPC)
 @cindex .sdata/.sdata2 references (PowerPC)
+@item -G @var{num}
 On embedded PowerPC systems, put global and static items less than or
 equal to @var{num} bytes into the small data or BSS sections instead of
 the normal data or BSS section.  By default, @var{num} is 8.  The
@@ -34389,18 +34389,18 @@ Issues a @var{command} to the spec file processor.  The commands that can
 appear here are:
 
 @table @code
-@item %include <@var{file}>
 @cindex @code{%include}
+@item %include <@var{file}>
 Search for @var{file} and insert its text at the current point in the
 specs file.
 
-@item %include_noerr <@var{file}>
 @cindex @code{%include_noerr}
+@item %include_noerr <@var{file}>
 Just like @samp{%include}, but do not generate an error message if the include
 file cannot be found.
 
-@item %rename @var{old_name} @var{new_name}
 @cindex @code{%rename}
+@item %rename @var{old_name} @var{new_name}
 Rename the spec string @var{old_name} to @var{new_name}.
 
 @end table
@@ -35078,6 +35078,15 @@ in turn take precedence over those specified by the configuration of GCC@.
 GNU Compiler Collection (GCC) Internals}.
 
 @table @env
+@vindex LANG
+@vindex LC_CTYPE
+@c @vindex LC_COLLATE
+@vindex LC_MESSAGES
+@c @vindex LC_MONETARY
+@c @vindex LC_NUMERIC
+@c @vindex LC_TIME
+@vindex LC_ALL
+@cindex locale
 @item LANG
 @itemx LC_CTYPE
 @c @itemx LC_COLLATE
@@ -35086,15 +35095,6 @@ GNU Compiler Collection (GCC) Internals}.
 @c @itemx LC_NUMERIC
 @c @itemx LC_TIME
 @itemx LC_ALL
-@findex LANG
-@findex LC_CTYPE
-@c @findex LC_COLLATE
-@findex LC_MESSAGES
-@c @findex LC_MONETARY
-@c @findex LC_NUMERIC
-@c @findex LC_TIME
-@findex LC_ALL
-@cindex locale
 These environment variables control the way that GCC uses
 localization information which allows GCC to work with different
 national conventions.  GCC inspects the locale categories
@@ -35118,22 +35118,22 @@ and @env{LC_MESSAGES} default to the value of the @env{LANG}
 environment variable.  If none of these variables are set, GCC
 defaults to traditional C English behavior.
 
+@vindex TMPDIR
 @item TMPDIR
-@findex TMPDIR
 If @env{TMPDIR} is set, it specifies the directory to use for temporary
 files.  GCC uses temporary files to hold the output of one stage of
 compilation which is to be used as input to the next stage: for example,
 the output of the preprocessor, which is the input to the compiler
 proper.
 
+@vindex GCC_COMPARE_DEBUG
 @item GCC_COMPARE_DEBUG
-@findex GCC_COMPARE_DEBUG
 Setting @env{GCC_COMPARE_DEBUG} is nearly equivalent to passing
 @option{-fcompare-debug} to the compiler driver.  See the documentation
 of this option for more details.
 
+@vindex GCC_EXEC_PREFIX
 @item GCC_EXEC_PREFIX
-@findex GCC_EXEC_PREFIX
 If @env{GCC_EXEC_PREFIX} is set, it specifies a prefix to use in the
 names of the subprograms executed by the compiler.  No slash is added
 when this prefix is combined with the name of a subprogram, but you can
@@ -35167,15 +35167,15 @@ If a standard directory begins with the configured
 @var{prefix} then the value of @var{prefix} is replaced by
 @env{GCC_EXEC_PREFIX} when looking for header files.
 
+@vindex COMPILER_PATH
 @item COMPILER_PATH
-@findex COMPILER_PATH
 The value of @env{COMPILER_PATH} is a colon-separated list of
 directories, much like @env{PATH}.  GCC tries the directories thus
 specified when searching for subprograms, if it cannot find the
 subprograms using @env{GCC_EXEC_PREFIX}.
 
+@vindex LIBRARY_PATH
 @item LIBRARY_PATH
-@findex LIBRARY_PATH
 The value of @env{LIBRARY_PATH} is a colon-separated list of
 directories, much like @env{PATH}.  When configured as a native compiler,
 GCC tries the directories thus specified when searching for special
@@ -35184,9 +35184,9 @@ using GCC also uses these directories when searching for ordinary
 libraries for the @option{-l} option (but directories specified with
 @option{-L} come first).
 
-@item LANG
-@findex LANG
+@vindex LANG
 @cindex locale definition
+@item LANG
 This variable is used to pass locale information to the compiler.  One way in
 which this information is used is to determine the character set to be used
 when character literals, string literals and comments are parsed in C and C++.
@@ -35206,8 +35206,8 @@ If @env{LANG} is not defined, or if it has some other value, then the
 compiler uses @code{mblen} and @code{mbtowc} as defined by the default locale to
 recognize and translate multibyte characters.
 
+@vindex GCC_EXTRA_DIAGNOSTIC_OUTPUT
 @item GCC_EXTRA_DIAGNOSTIC_OUTPUT
-@findex GCC_EXTRA_DIAGNOSTIC_OUTPUT
 If @env{GCC_EXTRA_DIAGNOSTIC_OUTPUT} is set to one of the following values,
 then additional text will be emitted to stderr when fix-it hints are
 emitted.  @option{-fdiagnostics-parseable-fixits} and

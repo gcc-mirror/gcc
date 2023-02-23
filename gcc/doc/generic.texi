@@ -1743,9 +1743,9 @@ represented.  Unrepresented fields will be cleared (zeroed), unless the
 CONSTRUCTOR_NO_CLEARING flag is set, in which case their value becomes
 undefined.
 
-@item COMPOUND_LITERAL_EXPR
 @findex COMPOUND_LITERAL_EXPR_DECL_EXPR
 @findex COMPOUND_LITERAL_EXPR_DECL
+@item COMPOUND_LITERAL_EXPR
 These nodes represent ISO C99 compound literals.  The
 @code{COMPOUND_LITERAL_EXPR_DECL_EXPR} is a @code{DECL_EXPR}
 containing an anonymous @code{VAR_DECL} for

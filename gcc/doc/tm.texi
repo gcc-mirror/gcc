@@ -4970,9 +4970,9 @@ function's arguments that this function should pop is available in
 @end deftypefn
 
 @itemize @bullet
-@item
 @findex pretend_args_size
 @findex crtl->args.pretend_args_size
+@item
 A region of @code{crtl->args.pretend_args_size} bytes of
 uninitialized space just underneath the first argument arriving on the
 stack.  (This may not be at the very start of the allocated stack region
@@ -4997,8 +4997,8 @@ boundary, to contain the local variables of the function.  On some machines,
 this region and the save area may occur in the opposite order, with the
 save area closer to the top of the stack.
 
-@item
 @cindex @code{ACCUMULATE_OUTGOING_ARGS} and stack frames
+@item
 Optionally, when @code{ACCUMULATE_OUTGOING_ARGS} is defined, a region of
 @code{crtl->outgoing_args_size} bytes to be used for outgoing
 argument lists of the function.  @xref{Stack Arguments}.

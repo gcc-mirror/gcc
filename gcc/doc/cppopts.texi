@@ -77,9 +77,9 @@ This option is supported on GNU/Linux targets, most other Unix derivatives,
 and also on x86 Cygwin and MinGW targets.
 
 @opindex M
-@item -M
 @cindex @command{make}
 @cindex dependencies, @command{make}
+@item -M
 Instead of outputting the result of preprocessing, output a rule
 suitable for @command{make} describing the dependencies of the main
 source file.  The preprocessor outputs one @command{make} rule containing
@@ -308,15 +308,15 @@ location independent.  This option also affects
 @option{-ffile-prefix-map}.
 
 @opindex fexec-charset
-@item -fexec-charset=@var{charset}
 @cindex character set, execution
+@item -fexec-charset=@var{charset}
 Set the execution character set, used for string and character
 constants.  The default is UTF-8.  @var{charset} can be any encoding
 supported by the system's @code{iconv} library routine.
 
 @opindex fwide-exec-charset
-@item -fwide-exec-charset=@var{charset}
 @cindex character set, wide execution
+@item -fwide-exec-charset=@var{charset}
 Set the wide execution character set, used for wide string and
 character constants.  The default is one of UTF-32BE, UTF-32LE, UTF-16BE,
 or UTF-16LE, whichever corresponds to the width of @code{wchar_t} and the
@@ -326,8 +326,8 @@ by the system's @code{iconv} library routine; however, you will have
 problems with encodings that do not fit exactly in @code{wchar_t}.
 
 @opindex finput-charset
-@item -finput-charset=@var{charset}
 @cindex character set, input
+@item -finput-charset=@var{charset}
 Set the input character set, used for translation from the character
 set of the input file to the source character set used by GCC@.  If the
 locale does not specify, or GCC cannot get this information from the

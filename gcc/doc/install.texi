@@ -2618,18 +2618,18 @@ script provides three variables for this:
 
 @table @code
 
-@item build_configargs
 @cindex @code{build_configargs}
+@item build_configargs
 The contents of this variable is passed to all build @command{configure}
 scripts.
 
-@item host_configargs
 @cindex @code{host_configargs}
+@item host_configargs
 The contents of this variable is passed to all host @command{configure}
 scripts.
 
-@item target_configargs
 @cindex @code{target_configargs}
+@item target_configargs
 The contents of this variable is passed to all target @command{configure}
 scripts.
 

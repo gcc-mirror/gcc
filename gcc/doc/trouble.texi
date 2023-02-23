@@ -198,8 +198,8 @@ with GCC does not produce the same floating-point formats that the
 assembler accepts.  If you have this problem, set the @env{LANG}
 environment variable to @samp{C} or @samp{En_US}.
 
-@item
 @opindex fdollars-in-identifiers
+@item
 Even if you specify @option{-fdollars-in-identifiers},
 you cannot successfully use @samp{$} in identifiers on the RS/6000 due
 to a restriction in the IBM assembler.  GAS supports these
@@ -588,8 +588,8 @@ to update the corrected header files.  They can be updated using the
 @command{mkheaders} script installed in
 @file{@var{libexecdir}/gcc/@var{target}/@var{version}/install-tools/}.
 
-@item
 @cindex floating point precision
+@item
 On 68000 and x86 systems, for instance, you can get paradoxical results
 if you test the precise values of floating point numbers.  For example,
 you can find that a floating point value which is not a NaN is not equal
@@ -953,8 +953,8 @@ where the return value should never be ignored, use the
 @code{warn_unused_result} function attribute (@pxref{Function
 Attributes}).
 
-@item
 @opindex fshort-enums
+@item
 Making @option{-fshort-enums} the default.
 
 This would cause storage layout to be incompatible with most other C
@@ -1021,9 +1021,9 @@ to be considered in the future.
 explicitly in each bit-field whether it is signed or not.  In this way,
 they write programs which have the same meaning in both C dialects.)
 
-@item
 @opindex ansi
 @opindex std
+@item
 Undefining @code{__STDC__} when @option{-ansi} is not used.
 
 Currently, GCC defines @code{__STDC__} unconditionally.  This provides

@@ -1028,8 +1028,8 @@ the symbol has already been written.
 
 @findex volatil
 @cindex @samp{/v} in RTL dump
-@item volatil
 @cindex volatile memory references
+@item volatil
 In a @code{mem}, @code{asm_operands}, or @code{asm_input}
 expression, it is 1 if the memory
 reference is volatile.  Volatile memory references may not be deleted,
@@ -2187,14 +2187,14 @@ laid out in memory order.  The memory order of bytes is defined by
 two target macros, @code{WORDS_BIG_ENDIAN} and @code{BYTES_BIG_ENDIAN}:
 
 @itemize
-@item
 @cindex @code{WORDS_BIG_ENDIAN}, effect on @code{subreg}
+@item
 @code{WORDS_BIG_ENDIAN}, if set to 1, says that byte number zero is
 part of the most significant word; otherwise, it is part of the least
 significant word.
 
-@item
 @cindex @code{BYTES_BIG_ENDIAN}, effect on @code{subreg}
+@item
 @code{BYTES_BIG_ENDIAN}, if set to 1, says that byte number zero is
 the most significant byte within a word; otherwise, it is the least
 significant byte within a word.
@@ -2336,8 +2336,8 @@ that both performs the arithmetic and sets the condition code register.
 For examples, search for @samp{addcc} and @samp{andcc} in @file{sparc.md}.
 
 @findex pc
-@item (pc)
 @cindex program counter
+@item (pc)
 This represents the machine's program counter.  It has no operands and
 may not have a machine mode.  @code{(pc)} may be validly used only in
 certain specific contexts in jump instructions.

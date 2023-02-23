@@ -269,8 +269,8 @@ These edges are used for unconditional or conditional jumps and in
 RTL also for table jumps.  They are the easiest to manipulate as they
 may be freely redirected when the flow graph is not in SSA form.
 
-@item fall-thru
 @findex EDGE_FALLTHRU, force_nonfallthru
+@item fall-thru
 Fall-thru edges are present in case where the basic block may continue
 execution to the following one without branching.  These edges have
 the @code{EDGE_FALLTHRU} flag set.  Unlike other types of edges, these
@@ -279,9 +279,9 @@ instruction stream.  The function @code{force_nonfallthru} is
 available to insert an unconditional jump in the case that redirection
 is needed.  Note that this may require creation of a new basic block.
 
-@item exception handling
 @cindex exception handling
 @findex EDGE_ABNORMAL, EDGE_EH
+@item exception handling
 Exception handling edges represent possible control transfers from a
 trapping instruction to an exception handler.  The definition of
 ``trapping'' varies.  In C++, only function calls can throw, but for
@@ -310,17 +310,17 @@ but this predicate only checks for possible memory traps, as in
 dereferencing an invalid pointer location.
 
 
-@item sibling calls
 @cindex sibling call
 @findex EDGE_ABNORMAL, EDGE_SIBCALL
+@item sibling calls
 Sibling calls or tail calls terminate the function in a non-standard
 way and thus an edge to the exit must be present.
 @code{EDGE_SIBCALL} and @code{EDGE_ABNORMAL} are set in such case.
 These edges only exist in the RTL representation.
 
-@item computed jumps
 @cindex computed jump
 @findex EDGE_ABNORMAL
+@item computed jumps
 Computed jumps contain edges to all labels in the function referenced
 from the code.  All those edges have @code{EDGE_ABNORMAL} flag set.
 The edges used to represent computed jumps often cause compile time
@@ -369,9 +369,9 @@ Be aware of that when you work on passes in that area.  There have
 been numerous examples already where the compile time for code with
 unfactored computed jumps caused some serious headaches.
 
-@item nonlocal goto handlers
 @cindex nonlocal goto handler
 @findex EDGE_ABNORMAL, EDGE_ABNORMAL_CALL
+@item nonlocal goto handlers
 GCC allows nested functions to return into caller using a @code{goto}
 to a label passed to as an argument to the callee.  The labels passed
 to nested functions contain special code to cleanup after function
@@ -380,9 +380,9 @@ receivers''.  If a function contains such nonlocal goto receivers, an
 edge from the call to the label is created with the
 @code{EDGE_ABNORMAL} and @code{EDGE_ABNORMAL_CALL} flags set.
 
-@item function entry points
 @cindex function entry point, alternate function entry point
 @findex LABEL_ALTERNATE_NAME
+@item function entry points
 By definition, execution of function starts at basic block 0, so there
 is always an edge from the @code{ENTRY_BLOCK_PTR} to basic block 0.
 There is no @code{GIMPLE} representation for alternate entry points at

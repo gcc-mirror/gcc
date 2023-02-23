@@ -292,8 +292,8 @@ roughly to the first three ``phases of translation'' described in the C
 standard.
 
 @enumerate
-@item
 @cindex line endings
+@item
 The input file is read into memory and broken into lines.
 
 Different systems use different conventions to indicate the end of a
@@ -312,8 +312,8 @@ of the file is considered to implicitly supply one.  The C standard says
 that this condition provokes undefined behavior, so GCC will emit a
 warning message.
 
-@item
 @cindex trigraphs
+@item
 @anchor{trigraphs}If trigraphs are enabled, they are replaced by their
 corresponding single characters.  By default GCC ignores trigraphs,
 but if you request a strictly conforming mode with the @option{-std}
@@ -346,9 +346,9 @@ Trigraph:       ??(  ??)  ??<  ??>  ??=  ??/  ??'  ??!  ??-
 Replacement:      [    ]    @{    @}    #    \    ^    |    ~
 @end smallexample
 
-@item
 @cindex continued lines
 @cindex backslash-newline
+@item
 Continued lines are merged into one long line.
 
 A continued line is a line which ends with a backslash, @samp{\}.  The
@@ -365,10 +365,10 @@ is still a continued line.  However, as this is usually the result of an
 editing mistake, and many compilers will not accept it as a continued
 line, GCC will warn you about it.
 
-@item
 @cindex comments
 @cindex line comments
 @cindex block comments
+@item
 All comments are replaced with single spaces.
 
 There are two kinds of comments.  @dfn{Block comments} begin with
@@ -694,8 +694,8 @@ C preprocessing directive @samp{#include}.
 Header files serve two purposes.
 
 @itemize @bullet
-@item
 @cindex system header files
+@item
 System header files declare the interfaces to parts of the operating
 system.  You include them in your program to supply the definitions and
 declarations you need to invoke system calls and libraries.
@@ -1121,8 +1121,8 @@ Header files found in directories added to the search path with the
 @option{-isystem} and @option{-idirafter} command-line options are 
 treated as system headers for the purposes of diagnostics.
 
-@item
 @findex #pragma GCC system_header
+@item
 There is also a directive, @code{@w{#pragma GCC system_header}}, which
 tells GCC to consider the rest of the current include file a system
 header, no matter where it was found.  Code that comes before the
