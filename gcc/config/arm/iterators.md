@@ -741,6 +741,20 @@
 		     VMLSLDAVXQ_P_S
 		     ])
 
+(define_int_iterator MVE_VRMLxLDAVxQ [
+		     VRMLALDAVHQ_S VRMLALDAVHQ_U
+		     VRMLALDAVHXQ_S
+		     VRMLSLDAVHQ_S
+		     VRMLSLDAVHXQ_S
+		     ])
+
+(define_int_iterator MVE_VRMLxLDAVHxQ_P [
+		     VRMLALDAVHQ_P_S VRMLALDAVHQ_P_U
+		     VRMLALDAVHXQ_P_S
+		     VRMLSLDAVHQ_P_S
+		     VRMLSLDAVHXQ_P_S
+		     ])
+
 (define_int_iterator MVE_MOVN [
 		     VMOVNBQ_S VMOVNBQ_U
 		     VMOVNTQ_S VMOVNTQ_U
@@ -979,6 +993,14 @@
 		 (VREV64Q_S "vrev64") (VREV64Q_U "vrev64") (VREV64Q_F "vrev64")
 		 (VRHADDQ_M_S "vrhadd") (VRHADDQ_M_U "vrhadd")
 		 (VRHADDQ_S "vrhadd") (VRHADDQ_U "vrhadd")
+		 (VRMLALDAVHQ_P_S "vrmlaldavh") (VRMLALDAVHQ_P_U "vrmlaldavh")
+		 (VRMLALDAVHQ_S "vrmlaldavh") (VRMLALDAVHQ_U "vrmlaldavh")
+		 (VRMLALDAVHXQ_P_S "vrmlaldavhx")
+		 (VRMLALDAVHXQ_S "vrmlaldavhx")
+		 (VRMLSLDAVHQ_P_S "vrmlsldavh")
+		 (VRMLSLDAVHQ_S "vrmlsldavh")
+		 (VRMLSLDAVHXQ_P_S "vrmlsldavhx")
+		 (VRMLSLDAVHXQ_S "vrmlsldavhx")
 		 (VRMULHQ_M_S "vrmulh") (VRMULHQ_M_U "vrmulh")
 		 (VRMULHQ_S "vrmulh") (VRMULHQ_U "vrmulh")
 		 (VRNDAQ_F "vrnda") (VRNDAQ_M_F "vrnda")
@@ -2323,6 +2345,12 @@
 		       (VMLALDAVXQ_P_S "s")
 		       (VMLSLDAVQ_P_S "s")
 		       (VMLSLDAVXQ_P_S "s")
+		       (VRMLALDAVHXQ_P_S "s")
+		       (VRMLALDAVHXQ_S "s")
+		       (VRMLSLDAVHQ_P_S "s")
+		       (VRMLSLDAVHQ_S "s")
+		       (VRMLSLDAVHXQ_P_S "s")
+		       (VRMLSLDAVHXQ_S "s")
 		       ])
 
 ;; Both kinds of return insn.
