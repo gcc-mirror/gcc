@@ -743,6 +743,7 @@ class Method : public InherentImplItem, public TraitImplItem
   std::unique_ptr<BlockExpr> function_body;
   Location locus;
   NodeId node_id;
+  bool is_default;
 
 public:
   // Returns whether the method is in an error state.
@@ -783,7 +784,8 @@ public:
 	  SelfParam self_param, std::vector<FunctionParam> function_params,
 	  std::unique_ptr<Type> return_type, WhereClause where_clause,
 	  std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	  std::vector<Attribute> outer_attrs, Location locus)
+	  std::vector<Attribute> outer_attrs, Location locus,
+	  bool is_default = false)
     : outer_attrs (std::move (outer_attrs)), vis (std::move (vis)),
       qualifiers (std::move (qualifiers)),
       method_name (std::move (method_name)),
@@ -793,7 +795,8 @@ public:
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
       function_body (std::move (function_body)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      is_default (is_default)
   {}
 
   // TODO: add constructor with less fields
@@ -803,7 +806,8 @@ public:
     : outer_attrs (other.outer_attrs), vis (other.vis),
       qualifiers (other.qualifiers), method_name (other.method_name),
       self_param (other.self_param), function_params (other.function_params),
-      where_clause (other.where_clause), locus (other.locus)
+      where_clause (other.where_clause), locus (other.locus),
+      is_default (other.is_default)
   {
     // guard to prevent null dereference (always required)
     if (other.return_type != nullptr)
@@ -831,6 +835,7 @@ public:
     function_params = other.function_params;
     where_clause = other.where_clause;
     locus = other.locus;
+    is_default = other.is_default;
 
     // guard to prevent null dereference (always required)
     if (other.return_type != nullptr)
@@ -1526,6 +1531,7 @@ class Function : public VisItem, public InherentImplItem, public TraitImplItem
   WhereClause where_clause;
   std::unique_ptr<BlockExpr> function_body;
   Location locus;
+  bool is_default;
 
 public:
   std::string as_string () const override;
@@ -1548,7 +1554,8 @@ public:
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	    std::vector<Attribute> outer_attrs, Location locus)
+	    std::vector<Attribute> outer_attrs, Location locus,
+	    bool is_default = false)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       qualifiers (std::move (qualifiers)),
       function_name (std::move (function_name)),
@@ -1556,7 +1563,8 @@ public:
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
-      function_body (std::move (function_body)), locus (locus)
+      function_body (std::move (function_body)), locus (locus),
+      is_default (is_default)
   {}
 
   // TODO: add constructor with less fields
@@ -1566,7 +1574,8 @@ public:
     : VisItem (other), qualifiers (other.qualifiers),
       function_name (other.function_name),
       function_params (other.function_params),
-      where_clause (other.where_clause), locus (other.locus)
+      where_clause (other.where_clause), locus (other.locus),
+      is_default (other.is_default)
   {
     // guard to prevent null dereference (always required)
     if (other.return_type != nullptr)
@@ -1592,6 +1601,7 @@ public:
     // visibility = other.visibility->clone_visibility();
     // outer_attrs = other.outer_attrs;
     locus = other.locus;
+    is_default = other.is_default;
 
     // guard to prevent null dereference (always required)
     if (other.return_type != nullptr)
