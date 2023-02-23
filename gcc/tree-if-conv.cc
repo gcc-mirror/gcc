@@ -1099,6 +1099,7 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 		   n = n->simdclone->next_clone)
 		if (n->simdclone->inbranch)
 		  {
+		    gimple_set_plf (stmt, GF_PLF_2, true);
 		    need_to_predicate = true;
 		    return true;
 		  }
@@ -2541,7 +2542,8 @@ predicate_statements (loop_p loop)
 	      release_defs (stmt);
 	      continue;
 	    }
-	  else if (gimple_plf (stmt, GF_PLF_2))
+	  else if (gimple_plf (stmt, GF_PLF_2)
+		   && is_gimple_assign (stmt))
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
 	      tree mask;
@@ -2625,13 +2627,14 @@ predicate_statements (loop_p loop)
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);
 	    }
-
-	  /* Convert functions that have a SIMD clone to IFN_MASK_CALL.  This
-	     will cause the vectorizer to match the "in branch" clone variants,
-	     and serves to build the mask vector in a natural way.  */
-	  gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
-	  if (call && !gimple_call_internal_p (call))
+	  else if (gimple_plf (stmt, GF_PLF_2)
+		   && is_gimple_call (stmt))
 	    {
+	      /* Convert functions that have a SIMD clone to IFN_MASK_CALL.
+		 This will cause the vectorizer to match the "in branch"
+		 clone variants, and serves to build the mask vector
+		 in a natural way.  */
+	      gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
 	      tree orig_fn = gimple_call_fn (call);
 	      int orig_nargs = gimple_call_num_args (call);
 	      auto_vec<tree> args;
