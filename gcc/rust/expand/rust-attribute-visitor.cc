@@ -2738,7 +2738,14 @@ AttrVisitor::visit (AST::TraitImpl &impl)
 void
 AttrVisitor::visit (AST::ExternalTypeItem &item)
 {
-  // TODO: ARTHUR
+  expander.expand_cfg_attrs (item.get_outer_attrs ());
+
+  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+    item.mark_for_strip ();
+
+  // TODO: Can we do anything like expand a macro here?
+  // extern "C" { type ffi_ty!(); }
+  // ?
 }
 
 void

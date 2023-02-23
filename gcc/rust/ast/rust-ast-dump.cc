@@ -1434,7 +1434,11 @@ Dump::visit (TraitImpl &impl)
 
 void
 Dump::visit (ExternalTypeItem &type)
-{}
+{
+  visit (type.get_visibility ());
+
+  stream << "type " << type.get_identifier () << ';';
+}
 
 void
 Dump::visit (ExternalStaticItem &)
