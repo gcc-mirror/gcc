@@ -24,6 +24,7 @@
 #include "rust-hir-type-check.h"
 #include "rust-hir-visitor.h"
 #include "rust-name-resolver.h"
+#include "rust-casts.h"
 #include "rust-unify.h"
 #include "rust-coercion.h"
 
@@ -152,6 +153,40 @@ coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 		  locus);
   context->insert_autoderef_mappings (id, std::move (result.adjustments));
   return coerced;
+}
+
+TyTy::BaseType *
+cast_site (HirId id, TyTy::TyWithLocation from, TyTy::TyWithLocation to,
+	   Location cast_locus)
+{
+  rust_debug ("cast_site id={%u} from={%s} to={%s}", id,
+	      from.get_ty ()->debug_str ().c_str (),
+	      to.get_ty ()->debug_str ().c_str ());
+
+  auto context = TypeCheckContext::get ();
+  if (from.get_ty ()->get_kind () == TyTy::TypeKind::ERROR
+      || to.get_ty ()->get_kind () == TyTy::TypeKind::ERROR)
+    return to.get_ty ();
+
+  // do the cast
+  auto result = TypeCastRules::resolve (cast_locus, from, to);
+
+  // we assume error has already been emitted
+  if (result.is_error ())
+    return to.get_ty ();
+
+  // the result needs to be unified
+  TyTy::BaseType *casted_result = result.tyty;
+  rust_debug ("cast_default_unify(a={%s}, b={%s})",
+	      casted_result->debug_str ().c_str (),
+	      to.get_ty ()->debug_str ().c_str ());
+
+  TyTy::BaseType *casted
+    = unify_site (id, to,
+		  TyTy::TyWithLocation (casted_result, from.get_locus ()),
+		  cast_locus);
+  context->insert_cast_autoderef_mappings (id, std::move (result.adjustments));
+  return casted;
 }
 
 } // namespace Resolver

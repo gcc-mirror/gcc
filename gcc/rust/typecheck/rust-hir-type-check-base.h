@@ -34,10 +34,6 @@ class TypeCheckBase
 public:
   virtual ~TypeCheckBase () {}
 
-  static TyTy::BaseType *cast_site (HirId id, TyTy::TyWithLocation from,
-				    TyTy::TyWithLocation to,
-				    Location cast_locus);
-
 protected:
   TypeCheckBase ();
 
