@@ -87,14 +87,14 @@ const void *xtensa_load_config (const char *name ATTRIBUTE_UNUSED,
       if (!handle)
 	{
 	  fatal_error (input_location,
-		       _("%qs is defined but could not be loaded: %s"),
+		       "%qs is defined but could not be loaded: %s",
 		       CONFIG_ENV_NAME, dlerror ());
 	  exit (FATAL_EXIT_CODE);
 	}
       if (dlsym (handle, "plugin_is_GPL_compatible") == NULL)
 	{
 	  fatal_error (input_location,
-		       _("%qs plugin is not licensed under a GPL-compatible license"),
+		       "%qs plugin is not licensed under a GPL-compatible license",
 		       CONFIG_ENV_NAME);
 	  exit (FATAL_EXIT_CODE);
 	}
@@ -111,7 +111,7 @@ const void *xtensa_load_config (const char *name ATTRIBUTE_UNUSED,
 	return no_name_def;
 
       fatal_error (input_location,
-		   _("%qs is loaded but symbol %qs is not found: %s"),
+		   "%qs is loaded but symbol %qs is not found: %s",
 		   CONFIG_ENV_NAME, name, dlerror ());
       exit (FATAL_EXIT_CODE);
     }
@@ -125,7 +125,7 @@ const void *xtensa_load_config (const char *name ATTRIBUTE_UNUSED,
       if (path)
 	{
 	  fatal_error (input_location,
-		       _("%qs is defined but plugin support is disabled"),
+		       "%qs is defined but plugin support is disabled",
 		       CONFIG_ENV_NAME);
 	  exit (FATAL_EXIT_CODE);
 	}
