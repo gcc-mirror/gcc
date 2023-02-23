@@ -138,6 +138,7 @@ public:
   void visit (AST::InherentImpl &);
   void visit (AST::TraitImpl &);
 
+  void visit (AST::ExternalTypeItem &);
   void visit (AST::ExternalStaticItem &);
   void visit (AST::ExternalFunctionItem &);
   void visit (AST::ExternBlock &);

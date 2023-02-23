@@ -771,6 +771,12 @@ EarlyNameResolver::visit (AST::TraitImpl &impl)
 }
 
 void
+EarlyNameResolver::visit (AST::ExternalTypeItem &item)
+{
+  // nothing to do?
+}
+
+void
 EarlyNameResolver::visit (AST::ExternalStaticItem &item)
 {
   item.get_type ()->accept_vis (*this);

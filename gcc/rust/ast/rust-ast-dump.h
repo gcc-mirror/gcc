@@ -251,6 +251,7 @@ private:
   void visit (Trait &trait);
   void visit (InherentImpl &impl);
   void visit (TraitImpl &impl);
+  void visit (ExternalTypeItem &item);
   void visit (ExternalStaticItem &item);
   void visit (ExternalFunctionItem &item);
   void visit (ExternBlock &block);

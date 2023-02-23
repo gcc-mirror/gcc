@@ -447,6 +447,10 @@ ResolverBase::visit (AST::TraitImpl &)
 {}
 
 void
+ResolverBase::visit (AST::ExternalTypeItem &)
+{}
+
+void
 ResolverBase::visit (AST::ExternalStaticItem &)
 {}
 

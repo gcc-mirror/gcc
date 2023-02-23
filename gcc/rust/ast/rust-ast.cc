@@ -3407,6 +3407,16 @@ EnumItemDiscriminant::as_string () const
 }
 
 std::string
+ExternalTypeItem::as_string () const
+{
+  auto str = append_attributes (outer_attrs, OUTER);
+
+  str += "type " + item_name + ";";
+
+  return str;
+}
+
+std::string
 ExternalStaticItem::as_string () const
 {
   // outer attributes
@@ -5488,6 +5498,12 @@ InherentImpl::accept_vis (ASTVisitor &vis)
 
 void
 TraitImpl::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ExternalTypeItem::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

@@ -1433,6 +1433,10 @@ Dump::visit (TraitImpl &impl)
 }
 
 void
+Dump::visit (ExternalTypeItem &type)
+{}
+
+void
 Dump::visit (ExternalStaticItem &)
 {}
 

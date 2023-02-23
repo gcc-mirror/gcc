@@ -622,6 +622,10 @@ AttributeChecker::visit (AST::TraitImpl &)
 {}
 
 void
+AttributeChecker::visit (AST::ExternalTypeItem &)
+{}
+
+void
 AttributeChecker::visit (AST::ExternalStaticItem &)
 {}
 

@@ -215,6 +215,7 @@ private:
   virtual void visit (AST::Trait &trait);
   virtual void visit (AST::InherentImpl &impl);
   virtual void visit (AST::TraitImpl &impl);
+  virtual void visit (AST::ExternalTypeItem &item);
   virtual void visit (AST::ExternalStaticItem &item);
   virtual void visit (AST::ExternalFunctionItem &item);
   virtual void visit (AST::ExternBlock &block);

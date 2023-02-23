@@ -203,6 +203,7 @@ class Impl;
 class InherentImpl;
 class TraitImpl;
 class ExternalItem;
+class ExternalTypeItem;
 class ExternalStaticItem;
 struct NamedFunctionParam;
 class ExternalFunctionItem;
