@@ -3548,8 +3548,6 @@ xtensa_expand_epilogue (bool sibcall_p)
 			      gen_frame_mem (SImode, x));
 	    }
 	}
-      if (sibcall_p)
-	emit_use (gen_rtx_REG (SImode, A0_REG));
 
       if (cfun->machine->current_frame_size > 0)
 	{
@@ -3575,7 +3573,9 @@ xtensa_expand_epilogue (bool sibcall_p)
 				  EH_RETURN_STACKADJ_RTX));
     }
   cfun->machine->epilogue_done = true;
-  if (!sibcall_p)
+  if (sibcall_p)
+    emit_use (gen_rtx_REG (SImode, A0_REG));
+  else
     emit_jump_insn (gen_return ());
 }
 
