@@ -232,6 +232,58 @@ vrange::dump (FILE *file) const
   pp_flush (&buffer);
 }
 
+namespace inchash
+{
+
+void
+add_vrange (const vrange &v, inchash::hash &hstate,
+	     unsigned int)
+{
+  if (v.undefined_p ())
+    {
+      hstate.add_int (VR_UNDEFINED);
+      return;
+    }
+  // Types are ignored throughout to inhibit two ranges being equal
+  // but having different hash values.  This can happen when two
+  // ranges are equal and their types are different (but
+  // types_compatible_p is true).
+  if (is_a <irange> (v))
+    {
+      const irange &r = as_a <irange> (v);
+      if (r.varying_p ())
+	hstate.add_int (VR_VARYING);
+      else
+	hstate.add_int (VR_RANGE);
+      for (unsigned i = 0; i < r.num_pairs (); ++i)
+	{
+	  hstate.add_wide_int (r.lower_bound (i));
+	  hstate.add_wide_int (r.upper_bound (i));
+	}
+      hstate.add_wide_int (r.get_nonzero_bits ());
+      return;
+    }
+  if (is_a <frange> (v))
+    {
+      const frange &r = as_a <frange> (v);
+      if (r.varying_p ())
+	hstate.add_int (VR_VARYING);
+      else
+	hstate.add_int (VR_RANGE);
+
+      hstate.add_real_value (r.lower_bound ());
+      hstate.add_real_value (r.upper_bound ());
+
+      nan_state nan = r.get_nan_state ();
+      hstate.add_int (nan.pos_p ());
+      hstate.add_int (nan.neg_p ());
+      return;
+    }
+  gcc_unreachable ();
+}
+
+} //namespace inchash
+
 bool
 irange::supports_type_p (const_tree type) const
 {

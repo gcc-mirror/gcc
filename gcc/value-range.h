@@ -109,6 +109,11 @@ protected:
   const ENUM_BITFIELD(value_range_discriminator) m_discriminator : 4;
 };
 
+namespace inchash
+{
+  extern void add_vrange (const vrange &, hash &, unsigned flags = 0);
+}
+
 // An integer range without any storage.
 
 class GTY((user)) irange : public vrange
