@@ -9561,9 +9561,10 @@ package body Exp_Ch4 is
       DDC   : constant Boolean    := Do_Division_Check (N);
 
       Is_Stoele_Mod : constant Boolean :=
-        Is_RTE (First_Subtype (Typ), RE_Storage_Offset)
-          and then Nkind (Left_Opnd (N)) = N_Unchecked_Type_Conversion
-          and then Is_RTE (Etype (Expression (Left_Opnd (N))), RE_Address);
+        Is_RTE (Typ, RE_Address)
+          and then Nkind (Right_Opnd (N)) = N_Unchecked_Type_Conversion
+          and then
+            Is_RTE (Etype (Expression (Right_Opnd (N))), RE_Storage_Offset);
       --  True if this is the special mod operator of System.Storage_Elements
 
       Left  : Node_Id;
@@ -9633,6 +9634,7 @@ package body Exp_Ch4 is
         and then ((Llo >= 0 and then Rlo >= 0)
                      or else
                   (Lhi <= 0 and then Rhi <= 0))
+        and then not Is_Stoele_Mod
       then
          Rewrite (N,
            Make_Op_Rem (Sloc (N),
@@ -9683,7 +9685,8 @@ package body Exp_Ch4 is
               Make_Raise_Constraint_Error (Loc,
                 Condition =>
                   Make_Op_Le (Loc,
-                    Left_Opnd  => Duplicate_Subexpr_No_Checks (Right),
+                    Left_Opnd  =>
+                      Duplicate_Subexpr_No_Checks (Expression (Right)),
                     Right_Opnd => Make_Integer_Literal (Loc, 0)),
                 Reason => CE_Overflow_Check_Failed));
             return;
