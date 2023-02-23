@@ -505,6 +505,7 @@ public:
   Value_Range ();
   Value_Range (const vrange &r);
   Value_Range (tree type);
+  Value_Range (tree, tree, value_range_kind kind = VR_RANGE);
   Value_Range (const Value_Range &);
   void set_type (tree type);
   vrange& operator= (const vrange &);
@@ -526,6 +527,7 @@ public:
   void set_undefined () { m_vrange->set_undefined (); }
   bool union_ (const vrange &r) { return m_vrange->union_ (r); }
   bool intersect (const vrange &r) { return m_vrange->intersect (r); }
+  bool contains_p (tree cst) const { return m_vrange->contains_p (cst); }
   bool singleton_p (tree *result = NULL) const
     { return m_vrange->singleton_p (result); }
   bool zero_p () const { return m_vrange->zero_p (); }
@@ -561,6 +563,13 @@ inline
 Value_Range::Value_Range (tree type)
 {
   init (type);
+}
+
+inline
+Value_Range::Value_Range (tree min, tree max, value_range_kind kind)
+{
+  init (TREE_TYPE (min));
+  set (min, max, kind);
 }
 
 inline
