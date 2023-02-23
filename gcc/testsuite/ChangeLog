@@ -1,3 +1,359 @@
+2023-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108880
+	* c-c++-common/ubsan/pr108880.c: New test.
+
+2023-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96024
+	* gfortran.dg/pr96024.f90: New test.
+
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/modules/modules.exp: Override unsupported to update
+	module_do, and test it after dg-test.
+
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/aes-fuse-1.c: Switch to -mcpu=cortex-a53.
+	* gcc.target/arm/aes-fuse-2.c: Likewise.
+
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/debug/ctf/ctf-complex-1.c: Do not test whether I is
+	usable in initializers.
+
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/torture/fp-uint64-convert-double-1.c: XFAIL on all of
+	arm-*-*.
+	* gcc.dg/torture/fp-uint64-convert-double-2.c: Likewise.
+
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/asm-flag-4.c: Match quotes around "asm" in
+	message.
+
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/warn/Waddress-5.C: Tolerate extra -Waddress warning.
+
+2023-02-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/vect-simd-clone-16.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16b.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16c.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16d.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16e.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16f.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17b.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17c.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17d.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17e.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17f.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18b.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18c.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18d.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18e.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18f.c: New test.
+
+2023-02-22  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-3.c: New test.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-4.c: New test.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-5.c: New test.
+	* gcc.target/riscv/rvv/base/ternop_vv_constraint-6.c: New test.
+	* gcc.target/riscv/rvv/base/ternop_vx_constraint-8.c: New test.
+	* gcc.target/riscv/rvv/base/ternop_vx_constraint-9.c: New test.
+
+2023-02-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/_Float16-zhinxmin-1.c: Tweak test
+	condition.
+
+2023-02-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-1.c: Filter out '-Oz'.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-27.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-30.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-38.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-41.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-42.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-43.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-44.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-45.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-48.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-50.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-51.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-65.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-66.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-67.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-68.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-69.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-70.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-71.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-73.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-74.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-75.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_loop_invariant-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-17.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-18.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-19.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-20.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-21.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-22.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-27.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-28.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-29.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-30.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-31.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-32.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-33.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-34.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-35.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-36.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-37.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-38.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-39.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-40.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-41.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-42.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-43.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-44.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-45.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-46.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-17.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-18.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-19.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-20.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-21.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-22.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-27.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-28.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_call-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_complex_loop-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_complex_loop-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-17.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-18.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-19.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-20.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-21.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-22.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-27.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-28.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_miss_default-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-17.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-18.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-19.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-20.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-21.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-22.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-27.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-28.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-19.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_vtype-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-13.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-18.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-17.c: Filter
+	out -Oz and -Og -g.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_single_block-18.c: Ditto.
+
+2023-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106258
+	* g++.dg/ipa/pr106258.C: New test.
+
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/Wcomplain-wrong-lang-1.c: New.
+	* gcc.dg/Wcomplain-wrong-lang-2.c: Likewise.
+	* gcc.dg/Wcomplain-wrong-lang-3.c: Likewise.
+	* gcc.dg/Wcomplain-wrong-lang-4.c: Likewise.
+	* gcc.dg/Wcomplain-wrong-lang-5.c: Likewise.
+	* lib/target-supports.exp (check_compile): Use
+	'-Wno-complain-wrong-lang'.
+	* g++.dg/abi/empty12.C: Likewise.
+	* g++.dg/abi/empty13.C: Likewise.
+	* g++.dg/abi/empty14.C: Likewise.
+	* g++.dg/abi/empty15.C: Likewise.
+	* g++.dg/abi/empty16.C: Likewise.
+	* g++.dg/abi/empty17.C: Likewise.
+	* g++.dg/abi/empty18.C: Likewise.
+	* g++.dg/abi/empty19.C: Likewise.
+	* g++.dg/abi/empty22.C: Likewise.
+	* g++.dg/abi/empty25.C: Likewise.
+	* g++.dg/abi/empty26.C: Likewise.
+	* gfortran.dg/bind-c-contiguous-1.f90: Likewise.
+	* gfortran.dg/bind-c-contiguous-4.f90: Likewise.
+	* gfortran.dg/bind-c-contiguous-5.f90: Likewise.
+
 2023-02-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108830

@@ -1,3 +1,7 @@
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config-list.mk (LIST): Clarify i686-symbolics-gnu to i686-gnu.
+
 2023-02-17  Petr Sumbera  <petr.sumbera@oracle.com>
 
 	* make_sunver.pl: Escape brace.

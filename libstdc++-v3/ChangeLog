@@ -1,3 +1,20 @@
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* src/c++11/shared_ptr.cc (__gnu_internal::get_mutex):
+	Avoid destruction of the mutex pool.
+
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/27_io/basic_ofstream/open/char/noreplace.cc: xfail
+	on vxworks.
+	* testsuite/27_io/basic_ofstream/open/wchar_t/noreplace.cc:
+	Likewise.
+
+2023-02-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/17_intro/names.cc: Undef func on vxworks >= 7 in
+	kernel mode.
+
 2023-02-20  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.

@@ -1,3 +1,9 @@
+2023-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96024
+	* resolve.cc (resolve_component): The type of a CHARACTER length
+	expression must be INTEGER.
+
 2023-02-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/96025

@@ -1,3 +1,10 @@
+2023-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108880
+	* c-gimplify.cc (c_genericize_control_stmt) <case STATEMENT_LIST>: Pass
+	pset to walk_tree_1.
+	(c_genericize): Call walk_tree with an explicit pset.
+
 2023-02-18  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/105660

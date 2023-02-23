@@ -1,3 +1,342 @@
+2023-02-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* internal-fn.cc (expand_MASK_CALL): New.
+	* internal-fn.def (MASK_CALL): New.
+	* internal-fn.h (expand_MASK_CALL): New prototype.
+	* omp-simd-clone.cc (simd_clone_adjust_argument_types): Set vector_type
+	for mask arguments also.
+	* tree-if-conv.cc: Include cgraph.h.
+	(if_convertible_stmt_p): Do if conversions for calls to SIMD calls.
+	(predicate_statements): Convert functions to IFN_MASK_CALL.
+	* tree-vect-loop.cc (vect_get_datarefs_in_loop): Recognise
+	IFN_MASK_CALL as a SIMD function call.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Handle
+	IFN_MASK_CALL as an inbranch SIMD function call.
+	Generate the mask vector arguments.
+
+2023-02-22  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class reducop): New class.
+	(class widen_reducop): Ditto.
+	(class freducop): Ditto.
+	(class widen_freducop): Ditto.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vredsum): Add reduction support.
+	(vredmaxu): Ditto.
+	(vredmax): Ditto.
+	(vredminu): Ditto.
+	(vredmin): Ditto.
+	(vredand): Ditto.
+	(vredor): Ditto.
+	(vredxor): Ditto.
+	(vwredsum): Ditto.
+	(vwredsumu): Ditto.
+	(vfredusum): Ditto.
+	(vfredosum): Ditto.
+	(vfredmax): Ditto.
+	(vfredmin): Ditto.
+	(vfwredosum): Ditto.
+	(vfwredusum): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct reduc_alu_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_WI_OPS): New macro.
+	(DEF_RVV_WU_OPS): Ditto.
+	(DEF_RVV_WF_OPS): Ditto.
+	(vint8mf8_t): Ditto.
+	(vint8mf4_t): Ditto.
+	(vint8mf2_t): Ditto.
+	(vint8m1_t): Ditto.
+	(vint8m2_t): Ditto.
+	(vint8m4_t): Ditto.
+	(vint8m8_t): Ditto.
+	(vint16mf4_t): Ditto.
+	(vint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vuint8mf8_t): Ditto.
+	(vuint8mf4_t): Ditto.
+	(vuint8mf2_t): Ditto.
+	(vuint8m1_t): Ditto.
+	(vuint8m2_t): Ditto.
+	(vuint8m4_t): Ditto.
+	(vuint8m8_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vfloat32mf2_t): Ditto.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_WI_OPS): Ditto.
+	(DEF_RVV_WU_OPS): Ditto.
+	(DEF_RVV_WF_OPS): Ditto.
+	(required_extensions_p): Add reduction support.
+	(rvv_arg_type_info::get_base_vector_type): Ditto.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum rvv_base_type): Ditto.
+	* config/riscv/riscv.md: Ditto.
+	* config/riscv/vector-iterators.md (minu): Ditto.
+	* config/riscv/vector.md (@pred_reduc_<reduc><mode><vlmul1>): New patern.
+	(@pred_reduc_<reduc><mode><vlmul1_zve32>): Ditto.
+	(@pred_widen_reduc_plus<v_su><mode><vwlmul1>): Ditto.
+	(@pred_widen_reduc_plus<v_su><mode><vwlmul1_zve32>):Ditto.
+	(@pred_reduc_plus<order><mode><vlmul1>): Ditto.
+	(@pred_reduc_plus<order><mode><vlmul1_zve32>): Ditto.
+	(@pred_widen_reduc_plus<order><mode><vwlmul1>): Ditto.
+
+2023-02-22  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/iterators.md: New iterator.
+	* config/riscv/riscv-vector-builtins-bases.cc (class widen_binop): New class.
+	(enum ternop_type): New enum.
+	(class vmacc): New class.
+	(class imac): Ditto.
+	(class vnmsac): Ditto.
+	(enum widen_ternop_type): New enum.
+	(class vmadd): Ditto.
+	(class vnmsub): Ditto.
+	(class iwmac): Ditto.
+	(class vwmacc): Ditto.
+	(class vwmaccu): Ditto.
+	(class vwmaccsu): Ditto.
+	(class vwmaccus): Ditto.
+	(class reverse_binop): Ditto.
+	(class vfmacc): Ditto.
+	(class vfnmsac): Ditto.
+	(class vfmadd): Ditto.
+	(class vfnmsub): Ditto.
+	(class vfnmacc): Ditto.
+	(class vfmsac): Ditto.
+	(class vfnmadd): Ditto.
+	(class vfmsub): Ditto.
+	(class vfwmacc): Ditto.
+	(class vfwnmacc): Ditto.
+	(class vfwmsac): Ditto.
+	(class vfwnmsac): Ditto.
+	(class float_misc): Ditto.
+	(class fcmp): Ditto.
+	(class vfclass): Ditto.
+	(class vfcvt_x): Ditto.
+	(class vfcvt_rtz_x): Ditto.
+	(class vfcvt_f): Ditto.
+	(class vfwcvt_x): Ditto.
+	(class vfwcvt_rtz_x): Ditto.
+	(class vfwcvt_f): Ditto.
+	(class vfncvt_x): Ditto.
+	(class vfncvt_rtz_x): Ditto.
+	(class vfncvt_f): Ditto.
+	(class vfncvt_rod_f): Ditto.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h:
+	* config/riscv/riscv-vector-builtins-functions.def (vzext): Ditto.
+	(vsext): Ditto.
+	(vfadd): Ditto.
+	(vfsub): Ditto.
+	(vfrsub): Ditto.
+	(vfwadd): Ditto.
+	(vfwsub): Ditto.
+	(vfmul): Ditto.
+	(vfdiv): Ditto.
+	(vfrdiv): Ditto.
+	(vfwmul): Ditto.
+	(vfmacc): Ditto.
+	(vfnmsac): Ditto.
+	(vfmadd): Ditto.
+	(vfnmsub): Ditto.
+	(vfnmacc): Ditto.
+	(vfmsac): Ditto.
+	(vfnmadd): Ditto.
+	(vfmsub): Ditto.
+	(vfwmacc): Ditto.
+	(vfwnmacc): Ditto.
+	(vfwmsac): Ditto.
+	(vfwnmsac): Ditto.
+	(vfsqrt): Ditto.
+	(vfrsqrt7): Ditto.
+	(vfrec7): Ditto.
+	(vfmin): Ditto.
+	(vfmax): Ditto.
+	(vfsgnj): Ditto.
+	(vfsgnjn): Ditto.
+	(vfsgnjx): Ditto.
+	(vfneg): Ditto.
+	(vfabs): Ditto.
+	(vmfeq): Ditto.
+	(vmfne): Ditto.
+	(vmflt): Ditto.
+	(vmfle): Ditto.
+	(vmfgt): Ditto.
+	(vmfge): Ditto.
+	(vfclass): Ditto.
+	(vfmerge): Ditto.
+	(vfmv_v): Ditto.
+	(vfcvt_x): Ditto.
+	(vfcvt_xu): Ditto.
+	(vfcvt_rtz_x): Ditto.
+	(vfcvt_rtz_xu): Ditto.
+	(vfcvt_f): Ditto.
+	(vfwcvt_x): Ditto.
+	(vfwcvt_xu): Ditto.
+	(vfwcvt_rtz_x): Ditto.
+	(vfwcvt_rtz_xu): Ditto.
+	(vfwcvt_f): Ditto.
+	(vfncvt_x): Ditto.
+	(vfncvt_xu): Ditto.
+	(vfncvt_rtz_x): Ditto.
+	(vfncvt_rtz_xu): Ditto.
+	(vfncvt_f): Ditto.
+	(vfncvt_rod_f): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct alu_def): Ditto.
+	(struct move_def): Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_WEXTF_OPS): New macro.
+	(DEF_RVV_CONVERT_I_OPS): Ditto.
+	(DEF_RVV_CONVERT_U_OPS): Ditto.
+	(DEF_RVV_WCONVERT_I_OPS): Ditto.
+	(DEF_RVV_WCONVERT_U_OPS): Ditto.
+	(DEF_RVV_WCONVERT_F_OPS): Ditto.
+	(vfloat64m1_t): Ditto.
+	(vfloat64m2_t): Ditto.
+	(vfloat64m4_t): Ditto.
+	(vfloat64m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_CONVERT_I_OPS): Ditto.
+	(DEF_RVV_CONVERT_U_OPS): Ditto.
+	(DEF_RVV_WCONVERT_I_OPS): Ditto.
+	(DEF_RVV_WCONVERT_U_OPS): Ditto.
+	(DEF_RVV_WCONVERT_F_OPS): Ditto.
+	(DEF_RVV_F_OPS): Ditto.
+	(DEF_RVV_WEXTF_OPS): Ditto.
+	(required_extensions_p): Adjust for floating-point support.
+	(check_required_extensions): Ditto.
+	(unsigned_base_type_p): Ditto.
+	(get_mode_for_bitsize): Ditto.
+	(rvv_arg_type_info::get_base_vector_type): Ditto.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	* config/riscv/riscv-vector-builtins.def (v_f): New define.
+	(f): New define.
+	(f_v): New define.
+	(xu_v): New define.
+	(f_w): New define.
+	(xu_w): New define.
+	* config/riscv/riscv-vector-builtins.h (enum rvv_base_type): New enum.
+	(function_expander::arg_mode): New function.
+	* config/riscv/vector-iterators.md (sof): New iterator.
+	(vfrecp): Ditto.
+	(copysign): Ditto.
+	(n): Ditto.
+	(msac): Ditto.
+	(msub): Ditto.
+	(fixuns_trunc): Ditto.
+	(floatuns): Ditto.
+	* config/riscv/vector.md (@pred_broadcast<mode>): New pattern.
+	(@pred_<optab><mode>): Ditto.
+	(@pred_<optab><mode>_scalar): Ditto.
+	(@pred_<optab><mode>_reverse_scalar): Ditto.
+	(@pred_<copysign><mode>): Ditto.
+	(@pred_<copysign><mode>_scalar): Ditto.
+	(@pred_mul_<optab><mode>): Ditto.
+	(pred_mul_<optab><mode>_undef_merge): Ditto.
+	(*pred_<madd_nmsub><mode>): Ditto.
+	(*pred_<macc_nmsac><mode>): Ditto.
+	(*pred_mul_<optab><mode>): Ditto.
+	(@pred_mul_<optab><mode>_scalar): Ditto.
+	(*pred_mul_<optab><mode>_undef_merge_scalar): Ditto.
+	(*pred_<madd_nmsub><mode>_scalar): Ditto.
+	(*pred_<macc_nmsac><mode>_scalar): Ditto.
+	(*pred_mul_<optab><mode>_scalar): Ditto.
+	(@pred_neg_mul_<optab><mode>): Ditto.
+	(pred_neg_mul_<optab><mode>_undef_merge): Ditto.
+	(*pred_<nmadd_msub><mode>): Ditto.
+	(*pred_<nmacc_msac><mode>): Ditto.
+	(*pred_neg_mul_<optab><mode>): Ditto.
+	(@pred_neg_mul_<optab><mode>_scalar): Ditto.
+	(*pred_neg_mul_<optab><mode>_undef_merge_scalar): Ditto.
+	(*pred_<nmadd_msub><mode>_scalar): Ditto.
+	(*pred_<nmacc_msac><mode>_scalar): Ditto.
+	(*pred_neg_mul_<optab><mode>_scalar): Ditto.
+	(@pred_<misc_op><mode>): Ditto.
+	(@pred_class<mode>): Ditto.
+	(@pred_dual_widen_<optab><mode>): Ditto.
+	(@pred_dual_widen_<optab><mode>_scalar): Ditto.
+	(@pred_single_widen_<plus_minus:optab><mode>): Ditto.
+	(@pred_single_widen_<plus_minus:optab><mode>_scalar): Ditto.
+	(@pred_widen_mul_<optab><mode>): Ditto.
+	(@pred_widen_mul_<optab><mode>_scalar): Ditto.
+	(@pred_widen_neg_mul_<optab><mode>): Ditto.
+	(@pred_widen_neg_mul_<optab><mode>_scalar): Ditto.
+	(@pred_cmp<mode>): Ditto.
+	(*pred_cmp<mode>): Ditto.
+	(*pred_cmp<mode>_narrow): Ditto.
+	(@pred_cmp<mode>_scalar): Ditto.
+	(*pred_cmp<mode>_scalar): Ditto.
+	(*pred_cmp<mode>_scalar_narrow): Ditto.
+	(@pred_eqne<mode>_scalar): Ditto.
+	(*pred_eqne<mode>_scalar): Ditto.
+	(*pred_eqne<mode>_scalar_narrow): Ditto.
+	(@pred_merge<mode>_scalar): Ditto.
+	(@pred_fcvt_x<v_su>_f<mode>): Ditto.
+	(@pred_<fix_cvt><mode>): Ditto.
+	(@pred_<float_cvt><mode>): Ditto.
+	(@pred_widen_fcvt_x<v_su>_f<mode>): Ditto.
+	(@pred_widen_<fix_cvt><mode>): Ditto.
+	(@pred_widen_<float_cvt><mode>): Ditto.
+	(@pred_extend<mode>): Ditto.
+	(@pred_narrow_fcvt_x<v_su>_f<mode>): Ditto.
+	(@pred_narrow_<fix_cvt><mode>): Ditto.
+	(@pred_narrow_<float_cvt><mode>): Ditto.
+	(@pred_trunc<mode>): Ditto.
+	(@pred_rod_trunc<mode>): Ditto.
+
+2023-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106258
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee,
+	cgraph_update_edges_for_call_stmt_node, cgraph_node::verify_node):
+	Handle BUILT_IN_UNREACHABLE_TRAP like BUILT_IN_UNREACHABLE.
+	* cgraphclones.cc (cgraph_node::create_clone): Likewise.
+
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* common.opt (-Wcomplain-wrong-lang): New.
+	* doc/invoke.texi (-Wno-complain-wrong-lang): Document it.
+	* opts-common.cc (prune_options): Handle it.
+	* opts-global.cc (complain_wrong_lang): Use it.
+
 2023-02-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108830
