@@ -3534,7 +3534,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   auto_vec <gassign *, 4> writes_to_lower;
   bitmap exit_bbs;
   edge pe;
-  vec<data_reference_p> refs;
+  auto_vec<data_reference_p, 10> refs;
 
  again:
   rloop = NULL;
@@ -3544,7 +3544,6 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   need_to_predicate = false;
   need_to_rewrite_undefined = false;
   any_complicated_phi = false;
-  refs.create (5);
 
   /* Apply more aggressive if-conversion when loop or its outer loop were
      marked with simd pragma.  When that's the case, we try to if-convert
@@ -3701,8 +3700,10 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   data_reference_p dr;
   unsigned int i;
   for (i = 0; refs.iterate (i, &dr); i++)
-    free (dr->aux);
-
+    {
+      free (dr->aux);
+      free_data_ref (dr);
+    }
   refs.truncate (0);
 
   if (ifc_bbs)
