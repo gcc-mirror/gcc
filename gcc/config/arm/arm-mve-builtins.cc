@@ -689,6 +689,14 @@ function_instance::has_inactive_argument () const
       || base == functions::vqmovunbq
       || base == functions::vqmovuntq
       || (base == functions::vorrq && mode_suffix_id == MODE_n)
+      || base == functions::vqdmladhq
+      || base == functions::vqdmladhxq
+      || base == functions::vqdmlsdhq
+      || base == functions::vqdmlsdhxq
+      || base == functions::vqrdmladhq
+      || base == functions::vqrdmladhxq
+      || base == functions::vqrdmlsdhq
+      || base == functions::vqrdmlsdhxq
       || (base == functions::vqrshlq && mode_suffix_id == MODE_n)
       || base == functions::vqrshrnbq
       || base == functions::vqrshrntq
