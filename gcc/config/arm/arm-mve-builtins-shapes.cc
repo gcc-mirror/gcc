@@ -1189,6 +1189,33 @@ struct ternary_def : public overloaded_base<0>
 };
 SHAPE (ternary)
 
+/* <T0>_t vfoo[_n_t0](<T0>_t, <T0>_t, <S0>_t)
+
+   i.e. the standard shape for ternary operations that operate on a
+   pair of vectors of the same type as the destination, and take a
+   third scalar argument of the same type as the vector elements.
+
+   Example: vmlaq.
+   int8x16_t [__arm_]vmlaq[_n_s8](int8x16_t add, int8x16_t m1, int8_t m2)
+   int8x16_t [__arm_]vmlaq_m[_n_s8](int8x16_t add, int8x16_t m1, int8_t m2, mve_pred16_t p)  */
+struct ternary_n_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,s0", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (2, 1);
+  }
+};
+SHAPE (ternary_n)
+
 /* <T0>_t vfoo[_t0](<T0>_t)
 
    i.e. the standard shape for unary operations that operate on
