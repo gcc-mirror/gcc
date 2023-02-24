@@ -21,7 +21,7 @@ void test_constant_99 (void)
     |                  ^~~~~~
     |                  |
     |                  (1) allocated 99 bytes here
-    |                  (2) assigned to 'int32_t *' {aka 'int *'} here; 'sizeof (int32_t {aka int})' is '4'
+    |                  (2) assigned to 'int32_t *' {aka '{re:long :re?}int *'} here; 'sizeof (int32_t {aka {re:long :re?}int})' is '4'
     |
    { dg-end-multiline-output "" } */
 
@@ -39,6 +39,6 @@ void test_symbolic (int n)
     |                  ^~~~~~
     |                  |
     |                  (1) allocated 'n * 2' bytes here
-    |                  (2) assigned to 'int32_t *' {aka 'int *'} here; 'sizeof (int32_t {aka int})' is '4'
+    |                  (2) assigned to 'int32_t *' {aka '{re:long :re?}int *'} here; 'sizeof (int32_t {aka {re:long :re?}int})' is '4'
     |
    { dg-end-multiline-output "" } */
