@@ -1,3 +1,12 @@
+2023-02-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* implement-d.texi: Reorder index entries around @items.
+
+2023-02-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* gdc.texi: Reorder @opindex commands to precede @items they
+	relate to.
+
 2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Make-lang.in (D_FRONTEND_OBJS): Add d/location.o.

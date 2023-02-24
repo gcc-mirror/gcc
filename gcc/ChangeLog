@@ -1,3 +1,114 @@
+2023-02-23  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa-dynconfig.cc (config.h, system.h)
+	(coretypes.h, diagnostic.h, intl.h): Use "..." instead of <...>
+	for the gcc-internal headers.
+
+2023-02-23  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/t-xtensa (xtensa-dynconfig.o): Use $(COMPILE)
+	and $(POSTCOMPILE) instead of manual dependency listing.
+	* config/xtensa/xtensa-dynconfig.c: Rename to ...
+	* config/xtensa/xtensa-dynconfig.cc: ... this.
+
+2023-02-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/cfg.texi: Reorder index entries around @items.
+	* doc/cpp.texi: Ditto.
+	* doc/cppenv.texi: Ditto.
+	* doc/cppopts.texi: Ditto.
+	* doc/generic.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/extend.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+	* doc/md.texi: Ditto.
+	* doc/rtl.texi: Ditto.
+	* doc/tm.texi.in: Ditto.
+	* doc/trouble.texi: Ditto.
+	* doc/tm.texi: Regenerate.
+
+2023-02-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md: New peephole2 pattern that eliminates
+	the occurrence of general-purpose register used only once and for
+	transferring intermediate value.
+
+2023-02-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (machine_function): Add new member
+	'eliminated_callee_saved_bmp'.
+	(xtensa_can_eliminate_callee_saved_reg_p): New function to
+	determine whether the register can be eliminated or not.
+	(xtensa_expand_prologue): Add invoking the above function and
+	elimination the use of callee-saved register by using its stack
+	slot through the stack pointer (or the frame pointer if needed)
+	directly.
+	(xtensa_expand_prologue): Modify to not emit register restoration
+	insn from its stack slot if the register is already eliminated.
+
+2023-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/108890
+	* config/xtensa/xtensa-dynconfig.c (xtensa_load_config): Drop _()s
+	around fatal_error format strings.
+
+2023-02-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (handle_lhs_call): Do not
+	re-create rhsc, only truncate it.
+
+2023-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106258
+	* ipa-prop.cc (try_make_edge_direct_virtual_call): Handle
+	BUILT_IN_UNREACHABLE_TRAP like BUILT_IN_UNREACHABLE.
+
+2023-02-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-if-conv.cc (tree_if_conversion): Properly manage
+	memory of refs and the contained data references.
+
+2023-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108888
+	* tree-if-conv.cc (if_convertible_stmt_p): Set PLF_2 on
+	calls to predicate.
+	(predicate_statements): Only predicate calls with PLF_2.
+
+2023-02-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md
+	(zero_cost_loop_start, zero_cost_loop_end, loop_end):
+	Add missing "SI:" to PLUS RTXes.
+
+2023-02-23  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/108876
+	* config/xtensa/xtensa.cc (xtensa_expand_epilogue):
+	Emit (use (reg:SI A0_REG)) at the end in the sibling call
+	(i.e. the same place as (return) in the normal call).
+
+2023-02-23  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Revert:
+	2023-02-21  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/108876
+	* config/xtensa/xtensa.cc (xtensa_expand_epilogue): Drop emit_use
+	for A0_REG.
+	* config/xtensa/xtensa.md (sibcall, sibcall_internal)
+	(sibcall_value, sibcall_value_internal): Add 'use' expression
+	for A0_REG.
+
+2023-02-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/cppdiropts.texi: Reorder @opindex commands to precede
+	@items they relate to.
+	* doc/cppopts.texi: Ditto.
+	* doc/cppwarnopts.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+	* doc/lto.texi: Ditto.
+
 2023-02-22  Andrew Stubbs  <ams@codesourcery.com>
 
 	* internal-fn.cc (expand_MASK_CALL): New.

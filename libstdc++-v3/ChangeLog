@@ -1,3 +1,34 @@
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/tests/reductions.cc: Introduce
+	max_distance as the type-dependent max error.
+
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_builtin.h (_S_set): Compare as
+	int. The actual range of these indexes is very small.
+
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h (_S_bit_shift_left)
+	(_S_bit_shift_right): Declare constexpr. The implementation was
+	already expecting constexpr evaluation.
+
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/108030
+	* include/experimental/bits/simd_detail.h
+	(_GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA): Define as empty for
+	__clang__.
+
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/108030
+	* include/experimental/bits/simd.h (__vector_broadcast):
+	Implement via __vector_broadcast_impl instead of
+	__call_with_n_evaluations + 2 lambdas.
+	(__vector_broadcast_impl): New.
+
 2023-02-22  Alexandre Oliva  <oliva@adacore.com>
 
 	* src/c++11/shared_ptr.cc (__gnu_internal::get_mutex):

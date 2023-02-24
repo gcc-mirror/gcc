@@ -1,3 +1,23 @@
+2023-02-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/elim_GP_regmove_0.c: New test.
+	* gcc.target/xtensa/elim_GP_regmove_1.c: New test.
+
+2023-02-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/elim_callee_saved.c: New.
+
+2023-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/108899
+	* g++.dg/modules/modules.exp: Only override unsupported if it
+	exists and saved-unsupported doesn't.
+
+2023-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108888
+	* g++.dg/torture/pr108888.C: New testcase.
+
 2023-02-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c/108880

@@ -1,3 +1,12 @@
+2023-02-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* invoke.texi: Reorder index entries around @items.
+
+2023-02-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* invoke.texi: Reorder @opindex commands to precede @items they
+	relate to.
+
 2023-02-22  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/96024
