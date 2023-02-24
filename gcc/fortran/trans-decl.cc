@@ -814,6 +814,10 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     set_decl_tls_model (decl, decl_default_tls_model (decl));
 
+  /* Mark weak variables.  */
+  if (sym->attr.ext_attr & (1 << EXT_ATTR_WEAK))
+    declare_weak (decl);
+
   gfc_finish_decl_attrs (decl, &sym->attr);
 }
 
@@ -5884,6 +5888,16 @@ generate_local_decl (gfc_symbol * sym)
 
       if (!sym->attr.dummy && !sym->ns->proc_name->attr.entry_master)
 	generate_dependency_declarations (sym);
+
+      if (sym->attr.ext_attr & (1 << EXT_ATTR_WEAK))
+	{
+	  if (sym->attr.dummy)
+	    gfc_error ("Symbol %qs at %L has the WEAK attribute but is a "
+		       "dummy argument", sym->name, &sym->declared_at);
+	  else
+	    gfc_error ("Symbol %qs at %L has the WEAK attribute but is a "
+		       "local variable", sym->name, &sym->declared_at);
+	}
 
       if (sym->attr.referenced)
 	gfc_get_symbol_decl (sym);
