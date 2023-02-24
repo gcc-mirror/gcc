@@ -1,3 +1,39 @@
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/108030
+	* include/experimental/bits/simd.h (__vector_broadcast):
+	Implement via __vector_broadcast_impl instead of
+	__call_with_n_evaluations + 2 lambdas.
+	(__vector_broadcast_impl): New.
+
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_builtin.h (_S_set): Compare as
+	int. The actual range of these indexes is very small.
+
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h (_S_bit_shift_left)
+	(_S_bit_shift_right): Declare constexpr. The implementation was
+	already expecting constexpr evaluation.
+
+2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-02-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (__extract_part, split):
+	Use reserved name for template parameter.
+
 2023-02-16  Matthias Kretz  <m.kretz@gsi.de>
 
 	Backported from master:
