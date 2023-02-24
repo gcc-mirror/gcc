@@ -1341,6 +1341,32 @@ public:
   }
 };
 
+/* Implements vmv/vfmv instructions.  */
+class vmv : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_extract_first (e.vector_mode ()));
+  }
+};
+
+/* Implements vmv.s.x/vfmv.s.f.  */
+class vmv_s : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_scalar_move_insn (code_for_pred_broadcast (e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -1530,6 +1556,10 @@ static CONSTEXPR const reducop<SMAX> vfredmax_obj;
 static CONSTEXPR const reducop<SMIN> vfredmin_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_UNORDERED> vfwredusum_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_ORDERED> vfwredosum_obj;
+static CONSTEXPR const vmv vmv_x_obj;
+static CONSTEXPR const vmv_s vmv_s_obj;
+static CONSTEXPR const vmv vfmv_f_obj;
+static CONSTEXPR const vmv_s vfmv_s_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -1725,5 +1755,9 @@ BASE (vfredmax)
 BASE (vfredmin)
 BASE (vfwredosum)
 BASE (vfwredusum)
+BASE (vmv_x)
+BASE (vmv_s)
+BASE (vfmv_f)
+BASE (vfmv_s)
 
 } // end namespace riscv_vector

@@ -1106,6 +1106,22 @@ static CONSTEXPR const rvv_op_info iu_v_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      v_args /* Args */};
 
+/* A static operand information for scalar_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_x_s_ops
+  = {iu_ops,				  /* Types */
+     OP_TYPE_s,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_scalar), /* Return type */
+     v_args /* Args */};
+
+/* A static operand information for scalar_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_f_s_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_s,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_scalar), /* Return type */
+     v_args /* Args */};
+
 /* A static operand information for vector_type func (vector_type)
  * function registration. */
 static CONSTEXPR const rvv_op_info iu_vs_ops
@@ -1293,9 +1309,25 @@ static CONSTEXPR const rvv_op_info iu_x_ops
 
 /* A static operand information for vector_type func (scalar_type)
  * function registration. */
+static CONSTEXPR const rvv_op_info iu_s_x_ops
+  = {iu_ops,				  /* Types */
+     OP_TYPE_x,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     x_args /* Args */};
+
+/* A static operand information for vector_type func (scalar_type)
+ * function registration. */
 static CONSTEXPR const rvv_op_info f_f_ops
   = {f_ops,			/* Types */
      OP_TYPE_f,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     x_args /* Args */};
+
+/* A static operand information for vector_type func (scalar_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info f_s_f_ops
+  = {f_ops,				  /* Types */
+     OP_TYPE_f,				  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      x_args /* Args */};
 
@@ -2448,14 +2480,19 @@ function_expander::add_mem_operand (machine_mode mode, unsigned argno)
   add_fixed_operand (mem);
 }
 
+/* Return the machine_mode of the corresponding mask type.  */
+machine_mode
+function_expander::mask_mode (void) const
+{
+  return TYPE_MODE (builtin_types[mask_types[type.index]].vector);
+}
+
 /* Implement the call using instruction ICODE, with a 1:1 mapping between
    arguments and input operands.  */
 rtx
 function_expander::use_exact_insn (insn_code icode)
 {
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  tree mask_type = builtin_types[mask_types[type.index]].vector;
-  machine_mode mask_mode = TYPE_MODE (mask_type);
 
   /* Record the offset to get the argument.  */
   int arg_offset = 0;
@@ -2465,7 +2502,7 @@ function_expander::use_exact_insn (insn_code icode)
       if (use_real_mask_p (pred))
 	add_input_operand (arg_offset++);
       else
-	add_all_one_mask_operand (mask_mode);
+	add_all_one_mask_operand (mask_mode ());
     }
 
   /* Store operation doesn't have merge operand.  */
@@ -2485,7 +2522,8 @@ function_expander::use_exact_insn (insn_code icode)
   if (base->apply_mask_policy_p ())
     add_input_operand (Pmode, get_mask_policy_for_pred (pred));
 
-  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+  if (base->apply_vl_p ())
+    add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
   return generate_insn (icode);
 }
 
@@ -2495,8 +2533,6 @@ function_expander::use_contiguous_load_insn (insn_code icode)
 {
   gcc_assert (call_expr_nargs (exp) > 0);
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  tree mask_type = builtin_types[mask_types[type.index]].vector;
-  machine_mode mask_mode = TYPE_MODE (mask_type);
 
   /* Record the offset to get the argument.  */
   int arg_offset = 0;
@@ -2504,7 +2540,7 @@ function_expander::use_contiguous_load_insn (insn_code icode)
   if (use_real_mask_p (pred))
     add_input_operand (arg_offset++);
   else
-    add_all_one_mask_operand (mask_mode);
+    add_all_one_mask_operand (mask_mode ());
 
   if (use_real_merge_p (pred))
     add_input_operand (arg_offset++);
@@ -2534,8 +2570,6 @@ function_expander::use_contiguous_store_insn (insn_code icode)
 {
   gcc_assert (call_expr_nargs (exp) > 0);
   machine_mode mode = TYPE_MODE (builtin_types[type.index].vector);
-  tree mask_type = builtin_types[mask_types[type.index]].vector;
-  machine_mode mask_mode = TYPE_MODE (mask_type);
 
   /* Record the offset to get the argument.  */
   int arg_offset = 0;
@@ -2545,7 +2579,7 @@ function_expander::use_contiguous_store_insn (insn_code icode)
   if (use_real_mask_p (pred))
     add_input_operand (arg_offset++);
   else
-    add_all_one_mask_operand (mask_mode);
+    add_all_one_mask_operand (mask_mode ());
 
   arg_offset++;
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
@@ -2601,8 +2635,6 @@ rtx
 function_expander::use_ternop_insn (bool vd_accum_p, insn_code icode)
 {
   machine_mode mode = TYPE_MODE (builtin_types[type.index].vector);
-  tree mask_type = builtin_types[mask_types[type.index]].vector;
-  machine_mode mask_mode = TYPE_MODE (mask_type);
 
   /* Record the offset to get the argument.  */
   int arg_offset = 0;
@@ -2610,7 +2642,7 @@ function_expander::use_ternop_insn (bool vd_accum_p, insn_code icode)
   if (use_real_mask_p (pred))
     add_input_operand (arg_offset++);
   else
-    add_all_one_mask_operand (mask_mode);
+    add_all_one_mask_operand (mask_mode ());
 
   rtx vd = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
   rtx vs1 = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
@@ -2668,8 +2700,6 @@ rtx
 function_expander::use_widen_ternop_insn (insn_code icode)
 {
   machine_mode mode = TYPE_MODE (builtin_types[type.index].vector);
-  tree mask_type = builtin_types[mask_types[type.index]].vector;
-  machine_mode mask_mode = TYPE_MODE (mask_type);
 
   /* Record the offset to get the argument.  */
   int arg_offset = 0;
@@ -2677,7 +2707,7 @@ function_expander::use_widen_ternop_insn (insn_code icode)
   if (use_real_mask_p (pred))
     add_input_operand (arg_offset++);
   else
-    add_all_one_mask_operand (mask_mode);
+    add_all_one_mask_operand (mask_mode ());
 
   rtx merge = RVV_VUNDEF (mode);
   if (use_real_merge_p (pred))
@@ -2704,6 +2734,31 @@ function_expander::use_widen_ternop_insn (insn_code icode)
 	    m_ops[8].value, m_ops[9].value);
   emit_insn (pat);
   return m_ops[0].value;
+}
+
+/* Implement the call using instruction ICODE, with a 1:1 mapping between
+   arguments and input operands.  */
+rtx
+function_expander::use_scalar_move_insn (insn_code icode)
+{
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Record the offset to get the argument.  */
+  int arg_offset = 0;
+  add_scalar_move_mask_operand (mask_mode ());
+
+  if (use_real_merge_p (pred))
+    add_input_operand (arg_offset++);
+  else
+    add_vundef_operand (mode);
+
+  for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
+    add_input_operand (argno);
+
+  add_input_operand (Pmode, get_tail_policy_for_pred (pred));
+  add_input_operand (Pmode, get_mask_policy_for_pred (pred));
+  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+  return generate_insn (icode);
 }
 
 /* Generate instruction ICODE, given that its operands have already

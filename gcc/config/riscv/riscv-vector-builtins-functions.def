@@ -464,6 +464,22 @@ DEF_RVV_FUNCTION (viota, mask_alu, full_preds, u_vm_ops)
 // 15.9. Vector Element Index Instruction
 DEF_RVV_FUNCTION (vid, alu, full_preds, u_v_ops)
 
-/* TODO: 16. Vector Permutation Instructions.  */
+/* 16. Vector Permutation Instructions.  */
+
+// 16.1. Integer Scalar Move Instructions
+DEF_RVV_FUNCTION (vmv_x, scalar_move, none_preds, iu_x_s_ops)
+DEF_RVV_FUNCTION (vmv_s, move, none_tu_preds, iu_s_x_ops)
+
+// 16.2. Floating-Point Scalar Move Instructions
+DEF_RVV_FUNCTION (vfmv_f, scalar_move, none_preds, f_f_s_ops)
+DEF_RVV_FUNCTION (vfmv_s, move, none_tu_preds, f_s_f_ops)
+
+// 16.3. Vector Slide Instructions
+
+// 16.4. Vector Register Gather Instructions
+
+// 16.5. Vector Compress Instruction
+
+// 16.6. Whole Vector Register Move
 
 #undef DEF_RVV_FUNCTION

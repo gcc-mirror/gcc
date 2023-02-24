@@ -219,6 +219,10 @@ extern const function_base *const vfredmax;
 extern const function_base *const vfredmin;
 extern const function_base *const vfwredosum;
 extern const function_base *const vfwredusum;
+extern const function_base *const vmv_x;
+extern const function_base *const vmv_s;
+extern const function_base *const vfmv_f;
+extern const function_base *const vfmv_s;
 }
 
 } // end namespace riscv_vector

@@ -402,6 +402,22 @@ struct reduc_alu_def : public build_base
   }
 };
 
+/* scalar_move_def class.  */
+struct scalar_move_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+    if (overloaded_p)
+      return b.finish_name ();
+    b.append_name (operand_suffixes[instance.op_info->op]);
+    b.append_name (type_suffixes[instance.type.index].vector);
+    b.append_name (type_suffixes[instance.type.index].scalar);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -414,5 +430,6 @@ SHAPE(narrow_alu, narrow_alu)
 SHAPE(move, move)
 SHAPE(mask_alu, mask_alu)
 SHAPE(reduc_alu, reduc_alu)
+SHAPE(scalar_move, scalar_move)
 
 } // end namespace riscv_vector

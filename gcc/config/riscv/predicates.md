@@ -284,12 +284,21 @@
 		|| satisfies_constraint_Wc0 (op)"))))
 
 (define_predicate "vector_all_trues_mask_operand"
-  (ior (match_operand 0 "register_operand")
+  (and (match_code "const_vector")
        (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
+
+(define_predicate "vector_least_significant_set_mask_operand"
+  (and (match_code "const_vector")
+       (match_test "rtx_equal_p (op, riscv_vector::gen_scalar_move_mask (GET_MODE (op)))")))
 
 (define_predicate "vector_mask_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "vector_all_trues_mask_operand")))
+
+(define_predicate "vector_broadcast_mask_operand"
+  (ior (match_operand 0 "vector_least_significant_set_mask_operand")
+    (ior (match_operand 0 "register_operand")
+         (match_operand 0 "vector_all_trues_mask_operand"))))
 
 (define_predicate "vector_undef_operand"
   (match_test "rtx_equal_p (op, RVV_VUNDEF (GET_MODE (op)))"))
@@ -340,10 +349,13 @@
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"
   (and (match_test "!(reload_completed && !FLOAT_MODE_P (GET_MODE (op))
-		&& register_operand (op, GET_MODE (op))
+		&& (register_operand (op, GET_MODE (op)) || CONST_INT_P (op)
+		|| rtx_equal_p (op, CONST0_RTX (GET_MODE (op))))
 		&& maybe_gt (GET_MODE_BITSIZE (GET_MODE (op)), GET_MODE_BITSIZE (Pmode)))")
-    (ior (match_operand 0 "register_operand")
-         (match_test "satisfies_constraint_Wdm (op)"))))
+    (ior (match_test "rtx_equal_p (op, CONST0_RTX (GET_MODE (op)))")
+         (ior (match_operand 0 "const_int_operand")
+              (ior (match_operand 0 "register_operand")
+                   (match_test "satisfies_constraint_Wdm (op)"))))))
 
 ;; A CONST_INT operand that has exactly two bits cleared.
 (define_predicate "const_nottwobits_operand"

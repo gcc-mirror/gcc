@@ -42,6 +42,7 @@
 #include "expr.h"
 #include "optabs.h"
 #include "tm-constrs.h"
+#include "rtx-vector-builder.h"
 
 using namespace riscv_vector;
 
@@ -482,6 +483,16 @@ sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
   emit_vector_func (operands, tmp);
 
   return true;
+}
+
+/* Get { ... ,0, 0, 0, ..., 0, 0, 0, 1 } mask.  */
+rtx
+gen_scalar_move_mask (machine_mode mode)
+{
+  rtx_vector_builder builder (mode, 1, 2);
+  builder.quick_push (const1_rtx);
+  builder.quick_push (const0_rtx);
+  return builder.build ();
 }
 
 } // namespace riscv_vector

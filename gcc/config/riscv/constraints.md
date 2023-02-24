@@ -162,6 +162,12 @@
  (and (match_code "const_vector")
       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
+(define_constraint "Wb1"
+  "@internal
+ A constraint that matches a BOOL vector of {...,0,...0,1}"
+ (and (match_code "const_vector")
+      (match_test "rtx_equal_p (op, riscv_vector::gen_scalar_move_mask (GET_MODE (op)))")))
+
 (define_memory_constraint "Wdm"
   "Vector duplicate memory operand"
   (and (match_code "mem")

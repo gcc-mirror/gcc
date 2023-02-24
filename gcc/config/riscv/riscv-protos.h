@@ -133,6 +133,7 @@ enum vlmul_type
   LMUL_F8 = 5,
   LMUL_F4 = 6,
   LMUL_F2 = 7,
+  NUM_LMUL = 8
 };
 
 enum avl_type
@@ -183,6 +184,7 @@ bool has_vi_variant_p (rtx_code, rtx);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode, machine_mode,
 			  bool, void (*)(rtx *, rtx));
+rtx gen_scalar_move_mask (machine_mode);
 }
 
 /* We classify builtin types into two classes:

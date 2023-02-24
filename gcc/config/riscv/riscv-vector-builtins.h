@@ -342,6 +342,7 @@ public:
   void add_input_operand (unsigned);
   void add_output_operand (machine_mode, rtx);
   void add_all_one_mask_operand (machine_mode);
+  void add_scalar_move_mask_operand (machine_mode);
   void add_vundef_operand (machine_mode);
   void add_fixed_operand (rtx);
   void add_integer_operand (rtx);
@@ -350,6 +351,7 @@ public:
   machine_mode vector_mode (void) const;
   machine_mode index_mode (void) const;
   machine_mode arg_mode (int) const;
+  machine_mode mask_mode (void) const;
 
   rtx use_exact_insn (insn_code);
   rtx use_contiguous_load_insn (insn_code);
@@ -357,6 +359,7 @@ public:
   rtx use_compare_insn (rtx_code, insn_code);
   rtx use_ternop_insn (bool, insn_code);
   rtx use_widen_ternop_insn (insn_code);
+  rtx use_scalar_move_insn (insn_code);
   rtx generate_insn (insn_code);
 
   /* The function call expression.  */
@@ -468,6 +471,13 @@ inline void
 function_expander::add_all_one_mask_operand (machine_mode mode)
 {
   add_input_operand (mode, CONSTM1_RTX (mode));
+}
+
+/* Add mask operand for scalar move instruction.  */
+inline void
+function_expander::add_scalar_move_mask_operand (machine_mode mode)
+{
+  add_input_operand (mode, gen_scalar_move_mask (mode));
 }
 
 /* Add an operand that must be X.  The only way of legitimizing an
