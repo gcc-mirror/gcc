@@ -91,8 +91,11 @@ class crc_symbolic_execution {
   bool execute (function *);
 
   /* Returns calculated polynomial by executing the loop
-     with concrete values.  */
-  value *extract_poly_and_create_lfsr (class loop *, gphi *, gphi *, bool);
+     with concrete values.
+     First value of the pair is the tree containing the value of the polynomial,
+     second is the calculated polynomial. Pair may contain nullptr.  */
+  std::pair <tree, value *>
+  extract_polynomial (class loop *, gphi *, gphi *, bool);
 
   const vec<state *> &get_final_states ()
   {

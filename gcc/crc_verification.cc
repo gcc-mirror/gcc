@@ -845,16 +845,26 @@ polynomial_is_known (const value *polynomial)
 
 
 /* Execute the loop, which is expected to calculate CRC,
-   to extract polynomial, assigning real numbers to crc and data.  */
+   to extract polynomial, assigning real numbers to crc and data.
+   Returns a pair, first value of the pair is the tree containing
+   the value of the polynomial,
+   second is the calculated polynomial. Pair may contain nullptr.  */
 
-value *
-crc_symbolic_execution::extract_poly_and_create_lfsr (class loop *crc_loop,
-						      gphi *crc, gphi *data,
-						      bool is_shift_left)
+std::pair <tree, value *>
+crc_symbolic_execution::extract_polynomial (class loop *crc_loop,
+					    gphi *crc, gphi *data,
+					    bool is_shift_left)
 {
   if (!execute_crc_loop (crc_loop, crc, data, is_shift_left))
-    return nullptr;
+    return std::make_pair (nullptr, nullptr);
 
+  if (states.length () != 1)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "There number of states isn't one "
+			    "after executing the loop.\n");
+      return std::make_pair (nullptr, nullptr);
+    }
   state *polynomial_state = states.last ();
 
   /* Get the tree which will contain the value of the polynomial
@@ -874,7 +884,7 @@ crc_symbolic_execution::extract_poly_and_create_lfsr (class loop *crc_loop,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Polynomial's value is null");
-      return nullptr;
+      return std::make_pair (nullptr, nullptr);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -892,10 +902,10 @@ crc_symbolic_execution::extract_poly_and_create_lfsr (class loop *crc_loop,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Polynomial's value is not constant.\n");
-      return nullptr;
+      return std::make_pair (nullptr, nullptr);
     }
 
-  return state::create_lfsr (calculated_crc, polynomial, is_shift_left);
+  return std::make_pair (calculated_crc, polynomial);
 }
 
 
