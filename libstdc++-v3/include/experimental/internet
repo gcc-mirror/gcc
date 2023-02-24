@@ -198,7 +198,12 @@ namespace ip
 
     constexpr
     address_v4(const bytes_type& __b)
-    : _M_addr((__b[0] << 24) | (__b[1] << 16) | (__b[2] << 8) | __b[3])
+#if __has_builtin(__builtin_bit_cast)
+    : _M_addr(__builtin_bit_cast(uint_type, __b))
+#else
+    : _M_addr(_S_hton_32((__b[0] << 24) | (__b[1] << 16)
+			   | (__b[2] << 8) | __b[3]))
+#endif
     { }
 
     explicit constexpr
@@ -227,12 +232,17 @@ namespace ip
     constexpr bytes_type
     to_bytes() const noexcept
     {
+#if __has_builtin(__builtin_bit_cast)
+      return __builtin_bit_cast(bytes_type, _M_addr);
+#else
+      auto __host = to_uint();
       return bytes_type{
-	  (_M_addr >> 24) & 0xFF,
-	  (_M_addr >> 16) & 0xFF,
-	  (_M_addr >> 8) & 0xFF,
-	  _M_addr & 0xFF
+	(__host >> 24) & 0xFF,
+	(__host >> 16) & 0xFF,
+	(__host >> 8) & 0xFF,
+	__host & 0xFF
       };
+#endif
     }
 
     constexpr uint_type

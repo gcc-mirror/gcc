@@ -26,6 +26,9 @@
 
 using std::experimental::net::ip::address_v4;
 
+static_assert(std::is_standard_layout<address_v4::bytes_type>::value,
+    "net::ip::address_v4::bytes_type is a standard layout type");
+
 constexpr bool
 test01()
 {
