@@ -23,9 +23,9 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* Before including this file, some macros must be defined:
-   BDESC (mask, icode, name, code, comparison, flag)
+   BDESC (mask, mask2, icode, name, code, comparison, flag)
      -- definition of each builtin
-   BDESC_FIRST (kind, KIND, mask, icode, name, code, comparison, flag)
+   BDESC_FIRST (kind, KIND, mask, mask2, icode, name, code, comparison, flag)
      -- like BDESC, but used for the first builtin in each category;
 	bdesc_##kind will be used in the name of the array and
 	IX86_BUILTIN__BDESC_##KIND##_FIRST will be the low boundary
