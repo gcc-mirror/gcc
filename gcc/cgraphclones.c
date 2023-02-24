@@ -214,7 +214,17 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
       body_adj.modify_formal_parameters ();
     }
   else
-    new_decl = copy_node (thunk->decl);
+    {
+      new_decl = copy_node (thunk->decl);
+      for (tree *arg = &DECL_ARGUMENTS (new_decl);
+	   *arg; arg = &DECL_CHAIN (*arg))
+	{
+	  tree next = DECL_CHAIN (*arg);
+	  *arg = copy_node (*arg);
+	  DECL_CONTEXT (*arg) = new_decl;
+	  DECL_CHAIN (*arg) = next;
+	}
+    }
 
   gcc_checking_assert (!DECL_STRUCT_FUNCTION (new_decl));
   gcc_checking_assert (!DECL_INITIAL (new_decl));
