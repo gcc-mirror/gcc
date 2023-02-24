@@ -2051,34 +2051,25 @@
 ])
 
 ;;
-;; [vqrdmladhq_s])
+;; [vqdmladhq_s]
+;; [vqdmladhxq_s]
+;; [vqdmlsdhq_s]
+;; [vqdmlsdhxq_s]
+;; [vqrdmladhq_s]
+;; [vqrdmladhxq_s]
+;; [vqrdmlsdhq_s]
+;; [vqrdmlsdhxq_s]
 ;;
-(define_insn "mve_vqrdmladhq_s<mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
 		       (match_operand:MVE_2 3 "s_register_operand" "w")]
-	 VQRDMLADHQ_S))
+	 MVE_VQxDMLxDHxQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vqrdmladh.s%#<V_sz_elem>\t%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqrdmladhxq_s])
-;;
-(define_insn "mve_vqrdmladhxq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:MVE_2 3 "s_register_operand" "w")]
-	 VQRDMLADHXQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqrdmladhx.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  "<mve_insn>.s%#<V_sz_elem>\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2111,38 +2102,6 @@
   ]
   "TARGET_HAVE_MVE"
   "vqrdmlash.s%#<V_sz_elem>\t%q0, %q2, %3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqrdmlsdhq_s])
-;;
-(define_insn "mve_vqrdmlsdhq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:MVE_2 3 "s_register_operand" "w")]
-	 VQRDMLSDHQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqrdmlsdh.s%#<V_sz_elem>\t%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqrdmlsdhxq_s])
-;;
-(define_insn "mve_vqrdmlsdhxq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:MVE_2 3 "s_register_operand" "w")]
-	 VQRDMLSDHXQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqrdmlsdhx.s%#<V_sz_elem>\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2225,70 +2184,6 @@
   ]
   "TARGET_HAVE_MVE"
   "vsri.%#<V_sz_elem>\t%q0, %q2, %3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqdmlsdhxq_s])
-;;
-(define_insn "mve_vqdmlsdhxq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:MVE_2 3 "s_register_operand" "w")]
-	 VQDMLSDHXQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqdmlsdhx.s%#<V_sz_elem>\t%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqdmlsdhq_s])
-;;
-(define_insn "mve_vqdmlsdhq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:MVE_2 3 "s_register_operand" "w")]
-	 VQDMLSDHQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqdmlsdh.s%#<V_sz_elem>\t%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqdmladhxq_s])
-;;
-(define_insn "mve_vqdmladhxq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:MVE_2 3 "s_register_operand" "w")]
-	 VQDMLADHXQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqdmladhx.s%#<V_sz_elem>\t%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqdmladhq_s])
-;;
-(define_insn "mve_vqdmladhq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:MVE_2 3 "s_register_operand" "w")]
-	 VQDMLADHQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqdmladh.s%#<V_sz_elem>\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
