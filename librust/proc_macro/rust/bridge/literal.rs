@@ -255,7 +255,7 @@ impl fmt::Display for Literal {
                     if byte != b'"' && (b' '..=b'z').contains(&byte) {
                         char::try_from(byte).unwrap().fmt(f)?;
                     } else {
-                        write!(f, "\\x{byte:02x}")?;
+                        write!(f, "\\x{:02x}", byte)?;
                     }
                 }
                 f.write_str("b\"")?;
@@ -266,8 +266,8 @@ impl fmt::Display for Literal {
                     '\'' => f.write_str("'\\''")?,
                     '\0' => f.write_str("'\\0'")?,
                     '\n' => f.write_str("'\\n'")?,
-                    ' '..='z' => write!(f, "'{ch}'")?,
-                    _ => write!(f, "'\\u{val:x}'")?,
+                    ' '..='z' => write!(f, "'{}'", ch)?,
+                    _ => write!(f, "'\\u{:x}'", val)?,
                 }
             }
             Literal::Unsigned(val, suffixed) => match val {
