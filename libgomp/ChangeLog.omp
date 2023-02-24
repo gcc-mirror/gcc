@@ -3,6 +3,12 @@
 	Backported from master:
 	2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* oacc-async.c (goacc_wait): Remove 'acc_async_test' -> skip
+	shortcut.
+
+	Backported from master:
+	2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* testsuite/libgomp.oacc-c-c++-common/data-3.c: Document/verify
 	another aspect of OpenACC 'async' semantics.
 
