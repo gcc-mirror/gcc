@@ -611,10 +611,10 @@ public:
   void qsort (int (*) (const void *, const void *));
   void sort (int (*) (const void *, const void *, void *), void *);
   void stablesort (int (*) (const void *, const void *, void *), void *);
-  T *bsearch (const void *key, int (*compar)(const void *, const void *));
+  T *bsearch (const void *key, int (*compar) (const void *, const void *));
   T *bsearch (const void *key,
 	      int (*compar)(const void *, const void *, void *), void *);
-  unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
+  unsigned lower_bound (const T &, bool (*) (const T &, const T &)) const;
   bool contains (const T &search) const;
   static size_t embedded_size (unsigned);
   void embedded_init (unsigned, unsigned = 0, unsigned = 0);
@@ -879,7 +879,7 @@ inline const T &
 vec<T, A, vl_embed>::operator[] (unsigned ix) const
 {
   gcc_checking_assert (ix < m_vecpfx.m_num);
-  return m_vecdata[ix];
+  return address ()[ix];
 }
 
 template<typename T, typename A>
@@ -887,7 +887,7 @@ inline T &
 vec<T, A, vl_embed>::operator[] (unsigned ix)
 {
   gcc_checking_assert (ix < m_vecpfx.m_num);
-  return m_vecdata[ix];
+  return address ()[ix];
 }
 
 
@@ -929,7 +929,7 @@ vec<T, A, vl_embed>::iterate (unsigned ix, T *ptr) const
 {
   if (ix < m_vecpfx.m_num)
     {
-      *ptr = m_vecdata[ix];
+      *ptr = address ()[ix];
       return true;
     }
   else
@@ -955,7 +955,7 @@ vec<T, A, vl_embed>::iterate (unsigned ix, T **ptr) const
 {
   if (ix < m_vecpfx.m_num)
     {
-      *ptr = CONST_CAST (T *, &m_vecdata[ix]);
+      *ptr = CONST_CAST (T *, &address ()[ix]);
       return true;
     }
   else
@@ -978,7 +978,7 @@ vec<T, A, vl_embed>::copy (ALONE_MEM_STAT_DECL) const
     {
       vec_alloc (new_vec, len PASS_MEM_STAT);
       new_vec->embedded_init (len, len);
-      vec_copy_construct (new_vec->address (), m_vecdata, len);
+      vec_copy_construct (new_vec->address (), address (), len);
     }
   return new_vec;
 }
@@ -1018,7 +1018,7 @@ inline T *
 vec<T, A, vl_embed>::quick_push (const T &obj)
 {
   gcc_checking_assert (space (1));
-  T *slot = &m_vecdata[m_vecpfx.m_num++];
+  T *slot = &address ()[m_vecpfx.m_num++];
   *slot = obj;
   return slot;
 }
@@ -1031,7 +1031,7 @@ inline T &
 vec<T, A, vl_embed>::pop (void)
 {
   gcc_checking_assert (length () > 0);
-  return m_vecdata[--m_vecpfx.m_num];
+  return address ()[--m_vecpfx.m_num];
 }
 
 
@@ -1056,7 +1056,7 @@ vec<T, A, vl_embed>::quick_insert (unsigned ix, const T &obj)
 {
   gcc_checking_assert (length () < allocated ());
   gcc_checking_assert (ix <= length ());
-  T *slot = &m_vecdata[ix];
+  T *slot = &address ()[ix];
   memmove (slot + 1, slot, (m_vecpfx.m_num++ - ix) * sizeof (T));
   *slot = obj;
 }
@@ -1071,7 +1071,7 @@ inline void
 vec<T, A, vl_embed>::ordered_remove (unsigned ix)
 {
   gcc_checking_assert (ix < length ());
-  T *slot = &m_vecdata[ix];
+  T *slot = &address ()[ix];
   memmove (slot, slot + 1, (--m_vecpfx.m_num - ix) * sizeof (T));
 }
 
@@ -1118,7 +1118,8 @@ inline void
 vec<T, A, vl_embed>::unordered_remove (unsigned ix)
 {
   gcc_checking_assert (ix < length ());
-  m_vecdata[ix] = m_vecdata[--m_vecpfx.m_num];
+  T *p = address ();
+  p[ix] = p[--m_vecpfx.m_num];
 }
 
 
@@ -1130,7 +1131,7 @@ inline void
 vec<T, A, vl_embed>::block_remove (unsigned ix, unsigned len)
 {
   gcc_checking_assert (ix + len <= length ());
-  T *slot = &m_vecdata[ix];
+  T *slot = &address ()[ix];
   m_vecpfx.m_num -= len;
   memmove (slot, slot + len, (m_vecpfx.m_num - ix) * sizeof (T));
 }
@@ -1248,9 +1249,13 @@ inline bool
 vec<T, A, vl_embed>::contains (const T &search) const
 {
   unsigned int len = length ();
+  const T *p = address ();
   for (unsigned int i = 0; i < len; i++)
-    if ((*this)[i] == search)
-      return true;
+    {
+      const T *slot = &p[i];
+      if (*slot == search)
+	return true;
+    }
 
   return false;
 }
@@ -1262,7 +1267,8 @@ vec<T, A, vl_embed>::contains (const T &search) const
 
 template<typename T, typename A>
 unsigned
-vec<T, A, vl_embed>::lower_bound (T obj, bool (*lessthan)(const T &, const T &))
+vec<T, A, vl_embed>::lower_bound (const T &obj,
+				  bool (*lessthan)(const T &, const T &))
   const
 {
   unsigned int len = length ();
@@ -1273,7 +1279,7 @@ vec<T, A, vl_embed>::lower_bound (T obj, bool (*lessthan)(const T &, const T &))
       half = len / 2;
       middle = first;
       middle += half;
-      T middle_elem = (*this)[middle];
+      const T &middle_elem = address ()[middle];
       if (lessthan (middle_elem, obj))
 	{
 	  first = middle;
@@ -1476,10 +1482,10 @@ public:
   { return m_vec ? m_vec->length () : 0; }
 
   T *address (void)
-  { return m_vec ? m_vec->m_vecdata : NULL; }
+  { return m_vec ? m_vec->address () : NULL; }
 
   const T *address (void) const
-  { return m_vec ? m_vec->m_vecdata : NULL; }
+  { return m_vec ? m_vec->address () : NULL; }
 
   T *begin () { return address (); }
   const T *begin () const { return address (); }
