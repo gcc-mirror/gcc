@@ -682,6 +682,8 @@ function_instance::has_inactive_argument () const
       || base == functions::vmaxnmaq
       || base == functions::vminaq
       || base == functions::vminnmaq
+      || base == functions::vmlaq
+      || base == functions::vmlasq
       || base == functions::vmovnbq
       || base == functions::vmovntq
       || base == functions::vqmovnbq
@@ -691,10 +693,14 @@ function_instance::has_inactive_argument () const
       || (base == functions::vorrq && mode_suffix_id == MODE_n)
       || base == functions::vqdmladhq
       || base == functions::vqdmladhxq
+      || base == functions::vqdmlahq
+      || base == functions::vqdmlashq
       || base == functions::vqdmlsdhq
       || base == functions::vqdmlsdhxq
       || base == functions::vqrdmladhq
       || base == functions::vqrdmladhxq
+      || base == functions::vqrdmlahq
+      || base == functions::vqrdmlashq
       || base == functions::vqrdmlsdhq
       || base == functions::vqrdmlsdhxq
       || (base == functions::vqrshlq && mode_suffix_id == MODE_n)
