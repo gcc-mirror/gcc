@@ -2550,34 +2550,21 @@
    (set_attr "length""8")])
 
 ;;
-;; [vmlaldavaq_s, vmlaldavaq_u])
+;; [vmlaldavaq_s, vmlaldavaq_u]
+;; [vmlaldavaxq_s]
+;; [vmlsldavaq_s]
+;; [vmlsldavaxq_s]
 ;;
-(define_insn "mve_vmlaldavaq_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:DI 0 "s_register_operand" "=r")
 	(unspec:DI [(match_operand:DI 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:MVE_5 3 "s_register_operand" "w")]
-	 VMLALDAVAQ))
+	 MVE_VMLxLDAVAxQ))
   ]
   "TARGET_HAVE_MVE"
-  "vmlaldava.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vmlaldavaxq_s])
-;;
-(define_insn "mve_vmlaldavaxq_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "0")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:MVE_5 3 "s_register_operand" "w")]
-	 VMLALDAVAXQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmlaldavax.s%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
+  "<mve_insn>.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2599,38 +2586,6 @@
   "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%Q0, %R0, %q1, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
-
-;;
-;; [vmlsldavaq_s])
-;;
-(define_insn "mve_vmlsldavaq_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "0")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:MVE_5 3 "s_register_operand" "w")]
-	 VMLSLDAVAQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmlsldava.s%#<V_sz_elem> %Q0, %R0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vmlsldavaxq_s])
-;;
-(define_insn "mve_vmlsldavaxq_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "0")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:MVE_5 3 "s_register_operand" "w")]
-	 VMLSLDAVAXQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmlsldavax.s%#<V_sz_elem> %Q0, %R0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-])
 
 ;;
 ;; [vmovlbq_m_u, vmovlbq_m_s])
@@ -3336,36 +3291,22 @@
    (set_attr "length""8")])
 
 ;;
-;; [vmlaldavaq_p_u, vmlaldavaq_p_s])
+;; [vmlaldavaq_p_u, vmlaldavaq_p_s]
+;; [vmlaldavaxq_p_s]
+;; [vmlsldavaq_p_s]
+;; [vmlsldavaxq_p_s]
 ;;
-(define_insn "mve_vmlaldavaq_p_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_p_<supf><mode>"
   [
    (set (match_operand:DI 0 "s_register_operand" "=r")
 	(unspec:DI [(match_operand:DI 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:MVE_5 3 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VMLALDAVAQ_P))
+	 MVE_VMLxLDAVAxQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vmlaldavat.<supf>%#<V_sz_elem>	%Q0, %R0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vmlaldavaxq_p_s])
-;;
-(define_insn "mve_vmlaldavaxq_p_<supf><mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "0")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:MVE_5 3 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VMLALDAVAXQ_P))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vmlaldavaxt.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
+  "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -3429,40 +3370,6 @@
   ]
   "TARGET_HAVE_MVE"
   "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vmlsldavaq_p_s])
-;;
-(define_insn "mve_vmlsldavaq_p_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "0")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:MVE_5 3 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VMLSLDAVAQ_P_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vmlsldavat.s%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vmlsldavaxq_p_s])
-;;
-(define_insn "mve_vmlsldavaxq_p_s<mode>"
-  [
-   (set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "0")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:MVE_5 3 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VMLSLDAVAXQ_P_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vmlsldavaxt.s%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 

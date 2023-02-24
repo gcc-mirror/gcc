@@ -741,6 +741,20 @@
 		     VMLSLDAVXQ_P_S
 		     ])
 
+(define_int_iterator MVE_VMLxLDAVAxQ [
+		     VMLALDAVAQ_S VMLALDAVAQ_U
+		     VMLALDAVAXQ_S
+		     VMLSLDAVAQ_S
+		     VMLSLDAVAXQ_S
+		     ])
+
+(define_int_iterator MVE_VMLxLDAVAxQ_P [
+		     VMLALDAVAQ_P_S VMLALDAVAQ_P_U
+		     VMLALDAVAXQ_P_S
+		     VMLSLDAVAQ_P_S
+		     VMLSLDAVAXQ_P_S
+		     ])
+
 (define_int_iterator MVE_VRMLxLDAVxQ [
 		     VRMLALDAVHQ_S VRMLALDAVHQ_U
 		     VRMLALDAVHXQ_S
@@ -883,6 +897,10 @@
 		 (VMLADAVQ_S "vmladav") (VMLADAVQ_U "vmladav")
 		 (VMLADAVXQ_P_S "vmladavx")
 		 (VMLADAVXQ_S "vmladavx")
+		 (VMLALDAVAQ_P_S "vmlaldava") (VMLALDAVAQ_P_U "vmlaldava")
+		 (VMLALDAVAQ_S "vmlaldava") (VMLALDAVAQ_U "vmlaldava")
+		 (VMLALDAVAXQ_P_S "vmlaldavax")
+		 (VMLALDAVAXQ_S "vmlaldavax")
 		 (VMLALDAVQ_P_S "vmlaldav") (VMLALDAVQ_P_U "vmlaldav")
 		 (VMLALDAVQ_S "vmlaldav") (VMLALDAVQ_U "vmlaldav")
 		 (VMLALDAVXQ_P_S "vmlaldavx")
@@ -897,6 +915,10 @@
 		 (VMLSDAVQ_S "vmlsdav")
 		 (VMLSDAVXQ_P_S "vmlsdavx")
 		 (VMLSDAVXQ_S "vmlsdavx")
+		 (VMLSLDAVAQ_P_S "vmlsldava")
+		 (VMLSLDAVAQ_S "vmlsldava")
+		 (VMLSLDAVAXQ_P_S "vmlsldavax")
+		 (VMLSLDAVAXQ_S "vmlsldavax")
 		 (VMLSLDAVQ_P_S "vmlsldav")
 		 (VMLSLDAVQ_S "vmlsldav")
 		 (VMLSLDAVXQ_P_S "vmlsldavx")
@@ -2351,6 +2373,12 @@
 		       (VRMLSLDAVHQ_S "s")
 		       (VRMLSLDAVHXQ_P_S "s")
 		       (VRMLSLDAVHXQ_S "s")
+		       (VMLALDAVAXQ_P_S "s")
+		       (VMLALDAVAXQ_S "s")
+		       (VMLSLDAVAQ_P_S "s")
+		       (VMLSLDAVAQ_S "s")
+		       (VMLSLDAVAXQ_P_S "s")
+		       (VMLSLDAVAXQ_S "s")
 		       ])
 
 ;; Both kinds of return insn.
