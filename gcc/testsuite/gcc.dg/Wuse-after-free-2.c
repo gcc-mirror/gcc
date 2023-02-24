@@ -1,6 +1,6 @@
 /* PR middle-end/104232 - spurious -Wuse-after-free after conditional free
    { dg-do compile }
-   { dg-options "-O2 -Wall -fno-tree-loop-distribute-patterns" }  */
+   { dg-options "-O2 -Wall -fno-tree-loop-distribute-patterns -fno-ivopts" }  */
 
 void free (void*);
 
@@ -108,7 +108,8 @@ int warn_cond_loop (char *p)
   char *q = p;
 
   /*  -fno-tree-loop-distribute-patterns ensures this does not get converted
-      into rawmemchr (making q and p unrelated).  */
+      into rawmemchr (making q and p unrelated).  Also, -fno-ivopts is required
+      for some targets, to not lose track of the pointer.  */
   while (*q)
     ++q;
 
