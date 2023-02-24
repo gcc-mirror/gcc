@@ -256,19 +256,19 @@ namespace
       return incomplete_mb_character;
     char32_t c1 = (unsigned char) from[0];
     // https://en.wikipedia.org/wiki/UTF-8#Sample_code
-    if (c1 < 0x80)
+    if (c1 < 0x80) [[likely]]
     {
       ++from;
       return c1;
     }
-    else if (c1 < 0xC2) // continuation or overlong 2-byte sequence
+    else if (c1 < 0xC2) [[unlikely]] // continuation or overlong 2-byte sequence
       return invalid_mb_sequence;
     else if (c1 < 0xE0) // 2-byte sequence
     {
-      if (avail < 2)
+      if (avail < 2) [[unlikely]]
 	return incomplete_mb_character;
       char32_t c2 = (unsigned char) from[1];
-      if ((c2 & 0xC0) != 0x80)
+      if ((c2 & 0xC0) != 0x80) [[unlikely]]
 	return invalid_mb_sequence;
       char32_t c = (c1 << 6) + c2 - 0x3080;
       if (c <= maxcode)
@@ -277,17 +277,17 @@ namespace
     }
     else if (c1 < 0xF0) // 3-byte sequence
     {
-      if (avail < 2)
+      if (avail < 2) [[unlikely]]
 	return incomplete_mb_character;
       char32_t c2 = (unsigned char) from[1];
-      if ((c2 & 0xC0) != 0x80)
+      if ((c2 & 0xC0) != 0x80) [[unlikely]]
 	return invalid_mb_sequence;
-      if (c1 == 0xE0 && c2 < 0xA0) // overlong
+      if (c1 == 0xE0 && c2 < 0xA0) [[unlikely]] // overlong
 	return invalid_mb_sequence;
-      if (avail < 3)
+      if (avail < 3) [[unlikely]]
 	return incomplete_mb_character;
       char32_t c3 = (unsigned char) from[2];
-      if ((c3 & 0xC0) != 0x80)
+      if ((c3 & 0xC0) != 0x80) [[unlikely]]
 	return invalid_mb_sequence;
       char32_t c = (c1 << 12) + (c2 << 6) + c3 - 0xE2080;
       if (c <= maxcode)
@@ -296,31 +296,31 @@ namespace
     }
     else if (c1 < 0xF5 && maxcode > 0xFFFF) // 4-byte sequence
     {
-      if (avail < 2)
+      if (avail < 2) [[unlikely]]
 	return incomplete_mb_character;
       char32_t c2 = (unsigned char) from[1];
-      if ((c2 & 0xC0) != 0x80)
+      if ((c2 & 0xC0) != 0x80) [[unlikely]]
 	return invalid_mb_sequence;
-      if (c1 == 0xF0 && c2 < 0x90) // overlong
+      if (c1 == 0xF0 && c2 < 0x90) [[unlikely]] // overlong
 	return invalid_mb_sequence;
-      if (c1 == 0xF4 && c2 >= 0x90) // > U+10FFFF
+      if (c1 == 0xF4 && c2 >= 0x90) [[unlikely]] // > U+10FFFF
 	return invalid_mb_sequence;
-      if (avail < 3)
+      if (avail < 3) [[unlikely]]
 	return incomplete_mb_character;
       char32_t c3 = (unsigned char) from[2];
-      if ((c3 & 0xC0) != 0x80)
+      if ((c3 & 0xC0) != 0x80) [[unlikely]]
 	return invalid_mb_sequence;
-      if (avail < 4)
+      if (avail < 4) [[unlikely]]
 	return incomplete_mb_character;
       char32_t c4 = (unsigned char) from[3];
-      if ((c4 & 0xC0) != 0x80)
+      if ((c4 & 0xC0) != 0x80) [[unlikely]]
 	return invalid_mb_sequence;
       char32_t c = (c1 << 18) + (c2 << 12) + (c3 << 6) + c4 - 0x3C82080;
       if (c <= maxcode)
 	from += 4;
       return c;
     }
-    else // > U+10FFFF
+    else [[unlikely]] // > U+10FFFF
       return invalid_mb_sequence;
   }
 
@@ -330,20 +330,20 @@ namespace
   {
     if (code_point < 0x80)
       {
-	if (to.size() < 1)
+	if (to.size() < 1) [[unlikely]]
 	  return false;
 	to = code_point;
       }
     else if (code_point <= 0x7FF)
       {
-	if (to.size() < 2)
+	if (to.size() < 2) [[unlikely]]
 	  return false;
 	to = (code_point >> 6) + 0xC0;
 	to = (code_point & 0x3F) + 0x80;
       }
     else if (code_point <= 0xFFFF)
       {
-	if (to.size() < 3)
+	if (to.size() < 3) [[unlikely]]
 	  return false;
 	to = (code_point >> 12) + 0xE0;
 	to = ((code_point >> 6) & 0x3F) + 0x80;
@@ -351,14 +351,14 @@ namespace
       }
     else if (code_point <= 0x10FFFF)
       {
-	if (to.size() < 4)
+	if (to.size() < 4) [[unlikely]]
 	  return false;
 	to = (code_point >> 18) + 0xF0;
 	to = ((code_point >> 12) & 0x3F) + 0x80;
 	to = ((code_point >> 6) & 0x3F) + 0x80;
 	to = (code_point & 0x3F) + 0x80;
       }
-    else
+    else [[unlikely]]
       return false;
     return true;
   }
@@ -403,16 +403,16 @@ namespace
 			  unsigned long maxcode, codecvt_mode mode)
     {
       const size_t avail = from.size();
-      if (avail == 0)
+      if (avail == 0) [[unlikely]]
 	return incomplete_mb_character;
       int inc = 1;
       char32_t c = adjust_byte_order(from[0], mode);
       if (is_high_surrogate(c))
 	{
-	  if (avail < 2)
+	  if (avail < 2) [[unlikely]]
 	    return incomplete_mb_character;
 	  const char16_t c2 = adjust_byte_order(from[1], mode);
-	  if (is_low_surrogate(c2))
+	  if (is_low_surrogate(c2)) [[likely]]
 	    {
 	      c = surrogate_pair_to_code_point(c, c2);
 	      inc = 2;
@@ -420,7 +420,7 @@ namespace
 	  else
 	    return invalid_mb_sequence;
 	}
-      else if (is_low_surrogate(c))
+      else if (is_low_surrogate(c)) [[unlikely]]
 	return invalid_mb_sequence;
       if (c <= maxcode)
 	from += inc;
@@ -464,9 +464,9 @@ namespace
     while (from.size() && to.size())
       {
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
-	if (codepoint == incomplete_mb_character)
+	if (codepoint == incomplete_mb_character) [[unlikely]]
 	  return codecvt_base::partial;
-	if (codepoint > maxcode)
+	if (codepoint > maxcode) [[unlikely]]
 	  return codecvt_base::error;
 	to = codepoint;
       }
@@ -479,14 +479,14 @@ namespace
   ucs4_out(range<const char32_t>& from, range<C>& to,
            unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
-    if (!write_utf8_bom(to, mode))
+    if (!write_utf8_bom(to, mode)) [[unlikely]]
       return codecvt_base::partial;
     while (from.size())
       {
 	const char32_t c = from[0];
-	if (c > maxcode)
+	if (c > maxcode) [[unlikely]]
 	  return codecvt_base::error;
-	if (!write_utf8_code_point(to, c))
+	if (!write_utf8_code_point(to, c)) [[unlikely]]
 	  return codecvt_base::partial;
 	++from;
       }
@@ -502,9 +502,9 @@ namespace
     while (from.size() && to.size())
       {
 	const char32_t codepoint = read_utf16_code_point(from, maxcode, mode);
-	if (codepoint == incomplete_mb_character)
+	if (codepoint == incomplete_mb_character) [[unlikely]]
 	  return codecvt_base::partial;
-	if (codepoint > maxcode)
+	if (codepoint > maxcode) [[unlikely]]
 	  return codecvt_base::error;
 	to = codepoint;
       }
@@ -516,14 +516,14 @@ namespace
   ucs4_out(range<const char32_t>& from, range<char16_t, false>& to,
            unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
-    if (!write_utf16_bom(to, mode))
+    if (!write_utf16_bom(to, mode)) [[unlikely]]
       return codecvt_base::partial;
     while (from.size())
       {
 	const char32_t c = from[0];
-	if (c > maxcode)
+	if (c > maxcode) [[unlikely]]
 	  return codecvt_base::error;
-	if (!write_utf16_code_point(to, c, mode))
+	if (!write_utf16_code_point(to, c, mode)) [[unlikely]]
 	  return codecvt_base::partial;
 	++from;
       }
@@ -544,11 +544,11 @@ namespace
       {
 	auto orig = from;
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
-	if (codepoint == incomplete_mb_character)
+	if (codepoint == incomplete_mb_character) [[unlikely]]
 	  return codecvt_base::partial;
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
-	if (!write_utf16_code_point(to, codepoint, mode))
+	if (!write_utf16_code_point(to, codepoint, mode)) [[unlikely]]
 	  {
 	    from = orig; // rewind to previous position
 	    return codecvt_base::partial;
@@ -564,7 +564,7 @@ namespace
 	    unsigned long maxcode = max_code_point, codecvt_mode mode = {},
 	    surrogates s = surrogates::allowed)
   {
-    if (!write_utf8_bom(to, mode))
+    if (!write_utf8_bom(to, mode)) [[unlikely]]
       return codecvt_base::partial;
     while (from.size())
       {
@@ -572,14 +572,14 @@ namespace
 	int inc = 1;
 	if (is_high_surrogate(c))
 	  {
-	    if (s == surrogates::disallowed)
+	    if (s == surrogates::disallowed) [[unlikely]]
 	      return codecvt_base::error; // No surrogates in UCS-2
 
-	    if (from.size() < 2)
+	    if (from.size() < 2) [[unlikely]]
 	      return codecvt_base::partial; // stop converting at this point
 
 	    const char32_t c2 = from[1];
-	    if (is_low_surrogate(c2))
+	    if (is_low_surrogate(c2)) [[likely]]
 	      {
 		c = surrogate_pair_to_code_point(c, c2);
 		inc = 2;
@@ -587,11 +587,11 @@ namespace
 	    else
 	      return codecvt_base::error;
 	  }
-	else if (is_low_surrogate(c))
+	else if (is_low_surrogate(c)) [[unlikely]]
 	  return codecvt_base::error;
-	if (c > maxcode)
+	if (c > maxcode) [[unlikely]]
 	  return codecvt_base::error;
-	if (!write_utf8_code_point(to, c))
+	if (!write_utf8_code_point(to, c)) [[unlikely]]
 	  return codecvt_base::partial;
 	from += inc;
       }
