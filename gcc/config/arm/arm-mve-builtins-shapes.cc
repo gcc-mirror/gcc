@@ -1163,6 +1163,32 @@ struct inherent_def : public nonoverloaded_base
 };
 SHAPE (inherent)
 
+/* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, <T0>_t)
+
+   i.e. the standard shape for ternary operations that operate on
+   uniform types.
+
+   Example: vqrdmlsdhxq.
+   int8x16_t [__arm_]vqrdmlsdhxq[_s8](int8x16_t inactive, int8x16_t a, int8x16_t b)
+   int8x16_t [__arm_]vqrdmlsdhxq_m[_s8](int8x16_t inactive, int8x16_t a, int8x16_t b, mve_pred16_t p)  */
+struct ternary_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform_opt_n (3);
+  }
+};
+SHAPE (ternary)
+
 /* <T0>_t vfoo[_t0](<T0>_t)
 
    i.e. the standard shape for unary operations that operate on
