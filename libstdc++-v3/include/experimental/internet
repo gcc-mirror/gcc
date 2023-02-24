@@ -1219,10 +1219,10 @@ namespace ip
 
   /// @}
 
-  bool
+  constexpr bool
   operator==(const network_v4& __a, const network_v4& __b) noexcept;
 
-  bool
+  constexpr bool
   operator==(const network_v6& __a, const network_v6& __b) noexcept;
 
 
@@ -1263,10 +1263,10 @@ namespace ip
     constexpr address_v4
     netmask() const noexcept
     {
-      address_v4::uint_type __val = address_v4::broadcast().to_uint();
-      __val >>= (32 - _M_prefix_len);
-      __val <<= (32 - _M_prefix_len);
-      return address_v4{__val};
+      address_v4 __m;
+      if (_M_prefix_len)
+	__m = address_v4(0xFFFFFFFFu << (32 - _M_prefix_len));
+      return __m;
     }
 
     constexpr address_v4
@@ -1275,7 +1275,7 @@ namespace ip
 
     constexpr address_v4
     broadcast() const noexcept
-    { return address_v4{_M_addr.to_uint() | ~netmask().to_uint()}; }
+    { return address_v4{_M_addr.to_uint() | (0xFFFFFFFFu >> _M_prefix_len)}; }
 
     address_v4_range
     hosts() const noexcept
@@ -1306,8 +1306,23 @@ namespace ip
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
-	return address().to_string(__a) + '/'
-	  + std::to_string(prefix_length());
+	auto __str = address().to_string(__a);
+	const unsigned __addrlen = __str.length();
+	const unsigned __preflen = prefix_length() >= 10 ? 2 : 1;
+	auto __write = [=](char* __p, size_t __n) {
+	  __p[__addrlen] = '/';
+	  std::__detail::__to_chars_10_impl(__p + __addrlen + 1, __preflen,
+					    (unsigned char)prefix_length());
+	  return __n;
+	};
+	const unsigned __len = __addrlen + 1 + __preflen;
+#if __cpp_lib_string_resize_and_overwrite
+	__str.resize_and_overwrite(__len, __write);
+#else
+	__str.resize(__len);
+	__write(&__str.front(), __len);
+#endif
+	return __str;
       }
 
   private:
@@ -1379,14 +1394,14 @@ namespace ip
    * @{
    */
 
-  inline bool
+  constexpr bool
   operator==(const network_v4& __a, const network_v4& __b) noexcept
   {
     return __a.address() == __b.address()
       && __a.prefix_length() == __b.prefix_length();
   }
 
-  inline bool
+  constexpr bool
   operator!=(const network_v4& __a, const network_v4& __b) noexcept
   { return !(__a == __b); }
 
@@ -1396,14 +1411,14 @@ namespace ip
    * @{
    */
 
-  inline bool
+  constexpr bool
   operator==(const network_v6& __a, const network_v6& __b) noexcept
   {
     return __a.address() == __b.address()
       && __a.prefix_length() == __b.prefix_length();
   }
 
-  inline bool
+  constexpr bool
   operator!=(const network_v6& __a, const network_v6& __b) noexcept
   { return !(__a == __b); }
 
