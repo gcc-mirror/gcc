@@ -7095,9 +7095,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_rhs = convert (gnu_count_type, gnu_rhs);
 	    gnu_max_shift
 	      = convert (TREE_TYPE (gnu_rhs), TYPE_SIZE (gnu_type));
-	    /* If the result type is larger than a word, then declare the dependence
-	       on the libgcc routine.  */
-	    if (TYPE_PRECISION (gnu_result_type) > BITS_PER_WORD)
+	    /* If the result type is larger than a word, then declare the
+	       dependence on the libgcc routine.  */
+	    if (TYPE_PRECISION (gnu_type) > BITS_PER_WORD)
 	      Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
 	  }
 
@@ -7114,7 +7114,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	/* If this is a modulo/remainder and the result type is larger than a
 	   word, then declare the dependence on the libgcc routine.  */
 	else if ((kind == N_Op_Mod ||kind == N_Op_Rem)
-		 && TYPE_PRECISION (gnu_result_type) > BITS_PER_WORD)
+		 && TYPE_PRECISION (gnu_type) > BITS_PER_WORD)
 	  Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
 
 	/* Pending generic support for efficient vector logical operations in
