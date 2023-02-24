@@ -1626,19 +1626,19 @@ namespace ip
    */
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator==(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return __a.address() == __b.address() && __a.port() == __b.port(); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator!=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__a == __b); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator< (const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     {
@@ -1647,19 +1647,19 @@ namespace ip
     }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator> (const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return __b < __a; }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator<=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__b < __a); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator>=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__a < __b); }
