@@ -292,3 +292,55 @@
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")]
 )
+
+;; XTheadMemPair
+
+;; MEMPAIR load 64/32 bit
+(define_insn "*th_mempair_load_<GPR:mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(match_operand:GPR 1 "memory_operand" "m"))
+   (set (match_operand:GPR 2 "register_operand" "=r")
+	(match_operand:GPR 3 "memory_operand" "m"))]
+  "TARGET_XTHEADMEMPAIR && reload_completed
+   && th_mempair_operands_p (operands, true, <GPR:MODE>mode)"
+  { return th_mempair_output_move (operands, true, <GPR:MODE>mode, UNKNOWN); }
+  [(set_attr "move_type" "load")
+   (set_attr "mode" "<GPR:MODE>")])
+
+;; MEMPAIR store 64/32 bit
+(define_insn "*th_mempair_store_<GPR:mode>2"
+  [(set (match_operand:GPR 0 "memory_operand" "=m")
+	(match_operand:GPR 1 "register_operand" "r"))
+   (set (match_operand:GPR 2 "memory_operand" "=m")
+	(match_operand:GPR 3 "register_operand" "r"))]
+  "TARGET_XTHEADMEMPAIR && reload_completed
+   && th_mempair_operands_p (operands, false, <GPR:MODE>mode)"
+  { return th_mempair_output_move (operands, false, <GPR:MODE>mode, UNKNOWN); }
+  [(set_attr "move_type" "store")
+   (set_attr "mode" "<GPR:MODE>")])
+
+;; MEMPAIR load DI extended signed SI
+(define_insn "*th_mempair_load_extendsidi2"
+  [(set (match_operand 0 "register_operand" "=r")
+	(sign_extend:DI (match_operand 1 "memory_operand" "m")))
+   (set (match_operand 2 "register_operand" "=r")
+	(sign_extend:DI (match_operand 3 "memory_operand" "m")))]
+  "TARGET_XTHEADMEMPAIR && TARGET_64BIT && reload_completed
+   && th_mempair_operands_p (operands, true, SImode)"
+  { return th_mempair_output_move (operands, true, SImode, SIGN_EXTEND); }
+  [(set_attr "move_type" "load")
+   (set_attr "mode" "DI")
+   (set_attr "length" "8")])
+
+;; MEMPAIR load DI extended unsigned SI
+(define_insn "*th_mempair_load_zero_extendsidi2"
+  [(set (match_operand 0 "register_operand" "=r")
+	(zero_extend:DI (match_operand 1 "memory_operand" "m")))
+   (set (match_operand 2 "register_operand" "=r")
+	(zero_extend:DI (match_operand 3 "memory_operand" "m")))]
+  "TARGET_XTHEADMEMPAIR && TARGET_64BIT && reload_completed
+   && th_mempair_operands_p (operands, true, SImode)"
+  { return th_mempair_output_move (operands, true, SImode, ZERO_EXTEND); }
+  [(set_attr "move_type" "load")
+   (set_attr "mode" "DI")
+   (set_attr "length" "8")])

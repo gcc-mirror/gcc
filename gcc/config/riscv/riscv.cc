@@ -4976,6 +4976,35 @@ riscv_set_return_address (rtx address, rtx scratch)
   riscv_emit_move (gen_frame_mem (GET_MODE (address), slot_address), address);
 }
 
+/* Save register REG to MEM.  Make the instruction frame-related.  */
+
+static void
+riscv_save_reg (rtx reg, rtx mem)
+{
+  riscv_emit_move (mem, reg);
+  riscv_set_frame_expr (riscv_frame_set (mem, reg));
+}
+
+/* Restore register REG from MEM.  */
+
+static void
+riscv_restore_reg (rtx reg, rtx mem)
+{
+  rtx insn = riscv_emit_move (reg, mem);
+  rtx dwarf = NULL_RTX;
+  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
+  if (epilogue_cfa_sp_offset && REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
+    {
+      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					 GEN_INT (epilogue_cfa_sp_offset));
+      dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
+    }
+
+  REG_NOTES (insn) = dwarf;
+  RTX_FRAME_RELATED_P (insn) = 1;
+}
+
 /* A function to save or store a register.  The first argument is the
    register and the second is the stack slot.  */
 typedef void (*riscv_save_restore_fn) (rtx, rtx);
@@ -5070,6 +5099,36 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	  && riscv_is_eh_return_data_register (regno))
 	continue;
 
+      if (TARGET_XTHEADMEMPAIR)
+	{
+	  /* Get the next reg/offset pair.  */
+	  HOST_WIDE_INT offset2 = offset;
+	  unsigned int regno2 = riscv_next_saved_reg (regno, limit, &offset2);
+
+	  /* Validate everything before emitting a mempair instruction.  */
+	  if (regno2 != INVALID_REGNUM
+	      && !cfun->machine->reg_is_wrapped_separately[regno2]
+	      && !(epilogue && !maybe_eh_return
+		   && riscv_is_eh_return_data_register (regno2)))
+	    {
+	      bool load_p = (fn == riscv_restore_reg);
+	      rtx operands[4];
+	      th_mempair_prepare_save_restore_operands (operands,
+							load_p, word_mode,
+							regno, offset,
+							regno2, offset2);
+
+	      /* If the operands fit into a mempair insn, then emit one.  */
+	      if (th_mempair_operands_p (operands, load_p, word_mode))
+		{
+		  th_mempair_save_restore_regs (operands, load_p, word_mode);
+		  offset = offset2;
+		  regno = regno2;
+		  continue;
+		}
+	    }
+	}
+
       riscv_save_restore_reg (word_mode, regno, offset, fn);
     }
 
@@ -5086,35 +5145,6 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	  riscv_save_restore_reg (mode, regno, offset, fn);
 	offset -= GET_MODE_SIZE (mode).to_constant ();
       }
-}
-
-/* Save register REG to MEM.  Make the instruction frame-related.  */
-
-static void
-riscv_save_reg (rtx reg, rtx mem)
-{
-  riscv_emit_move (mem, reg);
-  riscv_set_frame_expr (riscv_frame_set (mem, reg));
-}
-
-/* Restore register REG from MEM.  */
-
-static void
-riscv_restore_reg (rtx reg, rtx mem)
-{
-  rtx insn = riscv_emit_move (reg, mem);
-  rtx dwarf = NULL_RTX;
-  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
-
-  if (epilogue_cfa_sp_offset && REGNO (reg) == HARD_FRAME_POINTER_REGNUM)
-    {
-      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					 GEN_INT (epilogue_cfa_sp_offset));
-      dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
-    }
-
-  REG_NOTES (insn) = dwarf;
-  RTX_FRAME_RELATED_P (insn) = 1;
 }
 
 /* For stack frames that can't be allocated with a single ADDI instruction,

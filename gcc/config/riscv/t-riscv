@@ -76,6 +76,10 @@ riscv-v.o: $(srcdir)/config/riscv/riscv-v.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+thead.o: $(srcdir)/config/riscv/thead.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes.def
 
 $(common_out_file): $(srcdir)/config/riscv/riscv-cores.def \

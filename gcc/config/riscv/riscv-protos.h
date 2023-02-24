@@ -54,6 +54,7 @@ extern bool riscv_split_64bit_move_p (rtx, rtx);
 extern void riscv_split_doubleword_move (rtx, rtx);
 extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_return ();
+
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx);
 extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx);
@@ -218,5 +219,18 @@ const unsigned int RISCV_BUILTIN_SHIFT = 1;
 
 /* Mask that selects the riscv_builtin_class part of a function code.  */
 const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
+
+/* Routines implemented in thead.cc.  */
+extern bool th_mempair_operands_p (rtx[4], bool, machine_mode);
+extern void th_mempair_order_operands (rtx[4], bool, machine_mode);
+extern void th_mempair_prepare_save_restore_operands (rtx[4], bool,
+						      machine_mode,
+						      int, HOST_WIDE_INT,
+						      int, HOST_WIDE_INT);
+extern void th_mempair_save_restore_regs (rtx[4], bool, machine_mode);
+#ifdef RTX_CODE
+extern const char*
+th_mempair_output_move (rtx[4], bool, machine_mode, RTX_CODE);
+#endif
 
 #endif /* ! GCC_RISCV_PROTOS_H */
