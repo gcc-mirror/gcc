@@ -1,3 +1,11 @@
+2023-02-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2023-02-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/riscv/t-rtems: Keep only -mcmodel=medany 64-bit multilibs.
+	Add non-compact 32-bit multilibs.
+
 2023-02-20  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
