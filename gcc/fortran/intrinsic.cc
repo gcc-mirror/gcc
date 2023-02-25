@@ -4259,15 +4259,15 @@ remove_nullargs (gfc_actual_arglist **ap)
 }
 
 
-static gfc_dummy_arg *
-get_intrinsic_dummy_arg (gfc_intrinsic_arg *intrinsic)
+static void
+set_intrinsic_dummy_arg (gfc_dummy_arg *&dummy_arg,
+			 gfc_intrinsic_arg *intrinsic)
 {
-  gfc_dummy_arg * const dummy_arg = gfc_get_dummy_arg ();
+  if (dummy_arg == NULL)
+    dummy_arg = gfc_get_dummy_arg ();
 
   dummy_arg->intrinsicness = GFC_INTRINSIC_DUMMY_ARG;
   dummy_arg->u.intrinsic = intrinsic;
-
-  return dummy_arg;
 }
 
 
@@ -4430,7 +4430,7 @@ do_sort:
       if (a == NULL)
 	a = gfc_get_actual_arglist ();
 
-      a->associated_dummy = get_intrinsic_dummy_arg (f);
+      set_intrinsic_dummy_arg (a->associated_dummy, f);
 
       if (actual == NULL)
 	*ap = a;
