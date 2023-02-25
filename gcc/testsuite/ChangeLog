@@ -1,3 +1,39 @@
+2023-02-24  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	* gfortran.dg/weak-2.f90: New test.
+	* gfortran.dg/weak-3.f90: New test.
+
+2023-02-24  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/108834
+	* c-c++-common/asan/global-overflow-1.c: Test line and column
+	info for a global variable.
+
+2023-02-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR c++/105224
+	* g++.dg/modules/virt-2_a.C: Skip on arm_eabi.
+
+2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108854
+	* g++.dg/opt/pr108854.C: New test.
+
+2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108881
+	* gcc.target/i386/avx512bf16-pr108881.c: New test.
+
+2023-02-24  Junxian Zhu  <zhujunxian@oss.cipunited.com>
+
+	* gcc.target/mips/clz.c: New test.
+	* gcc.target/mips/clo.c: New test.
+	* gcc.target/mips/mips.exp: New option HAS_CLZ.
+
+2023-02-24  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* gcc.target/mips/hazard-barrier-return-attribute.c: New test.
+
 2023-02-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* gcc.target/xtensa/elim_GP_regmove_0.c: New test.

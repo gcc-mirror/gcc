@@ -1,3 +1,114 @@
+2023-02-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h: Line breaks and indenting
+	fixed to follow the libstdc++ standard.
+	* include/experimental/bits/simd_builtin.h: Likewise.
+	* include/experimental/bits/simd_fixed_size.h: Likewise.
+	* include/experimental/bits/simd_neon.h: Likewise.
+	* include/experimental/bits/simd_ppc.h: Likewise.
+	* include/experimental/bits/simd_scalar.h: Likewise.
+	* include/experimental/bits/simd_x86.h: Likewise.
+
+2023-02-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/108030
+	* include/experimental/bits/simd_fixed_size.h
+	(_SimdImplFixedSize::_S_broadcast): Replace inline with
+	_GLIBCXX_SIMD_INTRINSIC.
+	(_SimdImplFixedSize::_S_generate): Likewise.
+	(_SimdImplFixedSize::_S_load): Likewise.
+	(_SimdImplFixedSize::_S_masked_load): Likewise.
+	(_SimdImplFixedSize::_S_store): Likewise.
+	(_SimdImplFixedSize::_S_masked_store): Likewise.
+	(_SimdImplFixedSize::_S_min): Likewise.
+	(_SimdImplFixedSize::_S_max): Likewise.
+	(_SimdImplFixedSize::_S_complement): Likewise.
+	(_SimdImplFixedSize::_S_unary_minus): Likewise.
+	(_SimdImplFixedSize::_S_plus): Likewise.
+	(_SimdImplFixedSize::_S_minus): Likewise.
+	(_SimdImplFixedSize::_S_multiplies): Likewise.
+	(_SimdImplFixedSize::_S_divides): Likewise.
+	(_SimdImplFixedSize::_S_modulus): Likewise.
+	(_SimdImplFixedSize::_S_bit_and): Likewise.
+	(_SimdImplFixedSize::_S_bit_or): Likewise.
+	(_SimdImplFixedSize::_S_bit_xor): Likewise.
+	(_SimdImplFixedSize::_S_bit_shift_left): Likewise.
+	(_SimdImplFixedSize::_S_bit_shift_right): Likewise.
+	(_SimdImplFixedSize::_S_remquo): Add inline keyword (to be
+	explicit about not always-inline, yet).
+	(_SimdImplFixedSize::_S_isinf): Likewise.
+	(_SimdImplFixedSize::_S_isfinite): Likewise.
+	(_SimdImplFixedSize::_S_isnan): Likewise.
+	(_SimdImplFixedSize::_S_isnormal): Likewise.
+	(_SimdImplFixedSize::_S_signbit): Likewise.
+
+2023-02-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/108856
+	* include/experimental/bits/simd_builtin.h
+	(_SimdImplBuiltin::_S_masked_unary): More efficient
+	implementation of masked inc-/decrement for integers and floats
+	without AVX2.
+	* include/experimental/bits/simd_x86.h
+	(_SimdImplX86::_S_masked_unary): New. Use AVX512 masked subtract
+	builtins for masked inc-/decrement.
+
+2023-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (executor): Constrain template
+	constructors.
+
+2023-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (basic_endpoint): Add missing
+	constexpr to comparison operators.
+	* testsuite/experimental/net/internet/endpoint/cons.cc: New test.
+
+2023-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (network_v4::netmask()): Avoid
+	undefined shift.
+	(network_v4::broadcast()): Optimize and fix for targets with
+	uint_least32_t wider than 32 bits.
+	(network_v4::to_string(const Allocator&)): Fix for custom
+	allocators and optimize using to_chars.
+	(operator==(const network_v4&, const network_v4&)): Add missing
+	constexpr.
+	(operator==(const network_v6&, const network_v6&)): Likewise.
+	* testsuite/experimental/net/internet/network/v4/cons.cc: New test.
+	* testsuite/experimental/net/internet/network/v4/members.cc: New test.
+
+2023-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_4(const bytes_type&)):
+	Use __builtin_bit_cast if available, otherwise convert to
+	network byte order.
+	(address_v4::to_bytes()): Likewise, but convert from network
+	byte order.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: Fix
+	incorrect tests. Check for constexpr too.
+	* testsuite/experimental/net/internet/address/v4/creation.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/members.cc:
+	Check that bytes_type is a standard-layout type.
+
+2023-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v4::to_string):
+	Optimize.
+	* testsuite/experimental/net/internet/address/v4/members.cc:
+	Check more addresses.
+
+2023-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/aligned_buffer.h (__aligned_buffer): Add
+	diagnostic pragmas.
+
+2023-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/format/arguments/lwg3810.cc: Move dg-options
+	before dg-do.
+
 2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
 
 	* testsuite/experimental/simd/tests/reductions.cc: Introduce

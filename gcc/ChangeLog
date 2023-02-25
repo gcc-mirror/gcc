@@ -1,3 +1,105 @@
+2023-02-24  Richard Biener  <rguenther@suse.de>
+
+	* vec.h (vec<T, A, vl_embed>::m_vecdata): Remove.
+	(vec<T, A, vl_embed>::m_vecpfx): Align as T to avoid
+	changing alignment of vec<T, A, vl_embed> and simplifying
+	address.
+	(vec<T, A, vl_embed>::address): Compute as this + 1.
+	(vec<T, A, vl_embed>::embedded_size): Use sizeof the
+	vector instead of the offset of the m_vecdata member.
+	(auto_vec<T, N>::m_data): Turn storage into
+	uninitialized unsigned char.
+	(auto_vec<T, N>::auto_vec): Allow allocation of one
+	stack member.  Initialize m_vec in a special way to
+	avoid later stringop overflow diagnostics.
+	* vec.cc (test_auto_alias): New.
+	(vec_cc_tests): Call it.
+
+2023-02-24  Richard Biener  <rguenther@suse.de>
+
+	* vec.h (vec<T, A, vl_embed>::lower_bound): Adjust to
+	take a const reference to the object, use address to
+	access data.
+	(vec<T, A, vl_embed>::contains): Use address to access data.
+	(vec<T, A, vl_embed>::operator[]): Use address instead of
+	m_vecdata to access data.
+	(vec<T, A, vl_embed>::iterate): Likewise.
+	(vec<T, A, vl_embed>::copy): Likewise.
+	(vec<T, A, vl_embed>::quick_push): Likewise.
+	(vec<T, A, vl_embed>::pop): Likewise.
+	(vec<T, A, vl_embed>::quick_insert): Likewise.
+	(vec<T, A, vl_embed>::ordered_remove): Likewise.
+	(vec<T, A, vl_embed>::unordered_remove): Likewise.
+	(vec<T, A, vl_embed>::block_remove): Likewise.
+	(vec<T, A, vl_heap>::address): Likewise.
+
+2023-02-24  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/108834
+	* asan.cc (asan_add_global): Use proper TU name for normal
+	global variables (and aux_base_name for the artificial one).
+
+2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-builtin.def: Update description of BDESC
+	and BDESC_FIRST in file comment to include mask2.
+
+2023-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (FLAGS): Update comment.
+
+2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108854
+	* cgraphclones.cc (duplicate_thunk_for_node): If no parameter
+	changes are needed, copy at least DECL_ARGUMENTS PARM_DECL
+	nodes and adjust their DECL_CONTEXT.
+
+2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108881
+	* config/i386/i386-builtin.def (__builtin_ia32_cvtne2ps2bf16_v16bf,
+	__builtin_ia32_cvtne2ps2bf16_v16bf_mask,
+	__builtin_ia32_cvtne2ps2bf16_v16bf_maskz,
+	__builtin_ia32_cvtne2ps2bf16_v8bf,
+	__builtin_ia32_cvtne2ps2bf16_v8bf_mask,
+	__builtin_ia32_cvtne2ps2bf16_v8bf_maskz,
+	__builtin_ia32_cvtneps2bf16_v8sf_mask,
+	__builtin_ia32_cvtneps2bf16_v8sf_maskz,
+	__builtin_ia32_cvtneps2bf16_v4sf_mask,
+	__builtin_ia32_cvtneps2bf16_v4sf_maskz,
+	__builtin_ia32_dpbf16ps_v8sf, __builtin_ia32_dpbf16ps_v8sf_mask,
+	__builtin_ia32_dpbf16ps_v8sf_maskz, __builtin_ia32_dpbf16ps_v4sf,
+	__builtin_ia32_dpbf16ps_v4sf_mask,
+	__builtin_ia32_dpbf16ps_v4sf_maskz): Require also
+	OPTION_MASK_ISA_AVX512VL.
+
+2023-02-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/riscv/t-rtems: Keep only -mcmodel=medany 64-bit multilibs.
+	Add non-compact 32-bit multilibs.
+
+2023-02-24  Junxian Zhu  <zhujunxian@oss.cipunited.com>
+
+	* config/mips/mips.md (*clo<mode>2): New pattern.
+
+2023-02-24  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/mips.h (machine_function): New variable
+	use_hazard_barrier_return_p.
+	* config/mips/mips.md (UNSPEC_JRHB): New unspec.
+	(mips_hb_return_internal): New insn pattern.
+	* config/mips/mips.cc (mips_attribute_table): Add attribute
+	use_hazard_barrier_return.
+	(mips_use_hazard_barrier_return_p): New static function.
+	(mips_function_attr_inlinable_p): Likewise.
+	(mips_compute_frame_info): Set use_hazard_barrier_return_p.
+	Emit error for unsupported architecture choice.
+	(mips_function_ok_for_sibcall, mips_can_use_return_insn):
+	Return false for use_hazard_barrier_return.
+	(mips_expand_epilogue): Emit hazard barrier return.
+	* doc/extend.texi: Document use_hazard_barrier_return.
+
 2023-02-23  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa-dynconfig.cc (config.h, system.h)

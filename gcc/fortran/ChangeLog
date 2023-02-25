@@ -1,3 +1,21 @@
+2023-02-24  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	* trans-decl.cc (gfc_finish_var_decl): Apply attribute.
+	(generate_local_decl): Add diagnostic for dummy and local variables.
+
+2023-02-24  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/108923
+	* expr.cc (gfc_free_actual_arglist): Free associated_dummy
+	memory.
+	(gfc_copy_actual_arglist): Make a copy of the associated_dummy
+	field if it is set in the original element.
+
+2023-02-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108924
+	* frontend-passes.cc (do_subscript): Clear used gmp variable.
+
 2023-02-23  Arsen Arsenović  <arsen@aarsen.me>
 
 	* invoke.texi: Reorder index entries around @items.
