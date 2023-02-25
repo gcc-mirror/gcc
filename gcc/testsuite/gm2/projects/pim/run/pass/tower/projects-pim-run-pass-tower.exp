@@ -100,8 +100,11 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/Dungeon.mod]] {
 	continue
     }
     set gm2_keep_executable 1
-    # gm2-torture-execute $testcase "" "pass"
-    gm2-simple-execute $testcase "" ""
+    if { ${gm2_run_tower_test} } then {
+	gm2-simple-execute $testcase "" ""
+    } else {
+	verbose "not running simple tower execute test (with no map)" 1
+    }
     set gm2_keep_executable 0
 
     global tmpdir;
