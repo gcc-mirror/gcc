@@ -2257,6 +2257,7 @@ gfc_real2int (gfc_expr *src, int kind)
 			   gfc_typename (&result->ts), &src->where);
 	  did_warn = true;
 	}
+      mpfr_clear (f);
     }
   if (!did_warn && warn_conversion_extra)
     {
