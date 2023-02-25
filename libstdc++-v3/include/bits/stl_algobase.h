@@ -69,6 +69,7 @@
 #include <debug/debug.h>
 #include <bits/move.h> // For std::swap
 #include <bits/predefined_ops.h>
+#include <bits/stl_function.h>
 #if __cplusplus >= 201103L
 # include <type_traits>
 #endif
@@ -77,6 +78,15 @@
 #endif
 #if __cplusplus >= 202002L
 # include <compare>
+#endif
+
+#ifdef __cpp_lib_hardware_interference_size
+    using std::hardware_constructive_interference_size;
+    using std::hardware_destructive_interference_size;
+#else
+    // 64 bytes on x86-64 │ L1_CACHE_BYTES │ L1_CACHE_SHIFT │ __cacheline_aligned │ ...
+    constexpr std::size_t hardware_constructive_interference_size = 64;
+    constexpr std::size_t hardware_destructive_interference_size = 64;
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -1479,6 +1489,39 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       return __first;
     }
 
+// typename std::enable_if<std::is_arithmetic<_Tp>::value && (_Compare == std::greater || _Compare == std::less)>
+  template<typename _ForwardIterator, typename _Tp, typename _Compare> 
+  _GLIBCXX20_CONSTEXPR
+  typename std::enable_if<std::is_arithmetic<_Tp>::value &&
+           (std::is_same<_Compare, std::greater<_Tp>>::value ||
+            std::is_same<_Compare, std::less<_Tp>>::value), _ForwardIterator>::value 
+  __lower_bound(_ForwardIterator __first, _ForwardIterator __last,
+    const _Tp& __val, _Compare __comp)
+  {
+    constexpr size_t DISTANCE = hardware_constructive_interference_size / sizeof(_Tp);
+    typedef typename std::iterator_traits<_ForwardIterator>::difference_type _DistanceType;
+    _DistanceType __len = std::distance(__first, __last);
+    while (__len > DISTANCE)
+    {
+      _DistanceType __half = __len >> 1;
+      _ForwardIterator __middle = __first;
+      std::advance(__middle, __half);
+      if (__comp(*__middle, __val))
+      {
+        __first = __middle;
+        ++__first;
+        __len = __len - __half - 1;
+      } else
+        __len = __half;
+    }
+    for (auto i = __first ; i != __last ; ++i) {
+        if (!__comp(*i, __val)) {
+            return i;
+        }
+    }
+    return __last;
+  }
+  
   /**
    *  @brief Finds the first position in which @a val could be inserted
    *         without changing the ordering.
