@@ -134,9 +134,21 @@ fm2-lower-case
 Modula-2
 generate error messages which render keywords in lower case
 
+fm2-pathname=
+Modula-2 Joined
+specify the module mangled prefix name for all modules in the following include paths
+
+fm2-pathnameI
+Modula-2 Joined
+; For internal use only: used by the driver to copy the user facing -I option
+
 fm2-plugin
 Modula-2
-insert plugin to identify runtime errors at compiletime (default on)
+insert plugin to identify runtime errors at compiletime
+
+fm2-prefix=
+Modula-2 Joined
+specify the module mangled prefix name
 
 fm2-statistics
 Modula-2

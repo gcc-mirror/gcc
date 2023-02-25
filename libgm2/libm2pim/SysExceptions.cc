@@ -25,6 +25,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
+#include "m2rts.h"
+
+#define EXPORT(FUNC) m2pim ## _SysExceptions_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_SysExceptions_ ## FUNC
+#define M2LIBNAME "m2pim"
 
 #if defined(HAVE_SIGNAL_H)
 #include <signal.h>
@@ -172,7 +177,7 @@ sigfpeDespatcher (int signum, siginfo_t *info, void *ucontext)
 }
 
 extern "C" void
-SysExceptions_InitExceptionHandlers (
+EXPORT(InitExceptionHandlers) (
     void (*indexf) (void *), void (*range) (void *), void (*casef) (void *),
     void (*invalidloc) (void *), void (*function) (void *),
     void (*wholevalue) (void *), void (*wholediv) (void *),
@@ -223,7 +228,7 @@ SysExceptions_InitExceptionHandlers (
 
 #else
 extern "C" void
-SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
+EXPORT(InitExceptionHandlers) (void *indexf, void *range, void *casef,
                                      void *invalidloc, void *function,
                                      void *wholevalue, void *wholediv,
                                      void *realvalue, void *realdiv,
@@ -236,23 +241,24 @@ SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
 
 
 extern "C" void
-_M2_SysExceptions_init (int, char *[], char *[])
+M2EXPORT(init) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_SysExceptions_fini (int, char *[], char *[])
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_SysExceptions_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_SysExceptions_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("SysExceptions", _M2_SysExceptions_init, _M2_SysExceptions_fini,
-			_M2_SysExceptions_dep);
+  m2pim_M2RTS_RegisterModule ("SysExceptions", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

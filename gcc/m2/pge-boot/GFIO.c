@@ -558,7 +558,7 @@ static FIO_File GetNextFreeDescriptor (void)
         return f;  /* create new slot  */
       }
   }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -729,7 +729,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
                   (*p) = static_cast<unsigned char> ((*fd->buffer->contents).array[fd->buffer->position]);
                   fd->buffer->left -= 1;  /* remove consumed bytes  */
                   fd->buffer->position += 1;  /* move onwards n bytes  */
-                  nBytes = 0;  /* reduce the amount for future direct  */
+                  nBytes = 0;
                   /* read  */
                   return 1;
                 }
@@ -824,7 +824,6 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
 
   if (f != Error)
     {
-      /* avoid dangling else.  */
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       total = 0;  /* how many bytes have we read  */
       if (fd != NULL)  /* how many bytes have we read  */
@@ -894,16 +893,9 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
                 }
               return total;
             }
-          else
-            {
-              return -1;
-            }
         }
     }
-  else
-    {
-      return -1;
-    }
+  return -1;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2269,7 +2261,8 @@ extern "C" void * FIO_getFileName (FIO_File f)
           return fd->name.address;
         }
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  return NULL;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
@@ -2296,7 +2289,8 @@ extern "C" unsigned int FIO_getFileNameLength (FIO_File f)
           return fd->name.size;
         }
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/FIO.def", 25, 1);
+  return 0;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
@@ -2325,7 +2319,7 @@ extern "C" void _M2_FIO_init (__attribute__((unused)) int argc,__attribute__((un
   Init ();
 }
 
-extern "C" void _M2_FIO_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_FIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   FIO_FlushOutErr ();
 }

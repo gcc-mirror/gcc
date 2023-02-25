@@ -170,7 +170,7 @@ libm2pim_la_LIBADD =
 @BUILD_PIMLIB_TRUE@	UnixArgs.lo Selective.lo sckt.lo errno.lo \
 @BUILD_PIMLIB_TRUE@	dtoa.lo ldtoa.lo termios.lo \
 @BUILD_PIMLIB_TRUE@	SysExceptions.lo libm2pim_la-target.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-wrapc.lo cgetopt.lo
+@BUILD_PIMLIB_TRUE@	wrapc.lo cgetopt.lo
 libm2pim_la_OBJECTS = $(am_libm2pim_la_OBJECTS)
 @BUILD_PIMLIB_TRUE@am_libm2pim_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -529,12 +529,16 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@                      errno.cc dtoa.cc \
 @BUILD_PIMLIB_TRUE@                      ldtoa.cc termios.cc \
 @BUILD_PIMLIB_TRUE@                      SysExceptions.cc target.c \
-@BUILD_PIMLIB_TRUE@                      wrapc.c cgetopt.cc
+@BUILD_PIMLIB_TRUE@                      wrapc.cc cgetopt.cc
 
 @BUILD_PIMLIB_TRUE@libm2pimdir = libm2pim
 @BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
 @BUILD_PIMLIB_TRUE@libm2pim_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
-@BUILD_PIMLIB_TRUE@libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g -Wreturn-type -fcase
+@BUILD_PIMLIB_TRUE@libm2pim_la_M2FLAGS = \
+@BUILD_PIMLIB_TRUE@  -fm2-pathname=m2pim -I. -I$(GM2_SRC)/gm2-libs \
+@BUILD_PIMLIB_TRUE@  -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
+@BUILD_PIMLIB_TRUE@  -fm2-g -g -Wreturn-type -fcase -fm2-prefix=m2pim
+
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@libm2pim_la_link_flags = 
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_TRUE@libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup
 @BUILD_PIMLIB_TRUE@libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2pim_la_link_flags)
@@ -628,9 +632,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/errno.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldtoa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-target.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-wrapc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sckt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/termios.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wrapc.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -659,13 +663,6 @@ libm2pim_la-target.lo: target.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='target.c' object='libm2pim_la-target.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-target.lo `test -f 'target.c' || echo '$(srcdir)/'`target.c
-
-libm2pim_la-wrapc.lo: wrapc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-wrapc.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-wrapc.Tpo -c -o libm2pim_la-wrapc.lo `test -f 'wrapc.c' || echo '$(srcdir)/'`wrapc.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-wrapc.Tpo $(DEPDIR)/libm2pim_la-wrapc.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='wrapc.c' object='libm2pim_la-wrapc.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-wrapc.lo `test -f 'wrapc.c' || echo '$(srcdir)/'`wrapc.c
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

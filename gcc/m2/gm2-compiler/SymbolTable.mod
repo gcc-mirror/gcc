@@ -615,6 +615,7 @@ TYPE
             RECORD
                name          : Name ;       (* Index into name array, name   *)
                                             (* of record field.              *)
+               libname       : Name ;       (* Library (dialect) with module *)
                ctors         : ModuleCtor ; (* All the ctor functions.       *)
                DefListOfDep,
                ModListOfDep  : List ;       (* Vector of SymDependency.      *)
@@ -714,6 +715,7 @@ TYPE
             RECORD
                name          : Name ;       (* Index into name array, name   *)
                                             (* of record field.              *)
+               libname       : Name ;       (* Library (dialect) with module *)
                ctors         : ModuleCtor ; (* All the ctor functions.       *)
                ModListOfDep  : List ;       (* Vector of SymDependency.      *)
                LocalSymbols  : SymbolTree ; (* The LocalSymbols hold all the *)
@@ -3030,11 +3032,11 @@ END IsImplicityExported ;
    MakeProcedureCtorExtern - creates an extern ctor procedure
 *)
 
-PROCEDURE MakeProcedureCtorExtern (tokenno: CARDINAL; modulename: Name) : CARDINAL ;
+PROCEDURE MakeProcedureCtorExtern (tokenno: CARDINAL; libname, modulename: Name) : CARDINAL ;
 VAR
    ctor: CARDINAL ;
 BEGIN
-   ctor := MakeProcedure (tokenno, GenName ('_M2_', modulename, '_ctor')) ;
+   ctor := MakeProcedure (tokenno, GenName (libname, '_M2_', modulename, '_ctor')) ;
    PutExtern (ctor, TRUE) ;
    RETURN ctor
 END MakeProcedureCtorExtern ;
@@ -3044,12 +3046,13 @@ END MakeProcedureCtorExtern ;
    GenName - returns a new name consisting of pre, name, post concatenation.
 *)
 
-PROCEDURE GenName (pre: ARRAY OF CHAR; name: Name; post: ARRAY OF CHAR) : Name ;
+PROCEDURE GenName (libname: Name; pre: ARRAY OF CHAR; name: Name; post: ARRAY OF CHAR) : Name ;
 VAR
    str   : String ;
    result: Name ;
 BEGIN
-   str := InitString (pre) ;
+   str := InitStringCharStar (KeyToCharStar (libname)) ;
+   str := ConCat (str, Mark (InitString (pre))) ;
    str := ConCat (str, Mark (InitStringCharStar (KeyToCharStar (name)))) ;
    str := ConCat (str, InitString (post)) ;
    result := makekey (string (str)) ;
@@ -3086,10 +3089,12 @@ BEGIN
    IF IsDefImp (moduleSym)
    THEN
       InitCtorFields (moduleTok, beginTok, finallyTok,
+                      moduleSym,
                       pSym^.DefImp.ctors, GetSymName (moduleSym),
                       FALSE, TRUE)
    ELSE
       InitCtorFields (moduleTok, beginTok, finallyTok,
+                      moduleSym,
                       pSym^.Module.ctors, GetSymName (moduleSym),
                       IsInnerModule (moduleSym), TRUE)
    END
@@ -3102,32 +3107,41 @@ END MakeModuleCtor ;
 *)
 
 PROCEDURE InitCtorFields (moduleTok, beginTok, finallyTok: CARDINAL;
+                          moduleSym: CARDINAL;
                           VAR ctor: ModuleCtor; name: Name;
                           inner, pub: BOOLEAN) ;
 BEGIN
    IF ScaffoldDynamic AND (NOT inner)
    THEN
       (* The ctor procedure must be public.  *)
-      ctor.ctor := MakeProcedure (moduleTok, GenName ("_M2_", name, "_ctor")) ;
+      ctor.ctor := MakeProcedure (moduleTok,
+                                  GenName (GetLibName (moduleSym),
+                                           "_M2_", name, "_ctor")) ;
       PutCtor (ctor.ctor, TRUE) ;
       Assert (pub) ;
       PutPublic (ctor.ctor, pub) ;
       PutExtern (ctor.ctor, NOT pub) ;
       PutMonoName (ctor.ctor, TRUE) ;
       (* The dep procedure is local to the module.  *)
-      ctor.dep := MakeProcedure (moduleTok, GenName ("_M2_", name, "_dep")) ;
+      ctor.dep := MakeProcedure (moduleTok,
+                                 GenName (GetLibName (moduleSym),
+                                          "_M2_", name, "_dep")) ;
       PutMonoName (ctor.dep, TRUE)
    ELSE
       ctor.ctor := NulSym ;
       ctor.dep := NulSym
    END ;
    (* The init/fini procedures must be public.  *)
-   ctor.init := MakeProcedure (beginTok, GenName ("_M2_", name, "_init")) ;
+   ctor.init := MakeProcedure (beginTok,
+                               GenName (GetLibName (moduleSym),
+                                        "_M2_", name, "_init")) ;
    PutPublic (ctor.init, pub) ;
    PutExtern (ctor.init, NOT pub) ;
    PutMonoName (ctor.init, NOT inner) ;
    DeclareArgEnvParams (beginTok, ctor.init) ;
-   ctor.fini := MakeProcedure (finallyTok, GenName ("_M2_", name, "_fini")) ;
+   ctor.fini := MakeProcedure (finallyTok,
+                               GenName (GetLibName (moduleSym),
+                                        "_M2_", name, "_fini")) ;
    PutPublic (ctor.fini, pub) ;
    PutExtern (ctor.fini, NOT pub) ;
    PutMonoName (ctor.fini, NOT inner) ;
@@ -3190,6 +3204,7 @@ BEGIN
       WITH Module DO
          name := ModuleName ;               (* Index into name array, name   *)
                                             (* of record field.              *)
+         libname := NulName ;               (* Library association.          *)
          InitCtor (ctors) ;                 (* Init all ctor functions.      *)
          InitList(ModListOfDep) ;           (* Vector of SymDependency.      *)
          InitTree(LocalSymbols) ;           (* The LocalSymbols hold all the *)
@@ -3456,6 +3471,7 @@ BEGIN
          WITH Module DO
             name := ModuleName ;            (* Index into name array, name   *)
                                             (* of record field.              *)
+            libname := NulName ;            (* Library association.          *)
             InitCtor (ctors) ;              (* Init all ctor functions.      *)
             InitTree(LocalSymbols) ;        (* The LocalSymbols hold all the *)
                                             (* variables declared local to   *)
@@ -3551,6 +3567,7 @@ BEGIN
       WITH DefImp DO
          name := DefImpName ;         (* Index into name array, name   *)
                                       (* of record field.              *)
+         libname := NulName ;         (* Library association.          *)
          InitCtor (ctors) ;
                                       (* Init all ctor functions.      *)
          InitList(DefListOfDep) ;     (* Vector of SymDependency.      *)
@@ -3654,6 +3671,52 @@ END MakeDefImp ;
 
 
 (*
+   PutLibName - places libname into defimp or module sym.
+*)
+
+PROCEDURE PutLibName (sym: CARDINAL; libname: Name) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsModule (sym) OR IsDefImp (sym)) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      DefImpSym:  DefImp.libname := libname |
+      ModuleSym:  Module.libname := libname
+
+      ELSE
+         InternalError ('expecting DefImp or Module symbol')
+      END
+   END
+END PutLibName ;
+
+
+(*
+   GetLibName - returns libname associated with a defimp or module sym.
+*)
+
+PROCEDURE GetLibName (sym: CARDINAL) : Name ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsModule (sym) OR IsDefImp (sym)) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      DefImpSym:  RETURN DefImp.libname |
+      ModuleSym:  RETURN Module.libname
+
+      ELSE
+         InternalError ('expecting DefImp or Module symbol')
+      END
+   END
+END GetLibName ;
+
+
+(*
    PutProcedureExternPublic - if procedure is not NulSym set extern
                               and public booleans.
 *)
@@ -3678,7 +3741,7 @@ BEGIN
    (* If the ctor does not exist then make it extern/ (~extern) public.  *)
    IF ctor.ctor = NulSym
    THEN
-      ctor.ctor := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_ctor")) ;
+      ctor.ctor := MakeProcedure (tok, GenName (GetLibName (sym), "_M2_", GetSymName (sym), "_ctor")) ;
       PutMonoName (ctor.ctor, TRUE)
    END ;
    PutProcedureExternPublic (ctor.ctor, extern, NOT extern) ;
@@ -3686,21 +3749,21 @@ BEGIN
    (* If the ctor does not exist then make it extern/ (~extern) public.  *)
    IF ctor.dep = NulSym
    THEN
-      ctor.dep := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_dep")) ;
+      ctor.dep := MakeProcedure (tok, GenName (GetLibName (sym), "_M2_", GetSymName (sym), "_dep")) ;
       PutMonoName (ctor.dep, TRUE)
    END ;
    PutProcedureExternPublic (ctor.dep, extern, NOT extern) ;
    (* If init/fini do not exist then create them.  *)
    IF ctor.init = NulSym
    THEN
-      ctor.init := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_init")) ;
+      ctor.init := MakeProcedure (tok, GenName (GetLibName (sym), "_M2_", GetSymName (sym), "_init")) ;
       DeclareArgEnvParams (tok, ctor.init) ;
       PutMonoName (ctor.init, NOT IsInnerModule (sym))
    END ;
    PutProcedureExternPublic (ctor.init, extern, NOT extern) ;
    IF ctor.fini = NulSym
    THEN
-      ctor.fini := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_fini")) ;
+      ctor.fini := MakeProcedure (tok, GenName (GetLibName (sym), "_M2_", GetSymName (sym), "_fini")) ;
       DeclareArgEnvParams (tok, ctor.fini) ;
       PutMonoName (ctor.fini, NOT IsInnerModule (sym))
    END ;

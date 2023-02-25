@@ -49,12 +49,18 @@ static int insideCppArgs = FALSE;
 /* We default to pim in the absence of fiso.  */
 static bool iso = false;
 
+typedef struct named_path_s {
+  std::vector<const char*>path;
+  const char *name;
+} named_path;
+
+
 /* The language include paths are based on the libraries in use.  */
 static bool allow_libraries = true;
 static const char *flibs = nullptr;
 static const char *iprefix = nullptr;
 static const char *imultilib = nullptr;
-static std::vector<const char*>Ipaths;
+static std::vector<named_path>Ipaths;
 static std::vector<const char*>isystem;
 static std::vector<const char*>iquote;
 
@@ -319,6 +325,31 @@ is_cpp_filename (unsigned int i)
   return filename_cpp[i];
 }
 
+static void
+push_back_Ipath (const char *arg)
+{
+  if (Ipaths.empty ())
+    {
+      named_path np;
+      np.path.push_back (arg);
+      np.name = xstrdup (M2Options_GetM2PathName ());
+      Ipaths.push_back (np);
+    }
+  else
+    {
+      if (strcmp (Ipaths.back ().name,
+		  M2Options_GetM2PathName ()) == 0)
+	Ipaths.back ().path.push_back (arg);
+      else
+	{
+	  named_path np;
+	  np.path.push_back (arg);
+	  np.name = xstrdup (M2Options_GetM2PathName ());
+	  Ipaths.push_back (np);
+	}
+    }
+}
+
 /* Handle gm2 specific options.  Return 0 if we didn't do anything.  */
 
 bool
@@ -337,7 +368,7 @@ gm2_langhook_handle_option (
   switch (code)
     {
     case OPT_I:
-      Ipaths.push_back (arg);
+      push_back_Ipath (arg);
       return 1;
     case OPT_fiso:
       M2Options_SetISO (value);
@@ -517,6 +548,24 @@ gm2_langhook_handle_option (
       M2Options_SetM2g (value);
       return 1;
       break;
+    case OPT_fm2_pathname_:
+      if (strcmp (arg, "-") == 0)
+	M2Options_SetM2PathName ("");
+      else
+	M2Options_SetM2PathName (arg);
+      return 1;
+      break;
+    case OPT_fm2_pathnameI:
+      push_back_Ipath (arg);
+      return 1;
+      break;
+    case OPT_fm2_prefix_:
+      if (strcmp (arg, "-") == 0)
+	M2Options_SetM2Prefix ("");
+      else
+	M2Options_SetM2Prefix (arg);
+      return 1;
+      break;
     case OPT_iprefix:
       iprefix = arg;
       return 1;
@@ -608,6 +657,7 @@ add_one_import_path (const char *libname)
   strcat (lib, "m2");
   strcat (lib, dir_sep);
   strcat (lib, libname);
+  M2Options_SetM2PathName (libname);
   M2Options_SetSearchPath (lib);
 }
 
@@ -669,8 +719,12 @@ gm2_langhook_post_options (const char **pfilename)
   for (auto *s : iquote)
     M2Options_SetSearchPath (s);
   iquote.clear();
-  for (auto *s : Ipaths)
-    M2Options_SetSearchPath (s);
+  for (auto np : Ipaths)
+    {
+      M2Options_SetM2PathName (np.name);
+      for (auto *s : np.path)
+	M2Options_SetSearchPath (s);
+    }
   Ipaths.clear();
   for (auto *s : isystem)
     M2Options_SetSearchPath (s);

@@ -24,14 +24,15 @@ IMPLEMENTATION MODULE M2AsmUtil ;
 
 FROM SFIO IMPORT WriteS ;
 FROM FIO IMPORT StdOut ;
-FROM DynamicStrings IMPORT String, string, ConCat, KillString, InitString, Mark, InitStringCharStar, ConCatChar ;
+FROM DynamicStrings IMPORT String, string, ConCat, KillString, InitString, Mark, InitStringCharStar, ConCatChar, EqualArray ;
 FROM StdIO IMPORT Write ;
 FROM StrIO IMPORT WriteString ;
-FROM NameKey IMPORT WriteKey, GetKey, MakeKey, makekey, KeyToCharStar ;
+FROM NameKey IMPORT WriteKey, GetKey, MakeKey, makekey, KeyToCharStar, NulName ;
 FROM M2Options IMPORT WholeProgram ;
+FROM M2Printf IMPORT printf1 ;
 
 FROM SymbolTable IMPORT NulSym,
-                        GetSymName,
+                        GetSymName, GetLibName,
                         GetScope,
                         GetBaseModule,
                         IsInnerModule,
@@ -45,6 +46,10 @@ FROM SymbolTable IMPORT NulSym,
 
 FROM M2Error IMPORT InternalError ;
 FROM m2configure IMPORT UseUnderscoreForC ;
+
+
+CONST
+   Debugging = FALSE ;
 
 
 (*
@@ -97,8 +102,10 @@ END GetFullScopeAsmName ;
 
 PROCEDURE GetFullSymName (sym: CARDINAL) : Name ;
 VAR
-   module: String ;
-   scope : CARDINAL ;
+   libname,
+   fullsymname,
+   module     : String ;
+   scope      : CARDINAL ;
 BEGIN
    IF IsProcedure (sym) AND IsMonoName (sym)
    THEN
@@ -106,7 +113,34 @@ BEGIN
    ELSE
       scope := GetScope (sym) ;
       module := GetModulePrefix (InitString (''), sym, scope) ;
-      RETURN StringToKey (ConCat (module, InitStringCharStar (KeyToCharStar (GetSymName (sym)))))
+      fullsymname := ConCat (module, InitStringCharStar (KeyToCharStar (GetSymName (sym)))) ;
+      IF (IsVar (sym) OR IsProcedure (sym)) AND IsExportQualified (sym)
+      THEN
+         WHILE NOT IsDefImp (scope) DO
+            scope := GetScope (scope)
+         END ;
+         IF GetLibName (scope) # NulName
+         THEN
+            IF Debugging
+            THEN
+               printf1 ("before sym = %s  , ", fullsymname)
+            END ;
+            libname := InitStringCharStar (KeyToCharStar (GetLibName (scope))) ;
+            IF NOT EqualArray (libname, '')
+            THEN
+               IF Debugging
+               THEN
+                  printf1 ("libname = %s  , ", libname)
+               END ;
+               fullsymname := ConCat (ConCatChar (libname, '_'), fullsymname) ;
+            END ;
+            IF Debugging
+            THEN
+               printf1 ("after sym = %s\n", fullsymname)
+            END
+         END
+      END ;
+      RETURN StringToKey (fullsymname)
    END
 END GetFullSymName ;
 

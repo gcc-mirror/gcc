@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-
 #include "ChanConsts.h"
 
 #if defined(HAVE_ERRNO_H)
@@ -37,6 +36,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #include "m2rts.h"
+
+#define EXPORT(FUNC) m2iso ## _ErrnoCategory_ ## FUNC
+#define M2EXPORT(FUNC) m2iso ## _M2_ErrnoCategory_ ## FUNC
+#define M2LIBNAME "m2iso"
+
 
 #if !defined(FALSE)
 #define FALSE (1 == 0)
@@ -50,7 +54,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    with a hard device error.  */
 
 extern "C" int
-ErrnoCategory_IsErrnoHard (int e)
+EXPORT(IsErrnoHard) (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
   return ((e == EPERM) || (e == ENOENT) || (e == EIO) || (e == ENXIO)
@@ -65,7 +69,7 @@ ErrnoCategory_IsErrnoHard (int e)
    with a soft device error.  */
 
 extern "C" int
-ErrnoCategory_IsErrnoSoft (int e)
+EXPORT(IsErrnoSoft) (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
   return ((e == ESRCH) || (e == EINTR) || (e == E2BIG) || (e == ENOEXEC)
@@ -79,7 +83,7 @@ ErrnoCategory_IsErrnoSoft (int e)
 }
 
 extern "C" int
-ErrnoCategory_UnAvailable (int e)
+EXPORT(UnAvailable) (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
   return ((e == ENOENT) || (e == ESRCH) || (e == ENXIO) || (e == ECHILD)
@@ -93,7 +97,7 @@ ErrnoCategory_UnAvailable (int e)
    OpenResults.  */
 
 extern "C" openResults
-ErrnoCategory_GetOpenResults (int e)
+EXPORT(GetOpenResults) (int e)
 {
   if (e == 0)
     return opened;
@@ -157,23 +161,24 @@ ErrnoCategory_GetOpenResults (int e)
 /* GNU Modula-2 linking fodder.  */
 
 extern "C" void
-_M2_ErrnoCategory_init (int, char *argv[], char *env[])
+M2EXPORT(init) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_ErrnoCategory_fini (int, char *argv[], char *env[])
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_ErrnoCategory_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_ErrnoCategory_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("ErrnoCategory", _M2_ErrnoCategory_init, _M2_ErrnoCategory_fini,
-			_M2_ErrnoCategory_dep);
+  m2iso_M2RTS_RegisterModule ("ErrnoCategory", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

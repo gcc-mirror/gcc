@@ -131,7 +131,12 @@ libm2log_la_SOURCES = $(M2MODS) Break.c
 
 libm2log_la_DEPENDENCIES = ../libm2pim/SYSTEM.def $(addsuffix .lo, $(basename $(libm2log_la_SOURCES)))
 libm2log_la_CFLAGS = -I. -DBUILD_GM2_LIBS -I@srcdir@/../
-libm2log_la_M2FLAGS = -I../libm2pim -I$(GM2_SRC)/gm2-libs-log -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -Wreturn-type -fcase
+libm2log_la_M2FLAGS = \
+ -fm2-pathname=m2pim -I../libm2pim \
+ -fm2-pathname=m2log -I$(GM2_SRC)/gm2-libs-log \
+ -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
+ -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
+ -Wreturn-type -fcase -fm2-prefix=m2log
 if TARGET_DARWIN
 libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup
 else

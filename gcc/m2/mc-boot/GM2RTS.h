@@ -53,8 +53,8 @@ typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 typedef void (*M2RTS_ArgCVEnvP_t) (int, void *, void *);
 struct M2RTS_ArgCVEnvP_p { M2RTS_ArgCVEnvP_t proc; };
 
-EXTERN void M2RTS_ConstructModules (void * applicationmodule, int argc, void * argv, void * envp);
-EXTERN void M2RTS_DeconstructModules (void * applicationmodule, int argc, void * argv, void * envp);
+EXTERN void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+EXTERN void M2RTS_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 
 /*
    RegisterModule - adds module name to the list of outstanding
@@ -62,14 +62,14 @@ EXTERN void M2RTS_DeconstructModules (void * applicationmodule, int argc, void *
                     explored to determine initialization order.
 */
 
-EXTERN void M2RTS_RegisterModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
+EXTERN void M2RTS_RegisterModule (void * name, void * libname, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
 
 /*
    RequestDependant - used to specify that modulename is dependant upon
                       module dependantmodule.
 */
 
-EXTERN void M2RTS_RequestDependant (void * modulename, void * dependantmodule);
+EXTERN void M2RTS_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname);
 
 /*
    InstallTerminationProcedure - installs a procedure, p, which will

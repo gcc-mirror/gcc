@@ -24,7 +24,7 @@ IMPLEMENTATION MODULE M2Search ;
 
 FROM M2FileName IMPORT CalculateFileName ;
 FROM Assertion IMPORT Assert ;
-FROM DynamicStringPath IMPORT GetUserPath, GetSystemPath, FindFileName ;
+FROM PathName IMPORT FindNamedPathFile ;
 
 FROM DynamicStrings IMPORT InitString, InitStringChar,
                            KillString, ConCat, ConCatChar, Index, Slice,
@@ -55,7 +55,9 @@ VAR
 (*
    doDSdbEnter - called when compiled with -fcpp to enable runtime garbage
                  collection debugging.
+*)
 
+(*
 PROCEDURE doDSdbEnter ;
 BEGIN
    PushAllocation
@@ -67,7 +69,9 @@ END doDSdbEnter ;
    doDSdbExit - called when compiled with -fcpp to enable runtime garbage
                 collection debugging.  The parameter string s is exempt from
                 garbage collection analysis.
+*)
 
+(*
 PROCEDURE doDSdbExit (s: String) ;
 BEGIN
    (* Check to see whether no strings have been lost since the PushAllocation.  *)
@@ -120,17 +124,13 @@ END DSdbExit ;
                     is called.
                     FullPath is set to NIL if this function returns FALSE.
                     FindSourceFile sets FullPath to a new string if successful.
-                    The string, FileName, is not altered.
+                    The string FileName is not altered.
 *)
 
 PROCEDURE FindSourceFile (FileName: String;
-                          VAR FullPath: String) : BOOLEAN ;
+                          VAR FullPath, named: String) : BOOLEAN ;
 BEGIN
-   FullPath := FindFileName (FileName, GetUserPath ()) ;
-   IF FullPath = NIL
-   THEN
-      FullPath := FindFileName (FileName, GetSystemPath ())
-   END ;
+   FullPath := FindNamedPathFile (FileName, named) ;
    RETURN FullPath # NIL
 END FindSourceFile ;
 
@@ -142,22 +142,22 @@ END FindSourceFile ;
                        then FALSE is returned and FullPath is set to NIL.
 *)
 
-PROCEDURE FindSourceDefFile (Stem: String; VAR FullPath: String) : BOOLEAN ;
+PROCEDURE FindSourceDefFile (Stem: String; VAR FullPath, named: String) : BOOLEAN ;
 VAR
    f: String ;
 BEGIN
    IF Def # NIL
    THEN
       f := CalculateFileName (Stem, Def) ;
-      IF FindSourceFile (f, FullPath)
+      IF FindSourceFile (f, FullPath, named)
       THEN
          RETURN TRUE
       END ;
       f := KillString (f)
    END ;
    (* Try the GNU Modula-2 default extension.  *)
-   f := CalculateFileName (Stem, Mark(InitString ('def'))) ;
-   RETURN FindSourceFile (f, FullPath)
+   f := CalculateFileName (Stem, Mark (InitString ('def'))) ;
+   RETURN FindSourceFile (f, FullPath, named)
 END FindSourceDefFile ;
 
 
@@ -168,22 +168,22 @@ END FindSourceDefFile ;
                        then FALSE is returned and FullPath is set to NIL.
 *)
 
-PROCEDURE FindSourceModFile (Stem: String; VAR FullPath: String) : BOOLEAN ;
+PROCEDURE FindSourceModFile (Stem: String; VAR FullPath, named: String) : BOOLEAN ;
 VAR
    f: String ;
 BEGIN
    IF Mod#NIL
    THEN
       f := CalculateFileName (Stem, Mod) ;
-      IF FindSourceFile (f, FullPath)
+      IF FindSourceFile (f, FullPath, named)
       THEN
          RETURN TRUE
       END ;
       f := KillString (f)
    END ;
    (* Try the GNU Modula-2 default extension.  *)
-   f := CalculateFileName (Stem, Mark(InitString ('mod'))) ;
-   RETURN FindSourceFile (f, FullPath)
+   f := CalculateFileName (Stem, Mark (InitString ('mod'))) ;
+   RETURN FindSourceFile (f, FullPath, named)
 END FindSourceModFile ;
 
 
@@ -195,8 +195,8 @@ END FindSourceModFile ;
 
 PROCEDURE SetDefExtension (ext: String) ;
 BEGIN
-   Def := KillString(Def) ;
-   Def := Dup(ext)
+   Def := KillString (Def) ;
+   Def := Dup (ext)
 END SetDefExtension ;
 
 
@@ -208,8 +208,8 @@ END SetDefExtension ;
 
 PROCEDURE SetModExtension (ext: String) ;
 BEGIN
-   Mod := KillString(Mod) ;
-   Mod := Dup(ext)
+   Mod := KillString (Mod) ;
+   Mod := Dup (ext)
 END SetModExtension ;
 
 

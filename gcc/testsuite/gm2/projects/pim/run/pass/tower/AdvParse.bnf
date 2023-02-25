@@ -1,0 +1,379 @@
+% module AdvParse begin
+IMPLEMENTATION MODULE AdvParse ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : AdvParse
+   Date       : 16/7/2005
+   SYSTEM     : GNU Modula-2
+   Description: parses maps.
+*)
+
+FROM libc IMPORT printf ;
+FROM SYSTEM IMPORT ADDRESS ;
+FROM DynamicStrings IMPORT String, string, InitStringCharStar, KillString,
+                           InitString, ConCat, ConCatChar, Mark ;
+FROM StringConvert IMPORT stoi ;
+FROM advflex IMPORT toktype, OpenSource, CloseSource, error, GetToken,
+                    currenttoken, currentinteger ;
+FROM AdvMap IMPORT Rooms, Line, DoorStatus, Door, Room, Treasure,
+                   ActualNoOfRooms, MaxNoOfTreasures, MaxNoOfRooms,
+                   WallsPerRoom, DoorsPerRoom, TreasureKind ;
+FROM AdvUtil IMPORT HideTreasure ;
+
+
+CONST
+   Debugging = TRUE ;
+
+TYPE
+   BITSET = SET OF toktype ;
+
+VAR
+   LastInt,
+   ExitValue     : INTEGER ;
+
+   CurDoor,
+   CurWall,
+   CurRoom       : CARDINAL ;
+
+
+(*
+   Min -
+*)
+
+PROCEDURE Min (a, b: INTEGER) : INTEGER ;
+BEGIN
+   IF a<b
+   THEN
+      RETURN( a )
+   ELSE
+      RETURN( b )
+   END
+END Min ;
+
+
+(*
+   Max -
+*)
+
+PROCEDURE Max (a, b: INTEGER) : INTEGER ;
+BEGIN
+   IF a>b
+   THEN
+      RETURN( a )
+   ELSE
+      RETURN( b )
+   END
+END Max ;
+
+
+(*
+   OpenFile - attempts to open a file, mapfile.
+*)
+
+PROCEDURE OpenFile (mapfile: ADDRESS) : INTEGER ;
+VAR
+   r: INTEGER ;
+BEGIN
+   ExitValue := 0 ;
+   IF OpenSource(mapfile)
+   THEN
+      RETURN( 0 )
+   ELSE
+      r := printf("cannot open file: %s\n", mapfile) ;
+      RETURN( 1 )
+   END ;
+END OpenFile ;
+
+
+(*
+   CloseFile -
+*)
+
+PROCEDURE CloseFile ;
+BEGIN
+   CloseSource
+END CloseFile ;
+
+% declaration AdvParse begin
+
+
+(*
+   ErrorArray -
+*)
+
+PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
+BEGIN
+   ErrorString(InitString(a))
+END ErrorArray ;
+
+
+(*
+   ErrorString -
+*)
+
+PROCEDURE ErrorString (s: String) ;
+BEGIN
+   error(string(s)) ;
+   ExitValue := 1
+END ErrorString ;
+
+
+(*
+   SyntaxError - after a syntax error we skip all tokens up until we reach
+                 a stop symbol.
+*)
+
+PROCEDURE SyntaxError (stopset: BITSET) ;
+VAR
+   r: INTEGER ;
+BEGIN
+   DescribeError(stopset) ;
+   IF Debugging
+   THEN
+      r := printf('\nskipping token *** ')
+   END ;
+   WHILE NOT (currenttoken IN stopset)
+   DO
+      GetToken
+   END ;
+   IF Debugging
+   THEN
+      r := printf(' ***\n')
+   END ;
+   ExitValue := 1
+END SyntaxError ;
+
+
+(*
+   SyntaxCheck -
+*)
+
+PROCEDURE SyntaxCheck (stopset: BITSET) ;
+BEGIN
+   IF NOT (currenttoken IN stopset)
+   THEN
+      SyntaxError(stopset)
+   END
+END SyntaxCheck ;
+
+
+(*
+   WarnMissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE WarnMissingToken (t: toktype) ;
+VAR
+   s  : BITSET ;
+   str: String ;
+BEGIN
+   s := BITSET{t} ;
+   str := DescribeStop(s) ;
+
+   str := ConCat(InitString('syntax error,'), Mark(str)) ;
+   ErrorString(str)
+END WarnMissingToken ;
+
+
+(*
+   MissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE MissingToken (t: toktype) ;
+VAR
+   r: INTEGER ;
+BEGIN
+   WarnMissingToken(t)
+END MissingToken ;
+
+
+(*
+   InStopSet
+*)
+
+PROCEDURE InStopSet (t: toktype; stopset: BITSET) : BOOLEAN ;
+BEGIN
+   RETURN t IN stopset
+END InStopSet ;
+
+
+(*
+   Expect -
+*)
+
+PROCEDURE Expect (t: toktype; stopset: BITSET) ;
+BEGIN
+   IF currenttoken=t
+   THEN
+      GetToken
+   ELSE
+      MissingToken(t)
+   END ;
+   SyntaxCheck(stopset)
+END Expect ;
+
+
+PROCEDURE ParseMap (a: ADDRESS) : INTEGER ;
+VAR
+   r: INTEGER ;
+BEGIN
+   r := OpenFile(a) ;
+   IF r=0
+   THEN
+      GetToken ;
+      FileUnit(BITSET{eoftok}) ;
+      CloseFile ;
+      RETURN( ExitValue )
+   ELSE
+      RETURN( r )
+   END
+END ParseMap ;
+
+
+(*
+   Integer -
+*)
+
+PROCEDURE Integer (stopset: BITSET) ;
+BEGIN
+   LastInt := currentinteger ;
+   Expect(integertok, stopset)
+END Integer ;
+
+
+% module AdvParse end
+
+
+END AdvParse.
+% rules
+error       'ErrorArray' 'ErrorString'
+tokenfunc   'currenttoken'
+
+token   ''                eoftok      -- internal token
+token   'ROOM'            roomtok
+token   'DOOR'            doortok
+token   'WALL'            walltok
+token   'TREASURE'        treasuretok
+token   'AT'              attok
+token   'LEADS'           leadstok
+token   'TO'              totok
+token   'STATUS'          statustok
+token   "CLOSED"          closedtok
+token   "OPEN"            opentok
+token   "SECRET"          secrettok
+token   'IS'              istok
+token   'END'             endtok
+token   'END.'            enddottok
+token   'integer number'  integertok
+token   'RANDOMIZE'       randomizetok
+
+special Integer           first { < integertok > } follow { }
+
+BNF
+
+FileUnit := RoomDesc { RoomDesc } [ RandomTreasure ] "END." =:
+
+RoomDesc := 'ROOM' Integer                            % VAR r: INTEGER ; %
+                                                      % CurRoom := LastInt ;
+                                                        ActualNoOfRooms := Max(CurRoom,
+                                                                               ActualNoOfRooms) ;
+                                                        WITH Rooms[CurRoom] DO
+                                                           NoOfWalls := 0 ;
+                                                           NoOfDoors := 0 ;
+                                                           Treasures := {}
+                                                        END ;
+                                                        IF Debugging
+                                                        THEN
+                                                           r := printf('reading room %d\n', CurRoom)
+                                                        END %
+        { WallDesc | DoorDesc | TreasureDesc } 'END' =:
+
+WallDesc := 'WALL' WallCoords { WallCoords } =:
+
+WallCoords :=                                         % WITH Rooms[CurRoom] DO
+                                                           INC(NoOfWalls) ;
+                                                           IF NoOfWalls>WallsPerRoom
+                                                           THEN
+                                                              ErrorArray('too many walls') ;
+                                                              NoOfWalls := WallsPerRoom
+                                                           END ;
+                                                           CurWall := NoOfWalls
+                                                        END %
+              Integer                                 % VAR x1, y1, x2, y2: INTEGER ; %
+                                                      % x1 := LastInt %
+                      Integer                         % y1 := LastInt %
+
+                              Integer                 % x2 := LastInt %
+
+                                      Integer         % y2 := LastInt ;
+                                                        WITH Rooms[CurRoom].Walls[CurWall] DO
+                                                           X1 := Min(x1, x2) ;
+                                                           Y1 := Min(y1, y2) ;
+                                                           X2 := Max(x1, x2) ;
+                                                           Y2 := Max(y1, y2) ;
+                                                           IF (X1#X2) AND (Y1#Y2)
+                                                           THEN
+                                                              error(string(InitString("not allowed diagonal wall")))
+                                                           END
+                                                        END %
+           =:
+
+DoorDesc := 'DOOR' DoorCoords { DoorCoords } =:
+
+DoorCoords :=                                         % WITH Rooms[CurRoom] DO
+                                                           INC(NoOfDoors) ;
+                                                           IF NoOfDoors>DoorsPerRoom
+                                                           THEN
+                                                              ErrorArray('too many doors') ;
+                                                              NoOfDoors := DoorsPerRoom
+                                                           END ;
+                                                           CurDoor := NoOfDoors
+                                                        END %
+              Integer                                 % VAR x1, y1, x2, y2: INTEGER ; %
+                                                      % x1 := LastInt %
+                      Integer                         % y1 := LastInt %
+
+                              Integer                 % x2 := LastInt %
+
+                                      Integer         % y2 := LastInt ;
+                                                        WITH Rooms[CurRoom].Doors[CurDoor].Position DO
+                                                           X1 := Min(x1, x2) ;
+                                                           Y1 := Min(y1, y2) ;
+                                                           X2 := Max(x1, x2) ;
+                                                           Y2 := Max(y1, y2) ;
+                                                           IF (X1#X2) AND (Y1#Y2)
+                                                           THEN
+                                                              error(string(InitString("not allowed diagonal door")))
+                                                           END
+
+                                                        END %
+
+              Status
+              'LEADS' 'TO' Integer                    % Rooms[CurRoom].Doors[CurDoor].LeadsTo := LastInt %
+           =:
+
+Status := 'STATUS' ( 'OPEN'                           % Rooms[CurRoom].Doors[CurDoor].StateOfDoor := Open %
+                      | 'CLOSED'                      % Rooms[CurRoom].Doors[CurDoor].StateOfDoor := Closed %
+                      | 'SECRET'                      % Rooms[CurRoom].Doors[CurDoor].StateOfDoor := Secret %
+                   )
+       =:
+
+TreasureDesc := 'TREASURE' 'AT' Integer
+                                                      % VAR x, y: INTEGER ; %
+                                                      % x := LastInt %
+                            Integer                   % y := LastInt %
+                       'IS' Integer                   % WITH Treasure[LastInt] DO
+                                                           Xpos := x ;
+                                                           Ypos := y ;
+                                                           Rm := CurRoom ;
+                                                           kind := onfloor
+                                                        END ;
+                                                        INCL(Rooms[CurRoom].Treasures, LastInt) %
+          =:
+
+RandomTreasure := 'RANDOMIZE' 'TREASURE' Integer      % HideTreasure(LastInt) %
+                   { Integer                          % HideTreasure(LastInt) %
+                             }
+               =:
+
+FNB

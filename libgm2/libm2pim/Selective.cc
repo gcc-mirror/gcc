@@ -27,6 +27,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 #include <m2rts.h>
 
+#define EXPORT(FUNC) m2pim ## _Selective_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_Selective_ ## FUNC
+#define M2LIBNAME "m2pim"
+
 #if defined(HAVE_STDDEF_H)
 /* Obtain a definition for NULL.  */
 #include <stddef.h>
@@ -83,15 +87,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined(HAVE_STRUCT_TIMEVAL)
 extern "C" int
-Selective_Select (int nooffds, fd_set *readfds, fd_set *writefds,
-                  fd_set *exceptfds, struct timeval *timeout)
+EXPORT(Select) (int nooffds, fd_set *readfds, fd_set *writefds,
+		fd_set *exceptfds, struct timeval *timeout)
 {
   return select (nooffds, readfds, writefds, exceptfds, timeout);
 }
 #else
 extern "C" int
-Selective_Select (int nooffds, void *readfds, void *writefds, void *exceptfds,
-                  void *timeout)
+EXPORT(Select) (int nooffds, void *readfds, void *writefds, void *exceptfds,
+		void *timeout)
 {
   return 0;
 }
@@ -101,7 +105,7 @@ Selective_Select (int nooffds, void *readfds, void *writefds, void *exceptfds,
 
 #if defined(HAVE_STRUCT_TIMEVAL)
 extern "C" struct timeval *
-Selective_InitTime (unsigned int sec, unsigned int usec)
+EXPORT(InitTime) (unsigned int sec, unsigned int usec)
 {
   struct timeval *t = (struct timeval *)malloc (sizeof (struct timeval));
 
@@ -111,14 +115,14 @@ Selective_InitTime (unsigned int sec, unsigned int usec)
 }
 
 extern "C" void
-Selective_GetTime (struct timeval *t, unsigned int *sec, unsigned int *usec)
+EXPORT(GetTime) (struct timeval *t, unsigned int *sec, unsigned int *usec)
 {
   *sec = (unsigned int)t->tv_sec;
   *usec = (unsigned int)t->tv_usec;
 }
 
 extern "C" void
-Selective_SetTime (struct timeval *t, unsigned int sec, unsigned int usec)
+EXPORT(SetTime) (struct timeval *t, unsigned int sec, unsigned int usec)
 {
   t->tv_sec = sec;
   t->tv_usec = usec;
@@ -127,7 +131,7 @@ Selective_SetTime (struct timeval *t, unsigned int sec, unsigned int usec)
 /* KillTime frees the timeval structure and returns NULL.  */
 
 extern "C" struct timeval *
-Selective_KillTime (struct timeval *t)
+EXPORT(KillTime) (struct timeval *t)
 {
 #if defined(HAVE_STDLIB_H)
   free (t);
@@ -138,7 +142,7 @@ Selective_KillTime (struct timeval *t)
 /* InitSet returns a pointer to a FD_SET.  */
 
 extern "C" FDSET_T *
-Selective_InitSet (void)
+EXPORT(InitSet) (void)
 {
 #if defined(HAVE_STDLIB_H)
   FDSET_T *s = (FDSET_T *)malloc (sizeof (FDSET_T));
@@ -152,7 +156,7 @@ Selective_InitSet (void)
 /* KillSet frees the FD_SET and returns NULL.  */
 
 extern "C" FDSET_T *
-Selective_KillSet (FDSET_T *s)
+EXPORT(KillSet) (FDSET_T *s)
 {
 #if defined(HAVE_STDLIB_H)
   free (s);
@@ -163,7 +167,7 @@ Selective_KillSet (FDSET_T *s)
 /* FdZero generate an empty set.  */
 
 extern "C" void
-Selective_FdZero (FDSET_T *s)
+EXPORT(FdZero) (FDSET_T *s)
 {
   FD_ZERO (s);
 }
@@ -171,7 +175,7 @@ Selective_FdZero (FDSET_T *s)
 /* FS_Set include an element, fd, into set, s.  */
 
 extern "C" void
-Selective_FdSet (int fd, FDSET_T *s)
+EXPORT(FdSet) (int fd, FDSET_T *s)
 {
   FD_SET (fd, s);
 }
@@ -179,7 +183,7 @@ Selective_FdSet (int fd, FDSET_T *s)
 /* FdClr exclude an element, fd, from the set, s.  */
 
 extern "C" void
-Selective_FdClr (int fd, FDSET_T *s)
+EXPORT(FdClr) (int fd, FDSET_T *s)
 {
   FD_CLR (fd, s);
 }
@@ -187,7 +191,7 @@ Selective_FdClr (int fd, FDSET_T *s)
 /* FdIsSet return TRUE if, fd, is present in set, s.  */
 
 extern "C" int
-Selective_FdIsSet (int fd, FDSET_T *s)
+EXPORT(FdIsSet) (int fd, FDSET_T *s)
 {
   return FD_ISSET (fd, s);
 }
@@ -197,69 +201,69 @@ Selective_FdIsSet (int fd, FDSET_T *s)
    It returns zero (see man 3p gettimeofday).  */
 
 extern "C" int
-Selective_GetTimeOfDay (struct timeval *t)
+EXPORT(GetTimeOfDay) (struct timeval *t)
 {
   return gettimeofday (t, NULL);
 }
 #else
 
 extern "C" void *
-Selective_InitTime (unsigned int sec, unsigned int usec)
+EXPORT(InitTime) (unsigned int sec, unsigned int usec)
 {
   return NULL;
 }
 
 extern "C" void *
-Selective_KillTime (void *t)
+EXPORT(KillTime) (void *t)
 {
   return NULL;
 }
 
 extern "C" void
-Selective_GetTime (void *t, unsigned int *sec, unsigned int *usec)
+EXPORT(GetTime) (void *t, unsigned int *sec, unsigned int *usec)
 {
 }
 
 extern "C" void
-Selective_SetTime (void *t, unsigned int sec, unsigned int usec)
+EXPORT(SetTime) (void *t, unsigned int sec, unsigned int usec)
 {
 }
 
 extern "C" FDSET_T *
-Selective_InitSet (void)
+EXPORT(InitSet) (void)
 {
   return NULL;
 }
 
 extern "C" FDSET_T *
-Selective_KillSet (void)
+EXPORT(KillSet) (void)
 {
   return NULL;
 }
 
 extern "C" void
-Selective_FdZero (void *s)
+EXPORT(FdZero) (void *s)
 {
 }
 
 extern "C" void
-Selective_FdSet (int fd, void *s)
+EXPORT(FdSet) (int fd, void *s)
 {
 }
 
 extern "C" void
-Selective_FdClr (int fd, void *s)
+EXPORT(FdClr) (int fd, void *s)
 {
 }
 
 extern "C" int
-Selective_FdIsSet (int fd, void *s)
+EXPORT(FdIsSet) (int fd, void *s)
 {
   return 0;
 }
 
 extern "C" int
-Selective_GetTimeOfDay (void *t)
+EXPORT(GetTimeOfDay) (void *t)
 {
   return -1;
 }
@@ -268,7 +272,7 @@ Selective_GetTimeOfDay (void *t)
 /* MaxFdsPlusOne returns max (a + 1, b + 1).  */
 
 extern "C" int
-Selective_MaxFdsPlusOne (int a, int b)
+EXPORT(MaxFdsPlusOne) (int a, int b)
 {
   if (a > b)
     return a + 1;
@@ -279,7 +283,7 @@ Selective_MaxFdsPlusOne (int a, int b)
 /* WriteCharRaw writes a single character to the file descriptor.  */
 
 extern "C" void
-Selective_WriteCharRaw (int fd, char ch)
+EXPORT(WriteCharRaw) (int fd, char ch)
 {
   write (fd, &ch, 1);
 }
@@ -287,7 +291,7 @@ Selective_WriteCharRaw (int fd, char ch)
 /* ReadCharRaw read and return a single char from file descriptor, fd.  */
 
 extern "C" char
-Selective_ReadCharRaw (int fd)
+EXPORT(ReadCharRaw) (int fd)
 {
   char ch;
 
@@ -295,24 +299,27 @@ Selective_ReadCharRaw (int fd)
   return ch;
 }
 
+/* GNU Modula-2 linking hooks.  */
+
 extern "C" void
-_M2_Selective_init (int argc, char *argv[], char *envp[])
+M2EXPORT(init) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_Selective_fini (int argc, char *argv[], char *envp[])
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_Selective_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_Selective_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("Selective", _M2_Selective_init, _M2_Selective_fini,
-			_M2_Selective_dep);
+  m2pim_M2RTS_RegisterModule ("Selective", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

@@ -113,7 +113,11 @@ nodist_EXTRA_libm2cor_la_SOURCES = dummy.c  ## forces automake to generate the L
 libm2cordir = libm2cor
 libm2cor_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2cor_la_SOURCES)))
 libm2cor_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
-libm2cor_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs-coroutines -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g -Wreturn-type -fcase
+libm2cor_la_M2FLAGS = \
+    -fm2-pathname=m2cor -I. -I$(GM2_SRC)/gm2-libs-coroutines \
+    -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
+    -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
+    -fm2-g -g -Wreturn-type -fcase -fm2-prefix=m2cor
 if TARGET_DARWIN
 libm2cor_la_link_flags = -Wl,-undefined,dynamic_lookup
 else

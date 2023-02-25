@@ -132,6 +132,10 @@ EXTERN void M2Options_SetMQ (const char *arg);
 EXTERN char *M2Options_GetMQ (void);
 EXTERN void M2Options_SetObj (const char *arg);
 EXTERN char *M2Options_GetObj (void);
+EXTERN void M2Options_SetM2Prefix (const char *arg);
+EXTERN char *M2Options_GetM2Prefix (void);
+EXTERN void M2Options_SetM2PathName (const char *arg);
+EXTERN char *M2Options_GetM2PathName (void);
 
 #undef EXTERN
 #endif /* m2options_h.  */

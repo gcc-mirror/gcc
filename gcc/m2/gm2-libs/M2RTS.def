@@ -33,10 +33,10 @@ TYPE
    ArgCVEnvP = PROCEDURE (INTEGER, ADDRESS, ADDRESS) ;
 
 
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
                               argc: INTEGER; argv, envp: ADDRESS) ;
 
 
@@ -46,7 +46,7 @@ PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
                     explored to determine initialization order.
 *)
 
-PROCEDURE RegisterModule (name: ADDRESS;
+PROCEDURE RegisterModule (name, libname: ADDRESS;
                           init, fini:  ArgCVEnvP;
                           dependencies: PROC) ;
 
@@ -56,7 +56,8 @@ PROCEDURE RegisterModule (name: ADDRESS;
                       module dependantmodule.
 *)
 
-PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+PROCEDURE RequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname: ADDRESS) ;
 
 
 (*

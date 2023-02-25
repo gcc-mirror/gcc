@@ -25,6 +25,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#include <m2rts.h>
+
+#define EXPORT(FUNC) m2iso ## _wraptime_ ## FUNC
+#define M2EXPORT(FUNC) m2iso ## _M2_wraptime_ ## FUNC
+#define M2LIBNAME "m2iso"
 
 #if defined(HAVE_SYS_TYPES_H)
 #include "sys/types.h"
@@ -61,14 +66,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* InitTimeval returns a newly created opaque type.  */
 
 #if defined(HAVE_TIMEVAL) && defined(HAVE_MALLOC_H)
-struct timeval *
-wraptime_InitTimeval (void)
+extern "C" struct timeval *
+EXPORT(InitTimeval) (void)
 {
   return (struct timeval *)malloc (sizeof (struct timeval));
 }
 #else
-void *
-wraptime_InitTimeval (void)
+extern "C" void *
+EXPORT(InitTimeval) (void)
 {
   return NULL;
 }
@@ -76,8 +81,8 @@ wraptime_InitTimeval (void)
 
 /* KillTimeval deallocates the memory associated with an opaque type.  */
 
-struct timeval *
-wraptime_KillTimeval (void *tv)
+extern "C" struct timeval *
+EXPORT(KillTimeval) (void *tv)
 {
 #if defined(HAVE_MALLOC_H)
   free (tv);
@@ -88,14 +93,14 @@ wraptime_KillTimeval (void *tv)
 /* InitTimezone returns a newly created opaque type.  */
 
 #if defined(HAVE_STRUCT_TIMEZONE) && defined(HAVE_MALLOC_H)
-struct timezone *
-wraptime_InitTimezone (void)
+extern "C" struct timezone *
+EXPORT(InitTimezone) (void)
 {
   return (struct timezone *)malloc (sizeof (struct timezone));
 }
 #else
-void *
-wraptime_InitTimezone (void)
+extern "C" void *
+EXPORT(InitTimezone) (void)
 {
   return NULL;
 }
@@ -104,8 +109,8 @@ wraptime_InitTimezone (void)
 /* KillTimezone - deallocates the memory associated with an opaque
    type.  */
 
-struct timezone *
-wraptime_KillTimezone (struct timezone *tv)
+extern "C" struct timezone *
+EXPORT(KillTimezone) (struct timezone *tv)
 {
 #if defined(HAVE_MALLOC_H)
   free (tv);
@@ -116,14 +121,14 @@ wraptime_KillTimezone (struct timezone *tv)
 /* InitTM - returns a newly created opaque type.  */
 
 #if defined(HAVE_STRUCT_TM) && defined(HAVE_MALLOC_H)
-struct tm *
-wraptime_InitTM (void)
+extern "C" struct tm *
+EXPORT(InitTM) (void)
 {
   return (struct tm *)malloc (sizeof (struct tm));
 }
 #else
-void *
-wraptime_InitTM (void)
+extern "C" void *
+EXPORT(InitTM) (void)
 {
   return NULL;
 }
@@ -131,8 +136,8 @@ wraptime_InitTM (void)
 
 /* KillTM - deallocates the memory associated with an opaque type.  */
 
-struct tm *
-wraptime_KillTM (struct tm *tv)
+extern "C" struct tm *
+EXPORT(KillTM) (struct tm *tv)
 {
 #if defined(HAVE_MALLOC_H)
   free (tv);
@@ -144,14 +149,14 @@ wraptime_KillTM (struct tm *tv)
    and, tz.  It returns 0 on success.  */
 
 #if defined(HAVE_STRUCT_TIMEZONE) && defined(HAVE_GETTIMEOFDAY)
-int
-wraptime_gettimeofday (void *tv, struct timezone *tz)
+extern "C" int
+EXPORT(gettimeofday) (void *tv, struct timezone *tz)
 {
   return gettimeofday (tv, tz);
 }
 #else
-int
-wraptime_gettimeofday (void *tv, void *tz)
+extern "C" int
+EXPORT(gettimeofday) (void *tv, void *tz)
 {
   return -1;
 }
@@ -161,14 +166,14 @@ wraptime_gettimeofday (void *tv, void *tz)
    and, tz.  It returns 0 on success.  */
 
 #if defined(HAVE_STRUCT_TIMEZONE) && defined(HAVE_SETTIMEOFDAY)
-int
-wraptime_settimeofday (void *tv, struct timezone *tz)
+extern "C" int
+EXPORT(settimeofday) (void *tv, struct timezone *tz)
 {
   return settimeofday (tv, tz);
 }
 #else
-int
-wraptime_settimeofday (void *tv, void *tz)
+extern "C" int
+EXPORT(settimeofday) (void *tv, void *tz)
 {
   return -1;
 }
@@ -178,14 +183,14 @@ wraptime_settimeofday (void *tv, void *tz)
    timeval structure.  */
 
 #if defined(HAVE_TIMEVAL)
-unsigned int
-wraptime_GetFractions (struct timeval *tv)
+extern "C" unsigned int
+EXPORT(GetFractions) (struct timeval *tv)
 {
   return (unsigned int)tv->tv_usec;
 }
 #else
-unsigned int
-wraptime_GetFractions (void *tv)
+extern "C" unsigned int
+EXPORT(GetFractions) (void *tv)
 {
   return (unsigned int)-1;
 }
@@ -197,14 +202,14 @@ wraptime_GetFractions (void *tv)
    and not a time_t (as expected by the posix equivalent).  */
 
 #if defined(HAVE_TIMEVAL)
-struct tm *
-wraptime_localtime_r (struct timeval *tv, struct tm *m)
+extern "C" struct tm *
+EXPORT(localtime_r) (struct timeval *tv, struct tm *m)
 {
   return localtime_r (&tv->tv_sec, m);
 }
 #else
-struct tm *
-wraptime_localtime_r (void *tv, struct tm *m)
+extern "C" struct tm *
+EXPORT(localtime_r) (void *tv, struct tm *m)
 {
   return m;
 }
@@ -213,14 +218,14 @@ wraptime_localtime_r (void *tv, struct tm *m)
 /* wraptime_GetYear - returns the year from the structure, m.  */
 
 #if defined(HAVE_STRUCT_TM)
-unsigned int
-wraptime_GetYear (struct tm *m)
+extern "C" unsigned int
+EXPORT(GetYear) (struct tm *m)
 {
   return m->tm_year;
 }
 #else
-unsigned int
-wraptime_GetYear (void *m)
+extern "C" unsigned int
+EXPORT(GetYear) (void *m)
 {
   return (unsigned int)-1;
 }
@@ -229,14 +234,14 @@ wraptime_GetYear (void *m)
 /* wraptime_GetMonth - returns the month from the structure, m.  */
 
 #if defined(HAVE_STRUCT_TM)
-unsigned int
-wraptime_GetMonth (struct tm *m)
+extern "C" unsigned int
+EXPORT(GetMonth) (struct tm *m)
 {
   return m->tm_mon;
 }
 #else
-unsigned int
-wraptime_GetMonth (void *m)
+extern "C" unsigned int
+EXPORT(GetMonth) (void *m)
 {
   return (unsigned int)-1;
 }
@@ -246,14 +251,14 @@ wraptime_GetMonth (void *m)
    m.  */
 
 #if defined(HAVE_STRUCT_TM)
-unsigned int
-wraptime_GetDay (struct tm *m)
+extern "C" unsigned int
+EXPORT(GetDay) (struct tm *m)
 {
   return m->tm_mday;
 }
 #else
-unsigned int
-wraptime_GetDay (void *m)
+extern "C" unsigned int
+EXPORT(GetDay) (void *m)
 {
   return (unsigned int)-1;
 }
@@ -263,14 +268,14 @@ wraptime_GetDay (void *m)
    m.  */
 
 #if defined(HAVE_STRUCT_TM)
-unsigned int
-wraptime_GetHour (struct tm *m)
+extern "C" unsigned int
+EXPORT(GetHour) (struct tm *m)
 {
   return m->tm_hour;
 }
 #else
-unsigned int
-wraptime_GetHour (void *m)
+extern "C" unsigned int
+EXPORT(GetHour) (void *m)
 {
   return (unsigned int)-1;
 }
@@ -280,14 +285,14 @@ wraptime_GetHour (void *m)
    structure, m.  */
 
 #if defined(HAVE_STRUCT_TM)
-unsigned int
-wraptime_GetMinute (struct tm *m)
+extern "C" unsigned int
+EXPORT(GetMinute) (struct tm *m)
 {
   return m->tm_min;
 }
 #else
-unsigned int
-wraptime_GetMinute (void *m)
+extern "C" unsigned int
+EXPORT(GetMinute) (void *m)
 {
   return (unsigned int)-1;
 }
@@ -298,8 +303,8 @@ wraptime_GetMinute (void *m)
    A leap minute of value 60 will be truncated to 59.  */
 
 #if defined(HAVE_STRUCT_TM)
-unsigned int
-wraptime_GetSecond (struct tm *m)
+extern "C" unsigned int
+EXPORT(GetSecond) (struct tm *m)
 {
   if (m->tm_sec == 60)
     return 59;
@@ -307,8 +312,8 @@ wraptime_GetSecond (struct tm *m)
     return m->tm_sec;
 }
 #else
-unsigned int
-wraptime_GetSecond (void *m)
+extern "C" unsigned int
+EXPORT(GetSecond) (void *m)
 {
   return (unsigned int)-1;
 }
@@ -317,14 +322,14 @@ wraptime_GetSecond (void *m)
 /* wraptime_GetSummerTime - returns true if summer time is in effect.  */
 
 #if defined(HAVE_STRUCT_TIMEZONE)
-unsigned int
-wraptime_GetSummerTime (struct timezone *tz)
+extern "C" unsigned int
+EXPORT(GetSummerTime) (struct timezone *tz)
 {
   return tz->tz_dsttime != 0;
 }
 #else
-unsigned int
-wraptime_GetSummerTime (void *tz)
+extern "C" unsigned int
+EXPORT(GetSummerTime) (void *tz)
 {
   return FALSE;
 }
@@ -333,14 +338,14 @@ wraptime_GetSummerTime (void *tz)
 /* wraptime_GetDST - returns the number of minutes west of GMT.  */
 
 #if defined(HAVE_STRUCT_TIMEZONE)
-int
-wraptime_GetDST (struct timezone *tz)
+extern "C" int
+EXPORT(GetDST) (struct timezone *tz)
 {
   return tz->tz_minuteswest;
 }
 #else
-int
-wraptime_GetDST (void *tz)
+extern "C" int
+EXPORT(GetDST) (void *tz)
 {
 #if defined(INT_MIN)
   return INT_MIN;
@@ -353,15 +358,15 @@ wraptime_GetDST (void *tz)
 /* SetTimezone - set the timezone field inside timeval, tv.  */
 
 #if defined(HAVE_STRUCT_TIMEZONE)
-void
-wraptime_SetTimezone (struct timezone *tz, int zone, int minuteswest)
+extern "C" void
+EXPORT(SetTimezone) (struct timezone *tz, int zone, int minuteswest)
 {
   tz->tz_dsttime = zone;
   tz->tz_minuteswest = minuteswest;
 }
 #else
-void
-wraptime_SetTimezone (void *tz, int zone, int minuteswest)
+extern "C" void
+EXPORT(SetTimezone) (void *tz, int zone, int minuteswest)
 {
 }
 #endif
@@ -370,11 +375,11 @@ wraptime_SetTimezone (void *tz, int zone, int minuteswest)
    day, month, year, fractions.  */
 
 #if defined(HAVE_TIMEVAL)
-void
-wraptime_SetTimeval (struct tm *t, unsigned int second, unsigned int minute,
-                     unsigned int hour, unsigned int day, unsigned int month,
-                     unsigned int year, unsigned int yday, unsigned int wday,
-                     unsigned int isdst)
+extern "C" void
+EXPORT(SetTimeval) (struct tm *t, unsigned int second, unsigned int minute,
+		    unsigned int hour, unsigned int day, unsigned int month,
+		    unsigned int year, unsigned int yday, unsigned int wday,
+		    unsigned int isdst)
 {
   t->tm_sec = second;
   t->tm_min = minute;
@@ -387,22 +392,38 @@ wraptime_SetTimeval (struct tm *t, unsigned int second, unsigned int minute,
   t->tm_isdst = isdst;
 }
 #else
-void
-wraptime_SetTimeval (void *t, unsigned int second, unsigned int minute,
-                     unsigned int hour, unsigned int day, unsigned int month,
-                     unsigned int year, unsigned int yday, unsigned int wday,
-                     unsigned int isdst)
+extern "C" void
+EXPORT(SetTimeval) (void *t, unsigned int second, unsigned int minute,
+		    unsigned int hour, unsigned int day, unsigned int month,
+		    unsigned int year, unsigned int yday, unsigned int wday,
+		    unsigned int isdst)
 {
 }
 #endif
 
 /* init - init/finish functions for the module */
 
-void
-_M2_wraptime_init ()
+/* GNU Modula-2 linking hooks.  */
+
+extern "C" void
+M2EXPORT(init) (int, char **, char **)
 {
 }
-void
-_M2_wraptime_fini ()
+
+extern "C" void
+M2EXPORT(fini) (int, char **, char **)
 {
+}
+
+extern "C" void
+M2EXPORT(dep) (void)
+{
+}
+
+extern "C" void __attribute__((__constructor__))
+M2EXPORT(ctor) (void)
+{
+  m2iso_M2RTS_RegisterModule ("wraptime", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

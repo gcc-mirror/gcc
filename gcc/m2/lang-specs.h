@@ -41,9 +41,9 @@ along with GCC; see the file COPYING3.  If not see
   {"@modula-2",
    /* For preprocessing we use cc1 but wrap it in cc1gm2.  */
    "%{E|M|MM:\
-      cc1gm2 " M2CPP " %{!fcpp:-fcpp;:%{fcpp}} %{I*} %i } \
+      cc1gm2 " M2CPP " %{!fcpp:-fcpp;:%{fcpp}} %{fm2-pathname*} %i } \
     %{!E:%{!M:%{!MM:\
-      cc1gm2 " M2CPP " %(cc1_options) %{I*} %i %{c} \
+      cc1gm2 " M2CPP " %(cc1_options) %{fm2-pathname*} %i %{c} \
       %{!fcpp:%{MD|MMD|MF*: \
 		%eto generate dependencies you must specify '-fcpp' }} \
       %{!fsyntax-only:%(invoke_as)} \
@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
   {".m2i", "@modula-2-cpp-output", 0, 0, 0},
   {"@modula-2-cpp-output",
    "%{!M:%{!MM:%{!E: \
-      cc1gm2 %<fcpp %(cc1_options) %{v} %I -fmod=.mod.m2i -fdef=.def.m2i %{I*} \
+      cc1gm2 %<fcpp %(cc1_options) %{v} %I -fmod=.mod.m2i -fdef=.def.m2i \
+        %{fm2-pathname*} \
 	-fpreprocessed %i %{c} \
     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},

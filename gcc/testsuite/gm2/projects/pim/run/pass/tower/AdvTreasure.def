@@ -1,0 +1,22 @@
+DEFINITION MODULE AdvTreasure ;
+
+FROM AdvMap IMPORT TreasureKind ;
+
+EXPORT QUALIFIED GetTreasure, DropTreasure, UseTreasure,
+                 Grenade, DisplayEnemy, ScatterTreasures,
+                 RespawnTreasure, RespawnArrow ;
+
+
+PROCEDURE GetTreasure ;
+PROCEDURE DropTreasure ;
+PROCEDURE UseTreasure ;
+PROCEDURE Grenade ;
+PROCEDURE DisplayEnemy ;
+PROCEDURE ScatterTreasures (p, r: CARDINAL) ;
+PROCEDURE RespawnTreasure (seedRoom: CARDINAL; tno: CARDINAL; ticks: CARDINAL) ;
+PROCEDURE RespawnArrow (seedRoom: CARDINAL; tno: CARDINAL;
+                        spawnKind, arrowKind: TreasureKind;
+                        amount: CARDINAL; ticks: CARDINAL) ;
+
+
+END AdvTreasure.

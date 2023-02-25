@@ -48,7 +48,7 @@ m2decl_DeclareM2linkStaticInitialization (location_t location,
   m2block_pushGlobalScope ();
   /* Generate: int M2LINK_StaticInitialization = ScaffoldStatic;  */
   tree init = m2decl_BuildIntegerConstant (ScaffoldStatic);
-  tree static_init = m2decl_DeclareKnownVariable (location, "M2LINK_StaticInitialization",
+  tree static_init = m2decl_DeclareKnownVariable (location, "m2pim_M2LINK_StaticInitialization",
 						  integer_type_node,
 						  TRUE, FALSE, FALSE, TRUE, NULL_TREE, init);
   m2block_popGlobalScope ();
@@ -65,7 +65,7 @@ m2decl_DeclareM2linkForcedModuleInitOrder (location_t location,
   tree ptr_to_char = build_pointer_type (char_type_node);
   TYPE_READONLY (ptr_to_char) = TRUE;
   tree init = m2decl_BuildPtrToTypeString (location, RuntimeOverride, ptr_to_char);
-  tree forced_order = m2decl_DeclareKnownVariable (location, "M2LINK_ForcedModuleInitOrder",
+  tree forced_order = m2decl_DeclareKnownVariable (location, "m2pim_M2LINK_ForcedModuleInitOrder",
 						   ptr_to_char,
 						   TRUE, FALSE, FALSE, TRUE, NULL_TREE, init);
   m2block_popGlobalScope ();

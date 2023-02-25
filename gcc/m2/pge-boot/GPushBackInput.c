@@ -275,7 +275,7 @@ extern "C" char PushBackInput_PutCh (char ch)
     }
   else
     {
-      Debug_Halt ((const char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54);
+      Debug_Halt ((const char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (const char *) "../../gcc/m2/gm2-libs/PushBackInput.mod", 39);
     }
   return ch;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -301,7 +301,7 @@ extern "C" void PushBackInput_PutString (const char *a_, unsigned int _a_high)
       l -= 1;
       if ((PushBackInput_PutCh (a[l])) != a[l])
         {
-          Debug_Halt ((const char *) "assert failed", 13, 132, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54);
+          Debug_Halt ((const char *) "assert failed", 13, 132, (const char *) "../../gcc/m2/gm2-libs/PushBackInput.mod", 39);
         }
     }
 }
@@ -322,7 +322,7 @@ extern "C" void PushBackInput_PutStr (DynamicStrings_String s)
       i -= 1;
       if ((PushBackInput_PutCh (DynamicStrings_char (s, static_cast<int> (i)))) != (DynamicStrings_char (s, static_cast<int> (i))))
         {
-          Debug_Halt ((const char *) "assert failed", 13, 113, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/PushBackInput.mod", 54);
+          Debug_Halt ((const char *) "assert failed", 13, 113, (const char *) "../../gcc/m2/gm2-libs/PushBackInput.mod", 39);
         }
     }
 }
@@ -484,6 +484,6 @@ extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc,__attri
   Init ();
 }
 
-extern "C" void _M2_PushBackInput_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_PushBackInput_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

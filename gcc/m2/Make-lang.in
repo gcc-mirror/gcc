@@ -714,7 +714,8 @@ GM2-COMP-BOOT-DEFS = \
    M2DebugStack.def \
    M2Defaults.def \
    M2DriverOptions.def \
-   DynamicStringPath.def \
+   DynamicPath.def \
+   PathName.def \
    M2Emit.def \
    M2Error.def \
    M2EvalSym.def \
@@ -786,7 +787,8 @@ GM2-COMP-BOOT-MODS = \
    M2DebugStack.mod \
    M2Defaults.mod \
    M2DriverOptions.mod \
-   DynamicStringPath.mod \
+   DynamicPath.mod \
+   PathName.mod \
    M2Emit.mod \
    M2Error.mod \
    M2FileName.mod \
@@ -991,7 +993,8 @@ GM2-COMP-DEFS = \
    M2DebugStack.def \
    M2Defaults.def \
    M2DriverOptions.def \
-   DynamicStringPath.def \
+   DynamicPath.def \
+   PathName.def \
    M2Emit.def \
    M2Error.def \
    M2FileName.def \
@@ -1059,7 +1062,8 @@ GM2-COMP-MODS = \
    M2DebugStack.mod \
    M2Defaults.mod \
    M2DriverOptions.mod \
-   DynamicStringPath.mod \
+   DynamicPath.mod \
+   PathName.mod \
    M2Emit.mod \
    M2Error.mod \
    M2FileName.mod \

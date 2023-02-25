@@ -310,6 +310,6 @@ extern "C" void _M2_Output_init (__attribute__((unused)) int argc,__attribute__(
   outputFile = FIO_StdOut;
 }
 
-extern "C" void _M2_Output_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Output_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

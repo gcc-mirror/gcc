@@ -1,21 +1,28 @@
-(* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-                 2010
-                 Free Software Foundation, Inc. *)
-(* This file is part of GNU Modula-2.
+(* FIO.mod provides a simple buffered file input/output library.
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA *)
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
 
 IMPLEMENTATION MODULE FIO ;
 
@@ -83,22 +90,6 @@ TYPE
                                                            (* bufstart above.                  *)
    PtrToChar         = POINTER TO CHAR ;
 
-(* we only need forward directives for the p2c bootstrapping tool *)
-
-(* %%%FORWARD%%%
-PROCEDURE SetEndOfLine (f: File; ch: CHAR) ; FORWARD ;
-PROCEDURE FormatError (a: ARRAY OF CHAR) ; FORWARD ;
-PROCEDURE FormatError1 (a: ARRAY OF CHAR; w: ARRAY OF BYTE) ; FORWARD ;
-PROCEDURE CheckAccess (f: File; use: FileUsage; towrite: BOOLEAN) ; FORWARD ;
-PROCEDURE BufferedRead (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ; FORWARD ;
-PROCEDURE InitializeFile (f: File; fname: ADDRESS; flength: CARDINAL;
-                          fstate: FileStatus; use: FileUsage; towrite: BOOLEAN; buflength: CARDINAL) : File ; FORWARD ;
-PROCEDURE ConnectToUnix (f: File; towrite, newfile: BOOLEAN) ; FORWARD ;
-PROCEDURE SetState (f: File; s: FileStatus) ; FORWARD ;
-PROCEDURE PreInitialize (f: File; fname: ARRAY OF CHAR;
-                         state: FileStatus; use: FileUsage;
-                         towrite: BOOLEAN; osfd: INTEGER; bufsize: CARDINAL) ; FORWARD ;
-   %%%FORWARD%%% *)
 
 VAR
    FileInfo: Index ;
@@ -543,7 +534,7 @@ END Close ;
 *)
 
 PROCEDURE ReadFromBuffer (f: File; a: ADDRESS; nBytes: CARDINAL) : INTEGER ;
-VAR 
+VAR
    t     : ADDRESS ;
    result: INTEGER ;
    total,
@@ -635,32 +626,32 @@ END ReadFromBuffer ;
 
 
 (*
-   ReadNBytes - reads nBytes of a file into memory area, a, returning
+   ReadNBytes - reads nBytes of a file into memory area, dest, returning
                 the number of bytes actually read.
                 This function will consume from the buffer and then
                 perform direct libc reads. It is ideal for large reads.
 *)
 
-PROCEDURE ReadNBytes (f: File; nBytes: CARDINAL; a: ADDRESS) : CARDINAL ;
+PROCEDURE ReadNBytes (f: File; nBytes: CARDINAL; dest: ADDRESS) : CARDINAL ;
 VAR
    n: INTEGER ;
    p: POINTER TO CHAR ;
 BEGIN
-   IF f#Error
+   IF f # Error
    THEN
-      CheckAccess(f, openedforread, FALSE) ;
-      n := ReadFromBuffer(f, a, nBytes) ;
-      IF n<0
+      CheckAccess (f, openedforread, FALSE) ;
+      n := ReadFromBuffer (f, dest, nBytes) ;
+      IF n <= 0
       THEN
-         RETURN( 0 )
+         RETURN 0
       ELSE
-         p := a ;
-         INC(p, n) ;
-         SetEndOfLine(f, p^) ;
-         RETURN( n )
+         p := dest ;
+         INC (p, n-1) ;
+         SetEndOfLine (f, p^) ;
+         RETURN n
       END
    ELSE
-      RETURN( 0 )
+      RETURN 0
    END
 END ReadNBytes ;
 
@@ -674,7 +665,7 @@ END ReadNBytes ;
 *)
 
 PROCEDURE BufferedRead (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ;
-VAR 
+VAR
    t     : ADDRESS ;
    result: INTEGER ;
    total,
@@ -747,14 +738,11 @@ BEGIN
                   END
                END ;
                RETURN( total )
-            ELSE
-               RETURN( -1 )
             END
          END
       END
-   ELSE
-      RETURN( -1 )
-   END
+   END ;
+   RETURN( -1 )
 END BufferedRead ;
 
 
@@ -825,6 +813,8 @@ VAR
 BEGIN
    HighSrc := StrLen(src) ;
    HighDest := HIGH(dest) ;
+   p := NIL ;
+   c := 0 ;
    i := 0 ;
    j := 0 ;
    WHILE (i<HighSrc) AND (src[i]#nul) AND (j<HighDest) AND (src[i]#'%') DO
@@ -892,25 +882,27 @@ END StringFormat1 ;
 
 PROCEDURE FormatError (a: ARRAY OF CHAR) ;
 BEGIN
-   WriteString(StdErr, a)
+   WriteString (StdErr, a)
 END FormatError ;
 
 
 (*
-   FormatError1 - fairly generic error procedure.
+   FormatError1 - generic error procedure taking standard format string
+                  and single parameter.
 *)
 
 PROCEDURE FormatError1 (a: ARRAY OF CHAR; w: ARRAY OF BYTE) ;
 VAR
    s: ARRAY [0..MaxErrorString] OF CHAR ;
 BEGIN
-   StringFormat1(s, a, w) ;
-   FormatError(s)
+   StringFormat1 (s, a, w) ;
+   FormatError (s)
 END FormatError1 ;
 
 
 (*
-   FormatError2 - fairly generic error procedure.
+   FormatError2 - generic error procedure taking standard format string
+                  and two parameters.
 *)
 
 PROCEDURE FormatError2 (a: ARRAY OF CHAR;
@@ -918,13 +910,13 @@ PROCEDURE FormatError2 (a: ARRAY OF CHAR;
 VAR
    s: ARRAY [0..MaxErrorString] OF CHAR ;
 BEGIN
-   StringFormat1(s, a, w1) ;
-   FormatError1(s, w2)
+   StringFormat1 (s, a, w1) ;
+   FormatError1 (s, w2)
 END FormatError2 ;
 
 
 (*
-   CheckAccess - checks to see whether a file, f, has been
+   CheckAccess - checks to see whether a file f has been
                  opened for read/write.
 *)
 
@@ -934,20 +926,20 @@ VAR
 BEGIN
    IF f#Error
    THEN
-      fd := GetIndice(FileInfo, f) ;
+      fd := GetIndice (FileInfo, f) ;
       IF fd=NIL
       THEN
          IF f#StdErr
          THEN
-            FormatError('this file has probably been closed and not reopened successfully or alternatively never opened\n')
+            FormatError ('this file has probably been closed and not reopened successfully or alternatively never opened\n')
          END ;
          HALT
       ELSE
          WITH fd^ DO
             IF (use=openedforwrite) AND (usage=openedforread)
             THEN
-               FormatError1('this file (%s) has been opened for reading but is now being written\n',
-                            name.address) ;
+               FormatError1 ('this file (%s) has been opened for reading but is now being written\n',
+                             name.address) ;
                HALT
             ELSIF (use=openedforread) AND (usage=openedforwrite)
             THEN
@@ -982,7 +974,7 @@ END CheckAccess ;
 
 
 (*
-   ReadChar - returns a character read from file, f.
+   ReadChar - returns a character read from file f.
               Sensible to check with IsNoError or EOF after calling
               this function.
 *)
@@ -991,19 +983,19 @@ PROCEDURE ReadChar (f: File) : CHAR ;
 VAR
    ch: CHAR ;
 BEGIN
-   CheckAccess(f, openedforread, FALSE) ;
-   IF BufferedRead(f, SIZE(ch), ADR(ch)) = INTEGER (SIZE(ch))
+   CheckAccess (f, openedforread, FALSE) ;
+   IF BufferedRead (f, SIZE (ch), ADR (ch)) = VAL (INTEGER, SIZE (ch))
    THEN
-      SetEndOfLine(f, ch) ;
-      RETURN( ch )
+      SetEndOfLine (f, ch) ;
+      RETURN ch
    ELSE
-      RETURN( nul )
+      RETURN nul
    END
 END ReadChar ;
 
 
 (*
-   SetEndOfLine - 
+   SetEndOfLine -
 *)
 
 PROCEDURE SetEndOfLine (f: File; ch: CHAR) ;
@@ -1018,6 +1010,8 @@ BEGIN
          IF ch=nl
          THEN
             state := endofline
+         ELSE
+            state := successful
          END
       END
    END
@@ -1025,14 +1019,17 @@ END SetEndOfLine ;
 
 
 (*
-   UnReadChar - replaces a character, ch, back into file, f.
+   UnReadChar - replaces a character, ch, back into file f.
                 This character must have been read by ReadChar
                 and it does not allow successive calls.  It may
                 only be called if the previous read was successful
                 or end of file was seen.
+                If the state was previously endoffile then it
+                is altered to successful.
+                Otherwise it is left alone.
 *)
 
-PROCEDURE UnReadChar (f: File ; ch: CHAR) ;
+PROCEDURE UnReadChar (f: File; ch: CHAR) ;
 VAR
    fd  : FileDescriptor ;
    n   : CARDINAL ;
@@ -1061,7 +1058,6 @@ BEGIN
                      DEC(position) ;
                      INC(left) ;
                      contents^[position] := ch ;
-                     SetEndOfLine(f, ch)
                   ELSE
                      (* position=0 *)
                      (* if possible make room and store ch *)
@@ -1075,7 +1071,6 @@ BEGIN
                         a := memcpy(a, b, n) ;
                         INC(filled) ;
                         contents^[position] := ch ;
-                        SetEndOfLine(f, ch)
                      END
                   END
                END
@@ -1097,7 +1092,7 @@ END UnReadChar ;
 PROCEDURE ReadAny (f: File; VAR a: ARRAY OF BYTE) ;
 BEGIN
    CheckAccess(f, openedforread, FALSE) ;
-   IF BufferedRead(f, HIGH(a), ADR(a)) = INTEGER (HIGH(a))
+   IF BufferedRead (f, HIGH (a), ADR (a)) = VAL (INTEGER, HIGH (a))
    THEN
       SetEndOfLine(f, a[HIGH(a)])
    END
@@ -1145,10 +1140,10 @@ BEGIN
       fd := GetIndice(FileInfo, f) ;
       IF fd#NIL
       THEN
-         IF fd^.state=successful
+         IF (fd^.state=successful) OR (fd^.state=endofline)
          THEN
             ch := ReadChar(f) ;
-            IF fd^.state=successful
+            IF (fd^.state=successful) OR (fd^.state=endofline)
             THEN
                UnReadChar(f, ch)
             END ;
@@ -1190,14 +1185,14 @@ END WriteLine ;
 
 
 (*
-   WriteNBytes - writes nBytes of a file into memory area, a, returning
-                 the number of bytes actually written.
+   WriteNBytes - writes nBytes from memory area src to a file
+                 returning the number of bytes actually written.
                  This function will flush the buffer and then
                  write the nBytes using a direct write from libc.
                  It is ideal for large writes.
 *)
 
-PROCEDURE WriteNBytes (f: File; nBytes: CARDINAL; a: ADDRESS) : CARDINAL ;
+PROCEDURE WriteNBytes (f: File; nBytes: CARDINAL; src: ADDRESS) : CARDINAL ;
 VAR
    total: INTEGER ;
    fd   : FileDescriptor ;
@@ -1210,7 +1205,7 @@ BEGIN
       IF fd#NIL
       THEN
          WITH fd^ DO
-            total := write(unixfd, a, INTEGER(nBytes)) ;
+            total := write(unixfd, src, INTEGER(nBytes)) ;
             IF total<0
             THEN
                state := failed ;
@@ -1239,7 +1234,7 @@ END WriteNBytes ;
 *)
 
 PROCEDURE BufferedWrite (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ;
-VAR 
+VAR
    t     : ADDRESS ;
    result: INTEGER ;
    total,
@@ -1284,7 +1279,7 @@ BEGIN
                         END
                      ELSE
                         FlushBuffer(f) ;
-                        IF state#successful
+                        IF (state#successful) AND (state#endofline)
                         THEN
                            nBytes := 0
                         END
@@ -1343,8 +1338,8 @@ END FlushBuffer ;
 
 PROCEDURE WriteAny (f: File; VAR a: ARRAY OF BYTE) ;
 BEGIN
-   CheckAccess(f, openedforwrite, TRUE) ;
-   IF BufferedWrite (f, HIGH(a), ADR(a)) = INTEGER (HIGH(a))
+   CheckAccess (f, openedforwrite, TRUE) ;
+   IF BufferedWrite (f, HIGH (a), ADR (a)) = VAL (INTEGER, HIGH (a))
    THEN
    END
 END WriteAny ;
@@ -1356,8 +1351,8 @@ END WriteAny ;
 
 PROCEDURE WriteChar (f: File; ch: CHAR) ;
 BEGIN
-   CheckAccess(f, openedforwrite, TRUE) ;
-   IF BufferedWrite(f, SIZE(ch), ADR(ch)) = INTEGER (SIZE(ch))
+   CheckAccess (f, openedforwrite, TRUE) ;
+   IF BufferedWrite (f, SIZE (ch), ADR (ch)) = VAL (INTEGER, SIZE (ch))
    THEN
    END
 END WriteChar ;
@@ -1608,7 +1603,8 @@ BEGIN
       ELSE
          RETURN fd^.name.address
       END
-   END
+   END ;
+   RETURN NIL
 END getFileName ;
 
 
@@ -1630,7 +1626,8 @@ BEGIN
       ELSE
          RETURN fd^.name.size
       END
-   END
+   END ;
+   RETURN 0
 END getFileNameLength ;
 
 
@@ -1666,8 +1663,10 @@ END PreInitialize ;
 
 
 (*
-   FlushOutErr - called when the application calls M2RTS.Terminate (automatically
-                 placed in program modules by GM2.
+   FlushOutErr - flushes, StdOut, and, StdErr.
+                 It is also called when the application calls M2RTS.Terminate.
+                 (which is automatically placed in program modules by the GM2
+                 scaffold).
 *)
 
 PROCEDURE FlushOutErr ;

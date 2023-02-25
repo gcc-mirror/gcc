@@ -25,6 +25,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
+#include <m2rts.h>
+
+#define EXPORT(FUNC) m2pim ## _wrapc_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_wrapc_ ## FUNC
+#define M2LIBNAME "m2pim"
 
 #if defined(HAVE_MATH_H)
 #include <math.h>
@@ -69,11 +74,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* strtime returns the address of a string which describes the
    local time.  */
 
-char *
-wrapc_strtime (void)
+extern "C" char *
+EXPORT(strtime) (void)
 {
 #if defined(HAVE_CTIME)
-  time_t clock = time ((void *)0);
+  time_t clock = time (NULL);
   char *string = ctime (&clock);
 
   string[24] = (char)0;
@@ -84,8 +89,8 @@ wrapc_strtime (void)
 #endif
 }
 
-int
-wrapc_filesize (int f, unsigned int *low, unsigned int *high)
+extern "C" int
+EXPORT(filesize) (int f, unsigned int *low, unsigned int *high)
 {
 #if defined(HAVE_SYS_STAT_H) && defined(HAVE_STRUCT_STAT)
   struct stat s;
@@ -104,8 +109,8 @@ wrapc_filesize (int f, unsigned int *low, unsigned int *high)
 
 /* filemtime returns the mtime of a file, f.  */
 
-int
-wrapc_filemtime (int f)
+extern "C" int
+EXPORT(filemtime) (int f)
 {
 #if defined(HAVE_SYS_STAT_H) && defined(HAVE_STRUCT_STAT)
   struct stat s;
@@ -122,8 +127,8 @@ wrapc_filemtime (int f)
 /* fileinode returns the inode associated with a file, f.  */
 
 #if defined(HAVE_SYS_STAT_H) && defined(HAVE_STRUCT_STAT)
-ino_t
-wrapc_fileinode (int f, unsigned int *low, unsigned int *high)
+extern "C" ino_t
+EXPORT(fileinode) (int f, unsigned int *low, unsigned int *high)
 {
   struct stat s;
 
@@ -140,8 +145,8 @@ wrapc_fileinode (int f, unsigned int *low, unsigned int *high)
     return -1;
 }
 #else
-int
-wrapc_fileinode (int f, unsigned int *low, unsigned int *high)
+extern "C" int
+EXPORT(fileinode) (int f, unsigned int *low, unsigned int *high)
 {
   *low = 0;
   *high = 0;
@@ -151,8 +156,8 @@ wrapc_fileinode (int f, unsigned int *low, unsigned int *high)
 
 /* getrand returns a random number between 0..n-1.  */
 
-int
-wrapc_getrand (int n)
+extern "C" int
+EXPORT(getrand) (int n)
 {
   return rand () % n;
 }
@@ -160,8 +165,8 @@ wrapc_getrand (int n)
 #if defined(HAVE_PWD_H)
 #include <pwd.h>
 
-char *
-wrapc_getusername (void)
+extern "C" char *
+EXPORT(getusername) (void)
 {
   return getpwuid (getuid ())->pw_gecos;
 }
@@ -169,8 +174,8 @@ wrapc_getusername (void)
 /* getnameuidgid fills in the, uid, and, gid, which represents
    user, name.  */
 
-void
-wrapc_getnameuidgid (char *name, int *uid, int *gid)
+extern "C" void
+EXPORT(getnameuidgid) (char *name, int *uid, int *gid)
 {
   struct passwd *p = getpwnam (name);
 
@@ -186,22 +191,22 @@ wrapc_getnameuidgid (char *name, int *uid, int *gid)
     }
 }
 #else
-char *
-wrapc_getusername (void)
+extern "C" char *
+EXPORT(getusername) (void)
 {
   return "unknown";
 }
 
-void
-wrapc_getnameuidgid (char *name, int *uid, int *gid)
+extern "C" void
+EXPORT(getnameuidgid) (char *name, int *uid, int *gid)
 {
   *uid = -1;
   *gid = -1;
 }
 #endif
 
-int
-wrapc_signbit (double r)
+extern "C" int
+EXPORT(signbit) (double r)
 {
 #if defined(HAVE_SIGNBIT)
 
@@ -213,8 +218,8 @@ wrapc_signbit (double r)
 #endif
 }
 
-int
-wrapc_signbitl (long double r)
+extern "C" int
+EXPORT(signbitl) (long double r)
 {
 #if defined(HAVE_SIGNBITL)
 
@@ -226,8 +231,8 @@ wrapc_signbitl (long double r)
 #endif
 }
 
-int
-wrapc_signbitf (float r)
+extern "C" int
+EXPORT(signbitf) (float r)
 {
 #if defined(HAVE_SIGNBITF)
 
@@ -242,8 +247,8 @@ wrapc_signbitf (float r)
 /* isfinite provide non builtin alternative to the gcc builtin
    isfinite.  Returns 1 if x is finite and 0 if it is not.  */
 
-int
-wrapc_isfinite (double x)
+extern "C" int
+EXPORT(isfinite) (double x)
 {
 #if defined(FP_NAN) && defined(FP_INFINITE)
   return (fpclassify (x) != FP_NAN && fpclassify (x) != FP_INFINITE);
@@ -255,8 +260,8 @@ wrapc_isfinite (double x)
 /* isfinitel provide non builtin alternative to the gcc builtin
    isfinite.  Returns 1 if x is finite and 0 if it is not.  */
 
-int
-wrapc_isfinitel (long double x)
+extern "C" int
+EXPORT(isfinitel) (long double x)
 {
 #if defined(FP_NAN) && defined(FP_INFINITE)
   return (fpclassify (x) != FP_NAN && fpclassify (x) != FP_INFINITE);
@@ -268,8 +273,8 @@ wrapc_isfinitel (long double x)
 /* isfinitef provide non builtin alternative to the gcc builtin
    isfinite.  Returns 1 if x is finite and 0 if it is not.  */
 
-int
-wrapc_isfinitef (float x)
+extern "C" int
+EXPORT(isfinitef) (float x)
 {
 #if defined(FP_NAN) && defined(FP_INFINITE)
   return (fpclassify (x) != FP_NAN && fpclassify (x) != FP_INFINITE);
@@ -278,20 +283,27 @@ wrapc_isfinitef (float x)
 #endif
 }
 
-/* init/finish are GNU Modula-2 linking fodder.  */
+/* GNU Modula-2 linking hooks.  */
 
-void
-_M2_wrapc_init ()
+extern "C" void
+M2EXPORT(init) (int, char **, char **)
 {
 }
 
-void
-_M2_wrapc_fini ()
+extern "C" void
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
-void
-_M2_wrapc_ctor ()
+extern "C" void
+M2EXPORT(dep) (void)
 {
 }
 
+extern "C" void __attribute__((__constructor__))
+M2EXPORT(ctor) (void)
+{
+  m2pim_M2RTS_RegisterModule ("wrapc", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
+}

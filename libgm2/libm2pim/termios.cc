@@ -27,6 +27,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 #include <m2rts.h>
 
+#define EXPORT(FUNC) m2pim ## _termios_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_termios_ ## FUNC
+#define M2LIBNAME "m2pim"
+
 #if defined(HAVE_STDIO_H)
 #include <stdio.h>
 #endif
@@ -59,8 +63,6 @@ void _M2_termios_init (void);
 void _M2_termios_finish (void);
 
 #if defined(HAVE_TERMIOS_H)
-
-#define EXPORT(X) termios##_##X
 
 typedef enum {
   vintr,
@@ -1964,23 +1966,23 @@ EXPORT (SetChar) (struct termios *t, ControlChar c, char ch)
 #endif
 
 extern "C" void
-_M2_termios_init (int, char *[], char *[])
+M2EXPORT(init) (int, char *argv[], char *env[])
 {
 }
 
 extern "C" void
-_M2_termios_fini (int, char *[], char *[])
+M2EXPORT(fini) (int, char *argv[], char *env[])
 {
 }
 
 extern "C" void
-_M2_termios_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_termios_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("termios", _M2_termios_init, _M2_termios_fini,
-			_M2_termios_dep);
+  m2pim_M2RTS_RegisterModule ("termios", M2LIBNAME,
+			      M2EXPORT(init),	M2EXPORT(fini),	M2EXPORT(dep));
 }

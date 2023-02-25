@@ -330,7 +330,7 @@ extern "C" NameKey_Name NameKey_MakeKey (const char *a_, unsigned int _a_high)
       (*p) = ASCII_nul;
       return DoMakeKey (n, higha);
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-compiler/NameKey.def", 20, 1);
+  ReturnException ("../../gcc/m2/gm2-compiler/NameKey.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -380,7 +380,7 @@ extern "C" NameKey_Name NameKey_makekey (void * a)
           return DoMakeKey (n, higha);
         }
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-compiler/NameKey.def", 20, 1);
+  ReturnException ("../../gcc/m2/gm2-compiler/NameKey.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -607,6 +607,6 @@ extern "C" void _M2_NameKey_init (__attribute__((unused)) int argc,__attribute__
   BinaryTree->Left = NULL;
 }
 
-extern "C" void _M2_NameKey_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_NameKey_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

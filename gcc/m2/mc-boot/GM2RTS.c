@@ -96,14 +96,14 @@ static unsigned int Initialized;
                       module constructor in turn.
 */
 
-extern "C" void M2RTS_ConstructModules (void * applicationmodule, int argc, void * argv, void * envp);
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 
 /*
    DeconstructModules - resolve dependencies and then call each
                         module constructor in turn.
 */
 
-extern "C" void M2RTS_DeconstructModules (void * applicationmodule, int argc, void * argv, void * envp);
+extern "C" void M2RTS_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 
 /*
    RegisterModule - adds module name to the list of outstanding
@@ -111,14 +111,14 @@ extern "C" void M2RTS_DeconstructModules (void * applicationmodule, int argc, vo
                     explored to determine initialization order.
 */
 
-extern "C" void M2RTS_RegisterModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
+extern "C" void M2RTS_RegisterModule (void * name, void * libname, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
 
 /*
    RequestDependant - used to specify that modulename is dependant upon
                       module dependantmodule.
 */
 
-extern "C" void M2RTS_RequestDependant (void * modulename, void * dependantmodule);
+extern "C" void M2RTS_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname);
 
 /*
    InstallTerminationProcedure - installs a procedure, p, which will
@@ -434,9 +434,9 @@ static void CheckInitialized (void)
                       module constructor in turn.
 */
 
-extern "C" void M2RTS_ConstructModules (void * applicationmodule, int argc, void * argv, void * envp)
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp)
 {
-  M2Dependent_ConstructModules (applicationmodule, argc, argv, envp);
+  M2Dependent_ConstructModules (applicationmodule, libname, argc, argv, envp);
 }
 
 
@@ -445,9 +445,9 @@ extern "C" void M2RTS_ConstructModules (void * applicationmodule, int argc, void
                         module constructor in turn.
 */
 
-extern "C" void M2RTS_DeconstructModules (void * applicationmodule, int argc, void * argv, void * envp)
+extern "C" void M2RTS_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp)
 {
-  M2Dependent_DeconstructModules (applicationmodule, argc, argv, envp);
+  M2Dependent_DeconstructModules (applicationmodule, libname, argc, argv, envp);
 }
 
 
@@ -457,9 +457,9 @@ extern "C" void M2RTS_DeconstructModules (void * applicationmodule, int argc, vo
                     explored to determine initialization order.
 */
 
-extern "C" void M2RTS_RegisterModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies)
+extern "C" void M2RTS_RegisterModule (void * name, void * libname, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies)
 {
-  M2Dependent_RegisterModule (name, (M2Dependent_ArgCVEnvP) {(M2Dependent_ArgCVEnvP_t) init.proc}, (M2Dependent_ArgCVEnvP) {(M2Dependent_ArgCVEnvP_t) fini.proc}, dependencies);
+  M2Dependent_RegisterModule (name, libname, (M2Dependent_ArgCVEnvP) {(M2Dependent_ArgCVEnvP_t) init.proc}, (M2Dependent_ArgCVEnvP) {(M2Dependent_ArgCVEnvP_t) fini.proc}, dependencies);
 }
 
 
@@ -468,9 +468,9 @@ extern "C" void M2RTS_RegisterModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_A
                       module dependantmodule.
 */
 
-extern "C" void M2RTS_RequestDependant (void * modulename, void * dependantmodule)
+extern "C" void M2RTS_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname)
 {
-  M2Dependent_RequestDependant (modulename, dependantmodule);
+  M2Dependent_RequestDependant (modulename, libname, dependantmodule, dependantlibname);
 }
 
 

@@ -27,11 +27,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE M2Dependent ;
 
 
-FROM libc IMPORT abort, exit, write, getenv, printf ;
+FROM libc IMPORT abort, exit, write, getenv, printf, snprintf, strncpy ;
 (* FROM Builtins IMPORT strncmp, strcmp ;  not available during bootstrap.  *)
 FROM M2LINK IMPORT ForcedModuleInitOrder, StaticInitialization, PtrToChar ;
 FROM ASCII IMPORT nul, nl ;
-FROM SYSTEM IMPORT ADR ;
+FROM SYSTEM IMPORT ADR, SIZE ;
 FROM Storage IMPORT ALLOCATE ;
 FROM StrLib IMPORT StrCopy, StrLen, StrEqual ;
 
@@ -52,7 +52,8 @@ TYPE
                     END ;
 
    ModuleChain = POINTER TO RECORD
-                               name      : ADDRESS ;
+                               name,
+                               libname   : ADDRESS ;
                                init,
                                fini      : ArgCVEnvP ;
                                dependency: DependencyList ;
@@ -63,7 +64,9 @@ TYPE
 VAR
    Modules        : ARRAY DependencyState OF ModuleChain ;
    Initialized,
+   WarningTrace,
    ModuleTrace,
+   HexTrace,
    DependencyTrace,
    PreTrace,
    PostTrace,
@@ -75,20 +78,27 @@ VAR
                   ModuleChain.
 *)
 
-PROCEDURE CreateModule (name: ADDRESS;
+PROCEDURE CreateModule (name, libname: ADDRESS;
                         init, fini:  ArgCVEnvP;
                         dependencies: PROC) : ModuleChain ;
 VAR
-   mptr: ModuleChain ;
+   mptr  : ModuleChain ;
+   p0, p1: ADDRESS ;
 BEGIN
    NEW (mptr) ;
    mptr^.name := name ;
+   mptr^.libname := libname ;
    mptr^.init := init ;
    mptr^.fini := fini ;
    mptr^.dependency.proc := dependencies ;
    mptr^.dependency.state := unregistered ;
    mptr^.prev := NIL ;
    mptr^.next := NIL ;
+   IF HexTrace
+   THEN
+      printf ("   (init: %p  fini: %p", init, fini) ;
+      printf ("  dep: %p)", dependencies)
+   END ;
    RETURN mptr
 END CreateModule ;
 
@@ -157,12 +167,43 @@ END onChain ;
 
 
 (*
-   LookupModuleN - lookup module from the state list.  The string is limited
-                   to nchar.
+   max -
+*)
+
+PROCEDURE max (a, b: CARDINAL) : CARDINAL ;
+BEGIN
+   IF a > b
+   THEN
+      RETURN a
+   ELSE
+      RETURN b
+   END
+END max ;
+
+
+(*
+   min -
+*)
+
+PROCEDURE min (a, b: CARDINAL) : CARDINAL ;
+BEGIN
+   IF a < b
+   THEN
+      RETURN a
+   ELSE
+      RETURN b
+   END
+END min ;
+
+
+(*
+   LookupModuleN - lookup module from the state list.
+                   The strings lengths are known.
 *)
 
 PROCEDURE LookupModuleN (state: DependencyState;
-                         name: ADDRESS; nchar: CARDINAL) : ModuleChain ;
+                         name: ADDRESS; namelen: CARDINAL;
+                         libname: ADDRESS; libnamelen: CARDINAL) : ModuleChain ;
 VAR
    ptr: ModuleChain ;
 BEGIN
@@ -170,7 +211,10 @@ BEGIN
    THEN
       ptr := Modules[state] ;
       REPEAT
-         IF strncmp (ptr^.name, name, nchar) = 0
+         IF (strncmp (ptr^.name, name,
+                      max (namelen, strlen (ptr^.name))) = 0) AND
+            (strncmp (ptr^.libname, libname,
+                      max (libnamelen, strlen (ptr^.libname))) = 0)
          THEN
             RETURN ptr
          END ;
@@ -186,9 +230,11 @@ END LookupModuleN ;
                   module name from a particular list.
 *)
 
-PROCEDURE LookupModule (state: DependencyState; name: ADDRESS) : ModuleChain ;
+PROCEDURE LookupModule (state: DependencyState; name, libname: ADDRESS) : ModuleChain ;
 BEGIN
-   RETURN LookupModuleN (state, name, strlen (name))
+   RETURN LookupModuleN (state,
+                         name, strlen (name),
+                         libname, strlen (libname))
 END LookupModule ;
 
 
@@ -254,7 +300,10 @@ END strcmp ;
 
 PROCEDURE strncmp (a, b: PtrToChar; n: CARDINAL) : INTEGER ;
 BEGIN
-   IF (a # NIL) AND (b # NIL) AND (n > 0)
+   IF n = 0
+   THEN
+      RETURN 0
+   ELSIF (a # NIL) AND (b # NIL)
    THEN
       IF a = b
       THEN
@@ -316,13 +365,47 @@ END traceprintf ;
 *)
 
 PROCEDURE traceprintf2 (flag: BOOLEAN; str: ARRAY OF CHAR; arg: ADDRESS) ;
+VAR
+   ch: CHAR ;
 BEGIN
    IF flag
    THEN
       toCString (str) ;
+      IF arg = NIL
+      THEN
+         ch := 0C ;
+         arg := ADR (ch)
+      END ;
       printf (str, arg)
    END
 END traceprintf2 ;
+
+
+(*
+   traceprintf3 - wrap printf with a boolean flag.
+*)
+
+PROCEDURE traceprintf3 (flag: BOOLEAN; str: ARRAY OF CHAR;
+                        arg1, arg2: ADDRESS) ;
+VAR
+   ch: CHAR ;
+BEGIN
+   IF flag
+   THEN
+      toCString (str) ;
+      IF arg1 = NIL
+      THEN
+         ch := 0C ;
+         arg1 := ADR (ch)
+      END ;
+      IF arg2 = NIL
+      THEN
+         ch := 0C ;
+         arg2 := ADR (ch)
+      END ;
+      printf (str, arg1, arg2)
+   END
+END traceprintf3 ;
 
 
 (*
@@ -345,22 +428,24 @@ END moveTo ;
    ResolveDependant -
 *)
 
-PROCEDURE ResolveDependant (mptr: ModuleChain; currentmodule: ADDRESS) ;
+PROCEDURE ResolveDependant (mptr: ModuleChain; currentmodule, libname: ADDRESS) ;
 BEGIN
    IF mptr = NIL
    THEN
-      traceprintf (DependencyTrace, "   module has not been registered via a global constructor\n");
+      traceprintf3 (DependencyTrace,
+                    "   module %s [%s] has not been registered via a global constructor\n",
+                    currentmodule, libname);
    ELSE
       IF onChain (started, mptr)
       THEN
          traceprintf (DependencyTrace, "   processing...\n");
       ELSE
          moveTo (started, mptr) ;
-         traceprintf2 (DependencyTrace, "   starting: %s\n",
-                       currentmodule);
+         traceprintf3 (DependencyTrace, "   starting: %s [%s]\n",
+                       currentmodule, libname);
          mptr^.dependency.proc ;  (* Invoke and process the dependency graph.  *)
-         traceprintf2 (DependencyTrace, "   finished: %s\n",
-                       currentmodule);
+         traceprintf3 (DependencyTrace, "   finished: %s [%s]\n",
+                       currentmodule, libname);
          moveTo (ordered, mptr)
       END
    END
@@ -373,12 +458,14 @@ END ResolveDependant ;
                       if we are not using StaticInitialization.
 *)
 
-PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+PROCEDURE RequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname: ADDRESS) ;
 BEGIN
    CheckInitialized ;
    IF NOT StaticInitialization
    THEN
-      PerformRequestDependant (modulename, dependantmodule)
+      PerformRequestDependant (modulename, libname,
+                               dependantmodule, dependantlibname)
    END
 END RequestDependant ;
 
@@ -390,66 +477,73 @@ END RequestDependant ;
                              resolved.
 *)
 
-PROCEDURE PerformRequestDependant (modulename, dependantmodule: ADDRESS) ;
+PROCEDURE PerformRequestDependant (modulename, libname,
+                                   dependantmodule, dependantlibname: ADDRESS) ;
 VAR
    mptr: ModuleChain ;
 BEGIN
-   traceprintf2 (DependencyTrace, "  module %s", modulename) ;
+   traceprintf3 (DependencyTrace, "  module %s [%s]", modulename, libname) ;
    IF dependantmodule = NIL
    THEN
-      traceprintf2 (DependencyTrace, " has finished its import graph\n", modulename) ;
-      mptr := LookupModule (unordered, modulename) ;
+      traceprintf (DependencyTrace, " has finished its import graph\n") ;
+      mptr := LookupModule (unordered, modulename, libname) ;
       IF mptr # NIL
       THEN
-         traceprintf2 (DependencyTrace, "  module %s is now ordered\n", modulename) ;
+         traceprintf3 (DependencyTrace, "  module %s [%s] is now ordered\n",
+                       modulename, libname) ;
          moveTo (ordered, mptr)
       END
    ELSE
-      traceprintf2 (DependencyTrace, " imports from %s\n", dependantmodule) ;
-      mptr := LookupModule (ordered, dependantmodule) ;
+      traceprintf3 (DependencyTrace, " imports from %s [%s]\n",
+                    dependantmodule, dependantlibname) ;
+      mptr := LookupModule (ordered, dependantmodule, dependantlibname) ;
       IF mptr = NIL
       THEN
-         traceprintf2 (DependencyTrace, "  module %s is not ordered\n", dependantmodule) ;
-         mptr := LookupModule (unordered, dependantmodule) ;
+         traceprintf3 (DependencyTrace, "  module %s [%s] is not ordered\n",
+                       dependantmodule, dependantlibname) ;
+         mptr := LookupModule (unordered, dependantmodule, dependantlibname) ;
          IF mptr = NIL
          THEN
-            traceprintf2 (DependencyTrace, "  module %s is not unordered\n", dependantmodule) ;
-            mptr := LookupModule (started, dependantmodule) ;
+            traceprintf3 (DependencyTrace, "  module %s [%s] is not unordered\n",
+                          dependantmodule, dependantlibname) ;
+            mptr := LookupModule (started, dependantmodule, dependantlibname) ;
             IF mptr = NIL
             THEN
-               traceprintf2 (DependencyTrace, "  module %s has not started\n", dependantmodule) ;
-               traceprintf2 (DependencyTrace, "  module %s attempting to import from",
-                             modulename) ;
-               traceprintf2 (DependencyTrace, " %s which has not registered itself via a constructor\n",
-                             dependantmodule)
+               traceprintf3 (DependencyTrace, "  module %s [%s] has not started\n",
+                             dependantmodule, dependantlibname) ;
+               traceprintf3 (DependencyTrace, "  module %s [%s] attempting to import from",
+                             modulename, libname) ;
+               traceprintf3 (DependencyTrace, " %s [%s] which has not registered itself via a constructor\n",
+                             dependantmodule, dependantlibname)
             ELSE
-               traceprintf2 (DependencyTrace, "  module %s has registered itself and has started\n", dependantmodule)
+               traceprintf3 (DependencyTrace, "  module %s [%s] has registered itself and has started\n",
+                             dependantmodule, dependantlibname)
             END
          ELSE
-            traceprintf2 (DependencyTrace, "  module %s resolving\n", dependantmodule) ;
-            ResolveDependant (mptr, dependantmodule)
+            traceprintf3 (DependencyTrace, "  module %s [%s] resolving\n", dependantmodule, dependantlibname) ;
+            ResolveDependant (mptr, dependantmodule, dependantlibname)
          END
       ELSE
-         traceprintf2 (DependencyTrace, "  module %s ", modulename) ;
-         traceprintf2 (DependencyTrace, " dependant %s is ordered\n", dependantmodule)
+         traceprintf3 (DependencyTrace, "  module %s [%s]", modulename, libname) ;
+         traceprintf3 (DependencyTrace, " dependant %s [%s] is ordered\n", dependantmodule, dependantlibname)
       END
    END
 END PerformRequestDependant ;
 
 
 (*
-   ResolveDependencies - resolve dependencies for currentmodule.
+   ResolveDependencies - resolve dependencies for currentmodule, libname.
 *)
 
-PROCEDURE ResolveDependencies (currentmodule: ADDRESS) ;
+PROCEDURE ResolveDependencies (currentmodule, libname: ADDRESS) ;
 VAR
    mptr: ModuleChain ;
 BEGIN
-   mptr := LookupModule (unordered, currentmodule) ;
+   mptr := LookupModule (unordered, currentmodule, libname) ;
    WHILE mptr # NIL DO
-      traceprintf2 (DependencyTrace, "   attempting to resolve the dependants for %s\n",
-                    currentmodule);
-      ResolveDependant (mptr, currentmodule) ;
+      traceprintf3 (DependencyTrace, "   attempting to resolve the dependants for %s [%s]\n",
+                    currentmodule, libname);
+      ResolveDependant (mptr, currentmodule, libname) ;
       mptr := Modules[unordered]
    END
 END ResolveDependencies ;
@@ -459,18 +553,23 @@ END ResolveDependencies ;
    DisplayModuleInfo - displays all module in the state.
 *)
 
-PROCEDURE DisplayModuleInfo (state: DependencyState; name: ARRAY OF CHAR) ;
+PROCEDURE DisplayModuleInfo (state: DependencyState; desc: ARRAY OF CHAR) ;
 VAR
    mptr : ModuleChain ;
    count: CARDINAL ;
 BEGIN
    IF Modules[state] # NIL
    THEN
-      printf ("%s modules\n", ADR (name)) ;
+      printf ("%s modules\n", ADR (desc)) ;
       mptr := Modules[state] ;
       count := 0 ;
       REPEAT
-         printf ("  %d  %s", count, mptr^.name) ;
+         IF mptr^.name = NIL
+         THEN
+            printf ("  %d  %s []", count, mptr^.name)
+         ELSE
+            printf ("  %d  %s [%s]", count, mptr^.name, mptr^.libname)
+         END ;
          INC (count) ;
          IF mptr^.dependency.appl
          THEN
@@ -529,48 +628,98 @@ END combine ;
 
 
 (*
+   tracemodule -
+*)
+
+PROCEDURE tracemodule (flag: BOOLEAN; modname: ADDRESS; modlen: CARDINAL; libname: ADDRESS; liblen: CARDINAL) ;
+VAR
+   buffer: ARRAY [0..100] OF CHAR ;
+   len   : CARDINAL ;
+BEGIN
+   IF flag
+   THEN
+      len := min (modlen, SIZE (buffer)-1) ;
+      strncpy (ADR(buffer), modname, len) ;
+      buffer[len] := 0C ;
+      printf ("%s ", ADR (buffer)) ;
+      len := min (liblen, SIZE (buffer)-1) ;
+      strncpy (ADR(buffer), libname, len) ;
+      buffer[len] := 0C ;
+      printf (" [%s]", ADR (buffer))
+   END
+END tracemodule ;
+
+
+(*
+   ForceModule -
+*)
+
+PROCEDURE ForceModule (modname: ADDRESS; modlen: CARDINAL;
+                       libname: ADDRESS; liblen: CARDINAL) ;
+VAR
+   mptr: ModuleChain ;
+BEGIN
+   traceprintf (ForceTrace, "forcing module: ") ;
+   tracemodule (ForceTrace, modname, modlen, libname, liblen) ;
+   traceprintf (ForceTrace, "\n") ;
+   mptr := LookupModuleN (ordered, modname, modlen, libname, liblen) ;
+   IF mptr # NIL
+   THEN
+      mptr^.dependency.forced := TRUE ;
+      moveTo (user, mptr)
+   END
+END ForceModule ;
+
+
+(*
    ForceDependencies - if the user has specified a forced order then we override
                        the dynamic ordering with the preference.
 *)
 
 PROCEDURE ForceDependencies ;
 VAR
-   mptr,
-   userChain: ModuleChain ;
-   count    : CARDINAL ;
+   len,
+   modlen,
+   liblen   : CARDINAL ;
+   modname,
+   libname,
    pc, start: PtrToChar ;
 BEGIN
    IF ForcedModuleInitOrder # NIL
    THEN
-      userChain := NIL ;
+      traceprintf2 (ForceTrace, "user forcing order: %s\n", ForcedModuleInitOrder) ;
       pc := ForcedModuleInitOrder ;
       start := pc ;
-      count := 0 ;
+      len := 0 ;
+      modname := NIL ;
+      modlen := 0 ;
+      libname := NIL ;
+      liblen := 0 ;
       WHILE pc^ # nul DO
-         IF pc^ = ','
-         THEN
-            mptr := LookupModuleN (ordered, start, count) ;
-            IF mptr # NIL
-            THEN
-               mptr^.dependency.forced := TRUE ;
-               moveTo (user, mptr)
-            END ;
-            INC (pc) ;
-            start := pc ;
-            count := 0
+         CASE pc^ OF
+
+         ':':  libname := start ;
+               liblen := len ;
+               len := 0 ;
+               INC (pc) ;
+               start := pc |
+         ',':  modname := start ;
+               modlen := len ;
+               ForceModule (modname, modlen, libname, liblen) ;
+               libname := NIL ;
+               liblen := 0 ;
+               modlen := 0 ;
+               len := 0 ;
+               INC (pc) ;
+               start := pc
          ELSE
             INC (pc) ;
-            INC (count)
+            INC (len)
          END
       END ;
       IF start # pc
       THEN
-         mptr := LookupModuleN (ordered, start, count) ;
-         IF mptr # NIL
-         THEN
-            mptr^.dependency.forced := TRUE ;
-            moveTo (user, mptr)
-         END
+         ForceModule (start, len, libname, liblen)
       END ;
       combine (user, ordered)
    END
@@ -601,7 +750,8 @@ BEGIN
       UNTIL (appl # NIL) OR (mptr=Modules[ordered]) ;
       IF appl # NIL
       THEN
-         Modules[ordered] := appl^.next
+         RemoveModule (Modules[ordered], appl) ;
+         AppendModule (Modules[ordered], appl)
       END
    END
 END CheckApplication ;
@@ -612,22 +762,23 @@ END CheckApplication ;
                       module constructor in turn.
 *)
 
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 VAR
    mptr: ModuleChain ;
    nulp: ArgCVEnvP ;
 BEGIN
    CheckInitialized ;
-   traceprintf2 (ModuleTrace, "application module: %s\n", applicationmodule);
-   mptr := LookupModule (unordered, applicationmodule) ;
+   traceprintf3 (ModuleTrace, "application module: %s [%s]\n",
+                 applicationmodule, libname);
+   mptr := LookupModule (unordered, applicationmodule, libname) ;
    IF mptr # NIL
    THEN
       mptr^.dependency.appl := TRUE
    END ;
    traceprintf (PreTrace, "Pre resolving dependents\n");
    DumpModuleData (PreTrace) ;
-   ResolveDependencies (applicationmodule) ;
+   ResolveDependencies (applicationmodule, libname) ;
    traceprintf (PreTrace, "Post resolving dependents\n");
    DumpModuleData (PostTrace) ;
    ForceDependencies ;
@@ -638,7 +789,8 @@ BEGIN
    DumpModuleData (ForceTrace) ;
    IF Modules[ordered] = NIL
    THEN
-      traceprintf2 (ModuleTrace, "  module: %s has not registered itself using a global constructor\n", applicationmodule);
+      traceprintf3 (ModuleTrace, "  module: %s [%s] has not registered itself using a global constructor\n",
+                    applicationmodule, libname);
       traceprintf2 (ModuleTrace, "  hint try compile and linking using: gm2 %s.mod\n", applicationmodule);
       traceprintf2 (ModuleTrace, "  or try using: gm2 -fscaffold-static %s.mod\n",
       applicationmodule);
@@ -647,13 +799,13 @@ BEGIN
       REPEAT
          IF mptr^.dependency.forc
          THEN
-            traceprintf2 (ModuleTrace, "initializing module: %s for C\n", mptr^.name);
+            traceprintf3 (ModuleTrace, "initializing module: %s [%s] for C\n", mptr^.name, mptr^.libname)
          ELSE
-            traceprintf2 (ModuleTrace, "initializing module: %s\n", mptr^.name);
+            traceprintf3 (ModuleTrace, "initializing module: %s [%s]\n", mptr^.name, mptr^.libname);
          END ;
          IF mptr^.dependency.appl
          THEN
-            traceprintf2 (ModuleTrace, "application module: %s\n", mptr^.name);
+            traceprintf3 (ModuleTrace, "application module: %s [%s]\n", mptr^.name, mptr^.libname);
             traceprintf (ModuleTrace, "  calling M2RTS_ExecuteInitialProcedures\n");
             M2RTS.ExecuteInitialProcedures ;
             traceprintf (ModuleTrace, "  calling application module\n");
@@ -670,12 +822,13 @@ END ConstructModules ;
                         module constructor in turn.
 *)
 
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
                               argc: INTEGER; argv, envp: ADDRESS) ;
 VAR
    mptr: ModuleChain ;
 BEGIN
-   traceprintf2 (ModuleTrace, "application module finishing: %s\n", applicationmodule);
+   traceprintf3 (ModuleTrace, "application module finishing: %s [%s]\n",
+                 applicationmodule, libname);
    IF Modules[ordered] = NIL
    THEN
       traceprintf (ModuleTrace, "  no ordered modules found during finishing\n")
@@ -687,9 +840,11 @@ BEGIN
       REPEAT
          IF mptr^.dependency.forc
          THEN
-            traceprintf2 (ModuleTrace, "finalizing module: %s for C\n", mptr^.name);
+            traceprintf3 (ModuleTrace, "finalizing module: %s [%s] for C\n",
+                          mptr^.name, mptr^.libname)
          ELSE
-            traceprintf2 (ModuleTrace, "finalizing module: %s\n", mptr^.name);
+            traceprintf3 (ModuleTrace, "finalizing module: %s [%s]\n",
+                          mptr^.name, mptr^.libname)
          END ;
          mptr^.fini (argc, argv, envp) ;
          mptr := mptr^.prev
@@ -699,22 +854,51 @@ END DeconstructModules ;
 
 
 (*
+   warning3 - write format arg1 arg2 to stderr.
+*)
+
+PROCEDURE warning3 (format: ARRAY OF CHAR; arg1, arg2: ADDRESS) ;
+VAR
+   buffer: ARRAY [0..4096] OF CHAR ;
+   len   : INTEGER ;
+BEGIN
+   IF WarningTrace
+   THEN
+      len := snprintf (ADR (buffer), SIZE (buffer), "warning: ") ;
+      write (2, ADR (buffer), len) ;
+      len := snprintf (ADR (buffer), SIZE (buffer), format, arg1, arg2) ;
+      write (2, ADR (buffer), len)
+   END
+END warning3 ;
+
+
+(*
    RegisterModule - adds module name to the list of outstanding
                     modules which need to have their dependencies
                     explored to determine initialization order.
 *)
 
-PROCEDURE RegisterModule (name: ADDRESS;
+PROCEDURE RegisterModule (modulename, libname: ADDRESS;
                           init, fini:  ArgCVEnvP;
                           dependencies: PROC) ;
+VAR
+   mptr: ModuleChain ;
 BEGIN
    CheckInitialized ;
    IF NOT StaticInitialization
    THEN
-      traceprintf2 (ModuleTrace, "module: %s registering\n",
-                    name);
-      moveTo (unordered,
-              CreateModule (name, init, fini, dependencies))
+      mptr := LookupModule (unordered, modulename, libname) ;
+      IF mptr = NIL
+      THEN
+         traceprintf3 (ModuleTrace, "module: %s [%s] registering",
+                       modulename, libname);
+         moveTo (unordered,
+                 CreateModule (modulename, libname, init, fini, dependencies)) ;
+         traceprintf (ModuleTrace, "\n") ;
+      ELSE
+         warning3 ("module: %s [%s] (ignoring duplicate registration)\n",
+                   modulename, libname)
+      END
    END
 END RegisterModule ;
 
@@ -733,11 +917,12 @@ END equal ;
    SetupDebugFlags - By default assigns ModuleTrace, DependencyTrace,
                      DumpPostInit to FALSE.  It checks the environment
                      GCC_M2LINK_RTFLAG which can contain
-                     "all,module,pre,post,dep,force".  all turns them all on.
+                     "all,module,hex,pre,post,dep,force".  all turns them all on.
                      The flag meanings are as follows and flags the are in
                      execution order.
 
                      module   generate trace info as the modules are registered.
+                     hex      dump the modules ctor functions address in hex.
                      pre      generate a list of all modules seen prior to having
                               their dependancies resolved.
                      dep      display a trace as the modules are resolved.
@@ -756,6 +941,8 @@ BEGIN
    PostTrace := FALSE ;
    PreTrace := FALSE ;
    ForceTrace := FALSE ;
+   HexTrace := FALSE ;
+   WarningTrace := FALSE ;
    pc := getenv (ADR ("GCC_M2LINK_RTFLAG")) ;
    WHILE (pc # NIL) AND (pc^ # nul) DO
       IF equal (pc, "all")
@@ -765,11 +952,21 @@ BEGIN
          PreTrace := TRUE ;
          PostTrace := TRUE ;
          ForceTrace := TRUE ;
+         HexTrace := TRUE ;
+         WarningTrace := TRUE ;
          INC (pc, 3)
       ELSIF equal (pc, "module")
       THEN
          ModuleTrace := TRUE ;
          INC (pc, 6)
+      ELSIF equal (pc, "warning")
+      THEN
+         WarningTrace := TRUE ;
+         INC (pc, 7)
+      ELSIF equal (pc, "hex")
+      THEN
+         HexTrace := TRUE ;
+         INC (pc, 3)
       ELSIF equal (pc, "dep")
       THEN
          DependencyTrace := TRUE ;

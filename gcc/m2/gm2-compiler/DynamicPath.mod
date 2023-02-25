@@ -1,4 +1,4 @@
-(* DynamicStringPath.def implements a path for DynamicStrings.
+(* DynamicPath.mod implements a path for DynamicStrings.
 
 Copyright (C) 2001-2023 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
@@ -24,11 +24,11 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  *)
 
-IMPLEMENTATION MODULE DynamicStringPath ;  (*!m2iso+gm2*)
+IMPLEMENTATION MODULE DynamicPath ;  (*!m2iso+gm2*)
 
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM DynamicStrings IMPORT InitString, ConCat, ConCatChar, char, Dup,
-                           KillString, Length ;
+                           KillString, Length, EqualArray ;
 FROM SFIO IMPORT Exists ;
 FROM FIO IMPORT StdErr ;
 FROM M2Printf IMPORT fprintf0, fprintf1 ;
@@ -46,51 +46,7 @@ TYPE
 
 
 VAR
-   FreeList,
-   DefaultUserPath,
-   DefaultSystemPath: PathList ;
-
-
-(*
-   GetUserPath - returns the current UserPath.
-*)
-
-PROCEDURE GetUserPath () : PathList ;
-BEGIN
-   RETURN DefaultUserPath
-END GetUserPath ;
-
-
-(*
-   GetSystemPath - returns the current SystemPath.
-*)
-
-PROCEDURE GetSystemPath () : PathList ;
-BEGIN
-   RETURN DefaultSystemPath
-END GetSystemPath ;
-
-
-(*
-   SetUserPath - assigns UserPath to pl.
-*)
-
-PROCEDURE SetUserPath (pl: PathList) ;
-BEGIN
-   DefaultUserPath := pl ;
-   DumpPath ('DefaultUserPath', DefaultUserPath)
-END SetUserPath ;
-
-
-(*
-   SetSystemPath - assigns SystemPath to pl.
-*)
-
-PROCEDURE SetSystemPath (pl: PathList) ;
-BEGIN
-   DefaultSystemPath := pl ;
-   DumpPath ('DefaultSystemPath', DefaultSystemPath)
-END SetSystemPath ;
+   FreeList: PathList ;
 
 
 (*
@@ -148,10 +104,6 @@ END Cons ;
 
 (*
    ConsList - concatenates path list left and right together.
-              It always returns NIL which should be assigned
-              to the callers right parameter after ConsList
-              has been completed signifying that right should
-              no longer be accessed.
 *)
 
 PROCEDURE ConsList (left, right: PathList) : PathList ;
@@ -241,25 +193,19 @@ END FindFileName ;
    DumpPath - debugging dump of the pathlist.
 *)
 
-PROCEDURE DumpPath (name: ARRAY OF CHAR; pl: PathList) ;
+PROCEDURE DumpPath (name: String; pl: PathList) ;
 BEGIN
-   IF Debugging
-   THEN
-      fprintf0 (StdErr, name) ;
-      fprintf0 (StdErr, ":") ;
-      WHILE pl # NIL DO
-         fprintf0 (StdErr, " {") ;
-         fprintf1 (StdErr, "%s", pl^.entry) ;
-         fprintf0 (StdErr, "}") ;
-         pl := pl^.next
-      END ;
-      fprintf0 (StdErr, "\n")
-   END
+   fprintf1 (StdErr, "%s:", name) ;
+   WHILE pl # NIL DO
+      fprintf0 (StdErr, " {") ;
+      fprintf1 (StdErr, "%s", pl^.entry) ;
+      fprintf0 (StdErr, "}") ;
+      pl := pl^.next
+   END ;
+   fprintf0 (StdErr, "\n")
 END DumpPath ;
 
 
 BEGIN
-   DefaultSystemPath := NIL ;
-   DefaultUserPath := NIL ;
    FreeList := NIL
-END DynamicStringPath.
+END DynamicPath.

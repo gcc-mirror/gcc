@@ -1,32 +1,32 @@
-(* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
-   Free Software Foundation, Inc. *)
-(* This file is part of GNU Modula-2.
+(* StrLib.mod provides string manipulation procedures.
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA *)
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
 
 IMPLEMENTATION MODULE StrLib ;
 
 FROM ASCII IMPORT nul, tab ;
-
-(* %%%FORWARD%%%
-PROCEDURE StrEqual (a, b: ARRAY OF CHAR) : BOOLEAN ; FORWARD ;
-PROCEDURE StrLen (a: ARRAY OF CHAR) : CARDINAL ; FORWARD ;
-PROCEDURE StrCopy (a: ARRAY OF CHAR ; VAR b: ARRAY OF CHAR) ; FORWARD ;
-PROCEDURE StrConCat (a: ARRAY OF CHAR ; b: ARRAY OF CHAR ; VAR c: ARRAY OF CHAR) ; FORWARD ;
-PROCEDURE IsSubString (a, b: ARRAY OF CHAR) : BOOLEAN ; FORWARD ;
-   %%%FORWARD%%% *)
 
 
 (*
@@ -88,24 +88,21 @@ END StrLess ;
 PROCEDURE StrEqual (a, b: ARRAY OF CHAR) : BOOLEAN ;
 VAR
    i,
-   Higha,
-   Highb: CARDINAL ;
-   Equal: BOOLEAN ;
+   higha,
+   highb: CARDINAL ;
 BEGIN
-   Higha := StrLen(a) ;
-   Highb := StrLen(b) ;
-   IF Higha=Highb
-   THEN
-      Equal := TRUE ;
-      i := 0 ;
-      WHILE Equal AND (i<Higha) DO
-         Equal := (a[i]=b[i]) ;
-         INC(i)
+   higha := HIGH(a) ;
+   highb := HIGH(b) ;
+   i := 0 ;
+   WHILE (i<=higha) AND (i<=highb) AND (a[i]#nul) AND (b[i]#nul) DO
+      IF a[i]#b[i]
+      THEN
+         RETURN( FALSE )
       END ;
-      RETURN( Equal )
-   ELSE
-      RETURN( FALSE )
-   END
+      INC(i)
+   END ;
+   RETURN NOT (((i<=higha) AND (a[i]#nul)) OR
+               ((i<=highb) AND (b[i]#nul)))
 END StrEqual ;
 
 
@@ -123,22 +120,28 @@ BEGIN
 END StrLen ;
 
 
-PROCEDURE StrCopy (a: ARRAY OF CHAR ; VAR b: ARRAY OF CHAR) ;
+(*
+   StrCopy - copy string src into string dest providing dest is large enough.
+             If dest is smaller than a then src then the string is truncated when
+             dest is full.  Add a nul character if there is room in dest.
+*)
+
+PROCEDURE StrCopy (src: ARRAY OF CHAR ; VAR dest: ARRAY OF CHAR) ;
 VAR
-   Higha,
-   Highb,
-   n    : CARDINAL ;
+   HighSrc,
+   HighDest,
+   n       : CARDINAL ;
 BEGIN
    n := 0 ;
-   Higha := StrLen(a) ;
-   Highb := HIGH(b) ;
-   WHILE (n<Higha) AND (n<=Highb) DO
-      b[n] := a[n] ;
-      INC(n)
+   HighSrc := StrLen (src) ;
+   HighDest := HIGH (dest) ;
+   WHILE (n < HighSrc) AND (n <= HighDest) DO
+      dest[n] := src[n] ;
+      INC (n)
    END ;
-   IF n<=Highb
+   IF n <= HighDest
    THEN
-      b[n] := nul
+      dest[n] := nul
    END
 END StrCopy ;
 

@@ -422,6 +422,6 @@ extern "C" void _M2_Lists_init (__attribute__((unused)) int argc,__attribute__((
 {
 }
 
-extern "C" void _M2_Lists_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Lists_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

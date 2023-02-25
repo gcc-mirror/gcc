@@ -1,0 +1,82 @@
+DEFINITION MODULE AdvMap ;
+
+FROM AdvMath IMPORT MaxNoOfTreasures ;
+
+EXPORT QUALIFIED Rooms, Line, DoorStatus, Door, Room, Treasure,
+                 ActualNoOfRooms, MaxNoOfRooms,
+                 WallsPerRoom, DoorsPerRoom,
+                 NoOfRoomsToHidePlayers, NoOfRoomsToSpring,
+                 NoOfRoomsToHideCoal, NoOfRoomsToHideGrenade,
+                 TreasureKind,
+                 Adjacent, IncPosition,
+                 FileName, MaxLengthOfFileName ;
+
+
+CONST
+   MaxNoOfRooms           = 350 ;  (* An upper limit *)
+   WallsPerRoom           =  12 ;  (* An upper limit *)
+   DoorsPerRoom           =   8 ;  (* An upper limit *)
+
+   MaxLengthOfFileName    =  11 ;
+   NoOfRoomsToHidePlayers =  50 ;
+   NoOfRoomsToSpring      =  50 ;
+   NoOfRoomsToHideCoal    =  50 ;
+   NoOfRoomsToHideGrenade =  50 ;
+
+
+TYPE
+   Line         = RECORD
+                     X1 : CARDINAL ;
+                     Y1 : CARDINAL ;
+                     X2 : CARDINAL ;
+                     Y2 : CARDINAL
+                  END ;
+
+   DoorStatus   = (Open, Closed, Secret) ;
+
+   Door         = RECORD
+                     Position    : Line ;
+                     StateOfDoor : DoorStatus ;
+                     LeadsTo     : CARDINAL
+                  END ;
+
+   TreasureKind = (unused, respawnnormal, respawnmagic,
+                   onperson, onfloor, normal, magic) ;
+
+   TreasureInfo = RECORD
+                     Xpos         : CARDINAL ;
+                     Ypos         : CARDINAL ;
+                     Rm           : CARDINAL ;
+                     Tweight      : CARDINAL ;
+                     TreasureName : ARRAY [0..12] OF CHAR ;
+                     kind         : TreasureKind ;
+                     amount       : CARDINAL ;  (* number of arrows.  *)
+                  END ;
+
+   Room         = RECORD
+                     NoOfWalls   : CARDINAL ;
+                     NoOfDoors   : CARDINAL ;
+                     Walls       : ARRAY [1..WallsPerRoom] OF Line ;
+                     Doors       : ARRAY [1..DoorsPerRoom] OF Door ;
+                     Treasures   : BITSET ;
+                  END ;
+
+
+VAR
+   ActualNoOfRooms : CARDINAL ;
+   Treasure        : ARRAY [1..MaxNoOfTreasures] OF TreasureInfo ;
+   Rooms           : ARRAY [1..MaxNoOfRooms] OF Room ;
+   FileName        : ARRAY [0..MaxLengthOfFileName] OF CHAR ;
+
+
+(* Tests to see if two rooms are Adjacent to each other.                *)
+
+PROCEDURE Adjacent (R1, R2: CARDINAL) : BOOLEAN ;
+
+
+(* Increments the position of x, y by the direction that are facing     *)
+
+PROCEDURE IncPosition (VAR x, y: CARDINAL ; Dir: CARDINAL) ;
+
+
+END AdvMap.

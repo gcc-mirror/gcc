@@ -232,6 +232,6 @@ _M2_SysExceptions_init (void)
 
 EXTERN
 void
-_M2_SysExceptions_finish (void)
+_M2_SysExceptions_fini (void)
 {
 }

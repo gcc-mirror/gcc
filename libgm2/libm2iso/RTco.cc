@@ -32,8 +32,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <m2rts.h>
 #include <cstdio>
 
-#define EXPORT(FUNC) RTco_ ## FUNC
-#define M2EXPORT(FUNC) _M2_RTco_ ## FUNC
+#define EXPORT(FUNC) m2iso ## _RTco_ ## FUNC
+#define M2EXPORT(FUNC) m2iso ## _M2_RTco_ ## FUNC
+#define M2LIBNAME "m2iso"
 
 /* This implementation of RTco.cc uses a single lock for mutex across
    the whole module.  It also forces context switching between threads
@@ -104,11 +105,8 @@ static threadSem **semArray = NULL;
 static __gthread_mutex_t lock;  /* This is the only mutex for
 				   the whole module.  */
 static int initialized = FALSE;
-static int currentThread = 0;
-
 
 extern "C" int EXPORT(init) (void);
-
 
 extern "C" void
 M2EXPORT(dep) (void)
@@ -184,8 +182,8 @@ newSem (void)
       = (threadSem *)malloc (sizeof (threadSem));
   nSemaphores += 1;
   if (nSemaphores == SEM_POOL)
-    M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		 "too many semaphores created");
+    m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		       "too many semaphores created");
 #else
   threadSem *sem
       = (threadSem *)malloc (sizeof (threadSem));
@@ -233,6 +231,18 @@ EXPORT(initSemaphore) (int value)
   return sid;
 }
 
+static int
+currentThread (void)
+{
+  int tid;
+
+  for (tid = 0; tid < nThreads; tid++)
+    if (pthread_self () == threadArray[tid].p)
+      return tid;
+  m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		     "failed to find currentThread");
+}
+
 extern "C" int
 EXPORT(currentThread) (void)
 {
@@ -240,7 +250,7 @@ EXPORT(currentThread) (void)
 
   EXPORT(init) ();
   __gthread_mutex_lock (&lock);
-  tid = currentThread;
+  tid = currentThread ();
   tprintf ("currentThread %d\n", tid);
   __gthread_mutex_unlock (&lock);
   return tid;
@@ -253,9 +263,10 @@ EXPORT(currentInterruptLevel) (void)
 {
   EXPORT(init) ();
   __gthread_mutex_lock (&lock);
+  int current = currentThread ();
   tprintf ("currentInterruptLevel %d\n",
-           threadArray[currentThread].interruptLevel);
-  int level = threadArray[currentThread].interruptLevel;
+           threadArray[current].interruptLevel);
+  int level = threadArray[current].interruptLevel;
   __gthread_mutex_unlock (&lock);
   return level;
 }
@@ -268,9 +279,10 @@ EXPORT(turnInterrupts) (unsigned int newLevel)
 {
   EXPORT(init) ();
   __gthread_mutex_lock (&lock);
-  unsigned int old = threadArray[currentThread].interruptLevel;
+  int current = currentThread ();
+  unsigned int old = threadArray[current].interruptLevel;
   tprintf ("turnInterrupts from %d to %d\n", old, newLevel);
-  threadArray[currentThread].interruptLevel = newLevel;
+  threadArray[current].interruptLevel = newLevel;
   __gthread_mutex_unlock (&lock);
   return old;
 }
@@ -278,8 +290,8 @@ EXPORT(turnInterrupts) (unsigned int newLevel)
 static void
 never (void)
 {
-  M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-	       "the main thread should never call here");
+  m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		     "the main thread should never call here");
 }
 
 static void *
@@ -313,10 +325,10 @@ execThread (void *t)
   __gthread_mutex_unlock (&lock);
   tp->proc (); /* Now execute user procedure.  */
 #if 0
-  M2RTS_CoroutineException ( __FILE__, __LINE__, __COLUMN__, __FUNCTION__, "coroutine finishing");
+  m2iso_M2RTS_CoroutineException ( __FILE__, __LINE__, __COLUMN__, __FUNCTION__, "coroutine finishing");
 #endif
-  M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-	       "execThread should never finish");
+  m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		     "execThread should never finish");
   return NULL;
 }
 
@@ -326,8 +338,8 @@ newThread (void)
 #if defined(POOL)
   nThreads += 1;
   if (nThreads == THREAD_POOL)
-    M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		 "too many threads created");
+    m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		       "too many threads created");
   return nThreads - 1;
 #else
   if (nThreads == 0)
@@ -364,15 +376,15 @@ initThread (void (*proc) (void), unsigned int stackSize,
   /* Set thread creation attributes.  */
   result = pthread_attr_init (&attr);
   if (result != 0)
-    M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		 "failed to create thread attribute");
+    m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+		       "failed to create thread attribute");
 
   if (stackSize > 0)
     {
       result = pthread_attr_setstacksize (&attr, stackSize);
       if (result != 0)
-        M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		     "failed to set stack size attribute");
+        m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+			   "failed to set stack size attribute");
     }
 
   tprintf ("initThread [%d]  function = 0x%p  (arg = 0x%p)\n", tid, proc,
@@ -380,7 +392,7 @@ initThread (void (*proc) (void), unsigned int stackSize,
   result = pthread_create (&threadArray[tid].p, &attr, execThread,
                            (void *)&threadArray[tid]);
   if (result != 0)
-    M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__, "thread_create failed");
+    m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__, "thread_create failed");
   tprintf ("  created thread [%d]  function = 0x%p  0x%p\n", tid, proc,
            (void *)&threadArray[tid]);
   return tid;
@@ -408,62 +420,61 @@ EXPORT(transfer) (int *p1, int p2)
 {
   __gthread_mutex_lock (&lock);
   {
+    int current = currentThread ();
     if (!initialized)
-      M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		   "cannot transfer to a process before the process has been created");
-    if (currentThread == p2)
+      m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+			 "cannot transfer to a process before the process has been created");
+    if (current == p2)
       {
 	/* Error.  */
-	M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		     "attempting to transfer to ourself");
+	m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+			   "attempting to transfer to ourself");
     }
     else
       {
-	*p1 = currentThread;
-	int old = currentThread;
-	tprintf ("start, context switching from: %d to %d\n", currentThread, p2);
+	*p1 = current;
+	int old = current;
+	tprintf ("start, context switching from: %d to %d\n", current, p2);
 	/* Perform signal (p2 sem).  Without the mutex lock as we have
 	   already obtained it above.  */
 	if (threadArray[p2].waiting)
 	  {
 	    /* p2 is blocked on the condition variable, release it.  */
-	    tprintf ("p1 = %d cond_signal to p2 (%d)\n", currentThread, p2);
+	    tprintf ("p1 = %d cond_signal to p2 (%d)\n", current, p2);
 	  __gthread_cond_signal (&threadArray[p2].run_counter);
-	  tprintf ("after p1 = %d cond_signal to p2 (%d)\n", currentThread, p2);
+	  tprintf ("after p1 = %d cond_signal to p2 (%d)\n", current, p2);
 	  }
 	else
 	  {
 	    /* p2 hasn't reached the condition variable, so bump value
 	       ready for p2 to test.  */
 	    tprintf ("no need for thread %d to cond_signal - bump %d value (pre) = %d\n",
-		     currentThread, p2, threadArray[p2].value);
+		     current, p2, threadArray[p2].value);
 	    threadArray[p2].value++;
 	  }
 	/* Perform wait (old sem).  Again without obtaining mutex as
 	   we've already claimed it.  */
 	if (threadArray[old].value == 0)
 	  {
-	    currentThread = p2;
 	    /* Record we are about to wait on the condition variable.  */
 	    threadArray[old].waiting = true;
 	    __gthread_cond_wait (&threadArray[old].run_counter, &lock);
 	    threadArray[old].waiting = false;
 	    /* We are running again.  */
-	    currentThread = old;
 	  }
 	else
 	  {
 	    tprintf ("(currentThread = %d) no need for thread %d to cond_wait - taking value (pre) = %d\n",
-		     currentThread, old, threadArray[old].value);
+		     current, old, threadArray[old].value);
 	    /* No need to block as we have been told a signal has
                effectively already been recorded.  We remove the signal
                notification without blocking.  */
 	    threadArray[old].value--;
 	  }
-	tprintf ("end, context back to %d\n", currentThread);
-	if (currentThread != old)
-	  M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		       "wrong process id");
+	tprintf ("end, context back to %d\n", current);
+	if (current != old)
+	  m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
+			     "wrong process id");
       }
   }
   __gthread_mutex_unlock (&lock);
@@ -494,15 +505,15 @@ EXPORT(init) (void)
       semArray = (threadSem **)malloc (sizeof (threadSem *) * SEM_POOL);
 #endif
       /* Create a thread control block for the main program (or process).  */
-      currentThread = newThread ();  /* For the current initial thread.  */
-      threadArray[currentThread].p = pthread_self ();
-      threadArray[currentThread].tid = currentThread;
-      __GTHREAD_COND_INIT_FUNCTION (&threadArray[currentThread].run_counter);
-      threadArray[currentThread].interruptLevel = 0;
+      int tid = newThread ();  /* For the current initial thread.  */
+      threadArray[tid].p = pthread_self ();
+      threadArray[tid].tid = tid;
+      __GTHREAD_COND_INIT_FUNCTION (&threadArray[tid].run_counter);
+      threadArray[tid].interruptLevel = 0;
       /* The line below shouldn't be necessary as we are already running.  */
-      threadArray[currentThread].proc = never;
-      threadArray[currentThread].waiting = false;   /* We are running.  */
-      threadArray[currentThread].value = 0;   /* No signal from anyone yet.  */
+      threadArray[tid].proc = never;
+      threadArray[tid].waiting = false;   /* We are running.  */
+      threadArray[tid].value = 0;   /* No signal from anyone yet.  */
       tprintf ("RTco initialized completed\n");
       __gthread_mutex_unlock (&lock);
     }
@@ -512,7 +523,7 @@ EXPORT(init) (void)
 extern "C" void __attribute__((__constructor__))
 M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("RTco",
-			M2EXPORT(init), M2EXPORT(fini),
-			M2EXPORT(dep));
+  m2iso_M2RTS_RegisterModule ("RTco", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

@@ -1,0 +1,120 @@
+DEFINITION MODULE AdvMath ;
+
+EXPORT QUALIFIED RequiredToParry,
+                 RequiredToAttack,
+                 RequiredToThrust,
+                 RequiredToFireArrow,
+                 RequiredToFireMagic,
+                 RequiredToMove,
+                 RequiredToMagicShoes,
+                 RequiredToMagicParry,
+                 RequiredToMagicAttack,
+                 RequiredToMagicThrust,
+
+                 DammageByParry,
+                 DammageByAttack,
+                 DammageByThrust,
+                 DammageByFireArrow,
+                 DammageByFireMagic,
+                 DammageByHandGrenade,
+                 DammageByHotIron,
+                 DammageByMagicParry,
+                 DammageByMagicAttack,
+                 DammageByMagicThrust,
+
+                 MagicKey,
+                 CrystalBall,
+                 MagicSpring,
+                 SackOfCoal1,
+                 SackOfCoal2,
+                 HotIron,
+                 HandGrenade,
+                 MagicSword,
+                 MagicShoes,
+                 SleepPotion,
+                 LumpOfIron,
+                 TreasTrove,
+                 SpeedPotion,
+                 MagicShield,
+                 VisionChest,
+                 QuiverNormal,
+                 QuiverMagic,
+                 HealingPotion,
+                 LowFreePool,
+                 HighFreePool,
+                 MaxNoOfTreasures,
+
+                 UpDateWoundsAndFatigue,
+                 StrengthToParry,
+                 StrengthToAttack,
+                 StrengthToThrust,
+                 StrengthToFireArrow,
+                 StrengthToFireMagic,
+                 StrengthToMove ;
+
+
+CONST
+   RequiredToParry       =   3 ;
+   RequiredToAttack      =   5 ;
+   RequiredToThrust      =   9 ;
+   RequiredToFireArrow   =  10 ;
+   RequiredToFireMagic   =  15 ;
+   RequiredToMove        =   6 ;  (* For 9 squares *)
+   RequiredToMagicShoes  =   3 ;  (* For 9 squares *)
+   RequiredToMagicParry  =   1 ;
+   RequiredToMagicAttack =   3 ;
+   RequiredToMagicThrust =   6 ;
+
+   DammageByParry        =   7 ;
+   DammageByAttack       =  13 ;
+   DammageByThrust       =  17 ;
+   DammageByFireArrow    =  23 ;
+   DammageByFireMagic    =  74 ;
+   DammageByHandGrenade  =  69 ;
+   DammageByHotIron      =  19 ;
+   DammageByMagicParry   =   8 ;
+   DammageByMagicAttack  =  14 ;
+   DammageByMagicThrust  =  18 ;
+
+   MagicKey              =   1 ;  (* Treasure Numbers *)
+   CrystalBall           =   2 ;
+   MagicSpring           =   3 ;
+   SackOfCoal1           =   4 ;
+   SackOfCoal2           =   5 ;
+   HotIron               =   6 ;
+   HandGrenade           =   7 ;
+   MagicSword            =   8 ;
+   MagicShoes            =   9 ;
+   SleepPotion           =  10 ;
+   LumpOfIron            =  11 ;
+   TreasTrove            =  12 ;
+   SpeedPotion           =  13 ;
+   MagicShield           =  14 ;
+   VisionChest           =  15 ;
+   QuiverNormal          =  16 ;
+   QuiverMagic           =  17 ;
+   HealingPotion         =  18 ;
+
+   MaxNoOfTreasures      =  31 ;  (* An upper limit *)
+   HighFreePool          = MaxNoOfTreasures ;
+   LowFreePool           =  19 ;  (* start of dynamic treasures. (see AdvMath.def for static list).  *)
+
+TYPE
+   FreePool     = [LowFreePool..HighFreePool] ;
+
+PROCEDURE UpDateWoundsAndFatigue (p: CARDINAL) ;
+
+PROCEDURE StrengthToParry (VAR ok: BOOLEAN) ;
+
+PROCEDURE StrengthToAttack (VAR ok: BOOLEAN) ;
+
+PROCEDURE StrengthToThrust (VAR ok: BOOLEAN) ;
+
+PROCEDURE StrengthToFireArrow (VAR ok: BOOLEAN) ;
+
+PROCEDURE StrengthToFireMagic (VAR ok: BOOLEAN) ;
+
+PROCEDURE StrengthToMove (n: CARDINAL ; VAR ok: BOOLEAN) ;
+
+
+END AdvMath.

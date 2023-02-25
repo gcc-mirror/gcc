@@ -29,7 +29,7 @@ load_lib gm2-torture.exp
 #  attempts to use gm2 -fmakeall to build a syntactally incorrect program.
 #
 
-gm2_init "$srcdir/../gm2/gm2-libs $srcdir/gm2/switches/makeall/fail" -fmakeall
+gm2_init "${srcdir}/../gm2/gm2-libs $srcdir/gm2/switches/makeall/fail" -fmakeall
 
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {

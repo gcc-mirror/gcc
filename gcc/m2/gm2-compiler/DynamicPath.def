@@ -1,4 +1,4 @@
-(* DynamicStringPath.def implements a path for DynamicStrings.
+(* DynamicPath.def implements a path for DynamicStrings.
 
 Copyright (C) 2001-2023 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
@@ -24,40 +24,12 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  *)
 
-DEFINITION MODULE DynamicStringPath ;  (*!m2iso+gm2*)
+DEFINITION MODULE DynamicPath ;  (*!m2iso+gm2*)
 
 FROM DynamicStrings IMPORT String ;
 
 TYPE
    PathList ;
-
-
-(*
-   GetUserPath - returns the current UserPath.
-*)
-
-PROCEDURE GetUserPath () : PathList ;
-
-
-(*
-   GetSystemPath - returns the current SystemPath.
-*)
-
-PROCEDURE GetSystemPath () : PathList ;
-
-
-(*
-   SetUserPath - assigns UserPath to pl.
-*)
-
-PROCEDURE SetUserPath (pl: PathList) ;
-
-
-(*
-   SetSystemPath - assigns SystemPath to pl.
-*)
-
-PROCEDURE SetSystemPath (pl: PathList) ;
 
 
 (*
@@ -86,10 +58,6 @@ PROCEDURE Cons (pl: PathList; str: String) : PathList ;
 
 (*
    ConsList - concatenates path list left and right together.
-              It always returns NIL which should be assigned
-              to the callers right parameter after ConsList
-              has been completed signifying that right should
-              no longer be accessed.
 *)
 
 PROCEDURE ConsList (left, right: PathList) : PathList ;
@@ -110,4 +78,11 @@ PROCEDURE Stash (VAR pl: PathList) : PathList ;
 PROCEDURE FindFileName (filename: String; pl: PathList) : String ;
 
 
-END DynamicStringPath.
+(*
+   DumpPath - debugging dump of the pathlist.
+*)
+
+PROCEDURE DumpPath (name: String; pl: PathList) ;
+
+
+END DynamicPath.

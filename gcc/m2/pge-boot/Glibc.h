@@ -305,6 +305,7 @@ EXTERN void * libc_memset (void * s, int c, size_t size);
 
 EXTERN void * libc_memmove (void * dest, void * src, size_t size);
 EXTERN int libc_printf (const char *format_, unsigned int _format_high, ...);
+EXTERN int libc_snprintf (void *dest, size_t length, const char *format_, unsigned int _format_high, ...);
 
 /*
    setenv - sets environment variable, name, to value.
