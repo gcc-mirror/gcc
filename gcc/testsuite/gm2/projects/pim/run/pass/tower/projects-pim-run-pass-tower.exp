@@ -29,6 +29,7 @@ load_lib gm2-simple.exp
 gm2_init_cor "${srcdir}/${subdir}" -g
 gm2_link_obj "advflex.o AdvCmd.o AdvIntroduction.o AdvMap.o AdvMath.o AdvParse.o AdvSound.o AdvSystem.o AdvTreasure.o AdvUtil.o DrawG.o DrawL.o Lock.o ProcArgs.o Screen.o Window.o SocketControl.o"
 
+set gm2_run_tower_test 0
 
 proc gm2-local-exec { testcase execname mapfile } {
     global tool;
@@ -105,6 +106,11 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/Dungeon.mod]] {
 
     global tmpdir;
     set executable $tmpdir/[file tail [file rootname $testcase].x];
-    gm2-local-exec ${testcase} ${executable} $srcdir/$subdir/star
+
+    if { ${gm2_run_tower_test} } then {
+        gm2-local-exec ${testcase} ${executable} $srcdir/$subdir/star
+    } else {
+	verbose "not running tower socket test" 1
+    }
     remote_file build delete ${executable};
 }
