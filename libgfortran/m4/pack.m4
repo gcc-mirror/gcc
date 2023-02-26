@@ -97,6 +97,9 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 
   dim = GFC_DESCRIPTOR_RANK (array);
 
+  sstride[0] = 0; /* Avoid warnings if not initialized.  */
+  mstride[0] = 0;
+
   mptr = mask->base_addr;
 
   /* Use the same loop for all logical types, by using GFC_LOGICAL_1

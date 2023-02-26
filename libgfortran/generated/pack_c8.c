@@ -96,6 +96,9 @@ pack_c8 (gfc_array_c8 *ret, const gfc_array_c8 *array,
 
   dim = GFC_DESCRIPTOR_RANK (array);
 
+  sstride[0] = 0; /* Avoid warnings if not initialized.  */
+  mstride[0] = 0;
+
   mptr = mask->base_addr;
 
   /* Use the same loop for all logical types, by using GFC_LOGICAL_1
