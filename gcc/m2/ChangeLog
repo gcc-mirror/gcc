@@ -1,3 +1,294 @@
+2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108261
+	* Make-lang.in (GM2-COMP-BOOT-DEFS): DynamicStringPath.def
+	remove.  DynamicPath.def add.
+	(GM2-COMP-BOOT-MODS): DynamicStringPath.mod remove.
+	DynamicPath.mod add.
+	* Make-maintainer.in (BUILD-BOOT-PPG-H): New dependency.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)%.o): $(BUILD-BOOT-PPG-H) Add
+	dependency.
+	(PGE-DEF): New definition.
+	(BUILD-BOOT-PG-H): New dependency.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)%.o): $(BUILD-BOOT-PG-H) Add
+	dependency.
+	(BUILD-BOOT-PGE-H): New dependency.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)%.o): $(BUILD-BOOT-PGE-H) Add
+	dependency.
+	(GM2PATH): Add pathname entries.
+	(m2/boot-bin/mc-devel$(exeext)): Add m2/mc-boot-ch/Gm2rtsdummy.o
+	dependency.
+	(m2/boot-bin/mc-opt$(exeext)): Fix -I path.
+	* gm2-compiler/DynamicStringPath.def: Renamed module to
+	DynamicPath.
+	(GetUserPath): Remove.
+	(GetSystemPath): Remove.
+	(SetUserPath): Remove.
+	(SetSystemPath): Remove.
+	(DumpPath): New procedure definition.
+	* gm2-compiler/DynamicStringPath.mod: Renamed module to
+	DynamicPath.
+	(GetUserPath): Remove.
+	(GetSystemPath): Remove.
+	(SetUserPath): Remove.
+	(SetSystemPath): Remove.
+	(DumpPath): Remove Debugging conditional.
+	* gm2-compiler/M2AsmUtil.mod: Import EqualArray, NulName and
+	GetLibName.
+	(Debugging): New declaration.
+	(GetFullSymName): Re-implemented to prefix (mange) libname
+	to any extern variable/procedure which is IsExportQualified.
+	* gm2-compiler/M2Comp.mod (qprintLibName): New procedure.
+	* gm2-compiler/M2Graph.mod (resolveImports): Add libname.
+	* gm2-compiler/M2Options.def (SetM2Prefix): New procedure.
+	(GetM2Prefix): New procedure function.
+	(SetM2PathName): New procedure.
+	(GetM2PathName): New procedure function.
+	* gm2-compiler/M2Options.mod: (SetM2Prefix): New procedure implemented.
+	(GetM2Prefix): New procedure function implemented.
+	(SetM2PathName): New procedure implemented.
+	(GetM2PathName): New procedure function implemented.
+	(RuntimeModuleOverride): Set to DefaultRuntimeModuleOverride.
+	* gm2-compiler/M2Quads.mod: Import GetLibName.
+	(SafeRequestSym) Pass result of GetLibName to RequestDependant.
+	(callRequestDependant): Add libname as a parameter.
+	(BuildM2InitFunction): Add libname as a parameter.
+	(BuildM2FiniFunction): Add libname as a parameter.
+	(BuildM2CtorFunction): Add libname as a parameter.
+	* gm2-compiler/M2Scaffold.mod (LookupModuleSym): Set LibName
+	if a definition source was found.
+	* gm2-compiler/M2Search.def (FindSourceFile): Add named library parameter.
+	(FindSourceDefFile): Add named library parameter.
+	(FindSourceModFile): Add named library parameter.
+	* gm2-compiler/M2Search.mod (FindSourceFile): Reimplement.
+	(FindSourceDefFile): Add named library parameter.
+	(FindSourceModFile): Add named library parameter.
+	* gm2-compiler/SymbolTable.def (MakeProcedureCtorExtern): Add
+	libname parameter.
+	(PutLibName): New procedure.
+	(GetLibName): New procedure function.
+	* gm2-compiler/SymbolTable.mod (MakeProcedureCtorExtern): Add
+	libname parameter.
+	(GenName): Add libname parameter.
+	(InitCtorFields): Add moduleSym as a parameter.
+	(PutCtorExtern): Add libname parameter to GenName.
+	* gm2-gcc/init.cc (_M2_DynamicStringPath_init): Rename function...
+	(_M2_DynamicPath_init): ...to this.
+	(_M2_PathName_init): Added.
+	* gm2-gcc/m2decl.cc (m2decl_DeclareM2linkStaticInitialization):
+	Add m2pim as the manged component of the exported symbol.
+	(m2decl_DeclareM2linkForcedModuleInitOrder): Add m2pim mangle prefix.
+	* gm2-gcc/m2options.h (M2Options_SetM2Prefix): New function.
+	(M2Options_GetM2Prefix): New function.
+	(M2Options_SetM2PathName): New function.
+	(M2Options_GetM2PathName): New function.
+	* gm2-lang.cc (push_back_Ipath): New function.
+	(add_one_import_path): New function.
+	(gm2_langhook_handle_option): Record -I component.  Call
+	SetM2PathName when -fm2-pathname= is seen.  Record -fm2-pathnameI
+	component.  Call SetM2Prefix when -fm2-prefix= is seen.
+	(gm2_langhook_post_options): Iterative over pathname entries
+	and call SetM2PathName, SetSearchPath as appropriate.
+	* gm2-libs-iso/M2RTS.def (ConstructModules): Add libname parameter.
+	(DeconstructModules): Add libname parameter.
+	(RegisterModule): Add libname parameter.
+	(RequestDependant): Add libname parameter.
+	* gm2-libs-iso/M2RTS.mod (ConstructModules): Add libname parameter.
+	(DeconstructModules): Add libname parameter.
+	(RegisterModule): Add libname parameter.
+	(RequestDependant): Add libname parameter.
+	* gm2-libs-min/M2RTS.def (ConstructModules): Add libname parameter.
+	(DeconstructModules): Add libname parameter.
+	(RegisterModule): Add libname parameter.
+	(RequestDependant): Add libname parameter.
+	* gm2-libs-min/M2RTS.mod (ConstructModules): Add libname parameter.
+	(DeconstructModules): Add libname parameter.
+	(RegisterModule): Add libname parameter.
+	(RequestDependant): Add libname parameter.
+	* gm2-libs/M2Dependent.def (ConstructModules): Add libname parameter.
+	(DeconstructModules): Add libname parameter.
+	(RegisterModule): Add libname parameter.
+	(RequestDependant): Add libname parameter.
+	* gm2-libs/M2Dependent.mod (ConstructModules): Add libname parameter.
+	(DeconstructModules): Add libname parameter.
+	(RegisterModule): Add libname parameter.
+	(RequestDependant): Add libname parameter.
+	* gm2-libs/M2RTS.def (ConstructModules): Add libname parameter.
+	(DeconstructModules): Add libname parameter.
+	(RegisterModule): Add libname parameter.
+	(RequestDependant): Add libname parameter.
+	* gm2-libs/M2RTS.mod (ConstructModules): Add libname parameter.
+	(DeconstructModules): Add libname parameter.
+	(RegisterModule): Add libname parameter.
+	(RequestDependant): Add libname parameter.
+	* gm2-libs/RTint.mod (FindVector): Rename variables.
+	(initInputVector): Rename variables.
+	(initOutputVector): Rename variables.
+	(InitTimeVector): Rename variables.
+	(FindVectorNo): Rename variables.
+	(FindPendingVector): Rename variables.
+	(ReArmTimeVector): Rename variables.
+	(GetTimeVector): Rename variables.
+	(AttachVector): Rename variables.
+	(AttachVector): Rename variables.
+	(IncludeVector): Rename variables.
+	(ExcludeVector): Rename variables.
+	(AddFd): Rename variables.
+	(AddFd): Rename variables.
+	(DumpPendingQueue): Rename variables.
+	(stop): Remove.
+	(activatePending): Rename variables.
+	(Listen): Rename variables.
+	* gm2-libs/libc.def (snprintf): New function.
+	* gm2-libs/sckt.def: Change all exported identifiers to be
+	export qualified.
+	* gm2spec.cc (push_back_Ipath): New function.
+	(add_m2_I_path): New function.
+	(lang_specific_driver): Skip -fm2-pathname= and remember pathname.
+	Skip -I and record the path and current pathname.  Call add_m2_I_path.
+	* lang-specs.h: Replace %{I*} with %{fm2-pathname*}.
+	* lang.opt (-fm2-pathname=): New entry.
+	(-fm2-pathname): New entry.
+	(-fm2-prefix=): New entry.
+	* mc-boot-ch/GUnixArgs.cc (_M2_UnixArgs_dep): New function.
+	(_M2_UnixArgs_ctor::_M2_UnixArgs_ctor): New method.
+	* mc-boot-ch/Glibc.c (libc_snprintf): New function.
+	* mc-boot-ch/m2rts.h (M2RTS_RequestDependant): Changed prototype.
+	(M2RTS_RegisterModule): Changed prototype.
+	* mc-boot/GDynamicStrings.c: Rebuild.
+	* mc-boot/GFIO.c: Rebuild.
+	* mc-boot/GIndexing.c: Rebuild.
+	* mc-boot/GM2Dependent.c: Rebuild.
+	* mc-boot/GM2Dependent.h: Rebuild.
+	* mc-boot/GM2EXCEPTION.c: Rebuild.
+	* mc-boot/GM2RTS.c: Rebuild.
+	* mc-boot/GM2RTS.h: Rebuild.
+	* mc-boot/GPushBackInput.c: Rebuild.
+	* mc-boot/GRTExceptions.c: Rebuild.
+	* mc-boot/GRTint.c: Rebuild.
+	* mc-boot/GStdIO.c: Rebuild.
+	* mc-boot/GStringConvert.c: Rebuild.
+	* mc-boot/GSysStorage.c: Rebuild.
+	* mc-boot/Gdecl.c: Rebuild.
+	* mc-boot/Gkeyc.c: Rebuild.
+	* mc-boot/Glibc.h: Rebuild.
+	* mc-boot/GmcComment.c: Rebuild.
+	* mc-boot/GmcComp.c: Rebuild.
+	* mc-boot/GmcDebug.c: Rebuild.
+	* mc-boot/GmcMetaError.c: Rebuild.
+	* mc-boot/GmcStack.c: Rebuild.
+	* mc-boot/GnameKey.c: Rebuild.
+	* mc-boot/GsymbolKey.c: Rebuild.
+	* pge-boot/GASCII.c: Rebuild.
+	* pge-boot/GArgs.c: Rebuild.
+	* pge-boot/GAssertion.c: Rebuild.
+	* pge-boot/GDebug.c: Rebuild.
+	* pge-boot/GDynamicStrings.c: Rebuild.
+	* pge-boot/GFIO.c: Rebuild.
+	* pge-boot/GIO.c: Rebuild.
+	* pge-boot/GIndexing.c: Rebuild.
+	* pge-boot/GLists.c: Rebuild.
+	* pge-boot/GM2Dependent.c: Rebuild.
+	* pge-boot/GM2Dependent.h: Rebuild.
+	* pge-boot/GM2EXCEPTION.c: Rebuild.
+	* pge-boot/GM2RTS.c: Rebuild.
+	* pge-boot/GM2RTS.h: Rebuild.
+	* pge-boot/GNameKey.c: Rebuild.
+	* pge-boot/GNumberIO.c: Rebuild.
+	* pge-boot/GOutput.c: Rebuild.
+	* pge-boot/GPushBackInput.c: Rebuild.
+	* pge-boot/GRTExceptions.c: Rebuild.
+	* pge-boot/GSFIO.c: Rebuild.
+	* pge-boot/GStdIO.c: Rebuild.
+	* pge-boot/GStorage.c: Rebuild.
+	* pge-boot/GStrCase.c: Rebuild.
+	* pge-boot/GStrIO.c: Rebuild.
+	* pge-boot/GStrLib.c: Rebuild.
+	* pge-boot/GSymbolKey.c: Rebuild.
+	* pge-boot/GSysExceptions.c (_M2_SysExceptions_finish): Rename this...
+	(_M2_SysExceptions_fini): ... to this.
+	* pge-boot/GSysStorage.c: Rebuild.
+	(_M2_SysStorage_finish): Rename this...
+	(_M2_SysStorage_fini): ... to this.
+	* pge-boot/GUnixArgs.cc: New file.
+	* pge-boot/Gbnflex.c (_M2_bnflex_finish): Rename this...
+	(_M2_bnflex_fini): ... to this.
+	* pge-boot/Gerrno.c (_M2_errno_finish): Rename this...
+	(_M2_errno_fini): ... to this.
+	* pge-boot/Glibc.c (libc_snprintf): New function.
+	* pge-boot/Glibc.h (libc_snprintf): New prototype.
+	* pge-boot/Gpge.c (_M2_pge_finish): Rename this...
+	(_M2_pge_fini): ... to this.
+	* pge-boot/Gtermios.cc (_M2_termios_finish): Rename this...
+	(_M2_termios_fini): ... to this.
+	* pge-boot/main.c (_M2_RTExceptions_finish): Rename this...
+	(_M2_RTExceptions_fini): ... to this.
+	(_M2_M2EXCEPTION_finish): Rename this...
+	(_M2_M2EXCEPTION_fini): ... to this.
+	(_M2_M2RTS_finish): Rename this...
+	(_M2_M2RTS_fini): ... to this.
+	(_M2_SysExceptions_finish): Rename this...
+	(_M2_SysExceptions_fini): ... to this.
+	(_M2_StrLib_finish): Rename this...
+	(_M2_StrLib_fini): ... to this.
+	(_M2_errno_finish): Rename this...
+	(_M2_errno_fini): ... to this.
+	(_M2_termios_finish): Rename this...
+	(_M2_termios_fini): ... to this.
+	(_M2_IO_finish): Rename this...
+	(_M2_IO_fini): ... to this.
+	(_M2_StdIO_finish): Rename this...
+	(_M2_StdIO_fini): ... to this.
+	(_M2_Debug_finish): Rename this...
+	(_M2_Debug_fini): ... to this.
+	(_M2_SysStorage_finish): Rename this...
+	(_M2_SysStorage_fini): ... to this.
+	(_M2_Storage_finish): Rename this...
+	(_M2_Storage_fini): ... to this.
+	(_M2_StrIO_finish): Rename this...
+	(_M2_StrIO_fini): ... to this.
+	(_M2_DynamicStrings_finish): Rename this...
+	(_M2_DynamicStrings_fini): ... to this.
+	(_M2_Assertion_finish): Rename this...
+	(_M2_Assertion_fini): ... to this.
+	(_M2_Indexing_finish): Rename this...
+	(_M2_Indexing_fini): ... to this.
+	(_M2_NameKey_finish): Rename this...
+	(_M2_NameKey_fini): ... to this.
+	(_M2_NumberIO_finish): Rename this...
+	(_M2_NumberIO_fini): ... to this.
+	(_M2_PushBackInput_finish): Rename this...
+	(_M2_PushBackInput_fini): ... to this.
+	(_M2_SymbolKey_finish): Rename this...
+	(_M2_SymbolKey_fini): ... to this.
+	(_M2_UnixArgs_finish): Rename this...
+	(_M2_UnixArgs_fini): ... to this.
+	(_M2_FIO_finish): Rename this...
+	(_M2_FIO_fini): ... to this.
+	(_M2_SFIO_finish): Rename this...
+	(_M2_SFIO_fini): ... to this.
+	(_M2_StrCase_finish): Rename this...
+	(_M2_StrCase_fini): ... to this.
+	(_M2_bnflex_finish): Rename this...
+	(_M2_bnflex_fini): ... to this.
+	(_M2_Lists_finish): Rename this...
+	(_M2_Lists_fini): ... to this.
+	(_M2_Args_finish): Rename this...
+	(_M2_Args_fini): ... to this.
+	(_M2_Output_finish): Rename this...
+	(_M2_Output_fini): ... to this.
+	(_M2_pge_finish): Rename this...
+	(_M2_pge_fini): ... to this.
+	* plugin/m2rte.cc (m2_runtime_error_calls): Change all runtime
+	procedure names to their name mangled counterparts.
+	* gm2-libs-iso/wrapsock.c: Removed.
+	* gm2-libs-iso/wraptime.c: Removed.
+	* mc-boot/Gpth.h: Removed.
+	* gm2-compiler/PathName.def: New file.
+	* gm2-compiler/PathName.mod: New file.
+	* gm2-compiler/DynamicPath.def: New file.
+	* gm2-compiler/DynamicPath.mod: New file.
+
 2023-02-06  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/108135

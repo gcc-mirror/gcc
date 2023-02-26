@@ -1,3 +1,247 @@
+2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108261
+	* libm2cor/KeyBoardLEDs.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(KeyBoardLEDs_SwitchScroll): EXPORT.
+	(KeyBoardLEDs_SwitchNum): EXPORT.
+	(KeyBoardLEDs_SwitchCaps): EXPORT.
+	(KeyBoardLEDs_SwitchLeds): EXPORT.
+	(_M2_KeyBoardLEDs_init): M2EXPORT.
+	(_M2_KeyBoardLEDs_finish): M2EXPORT.
+	(_M2_KeyBoardLEDs_dep): M2EXPORT.
+	* libm2cor/Makefile.am (libm2cor_la_M2FLAGS): Define
+	path names.
+	* libm2cor/Makefile.in: Rebuild.
+	* libm2iso/ErrnoCategory.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(ErrnoCategory_IsErrnoHard): EXPORT.
+	(ErrnoCategory_IsErrnoSoft): EXPORT.
+	(ErrnoCategory_UnAvailable): EXPORT.
+	(ErrnoCategory_GetOpenResults): EXPORT.
+	(_M2_ErrnoCategory_init): M2EXPORT.
+	(_M2_ErrnoCategory_fini): M2EXPORT.
+	(_M2_ErrnoCategory_dep): M2EXPORT.
+	(_M2_ErrnoCategory_ctor): M2EXPORT.
+	* libm2iso/Makefile.am (libm2iso_la_M2FLAGS): Define
+	path names.
+	* libm2iso/Makefile.in: Rebuild.
+	* libm2iso/RTco.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(newSem): Add module libname prefix to HaltC.
+	(currentThread): Remove variable and replace with a function.
+	(never): Add module libname prefix to HaltC.
+	(initThread): Add module libname prefix to HaltC.
+	* libm2iso/m2rts.h (str): New define.
+	(M2RTS_RequestDependant): Change to the mangled name equivalent.
+	(M2RTS_RegisterModule): Change to the mangled name equivalent.
+	(m2iso_M2RTS_RequestDependant): Add libname parameter.
+	(m2iso_M2RTS_RegisterModule): Add libname parameter.
+	(m2pim_M2RTS_RegisterModule): Add libname parameter.
+	(_M2_M2RTS_init): Rename this...
+	(m2iso_M2_M2RTS_init): ...to this.
+	(M2RTS_ConstructModules): Change to the mangled name equivalent.
+	(M2RTS_Terminate): Change to the mangled name equivalent.
+	(M2RTS_DeconstructModules): Change to the mangled name equivalent.
+	(m2iso_M2RTS_ConstructModules): Add libname parameter.
+	(m2iso_M2RTS_Terminate): Add libname parameter.
+	(m2iso_M2RTS_DeconstructModules): Add libname parameter.
+	(M2RTS_HaltC): Rename this...
+	(m2iso_M2RTS_HaltC): ...to this.
+	* libm2iso/wrapsock.c (EXPORT): New define.
+	(IMPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(m2iso_M2RTS_RequestDependant): Add prototype.
+	(wrapsock_clientOpen): EXPORT.
+	(wrapsock_clientOpenIP): EXPORT.
+	(wrapsock_getClientPortNo): EXPORT.
+	(wrapsock_getClientHostname): EXPORT.
+	(wrapsock_getClientSocketFd): EXPORT.
+	(wrapsock_getClientIP): EXPORT.
+	(wrapsock_getPushBackChar): EXPORT.
+	(wrapsock_setPushBackChar): EXPORT.
+	(wrapsock_getSizeOfClientInfo): EXPORT.
+	(_M2_wrapsock_init): M2EXPORT.
+	(_M2_wrapsock_fini): M2EXPORT.
+	(ctor): M2EXPORT.  New function.
+	* libm2iso/wraptime.c: Rename to...
+	* libm2iso/wraptime.cc: ...this.
+	(EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(wraptime_InitTimeval): EXPORT.
+	(wraptime_KillTimeval): EXPORT.
+	(wraptime_InitTimezone): EXPORT.
+	(wraptime_KillTimezone): EXPORT.
+	(wraptime_InitTM): EXPORT.
+	(wraptime_KillTM): EXPORT.
+	(wraptime_gettimeofday): EXPORT.
+	(wraptime_settimeofday): EXPORT.
+	(wraptime_GetFractions): EXPORT.
+	(wraptime_localtime_r): EXPORT.
+	(wraptime_GetYear): EXPORT.
+	(wraptime_GetMonth): EXPORT.
+	(wraptime_GetDay): EXPORT.
+	(wraptime_GetHour): EXPORT.
+	(wraptime_GetMinute): EXPORT.
+	(wraptime_GetSecond): EXPORT.
+	(wraptime_GetSummerTime): EXPORT.
+	(wraptime_GetDST): EXPORT.
+	(wraptime_SetTimezone): EXPORT.
+	(wraptime_SetTimeval): EXPORT.
+	(_M2_wraptime_init): M2EXPORT.
+	(_M2_wraptime_fini): M2EXPORT.
+	(ctor): M2EXPORT.  New function.
+	* libm2log/Makefile.am (libm2log_la_M2FLAGS): Define
+	path names.
+	* libm2log/Makefile.in:
+	* libm2min/Makefile.am (libm2min_la_M2FLAGS): Define
+	path names.
+	* libm2min/Makefile.in:
+	* libm2pim/Makefile.am (libm2pim_la_M2FLAGS): Define
+	path names.
+	* libm2pim/Makefile.in:
+	* libm2pim/Selective.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(Selective_Select): EXPORT.
+	(Selective_InitTime): EXPORT.
+	(Selective_GetTime): EXPORT.
+	(Selective_SetTime): EXPORT.
+	(Selective_KillTime): EXPORT.
+	(Selective_InitSet): EXPORT.
+	(Selective_KillSet): EXPORT.
+	(Selective_FdZero): EXPORT.
+	(Selective_FdSet): EXPORT.
+	(Selective_FdClr): EXPORT.
+	(Selective_FdIsSet): EXPORT.
+	(Selective_GetTimeOfDay): EXPORT.
+	(Selective_MaxFdsPlusOne): EXPORT.
+	(Selective_WriteCharRaw): EXPORT.
+	(Selective_ReadCharRaw): EXPORT.
+	(_M2_Selective_init): M2EXPORT.
+	(_M2_Selective_fini): M2EXPORT.
+	(_M2_Selective_dep): M2EXPORT.
+	(_M2_Selective_ctor): M2EXPORT.
+	* libm2pim/SysExceptions.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(SysExceptions_InitExceptionHandlers): EXPORT.
+	(_M2_SysExceptions_init): M2EXPORT.
+	(_M2_SysExceptions_fini): M2EXPORT.
+	(_M2_SysExceptions_dep): M2EXPORT.
+	(_M2_SysExceptions_ctor): M2EXPORT.
+	* libm2pim/UnixArgs.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(UnixArgs_GetArgC): EXPORT.
+	(UnixArgs_GetArgV): EXPORT.
+	(UnixArgs_GetEnvV): EXPORT.
+	(_M2_UnixArgs_init): M2EXPORT.
+	(_M2_UnixArgs_fini): M2EXPORT.
+	(_M2_UnixArgs_dep): M2EXPORT.
+	(_M2_UnixArgs_ctor): M2EXPORT.
+	* libm2pim/cgetopt.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(cgetopt_getopt): EXPORT.
+	(cgetopt_getopt_long): EXPORT.
+	(cgetopt_getopt_long_only): EXPORT.
+	(cgetopt_InitOptions): EXPORT.
+	(cgetopt_KillOptions): EXPORT.
+	(cgetopt_SetOption): EXPORT.
+	(cgetopt_GetLongOptionArray): EXPORT.
+	(_M2_cgetopt_init): M2EXPORT.
+	(_M2_cgetopt_fini): M2EXPORT.
+	(_M2_cgetopt_dep): M2EXPORT.
+	(_M2_cgetopt_ctor): M2EXPORT.
+	* libm2pim/dtoa.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(dtoa_strtod): EXPORT.
+	(dtoa_calcmaxsig): EXPORT.
+	(dtoa_calcdecimal): EXPORT.
+	(dtoa_calcsign): EXPORT.
+	(dtoa_dtoa): EXPORT.
+	(_M2_dtoa_init): M2EXPORT.
+	(_M2_dtoa_fini): M2EXPORT.
+	(_M2_dtoa_dep): M2EXPORT.
+	(_M2_dtoa_ctor): M2EXPORT.
+	* libm2pim/errno.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(errno_geterrno): EXPORT.
+	(_M2_errno_init): M2EXPORT.
+	(_M2_errno_fini): M2EXPORT.
+	(_M2_errno_dep): M2EXPORT.
+	(_M2_errno_ctor): M2EXPORT.
+	* libm2pim/ldtoa.cc (EXPORT): New define.
+	(IMPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(dtoa_calcmaxsig): EXPORT.
+	(dtoa_calcdecimal): EXPORT.
+	(dtoa_calcsign): EXPORT.
+	(ldtoa_strtold): EXPORT.
+	(ldtoa_ldtoa): EXPORT.
+	(_M2_ldtoa_init): M2EXPORT.
+	(_M2_ldtoa_fini): M2EXPORT.
+	(_M2_ldtoa_dep): M2EXPORT.
+	(_M2_ldtoa_ctor): M2EXPORT.
+	* libm2pim/sckt.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(tcpServerEstablishPort): EXPORT.
+	(tcpServerEstablish): EXPORT.
+	(tcpServerAccept): EXPORT.
+	(tcpServerPortNo): EXPORT.
+	(tcpServerSocketFd): EXPORT.
+	(getLocalIP): EXPORT.
+	(tcpServerIP): EXPORT.
+	(tcpServerClientIP): EXPORT.
+	(tcpServerClientPortNo): EXPORT.
+	(tcpClientSocket): EXPORT.
+	(tcpClientSocketIP): EXPORT.
+	(tcpClientConnect): EXPORT.
+	(tcpClientPortNo): EXPORT.
+	(tcpClientSocketFd): EXPORT.
+	(tcpClientIP): EXPORT.
+	(_M2_sckt_init): M2EXPORT.
+	(_M2_sckt_finish): M2EXPORT.
+	(_M2_sckt_dep): M2EXPORT.
+	(_M2_sckt_ctor): M2EXPORT.
+	* libm2pim/termios.cc (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(_M2_termios_init): M2EXPORT.
+	(_M2_termios_fini): M2EXPORT.
+	(_M2_termios_dep): M2EXPORT.
+	(_M2_termios_ctor): M2EXPORT.
+	* libm2pim/wrapc.c (EXPORT): New define.
+	(M2EXPORT): New define.
+	(M2LIBNAME): New define.
+	(wrapc_strtime): EXPORT.
+	(wrapc_filesize): EXPORT.
+	(wrapc_filemtime): EXPORT.
+	(wrapc_fileinode): EXPORT.
+	(wrapc_getrand): EXPORT.
+	(wrapc_getusername): EXPORT.
+	(wrapc_getnameuidgid): EXPORT.
+	(wrapc_signbit): EXPORT.
+	(wrapc_signbitl): EXPORT.
+	(wrapc_signbitf): EXPORT.
+	(wrapc_isfinite): EXPORT.
+	(wrapc_isfinitel): EXPORT.
+	(wrapc_isfinitef): EXPORT.
+	(_M2_wrapc_init): M2EXPORT.
+	(_M2_wrapc_fini): M2EXPORT.
+	(_M2_wrapc_ctor): M2EXPORT.
+	* libm2pim/wrapc.cc: New file.
+
 2023-02-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR testsuite/108835

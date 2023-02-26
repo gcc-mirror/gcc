@@ -1,3 +1,23 @@
+2023-02-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/108923
+	* intrinsic.cc (get_intrinsic_dummy_arg,
+	set_intrinsic_dummy_arg): Rename the former to the latter.
+	Remove the return value, add a reference to the lhs as argument,
+	and do the pointer assignment inside the function.  Don't do
+	it if the pointer is already non-NULL.
+	(sort_actual): Update caller.
+
+2023-02-25  Harald Anlauf  <anlauf@gmx.de>
+
+	* arith.cc (gfc_real2int): Clear mpfr variable after use.
+
+2023-02-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/108621
+	* trans-expr.cc (gfc_conv_gfc_desc_to_cfi_desc): Skip setting of
+	bounds of CFI desc for 'pointer,intent(out)'.
+
 2023-02-24  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
 
 	* trans-decl.cc (gfc_finish_var_decl): Apply attribute.

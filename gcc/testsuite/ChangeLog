@@ -1,3 +1,102 @@
+2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/projects/pim/run/pass/tower/projects-pim-run-pass-tower.exp:
+	Also add conditional to gm2-simple-execute.
+
+2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/projects/pim/run/pass/tower/projects-pim-run-pass-tower.exp
+	(gm2_run_tower_test): New global variable.  Add conditional
+	before invoking gm2-local-exec.
+
+2023-02-25  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/multiline.exp (handle-multiline-outputs): Don't include the
+	quoted multiline pattern in the pass/fail output.
+
+2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108261
+	* gm2/examples/callingC/pass/examples-callingC-pass.exp: Tidy up
+	variable access.
+	* gm2/examples/callingC/run/pass/examples-callingC-run-pass.exp: Tidy up
+	variable access.
+	* gm2/examples/cpp/pass/examples-cpp-pass.exp: Tidy up
+	variable access.
+	* gm2/examples/cppDef/pass/examples-cppDef-pass.exp: Tidy up
+	variable access.
+	* gm2/examples/hello/pass/examples-hello-pass.exp: Tidy up
+	variable access.
+	* gm2/examples/map/pass/examples-map-pass.exp: Tidy up
+	variable access.
+	* gm2/iso/check/fail/iso-check-fail.exp: Add pathname.
+	* gm2/link/externalscaffold/pass/link-externalscaffold-pass.exp:
+	Add pathname.
+	* gm2/link/externalscaffold/pass/scaffold.c: Add mangled export name.
+	* gm2/pimlib/base/run/pass/FIO.mod: Updated test code.
+	* gm2/pimlib/base/run/pass/StrLib.mod: Updated test code.
+	* gm2/pimlib/base/run/pass/pimlib-base-run-pass.exp: Remove path.
+	* gm2/projects/pim/run/pass/random/projects-pim-run-pass-random.exp:
+	Tidy up variable access.
+	* gm2/switches/auto-init/fail/switches-auto-init-fail.exp: Add pathname.
+	* gm2/switches/check-all/pim2/fail/switches-check-all-pim2-fail.exp:
+	Add pathname.
+	* gm2/switches/makeall/fail/switches-makeall-fail.exp: Remove -fmakeall.
+	* gm2/switches/makeall/pass/switches-makeall-pass.exp: Remove -fmakeall.
+	* lib/gm2-simple.exp (gm2_keep_executable): New global variable.
+	(gm2_simple_execute): Keep executable if global is true.
+	* lib/gm2-torture.exp: Add ; after global variable access.
+	* lib/gm2.exp: Set up pathnames.
+	* gm2/projects/pim/run/pass/tower/AdvCmd.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvCmd.mod: New test.
+	* gm2/projects/pim/run/pass/tower/AdvIntroduction.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvIntroduction.mod: New test.
+	* gm2/projects/pim/run/pass/tower/AdvMap.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvMap.mod: New test.
+	* gm2/projects/pim/run/pass/tower/AdvMath.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvMath.mod: New test.
+	* gm2/projects/pim/run/pass/tower/AdvParse.bnf: New test.
+	* gm2/projects/pim/run/pass/tower/AdvParse.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvParse.mod: New test.
+	* gm2/projects/pim/run/pass/tower/AdvSound.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvSound.mod: New test.
+	* gm2/projects/pim/run/pass/tower/AdvSystem.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvSystem.mod: New test.
+	* gm2/projects/pim/run/pass/tower/AdvTreasure.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvTreasure.mod: New test.
+	* gm2/projects/pim/run/pass/tower/AdvUtil.def: New test.
+	* gm2/projects/pim/run/pass/tower/AdvUtil.mod: New test.
+	* gm2/projects/pim/run/pass/tower/DrawG.def: New test.
+	* gm2/projects/pim/run/pass/tower/DrawG.mod: New test.
+	* gm2/projects/pim/run/pass/tower/DrawL.def: New test.
+	* gm2/projects/pim/run/pass/tower/DrawL.mod: New test.
+	* gm2/projects/pim/run/pass/tower/Dungeon.mod: New test.
+	* gm2/projects/pim/run/pass/tower/Lock.def: New test.
+	* gm2/projects/pim/run/pass/tower/Lock.mod: New test.
+	* gm2/projects/pim/run/pass/tower/ProcArgs.def: New test.
+	* gm2/projects/pim/run/pass/tower/ProcArgs.mod: New test.
+	* gm2/projects/pim/run/pass/tower/Screen.def: New test.
+	* gm2/projects/pim/run/pass/tower/Screen.mod: New test.
+	* gm2/projects/pim/run/pass/tower/SocketControl.c: New test.
+	* gm2/projects/pim/run/pass/tower/SocketControl.def: New test.
+	* gm2/projects/pim/run/pass/tower/Window.def: New test.
+	* gm2/projects/pim/run/pass/tower/Window.mod: New test.
+	* gm2/projects/pim/run/pass/tower/adv.flex: New test.
+	* gm2/projects/pim/run/pass/tower/advflex.c: New test.
+	* gm2/projects/pim/run/pass/tower/advflex.def: New test.
+	* gm2/projects/pim/run/pass/tower/projects-pim-run-pass-tower.exp:
+	New test.
+	* gm2/projects/pim/run/pass/tower/star: New test.
+
+2023-02-25  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* gcc.target/xtensa/pr108919.c: New test.
+
+2023-02-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/108621
+	* gfortran.dg/c-interop/fc-descriptor-pr108621.f90: New test.
+
 2023-02-24  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
 
 	* gfortran.dg/weak-2.f90: New test.

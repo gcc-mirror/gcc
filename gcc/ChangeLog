@@ -1,3 +1,24 @@
+2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108261
+	* doc/gm2.texi (-fm2-pathname): New option documented.
+	(-fm2-pathnameI): New option documented.
+	(-fm2-prefix=): New option documented.
+	(-fruntime-modules=): Update default module list.
+
+2023-02-25  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/108919
+	* config/xtensa/xtensa-protos.h
+	(xtensa_prepare_expand_call): Rename to xtensa_expand_call.
+	* config/xtensa/xtensa.cc (xtensa_prepare_expand_call): Rename
+	to xtensa_expand_call.
+	(xtensa_expand_call): Emit the call and add a clobber expression
+	for the static chain to it in case of windowed ABI.
+	* config/xtensa/xtensa.md (call, call_value, sibcall)
+	(sibcall_value): Call xtensa_expand_call and complete expansion
+	right after that call.
+
 2023-02-24  Richard Biener  <rguenther@suse.de>
 
 	* vec.h (vec<T, A, vl_embed>::m_vecdata): Remove.
