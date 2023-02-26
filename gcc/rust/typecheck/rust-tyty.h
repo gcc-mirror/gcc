@@ -604,23 +604,7 @@ public:
     return identifier + subst_as_string ();
   }
 
-  bool is_concrete () const override final
-  {
-    if (is_unit ())
-      {
-	return !needs_substitution ();
-      }
-
-    for (auto &variant : variants)
-      {
-	for (auto &field : variant->get_fields ())
-	  {
-	    if (!field->is_concrete ())
-	      return false;
-	  }
-      }
-    return true;
-  }
+  bool is_concrete () const override final;
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;

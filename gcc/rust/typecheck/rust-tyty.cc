@@ -1111,6 +1111,30 @@ ADTType::as_string () const
 }
 
 bool
+ADTType::is_concrete () const
+{
+  if (is_unit ())
+    {
+      return !needs_substitution ();
+    }
+
+  for (auto &variant : variants)
+    {
+      bool is_num_variant
+	= variant->get_variant_type () == VariantDef::VariantType::NUM;
+      if (is_num_variant)
+	continue;
+
+      for (auto &field : variant->get_fields ())
+	{
+	  if (!field->is_concrete ())
+	    return false;
+	}
+    }
+  return true;
+}
+
+bool
 ADTType::can_eq (const BaseType *other, bool emit_errors) const
 {
   ADTCmp r (this, emit_errors);
