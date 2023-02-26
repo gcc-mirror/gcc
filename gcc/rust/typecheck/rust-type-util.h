@@ -30,12 +30,17 @@ class BaseType;
 
 namespace Resolver {
 
-extern bool
+bool
 query_type (HirId reference, TyTy::BaseType **result);
 
 TyTy::BaseType *
 unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 	    Location unify_locus);
+
+TyTy::BaseType *
+unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+		Location unify_locus, bool emit_errors, bool commit_if_ok,
+		bool implicit_infer_vars, bool cleanup);
 
 TyTy::BaseType *
 coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,

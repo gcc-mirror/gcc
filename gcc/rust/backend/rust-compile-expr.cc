@@ -26,7 +26,7 @@
 #include "rust-compile-block.h"
 #include "rust-compile-implitem.h"
 #include "rust-constexpr.h"
-#include "rust-unify.h"
+#include "rust-type-util.h"
 #include "rust-gcc.h"
 
 #include "fold-const.h"
@@ -2007,10 +2007,9 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 	{
 	  TyTy::BaseType *infer_impl_call
 	    = candidate_call->infer_substitions (expr_locus);
-	  monomorphized = Resolver::UnifyRules::Resolve (
-	    TyTy::TyWithLocation (infer_impl_call),
-	    TyTy::TyWithLocation (fntype), expr_locus, true /* commit */,
-	    true /* emit_errors */);
+	  monomorphized
+	    = Resolver::unify_site (ref, TyTy::TyWithLocation (infer_impl_call),
+				    TyTy::TyWithLocation (fntype), expr_locus);
 	}
 
       return CompileInherentImplItem::Compile (impl_item, ctx, monomorphized);

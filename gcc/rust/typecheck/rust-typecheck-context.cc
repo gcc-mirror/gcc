@@ -109,6 +109,16 @@ TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type) const
 }
 
 void
+TypeCheckContext::clear_type (TyTy::BaseType *ty)
+{
+  auto it = resolved.find (ty->get_ref ());
+  if (it == resolved.end ())
+    return;
+
+  resolved.erase (it);
+}
+
+void
 TypeCheckContext::insert_type_by_node_id (NodeId ref, HirId id)
 {
   rust_assert (node_id_refs.find (ref) == node_id_refs.end ());
