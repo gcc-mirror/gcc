@@ -36,7 +36,7 @@ UnifyRules::Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   TyTy::BaseType *result = r.go ();
 
   if (r.commit_flag)
-    r.commit (result);
+    UnifyRules::commit (lhs.get_ty (), rhs.get_ty (), result);
 
   bool failed = result->get_kind () == TyTy::TypeKind::ERROR;
   if (failed && r.emit_error)
@@ -58,19 +58,26 @@ UnifyRules::get_other ()
 }
 
 void
-UnifyRules::commit (TyTy::BaseType *resolved)
+UnifyRules::commit (TyTy::BaseType *base, TyTy::BaseType *other,
+		    TyTy::BaseType *resolved)
 {
-  resolved->append_reference (get_base ()->get_ref ());
-  resolved->append_reference (get_other ()->get_ref ());
-  for (auto ref : get_base ()->get_combined_refs ())
+  TypeCheckContext &context = *TypeCheckContext::get ();
+  Analysis::Mappings &mappings = *Analysis::Mappings::get ();
+
+  TyTy::BaseType *b = base->destructure ();
+  TyTy::BaseType *o = other->destructure ();
+
+  resolved->append_reference (b->get_ref ());
+  resolved->append_reference (o->get_ref ());
+  for (auto ref : b->get_combined_refs ())
     resolved->append_reference (ref);
-  for (auto ref : get_other ()->get_combined_refs ())
+  for (auto ref : o->get_combined_refs ())
     resolved->append_reference (ref);
 
-  get_other ()->append_reference (resolved->get_ref ());
-  get_other ()->append_reference (get_base ()->get_ref ());
-  get_base ()->append_reference (resolved->get_ref ());
-  get_base ()->append_reference (get_other ()->get_ref ());
+  o->append_reference (resolved->get_ref ());
+  o->append_reference (b->get_ref ());
+  b->append_reference (resolved->get_ref ());
+  b->append_reference (o->get_ref ());
 
   bool result_resolved = resolved->get_kind () != TyTy::TypeKind::INFER;
   bool result_is_infer_var = resolved->get_kind () == TyTy::TypeKind::INFER;
