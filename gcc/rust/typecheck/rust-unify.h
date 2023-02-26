@@ -32,6 +32,9 @@ public:
 				  TyTy::TyWithLocation rhs, Location locus,
 				  bool commit_flag, bool emit_error);
 
+  static void commit (TyTy::BaseType *base, TyTy::BaseType *other,
+		      TyTy::BaseType *resolved);
+
 protected:
   TyTy::BaseType *expect_inference_variable (TyTy::InferType *ltype,
 					     TyTy::BaseType *rtype);
@@ -69,7 +72,7 @@ private:
 	      Location locus, bool commit_flag, bool emit_error);
 
   void emit_type_mismatch () const;
-  void commit (TyTy::BaseType *resolved);
+
   TyTy::BaseType *go ();
 
   TyTy::BaseType *get_base ();
