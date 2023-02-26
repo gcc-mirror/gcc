@@ -577,13 +577,11 @@ win32_spawn (const char *executable,
 	     LPSTARTUPINFO si,
 	     LPPROCESS_INFORMATION pi)
 {
-  char *full_executable;
-  char *cmdline;
+  char *full_executable = NULL;
+  char *cmdline = NULL;
+  pid_t pid = (pid_t) -1;
   char **env_copy;
   char *env_block = NULL;
-
-  full_executable = NULL;
-  cmdline = NULL;
 
   if (env)
     {
@@ -622,13 +620,13 @@ win32_spawn (const char *executable,
 
   full_executable = find_executable (executable, search);
   if (!full_executable)
-    goto error;
+    goto exit;
   cmdline = argv_to_cmdline (argv);
   if (!cmdline)
-    goto error;
+    goto exit;
     
   /* Create the child process.  */  
-  if (!CreateProcess (full_executable, cmdline, 
+  if (CreateProcess (full_executable, cmdline,
 		      /*lpProcessAttributes=*/NULL,
 		      /*lpThreadAttributes=*/NULL,
 		      /*bInheritHandles=*/TRUE,
@@ -638,26 +636,17 @@ win32_spawn (const char *executable,
 		      si,
 		      pi))
     {
-      free (env_block);
-
-      free (full_executable);
-
-      return (pid_t) -1;
+      CloseHandle (pi->hThread);
+      pid = (pid_t) pi->hProcess;
     }
 
+ exit:
   /* Clean up.  */
-  CloseHandle (pi->hThread);
-  free (full_executable);
-  free (env_block);
-
-  return (pid_t) pi->hProcess;
-
- error:
   free (env_block);
   free (cmdline);
   free (full_executable);
 
-  return (pid_t) -1;
+  return pid;
 }
 
 /* Spawn a script.  This simulates the Unix script execution mechanism.
