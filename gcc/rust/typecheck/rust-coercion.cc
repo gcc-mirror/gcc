@@ -18,7 +18,7 @@
 
 #include "rust-hir-type-check-base.h"
 #include "rust-coercion.h"
-#include "rust-unify.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {
@@ -146,7 +146,7 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
 				      TyTy::PointerType *expected,
 				      Mutability to_mutbl)
 {
-  rust_debug ("coerce_unsafe_ptr(a={%s}, b={%s})",
+  rust_debug ("coerce_unsafe_ptr(receiver={%s}, expected={%s})",
 	      receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
 
   Mutability from_mutbl = Mutability::Imm;
@@ -184,13 +184,21 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
       return TypeCoercionRules::CoercionResult::get_error ();
     }
 
-  TyTy::PointerType *result
+  TyTy::PointerType *coerced_mutability
     = new TyTy::PointerType (receiver->get_ref (),
 			     TyTy::TyVar (element->get_ref ()), to_mutbl);
-  if (!result->can_eq (expected, false))
-    return CoercionResult::get_error ();
 
-  return CoercionResult{{}, result};
+  TyTy::BaseType *result
+    = unify_site_and (receiver->get_ref (), TyTy::TyWithLocation (expected),
+		      TyTy::TyWithLocation (coerced_mutability),
+		      Location () /*unify_locus*/, false /*emit_errors*/,
+		      true /*commit_if_ok*/, true /*infer*/,
+		      true /*cleanup on error*/);
+  bool unsafe_ptr_coerceion_ok = result->get_kind () != TyTy::TypeKind::ERROR;
+  if (unsafe_ptr_coerceion_ok)
+    return CoercionResult{{}, result};
+
+  return TypeCoercionRules::CoercionResult::get_error ();
 }
 
 /// Reborrows `&mut A` to `&mut B` and `&(mut) A` to `&B`.
@@ -220,9 +228,8 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 	// back to a final unity anyway
 	rust_debug ("coerce_borrowed_pointer -- unify");
 	TyTy::BaseType *result
-	  = UnifyRules::Resolve (TyTy::TyWithLocation (receiver),
-				 TyTy::TyWithLocation (expected), locus,
-				 true /* commit */, true /* emit_errors */);
+	  = unify_site (receiver->get_ref (), TyTy::TyWithLocation (receiver),
+			TyTy::TyWithLocation (expected), locus);
 	return CoercionResult{{}, result};
       }
     }

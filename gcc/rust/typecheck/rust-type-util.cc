@@ -117,8 +117,57 @@ unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   rust_debug ("unify_site id={%u} expected={%s} expr={%s}", id,
 	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
 
+  std::vector<UnifyRules::CommitSite> commits;
+  std::vector<UnifyRules::InferenceSite> infers;
   return UnifyRules::Resolve (lhs, rhs, unify_locus, true /*commit*/,
-			      true /*emit_error*/);
+			      true /*emit_error*/, false /*infer*/, commits,
+			      infers);
+}
+
+TyTy::BaseType *
+unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+		Location unify_locus, bool emit_errors, bool commit_if_ok,
+		bool implicit_infer_vars, bool cleanup)
+{
+  TypeCheckContext &context = *TypeCheckContext::get ();
+
+  TyTy::BaseType *expected = lhs.get_ty ();
+  TyTy::BaseType *expr = rhs.get_ty ();
+
+  rust_debug (
+    "unify_site_and commit %s infer %s id={%u} expected={%s} expr={%s}",
+    commit_if_ok ? "true" : "false", implicit_infer_vars ? "true" : "false", id,
+    expected->debug_str ().c_str (), expr->debug_str ().c_str ());
+
+  std::vector<UnifyRules::CommitSite> commits;
+  std::vector<UnifyRules::InferenceSite> infers;
+  TyTy::BaseType *result
+    = UnifyRules::Resolve (lhs, rhs, unify_locus, false /*commit inline*/,
+			   emit_errors, implicit_infer_vars, commits, infers);
+  bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
+  if (ok && commit_if_ok)
+    {
+      for (auto &c : commits)
+	{
+	  UnifyRules::commit (c.lhs, c.rhs, c.resolved);
+	}
+    }
+  else if (cleanup)
+    {
+      // FIXME
+      // reset the get_next_hir_id
+
+      for (auto &i : infers)
+	{
+	  i.param->set_ref (i.pref);
+	  i.param->set_ty_ref (i.ptyref);
+
+	  // remove the inference variable
+	  context.clear_type (i.infer);
+	  delete i.infer;
+	}
+    }
+  return result;
 }
 
 TyTy::BaseType *
