@@ -1,3 +1,4 @@
+// { dg-skip-if "test hangs the testsuite PR103944" { *-*-darwin* } }
 import core.stdc.stdlib : exit;
 import core.sys.posix.sys.wait : waitpid;
 import core.sys.posix.unistd : fork;
