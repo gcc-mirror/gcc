@@ -447,6 +447,43 @@
    (set_attr "length"	"3")])
 
 
+;; Signed clamp.
+
+(define_insn_and_split "*xtensa_clamps"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(smax:SI (smin:SI (match_operand:SI 1 "register_operand" "r")
+			  (match_operand:SI 2 "const_int_operand" "i"))
+		 (match_operand:SI 3 "const_int_operand" "i")))]
+  "TARGET_CLAMPS
+   && xtensa_match_CLAMPS_imms_p (operands[3], operands[2])"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(smin:SI (smax:SI (match_dup 1)
+			  (match_dup 3))
+		 (match_dup 2)))]
+  ""
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "*xtensa_clamps"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(smin:SI (smax:SI (match_operand:SI 1 "register_operand" "r")
+			  (match_operand:SI 2 "const_int_operand" "i"))
+		 (match_operand:SI 3 "const_int_operand" "i")))]
+  "TARGET_CLAMPS
+   && xtensa_match_CLAMPS_imms_p (operands[2], operands[3])"
+{
+  static char result[64];
+  sprintf (result, "clamps\t%%0, %%1, %d", floor_log2 (-INTVAL (operands[2])));
+  return result;
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+
 ;; Count redundant leading sign bits and leading/trailing zeros,
 ;; and find first bit.
 
