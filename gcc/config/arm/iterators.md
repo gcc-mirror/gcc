@@ -1071,6 +1071,8 @@
 		 (VQSHLQ_N_S "vqshl") (VQSHLQ_N_U "vqshl")
 		 (VQSHLQ_R_S "vqshl") (VQSHLQ_R_U "vqshl")
 		 (VQSHLQ_S "vqshl") (VQSHLQ_U "vqshl")
+		 (VQSHLUQ_M_N_S "vqshlu")
+		 (VQSHLUQ_N_S "vqshlu")
 		 (VQSHRNBQ_M_N_S "vqshrnb") (VQSHRNBQ_M_N_U "vqshrnb")
 		 (VQSHRNBQ_N_S "vqshrnb") (VQSHRNBQ_N_U "vqshrnb")
 		 (VQSHRNTQ_M_N_S "vqshrnt") (VQSHRNTQ_M_N_U "vqshrnt")
@@ -2490,6 +2492,8 @@
 		       (VRMLSLDAVHAXQ_P_S "s")
 		       (VRMLSLDAVHAXQ_S "s")
 		       (VRMLALDAVHAQ_P_S "s") (VRMLALDAVHAQ_P_U "u")
+		       (VQSHLUQ_M_N_S "s")
+		       (VQSHLUQ_N_S "s")
 		       ])
 
 ;; Both kinds of return insn.
@@ -2793,6 +2797,8 @@
 (define_int_iterator UQRSHLLQ [UQRSHLL_64 UQRSHLL_48])
 (define_int_iterator SQRSHRLQ [SQRSHRL_64 SQRSHRL_48])
 (define_int_iterator VSHLCQ_M [VSHLCQ_M_S VSHLCQ_M_U])
+(define_int_iterator VQSHLUQ_M_N [VQSHLUQ_M_N_S])
+(define_int_iterator VQSHLUQ_N [VQSHLUQ_N_S])
 
 ;; Define iterators for VCMLA operations
 (define_int_iterator VCMLA_OP [UNSPEC_VCMLA

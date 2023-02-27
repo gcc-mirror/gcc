@@ -1150,15 +1150,15 @@
 ;;
 ;; [vqshluq_n_s])
 ;;
-(define_insn "mve_vqshluq_n_s<mode>"
+(define_insn "@mve_<mve_insn>q_n_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:SI 2 "<MVE_pred>" "<MVE_constraint>")]
-	 VQSHLUQ_N_S))
+	 VQSHLUQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vqshlu.s%#<V_sz_elem>\t%q0, %q1, %2"
+  "<mve_insn>.<supf>%#<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2653,17 +2653,17 @@
 ;;
 ;; [vqshluq_m_n_s])
 ;;
-(define_insn "mve_vqshluq_m_n_s<mode>"
+(define_insn "@mve_<mve_insn>q_m_n_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")
 		       (match_operand:SI 3 "<MVE_pred>" "<MVE_constraint>")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VQSHLUQ_M_N_S))
+	 VQSHLUQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\n\tvqshlut.s%#<V_sz_elem>\t%q0, %q2, %3"
+  "vpst\n\t<mve_insn>t.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length" "8")])
 
