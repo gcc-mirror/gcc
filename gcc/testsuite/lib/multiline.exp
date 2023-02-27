@@ -169,9 +169,9 @@ proc handle-multiline-outputs { text } {
 	# Use "regsub" to attempt to prune the pattern from $text
 	if {[regsub -line $rexp $text "" text]} {
 	    # The multiline pattern was pruned.
-	    ${maybe_x}pass "$title was found"
+	    ${maybe_x}pass "$title"
 	} else {
-	    ${maybe_x}fail "$title not found"
+	    ${maybe_x}fail "$title"
 	}
 
 	set index [expr $index + 1]
