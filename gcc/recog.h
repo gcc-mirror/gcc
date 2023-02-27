@@ -382,7 +382,7 @@ extern const operand_alternative *recog_op_alt;
    on operand OP of the current instruction alternative (which_alternative).
    Only valid after calling preprocess_constraints and constrain_operands.  */
 
-inline static const operand_alternative *
+inline const operand_alternative *
 which_op_alt ()
 {
   gcc_checking_assert (IN_RANGE (which_alternative, 0,
