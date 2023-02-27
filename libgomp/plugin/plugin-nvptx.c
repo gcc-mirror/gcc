@@ -773,8 +773,7 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 }
 
 static void
-nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
-	    unsigned *dims, void *targ_mem_desc,
+nvptx_exec (void (*fn), size_t mapnum, unsigned *dims, void *targ_mem_desc,
 	    CUdeviceptr dp, CUstream stream)
 {
   struct targ_fn_descriptor *targ_fn = (struct targ_fn_descriptor *) fn;
@@ -1742,7 +1741,8 @@ GOMP_OFFLOAD_page_locked_host_free (void *ptr)
 
 void
 GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
-			   void **hostaddrs, void **devaddrs,
+			   void **hostaddrs __attribute__((unused)),
+			   void **devaddrs,
 			   unsigned *dims, void *targ_mem_desc)
 {
   GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
@@ -1761,7 +1761,7 @@ GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
       size_t s = mapnum * sizeof (void *);
       hp = alloca (s);
       for (int i = 0; i < mapnum; i++)
-	hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
+	hp[i] = devaddrs[i];
       CUDA_CALL_ASSERT (cuMemAlloc, &dp, s);
       if (profiling_p)
 	goacc_profiling_acc_ev_alloc (thr, (void *) dp, s);
@@ -1803,8 +1803,7 @@ GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
 	}
     }
 
-  nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
-	      dp, NULL);
+  nvptx_exec (fn, mapnum, dims, targ_mem_desc, dp, NULL);
 
   CUresult r = CUDA_CALL_NOCHECK (cuStreamSynchronize, NULL);
   const char *maybe_abort_msg = "(perhaps abort was called)";
@@ -1829,7 +1828,8 @@ cuda_free_argmem (void *ptr)
 
 void
 GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
-				 void **hostaddrs, void **devaddrs,
+				 void **hostaddrs __attribute__((unused)),
+				 void **devaddrs,
 				 unsigned *dims, void *targ_mem_desc,
 				 struct goacc_asyncqueue *aq)
 {
@@ -1851,7 +1851,7 @@ GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
       block = (void **) GOMP_PLUGIN_malloc (2 * sizeof (void *) + s);
       hp = block + 2;
       for (int i = 0; i < mapnum; i++)
-	hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
+	hp[i] = devaddrs[i];
       CUDA_CALL_ASSERT (cuMemAlloc, &dp, s);
       if (profiling_p)
 	goacc_profiling_acc_ev_alloc (thr, (void *) dp, s);
@@ -1900,8 +1900,7 @@ GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
 	}
     }
 
-  nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
-	      dp, aq->cuda_stream);
+  nvptx_exec (fn, mapnum, dims, targ_mem_desc, dp, aq->cuda_stream);
 
   if (mapnum > 0)
     GOMP_OFFLOAD_openacc_async_queue_callback (aq, cuda_free_argmem, block);

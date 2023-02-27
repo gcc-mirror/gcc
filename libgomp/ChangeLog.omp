@@ -3,6 +3,19 @@
 	Backported from master:
 	2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* target.c (gomp_map_vars_internal): Use 'OFFSET_INLINED' for
+	'GOMP_MAP_IF_PRESENT'.
+	* plugin/plugin-gcn.c (gcn_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Adjust.
+	* plugin/plugin-nvptx.c (nvptx_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-1.c: Add 'async'
+	testing.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-2.c: Likewise.
+
+	Backported from master:
+	2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* oacc-async.c (goacc_wait): Remove 'acc_async_test' -> skip
 	shortcut.
 
