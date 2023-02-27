@@ -3,6 +3,13 @@
 	Backported from master:
 	2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* target.c (gomp_copy_host2dev, gomp_map_vars_internal): Allow
+	libgomp 'cbuf' buffering with OpenACC 'async' for 'ephemeral'
+	data.
+
+	Backported from master:
+	2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* target.c (gomp_map_vars_internal): Use 'OFFSET_INLINED' for
 	'GOMP_MAP_IF_PRESENT'.
 	* plugin/plugin-gcn.c (gcn_exec, GOMP_OFFLOAD_openacc_exec)
