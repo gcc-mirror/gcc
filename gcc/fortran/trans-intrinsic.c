@@ -6502,6 +6502,7 @@ gfc_conv_intrinsic_ibits (gfc_se * se, gfc_expr * expr)
   tree type;
   tree tmp;
   tree mask;
+  tree num_bits, cond;
 
   gfc_conv_intrinsic_function_args (se, expr, args, 3);
   type = TREE_TYPE (args[0]);
@@ -6542,8 +6543,17 @@ gfc_conv_intrinsic_ibits (gfc_se * se, gfc_expr * expr)
 			       "in intrinsic IBITS", tmp1, tmp2, nbits);
     }
 
+  /* The Fortran standard allows (shift width) LEN <= BIT_SIZE(I), whereas
+     gcc requires a shift width < BIT_SIZE(I), so we have to catch this
+     special case.  See also gfc_conv_intrinsic_ishft ().  */
+  num_bits = build_int_cst (TREE_TYPE (args[2]), TYPE_PRECISION (type));
+
   mask = build_int_cst (type, -1);
   mask = fold_build2_loc (input_location, LSHIFT_EXPR, type, mask, args[2]);
+  cond = fold_build2_loc (input_location, GE_EXPR, logical_type_node, args[2],
+			  num_bits);
+  mask = fold_build3_loc (input_location, COND_EXPR, type, cond,
+			  build_int_cst (type, 0), mask);
   mask = fold_build1_loc (input_location, BIT_NOT_EXPR, type, mask);
 
   tmp = fold_build2_loc (input_location, RSHIFT_EXPR, type, args[0], args[1]);
