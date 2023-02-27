@@ -251,7 +251,7 @@ EXPORT(getLocalIP) (tcpServerState *s)
       return 0;
     }
 
-  memset (&sa, sizeof (struct sockaddr_in), 0);
+  memset (&sa, 0, sizeof (struct sockaddr_in));
   sa.sin_family = AF_INET;
   sa.sin_port = htons (80);
   if (hp->h_length == sizeof (unsigned int))
