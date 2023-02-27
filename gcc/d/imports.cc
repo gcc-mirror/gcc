@@ -106,12 +106,16 @@ public:
     tree type = build_ctype (d->type);
     /* Not all kinds of D enums create a TYPE_DECL.  */
     if (TREE_CODE (type) == ENUMERAL_TYPE)
-      this->result_ = this->make_import (TYPE_STUB_DECL (type));
+      {
+	type = TYPE_MAIN_VARIANT (type);
+	this->result_ = this->make_import (TYPE_STUB_DECL (type));
+      }
   }
 
   void visit (AggregateDeclaration *d) final override
   {
     tree type = build_ctype (d->type);
+    type = TYPE_MAIN_VARIANT (type);
     this->result_ = this->make_import (TYPE_STUB_DECL (type));
   }
 
@@ -119,6 +123,7 @@ public:
   {
     /* Want the RECORD_TYPE, not POINTER_TYPE.  */
     tree type = TREE_TYPE (build_ctype (d->type));
+    type = TYPE_MAIN_VARIANT (type);
     this->result_ = this->make_import (TYPE_STUB_DECL (type));
   }
 
