@@ -47,12 +47,12 @@ void farr_s16 (void)
   T (ax[-1]);                             /* { dg-warning "array subscript -1 is below array bounds" } */
   T (ax[0]);
 
-  T (ax[DIFF_MAX / 2 - 1]);
+  T (ax[DIFF_MAX / 2 - 1]);               /* { dg-warning "array subscript \[0-9\]+ is above array bounds" "llp64" { target llp64 } } */
   T (ax[DIFF_MAX / 2]);                   /* { dg-warning "array subscript \[0-9\]+ is above array bounds" } */
   T (ax[DIFF_MAX / 2 + (size_t)1]);       /* { dg-warning "array subscript \[0-9\]+ is above array bounds" } */
   T (ax[SIZE_MAX]);                       /* { dg-warning "array subscript \[0-9\]+ is above array bounds" } */
   T (ax[R (DIFF_MIN, -1)]);               /* { dg-warning "array subscript -1 is below array bounds" } */
-  T (ax[R (DIFF_MAX / 2 - 1, DIFF_MAX)]);
+  T (ax[R (DIFF_MAX / 2 - 1, DIFF_MAX)]); /* { dg-warning "array subscript \[0-9\]+ is above array bounds" "llp64" { target llp64 } } */
   T (ax[R (DIFF_MAX / 2, DIFF_MAX)]);     /* { dg-warning "array subscript \[0-9\]+ is above array bounds" } */
 }
 
@@ -87,7 +87,7 @@ void farr_s16_7 (void)
   T (ax_7[R (-1, DIFF_MAX)][0]);
 
   T (ax_7[R ( 1, DIFF_MAX)][0]);
-  T (ax_7[R (DIFF_MAX / 14 - 1, DIFF_MAX)][0]);
+  T (ax_7[R (DIFF_MAX / 14 - 1, DIFF_MAX)][0]); /* { dg-warning "array subscript \[0-9\]+ is above array bounds" "llp64" { target llp64 } } */
 
   i = R (DIFF_MAX / 14, DIFF_MAX);
   T (ax_7[i][0]);                         /* { dg-warning "array subscript \[0-9\]+ is above array bounds" } */
@@ -199,7 +199,7 @@ void fb (struct B *p)
 
 void f_cststring (int i)
 {
-  T (""[DIFF_MIN]);                       /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .(const )?char *\\\[1]" "string" { xfail lp64 } } */
+  T (""[DIFF_MIN]);                       /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .(const )?char *\\\[1]" "string" { xfail { lp64 || llp64 } } } */
   T (""[DIFF_MIN + 1]);                   /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .(const )?char *\\\[1]" "string" } */
   T (""[-1]);                             /* { dg-warning "array subscript -1 is below array bounds of .(const )?char *\\\[1]" "string" } */
   T (""[0]);
