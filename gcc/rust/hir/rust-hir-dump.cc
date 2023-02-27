@@ -26,31 +26,24 @@ Dump::Dump (std::ostream &stream) : stream (stream), indent (0) {}
 void
 Dump::go (HIR::Crate &crate)
 {
-  stream << "Crate"
-	 << " "
-	 << "{" << std::endl;
-  //
-
-  indent++;
-  stream << std::string (indent, indent_char);
-  stream << "inner_attrs"
-	 << ":"
-	 << " "
-	 << "[";
-  for (auto &attr : crate.inner_attrs)
-    stream << attr.as_string ();
-  stream << "]"
-	 << "," << std::endl;
-  indent--;
+  stream << "Crate {" << std::endl;
+  // inner attributes
+  if (!crate.inner_attrs.empty ())
+    {
+      indent++;
+      stream << std::string (indent, indent_char);
+      stream << "inner_attrs: [";
+      for (auto &attr : crate.inner_attrs)
+	stream << attr.as_string ();
+      stream << "]," << std::endl;
+      indent--;
+    }
 
   indent++;
   stream << std::string (indent, indent_char);
   //
 
-  stream << "items"
-	 << ":"
-	 << " "
-	 << "[";
+  stream << "items: [";
 
   stream << std::string (indent, indent_char);
   for (const auto &item : crate.items)
@@ -59,22 +52,17 @@ Dump::go (HIR::Crate &crate)
       item->accept_vis (*this);
     }
   stream << std::string (indent, indent_char);
-  stream << "]"
-	 << "," << std::endl;
+  stream << "]," << std::endl;
   indent--;
   //
 
   indent++;
   stream << std::string (indent, indent_char);
-  stream << "node_mappings"
-	 << ":"
-	 << " "
-	 << "[";
-  // TODO: print crate mapping attrs
-  stream << "]" << std::endl;
+  stream << "node_mappings: ";
+  stream << crate.get_mappings ().as_string ();
   indent--;
 
-  stream << "}" << std::endl;
+  stream << "\n}" << std::endl;
 }
 
 void
@@ -108,11 +96,8 @@ Dump::visit (QualifiedPathInType &)
 void
 Dump::visit (LiteralExpr &literal_expr)
 {
-  indent++;
-  stream << std::string (indent, indent_char);
-  stream << "( " + literal_expr.get_literal ().as_string () + " ("
-	      + literal_expr.get_mappings ().as_string () + "))";
-  stream << "\n";
+  stream << literal_expr.get_literal ().as_string () << " "
+	 << literal_expr.get_mappings ().as_string ();
 }
 void
 Dump::visit (BorrowExpr &)
@@ -127,8 +112,56 @@ void
 Dump::visit (NegationExpr &)
 {}
 void
-Dump::visit (ArithmeticOrLogicalExpr &)
-{}
+Dump::visit (ArithmeticOrLogicalExpr &aole)
+{
+  std::string operator_str;
+  operator_str.reserve (1);
+
+  // which operator
+  switch (aole.get_expr_type ())
+    {
+    case ArithmeticOrLogicalOperator::ADD:
+      operator_str = "+";
+      break;
+    case ArithmeticOrLogicalOperator::SUBTRACT:
+      operator_str = "-";
+      break;
+    case ArithmeticOrLogicalOperator::MULTIPLY:
+      operator_str = "*";
+      break;
+    case ArithmeticOrLogicalOperator::DIVIDE:
+      operator_str = "/";
+      break;
+    case ArithmeticOrLogicalOperator::MODULUS:
+      operator_str = "%";
+      break;
+    case ArithmeticOrLogicalOperator::BITWISE_AND:
+      operator_str = "&";
+      break;
+    case ArithmeticOrLogicalOperator::BITWISE_OR:
+      operator_str = "|";
+      break;
+    case ArithmeticOrLogicalOperator::BITWISE_XOR:
+      operator_str = "^";
+      break;
+    case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      operator_str = "<<";
+      break;
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      operator_str = ">>";
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+
+  aole.visit_lhs (*this);
+  stream << "\n";
+  stream << std::string (indent, indent_char);
+  stream << operator_str << "\n";
+  stream << std::string (indent, indent_char);
+  aole.visit_rhs (*this);
+}
 void
 Dump::visit (ComparisonExpr &)
 {}
@@ -200,17 +233,34 @@ void
 Dump::visit (ClosureExpr &)
 {}
 void
-Dump::visit (BlockExpr &)
+Dump::visit (BlockExpr &block_expr)
 {
-  stream << "BlockExpr"
-	 << ":"
-	 << " "
-	 << "[";
+  stream << "BlockExpr: [";
   indent++;
-  // TODO: print statements
-  // TODO: print tail expression if exists
-  stream << "]";
+  stream << std::endl;
+  // TODO: inner attributes
+
+  // statements
+  if (block_expr.has_statements ())
+    {
+      auto &stmts = block_expr.get_statements ();
+      for (auto &stmt : stmts)
+	{
+	  stream << std::string (indent, indent_char);
+	  stream << "Stmt: {\n";
+	  // stream << std::string (indent, indent_char);
+	  stmt->accept_vis (*this);
+	  stream << "\n";
+	  stream << std::string (indent, indent_char);
+	  stream << "}\n";
+	}
+    }
+
+  // // TODO: print tail expression if exists
+
   indent--;
+  stream << std::string (indent, indent_char);
+  stream << "]";
 }
 
 void
@@ -324,19 +374,87 @@ void
 Dump::visit (UseDeclaration &)
 {}
 void
-Dump::visit (Function &)
+Dump::visit (Function &func)
 {
   indent++;
   stream << std::string (indent, indent_char);
-  stream << "Function"
-	 << " ";
-  stream << "{" << std::endl;
-  // TODO: print function params
+  stream << "Function {" << std::endl;
+  indent++;
+
+  // function name
+  stream << std::string (indent, indent_char);
+  stream << "func_name: ";
+  auto func_name = func.get_function_name ();
+  stream << func_name;
+  stream << ",\n";
+
+  // return type
+  stream << std::string (indent, indent_char);
+  stream << "return_type: ";
+  if (func.has_return_type ())
+    {
+      auto &ret_type = func.get_return_type ();
+      stream << ret_type->as_string ();
+      stream << ",\n";
+    }
+  else
+    {
+      stream << "void,\n";
+    }
+
+  // function params
+  if (func.has_function_params ())
+    {
+      stream << std::string (indent, indent_char);
+      stream << "params: [\n";
+      indent++;
+      auto &func_params = func.get_function_params ();
+      for (const auto &item : func_params)
+	{
+	  stream << std::string (indent, indent_char);
+	  stream << item.as_string ();
+	  stream << ",\n";
+	}
+
+      // parameter node mappings
+      stream << std::string (indent, indent_char);
+      stream << "node_mappings: [\n";
+      for (const auto &item : func_params)
+	{
+	  auto nmap = item.get_mappings ();
+	  indent++;
+	  stream << std::string (indent, indent_char);
+	  auto pname = item.param_name->as_string ();
+	  stream << pname << ": ";
+	  stream << nmap.as_string () << ",\n";
+	  indent--;
+	}
+      stream << std::string (indent, indent_char);
+      stream << "],";
+      indent--;
+      stream << "\n";
+      stream << std::string (indent, indent_char);
+      stream << "],";
+      stream << "\n";
+    }
+
+  // function body
+  stream << std::string (indent, indent_char);
+  auto &func_body = func.get_definition ();
+  func_body->accept_vis (*this);
+
+  // func node mappings
+  stream << "\n";
+  stream << std::string (indent, indent_char);
+  stream << "node_mappings: ";
+  stream << func.get_impl_mappings ().as_string ();
+  indent--;
+  stream << "\n";
   stream << std::string (indent, indent_char);
   stream << "}" << std::endl;
   // TODO: get function definition and visit block
 
-  stream << std::endl;
+  // stream << std::endl;
   indent--;
 }
 void
@@ -402,8 +520,11 @@ void
 Dump::visit (LiteralPattern &)
 {}
 void
-Dump::visit (IdentifierPattern &)
-{}
+Dump::visit (IdentifierPattern &ident)
+{
+  auto ident_name = ident.get_identifier ();
+  stream << ident_name;
+}
 void
 Dump::visit (WildcardPattern &)
 {}
@@ -464,11 +585,49 @@ void
 Dump::visit (EmptyStmt &)
 {}
 void
-Dump::visit (LetStmt &)
-{}
+Dump::visit (LetStmt &let_stmt)
+{
+  indent++;
+  // TODO: outer attributes
+  stream << std::string (indent, indent_char);
+  stream << "LetStmt: {\n";
+  indent++;
+  stream << std::string (indent, indent_char);
+
+  auto var_pattern = let_stmt.get_pattern ();
+  stream << var_pattern->as_string ();
+  // return type
+  if (let_stmt.has_type ())
+    {
+      auto ret_type = let_stmt.get_type ();
+      stream << ": " << ret_type->as_string ();
+    }
+
+  // init expr
+  if (let_stmt.has_init_expr ())
+    {
+      stream << " = Expr: {\n ";
+      indent++;
+      stream << std::string (indent, indent_char);
+      auto expr = let_stmt.get_init_expr ();
+      expr->accept_vis (*this);
+      stream << "\n";
+      stream << std::string (indent, indent_char);
+      indent--;
+      stream << "}\n";
+    }
+  indent--;
+  stream << std::string (indent, indent_char);
+  stream << "}\n";
+
+  indent--;
+}
 void
-Dump::visit (ExprStmtWithoutBlock &)
-{}
+Dump::visit (ExprStmtWithoutBlock &expr_stmt)
+{
+  auto expr = expr_stmt.get_expr ();
+  expr->accept_vis (*this);
+}
 void
 Dump::visit (ExprStmtWithBlock &)
 {}
