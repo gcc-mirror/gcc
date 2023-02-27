@@ -140,10 +140,7 @@ package body System.Value_U is
         Spec.Scan_Based_Number_Ghost (Str, Ptr.all, Last_Num_Init)
       with Ghost;
       Starts_As_Based : constant Boolean :=
-        Last_Num_Init < Max - 1
-        and then Str (Last_Num_Init + 1) in '#' | ':'
-        and then Str (Last_Num_Init + 2) in
-        '0' .. '9' | 'a' .. 'f' | 'A' .. 'F'
+        Spec.Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, Max)
       with Ghost;
       Last_Num_Based  : constant Integer :=
         (if Starts_As_Based
@@ -151,9 +148,8 @@ package body System.Value_U is
          else Last_Num_Init)
       with Ghost;
       Is_Based        : constant Boolean :=
-        Starts_As_Based
-        and then Last_Num_Based < Max
-        and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1)
+        Spec.Raw_Unsigned_Is_Based_Ghost
+          (Str, Last_Num_Init, Last_Num_Based, Max)
       with Ghost;
       Based_Val       : constant Spec.Uns_Option :=
         (if Starts_As_Based and then not Init_Val.Overflow
