@@ -1297,6 +1297,55 @@ struct inherent_def : public nonoverloaded_base
 };
 SHAPE (inherent)
 
+/* <T0>_t vfoo[_t0](<T0>_t)
+   <T0>_t vfoo_n_t0(<sT0>_t)
+
+   For MODE_n, define only the 16 and 32 bits versions.
+
+   Example: vmvnq.
+   int16x8_t [__arm_]vmvnq[_s16](int16x8_t a)
+   int16x8_t [__arm_]vmvnq_m[_s16](int16x8_t inactive, int16x8_t a, mve_pred16_t p)
+   int16x8_t [__arm_]vmvnq_x[_s16](int16x8_t a, mve_pred16_t p)
+   int16x8_t [__arm_]vmvnq_n_s16(const int16_t imm)
+   int16x8_t [__arm_]vmvnq_m[_n_s16](int16x8_t inactive, const int16_t imm, mve_pred16_t p)
+   int16x8_t [__arm_]vmvnq_x_n_s16(const int16_t imm, mve_pred16_t p)  */
+struct mvn_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    /* Do not build a separate instance for MODE_n, since we want to
+       share vmvnq_m[_n_s16] with vmvnq_m[_s16].  */
+    build_all (b, "v0,v0", group, MODE_none, preserve_user_namespace);
+    build_16_32 (b, "v0,s0", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (1, i, nargs)
+	/* Same type for arg 0 and 1 if _m, so using 0 is OK */
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+  /* Skip last argument, may be scalar.  */
+    unsigned int last_arg = i;
+    for (i = 0; i < last_arg; i++)
+      if (!r.require_matching_vector_type (i, type))
+	return error_mark_node;
+
+    if (last_arg == 0)
+      return r.resolve_to (r.mode_suffix_id, type);
+
+    return r.finish_opt_n_resolution (last_arg, 0, type);
+  }
+};
+SHAPE (mvn)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, <T0>_t)
 
    i.e. the standard shape for ternary operations that operate on
