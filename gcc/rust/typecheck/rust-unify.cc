@@ -141,7 +141,7 @@ UnifyRules::go ()
   // check bounds
   if (ltype->num_specified_bounds () > 0)
     {
-      if (!ltype->bounds_compatible (*rtype, locus, true))
+      if (!ltype->bounds_compatible (*rtype, locus, emit_error))
 	{
 	  // already emitted an error
 	  emit_error = false;
