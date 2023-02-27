@@ -1098,6 +1098,55 @@ struct binary_widen_n_def : public overloaded_base<0>
 };
 SHAPE (binary_widen_n)
 
+/* <T0:twice>_t vfoo[_t0](<T0>_t, <T0>_t)
+   <T0:twice>_t vfoo[_n_t0](<T0>_t, <S0>_t)
+
+   Example: vqdmullbq.
+   int32x4_t [__arm_]vqdmulltq[_n_s16](int16x8_t a, int16_t b)
+   int32x4_t [__arm_]vqdmulltq_m[_n_s16](int32x4_t inactive, int16x8_t a, int16_t b, mve_pred16_t p)
+   int32x4_t [__arm_]vqdmulltq[_s16](int16x8_t a, int16x8_t b)
+   int32x4_t [__arm_]vqdmulltq_m[_s16](int32x4_t inactive, int16x8_t a, int16x8_t b, mve_pred16_t p)  */
+struct binary_widen_opt_n_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "vw0,v0,v0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "vw0,v0,s0", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    type_suffix_index wide_suffix
+      = find_type_suffix (type_suffixes[type].tclass,
+			  type_suffixes[type].element_bits * 2);
+
+    /* Skip last argument, may be scalar, will be checked below by
+       finish_opt_n_resolution.  */
+    unsigned int last_arg = i--;
+    for (; i > 0; i--)
+      if (!r.require_matching_vector_type (i, type))
+	return error_mark_node;
+
+    /* Check the inactive argument has the wide type.  */
+    if ((r.pred == PRED_m)
+	&& (r.infer_vector_type (0) != wide_suffix))
+      return r.report_no_such_form (type);
+
+    return r.finish_opt_n_resolution (last_arg, 0, type);
+  }
+};
+SHAPE (binary_widen_opt_n)
+
 /* Shape for comparison operations that operate on
    uniform types.
 
