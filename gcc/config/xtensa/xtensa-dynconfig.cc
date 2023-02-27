@@ -158,6 +158,30 @@ const struct xtensa_config_v1 *xtensa_get_config_v1 (void)
   return config;
 }
 
+const struct xtensa_config_v2 *xtensa_get_config_v2 (void)
+{
+  static const struct xtensa_config_v2 *config;
+  static struct xtensa_config_v2 def;
+
+  if (!config)
+    config = (const struct xtensa_config_v2 *) xtensa_load_config ("xtensa_config_v2",
+								   &xtensa_config_v2,
+								   &def);
+  return config;
+}
+
+const struct xtensa_config_v3 *xtensa_get_config_v3 (void)
+{
+  static const struct xtensa_config_v3 *config;
+  static struct xtensa_config_v3 def;
+
+  if (!config)
+    config = (const struct xtensa_config_v3 *) xtensa_load_config ("xtensa_config_v3",
+								   &xtensa_config_v3,
+								   &def);
+  return config;
+}
+
 const char * const *xtensa_get_config_strings (void)
 {
   static const char * const *config_strings;
