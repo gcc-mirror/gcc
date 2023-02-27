@@ -128,8 +128,6 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zhinx", "zhinxmin"},
   {"zhinxmin", "zfinx"},
 
-  {"xcorev", "xcorevmac"},
-
   {NULL, NULL}
 };
 

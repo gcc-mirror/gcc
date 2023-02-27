@@ -12561,7 +12561,6 @@ proc check_effective_target_const_volatile_readonly_section { } {
 }
 
 # Return 1 if CORE-V architecture is available.
-
 proc check_effective_target_cv_mac { } {
     if { !([istarget riscv*-*-*]) } {
          return 0
@@ -12571,5 +12570,5 @@ proc check_effective_target_cv_mac { } {
         {
           asm ("cv.mac t0, t1, t2");
         }
-    } "-march=rv32ixcvmac1p0" ]
+    } "-march=rv32ixcvmac" ]
 }
