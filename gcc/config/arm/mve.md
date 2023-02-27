@@ -1503,62 +1503,34 @@
 ])
 
 ;;
-;; [vqdmullbq_n_s])
+;; [vqdmullbq_n_s]
+;; [vqdmulltq_n_s]
 ;;
-(define_insn "mve_vqdmullbq_n_s<mode>"
+(define_insn "@mve_<mve_insn>q_n_<supf><mode>"
   [
    (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:MVE_5 1 "s_register_operand" "w")
 				  (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VQDMULLBQ_N_S))
+	 MVE_VQDMULLxQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vqdmullb.s%#<V_sz_elem>	%q0, %q1, %2"
+  "<mve_insn>.s%#<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
 ;;
-;; [vqdmullbq_s])
+;; [vqdmullbq_s]
+;; [vqdmulltq_s]
 ;;
-(define_insn "mve_vqdmullbq_s<mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:MVE_5 1 "s_register_operand" "w")
 				  (match_operand:MVE_5 2 "s_register_operand" "w")]
-	 VQDMULLBQ_S))
+	 MVE_VQDMULLxQ))
   ]
   "TARGET_HAVE_MVE"
-  "vqdmullb.s%#<V_sz_elem>	%q0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqdmulltq_n_s])
-;;
-(define_insn "mve_vqdmulltq_n_s<mode>"
-  [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:<V_double_width> [(match_operand:MVE_5 1 "s_register_operand" "w")
-				  (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VQDMULLTQ_N_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqdmullt.s%#<V_sz_elem>	%q0, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vqdmulltq_s])
-;;
-(define_insn "mve_vqdmulltq_s<mode>"
-  [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:<V_double_width> [(match_operand:MVE_5 1 "s_register_operand" "w")
-				  (match_operand:MVE_5 2 "s_register_operand" "w")]
-	 VQDMULLTQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vqdmullt.s%#<V_sz_elem>	%q0, %q1, %q2"
+  "<mve_insn>.s%#<V_sz_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -3228,70 +3200,38 @@
    (set_attr "length""8")])
 
 ;;
-;; [vqdmullbq_m_n_s])
+;; [vqdmullbq_m_n_s]
+;; [vqdmulltq_m_n_s]
 ;;
-(define_insn "mve_vqdmullbq_m_n_s<mode>"
+(define_insn "@mve_<mve_insn>q_m_n_<supf><mode>"
   [
    (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:<V_elem> 3 "s_register_operand" "r")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VQDMULLBQ_M_N_S))
+	 MVE_VQDMULLxQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vqdmullbt.s%#<V_sz_elem>\t%q0, %q2, %3"
+  "vpst\;<mve_insn>t.s%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
 ;;
-;; [vqdmullbq_m_s])
+;; [vqdmullbq_m_s]
+;; [vqdmulltq_m_s]
 ;;
-(define_insn "mve_vqdmullbq_m_s<mode>"
+(define_insn "@mve_<mve_insn>q_m_<supf><mode>"
   [
    (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
 		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:MVE_5 3 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VQDMULLBQ_M_S))
+	 MVE_VQDMULLxQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vqdmullbt.s%#<V_sz_elem>\t%q0, %q2, %q3"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vqdmulltq_m_n_s])
-;;
-(define_insn "mve_vqdmulltq_m_n_s<mode>"
-  [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:<V_elem> 3 "s_register_operand" "r")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VQDMULLTQ_M_N_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vqdmulltt.s%#<V_sz_elem>\t%q0, %q2, %3"
-  [(set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vqdmulltq_m_s])
-;;
-(define_insn "mve_vqdmulltq_m_s<mode>"
-  [
-   (set (match_operand:<V_double_width> 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:<V_double_width> [(match_operand:<V_double_width> 1 "s_register_operand" "0")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:MVE_5 3 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VQDMULLTQ_M_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vqdmulltt.s%#<V_sz_elem>\t%q0, %q2, %q3"
+  "vpst\;<mve_insn>t.s%#<V_sz_elem>\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
