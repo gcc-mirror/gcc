@@ -830,6 +830,7 @@ public:
     struct_pattern_etc_attrs = other.struct_pattern_etc_attrs;
     has_struct_pattern_etc = other.has_struct_pattern_etc;
 
+    fields.clear ();
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)
       fields.push_back (e->clone_struct_pattern_field ());
@@ -986,6 +987,7 @@ public:
   // Overloaded assignment operator with vector clone
   TupleStructItemsNoRange &operator= (TupleStructItemsNoRange const &other)
   {
+    patterns.clear ();
     patterns.reserve (other.patterns.size ());
     for (const auto &e : other.patterns)
       patterns.push_back (e->clone_pattern ());
@@ -1048,10 +1050,12 @@ public:
   // Overloaded assignment operator to clone
   TupleStructItemsRange &operator= (TupleStructItemsRange const &other)
   {
+    lower_patterns.clear ();
     lower_patterns.reserve (other.lower_patterns.size ());
     for (const auto &e : other.lower_patterns)
       lower_patterns.push_back (e->clone_pattern ());
 
+    upper_patterns.clear ();
     upper_patterns.reserve (other.upper_patterns.size ());
     for (const auto &e : other.upper_patterns)
       upper_patterns.push_back (e->clone_pattern ());
@@ -1263,6 +1267,7 @@ public:
   // Overloaded assignment operator to vector clone
   TuplePatternItemsMultiple &operator= (TuplePatternItemsMultiple const &other)
   {
+    patterns.clear ();
     patterns.reserve (other.patterns.size ());
     for (const auto &e : other.patterns)
       patterns.push_back (e->clone_pattern ());
@@ -1328,10 +1333,12 @@ public:
   // Overloaded assignment operator to clone
   TuplePatternItemsRanged &operator= (TuplePatternItemsRanged const &other)
   {
+    lower_patterns.clear ();
     lower_patterns.reserve (other.lower_patterns.size ());
     for (const auto &e : other.lower_patterns)
       lower_patterns.push_back (e->clone_pattern ());
 
+    upper_patterns.clear ();
     upper_patterns.reserve (other.upper_patterns.size ());
     for (const auto &e : other.upper_patterns)
       upper_patterns.push_back (e->clone_pattern ());
@@ -1541,6 +1548,7 @@ public:
     locus = other.locus;
     node_id = other.node_id;
 
+    items.clear ();
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
       items.push_back (e->clone_pattern ());
@@ -1607,6 +1615,7 @@ public:
     locus = other.locus;
     node_id = other.node_id;
 
+    alts.clear ();
     alts.reserve (other.alts.size ());
     for (const auto &e : other.alts)
       alts.push_back (e->clone_pattern ());
