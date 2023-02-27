@@ -1027,6 +1027,8 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
 
   context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
 
+  rust_debug_loc (expr.get_locus (), "attempting to resolve method for %s",
+		  receiver_tyty->debug_str ().c_str ());
   auto candidates
     = MethodResolver::Probe (receiver_tyty,
 			     expr.get_method_name ().get_segment ());
@@ -1053,13 +1055,17 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
 
   auto candidate = *candidates.begin ();
   rust_debug_loc (expr.get_method_name ().get_locus (),
-		  "resolved method to: {%u} {%s}",
+		  "resolved method to: {%u} {%s} with [%zu] adjustments",
 		  candidate.candidate.ty->get_ref (),
-		  candidate.candidate.ty->debug_str ().c_str ());
+		  candidate.candidate.ty->debug_str ().c_str (),
+		  candidate.adjustments.size ());
 
   // Get the adjusted self
   Adjuster adj (receiver_tyty);
   TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
+  rust_debug ("receiver: %s adjusted self %s",
+	      receiver_tyty->debug_str ().c_str (),
+	      adjusted_self->debug_str ().c_str ());
 
   // store the adjustments for code-generation to know what to do which must be
   // stored onto the receiver to so as we don't trigger duplicate deref mappings
@@ -1331,6 +1337,7 @@ TypeCheckExpr::visit (HIR::DereferenceExpr &expr)
   TyTy::BaseType *resolved_base
     = TypeCheckExpr::Resolve (expr.get_expr ().get ());
 
+  rust_debug_loc (expr.get_locus (), "attempting deref operator overload");
   auto lang_item_type = Analysis::RustLangItem::ItemType::DEREF;
   bool operator_overloaded
     = resolve_operator_overload (lang_item_type, expr, resolved_base, nullptr);

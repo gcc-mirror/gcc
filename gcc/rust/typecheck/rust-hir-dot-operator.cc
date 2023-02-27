@@ -19,6 +19,8 @@
 #include "rust-hir-dot-operator.h"
 #include "rust-hir-path-probe.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-hir-type-check-item.h"
+#include "rust-coercion.h"
 
 namespace Rust {
 namespace Resolver {
@@ -55,6 +57,10 @@ MethodResolver::select (TyTy::BaseType &receiver)
     TyTy::FnType *ty;
   };
 
+  const TyTy::BaseType *raw = receiver.destructure ();
+  bool receiver_is_raw_ptr = raw->get_kind () == TyTy::TypeKind::POINTER;
+  bool receiver_is_ref = raw->get_kind () == TyTy::TypeKind::REF;
+
   // assemble inherent impl items
   std::vector<impl_item_candidate> inherent_impl_fns;
   mappings->iterate_impl_items (
@@ -86,6 +92,38 @@ MethodResolver::select (TyTy::BaseType &receiver)
 
       rust_assert (ty->get_kind () == TyTy::TypeKind::FNDEF);
       TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
+      const TyTy::BaseType *impl_self
+	= TypeCheckItem::ResolveImplBlockSelf (*impl);
+
+      // see:
+      // https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/Method.20Resolution/near/338646280
+      // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L650-L660
+      bool impl_self_is_ptr = impl_self->get_kind () == TyTy::TypeKind::POINTER;
+      bool impl_self_is_ref = impl_self->get_kind () == TyTy::TypeKind::REF;
+      if (receiver_is_raw_ptr && impl_self_is_ptr)
+	{
+	  const TyTy::PointerType &sptr
+	    = *static_cast<const TyTy::PointerType *> (impl_self);
+	  const TyTy::PointerType &ptr
+	    = *static_cast<const TyTy::PointerType *> (raw);
+
+	  // we could do this via lang-item assemblies if we refactor this
+	  bool mut_match = sptr.mutability () == ptr.mutability ();
+	  if (!mut_match)
+	    return true;
+	}
+      else if (receiver_is_ref && impl_self_is_ref)
+	{
+	  const TyTy::ReferenceType &sptr
+	    = *static_cast<const TyTy::ReferenceType *> (impl_self);
+	  const TyTy::ReferenceType &ptr
+	    = *static_cast<const TyTy::ReferenceType *> (raw);
+
+	  // we could do this via lang-item assemblies if we refactor this
+	  bool mut_match = sptr.mutability () == ptr.mutability ();
+	  if (!mut_match)
+	    return true;
+	}
 
       inherent_impl_fns.push_back ({func, impl, fnty});
 
@@ -133,6 +171,39 @@ MethodResolver::select (TyTy::BaseType &receiver)
 
 	rust_assert (ty->get_kind () == TyTy::TypeKind::FNDEF);
 	TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
+	const TyTy::BaseType *impl_self
+	  = TypeCheckItem::ResolveImplBlockSelf (*impl);
+
+	// see:
+	// https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/Method.20Resolution/near/338646280
+	// https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L650-L660
+	bool impl_self_is_ptr
+	  = impl_self->get_kind () == TyTy::TypeKind::POINTER;
+	bool impl_self_is_ref = impl_self->get_kind () == TyTy::TypeKind::REF;
+	if (receiver_is_raw_ptr && impl_self_is_ptr)
+	  {
+	    const TyTy::PointerType &sptr
+	      = *static_cast<const TyTy::PointerType *> (impl_self);
+	    const TyTy::PointerType &ptr
+	      = *static_cast<const TyTy::PointerType *> (raw);
+
+	    // we could do this via lang-item assemblies if we refactor this
+	    bool mut_match = sptr.mutability () == ptr.mutability ();
+	    if (!mut_match)
+	      continue;
+	  }
+	else if (receiver_is_ref && impl_self_is_ref)
+	  {
+	    const TyTy::ReferenceType &sptr
+	      = *static_cast<const TyTy::ReferenceType *> (impl_self);
+	    const TyTy::ReferenceType &ptr
+	      = *static_cast<const TyTy::ReferenceType *> (raw);
+
+	    // we could do this via lang-item assemblies if we refactor this
+	    bool mut_match = sptr.mutability () == ptr.mutability ();
+	    if (!mut_match)
+	      continue;
+	  }
 
 	inherent_impl_fns.push_back ({func, impl, fnty});
 	return true;
@@ -170,18 +241,51 @@ MethodResolver::select (TyTy::BaseType &receiver)
     TyTy::FnType *fntype;
   };
 
+  // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L580-L694
+
   rust_debug ("inherent_impl_fns found {%lu}, trait_fns found {%lu}, "
 	      "predicate_items found {%lu}",
 	      (unsigned long) inherent_impl_fns.size (),
 	      (unsigned long) trait_fns.size (),
 	      (unsigned long) predicate_items.size ());
 
-  // see the follow for the proper fix to get rid of this we need to assemble
-  // candidates based on a match expression gathering the relevant impl blocks
-  // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L580-L694
-  TyTy::set_cmp_autoderef_mode ();
-
   bool found_possible_candidate = false;
+  for (const auto &predicate : predicate_items)
+    {
+      const TyTy::FnType *fn = predicate.fntype;
+      rust_assert (fn->is_method ());
+
+      TyTy::BaseType *fn_self = fn->get_self_type ();
+      rust_debug ("dot-operator predicate fn_self={%s} can_eq receiver={%s}",
+		  fn_self->debug_str ().c_str (),
+		  receiver.debug_str ().c_str ());
+
+      auto res = TypeCoercionRules::TryCoerce (&receiver, fn_self, Location (),
+					       false /*allow-autoderef*/);
+      bool ok = !res.is_error ();
+      if (ok)
+	{
+	  std::vector<Adjustment> adjs = append_adjustments (res.adjustments);
+	  const TraitReference *trait_ref
+	    = predicate.lookup.get_parent ()->get ();
+	  const TraitItemReference *trait_item
+	    = predicate.lookup.get_raw_item ();
+
+	  PathProbeCandidate::TraitItemCandidate c{trait_ref, trait_item,
+						   nullptr};
+	  auto try_result = MethodCandidate{
+	    PathProbeCandidate (PathProbeCandidate::CandidateType::TRAIT_FUNC,
+				fn->clone (), trait_item->get_locus (), c),
+	    adjs};
+	  result.insert (std::move (try_result));
+	  found_possible_candidate = true;
+	}
+    }
+  if (found_possible_candidate)
+    {
+      return true;
+    }
+
   for (auto &impl_item : inherent_impl_fns)
     {
       bool is_trait_impl_block = impl_item.impl_block->has_trait_ref ();
@@ -195,21 +299,25 @@ MethodResolver::select (TyTy::BaseType &receiver)
       rust_debug ("dot-operator impl_item fn_self={%s} can_eq receiver={%s}",
 		  fn_self->debug_str ().c_str (),
 		  receiver.debug_str ().c_str ());
-      if (fn_self->can_eq (&receiver, false))
+
+      auto res = TypeCoercionRules::TryCoerce (&receiver, fn_self, Location (),
+					       false /*allow-autoderef*/);
+      bool ok = !res.is_error ();
+      if (ok)
 	{
+	  std::vector<Adjustment> adjs = append_adjustments (res.adjustments);
 	  PathProbeCandidate::ImplItemCandidate c{impl_item.item,
 						  impl_item.impl_block};
 	  auto try_result = MethodCandidate{
 	    PathProbeCandidate (PathProbeCandidate::CandidateType::IMPL_FUNC,
 				fn, impl_item.item->get_locus (), c),
-	    adjustments};
+	    adjs};
 	  result.insert (std::move (try_result));
 	  found_possible_candidate = true;
 	}
     }
   if (found_possible_candidate)
     {
-      TyTy::reset_cmp_autoderef_mode ();
       return true;
     }
 
@@ -226,21 +334,25 @@ MethodResolver::select (TyTy::BaseType &receiver)
       rust_debug (
 	"dot-operator trait_impl_item fn_self={%s} can_eq receiver={%s}",
 	fn_self->debug_str ().c_str (), receiver.debug_str ().c_str ());
-      if (fn_self->can_eq (&receiver, false))
+
+      auto res = TypeCoercionRules::TryCoerce (&receiver, fn_self, Location (),
+					       false /*allow-autoderef*/);
+      bool ok = !res.is_error ();
+      if (ok)
 	{
+	  std::vector<Adjustment> adjs = append_adjustments (res.adjustments);
 	  PathProbeCandidate::ImplItemCandidate c{impl_item.item,
 						  impl_item.impl_block};
 	  auto try_result = MethodCandidate{
 	    PathProbeCandidate (PathProbeCandidate::CandidateType::IMPL_FUNC,
 				fn, impl_item.item->get_locus (), c),
-	    adjustments};
+	    adjs};
 	  result.insert (std::move (try_result));
 	  found_possible_candidate = true;
 	}
     }
   if (found_possible_candidate)
     {
-      TyTy::reset_cmp_autoderef_mode ();
       return true;
     }
 
@@ -253,53 +365,25 @@ MethodResolver::select (TyTy::BaseType &receiver)
       rust_debug ("dot-operator trait_item fn_self={%s} can_eq receiver={%s}",
 		  fn_self->debug_str ().c_str (),
 		  receiver.debug_str ().c_str ());
-      if (fn_self->can_eq (&receiver, false))
+
+      auto res = TypeCoercionRules::TryCoerce (&receiver, fn_self, Location (),
+					       false /*allow-autoderef*/);
+      bool ok = !res.is_error ();
+      if (ok)
 	{
+	  std::vector<Adjustment> adjs = append_adjustments (res.adjustments);
 	  PathProbeCandidate::TraitItemCandidate c{trait_item.reference,
 						   trait_item.item_ref,
 						   nullptr};
 	  auto try_result = MethodCandidate{
 	    PathProbeCandidate (PathProbeCandidate::CandidateType::TRAIT_FUNC,
 				fn, trait_item.item->get_locus (), c),
-	    adjustments};
-	  result.insert (std::move (try_result));
-	  found_possible_candidate = true;
-	}
-    }
-  if (found_possible_candidate)
-    {
-      TyTy::reset_cmp_autoderef_mode ();
-      return true;
-    }
-
-  for (const auto &predicate : predicate_items)
-    {
-      const TyTy::FnType *fn = predicate.fntype;
-      rust_assert (fn->is_method ());
-
-      TyTy::BaseType *fn_self = fn->get_self_type ();
-      rust_debug ("dot-operator predicate fn_self={%s} can_eq receiver={%s}",
-		  fn_self->debug_str ().c_str (),
-		  receiver.debug_str ().c_str ());
-      if (fn_self->can_eq (&receiver, false))
-	{
-	  const TraitReference *trait_ref
-	    = predicate.lookup.get_parent ()->get ();
-	  const TraitItemReference *trait_item
-	    = predicate.lookup.get_raw_item ();
-
-	  PathProbeCandidate::TraitItemCandidate c{trait_ref, trait_item,
-						   nullptr};
-	  auto try_result = MethodCandidate{
-	    PathProbeCandidate (PathProbeCandidate::CandidateType::TRAIT_FUNC,
-				fn->clone (), trait_item->get_locus (), c),
-	    adjustments};
+	    adjs};
 	  result.insert (std::move (try_result));
 	  found_possible_candidate = true;
 	}
     }
 
-  TyTy::reset_cmp_autoderef_mode ();
   return found_possible_candidate;
 }
 
@@ -326,6 +410,20 @@ MethodResolver::get_predicate_items (
     }
 
   return predicate_items;
+}
+
+std::vector<Adjustment>
+MethodResolver::append_adjustments (const std::vector<Adjustment> &adjs) const
+{
+  std::vector<Adjustment> combined;
+  combined.reserve (adjustments.size () + adjs.size ());
+
+  for (const auto &a : adjustments)
+    combined.push_back (a);
+  for (const auto &a : adjs)
+    combined.push_back (a);
+
+  return combined;
 }
 
 } // namespace Resolver

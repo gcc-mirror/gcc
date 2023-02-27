@@ -69,7 +69,7 @@ public:
 
 protected:
   TypeCoercionRules (TyTy::BaseType *expected, Location locus, bool emit_errors,
-		     bool allow_autoderef);
+		     bool allow_autoderef, bool try_flag);
 
   bool select (TyTy::BaseType &autoderefed) override;
 
@@ -87,6 +87,7 @@ private:
   // mutable fields
   CoercionResult try_result;
   bool emit_errors;
+  bool try_flag;
 };
 
 } // namespace Resolver

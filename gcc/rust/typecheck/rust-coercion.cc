@@ -27,7 +27,7 @@ TypeCoercionRules::CoercionResult
 TypeCoercionRules::Coerce (TyTy::BaseType *receiver, TyTy::BaseType *expected,
 			   Location locus, bool allow_autoderef)
 {
-  TypeCoercionRules resolver (expected, locus, true, allow_autoderef);
+  TypeCoercionRules resolver (expected, locus, true, allow_autoderef, false);
   bool ok = resolver.do_coercion (receiver);
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
@@ -37,16 +37,18 @@ TypeCoercionRules::TryCoerce (TyTy::BaseType *receiver,
 			      TyTy::BaseType *expected, Location locus,
 			      bool allow_autoderef)
 {
-  TypeCoercionRules resolver (expected, locus, false, allow_autoderef);
+  TypeCoercionRules resolver (expected, locus, false, allow_autoderef, true);
   bool ok = resolver.do_coercion (receiver);
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
 
 TypeCoercionRules::TypeCoercionRules (TyTy::BaseType *expected, Location locus,
-				      bool emit_errors, bool allow_autoderef)
+				      bool emit_errors, bool allow_autoderef,
+				      bool try_flag)
   : AutoderefCycle (!allow_autoderef), mappings (Analysis::Mappings::get ()),
     context (TypeCheckContext::get ()), expected (expected), locus (locus),
-    try_result (CoercionResult::get_error ()), emit_errors (emit_errors)
+    try_result (CoercionResult::get_error ()), emit_errors (emit_errors),
+    try_flag (try_flag)
 {}
 
 bool
@@ -139,6 +141,31 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
       break;
     }
 
+  // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/coercion.rs#L210
+  switch (receiver->get_kind ())
+    {
+      default: {
+	rust_debug (
+	  "do_coercion default unify and infer expected: %s receiver %s",
+	  receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
+	TyTy::BaseType *result
+	  = unify_site_and (receiver->get_ref (),
+			    TyTy::TyWithLocation (expected),
+			    TyTy::TyWithLocation (receiver),
+			    locus /*unify_locus*/, false /*emit_errors*/,
+			    !try_flag /*commit_if_ok*/, true /*infer*/,
+			    try_flag /*cleanup on error*/);
+	rust_debug ("result");
+	result->debug ();
+	if (result->get_kind () != TyTy::TypeKind::ERROR)
+	  {
+	    try_result = CoercionResult{{}, result};
+	    return true;
+	  }
+      }
+      break;
+    }
+
   return !try_result.is_error ();
 }
 
@@ -170,11 +197,19 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
       break;
 
       default: {
+	// FIXME this can probably turn into a unify_and
 	if (receiver->can_eq (expected, false))
 	  return CoercionResult{{}, expected->clone ()};
 
 	return CoercionResult::get_error ();
       }
+    }
+
+  bool receiver_is_non_ptr = receiver->get_kind () != TyTy::TypeKind::POINTER;
+  if (autoderef_flag && receiver_is_non_ptr)
+    {
+      // it is unsafe to autoderef to raw pointers
+      return CoercionResult::get_error ();
     }
 
   if (!coerceable_mutability (from_mutbl, to_mutbl))
@@ -192,9 +227,9 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
   TyTy::BaseType *result
     = unify_site_and (receiver->get_ref (), TyTy::TyWithLocation (expected),
 		      TyTy::TyWithLocation (coerced_mutability),
-		      Location () /*unify_locus*/, false /*emit_errors*/,
-		      true /*commit_if_ok*/, true /*infer*/,
-		      true /*cleanup on error*/);
+		      locus /*unify_locus*/, false /*emit_errors*/,
+		      !try_flag /*commit_if_ok*/, true /*infer*/,
+		      try_flag /*cleanup on error*/);
   bool unsafe_ptr_coerceion_ok = result->get_kind () != TyTy::TypeKind::ERROR;
   if (unsafe_ptr_coerceion_ok)
     return CoercionResult{{}, result};
@@ -229,8 +264,12 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 	// back to a final unity anyway
 	rust_debug ("coerce_borrowed_pointer -- unify");
 	TyTy::BaseType *result
-	  = unify_site (receiver->get_ref (), TyTy::TyWithLocation (receiver),
-			TyTy::TyWithLocation (expected), locus);
+	  = unify_site_and (receiver->get_ref (),
+			    TyTy::TyWithLocation (receiver),
+			    TyTy::TyWithLocation (expected), locus,
+			    false /*emit_errors*/, true /*commit_if_ok*/,
+			    false /* FIXME infer do we want to allow this?? */,
+			    true /*cleanup_on_failure*/);
 	return CoercionResult{{}, result};
       }
     }
