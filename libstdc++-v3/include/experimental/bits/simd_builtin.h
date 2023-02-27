@@ -2846,7 +2846,7 @@ template <typename _Abi, typename>
 		__k = __generate_from_n_evaluations<_Np,
 						    __vector_type_t<_Tp, _Np>>(
 		  [&](auto __j) {
-		    if (__i == __j)
+		    if (__i == static_cast<int>(__j))
 		      return _Tp(-__x);
 		    else
 		      return __k[+__j];
