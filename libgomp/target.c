@@ -1207,7 +1207,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    {
 	      /* Not present, hence, skip entry - including its MAP_POINTER,
 		 when existing.  */
-	      tgt->list[i].offset = OFFSET_POINTER;
+	      tgt->list[i].offset = OFFSET_INLINED;
 	      if (i + 1 < mapnum
 		  && ((typemask & get_kind (short_mapkind, kinds, i + 1))
 		      == GOMP_MAP_POINTER))

@@ -3064,7 +3064,7 @@ wait_queue (struct goacc_asyncqueue *aq)
 /* Execute an OpenACC kernel, synchronously or asynchronously.  */
 
 static void
-gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
+gcn_exec (struct kernel_info *kernel, size_t mapnum,
 	  void **devaddrs, unsigned *dims, void *targ_mem_desc, bool async,
 	  struct goacc_asyncqueue *aq)
 {
@@ -3077,9 +3077,7 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
   /* devaddrs must be double-indirect on the target.  */
   void **ind_da = alloc_by_agent (kernel->agent, sizeof (void*) * mapnum);
   for (size_t i = 0; i < mapnum; i++)
-    hsa_fns.hsa_memory_copy_fn (&ind_da[i],
-				devaddrs[i] ? &devaddrs[i] : &hostaddrs[i],
-				sizeof (void *));
+    hsa_fns.hsa_memory_copy_fn (&ind_da[i], &devaddrs[i], sizeof (void *));
 
   struct hsa_kernel_description *hsa_kernel_desc = NULL;
   for (unsigned i = 0; i < kernel->module->image_desc->kernel_count; i++)
@@ -3887,27 +3885,27 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
 
 void
 GOMP_OFFLOAD_openacc_exec (void (*fn_ptr) (void *), size_t mapnum,
-			   void **hostaddrs, void **devaddrs, unsigned *dims,
+			   void **hostaddrs __attribute__((unused)),
+			   void **devaddrs, unsigned *dims,
 			   void *targ_mem_desc)
 {
   struct kernel_info *kernel = (struct kernel_info *) fn_ptr;
 
-  gcn_exec (kernel, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc, false,
-	    NULL);
+  gcn_exec (kernel, mapnum, devaddrs, dims, targ_mem_desc, false, NULL);
 }
 
 /* Run an asynchronous OpenACC kernel on the specified queue.  */
 
 void
 GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *), size_t mapnum,
-				 void **hostaddrs, void **devaddrs,
+				 void **hostaddrs __attribute__((unused)),
+				 void **devaddrs,
 				 unsigned *dims, void *targ_mem_desc,
 				 struct goacc_asyncqueue *aq)
 {
   struct kernel_info *kernel = (struct kernel_info *) fn_ptr;
 
-  gcn_exec (kernel, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc, true,
-	    aq);
+  gcn_exec (kernel, mapnum, devaddrs, dims, targ_mem_desc, true, aq);
 }
 
 /* Create a new asynchronous thread and queue for running future kernels.  */
