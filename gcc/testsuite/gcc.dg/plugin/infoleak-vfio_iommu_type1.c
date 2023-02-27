@@ -37,8 +37,8 @@ int vfio_iommu_type1_get_info(unsigned long arg)
     info.cap_offset = 0;
   }
 
-  /* The padding bytes (20-23) are uninitialized, but can't be written
-     back, since minsz is either 16 or 20.  */
-  return copy_to_user((void *)arg, &info, minsz) ? -14 : 0; /* { dg-bogus "exposure" "" { xfail *-*-* } } */
+  /* The padding bytes (20-23, but applicable just for targets with padding) are
+     uninitialized, but can't be written back, since minsz is either 16 or 20.  */
+  return copy_to_user((void *)arg, &info, minsz) ? -14 : 0; /* { dg-bogus "exposure" "" { xfail { ! default_packed } } } */
   // TODO: false +ve due to not handling minsz being either 16 or 20
 }
