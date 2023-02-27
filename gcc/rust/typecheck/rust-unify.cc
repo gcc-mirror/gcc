@@ -153,12 +153,22 @@ UnifyRules::go ()
     {
       bool rgot_param = rtype->get_kind () == TyTy::TypeKind::PARAM;
       bool lhs_is_infer_var = ltype->get_kind () == TyTy::TypeKind::INFER;
-      bool expected_is_concrete = ltype->is_concrete () && !lhs_is_infer_var;
+      bool lhs_is_general_infer_var
+	= lhs_is_infer_var
+	  && static_cast<TyTy::InferType *> (ltype)->get_infer_kind ()
+	       == TyTy::InferType::GENERAL;
+      bool expected_is_concrete
+	= ltype->is_concrete () && !lhs_is_general_infer_var;
       bool rneeds_infer = expected_is_concrete && rgot_param;
 
       bool lgot_param = ltype->get_kind () == TyTy::TypeKind::PARAM;
       bool rhs_is_infer_var = rtype->get_kind () == TyTy::TypeKind::INFER;
-      bool receiver_is_concrete = rtype->is_concrete () && !rhs_is_infer_var;
+      bool rhs_is_general_infer_var
+	= rhs_is_infer_var
+	  && static_cast<TyTy::InferType *> (rtype)->get_infer_kind ()
+	       == TyTy::InferType::GENERAL;
+      bool receiver_is_concrete
+	= rtype->is_concrete () && !rhs_is_general_infer_var;
       bool lneeds_infer = receiver_is_concrete && lgot_param;
 
       if (rneeds_infer)
