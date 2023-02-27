@@ -1367,6 +1367,61 @@ public:
   }
 };
 
+template<int UNSPEC>
+class slideop : public function_base
+{
+public:
+  bool has_merge_operand_p () const override
+  {
+    if (UNSPEC == UNSPEC_VSLIDEUP)
+      return false;
+    return true;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_slide (UNSPEC, e.vector_mode ()));
+  }
+};
+
+class vrgather : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vx:
+	return e.use_exact_insn (
+	  code_for_pred_gather_scalar (e.vector_mode ()));
+      case OP_TYPE_vv:
+	return e.use_exact_insn (code_for_pred_gather (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
+class vrgatherei16 : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_gatherei16 (e.vector_mode ()));
+  }
+};
+
+class vcompress : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_compress (e.vector_mode ()));
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -1560,6 +1615,15 @@ static CONSTEXPR const vmv vmv_x_obj;
 static CONSTEXPR const vmv_s vmv_s_obj;
 static CONSTEXPR const vmv vfmv_f_obj;
 static CONSTEXPR const vmv_s vfmv_s_obj;
+static CONSTEXPR const slideop<UNSPEC_VSLIDEUP> vslideup_obj;
+static CONSTEXPR const slideop<UNSPEC_VSLIDEDOWN> vslidedown_obj;
+static CONSTEXPR const slideop<UNSPEC_VSLIDE1UP> vslide1up_obj;
+static CONSTEXPR const slideop<UNSPEC_VSLIDE1DOWN> vslide1down_obj;
+static CONSTEXPR const slideop<UNSPEC_VFSLIDE1UP> vfslide1up_obj;
+static CONSTEXPR const slideop<UNSPEC_VFSLIDE1DOWN> vfslide1down_obj;
+static CONSTEXPR const vrgather vrgather_obj;
+static CONSTEXPR const vrgatherei16 vrgatherei16_obj;
+static CONSTEXPR const vcompress vcompress_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -1759,5 +1823,14 @@ BASE (vmv_x)
 BASE (vmv_s)
 BASE (vfmv_f)
 BASE (vfmv_s)
+BASE (vslideup)
+BASE (vslidedown)
+BASE (vslide1up)
+BASE (vslide1down)
+BASE (vfslide1up)
+BASE (vfslide1down)
+BASE (vrgather)
+BASE (vrgatherei16)
+BASE (vcompress)
 
 } // end namespace riscv_vector

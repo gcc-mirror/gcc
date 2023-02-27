@@ -223,6 +223,15 @@ extern const function_base *const vmv_x;
 extern const function_base *const vmv_s;
 extern const function_base *const vfmv_f;
 extern const function_base *const vfmv_s;
+extern const function_base *const vslideup;
+extern const function_base *const vslidedown;
+extern const function_base *const vslide1up;
+extern const function_base *const vslide1down;
+extern const function_base *const vfslide1up;
+extern const function_base *const vfslide1down;
+extern const function_base *const vrgather;
+extern const function_base *const vrgatherei16;
+extern const function_base *const vcompress;
 }
 
 } // end namespace riscv_vector

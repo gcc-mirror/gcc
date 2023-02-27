@@ -311,7 +311,7 @@
 ;; viwred      vector widening integer reduction instructions
 ;; vfredu      vector single-width floating-point un-ordered reduction instruction
 ;; vfredo      vector single-width floating-point ordered reduction instruction
-;; vfwredu      vector widening floating-point un-ordered reduction instruction
+;; vfwredu     vector widening floating-point un-ordered reduction instruction
 ;; vfwredo     vector widening floating-point ordered reduction instruction
 ;; 15. Vector mask instructions
 ;; vmalu       vector mask-register logical instructions
@@ -321,16 +321,19 @@
 ;; vmiota      vector iota
 ;; vmidx       vector element index instruction
 ;; 16. Vector permutation instructions
-;; vimovvx     integer scalar move instructions
-;; vimovxv     integer scalar move instructions
-;; vfmovvf     floating-point scalar move instructions
-;; vfmovfv     floating-point scalar move instructions
-;; vislide     vector slide instructions
-;; vislide1    vector slide instructions
-;; vfslide1    vector slide instructions
-;; vgather     vector register gather instructions
-;; vcompress   vector compress instruction
-;; vmov        whole vector register move
+;; vimovvx      integer scalar move instructions
+;; vimovxv      integer scalar move instructions
+;; vfmovvf      floating-point scalar move instructions
+;; vfmovfv      floating-point scalar move instructions
+;; vslideup     vector slide instructions
+;; vslidedown   vector slide instructions
+;; vislide1up   vector slide instructions
+;; vislide1down vector slide instructions
+;; vfslide1up   vector slide instructions
+;; vfslide1down vector slide instructions
+;; vgather      vector register gather instructions
+;; vcompress    vector compress instruction
+;; vmov         whole vector register move
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
@@ -346,7 +349,8 @@
    vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,
    vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
    vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
-   vislide,vislide1,vfslide1,vgather,vcompress,vmov"
+   vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
+   vgather,vcompress,vmov"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,

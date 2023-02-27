@@ -475,11 +475,19 @@ DEF_RVV_FUNCTION (vfmv_f, scalar_move, none_preds, f_f_s_ops)
 DEF_RVV_FUNCTION (vfmv_s, move, none_tu_preds, f_s_f_ops)
 
 // 16.3. Vector Slide Instructions
+DEF_RVV_FUNCTION (vslideup, alu, full_preds, all_vvvx_ops)
+DEF_RVV_FUNCTION (vslidedown, alu, full_preds, all_vvx_ops)
+DEF_RVV_FUNCTION (vslide1up, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vslide1down, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vfslide1up, alu, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfslide1down, alu, full_preds, f_vvf_ops)
 
 // 16.4. Vector Register Gather Instructions
+DEF_RVV_FUNCTION (vrgather, alu, full_preds, all_gather_vvv_ops)
+DEF_RVV_FUNCTION (vrgather, alu, full_preds, all_gather_vvx_ops)
+DEF_RVV_FUNCTION (vrgatherei16, alu, full_preds, all_gatherei16_vvv_ops)
 
 // 16.5. Vector Compress Instruction
-
-// 16.6. Whole Vector Register Move
+DEF_RVV_FUNCTION (vcompress, alu, none_tu_preds, all_vvm_ops)
 
 #undef DEF_RVV_FUNCTION

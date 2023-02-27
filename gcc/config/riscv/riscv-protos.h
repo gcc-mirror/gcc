@@ -185,6 +185,18 @@ bool has_vi_variant_p (rtx_code, rtx);
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode, machine_mode,
 			  bool, void (*)(rtx *, rtx));
 rtx gen_scalar_move_mask (machine_mode);
+
+/* RVV vector register sizes.
+   TODO: Currently, we only add RVV_32/RVV_64/RVV_128, we may need to
+   support other values in the future.  */
+enum vlen_enum
+{
+  RVV_32 = 32,
+  RVV_64 = 64,
+  RVV_65536 = 65536
+};
+bool slide1_sew64_helper (int, machine_mode, machine_mode,
+			  machine_mode, rtx *);
 }
 
 /* We classify builtin types into two classes:

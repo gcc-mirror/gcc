@@ -50,7 +50,8 @@
 			  vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
 			  vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
 			  vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,\
-			  vislide,vislide1,vfslide1,vgather,vcompress")
+			  vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
+			  vgather,vcompress")
 	 (const_string "true")]
 	(const_string "false")))
 
@@ -70,7 +71,8 @@
 			  vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
 			  vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
 			  vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovxv,vfmovfv,\
-			  vislide,vislide1,vfslide1,vgather,vcompress")
+			  vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
+			  vgather,vcompress")
 	 (const_string "true")]
 	(const_string "false")))
 
@@ -153,7 +155,9 @@
 			  vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,\
 			  vfncvtftof,vfmuladd,vfwmuladd,vfclass,vired,\
 			  viwred,vfredu,vfredo,vfwredu,vfwredo,vimovvx,\
-			  vimovxv,vfmovvf,vfmovfv")
+			  vimovxv,vfmovvf,vfmovfv,vslideup,vslidedown,\
+			  vislide1up,vislide1down,vfslide1up,vfslide1down,\
+			  vgather,vcompress")
 	   (const_int INVALID_ATTRIBUTE)
 	 (eq_attr "mode" "VNx1QI,VNx1BI")
 	   (symbol_ref "riscv_vector::get_ratio(E_VNx1QImode)")
@@ -209,10 +213,12 @@
 				vmiota,vmidx,vfalu,vfmul,vfminmax,vfdiv,vfwalu,vfwmul,\
 				vfsqrt,vfrecp,vfsgnj,vfcmp,vfcvtitof,vfcvtftoi,vfwcvtitof,\
 				vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,vfclass,\
-				vired,viwred,vfredu,vfredo,vfwredu,vfwredo,vimovxv,vfmovfv")
+				vired,viwred,vfredu,vfredo,vfwredu,vfwredo,vimovxv,vfmovfv,\
+				vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
+				vgather")
 	       (const_int 2)
 
-	       (eq_attr "type" "vimerge,vfmerge")
+	       (eq_attr "type" "vimerge,vfmerge,vcompress")
 	       (const_int 1)
 
 	       (eq_attr "type" "vimuladd,viwmuladd,vfmuladd,vfwmuladd")
@@ -224,7 +230,7 @@
   (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vmalu,vsts,vstux,\
 			  vstox,vext,vmsfs,vmiota,vfsqrt,vfrecp,vfcvtitof,\
 			  vfcvtftoi,vfwcvtitof,vfwcvtftoi,vfwcvtftof,vfncvtitof,\
-			  vfncvtftoi,vfncvtftof,vfclass,vimovxv,vfmovfv")
+			  vfncvtftoi,vfncvtftof,vfclass,vimovxv,vfmovfv,vcompress")
 	   (const_int 4)
 
 	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
@@ -237,7 +243,9 @@
 	 (eq_attr "type" "vldux,vldox,vialu,vshift,viminmax,vimul,vidiv,vsalu,\
 			  viwalu,viwmul,vnshift,vimerge,vaalu,vsmul,\
 			  vsshift,vnclip,vfalu,vfmul,vfminmax,vfdiv,vfwalu,vfwmul,\
-			  vfsgnj,vfmerge,vired,viwred,vfredu,vfredo,vfwredu,vfwredo")
+			  vfsgnj,vfmerge,vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
+			  vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
+			  vgather")
 	   (const_int 5)
 
 	 (eq_attr "type" "vicmp,vimuladd,viwmuladd,vfcmp,vfmuladd,vfwmuladd")
@@ -251,7 +259,8 @@
 (define_attr "ta" ""
   (cond [(eq_attr "type" "vlde,vimov,vfmov,vext,vmiota,vfsqrt,vfrecp,\
 			  vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,vfwcvtftof,\
-			  vfncvtitof,vfncvtftoi,vfncvtftof,vfclass,vimovxv,vfmovfv")
+			  vfncvtitof,vfncvtftoi,vfncvtftof,vfclass,vimovxv,vfmovfv,\
+			  vcompress")
 	   (symbol_ref "riscv_vector::get_ta(operands[5])")
 
 	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
@@ -265,7 +274,8 @@
 			  viwalu,viwmul,vnshift,vimerge,vaalu,vsmul,\
 			  vsshift,vnclip,vfalu,vfmul,vfminmax,vfdiv,\
 			  vfwalu,vfwmul,vfsgnj,vfmerge,vired,viwred,vfredu,\
-			  vfredo,vfwredu,vfwredo")
+			  vfredo,vfwredu,vfwredo,vslideup,vslidedown,vislide1up,\
+			  vislide1down,vfslide1up,vfslide1down,vgather")
 	   (symbol_ref "riscv_vector::get_ta(operands[6])")
 
 	 (eq_attr "type" "vimuladd,viwmuladd,vfmuladd,vfwmuladd")
@@ -292,7 +302,8 @@
 	 (eq_attr "type" "vldux,vldox,vialu,vshift,viminmax,vimul,vidiv,vsalu,\
 			  viwalu,viwmul,vnshift,vaalu,vsmul,vsshift,\
 			  vnclip,vicmp,vfalu,vfmul,vfminmax,vfdiv,\
-			  vfwalu,vfwmul,vfsgnj,vfcmp")
+			  vfwalu,vfwmul,vfsgnj,vfcmp,vslideup,vslidedown,\
+			  vislide1up,vislide1down,vfslide1up,vfslide1down,vgather")
 	   (symbol_ref "riscv_vector::get_ma(operands[7])")
 
 	 (eq_attr "type" "vimuladd,viwmuladd,vfmuladd,vfwmuladd")
@@ -323,7 +334,8 @@
 	 (eq_attr "type" "vldux,vldox,vialu,vshift,viminmax,vimul,vidiv,vsalu,\
 			  viwalu,viwmul,vnshift,vimuladd,vaalu,vsmul,vsshift,\
 			  vnclip,vicmp,vfalu,vfmul,vfminmax,vfdiv,vfwalu,vfwmul,\
-			  vfsgnj,vfcmp,vfmuladd")
+			  vfsgnj,vfcmp,vfmuladd,vslideup,vslidedown,vislide1up,\
+			  vislide1down,vfslide1up,vfslide1down,vgather")
 	   (symbol_ref "INTVAL (operands[8])")
 	 (eq_attr "type" "vstux,vstox")
 	   (symbol_ref "INTVAL (operands[5])")
@@ -331,7 +343,7 @@
 	 (eq_attr "type" "vimuladd,viwmuladd,vfwmuladd")
 	   (symbol_ref "INTVAL (operands[9])")
 
-	 (eq_attr "type" "vmsfs,vmidx")
+	 (eq_attr "type" "vmsfs,vmidx,vcompress")
 	   (symbol_ref "INTVAL (operands[6])")
 
 	 (eq_attr "type" "vmpop,vmffs")
@@ -4838,7 +4850,7 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (commutative_float_binop:VF
 	    (vec_duplicate:VF
-	      (match_operand:<VEL> 4 "register_operand"  "  r,  r"))
+	      (match_operand:<VEL> 4 "register_operand"  "  f,  f"))
 	    (match_operand:VF 3 "register_operand"       " vr, vr"))
 	  (match_operand:VF 2 "vector_merge_operand"     "0vu,0vu")))]
   "TARGET_VECTOR"
@@ -4860,7 +4872,7 @@
 	  (non_commutative_float_binop:VF
 	    (match_operand:VF 3 "register_operand"       " vr, vr")
 	    (vec_duplicate:VF
-	      (match_operand:<VEL> 4 "register_operand"  "  r,  r")))
+	      (match_operand:<VEL> 4 "register_operand"  "  f,  f")))
 	  (match_operand:VF 2 "vector_merge_operand"     "0vu,0vu")))]
   "TARGET_VECTOR"
   "vf<insn>.vf\t%0,%3,%4%p1"
@@ -4880,7 +4892,7 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (non_commutative_float_binop:VF
 	    (vec_duplicate:VF
-	      (match_operand:<VEL> 4 "register_operand"  "  r,  r"))
+	      (match_operand:<VEL> 4 "register_operand"  "  f,  f"))
 	    (match_operand:VF 3 "register_operand"       " vr, vr"))
 	  (match_operand:VF 2 "vector_merge_operand"     "0vu,0vu")))]
   "TARGET_VECTOR"
@@ -5748,7 +5760,7 @@
 	    (mult:VWEXTF
 	      (float_extend:VWEXTF
 	        (vec_duplicate:<V_DOUBLE_TRUNC>
-	          (match_operand:<VSUBEL> 3 "register_operand"       "    r")))
+	          (match_operand:<VSUBEL> 3 "register_operand"       "    f")))
 	      (float_extend:VWEXTF
 	        (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "   vr"))))
 	  (match_operand:VWEXTF 5 "vector_merge_operand"             "  0vu")))]
@@ -5799,7 +5811,7 @@
 	      (mult:VWEXTF
 	        (float_extend:VWEXTF
 	          (vec_duplicate:<V_DOUBLE_TRUNC>
-	            (match_operand:<VSUBEL> 3 "register_operand"       "    r")))
+	            (match_operand:<VSUBEL> 3 "register_operand"       "    f")))
 	        (float_extend:VWEXTF
 	          (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "   vr")))))
 	  (match_operand:VWEXTF 5 "vector_merge_operand"               "  0vu")))]
@@ -5904,7 +5916,7 @@
 	  (match_operator:<VM> 3 "signed_order_operator"
 	     [(match_operand:VF 4 "register_operand"          "   vr")
 	      (vec_duplicate:VF
-	        (match_operand:<VEL> 5 "register_operand"     "    r"))])
+	        (match_operand:<VEL> 5 "register_operand"     "    f"))])
 	  (match_operand:<VM> 2 "vector_merge_operand"        "  0vu")))]
   "TARGET_VECTOR && known_le (GET_MODE_SIZE (<MODE>mode), BYTES_PER_RISCV_VECTOR)"
   "vmf%B3.vf\t%0,%4,%5%p1"
@@ -5925,7 +5937,7 @@
 	  (match_operator:<VM> 3 "signed_order_operator"
 	     [(match_operand:VF 4 "register_operand"          "   vr")
 	      (vec_duplicate:VF
-	        (match_operand:<VEL> 5 "register_operand"     "    r"))])
+	        (match_operand:<VEL> 5 "register_operand"     "    f"))])
 	  (match_operand:<VM> 2 "vector_merge_operand"        "  0vu")))]
   "TARGET_VECTOR && known_gt (GET_MODE_SIZE (<MODE>mode), BYTES_PER_RISCV_VECTOR)"
   "vmf%B3.vf\t%0,%4,%5%p1"
@@ -5963,7 +5975,7 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "equality_operator"
 	     [(vec_duplicate:VF
-	        (match_operand:<VEL> 5 "register_operand"     "    r"))
+	        (match_operand:<VEL> 5 "register_operand"     "    f"))
 	      (match_operand:VF 4 "register_operand"          "   vr")])
 	  (match_operand:<VM> 2 "vector_merge_operand"        "  0vu")))]
   "TARGET_VECTOR && known_le (GET_MODE_SIZE (<MODE>mode), BYTES_PER_RISCV_VECTOR)"
@@ -5984,7 +5996,7 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operator:<VM> 3 "equality_operator"
 	     [(vec_duplicate:VF
-	        (match_operand:<VEL> 5 "register_operand"     "    r"))
+	        (match_operand:<VEL> 5 "register_operand"     "    f"))
 	      (match_operand:VF 4 "register_operand"          "   vr")])
 	  (match_operand:<VM> 2 "vector_merge_operand"        "  0vu")))]
   "TARGET_VECTOR && known_gt (GET_MODE_SIZE (<MODE>mode), BYTES_PER_RISCV_VECTOR)"
@@ -6576,4 +6588,205 @@
   "TARGET_VECTOR"
   "vfmv.f.s\t%0,%1"
   [(set_attr "type" "vfmovvf")
+   (set_attr "mode" "<MODE>")])
+
+;; vslide instructions
+(define_insn "@pred_slide<ud><mode>"
+  [(set (match_operand:V 0 "register_operand"             "<ud_constraint>")
+	(unspec:V
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand" "     vm,    Wc1")
+	      (match_operand 5 "vector_length_operand"    "     rK,     rK")
+	      (match_operand 6 "const_int_operand"        "      i,      i")
+	      (match_operand 7 "const_int_operand"        "      i,      i")
+	      (match_operand 8 "const_int_operand"        "      i,      i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:V 2 "vector_merge_operand"      "    0vu,    0vu")
+	   (match_operand:V 3 "register_operand"          "     vr,     vr")
+	   (match_operand 4 "pmode_reg_or_uimm5_operand"  "     rK,     rK")] VSLIDES))]
+  "TARGET_VECTOR"
+  "vslide<ud>.v%o4\t%0,%3,%4%p1"
+  [(set_attr "type" "vslide<ud>")
+   (set_attr "mode" "<MODE>")])
+
+;; vslide1 instructions
+(define_insn "@pred_slide<ud><mode>"
+  [(set (match_operand:VI_QHS 0 "register_operand"        "<ud_constraint>")
+	(unspec:VI_QHS
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand" "     vm,    Wc1")
+	      (match_operand 5 "vector_length_operand"    "     rK,     rK")
+	      (match_operand 6 "const_int_operand"        "      i,      i")
+	      (match_operand 7 "const_int_operand"        "      i,      i")
+	      (match_operand 8 "const_int_operand"        "      i,      i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:VI_QHS 2 "vector_merge_operand" "    0vu,    0vu")
+	   (match_operand:VI_QHS 3 "register_operand"     "     vr,     vr")
+	   (match_operand:<VEL> 4 "reg_or_0_operand"      "     rJ,     rJ")] VSLIDES1))]
+  "TARGET_VECTOR"
+  "vslide<ud>.vx\t%0,%3,%z4%p1"
+  [(set_attr "type" "vislide<ud>")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "@pred_slide<ud><mode>"
+  [(set (match_operand:VI_D 0 "register_operand")
+	(unspec:VI_D
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand")
+	      (match_operand 5 "reg_or_int_operand")
+	      (match_operand 6 "const_int_operand")
+	      (match_operand 7 "const_int_operand")
+	      (match_operand 8 "const_int_operand")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:VI_D 2 "vector_merge_operand")
+	   (match_operand:VI_D 3 "register_operand")
+	   (match_operand:<VEL> 4 "reg_or_int_operand")] VSLIDES1))]
+  "TARGET_VECTOR"
+{
+  if (riscv_vector::slide1_sew64_helper (<UNSPEC>, <MODE>mode,
+					 <VDEMOTE>mode, <VMDEMOTE>mode,
+					 operands))
+    DONE;
+})
+
+(define_insn "*pred_slide<ud><mode>"
+  [(set (match_operand:VI_D 0 "register_operand"          "<ud_constraint>")
+	(unspec:VI_D
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand" "     vm,    Wc1")
+	      (match_operand 5 "vector_length_operand"    "     rK,     rK")
+	      (match_operand 6 "const_int_operand"        "      i,      i")
+	      (match_operand 7 "const_int_operand"        "      i,      i")
+	      (match_operand 8 "const_int_operand"        "      i,      i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:VI_D 2 "vector_merge_operand"   "    0vu,    0vu")
+	   (match_operand:VI_D 3 "register_operand"       "     vr,     vr")
+	   (match_operand:<VEL> 4 "reg_or_0_operand"      "     rJ,     rJ")] VSLIDES1))]
+  "TARGET_VECTOR"
+  "vslide<ud>.vx\t%0,%3,%z4%p1"
+  [(set_attr "type" "vislide<ud>")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*pred_slide<ud><mode>_extended"
+  [(set (match_operand:VI_D 0 "register_operand"          "<ud_constraint>")
+	(unspec:VI_D
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand" "     vm,    Wc1")
+	      (match_operand 5 "vector_length_operand"    "     rK,     rK")
+	      (match_operand 6 "const_int_operand"        "      i,      i")
+	      (match_operand 7 "const_int_operand"        "      i,      i")
+	      (match_operand 8 "const_int_operand"        "      i,      i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:VI_D 2 "vector_merge_operand"   "    0vu,    0vu")
+	   (match_operand:VI_D 3 "register_operand"       "     vr,     vr")
+	   (sign_extend:<VEL>
+	     (match_operand:<VSUBEL> 4 "reg_or_0_operand" "     rJ,     rJ"))] VSLIDES1))]
+  "TARGET_VECTOR"
+  "vslide<ud>.vx\t%0,%3,%z4%p1"
+  [(set_attr "type" "vislide<ud>")
+   (set_attr "mode" "<MODE>")])
+
+;; vfslide1 instructions
+(define_insn "@pred_slide<ud><mode>"
+  [(set (match_operand:VF 0 "register_operand"            "<ud_constraint>")
+	(unspec:VF
+	  [(unspec:<VM>
+	     [(match_operand:<VM> 1 "vector_mask_operand" "     vm,    Wc1")
+	      (match_operand 5 "vector_length_operand"    "     rK,     rK")
+	      (match_operand 6 "const_int_operand"        "      i,      i")
+	      (match_operand 7 "const_int_operand"        "      i,      i")
+	      (match_operand 8 "const_int_operand"        "      i,      i")
+	      (reg:SI VL_REGNUM)
+	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:VF 2 "vector_merge_operand"     "    0vu,    0vu")
+	   (match_operand:VF 3 "register_operand"         "     vr,     vr")
+	   (match_operand:<VEL> 4 "register_operand"      "      f,      f")] VFSLIDES1))]
+  "TARGET_VECTOR"
+  "vfslide<ud>.vf\t%0,%3,%4%p1"
+  [(set_attr "type" "vfslide<ud>")
+   (set_attr "mode" "<MODE>")])
+
+;; vrgather
+(define_insn "@pred_gather<mode>"
+  [(set (match_operand:V 0 "register_operand"              "=&vr")
+	(if_then_else:V
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"  "vmWc1")
+	     (match_operand 5 "vector_length_operand"     "   rK")
+	     (match_operand 6 "const_int_operand"         "    i")
+	     (match_operand 7 "const_int_operand"         "    i")
+	     (match_operand 8 "const_int_operand"         "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:V
+	    [(match_operand:V 3 "register_operand"        "   vr")
+	     (match_operand:<VINDEX> 4 "register_operand" "   vr")] UNSPEC_VRGATHER)
+	  (match_operand:V 2 "vector_merge_operand"       "  0vu")))]
+  "TARGET_VECTOR"
+  "vrgather.vv\t%0,%3,%4%p1"
+  [(set_attr "type" "vgather")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_gather<mode>_scalar"
+  [(set (match_operand:V 0 "register_operand"               "=&vr")
+	(if_then_else:V
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"   "vmWc1")
+	     (match_operand 5 "vector_length_operand"      "   rK")
+	     (match_operand 6 "const_int_operand"          "    i")
+	     (match_operand 7 "const_int_operand"          "    i")
+	     (match_operand 8 "const_int_operand"          "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:V
+	    [(match_operand:V 3 "register_operand"         "   vr")
+	     (match_operand 4 "pmode_reg_or_uimm5_operand" "   rK")] UNSPEC_VRGATHER)
+	  (match_operand:V 2 "vector_merge_operand"        "  0vu")))]
+  "TARGET_VECTOR"
+  "vrgather.v%o4\t%0,%3,%4%p1"
+  [(set_attr "type" "vgather")
+   (set_attr "mode" "<MODE>")])
+
+;; vrgatherei16
+(define_insn "@pred_gatherei16<mode>"
+  [(set (match_operand:VEI16 0 "register_operand"              "=&vr")
+	(if_then_else:VEI16
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"      "vmWc1")
+	     (match_operand 5 "vector_length_operand"         "   rK")
+	     (match_operand 6 "const_int_operand"             "    i")
+	     (match_operand 7 "const_int_operand"             "    i")
+	     (match_operand 8 "const_int_operand"             "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:VEI16
+	    [(match_operand:VEI16 3 "register_operand"        "   vr")
+	     (match_operand:<VINDEXEI16> 4 "register_operand" "   vr")] UNSPEC_VRGATHEREI16)
+	  (match_operand:VEI16 2 "vector_merge_operand"       "  0vu")))]
+  "TARGET_VECTOR"
+  "vrgatherei16.vv\t%0,%3,%4%p1"
+  [(set_attr "type" "vgather")
+   (set_attr "mode" "<MODE>")])
+
+;; vcompress
+(define_insn "@pred_compress<mode>"
+  [(set (match_operand:V 0 "register_operand"            "=&vr")
+	(unspec:V
+	  [(unspec:<VM>
+	    [(match_operand:<VM> 3 "register_operand"    "  vm")
+	     (match_operand 4 "vector_length_operand"    "  rK")
+	     (match_operand 5 "const_int_operand"        "   i")
+	     (match_operand 6 "const_int_operand"        "   i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand:V 2 "register_operand"          "  vr")
+	   (match_operand:V 1 "vector_merge_operand"        " 0vu")] UNSPEC_VCOMPRESS))]
+  "TARGET_VECTOR"
+  "vcompress.vm\t%0,%2,%3"
+  [(set_attr "type" "vcompress")
    (set_attr "mode" "<MODE>")])
