@@ -1,3 +1,9 @@
+2023-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/finalize-1.f: Update scan-tree-dump-times for
+	mapping changes.
+	* gfortran.dg/gomp/pr78260-2.f90: Likewise.
+
 2023-02-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/openmp-simd-8.f90: Remove dump test.

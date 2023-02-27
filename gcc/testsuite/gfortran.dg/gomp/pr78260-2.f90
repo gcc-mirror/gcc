@@ -48,9 +48,11 @@ contains
   end subroutine sub
 end module m
 
-! { dg-final { scan-tree-dump-times "#pragma omp target data map\\(tofrom:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) arr.data \\\[len: D.\[0-9\]+ \\* 4\\\]\\) map\\(to:arr \\\[pointer set, len: ..\\\]\\) map\\(alloc:\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) arr.data \\\[pointer assign, bias: 0\\\]\\)" 1 "original" } }
+! Check for multiplication: len = arrays_size * 4<bytes>:
+! { dg-final { scan-tree-dump-times "D\\.\[0-9\]+ = D\\.\[0-9\]+ \\* 4;" 2 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target data map\\(tofrom:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) arr.data \\\[len: D.\[0-9\]+\\\]\\) map\\(to:arr \\\[pointer set, len: ..\\\]\\) map\\(alloc:\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) arr.data \\\[pointer assign, bias: 0\\\]\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target update to\\(\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) arr.data \\\[len: D.\[0-9\]+ \\* 4\\\]\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp target data map\\(tofrom:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) __result->data \\\[len: D.\[0-9\]+ \\* 4\\\]\\) map\\(to:\\*__result \\\[pointer set, len: ..\\\]\\) map\\(alloc:\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) __result->data \\\[pointer assign, bias: 0\\\]\\) map\\(alloc:__result \\\[pointer assign, bias: 0\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target data map\\(tofrom:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) __result->data \\\[len: D.\[0-9\]+\\\]\\) map\\(to:\\*__result \\\[pointer set, len: ..\\\]\\) map\\(alloc:\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) __result->data \\\[pointer assign, bias: 0\\\]\\) map\\(alloc:__result \\\[pointer assign, bias: 0\\\]\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target update to\\(\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) __result->data \\\[len: D.\[0-9\]+ \\* 4\\\]\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target data map\\(tofrom:\\*__result.0\\) map\\(alloc:__result.0 \\\[pointer assign, bias: 0\\\]\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target update to\\(\\*__result.0\\)" 2 "original" } }
