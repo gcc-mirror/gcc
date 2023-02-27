@@ -1181,6 +1181,8 @@
 		 (VSHRNTQ_N_S "vshrnt") (VSHRNTQ_N_U "vshrnt")
 		 (VSHRQ_M_N_S "vshr") (VSHRQ_M_N_U "vshr")
 		 (VSHRQ_N_S "vshr") (VSHRQ_N_U "vshr")
+		 (VSLIQ_M_N_S "vsli") (VSLIQ_M_N_U "vsli")
+		 (VSLIQ_N_S "vsli") (VSLIQ_N_U "vsli")
 		 (VSUBQ_M_N_S "vsub") (VSUBQ_M_N_U "vsub") (VSUBQ_M_N_F "vsub")
 		 (VSUBQ_M_S "vsub") (VSUBQ_M_U "vsub") (VSUBQ_M_F "vsub")
 		 (VSUBQ_N_S "vsub") (VSUBQ_N_U "vsub") (VSUBQ_N_F "vsub")

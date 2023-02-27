@@ -2058,7 +2058,7 @@
 ;;
 ;; [vsliq_n_u, vsliq_n_s])
 ;;
-(define_insn "mve_vsliq_n_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_n_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
@@ -2067,7 +2067,7 @@
 	 VSLIQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vsli.%#<V_sz_elem>\t%q0, %q2, %3"
+  "<mve_insn>.%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2960,7 +2960,7 @@
 ;;
 ;; [vsliq_m_n_u, vsliq_m_n_s])
 ;;
-(define_insn "mve_vsliq_m_n_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_n_<supf><mode>"
    [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
        (unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
@@ -2970,7 +2970,7 @@
 	 VSLIQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vslit.%#<V_sz_elem>\t%q0, %q2, %3"
+  "vpst\;<mve_insn>t.%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
