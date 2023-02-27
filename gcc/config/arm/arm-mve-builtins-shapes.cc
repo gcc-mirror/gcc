@@ -489,6 +489,33 @@ struct binary_acca_int64_def : public overloaded_base<0>
 };
 SHAPE (binary_acca_int64)
 
+/* <T0>_t vfoo[_n_t0](<T0>_t, int32_t)
+
+   i.e. the shape for binary operations that operate on
+   a vector and an int32_t.
+
+   Example: vbrsrq.
+   int16x8_t [__arm_]vbrsrq[_n_s16](int16x8_t a, int32_t b)
+   int16x8_t [__arm_]vbrsrq_m[_n_s16](int16x8_t inactive, int16x8_t a, int32_t b, mve_pred16_t p)
+   int16x8_t [__arm_]vbrsrq_x[_n_s16](int16x8_t a, int32_t b, mve_pred16_t p)  */
+struct binary_imm32_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,ss32", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (1, 1);
+  }
+};
+SHAPE (binary_imm32)
+
 /* <T0>_t vfoo[_n_t0](<T0>_t, const int)
 
    Shape for vector shift right operations that take a vector first

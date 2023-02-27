@@ -41,6 +41,7 @@ namespace arm_mve
     extern const function_shape *const binary_acc_int64;
     extern const function_shape *const binary_acca_int32;
     extern const function_shape *const binary_acca_int64;
+    extern const function_shape *const binary_imm32;
     extern const function_shape *const binary_lshift_unsigned;
     extern const function_shape *const binary_maxamina;
     extern const function_shape *const binary_maxavminav;
