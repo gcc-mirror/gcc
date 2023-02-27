@@ -983,13 +983,13 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   cbuf.chunk_cnt = -1;
   cbuf.use_cnt = 0;
   cbuf.buf = NULL;
-  if (mapnum > 1 || pragma_kind == GOMP_MAP_VARS_TARGET)
+  if (mapnum > 1 || (pragma_kind & GOMP_MAP_VARS_TARGET))
     {
       size_t chunks_size = (mapnum + 1) * sizeof (struct gomp_coalesce_chunk);
       cbuf.chunks = (struct gomp_coalesce_chunk *) gomp_alloca (chunks_size);
       cbuf.chunk_cnt = 0;
     }
-  if (pragma_kind == GOMP_MAP_VARS_TARGET)
+  if (pragma_kind & GOMP_MAP_VARS_TARGET)
     {
       size_t align = 4 * sizeof (void *);
       tgt_align = align;
@@ -1262,7 +1262,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
       tgt->tgt_start = (uintptr_t) tgt->to_free;
       tgt->tgt_end = tgt->tgt_start + sizes[0];
     }
-  else if (not_found_cnt || pragma_kind == GOMP_MAP_VARS_TARGET)
+  else if (not_found_cnt || (pragma_kind & GOMP_MAP_VARS_TARGET))
     {
       /* Allocate tgt_align aligned tgt_size block of memory.  */
       /* FIXME: Perhaps change interface to allocate properly aligned
@@ -1300,7 +1300,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
     }
 
   tgt_size = 0;
-  if (pragma_kind == GOMP_MAP_VARS_TARGET)
+  if (pragma_kind & GOMP_MAP_VARS_TARGET)
     tgt_size = mapnum * sizeof (void *);
 
   tgt->array = NULL;
@@ -1738,7 +1738,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  }
     }
 
-  if (pragma_kind == GOMP_MAP_VARS_TARGET)
+  if (pragma_kind & GOMP_MAP_VARS_TARGET)
     {
       for (i = 0; i < mapnum; i++)
 	{

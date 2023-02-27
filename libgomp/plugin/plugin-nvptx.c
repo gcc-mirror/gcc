@@ -742,7 +742,7 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 }
 
 static void
-nvptx_exec (void (*fn), size_t mapnum, unsigned *dims, void *targ_mem_desc,
+nvptx_exec (void (*fn), unsigned *dims, void *targ_mem_desc,
 	    CUdeviceptr dp, CUstream stream)
 {
   struct targ_fn_descriptor *targ_fn = (struct targ_fn_descriptor *) fn;
@@ -1528,70 +1528,16 @@ GOMP_OFFLOAD_free (int ord, void *ptr)
 }
 
 void
-GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
+GOMP_OFFLOAD_openacc_exec (void (*fn) (void *),
+			   size_t mapnum  __attribute__((unused)),
 			   void **hostaddrs __attribute__((unused)),
 			   void **devaddrs,
 			   unsigned *dims, void *targ_mem_desc)
 {
-  GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
+  GOMP_PLUGIN_debug (0, "nvptx %s\n", __FUNCTION__);
 
-  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
-  acc_prof_info *prof_info = thr->prof_info;
-  acc_event_info data_event_info;
-  acc_api_info *api_info = thr->api_info;
-  bool profiling_p = __builtin_expect (prof_info != NULL, false);
-
-  void **hp = NULL;
-  CUdeviceptr dp = 0;
-
-  if (mapnum > 0)
-    {
-      size_t s = mapnum * sizeof (void *);
-      hp = alloca (s);
-      for (int i = 0; i < mapnum; i++)
-	hp[i] = devaddrs[i];
-      CUDA_CALL_ASSERT (cuMemAlloc, &dp, s);
-      if (profiling_p)
-	goacc_profiling_acc_ev_alloc (thr, (void *) dp, s);
-    }
-
-  /* Copy the (device) pointers to arguments to the device (dp and hp might in
-     fact have the same value on a unified-memory system).  */
-  if (mapnum > 0)
-    {
-      if (profiling_p)
-	{
-	  prof_info->event_type = acc_ev_enqueue_upload_start;
-
-	  data_event_info.data_event.event_type = prof_info->event_type;
-	  data_event_info.data_event.valid_bytes
-	    = _ACC_DATA_EVENT_INFO_VALID_BYTES;
-	  data_event_info.data_event.parent_construct
-	    = acc_construct_parallel;
-	  data_event_info.data_event.implicit = 1; /* Always implicit.  */
-	  data_event_info.data_event.tool_info = NULL;
-	  data_event_info.data_event.var_name = NULL;
-	  data_event_info.data_event.bytes = mapnum * sizeof (void *);
-	  data_event_info.data_event.host_ptr = hp;
-	  data_event_info.data_event.device_ptr = (const void *) dp;
-
-	  api_info->device_api = acc_device_api_cuda;
-
-	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
-						api_info);
-	}
-      CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, (void *) hp,
-			mapnum * sizeof (void *));
-      if (profiling_p)
-	{
-	  prof_info->event_type = acc_ev_enqueue_upload_end;
-	  data_event_info.data_event.event_type = prof_info->event_type;
-	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
-						api_info);
-	}
-    }
-
-  nvptx_exec (fn, mapnum, dims, targ_mem_desc, dp, NULL);
+  CUdeviceptr dp = (CUdeviceptr) devaddrs;
+  nvptx_exec (fn, dims, targ_mem_desc, dp, NULL);
 
   CUresult r = CUDA_CALL_NOCHECK (cuStreamSynchronize, NULL);
   const char *maybe_abort_msg = "(perhaps abort was called)";
@@ -1600,98 +1546,20 @@ GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
 		       maybe_abort_msg);
   else if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuStreamSynchronize error: %s", cuda_error (r));
-
-  CUDA_CALL_ASSERT (cuMemFree, dp);
-  if (profiling_p)
-    goacc_profiling_acc_ev_free (thr, (void *) dp);
-}
-
-static void
-cuda_free_argmem (void *ptr)
-{
-  void **block = (void **) ptr;
-  nvptx_free (block[0], (struct ptx_device *) block[1]);
-  free (block);
 }
 
 void
-GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
+GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *),
+				 size_t mapnum __attribute__((unused)),
 				 void **hostaddrs __attribute__((unused)),
 				 void **devaddrs,
 				 unsigned *dims, void *targ_mem_desc,
 				 struct goacc_asyncqueue *aq)
 {
-  GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
+  GOMP_PLUGIN_debug (0, "nvptx %s\n", __FUNCTION__);
 
-  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
-  acc_prof_info *prof_info = thr->prof_info;
-  acc_event_info data_event_info;
-  acc_api_info *api_info = thr->api_info;
-  bool profiling_p = __builtin_expect (prof_info != NULL, false);
-
-  void **hp = NULL;
-  CUdeviceptr dp = 0;
-  void **block = NULL;
-
-  if (mapnum > 0)
-    {
-      size_t s = mapnum * sizeof (void *);
-      block = (void **) GOMP_PLUGIN_malloc (2 * sizeof (void *) + s);
-      hp = block + 2;
-      for (int i = 0; i < mapnum; i++)
-	hp[i] = devaddrs[i];
-      CUDA_CALL_ASSERT (cuMemAlloc, &dp, s);
-      if (profiling_p)
-	goacc_profiling_acc_ev_alloc (thr, (void *) dp, s);
-    }
-
-  /* Copy the (device) pointers to arguments to the device (dp and hp might in
-     fact have the same value on a unified-memory system).  */
-  if (mapnum > 0)
-    {
-      if (profiling_p)
-	{
-	  prof_info->event_type = acc_ev_enqueue_upload_start;
-
-	  data_event_info.data_event.event_type = prof_info->event_type;
-	  data_event_info.data_event.valid_bytes
-	    = _ACC_DATA_EVENT_INFO_VALID_BYTES;
-	  data_event_info.data_event.parent_construct
-	    = acc_construct_parallel;
-	  data_event_info.data_event.implicit = 1; /* Always implicit.  */
-	  data_event_info.data_event.tool_info = NULL;
-	  data_event_info.data_event.var_name = NULL;
-	  data_event_info.data_event.bytes = mapnum * sizeof (void *);
-	  data_event_info.data_event.host_ptr = hp;
-	  data_event_info.data_event.device_ptr = (const void *) dp;
-
-	  api_info->device_api = acc_device_api_cuda;
-
-	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
-						api_info);
-	}
-
-      CUDA_CALL_ASSERT (cuMemcpyHtoDAsync, dp, (void *) hp,
-			mapnum * sizeof (void *), aq->cuda_stream);
-      block[0] = (void *) dp;
-
-      struct nvptx_thread *nvthd =
-	(struct nvptx_thread *) GOMP_PLUGIN_acc_thread ();
-      block[1] = (void *) nvthd->ptx_dev;
-
-      if (profiling_p)
-	{
-	  prof_info->event_type = acc_ev_enqueue_upload_end;
-	  data_event_info.data_event.event_type = prof_info->event_type;
-	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
-						api_info);
-	}
-    }
-
-  nvptx_exec (fn, mapnum, dims, targ_mem_desc, dp, aq->cuda_stream);
-
-  if (mapnum > 0)
-    GOMP_OFFLOAD_openacc_async_queue_callback (aq, cuda_free_argmem, block);
+  CUdeviceptr dp = (CUdeviceptr) devaddrs;
+  nvptx_exec (fn, dims, targ_mem_desc, dp, aq->cuda_stream);
 }
 
 void *

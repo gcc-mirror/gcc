@@ -203,9 +203,7 @@ static void cb_alloc (acc_prof_info *prof_info, acc_event_info *event_info, acc_
 # error TODO
 #else
   assert (state == 4
-	  || state == 6
-	  || state == 104
-	  || state == 106);
+	  || state == 104);
   STATE_OP (state, ++);
 
   if (state == 5
@@ -216,13 +214,6 @@ static void cb_alloc (acc_prof_info *prof_info, acc_event_info *event_info, acc_
       assert (tool_info->nested != NULL);
       assert (tool_info->nested->event_info.other_event.event_type == acc_ev_enter_data_start);
       assert (tool_info->nested->nested == NULL);
-    }
-  else if (state == 7
-	   || state == 107)
-    {
-      assert (tool_info != NULL);
-      assert (tool_info->event_info.other_event.event_type == acc_ev_compute_construct_start);
-      assert (tool_info->nested == NULL);
     }
   else
     abort ();
@@ -268,17 +259,10 @@ static void cb_free (acc_prof_info *prof_info, acc_event_info *event_info, acc_a
 #if DEVICE_INIT_INSIDE_COMPUTE_CONSTRUCT
 # error TODO
 #else
-  assert (state == 9
-	  || state == 11);
+  assert (state == 9);
   STATE_OP (state, ++);
 
   if (state == 10)
-    {
-      assert (tool_info != NULL);
-      assert (tool_info->event_info.other_event.event_type == acc_ev_compute_construct_start);
-      assert (tool_info->nested == NULL);
-    }
-  else if (state == 12)
     {
       assert (tool_info != NULL);
       assert (tool_info->event_info.other_event.event_type == acc_ev_compute_construct_start);
@@ -449,19 +433,9 @@ static void cb_exit_data_start (acc_prof_info *prof_info, acc_event_info *event_
 {
   DEBUG_printf ("%s\n", __FUNCTION__);
 
+  assert (state == 8
 #if ASYNC_EXIT_DATA
-  if (acc_async != acc_async_sync)
-    {
-      /* Compensate for the deferred 'acc_ev_free'.  */
-      state += 1;
-    }
-#else
-# error TODO
-#endif
-
-  assert (state == 10
-#if ASYNC_EXIT_DATA
-	  || state == 110
+	  || state == 108
 #endif
 	  );
   STATE_OP (state, ++);
@@ -525,9 +499,9 @@ static void cb_exit_data_end (acc_prof_info *prof_info, acc_event_info *event_in
 {
   DEBUG_printf ("%s\n", __FUNCTION__);
 
-  assert (state == 12
+  assert (state == 10
 #if ASYNC_EXIT_DATA
-	  || state == 112
+	  || state == 110
 #endif
 	  );
   STATE_OP (state, ++);
@@ -654,13 +628,9 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
     {
       /* Compensate for the missing 'acc_ev_enter_data_end'.  */
       state += 1;
-      /* Compensate for the missing 'acc_ev_alloc'.  */
-      state += 1;
       /* Compensate for the missing 'acc_ev_enqueue_launch_start' and
 	 'acc_ev_enqueue_launch_end'.  */
       state += 2;
-      /* Compensate for the missing 'acc_ev_free'.  */
-      state += 1;
       /* Compensate for the missing 'acc_ev_exit_data_start'.  */
       state += 1;
       /* Compensate for the missing 'acc_ev_free'.  */
@@ -676,8 +646,8 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
       state += 2;
     }
 #endif
-  assert (state == 13
-	  || state == 113);
+  assert (state == 11
+	  || state == 111);
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -731,8 +701,8 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
 
   assert (acc_device_type != acc_device_host);
 
-  assert (state == 7
-	  || state == 107);
+  assert (state == 6
+	  || state == 106);
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -800,8 +770,8 @@ static void cb_enqueue_launch_end (acc_prof_info *prof_info, acc_event_info *eve
 
   assert (acc_device_type != acc_device_host);
 
-  assert (state == 8
-	  || state == 108);
+  assert (state == 7
+	  || state == 107);
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -891,7 +861,7 @@ int main()
     }
     assert (state_init == 5);
   }
-  assert (state == 14);
+  assert (state == 12);
 
   STATE_OP (state, = 100);
 
@@ -908,7 +878,7 @@ int main()
 #pragma acc wait
     assert (state_init == 105);
   }
-  assert (state == 114);
+  assert (state == 112);
 
   return 0;
 }
