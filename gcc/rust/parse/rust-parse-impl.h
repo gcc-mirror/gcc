@@ -3990,6 +3990,34 @@ Parser<ManagedTokenSource>::parse_lifetime ()
     }
 }
 
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::ExternalTypeItem>
+Parser<ManagedTokenSource>::parse_external_type_item (AST::Visibility vis,
+						      AST::AttrVec outer_attrs)
+{
+  Location locus = lexer.peek_token ()->get_locus ();
+  skip_token (TYPE);
+
+  const_TokenPtr alias_name_tok = expect_token (IDENTIFIER);
+  if (alias_name_tok == nullptr)
+    {
+      Error error (lexer.peek_token ()->get_locus (),
+		   "could not parse identifier in external opaque type");
+      add_error (std::move (error));
+
+      skip_after_semicolon ();
+      return nullptr;
+    }
+
+  if (!skip_token (SEMICOLON))
+    return nullptr;
+
+  return std::unique_ptr<AST::ExternalTypeItem> (
+    new AST::ExternalTypeItem (std::move (alias_name_tok->get_str ()),
+			       std::move (vis), std::move (outer_attrs),
+			       std::move (locus)));
+}
+
 // Parses a "type alias" (typedef) item.
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::TypeAlias>
@@ -6011,6 +6039,9 @@ Parser<ManagedTokenSource>::parse_external_item ()
 	    std::move (variadic_attrs), std::move (vis),
 	    std::move (outer_attrs), locus));
       }
+    case TYPE:
+      return parse_external_type_item (std::move (vis),
+				       std::move (outer_attrs));
     default:
       // error
       add_error (
