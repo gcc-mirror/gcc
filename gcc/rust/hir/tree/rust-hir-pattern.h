@@ -667,9 +667,8 @@ protected:
 };
 
 // Elements of a struct pattern
-struct StructPatternElements
+class StructPatternElements
 {
-private:
   std::vector<std::unique_ptr<StructPatternField>> fields;
 
 public:
