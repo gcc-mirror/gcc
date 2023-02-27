@@ -526,6 +526,64 @@ struct binary_rshift_def : public overloaded_base<0>
 SHAPE (binary_rshift)
 
 
+/* <uT0>_t vfoo[_n_t0](<T0>_t, int)
+
+   Shape for vector saturating shift left operations that take a
+   vector of signed elements as first argument and an integer, and
+   produce a vector of unsigned elements.
+
+   Check that 'imm' is in the [0..#bits-1] range.
+
+   Example: vqshluq.
+   uint16x8_t [__arm_]vqshluq[_n_s16](int16x8_t a, const int imm)
+   uint16x8_t [__arm_]vqshluq_m[_n_s16](uint16x8_t inactive, int16x8_t a, const int imm, mve_pred16_t p)  */
+struct binary_lshift_unsigned_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "vu0,vs0,ss32", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (i-1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    if (r.pred == PRED_m)
+      {
+	/* With PRED_m, check that the 'inactive' first argument has
+	   the expeected unsigned type.  */
+	type_suffix_index return_type
+	  = find_type_suffix (TYPE_unsigned, type_suffixes[type].element_bits);
+
+	if (!r.require_matching_vector_type (0, return_type))
+	  return error_mark_node;
+      }
+
+    for (; i < nargs; ++i)
+      if (!r.require_integer_immediate (i))
+	return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int bits = c.type_suffix (0).element_bits;
+    return c.require_immediate_range (1, 0, bits - 1);
+  }
+
+};
+SHAPE (binary_lshift_unsigned)
+
 /* <uT0>_t vfoo[_t0](<uT0>_t, <T0>_t)
 
    i.e. binary operations that take a vector of unsigned elements as first argument and a
