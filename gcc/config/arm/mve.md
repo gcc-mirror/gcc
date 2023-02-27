@@ -459,14 +459,14 @@
 ;;
 ;; [vmvnq_n_u, vmvnq_n_s])
 ;;
-(define_insn "mve_vmvnq_n_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_n_<supf><mode>"
   [
    (set (match_operand:MVE_5 0 "s_register_operand" "=w")
 	(unspec:MVE_5 [(match_operand:<V_elem> 1 "immediate_operand" "i")]
 	 VMVNQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vmvn.i%#<V_sz_elem>  %q0, %1"
+  "<mve_insn>.i%#<V_sz_elem>\t%q0, %1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1953,7 +1953,7 @@
 ;;
 ;; [vmvnq_m_s, vmvnq_m_u])
 ;;
-(define_insn "mve_vmvnq_m_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
@@ -1962,7 +1962,7 @@
 	 VMVNQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vmvnt %q0, %q2"
+  "vpst\;<mve_insn>t\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2423,7 +2423,7 @@
 ;;
 ;; [vmvnq_m_n_u, vmvnq_m_n_s])
 ;;
-(define_insn "mve_vmvnq_m_n_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_n_<supf><mode>"
   [
    (set (match_operand:MVE_5 0 "s_register_operand" "=w")
 	(unspec:MVE_5 [(match_operand:MVE_5 1 "s_register_operand" "0")
@@ -2432,7 +2432,7 @@
 	 VMVNQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vmvnt.i%#<V_sz_elem>	%q0, %2"
+  "vpst\;<mve_insn>t.i%#<V_sz_elem>\t%q0, %2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
