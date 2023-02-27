@@ -70,6 +70,10 @@ protected:
   bool select (TyTy::BaseType &receiver) override;
 
 private:
+  std::vector<Adjustment>
+  append_adjustments (const std::vector<Adjustment> &adjustments) const;
+
+private:
   // search
   const HIR::PathIdentSegment &segment_name;
   std::vector<MethodResolver::predicate_candidate> predicate_items;
