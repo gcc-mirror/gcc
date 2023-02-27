@@ -40,15 +40,15 @@ public:
   };
 
   // ctor for all adjustments except derefs
-  Adjustment (AdjustmentType type, const TyTy::BaseType *actual,
-	      const TyTy::BaseType *expected)
+  Adjustment (AdjustmentType type, TyTy::BaseType *actual,
+	      TyTy::BaseType *expected)
     : Adjustment (type, actual, expected, nullptr, nullptr,
 		  AdjustmentType::ERROR)
   {}
 
   static Adjustment get_op_overload_deref_adjustment (
-    AdjustmentType type, const TyTy::BaseType *actual,
-    const TyTy::BaseType *expected, TyTy::FnType *fn, HIR::ImplItem *deref_item,
+    AdjustmentType type, TyTy::BaseType *actual, TyTy::BaseType *expected,
+    TyTy::FnType *fn, HIR::ImplItem *deref_item,
     Adjustment::AdjustmentType requires_ref_adjustment)
   {
     rust_assert (type == DEREF || type == DEREF_MUT);
@@ -58,8 +58,8 @@ public:
 
   AdjustmentType get_type () const { return type; }
 
-  const TyTy::BaseType *get_actual () const { return actual; }
-  const TyTy::BaseType *get_expected () const { return expected; }
+  TyTy::BaseType *get_actual () const { return actual; }
+  TyTy::BaseType *get_expected () const { return expected; }
 
   std::string as_string () const
   {
@@ -110,8 +110,8 @@ public:
   HIR::ImplItem *get_deref_hir_item () const { return deref_item; }
 
 private:
-  Adjustment (AdjustmentType type, const TyTy::BaseType *actual,
-	      const TyTy::BaseType *expected, TyTy::FnType *deref_operator_fn,
+  Adjustment (AdjustmentType type, TyTy::BaseType *actual,
+	      TyTy::BaseType *expected, TyTy::FnType *deref_operator_fn,
 	      HIR::ImplItem *deref_item,
 	      Adjustment::AdjustmentType requires_ref_adjustment)
     : type (type), actual (actual), expected (expected),
@@ -120,8 +120,8 @@ private:
   {}
 
   AdjustmentType type;
-  const TyTy::BaseType *actual;
-  const TyTy::BaseType *expected;
+  TyTy::BaseType *actual;
+  TyTy::BaseType *expected;
 
   // - only used for deref operator_overloads
   //
@@ -140,12 +140,12 @@ public:
   TyTy::BaseType *adjust_type (const std::vector<Adjustment> &adjustments);
 
   static Adjustment
-  try_deref_type (const TyTy::BaseType *ty,
+  try_deref_type (TyTy::BaseType *ty,
 		  Analysis::RustLangItem::ItemType deref_lang_item);
 
-  static Adjustment try_raw_deref_type (const TyTy::BaseType *ty);
+  static Adjustment try_raw_deref_type (TyTy::BaseType *ty);
 
-  static Adjustment try_unsize_type (const TyTy::BaseType *ty);
+  static Adjustment try_unsize_type (TyTy::BaseType *ty);
 
 private:
   const TyTy::BaseType *base;
@@ -158,15 +158,15 @@ protected:
 
   virtual ~AutoderefCycle ();
 
-  virtual bool select (const TyTy::BaseType &autoderefed) = 0;
+  virtual bool select (TyTy::BaseType &autoderefed) = 0;
 
   // optional: this is a chance to hook in to grab predicate items on the raw
   // type
   virtual void try_hook (const TyTy::BaseType &);
 
-  virtual bool cycle (const TyTy::BaseType *receiver);
+  virtual bool cycle (TyTy::BaseType *receiver);
 
-  bool try_autoderefed (const TyTy::BaseType *r);
+  bool try_autoderefed (TyTy::BaseType *r);
 
   bool autoderef_flag;
   std::vector<Adjustment> adjustments;

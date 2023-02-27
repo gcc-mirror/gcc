@@ -54,10 +54,9 @@ CompileCrate::go ()
 // Shared methods in compilation
 
 tree
-HIRCompileBase::coercion_site (HirId id, tree rvalue,
-			       const TyTy::BaseType *rval,
-			       const TyTy::BaseType *lval,
-			       Location lvalue_locus, Location rvalue_locus)
+HIRCompileBase::coercion_site (HirId id, tree rvalue, TyTy::BaseType *rval,
+			       TyTy::BaseType *lval, Location lvalue_locus,
+			       Location rvalue_locus)
 {
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (id, &adjustments);
@@ -70,15 +69,15 @@ HIRCompileBase::coercion_site (HirId id, tree rvalue,
 }
 
 tree
-HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
-				const TyTy::BaseType *lval,
-				Location lvalue_locus, Location rvalue_locus)
+HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
+				TyTy::BaseType *lval, Location lvalue_locus,
+				Location rvalue_locus)
 {
   if (rvalue == error_mark_node)
     return error_mark_node;
 
-  const TyTy::BaseType *actual = rval->destructure ();
-  const TyTy::BaseType *expected = lval->destructure ();
+  TyTy::BaseType *actual = rval->destructure ();
+  TyTy::BaseType *expected = lval->destructure ();
 
   if (expected->get_kind () == TyTy::TypeKind::REF)
     {

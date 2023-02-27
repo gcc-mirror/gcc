@@ -40,11 +40,11 @@ protected:
 protected:
   Context *get_context () { return ctx; }
 
-  tree coercion_site (HirId id, tree rvalue, const TyTy::BaseType *actual,
-		      const TyTy::BaseType *expected, Location lvalue_locus,
+  tree coercion_site (HirId id, tree rvalue, TyTy::BaseType *actual,
+		      TyTy::BaseType *expected, Location lvalue_locus,
 		      Location rvalue_locus);
-  tree coercion_site1 (tree rvalue, const TyTy::BaseType *actual,
-		       const TyTy::BaseType *expected, Location lvalue_locus,
+  tree coercion_site1 (tree rvalue, TyTy::BaseType *actual,
+		       TyTy::BaseType *expected, Location lvalue_locus,
 		       Location rvalue_locus);
 
   tree coerce_to_dyn_object (tree compiled_ref, const TyTy::BaseType *actual,
