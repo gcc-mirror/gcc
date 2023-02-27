@@ -529,15 +529,15 @@
 ;;
 ;; [vbrsrq_n_f])
 ;;
-(define_insn "mve_vbrsrq_n_f<mode>"
+(define_insn "@mve_<mve_insn>q_n_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:SI 2 "s_register_operand" "r")]
-	 VBRSRQ_N_F))
+	 MVE_VBRSR_N_FP))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vbrsr.<V_sz_elem>  %q0, %q1, %2"
+  "<mve_insn>.<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -826,7 +826,7 @@
 ;;
 ;; [vbrsrq_n_u, vbrsrq_n_s])
 ;;
-(define_insn "mve_vbrsrq_n_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_n_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
@@ -834,7 +834,7 @@
 	 VBRSRQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vbrsr.%#<V_sz_elem>	%q0, %q1, %2"
+  "<mve_insn>.%#<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2802,7 +2802,7 @@
 ;;
 ;; [vbrsrq_m_n_u, vbrsrq_m_n_s])
 ;;
-(define_insn "mve_vbrsrq_m_n_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_n_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
@@ -2812,7 +2812,7 @@
 	 VBRSRQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vbrsrt.%#<V_sz_elem>	%q0, %q2, %3"
+  "vpst\;<mve_insn>t.%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -3257,17 +3257,17 @@
 ;;
 ;; [vbrsrq_m_n_f])
 ;;
-(define_insn "mve_vbrsrq_m_n_f<mode>"
+(define_insn "@mve_<mve_insn>q_m_n_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:SI 3 "s_register_operand" "r")
 		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VBRSRQ_M_N_F))
+	 MVE_VBRSR_M_N_FP))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vbrsrt.%#<V_sz_elem>	%q0, %q2, %3"
+  "vpst\;<mve_insn>t.%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 

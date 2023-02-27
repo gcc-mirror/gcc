@@ -610,6 +610,14 @@
 		     VCREATEQ_F
 		     ])
 
+(define_int_iterator MVE_VBRSR_M_N_FP [
+		     VBRSRQ_M_N_F
+		     ])
+
+(define_int_iterator MVE_VBRSR_N_FP [
+		     VBRSRQ_N_F
+		     ])
+
 ;; MVE comparison iterators
 (define_int_iterator MVE_CMP_M [
 		     VCMPCSQ_M_U
@@ -900,6 +908,8 @@
 		 (VBICQ_M_N_S "vbic") (VBICQ_M_N_U "vbic")
 		 (VBICQ_M_S "vbic") (VBICQ_M_U "vbic") (VBICQ_M_F "vbic")
 		 (VBICQ_N_S "vbic") (VBICQ_N_U "vbic")
+		 (VBRSRQ_M_N_S "vbrsr") (VBRSRQ_M_N_U "vbrsr") (VBRSRQ_M_N_F "vbrsr")
+		 (VBRSRQ_N_S "vbrsr") (VBRSRQ_N_U "vbrsr") (VBRSRQ_N_F "vbrsr")
 		 (VCLSQ_M_S "vcls")
 		 (VCLSQ_S "vcls")
 		 (VCLZQ_M_S "vclz") (VCLZQ_M_U "vclz")
