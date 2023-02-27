@@ -25,25 +25,26 @@ namespace Resolver {
 
 TypeCoercionRules::CoercionResult
 TypeCoercionRules::Coerce (TyTy::BaseType *receiver, TyTy::BaseType *expected,
-			   Location locus)
+			   Location locus, bool allow_autoderef)
 {
-  TypeCoercionRules resolver (expected, locus, true);
+  TypeCoercionRules resolver (expected, locus, true, allow_autoderef);
   bool ok = resolver.do_coercion (receiver);
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
 
 TypeCoercionRules::CoercionResult
 TypeCoercionRules::TryCoerce (TyTy::BaseType *receiver,
-			      TyTy::BaseType *expected, Location locus)
+			      TyTy::BaseType *expected, Location locus,
+			      bool allow_autoderef)
 {
-  TypeCoercionRules resolver (expected, locus, false);
+  TypeCoercionRules resolver (expected, locus, false, allow_autoderef);
   bool ok = resolver.do_coercion (receiver);
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
 
 TypeCoercionRules::TypeCoercionRules (TyTy::BaseType *expected, Location locus,
-				      bool emit_errors)
-  : AutoderefCycle (false), mappings (Analysis::Mappings::get ()),
+				      bool emit_errors, bool allow_autoderef)
+  : AutoderefCycle (!allow_autoderef), mappings (Analysis::Mappings::get ()),
     context (TypeCheckContext::get ()), expected (expected), locus (locus),
     try_result (CoercionResult::get_error ()), emit_errors (emit_errors)
 {}

@@ -186,7 +186,8 @@ coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
     return expr;
 
   // can we autoderef it?
-  auto result = TypeCoercionRules::Coerce (expr, expected, locus);
+  auto result = TypeCoercionRules::Coerce (expr, expected, locus,
+					   true /*allow-autodref*/);
 
   // the result needs to be unified
   TyTy::BaseType *receiver = expr;
