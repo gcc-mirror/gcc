@@ -149,26 +149,52 @@ UnifyRules::go ()
 	}
     }
 
-  // inject inference vars if required
-  bool got_param = rtype->get_kind () == TyTy::TypeKind::PARAM;
-  bool lhs_is_infer_var = ltype->get_kind () == TyTy::TypeKind::INFER;
-  bool expected_is_concrete = ltype->is_concrete () && !lhs_is_infer_var;
-  bool needs_infer = expected_is_concrete && got_param;
-  if (infer_flag && needs_infer)
+  if (infer_flag)
     {
-      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (rtype);
-      TyTy::TyVar iv = TyTy::TyVar::get_implicit_infer_var (rhs.get_locus ());
-      rust_assert (iv.get_tyty ()->get_kind () == TyTy::TypeKind::INFER);
-      TyTy::InferType *i = static_cast<TyTy::InferType *> (iv.get_tyty ());
+      bool rgot_param = rtype->get_kind () == TyTy::TypeKind::PARAM;
+      bool lhs_is_infer_var = ltype->get_kind () == TyTy::TypeKind::INFER;
+      bool expected_is_concrete = ltype->is_concrete () && !lhs_is_infer_var;
+      bool rneeds_infer = expected_is_concrete && rgot_param;
 
-      infers.push_back ({p->get_ref (), p->get_ty_ref (), p, i});
+      bool lgot_param = ltype->get_kind () == TyTy::TypeKind::PARAM;
+      bool rhs_is_infer_var = rtype->get_kind () == TyTy::TypeKind::INFER;
+      bool receiver_is_concrete = rtype->is_concrete () && !rhs_is_infer_var;
+      bool lneeds_infer = receiver_is_concrete && lgot_param;
 
-      // FIXME
-      // this is hacky to set the implicit param lets make this a function
-      p->set_ty_ref (i->get_ref ());
+      if (rneeds_infer)
+	{
+	  TyTy::ParamType *p = static_cast<TyTy::ParamType *> (rtype);
+	  TyTy::TyVar iv
+	    = TyTy::TyVar::get_implicit_infer_var (rhs.get_locus ());
+	  rust_assert (iv.get_tyty ()->get_kind () == TyTy::TypeKind::INFER);
+	  TyTy::InferType *i = static_cast<TyTy::InferType *> (iv.get_tyty ());
 
-      // set the rtype now to the new inference var
-      rtype = i;
+	  infers.push_back ({p->get_ref (), p->get_ty_ref (), p, i});
+
+	  // FIXME
+	  // this is hacky to set the implicit param lets make this a function
+	  p->set_ty_ref (i->get_ref ());
+
+	  // set the rtype now to the new inference var
+	  rtype = i;
+	}
+      else if (lneeds_infer)
+	{
+	  TyTy::ParamType *p = static_cast<TyTy::ParamType *> (ltype);
+	  TyTy::TyVar iv
+	    = TyTy::TyVar::get_implicit_infer_var (lhs.get_locus ());
+	  rust_assert (iv.get_tyty ()->get_kind () == TyTy::TypeKind::INFER);
+	  TyTy::InferType *i = static_cast<TyTy::InferType *> (iv.get_tyty ());
+
+	  infers.push_back ({p->get_ref (), p->get_ty_ref (), p, i});
+
+	  // FIXME
+	  // this is hacky to set the implicit param lets make this a function
+	  p->set_ty_ref (i->get_ref ());
+
+	  // set the rtype now to the new inference var
+	  ltype = i;
+	}
     }
 
   switch (ltype->get_kind ())
