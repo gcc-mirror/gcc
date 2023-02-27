@@ -411,8 +411,12 @@ public:
 
     if (m_unspec_for_sint == VADDLVQ_S
 	|| m_unspec_for_sint == VADDLVAQ_S
+	|| m_unspec_for_sint == VRMLALDAVHAQ_S
+	|| m_unspec_for_sint == VRMLALDAVHAXQ_S
 	|| m_unspec_for_sint == VRMLALDAVHQ_S
 	|| m_unspec_for_sint == VRMLALDAVHXQ_S
+	|| m_unspec_for_sint == VRMLSLDAVHAQ_S
+	|| m_unspec_for_sint == VRMLSLDAVHAXQ_S
 	|| m_unspec_for_sint == VRMLSLDAVHQ_S
 	|| m_unspec_for_sint == VRMLSLDAVHXQ_S)
       {
