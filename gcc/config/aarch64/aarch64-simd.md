@@ -840,7 +840,7 @@
 )
 
 ;; The intrinsic version of integer ABS must not be allowed to
-;; combine with any operation with an integerated ABS step, such
+;; combine with any operation with an integrated ABS step, such
 ;; as SABD.
 (define_insn "aarch64_abs<mode>"
   [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w")
