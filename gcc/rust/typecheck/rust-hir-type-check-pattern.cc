@@ -387,24 +387,24 @@ TypeCheckPattern::visit (HIR::IdentifierPattern &)
 }
 
 void
-TypeCheckPattern::visit (HIR::QualifiedPathInExpression &)
+TypeCheckPattern::visit (HIR::QualifiedPathInExpression &pattern)
 {
-  // TODO
-  gcc_unreachable ();
+  rust_sorry_at (pattern.get_locus (),
+		 "type checking qualified path patterns not supported");
 }
 
 void
-TypeCheckPattern::visit (HIR::ReferencePattern &)
+TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
 {
-  // TODO
-  gcc_unreachable ();
+  rust_sorry_at (pattern.get_locus (),
+		 "type checking qualified path patterns not supported");
 }
 
 void
-TypeCheckPattern::visit (HIR::SlicePattern &)
+TypeCheckPattern::visit (HIR::SlicePattern &pattern)
 {
-  // TODO
-  gcc_unreachable ();
+  rust_sorry_at (pattern.get_locus (),
+		 "type checking qualified path patterns not supported");
 }
 
 } // namespace Resolver
