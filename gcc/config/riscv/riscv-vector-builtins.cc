@@ -291,9 +291,8 @@ static const rvv_type_info oextu_ops[] = {
 static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
-/* A list of args for size_t func (void) function.  */
-static CONSTEXPR const rvv_arg_type_info void_args[]
-  = {rvv_arg_type_info (RVV_BASE_void), rvv_arg_type_info_end};
+/* A list of args for size_t func () function.  */
+static CONSTEXPR const rvv_arg_type_info void_args[] = {rvv_arg_type_info_end};
 
 /* A list of args for size_t func () function.  */
 static CONSTEXPR const rvv_arg_type_info end_args[]
