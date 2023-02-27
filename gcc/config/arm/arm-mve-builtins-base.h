@@ -98,6 +98,8 @@ extern const function_base *const vqdmlashq;
 extern const function_base *const vqdmlsdhq;
 extern const function_base *const vqdmlsdhxq;
 extern const function_base *const vqdmulhq;
+extern const function_base *const vqdmullbq;
+extern const function_base *const vqdmulltq;
 extern const function_base *const vqmovnbq;
 extern const function_base *const vqmovntq;
 extern const function_base *const vqmovunbq;
