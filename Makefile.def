@@ -147,6 +147,7 @@ host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
 host_modules= { module= libctf; bootstrap=true; };
 host_modules= { module= libsframe; bootstrap=true; };
+host_modules= { module= libgrust; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -190,6 +191,7 @@ target_modules = { module= libgm2; lib_path=.libs; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
 target_modules = { module= libitm; lib_path=.libs; };
 target_modules = { module= libatomic; bootstrap=true; lib_path=.libs; };
+target_modules = { module= libgrust; };
 
 // These are (some of) the make targets to be done in each subdirectory.
 // Not all; these are the ones which don't have special options.
