@@ -1,3 +1,9 @@
+2023-02-26  Peter Foley  <pefoley2@pefoley.com>
+
+	PR ada/108909
+	* Make-generated.in: Use GNATMAKE.
+	* gcc-interface/Makefile.in: Ditto.
+
 2023-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (gnat_gimplify_expr): Add missing guard.

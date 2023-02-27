@@ -1,3 +1,7 @@
+2023-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/run_all.sh: Adjust example of compiler options.
+
 2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2/projects/pim/run/pass/tower/projects-pim-run-pass-tower.exp:
