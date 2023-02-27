@@ -373,7 +373,7 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
 }
 
 bool
-TypeCoercionRules::select (const TyTy::BaseType &autoderefed)
+TypeCoercionRules::select (TyTy::BaseType &autoderefed)
 {
   rust_debug (
     "autoderef type-coercion select autoderefed={%s} can_eq expected={%s}",

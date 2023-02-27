@@ -29,7 +29,7 @@ MethodResolver::MethodResolver (bool autoderef_flag,
 {}
 
 std::set<MethodCandidate>
-MethodResolver::Probe (const TyTy::BaseType *receiver,
+MethodResolver::Probe (TyTy::BaseType *receiver,
 		       const HIR::PathIdentSegment &segment_name,
 		       bool autoderef_flag)
 {
@@ -46,7 +46,7 @@ MethodResolver::try_hook (const TyTy::BaseType &r)
 }
 
 bool
-MethodResolver::select (const TyTy::BaseType &receiver)
+MethodResolver::select (TyTy::BaseType &receiver)
 {
   struct impl_item_candidate
   {

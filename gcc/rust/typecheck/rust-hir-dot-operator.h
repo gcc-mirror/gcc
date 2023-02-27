@@ -54,8 +54,7 @@ public:
   };
 
   static std::set<MethodCandidate>
-  Probe (const TyTy::BaseType *receiver,
-	 const HIR::PathIdentSegment &segment_name,
+  Probe (TyTy::BaseType *receiver, const HIR::PathIdentSegment &segment_name,
 	 bool autoderef_flag = false);
 
   static std::vector<predicate_candidate> get_predicate_items (
@@ -68,7 +67,7 @@ protected:
 
   void try_hook (const TyTy::BaseType &r) override;
 
-  bool select (const TyTy::BaseType &receiver) override;
+  bool select (TyTy::BaseType &receiver) override;
 
 private:
   // search

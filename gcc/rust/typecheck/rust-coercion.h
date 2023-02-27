@@ -71,7 +71,7 @@ protected:
   TypeCoercionRules (TyTy::BaseType *expected, Location locus, bool emit_errors,
 		     bool allow_autoderef);
 
-  bool select (const TyTy::BaseType &autoderefed) override;
+  bool select (TyTy::BaseType &autoderefed) override;
 
   bool do_coercion (TyTy::BaseType *receiver);
 
