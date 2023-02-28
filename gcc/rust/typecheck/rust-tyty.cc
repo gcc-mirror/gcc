@@ -38,19 +38,6 @@
 namespace Rust {
 namespace TyTy {
 
-bool autoderef_cmp_flag = false;
-
-void
-set_cmp_autoderef_mode ()
-{
-  autoderef_cmp_flag = true;
-}
-void
-reset_cmp_autoderef_mode ()
-{
-  autoderef_cmp_flag = false;
-}
-
 std::string
 TypeKindFormat::to_string (TypeKind kind)
 {

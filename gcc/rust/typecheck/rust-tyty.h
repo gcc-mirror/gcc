@@ -77,11 +77,6 @@ public:
   static std::string to_string (TypeKind kind);
 };
 
-extern void
-set_cmp_autoderef_mode ();
-extern void
-reset_cmp_autoderef_mode ();
-
 class TyVisitor;
 class TyConstVisitor;
 class BaseType : public TypeBoundsMappings
