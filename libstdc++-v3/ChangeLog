@@ -1,3 +1,10 @@
+2023-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_ios.h (basic_ios::_M_setstate): Add
+	caveat to comment.
+	* include/bits/basic_string.h (resize_and_overwrite): Add
+	doxygen comment.
+
 2023-02-24  Matthias Kretz  <m.kretz@gsi.de>
 
 	* include/experimental/bits/simd.h: Line breaks and indenting

@@ -1,3 +1,53 @@
+2023-02-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/108922
+	Revert:
+	* config/i386/i386.md (fmodxf3): Enable for flag_finite_math_only only.
+	(fmod<mode>3): Ditto.
+	(fpremxf4_i387): Ditto.
+	(reminderxf3): Ditto.
+	(reminder<mode>3): Ditto.
+	(fprem1xf4_i387): Ditto.
+
+2023-02-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.cc (simplify_unary_operation_1) <case FFS>: Avoid
+	generating FFS with mismatched operand and result modes, by using
+	an explicit SIGN_EXTEND/ZERO_EXTEND.
+	<case POPCOUNT>: Likewise, for POPCOUNT of ZERO_EXTEND.
+	<case PARITY>: Likewise, for PARITY of {ZERO,SIGN}_EXTEND.
+
+2023-02-27  Patrick Palka  <ppalka@redhat.com>
+
+	* hash-table.h (gt_pch_nx(hash_table<D>)): Remove static.
+	* lra-int.h (lra_change_class): Likewise.
+	* recog.h (which_op_alt): Likewise.
+	* sel-sched-ir.h (sel_bb_empty_or_nop_p): Declare inline
+	instead of static.
+
+2023-02-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_match_CLAMPS_imms_p):
+	New prototype.
+	* config/xtensa/xtensa.cc (xtensa_match_CLAMPS_imms_p):
+	New function.
+	* config/xtensa/xtensa.h (TARGET_CLAMPS): New macro definition.
+	* config/xtensa/xtensa.md (*xtensa_clamps): New insn pattern.
+
+2023-02-27  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa-dynconfig.cc (xtensa_get_config_v2)
+	(xtensa_get_config_v3): New functions.
+
+2023-02-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_abs<mode>): Fix typo in comment.
+
+2023-02-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/host-linux.cc (TRY_EMPTY_VM_SPACE): Modify the value of
+	the macro to 0x1000000000.
+
 2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/108261

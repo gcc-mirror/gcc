@@ -1,3 +1,9 @@
+2023-02-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108937
+	* trans-intrinsic.cc (gfc_conv_intrinsic_ibits): Handle corner case
+	LEN argument of IBITS equal to BITSIZE(I).
+
 2023-02-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/108923

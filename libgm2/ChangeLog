@@ -1,3 +1,8 @@
+2023-02-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108944
+	* libm2pim/sckt.cc (getLocalIP): Correct parameter order.
+
 2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/108261
