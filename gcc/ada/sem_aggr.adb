@@ -1340,6 +1340,12 @@ package body Sem_Aggr is
          Index_Typ : Entity_Id);
       --  For AI12-061
 
+      procedure Warn_On_Null_Component_Association (Expr : Node_Id);
+      --  Expr is either a conditional expression or a case expression of an
+      --  iterated component association initializing the aggregate N with
+      --  components that can never be null. Report warning on associations
+      --  that may initialize some component with a null value.
+
       ---------
       -- Add --
       ---------
@@ -1877,6 +1883,132 @@ package body Sem_Aggr is
          End_Scope;
       end Resolve_Iterated_Component_Association;
 
+      ----------------------------------------
+      -- Warn_On_Null_Component_Association --
+      ----------------------------------------
+
+      procedure Warn_On_Null_Component_Association (Expr : Node_Id) is
+         Comp_Typ : constant Entity_Id := Component_Type (Etype (N));
+
+         procedure Check_Case_Expr (N : Node_Id);
+         --  Check if a case expression may initialize some component with a
+         --  null value.
+
+         procedure Check_Cond_Expr (N : Node_Id);
+         --  Check if a conditional expression may initialize some component
+         --  with a null value.
+
+         procedure Check_Expr (Expr : Node_Id);
+         --  Check if an expression may initialize some component with a
+         --  null value.
+
+         procedure Warn_On_Null_Expression_And_Rewrite (Null_Expr : Node_Id);
+         --  Report warning on known null expression and replace the expression
+         --  by a raise constraint error node.
+
+         ---------------------
+         -- Check_Case_Expr --
+         ---------------------
+
+         procedure Check_Case_Expr (N : Node_Id) is
+            Alt_Node : Node_Id := First (Alternatives (N));
+
+         begin
+            while Present (Alt_Node) loop
+               Check_Expr (Expression (Alt_Node));
+               Next (Alt_Node);
+            end loop;
+         end Check_Case_Expr;
+
+         ---------------------
+         -- Check_Cond_Expr --
+         ---------------------
+
+         procedure Check_Cond_Expr (N : Node_Id) is
+            If_Expr   : Node_Id := N;
+            Then_Expr : Node_Id;
+            Else_Expr : Node_Id;
+
+         begin
+            Then_Expr := Next (First (Expressions (If_Expr)));
+            Else_Expr := Next (Then_Expr);
+
+            Check_Expr (Then_Expr);
+
+            --  Process elsif parts (if any)
+
+            while Nkind (Else_Expr) = N_If_Expression loop
+               If_Expr   := Else_Expr;
+               Then_Expr := Next (First (Expressions (If_Expr)));
+               Else_Expr := Next (Then_Expr);
+
+               Check_Expr (Then_Expr);
+            end loop;
+
+            if Known_Null (Else_Expr) then
+               Warn_On_Null_Expression_And_Rewrite (Else_Expr);
+            end if;
+         end Check_Cond_Expr;
+
+         ----------------
+         -- Check_Expr --
+         ----------------
+
+         procedure Check_Expr (Expr : Node_Id) is
+         begin
+            if Known_Null (Expr) then
+               Warn_On_Null_Expression_And_Rewrite (Expr);
+
+            elsif Nkind (Expr) = N_If_Expression then
+               Check_Cond_Expr (Expr);
+
+            elsif Nkind (Expr) = N_Case_Expression then
+               Check_Case_Expr (Expr);
+            end if;
+         end Check_Expr;
+
+         -----------------------------------------
+         -- Warn_On_Null_Expression_And_Rewrite --
+         -----------------------------------------
+
+         procedure Warn_On_Null_Expression_And_Rewrite (Null_Expr : Node_Id) is
+         begin
+            Error_Msg_N
+              ("(Ada 2005) NULL not allowed in null-excluding component??",
+               Null_Expr);
+            Error_Msg_N
+              ("\Constraint_Error might be raised at run time??", Null_Expr);
+
+            --  We cannot use Apply_Compile_Time_Constraint_Error because in
+            --  some cases the components are rewritten and the runtime error
+            --  would be missed.
+
+            Rewrite (Null_Expr,
+              Make_Raise_Constraint_Error (Sloc (Null_Expr),
+                Reason => CE_Access_Check_Failed));
+
+            Set_Etype    (Null_Expr, Comp_Typ);
+            Set_Analyzed (Null_Expr);
+         end Warn_On_Null_Expression_And_Rewrite;
+
+      --  Start of processing for Warn_On_Null_Component_Association
+
+      begin
+         pragma Assert (Can_Never_Be_Null (Comp_Typ));
+
+         case Nkind (Expr) is
+            when N_If_Expression =>
+               Check_Cond_Expr (Expr);
+
+            when N_Case_Expression =>
+               Check_Case_Expr (Expr);
+
+            when others =>
+               pragma Assert (False);
+               null;
+         end case;
+      end Warn_On_Null_Component_Association;
+
       --  Local variables
 
       Assoc   : Node_Id;
@@ -2146,8 +2278,15 @@ package body Sem_Aggr is
             -----------------
 
             function Empty_Range (A : Node_Id) return Boolean is
-               R : constant Node_Id := First (Choices (A));
+               R : Node_Id;
+
             begin
+               if Nkind (A) = N_Iterated_Component_Association then
+                  R := First (Discrete_Choices (A));
+               else
+                  R := First (Choices (A));
+               end if;
+
                return No (Next (R))
                  and then Nkind (R) = N_Range
                  and then Compile_Time_Compare
@@ -2313,10 +2452,28 @@ package body Sem_Aggr is
                --  Ada 2005 (AI-231)
 
                if Ada_Version >= Ada_2005
-                 and then Known_Null (Expression (Assoc))
                  and then not Empty_Range (Assoc)
                then
-                  Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
+                  if Known_Null (Expression (Assoc)) then
+                     Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
+
+                  --  Report warning on iterated component association that may
+                  --  initialize some component of an array of null-excluding
+                  --  access type components with a null value. For example:
+
+                  --     type AList is array (...) of not null access Integer;
+                  --     L : AList :=
+                  --          [for J in A'Range =>
+                  --            (if Func (J) = 0 then A(J)'Access else Null)];
+
+                  elsif Ada_Version >= Ada_2022
+                    and then Can_Never_Be_Null (Component_Type (Etype (N)))
+                    and then Nkind (Assoc) = N_Iterated_Component_Association
+                    and then Nkind (Expression (Assoc)) in N_If_Expression
+                                                         | N_Case_Expression
+                  then
+                     Warn_On_Null_Component_Association (Expression (Assoc));
+                  end if;
                end if;
 
                --  Ada 2005 (AI-287): In case of default initialized component

@@ -5728,6 +5728,11 @@ package body Exp_Ch4 is
       --  the usual forced evaluation to encapsulate potential aliasing.
 
       else
+         --  A check is also needed since the subtype of the EWA node and the
+         --  subtype of the expression may differ (for example, the EWA node
+         --  may have a null-excluding access subtype).
+
+         Apply_Constraint_Check (Expression (N), Etype (N));
          Force_Evaluation (Expression (N));
       end if;
 
