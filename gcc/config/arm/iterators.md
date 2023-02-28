@@ -898,6 +898,10 @@
 		 (VCMPNEQ_M_N_F "ne")
 		 ])
 
+(define_int_iterator MVE_VPSELQ_F [
+		     VPSELQ_F
+		     ])
+
 (define_int_attr mve_insn [
 		 (VABAVQ_P_S "vabav") (VABAVQ_P_U "vabav")
 		 (VABAVQ_S "vabav") (VABAVQ_U "vabav")
@@ -1030,6 +1034,7 @@
 		 (VORRQ_M_N_S "vorr") (VORRQ_M_N_U "vorr")
 		 (VORRQ_M_S "vorr") (VORRQ_M_U "vorr") (VORRQ_M_F "vorr")
 		 (VORRQ_N_S "vorr") (VORRQ_N_U "vorr")
+		 (VPSELQ_S "vpsel") (VPSELQ_U "vpsel") (VPSELQ_F "vpsel")
 		 (VQABSQ_M_S "vqabs")
 		 (VQABSQ_S "vqabs")
 		 (VQADDQ_M_N_S "vqadd") (VQADDQ_M_N_U "vqadd")

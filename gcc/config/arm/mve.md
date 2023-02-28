@@ -1969,7 +1969,7 @@
 ;;
 ;; [vpselq_u, vpselq_s])
 ;;
-(define_insn "@mve_vpselq_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_<supf><mode>"
   [
    (set (match_operand:MVE_1 0 "s_register_operand" "=w")
 	(unspec:MVE_1 [(match_operand:MVE_1 1 "s_register_operand" "w")
@@ -1978,7 +1978,7 @@
 	 VPSELQ))
   ]
   "TARGET_HAVE_MVE"
-  "vpsel %q0, %q1, %q2"
+  "<mve_insn>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2427,16 +2427,16 @@
 ;;
 ;; [vpselq_f])
 ;;
-(define_insn "@mve_vpselq_f<mode>"
+(define_insn "@mve_<mve_insn>q_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VPSELQ_F))
+	 MVE_VPSELQ_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpsel %q0, %q1, %q2"
+  "<mve_insn>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -6867,12 +6867,12 @@
   switch (GET_MODE_CLASS (<MODE>mode))
     {
       case MODE_VECTOR_INT:
-	emit_insn (gen_mve_vpselq (VPSELQ_S, <MODE>mode, operands[0],
-				   operands[1], operands[2], operands[3]));
+	emit_insn (gen_mve_q (VPSELQ_S,	VPSELQ_S, <MODE>mode, operands[0],
+			      operands[1], operands[2], operands[3]));
 	break;
       case MODE_VECTOR_FLOAT:
-	emit_insn (gen_mve_vpselq_f (<MODE>mode, operands[0],
-				     operands[1], operands[2], operands[3]));
+	emit_insn (gen_mve_q_f (VPSELQ_F, <MODE>mode, operands[0],
+				operands[1], operands[2], operands[3]));
 	break;
       default:
 	gcc_unreachable ();
