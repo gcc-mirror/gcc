@@ -1222,41 +1222,6 @@ protected:
   virtual TuplePatternItems *clone_tuple_pattern_items_impl () const = 0;
 };
 
-// Class representing TuplePattern patterns where there is only a single pattern
-/*class TuplePatternItemsSingle : public TuplePatternItems {
-    // Pattern pattern;
-    std::unique_ptr<Pattern> pattern;
-
-  public:
-    TuplePatternItemsSingle(Pattern* pattern) : pattern(pattern) {}
-
-    // Copy constructor uses clone
-    TuplePatternItemsSingle(TuplePatternItemsSingle const& other) :
-      pattern(other.pattern->clone_pattern()) {}
-
-    // Destructor - define here if required
-
-    // Overload assignment operator to clone
-    TuplePatternItemsSingle& operator=(TuplePatternItemsSingle const& other) {
-	pattern = other.pattern->clone_pattern();
-
-	return *this;
-    }
-
-    // move constructors
-    TuplePatternItemsSingle(TuplePatternItemsSingle&& other) = default;
-    TuplePatternItemsSingle& operator=(TuplePatternItemsSingle&& other) =
-default;
-
-  protected:
-    // Use covariance to implement clone function as returning this object
-rather than base virtual TuplePatternItemsSingle*
-clone_tuple_pattern_items_impl() const override { return new
-TuplePatternItemsSingle(*this);
-    }
-};*/
-// removed in favour of single-element TuplePatternItemsMultiple
-
 // Class representing TuplePattern patterns where there are multiple patterns
 class TuplePatternItemsMultiple : public TuplePatternItems
 {
