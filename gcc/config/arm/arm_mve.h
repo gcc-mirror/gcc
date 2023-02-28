@@ -184,9 +184,6 @@
 #define vcmlaq_rot180(__a, __b, __c) __arm_vcmlaq_rot180(__a, __b, __c)
 #define vcmlaq_rot270(__a, __b, __c) __arm_vcmlaq_rot270(__a, __b, __c)
 #define vcmlaq_rot90(__a, __b, __c) __arm_vcmlaq_rot90(__a, __b, __c)
-#define vfmaq(__a, __b, __c) __arm_vfmaq(__a, __b, __c)
-#define vfmasq(__a, __b, __c) __arm_vfmasq(__a, __b, __c)
-#define vfmsq(__a, __b, __c) __arm_vfmsq(__a, __b, __c)
 #define vcvtmq_m(__inactive, __a, __p) __arm_vcvtmq_m(__inactive, __a, __p)
 #define vcvtnq_m(__inactive, __a, __p) __arm_vcvtnq_m(__inactive, __a, __p)
 #define vcvtpq_m(__inactive, __a, __p) __arm_vcvtpq_m(__inactive, __a, __p)
@@ -199,9 +196,6 @@
 #define vcmulq_rot180_m(__inactive, __a, __b, __p) __arm_vcmulq_rot180_m(__inactive, __a, __b, __p)
 #define vcmulq_rot270_m(__inactive, __a, __b, __p) __arm_vcmulq_rot270_m(__inactive, __a, __b, __p)
 #define vcmulq_rot90_m(__inactive, __a, __b, __p) __arm_vcmulq_rot90_m(__inactive, __a, __b, __p)
-#define vfmaq_m(__a, __b, __c, __p) __arm_vfmaq_m(__a, __b, __c, __p)
-#define vfmasq_m(__a, __b, __c, __p) __arm_vfmasq_m(__a, __b, __c, __p)
-#define vfmsq_m(__a, __b, __c, __p) __arm_vfmsq_m(__a, __b, __c, __p)
 #define vcmulq_x(__a, __b, __p) __arm_vcmulq_x(__a, __b, __p)
 #define vcmulq_rot90_x(__a, __b, __p) __arm_vcmulq_rot90_x(__a, __b, __p)
 #define vcmulq_rot180_x(__a, __b, __p) __arm_vcmulq_rot180_x(__a, __b, __p)
@@ -375,10 +369,6 @@
 #define vcmlaq_rot180_f16(__a, __b, __c) __arm_vcmlaq_rot180_f16(__a, __b, __c)
 #define vcmlaq_rot270_f16(__a, __b, __c) __arm_vcmlaq_rot270_f16(__a, __b, __c)
 #define vcmlaq_rot90_f16(__a, __b, __c) __arm_vcmlaq_rot90_f16(__a, __b, __c)
-#define vfmaq_f16(__a, __b, __c) __arm_vfmaq_f16(__a, __b, __c)
-#define vfmaq_n_f16(__a, __b, __c) __arm_vfmaq_n_f16(__a, __b, __c)
-#define vfmasq_n_f16(__a, __b, __c) __arm_vfmasq_n_f16(__a, __b, __c)
-#define vfmsq_f16(__a, __b, __c) __arm_vfmsq_f16(__a, __b, __c)
 #define vcvtmq_m_s16_f16(__inactive, __a, __p) __arm_vcvtmq_m_s16_f16(__inactive, __a, __p)
 #define vcvtnq_m_s16_f16(__inactive, __a, __p) __arm_vcvtnq_m_s16_f16(__inactive, __a, __p)
 #define vcvtpq_m_s16_f16(__inactive, __a, __p) __arm_vcvtpq_m_s16_f16(__inactive, __a, __p)
@@ -392,10 +382,6 @@
 #define vcmlaq_rot180_f32(__a, __b, __c) __arm_vcmlaq_rot180_f32(__a, __b, __c)
 #define vcmlaq_rot270_f32(__a, __b, __c) __arm_vcmlaq_rot270_f32(__a, __b, __c)
 #define vcmlaq_rot90_f32(__a, __b, __c) __arm_vcmlaq_rot90_f32(__a, __b, __c)
-#define vfmaq_f32(__a, __b, __c) __arm_vfmaq_f32(__a, __b, __c)
-#define vfmaq_n_f32(__a, __b, __c) __arm_vfmaq_n_f32(__a, __b, __c)
-#define vfmasq_n_f32(__a, __b, __c) __arm_vfmasq_n_f32(__a, __b, __c)
-#define vfmsq_f32(__a, __b, __c) __arm_vfmsq_f32(__a, __b, __c)
 #define vcvtmq_m_s32_f32(__inactive, __a, __p) __arm_vcvtmq_m_s32_f32(__inactive, __a, __p)
 #define vcvtnq_m_s32_f32(__inactive, __a, __p) __arm_vcvtnq_m_s32_f32(__inactive, __a, __p)
 #define vcvtpq_m_s32_f32(__inactive, __a, __p) __arm_vcvtpq_m_s32_f32(__inactive, __a, __p)
@@ -493,14 +479,6 @@
 #define vcvtq_m_n_s16_f16(__inactive, __a,  __imm6, __p) __arm_vcvtq_m_n_s16_f16(__inactive, __a,  __imm6, __p)
 #define vcvtq_m_n_u32_f32(__inactive, __a,  __imm6, __p) __arm_vcvtq_m_n_u32_f32(__inactive, __a,  __imm6, __p)
 #define vcvtq_m_n_u16_f16(__inactive, __a,  __imm6, __p) __arm_vcvtq_m_n_u16_f16(__inactive, __a,  __imm6, __p)
-#define vfmaq_m_f32(__a, __b, __c, __p) __arm_vfmaq_m_f32(__a, __b, __c, __p)
-#define vfmaq_m_f16(__a, __b, __c, __p) __arm_vfmaq_m_f16(__a, __b, __c, __p)
-#define vfmaq_m_n_f32(__a, __b, __c, __p) __arm_vfmaq_m_n_f32(__a, __b, __c, __p)
-#define vfmaq_m_n_f16(__a, __b, __c, __p) __arm_vfmaq_m_n_f16(__a, __b, __c, __p)
-#define vfmasq_m_n_f32(__a, __b, __c, __p) __arm_vfmasq_m_n_f32(__a, __b, __c, __p)
-#define vfmasq_m_n_f16(__a, __b, __c, __p) __arm_vfmasq_m_n_f16(__a, __b, __c, __p)
-#define vfmsq_m_f32(__a, __b, __c, __p) __arm_vfmsq_m_f32(__a, __b, __c, __p)
-#define vfmsq_m_f16(__a, __b, __c, __p) __arm_vfmsq_m_f16(__a, __b, __c, __p)
 #define vornq_m_f32(__inactive, __a, __b, __p) __arm_vornq_m_f32(__inactive, __a, __b, __p)
 #define vornq_m_f16(__inactive, __a, __b, __p) __arm_vornq_m_f16(__inactive, __a, __b, __p)
 #define vstrbq_s8( __addr, __value) __arm_vstrbq_s8( __addr, __value)
@@ -5540,34 +5518,6 @@ __arm_vcmlaq_rot90_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
   return __builtin_mve_vcmlaq_rot90v8hf (__a, __b, __c);
 }
 
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
-{
-  return __builtin_mve_vfmaq_fv8hf (__a, __b, __c);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_n_f16 (float16x8_t __a, float16x8_t __b, float16_t __c)
-{
-  return __builtin_mve_vfmaq_n_fv8hf (__a, __b, __c);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmasq_n_f16 (float16x8_t __a, float16x8_t __b, float16_t __c)
-{
-  return __builtin_mve_vfmasq_n_fv8hf (__a, __b, __c);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmsq_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
-{
-  return __builtin_mve_vfmsq_fv8hf (__a, __b, __c);
-}
-
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcvtmq_m_s16_f16 (int16x8_t __inactive, float16x8_t __a, mve_pred16_t __p)
@@ -5657,34 +5607,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcmlaq_rot90_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
 {
   return __builtin_mve_vcmlaq_rot90v4sf (__a, __b, __c);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
-{
-  return __builtin_mve_vfmaq_fv4sf (__a, __b, __c);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_n_f32 (float32x4_t __a, float32x4_t __b, float32_t __c)
-{
-  return __builtin_mve_vfmaq_n_fv4sf (__a, __b, __c);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmasq_n_f32 (float32x4_t __a, float32x4_t __b, float32_t __c)
-{
-  return __builtin_mve_vfmasq_n_fv4sf (__a, __b, __c);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmsq_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
-{
-  return __builtin_mve_vfmsq_fv4sf (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
@@ -5958,62 +5880,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcvtq_m_n_u16_f16 (uint16x8_t __inactive, float16x8_t __a, const int __imm6, mve_pred16_t __p)
 {
   return __builtin_mve_vcvtq_m_n_from_f_uv8hi (__inactive, __a, __imm6, __p);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_m_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c, mve_pred16_t __p)
-{
-  return __builtin_mve_vfmaq_m_fv4sf (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_m_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c, mve_pred16_t __p)
-{
-  return __builtin_mve_vfmaq_m_fv8hf (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_m_n_f32 (float32x4_t __a, float32x4_t __b, float32_t __c, mve_pred16_t __p)
-{
-  return __builtin_mve_vfmaq_m_n_fv4sf (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_m_n_f16 (float16x8_t __a, float16x8_t __b, float16_t __c, mve_pred16_t __p)
-{
-  return __builtin_mve_vfmaq_m_n_fv8hf (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmasq_m_n_f32 (float32x4_t __a, float32x4_t __b, float32_t __c, mve_pred16_t __p)
-{
-  return __builtin_mve_vfmasq_m_n_fv4sf (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmasq_m_n_f16 (float16x8_t __a, float16x8_t __b, float16_t __c, mve_pred16_t __p)
-{
-  return __builtin_mve_vfmasq_m_n_fv8hf (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmsq_m_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c, mve_pred16_t __p)
-{
-  return __builtin_mve_vfmsq_m_fv4sf (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmsq_m_f16 (float16x8_t __a, float16x8_t __b, float16x8_t __c, mve_pred16_t __p)
-{
-  return __builtin_mve_vfmsq_m_fv8hf (__a, __b, __c, __p);
 }
 
 __extension__ extern __inline float32x4_t
@@ -10356,34 +10222,6 @@ __arm_vcmlaq_rot90 (float16x8_t __a, float16x8_t __b, float16x8_t __c)
  return __arm_vcmlaq_rot90_f16 (__a, __b, __c);
 }
 
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq (float16x8_t __a, float16x8_t __b, float16x8_t __c)
-{
- return __arm_vfmaq_f16 (__a, __b, __c);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq (float16x8_t __a, float16x8_t __b, float16_t __c)
-{
- return __arm_vfmaq_n_f16 (__a, __b, __c);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmasq (float16x8_t __a, float16x8_t __b, float16_t __c)
-{
- return __arm_vfmasq_n_f16 (__a, __b, __c);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmsq (float16x8_t __a, float16x8_t __b, float16x8_t __c)
-{
- return __arm_vfmsq_f16 (__a, __b, __c);
-}
-
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcvtmq_m (int16x8_t __inactive, float16x8_t __a, mve_pred16_t __p)
@@ -10473,34 +10311,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcmlaq_rot90 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
 {
  return __arm_vcmlaq_rot90_f32 (__a, __b, __c);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq (float32x4_t __a, float32x4_t __b, float32x4_t __c)
-{
- return __arm_vfmaq_f32 (__a, __b, __c);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq (float32x4_t __a, float32x4_t __b, float32_t __c)
-{
- return __arm_vfmaq_n_f32 (__a, __b, __c);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmasq (float32x4_t __a, float32x4_t __b, float32_t __c)
-{
- return __arm_vfmasq_n_f32 (__a, __b, __c);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmsq (float32x4_t __a, float32x4_t __b, float32x4_t __c)
-{
- return __arm_vfmsq_f32 (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
@@ -10774,62 +10584,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcvtq_m_n (uint16x8_t __inactive, float16x8_t __a, const int __imm6, mve_pred16_t __p)
 {
  return __arm_vcvtq_m_n_u16_f16 (__inactive, __a, __imm6, __p);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_m (float32x4_t __a, float32x4_t __b, float32x4_t __c, mve_pred16_t __p)
-{
- return __arm_vfmaq_m_f32 (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_m (float16x8_t __a, float16x8_t __b, float16x8_t __c, mve_pred16_t __p)
-{
- return __arm_vfmaq_m_f16 (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_m (float32x4_t __a, float32x4_t __b, float32_t __c, mve_pred16_t __p)
-{
- return __arm_vfmaq_m_n_f32 (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmaq_m (float16x8_t __a, float16x8_t __b, float16_t __c, mve_pred16_t __p)
-{
- return __arm_vfmaq_m_n_f16 (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmasq_m (float32x4_t __a, float32x4_t __b, float32_t __c, mve_pred16_t __p)
-{
- return __arm_vfmasq_m_n_f32 (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmasq_m (float16x8_t __a, float16x8_t __b, float16_t __c, mve_pred16_t __p)
-{
- return __arm_vfmasq_m_n_f16 (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmsq_m (float32x4_t __a, float32x4_t __b, float32x4_t __c, mve_pred16_t __p)
-{
- return __arm_vfmsq_m_f32 (__a, __b, __c, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vfmsq_m (float16x8_t __a, float16x8_t __b, float16x8_t __c, mve_pred16_t __p)
-{
- return __arm_vfmsq_m_f16 (__a, __b, __c, __p);
 }
 
 __extension__ extern __inline float32x4_t
@@ -11859,29 +11613,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint16x8_t][__ARM_mve_type_float16x8_t]: __arm_vcvtpq_m_u16_f16 (__ARM_mve_coerce(__p0, uint16x8_t), __ARM_mve_coerce(__p1, float16x8_t), p2), \
   int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_float32x4_t]: __arm_vcvtpq_m_u32_f32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, float32x4_t), p2));})
 
-#define __arm_vfmaq(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  __typeof(p2) __p2 = (p2); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmaq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(p2, double)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmaq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(p2, double)), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vfmaq_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vfmaq_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t)));})
-
-#define __arm_vfmsq(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  __typeof(p2) __p2 = (p2); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vfmsq_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vfmsq_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t)));})
-
-#define __arm_vfmasq(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  __typeof(p2) __p2 = (p2); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmasq_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(p2, double)), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmasq_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(p2, double)));})
-
 #define __arm_vpselq(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
@@ -11990,29 +11721,6 @@ extern void *__ARM_undef;
   _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)] [__ARM_mve_typeid(__p2)])0, \
   int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vcmulq_rot90_m_f16(__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t), p3), \
   int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vcmulq_rot90_m_f32(__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t), p3));})
-
-#define __arm_vfmaq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  __typeof(p2) __p2 = (p2); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vfmaq_m_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vfmaq_m_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t), p3), \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmaq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(p2, double), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmaq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(p2, double), p3));})
-
-#define __arm_vfmasq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  __typeof(p2) __p2 = (p2); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_fp_n]: __arm_vfmasq_m_n_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce2(p2, double), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_fp_n]: __arm_vfmasq_m_n_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce2(p2, double), p3));})
-
-#define __arm_vfmsq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  __typeof(p2) __p2 = (p2); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t][__ARM_mve_type_float16x8_t]: __arm_vfmsq_m_f16 (__ARM_mve_coerce(__p0, float16x8_t), __ARM_mve_coerce(__p1, float16x8_t), __ARM_mve_coerce(__p2, float16x8_t), p3), \
-  int (*)[__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t][__ARM_mve_type_float32x4_t]: __arm_vfmsq_m_f32 (__ARM_mve_coerce(__p0, float32x4_t), __ARM_mve_coerce(__p1, float32x4_t), __ARM_mve_coerce(__p2, float32x4_t), p3));})
 
 #define __arm_vornq_m(p0,p1,p2,p3) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \

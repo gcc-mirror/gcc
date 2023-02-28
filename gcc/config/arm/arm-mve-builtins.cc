@@ -678,6 +678,9 @@ function_instance::has_inactive_argument () const
       || base == functions::vcmpltq
       || base == functions::vcmpcsq
       || base == functions::vcmphiq
+      || base == functions::vfmaq
+      || base == functions::vfmasq
+      || base == functions::vfmsq
       || base == functions::vmaxaq
       || base == functions::vmaxnmaq
       || base == functions::vminaq
