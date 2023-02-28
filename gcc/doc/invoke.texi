@@ -2211,8 +2211,8 @@ directives are not affected by these options.  See also
 @option{-fmacro-prefix-map}, @option{-fdebug-prefix-map},
 @option{-fprofile-prefix-map} and @option{-fcanon-prefix-map}.
 
-@item -fcanon-prefix-map
 @opindex fcanon-prefix-map
+@item -fcanon-prefix-map
 For the @option{-f*-prefix-map} options normally comparison
 of @file{@var{old}} prefix against the filename that would be normally
 referenced in the result of the compilation is done using textual

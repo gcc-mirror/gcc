@@ -5662,8 +5662,8 @@ to locally turn off MIPS16 and microMIPS code generation.  This attribute
 overrides the @option{-mips16} and @option{-mmicromips} options on the
 command line (@pxref{MIPS Options}).
 
-@item use_hazard_barrier_return
 @cindex @code{use_hazard_barrier_return} function attribute, MIPS
+@item use_hazard_barrier_return
 This function attribute instructs the compiler to generate a hazard barrier
 return that clears all execution and instruction hazards while returning,
 instead of generating a normal return instruction.
@@ -24877,8 +24877,8 @@ fine-grained control when necessary. It is also the most portable
 alternative and programs using this approach will work with most modern
 compilers.
 
-@item
 @opindex fno-implicit-templates
+@item
 Compile your code with @option{-fno-implicit-templates} to disable the
 implicit generation of template instances, and explicitly instantiate
 all the ones you use.  This approach requires more knowledge of exactly
