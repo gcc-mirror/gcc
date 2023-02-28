@@ -132,6 +132,18 @@ EXTERN unsigned int mcOptions_getScaffoldMain (void);
 */
 
 EXTERN void mcOptions_writeGPLheader (FIO_File f);
+
+/*
+   setSuppressNoReturn - set suppressNoReturn to value.
+*/
+
+EXTERN void mcOptions_setSuppressNoReturn (unsigned int value);
+
+/*
+   getSuppressNoReturn - return the suppressNoReturn value.
+*/
+
+EXTERN unsigned int mcOptions_getSuppressNoReturn (void);
 #   ifdef __cplusplus
 }
 #   endif

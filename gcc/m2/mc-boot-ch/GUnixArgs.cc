@@ -81,13 +81,3 @@ extern "C" void
 _M2_UnixArgs_dep (void)
 {
 }
-
-#if 0
-struct _M2_UnixArgs_ctor { _M2_UnixArgs_ctor (); } _M2_UnixArgs_ctor;
-
-_M2_UnixArgs_ctor::_M2_UnixArgs_ctor (void)
-{
-  M2RTS_RegisterModule ("UnixArgs", _M2_UnixArgs_init, _M2_UnixArgs_fini,
-			_M2_UnixArgs_dep);
-}
-#endif

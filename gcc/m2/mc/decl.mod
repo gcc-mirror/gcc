@@ -30,7 +30,11 @@ FROM SFIO IMPORT OpenToWrite, WriteS ;
 FROM FIO IMPORT File, Close, FlushBuffer, StdOut, WriteLine, WriteChar ;
 FROM DynamicStrings IMPORT String, InitString, EqualArray, InitStringCharStar, KillString, ConCat, Mark, RemoveWhitePostfix, RemoveWhitePrefix ;
 FROM StringConvert IMPORT CardinalToString, ostoc ;
-FROM mcOptions IMPORT getOutputFile, getDebugTopological, getHPrefix, getIgnoreFQ, getExtendedOpaque, writeGPLheader, getGccConfigSystem, getScaffoldDynamic, getScaffoldMain ;
+
+FROM mcOptions IMPORT getOutputFile, getDebugTopological, getHPrefix, getIgnoreFQ,
+                      getExtendedOpaque, writeGPLheader, getGccConfigSystem,
+                      getScaffoldDynamic, getScaffoldMain, getSuppressNoReturn ;
+
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM libc IMPORT printf, memset ;
 FROM mcMetaError IMPORT metaError1, metaError2, metaError3, metaErrors1, metaErrors2 ;
@@ -8421,7 +8425,7 @@ BEGIN
       outText (doP, "void")
    END ;
    print (doP, ")") ;
-   IF n^.procedureF.noreturn AND prototype
+   IF n^.procedureF.noreturn AND prototype AND (NOT getSuppressNoReturn ())
    THEN
       setNeedSpace (doP) ;
       outText (doP, "__attribute__ ((noreturn))")

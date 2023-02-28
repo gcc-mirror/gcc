@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 #include "m2rts.h"
 
+#define LIBNAME "m2pim"
 
 extern "C" int UnixArgs_GetArgC (void);
 extern "C" char **UnixArgs_GetArgV (void);
@@ -85,6 +86,6 @@ _M2_UnixArgs_dep (void)
 extern "C" void __attribute__((__constructor__))
 _M2_UnixArgs_ctor (void)
 {
-  M2RTS_RegisterModule ("UnixArgs", _M2_UnixArgs_init, _M2_UnixArgs_finish,
+  M2RTS_RegisterModule ("UnixArgs", LIBNAME, _M2_UnixArgs_init, _M2_UnixArgs_finish,
 			_M2_UnixArgs_dep);
 }

@@ -132,12 +132,12 @@ extern "C" void RTint_ReArmTimeVector (unsigned int vec, unsigned int micro, uns
 extern "C" void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsigned int *secs);
 
 /*
-   AttachVector - adds the pointer, p, to be associated with the interrupt
+   AttachVector - adds the pointer ptr to be associated with the interrupt
                   vector. It returns the previous value attached to this
                   vector.
 */
 
-extern "C" void * RTint_AttachVector (unsigned int vec, void * p);
+extern "C" void * RTint_AttachVector (unsigned int vec, void * ptr);
 
 /*
    IncludeVector - includes, vec, into the dispatcher list of
@@ -178,14 +178,14 @@ static int Max (int i, int j);
 static int Min (int i, int j);
 
 /*
-   FindVector - searches the exists list for a vector of type, t,
+   FindVector - searches the exists list for a vector of type
                 which is associated with file descriptor, fd.
 */
 
-static RTint_Vector FindVector (int fd, RTint_VectorType t);
+static RTint_Vector FindVector (int fd, RTint_VectorType type);
 
 /*
-   FindVectorNo - searches the Exists list for vector, vec.
+   FindVectorNo - searches the Exists list for vector vec.
 */
 
 static RTint_Vector FindVectorNo (unsigned int vec);
@@ -197,22 +197,16 @@ static RTint_Vector FindVectorNo (unsigned int vec);
 static RTint_Vector FindPendingVector (unsigned int vec);
 
 /*
-   AddFd - adds the file descriptor, fd, to set, s, updating, max.
+   AddFd - adds the file descriptor fd to set updating max.
 */
 
-static void AddFd (Selective_SetOfFd *s, int *max, int fd);
+static void AddFd (Selective_SetOfFd *set, int *max, int fd);
 
 /*
    DumpPendingQueue - displays the pending queue.
 */
 
 static void DumpPendingQueue (void);
-
-/*
-   DumpPendingQueue - displays the pending queue.
-*/
-
-static void stop (void);
 
 /*
    AddTime - t1 := t1 + t2
@@ -236,7 +230,7 @@ static void SubTime (unsigned int *s, unsigned int *m, Selective_Timeval a, Sele
    activatePending - activates the first interrupt pending and clears it.
 */
 
-static unsigned int activatePending (unsigned int untilInterrupt, RTint_DispatchVector call, unsigned int pri, int maxFd, Selective_SetOfFd *i, Selective_SetOfFd *o, Selective_Timeval *t, Selective_Timeval b4, Selective_Timeval after);
+static unsigned int activatePending (unsigned int untilInterrupt, RTint_DispatchVector call, unsigned int pri, int maxFd, Selective_SetOfFd *inSet, Selective_SetOfFd *outSet, Selective_Timeval *timeval, Selective_Timeval b4, Selective_Timeval after);
 
 /*
    init -
@@ -282,22 +276,22 @@ static int Min (int i, int j)
 
 
 /*
-   FindVector - searches the exists list for a vector of type, t,
+   FindVector - searches the exists list for a vector of type
                 which is associated with file descriptor, fd.
 */
 
-static RTint_Vector FindVector (int fd, RTint_VectorType t)
+static RTint_Vector FindVector (int fd, RTint_VectorType type)
 {
-  RTint_Vector v;
+  RTint_Vector vec;
 
-  v = Exists;
-  while (v != NULL)
+  vec = Exists;
+  while (vec != NULL)
     {
-      if ((v->type == t) && (v->File == fd))
+      if ((vec->type == type) && (vec->File == fd))
         {
-          return v;
+          return vec;
         }
-      v = v->exists;
+      vec = vec->exists;
     }
   return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -306,19 +300,19 @@ static RTint_Vector FindVector (int fd, RTint_VectorType t)
 
 
 /*
-   FindVectorNo - searches the Exists list for vector, vec.
+   FindVectorNo - searches the Exists list for vector vec.
 */
 
 static RTint_Vector FindVectorNo (unsigned int vec)
 {
-  RTint_Vector v;
+  RTint_Vector vptr;
 
-  v = Exists;
-  while ((v != NULL) && (v->no != vec))
+  vptr = Exists;
+  while ((vptr != NULL) && (vptr->no != vec))
     {
-      v = v->exists;
+      vptr = vptr->exists;
     }
-  return v;
+  return vptr;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -330,19 +324,19 @@ static RTint_Vector FindVectorNo (unsigned int vec)
 
 static RTint_Vector FindPendingVector (unsigned int vec)
 {
-  unsigned int i;
-  RTint_Vector v;
+  unsigned int pri;
+  RTint_Vector vptr;
 
-  for (i=COROUTINES_UnassignedPriority; i<=7; i++)
+  for (pri=COROUTINES_UnassignedPriority; pri<=7; pri++)
     {
-      v = Pending.array[i-(COROUTINES_UnassignedPriority)];
-      while ((v != NULL) && (v->no != vec))
+      vptr = Pending.array[pri-(COROUTINES_UnassignedPriority)];
+      while ((vptr != NULL) && (vptr->no != vec))
         {
-          v = v->pending;
+          vptr = vptr->pending;
         }
-      if ((v != NULL) && (v->no == vec))
+      if ((vptr != NULL) && (vptr->no == vec))
         {
-          return v;
+          return vptr;
         }
     }
   return NULL;
@@ -352,19 +346,19 @@ static RTint_Vector FindPendingVector (unsigned int vec)
 
 
 /*
-   AddFd - adds the file descriptor, fd, to set, s, updating, max.
+   AddFd - adds the file descriptor fd to set updating max.
 */
 
-static void AddFd (Selective_SetOfFd *s, int *max, int fd)
+static void AddFd (Selective_SetOfFd *set, int *max, int fd)
 {
   (*max) = Max (fd, (*max));
-  if ((*s) == NULL)
+  if ((*set) == NULL)
     {
-      (*s) = Selective_InitSet ();
-      Selective_FdZero ((*s));
+      (*set) = Selective_InitSet ();
+      Selective_FdZero ((*set));
     }
   /* printf('%d, ', fd)  */
-  Selective_FdSet (fd, (*s));
+  Selective_FdSet (fd, (*set));
 }
 
 
@@ -374,42 +368,33 @@ static void AddFd (Selective_SetOfFd *s, int *max, int fd)
 
 static void DumpPendingQueue (void)
 {
-  COROUTINES_PROTECTION p;
-  RTint_Vector v;
-  unsigned int s;
-  unsigned int m;
+  COROUTINES_PROTECTION pri;
+  RTint_Vector vptr;
+  unsigned int sec;
+  unsigned int micro;
 
   libc_printf ((const char *) "Pending queue\\n", 15);
-  for (p=COROUTINES_UnassignedPriority; p<=7; p++)
+  for (pri=COROUTINES_UnassignedPriority; pri<=7; pri++)
     {
-      libc_printf ((const char *) "[%d]  ", 6, p);
-      v = Pending.array[p-(COROUTINES_UnassignedPriority)];
-      while (v != NULL)
+      libc_printf ((const char *) "[%d]  ", 6, pri);
+      vptr = Pending.array[pri-(COROUTINES_UnassignedPriority)];
+      while (vptr != NULL)
         {
-          if ((v->type == RTint_input) || (v->type == RTint_output))
+          if ((vptr->type == RTint_input) || (vptr->type == RTint_output))
             {
-              libc_printf ((const char *) "(fd=%d) (vec=%d)", 16, v->File, v->no);
+              libc_printf ((const char *) "(fd=%d) (vec=%d)", 16, vptr->File, vptr->no);
             }
-          else if (v->type == RTint_time)
+          else if (vptr->type == RTint_time)
             {
               /* avoid dangling else.  */
-              Selective_GetTime (v->rel, &s, &m);
-              Assertion_Assert (m < Microseconds);
-              libc_printf ((const char *) "time (%u.%06u secs) (arg = 0x%x)\\n", 34, s, m, v->arg);
+              Selective_GetTime (vptr->rel, &sec, &micro);
+              Assertion_Assert (micro < Microseconds);
+              libc_printf ((const char *) "time (%u.%06u secs) (arg = %p)\\n", 32, sec, micro, vptr->arg);
             }
-          v = v->pending;
+          vptr = vptr->pending;
         }
       libc_printf ((const char *) " \\n", 3);
     }
-}
-
-
-/*
-   DumpPendingQueue - displays the pending queue.
-*/
-
-static void stop (void)
-{
 }
 
 
@@ -503,86 +488,86 @@ static void SubTime (unsigned int *s, unsigned int *m, Selective_Timeval a, Sele
    activatePending - activates the first interrupt pending and clears it.
 */
 
-static unsigned int activatePending (unsigned int untilInterrupt, RTint_DispatchVector call, unsigned int pri, int maxFd, Selective_SetOfFd *i, Selective_SetOfFd *o, Selective_Timeval *t, Selective_Timeval b4, Selective_Timeval after)
+static unsigned int activatePending (unsigned int untilInterrupt, RTint_DispatchVector call, unsigned int pri, int maxFd, Selective_SetOfFd *inSet, Selective_SetOfFd *outSet, Selective_Timeval *timeval, Selective_Timeval b4, Selective_Timeval after)
 {
-  int r;
+  int result;
   unsigned int p;
-  RTint_Vector v;
+  RTint_Vector vec;
   unsigned int b4s;
   unsigned int b4m;
   unsigned int afs;
   unsigned int afm;
-  unsigned int s;
-  unsigned int m;
+  unsigned int sec;
+  unsigned int micro;
 
   RTco_wait (lock);
   p = static_cast<unsigned int> (7);
   while (p > pri)
     {
-      v = Pending.array[p-(COROUTINES_UnassignedPriority)];
-      while (v != NULL)
+      vec = Pending.array[p-(COROUTINES_UnassignedPriority)];
+      while (vec != NULL)
         {
-          switch (v->type)
+          switch (vec->type)
             {
               case RTint_input:
-                if (((v->File < maxFd) && ((*i) != NULL)) && (Selective_FdIsSet (v->File, (*i))))
+                if (((vec->File < maxFd) && ((*inSet) != NULL)) && (Selective_FdIsSet (vec->File, (*inSet))))
                   {
                     if (Debugging)
                       {
-                        libc_printf ((const char *) "read (fd=%d) is ready (vec=%d)\\n", 32, v->File, v->no);
+                        libc_printf ((const char *) "read (fd=%d) is ready (vec=%d)\\n", 32, vec->File, vec->no);
                         DumpPendingQueue ();
                       }
-                    Selective_FdClr (v->File, (*i));  /* so we dont activate this again from our select.  */
+                    Selective_FdClr (vec->File, (*inSet));  /* so we dont activate this again from our select.  */
                     RTco_signal (lock);  /* so we dont activate this again from our select.  */
-                    (*call.proc) (v->no, v->priority, v->arg);
+                    (*call.proc) (vec->no, vec->priority, vec->arg);
                     return TRUE;
                   }
                 break;
 
               case RTint_output:
-                if (((v->File < maxFd) && ((*o) != NULL)) && (Selective_FdIsSet (v->File, (*o))))
+                if (((vec->File < maxFd) && ((*outSet) != NULL)) && (Selective_FdIsSet (vec->File, (*outSet))))
                   {
                     if (Debugging)
                       {
-                        libc_printf ((const char *) "write (fd=%d) is ready (vec=%d)\\n", 33, v->File, v->no);
+                        libc_printf ((const char *) "write (fd=%d) is ready (vec=%d)\\n", 33, vec->File, vec->no);
                         DumpPendingQueue ();
                       }
-                    Selective_FdClr (v->File, (*o));  /* so we dont activate this again from our select.  */
+                    Selective_FdClr (vec->File, (*outSet));  /* so we dont activate this again from our select.  */
                     RTco_signal (lock);  /* so we dont activate this again from our select.  */
-                    (*call.proc) (v->no, v->priority, v->arg);
+                    (*call.proc) (vec->no, vec->priority, vec->arg);
                     return TRUE;
                   }
                 break;
 
               case RTint_time:
-                if (untilInterrupt && ((*t) != NULL))
+                if (untilInterrupt && ((*timeval) != NULL))
                   {
-                    r = Selective_GetTimeOfDay (after);
-                    Assertion_Assert (r == 0);
+                    result = Selective_GetTimeOfDay (after);
+                    Assertion_Assert (result == 0);
                     if (Debugging)
                       {
-                        Selective_GetTime ((*t), &s, &m);
-                        Assertion_Assert (m < Microseconds);
+                        Selective_GetTime ((*timeval), &sec, &micro);
+                        Assertion_Assert (micro < Microseconds);
                         Selective_GetTime (after, &afs, &afm);
                         Assertion_Assert (afm < Microseconds);
                         Selective_GetTime (b4, &b4s, &b4m);
                         Assertion_Assert (b4m < Microseconds);
-                        libc_printf ((const char *) "waited %u.%06u + %u.%06u now is %u.%06u\\n", 41, s, m, b4s, b4m, afs, afm);
+                        libc_printf ((const char *) "waited %u.%06u + %u.%06u now is %u.%06u\\n", 41, sec, micro, b4s, b4m, afs, afm);
                       }
-                    if (IsGreaterEqual (after, v->abs_))
+                    if (IsGreaterEqual (after, vec->abs_))
                       {
                         if (Debugging)
                           {
                             DumpPendingQueue ();
                             libc_printf ((const char *) "time has expired calling dispatcher\\n", 37);
                           }
-                        (*t) = Selective_KillTime ((*t));  /* so we dont activate this again from our select.  */
+                        (*timeval) = Selective_KillTime ((*timeval));  /* so we dont activate this again from our select.  */
                         RTco_signal (lock);  /* so we dont activate this again from our select.  */
                         if (Debugging)
                           {
-                            libc_printf ((const char *) "call (%d, %d, 0x%x)\\n", 21, v->no, v->priority, v->arg);
+                            libc_printf ((const char *) "call (%d, %d, 0x%x)\\n", 21, vec->no, vec->priority, vec->arg);
                           }
-                        (*call.proc) (v->no, v->priority, v->arg);
+                        (*call.proc) (vec->no, vec->priority, vec->arg);
                         return TRUE;
                       }
                     else if (Debugging)
@@ -595,10 +580,10 @@ static unsigned int activatePending (unsigned int untilInterrupt, RTint_Dispatch
 
 
               default:
-                CaseException ("../../gcc/m2/gm2-libs/RTint.def", 25, 1);
+                CaseException ("../../gcc-read-write/gcc/m2/gm2-libs/RTint.def", 25, 1);
                 __builtin_unreachable ();
             }
-          v = v->pending;
+          vec = vec->pending;
         }
       p -= 1;
     }
@@ -636,33 +621,33 @@ static void init (void)
 
 extern "C" unsigned int RTint_InitInputVector (int fd, unsigned int pri)
 {
-  RTint_Vector v;
+  RTint_Vector vptr;
 
   if (Debugging)
     {
       libc_printf ((const char *) "InitInputVector fd = %d priority = %d\\n", 39, fd, pri);
     }
   RTco_wait (lock);
-  v = FindVector (fd, RTint_input);
-  if (v == NULL)
+  vptr = FindVector (fd, RTint_input);
+  if (vptr == NULL)
     {
-      Storage_ALLOCATE ((void **) &v, sizeof (RTint__T1));
+      Storage_ALLOCATE ((void **) &vptr, sizeof (RTint__T1));
       VecNo += 1;
-      v->type = RTint_input;
-      v->priority = pri;
-      v->arg = NULL;
-      v->pending = NULL;
-      v->exists = Exists;
-      v->no = VecNo;
-      v->File = fd;
-      Exists = v;
+      vptr->type = RTint_input;
+      vptr->priority = pri;
+      vptr->arg = NULL;
+      vptr->pending = NULL;
+      vptr->exists = Exists;
+      vptr->no = VecNo;
+      vptr->File = fd;
+      Exists = vptr;
       RTco_signal (lock);
       return VecNo;
     }
   else
     {
       RTco_signal (lock);
-      return v->no;
+      return vptr->no;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -676,14 +661,14 @@ extern "C" unsigned int RTint_InitInputVector (int fd, unsigned int pri)
 
 extern "C" unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
 {
-  RTint_Vector v;
+  RTint_Vector vptr;
 
   RTco_wait (lock);
-  v = FindVector (fd, RTint_output);
-  if (v == NULL)
+  vptr = FindVector (fd, RTint_output);
+  if (vptr == NULL)
     {
-      Storage_ALLOCATE ((void **) &v, sizeof (RTint__T1));
-      if (v == NULL)
+      Storage_ALLOCATE ((void **) &vptr, sizeof (RTint__T1));
+      if (vptr == NULL)
         {
           M2RTS_HALT (-1);
           __builtin_unreachable ();
@@ -691,14 +676,14 @@ extern "C" unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
       else
         {
           VecNo += 1;
-          v->type = RTint_output;
-          v->priority = pri;
-          v->arg = NULL;
-          v->pending = NULL;
-          v->exists = Exists;
-          v->no = VecNo;
-          v->File = fd;
-          Exists = v;
+          vptr->type = RTint_output;
+          vptr->priority = pri;
+          vptr->arg = NULL;
+          vptr->pending = NULL;
+          vptr->exists = Exists;
+          vptr->no = VecNo;
+          vptr->File = fd;
+          Exists = vptr;
           RTco_signal (lock);
           return VecNo;
         }
@@ -706,9 +691,9 @@ extern "C" unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
   else
     {
       RTco_signal (lock);
-      return v->no;
+      return vptr->no;
     }
-  ReturnException ("../../gcc/m2/gm2-libs/RTint.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/RTint.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -720,11 +705,11 @@ extern "C" unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
 
 extern "C" unsigned int RTint_InitTimeVector (unsigned int micro, unsigned int secs, unsigned int pri)
 {
-  RTint_Vector v;
+  RTint_Vector vptr;
 
   RTco_wait (lock);
-  Storage_ALLOCATE ((void **) &v, sizeof (RTint__T1));
-  if (v == NULL)
+  Storage_ALLOCATE ((void **) &vptr, sizeof (RTint__T1));
+  if (vptr == NULL)
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
@@ -733,16 +718,16 @@ extern "C" unsigned int RTint_InitTimeVector (unsigned int micro, unsigned int s
     {
       VecNo += 1;
       Assertion_Assert (micro < Microseconds);
-      v->type = RTint_time;
-      v->priority = pri;
-      v->arg = NULL;
-      v->pending = NULL;
-      v->exists = Exists;
-      v->no = VecNo;
-      v->rel = Selective_InitTime (secs+DebugTime, micro);
-      v->abs_ = Selective_InitTime (0, 0);
-      v->queued = FALSE;
-      Exists = v;
+      vptr->type = RTint_time;
+      vptr->priority = pri;
+      vptr->arg = NULL;
+      vptr->pending = NULL;
+      vptr->exists = Exists;
+      vptr->no = VecNo;
+      vptr->rel = Selective_InitTime (secs+DebugTime, micro);
+      vptr->abs_ = Selective_InitTime (0, 0);
+      vptr->queued = FALSE;
+      Exists = vptr;
     }
   RTco_signal (lock);
   return VecNo;
@@ -758,18 +743,18 @@ extern "C" unsigned int RTint_InitTimeVector (unsigned int micro, unsigned int s
 
 extern "C" void RTint_ReArmTimeVector (unsigned int vec, unsigned int micro, unsigned int secs)
 {
-  RTint_Vector v;
+  RTint_Vector vptr;
 
   Assertion_Assert (micro < Microseconds);
   RTco_wait (lock);
-  v = FindVectorNo (vec);
-  if (v == NULL)
+  vptr = FindVectorNo (vec);
+  if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, 286, (const char *) "ReArmTimeVector", 15, (const char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 286, (const char *) "ReArmTimeVector", 15, (const char *) "cannot find vector supplied", 27);
     }
   else
     {
-      Selective_SetTime (v->rel, secs+DebugTime, micro);
+      Selective_SetTime (vptr->rel, secs+DebugTime, micro);
     }
   RTco_signal (lock);
 }
@@ -784,17 +769,17 @@ extern "C" void RTint_ReArmTimeVector (unsigned int vec, unsigned int micro, uns
 
 extern "C" void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsigned int *secs)
 {
-  RTint_Vector v;
+  RTint_Vector vptr;
 
   RTco_wait (lock);
-  v = FindVectorNo (vec);
-  if (v == NULL)
+  vptr = FindVectorNo (vec);
+  if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, 312, (const char *) "GetTimeVector", 13, (const char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 312, (const char *) "GetTimeVector", 13, (const char *) "cannot find vector supplied", 27);
     }
   else
     {
-      Selective_GetTime (v->rel, secs, micro);
+      Selective_GetTime (vptr->rel, secs, micro);
       Assertion_Assert ((*micro) < Microseconds);
     }
   RTco_signal (lock);
@@ -802,35 +787,35 @@ extern "C" void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsi
 
 
 /*
-   AttachVector - adds the pointer, p, to be associated with the interrupt
+   AttachVector - adds the pointer ptr to be associated with the interrupt
                   vector. It returns the previous value attached to this
                   vector.
 */
 
-extern "C" void * RTint_AttachVector (unsigned int vec, void * p)
+extern "C" void * RTint_AttachVector (unsigned int vec, void * ptr)
 {
-  RTint_Vector v;
-  void * l;
+  RTint_Vector vptr;
+  void * prevArg;
 
   RTco_wait (lock);
-  v = FindVectorNo (vec);
-  if (v == NULL)
+  vptr = FindVectorNo (vec);
+  if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, 339, (const char *) "AttachVector", 12, (const char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 339, (const char *) "AttachVector", 12, (const char *) "cannot find vector supplied", 27);
     }
   else
     {
-      l = v->arg;
-      v->arg = p;
+      prevArg = vptr->arg;
+      vptr->arg = ptr;
       if (Debugging)
         {
-          libc_printf ((const char *) "AttachVector %d with 0x%x\\n", 27, vec, p);
+          libc_printf ((const char *) "AttachVector %d with %p\\n", 25, vec, ptr);
           DumpPendingQueue ();
         }
       RTco_signal (lock);
-      return l;
+      return prevArg;
     }
-  ReturnException ("../../gcc/m2/gm2-libs/RTint.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/RTint.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -842,37 +827,37 @@ extern "C" void * RTint_AttachVector (unsigned int vec, void * p)
 
 extern "C" void RTint_IncludeVector (unsigned int vec)
 {
-  RTint_Vector v;
-  unsigned int m;
-  unsigned int s;
-  int r;
+  RTint_Vector vptr;
+  unsigned int micro;
+  unsigned int sec;
+  int result;
 
   RTco_wait (lock);
-  v = FindPendingVector (vec);
-  if (v == NULL)
+  vptr = FindPendingVector (vec);
+  if (vptr == NULL)
     {
       /* avoid dangling else.  */
-      v = FindVectorNo (vec);
-      if (v == NULL)
+      vptr = FindVectorNo (vec);
+      if (vptr == NULL)
         {
-          M2RTS_Halt ((const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, 372, (const char *) "IncludeVector", 13, (const char *) "cannot find vector supplied", 27);
+          M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 372, (const char *) "IncludeVector", 13, (const char *) "cannot find vector supplied", 27);
         }
       else
         {
           /* printf('including vector %d  (fd = %d)
           ', vec, v^.File) ;  */
-          v->pending = Pending.array[v->priority-(COROUTINES_UnassignedPriority)];
-          Pending.array[v->priority-(COROUTINES_UnassignedPriority)] = v;
-          if ((v->type == RTint_time) && ! v->queued)
+          vptr->pending = Pending.array[vptr->priority-(COROUTINES_UnassignedPriority)];
+          Pending.array[vptr->priority-(COROUTINES_UnassignedPriority)] = vptr;
+          if ((vptr->type == RTint_time) && ! vptr->queued)
             {
-              v->queued = TRUE;
-              r = Selective_GetTimeOfDay (v->abs_);
-              Assertion_Assert (r == 0);
-              Selective_GetTime (v->abs_, &s, &m);
-              Assertion_Assert (m < Microseconds);
-              AddTime (v->abs_, v->rel);
-              Selective_GetTime (v->abs_, &s, &m);
-              Assertion_Assert (m < Microseconds);
+              vptr->queued = TRUE;
+              result = Selective_GetTimeOfDay (vptr->abs_);
+              Assertion_Assert (result == 0);
+              Selective_GetTime (vptr->abs_, &sec, &micro);
+              Assertion_Assert (micro < Microseconds);
+              AddTime (vptr->abs_, vptr->rel);
+              Selective_GetTime (vptr->abs_, &sec, &micro);
+              Assertion_Assert (micro < Microseconds);
             }
         }
     }
@@ -880,9 +865,8 @@ extern "C" void RTint_IncludeVector (unsigned int vec)
     {
       if (Debugging)
         {
-          libc_printf ((const char *) "odd vector (%d) type (%d) arg (0x%x) is already attached to the pending queue\\n", 79, vec, v->type, v->arg);
+          libc_printf ((const char *) "odd vector (%d) type (%d) arg (%p) is already attached to the pending queue\\n", 77, vec, vptr->type, vptr->arg);
         }
-      stop ();
     }
   RTco_signal (lock);
 }
@@ -895,35 +879,35 @@ extern "C" void RTint_IncludeVector (unsigned int vec)
 
 extern "C" void RTint_ExcludeVector (unsigned int vec)
 {
-  RTint_Vector v;
-  RTint_Vector u;
+  RTint_Vector vptr;
+  RTint_Vector uptr;
 
   RTco_wait (lock);
-  v = FindPendingVector (vec);
-  if (v == NULL)
+  vptr = FindPendingVector (vec);
+  if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, 415, (const char *) "ExcludeVector", 13, (const char *) "cannot find pending vector supplied", 35);
+      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 414, (const char *) "ExcludeVector", 13, (const char *) "cannot find pending vector supplied", 35);
     }
   else
     {
       /* printf('excluding vector %d
       ', vec) ;  */
-      if (Pending.array[v->priority-(COROUTINES_UnassignedPriority)] == v)
+      if (Pending.array[vptr->priority-(COROUTINES_UnassignedPriority)] == vptr)
         {
-          Pending.array[v->priority-(COROUTINES_UnassignedPriority)] = Pending.array[v->priority-(COROUTINES_UnassignedPriority)]->pending;
+          Pending.array[vptr->priority-(COROUTINES_UnassignedPriority)] = Pending.array[vptr->priority-(COROUTINES_UnassignedPriority)]->pending;
         }
       else
         {
-          u = Pending.array[v->priority-(COROUTINES_UnassignedPriority)];
-          while (u->pending != v)
+          uptr = Pending.array[vptr->priority-(COROUTINES_UnassignedPriority)];
+          while (uptr->pending != vptr)
             {
-              u = u->pending;
+              uptr = uptr->pending;
             }
-          u->pending = v->pending;
+          uptr->pending = vptr->pending;
         }
-      if (v->type == RTint_time)
+      if (vptr->type == RTint_time)
         {
-          v->queued = FALSE;
+          vptr->queued = FALSE;
         }
     }
   RTco_signal (lock);
@@ -942,19 +926,19 @@ extern "C" void RTint_ExcludeVector (unsigned int vec)
 extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector call, unsigned int pri)
 {
   unsigned int found;
-  int r;
+  int result;
   Selective_Timeval after;
   Selective_Timeval b4;
-  Selective_Timeval t;
-  RTint_Vector v;
-  Selective_SetOfFd i;
-  Selective_SetOfFd o;
+  Selective_Timeval timeval;
+  RTint_Vector vec;
+  Selective_SetOfFd inSet;
+  Selective_SetOfFd outSet;
   unsigned int b4s;
   unsigned int b4m;
   unsigned int afs;
   unsigned int afm;
-  unsigned int s;
-  unsigned int m;
+  unsigned int sec;
+  unsigned int micro;
   int maxFd;
   unsigned int p;
 
@@ -966,103 +950,103 @@ extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector 
           DumpPendingQueue ();
         }
       maxFd = -1;
-      t = NULL;
-      i = NULL;
-      o = NULL;
-      t = Selective_InitTime (static_cast<unsigned int> (INT_MAX), 0);
+      timeval = NULL;
+      inSet = NULL;
+      outSet = NULL;
+      timeval = Selective_InitTime (static_cast<unsigned int> (INT_MAX), 0);
       p = static_cast<unsigned int> (7);
       found = FALSE;
       while (p > pri)
         {
-          v = Pending.array[p-(COROUTINES_UnassignedPriority)];
-          while (v != NULL)
+          vec = Pending.array[p-(COROUTINES_UnassignedPriority)];
+          while (vec != NULL)
             {
-              switch (v->type)
+              switch (vec->type)
                 {
                   case RTint_input:
-                    AddFd (&i, &maxFd, v->File);
+                    AddFd (&inSet, &maxFd, vec->File);
                     break;
 
                   case RTint_output:
-                    AddFd (&o, &maxFd, v->File);
+                    AddFd (&outSet, &maxFd, vec->File);
                     break;
 
                   case RTint_time:
-                    if (IsGreaterEqual (t, v->abs_))
+                    if (IsGreaterEqual (timeval, vec->abs_))
                       {
-                        Selective_GetTime (v->abs_, &s, &m);
-                        Assertion_Assert (m < Microseconds);
+                        Selective_GetTime (vec->abs_, &sec, &micro);
+                        Assertion_Assert (micro < Microseconds);
                         if (Debugging)
                           {
-                            libc_printf ((const char *) "shortest delay is %u.%06u\\n", 27, s, m);
+                            libc_printf ((const char *) "shortest delay is %u.%06u\\n", 27, sec, micro);
                           }
-                        Selective_SetTime (t, s, m);
+                        Selective_SetTime (timeval, sec, micro);
                         found = TRUE;
                       }
                     break;
 
 
                   default:
-                    CaseException ("../../gcc/m2/gm2-libs/RTint.def", 25, 1);
+                    CaseException ("../../gcc-read-write/gcc/m2/gm2-libs/RTint.def", 25, 1);
                     __builtin_unreachable ();
                 }
-              v = v->pending;
+              vec = vec->pending;
             }
           p -= 1;
         }
       if (! untilInterrupt)
         {
-          Selective_SetTime (t, 0, 0);
+          Selective_SetTime (timeval, 0, 0);
         }
-      if (((untilInterrupt && (i == NULL)) && (o == NULL)) && ! found)
+      if (((untilInterrupt && (inSet == NULL)) && (outSet == NULL)) && ! found)
         {
-          M2RTS_Halt ((const char *) "../../gcc/m2/gm2-libs/RTint.mod", 31, 731, (const char *) "Listen", 6, (const char *) "deadlock found, no more processes to run and no interrupts active", 65);
+          M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 730, (const char *) "Listen", 6, (const char *) "deadlock found, no more processes to run and no interrupts active", 65);
         }
       /* printf('}
       ') ;  */
-      if (((! found && (maxFd == -1)) && (i == NULL)) && (o == NULL))
+      if (((! found && (maxFd == -1)) && (inSet == NULL)) && (outSet == NULL))
         {
           /* no file descriptors to be selected upon.  */
-          t = Selective_KillTime (t);
+          timeval = Selective_KillTime (timeval);
           RTco_signal (lock);
           return ;
         }
       else
         {
-          Selective_GetTime (t, &s, &m);
-          Assertion_Assert (m < Microseconds);
+          Selective_GetTime (timeval, &sec, &micro);
+          Assertion_Assert (micro < Microseconds);
           b4 = Selective_InitTime (0, 0);
           after = Selective_InitTime (0, 0);
-          r = Selective_GetTimeOfDay (b4);
-          Assertion_Assert (r == 0);
-          SubTime (&s, &m, t, b4);
-          Selective_SetTime (t, s, m);
+          result = Selective_GetTimeOfDay (b4);
+          Assertion_Assert (result == 0);
+          SubTime (&sec, &micro, timeval, b4);
+          Selective_SetTime (timeval, sec, micro);
           if (Debugging)
             {
-              libc_printf ((const char *) "select waiting for %u.%06u seconds\\n", 36, s, m);
+              libc_printf ((const char *) "select waiting for %u.%06u seconds\\n", 36, sec, micro);
             }
           RTco_signal (lock);
           do {
             if (Debugging)
               {
-                libc_printf ((const char *) "select (.., .., .., %u.%06u)\\n", 30, s, m);
+                libc_printf ((const char *) "select (.., .., .., %u.%06u)\\n", 30, sec, micro);
               }
-            r = RTco_select (maxFd+1, i, o, NULL, t);
-            if (r == -1)
+            result = RTco_select (maxFd+1, inSet, outSet, NULL, timeval);
+            if (result == -1)
               {
                 libc_perror ((const char *) "select", 6);
-                r = RTco_select (maxFd+1, i, o, NULL, NULL);
-                if (r == -1)
+                result = RTco_select (maxFd+1, inSet, outSet, NULL, NULL);
+                if (result == -1)
                   {
                     libc_perror ((const char *) "select timeout argument is faulty", 33);
                   }
-                r = RTco_select (maxFd+1, i, NULL, NULL, t);
-                if (r == -1)
+                result = RTco_select (maxFd+1, inSet, NULL, NULL, timeval);
+                if (result == -1)
                   {
                     libc_perror ((const char *) "select output fd argument is faulty", 35);
                   }
-                r = RTco_select (maxFd+1, NULL, o, NULL, t);
-                if (r == -1)
+                result = RTco_select (maxFd+1, NULL, outSet, NULL, timeval);
+                if (result == -1)
                   {
                     libc_perror ((const char *) "select input fd argument is faulty", 34);
                   }
@@ -1071,29 +1055,29 @@ extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector 
                     libc_perror ((const char *) "select maxFD+1 argument is faulty", 33);
                   }
               }
-          } while (! (r != -1));
+          } while (! (result != -1));
         }
-      while (activatePending (untilInterrupt, call, pri, maxFd+1, &i, &o, &t, b4, after))
+      while (activatePending (untilInterrupt, call, pri, maxFd+1, &inSet, &outSet, &timeval, b4, after))
         {}  /* empty.  */
-      if (t != NULL)
+      if (timeval != NULL)
         {
-          t = Selective_KillTime (t);
+          timeval = Selective_KillTime (timeval);
         }
       if (after != NULL)
         {
-          t = Selective_KillTime (after);
+          after = Selective_KillTime (after);
         }
       if (b4 != NULL)
         {
-          t = Selective_KillTime (b4);
+          b4 = Selective_KillTime (b4);
         }
-      if (i != NULL)
+      if (inSet != NULL)
         {
-          i = Selective_KillSet (i);
+          inSet = Selective_KillSet (inSet);
         }
-      if (o != NULL)
+      if (outSet != NULL)
         {
-          o = Selective_KillSet (o);
+          outSet = Selective_KillSet (outSet);
         }
     }
   RTco_signal (lock);

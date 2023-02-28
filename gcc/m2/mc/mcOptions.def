@@ -134,4 +134,18 @@ PROCEDURE getScaffoldMain () : BOOLEAN ;
 PROCEDURE writeGPLheader (f: File) ;
 
 
+(*
+   setSuppressNoReturn - set suppressNoReturn to value.
+*)
+
+PROCEDURE setSuppressNoReturn (value: BOOLEAN) ;
+
+
+(*
+   getSuppressNoReturn - return the suppressNoReturn value.
+*)
+
+PROCEDURE getSuppressNoReturn () : BOOLEAN ;
+
+
 END mcOptions.

@@ -97,7 +97,7 @@ EXTERN void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsigned
                   vector.
 */
 
-EXTERN void * RTint_AttachVector (unsigned int vec, void * p);
+EXTERN void * RTint_AttachVector (unsigned int vec, void * ptr);
 
 /*
    IncludeVector - includes, vec, into the dispatcher list of

@@ -558,7 +558,7 @@ static FIO_File GetNextFreeDescriptor (void)
         return f;  /* create new slot  */
       }
   }
-  ReturnException ("../../gcc/m2/gm2-libs/FIO.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/FIO.def", 25, 1);
   __builtin_unreachable ();
 }
 

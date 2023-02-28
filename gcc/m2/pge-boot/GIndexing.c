@@ -227,7 +227,7 @@ extern "C" unsigned int Indexing_InBounds (Indexing_Index i, unsigned int n)
     {
       return (n >= i->Low) && (n <= i->High);
     }
-  ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -247,7 +247,7 @@ extern "C" unsigned int Indexing_HighIndice (Indexing_Index i)
     {
       return i->High;
     }
-  ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -267,7 +267,7 @@ extern "C" unsigned int Indexing_LowIndice (Indexing_Index i)
     {
       return i->Low;
     }
-  ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
 }
 

@@ -908,7 +908,7 @@ static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned 
         return TRUE;
       }
   }
-  ReturnException ("../../gcc/m2/mc/keyc.def", 20, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/mc/keyc.def", 20, 1);
   __builtin_unreachable ();
 }
 

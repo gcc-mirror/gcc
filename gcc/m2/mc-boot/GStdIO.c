@@ -193,7 +193,7 @@ extern "C" StdIO_ProcWrite StdIO_GetCurrentOutput (void)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc/m2/gm2-libs/StdIO.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/StdIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -252,7 +252,7 @@ extern "C" StdIO_ProcRead StdIO_GetCurrentInput (void)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("../../gcc/m2/gm2-libs/StdIO.def", 25, 1);
+  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/StdIO.def", 25, 1);
   __builtin_unreachable ();
 }
 

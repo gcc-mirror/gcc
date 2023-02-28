@@ -257,7 +257,7 @@ static void dumpComment (mcComment_commentDesc cd)
 
 
       default:
-        CaseException ("../../gcc/m2/mc/mcComment.def", 20, 1);
+        CaseException ("../../gcc-read-write/gcc/m2/mc/mcComment.def", 20, 1);
         __builtin_unreachable ();
     }
   if (cd->used)

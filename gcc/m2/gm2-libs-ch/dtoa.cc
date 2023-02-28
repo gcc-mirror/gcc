@@ -31,6 +31,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gm2-libs-host.h"
 #include "m2rts.h"
 
+#define LIBNAME "m2pim"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -192,7 +194,7 @@ _M2_dtoa_dep (void)
 extern "C" void __attribute__((__constructor__))
 _M2_dtoa_ctor (void)
 {
-  M2RTS_RegisterModule ("dtoa", _M2_dtoa_init, _M2_dtoa_finish,
+  M2RTS_RegisterModule ("dtoa", LIBNAME, _M2_dtoa_init, _M2_dtoa_finish,
 			_M2_dtoa_dep);
 }
 
