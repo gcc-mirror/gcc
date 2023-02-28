@@ -1372,6 +1372,44 @@ struct ternary_def : public overloaded_base<0>
 };
 SHAPE (ternary)
 
+/* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, const int)
+
+   i.e. ternary operations that operate on a pair of vectors of the
+   same type as the destination, and take a third integer argument.
+
+   Check that 'imm' is in the [0..#bits-1] range.
+
+   Example: vsliq.
+   int16x8_t [__arm_]vsliq[_n_s16](int16x8_t a, int16x8_t b, const int imm)
+   int16x8_t [__arm_]vsliq_m[_n_s16](int16x8_t a, int16x8_t b, const int imm, mve_pred16_t p)  */
+struct ternary_lshift_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,ss32", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (2, 1);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    if (c.mode_suffix_id != MODE_n)
+      return true;
+
+    unsigned int bits = c.type_suffix (0).element_bits;
+    return c.require_immediate_range (2, 0, bits - 1);
+  }
+};
+SHAPE (ternary_lshift)
+
 /* <T0>_t vfoo[_n_t0](<T0>_t, <T0>_t, <S0>_t)
 
    i.e. the standard shape for ternary operations that operate on a
