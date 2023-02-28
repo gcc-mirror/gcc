@@ -1706,6 +1706,45 @@ struct unary_widen_acc_def : public overloaded_base<0>
 };
 SHAPE (unary_widen_acc)
 
+/* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, mve_pred16_t)
+
+   i.e. a version of the standard ternary shape in which
+   the final argument is always a set of predicates.
+
+   Example: vpselq.
+   int16x8_t [__arm_]vpselq[_s16](int16x8_t a, int16x8_t b, mve_pred16_t p)  */
+struct vpsel_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,p", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    unsigned int last_arg = i;
+    for (i = 0; i < last_arg; i++)
+      if (!r.require_matching_vector_type (i, type))
+	return error_mark_node;
+
+    if (!r.require_vector_type (2 , VECTOR_TYPE_mve_pred16_t))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (vpsel)
+
 } /* end namespace arm_mve */
 
 #undef SHAPE
