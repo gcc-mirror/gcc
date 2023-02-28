@@ -10317,13 +10317,20 @@ lookup_template_variable (tree templ, tree arglist)
   return build2 (TEMPLATE_ID_EXPR, NULL_TREE, templ, arglist);
 }
 
-/* Instantiate a variable declaration from a TEMPLATE_ID_EXPR for use. */
+/* Instantiate a variable declaration from a TEMPLATE_ID_EXPR if it's
+   not dependent.  */
 
 tree
 finish_template_variable (tree var, tsubst_flags_t complain)
 {
   tree templ = TREE_OPERAND (var, 0);
   tree arglist = TREE_OPERAND (var, 1);
+
+  /* If the template or arguments are dependent, then we
+     can't resolve the TEMPLATE_ID_EXPR yet.  */
+  if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (templ)) != 1
+      || any_dependent_template_arguments_p (arglist))
+    return var;
 
   tree parms = DECL_TEMPLATE_PARMS (templ);
   arglist = coerce_template_parms (parms, arglist, templ, complain);
@@ -10352,19 +10359,14 @@ lookup_and_finish_template_variable (tree templ, tree targs,
 				     tsubst_flags_t complain)
 {
   tree var = lookup_template_variable (templ, targs);
-  if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (templ)) == 1
-      && !any_dependent_template_arguments_p (targs))
-    {
-      /* We may be called while doing a partial substitution, but the
-	 type of the variable template may be auto, in which case we
-	 will call do_auto_deduction in mark_used (which clears tf_partial)
-	 and the auto must be properly reduced at that time for the
-	 deduction to work.  */
-      complain &= ~tf_partial;
-      var = finish_template_variable (var, complain);
-      mark_used (var);
-    }
-
+  /* We may be called while doing a partial substitution, but the
+     type of the variable template may be auto, in which case we
+     will call do_auto_deduction in mark_used (which clears tf_partial)
+     and the auto must be properly reduced at that time for the
+     deduction to work.  */
+  complain &= ~tf_partial;
+  var = finish_template_variable (var, complain);
+  mark_used (var);
   return convert_from_reference (var);
 }
 
