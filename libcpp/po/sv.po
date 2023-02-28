@@ -1,17 +1,17 @@
 # Swedish messages for cpplib.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023.
 #
 # Remember: GCC team does not want RCS keywords in the header!
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 12.1-b20220213\n"
+"Project-Id-Version: cpplib 13.1-b20230212\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-02-10 22:39+0000\n"
-"PO-Revision-Date: 2022-02-17 16:46+0100\n"
+"PO-Revision-Date: 2023-02-26 17:10+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -62,53 +62,45 @@ msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "betydelsen av ”\\%c” är annorlunda i traditionell C"
 
 #: charset.cc:1483
-#, fuzzy
-#| msgid "'?' without following ':'"
 msgid "'\\N' not followed by '{'"
-msgstr "”?” utan följande ”:”"
+msgstr "”\\N” inte följt av ”{”"
 
 #: charset.cc:1513
 msgid "empty named universal character escape sequence; treating it as separate tokens"
-msgstr ""
+msgstr "tomma namngivna universella teckenspecialsekvenser; behandlar det som separata symboler"
 
 #: charset.cc:1520
-#, fuzzy
-#| msgid "incomplete universal character name %.*s"
 msgid "empty named universal character escape sequence"
-msgstr "ofullständigt universellt teckennamn %.*s"
+msgstr "ofullständig namngiven universell teckenspecialsekvens"
 
 #: charset.cc:1525
-#, fuzzy
-#| msgid "universal character names are only valid in C++ and C99"
 msgid "named universal character escapes are only valid in C++23"
-msgstr "universella teckennamn är endast giltiga i C++ och C99"
+msgstr "namngivna universella teckenspecialsekvenser är endast giltiga i C++23"
 
 #: charset.cc:1545
-#, fuzzy, c-format
-#| msgid "%.*s is not a valid universal character"
+#, c-format
 msgid "\\N{%.*s} is not a valid universal character; treating it as separate tokens"
-msgstr "%.*s är inte ett giltigt universellt tecken"
+msgstr "\\N{%.*s} är inte ett giltigt universellt tecken; behandlar det som separata symboler"
 
 #: charset.cc:1551
-#, fuzzy, c-format
-#| msgid "%.*s is not a valid universal character"
+#, c-format
 msgid "\\N{%.*s} is not a valid universal character"
-msgstr "%.*s är inte ett giltigt universellt tecken"
+msgstr "\\N{%.*s} är inte ett giltigt universellt tecken"
 
 #: charset.cc:1561
 #, c-format
 msgid "did you mean \\N{%s}?"
-msgstr ""
+msgstr "menade du \\N{%s}?"
 
 #: charset.cc:1579
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s; treating it as separate tokens"
-msgstr ""
+msgstr "”\\N{” inte avslutad med ”}” efter %.*s; behandlar det som separata symboler"
 
 #: charset.cc:1588
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s"
-msgstr ""
+msgstr "”\\N{” inte avslutad med ”}” efter %.*s"
 
 #: charset.cc:1596
 msgid "In _cpp_valid_ucn but not a UCN"
@@ -116,22 +108,20 @@ msgstr "I _cpp_valid_ucn men inte en UCN"
 
 #: charset.cc:1638
 msgid "empty delimited escape sequence; treating it as separate tokens"
-msgstr ""
+msgstr "tom avgränsad specialsekvens; behandlar den som separata symboler"
 
 #: charset.cc:1645 charset.cc:1978 charset.cc:2081
 msgid "empty delimited escape sequence"
-msgstr ""
+msgstr "tom avgränsad specialsekvens"
 
 #: charset.cc:1649 charset.cc:1984 charset.cc:2087
-#, fuzzy
-#| msgid "universal character names are only valid in C++ and C99"
 msgid "delimited escape sequences are only valid in C++23"
-msgstr "universella teckennamn är endast giltiga i C++ och C99"
+msgstr "avgränsade specialsekvenser är endast giltiga i C++23"
 
 #: charset.cc:1663
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s; treating it as separate tokens"
-msgstr ""
+msgstr "”\\u{” inte avslutad med ”}” efter %.*s; behandlar det som separata symboler"
 
 #: charset.cc:1675
 #, c-format
@@ -141,7 +131,7 @@ msgstr "ofullständigt universellt teckennamn %.*s"
 #: charset.cc:1679
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s"
-msgstr ""
+msgstr "”\\u{” inte avslutad med ”}” efter %.*s"
 
 #: charset.cc:1694
 #, c-format
@@ -196,22 +186,20 @@ msgstr "\\x använt utan några följande hexadecimala siffror"
 #: charset.cc:1998
 #, c-format
 msgid "'\\x{' not terminated with '}' after %.*s"
-msgstr ""
+msgstr "”\\x{” inte avslutad med ”}” efter %.*s"
 
 #: charset.cc:2006
 msgid "hex escape sequence out of range"
 msgstr "hexadecimal specialsekvens utanför intervallet"
 
 #: charset.cc:2049
-#, fuzzy
-#| msgid "'?' without following ':'"
 msgid "'\\o' not followed by '{'"
-msgstr "”?” utan följande ”:”"
+msgstr "”\\o” inte följt av ”{”"
 
 #: charset.cc:2093
 #, c-format
 msgid "'\\o{' not terminated with '}' after %.*s"
-msgstr ""
+msgstr "”\\o{” inte avslutad med ”}” efter %.*s"
 
 #: charset.cc:2102
 msgid "octal escape sequence out of range"
@@ -838,22 +826,22 @@ msgstr "hittade ett problematiskt Unicode-tecken ”%s”"
 #: lex.cc:1736 lex.cc:1742
 #, c-format
 msgid "invalid UTF-8 character <%x>"
-msgstr ""
+msgstr "felaktigt UTF-8-tecken <%x>"
 
 #: lex.cc:1752 lex.cc:1758
 #, c-format
 msgid "invalid UTF-8 character <%x><%x>"
-msgstr ""
+msgstr "felaktigt UTF-8-tecken <%x><%x>"
 
 #: lex.cc:1768 lex.cc:1774
 #, c-format
 msgid "invalid UTF-8 character <%x><%x><%x>"
-msgstr ""
+msgstr "felaktigt UTF-8-tecken <%x><%x><%x>"
 
 #: lex.cc:1784 lex.cc:1790
 #, c-format
 msgid "invalid UTF-8 character <%x><%x><%x><%x>"
-msgstr ""
+msgstr "felaktigt UTF-8-tecken <%x><%x><%x><%x>"
 
 #: lex.cc:1872
 msgid "\"/*\" within comment"
@@ -883,10 +871,8 @@ msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ är inte tillgängligt förrän C++20"
 
 #: lex.cc:2144
-#, fuzzy
-#| msgid "__VA_OPT__ is not available until C++20"
 msgid "__VA_OPT__ is not available until C2X"
-msgstr "__VA_OPT__ är inte tillgängligt förrän C++20"
+msgstr "__VA_OPT__ är inte tillgängligt förrän C2X"
 
 #: lex.cc:2152
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
