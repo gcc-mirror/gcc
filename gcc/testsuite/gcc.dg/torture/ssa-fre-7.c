@@ -11,8 +11,8 @@ foo (int c)
   int * p;
   int i;
   int x[4];
-  long unsigned int _1;
-  long unsigned int _2;
+  __SIZETYPE__ _1;
+  __SIZETYPE__ _2;
   int _7;
   v4si _6;
 
