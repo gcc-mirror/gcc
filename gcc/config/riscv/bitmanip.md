@@ -442,7 +442,7 @@
 	(ior:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		(match_operand 2 "single_bit_mask_operand" "i")))]
   "TARGET_ZBS && TARGET_64BIT
-   && !partial_subreg_p (operands[2])"
+   && !partial_subreg_p (operands[1])"
   "bseti\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])
 
