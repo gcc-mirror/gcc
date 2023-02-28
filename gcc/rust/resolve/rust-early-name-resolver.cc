@@ -957,6 +957,10 @@ EarlyNameResolver::visit (AST::WildcardPattern &)
 {}
 
 void
+EarlyNameResolver::visit (AST::RestPattern &)
+{}
+
+void
 EarlyNameResolver::visit (AST::RangePatternBoundLiteral &)
 {}
 

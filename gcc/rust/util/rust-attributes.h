@@ -222,6 +222,7 @@ private:
   void visit (AST::LiteralPattern &pattern);
   void visit (AST::IdentifierPattern &pattern);
   void visit (AST::WildcardPattern &pattern);
+  void visit (AST::RestPattern &pattern);
   // void visit(RangePatternBound& bound);
   void visit (AST::RangePatternBoundLiteral &bound);
   void visit (AST::RangePatternBoundPath &bound);

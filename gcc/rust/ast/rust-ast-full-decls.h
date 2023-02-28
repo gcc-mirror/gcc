@@ -228,6 +228,7 @@ class MetaListNameValueStr;
 class LiteralPattern;
 class IdentifierPattern;
 class WildcardPattern;
+class RestPattern;
 class RangePatternBound;
 class RangePatternBoundLiteral;
 class RangePatternBoundPath;

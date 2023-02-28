@@ -183,6 +183,7 @@ public:
   virtual void visit (LiteralPattern &pattern) = 0;
   virtual void visit (IdentifierPattern &pattern) = 0;
   virtual void visit (WildcardPattern &pattern) = 0;
+  virtual void visit (RestPattern &pattern) = 0;
   // virtual void visit(RangePatternBound& bound) = 0;
   virtual void visit (RangePatternBoundLiteral &bound) = 0;
   virtual void visit (RangePatternBoundPath &bound) = 0;

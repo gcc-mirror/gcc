@@ -158,6 +158,7 @@ public:
   void visit (AST::LiteralPattern &);
   void visit (AST::IdentifierPattern &);
   void visit (AST::WildcardPattern &);
+  void visit (AST::RestPattern &);
 
   void visit (AST::RangePatternBoundLiteral &);
   void visit (AST::RangePatternBoundPath &);

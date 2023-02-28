@@ -519,6 +519,10 @@ ResolverBase::visit (AST::WildcardPattern &)
 {}
 
 void
+ResolverBase::visit (AST::RestPattern &)
+{}
+
+void
 ResolverBase::visit (AST::RangePatternBoundLiteral &)
 {}
 
