@@ -577,6 +577,8 @@
 (define_int_iterator MVE_FP_M_BINARY   [
 		     VABDQ_M_F
 		     VADDQ_M_F
+		     VFMAQ_M_F
+		     VFMSQ_M_F
 		     VMAXNMQ_M_F
 		     VMINNMQ_M_F
 		     VMULQ_M_F
@@ -592,6 +594,8 @@
 
 (define_int_iterator MVE_FP_M_N_BINARY [
 		     VADDQ_M_N_F
+		     VFMAQ_M_N_F
+		     VFMASQ_M_N_F
 		     VMULQ_M_N_F
 		     VSUBQ_M_N_F
 		     ])
@@ -657,6 +661,14 @@
 		     VCMPLEQ_M_N_F
 		     VCMPLTQ_M_N_F
 		     VCMPNEQ_M_N_F
+		     ])
+
+(define_int_iterator MVE_VFMxQ_F [
+		     VFMAQ_F VFMSQ_F
+		     ])
+
+(define_int_iterator MVE_VFMAxQ_N_F [
+		     VFMAQ_N_F VFMASQ_N_F
 		     ])
 
 (define_int_iterator MVE_VMAXVQ_VMINVQ [
@@ -917,6 +929,14 @@
 		 (VDUPQ_M_N_S "vdup") (VDUPQ_M_N_U "vdup") (VDUPQ_M_N_F "vdup")
 		 (VDUPQ_N_S "vdup") (VDUPQ_N_U "vdup") (VDUPQ_N_F "vdup")
 		 (VEORQ_M_S "veor") (VEORQ_M_U "veor") (VEORQ_M_F "veor")
+		 (VFMAQ_F "vfma")
+		 (VFMAQ_M_F "vfma")
+		 (VFMAQ_M_N_F "vfma")
+		 (VFMAQ_N_F "vfma")
+		 (VFMASQ_M_N_F "vfmas")
+		 (VFMASQ_N_F "vfmas")
+		 (VFMSQ_F "vfms")
+		 (VFMSQ_M_F "vfms")
 		 (VHADDQ_M_N_S "vhadd") (VHADDQ_M_N_U "vhadd")
 		 (VHADDQ_M_S "vhadd") (VHADDQ_M_U "vhadd")
 		 (VHADDQ_N_S "vhadd") (VHADDQ_N_U "vhadd")
