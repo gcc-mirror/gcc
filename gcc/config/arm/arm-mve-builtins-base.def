@@ -140,6 +140,7 @@ DEF_MVE_FUNCTION (vshlq, binary_lshift_r, all_integer, m_or_none) // "_r" forms 
 DEF_MVE_FUNCTION (vshrnbq, binary_rshift_narrow, integer_16_32, m_or_none)
 DEF_MVE_FUNCTION (vshrntq, binary_rshift_narrow, integer_16_32, m_or_none)
 DEF_MVE_FUNCTION (vshrq, binary_rshift, all_integer, mx_or_none)
+DEF_MVE_FUNCTION (vsliq, ternary_lshift, all_integer, m_or_none)
 DEF_MVE_FUNCTION (vsubq, binary_opt_n, all_integer, mx_or_none)
 DEF_MVE_FUNCTION (vuninitializedq, inherent, all_integer_with_64, none)
 #undef REQUIRES_FLOAT

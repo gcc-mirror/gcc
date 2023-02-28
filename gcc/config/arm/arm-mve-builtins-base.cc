@@ -387,6 +387,7 @@ FUNCTION_WITH_M_N_R (vshlq, VSHLQ)
 FUNCTION_ONLY_N_NO_F (vshrnbq, VSHRNBQ)
 FUNCTION_ONLY_N_NO_F (vshrntq, VSHRNTQ)
 FUNCTION_ONLY_N_NO_F (vshrq, VSHRQ)
+FUNCTION_ONLY_N_NO_F (vsliq, VSLIQ)
 FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
 FUNCTION (vuninitializedq, vuninitializedq_impl,)
 
