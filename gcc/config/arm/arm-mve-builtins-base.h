@@ -161,6 +161,7 @@ extern const function_base *const vshrnbq;
 extern const function_base *const vshrntq;
 extern const function_base *const vshrq;
 extern const function_base *const vsliq;
+extern const function_base *const vsriq;
 extern const function_base *const vsubq;
 extern const function_base *const vuninitializedq;
 

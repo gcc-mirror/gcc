@@ -720,7 +720,8 @@ function_instance::has_inactive_argument () const
       || base == functions::vrshrntq
       || base == functions::vshrnbq
       || base == functions::vshrntq
-      || base == functions::vsliq)
+      || base == functions::vsliq
+      || base == functions::vsriq)
     return false;
 
   return true;
