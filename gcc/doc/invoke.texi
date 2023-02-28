@@ -1474,7 +1474,8 @@ See RS/6000 and PowerPC Options.
 -mtarget-align  -mno-target-align
 -mlongcalls  -mno-longcalls
 -mabi=@var{abi-type}
--mextra-l32r-costs=@var{cycles}}
+-mextra-l32r-costs=@var{cycles}
+-mstrict-align  -mno-strict-align}
 
 @emph{zSeries Options}
 See S/390 and zSeries Options.
@@ -34401,6 +34402,17 @@ instructions, in clock cycles.  This affects, when optimizing for speed,
 whether loading a constant from literal pool using @code{L32R} or
 synthesizing the constant from a small one with a couple of arithmetic
 instructions.  The default value is 0.
+
+@opindex mstrict-align
+@opindex mno-strict-align
+@item -mstrict-align
+@itemx -mno-strict-align
+Avoid or allow generating memory accesses that may not be aligned on a natural
+object boundary as described in the architecture specification.
+The default is @option{-mno-strict-align} for cores that support both
+unaligned loads and stores in hardware and @option{-mstrict-align} for all
+other cores.
+
 @end table
 
 @node zSeries Options

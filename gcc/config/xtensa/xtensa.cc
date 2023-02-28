@@ -2792,6 +2792,10 @@ xtensa_option_override (void)
   if (xtensa_windowed_abi == -1)
     xtensa_windowed_abi = TARGET_WINDOWED_ABI_DEFAULT;
 
+  if (xtensa_strict_alignment == XTENSA_STRICT_ALIGNMENT_UNDEFINED)
+    xtensa_strict_alignment = !XCHAL_UNALIGNED_LOAD_HW
+      || !XCHAL_UNALIGNED_STORE_HW;
+
   if (! TARGET_THREADPTR)
     targetm.have_tls = false;
 
