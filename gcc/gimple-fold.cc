@@ -5624,7 +5624,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	      {
 		index = fold_convert (TREE_TYPE (bound), index);
 		if (TREE_CODE (index) == INTEGER_CST
-		    && tree_int_cst_le (index, bound))
+		    && tree_int_cst_lt (index, bound))
 		  {
 		    replace_call_with_value (gsi, NULL_TREE);
 		    return true;

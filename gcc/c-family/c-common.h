@@ -907,6 +907,7 @@ extern tree fold_for_warn (tree);
 extern tree c_common_get_narrower (tree, int *);
 extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 extern void c_common_finalize_early_debug (void);
+extern unsigned int c_strict_flex_array_level_of (tree);
 extern bool c_option_is_from_cpp_diagnostics (int);
 
 /* Used by convert_and_check; in front ends.  */

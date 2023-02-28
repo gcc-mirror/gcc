@@ -354,7 +354,7 @@ ubsan_instrument_return (location_t loc)
    that gets expanded in the sanopt pass, and make an array dimension
    of it.  ARRAY is the array, *INDEX is an index to the array.
    Return NULL_TREE if no instrumentation is emitted.
-   IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR.  */
+   IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside an ADDR_EXPR.  */
 
 tree
 ubsan_instrument_bounds (location_t loc, tree array, tree *index,
@@ -363,13 +363,25 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
   tree type = TREE_TYPE (array);
   tree domain = TYPE_DOMAIN (type);
 
-  if (domain == NULL_TREE || TYPE_MAX_VALUE (domain) == NULL_TREE)
+  if (domain == NULL_TREE)
     return NULL_TREE;
 
   tree bound = TYPE_MAX_VALUE (domain);
-  if (ignore_off_by_one)
-    bound = fold_build2 (PLUS_EXPR, TREE_TYPE (bound), bound,
-			 build_int_cst (TREE_TYPE (bound), 1));
+  if (!bound)
+    {
+      /* Handle C [0] arrays, which have TYPE_MAX_VALUE NULL, like
+	 C++ [0] arrays which have TYPE_MIN_VALUE 0 TYPE_MAX_VALUE -1.  */
+      if (!c_dialect_cxx ()
+	  && COMPLETE_TYPE_P (type)
+	  && integer_zerop (TYPE_SIZE (type)))
+	bound = build_int_cst (TREE_TYPE (TYPE_MIN_VALUE (domain)), -1);
+      else
+	return NULL_TREE;
+    }
+
+  bound = fold_build2 (PLUS_EXPR, TREE_TYPE (bound), bound,
+		       build_int_cst (TREE_TYPE (bound),
+		       1 + ignore_off_by_one));
 
   /* Detect flexible array members and suchlike, unless
      -fsanitize=bounds-strict.  */
@@ -392,6 +404,45 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
 	  if (next)
 	    /* Not a last element.  Instrument it.  */
 	    break;
+	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (cref, 1))) == ARRAY_TYPE
+	      && !c_dialect_cxx ())
+	    {
+	      unsigned l
+		= c_strict_flex_array_level_of (TREE_OPERAND (cref, 1));
+	      tree type2 = TREE_TYPE (TREE_OPERAND (cref, 1));
+	      if (TYPE_DOMAIN (type2) != NULL_TREE)
+		{
+		  tree max = TYPE_MAX_VALUE (TYPE_DOMAIN (type2));
+		  if (max == NULL_TREE)
+		    {
+		      /* C [0] */
+		      if (COMPLETE_TYPE_P (type2)
+			  && integer_zerop (TYPE_SIZE (type2))
+			  && l == 3)
+			next = TREE_OPERAND (cref, 1);
+		    }
+		  else if (TREE_CODE (max) == INTEGER_CST)
+		    {
+		      if (c_dialect_cxx ()
+			  && integer_all_onesp (max))
+			{
+			  /* C++ [0] */
+			  if (l == 3)
+			    next = TREE_OPERAND (cref, 1);
+			}
+		      else if (integer_zerop (max))
+			{
+			  /* C/C++ [1] */
+			  if (l >= 2)
+			    next = TREE_OPERAND (cref, 1);
+			}
+		      else if (l >= 1)
+			next = TREE_OPERAND (cref, 1);
+		    }
+		}
+	      if (next)
+		break;
+	    }
 	  /* Ok, this is the last field of the structure/union.  But the
 	     aggregate containing the field must be the last field too,
 	     recursively.  */
@@ -413,7 +464,7 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
   if (idx
       && TREE_CODE (bound) == INTEGER_CST
       && tree_int_cst_sgn (idx) >= 0
-      && tree_int_cst_le (idx, bound))
+      && tree_int_cst_lt (idx, bound))
     return NULL_TREE;
 
   *index = save_expr (*index);

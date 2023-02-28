@@ -16831,14 +16831,17 @@ a++;
 @item -fsanitize=bounds
 This option enables instrumentation of array bounds.  Various out of bounds
 accesses are detected.  Flexible array members, flexible array member-like
-arrays, and initializers of variables with static storage are not instrumented.
+arrays, and initializers of variables with static storage are not
+instrumented, with the exception of flexible array member-like arrays
+for which @code{-fstrict-flex-arrays} or @code{-fstrict-flex-arrays=}
+options or @code{strict_flex_array} attributes say they shouldn't be treated
+like flexible array member-like arrays.
 
 @opindex fsanitize=bounds-strict
 @item -fsanitize=bounds-strict
 This option enables strict instrumentation of array bounds.  Most out of bounds
-accesses are detected, including flexible array members and flexible array
-member-like arrays.  Initializers of variables with static storage are not
-instrumented.
+accesses are detected, including flexible array member-like arrays.
+Initializers of variables with static storage are not instrumented.
 
 @opindex fsanitize=alignment
 @item -fsanitize=alignment
