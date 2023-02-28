@@ -1821,7 +1821,9 @@ vect_recog_widen_sum_pattern (vec_info *vinfo,
      of the above pattern.  */
 
   if (!vect_reassociating_reduction_p (vinfo, stmt_vinfo, PLUS_EXPR,
-				       &oprnd0, &oprnd1))
+				       &oprnd0, &oprnd1)
+      || TREE_CODE (oprnd0) != SSA_NAME
+      || !vinfo->lookup_def (oprnd0))
     return NULL;
 
   type = TREE_TYPE (gimple_get_lhs (last_stmt));
