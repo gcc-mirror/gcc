@@ -1775,9 +1775,9 @@ gimple_add_init_for_auto_var (tree decl,
 
   else
     {
-      char *decl_name_anonymous = xasprintf ("D.%u", DECL_UID (decl));
+      char decl_name_anonymous[3 + (HOST_BITS_PER_INT + 2) / 3];
+      sprintf (decl_name_anonymous, "D.%u", DECL_UID (decl));
       decl_name = build_string_literal (decl_name_anonymous);
-      free (decl_name_anonymous);
     }
 
   tree call = build_call_expr_internal_loc (loc, IFN_DEFERRED_INIT,

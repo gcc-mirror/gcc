@@ -224,8 +224,6 @@ warn_uninit (opt_code opt, tree t, tree var, gimple *context,
 	     at alt_reloc = temp.
 	  */
 	  tree lhs_var = NULL_TREE;
-	  tree lhs_var_name = NULL_TREE;
-	  const char *lhs_var_name_str = NULL;
 
 	  /* Get the variable name from the 3rd argument of call.  */
 	  tree var_name = gimple_call_arg (var_def_stmt, 2);
@@ -239,11 +237,22 @@ warn_uninit (opt_code opt, tree t, tree var, gimple *context,
 	      else if (TREE_CODE (gimple_assign_lhs (context)) == SSA_NAME)
 		lhs_var = SSA_NAME_VAR (gimple_assign_lhs (context));
 	    }
-	  if (lhs_var
-	      && (lhs_var_name = DECL_NAME (lhs_var))
-	      && (lhs_var_name_str = IDENTIFIER_POINTER (lhs_var_name))
-	      && (strcmp (lhs_var_name_str, var_name_str) == 0))
-	    return;
+	  if (lhs_var)
+	    {
+	      /* Get the name string for the LHS_VAR.
+		 Refer to routine gimple_add_init_for_auto_var.  */
+	      if (DECL_NAME (lhs_var)
+		  && (strcmp (IDENTIFIER_POINTER (DECL_NAME (lhs_var)),
+		      var_name_str) == 0))
+		return;
+	      else if (!DECL_NAME (lhs_var))
+		{
+		  char lhs_var_name_str_buf[3 + (HOST_BITS_PER_INT + 2) / 3];
+		  sprintf (lhs_var_name_str_buf, "D.%u", DECL_UID (lhs_var));
+		  if (strcmp (lhs_var_name_str_buf, var_name_str) == 0)
+		    return;
+		}
+	    }
 	  gcc_assert (var_name_str && var_def_stmt);
 	}
     }
