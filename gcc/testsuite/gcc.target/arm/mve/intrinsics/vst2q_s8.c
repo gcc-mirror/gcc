@@ -1,22 +1,45 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vst20.8	{q[0-9]+, q[0-9]+}, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+**	vst21.8	{q[0-9]+, q[0-9]+}, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+*/
 void
-foo (int8_t * addr, int8x16x2_t value)
+foo (int8_t *addr, int8x16x2_t value)
 {
-  vst2q_s8 (addr, value);
+  return vst2q_s8 (addr, value);
 }
 
-/* { dg-final { scan-assembler "vst20.8"  }  } */
-/* { dg-final { scan-assembler "vst21.8"  }  } */
 
+/*
+**foo1:
+**	...
+**	vst20.8	{q[0-9]+, q[0-9]+}, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+**	vst21.8	{q[0-9]+, q[0-9]+}, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+*/
 void
-foo1 (int8_t * addr, int8x16x2_t value)
+foo1 (int8_t *addr, int8x16x2_t value)
 {
-  vst2q (addr, value);
+  return vst2q (addr, value);
 }
 
-/* { dg-final { scan-assembler "vst20.8"  }  } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
