@@ -27,8 +27,7 @@ WERROR_FLAGS += -Wno-format
 
 host-mingw32.o : $(srcdir)/config/i386/host-mingw32.cc $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h hosthooks.h hosthooks-def.h toplev.h $(DIAGNOSTIC_H) $(HOOKS_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/i386/host-mingw32.cc
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 driver-mingw32.o : $(srcdir)/config/i386/driver-mingw32.cc $(CONFIG_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

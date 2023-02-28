@@ -1,0 +1,56 @@
+# Copyright (C) 2023 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+#
+# For 64-bit Windows host, embed a manifest that sets the active
+# code page of the driver and compiler proper processes to utf8.
+# This only has an effect on Windows version 1903 (May 2019 Update)
+# or later.
+
+# The resource .rc file references the utf8 .manifest file.
+# Compile it into an object file using windres.
+# The resulting .o file gets added to host_extra_gcc_objs in
+# config.host for x86_64-*-mingw* host and gets linked into
+# the driver as a .o file, so it's lack of symbols is OK.
+utf8rc-mingw32.o : $(srcdir)/config/i386/utf8-mingw32.rc
+	$(WINDRES) $< $@
+
+# Create an object file that just exports the global symbol
+# HOST_EXTRA_OBJS_SYMBOL
+sym-mingw32.o : $(srcdir)/config/i386/sym-mingw32.cc
+	$(COMPILER) -c $< $@
+
+# Combine the two object files into one which has both the
+# compiled utf8 resource and the HOST_EXTRA_OBJS_SYMBOL symbol.
+# The resulting .o file gets added to host_extra_objs in
+# config.host for x86_64-*-mingw* host and gets archived into
+# libbackend.a which gets linked into the compiler proper.
+# If nothing references it into libbackend.a, it will not
+# get linked into the compiler proper eventually.
+# Therefore we need to request the symbol at compiler link time.
+utf8-mingw32.o : utf8rc-mingw32.o sym-mingw32.o
+	$(COMPILER) -r utf8rc-mingw32.o sym-mingw32.o -o $@
+
+# Force compilers to link against the utf8 resource by
+# requiring the symbol to be defined.
+# Otherwise the object file won't get linked in the compilers
+# because nothing is referencing it in libbackend.a
+# This is expected because the resource object is not supposed
+# to have any symbols, it just has to be linked into the
+# executable in order for Windows to use the utf8 code page.
+$(COMPILERS) : override LDFLAGS += -Wl,--require-defined=HOST_EXTRA_OBJS_SYMBOL
