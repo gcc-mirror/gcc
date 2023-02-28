@@ -1,3 +1,11 @@
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
+	* semantics.cc (handle_omp_array_sections): Pass pointer to clause
+	instead of clause.  Add PNEXT return parameter for next clause in list
+	to process.
+	(finish_omp_clauses): Update calls to handle_omp_array_sections.
+	Handle cases where initial clause might be replaced.
+
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
 	* constexpr.cc (reduced_constant_expression_p): Add OMP_DECLARE_MAPPER

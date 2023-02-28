@@ -5562,8 +5562,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 /* Handle array sections for clause C.  */
 
 static bool
-handle_omp_array_sections (tree &c, enum c_omp_region_type ort)
+handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
 {
+  tree c = *pc;
   bool maybe_zero_len = false;
   unsigned int first_non_one = 0;
   bool non_contiguous = false;
@@ -5838,10 +5839,12 @@ handle_omp_array_sections (tree &c, enum c_omp_region_type ort)
 
 	  cp_omp_address_inspector ai (OMP_CLAUSE_LOCATION (c), t);
 
-	  tree nc = ai.expand_map_clause (c, first, addr_tokens, ort);
-	  if (nc != error_mark_node)
+	  tree* npc = ai.expand_map_clause (pc, first, addr_tokens, ort);
+	  if (npc != NULL)
 	    {
 	      using namespace omp_addr_tokenizer;
+
+	      c = *pc;
 
 	      if (ai.maybe_zero_length_array_section (c))
 		OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
@@ -5849,12 +5852,14 @@ handle_omp_array_sections (tree &c, enum c_omp_region_type ort)
 	      /* !!! If we're accessing a base decl via chained access
 		 methods (e.g. multiple indirections), duplicate clause
 		 detection won't work properly.  Skip it in that case.  */
-	      if ((addr_tokens[0]->type == STRUCTURE_BASE
+	      if (pnext
+		  && (addr_tokens[0]->type == STRUCTURE_BASE
 		   || addr_tokens[0]->type == ARRAY_BASE)
 		  && addr_tokens[0]->u.structure_base_kind == BASE_DECL
 		  && addr_tokens[1]->type == ACCESS_METHOD
 		  && omp_access_chain_p (addr_tokens, 1))
-		c = nc;
+		/* NPC points to the last node in the new sequence.  */
+		*pnext = npc;
 
 	      return false;
 	    }
@@ -6983,7 +6988,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
-	      if (handle_omp_array_sections (c, ort))
+	      if (handle_omp_array_sections (pc, NULL, ort))
 		{
 		  remove = true;
 		  break;
@@ -8131,7 +8136,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
-	      if (handle_omp_array_sections (c, ort))
+	      if (handle_omp_array_sections (pc, NULL, ort))
 		remove = true;
 	      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
 		       && (OMP_CLAUSE_DEPEND_KIND (c)
@@ -8300,10 +8305,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		grp_start_p = pc;
 		grp_sentinel = OMP_CLAUSE_CHAIN (c);
 
-		if (handle_omp_array_sections (c, ort))
+		tree *pnext = NULL;
+		if (handle_omp_array_sections (pc, &pnext, ort))
 		  remove = true;
 		else
 		  {
+		    /* We might have replaced the clause, so refresh C.  */
+		    c = *pc;
 		    t = OMP_CLAUSE_DECL (c);
 		    if (TREE_CODE (t) != OMP_ARRAY_SECTION
 			&& !type_dependent_expression_p (t)
@@ -8401,6 +8409,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		     clauses, reset the OMP_CLAUSE_SIZE (representing a bias)
 		     to zero here.  */
 		  OMP_CLAUSE_SIZE (c) = size_zero_node;
+		if (pnext)
+		  c = *pnext;
 		break;
 	      }
 	    else if (type_dependent_expression_p (t))
@@ -8646,10 +8656,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      {
 		grp_start_p = pc;
 		grp_sentinel = OMP_CLAUSE_CHAIN (c);
-		tree nc = ai.expand_map_clause (c, OMP_CLAUSE_DECL (c),
-						addr_tokens, ort);
-		if (nc != error_mark_node)
-		  c = nc;
+		tree *npc = ai.expand_map_clause (pc, OMP_CLAUSE_DECL (c),
+						  addr_tokens, ort);
+		if (npc != NULL)
+		  c = *npc;
 	      }
 	  }
 	  break;
@@ -8887,10 +8897,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
-	      if (handle_omp_array_sections (c, ort))
+	      if (handle_omp_array_sections (pc, NULL, ort))
 		remove = true;
 	      else
 		{
+		  c = *pc;
 		  t = OMP_CLAUSE_DECL (c);
 		  while (TREE_CODE (t) == OMP_ARRAY_SECTION)
 		    t = TREE_OPERAND (t, 0);

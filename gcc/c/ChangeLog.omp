@@ -1,3 +1,10 @@
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
+	* c-typeck.cc (handle_omp_array_sections): Pass pointer to clause to
+	process instead of clause.
+	(c_finish_omp_clauses): Update calls to handle_omp_array_sections.
+	Handle cases where initial clause might be replaced.
+
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
 	* c-decl.cc (c_omp_mapper_id, c_omp_mapper_decl, c_omp_mapper_lookup,
