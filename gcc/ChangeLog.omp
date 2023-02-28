@@ -1,3 +1,11 @@
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (omp_get_attachment): Handle GOMP_MAP_DETACH here.
+	(omp_group_last): Handle *, GOMP_MAP_DETACH, GOMP_MAP_ATTACH_DETACH
+	groups for "exit data" of reference-to-pointer component array
+	sections.
+	(omp_group_base): Handle GOMP_MAP_DETACH.
+
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (dwarf2out.h): Include.
