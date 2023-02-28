@@ -1692,18 +1692,15 @@ namespace std::chrono
     // https://www.ibm.com/support/pages/managing-time-zone-variable-posix
     if (const char* env = std::getenv("TZ"))
       {
-	string_view s(env);
-	if (s == "GMT0")
-	  s = "Etc/GMT";
-	else if (s.size() == 4 && s[3] == '0')
-	  s = "Etc/UTC";
-
-	// This will fail unless TZ contains an IANA time zone name,
-	// or one of the special cases above.
-	if (auto tz = do_locate_zone(this->zones, this->links, s))
+	// This will fail unless TZ contains an IANA time zone name.
+	if (auto tz = do_locate_zone(this->zones, this->links, env))
 	  return tz;
       }
 #endif
+
+    // Default to UTC.
+    if (auto tz = do_locate_zone(this->zones, this->links, "UTC"))
+      return tz;
 
     __throw_runtime_error("tzdb: cannot determine current zone");
   }
