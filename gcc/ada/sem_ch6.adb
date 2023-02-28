@@ -2277,7 +2277,7 @@ package body Sem_Ch6 is
       Mask_Types : Elist_Id  := No_Elist;
       Prot_Typ   : Entity_Id := Empty;
       Spec_Decl  : Node_Id   := Empty;
-      Spec_Id    : Entity_Id;
+      Spec_Id    : Entity_Id := Empty;
 
       Last_Real_Spec_Entity : Entity_Id := Empty;
       --  When we analyze a separate spec, the entity chain ends up containing
