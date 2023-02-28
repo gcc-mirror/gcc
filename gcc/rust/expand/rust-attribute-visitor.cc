@@ -2937,6 +2937,11 @@ AttrVisitor::visit (AST::WildcardPattern &)
   // not possible
 }
 void
+AttrVisitor::visit (AST::RestPattern &)
+{
+  // not possible
+}
+void
 AttrVisitor::visit (AST::RangePatternBoundLiteral &)
 {
   // not possible

@@ -151,6 +151,7 @@ public:
   void visit (AST::LiteralPattern &pattern) override {}
   void visit (AST::IdentifierPattern &pattern) override {}
   void visit (AST::WildcardPattern &pattern) override {}
+  void visit (AST::RestPattern &pattern) override {}
   void visit (AST::RangePatternBoundLiteral &bound) override {}
   void visit (AST::RangePatternBoundPath &bound) override {}
   void visit (AST::RangePatternBoundQualPath &bound) override {}

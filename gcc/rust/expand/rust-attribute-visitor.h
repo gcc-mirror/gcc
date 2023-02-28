@@ -242,6 +242,7 @@ public:
   void visit (AST::LiteralPattern &) override;
   void visit (AST::IdentifierPattern &pattern) override;
   void visit (AST::WildcardPattern &) override;
+  void visit (AST::RestPattern &) override;
   void visit (AST::RangePatternBoundLiteral &) override;
   void visit (AST::RangePatternBoundPath &bound) override;
   void visit (AST::RangePatternBoundQualPath &bound) override;

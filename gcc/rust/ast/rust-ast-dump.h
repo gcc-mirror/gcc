@@ -273,6 +273,7 @@ private:
   void visit (LiteralPattern &pattern);
   void visit (IdentifierPattern &pattern);
   void visit (WildcardPattern &pattern);
+  void visit (RestPattern &pattern);
   // void visit(RangePatternBound& bound);
   void visit (RangePatternBoundLiteral &bound);
   void visit (RangePatternBoundPath &bound);

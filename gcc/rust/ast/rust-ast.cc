@@ -5575,6 +5575,12 @@ WildcardPattern::accept_vis (ASTVisitor &vis)
 }
 
 void
+RestPattern::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
 RangePatternBoundLiteral::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);

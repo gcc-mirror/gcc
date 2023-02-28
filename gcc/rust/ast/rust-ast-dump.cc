@@ -1610,6 +1610,10 @@ void
 Dump::visit (WildcardPattern &)
 {}
 
+void
+Dump::visit (RestPattern &)
+{}
+
 // void Dump::visit(RangePatternBound& ){}
 
 void

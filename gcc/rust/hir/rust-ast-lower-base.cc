@@ -409,6 +409,9 @@ ASTLoweringBase::visit (AST::IdentifierPattern &)
 void
 ASTLoweringBase::visit (AST::WildcardPattern &)
 {}
+void
+ASTLoweringBase::visit (AST::RestPattern &)
+{}
 //  void ASTLoweringBase::visit(RangePatternBoundbound) {}
 void
 ASTLoweringBase::visit (AST::RangePatternBoundLiteral &)

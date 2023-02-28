@@ -191,6 +191,20 @@ protected:
   }
 };
 
+class RestPattern : public Pattern
+{
+  Location locus;
+
+public:
+  std::string as_string () const override { return ".."; }
+
+  RestPattern (Location locus) : locus (locus) {}
+
+  Location get_locus () const override final { return locus; }
+
+  void accept_vis (ASTVisitor &vis) override;
+};
+
 // Base range pattern bound (lower or upper limit) - abstract
 class RangePatternBound
 {

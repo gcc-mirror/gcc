@@ -695,6 +695,10 @@ void
 AttributeChecker::visit (AST::WildcardPattern &)
 {}
 
+void
+AttributeChecker::visit (AST::RestPattern &)
+{}
+
 // void AttributeChecker::visit(RangePatternBound& ){}
 
 void
