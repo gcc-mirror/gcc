@@ -206,6 +206,7 @@ static bool dependent_template_arg_p (tree);
 static bool dependent_type_p_r (tree);
 static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
 static tree tsubst_decl (tree, tree, tsubst_flags_t);
+static tree tsubst_scope (tree, tree, tsubst_flags_t, tree);
 static void perform_instantiation_time_access_checks (tree, tree);
 static tree listify (tree);
 static tree listify_autos (tree, tree);
@@ -15010,9 +15011,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      variadic_p = true;
 	    }
 	  else
-	    scope = tsubst_copy (scope, args,
-				 complain | tf_qualifying_scope,
-				 in_decl);
+	    scope = tsubst_scope (scope, args, complain, in_decl);
 
 	  tree name = DECL_NAME (t);
 	  if (IDENTIFIER_CONV_OP_P (name)
@@ -16625,6 +16624,16 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     }
 }
 
+/* Convenience wrapper over tsubst for substituting into the LHS
+   of the :: scope resolution operator.  */
+
+static tree
+tsubst_scope (tree t, tree args, tsubst_flags_t complain, tree in_decl)
+{
+  gcc_checking_assert (TYPE_P (t));
+  return tsubst (t, args, complain | tf_qualifying_scope, in_decl);
+}
+
 /* OLDFNS is a lookup set of member functions from some class template, and
    NEWFNS is a lookup set of member functions from NEWTYPE, a specialization
    of that class template.  Return the subset of NEWFNS which are
@@ -16889,7 +16898,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
   scope = TREE_OPERAND (qualified_id, 0);
   if (args)
     {
-      scope = tsubst (scope, args, complain | tf_qualifying_scope, in_decl);
+      scope = tsubst_scope (scope, args, complain, in_decl);
       expr = tsubst_copy (name, args, complain, in_decl);
     }
   else
@@ -17135,8 +17144,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (t == NULL_TREE || t == error_mark_node || args == NULL_TREE)
     return t;
 
-  tsubst_flags_t qualifying_scope_flag = (complain & tf_qualifying_scope);
-  complain &= ~tf_qualifying_scope;
+  if (TYPE_P (t))
+    return tsubst (t, args, complain, in_decl);
 
   if (tree d = maybe_dependent_member_ref (t, args, complain, in_decl))
     return d;
@@ -17611,8 +17620,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case SCOPE_REF:
       {
-	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args,
-				complain | tf_qualifying_scope, in_decl);
+	tree op0 = tsubst_scope (TREE_OPERAND (t, 0), args, complain, in_decl);
 	tree op1 = tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl);
 	return build_qualified_name (/*type=*/NULL_TREE, op0, op1,
 				     QUALIFIED_NAME_IS_TEMPLATE (t));
@@ -17708,26 +17716,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	return tree_cons (purpose, value, chain);
       }
 
-    case RECORD_TYPE:
-    case UNION_TYPE:
-    case ENUMERAL_TYPE:
-    case INTEGER_TYPE:
-    case TEMPLATE_TYPE_PARM:
-    case TEMPLATE_TEMPLATE_PARM:
-    case BOUND_TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_PARM_INDEX:
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-    case OFFSET_TYPE:
-    case FUNCTION_TYPE:
-    case METHOD_TYPE:
-    case ARRAY_TYPE:
-    case TYPENAME_TYPE:
-    case UNBOUND_CLASS_TEMPLATE:
-    case TYPEOF_TYPE:
-    case DECLTYPE_TYPE:
     case TYPE_DECL:
-      return tsubst (t, args, complain | qualifying_scope_flag, in_decl);
+      return tsubst (t, args, complain, in_decl);
 
     case USING_DECL:
       t = DECL_NAME (t);
