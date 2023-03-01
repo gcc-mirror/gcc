@@ -81,6 +81,8 @@ static tree
 copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
 op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
+static tree
+uninit_handler (Context *ctx, TyTy::FnType *fntype);
 
 enum class Prefetch
 {
@@ -202,6 +204,7 @@ static const std::map<std::string,
     {"unchecked_rem", unchecked_op_handler (TRUNC_MOD_EXPR)},
     {"unchecked_shl", unchecked_op_handler (LSHIFT_EXPR)},
     {"unchecked_shr", unchecked_op_handler (RSHIFT_EXPR)},
+    {"uninit", uninit_handler},
 };
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
@@ -980,6 +983,59 @@ unchecked_op_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
   ctx->add_statement (return_statement);
 
   // BUILTIN unchecked_<op> BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static tree
+uninit_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  // uninit has _zero_ parameters its parameter is the generic one
+  rust_assert (fntype->get_params ().size () == 0);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // get the template parameter type tree fn size_of<T>();
+  rust_assert (fntype->get_num_substitutions () == 1);
+  auto &param_mapping = fntype->get_substs ().at (0);
+  const TyTy::ParamType *param_tyty = param_mapping.get_param_ty ();
+  TyTy::BaseType *resolved_tyty = param_tyty->resolve ();
+  tree template_parameter_type
+    = TyTyResolveCompile::compile (ctx, resolved_tyty);
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN size_of FN BODY BEGIN
+
+  tree memset_builtin = error_mark_node;
+  BuiltinsContext::get ().lookup_simple_builtin ("memset", &memset_builtin);
+  rust_assert (memset_builtin != error_mark_node);
+
+  // call memset with 0x01 and size of the thing see
+  // https://github.com/Rust-GCC/gccrs/issues/1899
+
+  tree dst = DECL_RESULT (fndecl);
+  tree constant_byte = build_int_cst (integer_type_node, 0x01);
+  tree size_expr = TYPE_SIZE_UNIT (template_parameter_type);
+
+  tree memset_call = build_call_expr_loc (BUILTINS_LOCATION, memset_builtin, 3,
+					  dst, constant_byte, size_expr);
+  TREE_READONLY (memset_call) = 0;
+  TREE_SIDE_EFFECTS (memset_call) = 1;
+
+  ctx->add_statement (memset_call);
+
+  auto return_statement
+    = ctx->get_backend ()->return_statement (fndecl, {DECL_RESULT (fndecl)},
+					     Location ());
+  ctx->add_statement (return_statement);
+  // BUILTIN size_of FN BODY END
 
   finalize_intrinsic_block (ctx, fndecl);
 

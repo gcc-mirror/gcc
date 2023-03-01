@@ -249,6 +249,12 @@ BuiltinsContext::setup ()
 					    size_type_node, NULL_TREE),
 		  0);
 
+  define_builtin ("memset", BUILT_IN_MEMSET, "__builtin_memset", "memset",
+		  build_function_type_list (void_type_node, ptr_type_node,
+					    integer_type_node, size_type_node,
+					    NULL_TREE),
+		  0);
+
   define_builtin ("prefetch", BUILT_IN_PREFETCH, "__builtin_prefetch",
 		  "prefetch",
 		  build_varargs_function_type_list (
