@@ -2358,6 +2358,34 @@
     DONE;
   })
 
+(define_expand "<expander><mode>3_exec"
+  [(set (match_operand:V_QIHI 0 "gcn_valu_dst_operand")
+	(vec_merge:V_QIHI
+	  (minmaxop:V_QIHI
+	    (match_operand:V_QIHI 1 "gcn_valu_src0_operand")
+	    (match_operand:V_QIHI 2 "gcn_valu_src1com_operand"))
+	  (match_operand:V_QIHI 3 "gcn_register_or_unspec_operand" "U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand" "e")))]
+  ""
+  {
+    enum {smin, umin, smax, umax};
+    bool unsignedp = (<code> == umax || <code> == umin);
+    rtx insi1 = gen_reg_rtx (<VnSI>mode);
+    rtx insi2 = gen_reg_rtx (<VnSI>mode);
+    rtx outsi = gen_reg_rtx (<VnSI>mode);
+    rtx out = operands[0];
+    rtx exec = operands[4];
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+
+    convert_move (insi1, operands[1], unsignedp);
+    convert_move (insi2, operands[2], unsignedp);
+    emit_insn (gen_<code><vnsi>3_exec (outsi, insi1, insi2,
+                                       gcn_gen_undef(<VnSI>mode), exec));
+    convert_move (tmp, outsi, unsignedp);
+    emit_insn (gen_mov<mode>_exec (out, tmp, operands[3], exec));
+    DONE;
+  })
+
 (define_insn "<expander><vnsi>3<exec>"
   [(set (match_operand:V_SI 0 "gcn_valu_dst_operand"	   "=  v,RD")
 	(minmaxop:V_SI
@@ -2369,6 +2397,71 @@
    ds_<mnemonic>0\t%A0, %2%O0"
   [(set_attr "type" "vop2,ds")
    (set_attr "length" "8,8")])
+
+(define_insn_and_split "<expander><mode>3"
+  [(set (match_operand:V_DI 0 "register_operand"      "=v")
+	(minmaxop:V_DI
+	  (match_operand:V_DI 1 "gcn_alu_operand"     " v")
+	  (match_operand:V_DI 2 "gcn_alu_operand"     " v")))
+    (clobber (reg:DI VCC_REG))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx out = operands[0];
+    rtx vcc = gen_rtx_REG (DImode, VCC_REG);
+
+    enum {smin, smax, umin, umax};
+    bool minp = (<code> == smin || <code> == umin);
+    if (<code> == smin || <code> == smax)
+      emit_insn (gen_vec_cmp<mode>di (vcc, minp ? gen_rtx_LT (VOIDmode, 0, 0) :
+                                      gen_rtx_GT (VOIDmode, 0, 0), operands[1],
+                                      operands[2]));
+    else
+      emit_insn (gen_vec_cmp<mode>di (vcc, minp ? gen_rtx_LTU (VOIDmode, 0, 0) :
+                                      gen_rtx_GTU (VOIDmode, 0, 0), operands[1],
+                                      operands[2]));
+    emit_insn (gen_vcond_mask_<mode>di (out, operands[1], operands[2], vcc));
+  }
+  [(set_attr "type" "mult")])
+
+(define_insn_and_split "<expander><mode>3_exec"
+  [(set (match_operand:V_DI 0 "register_operand"                 "= v")
+	(vec_merge:V_DI
+          (minmaxop:V_DI
+            (match_operand:V_DI 1 "gcn_alu_operand"              "  v")
+            (match_operand:V_DI 2 "gcn_alu_operand"              "  v"))
+          (match_operand:V_DI 3 "gcn_register_or_unspec_operand" " U0")
+          (match_operand:DI 4 "gcn_exec_reg_operand"  "+e")))
+    (clobber (match_scratch:<VnDI> 5		      "= &v"))
+    (clobber (reg:DI VCC_REG))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx out = operands[0];
+    rtx vcc = gen_rtx_REG (DImode, VCC_REG);
+    rtx exec = operands[4];
+    rtx tmp = operands[5];
+
+    enum {smin, smax, umin, umax};
+    bool minp = (<code> == smin || <code> == umin);
+    if (<code> == smin || <code> == smax)
+      emit_insn (gen_vec_cmp<mode>di_exec (vcc,
+                                           minp ? gen_rtx_LT (VOIDmode, 0, 0) :
+                                           gen_rtx_GT (VOIDmode, 0, 0),
+                                           operands[1], operands[2], exec));
+    else
+      emit_insn (gen_vec_cmp<mode>di_exec (vcc,
+                                           minp ? gen_rtx_LTU (VOIDmode, 0, 0) :
+                                           gen_rtx_GTU (VOIDmode, 0, 0),
+                                           operands[1], operands[2], exec));
+    emit_insn (gen_vcond_mask_<mode>di (tmp, operands[1], operands[2], vcc));
+    emit_insn (gen_mov<mode>_exec (out, tmp, operands[3], exec));
+  }
+  [(set_attr "type" "mult")])
 
 ;; }}}
 ;; {{{ Int unops
@@ -3468,7 +3561,49 @@
     DONE;
   })
 
-;; TODO smin umin smax umax
+(define_code_iterator cond_fminmaxop [smin smax])
+
+(define_expand "cond_<fexpander><mode>"
+  [(match_operand:V_FP 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (cond_fminmaxop:V_FP
+     (match_operand:V_FP 2 "gcn_alu_operand")
+     (match_operand:V_FP 3 "gcn_alu_operand"))
+   (match_operand:V_FP 4 "register_operand")]
+  ""
+  {
+    operands[1] = force_reg (DImode, operands[1]);
+    operands[2] = force_reg (<MODE>mode, operands[2]);
+
+    emit_insn (gen_<fexpander><mode>3_exec (operands[0], operands[2],
+					    operands[3], operands[4],
+					    operands[1]));
+    DONE;
+  })
+
+(define_code_iterator cond_minmaxop [smin smax umin umax])
+
+(define_expand "cond_<expander><mode>"
+  [(match_operand:V_INT 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (cond_minmaxop:V_INT
+     (match_operand:V_INT 2 "gcn_alu_operand")
+     (match_operand:V_INT 3 "gcn_alu_operand"))
+   (match_operand:V_INT 4 "register_operand")]
+  ""
+  {
+    operands[1] = force_reg (DImode, operands[1]);
+    operands[2] = force_reg (<MODE>mode, operands[2]);
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+
+    emit_insn (gen_<expander><mode>3_exec (tmp, operands[2], operands[3],
+                                           gcn_gen_undef(<MODE>mode),
+                                           operands[1]));
+    emit_insn (gen_vcond_mask_<mode>di (operands[0], tmp, operands[4],
+                                        operands[1]));
+    DONE;
+  })
+
 (define_code_iterator cond_bitop [and ior xor])
 
 (define_expand "cond_<expander><mode>"

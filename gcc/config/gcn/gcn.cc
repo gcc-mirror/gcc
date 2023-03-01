@@ -798,7 +798,7 @@ static reg_class_t
 gcn_spill_class (reg_class_t c, machine_mode /*mode */ )
 {
   if (reg_classes_intersect_p (ALL_CONDITIONAL_REGS, c)
-      || c == VCC_CONDITIONAL_REG)
+      || c == VCC_CONDITIONAL_REG || c == EXEC_MASK_REG)
     return SGPR_REGS;
   else
     return NO_REGS;
