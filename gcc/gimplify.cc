@@ -9745,6 +9745,19 @@ omp_group_last (tree *start_p)
 	grp_last_p = &OMP_CLAUSE_CHAIN (c);
       break;
 
+    case GOMP_MAP_TO_GRID:
+    case GOMP_MAP_FROM_GRID:
+      while (nc
+	     && OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+	     && (OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_DIM
+		 || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_STRIDE))
+	{
+	  grp_last_p = &OMP_CLAUSE_CHAIN (c);
+	  c = nc;
+	    nc = OMP_CLAUSE_CHAIN (c);
+	}
+      break;
+
     case GOMP_MAP_STRUCT:
     case GOMP_MAP_STRUCT_UNORD:
       {
@@ -9892,6 +9905,10 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
       else
 	internal_error ("unexpected mapping node");
       return error_mark_node;
+
+    case GOMP_MAP_TO_GRID:
+    case GOMP_MAP_FROM_GRID:
+      return *grp->grp_start;
 
     case GOMP_MAP_ATTACH:
     case GOMP_MAP_DETACH:
@@ -14864,7 +14881,9 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    }
 	  if (remove)
 	    break;
-	  if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
+	  if (OMP_CLAUSE_SIZE (c) == NULL_TREE
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_GRID_DIM
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_GRID_STRIDE)
 	    {
 	      /* Sanity check: attach/detach map kinds use the size as a bias,
 		 and it's never right to use the decl size for such
@@ -14953,6 +14972,20 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
 				 is_gimple_lvalue, fb_lvalue) == GS_ERROR)
 		remove = true;
+	    }
+	  else if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_GRID_DIM
+		   || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_GRID_STRIDE)
+	    {
+	      /* The OMP_CLAUSE_DECL for GRID_DIM/GRID_STRIDE isn't necessarily
+		 an lvalue -- e.g. it might be a constant.  So handle it
+		 specially here.  */
+	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
+				 is_gimple_val, fb_rvalue) == GS_ERROR)
+		{
+		  gimplify_omp_ctxp = ctx;
+		  remove = true;
+		}
+	      break;
 	    }
 	  else if (!DECL_P (decl))
 	    {
@@ -15046,8 +15079,13 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 
 	      gimplify_omp_ctxp = ctx->outer_context;
 	      if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue,
-				 fb_lvalue) == GS_ERROR)
-		remove = true;
+				 fb_lvalue | fb_mayfail) == GS_ERROR)
+		{
+		  sorry_at (OMP_CLAUSE_LOCATION (c),
+			    "unsupported map expression %qE",
+			    OMP_CLAUSE_DECL (c));
+		  remove = true;
+		}
 	      gimplify_omp_ctxp = ctx;
 	      break;
 	    }
