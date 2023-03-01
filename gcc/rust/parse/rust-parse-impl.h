@@ -4013,9 +4013,8 @@ Parser<ManagedTokenSource>::parse_external_type_item (AST::Visibility vis,
     return nullptr;
 
   return std::unique_ptr<AST::ExternalTypeItem> (
-    new AST::ExternalTypeItem (std::move (alias_name_tok->get_str ()),
-			       std::move (vis), std::move (outer_attrs),
-			       std::move (locus)));
+    new AST::ExternalTypeItem (alias_name_tok->get_str (), std::move (vis),
+			       std::move (outer_attrs), std::move (locus)));
 }
 
 // Parses a "type alias" (typedef) item.
