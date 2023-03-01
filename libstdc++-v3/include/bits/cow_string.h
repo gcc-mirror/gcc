@@ -26,7 +26,7 @@
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{string}
  *
- *  Defines the reference-counted COW string implentation.
+ *  Defines the reference-counted COW string implementation.
  */
 
 #ifndef _COW_STRING_H
@@ -3406,7 +3406,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 }
        else
 	 {
-	   // Todo: overlapping case.
+	   // TODO: overlapping case.
 	   const basic_string __tmp(__s, __n2);
 	   return _M_replace_safe(__pos, __n1, __tmp._M_data(), __n2);
 	 }
