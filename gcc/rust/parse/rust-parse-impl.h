@@ -8372,7 +8372,7 @@ Parser<ManagedTokenSource>::parse_while_let_loop_expr (AST::AttrVec outer_attrs,
     locus = lexer.peek_token ()->get_locus ();
   else
     locus = label.get_locus ();
-  skip_token (WHILE);
+  maybe_skip_token (WHILE);
 
   /* check for possible accidental recognition of a while loop as a while let
    * loop */
@@ -13114,9 +13114,16 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
       return parse_loop_expr (std::move (outer_attrs), AST::LoopLabel::error (),
 			      tok->get_locus ());
     case WHILE:
-      return parse_while_loop_expr (std::move (outer_attrs),
-				    AST::LoopLabel::error (),
-				    tok->get_locus ());
+      if (lexer.peek_token ()->get_id () == LET)
+	{
+	  return parse_while_let_loop_expr (std::move (outer_attrs));
+	}
+      else
+	{
+	  return parse_while_loop_expr (std::move (outer_attrs),
+					AST::LoopLabel::error (),
+					tok->get_locus ());
+	}
     case MATCH_TOK:
       // also an expression with block
       return parse_match_expr (std::move (outer_attrs), tok->get_locus ());
