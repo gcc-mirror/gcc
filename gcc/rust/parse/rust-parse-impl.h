@@ -10737,6 +10737,10 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
       lexer.skip_token ();
       return std::unique_ptr<AST::WildcardPattern> (
 	new AST::WildcardPattern (t->get_locus ()));
+    case DOT_DOT:
+      lexer.skip_token ();
+      return std::unique_ptr<AST::RestPattern> (
+	new AST::RestPattern (t->get_locus ()));
     case REF:
     case MUT:
       return parse_identifier_pattern ();
