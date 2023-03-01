@@ -4640,7 +4640,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			       || GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
 			       || GFC_DECL_CRAY_POINTEE (decl)
 			       || GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (type))
-			       || n->sym->ts.type == BT_DERIVED))
+			       || (n->sym->ts.type == BT_DERIVED
+				   && (n->sym->ts.u.derived->ts.f90_type
+				       != BT_VOID))))
 		    {
 		      tree orig_decl = decl;
 		      enum gomp_map_kind gmk = GOMP_MAP_POINTER;
