@@ -984,21 +984,25 @@ lto_fixup_prevailing_type (tree t)
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (mv);
       TYPE_NEXT_VARIANT (mv) = t;
     }
-
-  /* The following reconstructs the pointer chains
-     of the new pointed-to type if we are a main variant.  We do
-     not stream those so they are broken before fixup.  */
-  if (TREE_CODE (t) == POINTER_TYPE
-      && TYPE_MAIN_VARIANT (t) == t)
+  else if (!TYPE_ATTRIBUTES (t))
     {
-      TYPE_NEXT_PTR_TO (t) = TYPE_POINTER_TO (TREE_TYPE (t));
-      TYPE_POINTER_TO (TREE_TYPE (t)) = t;
-    }
-  else if (TREE_CODE (t) == REFERENCE_TYPE
-	   && TYPE_MAIN_VARIANT (t) == t)
-    {
-      TYPE_NEXT_REF_TO (t) = TYPE_REFERENCE_TO (TREE_TYPE (t));
-      TYPE_REFERENCE_TO (TREE_TYPE (t)) = t;
+      /* The following reconstructs the pointer chains
+	 of the new pointed-to type if we are a main variant.  We do
+	 not stream those so they are broken before fixup.
+	 Don't add it if despite being main variant it has
+	 attributes (then it was created with build_distinct_type_copy).
+	 Similarly don't add TYPE_REF_IS_RVALUE REFERENCE_TYPEs.
+	 Don't add it if there is something in the chain already.  */
+      if (TREE_CODE (t) == POINTER_TYPE)
+	{
+	  TYPE_NEXT_PTR_TO (t) = TYPE_POINTER_TO (TREE_TYPE (t));
+	  TYPE_POINTER_TO (TREE_TYPE (t)) = t;
+	}
+      else if (TREE_CODE (t) == REFERENCE_TYPE && !TYPE_REF_IS_RVALUE (t))
+	{
+	  TYPE_NEXT_REF_TO (t) = TYPE_REFERENCE_TO (TREE_TYPE (t));
+	  TYPE_REFERENCE_TO (TREE_TYPE (t)) = t;
+	}
     }
 }
 
