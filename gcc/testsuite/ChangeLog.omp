@@ -1,3 +1,57 @@
+2023-03-06  Paul-Antoine Arras <pa@codesourcery.com>
+
+	Backported from master:
+	2023-03-06  Paul-Antoine Arras <pa@codesourcery.com>
+
+	* gcc.target/gcn/cond_fmaxnm_1.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_1_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_2.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_2_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_3.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_3_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_4.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_4_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_5.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_5_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_6.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_6_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_7.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_7_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_8.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_8_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_1.c: New test.
+	* gcc.target/gcn/cond_fminnm_1_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_2.c: New test.
+	* gcc.target/gcn/cond_fminnm_2_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_3.c: New test.
+	* gcc.target/gcn/cond_fminnm_3_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_4.c: New test.
+	* gcc.target/gcn/cond_fminnm_4_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_5.c: New test.
+	* gcc.target/gcn/cond_fminnm_5_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_6.c: New test.
+	* gcc.target/gcn/cond_fminnm_6_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_7.c: New test.
+	* gcc.target/gcn/cond_fminnm_7_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_8.c: New test.
+	* gcc.target/gcn/cond_fminnm_8_run.c: New test.
+	* gcc.target/gcn/cond_smax_1.c: New test.
+	* gcc.target/gcn/cond_smax_1_run.c: New test.
+	* gcc.target/gcn/cond_smin_1.c: New test.
+	* gcc.target/gcn/cond_smin_1_run.c: New test.
+	* gcc.target/gcn/cond_umax_1.c: New test.
+	* gcc.target/gcn/cond_umax_1_run.c: New test.
+	* gcc.target/gcn/cond_umin_1.c: New test.
+	* gcc.target/gcn/cond_umin_1_run.c: New test.
+	* gcc.target/gcn/smax_1.c: New test.
+	* gcc.target/gcn/smax_1_run.c: New test.
+	* gcc.target/gcn/smin_1.c: New test.
+	* gcc.target/gcn/smin_1_run.c: New test.
+	* gcc.target/gcn/umax_1.c: New test.
+	* gcc.target/gcn/umax_1_run.c: New test.
+	* gcc.target/gcn/umin_1.c: New test.
+	* gcc.target/gcn/umin_1_run.c: New test.
+
 2023-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/goacc/finalize-1.f: Update scan-tree-dump-times for
