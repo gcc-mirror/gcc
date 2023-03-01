@@ -161,15 +161,14 @@ struct target_expmed {
   struct expmed_op_cheap x_sdiv_pow2_cheap;
   struct expmed_op_cheap x_smod_pow2_cheap;
 
-  /* Cost of various pieces of RTL.  Note that some of these are indexed by
-     shift count and some by mode.  */
+  /* Cost of various pieces of RTL.  */
   int x_zero_cost[2];
   struct expmed_op_costs x_add_cost;
   struct expmed_op_costs x_neg_cost;
-  struct expmed_op_costs x_shift_cost[MAX_BITS_PER_WORD];
-  struct expmed_op_costs x_shiftadd_cost[MAX_BITS_PER_WORD];
-  struct expmed_op_costs x_shiftsub0_cost[MAX_BITS_PER_WORD];
-  struct expmed_op_costs x_shiftsub1_cost[MAX_BITS_PER_WORD];
+  int x_shift_cost[2][NUM_MODE_IPV_INT][MAX_BITS_PER_WORD];
+  int x_shiftadd_cost[2][NUM_MODE_IPV_INT][MAX_BITS_PER_WORD];
+  int x_shiftsub0_cost[2][NUM_MODE_IPV_INT][MAX_BITS_PER_WORD];
+  int x_shiftsub1_cost[2][NUM_MODE_IPV_INT][MAX_BITS_PER_WORD];
   struct expmed_op_costs x_mul_cost;
   struct expmed_op_costs x_sdiv_cost;
   struct expmed_op_costs x_udiv_cost;
@@ -395,8 +394,8 @@ neg_cost (bool speed, machine_mode mode)
 inline int *
 shift_cost_ptr (bool speed, machine_mode mode, int bits)
 {
-  return expmed_op_cost_ptr (&this_target_expmed->x_shift_cost[bits],
-			     speed, mode);
+  int midx = expmed_mode_index (mode);
+  return &this_target_expmed->x_shift_cost[speed][midx][bits];
 }
 
 /* Set the COST of doing a shift in MODE by BITS when optimizing for SPEED.  */
@@ -421,8 +420,8 @@ shift_cost (bool speed, machine_mode mode, int bits)
 inline int *
 shiftadd_cost_ptr (bool speed, machine_mode mode, int bits)
 {
-  return expmed_op_cost_ptr (&this_target_expmed->x_shiftadd_cost[bits],
-			     speed, mode);
+  int midx = expmed_mode_index (mode);
+  return &this_target_expmed->x_shiftadd_cost[speed][midx][bits];
 }
 
 /* Set the COST of doing a shift in MODE by BITS followed by an add when
@@ -448,8 +447,8 @@ shiftadd_cost (bool speed, machine_mode mode, int bits)
 inline int *
 shiftsub0_cost_ptr (bool speed, machine_mode mode, int bits)
 {
-  return expmed_op_cost_ptr (&this_target_expmed->x_shiftsub0_cost[bits],
-			     speed, mode);
+  int midx = expmed_mode_index (mode);
+  return &this_target_expmed->x_shiftsub0_cost[speed][midx][bits];
 }
 
 /* Set the COST of doing a shift in MODE by BITS and then subtracting a
@@ -475,8 +474,8 @@ shiftsub0_cost (bool speed, machine_mode mode, int bits)
 inline int *
 shiftsub1_cost_ptr (bool speed, machine_mode mode, int bits)
 {
-  return expmed_op_cost_ptr (&this_target_expmed->x_shiftsub1_cost[bits],
-			     speed, mode);
+  int midx = expmed_mode_index (mode);
+  return &this_target_expmed->x_shiftsub1_cost[speed][midx][bits];
 }
 
 /* Set the COST of subtracting a shift in MODE by BITS from a value when
