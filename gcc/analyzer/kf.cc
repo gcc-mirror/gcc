@@ -1033,9 +1033,11 @@ register_known_functions (known_function_manager &kfm)
        and OS X like this:
 	 extern int * __error(void);
 	 #define errno (*__error())
+       and similarly __errno for newlib.
        Add these as synonyms for "__errno_location".  */
     kfm.add ("___errno", make_unique<kf_errno_location> ());
     kfm.add ("__error", make_unique<kf_errno_location> ());
+    kfm.add ("__errno", make_unique<kf_errno_location> ());
   }
 
   /* Language-specific support functions.  */
