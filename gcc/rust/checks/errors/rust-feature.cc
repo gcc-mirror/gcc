@@ -43,6 +43,10 @@ Feature::create (Feature::Name name)
       return Feature (Feature::Name::DECL_MACRO, Feature::State::ACCEPTED,
 		      "decl_macro", "1.0.0", 0,
 		      Optional<CompileOptions::Edition>::none (), "");
+    case Feature::Name::EXTERN_TYPES:
+      return Feature (Feature::Name::EXTERN_TYPES, Feature::State::ACTIVE,
+		      "extern_types", "1.23.0", 43467,
+		      Optional<CompileOptions::Edition>::none (), "");
     default:
       gcc_unreachable ();
     }
@@ -56,6 +60,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   // TODO: Rename to "auto_traits" when supporting
   // later Rust versions
   {"optin_builtin_traits", Feature::Name::AUTO_TRAITS},
+  {"extern_types", Feature::Name::EXTERN_TYPES},
 }; // namespace Rust
 
 Optional<Feature::Name>

@@ -42,6 +42,7 @@ public:
     RUSTC_ATTRS,
     DECL_MACRO,
     AUTO_TRAITS,
+    EXTERN_TYPES,
   };
 
   const std::string &as_string () { return m_name_str; }

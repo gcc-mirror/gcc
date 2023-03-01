@@ -103,6 +103,10 @@ FeatureGate::visit (AST::ExternBlock &block)
 	gate (Feature::Name::INTRINSICS, block.get_locus (),
 	      "intrinsics are subject to change");
     }
+  for (const auto &item : block.get_extern_items ())
+    {
+      item->accept_vis (*this);
+    }
 }
 
 void
@@ -153,6 +157,15 @@ void
 FeatureGate::visit (AST::Function &function)
 {
   check_rustc_attri (function.get_outer_attrs ());
+}
+
+void
+FeatureGate::visit (AST::ExternalTypeItem &item)
+{
+  // TODO(mxlol233): The gating needs a complete visiting chain to activate
+  // `AST::ExternalTypeItem`.
+  gate (Feature::Name::EXTERN_TYPES, item.get_locus (),
+	"extern types are experimental");
 }
 
 } // namespace Rust

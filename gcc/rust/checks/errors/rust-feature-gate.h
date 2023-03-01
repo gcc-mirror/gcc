@@ -133,7 +133,7 @@ public:
   void visit (AST::Trait &trait) override {}
   void visit (AST::InherentImpl &impl) override;
   void visit (AST::TraitImpl &impl) override;
-  void visit (AST::ExternalTypeItem &item) override {}
+  void visit (AST::ExternalTypeItem &item) override;
   void visit (AST::ExternalStaticItem &item) override {}
   void visit (AST::ExternalFunctionItem &item) override {}
   void visit (AST::ExternBlock &block) override;
