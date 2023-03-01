@@ -8958,6 +8958,22 @@ enum omp_tsort_mark {
   PERMANENT
 };
 
+/* Hash for trees based on operand_equal_p.  Like tree_operand_hash
+   but ignores side effects in the equality comparisons.  */
+
+struct tree_operand_hash_no_se : tree_operand_hash
+{
+  static inline bool equal (const value_type &,
+			    const compare_type &);
+};
+
+inline bool
+tree_operand_hash_no_se::equal (const value_type &t1,
+				const compare_type &t2)
+{
+  return operand_equal_p (t1, t2, OEP_MATCH_SIDE_EFFECTS);
+}
+
 /* A group of OMP_CLAUSE_MAP nodes that correspond to a single "map"
    clause.  */
 
@@ -9400,10 +9416,10 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
 }
 
 /* Given a vector of omp_mapping_groups, build a hash table so we can look up
-   nodes by tree_operand_hash.  */
+   nodes by tree_operand_hash_no_se.  */
 
 static void
-omp_index_mapping_groups_1 (hash_map<tree_operand_hash,
+omp_index_mapping_groups_1 (hash_map<tree_operand_hash_no_se,
 				     omp_mapping_group *> *grpmap,
 			    vec<omp_mapping_group> *groups,
 			    tree reindex_sentinel)
@@ -9432,7 +9448,6 @@ omp_index_mapping_groups_1 (hash_map<tree_operand_hash,
 	   node = OMP_CLAUSE_CHAIN (node), j++)
 	{
 	  tree decl = OMP_CLAUSE_DECL (node);
-
 	  /* Sometimes we see zero-offset MEM_REF instead of INDIRECT_REF,
 	     meaning node-hash lookups don't work.  This is a workaround for
 	     that, but ideally we should just create the INDIRECT_REF at
@@ -9478,11 +9493,11 @@ omp_index_mapping_groups_1 (hash_map<tree_operand_hash,
     }
 }
 
-static hash_map<tree_operand_hash, omp_mapping_group *> *
+static hash_map<tree_operand_hash_no_se, omp_mapping_group *> *
 omp_index_mapping_groups (vec<omp_mapping_group> *groups)
 {
-  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap
-    = new hash_map<tree_operand_hash, omp_mapping_group *>;
+  hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap
+    = new hash_map<tree_operand_hash_no_se, omp_mapping_group *>;
 
   omp_index_mapping_groups_1 (grpmap, groups, NULL_TREE);
 
@@ -9502,14 +9517,14 @@ omp_index_mapping_groups (vec<omp_mapping_group> *groups)
    so, we can do the reindex operation in two parts, on the processed and
    then the unprocessed halves of the list.  */
 
-static hash_map<tree_operand_hash, omp_mapping_group *> *
+static hash_map<tree_operand_hash_no_se, omp_mapping_group *> *
 omp_reindex_mapping_groups (tree *list_p,
 			    vec<omp_mapping_group> *groups,
 			    vec<omp_mapping_group> *processed_groups,
 			    tree sentinel)
 {
-  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap
-    = new hash_map<tree_operand_hash, omp_mapping_group *>;
+  hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap
+    = new hash_map<tree_operand_hash_no_se, omp_mapping_group *>;
 
   processed_groups->truncate (0);
 
@@ -9550,7 +9565,7 @@ omp_containing_struct (tree expr)
    that maps that structure, if present.  */
 
 static bool
-omp_mapped_by_containing_struct (hash_map<tree_operand_hash,
+omp_mapped_by_containing_struct (hash_map<tree_operand_hash_no_se,
 					  omp_mapping_group *> *grpmap,
 				 tree decl,
 				 omp_mapping_group **mapped_by_group)
@@ -9590,8 +9605,8 @@ omp_mapped_by_containing_struct (hash_map<tree_operand_hash,
 static bool
 omp_tsort_mapping_groups_1 (omp_mapping_group ***outlist,
 			    vec<omp_mapping_group> *groups,
-			    hash_map<tree_operand_hash, omp_mapping_group *>
-			      *grpmap,
+			    hash_map<tree_operand_hash_no_se,
+				     omp_mapping_group *> *grpmap,
 			    omp_mapping_group *grp)
 {
   if (grp->mark == PERMANENT)
@@ -9670,7 +9685,7 @@ omp_tsort_mapping_groups_1 (omp_mapping_group ***outlist,
 
 static omp_mapping_group *
 omp_tsort_mapping_groups (vec<omp_mapping_group> *groups,
-			  hash_map<tree_operand_hash, omp_mapping_group *>
+			  hash_map<tree_operand_hash_no_se, omp_mapping_group *>
 			    *grpmap)
 {
   omp_mapping_group *grp, *outlist = NULL, **cursor;
@@ -9986,7 +10001,7 @@ omp_check_mapping_compatibility (location_t loc,
 
 void
 oacc_resolve_clause_dependencies (vec<omp_mapping_group> *groups,
-				  hash_map<tree_operand_hash,
+				  hash_map<tree_operand_hash_no_se,
 					   omp_mapping_group *> *grpmap)
 {
   int i;
@@ -10520,8 +10535,8 @@ static bool
 omp_build_struct_sibling_lists (enum tree_code code,
 				enum omp_region_type region_type,
 				vec<omp_mapping_group> *groups,
-				hash_map<tree_operand_hash, omp_mapping_group *>
-				  **grpmap,
+				hash_map<tree_operand_hash_no_se,
+					 omp_mapping_group *> **grpmap,
 				tree *list_p)
 {
   unsigned i;
@@ -10747,7 +10762,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
       groups = omp_gather_mapping_groups (list_p);
       if (groups)
 	{
-	  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap;
+	  hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap;
 	  grpmap = omp_index_mapping_groups (groups);
 
 	  omp_build_struct_sibling_lists (code, region_type, groups, &grpmap,
@@ -10783,7 +10798,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
       groups = omp_gather_mapping_groups (list_p);
       if (groups)
 	{
-	  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap;
+	  hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap;
 	  grpmap = omp_index_mapping_groups (groups);
 
 	  oacc_resolve_clause_dependencies (groups, grpmap);
