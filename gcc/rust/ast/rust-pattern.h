@@ -194,15 +194,26 @@ protected:
 class RestPattern : public Pattern
 {
   Location locus;
+  NodeId node_id;
 
 public:
   std::string as_string () const override { return ".."; }
 
-  RestPattern (Location locus) : locus (locus) {}
+  RestPattern (Location locus)
+    : locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
 
   Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  NodeId get_pattern_node_id () const override final { return node_id; }
+
+protected:
+  RestPattern *clone_pattern_impl () const override
+  {
+    return new RestPattern (*this);
+  }
 };
 
 // Base range pattern bound (lower or upper limit) - abstract
