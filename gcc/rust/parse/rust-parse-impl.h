@@ -13090,7 +13090,7 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
       return parse_block_expr (std::move (outer_attrs), tok->get_locus ());
     case IF:
       // if or if let, so more lookahead to find out
-      if (lexer.peek_token (1)->get_id () == LET)
+      if (lexer.peek_token ()->get_id () == LET)
 	{
 	  // if let expr
 	  return parse_if_let_expr (std::move (outer_attrs), tok->get_locus ());
