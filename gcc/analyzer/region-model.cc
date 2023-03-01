@@ -1477,8 +1477,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 {
   call_details cd (call, this, ctxt);
 
-  bool unknown_side_effects = false;
-
   /* Special-case for IFN_DEFERRED_INIT.
      We want to report uninitialized variables with -fanalyzer (treating
      -ftrivial-auto-var-init= as purely a mitigation feature).
@@ -1487,7 +1485,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
      view of the analyzer.  */
   if (gimple_call_internal_p (call)
       && gimple_call_internal_fn (call) == IFN_DEFERRED_INIT)
-    return false;
+    return false; /* No side effects.  */
 
   /* Get svalues for all of the arguments at the callsite, to ensure that we
      complain about any uninitialized arguments.  This might lead to
@@ -1532,33 +1530,29 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	  = get_known_function (gimple_call_internal_fn (call)))
       {
 	kf->impl_call_pre (cd);
-	return false;
+	return false; /* No further side effects.  */
       }
 
-  if (callee_fndecl)
+  if (!callee_fndecl)
+    return true; /* Unknown side effects.  */
+
+  if (const known_function *kf = get_known_function (callee_fndecl, cd))
     {
-      int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
-
-      if (const known_function *kf = get_known_function (callee_fndecl, cd))
-	{
-	  kf->impl_call_pre (cd);
-	  return false;
-	}
-      else if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
-	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
-	{
-	  if (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
-	    unknown_side_effects = true;
-	}
-      else if (!fndecl_has_gimple_body_p (callee_fndecl)
-	       && (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
-	       && !fndecl_built_in_p (callee_fndecl))
-	unknown_side_effects = true;
+      kf->impl_call_pre (cd);
+      return false; /* No further side effects.  */
     }
-  else
-    unknown_side_effects = true;
 
-  return unknown_side_effects;
+  const int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
+  if (callee_fndecl_flags & (ECF_CONST | ECF_PURE))
+    return false; /* No side effects.  */
+
+  if (fndecl_built_in_p (callee_fndecl))
+    return true; /* Unknown side effects.  */
+
+  if (!fndecl_has_gimple_body_p (callee_fndecl))
+    return true; /* Unknown side effects.  */
+
+  return false; /* No side effects.  */
 }
 
 /* Update this model for the CALL stmt, using CTXT to report any

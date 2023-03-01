@@ -27,7 +27,11 @@ test_2 (void)
     FILE *fp = fopen ("/tmp/test", "w");
     fprintf (fp, "hello");
   }
-} /* { dg-warning "leak of FILE 'fp'" } */
+} /* { dg-warning "leak of FILE 'fp'" "" { xfail *-*-* } } */
+/* TODO: fails on some targets due to fprintf call being optimized to
+   __builtin_fwrite with a size argument (idx 2) that fails
+   gimple_builtin_call_types_compatible_p, and thus the known_function
+   for __builtin_fwrite not being used (PR middle-end/108988).  */
 
 FILE *fp3;
 
