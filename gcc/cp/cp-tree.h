@@ -8438,6 +8438,7 @@ extern tree fold_non_dependent_init		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
 						 bool = false, tree = NULL_TREE);
 extern tree fold_simple				(tree);
+extern tree fold_to_constant			(tree);
 extern bool reduced_constant_expression_p       (tree);
 extern bool is_instantiation_of_constexpr       (tree);
 extern bool var_in_constexpr_fn                 (tree);
