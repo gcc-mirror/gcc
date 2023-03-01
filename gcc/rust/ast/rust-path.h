@@ -202,6 +202,9 @@ public:
     return *this;
   }
 
+  GenericArg (GenericArg &&other) = default;
+  GenericArg &operator= (GenericArg &&other) = default;
+
   bool is_error () const { return kind == Kind::Error; }
 
   Kind get_kind () const { return kind; }
@@ -411,9 +414,16 @@ public:
 
   // copy constructor with vector clone
   GenericArgs (GenericArgs const &other)
-    : lifetime_args (other.lifetime_args), generic_args (other.generic_args),
-      binding_args (other.binding_args), locus (other.locus)
-  {}
+    : lifetime_args (other.lifetime_args), binding_args (other.binding_args),
+      locus (other.locus)
+  {
+    generic_args.clear ();
+    generic_args.reserve (other.generic_args.size ());
+    for (const auto &arg : other.generic_args)
+      {
+	generic_args.push_back (GenericArg (arg));
+      }
+  }
 
   ~GenericArgs () = default;
 
@@ -421,9 +431,15 @@ public:
   GenericArgs &operator= (GenericArgs const &other)
   {
     lifetime_args = other.lifetime_args;
-    generic_args = other.generic_args;
     binding_args = other.binding_args;
     locus = other.locus;
+
+    generic_args.clear ();
+    generic_args.reserve (other.generic_args.size ());
+    for (const auto &arg : other.generic_args)
+      {
+	generic_args.push_back (GenericArg (arg));
+      }
 
     return *this;
   }
@@ -672,6 +688,7 @@ protected:
   bool has_separating_scope_resolution;
   NodeId node_id;
 
+public:
   // Clone function implementation - not pure virtual as overrided by
   // subclasses
   virtual TypePathSegment *clone_type_path_segment_impl () const
@@ -704,6 +721,25 @@ public:
       has_separating_scope_resolution (has_separating_scope_resolution),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
+
+  TypePathSegment (TypePathSegment const &other)
+    : ident_segment (other.ident_segment), locus (other.locus),
+      has_separating_scope_resolution (other.has_separating_scope_resolution),
+      node_id (other.node_id)
+  {}
+
+  TypePathSegment &operator= (TypePathSegment const &other)
+  {
+    ident_segment = other.ident_segment;
+    locus = other.locus;
+    has_separating_scope_resolution = other.has_separating_scope_resolution;
+    node_id = other.node_id;
+
+    return *this;
+  }
+
+  TypePathSegment (TypePathSegment &&other) = default;
+  TypePathSegment &operator= (TypePathSegment &&other) = default;
 
   virtual std::string as_string () const { return ident_segment.as_string (); }
 
@@ -780,6 +816,23 @@ public:
 				 std::move (binding_args)))
   {}
 
+  // Copy constructor with vector clone
+  TypePathSegmentGeneric (TypePathSegmentGeneric const &other)
+    : TypePathSegment (other), generic_args (other.generic_args)
+  {}
+
+  // Overloaded assignment operator with vector clone
+  TypePathSegmentGeneric &operator= (TypePathSegmentGeneric const &other)
+  {
+    generic_args = other.generic_args;
+
+    return *this;
+  }
+
+  // move constructors
+  TypePathSegmentGeneric (TypePathSegmentGeneric &&other) = default;
+  TypePathSegmentGeneric &operator= (TypePathSegmentGeneric &&other) = default;
+
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
@@ -791,7 +844,6 @@ public:
     return generic_args;
   }
 
-protected:
   // Use covariance to override base class method
   TypePathSegmentGeneric *clone_type_path_segment_impl () const override
   {
@@ -941,7 +993,6 @@ public:
     return function_path;
   }
 
-protected:
   // Use covariance to override base class method
   TypePathSegmentFunction *clone_type_path_segment_impl () const override
   {
@@ -1242,13 +1293,13 @@ public:
       segments (std::move (path_segments)), locus (locus)
   {}
 
-  /* TODO: maybe make a shortcut constructor that has QualifiedPathType
-   * elements as params */
-
   // Copy constructor with vector clone
   QualifiedPathInType (QualifiedPathInType const &other)
     : path_type (other.path_type), locus (other.locus)
   {
+    auto seg = other.associated_segment->clone_type_path_segment_impl ();
+    associated_segment = std::unique_ptr<TypePathSegment> (seg);
+
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
       segments.push_back (e->clone_type_path_segment ());
@@ -1257,6 +1308,9 @@ public:
   // Overloaded assignment operator with vector clone
   QualifiedPathInType &operator= (QualifiedPathInType const &other)
   {
+    auto seg = other.associated_segment->clone_type_path_segment_impl ();
+    associated_segment = std::unique_ptr<TypePathSegment> (seg);
+
     path_type = other.path_type;
     locus = other.locus;
 

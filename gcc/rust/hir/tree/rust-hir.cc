@@ -2112,6 +2112,7 @@ QualifiedPathInType::as_string () const
 {
   std::string str = path_type.as_string ();
 
+  str += "::" + associated_segment->as_string ();
   for (const auto &segment : segments)
     {
       str += "::" + segment->as_string ();
