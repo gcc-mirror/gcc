@@ -1,5 +1,21 @@
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
+	* c-common.h (expand_array_base): Update prototype.
+	* c-omp.cc (c_omp_address_inspector::map_supported_p): Support
+	VIEW_CONVERT_EXPR and ADDR_EXPR codes.
+	(omp_expand_grid_dim): New function.
+	(omp_handle_noncontig_array): New function.
+	(c_omp_address_inspector:expand_array_base): Remove DECL_P parameter.
+	Support noncontiguous array updates.
+	(c_omp_address_inspector::expand_component_selector): Support
+	noncontiguous array updates.
+	(c_omp_address_inspector::expand_map_clause): Update calls to
+	expand_array_base.
+	* c-pretty-print.cc (c_pretty_printer::postfix_expression): Add
+	OMP_ARRAY_SECTION stride support.
+
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
 	* c-common.h (expand_array_base, expand_component_selector,
 	expand_map_clause): Adjust member declarations.
 	* c-omp.cc (omp_expand_access_chain): Pass and return pointer to

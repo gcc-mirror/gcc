@@ -1623,6 +1623,11 @@ c_pretty_printer::postfix_expression (tree e)
       pp_colon (this);
       if (TREE_OPERAND (e, 2))
 	expression (TREE_OPERAND (e, 2));
+      if (TREE_OPERAND (e, 3))
+	{
+	  pp_colon (this);
+	  expression (TREE_OPERAND (e, 3));
+	}
       pp_c_right_bracket (this);
       break;
 

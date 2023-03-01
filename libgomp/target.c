@@ -2604,6 +2604,13 @@ goacc_unmap_vars (struct target_mem_desc *tgt, bool do_copyfrom,
   gomp_unmap_vars_internal (tgt, do_copyfrom, NULL, aq);
 }
 
+static int omp_target_memcpy_rect_worker (void *, const void *, size_t, int,
+					  const size_t *, const size_t *,
+					  const size_t *, const size_t *,
+					  const size_t *, const size_t *,
+					  struct gomp_device_descr *,
+					  struct gomp_device_descr *);
+
 static void
 gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 	     size_t *sizes, void *kinds, bool short_mapkind)
@@ -2626,90 +2633,129 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
     }
 
   for (i = 0; i < mapnum; i++)
-    if (sizes[i])
-      {
-	cur_node.host_start = (uintptr_t) hostaddrs[i];
-	cur_node.host_end = cur_node.host_start + sizes[i];
-	splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
-	if (n)
-	  {
-	    int kind = get_kind (short_mapkind, kinds, i);
-	    if (n->host_start > cur_node.host_start
-		|| n->host_end < cur_node.host_end)
-	      {
-		gomp_mutex_unlock (&devicep->lock);
-		gomp_fatal ("Trying to update [%p..%p) object when "
-			    "only [%p..%p) is mapped",
-			    (void *) cur_node.host_start,
-			    (void *) cur_node.host_end,
-			    (void *) n->host_start,
-			    (void *) n->host_end);
-	      }
+    {
+      int kind = get_kind (short_mapkind, kinds, i);
+      if ((kind & typemask) == GOMP_MAP_TO_GRID
+	  || (kind & typemask) == GOMP_MAP_FROM_GRID)
+	{
+	  omp_noncontig_array_desc *desc
+	    = (omp_noncontig_array_desc *) hostaddrs[i + 1];
+	  cur_node.host_start = (uintptr_t) hostaddrs[i];
+	  cur_node.host_end = cur_node.host_start + sizes[i];
+	  assert (sizes[i + 1] == sizeof (omp_noncontig_array_desc));
+	  splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
+	  if (n)
+	    {
+	      if (n->aux && n->aux->attach_count)
+		{
+		  gomp_mutex_unlock (&devicep->lock);
+		  gomp_error ("noncontiguous update with attached pointers");
+		  return;
+		}
+	      void *devaddr = (void *) (n->tgt->tgt_start + n->tgt_offset
+					+ cur_node.host_start
+					- n->host_start);
+	      if ((kind & typemask) == GOMP_MAP_TO_GRID)
+		omp_target_memcpy_rect_worker (devaddr, hostaddrs[i],
+					       desc->elemsize, desc->ndims,
+					       desc->length, desc->stride,
+					       desc->index, desc->index,
+					       desc->dim, desc->dim, devicep,
+					       NULL);
+	      else
+		omp_target_memcpy_rect_worker (hostaddrs[i], devaddr,
+					       desc->elemsize, desc->ndims,
+					       desc->length, desc->stride,
+					       desc->index, desc->index,
+					       desc->dim, desc->dim, NULL,
+					       devicep);
+	    }
+	  i++;
+	}
+      else if (sizes[i])
+	{
+	  cur_node.host_start = (uintptr_t) hostaddrs[i];
+	  cur_node.host_end = cur_node.host_start + sizes[i];
+	  splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
+	  if (n)
+	    {
+	      if (n->host_start > cur_node.host_start
+		  || n->host_end < cur_node.host_end)
+		{
+		  gomp_mutex_unlock (&devicep->lock);
+		  gomp_fatal ("Trying to update [%p..%p) object when "
+			      "only [%p..%p) is mapped",
+			      (void *) cur_node.host_start,
+			      (void *) cur_node.host_end,
+			      (void *) n->host_start,
+			      (void *) n->host_end);
+		}
 
-	    if (n->aux && n->aux->attach_count)
-	      {
-		uintptr_t addr = cur_node.host_start;
-		while (addr < cur_node.host_end)
-		  {
-		    /* We have to be careful not to overwrite still attached
-		       pointers during host<->device updates.  */
-		    size_t i = (addr - cur_node.host_start) / sizeof (void *);
-		    if (n->aux->attach_count[i] == 0)
-		      {
-			void *devaddr = (void *) (n->tgt->tgt_start
-						  + n->tgt_offset
-						  + addr - n->host_start);
-			if (GOMP_MAP_COPY_TO_P (kind & typemask))
-			  gomp_copy_host2dev (devicep, NULL,
-					      devaddr, (void *) addr,
-					      sizeof (void *), false, NULL);
-			if (GOMP_MAP_COPY_FROM_P (kind & typemask))
-			  gomp_copy_dev2host (devicep, NULL,
-					      (void *) addr, devaddr,
-					      sizeof (void *));
-		      }
-		    addr += sizeof (void *);
-		  }
-	      }
-	    else
-	      {
-		void *hostaddr = (void *) cur_node.host_start;
-		void *devaddr = (void *) (n->tgt->tgt_start + n->tgt_offset
-					  + cur_node.host_start
-					  - n->host_start);
-		size_t size = cur_node.host_end - cur_node.host_start;
+	      if (n->aux && n->aux->attach_count)
+		{
+		  uintptr_t addr = cur_node.host_start;
+		  while (addr < cur_node.host_end)
+		    {
+		      /* We have to be careful not to overwrite still attached
+			 pointers during host<->device updates.  */
+		      size_t i = (addr - cur_node.host_start) / sizeof (void *);
+		      if (n->aux->attach_count[i] == 0)
+			{
+			  void *devaddr = (void *) (n->tgt->tgt_start
+						    + n->tgt_offset
+						    + addr - n->host_start);
+			  if (GOMP_MAP_COPY_TO_P (kind & typemask))
+			    gomp_copy_host2dev (devicep, NULL,
+						devaddr, (void *) addr,
+						sizeof (void *), false, NULL);
+			  if (GOMP_MAP_COPY_FROM_P (kind & typemask))
+			    gomp_copy_dev2host (devicep, NULL,
+						(void *) addr, devaddr,
+						sizeof (void *));
+			}
+		      addr += sizeof (void *);
+		    }
+		}
+	      else
+		{
+		  void *hostaddr = (void *) cur_node.host_start;
+		  void *devaddr = (void *) (n->tgt->tgt_start + n->tgt_offset
+					    + cur_node.host_start
+					    - n->host_start);
+		  size_t size = cur_node.host_end - cur_node.host_start;
 
-		if (GOMP_MAP_COPY_TO_P (kind & typemask))
-		  gomp_copy_host2dev (devicep, NULL, devaddr, hostaddr, size,
-				      false, NULL);
-		if (GOMP_MAP_COPY_FROM_P (kind & typemask))
-		  gomp_copy_dev2host (devicep, NULL, hostaddr, devaddr, size);
-	      }
-	  }
-	else
-	  {
-	    int kind = get_kind (short_mapkind, kinds, i);
+		  if (GOMP_MAP_COPY_TO_P (kind & typemask))
+		    gomp_copy_host2dev (devicep, NULL, devaddr, hostaddr, size,
+					false, NULL);
+		  if (GOMP_MAP_COPY_FROM_P (kind & typemask))
+		    gomp_copy_dev2host (devicep, NULL, hostaddr, devaddr, size);
+		}
+	    }
+	  else
+	    {
+	      int kind = get_kind (short_mapkind, kinds, i);
 
-	    if (GOMP_MAP_PRESENT_P (kind))
-	      {
-		/* We already looked up the memory region above and it
-		   was missing.  */
-		gomp_mutex_unlock (&devicep->lock);
+	      if (GOMP_MAP_PRESENT_P (kind))
+		{
+		  /* We already looked up the memory region above and it
+		     was missing.  */
+		  gomp_mutex_unlock (&devicep->lock);
 #ifdef HAVE_INTTYPES_H
-		gomp_fatal ("present clause: not present on the device "
-			    "(addr: %p, size: %"PRIu64" (0x%"PRIx64"), "
-			    "dev: %d)", (void *) hostaddrs[i],
-			    (uint64_t) sizes[i], (uint64_t) sizes[i],
-			    devicep->target_id);
+		  gomp_fatal ("present clause: not present on the device "
+			      "(addr: %p, size: %"PRIu64" (0x%"PRIx64"), "
+			      "dev: %d)", (void *) hostaddrs[i],
+			      (uint64_t) sizes[i], (uint64_t) sizes[i],
+			      devicep->target_id);
 #else
-		gomp_fatal ("present clause: not present on the device "
-			    "(addr: %p, size: %lu (0x%lx), dev: %d)",
-			    (void *) hostaddrs[i], (unsigned long) sizes[i],
-			    (unsigned long) sizes[i], devicep->target_id);
+		  gomp_fatal ("present clause: not present on the device "
+			      "(addr: %p, size: %lu (0x%lx), dev: %d)",
+			      (void *) hostaddrs[i], (unsigned long) sizes[i],
+			      (unsigned long) sizes[i], devicep->target_id);
 #endif
-	      }
-	  }
-      }
+		}
+	    }
+	}
+    }
   gomp_mutex_unlock (&devicep->lock);
 }
 
@@ -5641,6 +5687,7 @@ omp_target_memcpy_async (void *dst, const void *src, size_t length,
 static int
 omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 			       int num_dims, const size_t *volume,
+			       const size_t *strides,
 			       const size_t *dst_offsets,
 			       const size_t *src_offsets,
 			       const size_t *dst_dimensions,
@@ -5653,7 +5700,7 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
   size_t j, dst_off, src_off, length;
   int i, ret;
 
-  if (num_dims == 1)
+  if (num_dims == 1 && (!strides || strides[0] == 1))
     {
       if (__builtin_mul_overflow (element_size, volume[0], &length)
 	  || __builtin_mul_overflow (element_size, dst_offsets[0], &dst_off)
@@ -5726,6 +5773,38 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 	ret = 0;
       return ret ? 0 : EINVAL;
     }
+  else if (num_dims == 1 && strides)
+    {
+      size_t stride;
+
+      assert ((src_devicep == NULL || dst_devicep == NULL)
+	      && (src_devicep != NULL || dst_devicep != NULL));
+
+      if (__builtin_mul_overflow (element_size, dst_offsets[0], &dst_off)
+	  || __builtin_mul_overflow (element_size, src_offsets[0], &src_off))
+	return EINVAL;
+
+      if (strides
+	  && __builtin_mul_overflow (element_size, strides[0], &stride))
+	return EINVAL;
+
+      for (i = 0, ret = 1; i < volume[0] && ret; i++)
+	{
+	  if (src_devicep == NULL)
+	    ret = dst_devicep->host2dev_func (dst_devicep->target_id,
+					      (char *) dst + dst_off,
+					      (const char *) src + src_off,
+					      element_size);
+	  else if (dst_devicep == NULL)
+	    ret = src_devicep->dev2host_func (src_devicep->target_id,
+					      (char *) dst + dst_off,
+					      (const char *) src + src_off,
+					      element_size);
+	  dst_off += stride;
+	  src_off += stride;
+	}
+      return ret ? 0 : EINVAL;
+    }
 
   /* FIXME: it would be nice to have some plugin function to handle
      num_dims == 2 and num_dims == 3 more efficiently.  Larger ones can
@@ -5739,13 +5818,19 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
   if (__builtin_mul_overflow (dst_slice, dst_offsets[0], &dst_off)
       || __builtin_mul_overflow (src_slice, src_offsets[0], &src_off))
     return EINVAL;
+  if (strides
+      && (__builtin_mul_overflow (dst_slice, strides[0], &dst_slice)
+	  || __builtin_mul_overflow (src_slice, strides[0], &src_slice)))
+    return EINVAL;
   for (j = 0; j < volume[0]; j++)
     {
       ret = omp_target_memcpy_rect_worker ((char *) dst + dst_off,
 					   (const char *) src + src_off,
 					   element_size, num_dims - 1,
-					   volume + 1, dst_offsets + 1,
-					   src_offsets + 1, dst_dimensions + 1,
+					   volume + 1,
+					   strides ? strides + 1 : NULL,
+					   dst_offsets + 1, src_offsets + 1,
+					   dst_dimensions + 1,
 					   src_dimensions + 1, dst_devicep,
 					   src_devicep);
       if (ret)
@@ -5791,9 +5876,10 @@ omp_target_memcpy_rect_copy (void *dst, const void *src,
   else if (dst_devicep)
     gomp_mutex_lock (&dst_devicep->lock);
   int ret = omp_target_memcpy_rect_worker (dst, src, element_size, num_dims,
-					   volume, dst_offsets, src_offsets,
-					   dst_dimensions, src_dimensions,
-					   dst_devicep, src_devicep);
+					   volume, NULL, dst_offsets,
+					   src_offsets, dst_dimensions,
+					   src_dimensions, dst_devicep,
+					   src_devicep);
   if (src_devicep)
     gomp_mutex_unlock (&src_devicep->lock);
   else if (dst_devicep)

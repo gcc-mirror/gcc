@@ -2036,6 +2036,8 @@ mark_exp_read (tree exp)
 	mark_exp_read (TREE_OPERAND (exp, 1));
       if (TREE_OPERAND (exp, 2))
 	mark_exp_read (TREE_OPERAND (exp, 2));
+      if (TREE_OPERAND (exp, 3))
+	mark_exp_read (TREE_OPERAND (exp, 3));
       break;
     default:
       break;
@@ -2921,7 +2923,8 @@ build_array_ref (location_t loc, tree array, tree index)
    instead.  */
 
 tree
-build_omp_array_section (location_t loc, tree array, tree index, tree length)
+build_omp_array_section (location_t loc, tree array, tree index, tree length,
+			 tree stride)
 {
   tree idxtype;
 
@@ -2958,7 +2961,8 @@ build_omp_array_section (location_t loc, tree array, tree index, tree length)
   else
     sectype = build_array_type (eltype, idxtype);
 
-  return build3_loc (loc, OMP_ARRAY_SECTION, sectype, array, index, length);
+  return build4_loc (loc, OMP_ARRAY_SECTION, sectype, array, index, length,
+		     stride);
 }
 
 
@@ -13712,7 +13716,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 			     bool &maybe_zero_len, unsigned int &first_non_one,
 			     bool &non_contiguous, enum c_omp_region_type ort)
 {
-  tree ret, low_bound, length, type;
+  tree ret, low_bound, length, stride, type;
   bool openacc = (ort & C_ORT_ACC) != 0;
   if (TREE_CODE (t) != OMP_ARRAY_SECTION)
     {
@@ -13798,8 +13802,11 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
   type = TREE_TYPE (ret);
   low_bound = TREE_OPERAND (t, 1);
   length = TREE_OPERAND (t, 2);
+  stride = TREE_OPERAND (t, 3);
 
-  if (low_bound == error_mark_node || length == error_mark_node)
+  if (low_bound == error_mark_node
+      || length == error_mark_node
+      || stride == error_mark_node)
     return error_mark_node;
 
   if (low_bound && !INTEGRAL_TYPE_P (TREE_TYPE (low_bound)))
@@ -13814,6 +13821,13 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       error_at (OMP_CLAUSE_LOCATION (c),
 		"length %qE of array section does not have integral type",
 		length);
+      return error_mark_node;
+    }
+  if (stride && !INTEGRAL_TYPE_P (TREE_TYPE (stride)))
+    {
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"stride %qE of array section does not have integral type",
+		stride);
       return error_mark_node;
     }
   if (low_bound
@@ -14032,7 +14046,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	       d = TREE_OPERAND (d, 0))
 	    {
 	      tree d_length = TREE_OPERAND (d, 2);
-	      if (d_length == NULL_TREE || !integer_onep (d_length))
+	      tree d_stride = TREE_OPERAND (d, 3);
+	      if (d_length == NULL_TREE || !integer_onep (d_length)
+		  || (d_stride && !integer_onep (d_stride)))
 		{
 		  if (openacc && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
 		    {

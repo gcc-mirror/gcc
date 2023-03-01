@@ -11386,7 +11386,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      start = expr.get_start ();
 	      finish = parser->tokens_buf[0].location;
 	      expr.value = build_omp_array_section (op_loc, expr.value, idx,
-						    len);
+						    len, NULL_TREE /* fixme */);
 	      set_c_expr_source_range (&expr, start, finish);
 	      expr.original_code = ERROR_MARK;
 	      expr.original_type = NULL;
@@ -13956,11 +13956,11 @@ c_parser_oacc_wait_list (c_parser *parser, location_t clause_loc, tree list)
 
 struct omp_dim
 {
-  tree low_bound, length;
+  tree low_bound, length, stride;
   location_t loc;
   bool no_colon;
-  omp_dim (tree lb, tree len, location_t lo, bool nc)
-  : low_bound (lb), length (len), loc (lo), no_colon (nc) {}
+  omp_dim (tree lb, tree len, tree str, location_t lo, bool nc)
+  : low_bound (lb), length (len), stride (str), loc (lo), no_colon (nc) {}
 };
 
 static tree
@@ -14089,7 +14089,9 @@ c_parser_omp_variable_list (c_parser *parser,
 		{
 		  tree low_bound = TREE_OPERAND (decl, 1);
 		  tree length = TREE_OPERAND (decl, 2);
-		  dims.safe_push (omp_dim (low_bound, length, loc, false));
+		  tree stride = TREE_OPERAND (decl, 3);
+		  dims.safe_push (omp_dim (low_bound, length, stride, loc,
+					   false));
 		  decl = TREE_OPERAND (decl, 0);
 		}
 
@@ -14105,21 +14107,22 @@ c_parser_omp_variable_list (c_parser *parser,
 		  else if (TREE_CODE (decl) == INDIRECT_REF)
 		    {
 		      dims.safe_push (omp_dim (integer_zero_node,
-					       integer_one_node, loc, true));
+					       integer_one_node, NULL_TREE, loc,
+					       true));
 		      decl = TREE_OPERAND (decl, 0);
 		    }
 		  else  /* ARRAY_REF. */
 		    {
 		      tree index = TREE_OPERAND (decl, 1);
-		      dims.safe_push (omp_dim (index, integer_one_node, loc,
-					       true));
+		      dims.safe_push (omp_dim (index, integer_one_node,
+					       NULL_TREE, loc, true));
 		      decl = TREE_OPERAND (decl, 0);
 		    }
 		}
 
 	      for (int i = dims.length () - 1; i >= 0; i--)
 		decl = build_omp_array_section (loc,  decl, dims[i].low_bound,
-						dims[i].length);
+						dims[i].length, dims[i].stride);
 	    }
 	  else if (TREE_CODE (decl) == INDIRECT_REF)
 	    {
@@ -14129,7 +14132,7 @@ c_parser_omp_variable_list (c_parser *parser,
 	      STRIP_NOPS (decl);
 
 	      decl = build_omp_array_section (loc, decl, integer_zero_node,
-					      integer_one_node);
+					      integer_one_node, NULL_TREE);
 	    }
 	  else if (TREE_CODE (decl) == ARRAY_REF)
 	    {
@@ -14138,7 +14141,8 @@ c_parser_omp_variable_list (c_parser *parser,
 	      decl = TREE_OPERAND (decl, 0);
 	      STRIP_NOPS (decl);
 
-	      decl = build_omp_array_section (loc, decl, idx, integer_one_node);
+	      decl = build_omp_array_section (loc, decl, idx, integer_one_node,
+					      NULL_TREE);
 	    }
 	  else if (TREE_CODE (decl) == NON_LVALUE_EXPR
 		   || CONVERT_EXPR_P (decl))
@@ -14293,7 +14297,8 @@ c_parser_omp_variable_list (c_parser *parser,
 		      break;
 		    }
 
-		  dims.safe_push (omp_dim (low_bound, length, loc, no_colon));
+		  dims.safe_push (omp_dim (low_bound, length, NULL_TREE, loc,
+				  no_colon));
 		}
 
 	      if (t != error_mark_node)
@@ -14317,7 +14322,8 @@ c_parser_omp_variable_list (c_parser *parser,
 		    for (unsigned i = 0; i < dims.length (); i++)
 		      t = build_omp_array_section (clause_loc, t,
 						   dims[i].low_bound,
-						   dims[i].length);
+						   dims[i].length,
+						   dims[i].stride);
 		}
 
 	      if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)

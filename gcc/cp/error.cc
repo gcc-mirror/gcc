@@ -2528,6 +2528,11 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_expr (pp, TREE_OPERAND (t, 1), flags);
       pp_colon (pp);
       dump_expr (pp, TREE_OPERAND (t, 2), flags);
+      if (TREE_OPERAND (t, 3))
+	{
+	  pp_colon (pp);
+	  dump_expr (pp, TREE_OPERAND (t, 3), flags);
+	}
       pp_cxx_right_bracket (pp);
       break;
 

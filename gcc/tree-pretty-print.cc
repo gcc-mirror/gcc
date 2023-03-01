@@ -1124,6 +1124,18 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT:
 	  pp_string (pp, "force_present,noncontig_array");
 	  break;
+	case GOMP_MAP_TO_GRID:
+	  pp_string (pp, "to_grid");
+	  break;
+	case GOMP_MAP_FROM_GRID:
+	  pp_string (pp, "from_grid");
+	  break;
+	case GOMP_MAP_GRID_DIM:
+	  pp_string (pp, "grid_dim");
+	  break;
+	case GOMP_MAP_GRID_STRIDE:
+	  pp_string (pp, "grid_stride");
+	  break;
 	case GOMP_MAP_UNSET:
 	  pp_string (pp, "unset");
 	  break;
@@ -2750,6 +2762,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
       pp_colon (pp);
       dump_generic_node (pp, TREE_OPERAND (node, 2), spc, flags, false);
+      if (TREE_OPERAND (node, 3))
+	{
+	  pp_colon (pp);
+	  dump_generic_node (pp,  TREE_OPERAND (node, 3), spc, flags, false);
+	}
       pp_right_bracket (pp);
       break;
 

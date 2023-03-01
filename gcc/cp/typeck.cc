@@ -1625,6 +1625,9 @@ structural_comptypes (tree t1, tree t2, int strict)
 	return false;
       if (DECLTYPE_FOR_LAMBDA_PROXY (t1) != DECLTYPE_FOR_LAMBDA_PROXY (t2))
 	return false;
+      if (DECLTYPE_FOR_OMP_ARRAYSHAPE_CAST (t1)
+	  != DECLTYPE_FOR_OMP_ARRAYSHAPE_CAST (t2))
+	return false;
       if (!cp_tree_equal (DECLTYPE_TYPE_EXPR (t1), DECLTYPE_TYPE_EXPR (t2)))
         return false;
       break;
@@ -4793,7 +4796,7 @@ build_x_array_ref (location_t loc, tree arg1, tree arg2,
 
 tree
 build_omp_array_section (location_t loc, tree array_expr, tree index,
-			 tree length)
+			 tree length, tree stride)
 {
   tree idxtype;
 
@@ -4832,8 +4835,8 @@ build_omp_array_section (location_t loc, tree array_expr, tree index,
   else
     sectype = build_array_type (eltype, idxtype);
 
-  return build3_loc (loc, OMP_ARRAY_SECTION, sectype, array_expr, index,
-		     length);
+  return build4_loc (loc, OMP_ARRAY_SECTION, sectype, array_expr, index,
+		     length, stride);
 }
 
 /* Return whether OP is an expression of enum type cast to integer
@@ -8149,6 +8152,9 @@ check_for_casting_away_constness (location_t loc, tree src_type,
 	error_at (loc, "%<reinterpret_cast%> from type %qT to type %qT "
 		  "casts away qualifiers",
 		  src_type, dest_type);
+      return true;
+
+    case OMP_ARRAYSHAPE_CAST_EXPR:
       return true;
 
     default:

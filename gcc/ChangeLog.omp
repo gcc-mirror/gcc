@@ -1,5 +1,27 @@
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (omp_group_last, omp_group_base): Add GOMP_MAP_TO_GRID,
+	GOMP_MAP_FROM_GRID support.
+	(gimplify_adjust_omp_clauses): Support new GOMP_MAP_GRID_DIM,
+	GOMP_MAP_GRID_STRIDE mapping nodes.  Don't crash on e.g. misuse of
+	ADDR_EXPR in mapping clauses.
+	* omp-general.cc (omp_parse_noncontiguous_array): New function.
+	(omp_parse_access_method): Add noncontiguous array support.
+	(omp_parse_structure_base): Add array-shaping support.
+	(debug_omp_tokenized_addr): Add ACCESS_NONCONTIG_ARRAY,
+	ACCESS_NONCONTIG_REF_TO_ARRAY token support.
+	* omp-general.h (access_method_kinds): Add ACCESS_NONCONTIG_ARRAY and
+	ACCESS_NONCONTIG_REF_TO_ARRAY access kinds.
+	* omp-low.cc (omp_noncontig_descriptor_type): New function.
+	(scan_sharing_clauses): Support noncontiguous array updates.
+	(lower_omp_target): Likewise.
+	* tree-pretty-print.cc (dump_omp_clause): Add GOMP_MAP_TO_GRID,
+	GOMP_MAP_FROM_GRID, GOMP_MAP_GRID_DIM, GOMP_MAP_GRID_STRIDE map kinds.
+	(dump_generic_node): Add stride support for OMP_ARRAY_SECTION.
+	* tree.def (OMP_ARRAY_SECTION): Add stride argument.
+
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (omp_get_attachment): Handle GOMP_MAP_DETACH here.
 	(omp_group_last): Handle *, GOMP_MAP_DETACH, GOMP_MAP_ATTACH_DETACH
 	groups for "exit data" of reference-to-pointer component array

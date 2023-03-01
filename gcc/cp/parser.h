@@ -410,6 +410,13 @@ struct GTY(()) cp_parser {
   /* TRUE if an OpenMP array section is allowed.  */
   bool omp_array_section_p;
 
+  /* TRUE if an OpenMP array-shaping operator is allowed.  */
+  bool omp_array_shaping_op_p;
+
+  /* TRUE if we are parsing an expression with an OpenMP array-shaping
+     operator.  */
+  bool omp_has_array_shape_p;
+
   /* Tracks the function's template parameter list when declaring a function
      using generic type parameters.  This is either a new chain in the case of a
      fully implicit function template or an extension of the function's existing

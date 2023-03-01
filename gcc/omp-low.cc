@@ -1388,6 +1388,55 @@ oacc_record_private_scalars (omp_context *ctx, tree clauses)
       }
 }
 
+/* Build record type for noncontiguous target update operations.  Must be kept
+   in sync with libgomp/libgomp.h omp_noncontig_array_desc.  */
+
+static tree
+omp_noncontig_descriptor_type (location_t loc)
+{
+  static tree cached = NULL_TREE;
+
+  if (cached)
+    return cached;
+
+  tree t = make_node (RECORD_TYPE);
+
+  tree fields = build_decl (loc, FIELD_DECL, get_identifier ("__ndims"),
+			    size_type_node);
+
+  tree field = build_decl (loc, FIELD_DECL, get_identifier ("__elemsize"),
+			   size_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  tree ptr_size_type = build_pointer_type (size_type_node);
+
+  field = build_decl (loc, FIELD_DECL, get_identifier ("__dim"), ptr_size_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  field = build_decl (loc, FIELD_DECL, get_identifier ("__index"),
+		      ptr_size_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  field = build_decl (loc, FIELD_DECL, get_identifier ("__length"),
+		      ptr_size_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  field = build_decl (loc, FIELD_DECL, get_identifier ("__stride"),
+		      ptr_size_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  finish_builtin_struct (t, "__omp_noncontig_desc_type", fields, ptr_type_node);
+
+  cached = t;
+
+  return t;
+}
+
 /* Instantiate decls as necessary in CTX to satisfy the data sharing
    specified by CLAUSES.  If BASE_POINTERS_RESTRICT, install var field with
    restrict.  */
@@ -1949,8 +1998,74 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	      install_var_local (array_decl, ctx);
 	      break;
 	    }
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		   && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_GRID
+		       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FROM_GRID))
+	    {
+	      tree desc_type = omp_noncontig_descriptor_type (UNKNOWN_LOCATION);
 
-	  if (DECL_P (decl))
+	      tree bare = decl;
+	      if (TREE_CODE (bare) == VIEW_CONVERT_EXPR)
+		bare = TREE_OPERAND (bare, 0);
+
+	      const char *desc_name = ".omp_noncontig_desc";
+	      /* Try (but not too hard) to make a friendly name for the
+		 descriptor.  */
+	      if (DECL_P (bare))
+		desc_name = ACONCAT ((".omp_nc_desc_",
+				      IDENTIFIER_POINTER (DECL_NAME (bare)),
+				      NULL));
+	      tree desc = create_tmp_var (desc_type, desc_name);
+	      DECL_NAMELESS (desc) = 1;
+	      TREE_ADDRESSABLE (desc) = 1;
+
+	      /* Adjust DECL so it refers to the first element of the array:
+		 either by indirecting a pointer, or by selecting the zero'th
+		 index of each dimension of an array.  (We don't have a "bias"
+		 as such for this type of noncontiguous update operation, just
+		 the volume specified in the descriptor we build in
+		 lower_omp_target.)  */
+
+	      if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
+		{
+		  decl = build_fold_indirect_ref (decl);
+		  OMP_CLAUSE_DECL (c) = decl;
+		}
+
+	      tree field
+		= build_decl (OMP_CLAUSE_LOCATION (c), FIELD_DECL, NULL_TREE,
+			      ptr_type_node);
+	      SET_DECL_ALIGN (field, TYPE_ALIGN (ptr_type_node));
+	      insert_field_into_struct (ctx->record_type, field);
+	      splay_tree_insert (ctx->field_map, (splay_tree_key) c,
+				 (splay_tree_value) field);
+
+	      tree dn = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+					  OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_SET_MAP_KIND (dn, GOMP_MAP_TO_PSET);
+	      OMP_CLAUSE_DECL (dn) = desc;
+	      OMP_CLAUSE_SIZE (dn) = TYPE_SIZE_UNIT (desc_type);
+
+	      OMP_CLAUSE_CHAIN (dn) = OMP_CLAUSE_CHAIN (c);
+	      OMP_CLAUSE_CHAIN (c) = dn;
+
+	      field = build_decl (OMP_CLAUSE_LOCATION (c), FIELD_DECL,
+				  NULL_TREE, ptr_type_node);
+	      SET_DECL_ALIGN (field, TYPE_ALIGN (ptr_type_node));
+	      insert_field_into_struct (ctx->record_type, field);
+	      splay_tree_insert (ctx->field_map, (splay_tree_key) dn,
+				 (splay_tree_value) field);
+
+	      c = dn;
+	      tree nc;
+
+	      while ((nc = OMP_CLAUSE_CHAIN (c))
+		     && OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+		     && (OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_DIM
+			 || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_STRIDE))
+		c = nc;
+	    }
+	  else if (DECL_P (decl))
 	    {
 	      if (DECL_SIZE (decl)
 		  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
@@ -2191,6 +2306,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
 	      && is_omp_target (ctx->stmt)
 	      && !is_gimple_omp_offloaded (ctx->stmt))
+	    break;
+	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_GRID
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FROM_GRID
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_GRID_DIM
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_GRID_STRIDE)
 	    break;
 	  if (DECL_P (decl))
 	    {
@@ -13666,6 +13786,10 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_DETACH:
 	  case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
 	  case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
+	  case GOMP_MAP_TO_GRID:
+	  case GOMP_MAP_FROM_GRID:
+	  case GOMP_MAP_GRID_DIM:
+	  case GOMP_MAP_GRID_STRIDE:
 	    break;
 	  case GOMP_MAP_IF_PRESENT:
 	  case GOMP_MAP_FORCE_ALLOC:
@@ -13693,6 +13817,20 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    gcc_unreachable ();
 	  }
 #endif
+	if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_GRID
+	    || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FROM_GRID)
+	  {
+	    tree nc = OMP_CLAUSE_CHAIN (c);
+	    gcc_assert (OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+			&& OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_TO_PSET);
+	    c = nc;
+	    while ((nc = OMP_CLAUSE_CHAIN (c))
+		   && (OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_DIM
+		       || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_STRIDE))
+	      c = nc;
+	    map_cnt += 2;
+	    continue;
+	  }
 	  /* FALLTHRU */
       case OMP_CLAUSE_TO:
       case OMP_CLAUSE_FROM:
@@ -14108,7 +14246,267 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 						   deep_map_offset_data,
 						   deep_map_offset, &ilist);
 	      }
-	    if (!DECL_P (ovar))
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		&& (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_GRID
+		    || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FROM_GRID))
+	      {
+		tree decl = OMP_CLAUSE_DECL (c);
+		tree dn = OMP_CLAUSE_CHAIN (c);
+		gcc_assert (OMP_CLAUSE_CODE (dn) == OMP_CLAUSE_MAP
+			    && OMP_CLAUSE_MAP_KIND (dn) == GOMP_MAP_TO_PSET);
+		tree desc = OMP_CLAUSE_DECL (dn);
+
+		tree oc, elsize = OMP_CLAUSE_SIZE (c);
+		tree type = TREE_TYPE (decl);
+		int i, dims = 0;
+		auto_vec<tree> tdims;
+		bool pointer_based = false, handled_pointer_section = false;
+		tree arrsize = fold_convert (sizetype, elsize);
+
+		/* Allow a single (maybe strided) array section if we have a
+		   pointer base.  */
+		if (TREE_CODE (decl) == INDIRECT_REF
+		    && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
+			== POINTER_TYPE))
+		  {
+		    pointer_based = true;
+		    dims = 1;
+		  }
+		else
+		  for (tree itype = type;
+		       TREE_CODE (itype) == ARRAY_TYPE;
+		       itype = TREE_TYPE (itype))
+		    {
+		      tdims.safe_push (itype);
+		      dims++;
+		    }
+
+		int tdim = tdims.length () - 1;
+
+		vec<constructor_elt, va_gc> *vdim;
+		vec<constructor_elt, va_gc> *vindex;
+		vec<constructor_elt, va_gc> *vlen;
+		vec<constructor_elt, va_gc> *vstride;
+		vec_alloc (vdim, dims);
+		vec_alloc (vindex, dims);
+		vec_alloc (vlen, dims);
+		vec_alloc (vstride, dims);
+
+		tree size_arr_type
+		  = build_array_type_nelts (size_type_node, dims);
+
+		tree dim_tmp = create_tmp_var (size_arr_type, ".omp_dim");
+		DECL_NAMELESS (dim_tmp) = 1;
+		TREE_ADDRESSABLE (dim_tmp) = 1;
+		TREE_STATIC (dim_tmp) = 1;
+		tree index_tmp = create_tmp_var (size_arr_type, ".omp_index");
+		DECL_NAMELESS (index_tmp) = 1;
+		TREE_ADDRESSABLE (index_tmp) = 1;
+		TREE_STATIC (index_tmp) = 1;
+		tree len_tmp = create_tmp_var (size_arr_type, ".omp_len");
+		DECL_NAMELESS (len_tmp) = 1;
+		TREE_ADDRESSABLE (len_tmp) = 1;
+		TREE_STATIC (len_tmp) = 1;
+		tree stride_tmp = create_tmp_var (size_arr_type, ".omp_stride");
+		DECL_NAMELESS (stride_tmp) = 1;
+		TREE_ADDRESSABLE (stride_tmp) = 1;
+		TREE_STATIC (stride_tmp) = 1;
+
+		oc = c;
+		c = dn;
+
+		for (i = 0; i < dims; i++)
+		  {
+		    nc = OMP_CLAUSE_CHAIN (c);
+		    tree dim = NULL_TREE, index = NULL_TREE, len = NULL_TREE,
+			 stride = size_one_node;
+
+		    if (OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+			&& OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_DIM)
+		      {
+			index = OMP_CLAUSE_DECL (nc);
+			len = OMP_CLAUSE_SIZE (nc);
+
+			index = fold_convert (sizetype, index);
+			len = fold_convert (sizetype, len);
+
+			tree nc2 = OMP_CLAUSE_CHAIN (nc);
+			if (nc2
+			    && OMP_CLAUSE_CODE (nc2) == OMP_CLAUSE_MAP
+			    && (OMP_CLAUSE_MAP_KIND (nc2)
+				== GOMP_MAP_GRID_STRIDE))
+			  {
+			    stride = OMP_CLAUSE_DECL (nc2);
+			    stride = fold_convert (sizetype, stride);
+			    nc = nc2;
+			  }
+
+			if (tdim >= 0)
+			  {
+			    /* We have an array shape -- use that to find the
+			       total size of the data on the target to look up
+			       in libgomp.  */
+			    tree dtype = TYPE_DOMAIN (tdims[tdim]);
+			    tree minval = TYPE_MIN_VALUE (dtype);
+			    tree maxval = TYPE_MAX_VALUE (dtype);
+			    minval = fold_convert (sizetype, minval);
+			    maxval = fold_convert (sizetype, maxval);
+			    dim = size_binop (MINUS_EXPR, maxval, minval);
+			    dim = size_binop (PLUS_EXPR, dim,
+					      size_one_node);
+			    arrsize = size_binop (MULT_EXPR, arrsize, dim);
+			  }
+			else if (pointer_based && !handled_pointer_section)
+			  {
+			    /* Use the selected array section to determine the
+			       size of the array.  */
+			    tree tmp = size_binop (MULT_EXPR, len, stride);
+			    tmp = size_binop (MINUS_EXPR, tmp, stride);
+			    tmp = size_binop (PLUS_EXPR, tmp, size_one_node);
+			    dim = size_binop (PLUS_EXPR, index, tmp);
+			    arrsize = size_binop (MULT_EXPR, arrsize, dim);
+			    handled_pointer_section = true;
+			  }
+			else
+			  {
+			    if (pointer_based)
+			      error_at (OMP_CLAUSE_LOCATION (c),
+					"too many array section specifiers "
+					"for pointer-based array");
+			    else
+			      error_at (OMP_CLAUSE_LOCATION (c),
+					"too many array section specifiers "
+					"for array");
+			    dim = index = len = stride = error_mark_node;
+			  }
+			tdim--;
+
+			c = nc;
+		      }
+		    else
+		      {
+			/* We have more array dimensions than array section
+			   specifiers.  Copy the whole span.  */
+			tree dtype = TYPE_DOMAIN (tdims[tdim]);
+			tree minval = TYPE_MIN_VALUE (dtype);
+			tree maxval = TYPE_MAX_VALUE (dtype);
+			minval = fold_convert (sizetype, minval);
+			maxval = fold_convert (sizetype, maxval);
+			dim = size_binop (MINUS_EXPR, maxval, minval);
+			dim = size_binop (PLUS_EXPR, dim, size_one_node);
+			len = dim;
+			index = size_zero_node;
+		      }
+
+		    if (TREE_CODE (dim) != INTEGER_CST)
+		      TREE_STATIC (dim_tmp) = 0;
+
+		    if (TREE_CODE (index) != INTEGER_CST)
+		      TREE_STATIC (index_tmp) = 0;
+
+		    if (TREE_CODE (len) != INTEGER_CST)
+		      TREE_STATIC (len_tmp) = 0;
+
+		    if (TREE_CODE (stride) != INTEGER_CST)
+		      TREE_STATIC (stride_tmp) = 0;
+
+		    tree cidx = size_int (i);
+		    CONSTRUCTOR_APPEND_ELT (vdim, cidx, dim);
+		    CONSTRUCTOR_APPEND_ELT (vindex, cidx, index);
+		    CONSTRUCTOR_APPEND_ELT (vlen, cidx, len);
+		    CONSTRUCTOR_APPEND_ELT (vstride, cidx, stride);
+		  }
+
+		/* The size of the whole array -- to make sure we find any
+		   part of the array via splay-tree lookup that might be
+		   mapped on the target at runtime.  */
+		OMP_CLAUSE_SIZE (oc) = arrsize;
+
+		tree cdim = build_constructor (size_arr_type, vdim);
+		tree cindex = build_constructor (size_arr_type, vindex);
+		tree clen = build_constructor (size_arr_type, vlen);
+		tree cstride = build_constructor (size_arr_type, vstride);
+
+		if (TREE_STATIC (dim_tmp))
+		  DECL_INITIAL (dim_tmp) = cdim;
+		else
+		  gimplify_assign (dim_tmp, cdim, &ilist);
+
+		if (TREE_STATIC (index_tmp))
+		  DECL_INITIAL (index_tmp) = cindex;
+		else
+		  gimplify_assign (index_tmp, cindex, &ilist);
+
+		if (TREE_STATIC (len_tmp))
+		  DECL_INITIAL (len_tmp) = clen;
+		else
+		  gimplify_assign (len_tmp, clen, &ilist);
+
+		if (TREE_STATIC (stride_tmp))
+		  DECL_INITIAL (stride_tmp) = cstride;
+		else
+		  gimplify_assign (stride_tmp, cstride, &ilist);
+
+		tree desc_type = TREE_TYPE (desc);
+
+		tree ndims_field = TYPE_FIELDS (desc_type);
+		tree elemsize_field = DECL_CHAIN (ndims_field);
+		tree dim_field = DECL_CHAIN (elemsize_field);
+		tree index_field = DECL_CHAIN (dim_field);
+		tree len_field = DECL_CHAIN (index_field);
+		tree stride_field = DECL_CHAIN (len_field);
+
+		vec<constructor_elt, va_gc> *v;
+		vec_alloc (v, 6);
+
+		bool all_static = (TREE_STATIC (dim_tmp)
+				   && TREE_STATIC (index_tmp)
+				   && TREE_STATIC (len_tmp)
+				   && TREE_STATIC (stride_tmp));
+
+		dim_tmp = build4 (ARRAY_REF, sizetype, dim_tmp, size_zero_node,
+				  NULL_TREE, NULL_TREE);
+		dim_tmp = build_fold_addr_expr (dim_tmp);
+
+		/* TODO: we could skip all-zeros index.  */
+		index_tmp = build4 (ARRAY_REF, sizetype, index_tmp,
+				    size_zero_node, NULL_TREE, NULL_TREE);
+		index_tmp = build_fold_addr_expr (index_tmp);
+
+		len_tmp = build4 (ARRAY_REF, sizetype, len_tmp, size_zero_node,
+				  NULL_TREE, NULL_TREE);
+		len_tmp = build_fold_addr_expr (len_tmp);
+
+		/* TODO: we could skip all-ones stride.  */
+		stride_tmp = build4 (ARRAY_REF, sizetype, stride_tmp,
+				     size_zero_node, NULL_TREE, NULL_TREE);
+		stride_tmp = build_fold_addr_expr (stride_tmp);
+
+		elsize = fold_convert (sizetype, elsize);
+		tree ndims = size_int (dims);
+
+		CONSTRUCTOR_APPEND_ELT (v, ndims_field, ndims);
+		CONSTRUCTOR_APPEND_ELT (v, elemsize_field, elsize);
+		CONSTRUCTOR_APPEND_ELT (v, dim_field, dim_tmp);
+		CONSTRUCTOR_APPEND_ELT (v, index_field, index_tmp);
+		CONSTRUCTOR_APPEND_ELT (v, len_field, len_tmp);
+		CONSTRUCTOR_APPEND_ELT (v, stride_field, stride_tmp);
+
+		tree desc_ctor = build_constructor (desc_type, v);
+
+		if (all_static)
+		  {
+		    TREE_STATIC (desc) = 1;
+		    DECL_INITIAL (desc) = desc_ctor;
+		  }
+		else
+		  gimplify_assign (desc, desc_ctor, &ilist);
+
+		OMP_CLAUSE_CHAIN (dn) = OMP_CLAUSE_CHAIN (nc);
+		c = oc;
+		nc = c;
+	      }
+	    else if (!DECL_P (ovar))
 	      {
 		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		    && OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c))

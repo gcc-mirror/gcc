@@ -5180,9 +5180,10 @@ public:
 static tree
 handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 			     bool &maybe_zero_len, unsigned int &first_non_one,
-			     bool &non_contiguous, enum c_omp_region_type ort)
+			     bool &non_contiguous, enum c_omp_region_type ort,
+			     int *discontiguous)
 {
-  tree ret, low_bound, length, type;
+  tree ret, low_bound, length, stride, type;
   bool openacc = (ort & C_ORT_ACC) != 0;
   if (TREE_CODE (t) != OMP_ARRAY_SECTION)
     {
@@ -5245,18 +5246,25 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     TREE_OPERAND (t, 0) = omp_privatize_field (TREE_OPERAND (t, 0), false);
   ret = handle_omp_array_sections_1 (c, TREE_OPERAND (t, 0), types,
 				     maybe_zero_len, first_non_one,
-				     non_contiguous, ort);
+				     non_contiguous, ort, discontiguous);
   if (ret == error_mark_node || ret == NULL_TREE)
     return ret;
 
-  type = TREE_TYPE (ret);
+  if (TREE_CODE (ret) == OMP_ARRAY_SECTION)
+    type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (ret, 0)));
+  else
+    type = TREE_TYPE (ret);
   low_bound = TREE_OPERAND (t, 1);
   length = TREE_OPERAND (t, 2);
+  stride = TREE_OPERAND (t, 3);
   if ((low_bound && type_dependent_expression_p (low_bound))
-      || (length && type_dependent_expression_p (length)))
+      || (length && type_dependent_expression_p (length))
+      || (stride && type_dependent_expression_p (stride)))
     return NULL_TREE;
 
-  if (low_bound == error_mark_node || length == error_mark_node)
+  if (low_bound == error_mark_node
+      || length == error_mark_node
+      || stride == error_mark_node)
     return error_mark_node;
 
   if (low_bound && !INTEGRAL_TYPE_P (TREE_TYPE (low_bound)))
@@ -5273,10 +5281,19 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		length);
       return error_mark_node;
     }
+  if (stride && !INTEGRAL_TYPE_P (TREE_TYPE (stride)))
+    {
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"stride %qE of array section does not have integral type",
+		stride);
+      return error_mark_node;
+    }
   if (low_bound)
     low_bound = mark_rvalue_use (low_bound);
   if (length)
     length = mark_rvalue_use (length);
+  if (stride)
+    stride = mark_rvalue_use (stride);
   /* We need to reduce to real constant-values for checks below.  */
   if (length)
     STRIP_NOPS (length);
@@ -5286,6 +5303,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     length = fold_simple (length);
   if (low_bound)
     low_bound = fold_simple (low_bound);
+  if (stride)
+    stride = fold_simple (stride);
   if (low_bound
       && TREE_CODE (low_bound) == INTEGER_CST
       && TYPE_PRECISION (TREE_TYPE (low_bound))
@@ -5296,9 +5315,15 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       && TYPE_PRECISION (TREE_TYPE (length))
 	 > TYPE_PRECISION (sizetype))
     length = fold_convert (sizetype, length);
+  if (stride
+      && TREE_CODE (stride) == INTEGER_CST
+      && TYPE_PRECISION (TREE_TYPE (stride))
+	 > TYPE_PRECISION (sizetype))
+    stride = fold_convert (sizetype, stride);
   if (low_bound == NULL_TREE)
     low_bound = integer_zero_node;
-
+  if (stride == NULL_TREE)
+    stride = size_one_node;
   if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
       && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
 	  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH))
@@ -5417,12 +5442,29 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	    }
 	  if (length && TREE_CODE (length) == INTEGER_CST)
 	    {
-	      if (tree_int_cst_lt (size, length))
+	      tree slength = length;
+	      if (stride && TREE_CODE (stride) == INTEGER_CST)
 		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "length %qE above array section size "
-			    "in %qs clause", length,
-			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  slength = size_binop (MULT_EXPR,
+					fold_convert (sizetype, length),
+					fold_convert (sizetype, stride));
+		  slength = size_binop (MINUS_EXPR,
+					  slength,
+					  fold_convert (sizetype, stride));
+		  slength = size_binop (PLUS_EXPR, slength, size_one_node);
+		}
+	      if (tree_int_cst_lt (size, slength))
+		{
+		  if (stride)
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "length %qE with stride %qE above array "
+			      "section size in %qs clause", length, stride,
+			      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  else
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "length %qE above array section size "
+			      "in %qs clause", length,
+			      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		  return error_mark_node;
 		}
 	      if (TREE_CODE (low_bound) == INTEGER_CST)
@@ -5430,7 +5472,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		  tree lbpluslen
 		    = size_binop (PLUS_EXPR,
 				  fold_convert (sizetype, low_bound),
-				  fold_convert (sizetype, length));
+				  fold_convert (sizetype, slength));
 		  if (TREE_CODE (lbpluslen) == INTEGER_CST
 		      && tree_int_cst_lt (size, lbpluslen))
 		    {
@@ -5500,7 +5542,10 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	       d = TREE_OPERAND (d, 0))
 	    {
 	      tree d_length = TREE_OPERAND (d, 2);
-	      if (d_length == NULL_TREE || !integer_onep (d_length))
+	      tree d_stride = TREE_OPERAND (d, 3);
+	      if (d_length == NULL_TREE
+		  || !integer_onep (d_length)
+		  || (d_stride && !integer_onep (d_stride)))
 		{
 		  if (openacc && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
 		    {
@@ -5520,10 +5565,15 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		      return error_mark_node;
 		    }
 
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "array section is not contiguous in %qs clause",
-			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		  return error_mark_node;
+		  if (discontiguous && *discontiguous)
+		    *discontiguous = 2;
+		  else
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"array section is not contiguous in %qs clause",
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      return error_mark_node;
+		    }
 		}
 	    }
 	}
@@ -5535,7 +5585,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       return error_mark_node;
     }
   if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
-    types.safe_push (TREE_TYPE (ret));
+    types.safe_push (type);
   /* We will need to evaluate lb more than once.  */
   tree lb = cp_save_expr (low_bound);
   if (lb != low_bound)
@@ -5554,15 +5604,45 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		      OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION);
-  ret = grok_array_decl (OMP_CLAUSE_LOCATION (c), ret, low_bound, NULL,
-			 tf_warning_or_error);
+  /* NOTE: Stride/length are discarded for affinity/depend here.  */
+  if (discontiguous
+      && *discontiguous
+      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
+    ret = grok_omp_array_section (OMP_CLAUSE_LOCATION (c), ret, low_bound,
+				  length, stride);
+  else
+    ret = grok_array_decl (OMP_CLAUSE_LOCATION (c), ret, low_bound, NULL,
+			   tf_warning_or_error);
   return ret;
 }
 
-/* Handle array sections for clause C.  */
+/* We built a reference to an array section, but it turns out we only need a
+   set of ARRAY_REFs to the lower bound.  Rewrite the node.  */
+
+static tree
+omp_array_section_low_bound (location_t loc, tree node)
+{
+  if (TREE_CODE (node) == OMP_ARRAY_SECTION)
+    {
+      tree low_bound = TREE_OPERAND (node, 1);
+      tree ret
+	= omp_array_section_low_bound (loc, TREE_OPERAND (node, 0));
+      return grok_array_decl (loc, ret, low_bound, NULL, tf_warning_or_error);
+    }
+
+  return node;
+}
+
+/* Handle array sections for clause C.  On entry *DISCONTIGUOUS is 0 if array
+   section must be contiguous, 1 if it can be discontiguous, and in the latter
+   case it is set to 2 on exit if it is determined to be discontiguous during
+   the function's execution.  PC points to the clause to be processed, and
+   *PNEXT to the last mapping node created, if passed as non-NULL.  */
 
 static bool
-handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
+handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort,
+			   int *discontiguous)
 {
   tree c = *pc;
   bool maybe_zero_len = false;
@@ -5578,7 +5658,7 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
     tp = &TREE_VALUE (*tp);
   tree first = handle_omp_array_sections_1 (c, *tp, types,
 					    maybe_zero_len, first_non_one,
-					    non_contiguous, ort);
+					    non_contiguous, ort, discontiguous);
   if (first == error_mark_node)
     return true;
   if (first == NULL_TREE)
@@ -5620,6 +5700,8 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
       if (processing_template_decl && maybe_zero_len)
 	return false;
 
+      bool higher_discontiguous = false;
+
       for (i = num, t = OMP_CLAUSE_DECL (c); i > 0;
 	   t = TREE_OPERAND (t, 0))
 	{
@@ -5627,6 +5709,7 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
 
 	  tree low_bound = TREE_OPERAND (t, 1);
 	  tree length = TREE_OPERAND (t, 2);
+	  tree stride = TREE_OPERAND (t, 3);
 
 	  if (length)
 	    STRIP_NOPS (length);
@@ -5644,6 +5727,11 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
 	      && TYPE_PRECISION (TREE_TYPE (length))
 		 > TYPE_PRECISION (sizetype))
 	    length = fold_convert (sizetype, length);
+	  if (stride
+	      && TREE_CODE (stride) == INTEGER_CST
+	      && TYPE_PRECISION (TREE_TYPE (stride))
+		 > TYPE_PRECISION (sizetype))
+	    stride = fold_convert (sizetype, stride);
 	  if (low_bound == NULL_TREE)
 	    low_bound = integer_zero_node;
 
@@ -5653,10 +5741,50 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
 	      continue;
 	    }
 
+	  if (stride == NULL_TREE)
+	    stride = size_one_node;
+	  if (discontiguous && *discontiguous)
+	    {
+	      /* This condition is similar to the error check below, but
+		 whereas that checks for a definitely-discontiguous array
+		 section in order to report an error (where such a section is
+		 illegal), here we instead need to know if the array section
+		 *may be* discontiguous so we can handle that case
+		 appropriately (i.e. for rectangular "target update"
+		 operations).  */
+	      bool full_span = false;
+	      if (length != NULL_TREE
+		  && TREE_CODE (length) == INTEGER_CST
+		  && TREE_CODE (types[i]) == ARRAY_TYPE
+		  && TYPE_DOMAIN (types[i])
+		  && TYPE_MAX_VALUE (TYPE_DOMAIN (types[i]))
+		  && TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (types[i])))
+		     == INTEGER_CST)
+		{
+		  tree size;
+		  size = size_binop (PLUS_EXPR,
+				     TYPE_MAX_VALUE (TYPE_DOMAIN (types[i])),
+				     size_one_node);
+		  if (tree_int_cst_equal (length, size))
+		    full_span = true;
+		}
+
+	      if (!integer_onep (stride)
+		  || (higher_discontiguous
+		      && (!integer_zerop (low_bound)
+			  || !full_span)))
+		*discontiguous = 2;
+
+	      if (!integer_onep (stride)
+		  || !integer_zerop (low_bound)
+		  || !full_span)
+		higher_discontiguous = true;
+	    }
+
 	  if (!maybe_zero_len && i > first_non_one)
 	    {
 	      if (integer_nonzerop (low_bound))
-		goto do_warn_noncontiguous;
+		goto is_noncontiguous;
 	      if (length != NULL_TREE
 		  && TREE_CODE (length) == INTEGER_CST
 		  && TYPE_DOMAIN (types[i])
@@ -5670,12 +5798,17 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
 				     size_one_node);
 		  if (!tree_int_cst_equal (length, size))
 		    {
-		     do_warn_noncontiguous:
-		      error_at (OMP_CLAUSE_LOCATION (c),
-				"array section is not contiguous in %qs "
-				"clause",
-				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		      return true;
+		     is_noncontiguous:
+		      if (discontiguous && *discontiguous)
+			*discontiguous = 2;
+		      else
+			{
+			  error_at (OMP_CLAUSE_LOCATION (c),
+				    "array section is not contiguous in %qs "
+				    "clause",
+				    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+			  return true;
+			}
 		    }
 		}
 	      if (!processing_template_decl
@@ -5792,15 +5925,15 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
 	      OMP_CLAUSE_DECL (c) = t;
 	      return false;
 	    }
+	  if (discontiguous && *discontiguous != 2)
+	    first = omp_array_section_low_bound (OMP_CLAUSE_LOCATION (c),
+						 first);
 	  OMP_CLAUSE_DECL (c) = first;
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
 	    return false;
 	  OMP_CLAUSE_SIZE (c) = size;
 	  if (TREE_CODE (t) == FIELD_DECL)
 	    t = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
-
-	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
-	    return false;
 
 	  if (TREE_CODE (first) == INDIRECT_REF)
 	    {
@@ -5828,6 +5961,10 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
 		}
 	    }
 
+	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
+	      && !(discontiguous && *discontiguous == 2))
+	    return false;
+
 	  /* FIRST represents the first item of data that we are mapping.
 	     E.g. if we're mapping an array, FIRST might resemble
 	     "foo.bar.myarray[0]".  */
@@ -5846,7 +5983,8 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort)
 
 	      c = *pc;
 
-	      if (ai.maybe_zero_length_array_section (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		  && ai.maybe_zero_length_array_section (c))
 		OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
 
 	      /* !!! If we're accessing a base decl via chained access
@@ -6988,7 +7126,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
-	      if (handle_omp_array_sections (pc, NULL, ort))
+	      if (handle_omp_array_sections (pc, NULL, ort, NULL))
 		{
 		  remove = true;
 		  break;
@@ -8136,7 +8274,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
-	      if (handle_omp_array_sections (pc, NULL, ort))
+	      int discontiguous = 1;
+	      if (handle_omp_array_sections (pc, NULL, ort, &discontiguous))
 		remove = true;
 	      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
 		       && (OMP_CLAUSE_DEPEND_KIND (c)
@@ -8291,6 +8430,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      remove = true;
 	      break;
 	    }
+	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_GRID_DIM
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_GRID_STRIDE)
+	    break;
 	  /* FALLTHRU */
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
@@ -8305,8 +8447,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		grp_start_p = pc;
 		grp_sentinel = OMP_CLAUSE_CHAIN (c);
 
+		int discontiguous
+		  = (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
+		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM);
 		tree *pnext = NULL;
-		if (handle_omp_array_sections (pc, &pnext, ort))
+		if (handle_omp_array_sections (pc, &pnext, ort, &discontiguous))
 		  remove = true;
 		else
 		  {
@@ -8897,7 +9042,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == OMP_ARRAY_SECTION)
 	    {
-	      if (handle_omp_array_sections (pc, NULL, ort))
+	      if (handle_omp_array_sections (pc, NULL, ort, NULL))
 		remove = true;
 	      else
 		{
@@ -13033,6 +13178,45 @@ cp_build_bit_cast (location_t loc, tree type, tree arg,
 
   if (!processing_template_decl && CLASS_TYPE_P (type))
     ret = get_target_expr (ret, complain);
+
+  return ret;
+}
+
+/* Build an OpenMP array-shape cast of ARG to TYPE.  */
+
+tree
+cp_build_omp_arrayshape_cast (location_t loc, tree type, tree arg,
+			      tsubst_flags_t complain)
+{
+  if (error_operand_p (type))
+    return error_mark_node;
+
+  if (!dependent_type_p (type)
+      && !complete_type_or_maybe_complain (type, NULL_TREE, complain))
+    return error_mark_node;
+
+  if (error_operand_p (arg))
+    return error_mark_node;
+
+  if (!type_dependent_expression_p (arg) && !dependent_type_p (type))
+    {
+      if (!trivially_copyable_p (TREE_TYPE (arg)))
+	{
+	  error_at (cp_expr_loc_or_loc (arg, loc),
+		    "OpenMP array shape source type %qT "
+		    "is not trivially copyable", TREE_TYPE (arg));
+	  return error_mark_node;
+	}
+
+      /* A pointer to multi-dimensional array conversion isn't normally
+	 allowed, but we force it here for array shape operators by creating
+	 the node directly.  We also want to avoid any overloaded conversions
+	 the user might have defined, not that there are likely to be any.  */
+      return build1_loc (loc, VIEW_CONVERT_EXPR, type, arg);
+    }
+
+  tree ret = build_min (OMP_ARRAYSHAPE_CAST_EXPR, type, arg);
+  SET_EXPR_LOCATION (ret, loc);
 
   return ret;
 }

@@ -504,6 +504,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
       FNDECL_MANIFESTLY_CONST_EVALUATED (in FUNCTION_DECL)
+      DECLTYPE_FOR_OMP_ARRAYSHAPE_CAST (in DECLTYPE_TYPE)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
@@ -4852,6 +4853,8 @@ get_vec_init_expr (tree t)
   TREE_LANG_FLAG_2 (DECLTYPE_TYPE_CHECK (NODE))
 #define DECLTYPE_FOR_REF_CAPTURE(NODE) \
   TREE_LANG_FLAG_3 (DECLTYPE_TYPE_CHECK (NODE))
+#define DECLTYPE_FOR_OMP_ARRAYSHAPE_CAST(NODE) \
+  TREE_LANG_FLAG_4 (DECLTYPE_TYPE_CHECK (NODE))
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
    specified in its declaration.  This can also be set for an
@@ -6924,6 +6927,8 @@ extern tree cxx_comdat_group			(tree);
 extern bool cp_missing_noreturn_ok_p		(tree);
 extern bool is_direct_enum_init			(tree, tree);
 extern void initialize_artificial_var		(tree, vec<constructor_elt, va_gc> *);
+extern tree cp_omp_create_arrayshape_type	(location_t, tree,
+						 vec<cp_expr> *);
 extern tree check_var_type			(tree, tree, location_t);
 extern tree reshape_init                        (tree, tree, tsubst_flags_t);
 extern tree next_aggregate_field		(tree);
@@ -6957,7 +6962,8 @@ extern void grokclassfn				(tree, tree,
 						 enum overload_flags);
 extern tree grok_array_decl			(location_t, tree, tree,
 						 vec<tree, va_gc> **, tsubst_flags_t);
-extern tree grok_omp_array_section		(location_t, tree, tree, tree);
+extern tree grok_omp_array_section		(location_t, tree, tree, tree,
+						 tree);
 extern tree delete_sanity			(location_t, tree, tree, bool,
 						 int, tsubst_flags_t);
 extern tree check_classfn			(tree, tree, tree);
@@ -7809,6 +7815,8 @@ extern tree cp_build_vec_convert		(tree, location_t, tree,
 						 tsubst_flags_t);
 extern tree cp_build_bit_cast			(location_t, tree, tree,
 						 tsubst_flags_t);
+extern tree cp_build_omp_arrayshape_cast	(location_t, tree, tree,
+						 tsubst_flags_t);
 extern void start_lambda_scope			(tree decl);
 extern void finish_lambda_scope			(void);
 extern void record_lambda_scope			(tree lambda);
@@ -8061,7 +8069,8 @@ inline tree build_x_binary_op (const op_location_t &loc,
 }
 extern tree build_x_array_ref			(location_t, tree, tree,
 						 tsubst_flags_t);
-extern tree build_omp_array_section		(location_t, tree, tree, tree);
+extern tree build_omp_array_section		(location_t, tree, tree, tree,
+						 tree);
 extern tree build_x_unary_op			(location_t,
 						 enum tree_code, cp_expr,
 						 tree, tsubst_flags_t);

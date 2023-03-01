@@ -1376,7 +1376,7 @@ public:
   bool maybe_zero_length_array_section (tree);
 
   tree * expand_array_base (tree *, vec<omp_addr_token *> &, tree, unsigned *,
-			    c_omp_region_type, bool);
+			    c_omp_region_type);
   tree * expand_component_selector (tree *, vec<omp_addr_token *> &, tree,
 				    unsigned *);
   tree * expand_map_clause (tree *, tree, vec<omp_addr_token *> &,

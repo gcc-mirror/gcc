@@ -4042,7 +4042,9 @@ c_omp_address_inspector::map_supported_p ()
 	 || TREE_CODE (t) == POINTER_PLUS_EXPR
 	 || TREE_CODE (t) == NON_LVALUE_EXPR
 	 || TREE_CODE (t) == OMP_ARRAY_SECTION
-	 || TREE_CODE (t) == NOP_EXPR)
+	 || TREE_CODE (t) == NOP_EXPR
+	 || TREE_CODE (t) == VIEW_CONVERT_EXPR
+	 || TREE_CODE (t) == ADDR_EXPR)
     if (TREE_CODE (t) == COMPOUND_EXPR)
       t = TREE_OPERAND (t, 1);
     else
@@ -4192,21 +4194,95 @@ omp_expand_access_chain (tree *pc, tree expr,
   return pc;
 }
 
+static tree *
+omp_expand_grid_dim (location_t loc, tree *pc, tree decl)
+{
+  if (TREE_CODE (decl) == OMP_ARRAY_SECTION)
+    pc = omp_expand_grid_dim (loc, pc, TREE_OPERAND (decl, 0));
+  else
+    return pc;
+
+  tree c = *pc;
+  tree low_bound = TREE_OPERAND (decl, 1);
+  tree length = TREE_OPERAND (decl, 2);
+  tree stride = TREE_OPERAND (decl, 3);
+
+  tree cd = build_omp_clause (loc, OMP_CLAUSE_MAP);
+  OMP_CLAUSE_SET_MAP_KIND (cd, GOMP_MAP_GRID_DIM);
+  OMP_CLAUSE_DECL (cd) = unshare_expr (low_bound);
+  OMP_CLAUSE_SIZE (cd) = unshare_expr (length);
+
+  if (stride && !integer_onep (stride))
+    {
+      tree cs = build_omp_clause (loc, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (cs, GOMP_MAP_GRID_STRIDE);
+      OMP_CLAUSE_DECL (cs) = unshare_expr (stride);
+
+      OMP_CLAUSE_CHAIN (cs) = OMP_CLAUSE_CHAIN (c);
+      OMP_CLAUSE_CHAIN (cd) = cs;
+      OMP_CLAUSE_CHAIN (c) = cd;
+      pc = &OMP_CLAUSE_CHAIN (cd);
+    }
+  else
+    {
+      OMP_CLAUSE_CHAIN (cd) = OMP_CLAUSE_CHAIN (c);
+      OMP_CLAUSE_CHAIN (c) = cd;
+      pc = &OMP_CLAUSE_CHAIN (c);
+    }
+
+  return pc;
+}
+
+tree *
+omp_handle_noncontig_array (location_t loc, tree *pc, tree c, tree base)
+{
+  tree type;
+
+  if (POINTER_TYPE_P (TREE_TYPE (base)))
+    type = TREE_TYPE (TREE_TYPE (base));
+  else
+    type = strip_array_types (TREE_TYPE (base));
+
+  tree c_map = build_omp_clause (loc, OMP_CLAUSE_MAP);
+
+  OMP_CLAUSE_DECL (c_map) = unshare_expr (base);
+  /* Use the element size (or pointed-to type size) here.  */
+  OMP_CLAUSE_SIZE (c_map) = TYPE_SIZE_UNIT (type);
+
+  switch (OMP_CLAUSE_CODE (c))
+    {
+    case OMP_CLAUSE_TO:
+      OMP_CLAUSE_SET_MAP_KIND (c_map, GOMP_MAP_TO_GRID);
+      break;
+    case OMP_CLAUSE_FROM:
+      OMP_CLAUSE_SET_MAP_KIND (c_map, GOMP_MAP_FROM_GRID);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  OMP_CLAUSE_CHAIN (c_map) = OMP_CLAUSE_CHAIN (c);
+
+  *pc = c_map;
+
+  return omp_expand_grid_dim (loc, pc, OMP_CLAUSE_DECL (c));
+}
+
 /* Translate "array_base_decl access_method" to OMP mapping clauses.  */
 
 tree *
 c_omp_address_inspector::expand_array_base (tree *pc,
 					    vec<omp_addr_token *> &addr_tokens,
 					    tree expr, unsigned *idx,
-					    c_omp_region_type ort,
-					    bool decl_p)
+					    c_omp_region_type ort)
 {
   using namespace omp_addr_tokenizer;
   tree c = *pc;
   location_t loc = OMP_CLAUSE_LOCATION (c);
   int i = *idx;
   tree decl = addr_tokens[i + 1]->expr;
-  bool declare_target_p = (decl_p
+  bool decl_p = DECL_P (decl);
+  bool declare_target_p = (DECL_P (decl)
 			   && is_global_var (decl)
 			   && lookup_attribute ("omp declare target",
 						DECL_ATTRIBUTES (decl)));
@@ -4218,6 +4294,7 @@ c_omp_address_inspector::expand_array_base (tree *pc,
   unsigned consume_tokens = 2;
   bool target = (ort & C_ORT_TARGET) != 0;
   bool openmp = (ort & C_ORT_OMP) != 0;
+  unsigned acc = i + 1;
 
   gcc_assert (i == 0);
 
@@ -4230,7 +4307,15 @@ c_omp_address_inspector::expand_array_base (tree *pc,
       return pc;
     }
 
-  switch (addr_tokens[i + 1]->u.access_kind)
+  if (!map_p && chain_p)
+    {
+      /* See comment in c_omp_address_inspector::expand_component_selector.  */
+      while (acc + 1 < addr_tokens.length ()
+	     && addr_tokens[acc + 1]->type == ACCESS_METHOD)
+	acc++;
+    }
+
+  switch (addr_tokens[acc]->u.access_kind)
     {
     case ACCESS_DIRECT:
       if (decl_p && !target)
@@ -4474,6 +4559,40 @@ c_omp_address_inspector::expand_array_base (tree *pc,
       }
       break;
 
+    case ACCESS_NONCONTIG_ARRAY:
+      {
+	gcc_assert (!map_p);
+
+	tree base = addr_tokens[acc]->expr;
+
+	if (decl_p)
+	  c_common_mark_addressable_vec (base);
+
+	pc = omp_handle_noncontig_array (loc, pc, c, base);
+	consume_tokens = (acc + 1) - i;
+	chain_p = false;
+      }
+      break;
+
+    case ACCESS_NONCONTIG_REF_TO_ARRAY:
+      {
+	gcc_assert (!map_p);
+
+	if (decl_p)
+	  c_common_mark_addressable_vec (addr_tokens[acc]->expr);
+
+	/* Or here.  */
+	gcc_assert (!chain_p);
+
+	tree base = addr_tokens[i + 1]->expr;
+	base = convert_from_reference (base);
+
+	pc = omp_handle_noncontig_array (loc, pc, c, base);
+	consume_tokens = (acc + 1) - i;
+	chain_p = false;
+      }
+      break;
+
     default:
       *idx = i + consume_tokens;
       return NULL;
@@ -4524,8 +4643,27 @@ c_omp_address_inspector::expand_component_selector (tree *pc,
   tree c2 = NULL_TREE, c3 = NULL_TREE;
   bool chain_p = omp_access_chain_p (addr_tokens, i + 1);
   bool map_p = OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP;
+  unsigned acc = i + 1;
 
-  switch (addr_tokens[i + 1]->u.access_kind)
+  if (!map_p && chain_p)
+    {
+      /* We have a non-map clause (i.e. to/from for an "update" directive),
+	 and we might have a noncontiguous array section at the end of a
+	 chain of other accesses, e.g. pointer indirections like this:
+
+	   struct_base_decl access_pointer access_pointer component_selector
+	     access_pointer access_pointer access_noncontig_array
+
+	 We only need to process the last access in this case, so skip
+	 over previous accesses.  */
+
+      while (acc + 1 < addr_tokens.length ()
+	     && addr_tokens[acc + 1]->type == ACCESS_METHOD)
+	acc++;
+      chain_p = false;
+    }
+
+  switch (addr_tokens[acc]->u.access_kind)
     {
     case ACCESS_DIRECT:
     case ACCESS_INDEXED_ARRAY:
@@ -4535,7 +4673,7 @@ c_omp_address_inspector::expand_component_selector (tree *pc,
       {
 	/* Copy the referenced object.  Note that we also do this for !MAP_P
 	   clauses.  */
-	tree obj = convert_from_reference (addr_tokens[i + 1]->expr);
+	tree obj = convert_from_reference (addr_tokens[acc]->expr);
 	OMP_CLAUSE_DECL (c) = obj;
 	OMP_CLAUSE_SIZE (c) = TYPE_SIZE_UNIT (TREE_TYPE (obj));
 
@@ -4544,7 +4682,7 @@ c_omp_address_inspector::expand_component_selector (tree *pc,
 
 	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
-	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_DECL (c2) = addr_tokens[acc]->expr;
 	OMP_CLAUSE_SIZE (c2) = size_zero_node;
       }
       break;
@@ -4555,15 +4693,15 @@ c_omp_address_inspector::expand_component_selector (tree *pc,
 	  break;
 
 	tree virtual_origin
-	  = convert_from_reference (addr_tokens[i + 1]->expr);
+	  = convert_from_reference (addr_tokens[acc]->expr);
 	virtual_origin = build_fold_addr_expr (virtual_origin);
 	virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
 					   virtual_origin);
-	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
+	tree data_addr = omp_accessed_addr (addr_tokens, acc, expr);
 
 	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
-	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_DECL (c2) = addr_tokens[acc]->expr;
 	OMP_CLAUSE_SIZE (c2)
 	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
 			     fold_convert_loc (loc, ptrdiff_type_node,
@@ -4580,12 +4718,12 @@ c_omp_address_inspector::expand_component_selector (tree *pc,
 
 	tree virtual_origin
 	  = fold_convert_loc (loc, ptrdiff_type_node,
-			      addr_tokens[i + 1]->expr);
-	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
+			      addr_tokens[acc]->expr);
+	tree data_addr = omp_accessed_addr (addr_tokens, acc, expr);
 
 	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
-	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_DECL (c2) = addr_tokens[acc]->expr;
 	OMP_CLAUSE_SIZE (c2)
 	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
 			     fold_convert_loc (loc, ptrdiff_type_node,
@@ -4600,10 +4738,10 @@ c_omp_address_inspector::expand_component_selector (tree *pc,
 	if (!map_p)
 	  break;
 
-	tree ptr = convert_from_reference (addr_tokens[i + 1]->expr);
+	tree ptr = convert_from_reference (addr_tokens[acc]->expr);
 	tree virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
 						ptr);
-	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
+	tree data_addr = omp_accessed_addr (addr_tokens, acc, expr);
 
 	/* Attach the pointer...  */
 	c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
@@ -4618,13 +4756,38 @@ c_omp_address_inspector::expand_component_selector (tree *pc,
 	/* ...and also the reference.  */
 	c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
 	OMP_CLAUSE_SET_MAP_KIND (c3, GOMP_MAP_ATTACH_DETACH);
-	OMP_CLAUSE_DECL (c3) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_DECL (c3) = addr_tokens[acc]->expr;
 	OMP_CLAUSE_SIZE (c3) = size_zero_node;
       }
       break;
 
+    case ACCESS_NONCONTIG_ARRAY:
+      {
+	gcc_assert (!map_p);
+
+	/* We don't expect to see further accesses here.  */
+	gcc_assert (!chain_p);
+
+	pc = omp_handle_noncontig_array (loc, pc, c, addr_tokens[acc]->expr);
+      }
+      break;
+
+    case ACCESS_NONCONTIG_REF_TO_ARRAY:
+      {
+	gcc_assert (!map_p);
+
+	/* Or here.  */
+	gcc_assert (!chain_p);
+
+	tree base = addr_tokens[acc]->expr;
+	base = convert_from_reference (base);
+
+	pc = omp_handle_noncontig_array (loc, pc, c, base);
+      }
+      break;
+
     default:
-      *idx = i + 2;
+      *idx = acc + 1;
       return NULL;
     }
 
@@ -4642,8 +4805,7 @@ c_omp_address_inspector::expand_component_selector (tree *pc,
       pc = &OMP_CLAUSE_CHAIN (c);
     }
 
-  i += 2;
-  *idx = i;
+  *idx = acc + 1;
 
   if (chain_p && map_p)
     return omp_expand_access_chain (pc, expr, addr_tokens, idx);
@@ -4671,7 +4833,7 @@ c_omp_address_inspector::expand_map_clause (tree *pc, tree expr,
 	  && addr_tokens[i]->u.structure_base_kind == BASE_DECL
 	  && addr_tokens[i + 1]->type == ACCESS_METHOD)
 	{
-	  pc = expand_array_base (pc, addr_tokens, expr, &i, ort, true);
+	  pc = expand_array_base (pc, addr_tokens, expr, &i, ort);
 	  if (pc == NULL)
 	    return NULL;
 	}
@@ -4680,7 +4842,7 @@ c_omp_address_inspector::expand_map_clause (tree *pc, tree expr,
 	       && addr_tokens[i]->u.structure_base_kind == BASE_ARBITRARY_EXPR
 	       && addr_tokens[i + 1]->type == ACCESS_METHOD)
 	{
-	  pc = expand_array_base (pc, addr_tokens, expr, &i, ort, false);
+	  pc = expand_array_base (pc, addr_tokens, expr, &i, ort);
 	  if (pc == NULL)
 	    return NULL;
 	}

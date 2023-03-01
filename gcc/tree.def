@@ -1372,7 +1372,7 @@ DEFTREECODE (OMP_ALLOCATE, "omp allocate", tcc_statement, 1)
 DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
 
 /* An OpenMP array section.  */
-DEFTREECODE (OMP_ARRAY_SECTION, "omp_array_section", tcc_expression, 3)
+DEFTREECODE (OMP_ARRAY_SECTION, "omp_array_section", tcc_expression, 4)
 
 /* TRANSACTION_EXPR tree code.
    Operand 0: BODY: contains body of the transaction.  */

@@ -1,5 +1,57 @@
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
+	* cp-objcp-common.cc (cp_common_init_ts): Add array-shape cast
+	support.
+	* cp-tree.def (OMP_ARRAYSHAPE_CAST_EXPR): Add tree code.
+	* cp-tree.h (DECLTYPE_FOR_OMP_ARRAYSHAPE_CAST): Add flag.
+	(cp_omp_create_arrayshape_type, cp_build_omp_arrayshape_cast): Add
+	prototypes.
+	(grok_omp_array_section, build_omp_array_section): Add stride
+	parameters.
+	* decl.cc (create_anon_array_type): New function.
+	(cp_omp_create_arrayshape_type): New function.
+	* decl2.cc (grok_omp_array_section): Add stride parameter.
+	(min_vis_expr_r): Add OMP_ARRAYSHAPE_CAST_EXPR support.
+	* error.cc (dump_expr): Add stride support for OMP_ARRAY_SECTION.
+	* mangle.cc (write_expression): Add OMP_ARRAYSHAPE_CAST_EXPR support.
+	* operators.def (OMP_ARRAYSHAPE_CAST_EXPR): Add.
+	* parser.cc (cp_parser_new): Initialise omp_array_shaping_op_p and
+	omp_has_array_shape_p fields.
+	(cp_parser_statement_expr): Don't allow array shaping op in statement
+	exprs.
+	(cp_parser_postfix_open_square_expression): Add stride parsing for
+	array sections.  Use array section code to represent array refs if we
+	have an array-shaping operator.
+	(cp_parser_parenthesized_expression_list): Don't allow array-shaping
+	op here.
+	(cp_parser_cast_expression): Add array-shaping operator parsing.
+	(cp_parser_lambda_expression): Don't allow array-shaping op in lambda
+	body.
+	(cp_parser_braced_list): Don't allow array-shaping op in braced list.
+	(struct omp_dim): Add stride field.
+	(cp_parser_var_list_no_open): Add stride/array shape support.
+	(cp_parser_omp_target_update): Handle noncontiguous updates.
+	* parser.h (cp_parser): Add omp_array_shaping_op_p and
+	omp_has_array_shape_p fields.
+	* pt.cc (tsubst): Add array-shape cast support.
+	(tsubst_copy, tsubst_copy_and_build): Likewise. Add stride support for
+	OMP_ARRAY_SECTION.
+	(tsubst_omp_clause_decl): Add stride support for OMP_ARRAY_SECTION.
+	* semantics.cc (handle_omp_array_sections_1): Add DISCONTIGUOUS
+	parameter and stride support.
+	(omp_array_section_low_bound): New function.
+	(handle_omp_array_sections): Add DISCONTIGUOUS parameter and stride
+	support.
+	(finish_omp_clauses): Update calls to handle_omp_array_sections, and
+	add noncontiguous array update support.
+	(cp_build_omp_arrayshape_cast): New function.
+	* typeck.cc (structural_comptypes): Add array-shape cast support.
+	(build_omp_array_section): Add stride parameter.
+	(check_for_casting_away_constness): Add OMP_ARRAYSHAPE_CAST_EXPR
+	support.
+
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
 	* semantics.cc (handle_omp_array_sections): Pass pointer to clause
 	instead of clause.  Add PNEXT return parameter for next clause in list
 	to process.

@@ -3611,6 +3611,7 @@ write_expression (tree expr)
 	case REINTERPRET_CAST_EXPR:
 	case STATIC_CAST_EXPR:
 	case CONST_CAST_EXPR:
+	case OMP_ARRAYSHAPE_CAST_EXPR:
 	  write_type (TREE_TYPE (expr));
 	  write_expression (TREE_OPERAND (expr, 0));
 	  break;

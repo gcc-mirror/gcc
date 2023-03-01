@@ -1313,6 +1313,20 @@ struct target_mem_desc {
 };
 
 
+/* A rectangular section of an array, for noncontiguous target update
+   operations.  Must be kept in sync with
+   omp-low.cc:omp_noncontig_descriptor_type.  */
+
+typedef struct {
+  size_t ndims;
+  size_t elemsize;
+  size_t *dim;
+  size_t *index;
+  size_t *length;
+  size_t *stride;
+} omp_noncontig_array_desc;
+
+
 typedef struct acc_dispatch_t
 {
   /* Execute.  */

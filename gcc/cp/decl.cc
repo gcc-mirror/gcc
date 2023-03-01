@@ -11591,6 +11591,81 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
   return build_cplus_array_type (type, itype);
 }
 
+/* Build an anonymous array of SIZE elements of ELTYPE.  */
+
+static tree
+create_anon_array_type (location_t loc, tree eltype, tree size)
+{
+  if (eltype == error_mark_node || size == error_mark_node)
+    return error_mark_node;
+
+  tree itype = compute_array_index_type_loc (loc, NULL_TREE, size,
+					     tf_warning_or_error);
+
+  if (type_uses_auto (eltype)
+      && variably_modified_type_p (itype, /*fn=*/NULL_TREE))
+    {
+      sorry_at (loc, "variable-length array of %<auto%>");
+      return error_mark_node;
+    }
+
+  return build_cplus_array_type (eltype, itype);
+}
+
+/* Derive an array type for an OpenMP array-shaping operator given EXPR, which
+   is an expression that might have array refs or array sections postfixed
+   (e.g. "ptr[0:3:2][3:4]"), and OMP_SHAPE_DIMS, a vector of dimensions.  */
+
+tree
+cp_omp_create_arrayshape_type (location_t loc, tree expr,
+			       vec<cp_expr> *omp_shape_dims)
+{
+  tree type, strip_sections = expr;
+
+  while (TREE_CODE (strip_sections) == OMP_ARRAY_SECTION
+	 || TREE_CODE (strip_sections) == ARRAY_REF)
+    strip_sections = TREE_OPERAND (strip_sections, 0);
+
+  /* Determine the element type, either directly or by using
+     "decltype" of an expression representing an element to
+     figure it out later during template instantiation.  */
+  if (type_dependent_expression_p (expr))
+    {
+      type = cxx_make_type (DECLTYPE_TYPE);
+
+      DECLTYPE_TYPE_EXPR (type)
+	= build_min_nt_loc (loc, INDIRECT_REF, strip_sections);
+      DECLTYPE_FOR_OMP_ARRAYSHAPE_CAST (type) = true;
+      SET_TYPE_STRUCTURAL_EQUALITY (type);
+    }
+  else
+    {
+      type = TREE_TYPE (strip_sections);
+
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+	type = TREE_TYPE (type);
+
+      if (TREE_CODE (type) != POINTER_TYPE)
+	{
+	  error ("OpenMP array shaping operator with non-pointer argument");
+	  return error_mark_node;
+	}
+
+      type = TREE_TYPE (type);
+    }
+
+  int i;
+  cp_expr dim;
+  FOR_EACH_VEC_ELT_REVERSE (*omp_shape_dims, i, dim)
+    {
+      if (!type_dependent_expression_p (dim))
+	dim = fold_convert (sizetype, dim);
+      type = create_anon_array_type (loc, type, dim);
+    }
+
+  return type;
+}
+
 /* Returns the smallest location that is not UNKNOWN_LOCATION.  */
 
 static location_t

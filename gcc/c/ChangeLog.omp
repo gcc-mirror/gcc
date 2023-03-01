@@ -1,5 +1,17 @@
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
+	* c-parser.cc (c_parser_postfix_expression_after_primary): Dummy stride
+	support (for now).
+	(struct omp_dim): Add stride support.
+	(c_parser_omp_variable_list): Likewise.
+	* c-tree.h (build_omp_array_section): Update prototype.
+	* c-typeck.cc (mark_exp_read): Add stride support for
+	OMP_ARRAY_SECTION.
+	(build_omp_array_section): Add stride support.
+	(handle_omp_array_sections_1): Add minimal stride support.
+
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
 	* c-typeck.cc (handle_omp_array_sections): Pass pointer to clause to
 	process instead of clause.
 	(c_finish_omp_clauses): Update calls to handle_omp_array_sections.

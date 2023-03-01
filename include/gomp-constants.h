@@ -220,6 +220,9 @@ enum gomp_map_kind
     GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION
       =					(GOMP_MAP_DEEP_COPY | 2),
 
+    GOMP_MAP_TO_GRID =			(GOMP_MAP_DEEP_COPY | 4),
+    GOMP_MAP_FROM_GRID =		(GOMP_MAP_DEEP_COPY | 5),
+
     /* Internal to GCC, not used in libgomp.  */
     /* Do not map, but pointer assign a pointer instead.  */
     GOMP_MAP_FIRSTPRIVATE_POINTER =	(GOMP_MAP_LAST | 1),
@@ -243,7 +246,9 @@ enum gomp_map_kind
     GOMP_MAP_POP_MAPPER_NAME =		(GOMP_MAP_LAST | 10),
     /* Used to hold a TREE_LIST of grouped nodes in an 'omp declare mapper'
        definition (only for Fortran at present).  */
-    GOMP_MAP_MAPPING_GROUP =		(GOMP_MAP_LAST | 11)
+    GOMP_MAP_MAPPING_GROUP =		(GOMP_MAP_LAST | 11),
+    GOMP_MAP_GRID_DIM =			(GOMP_MAP_LAST | 12),
+    GOMP_MAP_GRID_STRIDE =		(GOMP_MAP_LAST | 13)
   };
 
 #define GOMP_MAP_COPY_TO_P(X) \
