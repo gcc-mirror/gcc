@@ -1,3 +1,14 @@
+2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (gcn_stepped_zero_int_parallel_p): New.
+	* config/gcn/gcn-valu.md (V_1REG_ALT): New.
+	(V_2REG_ALT): New.
+	(vec_extract<V_1REG:mode><V_1REG_ALT:mode>_nop): New.
+	(vec_extract<V_2REG:mode><V_2REG_ALT:mode>_nop): New.
+	(vec_extract<V_ALL:mode><V_ALL_ALT:mode>): Use new patterns.
+	* config/gcn/gcn.cc (gcn_stepped_zero_int_parallel_p): New.
+	* config/gcn/predicates.md (ascending_zero_int_parallel): New.
+
 2023-02-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gimplify.cc (gimplify_scan_omp_clauses): Remove Fortran
