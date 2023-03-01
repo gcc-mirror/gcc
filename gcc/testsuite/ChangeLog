@@ -1,3 +1,73 @@
+2023-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108848
+	* g++.dg/cpp1y/noexcept1.C: Don't expect a bogus "different
+	exception specifier" error.  Expect a separate "not usable
+	in a constant expression" error.
+	* g++.dg/cpp1y/var-templ75.C: New test.
+	* g++.dg/cpp1y/var-templ76.C: New test.
+
+2023-02-28  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/107411
+	PR middle-end/107411
+	* g++.dg/pr107411.C: New test.
+
+2023-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108550
+	* g++.dg/cpp1y/var-templ70.C: New test.
+	* g++.dg/cpp1y/var-templ71.C: New test.
+	* g++.dg/cpp1y/var-templ72.C: New test.
+
+2023-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107938
+	* g++.dg/cpp1y/var-templ73.C: New test.
+	* g++.dg/cpp1y/var-templ74.C: New test.
+	* g++.dg/warn/Waddress-of-packed-member3.C: New test.
+
+2023-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108894
+	* gcc.dg/ubsan/bounds-4.c: New test.
+	* gcc.dg/ubsan/bounds-4a.c: New test.
+	* gcc.dg/ubsan/bounds-4b.c: New test.
+	* gcc.dg/ubsan/bounds-4c.c: New test.
+	* gcc.dg/ubsan/bounds-4d.c: New test.
+	* g++.dg/ubsan/bounds-1.C: New test.
+
+2023-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/108942
+	* gcc.dg/torture/ssa-fre-7.c: Use __SIZETYPE__.
+
+2023-02-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/plugin/infoleak-vfio_iommu_type1.c: Don't xfail bogus
+	message for "default_packed" targets.
+
+2023-02-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/multiline.exp (handle-multiline-outputs): Shorten
+	message to the same for fail and pass.
+
+2023-02-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/91419
+	* gcc.dg/tree-ssa/pr91091-2.c:15 Remove xfail for RHS.
+
+2023-02-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/79356
+	* gcc.dg/attr-alloc_size-11.c: Add CRIS to the list
+	of targets excluding xfail on lines 50 and 51.
+
+2023-02-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR tree-optimization/108828
+	* gcc.dg/Wuse-after-free-2.c: Add -fno-ivopts.
+
 2023-02-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108937

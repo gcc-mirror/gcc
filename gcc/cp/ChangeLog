@@ -1,3 +1,18 @@
+2023-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108848
+	* pt.cc (finish_template_variable): Move dependence check
+	to here from ...
+	(lookup_and_finish_template_variable): ... here.
+	* semantics.cc (finish_id_expression_1): Call
+	finish_template_variable sooner, before (and regardless of) the
+	type_dependent_expression_p test.
+
+2023-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108550
+	* pt.cc (lookup_and_finish_template_variable): Clear tf_partial.
+
 2023-02-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101073

@@ -1,3 +1,67 @@
+2023-02-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108956
+	* Make-lang.in (m2/gm2-libs-boot/M2RTS.o): New specific rule to
+	add the --suppress-noreturn option.
+	* Make-maintainer.in (m2/gm2-ppg-boot/$(SRC_PREFIX)M2RTS.o): New
+	specific rule to add the --suppress-noreturn option.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)M2RTS.o): New
+	specific rule to add the --suppress-noreturn option.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)%.o): Add missing $(srcdir).
+	(m2/gm2-pge-boot/$(SRC_PREFIX)M2RTS.o): New
+	specific rule to add the --suppress-noreturn option.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)%.o): Add missing $(srcdir).
+	* gm2-libs-ch/UnixArgs.cc (LIBNAME): New define.
+	(_M2_UnixArgs_ctor): Add LIBNAME parameter to RegisterModule.
+	* gm2-libs-ch/dtoa.cc (LIBNAME): New define.
+	(_M2_dtoa_ctor): Add LIBNAME parameter to RegisterModule.
+	* gm2-libs-ch/ldtoa.cc (LIBNAME): New define.
+	(_M2_ldtoa_ctor): Add LIBNAME parameter to RegisterModule.
+	* pge-boot/m2rts.h (M2RTS_RegisterModule): Add libname
+	parameter.
+	* gm2-libs-ch/m2rts.h (M2RTS_RegisterModule): Add libname
+	parameter.
+	* mc-boot-ch/GUnixArgs.cc (_M2_UnixArgs_ctor): Remove.
+	* pge-boot/GUnixArgs.cc (LIBNAME): New define.
+	(_M2_UnixArgs_ctor): Add LIBNAME parameter to RegisterModule.
+	* gm2-libs/RTint.def (AttachVector): Rename parameter.
+	* mc-boot/GDynamicStrings.c: Rebuilt.
+	* mc-boot/GFIO.c: Rebuilt.
+	* mc-boot/GIndexing.c: Rebuilt.
+	* mc-boot/GM2EXCEPTION.c: Rebuilt.
+	* mc-boot/GPushBackInput.c: Rebuilt.
+	* mc-boot/GRTExceptions.c: Rebuilt.
+	* mc-boot/GRTint.c: Rebuilt.
+	* mc-boot/GRTint.h: Rebuilt.
+	* mc-boot/GStdIO.c: Rebuilt.
+	* mc-boot/GStringConvert.c: Rebuilt.
+	* mc-boot/GSysStorage.c: Rebuilt.
+	* mc-boot/Gdecl.c: Rebuilt.
+	* mc-boot/Gkeyc.c: Rebuilt.
+	* mc-boot/GmcComment.c: Rebuilt.
+	* mc-boot/GmcComp.c: Rebuilt.
+	* mc-boot/GmcDebug.c: Rebuilt.
+	* mc-boot/GmcMetaError.c: Rebuilt.
+	* mc-boot/GmcOptions.c: Rebuilt.
+	* mc-boot/GmcOptions.h: Rebuilt.
+	* mc-boot/GmcStack.c: Rebuilt.
+	* mc-boot/GnameKey.c: Rebuilt.
+	* mc-boot/GsymbolKey.c: Rebuilt.
+	* mc/decl.mod:: Rebuilt.
+	* mc/mcOptions.def: Rebuilt.
+	* mc/mcOptions.mod:: Rebuilt.
+	* pge-boot/GDynamicStrings.c: Rebuilt.
+	* pge-boot/GFIO.c: Rebuilt.
+	* pge-boot/GIndexing.c: Rebuilt.
+	* pge-boot/GM2EXCEPTION.c: Rebuilt.
+	* pge-boot/GM2RTS.c: Rebuilt.
+	* pge-boot/GNameKey.c: Rebuilt.
+	* pge-boot/GPushBackInput.c: Rebuilt.
+	* pge-boot/GRTExceptions.c: Rebuilt.
+	* pge-boot/GStdIO.c: Rebuilt.
+	* pge-boot/GSymbolKey.c: Rebuilt.
+	* pge-boot/GSysStorage.c: Rebuilt.
+
 2023-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/108261

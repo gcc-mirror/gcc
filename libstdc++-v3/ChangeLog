@@ -1,3 +1,32 @@
+2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108952
+	* include/bits/uses_allocator_args.h
+	(uses_allocator_construction_args): Implement LWG 3527.
+	* testsuite/20_util/pair/astuple/get-2.cc: New test.
+	* testsuite/20_util/scoped_allocator/108952.cc: New test.
+	* testsuite/20_util/uses_allocator/lwg3527.cc: New test.
+
+2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108846
+	* include/bits/stl_algobase.h (__copy_move<false, false, RA>)
+	Add __assign_one static member function.
+	(__copy_move<true, false, RA>): Likewise.
+	(__copy_move<IsMove, true, RA>): Do not use memmove for a single
+	value.
+	(__copy_move_backward<IsMove, true, RA>): Likewise.
+	* testsuite/25_algorithms/copy/108846.cc: New test.
+	* testsuite/25_algorithms/copy_backward/108846.cc: New test.
+	* testsuite/25_algorithms/copy_n/108846.cc: New test.
+	* testsuite/25_algorithms/move/108846.cc: New test.
+	* testsuite/25_algorithms/move_backward/108846.cc: New test.
+
+2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/codecvt.cc: Add [[likely]] and [[unlikely]]
+	attributes.
+
 2023-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_ios.h (basic_ios::_M_setstate): Add

@@ -1,3 +1,25 @@
+2023-02-28  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/107411
+	PR middle-end/107411
+	* gimplify.cc (gimple_add_init_for_auto_var): Use sprintf to replace
+	xasprintf.
+	* tree-ssa-uninit.cc (warn_uninit): Handle the case when the
+	LHS varaible of a .DEFERRED_INIT call doesn't have a DECL_NAME.
+
+2023-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108894
+	* ubsan.cc (ubsan_expand_bounds_ifn): Emit index >= bound
+	comparison rather than index > bound.
+	* gimple-fold.cc (gimple_fold_call): Use tree_int_cst_lt
+	rather than tree_int_cst_le for IFN_UBSAN_BOUND comparison.
+	* doc/invoke.texi (-fsanitize=bounds): Document that whether
+	flexible array member-like arrays are instrumented or not depends
+	on -fstrict-flex-arrays* options of strict_flex_array attributes.
+	(-fsanitize=bounds-strict): Document that flexible array members
+	are not instrumented.
+
 2023-02-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/108922

@@ -1,3 +1,43 @@
+2023-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* generated/pack_c10.c (pack_c10): Regenerated.
+	* generated/pack_c16.c (pack_c16): Regenerated.
+	* generated/pack_c17.c (pack_c17): Regenerated.
+	* generated/pack_c4.c (pack_c4): Regenerated.
+	* generated/pack_c8.c (pack_c8): Regenerated.
+	* generated/pack_i1.c (pack_i1): Regenerated.
+	* generated/pack_i16.c (pack_i16): Regenerated.
+	* generated/pack_i2.c (pack_i2): Regenerated.
+	* generated/pack_i4.c (pack_i4): Regenerated.
+	* generated/pack_i8.c (pack_i8): Regenerated.
+	* generated/pack_r10.c (pack_r10): Regenerated.
+	* generated/pack_r16.c (pack_r16): Regenerated.
+	* generated/pack_r17.c (pack_r17): Regenerated.
+	* generated/pack_r4.c (pack_r4): Regenerated.
+	* generated/pack_r8.c (pack_r8): Regenerated.
+	* generated/spread_c10.c (spread_c10): Regenerated.
+	* generated/spread_c16.c (spread_c16): Regenerated.
+	* generated/spread_c17.c (spread_c17): Regenerated.
+	* generated/spread_c4.c (spread_c4): Regenerated.
+	* generated/spread_c8.c (spread_c8): Regenerated.
+	* generated/spread_i1.c (spread_i1): Regenerated.
+	* generated/spread_i16.c (spread_i16): Regenerated.
+	* generated/spread_i2.c (spread_i2): Regenerated.
+	* generated/spread_i4.c (spread_i4): Regenerated.
+	* generated/spread_i8.c (spread_i8): Regenerated.
+	* generated/spread_r10.c (spread_r10): Regenerated.
+	* generated/spread_r16.c (spread_r16): Regenerated.
+	* generated/spread_r17.c (spread_r17): Regenerated.
+	* generated/spread_r4.c (spread_r4): Regenerated.
+	* generated/spread_r8.c (spread_r8): Regenerated.
+	* intrinsics/execute_command_line.c (execute_command_line_i4),
+	(execute_command_line_i8): Set estat_initial to zero.
+	* intrinsics/pack_generic.c (pack_internal): Set sstride[0] and
+	mstride[0] to zero.
+	* intrinsics/spread_generic.c (spread_internal): Set sstride[0].
+	* m4/pack.m4: Set sstride[0] and mstride[0].
+	* m4/spread.m4: Set sstride[0].
+
 2023-01-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* intrinsics/execute_command_line.c (execute_command_line): On

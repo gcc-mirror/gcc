@@ -1,3 +1,22 @@
+2023-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107938
+	* c-warn.cc (check_address_or_pointer_of_packed_member): Check
+	POINTER_TYPE_P.
+
+2023-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108894
+	* c-common.h (c_strict_flex_array_level_of): Declare.
+	* c-common.cc (c_strict_flex_array_level_of): New function,
+	moved and renamed from c-decl.cc's strict_flex_array_level_of.
+	* c-ubsan.cc (ubsan_instrument_bounds): Fix comment typo.  For
+	C check c_strict_flex_array_level_of whether a trailing array
+	should be treated as flexible member like.  Handle C [0] arrays.
+	Add 1 + index_off_by_one rather than index_off_by_one to bounds
+	and use tree_int_cst_lt rather than tree_int_cst_le for idx vs.
+	bounds comparison.
+
 2023-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/108890

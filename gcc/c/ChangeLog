@@ -1,3 +1,10 @@
+2023-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108894
+	* c-decl.cc (strict_flex_array_level_of): Move to c-common.cc
+	and rename to c_strict_flex_array_level_of.
+	(is_flexible_array_member_p): Adjust caller.
+
 2023-02-18  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/108375
