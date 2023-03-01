@@ -8498,6 +8498,19 @@ fold_simple (tree t)
   return t;
 }
 
+/* Try folding the expression T to a simple constant.
+   Returns that constant, otherwise returns T.  */
+
+tree
+fold_to_constant (tree t)
+{
+  tree r = fold (t);
+  if (CONSTANT_CLASS_P (r) && !TREE_OVERFLOW (r))
+    return r;
+  else
+    return t;
+}
+
 /* If T is a constant expression, returns its reduced value.
    Otherwise, if T does not have TREE_CONSTANT set, returns T.
    Otherwise, returns a version of T without TREE_CONSTANT.
@@ -8523,6 +8536,11 @@ maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
     /* No caching or evaluation needed.  */
     return t;
 
+  /* Don't constant evaluate an unevaluated non-manifestly-constant operand,
+     but at least try folding it to a simple constant.  */
+  if (cp_unevaluated_operand && manifestly_const_eval != mce_true)
+    return fold_to_constant (t);
+
   if (manifestly_const_eval != mce_unknown)
     return cxx_eval_outermost_constant_expr (t, true, true,
 					     manifestly_const_eval, false, decl);
@@ -8543,10 +8561,6 @@ maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
 	}
       return r;
     }
-
-  /* Don't evaluate an unevaluated operand.  */
-  if (cp_unevaluated_operand)
-    return t;
 
   uid_sensitive_constexpr_evaluation_checker c;
   r = cxx_eval_outermost_constant_expr (t, true, true,
@@ -8611,9 +8625,14 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 	    }
 	  return t;
 	}
-
-      if (cp_unevaluated_operand && !manifestly_const_eval)
+      else if (CONSTANT_CLASS_P (t))
+	/* No evaluation needed.  */
 	return t;
+
+      /* Don't constant evaluate an unevaluated non-manifestly-constant operand,
+	 but at least try folding it to a simple constant.  */
+      if (cp_unevaluated_operand && !manifestly_const_eval)
+	return fold_to_constant (t);
 
       tree r = cxx_eval_outermost_constant_expr (t, true, true,
 						 mce_value (manifestly_const_eval),
