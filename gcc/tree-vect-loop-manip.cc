@@ -1080,12 +1080,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop,
   /* Allow duplication of outer loops.  */
   if (scalar_loop->inner)
     duplicate_outer_loop = true;
-  /* Check whether duplication is possible.  */
-  if (!can_copy_bbs_p (pbbs, scalar_loop->num_nodes))
-    {
-      free (bbs);
-      return NULL;
-    }
 
   /* Generate new loop structure.  */
   new_loop = duplicate_loop (scalar_loop, loop_outer (scalar_loop));
@@ -1329,7 +1323,11 @@ slpeel_can_duplicate_loop_p (const class loop *loop, const_edge e)
       || (e != exit_e && e != entry_e))
     return false;
 
-  return true;
+  basic_block *bbs = XNEWVEC (basic_block, loop->num_nodes);
+  get_loop_body_with_size (loop, bbs, loop->num_nodes);
+  bool ret = can_copy_bbs_p (bbs, loop->num_nodes);
+  free (bbs);
+  return ret;
 }
 
 /* Function vect_get_loop_location.
@@ -2864,7 +2862,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	}
     }
 
-  dump_user_location_t loop_loc = find_loop_location (loop);
   if (vect_epilogues)
     /* Make sure to set the epilogue's epilogue scalar loop, such that we can
        use the original scalar loop as remaining epilogue if necessary.  */
@@ -2874,20 +2871,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   if (prolog_peeling)
     {
       e = loop_preheader_edge (loop);
-      if (!slpeel_can_duplicate_loop_p (loop, e))
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loop_loc,
-			   "loop can't be duplicated to preheader edge.\n");
-	  gcc_unreachable ();
-	}
+      gcc_checking_assert (slpeel_can_duplicate_loop_p (loop, e));
+
       /* Peel prolog and put it on preheader edge of loop.  */
       prolog = slpeel_tree_duplicate_loop_to_edge_cfg (loop, scalar_loop, e);
-      if (!prolog)
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loop_loc,
-			   "slpeel_tree_duplicate_loop_to_edge_cfg failed.\n");
-	  gcc_unreachable ();
-	}
+      gcc_assert (prolog);
       prolog->force_vectorize = false;
       slpeel_update_phi_nodes_for_loops (loop_vinfo, prolog, loop, true);
       first_loop = prolog;
@@ -2949,12 +2937,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   if (epilog_peeling)
     {
       e = single_exit (loop);
-      if (!slpeel_can_duplicate_loop_p (loop, e))
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loop_loc,
-			   "loop can't be duplicated to exit edge.\n");
-	  gcc_unreachable ();
-	}
+      gcc_checking_assert (slpeel_can_duplicate_loop_p (loop, e));
+
       /* Peel epilog and put it on exit edge of loop.  If we are vectorizing
 	 said epilog then we should use a copy of the main loop as a starting
 	 point.  This loop may have already had some preliminary transformations
@@ -2964,12 +2948,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 vectorizing.  */
       epilog = vect_epilogues ? get_loop_copy (loop) : scalar_loop;
       epilog = slpeel_tree_duplicate_loop_to_edge_cfg (loop, epilog, e);
-      if (!epilog)
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loop_loc,
-			   "slpeel_tree_duplicate_loop_to_edge_cfg failed.\n");
-	  gcc_unreachable ();
-	}
+      gcc_assert (epilog);
+
       epilog->force_vectorize = false;
       slpeel_update_phi_nodes_for_loops (loop_vinfo, loop, epilog, false);
 
