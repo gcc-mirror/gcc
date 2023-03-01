@@ -11136,7 +11136,15 @@ std::unique_ptr<AST::SlicePattern>
 Parser<ManagedTokenSource>::parse_slice_pattern ()
 {
   Location square_locus = lexer.peek_token ()->get_locus ();
+  std::vector<std::unique_ptr<AST::Pattern>> patterns;
   skip_token (LEFT_SQUARE);
+
+  if (lexer.peek_token ()->get_id () == RIGHT_SQUARE)
+    {
+      skip_token (RIGHT_SQUARE);
+      return std::unique_ptr<AST::SlicePattern> (
+	new AST::SlicePattern (std::move (patterns), square_locus));
+    }
 
   // parse initial pattern (required)
   std::unique_ptr<AST::Pattern> initial_pattern = parse_pattern ();
@@ -11149,7 +11157,6 @@ Parser<ManagedTokenSource>::parse_slice_pattern ()
       return nullptr;
     }
 
-  std::vector<std::unique_ptr<AST::Pattern>> patterns;
   patterns.push_back (std::move (initial_pattern));
 
   const_TokenPtr t = lexer.peek_token ();
