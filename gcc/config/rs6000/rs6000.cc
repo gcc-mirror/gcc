@@ -3662,14 +3662,17 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Without option powerpc64 specified explicitly, we need to ensure
      powerpc64 always enabled for 64 bit here, otherwise some following
-     checks can use unexpected TARGET_POWERPC64 value.  Meanwhile, we
-     need to ensure set_masks doesn't have OPTION_MASK_POWERPC64 on,
-     otherwise later processing can clear it.  */
+     checks can use unexpected TARGET_POWERPC64 value.  */
   if (!(rs6000_isa_flags_explicit & OPTION_MASK_POWERPC64)
       && TARGET_64BIT)
     {
       rs6000_isa_flags |= OPTION_MASK_POWERPC64;
-      set_masks &= ~OPTION_MASK_POWERPC64;
+      /* Need to stop powerpc64 from being unset in later processing,
+	 so clear it in set_masks.  But as PR108240 shows, to keep it
+	 consistent with before, we want to make this only if 64 bit
+	 is enabled explicitly.  This is a hack, revisit this later.  */
+      if (rs6000_isa_flags_explicit & OPTION_MASK_64BIT)
+	set_masks &= ~OPTION_MASK_POWERPC64;
     }
 
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
