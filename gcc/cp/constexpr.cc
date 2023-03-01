@@ -9699,7 +9699,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		   (tmp, /*constexpr_context_p=*/true, flags))
 	    return false;
 	}
-      return RECUR (DECL_INITIAL (tmp), want_rval);
+      if (VAR_P (tmp))
+	return RECUR (DECL_INITIAL (tmp), want_rval);
+      return true;
 
     case TRY_FINALLY_EXPR:
       return (RECUR (TREE_OPERAND (t, 0), want_rval)
