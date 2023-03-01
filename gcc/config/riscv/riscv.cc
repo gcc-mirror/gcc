@@ -2527,7 +2527,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  && GET_CODE (XEXP (x, 0)) == MULT
 	  && REG_P (XEXP (XEXP (x, 0), 0))
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
-	  && IN_RANGE (pow2p_hwi (INTVAL (XEXP (XEXP (x, 0), 1))), 1, 3))
+	  && pow2p_hwi (INTVAL (XEXP (XEXP (x, 0), 1)))
+	  && IN_RANGE (exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1))), 1, 3))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return true;

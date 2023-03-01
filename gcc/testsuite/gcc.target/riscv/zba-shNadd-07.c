@@ -26,6 +26,6 @@ f4 (unsigned long i)
 }
 
 /* { dg-final { scan-assembler-times "sh2add" 2 } } */
-/* { dg-final { scan-assembler-times "sh1add" 2 } } */
-/* { dg-final { scan-assembler-times "slli" 5 } } */
-/* { dg-final { scan-assembler-times "mul" 1 } } */
+/* { dg-final { scan-assembler-times "sh1add" 1 } } */
+/* { dg-final { scan-assembler-times "slli" 3 } } */
+/* { dg-final { scan-assembler-times "mul" 2 } } */
