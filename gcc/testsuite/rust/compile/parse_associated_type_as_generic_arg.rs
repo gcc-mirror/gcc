@@ -1,12 +1,10 @@
-// { dg-additional-options "-fsyntax-only" }
-
 trait Foo {
     type A;
 
     fn foo();
 }
 
-struct S;
+struct S; // { dg-warning "struct is never constructed" }
 
 impl Foo for S {
     type A = i32;
@@ -19,6 +17,6 @@ enum Maybe<T> {
     Nothing,
 }
 
-fn foo() -> Maybe<<S as Foo>::A> {
+pub fn foo() -> Maybe<<S as Foo>::A> {
     Maybe::Something(15)
 }
