@@ -197,3 +197,10 @@
        (ior (match_operand 0 "gcn_ds_memory_operand")
 	    (and (match_code "unspec")
               (match_test "XINT (op, 1) == UNSPEC_VECTOR")))))
+
+(define_predicate "ascending_zero_int_parallel"
+  (match_code "parallel")
+{
+  return gcn_stepped_zero_int_parallel_p (op, 1);
+})
+

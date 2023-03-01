@@ -49,6 +49,13 @@
 		       V16QI V16HI V16SI V16HF V16SF
 		       V32QI V32HI V32SI V32HF V32SF
 		       V64QI V64HI V64SI V64HF V64SF])
+(define_mode_iterator V_1REG_ALT
+		      [V2QI V2HI V2SI V2HF V2SF
+		       V4QI V4HI V4SI V4HF V4SF
+		       V8QI V8HI V8SI V8HF V8SF
+		       V16QI V16HI V16SI V16HF V16SF
+		       V32QI V32HI V32SI V32HF V32SF
+		       V64QI V64HI V64SI V64HF V64SF])
 
 (define_mode_iterator V_INT_1REG
 		      [V2QI V2HI V2SI
@@ -74,6 +81,13 @@
 
 ; Vector modes for two vector registers
 (define_mode_iterator V_2REG
+		      [V2DI V2DF
+		       V4DI V4DF
+		       V8DI V8DF
+		       V16DI V16DF
+		       V32DI V32DF
+		       V64DI V64DF])
+(define_mode_iterator V_2REG_ALT
 		      [V2DI V2DF
 		       V4DI V4DF
 		       V8DI V8DF
@@ -788,11 +802,36 @@
    (set_attr "exec" "none")
    (set_attr "laneselect" "yes")])
 
+(define_insn "vec_extract<V_1REG:mode><V_1REG_ALT:mode>_nop"
+  [(set (match_operand:V_1REG_ALT 0 "register_operand" "=v,v")
+	(vec_select:V_1REG_ALT
+	  (match_operand:V_1REG 1 "register_operand"   " 0,v")
+	  (match_operand 2 "ascending_zero_int_parallel" "")))]
+  "MODE_VF (<V_1REG_ALT:MODE>mode) < MODE_VF (<V_1REG:MODE>mode)
+   && <V_1REG_ALT:SCALAR_MODE>mode == <V_1REG:SCALAR_MODE>mode"
+  "@
+  ; in-place extract %0
+  v_mov_b32\t%L0, %L1"
+  [(set_attr "type" "vmult")
+   (set_attr "length" "0,8")])
+  
+(define_insn "vec_extract<V_2REG:mode><V_2REG_ALT:mode>_nop"
+  [(set (match_operand:V_2REG_ALT 0 "register_operand" "=v,v")
+	(vec_select:V_2REG_ALT
+	  (match_operand:V_2REG 1 "register_operand"   " 0,v")
+	  (match_operand 2 "ascending_zero_int_parallel" "")))]
+  "MODE_VF (<V_2REG_ALT:MODE>mode) < MODE_VF (<V_2REG:MODE>mode)
+   && <V_2REG_ALT:SCALAR_MODE>mode == <V_2REG:SCALAR_MODE>mode"
+  "@
+  ; in-place extract %0
+  v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1"
+  [(set_attr "type" "vmult")
+   (set_attr "length" "0,8")])
+  
 (define_expand "vec_extract<V_ALL:mode><V_ALL_ALT:mode>"
-  [(set (match_operand:V_ALL_ALT 0 "register_operand")
-	(vec_select:V_ALL_ALT
-	  (match_operand:V_ALL 1 "register_operand")
-	  (parallel [(match_operand 2 "immediate_operand")])))]
+  [(match_operand:V_ALL_ALT 0 "register_operand")
+   (match_operand:V_ALL 1 "register_operand")
+   (match_operand 2 "immediate_operand")]
   "MODE_VF (<V_ALL_ALT:MODE>mode) < MODE_VF (<V_ALL:MODE>mode)
    && <V_ALL_ALT:SCALAR_MODE>mode == <V_ALL:SCALAR_MODE>mode"
   {
@@ -802,8 +841,12 @@
 
     if (firstlane == 0)
       {
-	/* A plain move will do.  */
-	tmp = operands[1];
+	rtx parallel = gen_rtx_PARALLEL (<V_ALL:MODE>mode,
+					  rtvec_alloc (numlanes));
+	for (int i = 0; i < numlanes; i++)
+	  XVECEXP (parallel, 0, i) = GEN_INT (i);
+	emit_insn (gen_vec_extract<V_ALL:mode><V_ALL_ALT:mode>_nop
+		   (operands[0], operands[1], parallel));
       } else {
         /* FIXME: optimize this by using DPP where available.  */
 
@@ -815,10 +858,10 @@
 	tmp = gen_reg_rtx (<V_ALL:MODE>mode);
 	emit_insn (gen_ds_bpermute<V_ALL:mode> (tmp, permutation, operands[1],
 						get_exec (<V_ALL:MODE>mode)));
-      }
 
-    emit_move_insn (operands[0],
-		    gen_rtx_SUBREG (<V_ALL_ALT:MODE>mode, tmp, 0));
+	emit_move_insn (operands[0],
+			gen_rtx_SUBREG (<V_ALL_ALT:MODE>mode, tmp, 0));
+      }
     DONE;
   })
 

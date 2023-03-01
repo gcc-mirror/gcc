@@ -75,6 +75,7 @@ extern reg_class gcn_regno_reg_class (int regno);
 extern bool gcn_scalar_flat_address_p (rtx);
 extern bool gcn_scalar_flat_mem_p (rtx);
 extern bool gcn_sgpr_move_p (rtx, rtx);
+extern bool gcn_stepped_zero_int_parallel_p (rtx op, int step);
 extern bool gcn_valid_move_p (machine_mode, rtx, rtx);
 extern rtx gcn_vec_constant (machine_mode, int);
 extern rtx gcn_vec_constant (machine_mode, rtx);

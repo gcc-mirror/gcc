@@ -1422,6 +1422,24 @@ CODE_FOR_OP (reload_out)
 #undef CODE_FOR_OP
 #undef CODE_FOR
 
+/* Return true if OP is a PARALLEL of CONST_INTs that form a linear
+   series with step STEP.  */
+
+bool
+gcn_stepped_zero_int_parallel_p (rtx op, int step)
+{
+  if (GET_CODE (op) != PARALLEL || !CONST_INT_P (XVECEXP (op, 0, 0)))
+    return false;
+
+  unsigned HOST_WIDE_INT base = 0;
+  for (int i = 0; i < XVECLEN (op, 0); ++i)
+    if (!CONST_INT_P (XVECEXP (op, 0, i))
+	|| UINTVAL (XVECEXP (op, 0, i)) != base + i * step)
+      return false;
+
+  return true;
+}
+
 /* }}}  */
 /* {{{ Addresses, pointers and moves.  */
 
