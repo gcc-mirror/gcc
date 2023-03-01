@@ -6722,31 +6722,6 @@ package body Sem_Util is
       return S;
    end Current_Scope_No_Loops;
 
-   --------------------------------------
-   -- Current_Scope_No_Loops_No_Blocks --
-   --------------------------------------
-
-   function Current_Scope_No_Loops_No_Blocks return Entity_Id is
-      S : Entity_Id;
-
-   begin
-      --  Examine the scope stack starting from the current scope and skip any
-      --  internally generated loops and blocks.
-
-      S := Current_Scope;
-      while Present (S) and then S /= Standard_Standard loop
-         if Ekind (S) in E_Loop | E_Block
-           and then not Comes_From_Source (S)
-         then
-            S := Scope (S);
-         else
-            exit;
-         end if;
-      end loop;
-
-      return S;
-   end Current_Scope_No_Loops_No_Blocks;
-
    ------------------------
    -- Current_Subprogram --
    ------------------------
@@ -27763,7 +27738,7 @@ package body Sem_Util is
    -----------------------
 
    procedure Set_Public_Status (Id : Entity_Id) is
-      S : constant Entity_Id := Current_Scope_No_Loops_No_Blocks;
+      S : constant Entity_Id := Current_Scope;
 
       function Within_HSS_Or_If (E : Entity_Id) return Boolean;
       --  Determines if E is defined within handled statement sequence or

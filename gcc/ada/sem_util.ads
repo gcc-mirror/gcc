@@ -642,9 +642,6 @@ package Sem_Util is
    function Current_Scope_No_Loops return Entity_Id;
    --  Return the current scope ignoring internally generated loops
 
-   function Current_Scope_No_Loops_No_Blocks return Entity_Id;
-   --  Return the current scope ignoring internally generated loops and blocks
-
    procedure Add_Block_Identifier
      (N     : Node_Id;
       Id    : out Entity_Id;

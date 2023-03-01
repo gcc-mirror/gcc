@@ -9921,6 +9921,10 @@ package body Sem_Ch13 is
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
       Expr : Node_Id;
       --  This is the expression for the result of the function. It is
       --  is build by connecting the component predicates with AND THEN.
@@ -9938,6 +9942,9 @@ package body Sem_Ch13 is
 
       SId : Entity_Id;
       --  Its entity
+
+      Restore_Scope : Boolean;
+      --  True if the current scope must be restored on exit
 
       Ancestor_Predicate_Function_Called : Boolean := False;
       --  Does this predicate function include a call to the
@@ -10190,12 +10197,6 @@ package body Sem_Ch13 is
          Replace_Type_References (N, Typ);
       end Replace_Current_Instance_References;
 
-      --  Local variables
-
-      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
-      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
-      --  Save the Ghost-related attributes to restore on exit
-
    --  Start of processing for Build_Predicate_Function
 
    begin
@@ -10232,6 +10233,15 @@ package body Sem_Ch13 is
         and then not Has_Static_Predicate_Aspect (Typ)
       then
          return;
+      end if;
+
+      --  Ensure that the declarations are added to the scope of the type
+
+      if Scope (Typ) /= Current_Scope then
+         Push_Scope (Scope (Typ));
+         Restore_Scope := True;
+      else
+         Restore_Scope := False;
       end if;
 
       --  The related type may be subject to pragma Ghost. Set the mode now to
@@ -10652,6 +10662,10 @@ package body Sem_Ch13 is
       end if;
 
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
+
+      if Restore_Scope then
+         Pop_Scope;
+      end if;
    end Build_Predicate_Function;
 
    ------------------------------------------
