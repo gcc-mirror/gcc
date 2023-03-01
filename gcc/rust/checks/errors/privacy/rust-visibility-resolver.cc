@@ -241,5 +241,11 @@ void
 VisibilityResolver::visit (HIR::ExternBlock &)
 {}
 
+void
+VisibilityResolver::visit (HIR::ExportedMacro &macro)
+{
+  resolve_and_update (&macro);
+}
+
 } // namespace Privacy
 } // namespace Rust

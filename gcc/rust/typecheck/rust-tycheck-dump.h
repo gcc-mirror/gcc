@@ -196,6 +196,8 @@ public:
     dump += "ctor: " + type_string (expr.get_mappings ());
   }
 
+  void visit (HIR::ExportedMacro &) override {}
+
 protected:
   std::string type_string (const Analysis::NodeMapping &mappings)
   {

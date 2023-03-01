@@ -41,6 +41,7 @@ static const BuiltinAttrDefinition __definitions[]
      {"repr", CODE_GENERATION},
      {"path", EXPANSION},
      {"macro_use", NAME_RESOLUTION},
+     {"macro_export", CODE_GENERATION}, // FIXME: And NAME_RESOLUTION as well
      // FIXME: This is not implemented yet, see
      // https://github.com/Rust-GCC/gccrs/issues/1475
      {"target_feature", CODE_GENERATION},
