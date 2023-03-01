@@ -56,6 +56,7 @@ public:
   void visit (AST::Trait &trait) override;
   void visit (AST::TraitImpl &impl_block) override;
   void visit (AST::ExternBlock &extern_block) override;
+  void visit (AST::MacroRulesDefinition &macro) override;
 
 private:
   ASTLoweringItem () : translated (nullptr) {}

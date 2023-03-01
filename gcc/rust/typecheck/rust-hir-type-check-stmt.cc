@@ -149,6 +149,10 @@ TypeCheckStmt::visit (HIR::QualifiedPathInType &path)
 }
 
 void
+TypeCheckStmt::visit (HIR::ExportedMacro &path)
+{}
+
+void
 TypeCheckStmt::visit (HIR::TupleStruct &struct_decl)
 {
   infered = TypeCheckItem::Resolve (struct_decl);

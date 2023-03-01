@@ -103,6 +103,7 @@ public:
   virtual void visit (HIR::Trait &trait);
   virtual void visit (HIR::ImplBlock &impl);
   virtual void visit (HIR::ExternBlock &block);
+  virtual void visit (HIR::ExportedMacro &macro);
 
 private:
   /* Stack of ancestor modules visited by this visitor */

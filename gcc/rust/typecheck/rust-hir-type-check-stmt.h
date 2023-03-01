@@ -47,6 +47,7 @@ public:
   void visit (HIR::ImplBlock &impl) override;
   void visit (HIR::TypePath &path) override;
   void visit (HIR::QualifiedPathInType &path) override;
+  void visit (HIR::ExportedMacro &path) override;
 
   // FIXME
   // this seems like it should not be part of this visitor

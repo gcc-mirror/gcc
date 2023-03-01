@@ -157,6 +157,7 @@ types
   virtual void visit (HIR::LetStmt &stmt);
   virtual void visit (HIR::ExprStmtWithoutBlock &stmt);
   virtual void visit (HIR::ExprStmtWithBlock &stmt);
+  virtual void visit (HIR::ExportedMacro &macro);
 
   Analysis::Mappings &mappings;
   Rust::Resolver::Resolver &resolver;

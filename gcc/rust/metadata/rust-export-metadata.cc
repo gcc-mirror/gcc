@@ -169,6 +169,7 @@ public:
   void visit (HIR::StaticItem &) override {}
   void visit (HIR::ImplBlock &) override {}
   void visit (HIR::ExternBlock &) override {}
+  void visit (HIR::ExportedMacro &) override {}
 
   void visit (HIR::Trait &trait) override { ctx.emit_trait (trait); }
 

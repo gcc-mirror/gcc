@@ -178,5 +178,12 @@ PubRestrictedVisitor::visit (HIR::ExternBlock &block)
 			block.get_locus ());
 }
 
+void
+PubRestrictedVisitor::visit (HIR::ExportedMacro &macro)
+{
+  is_restriction_valid (macro.get_mappings ().get_nodeid (),
+			macro.get_locus ());
+}
+
 } // namespace Privacy
 } // namespace Rust

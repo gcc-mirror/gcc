@@ -50,6 +50,7 @@ public:
   // nothing to do
   void visit (HIR::ExternCrate &) override {}
   void visit (HIR::UseDeclaration &) override {}
+  void visit (HIR::ExportedMacro &) override {}
 
 protected:
   std::vector<TyTy::SubstitutionParamMapping>

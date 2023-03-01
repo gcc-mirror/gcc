@@ -70,6 +70,7 @@ public:
   void visit (HIR::LetStmt &) override {}
   void visit (HIR::ExprStmtWithoutBlock &) override {}
   void visit (HIR::ExprStmtWithBlock &) override {}
+  void visit (HIR::ExportedMacro &) override {}
 
 protected:
   CompileItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
