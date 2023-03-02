@@ -3192,18 +3192,9 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
     }
 
   if (!async)
-    {
-      run_kernel (kernel, ind_da, &kla, NULL, false);
-      gomp_offload_free (ind_da);
-    }
+    run_kernel (kernel, ind_da, &kla, NULL, false);
   else
-    {
-      queue_push_launch (aq, kernel, ind_da, &kla);
-      if (DEBUG_QUEUES)
-	GCN_DEBUG ("queue_push_callback %d:%d gomp_offload_free, %p\n",
-		   aq->agent->device_id, aq->id, ind_da);
-      queue_push_callback (aq, gomp_offload_free, ind_da);
-    }
+    queue_push_launch (aq, kernel, ind_da, &kla);
 
   if (profiling_dispatch_p)
     {
@@ -3212,6 +3203,16 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
       GOMP_PLUGIN_goacc_profiling_dispatch (prof_info,
 					    &enqueue_launch_event_info,
 					    api_info);
+    }
+
+  if (!async)
+    gomp_offload_free (ind_da);
+  else
+    {
+      if (DEBUG_QUEUES)
+	GCN_DEBUG ("queue_push_callback %d:%d gomp_offload_free, %p\n",
+		   aq->agent->device_id, aq->id, ind_da);
+      queue_push_callback (aq, gomp_offload_free, ind_da);
     }
 }
 
