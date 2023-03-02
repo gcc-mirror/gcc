@@ -43312,7 +43312,9 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
 	     name but the DECL_VALUE_EXPR will be dependent.  Hide those
 	     from folding of other loop initializers e.g. for warning
 	     purposes until cp_finish_omp_range_for.  */
-	  gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (decomp_first_name));
+	  gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (decomp_first_name)
+			       || (TREE_TYPE (decomp_first_name)
+				   == error_mark_node));
 	  DECL_HAS_VALUE_EXPR_P (decomp_first_name) = 0;
 	}
       TREE_VEC_ELT (v, i + 3) = decomp_first_name;
@@ -43345,7 +43347,8 @@ cp_finish_omp_range_for (tree orig, tree begin)
 	  tree d = decomp_first_name;
 	  for (unsigned i = 0; i < decomp_cnt; i++)
 	    {
-	      DECL_HAS_VALUE_EXPR_P (d) = 1;
+	      if (TREE_TYPE (d) != error_mark_node)
+		DECL_HAS_VALUE_EXPR_P (d) = 1;
 	      d = DECL_CHAIN (d);
 	    }
 	}
