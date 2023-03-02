@@ -172,8 +172,6 @@ protected:
   irange (wide_int *, unsigned);
 
    // In-place operators.
-  void irange_set (tree type, const wide_int &, const wide_int &);
-  void irange_set_anti_range (tree type, const wide_int &, const wide_int &);
   bool irange_contains_p (const irange &) const;
   bool irange_single_pair_union (const irange &r);
 
@@ -186,8 +184,6 @@ private:
   friend void gt_pch_nx (irange *);
   friend void gt_pch_nx (irange *, gt_pointer_operator, void *);
 
-  void irange_set_1bit_anti_range (tree type,
-				   const wide_int &, const wide_int &);
   bool varying_compatible_p () const;
   bool intersect_nonzero_bits (const irange &r);
   bool union_nonzero_bits (const irange &r);
@@ -831,7 +827,6 @@ inline void
 irange::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
-  m_type = NULL;
   m_num_ranges = 0;
 }
 

@@ -654,7 +654,9 @@ public:
       range_cast (tmp, unsigned_type_for (tmp.type ()));
     wide_int max = tmp.upper_bound ();
     maxi = wi::floor_log2 (max) + 1;
-    r.set (type, wi::shwi (mini, prec), wi::shwi (maxi, prec));
+    r.set (type,
+	   wi::shwi (mini, TYPE_PRECISION (type)),
+	   wi::shwi (maxi, TYPE_PRECISION (type)));
     return true;
   }
 } op_cfn_ffs;

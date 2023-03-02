@@ -961,98 +961,6 @@ get_legacy_range (const irange &r, tree &min, tree &max)
   return VR_RANGE;
 }
 
-void
-irange::irange_set (tree type, const wide_int &min, const wide_int &max)
-{
-  m_type = type;
-  m_base[0] = min;
-  m_base[1] = max;
-  m_num_ranges = 1;
-  m_kind = VR_RANGE;
-  m_nonzero_mask = wi::minus_one (TYPE_PRECISION (type));
-  normalize_kind ();
-
-  if (flag_checking)
-    verify_range ();
-}
-
-void
-irange::irange_set_1bit_anti_range (tree type,
-				    const wide_int &min, const wide_int &max)
-{
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (type);
-  gcc_checking_assert (prec == 1);
-
-  if (min == max)
-    {
-      wide_int tmp;
-      // Since these are 1-bit quantities, they can only be [MIN,MIN]
-      // or [MAX,MAX].
-      if (min == wi::min_value (prec, sign))
-	tmp = wi::max_value (prec, sign);
-      else
-	tmp = wi::min_value (prec, sign);
-      set (type, tmp, tmp);
-    }
-  else
-    {
-      // The only alternative is [MIN,MAX], which is the empty range.
-      gcc_checking_assert (min == wi::min_value (prec, sign));
-      gcc_checking_assert (max == wi::max_value (prec, sign));
-      set_undefined ();
-    }
-  if (flag_checking)
-    verify_range ();
-}
-
-void
-irange::irange_set_anti_range (tree type,
-			       const wide_int &min, const wide_int &max)
-{
-  if (TYPE_PRECISION (type) == 1)
-    {
-      irange_set_1bit_anti_range (type, min, max);
-      return;
-    }
-
-  // set an anti-range
-  signop sign = TYPE_SIGN (type);
-  int_range<2> type_range (type);
-  // Calculate INVERSE([I,J]) as [-MIN, I-1][J+1, +MAX].
-  m_num_ranges = 0;
-  wi::overflow_type ovf;
-
-  if (wi::ne_p (min, type_range.lower_bound ()))
-    {
-      wide_int lim1 = wi::sub (min, 1, sign, &ovf);
-      gcc_checking_assert (ovf != wi::OVF_OVERFLOW);
-      m_base[0] = type_range.lower_bound (0);
-      m_base[1] = lim1;
-      m_num_ranges = 1;
-    }
-  if (wi::ne_p (max, type_range.upper_bound ()))
-    {
-      if (m_max_ranges == 1 && m_num_ranges)
-	{
-	  set_varying (type);
-	  return;
-	}
-      wide_int lim2 = wi::add (max, 1, sign, &ovf);
-      gcc_checking_assert (ovf != wi::OVF_OVERFLOW);
-      m_base[m_num_ranges * 2] = lim2;
-      m_base[m_num_ranges * 2 + 1] = type_range.upper_bound (0);
-      ++m_num_ranges;
-    }
-
-  m_kind = VR_RANGE;
-  m_nonzero_mask = wi::minus_one (TYPE_PRECISION (type));
-  normalize_kind ();
-
-  if (flag_checking)
-    verify_range ();
-}
-
 /* Set value range to the canonical form of {VRTYPE, MIN, MAX, EQUIV}.
    This means adjusting VRTYPE, MIN and MAX representing the case of a
    wrapping range with MAX < MIN covering [MIN, type_max] U [type_min, MAX]
@@ -1063,48 +971,69 @@ irange::irange_set_anti_range (tree type,
    extract ranges from var + CST op limit.  */
 
 void
-irange::set (tree type, const wide_int &rmin, const wide_int &rmax,
+irange::set (tree type, const wide_int &min, const wide_int &max,
 	     value_range_kind kind)
 {
-  if (kind == VR_UNDEFINED)
-    {
-      irange::set_undefined ();
-      return;
-    }
-
-  if (kind == VR_VARYING)
-    {
-      set_varying (type);
-      return;
-    }
+  unsigned prec = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
+  wide_int min_value = wi::min_value (prec, sign);
+  wide_int max_value = wi::max_value (prec, sign);
 
   m_type = type;
-  signop sign = TYPE_SIGN (type);
-  unsigned prec = TYPE_PRECISION (type);
-  wide_int min = wide_int::from (rmin, prec, sign);
-  wide_int max = wide_int::from (rmax, prec, sign);
+  m_nonzero_mask = wi::minus_one (prec);
 
   if (kind == VR_RANGE)
-    irange_set (type, min, max);
+    {
+      m_base[0] = min;
+      m_base[1] = max;
+      m_num_ranges = 1;
+      if (min == min_value && max == max_value)
+	m_kind = VR_VARYING;
+      else
+	m_kind = VR_RANGE;
+    }
   else
     {
       gcc_checking_assert (kind == VR_ANTI_RANGE);
-      irange_set_anti_range (type, min, max);
+      gcc_checking_assert (m_max_ranges > 1);
+
+      m_kind = VR_UNDEFINED;
+      m_num_ranges = 0;
+      wi::overflow_type ovf;
+      wide_int lim;
+      if (sign == SIGNED)
+	lim = wi::add (min, -1, sign, &ovf);
+      else
+	lim = wi::sub (min, 1, sign, &ovf);
+
+      if (!ovf)
+	{
+	  m_kind = VR_RANGE;
+	  m_base[0] = min_value;
+	  m_base[1] = lim;
+	  ++m_num_ranges;
+	}
+      if (sign == SIGNED)
+	lim = wi::sub (max, -1, sign, &ovf);
+      else
+	lim = wi::add (max, 1, sign, &ovf);
+      if (!ovf)
+	{
+	  m_kind = VR_RANGE;
+	  m_base[m_num_ranges * 2] = lim;
+	  m_base[m_num_ranges * 2 + 1] = max_value;
+	  ++m_num_ranges;
+	}
     }
+
+  if (flag_checking)
+    verify_range ();
 }
 
 void
 irange::set (tree min, tree max, value_range_kind kind)
 {
-  if (kind == VR_UNDEFINED)
-    {
-      irange::set_undefined ();
-      return;
-    }
-
-  if (kind == VR_VARYING
-      || POLY_INT_CST_P (min)
-      || POLY_INT_CST_P (max))
+  if (POLY_INT_CST_P (min) || POLY_INT_CST_P (max))
     {
       set_varying (TREE_TYPE (min));
       return;
@@ -1113,13 +1042,7 @@ irange::set (tree min, tree max, value_range_kind kind)
   gcc_checking_assert (TREE_CODE (min) == INTEGER_CST);
   gcc_checking_assert (TREE_CODE (max) == INTEGER_CST);
 
-  if (TREE_OVERFLOW_P (min))
-    min = drop_tree_overflow (min);
-  if (TREE_OVERFLOW_P (max))
-    max = drop_tree_overflow (max);
-
-  return set (TREE_TYPE (min),
-	      wi::to_wide (min), wi::to_wide (max), kind);
+  return set (TREE_TYPE (min), wi::to_wide (min), wi::to_wide (max), kind);
 }
 
 // Check the validity of the range.
