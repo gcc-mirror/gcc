@@ -1445,15 +1445,14 @@ extern void gomp_attach_pointer (struct gomp_device_descr *,
 extern void gomp_detach_pointer (struct gomp_device_descr *,
 				 struct goacc_asyncqueue *, splay_tree_key,
 				 uintptr_t, bool, struct gomp_coalesce_buf *);
+struct goacc_ncarray_info;
 extern struct target_mem_desc *goacc_map_vars (struct gomp_device_descr *,
 					       struct goacc_asyncqueue *,
 					       size_t, void **, void **,
-					       size_t *, void *, bool,
+					       size_t *, void *,
+					       struct goacc_ncarray_info *,
+					       bool,
 					       enum gomp_map_vars_kind);
-extern struct target_mem_desc *gomp_map_vars_openacc (struct gomp_device_descr *,
-						      struct goacc_asyncqueue *,
-						      size_t, void **, size_t *,
-						      unsigned short *, void *);
 extern void goacc_unmap_vars (struct target_mem_desc *, bool,
 			      struct goacc_asyncqueue *);
 extern void gomp_init_device (struct gomp_device_descr *);

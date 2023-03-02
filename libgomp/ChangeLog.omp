@@ -1,3 +1,16 @@
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/76739
+	* libgomp.h (goacc_map_vars): Add 'struct goacc_ncarray_info *'
+	formal parameter.
+	(gomp_map_vars_openacc): Remove.
+	* target.c (goacc_map_vars): Adjust.
+	(gomp_map_vars_openacc): Remove.
+	* oacc-mem.c (acc_map_data, goacc_enter_datum)
+	(goacc_enter_data_internal): Adjust.
+	* oacc-parallel.c (GOACC_parallel_keyed, GOACC_data_start):
+	Adjust.
+
 2023-02-23  Andrew Stubbs  <ams@codesourcery.com>
 
 	* target.c (gomp_attach_pointer): Check for USM.

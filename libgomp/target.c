@@ -1993,18 +1993,6 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   return tgt;
 }
 
-attribute_hidden struct target_mem_desc *
-gomp_map_vars_openacc (struct gomp_device_descr *devicep,
-		       struct goacc_asyncqueue *aq, size_t mapnum,
-		       void **hostaddrs, size_t *sizes, unsigned short *kinds,
-		       void *nca_info)
-{
-  return gomp_map_vars_internal (devicep, aq, mapnum, hostaddrs, NULL,
-				 sizes, (void *) kinds,
-				 (struct goacc_ncarray_info *) nca_info,
-				 true, NULL, GOMP_MAP_VARS_OPENACC);
-}
-
 static struct target_mem_desc *
 gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
 	       void **hostaddrs, void **devaddrs, size_t *sizes, void *kinds,
@@ -2034,11 +2022,12 @@ attribute_hidden struct target_mem_desc *
 goacc_map_vars (struct gomp_device_descr *devicep,
 		struct goacc_asyncqueue *aq, size_t mapnum,
 		void **hostaddrs, void **devaddrs, size_t *sizes,
-		void *kinds, bool short_mapkind,
+		void *kinds, struct goacc_ncarray_info *nca_info,
+		bool short_mapkind,
 		enum gomp_map_vars_kind pragma_kind)
 {
   return gomp_map_vars_internal (devicep, aq, mapnum, hostaddrs, devaddrs,
-				 sizes, kinds, NULL, short_mapkind, NULL,
+				 sizes, kinds, nca_info, short_mapkind, NULL,
 				 GOMP_MAP_VARS_OPENACC | pragma_kind);
 }
 

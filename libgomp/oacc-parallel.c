@@ -467,8 +467,8 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   goacc_aq aq = get_goacc_asyncqueue (async);
 
   struct target_mem_desc *tgt
-      = gomp_map_vars_openacc (acc_dev, aq, mapnum, hostaddrs, sizes, kinds,
-			       nca_info);
+      = goacc_map_vars (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds,
+			nca_info, true, GOMP_MAP_VARS_TARGET);
   free (nca_info);
 
   if (profiling_p)
@@ -631,7 +631,7 @@ GOACC_data_start (int flags_m, size_t mapnum,
     {
       prof_info.device_type = acc_device_host;
       api_info.device_type = prof_info.device_type;
-      tgt = gomp_map_vars_openacc (NULL, NULL, 0, NULL, NULL, NULL, NULL);
+      tgt = goacc_map_vars (NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, true, 0);
       tgt->prev = thr->mapped_data;
       thr->mapped_data = tgt;
 
@@ -648,8 +648,8 @@ GOACC_data_start (int flags_m, size_t mapnum,
     }
 
   gomp_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
-  tgt = gomp_map_vars_openacc (acc_dev, NULL, mapnum, hostaddrs, sizes, kinds,
-			       nca_info);
+  tgt = goacc_map_vars (acc_dev, NULL, mapnum, hostaddrs, NULL, sizes, kinds,
+			nca_info, true, 0);
   free (nca_info);
   gomp_debug (0, "  %s: mappings prepared\n", __FUNCTION__);
   tgt->prev = thr->mapped_data;
