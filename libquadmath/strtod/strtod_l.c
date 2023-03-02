@@ -200,7 +200,7 @@ round_and_return (mp_limb_t *retval, intmax_t exponent, int negative,
 
 	  round_limb = retval[RETURN_LIMB_SIZE - 1];
 	  round_bit = (MANT_DIG - 1) % BITS_PER_MP_LIMB;
-	  for (i = 0; i < RETURN_LIMB_SIZE; ++i)
+	  for (i = 0; i < RETURN_LIMB_SIZE - 1; ++i)
 	    more_bits |= retval[i] != 0;
 	  MPN_ZERO (retval, RETURN_LIMB_SIZE);
 	}
@@ -215,9 +215,14 @@ round_and_return (mp_limb_t *retval, intmax_t exponent, int negative,
 	  more_bits |= ((round_limb & ((((mp_limb_t) 1) << round_bit) - 1))
 			!= 0);
 
-	  (void) mpn_rshift (retval, &retval[shift / BITS_PER_MP_LIMB],
-			     RETURN_LIMB_SIZE - (shift / BITS_PER_MP_LIMB),
-			     shift % BITS_PER_MP_LIMB);
+	  /* mpn_rshift requires 0 < shift < BITS_PER_MP_LIMB.  */
+	  if ((shift % BITS_PER_MP_LIMB) != 0)
+	    (void) mpn_rshift (retval, &retval[shift / BITS_PER_MP_LIMB],
+			       RETURN_LIMB_SIZE - (shift / BITS_PER_MP_LIMB),
+			       shift % BITS_PER_MP_LIMB);
+	  else
+	    for (i = 0; i < RETURN_LIMB_SIZE - (shift / BITS_PER_MP_LIMB); i++)
+	      retval[i] = retval[i + (shift / BITS_PER_MP_LIMB)];
 	  MPN_ZERO (&retval[RETURN_LIMB_SIZE - (shift / BITS_PER_MP_LIMB)],
 		    shift / BITS_PER_MP_LIMB);
 	}
@@ -276,7 +281,7 @@ round_and_return (mp_limb_t *retval, intmax_t exponent, int negative,
 	}
     }
 
-  if (exponent > MAX_EXP)
+  if (exponent >= MAX_EXP)
     goto overflow;
 
 #ifdef HAVE_FENV_H
@@ -308,7 +313,7 @@ round_and_return (mp_limb_t *retval, intmax_t exponent, int negative,
     }
 #endif
 
-  if (exponent > MAX_EXP)
+  if (exponent >= MAX_EXP)
   overflow:
     return overflow_value (negative);
 
@@ -688,7 +693,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	  if (endptr != NULL)
 	    *endptr = (STRING_TYPE *) cp;
 
-	  return retval;
+	  return negative ? -retval : retval;
 	}
 
       /* It is really a text we do not recognize.  */
@@ -1193,7 +1198,16 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
   if (__builtin_expect (exponent > MAX_10_EXP + 1 - (intmax_t) int_no, 0))
     return overflow_value (negative);
 
-  if (__builtin_expect (exponent < MIN_10_EXP - (DIG + 1), 0))
+  /* 10^(MIN_10_EXP-1) is not normal.  Thus, 10^(MIN_10_EXP-1) /
+     2^MANT_DIG is below half the least subnormal, so anything with a
+     base-10 exponent less than the base-10 exponent (which is
+     MIN_10_EXP - 1 - ceil(MANT_DIG*log10(2))) of that value
+     underflows.  DIG is floor((MANT_DIG-1)log10(2)), so an exponent
+     below MIN_10_EXP - (DIG + 3) underflows.  But EXPONENT is
+     actually an exponent multiplied only by a fractional part, not an
+     integer part, so an exponent below MIN_10_EXP - (DIG + 2)
+     underflows.  */
+  if (__builtin_expect (exponent < MIN_10_EXP - (DIG + 2), 0))
     return underflow_value (negative);
 
   if (int_no > 0)
@@ -1360,7 +1374,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 
     assert (dig_no > int_no
 	    && exponent <= 0
-	    && exponent >= MIN_10_EXP - (DIG + 1));
+	    && exponent >= MIN_10_EXP - (DIG + 2));
 
     /* We need to compute MANT_DIG - BITS fractional bits that lie
        within the mantissa of the result, the following bit for
@@ -1651,8 +1665,8 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	  d1 = den[densize - 2];
 
 	  /* The division does not work if the upper limb of the two-limb
-	     numerator is greater than the denominator.  */
-	  if (mpn_cmp (num, &den[densize - numsize], numsize) > 0)
+	     numerator is greater than or equal to the denominator.  */
+	  if (mpn_cmp (num, &den[densize - numsize], numsize) >= 0)
 	    num[numsize++] = 0;
 
 	  if (numsize < densize)
@@ -1761,7 +1775,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	      got_limb;
 	    }
 
-	  for (i = densize; num[i] == 0 && i >= 0; --i)
+	  for (i = densize; i >= 0 && num[i] == 0; --i)
 	    ;
 	  return round_and_return (retval, exponent - 1, negative,
 				   quot, BITS_PER_MP_LIMB - 1 - used,
