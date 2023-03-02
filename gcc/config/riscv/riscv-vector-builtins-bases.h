@@ -232,6 +232,12 @@ extern const function_base *const vfslide1down;
 extern const function_base *const vrgather;
 extern const function_base *const vrgatherei16;
 extern const function_base *const vcompress;
+extern const function_base *const vundefined;
+extern const function_base *const vreinterpret;
+extern const function_base *const vlmul_ext;
+extern const function_base *const vlmul_trunc;
+extern const function_base *const vset;
+extern const function_base *const vget;
 }
 
 } // end namespace riscv_vector

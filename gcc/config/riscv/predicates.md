@@ -346,6 +346,10 @@
   (ior (match_operand 0 "const_0_operand")
        (match_operand 0 "pmode_register_operand")))
 
+;; A special predicate that doesn't match a particular mode.
+(define_special_predicate "vector_any_register_operand"
+  (match_code "reg"))
+
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"
   (and (match_test "!(reload_completed && !FLOAT_MODE_P (GET_MODE (op))

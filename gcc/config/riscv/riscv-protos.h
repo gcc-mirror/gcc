@@ -122,7 +122,8 @@ void riscv_run_selftests (void);
 namespace riscv_vector {
 #define RVV_VLMAX gen_rtx_REG (Pmode, X0_REGNUM)
 #define RVV_VUNDEF(MODE)                                                       \
-  gen_rtx_UNSPEC (MODE, gen_rtvec (1, const0_rtx), UNSPEC_VUNDEF)
+  gen_rtx_UNSPEC (MODE, gen_rtvec (1, gen_rtx_REG (SImode, X0_REGNUM)),        \
+		  UNSPEC_VUNDEF)
 enum vlmul_type
 {
   LMUL_1 = 0,
@@ -150,6 +151,8 @@ bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 void handle_pragma_vector (void);
 tree builtin_decl (unsigned, bool);
 rtx expand_builtin (unsigned int, tree, rtx);
+bool check_builtin_call (location_t, vec<location_t>, unsigned int,
+			   tree, unsigned int, tree *);
 bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 bool legitimize_move (rtx, rtx, machine_mode);
 void emit_vlmax_op (unsigned, rtx, rtx, machine_mode);

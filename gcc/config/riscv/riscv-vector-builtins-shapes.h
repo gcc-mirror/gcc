@@ -37,6 +37,10 @@ extern const function_shape *const move;
 extern const function_shape *const mask_alu;
 extern const function_shape *const reduc_alu;
 extern const function_shape *const scalar_move;
+extern const function_shape *const vundefined;
+extern const function_shape *const misc;
+extern const function_shape *const vset;
+extern const function_shape *const vget;
 }
 
 } // end namespace riscv_vector

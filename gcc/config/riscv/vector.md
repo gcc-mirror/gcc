@@ -354,11 +354,141 @@
 ;; ---- Miscellaneous Operations
 ;; -----------------------------------------------------------------
 
-(define_insn "vundefined<mode>"
+(define_insn "@vundefined<mode>"
   [(set (match_operand:V 0 "register_operand" "=vr")
-	(unspec:V [(const_int 0)] UNSPEC_VUNDEF))]
+	(unspec:V [(reg:SI X0_REGNUM)] UNSPEC_VUNDEF))]
   "TARGET_VECTOR"
   "")
+
+(define_expand "@vreinterpret<mode>"
+  [(set (match_operand:V 0 "register_operand")
+	(match_operand 1 "vector_any_register_operand"))]
+  "TARGET_VECTOR"
+  {
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, operands[1]));
+    DONE;
+  }
+)
+
+(define_expand "@vlmul_extx2<mode>"
+  [(set (match_operand:<VLMULX2> 0 "register_operand")
+  	(subreg:<VLMULX2>
+  	  (match_operand:VLMULEXT2 1 "register_operand") 0))]
+  "TARGET_VECTOR"
+{})
+
+(define_expand "@vlmul_extx4<mode>"
+  [(set (match_operand:<VLMULX4> 0 "register_operand")
+  	(subreg:<VLMULX4>
+  	  (match_operand:VLMULEXT4 1 "register_operand") 0))]
+  "TARGET_VECTOR"
+{})
+
+(define_expand "@vlmul_extx8<mode>"
+  [(set (match_operand:<VLMULX8> 0 "register_operand")
+  	(subreg:<VLMULX8>
+  	  (match_operand:VLMULEXT8 1 "register_operand") 0))]
+  "TARGET_VECTOR"
+{})
+
+(define_expand "@vlmul_extx16<mode>"
+  [(set (match_operand:<VLMULX16> 0 "register_operand")
+  	(subreg:<VLMULX16>
+  	  (match_operand:VLMULEXT16 1 "register_operand") 0))]
+  "TARGET_VECTOR"
+{})
+
+(define_expand "@vlmul_extx32<mode>"
+  [(set (match_operand:<VLMULX32> 0 "register_operand")
+  	(subreg:<VLMULX32>
+  	  (match_operand:VLMULEXT32 1 "register_operand") 0))]
+  "TARGET_VECTOR"
+{})
+
+(define_expand "@vlmul_extx64<mode>"
+  [(set (match_operand:<VLMULX64> 0 "register_operand")
+  	(subreg:<VLMULX64>
+  	  (match_operand:VLMULEXT64 1 "register_operand") 0))]
+  "TARGET_VECTOR"
+{})
+
+(define_insn_and_split "*vlmul_extx2<mode>"
+  [(set (match_operand:<VLMULX2> 0 "register_operand"  "=vr, ?&vr")
+	(subreg:<VLMULX2>
+	  (match_operand:VLMULEXT2 1 "register_operand" " 0,   vr") 0))]
+  "TARGET_VECTOR"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_rtx_SET (gen_lowpart (<MODE>mode, operands[0]), operands[1]));
+  DONE;
+})
+
+(define_insn_and_split "*vlmul_extx4<mode>"
+  [(set (match_operand:<VLMULX4> 0 "register_operand"  "=vr, ?&vr")
+	(subreg:<VLMULX4>
+	  (match_operand:VLMULEXT4 1 "register_operand" " 0,   vr") 0))]
+  "TARGET_VECTOR"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_rtx_SET (gen_lowpart (<MODE>mode, operands[0]), operands[1]));
+  DONE;
+})
+
+(define_insn_and_split "*vlmul_extx8<mode>"
+  [(set (match_operand:<VLMULX8> 0 "register_operand"  "=vr, ?&vr")
+	(subreg:<VLMULX8>
+	  (match_operand:VLMULEXT8 1 "register_operand" " 0,   vr") 0))]
+  "TARGET_VECTOR"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_rtx_SET (gen_lowpart (<MODE>mode, operands[0]), operands[1]));
+  DONE;
+})
+
+(define_insn_and_split "*vlmul_extx16<mode>"
+  [(set (match_operand:<VLMULX16> 0 "register_operand"  "=vr, ?&vr")
+	(subreg:<VLMULX16>
+	  (match_operand:VLMULEXT16 1 "register_operand" " 0,   vr") 0))]
+  "TARGET_VECTOR"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_rtx_SET (gen_lowpart (<MODE>mode, operands[0]), operands[1]));
+  DONE;
+})
+
+(define_insn_and_split "*vlmul_extx32<mode>"
+  [(set (match_operand:<VLMULX32> 0 "register_operand"  "=vr, ?&vr")
+	(subreg:<VLMULX32>
+	  (match_operand:VLMULEXT32 1 "register_operand" " 0,   vr") 0))]
+  "TARGET_VECTOR"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_rtx_SET (gen_lowpart (<MODE>mode, operands[0]), operands[1]));
+  DONE;
+})
+
+(define_insn_and_split "*vlmul_extx64<mode>"
+  [(set (match_operand:<VLMULX64> 0 "register_operand"  "=vr, ?&vr")
+	(subreg:<VLMULX64>
+	  (match_operand:VLMULEXT64 1 "register_operand" " 0,   vr") 0))]
+  "TARGET_VECTOR"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_rtx_SET (gen_lowpart (<MODE>mode, operands[0]), operands[1]));
+  DONE;
+})
 
 ;; This pattern is used to hold the AVL operand for
 ;; RVV instructions that implicity use VLMAX AVL.

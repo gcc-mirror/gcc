@@ -184,10 +184,30 @@ riscv_pragma_intrinsic (cpp_reader *)
     error ("unknown %<#pragma riscv intrinsic%> option %qs", name);
 }
 
+/* Implement TARGET_CHECK_BUILTIN_CALL.  */
+static bool
+riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
+			  tree orig_fndecl, unsigned int nargs, tree *args)
+{
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
+  switch (code & RISCV_BUILTIN_CLASS)
+    {
+    case RISCV_BUILTIN_GENERAL:
+      return true;
+
+    case RISCV_BUILTIN_VECTOR:
+      return riscv_vector::check_builtin_call (loc, arg_loc, subcode,
+					       orig_fndecl, nargs, args);
+    }
+  gcc_unreachable ();
+}
+
 /* Implement REGISTER_TARGET_PRAGMAS.  */
 
 void
 riscv_register_pragmas (void)
 {
+  targetm.check_builtin_call = riscv_check_builtin_call;
   c_register_pragma ("riscv", "intrinsic", riscv_pragma_intrinsic);
 }

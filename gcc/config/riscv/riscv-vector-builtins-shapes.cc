@@ -277,8 +277,7 @@ struct return_mask_def : public build_base
       {
 	b.append_name (type_suffixes[instance.type.index].vector);
 	vector_type_index ret_type_idx
-	  = instance.op_info->ret.get_base_vector_type (
-	    builtin_types[instance.type.index].vector);
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
 	b.append_name (type_suffixes[ret_type_idx].vector);
       }
 
@@ -303,8 +302,7 @@ struct narrow_alu_def : public build_base
 	b.append_name (operand_suffixes[instance.op_info->op]);
 	/* vop_<op> --> vop_<op>_<type>.  */
 	vector_type_index ret_type_idx
-	  = instance.op_info->ret.get_base_vector_type (
-	    builtin_types[instance.type.index].vector);
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
 	b.append_name (type_suffixes[ret_type_idx].vector);
       }
 
@@ -388,8 +386,7 @@ struct reduc_alu_def : public build_base
 	b.append_name (operand_suffixes[instance.op_info->op]);
 	b.append_name (type_suffixes[instance.type.index].vector);
 	vector_type_index ret_type_idx
-	  = instance.op_info->ret.get_base_vector_type (
-	    builtin_types[instance.type.index].vector);
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
 	b.append_name (type_suffixes[ret_type_idx].vector);
       }
 
@@ -418,6 +415,88 @@ struct scalar_move_def : public build_base
   }
 };
 
+/* vundefined_def class.  */
+struct vundefined_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      return nullptr;
+    b.append_base_name (instance.base_name);
+    b.append_name (type_suffixes[instance.type.index].vector);
+    return b.finish_name ();
+  }
+};
+
+/* misc_def class.  */
+struct misc_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    if (!overloaded_p)
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	vector_type_index arg0_type_idx
+	  = instance.op_info->args[0].get_function_type_index (
+	    instance.type.index);
+	b.append_name (type_suffixes[arg0_type_idx].vector);
+      }
+
+    vector_type_index ret_type_idx
+      = instance.op_info->ret.get_function_type_index (instance.type.index);
+    b.append_name (type_suffixes[ret_type_idx].vector);
+    return b.finish_name ();
+  }
+};
+
+/* vset_def class.  */
+struct vset_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    if (!overloaded_p)
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	vector_type_index arg_type_idx
+	  = instance.op_info->args[2].get_function_type_index (
+	    instance.type.index);
+	b.append_name (type_suffixes[arg_type_idx].vector);
+
+	vector_type_index ret_type_idx
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
+	b.append_name (type_suffixes[ret_type_idx].vector);
+      }
+    return b.finish_name ();
+  }
+
+  bool check (function_checker &c) const override
+  {
+    poly_int64 outer_size = GET_MODE_SIZE (c.arg_mode (0));
+    poly_int64 inner_size = GET_MODE_SIZE (c.arg_mode (2));
+    unsigned int nvecs = exact_div (outer_size, inner_size).to_constant ();
+    return c.require_immediate (1, 0, nvecs - 1);
+  }
+};
+
+/* vget_def class.  */
+struct vget_def : public misc_def
+{
+  bool check (function_checker &c) const override
+  {
+    poly_int64 outer_size = GET_MODE_SIZE (c.arg_mode (0));
+    poly_int64 inner_size = GET_MODE_SIZE (c.ret_mode ());
+    unsigned int nvecs = exact_div (outer_size, inner_size).to_constant ();
+    return c.require_immediate (1, 0, nvecs - 1);
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -431,5 +510,9 @@ SHAPE(move, move)
 SHAPE(mask_alu, mask_alu)
 SHAPE(reduc_alu, reduc_alu)
 SHAPE(scalar_move, scalar_move)
+SHAPE(vundefined, vundefined)
+SHAPE(misc, misc)
+SHAPE(vset, vset)
+SHAPE(vget, vget)
 
 } // end namespace riscv_vector

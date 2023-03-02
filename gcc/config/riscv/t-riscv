@@ -80,3 +80,21 @@ PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes.def
 $(common_out_file): $(srcdir)/config/riscv/riscv-cores.def \
     $(srcdir)/config/riscv/riscv-protos.h \
     $(srcdir)/config/riscv/riscv-subset.h
+
+build/genrvv-type-indexer.o: $(srcdir)/config/riscv/genrvv-type-indexer.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  $(CORETYPES_H) $(GTM_H) errors.h $(GENSUPPORT_H) insn-modes.h
+
+build/genrvv-type-indexer$(build_exeext): build/genrvv-type-indexer.o
+	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
+
+$(srcdir)/config/riscv/riscv-vector-builtins.def: riscv-vector-type-indexer.gen.def
+
+riscv-vector-type-indexer.gen.def: s-riscv-vector-type-indexer.gen.defs ; @true
+
+s-riscv-vector-type-indexer.gen.defs: build/genrvv-type-indexer$(build_exeext)
+	$(RUN_GEN) build/genrvv-type-indexer$(build_exeext) tmp-riscv-vector-type-indexer.gen.def
+	$(SHELL) $(srcdir)/../move-if-change tmp-riscv-vector-type-indexer.gen.def    riscv-vector-type-indexer.gen.def
+	$(STAMP) s-riscv-vector-type-indexer.gen.defs
+
+genprog+=rvv-type-indexer

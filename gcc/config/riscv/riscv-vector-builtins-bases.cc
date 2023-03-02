@@ -1422,6 +1422,120 @@ public:
   }
 };
 
+class vundefined : public function_base
+{
+public:
+  bool apply_vl_p () const override
+  {
+    return false;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.generate_insn (code_for_vundefined (e.vector_mode ()));
+  }
+};
+
+class vreinterpret : public function_base
+{
+public:
+  bool apply_vl_p () const override
+  {
+    return false;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    e.add_input_operand (0);
+    return e.generate_insn (code_for_vreinterpret (e.ret_mode ()));
+  }
+};
+
+class vlmul_ext : public function_base
+{
+public:
+  bool apply_vl_p () const override
+  {
+    return false;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    e.add_input_operand (0);
+    switch (e.op_info->ret.base_type)
+      {
+      case RVV_BASE_vlmul_ext_x2:
+	return e.generate_insn (
+	  code_for_vlmul_extx2 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x4:
+	return e.generate_insn (
+	  code_for_vlmul_extx4 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x8:
+	return e.generate_insn (
+	  code_for_vlmul_extx8 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x16:
+	return e.generate_insn (
+	  code_for_vlmul_extx16 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x32:
+	return e.generate_insn (
+	  code_for_vlmul_extx32 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x64:
+	return e.generate_insn (
+	  code_for_vlmul_extx64 (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
+class vlmul_trunc : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 0));
+    emit_move_insn (e.target, gen_lowpart (GET_MODE (e.target), src));
+    return e.target;
+  }
+};
+
+class vset : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    rtx dest = expand_normal (CALL_EXPR_ARG (e.exp, 0));
+    rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
+    rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 2));
+    poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (src));
+    emit_move_insn (e.target, dest);
+    rtx subreg = simplify_gen_subreg (GET_MODE (src), e.target,
+				      GET_MODE (e.target), offset);
+    emit_move_insn (subreg, src);
+    return e.target;
+  }
+};
+
+class vget : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 0));
+    rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
+    poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (src));
+    rtx subreg
+      = simplify_gen_subreg (GET_MODE (e.target), src, GET_MODE (src), offset);
+    return subreg;
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -1624,6 +1738,12 @@ static CONSTEXPR const slideop<UNSPEC_VFSLIDE1DOWN> vfslide1down_obj;
 static CONSTEXPR const vrgather vrgather_obj;
 static CONSTEXPR const vrgatherei16 vrgatherei16_obj;
 static CONSTEXPR const vcompress vcompress_obj;
+static CONSTEXPR const vundefined vundefined_obj;
+static CONSTEXPR const vreinterpret vreinterpret_obj;
+static CONSTEXPR const vlmul_ext vlmul_ext_obj;
+static CONSTEXPR const vlmul_trunc vlmul_trunc_obj;
+static CONSTEXPR const vset vset_obj;
+static CONSTEXPR const vget vget_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -1832,5 +1952,11 @@ BASE (vfslide1down)
 BASE (vrgather)
 BASE (vrgatherei16)
 BASE (vcompress)
+BASE (vundefined)
+BASE (vreinterpret)
+BASE (vlmul_ext)
+BASE (vlmul_trunc)
+BASE (vset)
+BASE (vget)
 
 } // end namespace riscv_vector
