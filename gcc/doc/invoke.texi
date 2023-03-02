@@ -16229,6 +16229,10 @@ The following choices of @var{name} are available on i386 and x86_64 targets:
 @item x86-stlf-window-ninsns
 Instructions number above which STFL stall penalty can be compensated.
 
+@item x86-stv-max-visits
+The maximum number of use and def visits when discovering a STV chain before
+the discovery is aborted.
+
 @end table
 
 @end table
