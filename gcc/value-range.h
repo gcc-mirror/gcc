@@ -104,8 +104,9 @@ public:
   enum value_range_kind kind () const;		// DEPRECATED
 
 protected:
+  vrange (enum value_range_discriminator d) : m_discriminator (d) { }
   ENUM_BITFIELD(value_range_kind) m_kind : 8;
-  ENUM_BITFIELD(value_range_discriminator) m_discriminator : 4;
+  const ENUM_BITFIELD(value_range_discriminator) m_discriminator : 4;
 };
 
 // An integer range without any storage.
@@ -214,7 +215,7 @@ private:
 
   bool intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
-  unsigned char m_max_ranges;
+  const unsigned char m_max_ranges;
   tree m_nonzero_mask;
   tree *m_base;
 };
@@ -257,8 +258,8 @@ class unsupported_range : public vrange
 {
 public:
   unsupported_range ()
+    : vrange (VR_UNKNOWN)
   {
-    m_discriminator = VR_UNKNOWN;
     set_undefined ();
   }
   virtual void set_undefined () final override
@@ -873,10 +874,10 @@ gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
 
 inline
 irange::irange (tree *base, unsigned nranges)
+  : vrange (VR_IRANGE),
+    m_max_ranges (nranges)
 {
-  m_discriminator = VR_IRANGE;
   m_base = base;
-  m_max_ranges = nranges;
   set_undefined ();
 }
 
@@ -1112,22 +1113,22 @@ vrp_val_min (const_tree type)
 
 inline
 frange::frange ()
+  : vrange (VR_FRANGE)
 {
-  m_discriminator = VR_FRANGE;
   set_undefined ();
 }
 
 inline
 frange::frange (const frange &src)
+  : vrange (VR_FRANGE)
 {
-  m_discriminator = VR_FRANGE;
   *this = src;
 }
 
 inline
 frange::frange (tree type)
+  : vrange (VR_FRANGE)
 {
-  m_discriminator = VR_FRANGE;
   set_varying (type);
 }
 
@@ -1137,8 +1138,8 @@ inline
 frange::frange (tree type,
 		const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
 		value_range_kind kind)
+  : vrange (VR_FRANGE)
 {
-  m_discriminator = VR_FRANGE;
   set (type, min, max, kind);
 }
 
@@ -1146,8 +1147,8 @@ frange::frange (tree type,
 
 inline
 frange::frange (tree min, tree max, value_range_kind kind)
+  : vrange (VR_FRANGE)
 {
-  m_discriminator = VR_FRANGE;
   set (min, max, kind);
 }
 
