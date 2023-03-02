@@ -3570,12 +3570,13 @@ determine_block_size (tree len, rtx len_rtx,
       if (TREE_CODE (len) == SSA_NAME)
 	{
 	  value_range r;
+	  tree tmin, tmax;
 	  get_global_range_query ()->range_of_expr (r, len);
-	  range_type = r.kind ();
+	  range_type = get_legacy_range (r, tmin, tmax);
 	  if (range_type != VR_UNDEFINED)
 	    {
-	      min = wi::to_wide (r.min ());
-	      max = wi::to_wide (r.max ());
+	      min = wi::to_wide (tmin);
+	      max = wi::to_wide (tmax);
 	    }
 	}
       if (range_type == VR_RANGE)

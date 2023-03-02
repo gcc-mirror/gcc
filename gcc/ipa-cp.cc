@@ -6614,10 +6614,11 @@ ipcp_store_vr_results (void)
 	      && !plats->m_value_range.top_p ()
 	      && dbg_cnt (ipa_cp_vr))
 	    {
+	      tree min, max;
 	      vr.known = true;
-	      vr.type = plats->m_value_range.m_vr.kind ();
-	      vr.min = wi::to_wide (plats->m_value_range.m_vr.min ());
-	      vr.max = wi::to_wide (plats->m_value_range.m_vr.max ());
+	      vr.type = get_legacy_range (plats->m_value_range.m_vr, min, max);
+	      vr.min = wi::to_wide (min);
+	      vr.max = wi::to_wide (max);
 	    }
 	  else
 	    {

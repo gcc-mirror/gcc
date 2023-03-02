@@ -914,19 +914,58 @@ irange::operator= (const irange &src)
   return *this;
 }
 
-// Return TRUE if range is a multi-range that can be represented as a
-// VR_ANTI_RANGE.
-
-bool
-irange::maybe_anti_range () const
+value_range_kind
+get_legacy_range (const irange &r, tree &min, tree &max)
 {
-  tree ttype = type ();
-  unsigned int precision = TYPE_PRECISION (ttype);
-  signop sign = TYPE_SIGN (ttype);
-  return (num_pairs () > 1
-	  && precision > 1
-	  && lower_bound () == wi::min_value (precision, sign)
-	  && upper_bound () == wi::max_value (precision, sign));
+  value_range_kind old_kind = r.kind ();
+  tree old_min = r.min ();
+  tree old_max = r.max ();
+
+  if (r.undefined_p ())
+    {
+      min = NULL_TREE;
+      max = NULL_TREE;
+      gcc_checking_assert (old_kind == VR_UNDEFINED);
+      return VR_UNDEFINED;
+    }
+
+  tree type = r.type ();
+  if (r.varying_p ())
+    {
+      min = wide_int_to_tree (type, r.lower_bound ());
+      max = wide_int_to_tree (type, r.upper_bound ());
+      gcc_checking_assert (old_kind == VR_VARYING);
+      gcc_checking_assert (vrp_operand_equal_p (old_min, min));
+      gcc_checking_assert (vrp_operand_equal_p (old_max, max));
+      return VR_VARYING;
+    }
+
+  unsigned int precision = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
+  if (r.num_pairs () > 1
+      && precision > 1
+      && r.lower_bound () == wi::min_value (precision, sign)
+      && r.upper_bound () == wi::max_value (precision, sign))
+    {
+      int_range<3> inv (r);
+      inv.invert ();
+      min = wide_int_to_tree (type, inv.lower_bound (0));
+      max = wide_int_to_tree (type, inv.upper_bound (0));
+      if (r.legacy_mode_p ())
+	{
+	  gcc_checking_assert (old_kind == VR_ANTI_RANGE);
+	  gcc_checking_assert (vrp_operand_equal_p (old_min, min));
+	  gcc_checking_assert (vrp_operand_equal_p (old_max, max));
+	}
+      return VR_ANTI_RANGE;
+    }
+
+  min = wide_int_to_tree (type, r.lower_bound ());
+  max = wide_int_to_tree (type, r.upper_bound ());
+  gcc_checking_assert (old_kind == VR_RANGE);
+  gcc_checking_assert (vrp_operand_equal_p (old_min, min));
+  gcc_checking_assert (vrp_operand_equal_p (old_max, max));
+  return VR_RANGE;
 }
 
 void
@@ -968,13 +1007,9 @@ irange::copy_to_legacy (const irange &src)
       return;
     }
   // Copy multi-range to legacy.
-  if (src.maybe_anti_range ())
-    {
-      int_range<3> r (src);
-      r.invert ();
-      // Use tree variants to save on tree -> wi -> tree conversions.
-      set (r.tree_lower_bound (0), r.tree_upper_bound (0), VR_ANTI_RANGE);
-    }
+  tree min, max;
+  if (get_legacy_range (src, min, max) == VR_ANTI_RANGE)
+    set (min, max, VR_ANTI_RANGE);
   else
     set (src.tree_lower_bound (), src.tree_upper_bound ());
 }
@@ -3056,18 +3091,20 @@ ranges_from_anti_range (const value_range *ar,
   /* As a future improvement, we could handle ~[0, A] as: [-INF, -1] U
      [A+1, +INF].  Not sure if this helps in practice, though.  */
 
-  if (ar->kind () != VR_ANTI_RANGE
-      || TREE_CODE (ar->min ()) != INTEGER_CST
-      || TREE_CODE (ar->max ()) != INTEGER_CST
+  tree ar_min, ar_max;
+  value_range_kind kind = get_legacy_range (*ar, ar_min, ar_max);
+  if (kind != VR_ANTI_RANGE
+      || TREE_CODE (ar_min) != INTEGER_CST
+      || TREE_CODE (ar_max) != INTEGER_CST
       || !vrp_val_min (type)
       || !vrp_val_max (type))
     return false;
 
-  if (tree_int_cst_lt (vrp_val_min (type), ar->min ()))
+  if (tree_int_cst_lt (vrp_val_min (type), ar_min))
     vr0->set (vrp_val_min (type),
-	      wide_int_to_tree (type, wi::to_wide (ar->min ()) - 1));
-  if (tree_int_cst_lt (ar->max (), vrp_val_max (type)))
-    vr1->set (wide_int_to_tree (type, wi::to_wide (ar->max ()) + 1),
+	      wide_int_to_tree (type, wi::to_wide (ar_min) - 1));
+  if (tree_int_cst_lt (ar_max, vrp_val_max (type)))
+    vr1->set (wide_int_to_tree (type, wi::to_wide (ar_max) + 1),
 	      vrp_val_max (type));
   if (vr0->undefined_p ())
     {

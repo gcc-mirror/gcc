@@ -124,8 +124,9 @@ check_for_binary_op_overflow (range_query *query,
   else
     vr1.set_varying (TREE_TYPE (op1));
 
-  tree vr0min = vr0.min (), vr0max = vr0.max ();
-  tree vr1min = vr1.min (), vr1max = vr1.max ();
+  tree vr0min, vr0max, vr1min, vr1max;
+  get_legacy_range (vr0, vr0min, vr0max);
+  get_legacy_range (vr1, vr1min, vr1max);
   if (!range_int_cst_p (&vr0)
       || TREE_OVERFLOW (vr0min)
       || TREE_OVERFLOW (vr0max))
@@ -233,11 +234,14 @@ compare_ranges (enum tree_code comp, const value_range *vr0,
     return NULL_TREE;
 
   /* Anti-ranges need to be handled separately.  */
-  if (vr0->kind () == VR_ANTI_RANGE || vr1->kind () == VR_ANTI_RANGE)
+  tree vr0min, vr0max, vr1min, vr1max;
+  value_range_kind kind0 = get_legacy_range (*vr0, vr0min, vr0max);
+  value_range_kind kind1 = get_legacy_range (*vr1, vr1min, vr1max);
+  if (kind0 == VR_ANTI_RANGE || kind1 == VR_ANTI_RANGE)
     {
       /* If both are anti-ranges, then we cannot compute any
 	 comparison.  */
-      if (vr0->kind () == VR_ANTI_RANGE && vr1->kind () == VR_ANTI_RANGE)
+      if (kind0 == VR_ANTI_RANGE && kind1 == VR_ANTI_RANGE)
 	return NULL_TREE;
 
       /* These comparisons are never statically computable.  */
@@ -249,14 +253,19 @@ compare_ranges (enum tree_code comp, const value_range *vr0,
 
       /* Equality can be computed only between a range and an
 	 anti-range.  ~[VAL1, VAL2] == [VAL1, VAL2] is always false.  */
-      if (vr0->kind () == VR_RANGE)
-	/* To simplify processing, make VR0 the anti-range.  */
-	std::swap (vr0, vr1);
+      if (kind0 == VR_RANGE)
+	{
+	  /* To simplify processing, make VR0 the anti-range.  */
+	  kind0 = kind1;
+	  vr0min = vr1min;
+	  vr0max = vr1max;
+	  kind1 = get_legacy_range (*vr0, vr1min, vr1max);
+	}
 
       gcc_assert (comp == NE_EXPR || comp == EQ_EXPR);
 
-      if (compare_values_warnv (vr0->min (), vr1->min (), strict_overflow_p) == 0
-	  && compare_values_warnv (vr0->max (), vr1->max (), strict_overflow_p) == 0)
+      if (compare_values_warnv (vr0min, vr1min, strict_overflow_p) == 0
+	  && compare_values_warnv (vr0max, vr1max, strict_overflow_p) == 0)
 	return (comp == NE_EXPR) ? boolean_true_node : boolean_false_node;
 
       return NULL_TREE;
@@ -267,19 +276,22 @@ compare_ranges (enum tree_code comp, const value_range *vr0,
   if (comp == GT_EXPR || comp == GE_EXPR)
     {
       comp = (comp == GT_EXPR) ? LT_EXPR : LE_EXPR;
-      std::swap (vr0, vr1);
+      kind0 = kind1;
+      vr0min = vr1min;
+      vr0max = vr1max;
+      kind1 = get_legacy_range (*vr0, vr1min, vr1max);
     }
 
   if (comp == EQ_EXPR)
     {
       /* Equality may only be computed if both ranges represent
 	 exactly one value.  */
-      if (compare_values_warnv (vr0->min (), vr0->max (), strict_overflow_p) == 0
-	  && compare_values_warnv (vr1->min (), vr1->max (), strict_overflow_p) == 0)
+      if (compare_values_warnv (vr0min, vr0max, strict_overflow_p) == 0
+	  && compare_values_warnv (vr1min, vr1max, strict_overflow_p) == 0)
 	{
-	  int cmp_min = compare_values_warnv (vr0->min (), vr1->min (),
+	  int cmp_min = compare_values_warnv (vr0min, vr1min,
 					      strict_overflow_p);
-	  int cmp_max = compare_values_warnv (vr0->max (), vr1->max (),
+	  int cmp_max = compare_values_warnv (vr0max, vr1max,
 					      strict_overflow_p);
 	  if (cmp_min == 0 && cmp_max == 0)
 	    return boolean_true_node;
@@ -287,9 +299,9 @@ compare_ranges (enum tree_code comp, const value_range *vr0,
 	    return boolean_false_node;
 	}
       /* If [V0_MIN, V1_MAX] < [V1_MIN, V1_MAX] then V0 != V1.  */
-      else if (compare_values_warnv (vr0->min (), vr1->max (),
+      else if (compare_values_warnv (vr0min, vr1max,
 				     strict_overflow_p) == 1
-	       || compare_values_warnv (vr1->min (), vr0->max (),
+	       || compare_values_warnv (vr1min, vr0max,
 					strict_overflow_p) == 1)
 	return boolean_false_node;
 
@@ -304,20 +316,20 @@ compare_ranges (enum tree_code comp, const value_range *vr0,
 	 make sure that both comparisons yield similar results to
 	 avoid comparing values that cannot be compared at
 	 compile-time.  */
-      cmp1 = compare_values_warnv (vr0->max (), vr1->min (), strict_overflow_p);
-      cmp2 = compare_values_warnv (vr0->min (), vr1->max (), strict_overflow_p);
+      cmp1 = compare_values_warnv (vr0max, vr1min, strict_overflow_p);
+      cmp2 = compare_values_warnv (vr0min, vr1max, strict_overflow_p);
       if ((cmp1 == -1 && cmp2 == -1) || (cmp1 == 1 && cmp2 == 1))
 	return boolean_true_node;
 
       /* If VR0 and VR1 represent a single value and are identical,
 	 return false.  */
-      else if (compare_values_warnv (vr0->min (), vr0->max (),
+      else if (compare_values_warnv (vr0min, vr0max,
 				     strict_overflow_p) == 0
-	       && compare_values_warnv (vr1->min (), vr1->max (),
+	       && compare_values_warnv (vr1min, vr1max,
 					strict_overflow_p) == 0
-	       && compare_values_warnv (vr0->min (), vr1->min (),
+	       && compare_values_warnv (vr0min, vr1min,
 					strict_overflow_p) == 0
-	       && compare_values_warnv (vr0->max (), vr1->max (),
+	       && compare_values_warnv (vr0max, vr1max,
 					strict_overflow_p) == 0)
 	return boolean_false_node;
 
@@ -330,13 +342,13 @@ compare_ranges (enum tree_code comp, const value_range *vr0,
       int tst;
 
       /* If VR0 is to the left of VR1, return true.  */
-      tst = compare_values_warnv (vr0->max (), vr1->min (), strict_overflow_p);
+      tst = compare_values_warnv (vr0max, vr1min, strict_overflow_p);
       if ((comp == LT_EXPR && tst == -1)
 	  || (comp == LE_EXPR && (tst == -1 || tst == 0)))
 	return boolean_true_node;
 
       /* If VR0 is to the right of VR1, return false.  */
-      tst = compare_values_warnv (vr0->min (), vr1->max (), strict_overflow_p);
+      tst = compare_values_warnv (vr0min, vr1max, strict_overflow_p);
       if ((comp == LT_EXPR && (tst == 0 || tst == 1))
 	  || (comp == LE_EXPR && tst == 1))
 	return boolean_false_node;
@@ -364,7 +376,8 @@ compare_range_with_value (enum tree_code comp, const value_range *vr,
     return NULL_TREE;
 
   /* Anti-ranges need to be handled separately.  */
-  if (vr->kind () == VR_ANTI_RANGE)
+  tree min, max;
+  if (get_legacy_range (*vr, min, max) == VR_ANTI_RANGE)
     {
       /* For anti-ranges, the only predicates that we can compute at
 	 compile time are equality and inequality.  */
@@ -386,16 +399,16 @@ compare_range_with_value (enum tree_code comp, const value_range *vr,
     {
       /* EQ_EXPR may only be computed if VR represents exactly
 	 one value.  */
-      if (compare_values_warnv (vr->min (), vr->max (), strict_overflow_p) == 0)
+      if (compare_values_warnv (min, max, strict_overflow_p) == 0)
 	{
-	  int cmp = compare_values_warnv (vr->min (), val, strict_overflow_p);
+	  int cmp = compare_values_warnv (min, val, strict_overflow_p);
 	  if (cmp == 0)
 	    return boolean_true_node;
 	  else if (cmp == -1 || cmp == 1 || cmp == 2)
 	    return boolean_false_node;
 	}
-      else if (compare_values_warnv (val, vr->min (), strict_overflow_p) == -1
-	       || compare_values_warnv (vr->max (), val, strict_overflow_p) == -1)
+      else if (compare_values_warnv (val, min, strict_overflow_p) == -1
+	       || compare_values_warnv (max, val, strict_overflow_p) == -1)
 	return boolean_false_node;
 
       return NULL_TREE;
@@ -403,14 +416,14 @@ compare_range_with_value (enum tree_code comp, const value_range *vr,
   else if (comp == NE_EXPR)
     {
       /* If VAL is not inside VR, then they are always different.  */
-      if (compare_values_warnv (vr->max (), val, strict_overflow_p) == -1
-	  || compare_values_warnv (vr->min (), val, strict_overflow_p) == 1)
+      if (compare_values_warnv (max, val, strict_overflow_p) == -1
+	  || compare_values_warnv (min, val, strict_overflow_p) == 1)
 	return boolean_true_node;
 
       /* If VR represents exactly one value equal to VAL, then return
 	 false.  */
-      if (compare_values_warnv (vr->min (), vr->max (), strict_overflow_p) == 0
-	  && compare_values_warnv (vr->min (), val, strict_overflow_p) == 0)
+      if (compare_values_warnv (min, max, strict_overflow_p) == 0
+	  && compare_values_warnv (min, val, strict_overflow_p) == 0)
 	return boolean_false_node;
 
       /* Otherwise, they may or may not be different.  */
@@ -421,13 +434,13 @@ compare_range_with_value (enum tree_code comp, const value_range *vr,
       int tst;
 
       /* If VR is to the left of VAL, return true.  */
-      tst = compare_values_warnv (vr->max (), val, strict_overflow_p);
+      tst = compare_values_warnv (max, val, strict_overflow_p);
       if ((comp == LT_EXPR && tst == -1)
 	  || (comp == LE_EXPR && (tst == -1 || tst == 0)))
 	return boolean_true_node;
 
       /* If VR is to the right of VAL, return false.  */
-      tst = compare_values_warnv (vr->min (), val, strict_overflow_p);
+      tst = compare_values_warnv (min, val, strict_overflow_p);
       if ((comp == LT_EXPR && (tst == 0 || tst == 1))
 	  || (comp == LE_EXPR && tst == 1))
 	return boolean_false_node;
@@ -440,13 +453,13 @@ compare_range_with_value (enum tree_code comp, const value_range *vr,
       int tst;
 
       /* If VR is to the right of VAL, return true.  */
-      tst = compare_values_warnv (vr->min (), val, strict_overflow_p);
+      tst = compare_values_warnv (min, val, strict_overflow_p);
       if ((comp == GT_EXPR && tst == 1)
 	  || (comp == GE_EXPR && (tst == 0 || tst == 1)))
 	return boolean_true_node;
 
       /* If VR is to the left of VAL, return false.  */
-      tst = compare_values_warnv (vr->max (), val, strict_overflow_p);
+      tst = compare_values_warnv (max, val, strict_overflow_p);
       if ((comp == GT_EXPR && (tst == -1 || tst == 0))
 	  || (comp == GE_EXPR && tst == -1))
 	return boolean_false_node;
@@ -544,11 +557,12 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 
   /* Try to use estimated number of iterations for the loop to constrain the
      final value in the evolution.  */
+  tree rmin, rmax;
   if (TREE_CODE (step) == INTEGER_CST
       && is_gimple_val (init)
       && (TREE_CODE (init) != SSA_NAME
 	  || (query->range_of_expr (r, init, stmt)
-	      && r.kind () == VR_RANGE)))
+	      && get_legacy_range (r, rmin, rmax) == VR_RANGE)))
     {
       widest_int nit;
 
@@ -584,9 +598,12 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 	      range_op_handler handler (PLUS_EXPR, TREE_TYPE (init));
 	      if (!handler.fold_range (maxvr, TREE_TYPE (init), vr0, vr1))
 		maxvr.set_varying (TREE_TYPE (init));
+	      tree maxvr_min, maxvr_max;
+	      value_range_kind maxvr_kind
+		= get_legacy_range (maxvr, maxvr_min, maxvr_max);
 
 	      /* Likewise if the addition did.  */
-	      if (maxvr.kind () == VR_RANGE)
+	      if (maxvr_kind == VR_RANGE)
 		{
 		  int_range<2> initvr;
 
@@ -597,18 +614,21 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 		  else
 		    return false;
 
+		  tree initvr_min, initvr_max;
+		  get_legacy_range (initvr, initvr_min, initvr_max);
+
 		  /* Check if init + nit * step overflows.  Though we checked
 		     scev {init, step}_loop doesn't wrap, it is not enough
 		     because the loop may exit immediately.  Overflow could
 		     happen in the plus expression in this case.  */
 		  if ((dir == EV_DIR_DECREASES
-		       && compare_values (maxvr.min (), initvr.min ()) != -1)
+		       && compare_values (maxvr_min, initvr_min) != -1)
 		      || (dir == EV_DIR_GROWS
-			  && compare_values (maxvr.max (), initvr.max ()) != 1))
+			  && compare_values (maxvr_max, initvr_max) != 1))
 		    return false;
 
-		  tmin = maxvr.min ();
-		  tmax = maxvr.max ();
+		  tmin = maxvr_min;
+		  tmax = maxvr_max;
 		}
 	    }
 	}
@@ -810,7 +830,8 @@ find_case_label_ranges (gswitch *stmt, const value_range *vr,
   unsigned int n = gimple_switch_num_labels (stmt);
   bool take_default;
   tree case_low, case_high;
-  tree min = vr->min (), max = vr->max ();
+  tree min, max;
+  value_range_kind kind = get_legacy_range (*vr, min, max);
 
   gcc_checking_assert (!vr->varying_p () && !vr->undefined_p ());
 
@@ -820,7 +841,7 @@ find_case_label_ranges (gswitch *stmt, const value_range *vr,
   *min_idx2 = 1;
   *max_idx2 = 0;
 
-  if (vr->kind () == VR_RANGE)
+  if (kind == VR_RANGE)
     {
       *min_idx1 = i;
       *max_idx1 = j;
@@ -1724,8 +1745,10 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
   /* We can truncate the case label ranges that partially overlap with OP's
      value range.  */
   size_t min_idx = 1, max_idx = 0;
+  tree min, max;
+  value_range_kind kind = get_legacy_range (vr, min, max);
   if (!vr.undefined_p ())
-    find_case_label_range (stmt, vr.min (), vr.max (), &min_idx, &max_idx);
+    find_case_label_range (stmt, min, max, &min_idx, &max_idx);
   if (min_idx <= max_idx)
     {
       tree min_label = gimple_switch_label (stmt, min_idx);
@@ -1733,10 +1756,10 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
 
       /* Avoid changing the type of the case labels when truncating.  */
       tree case_label_type = TREE_TYPE (CASE_LOW (min_label));
-      tree vr_min = fold_convert (case_label_type, vr.min ());
-      tree vr_max = fold_convert (case_label_type, vr.max ());
+      tree vr_min = fold_convert (case_label_type, min);
+      tree vr_max = fold_convert (case_label_type, max);
 
-      if (vr.kind () == VR_RANGE)
+      if (kind == VR_RANGE)
 	{
 	  /* If OP's value range is [2,8] and the low label range is
 	     0 ... 3, truncate the label's range to 2 .. 3.  */
@@ -1752,7 +1775,7 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
 	      && tree_int_cst_compare (CASE_HIGH (max_label), vr_max) > 0)
 	    CASE_HIGH (max_label) = vr_max;
 	}
-      else if (vr.kind () == VR_ANTI_RANGE)
+      else if (kind == VR_ANTI_RANGE)
 	{
 	  tree one_cst = build_one_cst (case_label_type);
 

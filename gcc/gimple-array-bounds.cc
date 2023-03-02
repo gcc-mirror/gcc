@@ -266,6 +266,7 @@ check_out_of_bounds_and_warn (location_t location, tree ref,
 			      bool ignore_off_by_one, bool for_array_bound,
 			      bool *out_of_bound)
 {
+  tree min, max;
   tree low_bound = array_ref_low_bound (ref);
   tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
 
@@ -284,7 +285,7 @@ check_out_of_bounds_and_warn (location_t location, tree ref,
 
   if (warned)
     ; /* Do nothing.  */
-  else if (vr->kind () == VR_ANTI_RANGE)
+  else if (get_legacy_range (*vr, min, max) == VR_ANTI_RANGE)
     {
       if (up_bound
 	  && TREE_CODE (up_sub) == INTEGER_CST
@@ -378,8 +379,10 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
       get_value_range (vr, low_sub_org, stmt);
       if (!vr.undefined_p () && !vr.varying_p ())
 	{
-	  low_sub = vr.kind () == VR_RANGE ? vr.max () : vr.min ();
-	  up_sub = vr.kind () == VR_RANGE ? vr.min () : vr.max ();
+	  tree min, max;
+	  value_range_kind kind = get_legacy_range (vr, min, max);
+	  low_sub = kind == VR_RANGE ? max : min;
+	  up_sub = kind == VR_RANGE ? min : max;
 	}
     }
 

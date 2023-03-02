@@ -118,9 +118,11 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   static hashval_t
   hash (const value_range *p)
     {
-      inchash::hash hstate (p->kind ());
-      inchash::add_expr (p->min (), hstate);
-      inchash::add_expr (p->max (), hstate);
+      tree min, max;
+      value_range_kind kind = get_legacy_range (*p, min, max);
+      inchash::hash hstate (kind);
+      inchash::add_expr (min, hstate);
+      inchash::add_expr (max, hstate);
       return hstate.end ();
     }
   static bool
@@ -4783,10 +4785,12 @@ ipa_write_jump_function (struct output_block *ob,
   streamer_write_bitpack (&bp);
   if (jump_func->m_vr)
     {
+      tree min, max;
+      value_range_kind kind = get_legacy_range (*jump_func->m_vr, min, max);
       streamer_write_enum (ob->main_stream, value_rang_type,
-			   VR_LAST, jump_func->m_vr->kind ());
-      stream_write_tree (ob, jump_func->m_vr->min (), true);
-      stream_write_tree (ob, jump_func->m_vr->max (), true);
+			   VR_LAST, kind);
+      stream_write_tree (ob, min, true);
+      stream_write_tree (ob, max, true);
     }
 }
 

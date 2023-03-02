@@ -118,6 +118,7 @@ namespace inchash
 
 class GTY((user)) irange : public vrange
 {
+  friend value_range_kind get_legacy_range (const irange &, tree &, tree &);
   friend class vrange_allocator;
   friend class irange_storage_slot; // For legacy_mode_p checks.
 public:
@@ -197,7 +198,6 @@ protected:
   wide_int legacy_lower_bound (unsigned = 0) const;
   wide_int legacy_upper_bound (unsigned) const;
   int value_inside_range (tree) const;
-  bool maybe_anti_range () const;
   void copy_to_legacy (const irange &);
   void copy_legacy_to_multi_range (const irange &);
 
@@ -672,6 +672,7 @@ irange::legacy_mode_p () const
 extern bool range_has_numeric_bounds_p (const irange *);
 extern bool ranges_from_anti_range (const value_range *,
 				    value_range *, value_range *);
+extern value_range_kind get_legacy_range (const irange &, tree &min, tree &max);
 extern void dump_value_range (FILE *, const vrange *);
 extern bool vrp_val_is_min (const_tree);
 extern bool vrp_val_is_max (const_tree);

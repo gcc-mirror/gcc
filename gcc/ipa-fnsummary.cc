@@ -1692,9 +1692,10 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   get_range_query (cfun)->range_of_expr (vr, op);
   if (vr.undefined_p ())
     vr.set_varying (TREE_TYPE (op));
-  value_range_kind vr_type = vr.kind ();
-  wide_int vr_wmin = wi::to_wide (vr.min ());
-  wide_int vr_wmax = wi::to_wide (vr.max ());
+  tree vr_min, vr_max;
+  value_range_kind vr_type = get_legacy_range (vr, vr_min, vr_max);
+  wide_int vr_wmin = wi::to_wide (vr_min);
+  wide_int vr_wmax = wi::to_wide (vr_max);
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
