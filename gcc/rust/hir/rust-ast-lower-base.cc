@@ -970,5 +970,21 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
   return hir_extern_block;
 }
 
+void
+ASTLoweringBase::lower_macro_definition (AST::MacroRulesDefinition &def)
+{
+  auto is_export = false;
+  for (const auto &attr : def.get_outer_attrs ())
+    if (attr.get_path ().as_string () == "macro_export")
+      is_export = true;
+
+  if (is_export)
+    {
+      mappings->insert_exported_macro (def);
+      mappings->insert_ast_item (&def);
+      mappings->insert_location (def.get_node_id (), def.get_locus ());
+    }
+}
+
 } // namespace HIR
 } // namespace Rust

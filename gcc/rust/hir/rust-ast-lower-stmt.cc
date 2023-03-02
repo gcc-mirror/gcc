@@ -32,7 +32,9 @@ ASTLoweringStmt::translate (AST::Stmt *stmt, bool *terminated)
   ASTLoweringStmt resolver;
   stmt->accept_vis (resolver);
 
-  rust_assert (resolver.translated != nullptr);
+  if (!resolver.translated)
+    return nullptr;
+
   *terminated = resolver.terminated;
   resolver.mappings->insert_location (
     resolver.translated->get_mappings ().get_hirid (),
@@ -404,6 +406,12 @@ void
 ASTLoweringStmt::visit (AST::ExternBlock &extern_block)
 {
   translated = lower_extern_block (extern_block);
+}
+
+void
+ASTLoweringStmt::visit (AST::MacroRulesDefinition &def)
+{
+  lower_macro_definition (def);
 }
 
 } // namespace HIR
