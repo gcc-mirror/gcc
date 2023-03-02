@@ -308,12 +308,12 @@ source_relative_path (std::string path, Location locus)
    FIXME: platform specific.  */
 
 std::vector<uint8_t>
-load_file_bytes (const char *filename)
+load_file_bytes (Location invoc_locus, const char *filename)
 {
   RAIIFile file_wrap (filename);
   if (file_wrap.get_raw () == nullptr)
     {
-      rust_error_at (Location (), "cannot open filename %s: %m", filename);
+      rust_error_at (invoc_locus, "cannot open filename %s: %m", filename);
       return std::vector<uint8_t> ();
     }
 
@@ -326,7 +326,7 @@ load_file_bytes (const char *filename)
 
   if (fread (&buf[0], fsize, 1, f) != 1)
     {
-      rust_error_at (Location (), "error reading file %s: %m", filename);
+      rust_error_at (invoc_locus, "error reading file %s: %m", filename);
       return std::vector<uint8_t> ();
     }
 
@@ -391,7 +391,8 @@ MacroBuiltin::include_bytes_handler (Location invoc_locus,
   std::string target_filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
 
-  std::vector<uint8_t> bytes = load_file_bytes (target_filename.c_str ());
+  std::vector<uint8_t> bytes
+    = load_file_bytes (invoc_locus, target_filename.c_str ());
 
   /* Is there a more efficient way to do this?  */
   std::vector<std::unique_ptr<AST::Expr>> elts;
@@ -455,7 +456,8 @@ MacroBuiltin::include_str_handler (Location invoc_locus,
   std::string target_filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
 
-  std::vector<uint8_t> bytes = load_file_bytes (target_filename.c_str ());
+  std::vector<uint8_t> bytes
+    = load_file_bytes (invoc_locus, target_filename.c_str ());
 
   /* FIXME: reuse lexer */
   int expect_single = 0;
