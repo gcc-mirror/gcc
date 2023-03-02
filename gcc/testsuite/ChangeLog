@@ -1,3 +1,34 @@
+2023-02-27  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2023-02-24  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/108834
+	* c-c++-common/asan/global-overflow-1.c: Test line and column
+	info for a global variable.
+
+2023-02-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-02-14  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96373
+	* gcc.target/powerpc/p9-vec-length-epil-1.c: Add -fno-trapping-math.
+	* gcc.target/powerpc/p9-vec-length-epil-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-1.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-2.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-3.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-4.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-5.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-6.c: Likewise.
+	* gcc.target/powerpc/p9-vec-length-full-8.c: Likewise.
+	* gcc.target/powerpc/pr96373.c: New test.
+
 2023-02-20  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
