@@ -8740,45 +8740,23 @@ attr_decl1 (void)
 	}
     }
 
-  /* Update symbol table.  DIMENSION attribute is set in
-     gfc_set_array_spec().  For CLASS variables, this must be applied
-     to the first component, or '_data' field.  */
   if (sym->ts.type == BT_CLASS
       && sym->ts.u.derived
       && sym->ts.u.derived->attr.is_class)
     {
-      /* gfc_set_array_spec sets sym->attr not CLASS_DATA(sym)->attr.  Check
-	 for duplicate attribute here.  */
-      if (CLASS_DATA(sym)->attr.dimension == 1 && as)
-	{
-	  gfc_error ("Duplicate DIMENSION attribute at %C");
-	  m = MATCH_ERROR;
-	  goto cleanup;
-	}
-
-      if (!gfc_copy_attr (&CLASS_DATA(sym)->attr, &current_attr, &var_locus))
-	{
-	  m = MATCH_ERROR;
-	  goto cleanup;
-	}
+      sym->attr.pointer = CLASS_DATA(sym)->attr.class_pointer;
+      sym->attr.allocatable = CLASS_DATA(sym)->attr.allocatable;
+      sym->attr.dimension = CLASS_DATA(sym)->attr.dimension;
+      sym->attr.codimension = CLASS_DATA(sym)->attr.codimension;
+      if (CLASS_DATA (sym)->as)
+	sym->as = gfc_copy_array_spec (CLASS_DATA (sym)->as);
     }
-  else
-    {
-      if (current_attr.dimension == 0 && current_attr.codimension == 0
-	  && !gfc_copy_attr (&sym->attr, &current_attr, &var_locus))
-	{
-	  m = MATCH_ERROR;
-	  goto cleanup;
-	}
-    }
-
-  if (sym->ts.type == BT_CLASS
-      && !gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as))
+  if (current_attr.dimension == 0 && current_attr.codimension == 0
+      && !gfc_copy_attr (&sym->attr, &current_attr, &var_locus))
     {
       m = MATCH_ERROR;
       goto cleanup;
     }
-
   if (!gfc_set_array_spec (sym, as, &var_locus))
     {
       m = MATCH_ERROR;
@@ -8802,6 +8780,24 @@ attr_decl1 (void)
   if ((current_attr.external || current_attr.intrinsic)
       && sym->attr.flavor != FL_PROCEDURE
       && !gfc_add_flavor (&sym->attr, FL_PROCEDURE, sym->name, NULL))
+    {
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
+  if (sym->ts.type == BT_CLASS && sym->ts.u.derived->attr.is_class
+      && !as && !current_attr.pointer && !current_attr.allocatable
+      && !current_attr.external)
+    {
+      sym->attr.pointer = 0;
+      sym->attr.allocatable = 0;
+      sym->attr.dimension = 0;
+      sym->attr.codimension = 0;
+      gfc_free_array_spec (sym->as);
+      sym->as = NULL;
+    }
+  else if (sym->ts.type == BT_CLASS
+      && !gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as))
     {
       m = MATCH_ERROR;
       goto cleanup;
