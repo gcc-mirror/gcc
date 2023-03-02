@@ -4709,7 +4709,7 @@ case "${target}" in
 		;;
 
 	mips*-*-*)
-		supported_defaults="abi arch arch_32 arch_64 float fpu nan fp_32 odd_spreg_32 tune tune_32 tune_64 divide llsc mips-plt synci lxc1-sxc1 madd4 compact-branches"
+		supported_defaults="abi arch arch_32 arch_64 float fpu nan fp_32 odd_spreg_32 tune tune_32 tune_64 divide llsc mips-plt synci lxc1-sxc1 madd4 compact-branches msa"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -4868,6 +4868,21 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown compact-branches policy used in --with-compact-branches" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_msa} in
+		yes)
+			with_msa=msa
+			;;
+		no)
+			with_msa=no-msa
+			;;
+		"")
+			;;
+		*)
+			echo "Unknown msa type used in --with-msa" 1>&2
 			exit 1
 			;;
 		esac
@@ -5815,7 +5830,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

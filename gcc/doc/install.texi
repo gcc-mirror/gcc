@@ -1653,6 +1653,14 @@ unfused is normally expected).  Disabling these instructions is the
 only way to ensure compatible code is generated; this will incur
 a performance penalty.
 
+@item --with-msa
+On MIPS targets, make @option{-mmsa} the default when no
+@option{-mno-msa} option is passed.
+
+@item --without-msa
+On MIPS targets, make @option{-mno-msa} the default when no
+@option{-mmsa} option is passed. This is the default.
+
 @item --with-mips-plt
 On MIPS targets, make use of copy relocations and PLTs.
 These features are extensions to the traditional
