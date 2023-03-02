@@ -142,34 +142,13 @@ range_query::dump (FILE *)
 {
 }
 
-// valuation_query support routines for value_range's.
-
-class equiv_allocator : public object_allocator<value_range>
-{
-public:
-  equiv_allocator ()
-    : object_allocator<value_range> ("equiv_allocator pool") { }
-};
-
-const value_range *
-range_query::get_value_range (const_tree expr, gimple *stmt)
-{
-  int_range_max r;
-  if (range_of_expr (r, const_cast<tree> (expr), stmt))
-    return new (equiv_alloc->allocate ()) value_range (r);
-  return new (equiv_alloc->allocate ()) value_range (TREE_TYPE (expr));
-}
-
 range_query::range_query ()
 {
-  equiv_alloc = new equiv_allocator;
   m_oracle = NULL;
 }
 
 range_query::~range_query ()
 {
-  equiv_alloc->release ();
-  delete equiv_alloc;
 }
 
 // Return a range in R for the tree EXPR.  Return true if a range is
