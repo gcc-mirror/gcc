@@ -75,8 +75,8 @@ FeatureGate::gate (Feature::Name name, Location loc,
       if (issue > 0)
 	{
 	  const char *fmt_str
-	    = "%s. see issue %ld "
-	      "<https://github.com/rust-lang/rust/issues/%ld> for more "
+	    = "%s. see issue %u "
+	      "<https://github.com/rust-lang/rust/issues/%u> for more "
 	      "information. add `#![feature(%s)]` to the crate attributes to "
 	      "enable.";
 	  rust_error_at (loc, fmt_str, error_msg.c_str (), issue, issue,
