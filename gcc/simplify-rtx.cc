@@ -7667,10 +7667,10 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	}
     }
 
-  /* Try simplifying a SUBREG expression of a non-integer OUTERMODE by using a
-     NEW_OUTERMODE of the same size instead, other simplifications rely on
-     integer to integer subregs and we'd potentially miss out on optimizations
-     otherwise.  */
+  /* If the outer mode is not integral, try taking a subreg with the equivalent
+     integer outer mode and then bitcasting the result.
+     Other simplifications rely on integer to integer subregs and we'd
+     potentially miss out on optimizations otherwise.  */
   if (known_gt (GET_MODE_SIZE (innermode),
 		GET_MODE_SIZE (outermode))
       && SCALAR_INT_MODE_P (innermode)
@@ -7680,7 +7680,7 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
     {
       rtx tem = simplify_subreg (int_outermode, op, innermode, byte);
       if (tem)
-	return simplify_gen_subreg (outermode, tem, int_outermode, 0);
+	return simplify_gen_subreg (outermode, tem, int_outermode, byte);
     }
 
   /* If OP is a vector comparison and the subreg is not changing the
