@@ -543,11 +543,12 @@ package body Sem_Ch11 is
             if Present (P) and then Nkind (P) = N_Assignment_Statement then
                L := Name (P);
 
-               --  Give warning for assignment to scalar formal
+               --  Give warning for assignment to by-copy formal
 
-               if Is_Scalar_Type (Etype (L))
-                 and then Is_Entity_Name (L)
+               if Is_Entity_Name (L)
                  and then Is_Formal (Entity (L))
+                 and then Is_By_Copy_Type (Etype (L))
+                 and then not Is_Aliased (Entity (L))
 
                  --  Do this only for parameters to the current subprogram.
                  --  This avoids some false positives for the nested case.
