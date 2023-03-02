@@ -49,14 +49,14 @@ public:
   Name name () { return m_name; }
   const std::string &description () { return m_description; }
   State state () { return m_state; }
-  uint64_t issue () { return m_issue; }
+  unsigned issue () { return m_issue; }
 
   static Optional<Name> as_name (const std::string &name);
   static Feature create (Name name);
 
 private:
   Feature (Name name, State state, const char *name_str,
-	   const char *rustc_since, uint64_t issue_number,
+	   const char *rustc_since, unsigned issue_number,
 	   const Optional<CompileOptions::Edition> &edition,
 	   const char *description)
     : m_state (state), m_name (name), m_name_str (name_str),
@@ -68,7 +68,7 @@ private:
   Name m_name;
   std::string m_name_str;
   std::string m_rustc_since;
-  uint64_t m_issue;
+  unsigned m_issue;
   Optional<CompileOptions::Edition> edition;
   std::string m_description;
 
