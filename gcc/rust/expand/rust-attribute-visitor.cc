@@ -2148,15 +2148,6 @@ AttrVisitor::visit (AST::Module &module)
 	}
     }
 
-  // Parse the module's items if they haven't been expanded and the file
-  // should be parsed (i.e isn't hidden behind an untrue or impossible cfg
-  // directive)
-  if (!module.is_marked_for_strip ()
-      && module.get_kind () == AST::Module::ModuleKind::UNLOADED)
-    {
-      module.load_items ();
-    }
-
   // strip items if required
   expand_pointer_allow_strip (module.get_items ());
 }

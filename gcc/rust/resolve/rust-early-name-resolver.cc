@@ -581,6 +581,12 @@ EarlyNameResolver::visit (AST::Method &method)
 void
 EarlyNameResolver::visit (AST::Module &module)
 {
+  // Parse the module's items if they haven't been expanded and the file
+  // should be parsed (i.e isn't hidden behind an untrue or impossible cfg
+  // directive)
+  if (module.get_kind () == AST::Module::UNLOADED)
+    module.load_items ();
+
   scoped (module.get_node_id (), [&module, this] () {
     for (auto &item : module.get_items ())
       item->accept_vis (*this);
