@@ -8770,6 +8770,8 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
 	 shouldn't bend the rules the same way for automatic variables.  */
       bool is_static = (decl && DECL_P (decl)
 			&& (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
+      if (is_static)
+	manifestly_const_eval = true;
       t = cxx_eval_outermost_constant_expr (t, allow_non_constant, !is_static,
 					    mce_value (manifestly_const_eval),
 					    false, decl);
