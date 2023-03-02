@@ -8087,6 +8087,7 @@ package body Sem_Res is
               and then Within_Exceptional_Cases_Consequence (N)
               and then not Is_Attribute_Old (Parent (N))
               and then not Is_By_Reference_Type (Etype (E))
+              and then not Is_Aliased (E)
             then
                if Ekind (E) = E_Out_Parameter then
                   Error_Msg_N
@@ -8098,7 +8099,7 @@ package body Sem_Res is
                        "in consequence of Exceptional_Cases", N);
                end if;
                Error_Msg_N
-                 ("\only parameters of by-reference types are allowed", N);
+                 ("\only parameters passed by reference are allowed", N);
             end if;
 
             --  Check for possible elaboration issues with respect to reads of
