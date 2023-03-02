@@ -9055,7 +9055,7 @@ Parser<ManagedTokenSource>::parse_closure_param ()
   AST::AttrVec outer_attrs = parse_outer_attributes ();
 
   // parse pattern (which is required)
-  std::unique_ptr<AST::Pattern> pattern = parse_pattern ();
+  std::unique_ptr<AST::Pattern> pattern = parse_pattern_no_alt ();
   if (pattern == nullptr)
     {
       // not necessarily an error
