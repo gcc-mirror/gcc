@@ -260,6 +260,8 @@ enum poly_value_estimate_kind
   POLY_VALUE_LIKELY
 };
 
+typedef void (*emit_support_tinfos_callback) (tree);
+
 extern bool verify_type_context (location_t, type_context_kind, const_tree,
 				 bool = false);
 

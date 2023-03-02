@@ -22775,6 +22775,27 @@ ix86_mangle_type (const_tree type)
     }
 }
 
+/* Create C++ tinfo symbols for only conditionally available fundamental
+   types.  */
+
+static void
+ix86_emit_support_tinfos (emit_support_tinfos_callback callback)
+{
+  extern tree ix86_float16_type_node;
+  extern tree ix86_bf16_type_node;
+
+  if (!TARGET_SSE2)
+    {
+      gcc_checking_assert (!float16_type_node && !bfloat16_type_node);
+      float16_type_node = ix86_float16_type_node;
+      bfloat16_type_node = ix86_bf16_type_node;
+      callback (float16_type_node);
+      callback (bfloat16_type_node);
+      float16_type_node = NULL_TREE;
+      bfloat16_type_node = NULL_TREE;
+    }
+}
+
 static GTY(()) tree ix86_tls_stack_chk_guard_decl;
 
 static tree
@@ -24953,6 +24974,9 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
+
+#undef TARGET_EMIT_SUPPORT_TINFOS
+#define TARGET_EMIT_SUPPORT_TINFOS ix86_emit_support_tinfos
 
 #undef TARGET_STACK_PROTECT_GUARD
 #define TARGET_STACK_PROTECT_GUARD ix86_stack_protect_guard

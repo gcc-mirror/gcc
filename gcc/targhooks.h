@@ -98,6 +98,8 @@ extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, in
 
 extern tree default_builtin_reciprocal (tree);
 
+extern void default_emit_support_tinfos (emit_support_tinfos_callback);
+
 extern HOST_WIDE_INT default_static_rtx_alignment (machine_mode);
 extern HOST_WIDE_INT default_constant_alignment (const_tree, HOST_WIDE_INT);
 extern HOST_WIDE_INT constant_alignment_word_strings (const_tree,

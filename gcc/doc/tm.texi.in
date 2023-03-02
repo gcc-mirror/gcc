@@ -1286,6 +1286,8 @@ pattern needs to support both a 32- and a 64-bit mode.
 
 @hook TARGET_MANGLE_TYPE
 
+@hook TARGET_EMIT_SUPPORT_TINFOS
+
 @node Type Layout
 @section Layout of Source Language Data Types
 

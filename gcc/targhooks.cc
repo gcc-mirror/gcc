@@ -752,6 +752,11 @@ default_builtin_reciprocal (tree)
   return NULL_TREE;
 }
 
+void
+default_emit_support_tinfos (emit_support_tinfos_callback)
+{
+}
+
 bool
 hook_bool_CUMULATIVE_ARGS_arg_info_false (cumulative_args_t,
 					  const function_arg_info &)

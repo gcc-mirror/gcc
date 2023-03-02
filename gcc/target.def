@@ -2606,6 +2606,19 @@ types.",
  const char *, (const_tree type),
  hook_constcharptr_const_tree_null)
 
+/* Temporarily add conditional target specific types for the purpose of
+   emitting C++ fundamental type tinfos.  */
+DEFHOOK
+(emit_support_tinfos,
+ "If your target defines any fundamental types which depend on ISA flags,\n\
+they might need C++ tinfo symbols in libsupc++/libstdc++ regardless of\n\
+ISA flags the library is compiled with.\n\
+This hook allows creating tinfo symbols even for those cases, by temporarily\n\
+creating each corresponding fundamental type trees, calling the\n\
+@var{callback} function on it and setting the type back to @code{nullptr}.",
+ void, (emit_support_tinfos_callback callback),
+ default_emit_support_tinfos)
+
 /* Make any adjustments to libfunc names needed for this target.  */
 DEFHOOK
 (init_libfuncs,

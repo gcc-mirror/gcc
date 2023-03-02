@@ -1525,6 +1525,15 @@ appropriate for a target that does not define any new fundamental
 types.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_EMIT_SUPPORT_TINFOS (emit_support_tinfos_callback @var{callback})
+If your target defines any fundamental types which depend on ISA flags,
+they might need C++ tinfo symbols in libsupc++/libstdc++ regardless of
+ISA flags the library is compiled with.
+This hook allows creating tinfo symbols even for those cases, by temporarily
+creating each corresponding fundamental type trees, calling the
+@var{callback} function on it and setting the type back to @code{nullptr}.
+@end deftypefn
+
 @node Type Layout
 @section Layout of Source Language Data Types
 
