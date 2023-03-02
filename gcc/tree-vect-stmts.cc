@@ -10756,11 +10756,10 @@ vectorizable_condition (vec_info *vinfo,
 		  cond.code = orig_code;
 		  if (loop_vinfo->scalar_cond_masked_set.contains (cond))
 		    {
-		      bitop1 = orig_code;
-		      bitop2 = BIT_NOT_EXPR;
 		      masks = &LOOP_VINFO_MASKS (loop_vinfo);
 		      cond_code = cond.code;
 		      swap_cond_operands = true;
+		      must_invert_cmp_result = true;
 		    }
 		}
 	    }
