@@ -1,3 +1,11 @@
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c: Revert
+	"Revert changes to acc_prof-init-1.c and acc_prof-parallel-1.c"
+	changes.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c:
+	Likewise.
+
 2023-03-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
