@@ -359,10 +359,10 @@ compare_nonzero_chars (strinfo *si, gimple *stmt,
      of the length range are equal return the result of the comparison
      same as in the constant case.  Otherwise return a conservative
      result.  */
-  tree lower = wide_int_to_tree (vr.type (), vr.lower_bound ());
-  tree upper = wide_int_to_tree (vr.type (), vr.upper_bound ());
-  int cmpmin = compare_tree_int (lower, off);
-  if (cmpmin > 0 || tree_int_cst_equal (lower, upper))
+  signop sign = TYPE_SIGN (vr.type ());
+  unsigned prec = TYPE_PRECISION (vr.type ());
+  int cmpmin = wi::cmp (vr.lower_bound (), wi::uhwi (off, prec), sign);
+  if (cmpmin > 0 || vr.singleton_p ())
     return cmpmin;
 
   return -1;
