@@ -2203,9 +2203,16 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
 	return get_rvalue_for_bits (TREE_TYPE (expr), reg, bits, ctxt);
       }
 
-    case SSA_NAME:
     case VAR_DECL:
+      if (DECL_HARD_REGISTER (pv.m_tree))
+	{
+	  /* If it has a hard register, it doesn't have a memory region
+	     and can't be referred to as an lvalue.  */
+	  return m_mgr->get_or_create_unknown_svalue (TREE_TYPE (pv.m_tree));
+	}
+      /* Fall through. */
     case PARM_DECL:
+    case SSA_NAME:
     case RESULT_DECL:
     case ARRAY_REF:
       {
