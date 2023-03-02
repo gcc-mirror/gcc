@@ -7611,7 +7611,7 @@ package body Sem_Eval is
                Error_Msg_NE
                  ("!& is not a static subtype (RM 4.9(26))", N, E);
 
-            else
+            elsif E /= Any_Id then
                Error_Msg_NE
                  ("!& is not static constant or named number "
                   & "(RM 4.9(5))", N, E);

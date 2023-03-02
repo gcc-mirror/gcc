@@ -1224,6 +1224,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  implicit label declaration, not the occurrence of the label itself,
        --  which is simply a direct name referring to the label.
        (Sm (Enclosing_Scope, Node_Id),
+        Sm (Entry_Cancel_Parameter, Node_Id),
         Sm (Reachable, Flag),
         Sm (Renamed_Or_Alias, Node_Id)));
 

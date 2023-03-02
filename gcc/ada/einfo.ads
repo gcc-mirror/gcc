@@ -1131,6 +1131,8 @@ package Einfo is
 --       object for task entry calls and a Communications_Block object
 --       in the case of protected entry calls. In both cases the objects
 --       are declared in outer scopes to this block.
+--       This is also defined in labels, because we temporarily set the
+--       Ekind of an E_Block to E_Label in Analyze_Implicit_Label_Declaration.
 
 --    Entry_Component
 --       Defined in formal parameters (in, in out and out parameters). Used
@@ -5660,6 +5662,7 @@ package Einfo is
    --  E_Label
    --    Renamed_Object $$$
    --    Renamed_Entity $$$
+   --    Entry_Cancel_Parameter
    --    Enclosing_Scope
    --    Reachable
 
