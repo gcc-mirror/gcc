@@ -42,6 +42,7 @@ public:
   void visit (AST::EmptyStmt &empty) override;
   void visit (AST::Function &function) override;
   void visit (AST::ExternBlock &extern_block) override;
+  void visit (AST::MacroRulesDefinition &extern_block) override;
 
 private:
   ASTLoweringStmt () : translated (nullptr), terminated (false) {}

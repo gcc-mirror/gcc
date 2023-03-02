@@ -708,9 +708,7 @@ ASTLoweringItem::visit (AST::ExternBlock &extern_block)
 void
 ASTLoweringItem::visit (AST::MacroRulesDefinition &def)
 {
-  for (const auto &attr : def.get_outer_attrs ())
-    if (attr.get_path ().as_string () == "macro_export")
-      mappings->insert_exported_macro (def);
+  lower_macro_definition (def);
 }
 
 HIR::SimplePath
