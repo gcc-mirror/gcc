@@ -327,8 +327,8 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
   if (solver.unreachable_path_p ())
     return UNREACHABLE_EDGE;
 
-  int_range<2> true_range (boolean_true_node, boolean_true_node);
-  int_range<2> false_range (boolean_false_node, boolean_false_node);
+  int_range<2> true_range = range_true ();
+  int_range<2> false_range = range_false ();
 
   if (r == true_range || r == false_range)
     {

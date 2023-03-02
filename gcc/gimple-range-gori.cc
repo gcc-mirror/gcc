@@ -562,8 +562,8 @@ gori_compute::gori_compute (int not_executable_flag)
 {
   m_not_executable_flag = not_executable_flag;
   // Create a boolean_type true and false range.
-  m_bool_zero = int_range<2> (boolean_false_node, boolean_false_node);
-  m_bool_one = int_range<2> (boolean_true_node, boolean_true_node);
+  m_bool_zero = range_false ();
+  m_bool_one = range_true ();
   if (dump_file && (param_ranger_debug & RANGER_DEBUG_GORI))
     tracer.enable_trace ();
 }
@@ -731,7 +731,8 @@ range_is_either_true_or_false (const irange &r)
   // so true can be ~[0, 0] (i.e. [1,MAX]).
   tree type = r.type ();
   gcc_checking_assert (range_compatible_p (type, boolean_type_node));
-  return (r.singleton_p () || !r.contains_p (build_zero_cst (type)));
+  return (r.singleton_p ()
+	  || !r.contains_p (wi::zero (TYPE_PRECISION (type))));
 }
 
 // Evaluate a binary logical expression by combining the true and

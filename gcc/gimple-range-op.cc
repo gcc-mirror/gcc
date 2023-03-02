@@ -276,7 +276,8 @@ public:
   {
     if (lh.singleton_p ())
       {
-	r.set (build_one_cst (type), build_one_cst (type));
+	wide_int one = wi::one (TYPE_PRECISION (type));
+	r.set (type, one, one);
 	return true;
       }
     if (cfun->after_inlining)
@@ -298,7 +299,8 @@ public:
   {
     if (lh.singleton_p ())
       {
-	r.set (build_one_cst (type), build_one_cst (type));
+	wide_int one = wi::one (TYPE_PRECISION (type));
+	r.set (type, one, one);
 	return true;
       }
     if (cfun->after_inlining)
@@ -359,7 +361,7 @@ public:
 	r.update_nan (false);
 	return true;
       }
-    if (!lhs.contains_p (build_zero_cst (lhs.type ())))
+    if (!lhs.contains_p (wi::zero (TYPE_PRECISION (lhs.type ()))))
       {
 	r.set (type, frange_val_min (type), dconstm0);
 	r.update_nan (true);
@@ -589,8 +591,12 @@ cfn_toupper_tolower::get_letter_range (tree type, irange &lowers,
 
   if ((z - a == 25) && (Z - A == 25))
     {
-      lowers = int_range<2> (build_int_cst (type, a), build_int_cst (type, z));
-      uppers = int_range<2> (build_int_cst (type, A), build_int_cst (type, Z));
+      lowers = int_range<2> (type,
+			     wi::shwi (a, TYPE_PRECISION (type)),
+			     wi::shwi (z, TYPE_PRECISION (type)));
+      uppers = int_range<2> (type,
+			     wi::shwi (A, TYPE_PRECISION (type)),
+			     wi::shwi (Z, TYPE_PRECISION (type)));
       return true;
     }
   // Unknown character set.
@@ -648,7 +654,7 @@ public:
       range_cast (tmp, unsigned_type_for (tmp.type ()));
     wide_int max = tmp.upper_bound ();
     maxi = wi::floor_log2 (max) + 1;
-    r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
+    r.set (type, wi::shwi (mini, prec), wi::shwi (maxi, prec));
     return true;
   }
 } op_cfn_ffs;
@@ -753,7 +759,9 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
 
   if (mini == -2)
     return false;
-  r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
+  r.set (type,
+	 wi::shwi (mini, TYPE_PRECISION (type)),
+	 wi::shwi (maxi, TYPE_PRECISION (type)));
   return true;
 }
 
@@ -823,7 +831,9 @@ cfn_ctz::fold_range (irange &r, tree type, const irange &lh,
 
   if (mini == -2)
     return false;
-  r.set (build_int_cst (type, mini), build_int_cst (type, maxi));
+  r.set (type,
+	 wi::shwi (mini, TYPE_PRECISION (type)),
+	 wi::shwi (maxi, TYPE_PRECISION (type)));
   return true;
 }
 
@@ -839,7 +849,9 @@ public:
     if (lh.undefined_p ())
       return false;
     int prec = TYPE_PRECISION (lh.type ());
-    r.set (build_int_cst (type, 0), build_int_cst (type, prec - 1));
+    r.set (type,
+	   wi::zero (TYPE_PRECISION (type)),
+	   wi::shwi (prec - 1, TYPE_PRECISION (type)));
     return true;
   }
 } op_cfn_clrsb;
@@ -891,14 +903,12 @@ public:
     tree max = vrp_val_max (ptrdiff_type_node);
     wide_int wmax
       = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
-    tree range_min = build_zero_cst (type);
     // To account for the terminating NULL, the maximum length
     // is one less than the maximum array size, which in turn
     // is one less than PTRDIFF_MAX (or SIZE_MAX where it's
     // smaller than the former type).
     // FIXME: Use max_object_size() - 1 here.
-    tree range_max = wide_int_to_tree (type, wmax - 2);
-    r.set (range_min, range_max);
+    r.set (type, wi::zero (TYPE_PRECISION (type)), wmax - 2);
     return true;
   }
 } op_cfn_strlen;
@@ -922,9 +932,11 @@ public:
       // If it's dynamic, the backend might know a hardware limitation.
       size = targetm.goacc.dim_limit (axis);
 
-    r.set (build_int_cst (type, m_is_pos ? 0 : 1),
+    r.set (type,
+	   wi::shwi (m_is_pos ? 0 : 1, TYPE_PRECISION (type)),
 	   size
-	   ? build_int_cst (type, size - m_is_pos) : vrp_val_max (type));
+	   ? wi::shwi (size - m_is_pos, TYPE_PRECISION (type))
+	   : wi::to_wide (vrp_val_max (type)));
     return true;
   }
 private:
@@ -940,7 +952,7 @@ public:
   virtual bool fold_range (irange &r, tree type, const irange &,
 			   const irange &, relation_trio) const
   {
-    r.set (build_zero_cst (type), build_one_cst (type));
+    r = range_true_and_false (type);
     return true;
   }
 } op_cfn_parity;

@@ -79,15 +79,15 @@ entry_loop_condition_is_static (class loop *l, gimple_ranger *ranger)
   if (!loop_exit_edge_p (l, true_e) && !loop_exit_edge_p (l, false_e))
     return false;
 
-  tree desired_static_value;
+  int_range<1> desired_static_range;
   if (loop_exit_edge_p (l, true_e))
-    desired_static_value = boolean_false_node;
+    desired_static_range = range_false ();
   else
-    desired_static_value = boolean_true_node;
+    desired_static_range = range_true ();
 
   int_range<2> r;
   edge_range_query (r, e, last, *ranger);
-  return r == int_range<2> (desired_static_value, desired_static_value);
+  return r == desired_static_range;
 }
 
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT

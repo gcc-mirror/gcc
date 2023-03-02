@@ -837,7 +837,9 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       tree label = gimple_switch_label (switch_stmt, i);
       tree case_high
 	= CASE_HIGH (label) ? CASE_HIGH (label) : CASE_LOW (label);
-      int_range_max label_range (CASE_LOW (label), case_high);
+      int_range_max label_range (type,
+				 wi::to_wide (CASE_LOW (label)),
+				 wi::to_wide (case_high));
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
       label_range.intersect (*range_of_op);
@@ -861,7 +863,9 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       tree case_high = CASE_HIGH (max_label);
       if (!case_high)
 	case_high = CASE_LOW (max_label);
-      int_range_max label_range (CASE_LOW (min_label), case_high);
+      int_range_max label_range (TREE_TYPE (CASE_LOW (min_label)),
+				 wi::to_wide (CASE_LOW (min_label)),
+				 wi::to_wide (case_high));
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
       label_range.intersect (*range_of_op);

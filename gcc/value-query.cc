@@ -176,16 +176,21 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      if (TREE_OVERFLOW_P (expr))
-	expr = drop_tree_overflow (expr);
-      r.set (expr, expr);
-      return true;
+      {
+	irange &i = as_a <irange> (r);
+	if (TREE_OVERFLOW_P (expr))
+	  expr = drop_tree_overflow (expr);
+	wide_int w = wi::to_wide (expr);
+	i.set (TREE_TYPE (expr), w, w);
+	return true;
+      }
 
     case REAL_CST:
       {
 	frange &f = as_a <frange> (r);
-	f.set (expr, expr);
-	if (!real_isnan (TREE_REAL_CST_PTR (expr)))
+	REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (expr);
+	f.set (TREE_TYPE (expr), *rv, *rv);
+	if (!real_isnan (rv))
 	  f.clear_nan ();
 	return true;
       }

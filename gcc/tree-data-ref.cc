@@ -769,7 +769,10 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       *var = size_int (0);
       *off = fold_convert (ssizetype, op0);
       if (result_range)
-	result_range->set (op0, op0);
+	{
+	  wide_int w = wi::to_wide (op0);
+	  result_range->set (TREE_TYPE (op0), w, w);
+	}
       return true;
 
     case POINTER_PLUS_EXPR:
@@ -795,7 +798,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	return false;
 
       split_constant_offset (op0, &var0, &off0, &op0_range, cache, limit);
-      op1_range.set (op1, op1);
+      op1_range.set (TREE_TYPE (op1), wi::to_wide (op1), wi::to_wide (op1));
       *off = size_binop (MULT_EXPR, off0, fold_convert (ssizetype, op1));
       if (!compute_distributive_range (type, op0_range, code, op1_range,
 				       off, result_range))

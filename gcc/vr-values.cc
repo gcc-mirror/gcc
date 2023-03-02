@@ -88,8 +88,7 @@ simplify_using_ranges::op_with_boolean_value_range_p (tree op, gimple *s)
      as [0,1].  */
   value_range vr;
   return (query->range_of_expr (vr, op, s)
-	  && vr == value_range (build_zero_cst (TREE_TYPE (op)),
-				build_one_cst (TREE_TYPE (op))));
+	  && vr == range_true_and_false (TREE_TYPE (op)));
 }
 
 /* Helper function for simplify_internal_call_using_ranges and
@@ -316,7 +315,11 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 	      value_range maxvr, vr0, vr1;
 	      if (!query->range_of_expr (vr0, init, stmt))
 		vr0.set_varying (TREE_TYPE (init));
-	      vr1.set (TREE_TYPE (init), wtmp, wtmp);
+	      tree tinit = TREE_TYPE (init);
+	      wide_int winit = wide_int::from (wtmp,
+					       TYPE_PRECISION (tinit),
+					       TYPE_SIGN (tinit));
+	      vr1.set (TREE_TYPE (init), winit, winit);
 
 	      range_op_handler handler (PLUS_EXPR, TREE_TYPE (init));
 	      if (!handler.fold_range (maxvr, TREE_TYPE (init), vr0, vr1))
@@ -444,15 +447,25 @@ simplify_using_ranges::legacy_fold_cond_overflow (gimple *stmt)
       else
 	{
 	  value_range vro, vri;
+	  tree type = TREE_TYPE (op0);
 	  if (code == GT_EXPR || code == GE_EXPR)
 	    {
-	      vro.set (TYPE_MIN_VALUE (TREE_TYPE (op0)), x, VR_ANTI_RANGE);
-	      vri.set (TYPE_MIN_VALUE (TREE_TYPE (op0)), x);
+	      vro.set (type,
+		       wi::to_wide (TYPE_MIN_VALUE (type)),
+		       wi::to_wide (x), VR_ANTI_RANGE);
+	      vri.set (type,
+		       wi::to_wide (TYPE_MIN_VALUE (type)),
+		       wi::to_wide (x));
 	    }
 	  else if (code == LT_EXPR || code == LE_EXPR)
 	    {
-	      vro.set (TYPE_MIN_VALUE (TREE_TYPE (op0)), x);
-	      vri.set (TYPE_MIN_VALUE (TREE_TYPE (op0)), x, VR_ANTI_RANGE);
+	      vro.set (type,
+		       wi::to_wide (TYPE_MIN_VALUE (type)),
+		       wi::to_wide (x));
+	      vri.set (type,
+		       wi::to_wide (TYPE_MIN_VALUE (type)),
+		       wi::to_wide (x),
+		       VR_ANTI_RANGE);
 	    }
 	  else
 	    gcc_unreachable ();

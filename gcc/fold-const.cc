@@ -10882,8 +10882,7 @@ expr_not_equal_to (tree t, const wide_int &w)
       else
 	get_global_range_query ()->range_of_expr (vr, t);
 
-      if (!vr.undefined_p ()
-	  && !vr.contains_p (wide_int_to_tree (TREE_TYPE (t), w)))
+      if (!vr.undefined_p () && !vr.contains_p (w))
 	return true;
       /* If T has some known zero bits and W has any of those bits set,
 	 then T is known not to be equal to W.  */

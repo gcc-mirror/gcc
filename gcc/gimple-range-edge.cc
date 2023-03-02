@@ -59,9 +59,9 @@ gcond_edge_range (irange &r, edge e)
 {
   gcc_checking_assert (e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE));
   if (e->flags & EDGE_TRUE_VALUE)
-    r = int_range<2> (boolean_true_node, boolean_true_node);
+    r = range_true ();
   else
-    r = int_range<2> (boolean_false_node, boolean_false_node);
+    r = range_false ();
 }
 
 
@@ -136,19 +136,22 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
       if (e == default_edge)
 	continue;
 
-      tree low = CASE_LOW (gimple_switch_label (sw, x));
-      tree high = CASE_HIGH (gimple_switch_label (sw, x));
-      if (!high)
+      wide_int low = wi::to_wide (CASE_LOW (gimple_switch_label (sw, x)));
+      wide_int high;
+      tree tree_high = CASE_HIGH (gimple_switch_label (sw, x));
+      if (tree_high)
+	high = wi::to_wide (tree_high);
+      else
 	high = low;
 
       // Remove the case range from the default case.
-      int_range_max def_range (low, high);
+      int_range_max def_range (type, low, high);
       range_cast (def_range, type);
       def_range.invert ();
       default_range.intersect (def_range);
 
       // Create/union this case with anything on else on the edge.
-      int_range_max case_range (low, high);
+      int_range_max case_range (type, low, high);
       range_cast (case_range, type);
       vrange_storage *&slot = m_edge_table->get_or_insert (e, &existed);
       if (existed)

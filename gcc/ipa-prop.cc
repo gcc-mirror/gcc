@@ -2220,7 +2220,8 @@ ipa_get_value_range (value_range *tmp)
 static value_range *
 ipa_get_value_range (enum value_range_kind kind, tree min, tree max)
 {
-  value_range tmp (min, max, kind);
+  value_range tmp (TREE_TYPE (min),
+		   wi::to_wide (min), wi::to_wide (max), kind);
   return ipa_get_value_range (&tmp);
 }
 

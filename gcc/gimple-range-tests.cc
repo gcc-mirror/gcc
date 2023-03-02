@@ -35,7 +35,9 @@ public:
 
     // [5,10] + [15,20] => [20, 30]
     tree expr = fold_build2 (PLUS_EXPR, type, op0, op1);
-    int_range<2> expect (build_int_cst (type, 20), build_int_cst (type, 30));
+    int_range<1> expect (type,
+			 wi::shwi (20, TYPE_PRECISION (type)),
+			 wi::shwi (30, TYPE_PRECISION (type)));
     int_range_max r;
 
     ASSERT_TRUE (range_of_expr (r, expr));
@@ -45,14 +47,15 @@ public:
   virtual bool range_of_expr (vrange &v, tree expr, gimple * = NULL) override
   {
     irange &r = as_a <irange> (v);
+    unsigned prec = TYPE_PRECISION (type);
     if (expr == op0)
       {
-	r.set (build_int_cst (type, 5), build_int_cst (type, 10));
+	r.set (type, wi::shwi (5, prec), wi::shwi (10, prec));
 	return true;
       }
     if (expr == op1)
       {
-	r.set (build_int_cst (type, 15), build_int_cst (type, 20));
+	r.set (type, wi::shwi (15, prec), wi::shwi (20, prec));
 	return true;
       }
     return gimple_ranger::range_of_expr (r, expr);

@@ -122,8 +122,7 @@ class GTY((user)) irange : public vrange
   friend class irange_storage;
 public:
   // In-place setters.
-  virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
-  void set (tree type, const wide_int_ref &, const wide_int_ref &,
+  void set (tree type, const wide_int &, const wide_int &,
 	    value_range_kind = VR_RANGE);
   virtual void set_nonzero (tree type) override;
   virtual void set_zero (tree type) override;
@@ -146,7 +145,8 @@ public:
   virtual bool zero_p () const override;
   virtual bool nonzero_p () const override;
   virtual bool singleton_p (tree *result = NULL) const override;
-  virtual bool contains_p (tree cst) const override;
+  bool singleton_p (wide_int &) const;
+  bool contains_p (const wide_int &) const;
 
   // In-place operators.
   virtual bool union_ (const vrange &) override;
@@ -167,11 +167,13 @@ public:
   void set_nonzero_bits (const wide_int_ref &bits);
 
 protected:
+  virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
+  virtual bool contains_p (tree cst) const override;
   irange (tree *, unsigned);
 
    // In-place operators.
-  void irange_set (tree, tree);
-  void irange_set_anti_range (tree, tree);
+  void irange_set (tree type, const wide_int &, const wide_int &);
+  void irange_set_anti_range (tree type, const wide_int &, const wide_int &);
   bool irange_contains_p (const irange &) const;
   bool irange_single_pair_union (const irange &r);
 
@@ -184,7 +186,8 @@ private:
   friend void gt_pch_nx (irange *);
   friend void gt_pch_nx (irange *, gt_pointer_operator, void *);
 
-  void irange_set_1bit_anti_range (tree, tree);
+  void irange_set_1bit_anti_range (tree type,
+				   const wide_int &, const wide_int &);
   bool varying_compatible_p () const;
   bool intersect_nonzero_bits (const irange &r);
   bool union_nonzero_bits (const irange &r);
@@ -206,7 +209,6 @@ class GTY((user)) int_range : public irange
 {
 public:
   int_range ();
-  int_range (tree, tree, value_range_kind = VR_RANGE);
   int_range (tree type, const wide_int &, const wide_int &,
 	     value_range_kind = VR_RANGE);
   int_range (tree type);
@@ -214,6 +216,8 @@ public:
   int_range (const irange &);
   virtual ~int_range () = default;
   int_range& operator= (const int_range &);
+protected:
+  int_range (tree, tree, value_range_kind = VR_RANGE);
 private:
   template <unsigned X> friend void gt_ggc_mx (int_range<X> *);
   template <unsigned X> friend void gt_pch_nx (int_range<X> *);
@@ -319,7 +323,6 @@ public:
     return SCALAR_FLOAT_TYPE_P (type) && !DECIMAL_FLOAT_TYPE_P (type);
   }
   virtual tree type () const override;
-  virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
   void set (tree type, const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
 	    value_range_kind = VR_RANGE);
   void set (tree type, const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
@@ -330,8 +333,9 @@ public:
   virtual void set_undefined () override;
   virtual bool union_ (const vrange &) override;
   virtual bool intersect (const vrange &) override;
-  virtual bool contains_p (tree) const override;
+  bool contains_p (const REAL_VALUE_TYPE &) const;
   virtual bool singleton_p (tree *result = NULL) const override;
+  bool singleton_p (REAL_VALUE_TYPE &r) const;
   virtual bool supports_type_p (const_tree type) const override;
   virtual void accept (const vrange_visitor &v) const override;
   virtual bool zero_p () const override;
@@ -361,7 +365,13 @@ public:
   bool maybe_isinf () const;
   bool signbit_p (bool &signbit) const;
   bool nan_signbit_p (bool &signbit) const;
+
+protected:
+  virtual bool contains_p (tree cst) const override;
+  virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
+
 private:
+  bool internal_singleton_p (REAL_VALUE_TYPE * = NULL) const;
   void verify_range ();
   bool normalize_kind ();
   bool union_nans (const frange &);
@@ -485,8 +495,6 @@ public:
   static bool supports_type_p (const_tree type);
 
   // Convenience methods for vrange compatibility.
-  void set (tree min, tree max, value_range_kind kind = VR_RANGE)
-    { return m_vrange->set (min, max, kind); }
   tree type () { return m_vrange->type (); }
   bool varying_p () const { return m_vrange->varying_p (); }
   bool undefined_p () const { return m_vrange->undefined_p (); }
@@ -536,7 +544,7 @@ inline
 Value_Range::Value_Range (tree min, tree max, value_range_kind kind)
 {
   init (TREE_TYPE (min));
-  set (min, max, kind);
+  m_vrange->set (min, max, kind);
 }
 
 inline
@@ -674,13 +682,6 @@ irange::varying_compatible_p () const
   return true;
 }
 
-inline void
-irange::set (tree type, const wide_int_ref &min, const wide_int_ref &max,
-	     value_range_kind kind)
-{
-  set (wide_int_to_tree (type, min), wide_int_to_tree (type, max), kind);
-}
-
 inline bool
 vrange::varying_p () const
 {
@@ -707,14 +708,20 @@ irange::nonzero_p () const
   if (undefined_p ())
     return false;
 
-  tree zero = build_zero_cst (type ());
-  return *this == int_range<2> (zero, zero, VR_ANTI_RANGE);
+  wide_int zero = wi::zero (TYPE_PRECISION (type ()));
+  return *this == int_range<2> (type (), zero, zero, VR_ANTI_RANGE);
 }
 
 inline bool
 irange::supports_p (const_tree type)
 {
   return INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type);
+}
+
+inline bool
+irange::contains_p (tree cst) const
+{
+  return contains_p (wi::to_wide (cst));
 }
 
 inline bool
@@ -726,7 +733,7 @@ range_includes_zero_p (const irange *vr)
   if (vr->varying_p ())
     return true;
 
-  tree zero = build_zero_cst (vr->type ());
+  wide_int zero = wi::zero (TYPE_PRECISION (vr->type ()));
   return vr->contains_p (zero);
 }
 
@@ -906,8 +913,8 @@ irange::upper_bound () const
 inline void
 irange::set_nonzero (tree type)
 {
-  tree zero = build_int_cst (type, 0);
-  irange_set_anti_range (zero, zero);
+  wide_int zero = wi::zero (TYPE_PRECISION (type));
+  set (type, zero, zero, VR_ANTI_RANGE);
 }
 
 // Set value range VR to a ZERO range of type TYPE.
@@ -915,8 +922,8 @@ irange::set_nonzero (tree type)
 inline void
 irange::set_zero (tree type)
 {
-  tree z = build_int_cst (type, 0);
-  irange_set (z, z);
+  wide_int zero = wi::zero (TYPE_PRECISION (type));
+  set (type, zero, zero);
 }
 
 // Normalize a range to VARYING or UNDEFINED if possible.
@@ -933,6 +940,16 @@ irange::normalize_kind ()
       else if (m_kind == VR_ANTI_RANGE)
 	set_undefined ();
     }
+}
+
+inline bool
+contains_zero_p (const irange &r)
+{
+  if (r.undefined_p ())
+    return true;
+
+  wide_int zero = wi::zero (TYPE_PRECISION (r.type ()));
+  return r.contains_p (zero);
 }
 
 // Return the maximum value for TYPE.
@@ -1081,6 +1098,12 @@ frange::update_nan (bool sign)
       if (flag_checking)
 	verify_range ();
     }
+}
+
+inline bool
+frange::contains_p (tree cst) const
+{
+  return contains_p (*TREE_REAL_CST_PTR (cst));
 }
 
 // Clear the NAN bit and adjust the range.

@@ -522,10 +522,9 @@ ssa_name_has_boolean_range (tree op)
   if (INTEGRAL_TYPE_P (TREE_TYPE (op))
       && (TYPE_PRECISION (TREE_TYPE (op)) > 1))
     {
-      int_range<2> onezero (build_zero_cst (TREE_TYPE (op)),
-			    build_one_cst (TREE_TYPE (op)));
       int_range<2> r;
-      if (get_range_query (cfun)->range_of_expr (r, op) && r == onezero)
+      if (get_range_query (cfun)->range_of_expr (r, op)
+	  && r == range_true_and_false (TREE_TYPE (op)))
 	return true;
 
       if (wi::eq_p (get_nonzero_bits (op), 1))

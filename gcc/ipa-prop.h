@@ -1208,7 +1208,10 @@ inline void
 ipa_range_set_and_normalize (irange &r, tree val)
 {
   if (TREE_CODE (val) == INTEGER_CST)
-    r.set (val, val);
+    {
+      wide_int w = wi::to_wide (val);
+      r.set (TREE_TYPE (val), w, w);
+    }
   else if (TREE_CODE (val) == ADDR_EXPR)
     r.set_nonzero (TREE_TYPE (val));
   else

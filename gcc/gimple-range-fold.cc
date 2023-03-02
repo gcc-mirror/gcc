@@ -404,7 +404,8 @@ adjust_imagpart_expr (vrange &res, const gimple *stmt)
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
 	{
-	  int_range<2> imag (TREE_IMAGPART (cst), TREE_IMAGPART (cst));
+	  wide_int w = wi::to_wide (TREE_IMAGPART (cst));
+	  int_range<1> imag (TREE_TYPE (TREE_IMAGPART (cst)), w, w);
 	  res.intersect (imag);
 	}
     }
@@ -430,8 +431,8 @@ adjust_realpart_expr (vrange &res, const gimple *stmt)
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
 	{
-	  tree imag = TREE_REALPART (cst);
-	  int_range<2> tmp (imag, imag);
+	  wide_int imag = wi::to_wide (TREE_REALPART (cst));
+	  int_range<2> tmp (TREE_TYPE (TREE_REALPART (cst)), imag, imag);
 	  res.intersect (tmp);
 	}
     }
@@ -689,7 +690,8 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
 	{
 	  /* For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
 	     allow going from non-NULL pointer to NULL.  */
-	  if (r.undefined_p () || !r.contains_p (build_zero_cst (r.type ())))
+	  if (r.undefined_p ()
+	      || !r.contains_p (wi::zero (TYPE_PRECISION (TREE_TYPE (expr)))))
 	    {
 	      /* We could here instead adjust r by off >> LOG2_BITS_PER_UNIT
 		 using POINTER_PLUS_EXPR if off_cst and just fall back to
@@ -1069,7 +1071,7 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   else if (ssa1_dep1 != ssa2_dep2 || ssa1_dep2 != ssa2_dep1)
     return;
 
-  int_range<2> bool_one (boolean_true_node, boolean_true_node);
+  int_range<2> bool_one = range_true ();
 
   relation_kind relation1 = handler1.op1_op2_relation (bool_one);
   relation_kind relation2 = handler2.op1_op2_relation (bool_one);
@@ -1081,7 +1083,7 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
 
   // x && y is false if the relation intersection of the true cases is NULL.
   if (is_and && relation_intersect (relation1, relation2) == VREL_UNDEFINED)
-    lhs_range = int_range<2> (boolean_false_node, boolean_false_node);
+    lhs_range = range_false (boolean_type_node);
   // x || y is true if the union of the true cases is NO-RELATION..
   // ie, one or the other being true covers the full range of possibilities.
   else if (!is_and && relation_union (relation1, relation2) == VREL_VARYING)

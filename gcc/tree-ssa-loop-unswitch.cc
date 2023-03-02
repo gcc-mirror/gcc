@@ -142,14 +142,14 @@ struct unswitch_predicate
 	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
 	int_range<2> rhs_range (TREE_TYPE (rhs));
 	if (CONSTANT_CLASS_P (rhs))
-	  rhs_range.set (rhs, rhs);
+	  {
+	    wide_int w = wi::to_wide (rhs);
+	    rhs_range.set (TREE_TYPE (rhs), w, w);
+	  }
 	if (!range_op.op1_range (true_range, TREE_TYPE (lhs),
-				 int_range<2> (boolean_true_node,
-					       boolean_true_node), rhs_range)
+				 range_true (), rhs_range)
 	    || !range_op.op1_range (false_range, TREE_TYPE (lhs),
-				    int_range<2> (boolean_false_node,
-						  boolean_false_node),
-				    rhs_range))
+				    range_false (), rhs_range))
 	  {
 	    true_range.set_varying (TREE_TYPE (lhs));
 	    false_range.set_varying (TREE_TYPE (lhs));
@@ -605,12 +605,13 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx, low);
 	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx, high);
 	      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1, cmp2);
-	      lab_range.set (low, high);
+	      lab_range.set (idx_type, wi::to_wide (low), wi::to_wide (high));
 	    }
 	  else
 	    {
 	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx, low);
-	      lab_range.set (low, low);
+	      wide_int w = wi::to_wide (low);
+	      lab_range.set (idx_type, w, w);
 	    }
 
 	  /* Combine the expression with the existing one.  */
