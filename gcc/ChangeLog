@@ -1,3 +1,57 @@
+2023-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/108545
+	* gimplify.cc (struct tree_operand_hash_no_se): New.
+	(omp_index_mapping_groups_1, omp_index_mapping_groups,
+	omp_reindex_mapping_groups, omp_mapped_by_containing_struct,
+	omp_tsort_mapping_groups_1, omp_tsort_mapping_groups,
+	oacc_resolve_clause_dependencies, omp_build_struct_sibling_lists,
+	gimplify_scan_omp_clauses): Use tree_operand_hash_no_se instead
+	of tree_operand_hash.
+
+2023-03-01  LIU Hao  <lh_mouse@126.com>
+
+	PR pch/14940
+	* config/i386/host-mingw32.cc (mingw32_gt_pch_get_address):
+	Remove the size limit `pch_VA_max_size`
+
+2023-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/108546
+	* omp-low.cc (lower_omp_target): Remove optional handling
+	on the receiver side, i.e. inside target (data), for
+	use_device_ptr.
+
+2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108967
+	* cfgexpand.cc (expand_debug_expr): Handle WIDEN_{PLUS,MINUS}_EXPR
+	and VEC_WIDEN_{PLUS,MINUS}_{HI,LO}_EXPR.
+
+2023-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108970
+	* tree-vect-loop-manip.cc (slpeel_can_duplicate_loop_p):
+	Check we can copy the BBs.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Avoid redundant
+	check.
+	(vect_do_peeling): Streamline error handling.
+
+2023-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108950
+	* tree-vect-patterns.cc (vect_recog_widen_sum_pattern):
+	Check oprnd0 is defined in the loop.
+	* tree-vect-loop.cc (vectorizable_reduction): Record all
+	operands vector types, compute that of invariants and
+	properly update their SLP nodes.
+
+2023-03-01  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108240
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Allow
+	implicit powerpc64 setting to be unset if 64 bit is enabled implicitly.
+
 2023-02-28  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/107411

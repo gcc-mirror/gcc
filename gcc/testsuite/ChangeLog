@@ -1,3 +1,70 @@
+2023-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107574
+	* g++.dg/cpp0x/ptrmem-cst1.C: New test.
+
+2023-03-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107565
+	* gcc.dg/analyzer/builtins-pr107565.c: New test.
+	* gcc.dg/analyzer/pr99716-1.c (test_2): Mark the leak as xfailing.
+
+2023-03-01  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/108219
+	PR c++/108218
+	* g++.dg/cpp0x/new6.C: New test.
+	* g++.dg/cpp2a/concepts-new1.C: New test.
+
+2023-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/108545
+	* c-c++-common/gomp/map-8.c: New test.
+	* gfortran.dg/gomp/map-9.f90: New test.
+
+2023-03-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108935
+	* gcc.dg/analyzer/infinite-recursion-pr108935-1.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-pr108935-1a.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-pr108935-2.c: New test.
+
+2023-03-01  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.target/i386/harden-sls-6.c: Fix warning on LLP64
+	targets.
+
+2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108894
+	* c-c++-common/ubsan/bounds-16.c: New test.
+
+2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108967
+	* g++.dg/debug/pr108967.C: New test.
+
+2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108606
+	* g++.dg/cpp1y/pr108606.C: New test.
+
+2023-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108970
+	* gcc.dg/pr108970.c: New testcase.
+
+2023-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108950
+	* gcc.dg/vect/pr108950.c: New testcase.
+
+2023-03-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/analyzer/fd-access-mode-target-headers.c: Skip for
+	newlib targets too.
+
 2023-02-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108848

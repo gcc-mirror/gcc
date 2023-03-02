@@ -1,3 +1,24 @@
+2023-03-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107565
+	* region-model.cc (region_model::on_call_pre): Flatten logic by
+	returning early.  Consolidate logic for detecting const and pure
+	functions.  When considering whether an unhandled built-in
+	function has side-effects, consider all kinds of builtin, rather
+	than just BUILT_IN_NORMAL, and don't require
+	gimple_builtin_call_types_compatible_p.
+
+2023-03-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108935
+	* infinite-recursion.cc (contains_unknown_p): New.
+	(sufficiently_different_region_binding_p): New function, splitting
+	out inner loop from...
+	(sufficiently_different_p): ...here.  Extend detection of unknown
+	svalues to also include svalues that contain unknown.  Treat
+	changes in frames below the entry to the recursion as being
+	sufficiently different to reject being an infinite recursion.
+
 2023-02-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108830

@@ -1,3 +1,10 @@
+2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108910
+	* lto-common.cc (lto_fixup_prevailing_type): Don't add t to
+	TYPE_POINTER_TO or TYPE_REFERENCE_TO chain if it has
+	TYPE_ATTRIBUTES or is TYPE_REF_IS_RVALUE.
+
 2023-01-13  Richard Biener  <rguenther@suse.de>
 
 	* lto-lang.cc (lto_type_for_mode): Sync with

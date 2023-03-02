@@ -1,3 +1,14 @@
+2023-03-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h: Fix typo in comment.
+
+2023-03-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (chrono::tzdb::current_zone()) Use "UTC" if
+	current time zone cannot be determined.
+	* testsuite/std/time/tzdb/1.cc: Remove conditions based on
+	HAVE_TZDB macro and test all members unconditionally.
+
 2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108952

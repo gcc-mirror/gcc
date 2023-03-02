@@ -1,3 +1,42 @@
+2023-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107574
+	* constexpr.cc (cxx_eval_constant_expression): Emit an error when
+	a PTRMEM_CST cannot be evaluated.
+
+2023-03-01  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (tsubst_scope): Define.
+	(tsubst_decl) <case USING_DECL>: Call tsubst_scope instead of
+	calling tsubst_scope with tf_qualifying_scope set.
+	(tsubst_qualified_id): Call tsubst_scope instead of
+	calling tsubst with tf_qualifying_scope set.
+	(tsubst_copy): Immediately delegate to tsubst for all TYPE_P
+	trees.  Remove tf_qualifying_scope manipulation.
+	<case SCOPE_REF>: Call tsubst_scope instead of calling
+	tsubst with tf_qualifying_scope set.
+
+2023-03-01  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/108219
+	PR c++/108218
+	* constexpr.cc (fold_to_constant): Define.
+	(maybe_constant_value): Move up early exit test for unevaluated
+	operands.  Try reducing an unevaluated operand to a constant via
+	fold_to_constant.
+	(fold_non_dependent_expr_template): Add early exit test for
+	CONSTANT_CLASS_P nodes.  Try reducing an unevaluated operand
+	to a constant via fold_to_constant.
+	* cp-tree.h (fold_to_constant): Declare.
+
+2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108606
+	* constexpr.cc (potential_constant_expression_1) <case DECL_EXPR>:
+	Only recurse on DECL_INITIAL (tmp) if tmp is a VAR_DECL, otherwise
+	just return true.
+
 2023-02-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108848
