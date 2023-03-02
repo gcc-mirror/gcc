@@ -638,6 +638,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 {
   char tname[GFC_MAX_SYMBOL_LEN+1];
   char *name;
+  gfc_typespec *orig_ts = ts;
   gfc_symbol *fclass;
   gfc_symbol *vtab;
   gfc_component *c;
@@ -646,9 +647,21 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 
   gcc_assert (as);
 
-  if (attr->class_ok)
-    /* Class container has already been built.  */
+  /* Class container has already been built with same name.  */
+  if (attr->class_ok
+      && ts->u.derived->components->attr.dimension >= attr->dimension
+      && ts->u.derived->components->attr.codimension >= attr->codimension
+      && ts->u.derived->components->attr.class_pointer >= attr->pointer
+      && ts->u.derived->components->attr.allocatable >= attr->allocatable)
     return true;
+  if (attr->class_ok)
+    {
+      attr->dimension |= ts->u.derived->components->attr.dimension;
+      attr->codimension |= ts->u.derived->components->attr.codimension;
+      attr->pointer |= ts->u.derived->components->attr.class_pointer;
+      attr->allocatable |= ts->u.derived->components->attr.allocatable;
+      ts = &ts->u.derived->components->ts;
+    }
 
   attr->class_ok = attr->dummy || attr->pointer || attr->allocatable
 		   || attr->select_type_temporary || attr->associate_var;
@@ -790,7 +803,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
     }
 
   fclass->attr.is_class = 1;
-  ts->u.derived = fclass;
+  orig_ts->u.derived = fclass;
   attr->allocatable = attr->pointer = attr->dimension = attr->codimension = 0;
   (*as) = NULL;
   free (name);
@@ -2344,6 +2357,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	  vtab->attr.vtab = 1;
 	  vtab->attr.access = ACCESS_PUBLIC;
 	  gfc_set_sym_referenced (vtab);
+	  free (name);
 	  name = xasprintf ("__vtype_%s", tname);
 
 	  gfc_find_symbol (name, ns, 0, &vtype);
@@ -2447,6 +2461,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      else
 		{
 		  /* Construct default initialization variable.  */
+		  free (name);
 		  name = xasprintf ("__def_init_%s", tname);
 		  gfc_get_symbol (name, ns, &def_init);
 		  def_init->attr.target = 1;
@@ -2480,6 +2495,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  ns->contained = sub_ns;
 		  sub_ns->resolved = 1;
 		  /* Set up procedure symbol.  */
+		  free (name);
 		  name = xasprintf ("__copy_%s", tname);
 		  gfc_get_symbol (name, sub_ns, &copy);
 		  sub_ns->proc_name = copy;
@@ -2558,6 +2574,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  ns->contained = sub_ns;
 		  sub_ns->resolved = 1;
 		  /* Set up procedure symbol.  */
+		  free (name);
 		  name = xasprintf ("__deallocate_%s", tname);
 		  gfc_get_symbol (name, sub_ns, &dealloc);
 		  sub_ns->proc_name = dealloc;
@@ -2723,6 +2740,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	  vtab->attr.vtab = 1;
 	  vtab->attr.access = ACCESS_PUBLIC;
 	  gfc_set_sym_referenced (vtab);
+	  free (name);
 	  name = xasprintf ("__vtype_%s", tname);
 
 	  gfc_find_symbol (name, ns, 0, &vtype);
@@ -2801,6 +2819,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      c->tb = XCNEW (gfc_typebound_proc);
 	      c->tb->ppc = 1;
 
+	      free (name);
 	      if (ts->type != BT_CHARACTER)
 		name = xasprintf ("__copy_%s", tname);
 	      else
