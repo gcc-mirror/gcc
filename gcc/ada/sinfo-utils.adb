@@ -50,7 +50,7 @@ package body Sinfo.Utils is
 
    --  Either way, gnat1 will stop when node 12345 is created, or certain other
    --  interesting operations are performed, such as Rewrite. To see exactly
-   --  which operations, search for "pragma Debug" below.
+   --  which operations, search for "New_Node_Debugging_Output" in Atree.
 
    --  The second method is much faster if the amount of Ada code being
    --  compiled is large.
