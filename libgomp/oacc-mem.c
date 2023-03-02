@@ -1431,12 +1431,6 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
   gomp_mutex_unlock (&acc_dev->lock);
 }
 
-struct async_prof_callback_info *
-queue_async_prof_dispatch (struct gomp_device_descr *devicep, goacc_aq aq,
-			   acc_prof_info *prof_info, acc_event_info *event_info,
-			   acc_api_info *api_info,
-			   struct async_prof_callback_info *prev_info);
-
 static void
 goacc_enter_exit_data_internal (int flags_m, size_t mapnum, void **hostaddrs,
 				size_t *sizes, unsigned short *kinds,
@@ -1447,7 +1441,6 @@ goacc_enter_exit_data_internal (int flags_m, size_t mapnum, void **hostaddrs,
 
   struct goacc_thread *thr;
   struct gomp_device_descr *acc_dev;
-  struct async_prof_callback_info *data_start_info = NULL;
 
   goacc_lazy_initialize ();
 
@@ -1503,19 +1496,9 @@ goacc_enter_exit_data_internal (int flags_m, size_t mapnum, void **hostaddrs,
       api_info.async_handle = NULL;
     }
 
-  goacc_aq aq = get_goacc_asyncqueue (async);
-
   if (profiling_p)
-    {
-      if (aq)
-	data_start_info
-	  = queue_async_prof_dispatch (acc_dev, aq, &prof_info,
-				       &enter_exit_data_event_info, &api_info,
-				       NULL);
-      else
-	goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
-				  &api_info);
-    }
+    goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
+			      &api_info);
 
   if ((acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
       || (flags & GOACC_FLAG_HOST_FALLBACK))
@@ -1529,6 +1512,8 @@ goacc_enter_exit_data_internal (int flags_m, size_t mapnum, void **hostaddrs,
   if (num_waits)
     goacc_wait (async, num_waits, ap);
 
+  goacc_aq aq = get_goacc_asyncqueue (async);
+
   if (data_enter)
     goacc_enter_data_internal (acc_dev, mapnum, hostaddrs, sizes, kinds, aq);
   else
@@ -1540,13 +1525,8 @@ goacc_enter_exit_data_internal (int flags_m, size_t mapnum, void **hostaddrs,
       prof_info.event_type
 	= data_enter ? acc_ev_enter_data_end : acc_ev_exit_data_end;
       enter_exit_data_event_info.other_event.event_type = prof_info.event_type;
-      if (aq)
-	queue_async_prof_dispatch (acc_dev, aq, &prof_info,
-				   &enter_exit_data_event_info, &api_info,
-				   data_start_info);
-      else
-	goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
-				  &api_info);
+      goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
+				&api_info);
 
       thr->prof_info = NULL;
       thr->api_info = NULL;

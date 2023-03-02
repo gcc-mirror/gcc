@@ -1,5 +1,14 @@
 2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* oacc-host.c: Revert
+	"OpenACC profiling-interface fixes for asynchronous operations"
+	changes.
+	* oacc-mem.c: Likewise.
+	* oacc-parallel.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c:
+	Likewise.
+
 	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c: Revert
 	"Revert changes to acc_prof-init-1.c and acc_prof-parallel-1.c"
 	changes.
