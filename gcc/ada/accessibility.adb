@@ -1213,7 +1213,7 @@ package body Accessibility is
             return First (Choices (Assoc));
 
          elsif Nkind (Assoc) = N_Discriminant_Association then
-            return (First (Selector_Names (Assoc)));
+            return First (Selector_Names (Assoc));
 
          else
             raise Program_Error;
@@ -1292,7 +1292,7 @@ package body Accessibility is
                exit;
             end if;
 
-            Nlists.Next (Return_Con);
+            Next (Return_Con);
          end loop;
 
          pragma Assert (Present (Return_Con));
@@ -1693,7 +1693,7 @@ package body Accessibility is
          if not Is_List_Member (Assoc) then
             exit;
          else
-            Nlists.Next (Assoc);
+            Next (Assoc);
          end if;
       end loop;
    end Check_Return_Construct_Accessibility;

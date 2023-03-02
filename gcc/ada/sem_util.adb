@@ -12654,8 +12654,7 @@ package body Sem_Util is
               and then Class_Present (Prag)
             then
                Pragma_Arg :=
-                 Nlists.First
-                   (Pragma_Argument_Associations (Prag));
+                 First (Pragma_Argument_Associations (Prag));
 
                if not Is_Static_Expression (Expression (Pragma_Arg)) then
                   return True;
