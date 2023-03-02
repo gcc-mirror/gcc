@@ -9923,7 +9923,7 @@ mips_finish_declare_object (FILE *stream, tree decl, int top_level, int at_end)
 void
 mips_set_text_contents_type (FILE *file ATTRIBUTE_UNUSED,
 			     const char *prefix ATTRIBUTE_UNUSED,
-			     unsigned long num ATTRIBUTE_UNUSED,
+			     unsigned HOST_WIDE_INT num ATTRIBUTE_UNUSED,
 			     bool function_p ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
@@ -9932,7 +9932,7 @@ mips_set_text_contents_type (FILE *file ATTRIBUTE_UNUSED,
   char *sname;
   rtx symbol;
 
-  sprintf (buf, "%lu", num);
+  sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, num);
   symbol = XEXP (DECL_RTL (current_function_decl), 0);
   fnname = targetm.strip_name_encoding (XSTR (symbol, 0));
   sname = ACONCAT ((prefix, fnname, "_", buf, NULL));
