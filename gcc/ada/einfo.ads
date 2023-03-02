@@ -4324,14 +4324,14 @@ package Einfo is
 --       concurrent types, private types and entries, and also to record types,
 --       i.e. to any entity that can appear on the scope stack. Yields the
 --       scope depth value, which for those entities other than records is
---       simply the scope depth value, for record entities, it is the
---       Scope_Depth of the record scope.
+--       simply the Scope_Depth_Value, and for record entities, is the
+--       Scope_Depth of the record's scope.
 
 --    Scope_Depth_Value
 --       Defined in program units, blocks, loops, return statements,
 --       concurrent types, private types and entries.
 --       Indicates the number of scopes that statically enclose the declaration
---       of the unit or type. Library units have a depth of zero. Note that
+--       of the unit or type. Library units have a depth of one. Note that
 --       record types can act as scopes but do NOT have this field set (see
 --       Scope_Depth above). Queries should normally be via Scope_Depth,
 --       and not call Scope_Depth_Value directly.
