@@ -100,7 +100,7 @@ that one could also use special file names @code{stdout} and
 respectively.
 
 @item @code{alt_stream}
-This steam is used for printing optimization specific output in
+This stream is used for printing optimization specific output in
 response to the @option{-fopt-info}. Again a file name can be given. If
 the file name is not given, it defaults to @code{stderr}.
 @end table
