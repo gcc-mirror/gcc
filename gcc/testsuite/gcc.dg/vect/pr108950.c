@@ -1,3 +1,4 @@
+/* { dg-require-effective-target vect_simd_clones } */
 /* { dg-do compile } */
 
 int m;
