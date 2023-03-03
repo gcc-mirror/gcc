@@ -1,3 +1,138 @@
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/108991
+	* gcc.dg/memchr-3.c: Add missing comment argument to dg-warning
+	before target selector.
+
+2023-03-02  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	PR jit/107999
+	* jit.dg/test-error-array-bounds.c: Update test.
+
+2023-03-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/avr/pr90706.c: New.
+
+2023-03-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* gcc.target/gcn/simd-math-1.c: New testcase.
+	* gcc.target/gcn/simd-math-2.c: New testcase.
+
+2023-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108243
+	PR c++/97553
+	* g++.dg/opt/is_constant_evaluated3.C: New test.
+
+2023-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108243
+	* g++.dg/cpp2a/is-constant-evaluated14.C: New test.
+
+2023-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108968
+	* gcc.dg/analyzer/uninit-pr108968-register.c: New test.
+
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108716
+	* g++.dg/debug/dwarf2/pr108716.C: New test.
+
+2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108979
+	* gfortran.dg/vect/pr108979.f90: New test.
+
+2023-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106259
+	* g++.dg/warn/Wmismatched-tags-11.C: New test.
+
+2023-03-02  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp: Add partial subdirectory.
+	* gcc.target/s390/vector/vec-nopeel-2.c: Change test
+	expectation.
+	* lib/target-supports.exp: Add s390.
+	* gcc.target/s390/vector/partial/s390-vec-length-1.h: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-2.h: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-3.h: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-7.h: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-epil-1.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-epil-2.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-epil-3.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-epil-7.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-epil-run-1.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-epil-run-2.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-epil-run-3.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-epil-run-7.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-full-1.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-full-2.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-full-3.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-full-7.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-full-run-1.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-full-run-2.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-full-run-3.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-full-run-7.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-run-1.h: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-run-2.h: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-run-3.h: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-run-7.h: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length-small.c: New test.
+	* gcc.target/s390/vector/partial/s390-vec-length.h: New test.
+
+2023-03-02  Jonathan Yong  <10walls@gmail.com>
+
+	PR middle-end/97956
+	* gcc.dg/memchr-3.c (memchr): Account for LLP64 warnings.
+
+2023-03-02  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.dg/overflow-warn-9.c: Add LLP64 case.
+
+2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108603
+	* gcc.target/aarch64/sve/pr108603.c: New test.
+
+2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108430
+	* gcc.target/aarch64/sve/pr108430.c: New test.
+
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108934
+	* gcc.target/i386/auto-init-4.c: Revert PR105259 change.
+	* g++.target/i386/pr108934.C: New test.
+
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105839
+	* g++.dg/gomp/pr105839-1.C: New test.
+	* g++.dg/gomp/pr105839-2.C: New test.
+
+2023-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/108985
+	* gcc.dg/vect/pr108950.c: Require vect_simd_clones.
+
+2023-03-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/ext/attr-copy-2.C: Fix for default_packed targets.
+
+2023-03-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/attr-copy-6.c: Prefix asm-declared name with
+	__USER_LABEL_PREFIX__.
+
+2023-03-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* c-c++-common/auto-init-7.c, c-c++-common/auto-init-8.c: Also
+	match targets where sizeof (union U) == 5, like "packed" targets.
+
 2023-03-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107574

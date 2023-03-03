@@ -1,3 +1,59 @@
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108883
+	* cp-tree.h (enum cp_tree_index): Remove CPTI_FALLBACK_DFLOAT*_TYPE
+	enumerators.
+	(fallback_dfloat32_type, fallback_dfloat64_type,
+	fallback_dfloat128_type): Remove.
+	* rtti.cc (emit_support_tinfo_1): If not emitted already, call
+	emit_tinfo_decl and remove from unemitted_tinfo_decls right away.
+	(emit_support_tinfos): Move &dfloat*_type_node from fundamentals array
+	into new fundamentals_with_fallback array.  Call emit_support_tinfo_1
+	on elements of that array too, with the difference that if
+	the type is NULL, use a fallback REAL_TYPE for it temporarily.
+	Drop the !targetm.decimal_float_supported_p () handling.  Call
+	targetm.emit_support_tinfos at the end.
+	* mangle.cc (write_builtin_type): Remove references to
+	fallback_dfloat*_type.  Handle bfloat16_type_node mangling.
+
+2023-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108243
+	PR c++/97553
+	* cp-gimplify.cc (cp_fully_fold): Add an internal overload that
+	additionally takes and propagate an mce_value parameter, and
+	define the existing public overload in terms of it.
+	(cp_fully_fold_init): Pass mce_false to cp_fully_fold.
+
+2023-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108243
+	* constexpr.cc (maybe_constant_init_1): Override
+	manifestly_const_eval to true if is_static.
+
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108716
+	* cp-gimplify.cc (cp_genericize_r) <case USING_STMT>: Set
+	DECL_SOURCE_LOCATION on IMPORTED_DECL to expression location
+	of USING_STMT or input_location.
+
+2023-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106259
+	* parser.cc (class_decl_loc_t::diag_mismatched_tags): If the first
+	lookup of SPEC didn't find anything, try to look for
+	most_general_template.
+
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105839
+	* parser.cc (cp_convert_omp_range_for): Allow in assert
+	decomp_first_name without DECL_HAS_VALUE_EXPR_P if it has
+	error_mark_node type.
+	(cp_finish_omp_range_for): Don't set DECL_HAS_VALUE_EXPR_P back
+	on decls which have error_mark_node type.
+
 2023-03-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107574

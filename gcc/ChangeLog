@@ -1,3 +1,84 @@
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108883
+	* target.h (emit_support_tinfos_callback): New typedef.
+	* targhooks.h (default_emit_support_tinfos): Declare.
+	* targhooks.cc (default_emit_support_tinfos): New function.
+	* target.def (emit_support_tinfos): New target hook.
+	* doc/tm.texi.in (emit_support_tinfos): Document it.
+	* doc/tm.texi: Regenerated.
+	* config/i386/i386.cc (ix86_emit_support_tinfos): New function.
+	(TARGET_EMIT_SUPPORT_TINFOS): Redefine.
+
+2023-03-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc: Include print-rtl.h.
+	(record_reg_classes, scan_one_insn): Add code to print debug info.
+	(record_operand_costs): Find and use smaller cost for hard reg
+	move.
+
+2023-03-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* builtins.cc (mathfn_built_in_explicit): New.
+	* config/gcn/gcn.cc: Include case-cfn-macros.h.
+	(mathfn_built_in_explicit): Add prototype.
+	(gcn_vectorize_builtin_vectorized_function): New.
+	(gcn_libc_has_function): New.
+	(TARGET_LIBC_HAS_FUNCTION): Define.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Define.
+
+2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108979
+	* tree-vect-stmts.cc (vectorizable_operation): Don't mask
+	operations on invariants.
+
+2023-03-02  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/predicates.md (vll_bias_operand): Add -1 bias.
+	* config/s390/s390.cc (s390_option_override_internal): Make
+	partial vector usage the default from z13 on.
+	* config/s390/vector.md (len_load_v16qi): Add.
+	(len_store_v16qi): Add.
+
+2023-03-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Use byte instead
+	of constant 0 offset.
+
+2023-03-02  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips.cc (mips_set_text_contents_type): Use HOST_WIDE_INT
+	instead of long.
+	* config/mips/mips-protos.h (mips_set_text_contents_type): Likewise.
+
+2023-03-02  Junxian Zhu  <zhujunxian@oss.cipunited.com>
+
+	* config.gcc: add -with-{no-}msa build option.
+	* config/mips/mips.h: Likewise.
+	* doc/install.texi: Likewise.
+
+2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108603
+	* explow.cc (convert_memory_address_addr_space_1): Only wrap
+	the result of a recursive call in a CONST if no instructions
+	were emitted.
+
+2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108430
+	* tree-vect-stmts.cc (vectorizable_condition): Fix handling
+	of inverted condition.
+
+2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108934
+	* fold-const.cc (native_interpret_expr) <case REAL_CST>: Before memcmp
+	comparison copy the bytes from ptr to a temporary buffer and clearing
+	padding bits in there.
+
 2023-03-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/108545

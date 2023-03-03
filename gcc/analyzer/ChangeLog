@@ -1,3 +1,13 @@
+2023-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108968
+	* region-model.cc (region_model::get_rvalue_1): Handle VAR_DECLs
+	with a DECL_HARD_REGISTER by returning UNKNOWN.
+
+2023-03-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* kf.cc (register_known_functions): Add __errno function for newlib.
+
 2023-03-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107565
