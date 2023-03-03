@@ -1555,7 +1555,6 @@ package body Freeze is
          Par_Prim     : Entity_Id;
          Wrapped_Subp : Entity_Id) return Node_Id
       is
-         Par_Typ    : constant Entity_Id := Find_Dispatching_Type (Par_Prim);
          Actuals    : constant List_Id   := Empty_List;
          Call       : Node_Id;
          Formal     : Entity_Id := First_Formal (Par_Prim);
@@ -1571,12 +1570,10 @@ package body Freeze is
             --  If the controlling argument is inherited, add conversion to
             --  parent type for the call.
 
-            if Etype (Formal) = Par_Typ
-              and then Is_Controlling_Formal (Formal)
-            then
+            if Is_Controlling_Formal (Formal) then
                Append_To (Actuals,
                  Make_Type_Conversion (Loc,
-                   New_Occurrence_Of (Par_Typ, Loc),
+                   New_Occurrence_Of (Etype (Formal), Loc),
                    New_Occurrence_Of (New_Formal, Loc)));
             else
                Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));

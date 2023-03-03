@@ -2234,9 +2234,12 @@ package body Sem_Util is
            and then Entity (Formal_Type) = Par_Typ
          then
             Rewrite (Formal_Type, New_Occurrence_Of (Typ, Loc));
-         end if;
 
-         --  Nothing needs to be done for access parameters
+         elsif Nkind (Formal_Type) = N_Access_Definition
+           and then Entity (Subtype_Mark (Formal_Type)) = Par_Typ
+         then
+            Rewrite (Subtype_Mark (Formal_Type), New_Occurrence_Of (Typ, Loc));
+         end if;
 
          Next (Formal_Spec);
       end loop;
