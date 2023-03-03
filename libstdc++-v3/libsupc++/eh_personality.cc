@@ -95,7 +95,7 @@ get_ttype_entry (lsda_header_info *info, _uleb128_t i)
   i *= size_of_encoded_value (info->ttype_encoding);
   read_encoded_value_with_base (
 #if __FDPIC__
-				/* Force these flags to nake sure to
+				/* Force these flags to make sure to
 				   take the GOT into account.  */
 				(DW_EH_PE_pcrel | DW_EH_PE_indirect),
 #else
