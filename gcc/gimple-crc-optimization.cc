@@ -1112,9 +1112,9 @@ unsigned HOST_WIDE_INT
 gf2n_poly_long_div_quotient (value *polynomial, bool is_left_shift)
 {
   vec<int> x2n, pol, q;
-  size_t n = (*polynomial).length () * 2 + 1, m = (*polynomial).length () + 1;
-  x2n.create (n);
-  pol.create (m);
+  size_t n = (*polynomial).length () + 1;
+  x2n.create ((*polynomial).length () * 2 + 1);
+  pol.create (n);
 
   for (size_t i = 0; i < (*polynomial).length (); i++)
     {
@@ -1128,20 +1128,20 @@ gf2n_poly_long_div_quotient (value *polynomial, bool is_left_shift)
 
   pol.quick_push (1);
 
-  for (size_t i = 0; i < n - 1; i++)
+  for (size_t i = 0; i < (*polynomial).length () * 2; i++)
     x2n.quick_push (0);
   x2n.quick_push (1);
 
-  q.create (n - m + 1);
-  for (size_t i = 0; i < n - m + 1; i++)
+  q.create (n);
+  for (size_t i = 0; i < n; i++)
     q.quick_push (0);
 
-  for (int i = n - m; i >= 0; i--)
+  for (int i = n - 1; i >= 0; i--)
     {
-      int d = x2n[i + m - 1];
+      int d = x2n[i + n - 1];
       if (d == 0)
 	continue;
-      for (int j = i + m - 1; j >= i; j--)
+      for (int j = i + n - 1; j >= i; j--)
 	x2n[j] = x2n[j] ^ (pol[j - i] * d);
       q[i] = d;
     }

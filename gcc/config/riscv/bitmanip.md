@@ -656,30 +656,56 @@
    operands[9] = GEN_INT (clearbit);
 })
 
+(define_insn "clmul<mode>3"
+[(set (match_operand:X 0 "register_operand" "=r")
+(clmul:X (match_operand:X 1 "register_operand" "r")
+(match_operand:X 2 "arith_operand"  "r")))]
+"TARGET_ZBC"
+"clmul\t%0,%1,%2"
+[(set_attr "type" "bitmanip")])
+
+
+(define_insn "clmulh<mode>3"
+[(set (match_operand:X 0 "register_operand" "=r")
+(plus:X (match_operand:X 1 "register_operand" " r")
+(match_operand:X 2 "arith_operand"    " r")))]
+"TARGET_ZBC"
+"clmulh\t%0,%1,%2"
+[(set_attr "type" "bitmanip")])
+
+
+(define_insn "clmulr<mode>3"
+[(set (match_operand:X 0 "register_operand" "=r")
+(clmulr:X (match_operand:X 1 "register_operand" "r")
+(match_operand:X 2 "arith_operand"  "r")))]
+"TARGET_ZBC"
+"clmulr\t%0,%1,%2"
+[(set_attr "type" "bitmanip")])
+
 (define_expand "crcqihi4"
-[(set (match_operand:HI 0 "register_operand" "=r")
-(unspec:HI
 [(match_operand:HI 1)
 (match_operand:QI 2)
 (match_operand:HI 3)]
-UNSPEC_CRC16))] ;;
 ""
 {
-// FIXME: Note correct instruction sequence.
-rtx data = force_reg (SImode, gen_rtx_ASHIFT (SImode, operands[1],
-					      GEN_INT (32)));
+if (TARGET_ZBC)
+  {
+     // FIXME: Note correct instruction sequence.
+     rtx data = force_reg (SImode, gen_rtx_ASHIFT (SImode, operands[1],
+						   GEN_INT (32)));
 
-rtx op3 = simplify_gen_subreg (SImode, operands[3], HImode, 0);
-rtx t2 = force_reg (SImode, gen_rtx_PLUS (SImode, data, op3)); // Must be CLMULH
-
-t2 = force_reg (SImode, gen_rtx_ASHIFT (SImode, t2, GEN_INT (16+1)));
-
-t2 = force_reg (SImode, gen_rtx_LSHIFTRT (SImode, t2, GEN_INT (48-1)));
-
-t2 = force_reg (SImode, gen_rtx_PLUS (SImode, data, t2)); // Must be CLMULH
-
-rtx tgt = simplify_gen_subreg (SImode, operands[0], HImode, 0);
-rtx crc = simplify_gen_subreg (SImode, operands[2], QImode, 0);
-emit_move_insn (tgt, gen_rtx_XOR (SImode, crc, t2));
+     rtx op3 = simplify_gen_subreg (SImode, operands[3], HImode, 0);
+     rtx t2 = force_reg (SImode, gen_rtx_CLMULH (SImode, data, op3));
+     t2 = force_reg (SImode, gen_rtx_ASHIFT (SImode, t2, GEN_INT (16+1)));
+     t2 = force_reg (SImode, gen_rtx_LSHIFTRT (SImode, t2, GEN_INT (48-1)));
+     t2 = force_reg (SImode, gen_rtx_CLMULH (SImode, data, t2));
+     rtx tgt = simplify_gen_subreg (SImode, operands[0], HImode, 0);
+     rtx crc = simplify_gen_subreg (SImode, operands[2], QImode, 0);
+     emit_move_insn (tgt, gen_rtx_XOR (SImode, crc, t2));
+  }
+else
+  {
+    expand_crc_table_based (operands);
+  }
 DONE;
 })

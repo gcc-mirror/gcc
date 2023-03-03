@@ -101,6 +101,9 @@ OPTAB_CD(vec_init_optab, "vec_init$a$b")
 
 OPTAB_CD (while_ult_optab, "while_ult$a$b")
 
+OPTAB_NL(clmul_optab, "clmul$a3", CLMUL, "clmul", '3', NULL)
+OPTAB_NL(clmulh_optab, "clmulh$a3", CLMULH, "clmulh", '3', NULL)
+OPTAB_NL(clmulr_optab, "clmulr$a3", CLMULR, "clmulr", '3', NULL)
 OPTAB_NL(add_optab, "add$P$a3", PLUS, "add", '3', gen_int_fp_fixed_libfunc)
 OPTAB_NX(add_optab, "add$F$a3")
 OPTAB_NX(add_optab, "add$Q$a3")

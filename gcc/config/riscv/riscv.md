@@ -65,8 +65,6 @@
 
   ;; OR-COMBINE
   UNSPEC_ORC_B
-
-  UNSPEC_CRC16
 ])
 
 (define_c_enum "unspecv" [

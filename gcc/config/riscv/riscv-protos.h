@@ -78,6 +78,8 @@ extern void riscv_reinit (void);
 extern poly_uint64 riscv_regmode_natural_size (machine_mode);
 extern bool riscv_v_ext_vector_mode_p (machine_mode);
 extern bool riscv_shamt_matches_mask_p (int, HOST_WIDE_INT);
+extern void expand_crc_table_based (rtx *operands);
+extern rtx generate_crc16_table (uint16_t);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);

@@ -6902,6 +6902,66 @@ riscv_shamt_matches_mask_p (int shamt, HOST_WIDE_INT mask)
   return shamt == ctz_hwi (mask);
 }
 
+/* Calculates CRC for initial CRC and given polynomial.  */
+static uint16_t
+generate_crc (uint16_t crc,
+	     uint16_t polynomial)
+{
+  for (int bits = 16; bits > 0; --bits)
+    {
+      if (crc & 0x8000)
+	{
+	  crc = (crc << 1) ^ polynomial;
+	}
+      else
+	{
+	  crc <<= 1;
+	}
+    }
+
+  return crc;
+}
+
+/* Generates 16-bit CRC table.  */
+rtx
+generate_crc16_table (uint16_t polynom)
+{
+  FILE *out = asm_out_file;
+  char buf[9+1];
+  sprintf (buf, "crc_table");
+  tree id = maybe_get_identifier (buf);
+  if (id)
+    return gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
+  id = get_identifier (buf);
+  rtx lab = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
+  asm_fprintf (out, "\t%s:\n\t", buf);
+  unsigned table_size = 256;
+  for (unsigned i = 0; i < table_size; i++)
+    {
+      unsigned HOST_WIDE_INT crc = generate_crc (i, polynom);
+      fprintf (out, HOST_WIDE_INT_PRINT_HEX, crc);
+      if (i % 8 != 7)
+	asm_fprintf (out, ", ");
+      else if (i < table_size - 1)
+	asm_fprintf (out, ",\n\t");
+      else
+	asm_fprintf (out, "\n");
+    }
+  return lab;
+}
+
+/* Generate table based CRC.  */
+void
+expand_crc_table_based (rtx *operands)
+{
+  rtx tab = generate_crc16_table (INTVAL (operands[3]));
+
+  machine_mode mode = GET_MODE (operands[0]);
+  tab = gen_rtx_MEM (mode, tab);
+  rtx crc = force_reg (mode, gen_rtx_XOR (mode, tab, operands[1]));
+  riscv_emit_move (operands[0], gen_rtx_SUBREG (mode, crc, 0));
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
