@@ -461,13 +461,16 @@ class VecPrinter:
             return
         m_vecpfx = self.gdbval['m_vecpfx']
         m_num = m_vecpfx['m_num']
-        typ = self.gdbval.type
+        val = self.gdbval
+        typ = val.type
         if typ.code == gdb.TYPE_CODE_PTR:
             typ = typ.target()
-        typ = typ.template_argument(0) # the type T
-        m_vecdata = (self.gdbval.address + 1).cast(typ.pointer())
+        else:
+            val = val.address
+        typ_T = typ.template_argument(0) # the type T
+        vecdata = (val + 1).cast(typ_T.pointer())
         for i in range(m_num):
-            yield ('[%d]' % i, m_vecdata[i])
+            yield ('[%d]' % i, vecdata[i])
 
 ######################################################################
 
