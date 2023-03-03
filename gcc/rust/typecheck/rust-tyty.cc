@@ -18,10 +18,7 @@
 
 #include "rust-tyty.h"
 
-#include "rust-hir-type-check-expr.h"
-#include "rust-hir-type-check-type.h"
 #include "rust-tyty-visitor.h"
-#include "rust-tyty-call.h"
 #include "rust-hir-map.h"
 #include "rust-location.h"
 #include "rust-linemap.h"
@@ -2961,7 +2958,7 @@ ParamType::get_name () const
   if (!can_resolve ())
     return get_symbol ();
 
-  return resolve ()->get_name ();
+  return destructure ()->get_name ();
 }
 
 bool
