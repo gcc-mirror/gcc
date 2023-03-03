@@ -16688,7 +16688,7 @@ package body Sem_Prag is
             Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
 
             --  Chain the pragma on the contract for further processing by
-            --  Analyze_Subprogram_Variant_In_Decl_Part.
+            --  Analyze_Exceptional_Cases_In_Decl_Part.
 
             Add_Contract_Item (N, Defining_Entity (Subp_Decl));
 
@@ -16698,13 +16698,13 @@ package body Sem_Prag is
             if Nkind (Subp_Decl) in N_Subprogram_Body
                                   | N_Subprogram_Body_Stub
             then
-               --  The legality checks of pragma Subprogram_Variant are
+               --  The legality checks of pragma Exceptional_Cases are
                --  affected by the SPARK mode in effect and the volatility
                --  of the context. Analyze all pragmas in a specific order.
 
                Analyze_If_Present (Pragma_SPARK_Mode);
                Analyze_If_Present (Pragma_Volatile_Function);
-               Analyze_Subprogram_Variant_In_Decl_Part (N);
+               Analyze_Exceptional_Cases_In_Decl_Part (N);
             end if;
          end Exceptional_Cases;
 
