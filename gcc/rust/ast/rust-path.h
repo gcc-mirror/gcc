@@ -1046,6 +1046,7 @@ public:
     : has_opening_scope_resolution (other.has_opening_scope_resolution),
       locus (other.locus)
   {
+    node_id = other.node_id;
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
       segments.push_back (e->clone_type_path_segment ());
@@ -1054,6 +1055,7 @@ public:
   // Overloaded assignment operator with clone
   TypePath &operator= (TypePath const &other)
   {
+    node_id = other.node_id;
     has_opening_scope_resolution = other.has_opening_scope_resolution;
     locus = other.locus;
 
