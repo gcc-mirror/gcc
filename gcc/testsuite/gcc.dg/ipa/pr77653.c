@@ -1,5 +1,6 @@
 /* { dg-require-alias "" } */
 /* { dg-options "-O2 -fcommon -fdump-ipa-icf-details"  } */
+/* { dg-skip-if "Can align g more than f" { cris-*-* } } */
 
 int a, b, c, d, e, h, i, j, k, l;
 const int f;
