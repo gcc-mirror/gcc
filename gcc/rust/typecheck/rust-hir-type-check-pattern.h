@@ -51,6 +51,10 @@ private:
 				 Analysis::NodeMapping mappings,
 				 Location locus);
 
+  void emit_pattern_size_error (const HIR::Pattern &pattern,
+				size_t expected_field_count,
+				size_t got_field_count);
+
   TyTy::BaseType *parent;
   TyTy::BaseType *infered;
 };

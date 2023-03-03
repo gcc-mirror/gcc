@@ -262,16 +262,30 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	  = *static_cast<HIR::TuplePatternItemsMultiple *> (
 	    pattern.get_items ().get ());
 
-	std::vector<TyTy::TyVar> pattern_elems;
-	for (size_t i = 0; i < ref.get_patterns ().size (); i++)
+	if (parent->get_kind () != TyTy::TUPLE)
 	  {
-	    auto &p = ref.get_patterns ()[i];
-	    TyTy::BaseType *par_type = parent;
-	    if (parent->get_kind () == TyTy::TUPLE)
-	      {
-		TyTy::TupleType &par = *static_cast<TyTy::TupleType *> (parent);
-		par_type = par.get_field (i);
-	      }
+	    rust_error_at (pattern.get_locus (), "expected %s, found tuple",
+			   parent->as_string ().c_str ());
+	    break;
+	  }
+
+	const auto &patterns = ref.get_patterns ();
+	size_t nitems_to_resolve = patterns.size ();
+
+	TyTy::TupleType &par = *static_cast<TyTy::TupleType *> (parent);
+	if (patterns.size () != par.get_fields ().size ())
+	  {
+	    emit_pattern_size_error (pattern, par.get_fields ().size (),
+				     patterns.size ());
+	    nitems_to_resolve
+	      = std::min (nitems_to_resolve, par.get_fields ().size ());
+	  }
+
+	std::vector<TyTy::TyVar> pattern_elems;
+	for (size_t i = 0; i < nitems_to_resolve; i++)
+	  {
+	    auto &p = patterns[i];
+	    TyTy::BaseType *par_type = par.get_field (i);
 
 	    TyTy::BaseType *elem
 	      = TypeCheckPattern::Resolve (p.get (), par_type);
@@ -405,6 +419,22 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
 {
   rust_sorry_at (pattern.get_locus (),
 		 "type checking qualified path patterns not supported");
+}
+
+void
+TypeCheckPattern::emit_pattern_size_error (const HIR::Pattern &pattern,
+					   size_t expected_field_count,
+					   size_t got_field_count)
+{
+  RichLocation r (pattern.get_locus ());
+  r.add_range (mappings->lookup_location (parent->get_ref ()));
+  rust_error_at (r,
+		 "expected a tuple with %lu %s, found one "
+		 "with %lu %s",
+		 (unsigned long) expected_field_count,
+		 expected_field_count == 1 ? "element" : "elements",
+		 (unsigned long) got_field_count,
+		 got_field_count == 1 ? "element" : "elements");
 }
 
 } // namespace Resolver
