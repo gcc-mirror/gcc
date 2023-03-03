@@ -281,29 +281,6 @@ package body Exp_Ch7 is
    --  does not contain the above constructs, the routine returns an empty
    --  list.
 
-   procedure Build_Finalizer
-     (N           : Node_Id;
-      Clean_Stmts : List_Id;
-      Mark_Id     : Entity_Id;
-      Top_Decls   : List_Id;
-      Defer_Abort : Boolean;
-      Fin_Id      : out Entity_Id);
-   --  N may denote an accept statement, block, entry body, package body,
-   --  package spec, protected body, subprogram body, or a task body. Create
-   --  a procedure which contains finalization calls for all controlled objects
-   --  declared in the declarative or statement region of N. The calls are
-   --  built in reverse order relative to the original declarations. In the
-   --  case of a task body, the routine delays the creation of the finalizer
-   --  until all statements have been moved to the task body procedure.
-   --  Clean_Stmts may contain additional context-dependent code used to abort
-   --  asynchronous calls or complete tasks (see Build_Cleanup_Statements).
-   --  Mark_Id is the secondary stack used in the current context or Empty if
-   --  missing. Top_Decls is the list on which the declaration of the finalizer
-   --  is attached in the non-package case. Defer_Abort indicates that the
-   --  statements passed in perform actions that require abort to be deferred,
-   --  such as for task termination. Fin_Id is the finalizer declaration
-   --  entity.
-
    procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id);
    --  N is a construct that contains a handled sequence of statements, Fin_Id
    --  is the entity of a finalizer. Create an At_End handler that covers the
@@ -2498,73 +2475,6 @@ package body Exp_Ch7 is
                   end if;
                end if;
 
-               --  Call the xxx__finalize_body procedure of a library level
-               --  package instantiation if the body contains finalization
-               --  statements.
-
-               if Present (Generic_Parent (Spec))
-                 and then Is_Library_Level_Entity (Pack_Id)
-                 and then Present (Body_Entity (Generic_Parent (Spec)))
-               then
-                  if Preprocess then
-                     declare
-                        P : Node_Id;
-                     begin
-                        P := Parent (Body_Entity (Generic_Parent (Spec)));
-                        while Present (P)
-                          and then Nkind (P) /= N_Package_Body
-                        loop
-                           P := Parent (P);
-                        end loop;
-
-                        if Present (P) then
-                           Old_Counter_Val := Counter_Val;
-                           Process_Declarations (Declarations (P), Preprocess);
-
-                           --  Note that we are processing the generic body
-                           --  template and not the actually instantiation
-                           --  (which is generated too late for us to process
-                           --  it), so there is no need to update in particular
-                           --  Last_Top_Level_Ctrl_Construct here.
-
-                           if Counter_Val > Old_Counter_Val then
-                              Counter_Val := Old_Counter_Val;
-                              Set_Has_Controlled_Component (Pack_Id);
-                           end if;
-                        end if;
-                     end;
-
-                  elsif Has_Controlled_Component (Pack_Id) then
-
-                     --  We import the xxx__finalize_body routine since the
-                     --  generic body will be instantiated later.
-
-                     declare
-                        Id : constant Node_Id :=
-                          Make_Defining_Identifier (Loc,
-                            New_Finalizer_Name (Defining_Unit_Name (Spec),
-                              For_Spec => False));
-
-                     begin
-                        Set_Has_Qualified_Name       (Id);
-                        Set_Has_Fully_Qualified_Name (Id);
-                        Set_Is_Imported              (Id);
-                        Set_Has_Completion           (Id);
-                        Set_Interface_Name (Id,
-                          Make_String_Literal (Loc,
-                            Strval => Get_Name_String (Chars (Id))));
-
-                        Append_New_To (Finalizer_Stmts,
-                          Make_Subprogram_Declaration (Loc,
-                            Make_Procedure_Specification (Loc,
-                              Defining_Unit_Name => Id)));
-                        Append_To (Finalizer_Stmts,
-                          Make_Procedure_Call_Statement (Loc,
-                            Name => New_Occurrence_Of (Id, Loc)));
-                     end;
-                  end if;
-               end if;
-
             --  Nested package bodies, avoid generics
 
             elsif Nkind (Decl) = N_Package_Body then
@@ -3541,34 +3451,15 @@ package body Exp_Ch7 is
          end if;
       end if;
 
-      --  Do not process nested packages since those are handled by the
-      --  enclosing scope's finalizer. Do not process non-expanded package
-      --  instantiations since those will be re-analyzed and re-expanded.
+      --  We do not need to process nested packages since they are handled by
+      --  the finalizer of the enclosing scope, including at library level.
+      --  And we do not build two finalizers for an instance without body that
+      --  is a library unit (see Analyze_Package_Instantiation).
 
       if For_Package
-        and then
-          (not Is_Library_Level_Entity (Spec_Id)
-
-            --  Nested packages are library-level entities, but do not need to
-            --  be processed separately.
-
-            or else Scope_Depth (Spec_Id) /= Uint_1
-
-            --  Do not build two finalizers for an instance without body that
-            --  is a library unit (see Analyze_Package_Instantiation).
-
-            or else (Is_Generic_Instance (Spec_Id)
-                      and then Package_Instantiation (Spec_Id) = N))
-
-         --  Still need to process library-level package body instances, whose
-         --  instantiation was deferred and thus could not be seen during the
-         --  processing of the enclosing scope, and which may contain objects
-         --  requiring finalization.
-
-        and then not
-          (For_Package_Body
-            and then Is_Library_Level_Entity (Spec_Id)
-            and then Is_Generic_Instance (Spec_Id))
+        and then (not Is_Compilation_Unit (Spec_Id)
+                   or else (Is_Generic_Instance (Spec_Id)
+                             and then Package_Instantiation (Spec_Id) = N))
       then
          return;
       end if;
@@ -5188,7 +5079,9 @@ package body Exp_Ch7 is
    --  Encode entity names in package body
 
    procedure Expand_N_Package_Body (N : Node_Id) is
+      Id      : constant Entity_Id := Defining_Entity (N);
       Spec_Id : constant Entity_Id := Corresponding_Spec (N);
+
       Fin_Id  : Entity_Id;
 
    begin
@@ -5242,7 +5135,9 @@ package body Exp_Ch7 is
 
       Qualify_Entity_Names (N);
 
-      if Ekind (Spec_Id) /= E_Generic_Package then
+      if Ekind (Spec_Id) /= E_Generic_Package
+        and then not Delay_Cleanups (Id)
+      then
          Build_Finalizer
            (N           => N,
             Clean_Stmts => No_List,
@@ -5369,7 +5264,9 @@ package body Exp_Ch7 is
 
       Qualify_Entity_Names (N);
 
-      if Ekind (Id) /= E_Generic_Package then
+      if Ekind (Id) /= E_Generic_Package
+        and then not Delay_Cleanups (Id)
+      then
          Build_Finalizer
            (N           => N,
             Clean_Stmts => No_List,

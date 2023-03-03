@@ -4794,66 +4794,68 @@ package body Sem_Ch12 is
             Needs_Body := False;
          end if;
 
+         --  If the context requires a full instantiation, set things up for
+         --  subsequent construction of the body.
+
          if Needs_Body then
-            --  Indicate that the enclosing scopes contain an instantiation,
-            --  and that cleanup actions should be delayed until after the
-            --  instance body is expanded.
+            declare
+               Fin_Scop, S : Entity_Id;
 
-            Check_Forward_Instantiation (Gen_Decl);
-            if Nkind (N) = N_Package_Instantiation then
-               declare
-                  Enclosing_Master : Entity_Id;
+            begin
+               Check_Forward_Instantiation (Gen_Decl);
 
-               begin
-                  --  Loop to search enclosing masters
+               Fin_Scop := Empty;
 
-                  Enclosing_Master := Current_Scope;
-                  Scope_Loop : while Enclosing_Master /= Standard_Standard loop
-                     if Ekind (Enclosing_Master) = E_Package then
-                        if Is_Compilation_Unit (Enclosing_Master) then
-                           exit Scope_Loop;
+               --  For a package instantiation that is not a compilation unit,
+               --  indicate that cleanup actions of the innermost enclosing
+               --  scope for which they are generated should be delayed until
+               --  after the package body is instantiated.
+
+               if Nkind (N) = N_Package_Instantiation
+                 and then not Is_Compilation_Unit (Act_Decl_Id)
+               then
+                  S := Current_Scope;
+
+                  while S /= Standard_Standard loop
+                     --  Cleanup actions are not generated within generic units
+                     --  or in the formal part of generic units.
+
+                     if Inside_A_Generic
+                       or else Is_Generic_Unit (S)
+                       or else Ekind (S) = E_Void
+                     then
+                        exit;
+
+                     --  For package scopes, cleanup actions are generated only
+                     --  for compilation units, for spec and body separately.
+
+                     elsif Ekind (S) = E_Package then
+                        if Is_Compilation_Unit (S) then
+                           if In_Package_Body (S) then
+                              Fin_Scop := Body_Entity (S);
+                           else
+                              Fin_Scop := S;
+                           end if;
+
+                           Set_Delay_Cleanups (Fin_Scop);
+                           exit;
+
                         else
-                           Enclosing_Master := Scope (Enclosing_Master);
+                           S := Scope (S);
                         end if;
 
-                     elsif Is_Generic_Unit (Enclosing_Master)
-                       or else Ekind (Enclosing_Master) = E_Void
-                     then
-                        --  Cleanup actions will eventually be performed on the
-                        --  enclosing subprogram or package instance, if any.
-                        --  Enclosing scope is void in the formal part of a
-                        --  generic subprogram.
-
-                        exit Scope_Loop;
+                     --  Cleanup actions are generated for all dynamic scopes
 
                      else
-                        Set_Delay_Cleanups (Enclosing_Master);
-
-                        while Ekind (Enclosing_Master) = E_Block loop
-                           Enclosing_Master := Scope (Enclosing_Master);
-                        end loop;
-
-                        if Is_Task_Type (Enclosing_Master) then
-                           declare
-                              TBP : constant Node_Id :=
-                                      Get_Task_Body_Procedure
-                                        (Enclosing_Master);
-                           begin
-                              if Present (TBP) then
-                                 Set_Delay_Cleanups (TBP);
-                              end if;
-                           end;
-                        end if;
-
-                        exit Scope_Loop;
+                        Fin_Scop := S;
+                        Set_Delay_Cleanups (Fin_Scop);
+                        exit;
                      end if;
-                  end loop Scope_Loop;
-               end;
+                  end loop;
+               end if;
 
-               --  Make entry in table
-
-               Add_Pending_Instantiation (N, Act_Decl);
-            end if;
+               Add_Pending_Instantiation (N, Act_Decl, Fin_Scop);
+            end;
          end if;
 
          Set_Categorization_From_Pragmas (Act_Decl);
@@ -5252,11 +5254,12 @@ package body Sem_Ch12 is
 
          Instantiate_Package_Body
            (Body_Info =>
-             ((Act_Decl                 => Act_Decl,
+             ((Inst_Node                => N,
+               Act_Decl                 => Act_Decl,
+               Fin_Scop                 => Empty,
                Config_Switches          => Config_Attrs,
                Current_Sem_Unit         => Current_Sem_Unit,
                Expander_Status          => Expander_Active,
-               Inst_Node                => N,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Scope_Suppress           => Scope_Suppress,
                Warnings                 => Save_Warnings)),
@@ -5366,11 +5369,12 @@ package body Sem_Ch12 is
       else
          Instantiate_Package_Body
            (Body_Info =>
-             ((Act_Decl                 => Act_Decl,
+             ((Inst_Node                => N,
+               Act_Decl                 => Act_Decl,
+               Fin_Scop                 => Empty,
                Config_Switches          => Save_Config_Switches,
                Current_Sem_Unit         => Current_Sem_Unit,
                Expander_Status          => Expander_Active,
-               Inst_Node                => N,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Scope_Suppress           => Scope_Suppress,
                Warnings                 => Save_Warnings)),
@@ -14694,13 +14698,14 @@ package body Sem_Ch12 is
                         Decl := First_Elmt (Previous_Instances);
                         while Present (Decl) loop
                            Info :=
-                             (Act_Decl                 =>
+                             (Inst_Node                => Node (Decl),
+                              Act_Decl                 =>
                                 Instance_Spec (Node (Decl)),
+                              Fin_Scop                 => Empty,
                               Config_Switches          => Save_Config_Switches,
                               Current_Sem_Unit         =>
                                 Get_Code_Unit (Sloc (Node (Decl))),
                               Expander_Status          => Exp_Status,
-                              Inst_Node                => Node (Decl),
                               Local_Suppress_Stack_Top =>
                                 Local_Suppress_Stack_Top,
                               Scope_Suppress           => Scope_Suppress,
@@ -14754,12 +14759,13 @@ package body Sem_Ch12 is
 
                   Instantiate_Package_Body
                     (Body_Info =>
-                       ((Act_Decl                 => True_Parent,
+                       ((Inst_Node                => Inst_Node,
+                         Act_Decl                 => True_Parent,
+                         Fin_Scop                 => Empty,
                          Config_Switches          => Save_Config_Switches,
                          Current_Sem_Unit         =>
                            Get_Code_Unit (Sloc (Inst_Node)),
                          Expander_Status          => Exp_Status,
-                         Inst_Node                => Inst_Node,
                          Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                          Scope_Suppress           => Scope_Suppress,
                          Warnings                 => Save_Warnings)),
