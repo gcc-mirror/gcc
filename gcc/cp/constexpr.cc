@@ -9179,8 +9179,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  }
 	else if (fun)
           {
-	    if (RECUR (fun, rval))
-	      /* Might end up being a constant function pointer.  */;
+	    if (RECUR (fun, FUNCTION_POINTER_TYPE_P (fun) ? rval : any))
+	      /* Might end up being a constant function pointer.  But it
+		 could also be a function object with constexpr op(), so
+		 we pass 'any' so that the underlying VAR_DECL is deemed
+		 as potentially-constant even though it wasn't declared
+		 constexpr.  */;
 	    else
 	      return false;
           }
