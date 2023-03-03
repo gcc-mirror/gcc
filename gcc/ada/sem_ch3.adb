@@ -15901,7 +15901,6 @@ package body Sem_Ch3 is
 
       procedure Replace_Type (Id, New_Id : Entity_Id) is
          Id_Type  : constant Entity_Id := Etype (Id);
-         Acc_Type : Entity_Id;
          Par      : constant Node_Id := Parent (Derived_Type);
 
       begin
@@ -15913,6 +15912,7 @@ package body Sem_Ch3 is
 
          if Ekind (Id_Type) = E_Anonymous_Access_Type then
             declare
+               Acc_Type  : Entity_Id;
                Desig_Typ : Entity_Id := Designated_Type (Id_Type);
 
             begin
