@@ -321,16 +321,10 @@ ResolveRelativeQualTypePath::resolve_qual_seg (AST::QualifiedPathType &seg)
     }
 
   auto type = seg.get_type ().get ();
-  NodeId type_resolved_node = ResolveType::go (type);
-  if (type_resolved_node == UNKNOWN_NODEID)
-    return false;
+  ResolveType::go (type);
 
-  if (!seg.has_as_clause ())
-    return true;
-
-  NodeId trait_resolved_node = ResolveType::go (&seg.get_as_type_path ());
-  if (trait_resolved_node == UNKNOWN_NODEID)
-    return false;
+  if (seg.has_as_clause ())
+    ResolveType::go (&seg.get_as_type_path ());
 
   return true;
 }
