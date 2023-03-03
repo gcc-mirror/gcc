@@ -3318,6 +3318,10 @@ void
 pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 					gimple *stmt)
 {
+  if (warning_suppressed_p (stmt, OPT_Wnonnull)
+      || warning_suppressed_p (stmt, OPT_Wstringop_overflow_))
+    return;
+
   auto_diagnostic_group adg;
 
   /* Set if a warning has been issued for any argument (used to decide
@@ -3501,7 +3505,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	      if (warning_at (loc, OPT_Wnonnull,
 			      "argument %i to %<%T[static %E]%> "
 			      "is null where non-null expected",
-			      ptridx + 1, argtype, access_size))
+			      ptridx + 1, argtype, access_nelts))
 		arg_warned = OPT_Wnonnull;
 	    }
 
@@ -3593,7 +3597,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 		"in a call with type %qT", fntype);
     }
 
-  /* Set the bit in case if was cleared and not set above.  */
+  /* Set the bit in case it was cleared and not set above.  */
   if (opt_warned != no_warning)
     suppress_warning (stmt, opt_warned);
 }
