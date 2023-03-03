@@ -15849,7 +15849,11 @@ package body Sem_Ch3 is
       --  derived type.
 
       procedure Replace_Type (Id, New_Id : Entity_Id);
-      --  When the type is an anonymous access type, create a new access type
+      --  Set the Etype of New_Id to the appropriate subtype determined from
+      --  the Etype of Id, following (RM 3.4 (18, 19, 20, 21)). Id is either
+      --  the parent type's primitive subprogram or one of its formals, and
+      --  New_Id is the corresponding entity for the derived type. When the
+      --  Etype of Id is an anonymous access type, create a new access type
       --  designating the derived type.
 
       procedure Set_Derived_Name;
