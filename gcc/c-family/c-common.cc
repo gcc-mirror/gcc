@@ -4576,8 +4576,11 @@ c_common_nodes_and_builtins (void)
   char32_array_type_node
     = build_array_type (char32_type_node, array_domain_type);
 
-  wint_type_node =
-    TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
+  if (strcmp (WINT_TYPE, "wchar_t") == 0)
+    wint_type_node = wchar_type_node;
+  else
+    wint_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
 
   intmax_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (INTMAX_TYPE)));
@@ -5359,7 +5362,14 @@ c_stddef_cpp_builtins(void)
   builtin_define_with_value ("__SIZE_TYPE__", SIZE_TYPE, 0);
   builtin_define_with_value ("__PTRDIFF_TYPE__", PTRDIFF_TYPE, 0);
   builtin_define_with_value ("__WCHAR_TYPE__", MODIFIED_WCHAR_TYPE, 0);
-  builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
+  /* C++ has wchar_t as a builtin type, C doesn't, so if WINT_TYPE
+     maps to wchar_t, define it to the underlying WCHAR_TYPE in C, and
+     to wchar_t in C++, so the desired type equivalence holds.  */
+  if (!c_dialect_cxx ()
+      && strcmp (WINT_TYPE, "wchar_t") == 0)
+    builtin_define_with_value ("__WINT_TYPE__", WCHAR_TYPE, 0);
+  else
+    builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
   builtin_define_with_value ("__INTMAX_TYPE__", INTMAX_TYPE, 0);
   builtin_define_with_value ("__UINTMAX_TYPE__", UINTMAX_TYPE, 0);
   if (flag_char8_t)
