@@ -32,6 +32,12 @@ using std::experimental::string_view;
 int
 main()
 {
+  // Ensure debug info for std::string is issued in the local
+  // translation unit, so that GDB won't pick up any alternate
+  // std::string notion that might be present in libstdc++.so.
+  std::string bah = "hi";
+  (void)bah;
+
   string_view str = "string";
 // { dg-final { note-test str "\"string\"" } }
 
