@@ -4515,7 +4515,8 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	   use the escaped locals.  */
 	return;
 
-      if (!is_gimple_assign (stmt) || gimple_clobber_p (stmt))
+      if (!is_gimple_assign (stmt) || gimple_clobber_p (stmt)
+	  || !gimple_store_p (stmt))
 	continue;
 
       access_ref lhs_ref;

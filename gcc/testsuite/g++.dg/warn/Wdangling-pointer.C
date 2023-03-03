@@ -35,7 +35,34 @@ void warn_init_ref_member ()
     { }
   } ai;
 
-  sink (&as, &ai);
+  struct Al
+  {
+    const S &sref;
+    Al ():
+      // The temporary S object is destroyed when Al::Al() returns.
+      sref (S ())  // { dg-warning "storing the address" }
+    {
+      // Copying this to an SSA_NAME used to disable the warning:
+      Al *ptr = this;
+      asm ("" : "+r" (ptr));
+    }
+  } al;
+
+  struct An
+  {
+    An *next;
+    const S &sref;
+    An ():
+      next (0),
+      // The temporary S object is destroyed when An::An() returns.
+      sref (S ())  // { dg-warning "storing the address" "" { xfail *-*-* } }
+    {
+      // ??? Writing to another part of *this disables the warning:
+      next = 0;
+    }
+  } an;
+
+  sink (&as, &ai, &al, &an);
 }
 
 
