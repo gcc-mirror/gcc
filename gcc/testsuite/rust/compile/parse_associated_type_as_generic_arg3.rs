@@ -1,5 +1,3 @@
-// { dg-additional-options "-fsyntax-only" }
-
 trait Bar {
     type B;
 
@@ -35,7 +33,7 @@ impl Tata for f32 {
     fn tata() {}
 }
 
-struct S;
+struct S; // { dg-warning "struct is never constructed" }
 
 impl Bar for i32 {
     type B = u32;
@@ -54,6 +52,6 @@ enum Maybe<T> {
     Nothing,
 }
 
-fn foo() -> Maybe<<<<<S as Foo>::A as Bar>::B as Toto>::C as Tata>::D> {
+pub fn foo() -> Maybe<<<<<S as Foo>::A as Bar>::B as Toto>::C as Tata>::D> {
     Maybe::Something(15)
 }
