@@ -312,9 +312,9 @@
     case 12: case 13:
       return output_move_vfp (operands);
     case 14:
-      return \"vmsr\\t P0, %1\";
+      return \"vmsr\\tp0, %1\";
     case 15:
-      return \"vmrs\\t %0, P0\";
+      return \"vmrs\\t%0, p0\";
     case 16:
       return \"mcr\\tp10, 7, %1, cr1, cr0, 0\\t @SET_FPSCR\";
     case 17:
