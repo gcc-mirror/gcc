@@ -2511,4 +2511,10 @@ version (GNU)
 @}
 @end smallexample
 
+@item TypeInfo-based va_arg
+The Digital Mars D compiler implements a version of @code{core.vararg.va_arg}
+that accepts a run-time @code{TypeInfo} argument for use when the static type
+is not known.  This function is not implemented by GNU D.  It is more portable
+to use variadic template functions instead.
+
 @end table
