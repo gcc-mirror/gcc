@@ -9,7 +9,7 @@ struct Q {
 extern const Q q;
 
 template<int>
-constexpr const Q* p = q(0); // { dg-bogus "not usable" "PR107939" { xfail *-*-* } }
+constexpr const Q* p = q(0);
 
 void
 g ()
