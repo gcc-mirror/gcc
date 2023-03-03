@@ -64,6 +64,7 @@ namespace arm_mve
     extern const function_shape *const ternary_lshift;
     extern const function_shape *const ternary_n;
     extern const function_shape *const ternary_opt_n;
+    extern const function_shape *const ternary_rshift;
     extern const function_shape *const unary;
     extern const function_shape *const unary_acc;
     extern const function_shape *const unary_convert;
