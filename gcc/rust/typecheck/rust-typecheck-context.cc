@@ -437,8 +437,8 @@ void
 TypeCheckContext::insert_resolved_predicate (HirId id,
 					     TyTy::TypeBoundPredicate predicate)
 {
-  auto it = predicates.find (id);
-  rust_assert (it == predicates.end ());
+  // auto it = predicates.find (id);
+  // rust_assert (it == predicates.end ());
 
   predicates.insert ({id, predicate});
 }
