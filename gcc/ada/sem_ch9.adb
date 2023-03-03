@@ -2067,6 +2067,7 @@ package body Sem_Ch9 is
       end if;
 
       Mutate_Ekind           (T, E_Protected_Type);
+      Set_Is_Not_Self_Hidden (T);
       Set_Is_First_Subtype   (T);
       Reinit_Size_Align      (T);
       Set_Etype              (T, T);
@@ -2901,6 +2902,7 @@ package body Sem_Ch9 is
 
       Enter_Name (Obj_Id);
       Mutate_Ekind               (Obj_Id, E_Variable);
+      Set_Is_Not_Self_Hidden     (Obj_Id);
       Set_Etype                  (Obj_Id, Typ);
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
@@ -2987,6 +2989,7 @@ package body Sem_Ch9 is
 
       Enter_Name (Obj_Id);
       Mutate_Ekind               (Obj_Id, E_Variable);
+      Set_Is_Not_Self_Hidden     (Obj_Id);
       Set_Etype                  (Obj_Id, Typ);
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
@@ -3265,6 +3268,7 @@ package body Sem_Ch9 is
       end if;
 
       Mutate_Ekind           (T, E_Task_Type);
+      Set_Is_Not_Self_Hidden (T);
       Set_Is_First_Subtype   (T, True);
       Set_Has_Task           (T, True);
       Reinit_Size_Align      (T);

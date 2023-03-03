@@ -3306,6 +3306,7 @@ package body Sem_Ch10 is
       --  incomplete type, and carries the corresponding attributes.
 
       Mutate_Ekind           (Ent, E_Incomplete_Type);
+      Set_Is_Not_Self_Hidden (Ent);
       Set_Etype              (Ent, Ent);
       Set_Full_View          (Ent, Empty);
       Set_Is_First_Subtype   (Ent);
@@ -5989,7 +5990,8 @@ package body Sem_Ch10 is
             Mutate_Ekind (Shadow, Ekind (Ent));
          end if;
 
-         Set_Is_Internal       (Shadow);
+         Set_Is_Not_Self_Hidden (Shadow);
+         Set_Is_Internal (Shadow);
          Set_From_Limited_With (Shadow);
 
          --  Add the new shadow entity to the limited view of the package
@@ -6056,6 +6058,7 @@ package body Sem_Ch10 is
       procedure Decorate_State (Ent : Entity_Id; Scop : Entity_Id) is
       begin
          Mutate_Ekind            (Ent, E_Abstract_State);
+         Set_Is_Not_Self_Hidden  (Ent);
          Set_Etype               (Ent, Standard_Void_Type);
          Set_Scope               (Ent, Scop);
          Set_Encapsulating_State (Ent, Empty);
@@ -6416,11 +6419,12 @@ package body Sem_Ch10 is
             raise Program_Error;
       end case;
 
-      --  The withed unit may not be analyzed, but the with calause itself
+      --  The withed unit may not be analyzed, but the with clause itself
       --  must be minimally decorated. This ensures that the checks on unused
       --  with clauses also process limieted withs.
 
       Mutate_Ekind (Pack, E_Package);
+      Set_Is_Not_Self_Hidden (Pack);
       Set_Etype (Pack, Standard_Void_Type);
 
       if Is_Entity_Name (Nam) then
