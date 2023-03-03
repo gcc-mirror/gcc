@@ -2954,8 +2954,7 @@ gimple_fold_builtin_fputs (gimple_stmt_iterator *gsi,
   /* Get the length of the string passed to fputs.  If the length
      can't be determined, punt.  */
   tree len = get_maxval_strlen (arg0, SRK_STRLEN);
-  if (!len
-      || TREE_CODE (len) != INTEGER_CST)
+  if (!len || TREE_CODE (len) != INTEGER_CST)
     return false;
 
   switch (compare_tree_int (len, 1))
@@ -2972,9 +2971,10 @@ gimple_fold_builtin_fputs (gimple_stmt_iterator *gsi,
 	    if (!fn_fputc)
 	      return false;
 
-	    gimple *repl = gimple_build_call (fn_fputc, 2,
-					     build_int_cst
-					     (integer_type_node, p[0]), arg1);
+	    gimple *repl
+	      = gimple_build_call (fn_fputc, 2,
+				   build_int_cst (integer_type_node, p[0]),
+				   arg1);
 	    replace_call_with_call_and_fold (gsi, repl);
 	    return true;
 	  }
@@ -2990,8 +2990,9 @@ gimple_fold_builtin_fputs (gimple_stmt_iterator *gsi,
 	if (!fn_fwrite)
 	  return false;
 
-	gimple *repl = gimple_build_call (fn_fwrite, 4, arg0,
-					 size_one_node, len, arg1);
+	gimple *repl
+	  = gimple_build_call (fn_fwrite, 4, arg0, size_one_node,
+			       fold_convert (size_type_node, len), arg1);
 	replace_call_with_call_and_fold (gsi, repl);
 	return true;
       }
